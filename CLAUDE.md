@@ -741,6 +741,21 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`).
+- **House upgrades** (2026-10-10, the user's ask after WoW's housing blueprint): the PC's HOUSE UPGRADES page draws the Secret
+  Base from above (`blueprint()` in `js/pc.js`: grey rooms, green pips to build on, grey ones already joined, Entry
+  under the main room). First the main room grows 11x8 to 14x10 (`BIG_PRICE` 500, `buyBigRoom()`), which opens its
+  three doorways; then any green pip takes a room for `ROOM_PRICE` 500 (the user's call), up to `MAX_ROOMS` 8: closet,
+  hallway, bedroom, den, L-shaped, cross-shaped, great hall (`ROOM_KINDS` in `js/data/house.js`: rects of floor and
+  pips; `fitRoom()` turns it to reach back through the doorway without overlapping; `tests/house.test.mjs`). The plan is
+  `secretBase.house`. Each room is walked as its own diorama (the user's pick over one open dollhouse): doorways are a
+  dark way through a wall or a doormat on the front edge, a tap walks your partner through and `travel()` in
+  `js/base-3d.js` builds the next room. The room you're in keeps its things on the base itself (`items` / `wall` /
+  `floor`, `here`), the others on their records (`goRoom()` / `roomContents()` in `js/secret-base.js`), so anything
+  outside the room counts every room's (`allItems()`, `eachRoom()`); `useRoom()` sets the live `COLS` / `ROWS` and the
+  floor mask, walls and doorways `fits()` reads. Opening the base always starts in the main room. Building clears a new
+  doorway's furniture into storage. **Duplicate** (the same day): the PC's DUPLICATE copies any owned piece into
+  storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
+  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)".
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never

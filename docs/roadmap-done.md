@@ -2077,3 +2077,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   snowman, falling snow (`makeSnow()`), a cold light; the vista past the Safari gate follows (`vistaLook()`). Ghosts
   (Gastly, Haunter, Gengar, Misdreavus, Drifloon) / Delibird and Vanillite join the flyers' round on both titles
   (`SEASON_FLYERS`). The Signs title's ledge is otherwise unchanged. A new season is a `season()` line and its looks.
+
+- **House upgrades and Duplicate** (2026-10-10, the user's asks): the PC's blueprint grows the main room (500) and builds
+  closets, halls, bedrooms, dens, L and cross rooms and great halls onto its doorways (500 each, up to 8), each walked
+  through its own door; Duplicate copies owned furniture (50, +5 a copy, capped at 100); the PC's new marks are a gold
+  "!". Detail in CLAUDE.md's House upgrades note.

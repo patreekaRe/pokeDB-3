@@ -1475,7 +1475,7 @@ function dressSeason() {
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
-      if (glow === 'pumpkin') glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      if (glow === 'pumpkin' && c.glow) glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
       else if (glow && c.glow) glowing(b.material, c, null, '#ffffff', 1.2, seasonMats);
       b.raycast = () => {};
       forest.add(b);

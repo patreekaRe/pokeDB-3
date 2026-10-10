@@ -412,14 +412,8 @@
 }
 .pc-env-from { font-size: 0.48rem; color: var(--ink); letter-spacing: 0.5px; }
 .pc-env-title { grid-column: 2; font-weight: 400; font-size: 0.64rem; }
-.pc-env-seal, .pc-env-when { grid-column: 3; grid-row: 1 / span 2; }
-.pc-env-seal {
-  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #fff; font-size: 0.44rem;
-  background: radial-gradient(circle at 35% 30%, #f06a5a, #c02a2a 60%, #8e1c1c); box-shadow: 0 2px 0 #6a1414;
-  animation: pcSeal 1.6s ease-in-out infinite;
-}
+.pc-env-when { grid-column: 3; grid-row: 1 / span 2; }
 .pc-env-when { font-size: 0.45rem; color: #6a6258; }
-@keyframes pcSeal { 50% { scale: 1.08; } }
 
 .pc-letter { position: relative; width: min(300px, 100%); height: 250px; margin: 0 auto 12px; overflow: hidden; perspective: 600px; }
 .pc-env-back, .pc-env-front, .pc-env-flap { position: absolute; left: 0; right: 0; bottom: 0; height: 110px; }
@@ -459,8 +453,8 @@
 @keyframes pcRise { 0% { translate: 0 220px; z-index: 1; } 55% { translate: 0 -14px; z-index: 1; } 56% { z-index: 4; } 100% { translate: 0 0; z-index: 4; } }
 @keyframes pcPaid { 40% { scale: 1.25; } }
 @keyframes pcStamp { from { scale: 2.4; opacity: 0; } }
-.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-env-seal { animation: none !important; }
-@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-env-seal { animation: none !important; } }
+.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-new { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-new { animation: none !important; } }
 @keyframes pcFade { from { opacity: 0; } }
 @keyframes pcGrow { from { scale: 0.4; translate: 0 30%; opacity: 0; } }
 @keyframes pcBoot { 0% { filter: brightness(0.2) saturate(0); } 50% { filter: brightness(1.6); } 100% { filter: none; } }
@@ -497,3 +491,42 @@
 @keyframes spookPop { from { scale: 0.6; opacity: 0; } }
 .hub-card:not([hidden]) ~ .spook-foot, .hub.held .spook-foot, .hub.held .spook-bubble, .hub-card:not([hidden]) ~ .spook-bubble { display: none; }
 @media (prefers-reduced-motion: reduce) { .spook-line.more i, .spook-bubble.pop { animation: none; } }
+
+/* something new to read in the PC: a gold "!" bobbing over the item's corner, like the Pokédex keys' (.dex-news), only bigger */
+.pc-new {
+  position: absolute; top: -8px; right: -8px; z-index: 2; display: grid; place-items: center; width: 24px; height: 24px;
+  border-radius: 7px; background: linear-gradient(#ffe070, #ffc020); color: #3a1c0c; font: 13px/1 var(--pixel-font);
+  box-shadow: 0 0 0 2px #3a1c0c, 0 3px 0 2px #3a1c0c, 0 0 12px rgba(255, 208, 64, 0.9);
+  animation: pcNew 0.7s ease-in-out infinite alternate; pointer-events: none;
+}
+@keyframes pcNew { from { translate: 0 0; } to { translate: 0 -4px; } }
+
+/* House upgrades: the blueprint, after WoW's housing one, on a dark grid */
+.pc-blueprint { margin: 0 0 12px; padding: 6px; border: 2px solid #3a78b8; border-radius: 10px; background: #081a30; box-shadow: 0 3px 0 #2a5a90; }
+.pc-bp { display: block; width: 100%; max-height: 300px; }
+.pc-bp-room .pc-bp-edge { fill: #3c4654; stroke: #a8c4dc; stroke-width: 0.22; }
+.pc-bp-room .pc-bp-fill { fill: #3c4654; }
+.pc-bp-room { cursor: pointer; }
+.pc-bp-room.entry .pc-bp-edge, .pc-bp-room.entry .pc-bp-fill { fill: #2c3440; }
+.pc-bp-room.ghost .pc-bp-edge { fill: rgba(88, 216, 88, 0.22); stroke: #58d858; stroke-dasharray: 0.5 0.35; }
+.pc-bp-room.ghost .pc-bp-fill { fill: rgba(88, 216, 88, 0.22); }
+.pc-bp-name { fill: #eef4fa; text-anchor: middle; dominant-baseline: central; font-family: var(--pixel-font); pointer-events: none; }
+.pc-bp-hit { fill: transparent; }
+.pc-bp-pip circle:last-child { stroke: #10202c; stroke-width: 0.14; }
+.pc-bp-pip.shut circle:last-child { fill: #9aa6b2; }
+.pc-bp-pip.open { cursor: pointer; }
+.pc-bp-pip.open circle:last-child { fill: #58d858; }
+.pc-bp-pip.open.on circle:last-child { fill: #fff; stroke: #58d858; stroke-width: 0.3; animation: pcPip 0.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes pcPip { to { scale: 1.35; } }
+.pc-plan { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.pc-plan-name { font-weight: 400; font-size: 0.72rem; }
+.pc-plan-note { font-size: 0.5rem; color: #2a6a80; line-height: 1.6; }
+.pc-build, .pc-dupe { margin: 8px auto 0; height: 40px; }
+.pc-build { display: block; margin: 0 auto 12px; }
+.pc-kinds { gap: 6px; margin-bottom: 4px; }
+.pc-kind { display: flex; justify-content: space-between; align-items: center; padding: 11px 12px 11px 30px; }
+.pc-kind.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); }
+.pc-kind:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+.pc-kind-size { font-size: 0.5rem; color: #2a6a80; }
+.pc-screen.calm .pc-bp-pip { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-bp-pip circle { animation: none !important; } }

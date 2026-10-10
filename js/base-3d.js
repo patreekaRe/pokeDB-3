@@ -21,7 +21,9 @@ import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
-  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC } from './secret-base.js';
+  spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
+  useRoom, goRoom, onFloor, topOf } from './secret-base.js';
+import { roomById, roomName, doorsOf, pipTile } from './data/house.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -63,7 +65,8 @@ let folded = false;   // the sheet folded down to its hinge, to look at the room
 let named = null;   // a piece just taken from the tray: its name, said for a moment (the tiles show none)
 let hushed = null;   // the hint tapped away: it stays away until it says something else
 let trying = null;   // a wallpaper or floor up on approval: { field, id, was }
-let exitMat = null;   // the doormat over the front edge: a tap walks your partner out, as in a Pokémon house
+let exitMat = null;   // the main room's doormat over the front edge: a tap walks your partner out, as in a Pokémon house
+let doorMats = [], doors = [];   // the room's doorways (js/data/house.js) and their mats, whose arrows breathe in Walk
 let leaveTo = null;   // where the doormat walks back to (the hub's door); without it, a ?base playtest reloads onto the title   // the Safari Pokémon on show, and the hearts and Zs floating off them
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -93,47 +96,108 @@ const shade = (hex, k) => '#' + new THREE.Color(hex).multiplyScalar(k).getHexStr
 
 /* ---------- the room and its pieces, rebuilt whenever the layout changes ---------- */
 
+const here = () => roomById(base.house, base.here || 'main');
+
+/* A room is its floor tiles (js/data/house.js: a plain rectangle, or an L or a cross): a floor block for each of its
+   rects, a back wall over every stretch of floor with none behind it, a side wall up each left and right edge, and the
+   front left open, a diorama's cut-away. A side wall standing in front of floor further back (a cross's lower arm,
+   before its wings) is cut down low, so it doesn't hide that floor. */
 function buildRoom() {
   dispose(roomGroup);
-  const art = roomArt(base);
-  const edge = solid('#2a1e16'), trimC = wallTrim(art);
-
-  const floorTex = tex(crop(art, 0, WALL, COLS * T, ROWS * T));
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(COLS, 0.6, ROWS),
-    [edge, edge, new THREE.MeshStandardMaterial({ map: floorTex, roughness: 1 }), edge, solid('#3a2a1e'), edge]);
-  floor.position.y = -0.3;
-  floor.receiveShadow = true;
-  roomGroup.add(floor);
-
-  const paper = new THREE.MeshStandardMaterial({ map: tex(crop(art, 0, 0, COLS * T, WALL)), roughness: 1 });
+  doorMats = []; exitMat = null;
+  const art = roomArt(base), shape = here().shape;
+  const edge = solid('#2a1e16'), trimC = wallTrim(art), under = solid('#3a2a1e');
   const cap = solid(shade(trimC, 1.15)), outer = solid(shade(trimC, 0.6));
-  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, WALL_H, 0.4), [outer, outer, cap, outer, paper, outer]);
-  back.position.set(0, WALL_H / 2, -ROWS / 2 - 0.2);
-  back.receiveShadow = true;
-  roomGroup.add(back);
-  // the side walls stop short of the front, so the camera sees in over them, a diorama's cut-away
-  const sidePaper = new THREE.MeshStandardMaterial({ map: tex(crop(art, 0, 0, ROWS * T, WALL)), roughness: 1 });
-  for (const s of [-1, 1]) {
-    const faces = [outer, outer, cap, outer, outer, outer];
-    faces[s < 0 ? 0 : 1] = sidePaper;
-    const side = new THREE.Mesh(new THREE.BoxGeometry(0.4, WALL_H, ROWS), faces);
-    side.position.set(s * (COLS / 2 + 0.2), WALL_H / 2, 0);
-    side.receiveShadow = true; side.castShadow = true;
-    roomGroup.add(side);
+  const paper = (from, len) => new THREE.MeshStandardMaterial({ map: tex(crop(art, from * T, 0, len * T, WALL)), roughness: 1 });
+  const add = (mesh, x, y, z) => { mesh.position.set(x, y, z); mesh.receiveShadow = true; roomGroup.add(mesh); return mesh; };
+
+  for (const [x, y, w, h] of shape.rects) {
+    const top = new THREE.MeshStandardMaterial({ map: tex(crop(art, x * T, WALL + y * T, w * T, h * T)), roughness: 1 });
+    add(new THREE.Mesh(new THREE.BoxGeometry(w, 0.6, h), [edge, edge, top, edge, under, edge]), x + w / 2 - COLS / 2, -0.3, y + h / 2 - ROWS / 2);
   }
-  const door = doormat(tileX(Math.floor(COLS / 2)), ROWS / 2 + 0.47, [outer, outer, cap, outer, outer, outer]);
-  roomGroup.add(door.step, exitMat = door.mat);
+  const on = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && onFloor(x, y);
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS;) {
+    const backed = (xx) => on(xx, y) && !on(xx, y - 1);
+    if (!backed(x)) { x++; continue; }
+    let e = x;
+    while (backed(e + 1)) e++;
+    const len = e - x + 1, l = on(x - 1, y) ? 0 : 0.4, r = on(e + 1, y) ? 0 : 0.4;
+    add(new THREE.Mesh(new THREE.BoxGeometry(len + l + r, WALL_H, 0.4), [outer, outer, cap, outer, paper(x, len), outer]),
+      x - COLS / 2 + len / 2 + (r - l) / 2, WALL_H / 2, y - ROWS / 2 - 0.2);
+    x = e + 1;
+  }
+  for (const s of [-1, 1]) for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS;) {
+    const edged = (yy) => on(x, yy) && !on(x + s, yy);
+    const low = (yy) => { for (let k = 0; k < yy; k++) if (on(x + s, k)) return true; return false; };
+    if (!edged(y)) { y++; continue; }
+    const lo = low(y);
+    let e = y;
+    while (edged(e + 1) && low(e + 1) === lo) e++;
+    const len = e - y + 1, tall = lo ? 0.35 : WALL_H, faces = [outer, outer, cap, outer, outer, outer];
+    faces[s < 0 ? 0 : 1] = lo ? cap : paper(y, len);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.4, tall, len), faces), x + (s > 0 ? 1 : 0) - COLS / 2 + s * 0.2, tall / 2, y - ROWS / 2 + len / 2).castShadow = true;
+    y = e + 1;
+  }
+  doors = doorsOf(base.house, here().id).map(d => ({ ...d, tile: pipTile(shape, [d.side, d.at]) }));
+  for (const d of doors) addDoor(d, [outer, outer, cap, outer, outer, outer]);
 }
 
-/** Your partner walks to the front of the room and out over the doormat, the only way out; then the room is left. */
-function headOut() {
+let throughTex = null;
+/** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor. */
+function throughMat() {
+  if (!throughTex) {
+    const c = document.createElement('canvas');
+    c.width = 64; c.height = 128;
+    const g = c.getContext('2d'), v = g.createLinearGradient(0, 0, 0, 128);
+    v.addColorStop(0, '#08060e'); v.addColorStop(0.7, '#1a1420'); v.addColorStop(1, '#4a3428');
+    g.fillStyle = v; g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.fill();
+    throughTex = new THREE.CanvasTexture(c);
+    throughTex.colorSpace = THREE.SRGBColorSpace;
+  }
+  return new THREE.MeshBasicMaterial({ map: throughTex, transparent: true });
+}
+
+/** A doorway: on the front edge a doormat like the way out; in a wall a dark way through under a wooden frame, a small
+    mat before it pointing in. A tap on any of it walks your partner through (goThrough()). */
+function addDoor(d, stepMat) {
+  const { x: tx, y: ty } = d.tile;
+  if (d.side === 's') {
+    const m = doormat(tileX(tx), ty + 1 - ROWS / 2 + 0.47, stepMat);
+    m.mat.userData.door = m.step.userData.door = d;
+    roomGroup.add(m.step, m.mat);
+    doorMats.push(m.mat);
+    if (d.exit) exitMat = m.mat;
+    return;
+  }
+  const g = new THREE.Group(), wood = solid('#7a5434');
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat());
+  dark.position.set(0, 1.05, 0.03);
+  const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
+  const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
+  lintel.position.set(0, 2.24, 0.07);
+  const mat = doormat(0, 0, wood).mat;
+  mat.scale.set(0.6, 0.75, 1);
+  mat.position.set(0, 0.012, 0.45);
+  mat.rotation.z = Math.PI;
+  g.add(dark, post(-0.61), post(0.61), lintel, mat);
+  if (d.side === 'n') g.position.set(tileX(tx), 0, ty - ROWS / 2);
+  if (d.side === 'w') { g.position.set(tx - COLS / 2, 0, tileZ(ty)); g.rotation.y = Math.PI / 2; }
+  if (d.side === 'e') { g.position.set(tx + 1 - COLS / 2, 0, tileZ(ty)); g.rotation.y = -Math.PI / 2; }
+  g.traverse(o => { o.userData.door = d; });
+  roomGroup.add(g);
+  doorMats.push(mat);
+}
+
+/** Your partner walks to a doorway and through it: out over the main room's doormat, the way out of the base, or into
+    the room it leads to (travel()). */
+function goThrough(d) {
   if (mode !== 'walk') return;
-  const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+  const t = d.tile, [ox, oy] = { n: [0, -0.7], s: [0, 0.97], w: [-0.7, 0], e: [0.7, 0] }[d.side];
   const go = () => {
-    walker.path = route(walker.tile, door);
-    walker.path.push({ x: door.x, y: ROWS - 0.03 });
-    walker.exit = true;
-    ring.position.set(exitMat.position.x, 0, exitMat.position.z);
+    walker.path = route(walker.tile, t);
+    walker.path.push({ x: t.x + ox, y: t.y + oy });
+    walker.through = d;
+    ring.position.set(tileX(t.x), 0.02, tileZ(t.y));
     ring.material.opacity = 0.9;
   };
   follow = true;
@@ -191,8 +255,8 @@ function makePiece(it, ghostly = false, lift = null) {
     const art = pieceArt(it.id, 0, HD), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
     const plane = add(new THREE.PlaneGeometry(p.w, WALL_H), m, false);
-    plane.position.set(it.x - COLS / 2 + p.w / 2, WALL_H / 2, -ROWS / 2 + 0.01 + (ghostly ? 0.01 : 0));
-    if (p.fam === 'window' && !ghostly) addShaft(group, plane.position.x);
+    plane.position.set(it.x - COLS / 2 + p.w / 2, WALL_H / 2, topOf(it.x) - ROWS / 2 + 0.01 + (ghostly ? 0.01 : 0));
+    if (p.fam === 'window' && !ghostly) addShaft(group, plane.position.x, plane.position.z);
     return group;
   }
   const [fw, fh] = footprint(it);
@@ -241,7 +305,7 @@ function makePiece(it, ghostly = false, lift = null) {
 }
 
 /** A soft shaft of light from the window down to the floor, drawn additive so bloom picks it up, and dust in it. */
-function addShaft(group, x) {
+function addShaft(group, x, wz) {
   const c = new OffscreenCanvas(32, 64), g = c.getContext('2d');
   const v = g.createLinearGradient(0, 0, 0, 64);
   v.addColorStop(0, 'rgba(255,240,200,0.9)'); v.addColorStop(1, 'rgba(255,240,200,0)');
@@ -253,7 +317,7 @@ function addShaft(group, x) {
   const m = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
   const shaft = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 3.6), m);
   // from the window's sill out and down across the floor
-  shaft.position.set(x, 1.15, -ROWS / 2 + 1.6);
+  shaft.position.set(x, 1.15, wz + 1.6);
   shaft.rotation.x = -1.05;
   shaft.raycast = () => {};
   group.add(shaft);
@@ -263,7 +327,7 @@ function addShaft(group, x) {
   for (let i = 0; i < n; i++) {
     pos[i * 3] = x + (Math.random() - 0.5) * 1.6;
     pos[i * 3 + 1] = Math.random() * 2.6;
-    pos[i * 3 + 2] = -ROWS / 2 + 0.4 + Math.random() * 2.6;
+    pos[i * 3 + 2] = wz + 0.4 + Math.random() * 2.6;
   }
   const pg = new THREE.BufferGeometry();
   pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
@@ -343,11 +407,11 @@ function showGhost() {
   const it = held(), wall = PIECES[it.id].layer === 'wall';
   // lifted a little, as if held, and tinted, since a ghost over a piece of the same shape would look just like it; up on a
   // table it shows at the table's top and the size it will be
-  ghost.position.set(it.x, wall ? 0 : 0.08, wall ? 0 : it.y);
+  ghost.position.set(it.x, wall ? 0 : 0.08, wall ? topOf(it.x) - topOf(0) : it.y);
   const model = ghost.userData.model, under = it.up ? base.items[surfaceUnder(it, base)] : null;
   if (model) { model.scale.setScalar(under ? RIDER : 1); model.position.y = under ? surfaceOf(under.id) - 0.06 : 0; }
   const [fw, fh] = wall ? [PIECES[it.id].w, 0] : footprint(it), ok = fits(it, -1, base);
-  if (wall) foot.position.set(it.x - COLS / 2 + fw / 2, WALL_H / 2, -ROWS / 2 + 0.03);
+  if (wall) foot.position.set(it.x - COLS / 2 + fw / 2, WALL_H / 2, topOf(it.x) - ROWS / 2 + 0.03);
   else foot.position.set(it.x - COLS / 2 + fw / 2, under ? surfaceOf(under.id) + 0.02 : 0.025, it.y - ROWS / 2 + fh / 2);
   foot.material.color.set(ok ? '#60e080' : '#ff5050');
   const tint = new THREE.Color(ok ? '#b0ffc0' : '#ff8080');
@@ -433,7 +497,7 @@ async function makeMon(mate = buddy(getSave()), back = true) {
 /* ---------- walking ---------- */
 
 const key = (x, y) => `${x},${y}`;
-const inRoom = (c) => c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS;
+const inRoom = (c) => c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS && onFloor(c.x, c.y);
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
 /** Breadth-first over free tiles; if the tapped tile is taken, to the reachable one nearest it. */
@@ -511,7 +575,7 @@ function taken(skip) {
 
 function freeTiles(skip) {
   const busy = taken(skip), out = [];
-  for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) if (!blocked.has(key(x, y)) && !busy.has(key(x, y))) out.push({ x, y });
+  for (let x = 0; x < COLS; x++) for (let y = 0; y < ROWS; y++) if (onFloor(x, y) && !blocked.has(key(x, y)) && !busy.has(key(x, y))) out.push({ x, y });
   return out;
 }
 
@@ -533,7 +597,7 @@ async function addGuest(id) {
   const m = await makeMon({ src: def.image, name: def.name, cry: def.spriteId ?? id }, false);
   if (!guests.includes(g)) { dispose(m.group); scene.remove(m.group); return; }
   const spots = freeTiles();
-  const tile = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree({ x: 5, y: ROWS - 1 });
+  const tile = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree(startTile());
   g.w = { tile, x: tileX(tile.x), z: tileZ(tile.y), y: 0, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0, think: performance.now() + rand(800, 3000) };
   m.board.userData.who = g;
   g.mon = m;
@@ -766,13 +830,13 @@ const visitLines = () => [
 
 /** Two free tiles side by side near the middle of the back: Smeargle, then its easel to its right. */
 function visitSpot() {
-  const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y));
+  const busy = taken(), ok = (t) => inRoom(t) && !blocked.has(key(t.x, t.y)) && !busy.has(key(t.x, t.y)) && !doors.some(d => Math.abs(d.tile.x - t.x) + Math.abs(d.tile.y - t.y) < 2);
   for (const y of [1, 2, 0, 3]) for (const x of [6, 7, 4, 3, 5, 8, 2, 1]) if (ok({ x, y }) && ok({ x: x + 1, y })) return { x, y };
   return null;
 }
 
 async function startVisit() {
-  if (visit || metSmeargle(base)) return;
+  if (visit || metSmeargle(base) || base.here) return;
   const spot = visitSpot();
   if (!spot) return;
   visit = { phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
@@ -998,7 +1062,7 @@ function pieceUnder(at) {
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
   const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board)];
-  return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [exitMat] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
+  return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
 function onTap(e) {
@@ -1006,8 +1070,8 @@ function onTap(e) {
   if (performance.now() < quietUntil) return;   // the end of a pinch or a pan, not a tap
   const ray = new THREE.Raycaster();
   const first = tapped(ndc(e), ray);
-  walker.exit = false;
-  if (first === exitMat) return headOut();
+  walker.through = null;
+  if (first?.userData.door) return goThrough(first.userData.door);
   if (first === mon.board) {
     playCry(mon.id);
     walker.hopUntil = performance.now() + 500;
@@ -1288,7 +1352,7 @@ function fitCamera(w, h) {
   camera.updateProjectionMatrix();
   const sheet = root.querySelector('.b3-sheet').offsetHeight;
   root.style.setProperty('--b3-sheet', sheet + 'px');
-  fitted = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot(SHOT.edit, w, h, sheet) };
+  fitted = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot({ ...SHOT.edit, across: COLS + 1.2 }, w, h, sheet) };
   shots ??= structuredClone(fitted);
 }
 
@@ -1299,6 +1363,9 @@ function easeShots(dt) {
 }
 
 function placeCamera(dt, now) {
+  // opened or switched rooms while the view had no size yet: fit it once it has one
+  if (!fitted) return resize();
+  shots ??= structuredClone(fitted);
   easeShots(dt);
   blend = calm ? +(mode === 'edit') : blend + ((mode === 'edit') - blend) * Math.min(1, dt / 1000 * 6);
   const k = blend * blend * (3 - 2 * blend), mix = (key) => shots.walk[key] + (shots.edit[key] - shots.walk[key]) * k;
@@ -1379,10 +1446,10 @@ function frame(now) {
 
   if (!hopping(walker, now) && walk(walker, mon, dt)) {
     if (walker.goal) partnerUp();
-    else if (walker.exit) { walker.exit = false; leave(); }
+    else if (walker.through) { const d = walker.through; walker.through = null; if (d.exit) leave(); else travel(d); }
   }
   // the mat's arrow breathes, so it reads as the way out
-  if (!calm) exitMat.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
+  if (!calm) for (const m of doorMats) m.material.emissiveIntensity = mode === 'walk' ? 0.12 + Math.sin(now / 420) * 0.1 : 0;
   const happy = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : happy ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, walker.y ?? 0, walker.z);
@@ -1462,13 +1529,58 @@ async function leave() {
   curtain(false);
 }
 
+/** Through a doorway into the room beyond: dark, that room built, your partner in at its side of the same doorway and
+    the Pokémon living here about the room, then light. */
+async function travel(d) {
+  if (travel.busy) return;
+  travel.busy = true;
+  playSound('door');
+  await curtain(true);
+  if (holding) act('cancel');
+  sel = -1;
+  endVisit();
+  untry();
+  goRoom(base, d.to);
+  save();
+  showRoom(doors => doors.find(x => x.pip === d.toPip)?.tile);
+  // in through a wall's doorway it faces into the room; in over the front edge, away from you, as at the front door
+  if (doors.find(x => x.pip === d.toPip)?.side !== 's') walker.facing = 'front';
+  travel.busy = false;
+  curtain(false);
+}
+
+/** Build the room `base.here` is and stand your partner at `spot(doors)` (a tile), or at the front; the guests about it. */
+function showRoom(spot = () => null) {
+  useRoom(base);
+  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : roomName(base.house, base.here);
+  buildRoom();
+  Object.assign(walker, { path: [], through: null, seat: null, seatTo: null, goal: null, jump: null, y: 0 });
+  buildPieces();
+  walker.tile = nearestFree(spot(doors) ?? startTile());
+  walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
+  walker.facing = 'back';
+  for (const g of guests) {
+    const w = g.w;
+    if (!w) continue;
+    const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : walker.tile;
+    Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, y: 0, path: [], tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(800, 3000) });
+  }
+  zoom = 1; camZ = panZ = 0; follow = true;
+  camX = panX = walker.x;
+  shots = fitted = null;
+  resize();
+  refresh();
+}
+
 /** The Storage PC: the Clearing's PC on its Decorations, over the room. What it changed (a piece put away, the walking
     buddy, the residents) is read back from the save once it's logged off. */
 function logOn() {
   playSound('confirm');
   openPC({ start: 'decor', inBase: true, onClose: async () => {
     base = loadBase();
-    buildPieces();
+    // the PC's House upgrades may have grown this room or opened a door in it
+    const at = walker.tile;
+    showRoom(() => at);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
     syncGuests();
@@ -1480,19 +1592,13 @@ function logOn() {
 async function reopen() {
   playMusic('secret-base');
   calm = calmFx();
-  base = loadBase();   // the mall's Furniture store may have bought into it since
+  base = goRoom(loadBase(), 'main');   // the mall's Furniture store may have bought into it since; in at the front door
   document.body.append(root);
   const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
   mode = 'walk'; blend = 0; sel = -1;
-  walker.path = []; walker.exit = false;
-  walker.tile = nearestFree(startTile());
-  walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
-  walker.facing = 'back';
-  camX = panX = walker.x;
+  showRoom();
   setTime(true);
-  resize();
-  refresh();
   syncGuests();
   startVisit();
   last = 0;
@@ -1577,7 +1683,8 @@ export async function openBase3d({ onLeave = null } = {}) {
 
   // the furniture is smooth 3D: a sharper scene, scaled up smoothly, not in whole pixels
   post = createPost(renderer, { short: 820, crisp: false });
-  base = loadBase();
+  base = goRoom(loadBase(), 'main');
+  useRoom(base);
   buildRoom();
   buildPieces();
   mon = await makeMon();
@@ -1620,8 +1727,9 @@ export async function openBase3d({ onLeave = null } = {}) {
 }
 
 function startTile() {
-  for (let r = 0; r < COLS; r++) for (let y = ROWS - 2; y >= 0; y--) for (const x of [5 - r, 5 + r]) {
-    if (x >= 0 && x < COLS && !blocked.has(key(x, y))) return { x, y };
+  const mid = Math.floor(COLS / 2);
+  for (let r = 0; r < COLS; r++) for (let y = ROWS - 2; y >= 0; y--) for (const x of [mid - r, mid + r]) {
+    if (x >= 0 && x < COLS && onFloor(x, y) && !blocked.has(key(x, y))) return { x, y };
   }
-  return { x: 5, y: ROWS - 1 };
+  return { x: mid, y: ROWS - 1 };
 }

@@ -12,9 +12,12 @@ import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
+import { roomById, doorTiles, freshHouse, addRoom, ROOM_PRICE, BIG_PRICE, MAX_ROOMS } from './data/house.js';
 
-const T = 16, COLS = 11, ROWS = 8, WALL = 48;
-const W = COLS * T, H = WALL + ROWS * T;
+const T = 16, WALL = 48;
+// the room being shown (useRoom()): its size in tiles, the canvas it's painted on (wide enough for its longest wall),
+// its floor tiles, the top row of each column (where its back wall stands) and the tiles its doorways keep clear
+let COLS = 11, ROWS = 8, W = COLS * T, H = WALL + ROWS * T, FLOOR = null, TOPS = [], DOORS = new Set();
 
 const WALLPAPERS = [
   { id: 'cream', name: 'Cream stripes', look: 'stripe', a: '#f4e6c4', b: '#ead6a8', trim: '#a8794a' },
@@ -69,6 +72,106 @@ const freshBase = (mons) => ({
   v: 2, wall: 'cream', floor: 'wood', items: FIRST_ROOM.map(it => ({ ...it })),
   owned: { window: 1, rug: 1, bed: 1, lamp: 1 }, ...(mons ? { mons } : {}),
 });
+
+/* ---------- the house (js/data/house.js): rooms beyond the first, walked one at a time ---------- */
+
+/* The room you're in keeps its things on the base itself (`items`, `wall`, `floor`, which the room code reads); every
+   other room keeps its own on its record in `house.rooms`, and the main room's wait in `house.main` while you're
+   elsewhere. `here` is the room you're in (none for the main room). Code outside the room counts every room's furniture
+   (allItems(), eachRoom()), so it never cares which one that is. */
+const CONTENTS = ['items', 'wall', 'floor'];
+
+/** Where a room's things are kept right now: the base itself for the room you're in. */
+export function roomContents(b, id) {
+  if ((b.here || 'main') === id) return b;
+  return id === 'main' ? b.house.main : b.house.rooms.find(r => r.id === id);
+}
+
+/** Walk into room `id`: the room you're in packs its things onto its record, and `id`'s come out onto the base. */
+export function goRoom(b, id) {
+  const here = b.here || 'main';
+  if (here === id || !roomById(b.house, id)) return b;
+  const away = here === 'main' ? (b.house.main = {}) : b.house.rooms.find(r => r.id === here);
+  for (const k of CONTENTS) away[k] = b[k];
+  const next = roomContents(b, id);
+  for (const k of CONTENTS) { b[k] = next[k]; delete next[k]; }
+  if (id === 'main') { delete b.house.main; delete b.here; } else b.here = id;
+  return b;
+}
+
+/** Every room's things, the room you're in first: `fn` gets each holder of `items`. */
+export function eachRoom(b, fn) {
+  fn(b);
+  if (b.house?.main) fn(b.house.main);
+  for (const r of b.house?.rooms || []) if (r.items) fn(r);
+}
+export const allItems = (b) => { const out = []; eachRoom(b, r => out.push(...r.items)); return out; };
+
+/** Make room `b.here` (the main room unless walked elsewhere) the room shown: its size, floor, walls and doorways. */
+export function useRoom(b) {
+  const r = roomById(b.house, b.here || 'main');
+  COLS = r.shape.w; ROWS = r.shape.h;
+  W = Math.max(COLS, ROWS) * T; H = WALL + ROWS * T;
+  FLOOR = r.shape.tiles;
+  TOPS = Array.from({ length: COLS }, (_, x) => { for (let y = 0; y < ROWS; y++) if (FLOOR.has(`${x},${y}`)) return y; return ROWS; });
+  DOORS = new Set(doorTiles(b.house, r.id).map(d => d.side === 'n' ? `n${d.tile.x}` : `${d.tile.x},${d.tile.y}`));
+  return r;
+}
+export const onFloor = (x, y) => !FLOOR || FLOOR.has(`${x},${y}`);
+/** The row a column's back wall stands behind: 0 in a plain room, lower under a shaped room's notches. */
+export const topOf = (x) => TOPS[x] ?? 0;
+const blocksDoor = (it) => PIECES[it.id].layer === 'wall'
+  ? Array.from({ length: PIECES[it.id].w }, (_, i) => `n${it.x + i}`).some(k => DOORS.has(k))
+  : cells(it).some(c => { const [x, y] = c.split(',').map(Number); return DOORS.has(c) || (y === topOf(x) && DOORS.has(`n${x}`)); });
+
+/** The first house upgrade: the main room grows to its big size (its furniture moved along to keep it centred), and
+    its doors open on the blueprint. False if the coins aren't there. */
+export function buyBigRoom(b) {
+  if ((getSave().coins ?? 0) < BIG_PRICE || b.house?.big) return false;
+  b.house ||= freshHouse();
+  b.house.big = true;
+  for (const it of roomContents(b, 'main').items) it.x += 1;
+  updateSave(d => { d.coins -= BIG_PRICE; d.secretBase = b; });
+  return true;
+}
+
+/** Build a room onto pip `pip` of room `id`. Furniture standing in a new doorway's way goes into storage (named in
+    `moved`). Null if the coins aren't there, the house is full or it doesn't fit. */
+export function buyRoom(b, id, pip, kind) {
+  if ((getSave().coins ?? 0) < ROOM_PRICE || (b.house?.rooms.length ?? 0) >= MAX_ROOMS) return null;
+  const was = new Set((b.house?.links || []).map(l => l.join()));
+  const nid = addRoom(b.house, id, pip, kind);
+  if (!nid) return null;
+  Object.assign(b.house.rooms.find(r => r.id === nid), { items: [], wall: 'cream', floor: 'wood' });
+  const moved = [];
+  // each room that got a door: clear its doorway, with that room shown for the while so the rules read its shape
+  const keep = { COLS, ROWS, W, H, FLOOR, TOPS, DOORS };
+  for (const rid of new Set(b.house.links.filter(l => !was.has(l.join())).flatMap(([a, , c]) => [a, c]))) {
+    const box = roomContents(b, rid);
+    useRoom({ house: b.house, here: rid });
+    const gone = new Set(box.items.filter(it => !it.up && blocksDoor(it)).flatMap(it => [it, ...ridersOf(it, box)]));
+    moved.push(...[...gone].map(it => PIECES[it.id].name));
+    box.items = box.items.filter(it => !gone.has(it));
+  }
+  ({ COLS, ROWS, W, H, FLOOR, TOPS, DOORS } = keep);
+  updateSave(d => { d.coins -= ROOM_PRICE; d.secretBase = b; });
+  return { id: nid, moved };
+}
+export { ROOM_PRICE, BIG_PRICE, MAX_ROOMS };
+
+/* Duplicating (the PC's Duplicate, 2026-10-10, the user's ask): one more of any piece you own, into storage. The first
+   costs 50 PokéCoins, each after it 5 more, up to 100, where it stays (`secretBase.dupes` counts them). */
+export const dupePrice = (b) => Math.min(100, 50 + 5 * (b.dupes || 0));
+/** Copy a piece into storage. False if the coins aren't there. */
+export function duplicate(b, id) {
+  const price = dupePrice(b);
+  if ((getSave().coins ?? 0) < price || PIECES[id].gift) return false;
+  const kind = PIECES[id].own;
+  b.owned[kind] = (b.owned[kind] || 0) + 1;
+  b.dupes = (b.dupes || 0) + 1;
+  updateSave(d => { d.coins -= price; d.secretBase = b; });
+  return true;
+}
 
 export { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, STARTER_GIFT, footprint, cells, fits, aimTile, icon };
 
@@ -134,17 +237,21 @@ export const FREE_PC = 'pc';
     stand in the room. */
 export function decorations(b) {
   return DESIGNS.filter(id => !PIECES[id].gift && owns(b, id) > 0).map(id => {
-    const room = b.items.filter(it => PIECES[it.id].own === id).length;
+    const room = allItems(b).filter(it => PIECES[it.id].own === id).length;
     return { id, have: owns(b, id), room };
   });
 }
 
 /** Put every piece of a design standing in the room back in storage, and whatever stands on them. How many went. */
 export function putAway(b, id) {
-  const mine = b.items.filter(it => PIECES[it.id].own === id), gone = new Set(mine.flatMap(it => [it, ...ridersOf(it, b)]));
-  b.items = b.items.filter(it => !gone.has(it));
+  let n = 0;
+  eachRoom(b, (r) => {
+    const mine = r.items.filter(it => PIECES[it.id].own === id), gone = new Set(mine.flatMap(it => [it, ...ridersOf(it, r)]));
+    r.items = r.items.filter(it => !gone.has(it));
+    n += mine.length;
+  });
   saveBase(b);
-  return mine.length;
+  return n;
 }
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
@@ -155,7 +262,7 @@ export const lockedEarned = () => FURNITURE.filter(p => !isEarned(p, getSave()) 
 export function spare(b, id) {
   if (lendAll() && PIECES[id] && !PIECES[id].gift) return Infinity;
   const kind = PIECES[id].own;
-  return owns(b, kind) - b.items.filter(it => PIECES[it.id].own === kind).length;
+  return owns(b, kind) - allItems(b).filter(it => PIECES[it.id].own === kind).length;
 }
 
 /** Open the room's present: it's gone, and the starter furniture is in storage. Returns what was inside. */
@@ -409,8 +516,11 @@ function fits(it, skip = -1, b = base) {
     if (!small(it.id) || surfaceUnder(it, b) < 0) return false;
     return b.items.every((o, i) => i === skip || !o.up || o.x !== it.x || o.y !== it.y);
   }
-  if (p.layer === 'wall') return b.items.every((o, i) => i === skip || PIECES[o.id].layer !== 'wall' || o.x + PIECES[o.id].w <= it.x || it.x + fw <= o.x);
+  // a wall piece hangs on one stretch of back wall, and none hangs over a doorway
+  if (p.layer === 'wall') return Array.from({ length: fw }, (_, i) => topOf(it.x + i)).every(t => t === topOf(it.x)) && !blocksDoor(it)
+    && b.items.every((o, i) => i === skip || PIECES[o.id].layer !== 'wall' || o.x + PIECES[o.id].w <= it.x || it.x + fw <= o.x);
   if (it.y < 0 || it.y + fh > ROWS) return false;
+  if (!cells(it).every(c => onFloor(...c.split(',').map(Number))) || (p.layer !== 'rug' && blocksDoor(it))) return false;
   const mine = new Set(cells(it)), rug = p.layer === 'rug';
   return b.items.every((o, i) => {
     if (i === skip || o.up || PIECES[o.id].layer === 'wall' || (PIECES[o.id].layer === 'rug') !== rug) return true;
@@ -548,7 +658,8 @@ function refresh() {
 }
 
 export function openBase() {
-  base = loadBase();
+  base = goRoom(loadBase(), 'main');
+  useRoom(base);
   const root = document.createElement('section');
   root.className = 'secret-base';
   root.innerHTML = `

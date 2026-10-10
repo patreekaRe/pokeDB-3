@@ -28,7 +28,8 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway } from './secret-base.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, MAX_ROOMS } from './secret-base.js';
+import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 
@@ -45,6 +46,8 @@ export function residents(save = getSave(), lend = false) {
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
 let start = 'home', reading = 0, deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
+let dupes = false;   // Decorations picking a piece to duplicate, not to put away
+let spot = null, plan = null;   // House upgrades: the doorway picked on the blueprint ({ room, pip }) and the room tried there
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -96,7 +99,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches' };
+const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
 
 function back() {
   const up = UP[page];
@@ -125,12 +128,17 @@ function show(id) {
   glass.querySelector('button')?.focus({ preventScroll: true });
 }
 
-/** A menu: big rows with a cursor, a line said for each as it's pointed at. */
+/** The gold "!" bobbing over the corner of something new to read (the user's ask, 2026-10-10: a "(NEW)" in the label
+    was easy to miss), the same mark the Pokédex's keys wear. */
+const freshMark = () => { const m = el('span', 'pc-new', '!'); m.setAttribute('aria-label', 'New'); return m; };
+
+/** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new. */
 function menu(title, rows) {
   const list = el('div', 'pc-menu');
-  list.append(...rows.map(([label, line, go]) => {
+  list.append(...rows.map(([label, line, go, fresh]) => {
     const b = el('button', 'pc-row', label);
     b.type = 'button';
+    if (fresh) b.append(freshMark());
     const tell = () => speak(line);
     b.addEventListener('pointerenter', tell);
     b.addEventListener('focus', tell);
@@ -173,12 +181,14 @@ const PAGES = {
   home() {
     const waiting = unclaimed().length;
     const rows = [
-      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox')],
+      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
-      [patchUnseen() ? 'PATCH NOTES (NEW)' : 'PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches')],
+      ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }],
     ];
+    const save = getSave();
+    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { spot = plan = null; show('house'); }]);
     if (patchUnseen() && !waiting) rows.unshift(rows.splice(2, 1)[0]);   // the "!" over the PC leads straight to it
     if (cloudConfigured()) {
       const on = cloudRemembered();
@@ -248,7 +258,8 @@ const PAGES = {
       b.style.setProperty('--ink', from.ink);
       b.style.setProperty('--paper', from.paper);
       b.append(el('span', 'pc-env-stamp'), el('span', 'pc-env-from', from.name), el('b', 'pc-env-title', m.title));
-      b.append(m.claimed ? el('span', 'pc-env-when', new Date(m.at).toLocaleDateString()) : el('span', 'pc-env-seal', 'NEW'));
+      if (m.claimed) b.append(el('span', 'pc-env-when', new Date(m.at).toLocaleDateString()));
+      else b.append(freshMark());
       b.addEventListener('click', () => { playSound('confirm'); letter = m.id; show('letter'); });
       return b;
     }));
@@ -289,7 +300,7 @@ const PAGES = {
   },
   patches() {
     const since = sincePatch(), fresh = patchUnseen();
-    const rows = PATCHES.map((p, i) => [`V${p.version}${i === 0 && fresh ? ' (NEW)' : ''}`, `${p.name}, ${p.date}.`, () => { reading = i; show('patch'); }]);
+    const rows = PATCHES.map((p, i) => [`V${p.version}`, `${p.name}, ${p.date}.`, () => { reading = i; show('patch'); }, i === 0 && fresh]);
     if (since) rows.unshift([`SINCE V${since.since}`, `Smaller changes since v${since.since}, on their way into the next version.`, () => { reading = -1; show('patch'); }]);
     rows.push(['IN THE GAME', 'Everything in the game so far.', () => show('game')]);
     menu('PATCH NOTES', rows);
@@ -364,7 +375,8 @@ const PAGES = {
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [
-      ['DECORATIONS', 'Your Secret Base furniture: what stands in your room and what\'s kept in storage.', () => { deco = null; show('decor'); }],
+      ['DECORATIONS', 'Your Secret Base furniture: what stands in your rooms and what\'s kept in storage.', () => { deco = null; dupes = false; show('decor'); }],
+      ['DUPLICATE', `Make one more of any piece you own, into storage: ${dupePrice(loadBase())} PokéCoins. Each copy costs 5 more, up to 100.`, () => { deco = null; dupes = true; show('decor'); }],
       ['RENAME', `Your name on the Trainer Card and the leaderboards: ${trainerName()}.`, () => show('rename')],
     ]);
   },
@@ -378,9 +390,9 @@ const PAGES = {
     const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || all.some(d => KINDS_OF[k](PIECES[d.id])));
     if (!kinds.includes(decoKind)) decoKind = 'All';
     const list = all.filter(d => KINDS_OF[decoKind](PIECES[d.id]));
-    const picked = all.find(d => d.id === deco);
-    const h = head('DECORATIONS');
-    h.append(el('span', 'pc-count', `${all.length} kinds`));
+    const picked = all.find(d => d.id === deco), price = dupePrice(b);
+    const h = head(dupes ? 'DUPLICATE' : 'DECORATIONS');
+    h.append(el('span', 'pc-count', dupes ? `${(save.coins ?? 0).toLocaleString()} coins` : `${all.length} kinds`));
 
     const kids = [h];
     if (picked) {
@@ -389,8 +401,19 @@ const PAGES = {
       pic.append(icon(picked.id));
       const stored = picked.have - picked.room;
       card.append(pic, el('b', 'pc-pick-name', PIECES[picked.id].name.toUpperCase()),
-        el('small', 'pc-pick-note', `${picked.room} in your room · ${stored} in storage`));
-      if (picked.room) {
+        el('small', 'pc-pick-note', `${picked.room} in your rooms · ${stored} in storage`));
+      if (dupes) {
+        const copy = el('button', 'room-ok pc-dupe', `Copy · ${price}`);
+        copy.type = 'button';
+        copy.addEventListener('click', () => {
+          const name = PIECES[picked.id].name;
+          if (!duplicate(loadBase(), picked.id)) { playSound('cancel'); speak(`You need ${price - (getSave().coins ?? 0)} more PokéCoins to copy the ${name}.`); return; }
+          playSound('buy');
+          show('decor');
+          speak(`A new ${name} went into storage! The next copy costs ${dupePrice(loadBase())} PokéCoins.`);
+        });
+        card.append(copy);
+      } else if (picked.room) {
         const away = el('button', 'pc-row pc-away', 'PUT AWAY');
         away.type = 'button';
         away.addEventListener('click', () => {
@@ -422,13 +445,64 @@ const PAGES = {
         playSound('select');
         deco = d.id === deco ? null : d.id;
         show('decor');
-        if (deco) speak(`${PIECES[d.id].name}. ${d.room ? 'Put it away to keep it in storage.' : 'It\'s in storage. Place it from the Secret Base\'s Decorate.'}`);
+        if (deco) speak(dupes ? `${PIECES[d.id].name}. Copy it for ${price} PokéCoins?` : `${PIECES[d.id].name}. ${d.room ? 'Put it away to keep it in storage.' : 'It\'s in storage. Place it from the Secret Base\'s Decorate.'}`);
       });
       return t;
     }));
     kids.push(chips, all.length ? grid : el('p', 'pc-empty', 'No furniture yet.'));
     glass.replaceChildren(...kids);
-    if (!picked) speak(all.length ? 'Gold ones stand in your room. Tap one to see it, or to put it away.' : 'Buy furniture at the Poké Mall and it\'s kept here.');
+    if (!picked) speak(!all.length ? 'Buy furniture at the Poké Mall and it\'s kept here.'
+      : dupes ? `Tap a piece to copy it into storage for ${price} PokéCoins.` : 'Gold ones stand in your rooms. Tap one to see it, or to put it away.');
+  },
+  house() {
+    const save = getSave(), b = loadBase(), house = b.house, big = !!house?.big, built = house?.rooms.length ?? 0;
+    if (!inBase && !save.baseOwned && !save.secretBase) {
+      glass.replaceChildren(head('HOUSE UPGRADES'), el('p', 'pc-empty', 'No Secret Base yet.'));
+      return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.');
+    }
+    const h = head('HOUSE UPGRADES');
+    h.append(el('span', 'pc-count', `${(save.coins ?? 0).toLocaleString()} coins`));
+    const fit = spot && plan ? fitRoom(house, spot.room, spot.pip, plan) : null;
+    const kids = [h, blueprint(house, fit)];
+    const buy = (label, go) => { const ok = el('button', 'room-ok pc-build', label); ok.type = 'button'; ok.addEventListener('click', go); return ok; };
+    if (!big) {
+      const card = el('div', 'pc-plan');
+      card.append(el('b', 'pc-plan-name', 'BIGGER MAIN ROOM'), el('small', 'pc-plan-note', `11 × 8 → 14 × 10 tiles, with doorways to build more rooms onto.`),
+        buy(`Build · ${BIG_PRICE}`, () => {
+          if (!buyBigRoom(loadBase())) { playSound('cancel'); return speak(`You need ${BIG_PRICE - (getSave().coins ?? 0)} more PokéCoins.`); }
+          playSound('item-get');
+          show('house');
+          speak('Your main room is bigger! Tap a green doorway on the blueprint to build a new room there.');
+        }));
+      kids.push(card);
+      glass.replaceChildren(...kids);
+      return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it.`);
+    }
+    if (spot) {
+      const list = el('div', 'pc-menu pc-kinds');
+      list.append(...BUILDABLE.map(kind => {
+        const k = ROOM_KINDS[kind], ok = !!fitRoom(house, spot.room, spot.pip, kind), sh = shapeOf(kind);
+        const r = el('button', `pc-row pc-kind${kind === plan ? ' on' : ''}`);
+        r.type = 'button';
+        r.disabled = !ok;
+        r.append(el('span', 'pc-kind-name', k.name.toUpperCase()), el('small', 'pc-kind-size', ok ? `${sh.w} × ${sh.h}` : 'No space'));
+        r.addEventListener('click', () => { playSound('select'); plan = kind; show('house'); speak(`${k.name}: ${k.blurb} ${ROOM_PRICE} PokéCoins.`); });
+        return r;
+      }));
+      if (fit) kids.push(buy(`Build · ${ROOM_PRICE}`, () => {
+        const name = ROOM_KINDS[plan].name, done = buyRoom(loadBase(), spot.room, spot.pip, plan);
+        if (!done) { playSound('cancel'); return speak((getSave().coins ?? 0) < ROOM_PRICE ? `You need ${ROOM_PRICE - (getSave().coins ?? 0)} more PokéCoins.` : 'That room doesn\'t fit there.'); }
+        spot = plan = null;
+        playSound('item-get');
+        show('house');
+        speak(`Your new ${name} is built! Walk through its doorway in your Secret Base.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the doorway.` : ''}`);
+      }));
+      kids.push(list);
+    }
+    glass.replaceChildren(...kids);
+    if (!spot) speak(built >= MAX_ROOMS ? `Your house has all ${MAX_ROOMS} rooms it can hold. What a home!`
+      : `Tap a green doorway to build a room onto it: ${ROOM_PRICE} PokéCoins a room. Grey ones already lead somewhere.`);
+    else if (!plan) speak('Pick a room to build there.');
   },
   rename() {
     const form = el('form', 'pc-name');
@@ -450,6 +524,73 @@ const PAGES = {
     setTimeout(() => box.focus(), 0);
   },
 };
+
+const svg = (tag, attrs = {}) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) n.setAttribute(k, attrs[k]); return n; };
+const OUT = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] };
+
+/** The house from above, after WoW's housing blueprint (the user's reference): each room a grey block named in it, a pip
+    at each doorway, green where a room can be built (a tap picks it) and grey where one already leads on, the front
+    door's Entry under the main room. `fit` is the room being tried at the picked pip, drawn dashed in green. */
+function blueprint(house, fit) {
+  const rooms = houseRooms(house), main = rooms[0], entry = entryOf(house);
+  const full = (house?.rooms.length ?? 0) >= MAX_ROOMS;
+  const blocks = rooms.map(r => ({ r, rects: r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]) }));
+  const ghost = fit ? shapeOf(fit.kind, fit.rot).rects.map(([x, y, w, h]) => [x + fit.gx, y + fit.gy, w, h]) : [];
+  const door = [entry.at - 1, main.shape.h, 3, 1.5];
+  const all = [...blocks.flatMap(b => b.rects), ...ghost, door];
+  const x0 = Math.min(...all.map(r => r[0])) - 2, y0 = Math.min(...all.map(r => r[1])) - 2;
+  const x1 = Math.max(...all.map(r => r[0] + r[2])) + 2, y1 = Math.max(...all.map(r => r[1] + r[3])) + 2;
+  const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': 'House blueprint' });
+  const pat = svg('pattern', { id: 'pc-bp-grid', width: 1, height: 1, patternUnits: 'userSpaceOnUse' });
+  pat.append(svg('path', { d: 'M1 0H0V1', fill: 'none', stroke: '#24507a', 'stroke-width': 0.05 }));
+  const defs = svg('defs');
+  defs.append(pat);
+  s.append(defs, svg('rect', { x: x0, y: y0, width: x1 - x0, height: y1 - y0, fill: 'url(#pc-bp-grid)' }));
+  // each block's outline, then its fill again over it, so a shaped room's inner seams don't show
+  const room = (rects, cls, label, tap) => {
+    const g = svg('g', { class: cls });
+    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-edge' }));
+    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-fill' }));
+    if (label) {
+      const [x, y, w, h] = [...rects].sort((a, b) => b[2] * b[3] - a[2] * a[3])[0];
+      const size = Math.min(1.1, w * 1.05 / label.length, h * 0.35);
+      const t = svg('text', { x: x + w / 2, y: y + h / 2, 'font-size': size, class: 'pc-bp-name' });
+      t.textContent = label;
+      g.append(t);
+    }
+    if (tap) g.addEventListener('click', tap);
+    s.append(g);
+  };
+  room([door], 'pc-bp-room entry', 'Entry');
+  for (const { r, rects } of blocks) {
+    const name = ROOM_KINDS[r.kind].name;
+    room(rects, 'pc-bp-room', name, () => { playSound('select'); speak(r.id === 'main' ? 'Your main room, the way in from the Clearing.' : `Your ${name}.`); });
+  }
+  if (ghost.length) room(ghost, 'pc-bp-room ghost', ROOM_KINDS[fit.kind].name);
+  const pip = (cx, cy, cls, tap) => {
+    const g = svg('g', { class: `pc-bp-pip ${cls}` });
+    g.append(svg('circle', { cx, cy, r: 1.2, class: 'pc-bp-hit' }), svg('circle', { cx, cy, r: 0.48 }));
+    if (tap) g.addEventListener('click', tap);
+    s.append(g);
+  };
+  pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
+  for (const r of rooms) r.shape.pips.forEach((p, i) => {
+    const t = pipTile(r.shape, p), [dx, dy] = OUT[p[0]], cx = r.gx + t.x + 0.5 + dx * 0.5, cy = r.gy + t.y + 0.5 + dy * 0.5;
+    if (linkOf(house, r.id, i)) return pip(cx, cy, 'shut');
+    if (full || !BUILDABLE.some(k => fitRoom(house, r.id, i, k))) return;
+    const on = spot?.room === r.id && spot.pip === i;
+    pip(cx, cy, `open${on ? ' on' : ''}`, () => {
+      playSound('confirm');
+      spot = on ? null : { room: r.id, pip: i };
+      plan = null;
+      show('house');
+      if (spot) speak('Pick a room to build there. Rooms that won\'t fit are greyed out.');
+    });
+  });
+  const box = el('div', 'pc-blueprint');
+  box.append(s);
+  return box;
+}
 
 /** Prof. Oak's word on your Pokédex, by how much of the main three pages you've beaten (Gen 3's Pokédex rating). */
 function rating(n, of, complete) {

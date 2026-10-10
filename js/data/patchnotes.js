@@ -45,6 +45,10 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['hub', "The Clearing dresses up for the season: jack-o'-lanterns, autumn leaves and ghosts flying over in October, snow in December."],
   ['hub', "Halloween in the Clearing goes big: giant jack-o'-lanterns, a pumpkin patch with a scarecrow, a candlelit graveyard, a bubbling cauldron, lanterns and bats, and Gengar, Litwick, Duskull and Sableye wandering about blurting spooky lines over their heads, with hundreds of lines and stories to tell when you tap one. One walks up to greet you by name when you arrive."],
+  ['base', 'House upgrades: open the PC\'s blueprint to make your Secret Base\'s main room bigger, then build more rooms onto its doorways for 500 PokéCoins each: a closet, hallway, bedroom, den, L-shaped room, cross-shaped room or great hall, each walked into through its own door.'],
+  ['pc', 'Duplicate any furniture you own from your PC: 50 PokéCoins, 5 more each time, never over 100.'],
+  ['pc', 'Something new to read in the PC now wears a bobbing gold "!" instead of a "NEW" label.'],
+  ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
