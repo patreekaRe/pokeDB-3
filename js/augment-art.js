@@ -75,7 +75,7 @@ const ICONS = {
   hoarder: ['items', '+'], 'lucky-find': ['clover'], scavenger: ['magnify'], 'thorn-coat': ['cactus'],
   'steady-hands': ['shield', '+'], 'heavy-hitter': ['glove'], 'alpha-hunter': ['target'], 'second-helping': ['moves', '4'],
   'deep-pockets': ['dice'], 'tough-hide': ['helmet'], 'clean-slate': ['pc'], 'lucky-coin': ['coin'],
-  'inner-focus': ['muscle'], kindling: ['log'], 'ember-skin': ['shield', 'fire'], 'deep-roots': ['tree'],
+  'inner-focus': ['muscle'], kindling: ['log'], 'ember-skin': ['shield', 'fire'], 'flash-fire': ['fire', '-'], 'deep-roots': ['tree'],
   pollinate: ['sprout', '+'], 'still-pool': ['water', '+'], undertow: ['whirl'],
   // Gold
   'second-wind': ['wind'], echo: ['echo'], overflow: ['glass'], 'double-down': ['moves', 'x2'],
@@ -85,7 +85,7 @@ const ICONS = {
   'golden-touch': ['sparkle'], duelist: ['swords'], comeback: ['uturn'], 'last-stand': ['flag'],
   'card-shark': ['moves', '★'], 'steel-nerves': ['status', '✓'], retainer: ['pin'], fortress: ['castle', '+'],
   'guardian-slayer': ['skull'], flurry: ['tornado'], overcharge: ['battery'], 'combo-breaker': ['burst', '3'],
-  patience: ['hourglass'], 'heat-shield': ['shield', 'fire'], 'wildfire-aug': ['fire', '∞'], cauterize: ['heart', 'fire'],
+  patience: ['hourglass'], 'heat-shield': ['shield', 'fire'], 'wildfire-aug': ['fire', '∞'], cauterize: ['heart', 'fire'], 'magma-armor': ['helmet', 'fire'],
   photosynthesis: ['sun'], 'thorn-garden': ['bramble'], overbloom: ['flower'], 'rising-tide': ['wave'],
   'tidal-armor': ['shell'], 'riptide-rush': ['pin', 'water'],
   // Prismatic
