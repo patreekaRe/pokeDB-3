@@ -503,7 +503,13 @@
 
 /* House upgrades: the blueprint, after WoW's housing one, on a dark grid */
 .pc-blueprint { margin: 0 0 12px; padding: 6px; border: 2px solid #3a78b8; border-radius: 10px; background: #081a30; box-shadow: 0 3px 0 #2a5a90; }
-.pc-bp { display: block; width: 100%; max-height: 300px; }
+.pc-blueprint { display: flex; align-items: center; gap: 6px; }
+.pc-bp { display: block; flex: 1; min-width: 0; width: 100%; max-height: 300px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pc-blueprint.zoomed .pc-bp { cursor: grab; }
+.pc-blueprint.zoomed .pc-bp:active { cursor: grabbing; }
+.pc-bp-keys { flex: none; display: flex; flex-direction: column; gap: 6px; }
+.pc-bp-zoom { width: 30px; height: 30px; padding: 0; border: 2px solid #a8c4dc; border-radius: 50%; background: #1c3a5c; color: #eef4fa; font: 700 18px/1 sans-serif; cursor: pointer; box-shadow: 0 2px 0 #0a1a2c; }
+.pc-bp-zoom:disabled { opacity: 0.35; cursor: default; }
 .pc-bp-room .pc-bp-edge { fill: #3c4654; stroke: #a8c4dc; stroke-width: 0.22; }
 .pc-bp-room .pc-bp-fill { fill: #3c4654; }
 .pc-bp-room { cursor: pointer; }

@@ -49,6 +49,7 @@ export const NEXT = [
   ['pc', 'Duplicate any furniture you own from your PC: 50 PokéCoins, 5 more each time, never over 100.'],
   ['pc', 'Something new to read in the PC now wears a bobbing gold "!" instead of a "NEW" label.'],
   ['pc', 'New PC pages (House Upgrades, Duplicate, Decorations, Prof. Oak) wear a gold "!" until you open them, and the PC in the Clearing shows one too.'],
+  ['pc', 'The house blueprint zooms and pans: pinch, scroll or tap + / − to zoom in, and drag to look around a big house.'],
   ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
 ];
 

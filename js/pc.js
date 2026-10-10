@@ -51,6 +51,9 @@ let dupes = false;   // Decorations picking a piece to duplicate, not to put awa
 // House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
 // room kind tried there and which of its turns, the floor looked at, and a built room picked (to take down, `sure` once asked)
 let spot = null, plan = null, turn = 0, floor = 0, picked = null, sure = false;
+// the blueprint's zoom and the point it's centred on, in tiles; kept across the redraw every tap makes
+let view = { z: 1, cx: null, cy: null };
+const resetView = () => { view = { z: 1, cx: null, cy: null }; };
 const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; };
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
@@ -193,7 +196,7 @@ const PAGES = {
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
     ];
-    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]);
+    if (inBase || save.baseOwned || save.secretBase) rows.splice(4, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]);
     if (patchUnseen() && !waiting) rows.unshift(rows.splice(2, 1)[0]);   // the "!" over the PC leads straight to it
     if (cloudConfigured()) {
       const on = cloudRemembered();
@@ -489,7 +492,7 @@ const PAGES = {
     for (let lv = 0; lv <= topFloor(house) + 1; lv++) {
       const t = el('button', `pc-chip${lv === floor ? ' on' : ''}`, floorName(lv));
       t.type = 'button';
-      t.addEventListener('click', () => { playSound('select'); unpick(); floor = lv; show('house'); });
+      t.addEventListener('click', () => { playSound('select'); unpick(); resetView(); floor = lv; show('house'); });
       tabs.append(t);
     }
     kids.push(tabs, blueprint(house, fit));
@@ -642,7 +645,7 @@ function blueprint(house, fit) {
     if (spot && line) speak(line);
   };
   if (!floor) pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
-  if (!house?.big) return wrap(s);
+  if (!house?.big) return wrap(s, [x0, y0, x1 - x0, y1 - y0]);
   const taken = takenOn(house, floor);
   // this floor's doorways and staircases, and the green spots a room fits onto
   for (const r of rooms) r.shape.pips.forEach((p, i) => {
@@ -663,9 +666,85 @@ function blueprint(house, fit) {
     const [dx, dy] = OUT[j.side], on = spot?.join?.room === j.room && spot.join.pip === j.pip;
     pip(j.x + 0.5 + dx * 0.5, j.y + 0.5 + dy * 0.5, `join${on ? ' on' : ''}`, pick({ join: j }));
   }
-  return wrap(s);
+  return wrap(s, [x0, y0, x1 - x0, y1 - y0]);
 }
-const wrap = (s) => { const box = el('div', 'pc-blueprint'); box.append(s); return box; };
+
+/** The blueprint in its frame, zoomed by a pinch, the wheel or the + / − keys and panned by a drag (the user's ask: a big
+    house got too small to tap). The view is the viewBox, so the drawing stays sharp; a drag that moved swallows the
+    click it ends in, so panning never picks a room or a pip. Zoomed out all the way, a drag scrolls the page instead. */
+function wrap(s, full) {
+  const box = el('div', 'pc-blueprint');
+  const [fx, fy, fw, fh] = full, zMax = Math.max(1, Math.min(5, fw / 6, fh / 4));
+  const apply = () => {
+    view.z = Math.min(zMax, Math.max(1, view.z));
+    const w = fw / view.z, h = fh / view.z;
+    view.cx = Math.min(fx + fw - w / 2, Math.max(fx + w / 2, view.cx ?? fx + fw / 2));
+    view.cy = Math.min(fy + fh - h / 2, Math.max(fy + h / 2, view.cy ?? fy + fh / 2));
+    s.setAttribute('viewBox', `${view.cx - w / 2} ${view.cy - h / 2} ${w} ${h}`);
+    box.classList.toggle('zoomed', view.z > 1);
+    out.disabled = view.z <= 1;
+    inn.disabled = view.z >= zMax;
+  };
+  // the tile under a point on screen, and a zoom that keeps it there
+  const tileAt = (px, py) => { const m = s.getScreenCTM(); return m ? new DOMPoint(px, py).matrixTransform(m.inverse()) : null; };
+  const zoomAt = (to, px, py) => {
+    const before = px == null ? null : tileAt(px, py);
+    view.z = to;
+    apply();
+    const after = before && tileAt(px, py);
+    if (after) { view.cx += before.x - after.x; view.cy += before.y - after.y; apply(); }
+  };
+  const key = (label, aria, by) => {
+    const b = el('button', 'pc-bp-zoom', label);
+    b.type = 'button';
+    b.setAttribute('aria-label', aria);
+    b.addEventListener('click', () => { playSound('select'); zoomAt(view.z * by); });
+    return b;
+  };
+  const inn = key('+', 'Zoom in', 1.5), out = key('−', 'Zoom out', 1 / 1.5);
+  const keys = el('div', 'pc-bp-keys');
+  keys.append(inn, out);
+  const scroller = () => { for (let n = box.parentElement; n; n = n.parentElement) if (n.scrollHeight > n.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(n).overflowY)) return n; return null; };
+  const touch = new Map();
+  let moved = false, pinch = 0, last = null;
+  s.addEventListener('pointerdown', (e) => {
+    touch.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touch.size === 1) { moved = false; last = { x: e.clientX, y: e.clientY }; }
+    if (touch.size === 2) { const [a, b] = [...touch.values()]; pinch = Math.hypot(a.x - b.x, a.y - b.y); moved = true; }
+  });
+  s.addEventListener('pointermove', (e) => {
+    if (!touch.has(e.pointerId)) return;
+    touch.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (touch.size >= 2) {
+      const [a, b] = [...touch.values()], d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (pinch) zoomAt(view.z * d / pinch, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      pinch = d;
+      return;
+    }
+    const dx = e.clientX - last.x, dy = e.clientY - last.y;
+    if (!moved && Math.hypot(dx, dy) < 6) return;
+    if (!moved) { moved = true; s.setPointerCapture?.(e.pointerId); }
+    last = { x: e.clientX, y: e.clientY };
+    if (view.z <= 1) { const sc = scroller(); if (sc) sc.scrollTop -= dy; return; }
+    const m = s.getScreenCTM();
+    if (!m) return;
+    view.cx -= dx / m.a;
+    view.cy -= dy / m.d;
+    apply();
+  });
+  const lift = (e) => {
+    touch.delete(e.pointerId);
+    if (touch.size < 2) pinch = 0;
+    if (touch.size === 1) last = { ...touch.values().next().value };
+  };
+  s.addEventListener('pointerup', lift);
+  s.addEventListener('pointercancel', lift);
+  s.addEventListener('click', (e) => { if (moved) { e.stopPropagation(); e.preventDefault(); moved = false; } }, true);
+  s.addEventListener('wheel', (e) => { e.preventDefault(); zoomAt(view.z * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+  box.append(s, keys);
+  apply();
+  return box;
+}
 
 /** Prof. Oak's word on your Pokédex, by how much of the main three pages you've beaten (Gen 3's Pokédex rating). */
 function rating(n, of, complete) {
