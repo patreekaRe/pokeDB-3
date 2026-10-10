@@ -1388,7 +1388,7 @@ export const BIOMES = [
    walkAt() lends it the slot's, and its Pokémon (authored at its `home` slot) grow or shrink to that slot's. */
 export const ALT_BIOMES = [
   {
-    id: 'ruins', name: 'Sunken Ruins', home: 1,
+    id: 'ruins', name: 'Sunken Ruins', home: 1, music: 'ruins',   // its map's own song (the user's), at either fork
     stages: ['Flooded Steps', 'Drowned Halls', 'Sunken Court', 'Tide Altar'],
     normals: ['corphish', 'finneon', 'shellder', 'frillish', 'basculin', 'slugma',
       'flareon', 'foongus', 'shroomish', 'bidoof', 'lillipup', 'skitty'],
