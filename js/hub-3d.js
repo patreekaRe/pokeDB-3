@@ -1671,7 +1671,8 @@ function pokestop(g, id, x, z, S, saved, start) {
 }
 
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
-    or start): CONTINUE before the one holding the saved run, what the others start a little smaller. */
+    or start): CONTINUE before the one holding the saved run, what the others start a little smaller. In the signs' heavy
+    sans, not the pixel font, whose thin strokes blurred into the glow lying flat (CLIMB was hard to read, 2026-10-10). */
 function groundCue(g, x, z, text, scale) {
   const c = document.createElement('canvas');
   c.width = 640; c.height = 160;
@@ -1680,7 +1681,8 @@ function groundCue(g, x, z, text, scale) {
   const paint = () => {
     const d = c.getContext('2d');
     d.clearRect(0, 0, c.width, c.height);
-    d.font = '68px "PokeDB Pixel", monospace';
+    let px = 84;
+    do d.font = `900 ${px -= 4}px "Trebuchet MS", "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 560);
     d.textAlign = 'center'; d.textBaseline = 'middle';
     d.shadowColor = '#5fe0ff'; d.shadowBlur = 30;
     d.lineWidth = 10; d.strokeStyle = '#4fd8ff'; d.lineJoin = 'round';
@@ -1690,7 +1692,6 @@ function groundCue(g, x, z, text, scale) {
     map.needsUpdate = true;
   };
   paint();
-  document.fonts?.load('68px "PokeDB Pixel"').then(paint, () => {});
   const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0.9 });
   const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.6 * scale, 3.6 * scale * 160 / 640 * 1.6), m);
   mesh.rotation.x = -Math.PI / 2;
