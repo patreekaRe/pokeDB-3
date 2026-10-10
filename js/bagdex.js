@@ -153,7 +153,7 @@ export function shelfApp(spec) {
         el('strong', 'pdx-banner-name', mask?.name ?? g.name), el('span', 'pdx-banner-sub', mask?.sub ?? (all ? spec.doneSub : g.sub)),
         el('span', 'pdx-banner-count', counted ?? `${n} / ${of}`));
       if (!counted) b.append(progressBar(n, of));
-      if (spec.medal) b.append(spec.medal(g));
+      if (spec.medal) b.querySelector('.pdx-banner-name').append(spec.medal(g));
       if (spec.bannerArt) b.append(spec.bannerArt(g, things));
       else {
         const shelf = el('span', 'pdx-banner-mons bdx-banner-things');

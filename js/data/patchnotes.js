@@ -54,6 +54,7 @@ export const NEXT = [
   ['fixes', 'The "!" over the Clearing\'s PC goes away once you log on, instead of staying until every new page was read, and the PC now says what\'s new.'],
   ['pc', 'The PC menu is in a tidier order: your mail, then the PCs and your house, the Hall of Fame, and patch notes and cloud save at the bottom.'],
   ['fixes', 'The PC\'s Decorations and Duplicate pages show the picked piece in its own card, so tall furniture no longer covers its name.'],
+  ['dex', 'Each Pokédex page\'s reward medal now sits beside its name, not in the bottom corner.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

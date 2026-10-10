@@ -412,6 +412,7 @@ function renderList() {
   rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), iconOf('pdx-banner-mons pdx-trophy', '🏆'));
   banners.push(rewards);
 
+  for (const b of banners) { const m = b.querySelector('.pdx-medal'); if (m) b.querySelector('.pdx-banner-name').append(m); }   // the medal on the title's line
   $('dex-banners').replaceChildren(...banners);
 
   const ids = ALL_IDS;
