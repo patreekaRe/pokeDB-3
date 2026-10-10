@@ -297,6 +297,7 @@
 .pc-mon.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); box-shadow: 0 0 0 2px #f8d040, 0 0 12px rgba(255, 210, 60, 0.8); }
 .pc-mon:active { translate: 0 2px; }
 .pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
+.pc-deco .pc-mon-tag { z-index: 1; top: 2px; right: 2px; padding: 1px 4px; border-radius: 6px; background: rgba(255, 255, 255, 0.9); line-height: 1.3; }
 .pc-empty { margin-top: 24px; text-align: center; font-size: 0.62rem; }
 /* Patch notes: a white sheet of lines under blue headings on the striped screen */
 .pc-notes { padding: 12px 12px 14px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; box-shadow: 0 3px 0 #2a5a90; }
@@ -325,9 +326,16 @@
 .pc-deco { padding: 8px; }
 .pc-deco canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
 .pc-deco.picked { outline: 3px solid #3a78b8; outline-offset: 1px; }
-.pc-deco-pick { gap: 6px; }
-.pc-deco-big { width: 96px; height: 96px; display: grid; place-items: center; }
-.pc-deco-big canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; filter: drop-shadow(0 4px 0 rgba(0, 60, 90, 0.2)); }
+.pc-deco-pick {
+  display: grid; grid-template-columns: 96px 1fr; grid-template-rows: auto auto 1fr; column-gap: 12px; row-gap: 4px;
+  align-items: start; text-align: left; margin: 0 0 12px; padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.85); border: 3px solid #3a78b8; border-radius: 14px;
+}
+.pc-deco-pick > :not(.pc-deco-big) { grid-column: 2; min-width: 0; }
+.pc-deco-pick .pc-pick-name { line-height: 1.4; overflow-wrap: anywhere; }
+.pc-deco-pick .pc-dupe, .pc-deco-pick .pc-away { margin: 4px 0 0; justify-self: start; align-self: end; }
+.pc-deco-big { grid-row: 1 / -1; position: relative; width: 96px; height: 96px; overflow: hidden; border-radius: 10px; background: #fdf3d0; }
+.pc-deco-big canvas { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; image-rendering: auto; filter: drop-shadow(0 3px 0 rgba(0, 60, 90, 0.2)); }
 .pc-away { margin-top: 4px; padding: 10px 16px 10px 30px; }
 .pc-name { display: flex; gap: 10px; align-items: center; }
 .pc-name-box {
