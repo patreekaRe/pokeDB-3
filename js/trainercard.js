@@ -452,18 +452,24 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const dex = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
   const safari = safariOpen(save) ? safariDexCount() : null;
   const stars = Object.values(s.level5WinsBy || {}).filter(n => n > 0).length;
+  // each line says what it counts when tapped (js/tips.js reads the title): STARS and TIME weren't clear on their own
   const lines = [
-    ['NAME', trainerName().toUpperCase()],
-    ['WINS', String(s.runsWon)],
-    ['POKéDEX', `${dex}/${dexTotal}`],
-    ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---'],
-    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-'],
-    ['TIME', playTime(s.playMs)],
+    ['NAME', trainerName().toUpperCase(), 'Your nickname, shown on the leaderboards. Tap Edit to change it.'],
+    ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
+    ['POKéDEX', `${dex}/${dexTotal}`, 'Pokémon researched in the main Pokédex.'],
+    ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
+    ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
   ];
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
   const redraw = () => openTrainerCard(into, { reopen: true });
-  for (const [k, v] of lines) list.append(el('dt', '', k), k === 'NAME' ? nameField(redraw) : el('dd', '', v));
+  for (const [k, v, tip] of lines) {
+    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : el('dd', '', v);
+    dt.title = tip;
+    if (k !== 'NAME') dd.title = tip;
+    list.append(dt, dd);
+  }
   const mate = partner(save);
   const pic = el('button', 'tc-partner');
   pic.type = 'button';
