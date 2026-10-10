@@ -881,26 +881,6 @@ const PLACE_ART = {
     life: ['center'],
   },
 
-  mart: {   // inside a Poké Mart: lamps, windows and posters round the shop's real shelf, its floor line set by the page (martRoom)
-    backdrop: 'mart', floor: 'mart', light: null, horizon: 0.74,   // low, so the wall stands behind the shelf
-    sky: ['#f8f8f0'],
-    wall: ['#2a8a98', '#58c0c8', '#f8f8f0', '#e89078'],
-    wainscot: ['#e8e8f0', '#b8b8c8'],
-    flags: ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'],
-    sale: ['#e03828', '#f8d030', '#ffffff'],
-    cork: ['#c89058', '#8a5a34', '#ffffff', '#f8e070', '#98d8f8', '#f8a8c8'],
-    crate: ['#c88a50', '#7a4a28', '#e0a868'],
-    balls: { base: ['#f8f8f8', '#303038', '#ffffff'], poke: ['#e04030'], great: ['#3878f0', '#e04030'], ultra: ['#383840', '#f8d030'], master: ['#8048c8', '#f070a8'] },
-    lamp: ['#505060', '#fffce8', '#c8c8d8', '#fff4b0'],
-    window: ['#ffffff', '#98d8f8', '#58b858', '#e05838', '#ffffff'],
-    bin: ['#3878f0', '#78a8f8', '#fffcf0'],
-    mote: '#fffce8',
-    tiles: ['#a8e8b0', '#78c890', '#88d49c'],
-    mat: ['#e85830', '#f8a868'],
-    plant: ['#5ab048', '#2e7a34', '#8ad060', '#c8c8d8', '#7a7a90'],
-    life: ['mart'],
-  },
-
   /* a hidden grotto: a shaft of light through a hole in the roof onto a stone dais, crystals in the rock and gold
      spilled round the chest (the page's own, from treasureChest()). Its look is per biome (`biomes`). */
   treasure: {
@@ -1455,7 +1435,7 @@ export function sceneShot(biomeId, { w, h, at = 0.6, kind = 'wild', where = 0, t
   return shoot({ ...biomeLook(art, time, kind), ...journeyOf(where), weather: null }, w, h, at);
 }
 
-/** A still of an indoor place (PLACE_ART: 'mart', 'center', 'treasure' with a `biome`'s grotto, 'kombat'...), like sceneShot(). */
+/** A still of an indoor place (PLACE_ART: 'center', 'treasure' with a `biome`'s grotto, 'kombat'...), like sceneShot(). */
 export function placeShot(place, { w, h, at = null, biome = null }) {
   const [, look] = placeLook(place, biome, null);
   return shoot(look, w, h, at ?? look.horizon ?? 0.6);
@@ -1807,7 +1787,6 @@ function paintBase() {
   if (S.raw.backdrop === 'sea') seaBackdrop();
   if (S.raw.backdrop === 'jungle') jungleBackdrop();
   if (S.raw.backdrop === 'center') centerBackdrop();
-  if (S.raw.backdrop === 'mart') martBackdrop();
   if (S.raw.backdrop === 'treasure') grottoWall();
   if (S.raw.backdrop === 'altar') shrineGrove();
   if (S.raw.backdrop === 'onsen') onsenWall();
@@ -1830,7 +1809,6 @@ function paintBase() {
   if (S.raw.floor === 'carpet') carpet();
   if (S.raw.floor === 'yard') yardGrass();
   if (S.raw.floor === 'center') centerFloor();
-  if (S.raw.floor === 'mart') martFloor();
   if (S.raw.floor === 'meadow') meadow();
   if (S.raw.floor === 'moss') mossGround();
   if (S.raw.floor === 'basalt') basalt();
@@ -1848,7 +1826,6 @@ function paintBase() {
   if (S.raw.backdrop === 'shrine') shrineFront();
   if (S.raw.backdrop === 'jungle') jungleFront();
   if (S.raw.backdrop === 'center') centerFront();
-  if (S.raw.backdrop === 'mart') martFront();
   if (S.raw.backdrop === 'treasure') grottoFront();
   if (S.raw.backdrop === 'safari') safariFront();
   if (S.raw.backdrop === 'hills' || S.raw.backdrop === 'shrine' || S.raw.backdrop === 'volcano') { stageFront(); landmark(); }
@@ -3465,145 +3442,6 @@ function counter(cx, top, half) {
   ball(cx, top + 7, 3);
 }
 
-/* ---------- the Poké Mart, after the Gen 3 Marts: white walls under a teal band with sale posters,
-   green octagon tiles and an orange mat at the door ---------- */
-
-function martBackdrop() {
-  const [top, band, face, stripe] = S.wall, [panel, shade] = S.wainscot;
-  const ceil = 3, rail = horizon - Math.max(6, Math.round(horizon * 0.2));
-  for (let y = 0; y < horizon; y++) for (let x = 0; x < W; x++) {
-    solid(x, y, y < ceil ? top : y < ceil + 3 ? band : y < rail ? face : y - rail < 2 ? stripe : y >= horizon - 2 ? shade : panel);
-    if (x % 6 === 0 && y >= ceil + 3 && y < rail) tint(x, y, 0.96);   // faint wallpaper pinstripes
-  }
-  life.lamps = [];
-  for (let x = ((W >> 1) % 30) - 15; x < W + 15; x += 30) hangingLamp(x, ceil + 3);
-  bunting(ceil + 11);
-  life.windows = [];
-  // the side walls (a phone's shelf covers them): a window and a crate stack on one, a sale poster and a cork board on the other
-  const side = Math.round(W / 2 - 64);
-  if (side < 30) return;
-  const zone = Math.round(side / 2), wallMid = Math.round((ceil + 16 + rail) / 2);
-  shopWindow(zone, wallMid - 2);
-  salePoster(W - zone - Math.round(side * 0.18), wallMid - 3);
-  if (side > 52) corkBoard(W - zone + Math.round(side * 0.24), wallMid + 3);
-  crateStack(zone + 12, horizon - 1);
-}
-
-/** A lamp hanging from the teal band on a short cord: a white shade, and the warm glow drawn under it each frame (drawMart). */
-function hangingLamp(cx, y0) {
-  const [cord, shade, rim] = S.lamp;
-  for (let y = y0; y < y0 + 3; y++) solid(cx, y, cord);
-  for (let x = -3; x <= 3; x++) { solid(cx + x, y0 + 4, Math.abs(x) === 3 ? rim : shade); if (Math.abs(x) <= 2) solid(cx + x, y0 + 3, shade); }
-  life.lamps.push({ x: cx, y: y0 + 5, phase: cx * 7 });
-}
-
-/** Strings of pennants swagging across the wall, like a grand opening. */
-function bunting(y0) {
-  const span = 34, flags = S.flags;
-  for (let x = 0; x < W; x++) {
-    const sag = Math.round(4 * Math.sin(Math.PI * (((x + 9) % span) / span)));
-    solid(x, y0 + sag, S.lamp[0]);
-    if ((x + 9) % 5 === 1) {
-      const c = flags[Math.floor((x + 9) / 5) % flags.length];
-      for (let k = 1; k <= 4; k++) for (let w = 0; w <= Math.max(0, 2 - Math.floor(k / 2)); w++) solid(x + w - (k < 3 ? 1 : 0), y0 + sag + k, c);
-    }
-  }
-}
-
-/** A window onto a sunny street: sky, a hedge and a red rooftop, under a white frame with a cross bar; clouds drift across it (drawMart). */
-function shopWindow(cx, cy) {
-  const [frame, sky, hill, roof] = S.window, x0 = cx - 13, x1 = cx + 13, y0 = cy - 9, y1 = cy + 8;
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const edge = x === x0 || x === x1 || y === y0 || y === y1 || x === cx || y === cy - 1;
-    const ground = y > y1 - 5 + Math.round(Math.sin(x / 3));
-    const house = x > cx + 3 && x < cx + 10 && y > y1 - 9 && !ground;
-    const roofTop = house && y < y1 - 6;
-    solid(x, y, edge ? frame : ground ? hill : roofTop ? roof : house ? frame : sky);
-  }
-  for (let x = x0 - 1; x <= x1 + 1; x++) { solid(x, y1 + 1, frame); tint(x, y1 + 2, 0.85); }   // the sill and its shadow
-  life.windows.push({ x0: x0 + 1, x1: x1 - 1, y0: y0 + 1, y1: y1 - 6, cx, bar: cy - 1 });
-}
-
-/** A big red SALE poster: a yellow starburst in the middle and lines of white print. */
-function salePoster(cx, cy) {
-  const [red, star, print] = S.sale, x0 = cx - 8, x1 = cx + 8, y0 = cy - 11, y1 = cy + 11;
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const edge = x === x0 || x === x1 || y === y0 || y === y1;
-    const dx = x - cx, dy = y - (cy - 3), burst = Math.abs(dx) + Math.abs(dy) <= 5 || (Math.abs(dx) <= 6 && dy === 0) || (Math.abs(dy) <= 6 && dx === 0);
-    const line = y >= cy + 5 && y <= cy + 8 && y % 2 === 0 && Math.abs(dx) <= 5;
-    solid(x, y, edge ? print : burst ? star : line ? print : red);
-  }
-  for (let y = y0 + 1; y <= y1 + 1; y++) tint(x1 + 1, y, 0.85);
-}
-
-/** A cork board with flyers pinned to it. */
-function corkBoard(cx, cy) {
-  const [cork, wood, ...notes] = S.cork, x0 = cx - 9, x1 = cx + 9, y0 = cy - 7, y1 = cy + 7;
-  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) solid(x, y, x === x0 || x === x1 || y === y0 || y === y1 ? wood : (x * 7 + y * 3) % 5 ? cork : wood);
-  [[x0 + 2, y0 + 2, 5, 6], [x0 + 9, y0 + 3, 6, 4], [x0 + 4, y0 + 9, 6, 4], [x0 + 12, y0 + 8, 4, 5]].forEach(([nx, ny, w, h], i) => {
-    for (let y = ny; y < ny + h; y++) for (let x = nx; x < nx + w; x++) solid(x, y, notes[i % notes.length]);
-    solid(nx + (w >> 1), ny, S.sale[0]);   // the pin
-  });
-  for (let y = y0 + 1; y <= y1 + 1; y++) tint(x1 + 1, y, 0.85);
-}
-
-/** Wooden crates stacked against the wall, one with a Poké Ball stencil. */
-function crateStack(cx, foot) {
-  const [wood, dark, light] = S.crate;
-  const crate = (x0, y0, s) => {
-    for (let y = y0; y < y0 + s; y++) for (let x = x0; x < x0 + s; x++) {
-      const edge = x === x0 || x === x0 + s - 1 || y === y0 || y === y0 + s - 1;
-      solid(x, y, edge ? dark : (y - y0) % 3 === 0 ? light : wood);
-    }
-  };
-  crate(cx - 9, foot - 9, 9);
-  crate(cx, foot - 9, 9);
-  crate(cx - 5, foot - 18, 9);
-}
-
-/** Green octagon tiles in perspective, the wall's shadow along its foot, and the orange mat by the door. */
-function martFloor() {
-  const [tile, corner, grout] = S.tiles, cx = W / 2, vy = horizon - (H - horizon) * 1.5;
-  const bottom = H - vy, ku = bottom / 6, kv = bottom * bottom / 3.5;
-  for (let y = horizon; y < H; y++) {
-    const dz = y - vy, v = kv / dz, fv = v - Math.floor(v), ev = Math.min(fv, 1 - fv);
-    for (let x = 0; x < W; x++) {
-      const u = (x - cx) * ku / dz, fu = u - Math.floor(u), eu = Math.min(fu, 1 - fu);
-      const line = eu < ku / dz * 0.6 || ev * dz * dz / kv < 0.6;
-      put(x, y, eu + ev < 0.28 ? corner : line ? grout : tile);
-    }
-  }
-  for (let x = 0; x < W; x++) { tint(x, horizon, 0.82); tint(x, horizon + 1, 0.92); }
-  const [mat, trim] = S.mat, mw = Math.min(22, Math.round(W * 0.14)), my = H - 7;
-  for (let y = my; y < my + 5; y++) for (let x = (W >> 1) - mw; x <= (W >> 1) + mw; x++) {
-    put(x, y, y === my || y === my + 4 || Math.abs(x - (W >> 1)) === mw ? trim : mat);
-  }
-}
-
-/** Where the counter leaves wall to either side (a wide screen) the plants and ball bins stand there; a phone's counter
-    spans the screen, so they'd hide behind it, and the page stands them in front of it instead (martProps()). */
-const martRoomy = () => spanAt && spanAt()[0] * W / innerWidth > 34;
-
-function martFront() {
-  if (!martRoomy()) return;
-  const [l, r] = spanAt().map(x => Math.round(x * W / innerWidth)), foot = horizon + 4;
-  pottedPlant(l - 6, foot, 4);
-  pottedPlant(r + 5, foot, 4);
-  ballBin(l - 22, horizon - 2, ['great', 'poke', 'great']);
-  ballBin(r + 21, horizon - 2, ['ultra', 'master', 'ultra']);
-}
-
-/** The Mart's plants and ball bins as little pixel images ({ plant, left, right } data URLs with their sizes), for the
-    page to stand in front of a counter that spans the screen; null when they're painted beside it instead. */
-export function martProps() {
-  if (!S || S.raw.backdrop !== 'mart' || martRoomy()) return null;
-  return {
-    plant: paintProp(11, 13, () => pottedPlant(5, 12, 4)),
-    left: paintProp(17, 11, () => ballBin(8, 4, ['great', 'poke', 'great'])),
-    right: paintProp(17, 11, () => ballBin(8, 4, ['ultra', 'master', 'ultra'])),
-  };
-}
-
 /** Paint a prop on its own transparent w x h pixels, with the scene's painters, and hand it back as { url, w, h }. */
 function paintProp(w, h, paint) {
   const saved = [W, H, px, sky];
@@ -3614,17 +3452,6 @@ function paintProp(w, h, paint) {
   c.getContext('2d').putImageData(new ImageData(new Uint8ClampedArray(px.buffer), w, h), 0, 0);
   [W, H, px, sky] = saved;
   return { url: c.toDataURL(), w, h };
-}
-
-/** A low blue Mart bin against the counter, heaped with Poké Balls whose lower halves sit inside it. */
-function ballBin(cx, top, kinds) {
-  const [blue, rim, label] = S.bin, x0 = cx - 7, x1 = cx + 7, y1 = top + 5;
-  [[-4, 0], [0, -1], [4, 0]].forEach(([dx, dy], i) => floorBall(cx + dx, top + dy, kinds[i % kinds.length], false));
-  for (let y = top + 1; y <= y1; y++) for (let x = x0; x <= x1; x++) {
-    const edge = x === x0 || x === x1 || y === y1;
-    solid(x, y, y === top + 1 ? rim : edge ? S.balls.base[1] : y === top + 3 && Math.abs(x - cx) < 4 ? label : blue);
-  }
-  for (let x = x0; x <= x1 + 1; x++) tint(x, y1 + 1, 0.8);   // its shadow on the tiles
 }
 
 /** A Poké Ball: Poké (red), Great (blue with red marks), Ultra (black with a yellow H) or Master (purple, pink bumps). */
@@ -5997,7 +5824,6 @@ function makeLife() {
     })));
     for (const [v, vent] of (life.vents || []).entries()) for (let n = 0; n < 3; n++) life.steam.push({ pool: -1, vent: v, age: n * 8 + rand() * 4, speed: 0.6, size: 1 });
   }
-  if (has('mart')) life.dust = Array.from({ length: Math.round(W / 8) }, () => ({ x: rand() * W, y: 8 + rand() * (horizon - 8), drift: 0.03 + rand() * 0.04, phase: rand() * 60 }));
   if (has('surf')) {
     life.glints = [];
     for (let i = 0, n = Math.round(W * (life.shore - horizon) / 30); i < n; i++) {
@@ -6085,7 +5911,6 @@ function draw() {
 
   if (has('campfire')) drawCampfire(t);
   if (has('center')) drawCenter(t);
-  if (has('mart')) drawMart(t);
   if (has('treasure')) drawGrotto(t);
   if (has('berry')) drawBerryTree();
   if (has('spring')) drawSpring(t);
@@ -7248,31 +7073,6 @@ function drawCenter(t) {
     hand((now.getHours() % 12 + now.getMinutes() / 60) * Math.PI / 6, c.r * 0.45);
     hand(now.getMinutes() * Math.PI / 30, c.r * 0.72);
     put(c.cx, c.cy, red);
-  }
-}
-
-/** The Mart: each lamp's soft glow (one flickers now and then), clouds and the odd bird crossing the windows, dust in the light. */
-function drawMart(t) {
-  for (const l of life.lamps) {
-    if ((t + l.phase) % 173 < 3) continue;   // a flicker
-    for (let y = 0; y < 7; y++) for (let x = -2 - y; x <= 2 + y; x++) if (dither(l.x + x, l.y + y) < 9 - y) tint(l.x + x, l.y + y, 1.05, 6);
-  }
-  for (const w of life.windows) {
-    const glass = (x, y) => x >= w.x0 && x <= w.x1 && y >= w.y0 && y <= w.y1 && x !== w.cx && y !== w.bar;
-    const cx = w.x0 - 6 + Math.floor((t * 0.12 + w.cx * 3) % (w.x1 - w.x0 + 12));
-    for (const [dx, dy] of [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [1, -1], [2, -1], [3, -1]]) {
-      if (glass(cx + dx, w.y0 + 3 + dy)) put(cx + dx, w.y0 + 3 + dy, S.window[4]);
-    }
-    const fly = (t + w.cx * 11) % 240;
-    if (fly < 50) {   // a bird flapping across
-      const bx = w.x0 + Math.floor(fly * (w.x1 - w.x0) / 50), by = w.y0 + 2, flap = fly % 4 < 2 ? 1 : 0;
-      for (const dx of [-1, 0, 1]) if (glass(bx + dx, by - (dx ? flap : 0))) put(bx + dx, by - (dx ? flap : 0), S.lamp[0]);
-    }
-  }
-  for (const m of life.dust) {
-    m.y -= (m.drift) * DT;
-    if (m.y < 8) m.y = horizon - 2;
-    if (Math.sin((t + m.phase) / 5) > 0.2) put(m.x + Math.sin((t + m.phase) / 11) * 2, m.y, S.mote);
   }
 }
 

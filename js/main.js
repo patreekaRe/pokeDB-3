@@ -318,7 +318,7 @@ function init() {
   if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
   // ?center: a throwaway run straight into a Pokémon Center (&starter=id), the walk-in 3D one on this branch
   if (params.has('center')) return peekCenter(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free));
-  // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N; &mart2d the pixel shop)
+  // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N)
   if (params.has('mart')) return peekMart(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), Number(params.get('money') ?? 300));
   // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
   // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars

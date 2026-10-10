@@ -660,7 +660,21 @@ function tagMesh(text, look, w = 0.56) {
 }
 
 const cardTex = new Map();
+function cardMap(card) {
+  if (!cardTex.has(card.id)) cardTex.set(card.id, cardArt(card).then(c => { const t = texOf(Object.assign(c, { fine: 2 })); t.userData.keep = true; return t; }));
+  return cardTex.get(card.id);
+}
+const sprites = new Map();
+function spriteOf(thing) {
+  const id = thing.sprite || thing.id;
+  if (!sprites.has(id)) sprites.set(id, spriteArt(thing));
+  return sprites.get(id);
+}
+// every picture painted at once, not one after another (that wait was most of the walk in)
+const paintAll = (list) => Promise.all(list.map(w => w.sold || !w.thing ? null : w.kind === 'card' ? cardMap(w.thing) : spriteOf(w.thing)));
+
 async function buildWares(list) {
+  await paintAll(list);
   const group = new THREE.Group(), out = [];
   const counts = { card: 0, item: 0, relic: 0 }, of = (k) => list.filter(w => w.kind === k).length;
   for (const w of list) {
@@ -673,9 +687,7 @@ async function buildWares(list) {
     tag.rotation.x = -PITCH * 0.5;
     group.add(tag);
     if (w.kind === 'card' && !w.sold) {
-      const id = w.thing.id;
-      if (!cardTex.has(id)) cardTex.set(id, cardArt(w.thing).then(c => { const t = texOf(Object.assign(c, { fine: 2 })); t.userData.keep = true; return t; }));
-      const map = await cardTex.get(id);
+      const map = await cardMap(w.thing);
       const h = RACK.h, cw = h * 100 / 124;
       // unlit, so it shows the card's own colours whatever the light does (on the user's phone the lit card came out black)
       const face = new THREE.Mesh(new THREE.PlaneGeometry(cw, h), new THREE.MeshBasicMaterial({ map, alphaTest: 0.5 }));
@@ -692,7 +704,7 @@ async function buildWares(list) {
       g.add(easel);
       g.rotation.x = -0.1;
     } else if (!w.sold) {
-      const art = await spriteArt(w.thing);
+      const art = await spriteOf(w.thing);
       const s = w.kind === 'item' ? 0.54 : 0.32;
       const map = tex(art);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(s, s), std({ map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: map, emissiveIntensity: 0.15 }));
@@ -1019,7 +1031,7 @@ export function warmMart() {
 /** Lays the 3D Mart under the shop martRoom() just showed. `o`: { run, mate ({ src, name, cry }), wares (in the stock's
     order: { kind: 'card' | 'item' | 'relic' | 'pc', thing, price, dear, sold, index (its choice), sign (the PC's) }),
     onPick(index), onLeave(), onClerk(), onSoldOut() }. Resolves once it's showing (null if the shop was left meanwhile);
-    throws if Three.js won't load (the pixel shop stays). */
+    throws if Three.js won't load (only the list of wares shows). */
 export async function mountMart(o) {
   const back = o.run === runId && performance.now() - leftAt < 20000;
   const again = o.run === runId && !!raf;   // re-shown after a purchase: the room is already up
@@ -1028,30 +1040,15 @@ export async function mountMart(o) {
   calm = calmFx();
   await warmMart();
   if (!alive()) return null;
-  if (mon?.src !== o.mate.src) {
-    if (mon) scene.remove(mon.group);
-    mon = await monBoard(o.mate);
-    mon.board.rotation.x = -PITCH;
-    scene.add(mon.group);
-  }
-  const next = await buildWares(o.wares);
+  await ensureMon(o.mate);
   if (!alive()) return null;
-  // what was on sale before and is gone now was just bought: it flies into your Pokémon
-  if (again) {
-    for (const [i, w] of wares.list.entries()) {
-      const now = next.list[i];
-      if (w.group && !w.sold && now?.sold && !calm) {
-        const start = new THREE.Vector3();
-        w.group.getWorldPosition(start);
-        scene.attach(w.group);
-        flying.push({ obj: w.group, start, from: performance.now() });
-      }
-    }
+  if (again) await restock(o.wares, true);
+  else {   // a new Mart shows at once, its shelves filling the moment their pictures are ready (they're usually ready already)
+    scene.remove(wares.group);
+    dispose(wares.group);
+    wares = { group: new THREE.Group(), list: [] };
+    scene.add(wares.group);
   }
-  scene.remove(wares.group);
-  dispose(wares.group);   // the card faces are kept (cardTex), so a re-shown shelf needn't paint them again
-  wares = next;
-  scene.add(wares.group);
   if (!back && !again) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
     camX = walker.x;
@@ -1078,6 +1075,51 @@ export async function mountMart(o) {
   resize();
   last = 0;
   if (!raf) raf = requestAnimationFrame(frame);
-  requestAnimationFrame(() => view.classList.add('on'));
-  return true;
+  view.classList.add('on');
+  if (!again) await restock(o.wares, false);
+  return alive() || null;
+}
+
+/** The shelves built from `list`; with `bought`, what was on sale before and is gone now flies into your Pokémon. */
+async function restock(list, bought) {
+  const next = await buildWares(list);
+  if (!alive()) return;
+  if (bought && !calm) {
+    for (const [i, w] of wares.list.entries()) {
+      const now = next.list[i];
+      if (w.group && !w.sold && now?.sold) {
+        const start = new THREE.Vector3();
+        w.group.getWorldPosition(start);
+        scene.attach(w.group);
+        flying.push({ obj: w.group, start, from: performance.now() });
+      }
+    }
+  }
+  scene.remove(wares.group);
+  dispose(wares.group);   // the card faces are kept (cardTex), so a re-shown shelf needn't paint them again
+  wares = next;
+  scene.add(wares.group);
+}
+
+let monReady = null;
+function ensureMon(mate) {
+  if (monReady?.src !== mate.src) {
+    const old = mon;
+    monReady = monBoard(mate).then(m => {
+      if (old) scene.remove(old.group);
+      m.board.rotation.x = -PITCH;
+      scene.add(m.group);
+      return (mon = m);
+    });
+    monReady.src = mate.src;
+    monReady.catch(() => { monReady = null; });
+  }
+  return monReady;
+}
+
+/** While the map is up: Three.js, the room, your Pokémon and every ware's picture made ready, so walking in shows the
+    Mart at once. `o`: { mate, wares } as mountMart() takes them. */
+export async function preloadMart(o) {
+  await warmMart();
+  await Promise.all([ensureMon(o.mate), paintAll(o.wares)]);
 }

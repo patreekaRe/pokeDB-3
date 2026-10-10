@@ -157,7 +157,7 @@ live site.
 - **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, not on `main` until the user says): `js/mart-3d.js`
   lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit
   of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Kecleon's counter with the PC, a tap walks up and
-  presses the choice. `?mart` (`&money=N`, `&mart2d`). Detail in `docs/reference/mart.md`.
+  presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different

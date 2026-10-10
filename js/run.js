@@ -43,7 +43,7 @@ import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, s
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
-import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
+import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { bootDevice } from './device-boot.js';
@@ -1980,11 +1980,19 @@ function warmCenter3d() {
   setTimeout(() => import('./center-3d.js').then(m => m.warmCenter()).catch(() => { warmCenter3d.done = false; }), 1500);
 }
 
-/** The 3D Mart likewise, once a map has a Mart on it. */
+/** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
+    in shows the room at once (the user saw a blank blue screen while it loaded). */
 function warmMart3d() {
-  if (warmMart3d.done || !Object.values(run.map?.byId ?? {}).some(n => n.type === 'shop') || new URLSearchParams(location.search).has('mart2d')) return;
-  warmMart3d.done = true;
-  setTimeout(() => import('./mart-3d.js').then(m => m.warmMart()).catch(() => { warmMart3d.done = false; }), 2500);
+  const shops = Object.values(run.map?.byId ?? {}).filter(n => n.type === 'shop' && n.stock);
+  if (warmMart3d.map === run.map || !shops.length) return;
+  warmMart3d.map = run.map;
+  const wares = shops.flatMap(({ stock }) => [
+    ...stock.cards.map(i => ({ kind: 'card', thing: CARDS_BY_ID[i.id] })),
+    ...stock.items.map(i => ({ kind: 'item', thing: ITEMS_BY_ID[i.id] })),
+    ...stock.relics.map(i => ({ kind: 'relic', thing: RELICS_BY_ID[i.id] })),
+  ]).filter(w => w.thing);
+  const mate = { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id };
+  setTimeout(() => import('./mart-3d.js').then(m => m.preloadMart({ mate, wares })).catch(() => { warmMart3d.map = null; }), 1200);
 }
 
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
@@ -2206,23 +2214,6 @@ function liftRoomLog() {
 new ResizeObserver(liftRoomLog).observe(document.querySelector('#reward-screen .reward-bottom'));
 addEventListener('resize', liftRoomLog);
 
-/** On a short window the Mart's shelves pushed Leave and the text box off the bottom, so the whole shop is zoomed out just
-    enough for the screen to fit without scrolling. It works out its own zoom, so the scene's floor line (read from the
-    counter's box) is repainted with a second resize once the zoom changes. */
-function fitMart() {
-  const shop = document.querySelector('#reward-options.mart-window');
-  if (!shop) return;
-  const before = shop.style.zoom;
-  const fits = (zoom) => { shop.style.zoom = zoom; return document.documentElement.scrollHeight <= innerHeight; };
-  if (!fits('')) {
-    let [lo, hi] = [0.6, 1];   // the largest zoom that fits, to within 1%: the layout doesn't shrink in step with it
-    while (hi - lo > 0.01) { const mid = (lo + hi) / 2; if (fits(mid)) lo = mid; else hi = mid; }
-    shop.style.zoom = lo.toFixed(3);
-  }
-  if (shop.style.zoom !== before) dispatchEvent(new Event('resize'));
-}
-addEventListener('resize', fitMart);
-new ResizeObserver(() => fitMart()).observe(document.querySelector('#reward-screen .reward-bottom'));   // the text box grows as a line types out
 addEventListener('scenepaint', placeCenterSpots);
 
 /** The Mart's PC on the counter, under the same bouncing sign as the Center's. */
@@ -2873,43 +2864,12 @@ function martRoom() {
     layout: 'mart-window',
   });
 
-  // a Bag-pocket sign hanging over the items and the relics shelves
-  for (const [group, icon, text] of [['items', itemSprite({ id: 'potion' }), 'ITEMS'], ['relics', '💎', 'RELICS']]) {
-    const sign = el('span', `shelf-sign ${group}`);
-    sign.setAttribute('aria-hidden', 'true');
-    const iconBox = typeof icon === 'string' ? el('span', 'shelf-sign-icon', icon) : icon;
-    iconBox.classList.add('shelf-sign-icon');
-    sign.append(iconBox, el('span', 'shelf-sign-text', text));
-    document.querySelector(`#reward-options .group-${group}`)?.prepend(sign);
-  }
-
-  // the shopkeeper at the left end of the counter (the .mart-window grid places it); the counter stays bare (the user's call)
-  const clerk = el('img', 'mart-clerk');
-  clerk.src = 'assets/pokemon/kecleon-front.gif';
-  clerk.alt = 'Kecleon, the shopkeeper';
-  $('reward-options').append(clerk);
-
-  if (!new URLSearchParams(location.search).has('mart2d')) mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin });
-
-  fitMart();
-  // the room's floor starts at the foot of the counter, so the shop stands on the tiles
-  const shop = () => $('reward-options').getBoundingClientRect();
-  showPlaceScene('mart', { floor: () => shop().bottom, span: () => [shop().left, shop().right] });
+  mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin });
   playMusic('mart');
-
-  // on a phone the counter spans the screen, so the plants and ball bins stand in front of it, against its foot
-  const props = martProps();
-  if (props) {
-    const row = el('div', 'mart-props');
-    row.setAttribute('aria-hidden', 'true');
-    const prop = ({ url, w, h }) => Object.assign(el('img'), { src: url, alt: '', width: w * 4, height: h * 4 });
-    row.append(prop(props.plant), prop(props.left), el('span', 'mart-props-gap'), prop(props.right), prop(props.plant));
-    $('reward-options').append(row);
-  }
 }
 
 /** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
-    order, each pointing at its choice (a sold one stays an empty slot). The pixel shop stays if Three.js won't load. */
+    order, each pointing at its choice (a sold one stays an empty slot). Without Three.js only the list of wares shows. */
 function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
   const { stock } = run.map.byId[run.current], box = $('reward-options'), thisRun = run;
   const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
