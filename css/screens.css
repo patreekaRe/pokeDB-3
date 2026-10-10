@@ -4244,7 +4244,7 @@ body.scene-peek #backdrop { display: none; }
   position: absolute; left: 12px; bottom: 7px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
   font-size: 0.8rem; border: 2px solid rgba(255, 255, 255, 0.8); background: rgba(0, 0, 0, 0.25); filter: grayscale(1); opacity: 0.75;
 }
-.pdx-banner-name .pdx-medal { position: relative; left: auto; bottom: auto; display: inline-grid; vertical-align: middle; margin: -4px 0 0 10px; letter-spacing: 0; text-shadow: none; }
+.pdx-banner-name .pdx-medal { position: relative; left: auto; bottom: auto; display: inline-grid; vertical-align: middle; margin: -6px 0 0 10px; width: 34px; height: 34px; font-size: 1.05rem; letter-spacing: 0; text-shadow: none; }
 .pdx-medal.lv1 { filter: none; opacity: 1; background: linear-gradient(160deg, #f4f4f8, #9ea4b4); border-color: #fff; }
 .pdx-medal.lv2 { filter: none; opacity: 1; background: linear-gradient(160deg, #fff2a0, #d89a10); border-color: #fff6c8; box-shadow: 0 0 8px rgba(255, 220, 100, 0.8); }
 .pdx-banner-mons { position: absolute; right: 2px; bottom: 0; display: flex; align-items: flex-end; }
