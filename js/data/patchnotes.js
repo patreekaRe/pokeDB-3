@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
-  ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap does something new.'],
+  ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

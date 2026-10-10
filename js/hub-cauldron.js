@@ -1,7 +1,7 @@
 /* hub-cauldron.js  -  Halloween's witch's cauldron in the Clearing as a real 3D model (the user's ask, 2026-10-10: the
    painted board looked flat): an iron pot on three legs over a log fire in a ring of stones, its brew swirling and
-   bubbling, steam curling off it, a ladle stirring by itself. A tap does something different each time (TRICKS, never
-   the same twice running): a burst of bubbles, the brew changing colour in a puff of smoke, a fountain of sparks,
+   bubbling, steam curling off it, a ladle stirring by itself. A tap plays the next of TRICKS in turn, all six before
+   any comes round again: a burst of bubbles, the brew changing colour in a puff of smoke, a fountain of sparks,
    boiling over, a little ghost rising out to circle it, smoke rings. The fire and brew light the ground after dark
    (`lights`, handed to js/hub-3d.js's lamps, which sets them by the hour; tick() only flickers them). */
 import { playSound } from './audio.js';
@@ -247,7 +247,7 @@ export function makeCauldron(THREE) {
 
   /* ---------- state ---------- */
 
-  let level = SURFACE, brewIx = 0, last = '', busy = 0, sounds = 0, soundAt = 0, flash = 0;
+  let level = SURFACE, brewIx = 0, turn = 0, busy = 0, sounds = 0, soundAt = 0, flash = 0;
   let nextBubble = 0, nextSteam = 0, nextEmber = 0;
   let fade = null, boil = null, rising = null, rings = [], burst = [];
   const later = (ms, fn) => burst.push({ at: performance.now() + ms, fn });
@@ -306,15 +306,14 @@ export function makeCauldron(THREE) {
     },
   };
 
-  /** A tap: the next trick, never the last one again; mid-trick, a handful of bubbles so a tap always does something. */
+  /** A tap: the next trick in TRICKS' order; mid-trick, a handful of bubbles so a tap always does something. */
   function tap(now = performance.now(), want) {
     if (now < busy && !want) {
       for (let i = 0; i < 6; i++) emit('bubble', { at: onBrew(), vel: [0, rand(0.8, 1.4), 0], life: rand(0.6, 1), size: rand(0.04, 0.08), wobble: 0.02, pop: i < 1 });
       playSound('fx-bubble');
       return 'stir';
     }
-    const pick = TRICKS.filter(t => t !== last), trick = DO[want] ? want : pick[Math.floor(Math.random() * pick.length)];
-    last = trick;
+    const trick = DO[want] ? want : TRICKS[turn++ % TRICKS.length];
     busy = now + DO[trick](now);
     return trick;
   }
