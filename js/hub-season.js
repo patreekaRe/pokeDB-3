@@ -281,29 +281,6 @@ export function scarecrowArt() {
   return c;
 }
 
-/** A witch's cauldron, 14 x 13, over a log fire: green brew bubbling over its lip, the fire and brew its glow. */
-export function cauldronArt() {
-  const { c, g, glowCtx } = smooth(14, 13, 10), gl = glowCtx();
-  g.fillStyle = '#5a3a1e'; g.save(); g.translate(7, 12); g.rotate(0.35); g.fillRect(-5, -0.5, 10, 1); g.rotate(-0.7); g.fillRect(-5, -0.5, 10, 1); g.restore();
-  flame(g, 5, 12, 1.4, gl); flame(g, 9, 12, 1.3, gl); flame(g, 7, 12.2, 1.8, gl);
-  const pot = g.createRadialGradient(5, 6, 0.5, 7, 7.5, 6);
-  pot.addColorStop(0, '#5a5a6e'); pot.addColorStop(0.6, '#2a2a36'); pot.addColorStop(1, '#121218');
-  g.fillStyle = '#121218'; for (const x of [3.2, 10.8]) poly(g, [[x - 0.5, 9.5], [x + 0.5, 9.5], [x + (x < 7 ? -0.6 : 0.6), 11.6]]);
-  g.fillStyle = pot; blob(g, 7, 7.4, 5.4, 4.2);
-  g.fillStyle = '#1e1e28'; g.beginPath(); g.roundRect(1.2, 3.2, 11.6, 1.4, 0.7); g.fill();
-  const brew = g.createLinearGradient(0, 0.6, 0, 4);
-  brew.addColorStop(0, '#c8ff70'); brew.addColorStop(1, '#40c040');
-  for (const ctx of [g, gl]) {
-    ctx.fillStyle = ctx === g ? brew : '#90ff70';
-    blob(ctx, 7, 3.5, 5.2, 0.8);
-    for (const [x, y, r] of [[4.5, 2.6, 0.7], [7.2, 2.2, 0.9], [9.4, 2.7, 0.6], [6, 1.4, 0.35], [8.6, 0.9, 0.3]]) circle(ctx, x, y, r);
-    ctx.beginPath(); ctx.moveTo(10.6, 3.6); ctx.quadraticCurveTo(11.6, 5, 11.2, 6.6); ctx.quadraticCurveTo(10.6, 5.4, 10, 4); ctx.fill();   // a drip over the lip
-  }
-  g.fillStyle = 'rgba(255,255,255,0.5)'; circle(g, 7, 1.9, 0.25); circle(g, 4.3, 2.4, 0.18);
-  g.fillStyle = 'rgba(255,255,255,0.12)'; blob(g, 4.4, 6.8, 1, 2, 0.3);
-  return c;
-}
-
 /** A huddle of three to five candles, 10 x 9, dripping wax; their flames glow. */
 export function candlesArt(seed) {
   const { c, g, glowCtx } = smooth(10, 9, 12), gl = glowCtx(), n = 3 + (seed % 3);

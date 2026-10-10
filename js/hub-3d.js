@@ -11,7 +11,7 @@
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
-import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, cauldronArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
@@ -26,6 +26,7 @@ import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { makeCauldron } from './hub-cauldron.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -91,7 +92,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
-let yardTiles = new Set(), spooks = null;   // the tiles the season's decorations stand on (nothing walks through them), and Halloween's ghosts
+let yardTiles = new Set(), spooks = null, cauldron = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -1467,7 +1468,7 @@ function dressSeason() {
       [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
       [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
       [deadTreeArt(0), 'white', 12, 6, 1.7, 0.2, -0.2], [capsArt(1), 'white', 12, 7, 1.3, 0, 0.1],
-      [cauldronArt(), 'white', 3, 11, 1.7, 0, 0], [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
+      [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
       [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
       [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
       [deadTreeArt(1), 'white', 1, 14, 1.8, 0, 0.2], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
@@ -1489,8 +1490,14 @@ function dressSeason() {
       b.raycast = () => {};
       forest.add(b);
     }
-    // the giant pumpkin and the cauldron light the ground round them after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8], ['#70ff80', [tileX(3), 1, tileZ(11) + 0.8], 0.6]]) {
+    // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
+    cauldron = makeCauldron(THREE);
+    cauldron.group.position.set(tileX(3), 0, tileZ(11));
+    forest.add(cauldron.group);
+    yardTiles.add(key(3, 11));
+    for (const l of cauldron.lights) lamps.push(l);
+    // the giant pumpkin lights the ground round it after dark
+    for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4.5, 1.6);
       l.position.set(...at);
       l.userData.k = k;
@@ -1964,9 +1971,10 @@ function onTap(e) {
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
   const ghosts = spooks?.boards() || [];
-  const hit = ray.intersectObjects([mon.board, ...ghosts, placeGroup], true).find(h => !h.object.userData.who || onSprite(h));
+  const hit = ray.intersectObjects([mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])], true).find(h => !h.object.userData.who || onSprite(h));
   if (spooks?.tap(hit, walker)) return;
   if (spooks?.hush()) return;
+  if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
   const at = new THREE.Vector3();
@@ -2230,6 +2238,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (!calm) livePc(now);
+  cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.85 : 0.3 + 0.65 * (0.5 + 0.5 * Math.sin(now / 520));
