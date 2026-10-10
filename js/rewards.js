@@ -278,7 +278,8 @@ export function pressConfirm(ok) {
 
 // the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box, a picked card
 // blown up over the screen, which lives outside it)
-new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
+// guarded: the Node tests import this file, and Node has no ResizeObserver
+if (globalThis.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
 
 /* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,
    with its confirm ("Add to deck") under it where battle says "Tap to play". The big tile
