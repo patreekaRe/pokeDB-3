@@ -52,6 +52,7 @@ export const NEXT = [
   ['pc', 'The house blueprint zooms and pans: pinch, scroll or tap + / − to zoom in, and drag to look around a big house.'],
   ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
   ['fixes', 'The "!" over the Clearing\'s PC goes away once you log on, instead of staying until every new page was read, and the PC now says what\'s new.'],
+  ['pc', 'The PC menu is in a tidier order: your mail, then the PCs and your house, the Hall of Fame, and patch notes and cloud save at the bottom.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
