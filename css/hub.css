@@ -287,8 +287,20 @@
 .pc-mon {
   position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; cursor: pointer;
   border: 2px solid rgba(42, 106, 152, 0.45); border-radius: 12px; background: rgba(255, 255, 255, 0.55);
+  min-width: 0; overflow: hidden;
 }
-.pc-mon img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+/* Absolute so a sprite's own size never stretches its tile: every box the same square */
+.pc-mon img { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; image-rendering: pixelated; }
+.pc-shiny {
+  flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 2px solid #3a78b8; border-radius: 999px;
+  cursor: pointer; background: #fbfdff; color: #1e2a3a; font: 0.5rem var(--pixel-font); font-synthesis-weight: none;
+}
+.pc-shiny::after {
+  content: ""; width: 22px; height: 12px; border-radius: 999px; background: #b8c8d8 radial-gradient(circle at 6px 6px, #fff 4px, transparent 4.5px) no-repeat;
+  transition: background-color 0.15s, background-position 0.15s;
+}
+.pc-shiny.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); }
+.pc-shiny.on::after { background-color: #e0a820; background-position: 10px 0; }
 .pc-mon.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); box-shadow: 0 0 0 2px #f8d040, 0 0 12px rgba(255, 210, 60, 0.8); }
 .pc-mon:active { translate: 0 2px; }
 .pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
