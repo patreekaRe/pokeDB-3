@@ -156,6 +156,8 @@
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
 .title-screen.hub-mode .title-menu, .title-screen.hub-mode .title-run, .title-screen.hub-mode .title-gate,
 .title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }
+/* the cloud save's Sign in moved into the Clearing's PC (js/pc.js), so the corner's PC goes (2026-10-09, the user's call) */
+.title-screen.hub-mode #title-account { display: none; }
 
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a front's
    line pops up a moment (no pill since 2026-10-09, the user's call). */

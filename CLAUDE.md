@@ -718,7 +718,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (`docs/reference/title-screen.md`).
 - **The Clearing's PC** (2026-10-09, the user's ask; part 2 is in the roadmap): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
   `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
-  Bill's PC (Walking buddy, Base residents), your PC (Rename, the same nickname as Settings'), the Hall of Fame / Record
+  Bill's PC (Walking buddy, Base residents), your PC (Rename, the same nickname as Settings'), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
   Book (the device's app, `onApp`) and Log off (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**
   (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall

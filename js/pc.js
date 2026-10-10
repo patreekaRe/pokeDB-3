@@ -2,8 +2,9 @@
    pc.js  -  the Clearing's PC (2026-10-09, the user's ask), full screen over the hub: a white hood round a striped cyan
    screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu: Bill's PC holds your
    Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
-   `secretBase.mons`), your own PC your name, then the Hall of Fame and Log off. Everything about you and the game stays
-   in the Pokédex; the PC is your Pokémon and your things.
+   `secretBase.mons`), your own PC your name, the cloud save's Sign in (the title corner's PC, which the hub hides), then
+   the Hall of Fame and Log off. Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
+   your things.
    ============================================================ */
 
 import { getSave, updateSave } from './storage.js';
@@ -15,6 +16,7 @@ import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { bookEntries } from './halloffame.js';
 import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
+import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
 
 /** Safari catches living in the Secret Base at once. */
@@ -72,7 +74,7 @@ function logOff() {
 }
 
 function onKey(e) {
-  if (e.key !== 'Escape') return;
+  if (e.key !== 'Escape' || document.querySelector('dialog[open]')) return;
   e.preventDefault();
   back();
 }
@@ -156,7 +158,11 @@ const PAGES = {
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
     ];
-    const fame = bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
+    if (cloudConfigured()) {
+      const on = cloudRemembered();
+      rows.push([on ? 'CLOUD SAVE' : 'SIGN IN', on ? 'Your progress is kept in the cloud. Check it or sign out here.' : 'Keep your progress safe in the cloud and carry on from your phone or PC.', signIn]);
+    }
+    const fame =bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
     if (fame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
     menu('PC', rows);
@@ -228,6 +234,12 @@ const PAGES = {
     setTimeout(() => box.focus(), 0);
   },
 };
+
+/** The cloud save's window over the PC; the menu's row reads Sign in or Cloud save again once it closes. */
+function signIn() {
+  openCloud();
+  document.getElementById('cloud-dialog').addEventListener('close', () => { if (root && page === 'home') show('home'); }, { once: true });
+}
 
 function setResidents(ids) {
   updateSave(d => { d.secretBase = { ...(d.secretBase || {}), mons: ids }; });

@@ -5,7 +5,7 @@ saves differ). Since 2026-09-30 also email + password (Sign in / Sign up / Forgo
 Mail drops Firebase's default-sender emails, so the link never reached iCloud users; a password sends no email. `js/cloud.js`; the project (`pokedb-42e7c`, the user's) and its public web config is `FIREBASE_CONFIG` in `js/cloud-config.js` (not a secret;
 the Firestore rules guard the data). While it's `null` the ☁️ Sign in item (`#cloud-btn`) and the title's PC stay
 hidden and nothing changes. The title's top-left corner has its own way in once the gems are up: the games' PC
-(`#title-account`, the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's
+(`#title-account`, hidden in hub mode since 2026-10-09, where the Clearing's PC has a Sign in row instead, `js/pc.js`; the 🖥️ pixel icon big, captioned Sign in / Cloud save, a green power light once signed in; the user's
 idea; tapping it plays `pc-on`, `assets/audio/sfx/pc-on.mp3`, the games' PC boot sound, supplied by the user, and
 sets `data-close-sound="pc-off"` on the window, so however it closes it plays `pc-off.mp3` (logging off) in place of
 `cancel`: `js/ui.js`'s outside tap and `js/audio.js`'s Escape skip `cancel` for a window with a `data-close-sound`; both
