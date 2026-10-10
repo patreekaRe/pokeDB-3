@@ -35,13 +35,6 @@ export function initTowerPrep(handlers) {
   actions = handlers;
   for (const node of document.querySelectorAll('#tower-dialog [data-icon]')) node.append(smoothIcon(node.dataset.icon));
   $('tower-go').addEventListener('click', () => { if (ranks) return; closeDialog('tower-dialog'); actions.onStart(null); });
-  $('tower-continue').addEventListener('click', () => {
-    const run = actions.savedRun?.();
-    if (ranks || !run) return;
-    playSound('confirm');
-    closeDialog('tower-dialog');
-    actions.onContinue(run.saved);
-  });
   $('tower-board').addEventListener('click', () => (ranks ? back() : openRanks()));
   $('tower-close').addEventListener('click', back);
   const dialog = $('tower-dialog');
@@ -115,7 +108,6 @@ function dressKeys() {
   $('tower-week').hidden = !!ranks;
   $('tower-base').inert = !!ranks;
   $('tower-go').disabled = !!ranks;
-  $('tower-continue').disabled = !!ranks;
 }
 
 const PLAQUE_ROWS = 5;
@@ -184,7 +176,6 @@ export function openTowerPrep() {
     li.append(smoothIcon(icon), el('span', '', text));
     return li;
   }));
-  $('tower-continue').hidden = !actions.savedRun?.();
   $('tower-go-label').textContent = first ? 'Climb' : 'Again';
   $('tower-note').textContent = first ? 'Your first climb this week counts. No perks.' : 'Only your first climb this week counts.';
   // practice: any starter you own but Mewtwo (it would trivialise the climb)

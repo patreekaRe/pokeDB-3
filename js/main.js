@@ -238,8 +238,6 @@ function init() {
   });
 
   initTowerPrep({
-    savedRun: savedRunCard,
-    onContinue: continueGame,
     onStart: async (practice) => {
       if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
       const climber = practice ?? towerWeekly().starter;

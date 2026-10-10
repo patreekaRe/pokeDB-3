@@ -4093,8 +4093,6 @@ body.scene-peek #backdrop { display: none; }
 .tower-lobby[open] .pdx-light.yellow { animation-delay: 0.08s; }
 .tower-lobby[open] .pdx-light.green { animation-delay: 0.16s; }
 .tdev-lid .cdev-lcd { min-width: 0; max-width: 64%; }
-.tower-continue { min-width: 0; padding-inline: 14px; }
-@media (max-width: 380px) { .tower-continue { padding-inline: 10px; font-size: 0.55rem; } }
 .tower-title { margin: 0; font-size: 0.72rem; font-weight: 400; letter-spacing: 1px; text-transform: uppercase; }
 .tower-title:focus { outline: none; }
 .tower-week { margin: 0; font-size: 0.55rem; opacity: 0.75; white-space: nowrap; }
