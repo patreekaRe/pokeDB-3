@@ -1674,18 +1674,18 @@ function pokestop(g, id, x, z, S, saved, start) {
     or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
     heavy arcade face (the pixel font's thin strokes blurred into the glow), lying flat like a painted road marking, only
     a little taller to make up for the floor's foreshortening (1.6 looked propped up), white letters with a cyan glow on a dark
-    extruded edge, a little see-through, chevrons marching in on either side and sparkles twinkling over the letters
-    (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game, and something new). */
+    extruded edge, a little see-through, chevrons marching in on either side
+    (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game, something new, no sparkles). */
 let cueFont;
 function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
   c.width = 760; c.height = 240;
   c.hd = 2;
   const map = tex(c);
-  // the letters are painted once onto `base`; each frame lays the marching chevrons under them and the sparkles over them
+  // the letters are painted once onto `base`; each frame lays the marching chevrons beside them
   const base = document.createElement('canvas');
   base.width = c.width; base.height = c.height;
-  const cx = 380, cy = 120, sparks = [];
+  const cx = 380, cy = 120;
   let half = 0, px = 124, last = -1;
   const paint = () => {
     const d = base.getContext('2d');
@@ -1715,19 +1715,7 @@ function groundCue(g, x, z, text) {
     d.lineWidth = 20; d.strokeStyle = '#0c2c48'; d.stroke();
     d.lineWidth = 10; d.strokeStyle = '#8eecff'; d.stroke();
   };
-  const twinkle = (d, x, y, r) => {
-    d.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const ang = i * Math.PI / 4 - Math.PI / 2, rr = i % 2 ? r * 0.3 : r;
-      d.lineTo(x + Math.cos(ang) * rr, y + Math.sin(ang) * rr);
-    }
-    d.closePath();
-    // a dark edge and a cyan heart, or a white sparkle vanishes on the white letters
-    d.lineWidth = 6; d.strokeStyle = '#0c2c48'; d.stroke();
-    d.shadowColor = '#5fe0ff'; d.shadowBlur = 16; d.fillStyle = '#8eecff'; d.fill();
-    d.shadowBlur = 0;
-  };
-  // `now` 0 (and Reduced motion) is the still look: one chevron each side, no sparkles
+  // `now` 0 (and Reduced motion) is the still look: one chevron each side
   const draw = (now, force) => {
     if (!force && now - last < 33) return;
     last = now;
@@ -1741,13 +1729,6 @@ function groundCue(g, x, z, text) {
     }
     d.globalAlpha = 1;
     d.drawImage(base, 0, 0);
-    if (now) {
-      if (!sparks.length || now - sparks[sparks.length - 1].at > 700) {
-        sparks.push({ at: now, x: cx + (Math.random() * 2 - 1) * half * 0.9, y: cy - px * (0.1 + Math.random() * 0.3) });
-      }
-      while (sparks.length && now - sparks[0].at > 650) sparks.shift();
-      for (const sp of sparks) twinkle(d, sp.x, sp.y, 30 * Math.sin(Math.PI * (now - sp.at) / 650));
-    }
     map.needsUpdate = true;
   };
   paint();
