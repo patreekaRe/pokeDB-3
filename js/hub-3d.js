@@ -1612,6 +1612,7 @@ async function enterBase() {
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
+  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
@@ -1626,6 +1627,7 @@ async function enterMall() {
   if (entering) return;
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);

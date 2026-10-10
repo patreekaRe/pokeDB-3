@@ -420,7 +420,7 @@ async function ribbonTap() {
   await later(1700);
   if (P?.id !== 'hall' || !root?.isConnected) return;
   ribbon.done = true;
-  await goPlace('f1', { x: 6, y: ROWS - 1 });
+  await walkIn('f1');
   syncRibbon();
 }
 
@@ -936,6 +936,12 @@ function say(fr, ms = 2600) {
 
 const prizeLine = (e) => (e.blocked ? `${e.name}: not yet.` : e.done ? `${e.name}: ${e.done.toLowerCase()}.` : `${e.name}: ${e.cost.toLocaleString()} PokéCoins.`);
 
+/** Into a shop from the hall: the confirm blip as you step in (the user's ask, 2026-10-09), then its door. */
+function walkIn(id) {
+  playSound('confirm');
+  return goPlace(id, { x: 6, y: ROWS - 1 });
+}
+
 /** In: a shop's place (the Furniture store, the Game Corner); a shutter only says so. Inside, a spot's own tap. */
 function enterFront(fr) {
   if (fr.kind === 'bay') return bayTap(fr);
@@ -944,8 +950,8 @@ function enterFront(fr) {
   if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
   if (fr.id === 'furniture' && ribbon?.group.visible) return ribbonTap();
-  if (fr.id === 'furniture') return goPlace('f1', { x: 6, y: ROWS - 1 });
-  if (fr.id === 'corner') return goPlace('gc', { x: 6, y: ROWS - 1 });
+  if (fr.id === 'furniture') return walkIn('f1');
+  if (fr.id === 'corner') return walkIn('gc');
 }
 
 /* ---------- taps ---------- */
