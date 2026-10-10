@@ -5304,3 +5304,12 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 #reward-reroll.room-ok .pp-pill { display: contents; }
 #reward-reroll.room-ok .reroll-cap { display: none; }
 .reward-focus .room-ok.focus-confirm { min-width: 110px; height: 42px; font-size: 0.8rem; }
+
+/* ---------- the walk-in 3D Pokémon Center (js/center-3d.js, branch pokecenter-3d) ---------- */
+/* its canvas sits where the pixel scene does, under the room's bar and text box; the choices are the room's own
+   machine, PC and Chansey, so the pixel room's signs, nurse and monitor go */
+.center3d-view { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; touch-action: manipulation; }
+.center3d-view.on { opacity: 1; }
+#reward-options:is(.c3d, .c3d-wait) :is(.reward-option, .center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
+body:has(#reward-options.c3d) #reward-screen { cursor: pointer; }
+body:has(#reward-options.c3d) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }

@@ -450,6 +450,13 @@ export function peekEvent(starter, id) {
   return true;
 }
 
+/** Playtest shortcut: ?center walks a throwaway run (&starter=id) straight into a Pokémon Center, hurt so resting shows.
+    Nothing about it is saved. */
+export function peekCenter(starter) {
+  peeking = true;
+  beginRun(starter, 0, ':center');
+}
+
 /** Playtest shortcut: ?bossfight=wetland (any Safari area) walks a throwaway Safari run straight into that area's boss
     fight, its prelude and arena included (&starter=id picks who you play). Nothing about the run is saved. */
 export function peekSafariBoss(areaId, starter = null) {
@@ -513,6 +520,13 @@ function peekRoom(id) {
     run.stage = run.starter.line.length - 1;
     run.hp = Math.ceil(run.maxHp / 2);
     return fallIn();
+  }
+  if (id === ':center') {
+    startBiome(true);
+    run.hp = Math.ceil(run.maxHp * 0.55);   // hurt, so resting shows
+    const node = Object.values(run.map.byId).find(n => n.type === 'rest') ?? Object.values(run.map.byId)[0];
+    node.type = 'rest';
+    return enterNode(node);
   }
   if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   if (id === ':final') {
@@ -692,6 +706,7 @@ function showMap() {
   showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
+  warmCenter3d();
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -1941,6 +1956,13 @@ function placeTreasure() {
 }
 addEventListener('scenepaint', placeTreasure);
 
+/** The 3D Center built in the background while the map is up, once a map has a Center on it, so walking in is instant. */
+function warmCenter3d() {
+  if (warmCenter3d.done || !Object.values(run.map?.byId ?? {}).some(n => n.type === 'rest') || new URLSearchParams(location.search).has('center2d')) return;
+  warmCenter3d.done = true;
+  setTimeout(() => import('./center-3d.js').then(m => m.warmCenter()).catch(() => { warmCenter3d.done = false; }), 1500);
+}
+
 /** Forgetting a move never takes the deck below this, so a reshuffle still deals a full hand and some. */
 const MIN_DECK = 7;
 
@@ -1970,11 +1992,11 @@ function restSite() {
           // like the games: the music stops, the balls go into the machine one by one, then they flash while the
           // healing chime plays out before you leave
           playMusic(null, { cut: true });
-          await healAtCenter();
+          await (room3d ? room3d.heal() : healAtCenter());
           if (run !== thisRun) return;
           const chime = await playSound('heal');
           const seconds = Math.min(chime, 4) || 2;
-          flashCenter(seconds);
+          if (room3d) room3d.flash(seconds, before, run.hp); else flashCenter(seconds);
           vitals.fill(before, run.hp, seconds);   // the patient monitor's bar fills up while the chime plays
           showChoiceHp();
           await sleep(seconds * 1000);
@@ -2014,6 +2036,24 @@ function restSite() {
   placeCenterSpots();
   playMusic('center');
   preloadSounds('heal');
+  // the walk-in 3D Center (js/center-3d.js) under the same choices; the pixel room stays if Three.js won't load
+  let room3d = null;
+  if (!new URLSearchParams(location.search).has('center2d')) {
+    const box = $('reward-options'), thisRun = run;
+    box.classList.add('c3d-wait');
+    import('./center-3d.js').then(m => m.mountCenter({
+      run: thisRun, hp: run.hp, maxHp: run.maxHp, heal: banned ? 0 : heal, name: stageName(run.starter, run.stage),
+      mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
+      onPick: (i) => {
+        const btn = box.querySelectorAll('.reward-option')[i];
+        if (!btn) return;
+        if (btn.disabled) { playSound('cancel'); return sayLines([btn.querySelector('.center-label')?.title ?? '']); }
+        btn.click();
+      },
+      onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
+    })).then(ctl => { room3d = ctl; placeCenterSpots(); }).catch(err => console.warn('3D Center unavailable', err))
+      .finally(() => box.classList.remove('c3d-wait'));
+  }
 }
 
 /** The Center's patient monitor: your Pokémon, its HP bar in green phosphor and what Rest would heal blinking on the
@@ -2092,6 +2132,10 @@ function centerLabel(text, hint) {
 function placeCenterSpots() {
   const box = $('reward-options');
   if (!box.classList.contains('center-room')) return;
+  if (box.classList.contains('c3d')) {   // the 3D room: the text box sits just over the bar
+    $('reward-screen').style.setProperty('--counter-foot', `${innerHeight}px`);
+    return liftRoomLog();
+  }
   const spots = centerSpots();
   if (!spots) return;
   box.querySelectorAll('.reward-option').forEach((btn, i) => {

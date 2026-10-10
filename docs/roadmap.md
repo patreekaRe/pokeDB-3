@@ -175,6 +175,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **The walk-in 3D Pokémon Center** (branch `pokecenter-3d`, 2026-10-09, the user's ask): the run's Center as a 3D room
+  after the DPPt Centers (`js/center-3d.js`), the same three choices. The user playtests it on the branch first; on their
+  OK, merge it into `main`, then do the Poké Mart the same way. ▶ Run in: LOCAL (visual).
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
   Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and

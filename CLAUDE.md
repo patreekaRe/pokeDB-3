@@ -141,6 +141,16 @@ live site.
   of it the Pokédex's hinge (`.room-hinge`: lens, lights, the room's title alone on a small LCD sized to it, no biome line (the user's call, 2026-10-07), in place of the title plate).
   The move pick after a fight (`layout: 'learn-room'`, `.learn`; the signature-move picks too) and the found item and relic picks (`item-found`) get the bar and hinge too, keeping their own Reroll (since 2026-10-08, the user's calls: their Skip is a round key by Home like it, a double chevron, `.room-skip`, and every confirm, Take it / Put in Bag / Add to deck / a card's focus confirm over a room, is a glowing gold pill beside the hinge's lights saying one word (Take, Add, Learn, Upgrade...: `ONE_WORD` or the label's first word), `#room-ok`, armed by `roomConfirm()` in `js/rewards.js`, greyed in place until a pick and, once pressed, pushed in and lit until the screen moves on (`pressConfirm()`, never hidden under the finger; the user's call, 2026-10-08); Skip and Leave ask "are you sure?" first (`askFirst()`: Leave only while the room still has a pick, Back never); no pills over the scene; and the text box on every `.in-room` screen is the cream speech window, green kept for the device's readouts);
   `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.
+- **The walk-in 3D Pokémon Center** (branch `pokecenter-3d` until the user says, 2026-10-09, their ask after DPPt's
+  Centers): `js/center-3d.js` lays a 3D room under the run's Center (`restSite()` in `js/run.js` keeps its choices,
+  text box and room bar; `mountCenter()` puts a canvas where the pixel scene was, `#reward-options.c3d` hides the
+  pixel room's signs, nurse and monitor): orange walls over a red band, a cream tiled floor with the Poké Ball seal and a
+  red runner, the red counter with Chansey behind it (a tap: PP Up), the Secret Base's Healing machine (a tap: Rest; its
+  six balls light one by one, then flash with the chime) under a patient monitor drawn live, a Storage PC on the counter
+  (a tap: Forget, or why not), benches, plants and an escalator down in each front corner; the doormat presses Leave.
+  Your Pokémon walks to the spot first; coming back from a deck picker it stands where it was. `warmCenter()` builds it
+  while the map is up (`warmCenter3d()`); without Three.js the pixel room stays. `?center` (`&starter=id`) walks a
+  throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
