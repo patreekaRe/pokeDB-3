@@ -11,13 +11,14 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins, sleep } from './ui.js';
 import { trim } from './hd2d.js';
+import { calmFx } from './prefs.js';
 
 /** Every capsule doll: the big ones. js/secret-base.js keeps them out of the Furniture store. */
 export const CAPSULE_DOLLS = DESIGNS.filter(isCapsule);
 
 const CAPSULE_COLOURS = ['#f05a6a', '#4a9ae8', '#f8c840', '#6ac868', '#b07af0', '#f08ac8', '#40c8c0', '#f09a40'];
 
-let root = null, busy = false, opened = null, onClose = null;
+let root = null, busy = false, opened = null, capsule = null, onClose = null;
 
 const week = () => towerWeek();
 const theSet = () => gachaSet(week(), CAPSULE_DOLLS);
@@ -28,7 +29,7 @@ const owned = (b, id) => (b.owned[PIECES[id].own] || 0) > 0;
 export function openGachapon(close) {
   onClose = close ?? null;
   preloadSounds('creak', 'ball-open', 'item-get', 'coins');
-  busy = false; opened = null;
+  busy = false; opened = null; capsule = null;
   root?.remove();
   root = el('div', 'cg-overlay gp');
   root.setAttribute('role', 'dialog');
@@ -84,7 +85,12 @@ function render() {
   machine.append(dome, base);
 
   const show = el('div', 'gp-show');
-  if (opened) {
+  if (capsule) {   // out of the chute: it drops, wobbles and splits open
+    const c = el('div', 'gp-ball');
+    c.style.setProperty('--c', capsule);
+    c.append(el('span', 'gp-top'), el('span', 'gp-bottom'));
+    show.append(c);
+  } else if (opened) {
     const card = el('div', `gp-won${opened.dupe ? ' dupe' : ''}`);
     card.append(art(opened.id), el('b', '', PIECES[opened.id].name),
       el('span', '', opened.dupe ? `You have it already: ${GACHA_REFUND} PokéCoins back.` : 'New! It\'s in your Secret Base\'s storage.'));
@@ -129,11 +135,18 @@ async function pull() {
   });
   refreshCoins();
   busy = true; opened = null;
+  const calm = calmFx();
   playSound('creak', 'stick');
   render();
-  await sleep(matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 1100);
+  await sleep(calm ? 100 : 1100);
+  if (!root) return;
+  capsule = CAPSULE_COLOURS[(pulls() * 5 + id.length) % CAPSULE_COLOURS.length];
+  playSound('catch-shake', 'stick');
+  render();
+  await sleep(calm ? 100 : 1500);
   if (!root) return;
   playSound('ball-open', 'confirm');
+  capsule = null;
   busy = false; opened = { id, dupe };
   render();
   playSound(dupe ? 'coins' : 'item-get', 'buy');

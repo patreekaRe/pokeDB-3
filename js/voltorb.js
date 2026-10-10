@@ -10,6 +10,7 @@ import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins } from './ui.js';
+import { calmFx } from './prefs.js';
 
 const LINE_COLOURS = ['#e07060', '#58b060', '#e8a040', '#4a90d8', '#b070d0'];
 
@@ -69,6 +70,11 @@ function render() {
     meter('Pays', won >= VOLTORB_CAP && !ended ? 'For fun' : `${pays} 💰`),
     meter('Today', `${Math.min(won, VOLTORB_CAP)}/${VOLTORB_CAP}`),
   );
+  if (ended?.fresh && ended.paid) {   // the round's coins count up into the day's, once
+    ended.fresh = false;
+    countUp(meters.lastChild.lastChild, won - ended.paid, won);
+    meters.children[1].classList.add('paid');
+  }
 
   const c = clues(board), grid = el('div', 'vf-grid');
   for (let r = 0; r < SIZE; r++) {
@@ -94,9 +100,20 @@ function render() {
   }
   keys.append(button('Close', 'vf-close', shut));
 
-  const panel = el('div', 'vf-panel');
+  const panel = el('div', `vf-panel${ended?.boom != null && just === ended.boom && !calmFx() ? ' shake' : ''}${ended?.paid ? ' won' : ''}`);
   panel.append(head, meters, grid, say, keys);
   root.replaceChildren(panel);
+}
+
+/** A meter's number running from `from` to `to`. */
+function countUp(b, from, to) {
+  const t0 = performance.now(), ms = calmFx() ? 0 : 700;
+  const step = (now) => {
+    const k = ms ? Math.min(1, (now - t0) / ms) : 1;
+    b.textContent = `${Math.round(from + (to - from) * k)}/${VOLTORB_CAP}`;
+    if (k < 1 && b.isConnected) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
 }
 
 function meter(label, value) {
@@ -116,7 +133,9 @@ function tile(i) {
   const mine = (ended ? ended.flipped : state.flipped).includes(i), up = mine || !!ended;
   const t = el('button', `vf-tile${up ? ' up' : ''}${up && !mine ? ' shown' : ''}${ended?.boom === i ? ' boom' : ''}${just === i ? ' just' : ''}`);
   t.type = 'button';
+  if (up && !mine) t.style.animationDelay = `${300 + (Math.floor(i / SIZE) + i % SIZE) * 45}ms`;   // the rest turn over in a wave
   if (up) {
+    if (ended?.boom === i && just === i) t.append(el('span', 'vf-blast'));
     if (board[i] === 0) t.append(voltorbIcon());
     else t.append(el('span', `vf-n n${board[i]}`, String(board[i])));
     t.setAttribute('aria-label', board[i] === 0 ? 'Voltorb' : String(board[i]));
@@ -181,7 +200,7 @@ function endRound({ won, quit, flips, boom, points, line }) {
   });
   if (paid) playSound('coins', 'buy');
   const left = state.won >= VOLTORB_CAP ? ' That\'s the most for today!' : '';
-  ended = { level, points, paid, boom, flipped,
+  ended = { level, points, paid, boom, flipped, fresh: true,
     line: line ?? (won ? `Board cleared! ${points.toLocaleString()} points: ${paid} PokéCoins.${left} On to Lv. ${next}.`
       : `You took ${paid} PokéCoins.${left}${next < level ? ` Next round is Lv. ${next}.` : ''}`) };
   refreshCoins();

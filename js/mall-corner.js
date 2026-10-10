@@ -17,9 +17,11 @@ const CASES = [
 ];
 const CASE_H = 2.5, CASE_D = 0.7;
 const COUNTER = { x: 5, y: 1, w: 3 };
-const MACHINE_Y = 3, MACHINES = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12];   // a perk each, the last one Voltorb Flip
+const MACHINE_Y = 3, MACHINES = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12];   // a perk each but GAME_AT, Voltorb Flip
+const GAME_AT = 8;   // by the runner, so a phone's narrow shot keeps it in view (the row's ends fall off its sides)
+const PERK_TILES = MACHINES.filter(t => t !== GAME_AT);
 const MACHINE_H = 1.3;
-const GACHA = { x: 12, y: 5 };   // the capsule machine, front right
+const GACHA = { x: 4, y: 5 };   // the capsule machine, front left of the runner, across from Voltorb Flip
 
 /* The games (the revamp, 2026-10-10): free Voltorb Flip for capped coins, and the Gachapon of big dolls. */
 const GAMES = {
@@ -186,6 +188,7 @@ function machineArt(e) {
     g.save(); g.translate(9, 11.4); g.scale(0.62, 0.62); (PERK_ART[e.id] ?? PERK_ART.coinFinder)(g); g.restore();
     s.save(); s.translate(9, 11.4); s.scale(0.62, 0.62); (PERK_ART[e.id] ?? PERK_ART.coinFinder)(s); s.restore();
     const tag = e.blocked ? 'LOCKED' : e.done ? e.done.toUpperCase() : `${e.cost}`;
+    if (e.deal) dealTag(g, s, 9, 7.6, 10);
     words(g, e.level ?? '', 9, 15.3, 1.8, '#c8b8f0');
     if (!e.done && !e.blocked) coin(g, 5.6, 17, 1);
     words(g, tag, e.done || e.blocked ? 9 : 10, 17, 2.1, e.done ? NEON.lime : e.blocked ? '#a098b8' : NEON.gold);
@@ -202,6 +205,16 @@ function machineArt(e) {
   rr(5, 23.6, 8, 2.2, 0.8, '#3a3448');
   rr(6, 24.2, 6, 1, 0.5, '#120a22');
   return f.c;
+}
+
+/** Today's deal: a pink neon tag saying DEAL, `w` wide, centred on x. */
+function dealTag(g, s, x, y, w) {
+  const h = w * 0.3;
+  for (const [ctx, c] of [[g, NEON.pink], [s, NEON.pink]]) {
+    ctx.save(); glow(ctx, c, ctx === g ? 2 : 0); ctx.fillStyle = c;
+    ctx.beginPath(); ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2); ctx.fill(); ctx.restore();
+  }
+  words(g, 'DEAL', x, y + 0.1, h * 0.72, '#ffffff'); words(s, 'DEAL', x, y + 0.1, h * 0.72, '#ffffff');
 }
 
 /** Voltorb Flip's cabinet: a green marquee, a board of tiles with a Voltorb and a 3 turned up, the buttons lit. */
@@ -225,6 +238,22 @@ function voltorbArt() {
     s.fillStyle = c; s.beginPath(); s.arc(x, 21, 1, 0, Math.PI * 2); s.fill();
   }
   words(g, 'FREE PLAY', 9, 25, 1.9, NEON.gold); words(s, 'FREE PLAY', 9, 25, 1.9, '#ffe890');
+  return f.c;
+}
+
+/** The Gachapon stand's face: GACHAPON in gold over a starry red, the coin slot and the capsule chute. */
+function gachaArt() {
+  const f = fine(20, 20, 10), { g, rr, lin, shine } = f, s = shine();
+  rr(0, 0, 20, 20, 1, lin(0, 0, 0, 20, [GC.red, GC.redDark]));
+  for (let i = 0; i < 9; i++) { g.fillStyle = 'rgba(255,240,200,0.35)'; star(g, (i * 7.3) % 20, 2 + (i * 4.1) % 6, 0.5); }
+  rr(1.4, 1.2, 17.2, 4.4, 1, '#3a1020');
+  g.save(); glow(g, NEON.gold, 2); words(g, 'GACHAPON', 10, 3.5, 2.6, GC.gold); g.restore();
+  words(s, 'GACHAPON', 10, 3.5, 2.6, '#ffe890');
+  rr(13.4, 9.2, 4, 1.2, 0.5, '#1a0810');
+  words(g, '100', 15.4, 12, 1.6, '#fff2b8');
+  rr(3.5, 13.6, 13, 5, 1.6, '#2a0a14');
+  rr(4.3, 14.4, 11.4, 3.6, 1.2, lin(0, 14.4, 0, 18, ['#120408', '#3a1020']));
+  s.fillStyle = '#601830'; s.beginPath(); s.roundRect(4.3, 14.4, 11.4, 3.6, 1.2); s.fill();
   return f.c;
 }
 
@@ -288,6 +317,7 @@ function caseArt(def, rows, cutOf, U) {
         if (e.done) { ball(g, cx - 3.6, tagY, 0.9); words(g, 'OWNED', cx + 1, tagY, 1.9, NEON.lime); }
         else if (e.blocked) words(g, e.dark ? '???' : 'LOCKED', cx, tagY, 1.9, '#d8b8c8');
         else { coin(g, cx - 2.8, tagY, 0.9); words(g, `${e.cost}`, cx + 1, tagY, 2, '#fff2b8'); }
+        if (e.deal) dealTag(g, s, cx, y + 2.6, Math.min(cw - 1.4, 11));
         cells.push({ row: sh.row, i, x: cx / U, y: (H - (y + lane / 2)) / U, w: cw / U, h: lane / U });
       });
       y += lane;
@@ -378,8 +408,8 @@ export function buildCorner(THREE, size) {
   // the perk machines, and the dark one
   const perks = cornerEntries('perks');
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
-  MACHINES.forEach((tx, n) => {
-    const e = perks[n] ?? null;
+  MACHINES.forEach((tx) => {
+    const n = PERK_TILES.indexOf(tx), e = n < 0 ? null : perks[n];
     blocked.add(`${tx},${MACHINE_Y}`);
     const m = new THREE.Group();
     m.position.set(tileX(tx), 0, tileZ(MACHINE_Y));
@@ -404,26 +434,37 @@ export function buildCorner(THREE, size) {
 
   // the Gachapon: a red stand under a glass dome full of capsules
   {
-    const spot = { id: 'gacha', kind: 'game', game: GAMES.gacha, name: GAMES.gacha.name, open: true, line: GAMES.gacha.name, step: { x: GACHA.x - 1, y: GACHA.y },
+    const spot = { id: 'gacha', kind: 'game', game: GAMES.gacha, name: GAMES.gacha.name, open: true, line: GAMES.gacha.name, step: { x: GACHA.x + 1, y: GACHA.y },
       frame: { x: tileX(GACHA.x), y: 0.62, z: tileZ(GACHA.y) + 0.36, w: 0.8, h: 1.24 } };
     spots.push(spot);
     blocked.add(`${GACHA.x},${GACHA.y}`);
     const m = new THREE.Group();
     m.position.set(tileX(GACHA.x), 0, tileZ(GACHA.y));
-    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.62), std({ color: GC.red, roughness: 0.5 }));
-    stand.position.y = 0.31;
-    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.05, 18), chrome);
+    const red = std({ color: GC.red, roughness: 0.45 }), gold = std({ color: GC.gold, metalness: 0.6, roughness: 0.3 });
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.66, 0.6), [red, red, gold, red, lit(gachaArt(), 0.7), red]);
+    stand.position.y = 0.33;
+    stand.castShadow = stand.receiveShadow = true;
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 20), chrome);
     knob.rotation.x = Math.PI / 2;
-    knob.position.set(0, 0.42, 0.32);
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 16), new THREE.MeshStandardMaterial({ color: '#d8ecff', transparent: true, opacity: 0.32, roughness: 0.1, depthWrite: false }));
-    dome.position.y = 0.92;
-    m.add(stand, knob, dome);
+    knob.position.set(0, 0.44, 0.32);
+    const grip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.04, 0.04), std({ color: '#a8a8b8', metalness: 0.4 }));
+    grip.position.set(0, 0.44, 0.36);
+    const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.33, 0.06, 28), gold);
+    ring.position.y = 0.69;
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.31, 28, 18), new THREE.MeshStandardMaterial({ color: '#e0f0ff', transparent: true, opacity: 0.28, roughness: 0.05, metalness: 0.1, depthWrite: false }));
+    dome.position.y = 0.98;
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.12, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), gold);
+    cap.position.y = 1.25;
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 10), std({ color: GC.red, emissive: new THREE.Color(GC.red), emissiveIntensity: 0.6 }));
+    ball.position.y = 1.4;
+    m.add(stand, knob, grip, ring, dome, cap, ball);
     const caps = ['#f05a6a', '#4a9ae8', '#f8c840', '#6ac868', '#b07af0', '#f08ac8', '#40c8c0'];
-    for (let i = 0; i < 11; i++) {
-      const a = i * 2.4, r = 0.08 + (i % 3) * 0.06, c = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), std({ color: caps[i % caps.length], roughness: 0.35 }));
-      c.position.set(Math.cos(a) * r, 0.72 + (i % 4) * 0.07, Math.sin(a) * r);
+    for (let i = 0; i < 16; i++) {
+      const a = i * 2.4, r = 0.06 + (i % 3) * 0.075, c = new THREE.Mesh(new THREE.SphereGeometry(0.075, 14, 10), std({ color: caps[i % caps.length], roughness: 0.3 }));
+      c.position.set(Math.cos(a) * r, 0.8 + Math.floor(i / 5) * 0.09, Math.sin(a) * r);
       m.add(c);
     }
+    m.scale.setScalar(1.2);
     m.traverse(o => { o.userData.front = spot; });
     group.add(m);
   }
