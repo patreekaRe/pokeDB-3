@@ -1457,11 +1457,11 @@ function dressSeason() {
     const P_ = (seed, lit = true) => [pumpkinArt(seed, lit), lit ? 'pumpkin' : null];
     // [art, glow, tile x, tile y, size, nudge x, nudge z]; a nudge keeps a thing on its tile but off its middle
     const yard = [
-      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0], [...P_(2), 5, 11, 1.5, -0.2, 0.2], [...P_(3, false), 7, 11, 1.4, 0.2, 0.2],   // the plaza
+      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0],   // the plaza
       [...P_(5), 3, 7, 5.6, 0, -0.1], [...P_(6), 4, 8, 2.4, 0.1, 0.1], [...P_(7, false), 2, 8, 2, -0.1, 0.15], [...P_(8, false), 2, 6, 1.8, 0, 0],   // the patch
       [scarecrowArt(), 'white', 4, 6, 1.5, 0.1, 0],
       [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.1, 0, 0.2],   // the Ancient Tree's door
-      [...P_(11), 5, 12, 2, 0.1, 0], [...P_(12), 7, 13, 2.2, -0.1, 0], [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
+      [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
       [...P_(15), 0, 5, 1.8, 0, 0], [...P_(16), 12, 3, 1.8, 0, 0], [...P_(17), 1, -1, 2, 0, 0], [...P_(18), -3, 11, 2.4, 0, 0], [...P_(19, false), -2, 12, 1.6, 0, 0],
       [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
       [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
@@ -1469,7 +1469,7 @@ function dressSeason() {
       [cauldronArt(), 'white', 3, 11, 1.7, 0, 0], [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
       [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
       [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
-      [deadTreeArt(1), 'white', 0, 12, 1.8, -0.2, 0], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
+      [deadTreeArt(1), 'white', 1, 14, 1.8, 0, 0.2], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
       [graveArt(5), null, 2, 14, 1.3, 0, 0], [graveArt(6), null, -3, 13, 1.4, 0, 0], [candlesArt(4), 'white', -2, 13, 1, 0, 0.1], [capsArt(1), 'white', 3, 14, 1.1, 0, 0.1],
       [capsArt(0), 'white', 9, 14, 1.1, 0, 0], [lanternArt(4), 'white', -1, 12, 1.3, 0, 0],
     ];
