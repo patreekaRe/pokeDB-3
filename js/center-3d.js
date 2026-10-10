@@ -40,7 +40,7 @@ let THREE, renderer, scene, camera, post, view, hemi, sun;
 let room, mon, nurse, monitor, machine, plays = [], anchors = {}, blocked = new Set(), mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0;
-let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, popping = null, leftAt = 0, runId = null, sizeCheck = 0;
+let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, popping = null, leftAt = 0, runId = null;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -648,9 +648,10 @@ function aimCamera(x, d) {
   camera.updateMatrixWorld();
 }
 
-/** How much of the screen the room's bar, hinge and text box take at the bottom. */
+/** How much of the screen the room's bar and hinge take at the bottom. The text box is left out: it comes and goes, and
+    the shot refitting round it swung the camera every time it closed. */
 function below() {
-  const tops = ['#reward-screen .reward-bottom', '#room-bar', '#reward-screen .room-hinge']
+  const tops = ['#room-bar', '#reward-screen .room-hinge']
     .map(s => document.querySelector(s)).filter(n => n?.offsetHeight).map(n => n.getBoundingClientRect().top);
   return tops.length ? Math.max(0, viewH - Math.min(...tops)) + 6 : 120;
 }
@@ -707,7 +708,6 @@ function frame(now) {
   const dt = Math.min(100, now - (last || now));
   last = now;
   if (walk(dt)) arrived();
-  if (++sizeCheck % 30 === 0 && shot && Math.abs(below() - shot.low) > 4) fitShot();   // the text box grew or shrank
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
@@ -899,6 +899,7 @@ export async function mountCenter(o) {
   machine.ball.visible = false;
   glowMachine(0);
   document.body.append(view);
+  document.getElementById('reward-log').hidden = true;   // the signs say it; the hint only covered the room
   document.getElementById('reward-options').classList.add('c3d');
   // one word a sign, so the three fit side by side this close in (the hint keeps the detail)
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = label.textContent.replace(/^(Heal|Upgrade|Forget) .*$/, '$1').replace(/ card$/, '');
