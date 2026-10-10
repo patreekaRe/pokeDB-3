@@ -32,7 +32,7 @@ import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buy
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
-import { pcNew, markPcSeen } from './pc-news.js';
+import { pcNew, markPcSeen, pcLookedAt } from './pc-news.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -64,6 +64,7 @@ export function openPC(opts = {}) {
   ({ onClose = null, onFame = null, start = 'home' } = opts);
   deco = null;
   inBase = !!opts.inBase;
+  pcLookedAt(getSave());
   root = el('div', `pc-screen${inBase ? ' in-base' : ''}`);
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-label', 'PC');
@@ -129,11 +130,15 @@ function speak(text) {
   }, 18);
 }
 
+let hush = false;
+
 function show(id) {
   page = id;
   markPcSeen(id === 'decor' && dupes ? 'dupe' : id);
   PAGES[id]();
+  hush = true;   // the cursor lands on the first row without talking over the page's own line
   glass.querySelector('button')?.focus({ preventScroll: true });
+  hush = false;
 }
 
 /** The gold "!" bobbing over the corner of something new to read (the user's ask, 2026-10-10: a "(NEW)" in the label
@@ -141,20 +146,20 @@ function show(id) {
 const freshMark = () => { const m = el('span', 'pc-new', '!'); m.setAttribute('aria-label', 'New'); return m; };
 
 /** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new. */
-function menu(title, rows) {
+function menu(title, rows, line = rows[0][1]) {
   const list = el('div', 'pc-menu');
   list.append(...rows.map(([label, line, go, fresh]) => {
     const b = el('button', 'pc-row', label);
     b.type = 'button';
     if (fresh) b.append(freshMark());
-    const tell = () => speak(line);
+    const tell = () => { if (!hush) speak(line); };
     b.addEventListener('pointerenter', tell);
     b.addEventListener('focus', tell);
     b.addEventListener('click', () => { playSound('confirm'); go(); });
     return b;
   }));
   glass.replaceChildren(head(title), list);
-  speak(rows[0][1]);
+  speak(line);
 }
 
 /** The page's title strip, with a Back key on every page but the first. */
@@ -205,7 +210,8 @@ const PAGES = {
     const fame =bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
     if (fame && onFame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
-    menu('PC', rows);
+    const fresh = rows.filter(r => r[3]).map(r => r[0].replace(/ \(\d+\)$/, ''));
+    menu('PC', rows, fresh.length ? `New: ${fresh.join(fresh.length > 2 ? ', ' : ' and ').replace(/, ([^,]*)$/, ' and $1')}! Look for the "!".` : rows[0][1]);
   },
   prof() {
     const save = getSave(), beaten = new Set(save.dex.defeated), seen = new Set([...save.dex.seen, ...save.dex.defeated]);

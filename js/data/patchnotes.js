@@ -51,6 +51,7 @@ export const NEXT = [
   ['pc', 'New PC pages (House Upgrades, Duplicate, Decorations, Prof. Oak) wear a gold "!" until you open them, and the PC in the Clearing shows one too.'],
   ['pc', 'The house blueprint zooms and pans: pinch, scroll or tap + / − to zoom in, and drag to look around a big house.'],
   ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
+  ['fixes', 'The "!" over the Clearing\'s PC goes away once you log on, instead of staying until every new page was read, and the PC now says what\'s new.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -4,7 +4,10 @@
    "!" too) until it's opened once. A new PC page gets a line in NEWS; its menu row then follows by itself.
    ============================================================ */
 
+import { latestPatch, patchUnseen } from './patchnotes.js';
+
 const SEEN_KEY = 'pokedb.pcSeen';   // per device, like the patch notes' "!"
+const LOOKED_KEY = 'pokedb.pcLooked';   // the news the hub's "!" over the PC last showed when you logged on
 
 const hasBase = (save) => !!(save.baseOwned || save.secretBase);
 
@@ -35,4 +38,20 @@ export function markPcSeen(id) {
   if (done.has(id)) return;
   done.add(id);
   try { localStorage.setItem(SEEN_KEY, JSON.stringify([...done])); } catch {}
+}
+
+/** Everything new on the PC right now, as one key: the hub's "!" asks for a log on, not for every page read. */
+function newsNow(save) {
+  return [...(patchUnseen() ? [`patch:${latestPatch.version}`] : []), ...Object.keys(NEWS).filter(k => pcNew(k, save))].join(',');
+}
+
+/** The "!" over the Clearing's PC: something new it hasn't shown you yet (2026-10-10, the user's ask: it stayed up
+    forever while a page inside was unread, and inside nothing said which). */
+export function pcBeckons(save) {
+  const now = newsNow(save);
+  try { return !!now && localStorage.getItem(LOOKED_KEY) !== now; } catch { return false; }
+}
+
+export function pcLookedAt(save) {
+  try { localStorage.setItem(LOOKED_KEY, newsNow(save)); } catch {}
 }
