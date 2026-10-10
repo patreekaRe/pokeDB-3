@@ -259,9 +259,9 @@ function autoPartner(save) {
   return best ? { starter: best, stage: best.line.length - 1 } : { starter: STARTERS_BY_ID.charmander, stage: 0 };
 }
 
-/** Every PokÃ©mon the card can show, by group: your starters at each stage, the PokÃ©dex's defeated, the Safari's caught.
+/** Every Pokémon the card can show, by group: your starters at each stage, the Pokédex's defeated, the Safari's caught.
     Keys are what `save.partner` holds: 'starter:<id>:<stage>[:shiny]' or 'mon:<enemy id>'. A starter whose shiny you own
-    comes both ways, each pointing at the other as its `twin` (the card's âœ¨ toggle); only starters have shiny sprites. */
+    comes both ways, each pointing at the other as its `twin` (the card's ✨ toggle); only starters have shiny sprites. */
 export function partnerChoices(save = getSave()) {
   const mon = (id) => ENEMY_DEFS[id] && { key: `mon:${id}`, src: ENEMY_DEFS[id].image, name: ENEMY_DEFS[id].name };
   const owned = new Set(save.shiny?.owned || []);
@@ -280,12 +280,12 @@ export function partnerChoices(save = getSave()) {
   return [
     { name: 'Starters', mons: starters },
     { name: 'Shiny', mons: shinies },
-    { name: 'PokÃ©dex', mons: dex },
+    { name: 'Pokédex', mons: dex },
     { name: 'Safari', mons: [...new Map(safari.map(m => [m.key, m])).values()] },
   ].filter(g => g.mons.length);
 }
 
-/** The PokÃ©mon on the card, cover and ID strip: the one chosen (`save.partner`) while it's still yours, else autoPartner(). */
+/** The Pokémon on the card, cover and ID strip: the one chosen (`save.partner`) while it's still yours, else autoPartner(). */
 export function partner(save) {
   const chosen = save.partner && partnerChoices(save).flatMap(g => g.mons).find(m => m.key === save.partner);
   if (chosen) return chosen;
@@ -295,7 +295,7 @@ export function partner(save) {
   return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name, shiny, twin };
 }
 
-/** Who may walk with you in the Clearing, the Secret Base and the PokÃ© Mall (the PC's walking buddy, the user's call,
+/** Who may walk with you in the Clearing, the Secret Base and the Poké Mall (the PC's walking buddy, the user's call,
     2026-10-09): the first form of every starter you own, no legendaries (their sprites are too big to walk about), and
     each one's shiny once bought. Keys are 'starter:<id>[:shiny]'. */
 export function buddyChoices(save = getSave()) {
@@ -305,8 +305,8 @@ export function buddyChoices(save = getSave()) {
   return [...mine.map(st => form(st, false)), ...mine.filter(st => owned.has(st.id)).map(st => form(st, true))];
 }
 
-/** The PokÃ©mon walking with you: the PC's pick (`save.buddy`) while it's still yours, else the first form of the
-    starter with the most wins, as its shiny switch says. Never the PokÃ©dex's partner: that one only shows on the device. */
+/** The Pokémon walking with you: the PC's pick (`save.buddy`) while it's still yours, else the first form of the
+    starter with the most wins, as its shiny switch says. Never the Pokédex's partner: that one only shows on the device. */
 export function buddy(save = getSave()) {
   const all = buddyChoices(save);
   const chosen = save.buddy && all.find(m => m.key === save.buddy);
@@ -353,7 +353,7 @@ function partnerPicker(body, done) {
       btn.addEventListener('click', () => pick(m.key, btn));
       return btn;
     }));
-    box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} Â· ${g.mons.length}`), grid);
+    box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${g.mons.length}`), grid);
     return box;
   });
   body.replaceChildren(head, auto, ...groups);
@@ -409,7 +409,7 @@ function nameField(redraw) {
   show.type = 'button';
   show.title = 'Tap to change your name';
   show.setAttribute('aria-label', `Name: ${trainerName()}. Change it`);
-  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', 'âœŽ'));
+  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', 'Edit'));
   show.addEventListener('click', () => {
     playSound('confirm');
     const form = el('form', 'tc-name-form');
@@ -455,9 +455,9 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const lines = [
     ['NAME', trainerName().toUpperCase()],
     ['WINS', String(s.runsWon)],
-    ['POKÃ©DEX', `${dex}/${dexTotal}`],
+    ['POKéDEX', `${dex}/${dexTotal}`],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---'],
-    ['STARS', stars ? 'â­'.repeat(Math.min(stars, 3)) + (stars > 3 ? `Ã—${stars}` : '') : '-'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-'],
     ['TIME', playTime(s.playMs)],
   ];
   const info = el('div', 'tc-info');
@@ -472,7 +472,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
-  pic.append(img, el('span', 'tc-partner-edit', 'âœŽ'));
+  pic.append(img, el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
@@ -480,7 +480,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const frame = el('div', 'tc-partner-frame');
   frame.append(pic);
   if (mate.twin) {
-    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, 'âœ¨');
+    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, mate.shiny ? '✨ Shiny' : 'Shiny');
     flip.type = 'button';
     flip.title = mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours';
     flip.setAttribute('aria-pressed', String(!!mate.shiny));
@@ -502,14 +502,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     badges.append(...BADGES.filter(b => b.group === group.id).map(b => badgeButton(b, save, earned.has(b.id), fresh.includes(b.id), fresh.includes(b.id) && !popped.has(b.id) ? n++ : 0)));
     const inGroup = BADGES.filter(b => b.group === group.id);
     if (inGroup.some(b => fresh.includes(b.id))) row.classList.add('new');
-    row.append(el('span', 'tc-group', `${group.name} Â· ${inGroup.filter(b => earned.has(b.id)).length}/${inGroup.length}`), badges);
+    row.append(el('span', 'tc-group', `${group.name} · ${inGroup.filter(b => earned.has(b.id)).length}/${inGroup.length}`), badges);
     caseBox.append(row);
   }
 
   const head = el('div', 'tc-head');
   head.append(el('h2', 'tc-title', 'TRAINER CARD'), el('span', 'tc-tier', tier.name));
   head.querySelector('h2').tabIndex = -1;
-  const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` Â· ${tier.next}` : ''}`);
+  const foot = el('p', 'tc-foot', `${earned.size}/${EARNABLE.length} badges${tier.next ? ` · ${tier.next}` : ''}`);
   const body = into ?? $('trainer-body');
   const label = el('span', 'tc-case-label', 'BADGE CASE');
   if (fresh.length > 1) {
@@ -571,7 +571,7 @@ export const newFinds = (kind, save = getSave()) => (save.newFinds?.[kind] || []
 export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length);
 
 /** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen; the
-    title's PokÃ©dex sign and every PokÃ©dex / Home key glint for anything new in the device. */
+    title's Pokédex sign and every Pokédex / Home key glint for anything new in the device. */
 export function showBadgeNews(save = getSave()) {
   const tier = cardTier(save).id, news = badgeNews(save), any = deviceNews(save);
   for (const node of document.querySelectorAll('#title-menu .gem-dex, #bag-btn, .bag-pocket[data-pocket="trainer"]')) {
@@ -589,5 +589,5 @@ export function trainerTile(save = getSave()) {
   img.src = badgeArt(earned.at(-1) ?? 'champion', earned.length > 0);
   img.alt = '';
   const fresh = earned.some(id => !(save.badgesSeen || []).includes(id));
-  return { art: img, count: `${earned.length}/${EARNABLE.length} badges${fresh ? ' Â· New!' : ''}`, tier: cardTier(save).id };
+  return { art: img, count: `${earned.length}/${EARNABLE.length} badges${fresh ? ' · New!' : ''}`, tier: cardTier(save).id };
 }
