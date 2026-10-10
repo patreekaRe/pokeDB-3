@@ -1402,7 +1402,7 @@ export const ALT_BIOMES = [
     elites: ['vigoroth', 'delcatty', 'spinda'], bosses: ['blissey', 'porygon', 'porygon2'],
   },
   {
-    id: 'savanna', name: 'Sunscorch Savanna', home: 1,
+    id: 'savanna', name: 'Sunscorch Savanna', home: 1, music: 'savanna',   // its map's own song (the user's), at either fork
     stages: ['Tall Grass', 'Burnt Plain', 'Watering Hole', 'Sun Rock'],
     normals: ['ponyta', 'magby', 'ninetales', 'arcanine', 'houndoom', 'simisear',
       'panpour', 'golduck', 'sunflora', 'cherrim', 'meowth', 'minccino'],
