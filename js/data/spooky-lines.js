@@ -1,12 +1,32 @@
 /* spooky-lines.js  -  what the Clearing's Halloween ghosts say (js/hub-spooky.js walks them about).
-   Each one: `quips`, short lines floated over its head now and then; `lines`, said when tapped; `stories`, a few lines
+   {name} in any line is the player's nickname (js/leaderboard.js's trainerName()).
+   Each one: `greets`, one of which it says walking up to you the first time the Clearing shows on a page load; `named`,
+   lines with your name mixed in among the rest; `quips`, short lines floated over its head now and then; `lines`, said when tapped; `stories`, a few lines
    tapped through in turn. A tap deals the next of its lines and stories, shuffled, none again till all are told.
    A new ghost is an entry here (its front GIF in assets/pokemon/). */
 
 export const SPOOKS = [
   {
     id: 'gengar', name: 'Gengar', tag: ['#9a78d8', '#3a2060'], move: 'walk', speed: 1.6,
+    greets: [
+      "Kekeke! Look who's back! {name}! I've been keeping your shadow warm for you.",
+      "Boo! ...Oh, it's only {name}. Hi, {name}! Missed you. Not in a creepy way. In a very creepy way.",
+      "{name}! Finally! The Clearing was so boring without someone to sneak up on.",
+      "Well, well, well. If it isn't {name}. Happy Halloween! Got candy? No? Kekeke, I'll be watching.",
+      "Hey, {name}! I turned all the pumpkins to face you this morning. You're welcome.",
+    ],
+    named: [
+      "Kekeke, {name}, your shadow looked lonely, so I moved in. Rent free.",
+      "Psst, {name}. Don't turn around. ...Okay, you can turn around. Kekeke, nothing there. Or was there?",
+      "I told the whole Clearing that {name} is the bravest Trainer around. Prove me right. Go poke the scarecrow.",
+      "{name}, if you hear giggling behind you on your next run, it's me. Cheering. Creepily.",
+      "You know what, {name}? You're alright. For someone with a shadow I can't keep.",
+      "I carved \"{name}\" into a pumpkin. Then I ate it. It means I like you.",
+      "Every time you leave the Clearing, {name}, I count the minutes till you're back. Then I lose count. Then I nap.",
+      "{name}! Quick! Act natural! Litwick thinks I ate its wax. ...I did.",
+    ],
     quips: [
+      "Boo, {name}!", "Hiya, {name}!", "{name}, behind you!", "Kekeke, {name}...",
       'Boo!', 'Kekeke...', 'Behind you!', 'Nice shadow. Mine now.', 'Trick or treat!', 'I licked a pumpkin.', 'Heh heh heh.',
       'Did you hear that?', 'Gotcha!', 'Shhh...', 'Who turned off the sun?', 'Got any candy?', 'I see you...',
       'Spooky season!', 'Grin practice.', 'Too quiet...', 'Your shadow says hi.', 'Ooooo!', 'Prank time.', 'Ha! Made you look.',
@@ -103,7 +123,25 @@ export const SPOOKS = [
   },
   {
     id: 'litwick', name: 'Litwick', tag: ['#f0d8f8', '#6a3a8a'], move: 'hop', speed: 1.1,
+    greets: [
+      "Oh! {name}, you're here! My flame just got twice as bright. Can you see?",
+      "Hello, {name}! I kept a candle lit for you all night, so you'd find your way back.",
+      "{name}! Welcome home! Mind the pumpkins, they're very big this year.",
+      "Hee hee! It's {name}! I was hoping you'd come! Happy Halloween!",
+      "Flicker flicker! That means \"hello, {name}\" in candle.",
+    ],
+    named: [
+      "{name}, you're my favourite Trainer. Don't tell the others. I tell all of them that. But I mean it with you.",
+      "If you ever get lost out there, {name}, just look for a little purple light. I'll come find you.",
+      "I wrote \"{name}\" in the wax on the graveyard candles. So the ghosts know you're a friend.",
+      "Did you sleep well, {name}? I didn't. I don't sleep. I glow.",
+      "{name}, your partner looks so warm. Can I sit next to it? Just for a little bit?",
+      "Every flame needs a friend, {name}. I'm glad mine is you!",
+      "Be careful on your run, {name}. Come back safe, okay? I'll keep the light on.",
+      "Hee hee, {name}, you have leaves in your hair. It suits you! Very autumn.",
+    ],
     quips: [
+      "Hi, {name}!", "Stay warm, {name}!", "{name}! Over here!", "Glowing for {name}!",
       'Flicker flicker!', 'Lit!', 'Warm, aren\'t I?', 'Follow the light...', 'Mind the wax.', 'Hee hee!', 'So cosy.',
       'Need a light?', 'I glow, you go!', 'Don\'t blow!', 'Spooky and bright!', 'Wick-ed!', 'Candles everywhere!',
       'I\'m not melting, I\'m relaxing.', 'Hold my hand?', 'Brrr, wind!', 'Shine on!', 'Little flame, big heart.',
@@ -193,7 +231,25 @@ export const SPOOKS = [
   },
   {
     id: 'duskull', name: 'Duskull', tag: ['#d8d0c8', '#4a4040'], move: 'float', speed: 0.9,
+    greets: [
+      "Ah... {name}. You have returned. The Clearing was quiet without your footsteps.",
+      "Good evening, {name}. The stones whispered you would come tonight. They are rarely wrong.",
+      "{name}. Welcome back. Sit a while. The night has stories to tell, and so do I.",
+      "I saw your shadow at the gate before I saw you, {name}. It is good to see you both.",
+      "Hello, {name}. The moon asked after you. I told it you would be along.",
+    ],
+    named: [
+      "You walk with purpose, {name}. The ghosts have noticed. They approve.",
+      "I keep a list of every Trainer who passes, {name}. Your name is written in the good column. In the margin, a small star.",
+      "Rest when you are tired, {name}. Even heroes need the dark sometimes.",
+      "The candles burn a little brighter when you are near, {name}. I do not think that is a coincidence.",
+      "One day, {name}, there will be stories told about you by this fire. Make them good ones.",
+      "Do not fear the dark, {name}. It has watched over you every night you have slept.",
+      "The Ancient Tree remembers your name, {name}. It does not remember many.",
+      "Go well, {name}. And come back. The Clearing is more alive with you in it.",
+    ],
     quips: [
+      "Evening, {name}.", "Walk softly, {name}.", "{name}... listen.", "Rest well, {name}.",
       '...', 'Hush now.', 'The night listens.', 'Gather close.', 'A tale for you...', 'Mmm.', 'Late, isn\'t it?',
       'The stones remember.', 'Do you hear them?', 'Walk softly.', 'Midnight comes.', 'Rest well.', 'I see you.',
       'Cold wind tonight.', 'The moon is watching.', 'Not all who wander are lost.', 'Shh... listen.', 'Once, long ago...',
@@ -289,7 +345,25 @@ export const SPOOKS = [
   },
   {
     id: 'sableye', name: 'Sableye', tag: ['#a8e8f0', '#2a4a6a'], move: 'walk', speed: 2,
+    greets: [
+      "Sableye! {name}! You're back! Did you bring shiny? Even a little shiny?",
+      "{name}! {name}! Hehehe, I was hiding behind the hay bale waiting for you!",
+      "Ooh, {name} came! Your eyes look sparkly today. Not gem sparkly. But close!",
+      "Hehehe! Hello, {name}! I found a button. It's yours. No wait, it's mine. Hello!",
+      "Shiny greetings, {name}! That's a Sableye hello. Very fancy. Very rare.",
+    ],
+    named: [
+      "{name}, if you find any gems on your run, think of me. Then bring them to me. Mostly the second part.",
+      "I named a pebble {name}. It's my favourite pebble. Very round. Very brave.",
+      "Hehehe, {name}, your Bag jingles when you walk. Jingle jingle. I hear everything.",
+      "{name} is a good name. Shiny name. Sounds like coins falling. Hehehe.",
+      "You're nice, {name}. Nice people get my second-best rock. Want it? It's grey.",
+      "When I'm a famous treasure hunter, {name}, I'll put you in my museum. Next to the bottle cap.",
+      "Shh, {name}! Hide with me! Gengar is coming! ...False alarm. It was a leaf.",
+      "Sableye's rule number three: {name} can look at the treasure. But no touching. Okay, a little touching.",
+    ],
     quips: [
+      "{name}! Shiny?", "Hehe, {name}!", "Mine, {name}!", "Ooh, {name}!",
       'Sableye!', 'Shiny?', 'Gems!', 'Mine!', 'Sparkle sparkle...', 'Hehehe!', 'Ooh, glitter!', 'Is that a gem?',
       'Precious...', 'Dig dig dig!', 'Crunch!', 'Hiss!', 'Nobody look.', 'Treasure!', 'Snack time!', 'Your coins?',
       'Pretty rocks!', 'Shh, hiding.', 'Eyes like jewels!', 'Trade me?', 'So shiny!', 'Ooh, ooh, ooh!', 'Caves are cosy.',

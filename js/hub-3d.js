@@ -1496,7 +1496,7 @@ function dressSeason() {
       lamps.push(l);
       scene.add(l);
     }
-    spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
+    spooks = makeSpooks({ THREE, scene, camera, root, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
