@@ -32,7 +32,7 @@ Purchases are only saved when you leave for the map. Items are covered
 under Items below.
 
 
-**The walk-in 3D Mart** (`js/mart-3d.js`, branch `pokemart-3d`, 2026-10-09, the user's ask after the 3D Center): `mart3d()` in
+**The walk-in 3D Mart** (`js/mart-3d.js`, 2026-10-09, live on `main` since 2026-10-10, the user's ask after the 3D Center): `mart3d()` in
 `js/run.js` lays a 3D room under the shop `martRoom()` just showed, which keeps its choices (hidden: `.m3d`), the two-tap Buy
 (the focus over the room and its gold pill) and the text box. HeartGold / SoulSilver's Mart: white walls over a blue wainscot,
 bunting, POKé MART on a blue sign, pale blue tiles with a runner to the door. The wares stand on two wall units (the user's
