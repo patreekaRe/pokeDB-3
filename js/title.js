@@ -127,6 +127,7 @@ export function initTitle(handlers) {
   tags[1].replaceChildren(smoothIcon('bell'));
   $('title-abandon').replaceChildren(smoothIcon('run'));
   paintLogo();
+  runClock();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
@@ -263,6 +264,33 @@ async function start(e) {
     await howto;
   } else if (!still()) lift(dex);
   reveal(hub);
+}
+
+/* The shut Pokédex's cover tells the time like a phone's lock screen (the user's ask, 2026-10-10): the clock and day on
+   an LCD, a sun or moon for the scenes' time of day, so dawn, day, dusk or night is known before it opens. */
+const SKY_ART = {
+  day: '<circle cx="12" cy="12" r="5" fill="#ffd23a"/><g stroke="#ffb020" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></g>',
+  dawn: '<path d="M5 17a7 7 0 0 1 14 0z" fill="#ffb347"/><g stroke="#ff8a3d" stroke-width="2" stroke-linecap="round"><path d="M12 5v3M5.6 8.6l1.8 1.8M18.4 8.6l-1.8 1.8M2 20h20"/></g>',
+  dusk: '<path d="M5 17a7 7 0 0 1 14 0z" fill="#ff7a4a"/><path d="M2 20h20" stroke="#c4466a" stroke-width="2" stroke-linecap="round"/><path d="M15 6l3-3M15 3l3 3" stroke="#ffd0a0" stroke-width="1.5" stroke-linecap="round"/>',
+  night: '<path d="M15.5 3.5a8.5 8.5 0 1 0 5 13.5A7 7 0 0 1 15.5 3.5z" fill="#f4eebc"/><circle cx="19" cy="5" r="1.2" fill="#f4eebc"/><circle cx="21" cy="10" r="0.8" fill="#f4eebc"/>',
+};
+let clockTimer = 0;
+
+function runClock() {
+  const box = $('tdx-clock');
+  const sky = box.querySelector('.tdx-sky');
+  const paintClock = () => {
+    if (pressed) { clearInterval(clockTimer); clockTimer = 0; return; }
+    const now = new Date();
+    const time = timeOfDay(now);
+    box.dataset.time = time;
+    if (sky.dataset.time !== time) { sky.dataset.time = time; sky.innerHTML = `<svg viewBox="0 0 24 24">${SKY_ART[time]}</svg>`; }
+    box.querySelector('.tdx-time').textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    box.querySelector('.tdx-date').textContent =
+      now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }).replace(/,/g, '').toUpperCase();
+  };
+  paintClock();
+  clockTimer = setInterval(paintClock, 5000);
 }
 
 async function powerOn(dex) {

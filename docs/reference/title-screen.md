@@ -70,3 +70,5 @@ corner's PC / speaker / ❓, the volume pop-out's note and bell, the Run key) is
 speaker is redrawn by `renderButton()` in `js/audio.js` (`data-smooth`). The sign pointer ▶ and the sub-menu ▶ are CSS
 triangles. The Pokémon sprites, the sky, logo, signpost and gate stay pixel art. A new title icon needs an `ART` entry.
 
+
+The shut Pokédex's cover tells the time like a lock screen (2026-10-10, the user's ask): a green LCD between the chevron and the power button with the clock and day in the device's locale, and a sun or moon for `timeOfDay()` (dawn / day / dusk / night, so `?time=` shows each), `runClock()` in `js/title.js`, every 5 s until the first tap.
