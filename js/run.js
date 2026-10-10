@@ -39,7 +39,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
@@ -2050,6 +2050,9 @@ function restSite({ used = false } = {}) {
   if (!new URLSearchParams(location.search).has('center2d')) {
     const box = $('reward-options'), thisRun = run;
     box.classList.add('c3d-wait');
+    // the welcome waits until you're inside: it typed out over the dark screen while the room loaded
+    const lines = holdLines();
+    const greet = () => { if (run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
     import('./center-3d.js').then(m => m.mountCenter({
       run: thisRun, hp: run.hp, maxHp: run.maxHp, heal: banned ? 0 : heal, name: stageName(run.starter, run.stage),
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
@@ -2062,7 +2065,8 @@ function restSite({ used = false } = {}) {
         if (run === thisRun && box.isConnected) btn.click();
       },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-    })).then(ctl => { room3d = ctl; placeCenterSpots(); }).catch(err => console.warn('3D Center unavailable', err))
+    })).then(ctl => { room3d = ctl; placeCenterSpots(); if (ctl) setTimeout(greet, 600); })
+      .catch(err => { console.warn('3D Center unavailable', err); greet(); })
       .finally(() => box.classList.remove('c3d-wait'));
   }
 }

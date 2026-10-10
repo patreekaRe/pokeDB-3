@@ -382,6 +382,15 @@ export function sayLines(lines, boxId = 'reward-log', onDone) {
   if (lines.length) showLine(0);
 }
 
+/** Takes the reward box's lines back unsaid (the box put away), for a screen that tells them later. */
+export function holdLines() {
+  clearInterval(say.typing);
+  $(say.box).hidden = true;
+  const lines = say.lines;
+  say = { lines: [], at: 0, typing: 0, box: say.box };
+  return lines;
+}
+
 /* News from the run (a card learned, a Mart buy, an event's outcome) in place of pop-up toasts: told in the next
    text box, like the games. On the map it's told there and then; otherwise it waits for the next screen's box. */
 const notes = [];

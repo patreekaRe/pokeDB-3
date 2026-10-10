@@ -898,7 +898,6 @@ export async function mountCenter(o) {
   machine.ball.visible = false;
   glowMachine(0);
   document.body.append(view);
-  document.getElementById('reward-log').hidden = true;   // the signs say it; the hint only covered the room
   document.getElementById('reward-options').classList.add('c3d');
   // one word a sign, so the three fit side by side this close in (the hint keeps the detail)
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = label.textContent.replace(/^(Heal|Upgrade|Forget) .*$/, '$1').replace(/ card$/, '');
