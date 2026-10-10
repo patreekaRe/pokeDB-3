@@ -1734,7 +1734,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Water 39 -> 32%. The table and numbers are in `docs/augments.md` (Tuning); pokeDB-sim's ranks re-measured.
 - **Sky Pillar augments, part d** (2026-10-10): Fire's Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix
   stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
-  noise, not traps. Floor 100 (200 climbs): Fire 16 -> 22%, Grass 49 -> 51%, Water 32 -> 42%. Detail in `docs/augments.md`.
+  noise, not traps. Then three new Fire-only augments (Flash Fire, Magma Armor, Eruption). Floor 100: Fire 16 -> 28%, Grass 49 -> 51%,
+  Water 32 -> 42% (200-350 climbs a type). Detail in `docs/augments.md`.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title

@@ -195,6 +195,7 @@ export const AUGMENTS = [
   { id: 'soul-bond',      tier: 'prismatic', icon: '🔗', name: 'Soul Bond',      text: 'Two random relics now, and another after every guardian.', relicNow: 2, relicEvery: 1 },
   { id: 'phoenix',        tier: 'prismatic', type: 'fire',  icon: '🐦‍🔥', name: 'Phoenix',  text: 'Blaze is always on, and its bonus is doubled. Heal 2 HP at the start of every turn.', blazeAlways: true, abilityMult: 2, healEachTurn: 2 },
   { id: 'rebirth',        tier: 'prismatic', type: 'fire',  icon: '🔥', name: 'Rebirth',    text: 'Once this climb, at 0 HP: revive at full HP with 3 strength.', rebirth: 3 },
+  { id: 'eruption',       tier: 'prismatic', type: 'fire',  icon: '🌋', name: 'Eruption',   text: 'Your attacks deal 30% more; heal 2 HP at the start of every turn.', dmgMult: 1.3, healEachTurn: 2 },
   { id: 'supernova',      tier: 'prismatic', type: 'fire',  icon: '☄️', name: 'Supernova',  text: 'Burn deals double damage; every card you exhaust deals 6 to the enemy.', burnTickMult: 2, exhaustDamage: 6 },
   { id: 'world-tree',     tier: 'prismatic', type: 'grass', icon: '🌲', name: 'World Tree', text: 'Leech Seed never goes down, and heals you double.', seedKeep: true, seedHealMult: 2 },
   { id: 'spore-storm',    tier: 'prismatic', type: 'grass', icon: '🍄', name: 'Spore Storm', text: 'Every Weak, Vulnerable, Leech Seed and Sap you apply is applied twice.', debuffTwice: true },

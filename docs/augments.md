@@ -2,7 +2,7 @@
 
 The user's call (2026-10-07): the Sky Pillar gets its own run-changing **augments**, picked one of three like League's
 Arena / ARAM Mayhem or a roguelike's boons, and "a SHIT TON of them" so every climb plays differently. Roadmap item 21.
-All of it is built (parts a-c, 2026-10-07): 113 augments, 10 trade-offs, 6 sets, 6 augment badges. `js/data/augments.js` is
+All of it is built (parts a-c, 2026-10-07): 113 augments (116 since part d), 10 trade-offs, 6 sets, 6 augment badges. `js/data/augments.js` is
 the source of truth for names and numbers; the tables below are the first list, with what changed noted under
 "Part c's calls".
 
@@ -140,11 +140,14 @@ the source of truth for names and numbers; the tables below are the first list, 
 |---|---|---|---|
 | Kindling | Silver | Fire | Your Burn applies +2 |
 | Ember Skin | Silver | Fire | Start every fight with 8 block; heal 4 after every won fight |
+| Flash Fire | Silver | Fire | Take 3 less damage from every enemy attack (part d) |
 | Heat Shield | Gold | Fire | Every Burn you apply also gives you 3 block |
 | Wildfire | Gold | Fire | Burn never goes down, and heals you 1 whenever it hurts |
 | Cauterize | Gold | Fire | Heal 3 for every Burn tick on an enemy |
+| Magma Armor | Gold | Fire | Start every fight with 10 block; enemies take 3 when they attack you (part d) |
 | Phoenix | Prismatic | Fire | Blaze is always on and its bonus doubles; heal 2 every turn |
 | Rebirth | Prismatic | Fire | Once a climb, at 0 HP: revive at full HP with 3 strength |
+| Eruption | Prismatic | Fire | Your attacks deal 30% more; heal 2 every turn (part d) |
 | Supernova | Prismatic | Fire | Burn stacks deal double; your exhausted cards deal 6 to the enemy |
 | Deep Roots | Silver | Grass | Overgrow heals 6 |
 | Pollinate | Silver | Grass | Leech Seed applies +1 |
@@ -262,4 +265,18 @@ alone (Phoenix and Cauterize heal 3: 17%) didn't move floor 100. Its Silver and 
 
 Full climbs (Fire 150 / 120 per candidate, then 200 a type): floor 100 Fire 16 -> 22% (median 53 -> 57), Grass 49 -> 51%,
 Water 32 -> 42% (median 65 -> 83). Water rose with the trap fixes (Risky Climb, taken 73% now, is worth +11 floors to it),
-so Fire still trails Water by 20; left for the user (roadmap item 21).
+so Fire still trailed Water by 20.
+
+Second pass (the user's go-ahead: keep Water's 42%, since it came from the bot picking correctly, which players do too). Fire
+had only 2 Silver augments of its own among ~31, so most climbs met none before floor 40; three new Fire-only augments,
+built from existing keys: Flash Fire (Silver, `hitReduce` 3: +15 floors from floor 1; 2 was +11), Magma Armor (Gold, 10
+block and 3 thorns: +12; 14 block no better) and Eruption (Prismatic, attacks x1.3 and heal 2 a turn). The first two lifted
+Fire's middle (reach 50: 58 -> 67%) but not floor 100 (20%): Fire converted only ~45% of climbs from floor 70 to the top
+against ~80% for the others, enemy HP compounding past what it could burst. Eruption, offered from floor 70, fixed that:
+Fire 28% over 350 climbs (median 66). A Gold Sunny Day (3 strength, Burn +1) alongside it measured 20%, so it was dropped.
+Risky Climb's ₽ was tried at 1.5x and 1x: still +9 to +19 floors, its pull is the Alphas' rewards, so it stays; it helps
+Fire most and costs Grass, which narrows the gap.
+
+Final, floor 100 reached: Fire 16 -> 28%, Water 32 -> 42%, Grass 49 -> 51% (Fire 350 climbs, the others 200; the others
+were not re-run after the second pass, which only touched Fire-only augments). Fire now trails Water by 14, within the
+cells' noise (~±7 each) of the ~10-point goal.

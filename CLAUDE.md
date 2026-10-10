@@ -795,7 +795,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
   a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and
   flipped with tier chimes (`aug-*` synths in `js/audio.js`), the reroll turning them away, and the picks under each climb on
-  the board. Part c (2026-10-07): 113 augments in all, 10 trade-offs (`trade: true`, a red chip: Darkrai's Deal's Prismatic
+  the board. Part c (2026-10-07): 113 augments in all (116 since part d, 2026-10-10: Fire's Flash Fire, Magma Armor and Eruption), 10 trade-offs (`trade: true`, a red chip: Darkrai's Deal's Prismatic
   comes from the week's seed, `dealPrismatic()`), 6 sets (`AUG_SETS`: 2 / 3 held add bonus keys inside `augEffects()`; a set
   chip on the tile, a row per set in the Bag; High Roller's 3 is a 4th offer that never shifts everyone's three,
   `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment

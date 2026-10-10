@@ -70,12 +70,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
     - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
-    - Part d (Fire's augments, Risky Climb, the trap re-check) is done: see the archive. Open: Water rose to 42% with it
-      (Fire 22%, Grass 51%), so Fire still trails Water by 20 points. Likely Risky Climb, now taken 73% and worth +11 floors
-      to Water, +19 to Fire. Ask the user before tuning further. Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`).
-      Prompt: "Read CLAUDE.md, docs/roadmap.md's item 21 and docs/augments.md's Part d. Find what lifted Water on full
-      Sky Pillar climbs (32 -> 42% to floor 100), measuring Water with and without Risky Climb (`ban=` won't do it: use
-      `aug=risky-climb/riskyClimb/false` and a 0 rank), and bring Fire within ~10 points of Water. Keep bot runs small."
+    - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Floor 100:
+      Fire 28%, Water 42%, Grass 51%. Grass is the strongest now; leave it unless a playtest says otherwise.
 
 ## Ideas, not agreed yet (ask the user before building)
 

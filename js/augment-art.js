@@ -93,7 +93,7 @@ const ICONS = {
   'mirror-force': ['mirror'], 'time-warp': ['hourglass', '4'], avatar: ['eye'], legend: ['star'],
   bloodlust: ['drop', '+'], immortal: ['infinity'], gambler: ['corner'], 'one-punch': ['glove', 'x5'],
   'living-legend': ['fame', '+'], speedrunner: ['watch'], nova: ['burst', '10'], pandemonium: ['boss', '+'],
-  'last-breath': ['heart', '1'], phoenix: ['fire', '★'], rebirth: ['egg'], supernova: ['burst', 'fire'],
+  'last-breath': ['heart', '1'], phoenix: ['fire', '★'], rebirth: ['egg'], eruption: ['fire', '%'], supernova: ['burst', 'fire'],
   'world-tree': ['tree', '∞'], 'spore-storm': ['mushroom'], 'tsunami-aug': ['wave', '∞'], abyss: ['whirl', '!'],
   // part c: the rest of the list and the trade-offs
   'picky-eater': ['moves', '₽'], insight: ['eye', '2'], mulligan: ['card', '↻'], 'cursed-gold': ['coin', '!'],
