@@ -17,7 +17,7 @@ import { ITEM_FIT } from './data/item-fit.js';
 const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
-const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4;
+const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4, ZOOM = 0.6;
 // the moves on a counter-height cabinet of their own in the middle, the items on a unit of their own on the right (the
 // user's ask, 2026-10-09: the cards were lost among the items under them), and the relics under glass domes on a table
 // of their own on the floor in front of it (their next ask, the same day); every price stands over its ware
@@ -27,7 +27,7 @@ const TABLE = { x0: 8, n: 2, y: 4, h: 0.72 };
 const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
 const SHELF = { x0: 0, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
 const DOOR = { x: 5, y: ROWS - 1 };
-const CLERK = { x: 1.55, y: 1 };
+const CLERK = { x: 1.0, y: 1 };
 
 const C = { blue: ['#5aa0f8', '#3a7ce0', '#2a60c0'], navy: '#1c3270', white: ['#ffffff', '#f2f6fc', '#e2eaf6'],
   tile: ['#eef5ff', '#dceaff'], grout: '#bcd2f0', ink: '#1e2a48', red: '#e84838' };
@@ -790,7 +790,7 @@ function fitShot() {
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = ends(mid); if (t - b > span) lo = mid; else hi = mid; }
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  const d = Math.max(hi, ACROSS / 2 / halfTan);
+  const d = Math.max(hi, ACROSS / 2 / halfTan) * ZOOM;
   const [, b] = ends(d);
   shot = { dist: d, half: d * halfTan, shift: (1 - b) / 2 * h - (h - low - 2), low };
 }

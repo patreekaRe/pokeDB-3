@@ -69,7 +69,7 @@ cards on easels along its top (`cardArt()` paints `.card.small` on a canvas: cos
 `buildItems()`), the items on its top; the relics under glass domes on a RELICS table of their own on the floor in front of
 it (`TABLE`, `buildTable()`; the user's ask, 2026-10-09, with the gondola of goods moved to the left wall). Each ware's
 price stands over it, big, tilted to the camera (red when too dear, SOLD OUT once bought). The camera starts centred on the
-door and follows your Pokémon (it began leaning right, the user's call); a phone's shot is `ACROSS` 8.8 tiles. The wares'
+door and follows your Pokémon (it began leaning right, the user's call); a phone's shot is `ACROSS` 8.8 tiles, then brought in to `ZOOM` 0.6 of that distance (the user's ask, 2026-10-09: much closer). The wares'
 PNGs load with `crossOrigin` (githack can serve them from its CDN's domain, which taints the canvas so WebGL uploads it
 blank: on the user's phone every card and sprite was missing). Kecleon stands behind a
 blue counter on the left with the PC on it (its "Forget ₽N" sign, `.mart3d-sign`). A tap on a ware walks your Pokémon up
