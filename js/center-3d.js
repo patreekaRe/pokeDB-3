@@ -1,29 +1,33 @@
 /* center-3d.js  -  the run's Pokémon Center as a 3D room you walk about (branch pokecenter-3d; the user's ask, 2026-10-09,
    after the Diamond / Pearl / Platinum Centers): orange walls over a red band, a cream tiled floor with the Poké Ball seal,
-   the long red counter with Chansey behind it, the healing machine and its patient monitor, a PC on the counter, benches,
-   plants and an escalator down in each front corner. It is only the scene: restSite() in js/run.js keeps the room's
+   the red counter with a plant at each end and Chansey behind it, the healing machine (one Poké Ball, put in only once you
+   agree to heal) under a big patient monitor, the Clearing's PC (js/hub-pc.js) on the floor before the counter, shelves of
+   towels, books and medicine, benches and an escalator down in each front corner. It is only the scene: restSite() in js/run.js keeps the room's
    choices, text box and bar, and this lays the room under them (a canvas in place of the pixel scene). A tap on the
-   machine, the PC or Chansey walks your Pokémon up to the counter and picks that choice; the doormat walks it to the door
-   and presses Leave. The Secret Base's furniture models (js/base-mesh.js) are the machine, the PC and the decor. */
+   machine, the PC or Chansey (or the floating sign over it) walks your Pokémon up and picks that choice; the doormat walks
+   it to the door and presses Leave. The decor is the Secret Base's furniture models (js/base-mesh.js). */
 
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
-import { HD, sh as shadeOf } from './base-paint.js';
+import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
+import { pcModel, livePc } from './hub-pc.js';
 import { PIECES } from './secret-base.js';
 
 const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;                // the walls' height, so a tall phone shows wall, not sky, over the counter
-const PITCH = 0.62, ACROSS = 7.8, LOOK_Y = 0.9;
-const COUNTER = { x0: 2, x1: 8, y: 2, h: 0.82, d: 0.9 };
+const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8, SHOT_TOP = 3.2;   // a gentle tilt, close in: the room up to the shelves
+const COUNTER = { x0: 3, x1: 7, y: 2, h: 0.95, d: 0.9 };
+const MACHINE = { x: 3.5, y: 0.3 };   // in tiles, behind the counter
+const PC_AT = { x: 7, y: 3 };
 // where your Pokémon stands for each choice (the option's index in restSite()), and what it faces
 const SPOTS = {
   machine: { option: 0, step: { x: 3, y: 3 } },
-  pc: { option: 1, step: { x: 7, y: 3 } },
+  pc: { option: 1, step: { x: 7, y: 4 } },
   nurse: { option: 2, step: { x: 5, y: 3 } },
 };
 const DOOR = { x: 5, y: ROWS - 1 };
@@ -33,10 +37,10 @@ const C = { orange: ['#f8a060', '#f08040', '#e06830'], panel: '#f8b070', red: '#
   tile: ['#fbeec4', '#f4e0a8'], grout: '#e6cc8c', ink: '#2a2238', skirting: '#7a2c1c' };
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
-let room, mon, nurse, monitor, machinePlay, plays = [], blocked = new Set(), mat = null;
+let room, mon, nurse, monitor, machine, plays = [], anchors = {}, blocked = new Set(), mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0;
-let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, leftAt = 0, runId = null, sizeCheck = 0;
+let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, leftAt = 0, runId = null, sizeCheck = 0;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -88,24 +92,133 @@ function skyWindow(f, s, x0, x1, y0, y1) {
   s.fillStyle = '#304050'; s.fillRect(x0, y0, x1 - x0, y1 - y0);
 }
 
-/** The back wall, one painting: windows at either end, shelves of Poké Balls and medicine behind the counter, the red
-    band, POKéMON CENTER on a red sign with the Poké Ball, and round ceiling lights. */
+/* ---------- the cabinet behind the counter: what a real Center keeps to hand, never two shelves alike ---------- */
+
+function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+const BOOKS = ['#c84838', '#3868b8', '#e8b838', '#58985a', '#7a4ab0', '#d87830', '#2a6878', '#efe4cc', '#8a3a48'];
+
+// each draws on the shelf's top edge at y, from x, and says how wide it was
+const STOCK = {
+  books(f, x, y, r) {
+    const { g, rr, lin } = f, n = 3 + Math.floor(r() * 4);
+    let w = 0;
+    for (let i = 0; i < n; i++) {
+      const bw = 1.7 + r() * 1.2, bh = 6 + r() * 3.4, col = BOOKS[Math.floor(r() * BOOKS.length)];
+      const lean = i === n - 1 && r() < 0.5;
+      g.save();
+      if (lean) { g.translate(x + w, y); g.rotate(0.2); g.translate(-(x + w), -y); }
+      rr(x + w, y - bh, bw, bh, 0.35, lin(x + w, 0, x + w + bw, 0, [col, col, '#00000030']));
+      g.fillStyle = 'rgba(255,255,255,0.45)'; g.fillRect(x + w + 0.3, y - bh + 1, bw - 0.6, 0.45); g.fillRect(x + w + 0.3, y - 1.6, bw - 0.6, 0.45);
+      g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x + w + 0.5, y - bh * 0.62, bw - 1, bh * 0.22);
+      g.restore();
+      w += bw + 0.15 + (lean ? 1.8 : 0);
+    }
+    return w;
+  },
+  binders(f, x, y, r) {
+    const { g, rr } = f, n = 2 + Math.floor(r() * 3), col = ['#e85848', '#3a8ad8', '#f8f0e0'][Math.floor(r() * 3)];
+    for (let i = 0; i < n; i++) {
+      rr(x + i * 2.9, y - 9.2, 2.7, 9.2, 0.5, col);
+      rr(x + i * 2.9 + 0.5, y - 7.6, 1.7, 2.4, 0.3, '#ffffff');
+      g.fillStyle = '#60606a'; g.beginPath(); g.arc(x + i * 2.9 + 1.35, y - 2.2, 0.55, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(x + i * 2.9 + 2.2, y - 9.2, 0.5, 9.2);
+    }
+    return n * 2.9;
+  },
+  frame(f, x, y) {
+    const { g, rr, lin } = f;
+    rr(x, y - 7.2, 6, 7.2, 0.6, '#b8844c');
+    rr(x + 0.8, y - 6.4, 4.4, 5.6, 0.3, lin(0, y - 6.4, 0, y - 0.8, ['#9cd0f4', '#d8f0ff']));
+    g.fillStyle = '#f8b8c8'; g.beginPath(); g.ellipse(x + 3, y - 2.6, 1.6, 1.8, 0, 0, Math.PI * 2); g.fill();   // Chansey in the photo
+    g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(x + 3, y - 2.1, 0.7, 0.6, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#6ab858'; g.fillRect(x + 0.8, y - 1.6, 4.4, 0.8);
+    return 6;
+  },
+  potions(f, x, y, r) {
+    const { g, rr, lin } = f, n = 2 + Math.floor(r() * 3);
+    const kinds = [['#a868e0', '#7a40b0'], ['#f0c838', '#c09018'], ['#e86090', '#b03060'], ['#58b0f0', '#2a78c0']];
+    for (let i = 0; i < n; i++) {
+      const [c0, c1] = kinds[Math.floor(r() * kinds.length)], px = x + i * 4.2, h = 5.2 + r() * 1.4;
+      rr(px, y - h, 3.4, h, 1.1, lin(px, 0, px + 3.4, 0, [c0, c0, c1]));
+      rr(px + 0.4, y - h * 0.62, 2.6, 1.8, 0.3, '#ffffff');
+      rr(px + 1, y - h - 1.4, 1.4, 1.6, 0.3, '#e8e8f0');
+      rr(px + 0.5, y - h - 2.3, 2.6, 1, 0.4, '#d0d0dc');
+      g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(px + 0.55, y - h + 0.8, 0.5, h * 0.4);
+    }
+    return n * 4.2;
+  },
+  jar(f, x, y, r) {
+    const { g, rr } = f, col = ['#5888f0', '#f06868', '#f8c040'][Math.floor(r() * 3)];
+    rr(x, y - 6.4, 5.2, 6.4, 1.2, 'rgba(220,240,255,0.55)');
+    for (let i = 0; i < 9; i++) { g.fillStyle = i % 3 ? col : '#ffffff'; g.beginPath(); g.arc(x + 1.2 + (i % 3) * 1.4, y - 1.2 - Math.floor(i / 3) * 1.3, 0.7, 0, Math.PI * 2); g.fill(); }
+    rr(x - 0.2, y - 7.4, 5.6, 1.3, 0.5, '#c86848');
+    g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(x + 0.6, y - 5.8, 0.5, 4);
+    return 5.2;
+  },
+  towels(f, x, y, r) {
+    const { g, rr } = f, n = 2 + Math.floor(r() * 2), w = 8 + r() * 1.5;
+    for (let i = 0; i < n; i++) {
+      const col = i % 2 ? '#ffffff' : ['#f8b8cc', '#a8d8f0'][Math.floor(r() * 2)];
+      rr(x + (i % 2) * 0.4, y - (i + 1) * 2.3, w, 2.2, 1, col);
+      g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(x + (i % 2) * 0.4 + 0.8, y - (i + 1) * 2.3 + 1.4, w - 1.6, 0.35);
+    }
+    return w + 0.4;
+  },
+  kit(f, x, y) {
+    const { rr } = f;
+    rr(x, y - 5.4, 7.4, 5.4, 0.8, '#f8f6f2');
+    rr(x + 2.9, y - 4.6, 1.6, 3.8, 0.2, '#e03830'); rr(x + 1.8, y - 3.5, 3.8, 1.6, 0.2, '#e03830');
+    rr(x + 2.6, y - 6.2, 2.2, 0.9, 0.4, '#9a9aa6');
+    return 7.4;
+  },
+  rolls(f, x, y, r) {
+    const { g, rr } = f, n = 2 + Math.floor(r() * 2);
+    for (let i = 0; i < n; i++) {
+      rr(x + i * 2.8, y - 3.4, 2.6, 3.4, 1.2, '#fbfaf6');
+      g.fillStyle = '#d8d4cc'; g.beginPath(); g.ellipse(x + i * 2.8 + 1.3, y - 3.4, 1.3, 0.5, 0, 0, Math.PI * 2); g.fill();
+    }
+    return n * 2.8;
+  },
+  plant(f, x, y, r) {
+    const { g, rr } = f;
+    for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#58a848' : '#3e8a38'; g.save(); g.translate(x + 2.4, y - 3.6); g.rotate(-1.2 + i * 0.48 + r() * 0.2); g.beginPath(); g.ellipse(0, -2.4, 0.9, 2.6, 0, 0, Math.PI * 2); g.fill(); g.restore(); }
+    rr(x + 0.6, y - 3.8, 3.6, 3.8, 0.6, '#d07848');
+    rr(x + 0.3, y - 4.2, 4.2, 1, 0.4, '#e08858');
+    return 4.8;
+  },
+};
+const LEVELS = [['books', 'frame', 'binders', 'books', 'plant'], ['potions', 'jar', 'potions', 'towels', 'kit'], ['towels', 'kit', 'rolls', 'towels', 'jar']];
+
+/** A wooden cabinet of three shelves on the wall, each stocked differently, a soft shadow under every board. */
+function cabinet(f, x0, x1, y0, y1) {
+  const { g, rr, lin } = f, r = seeded(11);
+  rr(x0 - 2, y0 - 2, x1 - x0 + 4, y1 - y0 + 4, 1.5, lin(x0, 0, x1, 0, ['#b8723c', '#c8844c', '#a8622e']));
+  rr(x0, y0, x1 - x0, y1 - y0, 0.8, lin(0, y0, 0, y1, ['#f6e6c8', '#ead2aa']));
+  const rows = 3, step = (y1 - y0) / rows;
+  for (let i = 0; i < rows; i++) {
+    const base = y0 + step * (i + 1) - 1.4, kinds = LEVELS[i].slice().sort(() => r() - 0.5);
+    g.fillStyle = lin(0, base - 8, 0, base, ['rgba(120,70,30,0)', 'rgba(120,70,30,0.18)']); g.fillRect(x0, base - 8, x1 - x0, 8);
+    let x = x0 + 1.5 + r() * 2, k = 0;
+    while (x < x1 - 6) {
+      const w = STOCK[kinds[k % kinds.length]](f, x, base, r);
+      x += w + 1.4 + r() * 2.4;
+      k++;
+    }
+    rr(x0 - 1, base, x1 - x0 + 2, 1.6, 0.4, lin(0, base, 0, base + 1.6, ['#d89458', '#9a5a28']));
+  }
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(x0, y0, 1.2, y1 - y0);
+}
+
+/** The back wall, one painting: windows at either end, the cabinet behind the counter, the red band, POKéMON CENTER on
+    a red sign with the Poké Ball, and round ceiling lights. */
 function wallArt() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
   wallBands(f, W);
   skyWindow(f, s, wx(0.15), wx(1.7), wy(2.15), wy(0.95));
   skyWindow(f, s, wx(9.3), wx(10.85), wy(2.15), wy(0.95));
-  // shelves behind Chansey and the PC
-  const sx0 = wx(5.1), sx1 = wx(8.9), sy0 = wy(2.3), sy1 = wy(0.95);
-  rr(sx0 - 1.5, sy0 - 1.5, sx1 - sx0 + 3, sy1 - sy0 + 3, 1.5, '#a8582c');
-  rr(sx0, sy0, sx1 - sx0, sy1 - sy0, 1, lin(0, sy0, 0, sy1, ['#fff2dc', '#f2dcb8']));
-  for (const y of [sy0 + (sy1 - sy0) / 2, sy1 - 1.5]) rr(sx0, y, sx1 - sx0, 1.6, 0.4, '#c87840');
-  for (let x = sx0 + 4; x < sx1 - 2; x += 6.5) {
-    ball(g, x, sy0 + (sy1 - sy0) / 2 - 3.4, 2.8);
-    const top = sy1 - 1.5, col = ['#b070e0', '#58a8f8', '#f87878', '#58c868'][Math.round((x - sx0) / 6.5) % 4];
-    rr(x - 2, top - 7, 4, 7, 1, col); rr(x - 1, top - 9, 2, 2.4, 0.5, '#e8e8f0');
-    g.fillStyle = 'rgba(255,255,255,0.45)'; g.fillRect(x - 1.4, top - 6, 0.8, 4.6);
-  }
+  // the cabinet behind Chansey
+  cabinet(f, wx(5.1), wx(8.9), wy(2.42), wy(0.62));
   // the sign
   const sw = 6.4 * U, sx = W / 2 - sw / 2, sy = wy(4.3);
   rr(sx - 2, sy - 2, sw + 4, 26, 6, '#ffffff');
@@ -190,23 +303,28 @@ function drawVitals() {
   const sig = `${Math.round(k.now)}|${Math.round(k.coming)}|${on}|${m.faceReady}`;
   if (sig === k.drawn) return;
   k.drawn = sig;
-  const W = c.width, H = c.height, max = opts.maxHp;
-  g.fillStyle = '#0c2414'; g.fillRect(0, 0, W, H);
-  g.strokeStyle = 'rgba(120,255,160,0.08)'; g.lineWidth = 2;
-  for (let y = 3; y < H; y += 6) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-  if (m.face) { g.imageSmoothingEnabled = false; g.drawImage(m.face, 8, 10, 104, 104); }
-  g.fillStyle = '#9cffb4'; g.font = 'bold 26px "Trebuchet MS", sans-serif'; g.textAlign = 'left'; g.textBaseline = 'top';
-  g.fillText(opts.name.toUpperCase(), 124, 14);
-  const bx = 124, by = 54, bw = W - bx - 16, bh = 20;
-  g.fillStyle = '#1c4026'; g.fillRect(bx, by, bw, bh);
+  const W = c.width, H = c.height, max = opts.maxHp, font = (n) => `900 ${n}px "Trebuchet MS", sans-serif`;
+  g.fillStyle = '#0a2012'; g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(120,255,160,0.06)';
+  for (let y = 0; y < H; y += 5) g.fillRect(0, y, W, 2);
+  g.shadowColor = 'rgba(120,255,160,0.7)'; g.shadowBlur = 10;
+  if (m.face) { g.imageSmoothingEnabled = false; g.drawImage(m.face, 6, 30, 150, 150); }
+  g.fillStyle = '#a8ffc0'; g.font = font(30); g.textAlign = 'left'; g.textBaseline = 'middle';
+  g.fillText(opts.name.toUpperCase(), 166, 30);
+  const bx = 166, by = 56, bw = W - bx - 18, bh = 40;
+  g.fillStyle = '#163a20'; g.fillRect(bx, by, bw, bh);
   const fill = k.now / max, add = k.coming / max;
   g.fillStyle = fill > 0.5 ? '#58f080' : fill > 0.2 ? '#f8d048' : '#f86048';
   g.fillRect(bx, by, bw * fill, bh);
-  if (on && add) { g.fillStyle = 'rgba(160,255,190,0.6)'; g.fillRect(bx + bw * fill, by, bw * add, bh); }
-  g.strokeStyle = '#9cffb4'; g.lineWidth = 2; g.strokeRect(bx, by, bw, bh);
-  g.fillStyle = '#9cffb4'; g.font = 'bold 24px "Trebuchet MS", sans-serif';
-  g.fillText(`HP ${Math.round(k.now)}/${max}`, bx, 86);
-  if (on && k.coming >= 1 && !healing && !k.fill) { g.textAlign = 'right'; g.fillStyle = '#d8ffe0'; g.fillText(`+${Math.round(k.coming)}`, W - 16, 86); }
+  if (on && add) { g.fillStyle = 'rgba(180,255,200,0.55)'; g.fillRect(bx + bw * fill, by, bw * add, bh); }
+  g.strokeStyle = '#a8ffc0'; g.lineWidth = 3; g.strokeRect(bx, by, bw, bh);
+  g.fillStyle = '#a8ffc0'; g.font = font(26); g.fillText('HP', bx, 152);
+  g.fillStyle = vitals.fill ? '#ffffff' : '#d8ffe2'; g.font = font(64);
+  g.fillText(`${Math.round(k.now)}/${max}`, bx + 44, 150);
+  if (on && k.coming >= 1 && !healing && !k.fill) { g.textAlign = 'right'; g.fillStyle = '#d8ffe0'; g.font = font(52); g.fillText(`+${Math.round(k.coming)}`, W - 18, 150); }
+  g.shadowBlur = 0;
+  g.fillStyle = '#58c070'; g.font = font(20); g.textAlign = 'left';
+  g.fillText(k.fill ? 'HEALING...' : k.now >= max ? 'FULL HP' : 'PATIENT STATUS', bx, 200);
   m.t.needsUpdate = true;
 }
 
@@ -284,6 +402,78 @@ function escalator(tx) {
   for (let ty = 5; ty < ROWS; ty++) { blocked.add(key(tx, ty)); blocked.add(key(tx + 1, ty)); }
 }
 
+/** A box with rounded edges (js/hub-pc.js's). */
+function rbox(w, h, d, r) {
+  r = Math.min(r, w / 2, h / 2, d / 2) - 1e-4;
+  const n = 5, g = new THREE.BoxGeometry(1, 1, 1, n, n, n).toNonIndexed();
+  const pos = g.attributes.position, nor = g.attributes.normal, half = 0.5 / n, v = new THREE.Vector3();
+  const bx = w / 2 - r, by = h / 2 - r, bz = d / 2 - r;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    v.set(x - Math.sign(x) * half, y - Math.sign(y) * half, z - Math.sign(z) * half).normalize();
+    pos.setXYZ(i, bx * Math.sign(x) + v.x * r, by * Math.sign(y) + v.y * r, bz * Math.sign(z) + v.z * r);
+    nor.setXYZ(i, v.x, v.y, v.z);
+  }
+  return g;
+}
+
+/** The Poké Ball's skin on a sphere: red over a black band over white (its button is a part of its own). */
+function ballSkin() {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 128;
+  const g = c.getContext('2d'), red = g.createLinearGradient(0, 0, 0, 60);
+  red.addColorStop(0, '#ff6a5a'); red.addColorStop(1, '#e02a20');
+  g.fillStyle = red; g.fillRect(0, 0, 256, 60);
+  g.fillStyle = '#f8f8fa'; g.fillRect(0, 68, 256, 60);
+  g.fillStyle = '#22222a'; g.fillRect(0, 59, 256, 10);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** The healing machine: a rounded white cabinet banded red, a console on its front, a dish on top under a glowing arch.
+    Its one Poké Ball is only put in once you agree to heal (heal() in mountCenter()). */
+function buildMachine() {
+  const g = new THREE.Group(), add = (geo, m, x, y, z) => { const mesh = new THREE.Mesh(geo, m); mesh.position.set(x, y, z); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
+  const white = std({ color: '#f6f5fa', roughness: 0.3 }), red = std({ color: C.red, roughness: 0.35 }), grey = std({ color: '#c8ccd8', roughness: 0.35, metalness: 0.2 });
+  const dark = std({ color: '#2c3040', roughness: 0.25, metalness: 0.3 });
+  const glow = std({ color: '#f8a8c8', emissive: new THREE.Color('#ff70a8'), emissiveIntensity: 0.35, roughness: 0.3 });
+  add(rbox(1.6, 0.95, 0.8, 0.12), white, 0, 0.475, 0);
+  add(rbox(1.64, 0.1, 0.84, 0.05), red, 0, 0.8, 0);
+  add(rbox(1.64, 0.06, 0.84, 0.03), red, 0, 0.1, 0);
+  add(rbox(0.62, 0.26, 0.05, 0.03), dark, -0.32, 0.5, 0.4);
+  for (let i = 0; i < 3; i++) add(new THREE.SphereGeometry(0.03, 12, 8), std({ color: ['#58f080', '#f8d048', '#58b0f8'][i], emissive: new THREE.Color(['#58f080', '#f8d048', '#58b0f8'][i]), emissiveIntensity: 0.8 }), -0.5 + i * 0.12, 0.5, 0.43);
+  for (const [x, col] of [[0.3, '#e03830'], [0.48, '#3878e0']]) add(new THREE.CylinderGeometry(0.06, 0.06, 0.04, 20), std({ color: col, roughness: 0.3 }), x, 0.5, 0.41).rotation.x = Math.PI / 2;
+  add(rbox(1.3, 0.06, 0.62, 0.03), grey, 0, 0.98, 0);
+  add(new THREE.CylinderGeometry(0.22, 0.24, 0.06, 40), dark, 0, 1.03, 0.04);
+  const ring = add(new THREE.TorusGeometry(0.23, 0.025, 12, 48), glow, 0, 1.06, 0.04);
+  ring.rotation.x = Math.PI / 2;
+  const arch = add(new THREE.TorusGeometry(0.5, 0.045, 14, 48, Math.PI), glow, 0, 1.0, -0.2);
+  arch.castShadow = false;
+  for (const x of [-0.5, 0.5]) add(rbox(0.12, 0.08, 0.14, 0.03), white, x, 1.0, -0.2);
+  // the ball, hidden till it's needed: a true sphere with its button facing out
+  const ball = new THREE.Group(), R = 0.16;
+  const skin = std({ map: ballSkin(), roughness: 0.22, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 });
+  const sphere = new THREE.Mesh(new THREE.SphereGeometry(R, 48, 32), skin);
+  sphere.castShadow = true;
+  const ink = std({ color: '#22222a', roughness: 0.3 }), knob = std({ color: '#f8f8fa', roughness: 0.2, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 });
+  const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.066, 0.066, 0.03, 32), ink);
+  rim.rotation.x = Math.PI / 2; rim.position.z = R - 0.005;
+  const button = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.044, 0.03, 32), knob);
+  button.rotation.x = Math.PI / 2; button.position.z = R + 0.008;
+  ball.add(sphere, rim, button);
+  ball.visible = false;
+  const x = tileX(MACHINE.x), z = -ROWS / 2 + 0.45;
+  g.position.set(x, 0, z);
+  g.traverse(o => { o.userData.spot = 'machine'; });
+  room.add(g);
+  scene.add(ball);   // in world space, so it can fly from your Pokémon to the dish
+  machine = { group: g, ball, R, skin, knob, glow, dish: new THREE.Vector3(x, 1.06 + R, z + 0.04) };
+  blocked.add(key(3, 0)); blocked.add(key(4, 0));
+  anchors.machine = new THREE.Vector3(x, 1.1, z + 0.35);
+}
+
 function buildRoom() {
   room = new THREE.Group();
   scene.add(room);
@@ -328,31 +518,41 @@ function buildRoom() {
   // a low back counter along the wall, under the shelves
   box(3.9, 0.6, 0.6, [red, red, top, red, std({ color: '#f05848', roughness: 0.6 }), red], tileX(7) - 0.05, 0.3, -ROWS / 2 + 0.3);
 
-  // the healing machine behind the counter, its patient monitor on the wall over it
-  const machine = piece('pokecenter', tileX(3) + 0.5, tileZ(0) + 0.2, { spot: 'machine', scale: 1.1 });
-  machinePlay = machine?.userData.play ?? null;
+  // the healing machine behind the counter, the patient monitor on the wall over it
+  buildMachine();
   const mc = document.createElement('canvas');
-  mc.width = 384; mc.height = 128;
+  mc.width = 512; mc.height = 220;
   const mt = new THREE.CanvasTexture(mc);
   mt.colorSpace = THREE.SRGBColorSpace;
-  const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.5), new THREE.MeshBasicMaterial({ map: mt, toneMapped: false }));
-  const bezel = box(1.66, 0.66, 0.08, std({ color: '#e8e8f0', roughness: 0.4 }), tileX(3) + 0.5, 2.0, -ROWS / 2 + 0.05);
+  mt.anisotropy = 4;
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.9), new THREE.MeshBasicMaterial({ map: mt, toneMapped: false }));
+  const bezel = box(2.26, 1.06, 0.08, std({ color: '#e8e8f0', roughness: 0.4 }), tileX(MACHINE.x), 2.42, -ROWS / 2 + 0.07);
   screen.position.set(0, 0, 0.045);
   bezel.add(screen);
   bezel.traverse(o => { o.userData.spot = 'machine'; });
   monitor = { c: mc, g: mc.getContext('2d'), t: mt, face: null };
-  // the PC on the counter's right end
-  piece('pc', tileX(7), cz - 0.05, { spot: 'pc', scale: 0.72, y: H });
 
-  // plants in the back corners, benches by the side walls, a Poké Ball stand and the TM case at the back
+  // the Clearing's PC, on the floor before the counter's right end
+  const glows = [], pc = pcModel(THREE, glows);
+  for (const m of glows) m.emissiveIntensity = 0.85;
+  pc.scale.setScalar(0.62);
+  pc.position.set(tileX(PC_AT.x), 0, tileZ(PC_AT.y) - 0.05);
+  pc.rotation.y = -0.25;   // turned a little, so its side shows
+  pc.traverse(o => { o.userData.spot = 'pc'; });
+  room.add(pc);
+  blocked.add(key(PC_AT.x, PC_AT.y));
+  anchors.pc = new THREE.Vector3(pc.position.x, 1.35, pc.position.z);
+
+  // a tall plant at each end of the counter, plants in the back corners, benches by the side walls, a Poké Ball stand and
+  // the TM case at the back
+  piece('centerplant', tileX(COUNTER.x0) - 1.3, cz + 0.12, { scale: 1.2 });
+  piece('centerplant', tileX(COUNTER.x1) + 1.3, cz + 0.12, { scale: 1.2 });
   piece('centerplant', tileX(0), tileZ(0), { scale: 1.15 }); blocked.add(key(0, 0));
   piece('centerplant', tileX(10), tileZ(0), { scale: 1.15 }); blocked.add(key(10, 0));
   piece('balldisplay', tileX(1), tileZ(0)); blocked.add(key(1, 0));
   piece('tmcase', tileX(9), tileZ(0)); blocked.add(key(9, 0));
   piece('waitbench', tileX(0) - 0.05, tileZ(2) + 0.5, { turn: Math.PI / 2 }); blocked.add(key(0, 2)); blocked.add(key(0, 3));
   piece('waitbench', tileX(10) + 0.05, tileZ(2) + 0.5, { turn: -Math.PI / 2 }); blocked.add(key(10, 2)); blocked.add(key(10, 3));
-  piece('centerplant', tileX(1), tileZ(4), { scale: 0.9 }); blocked.add(key(1, 4));
-  piece('centerplant', tileX(9), tileZ(4), { scale: 0.9 }); blocked.add(key(9, 4));
   for (const tx of ESCALATORS) escalator(tx);
 
   const { step, mat: m } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#c8b088' }));
@@ -423,6 +623,8 @@ function onTap(e) {
   if (busy || !alive()) return;
   if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over')) return;
   if (document.querySelector('dialog[open]')) return;
+  const sign = signAt(e.clientX, e.clientY);
+  if (sign) { playSound('select'); return goTo(sign); }
   const r = view.getBoundingClientRect();
   const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   const ray = new THREE.Raycaster();
@@ -458,7 +660,7 @@ function below() {
 }
 
 /* The shot: ACROSS tiles at least, and far enough back that the room from the doorstep up to the sign fits over the
-   bar and text box; a lens shift sets the doorstep just over them, so a shot held back by the room's width shows more
+   bar and text box (SHOT_TOP: the cabinet's top, the sign above it left to a tall phone); a lens shift sets the doorstep just over them, so a shot held back by the room's width shows more
    wall, not more plinth. */
 function fitShot() {
   const h = viewH;
@@ -467,7 +669,7 @@ function fitShot() {
   const topGap = 10, low = below(), avail = Math.max(120, h - topGap - low), room = 2 * avail / h * 0.96;
   const span = (d) => {
     aimCamera(0, d);
-    return [new THREE.Vector3(0, 4.7, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
+    return [new THREE.Vector3(0, SHOT_TOP, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
   };
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid); if (t - b > room) lo = mid; else hi = mid; }
@@ -527,23 +729,53 @@ function frame(now) {
   drawVitals();
   if (!calm && mat) mat.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
+  placeSigns();
+  if (!calm) livePc(now);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
   raf = requestAnimationFrame(frame);
 }
 
-/** The machine's six balls: lit one by one as they go in, then flashing together while the chime plays. */
-function setBalls(n, on = 1) {
-  (machinePlay?.balls ?? []).forEach((b, i) => b.children.forEach(m => { m.material.emissiveIntensity = i < n ? 0.95 * on : 0; }));
+/** The machine's glow and the ball's: `k` 0 at rest to 1 lit. */
+function glowMachine(k) {
+  machine.glow.emissiveIntensity = 0.35 + k * 1.4;
+  machine.skin.emissiveIntensity = k * 0.35;
+  machine.knob.emissiveIntensity = k * 1.2;
 }
 
+const ease = (k) => k * k * (3 - 2 * k);
+
+/** Where the ball is on a hop between two points: an arc `up` high, `k` 0 to 1. */
+function arc(from, to, k, up) {
+  const e = ease(k);
+  return new THREE.Vector3(from.x + (to.x - from.x) * e, from.y + (to.y - from.y) * e + Math.sin(Math.PI * k) * up, from.z + (to.z - from.z) * e);
+}
+
+/** The ball: thrown from your Pokémon over the counter into the dish, flashing there while the chime plays, then hopping
+    back to it and gone. */
 function tickHeal(now) {
+  const B = machine.ball, here = () => new THREE.Vector3(walker.x, 0.55, walker.z);
   if (healing) {
     const k = Math.min(1, (now - healing.from) / healing.ms);
-    setBalls(Math.ceil(k * 6));
+    B.visible = true;
+    if (calm) B.position.copy(machine.dish);
+    else {
+      const fly = Math.min(1, k / 0.75), settle = Math.max(0, (k - 0.75) / 0.25);
+      B.position.copy(arc(here(), machine.dish, fly, 1.1));
+      if (fly >= 1) B.position.y += Math.abs(Math.sin(settle * Math.PI * 2)) * 0.12 * (1 - settle);
+      B.rotation.x = fly < 1 ? -fly * Math.PI * 4 : 0;
+    }
+    B.scale.setScalar(calm ? 1 : Math.min(1, 0.3 + k * 2));
+    B.rotation.y = 0;
+    glowMachine(k >= 1 ? 0.3 : 0);
     if (k >= 1) { const done = healing.done; healing = null; done(); }
   } else if (flashing) {
-    if (now > flashing.to) { flashing = null; setBalls(0); nurse.hopUntil = now + 600; }
-    else setBalls(6, calm ? 1 : Math.floor((now - flashing.from) / 220) % 2 ? 0.25 : 1);
+    if (now > flashing.to) { flashing = null; going = { from: now, ms: calm ? 1 : 650 }; glowMachine(0); nurse.hopUntil = now + 600; playSound('select'); }
+    else glowMachine(calm ? 0.8 : 0.25 + 0.75 * (0.5 + 0.5 * Math.cos((now - flashing.from) / 200 * Math.PI)));
+  } else if (going) {
+    const k = Math.min(1, (now - going.from) / going.ms);
+    B.position.copy(arc(machine.dish, here(), k, 0.9));
+    B.scale.setScalar(1 - ease(k) * 0.8);
+    if (k >= 1) { going = null; B.visible = false; walker.hopUntil = now + 500; }
   }
   if (vitals.fill) {
     const f = vitals.fill, k = Math.min(1, (now - f.from) / f.ms);
@@ -551,6 +783,31 @@ function tickHeal(now) {
     vitals.coming = (f.b - f.a) * (1 - k);
     if (k >= 1) vitals.fill = null;
   }
+}
+
+/** The room's own signs (Heal, Forget, Upgrade), floating over the machine, the PC and Chansey. */
+function placeSigns() {
+  const btns = document.querySelectorAll('#reward-options.c3d .reward-option'), r = view.getBoundingClientRect();
+  for (const [kind, spot] of Object.entries(SPOTS)) {
+    const b = btns[spot.option], at = anchors[kind];
+    if (!b || !at) continue;
+    const p = at.clone().project(camera), x = Math.round(r.left + (p.x + 1) / 2 * r.width), y = Math.round(r.top + (1 - p.y) / 2 * r.height);
+    if (b.dataset.at === `${x},${y}`) continue;
+    b.dataset.at = `${x},${y}`;
+    Object.assign(b.style, { left: `${x}px`, top: `${y}px`, width: '0px', height: '0px' });
+    const label = b.querySelector('.center-label');
+    if (label) label.style.marginLeft = label.style.marginBottom = '';   // the pixel room's nudges
+  }
+}
+
+/** The choice whose floating sign is under a tap, if any. */
+function signAt(x, y) {
+  const btns = document.querySelectorAll('#reward-options.c3d .reward-option');
+  for (const [kind, spot] of Object.entries(SPOTS)) {
+    const r = btns[spot.option]?.querySelector('.center-label')?.getBoundingClientRect();
+    if (r && x >= r.left - 6 && x <= r.right + 6 && y >= r.top - 6 && y <= r.bottom + 12) return kind;
+  }
+  return null;
 }
 
 function unmount() {
@@ -562,7 +819,8 @@ function unmount() {
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   leftAt = performance.now();
-  busy = false; aim = null; healing = null; flashing = null;
+  busy = false; aim = null; healing = null; flashing = null; going = null;
+  if (machine) machine.ball.visible = false;
 }
 
 /* ---------- in ---------- */
@@ -598,6 +856,7 @@ export function warmCenter() {
     nurse.board.rotation.x = -PITCH;
     nurse.group.position.set(tileX(5), 0.12, tileZ(1));
     nurse.group.traverse(n => { n.userData.spot = 'nurse'; });
+    anchors.nurse = new THREE.Vector3(tileX(5), 0.12 + nurse.top + 0.15, tileZ(1));
     scene.add(nurse.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
   })();
@@ -630,9 +889,12 @@ export async function mountCenter(o) {
   }
   walker.path = [];
   vitals = { now: o.hp, coming: o.heal, blink: 0, drawn: '' };
-  setBalls(0);
+  machine.ball.visible = false;
+  glowMachine(0);
   document.body.append(view);
   document.getElementById('reward-options').classList.add('c3d');
+  // one word a sign, so the three fit side by side this close in (the hint keeps the detail)
+  for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = label.textContent.replace(/^(Heal|Upgrade|Forget) .*$/, '$1').replace(/ card$/, '');
   addEventListener('click', onTap, true);
   addEventListener('resize', resize);
   resize();
@@ -640,14 +902,14 @@ export async function mountCenter(o) {
   if (!raf) raf = requestAnimationFrame(frame);
   requestAnimationFrame(() => view.classList.add('on'));
   return {
-    /** The balls going into the machine one by one; resolves once they're all in. */
+    /** Your Pokémon's ball thrown into the machine's dish; resolves once it's in. */
     heal() {
       busy = true;
       walker.path = []; aim = null;
       walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-      return new Promise(done => { healing = { from: performance.now(), ms: calm ? 150 : 1700, done }; });
+      return new Promise(done => { healing = { from: performance.now(), ms: calm ? 150 : 1300, done }; });
     },
-    /** The balls flashing while the chime plays, and the monitor's bar filling from `from` to `to`. */
+    /** The ball flashing while the chime plays, and the monitor's bar filling from `from` to `to`. */
     flash(seconds, from, to) {
       const now = performance.now();
       flashing = { from: now, to: now + seconds * 1000 };

@@ -4,6 +4,7 @@
    rounded. The screen is its glow (glowMats in js/hub-3d.js) and its scan lines roll (livePc()). */
 
 let T, screen = null;
+const screens = [];   // the Clearing's PC and the walk-in Center's (js/center-3d.js) roll together
 
 /** A box with rounded edges (js/base-mesh.js's rbox()). */
 function rbox(w, h, d, r) {
@@ -68,9 +69,8 @@ function paintScreen(now) {
 
 /** Rolls the screen's scan lines, ~15 times a second. */
 export function livePc(now) {
-  if (!screen || now - screen.at < 66) return;
-  screen.at = now;
-  paintScreen(now);
+  if (!screens.length || now - screens[0].at < 66) return;
+  for (const s of screens) { screen = s; s.at = now; paintScreen(now); }
 }
 
 /** The PC, its feet at the origin, its front towards +z. `glows` takes the screen's material (js/hub-3d.js's glowMats). */
@@ -135,6 +135,7 @@ export function pcModel(THREE, glows) {
   const t = new T.CanvasTexture(c);
   t.colorSpace = T.SRGBColorSpace; t.anisotropy = 4;
   screen = { c, g: c.getContext('2d'), t, at: 0 };
+  screens.push(screen);
   paintScreen(0);
   const sg = new T.ShapeGeometry(screenShape(new T.Shape(), -0.01), 24), uv = sg.attributes.uv, sp = sg.attributes.position;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (sp.getX(i) + SX) / (2 * SX), (sp.getY(i) - SY0) / (SY1 - SY0));

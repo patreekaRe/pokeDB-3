@@ -41,7 +41,7 @@ import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, martProps, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -2044,11 +2044,13 @@ function restSite() {
     import('./center-3d.js').then(m => m.mountCenter({
       run: thisRun, hp: run.hp, maxHp: run.maxHp, heal: banned ? 0 : heal, name: stageName(run.starter, run.stage),
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
-      onPick: (i) => {
+      onPick: async (i) => {
         const btn = box.querySelectorAll('.reward-option')[i];
         if (!btn) return;
         if (btn.disabled) { playSound('cancel'); return sayLines([btn.querySelector('.center-label')?.title ?? '']); }
-        btn.click();
+        // resting can't be taken back, so the machine asks first (Chansey's and the PC's pickers have their own Back)
+        if (i === 0 && !await confirmDialog(heal ? `Heal ${heal} HP at the machine?` : "You're already at full HP. Rest anyway?", 'Heal')) return;
+        if (run === thisRun && box.isConnected) btn.click();
       },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
     })).then(ctl => { room3d = ctl; placeCenterSpots(); }).catch(err => console.warn('3D Center unavailable', err))

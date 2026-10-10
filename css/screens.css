@@ -5307,9 +5307,13 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 
 /* ---------- the walk-in 3D Pokémon Center (js/center-3d.js, branch pokecenter-3d) ---------- */
 /* its canvas sits where the pixel scene does, under the room's bar and text box; the choices are the room's own
-   machine, PC and Chansey, so the pixel room's signs, nurse and monitor go */
+   machine, PC and Chansey, so the pixel room's nurse and monitor go */
 .center3d-view { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; touch-action: manipulation; }
 .center3d-view.on { opacity: 1; }
-#reward-options:is(.c3d, .c3d-wait) :is(.reward-option, .center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
+#reward-options.c3d-wait :is(.reward-option, .center-nurse, .center-vitals), #reward-options.c3d :is(.center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
+/* the signs float over the 3D machine, PC and Chansey (placeSigns()); a tap on one goes through to the room, which walks
+   your Pokémon over first */
+#reward-options.c3d .reward-option { pointer-events: none; background: none; }
 body:has(#reward-options.c3d) #reward-screen { cursor: pointer; }
 body:has(#reward-options.c3d) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+#reward-options.c3d .center-label { bottom: 8px; }

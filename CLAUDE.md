@@ -144,13 +144,17 @@ live site.
 - **The walk-in 3D Pokémon Center** (branch `pokecenter-3d` until the user says, 2026-10-09, their ask after DPPt's
   Centers): `js/center-3d.js` lays a 3D room under the run's Center (`restSite()` in `js/run.js` keeps its choices,
   text box and room bar; `mountCenter()` puts a canvas where the pixel scene was, `#reward-options.c3d` hides the
-  pixel room's signs, nurse and monitor): orange walls over a red band, a cream tiled floor with the Poké Ball seal and a
-  red runner, the red counter with Chansey behind it (a tap: PP Up), the Secret Base's Healing machine (a tap: Rest; its
-  six balls light one by one, then flash with the chime) under a patient monitor drawn live, a Storage PC on the counter
-  (a tap: Forget, or why not), benches, plants and an escalator down in each front corner; the doormat presses Leave.
-  Your Pokémon walks to the spot first; coming back from a deck picker it stands where it was. `warmCenter()` builds it
-  while the map is up (`warmCenter3d()`); without Three.js the pixel room stays. `?center` (`&starter=id`) walks a
-  throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
+  pixel room's nurse and monitor and floats the choices' signs, one word each, over the 3D things, `placeSigns()`):
+  orange walls over a red band, a cream tiled floor with the Poké Ball seal and a red runner, the red counter with a tall
+  plant at each end and Chansey behind it (Upgrade), a modelled healing machine (Heal, after a "Heal N HP?" ask; its one
+  Poké Ball, a true sphere, appears only then: thrown from your Pokémon into the dish, flashing with the chime, hopping
+  back, `tickHeal()`) under a big patient monitor counting the HP up, the Clearing's PC model (`pcModel()`, js/hub-pc.js,
+  whose screens now roll together) on the floor before the counter (Forget, or why not), a cabinet of varied stock
+  (`STOCK` / `cabinet()`: books, binders, potions, jars, towels, a first-aid kit, a photo, a plant; never two shelves
+  alike), benches, an escalator down in each front corner; the doormat presses Leave. A gentle tilt, close in
+  (`PITCH`, `ACROSS`, `SHOT_TOP`). Your Pokémon walks to the spot first; back from a deck picker it stands where it was.
+  `warmCenter()` builds it while the map is up (`warmCenter3d()`); without Three.js the pixel room stays. `?center`
+  (`&starter=id`) walks a throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
