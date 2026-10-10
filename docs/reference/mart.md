@@ -68,7 +68,9 @@ cards on easels along its top (`cardArt()` paints `.card.small` on a canvas: cos
 `MeshBasicMaterial`, so no light or shadow darkens them; a sheen sweeps across them), and ITEMS on the right (`ITEMS`,
 `buildItems()`), the items on its top; the relics under glass domes on a RELICS table of their own on the floor in front of
 it (`TABLE`, `buildTable()`; the user's ask, 2026-10-09, with the gondola of goods moved to the left wall). Each ware's
-price stands over it, big, tilted to the camera (red when too dear, SOLD OUT once bought). The camera starts centred on the
+price stands over it, big, tilted to the camera (red when too dear, SOLD OUT once bought): a white pill with a ₽ coin,
+`tagArt()`. The MOVES / ITEMS / RELICS signs are glossy blue pills with an emblem each, the wall ones tipped to the camera
+(`header()` / `emblem()`; bigger and cleaner since 2026-10-10, the user's ask). The camera starts centred on the
 door and follows your Pokémon (it began leaning right, the user's call); a phone's shot is `ACROSS` 8.8 tiles, then brought in to `ZOOM` 0.7 of that distance (0.6 on 2026-10-09, the user's ask: much closer; eased to 0.7 on 2026-10-10 as the right side was hard to see). Since 2026-10-10 the camera follows your Pokémon all the way (it was 0.6 of its x) and a sideways drag looks along the room (`look`, `onDown()` / `onMove()`, a drag swallowing its click; walking brings it back). The wares'
 PNGs load with `crossOrigin` (githack can serve them from its CDN's domain, which taints the canvas so WebGL uploads it
 blank: on the user's phone every card and sprite was missing). Kecleon stands behind a
