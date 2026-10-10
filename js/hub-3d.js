@@ -13,7 +13,7 @@ import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -1958,6 +1958,7 @@ function liveBugs(now) {
 
 /** Now and then a legendary crosses the sky over the forest, from the title's own round (a silhouette until it's
     yours), its shadow gliding over the Clearing while the sun's up. Never under reduced motion, like the title's. */
+const FLY_SCALE = 0.45;
 async function launchFlyer(now) {
   nextFly = now + 30000 + Math.random() * 20000;
   if (calm || !acts.dealFlyer) return;
@@ -1975,12 +1976,14 @@ async function launchFlyer(now) {
   scene.add(m.group, shade);
   const dir = Math.random() < 0.5 ? 1 : -1, high = 0.4 + Math.random() * 0.15;
   // the path is fixed in the world when it sets off, across the top of the view as it is then, so walking about
-  // never drags it along with the camera
+  // never drags it along with the camera. It starts and ends a whole sprite's width past the view's edges: a fixed
+  // margin left Lugia and Eternatus half on screen on a narrow phone when the flight ended
   const along = (sx) => {
     const d = new THREE.Vector3(sx, high, 0.5).unproject(camera).sub(camera.position).normalize();
     return camera.position.clone().addScaledVector(d, camera.userData.dist * 0.55);
   };
-  flyer = { m, shade, at: now, ms: 9000 + Math.random() * 3000, dir, from: along(-1.5 * dir), to: along(1.5 * dir),
+  const a = along(-dir), b = along(dir), out = b.clone().sub(a).normalize().multiplyScalar(m.c.width * MON_PX * FLY_SCALE + 0.5);
+  flyer = { m, shade, at: now, ms: 9000 + Math.random() * 3000, dir, from: a.sub(out), to: b.add(out),
     sx: camX, sz: camZ, w: { facing: 'front' } };
 }
 
@@ -1992,7 +1995,7 @@ function liveFlyer(now, dt) {
   f.m.group.position.lerpVectors(f.from, f.to, k);
   f.m.group.position.y += Math.sin(k * Math.PI) * 0.4 + Math.sin(now / 260) * 0.06;
   f.m.group.quaternion.copy(camera.quaternion);
-  f.m.board.scale.set(f.dir > 0 ? -0.45 : 0.45, 0.45, 1);
+  f.m.board.scale.set(f.dir > 0 ? -FLY_SCALE : FLY_SCALE, FLY_SCALE, 1);
   drawMon(f.m, f.w, dt);
   // the shadow runs a little ahead, over the ground near you
   const sh = Math.min(1, k * 1.2 + 0.05), up = time !== 'night';
