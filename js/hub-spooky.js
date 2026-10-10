@@ -4,7 +4,7 @@
    said it), and when tapped it speaks in that store's speech window over the bar (.mall-line in css/hub.css: its
    name on a tilted pink tag), a line or a whole story tapped through (js/data/spooky-lines.js). The
    first time the Clearing shows on a page load, one walks up to your partner and greets you by your nickname, and
-   your name turns up among their lines after that. Nothing is saved. */
+   your name turns up among their lines after that, the four taking turns at it (the last greeter kept per device). */
 
 import { SPOOKS } from './data/spooky-lines.js';
 import { batArt } from './hub-season.js';
@@ -16,6 +16,7 @@ const GREET_MS = 6500;        // and the greeting
 const PAUSE = [2500, 7000];   // a rest between strolls (ms)
 const ROAM = 5;               // how far (tiles) a stroll goes at most
 
+const GREETER_KEY = 'pokedb.spookGreeter';
 let greeted = false;          // once a page load
 
 const shuffled = (a) => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(([, x]) => x);
@@ -145,11 +146,15 @@ export function makeSpooks(H) {
     return true;
   }
 
-  /** The greeting: the ghost nearest your partner heads for a free tile beside it, then says hello by name. */
+  /** The greeting: the ghosts take turns (Sableye spawned nearest every time), the next in line heading for a free
+   *  tile beside your partner, then saying hello by name. */
   function startGreet(partner, now) {
     greeted = true;
-    const near = (g) => Math.hypot(g.w.x - partner.x, g.w.z - partner.z);
-    const g = [...ghosts].sort((a, b) => near(a) - near(b))[0];
+    let last = -1;
+    try { last = SPOOKS.findIndex(d => d.id === localStorage.getItem(GREETER_KEY)); } catch {}
+    const def = SPOOKS[(last + 1) % SPOOKS.length];
+    const g = ghosts.find(x => x.def === def) || ghosts[0];
+    try { localStorage.setItem(GREETER_KEY, g.def.id); } catch {}
     let best = null;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, -1], [0, 1]]) {
       const to = { x: partner.tile.x + dx, y: partner.tile.y + dy };
