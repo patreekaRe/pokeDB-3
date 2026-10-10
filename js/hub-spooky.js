@@ -85,7 +85,7 @@ export function makeSpooks(H) {
     bubble.firstChild.textContent = g.def.name;
     bubble.children[1].textContent = named(text);
     quip = { g, until: performance.now() + QUIP_MS };
-    bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
+    bubble.classList.remove('spook-in'); void bubble.offsetWidth; bubble.classList.add('spook-in');
   }
 
   function unblurt() { quip = null; bubble.hidden = true; }

@@ -487,10 +487,10 @@
   border: 8px solid transparent; border-top: 9px solid #fbf4df; border-bottom: 0; filter: drop-shadow(0 2px 0 #d8c8a4);
 }
 .spook-bubble[hidden] { display: none; }
-.spook-bubble.pop { animation: spookPop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+.spook-bubble.spook-in { animation: spookPop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
 @keyframes spookPop { from { scale: 0.6; opacity: 0; } }
 .hub-card:not([hidden]) ~ .spook-foot, .hub.held .spook-foot, .hub.held .spook-bubble, .hub-card:not([hidden]) ~ .spook-bubble { display: none; }
-@media (prefers-reduced-motion: reduce) { .spook-line.more i, .spook-bubble.pop { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .spook-line.more i, .spook-bubble.spook-in { animation: none; } }
 
 /* something new to read in the PC: a gold "!" bobbing over the item's corner, like the Pokédex keys' (.dex-news), only bigger */
 .pc-new {
@@ -518,6 +518,19 @@
 .pc-bp-pip.open circle:last-child { fill: #58d858; }
 .pc-bp-pip.open.on circle:last-child { fill: #fff; stroke: #58d858; stroke-width: 0.3; animation: pcPip 0.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
 @keyframes pcPip { to { scale: 1.35; } }
+.pc-bp-room.below { pointer-events: none; }
+.pc-bp-room.below .pc-bp-edge { fill: none; stroke: #4a6a8a; stroke-dasharray: 0.4 0.3; }
+.pc-bp-room.below .pc-bp-fill { fill: rgba(60, 70, 84, 0.25); }
+.pc-bp-room.picked .pc-bp-edge { stroke: #f0b030; stroke-width: 0.3; }
+.pc-bp-room.picked .pc-bp-fill { fill: #5a4a3a; }
+.pc-bp-pip.shut.stairs rect { fill: #c8a070; stroke: #10202c; stroke-width: 0.14; }
+.pc-bp-pip.join { cursor: pointer; }
+.pc-bp-pip.join circle:last-child { fill: #f0b030; }
+.pc-bp-pip.join.on circle:last-child { fill: #fff; stroke: #f0b030; stroke-width: 0.3; }
+.pc-build-row { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
+.pc-build-row .pc-build { margin: 0; }
+.pc-build.pc-turn { min-width: 90px; }
+.pc-floors { margin-bottom: 8px; }
 .pc-plan { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
 .pc-plan-name { font-weight: 400; font-size: 0.72rem; }
 .pc-plan-note { font-size: 0.5rem; color: #2a6a80; line-height: 1.6; }
