@@ -5336,7 +5336,7 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
 #reward-options.mart-window:is(.m3d, .m3d-wait) { visibility: hidden; pointer-events: none; }
 #reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; }
 body:has(#reward-options:is(.m3d, .m3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
-body:has(#reward-options.m3d) #reward-screen { cursor: pointer; }
+body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 /* the PC's sign, a cream speech window like the 3D Center's, bobbing over it */
 .mart3d-sign {
   position: fixed; z-index: 2; translate: -50% -100%; pointer-events: none; white-space: nowrap;

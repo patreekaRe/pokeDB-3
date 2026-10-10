@@ -17,7 +17,7 @@ import { ITEM_FIT } from './data/item-fit.js';
 const COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
-const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4, ZOOM = 0.6;
+const PITCH = 0.42, ACROSS = 8.8, LOOK_Y = 0.9, SHOT_TOP = 3.4, ZOOM = 0.7;
 // the moves on a counter-height cabinet of their own in the middle, the items on a unit of their own on the right (the
 // user's ask, 2026-10-09: the cards were lost among the items under them), and the relics under glass domes on a table
 // of their own on the floor in front of it (their next ask, the same day); every price stands over its ware
@@ -38,6 +38,7 @@ let THREE, renderer, scene, camera, post, view;
 let room, wares = null, mon, clerk, plays = [], blocked = new Set(), mat = null, signEl = null, pcAt = null, shine = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let opts = null, aim = null, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, leftAt = 0, runId = null;
+let look = 0, drag = null;
 let flying = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -732,7 +733,29 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
+/** A sideways drag looks along the shelves (a phone shows only part of the room); walking brings the camera back. */
+function onDown(e) {
+  if (!alive() || !shot || e.target.closest('button, a, input, dialog, #room-bar, .room-hinge, .reward-bottom, .reward-focus')) return;
+  drag = { x: e.clientX, look, moved: false, id: e.pointerId };
+}
+
+function onMove(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const dx = e.clientX - drag.x;
+  if (Math.abs(dx) > 10) drag.moved = true;
+  if (drag.moved) look = drag.look - dx * shot.half * 2 / viewW;
+}
+
+function onUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (drag.moved) dragged = performance.now();
+  drag = null;
+}
+
+let dragged = 0;
+
 function onTap(e) {
+  if (performance.now() - dragged < 300) { e.stopPropagation(); e.preventDefault(); return; }
   if (!alive() || flying.length) return;
   if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .reward-focus')) return;
   if (document.querySelector('dialog[open], .reward-focus')) return;
@@ -798,7 +821,9 @@ function fitShot() {
 function placeCamera(dt) {
   if (!shot) return;
   const edge = COLS / 2 + 0.4, half = shot.half;
-  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x * 0.6));
+  if (walker.path.length && !drag) look = 0;
+  const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x + look));
+  if (half < edge) look = want - walker.x;
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist);
@@ -886,6 +911,10 @@ function unmount() {
   view?.remove();
   signEl?.remove();
   removeEventListener('click', onTap, true);
+  removeEventListener('pointerdown', onDown, true);
+  removeEventListener('pointermove', onMove, true);
+  removeEventListener('pointerup', onUp, true);
+  removeEventListener('pointercancel', onUp, true);
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('m3d');
   leftAt = performance.now();
@@ -974,7 +1003,8 @@ export async function mountMart(o) {
   scene.add(wares.group);
   if (!back && !again) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
-    camX = walker.x * 0.6;
+    camX = walker.x;
+    look = 0;
   }
   walker.path = [];
   const pc = o.wares.find(w => w.kind === 'pc');
@@ -989,6 +1019,10 @@ export async function mountMart(o) {
   document.body.append(view);
   document.getElementById('reward-options').classList.add('m3d');
   addEventListener('click', onTap, true);
+  addEventListener('pointerdown', onDown, true);
+  addEventListener('pointermove', onMove, true);
+  addEventListener('pointerup', onUp, true);
+  addEventListener('pointercancel', onUp, true);
   addEventListener('resize', resize);
   resize();
   last = 0;
