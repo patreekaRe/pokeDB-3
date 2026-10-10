@@ -32,9 +32,9 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
   // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base (syncShop()); the Game Corner
-  // is closed till the user has finished its insides (2026-10-08), `open: true` lets you in; ?mall= goes in either way
+  // opened with its revamp (2026-10-10: Voltorb Flip, the Gachapon, the Deal of the Day); ?mall= goes in either way
   { id: 'furniture', name: 'Furniture', line: '', x: 2, step: { x: 2, y: 1 } },
-  { id: 'corner', name: 'Game Corner', line: 'Closed for now: the machines are still being set up.', x: 6, step: { x: 6, y: 1 } },
+  { id: 'corner', name: 'Game Corner', line: 'Closed for now: the machines are still being set up.', x: 6, step: { x: 6, y: 1 }, open: true },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
 
@@ -604,7 +604,7 @@ function buildHall() {
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
   const tape = tapeArt();
-  for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
+  for (const fr of FRONTS) if (fr.id === 'furniture' || (fr.id !== 'east' && !fr.open)) tapeOver(fr, tape);   // the store's tape comes off when it opens (syncShop())
   ribbon = buildRibbon(shop);
 
   // planters and benches down the sides, light falling from the windows
@@ -819,7 +819,8 @@ async function prizeTap(spot) {
     if (e.blocked) return talk(`${e.dark ? 'Who\'s that Pokémon? ' : ''}${e.text}`, 4600);
     if (e.done) return talk(`${e.name}: ${e.done === 'Maxed' ? 'maxed out already, meow!' : 'that one\'s yours already, meow!'}`, 3600);
     const what = spot.row === 'perks' ? ` ${e.text}${e.level ? ` (${e.level})` : ''}` : spot.row === 'balls' ? ` ${e.text}` : '';
-    return talk(`${e.name}!${what} That's ${e.cost.toLocaleString()} PokéCoins. Tap again and it's yours, meow.`, 5200);
+    const price = e.deal ? `It's the Deal of the Day: ${e.cost.toLocaleString()} PokéCoins, not ${e.full.toLocaleString()}!` : `That's ${e.cost.toLocaleString()} PokéCoins.`;
+    return talk(`${e.name}!${what} ${price} Tap again and it's yours, meow.`, 5200);
   }
   if (e.done || e.blocked) { pick(null); return prizeTap(spot); }
   if (coins < e.cost) { playSound('cancel'); return talk(`No dice, you're ${(e.cost - coins).toLocaleString()} PokéCoins short for that, meow.`, 3600); }
@@ -854,6 +855,15 @@ async function bayTap(spot) {
   pick(null);
   showCoins();
   talk(n > 1 ? `Thank you! All ${n} styles of the ${p.name.toLowerCase()} are off to your Secret Base.` : `Thank you! The ${p.name.toLowerCase()} is off to your Secret Base.`, 3600);
+}
+
+/** A Game Corner game (Voltorb Flip, the Gachapon): the first tap picks it and Meowth says what it is, the next sits
+    down at it; coming back repaints the coins and the prize cases. */
+function gameTap(spot) {
+  if (picked !== spot) { pick(spot); playSound('select'); return talk(spot.game.line, 4600); }
+  pick(null);
+  playSound('confirm');
+  spot.game.open(() => { showCoins(); P?.refresh?.(); });
 }
 
 /** The shopkeeper: its cry, a little hop and a line. */
@@ -948,6 +958,7 @@ function enterFront(fr) {
   if (fr.kind === 'prize') return prizeTap(fr);
   if (fr.kind === 'lift') return liftTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
+  if (fr.kind === 'game') return gameTap(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   if (fr.id === 'furniture' && ribbon?.group.visible) return ribbonTap();
   if (fr.id === 'furniture') return walkIn('f1');

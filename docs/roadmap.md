@@ -147,12 +147,18 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) ~~Furniture store~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-furniture.js`, the west front.
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
-     c) **Prize games** in the Game Corner: slots, roulette and blackjack for PokéCoins, seeded by `js/rng.js`, a house
-        edge (~5-10%) and a daily stake cap so coins stay earned by playing runs; wins can also be **prize tickets** for a
-        prize counter of exclusives (dolls, wallpapers, a shiny-only trinket), Gen 1's Game Corner. Odds tested in `tests/`.
-     d) **The east front**: Claude's pick is a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on
-        its wall), so each shop is one thing coins buy: home, runs, the Safari. Waiting on the user's pick (balls could
-        also stay in the Game Corner, and the east front be a cosmetics Boutique instead).
+     c) **The Game Corner revamp** (branch `game-corner-revamp`, 2026-10-10; the user's picks over prize tickets and
+        betting coins): the Game Corner is open; **Voltorb Flip** (free, coins from the score up to 250 a UTC day, HGSS's 8
+        levels; `js/voltorb.js`), a **Gachapon** of the big Pokémon dolls, now sold nowhere else (8 a week, 100 a turn, a
+        duplicate refunds 60; `js/gachapon.js`), and a **Deal of the Day** (30% off one skin, perk or shiny; `todaysDeal()` in
+        `js/shop.js`). Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Plain panels for now.
+        **Next:** ▶ Run in: LOCAL (Desktop app). The look: Voltorb Flip and the Gachapon as proper arcade screens (flip and
+        capsule animations, sounds), the two machines placed and dressed in the 3D room (the Voltorb machine is the old dark
+        one at the right end of the row, the Gachapon front right; on a phone both sit past the screen's edge), a DEAL sign
+        in the room. Then the user playtests the branch and decides if it goes to `main`.
+     d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
+        with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. Balls stay in the Game
+        Corner until it's built. ▶ Run in: LOCAL (a 3D shop like `js/mall-furniture.js`).
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

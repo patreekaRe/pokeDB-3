@@ -14,6 +14,8 @@
 
 import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS, SHINY_COSTS } from './data/shop.js';
 import { BALLS } from './data/balls.js';
+import { DEAL_ROWS, dealPrice, pickDeal } from './data/corner.js';
+import { safariDay } from './data/safari.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, perkLevel } from './storage.js';
 import { safariOpen } from './data/pokedex.js';
@@ -29,6 +31,25 @@ const ROWS = [
   { id: 'shiny', name: 'Shiny', entries: () => STARTERS.filter(s => !s.secret).map(shinyEntry) },
   { id: 'balls', name: 'Poké Balls', entries: () => BALLS.filter(b => !b.free).map(ballEntry) },
 ];
+/** A row's entries, the Deal of the Day's price cut on its one entry. */
+function rowEntries(row) {
+  const deal = todaysDeal();
+  return row.entries().map(e => (deal === `${row.id}:${e.id}` && !e.done && !e.blocked
+    ? { ...e, deal: true, full: e.cost, cost: dealPrice(e.cost) } : e));
+}
+
+/** The Deal of the Day's key ("perks:hpBoost"), picked the first time it's asked for each UTC day from what you could
+    buy then, so buying something else never moves it; null once it's bought or there was nothing to pick. */
+export function todaysDeal() {
+  const day = safariDay(), deal = getSave().corner?.deal;
+  if (deal?.day === day) return deal.bought ? null : deal.key;
+  const keys = ROWS.filter(r => DEAL_ROWS.includes(r.id))
+    .flatMap(r => r.entries().filter(e => !e.done && !e.blocked).map(e => `${r.id}:${e.id}`));
+  const key = pickDeal(day, keys);
+  updateSave(d => { d.corner = { ...d.corner, deal: { day, key } }; });
+  return key;
+}
+
 const cursor = { row: 0, col: [0, 0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
 const WINDOW = 6;     // cells a row shows at once
 const PUSH = 16;      // px the stick must be dragged before it counts as a push
@@ -214,7 +235,7 @@ function ballEntry(ball) {
 function render() {
   refreshCoins();
   const coins = getSave().coins;
-  const rows = ROWS.map(row => row.entries());
+  const rows = ROWS.map(rowEntries);
   const pick = rows[cursor.row][cursor.col[cursor.row]];
 
   $('gc-section').textContent = `${ROWS[cursor.row].name} ${cursor.col[cursor.row] + 1}/${rows[cursor.row].length}`;
@@ -222,7 +243,9 @@ function render() {
   const art = pick.sprite ? el('img', `pixel gc-pick-sprite${pick.dark ? ' dark' : ''}`) : el('span', 'gc-pick-icon', pick.icon);
   if (pick.sprite) { art.src = pick.sprite; art.alt = ''; }
   const price = pick.done ? ownedTag(pick.done) : el('span', `gc-price${coins < pick.cost || pick.blocked ? ' short' : ''}`, `💰 ${pick.cost}`);
+  if (pick.deal) price.prepend(el('s', 'gc-was', `${pick.full}`), ' ');
   const foot = el('div', 'gc-pick-foot');
+  if (pick.deal) foot.append(el('span', 'gc-level gc-deal-tag', 'Deal of the Day!'));
   if (pick.level) foot.append(el('span', 'gc-level', pick.level));
   foot.append(price);
   // the words sit on a dark plate above the scanlines: on the bare glowing teal they were hard to read (the user's note)
@@ -251,6 +274,7 @@ function render() {
         cell.append(img);
       } else cell.append(el('span', 'gc-cell-icon', entry.icon));
       if (entry.done) cell.append(ownedTag(''));
+      if (entry.deal) cell.append(el('span', 'gc-deal', 'DEAL'));
       cell.addEventListener('click', () => select(r, c));
       line.append(cell);
     });
@@ -275,7 +299,7 @@ function render() {
 function move(dx, dy) {
   if (dy) cursor.row = (cursor.row + dy + ROWS.length) % ROWS.length;
   if (dx) {
-    const count = ROWS[cursor.row].entries().length;
+    const count = rowEntries(ROWS[cursor.row]).length;
     cursor.col[cursor.row] = (cursor.col[cursor.row] + dx + count) % count;
   }
   cursor.armed = false;
@@ -295,13 +319,13 @@ function select(row, col) {
 
 /** One of the Game Corner's things for sale, fresh from the save: a row's id ('skins', 'perks', 'shiny', 'balls') and its
     place in that row. The Poké Mall's walk-in Game Corner (js/mall-corner.js) sells the very same entries. */
-export const cornerEntries = (rowId) => ROWS.find(r => r.id === rowId).entries();
+export const cornerEntries = (rowId) => rowEntries(ROWS.find(r => r.id === rowId));
 
 /** Pays for an entry and hands it over; the lines saying what it got you (badges too), or null if it can't be bought. */
 export function buyCorner(pick) {
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return null;
-  updateSave(d => { d.coins -= pick.cost; });
-  const news = [...pick.bought(), ...checkBadges().map(badgeLine)];   // a shiny, a maxed perk or a full set of balls can earn one
+  updateSave(d => { d.coins -= pick.cost; if (pick.deal) d.corner.deal.bought = true; });
+  const news = [...pick.bought(), ...(pick.deal ? [`Deal of the Day: ${pick.full - pick.cost} PokéCoins off!`] : []), ...checkBadges().map(badgeLine)];   // a shiny, a maxed perk or a full set of balls can earn one
   showBadgeNews();
   refreshCoins();
   return news;
@@ -309,7 +333,7 @@ export function buyCorner(pick) {
 
 /** First press arms the button, the second buys (the menu blip covers the first). */
 function press() {
-  const pick = ROWS[cursor.row].entries()[cursor.col[cursor.row]];
+  const pick = rowEntries(ROWS[cursor.row])[cursor.col[cursor.row]];
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
   if (!cursor.armed) { cursor.armed = true; cursor.news = null; render(); return; }
   cursor.armed = false;

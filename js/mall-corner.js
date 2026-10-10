@@ -17,8 +17,17 @@ const CASES = [
 ];
 const CASE_H = 2.5, CASE_D = 0.7;
 const COUNTER = { x: 5, y: 1, w: 3 };
-const MACHINE_Y = 3, MACHINES = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12];   // a perk each, the last one dark till the prize games
+const MACHINE_Y = 3, MACHINES = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12];   // a perk each, the last one Voltorb Flip
 const MACHINE_H = 1.3;
+const GACHA = { x: 12, y: 5 };   // the capsule machine, front right
+
+/* The games (the revamp, 2026-10-10): free Voltorb Flip for capped coins, and the Gachapon of big dolls. */
+const GAMES = {
+  voltorb: { name: 'Voltorb Flip', line: 'Voltorb Flip! Free to play: clear the board for PokéCoins, up to 250 a day. Tap again to sit down, meow.',
+    open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
+  gacha: { name: 'Gachapon', line: 'The Gachapon! Big Pokémon dolls you can\'t buy anywhere else, a new set every Monday. Tap again to have a look, meow.',
+    open: (done) => import('./gachapon.js').then(m => m.openGachapon(done)) },
+};
 
 const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
 const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
@@ -27,7 +36,7 @@ const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 export const KEEPER = {
   id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif',
   hello: ['Welcome to the Game Corner, meow! Everything here\'s for PokéCoins.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Shinies on the right, prizes on the left, perks in the machines. Tap anything!'],
-  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'That dark machine? Prize games are coming. Slots, meow! I can hardly wait.', 'Every shiny in that case is the real deal. Polished \'em myself.', 'Pay Day is my favourite move. Can you tell?'],
+  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'I put a doll in that Gachapon I\'ve never seen myself. Lucky you if you get it!', 'Every shiny in that case is the real deal. Polished \'em myself.', 'Pay Day is my favourite move. Can you tell?'],
 };
 
 /* ---------- painting ---------- */
@@ -161,6 +170,7 @@ const PERK_COLOUR = { hpBoost: NEON.pink, relicCharm: '#b07af0', wellFed: '#f090
 /** A perk machine's face: a lit marquee in its colour, a screen with its picture, level and price, buttons and a coin
     tray; a dark one (`e` null) says SOON on a black screen. */
 function machineArt(e) {
+  if (!e) return voltorbArt();
   const f = fine(18, 27, 10), { g, rr, lin, shine } = f, s = shine();
   const col = e ? PERK_COLOUR[e.id] ?? NEON.pink : '#5a5668';
   rr(0, 0, 18, 27, 1.4, lin(0, 0, 18, 0, [GC.chrome[2], GC.chrome[0], GC.chrome[1], GC.chrome[2]]));
@@ -191,6 +201,30 @@ function machineArt(e) {
   }
   rr(5, 23.6, 8, 2.2, 0.8, '#3a3448');
   rr(6, 24.2, 6, 1, 0.5, '#120a22');
+  return f.c;
+}
+
+/** Voltorb Flip's cabinet: a green marquee, a board of tiles with a Voltorb and a 3 turned up, the buttons lit. */
+function voltorbArt() {
+  const f = fine(18, 27, 10), { g, rr, lin, shine } = f, s = shine(), green = '#58d080';
+  rr(0, 0, 18, 27, 1.4, lin(0, 0, 18, 0, [GC.chrome[2], GC.chrome[0], GC.chrome[1], GC.chrome[2]]));
+  rr(2, 2, 14, 3.4, 0.8, green);
+  s.fillStyle = green; s.beginPath(); s.roundRect(2, 2, 14, 3.4, 0.8); s.fill();
+  words(g, 'VOLTORB FLIP', 9, 3.8, 2, '#123020');
+  rr(1.6, 7, 14.8, 11.6, 1, '#123020');
+  rr(2.2, 7.6, 13.6, 10.4, 0.8, '#2f8a58');
+  s.fillStyle = '#3a9a68'; s.beginPath(); s.roundRect(2.2, 7.6, 13.6, 10.4, 0.8); s.fill();
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
+    const x = 3 + c * 3.2, y = 8.4 + r * 3.1, up = r * 4 + c;
+    rr(x, y, 2.6, 2.6, 0.4, up === 5 || up === 10 ? '#f4f8ec' : '#b8dc98');
+    if (up === 5) { g.fillStyle = '#e04040'; g.beginPath(); g.arc(x + 1.3, y + 1.3, 1, Math.PI, 0); g.fill(); g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(x + 1.3, y + 1.3, 1, 0, Math.PI); g.fill(); }
+    if (up === 10) words(g, '3', x + 1.3, y + 1.4, 2, '#d84a2a');
+  }
+  for (const [x, c] of [[5, GC.red], [9, NEON.gold], [13, '#4a8ef0']]) {
+    g.fillStyle = c; g.beginPath(); g.arc(x, 21, 1.4, 0, Math.PI * 2); g.fill();
+    s.fillStyle = c; s.beginPath(); s.arc(x, 21, 1, 0, Math.PI * 2); s.fill();
+  }
+  words(g, 'FREE PLAY', 9, 25, 1.9, NEON.gold); words(s, 'FREE PLAY', 9, 25, 1.9, '#ffe890');
   return f.c;
 }
 
@@ -349,22 +383,50 @@ export function buildCorner(THREE, size) {
     blocked.add(`${tx},${MACHINE_Y}`);
     const m = new THREE.Group();
     m.position.set(tileX(tx), 0, tileZ(MACHINE_Y));
-    const face = lit(machineArt(e), e ? 1 : 0.2);
+    const face = lit(machineArt(e), 1);
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.84, MACHINE_H, 0.6), [violet, violet, chrome, chrome, face, violet]);
     body.position.y = MACHINE_H / 2;
     body.castShadow = body.receiveShadow = true;
     m.add(body);
-    const topper = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.16, 0.5), std({ color: e ? PERK_COLOUR[e.id] : '#3a3448', emissive: new THREE.Color(e ? PERK_COLOUR[e.id] : '#000000'), emissiveIntensity: e ? 0.9 : 0 }));
+    const tint = e ? PERK_COLOUR[e.id] : '#58d080';
+    const topper = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.16, 0.5), std({ color: tint, emissive: new THREE.Color(tint), emissiveIntensity: 0.9 }));
     topper.position.y = MACHINE_H + 0.08;
     m.add(topper);
     const spot = e
       ? { id: `perk${n}`, kind: 'prize', row: 'perks', i: n, name: e.name, open: true, step: { x: tx, y: MACHINE_Y + 1 }, frame: { x: tileX(tx), y: MACHINE_H / 2, z: tileZ(MACHINE_Y) + 0.32, w: 0.94, h: MACHINE_H + 0.1 } }
-      : { id: 'soon', kind: 'soon', name: 'Prize games', open: false, line: 'Out of order: prize games are coming soon.', step: { x: tx, y: MACHINE_Y + 1 } };
+      : { id: 'voltorb', kind: 'game', game: GAMES.voltorb, name: GAMES.voltorb.name, open: true, line: GAMES.voltorb.name, step: { x: tx, y: MACHINE_Y + 1 },
+        frame: { x: tileX(tx), y: MACHINE_H / 2, z: tileZ(MACHINE_Y) + 0.32, w: 0.94, h: MACHINE_H + 0.1 } };
     spots.push(spot);
     m.traverse(o => { o.userData.front = spot; });
     group.add(m);
     if (e) redraws.push(() => { const now = cornerEntries('perks')[n]; spot.name = now.name; swap(face, machineArt(now), 1); });
   });
+
+  // the Gachapon: a red stand under a glass dome full of capsules
+  {
+    const spot = { id: 'gacha', kind: 'game', game: GAMES.gacha, name: GAMES.gacha.name, open: true, line: GAMES.gacha.name, step: { x: GACHA.x - 1, y: GACHA.y },
+      frame: { x: tileX(GACHA.x), y: 0.62, z: tileZ(GACHA.y) + 0.36, w: 0.8, h: 1.24 } };
+    spots.push(spot);
+    blocked.add(`${GACHA.x},${GACHA.y}`);
+    const m = new THREE.Group();
+    m.position.set(tileX(GACHA.x), 0, tileZ(GACHA.y));
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.62, 0.62), std({ color: GC.red, roughness: 0.5 }));
+    stand.position.y = 0.31;
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.05, 18), chrome);
+    knob.rotation.x = Math.PI / 2;
+    knob.position.set(0, 0.42, 0.32);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.3, 24, 16), new THREE.MeshStandardMaterial({ color: '#d8ecff', transparent: true, opacity: 0.32, roughness: 0.1, depthWrite: false }));
+    dome.position.y = 0.92;
+    m.add(stand, knob, dome);
+    const caps = ['#f05a6a', '#4a9ae8', '#f8c840', '#6ac868', '#b07af0', '#f08ac8', '#40c8c0'];
+    for (let i = 0; i < 11; i++) {
+      const a = i * 2.4, r = 0.08 + (i % 3) * 0.06, c = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 8), std({ color: caps[i % caps.length], roughness: 0.35 }));
+      c.position.set(Math.cos(a) * r, 0.72 + (i % 4) * 0.07, Math.sin(a) * r);
+      m.add(c);
+    }
+    m.traverse(o => { o.userData.front = spot; });
+    group.add(m);
+  }
 
   // the prize counter, Meowth's place behind it
   const keeper = { id: 'keeper', kind: 'keeper', name: KEEPER.name, open: true, step: { x: COUNTER.x + 1, y: COUNTER.y + 1 } };

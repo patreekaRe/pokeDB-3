@@ -314,6 +314,9 @@ export const KINDS_OF = {
 
 /* Each floor's day, like Nook's Cranny's: a piece of every kind, so a day is never eight posters (the user's ask,
    2026-10-09); the last stand a doll or anything else, oftener anything else, as there are far more of those. */
+/** The big Pokémon dolls are the Game Corner's Gachapon's alone (js/gachapon.js), never in the store's stock. */
+export const isCapsule = (id) => /^big.+doll$/.test(id) && PIECES[id]?.group === 'Dolls';
+
 const SLOTS = ['Seats', 'Tables', 'Storage', 'Lights', 'Plants', 'Rugs', 'Wall', 'Other'];
 const DOLL_ODDS = 0.25;
 const stocked = new Map();
@@ -323,7 +326,7 @@ const stocked = new Map();
     share a piece. */
 export function furnitureStock(day = safariDay(), floor = 1) {
   if (!stocked.has(day)) {
-    const rand = streamOf('furniture', day), taken = new Set(), pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id]);
+    const rand = streamOf('furniture', day), taken = new Set(), pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !isCapsule(id));
     const deal = () => shuffled(SLOTS.map(slot => {
       const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
       const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));

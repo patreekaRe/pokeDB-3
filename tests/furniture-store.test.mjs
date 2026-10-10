@@ -7,7 +7,7 @@ import { FURNITURE_BY_KIND } from '../js/data/furniture.js';
 globalThis.location ??= { search: '', pathname: '/', hostname: 'localhost' };
 const mem = new Map();
 globalThis.localStorage ??= { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
-const { furnitureStock, shopStock } = await import('../js/secret-base.js');
+const { furnitureStock, shopStock, isCapsule, DESIGNS } = await import('../js/secret-base.js');
 
 test('each floor sells 8 pieces a day, the same for everyone, never the same piece twice', () => {
   for (const day of ['2026-10-08', '2026-10-09', '2027-01-01']) {
@@ -17,10 +17,15 @@ test('each floor sells 8 pieces a day, the same for everyone, never the same pie
     assert.deepEqual(furnitureStock(day), one);
     assert.equal(new Set([...one, ...two]).size, 16);
     for (const id of [...one, ...two]) assert.ok(!FURNITURE_BY_KIND[id], `${id} is earned, never sold`);
+    for (const id of [...one, ...two]) assert.ok(!isCapsule(id), `${id} is the Gachapon's, never sold`);
   }
 });
 
 test('the Shop tab lists the second floor only once it is open', () => {
   assert.equal(shopStock({}).length, 8);
   assert.equal(shopStock({ upstairs: true }).length, 16);
+});
+
+test('the Gachapon has 60 big dolls of its own', () => {
+  assert.equal(DESIGNS.filter(isCapsule).length, 60);
 });
