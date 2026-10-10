@@ -152,17 +152,48 @@ function bunting(g, W, y, sag) {
   }
 }
 
-/** A header board: navy, a gold inner face, the word in navy, its ends rounded. */
+/** A section's emblem in a white disc: a card for the moves, a Poké Ball for the items, a gem for the relics. */
+function emblem(g, kind, x, y, r) {
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  const s = r * 0.62;
+  if (kind === 'ITEMS') ballIcon(g, x, y, s, C.red, C.navy);
+  else if (kind === 'MOVES') {
+    g.save(); g.translate(x, y); g.rotate(-0.18);
+    g.fillStyle = '#2a60c0'; g.beginPath(); g.roundRect(-s * 0.7, -s, s * 1.4, s * 2, s * 0.22); g.fill();
+    g.fillStyle = '#ffd040'; g.beginPath(); g.roundRect(-s * 0.5, -s * 0.8, s, s * 0.8, s * 0.12); g.fill();
+    g.fillStyle = '#ffffff'; g.fillRect(-s * 0.5, s * 0.22, s, s * 0.14); g.fillRect(-s * 0.5, s * 0.5, s * 0.7, s * 0.14);
+    g.restore();
+  } else {
+    const p = [[0, -s], [s * 0.9, -s * 0.25], [0, s], [-s * 0.9, -s * 0.25]];
+    g.fillStyle = '#b05ee8'; g.beginPath(); p.forEach(([a, b], i) => g[i ? 'lineTo' : 'moveTo'](x + a, y + b)); g.closePath(); g.fill();
+    g.fillStyle = '#e2b8ff'; g.beginPath(); g.moveTo(x, y - s); g.lineTo(x + s * 0.9, y - s * 0.25); g.lineTo(x, y - s * 0.05); g.lineTo(x - s * 0.9, y - s * 0.25); g.closePath(); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.85)'; g.beginPath(); g.moveTo(x - s * 0.35, y - s * 0.62); g.lineTo(x - s * 0.1, y - s * 0.7); g.lineTo(x - s * 0.5, y - s * 0.3); g.closePath(); g.fill();
+  }
+}
+
+/** A section's sign: a glossy blue pill in a white rim, its emblem on the left, the word in white. */
 function header(text, w, h = 0.3) {
-  const c = document.createElement('canvas'), k = 200;
+  const c = document.createElement('canvas'), k = 360, pad = 10;
   c.width = Math.round(w * k); c.height = Math.round(h * k);
   const g = c.getContext('2d'), W = c.width, H = c.height;
-  g.fillStyle = C.navy; g.beginPath(); g.roundRect(0, 0, W, H, H / 2); g.fill();
-  const l = g.createLinearGradient(0, 6, 0, H - 6);
-  l.addColorStop(0, '#fff6c8'); l.addColorStop(1, '#ffd040');
-  g.fillStyle = l; g.beginPath(); g.roundRect(6, 6, W - 12, H - 12, (H - 12) / 2); g.fill();
-  g.font = `900 ${H * 0.56}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = C.navy; g.fillText(text, W / 2, H / 2 + H * 0.04);
+  const pill = (x, y, ww, hh) => { g.beginPath(); g.roundRect(x, y, ww, hh, hh / 2); };
+  g.fillStyle = 'rgba(16,32,80,0.22)'; pill(pad, pad + 6, W - pad * 2, H - pad * 2); g.fill();
+  g.fillStyle = '#ffffff'; pill(pad, pad, W - pad * 2, H - pad * 2 - 4); g.fill();
+  const i = pad + H * 0.07, ih = H - i * 2 - 4, l = g.createLinearGradient(0, i, 0, i + ih);
+  l.addColorStop(0, '#6cb4ff'); l.addColorStop(0.55, '#3a7ce0'); l.addColorStop(1, '#2558bc');
+  g.fillStyle = l; pill(i, i, W - i * 2, ih); g.fill();
+  g.save(); pill(i, i, W - i * 2, ih); g.clip();
+  const gl = g.createLinearGradient(0, i, 0, i + ih * 0.5);
+  gl.addColorStop(0, 'rgba(255,255,255,0.45)'); gl.addColorStop(1, 'rgba(255,255,255,0.04)');
+  g.fillStyle = gl; pill(i + ih * 0.25, i + ih * 0.06, W - i * 2 - ih * 0.5, ih * 0.44); g.fill();
+  g.restore();
+  const r = ih * 0.36, ex = i + ih * 0.5;
+  emblem(g, text, ex, i + ih / 2, r);
+  g.font = `800 ${ih * 0.5}px "Trebuchet MS", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  if ('letterSpacing' in g) g.letterSpacing = `${Math.round(ih * 0.06)}px`;
+  const tx = (ex + r + W - i) / 2, ty = i + ih / 2 + ih * 0.03;
+  g.fillStyle = 'rgba(14,34,96,0.45)'; g.fillText(text, tx, ty + ih * 0.05);
+  g.fillStyle = '#ffffff'; g.fillText(text, tx, ty);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   t.anisotropy = 4;
@@ -206,17 +237,35 @@ function floorArt() {
   return f.c;
 }
 
-/** A shelf-edge price label: white, a blue tab, the price in navy (red when you can't afford it); SOLD OUT in grey. */
+/** A price tag: a white pill with a soft shadow and a thin coloured rim, a ₽ coin on the left and the price in navy
+    (red, rim and coin too, when you can't afford it); SOLD OUT in grey. Drawn at twice 240 x 92. */
 function tagArt(text, { dear = false, sold = false } = {}) {
-  const c = document.createElement('canvas');
-  c.width = 240; c.height = 92;
+  const c = document.createElement('canvas'), k = 2;
+  c.width = 240 * k; c.height = 92 * k;
   const g = c.getContext('2d');
-  g.fillStyle = 'rgba(0,0,0,0.18)'; g.beginPath(); g.roundRect(6, 10, 228, 78, 16); g.fill();
-  g.fillStyle = sold ? '#e4e8ee' : '#ffffff'; g.beginPath(); g.roundRect(4, 4, 228, 78, 16); g.fill();
-  g.fillStyle = sold ? '#a8b0bc' : dear ? '#e84838' : '#3a7ce0'; g.beginPath(); g.roundRect(4, 4, 16, 78, [16, 0, 0, 16]); g.fill();
-  g.font = `900 ${sold ? 38 : 64}px "Trebuchet MS", sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.fillStyle = sold ? '#8a929e' : dear ? '#d02818' : C.navy;
-  g.fillText(text, 126, 47, 200);
+  g.scale(k, k);
+  const ink = sold ? '#9aa2ae' : dear ? '#e04434' : '#3a7ce0';
+  const pill = (x, y, w, h) => { g.beginPath(); g.roundRect(x, y, w, h, h / 2); };
+  g.fillStyle = 'rgba(16,32,80,0.2)'; pill(8, 14, 224, 72); g.fill();
+  g.fillStyle = ink; pill(6, 6, 228, 76); g.fill();
+  const l = g.createLinearGradient(0, 10, 0, 78);
+  l.addColorStop(0, '#ffffff'); l.addColorStop(1, sold ? '#e6eaf0' : '#eef4fd');
+  g.fillStyle = l; pill(10, 10, 220, 68); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  if (sold) {
+    g.font = '800 34px "Trebuchet MS", system-ui, sans-serif';
+    if ('letterSpacing' in g) g.letterSpacing = '2px';
+    g.fillStyle = '#8a929e'; g.fillText(text, 120, 45, 190);
+    return c;
+  }
+  const cx = 44, cy = 44, r = 24, coin = g.createLinearGradient(0, cy - r, 0, cy + r);
+  coin.addColorStop(0, dear ? '#ff7a68' : '#6cb4ff'); coin.addColorStop(1, ink);
+  g.fillStyle = coin; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.ellipse(cx, cy - r * 0.45, r * 0.62, r * 0.32, 0, 0, Math.PI * 2); g.fill();
+  g.font = '800 30px "Trebuchet MS", system-ui, sans-serif'; g.fillStyle = '#ffffff'; g.fillText('₽', cx, cy + 1);
+  g.font = '800 54px "Trebuchet MS", system-ui, sans-serif';
+  g.fillStyle = dear ? '#d02818' : C.navy;
+  g.fillText(text.replace('₽', ''), 146, 46, 150);
   return c;
 }
 
@@ -437,7 +486,9 @@ function wallUnit(cx, w, top, doors, name) {
   box(w, tall, 0.06, back, cx, H + tall / 2, wall + 0.03);
   for (const s of [-1, 1]) box(0.08, tall, 0.4, white, cx + s * (w / 2 - 0.04), H + tall / 2, wall + 0.2);
   box(w, 0.1, 0.44, white, cx, top, wall + 0.22);
-  header(name, 1.7, 0.34).position.set(cx, top + 0.26, wall + 0.3);
+  const sign = header(name, 2.6, 0.58);   // tipped towards the camera, which looks down on it
+  sign.position.set(cx, top + 0.36, wall + 0.5);
+  sign.rotation.x = -PITCH * 0.8;
   const strip = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.02, 0.05), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
   strip.position.set(cx, top - 0.06, wall + 0.3);
   room.add(strip);
@@ -468,7 +519,7 @@ function buildTable() {
   mesh(rbox(w - 0.12, 0.08, D - 0.12, 0.03), blue, cx, 0.04, cz);
   mesh(rbox(w + 0.08, 0.08, D + 0.08, 0.035), blue, cx, H - 0.04, cz);
   mesh(rbox(w + 0.1, 0.025, D + 0.1, 0.012), gold, cx, H - 0.085, cz);
-  header('RELICS', 1.1, 0.24).position.set(cx, H * 0.55, cz + D / 2 + 0.005);
+  header('RELICS', 1.6, 0.36).position.set(cx, H * 0.52, cz + D / 2 + 0.01);
   for (let i = 0; i < TABLE.n; i++) blocked.add(key(TABLE.x0 + i, TABLE.y));
 }
 
