@@ -1942,28 +1942,30 @@ async function launchFlyer(now) {
   shade.scale.set(1.8, 0.7, 1);
   shade.raycast = () => {};
   scene.add(m.group, shade);
-  flyer = { m, shade, at: now, ms: 9000 + Math.random() * 3000, dir: Math.random() < 0.5 ? 1 : -1, high: 0.4 + Math.random() * 0.15, w: { facing: 'front' } };
+  const dir = Math.random() < 0.5 ? 1 : -1, high = 0.4 + Math.random() * 0.15;
+  // the path is fixed in the world when it sets off, across the top of the view as it is then, so walking about
+  // never drags it along with the camera
+  const along = (sx) => {
+    const d = new THREE.Vector3(sx, high, 0.5).unproject(camera).sub(camera.position).normalize();
+    return camera.position.clone().addScaledVector(d, camera.userData.dist * 0.55);
+  };
+  flyer = { m, shade, at: now, ms: 9000 + Math.random() * 3000, dir, from: along(-1.5 * dir), to: along(1.5 * dir),
+    sx: camX, sz: camZ, w: { facing: 'front' } };
 }
-
-const ray = { dir: null };
 
 function liveFlyer(now, dt) {
   if (!flyer) { if (now > nextFly) launchFlyer(now); return; }
   const f = flyer, k = (now - f.at) / f.ms;
   if (k >= 1) { scene.remove(f.m.group, f.shade); dispose(f.m.group); f.shade.geometry.dispose(); f.shade.material.dispose(); flyer = null; return; }
-  // its path is across the top of the view, high over the treetops (nearer the camera than the forest, or it would fly
-  // through it); the board always faces the camera
-  const x = f.dir * (-1.5 + 3 * k), y = f.high + Math.sin(k * Math.PI) * 0.08;
-  ray.dir ??= new THREE.Vector3();
-  ray.dir.set(x, y, 0.5).unproject(camera).sub(camera.position).normalize();
-  f.m.group.position.copy(camera.position).addScaledVector(ray.dir, camera.userData.dist * 0.55);
-  f.m.group.position.y += Math.sin(now / 260) * 0.06;
+  // high over the treetops (nearer the camera than the forest, or it would fly through it); the board always faces the camera
+  f.m.group.position.lerpVectors(f.from, f.to, k);
+  f.m.group.position.y += Math.sin(k * Math.PI) * 0.4 + Math.sin(now / 260) * 0.06;
   f.m.group.quaternion.copy(camera.quaternion);
   f.m.board.scale.set(f.dir > 0 ? -0.45 : 0.45, 0.45, 1);
   drawMon(f.m, f.w, dt);
   // the shadow runs a little ahead, over the ground near you
   const sh = Math.min(1, k * 1.2 + 0.05), up = time !== 'night';
-  f.shade.position.set(camX + f.dir * (-14 + 28 * sh), 0.03, camZ - 1.5);
+  f.shade.position.set(f.sx + f.dir * (-14 + 28 * sh), 0.03, f.sz - 1.5);
   f.shade.material.opacity = up ? 0.2 * Math.sin(Math.min(1, sh) * Math.PI) : 0;
 }
 
