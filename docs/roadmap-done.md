@@ -2049,3 +2049,12 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   A tap has Smeargle ask you to cut it, a second snips it (`snip` synth): the halves swing down, the bow drops, confetti
   bursts, the achievement jingle, and Smeargle walks in, you after it. Saved as `secretBase.ribbonCut` (a save already
   greeted inside skips it); `?ribbon` puts it up for a page load, never saved. `buildRibbon()` / `ribbonTap()` in `js/mall-3d.js`.
+
+- **The Clearing PC's Mailbox** (2026-10-09, the user's ask, part 2 of the PC): the big PokéCoin prizes (a Pokédex,
+  bonus or Safari page done, the whole Pokédex, a type's first Level 5 jackpot, Champion of the Depths' coins) are
+  posted as letters (`post()` in `js/mail.js`, `save.mail`) instead of paid mid-run; the reward line says they wait in the
+  PC. The PC's Mailbox (top of its menu) lists envelopes, newest first; a tap opens one (flap up, letter rises out and
+  settles in front) and Claim pays it, the coins counting up under a CLAIMED stamp. An envelope bubble bobs over the PC
+  while one waits. With the Signs title there is no PC, so they're paid at once. Research-complete coins stay immediate
+  (their own window), starter unlock windows unchanged, and badges have no rewards to mail. `?mail` drops three sample
+  letters into an empty mailbox.

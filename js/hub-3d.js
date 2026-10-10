@@ -23,6 +23,7 @@ import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { unclaimed } from './mail.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -82,6 +83,7 @@ let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
+let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
@@ -715,6 +717,19 @@ export function texOf(canvas) {
   return map;
 }
 
+/** The PC's "you've got mail": a cream envelope in a white bubble with a red dot, like a phone's badge. */
+function mailArt() {
+  const { c, g, fill, rr } = fine(14, 13, 10);
+  rr(0.5, 0.5, 13, 10, 3, '#3a4a6a');
+  rr(1.2, 1.2, 11.6, 8.6, 2.4, '#ffffff');
+  fill('#3a4a6a', () => { g.moveTo(5.5, 10.4); g.lineTo(7, 12.6); g.lineTo(8.5, 10.4); });
+  rr(3, 3, 8, 5.4, 0.8, '#f4dca4');
+  g.strokeStyle = '#b88a3a'; g.lineWidth = 0.5;
+  g.beginPath(); g.moveTo(3.2, 3.3); g.lineTo(7, 6.2); g.lineTo(10.8, 3.3); g.stroke();
+  fill('#e8403a', () => g.arc(11.4, 2.6, 2, 0, Math.PI * 2));
+  return c;
+}
+
 /** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
     poster with a red header and three snapshots of today's catches. */
 function kioskArt(K = KIT) {
@@ -1165,10 +1180,15 @@ function makePlaces() {
     {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      line: 'A PC. Choose who walks with you, who lives in your Secret Base, and your name.',
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : ''}A PC. Your mail, who walks with you, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
+        pcMail = board(mailArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
+        pcMail.rotation.x = -PITCH;
+        pcMail.userData.y = 2.35;
+        pcMail.visible = unclaimed().length > 0;
+        g.add(pcMail);
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         pc.rotation.y = -0.35;   // turned a little, so its right side shows
         g.add(pc);
@@ -1282,7 +1302,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {};
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1643,7 +1663,7 @@ async function openPc() {
   hideCard();
   walker.path = []; aim = null;
   const { openPC } = await import('./pc.js');
-  openPC({ onClose: swapBuddy, onFame: (app) => acts.onApp?.(app) });
+  openPC({ onClose: () => { if (pcMail) pcMail.visible = unclaimed().length > 0; swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
@@ -2028,6 +2048,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (!calm) livePc(now);
+  if (pcMail?.visible) pcMail.position.y = pcMail.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }

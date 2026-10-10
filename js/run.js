@@ -28,6 +28,7 @@ import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
+import { post } from './mail.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
@@ -1541,9 +1542,9 @@ function creditSafari() {
   const lines = [];
   for (const area of news.areas) {
     updateSave(d => { d.safariDex.done.push(area); });
-    const coins = awardCoins(SAFARI_AREA_COINS);
     const { name } = SAFARI_AREAS_BY_ID[area];
-    lines.push(`The ${name} page of the Safari Pokédex is complete! +${coins} PokéCoins.`,
+    const paid = post('safari', 'A full page!', `Every Pokémon of the ${name} is in your Safari Pokédex. The rangers send their thanks.`, SAFARI_AREA_COINS);
+    lines.push(`The ${name} page of the Safari Pokédex is complete! ${paid}`,
       `${name}'s rare spawns now come ${RARE_BOOST === 2 ? 'twice' : `${RARE_BOOST} times`} as often (on replays, not the day's first try).`);
   }
   if (news.complete) {
@@ -2868,7 +2869,7 @@ function unlockWindow(list, next) {
   }
   $('unlock-name').textContent = ken ? KEN.name : feat ? starter.name : starter.line[0].name;
   $('unlock-text').textContent = ken || feat ? starter.text : ACHIEVEMENT_FOR[starter.id]?.text ?? '';
-  $('unlock-hint').textContent = ken ? starter.hint : feat ? [starter.paid ? `+${starter.paid} PokéCoins!` : '', starter.hint].filter(Boolean).join(' ')
+  $('unlock-hint').textContent = ken ? starter.hint : feat ? [starter.coinLine ?? (starter.paid ? `+${starter.paid} PokéCoins!` : ''), starter.hint].filter(Boolean).join(' ')
     : 'Choose it at New game.';
   d.addEventListener('close', () => unlockWindow(rest, next), { once: true });
   openDialog('unlock-dialog');
@@ -2944,9 +2945,10 @@ function level5Rewards() {
   });
   if (shiny) lines.push(`✨ Shiny ${name} unlocked, and switched on!`);
   if (jackpot) {
-    const coins = awardCoins(LEVEL5_JACKPOT);
+    const kind = TYPES[type]?.label ?? type;
+    const paid = post('league', 'Jackpot!', `Your first Trainer Level 5 win with a ${kind} Pokémon! The League rewards a true champion.`, LEVEL5_JACKPOT);
     refreshCoins();
-    lines.push(`💰 Jackpot! +${coins} PokéCoins for your first Level 5 win with a ${TYPES[type]?.label ?? type} Pokémon!`);
+    lines.push(`💰 Jackpot for your first Level 5 win with a ${kind} Pokémon! ${paid}`);
   }
   return lines;
 }
@@ -3070,7 +3072,7 @@ function endRun(won, atLastBoss = false, loss = null) {
 
   dropNotes();   // the result window lists the unlocks itself
   const list = $('result-unlocks');
-  const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.paid ? ` +${f.paid} PokéCoins.` : ''}`),
+  const lines = [...run.unlocks.map(s => `🔓 Unlocked ${s.line[0].name}!`), ...(run.feats || []).map(f => `🏅 ${f.name}: ${f.text}!${f.coinLine ? ` ${f.coinLine}` : ''}`),
     ...(run.dexNews || []).map(line => `📕 ${line}`), ...(run.badges || []).map(badgeItem)];
   if (run.dexComplete) lines.push(`🏆 Pokédex complete! Every entry's research is done: +${coinsWithBonus(DEX_COMPLETE_COINS)} PokéCoins.`);
   lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate?.li ? [gate.li] : []));

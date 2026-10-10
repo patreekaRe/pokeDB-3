@@ -34,6 +34,7 @@ import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
@@ -177,6 +178,7 @@ function init() {
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
+  if (query.has('mail')) sampleMail();   // three letters in the Clearing PC's Mailbox, if it's empty
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
   // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
   // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.

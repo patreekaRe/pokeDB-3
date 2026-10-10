@@ -3,7 +3,8 @@
    screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu: Bill's PC holds your
    Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
    `secretBase.mons`), your own PC your name, the cloud save's Sign in (the title corner's PC, which the hub hides), then
-   the Hall of Fame and Log off. Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
+   the Hall of Fame and Log off. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
+   envelope and its PokéCoins are claimed there. Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
    your things.
    ============================================================ */
 
@@ -18,6 +19,8 @@ import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
+import { SENDERS, unclaimed, claim } from './mail.js';
+import { smoothIcon } from './smooth-icons.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -30,7 +33,7 @@ export function residents(save = getSave(), lend = false) {
   return { all, shown: (save.secretBase?.mons ?? all.slice(0, RESIDENTS)).filter(id => all.includes(id)) };
 }
 
-let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0;
+let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. */
@@ -79,7 +82,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine' };
+const UP = { home: null, mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine' };
 
 function back() {
   const up = UP[page];
@@ -154,7 +157,9 @@ function monTile(src, name, on, tap, tag = '') {
 
 const PAGES = {
   home() {
+    const waiting = unclaimed().length;
     const rows = [
+      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox')],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
     ];
@@ -166,6 +171,57 @@ const PAGES = {
     if (fame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
     menu('PC', rows);
+  },
+  mailbox() {
+    const mail = [...(getSave().mail || [])].reverse(), waiting = unclaimed().length;
+    const h = head('MAILBOX');
+    h.append(el('span', 'pc-count', waiting ? `${waiting} new` : ''));
+    const list = el('div', 'pc-mail');
+    list.append(...mail.map(m => {
+      const from = SENDERS[m.from] || SENDERS.lab;
+      const b = el('button', `pc-env${m.claimed ? ' read' : ''}`);
+      b.type = 'button';
+      b.style.setProperty('--ink', from.ink);
+      b.style.setProperty('--paper', from.paper);
+      b.append(el('span', 'pc-env-stamp'), el('span', 'pc-env-from', from.name), el('b', 'pc-env-title', m.title));
+      b.append(m.claimed ? el('span', 'pc-env-when', new Date(m.at).toLocaleDateString()) : el('span', 'pc-env-seal', 'NEW'));
+      b.addEventListener('click', () => { playSound('confirm'); letter = m.id; show('letter'); });
+      return b;
+    }));
+    glass.replaceChildren(h, mail.length ? list : el('p', 'pc-empty', 'No mail yet.'));
+    speak(waiting ? 'Tap a letter to open it.' : mail.length ? 'Every letter is opened. Tap one to read it again.' : 'Complete Pokédex pages and win big, and rewards will be sent here.');
+  },
+  letter() {
+    const m = (getSave().mail || []).find(x => x.id === letter);
+    if (!m) return show('mailbox');
+    const from = SENDERS[m.from] || SENDERS.lab, fresh = !m.claimed;
+    const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
+    wrap.style.setProperty('--ink', from.ink);
+    wrap.style.setProperty('--paper', from.paper);
+    const sheet = el('div', 'pc-sheet');
+    const prize = el('div', 'pc-prize');
+    prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${m.coins.toLocaleString()}`));
+    sheet.append(el('span', 'pc-sheet-from', `From: ${from.name}`), el('b', 'pc-sheet-title', m.title), el('p', 'pc-sheet-text', m.text), prize);
+    if (!fresh) sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+    wrap.append(el('div', 'pc-env-back'), sheet, el('div', 'pc-env-front'), el('div', 'pc-env-flap'));
+    const kids = [head(m.title.toUpperCase()), wrap];
+    if (fresh) {
+      const ok = el('button', 'room-ok pc-claim', 'Claim');
+      ok.type = 'button';
+      ok.addEventListener('click', () => {
+        if (ok.classList.contains('pressed')) return;
+        ok.classList.add('pressed');   // pushed in and lit, like every room's confirm (pressConfirm() in js/rewards.js)
+        const paid = claim(m.id);
+        playSound('item-get');
+        countUp(prize.querySelector('.pc-prize-n'), paid);
+        sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+        wrap.classList.add('paid');
+        speak(`${trainerName().toUpperCase()} received ${paid.toLocaleString()} PokéCoins!`);
+      });
+      kids.push(ok);
+    }
+    glass.replaceChildren(...kids);
+    speak(fresh ? `A letter from ${from.name}!` : `Opened ${new Date(m.claimed).toLocaleDateString()}.`);
   },
   bill() {
     menu('BILL\'S PC', [
@@ -239,6 +295,18 @@ const PAGES = {
 function signIn() {
   openCloud();
   document.getElementById('cloud-dialog').addEventListener('close', () => { if (root && page === 'home') show('home'); }, { once: true });
+}
+
+/** The prize's number ticking up from 0 to what was paid (Coin Finder's bonus included). */
+function countUp(node, to) {
+  if (calmFx()) { node.textContent = to.toLocaleString(); return; }
+  const at = performance.now(), ms = 700;
+  const tick = (now) => {
+    const k = Math.min(1, (now - at) / ms);
+    node.textContent = Math.round(to * (1 - (1 - k) ** 3)).toLocaleString();
+    if (k < 1 && node.isConnected) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 function setResidents(ids) {

@@ -328,6 +328,73 @@
   box-shadow: 0 2px 0 #8e1c26;
 }
 .pc-off:active { translate: 0 2px; box-shadow: none; }
+/* the Mailbox (js/mail.js): envelopes in a list, the newest first; one opened is a letter rising out of its envelope */
+.pc-mail { display: flex; flex-direction: column; gap: 10px; }
+.pc-env {
+  position: relative; display: grid; grid-template-columns: 38px 1fr auto; grid-template-rows: auto auto; align-items: center;
+  column-gap: 12px; padding: 10px 12px; cursor: pointer; text-align: left; border: 2px solid var(--ink); border-radius: 8px;
+  background: linear-gradient(162deg, transparent 0 49.6%, rgba(0, 0, 0, 0.06) 50%, transparent 50.4%), var(--paper);
+  color: #2a2620; font: 0.6rem var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 rgba(0, 40, 70, 0.35);
+}
+.pc-env:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(0, 40, 70, 0.35); }
+.pc-env.read { opacity: 0.62; }
+.pc-env-stamp {
+  grid-row: 1 / span 2; width: 34px; height: 40px; border-radius: 3px; background:
+    radial-gradient(circle, #fff 0 5px, var(--ink) 5px 6px, #fff 6px 9px, transparent 9px),
+    linear-gradient(transparent 46%, var(--ink) 46% 54%, transparent 54%), var(--ink);
+  outline: 2px dashed #fff; outline-offset: -4px;
+}
+.pc-env-from { font-size: 0.48rem; color: var(--ink); letter-spacing: 0.5px; }
+.pc-env-title { grid-column: 2; font-weight: 400; font-size: 0.64rem; }
+.pc-env-seal, .pc-env-when { grid-column: 3; grid-row: 1 / span 2; }
+.pc-env-seal {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: #fff; font-size: 0.44rem;
+  background: radial-gradient(circle at 35% 30%, #f06a5a, #c02a2a 60%, #8e1c1c); box-shadow: 0 2px 0 #6a1414;
+  animation: pcSeal 1.6s ease-in-out infinite;
+}
+.pc-env-when { font-size: 0.45rem; color: #6a6258; }
+@keyframes pcSeal { 50% { scale: 1.08; } }
+
+.pc-letter { position: relative; width: min(300px, 100%); height: 250px; margin: 0 auto 12px; overflow: hidden; perspective: 600px; }
+.pc-env-back, .pc-env-front, .pc-env-flap { position: absolute; left: 0; right: 0; bottom: 0; height: 110px; }
+.pc-env-back { border-radius: 8px; background: color-mix(in srgb, var(--ink) 70%, #000); }
+.pc-env-front {
+  z-index: 2; border-radius: 0 0 8px 8px; background:
+    linear-gradient(to top right, var(--paper) 49.5%, transparent 50.5%) left / 51% 100% no-repeat,
+    linear-gradient(to top left, var(--paper) 49.5%, transparent 50.5%) right / 51% 100% no-repeat,
+    linear-gradient(transparent 55%, var(--paper) 55%);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.12));
+}
+.pc-env-flap {
+  z-index: 0; bottom: 110px; height: 60px; transform-origin: 50% 100%;
+  clip-path: polygon(0 100%, 50% 0, 100% 100%); background: color-mix(in srgb, var(--paper) 88%, var(--ink));
+}
+.pc-sheet {
+  position: absolute; z-index: 4; left: 12px; right: 12px; top: 18px; display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 14px 16px; border-radius: 6px; background: #fffef9; color: #2a2620; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  background-image: repeating-linear-gradient(transparent 0 19px, rgba(60, 110, 170, 0.12) 19px 20px);
+}
+.pc-sheet-from { font-size: 0.45rem; color: var(--ink); }
+.pc-sheet-title { font-weight: 400; font-size: 0.7rem; }
+.pc-sheet-text { margin: 0; font-size: 0.52rem; line-height: 1.8; }
+.pc-prize { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; }
+.pc-prize-coin { width: 30px; height: 30px; }
+.pc-prize-n { font-weight: 400; font-size: 0.95rem; color: #8e5c06; }
+.pc-letter.paid .pc-prize { animation: pcPaid 0.5s ease-out; }
+.pc-claimed {
+  position: absolute; right: 10px; top: 12px; padding: 4px 8px; border: 3px solid #c02a2a; border-radius: 6px;
+  color: #c02a2a; font-size: 0.55rem; rotate: -12deg; opacity: 0.85; animation: pcStamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.pc-claim { display: block; margin: 0 auto; min-width: 140px; height: 44px; }
+/* opening: the flap swings up and over, the letter rises out of the envelope, then settles in front of it to be read */
+.pc-letter.fresh .pc-env-flap { animation: pcFlap 0.45s 0.15s ease-in-out backwards; }
+.pc-letter.fresh .pc-sheet { animation: pcRise 1s 0.5s ease-in-out backwards; }
+@keyframes pcFlap { from { rotate: x 180deg; z-index: 3; } }
+@keyframes pcRise { 0% { translate: 0 220px; z-index: 1; } 55% { translate: 0 -14px; z-index: 1; } 56% { z-index: 4; } 100% { translate: 0 0; z-index: 4; } }
+@keyframes pcPaid { 40% { scale: 1.25; } }
+@keyframes pcStamp { from { scale: 2.4; opacity: 0; } }
+.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-env-seal { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-env-seal { animation: none !important; } }
 @keyframes pcFade { from { opacity: 0; } }
 @keyframes pcGrow { from { scale: 0.4; translate: 0 30%; opacity: 0; } }
 @keyframes pcBoot { 0% { filter: brightness(0.2) saturate(0); } 50% { filter: brightness(1.6); } 100% { filter: none; } }
