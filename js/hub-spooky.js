@@ -1,7 +1,8 @@
 /* hub-spooky.js  -  the Clearing's Halloween guests (js/hub-3d.js asks for them in October): ghost Pokémon wandering
-   about between the decorations, and bats circling the Ancient Tree. They speak in the Furniture store's speech window
-   (.mall-line in css/hub.css: cream, its name on a tilted pink tag, fading up from the bottom): now and then a short
-   line that fades by itself, and when tapped a line or a whole story tapped through (js/data/spooky-lines.js). The
+   about between the decorations, and bats circling the Ancient Tree. Now and then one blurts a short line in a little
+   speech window over its head (.spook-bubble, the cream look of the Furniture store's, its tail pointing at who
+   said it), and when tapped it speaks in that store's speech window over the bar (.mall-line in css/hub.css: its
+   name on a tilted pink tag), a line or a whole story tapped through (js/data/spooky-lines.js). The
    first time the Clearing shows on a page load, one walks up to your partner and greets you by your nickname, and
    your name turns up among their lines after that. Nothing is saved. */
 
@@ -10,7 +11,7 @@ import { batArt } from './hub-season.js';
 import { playCry, playSound } from './audio.js';
 import { trainerName } from './leaderboard.js';
 
-const QUIP_MS = 3200;         // how long a passing line stays, like the store's say()
+const QUIP_MS = 4200;         // how long a line over a head stays
 const GREET_MS = 6500;        // and the greeting
 const PAUSE = [2500, 7000];   // a rest between strolls (ms)
 const ROAM = 5;               // how far (tiles) a stroll goes at most
@@ -33,6 +34,13 @@ export function makeSpooks(H) {
   foot.innerHTML = '<p class="mall-line talk spook-line" aria-live="polite"><b class="mall-who"></b><span></span><i aria-hidden="true"></i></p>';
   H.root.append(foot);
   const line = foot.firstChild;
+  const bubble = document.createElement('p');
+  bubble.className = 'spook-bubble';
+  bubble.setAttribute('aria-live', 'polite');
+  bubble.innerHTML = '<b class="mall-who"></b><span></span>';
+  bubble.hidden = true;
+  H.root.append(bubble);
+  let quip = null;            // { g, until }: the line floating over a ghost's head
   line.addEventListener('click', (e) => { e.stopPropagation(); if (talking) sayNext(); else fade(); });
 
   SPOOKS.forEach(async (def, i) => {
@@ -72,6 +80,25 @@ export function makeSpooks(H) {
     timed = more ? null : setTimeout(fade, ms);
   }
 
+  /** A passing line over a ghost's head, gone after QUIP_MS. */
+  function blurt(g, text) {
+    bubble.firstChild.textContent = g.def.name;
+    bubble.children[1].textContent = named(text);
+    quip = { g, until: performance.now() + QUIP_MS };
+    bubble.classList.remove('pop'); void bubble.offsetWidth; bubble.classList.add('pop');
+  }
+
+  function unblurt() { quip = null; bubble.hidden = true; }
+
+  /** Pins the bubble over its ghost's head on screen; false when the head is off the view. */
+  function place(g) {
+    const r = H.view.getBoundingClientRect(), o = H.root.getBoundingClientRect();
+    const v = new THREE.Vector3(g.w.x, g.m.board.position.y + g.m.top + 0.3, g.w.z).project(H.camera);
+    bubble.style.left = `${r.left - o.left + (v.x + 1) / 2 * r.width}px`;
+    bubble.style.top = `${r.top - o.top + (1 - v.y) / 2 * r.height}px`;
+    return v.z < 1 && Math.abs(v.x) < 0.9 && v.y < 0.9 && v.y > -0.6;
+  }
+
   function fade() {
     clearTimeout(timed);
     timed = null;
@@ -94,6 +121,7 @@ export function makeSpooks(H) {
   function start(g, partner) {
     if (talking?.g === g) return sayNext();
     hush();
+    unblurt();
     if (greeter?.g === g) greeter = null;
     talking = { g, lines: deal(g), i: -1 };
     face(g, partner);
@@ -209,21 +237,24 @@ export function makeSpooks(H) {
         if (!calm) b.material = bats.mats[Math.floor((now + u.flap) / 110) % 2];
       }
 
-      if (quiet) { calmFrom = 0; hush(); if (line.classList.contains('on')) fade(); return; }
+      if (quiet) { calmFrom = 0; hush(); unblurt(); if (line.classList.contains('on')) fade(); return; }
+      if (quip && now > quip.until) unblurt();
+      if (quip) bubble.hidden = !place(quip.g);
       calmFrom ||= now;
       if (greeter && now > greeter.until) greet(partner);
       if (!greeted && ghosts.length === SPOOKS.length && now - calmFrom > 900) startGreet(partner, now);
-      if (!timed && !talking && !greeter && greeted && now > nextQuip && ghosts.length) {
+      if (!quip && !timed && !talking && !greeter && greeted && now > nextQuip && ghosts.length) {
         nextQuip = now + 7000 + Math.random() * 9000;
         const g = ghosts[Math.floor(Math.random() * ghosts.length)];
         if (!g.quips.length) g.quips = shuffled(g.def.quips);
-        show(g, g.quips.shift());
+        blurt(g, g.quips.shift());
       }
     },
 
     dispose() {
       gone = true;
       fade();
+      bubble.remove();
       for (const g of ghosts) { H.scene.remove(g.m.group); H.dispose(g.m.group); }
       if (bats) { for (const b of bats) H.scene.remove(b); bats.mats.forEach(m => { m.map.dispose(); m.emissiveMap.dispose(); m.dispose(); }); bats.geo.dispose(); }
       foot.remove();

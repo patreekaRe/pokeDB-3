@@ -477,5 +477,23 @@
   display: block; position: absolute; right: 18px; bottom: 8px; width: 0; height: 0;
   border: 6px solid transparent; border-top: 7px solid #e8a040; border-bottom: 0; animation: b3Nudge 0.8s ease-in-out infinite;
 }
-.hub-card:not([hidden]) ~ .spook-foot, .hub.held .spook-foot { display: none; }
-@media (prefers-reduced-motion: reduce) { .spook-line.more i { animation: none; } }
+/* a passing line floats over the ghost's head in a small one, its name on the same tag, its tail pointing down at it */
+.spook-bubble {
+  position: absolute; z-index: 5; translate: -50% calc(-100% - 8px); width: max-content; max-width: min(220px, 62vw);
+  box-sizing: border-box; margin: 0; padding: 15px 15px 11px; pointer-events: none; border-radius: 20px / 17px;
+  background: #fbf4df; color: #6a5440; font-size: 13px; line-height: 1.4; text-align: center;
+  box-shadow: 0 3px 0 #d8c8a4, 0 5px 12px #0005; transform-origin: 50% 100%;
+}
+.spook-bubble .mall-who {
+  display: block; position: absolute; left: 12px; top: -11px; padding: 4px 10px; border-radius: 999px;
+  background: #f0a0b0; color: #6a2a3a; font-size: 10px; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
+}
+.spook-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -8px; translate: -50% 0;
+  border: 8px solid transparent; border-top: 9px solid #fbf4df; border-bottom: 0; filter: drop-shadow(0 2px 0 #d8c8a4);
+}
+.spook-bubble[hidden] { display: none; }
+.spook-bubble.pop { animation: spookPop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes spookPop { from { scale: 0.6; opacity: 0; } }
+.hub-card:not([hidden]) ~ .spook-foot, .hub.held .spook-foot, .hub.held .spook-bubble, .hub-card:not([hidden]) ~ .spook-bubble { display: none; }
+@media (prefers-reduced-motion: reduce) { .spook-line.more i, .spook-bubble.pop { animation: none; } }
