@@ -17,7 +17,7 @@
 
 import { $, el, setHpBar, infGlyph } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
-import { playSound, playCry, playMusic, closeSoundPops } from './audio.js';
+import { playSound, playCry, playMusic, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
@@ -147,7 +147,7 @@ export function initTitle(handlers) {
 
 /* The walkable Clearing (js/hub-3d.js) over the sky and signs, where its places open what the signs do; the signs stay
    under it as the fallback (no WebGL, Three.js offline) and for Settings' Title screen: Signs, or ?signs. */
-const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
+export const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
 
 let hubReady = Promise.resolve(false);   // the hub drawn behind the shut Pokédex (showTitle()), true once it's there
 
@@ -155,12 +155,14 @@ function openHub(hold = false) {
   const screen = $('title-screen');
   if (!useHub()) {
     screen.classList.remove('hub-mode');
+    setHomeTrack('title');
     hideHub();
     if (pressed) runTitleLight(true);
     return Promise.resolve(false);
   }
   screen.classList.add('hub-mode');
   runTitleLight(false);
+  setHomeTrack('clearing-hub');
   const mewtwo = STARTERS_BY_ID.mewtwo;
   return showHub(screen, {
     savedRun: actions.savedRun,
@@ -179,9 +181,9 @@ function openHub(hold = false) {
     dealFlyer,
   }, { hold }).then((ok) => {
     // no WebGL or Three.js offline: the signs and their sky after all
-    if (!ok) { screen.classList.remove('hub-mode'); runTitleLight(!screen.hidden); }
+    if (!ok) { screen.classList.remove('hub-mode'); setHomeTrack('title'); runTitleLight(!screen.hidden); }
     return ok;
-  }, () => { screen.classList.remove('hub-mode'); hideHub(); return false; });
+  }, () => { screen.classList.remove('hub-mode'); setHomeTrack('title'); hideHub(); return false; });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */

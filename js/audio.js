@@ -51,6 +51,7 @@ const TRACKS = {
   kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
   seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break
   'secret-base': 'assets/audio/secret-base.mp3',   // the user's (2026-10-09): inside the Secret Base, from its door till the doormat
+  'clearing-hub': 'assets/audio/clearing-hub.mp3',   // the user's (2026-10-09): the walkable Clearing's song, in place of 'title' wherever the hub is the title (setHomeTrack())
   'team-rocket': 'assets/audio/team-rocket.mp3',   // the user's (2026-10-09): Team Rocket's ? room (its events.js `music`), till the fight or the map
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
@@ -74,10 +75,11 @@ const LOOP_POINTS = {
   mart: [38.75, 87.45907, 0.3],   // a 48.71 s repeat (0.997 sample correlation at the join); the file fades out from ~101 s
   // From here on found with tools/loop.html?song=<name>.
   'secret-base': [40.4, 84.2515],   // a 43.85 s repeat (0.997 sample correlation at the join); the file fades out after
+  'clearing-hub': [22.3, 75.85327],   // a 53.55 s repeat (0.983 sample correlation at the join); the file is 84.5 s
   'team-rocket': [2.5, 61.22894, 0.3],   // a 58.73 s repeat (0.93 melody match, 0.65 sample correlation at the join, so cross-faded); the file is 75.1 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
+const TRACK_FALLBACK = { 'clearing-hub': 'title', 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -240,6 +242,7 @@ const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 const loops = {};          // sound name -> { on, source } of an effect that repeats until turned off (setLoop)
 let current = null;        // name of the track that should be playing right now
+let homeTrack = 'title';   // what playMusic('title') plays: 'clearing-hub' while the walkable Clearing is the title
 /** The track that should be playing now (a scene that takes the music over puts it back). */
 export const musicNow = () => current;
 
@@ -298,6 +301,7 @@ export function initAudio() {
  * cut:     switch instantly (no fade out, no fade in), e.g. for a fanfare.
  */
 export function playMusic(name, { restart = false, cut = false } = {}) {
+  if (name === 'title') name = homeTrack;
   if (missing.has(name)) name = TRACK_FALLBACK[name] ?? null;
   if (current === name) return;
   const previous = current;
@@ -673,7 +677,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7)
+const TRACK_GAIN = { boss: 1.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
@@ -1502,4 +1506,12 @@ function liftDing(ac) {
     out[i] = v * Math.min(1, t / 0.003, (length - i) / (rate * 0.05));
   }
   return normalize(buffer, 0.14);
+}
+
+/** The menus' song: 'clearing-hub' while the walkable Clearing stands in for the title, 'title' over the signs. */
+export function setHomeTrack(name) {
+  if (homeTrack === name) return;
+  const playing = current === homeTrack;
+  homeTrack = name;
+  if (playing) playMusic('title');
 }

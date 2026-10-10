@@ -45,10 +45,10 @@ import { floorOf, towerWeekly } from './data/tower.js';
 import { climbIntro } from './climb-intro.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playMusic } from './audio.js';
+import { initAudio, playMusic, setHomeTrack } from './audio.js';
 import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
-import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
+import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest, useHub } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
@@ -202,6 +202,7 @@ function init() {
     });
   }
   checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
+  setHomeTrack(useHub() ? 'clearing-hub' : 'title');   // before initAudio() starts the menus' song, so title.mp3 isn't fetched for nothing
   initAudio();
   initSettings();
   initTips();
