@@ -144,11 +144,10 @@ live site.
 - **The walk-in 3D Pokémon Center** (branch `pokecenter-3d` until the user says, 2026-10-09, their ask after DPPt's
   Centers): `js/center-3d.js` lays a 3D room under the run's Center (`restSite()` in `js/run.js` keeps its choices,
   text box and room bar; `mountCenter()` puts a canvas where the pixel scene was, `#reward-options.c3d` hides the
-  pixel room's nurse and monitor and floats the choices' signs, one word each, over the 3D things, `placeSigns()`):
-  orange walls over a red band, a cream tiled floor with the Poké Ball seal and a red runner, the red counter with a tall
-  plant at each end and Chansey behind it (Upgrade), a modelled healing machine (Heal, after a "Heal N HP?" ask; its one
-  Poké Ball, a true sphere, appears only then: thrown from your Pokémon into the dish, flashing with the chime, hopping
-  back, `tickHeal()`) under a big patient monitor counting the HP up, the Clearing's PC model (`pcModel()`, js/hub-pc.js,
+  pixel room's nurse and monitor and floats the choices' signs, one word each, small cream speech windows with a thin border in the choice's colour, over the 3D things, Heal on the counter's front under the machine, `placeSigns()`; the pixel room never shows while the 3D one loads, `c3d-wait`):
+  orange walls over a red band, a cream tiled floor with the Poké Ball seal and a red runner, the red counter (no plants, 2026-10-09, the user's call) and Chansey behind it (Upgrade), a modelled healing machine (Heal, after a "Heal N HP?" ask; its one
+  Poké Ball, a true sphere, appears only then: your Pokémon shrinks into it in a red glow, it's thrown into the dish, flashing with the chime, hopping
+  back and your Pokémon popping out, `tickHeal()`) under a big patient monitor counting the HP up, the Clearing's PC model (`pcModel()`, js/hub-pc.js,
   whose screens now roll together) on the floor before the counter (Forget, or why not), a cabinet of varied stock
   (`STOCK` / `cabinet()`: books, binders, potions, jars, towels, a first-aid kit, a photo, a plant; never two shelves
   alike), benches, an escalator down in each front corner; the doormat presses Leave. A gentle tilt, close in

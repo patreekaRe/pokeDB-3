@@ -5315,5 +5315,18 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
    your Pokémon over first */
 #reward-options.c3d .reward-option { pointer-events: none; background: none; }
 body:has(#reward-options.c3d) #reward-screen { cursor: pointer; }
-body:has(#reward-options.c3d) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
-#reward-options.c3d .center-label { bottom: 8px; }
+/* the pixel room never shows while the 3D one loads (c3d-wait); if Three.js fails the wait comes off and it's back */
+body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+/* the signs are small cream speech windows, a thin border in the choice's colour (the user's pick, 2026-10-09) */
+#reward-options.c3d .center-label {
+  bottom: 8px; padding: 7px 12px 6px;
+  background: #fbf4df; color: #6a5440; border: 2px solid #e05838; border-radius: 12px;
+  box-shadow: 0 2px 0 #d8c8a4, 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+#reward-options.c3d .reward-option + .reward-option .center-label { border-color: #3878f0; }
+#reward-options.c3d .reward-option:nth-child(3) .center-label { border-color: #b058d8; }
+#reward-options.c3d .center-label::after {
+  width: 10px; height: 10px; margin-top: -5px; transform: translateX(-50%) rotate(45deg);
+  background: #fbf4df; clip-path: polygon(100% 0, 100% 100%, 0 100%); border: inherit; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
+}
+#reward-options.c3d .reward-option:is(:disabled, .locked) .center-label { color: #9a8c78; border-color: #b8ae9c; }

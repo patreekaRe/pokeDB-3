@@ -1,6 +1,6 @@
 /* center-3d.js  -  the run's Pokémon Center as a 3D room you walk about (branch pokecenter-3d; the user's ask, 2026-10-09,
    after the Diamond / Pearl / Platinum Centers): orange walls over a red band, a cream tiled floor with the Poké Ball seal,
-   the red counter with a plant at each end and Chansey behind it, the healing machine (one Poké Ball, put in only once you
+   the red counter with Chansey behind it, the healing machine (one Poké Ball, put in only once you
    agree to heal) under a big patient monitor, the Clearing's PC (js/hub-pc.js) on the floor before the counter, shelves of
    towels, books and medicine, benches and an escalator down in each front corner. It is only the scene: restSite() in js/run.js keeps the room's
    choices, text box and bar, and this lays the room under them (a canvas in place of the pixel scene). A tap on the
@@ -40,7 +40,7 @@ let THREE, renderer, scene, camera, post, view, hemi, sun;
 let room, mon, nurse, monitor, machine, plays = [], anchors = {}, blocked = new Set(), mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0;
-let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, leftAt = 0, runId = null, sizeCheck = 0;
+let vitals = { now: 0, coming: 0, blink: 0, drawn: '' }, healing = null, flashing = null, going = null, popping = null, leftAt = 0, runId = null, sizeCheck = 0;
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
@@ -471,7 +471,7 @@ function buildMachine() {
   scene.add(ball);   // in world space, so it can fly from your Pokémon to the dish
   machine = { group: g, ball, R, skin, knob, glow, dish: new THREE.Vector3(x, 1.06 + R, z + 0.04) };
   blocked.add(key(3, 0)); blocked.add(key(4, 0));
-  anchors.machine = new THREE.Vector3(x, 1.1, z + 0.35);
+  anchors.machine = new THREE.Vector3(x - 0.2, 0.32, tileZ(COUNTER.y) + COUNTER.d / 2 + 0.1);   // on the counter's front, under the machine
 }
 
 function buildRoom() {
@@ -543,12 +543,8 @@ function buildRoom() {
   blocked.add(key(PC_AT.x, PC_AT.y));
   anchors.pc = new THREE.Vector3(pc.position.x, 1.35, pc.position.z);
 
-  // a tall plant at each end of the counter, plants in the back corners, benches by the side walls, a Poké Ball stand and
+  // benches by the side walls, a Poké Ball stand and
   // the TM case at the back
-  piece('centerplant', tileX(COUNTER.x0) - 1.3, cz + 0.12, { scale: 1.2 });
-  piece('centerplant', tileX(COUNTER.x1) + 1.3, cz + 0.12, { scale: 1.2 });
-  piece('centerplant', tileX(0), tileZ(0), { scale: 1.15 }); blocked.add(key(0, 0));
-  piece('centerplant', tileX(10), tileZ(0), { scale: 1.15 }); blocked.add(key(10, 0));
   piece('balldisplay', tileX(1), tileZ(0)); blocked.add(key(1, 0));
   piece('tmcase', tileX(9), tileZ(0)); blocked.add(key(9, 0));
   piece('waitbench', tileX(0) - 0.05, tileZ(2) + 0.5, { turn: Math.PI / 2 }); blocked.add(key(0, 2)); blocked.add(key(0, 3));
@@ -715,8 +711,12 @@ function frame(now) {
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
   mon.group.position.set(walker.x, 0, walker.z);
-  mon.board.position.y = bob;
-  mon.board.scale.x = walker.flip ? -1 : 1;
+  const size = walker.size ?? 1;   // shrunk into its ball while it heals
+  mon.board.scale.set((walker.flip ? -1 : 1) * size, size, 1);
+  mon.board.position.y = bob + (1 - size) * 0.4;
+  mon.board.material.emissive.setRGB(1, 0.25, 0.2);
+  mon.board.material.emissiveIntensity = size < 1 ? (1 - size) * 1.6 + 0.4 : 0;
+  mon.group.children[1].visible = size > 0.3;
   drawMon(mon, walker, dt);
   drawMon(nurse, { facing: 'front' }, dt);
   nurse.board.scale.x = walker.x > nurse.group.position.x + 0.3 ? -1 : 1;
@@ -750,21 +750,23 @@ function arc(from, to, k, up) {
   return new THREE.Vector3(from.x + (to.x - from.x) * e, from.y + (to.y - from.y) * e + Math.sin(Math.PI * k) * up, from.z + (to.z - from.z) * e);
 }
 
-/** The ball: thrown from your Pokémon over the counter into the dish, flashing there while the chime plays, then hopping
-    back to it and gone. */
+/** The ball: your Pokémon shrinks into it in a red glow, it's thrown over the counter into the dish, flashes there while
+    the chime plays, then hops back and your Pokémon pops out of it. */
 function tickHeal(now) {
   const B = machine.ball, here = () => new THREE.Vector3(walker.x, 0.55, walker.z);
   if (healing) {
-    const k = Math.min(1, (now - healing.from) / healing.ms);
+    const k = Math.min(1, (now - healing.from) / healing.ms), IN = 0.25;
     B.visible = true;
+    walker.size = calm ? 0 : Math.max(0, 1 - k / IN);
     if (calm) B.position.copy(machine.dish);
     else {
-      const fly = Math.min(1, k / 0.75), settle = Math.max(0, (k - 0.75) / 0.25);
+      if (!healing.thrown && k >= IN) { healing.thrown = true; playSound('ball-throw'); }
+      const fly = Math.max(0, Math.min(1, (k - IN) / 0.55)), settle = Math.max(0, (k - IN - 0.55) / 0.2);
       B.position.copy(arc(here(), machine.dish, fly, 1.1));
       if (fly >= 1) B.position.y += Math.abs(Math.sin(settle * Math.PI * 2)) * 0.12 * (1 - settle);
       B.rotation.x = fly < 1 ? -fly * Math.PI * 4 : 0;
     }
-    B.scale.setScalar(calm ? 1 : Math.min(1, 0.3 + k * 2));
+    B.scale.setScalar(calm ? 1 : Math.min(1, 0.3 + k * 3));
     B.rotation.y = 0;
     glowMachine(k >= 1 ? 0.3 : 0);
     if (k >= 1) { const done = healing.done; healing = null; done(); }
@@ -775,7 +777,11 @@ function tickHeal(now) {
     const k = Math.min(1, (now - going.from) / going.ms);
     B.position.copy(arc(machine.dish, here(), k, 0.9));
     B.scale.setScalar(1 - ease(k) * 0.8);
-    if (k >= 1) { going = null; B.visible = false; walker.hopUntil = now + 500; }
+    if (k >= 1) { going = null; B.visible = false; popping = { from: now, ms: calm ? 1 : 320 }; playSound('ball-open'); }
+  } else if (popping) {
+    const k = Math.min(1, (now - popping.from) / popping.ms);
+    walker.size = ease(k);
+    if (k >= 1) { popping = null; walker.size = 1; walker.hopUntil = now + 500; }
   }
   if (vitals.fill) {
     const f = vitals.fill, k = Math.min(1, (now - f.from) / f.ms);
@@ -819,7 +825,8 @@ function unmount() {
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   leftAt = performance.now();
-  busy = false; aim = null; healing = null; flashing = null; going = null;
+  busy = false; aim = null; healing = null; flashing = null; going = null; popping = null;
+  if (walker) walker.size = 1;
   if (machine) machine.ball.visible = false;
 }
 
@@ -856,7 +863,7 @@ export function warmCenter() {
     nurse.board.rotation.x = -PITCH;
     nurse.group.position.set(tileX(5), 0.12, tileZ(1));
     nurse.group.traverse(n => { n.userData.spot = 'nurse'; });
-    anchors.nurse = new THREE.Vector3(tileX(5), 0.12 + nurse.top + 0.15, tileZ(1));
+    anchors.nurse = new THREE.Vector3(tileX(5) + 0.7, 0.12 + nurse.top + 0.15, tileZ(1));
     scene.add(nurse.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
   })();
@@ -907,7 +914,7 @@ export async function mountCenter(o) {
       busy = true;
       walker.path = []; aim = null;
       walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-      return new Promise(done => { healing = { from: performance.now(), ms: calm ? 150 : 1300, done }; });
+      return new Promise(done => { healing = { from: performance.now(), ms: calm ? 150 : 1800, done }; });
     },
     /** The ball flashing while the chime plays, and the monitor's bar filling from `from` to `to`. */
     flash(seconds, from, to) {
