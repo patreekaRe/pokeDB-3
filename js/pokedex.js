@@ -124,9 +124,9 @@ export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.le
 const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', ruins: 'Ruins', wastes: 'Wastes', thornwood: 'Jungle', savanna: 'Savanna', depths: 'Depths' };
 const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
 /** A bonus page (another road from a crossroads) shows once a run has walked that road or met one of its Pokémon. */
-const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));
+export const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));
 /** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
-const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
+export const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
 
 let view = 'list';   // 'list' | 'page' | 'rewards'
 let entry = 0;       // the entry shown on the device, an index into the page's ids

@@ -2,7 +2,7 @@
    pc.js  -  the Clearing's PC (2026-10-09, the user's ask), full screen over the hub: a white hood round a striped cyan
    screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu: Bill's PC holds your
    Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
-   `secretBase.mons`), your own PC your name, the cloud save's Sign in (the title corner's PC, which the hub hides), then
+   `secretBase.mons`), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
    the Hall of Fame and Log off. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
    envelope and its PokéCoins are claimed there. Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
    your things.
@@ -21,6 +21,12 @@ import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
 import { SENDERS, unclaimed, claim } from './mail.js';
 import { smoothIcon } from './smooth-icons.js';
+import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, DEX_COMPLETE_COINS, SCOPE, safariOpen } from './data/pokedex.js';
+import { researchCount, bonusKnown, depthsKnown } from './pokedex.js';
+import { SAFARI_AREA_COINS } from './data/safari.js';
+import { ACHIEVEMENTS } from './data/achievements.js';
+import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { isStarterUnlocked } from './progress.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -33,7 +39,7 @@ export function residents(save = getSave(), lend = false) {
   return { all, shown: (save.secretBase?.mons ?? all.slice(0, RESIDENTS)).filter(id => all.includes(id)) };
 }
 
-let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null;
+let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. */
@@ -82,7 +88,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine' };
+const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine' };
 
 function back() {
   const up = UP[page];
@@ -162,6 +168,7 @@ const PAGES = {
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox')],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine')],
+      ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }],
     ];
     if (cloudConfigured()) {
       const on = cloudRemembered();
@@ -171,6 +178,53 @@ const PAGES = {
     if (fame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
     menu('PC', rows);
+  },
+  prof() {
+    const save = getSave(), beaten = new Set(save.dex.defeated), seen = new Set([...save.dex.seen, ...save.dex.defeated]);
+    const main = DEX_PAGES.flatMap(p => p.ids), [done, of] = researchCount();
+    const nBeaten = main.filter(id => beaten.has(id)).length;
+    const rate = el('div', 'pc-rate');
+    rate.append(...[['SEEN', main.filter(id => seen.has(id)).length], ['BEATEN', nBeaten], ['RESEARCHED', done]].map(([k, n]) => {
+      const c = el('div', 'pc-rate-n');
+      c.append(el('small', '', k), el('b', '', String(n)));
+      return c;
+    }));
+
+    const list = el('div', 'pc-done');
+    const row = (name, n, total, star) => {
+      const r = el('div', `pc-done-row${star ? ' star' : ''}`);
+      const bar = el('span', 'pc-done-bar');
+      bar.style.setProperty('--k', total ? n / total : 0);
+      r.append(el('span', 'pc-done-name', `${star ? '★ ' : ''}${name}`), bar, el('span', 'pc-done-n', `${n}/${total}`));
+      return r;
+    };
+    const pageRow = (p) => row(p.name, p.ids.filter(id => beaten.has(id)).length, p.ids.length, save.dex.done.includes(p.biome));
+    list.append(el('b', 'pc-done-head', 'POKéDEX'), ...DEX_PAGES.map(pageRow), row('Research', done, of, save.dex.complete));
+    const extra = [...(depthsKnown() ? [DEPTHS_PAGE] : []), ...BONUS_PAGES.filter(bonusKnown)];
+    if (extra.length) list.append(el('b', 'pc-done-head', 'BONUS PAGES'), ...extra.map(pageRow));
+    if (safariOpen(save)) {
+      const caught = new Set(save.safariDex.caught);
+      list.append(el('b', 'pc-done-head', 'SAFARI POKéDEX'), ...SAFARI_DEX_PAGES.map(p =>
+        row(p.name, p.ids.filter(id => caught.has(id)).length, p.ids.length, (save.safariDex.done || []).includes(p.area))));
+    }
+
+    const tips = hints(save), at = hint % Math.max(1, tips.length), tip = tips[at];
+    const card = el('button', 'pc-hint');
+    card.type = 'button';
+    const top = el('span', 'pc-hint-top', 'NEXT UNLOCK');
+    if (tips.length > 1) top.append(el('span', 'pc-hint-of', `${at + 1}/${tips.length} ▸`));
+    card.append(top);
+    if (tip?.art) {
+      const img = el('img', 'pixel pc-hint-art');
+      Object.assign(img, { src: tip.art, alt: '', draggable: false });
+      card.append(img);
+    }
+    card.append(el('span', 'pc-hint-text', tip ? tip.text : 'Nothing left to unlock. Truly a Pokémon Master!'));
+    if (tips.length > 1) card.addEventListener('click', () => { playSound('confirm'); hint = at + 1; show('prof'); speak(tips[hint % tips.length].say ?? 'Here\'s another thing to aim for.'); });
+    else card.disabled = true;
+
+    glass.replaceChildren(head('PROF. OAK\'S PC'), rate, card, list);
+    speak(`PROF. OAK: ${rating(nBeaten, main.length, save.dex.complete)}`);
   },
   mailbox() {
     const mail = [...(getSave().mail || [])].reverse(), waiting = unclaimed().length;
@@ -290,6 +344,50 @@ const PAGES = {
     setTimeout(() => box.focus(), 0);
   },
 };
+
+/** Prof. Oak's word on your Pokédex, by how much of the main three pages you've beaten (Gen 3's Pokédex rating). */
+function rating(n, of, complete) {
+  if (complete) return 'Every entry researched! Your Pokédex is complete. You are a true Pokémon researcher!';
+  const k = n / of;
+  if (!n) return 'Not one Pokémon beaten yet? Head out on a run and fill those pages!';
+  if (k < 0.25) return `${n} so far. A fine start! Every biome has Pokémon waiting for you.`;
+  if (k < 0.5) return `${n}! You're getting the hang of this. Keep exploring.`;
+  if (k < 0.75) return `${n}! Splendid, your Pokédex is filling up nicely.`;
+  if (k < 1) return `${n}! Nearly there. Only ${of - n} left to find.`;
+  return 'Every Pokémon beaten! Now beat each one a few more times to finish its research.';
+}
+
+/** What to aim for next, nearest first: an unfinished page, the Safari Zone's door, the research, a Safari area, a bonus
+    page, then the starters still to earn (Mewtwo stays a secret). Each is a line and, for a starter, its silhouette. */
+function hints(save) {
+  const beaten = new Set(save.dex.defeated), out = [];
+  const left = (p) => p.ids.filter(id => !beaten.has(id)).length;
+  const open = DEX_PAGES.filter(p => !save.dex.done.includes(p.biome)).sort((a, b) => left(a) - left(b));
+  for (const p of open.slice(0, 2)) {
+    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} page: ${p.perk.coins} PokéCoins and its perk, ${p.perk.name}.` });
+  }
+  if (!safariOpen(save)) {
+    const all = DEX_PAGES.flatMap(p => p.ids);
+    out.push({ text: `Beat every Pokémon in the three biomes once (${all.filter(id => beaten.has(id)).length}/${all.length}) and the Safari Zone opens.` });
+  }
+  if (!save.dex.complete && !open.length) {
+    const [n, of] = researchCount();
+    out.push({ text: `Finish the research on every entry (${n}/${of}): ${DEX_COMPLETE_COINS} PokéCoins and the ${SCOPE.name}.` });
+  }
+  if (safariOpen(save)) {
+    const caught = new Set(save.safariDex.caught), miss = (p) => p.ids.filter(id => !caught.has(id)).length;
+    const area = SAFARI_DEX_PAGES.filter(p => miss(p)).sort((a, b) => miss(a) - miss(b))[0];
+    if (area) out.push({ text: `Catch the ${miss(area)} Pokémon still missing from the Safari's ${area.name}${(save.safariDex.done || []).includes(area.area) ? '.' : `: ${SAFARI_AREA_COINS} PokéCoins.`}` });
+  }
+  for (const p of BONUS_PAGES.filter(p => bonusKnown(p) && !save.dex.done.includes(p.biome))) {
+    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} bonus page: ${p.bonus.coins} PokéCoins.` });
+  }
+  for (const a of ACHIEVEMENTS.filter(a => !STARTERS_BY_ID[a.starter]?.secret && !isStarterUnlocked(STARTERS_BY_ID[a.starter])).slice(0, 3)) {
+    const s = STARTERS_BY_ID[a.starter];
+    out.push({ text: `A Pokémon is waiting to join you. ${a.text}.`, art: spriteUrl(s, 'front', 0, false), say: 'Who could it be? Only one way to find out.' });
+  }
+  return out;
+}
 
 /** The cloud save's window over the PC; the menu's row reads Sign in or Cloud save again once it closes. */
 function signIn() {

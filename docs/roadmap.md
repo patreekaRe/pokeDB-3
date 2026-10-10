@@ -10,9 +10,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **The Clearing's PC, part 2** (part 1 landed 2026-10-09: the PC right of the plaza, `js/pc.js`, Bill's PC with the walking
-buddy and base residents, your PC's Rename, the Hall of Fame, Log off; the Mailbox landed 2026-10-09). Run in: LOCAL
+buddy and base residents, your PC's Rename, the Hall of Fame, Log off; the Mailbox and Prof. Oak's PC landed 2026-10-09). Run in: LOCAL
 (visual). Still to add, as agreed:
-- **Prof's PC**: the Pokédex rating, your completion and a hint at the next unlock.
 - **Decorations** in your PC (the base's furniture), and a PC furniture piece in the Secret Base opening the same screen.
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):

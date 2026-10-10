@@ -328,6 +328,36 @@
   box-shadow: 0 2px 0 #8e1c26;
 }
 .pc-off:active { translate: 0 2px; box-shadow: none; }
+/* Prof. Oak's PC: the rating's three numbers, the next-unlock card (a tap shows another) and every page's bar */
+.pc-rate { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.pc-rate-n {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 2px solid #3a78b8;
+  border-radius: 10px; background: #fbfdff; box-shadow: 0 3px 0 #2a5a90;
+}
+.pc-rate-n small { font-size: 0.42rem; color: #2a6a80; letter-spacing: 0.5px; }
+.pc-rate-n b { font-weight: 400; font-size: 1rem; color: #1e2a3a; }
+.pc-hint {
+  position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 12px; width: 100%;
+  margin-bottom: 14px; padding: 10px 12px 12px; cursor: pointer; text-align: left; border: 2px solid #c89418; border-radius: 10px;
+  background: linear-gradient(#fffbe6, #fff0b0); color: #3a2a08; font: 0.56rem/1.8 var(--pixel-font); font-synthesis-weight: none;
+  box-shadow: 0 3px 0 #a8780c;
+}
+.pc-hint:disabled { cursor: default; }
+.pc-hint:not(:disabled):active { translate: 0 2px; box-shadow: 0 1px 0 #a8780c; }
+.pc-hint-top { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 0.48rem; color: #8e5c06; letter-spacing: 0.5px; }
+.pc-hint-art { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; filter: brightness(0) opacity(0.7); }
+.pc-hint-text { grid-column: auto / -1; }
+.pc-done { display: flex; flex-direction: column; gap: 6px; }
+.pc-done-head { margin-top: 6px; font-weight: 400; font-size: 0.5rem; color: #0e3446; letter-spacing: 1px; }
+.pc-done-row { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 4.5em; align-items: center; gap: 8px; font-size: 0.48rem; color: #1e2a3a; }
+.pc-done-name { line-height: 1.6; }
+.pc-done-n { text-align: right; }
+.pc-done-bar {
+  height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(42, 106, 152, 0.4);
+  background-image: linear-gradient(90deg, #3a9a58, #6ad070); background-size: calc(var(--k) * 100%) 100%; background-repeat: no-repeat;
+}
+.pc-done-row.star { color: #8e5c06; }
+.pc-done-row.star .pc-done-bar { background-image: linear-gradient(90deg, #e0a820, #f8d850); }
 /* the Mailbox (js/mail.js): envelopes in a list, the newest first; one opened is a letter rising out of its envelope */
 .pc-mail { display: flex; flex-direction: column; gap: 10px; }
 .pc-env {

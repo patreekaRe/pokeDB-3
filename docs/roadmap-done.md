@@ -2058,3 +2058,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   while one waits. With the Signs title there is no PC, so they're paid at once. Research-complete coins stay immediate
   (their own window), starter unlock windows unchanged, and badges have no rewards to mail. `?mail` drops three sample
   letters into an empty mailbox.
+- **Prof. Oak's PC** (2026-10-09, part 2 of the Clearing's PC): a row under your own PC opens `PAGES.prof` in `js/pc.js`:
+  Gen 3's Pokédex rating (seen / beaten / researched over the three main pages, Prof. Oak's line by how much is beaten,
+  `rating()`), a gold Next unlock card (`hints()`: nearest unfinished page, the Safari Zone's door, the research, a Safari area,
+  a known bonus page, then up to 3 locked starters as silhouettes, Mewtwo kept secret; a tap shows the next) and a bar per
+  page (bonus pages once known, Safari areas once it's open).
