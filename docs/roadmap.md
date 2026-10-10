@@ -58,7 +58,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     `docs/reference/sky-pillar.md` and the archive). Still the user's: publish `firestore.rules` for the tower board and plaque.
 
 19. **Branching biomes** is done (parts a-d, 2026-10-06/07: the crossroads, the Sunken Ruins and the Thornwood Jungle,
-    each painted with its films; see the archive). The new roads open after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07). Still the user's: hear the new synths and films on a phone.
+    each painted with its films; see the archive). The new roads open after two won runs (`roadsOpen()`, 2026-10-10; was a Level 2+ win with each type). Still the user's: hear the new synths and films on a phone.
 
 20. **A Fire biome and a shuffled pool of roads** is done (parts a-c, 2026-10-07: the Sunscorch Savanna, the pool of three
     roads rolled at each run's start, its look and films, journey films for every pairing, its badges; see the archive).

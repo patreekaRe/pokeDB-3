@@ -625,7 +625,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   / 2 Water / 2 Grass / 2 Normal wilds (Meowth and Minccino, Team Rocket's), Alphas Patrat / Buneary / Glameow, bosses
   Castform / Loudred / Munchlax; its look is item 20 part b's, below). A win
   "conquered" its last biome (`conquered(route)` in `js/halloffame.js`, from the `route` a record keeps; a Wastes descent
-  scene unless the last biome is another road's: `descent({ land })`, `jungle` / `savanna` / `ruins`, each its own sky and skyline, `onSkyline()` in `js/descent.js`). The other roads stay hidden, no crossroads at all, until a win on Trainer Level 2+ with each of Fire, Grass and Water, `roadsOpen(stats)` from `maxLevelWinByType`, the user's call 2026-10-07; the result window says when they open; a peeked run always gets the fork),
+  scene unless the last biome is another road's: `descent({ land })`, `jungle` / `savanna` / `ruins`, each its own sky and skyline, `onSkyline()` in `js/descent.js`). The other roads stay hidden, no crossroads at all, until two won runs in all (`stats.runsWon`, any starter or Level; `roadsOpen(stats)`, the user's call 2026-10-10, was a Level 2+ win with each type); the result window says when they open; a peeked run always gets the fork),
   `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
   default road, no version bump). The Shrine / Ember Badges read their own bosses from `dex.defeated` (a slot's
   `bossesDefeated` is any road's), the Wanderer a win through every road at either fork, the Explorer every main biome entered. After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,

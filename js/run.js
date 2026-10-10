@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_LEVEL, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
+import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
@@ -3105,7 +3105,7 @@ function endRun(won, atLastBoss = false, loss = null) {
     if (mewtwoRun) level5.push(`💎 ${stageName(run.starter, run.stage)} entered the Hall of Fame as Champion of the Depths No.${String(entry.champ).padStart(3, '0')}!`);
 
     if (!roadsWere && roadsOpen(getSave().stats)) {
-      level5.push(`🧭 New roads open! You've won on Trainer Level ${ROADS_LEVEL}+ with Fire, Grass and Water: from now on, after a boss, a crossroads lets you pick the next biome.`);
+      level5.push(`🧭 New roads open! You've won ${ROADS_WINS} runs: from now on, after a boss, a crossroads lets you pick the next biome.`);
     }
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (!mewtwoRun && run.level === getSave().maxLevel && run.level < MAX_LEVEL) {
