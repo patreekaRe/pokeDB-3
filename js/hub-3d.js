@@ -1698,7 +1698,7 @@ function groundCue(g, x, z, text) {
     .then((f) => document.fonts.add(f));
   cueFont.then(paint, () => {});
   const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6 * 200 / 640), m);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8 * 200 / 640), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;
@@ -2247,7 +2247,7 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 1 : 0.8 + 0.2 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.6 : 0.48 + 0.12 * (0.5 + 0.5 * Math.sin(now / 520));
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
