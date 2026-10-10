@@ -1648,8 +1648,9 @@ function walkBackIn() {
 
 /* ---------- the Pokéstop ---------- */
 
-/** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. */
-function pokestop(g, id, x, z, S, cue = false) {
+/** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. `saved` is
+    whether it holds the saved run: CONTINUE on the ground before it, else a smaller NEW GAME. */
+function pokestop(g, id, x, z, S, saved = false) {
   const d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
   g.add(board(stopPostArt(), x, z, { s: S }));
   const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
@@ -1658,12 +1659,12 @@ function pokestop(g, id, x, z, S, cue = false) {
   disc.position.set(x, 1.55 * S + w / 2, z);
   disc.castShadow = true;
   g.add(disc);
-  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: cue ? continueCue(g, x, z + 0.95) : null };
+  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 0.95, saved ? 'CONTINUE' : 'NEW GAME', saved ? 1 : 0.8) };
 }
 
-/** Glowing CONTINUE on the ground before the Pokéstop holding the saved run (the user's ask, 2026-10-09: make it
-    obvious where to carry on). One saved run, so only one stop ever wears it; liveStop() fades it in and out. */
-function continueCue(g, x, z) {
+/** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
+    or start): CONTINUE before the one holding the saved run, NEW GAME a little smaller before the rest. */
+function groundCue(g, x, z, text, scale) {
   const c = document.createElement('canvas');
   c.width = 640; c.height = 160;
   c.hd = 2;
@@ -1675,15 +1676,15 @@ function continueCue(g, x, z) {
     d.textAlign = 'center'; d.textBaseline = 'middle';
     d.shadowColor = '#5fe0ff'; d.shadowBlur = 30;
     d.lineWidth = 10; d.strokeStyle = '#4fd8ff'; d.lineJoin = 'round';
-    for (let i = 0; i < 3; i++) d.strokeText('CONTINUE', 320, 84);
+    for (let i = 0; i < 3; i++) d.strokeText(text, 320, 84);
     d.shadowBlur = 0; d.fillStyle = '#ffffff';
-    d.fillText('CONTINUE', 320, 84);
+    d.fillText(text, 320, 84);
     map.needsUpdate = true;
   };
   paint();
   document.fonts?.load('68px "PokeDB Pixel"').then(paint, () => {});
   const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0.9 });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6 * 160 / 640 * 1.6), m);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.6 * scale, 3.6 * scale * 160 / 640 * 1.6), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;

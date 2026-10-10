@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.3',
+    name: 'Spooky Season',
+    date: '2026-10-10',
+    notes: [
   ['hub', "The Clearing dresses up for the season: jack-o'-lanterns, autumn leaves and ghosts flying over in October, snow in December."],
   ['hub', "Halloween in the Clearing goes big: giant jack-o'-lanterns, a pumpkin patch with a scarecrow, a candlelit graveyard, a bubbling cauldron, lanterns and bats, and Gengar, Litwick, Duskull and Sableye wandering about blurting spooky lines over their heads, with hundreds of lines and stories to tell when you tap one. One walks up to greet you by name when you arrive."],
   ['base', 'House upgrades: open the PC\'s blueprint to make your Secret Base\'s main room bigger, then build as many rooms as you like for 500 PokéCoins each, a doorway wherever you pick on a wall, turned whichever way you want, or upstairs up a staircase from a back wall. Join rooms that stand side by side with a new doorway, or take a room down and its furniture goes back into storage.'],
@@ -55,17 +71,9 @@ export const NEXT = [
   ['pc', 'The PC menu is in a tidier order: your mail, then the PCs and your house, the Hall of Fame, and patch notes and cloud save at the bottom.'],
   ['fixes', 'The PC\'s Decorations and Duplicate pages show the picked piece in its own card, so tall furniture no longer covers its name.'],
   ['dex', 'Each Pokédex page\'s reward medal now sits beside its name, not in the bottom corner.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+  ['hub', 'Every Pokéstop now says what it does on the ground in front of it: NEW GAME, or CONTINUE where your saved run waits.'],
+    ],
+  },
   {
     version: '1.2',
     name: 'Home Sweet Home',
@@ -234,7 +242,7 @@ export const IN_THE_GAME = [
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 113 augments and a weekly leaderboard.'],
   ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
-  ['🏠', 'Secret Base', 'A 3D room in the Ancient Tree to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Spend PokéCoins on 6 starters, 9 perks, a shiny for every starter but Mewtwo, and Poké Balls.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
