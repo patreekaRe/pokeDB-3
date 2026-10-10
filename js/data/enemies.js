@@ -1372,7 +1372,7 @@ export const BIOMES = [
   {
     // Mewtwo's alone (v1.0): `secret` keeps it out of every other run, the Pokédex and the records. Its numbers are fixed:
     // no Trainer Level reaches it (MEWTWO_MODE in difficulty.js). Its scenery is BIOME_ART.depths in scene.js.
-    id: 'depths', name: 'Crystal Depths', secret: true, slot: 3,
+    id: 'depths', name: 'Crystal Depths', secret: true, slot: 3, music: 'seal',   // the fall's song carries on into the map (the user's call, 2026-10-09)
     stages: ['Cave Mouth', 'Crystal Halls', 'Deep Core', 'Energy Well'],
     normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
       'golurk', 'bronzong', 'claydol', 'dusknoir', 'lanturn', 'magnezone'],

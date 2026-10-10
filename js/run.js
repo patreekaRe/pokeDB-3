@@ -758,7 +758,7 @@ function showMap() {
   document.querySelector('.map-trainer')?.scrollIntoView({ block: 'center' });   // the map scrolls inside the Pokédex's screen
   if (isTower()) showScene(null);   // the tower is its own picture (js/tower.js)
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
-  playMusic(biome.music || `map${run.biome + 1}`);
+  playMusic(isTower() ? 'map4' : biome.music || `map${run.biome + 1}`);   // the climb has its own song (the user's call, 2026-10-09)
   if (run.charm) return relicCharm();
   if (run.gift) return chanseyGift();
   if (run.tutorLeft > 0) return tutorNotes();

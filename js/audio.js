@@ -42,7 +42,7 @@ const TRACKS = {
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
-  map4:    'assets/audio/map4.mp3',   // the Crystal Depths' map, the user's (2026-10-04)
+  map4:    'assets/audio/map4.mp3',   // the user's (2026-10-04): the Crystal Depths' map until 2026-10-09, now the Sky Pillar's climb (showMap())
   savanna: 'assets/audio/savanna.mp3',   // the Sunscorch Savanna's map, the user's (2026-10-09), in place of its slot's mapN (a biome's `music`, showMap())
   ruins:   'assets/audio/ruins.mp3',     // the Sunken Ruins' map, the user's (2026-10-09), the same way
   thornwood: 'assets/audio/thornwood.mp3',   // the Thornwood Jungle's map, the user's (2026-10-09), the same way
@@ -52,7 +52,7 @@ const TRACKS = {
   eternatus: 'assets/audio/eternatus.mp3',   // the final boss's own theme (v1.0 part C): the user's to supply...
   eternamax: 'assets/audio/eternamax.mp3',   // ...and its second form's; each plays `boss` until its file arrives
   kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
-  seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break
+  seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break, and the Crystal Depths' map (its biome's `music`)
   'secret-base': 'assets/audio/secret-base.mp3',   // the user's (2026-10-09): inside the Secret Base, from its door till the doormat
   'clearing-hub': 'assets/audio/clearing-hub.mp3',   // the user's (2026-10-09): the walkable Clearing's song, in place of 'title' wherever the hub is the title (setHomeTrack())
   'team-rocket': 'assets/audio/team-rocket.mp3',   // the user's (2026-10-09): Team Rocket's ? room (its events.js `music`), till the fight or the map
@@ -82,6 +82,7 @@ const LOOP_POINTS = {
   'team-rocket': [2.5, 61.22894, 0.3],   // a 58.73 s repeat (0.93 melody match, 0.65 sample correlation at the join, so cross-faded); the file is 75.1 s
   savanna: [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.95 melody match, 0.58 sample correlation at the join, so cross-faded); the file is 56.7 s, fading from ~48 s
   ruins:   [16.05, 77.13694, 0.3],   // a 61.09 s repeat (0.968 melody match, 0.912 sample correlation at the join, so cross-faded); the file is 133.4 s
+  seal:    [41.4, 79.58037, 0.3],   // a 38.18 s repeat (0.975 melody match, 0.822 sample correlation at the join, so cross-faded); the file is 102.2 s; the Depths' map since 2026-10-09
   thornwood: [20.2, 85.54415, 0.3],   // a 65.34 s repeat (0.888 melody match, 0.747 sample correlation at the join, so cross-faded; the finder's 16 s one at the top would skip most of the song); the file is 94.8 s, fading from ~86 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
