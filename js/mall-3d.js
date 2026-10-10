@@ -11,7 +11,7 @@
 
 import { getSave } from './storage.js';
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
+import { playSound, playCry, playMusic } from './audio.js';
 import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -868,6 +868,7 @@ async function leave() {
 /** The Poké Mall's hall. `onLeave` is where its doormat goes (the Clearing hands it the way back out of the doors). */
 export async function openMall({ onLeave = null, store = null } = {}) {
   leaveTo = onLeave;
+  playMusic('mart');   // the Poké Mart's song through the hall and every shop in it; the doormat's showHome() brings 'title' back
   calm = calmFx();
   if (root && renderer) {
     document.body.append(root);

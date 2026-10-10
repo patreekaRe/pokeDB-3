@@ -12,6 +12,7 @@ mastered ~11 dB louder; `evolve()` resumes it after the evolution scene) through
 win, the Hall of Fame's `hall-of-fame`, after any other won run `run-win`, each `victory` while its file is missing), and `center` at rest sites
 (`restSite()` in `js/run.js`), `mart` in a Poké Mart (`martRoom()`, the user's song, 2026-10-04: looped over its 48.71 s repeat with a crossfade, at `TRACK_GAIN` 0.27 since it's ~11.5 dB louder).
 `team-rocket` in Team Rocket's ? room (an event's `music` in `js/data/events.js`, played by `eventRoom()`): the user's song, 2026-10-09, 75 s, looped over its 58.73 s repeat (2.5-61.23 s, cross-faded), at `TRACK_GAIN` 0.24 (~12.9 dB louder than `center`). Battle! cuts to `elite` as usual (the user's call: it stops when the fight starts); Pay / Run go back to the map's song.
+`mart` also plays through the Poké Mall, its hall and every shop in it (`openMall()` in `js/mall-3d.js`, the user's ask, 2026-10-09; the doormat's `showHome()` brings `title` back).
 `secret-base` inside the Secret Base (`openBase3d()` / `reopen()` in `js/base-3d.js`; the doormat's `showHome()` brings `title` back): the user's song, 2026-10-09, 98 s fading out at its end, looped seamlessly over its own 43.85 s repeat (40.4-84.25 s, 0.997 at the join, no cross-fade), at gain 1 (as loud as `title`, -28 dB RMS). `showScreen()` deliberately leaves the map and
 reward screen's music alone so each of those can choose its own track.
 Tapping Rest cuts the music (`playMusic(null, { cut: true })`), plays the
