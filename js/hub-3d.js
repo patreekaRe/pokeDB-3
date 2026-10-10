@@ -17,6 +17,7 @@ import { loadThree, tex, dispose, monBoard, drawMon, onSprite, createPost, curta
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
+import { spriteFit } from './data/sprite-fit.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
@@ -1733,6 +1734,20 @@ function nearest() {
   return best;
 }
 
+/** A GIF's frame fits its whole animation, so a big or hopping Pokémon overflowed the run strip's LCD: scale its resting
+    pose (SPRITE_FIT's gaps) to fit .hbar-mon's 34 x 30 box, feet on its floor, in % so the box can change size. */
+function fitMon(img) {
+  const BW = 34, BH = 30;
+  const [top, bottom, left, right] = spriteFit(img.src);
+  const w = img.naturalWidth - left - right, h = img.naturalHeight - top - bottom;
+  if (w <= 0 || h <= 0) return;
+  const k = Math.min(BW / w, BH / h), pct = (n, of) => `${(n / of * 100).toFixed(2)}%`;
+  Object.assign(img.style, {
+    width: pct(img.naturalWidth * k, BW), height: pct(img.naturalHeight * k, BH),
+    left: pct((BW - w * k) / 2 - left * k, BW), top: pct(BH - h * k - top * k, BH),
+  });
+}
+
 /** The bottom bar, the rooms' Pokédex bar (the user's pick, 2026-10-08), reworked 2026-10-09 (the user's layout): one
     line along the hinge, lens, lights, small Home and How to play keys that never turn into anything else, the PokéCoins
     on their own little LCD and the place your partner walks up to on the right (a tap on the place does it); under it a
@@ -2053,6 +2068,7 @@ async function build() {
   bar = root.querySelector('.hub-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
   new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (camera) resize(); }).observe(bar);
+  bar.querySelector('.hbar-sprite').addEventListener('load', (e) => fitMon(e.target));
   bar.querySelector('.hbar-flee').append(smoothIcon('run'));
   bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(); });
   dexBtn = root.querySelector('.hub-dex');
