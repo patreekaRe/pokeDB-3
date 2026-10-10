@@ -126,9 +126,9 @@
 @media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hub-bar { animation: none; } }
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
-.title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }
+.title-screen.hub-on .title-center { animation: hubLogo 5.4s ease-in forwards; }
 .title-screen.hub-on .title-version { visibility: hidden; }
-@keyframes hubLogo { 0%, 65% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+@keyframes hubLogo { 0%, 75% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .title-screen.hub-on.hub-greeted .title-center { animation: none; visibility: hidden; }
 /* the title's fade in showed the screen under it (the character select) through the Clearing; the walk out of the mall
    or the base is already a fade through black */

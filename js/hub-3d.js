@@ -1474,7 +1474,7 @@ function walk(dt) {
   const w = walker, step = w.path[0];
   if (!step) { w.hop = 0; return false; }
   const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
-  const d = Math.hypot(dx, dz), move = dt / 1000 * 3.4;
+  const d = Math.hypot(dx, dz), move = dt / 1000 * (arriving ? 4.6 : 3.4);
   if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
   else { w.facing = 'front'; w.flip = dx > 0; }
   if (d <= move) { w.x = tx; w.z = tz; w.tile = step; w.path.shift(); }
@@ -1837,7 +1837,8 @@ const openDex = () => fromCorner(acts.onPokedex, dexBtn);
 function fromCorner(open, key) {
   if (root.querySelector('.room-home.out') || entering || held) return;
   hideCard();
-  walker.path = []; aim = null;
+  // the walk in carries on once it shuts: cut short, `arriving` never cleared and every tap was ignored
+  if (!arriving) { walker.path = []; aim = null; }
   playSound('confirm');
   open(key, () => { key.classList.remove('out'); dexNews(); });
   key.classList.add('out');
