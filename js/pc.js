@@ -41,7 +41,7 @@ export function residents(save = getSave(), lend = false) {
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
-let start = 'home', deco = null, decoKind = 'All', inBase = false;
+let start = 'home', deco = null, decoKind = 'All', inBase = false, buddyShiny = null;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -284,7 +284,7 @@ const PAGES = {
   },
   bill() {
     menu('BILL\'S PC', [
-      ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => show('buddy')],
+      ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }],
       ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
     ]);
   },
@@ -294,15 +294,25 @@ const PAGES = {
     const img = el('img', 'pixel pc-pick-mon');
     Object.assign(img, { src: now.src, alt: '' });
     card.append(img, el('b', 'pc-pick-name', now.name.toUpperCase()), el('small', 'pc-pick-note', 'walks with you'));
+    const anyShiny = all.some(m => m.shiny);
+    if (!anyShiny || buddyShiny == null) buddyShiny = anyShiny && !!now.shiny;
     const grid = el('div', 'pc-box');
-    grid.append(...all.map(m => monTile(m.src, m.name, m.key === now.key || (!now.key && m.src === now.src), () => {
+    grid.append(...all.filter(m => !!m.shiny === buddyShiny).map(m => monTile(m.src, m.name, m.key === now.key || (!now.key && m.src === now.src), () => {
       if (m.src === buddy().src) return;
       updateSave(d => { d.buddy = m.key; });
       playCry(m.cry);
       show('buddy');
       speak(`${m.name} will walk with you.`);
-    }, m.shiny ? '✨' : '')));
-    glass.replaceChildren(head('WALKING BUDDY'), card, grid);
+    })));
+    const h = head('WALKING BUDDY');
+    if (anyShiny) {
+      const t = el('button', `pc-shiny${buddyShiny ? ' on' : ''}`, '✨ Shiny');
+      t.type = 'button';
+      t.setAttribute('aria-pressed', buddyShiny ? 'true' : 'false');
+      t.addEventListener('click', () => { buddyShiny = !buddyShiny; playSound('select'); show('buddy'); });
+      h.append(t);
+    }
+    glass.replaceChildren(h, card, grid);
     speak('Only first forms fit on the paths. Bigger Pokémon rest in the box.');
   },
   residents() {
