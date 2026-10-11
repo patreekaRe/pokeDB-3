@@ -27,6 +27,7 @@
 
 import { TYPES } from './data/cards.js';
 import { ENEMY_DEFS } from './data/enemies.js';
+import { EVENTS_BY_ID } from './data/events.js';
 import { buildingSvg } from './buildings.js';
 import { random } from './rng.js';
 
@@ -751,10 +752,11 @@ if (typeof addEventListener === 'function') addEventListener('resize', () => {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, peek = null, ken = false } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false } = {}) {
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
-  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal, ken }];
+  // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
+  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal, read, track, type, ken }];
   const box = peek || $('map');
   box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
   setRows(map.floors.length);
@@ -791,6 +793,17 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       btn.querySelector('.map-town').replaceChildren(el('span', 'ken-face'));
       btn.classList.add('ken');
       label = 'Ken\'s dojo: the Move Tutor, Chad Master Kenmatta';
+    } else if (node.read && EVENTS_BY_ID[node.event?.id]) {
+      const event = EVENTS_BY_ID[node.event.id];
+      btn.querySelector('.map-town').textContent = event.icon;
+      btn.classList.add('read');
+      label = `${info.label}: ${event.name}`;
+    }
+    const match = track && type && node.type === 'fight' && !node.visited && matchUp(node.enemyId, type, track);
+    if (match) {
+      const def = ENEMY_DEFS[node.enemyId];
+      btn.append(el('span', `map-match ${match}`, TYPES[def.type].icon));
+      label = `${label}: a ${TYPES[def.type].label} Pokémon, ${match === 'tough' ? 'a tough match-up' : 'weak to you'}`;
     }
 
     // Every fight is chosen ahead of time (so a refresh can't reroll it), but no room names its Pokémon (the user's call:
@@ -819,6 +832,11 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       btn.classList.toggle('scope-pick', can);
       btn.disabled = !can;
       if (can) btn.addEventListener('click', () => reveal(node));
+    } else if (read) {
+      const can = readable(node);
+      btn.classList.toggle('scope-pick', can);
+      btn.disabled = !can;
+      if (can) btn.addEventListener('click', () => read(node));
     } else {
       const canGo = reachable.has(node.id);
       if (canGo) btn.classList.add('reachable');
@@ -854,6 +872,17 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
 
 /** A room the Silph Scope can reveal: a fight you haven't been to whose Pokémon isn't shown yet (the boss always is). */
 export const scopeable = (node) => ['fight', 'elite'].includes(node.type) && node.enemyId && !node.visited && !node.revealed;
+
+/** A ❓ room Unown Rubbing can read: one you haven't been to whose event isn't shown yet. */
+export const readable = (node) => node.type === 'event' && node.event && !node.visited && !node.read;
+
+/** Tracker's Eye: 'tough' when the wild Pokémon's type beats yours, at Lv 2 'weak' when yours beats it. */
+function matchUp(enemyId, type, level) {
+  const theirs = ENEMY_DEFS[enemyId]?.type;
+  if (!theirs) return null;
+  if (TYPES[theirs]?.beats === type) return 'tough';
+  return level > 1 && TYPES[type]?.beats === theirs ? 'weak' : null;
+}
 
 /* A revealed room's Pokémon stands above it in full colour (the boss's silhouette, coloured in), with its type's icon
    beside it for a wild one: elites are all Normal, so they show none (the user's call on the badges). */

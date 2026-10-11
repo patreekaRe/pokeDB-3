@@ -56,8 +56,7 @@
       <div class="title-dex" id="title-dex" aria-hidden="true">
         <div class="tdx-top"><span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></div>
         <div class="tdx-glass"><div class="tdx-screen">
-          <span class="cdev-splash-ball"></span>
-          <span class="tdx-name"><small>POKÉ</small>DECKBOUND</span>
+          <img class="tdx-buddy" id="tdx-buddy" alt="">
           <span class="tdx-hello" id="tdx-hello"></span>
         </div></div>
         <div class="tdx-cover"><span class="pdx-cover-hinge"></span><span class="tdx-led"></span><span class="tdx-clock" id="tdx-clock"><span class="tdx-sky"></span><span class="tdx-time"></span><span class="tdx-date"></span></span><span class="tdx-power"></span></div>
@@ -120,7 +119,7 @@
         <section class="set-group" data-tone="trainer">
           <header class="set-head"><span class="set-ico" data-icon="cap" aria-hidden="true"></span><b>Trainer</b></header>
           <form class="set-opt set-name-form" id="set-name-form"><label class="set-name" for="set-name-input">Nickname</label><small id="set-name-hint">On your Trainer Card and the leaderboards</small>
-            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="Trainer" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
+            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="TRAINER" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
         </section>
         <section class="set-group sound-ctl" data-tone="sound">
           <header class="set-head"><span class="set-ico" data-icon="sound" aria-hidden="true"></span><b>Sound</b>
@@ -369,7 +368,7 @@
            (js/run.js drawMap()); .map-keep survives renderMap() -->
       </div>
       <div class="mdex-glass">
-      <div class="map-wrap"><div class="map" id="map"><button class="scope-btn map-keep" id="scope-btn" type="button" hidden></button></div></div>
+      <div class="map-wrap"><div class="map" id="map"><div class="map-tools map-keep"><button class="scope-btn" id="scope-btn" type="button" hidden></button><button class="scope-btn rubbing-btn" id="rubbing-btn" type="button" hidden></button></div></div></div>
       <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->
       </div>
       <nav class="mdex-dock" id="mdex-dock" aria-label="Bag pockets">

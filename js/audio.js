@@ -304,8 +304,9 @@ export function initAudio() {
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
-    if (document.hidden) ctx.suspend(); else ctx.resume();
+    if (document.hidden) ctx.suspend(); else ctx.resume().catch(() => {});
   });
+  window.addEventListener('pageshow', () => { if (ctx && !document.hidden) ctx.resume().catch(() => {}); });   // back from the bfcache
 
   playMusic('title');
 }
@@ -349,6 +350,17 @@ export function preloadSounds(...names) {
   names.forEach(name => loadSound(name));
 }
 
+/** Whether sound runs, giving a tap's resume a moment to land first (iOS can take a beat, which dropped the power-on's dex-on). */
+function awake() {
+  if (ctx.state === 'running') return true;
+  return new Promise(done => {
+    const check = () => { if (ctx.state === 'running') finish(true); };
+    const finish = (ok) => { clearTimeout(timer); ctx.removeEventListener('statechange', check); done(ok); };
+    const timer = setTimeout(() => finish(false), 400);
+    ctx.addEventListener('statechange', check);
+  });
+}
+
 /**
  * Play a sound effect, or `fallback` if its own file is missing.
  * Resolves with the clip's length in seconds (0 if nothing played).
@@ -357,7 +369,7 @@ export async function playSound(name, fallback) {
   if (getSave().muted) return 0;
   let buffer = await loadSound(name);
   if (!buffer && fallback) buffer = await loadSound(name = fallback);
-  if (!buffer || ctx.state !== 'running') return 0;
+  if (!buffer || !await awake()) return 0;
   const now = ctx.currentTime;
   const last = lastPlayed[name];
   if (last && now - last.at < SFX_MIN_GAP) return 0;
@@ -394,7 +406,7 @@ export async function playCry(spriteId) {
   stopCry();
   if (getSave().muted || !CRIES.has(id)) return;
   const buffer = await loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`);
-  if (!buffer || ctx.state !== 'running' || getSave().muted) return;
+  if (!buffer || !await awake() || getSave().muted) return;
   stopCry();   // another cry may have been asked for while this one loaded
   const source = ctx.createBufferSource();
   source.buffer = buffer;
@@ -721,19 +733,24 @@ function stop(name) {
   p.el.pause();
 }
 
-/** The first tap or key press: now the browser lets us start sound. */
+/**
+ * Every tap or key press: if sound isn't running (the first tap, or iOS left the context suspended or "interrupted"
+ * after a lock, a call or an app switch, where a resume outside a tap is refused), wake it again. It used to stop
+ * listening once sound first worked, so a context that stalled afterwards stayed silent until a refresh.
+ */
+let primed = false;
 function unlock() {
   const context = audioContext();
-  context.resume();
-  preloadSounds('confirm', 'cancel', 'bag');   // so the first blip isn't late waiting on a download (or a missing file's 404)
+  if (!primed) { primed = true; preloadSounds('confirm', 'cancel', 'bag'); }   // so the first blip isn't late waiting on a download (or a missing file's 404)
+  const stuck = current && !getSave().muted && players[current]?.el.paused;
+  if (context.state === 'running' && !stuck) return;
+  context.resume().catch(() => {});
+  // iOS only lets a context start from inside the tap itself, and starting a sound there is what reliably wakes it
+  const blank = context.createBufferSource();
+  blank.buffer = context.createBuffer(1, 1, context.sampleRate);
+  blank.connect(context.destination);
+  blank.start();
   if (current && !getSave().muted) fadeIn(current);
-  // stay subscribed until sound really works: the context is running and the current track isn't stuck paused
-  setTimeout(() => {
-    const blocked = current && !getSave().muted && players[current] && players[current].el.paused;
-    if (context.state === 'running' && !blocked) {
-      UNLOCK_EVENTS.forEach(type => document.removeEventListener(type, unlock, true));
-    }
-  }, 250);
 }
 
 /**

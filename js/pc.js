@@ -580,7 +580,7 @@ const PAGES = {
   rename() {
     const form = el('form', 'pc-name');
     const box = el('input', 'pc-name-box');
-    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: getSave().trainerName || '', placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
+    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: (getSave().trainerName || '').toUpperCase(), placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
     box.setAttribute('aria-label', 'Your name');
     const ok = el('button', 'room-ok pc-name-ok', 'Save');
     ok.type = 'submit';
@@ -805,7 +805,7 @@ function hints(save) {
     if (area) out.push({ text: `Catch the ${miss(area)} Pokémon still missing from the Safari's ${area.name}${(save.safariDex.done || []).includes(area.area) ? '.' : `: ${SAFARI_AREA_COINS} PokéCoins.`}` });
   }
   for (const p of BONUS_PAGES.filter(p => bonusKnown(p) && !save.dex.done.includes(p.biome))) {
-    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} bonus page: ${p.bonus.coins} PokéCoins.` });
+    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} bonus page: ${p.bonus.coins} PokéCoins and its perk, ${p.perk.name}.` });
   }
   for (const a of ACHIEVEMENTS.filter(a => !STARTERS_BY_ID[a.starter]?.secret && !isStarterUnlocked(STARTERS_BY_ID[a.starter])).slice(0, 3)) {
     const s = STARTERS_BY_ID[a.starter];

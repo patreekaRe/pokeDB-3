@@ -78,20 +78,22 @@ function pending(k = K()) {
     2026-10-08 (the user's call), so it follows a cloud save to every device; a device's own old one moves in once, unless
     the save already has one. The old one stays on the device until a name is set here, in case a cloud save from before
     the move lands over the save without one. */
+// every name is in capitals, as typed boxes show it (the user's call, 2026-10-11), so an old mixed-case save reads the same
+const upper = (name) => cleanName(name).toUpperCase();
 const nameFor = () => {
-  const saved = cleanName(getSave().trainerName || '');
+  const saved = upper(getSave().trainerName || '');
   if (saved) return saved;
-  const old = cleanName(String(store.get(NAME_KEY) || ''));
+  const old = upper(String(store.get(NAME_KEY) || ''));
   if (old) updateSave(d => { d.trainerName = old; });
   return old;
 };
 /** The Trainer Card's name: the leaderboard nickname the player picked, never the sign-in's real name. */
-export const trainerName = () => nameFor() || 'Trainer';
+export const trainerName = () => nameFor() || 'TRAINER';
 /** The picked nickname itself ('' if none), for Settings' name box. */
 export const pickedName = () => nameFor();
 /** Settings' name box: saves the nickname (an empty one goes back to "Trainer") and returns what was kept. */
 export function setTrainerName(name) {
-  const clean = cleanName(name);
+  const clean = upper(name);
   updateSave(d => { d.trainerName = clean; });
   store.set(NAME_KEY, null);   // so clearing it really goes back to "Trainer"
   return clean;
@@ -309,10 +311,10 @@ function nameRow(user, waiting) {
   const form = el('form', 'pdx-lcd lb-name-form');
   const input = el('input', 'lb-name-input');
   input.maxLength = NAME_MAX;
-  input.placeholder = 'Your name';
+  input.placeholder = 'YOUR NAME';
   input.required = true;
   input.autocomplete = 'nickname';
-  input.value = nameFor() || suggestName(user);
+  input.value = nameFor() || suggestName(user).toUpperCase();
   const btn = el('button', 'lb-btn primary', waiting ? 'Post' : 'Save');
   btn.type = 'submit';
   form.append(el('strong', '', 'Pick your leaderboard name'),

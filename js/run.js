@@ -34,7 +34,7 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
@@ -60,7 +60,7 @@ import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
-import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
+import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { buildingSvg } from './buildings.js';
@@ -226,21 +226,25 @@ function markHp(node) {
 function spend(price) {
   run.money -= price;
   run.tally.spent += price;
-  mission('money', price);
 }
 
 /** Count play into the daily and weekly missions (js/missions.js), never on a peeked run; one just finished is told. */
 function mission(events, amount = 1) {
   if (peeking || !run) return;
-  for (const line of track(events, amount, { type: run.starter.type, level: run.level, safari: !!run.safari })) tell(line);
+  const road = !run.safari && !run.tower && (run.route || []).some((id, slot) => id && id !== BIOMES[slot]?.id);
+  const ctx = { type: run.starter.type, level: run.level, safari: !!run.safari, special: !run.starter.free, rests: run.restCount, road, day: run.safari?.day };
+  for (const line of track(events, amount, ctx)) tell(line);
 }
 
 /** A fight's moves played, damage dealt and items used, for the missions. */
 function missionTally(t) {
   if (!t) return;
-  mission('cards', t.played);
   mission('damage', t.dealt);
-  mission('item', t.items?.length || 0);
+  mission('seed', t.seed);
+  mission('power', t.powers);
+  mission('exhaust', t.exhausted);
+  if (t.tide >= 20) mission('tide-fight');
+  if (t.burn >= 40) mission('burn-fight');
 }
 
 function checkpoint() {
@@ -260,6 +264,8 @@ function checkpoint() {
     biome: run.biome,
     route: run.route,
     roads: run.roads,
+    wayfound: run.wayfound,   // Wayfinder Lv 1's one swap a run, spent
+    atFork: run.atFork,       // saved at the crossroads, so Continue comes back to it (walkOn())
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -353,8 +359,13 @@ export const hasSavedRun = () => loadSavedRun() !== null;
 /** Pick a saved run (from loadSavedRun) back up on its map. Returns the place's walk-on film if one plays over it. */
 export function continueRun(saved) {
   run = saved;
-  reseed(`map:${zone()}:${run.current}`);
   mapFilm = null;
+  if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
+    playMusic('trainer-victory');
+    walkOn();
+    return null;
+  }
+  reseed(`map:${zone()}:${run.current}`);
   showMap();
   return mapFilm;
 }
@@ -638,7 +649,6 @@ function peekRoom(id) {
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
-  if (!isSafari() && run.biome === 1) mission('biome');
   if (!isSafari() && !peeking) updateSave(d => {
     d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1);
     if (!d.stats.biomesSeen.includes(mainBiome().id)) d.stats.biomesSeen.push(mainBiome().id);   // for the Explorer Badge, once every road exists
@@ -706,6 +716,7 @@ function climbed(floor) {
   const t = run.tower;
   if (floor <= t.floor) return;
   mission('floor', floor - t.floor);
+  if (floor >= 30) mission('tower-30');
   t.floor = floor;
   if (peeking) return;
   updateSave(d => {
@@ -788,7 +799,7 @@ function showAbility() {
 
 function showMap() {
   const biome = land();
-  scoping = false;
+  scoping = rubbing = false;
   showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
@@ -1172,7 +1183,7 @@ function openMapPeek() {
   closeBag(true);
   const biome = land();
   renderMap(run.map, run.current, null, {
-    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten,
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten, ...tracking(),
   });
   const stage = biome.stages?.[stageOf(run.map, run.map.byId[run.current]).stage];
   $('map-dialog-title').textContent = stage ? `${biome.name}: ${stage}` : biome.name;
@@ -1266,7 +1277,6 @@ function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
   run.items.splice(index, 1);
   run.tally.itemsUsed.push(item.id);
-  mission('item');
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
@@ -1303,10 +1313,14 @@ function drawMap() {
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
+  if (rubbing && !nodes.some(readable)) rubbing = false;
   renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
+    read: rubbing ? readRoom : null, ...tracking(),
   });
   $('key-ken').hidden = !getSave().kenBeaten;
+  $('map').classList.toggle('scoping', scoping || rubbing);
+  drawRubbing(nodes);
   const total = scopeReveals(), left = total - scopeUsed();
   const btn = $('scope-btn');
   btn.hidden = !total;
@@ -1317,12 +1331,12 @@ function drawMap() {
   btn.querySelector('.scope-label').textContent = scoping ? 'Pick a room' : `${left}/${total}`;
   btn.title = scoping ? 'Tap a lit-up fight room to reveal it, or tap here to put the Scope away.'
     : `${SCOPE.name}: ${SCOPE.text} ${left} of ${total} left in this biome.`;
-  $('map').classList.toggle('scoping', scoping);
 }
 
 function toggleScope() {
   if (!run || (!scoping && scopeReveals() - scopeUsed() <= 0)) return;
   scoping = !scoping;
+  rubbing = false;
   playSound(scoping ? 'confirm' : 'cancel', 'confirm');
   drawMap();
 }
@@ -1338,6 +1352,47 @@ function revealRoom(node) {
 function initScope() {
   $('scope-btn').replaceChildren(itemSprite(SCOPE, 'scope-icon'), el('span', 'scope-label'));
   $('scope-btn').addEventListener('click', toggleScope);
+  $('rubbing-btn').replaceChildren(el('span', 'rubbing-icon', DEX_PERKS.ruins.icon), el('span', 'scope-label'));
+  $('rubbing-btn').addEventListener('click', toggleRubbing);
+}
+
+/* ---------- the other roads' map perks (the Ruins' and Thornwood's pages): what a ❓ room holds, and match-ups ---------- */
+
+let rubbing = false;   // picking a ❓ room for Unown Rubbing to read
+
+const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
+const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
+
+/** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+
+function drawRubbing(nodes) {
+  const total = rubbingReads(), left = total - rubbingUsed();
+  const btn = $('rubbing-btn');
+  btn.hidden = !total;
+  if (!total) return;
+  btn.classList.toggle('on', rubbing);
+  btn.disabled = !rubbing && (left <= 0 || !nodes.some(readable));
+  btn.setAttribute('aria-pressed', String(rubbing));
+  btn.querySelector('.scope-label').textContent = rubbing ? 'Pick a ❓' : `${left}/${total}`;
+  btn.title = rubbing ? 'Tap a lit-up ❓ room to read it, or tap here to put the rubbing away.'
+    : `${DEX_PERKS.ruins.name}: see which event waits in a ❓ room. ${left} of ${total} left in this biome.`;
+}
+
+function toggleRubbing() {
+  if (!run || (!rubbing && rubbingReads() - rubbingUsed() <= 0)) return;
+  rubbing = !rubbing;
+  scoping = false;
+  playSound(rubbing ? 'confirm' : 'cancel', 'confirm');
+  drawMap();
+}
+
+function readRoom(node) {
+  node.read = true;
+  rubbing = false;
+  checkpoint();
+  drawMap();
+  playSound('confirm');
 }
 
 /** A fight's share of the run's record. */
@@ -1392,7 +1447,7 @@ async function fight(node) {
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
-  if (!ken && !isSafari() && !isTower()) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one
+  if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   const deferIntro = node.type === 'boss' || ken;
@@ -1462,13 +1517,13 @@ function afterFight(node, result) {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
     // counted here, not as the fight ends: a refresh on a reward screen replays the fight
     missionTally(result.tally);
-    mission(['fight', 'fight-type']);
+    mission(['fight', 'fight-type', 'fight-special']);
     if (node.type === 'elite') mission('alpha');
     if (node.type === 'boss' || node.type === 'ken') mission('boss');
     if (node.type === 'boss' && run.hp > run.maxHp / 2) mission('healthy-boss');
     if (result.tally && !result.tally.taken) mission('flawless');
-    if (result.tally?.biggest >= 30) mission('big-hit');
-    if (result.tally && result.tally.turns <= 2) mission('quick');
+    if (result.tally?.biggest >= 50) mission('big-hit');
+    if (result.tally && result.tally.turns <= 4) mission('quick');
     if (tough) mission('tough');
     if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
@@ -1558,8 +1613,12 @@ async function walkOn() {
   const from = mainBiome().id, roads = FORKS.includes(run.biome + 1) && forkRoads(run.biome + 1, run.roads);
   // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
   // A peeked run always gets it, so it can be playtested.
-  const fork = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats))
-    ? await crossroads({ ids: roads, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  const forks = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats));
+  // the boss and its rewards are done: a refresh from here on (the crossroads or the journey film) comes back to the
+  // crossroads rather than the map before the boss, so the boss can't be fought again (the user's ask, 2026-10-11)
+  if (forks) { run.atFork = true; checkpoint(); }
+  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  if (fork && !roads.includes(fork.id)) swapRoad(run.biome + 1, roads[1], fork.id);
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;
   let close = null;
@@ -1571,9 +1630,27 @@ async function walkOn() {
     if (!peeking) updateSave(d => { d.travelSeen = { ...seenOf(d.travelSeen), [key]: true }; });
   }
   run.biome += 1;
+  run.atFork = false;
   startBiome();
   close?.();
   fork?.close();
+}
+
+/** Wayfinder (the Savanna page's perk): the other pool biomes the crossroads' second road can be swapped for, never one this
+    run has walked; Lv 1 once a run (spent only when a swapped road is taken), Lv 2 at every crossroads. Null when it can't. */
+function wayfinder(roads) {
+  const lv = dexPerk('wayfinder'), slot = run.biome + 1;
+  if (!lv || (lv < 2 && run.wayfound)) return null;
+  const others = POOL.filter(id => id !== roads[1] && !run.route.includes(id) && canWalk(id, slot));
+  return others.length ? others : null;
+}
+
+/** A swapped road was taken at `slot`: a later fork that was to offer it offers the one it replaced instead. */
+function swapRoad(slot, was, now) {
+  run.wayfound = true;
+  run.roads = { ...run.roads, [slot]: now };
+  for (const s of FORKS) if (s > slot && run.roads[s] === now) run.roads[s] = was;
+  tell(`${DEX_PERKS.savanna.name}: you found the way to the ${BIOMES_BY_ID[now].name}.`);
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
@@ -2142,7 +2219,6 @@ function restSite({ used = false } = {}) {
           const before = run.hp;
           run.hp += heal;
           run.restCount += 1;
-          mission('rest');
           $('reward-options').classList.add('resting');
           // like the games: the music stops, the balls go into the machine one by one, then they flash while the
           // healing chime plays out before you leave
@@ -2384,6 +2460,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
         run.tally.forgotten += 1;
+        mission('forget');
         tell(`${card.name} was forgotten.`);
         done();
       }, count),
@@ -2902,6 +2979,7 @@ function tutorCards(back, pay, done = showMap) {
       ...cardOption(card, run.stage, () => {
         pay();
         run.deck.push(card.id);
+        mission('learn');
         tell(`${card.name} added to your deck.`);
         done();
       }),
@@ -2971,6 +3049,7 @@ function martRoom() {
       item.sold = true;
       if (card.upgraded) upgradeBurst(option.node);
       run.deck.push(card.id);
+      mission('learn');
       tell(`Bought ${card.name}.`);
       martRoom();
     }, { group: 'cards', name: card.name });
@@ -3263,7 +3342,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   let record = null;   // a won run's entry, whose win scene plays before the result window
   if (won && !peeking) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
-    mission(['win', 'win-level']);
+    mission(['win', 'win-level', 'win-type', 'win-norest', 'win-road']);
     refreshCoins();
   }
   const lost = won ? 0 : breakStreak(run.starter.id, safari);

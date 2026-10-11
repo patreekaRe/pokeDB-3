@@ -43,8 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
-  ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
+  ['fixes', 'Sound no longer stays off after the first tap on the Pokédex: any tap now wakes it, also after locking the phone or switching apps.'],
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
   ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard is 3D too: its flagstones, his dais and carpeted steps, two braziers burning, and a smooth gold Dragonite medallion on the wall in place of the pixel one.'],
@@ -59,6 +58,28 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.5',
+    name: 'At the Crossroads',
+    date: '2026-10-11',
+    notes: [
+  ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
+  ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
+  ['runs', 'The crossroads is now a 3D place you walk about at dusk: tap the ground to walk your Pokémon there, and walk up a road to take it.'],
+  ['dex', 'The Sunken Ruins, Thornwood Jungle and Sunscorch Savanna pages now each give a perk when finished, Lv 2 once researched: Unown Rubbing shows which event a ❓ room holds, Tracker\'s Eye marks tough match-ups on the map, and Wayfinder lets you swap the other road at a crossroads.'],
+  ['fixes', 'Closing the game at a crossroads (or during the walk after it) now brings you back to the crossroads on Continue, not to the map before the boss.'],
+  ['runs', 'At the crossroads a notice board stands at each road: tap one to walk up and read it, its poster blown up with notes pinned to it: its places in order, bosses, wild Pokémon by type and its Pokédex page. Your Pokémon also gets a little smaller as it walks towards the fork.'],
+  ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
+  ['runs', 'At the crossroads the notice boards wear a bobbing "!" until read and the signpost\'s arms glow in turn until you pick a road; tapping a board or a sign now chimes.'],
+  ['fixes', 'A road you have never walked no longer shows its bosses at the crossroads, even if an older version or a playtest had marked them seen.'],
+  ['runs', 'At the crossroads the signpost\'s arms and the notice boards now say which biome each road leads to, the arms pulsing with light, the boards list each road\'s three Alphas beside its bosses (so the Pokédex count of 18 adds up), and your Pokémon turns left and right as it walks, as in the Clearing.'],
+  ['runs', 'At the crossroads a gold arrow bounces over the board and off the signpost arm of the road you have picked.'],
+  ['fixes', 'Continuing a run at a crossroads no longer flashes the character select before the crossroads appears.'],
+  ['hub', 'The Clearing\'s Halloween decorations are tidied up: a pumpkin patch, a graveyard, the witch\'s cauldron and matching pumpkins and lanterns along the trail, with the clutter in between cleared away.'],
+  ['pc', 'Missions rebalanced: each day is now one easy, one medium and one hard mission (30, 45 and 65 PokéCoins), each week likewise (200, 250 and 300), never two that need the same type or two run wins; new ones ask for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
+  ['hub', 'New players pick a name and a walking buddy (Charmander, Bulbasaur or Squirtle) on the Pokédex before they start, your buddy greets you on its screen each time you power it on, and names are now in capitals everywhere.'],
+    ],
+  },
   {
     version: '1.4',
     name: 'Rooms to Walk In',

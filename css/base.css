@@ -660,3 +660,6 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
   .cloud-save .hint { margin-bottom: 0; }
   .cloud-lines { margin: 4px 0 8px; }
 }
+
+/* names are in capitals everywhere (the user's call, 2026-10-11): every box you type one in shows it so as you type */
+.tdx-field, .tc-name-input, .pc-name-box, .lb-name-input, .set-name-input { text-transform: uppercase; }

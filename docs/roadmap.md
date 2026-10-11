@@ -102,7 +102,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`). Since the same day (the user's ask)
       the courtyard is 3D up to the painted wall (`dressKombat()`): flagstones in the painted floor's colours, his dais
       against the wall with carpeted, gold-edged steps (his pad raised onto it, `kombatLift()`; the painted steps step
-      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers, and the medallion as a smooth gold relief (`medallion3d()`: Dragonite traced from its own sprite, blurred and cut again so its pixel steps round off; hung on the wall between the nameplate and the Pokémon, clear of the dais; the painted one steps aside, `sceneBare()`). `?arena=ken`
+      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers, and the medallion as a smooth gold relief (`medallion3d()`: Dragonite traced from its own sprite, blurred and cut again so its pixel steps round off, baked into `assets/arena/` by `tools/medallion.html` since traced live it never showed on the user's iPhone; hung on the wall between the nameplate and the Pokémon, clear of the dais; the painted one steps aside, `sceneBare()`). `?arena=ken`
       (`&biome=`) walks a throwaway run straight into his fight.
     - **d. Each biome's own 3D foreground**, like the Clearing's, about a session a biome; then main. `GROUNDS` in
       `js/arena-3d.js` is one `dress*()` a biome, handed the ground's span, the fade and the placing tests by `build()`.
@@ -116,10 +116,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         (`spot()`) so a phone's narrow view gets its share; flat things keep off the middle between the Pokémon (the boss's
         lava runs across it), tall ones to the sides. Light by the hour, `WASTES_TIMES`; its pads basalt with lava seams.
         ~40 draw calls a frame (the Clearing ~300). Checked at 390x844 and 1280x800, every place, day / dusk / night.
-      - Next: the Shrine, then Ruins, Thornwood, Savanna, Depths.
+      - Merged into `main` and live since 2026-10-11 (the user's call). Next: the Shrine, then Ruins, Thornwood, Savanna, Depths.
       Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome and its dressing each session): "Read
-      CLAUDE.md and docs/roadmap.md's item 22, then check out the branch `claude/jolly-ritchie-vdznxn` and work only on it
-      (push only to it, never to main). Give the Shrine's 3D arena its own foreground in js/arena-3d.js, a `GROUNDS`
+      CLAUDE.md and docs/roadmap.md's item 22, then give the Shrine's 3D arena its own foreground in js/arena-3d.js, a `GROUNDS`
       entry like `dressWastes()`: 3D ground from your feet up to the pixel horizon in the pixel floor's own colours,
       with the Shrine's stone (flagstones, lanterns, moss, fallen leaves, a torii post or two) round the edges, kept off
       the middle and the pads, lit by the hour; boss, Alpha and wild fights alike. Keep it cheap on a phone (instanced or

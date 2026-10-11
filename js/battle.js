@@ -212,7 +212,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
-    tally: { played: 0, dealt: 0, biggest: 0, items: [] },   // this fight's share of the run's record (js/halloffame.js)
+    tally: { played: 0, dealt: 0, biggest: 0, items: [], burn: 0, seed: 0, powers: 0, exhausted: 0 },   // this fight's share of the run's record (js/halloffame.js)
     hurtThisTurn: false,   // lost HP on this turn of yours (Temper Flare)
     timesHurt: 0,      // times you've lost HP this fight, however it happened (Mind Blown)
     played: 0,         // cards played this turn (this one included, while it resolves)
@@ -867,6 +867,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     applyEffects(e.combo);
   }
   if (card.power) {
+    b.tally.powers += 1;
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
     pop('player-zone', `${POWER_LENS[b.starter.type] ?? '🧬'} ${card.name}`, 'note good', 200);
     playSound('power');
@@ -978,6 +979,7 @@ function timesEach(extras, n) {
 function burnEnemy(n, delay = 0) {
   const add = n + (battle.powers.drought || 0) + (hasRelic('tamato-berry') ? 2 : 0) + (battle.aug.burnBonus || 0);
   battle.enemy.burn += add;
+  battle.tally.burn += add;
   pop('enemy-zone', `🔥 Burn ${add}`, 'note', delay);
   if (battle.aug.burnBlock) gainBlock(battle.aug.burnBlock);   // Heat Shield
 }
@@ -1102,6 +1104,7 @@ const settled = (card) => card.orig || card;
 function exhaustCard(card) {
   const b = battle;
   b.exhaust.push(settled(card));
+  b.tally.exhausted += 1;
   if (!card.status && !card.copied) b.recycled.push(baseId(settled(card).id));   // Recycler
   pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
   if (card.onExhaust) applyEffects(card.onExhaust);
@@ -1498,7 +1501,7 @@ function enemyLoses(n) {
 }
 
 /** What this fight adds to the run's record. */
-const tallyOf = (b) => ({ ...b.tally, turns: b.turn, taken: b.damageTaken });
+const tallyOf = (b) => ({ ...b.tally, tide: b.tideGained || 0, turns: b.turn, taken: b.damageTaken });
 
 
 /** Damage the player: block first, then HP. Returns the damage that got through. `source` names a fatal blow for the loss recap. */
@@ -1686,6 +1689,7 @@ async function enemyTurn() {
     const n = Math.min(en.seed, en.hp);
     if (!b.powers.seedKeep && !b.aug.seedKeep) en.seed -= 1;
     enemyLoses(n);
+    b.tally.seed += n;
     checkStorm();
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${n} 🌱`, 'dmg');
