@@ -8,9 +8,9 @@
  * its bosses (silhouettes until the Pokédex has met them) and its wilds' types. A tap on a card or a road picks it (its
  * arm of the signpost lights up), a second tap or the button takes it, and your Pokémon walks off up that road as the
  * dark comes down. Or walk there yourself: tap the ground (or hold and drag, or the arrow keys / WASD), and walking onto a
- * road picks it, on up it takes it. Enter takes the picked one. There's no way out without choosing.
+ * road picks it, on up it takes it. Taking one asks "Are you sure you want to enter the X?" first. Enter takes the picked one. There's no way out without choosing.
  */
-import { $, el, sleep } from './ui.js';
+import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds } from './audio.js';
 import { sceneShot } from './scene.js';
 import { dexSeen } from './pokedex.js';
@@ -49,7 +49,7 @@ const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'],
 
 let P = 4, W = 0, H = 0, tall = true, hz = 0, fy = 0, fx = 0, d = 0, gw = 0, gh = 0, bw = 0;
 let canvas = null, ctx = null, img = null, buf = null, shots = [];
-let roads = [], picked = -1, walking = false;
+let roads = [], picked = -1, walking = false, asking = false;
 // the painting is split into layers wider than the screen (M pixels each side), slid apart by the camera's sideways
 // offset `cam` as your Pokémon walks: the sky barely, the meadow more on each row nearer you, the framing trees most
 let M = 0, LW = 0, far = null, ground = null, trees = null, cam = 0;
@@ -352,7 +352,7 @@ function roadCard(id, i, pick) {
  * past it in layers; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
-  roads = ids; picked = -1; walking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back';
+  roads = ids; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back';
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
   const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };
   scene.className = `crossroads-scene${calm ? ' still' : ''}`;
@@ -379,7 +379,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
     };
     const pick = (i) => {
-      if (walking) return;
+      if (walking || asking) return;
       if (picked === i) return take();
       choose(i);
       routeTo(pathAt(fy - (fy - hz) * 0.12, i ? 1 : -1)[0], fy - (fy - hz) * 0.12);
@@ -398,7 +398,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       last = now;
       const [X, Z] = toWorld(mx, my), speed = W * (walking ? 1.1 : 0.8) * dt;
       let gx = 0, gz = 0;
-      if (keys.size && !walking) {
+      if (keys.size && !walking && !asking) {
         gx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
         gz = (keys.has('up') ? 1 : 0) - (keys.has('down') ? 1 : 0);
         route = [];
@@ -421,7 +421,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       const target = Math.max(-M / 1.2, Math.min(M / 1.2, (mx - fx) * 0.35));
       cam += (target - cam) * Math.min(1, dt * 3);
       const r = regionOf(mx, my);
-      if (!walking && r >= 0) {
+      if (!walking && !asking && r >= 0) {
         choose(r);
         if (my < hz + (fy - hz) * 0.72) take();
       }
@@ -437,7 +437,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       routeTo(x + cam * near(y), y);
     };
     const onDown = (e) => {
-      if (walking || e.target.closest('.xr-road, .xr-go')) return;
+      if (walking || asking || e.target.closest('.xr-road, .xr-go')) return;
       held = true;
       aim(e);
     };
@@ -445,6 +445,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
     const onUp = () => { held = false; };
     const KEYS = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down' };
     const onKey = (e) => {
+      if (asking) return;
       const k = KEYS[e.key];
       if (k) keys.add(k);
       else if ((e.key === 'Enter' || e.key === ' ') && picked >= 0) take();
@@ -464,7 +465,18 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
     go.onclick = (e) => { e.stopPropagation(); take(); };
 
     async function take() {
-      if (walking || picked < 0) return;
+      if (walking || asking || picked < 0) return;
+      // no way back once you walk on, so it asks first (the user's ask, 2026-10-11); a no steps back off the road
+      asking = true;
+      keys.clear();
+      route = [];
+      playSound('stick');
+      const sure = await confirmDialog(`Are you sure you want to enter the ${BIOMES_BY_ID[roads[picked]].name}?`, 'Enter');
+      asking = false;
+      if (!sure || walking) {
+        if (regionOf(mx, my) >= 0) routeTo(fx, fy + (H - fy) * 0.15);
+        return;
+      }
       walking = true;
       keys.clear();
       playSound('confirm');

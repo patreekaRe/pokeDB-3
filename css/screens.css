@@ -2352,8 +2352,10 @@ body.battle-intro { pointer-events: none; }
 /* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */
 .enemy-portrait.sprite { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
 .enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; translate: calc(var(--shift, 0) * 100%) calc(var(--drop, 0) * 100%); --rest: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); filter: var(--rest); }
-.enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
-.enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+/* one shadow layer, the glow only: two blurred drop-shadows on an animated GIF are redrawn every frame, and an Alpha
+   (Linoone) lagged on the user's phone; the glow already sits round the feet */
+.enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b); }
+.enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)); }
 /* a boss's second form (Eternamax, rebirth() in js/battle.js): a crimson glow in place of the gold, breathing; it pulses
    hot while it charges a huge hit; the first form sinks into the Well, brightening, and the second comes down from the
    rift in the roof (bossRebirth() in js/scene.js), a black silhouette taking on its colours as it lands */
@@ -4242,6 +4244,7 @@ body.scene-peek #backdrop { display: none; }
   position: absolute; left: 12px; bottom: 7px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%;
   font-size: 0.8rem; border: 2px solid rgba(255, 255, 255, 0.8); background: rgba(0, 0, 0, 0.25); filter: grayscale(1); opacity: 0.75;
 }
+.pdx-banner-name .pdx-medal { position: relative; left: auto; bottom: auto; display: inline-grid; vertical-align: middle; margin: -6px 0 0 10px; width: 34px; height: 34px; font-size: 1.05rem; letter-spacing: 0; text-shadow: none; }
 .pdx-medal.lv1 { filter: none; opacity: 1; background: linear-gradient(160deg, #f4f4f8, #9ea4b4); border-color: #fff; }
 .pdx-medal.lv2 { filter: none; opacity: 1; background: linear-gradient(160deg, #fff2a0, #d89a10); border-color: #fff6c8; box-shadow: 0 0 8px rgba(255, 220, 100, 0.8); }
 .pdx-banner-mons { position: absolute; right: 2px; bottom: 0; display: flex; align-items: flex-end; }
@@ -5250,6 +5253,11 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 .center3d-view.on { opacity: 1; }
 .mart3d-view { transition: none; }   /* the Mart shows at once: a fade let the page's navy through */
 #reward-options.c3d-wait :is(.reward-option, .center-nurse, .center-vitals), #reward-options.c3d :is(.center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
+/* the indoor ? rooms walked in 3D (js/event-3d.js): their trainer and Pokémon stand in the room instead */
+/* display, not visibility: a blinking trainer's eyes-closed head sets itself visible and flashed over the room */
+#reward-options:is(.c3d, .c3d-wait) .event-figure { display: none; }
+/* a found item or relic picked over the 3D room it came from (hold() in js/event-3d.js), not the pixel scene */
+body.ev3d-held :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
 /* the signs float over the 3D machine, PC and Chansey (placeSigns()); a tap on one goes through to the room, which walks
    your Pokémon over first */
 #reward-options.c3d .reward-option { pointer-events: none; background: none; }
@@ -5269,6 +5277,10 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
   background: #fbf4df; clip-path: polygon(100% 0, 100% 100%, 0 100%); border: inherit; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
 }
 #reward-options.c3d .reward-option:is(:disabled, .locked) .center-label { color: #9a8c78; border-color: #b8ae9c; }
+/* the 3D grotto (js/event-3d.js): its chest is modelled, so the pixel chest's button stays only for its sign, floated over
+   the lid, and its logic; a tap goes through to the room, which walks your Pokémon up first */
+#reward-options.c3d-wait .treasure-chest, #reward-options.c3d .treasure-chest :is(.chest-part, .chest-rays, .chest-glow) { visibility: hidden; }
+#reward-options.c3d .treasure-chest { pointer-events: none; animation: none; }
 
 /* ---------- the walk-in 3D Poké Mart (js/mart-3d.js, branch pokemart-3d) ---------- */
 /* the shop's tiles stay in the page (their buttons take the two-tap Buy) but the 3D shelves show the wares instead */

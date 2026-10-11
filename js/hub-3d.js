@@ -10,6 +10,9 @@
 
 import { getSave, updateSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
+import { season } from './season.js';
+import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
+import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
@@ -23,7 +26,11 @@ import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { makeCauldron } from './hub-cauldron.js';
 import { unclaimed } from './mail.js';
+import { patchUnseen } from './patchnotes.js';
+import { pcBeckons } from './pc-news.js';
+import { claimable } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -57,6 +64,8 @@ const P = {
   roof: ['#d85040', '#a03028'],
   flowers: [['#ffffff', '#f8d848'], ['#f8e048', '#f89830'], ['#f8a0c8', '#f8f0f8'], ['#b0a0f8', '#f8f8f8']],
 };
+// the time of year (js/season.js), fixed for the page load: the trees, ground, light and decorations dress for it
+const SEASON = season(), GROUND = groundLook(SEASON, P);
 
 // glow: how hard the lantern and the Sky Pillar's door shine; lamp: the two lights they cast;
 // bugs: pollen drifting by day, fireflies blinking from dusk; air: the ambience loop (js/audio.js)
@@ -83,7 +92,10 @@ let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
 let built = null;   // the promise of the first build
+let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
+let yardTiles = new Set(), spooks = null, cauldron = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
 let held = false;   // drawn behind the shut Pokédex, waiting for enterHub(): no partner, no keys, no taps
@@ -146,9 +158,9 @@ function treeArt(seed, pal = P.trees) {
   return a.c;
 }
 
-function bushArt(seed) {
+function bushArt(seed, pal = P.trees) {
   const rnd = seeded(seed), a = art(30, 20);
-  blobs(a, [[10, 12, 8], [19, 11, 9], [15, 7, 7]], P.trees, rnd);
+  blobs(a, [[10, 12, 8], [19, 11, 9], [15, 7, 7]], pal, rnd);
   if (rnd() < 0.6) for (let i = 0; i < 4; i++) { const [x, y] = [6 + Math.floor(rnd() * 18), 6 + Math.floor(rnd() * 8)]; a.dot(x, y, '#f04858', 2, 2); a.dot(x, y, '#f8c8d0'); }
   return a.c;
 }
@@ -158,7 +170,7 @@ function groundArt() {
   const W = (COLS + 2 * M) * TP, H = (ROWS + M + FRONT) * TP, a = art(W, H), rnd = seeded(7);
   const img = a.g.createImageData(W, H), d = img.data;
   const rgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-  const meadow = P.meadow.map(rgb), dirt = P.path.map(rgb);
+  const meadow = GROUND.meadow.map(rgb), dirt = GROUND.path.map(rgb);
   const seg = (u, v, [[x1, y1], [x2, y2]]) => {
     const dx = x2 - x1, dy = y2 - y1, k = Math.max(0, Math.min(1, ((u - x1) * dx + (v - y1) * dy) / (dx * dx + dy * dy)));
     return Math.hypot(u - x1 - dx * k, v - y1 - dy * k);
@@ -189,6 +201,7 @@ function groundArt() {
       c = dirt[path > -0.06 ? 3 : n > 1.0 ? 0 : n > 0.62 ? 1 : 2];
       if (hash(x * 3, y * 7) > 0.985) c = dirt[3];
       c = pokePlaza(c, u - START.x, v - START.y, wob);
+      if (GROUND.snowy) c = mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.55 : 0.1);   // trodden snow
     } else {
       // darker away from the walkable ground, towards the trees
       // (not down the left, cleared round the Safari gate and the Poké Mall)
@@ -201,13 +214,18 @@ function groundArt() {
   }
   a.g.putImageData(img, 0, 0);
   const onPath = (x, y) => { const u = x / TP - M - 0.5, v = y / TP - M - 0.5; return Math.min(...PATHS.map(s => seg(u, v, s))) < 0.7 || Math.hypot(u - START.x, v - START.y) < 1.9; };
-  for (let i = 0; i < 900; i++) {   // blades
+  const blade = GROUND.blade;
+  if (blade) for (let i = 0; i < 900; i++) {   // blades
     const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H);
     if (onPath(x, y)) continue;
-    a.dot(x, y, P.blade[2], 1, 1); a.dot(x, y - 1, P.blade[1]); a.dot(x, y - 2, P.blade[0]);
+    a.dot(x, y, blade[2], 1, 1); a.dot(x, y - 1, blade[1]); a.dot(x, y - 2, blade[0]);
   }
-  for (let i = 0; i < 70; i++) {   // flowers, in little clumps
-    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), [petal, eye] = P.flowers[Math.floor(rnd() * 4)];
+  if (GROUND.leaves) for (let i = 0; i < 1400; i++) {   // fallen leaves, on the paths too
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), col = GROUND.leaves[Math.floor(rnd() * GROUND.leaves.length)];
+    a.dot(x, y, col, 2, 1); if (rnd() < 0.5) a.dot(x + (rnd() < 0.5 ? 0 : 1), y + 1, col);
+  }
+  if (GROUND.flowers.length) for (let i = 0; i < 70; i++) {   // flowers, in little clumps
+    const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H), [petal, eye] = GROUND.flowers[Math.floor(rnd() * 4)];
     if (onPath(x, y)) continue;
     for (let k = 0; k < 3; k++) {
       const fx = x + Math.floor(rnd() * 7) - 3, fy = y + Math.floor(rnd() * 5) - 2;
@@ -718,6 +736,19 @@ export function texOf(canvas) {
 }
 
 /** The PC's "you've got mail": a cream envelope in a white bubble with a red dot, like a phone's badge. */
+/** The "!" over the PC: the yellow bubble every Home key wears for news (.dex-news), a point at its foot. */
+function newsArt() {
+  const { c, g, fill, rr } = fine(10, 13, 10);
+  fill('#5a3a00', () => g.arc(5, 5, 4.6, 0, Math.PI * 2));
+  fill('#5a3a00', () => { g.moveTo(3.4, 8.6); g.lineTo(5, 12.4); g.lineTo(6.6, 8.6); });
+  fill('#ffd23a', () => g.arc(5, 5, 3.8, 0, Math.PI * 2));
+  fill('#ffd23a', () => { g.moveTo(3.9, 8.2); g.lineTo(5, 11); g.lineTo(6.1, 8.2); });
+  fill('rgba(255, 255, 255, 0.55)', () => g.ellipse(3.6, 3, 1.4, 0.8, -0.6, 0, Math.PI * 2));
+  rr(4.3, 2.2, 1.4, 3.6, 0.7, '#3a2400');
+  fill('#3a2400', () => g.arc(5, 7.2, 0.8, 0, Math.PI * 2));
+  return c;
+}
+
 function mailArt() {
   const { c, g, fill, rr } = fine(14, 13, 10);
   rr(0.5, 0.5, 13, 10, 3, '#3a4a6a');
@@ -1148,7 +1179,7 @@ function makePlaces() {
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7, !!run),
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
@@ -1180,15 +1211,18 @@ function makePlaces() {
     {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : ''}A PC. Your mail, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
         pcMail = board(mailArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
         pcMail.rotation.x = -PITCH;
         pcMail.userData.y = 2.35;
-        pcMail.visible = unclaimed().length > 0;
-        g.add(pcMail);
+        pcNews = board(newsArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
+        pcNews.rotation.x = -PITCH;
+        pcNews.userData.y = 2.35;
+        g.add(pcMail, pcNews);
+        pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
         pc.rotation.y = -0.35;   // turned a little, so its right side shows
         g.add(pc);
@@ -1219,7 +1253,7 @@ function makePlaces() {
     id: 'safari', name: 'Safari Pokéstop', step: { x: -1, y: -1 }, tiles: [[-1, -2]], tag: [-1, 2.6, -2], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
-    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun),
+    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun, 'EXPLORE'),
   });
   // left of the gate, along its fence (the user's ask, 2026-10-09)
   list.push({
@@ -1255,7 +1289,7 @@ function makePlaces() {
     id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
     line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
-    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb),
+    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'CLIMB'),
   });
   list.push({
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
@@ -1302,11 +1336,12 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
+  for (const k of yardTiles) blocked.add(k);
   for (const p of places) {
     const g = new THREE.Group();
     p.build(g);
@@ -1378,7 +1413,9 @@ function buildClearing() {
 
   forest = new THREE.Group();
   scene.add(forest);
-  const rnd = seeded(21), kinds = [treeArt(1), treeArt(2), treeArt(3, P.deep), treeArt(4, P.deep), bushArt(5), bushArt(6)];
+  const L = leavesOf(SEASON), crown = (i) => L ? L.trees[i % L.trees.length] : P.trees, far = (i) => L ? L.deep[i % L.deep.length] : P.deep;
+  const rnd = seeded(21), kinds = [treeArt(1, crown(0)), treeArt(2, crown(1)), treeArt(3, far(0)), treeArt(4, far(1)), bushArt(5, crown(2)), bushArt(6, crown(0))]
+    .map(c => SEASON === 'winter' ? snowCap(c) : c);
   const spots = kinds.map(() => []);
   // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()),
   // and none where the Sky Pillar and its meadow stand in the back-right corner, the trees behind it kept
@@ -1410,12 +1447,79 @@ function buildClearing() {
     forest.add(mesh);
   });
   buildVista();
+  dressSeason();
+}
+
+/** The season's decorations, built once with the forest. Halloween: big jack-o'-lanterns round the plaza, down the
+    trail and at the Ancient Tree's door, a giant pumpkin patch with a scarecrow, a graveyard lit by candles under a dead
+    tree, a bubbling cauldron, hay bales, lantern posts and glowing toadstools (lit with the clock, setTime()), ghost
+    Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
+    every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
+function dressSeason() {
+  if (SEASON === 'halloween') {
+    const P_ = (seed, lit = true) => [pumpkinArt(seed, lit), lit ? 'pumpkin' : null];
+    // [art, glow, tile x, tile y, size, nudge x, nudge z]; a nudge keeps a thing on its tile but off its middle
+    const yard = [
+      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0],   // the plaza
+      [...P_(5), 3, 7, 5.6, 0, -0.1], [...P_(6), 4, 8, 2.4, 0.1, 0.1], [...P_(7, false), 2, 8, 2, -0.1, 0.15], [...P_(8, false), 2, 6, 1.8, 0, 0],   // the patch
+      [scarecrowArt(), 'white', 4, 6, 1.5, 0.1, 0],
+      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.1, 0, 0.2],   // the Ancient Tree's door
+      [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
+      [...P_(15), 0, 5, 1.8, 0, 0], [...P_(16), 12, 3, 1.8, 0, 0], [...P_(17), 1, -1, 2, 0, 0], [...P_(18), -3, 11, 2.4, 0, 0], [...P_(19, false), -2, 12, 1.6, 0, 0],
+      [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
+      [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
+      [deadTreeArt(0), 'white', 12, 6, 1.7, 0.2, -0.2], [capsArt(1), 'white', 12, 7, 1.3, 0, 0.1],
+      [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
+      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
+      [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
+      [deadTreeArt(1), 'white', 1, 14, 1.8, 0, 0.2], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
+      [graveArt(5), null, 2, 14, 1.3, 0, 0], [graveArt(6), null, -3, 13, 1.4, 0, 0], [candlesArt(4), 'white', -2, 13, 1, 0, 0.1], [capsArt(1), 'white', 3, 14, 1.1, 0, 0.1],
+      [capsArt(0), 'white', 9, 14, 1.1, 0, 0], [lanternArt(4), 'white', -1, 12, 1.3, 0, 0],
+    ];
+    for (const [c, glow, tx, ty, s, nx, nz] of yard) {
+      const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
+      if (glow === 'pumpkin' && c.glow) glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      else if (glow && c.glow) glowing(b.material, c, null, '#ffffff', 1.2, seasonMats);
+      b.raycast = () => {};
+      forest.add(b);
+      yardTiles.add(key(tx, ty));
+    }
+    // out under the gate's sides, where the old little ones stood: no tile, so the sign and the Pokéstop stay reachable
+    for (const [dx, i] of [[-1.6, 20], [1.6, 21]]) {
+      const c = pumpkinArt(i), b = board(c, tileX(GATE_AT.tx) + dx, tileZ(GATE_AT.ty) + 0.7, { s: 1.7 });
+      glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
+      b.raycast = () => {};
+      forest.add(b);
+    }
+    // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
+    cauldron = makeCauldron(THREE);
+    cauldron.group.position.set(tileX(3), 0, tileZ(11));
+    forest.add(cauldron.group);
+    yardTiles.add(key(3, 11));
+    for (const l of cauldron.lights) lamps.push(l);
+    // the giant pumpkin lights the ground round it after dark
+    for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
+      const l = new THREE.PointLight(colour, 0, 4.5, 1.6);
+      l.position.set(...at);
+      l.userData.k = k;
+      lamps.push(l);
+      scene.add(l);
+    }
+    spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
+      spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+  }
+  if (SEASON === 'winter') {
+    const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
+    b.raycast = () => {};
+    forest.add(b);
+    makeSnow();
+  }
 }
 
 /** The view out past the Safari gate (js/hub-vista.js), square to the camera so it reads as the far distance, its foot
     on the ground's back edge; and plain meadow under everything, where the cleared corner shows past the ground's edges. */
 function buildVista() {
-  const meadow = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: P.meadow[3], roughness: 1 }));
+  const meadow = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), new THREE.MeshStandardMaterial({ color: GROUND.meadow[3], roughness: 1 }));
   meadow.rotation.x = -Math.PI / 2;
   meadow.position.y = -0.02;
   meadow.receiveShadow = true;
@@ -1434,7 +1538,7 @@ function paintVista() {
   const t = timeOfDay();
   if (!vista || vista.userData.time === t) return;
   vista.material.map?.dispose();
-  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42));
+  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42, vistaLook(SEASON)));
   vista.material.needsUpdate = true;
   vista.userData.time = t;
 }
@@ -1552,8 +1656,10 @@ function walkBackIn() {
 
 /* ---------- the Pokéstop ---------- */
 
-/** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. */
-function pokestop(g, id, x, z, S, cue = false) {
+/** A Pokéstop at (x, z), `S` its size: New game's on the trail, and the Safari's small one by its gate. `saved` is
+    whether it holds the saved run: CONTINUE on the ground before it, else its own `start` a little smaller (the user
+    let Claude pick, 2026-10-10: NEW GAME sounded like wiping the save). */
+function pokestop(g, id, x, z, S, saved, start) {
   const d = stopDiscArt(), w = d.width / d.fine / TP * 1.15 * S;
   g.add(board(stopPostArt(), x, z, { s: S }));
   const m = glowing(new THREE.MeshStandardMaterial({ map: texOf(d), alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.6 }), d, null, '#9cecff', 1.4);
@@ -1562,36 +1668,82 @@ function pokestop(g, id, x, z, S, cue = false) {
   disc.position.set(x, 1.55 * S + w / 2, z);
   disc.castShadow = true;
   g.add(disc);
-  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: cue ? continueCue(g, x, z + 0.95) : null };
+  stops[id] = { disc, m, y: disc.position.y, spinAt: 0, cue: groundCue(g, x, z + 1.1, saved ? 'CONTINUE' : start) };
 }
 
-/** Glowing CONTINUE on the ground before the Pokéstop holding the saved run (the user's ask, 2026-10-09: make it
-    obvious where to carry on). One saved run, so only one stop ever wears it; liveStop() fades it in and out. */
-function continueCue(g, x, z) {
+/** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
+    or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
+    heavy arcade face (the pixel font's thin strokes blurred into the glow), lying flat like a painted road marking, only
+    a little taller to make up for the floor's foreshortening (1.6 looked propped up), white letters with a cyan glow on a dark
+    extruded edge, a little see-through, chevrons marching in on either side
+    (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game, something new, no sparkles). */
+let cueFont;
+function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
-  c.width = 640; c.height = 160;
+  c.width = 760; c.height = 240;
   c.hd = 2;
   const map = tex(c);
+  // the letters are painted once onto `base`; each frame lays the marching chevrons beside them
+  const base = document.createElement('canvas');
+  base.width = c.width; base.height = c.height;
+  const cx = 380, cy = 120;
+  let half = 0, px = 124, last = -1;
   const paint = () => {
+    const d = base.getContext('2d');
+    d.clearRect(0, 0, base.width, base.height);
+    px = 124;
+    do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 500);
+    d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
+    half = d.measureText(text).width / 2;
+    d.shadowColor = 'rgba(95, 224, 255, 0.9)'; d.shadowBlur = 22;
+    d.lineWidth = 16; d.strokeStyle = 'rgba(40, 190, 240, 0.55)';
+    d.strokeText(text, cx, cy);
+    d.shadowBlur = 0;
+    // a chunky extruded edge under the letters, like an arcade title
+    d.lineWidth = 9; d.strokeStyle = d.fillStyle = '#06182a';
+    for (let i = 6; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
+    d.strokeStyle = '#0c2c48';
+    d.strokeText(text, cx, cy);
+    const g = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#bff2ff');
+    d.fillStyle = g;
+    d.fillText(text, cx, cy);
+    draw(last < 0 ? 0 : last, true);
+  };
+  const chevron = (d, x, dir, a) => {
+    d.globalAlpha = a;
+    d.beginPath(); d.moveTo(x - 20 * dir, cy - 26); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 20 * dir, cy + 26);
+    d.lineWidth = 20; d.strokeStyle = '#0c2c48'; d.stroke();
+    d.lineWidth = 10; d.strokeStyle = '#8eecff'; d.stroke();
+  };
+  // `now` 0 (and Reduced motion) is the still look: one chevron each side
+  const draw = (now, force) => {
+    if (!force && now - last < 33) return;
+    last = now;
     const d = c.getContext('2d');
     d.clearRect(0, 0, c.width, c.height);
-    d.font = '68px "PokeDB Pixel", monospace';
-    d.textAlign = 'center'; d.textBaseline = 'middle';
-    d.shadowColor = '#5fe0ff'; d.shadowBlur = 30;
-    d.lineWidth = 10; d.strokeStyle = '#4fd8ff'; d.lineJoin = 'round';
-    for (let i = 0; i < 3; i++) d.strokeText('CONTINUE', 320, 84);
-    d.shadowBlur = 0; d.fillStyle = '#ffffff';
-    d.fillText('CONTINUE', 320, 84);
+    d.lineJoin = 'round'; d.lineCap = 'round';
+    if (!now) { chevron(d, cx - half - 40, 1, 1); chevron(d, cx + half + 40, -1, 1); }
+    else for (let k = 0; k < 2; k++) {
+      const t = (now / 1100 + k / 2) % 1, x = half + 92 - t * 44, a = Math.sin(t * Math.PI);
+      chevron(d, cx - x, 1, a); chevron(d, cx + x, -1, a);
+    }
+    d.globalAlpha = 1;
+    d.drawImage(base, 0, 0);
     map.needsUpdate = true;
   };
   paint();
-  document.fonts?.load('68px "PokeDB Pixel"').then(paint, () => {});
-  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0.9 });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6 * 160 / 640 * 1.6), m);
+  cueFont ??= new FontFace('Bungee', 'url(https://fonts.gstatic.com/s/bungee/v17/N0bU2SZBIuF2PU_0DXR1.woff2)').load()
+    .then((f) => document.fonts.add(f));
+  cueFont.then(paint, () => {});
+  // drawn over the ground, not added to it: added light at 60% washed white letters into the grass (the user couldn't read them)
+  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8 * 760 / 640, 2.8 * 240 / 640 * 1.25), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;
   g.add(mesh);
+  m.userData.tick = draw;
   return m;
 }
 
@@ -1687,13 +1839,20 @@ async function enterMall() {
   await acts.onMall();
 }
 
+/** What floats over the PC: the envelope for mail, else the "!" for unread patch notes or a PC page not yet opened. */
+function pcMarks() {
+  if (!pcMail) return;
+  pcMail.visible = unclaimed().length > 0;
+  pcNews.visible = !pcMail.visible && pcBeckons(getSave());
+}
+
 /** Log on to the PC (js/pc.js), full screen over the Clearing; logged off, a new walking buddy steps out in place. */
 async function openPc() {
   if (entering || document.querySelector('.pc-screen')) return;
   hideCard();
   walker.path = []; aim = null;
   const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { if (pcMail) pcMail.visible = unclaimed().length > 0; swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
+  openPC({ onClose: () => { pcMarks(); swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
@@ -1858,7 +2017,11 @@ function onTap(e) {
   if (held || arriving || leaving || outbound || returning) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
-  const hit = ray.intersectObjects([mon.board, placeGroup], true).find(h => h.object !== mon.board || onSprite(h));
+  const ghosts = spooks?.boards() || [];
+  const hit = ray.intersectObjects([mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])], true).find(h => !h.object.userData.who || onSprite(h));
+  if (spooks?.tap(hit, walker)) return;
+  if (spooks?.hush()) return;
+  if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
   const at = new THREE.Vector3();
@@ -1906,7 +2069,12 @@ function setTime(force) {
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
   scene.background = new THREE.Color(L.bg);
   scene.fog.color.set(L.bg);
-  for (const m of glowMats) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
+  const T = tintOf(SEASON, t), c = new THREE.Color();
+  if (T?.bg) { scene.background.lerp(c.set(T.bg[0]), T.bg[1]); scene.fog.color.copy(scene.background); }
+  if (T?.sky) hemi.color.lerp(c.set(T.sky[0]), T.sky[1]);
+  if (T?.ground) hemi.groundColor.lerp(c.set(T.ground[0]), T.ground[1]);
+  if (T?.sun) sun.color.lerp(c.set(T.sun[0]), T.sun[1]);
+  for (const m of [...glowMats, ...seasonMats]) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
   for (const l of lamps) l.intensity = L.lamp * l.userData.k;
   if (bugs) bugs.userData.kind = L.bugs;
   paintVista();
@@ -1938,19 +2106,51 @@ function makeBugs() {
   bugs = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.16, map: dotTexture(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false }));
   bugs.userData = { seeds, kind: 'pollen' };
   bugs.raycast = () => {};
+  bugs.visible = SEASON !== 'winter';   // snow instead
   scene.add(bugs);
+}
+
+/** Winter's snowfall: flakes drifting down through a box that follows the view, wrapping back to the top. */
+const FLAKES = 420, SNOW_W = 26, SNOW_D = 24, SNOW_H = 9;
+function makeSnow() {
+  const rnd = seeded(51), pos = new Float32Array(FLAKES * 3), seeds = [];
+  for (let i = 0; i < FLAKES; i++) {
+    const s = [(rnd() - 0.5) * SNOW_W, rnd() * SNOW_H, (rnd() - 0.5) * SNOW_D, rnd() * 100, 0.5 + rnd() * 0.6];
+    seeds.push(s);
+    pos.set(s.slice(0, 3), i * 3);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  snow = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.12, map: dotTexture(), color: '#ffffff', transparent: true, opacity: 0.95, depthWrite: false }));
+  snow.userData = { seeds };
+  snow.raycast = () => {};
+  scene.add(snow);
+}
+
+function liveSnow(now) {
+  if (!snow) return;
+  snow.position.set(camX, 0, camZ);
+  if (calm) return;
+  const t = now / 1000, p = snow.geometry.attributes.position;
+  snow.userData.seeds.forEach(([x, y, z, ph, sp], i) => {
+    const fy = ((y - t * sp) % SNOW_H + SNOW_H) % SNOW_H;
+    p.setXYZ(i, x + Math.sin(t * 0.6 * sp + ph) * 0.5, fy, z + Math.cos(t * 0.4 * sp + ph) * 0.3);
+  });
+  p.needsUpdate = true;
 }
 
 const FIREFLY = [0.85, 1, 0.45], POLLEN = [1, 0.96, 0.78];
 function liveBugs(now) {
+  if (!bugs.visible) return;
   const { seeds, kind } = bugs.userData, L = LIGHT[time], p = bugs.geometry.attributes.position, c = bugs.geometry.attributes.color;
+  const tints = BUG_LOOK[SEASON]?.[kind];
   const t = calm ? 0 : now / 1000, fly = kind === 'fireflies';
   bugs.material.size = fly ? 0.16 : 0.09;
   seeds.forEach(([x, y, z, ph, sp], i) => {
     if (!calm) p.setXYZ(i, x + Math.sin(t * 0.3 * sp + ph) * 1.2, y + Math.sin(t * 0.7 * sp + ph * 2) * (fly ? 0.3 : 0.12) - (fly ? 0 : (t * 0.05 * sp + ph) % 1 * 0.3), z + Math.cos(t * 0.25 * sp + ph) * 1.0);
     // a firefly glows in slow pulses, dark between; pollen just catches the light
     const k = (fly ? Math.max(0, Math.sin(t * 1.3 * sp + ph)) ** 3 : 0.35 + 0.15 * Math.sin(t * 2 + ph)) * L.bugsI * (calm ? 0.7 : 1);
-    const [r, g, b] = fly ? FIREFLY : POLLEN;
+    const [r, g, b] = tints ? tints[i % tints.length] : fly ? FIREFLY : POLLEN;
     c.setXYZ(i, r * k, g * k, b * k);
   });
   p.needsUpdate = true; c.needsUpdate = true;
@@ -2081,16 +2281,22 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
+  spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   if (!calm) livePc(now);
-  if (pcMail?.visible) pcMail.position.y = pcMail.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  cauldron?.tick(now, dt, calm);
+  for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.85 : 0.3 + 0.65 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) {
+    s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
+    s.cue.userData.tick(calm ? 0 : now);
+  }
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
+  liveSnow(now);
   if (!held) { liveFlyer(now, dt); sounds(now); }
   placeBar();
   post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
@@ -2119,7 +2325,6 @@ async function build() {
           <span class="hbar-hp"><span class="gb-hp" id="hub-hp" role="progressbar" aria-label="HP" aria-valuemin="0"><span class="gb-hp-tag" aria-hidden="true">HP:</span><span class="gb-hp-track"><span class="gb-hp-fill" id="hub-hp-fill"></span></span></span><span class="gb-hp-num" id="hub-hp-text"></span></span>
           <button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></div></div></div>
     </div>
-    <button type="button" class="hub-version" aria-label="Patch notes"></button>
     <span class="hub-fps" hidden></span>`;
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
@@ -2135,7 +2340,6 @@ async function build() {
   const help = root.querySelector('.hub-help');
   help.append(roundKey('help'));
   help.addEventListener('click', () => fromCorner(acts.onHelp, help));
-  root.querySelector('.hub-version').addEventListener('click', () => document.getElementById('title-version')?.click());
   if (new URLSearchParams(location.search).has('fps')) { fpsEl = root.querySelector('.hub-fps'); fpsEl.hidden = false; }
   renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   renderer.shadowMap.enabled = true;
@@ -2215,8 +2419,6 @@ async function openHub(titleScreen, actions, hold) {
   hideCard();
   root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();
-  const tag = document.getElementById('title-version');
-  root.querySelector('.hub-version').textContent = tag?.textContent ?? '';
   nextFly = performance.now() + 6000;
   airAt = 0;
   setTime(true);

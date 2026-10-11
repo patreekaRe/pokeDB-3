@@ -1732,6 +1732,13 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Speed Demon, Sudden Death (now every foe -25% HP for -25% max HP, `enemyHp`), Overclock, Pandemonium and Gambler (your
   attacks x3 or x0.75, enemies unchanged) reworked from never-taken to 15-61%. Floor 100: Fire 26 -> 16%, Grass 59 -> 49%,
   Water 39 -> 32%. The table and numbers are in `docs/augments.md` (Tuning); pokeDB-sim's ranks re-measured.
+- **Sky Pillar augments, part d** (2026-10-10): Fire's Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix
+  stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
+  noise, not traps. Then three new Fire-only augments (Flash Fire, Magma Armor, Eruption). Floor 100: Fire 16 -> 28%, Grass 49 -> 51%,
+  Water 32 -> 42% (200-350 climbs a type). Detail in `docs/augments.md`.
+- **Sky Pillar augments, part e** (2026-10-11): Mulligan, Scavenger, Ambush, Refresh and Thorn Garden reworked (each was
+  below a bare climb, now +4 to +11 floors; new key `startSeed`), so the bot takes them 63-100% of the time. Floor 100:
+  Fire 23%, Grass 56%, Water 41% (200 climbs a type). Detail in `docs/augments.md` Part e.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
@@ -2069,3 +2076,38 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   sends them all (and whatever stands on them) back to storage (`putAway()`). Every base owns one Storage PC (`FREE_PC`,
   added in `owns()`); tapped in the room on Walk it opens the PC on its Decorations (`logOn()` in `js/base-3d.js`, `.in-base`
   over the base), and the room reloads from the save when it's logged off.
+
+- **Seasonal title screen** (polish #9, 2026-10-10): `season(now)` in `js/season.js` (October `halloween`, December
+  `winter`; `?season=halloween|winter|none` pins it) dresses the 3D Clearing (the default title), its look all in
+  `js/hub-season.js`: Halloween's autumn trees, fallen leaves, 13 pumpkins (most jack-o'-lanterns lit from dusk through
+  `seasonMats`), an orange tint (`TINT`), orange / violet wisps; winter's snowy ground, snow-capped trees (`snowCap()`), a
+  snowman, falling snow (`makeSnow()`), a cold light; the vista past the Safari gate follows (`vistaLook()`). Ghosts
+  (Gastly, Haunter, Gengar, Misdreavus, Drifloon) / Delibird and Vanillite join the flyers' round on both titles
+  (`SEASON_FLYERS`). The Signs title's ledge is otherwise unchanged. A new season is a `season()` line and its looks.
+
+- **House upgrades and Duplicate** (2026-10-10, the user's asks): the PC's blueprint grows the main room (500) and builds
+  closets, halls, bedrooms, dens, L and cross rooms and great halls onto its doorways (500 each, up to 8), each walked
+  through its own door; Duplicate copies owned furniture (50, +5 a copy, capped at 100); the PC's new marks are a gold
+  "!". Detail in CLAUDE.md's House upgrades note.
+- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a day (30-60 coins) and 3 a
+  week (180-300), plus a bonus for all of them (60 / 300), counted from ordinary play and claimed at the PC's MISSIONS page.
+  Detail in CLAUDE.md's Daily and weekly missions note.
+
+**3D ? rooms, part a** (2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club are
+walked in 3D (`js/event-3d.js`, `docs/reference/events.md`), each choice's act and the trainers' reactions on the props.
+Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with the old pixel Mart, 2026-10-10), and a
+`?event=day-care` peek crashed when the map hadn't rolled one (`rollEvent()`).
+
+**3D ? rooms, parts b and c** (2026-10-11): the Hot Spring and the Shrine are open-air 3D rooms with a look per biome and
+the light by the hour, and the treasure grotto a 3D cave per biome with a Poké Ball chest that wobbles and opens
+(`js/event-3d.js`, `docs/reference/events.md`). `?event=` takes `&biome=` and `&starter=` now, and `?event=treasure` walks
+into a grotto.
+
+**3D ? rooms, part d** (2026-10-11, the user's pick: a 3D ground per biome): the Berry Tree, Wishing Well, Item Ball and
+Team Rocket stand on a patch of the biome's own 3D ground (`wild()` in `js/event-3d.js`), each choice played out on its
+prop. Only Kenmatta's arena is still pixel.
+
+**3D ? rooms, parts b-d and live** (2026-10-11): the Hot Spring, Shrine, treasure grotto and the outdoor four walked in 3D;
+every room now stays until you walk out over its doormat (framed above the text box), found items float over the room,
+each room has the user's song (`event-room`, `event-outdoor`, `shrine-room`, `treasure`), and the Mart's relics are
+bigger with nothing in front of them. Playtested on `event-rooms-3d`, merged into `main` the same day (the user's call).
