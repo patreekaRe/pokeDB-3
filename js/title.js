@@ -120,7 +120,8 @@ export function initTitle(handlers) {
   flyer.addEventListener('animationiteration', () => nextFlyer(flyer));   // swapped while it's off screen
   $('press-start-text').textContent = 'Power on';   // read out only: the shut Pokédex says it on its own (the user's call)
   screen.addEventListener('click', (e) => {
-    if (!pressed && !e.target.closest('.gem')) return start(e);
+    // only the blue power button turns it on (the user's call, 2026-10-11: any stray tap did); #press-start is its stand-in for keys and screen readers
+    if (!pressed) { if (e.target.closest('.tdx-power, #press-start')) start(e); return; }
     // a sub-menu goes back on a tap on the empty sky, like every window closes on a tap outside it
     if (pressed && page !== 'main' && !e.target.closest('button, a, input, .nameplate, .title-areas, .title-corner')) goBack();
   });
@@ -138,7 +139,7 @@ export function initTitle(handlers) {
   gateReady().then(paintGate);
   document.addEventListener('keydown', (e) => {
     if (screen.hidden || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')) return;
-    if (!pressed) return start(e);
+    if (!pressed) { if (e.key === 'Enter' || e.key === ' ') start(e); return; }
     if (screen.classList.contains('hub-mode')) return;   // the hub walks on the keys (js/hub-3d.js), and its signs are hidden
     const gems = [...screen.querySelectorAll('.gem')];
     const at = gems.findIndex(g => g.classList.contains('on'));
@@ -349,12 +350,11 @@ async function onboard(dex) {
 }
 
 /* The opened screen shows your walking buddy over the hello, in place of the game's title (the user's call, 2026-10-11),
-   hopping in with its cry. */
+   hopping in. */
 function showBuddy() {
   const mate = buddy(getSave()), img = $('tdx-buddy');
   img.src = mate.src;
   img.dataset.type = STARTERS_BY_ID[mate.id]?.type ?? 'normal';
-  setTimeout(() => playCry(mate.cry), still() ? 0 : 1100);
 }
 
 const pill = (label, cls = '') => {

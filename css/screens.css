@@ -216,7 +216,7 @@ body.titling { overflow: hidden; }
   position: absolute; left: 50%; bottom: 11%; width: 58px; height: 58px; translate: -50% 0; border-radius: 50%;
   background: radial-gradient(circle at 38% 32%, #e6f8ff 0 10%, #5ec8ff 24%, #1f78c8 72%); border: 4px solid #fff;
   box-shadow: 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep);
-  animation: tdxPulse 1.8s ease-out infinite;
+  animation: tdxPulse 1.8s ease-out infinite; cursor: pointer;
   transition: translate 0.08s, box-shadow 0.2s;
 }
 .tdx-power::before { content: ''; position: absolute; left: 50%; top: 20%; width: 4px; height: 32%; translate: -50% 0; border-radius: 2px; background: #fff; }

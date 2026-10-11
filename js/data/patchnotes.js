@@ -47,6 +47,7 @@ export const NEXT = [
   ['fixes', 'Players from early versions who never picked a name now get the name and buddy setup on their next start.'],
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
+  ['look', 'The shut Pokédex on the title now opens only with its blue power button, and no longer plays your buddy\'s cry as it opens.'],
   ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard is 3D too: its flagstones, his dais and carpeted steps, two braziers burning, and a smooth gold Dragonite medallion on the wall in place of the pixel one.'],
 ];
 
