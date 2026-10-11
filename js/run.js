@@ -226,21 +226,25 @@ function markHp(node) {
 function spend(price) {
   run.money -= price;
   run.tally.spent += price;
-  mission('money', price);
 }
 
 /** Count play into the daily and weekly missions (js/missions.js), never on a peeked run; one just finished is told. */
 function mission(events, amount = 1) {
   if (peeking || !run) return;
-  for (const line of track(events, amount, { type: run.starter.type, level: run.level, safari: !!run.safari })) tell(line);
+  const road = !run.safari && !run.tower && (run.route || []).some((id, slot) => id && id !== BIOMES[slot]?.id);
+  const ctx = { type: run.starter.type, level: run.level, safari: !!run.safari, special: !run.starter.free, rests: run.restCount, road, day: run.safari?.day };
+  for (const line of track(events, amount, ctx)) tell(line);
 }
 
 /** A fight's moves played, damage dealt and items used, for the missions. */
 function missionTally(t) {
   if (!t) return;
-  mission('cards', t.played);
   mission('damage', t.dealt);
-  mission('item', t.items?.length || 0);
+  mission('seed', t.seed);
+  mission('power', t.powers);
+  mission('exhaust', t.exhausted);
+  if (t.tide >= 10) mission('tide-fight');
+  if (t.burn >= 15) mission('burn-fight');
 }
 
 function checkpoint() {
@@ -655,6 +659,7 @@ function climbed(floor) {
   const t = run.tower;
   if (floor <= t.floor) return;
   mission('floor', floor - t.floor);
+  if (floor >= 30) mission('tower-30');
   t.floor = floor;
   if (peeking) return;
   updateSave(d => {
@@ -1213,7 +1218,6 @@ function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
   run.items.splice(index, 1);
   run.tally.itemsUsed.push(item.id);
-  mission('item');
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
@@ -1409,7 +1413,7 @@ function afterFight(node, result) {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
     // counted here, not as the fight ends: a refresh on a reward screen replays the fight
     missionTally(result.tally);
-    mission(['fight', 'fight-type']);
+    mission(['fight', 'fight-type', 'fight-special']);
     if (node.type === 'elite') mission('alpha');
     if (node.type === 'boss' || node.type === 'ken') mission('boss');
     if (node.type === 'boss' && run.hp > run.maxHp / 2) mission('healthy-boss');
@@ -2300,6 +2304,7 @@ function forgetMove(back, done = showMap, skipLabel = back === done ? 'Keep ever
       ...cardOption(card, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1);
         run.tally.forgotten += 1;
+        mission('forget');
         tell(`${card.name} was forgotten.`);
         done();
       }, count),
@@ -3133,7 +3138,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   let record = null;   // a won run's entry, whose win scene plays before the result window
   if (won && !peeking) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
-    mission(['win', 'win-level']);
+    mission(['win', 'win-level', 'win-type', 'win-norest', 'win-road']);
     refreshCoins();
   }
   const lost = won ? 0 : breakStreak(run.starter.id, safari);

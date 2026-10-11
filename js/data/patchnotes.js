@@ -46,7 +46,7 @@ export const NEXT = [
   ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
   ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are bold arcade letters with a cyan glow, easy to read, lying flat on the ground, with arrows marching in on either side.'],
-  ['pc', 'Daily and weekly missions: three goals a day and three a week, from winning fights to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
+  ['pc', 'Daily and weekly missions: three goals a day and three a week, picked from 29 dailies and 15 weeklies, from winning fights and building Tide to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
   ['modes', "Sky Pillar: Fire gets three new augments of its own (Flash Fire, Magma Armor and Eruption) and six stronger ones (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
 ];
 

@@ -23,7 +23,7 @@ test('a new save is never set a mission in a mode it has not opened', () => {
   for (let i = 0; i < 60; i++) {
     const day = `2026-${String(1 + (i % 12)).padStart(2, '0')}-${String(1 + (i % 28)).padStart(2, '0')}`;
     for (const id of [...rollMissions('daily', day, fresh), ...rollMissions('weekly', missionWeek(new Date(day)), fresh)]) {
-      assert.ok(!['d-catch', 'd-floors', 'd-safari', 'w-catch', 'w-floors', 'w-level'].includes(id), id);
+      assert.ok(!['d-catch', 'd-floors', 'd-safari', 'd-special', 'w-road', 'w-height', 'w-safaridays', 'w-catch', 'w-floors', 'w-level'].includes(id), id);
     }
   }
 });
@@ -40,4 +40,18 @@ test('counting fills a mission once, filters by its context, and the bonus waits
   roll.list.forEach(e => { e.claimed = true; });
   assert.equal(bonusReady(roll), true);
   assert.equal(freshRoll('weekly', '2026-10-05', veteran).list.length, PER_ROLL);
+});
+
+test('a distinct mission counts each different value once', () => {
+  const roll = { key: 'x', list: [{ id: 'w-types', got: 0, claimed: false }], bonus: false };
+  countInto(roll, 'win-type', 1, { type: 'fire' });
+  countInto(roll, 'win-type', 1, { type: 'fire' });
+  assert.equal(roll.list[0].got, 1);
+  assert.equal(countInto(roll, 'win-type', 1, { type: 'water' }).length, 1);
+  assert.equal(roll.list[0].got, 2);
+});
+
+test('the pools stay at their agreed sizes', () => {
+  assert.equal(DAILY.length, 29);
+  assert.equal(WEEKLY.length, 15);
 });
