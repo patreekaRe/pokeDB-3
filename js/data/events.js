@@ -21,12 +21,14 @@ export const EVENTS = [
   },
   {
     id: 'move-tutor', icon: '🎓', name: 'Move Tutor',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'Chad Master Kenmatta, the Move Tutor, offers to teach a rare move, for a price.',
     price: [60, 80, 100, 120],      // ₽
     hpCost: [7, 10, 14, 18],       // or pay in HP instead
   },
   {
     id: 'move-deleter', icon: '📖', name: 'Move Deleter',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'A strange man insists he can make your Pokémon forget moves.',
     doubleHpCost: 0.1,         // share of max HP to forget two moves instead of one
   },
@@ -56,6 +58,7 @@ export const EVENTS = [
   },
   {
     id: 'day-care', icon: '🥚', name: 'Day Care',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'The Day Care couple offer to swap one of your moves for a rarer one they\'ve been raising.',
     // a card of each rarity trades for a random card (of your type's pool) of the next one up; rares can't be traded
     upgrade: { common: 'uncommon', uncommon: 'rare' },
@@ -72,6 +75,7 @@ export const EVENTS = [
   },
   {
     id: 'fan-club', icon: '📣', name: 'Fan Club',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'The Pokémon Fan Club rushes over to meet your Pokémon!',
     healthyMoney: [40, 55, 70, 85],   // ₽ if your HP is above half
     tiredItem: 'super-potion',    // otherwise they hand you this (or tiredMoney with a full Bag)
