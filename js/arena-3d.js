@@ -1,4 +1,4 @@
-/* arena-3d.js  -  an Alpha's or a boss's fight in 3D (the user's ask, 2026-10-11; a test on its own branch): the battle
+/* arena-3d.js  -  a main biome's fight in 3D (the user's ask, 2026-10-11; a test on its own branch): the battle
    screen is untouched, every card, sprite, nameplate and animation is the page's own. The live pixel scene stays the
    backdrop (`backdrop`, its canvas as the 3D view's background, so each boss's pulse, lava or storm plays on), and 3D pads
    stand where the page draws its Pokémon: the pad's spot on screen (the CSS pad, now invisible) is cast into the ground
@@ -11,11 +11,12 @@ import { loadThree, tex, createPost, dispose } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour } from './scene.js';
 
-/* Every main biome's boss and Alphas (Team Rocket's too) fight on 3D pads in front of their own live pixel backdrop (the
-   Ancient Tree's pulse, the lava, the Well: the user's call, 2026-10-11); the Clearing, whose 3D place this was built for,
-   also lays its 3D ground, bushes and side trees up to the horizon. */
+/* Every main biome's fights, boss, Alphas (Team Rocket's too) and wilds, stand on 3D pads in front of their own live pixel
+   backdrop (the Ancient Tree's pulse, the lava, the Well: the user's calls, 2026-10-11); the Clearing, whose 3D place this
+   was built for, also lays its 3D ground, bushes and side trees up to the horizon. A wild fight's kind is `fight`. */
 const MAIN = new Set(['clearing', 'shrine', 'wastes', 'depths', 'ruins', 'thornwood', 'savanna']);
-export const arenaFor = (land, kind) => (kind === 'boss' || kind === 'elite') && MAIN.has(land);
+const KINDS = new Set(['boss', 'elite', 'fight', 'wild']);
+export const arenaFor = (land, kind) => KINDS.has(kind) && MAIN.has(land);
 const PAD_H = 0.2;
 
 let THREE, renderer, scene, camera, post, view, hemi, sun, backdrop;
@@ -25,7 +26,7 @@ function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(
 const canvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h });
 const hd = (c) => { c.hd = 2; return c; };   // smooth sampling, mipmaps (hd2d.js's tex())
 
-/** Whether this fight is laid in 3D: an Alpha's or a boss's in a biome that has its arena (`?arena2d` keeps the pixels). */
+/** Whether this fight is laid in 3D: any main biome's fight in a biome that has its arena (`?arena2d` keeps the pixels). */
 export function wantsArena({ land, kind, def, run }) {
   if (new URLSearchParams(location.search).has('arena2d')) return false;
   return arenaFor(land, kind) && !def.arena && !run.tower && !run.safari;
@@ -481,7 +482,7 @@ function padKit(p, land) {
 
 function build(o) {
   const clearing = o.biome === 'clearing';
-  const look = TIMES[o.time] || TIMES.day, r = seeded(1234 + o.stage * 97 + (o.kind === 'boss' ? 5 : 0));
+  const look = TIMES[o.time] || TIMES.day, r = seeded(1234 + o.stage * 97 + (o.kind === 'boss' ? 5 : o.kind === 'elite' ? 0 : 11));
   B = { group: new THREE.Group(), ticks: [], look, runes: null, clearing };
   const M = materials();
   for (const m of [M.bark, ...M.leaves, M.blade, ...M.flowers, M.padTop, M.dirt, M.rock, M.moss, M.log]) m.color.set(clearing ? look.tint : '#ffffff');
@@ -585,7 +586,30 @@ function frame(now) {
   if (++A.beat % 3 === 0) follow();
   const focus = 1 - (A.at.foe.sy + A.at.you.sy) / 2;
   post.draw(scene, camera, focus);
+  fpsLog.push(dt * 1000); if (fpsLog.length > 60) fpsLog.shift();
+  if (wanted) keepUp(now);   // not under a boss's pixel prelude, which has its own cost
   if (!document.hidden) raf = requestAnimationFrame(frame);
+}
+
+/* Wild fights are the most common, so a phone that can't hold ~40 fps steps down like the Secret Base (shadows, then
+   resolution), remembered per device. */
+let fpsLog = [], slowSince = 0, lowered = 0;
+function keepUp(now) {
+  if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
+  const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
+  if (avg < 25) { slowSince = 0; return; }
+  if (!slowSince) { slowSince = now; return; }
+  if (now - slowSince < 3000) return;
+  slowSince = 0;
+  if (!stepDown()) return;
+  try { localStorage.setItem('pokedb.arena3d.low', String(++lowered)); } catch {}
+  fpsLog.length = 0;
+}
+function stepDown() {
+  if (sun.shadow.mapSize.x > 512) { sun.shadow.mapSize.set(512, 512); sun.shadow.map?.dispose(); sun.shadow.map = null; return true; }
+  if (!post.lower(innerWidth, innerHeight)) return false;
+  resize();
+  return true;
 }
 
 /** The pads follow the page's: a boss's sprite that loads late, a move bubble that wraps, a Pokémon that grows on evolving
@@ -649,6 +673,9 @@ export function warmArena() {
     Object.assign(post.final.uniforms.uBlur, { value: 3.2 });
     Object.assign(post.final.uniforms.uBand, { value: 0.26 });
     Object.assign(post.final.uniforms.uBloom, { value: 0.55 });
+    let steps = 0;
+    try { steps = +localStorage.getItem('pokedb.arena3d.low') || 0; } catch {}
+    for (; lowered < steps; lowered++) if (!stepDown()) break;
     addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => { if (A) rebuild(); }, 200);
@@ -699,7 +726,7 @@ function rebuild() {
   for (const p of [A.at.foe, A.at.you]) p.r0 = p.r;
   scene.add(A.group);
   if (wanted) show(false);
-  last = 0;
+  last = 0; fpsLog.length = 0; slowSince = 0;
   raf ||= requestAnimationFrame(frame);
   return true;
 }

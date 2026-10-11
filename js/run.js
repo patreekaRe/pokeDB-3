@@ -504,8 +504,8 @@ export function peekFinalBoss(starter, bossHp = 1) {
 }
 let finalPeekHp = 1;
 
-/** Playtest shortcut: ?arena=elite (or boss) walks a throwaway run (&starter=id) straight into a Whispering Clearing
-    Alpha's fight (or its boss's, prelude and all), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's
+/** Playtest shortcut: ?arena=elite (or boss, or wild) walks a throwaway run (&starter=id) straight into a Whispering
+    Clearing Alpha's fight (or its boss's, prelude and all, or a wild Pokémon's), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's or wild's
     place, &arena2d the pixel scene); &biome=wastes (&slot=1 / 2 for a pool biome) any biome's Alpha or boss, the Depths'
     with Mewtwo. Nothing about it is saved. */
 export function peekArena(starter, kind, biome = null, slot = null) {
@@ -513,7 +513,7 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   const home = BIOMES_BY_ID[biome];
   peekDepths = !!home?.secret;
   peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
-  beginRun(starter, 0, kind === 'boss' ? ':boss' : ':elite');
+  beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : ':elite');
 }
 
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
@@ -582,7 +582,7 @@ function peekRoom(id) {
     node.stock ??= martStock();
     return enterNode(node);
   }
-  if (id === ':elite' || (id === ':boss' && peekDepths)) {
+  if (id === ':elite' || id === ':wild' || (id === ':boss' && peekDepths)) {
     if (peekDepths) {   // Mewtwo's last biome, fully powered up like after its fall
       run.biome = finalBiome(run.starter);
       run.stage = run.starter.line.length - 1;
@@ -592,8 +592,8 @@ function peekRoom(id) {
     if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
     startBiome(true);
     const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
-    const elites = Object.values(run.map.byId).filter(n => n.type === 'elite');
-    return enterNode(elites.find(n => stageOf(run.map, n).stage === stage) ?? elites[0]);
+    const type = id === ':wild' ? 'fight' : 'elite', fights = Object.values(run.map.byId).filter(n => n.type === type);
+    return enterNode(fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0]);
   }
   if (id === ':boss') { if (peekAt) walkInto(peekAt); startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   if (id === ':final') {
@@ -2073,11 +2073,11 @@ function warmCenter3d() {
 
 /** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
     in shows the room at once (the user saw a blank blue screen while it loaded). */
-/** The 3D arena's renderer readied while the map is up, in a biome whose Alphas and boss fight in it (js/arena-3d.js). */
+/** The 3D arena's renderer readied while the map is up, in a biome whose fights are laid in it (js/arena-3d.js). */
 function warmArena3d() {
   if (warmArena3d.done || isTower() || isSafari() || new URLSearchParams(location.search).has('arena2d')) return;
   import('./arena-3d.js').then(m => {
-    if (!m.arenaFor(mainBiome().id, 'boss') || warmArena3d.done) return;
+    if (!m.arenaFor(mainBiome().id, 'fight') || warmArena3d.done) return;
     warmArena3d.done = true;
     setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 2000);
   }).catch(() => {});

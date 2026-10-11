@@ -277,13 +277,13 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   playIntro();
 }
 
-/* An Alpha's or a boss's fight in a 3D place (js/arena-3d.js, a test in the Clearing): loaded only when one is, and laid
+/* A main biome's fight in a 3D place (js/arena-3d.js, a test on its own branch): loaded only when one is, and laid
    under the battle screen; a boss's stays hidden until its pixel prelude is over (playIntro()). */
 let arenaMod = null, arenaUp = false;
 function arena3d(land, kind, def, run) {
   arenaMod?.unmountArena();
   arenaUp = false;
-  if (!(kind === 'elite' || kind === 'boss') || new URLSearchParams(location.search).has('arena2d')) return;
+  if (run.tower || run.safari || def.arena || new URLSearchParams(location.search).has('arena2d')) return;
   import('./arena-3d.js').then(m => {
     arenaMod = m;
     if (!m.wantsArena({ land, kind, def, run })) return;

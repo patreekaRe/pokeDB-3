@@ -79,7 +79,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     **`claude/jolly-ritchie-vdznxn`**, never on `main` until the user says it goes live; every session for it starts from
     that branch and pushes only to it. Playtest at `https://raw.githack.com/patreekaRe/pokeDB-3/claude/jolly-ritchie-vdznxn/index.html`
     with `?arena=boss` (`&biome=shrine` / `wastes` / `ruins` / `thornwood` / `savanna`, `&slot=1` / `2` for a pool biome),
-    `?bossfight=depths` (Eternatus), `?arena=elite` (an Alpha, any `&biome=`, the Depths too; `&stage=0-2`); `&arena2d` shows today's pixel
+    `?bossfight=depths` (Eternatus), `?arena=elite` (an Alpha, any `&biome=`, the Depths too; `&stage=0-2`), `?arena=wild` (the same for a wild Pokémon); `&arena2d` shows today's pixel
     version of the same fight to compare.
     - **Done (2026-10-11):** every main biome's **boss** fights in 3D. The live pixel scene is the 3D view's background
       (`backdrop`, `#scene-bg` as a texture), so each boss's own backdrop keeps playing (the Ancient Tree's pulse, the lava,
@@ -91,16 +91,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - **Done (2026-10-11): b, the Alphas.** Every main biome's Alphas (Team Rocket's too, an `elite` fight) get the boss
       treatment: `arenaFor()` takes `elite` in every `MAIN` biome. `?arena=elite&biome=` takes any biome, the Depths
       too (with Mewtwo, fully powered up; `peekDepths` in `js/run.js`). Checked at 390x844 and 1280x800, every biome.
-    - **c. Wild fights, the same treatment** (the user's ask, 2026-10-11, after liking the Alphas). Run in: CLOUD (attach
-      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read CLAUDE.md and docs/roadmap.md's item 22, then check out the branch
-      `claude/jolly-ritchie-vdznxn` and work only on it (push only to it, never to main). Give every main biome's wild
-      fights the Alphas' treatment in js/arena-3d.js: 3D pads in front of their own live pixel backdrop, following the
-      sprites, the Clearing's 3D ground as now (`arenaFor()` takes `wild` too, `arena3d()` in js/battle.js stops
-      skipping it, and the map's `warmArena3d()` warms it before the first fight). Not Safari or Sky Pillar fights. Add
-      `?arena=wild&biome=` (any biome, the Depths with Mewtwo, `&stage=0-2`), check every biome at 390x844 and 1280x800
-      (Three.js loads from jsdelivr, which the cloud proxy blocks: route it to a local `npm pack three@0.160.0` in
-      Playwright), watch that a wild fight doesn't stutter on a phone (it's the most common fight), and give me
-      raw.githack links for each."
+    - **Done (2026-10-11): c, wild fights.** Every main biome's wild fights get the same treatment (`arenaFor()` takes
+      `fight` / `wild`; not Safari, Sky Pillar or Kenmatta). `?arena=wild&biome=` (any biome, the Depths with Mewtwo,
+      `&stage=0-2`). Since a wild fight is the most common, a device under ~40 fps steps the arena down, shadows then
+      resolution, remembered in `pokedb.arena3d.low` (`keepUp()` / `stepDown()`, the Secret Base's way). Checked at
+      390x844 and 1280x800, every biome.
     - Kenmatta's dojo arena stays pixel for now: his fight has its own scene (`def.arena`, `PLACE_ART.kombat`), which
       `wantsArena()` skips. Ask the user whether it should get 3D pads over its Mortal Kombat backdrop too.
     - d. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
