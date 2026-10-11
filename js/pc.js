@@ -580,7 +580,7 @@ const PAGES = {
   rename() {
     const form = el('form', 'pc-name');
     const box = el('input', 'pc-name-box');
-    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: getSave().trainerName || '', placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
+    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: (getSave().trainerName || '').toUpperCase(), placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
     box.setAttribute('aria-label', 'Your name');
     const ok = el('button', 'room-ok pc-name-ok', 'Save');
     ok.type = 'submit';

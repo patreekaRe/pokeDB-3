@@ -31,11 +31,11 @@ import { tipAt } from './tips.js';
 import { isStarterUnlocked } from './progress.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { spriteFit } from './data/sprite-fit.js';
-import { showBadgeNews } from './trainercard.js';
+import { showBadgeNews, buddy } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
 import { showHub, hideHub, enterHub, hubDex, refreshBuddy } from './hub-3d.js';
-import { pickedName, setTrainerName } from './leaderboard.js';
+import { pickedName, setTrainerName, trainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { pref } from './prefs.js';
 
@@ -133,6 +133,7 @@ export function initTitle(handlers) {
   $('title-abandon').replaceChildren(smoothIcon('run'));
   paintLogo();
   runClock();
+  paintPlate();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
@@ -335,6 +336,7 @@ async function onboard(dex) {
   }
   setTrainerName(name);
   updateSave(d => { d.buddy = `starter:${mate}`; });
+  paintPlate();
   box.remove();
   dex.classList.remove('setup', 'instant');
   dex.setAttribute('aria-hidden', 'true');
@@ -342,6 +344,26 @@ async function onboard(dex) {
   // the logo and hello come up as they would have, now saying the new name
   screen.querySelectorAll(':scope > *').forEach(n => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });
   await wait(still() ? 900 : 2000);
+}
+
+/* The cover's yellow plate is the owner's (the user's ask, 2026-10-11): their name engraved on it beside a little round
+   LED with their walking buddy lit inside. Blank, the classic chevron, until a new player has set up. */
+function paintPlate() {
+  const plate = $('tdx-plate');
+  if (needsSetup()) { plate.replaceChildren(); plate.classList.remove('named'); return; }
+  const mate = buddy(getSave()), name = trainerName();
+  const led = el('span', 'tdx-plate-led');
+  led.dataset.type = STARTERS_BY_ID[mate.id]?.type ?? 'normal';
+  const img = el('img');
+  img.src = mate.src;
+  img.alt = '';
+  led.append(img);
+  const tag = el('span', 'tdx-plate-name', name);
+  const len = [...name].length;
+  tag.style.setProperty('--len', Math.max(len, 6));
+  tag.classList.toggle('long', len > 10);
+  plate.replaceChildren(led, tag);
+  plate.classList.add('named');
 }
 
 const pill = (label, cls = '') => {
@@ -354,7 +376,7 @@ const pill = (label, cls = '') => {
 function askName(box, name, keep) {
   return new Promise(done => {
     const field = el('input', 'tdx-field');
-    Object.assign(field, { type: 'text', maxLength: NAME_MAX, value: name, placeholder: 'Trainer', autocomplete: 'off', spellcheck: false });
+    Object.assign(field, { type: 'text', maxLength: NAME_MAX, value: name, placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
     field.setAttribute('aria-label', 'Trainer name');
     field.setAttribute('autocapitalize', 'words');
     const ok = pill('OK');

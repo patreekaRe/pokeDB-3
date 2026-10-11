@@ -414,7 +414,7 @@ function nameField(redraw) {
     playSound('confirm');
     const form = el('form', 'tc-name-form');
     const input = el('input', 'tc-name-input');
-    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'Trainer', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
+    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'TRAINER', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
     input.setAttribute('aria-label', 'Your name');
     const ok = el('button', 'tc-name-ok', 'OK');
     ok.type = 'submit';
