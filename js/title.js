@@ -314,9 +314,11 @@ async function powerOn(dex) {
 
 /* A new player's first power-on (the user's ask, 2026-10-11, like the games asking your name first): the device opens
    bigger, straight onto WHAT'S YOUR NAME?, then CHOOSE YOUR BUDDY from the three starters (the PC's walking buddy, which
-   walks in once it's shut), then the hello says the new name. `?onboard` shows it again (what's picked is kept). */
+   walks in once it's shut), then the hello says the new name. `?onboard` shows it again (what's picked is kept).
+   Anyone with no name who never finished it gets it, even an old save that has played (the user's call, 2026-10-11: a
+   friend from an early version never saw it). */
 const SETUP_BUDDIES = ['charmander', 'bulbasaur', 'squirtle'];
-const needsSetup = () => new URLSearchParams(location.search).has('onboard') || (!getSave().seenHelp && !pickedName());
+const needsSetup = () => new URLSearchParams(location.search).has('onboard') || (!getSave().setupDone && !pickedName());
 
 async function onboard(dex) {
   const screen = $('title-dex').querySelector('.tdx-screen');
@@ -335,7 +337,7 @@ async function onboard(dex) {
     step += (step === 0 ? await askName(box, name, (n) => { name = n; }) : await askBuddy(box, mate, (m) => { mate = m; }));
   }
   setTrainerName(name);
-  updateSave(d => { d.buddy = `starter:${mate}`; });
+  updateSave(d => { d.buddy = `starter:${mate}`; d.setupDone = true; });
   showBuddy();
   box.remove();
   dex.classList.remove('setup', 'instant');

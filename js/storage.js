@@ -32,6 +32,7 @@ const wrote = () => listeners.forEach(fn => fn());
 const freshSave = () => ({
   seenHelp: false,
   trainerName: '',           // the nickname on the Trainer Card and the leaderboards (js/leaderboard.js), '' = "Trainer"
+  setupDone: false,          // the title's name / buddy setup was finished once (js/title.js), so a blank name isn't asked again
   helpTapped: false,         // the title's ? bubble on New game hops until it's first tapped
   muted: false,              // background music switched off with the 🔊 button
   volume: 1,                 // the old single volume slider, 0-1: where both bars below start on an old save
@@ -265,7 +266,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName'];
+  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));
