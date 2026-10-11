@@ -2086,3 +2086,6 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   closets, halls, bedrooms, dens, L and cross rooms and great halls onto its doorways (500 each, up to 8), each walked
   through its own door; Duplicate copies owned furniture (50, +5 a copy, capped at 100); the PC's new marks are a gold
   "!". Detail in CLAUDE.md's House upgrades note.
+- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a day (30-60 coins) and 3 a
+  week (180-300), plus a bonus for all of them (60 / 300), counted from ordinary play and claimed at the PC's MISSIONS page.
+  Detail in CLAUDE.md's Daily and weekly missions note.

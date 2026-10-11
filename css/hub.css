@@ -402,6 +402,31 @@
 }
 .pc-done-row.star { color: #8e5c06; }
 .pc-done-row.star .pc-done-bar { background-image: linear-gradient(90deg, #e0a820, #f8d850); }
+/* Missions (js/missions.js): a card each, its goal and PokéCoins over a bar, Claim once done; the bonus for all of them last */
+.pc-quests { display: flex; flex-direction: column; gap: 8px; }
+.pc-quest-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; font-size: 0.56rem; color: #0e3446; letter-spacing: 1px; }
+.pc-quest-head b { font-weight: 400; }
+.pc-quest-left { font-size: 0.45rem; letter-spacing: 0; color: #2a6a80; }
+.pc-quest {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 8px 10px;
+  padding: 10px 12px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; font-size: 0.52rem;
+  box-shadow: 0 3px 0 #2a5a90;
+}
+.pc-quest-text { line-height: 1.6; }
+.pc-quest-coins { display: flex; align-items: center; gap: 4px; justify-self: end; color: #8e5c06; font-size: 0.6rem; }
+.pc-quest-coins b { font-weight: 400; }
+.pc-quest-coin { width: 18px; height: 18px; }
+.pc-quest-coins.paid { animation: pcPaid 0.5s ease-out; }
+.pc-quest-prog { display: flex; align-items: center; gap: 8px; font-size: 0.45rem; color: #2a6a80; }
+.pc-quest-prog .pc-done-bar { flex: 1; }
+.pc-quest-n { flex: none; }
+.pc-quest-claim { grid-column: 2; grid-row: 2; min-width: 70px; height: 28px; font-size: 0.5rem; }
+.pc-quest-tag { grid-column: 2; grid-row: 2; justify-self: end; font-size: 0.45rem; color: #c02a2a; letter-spacing: 1px; }
+.pc-quest-tag.none { visibility: hidden; }
+.pc-quest.done { border-color: #c89018; box-shadow: 0 3px 0 #8e5c06, 0 0 10px rgba(255, 216, 64, 0.5); }
+.pc-quest.paid { opacity: 0.6; }
+.pc-quest.paid .pc-done-bar { background-image: linear-gradient(90deg, #8aa0b0, #b0c4d0); }
+.pc-quest.bonus { background: linear-gradient(#fffbea, #fff3c8); border-style: dashed; }
 /* the Mailbox (js/mail.js): envelopes in a list, the newest first; one opened is a letter rising out of its envelope */
 .pc-mail { display: flex; flex-direction: column; gap: 10px; }
 .pc-env {

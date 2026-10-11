@@ -9,7 +9,7 @@
    your things.
    ============================================================ */
 
-import { getSave, updateSave } from './storage.js';
+import { getSave, updateSave, coinsWithBonus } from './storage.js';
 import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -21,6 +21,8 @@ import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
 import { SENDERS, unclaimed, claim } from './mail.js';
+import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
+import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
 import { smoothIcon } from './smooth-icons.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, DEX_COMPLETE_COINS, SCOPE, safariOpen } from './data/pokedex.js';
 import { researchCount, bonusKnown, depthsKnown } from './pokedex.js';
@@ -107,7 +109,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
+const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
 
 function back() {
   const up = UP[page];
@@ -192,10 +194,11 @@ function monTile(src, name, on, tap, tag = '') {
 
 const PAGES = {
   home() {
-    const waiting = unclaimed().length;
+    const waiting = unclaimed().length, ready = claimable();
     const save = getSave();
     const rows = [
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
+      [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
@@ -312,6 +315,20 @@ const PAGES = {
     }
     glass.replaceChildren(...kids);
     speak(fresh ? `A letter from ${from.name}!` : `Opened ${new Date(m.claimed).toLocaleDateString()}.`);
+  },
+  missions() {
+    const all = missions(), ready = claimable();
+    const h = head('MISSIONS');
+    h.append(el('span', 'pc-count', ready ? `${ready} to claim` : ''));
+    const box = el('div', 'pc-quests');
+    for (const kind of ['daily', 'weekly']) {
+      const roll = all[kind];
+      const top = el('div', 'pc-quest-head');
+      top.append(el('b', '', kind === 'daily' ? 'DAILY' : 'WEEKLY'), el('span', 'pc-quest-left', `New in ${timeLeft(kind)}`));
+      box.append(top, ...roll.list.map(e => questRow(kind, e)), bonusRow(kind, roll));
+    }
+    glass.replaceChildren(h, box);
+    speak(ready ? 'Mission complete! Tap Claim for your PokéCoins.' : 'Missions count as you play: runs, the Safari Zone and the Sky Pillar all count. Come back to claim them.');
   },
   patches() {
     const since = sincePatch(), fresh = patchUnseen();
@@ -795,6 +812,55 @@ function hints(save) {
     out.push({ text: `A Pokémon is waiting to join you. ${a.text}.`, art: spriteUrl(s, 'front', 0, false), say: 'Who could it be? Only one way to find out.' });
   }
   return out;
+}
+
+/** A mission on the Missions page: its goal, a bar of how far along it is, its PokéCoins, and Claim once it's done. */
+function questRow(kind, e) {
+  const m = MISSIONS_BY_ID[e.id];
+  if (!m) return el('span');
+  const done = isDone(e);
+  const r = el('div', `pc-quest${e.claimed ? ' paid' : done ? ' done' : ''}`);
+  const bar = el('span', 'pc-done-bar');
+  bar.style.setProperty('--k', Math.min(1, e.got / m.n));
+  const coin = el('span', 'pc-quest-coins');
+  coin.append(smoothIcon('coin', 'pc-quest-coin'), el('b', '', coinsWithBonus(m.coins).toLocaleString()));
+  const prog = el('span', 'pc-quest-prog');
+  prog.append(bar, el('span', 'pc-quest-n', `${e.got.toLocaleString()}/${m.n.toLocaleString()}`));
+  r.append(el('span', 'pc-quest-text', missionText(m)), coin, prog);
+  r.append(payKey(e.claimed, done, () => claimMission(kind, e.id), coin));
+  return r;
+}
+
+/** The bonus for finishing all of the day's or the week's missions. */
+function bonusRow(kind, roll) {
+  const left = roll.list.filter(e => !e.claimed).length;
+  const r = el('div', `pc-quest bonus${roll.bonus ? ' paid' : bonusReady(roll) ? ' done' : ''}`);
+  const coin = el('span', 'pc-quest-coins');
+  coin.append(smoothIcon('coin', 'pc-quest-coin'), el('b', '', coinsWithBonus(BONUS[kind]).toLocaleString()));
+  r.append(el('span', 'pc-quest-text', `★ Bonus: claim all ${roll.list.length}`), coin,
+    el('span', 'pc-quest-prog', roll.bonus ? 'Every mission done!' : left ? `${left} left to claim` : 'Ready!'));
+  r.append(payKey(roll.bonus, bonusReady(roll), () => claimBonus(kind), coin));
+  return r;
+}
+
+/** Claim (a gold pill) on a finished mission, CLAIMED once paid, nothing before it's done. */
+function payKey(claimed, done, pay, coin) {
+  if (claimed) return el('span', 'pc-quest-tag', 'CLAIMED');
+  if (!done) return el('span', 'pc-quest-tag none');
+  const ok = el('button', 'room-ok pc-quest-claim', 'Claim');
+  ok.type = 'button';
+  ok.addEventListener('click', () => {
+    if (ok.classList.contains('pressed')) return;
+    ok.classList.add('pressed');
+    const paid = pay();
+    if (!paid) return show('missions');
+    playSound('item-get');
+    countUp(coin.querySelector('b'), paid);
+    coin.classList.add('paid');
+    speak(`${trainerName().toUpperCase()} received ${paid.toLocaleString()} PokéCoins!`);
+    setTimeout(() => { if (root && page === 'missions') { const at = glass.scrollTop; show('missions'); glass.scrollTop = at; } }, calmFx() ? 300 : 900);
+  });
+  return ok;
 }
 
 /** The cloud save's window over the PC; the menu's row reads Sign in or Cloud save again once it closes. */

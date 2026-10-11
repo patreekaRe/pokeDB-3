@@ -741,6 +741,15 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`).
+- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a UTC day and 3 a week
+  (its Monday, the Sky Pillar's), rolled from the date's seed out of the pool open to that save (`needs`: the Safari and
+  Sky Pillar ones wait for their mode) and never two on one event (`DAILY` / `WEEKLY` / `rollMissions()` in
+  `js/data/missions.js`, pure, `tests/missions.test.mjs`); all of a roll claimed pays `BONUS` (60 / 300). `track()` in
+  `js/missions.js` counts play from `mission()` in `js/run.js` (never on a peeked run): fights, Alphas, bosses / guardians /
+  Kenmatta, moves played, damage, items, ❓ rooms, Center heals, ₽ spent, catches, Sky Pillar floors, wins; a fight's are
+  counted in `collect()` (a refresh replays the fight). Saved in `save.missions`. Claimed at the Clearing's PC (MISSIONS,
+  `questRow()` in `js/pc.js`), whose "!" stays while one waits (`pcBeckons()`); with the Signs title they're paid at once.
+  A new mission is a pool line (its `on` event fed by a `mission()` call).
 - **House upgrades** (2026-10-10, the user's ask after WoW's housing blueprint): the PC's HOUSE UPGRADES page draws the Secret
   Base from above (`blueprint()` in `js/pc.js`: grey rooms, Entry under the main room, a tab per floor, `floor`). First the main
   room grows 11x8 to 14x10 (`BIG_PRICE` 500, `buyBigRoom()`), with no doorways of its own (the user's call: they're the

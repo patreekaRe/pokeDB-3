@@ -28,7 +28,7 @@ import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
-import { post } from './mail.js';
+import { post, mailOn } from './mail.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
@@ -62,6 +62,7 @@ import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
+import { track, claimable } from './missions.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -225,6 +226,21 @@ function markHp(node) {
 function spend(price) {
   run.money -= price;
   run.tally.spent += price;
+  mission('money', price);
+}
+
+/** Count play into the daily and weekly missions (js/missions.js), never on a peeked run; one just finished is told. */
+function mission(events, amount = 1) {
+  if (peeking || !run) return;
+  for (const line of track(events, amount, { type: run.starter.type, level: run.level, safari: !!run.safari })) tell(line);
+}
+
+/** A fight's moves played, damage dealt and items used, for the missions. */
+function missionTally(t) {
+  if (!t) return;
+  mission('cards', t.played);
+  mission('damage', t.dealt);
+  mission('item', t.items?.length || 0);
 }
 
 function checkpoint() {
@@ -636,6 +652,7 @@ function startFlight(quiet) {
 function climbed(floor) {
   const t = run.tower;
   if (floor <= t.floor) return;
+  mission('floor', floor - t.floor);
   t.floor = floor;
   if (peeking) return;
   updateSave(d => {
@@ -1194,6 +1211,7 @@ function useItemOnMap(index) {
   const item = ITEMS_BY_ID[run.items[index]];
   run.items.splice(index, 1);
   run.tally.itemsUsed.push(item.id);
+  mission('item');
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
   if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
@@ -1298,7 +1316,7 @@ function enterNode(node) {
     if (healed) { run.hp += healed; playSound('heal-hp'); tell(`You ate the Big Malasada. +${healed} HP!`); }
     return martRoom();
   }
-  if (node.type === 'event') { run.tally.events += 1; playSound('event'); return eventRoom(node); }
+  if (node.type === 'event') { run.tally.events += 1; mission('event'); playSound('event'); return eventRoom(node); }
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -1337,8 +1355,10 @@ function afterFight(node, result) {
   if (result.fled || result.escaped) {
     run.hp = result.hp;
     tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
+    missionTally(result.tally);
     return showMap();
   }
+  if (!result.won) missionTally(result.tally);
   if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, move: result.move, kind: node.type });
 
   run.hp = result.hp;
@@ -1385,6 +1405,12 @@ function afterFight(node, result) {
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
     if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
+    // counted here, not as the fight ends: a refresh on a reward screen replays the fight
+    missionTally(result.tally);
+    mission(['fight', 'fight-type']);
+    if (node.type === 'elite') mission('alpha');
+    if (node.type === 'boss' || node.type === 'ken') mission('boss');
+    if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     run.money += prize;
     setMoney(run.money);
@@ -2024,6 +2050,7 @@ function restSite({ used = false } = {}) {
           const before = run.hp;
           run.hp += heal;
           run.restCount += 1;
+          mission('rest');
           $('reward-options').classList.add('resting');
           // like the games: the music stops, the balls go into the machine one by one, then they flash while the
           // healing chime plays out before you leave
@@ -3095,6 +3122,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   let record = null;   // a won run's entry, whose win scene plays before the result window
   if (won && !peeking) {
     winCoins = awardCoins(levelCoins(COIN_REWARDS.winBonus));
+    mission(['win', 'win-level']);
     refreshCoins();
   }
   const lost = won ? 0 : breakStreak(run.starter.id, safari);
@@ -3171,6 +3199,8 @@ function endRun(won, atLastBoss = false, loss = null) {
     if (line) lines.push(line);
   }
   if (run.levelUnlocked) lines.push(`⭐ Trainer Level ${run.levelUnlocked} unlocked: ${LEVELS[run.levelUnlocked].name}!`);
+  const ready = peeking || !mailOn() ? 0 : claimable();
+  if (ready) lines.push(`🎯 ${ready} mission reward${ready === 1 ? ' is' : 's are'} waiting at the PC.`);
   list.replaceChildren(...lines.map(line => (typeof line === 'string' ? el('li', '', line) : line)));
   list.hidden = lines.length === 0;
   $('result-again').textContent = safari ? 'Try again' : 'New run';
