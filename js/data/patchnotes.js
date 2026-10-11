@@ -52,6 +52,7 @@ export const NEXT = [
   ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
   ['runs', 'At the crossroads the notice boards wear a bobbing "!" until read and the signpost\'s arms glow in turn until you pick a road; tapping a board or a sign now chimes.'],
   ['fixes', 'A road you have never walked no longer shows its bosses at the crossroads, even if an older version or a playtest had marked them seen.'],
+  ['pc', 'More missions: 29 dailies and 15 weeklies to roll from, new ones asking for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -3,7 +3,8 @@
    missions a UTC day and three weekly ones a week (its Monday, UTC, like the Sky Pillar's), each a goal counted from
    ordinary play (fights won, Alphas, bosses, moves played...) and paid in PokéCoins, claimed at the Clearing's PC
    (js/missions.js keeps the save; this file is pure, for tests/missions.test.mjs). Finishing all three pays a bonus.
-   A mission is { id, text ({n} is its goal), n, coins, on: the event it counts, when(ctx) to count only some, needs(save)
+   A mission is { id, text ({n} is its goal), n, coins, on: the event it counts, when(ctx) to count only some, distinct(ctx) to
+   count each different value once (a type, a day), needs(save)
    to be offered only once its mode is open }. Two missions of one roll never count the same event.
    ============================================================ */
 
@@ -11,6 +12,8 @@ import { hashString, makeRng, shuffled } from '../rng.js';
 import { towerOpen, towerWeek } from './tower.js';
 import { safariOpen } from './pokedex.js';
 import { safariDay } from './safari.js';
+import { roadsOpen } from './enemies.js';
+import { STARTERS_BY_ID } from './starters.js';
 
 /** Missions a day and a week. */
 export const PER_ROLL = 3;
@@ -20,17 +23,15 @@ export const BONUS = { daily: 60, weekly: 300 };
 const typed = (type) => (ctx) => ctx.type === type;
 const levelAtLeast = (lv) => (ctx) => !ctx.safari && (ctx.level ?? 0) >= lv;
 const hasLevel = (lv) => (save) => (save.maxLevel || 0) >= lv;
+const hasSpecial = (save) => (save.unlocked || []).some(id => STARTERS_BY_ID[id] && !STARTERS_BY_ID[id].free);
 
 export const DAILY = [
   { id: 'd-fights', text: 'Win {n} fights', n: 8, coins: 40, on: 'fight' },
   { id: 'd-alphas', text: 'Beat {n} Alphas', n: 2, coins: 50, on: 'alpha' },
   { id: 'd-boss', text: 'Beat a boss or a Sky Pillar guardian', n: 1, coins: 60, on: 'boss' },
-  { id: 'd-cards', text: 'Play {n} moves in battle', n: 80, coins: 40, on: 'cards' },
   { id: 'd-damage', text: 'Deal {n} damage', n: 800, coins: 45, on: 'damage' },
-  { id: 'd-items', text: 'Use {n} items', n: 3, coins: 35, on: 'item' },
   { id: 'd-events', text: 'Explore {n} ❓ rooms', n: 2, coins: 35, on: 'event' },
   { id: 'd-rest', text: 'Heal at a Pokémon Center', n: 1, coins: 30, on: 'rest' },
-  { id: 'd-money', text: 'Spend ₽{n}', n: 300, coins: 40, on: 'money' },
   { id: 'd-fire', text: 'Win {n} fights with a Fire Pokémon', n: 5, coins: 45, on: 'fight-type', when: typed('fire') },
   { id: 'd-grass', text: 'Win {n} fights with a Grass Pokémon', n: 5, coins: 45, on: 'fight-type', when: typed('grass') },
   { id: 'd-water', text: 'Win {n} fights with a Water Pokémon', n: 5, coins: 45, on: 'fight-type', when: typed('water') },
@@ -48,6 +49,14 @@ export const DAILY = [
   { id: 'd-upgrade', text: 'PP Up {n} moves', n: 2, coins: 40, on: 'upgrade' },
   { id: 'd-mart', text: 'Buy {n} things at a Poké Mart', n: 2, coins: 35, on: 'mart' },
   { id: 'd-safari', text: 'Play the Safari Zone', n: 1, coins: 40, on: 'safari', needs: safariOpen },
+  // the third batch (the user's call, same day): the game's own mechanics, in place of Spend ₽, Use items and Play moves
+  { id: 'd-tide', text: 'Build 10 Tide in one fight', n: 1, coins: 45, on: 'tide-fight' },
+  { id: 'd-burn', text: 'Apply 15 Burn in one fight', n: 1, coins: 45, on: 'burn-fight' },
+  { id: 'd-seed', text: 'Drain {n} HP with Leech Seed', n: 30, coins: 45, on: 'seed' },
+  { id: 'd-powers', text: 'Play {n} Power cards', n: 3, coins: 40, on: 'power' },
+  { id: 'd-exhaust', text: 'Exhaust {n} cards', n: 5, coins: 40, on: 'exhaust' },
+  { id: 'd-forget', text: 'Forget a move', n: 1, coins: 30, on: 'forget' },
+  { id: 'd-special', text: 'Win {n} fights with a skin or legendary starter', n: 3, coins: 45, on: 'fight-special', when: (ctx) => ctx.special, needs: hasSpecial },
 ];
 
 export const WEEKLY = [
@@ -61,6 +70,11 @@ export const WEEKLY = [
   { id: 'w-dailies', text: 'Complete {n} daily missions', n: 9, coins: 250, on: 'daily' },
   { id: 'w-catch', text: 'Catch {n} Pokémon in the Safari Zone', n: 15, coins: 250, on: 'catch', needs: safariOpen },
   { id: 'w-floors', text: 'Climb {n} Sky Pillar floors', n: 40, coins: 250, on: 'floor', needs: towerOpen },
+  { id: 'w-types', text: 'Win runs with {n} different types', n: 2, coins: 300, on: 'win-type', distinct: (ctx) => ctx.type },
+  { id: 'w-norest', text: 'Win a run without healing at a Pokémon Center', n: 1, coins: 300, on: 'win-norest', when: (ctx) => !ctx.rests },
+  { id: 'w-road', text: 'Win a run that took the other road at a crossroads', n: 1, coins: 300, on: 'win-road', when: (ctx) => ctx.road, needs: (save) => roadsOpen(save.stats) },
+  { id: 'w-height', text: 'Reach floor 30 of the Sky Pillar in one climb', n: 1, coins: 300, on: 'tower-30', needs: towerOpen },
+  { id: 'w-safaridays', text: 'Play the Safari Zone on {n} different days', n: 3, coins: 250, on: 'safari', distinct: (ctx) => ctx.day, needs: safariOpen },
 ];
 
 export const MISSIONS_BY_ID = Object.fromEntries([...DAILY, ...WEEKLY].map(m => [m.id, m]));
@@ -94,7 +108,12 @@ export function countInto(roll, event, amount, ctx = {}) {
   for (const entry of roll.list) {
     const m = MISSIONS_BY_ID[entry.id];
     if (!m || m.on !== event || (m.when && !m.when(ctx)) || entry.got >= m.n) continue;
-    entry.got = Math.min(m.n, entry.got + amount);
+    if (m.distinct) {   // counts each different type, day... once
+      const key = m.distinct(ctx);
+      if (key == null || (entry.keys || []).includes(key)) continue;
+      entry.keys = [...(entry.keys || []), key];
+    }
+    entry.got = Math.min(m.n, entry.got + (m.distinct ? 1 : amount));
     if (entry.got >= m.n) done.push(m);
   }
   return done;
