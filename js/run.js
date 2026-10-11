@@ -461,9 +461,10 @@ let towerPeekHp = 1;   // ?tower=25&hp=0.1 shrinks every foe's HP, to see guardi
 /** Playtest shortcut (the user's ask): ?event=move-tutor (any event id, or `treasure` for the grotto; &biome=shrine to be
     in that biome, &starter=id) starts a throwaway run and walks straight into that event's room, so it can be seen on a
     phone without playing to it. Nothing about the run is saved. */
-export function peekEvent(starter, id, biome = null) {
+export function peekEvent(starter, id, biome = null, money = null) {
   if (!EVENTS_BY_ID[id] && id !== 'treasure') return false;
   peeking = true;
+  eventPeekMoney = money;
   peekAt = BIOMES_BY_ID[biome] ? biomeAt({ [BIOMES_BY_ID[biome].slot]: biome }, BIOMES_BY_ID[biome].slot) : null;
   beginRun(starter, 0, id);
   return true;
@@ -483,6 +484,7 @@ export function peekMart(starter, money = 300) {
   beginRun(starter, 0, ':mart');
 }
 let martPeekMoney = 300;
+let eventPeekMoney = null;   // ?event=…&money=N: start the throwaway run with that much ₽, to try the paid choices
 
 /** Playtest shortcut: ?bossfight=wetland (any Safari area) walks a throwaway Safari run straight into that area's boss
     fight, its prelude and arena included (&starter=id picks who you play). Nothing about the run is saved. */
@@ -576,6 +578,7 @@ function peekRoom(id) {
     run.biome = peekAt.slot;
     run.route = [...BIOMES.slice(0, peekAt.slot).map(b => b.id), peekAt.id];
   }
+  if (eventPeekMoney != null) run.money = eventPeekMoney;
   run.map = generateMap();
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);

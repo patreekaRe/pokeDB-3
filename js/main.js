@@ -315,7 +315,7 @@ function init() {
     return;
   }
   // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
-  if (params.get('event') && peekEvent(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('event'), params.get('biome'))) return;
+  if (params.get('event') && peekEvent(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('event'), params.get('biome'), params.has('money') ? Number(params.get('money')) : null)) return;
   // ?center: a throwaway run straight into a Pokémon Center (&starter=id), the walk-in 3D one on this branch
   if (params.has('center')) return peekCenter(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free));
   // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N)
