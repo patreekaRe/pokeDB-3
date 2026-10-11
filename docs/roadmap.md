@@ -102,7 +102,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`). Since the same day (the user's ask)
       the courtyard is 3D up to the painted wall (`dressKombat()`): flagstones in the painted floor's colours, his dais
       against the wall with carpeted, gold-edged steps (his pad raised onto it, `kombatLift()`; the painted steps step
-      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers. `?arena=ken`
+      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers, and the medallion as a smooth gold relief (`medallion3d()`: Dragonite traced from its own sprite, blurred and cut again so its pixel steps round off; hung on the wall between the nameplate and the Pokémon, clear of the dais; the painted one steps aside, `sceneBare()`). `?arena=ken`
       (`&biome=`) walks a throwaway run straight into his fight.
     - **d. Each biome's own 3D foreground**, like the Clearing's, about a session a biome; then main. `GROUNDS` in
       `js/arena-3d.js` is one `dress*()` a biome, handed the ground's span, the fade and the placing tests by `build()`.

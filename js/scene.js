@@ -5408,11 +5408,12 @@ function kombatLayout() {
   };
 }
 
-/* The 3D arena (js/arena-3d.js) builds Kenmatta's dais and steps itself, so the painted ones step aside while it's up. */
-let bareDais = false;
-export function sceneDais(off) {
-  if (bareDais === off) return;
-  bareDais = off;
+/* The 3D arena (js/arena-3d.js) builds Kenmatta's dais, its steps and the medallion itself, so the painted ones step
+   aside while it's up. */
+let bareKombat = { dais: false, medal: false };
+export function sceneBare(o) {
+  if (bareKombat.dais === o.dais && bareKombat.medal === o.medal) return;
+  bareKombat = o;
   if (S?.raw.backdrop === 'kombat') resize();
 }
 
@@ -5429,7 +5430,7 @@ function kombatBackdrop() {
     lacquerPillar(x + side * bay, wallTop - 4);
   }
   gateTower(cx, towerTop, roof, half);
-  const { eye } = medallion(cx, cy, room);
+  const { eye } = bareKombat.medal ? { eye: null } : medallion(cx, cy, room);
   life.braziers = [];
   for (const side of [-1, 1]) {
     const x = cx + side * (half + 6), py = Math.round(cy - R * 0.1);
@@ -5438,7 +5439,7 @@ function kombatBackdrop() {
     pixelMap(x - 3, py - 3, ['ooooooo', 'olggggo', '.odddo.', '..ooo..'], { o: S.gold[4], l: S.gold[0], g: S.gold[1], d: S.gold[3] });
     life.braziers.push({ x, y: py - 4 });
   }
-  if (dais && !bareDais) templeSteps(dais);
+  if (dais && !bareKombat.dais) templeSteps(dais);
   life.kombat = { eye };
 }
 
@@ -5648,6 +5649,7 @@ function drawKombat(t) {
     }
   }
   const e = life.kombat.eye, [hot, glow, ember] = S.eye, p = Math.sin(t / 3) + storm.level * 2;
+  if (!e) return;
   put(e.x, e.y, p > 0 ? hot : glow);
   if (p > 0.4) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) put(e.x + dx, e.y + dy, p > 1.4 ? glow : ember);
 }
