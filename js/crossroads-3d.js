@@ -144,6 +144,20 @@ function glowArt(core, edge) {
   return c;
 }
 
+/** The gold "!" bobbing over a board till it's read: a cream speech bubble, as the Clearing's mailbox and PC wear. */
+function hintArt() {
+  const [c, g] = canvas(64, 72);
+  g.fillStyle = 'rgba(0,0,0,0.25)';
+  g.beginPath(); g.ellipse(33, 31, 27, 27, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#fbf4e4'; g.strokeStyle = '#3a2e24'; g.lineWidth = 3.5;
+  g.beginPath(); g.arc(32, 29, 25, 0, Math.PI * 2); g.moveTo(24, 50); g.lineTo(32, 66); g.lineTo(40, 50); g.fill();
+  g.beginPath(); g.arc(32, 29, 25, 0.62 * Math.PI, 2.38 * Math.PI); g.lineTo(32, 66); g.closePath(); g.stroke();
+  g.fillStyle = '#f0b020'; g.strokeStyle = '#8a5a10'; g.lineWidth = 2;
+  g.beginPath(); g.roundRect(27, 11, 10, 23, 4); g.fill(); g.stroke();
+  g.beginPath(); g.arc(32, 42, 5, 0, Math.PI * 2); g.fill(); g.stroke();
+  return c;
+}
+
 /* ---------- building ---------- */
 
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.9, ...o });
@@ -275,7 +289,7 @@ function boardMesh(i, id) {
   m.geometry.translate(0, h / 2, 0);
   m.rotation.y = -side(i) * 0.32;   // turned a little towards the path
   m.castShadow = true;
-  m.userData = { board: i, w };
+  m.userData = { board: i, w, h };
   return m;
 }
 
@@ -317,6 +331,15 @@ async function build(ids) {
   group.add(post);
   const boards = ids.map((id, i) => boardMesh(i, id));
   group.add(...boards);
+  // a "!" over each board till it's read, so it's plain they can be
+  const hintTex = smoothTex(hintArt());
+  const hints = boards.map((b) => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: hintTex, transparent: true, depthWrite: false, fog: false }));
+    s.scale.set(0.95, 1.07, 1);
+    s.raycast = () => {};
+    b.add(s);
+    return s;
+  });
   // through each gap, a glimpse of the biome the road runs to, lit by itself
   const glimpses = ids.map((id, i) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: glimpseTex(id), fog: false, toneMapped: false, transparent: true, depthWrite: false }));
@@ -356,7 +379,7 @@ async function build(ids) {
   const fill = new THREE.DirectionalLight('#ff9060', 1.2);
   fill.position.set(0, 6, FORK_Z - 40);
   scene.add(group, hemi, sun, sun.target, fill);
-  return { scene, group, arms, glimpses, boards, hills, sky, sunDisc, flies, ground, line, edges };
+  return { scene, group, arms, glimpses, boards, hints, hills, sky, sunDisc, flies, ground, line, edges };
 }
 
 function glimpseTex(id) {
@@ -445,7 +468,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   const scene = $('crossroads-scene'), go = $('xr-go'), calm = still();
   scene.className = `crossroads-scene x3d${calm ? ' still' : ''}`;
   scene.prepend(view);
-  preloadSounds('stick', 'confirm', 'footstep');
+  preloadSounds('stick', 'confirm', 'cancel', 'footstep');
   go.disabled = true;
   go.textContent = 'Which way?';
   scene.hidden = false;
@@ -453,6 +476,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', hop: 0 };
   let picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
   let size = 1, vw = 0, vh = 0, raf = 0, last = 0, stepAt = 0, held = false;
+  const read = new Set();   // boards opened: their "!" and glow stop
 
   function resize() {
     vw = view.clientWidth || innerWidth; vh = view.clientHeight || innerHeight;
@@ -474,7 +498,8 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     const choose = (i) => {
       if (picked === i) return;
       picked = i;
-      playSound('stick');
+      playSound('confirm');
+      W.arms.forEach(a => { a.rotation.z = 0; });
       W.arms.forEach((a, k) => a.material.forEach((m, j) => { m.emissive.set(k === i ? (j ? '#c89030' : '#f8c850') : m.color); m.emissiveIntensity = k === i ? 0.6 : 0.3; }));
       go.disabled = false;
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
@@ -545,6 +570,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       route = [];
       keys.clear();
       face('back');
+      read.add(i);
       playSound('stick');
       fillPanel(i);
       panel.hidden = false;
@@ -553,13 +579,14 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       if (reading < 0) return;
       reading = -1;
       panel.hidden = true;
-      playSound('stick');
+      playSound('cancel');
     }
     /** Walks your Pokémon up in front of road i's board (on the grass, short of the road), then opens it. */
     function readBoard(i) {
       if (walking || asking || reading >= 0) return;
       const b = W.boards[i].position, z = FORK_Z + 0.9, e = meadowHalf(z) - 0.15;
       routeTo(side(i) * Math.min(e, Math.abs(b.x) - 1.5), z);   // beside it, not in front of it
+      if (toRead !== i) playSound('confirm');
       toRead = i;
     }
     function turn() {
@@ -576,6 +603,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       const bm = W.boards[1].material;
       bm.map.dispose(); bm.map = bm.emissiveMap = smoothTex(boardArt(roads[1])); bm.needsUpdate = true;
       if (reading === 1) fillPanel(1);
+      else read.delete(1);
       resize();
     }
     resize();
@@ -657,6 +685,21 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         const u = s.userData, b = Math.sin(t * 0.0021 + u.ph * 3);
         s.position.set(u.x + Math.sin(t * 0.0005 + u.ph) * 0.8, u.y + Math.cos(t * 0.0007 + u.ph * 2) * 0.3, u.z);
         s.material.opacity = calm ? 0.8 : Math.max(0, b);
+      }
+      // till read, a board's "!" bobs over it and the board glows softly; till a road is picked, the signpost's arms breathe
+      W.boards.forEach((b, i) => {
+        const on = !read.has(i) && !walking, wave = calm ? 0.5 : (Math.sin(t * 0.004 + i * 1.7) + 1) / 2;
+        const hint = W.hints[i];
+        hint.visible = on;
+        hint.position.y = b.userData.h + 0.55 + (calm ? 0 : Math.abs(Math.sin(t * 0.0035 + i * 1.3)) * 0.22);
+        b.material.emissiveIntensity = on ? 0.14 + wave * 0.22 : 0.12;
+      });
+      if (picked < 0) {
+        W.arms.forEach((a, k) => {
+          const wave = calm ? 0.5 : (Math.sin(t * 0.003 + k * Math.PI) + 1) / 2;   // in turn, one then the other
+          a.material.forEach(m => { m.emissiveIntensity = 0.3 + wave * 0.35; });
+          a.rotation.z = calm ? 0 : Math.sin(t * 0.0022 + k * 2) * 0.035;
+        });
       }
       post.draw(W.scene, camera, (new THREE.Vector3(walker.x, 0.5, walker.z).project(camera).y + 1) / 2);
     }

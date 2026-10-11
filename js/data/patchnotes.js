@@ -50,6 +50,8 @@ export const NEXT = [
   ['fixes', 'Closing the game at a crossroads (or during the walk after it) now brings you back to the crossroads on Continue, not to the map before the boss.'],
   ['runs', 'At the crossroads a notice board stands at each road: tap one to walk up and read it, its poster blown up with notes pinned to it: its places in order, bosses, wild Pokémon by type and its Pokédex page. Your Pokémon also gets a little smaller as it walks towards the fork.'],
   ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
+  ['runs', 'At the crossroads the notice boards wear a bobbing "!" until read and the signpost\'s arms glow in turn until you pick a road; tapping a board or a sign now chimes.'],
+  ['fixes', 'A road you have never walked no longer shows its bosses at the crossroads, even if an older version or a playtest had marked them seen.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

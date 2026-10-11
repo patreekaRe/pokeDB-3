@@ -37,7 +37,7 @@ import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './stora
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
-import { DEPTHS_PAGE } from './data/pokedex.js';
+import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
 import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
@@ -191,6 +191,11 @@ function init() {
       d.gateHp = seedGate(d);
     });
   }
+  // a playtest (?biome=, ?bossfight=...) used to mark its Pokémon seen, so a road never walked showed its bosses at the
+  // crossroads: forget what a never-entered road's page only saw, never what was beaten
+  const leaked = (d) => BONUS_PAGES.filter(p => !d.stats.biomesSeen?.includes(p.biome))
+    .flatMap(p => p.ids).filter(id => d.dex.seen.includes(id) && !d.dex.defeated.includes(id) && !(d.dex.count?.[id] > 0));
+  if (leaked(getSave()).length) updateSave(d => { const gone = new Set(leaked(d)); d.dex.seen = d.dex.seen.filter(id => !gone.has(id)); });
   // ?lockdepths forgets the Crystal Depths' Pokédex page and how deep runs have gone, for a save whose playtests (before
   // peeked runs stopped counting) revealed the page early. Not while a saved run is down there.
   if (query.has('lockdepths') && !(loadRunData()?.starter === 'mewtwo' && loadRunData().biome >= 3)) {
