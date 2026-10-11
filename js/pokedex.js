@@ -48,7 +48,7 @@ const levelOf = (p) => (!getSave().dex.done.includes(p.biome) ? 0 : pageResearch
 
 /** A page perk's level: 0 until its page is complete, 1 once it is, 2 once every entry on it is researched too.
     Worked out from the save rather than stored, so a save that had already researched a page gets Lv 2 straight away. */
-export const dexPerkLevel = (perkId) => levelOf(DEX_PAGES.find(p => p.perk.id === perkId));
+export const dexPerkLevel = (perkId) => levelOf([...DEX_PAGES, ...BONUS_PAGES].find(p => p.perk.id === perkId));
 
 /** Pick weight for a fight room's Pokémon: ones you haven't beaten yet come up twice as often. */
 export const dexWeight = (id) => (getSave().dex.defeated.includes(id) ? 1 : 2);
@@ -91,8 +91,9 @@ export function dexDefeated(id) {
     updateSave(d => { d.dex.done.push(p.biome); });   // its prize, shiny Mewtwo, is a feat (checkFeats()), with its own window
     lines.push(`The ${p.name} page is complete! ${p.prize.icon} ${p.prize.name} unlocked!`);
   } else if (p.bonus && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
-    updateSave(d => { d.dex.done.push(p.biome); });   // a bonus page (another road's): PokéCoins, no perk
-    lines.push(`The ${p.name} bonus page is complete! ${post('lab', 'Bonus page complete!', `You completed the ${p.name} bonus page of your Pokédex. Please accept this reward for your research.`, p.bonus.coins)}`);
+    updateSave(d => { d.dex.done.push(p.biome); });   // a bonus page (another road's): PokéCoins and its perk
+    lines.push(`The ${p.name} bonus page is complete! ${post('lab', 'Bonus page complete!', `You completed the ${p.name} bonus page of your Pokédex. Please accept this reward for your research.`, p.bonus.coins)}`,
+      `New perk: ${p.perk.name}. ${p.perk.text}`);
   } else if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });
     const paid = post('lab', 'Page complete!', `You completed the ${p.name} page of your Pokédex. Please accept this reward for your research.`, p.perk.coins);
@@ -199,14 +200,19 @@ function depthsBox(p, count, done) {
 
 /** A bonus page's prize, PokéCoins once, in the perk's place. */
 function bonusBox(p, count, done) {
-  const box = el('div', `dex-perk${done ? ' earned' : ''}`);
+  const lv = levelOf(p);
+  const box = el('div', `dex-perk${done ? ' earned' : ''}${lv === 2 ? ' mastered' : ''}`);
   const text = el('div', 'dex-perk-text');
+  const studied = p.ids.filter(researched).length;
   text.append(
-    el('strong', '', `${done ? '' : '🔒 '}Bonus page: 💰 ${p.bonus.coins} PokéCoins`),
-    el('span', '', 'Another road\'s page: it doesn\'t count towards finishing the Pokédex.'),
-    el('small', '', done ? 'Earned.' : `Defeat all ${p.ids.length} to earn it.`),
-    progressBar(count, p.ids.length));
-  box.append(iconOf('dex-perk-icon', p.bonus.icon), text, el('b', 'dex-perk-count', `${count}/${p.ids.length}`));
+    el('strong', '', `${done ? '' : '🔒 '}${p.perk.name}${lv === 2 ? ' Lv 2' : ''}`),
+    el('span', '', lv === 2 ? p.perk.lv2.text : p.perk.text),
+    el('small', '', !done ? `Defeat all ${p.ids.length} to earn it, plus 💰 ${p.bonus.coins}. A bonus page: it doesn't count towards finishing the Pokédex.`
+      : lv === 2 ? 'Every entry researched: Lv 2, on for every run.'
+      : `Earned: on for every run. Research all ${p.ids.length} (★${studied}) for Lv 2: ${p.perk.lv2.short}.`));
+  const shown = done ? studied : count;
+  text.append(progressBar(shown, p.ids.length));
+  box.append(iconOf('dex-perk-icon', p.perk.icon), text, el('b', 'dex-perk-count', `${done ? '★' : ''}${shown}/${p.ids.length}`));
   return box;
 }
 
@@ -278,9 +284,15 @@ function rewardBoxes() {
       p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.prize.name}: ${p.prize.text}`));
     depths[0].classList.add('dex-depths');
   }
-  const bonus = BONUS_PAGES.filter(bonusKnown).map(p => goal(p.bonus.icon, `${BANNER_NAME[p.biome]} page`, `Beat all ${p.ids.length} once (a bonus page)`,
-    [coins(p.bonus.coins)], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.name}: another road's page`));
-  return [jackpot, research, ...pages, ...masters, ...bonus, ...depths];
+  const known = BONUS_PAGES.filter(bonusKnown);
+  const bonus = known.map(p => goal(p.bonus.icon, `${BANNER_NAME[p.biome]} page`, `Beat all ${p.ids.length} once (a bonus page)`, [
+    coins(p.bonus.coins),
+    prize(iconOf('dex-prize-icon', p.perk.icon), p.perk.name, p.perk.short),
+  ], p.ids.filter(id => defeated.has(id)).length, p.ids.length, save.dex.done.includes(p.biome), `${p.perk.name}: ${p.perk.text}`));
+  const bonusMasters = known.map(p => goal('★', `${BANNER_NAME[p.biome]} research`, `Research all ${p.ids.length}`, [
+    prize(iconOf('dex-prize-icon', p.perk.icon), `${p.perk.name} Lv 2`, p.perk.lv2.short),
+  ], p.ids.filter(researched).length, p.ids.length, levelOf(p) === 2, `${p.perk.name} Lv 2: ${p.perk.lv2.text}`));
+  return [jackpot, research, ...pages, ...masters, ...bonus, ...bonusMasters, ...depths];
 }
 
 /** A move's numbers in a fight (Research complete): attacks carry the biome's extra damage. */
@@ -380,7 +392,7 @@ function renderList() {
       const b = banner(`biome-${p.biome}${done ? ' complete' : ''}`, BANNER_NAME[p.biome], done ? 'Complete!' : p.name, (b) => openPage(i, b), p.biome);
       b.dataset.page = i;
       b.append(el('span', 'pdx-banner-count', `${n} / ${p.ids.length}`), progressBar(n, p.ids.length),
-        medal(done ? 2 : 0, p.bonus.icon, `Bonus page: ${p.bonus.coins} PokéCoins`), bannerMons(bannerIds(p), seen));
+        medal(levelOf(p), p.perk.icon, done ? `${p.perk.name}${levelOf(p) === 2 ? ' Lv 2' : ''}` : `${p.perk.name}: complete the page to earn it`), bannerMons(bannerIds(p), seen));
       banners.push(b);
     } else {
       const b = banner('biome-mystery locked', '???', 'A road you haven\'t taken.', () => tipAt(b, 'Take the other path at a crossroads to find it.'));

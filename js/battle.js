@@ -234,7 +234,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       dmgMult: encounter.dmgMult ?? 1,  // the Sky Pillar's compounding damage past floor 30
       burn: run.relics.includes('flame-orb') ? 3 : 0,
-      seed: run.relics.includes('gooey-mulch') ? 2 : 0,   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
+      seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
       weak: aug.startWeak || 0,       // turns left dealing WEAK_MULT damage
       vulnerable: aug.startVuln || 0, // turns left taking VULNERABLE_MULT damage from your attacks

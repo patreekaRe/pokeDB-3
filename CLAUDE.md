@@ -158,6 +158,15 @@ live site.
   lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit
   of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Kecleon's counter with the PC, a tap walks up and
   presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
+- **The walk-in 3D ? rooms** (2026-10-11, the user's ask): the Move Tutor's dojo, the Move Deleter's study, the Day Care
+  and the Fan Club are walked in 3D like the Center (`js/event-3d.js`, mounted by `event3d()` under `eventRoom()`; the
+  choices' acts and the trainers' reactions play on the props); since part b/c (same day) so are the Hot Spring and the
+  Shrine (open air: a look per biome, `LOOKS`, lit by the hour) and the treasure grotto (`treasureRoom()`, a cave per
+  biome, `CAVE`, its Poké Ball chest following the page chest's `.shaking` / `.opened`), and since part d (same day, the
+  user's pick: a 3D ground per biome) the outdoor four, the Berry Tree, Wishing Well, Item Ball and Team Rocket, on a
+  patch of the biome's own ground (`wild()`). Only Kenmatta's arena stays pixel. `?event=day-care` (`&biome=shrine`, `&starter=id`;
+  `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
+  `docs/reference/events.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
@@ -636,7 +645,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
   path splitting round a signpost (an arm a road in its biome sign's colours, `ARMS`; a new biome needs one) into two gaps in
   the treeline, each a glimpse of its biome (`sceneShot(id, { time: 'dusk' })`), a card over each road (sign, bosses as
-  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. A tap (card or road) or an arrow key picks,
+  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. Since 2026-10-11 (the user's ask: keep the scene, move like in 3D) you walk it: a tap (or hold and drag, arrows / WASD) walks your Pokémon there, in ground perspective (`toWorld()` / `fromWorld()`), easing down to 70% of the size it loads in at by the fork and held there (the user's pick: full perspective was tried and felt too much), the painting in layers (`far`, `ground`, `trees`, the post) under a still camera (`cam` 0: a following, parallax camera was tried and the user didn't like it); walking onto a road picks it, on up it takes it. Since later that day (the user's pick: "I want the 3D room instead") it is a 3D place, `js/crossroads-3d.js`, tried first by `crossroads()` (`?xr2d`, or no Three.js, paints the old one): the same button, ask and walking, the floating cards replaced by a notice board at each road's mouth (`boardMesh()`, the Clearing's `kioskArt()` in its `ARMS` colours; a tap walks your Pokémon up beside it and opens `.xr-panel`: sign, places, bosses, wilds, Pokédex page; reading never picks a road; the user's pick, same day), your Pokémon easing to 70% of its loaded size by the fork (`SHRINK`; the painted one too), in the painting's camera (level and high over the path, the horizon shifted up by a view offset to the painting's 42% / 50%, its fork and your Pokémon's feet at the painting's heights, `fitCamera()`), open meadow like the painting (a big tree cut by each screen edge, `edgeTree()`, the far treeline low across the horizon, `treeline()`, squashed to the camera's height, a wide gap per road showing a faded `sceneShot()` of its biome), a signpost whose arms light on a pick, fireflies; your Pokémon keeps its size on the screen until it walks off. A tap (card or road) or an arrow key picks,
   a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
   `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
   `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, `&road=savanna` the pool biome it offers, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
@@ -644,7 +653,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
   biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: every main biome entered, the user's call; six since item 20). The pool's
   Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
+  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`, and since 2026-10-11 a perk each like the three's, `DEX_PERKS` (the user's call: perks that show or choose, never make a run stronger, so no bot test): the Ruins' Unown Rubbing reads a ❓ room's event on the map (`rubbing-btn` beside the Scope, `node.read`), Thornwood's Tracker's Eye rings wild fights by match-up (`.map-match`, `matchUp()` in `js/map.js`), the Savanna's Wayfinder swaps the crossroads' pool road (`wayfinder()` / `swapRoad()` in `js/run.js`, `run.wayfound`, `swap` in `crossroads()`); never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
   pool's Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
   ones they had were swapped out), like the Safari's 44 borrowed wilds: the biome's `ENEMY_DEFS` entry wins over
   `safariMonDef()` everywhere, Safari included, and keeps the Safari Pokédex's line as `safariLine` (`js/safaridex.js` reads it);

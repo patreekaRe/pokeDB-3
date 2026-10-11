@@ -1736,6 +1736,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
   noise, not traps. Then three new Fire-only augments (Flash Fire, Magma Armor, Eruption). Floor 100: Fire 16 -> 28%, Grass 49 -> 51%,
   Water 32 -> 42% (200-350 climbs a type). Detail in `docs/augments.md`.
+- **Sky Pillar augments, part e** (2026-10-11): Mulligan, Scavenger, Ambush, Refresh and Thorn Garden reworked (each was
+  below a bare climb, now +4 to +11 floors; new key `startSeed`), so the bot takes them 63-100% of the time. Floor 100:
+  Fire 23%, Grass 56%, Water 41% (200 climbs a type). Detail in `docs/augments.md` Part e.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
@@ -2089,3 +2092,29 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a day (30-60 coins) and 3 a
   week (180-300), plus a bonus for all of them (60 / 300), counted from ordinary play and claimed at the PC's MISSIONS page.
   Detail in CLAUDE.md's Daily and weekly missions note.
+
+**3D ? rooms, part a** (2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club are
+walked in 3D (`js/event-3d.js`, `docs/reference/events.md`), each choice's act and the trainers' reactions on the props.
+Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with the old pixel Mart, 2026-10-10), and a
+`?event=day-care` peek crashed when the map hadn't rolled one (`rollEvent()`).
+
+**3D ? rooms, parts b and c** (2026-10-11): the Hot Spring and the Shrine are open-air 3D rooms with a look per biome and
+the light by the hour, and the treasure grotto a 3D cave per biome with a Poké Ball chest that wobbles and opens
+(`js/event-3d.js`, `docs/reference/events.md`). `?event=` takes `&biome=` and `&starter=` now, and `?event=treasure` walks
+into a grotto.
+
+**3D ? rooms, part d** (2026-10-11, the user's pick: a 3D ground per biome): the Berry Tree, Wishing Well, Item Ball and
+Team Rocket stand on a patch of the biome's own 3D ground (`wild()` in `js/event-3d.js`), each choice played out on its
+prop. Only Kenmatta's arena is still pixel.
+
+**3D ? rooms, parts b-d and live** (2026-10-11): the Hot Spring, Shrine, treasure grotto and the outdoor four walked in 3D;
+every room now stays until you walk out over its doormat (framed above the text box), found items float over the room,
+each room has the user's song (`event-room`, `event-outdoor`, `shrine-room`, `treasure`), and the Mart's relics are
+bigger with nothing in front of them. Playtested on `event-rooms-3d`, merged into `main` the same day (the user's call).
+
+**3D crossroads: notice boards and a gentle shrink** (2026-10-11): the floating road cards gave way to a notice board at
+each road's mouth (the Clearing's kiosk in the road's sign colours, its snapshots the wilds' types); a tap walks your
+Pokémon up beside it and opens a panel with the road's places, bosses, wilds and Pokédex page (and Wayfinder's swap).
+Reading never picks a road. Your Pokémon eases down to 70% of its loaded size by the fork (the painted fallback, which
+keeps its cards, too). Fixed on the way: the cards called `dexSeen()`, which *marks* a Pokémon seen, so showing the fork
+marked its bosses seen and never showed a met one in colour; they read `save.dex.seen` now.

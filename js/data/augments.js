@@ -12,7 +12,7 @@
    by augEffects() (MULT keys multiply, `true` keys switch on), and the
    game (js/battle.js, js/run.js) and the bot (pokeDB-sim) read the sums.
    Fight keys (read by battle.js):
-     startBlock, startStrength, startFocus, startWeak, startVuln   at the start of every fight
+     startBlock, startStrength, startFocus, startWeak, startVuln, startSeed   at the start of every fight
      turn1Draw, turn1Energy        on the first turn
      firstAttack                   extra damage on the fight's first attack
      onePunch                      the fight's first attack deals this many times as much
@@ -95,7 +95,7 @@ export const AUGMENTS = [
   { id: 'early-bird',     tier: 'silver', icon: '🐦', name: 'Early Bird',     text: '+1 PP on turn 1 of every fight.', turn1Energy: 1 },
   { id: 'hoarder',        tier: 'silver', icon: '👜', name: 'Hoarder',        text: '+1 item slot, and an item now.', itemSlots: 1, itemNow: 1 },
   { id: 'lucky-find',     tier: 'silver', icon: '🍀', name: 'Lucky Find',     text: 'A random relic now.', relicNow: 1, set: 'high-roller' },
-  { id: 'scavenger',      tier: 'silver', icon: '🦝', name: 'Scavenger',      text: 'Fights drop items twice as often.', itemOdds: 2 },
+  { id: 'scavenger',      tier: 'silver', icon: '🦝', name: 'Scavenger',      text: 'Fights drop items twice as often; heal 3 HP after every won fight.', itemOdds: 2, fightHeal: 3 },
   { id: 'thorn-coat',     tier: 'silver', icon: '🌵', name: 'Thorn Coat',     text: 'Enemies take 3 damage when they attack you.', thorns: 3 },
   { id: 'steady-hands',   tier: 'silver', icon: '🤲', name: 'Steady Hands',   text: 'Cards that give block give 2 more.', blockBonus: 2 },
   { id: 'heavy-hitter',   tier: 'silver', icon: '🥊', name: 'Heavy Hitter',   text: 'Your attacks deal +2 damage.', attackBonus: 2 },
@@ -108,7 +108,7 @@ export const AUGMENTS = [
   { id: 'inner-focus',    tier: 'silver', icon: '🧘', name: 'Inner Focus',    text: 'Start every fight with 1 strength.', startStrength: 1 },
   { id: 'picky-eater',    tier: 'silver', icon: '🥢', name: 'Picky Eater',    text: 'Reroll a fight\'s card reward once, for 30 ₽.', pickyEater: 30 },
   { id: 'insight',        tier: 'silver', icon: '🔭', name: 'Insight',        text: 'See the enemy\'s next two moves; your first attack each fight deals +3.', insight: true, firstAttack: 3 },
-  { id: 'mulligan',       tier: 'silver', icon: '🔄', name: 'Mulligan',       text: 'Once a fight, shuffle your hand into your draw pile and draw that many.', mulligan: 1 },
+  { id: 'mulligan',       tier: 'silver', icon: '🔄', name: 'Mulligan',       text: 'Draw 2 more cards and +1 PP on turn 1; once a fight, shuffle your hand into your draw pile and draw that many.', mulligan: 1, turn1Draw: 2, turn1Energy: 1 },
   { id: 'cursed-gold',    tier: 'silver', trade: true, icon: '💰', name: 'Cursed Gold',  text: '+300 ₽ now; Poké Mart prices are 25% higher.', moneyNow: 300, martMult: 1.25, set: 'high-roller' },
   { id: 'heavy-pack',     tier: 'silver', trade: true, icon: '🧳', name: 'Heavy Pack',   text: 'Take 2 moves from every card reward; a Sludge joins your deck after every guardian.', rewardTake: 1, sludgeEvery: 1 },
   { id: 'risky-climb',    tier: 'silver', trade: true, icon: '🧗', name: 'Risky Climb',  text: 'From floor 3 on, every landing fight is an Alpha; Alphas pay double ₽.', riskyClimb: 2 },
@@ -132,8 +132,8 @@ export const AUGMENTS = [
   { id: 'executioner',    tier: 'gold', icon: '🪓', name: 'Executioner',    text: 'Your attacks deal double damage to enemies below 25% HP.', executeMult: 2, set: 'snowball' },
   { id: 'opening-act',    tier: 'gold', icon: '🎭', name: 'Opening Act',    text: 'Your Powers cost 0 on turn 1.', powersFree: true },
   { id: 'deck-diet',      tier: 'gold', icon: '🥗', name: 'Deck Diet',      text: 'Forget 4 moves from your deck; -5 max HP.', forget: 4, maxHp: -5 },
-  { id: 'refresh',        tier: 'gold', icon: '♻️', name: 'Refresh',        text: 'Draw 1 card whenever your discard pile is shuffled into your draw pile.', refresh: 1 },
-  { id: 'ambush',         tier: 'gold', icon: '🥷', name: 'Ambush',         text: 'Enemies start every fight with 2 Vulnerable.', startVuln: 2 },
+  { id: 'refresh',        tier: 'gold', icon: '♻️', name: 'Refresh',        text: 'Draw 2 more cards on turn 1, and 2 whenever your discard pile is shuffled into your draw pile.', refresh: 2, turn1Draw: 2 },
+  { id: 'ambush',         tier: 'gold', icon: '🥷', name: 'Ambush',         text: 'Enemies start every fight with 3 Vulnerable; your first attack each fight deals +8 damage.', startVuln: 3, firstAttack: 8 },
   { id: 'intimidate',     tier: 'gold', icon: '😠', name: 'Intimidate',     text: 'Enemies start every fight with 2 Weak.', startWeak: 2 },
   { id: 'bodyguard',      tier: 'gold', icon: '💂', name: 'Bodyguard',      text: 'The first time each fight you drop below half HP, gain 15 block.', bodyguard: 15, set: 'ironclad' },
   { id: 'spoils-of-war',  tier: 'gold', icon: '👑', name: 'Spoils of War',  text: 'Guardians give a second boss relic to choose.', guardianBossRelic: 1 },
@@ -164,7 +164,7 @@ export const AUGMENTS = [
   { id: 'cauterize',      tier: 'gold', type: 'fire',  icon: '🩹', name: 'Cauterize',    text: 'Heal 3 HP whenever Burn hurts an enemy.', burnHeal: 3 },
   { id: 'magma-armor',    tier: 'gold', type: 'fire',  icon: '🌋', name: 'Magma Armor',  text: 'Start every fight with 10 block; enemies take 3 damage when they attack you.', startBlock: 10, thorns: 3 },
   { id: 'photosynthesis', tier: 'gold', type: 'grass', icon: '☀️', name: 'Photosynthesis', text: 'Heal 2 HP at the start of every turn.', healEachTurn: 2, set: 'glutton' },
-  { id: 'thorn-garden',   tier: 'gold', type: 'grass', icon: '🥀', name: 'Thorn Garden', text: 'An enemy with Leech Seed takes 3 damage when it attacks.', seedThorns: 3 },
+  { id: 'thorn-garden',   tier: 'gold', type: 'grass', icon: '🥀', name: 'Thorn Garden', text: 'Enemies start every fight with 2 Leech Seed, and take 3 damage when they attack while seeded.', startSeed: 2, seedThorns: 3 },
   { id: 'overbloom',      tier: 'gold', type: 'grass', icon: '🌺', name: 'Overbloom',    text: 'Healing past your max HP becomes twice as much block.', overheal: 2 },
   { id: 'rising-tide',    tier: 'gold', type: 'water', icon: '🌊', name: 'Rising Tide',  text: 'Spending Tide only spends half of it.', tideHalf: true },
   { id: 'tidal-armor',    tier: 'gold', type: 'water', icon: '🐚', name: 'Tidal Armor',  text: 'At the end of your turn, gain 1 block per Tide.', tideBlock: 1 },

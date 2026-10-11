@@ -56,7 +56,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Early Bird | +1 PP on turn 1 of every fight |
 | Hoarder | +1 item slot, and an item now |
 | Lucky Find | A random relic now |
-| Scavenger | Fights drop an item twice as often |
+| Scavenger | Fights drop an item twice as often; heal 3 after every won fight |
 | Thorn Coat | Enemies take 3 damage when they hit you |
 | Steady Hands | Your block cards give +2 |
 | Heavy Hitter | Your attacks deal +2 |
@@ -68,7 +68,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Insight | See the enemy's next two moves |
 | Clean Slate | Remove a card at every Center as well as resting |
 | Lucky Coin | 25% chance for an extra relic from guardians |
-| Mulligan | Once a fight, shuffle your hand into the draw pile and draw that many |
+| Mulligan | Draw 2 more and +1 PP on turn 1; once a fight, shuffle your hand into the draw pile and draw that many |
 | Inner Focus | Start every fight with 1 strength |
 
 ### Gold (floors 40-60)
@@ -86,8 +86,8 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Executioner | Attacks deal double to enemies below 25% HP |
 | Opening Act | Your Power cards cost 0 on turn 1 |
 | Deck Diet | Remove 4 cards; max HP -5 |
-| Refresh | Draw 1 card whenever you shuffle your discard pile |
-| Ambush | Enemies start every fight Vulnerable 2 |
+| Refresh | Draw 2 more on turn 1, and 2 whenever you shuffle your discard pile |
+| Ambush | Enemies start every fight Vulnerable 3; your first attack +8 |
 | Intimidate | Enemies start every fight Weak 2 |
 | Bodyguard | The first time each fight you'd drop below half, gain 15 block |
 | Spoils of War | Guardians give a second boss relic to choose |
@@ -152,7 +152,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Deep Roots | Silver | Grass | Overgrow heals 6 |
 | Pollinate | Silver | Grass | Leech Seed applies +1 |
 | Photosynthesis | Gold | Grass | Heal 2 at the start of every turn |
-| Thorn Garden | Gold | Grass | Enemies with Leech Seed take 3 when they attack |
+| Thorn Garden | Gold | Grass | Enemies start every fight with Leech Seed 2, and take 3 when they attack seeded |
 | Overbloom | Gold | Grass | Healing past max HP becomes block (twice as much) |
 | World Tree | Prismatic | Grass | Leech Seed never goes down and heals double |
 | Spore Storm | Prismatic | Grass | Every debuff you apply is applied twice |
@@ -280,3 +280,25 @@ Fire most and costs Grass, which narrows the gap.
 Final, floor 100 reached: Fire 16 -> 28%, Water 32 -> 42%, Grass 49 -> 51% (Fire 350 climbs, the others 200; the others
 were not re-run after the second pass, which only touched Fire-only augments). Fire now trails Water by 14, within the
 cells' noise (~±7 each) of the ~10-point goal.
+
+## Part e (2026-10-11, bot-checked)
+
+The five augments the bot never took (Wildfire was already fixed in Part d) each measured below a bare climb. Each was
+reworked with keys that already existed, plus one new one, `startSeed` (mirrored in the sim). Measured with 72 climbs of
+6 flights holding only that augment (the `aug=` tweak). Floors gained over a bare climb (Fire 35.1, Grass 37.8, Water 31.3):
+
+| Augment | Was | Now | Fire | Grass | Water |
+|---|---|---|---|---|---|
+| Mulligan (Silver) | once a fight, a new hand | + draw 2 and +1 PP on turn 1 | +7.6 | +9.9 | +9.9 |
+| Scavenger (Silver) | items twice as often | + heal 3 after every won fight | +8.0 | +6.2 | +11.2 |
+| Ambush (Gold) | enemies start Vulnerable 2 | Vulnerable 3, first attack +8 | +7.7 | +10.9 | +5.5 |
+| Refresh (Gold) | draw 1 on a reshuffle | draw 2, and 2 more on turn 1 | +4.1 | +9.0 | +7.5 |
+| Thorn Garden (Gold, Grass) | seeded enemies take 3 when attacking | and they start with Leech Seed 2 | | +10.4 | |
+
+The old versions measured -1 to -12. Losing variants: Mulligan + turn-1 draw 2 alone (Fire flat) or + 1 PP alone (Fire
+worse); Scavenger at 3x items + a slot; Ambush at Vulnerable 4 alone; Refresh 3 alone. Thorn Garden at Leech Seed 3
+measured +16.6, but Grass is already the strongest climber, so it got 2.
+
+Full climbs, 200 a type (floor 100): Fire 23% (was 28 over 350), Grass 56% (51), Water 41% (42), all within the cells'
+noise (~±7). The bot now takes them when offered: Mulligan 77-98%, Scavenger 89-98%, Ambush 70-100%, Refresh 63-93%,
+Thorn Garden 92%.

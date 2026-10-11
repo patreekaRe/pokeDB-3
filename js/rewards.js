@@ -238,6 +238,7 @@ const oneWord = (label) => ONE_WORD[label] || label.split(' ')[0];
 function askFirst(go, skip, title) {
   return async () => {
     const leave = skip.classList.contains('room-leave');
+    if (leave) go = doorOut(go);
     if (leave && !$('reward-options').querySelector('.reward-option:not(:disabled)')) return go();
     if (!leave && $('reward-skip-text').textContent === 'Back') return go();
     playSound('stick');
@@ -246,6 +247,9 @@ function askFirst(go, skip, title) {
     if (sure) go();
   };
 }
+
+/** Walking out of a room (the doormat or Leave) shuts its door behind you, the sound you came in on. */
+export const doorOut = (go) => () => { playSound('door'); return go(); };
 
 /** The deck picker's confirm: `fn` lights it up for the picked card, null greys it out again. */
 function armDeckOk(fn) {

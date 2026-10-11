@@ -1291,8 +1291,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
    bottom-left corner (routes start from the middle, so it's always free). It's the map's one in-flow child, set down in the
    corner by the map's flex column (not a top margin: a sticky box won't move its margin out of the map), and sticky, so on a
    tall map scrolled up it waits at the screen's bottom instead. */
-.map:has(> .scope-btn:not([hidden])) { display: flex; flex-direction: column; justify-content: flex-end; }
-.map > .scope-btn { position: sticky; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 3; margin: 0 0 12px 12px; }
+.map:has(> .map-tools > .scope-btn:not([hidden])) { display: flex; flex-direction: column; justify-content: flex-end; }
+.map > .map-tools { position: sticky; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 3; margin: 0 0 12px 12px; display: flex; gap: 8px; width: fit-content; }
+/* Unown Rubbing (the Ruins page's perk) sits beside the Scope, the same capsule */
+.rubbing-icon { display: grid; place-items: center; width: 32px; height: 32px; font-size: 22px; line-height: 1; }
 .scope-btn {
   display: flex;
   width: fit-content;
@@ -1563,6 +1565,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;
   image-rendering: pixelated; }
 .ken-face[hidden] { display: none; }
+.map-node.read .map-town { border-color: #8cc8c0; }
+/* Tracker's Eye (Thornwood's page): a wild fight's type in a red ring when it beats yours, green when yours beats it */
+.map-match { position: absolute; top: -6px; right: -8px; z-index: 2; display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid #f04038; border-radius: 50%; background: #2a1818; font-size: 12px; line-height: 1; pointer-events: none; }
+.map-match.weak { border-color: #58c058; background: #18281a; }
 .map-node.ken .map-town { background: #f8e8c8; overflow: hidden; }
 .map-node.ken .ken-face { width: 100%; }
 .unlock-stage .ken-face { width: 104px; animation: unlockHop 0.9s ease-in-out infinite; transform-origin: 50% 100%; }
@@ -2352,8 +2358,10 @@ body.battle-intro { pointer-events: none; }
 /* pixel sprites stand in the scene frameless, like your Pokémon; the glow marks elites and bosses */
 .enemy-portrait.sprite { border: 0; border-radius: 0; box-shadow: none; overflow: visible; }
 .enemy-portrait.sprite img { object-fit: contain; object-position: 50% 100%; translate: calc(var(--shift, 0) * 100%) calc(var(--drop, 0) * 100%); --rest: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); filter: var(--rest); }
-.enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
-.enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)) drop-shadow(0 8px 6px rgba(0, 0, 0, 0.5)); }
+/* one shadow layer, the glow only: two blurred drop-shadows on an animated GIF are redrawn every frame, and an Alpha
+   (Linoone) lagged on the user's phone; the glow already sits round the feet */
+.enemy-portrait.sprite.elite img { --rest: drop-shadow(0 0 10px #ff3b3b); }
+.enemy-portrait.sprite.boss img  { --rest: drop-shadow(0 0 12px var(--gold)); }
 /* a boss's second form (Eternamax, rebirth() in js/battle.js): a crimson glow in place of the gold, breathing; it pulses
    hot while it charges a huge hit; the first form sinks into the Well, brightening, and the second comes down from the
    rift in the roof (bossRebirth() in js/scene.js), a black silhouette taking on its colours as it lands */
@@ -3944,16 +3952,14 @@ body.scene-peek #backdrop { display: none; }
 .travel-scene.still { animation: none; }
 
 /* the crossroads after a boss (js/crossroads.js): a card over each road, your Pokémon at the fork, the button under it */
-.crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
+.crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; touch-action: none; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
 .crossroads-scene.still { animation: none; }
 .crossroads-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
-.xr-mon { position: absolute; max-width: none; translate: calc(-50% + var(--lean, 0px)) calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
-  image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); transition: translate 0.35s ease-out; pointer-events: none; }
-.xr-mon.away { translate: calc(-50% + var(--to-x)) calc(var(--foot, 0px) - 100% + var(--to-y)); scale: 0.4;
-  transition: translate 1.5s linear, scale 1.5s linear, filter 1.5s; filter: brightness(0.55) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
-  animation: xrBob 0.38s steps(2) infinite; }
+.xr-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
+  image-rendering: pixelated; pointer-events: none; }
+.xr-mon.walking { animation: xrBob 0.38s steps(2) infinite; }
 @keyframes xrBob { 50% { margin-top: -3px; } }
-.crossroads-scene.still .xr-mon { transition: none; animation: none; }
+.crossroads-scene.still .xr-mon { animation: none; }
 .xr-roads { position: absolute; inset: 0; pointer-events: none; }
 .xr-road { position: absolute; top: calc(12px + env(safe-area-inset-top)); translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 0 6px 8px; border: 3px solid #1a1008; border-radius: 6px; background: rgba(20, 14, 34, 0.82); color: #fff4d6; cursor: pointer;
@@ -3966,6 +3972,9 @@ body.scene-peek #backdrop { display: none; }
 .xr-boss { height: 44px; width: auto; max-width: 33%; object-fit: contain; image-rendering: pixelated; }
 .xr-boss.unmet { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 240, 200, 0.8)); }
 .xr-types { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+/* Wayfinder (the Savanna page's perk): steps the second road through the other biomes it could be */
+.xr-swap { margin-top: 4px; padding: 3px 10px; border: 2px solid #f8c850; border-radius: 999px; background: #3a2a14; color: #fff0a0; font-size: 0.8rem; cursor: pointer; }
+.xr-swap:hover { background: #5a4020; }
 .xr-types .chip { font-size: 0.75rem; padding: 2px 6px; }
 .xr-go { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); translate: -50% 0; min-width: 200px; max-width: calc(100% - 32px); white-space: nowrap; }
 .xr-go:disabled { opacity: 1; filter: saturate(0.4) brightness(0.85); }
@@ -4484,7 +4493,7 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }
 }
 #map-screen:not(.tower) .map-wrap::-webkit-scrollbar { display: none; }
 #map-screen:not(.tower) .map { width: 100%; box-shadow: none; border-radius: 0; }
-#map-screen:not(.tower) .map > .scope-btn { bottom: 10px; }
+#map-screen:not(.tower) .map > .map-tools { bottom: 10px; }
 #map-screen:not(.tower) .mdex-dock {
   position: relative; flex: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
   padding: 10px 10px max(10px, env(safe-area-inset-bottom));
@@ -5253,6 +5262,11 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 .center3d-view.on { opacity: 1; }
 .mart3d-view { transition: none; }   /* the Mart shows at once: a fade let the page's navy through */
 #reward-options.c3d-wait :is(.reward-option, .center-nurse, .center-vitals), #reward-options.c3d :is(.center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
+/* the indoor ? rooms walked in 3D (js/event-3d.js): their trainer and Pokémon stand in the room instead */
+/* display, not visibility: a blinking trainer's eyes-closed head sets itself visible and flashed over the room */
+#reward-options:is(.c3d, .c3d-wait) .event-figure { display: none; }
+/* a found item or relic picked over the 3D room it came from (hold() in js/event-3d.js), not the pixel scene */
+body.ev3d-held :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
 /* the signs float over the 3D machine, PC and Chansey (placeSigns()); a tap on one goes through to the room, which walks
    your Pokémon over first */
 #reward-options.c3d .reward-option { pointer-events: none; background: none; }
@@ -5272,6 +5286,10 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
   background: #fbf4df; clip-path: polygon(100% 0, 100% 100%, 0 100%); border: inherit; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
 }
 #reward-options.c3d .reward-option:is(:disabled, .locked) .center-label { color: #9a8c78; border-color: #b8ae9c; }
+/* the 3D grotto (js/event-3d.js): its chest is modelled, so the pixel chest's button stays only for its sign, floated over
+   the lid, and its logic; a tap goes through to the room, which walks your Pokémon up first */
+#reward-options.c3d-wait .treasure-chest, #reward-options.c3d .treasure-chest :is(.chest-part, .chest-rays, .chest-glow) { visibility: hidden; }
+#reward-options.c3d .treasure-chest { pointer-events: none; animation: none; }
 
 /* ---------- the walk-in 3D Poké Mart (js/mart-3d.js, branch pokemart-3d) ---------- */
 /* the shop's tiles stay in the page (their buttons take the two-tap Buy) but the 3D shelves show the wares instead */
@@ -5296,3 +5314,64 @@ body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pa
 body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .mart3d-sign { display: none; }
 @keyframes martSign { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .mart3d-sign { animation: none; } }
+/* the 3D fork (js/crossroads-3d.js): its canvas under the cards, the painted canvas and sprite put away */
+.xr3d-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; }
+.xr3d-view.on { opacity: 1; }
+.crossroads-scene.x3d #xr-canvas, .crossroads-scene.x3d #xr-mon { display: none; }
+/* a road's notice board, read (js/crossroads-3d.js): what the floating cards said, plus its places and Pokédex page */
+.xr-panel { --xr-dark: #7a5a3a; --xr-light: #c8a070; --ink: #3a2e24; position: absolute; left: 50%; top: calc(10px + env(safe-area-inset-top)); translate: -50% 0;
+  width: min(340px, calc(100% - 28px)); box-sizing: border-box; color: var(--ink); filter: drop-shadow(4px 5px 0 rgba(0, 0, 0, 0.35));
+  transform-origin: 50% 100%; animation: xrPanel 0.26s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+.xr-panel[hidden] { display: none; }
+@keyframes xrPanel { from { opacity: 0; scale: 0.85; translate: -50% 16px; } }
+/* the kiosk's roof: rounded on top, ribbed, its underside in shadow */
+.xr-roof { position: relative; z-index: 1; height: 26px; margin: 0 -8px -4px; border-radius: 50% 50% 6px 6px / 100% 100% 6px 6px;
+  background: repeating-linear-gradient(90deg, transparent 0 22%, rgba(0, 0, 0, 0.07) 22% 23%), linear-gradient(#fffdf6, #eadcc0 70%, #c8b89a);
+  box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--xr-dark) 70%, #000); }
+/* the frame in the road's colours, the poster pinned inside it */
+.xr-frame { padding: 7px; border-radius: 4px; background: linear-gradient(var(--xr-light), var(--xr-dark)); box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25); }
+.xr-poster { overflow: hidden; border-radius: 2px; background: radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.6), transparent 40%), #fbf4e4;
+  box-shadow: inset 0 0 0 1px rgba(58, 46, 36, 0.25), inset 0 0 18px rgba(160, 120, 70, 0.18); }
+.xr-rail { height: 9px; margin: -2px 6px 0; border-radius: 0 0 6px 6px; background: linear-gradient(#fbf4e4, #eadcc0 50%, var(--xr-dark)); }
+.xr-head { position: relative; display: flex; align-items: center; gap: 8px; margin: 8px 8px 0; padding: 7px 44px 7px 10px; border-radius: 4px;
+  background: linear-gradient(var(--xr-light), var(--xr-dark)); color: #fff; }
+.xr-title { margin: 0; font-size: 1.15rem; line-height: 1.15; letter-spacing: 0.5px; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.xr-ball { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--ink); box-sizing: border-box;
+  background: radial-gradient(circle, #fff 0 2.5px, var(--ink) 2.5px 4px, transparent 4px), linear-gradient(#e84838 0 45%, var(--ink) 45% 55%, #fff 55%); }
+.xr-shut { position: absolute; top: 50%; right: 7px; translate: 0 -50%; width: 28px; height: 28px; padding: 0; border: 2px solid var(--ink); border-radius: 50%;
+  background: #fbf4e4; color: var(--ink); font: inherit; font-size: 0.8rem; line-height: 1; cursor: pointer; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); }
+.xr-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; padding: 12px 10px 12px; }
+/* each section a note pinned to the poster, a little askew */
+.xr-sec { position: relative; margin: 0; padding: 9px 8px 8px; min-width: 0; border-radius: 2px; background: #fffdf8;
+  box-shadow: 0 1px 0 rgba(58, 46, 36, 0.25), 1px 2px 4px rgba(58, 46, 36, 0.18); rotate: -0.6deg; }
+.xr-sec:nth-child(even) { rotate: 0.7deg; }
+.xr-sec::before { content: ''; position: absolute; top: -5px; left: 50%; translate: -50% 0; width: 10px; height: 10px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff 0 15%, var(--xr-light) 30%, var(--xr-dark)); box-shadow: 0 2px 1px rgba(0, 0, 0, 0.35); }
+.xr-sec-places, .xr-sec-dex { grid-column: 1 / -1; }
+.xr-sec .xr-label { display: block; margin: 0 0 6px; padding-bottom: 3px; border-bottom: 1px dashed rgba(58, 46, 36, 0.3); font-size: 0.62rem; font-weight: bold;
+  letter-spacing: 1px; text-transform: uppercase; color: var(--xr-dark); text-align: left; }
+.xr-places { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 8px; margin: 0; padding: 0; list-style: none; }
+.xr-place { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; line-height: 1.1; min-width: 0; }
+.xr-num { flex: none; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--xr-dark); color: #fff; font-size: 0.68rem; }
+.xr-place.boss .xr-num { background: #e84838; }
+.xr-pname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xr-sec-bosses .xr-bosses { justify-content: center; min-height: 40px; }
+.xr-sec-bosses .xr-boss { height: 40px; }
+.xr-sec-bosses .xr-boss.unmet { filter: brightness(0) opacity(0.75); }
+.xr-wilds { display: flex; flex-direction: column; gap: 4px; }
+.xr-wild { display: flex; align-items: center; gap: 6px; padding: 2px 8px; font-size: 0.75rem; line-height: 1.4; }
+.xr-wname { flex: 1; }
+.xr-wn { font-weight: bold; }
+.xr-dex { display: flex; align-items: center; gap: 10px; }
+.xr-dex .dex-bar { flex: 1; margin: 0; height: 10px; background: #eadcc0; box-shadow: inset 0 0 0 1px rgba(58, 46, 36, 0.3); }
+.xr-dex-n { font-size: 0.8rem; min-width: 3.5em; text-align: right; font-weight: bold; }
+.xr-body .xr-swap { grid-column: 1 / -1; justify-self: center; margin: 0; }
+.crossroads-scene.chosen .xr-panel { opacity: 0; transition: opacity 0.4s; }
+.crossroads-scene.still .xr-panel { animation: none; }
+.xr-wild { background: #f4ecda; border-left: 4px solid #c8c0a0; border-radius: 3px; }
+.xr-wild.type-fire { border-color: #f08030; background: #fbe6d4; }
+.xr-wild.type-water { border-color: #6890f0; background: #e2eafb; }
+.xr-wild.type-grass { border-color: #78c850; background: #e6f4dc; }
+.xr-wild.type-psychic { border-color: #f85888; background: #fbe2ea; }
+.xr-sec-bosses { display: flex; flex-direction: column; }
+.xr-sec-bosses .xr-bosses { flex: 1; align-items: center; }
