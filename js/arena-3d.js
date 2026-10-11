@@ -1159,13 +1159,11 @@ const DRAGONITE_EYE = [26, 19.5];   // the sprite's eye, in its pixels
 
 function medallionArt() {
   return once('medallion', () => {
-    const N = 1024, c = hd(canvas(N, N)), bump = hd(canvas(N, N)), out = { map: c, bump, eye: null, ready: null };
-    out.ready = new Promise(done => {
-      const img = new Image();
-      img.onload = () => { paintMedallion(img, out); done(true); };
-      img.onerror = () => { paintMedallion(null, out); done(false); };
-      img.src = DRAGONITE_SPRITE;
-    });
+    const N = 1024, c = hd(canvas(N, N)), bump = hd(canvas(N, N)), out = { map: c, bump, eye: null, version: 0 };
+    paintMedallion(null, out);   // the ring and field at once, so it's never blank while the sprite loads
+    const img = new Image();
+    img.onload = () => { try { paintMedallion(img, out); out.version++; } catch { /* the plain medallion stays */ } };
+    img.src = DRAGONITE_SPRITE;
     return out;
   });
 }
@@ -1213,15 +1211,29 @@ function paintMedallion(img, out) {
   const W = Math.ceil(bw * k) + 40, H = Math.ceil(bh * k) + 40, ox = Math.round(C - W / 2 + Rf * 0.04), oy = Math.round(C - H / 2 + Rf * 0.04);
   const up = canvas(W, H), ug = up.getContext('2d');
   ug.imageSmoothingEnabled = true; ug.imageSmoothingQuality = 'high';
-  ug.filter = `blur(${(k * 0.55).toFixed(1)}px)`;
   ug.drawImage(src, x0, y0, bw, bh, 20, 20, bw * k, bh * k);
   const u = ug.getImageData(0, 0, W, H).data;
+  // the alpha blurred by hand (Safari's canvas has no `filter`), two box passes each way, so the pixel steps round off
+  const blurA = new Float32Array(W * H), tmp = new Float32Array(W * H), br = Math.max(1, Math.round(k * 0.4));
+  for (let i = 0; i < W * H; i++) blurA[i] = u[i * 4 + 3] / 255;
+  const box = (from, to, n, stride, lines, lineStride) => {   // a running-sum box blur along one axis
+    for (let l = 0; l < lines; l++) {
+      const o = l * lineStride;
+      let t = 0;
+      for (let j = -br; j <= br; j++) t += from[o + Math.min(n - 1, Math.max(0, j)) * stride];
+      for (let j = 0; j < n; j++) {
+        to[o + j * stride] = t / (2 * br + 1);
+        t += from[o + Math.min(n - 1, j + br + 1) * stride] - from[o + Math.max(0, j - br) * stride];
+      }
+    }
+  };
+  for (let pass = 0; pass < 2; pass++) { box(blurA, tmp, W, 1, H, W); box(tmp, blurA, H, W, W, 1); }
   // the silhouette cut again from the blurred alpha (smooth edges); the colours' lightness kept for its shading
   const mask = new Float32Array(W * H), lum = new Float32Array(W * H);
   const step = (e0, e1, v) => { const t = Math.max(0, Math.min(1, (v - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
   for (let i = 0; i < W * H; i++) {
     const a = u[i * 4 + 3] / 255;
-    mask[i] = step(0.4, 0.6, a);
+    mask[i] = step(0.4, 0.6, blurA[i]);
     lum[i] = a > 0.05 ? (u[i * 4] * 0.35 + u[i * 4 + 1] * 0.5 + u[i * 4 + 2] * 0.15) / a / 255 : 0;
   }
   const soft = new Float32Array(W * H);   // the mask blurred, for the bevel's light and shadow
@@ -1271,21 +1283,19 @@ function medallion3d(at, zW) {
     return rc.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -wallZ), hit) ? hit : null;
   };
   // on the wall between the nameplate and your Pokémon's head, clear of the dais in front of it
-  const sprite = document.getElementById('player-sprite')?.getBoundingClientRect();
   const pads = [at.foe, at.you].map(p => onScreen(p.x, p.lift ?? 0, p.z).x * innerWidth);
   const plate = document.getElementById('enemy-plate')?.getBoundingClientRect();
   const top = Math.max(64, plate?.height ? plate.bottom + 8 : 0);
   let lo = 8, hi = innerWidth - 8;
   if (B.dais) {
     const f = at.foe, w = f.r + 0.45, edge = [-1, 1].map(s => onScreen(f.x + s * w, f.lift, f.z + f.r).x * innerWidth);
-    if (pads[0] > innerWidth / 2) hi = Math.min(hi, edge[0] - 8); else lo = Math.max(lo, edge[1] + 8);
+    if (pads[0] > innerWidth / 2) hi = Math.min(hi, edge[0] - 16); else lo = Math.max(lo, edge[1] + 16);
   }
   const fit = (foot) => {
     const half = Math.min((foot - top) / 2 - 4, (hi - lo) / 2, 150);
     return { half, cx: Math.max(lo + half, Math.min(hi - half, (pads[0] + pads[1]) / 2)), cy: top + (foot - top) / 2 };
   };
-  let { half, cx, cy } = fit(onScreen(0, 0, zW).y * innerHeight);
-  if (sprite?.height && cx - half < sprite.right && cx + half > sprite.left) ({ half, cx, cy } = fit(Math.min(onScreen(0, 0, zW).y * innerHeight, sprite.top + sprite.height * 0.2)));
+  const { half, cx, cy } = fit(onScreen(0, 0, zW).y * innerHeight);   // your Pokémon may stand in front of it
   if (half < 30) return false;
   const c = onWall(cx, cy), e = onWall(cx + half, cy);
   if (!c || !e) return false;
@@ -1299,13 +1309,13 @@ function medallion3d(at, zW) {
   const eye = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex(glowArt()), color: '#ff3020', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
   eye.visible = false;
   add(eye);
-  art.ready.then(() => {
-    map.needsUpdate = bumpMap.needsUpdate = true;
-    if (!art.eye) return;
-    eye.position.set(c.x + (art.eye[0] - 0.5) * 2 * R, c.y - (art.eye[1] - 0.5) * 2 * R, wallZ + 0.1);
-    eye.visible = true;
-  });
+  let seen = -1;
   B.ticks.push((t) => {
+    if (seen !== art.version) {   // the Dragonite painted in since
+      seen = art.version;
+      map.needsUpdate = bumpMap.needsUpdate = true;
+      if (art.eye) { eye.position.set(c.x + (art.eye[0] - 0.5) * 2 * R, c.y - (art.eye[1] - 0.5) * 2 * R, wallZ + 0.1); eye.visible = true; }
+    }
     const p = 0.6 + Math.sin(t * 1.4) * 0.3 + stormK * 0.8;
     eye.scale.setScalar(R * (0.05 + p * 0.035));
     eye.material.opacity = Math.min(1, 0.5 + p * 0.4);
