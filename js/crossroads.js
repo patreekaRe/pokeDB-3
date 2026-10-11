@@ -7,7 +7,7 @@
  * a glimpse of where it goes (sceneShot() of the biome's first place, at dusk). Above each road a card names it: its sign,
  * its bosses (silhouettes until the Pokédex has met them) and its wilds' types. A tap on a card or a road picks it (its
  * arm of the signpost lights up), a second tap or the button takes it, and your Pokémon walks off up that road as the
- * dark comes down. Or walk there yourself: tap the ground (or hold and drag, or the arrow keys / WASD), and walking onto a
+ * dark comes down. Or walk there yourself (the camera stays still): tap the ground (or hold and drag, or the arrow keys / WASD), and walking onto a
  * road picks it, on up it takes it. Taking one asks "Are you sure you want to enter the X?" first. Enter takes the picked one. There's no way out without choosing.
  */
 import { $, el, sleep, confirmDialog } from './ui.js';
@@ -50,8 +50,8 @@ const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'],
 let P = 4, W = 0, H = 0, tall = true, hz = 0, fy = 0, fx = 0, d = 0, gw = 0, gh = 0, bw = 0;
 let canvas = null, ctx = null, img = null, buf = null, shots = [];
 let roads = [], picked = -1, walking = false, asking = false;
-// the painting is split into layers wider than the screen (M pixels each side), slid apart by the camera's sideways
-// offset `cam` as your Pokémon walks: the sky barely, the meadow more on each row nearer you, the framing trees most
+// the painting is split into layers wider than the screen (M pixels each side) that a sideways camera offset `cam`
+// would slide apart; the camera stays still (the user's call, 2026-10-11: the parallax felt wrong), so `cam` is 0
 let M = 0, LW = 0, far = null, ground = null, trees = null, cam = 0;
 // your Pokémon on the ground, in the painting's pixels with the camera at rest; `route` the points it's walking to
 let mx = 0, my = 0, route = [], keys = new Set(), facing = 'back', scale0 = 1, startY = 0;
@@ -441,8 +441,6 @@ export async function crossroads({ ids, swap = null, starter, stage = 0, shiny =
         if (!calm && now > stepAt) { playSound('footstep'); stepAt = now + 360; }
       }
       mon.classList.toggle('walking', !!moving && !calm);
-      const target = Math.max(-M / 1.2, Math.min(M / 1.2, (mx - fx) * 0.35));
-      cam += (target - cam) * Math.min(1, dt * 3);
       const r = regionOf(mx, my);
       if (r < 0) backing = false;
       if (!walking && !asking && r >= 0) {
