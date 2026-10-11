@@ -98,20 +98,31 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       390x844 and 1280x800, every biome.
     - **Waiting on the user:** a phone playtest of the wild fights (`?arena=wild`, the Clearing first, which has the most
       3D): does any stutter? The cloud's browser renders 3D in software, so phone frame rates were never measured.
-    - Kenmatta's dojo arena stays pixel for now: his fight has its own scene (`def.arena`, `PLACE_ART.kombat`), which
-      `wantsArena()` skips. Asked the user (2026-10-11) whether it should get 3D pads over its Mortal Kombat backdrop too;
-      no answer yet. If yes, it's a small add to part d's first session ("and Kenmatta's arena too").
-    - **d. Each biome's own 3D foreground**, like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
-      Shrine's stone, Thornwood's roots, the Savanna's grass, the Depths' crystals), about a session a biome; then main.
-      Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome each session): "Read CLAUDE.md and
-      docs/roadmap.md's item 22, then check out the branch `claude/jolly-ritchie-vdznxn` and work only on it (push only
-      to it, never to main). Give the Wastes' 3D arena its own foreground in js/arena-3d.js, the way `build()` lays the
-      Clearing's: 3D ground from your feet up to the pixel horizon (`sceneHorizon()`), fading into the pixel floor,
-      with ash, rocks and lava cracks round the edges, kept off the middle and the pads, lit by the hour; boss, Alpha
-      and wild fights alike. Keep it cheap on a phone (instanced meshes, the step-down still working). Check it at
-      390x844 and 1280x800 for every place (`&stage=0-2`, `&arena=boss`) with Three.js routed to a local
-      `npm pack three@0.160.0` in Playwright, and give me raw.githack links." Order: Wastes, Shrine, Ruins, Thornwood,
-      Savanna, Depths.
+    - **Done (2026-10-11): Kenmatta's arena** (the user's yes). His fight stands on 3D stone pads before his Mortal Kombat
+      courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`: pads only, his temple steps stay
+      the pixel scene's). `?arena=ken` (`&biome=`) walks a throwaway run straight into his fight.
+    - **d. Each biome's own 3D foreground**, like the Clearing's, about a session a biome; then main. `GROUNDS` in
+      `js/arena-3d.js` is one `dress*()` a biome, handed the ground's span, the fade and the placing tests by `build()`.
+      - **Done (2026-10-11): the Wastes** (`dressWastes()`). Its ground takes the pixel floor's own colours row by row
+        (`rowColour()`, divided by the light falling on it, `flatLight()`, so it fades into the pixel floor at the
+        horizon), read again once a boss's prelude is over (`retint()`: built under it, the floor was mid-eruption), its
+        haze the far floor's colour. Lava cracks are merged ribbons (`ribbons()`: scorch, molten core flowing, additive
+        glow breathing), lava pools in the Lava Fields and at the Crater Rim, instanced basalt rocks and ash heaps,
+        obsidian shards from the Volcano Slope on, charred snags at the sides (one merged mesh each), ash falling and
+        embers rising (`drift()`), smoke off the lava, a rain of cinders in the storm. Spots are picked on screen
+        (`spot()`) so a phone's narrow view gets its share; flat things keep off the middle between the Pokémon (the boss's
+        lava runs across it), tall ones to the sides. Light by the hour, `WASTES_TIMES`; its pads basalt with lava seams.
+        ~40 draw calls a frame (the Clearing ~300). Checked at 390x844 and 1280x800, every place, day / dusk / night.
+      - Next: the Shrine, then Ruins, Thornwood, Savanna, Depths.
+      Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome and its dressing each session): "Read
+      CLAUDE.md and docs/roadmap.md's item 22, then check out the branch `claude/jolly-ritchie-vdznxn` and work only on it
+      (push only to it, never to main). Give the Shrine's 3D arena its own foreground in js/arena-3d.js, a `GROUNDS`
+      entry like `dressWastes()`: 3D ground from your feet up to the pixel horizon in the pixel floor's own colours,
+      with the Shrine's stone (flagstones, lanterns, moss, fallen leaves, a torii post or two) round the edges, kept off
+      the middle and the pads, lit by the hour; boss, Alpha and wild fights alike. Keep it cheap on a phone (instanced or
+      merged meshes, the step-down still working). Check it at 390x844 and 1280x800 for every place (`&stage=0-2`,
+      `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
+      links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
 ## Ideas, not agreed yet (ask the user before building)
 

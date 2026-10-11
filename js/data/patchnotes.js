@@ -47,6 +47,7 @@ export const NEXT = [
   ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
+  ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard has 3D platforms too.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

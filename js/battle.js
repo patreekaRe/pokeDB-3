@@ -283,12 +283,13 @@ let arenaMod = null, arenaUp = false;
 function arena3d(land, kind, def, run) {
   arenaMod?.unmountArena();
   arenaUp = false;
-  if (run.tower || run.safari || def.arena || new URLSearchParams(location.search).has('arena2d')) return;
+  if (run.tower || run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
   import('./arena-3d.js').then(m => {
     arenaMod = m;
     if (!m.wantsArena({ land, kind, def, run })) return;
     const where = journey(run.map, run.map?.byId[run.current]);
-    m.mountArena({ biome: land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp });
+    // Kenmatta's courtyard is his own place (`def.arena`), whatever biome his dojo stood in
+    m.mountArena({ biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp });
   }).catch(() => {});
 }
 

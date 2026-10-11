@@ -325,7 +325,7 @@ function init() {
   // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1
   // shrinks every foe's HP
   if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1), (params.get('aug') || '').split(',').filter(Boolean));
-  // ?arena=elite / boss / wild: a throwaway run straight into an Alpha's, boss's or wild Pokémon's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
+  // ?arena=elite / boss / wild / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
   if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter') ?? (params.get('biome') === 'depths' ? 'mewtwo' : '')] ?? STARTERS.find(s => s.free), params.get('arena'), params.get('biome'), params.has('slot') ? Number(params.get('slot')) : null);
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));

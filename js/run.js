@@ -505,7 +505,7 @@ export function peekFinalBoss(starter, bossHp = 1) {
 let finalPeekHp = 1;
 
 /** Playtest shortcut: ?arena=elite (or boss, or wild) walks a throwaway run (&starter=id) straight into a Whispering
-    Clearing Alpha's fight (or its boss's, prelude and all, or a wild Pokémon's), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's or wild's
+    Clearing Alpha's fight (or its boss's, prelude and all, or a wild Pokémon's, or `ken` Chad Master Kenmatta's in his courtyard), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's or wild's
     place, &arena2d the pixel scene); &biome=wastes (&slot=1 / 2 for a pool biome) any biome's Alpha or boss, the Depths'
     with Mewtwo. Nothing about it is saved. */
 export function peekArena(starter, kind, biome = null, slot = null) {
@@ -513,7 +513,7 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   const home = BIOMES_BY_ID[biome];
   peekDepths = !!home?.secret;
   peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
-  beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : ':elite');
+  beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'ken' ? ':ken' : ':elite');
 }
 
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
@@ -596,6 +596,13 @@ function peekRoom(id) {
     return enterNode(fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0]);
   }
   if (id === ':boss') { if (peekAt) walkInto(peekAt); startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
+  if (id === ':ken') {   // as if challenged in his dojo, a ? room on the first floor
+    if (peekAt) walkInto(peekAt);
+    startBiome(true);
+    const node = Object.values(run.map.byId).find(n => n.floor === 0) ?? Object.values(run.map.byId)[0];
+    run.current = node.id;
+    return fight({ ...node, type: 'ken' });
+  }
   if (id === ':final') {
     run.biome = finalBiome(run.starter);
     run.stage = run.starter.line.length - 1;

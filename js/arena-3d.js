@@ -3,7 +3,7 @@
    backdrop (`backdrop`, its canvas as the 3D view's background, so each boss's pulse, lava or storm plays on), and 3D pads
    stand where the page draws its Pokémon: the pad's spot on screen (the CSS pad, now invisible) is cast into the ground
    (`layout()`), and followed every few frames (`follow()`), so it fits any screen and a sprite that resizes keeps its pad.
-   The Clearing also lays its 3D ground, bushes, flowers and side trees up to the pixel horizon. The camera is fixed, high
+   The Clearing and the Wastes also lay their own 3D ground up to the pixel horizon (`GROUNDS`). The camera is fixed, high
    and behind your Pokémon like the games' battle view. A boss keeps its pixel prelude; the 3D fades in out of its last
    white flash (`revealArena()`). */
 
@@ -18,6 +18,7 @@ const MAIN = new Set(['clearing', 'shrine', 'wastes', 'depths', 'ruins', 'thornw
 const KINDS = new Set(['boss', 'elite', 'fight', 'wild']);
 export const arenaFor = (land, kind) => KINDS.has(kind) && MAIN.has(land);
 const PAD_H = 0.2;
+const PLAIN_LIGHT = 1.53;   // flatLight() under the plain lights pads elsewhere are seen in (build())
 
 let THREE, renderer, scene, camera, post, view, hemi, sun, backdrop;
 let A = null, raf = 0, last = 0, wanted = false, building = 0, stormOn = false, stormK = 0, flashK = 0, resizeTimer = 0;
@@ -26,10 +27,12 @@ function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(
 const canvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h });
 const hd = (c) => { c.hd = 2; return c; };   // smooth sampling, mipmaps (hd2d.js's tex())
 
-/** Whether this fight is laid in 3D: any main biome's fight in a biome that has its arena (`?arena2d` keeps the pixels). */
+/** Whether this fight is laid in 3D: any main biome's fight in a biome that has its arena (`?arena2d` keeps the pixels).
+    Kenmatta's fight (`def.arena` 'kombat') stands on 3D pads before his own Mortal Kombat courtyard (the user's call, 2026-10-11). */
 export function wantsArena({ land, kind, def, run }) {
-  if (new URLSearchParams(location.search).has('arena2d')) return false;
-  return arenaFor(land, kind) && !def.arena && !run.tower && !run.safari;
+  if (new URLSearchParams(location.search).has('arena2d') || run.tower || run.safari) return false;
+  if (def.arena) return def.arena === 'kombat';
+  return arenaFor(land, kind);
 }
 
 /* ---------- the looks, by the hour ---------- */
@@ -393,13 +396,13 @@ function butterflies(n, r) {
   }
 }
 
-/** Rain for a boss close to fainting (setStorm in js/scene.js does the pixel scene's). */
-function rain() {
+/** Rain for a boss close to fainting (setStorm in js/scene.js does the pixel scene's); in the Wastes, a rain of cinders. */
+function rain(colour) {
   const n = 700, geo = new THREE.BufferGeometry(), p = new Float32Array(n * 6), r = seeded(77);
   const drops = [];
   for (let i = 0; i < n; i++) drops.push([(r() - 0.5) * 30, r() * 14, -16 + r() * 22, 8 + r() * 4]);
   geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
-  const m = new THREE.LineBasicMaterial({ color: '#c8d8f0', transparent: true, opacity: 0, depthWrite: false });
+  const m = new THREE.LineBasicMaterial({ color: colour, transparent: true, opacity: 0, depthWrite: false });
   const lines = add(new THREE.LineSegments(geo, m));
   lines.frustumCulled = false;
   B.ticks.push((t, dt) => {
@@ -476,12 +479,17 @@ function padKit(p, land) {
   const c = floorColour(p), green = c[1] > c[0] * 1.08 && c[1] > c[2];
   const top = std({ map: tex(stoneArt()), color: hexOf(mixRgb(c, 0.12)), roughness: 1 });
   const side = std({ map: tex(dirtArt()), color: hexOf(mixRgb(c, 0.35, 0)) });
+  if (land === 'wastes') {   // basalt, lava glowing through its seams like the pixel pads'; as bright under its own light as elsewhere
+    const glow = (WASTES_TIMES[timeOfDay()] ?? WASTES_TIMES.day).glow, k = PLAIN_LIGHT / flatLight();
+    top.color.multiplyScalar(k); side.color.multiplyScalar(k);
+    side.emissiveMap = tex(seamArt()); side.emissive.set('#ff6a18'); side.emissiveIntensity = glow * 1.4;
+  }
   const blade = green ? std({ map: tex(bladeArt()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, color: hexOf(mixRgb(c, 0.25)) }) : null;
   return { top, side, blade, grass: green || land === 'thornwood' };
 }
 
 function build(o) {
-  const clearing = o.biome === 'clearing';
+  const dress = GROUNDS[o.biome], clearing = o.biome === 'clearing';
   const look = TIMES[o.time] || TIMES.day, r = seeded(1234 + o.stage * 97 + (o.kind === 'boss' ? 5 : o.kind === 'elite' ? 0 : 11));
   B = { group: new THREE.Group(), ticks: [], look, runes: null, clearing };
   const M = materials();
@@ -490,9 +498,13 @@ function build(o) {
   scene.background = backdrop;
   const hz = sceneHorizon() ?? 0.42;
   const fogC = sceneColour(0.5, Math.max(0, hz - 0.02)) ?? [200, 220, 200];
+  const wl = o.biome === 'wastes' ? WASTES_TIMES[o.time] || WASTES_TIMES.day : null;
   if (clearing) {
     hemi.color.set(look.hemi[0]); hemi.groundColor.set(look.hemi[1]); hemi.intensity = look.hemi[2];
     sun.color.set(look.sun[0]); sun.intensity = look.sun[1];
+  } else if (wl) {   // its 3D ground stands in for the pixel floor, so it takes the floor's colours and a light by the hour
+    hemi.color.set(wl.hemi[0]); hemi.groundColor.set(wl.hemi[1]); hemi.intensity = wl.hemi[2];
+    sun.color.set(wl.sun[0]); sun.intensity = wl.sun[1];
   } else {   // the pixel floor is already lit by the hour: the pads only need to read as solid
     hemi.color.set('#ffffff'); hemi.groundColor.set('#808080'); hemi.intensity = 2.2;
     sun.color.set('#fff8ec'); sun.intensity = 2.0;
@@ -505,14 +517,14 @@ function build(o) {
   if (!at.foe || !at.you) return null;
   const far = onGround(innerWidth / 2, innerHeight * hz, 0);
   const span = far ? camera.position.distanceTo(far) : 40;
-  scene.fog = clearing ? new THREE.Fog(hexOf(fogC), span * 0.55, span * 1.15) : null;
+  scene.fog = dress ? new THREE.Fog(hexOf(fogC), span * 0.55, span * 1.15) : null;
 
-  B.pads = [pad(at.foe, clearing ? null : padKit(cssPad(document.getElementById('enemy-zone'), '::after'), o.biome)),
-    pad(at.you, clearing ? null : padKit(cssPad(document.getElementById('player-zone'), '::before'), o.biome))];
+  const kitOf = (zone, pseudo) => clearing ? null : padKit(cssPad(document.getElementById(zone), pseudo), o.biome);
+  B.pads = [pad(at.foe, kitOf('enemy-zone', '::after')), pad(at.you, kitOf('player-zone', '::before'))];
   B.at = at;
-  if (!clearing) { const b = B; B = null; return b; }
+  if (!dress) { const b = B; B = null; return b; }
 
-  // the Clearing's 3D ground, from your feet to just past the pixel horizon, fading into the pixel floor there
+  // the 3D ground, from your feet to just past the pixel horizon, fading into the pixel floor there
   const edge = onGround(innerWidth / 2, innerHeight * Math.max(0.05, hz - 0.045), 0);
   const zFar = edge ? edge.z : -20, zNear = 14, len = zNear - zFar;
   const fade = hd(canvas(4, 256)), fg = fade.getContext('2d'), fl = fg.createLinearGradient(0, 0, 0, 256);
@@ -520,16 +532,25 @@ function build(o) {
   fl.addColorStop(0, '#000'); fl.addColorStop(fadeFrom * 0.35, '#000'); fl.addColorStop(fadeFrom, '#fff'); fl.addColorStop(1, '#fff');
   fg.fillStyle = fl; fg.fillRect(0, 0, 4, 256);
   const alpha = tex(fade); alpha.flipY = true;
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, len), std({ map: tex(groundArt(o.stage + 1)), color: look.tint, alphaMap: alpha, transparent: true }));
-  ground.rotation.x = -Math.PI / 2; ground.position.z = (zNear + zFar) / 2; ground.receiveShadow = true;
-  ground.renderOrder = -1;
-  add(ground);
 
   const clear = (x, z, m = 0.9) => [at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
   const onLand = (x, z) => onScreen(x, 0, z).y > hz + 0.004;   // stands on the 3D ground, not out in the pixel backdrop
   const between = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.02 && s.y < at.you.sy + 0.06 && s.x > 0.1 && s.x < 0.9; };
-  // a tree's crown on screen must keep off the middle, where the backdrop's landmark and both Pokémon are
+  // anything tall on screen must keep off the middle, where the backdrop's landmark and both Pokémon are
   const side = (x, z, s) => { const p = onScreen(x, 0, z), q = onScreen(x, 6 * s, z); return Math.max(p.x, q.x) < 0.17 || Math.min(p.x, q.x) > 0.83; };
+  dress({ o, r, at, hz, zFar, zNear, len, alpha, look, wl, clear, onLand, between, side });
+  const b = B;
+  B = null;
+  return b;
+}
+
+/** The Whispering Clearing: a meadow with trees framing the sides, bushes, rocks, mushrooms, flowers, pollen or fireflies. */
+function dressClearing({ o, r, zFar, zNear, len, alpha, look, clear, onLand, between, side }) {
+  const M = materials();
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, len), std({ map: tex(groundArt(o.stage + 1)), color: look.tint, alphaMap: alpha, transparent: true }));
+  ground.rotation.x = -Math.PI / 2; ground.position.z = (zNear + zFar) / 2; ground.receiveShadow = true;
+  ground.renderOrder = -1;
+  add(ground);
 
   const deep = o.stage >= 2;
   let placed = 0;
@@ -558,11 +579,422 @@ function build(o) {
 
   motes(look.fireflies || deep ? 50 : 30, look.fireflies ? '#e0f878' : look.motes, [-12, 12, zFar + 2, 2, 4], { size: look.fireflies ? 0.22 : 0.12, rise: 0.05 });
   if (o.time === 'day' || o.time === 'dawn') butterflies(o.stage === 0 ? 4 : 2, r);
-  rain();
-  const b = B;
-  B = null;
-  return b;
+  rain('#c8d8f0');
 }
+
+/* ---------- the Ember Wastes ---------- */
+
+/* Its light by the hour (the pixel floor's colours already carry the hour; this only shades the 3D, warm by day, red at
+   dusk, the lava's glow from below at night), how bright its lava burns and how many embers rise. */
+const WASTES_TIMES = {
+  day: { hemi: ['#ffffff', '#8a6a5a', 2.0], sun: ['#fff0d8', 2.4], glow: 0.8, embers: 30, ash: 150 },
+  dawn: { hemi: ['#f8ecf4', '#7a5a60', 1.9], sun: ['#ffd0b0', 2.3], glow: 0.9, embers: 36, ash: 140 },
+  dusk: { hemi: ['#fff0e8', '#904030', 1.9], sun: ['#ffa478', 2.5], glow: 1.05, embers: 50, ash: 130 },
+  night: { hemi: ['#d8d8ff', '#c05020', 2.0], sun: ['#b8c0ff', 1.3], glow: 1.35, embers: 70, ash: 110 },
+};
+
+/** Draws `f(x, y)` at every wrap of a tile, so a mark on its edge carries on over the other side and the tile repeats seamlessly. */
+function wrapped(size, x, y, rad, f) {
+  for (const dx of [-size, 0, size]) for (const dy of [-size, 0, size]) {
+    if (x + dx + rad < 0 || x + dx - rad > size || y + dy + rad < 0 || y + dy - rad > size) continue;
+    f(x + dx, y + dy);
+  }
+}
+
+/** Ash-dusted basalt, light and neutral (the vertex colours give it the pixel floor's own), tiled over the ground. */
+function basaltArt() {
+  return once('basalt', () => {
+    const N = 512, c = hd(canvas(N, N)), g = c.getContext('2d'), r = seeded(51);
+    g.fillStyle = '#d4d0cc'; g.fillRect(0, 0, N, N);
+    const blob = (x, y, rad, col) => wrapped(N, x, y, rad, (X, Y) => {
+      const grd = g.createRadialGradient(X, Y, 0, X, Y, rad);
+      grd.addColorStop(0, col); grd.addColorStop(1, col.replace(/[\d.]+\)$/, '0)'));
+      g.fillStyle = grd; g.fillRect(X - rad, Y - rad, rad * 2, rad * 2);
+    });
+    for (let i = 0; i < 260; i++) blob(r() * N, r() * N, 14 + r() * 50, r() < 0.5 ? 'rgba(255,252,248,0.45)' : 'rgba(120,110,104,0.35)');   // drifts of ash, bare rock
+    for (let i = 0; i < 26; i++) {   // hairline cracks in the crust
+      let x = r() * N, y = r() * N, a = r() * Math.PI * 2;
+      g.strokeStyle = 'rgba(70,60,56,0.55)'; g.lineWidth = 1 + r();
+      for (let k = 0; k < 7; k++) {
+        const nx = x + Math.cos(a) * (8 + r() * 14), ny = y + Math.sin(a) * (8 + r() * 14);
+        wrapped(N, x, y, 30, (X, Y) => { g.beginPath(); g.moveTo(X, Y); g.lineTo(X + nx - x, Y + ny - y); g.stroke(); });
+        x = nx; y = ny; a += (r() - 0.5) * 1.2;
+      }
+    }
+    for (let i = 0; i < 1400; i++) {   // grit and pebbles, each with a lit top and a shadow
+      const x = r() * N, y = r() * N, s = 0.8 + r() * (r() < 0.1 ? 4 : 1.6);
+      wrapped(N, x, y, s + 2, (X, Y) => {
+        g.fillStyle = 'rgba(60,52,48,0.55)'; g.beginPath(); g.ellipse(X + 0.6, Y + 0.8, s, s * 0.7, 0, 0, Math.PI * 2); g.fill();
+        g.fillStyle = r() < 0.5 ? 'rgba(236,232,228,0.8)' : 'rgba(150,142,136,0.8)'; g.beginPath(); g.ellipse(X, Y, s, s * 0.7, 0, 0, Math.PI * 2); g.fill();
+      });
+    }
+    return c;
+  });
+}
+
+/** Molten rock along a crack: u runs along it (tiled, so it flows), v across, from crust-dark edges to a white-hot core. */
+function lavaArt() {
+  return once('lava', () => {
+    const c = hd(canvas(256, 64)), g = c.getContext('2d'), r = seeded(61);
+    const lin = g.createLinearGradient(0, 0, 0, 64);
+    lin.addColorStop(0, '#3a0c06'); lin.addColorStop(0.2, '#b02c0c'); lin.addColorStop(0.38, '#f07018'); lin.addColorStop(0.5, '#fff0a0');
+    lin.addColorStop(0.62, '#f07018'); lin.addColorStop(0.8, '#b02c0c'); lin.addColorStop(1, '#3a0c06');
+    g.fillStyle = lin; g.fillRect(0, 0, 256, 64);
+    for (let i = 0; i < 70; i++) {   // cooling crust floating on it, and hotter swirls
+      const x = r() * 256, y = 8 + r() * 48, w = 4 + r() * 16;
+      wrapped(256, x, 32, w, (X) => {
+        g.fillStyle = r() < 0.6 ? 'rgba(60,14,6,0.55)' : 'rgba(255,230,140,0.5)';
+        g.beginPath(); g.ellipse(X, y, w, 1.5 + r() * 3, 0, 0, Math.PI * 2); g.fill();
+      });
+    }
+    return c;
+  });
+}
+
+/** A soft band, white across the middle: the glow over a crack, and (as an alpha map) the scorch round it. */
+function bandArt() {
+  return once('band', () => {
+    const c = hd(canvas(8, 64)), g = c.getContext('2d'), lin = g.createLinearGradient(0, 0, 0, 64);
+    lin.addColorStop(0, '#000'); lin.addColorStop(0.5, '#fff'); lin.addColorStop(1, '#000');
+    g.fillStyle = lin; g.fillRect(0, 0, 8, 64);
+    return c;
+  });
+}
+
+/** A lava pool's face: glowing rock between plates of black crust. */
+function poolArt() {
+  return once('pool', () => {
+    const N = 256, c = hd(canvas(N, N)), g = c.getContext('2d'), r = seeded(71);
+    const grd = g.createRadialGradient(N / 2, N / 2, 0, N / 2, N / 2, N / 2);
+    grd.addColorStop(0, '#fff4b0'); grd.addColorStop(0.5, '#f8a028'); grd.addColorStop(1, '#c03810');
+    g.fillStyle = grd; g.fillRect(0, 0, N, N);
+    for (let i = 0; i < 26; i++) {
+      const x = r() * N, y = r() * N, k = 8 + r() * 22, n = 5 + Math.floor(r() * 3), a0 = r() * 6;
+      const pts = Array.from({ length: n }, (_, j) => { const a = a0 + j / n * Math.PI * 2, d = k * (0.6 + r() * 0.4); return [x + Math.cos(a) * d, y + Math.sin(a) * d]; });
+      g.fillStyle = 'rgba(255,120,30,0.8)';
+      g.beginPath(); pts.forEach(([px, py], j) => j ? g.lineTo(px + 1.5, py + 1.5) : g.moveTo(px + 1.5, py + 1.5)); g.fill();
+      g.fillStyle = ['#2a1410', '#3a1c14', '#1e0e0a'][i % 3];
+      g.beginPath(); pts.forEach(([px, py], j) => j ? g.lineTo(px, py) : g.moveTo(px, py)); g.fill();
+    }
+    return c;
+  });
+}
+
+/** A pad's side in the Wastes: layered basalt with seams of lava glowing through (its emissive map). */
+function seamArt() {
+  return once('seam', () => {
+    const c = hd(canvas(256, 64)), g = c.getContext('2d'), r = seeded(81);
+    g.fillStyle = '#000'; g.fillRect(0, 0, 256, 64);
+    g.strokeStyle = '#fff'; g.lineCap = 'round';
+    for (let i = 0; i < 9; i++) {
+      let x = r() * 256, y = 26 + r() * 34;
+      g.lineWidth = 1 + r() * 1.6; g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 5; k++) { x += 4 + r() * 10; y = Math.max(22, Math.min(62, y + (r() - 0.5) * 12)); g.lineTo(x, y); }
+      g.stroke();
+    }
+    return c;
+  });
+}
+
+/** The light a flat face gets from the arena's lights as they are, so a colour can be divided by it and come out as painted. */
+function flatLight() {
+  const lum = (c) => c.r * 0.3 + c.g * 0.55 + c.b * 0.15, dir = new THREE.Vector3().subVectors(sun.position, sun.target.position).normalize();
+  return (hemi.intensity * lum(hemi.color) + sun.intensity * dir.y * lum(sun.color)) / Math.PI * 1.25;
+}
+
+/** sRGB 0-255 from the pixel scene, as a linear colour divided by `gain` (the light falling on it), so once lit it reads as it was painted. */
+function painted(c, gain) {
+  return new THREE.Color().setRGB(c[0] / 255, c[1] / 255, c[2] / 255, THREE.SRGBColorSpace).multiplyScalar(1 / gain);
+}
+
+/** The pixel floor's colour along a row, from both sides of the screen (never the middle, where its landmark stands): the median, so a lava crack or a rock doesn't sway it. */
+function rowColour(y) {
+  const cs = [0.03, 0.08, 0.14, 0.2, 0.8, 0.86, 0.92, 0.97].map(x => sceneColour(x, y)).filter(Boolean);
+  if (!cs.length) return null;
+  cs.sort((a, b) => (a[0] + a[1] + a[2]) - (b[0] + b[1] + b[2]));
+  return cs[cs.length >> 1];
+}
+
+/** Flat ribbons laid on the ground along a crack's path: the scorch, the molten core and its glow, each merged into one mesh. */
+function ribbons() {
+  const layers = { scorch: [], core: [], glow: [] };
+  return {
+    lay(pts, w) {
+      let u = 0;
+      const L = layers;
+      const strip = (out, width, y) => {
+        for (let i = 0; i < pts.length - 1; i++) {
+          const [x0, z0] = pts[i], [x1, z1] = pts[i + 1], t0 = i / (pts.length - 1), t1 = (i + 1) / (pts.length - 1);
+          const w0 = width * Math.pow(Math.sin(Math.PI * Math.min(0.98, Math.max(0.02, t0))), 0.6), w1 = width * Math.pow(Math.sin(Math.PI * Math.min(0.98, Math.max(0.02, t1))), 0.6);
+          const dx = x1 - x0, dz = z1 - z0, l = Math.hypot(dx, dz) || 1, nx = -dz / l, nz = dx / l;
+          const u0 = u + i * 0.6, u1 = u + (i + 1) * 0.6;
+          out.push([x0 + nx * w0, y, z0 + nz * w0, u0, 0], [x1 + nx * w1, y, z1 + nz * w1, u1, 0], [x0 - nx * w0, y, z0 - nz * w0, u0, 1],
+            [x1 + nx * w1, y, z1 + nz * w1, u1, 0], [x1 - nx * w1, y, z1 - nz * w1, u1, 1], [x0 - nx * w0, y, z0 - nz * w0, u0, 1]);
+        }
+      };
+      strip(L.scorch, w * 3.2, 0.015);
+      strip(L.core, w, 0.03);
+      strip(L.glow, w * 2.6, 0.06);
+      u += pts.length;
+    },
+    mesh(name, m) {
+      const v = layers[name];
+      if (!v.length) return null;
+      const pos = new Float32Array(v.length * 3), uv = new Float32Array(v.length * 2);
+      v.forEach((p, i) => { pos.set(p.slice(0, 3), i * 3); uv.set(p.slice(3), i * 2); });
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+      geo.computeVertexNormals();
+      const o = new THREE.Mesh(geo, m);
+      o.receiveShadow = name === 'scorch';
+      return add(o);
+    },
+  };
+}
+
+/** Points drifting through a box, wrapping top to bottom: ash falling, embers rising (`vy` > 0), each swaying a little. */
+function drift(n, box, { colour, size, vy, glow = false, sway = 0.4 }) {
+  const geo = new THREE.BufferGeometry(), p = new Float32Array(n * 3), r = seeded(n * 13 + Math.round(vy * 10)), seed = [];
+  const [x0, x1, z0, z1, top] = box;
+  for (let i = 0; i < n; i++) { p.set([x0 + r() * (x1 - x0), r() * top, z0 + r() * (z1 - z0)], i * 3); seed.push(r() * 100); }
+  geo.setAttribute('position', new THREE.BufferAttribute(p, 3));
+  const m = new THREE.PointsMaterial({ map: tex(glowArt()), color: colour, size, transparent: true, depthWrite: false, sizeAttenuation: true,
+    ...(glow ? { blending: THREE.AdditiveBlending } : { opacity: 0.85 }) });
+  const pts = add(new THREE.Points(geo, m));
+  pts.frustumCulled = false;
+  B.ticks.push((t, dt) => {
+    for (let i = 0; i < n; i++) {
+      const s = seed[i];
+      let y = p[i * 3 + 1] + vy * (0.7 + (s % 1) * 0.6) * dt;
+      if (y > top) y -= top; else if (y < 0) y += top;
+      p[i * 3 + 1] = y;
+      p[i * 3] += Math.sin(t * 0.8 + s) * sway * dt;
+      p[i * 3 + 2] += Math.cos(t * 0.6 + s) * sway * 0.5 * dt;
+    }
+    geo.attributes.position.needsUpdate = true;
+    if (glow) m.opacity = 0.75 + Math.sin(t * 7.3) * 0.15 + Math.sin(t * 3.1) * 0.1;
+  });
+  return pts;
+}
+
+/** Smoke curling up off the lava, a few soft puffs rising, swelling and thinning out, then starting again. */
+function smoke(spots, colour) {
+  const m = new THREE.SpriteMaterial({ map: tex(glowArt()), color: colour, transparent: true, depthWrite: false, opacity: 0 });
+  spots.forEach(([x, z], k) => {
+    for (let j = 0; j < 2; j++) {
+      const s = new THREE.Sprite(m.clone()), off = j / 2 + k * 0.37;
+      add(s);
+      B.ticks.push((t) => {
+        const f = (t * 0.12 + off) % 1;
+        s.position.set(x + Math.sin(t * 0.5 + off * 9) * 0.3 * f, 0.3 + f * 4, z);
+        s.scale.setScalar(0.8 + f * 2.6);
+        s.material.opacity = Math.sin(f * Math.PI) * 0.32;
+      });
+    }
+  });
+}
+
+/** The Ember Wastes: an ashen basalt plain from your feet to the volcano, lava cracks glowing round its edges (more in the
+    Lava Fields, a lava pool or two there and at the Crater Rim), basalt rocks and ash heaps, charred snags at the sides,
+    obsidian on the Volcano Slope and the Crater Rim, ash falling, embers rising, smoke off the lava. */
+function dressWastes({ o, r, at, hz, zFar, zNear, len, alpha, wl, clear, onLand, between, side }) {
+  const boss = o.kind === 'boss', st = o.stage, gain = flatLight();
+  const glowK = wl.glow + (boss ? 0.3 : 0) + (o.kind === 'elite' ? 0.1 : 0);
+
+  // the ground, in the pixel floor's own colours row by row (darker or lighter towards the horizon, graded for an Alpha or a boss)
+  const rows = 24, geo = new THREE.PlaneGeometry(80, len, 1, rows), cols = new THREE.BufferAttribute(new Float32Array((rows + 1) * 2 * 3), 3);
+  geo.setAttribute('color', cols);
+  const tinters = [];
+  // read again when a boss's arena is shown: built under its prelude, the floor was mid-eruption
+  const tint = () => {
+    const posA = geo.attributes.position;
+    let near = null;
+    for (let i = 0; i < posA.count; i++) {
+      const z = (zNear + zFar) / 2 - posA.getY(i);   // the plane is laid flat: its y becomes -z
+      const c = rowColour(Math.min(0.995, Math.max(hz + 0.01, onScreen(0, 0, z).y))) ?? near ?? [90, 76, 70];
+      near = c;
+      const col = painted(c, gain);
+      cols.setXYZ(i, col.r, col.g, col.b);
+    }
+    cols.needsUpdate = true;
+    // its haze is the far floor's colour (a boss's horizon is a band of lava, which hazed it all orange)
+    const hc = rowColour(hz + 0.02);
+    if (hc && scene.fog) scene.fog.color.set(hexOf(hc));
+    const fc = painted(rowColour(Math.min(0.95, (at.foe.sy + at.you.sy) / 2)) ?? [90, 76, 70], gain);
+    for (const f of tinters) f(fc);
+  };
+  B.retint = tint;
+  const basalt = tex(basaltArt());
+  basalt.wrapS = basalt.wrapT = THREE.RepeatWrapping;
+  basalt.repeat.set(16, len / 5);
+  const ground = new THREE.Mesh(geo, std({ map: basalt, vertexColors: true, alphaMap: alpha, transparent: true, roughness: 1 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.z = (zNear + zFar) / 2; ground.receiveShadow = true;
+  ground.renderOrder = -1;
+  add(ground);
+  const tinted = (m, k = 1) => { tinters.push(fc => m.color.copy(fc).multiplyScalar(k)); return m; };
+
+  // lava cracks, wandering over the ground round the edges, never across the middle or under a pad
+  const lava = tex(lavaArt());
+  lava.wrapS = THREE.RepeatWrapping;
+  const band = tex(bandArt());
+  const R = ribbons(), vents = [];
+  // flat things may lie anywhere but the middle between the two Pokémon; spots are picked on screen, so a phone's narrow view gets its share
+  const middle = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.05 && s.y < at.you.sy + 0.06 && s.x > 0.24 && s.x < 0.76; };
+  const ok = (x, z, m = 0.5) => onLand(x, z) && clear(x, z, m) && !middle(x, z);
+  const okCrack = boss ? (x, z) => onLand(x, z) && clear(x, z, 0.6) : ok;   // the Crater Rim's lava runs right across it, like the pixel arena's
+  const spot = () => onGround(r() * innerWidth, innerHeight * (hz + 0.012 + Math.pow(r(), 1.4) * (0.94 - hz)), 0) ?? { x: 0, z: zFar };
+  const cracks = [7, 12, 8, 10][st] + (boss ? 2 : 0);
+  for (let i = 0, made = 0; i < 300 && made < cracks; i++) {
+    let { x, z } = spot(), a = r() * Math.PI * 2;
+    if (!okCrack(x, z)) continue;
+    const pts = [[x, z]], steps = 7 + Math.floor(r() * (st === 1 || boss ? 14 : 9));
+    for (let k = 0; k < steps; k++) {
+      a += (r() - 0.5) * 1.1;
+      const nx = x + Math.cos(a) * (0.5 + r() * 0.5), nz = z + Math.sin(a) * (0.5 + r() * 0.5);
+      if (!okCrack(nx, nz)) break;
+      x = nx; z = nz; pts.push([x, z]);
+    }
+    if (pts.length < 4) continue;
+    R.lay(pts, (st === 1 || boss ? 0.24 : 0.16) + r() * 0.12);
+    if (r() < 0.5) vents.push(pts[pts.length >> 1]);
+    made++;
+  }
+  R.mesh('scorch', new THREE.MeshBasicMaterial({ color: '#140806', alphaMap: band, transparent: true, opacity: 0.7, depthWrite: false }));
+  const core = new THREE.MeshBasicMaterial({ map: lava, color: '#ffffff', toneMapped: false });
+  R.mesh('core', core);
+  const glowM = new THREE.MeshBasicMaterial({ map: band, color: '#ff6a18', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.5 });
+  R.mesh('glow', glowM);
+
+  // lava pools: in the Lava Fields and at the Crater Rim, off to the sides
+  const pools = [];
+  for (let i = 0, want = st === 1 ? 2 : st === 3 || boss ? 2 : 0; i < 200 && pools.length < want; i++) {
+    const { x, z } = spot(), s = 0.7 + r() * 0.8;
+    if (!ok(x, z, s + 1) || pools.some(p => Math.hypot(p[0] - x, p[1] - z) < 4) || !side(x, z, 0.05)) continue;
+    pools.push([x, z, s]);
+  }
+  const poolTex = tex(poolArt());
+  const poolM = new THREE.MeshBasicMaterial({ map: poolTex, toneMapped: false });
+  for (const [x, z, s] of pools) {
+    const disc = (rad, m, y) => {
+      const g = new THREE.CircleGeometry(rad, 28), p = g.attributes.position;
+      for (let i = 1; i < p.count; i++) { const a = Math.atan2(p.getY(i), p.getX(i)), k = 1 + Math.sin(a * 3 + x) * 0.12 + Math.sin(a * 5 + z) * 0.08; p.setXY(i, p.getX(i) * k, p.getY(i) * k); }
+      const o = mesh(g, m, x, y, z, { shadow: false });
+      o.rotation.x = -Math.PI / 2; o.scale.y = 0.75;
+      return o;
+    };
+    disc(s * 1.7, new THREE.MeshBasicMaterial({ color: '#140806', map: tex(glowArt()), transparent: true, opacity: 0.85, depthWrite: false }), 0.012);
+    disc(s * 1.25, tinted(std({ roughness: 1, flatShading: true }), 0.55), 0.02);
+    disc(s, poolM, 0.05);
+    const halo = mesh(new THREE.PlaneGeometry(s * 4, s * 3), new THREE.MeshBasicMaterial({ map: tex(glowArt()), color: '#ff7a20', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.5 }), x, 0.08, z, { shadow: false });
+    halo.rotation.x = -Math.PI / 2;
+    vents.push([x, z]);
+  }
+  B.ticks.push((t, dt) => {   // the lava flows and breathes
+    lava.offset.x = (lava.offset.x + dt * 0.09) % 1;
+    poolTex.offset.set(Math.sin(t * 0.1) * 0.03, Math.cos(t * 0.08) * 0.03);
+    const p = glowK * (0.85 + Math.sin(t * 1.3) * 0.1 + Math.sin(t * 3.7) * 0.05);
+    glowM.opacity = 0.6 * p;
+    core.color.setScalar(0.75 + 0.25 * p);
+    poolM.color.setScalar(0.8 + 0.2 * p);
+  });
+
+  // basalt rocks and pebbles round the edges, a few boulders, ash heaps: one instanced mesh each
+  const d = new THREE.Object3D(), rocks = [], heaps = [], shards = [];
+  for (let i = 0; i < 400 && rocks.length < 90; i++) {
+    const { x, z } = spot(), big = r() < 0.2, s = big ? 0.45 + r() * 0.65 : 0.07 + r() * 0.2;
+    if (!onLand(x, z) || !clear(x, z, s + 0.5) || (big ? !side(x, z, s * 0.2) : middle(x, z) && r() < 0.85)) continue;
+    rocks.push([x, z, s]);
+  }
+  for (let i = 0; i < 200 && heaps.length < (st === 0 ? 14 : 7); i++) {
+    const { x, z } = spot(), s = 0.5 + r() * 0.9;
+    if (!ok(x, z, s)) continue;
+    heaps.push([x, z, s]);
+  }
+  if (st >= 2 || boss) for (let i = 0; i < 200 && shards.length < 7; i++) {   // obsidian, in clusters
+    const { x, z } = spot();
+    if (!ok(x, z, 1) || !side(x, z, 0.15)) continue;
+    shards.push([x, z]);
+  }
+  const rockM = std({ roughness: 0.95, flatShading: true });
+  const rockI = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), rockM, rocks.length);
+  const shade = [];
+  rocks.forEach(([x, z, s], i) => {
+    d.position.set(x, s * 0.25, z); d.rotation.set(r() * 3, r() * 6, r() * 3); d.scale.set(s, s * (0.55 + r() * 0.35), s * (0.8 + r() * 0.4));
+    d.updateMatrix(); rockI.setMatrixAt(i, d.matrix);
+    shade.push(0.5 + r() * 0.65);
+  });
+  tinters.push(fc => { const c = new THREE.Color(); shade.forEach((k, i) => rockI.setColorAt(i, c.copy(fc).multiplyScalar(k))); if (rockI.instanceColor) rockI.instanceColor.needsUpdate = true; });
+  rockI.castShadow = rockI.receiveShadow = true;
+  if (rocks.length) add(rockI);
+  const heapI = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 14, 6, 0, Math.PI * 2, 0, Math.PI / 2), tinted(std({ roughness: 1 }), 1.05), heaps.length);
+  heaps.forEach(([x, z, s], i) => {
+    d.position.set(x, 0, z); d.rotation.set(0, r() * 6, 0); d.scale.set(s, s * 0.3, s * (0.6 + r() * 0.4));
+    d.updateMatrix(); heapI.setMatrixAt(i, d.matrix);
+  });
+  heapI.receiveShadow = true; heapI.castShadow = true;
+  if (heaps.length) add(heapI);
+  if (shards.length) {
+    const n = shards.length * 4, shardI = new THREE.InstancedMesh(new THREE.ConeGeometry(0.22, 1, 5).translate(0, 0.5, 0),
+      std({ color: '#2c2438', roughness: 0.18, metalness: 0.35, flatShading: true, emissive: '#3a1a40', emissiveIntensity: 0.4 }), n);
+    shards.forEach(([x, z], k) => {
+      for (let j = 0; j < 4; j++) {
+        const a = r() * 6, dd = j ? 0.2 + r() * 0.35 : 0, h = j ? 0.5 + r() * 0.8 : 1.2 + r() * 1.1;
+        d.position.set(x + Math.cos(a) * dd, -0.05, z + Math.sin(a) * dd);
+        d.rotation.set(Math.sin(a) * dd * 1.2, r() * 6, -Math.cos(a) * dd * 1.2);
+        d.scale.set(0.7 + r() * 0.6, h, 0.7 + r() * 0.6);
+        d.updateMatrix(); shardI.setMatrixAt(k * 4 + j, d.matrix);
+      }
+    });
+    shardI.castShadow = shardI.receiveShadow = true;
+    add(shardI);
+  }
+
+  // charred snags framing the sides, like the Clearing's trees
+  const charM = tinted(std({ roughness: 1 }), 0.45);
+  for (let i = 0, placed = 0; i < 400 && placed < (st === 0 ? 5 : 3); i++) {
+    const x = (r() - 0.5) * 40, z = zFar + 1 + r() * (len - 4), s = 0.7 + r() * 0.5;
+    if (!onLand(x, z) || !side(x, z, s * 0.75) || !clear(x, z, 2) || Math.abs(onScreen(x, 0, z).x - 0.5) < 0.38) continue;
+    snag(x, z, s, r, charM);
+    placed++;
+  }
+
+  // ash falling, embers rising off the cracks, smoke off the lava
+  const boxW = [-14, 14, zFar + 2, zNear - 4];
+  drift(wl.ash, [...boxW, 9], { colour: '#c8c0bc', size: 0.09, vy: -0.45, sway: 0.5 });
+  drift(Math.round(wl.embers * (boss ? 1.8 : 1) * (st === 1 || st === 3 ? 1.3 : 1)), [...boxW, 6], { colour: '#ffa040', size: 0.16, vy: 0.9, glow: true, sway: 0.8 });
+  smoke(vents.slice(0, 4), o.time === 'night' ? '#4a3a38' : '#8a7c78');
+  rain('#ffa860');
+  tint();
+}
+
+/** A dead tree burnt black: a leaning trunk and a few bare branches, forked at their ends, merged into one mesh (one draw). */
+function snag(x, z, s, r, m) {
+  const parts = [], h = (2.6 + r() * 1.6) * s, o = new THREE.Object3D();
+  const part = (r0, r1, l, at, rx, rz, parent = null) => {
+    const geo = new THREE.CylinderGeometry(r1, r0, l, 6).translate(0, l / 2, 0).toNonIndexed();
+    o.position.set(...at); o.rotation.set(rx, 0, rz); o.updateMatrix();
+    const mat = parent ? parent.clone().multiply(o.matrix) : o.matrix.clone();
+    parts.push(geo.applyMatrix4(mat));
+    return mat;
+  };
+  part(0.22 * s, 0.07 * s, h, [0, 0, 0], 0, 0);
+  for (let i = 0; i < 4; i++) {
+    const a = r() * Math.PI * 2, l = (0.8 + r() * 0.9) * s, b = part(0.07 * s, 0.025 * s, l, [0, h * (0.45 + i * 0.13), 0], Math.sin(a) * 0.95, Math.cos(a) * 0.95);
+    part(0.03 * s, 0.01 * s, l * 0.5, [0, l * 0.8, 0], 0.6, 0.4, b);
+  }
+  const geo = new THREE.BufferGeometry();
+  for (const key of ['position', 'normal']) {
+    const all = new Float32Array(parts.reduce((n, g) => n + g.attributes[key].array.length, 0));
+    parts.reduce((at, g) => { all.set(g.attributes[key].array, at); return at + g.attributes[key].array.length; }, 0);
+    geo.setAttribute(key, new THREE.BufferAttribute(all, 3));
+  }
+  parts.forEach(g => g.dispose());
+  const tree = mesh(geo, m, x, 0, z);
+  tree.rotation.set((r() - 0.5) * 0.15, r() * 6, (r() - 0.5) * 0.15);
+}
+
+const GROUNDS = { clearing: dressClearing, wastes: dressWastes };
 
 /* ---------- the frame ---------- */
 
@@ -745,6 +1177,9 @@ function show(fade) {
 /** The boss's prelude is over: the arena comes up out of its last white flash. */
 export function revealArena() {
   wanted = true;
+  // the prelude's last flash may still be on the pixel floor: read its colours again once it has settled
+  const was = A;
+  for (const ms of [0, 500, 1200]) setTimeout(() => { if (A === was) A?.retint?.(); }, ms);
   if (A) show(true);
 }
 
