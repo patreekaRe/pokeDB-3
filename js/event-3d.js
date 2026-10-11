@@ -16,7 +16,7 @@ import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES } from './secret-base.js';
-import { DRAGONITE } from './scene.js';
+import { paintMedallion } from './medallion-art.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
 
 const COLS = 11, ROWS = 8;
@@ -385,37 +385,42 @@ function dojoBands(f, W, posts = 2) {
   g.fillStyle = DOJO.wood[2]; g.fillRect(0, wy(TOP), W, 4);
 }
 
-/** The gold medallion with Dragonite in relief, the pixel arena's (DRAGONITE in js/scene.js), at radius `R`. */
-function medallion(f, s, cx, cy, Rr) {
-  const { g, lin } = f, k = Rr * 0.78 * 2 / DRAGONITE.length, Ri = DRAGONITE.length * k / 2;
-  g.fillStyle = lin(cx - Rr, cy - Rr, cx + Rr, cy + Rr, ['#fff0a0', '#e8b030', '#a87010', '#f8d058']);
-  g.beginPath(); g.arc(cx, cy, Rr, 0, Math.PI * 2); g.fill();
-  g.fillStyle = lin(0, cy - Ri, 0, cy + Ri, ['#5a1410', '#2a0806']);
-  g.beginPath(); g.arc(cx, cy, Ri * 1.04, 0, Math.PI * 2); g.fill();
-  const col = { '#': '#f0c048', w: '#d89a28', '=': '#fff0b0', e: '#ff3020' };
-  DRAGONITE.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (!col[ch]) return;
-    g.fillStyle = col[ch];
-    g.fillRect(cx - Ri + x * k, cy - Ri + y * k, k + 0.05, k + 0.05);
-    if (ch === 'e') { s.fillStyle = '#ff6040'; s.fillRect(cx - Ri + x * k - k, cy - Ri + y * k - k, k * 3, k * 3); }
-  }));
-  s.fillStyle = 'rgba(160,110,30,0.6)'; s.beginPath(); s.arc(cx, cy, Rr, 0, Math.PI * 2); s.arc(cx, cy, Ri * 1.04, 0, Math.PI * 2, true); s.fill();
+/* Kenmatta's arena medallion (js/arena-3d.js's, the relief baked into assets/arena/), hung in the alcove over his head: the
+   painted one sat behind him (the user's ask, 2026-10-11). */
+const MEDALLION = ['assets/arena/ken-medallion.jpg', 'assets/arena/ken-medallion-bump.jpg'];
+
+function medallion3d(x, y, z, r) {
+  const N = 1024, mk = () => Object.assign(document.createElement('canvas'), { width: N, height: N, fine: true });
+  const out = { map: mk(), bump: mk() };
+  paintMedallion(null, out);   // the ring at once, the Dragonite once its pictures load
+  const map = texOf(out.map), bumpMap = texOf(out.bump);
+  MEDALLION.forEach((src, i) => {
+    const img = new Image();
+    img.onload = () => {
+      try { (i ? out.bump : out.map).getContext('2d').drawImage(img, 0, 0, N, N); } catch { return; }
+      (i ? bumpMap : map).needsUpdate = true;
+    };
+    img.src = src;
+  });
+  const face = std({ map, bumpMap, bumpScale: 3, metalness: 0.25, roughness: 0.4, emissive: '#ffffff', emissiveMap: map, emissiveIntensity: 0.35 });
+  mesh(new THREE.CircleGeometry(r, 64), face, x, y, z + 0.06).castShadow = false;
+  const rim = mesh(new THREE.CylinderGeometry(r * 1.01, r * 1.01, 0.12, 64, 1, true), std({ color: '#a86a18', metalness: 0.5, roughness: 0.4 }), x, y, z);
+  rim.rotation.x = Math.PI / 2;
 }
 
 function dojoWall() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
   dojoBands(f, W);
-  // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags, the medallion
+  // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags (the medallion hangs over it, medallion3d())
   const a0 = wx(4.15), a1 = wx(5.85);
   rr(a0 - 3, wy(3.9), a1 - a0 + 6, wy(0) - wy(3.9), 1, lin(a0, 0, a1, 0, DOJO.wood));
   rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#3a2414', '#2a180c']));
-  medallion(f, s, (a0 + a1) / 2, wy(2.05), U * 0.72);
   g.strokeStyle = '#d8c078'; g.lineWidth = 3.4;
-  g.beginPath(); g.moveTo(a0 - 2, wy(3.55)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.15), a1 + 2, wy(3.55)); g.stroke();
+  g.beginPath(); g.moveTo(a0 - 2, wy(3.8)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.6), a1 + 2, wy(3.8)); g.stroke();
   g.strokeStyle = '#a88a48'; g.lineWidth = 0.6;
-  for (let t = 0; t < 1; t += 0.05) { const x = a0 + (a1 - a0) * t, y = wy(3.55) + Math.sin(t * Math.PI) * (wy(3.15) - wy(3.55)); g.beginPath(); g.moveTo(x - 1.4, y - 1.4); g.lineTo(x + 1.4, y + 1.4); g.stroke(); }
-  for (const t of [0.22, 0.5, 0.78]) {
-    const x = a0 + (a1 - a0) * t, y = wy(3.55) + Math.sin(t * Math.PI) * (wy(3.15) - wy(3.55)) + 1.6;
+  for (let t = 0; t < 1; t += 0.05) { const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)); g.beginPath(); g.moveTo(x - 1.4, y - 1.4); g.lineTo(x + 1.4, y + 1.4); g.stroke(); }
+  for (const t of [0.14, 0.86]) {
+    const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)) + 1.6;
     g.fillStyle = '#ffffff';
     g.beginPath(); g.moveTo(x - 1.5, y); g.lineTo(x + 1.5, y); g.lineTo(x + 0.4, y + 3); g.lineTo(x + 1.6, y + 3); g.lineTo(x + 0.2, y + 6.5); g.lineTo(x - 1.5, y + 3.5); g.lineTo(x - 0.3, y + 3.5); g.closePath(); g.fill();
   }
@@ -510,12 +515,13 @@ async function buildTutor(figs) {
   shell({ floor: dojoFloor(), wall: dojoWall(), side: dojoSide, edge: '#3a2414', cap: '#5a3418', under: '#24140a', bg: '#1a0e08' });
   // Kenmatta on his red cushion before the alcove (his challenge), the scroll (a lesson) and the sandbag (training)
   piece('zabuton', 5, 1, { scale: 1.1 });
+  medallion3d(tileX(5), 2.95, BACK_Z, 0.55);
   B.blocked.add(key(5, 1));
   const scroll = panel(scrollArt(0.12), 0.9, 2.2, tileX(3), 2.15, BACK_Z + 0.03, { live: true });
   scroll.userData.spot = 0;
   B.anchors[0] = new THREE.Vector3(tileX(3), 3.45, BACK_Z + 0.1);
   B.bag = sandbag(7, 2);
-  B.anchors[2] = new THREE.Vector3(tileX(5), 2.5, tileZ(1));
+  B.anchors[2] = new THREE.Vector3(tileX(5), 0.5, tileZ(1) + 0.55);   // at his cushion, the medallion over his head
   B.spots = [{ step: { x: 3, y: 1 } }, { step: { x: 7, y: 3 } }, { step: { x: 5, y: 2 } }];
   piece('scrollrack', 0, 0); piece('bonsai', 1, 0); piece('swordrack', 10, 0); piece('stonelantern', 8, 0, { scale: 0.85 });
   piece('dummy', 10, 2); piece('drum', 0, 3); piece('dumbbells', 10, 5); piece('getarack', 0, 6);
