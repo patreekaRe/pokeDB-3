@@ -414,7 +414,17 @@ function dojoWall() {
   // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags (the medallion hangs over it, medallion3d())
   const a0 = wx(4.15), a1 = wx(5.85);
   rr(a0 - 3, wy(3.9), a1 - a0 + 6, wy(0) - wy(3.9), 1, lin(a0, 0, a1, 0, DOJO.wood));
-  rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#3a2414', '#2a180c']));
+  rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#9a6236', '#7a4a26']));
+  {   // planked in warm wood, the medallion's backboard
+    const n = 6, w = (a1 - a0) / n, r = seeded(17);
+    for (let i = 0; i < n; i++) {
+      const x = a0 + i * w;
+      g.fillStyle = `rgba(${r() < 0.5 ? '255,220,170' : '60,30,10'},${0.06 + r() * 0.08})`; g.fillRect(x, wy(3.7), w, wy(0.3) - wy(3.7));
+      g.strokeStyle = 'rgba(90,50,20,0.35)'; g.lineWidth = 0.3;
+      for (let k = 0; k < 3; k++) { const gx = x + w * (0.25 + r() * 0.5); g.beginPath(); g.moveTo(gx, wy(3.7)); g.bezierCurveTo(gx + 0.8, wy(2.6), gx - 0.8, wy(1.4), gx + 0.3, wy(0.3)); g.stroke(); }
+      g.fillStyle = '#4a2a14'; g.fillRect(x - 0.3, wy(3.7), 0.6, wy(0.3) - wy(3.7));
+    }
+  }
   g.strokeStyle = '#d8c078'; g.lineWidth = 3.4;
   g.beginPath(); g.moveTo(a0 - 2, wy(3.8)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.6), a1 + 2, wy(3.8)); g.stroke();
   g.strokeStyle = '#a88a48'; g.lineWidth = 0.6;
@@ -515,7 +525,7 @@ async function buildTutor(figs) {
   shell({ floor: dojoFloor(), wall: dojoWall(), side: dojoSide, edge: '#3a2414', cap: '#5a3418', under: '#24140a', bg: '#1a0e08' });
   // Kenmatta on his red cushion before the alcove (his challenge), the scroll (a lesson) and the sandbag (training)
   piece('zabuton', 5, 1, { scale: 1.1 });
-  medallion3d(tileX(5), 2.95, BACK_Z, 0.55);
+  medallion3d(tileX(5), 2.5, BACK_Z, 0.84);
   B.blocked.add(key(5, 1));
   const scroll = panel(scrollArt(0.12), 0.9, 2.2, tileX(3), 2.15, BACK_Z + 0.03, { live: true });
   scroll.userData.spot = 0;
