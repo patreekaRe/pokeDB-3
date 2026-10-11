@@ -7,7 +7,8 @@
  * a glimpse of where it goes (sceneShot() of the biome's first place, at dusk). Above each road a card names it: its sign,
  * its bosses (silhouettes until the Pokédex has met them) and its wilds' types. A tap on a card or a road picks it (its
  * arm of the signpost lights up), a second tap or the button takes it, and your Pokémon walks off up that road as the
- * dark comes down. Arrow keys pick, Enter takes. There's no way out without choosing.
+ * dark comes down. Or walk there yourself: tap the ground (or hold and drag, or the arrow keys / WASD), and walking onto a
+ * road picks it, on up it takes it. Enter takes the picked one. There's no way out without choosing.
  */
 import { $, el, sleep } from './ui.js';
 import { playSound, preloadSounds } from './audio.js';
@@ -47,10 +48,22 @@ const FLY = pal(['#fffad0', '#f8d860', '#a88830']);
 const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'], ruins: ['#4f7472', '#8cc8c0'], wastes: ['#54403a', '#e0602a'], thornwood: ['#3e5a2a', '#8cc850'], savanna: ['#a8743a', '#f0c040'] };
 
 let P = 4, W = 0, H = 0, tall = true, hz = 0, fy = 0, fx = 0, d = 0, gw = 0, gh = 0, bw = 0;
-let canvas = null, ctx = null, img = null, buf = null, base = null, shots = [];
+let canvas = null, ctx = null, img = null, buf = null, shots = [];
 let roads = [], picked = -1, walking = false;
+// the painting is split into layers wider than the screen (M pixels each side), slid apart by the camera's sideways
+// offset `cam` as your Pokémon walks: the sky barely, the meadow more on each row nearer you, the framing trees most
+let M = 0, LW = 0, far = null, ground = null, trees = null, cam = 0;
+// your Pokémon on the ground, in the painting's pixels with the camera at rest; `route` the points it's walking to
+let mx = 0, my = 0, route = [], keys = new Set(), facing = 'back', scale0 = 1, startY = 0;
+
+/** How near row y is, 0 at the horizon and 1 at the bottom: the size of things and how fast they slide there. */
+const near = (y) => Math.max(0.01, (y - hz) / (H - hz));
+const K = () => W * 0.4;   // ground depth per 1/near, so walking up a road takes longer the further it goes
+const toWorld = (x, y) => { const f = near(y); return [(x - fx) / f, K() / f]; };
+const fromWorld = (X, Z) => { const f = K() / Z; return [fx + X * f, hz + f * (H - hz)]; };
 
 function layout() {
+  const fr = H ? [(mx - fx) / W, my / H] : null;
   P = innerWidth <= 720 ? 4 : 5;
   W = Math.ceil(innerWidth / P);
   H = Math.ceil(innerHeight / P);
@@ -62,6 +75,10 @@ function layout() {
   gw = Math.round(W * (tall ? 0.4 : 0.24));
   gh = Math.round(gw * 0.62);
   bw = Math.round(W * (tall ? 0.2 : 0.11));
+  M = Math.ceil(W * 0.4);
+  LW = W + M * 2;
+  startY = Math.round(H * (tall ? 0.86 : 0.9));
+  if (fr) { mx = fx + fr[0] * W; my = fr[1] * H; } else { mx = fx; my = startY; }
   canvas = $('xr-canvas');
   canvas.width = W; canvas.height = H;
   canvas.style.width = `${W * P}px`; canvas.style.height = `${H * P}px`;
@@ -86,52 +103,55 @@ function pathAt(y, side) {
   return [v + (join - v) * t ** 1.5, 0.6 + (fhw * 0.62 - 0.6) * t ** 1.4];
 }
 
+const putter = (layer, rows, y0) => (x, y, c) => { x = Math.round(x) + M; y -= y0; if (x >= 0 && x < LW && y >= 0 && y < rows) layer[y * LW + x] = c; };
+
 function paintBase() {
-  base = new Uint32Array(W * H);
-  const set = (x, y, c) => { if (x >= 0 && x < W && y >= 0 && y < H) base[y * W + x] = c; };
+  far = new Uint32Array(LW * hz);
+  ground = new Uint32Array(LW * (H - hz));
+  trees = new Uint32Array(LW * H);
+  const sky = putter(far, hz, 0), set = putter(ground, H - hz, hz), front = putter(trees, H, 0);
   // the sky, and the sun sinking between the two roads
   const sr = Math.max(4, Math.round(W * (tall ? 0.09 : 0.05))), sy = hz - Math.round(sr * 0.3);
-  for (let y = 0; y < hz; y++) for (let x = 0; x < W; x++) {
+  for (let y = 0; y < hz; y++) for (let x = -M; x < W + M; x++) {
     let c = ramp(SKY, y / hz, x, y);
     const r = Math.hypot(x - fx, (y - sy) * 1.1);
     if (r < sr) c = SUN[r < sr * 0.6 ? 0 : r < sr * 0.85 ? 1 : 2];
     else if (r < sr * 2.2 && (1 - (r - sr) / (sr * 1.2)) > bay(x, y) + 0.35) c = SUN[2];
-    base[y * W + x] = c;
+    sky(x, y, c);
   }
   // far hills, then each road's glimpse of its biome through the gap it makes
-  for (let x = 0; x < W; x++) {
+  for (let x = -M; x < W + M; x++) {
     const top = hz - Math.round(3 + 3 * Math.sin(x * 0.09) + 2 * Math.sin(x * 0.23 + 1));
-    for (let y = top; y < hz; y++) set(x, y, HILLS[y - top < 2 ? 0 : 1]);
+    for (let y = top; y < hz; y++) sky(x, y, HILLS[y - top < 2 ? 0 : 1]);
   }
   shots.forEach((shot, i) => {
     const x0 = vx(i) - (gw >> 1), y0 = hz - Math.round(gh * 0.62), cy = hz - gh * 0.22;
     for (let y = 0; y < gh; y++) for (let x = 0; x < gw; x++) {
       const X = x0 + x, Y = y0 + y;
-      if (Y > hz + 1) continue;
       const dx = (X - vx(i)) / (gw / 2), dy = (Y - cy) / (gh * 0.5);
-      if ((1 - dx * dx - dy * dy) * 4 > bay(X, Y)) set(X, Y, shot[y * gw + x]);
+      if ((1 - dx * dx - dy * dy) * 4 > bay(X, Y)) sky(X, Y, shot[y * gw + x]);
     }
   });
   // two rows of pines, parting where each road runs through them
   const gap = (x, wide) => Math.min(...roads.map((_, i) => Math.abs(x - vx(i)) / (gw * wide)));
   [[PINES[0], 4, 10, 0.36], [PINES[1], 7, 15, 0.5]].forEach(([c, step, tallest, wide], row) => {
-    for (let p = -6, k = 0; p < W + 6; p += step * (0.7 + hash(k + row * 97) * 0.6), k++) {
+    for (let p = -6 - M, k = 0; p < W + M + 6; p += step * (0.7 + hash(k + row * 97) * 0.6), k++) {
       const edge = 1 + 1.2 * smooth(Math.abs(p - fx) / (W * 0.5) - 0.4);
-      const ph = Math.round((tallest * 0.55 + hash(k * 3 + row) * tallest * 0.6) * edge * smooth(gap(p, wide) * 1.2 - 0.25));
+      const ph = Math.round((tallest * 0.55 + hash(k * 3 + row) * tallest * 0.6) * Math.min(edge, 2) * smooth(gap(p, wide) * 1.2 - 0.25));
       if (ph < 2) continue;
       for (let y = 0; y < ph; y++) {
         const half = Math.floor((y / ph) * step * 0.55 + (y % 3 === 2 ? 1 : 0));
-        for (let x = -half; x <= half; x++) set(Math.round(p) + x, hz - ph + y + row, c);
+        for (let x = -half; x <= half; x++) sky(Math.round(p) + x, hz - ph + y + row, c);
       }
     }
   });
   // the meadow, the roads through it and their pebbles
   for (let y = hz; y < H; y++) {
     const t = (y - hz) / (H - hz);
-    for (let x = 0; x < W; x++) base[y * W + x] = ramp(GRASS, t, x, y);
+    for (let x = -M; x < W + M; x++) set(x, y, ramp(GRASS, t, x, y));
   }
-  for (let k = 0; k < W * H * 0.012; k++) {
-    const x = Math.floor(hash(k * 1.7) * W), y = hz + 2 + Math.floor(hash(k * 2.3 + 9) ** 0.7 * (H - hz - 2)), h = 1 + Math.floor(((y - hz) / (H - hz)) * 3);
+  for (let k = 0; k < LW * H * 0.012; k++) {
+    const x = Math.floor(hash(k * 1.7) * LW) - M, y = hz + 2 + Math.floor(hash(k * 2.3 + 9) ** 0.7 * (H - hz - 2)), h = 1 + Math.floor(((y - hz) / (H - hz)) * 3);
     for (let i = 0; i < h; i++) set(x + (i === h - 1 && k & 1 ? 1 : 0), y - i, TUFT);
   }
   for (let y = hz + 1; y < H; y++) {
@@ -146,9 +166,35 @@ function paintBase() {
       }
     }
   }
-  // the signpost's shadow on the path, then the post and one arm a road
+  for (let x = -5; x <= 5; x++) if (Math.abs(x) < 4 || bay(fx + x, fy) > 0.5) set(fx + x, fy + 1, PATH[3]);   // the signpost's shadow
+  // two old trees framing the view, lit at their edges by the sun
+  for (const s of [-1, 1]) {
+    const tx = s < 0 ? 0 : W - 1, tw = Math.max(3, Math.round(W * 0.045)), foot = Math.round(H * (tall ? 0.6 : 0.7));
+    for (let y = 0; y <= foot; y++) {
+      const flare = y > foot - 5 ? Math.round((5 - (foot - y)) * 0.8) : 0, lean = Math.round(Math.sin(y * 0.05) * 1.5);
+      for (let x = -tw - flare; x <= tw + flare; x++) {
+        const k = x * -s, edge = tw + flare - k;   // k grows towards the sun
+        const c = edge < 1 ? RIM : edge < 2 && bay(x, y) > 0.4 ? RIM : hash(x * 3.7 + Math.floor((y + x * 2) / 4) * 1.3) > 0.82 ? TRUNK[2] : TRUNK[k > 0 ? 0 : 1];
+        front(tx + x + lean, y, c);
+      }
+    }
+    const blobs = [[0, 0.02, 0.22], [0.12, 0.08, 0.15], [0.2, 0.0, 0.14], [0.05, 0.16, 0.13], [0.27, 0.05, 0.1]];
+    for (const [ox, oy, r] of blobs) {
+      const bx = tx - s * ox * W, by = oy * H, R = r * Math.min(W, H * 0.7);
+      for (let y = Math.floor(by - R); y <= by + R; y++) for (let x = Math.floor(bx - R); x <= bx + R; x++) {
+        const q = Math.hypot(x - bx, y - by) / R;
+        if (q > 1 - hash(x * 3.1 + y * 5.7) * 0.12) continue;
+        const inner = (x - bx) * -s / R + (y - by) / R;   // the side facing the sun
+        front(x, y, q > 0.84 && inner > 0.5 ? RIM : ramp(LEAF, q * 0.6 + (1 - inner) * 0.2, x, y));
+      }
+    }
+  }
+}
+
+/** The signpost, slid `ox` pixels by the camera: the post and one arm a road, the picked one lit. */
+function paintPost(ox) {
+  const set = (x, y, c) => { x += ox; if (x >= 0 && x < W && y >= 0 && y < H) buf[y * W + x] = c; };
   const sh = Math.round(H * (tall ? 0.13 : 0.17)), top = fy - sh, arm = Math.round(W * (tall ? 0.15 : 0.09));
-  for (let x = -5; x <= 5; x++) if (Math.abs(x) < 4 || bay(fx + x, fy) > 0.5) set(fx + x, fy + 1, PATH[3]);
   for (let y = top - 1; y <= fy; y++) for (let x = -2; x <= 2; x++) set(fx + x, y, Math.abs(x) === 2 || y === top - 1 ? INK : POST[x < 0 ? 0 : x === 0 ? 1 : 2]);
   roads.forEach((id, i) => {
     const s = i ? 1 : -1, y0 = top + 2 + i * 8, [plank, rim] = (ARMS[id] || ARMS.clearing).map(abgr), lit = picked === i;
@@ -162,56 +208,58 @@ function paintBase() {
     set(fx + s * 3, y0 + 2, INK);   // its nail
     if (lit) for (let k = 0; k <= arm - 3; k++) { set(fx + s * (2 + k), y0 - 2, GOLD[0]); set(fx + s * (2 + k), y0 + 7, GOLD[0]); }
   });
-  // two old trees framing the view, lit at their edges by the sun
-  for (const s of [-1, 1]) {
-    const tx = s < 0 ? 0 : W - 1, tw = Math.max(3, Math.round(W * 0.045)), foot = Math.round(H * (tall ? 0.6 : 0.7));
-    for (let y = 0; y <= foot; y++) {
-      const flare = y > foot - 5 ? Math.round((5 - (foot - y)) * 0.8) : 0, lean = Math.round(Math.sin(y * 0.05) * 1.5);
-      for (let x = -tw - flare; x <= tw + flare; x++) {
-        const k = x * -s, edge = tw + flare - k;   // k grows towards the sun
-        const c = edge < 1 ? RIM : edge < 2 && bay(x, y) > 0.4 ? RIM : hash(x * 3.7 + Math.floor((y + x * 2) / 4) * 1.3) > 0.82 ? TRUNK[2] : TRUNK[k > 0 ? 0 : 1];
-        set(tx + x + lean, y, c);
-      }
-    }
-    const blobs = [[0, 0.02, 0.22], [0.12, 0.08, 0.15], [0.2, 0.0, 0.14], [0.05, 0.16, 0.13], [0.27, 0.05, 0.1]];
-    for (const [ox, oy, r] of blobs) {
-      const bx = tx - s * ox * W, by = oy * H, R = r * Math.min(W, H * 0.7);
-      for (let y = Math.floor(by - R); y <= by + R; y++) for (let x = Math.floor(bx - R); x <= bx + R; x++) {
-        const q = Math.hypot(x - bx, y - by) / R;
-        if (q > 1 - hash(x * 3.1 + y * 5.7) * 0.12) continue;
-        const inner = (x - bx) * -s / R + (y - by) / R;   // the side facing the sun
-        set(x, y, q > 0.84 && inner > 0.5 ? RIM : ramp(LEAF, q * 0.6 + (1 - inner) * 0.2, x, y));
-      }
-    }
-  }
 }
 
 const flies = Array.from({ length: 18 }, (_, i) => [hash(i * 3.3), hash(i * 7.1 + 2), hash(i * 1.9 + 5) * 6.28]);
+const dim = (c) => (0xff000000 | ((c >>> 1) & 0x7f7f7f) + ((c >>> 2) & 0x3f3f3f)) >>> 0;
 
 function frame(now) {
-  buf.set(base);
+  const sf = Math.round(cam * 0.06), st = Math.round(cam * 1.0);
+  for (let y = 0; y < hz; y++) buf.set(far.subarray(y * LW + M + sf, y * LW + M + sf + W), y * W);
+  for (let y = hz; y < H; y++) {
+    const o = Math.max(-M, Math.min(M, Math.round(cam * near(y)))), r = (y - hz) * LW + M + o;
+    buf.set(ground.subarray(r, r + W), y * W);
+  }
+  // your Pokémon's shadow on the grass
+  const f = near(my), sx = mx - cam * f, rx = Math.max(2, monWidth() * (f / near(startY)) * 0.3 / P), ry = Math.max(1, rx * 0.3);
+  for (let y = Math.floor(my - ry); y <= my + ry; y++) for (let x = Math.floor(sx - rx); x <= sx + rx; x++) {
+    const q = ((x + 0.5 - sx) / rx) ** 2 + ((y + 0.5 - my) / ry) ** 2;
+    if (q < 1 && x >= 0 && x < W && y >= hz && y < H && (q < 0.6 || bay(x, y) > 0.5)) buf[y * W + x] = dim(buf[y * W + x]);
+  }
+  paintPost(-Math.round(cam * near(fy)));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const c = trees[y * LW + M + x + st];
+    if (c) buf[y * W + x] = c;
+  }
+  const t = still() ? 0 : now;
   for (const [fxr, fyr, ph] of flies) {
-    const x = Math.round(fxr * W + Math.sin(now * 0.0005 + ph) * 4), y = Math.round(hz - 6 + fyr * (fy - hz + 12) + Math.cos(now * 0.0007 + ph * 2) * 3);
-    const b = Math.sin(now * 0.0021 + ph * 3);
+    const y = Math.round(hz - 6 + fyr * (fy - hz + 12) + Math.cos(t * 0.0007 + ph * 2) * 3);
+    const x = Math.round(fxr * W + Math.sin(t * 0.0005 + ph) * 4 - cam * (y > hz ? near(y) : 0.06));
+    const b = Math.sin(t * 0.0021 + ph * 3);
     if (b < 0.1 || x < 1 || x >= W - 1 || y < 1 || y >= H - 1) continue;
     buf[y * W + x] = FLY[b > 0.5 ? 0 : 1];
     if (b > 0.75) for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) buf[(y + ay) * W + x + ax] = FLY[2];
   }
   ctx.putImageData(img, 0, 0);
+  const mon = $('xr-mon'), k = scale0 * f / near(startY);
+  mon.style.left = `${sx * P}px`;
+  mon.style.top = `${my * P}px`;
+  mon.style.scale = `${k}`;
+  mon.style.setProperty('--foot', `${(mon.dataset.foot || 0) * k}px`);
+  const shift = `${-sf * P}px`;
+  document.querySelectorAll('.xr-road').forEach(c => { c.style.marginLeft = shift; });
 }
 
-/** Your Pokémon on the path below the fork, at a whole or half scale, and each card over its road. */
+const monWidth = () => { const m = $('xr-mon'); return (m.naturalWidth || 64) * scale0 * 0.6; };
+
+/** Your Pokémon's size at the bottom of the screen, a whole or half scale, and each card over its road. */
 function place() {
   const mon = $('xr-mon');
   const [t, b, l, r] = spriteFit(mon.src);
   const pose = Math.max(mon.naturalWidth - l - r, mon.naturalHeight - t - b) || 64;
   const room = Math.min(innerWidth * 0.3, innerHeight * (tall ? 0.15 : 0.2));
-  const s = Math.max(1, Math.min(4, Math.floor((room / pose) * 2) / 2));
-  mon.style.width = `${mon.naturalWidth * s}px`;
-  mon.style.height = `${mon.naturalHeight * s}px`;
-  mon.style.setProperty('--foot', `${b * s}px`);
-  mon.style.left = `${fx * P}px`;
-  mon.style.top = `${Math.round(H * (tall ? 0.86 : 0.9)) * P}px`;
+  scale0 = Math.max(1, Math.min(4, Math.floor((room / pose) * 2) / 2));
+  fitMon();
   const cardW = Math.min(tall ? 200 : 290, (fx - d) * P * 2 - 16, d * P * 2 - 12);
   const cards = [...document.querySelectorAll('.xr-road')];
   cards.forEach((card, i) => {
@@ -223,6 +271,45 @@ function place() {
   cards.forEach(c => { c.style.minHeight = `${tallest}px`; });   // two of a kind, whichever name wraps
 }
 
+/** The sprite at full size (scaled per frame by `scale`), and its feet's gap kept for the frame to scale with it. */
+function fitMon() {
+  const mon = $('xr-mon');
+  mon.style.width = `${mon.naturalWidth * scale0}px`;
+  mon.style.height = `${mon.naturalHeight * scale0}px`;
+  mon.dataset.foot = spriteFit(mon.src)[1] * scale0;
+}
+
+/** Which road a spot is on (0 / 1), or -1 on the meadow below the fork. */
+const regionOf = (x, y) => (y >= fy - 1 ? -1 : Math.abs(x - pathAt(y, -1)[0]) <= Math.abs(x - pathAt(y, 1)[0]) ? 0 : 1);
+const meadowEdge = (y) => W * 0.42 * (0.55 + 0.45 * Math.max(0, (y - fy) / (H - fy)));
+const lowest = () => startY + Math.round(H * 0.02);
+const farthest = () => hz + Math.round((fy - hz) * 0.08);
+const joinOf = (i) => [pathAt(fy - 1.5, i ? 1 : -1)[0], fy - 1.5];
+
+/** Where a step from (x0, y0) to (x, y) ends up: on the meadow, or kept to the road it's on. */
+function constrain(x0, y0, x, y) {
+  y = Math.max(farthest(), Math.min(lowest(), y));
+  if (y >= fy - 1) {
+    const e = meadowEdge(y);
+    return [Math.max(fx - e, Math.min(fx + e, x)), y];
+  }
+  const was = regionOf(x0, y0), side = was >= 0 ? was : regionOf(x, y);
+  const [c, hw] = pathAt(y, side ? 1 : -1);
+  if (was < 0 && Math.abs(x - c) > bw) return [x, Math.max(y, fy - 1)];   // only onto a road from the path at its mouth
+  return [Math.max(c - hw - 0.5, Math.min(c + hw + 0.5, x)), y];
+}
+
+/** The way to (x, y): through the fork if it means changing road, then along it. */
+function routeTo(x, y) {
+  [x, y] = [x, Math.max(farthest(), Math.min(lowest(), y))];
+  const to = regionOf(x, y), from = regionOf(mx, my);
+  if (to >= 0) { const [c, hw] = pathAt(y, to ? 1 : -1); x = Math.max(c - hw, Math.min(c + hw, x)); }
+  else { const e = meadowEdge(y); x = Math.max(fx - e, Math.min(fx + e, x)); }
+  route = [];
+  if (from >= 0 && to !== from) route.push(joinOf(from), [joinOf(from)[0], fy + 1]);
+  if (to >= 0 && to !== from) route.push([joinOf(to)[0], fy + 1], joinOf(to));
+  route.push([x, y]);
+}
 /** What lives on a road, by its wilds' types, the most common first: Alphas and bosses fight as Neutral. */
 function typeChips(biome) {
   const counts = {};
@@ -261,77 +348,139 @@ function roadCard(id, i, pick) {
 /**
  * The fork between `ids` (CROSSROADS[slot], drawn left to right). Resolves once a road is taken and the screen is dark,
  * with the biome id and a close() that takes the scene away: call it once the journey film or the next map covers it.
+ * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), smaller the further it goes, the scene sliding
+ * past it in layers; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
-  roads = ids; picked = -1; walking = false;
+  roads = ids; picked = -1; walking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back';
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
+  const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };
   scene.className = `crossroads-scene${calm ? ' still' : ''}`;
   mon.className = 'xr-mon pixel';
-  mon.style.transform = '';
-  mon.src = spriteUrl(starter, 'back', stage, shiny);
+  mon.style.filter = '';
+  mon.src = art.back;
   mon.alt = stageName(starter, stage);
+  new Image().src = art.front;
   preloadSounds('stick', 'confirm', 'footstep');
   go.disabled = true;
   go.textContent = 'Which way?';
   scene.hidden = false;
   await new Promise(r => (mon.complete && mon.naturalWidth ? r() : (mon.onload = mon.onerror = r)));
+  mon.onload = () => fitMon();
 
   return new Promise(resolve => {
-    let raf = 0;
-    const pick = (i) => {
-      if (walking) return;
-      if (picked === i) return take();
+    let raf = 0, last = 0, stepAt = 0, held = false;
+    const choose = (i) => {
+      if (picked === i) return;
       picked = i;
       playSound('stick');
       document.querySelectorAll('.xr-road').forEach((c, k) => c.classList.toggle('on', k === i));
-      mon.style.setProperty('--lean', `${(i ? 1 : -1) * Math.round(P * 3)}px`);
-      mon.classList.add('leaning');
       go.disabled = false;
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
-      paintBase();
-      if (calm) frame(0);
+    };
+    const pick = (i) => {
+      if (walking) return;
+      if (picked === i) return take();
+      choose(i);
+      routeTo(pathAt(fy - (fy - hz) * 0.12, i ? 1 : -1)[0], fy - (fy - hz) * 0.12);
     };
     const box = $('xr-roads');
     box.replaceChildren(...roads.map((id, i) => roadCard(id, i, pick)));
     layout();
-    const loop = (now) => { frame(now); raf = requestAnimationFrame(loop); };
-    if (calm) frame(0); else raf = requestAnimationFrame(loop);
 
-    const onTap = (e) => {
-      if (e.target.closest('.xr-road, .xr-go')) return;
-      const r = canvas.getBoundingClientRect(), y = (e.clientY - r.top) / P;
-      if (y > hz - gh && y < H * 0.95) pick((e.clientX - r.left) / P < fx ? 0 : 1);
+    const face = (to) => {
+      if (to === facing) return;
+      facing = to;
+      mon.src = art[to];
     };
+    const loop = (now) => {
+      const dt = Math.min(0.05, last ? (now - last) / 1000 : 0);
+      last = now;
+      const [X, Z] = toWorld(mx, my), speed = W * (walking ? 1.1 : 0.8) * dt;
+      let gx = 0, gz = 0;
+      if (keys.size && !walking) {
+        gx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
+        gz = (keys.has('up') ? 1 : 0) - (keys.has('down') ? 1 : 0);
+        route = [];
+      } else if (route.length) {
+        const [TX, TZ] = toWorld(...route[0]);
+        const dist = Math.hypot(TX - X, TZ - Z);
+        if (dist < Math.max(0.5, speed)) { [mx, my] = constrain(mx, my, ...route[0]); route.shift(); }
+        else { gx = (TX - X) / dist; gz = (TZ - Z) / dist; }
+      }
+      const moving = gx || gz;
+      if (moving) {
+        const n = Math.hypot(gx, gz) || 1, [nx, ny] = fromWorld(X + (gx / n) * speed, Z + (gz / n) * speed);
+        const [cx, cy] = constrain(mx, my, nx, ny), r = regionOf(cx, cy);
+        if (r >= 0 && keys.size) [mx, my] = [cx + (pathAt(cy, r ? 1 : -1)[0] - cx) * Math.min(1, dt * 4), cy];   // keys steer along the road
+        else [mx, my] = [cx, cy];
+        if (gz < -0.5) face('front'); else if (gz > 0.3) face('back');
+        if (!calm && now > stepAt) { playSound('footstep'); stepAt = now + 360; }
+      }
+      mon.classList.toggle('walking', !!moving && !calm);
+      const target = Math.max(-M / 1.2, Math.min(M / 1.2, (mx - fx) * 0.35));
+      cam += (target - cam) * Math.min(1, dt * 3);
+      const r = regionOf(mx, my);
+      if (!walking && r >= 0) {
+        choose(r);
+        if (my < hz + (fy - hz) * 0.72) take();
+      }
+      if (walking) mon.style.filter = `brightness(${Math.max(0.5, near(my) / near(fy))})`;
+      frame(now);
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+
+    const aim = (e) => {
+      const rect = canvas.getBoundingClientRect(), y = (e.clientY - rect.top) / P, x = (e.clientX - rect.left) / P;
+      if (y <= hz + 1) return pick(x + cam * 0.06 < fx ? 0 : 1);   // a tap on a road's glimpse of its biome
+      routeTo(x + cam * near(y), y);
+    };
+    const onDown = (e) => {
+      if (walking || e.target.closest('.xr-road, .xr-go')) return;
+      held = true;
+      aim(e);
+    };
+    const onMove = (e) => { if (held && !walking && (e.clientY - canvas.getBoundingClientRect().top) / P > hz + 1) aim(e); };
+    const onUp = () => { held = false; };
+    const KEYS = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down' };
     const onKey = (e) => {
-      if (e.key === 'ArrowLeft') pick(0);
-      else if (e.key === 'ArrowRight') pick(1);
+      const k = KEYS[e.key];
+      if (k) keys.add(k);
       else if ((e.key === 'Enter' || e.key === ' ') && picked >= 0) take();
       else if (e.key !== 'Escape') return;
       e.preventDefault();
       e.stopPropagation();
     };
+    const onKeyUp = (e) => { if (KEYS[e.key]) keys.delete(KEYS[e.key]); };
     const onResize = () => { if (!walking) layout(); };
-    scene.addEventListener('click', onTap);
+    scene.addEventListener('pointerdown', onDown);
+    addEventListener('pointermove', onMove);
+    addEventListener('pointerup', onUp);
+    addEventListener('pointercancel', onUp);
     addEventListener('keydown', onKey, true);
+    addEventListener('keyup', onKeyUp, true);
     addEventListener('resize', onResize);
     go.onclick = (e) => { e.stopPropagation(); take(); };
 
     async function take() {
       if (walking || picked < 0) return;
       walking = true;
+      keys.clear();
       playSound('confirm');
-      scene.removeEventListener('click', onTap);
+      scene.removeEventListener('pointerdown', onDown);
+      removeEventListener('pointermove', onMove);
+      removeEventListener('pointerup', onUp);
+      removeEventListener('pointercancel', onUp);
       removeEventListener('keydown', onKey, true);
+      removeEventListener('keyup', onKeyUp, true);
       removeEventListener('resize', onResize);
       go.disabled = true;
       scene.classList.add('chosen');
+      face('back');
       // up the road: towards its gap in the trees, smaller with every step
-      const [cx] = pathAt(Math.round((hz + fy) / 2), picked ? 1 : -1);
-      mon.classList.remove('leaning');
-      mon.style.setProperty('--to-x', `${(cx - fx) * P}px`);
-      mon.style.setProperty('--to-y', `${(Math.round((hz + fy) / 2) - Math.round(H * (tall ? 0.86 : 0.9))) * P}px`);
-      mon.classList.add('away');
-      if (!calm) for (let k = 0; k < 4; k++) setTimeout(() => playSound('footstep'), 150 + k * 380);
+      const y = hz + (fy - hz) * 0.2;
+      routeTo(pathAt(y, picked ? 1 : -1)[0], y);
       await sleep(calm ? 500 : 1300);
       scene.classList.add('dark');
       await sleep(650);

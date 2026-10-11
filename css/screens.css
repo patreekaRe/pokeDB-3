@@ -3944,16 +3944,14 @@ body.scene-peek #backdrop { display: none; }
 .travel-scene.still { animation: none; }
 
 /* the crossroads after a boss (js/crossroads.js): a card over each road, your Pokémon at the fork, the button under it */
-.crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
+.crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; touch-action: none; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
 .crossroads-scene.still { animation: none; }
 .crossroads-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
-.xr-mon { position: absolute; max-width: none; translate: calc(-50% + var(--lean, 0px)) calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
-  image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); transition: translate 0.35s ease-out; pointer-events: none; }
-.xr-mon.away { translate: calc(-50% + var(--to-x)) calc(var(--foot, 0px) - 100% + var(--to-y)); scale: 0.4;
-  transition: translate 1.5s linear, scale 1.5s linear, filter 1.5s; filter: brightness(0.55) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
-  animation: xrBob 0.38s steps(2) infinite; }
+.xr-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
+  image-rendering: pixelated; pointer-events: none; }
+.xr-mon.walking { animation: xrBob 0.38s steps(2) infinite; }
 @keyframes xrBob { 50% { margin-top: -3px; } }
-.crossroads-scene.still .xr-mon { transition: none; animation: none; }
+.crossroads-scene.still .xr-mon { animation: none; }
 .xr-roads { position: absolute; inset: 0; pointer-events: none; }
 .xr-road { position: absolute; top: calc(12px + env(safe-area-inset-top)); translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 4px;
   padding: 0 6px 8px; border: 3px solid #1a1008; border-radius: 6px; background: rgba(20, 14, 34, 0.82); color: #fff4d6; cursor: pointer;

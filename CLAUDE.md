@@ -636,7 +636,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
   path splitting round a signpost (an arm a road in its biome sign's colours, `ARMS`; a new biome needs one) into two gaps in
   the treeline, each a glimpse of its biome (`sceneShot(id, { time: 'dusk' })`), a card over each road (sign, bosses as
-  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. A tap (card or road) or an arrow key picks,
+  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. Since 2026-10-11 (the user's ask: keep the scene, move like in 3D) you walk it: a tap (or hold and drag, arrows / WASD) walks your Pokémon there, in ground perspective (`toWorld()` / `fromWorld()`, smaller further up), the painting split into layers (`far`, `ground`, `trees`, the post) slid by a camera following it (`cam`); walking onto a road picks it, on up it takes it. A tap (card or road) or an arrow key picks,
   a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
   `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
   `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, `&road=savanna` the pool biome it offers, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
