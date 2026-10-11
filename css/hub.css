@@ -272,6 +272,20 @@
 }
 .pc-row:hover::before, .pc-row:focus-visible::before, .pc-row:focus::before { opacity: 1; }
 .pc-row:active { translate: 0 2px; box-shadow: 0 1px 0 #2a5a90; }
+.pc-sub { display: block; margin-top: 6px; font-size: 0.48rem; letter-spacing: 0.5px; color: #2a6a80; }
+/* signed out: the account row in gold with a cloud, glowing, so it's the one to notice */
+.pc-row.pc-cloud {
+  padding-right: 54px; border-color: #c08a10; background: linear-gradient(#fff6c8, #ffe27a); color: #3a2400; box-shadow: 0 3px 0 #8a5c00;
+  animation: pcCloud 1.6s ease-in-out infinite alternate;
+}
+.pc-row.pc-cloud::before { border-left-color: #c08a10; }
+.pc-row.pc-cloud::after {
+  content: ""; position: absolute; right: 14px; top: 50%; translate: 0 -50%; width: 30px; height: 22px;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 22'%3E%3Cpath d='M8 20a6 6 0 0 1-.6-12A8 8 0 0 1 22.6 6.4 6.8 6.8 0 0 1 23 20z' fill='%23fff' stroke='%233a78b8' stroke-width='2'/%3E%3Cpath d='M15 16V10m-3 3 3-3 3 3' fill='none' stroke='%233a78b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+.pc-row.pc-cloud .pc-sub { color: #7a4c00; }
+.pc-row.pc-cloud:active { box-shadow: 0 1px 0 #8a5c00; }
+@keyframes pcCloud { from { box-shadow: 0 3px 0 #8a5c00, 0 0 0 rgba(255, 200, 40, 0); } to { box-shadow: 0 3px 0 #8a5c00, 0 0 14px 2px rgba(255, 200, 40, 0.8); } }
 .pc-pick { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: -4px 0 12px; }
 .pc-pick-mon { width: 112px; height: 112px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0, 60, 90, 0.2)); }
 .pc-pick-name { font-size: 0.72rem; }
@@ -486,8 +500,8 @@
 @keyframes pcRise { 0% { translate: 0 220px; z-index: 1; } 55% { translate: 0 -14px; z-index: 1; } 56% { z-index: 4; } 100% { translate: 0 0; z-index: 4; } }
 @keyframes pcPaid { 40% { scale: 1.25; } }
 @keyframes pcStamp { from { scale: 2.4; opacity: 0; } }
-.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-new { animation: none !important; }
-@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-new { animation: none !important; } }
+.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-new, .pc-screen.calm .pc-cloud { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-new, .pc-cloud { animation: none !important; } }
 @keyframes pcFade { from { opacity: 0; } }
 @keyframes pcGrow { from { scale: 0.4; translate: 0 30%; opacity: 0; } }
 @keyframes pcBoot { 0% { filter: brightness(0.2) saturate(0); } 50% { filter: brightness(1.6); } 100% { filter: none; } }

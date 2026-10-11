@@ -147,12 +147,14 @@ function show(id) {
     was easy to miss), the same mark the Pokédex's keys wear. */
 const freshMark = () => { const m = el('span', 'pc-new', '!'); m.setAttribute('aria-label', 'New'); return m; };
 
-/** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new. */
+/** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new, and a
+    fifth, { cls, sub }, styles it and puts a small line under its label. */
 function menu(title, rows, line = rows[0][1]) {
   const list = el('div', 'pc-menu');
-  list.append(...rows.map(([label, line, go, fresh]) => {
-    const b = el('button', 'pc-row', label);
+  list.append(...rows.map(([label, line, go, fresh, look]) => {
+    const b = el('button', `pc-row ${look?.cls ?? ''}`.trim(), label);
     b.type = 'button';
+    if (look?.sub) b.append(el('small', 'pc-sub', look.sub));
     if (fresh) b.append(freshMark());
     const tell = () => { if (!hush) speak(line); };
     b.addEventListener('pointerenter', tell);
@@ -209,10 +211,9 @@ const PAGES = {
     const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
     if (patchUnseen() && !waiting) rows.unshift(patches);   // the "!" over the PC leads straight to it
     else rows.push(patches);
-    if (cloudConfigured()) {
-      const on = cloudRemembered();
-      rows.push([on ? 'CLOUD SAVE' : 'SIGN IN', on ? 'Your progress is kept in the cloud. Check it or sign out here.' : 'Keep your progress safe in the cloud and carry on from your phone or PC.', signIn]);
-    }
+    // signed out, the account row stands out near the top, so new players find how to make one (the user's ask, 2026-10-11)
+    if (cloudConfigured() && cloudRemembered()) rows.push(['CLOUD SAVE', 'Your progress is kept in the cloud. Check it or sign out here.', signIn]);
+    else if (cloudConfigured()) rows.splice(1, 0, ['SIGN IN / SIGN UP', 'Make a free account (Google or email) to keep your progress safe and carry on from your phone or PC.', signIn, false, { cls: 'pc-cloud', sub: 'Free account · saves your progress' }]);
     rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
     const fresh = rows.filter(r => r[3]).map(r => r[0].replace(/ \(\d+\)$/, ''));
     menu('PC', rows, fresh.length ? `New: ${fresh.join(fresh.length > 2 ? ', ' : ' and ').replace(/, ([^,]*)$/, ' and $1')}! Look for the "!".` : rows[0][1]);
