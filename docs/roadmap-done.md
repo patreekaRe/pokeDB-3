@@ -2099,3 +2099,7 @@ Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with 
 the light by the hour, and the treasure grotto a 3D cave per biome with a Poké Ball chest that wobbles and opens
 (`js/event-3d.js`, `docs/reference/events.md`). `?event=` takes `&biome=` and `&starter=` now, and `?event=treasure` walks
 into a grotto.
+
+**3D ? rooms, part d** (2026-10-11, the user's pick: a 3D ground per biome): the Berry Tree, Wishing Well, Item Ball and
+Team Rocket stand on a patch of the biome's own 3D ground (`wild()` in `js/event-3d.js`), each choice played out on its
+prop. Only Kenmatta's arena is still pixel.

@@ -2426,9 +2426,8 @@ function eventRoom(node, after) {
   box.onclick = () => { read(); if (box.hidden) showMap(); };
 }
 
-// the rooms walked in 3D (js/event-3d.js), like the Center: the indoor four, the Hot Spring, the Shrine and the treasure
-// grotto; the outdoor four keep their pixel scene
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto'];
+// the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps

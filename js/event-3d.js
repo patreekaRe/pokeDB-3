@@ -1,6 +1,8 @@
-/* event-3d.js  -  the run's indoor ? rooms as 3D rooms you walk about, like the Center (js/center-3d.js) and the Mart (the
-   user's ask, 2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club. It is only the
-   scene: eventRoom() in js/run.js keeps each room's choices (their two taps: the first says the hint, the second takes it),
+/* event-3d.js  -  the run's ? rooms and treasure grotto as 3D places you walk about, like the Center (js/center-3d.js) and
+   the Mart (the user's ask, 2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club
+   indoors; the Hot Spring and the Shrine in the open air; the treasure grotto; and the Berry Tree, Wishing Well, Item Ball
+   and Team Rocket on a patch of the biome's own ground. The open-air rooms and the grotto wear the biome they're in. It is
+   only the scene: eventRoom() in js/run.js keeps each room's choices (their two taps: the first says the hint, the second takes it),
    text box and bar, and this lays the room under them. A tap on a choice's prop, or its floating sign, walks your Pokémon
    up and presses that choice; the doormat walks it out. Each room's trainer stands in it as their sprite, blinking, and
    does what figureDoes() in js/run.js asks (nod, jump, shake their head, turn round); a choice plays out on the props
@@ -8,7 +10,7 @@
 
 import { calmFx } from './prefs.js';
 import { playSound, playCry } from './audio.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -23,7 +25,7 @@ const TOP = 8;
 const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8;
 const DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
@@ -186,7 +188,7 @@ function panel(c, w, h, x, y, z, { glow = null, live = false } = {}) {
 }
 
 /** The floor, the back wall and the side walls from their paintings, the plinth under them and the doormat out. */
-function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false }) {
+function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true }) {
   B.bg = bg;
   const e = std({ color: edge });
   const top = std({ map: texOf(floor), roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: floor.glow ? texOf(floor.glow) : null, emissiveIntensity: floor.glow ? 0.9 : 0 });
@@ -210,6 +212,7 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
     m.receiveShadow = true;
     B.group.add(m);
   }
+  if (!mat) return;
   const { step, mat: m } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#b89a78' }));
   m.userData.spot = 'exit';
   B.group.add(step, m);
@@ -303,9 +306,25 @@ async function figure(stand, f, at) {
   who.stand = stand;
   who.base = { x: tileX(at.x) + (at.dx || 0), y: at.y || 0, z: tileZ(at.ty) + (at.dz || 0) };
   who.group.position.set(who.base.x, who.base.y, who.base.z);
+  if (at.scale) who.group.scale.setScalar(at.scale);
+  if (at.feet) standOnFeet(who);
   who.group.traverse(n => { n.userData.who = stand; });
   if (at.sleep) who.sleeping = true;
   return who;
+}
+
+/** A trainer's GIF has no SPRITE_FIT line: its board is lifted so its feet, the lowest opaque row, touch the ground. */
+function standOnFeet(who) {
+  const bmp = who.sheets.front.frames[0]?.bmp;
+  if (!bmp) return;
+  const c = document.createElement('canvas');
+  c.width = bmp.width; c.height = bmp.height;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(bmp, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height).data;
+  let bottom = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] > 8) bottom = Math.floor(i / 4 / c.width);
+  who.board.geometry.translate(0, (c.height - 1 - bottom) * MON_PX, 0);
 }
 
 /** A reaction, run off the clock in tickFigures(): jump, nod, no (a head shake), turn (faces away until the room closes),
@@ -335,7 +354,7 @@ function tickFigures(now, dt) {
       if (k >= 1) who.move = null;
       else if (m.name === 'npc-jump' || m.name === 'hop') y = Math.abs(Math.sin(k * Math.PI * 2)) * (m.name === 'hop' ? 0.28 : 0.34);
       else if (m.name === 'npc-nod') sy = 1 - Math.abs(Math.sin(k * Math.PI * 2)) * 0.06;
-      else if (m.name === 'npc-no') x = Math.sin(k * Math.PI * 6) * 0.07 * (1 - k);
+      else if (m.name === 'npc-no' || m.name === 'shake') x = Math.sin(k * Math.PI * 6) * 0.07 * (1 - k);
     } else if (m) who.move = null;
     // a trainer breathes, a touch, like the pixel room's
     if (who.npc && !calm) sy *= 1 + Math.sin(now / 2800 * Math.PI * 2 + who.base.x) * 0.012;
@@ -925,7 +944,8 @@ const GARDEN = {
   bamboo: ['#c8e878', '#90c050', '#5a8a30', '#2a4418'], rock: ['#e4e4dc', '#c4c4bc', '#a0a098', '#787870'],
   water: ['#f0fffc', '#a8f0f0', '#60d0dc', '#3a9ac0', '#246a98'], edge: '#6a5a44', under: '#3a2e22',
   fence: ['#f0c888', '#c08850', '#7a4c28'], roof: ['#b87860', '#8a4c3a', '#5e2e24'], gravel: ['#ece4cc', '#dcd2b6'],
-  wood: ['#c89058', '#9a6438', '#6a4024'], trees: ['sakura', 'bonsai'], drift: ['#f86040', '#f8a040'],
+  wood: ['#c89058', '#9a6438', '#6a4024'], drift: ['#f86040', '#f8a040'],
+  grass: ['#98d868', '#7ac050', '#5aa040'], dirt: ['#d8b888', '#b89868'],
 };
 const CEDAR = {
   ...GARDEN, look: 'cedar', sky: ['#4e7e58', '#7aa088', '#b8d0c0'], far: ['#7a9a84', '#6a8a74'], leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36'],
@@ -933,7 +953,7 @@ const CEDAR = {
   bamboo: ['#b0a070', '#8a7850', '#5e5034', '#2a2418'], rock: ['#d0d4c0', '#a8ae98', '#7c846e', '#4e5444'],
   water: ['#f0fff8', '#b0f0e0', '#70d0c0', '#3a9aa0', '#20687a'], edge: '#4a4a38', under: '#24241a',
   fence: ['#f87858', '#e04030', '#a82820'], roof: ['#88d0b0', '#4aa080', '#2e7458'], gravel: ['#c8ccb8', '#b4baa4'],
-  trees: ['pine', 'bamboo'], mist: '#e8f0ec',
+  grass: ['#88b070', '#6a9a58', '#4e7e48'], dirt: ['#b0a080', '#8a7a5c'],
 };
 const ROCK = {
   ...GARDEN, look: 'rock', sky: ['#3a2a30', '#6a4040', '#b06848'], far: ['#5a4244', '#4a3638'], leaf: null,
@@ -941,14 +961,15 @@ const ROCK = {
   bamboo: ['#9a8a80', '#6a5a54', '#4a3c38', '#1a1012'], rock: ['#8a7068', '#6a5250', '#4e3c3a', '#2e2224'],
   water: ['#ffffff', '#e0f4f0', '#a8dcd8', '#78b8c0', '#4a8898'], edge: '#3a2a28', under: '#1a1012',
   fence: ['#8a7a74', '#6a5a54', '#4a3c38'], roof: ['#8a8a98', '#5e5e6a', '#3e3e48'], gravel: ['#5a4a46', '#4a3c3a'],
-  wood: ['#7a6458', '#5a463e', '#3a2a24'], trees: ['deadtree', 'boulder'], vein: ['#f8b030', '#e05820'], drift: ['#fff0a0', '#f8a830'],
+  wood: ['#7a6458', '#5a463e', '#3a2a24'], vein: ['#f8b030', '#e05820'], drift: ['#fff0a0', '#f8a830'],
+  grass: ['#5e4e4a', '#504240', '#443836'], dirt: ['#6e5e58', '#5a4a44'],
 };
 const LOOKS = {
   clearing: GARDEN, shrine: CEDAR, wastes: ROCK,
-  thornwood: { ...GARDEN, sky: ['#4a8a58', '#7ab080', '#c0e0b8'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], trees: ['fern', 'bamboo'], drift: ['#c8f078', '#78c048'] },
-  savanna: { ...GARDEN, sky: ['#f0a860', '#f8c888', '#fce8c0'], far: ['#d8b070', '#c89c5c'], leaf: ['#b8b850', '#8a9a3a', '#6a7a2c', '#4a5a20'], stone: ['#e8d0a8', '#dcc298', '#ceb488', '#bca070'], gap: '#9a7a50', moss: '#b8a858', trees: ['cactus', 'boulder'], drift: ['#fff0a0', '#f8a830'] },
-  ruins: { ...CEDAR, stone: ['#d8c8a0', '#c8b890', '#b8a880', '#a09068'], rock: ['#e0d0a8', '#c0b088', '#988860', '#6a5a40'], water: ['#f0fffc', '#a8e8f0', '#58c0d8', '#2888b0', '#145a88'], fence: ['#e8d8b0', '#c0a878', '#8a7450'], roof: ['#e0d0a8', '#b0a078', '#7a6a48'] },
-  depths: { ...ROCK, sky: ['#140c24', '#2a1a48', '#4a2a70'], stone: ['#4a4058', '#40384e', '#383046', '#30283c'], gap: '#140c1c', rock: ['#6a5a80', '#4e4064', '#382c4a', '#20182c'], vein: ['#e0a0ff', '#a050f0'], roof: ['#6a5a80', '#4e4064', '#382c4a'], drift: ['#f0d0ff', '#b070f0'] },
+  thornwood: { ...GARDEN, sky: ['#4a8a58', '#7ab080', '#c0e0b8'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], drift: ['#c8f078', '#78c048'], grass: ['#5aa048', '#3e8a38', '#2a6a2c'], dirt: ['#8a6a48', '#6a5038'] },
+  savanna: { ...GARDEN, sky: ['#f0a860', '#f8c888', '#fce8c0'], far: ['#d8b070', '#c89c5c'], leaf: ['#b8b850', '#8a9a3a', '#6a7a2c', '#4a5a20'], stone: ['#e8d0a8', '#dcc298', '#ceb488', '#bca070'], gap: '#9a7a50', moss: '#b8a858', drift: ['#fff0a0', '#f8a830'], grass: ['#e0c878', '#c8b060', '#a89048'], dirt: ['#e8d0a0', '#c8a878'] },
+  ruins: { ...CEDAR, stone: ['#d8c8a0', '#c8b890', '#b8a880', '#a09068'], rock: ['#e0d0a8', '#c0b088', '#988860', '#6a5a40'], water: ['#f0fffc', '#a8e8f0', '#58c0d8', '#2888b0', '#145a88'], fence: ['#e8d8b0', '#c0a878', '#8a7450'], roof: ['#e0d0a8', '#b0a078', '#7a6a48'], grass: ['#8ab878', '#6a9a60', '#4a7a4c'], dirt: ['#d8c8a0', '#b8a880'] },
+  depths: { ...ROCK, sky: ['#140c24', '#2a1a48', '#4a2a70'], stone: ['#4a4058', '#40384e', '#383046', '#30283c'], gap: '#140c1c', rock: ['#6a5a80', '#4e4064', '#382c4a', '#20182c'], vein: ['#e0a0ff', '#a050f0'], roof: ['#6a5a80', '#4e4064', '#382c4a'], drift: ['#f0d0ff', '#b070f0'], grass: ['#4a4060', '#3e3652', '#322a44'], dirt: ['#5a5070', '#4a4060'] },
 };
 
 /** The light outdoors by the time of day ([colour, intensity] for the sky light and the sun); the rock looks keep a dusk. */
@@ -980,6 +1001,15 @@ function clump(f, x, y, r, leaf, rnd) {
 /** A fence along the foot of a painting: bamboo poles bound with rope, or a plank fence on posts (the shrine's). */
 function paintFence(f, W, kind, L) {
   const { g, rr, lin } = f, top = wy(1.45), foot = wy(0);
+  if (kind === 'none') {   // the wild's edge: a hedge of bushes, or tumbled rocks
+    const r = seeded(17);
+    for (let x = -6; x < W + 6; x += 7 + r() * 4) {
+      if (L.leaf) clump(f, x, wy(0.55 + r() * 0.4), 6 + r() * 3, L.leaf, r);
+      else { g.fillStyle = L.rock[1 + Math.floor(r() * 2)]; g.beginPath(); g.ellipse(x, wy(0.4), 6 + r() * 4, 5 + r() * 3, 0, Math.PI, 0); g.lineTo(x + 8, foot); g.lineTo(x - 8, foot); g.fill(); }
+    }
+    g.fillStyle = L.leaf ? L.leaf[3] : L.rock[3]; g.fillRect(0, foot - 1.5, W, 1.5);
+    return;
+  }
   if (kind === 'bamboo') {
     const r = seeded(13);
     for (let x = 0; x < W; x += 3.2) {
@@ -1394,6 +1424,19 @@ function cordArt() {
   return f.c;
 }
 
+/** Roof tiles in rows, `cols` [light, mid, dark], repeated `u` x `v` times. */
+function roofTiles(cols, u, v) {
+  const tiles = document.createElement('canvas');
+  tiles.width = tiles.height = 64;
+  const tg = tiles.getContext('2d');
+  tg.fillStyle = cols[1]; tg.fillRect(0, 0, 64, 64);
+  for (let x = 0; x < 64; x += 8) { tg.fillStyle = cols[0]; tg.fillRect(x + 1, 0, 3, 64); tg.fillStyle = cols[2]; tg.fillRect(x + 6, 0, 2, 64); }
+  for (let y = 0; y < 64; y += 16) { tg.fillStyle = 'rgba(0,0,0,0.25)'; tg.fillRect(0, y, 64, 1.5); }
+  const map = new THREE.CanvasTexture(tiles);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.repeat.set(u, v);
+  return map;
+}
+
 /** The roof's curve, front eave to ridge to back eave, `t` thick: eaves swept up at the tips, a sag in the slopes. */
 function roofShape(half, rise, t) {
   const s = new THREE.Shape();
@@ -1428,15 +1471,7 @@ function shrineModel(L, glow) {
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) add(new THREE.CylinderGeometry(0.085, 0.09, hgt + 0.02, 12), dark, sx * (w / 2 + 0.05), base + hgt / 2, zc + sz * (d / 2 + 0.05));
   add(new THREE.BoxGeometry(w + 0.4, 0.16, 0.16), dark, 0, base + hgt - 0.02, zc + d / 2 + 0.06);
   // the roof: two sweeping slopes, a ridge, crossed chigi at each gable and katsuogi along the ridge
-  const tiles = document.createElement('canvas');
-  tiles.width = tiles.height = 64;
-  const tg = tiles.getContext('2d');
-  tg.fillStyle = L.roof[1]; tg.fillRect(0, 0, 64, 64);
-  for (let x = 0; x < 64; x += 8) { tg.fillStyle = L.roof[0]; tg.fillRect(x + 1, 0, 3, 64); tg.fillStyle = L.roof[2]; tg.fillRect(x + 6, 0, 2, 64); }
-  for (let y = 0; y < 64; y += 16) { tg.fillStyle = 'rgba(0,0,0,0.25)'; tg.fillRect(0, y, 64, 1.5); }
-  const roofMap = new THREE.CanvasTexture(tiles);
-  roofMap.wrapS = roofMap.wrapT = THREE.RepeatWrapping; roofMap.colorSpace = THREE.SRGBColorSpace; roofMap.repeat.set(1.6, 1.6);
-  const roofMat = std({ map: roofMap, roughness: 0.6 }), eave = std({ color: L.roof[2], roughness: 0.7 });
+  const roofMat = std({ map: roofTiles(L.roof, 1.6, 1.6), roughness: 0.6 }), eave = std({ color: L.roof[2], roughness: 0.7 });
   const geo = new THREE.ExtrudeGeometry(roofShape(1.55, 1.0, 0.13), { depth: w + 1.1, bevelEnabled: false, curveSegments: 16 });
   geo.rotateY(Math.PI / 2); geo.translate(-(w + 1.1) / 2, 0, 0);
   add(geo, [roofMat, eave], 0, base + hgt + 0.02, zc);
@@ -1792,9 +1827,444 @@ async function buildGrotto(figs, { biome }) {
   });
 }
 
-const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto };
+/* ---------- the outdoor four: a patch of the biome itself ---------- */
+
+/** Wild ground: grass with tufts and flowers in the garden, moss and fallen leaves under the cedars, ash with glowing
+    cracks among the rocks, and a worn path from where you came in up to the thing. */
+function wildFloor(L, { to = 2 } = {}) {
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f, r = seeded(43);
+  const s = L.vein ? f.shine() : null;
+  g.fillStyle = L.grass[1]; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 900; i++) { g.fillStyle = L.grass[Math.floor(r() * 3)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 3, 0.6 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
+  if (L.look !== 'rock') {
+    g.strokeStyle = L.grass[2]; g.lineWidth = 0.4;
+    for (let i = 0; i < 700; i++) { const x = r() * W, y = r() * H; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 1.4, y - 1.6 - r()); g.stroke(); }
+  }
+  // the path: worn earth from the doorstep up to the middle
+  for (let y = H + 4; y > to * T; y -= 3) {
+    const x = 5.5 * T + Math.sin(y / 23) * 3, w = 1.3 * T + Math.sin(y / 11) * 2;
+    g.fillStyle = L.dirt[0]; g.beginPath(); g.ellipse(x, y, w / 2, 3.2, 0, 0, Math.PI * 2); g.fill();
+  }
+  for (let i = 0; i < 120; i++) { const y = to * T + r() * (H - to * T), x = 5.5 * T + (r() - 0.5) * T; g.fillStyle = L.dirt[1]; g.fillRect(x, y, 0.8, 0.8); }
+  if (L.look === 'garden') for (let i = 0; i < 70; i++) {   // wildflowers
+    const x = r() * W, y = r() * H;
+    if (Math.abs(x - 5.5 * T) < T) continue;
+    g.fillStyle = ['#ffffff', '#f8e060', '#f890b0', '#b0a0f8'][i % 4]; g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f8c838'; g.fillRect(x - 0.25, y - 0.25, 0.5, 0.5);
+  }
+  if (L.look === 'cedar') for (let i = 0; i < 90; i++) { g.fillStyle = L.drift[i % 2]; g.beginPath(); g.ellipse(r() * W, r() * H, 1.3, 0.7, r() * 3, 0, Math.PI * 2); g.fill(); }
+  if (s) for (let i = 0; i < 8; i++) {
+    let x = r() * W, y = r() * H;
+    for (const ctx of [g, s]) { ctx.strokeStyle = L.vein[i % 2]; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x, y); }
+    for (let k = 0; k < 5; k++) { x += (r() - 0.5) * 10; y += (r() - 0.5) * 10; g.lineTo(x, y); s.lineTo(x, y); }
+    g.stroke(); s.stroke();
+  }
+  return f.c;
+}
+
+/** Tufts of grass (pebbles among the rocks) over the free ground, off the path. */
+function tufts(L, n, rnd) {
+  const blade = [0, 1, 2].map(i => std({ color: L.grass[i], roughness: 1 }));
+  const stone = std({ color: L.rock[2], roughness: 1, flatShading: true });
+  for (let i = 0; i < n; i++) {
+    const tx = Math.floor(rnd() * COLS), ty = Math.floor(rnd() * ROWS);
+    if (B.blocked.has(key(tx, ty)) || (Math.abs(tx - DOOR.x) < 1 && ty > 1)) continue;
+    const x = tileX(tx) + (rnd() - 0.5) * 0.7, z = tileZ(ty) + (rnd() - 0.5) * 0.7;
+    if (L.look === 'rock') { boulder(x, z, 0.06 + rnd() * 0.08, L.rock, rnd); continue; }
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
+    for (let k = 0; k < 4; k++) {
+      const m = mesh(new THREE.ConeGeometry(0.035, 0.22 + rnd() * 0.16, 4), blade[k % 3], (rnd() - 0.5) * 0.12, 0.13, (rnd() - 0.5) * 0.08, g);
+      m.rotation.set((rnd() - 0.5) * 0.5, 0, (rnd() - 0.5) * 0.6);
+      m.castShadow = false; m.raycast = () => {};
+    }
+    B.group.add(g);
+  }
+}
+
+/** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
+    the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
+function wild(L, time, { to = 2, trees = [], exit = true } = {}) {
+  const sky = graded(L.sky[0], time);
+  shell({ floor: wildFloor(L, { to }), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
+  skyDome(L, time);
+  const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
+  B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
+  B.noExit = !exit;
+  const rnd = seeded(29);
+  for (const [tx, ty, tall] of trees) tree(L, tx, ty, rnd, tall);
+  return rnd;
+}
+
+/* the Berry Tree: an Oran Berry tree over a plot of soil (eat), an empty plot beside it with a sign (plant) */
+
+function soil(x, z, w, d) {
+  const m = mesh(rbox(w, 0.16, d, 0.07), std({ color: '#6a4428', roughness: 1 }), x, 0.05, z);
+  for (let i = 0; i < 3; i++) mesh(new THREE.BoxGeometry(w - 0.3, 0.03, 0.05), std({ color: '#4a2c18', roughness: 1 }), x, 0.135, z - d / 3 + i * d / 3).raycast = () => {};
+  return m;
+}
+
+function plotSign() {
+  const f = fine(24, 16, 8), { g, rr, lin } = f;
+  rr(0, 0, 24, 16, 1.6, '#6a4428');
+  rr(1.2, 1.2, 21.6, 13.6, 1, lin(0, 0, 0, 16, ['#f0c890', '#d8a868']));
+  g.fillStyle = '#3a78d8'; g.beginPath(); g.arc(8, 9, 3.6, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#88c8ff'; g.beginPath(); g.arc(7, 7.8, 1.2, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#4a9a38'; g.beginPath(); g.ellipse(9.5, 4.6, 2.4, 1, -0.5, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#7a3a20'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(14, 8); g.lineTo(19, 8); g.moveTo(16.5, 5.5); g.lineTo(16.5, 10.5); g.stroke();
+  return f.c;
+}
+
+async function buildBerry(figs, { look: L, time }) {
+  wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [0, 3, 1.1], [10, 5, 1.2], [1, 6, 0.9]] });
+  B.shotTop = 3.4;
+  const tx = tileX(3.5), tz = tileZ(2), leaf = L.leaf || ['#c8c070', '#a8a050', '#88883c', '#5e6028'], rnd = seeded(83);
+  soil(tx, tz, 2.2, 1.8);
+  // the tree
+  mesh(new THREE.CylinderGeometry(0.13, 0.2, 1.5, 12), std({ color: L.trunk[0], roughness: 0.95 }), tx, 0.85, tz);
+  const crown = new THREE.Group();
+  crown.position.set(tx, 2.05, tz);
+  B.group.add(crown);
+  for (let i = 0; i < 9; i++) {
+    const a = i / 9 * Math.PI * 2, d = i ? 0.55 : 0, rr = 0.6 + rnd() * 0.2;
+    mesh(new THREE.IcosahedronGeometry(rr, 1), std({ color: leaf[Math.floor(rnd() * 3)], roughness: 0.9, flatShading: true }), Math.cos(a) * d, (i ? rnd() * 0.4 - 0.15 : 0.35), Math.sin(a) * d * 0.8, crown);
+  }
+  const blue = std({ color: '#3a78d8', roughness: 0.3, emissive: new THREE.Color('#1a3a80'), emissiveIntensity: 0.25 }), cap = std({ color: '#4a9a38', roughness: 0.6 });
+  const berries = [];
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI * 0.9 + i / 9 * Math.PI * 0.8 + (rnd() - 0.5) * 0.15, y = 1.55 + (i % 3) * 0.32 + rnd() * 0.12, rad = 1.05 + rnd() * 0.12;
+    const b = new THREE.Group(), home = new THREE.Vector3(tx + Math.cos(a) * rad, y, tz - Math.sin(a) * rad * 0.95);
+    mesh(new THREE.SphereGeometry(0.1, 16, 12), blue, 0, 0, 0, b);
+    mesh(new THREE.ConeGeometry(0.05, 0.08, 6), cap, 0, 0.1, 0, b);
+    b.position.copy(home);
+    B.group.add(b);
+    berries.push({ b, home });
+  }
+  // the empty plot and its sign, the sprout that comes up in it
+  const px = tileX(7.5), pz = tileZ(2.5);
+  soil(px, pz, 1.3, 1.1);
+  signboard(plotSign(), px + 0.75, pz - 0.6, 0.6, 0.4, 0.5);
+  const sprout = new THREE.Group();
+  sprout.position.set(px, 0.13, pz);
+  mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.3, 6), cap, 0, 0.15, 0, sprout);
+  for (const s of [-1, 1]) { const l = mesh(new THREE.SphereGeometry(0.09, 10, 8), std({ color: '#68c048', roughness: 0.7 }), s * 0.09, 0.3, 0, sprout); l.scale.set(1, 0.35, 0.6); l.rotation.z = s * 0.4; }
+  B.group.add(sprout);
+  for (let x = 2; x <= 4; x++) for (let y = 1; y <= 2; y++) B.blocked.add(key(x, y));
+  B.blocked.add(key(7, 2)); B.blocked.add(key(8, 2));
+  crown.traverse(o => { o.userData.spot = 0; });
+  berries.forEach(({ b }) => b.traverse(o => { o.userData.spot = 0; }));
+  sprout.traverse(o => { o.userData.spot = 1; });
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tx, 3.2, tz);
+  B.anchors[1] = new THREE.Vector3(px, 1.3, pz);
+  tufts(L, 60, rnd);
+  B.ticks.push((now) => { if (!calm && !acting) crown.rotation.z = Math.sin(now / 1700) * 0.02; });
+  B.reset = () => { berries.forEach(({ b, home }) => { b.position.copy(home); b.scale.setScalar(1); b.visible = true; }); sprout.visible = false; sprout.scale.setScalar(0.01); };
+  B.reset();
+  const low = () => [...berries].sort((a, c) => a.home.y - c.home.y);
+  B.acts = {
+    eat: { ms: 1800, start() { this.fall = low().slice(0, 3); },
+      tick(k) {
+        crown.rotation.z = Math.sin(k * Math.PI * 8) * 0.06 * (1 - k);
+        this.fall.forEach(({ b, home }, i) => {
+          const t = Math.max(0, Math.min(1, (k - i * 0.1) / 0.45)), y = home.y + (0.1 - home.y) * t * t;
+          b.position.set(home.x + (walker.x - home.x) * 0.3 * t, y, home.z + (walker.z - home.z) * 0.3 * t);
+          b.scale.setScalar(k > 0.7 ? Math.max(0.01, 1 - (k - 0.7) / 0.25) : 1);
+        });
+        walker.oy = k > 0.65 && k < 0.95 ? Math.abs(Math.sin((k - 0.65) / 0.3 * Math.PI * 2)) * 0.15 : 0;
+      }, cues: [[0, 'rustle'], [0.4, 'stick'], [0.75, 'stick']] },
+    plant: { ms: 2000, start() { this.seed = low().pop(); },
+      tick(k) {
+        const { b, home } = this.seed, t = Math.min(1, k / 0.45);
+        b.position.set(home.x + (px - home.x) * t, home.y + (0.15 - home.y) * t + Math.sin(t * Math.PI) * 1.2, home.z + (pz - home.z) * t);
+        b.scale.setScalar(k > 0.45 ? Math.max(0.01, 1 - (k - 0.45) / 0.1) : 1);
+        sprout.visible = k > 0.55;
+        sprout.scale.setScalar(Math.max(0.01, ease(Math.min(1, (k - 0.55) / 0.35)) * 2));
+      }, cues: [[0, 'rustle'], [0.45, 'stick'], [0.6, 'stat-up']] },
+  };
+}
+
+/* the Wishing Well: an old stone well under a roof, a crank and a bucket, coins glinting in the water; its left side the
+   small toss, its right the big one */
+
+function bricks(L) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 64;
+  const g = c.getContext('2d'), r = seeded(57), cols = L.look === 'garden' ? ['#e0e4ec', '#c8ccd8', '#b4bac8', '#9aa0b0'] : L.stone;
+  g.fillStyle = '#5a5a60'; g.fillRect(0, 0, 256, 64);
+  for (let y = 0; y < 64; y += 16) for (let x = (y / 16) % 2 ? -16 : 0; x < 256; x += 32) { g.fillStyle = cols[Math.floor(r() * cols.length)]; g.beginPath(); g.roundRect(x + 1.5, y + 1.5, 29, 13, 3); g.fill(); g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(x + 4, y + 3, 18, 2); }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(2, 1);
+  return t;
+}
+
+async function buildWell(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.2], [10, 6, 1]] });
+  B.shotTop = 3.2;
+  const cx = tileX(5), cz = tileZ(2), wood = std({ color: L.wood[1], roughness: 0.8 }), dark = std({ color: L.wood[2], roughness: 0.8 });
+  const well = new THREE.Group();
+  B.group.add(well);
+  const brick = std({ map: bricks(L), roughness: 0.9 }), inner = std({ color: '#2a2a30', roughness: 1, side: THREE.BackSide });
+  mesh(new THREE.CylinderGeometry(0.9, 0.95, 0.85, 32, 1, true), brick, cx, 0.425, cz, well);
+  mesh(new THREE.CylinderGeometry(0.7, 0.7, 0.85, 32, 1, true), inner, cx, 0.425, cz, well);
+  const rim = mesh(new THREE.RingGeometry(0.68, 0.94, 32), std({ color: L.look === 'garden' ? '#c8ccd8' : L.stone[0], roughness: 0.85 }), cx, 0.86, cz, well);
+  rim.rotation.x = -Math.PI / 2;
+  const map = waterTex(['#ffffff', '#88b8f0', '#4a7ab8', '#1e3c70', '#0c1a38']);
+  const water = mesh(new THREE.CircleGeometry(0.7, 32), std({ map, roughness: 0.15, emissive: new THREE.Color('#2a4a90'), emissiveIntensity: 0.25 }), cx, 0.5, cz, well);
+  water.rotation.x = -Math.PI / 2;
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 });
+  for (let i = 0; i < 9; i++) { const a = rnd() * 6.3, d = rnd() * 0.5; mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.01, 12), gold, cx + Math.cos(a) * d, 0.505, cz + Math.sin(a) * d).raycast = () => {}; }
+  for (const s of [-1, 1]) box(0.12, 2.2, 0.12, wood, cx + s * 0.98, 1.1, cz, well);
+  const roof = L.look === 'garden' ? ['#f87858', '#e04030', '#a82820'] : L.roof;
+  const tiled = std({ map: roofTiles(roof, 3, 1), roughness: 0.6 }), edge = std({ color: roof[2], roughness: 0.6 });
+  for (const s of [-1, 1]) { const r = box(1.7, 0.08, 0.95, [edge, edge, tiled, dark, edge, edge], cx, 2.3, cz + s * 0.4, well); r.rotation.x = s * 0.72; }
+  box(1.8, 0.12, 0.14, edge, cx, 2.62, cz, well);
+  const axle = mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.9, 12), wood, cx, 1.75, cz, well);
+  axle.rotation.z = Math.PI / 2;
+  const crank = new THREE.Group();
+  crank.position.set(cx + 1.05, 1.75, cz);
+  well.add(crank);
+  box(0.05, 0.3, 0.05, dark, 0, -0.12, 0, crank);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.2, 8), dark, 0.08, -0.26, 0, crank).rotation.z = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.55, 6), std({ color: '#c8a868' }), cx, 1.45, cz, well);
+  const bucket = mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.22, 16), wood, cx, 1.06, cz, well);
+  for (const y of [-0.06, 0.06]) mesh(new THREE.CylinderGeometry(0.155, 0.155, 0.02, 16), std({ color: '#505058', metalness: 0.5 }), 0, y, 0, bucket);
+  for (let x = 4; x <= 6; x++) for (let y = 1; y <= 2; y++) B.blocked.add(key(x, y));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 6, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx - 0.75, 3.0, cz);
+  B.anchors[1] = new THREE.Vector3(cx + 0.75, 3.0, cz);
+  well.userData.spotAt = (p) => (p.x < cx ? 0 : 1);   // its two halves are the two tosses
+  tufts(L, 50, rnd);
+  B.ticks.push((now) => { if (!calm) map.offset.set(now / 50000, 0); });
+  const coin = mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.02, 16), gold, 0, 0, 0);
+  const nugget = mesh(new THREE.IcosahedronGeometry(0.12, 0), std({ color: '#f8c830', metalness: 0.9, roughness: 0.25, flatShading: true }), 0, 0, 0);
+  const rings = ripples(3, '#c8e0ff');
+  const drops = Array.from({ length: 8 }, () => sprite(sparkArt('#c8e8ff'), 0.16));
+  const wishes = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8d0' : '#ffe080'), 0.26));
+  const column = mesh(new THREE.CylinderGeometry(0.55, 0.65, 4, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#fff4c0', transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending }), cx, 2.5, cz);
+  column.castShadow = false; column.raycast = () => {};
+  B.reset = () => { coin.visible = nugget.visible = false; column.material.opacity = 0; };
+  B.reset();
+  B.acts = {
+    toss: { ms: (o) => (o?.win ? 2800 : 1600), cues: (o) => [[0.05, 'stick'], [o?.win ? 0.25 : 0.4, 'splash'], ...(o?.win ? [[0.4, 'spirit'], [0.55, 'stat-up']] : [])],
+      start(o) { this.o = o || {}; this.ball = this.o.big ? nugget : coin; this.from = new THREE.Vector3(walker.x, 0.7, walker.z); this.land = this.o.win ? 0.25 : 0.4; this.splash = burst(drops, new THREE.Vector3(cx, 0.55, cz), { spread: 0.3, rise: 0.6 }); this.rise = burst(wishes, new THREE.Vector3(cx, 0.6, cz), { spread: 0.4, rise: 2.4 }); },
+      tick(k) {
+        const t = Math.min(1, k / this.land), b = this.ball;
+        b.visible = t < 1;
+        b.position.lerpVectors(this.from, new THREE.Vector3(cx, 0.5, cz), t);
+        b.position.y += Math.sin(t * Math.PI) * 1.3;
+        b.rotation.set(t * 9, 0, t * 4);
+        crank.rotation.x = k * 4;
+        const u = (k - this.land) / (1 - this.land);
+        rings.forEach((m, i) => ringAt(m, cx, 0.51, cz, (u - i * 0.12) / 0.5, 0.65));
+        if (u > 0) this.splash(Math.min(1, u * 2));
+        if (this.o.win) {
+          const w = Math.max(0, (k - 0.35) / 0.65);
+          column.material.opacity = Math.sin(w * Math.PI) * 0.35;
+          water.material.emissiveIntensity = 0.25 + Math.sin(w * Math.PI) * 1.5;
+          if (w > 0) this.rise(w);
+        }
+      } },
+  };
+}
+
+/* the Item Ball: a Poké Ball lying in a patch of the games' tall grass (or a Voltorb...) */
+
+function tallGrass(cx, cz, w, d, L, rnd, clear) {
+  const cols = L.look === 'rock' ? ['#a8a058', '#88883c', '#5e6028'] : [L.grass[0], L.grass[1], L.grass[2]];
+  const mats = cols.map(c => std({ color: c, roughness: 0.9, flatShading: true }));
+  const clumps = [];
+  for (let x = -w / 2 + 0.15; x <= w / 2; x += 0.3) for (let z = -d / 2 + 0.15; z <= d / 2; z += 0.3) {
+    const g = new THREE.Group();
+    g.position.set(cx + x + (rnd() - 0.5) * 0.12, 0, cz + z + (rnd() - 0.5) * 0.12);
+    if (Math.hypot(g.position.x - clear.x, g.position.z - clear.z) < 0.32) continue;   // round the ball, so it shows
+    for (let k = 0; k < 4; k++) {
+      const h = 0.36 + rnd() * 0.22, m = mesh(new THREE.ConeGeometry(0.07, h, 4), mats[k % 3], (rnd() - 0.5) * 0.15, h / 2, (rnd() - 0.5) * 0.12, g);
+      m.rotation.set((rnd() - 0.5) * 0.35, rnd() * 3, (rnd() - 0.5) * 0.45);
+      m.raycast = () => {};
+    }
+    B.group.add(g);
+    clumps.push({ g, phase: rnd() * 6, near: Math.hypot(x, z) });
+  }
+  return clumps;
+}
+
+function voltorbEyes(top) {
+  const eyes = new THREE.Group();
+  const white = std({ color: '#ffffff', roughness: 0.4 }), black = std({ color: '#101010', roughness: 0.4 });
+  for (const s of [-1, 1]) {
+    const e = mesh(new THREE.SphereGeometry(0.045, 12, 8), white, s * 0.06, 0.07, 0.15, eyes);
+    e.scale.set(1.2, 0.8, 0.4);
+    mesh(new THREE.SphereGeometry(0.022, 8, 6), black, s * 0.055, 0.07, 0.17, eyes);
+    const brow = mesh(new THREE.BoxGeometry(0.08, 0.014, 0.01), black, s * 0.06, 0.115, 0.165, eyes);
+    brow.rotation.z = s * 0.45;
+  }
+  top.add(eyes);
+  return eyes;
+}
+
+async function buildItemball(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [2, 0, 1.1], [8, 0, 1.2], [0, 4, 1], [10, 3, 1.1], [10, 6, 0.9]] });
+  B.shotTop = 2.6;
+  const cx = tileX(5), cz = tileZ(2.4);
+  const clumps = tallGrass(cx, cz, 2.6, 1.6, L, rnd, { x: cx, z: cz + 0.6 });
+  // the ball: red top on a hinge, white bottom, the black band and its button
+  const ball = new THREE.Group();
+  ball.position.set(cx, 0.17, cz + 0.6);
+  B.group.add(ball);
+  const red = std({ color: '#e83828', roughness: 0.3, emissive: new THREE.Color('#ffffff'), emissiveIntensity: 0 }), white = std({ color: '#f4f4f8', roughness: 0.3 }), black = std({ color: '#202026', roughness: 0.4 });
+  mesh(new THREE.SphereGeometry(0.17, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), white, 0, 0, 0, ball);
+  const hinge = new THREE.Group();
+  hinge.position.set(0, 0, -0.17);
+  ball.add(hinge);
+  const top = new THREE.Group();
+  top.position.set(0, 0, 0.17);
+  hinge.add(top);
+  mesh(new THREE.SphereGeometry(0.17, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), red, 0, 0, 0, top);
+  mesh(new THREE.CircleGeometry(0.17, 24), std({ color: '#f4e8c8', side: THREE.DoubleSide }), 0, 0.001, 0, top).rotation.x = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(0.173, 0.173, 0.03, 24), black, 0, 0, 0, ball);
+  const ring = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.03, 20), black, 0, 0, 0.165, ball);
+  ring.rotation.x = Math.PI / 2;
+  const button = mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.035, 20), white, 0, 0, 0.175, ball);
+  button.rotation.x = Math.PI / 2;
+  const eyes = voltorbEyes(top);
+  ball.traverse(o => { o.userData.spot = 0; });
+  const scorch = mesh(new THREE.CircleGeometry(0.7, 28), new THREE.MeshBasicMaterial({ color: '#1a1410', transparent: true, opacity: 0, depthWrite: false }), cx, 0.012, cz + 0.6);
+  scorch.rotation.x = -Math.PI / 2; scorch.raycast = () => {};
+  B.blocked.add(key(5, 2));
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx, 1.15, cz + 0.6);
+  tufts(L, 50, rnd);
+  let rustle = 0;
+  B.ticks.push((now) => {
+    if (calm) return;
+    const walking = walker.path.length && Math.abs(walker.x - cx) < 1.6 && walker.z < cz + 1.4;
+    for (const c of clumps) c.g.rotation.z = Math.sin(now / 900 + c.phase) * 0.05 + (walking || rustle ? Math.sin(now / 70 + c.phase) * 0.12 * (rustle || 0.6) * Math.max(0, 1 - c.near / 1.6) : 0);
+  });
+  const flash = sprite(sparkArt('#ffffff'), 1);
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffffff'), 0.22));
+  const smoke = (() => { const { c, g } = fine(16, 16, 8), grd = g.createRadialGradient(8, 8, 0, 8, 8, 8); grd.addColorStop(0, 'rgba(90,80,80,0.9)'); grd.addColorStop(1, 'rgba(90,80,80,0)'); g.fillStyle = grd; g.fillRect(0, 0, 16, 16); return c; })();
+  const puffs = Array.from({ length: 10 }, () => sprite(smoke, 0.8));
+  B.reset = () => { ball.visible = true; ball.rotation.set(0, 0, 0); hinge.rotation.x = 0; eyes.visible = false; red.emissiveIntensity = 0; scorch.material.opacity = 0; flash.visible = false; };
+  B.reset();
+  B.acts = {
+    pickup: { ms: (o) => (o?.trap ? 2600 : 1800), cues: (o) => (o?.trap ? [[0.05, 'rustle'], [0.6, 'hit']] : [[0.05, 'rustle'], [0.45, 'ball-open']]),
+      start(o) { this.trap = !!o?.trap; this.pop = burst(sparks, new THREE.Vector3(cx, 0.4, cz + 0.6), { spread: 0.4, rise: 1.2 }); this.boom = burst(puffs, new THREE.Vector3(cx, 0.3, cz + 0.6), { spread: 0.9, rise: 1.4 }); },
+      tick(k) {
+        rustle = k < 0.3 ? 1 : 0;
+        walker.lunge = Math.sin(Math.min(1, k / 0.3) * Math.PI) * 0.3;
+        const wob = k > 0.12 && k < 0.42 ? Math.sin((k - 0.12) / 0.3 * Math.PI * 6) * 0.35 * Math.sin((k - 0.12) / 0.3 * Math.PI) : 0;
+        ball.rotation.z = wob;
+        if (!this.trap) {
+          const u = Math.max(0, (k - 0.45) / 0.2);
+          hinge.rotation.x = -1.9 * ease(Math.min(1, u));
+          flash.visible = u > 0 && u < 1.5;
+          flash.position.set(cx, 0.45, cz + 0.65); flash.scale.setScalar(0.4 + u * 1.2); flash.material.opacity = Math.max(0, 1 - u / 1.5);
+          if (u > 0) this.pop(Math.min(1, (k - 0.45) / 0.55));
+          return;
+        }
+        // a Voltorb: it opens its eyes, flashes faster and faster, and blows up
+        eyes.visible = k > 0.35;
+        if (k > 0.35) ball.rotation.y = Math.sin(k * 60) * 0.06;
+        red.emissiveIntensity = k > 0.35 && k < 0.6 ? (Math.sin((k - 0.35) * (40 + k * 120)) > 0 ? 0.9 : 0) : 0;
+        if (k >= 0.6) {
+          const u = (k - 0.6) / 0.4;
+          ball.visible = false;
+          flash.visible = u < 0.5;
+          flash.position.set(cx, 0.4, cz + 0.65); flash.scale.setScalar(1 + u * 5); flash.material.opacity = 1 - u * 2;
+          this.boom(u);
+          scorch.material.opacity = Math.min(0.55, u * 2);
+          walker.oz = Math.sin(Math.min(1, u * 2) * Math.PI / 2) * 0.5;
+          walker.oy = Math.sin(Math.min(1, u * 2.5) * Math.PI) * 0.3;
+        }
+      } },
+  };
+}
+
+/* Team Rocket: a black-and-red roadblock with the R board, the grunt and their Alpha standing at it, a bush to run
+   through; no way back the way you came */
+
+function stripes() {
+  const c = document.createElement('canvas');
+  c.width = 128; c.height = 16;
+  const g = c.getContext('2d');
+  g.fillStyle = '#202028'; g.fillRect(0, 0, 128, 16);
+  g.fillStyle = '#e03830';
+  for (let x = -16; x < 140; x += 16) { g.beginPath(); g.moveTo(x, 16); g.lineTo(x + 8, 0); g.lineTo(x + 16, 0); g.lineTo(x + 8, 16); g.fill(); }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(3, 1);
+  return t;
+}
+
+function rArt() {
+  const f = fine(24, 24, 10), { g, rr } = f;
+  rr(0, 0, 24, 24, 2, '#101014');
+  rr(1.5, 1.5, 21, 21, 1.5, '#f4f4f8');
+  g.fillStyle = '#e03830'; g.font = '900 19px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('R', 12, 13);
+  return f.c;
+}
+
+async function buildRocket(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 2, trees: [[0, 0, 1.4], [10, 0, 1.3], [0, 2, 1.1], [10, 2, 1.2], [0, 5, 1], [1, 6, 0.9]], exit: false });
+  B.shotTop = 3.0;
+  const z = tileZ(1), board = std({ map: stripes(), roughness: 0.6 }), legs = std({ color: '#303038', roughness: 0.6 });
+  for (const y of [0.5, 0.95]) box(5.2, 0.28, 0.08, [legs, legs, legs, legs, board, board], 0, y, z);
+  for (const x of [-2.4, 0, 2.4]) for (const s of [-1, 1]) { const l = box(0.08, 1.25, 0.08, legs, x, 0.6, z + s * 0.12); l.rotation.x = s * 0.22; }
+  box(0.1, 1.9, 0.1, legs, 1.3, 0.95, z - 0.12);
+  const r = panel(rArt(), 0.8, 0.8, 1.3, 1.75, z - 0.05);
+  r.castShadow = true;
+  for (let x = 2; x <= 8; x++) B.blocked.add(key(x, 1));
+  // the bush you'd run through
+  const leaf = L.leaf || ['#b8b060', '#88883c', '#5e6028', '#2a2a10'];
+  const bush = new THREE.Group();
+  bush.position.set(tileX(7.4), 0, tileZ(3.4));
+  B.group.add(bush);
+  for (let i = 0; i < 7; i++) {
+    const a = i / 7 * Math.PI * 2, d = i ? 0.38 : 0;
+    mesh(new THREE.IcosahedronGeometry(0.42 + rnd() * 0.15, 1), std({ color: leaf[Math.floor(rnd() * 3)], roughness: 0.9, flatShading: true }), Math.cos(a) * d, 0.45 + (i ? rnd() * 0.25 : 0.35), Math.sin(a) * d * 0.7, bush);
+  }
+  bush.traverse(o => { o.userData.spot = 2; });
+  B.blocked.add(key(7, 3));
+  B.who.trainer = await figure('trainer', figs.trainer ?? { src: 'assets/trainers/grunt-m.gif' }, { x: 3, ty: 2, dz: -0.2, scale: 0.94, feet: true });
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/rattata-front.gif', alpha: true }, { x: 5, ty: 2, dz: -0.2, scale: (figs.mon ?? {}).alpha === false ? 1 : 1.35 });
+  B.who.trainer.group.traverse(o => { o.userData.spot = 0; });
+  B.who.mon.group.traverse(o => { o.userData.spot = 1; });
+  B.blocked.add(key(3, 2)); B.blocked.add(key(5, 2));
+  B.spots = [{ step: { x: 3, y: 4 } }, { step: { x: 5, y: 4 } }, { step: { x: 7, y: 4 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(3), 2.35, tileZ(2) - 0.2);
+  B.anchors[1] = new THREE.Vector3(tileX(5), 2.15, tileZ(2) - 0.2);
+  B.anchors[2] = new THREE.Vector3(tileX(7.4), 1.6, tileZ(3.4));
+  tufts(L, 50, rnd);
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 });
+  const coins = [0, 1, 2].map(() => { const c = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.02, 14), gold, 0, 0, 0); c.visible = false; c.raycast = () => {}; return c; });
+  const leaves = Array.from({ length: 10 }, (_, i) => sprite(heartArt(leaf[i % 3]), 0.16));
+  B.acts = {
+    pay: { ms: 1400, start() { this.from = new THREE.Vector3(walker.x, 0.7, walker.z); },
+      tick(k) {
+        const hand = new THREE.Vector3(tileX(3) + 0.15, 1.05, tileZ(2) - 0.1);
+        coins.forEach((c, i) => {
+          const t = Math.max(0, Math.min(1, (k - i * 0.15) / 0.5));
+          c.visible = t > 0 && t < 1;
+          c.position.lerpVectors(this.from, hand, t); c.position.y += Math.sin(t * Math.PI) * 0.8; c.rotation.x = t * 12;
+        });
+      }, cues: [[0.4, 'fx-coin'], [0.55, 'fx-coin'], [0.7, 'fx-coin']] },
+    run: { ms: 1500, start() { this.fly = burst(leaves, new THREE.Vector3(bush.position.x, 0.8, bush.position.z), { spread: 0.6, rise: 0.9 }); },
+      tick(k) {
+        const t = ease(Math.min(1, k / 0.4));
+        walker.ox = (bush.position.x - walker.x) * t * 0.9; walker.oz = (bush.position.z - walker.z) * t * 0.9;
+        walker.oy = Math.sin(t * Math.PI) * 0.2;
+        const s = k > 0.3 ? Math.sin((k - 0.3) * 40) * 0.12 * (1 - k) : 0;
+        bush.rotation.z = s; bush.scale.set(1 + Math.abs(s) * 0.5, 1 - Math.abs(s) * 0.4, 1);
+        if (k > 0.3) this.fly((k - 0.3) / 0.7);
+      }, cues: [[0.3, 'rustle'], [0.55, 'rustle']] },
+  };
+}
+
+const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -1839,6 +2309,7 @@ function walk(dt) {
 
 /** Up to a choice's prop, or to the door to leave; `aim` is acted on as it arrives. */
 function goTo(kind) {
+  if (kind === 'exit' && R.noExit) return;   // Team Rocket's: no way back past them
   const target = kind === 'exit' ? DOOR : R.spots[kind]?.step;
   if (!target) return;
   aim = kind;
@@ -1873,8 +2344,9 @@ function onTap(e) {
   const first = hits[0]?.object;
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   let o = first;
-  while (o && o.userData.spot === undefined && !o.userData.who) o = o.parent;
-  if (o?.userData.spot !== undefined && (o.userData.spot === 'exit' || R.spots[o.userData.spot])) { playSound('select'); return goTo(o.userData.spot); }
+  while (o && o.userData.spot === undefined && !o.userData.spotAt && !o.userData.who) o = o.parent;
+  const spot = o?.userData.spotAt ? o.userData.spotAt(hits[0].point) : o?.userData.spot;   // the well: a toss a half
+  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) { playSound('select'); return goTo(spot); }
   if (o?.userData.who) {
     const who = R.who[o.userData.who];
     if (!who.npc) { playCry(who.id); does(who, 'hop'); return; }
@@ -2070,7 +2542,7 @@ function room(kind, figs, at = {}) {
 
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
 export function preloadEvent(kind, at = {}) {
-  if (BUILD[kind]) room(kind, {}, at).catch(() => {});
+  if (BUILD[kind] && kind !== 'rocket') room(kind, {}, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha
 }
 
 /** Lays the 3D room `o.kind` under the event room eventRoom() just showed. `o`: { kind, run, node (to tell coming back from a
@@ -2098,6 +2570,7 @@ export async function mountEvent(o) {
   }
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
   if (!back) {
+    R.reset?.();   // a berry eaten, a sprout planted, a ball picked up last time: whole again
     if (R.scroll) { R.scroll.ink = 0.12; const m = R.scroll.mesh.material; m.map.dispose(); m.map = texOf(scrollArt(0.12)); m.needsUpdate = true; }
   }
   if (mon?.src !== o.mate.src) {
@@ -2128,20 +2601,22 @@ export async function mountEvent(o) {
 
 const SHORT = { 'Forget a move': 'Forget one', 'Trade a move': 'Trade', 'Accept their gift': 'Gift', 'Soak: full HP': 'Soak' };
 /** A word or two a sign this close in, the price kept (the hint says the rest). */
-const oneWord = (text) => SHORT[text] ?? text;
+const oneWord = (text) => SHORT[text] ?? text.replace(/^(Plant) \+\d+ max HP$/, '$1');
 
 /** What eventRoom()'s choices ask of the room. */
 const controls = {
-  /** Play a choice out on the props; resolves once it has (at once under reduced motion, its sounds still played). */
-  act(name) {
+  /** Play a choice out on the props (`opts` how it goes: a big toss, a win, a Voltorb); resolves once it has (at once under
+      reduced motion, its sounds still played). */
+  act(name, opts) {
     const act = R?.acts[name];
     if (!act || !alive()) return Promise.resolve();
     walker.path = []; aim = null;
     walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-    if (calm) { for (const [, s] of act.cues || []) playSound(s); act.start?.call(act); act.tick?.call(act, 1); still(); return Promise.resolve(); }
+    const of = (v) => (typeof v === 'function' ? v(opts) : v), cues = of(act.cues) || [];   // a toss's or a pickup's depend on how it goes
+    if (calm) { for (const [, s] of cues) playSound(s); act.start?.call(act, opts); act.tick?.call(act, 1); still(); return Promise.resolve(); }
     return new Promise(done => {
-      act.start?.call(act);
-      acting = { name, act, from: performance.now(), ms: act.ms, cues: (act.cues || []).map(c => [...c]), done };
+      act.start?.call(act, opts);
+      acting = { name, act, from: performance.now(), ms: of(act.ms), cues: cues.map(c => [...c]), done };
     });
   },
   /** Someone in the room reacts (figureDoes()). */

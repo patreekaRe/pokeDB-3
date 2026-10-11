@@ -168,3 +168,21 @@ Poké Ball chest (`ballChest()`: a white box, the ball's band and button, a dome
 classes and wobbles while `.shaking`, then the lid swings up and the light pours out on `.opened`; `chest3dSpot()` in
 `js/run.js` floats the relics up from it. Rooms with a look are built per biome and hour (`PER_BIOME`). `?event=hot-spring`
 (`&biome=wastes`, `&time=night`), `?event=treasure`.
+
+**The outdoor four** (part d, 2026-10-11, the user's pick: a 3D ground per biome over a 3D prop on the painted scene): the
+Berry Tree, Wishing Well, Item Ball and Team Rocket stand on a patch of the biome itself, `wild()`: the same scenery and
+sky as the open-air rooms with no fence (`paintFence(…, 'none')`: a hedge of bushes, or tumbled rocks), wild ground
+(`wildFloor()`: grass and wildflowers, moss and fallen leaves, or ash with glowing cracks, a worn path up from the door;
+a look's `grass` / `dirt`), the look's trees about and grass tufts or pebbles (`tufts()`). `buildBerry()`: an Oran Berry
+tree over a soil plot (eat: three berries drop and are eaten) and an empty plot with a sign (plant: a berry arcs into it
+and a sprout comes up). `buildWell()`: the stone well under a tiled roof, crank, rope and bucket, coins in the water; a tap
+on its left half is the first toss (or Fish), its right the big one (`userData.spotAt`, read by `onTap()`); act `toss`
+(`{ big, win }`: a coin or a Nugget arcs in, splashes, a win lights the water and sends a column of light and sparkles up).
+`buildItemball()`: the Poké Ball at the front of a patch of tall grass that rustles as you wade in; act `pickup`
+(`{ trap }`: it wobbles and pops open, or opens a Voltorb's eyes, flashes and blows up over a scorch, knocking your Pokémon
+back). `buildRocket()`: a striped roadblock with the R board, the grunt (their GIF, lifted onto its feet by
+`standOnFeet()`) and their Alpha (1.35x) standing at it, a bush to run through; no doormat (`exit: false`, `noExit`: there
+is no Leave), acts `pay` (coins into the grunt's hand) and `run` (into the bush, which shakes), the grunt's hop and shake
+from `figureDoes()`. An act's `ms` and `cues` can be functions of its `opts` (`playOut(act, opts)`), and a room's `reset()`
+puts it back whole on a new visit (berries, the sprout, the ball). Team Rocket's room is built per grunt and Alpha, so it
+is not built ahead.
