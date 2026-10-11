@@ -5277,6 +5277,19 @@ function fanScene() {
   life.confetti = Array.from({ length: Math.round(W / 3) }, (_, i) => ({ x: rand() * W, y: -rand() * H * 0.6, vx: (rand() - 0.5) * 0.6, vy: 0.8 + rand() * 1.2, c: i % S.flags.length }));
 }
 
+/** A string of little flags in the scene's `flags` colours, sagging between pins, along row `y0`. */
+function bunting(y0) {
+  const span = 34, flags = S.flags;
+  for (let x = 0; x < W; x++) {
+    const sag = Math.round(4 * Math.sin(Math.PI * (((x + 9) % span) / span)));
+    solid(x, y0 + sag, S.lamp[0]);
+    if ((x + 9) % 5 === 1) {
+      const c = flags[Math.floor((x + 9) / 5) % flags.length];
+      for (let k = 1; k <= 4; k++) for (let w = 0; w <= Math.max(0, 2 - Math.floor(k / 2)); w++) solid(x + w - (k < 3 ? 1 : 0), y0 + sag + k, c);
+    }
+  }
+}
+
 function fanWall() {
   const rail = roomWall({ stripes: 4 });
   bunting(Math.max(4, Math.round(horizon * 0.06)));
@@ -5492,7 +5505,7 @@ function kombatBanner(cx, top, len) {
 /* The medallion's Dragonite, roaring to the left like the MK dragon with its wing raised: antennae, open jaws, a reaching
    claw, the striped belly, its tail hooking up the ring. # body, w wing, = belly, e the eye (drawKombat lights it). Two
    sizes, each drawn at a whole number of pixels a cell (medallionFit), since squeezing one grid to fit blurred it. */
-const DRAGONITE = [
+export const DRAGONITE = [
   '................................',
   '................................',
   '................................',

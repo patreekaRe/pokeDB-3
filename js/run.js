@@ -576,7 +576,7 @@ function peekRoom(id) {
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   const node = nodes.find(n => n.event?.id === id) ?? nodes.find(n => n.type === 'event') ?? nodes[0];   // a rolled one keeps its dice (Team Rocket's team)
-  if (node.event?.id !== id) { node.type = 'event'; node.event = { id }; }
+  if (node.event?.id !== id) { node.type = 'event'; rollEvent(node, EVENTS_BY_ID[id]); }
   enterNode(node);
 }
 
@@ -743,6 +743,7 @@ function showMap() {
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
   warmCenter3d();
   warmMart3d();
+  warmEvent3d();
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -2017,6 +2018,15 @@ function warmCenter3d() {
 
 /** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
     in shows the room at once (the user saw a blank blue screen while it loaded). */
+/** The map's indoor ? rooms built in 3D while it's up, so walking into one is quick. */
+function warmEvent3d() {
+  if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
+  const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => EVENT_SCENES[n.event?.id]).filter(k => EVENT_3D.includes(k)))];
+  if (!kinds.length) return;
+  warmEvent3d.map = run.map;
+  setTimeout(() => import('./event-3d.js').then(m => { event3dMod = m; kinds.forEach(m.preloadEvent); }).catch(() => { warmEvent3d.map = null; }), 1800);
+}
+
 function warmMart3d() {
   const shops = Object.values(run.map?.byId ?? {}).filter(n => n.type === 'shop' && n.stock);
   if (warmMart3d.map === run.map || !shops.length) return;
@@ -2321,35 +2331,38 @@ function rollEvents() {
   for (const node of Object.values(run.map.byId)) {
     if (node.type !== 'event') continue;
     if (!bag.length) bag = shuffled(EVENTS);
-    const event = bag.pop();
-    node.event = { id: event.id };
-    if (event.trapChance) {
-      const roll = random();
-      node.event.trap = roll < event.trapChance;
-      node.event.relic = !node.event.trap && roll < event.trapChance + event.relicChance;   // else an item
-    }
-    if (event.team) {
-      const team = event.team[mainBiome().id];
-      node.event.enemyId = pickOne(team);
-      node.event.grunt = pickOne(event.grunts);
-    }
-    if (event.upgrade) {
-      // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
-      const pool = poolForType(run.starter.type);
-      node.event.offers = Object.fromEntries(Object.values(event.upgrade).map(rarity =>
-        [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
-    }
-    if (event.tosses) {
-      node.event.luck = random();   // one roll for every toss, so the bigger toss wins whenever the small one would
-      node.event.relics = relicChoices(run).map(r => r.id);
-    }
-    if (event.offering) {
-      const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type));
-      node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
-    }
+    rollEvent(node, bag.pop());
   }
 }
 
+/** An event's dice, rolled into its node as the biome starts (a refresh can't reroll them). */
+function rollEvent(node, event) {
+  node.event = { id: event.id };
+  if (event.trapChance) {
+    const roll = random();
+    node.event.trap = roll < event.trapChance;
+    node.event.relic = !node.event.trap && roll < event.trapChance + event.relicChance;   // else an item
+  }
+  if (event.team) {
+    const team = event.team[mainBiome().id];
+    node.event.enemyId = pickOne(team);
+    node.event.grunt = pickOne(event.grunts);
+  }
+  if (event.upgrade) {
+    // every card of each rarity in a shuffled order: the trade takes the first one you don't already hold MAX_COPIES of
+    const pool = poolForType(run.starter.type);
+    node.event.offers = Object.fromEntries(Object.values(event.upgrade).map(rarity =>
+      [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
+  }
+  if (event.tosses) {
+    node.event.luck = random();   // one roll for every toss, so the bigger toss wins whenever the small one would
+    node.event.relics = relicChoices(run).map(r => r.id);
+  }
+  if (event.offering) {
+    const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type));
+    node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
+  }
+}
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
 const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(id => CARDS_BY_ID[id])
@@ -2385,11 +2398,37 @@ function eventRoom(node, after) {
   for (const [stand, figure] of Object.entries(figures || {})) $('reward-options').append(eventFigure(stand, figure));
   showPlaceScene(scene, { biome: land().id, type: run.starter.type, where: journey(run.map, node) });
   placeEventSpots();
+  event3d(node, scene, figures, after);
   if (!after) return;
   figureDoes('npc', after);
   const box = $('reward-log'), read = box.onclick;
   if (box.hidden) return;
   box.onclick = () => { read(); if (box.hidden) showMap(); };
+}
+
+// the indoor rooms walked in 3D (js/event-3d.js), like the Center; the rest keep their pixel scene
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans'];
+let event3dMod = null;
+
+/** The walk-in 3D room under an indoor event's choices; the pixel room stays if Three.js won't load (or `?event2d`). */
+function event3d(node, kind, figures, after) {
+  if (!EVENT_3D.includes(kind) || new URLSearchParams(location.search).has('event2d')) return;
+  const box = $('reward-options'), thisRun = run;
+  box.classList.add('c3d-wait');
+  // its text waits until you're inside (the box coming and going jolted the camera while it loaded)
+  const lines = after ? null : holdLines();
+  const greet = () => { if (lines && run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
+  import('./event-3d.js').then(m => {
+    event3dMod = m;
+    return m.mountEvent({
+      kind, run: thisRun, node, figures, after,
+      mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
+      onPick: (i) => { if (run === thisRun && box.isConnected) box.querySelectorAll('.reward-option')[i]?.click(); },
+      onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
+    });
+  }).then(() => setTimeout(greet, 350))
+    .catch(err => { console.warn('3D event room unavailable', err); greet(); })
+    .finally(() => box.classList.remove('c3d-wait'));
 }
 
 /** Someone standing in an event's scene, on its `stands` (placeEventSpots()): the grunt and their Alpha, the Pokémon
@@ -2455,13 +2494,15 @@ const spotOption = (label, hint, onPick, disabled = false) => ({ node: shortSign
 async function playOut(act, opts) {
   const thisRun = run;
   $('reward-options').classList.add('resting');
-  await sleep(sceneAct(act, opts));
+  const room = event3dMod?.eventRoom3d();
+  await (room ? room.act(act, opts) : sleep(sceneAct(act, opts)));
   return run === thisRun;
 }
 
 /** Someone in the scene reacts to a choice (a CSS animation timed to the scene's act, run again if it already ran): the
     grunt hops or shakes; a trainer jumps, nods, shakes their head (npc-no) or turns round (npc-turn, until the room closes). */
 function figureDoes(stand, move) {
+  if (EVENT_3D.some(k => $('reward-options').classList.contains(`${k}-room`)) && event3dMod) event3dMod.figure3d(stand, move);
   const figure = $('reward-options').querySelector(`[data-stand="${stand}"]`);
   if (!figure) return;
   figure.classList.remove(move);
@@ -2471,7 +2512,12 @@ function figureDoes(stand, move) {
 
 /** Lay the event's choices over its props; the scene tells us whenever it repaints. */
 function placeEventSpots() {
-  const box = $('reward-options'), spots = box.classList.contains('event-room') && eventSpots();
+  const box = $('reward-options');
+  if (box.classList.contains('event-room') && box.classList.contains('c3d')) {   // the 3D room: the text box sits just over the bar
+    $('reward-screen').style.setProperty('--counter-foot', `${innerHeight}px`);
+    return liftRoomLog();
+  }
+  const spots = box.classList.contains('event-room') && eventSpots();
   if (!spots) return;
   box.querySelectorAll('.reward-option').forEach((btn, i) => {
     const r = spots.spots[i];
@@ -2687,6 +2733,7 @@ const EVENT_CHOICES = {
     const collect = () => { run.money += money; setMoney(run.money); playSound('coins'); tell(`The fans gave you ₽${money}!`); showMap(); };
     const cheer = async (then) => {
       $('reward-options').querySelectorAll('.event-figure').forEach(fan => fan.classList.add('hop'));
+      if (event3dMod?.eventRoom3d()) for (const fan of ['left', 'right']) figureDoes(fan, 'hop');
       if (await playOut('cheer')) then();
     };
     const view = { figures: { left: { src: 'assets/pokemon/persian-front.gif', flip: true }, right: { src: 'assets/pokemon/cinccino-front.gif' }, npc: { npc: 'chairman' } } };

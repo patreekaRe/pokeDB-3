@@ -2089,3 +2089,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a day (30-60 coins) and 3 a
   week (180-300), plus a bonus for all of them (60 / 300), counted from ordinary play and claimed at the PC's MISSIONS page.
   Detail in CLAUDE.md's Daily and weekly missions note.
+
+**3D ? rooms, part a** (2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club are
+walked in 3D (`js/event-3d.js`, `docs/reference/events.md`), each choice's act and the trainers' reactions on the props.
+Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with the old pixel Mart, 2026-10-10), and a
+`?event=day-care` peek crashed when the map hadn't rolled one (`rollEvent()`).
