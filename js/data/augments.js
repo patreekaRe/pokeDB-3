@@ -12,7 +12,7 @@
    by augEffects() (MULT keys multiply, `true` keys switch on), and the
    game (js/battle.js, js/run.js) and the bot (pokeDB-sim) read the sums.
    Fight keys (read by battle.js):
-     startBlock, startStrength, startFocus, startWeak, startVuln   at the start of every fight
+     startBlock, startStrength, startFocus, startWeak, startVuln, startSeed   at the start of every fight
      turn1Draw, turn1Energy        on the first turn
      firstAttack                   extra damage on the fight's first attack
      onePunch                      the fight's first attack deals this many times as much
@@ -76,6 +76,8 @@ export const AUG_TIER_NAMES = { silver: 'Silver', gold: 'Gold', prismatic: 'Pris
 export const AUG_REROLLS = 1;           // a climb's rerolls (Deep Pockets adds one)
 export const AUG_TIER_UP = 0.1;         // each slot's seeded chance of being one tier up (Arena's surprise)
 export const AUG_OFFER = 3;
+// Risky Climb's Alphas start where the tower's own do (landingTypes()): from floor 1 they killed the bot on floor 1 or 2
+export const RISKY_FROM = 3;
 
 export const AUGMENTS = [
   // ---------- Silver (floors 1-30) ----------
@@ -93,7 +95,7 @@ export const AUGMENTS = [
   { id: 'early-bird',     tier: 'silver', icon: '🐦', name: 'Early Bird',     text: '+1 PP on turn 1 of every fight.', turn1Energy: 1 },
   { id: 'hoarder',        tier: 'silver', icon: '👜', name: 'Hoarder',        text: '+1 item slot, and an item now.', itemSlots: 1, itemNow: 1 },
   { id: 'lucky-find',     tier: 'silver', icon: '🍀', name: 'Lucky Find',     text: 'A random relic now.', relicNow: 1, set: 'high-roller' },
-  { id: 'scavenger',      tier: 'silver', icon: '🦝', name: 'Scavenger',      text: 'Fights drop items twice as often.', itemOdds: 2 },
+  { id: 'scavenger',      tier: 'silver', icon: '🦝', name: 'Scavenger',      text: 'Fights drop items twice as often; heal 3 HP after every won fight.', itemOdds: 2, fightHeal: 3 },
   { id: 'thorn-coat',     tier: 'silver', icon: '🌵', name: 'Thorn Coat',     text: 'Enemies take 3 damage when they attack you.', thorns: 3 },
   { id: 'steady-hands',   tier: 'silver', icon: '🤲', name: 'Steady Hands',   text: 'Cards that give block give 2 more.', blockBonus: 2 },
   { id: 'heavy-hitter',   tier: 'silver', icon: '🥊', name: 'Heavy Hitter',   text: 'Your attacks deal +2 damage.', attackBonus: 2 },
@@ -106,12 +108,13 @@ export const AUGMENTS = [
   { id: 'inner-focus',    tier: 'silver', icon: '🧘', name: 'Inner Focus',    text: 'Start every fight with 1 strength.', startStrength: 1 },
   { id: 'picky-eater',    tier: 'silver', icon: '🥢', name: 'Picky Eater',    text: 'Reroll a fight\'s card reward once, for 30 ₽.', pickyEater: 30 },
   { id: 'insight',        tier: 'silver', icon: '🔭', name: 'Insight',        text: 'See the enemy\'s next two moves; your first attack each fight deals +3.', insight: true, firstAttack: 3 },
-  { id: 'mulligan',       tier: 'silver', icon: '🔄', name: 'Mulligan',       text: 'Once a fight, shuffle your hand into your draw pile and draw that many.', mulligan: 1 },
+  { id: 'mulligan',       tier: 'silver', icon: '🔄', name: 'Mulligan',       text: 'Draw 2 more cards and +1 PP on turn 1; once a fight, shuffle your hand into your draw pile and draw that many.', mulligan: 1, turn1Draw: 2, turn1Energy: 1 },
   { id: 'cursed-gold',    tier: 'silver', trade: true, icon: '💰', name: 'Cursed Gold',  text: '+300 ₽ now; Poké Mart prices are 25% higher.', moneyNow: 300, martMult: 1.25, set: 'high-roller' },
   { id: 'heavy-pack',     tier: 'silver', trade: true, icon: '🧳', name: 'Heavy Pack',   text: 'Take 2 moves from every card reward; a Sludge joins your deck after every guardian.', rewardTake: 1, sludgeEvery: 1 },
-  { id: 'risky-climb',    tier: 'silver', trade: true, icon: '🧗', name: 'Risky Climb',  text: 'Every landing fight is an Alpha; Alphas pay double ₽.', riskyClimb: true },
-  { id: 'kindling',       tier: 'silver', type: 'fire',  icon: '🪵', name: 'Kindling',   text: 'Every Burn you apply is 1 higher.', burnBonus: 1 },
-  { id: 'ember-skin',     tier: 'silver', type: 'fire',  icon: '🧯', name: 'Ember Skin', text: 'Start every fight with 8 block.', startBlock: 8 },
+  { id: 'risky-climb',    tier: 'silver', trade: true, icon: '🧗', name: 'Risky Climb',  text: 'From floor 3 on, every landing fight is an Alpha; Alphas pay double ₽.', riskyClimb: 2 },
+  { id: 'kindling',       tier: 'silver', type: 'fire',  icon: '🪵', name: 'Kindling',   text: 'Every Burn you apply is 2 higher.', burnBonus: 2 },
+  { id: 'ember-skin',     tier: 'silver', type: 'fire',  icon: '🧯', name: 'Ember Skin', text: 'Start every fight with 8 block; heal 4 HP after every won fight.', startBlock: 8, fightHeal: 4 },
+  { id: 'flash-fire',     tier: 'silver', type: 'fire',  icon: '🔥', name: 'Flash Fire', text: 'Take 3 less damage from every enemy attack.', hitReduce: 3 },
   { id: 'deep-roots',     tier: 'silver', type: 'grass', icon: '🌳', name: 'Deep Roots', text: 'Overgrow heals 3 more.', abilityAdd: 3 },
   { id: 'pollinate',      tier: 'silver', type: 'grass', icon: '🐝', name: 'Pollinate',  text: 'Every Leech Seed you apply is 1 higher.', seedBonus: 1 },
   { id: 'still-pool',     tier: 'silver', type: 'water', icon: '💧', name: 'Still Pool', text: 'Torrent starts fights with 3 more Tide.', abilityAdd: 3 },
@@ -129,8 +132,8 @@ export const AUGMENTS = [
   { id: 'executioner',    tier: 'gold', icon: '🪓', name: 'Executioner',    text: 'Your attacks deal double damage to enemies below 25% HP.', executeMult: 2, set: 'snowball' },
   { id: 'opening-act',    tier: 'gold', icon: '🎭', name: 'Opening Act',    text: 'Your Powers cost 0 on turn 1.', powersFree: true },
   { id: 'deck-diet',      tier: 'gold', icon: '🥗', name: 'Deck Diet',      text: 'Forget 4 moves from your deck; -5 max HP.', forget: 4, maxHp: -5 },
-  { id: 'refresh',        tier: 'gold', icon: '♻️', name: 'Refresh',        text: 'Draw 1 card whenever your discard pile is shuffled into your draw pile.', refresh: 1 },
-  { id: 'ambush',         tier: 'gold', icon: '🥷', name: 'Ambush',         text: 'Enemies start every fight with 2 Vulnerable.', startVuln: 2 },
+  { id: 'refresh',        tier: 'gold', icon: '♻️', name: 'Refresh',        text: 'Draw 2 more cards on turn 1, and 2 whenever your discard pile is shuffled into your draw pile.', refresh: 2, turn1Draw: 2 },
+  { id: 'ambush',         tier: 'gold', icon: '🥷', name: 'Ambush',         text: 'Enemies start every fight with 3 Vulnerable; your first attack each fight deals +8 damage.', startVuln: 3, firstAttack: 8 },
   { id: 'intimidate',     tier: 'gold', icon: '😠', name: 'Intimidate',     text: 'Enemies start every fight with 2 Weak.', startWeak: 2 },
   { id: 'bodyguard',      tier: 'gold', icon: '💂', name: 'Bodyguard',      text: 'The first time each fight you drop below half HP, gain 15 block.', bodyguard: 15, set: 'ironclad' },
   { id: 'spoils-of-war',  tier: 'gold', icon: '👑', name: 'Spoils of War',  text: 'Guardians give a second boss relic to choose.', guardianBossRelic: 1 },
@@ -156,11 +159,12 @@ export const AUGMENTS = [
   { id: 'speed-demon',    tier: 'gold', trade: true, icon: '👟', name: 'Speed Demon',    text: '+1 PP a turn; take 2 more damage from every enemy attack.', energyEachTurn: 1, hitReduce: -2 },
   { id: 'sudden-death',   tier: 'gold', trade: true, icon: '💀', name: 'Sudden Death',   text: 'Every enemy has 25% less HP; so do you (-25% max HP).', enemyHp: 0.75, maxHpMult: 0.75 },
   { id: 'no-mercy',       tier: 'gold', trade: true, icon: '🗡️', name: 'No Mercy',       text: 'Your attacks deal 40% more; Pokémon Centers become fights.', dmgMult: 1.4, noCenters: true },
-  { id: 'heat-shield',    tier: 'gold', type: 'fire',  icon: '🔰', name: 'Heat Shield',  text: 'Whenever you apply Burn, gain 2 block.', burnBlock: 2 },
-  { id: 'wildfire-aug',   tier: 'gold', type: 'fire',  icon: '🌋', name: 'Wildfire',     text: 'Burn never goes down.', burnKeep: true },
-  { id: 'cauterize',      tier: 'gold', type: 'fire',  icon: '🩹', name: 'Cauterize',    text: 'Heal 2 HP whenever Burn hurts an enemy.', burnHeal: 2 },
+  { id: 'heat-shield',    tier: 'gold', type: 'fire',  icon: '🔰', name: 'Heat Shield',  text: 'Whenever you apply Burn, gain 3 block.', burnBlock: 3 },
+  { id: 'wildfire-aug',   tier: 'gold', type: 'fire',  icon: '🌋', name: 'Wildfire',     text: 'Burn never goes down, and heals you 1 HP whenever it hurts an enemy.', burnKeep: true, burnHeal: 1 },
+  { id: 'cauterize',      tier: 'gold', type: 'fire',  icon: '🩹', name: 'Cauterize',    text: 'Heal 3 HP whenever Burn hurts an enemy.', burnHeal: 3 },
+  { id: 'magma-armor',    tier: 'gold', type: 'fire',  icon: '🌋', name: 'Magma Armor',  text: 'Start every fight with 10 block; enemies take 3 damage when they attack you.', startBlock: 10, thorns: 3 },
   { id: 'photosynthesis', tier: 'gold', type: 'grass', icon: '☀️', name: 'Photosynthesis', text: 'Heal 2 HP at the start of every turn.', healEachTurn: 2, set: 'glutton' },
-  { id: 'thorn-garden',   tier: 'gold', type: 'grass', icon: '🥀', name: 'Thorn Garden', text: 'An enemy with Leech Seed takes 3 damage when it attacks.', seedThorns: 3 },
+  { id: 'thorn-garden',   tier: 'gold', type: 'grass', icon: '🥀', name: 'Thorn Garden', text: 'Enemies start every fight with 2 Leech Seed, and take 3 damage when they attack while seeded.', startSeed: 2, seedThorns: 3 },
   { id: 'overbloom',      tier: 'gold', type: 'grass', icon: '🌺', name: 'Overbloom',    text: 'Healing past your max HP becomes twice as much block.', overheal: 2 },
   { id: 'rising-tide',    tier: 'gold', type: 'water', icon: '🌊', name: 'Rising Tide',  text: 'Spending Tide only spends half of it.', tideHalf: true },
   { id: 'tidal-armor',    tier: 'gold', type: 'water', icon: '🐚', name: 'Tidal Armor',  text: 'At the end of your turn, gain 1 block per Tide.', tideBlock: 1 },
@@ -189,8 +193,9 @@ export const AUGMENTS = [
   { id: 'hydra',          tier: 'prismatic', icon: '🐉', name: 'Hydra',          text: 'Every attack hits again for half its damage.', hydra: 0.5 },
   { id: 'copycat',        tier: 'prismatic', icon: '🐱', name: 'Copycat',        text: 'Every turn, the enemy\'s next move joins your hand as a free card, at half its power.', copycat: true },
   { id: 'soul-bond',      tier: 'prismatic', icon: '🔗', name: 'Soul Bond',      text: 'Two random relics now, and another after every guardian.', relicNow: 2, relicEvery: 1 },
-  { id: 'phoenix',        tier: 'prismatic', type: 'fire',  icon: '🐦‍🔥', name: 'Phoenix',  text: 'Blaze is always on, and its bonus is doubled.', blazeAlways: true, abilityMult: 2 },
+  { id: 'phoenix',        tier: 'prismatic', type: 'fire',  icon: '🐦‍🔥', name: 'Phoenix',  text: 'Blaze is always on, and its bonus is doubled. Heal 2 HP at the start of every turn.', blazeAlways: true, abilityMult: 2, healEachTurn: 2 },
   { id: 'rebirth',        tier: 'prismatic', type: 'fire',  icon: '🔥', name: 'Rebirth',    text: 'Once this climb, at 0 HP: revive at full HP with 3 strength.', rebirth: 3 },
+  { id: 'eruption',       tier: 'prismatic', type: 'fire',  icon: '🌋', name: 'Eruption',   text: 'Your attacks deal 30% more; heal 2 HP at the start of every turn.', dmgMult: 1.3, healEachTurn: 2 },
   { id: 'supernova',      tier: 'prismatic', type: 'fire',  icon: '☄️', name: 'Supernova',  text: 'Burn deals double damage; every card you exhaust deals 6 to the enemy.', burnTickMult: 2, exhaustDamage: 6 },
   { id: 'world-tree',     tier: 'prismatic', type: 'grass', icon: '🌲', name: 'World Tree', text: 'Leech Seed never goes down, and heals you double.', seedKeep: true, seedHealMult: 2 },
   { id: 'spore-storm',    tier: 'prismatic', type: 'grass', icon: '🍄', name: 'Spore Storm', text: 'Every Weak, Vulnerable, Leech Seed and Sap you apply is applied twice.', debuffTwice: true },

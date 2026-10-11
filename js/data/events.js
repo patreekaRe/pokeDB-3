@@ -15,23 +15,27 @@
 export const EVENTS = [
   {
     id: 'berry-tree', icon: '🫐', name: 'Berry Tree',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'A tree heavy with Oran Berries grows by the path.',
     eatHeal: 0.3,              // share of max HP healed
     plantMaxHp: [5, 7, 9, 11],     // max HP gained (and healed)
   },
   {
     id: 'move-tutor', icon: '🎓', name: 'Move Tutor',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'Chad Master Kenmatta, the Move Tutor, offers to teach a rare move, for a price.',
     price: [60, 80, 100, 120],      // ₽
     hpCost: [7, 10, 14, 18],       // or pay in HP instead
   },
   {
     id: 'move-deleter', icon: '📖', name: 'Move Deleter',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'A strange man insists he can make your Pokémon forget moves.',
     doubleHpCost: 0.1,         // share of max HP to forget two moves instead of one
   },
   {
     id: 'item-ball', icon: '⚫', name: 'Item Ball',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'A Poké Ball lies in the grass. Is it an item... or a Voltorb?',
     trapChance: 0.25,          // a Voltorb
     relicChance: 0.15,         // a relic; else (60%) an item
@@ -39,6 +43,7 @@ export const EVENTS = [
   },
   {
     id: 'hot-spring', icon: '♨️', name: 'Hot Spring',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'Steam rises from a spring hidden between the rocks.',
     soakMaxHpLoss: [4, 5, 6, 7],  // a full heal, but max HP drops by this
     dipHeal: 0.15,
@@ -46,6 +51,7 @@ export const EVENTS = [
   {
     id: 'team-rocket', icon: '🚀', name: 'Team Rocket',
     text: 'A Team Rocket grunt blocks the road and demands a toll!',
+    music: 'team-rocket',          // the user's (2026-10-09): only in the room; the fight cuts to the elite song
     toll: [30, 45, 60, 75],        // ₽
     fleeHp: 0.15,              // share of max HP lost running past
     // The grunt's Pokémon (an Alpha version: an elite fight with elite rewards), by biome id: from its own wilds, so a new
@@ -55,12 +61,14 @@ export const EVENTS = [
   },
   {
     id: 'day-care', icon: '🥚', name: 'Day Care',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'The Day Care couple offer to swap one of your moves for a rarer one they\'ve been raising.',
     // a card of each rarity trades for a random card (of your type's pool) of the next one up; rares can't be traded
     upgrade: { common: 'uncommon', uncommon: 'rare' },
   },
   {
     id: 'wishing-well', icon: '⛲', name: 'Wishing Well',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'Something glints at the bottom of an old well. They say a coin buys a wish.',
     // pay ₽ for a chance of a relic (choose 1 of 3); the bigger toss has better odds
     tosses: [
@@ -71,6 +79,7 @@ export const EVENTS = [
   },
   {
     id: 'fan-club', icon: '📣', name: 'Fan Club',
+    music: 'event-room',   // the user's song for the indoor rooms (2026-10-11)
     text: 'The Pokémon Fan Club rushes over to meet your Pokémon!',
     healthyMoney: [40, 55, 70, 85],   // ₽ if your HP is above half
     tiredItem: 'super-potion',    // otherwise they hand you this (or tiredMoney with a full Bag)
@@ -78,6 +87,7 @@ export const EVENTS = [
   },
   {
     id: 'shrine', icon: '⛩️', name: 'Shrine',
+    music: 'shrine-room',   // the user's song for the Shrine (2026-10-11)
     text: 'An old shrine hums with the power of your Pokémon\'s type.',
     // HP for one of your type's relics (a normal relic once you own them all); never faints you
     offering: [6, 9, 12, 15],

@@ -1372,7 +1372,7 @@ export const BIOMES = [
   {
     // Mewtwo's alone (v1.0): `secret` keeps it out of every other run, the Pokédex and the records. Its numbers are fixed:
     // no Trainer Level reaches it (MEWTWO_MODE in difficulty.js). Its scenery is BIOME_ART.depths in scene.js.
-    id: 'depths', name: 'Crystal Depths', secret: true, slot: 3,
+    id: 'depths', name: 'Crystal Depths', secret: true, slot: 3, music: 'seal',   // the fall's song carries on into the map (the user's call, 2026-10-09)
     stages: ['Cave Mouth', 'Crystal Halls', 'Deep Core', 'Energy Well'],
     normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
       'golurk', 'bronzong', 'claydol', 'dusknoir', 'lanturn', 'magnezone'],
@@ -1388,21 +1388,21 @@ export const BIOMES = [
    walkAt() lends it the slot's, and its Pokémon (authored at its `home` slot) grow or shrink to that slot's. */
 export const ALT_BIOMES = [
   {
-    id: 'ruins', name: 'Sunken Ruins', home: 1,
+    id: 'ruins', name: 'Sunken Ruins', home: 1, music: 'ruins',   // its map's own song (the user's), at either fork
     stages: ['Flooded Steps', 'Drowned Halls', 'Sunken Court', 'Tide Altar'],
     normals: ['corphish', 'finneon', 'shellder', 'frillish', 'basculin', 'slugma',
       'flareon', 'foongus', 'shroomish', 'bidoof', 'lillipup', 'skitty'],
     elites: ['lickitung', 'herdier', 'audino'], bosses: ['dunsparce', 'wigglytuff', 'granbull'],
   },
   {
-    id: 'thornwood', name: 'Thornwood Jungle', home: 2,
+    id: 'thornwood', name: 'Thornwood Jungle', home: 2, music: 'thornwood',   // its map's own song (the user's), at either fork
     stages: ['Tangled Edge', 'Canopy Walk', 'Strangler Grove', 'Heart Tree'],
     normals: ['simisage', 'lilligant', 'shiftry', 'sawsbuck', 'carnivine', 'exeggutor',
       'whimsicott', 'volcarona', 'rapidash', 'carvanha', 'simipour', 'slakoth'],
     elites: ['vigoroth', 'delcatty', 'spinda'], bosses: ['blissey', 'porygon', 'porygon2'],
   },
   {
-    id: 'savanna', name: 'Sunscorch Savanna', home: 1,
+    id: 'savanna', name: 'Sunscorch Savanna', home: 1, music: 'savanna',   // its map's own song (the user's), at either fork
     stages: ['Tall Grass', 'Burnt Plain', 'Watering Hole', 'Sun Rock'],
     normals: ['ponyta', 'magby', 'ninetales', 'arcanine', 'houndoom', 'simisear',
       'panpour', 'golduck', 'sunflora', 'cherrim', 'meowth', 'minccino'],
@@ -1444,10 +1444,10 @@ export function rollRoads(seen = []) {
   return Object.fromEntries(FORKS.map((slot, i) => [slot, order[i]]));
 }
 
-/** The other roads stay hidden until you've won a run with every type (Fire, Grass, Water) on Trainer Level ROADS_LEVEL or
-    higher (the user's call, 2026-10-07); until then a run walks the default road with no crossroads. */
-export const ROADS_LEVEL = 2;
-export const roadsOpen = (stats) => ['fire', 'grass', 'water'].every(t => (stats?.maxLevelWinByType?.[t] ?? -1) >= ROADS_LEVEL);
+/** The other roads stay hidden until you've won ROADS_WINS runs in all, any starter or Level (the user's call, 2026-10-10;
+    was a Level 2+ win with each type); until then a run walks the default road with no crossroads. */
+export const ROADS_WINS = 2;
+export const roadsOpen = (stats) => (stats?.runsWon ?? 0) >= ROADS_WINS;
 /** The biome a run is in at slot `i`, by its saved `route` (none, or a run saved before the crossroads: the default road). */
 export const biomeAt = (route, i) => (canWalk(route?.[i], i) ? walkAt(BIOMES_BY_ID[route[i]], i) : BIOMES[i]);
 /** A biome given as its slot (the default road's) or as the biome itself. */

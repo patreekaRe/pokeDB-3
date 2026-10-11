@@ -34,21 +34,22 @@ import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
 import { climbIntro } from './climb-intro.js';
 import { initBattle } from './battle.js';
 import { toggleShop, initShop } from './shop.js';
-import { initAudio, playMusic } from './audio.js';
+import { initAudio, playMusic, setHomeTrack } from './audio.js';
 import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
-import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest } from './title.js';
+import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest, useHub } from './title.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
@@ -177,6 +178,7 @@ function init() {
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
+  if (query.has('mail')) sampleMail();   // three letters in the Clearing PC's Mailbox, if it's empty
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
   // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
   // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.
@@ -202,6 +204,7 @@ function init() {
     });
   }
   checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
+  setHomeTrack(useHub() ? 'clearing-hub' : 'title');   // before initAudio() starts the menus' song, so title.mp3 isn't fetched for nothing
   initAudio();
   initSettings();
   initTips();
@@ -238,8 +241,6 @@ function init() {
   });
 
   initTowerPrep({
-    savedRun: savedRunCard,
-    onContinue: continueGame,
     onStart: async (practice) => {
       if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
       const climber = practice ?? towerWeekly().starter;
@@ -314,7 +315,11 @@ function init() {
     return;
   }
   // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
-  if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
+  if (params.get('event') && peekEvent(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('event'), params.get('biome'), params.has('money') ? Number(params.get('money')) : null)) return;
+  // ?center: a throwaway run straight into a Pokémon Center (&starter=id), the walk-in 3D one on this branch
+  if (params.has('center')) return peekCenter(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free));
+  // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N)
+  if (params.has('mart')) return peekMart(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), Number(params.get('money') ?? 300));
   // ...and ?bossfight=wetland (any Safari area; &starter=id) walks one straight into that area's boss fight, prelude and arena included
   // ?bossfight=depths: Mewtwo (or &starter=id) straight into Eternatus, the final boss; &hp=0.1 shrinks its bars
   // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1

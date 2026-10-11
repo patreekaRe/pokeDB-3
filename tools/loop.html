@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loop finder</title>
+<base href="../">
+<style>
+  body { margin: 0; padding: 12px; background: #fbf6ea; color: #2a2a3a; font: 13px/1.4 system-ui, sans-serif; }
+  h1 { font-size: 16px; margin: 0 0 6px; }
+  input[type=text], input[type=number] { font: inherit; padding: 3px 6px; }
+  button { font: inherit; padding: 4px 10px; margin: 2px; cursor: pointer; }
+  table { border-collapse: collapse; margin-top: 8px; }
+  td, th { padding: 3px 8px; border-bottom: 1px solid #e6dcc6; text-align: left; }
+  pre { background: #fff; padding: 8px; border-radius: 8px; box-shadow: 0 0 0 1.5px #e6dcc6; white-space: pre-wrap; user-select: all; }
+  #log { color: #776; }
+</style>
+</head>
+<body>
+<h1>Loop finder</h1>
+<p>Finds where a song repeats itself, for <code>LOOP_POINTS</code> in <code>js/audio.js</code>. <code>?song=secret-base</code>
+reads <code>assets/audio/secret-base.mp3</code>; or pick a file. Each row's Hear plays the 6 s before its join, then jumps back.</p>
+<p>
+  Song <input type="text" id="song" size="18"> or <input type="file" id="file" accept="audio/*">
+  shortest loop <input type="number" id="min" value="8" min="2" style="width:4em"> s
+  <button id="go">Find</button> <button id="stop">Stop</button>
+</p>
+<div id="log"></div>
+<table id="out"></table>
+<pre id="line" hidden></pre>
+<script type="module">
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+$('song').value = params.get('song') || '';
+const ctx = new AudioContext();
+let buffer = null, mono = null, playing = null;
+const log = text => { $('log').textContent = text; };
+const tick = () => new Promise(r => setTimeout(r));
+
+const FRAME = 4096, HOP = 2048;
+
+function fft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1;
+    for (; j & bit; bit >>= 1) j ^= bit;
+    j ^= bit;
+    if (i < j) { [re[i], re[j]] = [re[j], re[i]]; [im[i], im[j]] = [im[j], im[i]]; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const p = i + k, q = p + len / 2;
+        const tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr;
+        re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti;
+        [cr, ci] = [cr * wr - ci * wi, cr * wi + ci * wr];
+      }
+    }
+  }
+}
+
+// A semitone band per note from C2 to C7: melody and harmony, which is what has to line up at a join.
+function features(x, rate) {
+  const n = Math.floor((x.length - FRAME) / HOP);
+  const bands = 61, f = new Float32Array(n * bands), level = new Float32Array(n);
+  const win = Float32Array.from({ length: FRAME }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / FRAME));
+  const bandOf = new Int16Array(FRAME / 2).fill(-1);
+  for (let k = 1; k < FRAME / 2; k++) {
+    const midi = 69 + 12 * Math.log2(k * rate / FRAME / 440);
+    const b = Math.round(midi) - 36;
+    if (b >= 0 && b < bands) bandOf[k] = b;
+  }
+  const re = new Float32Array(FRAME), im = new Float32Array(FRAME);
+  for (let t = 0; t < n; t++) {
+    let rms = 0;
+    for (let i = 0; i < FRAME; i++) { const s = x[t * HOP + i]; re[i] = s * win[i]; im[i] = 0; rms += s * s; }
+    level[t] = Math.sqrt(rms / FRAME);
+    fft(re, im);
+    const row = t * bands;
+    for (let k = 1; k < FRAME / 2; k++) if (bandOf[k] >= 0) f[row + bandOf[k]] += Math.sqrt(re[k] * re[k] + im[k] * im[k]);
+    let norm = 0;
+    for (let b = 0; b < bands; b++) { f[row + b] = Math.sqrt(f[row + b]); norm += f[row + b] ** 2; }
+    norm = Math.sqrt(norm) || 1;
+    for (let b = 0; b < bands; b++) f[row + b] /= norm;
+  }
+  return { n, bands, f, level };
+}
+
+// For every lag, how well each stretch of WIN frames matches the stretch one lag later, levels included (so a
+// fade-out never matches its own loud start).
+async function search({ n, bands, f, level }, rate, minLoop) {
+  const sec = HOP / rate, WIN = Math.round(6 / sec);
+  const best = [];
+  for (let lag = Math.round(minLoop / sec); lag < n - WIN; lag++) {
+    const m = n - lag, sum = new Float64Array(m + 1);
+    for (let i = 0; i < m; i++) {
+      let dot = 0;
+      const a = i * bands, b = (i + lag) * bands;
+      for (let k = 0; k < bands; k++) dot += f[a + k] * f[b + k];
+      const la = level[i], lb = level[i + lag];
+      const loud = Math.max(la, lb) > 1e-4 ? Math.min(la, lb) / Math.max(la, lb) : 0;
+      sum[i + 1] = sum[i] + dot * Math.sqrt(loud);
+    }
+    let top = -1, at = 0;
+    for (let i = 0; i + WIN <= m; i++) {
+      const s = (sum[i + WIN] - sum[i]) / WIN;
+      if (s > top) { top = s; at = i; }
+    }
+    best.push({ lag, score: top, start: (at + WIN / 2) * sec });
+    if (lag % 100 === 0) { log(`Comparing… ${Math.round(100 * lag / n)}%`); await tick(); }
+  }
+  const picks = [];
+  for (const c of best.sort((a, b) => b.score - a.score)) {
+    if (picks.some(p => Math.abs(p.lag - c.lag) * sec < 1)) continue;
+    picks.push({ ...c, length: c.lag * sec });
+    if (picks.length === 6) break;
+  }
+  return picks;
+}
+
+function corrAt(x, a, b, half, step = 2) {
+  let xy = 0, xx = 0, yy = 0;
+  for (let i = -half; i < half; i += step) { const p = x[a + i], q = x[b + i]; xy += p * q; xx += p * p; yy += q * q; }
+  return xy / Math.sqrt(xx * yy || 1);
+}
+
+// The frame search is good to a hop (46 ms). The exact length comes from the waveform over the whole 6 s that matched,
+// then the join goes wherever along the repeat the waveform lines up best a quarter-second either side.
+async function refine(x, rate, feats, start, length) {
+  const reach = HOP * 2, guess = Math.round(length * rate);
+  const a = Math.round(start * rate), wide = Math.round(3 * rate);
+  let top = -2, lag = guess;
+  for (let d = -reach; d <= reach; d++) {
+    const b = a + guess + d;
+    if (a - wide < 0 || b + wide >= x.length) continue;
+    const r = corrAt(x, a, b, wide, 4);
+    if (r > top) { top = r; lag = guess + d; }
+    if (d % 512 === 0) await tick();
+  }
+  const { bands, f, level } = feats, sec = HOP / rate, fl = Math.round(lag / HOP), span = Math.round(1 / sec);
+  const near = t => {
+    let s = 0, c = 0;
+    for (let i = Math.max(0, t - span); i < t + span && i + fl < feats.n; i++, c++) {
+      let dot = 0;
+      for (let k = 0; k < bands; k++) dot += f[i * bands + k] * f[(i + fl) * bands + k];
+      const la = level[i], lb = level[i + fl];
+      s += dot * Math.sqrt(Math.max(la, lb) > 1e-4 ? Math.min(la, lb) / Math.max(la, lb) : 0);
+    }
+    return c ? s / c : 0;
+  };
+  const half = Math.round(0.25 * rate), tries = [];
+  for (let t = 0.5; (t * rate) + lag + half < x.length; t += 0.05) tries.push({ t, frame: near(Math.round(t / sec)) });
+  const bar = Math.max(...tries.map(p => p.frame)) * 0.95;
+  let corr = -2, at = start;
+  for (const p of tries) {
+    if (p.frame < bar) continue;
+    const s = Math.round(p.t * rate), r = corrAt(x, s, s + lag, half);
+    if (r > corr) { corr = r; at = p.t; }
+  }
+  return { start: at, end: at + lag / rate, corr };
+}
+
+function mixdown(buf) {
+  const out = new Float32Array(buf.length);
+  for (let c = 0; c < buf.numberOfChannels; c++) {
+    const d = buf.getChannelData(c);
+    for (let i = 0; i < d.length; i++) out[i] += d[i] / buf.numberOfChannels;
+  }
+  return out;
+}
+
+function hear(start, end) {
+  stop();
+  ctx.resume();
+  const src = ctx.createBufferSource();
+  src.buffer = buffer; src.loop = true; src.loopStart = start; src.loopEnd = end;
+  src.connect(ctx.destination);
+  src.start(0, Math.max(0, end - 6));
+  playing = src;
+}
+function stop() { if (playing) { playing.stop(); playing = null; } }
+$('stop').onclick = stop;
+
+const fix = v => +v.toFixed(5);
+async function run(name, bytes) {
+  log('Decoding…'); await tick();
+  buffer = await ctx.decodeAudioData(bytes);
+  mono = mixdown(buffer);
+  const rate = buffer.sampleRate;
+  log('Listening…'); await tick();
+  const feats = features(mono, rate);
+  const picks = await search(feats, rate, +$('min').value || 8);
+  const rows = [];
+  for (const [i, p] of picks.entries()) {
+    log(`Lining up the waveform… ${i + 1}/${picks.length}`);
+    rows.push({ ...p, ...await refine(mono, rate, feats, p.start, p.length) });
+  }
+  $('out').innerHTML = '<tr><th>loop</th><th>start</th><th>end</th><th>match</th><th>samples</th><th></th></tr>';
+  for (const r of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${(r.end - r.start).toFixed(2)} s</td><td>${r.start.toFixed(2)}</td><td>${r.end.toFixed(2)}</td>`
+      + `<td>${r.score.toFixed(3)}</td><td>${r.corr.toFixed(3)}</td><td><button>Hear</button><button>Use</button></td>`;
+    const [hearBtn, useBtn] = tr.querySelectorAll('button');
+    hearBtn.onclick = () => hear(r.start, r.end);
+    useBtn.onclick = () => show(name, r, buffer.duration);
+    $('out').append(tr);
+  }
+  show(name, rows[0], buffer.duration);
+  log(`${name}: ${buffer.duration.toFixed(2)} s. "match" is melody and level over 6 s (1 = the same); "samples" the waveform at the join (above ~0.95 needs no cross-fade).`);
+  window.loopResults = rows;
+}
+function show(name, r, duration) {
+  const xf = r.corr >= 0.95 ? '' : ', 0.3';
+  $('line').hidden = false;
+  $('line').textContent = `  '${name}': [${fix(r.start)}, ${fix(r.end)}${xf}],   // a ${(r.end - r.start).toFixed(2)} s repeat `
+    + `(${r.corr.toFixed(3)} sample correlation at the join${xf ? ', so cross-faded' : ''}); the file is ${duration.toFixed(1)} s`;
+}
+
+$('go').onclick = async () => {
+  const file = $('file').files[0];
+  if (file) return run(file.name.replace(/\.[^.]+$/, ''), await file.arrayBuffer());
+  const name = $('song').value.trim();
+  if (!name) return log('Name a song or pick a file.');
+  const res = await fetch(`assets/audio/${name}.mp3`);
+  if (!res.ok) return log(`assets/audio/${name}.mp3: ${res.status}`);
+  run(name, await res.arrayBuffer());
+};
+if (params.get('song')) $('go').click();
+</script>
+</body>
+</html>

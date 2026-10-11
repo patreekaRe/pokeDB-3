@@ -12,6 +12,16 @@ three places:
 
 ## Where we left off (2026-10-03)
 
+- 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
+  PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in
+  `js/data/patchnotes.js` and a patch is cut at 12 lines (CLAUDE.md's Conventions has the rule).
+
+- 2026-10-09: **The Clearing PC's Mailbox** (Desktop app, `main`): big PokéCoin prizes (Pokédex / bonus / Safari pages,
+  the whole Pokédex, a type's first Level 5 jackpot, the Depths feat) are posted as letters (`js/mail.js`, `save.mail`)
+  and claimed in the PC's Mailbox: the envelope opens, the letter rises out, the coins count up. An envelope floats over
+  the PC while one waits. The Signs title pays at once as before. `?mail` drops sample letters. Next: the PC's Prof's PC
+  (LOCAL).
+
 - 2026-10-09: **The Poké Mall's Game Corner, walked into** (Desktop app, branch `secret-base` only): the hall's middle front
   walks into a neon 3D arcade (`js/mall-corner.js`; `?mall=corner`): skins and balls in a PRIZES case, shinies in a SHINY
   case, a perk machine each, Meowth at the prize counter; tap twice to buy, the cabinet's same entries (`buyCorner()` in

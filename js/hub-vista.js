@@ -15,8 +15,8 @@ const K = 48;                                      // canvas pixels a world unit
 const HZ = 0.95;                                   // the horizon, units up from its foot
 const FADE = 0.3;                                  // its foot fading into the ground
 
-/** The painting for `time`; `roadX` is the world x where the road leaves the ground's back edge, `half` its half-width. */
-export function vistaArt(time, roadX, half) {
+/** The painting for `time`; `roadX` is the world x where the road leaves the ground's back edge, `half` its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js). */
+export function vistaArt(time, roadX, half, look = null) {
   const { w: W, h: H } = VISTA, c = new OffscreenCanvas(W * K, H * K), g = c.getContext('2d');
   c.fine = K;
   g.scale(K, K);
@@ -71,20 +71,22 @@ export function vistaArt(time, roadX, half) {
   range(8, 1, 2, 9, [L('#8098c0'), L('#6a82ac')], L('#e8eef6'));
 
   // the meadow, paler far off, a treeline along the horizon
-  g.fillStyle = vgrad(g, hy, H, [L('#b0dc88'), L('#8ccc62'), L('#76c052')]);
+  g.fillStyle = vgrad(g, hy, H, (look?.meadow || ['#b0dc88', '#8ccc62', '#76c052']).map(L));
   g.fillRect(0, hy, W, HZ);
   const road = roadX - VISTA.x0;
   for (let i = 0; i < W * 3; i++) {
     const x = hash(i * 4.7) * W, r = 0.12 + hash(i * 2.3) * 0.2;
     if (Math.abs(x - road) < 0.45) continue;   // a gap where the trail goes over the horizon, framed by the gate
     const tg = g.createRadialGradient(x - r * 0.3, hy - r * 0.7, 0, x, hy - r * 0.3, r * 1.1);
-    tg.addColorStop(0, L('#5eae4c')); tg.addColorStop(1, L('#2e6a30'));
+    const [lit, dark] = look?.trees || ['#5eae4c', '#2e6a30'];
+    tg.addColorStop(0, L(lit)); tg.addColorStop(1, L(dark));
     g.fillStyle = tg; g.beginPath(); g.ellipse(x, hy - r * 0.35, r, r * 0.8, 0, 0, Math.PI * 2); g.fill();
   }
-  g.fillStyle = rgba(L('#2e6a30'), 0.55); g.fillRect(0, hy - 0.02, W, 0.07);
-  for (let i = 0; i < W * 14; i++) {   // wildflowers, smaller far off
+  g.fillStyle = rgba(L(look?.trees[1] || '#2e6a30'), 0.55); g.fillRect(0, hy - 0.02, W, 0.07);
+  const blooms = look?.flowers || ['#ffffff', '#f8e070', '#f898b8', '#c8a8f8'];
+  if (blooms.length) for (let i = 0; i < W * 14; i++) {   // wildflowers, smaller far off
     const k = hash(i * 6.1), y = hy + 0.1 + k * (HZ - 0.2), x = hash(i * 2.9 + 3) * W;
-    g.fillStyle = L(['#ffffff', '#f8e070', '#f898b8', '#c8a8f8'][i % 4]);
+    g.fillStyle = L(blooms[i % blooms.length]);
     g.beginPath(); g.arc(x, y, 0.012 + k * 0.035, 0, Math.PI * 2); g.fill();
   }
 

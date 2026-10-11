@@ -3,8 +3,9 @@
    you just earned a new one.
    ============================================================ */
 
-import { getSave, updateSave, awardCoins } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
+import { post } from './mail.js';
 import { ACHIEVEMENTS, FEATS } from './data/achievements.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
@@ -48,7 +49,7 @@ export function checkFeats() {
       if (f.shiny && !d.shiny.owned.includes(f.shiny)) d.shiny.owned.push(f.shiny);
       if (f.shiny && !d.shiny.on.includes(f.shiny)) d.shiny.on.push(f.shiny);
     });
-    earned.push({ ...f, feat: true, paid: f.coins ? awardCoins(f.coins) : 0 });
+    earned.push({ ...f, feat: true, coinLine: f.coins ? post('depths', f.name, `${f.text}: you did it! Please accept this reward from the deep.`, f.coins) : '' });
   }
   return earned;
 }

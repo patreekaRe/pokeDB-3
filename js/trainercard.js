@@ -327,14 +327,15 @@ function partnerPicker(body, done) {
   back.type = 'button';
   back.addEventListener('click', done);
   head.append(back);
-  const pick = (key) => {
+  const pick = (key, btn) => {
     updateSave(d => { d.partner = key; });
     playSound('confirm');
-    done();
+    body.querySelectorAll('.tc-pick.on, .tc-pick-auto.on').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
   };
   const auto = el('button', `tc-pick-auto${current ? '' : ' on'}`, 'Auto: the starter with the most wins');
   auto.type = 'button';
-  auto.addEventListener('click', () => pick(null));
+  auto.addEventListener('click', () => pick(null, auto));
   const groups = partnerChoices(save).map(g => {
     const box = el('div', 'tc-pick-group');
     const grid = el('div', 'tc-pick-grid');
@@ -349,7 +350,7 @@ function partnerPicker(body, done) {
       img.loading = 'lazy';
       img.draggable = false;
       btn.append(img);
-      btn.addEventListener('click', () => pick(m.key));
+      btn.addEventListener('click', () => pick(m.key, btn));
       return btn;
     }));
     box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${g.mons.length}`), grid);
@@ -408,7 +409,7 @@ function nameField(redraw) {
   show.type = 'button';
   show.title = 'Tap to change your name';
   show.setAttribute('aria-label', `Name: ${trainerName()}. Change it`);
-  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', '✎'));
+  show.append(el('span', '', trainerName().toUpperCase()), el('span', 'tc-name-edit', 'Edit'));
   show.addEventListener('click', () => {
     playSound('confirm');
     const form = el('form', 'tc-name-form');
@@ -451,18 +452,24 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const dex = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
   const safari = safariOpen(save) ? safariDexCount() : null;
   const stars = Object.values(s.level5WinsBy || {}).filter(n => n > 0).length;
+  // each line says what it counts when tapped (js/tips.js reads the title): STARS and TIME weren't clear on their own
   const lines = [
-    ['NAME', trainerName().toUpperCase()],
-    ['WINS', String(s.runsWon)],
-    ['POKéDEX', `${dex}/${dexTotal}`],
-    ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---'],
-    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-'],
-    ['TIME', playTime(s.playMs)],
+    ['NAME', trainerName().toUpperCase(), 'Your nickname, shown on the leaderboards. Tap Edit to change it.'],
+    ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
+    ['POKéDEX', `${dex}/${dexTotal}`, 'Pokémon researched in the main Pokédex.'],
+    ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
+    ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
+    ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
   ];
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
   const redraw = () => openTrainerCard(into, { reopen: true });
-  for (const [k, v] of lines) list.append(el('dt', '', k), k === 'NAME' ? nameField(redraw) : el('dd', '', v));
+  for (const [k, v, tip] of lines) {
+    const dt = el('dt', '', k), dd = k === 'NAME' ? nameField(redraw) : el('dd', '', v);
+    dt.title = tip;
+    if (k !== 'NAME') dd.title = tip;
+    list.append(dt, dd);
+  }
   const mate = partner(save);
   const pic = el('button', 'tc-partner');
   pic.type = 'button';
@@ -471,7 +478,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const img = el('img', 'pixel');
   img.src = mate.src;
   img.alt = '';
-  pic.append(img, el('span', 'tc-partner-edit', '✎'));
+  pic.append(img, el('span', 'tc-partner-edit', 'Change'));
   pic.addEventListener('click', () => {
     playSound('confirm');
     partnerPicker(body, () => openTrainerCard(into, { reopen: true }));
@@ -479,7 +486,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const frame = el('div', 'tc-partner-frame');
   frame.append(pic);
   if (mate.twin) {
-    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, '✨');
+    const flip = el('button', `tc-shiny${mate.shiny ? ' on' : ''}`, mate.shiny ? '✨ Shiny' : 'Shiny');
     flip.type = 'button';
     flip.title = mate.shiny ? 'Shiny on: tap for its normal colours' : 'Tap for its shiny colours';
     flip.setAttribute('aria-pressed', String(!!mate.shiny));

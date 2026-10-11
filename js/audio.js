@@ -42,14 +42,24 @@ const TRACKS = {
   map1:    'assets/audio/map1.mp3',      // one theme per biome, played on its map
   map2:    'assets/audio/map2.mp3',
   map3:    'assets/audio/map3.mp3',
-  map4:    'assets/audio/map4.mp3',   // the Crystal Depths' map, the user's (2026-10-04)
+  map4:    'assets/audio/map4.mp3',   // the user's (2026-10-04): the Crystal Depths' map until 2026-10-09, now the Sky Pillar's climb (showMap())
+  savanna: 'assets/audio/savanna.mp3',   // the Sunscorch Savanna's map, the user's (2026-10-09), in place of its slot's mapN (a biome's `music`, showMap())
+  ruins:   'assets/audio/ruins.mp3',     // the Sunken Ruins' map, the user's (2026-10-09), the same way
+  thornwood: 'assets/audio/thornwood.mp3',   // the Thornwood Jungle's map, the user's (2026-10-09), the same way
   evolution: 'assets/audio/evolution.mp3',   // the evolution scene (evolution.js), cut as the new form cries
   'hall-of-fame': 'assets/audio/hall-of-fame.mp3',   // the Hall of Fame scene after a Level 5 win (halloffame.js)
   'run-win': 'assets/audio/run-win.mp3',             // the same scene after any other won run
   eternatus: 'assets/audio/eternatus.mp3',   // the final boss's own theme (v1.0 part C): the user's to supply...
   eternamax: 'assets/audio/eternamax.mp3',   // ...and its second form's; each plays `boss` until its file arrives
   kombat:  'assets/audio/kombat.mp3',   // Chad Master Kenmatta's fight (KEN.music), the user's: an 8-bit Mortal Kombat theme
-  seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break
+  seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break, and the Crystal Depths' map (its biome's `music`)
+  'secret-base': 'assets/audio/secret-base.mp3',   // the user's (2026-10-09): inside the Secret Base, from its door till the doormat
+  'clearing-hub': 'assets/audio/clearing-hub.mp3',   // the user's (2026-10-09): the walkable Clearing's song, in place of 'title' wherever the hub is the title (setHomeTrack())
+  'event-room': 'assets/audio/event-room.mp3',
+  'event-outdoor': 'assets/audio/event-outdoor.mp3',   // the user's (2026-10-11): the Hot Spring, Berry Tree, Wishing Well and Item Ball
+  treasure: 'assets/audio/treasure.mp3',
+  'shrine-room': 'assets/audio/shrine-room.mp3',   // the user's (2026-10-11): the Shrine ? room (its events.js `music`), till the map   // the user's (2026-10-11): the treasure grotto (treasureRoom()), till the map   // the user's (2026-10-11): the indoor ? rooms (their events.js `music`), till the map
+  'team-rocket': 'assets/audio/team-rocket.mp3',   // the user's (2026-10-09): Team Rocket's ? room (its events.js `music`), till the fight or the map
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
 // to the intro (the user found it broke the immersion). These loop inside the file instead, seamlessly: [loopStart,
@@ -70,9 +80,21 @@ const LOOP_POINTS = {
   'trainer-victory': [2.40018, 24.92, 0.3],   // the fanfare, then a 22.52 s loop (chroma 0.98); the file fades out after
   kombat: [30, 115.97016, 0.3],   // an 85.97 s repeat (0.81 sample correlation at the join, so cross-faded); the file fades out at 194 s
   mart: [38.75, 87.45907, 0.3],   // a 48.71 s repeat (0.997 sample correlation at the join); the file fades out from ~101 s
+  // From here on found with tools/loop.html?song=<name>.
+  'secret-base': [40.4, 84.2515],   // a 43.85 s repeat (0.997 sample correlation at the join); the file fades out after
+  'clearing-hub': [22.3, 75.85327],   // a 53.55 s repeat (0.983 sample correlation at the join); the file is 84.5 s
+  'event-room': [33.02, 95.98612, 0.2],
+  'event-outdoor': [7.94, 45.18184, 0.3],   // a 37.24 s repeat (0.996 melody match, 0.79 at the join, so a longer cross-fade); the file is 86 s, its second pass fading from ~74 s
+  treasure: [33.02, 125.48009, 0.2],
+  'shrine-room': [10.96, 68.51116, 0.2],   // a 57.55 s repeat (0.995 melody match, 0.965 at the join); the file is 97.6 s, fading from ~88 s   // a 92.46 s repeat (0.997 melody match, 0.935 at the join); the file is 158.7 s, fading from ~140 s   // a 62.97 s repeat (0.998 melody match, 0.961 sample correlation at the join); the file is 145.6 s, fading from ~137 s
+  'team-rocket': [2.5, 61.22894, 0.3],   // a 58.73 s repeat (0.93 melody match, 0.65 sample correlation at the join, so cross-faded); the file is 75.1 s
+  savanna: [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.95 melody match, 0.58 sample correlation at the join, so cross-faded); the file is 56.7 s, fading from ~48 s
+  ruins:   [16.05, 77.13694, 0.3],   // a 61.09 s repeat (0.968 melody match, 0.912 sample correlation at the join, so cross-faded); the file is 133.4 s
+  seal:    [41.4, 79.58037, 0.3],   // a 38.18 s repeat (0.975 melody match, 0.822 sample correlation at the join, so cross-faded); the file is 102.2 s; the Depths' map since 2026-10-09
+  thornwood: [20.2, 85.54415, 0.3],   // a 65.34 s repeat (0.888 melody match, 0.747 sample correlation at the join, so cross-faded; the finder's 16 s one at the top would skip most of the song); the file is 94.8 s, fading from ~86 s
 };
 // A track whose file isn't there yet plays another in its place (the user supplies these MP3s later).
-const TRACK_FALLBACK = { 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
+const TRACK_FALLBACK = { 'clearing-hub': 'title', 'hall-of-fame': 'victory', 'run-win': 'victory', 'trainer-victory': 'victory', kombat: 'boss', eternatus: 'boss', eternamax: 'boss' };
 const missing = new Set();   // tracks whose file failed to load
 // Files come mastered at very different loudness, so each can be boosted
 // (or cut) on top of SFX_VOLUME. `gain` defaults to 1. `start`/`length` (seconds)
@@ -85,7 +107,7 @@ const SOUNDS = {
   hit:   { url: 'assets/audio/sfx/hit.mp3' },     // damage gets through, either way
   'hit-super': { url: 'assets/audio/sfx/hit-super.mp3' },  // ...super effectively (falls back to hit)
   'hit-weak':  { url: 'assets/audio/sfx/hit-weak.mp3' },   // ...not very effectively (falls back to hit)
-  block: { synth: blockClink, gain: 0.5 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
+  block: { synth: blockClink, gain: 0.6 },   // you gain block, or a hit is fully blocked: made in code (the user's call), no file
   faint: { url: 'assets/audio/sfx/faint.mp3' },   // the enemy faints
   select: { url: 'assets/audio/sfx/card.mp3', gain: 0.2 },   // a pick in the 3D views (the base's tiles, the mall's stands and prizes, a tap to walk): softer than confirm
   buy:   { url: 'assets/audio/sfx/buy.mp3' },     // a Poké Mart purchase
@@ -130,6 +152,7 @@ const SOUNDS = {
   rustle:       { synth: grassRustle },      // a wild Pokémon pops out of the tall grass in a biome's intro (biome-intro.js)
   splash:       { synth: waterSplash },      // ...or surfaces out of the water (the Sunken Ruins', ruins-intro.js)
   'lift-ding':  { synth: liftDing },        // the Furniture store's lift arriving, its doors about to open (mall-3d.js)
+  snip:         { synth: scissorSnip },     // ...and its grand opening's ribbon cut
   'plink-0':    { synth: ac => windChime(ac, 1175), gain: 0.45 },   // ...whose intro plinks like drops into still water as its runes wake
   'plink-1':    { synth: ac => windChime(ac, 1397), gain: 0.45 },
   'plink-2':    { synth: ac => windChime(ac, 1760), gain: 0.45 },
@@ -235,6 +258,7 @@ const buffers = {};        // sound name -> Promise of its decoded AudioBuffer (
 const lastPlayed = {};     // sound name -> { source, gain, at } of its latest play
 const loops = {};          // sound name -> { on, source } of an effect that repeats until turned off (setLoop)
 let current = null;        // name of the track that should be playing right now
+let homeTrack = 'title';   // what playMusic('title') plays: 'clearing-hub' while the walkable Clearing is the title
 /** The track that should be playing now (a scene that takes the music over puts it back). */
 export const musicNow = () => current;
 
@@ -293,6 +317,7 @@ export function initAudio() {
  * cut:     switch instantly (no fade out, no fade in), e.g. for a fanfare.
  */
 export function playMusic(name, { restart = false, cut = false } = {}) {
+  if (name === 'title') name = homeTrack;
   if (missing.has(name)) name = TRACK_FALLBACK[name] ?? null;
   if (current === name) return;
   const previous = current;
@@ -668,7 +693,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6)
+const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
@@ -712,25 +737,25 @@ function unlock() {
 }
 
 /**
- * The block sound, built sample by sample: an 8-bit shield "clink". A tick of noise for the impact, a
- * square-wave blip that steps down (G6 then D6) like the games' chiptune effects, and a short metallic
- * ring from a few inharmonic partials so it reads as hitting something hard.
+ * The block sound, built sample by sample: a soft, padded shield "whump", no ring (the user disliked the old metallic
+ * "dink", 2026-10-10). A muffled puff of low-passed noise for the impact under a low sine thud that sags in pitch, with a
+ * touch of its octave so it carries on phone speakers.
  */
 function blockClink(ac) {
-  const rate = ac.sampleRate, length = Math.round(rate * 0.3);
+  const rate = ac.sampleRate, length = Math.round(rate * 0.22);
   const buffer = ac.createBuffer(1, length, rate);
   const out = buffer.getChannelData(0);
-  const ring = [[2093, 0.16], [3170, 0.1], [4060, 0.06]];
+  let lp = 0, phase = 0;
   for (let i = 0; i < length; i++) {
     const t = i / rate;
-    const tick = (Math.random() * 2 - 1) * Math.exp(-t / 0.004) * 0.5;
-    const pitch = t < 0.035 ? 1568 : 1175;
-    const blip = Math.sign(Math.sin(2 * Math.PI * pitch * t)) * 0.22 * Math.exp(-t / 0.07);
-    const metal = ring.reduce((sum, [f, a]) => sum + Math.sin(2 * Math.PI * f * t) * a, 0) * Math.exp(-t / 0.09);
-    const fade = Math.min(1, t / 0.002, (length - i) / (rate * 0.01));   // no click at either end
-    out[i] = (tick + blip + metal) * fade;
+    lp += 0.08 * ((Math.random() * 2 - 1) - lp);
+    const puff = lp * 2.2 * Math.exp(-t / 0.03);
+    phase += 2 * Math.PI * (95 + 140 * Math.exp(-t / 0.04)) / rate;
+    const thud = (Math.sin(phase) + 0.35 * Math.sin(2 * phase)) * Math.exp(-t / 0.07);
+    const fade = Math.min(1, t / 0.003, (length - i) / (rate * 0.02));   // no click at either end
+    out[i] = (puff + thud) * fade;
   }
-  return normalize(buffer, 0.2);   // it used to peak at 0.9, about 4x the MP3s (the user found it far too loud)
+  return normalize(buffer, 0.22);
 }
 
 /** Scale a synth buffer so its loudest sample is `peak`: the MP3s peak around 0.1-0.25, so synths sit with them. */
@@ -1484,6 +1509,20 @@ Object.assign(SOUNDS, {
   'fx-heal': { synth: ac => render(ac, 2.2, t => { const i = Math.min(5, Math.floor(t / 0.26)), s = t - i * 0.26; return partials(noteHz([5, 7, 9, 10, 12, 14][i] - 3) * 0.5, s, [[1, 1, 3], [2, 0.3, 6]]) * (t < 1.6 ? 1 : Math.exp(-(t - 1.6) * 6)); }, 0.3) },
 });
 
+/** Big scissors closing: a steel scrape as the blades slide, then the sharp click of them meeting. */
+function scissorSnip(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 0.32);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0), noise = chipNoise(length, 1);
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    const scrape = t < 0.16 ? noise[i] * Math.sin(Math.PI * t / 0.16) * 0.35 * (0.6 + 0.4 * Math.sin(2 * Math.PI * 3400 * t)) : 0;
+    const c = t - 0.16, click = c >= 0 ? (noise[i] * 0.7 + Math.sin(2 * Math.PI * 4200 * c) * 0.6 + Math.sin(2 * Math.PI * 2600 * c) * 0.4) * Math.exp(-c / 0.025) : 0;
+    out[i] = (scrape + click) * Math.min(1, (length - i) / (rate * 0.01));
+  }
+  return normalize(buffer, 0.3);
+}
+
 /** A lift arriving: one soft, warm bell, its overtones dying away first. */
 function liftDing(ac) {
   const rate = ac.sampleRate, length = Math.round(rate * 1.1), f = 1319;
@@ -1497,4 +1536,12 @@ function liftDing(ac) {
     out[i] = v * Math.min(1, t / 0.003, (length - i) / (rate * 0.05));
   }
   return normalize(buffer, 0.14);
+}
+
+/** The menus' song: 'clearing-hub' while the walkable Clearing stands in for the title, 'title' over the signs. */
+export function setHomeTrack(name) {
+  if (homeTrack === name) return;
+  const playing = current === homeTrack;
+  homeTrack = name;
+  if (playing) playMusic('title');
 }

@@ -22,6 +22,7 @@ import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave, updateSave, markDex, countDex, awardCoins } from './storage.js';
 import { $, el, openDialog, closeDialog, itemSprite } from './ui.js';
 import { textPace } from './prefs.js';
+import { post } from './mail.js';
 import { playCry, playSound } from './audio.js';
 import { sceneShot } from './scene.js';
 import { timeOfDay } from './daytime.js';
@@ -91,11 +92,11 @@ export function dexDefeated(id) {
     lines.push(`The ${p.name} page is complete! ${p.prize.icon} ${p.prize.name} unlocked!`);
   } else if (p.bonus && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });   // a bonus page (another road's): PokéCoins, no perk
-    lines.push(`The ${p.name} bonus page is complete! +${awardCoins(p.bonus.coins)} PokéCoins.`);
+    lines.push(`The ${p.name} bonus page is complete! ${post('lab', 'Bonus page complete!', `You completed the ${p.name} bonus page of your Pokédex. Please accept this reward for your research.`, p.bonus.coins)}`);
   } else if (!save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });
-    const coins = awardCoins(p.perk.coins);
-    lines.push(`The ${p.name} page is complete! +${coins} PokéCoins.`, `New perk: ${p.perk.name}. ${p.perk.text}`);
+    const paid = post('lab', 'Page complete!', `You completed the ${p.name} page of your Pokédex. Please accept this reward for your research.`, p.perk.coins);
+    lines.push(`The ${p.name} page is complete! ${paid}`,`New perk: ${p.perk.name}. ${p.perk.text}`);
     if (safariOpen(getSave())) lines.push('Every Pokémon is in the Pokédex! The Safari Zone is open on the title screen.');
   }
   if (n === goal && p.perk && pageResearched(p)) {
@@ -104,8 +105,8 @@ export function dexDefeated(id) {
   let complete = false;
   if (!save.dex.complete && ALL_IDS.every(researched)) {
     updateSave(d => { d.dex.complete = true; });
-    const coins = awardCoins(DEX_COMPLETE_COINS);
-    lines.push(`Pokédex complete! Every entry's research is done. +${coins} PokéCoins!`, `New on the map: the ${SCOPE.name}. ${SCOPE.text}`);
+    const paid = post('lab', 'Pokédex complete!', 'Every entry of your Pokédex is researched. A remarkable achievement! The Lab sends its warmest congratulations.', DEX_COMPLETE_COINS);
+    lines.push(`Pokédex complete! Every entry's research is done. ${paid}`,`New on the map: the ${SCOPE.name}. ${SCOPE.text}`);
     complete = true;
   }
   return { lines, complete, research };
@@ -123,9 +124,9 @@ export const researchCount =() => [ALL_IDS.filter(researched).length, ALL_IDS.le
 const BANNER_NAME = { clearing: 'Clearing', shrine: 'Shrine', ruins: 'Ruins', wastes: 'Wastes', thornwood: 'Jungle', savanna: 'Savanna', depths: 'Depths' };
 const MYSTERY = DEX_PAGES.length;   // the Crystal Depths' page, "???" until a Mewtwo run reaches it
 /** A bonus page (another road from a crossroads) shows once a run has walked that road or met one of its Pokémon. */
-const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));
+export const bonusKnown = (p) => (getSave().stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => getSave().dex.seen.includes(id));
 /** A Mewtwo run has been down into the Depths (or met one of its Pokémon), so its page shows. */
-const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
+export const depthsKnown = () => getSave().stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => getSave().dex.seen.includes(id));
 
 let view = 'list';   // 'list' | 'page' | 'rewards'
 let entry = 0;       // the entry shown on the device, an index into the page's ids
@@ -411,6 +412,7 @@ function renderList() {
   rewards.append(el('span', 'pdx-banner-count', `★ ${done} / ${all}`), progressBar(done, all), iconOf('pdx-banner-mons pdx-trophy', '🏆'));
   banners.push(rewards);
 
+  for (const b of banners) { const m = b.querySelector('.pdx-medal'); if (m) b.querySelector('.pdx-banner-name').append(m); }   // the medal on the title's line
   $('dex-banners').replaceChildren(...banners);
 
   const ids = ALL_IDS;

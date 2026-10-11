@@ -9,13 +9,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**The Clearing's PC, part 2** (part 1 landed 2026-10-09: the PC right of the plaza, `js/pc.js`, Bill's PC with the walking
-buddy and base residents, your PC's Rename, the Hall of Fame, Log off). Run in: LOCAL (visual). Still to add, as agreed:
-- **Mailbox** in your PC: rewards waiting to be claimed (Pokédex page coins, badge rewards, new skins), opened with a
-  little moment there instead of popping up mid-run.
-- **Prof's PC**: the Pokédex rating, your completion and a hint at the next unlock.
-- **Decorations** in your PC (the base's furniture), and a PC furniture piece in the Secret Base opening the same screen.
-
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - ~~D2~~ and ~~E~~ done 2026-10-07 (see the archive). Staying cream on purpose (the user's call): battle's nameplates,
   Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
@@ -45,10 +38,7 @@ The polish batch (the user wants all of it, 2026-10-03). One session each, in an
 
 The user's second pick (2026-10-03), one session each:
 
-9. **Seasonal title screen.** Run in: LOCAL (Desktop app). The title dresses up by the date, the way `js/daytime.js`
-   follows the clock: October Halloween (pumpkins on the ledge, Gastly / Haunter in the flyers' round, an orange dusk
-   tint), December snow, and room for more. A `season(now)` helper like `timeOfDay()`, and `?season=halloween` to pin it
-   for a playtest (as `?time=` does). Title only; battles and the map are untouched.
+9. ~~Seasonal title screen~~ done 2026-10-10 (see the archive).
 
 **Journey films** (the user's pick, 2026-10-03: "like the fall into the Depths, but travelling"). Between a boss's
 evolution and the next biome's `biomeIntro()`, a short film of the trip there: your evolved Pokémon walks a side-on
@@ -65,7 +55,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     `docs/reference/sky-pillar.md` and the archive). Still the user's: publish `firestore.rules` for the tower board and plaque.
 
 19. **Branching biomes** is done (parts a-d, 2026-10-06/07: the crossroads, the Sunken Ruins and the Thornwood Jungle,
-    each painted with its films; see the archive). The new roads open after a Level 2+ win with each type (`roadsOpen()`, 2026-10-07). Still the user's: hear the new synths and films on a phone.
+    each painted with its films; see the archive). The new roads open after two won runs (`roadsOpen()`, 2026-10-10; was a Level 2+ win with each type). Still the user's: hear the new synths and films on a phone.
 
 20. **A Fire biome and a shuffled pool of roads** is done (parts a-c, 2026-10-07: the Sunscorch Savanna, the pool of three
     roads rolled at each run's start, its look and films, journey films for every pairing, its badges; see the archive).
@@ -79,17 +69,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     in the bot today), every offer from the week's seed so the leaderboard stays even.
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
-    - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
-    - **Part d, augment balance (the user's pick, 2026-10-08: do it the weekend of 2026-10-10).** Run in: CLOUD (attach
-      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 21 and
-      docs/reference/sky-pillar.md. Balance the Sky Pillar's augments with the bot (pokeDB-sim's `sim/augranks.json`,
-      `towerCfg()` in `sim/run-node.mjs`). 1) Fire first: on full climbs Fire reaches floor 100 16% of the time against
-      Grass 49% and Water 32%; lift it (stronger Fire-only augments, or more healing / block for it) to within ~10 points
-      of Water, without moving Grass and Water. 2) Re-check the five that measured far below no augment, with more climbs
-      before touching them: Risky Climb (Grass -26 floors), Card Shark (-19), Golden Touch and Bodyguard (-13), Overcharge
-      (Water -11); fix any that is really a trap. 3) Re-measure what changed and confirm the full-climb rates once at
-      ~300. The ranks are one augment from floor 1, so read gaps under ~5 floors as even, and remember scaling augments
-      measure low there. Keep bot runs small (CLAUDE.md). Push both repos to main."
+    - Part e (the five augments the bot never took, reworked) is done: see the archive. Floor 100: Fire 23%, Grass 56%, Water 41%.
+    - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
+      the strongest; leave it unless a playtest says otherwise.
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -182,6 +164,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, the user's ask: "like the Pokémon Center"): the run's Mart
+  as a 3D room (`js/mart-3d.js`), every ware on one wall unit, Kecleon's counter with the PC. The user playtests it on the
+  branch (`?mart`); on their OK, merge it into `main`. ▶ Run in: LOCAL (visual).
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
   Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and

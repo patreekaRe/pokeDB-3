@@ -149,7 +149,6 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const box = $('reward-options');
   box.replaceChildren();
   box.className = `reward-options${layout ? ` ${layout}` : ''}`;
-  box.style.zoom = '';   // fitMart()'s zoom-out would shrink the next screen too, and pull the Center's and events' fixed spots towards the top left
   const groups = {};
   // a deck picker's cards sit on the device's dark screen, which scrolls inside the glass (the box)
   const glass = layout.split(' ').includes('deck-pick') ? box.appendChild(el('div', 'deck-pick-screen')) : box;
@@ -279,7 +278,8 @@ export function pressConfirm(ok) {
 
 // the bar's height, for whatever has to stay clear of it (the Mart, the grotto, the move pick's text box, a picked card
 // blown up over the screen, which lives outside it)
-new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
+// guarded: the Node tests import this file, and Node has no ResizeObserver
+if (globalThis.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--room-bar-h', `${$('room-bar').offsetHeight}px`)).observe($('room-bar'));
 
 /* A picked reward blows up in the middle of a dimmed screen, like a card picked in battle,
    with its confirm ("Add to deck") under it where battle says "Tap to play". The big tile
@@ -380,6 +380,15 @@ export function sayLines(lines, boxId = 'reward-log', onDone) {
     else { box.hidden = true; onDone?.(); }   // like the games, a tap on the last line closes the box
   };
   if (lines.length) showLine(0);
+}
+
+/** Takes the reward box's lines back unsaid (the box put away), for a screen that tells them later. */
+export function holdLines() {
+  clearInterval(say.typing);
+  $(say.box).hidden = true;
+  const lines = say.lines;
+  say = { lines: [], at: 0, typing: 0, box: say.box };
+  return lines;
 }
 
 /* News from the run (a card learned, a Mart buy, an event's outcome) in place of pop-up toasts: told in the next

@@ -51,12 +51,11 @@
 }
 .hub-bar.no-run .hbar-run { opacity: 0; translate: 0 12px; }
 /* your Pokémon on the left in the LCD's four greens, the map run card's look (#lcd-ink in index.html; the user's ask,
-   2026-10-09), standing a little out of the LCD's top like it does there */
-.hbar-mon { grid-column: 1; grid-row: 1 / span 2; position: relative; width: 50px; height: 42px; margin: -14px 0 -4px -2px; }
-.hbar-mon::before { content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 7px; border-radius: 50%; background: rgba(31, 58, 20, 0.16); }
-.hbar-sprite { position: absolute; left: 50%; bottom: 0; width: 60px; height: 60px; margin-left: -30px; object-fit: contain; filter: url(#lcd-ink); scale: var(--grow, 1); transform-origin: 50% 100%; }
-.hbar-sprite[data-stage="0"] { --grow: 0.78; }
-.hbar-sprite[data-stage="1"] { --grow: 0.9; }
+   2026-10-09), inside the LCD (it stood out of the top, the user's call): fitMon() in js/hub-3d.js scales each one's
+   visible pixels to this box */
+.hbar-mon { grid-column: 1; grid-row: 1 / span 2; align-self: center; position: relative; width: 34px; height: 30px; }
+.hbar-mon::before { content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 5px; border-radius: 50%; background: rgba(31, 58, 20, 0.16); }
+.hbar-sprite { position: absolute; left: 0; top: 0; width: 100%; height: 100%; filter: url(#lcd-ink); }
 .hbar-info { grid-column: 2; display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; }
 .hbar-name { flex: none; font-weight: 400; }
 .hbar-where { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; opacity: 0.8; }
@@ -127,9 +126,9 @@
 @media (prefers-reduced-motion: reduce) { .hub, .hub-card { animation: none; } .hub-bar { animation: none; } }
 
 /* the logo greets the hub, then fades so it never hides the Ancient Tree's tag */
-.title-screen.hub-on .title-center { animation: hubLogo 3.6s ease-in forwards; }
-.title-screen.hub-on .title-version { visibility: hidden; }
-@keyframes hubLogo { 0%, 65% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.title-screen.hub-on .title-center { animation: hubLogo 5.4s ease-in forwards; }
+.title-screen.hub-mode .title-version { visibility: hidden; }   /* the patch notes are on the Clearing's PC there */
+@keyframes hubLogo { 0%, 75% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .title-screen.hub-on.hub-greeted .title-center { animation: none; visibility: hidden; }
 /* the title's fade in showed the screen under it (the character select) through the Clearing; the walk out of the mall
    or the base is already a fade through black */
@@ -140,22 +139,16 @@
 .hd2d-curtain { position: fixed; inset: 0; z-index: 2000; background: #000; opacity: 0; pointer-events: none; transition: opacity 320ms ease; }
 .hd2d-curtain.on { opacity: 1; pointer-events: auto; }
 
-/* the version tag (the Patch notes) stays once the logo has faded, in the top corner */
-.hub-version {
-  position: absolute; right: max(12px, env(safe-area-inset-right)); top: calc(max(10px, env(safe-area-inset-top)) + 8px);
-  padding: 4px 7px 3px; border: 2px solid #1c1d4e; border-radius: 6px; background: #fff8e0; box-shadow: 0 2px 0 #1c1d4e;
-  color: #1c1d4e; font: 0.55rem/1 var(--pixel-font); font-synthesis-weight: none; cursor: pointer;
-}
-.hub-version:empty { display: none; }
-.hub-version:active { translate: 0 2px; box-shadow: none; }
 
 /* behind the shut Pokédex (showHub()'s hold): the Clearing is drawn, but its keys and bar wait for the partner to walk in */
-.hub.held .hub-dex, .hub.held .hub-version, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
+.hub.held .hub-dex, .hub.held .hub-bar, .hub.held .hub-card { visibility: hidden; }
 .hub.held .hub-view { pointer-events: none; }
 /* the hub is the title from the first frame, so the old pixel sky, its light and the signs never show under it */
 .title-screen.hub-mode .title-sky, .title-screen.hub-mode .title-light, .title-screen.hub-mode .title-flyer,
 .title-screen.hub-mode .title-menu, .title-screen.hub-mode .title-run, .title-screen.hub-mode .title-gate,
 .title-screen.hub-mode .title-signpost, .title-screen.hub-mode .title-areas { display: none; }
+/* the cloud save's Sign in moved into the Clearing's PC (js/pc.js), so the corner's PC goes (2026-10-09, the user's call) */
+.title-screen.hub-mode #title-account { display: none; }
 
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a front's
    line pops up a moment (no pill since 2026-10-09, the user's call). */
@@ -216,6 +209,7 @@
 /* ---------- the Clearing's PC (js/pc.js): full screen, the PC by the plaza grown big ---------- */
 .pc-screen {
   position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr); /* a definite row, so the unit's 100% height holds and a long page scrolls inside it */
   background: radial-gradient(ellipse at 50% 40%, rgba(20, 60, 80, 0.55), rgba(6, 12, 24, 0.82));
   font-family: var(--pixel-font); font-synthesis-weight: none; -webkit-tap-highlight-color: transparent;
   animation: pcFade 0.25s ease-out;
@@ -286,12 +280,63 @@
 .pc-mon {
   position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; cursor: pointer;
   border: 2px solid rgba(42, 106, 152, 0.45); border-radius: 12px; background: rgba(255, 255, 255, 0.55);
+  min-width: 0; overflow: hidden;
 }
-.pc-mon img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+/* Absolute so a sprite's own size never stretches its tile: every box the same square */
+.pc-mon img { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; image-rendering: pixelated; }
+.pc-shiny {
+  flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 2px solid #3a78b8; border-radius: 999px;
+  cursor: pointer; background: #fbfdff; color: #1e2a3a; font: 0.5rem var(--pixel-font); font-synthesis-weight: none;
+}
+.pc-shiny::after {
+  content: ""; width: 22px; height: 12px; border-radius: 999px; background: #b8c8d8 radial-gradient(circle at 6px 6px, #fff 4px, transparent 4.5px) no-repeat;
+  transition: background-color 0.15s, background-position 0.15s;
+}
+.pc-shiny.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); }
+.pc-shiny.on::after { background-color: #e0a820; background-position: 10px 0; }
 .pc-mon.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); box-shadow: 0 0 0 2px #f8d040, 0 0 12px rgba(255, 210, 60, 0.8); }
 .pc-mon:active { translate: 0 2px; }
 .pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
+.pc-deco .pc-mon-tag { z-index: 1; top: 2px; right: 2px; padding: 1px 4px; border-radius: 6px; background: rgba(255, 255, 255, 0.9); line-height: 1.3; }
 .pc-empty { margin-top: 24px; text-align: center; font-size: 0.62rem; }
+/* Patch notes: a white sheet of lines under blue headings on the striped screen */
+.pc-notes { padding: 12px 12px 14px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; box-shadow: 0 3px 0 #2a5a90; }
+.pc-notes .patch-title { margin: 0; font-size: 0.72rem; line-height: 1.5; color: #0e3446; }
+.pc-notes .patch-date { margin: 2px 0 4px; font-size: 0.55rem; color: #5a7088; }
+.pc-notes .patch-head { margin: 14px 0 6px; font-size: 0.62rem; color: #1e5a96; }
+.pc-notes .patch-list { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; font-size: 0.6rem; line-height: 1.6; }
+.pc-notes .patch-game { display: flex; flex-direction: column; gap: 10px; }
+.pc-notes .patch-row-text { display: flex; flex-direction: column; gap: 3px; font-size: 0.58rem; line-height: 1.6; }
+.pc-notes .patch-row-text b { font-size: 0.64rem; color: #1e5a96; }
+/* Decorations: the base's furniture, its pictures smooth (never pixelated), gold for what stands in the room */
+.pc-screen.in-base { z-index: 910; }
+/* The kinds as one tray of equal keys, five a row, so it always fits the screen's width and lines up */
+.pc-chips {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 3px; margin-bottom: 10px; padding: 3px;
+  border: 2px solid #3a78b8; border-radius: 12px; background: #dcebf8; box-shadow: inset 0 1px 2px rgba(30, 60, 100, 0.25);
+}
+.pc-chip {
+  min-width: 0; padding: 8px 2px; border: 0; border-radius: 9px; cursor: pointer; overflow: hidden;
+  background: transparent; color: #1e2a3a; font: clamp(0.4rem, 2.3vw, 0.5rem) var(--pixel-font); font-synthesis-weight: none;
+  white-space: nowrap; text-overflow: clip; text-align: center;
+}
+.pc-chip.on { background: #3a78b8; color: #fff; box-shadow: 0 1px 0 #24568a, inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+.pc-chip:active { translate: 0 1px; }
+.pc-decos { grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); }
+.pc-deco { padding: 8px; }
+.pc-deco canvas { width: 100%; height: 100%; object-fit: contain; image-rendering: auto; }
+.pc-deco.picked { outline: 3px solid #3a78b8; outline-offset: 1px; }
+.pc-deco-pick {
+  display: grid; grid-template-columns: 96px 1fr; grid-template-rows: auto auto 1fr; column-gap: 12px; row-gap: 4px;
+  align-items: start; text-align: left; margin: 0 0 12px; padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.85); border: 3px solid #3a78b8; border-radius: 14px;
+}
+.pc-deco-pick > :not(.pc-deco-big) { grid-column: 2; min-width: 0; }
+.pc-deco-pick .pc-pick-name { line-height: 1.4; overflow-wrap: anywhere; }
+.pc-deco-pick .pc-dupe, .pc-deco-pick .pc-away { margin: 4px 0 0; justify-self: start; align-self: end; }
+.pc-deco-big { grid-row: 1 / -1; position: relative; width: 96px; height: 96px; overflow: hidden; border-radius: 10px; background: #fdf3d0; }
+.pc-deco-big canvas { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; image-rendering: auto; filter: drop-shadow(0 3px 0 rgba(0, 60, 90, 0.2)); }
+.pc-away { margin-top: 4px; padding: 10px 16px 10px 30px; }
 .pc-name { display: flex; gap: 10px; align-items: center; }
 .pc-name-box {
   flex: 1; min-width: 0; padding: 12px; border: 3px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a;
@@ -327,9 +372,213 @@
   box-shadow: 0 2px 0 #8e1c26;
 }
 .pc-off:active { translate: 0 2px; box-shadow: none; }
+/* Prof. Oak's PC: the rating's three numbers, the next-unlock card (a tap shows another) and every page's bar */
+.pc-rate { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.pc-rate-n {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 2px solid #3a78b8;
+  border-radius: 10px; background: #fbfdff; box-shadow: 0 3px 0 #2a5a90;
+}
+.pc-rate-n small { font-size: 0.42rem; color: #2a6a80; letter-spacing: 0.5px; }
+.pc-rate-n b { font-weight: 400; font-size: 1rem; color: #1e2a3a; }
+.pc-hint {
+  position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 12px; width: 100%;
+  margin-bottom: 14px; padding: 10px 12px 12px; cursor: pointer; text-align: left; border: 2px solid #c89418; border-radius: 10px;
+  background: linear-gradient(#fffbe6, #fff0b0); color: #3a2a08; font: 0.56rem/1.8 var(--pixel-font); font-synthesis-weight: none;
+  box-shadow: 0 3px 0 #a8780c;
+}
+.pc-hint:disabled { cursor: default; }
+.pc-hint:not(:disabled):active { translate: 0 2px; box-shadow: 0 1px 0 #a8780c; }
+.pc-hint-top { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 0.48rem; color: #8e5c06; letter-spacing: 0.5px; }
+.pc-hint-art { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; filter: brightness(0) opacity(0.7); }
+.pc-hint-text { grid-column: auto / -1; }
+.pc-done { display: flex; flex-direction: column; gap: 6px; }
+.pc-done-head { margin-top: 6px; font-weight: 400; font-size: 0.5rem; color: #0e3446; letter-spacing: 1px; }
+.pc-done-row { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 4.5em; align-items: center; gap: 8px; font-size: 0.48rem; color: #1e2a3a; }
+.pc-done-name { line-height: 1.6; }
+.pc-done-n { text-align: right; }
+.pc-done-bar {
+  height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.6); box-shadow: inset 0 0 0 1px rgba(42, 106, 152, 0.4);
+  background-image: linear-gradient(90deg, #3a9a58, #6ad070); background-size: calc(var(--k) * 100%) 100%; background-repeat: no-repeat;
+}
+.pc-done-row.star { color: #8e5c06; }
+.pc-done-row.star .pc-done-bar { background-image: linear-gradient(90deg, #e0a820, #f8d850); }
+/* Missions (js/missions.js): a card each, its goal and PokéCoins over a bar, Claim once done; the bonus for all of them last */
+.pc-quests { display: flex; flex-direction: column; gap: 8px; }
+.pc-quest-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; font-size: 0.56rem; color: #0e3446; letter-spacing: 1px; }
+.pc-quest-head b { font-weight: 400; }
+.pc-quest-left { font-size: 0.45rem; letter-spacing: 0; color: #2a6a80; }
+.pc-quest {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 8px 10px;
+  padding: 10px 12px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; font-size: 0.52rem;
+  box-shadow: 0 3px 0 #2a5a90;
+}
+.pc-quest-text { line-height: 1.6; }
+.pc-quest-coins { display: flex; align-items: center; gap: 4px; justify-self: end; color: #8e5c06; font-size: 0.6rem; }
+.pc-quest-coins b { font-weight: 400; }
+.pc-quest-coin { width: 18px; height: 18px; }
+.pc-quest-coins.paid { animation: pcPaid 0.5s ease-out; }
+.pc-quest-prog { display: flex; align-items: center; gap: 8px; font-size: 0.45rem; color: #2a6a80; }
+.pc-quest-prog .pc-done-bar { flex: 1; }
+.pc-quest-n { flex: none; }
+.pc-quest-claim { grid-column: 2; grid-row: 2; min-width: 70px; height: 28px; font-size: 0.5rem; }
+.pc-quest-tag { grid-column: 2; grid-row: 2; justify-self: end; font-size: 0.45rem; color: #c02a2a; letter-spacing: 1px; }
+.pc-quest-tag.none { visibility: hidden; }
+.pc-quest.done { border-color: #c89018; box-shadow: 0 3px 0 #8e5c06, 0 0 10px rgba(255, 216, 64, 0.5); }
+.pc-quest.paid { opacity: 0.6; }
+.pc-quest.paid .pc-done-bar { background-image: linear-gradient(90deg, #8aa0b0, #b0c4d0); }
+.pc-quest.bonus { background: linear-gradient(#fffbea, #fff3c8); border-style: dashed; }
+/* the Mailbox (js/mail.js): envelopes in a list, the newest first; one opened is a letter rising out of its envelope */
+.pc-mail { display: flex; flex-direction: column; gap: 10px; }
+.pc-env {
+  position: relative; display: grid; grid-template-columns: 38px 1fr auto; grid-template-rows: auto auto; align-items: center;
+  column-gap: 12px; padding: 10px 12px; cursor: pointer; text-align: left; border: 2px solid var(--ink); border-radius: 8px;
+  background: linear-gradient(162deg, transparent 0 49.6%, rgba(0, 0, 0, 0.06) 50%, transparent 50.4%), var(--paper);
+  color: #2a2620; font: 0.6rem var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 rgba(0, 40, 70, 0.35);
+}
+.pc-env:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(0, 40, 70, 0.35); }
+.pc-env.read { opacity: 0.62; }
+.pc-env-stamp {
+  grid-row: 1 / span 2; width: 34px; height: 40px; border-radius: 3px; background:
+    radial-gradient(circle, #fff 0 5px, var(--ink) 5px 6px, #fff 6px 9px, transparent 9px),
+    linear-gradient(transparent 46%, var(--ink) 46% 54%, transparent 54%), var(--ink);
+  outline: 2px dashed #fff; outline-offset: -4px;
+}
+.pc-env-from { font-size: 0.48rem; color: var(--ink); letter-spacing: 0.5px; }
+.pc-env-title { grid-column: 2; font-weight: 400; font-size: 0.64rem; }
+.pc-env-when { grid-column: 3; grid-row: 1 / span 2; }
+.pc-env-when { font-size: 0.45rem; color: #6a6258; }
+
+.pc-letter { position: relative; width: min(300px, 100%); height: 250px; margin: 0 auto 12px; overflow: hidden; perspective: 600px; }
+.pc-env-back, .pc-env-front, .pc-env-flap { position: absolute; left: 0; right: 0; bottom: 0; height: 110px; }
+.pc-env-back { border-radius: 8px; background: color-mix(in srgb, var(--ink) 70%, #000); }
+.pc-env-front {
+  z-index: 2; border-radius: 0 0 8px 8px; background:
+    linear-gradient(to top right, var(--paper) 49.5%, transparent 50.5%) left / 51% 100% no-repeat,
+    linear-gradient(to top left, var(--paper) 49.5%, transparent 50.5%) right / 51% 100% no-repeat,
+    linear-gradient(transparent 55%, var(--paper) 55%);
+  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.12));
+}
+.pc-env-flap {
+  z-index: 0; bottom: 110px; height: 60px; transform-origin: 50% 100%;
+  clip-path: polygon(0 100%, 50% 0, 100% 100%); background: color-mix(in srgb, var(--paper) 88%, var(--ink));
+}
+.pc-sheet {
+  position: absolute; z-index: 4; left: 12px; right: 12px; top: 18px; display: flex; flex-direction: column; gap: 8px;
+  padding: 14px 14px 16px; border-radius: 6px; background: #fffef9; color: #2a2620; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  background-image: repeating-linear-gradient(transparent 0 19px, rgba(60, 110, 170, 0.12) 19px 20px);
+}
+.pc-sheet-from { font-size: 0.45rem; color: var(--ink); }
+.pc-sheet-title { font-weight: 400; font-size: 0.7rem; }
+.pc-sheet-text { margin: 0; font-size: 0.52rem; line-height: 1.8; }
+.pc-prize { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; }
+.pc-prize-coin { width: 30px; height: 30px; }
+.pc-prize-n { font-weight: 400; font-size: 0.95rem; color: #8e5c06; }
+.pc-letter.paid .pc-prize { animation: pcPaid 0.5s ease-out; }
+.pc-claimed {
+  position: absolute; right: 10px; top: 12px; padding: 4px 8px; border: 3px solid #c02a2a; border-radius: 6px;
+  color: #c02a2a; font-size: 0.55rem; rotate: -12deg; opacity: 0.85; animation: pcStamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.pc-claim { display: block; margin: 0 auto; min-width: 140px; height: 44px; }
+/* opening: the flap swings up and over, the letter rises out of the envelope, then settles in front of it to be read */
+.pc-letter.fresh .pc-env-flap { animation: pcFlap 0.45s 0.15s ease-in-out backwards; }
+.pc-letter.fresh .pc-sheet { animation: pcRise 1s 0.5s ease-in-out backwards; }
+@keyframes pcFlap { from { rotate: x 180deg; z-index: 3; } }
+@keyframes pcRise { 0% { translate: 0 220px; z-index: 1; } 55% { translate: 0 -14px; z-index: 1; } 56% { z-index: 4; } 100% { translate: 0 0; z-index: 4; } }
+@keyframes pcPaid { 40% { scale: 1.25; } }
+@keyframes pcStamp { from { scale: 2.4; opacity: 0; } }
+.pc-screen.calm .pc-letter *, .pc-screen.calm .pc-new { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-letter *, .pc-new { animation: none !important; } }
 @keyframes pcFade { from { opacity: 0; } }
 @keyframes pcGrow { from { scale: 0.4; translate: 0 30%; opacity: 0; } }
 @keyframes pcBoot { 0% { filter: brightness(0.2) saturate(0); } 50% { filter: brightness(1.6); } 100% { filter: none; } }
 .pc-screen.calm, .pc-screen.calm .pc-unit, .pc-screen.calm .pc-glass { animation: none; }
 @media (prefers-reduced-motion: reduce) { .pc-screen, .pc-unit, .pc-glass { animation: none !important; } }
 .pc-screen button:focus:not(:focus-visible) { outline: none; }
+
+/* Halloween's ghosts (js/hub-spooky.js) speak in the Furniture store's speech window (.mall-line), over the bar; a
+   tapped talk shows the bouncing arrow, and a place's card takes the spot from them */
+.hub .spook-foot { bottom: calc(var(--hub-bar-h, 90px) + 14px); z-index: 6; }
+.spook-line.on { pointer-events: auto; cursor: pointer; }
+.spook-line i { display: none; }
+.spook-line.more i {
+  display: block; position: absolute; right: 18px; bottom: 8px; width: 0; height: 0;
+  border: 6px solid transparent; border-top: 7px solid #e8a040; border-bottom: 0; animation: b3Nudge 0.8s ease-in-out infinite;
+}
+/* a passing line floats over the ghost's head in a small one, its name on the same tag, its tail pointing down at it */
+.spook-bubble {
+  position: absolute; z-index: 5; translate: -50% calc(-100% - 8px); width: max-content; max-width: min(220px, 62vw);
+  box-sizing: border-box; margin: 0; padding: 15px 15px 11px; pointer-events: none; border-radius: 20px / 17px;
+  background: #fbf4df; color: #6a5440; font-size: 13px; line-height: 1.4; text-align: center;
+  box-shadow: 0 3px 0 #d8c8a4, 0 5px 12px #0005; transform-origin: 50% 100%;
+}
+.spook-bubble .mall-who {
+  display: block; position: absolute; left: 12px; top: -11px; padding: 4px 10px; border-radius: 999px;
+  background: #f0a0b0; color: #6a2a3a; font-size: 10px; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
+}
+.spook-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -8px; translate: -50% 0;
+  border: 8px solid transparent; border-top: 9px solid #fbf4df; border-bottom: 0; filter: drop-shadow(0 2px 0 #d8c8a4);
+}
+.spook-bubble[hidden] { display: none; }
+.spook-bubble.spook-in { animation: spookPop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes spookPop { from { scale: 0.6; opacity: 0; } }
+.hub-card:not([hidden]) ~ .spook-foot, .hub.held .spook-foot, .hub.held .spook-bubble, .hub-card:not([hidden]) ~ .spook-bubble { display: none; }
+@media (prefers-reduced-motion: reduce) { .spook-line.more i, .spook-bubble.spook-in { animation: none; } }
+
+/* something new to read in the PC: a gold "!" bobbing over the item's corner, like the Pokédex keys' (.dex-news), only bigger */
+.pc-new {
+  position: absolute; top: -8px; right: -8px; z-index: 2; display: grid; place-items: center; width: 24px; height: 24px;
+  border-radius: 7px; background: linear-gradient(#ffe070, #ffc020); color: #3a1c0c; font: 13px/1 var(--pixel-font);
+  box-shadow: 0 0 0 2px #3a1c0c, 0 3px 0 2px #3a1c0c, 0 0 12px rgba(255, 208, 64, 0.9);
+  animation: pcNew 0.7s ease-in-out infinite alternate; pointer-events: none;
+}
+@keyframes pcNew { from { translate: 0 0; } to { translate: 0 -4px; } }
+
+/* House upgrades: the blueprint, after WoW's housing one, on a dark grid */
+.pc-blueprint { margin: 0 0 12px; padding: 6px; border: 2px solid #3a78b8; border-radius: 10px; background: #081a30; box-shadow: 0 3px 0 #2a5a90; }
+.pc-blueprint { display: flex; align-items: center; gap: 6px; }
+.pc-bp { display: block; flex: 1; min-width: 0; width: 100%; max-height: 300px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pc-blueprint.zoomed .pc-bp { cursor: grab; }
+.pc-blueprint.zoomed .pc-bp:active { cursor: grabbing; }
+.pc-bp-keys { flex: none; display: flex; flex-direction: column; gap: 6px; }
+.pc-bp-zoom { width: 30px; height: 30px; padding: 0; border: 2px solid #a8c4dc; border-radius: 50%; background: #1c3a5c; color: #eef4fa; font: 700 18px/1 sans-serif; cursor: pointer; box-shadow: 0 2px 0 #0a1a2c; }
+.pc-bp-zoom:disabled { opacity: 0.35; cursor: default; }
+.pc-bp-room .pc-bp-edge { fill: #3c4654; stroke: #a8c4dc; stroke-width: 0.22; }
+.pc-bp-room .pc-bp-fill { fill: #3c4654; }
+.pc-bp-room { cursor: pointer; }
+.pc-bp-room.entry .pc-bp-edge, .pc-bp-room.entry .pc-bp-fill { fill: #2c3440; }
+.pc-bp-room.ghost .pc-bp-edge { fill: rgba(88, 216, 88, 0.22); stroke: #58d858; stroke-dasharray: 0.5 0.35; }
+.pc-bp-room.ghost .pc-bp-fill { fill: rgba(88, 216, 88, 0.22); }
+.pc-bp-name { fill: #eef4fa; text-anchor: middle; dominant-baseline: central; font-family: var(--pixel-font); pointer-events: none; }
+.pc-bp-hit { fill: transparent; }
+.pc-bp-pip circle:last-child { stroke: #10202c; stroke-width: 0.14; }
+.pc-bp-pip.shut circle:last-child { fill: #9aa6b2; }
+.pc-bp-pip.open { cursor: pointer; }
+.pc-bp-pip.open circle:last-child { fill: #58d858; }
+.pc-bp-pip.open.on circle:last-child { fill: #fff; stroke: #58d858; stroke-width: 0.3; animation: pcPip 0.6s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: center; }
+@keyframes pcPip { to { scale: 1.35; } }
+.pc-bp-room.below { pointer-events: none; }
+.pc-bp-room.below .pc-bp-edge { fill: none; stroke: #4a6a8a; stroke-dasharray: 0.4 0.3; }
+.pc-bp-room.below .pc-bp-fill { fill: rgba(60, 70, 84, 0.25); }
+.pc-bp-room.picked .pc-bp-edge { stroke: #f0b030; stroke-width: 0.3; }
+.pc-bp-room.picked .pc-bp-fill { fill: #5a4a3a; }
+.pc-bp-pip.shut.stairs rect { fill: #c8a070; stroke: #10202c; stroke-width: 0.14; }
+.pc-bp-pip.join { cursor: pointer; }
+.pc-bp-pip.join circle:last-child { fill: #f0b030; }
+.pc-bp-pip.join.on circle:last-child { fill: #fff; stroke: #f0b030; stroke-width: 0.3; }
+.pc-build-row { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
+.pc-build-row .pc-build { margin: 0; }
+.pc-build.pc-turn { min-width: 90px; }
+.pc-floors { margin-bottom: 8px; }
+.pc-plan { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.pc-plan-name { font-weight: 400; font-size: 0.72rem; }
+.pc-plan-note { font-size: 0.5rem; color: #2a6a80; line-height: 1.6; }
+.pc-build, .pc-dupe { margin: 8px auto 0; height: 40px; }
+.pc-build { display: block; margin: 0 auto 12px; }
+.pc-kinds { gap: 6px; margin-bottom: 4px; }
+.pc-kind { display: flex; justify-content: space-between; align-items: center; padding: 11px 12px 11px 30px; }
+.pc-kind.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); }
+.pc-kind:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
+.pc-kind-size { font-size: 0.5rem; color: #2a6a80; }
+.pc-screen.calm .pc-bp-pip { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { .pc-bp-pip circle { animation: none !important; } }

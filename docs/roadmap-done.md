@@ -1732,6 +1732,13 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   Speed Demon, Sudden Death (now every foe -25% HP for -25% max HP, `enemyHp`), Overclock, Pandemonium and Gambler (your
   attacks x3 or x0.75, enemies unchanged) reworked from never-taken to 15-61%. Floor 100: Fire 26 -> 16%, Grass 59 -> 49%,
   Water 39 -> 32%. The table and numbers are in `docs/augments.md` (Tuning); pokeDB-sim's ranks re-measured.
+- **Sky Pillar augments, part d** (2026-10-10): Fire's Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix
+  stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
+  noise, not traps. Then three new Fire-only augments (Flash Fire, Magma Armor, Eruption). Floor 100: Fire 16 -> 28%, Grass 49 -> 51%,
+  Water 32 -> 42% (200-350 climbs a type). Detail in `docs/augments.md`.
+- **Sky Pillar augments, part e** (2026-10-11): Mulligan, Scavenger, Ambush, Refresh and Thorn Garden reworked (each was
+  below a bare climb, now +4 to +11 floors; new key `startSeed`), so the bot takes them 63-100% of the time. Floor 100:
+  Fire 23%, Grass 56%, Water 41% (200 climbs a type). Detail in `docs/augments.md` Part e.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
@@ -1805,7 +1812,7 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 - **R16. How to play is a Pokédex app** (2026-10-08, the user's ask: "open up to a Pokédex", clean up its icons): the old swipe window (`#help-dialog`) and the Help menu (`#dev-help`) are gone; `howtoApp` in `js/howto.js` runs on `shelfApp()`, 7 topic banners, 48 tips, every picture smooth vector art (new `weak`, `vulnerable`, `tide`, `seed`, `chest`, `pp` in `js/smooth-icons.js`), its numbers read from the data. The dock's Help, the title's ❓ and the first launch open it; About & credits sits above its banners. The Bag's map key now draws its own Mart / Center buildings (`initBag()` in `js/run.js`).
 - **R17. How to play's banners get their own pictures** (2026-10-08, the user's ask): bigger and huddled, a Pokémon in the middle, and Cards brings back the old window's fanned hand of a 1-PP Fire, Grass and Water card (`bannerArt()` / `tricard()` in `js/howto.js`, `.howto-banner-art` in `css/screens.css`).
 - **R18. How to play moves onto the New game sign** (2026-10-08, the user's ask): the corner's ❓ is gone; a white emote bubble with a red ? hangs off New game's right end (`helpRow()` in `js/title.js`, `.gem-help` in `css/menus.css`), hopping and ringing out every 3.2 s until first tapped (`save.helpTapped`), then only breathing.
-- **R19. Continue in the Sky Pillar lobby** (2026-10-08, the user's ask: another place to press Continue): a gold `.room-ok` pill on the lobby's lid after the lights (`#tower-continue`), shown whenever any run is saved; it closes the lobby and calls main.js's `continueGame()` (`savedRun` / `onContinue` handed to `initTowerPrep()`).
+- **R19. Continue in the Sky Pillar lobby** (2026-10-08, the user's ask: another place to press Continue): a gold `.room-ok` pill on the lobby's lid after the lights (`#tower-continue`), shown whenever any run is saved; it closes the lobby and calls main.js's `continueGame()` (`savedRun` / `onContinue` handed to `initTowerPrep()`). Taken out again 2026-10-09 (the user's call).
 - **R20. Skip stays put; the climb's Home on the hinge** (2026-10-08, the user's ask): taking a found item or relic (or a grotto relic) leaves Skip in place, just `disabled` (`showChoice()` re-enables it), instead of hiding it; on the Sky Pillar map the Home key moves from the LCD to the hinge after the lights, like every map's (`--tw-home-x/y` from `measureBar()` in `js/tower.js`).
 - **R21. Augments in the climb's dock** (2026-10-08, the user's ask): a 5th dock button on the Sky Pillar map (`.mdex-aug`, smooth `augments` icon, a count) opens a new Bag pocket, Augments, moved out of the Relics pocket (`renderAugmentList()`); hidden and skipped by the Bag's arrows off a climb. Chosen over a key on the hinge, which is already full on phones.
 - **R22. Back wobbles; the select on a green LCD** (2026-10-08, the user's ask): the title's Back ball drops its ◀, wobbles all the time (`backRock`) and sits centred under the signs' balls (`--ball-x` from `sizeGems()`). The character select's portraits sit on a green LCD in the Practice grid's style, one swipeable row, 62px (54 on short phones), the pick dark (`.select-screen:not(.preparing) .sel-thumb`); the starting deck keeps the dark screen. (A Pokédex-slot Practice grid was tried and reverted.)
@@ -2044,3 +2051,63 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   a smooth ramp, so the partner sank into each tread, and upstairs it walked into a stairwell only painted on the floor);
   a timber lift with brass-dial header, champagne doors that slide apart with a ding (`lift-ding`), a lit car, and the
   ride is doors open, step in, doors shut, dial swings, out on the other floor. `LIFT` / `rideOn()`.
+- **Furniture store: a ribbon-cutting grand opening** (2026-10-09, the user's ask): the day the store first opens, a red
+  ribbon on brass posts with a bow crosses its front in the hall, a GRAND OPENING! easel beside it and Smeargle waiting.
+  A tap has Smeargle ask you to cut it, a second snips it (`snip` synth): the halves swing down, the bow drops, confetti
+  bursts, the achievement jingle, and Smeargle walks in, you after it. Saved as `secretBase.ribbonCut` (a save already
+  greeted inside skips it); `?ribbon` puts it up for a page load, never saved. `buildRibbon()` / `ribbonTap()` in `js/mall-3d.js`.
+
+- **The Clearing PC's Mailbox** (2026-10-09, the user's ask, part 2 of the PC): the big PokéCoin prizes (a Pokédex,
+  bonus or Safari page done, the whole Pokédex, a type's first Level 5 jackpot, Champion of the Depths' coins) are
+  posted as letters (`post()` in `js/mail.js`, `save.mail`) instead of paid mid-run; the reward line says they wait in the
+  PC. The PC's Mailbox (top of its menu) lists envelopes, newest first; a tap opens one (flap up, letter rises out and
+  settles in front) and Claim pays it, the coins counting up under a CLAIMED stamp. An envelope bubble bobs over the PC
+  while one waits. With the Signs title there is no PC, so they're paid at once. Research-complete coins stay immediate
+  (their own window), starter unlock windows unchanged, and badges have no rewards to mail. `?mail` drops three sample
+  letters into an empty mailbox.
+- **Prof. Oak's PC** (2026-10-09, part 2 of the Clearing's PC): a row under your own PC opens `PAGES.prof` in `js/pc.js`:
+  Gen 3's Pokédex rating (seen / beaten / researched over the three main pages, Prof. Oak's line by how much is beaten,
+  `rating()`), a gold Next unlock card (`hints()`: nearest unfinished page, the Safari Zone's door, the research, a Safari area,
+  a known bonus page, then up to 3 locked starters as silhouettes, Mewtwo kept secret; a tap shows the next) and a bar per
+  page (bonus pages once known, Safari areas once it's open).
+- **Decorations** (2026-10-09, the last part of the Clearing's PC): a row under your own PC opens `PAGES.decor` in `js/pc.js`:
+  every design you own (`decorations()` in `js/secret-base.js`: bought, earned, the free Storage PC), filter chips by
+  `KINDS_OF`, gold tiles for what stands in the room; a tap shows how many are in the room and in storage, and Put away
+  sends them all (and whatever stands on them) back to storage (`putAway()`). Every base owns one Storage PC (`FREE_PC`,
+  added in `owns()`); tapped in the room on Walk it opens the PC on its Decorations (`logOn()` in `js/base-3d.js`, `.in-base`
+  over the base), and the room reloads from the save when it's logged off.
+
+- **Seasonal title screen** (polish #9, 2026-10-10): `season(now)` in `js/season.js` (October `halloween`, December
+  `winter`; `?season=halloween|winter|none` pins it) dresses the 3D Clearing (the default title), its look all in
+  `js/hub-season.js`: Halloween's autumn trees, fallen leaves, 13 pumpkins (most jack-o'-lanterns lit from dusk through
+  `seasonMats`), an orange tint (`TINT`), orange / violet wisps; winter's snowy ground, snow-capped trees (`snowCap()`), a
+  snowman, falling snow (`makeSnow()`), a cold light; the vista past the Safari gate follows (`vistaLook()`). Ghosts
+  (Gastly, Haunter, Gengar, Misdreavus, Drifloon) / Delibird and Vanillite join the flyers' round on both titles
+  (`SEASON_FLYERS`). The Signs title's ledge is otherwise unchanged. A new season is a `season()` line and its looks.
+
+- **House upgrades and Duplicate** (2026-10-10, the user's asks): the PC's blueprint grows the main room (500) and builds
+  closets, halls, bedrooms, dens, L and cross rooms and great halls onto its doorways (500 each, up to 8), each walked
+  through its own door; Duplicate copies owned furniture (50, +5 a copy, capped at 100); the PC's new marks are a gold
+  "!". Detail in CLAUDE.md's House upgrades note.
+- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a day (30-60 coins) and 3 a
+  week (180-300), plus a bonus for all of them (60 / 300), counted from ordinary play and claimed at the PC's MISSIONS page.
+  Detail in CLAUDE.md's Daily and weekly missions note.
+
+**3D ? rooms, part a** (2026-10-11): the Move Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club are
+walked in 3D (`js/event-3d.js`, `docs/reference/events.md`), each choice's act and the trainers' reactions on the props.
+Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with the old pixel Mart, 2026-10-10), and a
+`?event=day-care` peek crashed when the map hadn't rolled one (`rollEvent()`).
+
+**3D ? rooms, parts b and c** (2026-10-11): the Hot Spring and the Shrine are open-air 3D rooms with a look per biome and
+the light by the hour, and the treasure grotto a 3D cave per biome with a Poké Ball chest that wobbles and opens
+(`js/event-3d.js`, `docs/reference/events.md`). `?event=` takes `&biome=` and `&starter=` now, and `?event=treasure` walks
+into a grotto.
+
+**3D ? rooms, part d** (2026-10-11, the user's pick: a 3D ground per biome): the Berry Tree, Wishing Well, Item Ball and
+Team Rocket stand on a patch of the biome's own 3D ground (`wild()` in `js/event-3d.js`), each choice played out on its
+prop. Only Kenmatta's arena is still pixel.
+
+**3D ? rooms, parts b-d and live** (2026-10-11): the Hot Spring, Shrine, treasure grotto and the outdoor four walked in 3D;
+every room now stays until you walk out over its doormat (framed above the text box), found items float over the room,
+each room has the user's song (`event-room`, `event-outdoor`, `shrine-room`, `treasure`), and the Mart's relics are
+bigger with nothing in front of them. Playtested on `event-rooms-3d`, merged into `main` the same day (the user's call).

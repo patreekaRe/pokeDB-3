@@ -1,12 +1,123 @@
 /* ============================================================
-   patchnotes.js  -  the title's version tag and its Patch notes
-   window (js/patchnotes.js). Newest patch first: a new patch is
-   one more entry at the top, and the tag shows its version.
-   Each section is [icon, heading, lines]; every emoji needs an
-   icon in js/icons.js.
+   patchnotes.js  -  the patch notes, read on the Clearing's PC
+   (js/pc.js) and the Signs title's version tag (js/patchnotes.js).
+
+   How a change gets in (2026-10-10, the user's ask: no more
+   hand-writing a whole patch, and no v1.3, v1.4, v1.5 for every
+   small thing):
+   1. Every session that ships something a player would notice
+      adds ONE line to NEXT: [group, line], the group a GROUPS
+      key. Fixes too small to notice get no line.
+   2. NEXT shows on the PC as "Since vX" with no "!": players can
+      read it, nothing beckons them.
+   3. Once NEXT holds RELEASE_AT lines, or a headline (a new
+      mode, biome or place) and half that, it becomes a patch:
+      move the lines into a new PATCHES entry at the top with the
+      next version, a name and the date, and empty NEXT. The PC's
+      "!" and the version follow by themselves. tests/
+      patchnotes.test.mjs fails past NEXT_MAX, so it can't pile up.
+   A patch's notes are grouped under GROUPS' headings in GROUPS'
+   order (sectionsOf()); patches before 1.2 keep their own
+   hand-made `sections`, each [icon, heading, lines].
    ============================================================ */
 
+/** Where a note goes: its heading, in this order. A new group needs a smooth or pixel icon for its emoji. */
+export const GROUPS = {
+  hub: ['🌳', 'The Clearing'],
+  base: ['🏠', 'Secret Base'],
+  mall: ['🏪', 'Poké Mall'],
+  pc: ['💻', 'The PC'],
+  runs: ['🗺️', 'Runs'],
+  battle: ['⚔️', 'Battle'],
+  modes: ['🗼', 'Game modes'],
+  dex: ['📕', 'Pokédex'],
+  music: ['🎵', 'Music'],
+  look: ['✨', 'Look'],
+  fixes: ['⚙️', 'Settings and fixes'],
+};
+
+/** Lines a patch is cut at; a headline feature cuts it at half. */
+export const RELEASE_AT = 12;
+/** Past this the tests fail: cut a patch. */
+export const NEXT_MAX = 20;
+
+/** What has shipped since the newest patch, waiting for the next one: [group, line]. */
+export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
 export const PATCHES = [
+  {
+    version: '1.4',
+    name: 'Rooms to Walk In',
+    date: '2026-10-11',
+    notes: [
+  ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
+  ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
+  ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are bold arcade letters with a cyan glow, easy to read, lying flat on the ground, with arrows marching in on either side.'],
+  ['pc', 'Daily and weekly missions: three goals a day and three a week, from winning fights to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
+  ['modes', "Sky Pillar: Fire gets three new augments of its own (Flash Fire, Magma Armor and Eruption) and six stronger ones (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
+  ['modes', 'Sky Pillar: Mulligan, Scavenger, Ambush, Refresh and Thorn Garden are stronger and worth picking: Mulligan and Refresh also draw more on turn 1, Scavenger heals after won fights, Ambush hits harder first, and Thorn Garden seeds enemies from the start.'],
+  ['runs', 'The Move Tutor\'s dojo, the Move Deleter\'s study, the Day Care and the Fan Club are 3D rooms you walk about, like the Pokémon Center: tap a sign or the thing itself to walk up to it, and each choice plays out in the room (the sandbag swings, the pendulum swirls, the Egg wobbles, confetti rains on the stage).'],
+  ['fixes', 'The Fan Club no longer freezes the run when you walk in.'],
+  ['runs', 'Every other ? room and the treasure grotto are 3D places you walk about too, dressed for the biome you\'re in and lit by the time of day: soak in the Hot Spring, ring the Shrine\'s bell as it glows in your type\'s colour, shake berries off the Berry Tree or plant one, toss a coin down the Wishing Well, wade into the tall grass for the Item Ball (watch out for Voltorb), face Team Rocket at their roadblock, and watch the grotto\'s Poké Ball chest wobble and pop open in its shaft of light.'],
+  ['runs', 'After a ? room, the Center-style way: the room stays with its signs greyed, and you walk out over the doormat when you\'re ready; a found item or relic floats over the room it came from.'],
+  ['runs', 'The Poké Mart\'s relics sit much bigger under their glass domes, with nothing in front of them or the shelves.'],
+  ['music', 'The Move Tutor, Move Deleter, Day Care and Fan Club have a song of their own, and so do the Hot Spring, Berry Tree, Wishing Well and Item Ball, the Shrine and the treasure grotto.'],
+    ],
+  },
+  {
+    version: '1.3',
+    name: 'Spooky Season',
+    date: '2026-10-10',
+    notes: [
+  ['hub', "The Clearing dresses up for the season: jack-o'-lanterns, autumn leaves and ghosts flying over in October, snow in December."],
+  ['hub', "Halloween in the Clearing goes big: giant jack-o'-lanterns, a pumpkin patch with a scarecrow, a candlelit graveyard, a bubbling cauldron, lanterns and bats, and Gengar, Litwick, Duskull and Sableye wandering about blurting spooky lines over their heads, with hundreds of lines and stories to tell when you tap one. One walks up to greet you by name when you arrive."],
+  ['base', 'House upgrades: open the PC\'s blueprint to make your Secret Base\'s main room bigger, then build as many rooms as you like for 500 PokéCoins each, a doorway wherever you pick on a wall, turned whichever way you want, or upstairs up a staircase from a back wall. Join rooms that stand side by side with a new doorway, or take a room down and its furniture goes back into storage.'],
+  ['pc', 'Duplicate any furniture you own from your PC: 50 PokéCoins, 5 more each time, never over 100.'],
+  ['pc', 'Something new to read in the PC now wears a bobbing gold "!" instead of a "NEW" label.'],
+  ['pc', 'New PC pages (House Upgrades, Duplicate, Decorations, Prof. Oak) wear a gold "!" until you open them, and the PC in the Clearing shows one too.'],
+  ['pc', 'The house blueprint zooms and pans: pinch, scroll or tap + / − to zoom in, and drag to look around a big house.'],
+  ['fixes', 'The Clearing loads again in October; a Halloween pumpkin stopped it.'],
+  ['fixes', 'The "!" over the Clearing\'s PC goes away once you log on, instead of staying until every new page was read, and the PC now says what\'s new.'],
+  ['pc', 'The PC menu is in a tidier order: your mail, then the PCs and your house, the Hall of Fame, and patch notes and cloud save at the bottom.'],
+  ['fixes', 'The PC\'s Decorations and Duplicate pages show the picked piece in its own card, so tall furniture no longer covers its name.'],
+  ['dex', 'Each Pokédex page\'s reward medal now sits beside its name, not in the bottom corner.'],
+  ['hub', 'Every Pokéstop now says what it does on the ground in front of it: SET OUT on the trail, EXPLORE at the Safari, CLIMB at the Sky Pillar, or CONTINUE where your saved run waits.'],
+    ],
+  },
+  {
+    version: '1.2',
+    name: 'Home Sweet Home',
+    date: '2026-10-10',
+    notes: [
+      ['hub', 'After PRESS START you walk into the Whispering Clearing in 3D: tap where to go, and tap a place to use it.'],
+      ['hub', 'A Pokéstop outside the Clearing\'s gate starts a new run; spin it and your Pokémon walks out. A saved run waits where you started it, with CONTINUE glowing in front.'],
+      ['hub', 'The Safari Zone\'s gate and the Sky Pillar stand at the ends of their roads, each with its own Pokéstop and leaderboard board.'],
+      ['hub', 'The Clearing has its own day and night, fireflies, sounds, and a legendary flying over now and then.'],
+      ['base', 'Buy the Ancient Tree\'s house for 1,500 PokéCoins and make it your Secret Base: a 3D room to decorate however you like.'],
+      ['base', 'Over 1,000 kinds of furniture in 20 colours each, from beds and TVs to 60 Pokémon plushies. Many do things when tapped: TVs change channel, lamps switch off, fridges open.'],
+      ['base', 'Up to six of your Safari catches can live in your base, and your walking Pokémon can sit on its seats.'],
+      ['base', 'Some furniture can\'t be bought: earn it with badges, achievements and Safari pages.'],
+      ['mall', 'The Poké Mall opens in the Clearing. Smeargle\'s Furniture store sells a new stock every day, 50 to 150 PokéCoins a piece, with a second floor to unlock.'],
+      ['mall', 'The Game Corner shop is coming soon.'],
+      ['pc', 'A PC in the Clearing: choose the Pokémon that walks with you, pick your base\'s residents, change your name and sign in to the cloud save.'],
+      ['pc', 'Big PokéCoin rewards now arrive as letters in its Mailbox. Prof. Oak rates your Pokédex and hints at what to unlock next.'],
+      ['pc', 'The patch notes live on the PC now. A "!" over it means there\'s a new patch to read.'],
+      ['runs', 'The Pokémon Center and Poké Mart are 3D rooms you walk around in. Your Pokémon goes into its Poké Ball to heal.'],
+      ['runs', 'The new biomes\' roads open after any two won runs, not a Level 2 win with each type.'],
+      ['battle', 'A wild Pokémon\'s block now shows in blue on its HP bar, like yours.'],
+      ['music', 'New songs for the Clearing, the Secret Base, the Poké Mall, Team Rocket\'s ambush, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna.'],
+      ['dex', 'The shut Pokédex shows the time and day like a lock screen. The Trainer Card explains each line when tapped.'],
+    ],
+  },
   {
     version: '1.1',
     name: 'Many Roads',
@@ -143,13 +254,15 @@ export const IN_THE_GAME = [
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
   ['💎', '59 relics', 'Starter Abilities, relics for each type and boss relics that give extra PP with a catch.'],
   ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag.'],
-  ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.'],
+  ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
-  ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 113 augments and a weekly leaderboard.'],
+  ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Spend PokéCoins on 6 starters, 9 perks, a shiny for every starter but Mewtwo, and Poké Balls.'],
-  ['☁️', 'Cloud save', 'Sign in from the Pokédex\'s Settings to play on your phone and PC with one save.'],
+  ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

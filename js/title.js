@@ -17,8 +17,10 @@
 
 import { $, el, setHpBar, infGlyph } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
-import { playSound, playCry, playMusic, closeSoundPops } from './audio.js';
+import { playSound, playCry, playMusic, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
+import { season } from './season.js';
+import { SEASON_FLYERS } from './hub-season.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { safariDaily, SAFARI_DEX_PAGES, safariProgress } from './data/safari.js';
 import { safariAccess, DAY_PASS } from './data/balls.js';
@@ -89,11 +91,12 @@ export const eternatusGuest = () => { guest = true; flight = [ETERNATUS]; };   /
     deals from the same round. */
 export function dealFlyer() {
   if (!flight.length) {
-    const round = guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS;
+    const round = [...(guest || getSave().feats.includes(ETERNATUS) ? [...FLYERS, ETERNATUS] : FLYERS), ...(SEASON_FLYERS[season()] || [])];
     flight = round.map(id => [Math.random(), id]).sort((a, b) => a[0] - b[0]).map(([, id]) => id);
     if (flight[0] === lastFlyer) flight.push(flight.shift());
   }
   const id = lastFlyer = flight.shift();
+  if (!STARTERS_BY_ID[id] && id !== ETERNATUS) return { id, src: `assets/pokemon/${id}-front.gif`, lit: true };   // the season's guests
   if (id === ETERNATUS) return { id, src: `assets/pokemon/${ETERNATUS}-front.gif`, lit: true };
   const starter = STARTERS_BY_ID[id], lit = isStarterUnlocked(starter);
   return { id, src: lit ? spriteUrl(starter, 'front') : `assets/pokemon/${id}-front.gif`, lit };
@@ -127,6 +130,7 @@ export function initTitle(handlers) {
   tags[1].replaceChildren(smoothIcon('bell'));
   $('title-abandon').replaceChildren(smoothIcon('run'));
   paintLogo();
+  runClock();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
@@ -147,7 +151,7 @@ export function initTitle(handlers) {
 
 /* The walkable Clearing (js/hub-3d.js) over the sky and signs, where its places open what the signs do; the signs stay
    under it as the fallback (no WebGL, Three.js offline) and for Settings' Title screen: Signs, or ?signs. */
-const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
+export const useHub = () => pref('titleHub') && !new URLSearchParams(location.search).has('signs');
 
 let hubReady = Promise.resolve(false);   // the hub drawn behind the shut Pokédex (showTitle()), true once it's there
 
@@ -155,12 +159,14 @@ function openHub(hold = false) {
   const screen = $('title-screen');
   if (!useHub()) {
     screen.classList.remove('hub-mode');
+    setHomeTrack('title');
     hideHub();
     if (pressed) runTitleLight(true);
     return Promise.resolve(false);
   }
   screen.classList.add('hub-mode');
   runTitleLight(false);
+  setHomeTrack('clearing-hub');
   const mewtwo = STARTERS_BY_ID.mewtwo;
   return showHub(screen, {
     savedRun: actions.savedRun,
@@ -179,9 +185,9 @@ function openHub(hold = false) {
     dealFlyer,
   }, { hold }).then((ok) => {
     // no WebGL or Three.js offline: the signs and their sky after all
-    if (!ok) { screen.classList.remove('hub-mode'); runTitleLight(!screen.hidden); }
+    if (!ok) { screen.classList.remove('hub-mode'); setHomeTrack('title'); runTitleLight(!screen.hidden); }
     return ok;
-  }, () => { screen.classList.remove('hub-mode'); hideHub(); return false; });
+  }, () => { screen.classList.remove('hub-mode'); setHomeTrack('title'); hideHub(); return false; });
 }
 
 /** The first time: PRESS START. Resolves once it's pressed and the menu is up. */
@@ -261,6 +267,33 @@ async function start(e) {
     await howto;
   } else if (!still()) lift(dex);
   reveal(hub);
+}
+
+/* The shut Pokédex's cover tells the time like a phone's lock screen (the user's ask, 2026-10-10): the clock and day on
+   an LCD, a sun or moon for the scenes' time of day, so dawn, day, dusk or night is known before it opens. */
+const SKY_ART = {
+  day: '<circle cx="12" cy="12" r="5" fill="#ffd23a"/><g stroke="#ffb020" stroke-width="2" stroke-linecap="round"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></g>',
+  dawn: '<path d="M5 17a7 7 0 0 1 14 0z" fill="#ffb347"/><g stroke="#ff8a3d" stroke-width="2" stroke-linecap="round"><path d="M12 5v3M5.6 8.6l1.8 1.8M18.4 8.6l-1.8 1.8M2 20h20"/></g>',
+  dusk: '<path d="M5 17a7 7 0 0 1 14 0z" fill="#ff7a4a"/><path d="M2 20h20" stroke="#c4466a" stroke-width="2" stroke-linecap="round"/><path d="M15 6l3-3M15 3l3 3" stroke="#ffd0a0" stroke-width="1.5" stroke-linecap="round"/>',
+  night: '<path d="M15.5 3.5a8.5 8.5 0 1 0 5 13.5A7 7 0 0 1 15.5 3.5z" fill="#f4eebc"/><circle cx="19" cy="5" r="1.2" fill="#f4eebc"/><circle cx="21" cy="10" r="0.8" fill="#f4eebc"/>',
+};
+let clockTimer = 0;
+
+function runClock() {
+  const box = $('tdx-clock');
+  const sky = box.querySelector('.tdx-sky');
+  const paintClock = () => {
+    if (pressed) { clearInterval(clockTimer); clockTimer = 0; return; }
+    const now = new Date();
+    const time = timeOfDay(now);
+    box.dataset.time = time;
+    if (sky.dataset.time !== time) { sky.dataset.time = time; sky.innerHTML = `<svg viewBox="0 0 24 24">${SKY_ART[time]}</svg>`; }
+    box.querySelector('.tdx-time').textContent = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    box.querySelector('.tdx-date').textContent =
+      now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }).replace(/,/g, '').toUpperCase();
+  };
+  paintClock();
+  clockTimer = setInterval(paintClock, 5000);
 }
 
 async function powerOn(dex) {
