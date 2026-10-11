@@ -48,7 +48,6 @@ export const NEXT = [
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are bold arcade letters with a cyan glow, easy to read, lying flat on the ground, with arrows marching in on either side.'],
   ['pc', 'Daily and weekly missions: three goals a day and three a week, from winning fights to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
   ['modes', "Sky Pillar: Fire gets three new augments of its own (Flash Fire, Magma Armor and Eruption) and six stronger ones (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
-  ['runs', 'The Move Tutor\'s dojo, the Move Deleter\'s study, the Day Care and the Fan Club are 3D rooms you walk about, like the Pokémon Center: tap a sign or the thing itself to walk up to it, and each choice plays out in the room (the sandbag swings, the pendulum swirls, the Egg wobbles, confetti rains on the stage).'],
   ['fixes', 'The Fan Club no longer freezes the run when you walk in.'],
 ];
 

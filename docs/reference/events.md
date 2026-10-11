@@ -127,20 +127,3 @@ little plate beside the Poké Ball (`#choice-plate`, as on every choice screen; 
 a row under the title), and `showHpChange()` runs its bar to the new HP before the room closes. Choices that open a picker (Tutor, Deleter, Day Care) play their act first; the
 price is still only paid once something is picked.
 
-
-**The walk-in 3D rooms** (2026-10-11, the user's ask after the 3D Center and Mart): the four indoor rooms, the Move
-Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club (`EVENT_3D` in `js/run.js`), are walked in 3D,
-`js/event-3d.js`, one engine (the Center's walking, camera and floating signs) and a `build*()` per room in `BUILD`. Like
-the Center it is only the scene: `eventRoom()` still shows the room's choices, text box and bar, then `event3d()` mounts
-the 3D room under them (`mountEvent()`), the pixel scene hidden behind it (`c3d`, `.event-figure` hidden too). A tap on a
-sign or its prop (`userData.spot`, the option's index) walks your Pokémon to that choice's `spots[i].step`, then clicks
-the choice, so the two taps (hint, then take) are the same as the pixel room's. `playOut()` plays a choice on the props
-through the room's `act(name)` (`acts` per room: `lesson` brushes ink down the hanging scroll, `train` swings the
-sandbag, `erase` lifts sparkles off the lectern's book, `hypno` swirls the pendulum, `trade` wobbles the Egg, `cheer` rains
-confetti and hearts; their `cues` are timed sounds), and `figureDoes()` forwards to the room (`does()`: jump, nod, no,
-turn, the fans' hop). The trainers are their `assets/trainers/` sprites on billboards, blinking with the `-blink` copy.
-Coming back from a picker remounts the room with your Pokémon where it stood and `after` the trainer's reaction. Rooms
-are built once a page load (`room()`, one at a time), ahead while the map is up (`warmEvent3d()` → `preloadEvent()`).
-The decor is the Secret Base's furniture (`piece()`), the rest modelled or painted in the file (Dragonite's medallion
-is `DRAGONITE` from `js/scene.js`). `?event=move-tutor` (any of the four) walks in; `&event2d` keeps the pixel room. A
-`?event=` peek of an event the map didn't roll now rolls its dice too (`rollEvent()`), so Day Care's peek no longer crashes.

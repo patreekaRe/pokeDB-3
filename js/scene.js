@@ -5505,7 +5505,7 @@ function kombatBanner(cx, top, len) {
 /* The medallion's Dragonite, roaring to the left like the MK dragon with its wing raised: antennae, open jaws, a reaching
    claw, the striped belly, its tail hooking up the ring. # body, w wing, = belly, e the eye (drawKombat lights it). Two
    sizes, each drawn at a whole number of pixels a cell (medallionFit), since squeezing one grid to fit blurred it. */
-export const DRAGONITE = [
+const DRAGONITE = [
   '................................',
   '................................',
   '................................',

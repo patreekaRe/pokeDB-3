@@ -158,10 +158,6 @@ live site.
   lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit
   of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Kecleon's counter with the PC, a tap walks up and
   presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
-- **The walk-in 3D ? rooms** (2026-10-11, the user's ask): the Move Tutor's dojo, the Move Deleter's study, the Day Care
-  and the Fan Club are walked in 3D like the Center (`js/event-3d.js`, mounted by `event3d()` under `eventRoom()`; the
-  choices' acts and the trainers' reactions play on the props). The Hot Spring, Shrine, Kenmatta's arena, the grotto and
-  the outdoor rooms stay pixel. `?event=day-care` (`&event2d` the pixel room). Detail in `docs/reference/events.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different
