@@ -369,7 +369,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
   mon.onload = () => fitMon();
 
   return new Promise(resolve => {
-    let raf = 0, last = 0, stepAt = 0, held = false;
+    let raf = 0, last = 0, stepAt = 0, held = false, backing = false;
     const choose = (i) => {
       if (picked === i) return;
       picked = i;
@@ -421,9 +421,10 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       const target = Math.max(-M / 1.2, Math.min(M / 1.2, (mx - fx) * 0.35));
       cam += (target - cam) * Math.min(1, dt * 3);
       const r = regionOf(mx, my);
+      if (r < 0) backing = false;
       if (!walking && !asking && r >= 0) {
         choose(r);
-        if (my < hz + (fy - hz) * 0.72) take();
+        if (my < hz + (fy - hz) * 0.72 && !backing) take();
       }
       if (walking) mon.style.filter = `brightness(${Math.max(0.5, near(my) / near(fy))})`;
       frame(now);
@@ -474,7 +475,7 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       const sure = await confirmDialog(`Are you sure you want to enter the ${BIOMES_BY_ID[roads[picked]].name}?`, 'Enter');
       asking = false;
       if (!sure || walking) {
-        if (regionOf(mx, my) >= 0) routeTo(fx, fy + (H - fy) * 0.15);
+        if (regionOf(mx, my) >= 0) { backing = true; routeTo(fx, fy + (H - fy) * 0.15); }
         return;
       }
       walking = true;
