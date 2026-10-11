@@ -458,11 +458,13 @@ const freshAugments = (pick) => ({ augments: [], spent: [], rerolls: 0, pick, re
 
 let towerPeekHp = 1;   // ?tower=25&hp=0.1 shrinks every foe's HP, to see guardians and flights through quickly
 
-/** Playtest shortcut (the user's ask): ?event=move-tutor (any event id) starts a throwaway run and walks straight into
-    that event's room, so it can be seen on a phone without playing to it. Nothing about the run is saved. */
-export function peekEvent(starter, id) {
-  if (!EVENTS_BY_ID[id]) return false;
+/** Playtest shortcut (the user's ask): ?event=move-tutor (any event id, or `treasure` for the grotto; &biome=shrine to be
+    in that biome, &starter=id) starts a throwaway run and walks straight into that event's room, so it can be seen on a
+    phone without playing to it. Nothing about the run is saved. */
+export function peekEvent(starter, id, biome = null) {
+  if (!EVENTS_BY_ID[id] && id !== 'treasure') return false;
   peeking = true;
+  peekAt = BIOMES_BY_ID[biome] ? biomeAt({ [BIOMES_BY_ID[biome].slot]: biome }, BIOMES_BY_ID[biome].slot) : null;
   beginRun(starter, 0, id);
   return true;
 }
@@ -570,11 +572,20 @@ function peekRoom(id) {
     run.mods = { ...run.mods, bossHp: (run.mods.bossHp ?? 1) * finalPeekHp };
     return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss'));
   }
+  if (peekAt) {   // ?event=…&biome=shrine: that event in that biome
+    run.biome = peekAt.slot;
+    run.route = [...BIOMES.slice(0, peekAt.slot).map(b => b.id), peekAt.id];
+  }
   run.map = generateMap();
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
   for (const kind of ['fight', 'elite', 'boss']) dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, dexWeight);
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
+  if (id === 'treasure') {   // ?event=treasure: the treasure grotto
+    const node = nodes.find(n => n.type === 'treasure') ?? nodes[0];
+    node.type = 'treasure';
+    return enterNode(node);
+  }
   const node = nodes.find(n => n.event?.id === id) ?? nodes.find(n => n.type === 'event') ?? nodes[0];   // a rolled one keeps its dice (Team Rocket's team)
   if (node.event?.id !== id) { node.type = 'event'; rollEvent(node, EVENTS_BY_ID[id]); }
   enterNode(node);
@@ -1933,6 +1944,7 @@ function treasureRoom() {
   stage.append(chest);
   $('reward-options').append(stage);
   placeTreasure();
+  event3d(run.map.byId[run.current], 'grotto', null, null, { onPick: () => chest.click() });
 
   let picked = null, taking = false;
   chest.addEventListener('click', async () => {
@@ -1990,7 +2002,8 @@ function treasureRoom() {
 
 /** Stand the chest on the grotto's dais and float the relics in a row above it; the scene tells us whenever it repaints. */
 function placeTreasure() {
-  const stage = document.querySelector('.treasure-stage'), spot = stage?.isConnected && treasureSpots();
+  const stage = document.querySelector('.treasure-stage'), walkIn = $('reward-options').classList.contains('c3d');
+  const spot = stage?.isConnected && (walkIn ? chest3dSpot(stage) : treasureSpots());
   if (!spot) return;
   const { left, foot, px } = spot, chestTop = foot - 28 * px, cx = left + 18 * px;
   const size = innerWidth <= 720 ? 72 : 96;
@@ -1998,7 +2011,7 @@ function placeTreasure() {
   const rowY = Math.max(titleFoot + size / 2 + 12, chestTop - 100 - size / 2);
   stage.style.setProperty('--px', `${px}px`);
   stage.style.setProperty('--size', `${size}px`);
-  Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });
+  if (!walkIn) Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });   // the 3D grotto floats it over its chest
   const relics = [...stage.querySelectorAll('.treasure-relic')], gap = Math.min(size * 1.5, (innerWidth - 24) / Math.max(1, relics.length));
   relics.forEach((btn, i) => {
     const off = i - (relics.length - 1) / 2, x = cx + off * gap, y = rowY + Math.abs(off) * 14;
@@ -2009,6 +2022,12 @@ function placeTreasure() {
 }
 addEventListener('scenepaint', placeTreasure);
 
+/** Where the 3D grotto's chest is on screen, in placeTreasure()'s terms (the chest's button sits on the lid's top). */
+function chest3dSpot(stage) {
+  const r = stage.querySelector('.treasure-chest').getBoundingClientRect(), px = 3;
+  return { left: r.left - 18 * px, foot: r.top + 28 * px - 30, px };
+}
+
 /** The 3D Center built in the background while the map is up, once a map has a Center on it, so walking in is instant. */
 function warmCenter3d() {
   if (warmCenter3d.done || !Object.values(run.map?.byId ?? {}).some(n => n.type === 'rest') || new URLSearchParams(location.search).has('center2d')) return;
@@ -2018,13 +2037,14 @@ function warmCenter3d() {
 
 /** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
     in shows the room at once (the user saw a blank blue screen while it loaded). */
-/** The map's indoor ? rooms built in 3D while it's up, so walking into one is quick. */
+/** The map's 3D ? rooms built while it's up, so walking into one is quick. */
 function warmEvent3d() {
   if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
-  const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => EVENT_SCENES[n.event?.id]).filter(k => EVENT_3D.includes(k)))];
+  const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
   if (!kinds.length) return;
   warmEvent3d.map = run.map;
-  setTimeout(() => import('./event-3d.js').then(m => { event3dMod = m; kinds.forEach(m.preloadEvent); }).catch(() => { warmEvent3d.map = null; }), 1800);
+  const at = { biome: land().id, type: run.starter.type };
+  setTimeout(() => import('./event-3d.js').then(m => { event3dMod = m; kinds.forEach(k => m.preloadEvent(k, at)); }).catch(() => { warmEvent3d.map = null; }), 1800);
 }
 
 function warmMart3d() {
@@ -2406,12 +2426,14 @@ function eventRoom(node, after) {
   box.onclick = () => { read(); if (box.hidden) showMap(); };
 }
 
-// the indoor rooms walked in 3D (js/event-3d.js), like the Center; the rest keep their pixel scene
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans'];
+// the rooms walked in 3D (js/event-3d.js), like the Center: the indoor four, the Hot Spring, the Shrine and the treasure
+// grotto; the outdoor four keep their pixel scene
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto'];
 let event3dMod = null;
 
-/** The walk-in 3D room under an indoor event's choices; the pixel room stays if Three.js won't load (or `?event2d`). */
-function event3d(node, kind, figures, after) {
+/** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
+    how a choice is pressed (the grotto's chest is no `.reward-option`). */
+function event3d(node, kind, figures, after, { onPick = null } = {}) {
   if (!EVENT_3D.includes(kind) || new URLSearchParams(location.search).has('event2d')) return;
   const box = $('reward-options'), thisRun = run;
   box.classList.add('c3d-wait');
@@ -2421,9 +2443,9 @@ function event3d(node, kind, figures, after) {
   import('./event-3d.js').then(m => {
     event3dMod = m;
     return m.mountEvent({
-      kind, run: thisRun, node, figures, after,
+      kind, run: thisRun, node, figures, after, biome: land().id, type: run.starter.type,
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
-      onPick: (i) => { if (run === thisRun && box.isConnected) box.querySelectorAll('.reward-option')[i]?.click(); },
+      onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
     });
   }).then(() => setTimeout(greet, 350))

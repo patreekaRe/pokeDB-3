@@ -2094,3 +2094,8 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
 walked in 3D (`js/event-3d.js`, `docs/reference/events.md`), each choice's act and the trainers' reactions on the props.
 Fixed on the way: the Fan Club crashed on walking in (its `bunting()` went with the old pixel Mart, 2026-10-10), and a
 `?event=day-care` peek crashed when the map hadn't rolled one (`rollEvent()`).
+
+**3D ? rooms, parts b and c** (2026-10-11): the Hot Spring and the Shrine are open-air 3D rooms with a look per biome and
+the light by the hour, and the treasure grotto a 3D cave per biome with a Poké Ball chest that wobbles and opens
+(`js/event-3d.js`, `docs/reference/events.md`). `?event=` takes `&biome=` and `&starter=` now, and `?event=treasure` walks
+into a grotto.
