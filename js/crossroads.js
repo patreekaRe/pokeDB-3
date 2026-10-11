@@ -45,7 +45,7 @@ const INK = abgr('#1a1008');
 const GOLD = pal(['#fff0a0', '#f8c850']);
 const FLY = pal(['#fffad0', '#f8d860', '#a88830']);
 // each road's arm of the signpost in its biome sign's colours (css/screens.css's .biome-sign): plank, rim
-const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'], ruins: ['#4f7472', '#8cc8c0'], wastes: ['#54403a', '#e0602a'], thornwood: ['#3e5a2a', '#8cc850'], savanna: ['#a8743a', '#f0c040'] };
+export const ARMS = { clearing: ['#b0682c', '#d89050'], shrine: ['#6f7f62', '#9aae84'], ruins: ['#4f7472', '#8cc8c0'], wastes: ['#54403a', '#e0602a'], thornwood: ['#3e5a2a', '#8cc850'], savanna: ['#a8743a', '#f0c040'] };
 
 let P = 4, W = 0, H = 0, tall = true, hz = 0, fy = 0, fx = 0, d = 0, gw = 0, gh = 0, bw = 0;
 let canvas = null, ctx = null, img = null, buf = null, shots = [];
@@ -324,7 +324,7 @@ function typeChips(biome) {
   });
 }
 
-function roadCard(id, i, pick, onSwap) {
+export function roadCard(id, i, pick, onSwap) {
   const biome = BIOMES_BY_ID[id];
   const card = el('button', 'xr-road');
   card.type = 'button';
@@ -362,6 +362,11 @@ function roadCard(id, i, pick, onSwap) {
  * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), keeping the size it loaded in at; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
+  // the 3D fork first (js/crossroads-3d.js, the user's pick, 2026-10-11); `?xr2d`, or no Three.js, paints this one
+  if (!new URLSearchParams(location.search).has('xr2d')) {
+    try { return (await (await import('./crossroads-3d.js')).crossroads3d({ ids, swap, starter, stage, shiny })).chosen; }
+    catch (e) { console.warn('3D crossroads unavailable, painting it', e); }
+  }
   roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back'; monTall = 0;
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
   const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };

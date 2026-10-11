@@ -5314,3 +5314,7 @@ body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pa
 body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .mart3d-sign { display: none; }
 @keyframes martSign { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .mart3d-sign { animation: none; } }
+/* the 3D fork (js/crossroads-3d.js): its canvas under the cards, the painted canvas and sprite put away */
+.xr3d-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; }
+.xr3d-view.on { opacity: 1; }
+.crossroads-scene.x3d #xr-canvas, .crossroads-scene.x3d #xr-mon { display: none; }
