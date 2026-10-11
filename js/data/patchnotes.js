@@ -49,6 +49,7 @@ export const NEXT = [
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
   ['look', 'The shut Pokédex on the title now opens only with its blue power button, and no longer plays your buddy\'s cry as it opens.'],
   ['pc', 'The PC\'s Sign in is now a gold SIGN IN / SIGN UP row near the top while you\'re signed out, and the sign-in window says how to make a free account.'],
+  ['pc', 'The PC\'s Log off is now called Exit PC.'],
   ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard is 3D too: its flagstones, his dais and carpeted steps, two braziers burning, and a smooth gold Dragonite medallion on the wall in place of the pixel one.'],
 ];
 

@@ -75,7 +75,7 @@ export function openPC(opts = {}) {
       <div class="pc-hood"><span class="pc-cam" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="pc-glass"><div class="pc-page"></div><p class="pc-say" aria-live="polite"></p></div></div>
       <div class="pc-ledge"></div>
-      <div class="pc-stand"><span class="pc-ball" aria-hidden="true"></span><button type="button" class="pc-off">Log off</button></div>
+      <div class="pc-stand"><span class="pc-ball" aria-hidden="true"></span><button type="button" class="pc-off">Exit PC</button></div>
     </div>`;
   glass = root.querySelector('.pc-page');
   say = root.querySelector('.pc-say');
@@ -214,7 +214,7 @@ const PAGES = {
     // signed out, the account row stands out near the top, so new players find how to make one (the user's ask, 2026-10-11)
     if (cloudConfigured() && cloudRemembered()) rows.push(['CLOUD SAVE', 'Your progress is kept in the cloud. Check it or sign out here.', signIn]);
     else if (cloudConfigured()) rows.splice(1, 0, ['SIGN IN / SIGN UP', 'Make a free account (Google or email) to keep your progress safe and carry on from your phone or PC.', signIn, false, { cls: 'pc-cloud', sub: 'Free account · saves your progress' }]);
-    rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
+    rows.push(['EXIT PC', 'Turn the PC off and step away.', logOff]);
     const fresh = rows.filter(r => r[3]).map(r => r[0].replace(/ \(\d+\)$/, ''));
     menu('PC', rows, fresh.length ? `New: ${fresh.join(fresh.length > 2 ? ', ' : ' and ').replace(/, ([^,]*)$/, ' and $1')}! Look for the "!".` : rows[0][1]);
   },
