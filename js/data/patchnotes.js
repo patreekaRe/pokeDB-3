@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
+  ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
