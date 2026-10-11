@@ -1929,6 +1929,7 @@ function treasureRoom(spent = false) {
     onSkip: showMap,
     layout: 'treasure-room',
   });
+  playMusic('treasure');   // the user's song for the grotto (2026-10-11); showMap() brings the map's back
   showPlaceScene('treasure', { biome: land().id });
 
   const art = treasureChest(), stage = el('div', 'treasure-stage');
