@@ -91,8 +91,20 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - **Done (2026-10-11): b, the Alphas.** Every main biome's Alphas (Team Rocket's too, an `elite` fight) get the boss
       treatment: `arenaFor()` takes `elite` in every `MAIN` biome. `?arena=elite&biome=` takes any biome, the Depths
       too (with Mewtwo, fully powered up; `peekDepths` in `js/run.js`). Checked at 390x844 and 1280x800, every biome.
-    - c. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
-      Shrine's stone, Thornwood's roots, the Savanna's grass), about a session a biome; then wild fights; then main.
+    - **c. Wild fights, the same treatment** (the user's ask, 2026-10-11, after liking the Alphas). Run in: CLOUD (attach
+      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read CLAUDE.md and docs/roadmap.md's item 22, then check out the branch
+      `claude/jolly-ritchie-vdznxn` and work only on it (push only to it, never to main). Give every main biome's wild
+      fights the Alphas' treatment in js/arena-3d.js: 3D pads in front of their own live pixel backdrop, following the
+      sprites, the Clearing's 3D ground as now (`arenaFor()` takes `wild` too, `arena3d()` in js/battle.js stops
+      skipping it, and the map's `warmArena3d()` warms it before the first fight). Not Safari or Sky Pillar fights. Add
+      `?arena=wild&biome=` (any biome, the Depths with Mewtwo, `&stage=0-2`), check every biome at 390x844 and 1280x800
+      (Three.js loads from jsdelivr, which the cloud proxy blocks: route it to a local `npm pack three@0.160.0` in
+      Playwright), watch that a wild fight doesn't stutter on a phone (it's the most common fight), and give me
+      raw.githack links for each."
+    - Kenmatta's dojo arena stays pixel for now: his fight has its own scene (`def.arena`, `PLACE_ART.kombat`), which
+      `wantsArena()` skips. Ask the user whether it should get 3D pads over its Mortal Kombat backdrop too.
+    - d. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
+      Shrine's stone, Thornwood's roots, the Savanna's grass), about a session a biome; then main.
 
 ## Ideas, not agreed yet (ask the user before building)
 
