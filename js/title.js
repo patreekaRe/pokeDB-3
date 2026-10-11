@@ -354,7 +354,7 @@ const pill = (label, cls = '') => {
 function askName(box, name, keep) {
   return new Promise(done => {
     const field = el('input', 'tdx-field');
-    Object.assign(field, { type: 'text', maxLength: NAME_MAX, value: name, placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
+    Object.assign(field, { type: 'text', maxLength: NAME_MAX, value: name, placeholder: 'Trainer', autocomplete: 'off', spellcheck: false });
     field.setAttribute('aria-label', 'Trainer name');
     field.setAttribute('autocapitalize', 'words');
     const ok = pill('OK');
