@@ -212,11 +212,13 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
     m.receiveShadow = true;
     B.group.add(m);
   }
-  if (!mat) return;
+  // a room you can't walk out of yet (Team Rocket's) still gets its mat, shown once the way out is open (mountEvent())
   const { step, mat: m } = doormat(tileX(DOOR.x), ROWS / 2 + 0.47, std({ color: '#b89a78' }));
   m.userData.spot = 'exit';
   B.group.add(step, m);
   B.mat = m.material;
+  B.exitParts = [step, m];
+  B.lockedExit = !mat;
 }
 
 /** Glowing bits that rise and fade: sparkles off a book, hearts over the fans, the Z's over a sleeping Slowpoke. */
@@ -1890,7 +1892,6 @@ function wild(L, time, { to = 2, trees = [], exit = true } = {}) {
   skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
-  B.noExit = !exit;
   const rnd = seeded(29);
   for (const [tx, ty, tall] of trees) tree(L, tx, ty, rnd, tall);
   return rnd;
@@ -2331,7 +2332,7 @@ function arrived() {
 /* ---------- taps ---------- */
 
 function onTap(e) {
-  if (busy || acting || !alive()) return;
+  if (busy || acting || !inRoom()) return;
   if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic')) return;
   if (document.querySelector('dialog[open]')) return;
   const sign = signAt(e.clientX, e.clientY);
@@ -2368,6 +2369,10 @@ function aimCamera(x, d) {
   camera.updateMatrixWorld();
 }
 
+// the text box over the bar: a room says something nearly all the time, so the shot always leaves it this much room
+// (measuring the box itself swung the camera every time it came and went) and the doormat shows above it
+const BOX_ROOM = 104;
+
 function below() {
   const tops = ['#room-bar', '#reward-screen .room-hinge']
     .map(s => document.querySelector(s)).filter(n => n?.offsetHeight).map(n => n.getBoundingClientRect().top);
@@ -2379,7 +2384,7 @@ function fitShot() {
   const h = viewH;
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
-  const topGap = 10, low = below(), avail = Math.max(120, h - topGap - low), room = 2 * avail / h * 0.96;
+  const topGap = 10, low = below() + BOX_ROOM, avail = Math.max(120, h - topGap - low), room = 2 * avail / h * 0.96;
   const span = (d) => {
     aimCamera(0, d);
     return [new THREE.Vector3(0, R.shotTop ?? 3.4, BACK_Z).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
@@ -2416,11 +2421,15 @@ function resize() {
 /* ---------- the frame ---------- */
 
 /** Still in this room: it is up and showing. A deck picker, a reward or the map puts the 3D room away. */
-const alive = () => !!(R && document.querySelector(`#reward-options${ROOM_OF(R.kind)}`)) && !document.getElementById('reward-screen').hidden;
+const inRoom = () => !!(R && document.querySelector(`#reward-options${ROOM_OF(R.kind)}`)) && !document.getElementById('reward-screen').hidden;
+/** Held behind a found item or relic the room just gave (hold()): the room keeps running under that screen. */
+const heldUnder = () => !!(R?.held && document.querySelector('#reward-options.item-found')) && !document.getElementById('reward-screen').hidden;
+const alive = () => inRoom() || heldUnder();
 
 function frame(now) {
   raf = 0;
   if (!alive()) return unmount();
+  document.body.classList.toggle('ev3d-held', heldUnder());
   const dt = Math.min(100, now - (last || now));
   last = now;
   if (walk(dt)) arrived();
@@ -2485,6 +2494,8 @@ function unmount() {
   removeEventListener('click', onTap, true);
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
+  document.body.classList.remove('ev3d-held');
+  if (R) R.held = false;
   leftAt = performance.now();
   busy = false; aim = null;
   if (acting) { const done = acting.done; acting = null; done(); }
@@ -2550,7 +2561,7 @@ export function preloadEvent(kind, at = {}) {
     trainer's reaction once a picker is done), biome (the open-air rooms' look), type (the Shrine's glow), onPick(index): press that choice, onLeave(): press Leave }. Resolves the
     room's controls, or null if it was left while it loaded; throws if Three.js won't load (the pixel room stays). */
 export async function mountEvent(o) {
-  const back = visit && visit.node === o.node && visit.run === o.run && performance.now() - leftAt < 30000;
+  const back = visit && visit.node === o.node && visit.run === o.run && (o.spent || performance.now() - leftAt < 30000);   // a done room keeps its eaten berry, its picked-up ball
   visit = { node: o.node, run: o.run };
   opts = o;
   calm = calmFx();
@@ -2569,6 +2580,10 @@ export async function mountEvent(o) {
     mat = R.mat;
   }
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
+  R.held = false;
+  document.body.classList.remove('ev3d-held');
+  R.noExit = !!R.lockedExit && !o.spent;   // Team Rocket's way out opens once you've paid or run
+  for (const part of R.exitParts || []) part.visible = !R.noExit;
   if (!back) {
     R.reset?.();   // a berry eaten, a sprout planted, a ball picked up last time: whole again
     if (R.scroll) { R.scroll.ink = 0.12; const m = R.scroll.mesh.material; m.map.dispose(); m.map = texOf(scrollArt(0.12)); m.needsUpdate = true; }
@@ -2605,6 +2620,8 @@ const oneWord = (text) => SHORT[text] ?? text.replace(/^(Plant) \+\d+ max HP$/, 
 
 /** What eventRoom()'s choices ask of the room. */
 const controls = {
+  /** Keep the room running under the found item or relic screen it is about to show (the Item Ball, the Wishing Well). */
+  hold() { if (R && inRoom()) R.held = true; },
   /** Play a choice out on the props (`opts` how it goes: a big toss, a win, a Voltorb); resolves once it has (at once under
       reduced motion, its sounds still played). */
   act(name, opts) {

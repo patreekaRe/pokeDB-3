@@ -484,7 +484,6 @@ function wallUnit(cx, w, top, doors, name) {
   box(w + 0.06, 0.05, 0.66, blue, cx, H - 0.025, z + 0.01);
   const tall = top - H;
   box(w, tall, 0.06, back, cx, H + tall / 2, wall + 0.03);
-  for (const s of [-1, 1]) box(0.08, tall, 0.4, white, cx + s * (w / 2 - 0.04), H + tall / 2, wall + 0.2);
   box(w, 0.1, 0.44, white, cx, top, wall + 0.22);
   const sign = header(name, 2.6, 0.58);   // tipped towards the camera, which looks down on it
   sign.position.set(cx, top + 0.36, wall + 0.5);
@@ -610,7 +609,6 @@ function buildRoom() {
   buildTable();
   buildShelf();
   ballBin(2, 6);
-  ballBin(8, 6);
   piece('centerplant', tileX(0), tileZ(6)); blocked.add(key(0, 6));
   piece('centerplant', tileX(10), tileZ(6)); blocked.add(key(10, 6));
   piece('centerplant', tileX(0), tileZ(0)); blocked.add(key(0, 0));
@@ -643,9 +641,9 @@ function slotOf(kind, i, of) {
   }
   const clamp = (ax, x0, n) => Math.max(x0, Math.min(x0 + n - 1, Math.round(ax + COLS / 2 - 0.5)));
   if (kind === 'relic') {
-    const cx = tileX(TABLE.x0) + (TABLE.n - 1) / 2, ax = cx + (i - (of - 1) / 2) * 0.9, z = tileZ(TABLE.y);
-    const at = new THREE.Vector3(ax, TABLE.h + 0.27, z);
-    return { at, tag: new THREE.Vector3(ax, TABLE.h + 0.86, z + 0.05), step: { x: clamp(ax, TABLE.x0, TABLE.n), y: TABLE.y + 1 } };
+    const cx = tileX(TABLE.x0) + (TABLE.n - 1) / 2, ax = cx + (i - (of - 1) / 2) * 0.96, z = tileZ(TABLE.y);
+    const at = new THREE.Vector3(ax, TABLE.h + 0.44, z);
+    return { at, tag: new THREE.Vector3(ax, TABLE.h + 1.5, z + 0.05), step: { x: clamp(ax, TABLE.x0, TABLE.n), y: TABLE.y + 1 } };
   }
   const ax = ITEMS.cx + (i - (of - 1) / 2) * 0.88;
   const at = new THREE.Vector3(ax, RACK.low + 0.27, wall + 0.36);
@@ -705,24 +703,24 @@ async function buildWares(list) {
       g.rotation.x = -0.1;
     } else if (!w.sold) {
       const art = await spriteOf(w.thing);
-      const s = w.kind === 'item' ? 0.54 : 0.32;
+      const s = w.kind === 'item' ? 0.54 : 0.76;   // the relics big, the user's call (2026-10-11): they were lost under their domes
       const map = tex(art);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(s, s), std({ map, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: map, emissiveIntensity: 0.15 }));
-      board.position.y = w.kind === 'relic' ? -0.02 : s / 2 - 0.22;
+      board.position.y = w.kind === 'relic' ? 0.04 : s / 2 - 0.22;
       board.castShadow = true;
       board.rotation.x = -PITCH * 0.6;
       g.add(board);
       entry.board = board;
       if (w.kind === 'relic') {   // under a glass dome on a gold base, on a blue velvet pad
         const gold = std({ color: '#f8d048', roughness: 0.35, metalness: 0.5 });
-        mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.06, 32), gold, 0, -0.24, 0, g).castShadow = false;
-        mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.03, 32), std({ color: '#2a58c0', roughness: 1 }), 0, -0.2, 0, g).castShadow = false;
-        const glass = new THREE.MeshPhysicalMaterial({ color: '#e8f6ff', transparent: true, opacity: 0.16, roughness: 0.05, depthWrite: false });
-        const dome = new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.18, 8, 32), glass);
-        dome.position.y = 0.0;
+        mesh(new THREE.CylinderGeometry(0.43, 0.46, 0.07, 40), gold, 0, -0.405, 0, g).castShadow = false;
+        mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.03, 40), std({ color: '#2a58c0', roughness: 1 }), 0, -0.36, 0, g).castShadow = false;
+        const glass = new THREE.MeshPhysicalMaterial({ color: '#e8f6ff', transparent: true, opacity: 0.14, roughness: 0.05, depthWrite: false });
+        const dome = new THREE.Mesh(new THREE.CapsuleGeometry(0.41, 0.3, 10, 40), glass);
+        dome.position.y = 0.16;
         dome.raycast = () => {};
         g.add(dome);
-        mesh(new THREE.SphereGeometry(0.03, 12, 8), gold, 0, 0.3, 0, g).castShadow = false;
+        mesh(new THREE.SphereGeometry(0.045, 12, 8), gold, 0, 0.74, 0, g).castShadow = false;
       } else {
         mesh(rbox(0.36, 0.06, 0.3, 0.02), std({ color: '#ffffff', roughness: 0.3 }), 0, -0.24, 0, g).castShadow = false;
       }
