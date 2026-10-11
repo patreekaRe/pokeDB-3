@@ -5375,3 +5375,5 @@ body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .m
 .xr-wild.type-psychic { border-color: #f85888; background: #fbe2ea; }
 .xr-sec-bosses { display: flex; flex-direction: column; }
 .xr-sec-bosses .xr-bosses { flex: 1; align-items: center; }
+/* the wilds' note runs down beside the bosses' and the Alphas' */
+.xr-sec-wilds { grid-row: span 2; }

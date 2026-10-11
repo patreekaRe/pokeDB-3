@@ -337,27 +337,31 @@ export function roadInfo(id) {
   const biome = BIOMES_BY_ID[id];
   const sign = el('div', 'biome-sign xr-sign', biome.name);
   sign.dataset.biome = id;
-  const bosses = el('div', 'xr-bosses');
-  for (const bossId of biome.bosses) {
-    const def = ENEMY_DEFS[bossId], met = getSave().dex.seen.includes(bossId);   // read, never dexSeen(): that marks it seen
-    const pic = el('img', `pixel xr-boss${met ? '' : ' unmet'}`);
-    pic.src = def.image;
-    pic.alt = met ? def.name : '???';
-    pic.title = met ? def.name : '???';
-    pic.draggable = false;
-    bosses.append(pic);
-  }
+  const row = (ids) => {
+    const box = el('div', 'xr-bosses');
+    for (const id of ids) {
+      const def = ENEMY_DEFS[id], met = getSave().dex.seen.includes(id);   // read, never dexSeen(): that marks it seen
+      const pic = el('img', `pixel xr-boss${met ? '' : ' unmet'}`);
+      pic.src = def.image;
+      pic.alt = met ? def.name : '???';
+      pic.title = met ? def.name : '???';
+      pic.draggable = false;
+      box.append(pic);
+    }
+    return box;
+  };
+  const bosses = row(biome.bosses), alphas = row(biome.elites ?? []);
   const types = el('div', 'xr-types');
   types.append(...typeChips(biome));
-  return { sign, bosses, types };
+  return { sign, bosses, alphas, types };
 }
 
 export function roadCard(id, i, pick, onSwap) {
   const card = el('button', 'xr-road');
   card.type = 'button';
   card.dataset.biome = id;
-  const { sign, bosses, types } = roadInfo(id);
-  card.append(sign, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Wild Pokémon'), types);
+  const { sign, bosses, alphas, types } = roadInfo(id);
+  card.append(sign, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Alphas'), alphas, el('span', 'xr-label', 'Wild Pokémon'), types);
   if (onSwap) {
     const swap = el('span', 'xr-swap', '🧭 Another road');   // the card is a button already, so not a nested one
     swap.setAttribute('role', 'button');

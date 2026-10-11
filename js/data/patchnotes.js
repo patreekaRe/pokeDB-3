@@ -52,7 +52,7 @@ export const NEXT = [
   ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
   ['runs', 'At the crossroads the notice boards wear a bobbing "!" until read and the signpost\'s arms glow in turn until you pick a road; tapping a board or a sign now chimes.'],
   ['fixes', 'A road you have never walked no longer shows its bosses at the crossroads, even if an older version or a playtest had marked them seen.'],
-  ['runs', 'At the crossroads the signpost\'s arms and the notice boards now say which biome each road leads to, the arms pulsing with light, and your Pokémon turns left and right as it walks, as in the Clearing.'],
+  ['runs', 'At the crossroads the signpost\'s arms and the notice boards now say which biome each road leads to, the arms pulsing with light, the boards list each road\'s three Alphas beside its bosses (so the Pokédex count of 18 adds up), and your Pokémon turns left and right as it walks, as in the Clearing.'],
   ['pc', 'Missions rebalanced: each day is now one easy, one medium and one hard mission (30, 45 and 65 PokéCoins), each week likewise (200, 250 and 300), never two that need the same type or two run wins; new ones ask for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
 ];
 
