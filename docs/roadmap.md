@@ -73,6 +73,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
       the strongest; leave it unless a playtest says otherwise.
 
+**3D ? rooms** (the user's go, 2026-10-11). Part a, the four indoor rooms with trainers (dojo, study, Day Care, Fan
+Club), is done: see the archive. Next, Run in: CLOUD (attach both repos), easiest first: b) the Hot Spring and the Shrine
+(built places in the open air, each with a look per biome); c) the treasure grotto (a cave, its look per biome); d) the
+outdoor four (Berry Tree, Wishing Well, Item Ball, Team Rocket), which stand in the biome's own scenery, so they need a 3D
+ground per biome or a 3D prop over the painted backdrop: ask the user which. Kenmatta's arena is a battle backdrop, not
+a room: leave it unless asked.
+
 ## Ideas, not agreed yet (ask the user before building)
 
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a

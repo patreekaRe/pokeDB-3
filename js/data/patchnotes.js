@@ -49,6 +49,7 @@ export const NEXT = [
   ['pc', 'Daily and weekly missions: three goals a day and three a week, from winning fights to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
   ['modes', "Sky Pillar: Fire gets three new augments of its own (Flash Fire, Magma Armor and Eruption) and six stronger ones (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
   ['modes', 'Sky Pillar: Mulligan, Scavenger, Ambush, Refresh and Thorn Garden are stronger and worth picking: Mulligan and Refresh also draw more on turn 1, Scavenger heals after won fights, Ambush hits harder first, and Thorn Garden seeds enemies from the start.'],
+  ['runs', 'The Move Tutor\'s dojo, the Move Deleter\'s study, the Day Care and the Fan Club are 3D rooms you walk about, like the Pokémon Center: tap a sign or the thing itself to walk up to it, and each choice plays out in the room (the sandbag swings, the pendulum swirls, the Egg wobbles, confetti rains on the stage).'],
   ['fixes', 'The Fan Club no longer freezes the run when you walk in.'],
 ];
 
