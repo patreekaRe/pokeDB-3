@@ -55,6 +55,7 @@ export const NEXT = [
   ['runs', 'At the crossroads the signpost\'s arms and the notice boards now say which biome each road leads to, the arms pulsing with light, the boards list each road\'s three Alphas beside its bosses (so the Pokédex count of 18 adds up), and your Pokémon turns left and right as it walks, as in the Clearing.'],
   ['runs', 'At the crossroads a gold arrow bounces over the board and off the signpost arm of the road you have picked.'],
   ['fixes', 'Continuing a run at a crossroads no longer flashes the character select before the crossroads appears.'],
+  ['hub', 'The Clearing\'s Halloween decorations are tidied up: a pumpkin patch, a graveyard, the witch\'s cauldron and matching pumpkins and lanterns along the trail, with the clutter in between cleared away.'],
   ['pc', 'Missions rebalanced: each day is now one easy, one medium and one hard mission (30, 45 and 65 PokéCoins), each week likewise (200, 250 and 300), never two that need the same type or two run wins; new ones ask for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
 ];
 

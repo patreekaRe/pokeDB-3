@@ -1450,31 +1450,29 @@ function buildClearing() {
   dressSeason();
 }
 
-/** The season's decorations, built once with the forest. Halloween: big jack-o'-lanterns round the plaza, down the
-    trail and at the Ancient Tree's door, a giant pumpkin patch with a scarecrow, a graveyard lit by candles under a dead
-    tree, a bubbling cauldron, hay bales, lantern posts and glowing toadstools (lit with the clock, setTime()), ghost
+/** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door and
+    the gate, a pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    bubbling cauldron with toadstools, hay either side of the way out and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
 function dressSeason() {
   if (SEASON === 'halloween') {
     const P_ = (seed, lit = true) => [pumpkinArt(seed, lit), lit ? 'pumpkin' : null];
     // [art, glow, tile x, tile y, size, nudge x, nudge z]; a nudge keeps a thing on its tile but off its middle
+    // grouped into a few spots, mirrored across the trail where they frame it, the open ground left clear (the user's
+    // call, 2026-10-11: scattered everywhere it read as clutter)
     const yard = [
-      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0],   // the plaza
-      [...P_(5), 3, 7, 5.6, 0, -0.1], [...P_(6), 4, 8, 2.4, 0.1, 0.1], [...P_(7, false), 2, 8, 2, -0.1, 0.15], [...P_(8, false), 2, 6, 1.8, 0, 0],   // the patch
-      [scarecrowArt(), 'white', 4, 6, 1.5, 0.1, 0],
-      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.1, 0, 0.2],   // the Ancient Tree's door
-      [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
-      [...P_(15), 0, 5, 1.8, 0, 0], [...P_(16), 12, 3, 1.8, 0, 0], [...P_(17), 1, -1, 2, 0, 0], [...P_(18), -3, 11, 2.4, 0, 0], [...P_(19, false), -2, 12, 1.6, 0, 0],
-      [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
-      [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
-      [deadTreeArt(0), 'white', 12, 6, 1.7, 0.2, -0.2], [capsArt(1), 'white', 12, 7, 1.3, 0, 0.1],
-      [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
-      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
-      [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
-      [deadTreeArt(1), 'white', 1, 14, 1.8, 0, 0.2], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
-      [graveArt(5), null, 2, 14, 1.3, 0, 0], [graveArt(6), null, -3, 13, 1.4, 0, 0], [candlesArt(4), 'white', -2, 13, 1, 0, 0.1], [capsArt(1), 'white', 3, 14, 1.1, 0, 0.1],
-      [capsArt(0), 'white', 9, 14, 1.1, 0, 0], [lanternArt(4), 'white', -1, 12, 1.3, 0, 0],
+      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.2, 0, 0.2],   // the Ancient Tree's door
+      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0],   // lantern posts, a pair at the back
+      [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],   // and a pair down the trail
+      [...P_(5), 3, 7, 4.4, 0, -0.1], [...P_(6), 2, 8, 2.2, 0, 0.1], [...P_(7, false), 4, 8, 1.9, 0, 0.15],   // the pumpkin patch
+      [scarecrowArt(), 'white', 2, 6, 1.5, 0, 0],
+      [deadTreeArt(0), 'white', 10, 6, 1.7, 0, -0.2],   // the graveyard, clear of the road along row 4: a row of stones under the dead tree, a candle at each end
+      [graveArt(0), null, 8, 7, 1.4, 0, 0], [graveArt(1), null, 9, 7, 1.5, 0, 0], [graveArt(2), null, 11, 7, 1.5, 0, 0], [graveArt(3), null, 12, 7, 1.4, 0, 0],
+      [candlesArt(0), 'white', 8, 8, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 8, 1.1, 0, -0.1],
+      [...P_(1), 7, 9, 1.4, 0.15, 0.1],   // a little one on the plaza
+      [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
+      [hayArt(0), 'white', 1, 13, 1.6, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0],   // hay either side of the way out
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
@@ -1499,14 +1497,14 @@ function dressSeason() {
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
     for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
-      const l = new THREE.PointLight(colour, 0, 4.5, 1.6);
+      const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;
       lamps.push(l);
       scene.add(l);
     }
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
-      spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      spawns: [{ x: 1, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
