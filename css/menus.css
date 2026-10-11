@@ -108,6 +108,8 @@
 .title-refresh.spinning .refresh-ico { animation: taSpin 0.7s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .title-refresh .refresh-ico { animation: none; } }
 .title-sound .title-account { margin-top: 4px; }
+/* a quiet word under the refresh arrow, so players know to tap it now and then for the newest version (the user's ask) */
+.ta-update { font-size: 0.8em; opacity: 0.6; }
 /* phones: one row along the top, refresh centred on the speaker */
 /* wider screens have room beside the logo, so one column */
 @media (min-width: 601px) { .title-corner { grid-template-columns: auto; } }

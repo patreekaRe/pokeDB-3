@@ -5,7 +5,7 @@
 .hub { position: absolute; inset: 0; z-index: 1; animation: hubIn 0.5s ease-out; }
 @keyframes hubIn { from { opacity: 0; } }
 .hub.shown { animation: none; }
-.hub-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: manipulation; }
+.hub-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
 .title-screen.hub-on { cursor: default; }
 .title-screen.hub-on .title-menu, .title-screen.hub-on .title-run, .title-screen.hub-on .title-gate,

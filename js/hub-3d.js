@@ -2026,6 +2026,7 @@ function ndc(e) {
 }
 
 function onTap(e) {
+  if (dragged) { dragged = false; return; }
   if (held || arriving || leaving || outbound || returning) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
@@ -2036,17 +2037,64 @@ function onTap(e) {
   if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
+  const to = groundTile(ray);
+  if (!to) return;
+  walkTo(to);
+  if (!walker.path.length) arrived();
+}
+
+/** The grid tile under a ray, or null off the ground. */
+function groundTile(ray) {
   const at = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return;
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return null;
   const to = { x: Math.floor(at.x + COLS / 2), y: Math.floor(at.z + ROWS / 2) };
-  if (!inGrid(to)) return;
-  walker.path = route(walker.tile, to);
+  return inGrid(to) ? to : null;
+}
+
+/** Off along a route to `to`, the ring marking where it ends; a step already under way is finished first. */
+function walkTo(to) {
+  const next = walker.path[0];
+  walker.path = next ? [next, ...route(next, to)] : route(walker.tile, to);
   aim = null;
   hideCard();
   const end = walker.path.at(-1) ?? walker.tile;
   ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
   ring.material.opacity = 0.9;
-  if (!walker.path.length) arrived();
+}
+
+/* Hold and drag to walk (the user's ask, 2026-10-11): your partner follows the finger tile by tile while it's down, and
+   the tap that ends a drag is swallowed so it doesn't walk again or open a place. */
+let drag = null, dragged = false;
+
+function onDown(e) {
+  if (held || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, last: '' };
+}
+
+function onDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.moved) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 12) return;
+    drag.moved = true;
+    view.setPointerCapture?.(e.pointerId);
+  }
+  if (held || arriving || leaving || outbound || returning) return;
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(ndc(e), camera);
+  const to = groundTile(ray);
+  if (!to || key(to.x, to.y) === drag.last) return;
+  drag.last = key(to.x, to.y);
+  walkTo(to);
+}
+
+function onUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (drag.moved) {
+    dragged = true;
+    setTimeout(() => { dragged = false; }, 400);   // a drag that ends off the canvas sends no click to clear it
+    if (!walker.path.length) arrived();
+  }
+  drag = null;
 }
 
 function onKey(e) {
@@ -2385,6 +2433,10 @@ async function build() {
   makeBugs();
   await gateReady();
   view.addEventListener('click', onTap);
+  view.addEventListener('pointerdown', onDown);
+  view.addEventListener('pointermove', onDrag);
+  view.addEventListener('pointerup', onUp);
+  view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
 }
