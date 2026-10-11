@@ -42,3 +42,33 @@ export async function monPool() {
 }
 
 export const spriteOf = (id) => `assets/pokemon/${id}-front.gif`;
+
+/** Has this device seen a game's How to play yet? The first open shows it by itself; the "?" brings it back. */
+export function firstLook(game) {
+  try {
+    const seen = JSON.parse(localStorage.getItem('pokedb.cornerHelp') || '{}');
+    if (seen[game]) return false;
+    localStorage.setItem('pokedb.cornerHelp', JSON.stringify({ ...seen, [game]: 1 }));
+    return true;
+  } catch { return false; }
+}
+
+/** The "?" in a game's head, lit while its How to play is open. */
+export function helpKey(on, fn) {
+  const b = el('button', `cg-help-key${on ? ' on' : ''}`, '?');
+  b.type = 'button';
+  b.setAttribute('aria-label', 'How to play');
+  b.addEventListener('click', () => { playSound('select'); fn(); });
+  return b;
+}
+
+/** A How to play card: an optional picture, then numbered steps, each [bold lead, the rest], and a Got it key. */
+export function helpCard(steps, { picture = null, done } = {}) {
+  const card = el('div', 'cg-help');
+  card.append(el('strong', 'cg-help-title', 'HOW TO PLAY'));
+  if (picture) card.append(picture);
+  const list = el('ol', 'cg-help-steps');
+  for (const [lead, rest] of steps) { const li = el('li'); li.append(el('b', '', lead), ` ${rest}`); list.append(li); }
+  card.append(list, key('Got it!', 'vf-go', () => { playSound('confirm'); done(); }));
+  return card;
+}

@@ -24,3 +24,15 @@ export function payGame(coins) {
   refreshCoins();
   return paid;
 }
+
+/** Meowth's stamp card: a stamp for each different game played today; STAMPS of them earn the day's scratch card. */
+export const STAMPS = 5;
+export function stamps() {
+  const s = getSave().corner?.stamps;
+  return s?.day === safariDay() ? s.games : [];
+}
+export function stamp(game) {
+  const have = stamps();
+  if (have.includes(game)) return;
+  updateSave(d => { d.corner = { ...d.corner, stamps: { day: safariDay(), games: [...have, game] } }; });
+}

@@ -11,11 +11,12 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins } from './ui.js';
 import { calmFx } from './prefs.js';
-import { potWon, payGame } from './corner-pot.js';
+import { potWon, payGame, stamp } from './corner-pot.js';
+import { firstLook, helpKey, helpCard } from './corner-panel.js';
 
 const LINE_COLOURS = ['#e07060', '#58b060', '#e8a040', '#4a90d8', '#b070d0'];
 
-let root = null, just = -1, state = null, board = null, memo = false, marks = new Set(), ended = null, onClose = null;
+let help = false, root = null, just = -1, state = null, board = null, memo = false, marks = new Set(), ended = null, onClose = null;
 
 /** Today's record: a new day starts at round 0 with nothing won, keeping the level. */
 function load() {
@@ -32,6 +33,7 @@ export function openVoltorb(close) {
   preloadSounds('card', 'thunder', 'coins', 'plink-1', 'plink-2');
   load();
   memo = false; marks = new Set(); ended = null; just = -1;
+  help = firstLook('voltorb');
   root?.remove();
   root = el('div', 'cg-overlay vf');
   root.setAttribute('role', 'dialog');
@@ -64,7 +66,12 @@ function render() {
   const won = potWon(), points = ended ? ended.points : score(board, state.flipped);
   const pays = ended ? ended.paid : capPay(payout(points), won);
   const head = el('div', 'vf-head');
-  head.append(el('strong', 'vf-title', 'VOLTORB FLIP'), el('span', 'vf-lv', `Lv. ${ended ? ended.level : state.level}`));
+  head.append(el('strong', 'vf-title', 'VOLTORB FLIP'), el('span', 'vf-lv', `Lv. ${ended ? ended.level : state.level}`), helpKey(help, () => { help = !help; render(); }));
+  if (help) {
+    const panel = el('div', 'vf-panel');
+    panel.append(head, helpCard(HELP, { picture: example(), done: () => { help = false; render(); } }));
+    return root.replaceChildren(panel);
+  }
   const meters = el('div', 'vf-meters');
   meters.append(
     meter('Score', points.toLocaleString()),
@@ -104,6 +111,31 @@ function render() {
   const panel = el('div', `vf-panel${ended?.boom != null && just === ended.boom && !calmFx() ? ' shake' : ''}${ended?.paid ? ' won' : ''}`);
   panel.append(head, meters, grid, say, keys);
   root.replaceChildren(panel);
+}
+
+const HELP = [
+  ['Every tile hides a 1, 2, 3 or a Voltorb.', 'Flip one with a tap.'],
+  ['The number beside each row and under each column', 'is all of that line\'s numbers added up.'],
+  ['The Voltorb number under it', 'is how many Voltorbs hide in that line.'],
+  ['Your score is multiplied by each tile you flip.', '1s keep it, 2s double it, 3s triple it.'],
+  ['Find every 2 and 3 to clear the board.', 'Flip a Voltorb and the round\'s score is gone, so you can Quit any time and take your coins.'],
+  ['Tips:', 'a line with 0 Voltorbs is safe to flip. A line whose total is low with lots of Voltorbs is only 1s and Voltorbs, so leave it. Memo marks tiles you think are Voltorbs.'],
+];
+
+/** One row worked out: five tiles face up and their clue, with what each number means. */
+function example() {
+  const box = el('div', 'vf-example');
+  const row = el('div', 'vf-ex-row');
+  for (const v of [1, 0, 3, 1, 2]) {
+    const t = el('span', 'vf-tile up');
+    t.append(v ? el('span', `vf-n n${v}`, String(v)) : voltorbIcon());
+    row.append(t);
+  }
+  row.append(clue({ sum: 7, bombs: 1 }, 0));
+  const notes = el('div', 'vf-ex-notes');
+  notes.append(el('p', '', '1 + 3 + 1 + 2 = 07, the top number'), el('p', '', 'one Voltorb in the row, the bottom number'));
+  box.append(row, notes);
+  return box;
 }
 
 /** A meter's number running from `from` to `to`. */
@@ -165,6 +197,7 @@ function flip(i) {
   just = -1;
   if (memo) { marks.has(i) ? marks.delete(i) : marks.add(i); playSound('select'); return render(); }
   const flips = state.flipped.length;
+  stamp('voltorb');
   just = i;
   state.flipped.push(i);
   marks.delete(i);

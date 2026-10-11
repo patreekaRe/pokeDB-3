@@ -7,6 +7,7 @@ import { BETS, BET_CAP, tablesOpen, JACKPOT_BASE, JACKPOT_FEED } from './data/ca
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el, refreshCoins } from './ui.js';
+import { stamp } from './corner-pot.js';
 
 function today() {
   const b = getSave().corner?.bets, day = safariDay();
@@ -25,6 +26,7 @@ export function stake(game, amount) {
   const n = b.plays[game] ?? 0;
   write({ ...b, net: b.net - amount, plays: { ...b.plays, [game]: n + 1 } });
   updateSave(d => { d.coins -= amount; });
+  stamp(game);
   refreshCoins();
   return { day: b.day, n };
 }

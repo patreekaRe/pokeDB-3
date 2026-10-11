@@ -9,7 +9,7 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key, monPool, spriteOf } from './corner-panel.js';
-import { potWon, payGame } from './corner-pot.js';
+import { potWon, payGame, stamp } from './corner-pot.js';
 
 let panel = null, names = null, round = null, st = null, picked = null, done = null, cur = 0;   // cur: the question on show
 
@@ -66,6 +66,7 @@ function render() {
 let ended = null;   // the round just finished, shown once the last answer's reveal is over
 
 function answer(id) {
+  stamp('quiz');
   if (picked || done) return;
   const q = round[cur];
   picked = id;

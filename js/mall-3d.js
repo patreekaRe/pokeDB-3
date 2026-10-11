@@ -718,7 +718,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
     k.mon = await monBoard(k, false);
     k.mon.board.rotation.x = -PITCH;
-    k.mon.group.position.set(k.x, 0.3, k.z);   // on a step behind the counter, so it shows over it
+    k.mon.group.position.set(k.x, k.lift ?? 0.3, k.z);   // on a step behind the counter, so it shows over it
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
     places[id] = { id, front: SHOPS[id].front, ...built };
@@ -878,7 +878,7 @@ function keeperTap() {
   const chat = () => talk(pickLine(P.keeper.chat), 4200);
   if (!P.keeper.special) return chat();
   const place = P;
-  P.keeper.special(() => { showCoins(); place?.refresh?.(); }).then(opened => { if (!opened && P === place) chat(); });
+  P.keeper.special(() => { showCoins(); place?.refresh?.(); }).then(r => { if (r === true || P !== place) return; if (typeof r === 'string') talk(r, 5200); else chat(); });
 }
 
 /** The lift: roped off until the second floor is bought (a tap asks, a second buys), then ridden up, or down again. */

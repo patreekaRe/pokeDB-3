@@ -106,14 +106,22 @@ export const crashMult = (ms) => Math.floor(Math.exp(CRASH_RATE * ms / 1000) * 1
 /** How long a flight takes to reach `m`. */
 export const crashTime = (m) => Math.log(m) / CRASH_RATE * 1000;
 
-/* ---------- Plinko: a Poké Ball down eight rows of pegs ---------- */
+/* ---------- Plinko: a Poké Ball down twelve rows of pegs ---------- */
 
-export const PLINKO_ROWS = 8;
-export const PLINKO_PAYS = [13, 3, 1.3, 0.6, 0.4, 0.6, 1.3, 3, 13];
+/* A coin-flip at every peg would pile nearly every ball into the middle three bins (the user saw only the middle,
+   2026-10-11), so the bin is dealt from PLINKO_ODDS first, flatter than a bell, and the bounces are shuffled to land
+   there: about 1 drop in 25 reaches an edge. */
+export const PLINKO_ROWS = 12;
+export const PLINKO_PAYS = [10, 2.4, 1.4, 1, 0.55, 0.4, 0.2, 0.4, 0.55, 1, 1.4, 2.4, 10];
+export const PLINKO_ODDS = [12, 35, 55, 75, 95, 110, 236, 110, 95, 75, 55, 35, 12];   // in 1000
 
-/** A drop's path: a left (0) or right (1) bounce at each row; its bin is how many went right. */
-export const plinkoPath = (rand) => Array.from({ length: PLINKO_ROWS }, () => randIndex(2, rand));
-export const plinkoBin = (path) => path.reduce((n, r) => n + r, 0);
+/** A drop: its bin, and its path, a left (0) or right (1) bounce at each row, with as many rights as the bin. */
+export function plinkoDrop(rand) {
+  let r = randIndex(1000, rand), bin = 0;
+  while (r >= PLINKO_ODDS[bin]) r -= PLINKO_ODDS[bin++];
+  const path = shuffled([...Array(bin).fill(1), ...Array(PLINKO_ROWS - bin).fill(0)], rand);
+  return { bin, path };
+}
 
 /* ---------- Meowth's scratch card: one free a UTC day, always a prize ---------- */
 

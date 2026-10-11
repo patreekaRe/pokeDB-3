@@ -254,20 +254,9 @@
 @keyframes boPulse { 50% { transform: scale(1.04); } }
 
 /* Plinko */
-.pk-panel { background: linear-gradient(#1a5a9a, #0e3a6a); }
-.pk-board { position: relative; height: 280px; border-radius: 12px; background: radial-gradient(ellipse at 50% 20%, #24486e, #102238);
-  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.15); overflow: hidden; }
-.pk-peg { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #fff, #9ab8d8);
-  box-shadow: 0 0 4px rgba(160, 200, 255, 0.6); }
-.pk-ball { position: absolute; z-index: 2; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; left: 50%; top: 0;
-  background: radial-gradient(circle, #fff 0 15%, #303030 16% 24%, transparent 25%), linear-gradient(#e84040 0 45%, #303030 45% 55%, #f8f8f8 55%);
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5); }
-.pk-bins { position: absolute; left: 4%; right: 4%; bottom: 4px; display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; }
-.pk-bin { display: grid; place-items: center; height: 26px; border-radius: 4px 4px 6px 6px; font-size: 10px; font-weight: 800; color: #fff; text-shadow: 0 1px 0 #000; }
-.pk-bin.t0 { background: #4a5a70; } .pk-bin.t1 { background: #3a8a5a; } .pk-bin.t2 { background: #2a9ad0; }
-.pk-bin.t3 { background: #d8862a; } .pk-bin.t4 { background: #e02848; box-shadow: 0 0 8px #ff6070; }
-.pk-bin.hit { animation: pkHit 0.6s ease-out; }
-@keyframes pkHit { 30% { transform: translateY(4px) scale(1.15); filter: brightness(1.6); } }
+.pk-panel { width: min(520px, 100%); background: linear-gradient(#1a5a9a, #0e3a6a); }
+.pk-canvas { display: block; width: 100%; border-radius: 12px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.15), 0 4px 14px rgba(0, 0, 0, 0.4); }
+.pk-panel .vf-keys .vf-go { flex: 1 1 0; }
 
 /* Meowth's scratch card */
 .sx-panel { background: linear-gradient(#e8b818, #b07a08); color: #3a2400; }
@@ -283,3 +272,28 @@
 .sx-foil::after { content: '?'; font-size: 28px; font-weight: 900; color: #8a8a9a; }
 .sx-cell.open .sx-foil { opacity: 0; transform: scale(1.3) rotate(8deg); pointer-events: none; }
 .sx-cell.win { box-shadow: inset 0 0 0 3px #ffb000, 0 0 10px #ffd84a; animation: slHit 0.6s ease-out 2; }
+
+/* How to play: the "?" in a game's head, and its card */
+.cg-help-key { width: 30px; height: 30px; flex: none; margin-left: 4px; border: 0; border-radius: 50%; cursor: pointer; font: inherit; font-weight: 900; font-size: 16px;
+  color: #2a2a30; background: #fffbea; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35); }
+.cg-help-key.on { background: #ffd84a; }
+.vf-head { align-items: center; }
+.vf-head .vf-title { margin-right: auto; }
+.cg-help { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #fffbea; color: #2a2a30; }
+.cg-help-title { font-size: 15px; letter-spacing: 2px; color: #b03a2a; }
+.cg-help-steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-size: 14px; line-height: 1.4; }
+.cg-help-steps b { color: #1a1a24; }
+.vf-example { display: grid; gap: 6px; padding: 8px; border-radius: 10px; background: linear-gradient(#2f8a58, #20704a); }
+.vf-ex-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.vf-ex-row .vf-tile { cursor: default; }
+.vf-ex-notes { display: grid; gap: 2px; justify-items: end; }
+.vf-ex-notes p { margin: 0; font-size: 12px; color: #fffbea; }
+.vf-ex-notes p::before { content: '▲ '; color: #ffe070; }
+
+/* Blast-Off's strip of the last flights, and what a cash out pays right now */
+.bo-history { display: flex; align-items: center; gap: 5px; overflow: hidden; font-size: 12px; white-space: nowrap; }
+.bo-history span { opacity: 0.75; margin-right: 2px; }
+.bo-history b { padding: 2px 6px; border-radius: 99px; background: rgba(232, 72, 72, 0.35); font-variant-numeric: tabular-nums; }
+.bo-history b.hi { background: rgba(156, 240, 96, 0.35); }
+.bo-worth { position: absolute; left: 0; right: 0; top: 52px; text-align: center; font-size: 14px; font-weight: 700; color: #fffbea; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5); }
+.bo-sky { height: 270px; }

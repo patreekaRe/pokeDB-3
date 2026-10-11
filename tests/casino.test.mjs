@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SYMBOLS, REEL_WEIGHT, STRIP, SLIP, slotPay, stopAt, shuffledDeck, handValue, dealerPlays, blackjackReturn, isBlackjack,
-  hlChance, hlMult, playRand, tablesOpen, BET_CAP, crashPoint, crashMult, crashTime, plinkoPath, plinkoBin, PLINKO_PAYS,
-  PLINKO_ROWS, scratchCard, SCRATCH_PRIZES,
+  hlChance, hlMult, playRand, tablesOpen, BET_CAP, crashPoint, crashMult, crashTime, plinkoDrop, PLINKO_PAYS,
+  PLINKO_ROWS, PLINKO_ODDS, scratchCard, SCRATCH_PRIZES,
 } from '../js/data/casino.js';
 import { makeRng } from '../js/rng.js';
 
@@ -59,13 +59,19 @@ test('Blast-Off returns about 95% whenever you cash out', () => {
   assert.ok(Math.abs(crashMult(crashTime(3)) - 3) < 0.02);
 });
 
-test('Plinko returns about 95%', () => {
-  const C = [1, 8, 28, 56, 70, 56, 28, 8, 1];
-  const rtp = C.reduce((s, c, i) => s + c * PLINKO_PAYS[i], 0) / 256;
+test('Plinko returns about 95%, and its paths land in their bins', () => {
+  assert.equal(PLINKO_ODDS.reduce((a, b) => a + b, 0), 1000);
+  assert.equal(PLINKO_PAYS.length, PLINKO_ROWS + 1);
+  const rtp = PLINKO_ODDS.reduce((s, c, i) => s + c * PLINKO_PAYS[i], 0) / 1000;
   assert.ok(rtp > 0.93 && rtp < 0.97, `plinko returns ${rtp}`);
-  const path = plinkoPath(makeRng(9));
-  assert.equal(path.length, PLINKO_ROWS);
-  assert.ok(plinkoBin(path) >= 0 && plinkoBin(path) <= PLINKO_ROWS);
+  const rand = makeRng(9), seen = new Set();
+  for (let i = 0; i < 3000; i++) {
+    const { bin, path } = plinkoDrop(rand);
+    assert.equal(path.length, PLINKO_ROWS);
+    assert.equal(path.reduce((a, b) => a + b, 0), bin);
+    seen.add(bin);
+  }
+  assert.equal(seen.size, PLINKO_ROWS + 1);
 });
 
 test('the scratch card always wins its prize, the same for the day', () => {

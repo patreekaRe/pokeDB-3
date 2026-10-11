@@ -1,4 +1,5 @@
-/* scratch.js  -  Meowth's free scratch card (2026-10-11, the user's pick): one a UTC day from the prize counter, nine
+/* scratch.js  -  Meowth's scratch card (2026-10-11, the user's pick): earned each UTC day by filling Meowth's stamp card
+   (a stamp for each different game played, js/corner-pot.js), handed over at the prize counter, nine
    foil spots to scratch (a tap, or a finger dragged across), three of a kind somewhere under them, and it always pays
    (js/data/casino.js's scratchCard(), the same card for everyone that day). What's scratched and whether it's paid are
    saved (`save.corner.scratch`), so a refresh keeps the card. */
@@ -10,6 +11,7 @@ import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { SYMBOL_ART } from './slots.js';
+import { stamps, STAMPS } from './corner-pot.js';
 
 let panel = null, card = null, st = null, down = false;   // down: a finger pressed, scratching what it crosses
 addEventListener('pointerup', () => { down = false; });
@@ -18,8 +20,13 @@ addEventListener('pointercancel', () => { down = false; });
 const today = () => { const s = getSave().corner?.scratch, day = safariDay(); return s?.day === day ? s : { day, open: [], paid: false }; };
 const keep = () => updateSave(d => { d.corner = { ...d.corner, scratch: st }; });
 
-/** Is today's card still to be scratched? (Meowth offers it while it is.) */
-export const scratchReady = () => !today().paid;
+/** Is today's card earned (a full stamp card) and still to be scratched? */
+export const scratchReady = () => stamps().length >= STAMPS && !today().paid;
+/** Meowth's sign over its head: how full today's stamp card is, or the card waiting, or done. */
+export function stampState() {
+  const n = Math.min(STAMPS, stamps().length), paid = today().paid;
+  return { n, of: STAMPS, ready: n >= STAMPS && !paid, paid };
+}
 
 export function openScratch(onClose) {
   preloadSounds('select', 'coins', 'achievement');

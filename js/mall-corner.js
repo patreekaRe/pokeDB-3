@@ -10,10 +10,11 @@ import { cornerEntries } from './shop.js';
 import { trim } from './hd2d.js';
 import { fine, texOf, words, star, GC } from './hub-3d.js';
 import { SHOWCASES } from './showcase.js';
+import { stampState } from './scratch.js';
 
 /* The room: `x` a thing's first tile, `w` its tiles; y 0 is the back wall. */
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
-const COUNTER = { x: 9, y: 1, w: 3 };
+const COUNTER = { x: 9, y: 2, w: 3 };   // Meowth stands a row behind it, clear of the back wall
 const SHOWS = [
   { row: 'skins', x: 0, w: 3 },
   { row: 'shiny', x: 4, w: 4 },
@@ -22,37 +23,37 @@ const SHOWS = [
 ];
 const SHOW_H = 3.1, SHOW_D = 0.8, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
-const CAB_H = 1.6;    // a game cabinet's height
+const CAB_H = 1.6;    // an attract cabinet's height
 /* The free games (the revamp, 2026-10-10): they pay into a shared daily pot. */
 const GAMES = {
-  voltorb: { at: { x: 8, y: 5 }, name: 'Voltorb Flip', colour: '#58d080',
+  voltorb: { at: { x: 2, y: 4 }, w: 2, name: 'Voltorb Flip', colour: '#58d080',
     line: 'Voltorb Flip! Clear the board for PokéCoins: the free games pay up to 250 a day between them. Tap again to sit down, meow.',
     open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
-  quiz: { at: { x: 5, y: 5 }, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
+  quiz: { at: { x: 5, y: 4 }, w: 2, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
     line: 'Who\'s That Pokémon? Five silhouettes a day, name \'em for coins. Tap again to play, meow.',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The betting games (2026-10-10; the lineup the user picked 2026-10-11): a bank of tap-to-stop slot machines either side
    of the runner, Plinko and High-Low up front, a Blackjack table and Team Rocket's Blast-Off. */
 const CASINO = {
-  slots: { ats: [{ x: 7, y: 8 }, { x: 8, y: 8 }, { x: 12, y: 8 }, { x: 13, y: 8 }], name: 'Slots', colour: '#ff5a5a',
+  slots: { ats: [{ x: 6, y: 8 }, { x: 7, y: 8 }, { x: 13, y: 8 }, { x: 14, y: 8 }], name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! You stop the reels yourself, so time it for a 7. Three 7s win the jackpot, meow. Tap again to play.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
-  plinko: { at: { x: 12, y: 5 }, name: 'Plinko', colour: '#4ae8f0',
-    line: 'Plinko! Drop a Poké Ball and watch it bounce. The edges pay ×13, meow. Tap again to play.',
+  plinko: { at: { x: 14, y: 4 }, w: 2, name: 'Plinko', colour: '#4ae8f0',
+    line: 'Plinko! Drop a Poké Ball and watch it bounce. The edges pay ×10, meow. Tap again to play.',
     open: (done) => import('./plinko.js').then(m => m.openPlinko(done)) },
-  highlow: { at: { x: 15, y: 5 }, name: 'High-Low', colour: '#ffd84a',
+  highlow: { at: { x: 17, y: 4 }, w: 2, name: 'High-Low', colour: '#ffd84a',
     line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
     open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
-  blackjack: { at: { x: 3, y: 7 }, w: 2, name: 'Blackjack',
+  blackjack: { at: { x: 2, y: 8 }, w: 3, name: 'Blackjack',
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
-  blastoff: { at: { x: 16, y: 7 }, w: 2, name: 'Team Rocket Blast-Off', colour: '#e84848',
+  blastoff: { at: { x: 16, y: 8 }, w: 3, name: 'Team Rocket Blast-Off', colour: '#e84848',
     line: 'Team Rocket Blast-Off! Bet, watch the payout climb, and cash out before they blast off again. Tap again to play, meow.',
     open: (done) => import('./blastoff.js').then(m => m.openBlastOff(done)) },
 };
-const PILLARS = [[1, 9], [6, 10], [14, 10], [19, 9]];
-const ATTRACT = [[0, 4], [0, 6], [0, 8], [20, 4], [20, 6], [20, 8]];   // scenery cabinets down the side walls
+const PILLARS = [[1, 11], [5, 11], [15, 11], [19, 11]];
+const ATTRACT = [[0, 6], [0, 10], [20, 6], [20, 10]];   // scenery cabinets down the side walls
 
 const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
 const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
@@ -60,9 +61,14 @@ const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 /* Meowth keeps the Game Corner (Pay Day: it can't keep its paws off a coin). */
 export const KEEPER = {
   id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif',
-  /* A tap on Meowth hands over the day's free scratch card while it's unscratched (js/scratch.js). */
-  special: (done) => import('./scratch.js').then(m => { if (!m.scratchReady()) return false; m.openScratch(done); return true; }),
-  hello: ['Welcome to the Game Corner, meow! Tap me for your free scratch card today.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
+  /* A tap on Meowth hands over the day's scratch card once the stamp card is full (js/scratch.js), else says how full it is. */
+  special: (done) => import('./scratch.js').then(m => {
+    const st = m.stampState();
+    if (st.ready) { m.openScratch(done); return true; }
+    if (st.paid) return 'You\'ve had today\'s scratch card, meow. Fill a new stamp card tomorrow!';
+    return `Your stamp card has ${st.n} of ${st.of} stamps. Play ${st.of - st.n} more different game${st.of - st.n > 1 ? 's' : ''} today and I\'ll hand you a scratch card, meow!`;
+  }),
+  hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
   chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Team Rocket keep borrowing my balloon. Cash out before they ruin it again.', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Feeling lucky? The slots, Plinko, Blackjack, High-Low and Blast-Off take bets. The house only closes once you\'re 500 up for the day, meow.', 'Blackjack against me? Bold. I like bold. I like your coins more.'],
 };
 
@@ -187,8 +193,8 @@ const PERK_ART = {
 
 /** A game cabinet's face: a lit marquee in its colour, its screen's picture (`screen(g, s)` draws in the 2.2..15.8 x
     7.6..18 box), the buttons lit, FREE PLAY. */
-function gameArt(title, colour, screen, foot = 'FREE PLAY') {
-  const f = fine(18, 27, 10), { g, rr, lin, shine } = f, s = shine();
+function gameArt(title, colour, screen, foot = 'FREE PLAY', sharp = 10) {
+  const f = fine(18, 27, sharp), { g, rr, lin, shine } = f, s = shine();
   rr(0, 0, 18, 27, 1.4, lin(0, 0, 18, 0, [GC.chrome[2], GC.chrome[0], GC.chrome[1], GC.chrome[2]]));
   rr(1.2, 1.2, 15.6, 5, 1, lin(0, 1.2, 0, 6.2, [colour, '#00000060']));
   rr(2, 2, 14, 3.4, 0.8, colour);
@@ -277,11 +283,46 @@ function feltArt(id, w) {
 }
 
 
+/** A table's marquee: its name in neon on a dark board ringed with bulbs. */
+function marqueeArt(title, w) {
+  const W = Math.round(w * 20), H = 16, f = fine(W, H, 12), { g, rr, shine } = f, s = shine();
+  rr(0, 0, W, H, 2, '#1a0e30');
+  for (let x = 2; x < W - 1; x += 3) for (const y of [1.6, H - 1.6]) {
+    for (const c of [g, s]) { c.fillStyle = '#ffe890'; c.beginPath(); c.arc(x, y, 0.7, 0, Math.PI * 2); c.fill(); }
+  }
+  words(g, title, W / 2, H / 2 + 0.4, 6, NEON.pink); words(s, title, W / 2, H / 2 + 0.4, 6, '#ffb0e0');
+  return f.c;
+}
+
 /** Team Rocket's red R, white on clear, for the balloon. */
 function rocketR() {
   const f = fine(16, 16, 8), { g } = f;
   words(g, 'R', 8, 8.6, 13, '#ffffff');
   return f.c;
+}
+
+/** Meowth's stamp card sign: DAILY STAMPS and a row of stamps, or the scratch card waiting, or done for today. */
+function stampSign(c, { n, of, ready, paid }) {
+  const g = c.getContext('2d'), W = c.width, H = c.height;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#1a0e30'; g.strokeStyle = ready ? '#ff5ab8' : '#ffd84a'; g.lineWidth = 8;
+  g.beginPath(); g.roundRect(6, 6, W - 12, H - 12, 26); g.fill(); g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 38px system-ui, sans-serif'; g.fillStyle = ready ? '#ff8ad0' : '#ffd84a';
+  g.shadowColor = g.fillStyle; g.shadowBlur = 12;
+  g.fillText(ready ? 'SCRATCH CARD READY!' : paid ? 'SEE YOU TOMORROW!' : `DAILY STAMPS ${n}/${of}`, W / 2, 44);
+  g.shadowBlur = 0;
+  if (ready) { g.font = '700 24px system-ui, sans-serif'; g.fillStyle = '#fffbea'; g.fillText('Tap Meowth to scratch it', W / 2, 112); return; }
+  for (let i = 0; i < of; i++) {
+    const x = W / 2 + (i - (of - 1) / 2) * 76, y = 112, on = paid || i < n;
+    g.fillStyle = on ? '#e83a5a' : '#2e1e4a'; g.strokeStyle = on ? '#ffd0dc' : '#5a4680'; g.lineWidth = 4;
+    g.beginPath(); g.arc(x, y, 28, 0, Math.PI * 2); g.fill(); g.stroke();
+    if (on) {   // a paw print
+      g.fillStyle = '#fffbea';
+      g.beginPath(); g.ellipse(x, y + 6, 10, 8, 0, 0, Math.PI * 2); g.fill();
+      for (const [dx, dy] of [[-12, -7], [-4, -14], [4, -14], [12, -7]]) { g.beginPath(); g.arc(x + dx, y + dy, 4.5, 0, Math.PI * 2); g.fill(); }
+    }
+  }
 }
 
 /* ---------- pictures ---------- */
@@ -444,87 +485,63 @@ export function buildCorner(THREE, size) {
   Promise.all(srcs.map(src => picture(src).then(c => cuts.set(src, c)))).then(() => screens.forEach(sc => sc.paint()));
   redraws.push(() => screens.forEach(sc => sc.paint()));
 
-  // the game cabinets
+  // the game cabinets (rebuilt bigger 2026-10-11, the user's ask: they were small and scattered): one `w` tiles wide is a
+  // big cabinet, its face the full painting on a short plinth; a one-tile one (a slot machine) a taller, narrower one
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
-  for (const [id, gm] of Object.entries(GAMES)) {
-    const { x, y } = gm.at;
-    blocked.add(`${x},${y}`);
-    const m = new THREE.Group();
-    m.position.set(tileX(x), 0, tileZ(y));
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, CAB_H, 0.66), [violet, violet, chrome, chrome, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id]), 1), violet]);
-    body.position.y = CAB_H / 2;
-    body.castShadow = body.receiveShadow = true;
-    const topper = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.18, 0.54), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
-    topper.position.y = CAB_H + 0.09;
-    m.add(body, topper);
-    const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x, y: y + 1 },
-      frame: { x: tileX(x), y: CAB_H / 2, z: tileZ(y) + 0.35, w: 1, h: CAB_H + 0.1 } };
-    spots.push(spot);
-    m.traverse(o => { o.userData.front = spot; });
-    group.add(m);
-  }
-
-  // the slot bank and High-Low: cabinets like the games', a slot machine with a lever on its side
   const lever = std({ color: '#cdc8e0', metalness: 0.6, roughness: 0.3 });
-  const casinoCab = (id, gm, x, y, slot) => {
-    blocked.add(`${x},${y}`);
+  const balloons = [];
+  const cab = (id, gm, x, y, foot) => {
+    const w = gm.w ?? 1, big = w > 1;
+    for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
+    const W = big ? Math.min(1.75, w * 0.86) : 0.92, D = big ? 0.85 : 0.72;
+    const aw = W - 0.1, ah = aw * 1.5, base = big ? 0.35 : 0.62, H = base + ah + 0.1;
     const m = new THREE.Group();
-    m.position.set(tileX(x), 0, tileZ(y));
-    const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, CAB_H, 0.66), [violet, violet, chrome, chrome, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], 'BET 5-50'), 1), violet]);
-    body.position.y = CAB_H / 2;
+    m.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y));
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [chrome, chrome, violet, violet, violet, violet]);
+    body.position.y = H / 2;
     body.castShadow = body.receiveShadow = true;
-    const topper = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.18, 0.54), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
-    topper.position.y = CAB_H + 0.09;
-    m.add(body, topper);
-    if (slot) {
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.5, 10), lever);
-      rod.position.set(0.5, CAB_H * 0.62, 0.05);
-      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.07, 14, 10), std({ color: GC.red, emissive: new THREE.Color(GC.red), emissiveIntensity: 0.4 }));
-      knob.position.set(0.5, CAB_H * 0.62 + 0.27, 0.05);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(aw, ah), lit(gameArt(id === 'blastoff' ? 'BLAST-OFF' : gm.name.toUpperCase(), gm.colour, SCREENS[id], foot, big ? 16 : 12), 1));
+    face.position.set(0, base + ah / 2 + 0.03, D / 2 + 0.005);
+    const kick = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.12, D + 0.04), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.7 }));
+    kick.position.y = 0.06;
+    const topper = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 0.22, D * 0.8), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
+    topper.position.y = H + 0.11;
+    m.add(body, face, kick, topper);
+    if (id === 'slots') {
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 10), lever);
+      rod.position.set(W / 2 + 0.06, H * 0.6, 0.05);
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10), std({ color: GC.red, emissive: new THREE.Color(GC.red), emissiveIntensity: 0.4 }));
+      knob.position.set(W / 2 + 0.06, H * 0.6 + 0.33, 0.05);
       m.add(rod, knob);
     }
-    const spot = { id: `${id}${x}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x, y: y + 1 },
-      frame: { x: tileX(x), y: CAB_H / 2, z: tileZ(y) + 0.35, w: 1, h: CAB_H + 0.1 } };
+    if (id === 'blastoff') {   // Team Rocket's R balloon bobbing over it on its ropes
+      const balloon = new THREE.Group();
+      const skin = new THREE.Mesh(new THREE.SphereGeometry(0.5, 28, 20), std({ color: '#e84848', roughness: 0.35, emissive: new THREE.Color('#601010'), emissiveIntensity: 0.4 }));
+      skin.scale.y = 1.15;
+      const r = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ map: texOf(rocketR()), transparent: true }));
+      r.position.z = 0.51;
+      const basket = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.22, 0.34), std({ color: '#a87038', roughness: 0.8 }));
+      basket.position.y = -0.95;
+      balloon.add(skin, r, basket);
+      for (const [dx, dz] of [[-0.13, -0.13], [0.13, -0.13], [-0.13, 0.13], [0.13, 0.13]]) {
+        const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.46, 4), std({ color: '#4a3020' }));
+        rope.position.set(dx, -0.6, dz);
+        balloon.add(rope);
+      }
+      balloon.position.set(W / 2 - 0.2, H + 1.2, 0);
+      balloon.userData.y = H + 1.2;
+      balloons.push(balloon);
+      m.add(balloon);
+    }
+    const spot = { id: `${id}${x}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor((w - 1) / 2), y: y + 1 },
+      frame: { x: tileX(x) - 0.5 + w / 2, y: H / 2, z: tileZ(y) + D / 2 + 0.03, w: W + 0.1, h: H + 0.1 } };
     spots.push(spot);
     m.traverse(o => { o.userData.front = spot; });
     group.add(m);
   };
-  for (const at of CASINO.slots.ats) casinoCab('slots', CASINO.slots, at.x, at.y, true);
-  casinoCab('highlow', CASINO.highlow, CASINO.highlow.at.x, CASINO.highlow.at.y, false);
-  casinoCab('plinko', CASINO.plinko, CASINO.plinko.at.x, CASINO.plinko.at.y, false);
-
-  // Team Rocket Blast-Off: a double-wide cabinet, and Team Rocket's R balloon bobbing over it on its ropes
-  const balloons = [];
-  {
-    const gm = CASINO.blastoff, { x, y } = gm.at, w = gm.w;
-    for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
-    const m = new THREE.Group();
-    m.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y));
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w - 0.15, CAB_H, 0.7), [violet, violet, chrome, chrome, lit(gameArt('BLAST-OFF', gm.colour, SCREENS.blastoff, 'BET 5-50'), 1), violet]);
-    body.position.y = CAB_H / 2;
-    body.castShadow = body.receiveShadow = true;
-    const balloon = new THREE.Group();
-    const skin = new THREE.Mesh(new THREE.SphereGeometry(0.42, 28, 20), std({ color: '#e84848', roughness: 0.35, emissive: new THREE.Color('#601010'), emissiveIntensity: 0.4 }));
-    skin.scale.y = 1.15;
-    const r = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), new THREE.MeshBasicMaterial({ map: texOf(rocketR()), transparent: true }));
-    r.position.z = 0.43;
-    const basket = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.3), std({ color: '#a87038', roughness: 0.8 }));
-    basket.position.y = -0.82;
-    balloon.add(skin, r, basket);
-    for (const [dx, dz] of [[-0.12, -0.12], [0.12, -0.12], [-0.12, 0.12], [0.12, 0.12]]) {
-      const rope = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.42, 4), std({ color: '#4a3020' }));
-      rope.position.set(dx, -0.52, dz);
-      balloon.add(rope);
-    }
-    balloon.position.y = CAB_H + 1.1;
-    balloons.push(balloon);
-    m.add(body, balloon);
-    const spot = { id: 'blastoff', kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + 1, y: y + 1 },
-      frame: { x: tileX(x) - 0.5 + w / 2, y: CAB_H / 2, z: tileZ(y) + 0.37, w: w, h: CAB_H + 0.1 } };
-    spots.push(spot);
-    m.traverse(o => { o.userData.front = spot; });
-    group.add(m);
-  }
+  for (const [id, gm] of Object.entries(GAMES)) cab(id, gm, gm.at.x, gm.at.y, 'FREE PLAY');
+  for (const at of CASINO.slots.ats) cab('slots', CASINO.slots, at.x, at.y, 'BET 5-50');
+  for (const id of ['plinko', 'highlow', 'blastoff']) cab(id, CASINO[id], CASINO[id].at.x, CASINO[id].at.y, 'BET 5-50');
 
   // the Blackjack table: green felt on a dark wood base, two tiles wide, cards dealt on it
   const wood = std({ color: '#4a2a18', roughness: 0.6 });
@@ -548,6 +565,15 @@ export function buildCorner(THREE, size) {
       c.position.set(cx, 0.79, cz);
       t.add(c);
     }
+    const board = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.8, 0.12), [gold, gold, gold, gold, lit(marqueeArt('BLACKJACK', w - 0.3), 1.1), gold]);
+    board.position.set(0, 2.05, -0.62);
+    t.add(board);
+    for (const sx of [-1, 1]) {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.7, 10), gold);
+      post.position.set(sx * (w / 2 - 0.35), 0.85, -0.62);
+      t.add(post);
+    }
+    for (let k = 0; k < w; k++) blocked.add(`${x + k},${y - 1}`);
     const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
       frame: { x: tileX(x) - 0.5 + w / 2, y: 0.5, z: tileZ(y) + 0.5, w: w + 0.1, h: 1 } };
     spots.push(spot);
@@ -621,6 +647,18 @@ export function buildCorner(THREE, size) {
   desk.traverse(o => { o.userData.front = keeper; });
   group.add(desk);
 
+  // Meowth's stamp card, hung over its head: how many games today, then the scratch card waiting
+  const signCanvas = new OffscreenCanvas(480, 168);
+  signCanvas.fine = 1;
+  const signMap = texOf(signCanvas);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 0.945), new THREE.MeshBasicMaterial({ map: signMap, transparent: true, toneMapped: false }));
+  sign.position.set(tileX(COUNTER.x + 1), 2.35, tileZ(COUNTER.y - 1) + 0.1);
+  sign.userData.front = keeper;
+  group.add(sign);
+  const paintSign = () => { stampSign(signCanvas, stampState()); signMap.needsUpdate = true; };
+  paintSign();
+  redraws.push(paintSign);
+
   const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: texOf(frameArt()), transparent: true, depthWrite: false }));
   ring.visible = false;
   ring.raycast = () => {};
@@ -628,13 +666,15 @@ export function buildCorner(THREE, size) {
 
   return {
     group, blocked, spots, frame: ring, top: 4.7, title: 'Game Corner', light: 0.6, cols, rows, door: DOOR,
-    keeper: { ...KEEPER, x: tileX(COUNTER.x + 1), z: tileZ(0) },
+    keeper: { ...KEEPER, x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1), lift: 0.6 },
     refresh: () => redraws.forEach(r => r()),
     tick(now) {
       for (const sc of screens) if (!sc.held && now >= sc.next) { sc.at += 1; sc.next = now + CYCLE; sc.paint(); }
       rings.forEach((m, i) => { m.emissiveIntensity = 0.7 + 0.6 * Math.max(0, Math.sin(now / 260 - i * 0.7)); });
       screenMats.forEach((m, i) => { m.emissive.set(tints[Math.floor(now / 900 + i) % 4]); });
-      balloons.forEach((b, i) => { b.position.y = CAB_H + 1.1 + Math.sin(now / 700 + i) * 0.08; b.rotation.z = Math.sin(now / 1100) * 0.05; });
+      sign.position.y = 2.35 + Math.sin(now / 900) * 0.04;
+      if (stampState().ready) sign.scale.setScalar(1 + Math.max(0, Math.sin(now / 220)) * 0.04);
+      balloons.forEach((b, i) => { b.position.y = b.userData.y + Math.sin(now / 700 + i) * 0.08; b.rotation.z = Math.sin(now / 1100) * 0.05; });
     },
   };
 }
