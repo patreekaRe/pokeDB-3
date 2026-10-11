@@ -1291,8 +1291,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
    bottom-left corner (routes start from the middle, so it's always free). It's the map's one in-flow child, set down in the
    corner by the map's flex column (not a top margin: a sticky box won't move its margin out of the map), and sticky, so on a
    tall map scrolled up it waits at the screen's bottom instead. */
-.map:has(> .scope-btn:not([hidden])) { display: flex; flex-direction: column; justify-content: flex-end; }
-.map > .scope-btn { position: sticky; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 3; margin: 0 0 12px 12px; }
+.map:has(> .map-tools > .scope-btn:not([hidden])) { display: flex; flex-direction: column; justify-content: flex-end; }
+.map > .map-tools { position: sticky; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 4px); z-index: 3; margin: 0 0 12px 12px; display: flex; gap: 8px; width: fit-content; }
+/* Unown Rubbing (the Ruins page's perk) sits beside the Scope, the same capsule */
+.rubbing-icon { display: grid; place-items: center; width: 32px; height: 32px; font-size: 22px; line-height: 1; }
 .scope-btn {
   display: flex;
   width: fit-content;
@@ -1563,6 +1565,10 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;
   image-rendering: pixelated; }
 .ken-face[hidden] { display: none; }
+.map-node.read .map-town { border-color: #8cc8c0; }
+/* Tracker's Eye (Thornwood's page): a wild fight's type in a red ring when it beats yours, green when yours beats it */
+.map-match { position: absolute; top: -6px; right: -8px; z-index: 2; display: grid; place-items: center; width: 22px; height: 22px; border: 2px solid #f04038; border-radius: 50%; background: #2a1818; font-size: 12px; line-height: 1; pointer-events: none; }
+.map-match.weak { border-color: #58c058; background: #18281a; }
 .map-node.ken .map-town { background: #f8e8c8; overflow: hidden; }
 .map-node.ken .ken-face { width: 100%; }
 .unlock-stage .ken-face { width: 104px; animation: unlockHop 0.9s ease-in-out infinite; transform-origin: 50% 100%; }
@@ -3968,6 +3974,9 @@ body.scene-peek #backdrop { display: none; }
 .xr-boss { height: 44px; width: auto; max-width: 33%; object-fit: contain; image-rendering: pixelated; }
 .xr-boss.unmet { filter: brightness(0) drop-shadow(0 0 1px rgba(255, 240, 200, 0.8)); }
 .xr-types { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+/* Wayfinder (the Savanna page's perk): steps the second road through the other biomes it could be */
+.xr-swap { margin-top: 4px; padding: 3px 10px; border: 2px solid #f8c850; border-radius: 999px; background: #3a2a14; color: #fff0a0; font-size: 0.8rem; cursor: pointer; }
+.xr-swap:hover { background: #5a4020; }
 .xr-types .chip { font-size: 0.75rem; padding: 2px 6px; }
 .xr-go { position: absolute; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); translate: -50% 0; min-width: 200px; max-width: calc(100% - 32px); white-space: nowrap; }
 .xr-go:disabled { opacity: 1; filter: saturate(0.4) brightness(0.85); }
@@ -4486,7 +4495,7 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }
 }
 #map-screen:not(.tower) .map-wrap::-webkit-scrollbar { display: none; }
 #map-screen:not(.tower) .map { width: 100%; box-shadow: none; border-radius: 0; }
-#map-screen:not(.tower) .map > .scope-btn { bottom: 10px; }
+#map-screen:not(.tower) .map > .map-tools { bottom: 10px; }
 #map-screen:not(.tower) .mdex-dock {
   position: relative; flex: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
   padding: 10px 10px max(10px, env(safe-area-inset-bottom));

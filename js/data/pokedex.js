@@ -28,11 +28,29 @@ export const DEX_PERKS = {
     text: 'Once per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward once a biome', gift: '1 reroll', every: 'card rerolls each biome',
     lv2: { text: 'Twice per biome, reroll a card reward for 3 new cards.', short: 'Reroll a card reward twice a biome', gift: '2 rerolls' },
   },
+  /* The other roads' perks (the user's call, 2026-10-11: no bot tests for these): they show or choose, never make a run
+     stronger, so they need no balance pass. A new road's perk should stay that way. */
+  ruins: {
+    id: 'unown-rubbing', name: 'Unown Rubbing', icon: '📜', coins: 500,
+    text: 'Once per biome, read a ❓ room on the map to see which event waits there.', short: 'Read a ❓ room once a biome',
+    lv2: { text: 'Twice per biome, read a ❓ room on the map to see which event waits there.', short: 'Read a ❓ room twice a biome' },
+  },
+  thornwood: {
+    id: 'trackers-eye', name: 'Tracker\'s Eye', icon: '🐾', coins: 500,
+    text: 'The map marks wild fights whose type beats yours.', short: 'Marks tough match-ups on the map',
+    lv2: { text: 'The map marks wild fights whose type beats yours, and those yours beats.', short: 'Marks every match-up on the map' },
+  },
+  savanna: {
+    id: 'wayfinder', name: 'Wayfinder', icon: '🧭', coins: 500,
+    text: 'Once per run, swap the other road at a crossroads for another biome you could walk.', short: 'Swap a crossroads road once a run',
+    lv2: { text: 'At every crossroads, swap the other road for any biome you could walk.', short: 'Swap the road at every crossroads' },
+  },
 };
 
 export const DEX_START_MONEY = [0, 50, 100];   // by perk level: Lv 2 once the page's every entry is researched
 export const DEX_START_ITEM = [null, 'potion', 'super-potion'];
 export const DEX_REROLLS = [0, 1, 2];
+export const DEX_RUBBINGS = [0, 1, 2];   // ❓ rooms read a biome, by Unown Rubbing's level
 
 /* Research (Legends: Arceus's research levels): every entry counts its defeats. At the goal it's
    Research complete (the entry shows each move's numbers) and pays its PokéCoins once; bosses are
@@ -66,10 +84,11 @@ export const DEX_PAGES = BIOMES.filter(b => !b.secret).map(b => ({ ...pageFor(b)
 export const DEPTHS_PAGE = { ...pageFor(BIOMES.find(b => b.secret)), prize: { icon: '✨', name: 'Shiny Mewtwo', text: 'Mewtwo in its shiny colours. It can\'t be bought.' } };
 /** The other roads' pages (roadmap item 19, the user's call): bonus pages, never in DEX_PAGES, so finishing the Pokédex,
     Reshiram and the Safari Zone don't wait on a road a run may never take. Each pays its `bonus` PokéCoins once, and is
-    "???" in the Pokédex until one of its Pokémon has been met. */
+    "???" in the Pokédex until one of its Pokémon has been met.
+    Since 2026-10-11 each also switches on a perk, like the three (DEX_PERKS: its coins are the bonus's). */
 export const BONUS_COINS = { ruins: 500, thornwood: 500, savanna: 500 };
 const BONUS_ICON = { ruins: '🏛️', thornwood: '🌴', savanna: '🌾' };
-export const BONUS_PAGES = ALT_BIOMES.map(b => ({ ...pageFor(b), bonus: { icon: BONUS_ICON[b.id], coins: BONUS_COINS[b.id] } }));
+export const BONUS_PAGES = ALT_BIOMES.map(b => ({ ...pageFor(b), perk: DEX_PERKS[b.id], bonus: { icon: BONUS_ICON[b.id], coins: BONUS_COINS[b.id] } }));
 /** Every page the Pokédex window shows: the three, the Depths, then the bonus pages (indices stay put as pages are added). */
 export const ALL_PAGES = [...DEX_PAGES, DEPTHS_PAGE, ...BONUS_PAGES];
 /** A biome's page number in ALL_PAGES (-1 if it has none). */

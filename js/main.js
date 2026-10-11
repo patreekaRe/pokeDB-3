@@ -57,7 +57,7 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
-import { initPokedex } from './pokedex.js';
+import { initPokedex, dexPerkLevel } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
@@ -417,7 +417,9 @@ async function peekCrossroads(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? slot) || 0), shiny = getSave().shiny.on.includes(starter.id);
   const from = canWalk(params.get('from'), slot - 1) ? params.get('from') : BIOMES[slot - 1].id;
   const road = [params.get('road'), LEGACY_ROADS[slot], ...POOL].find(id => POOL.includes(id) && id !== from);
-  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), starter, stage, shiny });
+  const others = POOL.filter(id => id !== road && id !== from);   // Wayfinder's swap, once its page is done
+  const swap = dexPerkLevel('wayfinder') && others.length ? others : null;
+  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny });
   const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
   close?.();

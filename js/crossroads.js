@@ -234,7 +234,7 @@ function typeChips(biome) {
   });
 }
 
-function roadCard(id, i, pick) {
+function roadCard(id, i, pick, onSwap) {
   const biome = BIOMES_BY_ID[id];
   const card = el('button', 'xr-road');
   card.type = 'button';
@@ -254,16 +254,24 @@ function roadCard(id, i, pick) {
   const types = el('div', 'xr-types');
   types.append(...typeChips(biome));
   card.append(sign, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Wild Pokémon'), types);
+  if (onSwap) {
+    const swap = el('span', 'xr-swap', '🧭 Another road');   // the card is a button already, so not a nested one
+    swap.setAttribute('role', 'button');
+    swap.title = 'Wayfinder: swap this road for another biome you could walk.';
+    swap.addEventListener('click', (e) => { e.stopPropagation(); onSwap(); });
+    card.append(swap);
+  }
   card.addEventListener('click', (e) => { e.stopPropagation(); pick(i); });
   return card;
 }
 
 /**
- * The fork between `ids` (CROSSROADS[slot], drawn left to right). Resolves once a road is taken and the screen is dark,
+ * The fork between `ids` (CROSSROADS[slot], drawn left to right). `swap` (Wayfinder, the Savanna page's perk) lists the
+ * biomes the second road can be swapped for: a button on its card steps through them and back. Resolves once a road is taken and the screen is dark,
  * with the biome id and a close() that takes the scene away: call it once the journey film or the next map covers it.
  */
-export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
-  roads = ids; picked = -1; walking = false; asking = false;
+export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
+  roads = [...ids]; picked = -1; walking = false; asking = false;
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
   scene.className = `crossroads-scene${calm ? ' still' : ''}`;
   mon.className = 'xr-mon pixel';
@@ -292,7 +300,23 @@ export async function crossroads({ ids, starter, stage = 0, shiny = false }) {
       if (calm) frame(0);
     };
     const box = $('xr-roads');
-    box.replaceChildren(...roads.map((id, i) => roadCard(id, i, pick)));
+    const ways = swap && [ids[1], ...swap];
+    let way = 0;
+    const cards = () => {
+      box.replaceChildren(...roads.map((id, i) => roadCard(id, i, pick, ways && i === 1 ? turn : null)));
+      if (picked >= 0) box.children[picked].classList.add('on');
+    };
+    function turn() {
+      if (walking || asking) return;
+      way = (way + 1) % ways.length;
+      roads[1] = ways[way];
+      playSound('stick');
+      cards();
+      if (picked === 1) go.textContent = `To the ${BIOMES_BY_ID[roads[1]].name}`;
+      layout();
+      if (calm) frame(0);
+    }
+    cards();
     layout();
     const loop = (now) => { frame(now); raf = requestAnimationFrame(loop); };
     if (calm) frame(0); else raf = requestAnimationFrame(loop);

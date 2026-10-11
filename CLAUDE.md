@@ -653,7 +653,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
   biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: every main biome entered, the user's call; six since item 20). The pool's
   Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`; never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
+  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`, and since 2026-10-11 a perk each like the three's, `DEX_PERKS` (the user's call: perks that show or choose, never make a run stronger, so no bot test): the Ruins' Unown Rubbing reads a ❓ room's event on the map (`rubbing-btn` beside the Scope, `node.read`), Thornwood's Tracker's Eye rings wild fights by match-up (`.map-match`, `matchUp()` in `js/map.js`), the Savanna's Wayfinder swaps the crossroads' pool road (`wayfinder()` / `swapRoad()` in `js/run.js`, `run.wayfound`, `swap` in `crossroads()`); never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
   pool's Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
   ones they had were swapped out), like the Safari's 44 borrowed wilds: the biome's `ENEMY_DEFS` entry wins over
   `safariMonDef()` everywhere, Safari included, and keeps the Safari Pokédex's line as `safariLine` (`js/safaridex.js` reads it);

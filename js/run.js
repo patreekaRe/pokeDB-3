@@ -34,7 +34,7 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, journey, stageOf } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
@@ -60,7 +60,7 @@ import { dexSeen, dexDefeated, dexWeight, dexPerkLevel } from './pokedex.js';
 import { SAFARI_AREAS_BY_ID, safariDaily, markRares, rareOdds, safariNews, SAFARI_AREA_COINS, RARE_BOOST } from './data/safari.js';
 import { safariTicket } from './daypass.js';
 import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/balls.js';
-import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
+import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { buildingSvg } from './buildings.js';
@@ -260,6 +260,7 @@ function checkpoint() {
     biome: run.biome,
     route: run.route,
     roads: run.roads,
+    wayfound: run.wayfound,   // Wayfinder Lv 1's one swap a run, spent
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -751,7 +752,7 @@ function showAbility() {
 
 function showMap() {
   const biome = land();
-  scoping = false;
+  scoping = rubbing = false;
   showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
@@ -1134,7 +1135,7 @@ function openMapPeek() {
   closeBag(true);
   const biome = land();
   renderMap(run.map, run.current, null, {
-    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten,
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten, ...tracking(),
   });
   const stage = biome.stages?.[stageOf(run.map, run.map.byId[run.current]).stage];
   $('map-dialog-title').textContent = stage ? `${biome.name}: ${stage}` : biome.name;
@@ -1265,10 +1266,14 @@ function drawMap() {
   const biome = land();
   const nodes = Object.values(run.map.byId);
   if (scoping && !nodes.some(scopeable)) scoping = false;
+  if (rubbing && !nodes.some(readable)) rubbing = false;
   renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
+    read: rubbing ? readRoom : null, ...tracking(),
   });
   $('key-ken').hidden = !getSave().kenBeaten;
+  $('map').classList.toggle('scoping', scoping || rubbing);
+  drawRubbing(nodes);
   const total = scopeReveals(), left = total - scopeUsed();
   const btn = $('scope-btn');
   btn.hidden = !total;
@@ -1279,12 +1284,12 @@ function drawMap() {
   btn.querySelector('.scope-label').textContent = scoping ? 'Pick a room' : `${left}/${total}`;
   btn.title = scoping ? 'Tap a lit-up fight room to reveal it, or tap here to put the Scope away.'
     : `${SCOPE.name}: ${SCOPE.text} ${left} of ${total} left in this biome.`;
-  $('map').classList.toggle('scoping', scoping);
 }
 
 function toggleScope() {
   if (!run || (!scoping && scopeReveals() - scopeUsed() <= 0)) return;
   scoping = !scoping;
+  rubbing = false;
   playSound(scoping ? 'confirm' : 'cancel', 'confirm');
   drawMap();
 }
@@ -1300,6 +1305,47 @@ function revealRoom(node) {
 function initScope() {
   $('scope-btn').replaceChildren(itemSprite(SCOPE, 'scope-icon'), el('span', 'scope-label'));
   $('scope-btn').addEventListener('click', toggleScope);
+  $('rubbing-btn').replaceChildren(el('span', 'rubbing-icon', DEX_PERKS.ruins.icon), el('span', 'scope-label'));
+  $('rubbing-btn').addEventListener('click', toggleRubbing);
+}
+
+/* ---------- the other roads' map perks (the Ruins' and Thornwood's pages): what a ❓ room holds, and match-ups ---------- */
+
+let rubbing = false;   // picking a ❓ room for Unown Rubbing to read
+
+const rubbingReads = () => DEX_RUBBINGS[dexPerk('unown-rubbing')];
+const rubbingUsed = () => Object.values(run.map.byId).filter(n => n.read).length;   // saved with the map's nodes, like the Scope's
+
+/** Tracker's Eye's level and your type, for renderMap() (a peek at the map shows the marks too). */
+const tracking = () => ({ track: dexPerk('trackers-eye'), type: run.starter.type });
+
+function drawRubbing(nodes) {
+  const total = rubbingReads(), left = total - rubbingUsed();
+  const btn = $('rubbing-btn');
+  btn.hidden = !total;
+  if (!total) return;
+  btn.classList.toggle('on', rubbing);
+  btn.disabled = !rubbing && (left <= 0 || !nodes.some(readable));
+  btn.setAttribute('aria-pressed', String(rubbing));
+  btn.querySelector('.scope-label').textContent = rubbing ? 'Pick a ❓' : `${left}/${total}`;
+  btn.title = rubbing ? 'Tap a lit-up ❓ room to read it, or tap here to put the rubbing away.'
+    : `${DEX_PERKS.ruins.name}: see which event waits in a ❓ room. ${left} of ${total} left in this biome.`;
+}
+
+function toggleRubbing() {
+  if (!run || (!rubbing && rubbingReads() - rubbingUsed() <= 0)) return;
+  rubbing = !rubbing;
+  scoping = false;
+  playSound(rubbing ? 'confirm' : 'cancel', 'confirm');
+  drawMap();
+}
+
+function readRoom(node) {
+  node.read = true;
+  rubbing = false;
+  checkpoint();
+  drawMap();
+  playSound('confirm');
 }
 
 /** A fight's share of the run's record. */
@@ -1520,8 +1566,9 @@ async function walkOn() {
   const from = mainBiome().id, roads = FORKS.includes(run.biome + 1) && forkRoads(run.biome + 1, run.roads);
   // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
   // A peeked run always gets it, so it can be playtested.
-  const fork = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats))
-    ? await crossroads({ ids: roads, starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  const forks = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats));
+  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  if (fork && !roads.includes(fork.id)) swapRoad(run.biome + 1, roads[1], fork.id);
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;
   let close = null;
@@ -1536,6 +1583,23 @@ async function walkOn() {
   startBiome();
   close?.();
   fork?.close();
+}
+
+/** Wayfinder (the Savanna page's perk): the other pool biomes the crossroads' second road can be swapped for, never one this
+    run has walked; Lv 1 once a run (spent only when a swapped road is taken), Lv 2 at every crossroads. Null when it can't. */
+function wayfinder(roads) {
+  const lv = dexPerk('wayfinder'), slot = run.biome + 1;
+  if (!lv || (lv < 2 && run.wayfound)) return null;
+  const others = POOL.filter(id => id !== roads[1] && !run.route.includes(id) && canWalk(id, slot));
+  return others.length ? others : null;
+}
+
+/** A swapped road was taken at `slot`: a later fork that was to offer it offers the one it replaced instead. */
+function swapRoad(slot, was, now) {
+  run.wayfound = true;
+  run.roads = { ...run.roads, [slot]: now };
+  for (const s of FORKS) if (s > slot && run.roads[s] === now) run.roads[s] = was;
+  tell(`${DEX_PERKS.savanna.name}: you found the way to the ${BIOMES_BY_ID[now].name}.`);
 }
 
 const canEvolve = () => run.stage < run.starter.line.length - 1;
