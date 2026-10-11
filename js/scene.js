@@ -1714,6 +1714,15 @@ function resize() {
 }
 
 /** The horizon sits at about 38% of the screen, but always above the enemy's pad, so the pad is on the ground on any layout. */
+/** Where the pixel scene's horizon is, 0-1 down the screen (js/arena-3d.js lays its 3D ground up to it), or null. */
+export const sceneHorizon = () => (H && S ? horizon / H : null);
+/** The pixel scene's colour at a point (0-1 each way) as [r, g, b], or null: js/arena-3d.js matches its pads and fog to it. */
+export function sceneColour(x, y) {
+  if (!px || !W || !H) return null;
+  const v = px[Math.min(H - 1, Math.max(0, Math.round(y * H))) * W + Math.min(W - 1, Math.max(0, Math.round(x * W)))];
+  return [v & 255, (v >> 8) & 255, (v >> 16) & 255];
+}
+
 function horizonRow(scale) {
   const box = $('enemy-portrait-box').getBoundingClientRect();
   const low = Math.round(H * 0.38);

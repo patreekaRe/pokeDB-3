@@ -1,17 +1,24 @@
-/* arena-3d.js  -  an Alpha's or a boss's fight in a 3D place (the user's ask, 2026-10-11; a test on its own branch, the
-   Whispering Clearing only): the battle screen is untouched, every card, sprite, nameplate and animation is the page's
-   own, and this only lays a 3D clearing under it where the pixel scene was. The camera is fixed (you never walk here),
-   high and behind your Pokémon like the games' battle view, and each grassy pad is put exactly where the page draws its
-   Pokémon: the pad's spot on screen (the CSS pad, now invisible) is cast into the ground (`layout()`), so it fits any
-   screen. A boss keeps its pixel prelude; the 3D arena fades in out of its last white flash (`revealArena()`). */
+/* arena-3d.js  -  an Alpha's or a boss's fight in 3D (the user's ask, 2026-10-11; a test on its own branch): the battle
+   screen is untouched, every card, sprite, nameplate and animation is the page's own. The live pixel scene stays the
+   backdrop (`backdrop`, its canvas as the 3D view's background, so each boss's pulse, lava or storm plays on), and 3D pads
+   stand where the page draws its Pokémon: the pad's spot on screen (the CSS pad, now invisible) is cast into the ground
+   (`layout()`), and followed every few frames (`follow()`), so it fits any screen and a sprite that resizes keeps its pad.
+   The Clearing also lays its 3D ground, bushes, flowers and side trees up to the pixel horizon. The camera is fixed, high
+   and behind your Pokémon like the games' battle view. A boss keeps its pixel prelude; the 3D fades in out of its last
+   white flash (`revealArena()`). */
 
 import { loadThree, tex, createPost, dispose } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
+import { sceneHorizon, sceneColour } from './scene.js';
 
-export const ARENA_3D = new Set(['clearing']);
+/* Every main biome's boss fights on 3D pads in front of its own live pixel backdrop (the Ancient Tree's pulse, the lava,
+   the Well: the user's call, 2026-10-11); the Clearing, whose 3D place this was built for, also lays its 3D ground, bushes
+   and side trees up to the horizon, and keeps its Alphas in 3D too. */
+const MAIN = new Set(['clearing', 'shrine', 'wastes', 'depths', 'ruins', 'thornwood', 'savanna']);
+export const arenaFor = (land, kind) => (kind === 'boss' ? MAIN.has(land) : kind === 'elite' && land === 'clearing');
 const PAD_H = 0.2;
 
-let THREE, renderer, scene, camera, post, view, hemi, sun;
+let THREE, renderer, scene, camera, post, view, hemi, sun, backdrop;
 let A = null, raf = 0, last = 0, wanted = false, building = 0, stormOn = false, stormK = 0, flashK = 0, resizeTimer = 0;
 
 function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -21,7 +28,7 @@ const hd = (c) => { c.hd = 2; return c; };   // smooth sampling, mipmaps (hd2d.j
 /** Whether this fight is laid in 3D: an Alpha's or a boss's in a biome that has its arena (`?arena2d` keeps the pixels). */
 export function wantsArena({ land, kind, def, run }) {
   if (new URLSearchParams(location.search).has('arena2d')) return false;
-  return ARENA_3D.has(land) && (kind === 'elite' || kind === 'boss') && !def.arena && !run.tower && !run.safari;
+  return arenaFor(land, kind) && !def.arena && !run.tower && !run.safari;
 }
 
 /* ---------- the looks, by the hour ---------- */
@@ -141,14 +148,18 @@ function glowArt() {
   });
 }
 
-function shaftArt() {
-  return once('shaft', () => {
-    const c = hd(canvas(64, 256)), g = c.getContext('2d');
-    for (let x = 0; x < 64; x++) {
-      const k = Math.sin(x / 63 * Math.PI) ** 2;
-      const lin = g.createLinearGradient(0, 0, 0, 256);
-      lin.addColorStop(0, `rgba(255,255,255,${0.9 * k})`); lin.addColorStop(0.7, `rgba(255,255,255,${0.5 * k})`); lin.addColorStop(1, 'rgba(255,255,255,0)');
-      g.fillStyle = lin; g.fillRect(x, 0, 1, 256);
+
+/** A pad's top away from the Clearing: plain worn ground, white, so the pixel floor's own colour tints it. */
+function stoneArt() {
+  return once('stone', () => {
+    const c = hd(canvas(256, 256)), g = c.getContext('2d'), r = seeded(41);
+    const grd = g.createRadialGradient(128, 118, 10, 128, 128, 128);
+    grd.addColorStop(0, '#ffffff'); grd.addColorStop(0.7, '#e4e4e4'); grd.addColorStop(1, '#a8a8a8');
+    g.fillStyle = grd; g.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 900; i++) {
+      const x = r() * 256, y = r() * 256, rad = 2 + r() * 9;
+      g.fillStyle = r() < 0.5 ? 'rgba(255,255,255,0.25)' : 'rgba(80,80,80,0.18)';
+      g.beginPath(); g.ellipse(x, y, rad, rad * 0.6, r() * 3, 0, Math.PI * 2); g.fill();
     }
     return c;
   });
@@ -217,10 +228,7 @@ function materials() {
     moss: std({ color: '#6aa848', roughness: 1 }),
     cap: std({ color: '#e04838', roughness: 0.6 }),
     stem: std({ color: '#f0e8d0' }),
-    root: std({ color: '#5e4024', roughness: 1 }),
     log: std({ map: bark }),
-    hollow: new THREE.MeshBasicMaterial({ color: '#160c06' }),
-    rune: new THREE.MeshBasicMaterial({ color: '#a8f8a0' }),
   };
   return mats;
 }
@@ -235,19 +243,21 @@ function mesh(geo, m, x, y, z, { shadow = true } = {}) {
 }
 
 /** A grassy battle pad, like the games' (Gen 4's raised discs): its top, a band of earth round it, its shadow. */
-function pad(p) {
+function pad(p, kit = null) {
   const M = materials(), g = new THREE.Group();
   g.position.set(p.x, 0, p.z);
-  const top = new THREE.Mesh(new THREE.CircleGeometry(p.r, 48), M.padTop);
+  const top = new THREE.Mesh(new THREE.CircleGeometry(p.r, 48), kit?.top ?? M.padTop);
   top.rotation.x = -Math.PI / 2; top.position.y = PAD_H; top.receiveShadow = true;
-  const side = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r * 1.06, PAD_H + 0.04, 48, 1, true), M.dirt);
+  const side = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r * 1.06, PAD_H + 0.04, 48, 1, true), kit?.side ?? M.dirt);
   side.position.y = PAD_H / 2 - 0.02; side.receiveShadow = true; side.castShadow = true;
   const shade = new THREE.Mesh(new THREE.PlaneGeometry(p.r * 2.9, p.r * 2.9), M.shadow);
   shade.rotation.x = -Math.PI / 2; shade.position.y = 0.012;
   g.add(top, side, shade);
+  if (kit && !kit.grass) { add(g); return g; }
   // a fringe of grass round its rim
   const n = Math.round(p.r * 22), blades = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.34, 0.26).translate(0, 0.13, 0), M.blade, n);
   const d = new THREE.Object3D();
+  if (kit?.blade) blades.material = kit.blade;
   for (let i = 0; i < n; i++) {
     const a = i / n * Math.PI * 2 + Math.sin(i * 7.1) * 0.05;
     d.position.set(Math.cos(a) * p.r * 1.0, PAD_H - 0.06, Math.sin(a) * p.r * 1.0);
@@ -292,53 +302,6 @@ function tree(x, z, s, r) {
   return g;
 }
 
-/** The Ancient Tree, the Clearing's heart, behind a boss: a colossal trunk on arching roots, a dark hollow at its foot
-    and old runes glowing in its bark. */
-function ancientTree(x, z, r) {
-  const M = materials(), g = new THREE.Group(), h = 14;
-  g.position.set(x, 0, z);
-  g.scale.setScalar(1.5);
-  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.8, h, 24, 6).translate(0, h / 2, 0), M.bark);
-  const pos = trunk.geometry.attributes.position;
-  for (let i = 0; i < pos.count; i++) {   // knotted, not a perfect column
-    const px = pos.getX(i), py = pos.getY(i), pz = pos.getZ(i), a = Math.atan2(pz, px), k = 1 + Math.sin(a * 5 + py * 0.6) * 0.08 + Math.sin(a * 11) * 0.04;
-    pos.setXYZ(i, px * k, py, pz * k);
-  }
-  trunk.geometry.computeVertexNormals();
-  trunk.castShadow = trunk.receiveShadow = true;
-  g.add(trunk);
-  const hollow = new THREE.Mesh(new THREE.CircleGeometry(0.9, 24).scale(0.75, 1.3, 1), M.hollow);
-  hollow.position.set(0, 1.1, 2.62); hollow.rotation.x = -0.12;
-  g.add(hollow);
-  for (let i = 0; i < 9; i++) {   // roots arching out over the ground
-    const a = i / 9 * Math.PI * 2 + r() * 0.3, reach = 3.2 + r() * 2.4;
-    if (Math.abs(Math.atan2(Math.sin(a), Math.cos(a)) - Math.PI / 2) < 0.35) continue;   // keep the hollow clear
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(Math.cos(a) * 1.8, 1.6, Math.sin(a) * 1.8),
-      new THREE.Vector3(Math.cos(a) * (reach * 0.55), 0.9 + r() * 0.4, Math.sin(a) * (reach * 0.55)),
-      new THREE.Vector3(Math.cos(a) * reach, -0.15, Math.sin(a) * reach),
-    ]);
-    const root = new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.42, 9), M.bark);
-    root.castShadow = root.receiveShadow = true; g.add(root);
-  }
-  B.runes = [];
-  for (let i = 0; i < 6; i++) {
-    const a = Math.PI / 2 + (i - 2.5) * 0.32, y = 2.4 + (i % 3) * 0.9;
-    const rune = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.4), M.rune.clone());
-    rune.position.set(Math.cos(a) * 2.62, y, Math.sin(a) * 2.62);
-    rune.lookAt(Math.cos(a) * 6, y, Math.sin(a) * 6);
-    rune.material.transparent = true;
-    g.add(rune); B.runes.push(rune);
-  }
-  for (let i = 0; i < 9; i++) {
-    const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), M.leaves[1]);
-    const a = i / 9 * Math.PI * 2;
-    ball.position.set(Math.cos(a) * 4.5, h + 1 + r() * 2, Math.sin(a) * 4.5);
-    ball.scale.setScalar(3.2 + r() * 1.4);
-    ball.castShadow = true; g.add(ball);
-  }
-  add(g);
-}
 
 function rock(x, z, s, r) {
   const M = materials(), o = mesh(new THREE.DodecahedronGeometry(s, 0), M.rock, x, s * 0.35, z);
@@ -367,15 +330,6 @@ function log(x, z, r) {
   o.rotation.set(0, r() * Math.PI, Math.PI / 2);
 }
 
-/** Roots and old branches lying across the floor, like the pixel Deep Woods'. */
-function rootLine(from, to, r) {
-  const M = materials(), mid = from.clone().lerp(to, 0.5);
-  mid.x += (r() - 0.5) * 2; mid.y = 0.12;
-  const curve = new THREE.CatmullRomCurve3([from, mid, to]);
-  const o = new THREE.Mesh(new THREE.TubeGeometry(curve, 20, 0.07 + r() * 0.05, 6), M.root);
-  o.castShadow = o.receiveShadow = true;
-  add(o);
-}
 
 /** Many of one card (a tuft of grass, a flower) scattered over the ground. */
 function scatter(m, w, h, spots) {
@@ -416,18 +370,6 @@ function motes(n, colour, box, { size = 0.12, rise = 0.15 } = {}) {
   return pts;
 }
 
-/** Sunbeams slanting down through the canopy. */
-function shafts(look, spots) {
-  const m0 = new THREE.MeshBasicMaterial({ map: tex(shaftArt()), color: look.shaft, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-  spots.forEach(([x, z, w], i) => {
-    const m = m0.clone();
-    const o = new THREE.Mesh(new THREE.PlaneGeometry(w, 16).translate(0, -8, 0), m);
-    o.position.set(x, 15, z);
-    o.rotation.set(0, 0.3, -0.32);
-    add(o);
-    B.ticks.push((t) => { m.opacity = look.shaftA * (0.75 + Math.sin(t * 0.5 + i * 1.7) * 0.25) * (1 - stormK); });
-  });
-}
 
 /** Butterflies, by day: two wings flapping on a little loop about the clearing. */
 function butterflies(n, r) {
@@ -518,88 +460,104 @@ function aimCamera(w, h) {
   camera.updateMatrixWorld();
 }
 
+const hexOf = (c) => `#${c.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('')}`;
+const mixRgb = (c, k, to = 255) => c.map(v => v + (to - v) * k);
+
+/** The pixel floor's colour round a pad (beside it, where the CSS pad doesn't cover the canvas), to dress a pad in it. */
+function floorColour(p) {
+  const cs = [[-0.7, 0], [0.7, 0], [-0.55, 0.12], [0.55, 0.12]].map(([dx, dy]) => sceneColour((p.cx + dx * p.w) / innerWidth, (p.cy + dy * p.w) / innerHeight)).filter(Boolean);
+  if (!cs.length) return [150, 140, 120];
+  return [0, 1, 2].map(i => cs.reduce((t, c) => t + c[i], 0) / cs.length);
+}
+
+/** A pad's look in a biome without a 3D ground: the pixel floor's colour on a plain worn top, grass at the rim in green places. */
+function padKit(p, land) {
+  const c = floorColour(p), green = c[1] > c[0] * 1.08 && c[1] > c[2];
+  const top = std({ map: tex(stoneArt()), color: hexOf(mixRgb(c, 0.12)), roughness: 1 });
+  const side = std({ map: tex(dirtArt()), color: hexOf(mixRgb(c, 0.35, 0)) });
+  const blade = green ? std({ map: tex(bladeArt()), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, color: hexOf(mixRgb(c, 0.25)) }) : null;
+  return { top, side, blade, grass: green || land === 'thornwood' };
+}
+
 function build(o) {
+  const clearing = o.biome === 'clearing';
   const look = TIMES[o.time] || TIMES.day, r = seeded(1234 + o.stage * 97 + (o.kind === 'boss' ? 5 : 0));
-  B = { group: new THREE.Group(), ticks: [], look, runes: null };
+  B = { group: new THREE.Group(), ticks: [], look, runes: null, clearing };
   const M = materials();
-  for (const m of [M.bark, ...M.leaves, M.blade, ...M.flowers, M.padTop, M.dirt, M.rock, M.moss, M.root, M.log]) m.color.set(look.tint);
-  scene.background = new THREE.Color(look.sky);
-  scene.fog = new THREE.Fog(look.fog, 30, 85);
-  hemi.color.set(look.hemi[0]); hemi.groundColor.set(look.hemi[1]); hemi.intensity = look.hemi[2];
-  sun.color.set(look.sun[0]); sun.intensity = look.sun[1];
+  for (const m of [M.bark, ...M.leaves, M.blade, ...M.flowers, M.padTop, M.dirt, M.rock, M.moss, M.log]) m.color.set(clearing ? look.tint : '#ffffff');
+  // the pixel scene, live (its boss's pulse, lava, rain), is the sky and the far land behind everything 3D
+  scene.background = backdrop;
+  const hz = sceneHorizon() ?? 0.42;
+  const fogC = sceneColour(0.5, Math.max(0, hz - 0.02)) ?? [200, 220, 200];
+  if (clearing) {
+    hemi.color.set(look.hemi[0]); hemi.groundColor.set(look.hemi[1]); hemi.intensity = look.hemi[2];
+    sun.color.set(look.sun[0]); sun.intensity = look.sun[1];
+  } else {   // the pixel floor is already lit by the hour: the pads only need to read as solid
+    hemi.color.set('#ffffff'); hemi.groundColor.set('#808080'); hemi.intensity = 2.2;
+    sun.color.set('#fff8ec'); sun.intensity = 2.0;
+  }
+  B.look = { ...look, hemi: [hemi.color.getStyle(), hemi.groundColor.getStyle(), hemi.intensity], sun: [sun.color.getStyle(), sun.intensity] };
   sun.position.set(-10, 18, -2);
   sun.target.position.set(0, 0, -4);
 
-  const groundTex = tex(groundArt(o.stage + 1));
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), std({ map: groundTex, color: look.tint }));
-  ground.rotation.x = -Math.PI / 2; ground.position.z = -14; ground.receiveShadow = true;
-  add(ground);
-
   const at = layout();
   if (!at.foe || !at.you) return null;
-  B.pads = [pad(at.foe), pad(at.you)];
-  B.at = at;
-  const clear = (x, z, m = 0.9) => [at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
-  // the fighting ground, on screen: nothing tall may stand in front of the far pad there, nor reach over either Pokémon
-  const boxes = [at.foe, at.you].map(p => { const c = onScreen(p.x, 0, p.z); return [c.x - 0.28, c.y - 0.3, c.x + 0.28, c.y + 0.08, p.z - p.r - 2.6]; });
-  const covers = (x, z, s = 1) => {
-    let x0 = 1, y0 = 1, x1 = 0, y1 = 0;
-    for (const [dx, y, dz] of [[0, 0, 0], [-2.6 * s, 5.5 * s, 0], [2.6 * s, 5.5 * s, 0], [0, 7.5 * s, 2.6 * s], [0, 3 * s, 2.6 * s]]) {
-      const p = onScreen(x + dx, y, z + dz);
-      x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y);
-    }
-    return boxes.some(([a, b, c, d, behind]) => z > behind && x0 < c && x1 > a && y0 < d && y1 > b);
-  };
-  const open = (x, z, s) => { const p = onScreen(x, 0, z); return (p.y > at.foe.sy - 0.06 && p.x > 0.04 && p.x < 0.96) || covers(x, z, s); };
-  const between = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.02 && s.y < at.you.sy + 0.06 && s.x > 0.1 && s.x < 0.9; };
+  const far = onGround(innerWidth / 2, innerHeight * hz, 0);
+  const span = far ? camera.position.distanceTo(far) : 40;
+  scene.fog = clearing ? new THREE.Fog(hexOf(fogC), span * 0.55, span * 1.15) : null;
 
-  const deep = o.stage >= 2, trees = [0.6, 1, 1.4, 1.2][o.stage] ?? 1;
-  // the Ancient Tree stands behind a boss, its foot just above the far pad on screen, a little to the right
-  const heart = o.stage === 3 ? onGround(innerWidth * 0.66, innerHeight * (at.foe.sy - 0.13), 0) : null;
-  if (heart) ancientTree(heart.x, heart.z, r);
-  const nearHeart = (x, z) => heart && Math.hypot(x - heart.x, z - heart.z) < 11;
-  for (let x = -26; x < 26; x += 2.6 + r() * 1.6) {   // the forest's wall at the back
-    const z = -30 - r() * 6;
-    if (nearHeart(x, z)) continue;
-    tree(x, z, 1.1 + r() * 0.5, r);
-  }
+  B.pads = [pad(at.foe, clearing ? null : padKit(cssPad(document.getElementById('enemy-zone'), '::after'), o.biome)),
+    pad(at.you, clearing ? null : padKit(cssPad(document.getElementById('player-zone'), '::before'), o.biome))];
+  B.at = at;
+  if (!clearing) { const b = B; B = null; return b; }
+
+  // the Clearing's 3D ground, from your feet to just past the pixel horizon, fading into the pixel floor there
+  const edge = onGround(innerWidth / 2, innerHeight * Math.max(0.05, hz - 0.045), 0);
+  const zFar = edge ? edge.z : -20, zNear = 14, len = zNear - zFar;
+  const fade = hd(canvas(4, 256)), fg = fade.getContext('2d'), fl = fg.createLinearGradient(0, 0, 0, 256);
+  const fadeFrom = edge && far ? Math.min(0.5, Math.max(0.04, (far.z - zFar + 0.8) / len)) : 0.12;
+  fl.addColorStop(0, '#000'); fl.addColorStop(fadeFrom * 0.35, '#000'); fl.addColorStop(fadeFrom, '#fff'); fl.addColorStop(1, '#fff');
+  fg.fillStyle = fl; fg.fillRect(0, 0, 4, 256);
+  const alpha = tex(fade); alpha.flipY = true;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(80, len), std({ map: tex(groundArt(o.stage + 1)), color: look.tint, alphaMap: alpha, transparent: true }));
+  ground.rotation.x = -Math.PI / 2; ground.position.z = (zNear + zFar) / 2; ground.receiveShadow = true;
+  ground.renderOrder = -1;
+  add(ground);
+
+  const clear = (x, z, m = 0.9) => [at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
+  const onLand = (x, z) => onScreen(x, 0, z).y > hz + 0.004;   // stands on the 3D ground, not out in the pixel backdrop
+  const between = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.02 && s.y < at.you.sy + 0.06 && s.x > 0.1 && s.x < 0.9; };
+  // a tree's crown on screen must keep off the middle, where the backdrop's landmark and both Pokémon are
+  const side = (x, z, s) => { const p = onScreen(x, 0, z), q = onScreen(x, 6 * s, z); return Math.max(p.x, q.x) < 0.17 || Math.min(p.x, q.x) > 0.83; };
+
+  const deep = o.stage >= 2;
   let placed = 0;
-  for (let i = 0; i < 400 && placed < Math.round(30 * trees); i++) {
-    const x = (r() - 0.5) * 44, z = -34 + r() * 36, size = 0.9 + r() * 0.6;
-    if (open(x, z, size) || !clear(x, z, 2)) continue;
-    if (nearHeart(x, z)) continue;
+  for (let i = 0; i < 500 && placed < 8; i++) {   // a few trees framing the sides, standing on the 3D ground
+    const x = (r() - 0.5) * 40, z = zFar + 1 + r() * (len - 4), size = 0.8 + r() * 0.5;
+    if (!onLand(x, z) || !side(x, z, size) || !clear(x, z, 2)) continue;
     tree(x, z, size, r);
     placed++;
   }
-  for (let i = 0; i < 22; i++) {   // bushes and rocks round the edges, a few in the open
-    const x = (r() - 0.5) * 26, z = -18 + r() * 18;
-    if (!clear(x, z, 0.8) || between(x, z)) continue;
+  for (let i = 0; i < 40; i++) {   // bushes and rocks round the edges, a few in the open
+    const x = (r() - 0.5) * 26, z = zFar + r() * (len - 2);
+    if (!onLand(x, z) || !clear(x, z, 0.8) || between(x, z)) continue;
     if (r() < 0.55) bush(x, z, 0.8 + r() * 0.6, r); else rock(x, z, 0.3 + r() * 0.5, r);
   }
-  for (let i = 0; i < 2 && deep; i++) { const x = (i ? 1 : -1) * (7 + r() * 3), z = -10 - r() * 6; if (!between(x, z) && clear(x, z, 2)) log(x, z, r); }
-  if (deep) for (let i = 0; i < 6; i++) {
-    const a = new THREE.Vector3((r() - 0.5) * 30, 0.05, -20 + r() * 14), b = a.clone().add(new THREE.Vector3((r() - 0.5) * 8, 0, (r() - 0.5) * 5));
-    if (clear(a.x, a.z, 1) && clear(b.x, b.z, 1) && clear((a.x + b.x) / 2, (a.z + b.z) / 2, 1)) rootLine(a, b, r);
-  }
-  for (let i = 0; i < 18; i++) { const x = (r() - 0.5) * 24, z = -16 + r() * 14; if (clear(x, z, 0.5)) mushroom(x, z, 0.5 + r() * 0.5); }
+  for (let i = 0; i < 2 && deep; i++) { const x = (i ? 1 : -1) * (7 + r() * 3), z = -6 - r() * 4; if (onLand(x, z) && !between(x, z) && clear(x, z, 2)) log(x, z, r); }
+  for (let i = 0; i < 30; i++) { const x = (r() - 0.5) * 24, z = zFar + r() * (len - 2); if (onLand(x, z) && clear(x, z, 0.5)) mushroom(x, z, 0.5 + r() * 0.5); }
   const tufts = [], flowers = [[], [], [], []];
-  for (let i = 0; i < 700; i++) {
-    const x = (r() - 0.5) * 36, z = -26 + r() * 30;
-    if (!clear(x, z, 0.25)) continue;
+  for (let i = 0; i < 900; i++) {
+    const x = (r() - 0.5) * 36, z = zFar + r() * len;
+    if (!onLand(x, z) || !clear(x, z, 0.25)) continue;
     if (r() < (o.stage === 0 ? 0.35 : 0.2)) flowers[Math.floor(r() * 4)].push([x, z, 0.5 + r() * 0.35, r() * 3]);
     else tufts.push([x, z, 0.6 + r() * 0.7, r() * 3]);
   }
   scatter(M.blade, 0.6, 0.36, tufts);
   flowers.forEach((f, i) => f.length && scatter(M.flowers[i], 0.36, 0.42, f));
 
-  if (o.time !== 'night' || deep) shafts(look, [[-6, -12, 2.2], [-1, -16, 1.6], [4, -10, 2.6], [9, -15, 1.8], [-10, -6, 2]].slice(0, deep ? 5 : 3));
-  motes(look.fireflies || deep ? 60 : 36, look.fireflies ? '#e0f878' : look.motes, [-12, 12, -20, 2, 4], { size: look.fireflies ? 0.22 : 0.12, rise: 0.05 });
-  if (heart) motes(50, '#b8f8a0', [heart.x - 6, heart.x + 6, heart.z - 2, heart.z + 6, 9], { size: 0.3, rise: 0.25 });
+  motes(look.fireflies || deep ? 50 : 30, look.fireflies ? '#e0f878' : look.motes, [-12, 12, zFar + 2, 2, 4], { size: look.fireflies ? 0.22 : 0.12, rise: 0.05 });
   if (o.time === 'day' || o.time === 'dawn') butterflies(o.stage === 0 ? 4 : 2, r);
   rain();
-  const runes = B.runes;
-  if (runes) B.ticks.push((t) => runes.forEach((u, i) => { u.material.opacity = 0.45 + Math.sin(t * 1.6 + i) * 0.4; }));
-
   const b = B;
   B = null;
   return b;
@@ -623,9 +581,31 @@ function frame(now) {
   if (stormOn && Math.random() < dt * 0.25) flashK = 1;   // lightning, now and then
   flashK = Math.max(0, flashK - dt * 3);
   for (const f of A.ticks) f(t, dt);
+  backdrop.needsUpdate = true;
+  if (++A.beat % 3 === 0) follow();
   const focus = 1 - (A.at.foe.sy + A.at.you.sy) / 2;
   post.draw(scene, camera, focus);
   if (!document.hidden) raf = requestAnimationFrame(frame);
+}
+
+/** The pads follow the page's: a boss's sprite that loads late, a move bubble that wraps, a Pokémon that grows on evolving
+    all shift where the page draws its pads, and a 3D pad left where it was built stood off to the side (the user saw it). */
+function follow() {
+  const spots = [['enemy-zone', '::after'], ['player-zone', '::before']];
+  spots.forEach(([zone, pseudo], i) => {
+    const el = document.getElementById(zone);
+    if (!el) return;
+    const p = cssPad(el, pseudo), key = `${Math.round(p.cx)},${Math.round(p.cy)},${Math.round(p.w)}`;
+    if (A.keys[i] === key) return;
+    A.keys[i] = key;
+    const c = onGround(p.cx, p.cy), l = onGround(p.cx - p.w / 2, p.cy), rr = onGround(p.cx + p.w / 2, p.cy);
+    if (!c || !l || !rr) return;
+    const g = A.pads[i], r = Math.abs(rr.x - l.x) / 2 * 0.86, was = i ? A.at.you : A.at.foe;
+    g.position.set(c.x, 0, c.z);
+    const k = r / was.r0;
+    g.scale.set(k, 1, k);
+    Object.assign(was, { x: c.x, z: c.z, r, sy: p.cy / innerHeight });
+  });
 }
 
 function resize() {
@@ -651,6 +631,10 @@ export function warmArena() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     scene = new THREE.Scene();
+    backdrop = new THREE.CanvasTexture(document.getElementById('scene-bg'));
+    backdrop.colorSpace = THREE.SRGBColorSpace;
+    backdrop.magFilter = backdrop.minFilter = THREE.NearestFilter;
+    backdrop.generateMipmaps = false;
     camera = new THREE.PerspectiveCamera(24, 1, 0.5, 160);
     hemi = new THREE.HemisphereLight('#fff', '#444', 1);
     sun = new THREE.DirectionalLight('#fff', 2);
@@ -711,6 +695,8 @@ function rebuild() {
   const b = build(current);
   if (!b) return false;
   A = b;
+  A.beat = 0; A.keys = [];
+  for (const p of [A.at.foe, A.at.you]) p.r0 = p.r;
   scene.add(A.group);
   if (wanted) show(false);
   last = 0;

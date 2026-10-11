@@ -326,7 +326,7 @@ function init() {
   // shrinks every foe's HP
   if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1), (params.get('aug') || '').split(',').filter(Boolean));
   // ?arena=elite / ?arena=boss: a throwaway run straight into a Clearing Alpha's or boss's fight, in the 3D arena (&stage=0-2, &starter=id)
-  if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('arena'));
+  if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('arena'), params.get('biome'), params.has('slot') ? Number(params.get('slot')) : null);
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map

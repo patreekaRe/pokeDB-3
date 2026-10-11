@@ -506,9 +506,12 @@ let finalPeekHp = 1;
 
 /** Playtest shortcut: ?arena=elite (or boss) walks a throwaway run (&starter=id) straight into a Whispering Clearing
     Alpha's fight (or its boss's, prelude and all), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's
-    place, &arena2d the pixel scene). Nothing about it is saved. */
-export function peekArena(starter, kind) {
+    place, &arena2d the pixel scene); &biome=wastes (any but the Depths, &slot=1 / 2 for a pool biome) any biome's boss.
+    Nothing about it is saved. */
+export function peekArena(starter, kind, biome = null, slot = null) {
   peeking = true;
+  const home = BIOMES_BY_ID[biome];
+  peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
   beginRun(starter, 0, kind === 'boss' ? ':boss' : ':elite');
 }
 
@@ -532,16 +535,21 @@ export function peekBiome(starter, id, level = 0, slot = null) {
 }
 let peekAt = null;
 
+/** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
+function walkInto(at) {
+  run.biome = at.slot;
+  run.route = [...BIOMES.slice(0, at.slot).map(b => b.id), at.id];
+  if (at.home) {   // the other fork offers another pool biome
+    const other = FORKS.find(i => i !== at.slot);
+    run.roads = { [at.slot]: at.id, [other]: run.roads[other] !== at.id ? run.roads[other] : run.roads[at.slot] };
+  }
+  run.stage = Math.min(run.biome, run.starter.line.length - 1);
+  run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
+}
+
 function peekRoom(id) {
   if (id === ':biome') {
-    run.biome = peekAt.slot;
-    run.route = [...BIOMES.slice(0, peekAt.slot).map(b => b.id), peekAt.id];
-    if (peekAt.home) {   // the other fork offers another pool biome
-      const other = FORKS.find(i => i !== peekAt.slot);
-      run.roads = { [peekAt.slot]: peekAt.id, [other]: run.roads[other] !== peekAt.id ? run.roads[other] : run.roads[peekAt.slot] };
-    }
-    run.stage = Math.min(run.biome, run.starter.line.length - 1);
-    run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
+    walkInto(peekAt);
     return startBiome();
   }
   if (id === ':tower') {
@@ -574,12 +582,13 @@ function peekRoom(id) {
     return enterNode(node);
   }
   if (id === ':elite') {
+    if (peekAt) walkInto(peekAt);
     startBiome(true);
     const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
     const elites = Object.values(run.map.byId).filter(n => n.type === 'elite');
     return enterNode(elites.find(n => stageOf(run.map, n).stage === stage) ?? elites[0]);
   }
-  if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
+  if (id === ':boss') { if (peekAt) walkInto(peekAt); startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   if (id === ':final') {
     run.biome = finalBiome(run.starter);
     run.stage = run.starter.line.length - 1;
@@ -2061,7 +2070,7 @@ function warmCenter3d() {
 function warmArena3d() {
   if (warmArena3d.done || isTower() || isSafari() || new URLSearchParams(location.search).has('arena2d')) return;
   import('./arena-3d.js').then(m => {
-    if (!m.ARENA_3D.has(mainBiome().id) || warmArena3d.done) return;
+    if (!m.arenaFor(mainBiome().id, 'boss') || warmArena3d.done) return;
     warmArena3d.done = true;
     setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 2000);
   }).catch(() => {});
