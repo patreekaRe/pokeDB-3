@@ -15,6 +15,7 @@
 export const EVENTS = [
   {
     id: 'berry-tree', icon: '🫐', name: 'Berry Tree',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'A tree heavy with Oran Berries grows by the path.',
     eatHeal: 0.3,              // share of max HP healed
     plantMaxHp: [5, 7, 9, 11],     // max HP gained (and healed)
@@ -34,6 +35,7 @@ export const EVENTS = [
   },
   {
     id: 'item-ball', icon: '⚫', name: 'Item Ball',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'A Poké Ball lies in the grass. Is it an item... or a Voltorb?',
     trapChance: 0.25,          // a Voltorb
     relicChance: 0.15,         // a relic; else (60%) an item
@@ -41,6 +43,7 @@ export const EVENTS = [
   },
   {
     id: 'hot-spring', icon: '♨️', name: 'Hot Spring',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'Steam rises from a spring hidden between the rocks.',
     soakMaxHpLoss: [4, 5, 6, 7],  // a full heal, but max HP drops by this
     dipHeal: 0.15,
@@ -65,6 +68,7 @@ export const EVENTS = [
   },
   {
     id: 'wishing-well', icon: '⛲', name: 'Wishing Well',
+    music: 'event-outdoor',   // the user's song for the outdoor rooms (2026-10-11)
     text: 'Something glints at the bottom of an old well. They say a coin buys a wish.',
     // pay ₽ for a chance of a relic (choose 1 of 3); the bigger toss has better odds
     tosses: [

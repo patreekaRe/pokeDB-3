@@ -53,7 +53,7 @@ export const NEXT = [
   ['runs', 'Every other ? room and the treasure grotto are 3D places you walk about too, dressed for the biome you\'re in and lit by the time of day: soak in the Hot Spring, ring the Shrine\'s bell as it glows in your type\'s colour, shake berries off the Berry Tree or plant one, toss a coin down the Wishing Well, wade into the tall grass for the Item Ball (watch out for Voltorb), face Team Rocket at their roadblock, and watch the grotto\'s Poké Ball chest wobble and pop open in its shaft of light.'],
   ['runs', 'After a ? room, the Center-style way: the room stays with its signs greyed, and you walk out over the doormat when you\'re ready; a found item or relic floats over the room it came from.'],
   ['runs', 'The Poké Mart\'s relics sit much bigger under their glass domes, with nothing in front of them or the shelves.'],
-  ['music', 'The Move Tutor, Move Deleter, Day Care and Fan Club have a song of their own.'],
+  ['music', 'The Move Tutor, Move Deleter, Day Care and Fan Club have a song of their own, and so do the Hot Spring, Berry Tree, Wishing Well and Item Ball.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
