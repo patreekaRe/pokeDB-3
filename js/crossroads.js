@@ -380,6 +380,9 @@ export function roadCard(id, i, pick, onSwap) {
  * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), shrinking a little towards the fork; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
+  // its backdrop at once, while the 3D place loads: on Continue the select under the leaving title showed through till then
+  const sc = $('crossroads-scene');
+  if (sc.hidden) { sc.className = `crossroads-scene wait${document.body.classList.contains('titling') || still() ? ' held' : ''}`; sc.hidden = false; }
   // the 3D fork first (js/crossroads-3d.js, the user's pick, 2026-10-11); `?xr2d`, or no Three.js, paints this one
   if (!new URLSearchParams(location.search).has('xr2d')) {
     try { return (await (await import('./crossroads-3d.js')).crossroads3d({ ids, swap, starter, stage, shiny })).chosen; }
@@ -388,7 +391,7 @@ export async function crossroads({ ids, swap = null, starter, stage = 0, shiny =
   roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back'; monTall = 0;
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
   const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };
-  scene.className = `crossroads-scene${calm ? ' still' : ''}`;
+  scene.className = `crossroads-scene held${calm ? ' still' : ''}`;
   mon.className = 'xr-mon pixel';
   mon.style.filter = '';
   mon.src = art.back;

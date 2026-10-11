@@ -3953,7 +3953,8 @@ body.scene-peek #backdrop { display: none; }
 
 /* the crossroads after a boss (js/crossroads.js): a card over each road, your Pokémon at the fork, the button under it */
 .crossroads-scene { position: fixed; inset: 0; z-index: 944; overflow: hidden; touch-action: none; background: #282c68; animation: biIn 0.5s both; user-select: none; -webkit-user-select: none; }
-.crossroads-scene.still { animation: none; }
+.crossroads-scene.still, .crossroads-scene.held { animation: none; }
+.crossroads-scene.wait > * { visibility: hidden; }
 .crossroads-scene.dark .travel-dark { opacity: 1; transition: opacity 0.6s ease-in; }
 .xr-mon { position: absolute; max-width: none; translate: -50% calc(var(--foot, 0px) - 100%); transform-origin: 50% 100%;
   image-rendering: pixelated; pointer-events: none; }

@@ -158,6 +158,18 @@ function hintArt() {
   return c;
 }
 
+/** The gold arrow bouncing over the picked road's board and off its arm's tip, pointing down (turned for the arm). */
+function arrowArt() {
+  const [c, g] = canvas(64, 64);
+  const tip = () => { g.beginPath(); g.moveTo(22, 6); g.lineTo(42, 6); g.lineTo(42, 30); g.lineTo(56, 30); g.lineTo(32, 58); g.lineTo(8, 30); g.lineTo(22, 30); g.closePath(); };
+  g.translate(1.5, 2.5); g.fillStyle = 'rgba(0,0,0,0.3)'; tip(); g.fill(); g.setTransform(1, 0, 0, 1, 0, 0);
+  const l = g.createLinearGradient(0, 6, 0, 58);
+  l.addColorStop(0, '#fff2a8'); l.addColorStop(0.55, '#f6c030'); l.addColorStop(1, '#d88a10');
+  g.fillStyle = l; g.strokeStyle = '#6a4208'; g.lineWidth = 3.5; g.lineJoin = 'round';
+  tip(); g.fill(); g.stroke();
+  return c;
+}
+
 /* ---------- building ---------- */
 
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.9, ...o });
@@ -397,6 +409,18 @@ async function build(ids) {
     b.add(s);
     return s;
   });
+  // a gold arrow bouncing over the picked road's board, and one off its arm's tip (frame() shows the picked road's)
+  const arrowTex = smoothTex(arrowArt());
+  const arrow = (parent) => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: arrowTex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+    s.raycast = () => {};
+    s.visible = false;
+    s.renderOrder = 5;
+    parent.add(s);
+    return s;
+  };
+  const pointers = boards.map((b) => { const s = arrow(b); s.scale.set(1.35, 1.35, 1); return s; });
+  const tips = arms.map((a, i) => { const s = arrow(a); s.scale.set(1.1, 1.1, 1); s.material.rotation = side(i) * Math.PI / 2; return s; });
   // through each gap, a glimpse of the biome the road runs to, lit by itself
   const glimpses = ids.map((id, i) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: glimpseTex(id), fog: false, toneMapped: false, transparent: true, depthWrite: false }));
@@ -436,7 +460,7 @@ async function build(ids) {
   const fill = new THREE.DirectionalLight('#ff9060', 1.2);
   fill.position.set(0, 6, FORK_Z - 40);
   scene.add(group, hemi, sun, sun.target, fill);
-  return { scene, group, arms, glimpses, boards, hints, hills, sky, sunDisc, flies, ground, line, edges };
+  return { scene, group, arms, glimpses, boards, hints, pointers, tips, hills, sky, sunDisc, flies, ground, line, edges };
 }
 
 function glimpseTex(id) {
@@ -523,7 +547,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   W.scene.add(mon.group);
 
   const scene = $('crossroads-scene'), go = $('xr-go'), calm = still();
-  scene.className = `crossroads-scene x3d${calm ? ' still' : ''}`;
+  scene.className = `crossroads-scene x3d held${calm ? ' still' : ''}`;
   scene.prepend(view);
   preloadSounds('stick', 'confirm', 'cancel', 'footstep');
   go.disabled = true;
@@ -756,6 +780,14 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         hint.visible = on;
         hint.position.y = b.userData.h + 0.55 + (calm ? 0 : Math.abs(Math.sin(t * 0.0035 + i * 1.3)) * 0.22);
         b.material.emissiveIntensity = on ? 0.14 + wave * 0.22 : 0.12;
+        // the picked road's gold arrow bounces over its board, above the "!" while that still shows
+        const p = W.pointers[i], bounce = calm ? 0 : Math.abs(Math.sin(t * 0.006));
+        p.visible = picked === i && !walking;
+        p.position.y = b.userData.h + (on ? 2 : 0.8) + bounce * 0.45;
+      });
+      W.tips.forEach((s, k) => {
+        s.visible = picked === k && !walking;
+        s.position.set(ARM_L + 0.75 + (calm ? 0 : Math.abs(Math.sin(t * 0.006 + 0.8))) * 0.35, 0, 0.1);
       });
       // the signpost's arms glow and pulse, in turn till a road is picked, then the picked one brighter and the other dim
       W.arms.forEach((a, k) => {
