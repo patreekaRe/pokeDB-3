@@ -9,7 +9,7 @@
 
 import { loadThree, tex, createPost, dispose } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
-import { sceneHorizon, sceneColour } from './scene.js';
+import { sceneHorizon, sceneColour, sceneDais } from './scene.js';
 
 /* Every main biome's fights, boss, Alphas (Team Rocket's too) and wilds, stand on 3D pads in front of their own live pixel
    backdrop (the Ancient Tree's pulse, the lava, the Well: the user's calls, 2026-10-11); the Clearing, whose 3D place this
@@ -249,7 +249,7 @@ function mesh(geo, m, x, y, z, { shadow = true } = {}) {
 /** A grassy battle pad, like the games' (Gen 4's raised discs): its top, a band of earth round it, its shadow. */
 function pad(p, kit = null) {
   const M = materials(), g = new THREE.Group();
-  g.position.set(p.x, 0, p.z);
+  g.position.set(p.x, p.lift ?? 0, p.z);
   const top = new THREE.Mesh(new THREE.CircleGeometry(p.r, 48), kit?.top ?? M.padTop);
   top.rotation.x = -Math.PI / 2; top.position.y = PAD_H; top.receiveShadow = true;
   const side = new THREE.Mesh(new THREE.CylinderGeometry(p.r, p.r * 1.06, PAD_H + 0.04, 48, 1, true), kit?.side ?? M.dirt);
@@ -436,13 +436,16 @@ function onGround(px, py, h = PAD_H) {
   return rc.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -h), hit) ? hit : null;
 }
 
-function layout() {
-  const spot = (zone, pseudo) => {
-    const p = cssPad(document.getElementById(zone), pseudo), c = onGround(p.cx, p.cy), l = onGround(p.cx - p.w / 2, p.cy), rr = onGround(p.cx + p.w / 2, p.cy);
-    if (!c || !l || !rr) return null;
-    return { x: c.x, z: c.z, r: Math.abs(rr.x - l.x) / 2 * 0.86, sy: p.cy / innerHeight };
-  };
-  return { foe: spot('enemy-zone', '::after'), you: spot('player-zone', '::before') };
+/** Where a pad lands, cast onto the plane its top is on (`lift` above the ground: Kenmatta's dais). */
+function padAt(p, lift = 0) {
+  const h = lift + PAD_H, c = onGround(p.cx, p.cy, h), l = onGround(p.cx - p.w / 2, p.cy, h), rr = onGround(p.cx + p.w / 2, p.cy, h);
+  if (!c || !l || !rr) return null;
+  return { x: c.x, z: c.z, r: Math.abs(rr.x - l.x) / 2 * 0.86, sy: p.cy / innerHeight, lift };
+}
+
+function layout(lift = 0) {
+  const spot = (zone, pseudo, h = 0) => padAt(cssPad(document.getElementById(zone), pseudo), h);
+  return { foe: spot('enemy-zone', '::after', lift), you: spot('player-zone', '::before') };
 }
 
 /** A point's place on screen, 0-1 each way (y down). */
@@ -479,6 +482,12 @@ function padKit(p, land) {
   const c = floorColour(p), green = c[1] > c[0] * 1.08 && c[1] > c[2];
   const top = std({ map: tex(stoneArt()), color: hexOf(mixRgb(c, 0.12)), roughness: 1 });
   const side = std({ map: tex(dirtArt()), color: hexOf(mixRgb(c, 0.35, 0)) });
+  if (land === 'kombat') {   // the courtyard's flags, a gold-trimmed side
+    const gain = flatLight();
+    top.map = tex(flagsArt()); top.color.copy(painted([150, 136, 128], gain));
+    side.map = null; side.color.copy(painted([120, 84, 40], gain)); side.metalness = 0.4; side.roughness = 0.5;
+    return { top, side, blade: null, grass: false };
+  }
   if (land === 'wastes') {   // basalt, lava glowing through its seams like the pixel pads'; as bright under its own light as elsewhere
     const glow = (WASTES_TIMES[timeOfDay()] ?? WASTES_TIMES.day).glow, k = PLAIN_LIGHT / flatLight();
     top.color.multiplyScalar(k); side.color.multiplyScalar(k);
@@ -502,6 +511,9 @@ function build(o) {
   if (clearing) {
     hemi.color.set(look.hemi[0]); hemi.groundColor.set(look.hemi[1]); hemi.intensity = look.hemi[2];
     sun.color.set(look.sun[0]); sun.intensity = look.sun[1];
+  } else if (o.biome === 'kombat') {   // always night: a blood-red sky, the braziers' fire doing the rest
+    hemi.color.set('#d8b0c0'); hemi.groundColor.set('#40181a'); hemi.intensity = 1.6;
+    sun.color.set('#ffb8a0'); sun.intensity = 1.4;
   } else if (wl) {   // its 3D ground stands in for the pixel floor, so it takes the floor's colours and a light by the hour
     hemi.color.set(wl.hemi[0]); hemi.groundColor.set(wl.hemi[1]); hemi.intensity = wl.hemi[2];
     sun.color.set(wl.sun[0]); sun.intensity = wl.sun[1];
@@ -513,7 +525,7 @@ function build(o) {
   sun.position.set(-10, 18, -2);
   sun.target.position.set(0, 0, -4);
 
-  const at = layout();
+  const at = layout(LIFTS[o.biome]?.(hz) ?? 0);
   if (!at.foe || !at.you) return null;
   const far = onGround(innerWidth / 2, innerHeight * hz, 0);
   const span = far ? camera.position.distanceTo(far) : 40;
@@ -994,7 +1006,183 @@ function snag(x, z, s, r, m) {
   tree.rotation.set((r() - 0.5) * 0.15, r() * 6, (r() - 0.5) * 0.15);
 }
 
-const GROUNDS = { clearing: dressClearing, wastes: dressWastes };
+/* ---------- Chad Master Kenmatta's courtyard ---------- */
+
+/* His Mortal Kombat courtyard: the painted wall, gate tower and medallion stay the backdrop; the flags in front of it,
+   his dais and its carpeted steps and two braziers are 3D. The painted floor is a low strip just above your Pokémon's pad,
+   so his pad stands raised on the dais against the wall, where the page draws it. */
+const KOMBAT = {
+  stone: [138, 120, 112], stoneDark: [92, 78, 72], carpet: [184, 36, 32], carpetDark: [110, 18, 20],
+  gold: [248, 200, 48], lacquer: [184, 40, 32],
+};
+
+/** Big light flags in staggered rows, dark seams, a few cracks and chips (the vertex colours give them the painted floor's). */
+function flagsArt() {
+  return once('flags', () => {
+    const N = 512, c = hd(canvas(N, N)), g = c.getContext('2d'), r = seeded(91), rows = 4, h = N / rows, w = N / 3;
+    g.fillStyle = '#2a2224'; g.fillRect(0, 0, N, N);
+    for (let y = 0; y < rows; y++) for (let k = -1; k < 4; k++) {
+      const x = k * w + (y % 2) * w / 2, tone = 200 + Math.floor(r() * 40);
+      g.fillStyle = `rgb(${tone},${tone - 6},${tone - 10})`;
+      g.fillRect(x + 4, y * h + 4, w - 8, h - 8);
+      const lit = g.createLinearGradient(0, y * h, 0, y * h + h);
+      lit.addColorStop(0, 'rgba(255,255,255,0.18)'); lit.addColorStop(0.15, 'rgba(255,255,255,0)'); lit.addColorStop(0.85, 'rgba(0,0,0,0)'); lit.addColorStop(1, 'rgba(0,0,0,0.22)');
+      g.fillStyle = lit; g.fillRect(x + 4, y * h + 4, w - 8, h - 8);
+    }
+    for (let i = 0; i < 700; i++) {   // wear and grit
+      const x = r() * N, y = r() * N, s = 1 + r() * 3;
+      g.fillStyle = r() < 0.5 ? 'rgba(255,250,244,0.25)' : 'rgba(40,30,30,0.22)';
+      g.beginPath(); g.ellipse(x, y, s, s * 0.7, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = 'rgba(40,30,30,0.6)'; g.lineWidth = 1.5;
+    for (let i = 0; i < 9; i++) {   // hairline cracks
+      let x = r() * N, y = r() * N, a = r() * 6;
+      g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 5; k++) { a += (r() - 0.5) * 1.4; x += Math.cos(a) * 12; y += Math.sin(a) * 12; g.lineTo(x, y); }
+      g.stroke();
+    }
+    return c;
+  });
+}
+
+/** How high his dais must be for his pad, cast where the page draws it, to stand just in front of the wall (0 when the
+    page draws him down on the floor, a wide screen). */
+function kombatLift(hz) {
+  const wall = onGround(innerWidth / 2, innerHeight * hz, 0);
+  if (!wall) return 0;
+  const p = cssPad(document.getElementById('enemy-zone'), '::after'), rc = ray();
+  rc.setFromCamera(new THREE.Vector2(p.cx / innerWidth * 2 - 1, -(p.cy / innerHeight * 2 - 1)), camera);
+  const { origin: O, direction: D } = rc.ray;
+  let lift = 0;
+  for (let i = 0; i < 4; i++) {
+    const at = padAt(p, lift);
+    if (!at) return 0;
+    const z = wall.z + at.r * 1.1 + 0.5, t = (z - O.z) / D.z;
+    lift = O.y + D.y * t - PAD_H;
+  }
+  return lift > 0.4 ? lift : 0;
+}
+
+function dressKombat({ o, r, at, hz, zNear }) {
+  scene.fog = null;
+  const gain = flatLight(), paint = (c) => painted(c, gain);
+  const wall = onGround(innerWidth / 2, innerHeight * hz, 0), zW = wall ? wall.z : -10, len = zNear - zW;
+
+  // the flags from your feet to the foot of the wall, in the painted floor's colours row by row
+  const rows = 16, geo = new THREE.PlaneGeometry(80, len, 1, rows), cols = new THREE.BufferAttribute(new Float32Array((rows + 1) * 2 * 3), 3);
+  geo.setAttribute('color', cols);
+  const tint = () => {
+    const posA = geo.attributes.position;
+    let near = null;
+    for (let i = 0; i < posA.count; i++) {
+      const z = (zNear + zW) / 2 - posA.getY(i);
+      const c = rowColour(Math.min(0.995, Math.max(hz + 0.006, onScreen(0, 0, z).y))) ?? near ?? [86, 76, 72];
+      near = c;
+      const col = paint(c.map(v => v * 1.15));
+      cols.setXYZ(i, col.r, col.g, col.b);
+    }
+    cols.needsUpdate = true;
+  };
+  B.retint = tint;
+  const flags = tex(flagsArt());
+  flags.wrapS = flags.wrapT = THREE.RepeatWrapping;
+  flags.repeat.set(80 / 3.6, len / 2.4);
+  const ground = mesh(geo, std({ map: flags, vertexColors: true, roughness: 0.95 }), 0, 0, (zNear + zW) / 2, { shadow: false });
+  ground.rotation.x = -Math.PI / 2;
+  ground.renderOrder = -1;
+  tint();
+
+  const stoneM = std({ map: tex(flagsArt()), color: paint(KOMBAT.stone), roughness: 0.9 });
+  const riserM = std({ color: paint(KOMBAT.stoneDark), roughness: 0.95 });
+  const goldM = std({ color: paint(KOMBAT.gold), metalness: 0.6, roughness: 0.35, emissive: '#5a3008', emissiveIntensity: 0.3 });
+  const carpetM = std({ color: paint(KOMBAT.carpet), roughness: 1 });
+  const carpetDarkM = std({ color: paint(KOMBAT.carpetDark), roughness: 1 });
+
+  // his dais against the wall and its steps down to the flags, a red carpet down the middle edged in gold
+  const foe = at.foe;
+  if (foe.lift > 0) {
+    const g = new THREE.Group();
+    g.position.set(foe.x, 0, foe.z);
+    add(g);
+    B.dais = g;
+    const Y = foe.lift, hw = foe.r + 0.45, back = zW - 0.3 - foe.z, front = foe.r + 0.4;
+    const n = Math.max(3, Math.round(Y / 0.26)), rise = Y / n, run = Math.min(0.42, Math.max(0.24, rise * 1.1)), cw = foe.r * 0.42;
+    const box = new THREE.BoxGeometry(1, 1, 1), d = new THREE.Object3D();
+    const parts = { stone: [], riser: [], gold: [], carpet: [], carpetDark: [] };
+    const put = (kind, x, y, z, sx, sy, sz) => parts[kind].push([x, y, z, sx, sy, sz]);
+    put('stone', 0, Y / 2, (back + front) / 2, hw * 2, Y, front - back);
+    put('gold', 0, Y - 0.03, front, hw * 2 + 0.04, 0.07, 0.06);
+    for (let k = 1; k < n; k++) {
+      const top = Y - k * rise, z0 = front + (k - 1) * run, w = hw + k * 0.1;
+      put('stone', 0, top / 2, z0 + run / 2, w * 2, top, run);
+      put('riser', 0, top + rise / 2, z0 + 0.002, w * 2 - 0.02, rise, 0.01);
+      put('carpet', 0, top + 0.012, z0 + run / 2, cw * 2, 0.025, run + 0.005);
+      put('carpetDark', 0, top + rise / 2, z0 + 0.008, cw * 2, rise, 0.012);
+      for (const s of [-1, 1]) put('gold', s * cw, top + 0.02, z0 + run / 2, 0.06, 0.04, run + 0.01);
+    }
+    const foot = front + (n - 1) * run;
+    put('carpet', 0, 0.012, foot + 0.9, cw * 2, 0.025, 1.8);   // and on over the flags a little
+    for (const s of [-1, 1]) put('gold', s * cw, 0.02, foot + 0.9, 0.06, 0.04, 1.8);
+    const mats = { stone: stoneM, riser: riserM, gold: goldM, carpet: carpetM, carpetDark: carpetDarkM };
+    for (const [kind, list] of Object.entries(parts)) {
+      const im = new THREE.InstancedMesh(box, mats[kind], list.length);
+      list.forEach(([x, y, z, sx, sy, sz], i) => { d.position.set(x, y, z); d.scale.set(sx, sy, sz); d.updateMatrix(); im.setMatrixAt(i, d.matrix); });
+      im.castShadow = kind === 'stone'; im.receiveShadow = true;
+      g.add(im);
+    }
+  }
+
+  // a brazier either side, at the foot of the wall, clear of the pads and the steps
+  const fires = [];
+  for (const sx of [0.07, 0.93]) {
+    let spot = null;
+    for (let k = 0; k < 8 && !spot; k++) {
+      const x = innerWidth * (sx + (sx < 0.5 ? 1 : -1) * k * 0.02), c = onGround(x, innerHeight * (hz + 0.025), 0);
+      if (!c) continue;
+      const offDais = !B.dais || Math.abs(c.x - foe.x) > foe.r + 1.6;
+      if (offDais && [at.foe, at.you].every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) spot = c;
+    }
+    if (spot) fires.push(brazier(spot.x, spot.z, { stoneM, goldM, lacquer: std({ color: paint(KOMBAT.lacquer), roughness: 0.4 }) }));
+  }
+  B.ticks.push((t) => fires.forEach((f, i) => f(t + i * 3.7)));
+
+  drift(40, [-12, 12, zW, zNear - 6, 7], { colour: '#ffa040', size: 0.14, vy: 0.7, glow: true, sway: 0.7 });
+  rain('#ffa860');
+}
+
+/** A brazier on a red lacquer column, gold-banded, its gold bowl burning: flickering flames and a light that throws the
+    fire's colour over the flags. Returns its flicker. */
+function brazier(x, z, { stoneM, goldM, lacquer }) {
+  const h = 1.5;
+  mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.16, 16), stoneM, x, 0.08, z);
+  mesh(new THREE.CylinderGeometry(0.17, 0.19, h, 16), lacquer, x, 0.16 + h / 2, z);
+  for (const y of [0.24, h + 0.04]) mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.08, 16), goldM, x, y, z);
+  const bowl = new THREE.LatheGeometry([[0.05, 0], [0.3, 0.06], [0.42, 0.26], [0.44, 0.3], [0.4, 0.3]].map(([a, b]) => new THREE.Vector2(a, b)), 20);
+  mesh(bowl, goldM, x, h + 0.08, z);
+  const coals = mesh(new THREE.CircleGeometry(0.38, 16), new THREE.MeshBasicMaterial({ color: '#ff8a30', toneMapped: false }), x, h + 0.34, z, { shadow: false });
+  coals.rotation.x = -Math.PI / 2;
+  const glow = tex(glowArt()), flames = [];
+  for (const [col, s, y] of [['#e84818', 1.5, 0.55], ['#f8a030', 1.05, 0.6], ['#fff080', 0.6, 0.5]]) {
+    const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    f.position.set(x, h + 0.08 + y, z);
+    add(f);
+    flames.push([f, s, y]);
+  }
+  const light = add(new THREE.PointLight('#ff8a3a', 6, 9, 1.6));
+  light.position.set(x, h + 0.9, z);
+  return (t) => {
+    const k = 0.85 + Math.sin(t * 9.1) * 0.08 + Math.sin(t * 5.3) * 0.07;
+    flames.forEach(([f, s, y], i) => {
+      const wob = Math.sin(t * (7 + i * 2.3)) * 0.06;
+      f.scale.set(s * (0.9 + wob), s * 1.5 * k, 1);
+      f.position.y = h + 0.08 + y + (k - 0.85) * 0.5;
+    });
+    light.intensity = 6 * k;
+  };
+}
+
+const GROUNDS = { clearing: dressClearing, wastes: dressWastes, kombat: dressKombat };
+const LIFTS = { kombat: kombatLift };
 
 /* ---------- the frame ---------- */
 
@@ -1054,13 +1242,14 @@ function follow() {
     const p = cssPad(el, pseudo), key = `${Math.round(p.cx)},${Math.round(p.cy)},${Math.round(p.w)}`;
     if (A.keys[i] === key) return;
     A.keys[i] = key;
-    const c = onGround(p.cx, p.cy), l = onGround(p.cx - p.w / 2, p.cy), rr = onGround(p.cx + p.w / 2, p.cy);
-    if (!c || !l || !rr) return;
-    const g = A.pads[i], r = Math.abs(rr.x - l.x) / 2 * 0.86, was = i ? A.at.you : A.at.foe;
-    g.position.set(c.x, 0, c.z);
-    const k = r / was.r0;
+    const was = i ? A.at.you : A.at.foe, at = padAt(p, was.lift);
+    if (!at) return;
+    const g = A.pads[i];
+    g.position.set(at.x, at.lift, at.z);
+    if (!i) A.dais?.position.set(at.x, 0, at.z);
+    const k = at.r / was.r0;
     g.scale.set(k, 1, k);
-    Object.assign(was, { x: c.x, z: c.z, r, sy: p.cy / innerHeight });
+    Object.assign(was, at);
   });
 }
 
@@ -1165,6 +1354,7 @@ function rebuild() {
 
 function show(fade) {
   document.body.classList.add('arena3d');
+  sceneDais(!!A?.dais);
   view.classList.toggle('fade', fade && !matchMedia('(prefers-reduced-motion: reduce)').matches);
   void view.offsetWidth;
   view.classList.add('on');
@@ -1188,6 +1378,7 @@ export function unmountArena() {
   building++;
   cancelAnimationFrame(raf); raf = 0;
   document.body.classList.remove('arena3d', 'arena3d-solid');
+  sceneDais(false);
   view?.classList.remove('on', 'fade');
   if (A) { dispose(A.group); scene.remove(A.group); A = null; }
 }

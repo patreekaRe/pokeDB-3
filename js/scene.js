@@ -5408,6 +5408,14 @@ function kombatLayout() {
   };
 }
 
+/* The 3D arena (js/arena-3d.js) builds Kenmatta's dais and steps itself, so the painted ones step aside while it's up. */
+let bareDais = false;
+export function sceneDais(off) {
+  if (bareDais === off) return;
+  bareDais = off;
+  if (S?.raw.backdrop === 'kombat') resize();
+}
+
 function kombatBackdrop() {
   const { R: room, cx, cy, dais } = kombatLayout(), { R } = medallionFit(room), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
   const towerTop = Math.max(1, cy - R - roof - 4), wallTop = Math.max(towerTop + roof + 2, Math.round(horizon * 0.3));
@@ -5430,7 +5438,7 @@ function kombatBackdrop() {
     pixelMap(x - 3, py - 3, ['ooooooo', 'olggggo', '.odddo.', '..ooo..'], { o: S.gold[4], l: S.gold[0], g: S.gold[1], d: S.gold[3] });
     life.braziers.push({ x, y: py - 4 });
   }
-  if (dais) templeSteps(dais);
+  if (dais && !bareDais) templeSteps(dais);
   life.kombat = { eye };
 }
 

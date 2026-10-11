@@ -99,8 +99,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - **Waiting on the user:** a phone playtest of the wild fights (`?arena=wild`, the Clearing first, which has the most
       3D): does any stutter? The cloud's browser renders 3D in software, so phone frame rates were never measured.
     - **Done (2026-10-11): Kenmatta's arena** (the user's yes). His fight stands on 3D stone pads before his Mortal Kombat
-      courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`: pads only, his temple steps stay
-      the pixel scene's). `?arena=ken` (`&biome=`) walks a throwaway run straight into his fight.
+      courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`). Since the same day (the user's ask)
+      the courtyard is 3D up to the painted wall (`dressKombat()`): flagstones in the painted floor's colours, his dais
+      against the wall with carpeted, gold-edged steps (his pad raised onto it, `kombatLift()`; the painted steps step
+      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers. `?arena=ken`
+      (`&biome=`) walks a throwaway run straight into his fight.
     - **d. Each biome's own 3D foreground**, like the Clearing's, about a session a biome; then main. `GROUNDS` in
       `js/arena-3d.js` is one `dress*()` a biome, handed the ground's span, the fade and the placing tests by `build()`.
       - **Done (2026-10-11): the Wastes** (`dressWastes()`). Its ground takes the pixel floor's own colours row by row
