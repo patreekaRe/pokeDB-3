@@ -48,7 +48,7 @@ export const NEXT = [
   ['runs', 'The crossroads is now a 3D place you walk about at dusk: tap the ground to walk your Pokémon there, and walk up a road to take it.'],
   ['dex', 'The Sunken Ruins, Thornwood Jungle and Sunscorch Savanna pages now each give a perk when finished, Lv 2 once researched: Unown Rubbing shows which event a ❓ room holds, Tracker\'s Eye marks tough match-ups on the map, and Wayfinder lets you swap the other road at a crossroads.'],
   ['fixes', 'Closing the game at a crossroads (or during the walk after it) now brings you back to the crossroads on Continue, not to the map before the boss.'],
-  ['runs', 'At the crossroads a notice board stands at each road: tap one to walk up and read it (its places, bosses, wild Pokémon and Pokédex page). Your Pokémon also gets a little smaller as it walks towards the fork.'],
+  ['runs', 'At the crossroads a notice board stands at each road: tap one to walk up and read it, laid out in tidy boxes: its places in order, bosses, wild Pokémon by type and its Pokédex page. Your Pokémon also gets a little smaller as it walks towards the fork.'],
   ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
 ];
 

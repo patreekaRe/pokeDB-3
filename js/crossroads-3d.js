@@ -17,6 +17,7 @@ import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ARMS, roadInfo, wildTypes } from './crossroads.js';
 import { kioskArt } from './hub-3d.js';
+import { TYPES } from './data/cards.js';
 import { progressBar } from './pokedex.js';
 import { getSave } from './storage.js';
 import { ALL_PAGES } from './data/pokedex.js';
@@ -490,31 +491,47 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     panel.hidden = true;
     scene.append(panel);
     /** What road i's board says: its sign, places, bosses, wilds and how much of its Pokédex page you've met. */
+    /** A boxed section of the board: a small heading over its contents. */
+    const section = (cls, label, ...kids) => { const sec = el('section', `xr-sec ${cls}`); sec.append(el('h4', 'xr-label', label), ...kids); return sec; };
+    /** What road i's board says, in boxes: its places in order, its bosses beside its wilds, then its Pokédex page. */
     function fillPanel(i) {
       const id = roads[i], biome = BIOMES_BY_ID[id], page = ALL_PAGES.find(p => p.biome === id);
-      const { sign, bosses, types } = roadInfo(id);
+      const { sign, bosses } = roadInfo(id);
+      const head = el('header', 'xr-head');
       const shut = el('button', 'xr-shut', '✕');
       shut.type = 'button';
       shut.setAttribute('aria-label', 'Close');
       shut.onclick = (e) => { e.stopPropagation(); closePanel(); };
-      const places = el('div', 'xr-places');
-      biome.stages.forEach((name, k) => { if (k) places.append(el('span', 'xr-step', '›')); places.append(el('span', 'xr-place', name)); });
-      const parts = [shut, sign, el('span', 'xr-label', 'Places'), places, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Wild Pokémon'), types];
+      head.append(sign, shut);
+      const places = el('ol', 'xr-places');
+      biome.stages.forEach((name, k) => {
+        const li = el('li', `xr-place${k === biome.stages.length - 1 ? ' boss' : ''}`);
+        li.append(el('span', 'xr-num', `${k + 1}`), el('span', 'xr-pname', name));
+        places.append(li);
+      });
+      const wilds = el('div', 'xr-wilds');
+      for (const [type, n] of wildTypes(biome)) {
+        const row = el('div', `xr-wild type-${type}`);
+        row.append(el('span', 'xr-wicon', TYPES[type]?.icon ?? ''), el('span', 'xr-wname', TYPES[type]?.label ?? type), el('span', 'xr-wn', `${n}`));
+        wilds.append(row);
+      }
+      const body = el('div', 'xr-body');
+      body.append(section('xr-sec-places', 'Places', places), section('xr-sec-bosses', 'Bosses', bosses), section('xr-sec-wilds', 'Wild Pokémon', wilds));
       if (page) {
         const beaten = getSave().dex.defeated, n = page.ids.filter(id => beaten.includes(id)).length;
         const dex = el('div', 'xr-dex');
         dex.append(progressBar(n, page.ids.length), el('span', 'xr-dex-n', `${n}/${page.ids.length}`));
-        parts.push(el('span', 'xr-label', 'Pokédex'), dex);
+        body.append(section('xr-sec-dex', 'Pokédex', dex));
       }
       if (ways && i === 1) {
         const swapBtn = el('button', 'xr-swap', '🧭 Another road');
         swapBtn.type = 'button';
         swapBtn.title = 'Wayfinder: swap this road for another biome you could walk.';
         swapBtn.onclick = (e) => { e.stopPropagation(); turn(); };
-        parts.push(swapBtn);
+        body.append(swapBtn);
       }
       panel.dataset.biome = id;
-      panel.replaceChildren(...parts);
+      panel.replaceChildren(head, body);
     }
     function openPanel(i) {
       reading = i;
