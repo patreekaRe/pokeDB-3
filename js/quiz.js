@@ -1,5 +1,5 @@
-/* quiz.js  -  Who's That Pokémon?, a Game Corner game (2026-10-10): a silhouette and four names, ten a round, from every
-   Pokémon in the game. Free; a round pays quizPay() into the games' shared pot (js/corner-pot.js). The day's rounds come
+/* quiz.js  -  Who's That Pokémon?, a Game Corner game (2026-10-10; slimmed to one round of five a UTC day 2026-10-11,
+   the user's pick): a silhouette and four names, from every Pokémon in the game. Free; a round pays quizPay() into the games' shared pot (js/corner-pot.js). The day's rounds come
    from its seed (js/data/corner.js's quizRound()), and where you are in one is saved (`save.corner.quiz`), so a refresh
    never deals a question again. */
 
@@ -25,7 +25,7 @@ export async function openQuiz(onClose) {
   names ??= await monPool();
   preloadSounds('select', 'cancel', 'coins', 'stat-up');
   load();
-  picked = null; done = null;
+  picked = null; done = st.round >= 1 ? { ...st.last, line: `Today's round is done: ${st.last?.right ?? 0}/${QUIZ_LEN}. A new one tomorrow, meow!` } : null;
   panel = openPanel('qz', "Who's That Pokémon?", { onClose });
   render();
 }
@@ -42,7 +42,6 @@ function render() {
   const body = [];
   if (done) {
     body.push(el('p', 'vf-say', done.line));
-    keys.append(key('Next round', 'vf-go', nextRound));
   } else {
     const q = round[cur];
     const stage = el('div', `qz-stage${picked ? ' shown' : ''}`);
@@ -89,14 +88,8 @@ function answer(id) {
 /** The round's end: paid, and the record moved on to the next round. */
 function finish() {
   const right = st.right, paid = payGame(quizPay(right));
-  st = { ...st, round: st.round + 1, q: 0, right: 0 };
+  const result = { right, paid, line: `${right}/${QUIZ_LEN} right${right === QUIZ_LEN ? ', a perfect round' : ''}! ${paid ? `${paid} PokéCoins.` : potWon() >= GAMES_CAP ? 'The games have paid the most for today.' : 'No coins this time.'} A new round tomorrow.` };
+  st = { ...st, round: st.round + 1, q: 0, right: 0, last: result };
   keep();
-  return { right, paid, line: `${right}/${QUIZ_LEN} right${right === QUIZ_LEN ? ', a perfect round' : ''}! ${paid ? `${paid} PokéCoins.` : potWon() >= GAMES_CAP ? 'The games have paid the most for today: this one was for fun.' : 'No coins this time.'}` };
-}
-
-function nextRound() {
-  playSound('confirm');
-  round = quizRound(st.day, st.round, [...names.keys()]);
-  done = null; picked = null; cur = 0;
-  render();
+  return result;
 }

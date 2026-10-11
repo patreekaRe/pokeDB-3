@@ -48,9 +48,9 @@ export const NEXT = [
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are gold arcade letters between chevrons, see-through and easy to read, lying flat on the ground.'],
   ['modes', "Sky Pillar: Fire's own augments are stronger (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
   ['mall', 'The Poké Mall\'s Game Corner is open, and huge: four big screens along the back wall show the Pokémon, shinies, perks and Poké Balls for sale; tap one and flip through them left and right, one at a time.'],
-  ['mall', 'Three free games in the Game Corner: Voltorb Flip, Who\'s That Pokémon? and Memory Match. Win PokéCoins, up to 250 a day between them.'],
-  ['mall', 'Bet your PokéCoins in the Game Corner: a bank of slot machines, Blackjack against Meowth, Roulette and High-Low, 10 to 100 a play. The house closes for the day once you\'re 500 up.'],
-  ['mall', 'A Gachapon in the Game Corner: 100 PokéCoins a turn for a big Pokémon doll for your Secret Base. Big dolls come only from it now, 8 a week; one you already have gives 60 coins back.'],
+  ['mall', 'Two free games in the Game Corner: Voltorb Flip and a daily round of Who\'s That Pokémon?. Win PokéCoins, up to 250 a day between them.'],
+  ['mall', 'Bet your PokéCoins in the Game Corner, 5 to 50 a play: slots you stop yourself, with a growing jackpot and a Pikachu bonus round; Team Rocket Blast-Off (cash out before they blast off again!); Poké Ball Plinko; Blackjack against Meowth; and High-Low. The house closes for the day once you\'re 500 up.'],
+  ['mall', 'Meowth has a free scratch card for you every day at the Game Corner\'s prize counter. It always wins something, up to 500 PokéCoins.'],
   ['mall', 'Deal of the Day: one skin, perk or shiny in the Game Corner is 30% off each day, marked with a pink DEAL tag.'],
 ];
 

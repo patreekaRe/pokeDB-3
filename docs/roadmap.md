@@ -149,12 +149,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
      c) **The Game Corner revamp** (branch `game-corner-revamp`, 2026-10-10; the user's picks over prize tickets and
         betting coins): the Game Corner is open; **Voltorb Flip** (free, coins from the score up to 250 a UTC day, HGSS's 8
-        levels; `js/voltorb.js`), a **Gachapon** of the big Pokémon dolls, now sold nowhere else (8 a week, 100 a turn, a
-        duplicate refunds 60; `js/gachapon.js`), and a **Deal of the Day** (30% off one skin, perk or shiny; `todaysDeal()` in
-        `js/shop.js`). Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Plain panels for now.
-        Its look pass is done too (2026-10-10, in a cloud session: the user has no local access), and the same day the
-        room was rebuilt huge at the user's ask: four big showcase screens browsed one at a time (`js/showcase.js`), two
-        more free games (Who's That Pokémon?, Memory Match) sharing a 250-a-day pot. See CLAUDE.md.
+        levels; `js/voltorb.js`) and a **Deal of the Day** (30% off one skin, perk or shiny; `todaysDeal()` in `js/shop.js`).
+        Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Rebuilt huge the same day (four showcase screens,
+        `js/showcase.js`), then the lineup settled on 2026-10-11 (the user's pick): Roulette, Memory Match and the Gachapon
+        cut (the big dolls back in the Furniture store); tap-to-stop slots with a carried-over jackpot and a Pikachu bonus
+        round, Team Rocket Blast-Off, Plinko, Blackjack, High-Low (bets 5-50, `js/data/casino.js`), Who's That Pokémon?
+        one round a day, and Meowth's free daily scratch card. See CLAUDE.md.
         **Next:** the user playtests and says whether it goes to `main` (Pages only serves `main`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
         with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. Balls stay in the Game

@@ -875,7 +875,10 @@ function keeperTap() {
   pick(null);
   playCry(P.keeper.mon.id);
   P.keeper.hopUntil = performance.now() + 600;
-  talk(pickLine(P.keeper.chat), 4200);
+  const chat = () => talk(pickLine(P.keeper.chat), 4200);
+  if (!P.keeper.special) return chat();
+  const place = P;
+  P.keeper.special(() => { showCoins(); place?.refresh?.(); }).then(opened => { if (!opened && P === place) chat(); });
 }
 
 /** The lift: roped off until the second floor is bought (a tap asks, a second buys), then ridden up, or down again. */

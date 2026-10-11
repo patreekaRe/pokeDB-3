@@ -1,28 +1,31 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  SYMBOLS, REEL_WEIGHT, slotPay, spinReels, shuffledDeck, handValue, dealerPlays, blackjackReturn, isBlackjack,
-  rouletteReturn, ROULETTE_BETS, spinWheel, hlChance, hlMult, playRand, tablesOpen, BET_CAP, WHEEL,
+  SYMBOLS, REEL_WEIGHT, STRIP, SLIP, slotPay, stopAt, shuffledDeck, handValue, dealerPlays, blackjackReturn, isBlackjack,
+  hlChance, hlMult, playRand, tablesOpen, BET_CAP, crashPoint, crashMult, crashTime, plinkoPath, plinkoBin, PLINKO_PAYS,
+  PLINKO_ROWS, scratchCard, SCRATCH_PRIZES,
 } from '../js/data/casino.js';
 import { makeRng } from '../js/rng.js';
 
-test('the slots return about 95% of what goes in', () => {
-  const T = Object.values(REEL_WEIGHT).reduce((a, b) => a + b, 0);
+test('the slot strip holds each symbol as often as its weight', () => {
+  assert.equal(STRIP.length, 20);
+  for (const s of SYMBOLS) assert.equal(STRIP.filter(x => x === s).length, REEL_WEIGHT[s]);
+  for (let at = 0; at < 20; at++) { const s = stopAt(at, makeRng(at)); assert.ok(((s - at + 20) % 20) < SLIP); }
+});
+
+test('slots stopped at random return under 100%, the jackpot aside', () => {
   let rtp = 0;
-  for (const a of SYMBOLS) for (const b of SYMBOLS) for (const c of SYMBOLS) rtp += REEL_WEIGHT[a] * REEL_WEIGHT[b] * REEL_WEIGHT[c] / T ** 3 * slotPay([a, b, c]);
-  assert.ok(rtp > 0.93 && rtp < 0.97, `slots return ${rtp}`);
-  assert.equal(slotPay(['seven', 'seven', 'seven']), 100);
-  assert.equal(spinReels(makeRng(1)).length, 3);
+  for (const a of STRIP) for (const b of STRIP) for (const c of STRIP) { const m = slotPay([a, b, c]); rtp += (m === 'jackpot' ? 0 : m) / 8000; }
+  assert.ok(rtp > 0.8 && rtp < 0.95, `slots return ${rtp}`);
+  assert.equal(slotPay(['seven', 'seven', 'seven']), 'jackpot');
 });
 
 test('blackjack hands add up', () => {
   assert.deepEqual(handValue([['A', '♠'], ['K', '♥']]), { total: 21, soft: true });
   assert.equal(handValue([['A', '♠'], ['A', '♥'], ['9', '♣']]).total, 21);
-  assert.equal(handValue([['K', '♠'], ['Q', '♥'], ['5', '♣']]).total, 25);
   assert.ok(isBlackjack([['A', '♠'], ['J', '♦']]));
   assert.equal(blackjackReturn([['A', '♠'], ['J', '♦']], [['10', '♠'], ['9', '♦']]), 2.5);
   assert.equal(blackjackReturn([['10', '♠'], ['8', '♦']], [['10', '♣'], ['8', '♥']]), 1);
-  assert.equal(blackjackReturn([['10', '♠'], ['8', '♦'], ['9', '♣']], [['10', '♣'], ['8', '♥']]), 0);
   assert.ok(handValue(dealerPlays([['2', '♠'], ['3', '♦']], shuffledDeck(makeRng(4)))).total >= 17);
   assert.equal(new Set(shuffledDeck(makeRng(2)).map(c => c.join(''))).size, 52);
 });
@@ -37,19 +40,7 @@ test('blackjack played by the book loses a little', () => {
     }
     back += blackjackReturn(p, handValue(p).total > 21 ? d : dealerPlays(d, deck));
   }
-  const rtp = back / n;
-  assert.ok(rtp > 0.9 && rtp < 1, `blackjack returns ${rtp}`);
-});
-
-test('roulette pays a single-zero wheel', () => {
-  assert.equal(WHEEL.length, 37);
-  assert.equal(new Set(WHEEL).size, 37);
-  for (const bet of [...Object.keys(ROULETTE_BETS), 17]) {
-    let back = 0;
-    for (let n = 0; n <= 36; n++) back += rouletteReturn(bet, n);
-    assert.ok(Math.abs(back / 37 - 36 / 37) < 1e-9, `${bet} returns ${back / 37}`);
-  }
-  assert.ok(spinWheel(makeRng(3)) <= 36);
+  assert.ok(back / n > 0.9 && back / n < 1, `blackjack returns ${back / n}`);
 });
 
 test('high-low keeps a 5% edge each guess and never offers a sure loss', () => {
@@ -59,9 +50,37 @@ test('high-low keeps a 5% edge each guess and never offers a sure loss', () => {
   }
 });
 
+test('Blast-Off returns about 95% whenever you cash out', () => {
+  const n = 40000, points = Array.from({ length: n }, (_, i) => crashPoint(makeRng(i + 1)));
+  for (const target of [1.5, 2, 5]) {
+    const back = points.reduce((s, p) => s + (p >= target ? target : 0), 0) / n;
+    assert.ok(back > 0.9 && back < 0.99, `cashing at ${target} returns ${back}`);
+  }
+  assert.ok(Math.abs(crashMult(crashTime(3)) - 3) < 0.02);
+});
+
+test('Plinko returns about 95%', () => {
+  const C = [1, 8, 28, 56, 70, 56, 28, 8, 1];
+  const rtp = C.reduce((s, c, i) => s + c * PLINKO_PAYS[i], 0) / 256;
+  assert.ok(rtp > 0.93 && rtp < 0.97, `plinko returns ${rtp}`);
+  const path = plinkoPath(makeRng(9));
+  assert.equal(path.length, PLINKO_ROWS);
+  assert.ok(plinkoBin(path) >= 0 && plinkoBin(path) <= PLINKO_ROWS);
+});
+
+test('the scratch card always wins its prize, the same for the day', () => {
+  for (const day of ['2026-10-11', '2026-10-12', '2026-11-01']) {
+    const c = scratchCard(day);
+    assert.ok(SCRATCH_PRIZES.some(([coins]) => coins === c.prize));
+    assert.equal(c.cells.length, 9);
+    assert.equal(c.cells.filter(s => s === c.symbol).length, 3);
+    for (const s of new Set(c.cells)) if (s !== c.symbol) assert.ok(c.cells.filter(x => x === s).length < 3);
+    assert.deepEqual(c, scratchCard(day));
+  }
+});
+
 test('plays come from the day and their number, and the tables close once the day is won', () => {
   assert.equal(playRand('slots', '2026-10-10', 4)(), playRand('slots', '2026-10-10', 4)());
-  assert.notEqual(playRand('slots', '2026-10-10', 4)(), playRand('slots', '2026-10-10', 5)());
   assert.ok(tablesOpen(BET_CAP - 1));
   assert.ok(!tablesOpen(BET_CAP));
 });

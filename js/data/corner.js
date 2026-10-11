@@ -8,9 +8,7 @@
                  Free to play; a won (or quit) round pays coins from its score, up to VOLTORB_CAP a UTC day, so it's a
                  fun extra and never replaces runs. Levels 1-8 as in HGSS. Each board comes from the day's seed and
                  the round number, so a refresh can't deal a new one.
-   Gachapon      a capsule machine of the Secret Base's big Pokémon dolls (sold nowhere else). A week's set of
-                 GACHA_SET dolls, the same for everyone; a pull costs GACHA_PRICE and a doll already owned refunds
-                 GACHA_REFUND.
+   Who's That Pokémon?  one round of QUIZ_LEN silhouettes a UTC day.
    Deal of the Day  one skin, perk level or shiny at DEAL_OFF off, picked once a UTC day from what you can still buy.
    ============================================================ */
 
@@ -86,7 +84,7 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
 
 /* ---------- Who's That Pokémon? ---------- */
 
-export const QUIZ_LEN = 10;      // silhouettes a round
+export const QUIZ_LEN = 5;       // silhouettes in the day's one round (slimmed 2026-10-11, the user's pick)
 export const QUIZ_CHOICES = 4;
 
 /** A round's questions: QUIZ_LEN Pokémon from `pool` (ids), each with QUIZ_CHOICES names to pick from, the same for
@@ -99,34 +97,8 @@ export function quizRound(day, n, pool) {
   });
 }
 
-/** Coins for a round: 3 a right answer, and 10 more for all of them. */
-export const quizPay = (right) => right * 3 + (right === QUIZ_LEN ? 10 : 0);
-
-/* ---------- Memory Match ---------- */
-
-export const MEMORY_PAIRS = 8;   // a 4 x 4 board
-
-/** A day's nth board: MEMORY_PAIRS Pokémon from `pool`, each twice, shuffled. */
-export function memoryBoard(day, n, pool) {
-  const rand = streamOf('memory', `${day}:${n}`);
-  const picks = shuffled([...pool].sort(), rand).slice(0, MEMORY_PAIRS);
-  return shuffled([...picks, ...picks], rand);
-}
-
-/** Coins for a cleared board: 30, less 2 a miss, never under 4. */
-export const memoryPay = (misses) => Math.max(4, 30 - 2 * misses);
-
-/* ---------- Gachapon ---------- */
-
-export const GACHA_SET = 8;       // dolls in a week's capsules
-export const GACHA_PRICE = 100;   // PokéCoins a pull
-export const GACHA_REFUND = 60;   // back for a doll you already have
-
-/** The week's capsules: GACHA_SET kinds of `pool` (the big dolls), the same for everyone that week. */
-export const gachaSet = (week, pool) => shuffled([...pool].sort(), streamOf('gacha', week)).slice(0, GACHA_SET);
-
-/** The doll in a week's nth capsule: rolled on the week and the pull, so a refresh opens the same one. */
-export const gachaPull = (week, n, set) => set[randIndex(set.length, streamOf('gacha', `${week}:${n}`))];
+/** Coins for the day's round: 5 a right answer, and 5 more for all of them. */
+export const quizPay = (right) => right * 5 + (right === QUIZ_LEN ? 5 : 0);
 
 /* ---------- Deal of the Day ---------- */
 

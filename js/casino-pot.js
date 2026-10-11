@@ -3,7 +3,7 @@
    ({ day, net, plays }); a game's hand in progress is its own field there. Winnings never count towards
    `stats.coinsEarned`, so betting can't earn the coin badges. */
 
-import { BETS, BET_CAP, tablesOpen } from './data/casino.js';
+import { BETS, BET_CAP, tablesOpen, JACKPOT_BASE, JACKPOT_FEED } from './data/casino.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el, refreshCoins } from './ui.js';
@@ -27,6 +27,27 @@ export function stake(game, amount) {
   updateSave(d => { d.coins -= amount; });
   refreshCoins();
   return { day: b.day, n };
+}
+
+/** A free play of `game` (a bonus round's spin): its seed, no stake. */
+export function freePlay(game) {
+  const b = today(), n = b.plays[game] ?? 0;
+  write({ ...b, plays: { ...b.plays, [game]: n + 1 } });
+  return { day: b.day, n };
+}
+
+/** The slots' jackpot: it carries over between days (`save.corner.jackpot`), fed by every paid spin. */
+export const jackpot = () => getSave().corner?.jackpot ?? JACKPOT_BASE;
+export function feedJackpot(bet) {
+  const pot = jackpot() + Math.max(1, Math.round(bet * JACKPOT_FEED));
+  updateSave(d => { d.corner = { ...d.corner, jackpot: pot }; });
+}
+/** Three 7s: the whole pot, and it starts again from the floor. */
+export function winJackpot() {
+  const pot = jackpot();
+  updateSave(d => { d.corner = { ...d.corner, jackpot: JACKPOT_BASE }; });
+  settle(pot);
+  return pot;
 }
 
 /** More stake on a play already going (Blackjack's double). False if the coins aren't there. */
