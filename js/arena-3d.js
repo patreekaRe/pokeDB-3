@@ -1402,7 +1402,9 @@ let current = null;   // what mountArena() was last asked for, to build again on
     whose pixel prelude plays first; revealArena() shows it). Resolves false where it can't (no WebGL, offline): the
     pixel scene stays. */
 export async function mountArena(o, { reveal = true } = {}) {
+  const waiting = document.body.classList.contains('arena3d-wait');
   unmountArena();
+  document.body.classList.toggle('arena3d-wait', waiting);   // the pixel scene stays hidden till this one's up
   const id = ++building;
   wanted = reveal;
   stormOn = false; stormK = 0;
@@ -1432,6 +1434,7 @@ function rebuild() {
 
 function show(fade) {
   document.body.classList.add('arena3d');
+  document.body.classList.remove('arena3d-wait');
   sceneBare({ dais: !!A?.dais, medal: !!A?.medal });
   view.classList.toggle('fade', fade && !matchMedia('(prefers-reduced-motion: reduce)').matches);
   void view.offsetWidth;
@@ -1455,7 +1458,7 @@ export function revealArena() {
 export function unmountArena() {
   building++;
   cancelAnimationFrame(raf); raf = 0;
-  document.body.classList.remove('arena3d', 'arena3d-solid');
+  document.body.classList.remove('arena3d', 'arena3d-solid', 'arena3d-wait');
   sceneBare({ dais: false, medal: false });
   view?.classList.remove('on', 'fade');
   if (A) { dispose(A.group); scene.remove(A.group); A = null; }

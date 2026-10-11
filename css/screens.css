@@ -5372,6 +5372,7 @@ body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .m
 body.arena3d .enemy-zone::after,
 body.arena3d .player-zone::before { opacity: 0; }
 body.arena3d-solid :is(#scene-bg, #scene-light) { visibility: hidden; }
+body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 /* the 3D fork (js/crossroads-3d.js): its canvas under the cards, the painted canvas and sprite put away */
 .xr3d-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; }
 .xr3d-view.on { opacity: 1; }

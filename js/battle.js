@@ -284,13 +284,19 @@ function arena3d(land, kind, def, run) {
   arenaMod?.unmountArena();
   arenaUp = false;
   if (run.tower || run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
-  import('./arena-3d.js').then(m => {
+  // Kenmatta's painted courtyard is never shown while his 3D one loads (the user saw it flash up first); it has no
+  // prelude, so the 3D one comes up as soon as it's built. Without WebGL the pixels come back.
+  const ken = def.arena === 'kombat';
+  if (ken) document.body.classList.add('arena3d-wait');
+  const fallBack = () => document.body.classList.remove('arena3d-wait');
+  if (ken) setTimeout(fallBack, 8000);
+  import('./arena-3d.js').then(async m => {
     arenaMod = m;
-    if (!m.wantsArena({ land, kind, def, run })) return;
+    if (!m.wantsArena({ land, kind, def, run })) return fallBack();
     const where = journey(run.map, run.map?.byId[run.current]);
     // Kenmatta's courtyard is his own place (`def.arena`), whatever biome his dojo stood in
-    m.mountArena({ biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp });
-  }).catch(() => {});
+    if (!await m.mountArena({ biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp || ken })) fallBack();
+  }).catch(fallBack);
 }
 
 /**
