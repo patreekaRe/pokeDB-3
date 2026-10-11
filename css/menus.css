@@ -1284,6 +1284,7 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .tc-shiny:focus-visible { outline: 2px solid var(--tc3); outline-offset: 1px; }
 .tc-partner-edit { padding: 4px 10px 3px; border-radius: 999px; font-size: 0.55rem; color: #fff; background: var(--tc3); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3); }
 .tc-pick-back { padding: 5px 12px 4px; border: 0; border-radius: 999px; font: inherit; font-size: 0.55rem; color: #fff; background: var(--tc3); cursor: pointer; }
+.tc-pick-note { margin: 0 0 8px; padding: 8px 10px; border-radius: var(--round-sm); font-size: 0.5rem; line-height: 1.6; color: var(--win-ink); background: var(--win-bg); box-shadow: 0 0 0 3px #303038; }
 .tc-pick-auto { display: block; width: 100%; padding: 9px 10px; border: 0; border-radius: var(--round-sm); font: inherit; font-size: 0.58rem;
   text-align: left; color: var(--win-ink); background: var(--win-bg); box-shadow: 0 0 0 3px #303038; cursor: pointer; }
 .tc-pick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; padding: 8px; border-radius: var(--round-sm);
