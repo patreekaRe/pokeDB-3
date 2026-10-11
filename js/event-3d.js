@@ -412,7 +412,7 @@ function dojoWall() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
   dojoBands(f, W);
   // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags (the medallion hangs over it, medallion3d())
-  const a0 = wx(4.15), a1 = wx(5.85);
+  const a0 = wx(4.65), a1 = wx(6.35);   // centred on Ken's tile, 5 (wx() is a tile's left edge)
   rr(a0 - 3, wy(3.9), a1 - a0 + 6, wy(0) - wy(3.9), 1, lin(a0, 0, a1, 0, DOJO.wood));
   rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#9a6236', '#7a4a26']));
   {   // planked in warm wood, the medallion's backboard
