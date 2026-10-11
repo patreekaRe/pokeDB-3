@@ -261,6 +261,7 @@ function checkpoint() {
     route: run.route,
     roads: run.roads,
     wayfound: run.wayfound,   // Wayfinder Lv 1's one swap a run, spent
+    atFork: run.atFork,       // saved at the crossroads, so Continue comes back to it (walkOn())
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -354,8 +355,13 @@ export const hasSavedRun = () => loadSavedRun() !== null;
 /** Pick a saved run (from loadSavedRun) back up on its map. Returns the place's walk-on film if one plays over it. */
 export function continueRun(saved) {
   run = saved;
-  reseed(`map:${zone()}:${run.current}`);
   mapFilm = null;
+  if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
+    playMusic('trainer-victory');
+    walkOn();
+    return null;
+  }
+  reseed(`map:${zone()}:${run.current}`);
   showMap();
   return mapFilm;
 }
@@ -1567,6 +1573,9 @@ async function walkOn() {
   // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
   // A peeked run always gets it, so it can be playtested.
   const forks = roads && !isMewtwoRun(run.starter) && !isSafari() && (peeking || roadsOpen(getSave().stats));
+  // the boss and its rewards are done: a refresh from here on (the crossroads or the journey film) comes back to the
+  // crossroads rather than the map before the boss, so the boss can't be fought again (the user's ask, 2026-10-11)
+  if (forks) { run.atFork = true; checkpoint(); }
   const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
   if (fork && !roads.includes(fork.id)) swapRoad(run.biome + 1, roads[1], fork.id);
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
@@ -1580,6 +1589,7 @@ async function walkOn() {
     if (!peeking) updateSave(d => { d.travelSeen = { ...seenOf(d.travelSeen), [key]: true }; });
   }
   run.biome += 1;
+  run.atFork = false;
   startBiome();
   close?.();
   fork?.close();
