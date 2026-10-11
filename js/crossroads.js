@@ -54,7 +54,7 @@ let roads = [], picked = -1, walking = false, asking = false;
 // would slide apart; the camera stays still (the user's call, 2026-10-11: the parallax felt wrong), so `cam` is 0
 let M = 0, LW = 0, far = null, ground = null, trees = null, cam = 0;
 // your Pokémon on the ground, in the painting's pixels with the camera at rest; `route` the points it's walking to
-let mx = 0, my = 0, route = [], keys = new Set(), facing = 'back', scale0 = 1, startY = 0;
+let mx = 0, my = 0, route = [], keys = new Set(), facing = 'back', scale0 = 1, monTall = 0, startY = 0;
 
 /** How near row y is, 0 at the horizon and 1 at the bottom: the size of things and how fast they slide there. */
 const near = (y) => Math.max(0.01, (y - hz) / (H - hz));
@@ -241,7 +241,7 @@ function frame(now) {
     if (b > 0.75) for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) buf[(y + ay) * W + x + ax] = FLY[2];
   }
   ctx.putImageData(img, 0, 0);
-  const mon = $('xr-mon'), k = scale0;   // the size it loads in at, wherever it walks (the user's call, 2026-10-11)
+  const mon = $('xr-mon'), k = 1;   // the size it loads in at, wherever it walks (the user's call, 2026-10-11)
   mon.style.left = `${sx * P}px`;
   mon.style.top = `${my * P}px`;
   mon.style.scale = `${k}`;
@@ -259,6 +259,7 @@ function place() {
   const pose = Math.max(mon.naturalWidth - l - r, mon.naturalHeight - t - b) || 64;
   const room = Math.min(innerWidth * 0.3, innerHeight * (tall ? 0.15 : 0.2));
   scale0 = Math.max(1, Math.min(4, Math.floor((room / pose) * 2) / 2));
+  if (facing === 'back') monTall = (mon.naturalHeight - t - b) * scale0;
   fitMon();
   const cardW = Math.min(tall ? 200 : 290, (fx - d) * P * 2 - 16, d * P * 2 - 12);
   const cards = [...document.querySelectorAll('.xr-road')];
@@ -273,10 +274,12 @@ function place() {
 
 /** The sprite at full size (scaled per frame by `scale`), and its feet's gap kept for the frame to scale with it. */
 function fitMon() {
-  const mon = $('xr-mon');
-  mon.style.width = `${mon.naturalWidth * scale0}px`;
-  mon.style.height = `${mon.naturalHeight * scale0}px`;
-  mon.dataset.foot = spriteFit(mon.src)[1] * scale0;
+  const mon = $('xr-mon'), [t, b] = spriteFit(mon.src);
+  // its front sprite drawn as tall as the back one it loaded in as, so turning round never resizes it
+  const s = monTall ? monTall / Math.max(1, mon.naturalHeight - t - b) : scale0;
+  mon.style.width = `${mon.naturalWidth * s}px`;
+  mon.style.height = `${mon.naturalHeight * s}px`;
+  mon.dataset.foot = b * s;
 }
 
 /** Which road a spot is on (0 / 1), or -1 on the meadow below the fork. */
@@ -359,7 +362,7 @@ function roadCard(id, i, pick, onSwap) {
  * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), keeping the size it loaded in at; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
-  roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back';
+  roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back'; monTall = 0;
   const scene = $('crossroads-scene'), mon = $('xr-mon'), go = $('xr-go'), calm = still();
   const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };
   scene.className = `crossroads-scene${calm ? ' still' : ''}`;
