@@ -221,7 +221,7 @@ function frame(now) {
     buf.set(ground.subarray(r, r + W), y * W);
   }
   // your Pokémon's shadow on the grass
-  const f = near(my), sx = mx - cam * f, rx = Math.max(2, monWidth() * (f / near(startY)) * 0.3 / P), ry = Math.max(1, rx * 0.3);
+  const f = near(my), sx = mx - cam * f, rx = Math.max(2, monWidth() * 0.3 / P), ry = Math.max(1, rx * 0.3);
   for (let y = Math.floor(my - ry); y <= my + ry; y++) for (let x = Math.floor(sx - rx); x <= sx + rx; x++) {
     const q = ((x + 0.5 - sx) / rx) ** 2 + ((y + 0.5 - my) / ry) ** 2;
     if (q < 1 && x >= 0 && x < W && y >= hz && y < H && (q < 0.6 || bay(x, y) > 0.5)) buf[y * W + x] = dim(buf[y * W + x]);
@@ -241,7 +241,7 @@ function frame(now) {
     if (b > 0.75) for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) buf[(y + ay) * W + x + ax] = FLY[2];
   }
   ctx.putImageData(img, 0, 0);
-  const mon = $('xr-mon'), k = scale0 * f / near(startY);
+  const mon = $('xr-mon'), k = scale0;   // the size it loads in at, wherever it walks (the user's call, 2026-10-11)
   mon.style.left = `${sx * P}px`;
   mon.style.top = `${my * P}px`;
   mon.style.scale = `${k}`;
@@ -356,8 +356,7 @@ function roadCard(id, i, pick, onSwap) {
  * The fork between `ids` (CROSSROADS[slot], drawn left to right). `swap` (Wayfinder, the Savanna page's perk) lists the
  * biomes the second road can be swapped for: a button on its card steps through them and back. Resolves once a road is taken and the screen is dark,
  * with the biome id and a close() that takes the scene away: call it once the journey film or the next map covers it.
- * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), smaller the further it goes, the scene sliding
- * past it in layers; walking onto a road picks it, and on up it takes it.
+ * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), keeping the size it loaded in at; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
   roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back';
