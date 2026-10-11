@@ -48,6 +48,7 @@ export const NEXT = [
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are bold arcade letters with a cyan glow, easy to read, lying flat on the ground, with arrows marching in on either side.'],
   ['pc', 'Daily and weekly missions: three goals a day and three a week, from winning fights to climbing the Sky Pillar, each paying PokéCoins (with a bonus for finishing them all). Claim them at the PC\'s new MISSIONS page.'],
   ['modes', "Sky Pillar: Fire gets three new augments of its own (Flash Fire, Magma Armor and Eruption) and six stronger ones (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
+  ['modes', 'Sky Pillar: Mulligan, Scavenger, Ambush, Refresh and Thorn Garden are stronger and worth picking: Mulligan and Refresh also draw more on turn 1, Scavenger heals after won fights, Ambush hits harder first, and Thorn Garden seeds enemies from the start.'],
   ['fixes', 'The Fan Club no longer freezes the run when you walk in.'],
 ];
 

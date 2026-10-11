@@ -56,7 +56,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Early Bird | +1 PP on turn 1 of every fight |
 | Hoarder | +1 item slot, and an item now |
 | Lucky Find | A random relic now |
-| Scavenger | Fights drop an item twice as often |
+| Scavenger | Fights drop an item twice as often; heal 3 after every won fight |
 | Thorn Coat | Enemies take 3 damage when they hit you |
 | Steady Hands | Your block cards give +2 |
 | Heavy Hitter | Your attacks deal +2 |
@@ -68,7 +68,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Insight | See the enemy's next two moves |
 | Clean Slate | Remove a card at every Center as well as resting |
 | Lucky Coin | 25% chance for an extra relic from guardians |
-| Mulligan | Once a fight, shuffle your hand into the draw pile and draw that many |
+| Mulligan | Draw 2 more and +1 PP on turn 1; once a fight, shuffle your hand into the draw pile and draw that many |
 | Inner Focus | Start every fight with 1 strength |
 
 ### Gold (floors 40-60)
@@ -86,8 +86,8 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Executioner | Attacks deal double to enemies below 25% HP |
 | Opening Act | Your Power cards cost 0 on turn 1 |
 | Deck Diet | Remove 4 cards; max HP -5 |
-| Refresh | Draw 1 card whenever you shuffle your discard pile |
-| Ambush | Enemies start every fight Vulnerable 2 |
+| Refresh | Draw 2 more on turn 1, and 2 whenever you shuffle your discard pile |
+| Ambush | Enemies start every fight Vulnerable 3; your first attack +8 |
 | Intimidate | Enemies start every fight Weak 2 |
 | Bodyguard | The first time each fight you'd drop below half, gain 15 block |
 | Spoils of War | Guardians give a second boss relic to choose |
@@ -152,7 +152,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Deep Roots | Silver | Grass | Overgrow heals 6 |
 | Pollinate | Silver | Grass | Leech Seed applies +1 |
 | Photosynthesis | Gold | Grass | Heal 2 at the start of every turn |
-| Thorn Garden | Gold | Grass | Enemies with Leech Seed take 3 when they attack |
+| Thorn Garden | Gold | Grass | Enemies start every fight with Leech Seed 2, and take 3 when they attack seeded |
 | Overbloom | Gold | Grass | Healing past max HP becomes block (twice as much) |
 | World Tree | Prismatic | Grass | Leech Seed never goes down and heals double |
 | Spore Storm | Prismatic | Grass | Every debuff you apply is applied twice |
