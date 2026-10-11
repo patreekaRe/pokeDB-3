@@ -243,8 +243,8 @@ function missionTally(t) {
   mission('seed', t.seed);
   mission('power', t.powers);
   mission('exhaust', t.exhausted);
-  if (t.tide >= 10) mission('tide-fight');
-  if (t.burn >= 15) mission('burn-fight');
+  if (t.tide >= 20) mission('tide-fight');
+  if (t.burn >= 40) mission('burn-fight');
 }
 
 function checkpoint() {
@@ -612,7 +612,6 @@ function peekRoom(id) {
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
-  if (!isSafari() && run.biome === 1) mission('biome');
   if (!isSafari() && !peeking) updateSave(d => {
     d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1);
     if (!d.stats.biomesSeen.includes(mainBiome().id)) d.stats.biomesSeen.push(mainBiome().id);   // for the Explorer Badge, once every road exists
@@ -1485,8 +1484,8 @@ function afterFight(node, result) {
     if (node.type === 'boss' || node.type === 'ken') mission('boss');
     if (node.type === 'boss' && run.hp > run.maxHp / 2) mission('healthy-boss');
     if (result.tally && !result.tally.taken) mission('flawless');
-    if (result.tally?.biggest >= 30) mission('big-hit');
-    if (result.tally && result.tally.turns <= 2) mission('quick');
+    if (result.tally?.biggest >= 50) mission('big-hit');
+    if (result.tally && result.tally.turns <= 4) mission('quick');
     if (tough) mission('tough');
     if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
@@ -2172,7 +2171,6 @@ function restSite({ used = false } = {}) {
           const before = run.hp;
           run.hp += heal;
           run.restCount += 1;
-          mission('rest');
           $('reward-options').classList.add('resting');
           // like the games: the music stops, the balls go into the machine one by one, then they flash while the
           // healing chime plays out before you leave
@@ -2933,6 +2931,7 @@ function tutorCards(back, pay, done = showMap) {
       ...cardOption(card, run.stage, () => {
         pay();
         run.deck.push(card.id);
+        mission('learn');
         tell(`${card.name} added to your deck.`);
         done();
       }),
@@ -3002,6 +3001,7 @@ function martRoom() {
       item.sold = true;
       if (card.upgraded) upgradeBurst(option.node);
       run.deck.push(card.id);
+      mission('learn');
       tell(`Bought ${card.name}.`);
       martRoom();
     }, { group: 'cards', name: card.name });

@@ -750,21 +750,21 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
   all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
   Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`).
-- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins): 3 a UTC day and 3 a week
-  (its Monday, the Sky Pillar's), rolled from the date's seed out of the pool open to that save (`needs`: the Safari and
-  Sky Pillar ones wait for their mode) and never two on one event (`DAILY` / `WEEKLY` / `rollMissions()` in
-  `js/data/missions.js`, pure, `tests/missions.test.mjs`); all of a roll claimed pays `BONUS` (60 / 300). `track()` in
-  `js/missions.js` counts play from `mission()` in `js/run.js` (never on a peeked run): fights, Alphas, bosses / guardians /
-  Kenmatta, moves played, damage, items, ❓ rooms, Center heals, ₽ spent, catches, Sky Pillar floors, wins, and since the
-  pool grew (the user's calls, same day: 29 dailies, 15 weeklies; Spend ₽, Use items and Play moves dropped as weak)
-  flawless / quick (≤ 2 turns) / tough match-up wins, a 30+ hit, a boss beaten over half HP, reaching biome 2, moves
-  learned, relics found, PP Ups, Mart buys, a Safari run, 10 Tide / 15 Burn in a fight, Leech Seed drained, Powers played,
-  cards exhausted (battle's `tally` counts `burn` / `seed` / `powers` / `exhausted`, `tallyOf()` adds `tide`), a move
-  forgotten, wins with a skin or legendary, and weekly wins with 2 types / no Center heal / the other road, floor 30 in one
-  climb, the Safari on 3 days (a mission's `distinct(ctx)` counts each type or day once); a fight's are
-  counted in `collect()` (a refresh replays the fight). Saved in `save.missions`. Claimed at the Clearing's PC (MISSIONS,
-  `questRow()` in `js/pc.js`), whose "!" stays while one waits (`pcBeckons()`); with the Signs title they're paid at once.
-  A new mission is a pool line (its `on` event fed by a `mission()` call).
+- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
+  user's call "all worked out and balanced"): 3 a UTC day and 3 a week (its Monday, the Sky Pillar's), one per `tier`
+  (easy / medium / hard, paying `TIER_COINS` 30 / 45 / 65 a day, 200 / 250 / 300 a week; all three claimed pays `BONUS`
+  60 / 250), rolled from the date's seed out of the pool open to that save (`needs`: Safari / Sky Pillar / crossroads /
+  Level 3 / a skin wait for it), never two on one event or one `group` (type-locked goals, bosses, modes, a week's run
+  wins); `DAILY` / `WEEKLY` / `rollMissions()` in `js/data/missions.js`, pure, `tests/missions.test.mjs` (every roll is
+  one a tier; every `on` is sent by the game). Goals were set from the human-like bot at Level 0 (150 runs a type, a
+  scratch copy of pokeDB-sim counting Burn / Tide / Seed / Powers / exhausts / biggest hit / turns a fight): easy is done
+  in a first biome, medium about a run into biome 2, hard one good run (the numbers are in the comment over `DAILY`).
+  `track()` in `js/missions.js` counts play from `mission()` in `js/run.js` (never on a peeked run); a fight's in
+  `collect()` (a refresh replays the fight), from battle's `tally` (`burn` / `seed` / `powers` / `exhausted`, and
+  `tallyOf()`'s `tide`); a mission's `distinct(ctx)` counts each type or day once. Saved in `save.missions`; a roll
+  holding an id taken out of the pool is rolled again. Claimed at the Clearing's PC (MISSIONS, `questRow()` in
+  `js/pc.js`), whose "!" stays while one waits (`pcBeckons()`); with the Signs title they're paid at once. A new mission
+  is a pool line in a tier (its `on` event fed by a `mission()` call).
 - **House upgrades** (2026-10-10, the user's ask after WoW's housing blueprint): the PC's HOUSE UPGRADES page draws the Secret
   Base from above (`blueprint()` in `js/pc.js`: grey rooms, Entry under the main room, a tab per floor, `floor`). First the main
   room grows 11x8 to 14x10 (`BIG_PRICE` 500, `buyBigRoom()`), with no doorways of its own (the user's call: they're the
