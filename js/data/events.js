@@ -87,6 +87,7 @@ export const EVENTS = [
   },
   {
     id: 'shrine', icon: '⛩️', name: 'Shrine',
+    music: 'shrine-room',   // the user's song for the Shrine (2026-10-11)
     text: 'An old shrine hums with the power of your Pokémon\'s type.',
     // HP for one of your type's relics (a normal relic once you own them all); never faints you
     offering: [6, 9, 12, 15],
