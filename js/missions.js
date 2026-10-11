@@ -14,10 +14,12 @@ const keyOf = (kind, now) => (kind === 'daily' ? missionDay(now) : missionWeek(n
 /** Today's and this week's missions, rolled anew (and saved) once the day or the week has turned. */
 export function missions(now = new Date()) {
   const save = getSave(), m = save.missions || {};
-  if (KINDS.every(k => m[k]?.key === keyOf(k, now))) return m;
+  // a roll holding a mission since taken out of the pool could never be finished: it's rolled again
+  const stale = (roll, k) => roll?.key !== keyOf(k, now) || roll.list.some(e => !MISSIONS_BY_ID[e.id]);
+  if (KINDS.every(k => !stale(m[k], k))) return m;
   updateSave(d => {
     d.missions = { ...(d.missions || {}) };
-    for (const k of KINDS) if (d.missions[k]?.key !== keyOf(k, now)) d.missions[k] = freshRoll(k, keyOf(k, now), d);
+    for (const k of KINDS) if (stale(d.missions[k], k)) d.missions[k] = freshRoll(k, keyOf(k, now), d);
   });
   return getSave().missions;
 }

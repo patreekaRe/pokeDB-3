@@ -50,7 +50,7 @@ export const NEXT = [
   ['fixes', 'Closing the game at a crossroads (or during the walk after it) now brings you back to the crossroads on Continue, not to the map before the boss.'],
   ['runs', 'At the crossroads a notice board stands at each road: tap one to walk up and read it, its poster blown up with notes pinned to it: its places in order, bosses, wild Pokémon by type and its Pokédex page. Your Pokémon also gets a little smaller as it walks towards the fork.'],
   ['fixes', 'The crossroads no longer marks its roads\' bosses as seen in your Pokédex just by showing them, and a boss you have met now shows in colour there.'],
-  ['pc', 'More missions: 29 dailies and 15 weeklies to roll from, new ones asking for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
+  ['pc', 'Missions rebalanced: each day is now one easy, one medium and one hard mission (30, 45 and 65 PokéCoins), each week likewise (200, 250 and 300), never two that need the same type or two run wins; new ones ask for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
