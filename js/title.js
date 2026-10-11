@@ -35,7 +35,7 @@ import { showBadgeNews, buddy } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
 import { showHub, hideHub, enterHub, hubDex, refreshBuddy } from './hub-3d.js';
-import { pickedName, setTrainerName, trainerName } from './leaderboard.js';
+import { pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { pref } from './prefs.js';
 
@@ -133,7 +133,6 @@ export function initTitle(handlers) {
   $('title-abandon').replaceChildren(smoothIcon('run'));
   paintLogo();
   runClock();
-  paintPlate();
   initRope();
   $('title-gate').addEventListener('click', enterGate);
   gateReady().then(paintGate);
@@ -305,6 +304,7 @@ function runClock() {
 async function powerOn(dex) {
   $('title-screen').classList.add('powering');
   $('tdx-hello').textContent = actions.hello?.() ?? '';
+  showBuddy();
   dex.classList.add('on');
   await wait(240);
   playSound('dex-on');
@@ -336,7 +336,7 @@ async function onboard(dex) {
   }
   setTrainerName(name);
   updateSave(d => { d.buddy = `starter:${mate}`; });
-  paintPlate();
+  showBuddy();
   box.remove();
   dex.classList.remove('setup', 'instant');
   dex.setAttribute('aria-hidden', 'true');
@@ -346,24 +346,13 @@ async function onboard(dex) {
   await wait(still() ? 900 : 2000);
 }
 
-/* The cover's yellow plate is the owner's (the user's ask, 2026-10-11): their name engraved on it beside a little round
-   LED with their walking buddy lit inside. Blank, the classic chevron, until a new player has set up. */
-function paintPlate() {
-  const plate = $('tdx-plate');
-  if (needsSetup()) { plate.replaceChildren(); plate.classList.remove('named'); return; }
-  const mate = buddy(getSave()), name = trainerName();
-  const led = el('span', 'tdx-plate-led');
-  led.dataset.type = STARTERS_BY_ID[mate.id]?.type ?? 'normal';
-  const img = el('img');
+/* The opened screen shows your walking buddy over the hello, in place of the game's title (the user's call, 2026-10-11),
+   hopping in with its cry. */
+function showBuddy() {
+  const mate = buddy(getSave()), img = $('tdx-buddy');
   img.src = mate.src;
-  img.alt = '';
-  led.append(img);
-  const tag = el('span', 'tdx-plate-name', name);
-  const len = [...name].length;
-  tag.style.setProperty('--len', Math.max(len, 6));
-  tag.classList.toggle('long', len > 10);
-  plate.replaceChildren(led, tag);
-  plate.classList.add('named');
+  img.dataset.type = STARTERS_BY_ID[mate.id]?.type ?? 'normal';
+  setTimeout(() => playCry(mate.cry), still() ? 0 : 1100);
 }
 
 const pill = (label, cls = '') => {
