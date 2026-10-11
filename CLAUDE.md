@@ -121,7 +121,11 @@ live site.
   select's empty device showed while the scripts loaded), and its `hub-mode` class keeps the old pixel sky, signs and
   flyer off from that first frame; `showTitle()` builds the walkable Clearing behind the veil at once (`showHub(…, { hold:
   true })`: no partner, no keys), and after the power-on `enterHub()` walks your partner in from the bottom of the screen
-  as the logo comes up. How to play, from the hub's ? or the first launch, grows out of / shrinks back into the bar's
+  as the logo comes up. A new player (no `seenHelp`, no nickname; `?onboard` any time) powers it on straight into setup
+  (2026-10-11, the user's ask: `onboard()` in `js/title.js`): WHAT'S YOUR NAME? then CHOOSE YOUR BUDDY of the three free
+  starters, saved as the nickname and the PC's walking buddy (`refreshBuddy()` in `js/hub-3d.js` swaps it in before it walks
+  in); the opened screen shows the walking buddy over the hello in place of the title, hopping with its cry (`showBuddy()`).
+  Names are in capitals everywhere (`upper()` in `js/leaderboard.js`, every name box `text-transform: uppercase`). How to play, from the hub's ? or the first launch, grows out of / shrinks back into the bar's
   `?` key beside Home (`openHowto(from, onClose)`, `bootHowto(from)`, `hubDex()`).
 - **Every way in boots the device** (2026-10-07, the user's ask): New game (the select, `newGame()` in `js/main.js`),
   Continue (the map, `continueGame()`, not a Sky Pillar climb) and the Safari / Sky Pillar lobbies open under the

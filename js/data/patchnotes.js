@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.5',
+    name: 'At the Crossroads',
+    date: '2026-10-11',
+    notes: [
   ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
   ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
   ['runs', 'The crossroads is now a 3D place you walk about at dusk: tap the ground to walk your Pokémon there, and walk up a road to take it.'],
@@ -57,17 +73,9 @@ export const NEXT = [
   ['fixes', 'Continuing a run at a crossroads no longer flashes the character select before the crossroads appears.'],
   ['hub', 'The Clearing\'s Halloween decorations are tidied up: a pumpkin patch, a graveyard, the witch\'s cauldron and matching pumpkins and lanterns along the trail, with the clutter in between cleared away.'],
   ['pc', 'Missions rebalanced: each day is now one easy, one medium and one hard mission (30, 45 and 65 PokéCoins), each week likewise (200, 250 and 300), never two that need the same type or two run wins; new ones ask for Tide, Burn, Leech Seed, Power cards, wins with two types or the other road, and a Sky Pillar climb to floor 30.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+  ['hub', 'New players pick a name and a walking buddy (Charmander, Bulbasaur or Squirtle) on the Pokédex before they start, your buddy greets you on its screen each time you power it on, and names are now in capitals everywhere.'],
+    ],
+  },
   {
     version: '1.4',
     name: 'Rooms to Walk In',
