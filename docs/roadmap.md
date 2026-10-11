@@ -69,9 +69,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     in the bot today), every offer from the week's seed so the leaderboard stays even.
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
-    - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
-    - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Floor 100:
-      Fire 28%, Water 42%, Grass 51%. Grass is the strongest now; leave it unless a playtest says otherwise.
+    - Part e (the five augments the bot never took, reworked) is done: see the archive. Floor 100: Fire 23%, Grass 56%, Water 41%.
+    - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
+      the strongest; leave it unless a playtest says otherwise.
 
 ## Ideas, not agreed yet (ask the user before building)
 

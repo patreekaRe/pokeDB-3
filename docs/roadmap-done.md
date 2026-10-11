@@ -1736,6 +1736,9 @@ folder symlinked in (`ln -s <sim clone>/sim sim`, then `python3 -m http.server 8
   stronger; Risky Climb's Alphas start on floor 3 (`RISKY_FROM`). Bodyguard, Golden Touch, Card Shark and Overcharge were
   noise, not traps. Then three new Fire-only augments (Flash Fire, Magma Armor, Eruption). Floor 100: Fire 16 -> 28%, Grass 49 -> 51%,
   Water 32 -> 42% (200-350 climbs a type). Detail in `docs/augments.md`.
+- **Sky Pillar augments, part e** (2026-10-11): Mulligan, Scavenger, Ambush, Refresh and Thorn Garden reworked (each was
+  below a bare climb, now +4 to +11 floors; new key `startSeed`), so the bot takes them 63-100% of the time. Floor 100:
+  Fire 23%, Grass 56%, Water 41% (200 climbs a type). Detail in `docs/augments.md` Part e.
 - **Map Bag drop-down halved** (UI fixes batch F, 2026-10-07): on the map the Bag rising over the menu bar is at most half
   the screen tall (`min(50dvh, ...)` in `css/screens.css`), its pocket scrolling inside, so the map stays in view.
 - **Device boot timing** (UI fixes batch A, 2026-10-07): the Sky Pillar / Safari lobbies fade in over the title
