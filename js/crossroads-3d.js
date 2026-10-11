@@ -257,15 +257,65 @@ function tufts(group, r) {
   group.add(many(new THREE.DodecahedronGeometry(1, 0), stones, { shadow: false }));
 }
 
-/** An arm of the signpost: a board with a pointed end, aimed up road i, in that biome's sign colours. */
+const ARM_L = 2.8, ARM_H = 0.78;
+const SIGN_FONT = '"Trebuchet MS", "Segoe UI", system-ui, sans-serif';
+
+/** Writes `text` centred in the box, bold, shrunk to fit its width, with a dark outline so it reads at a distance. */
+function letter(g, text, x, y, w, size, fill, ink) {
+  let px = size;
+  g.font = `900 ${px}px ${SIGN_FONT}`;
+  while (px > 4 && g.measureText(text).width > w) { px -= 0.5; g.font = `900 ${px}px ${SIGN_FONT}`; }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.lineJoin = 'round'; g.lineWidth = px * 0.22; g.strokeStyle = ink;
+  g.strokeText(text, x, y);
+  g.fillStyle = fill;
+  g.fillText(text, x, y);
+}
+
+/** An arm's face: its plank in the sign's colours, the grain, a rim, the biome's name. Its uv is the shape's own x / y,
+    so the canvas spans the arm's length and height; arm 0 is seen from behind, so its painting is mirrored to read. */
+function armArt(id, mirror) {
+  const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
+  const [c, g] = canvas(512, Math.round(512 * ARM_H / ARM_L));
+  const W = c.width, H = c.height, r = seeded(id.length * 7);
+  g.fillStyle = light; g.fillRect(0, 0, W, H);
+  g.globalAlpha = 0.18; g.strokeStyle = dark; g.lineWidth = 1.5;
+  for (let k = 0; k < 9; k++) { const y = 8 + r() * (H - 16); g.beginPath(); g.moveTo(0, y); g.bezierCurveTo(W * 0.3, y + (r() - 0.5) * 8, W * 0.7, y + (r() - 0.5) * 8, W, y); g.stroke(); }
+  g.globalAlpha = 1;
+  g.strokeStyle = dark; g.lineWidth = 8; g.strokeRect(4, 4, W - 8, H - 8);
+  if (mirror) { g.translate(W, 0); g.scale(-1, 1); }
+  const tip = W * 0.4 / ARM_L, x0 = mirror ? tip : 20, x1 = mirror ? W - 20 : W - tip;   // keep off the point and the nail
+  letter(g, BIOMES_BY_ID[id]?.name ?? id, (x0 + x1) / 2 + 6, H / 2 + 2, x1 - x0 - 24, H * 0.68, '#fffaf0', dark);
+  return c;
+}
+
+function armFace(id, i) {
+  const t = smoothTex(armArt(id, !i));
+  t.repeat.set(1 / ARM_L, 1 / ARM_H);
+  t.offset.set(0, 0.5);
+  return t;
+}
+
+/** A soft halo behind an arm, pulsing with it. */
+let halo = null;
+
+/** An arm of the signpost: a board with a pointed end, aimed up road i, in that biome's sign colours, its name on it. */
 function arm(i, id, y) {
-  const s = new THREE.Shape(), L = 2.6, h = 0.64;
+  const s = new THREE.Shape(), L = ARM_L, h = ARM_H;
   s.moveTo(0, -h / 2); s.lineTo(L - 0.4, -h / 2); s.lineTo(L, 0); s.lineTo(L - 0.4, h / 2); s.lineTo(0, h / 2); s.closePath();
   const geo = new THREE.ExtrudeGeometry(s, { depth: 0.12, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 1 });
   geo.translate(0.05, 0, -0.06);
   const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
-  const face = std({ color: light, emissive: light, emissiveIntensity: 0.3 }), edge = std({ color: dark, emissive: dark, emissiveIntensity: 0.3 });
+  const map = armFace(id, i);
+  const face = std({ color: '#ffffff', map, emissive: '#ffffff', emissiveMap: map, emissiveIntensity: 0.3 }), edge = std({ color: dark, emissive: dark, emissiveIntensity: 0.3 });
   const m = new THREE.Mesh(geo, [face, edge]);
+  halo ??= smoothTex(glowArt('rgba(255,240,200,0.9)', 'rgba(255,210,140,0.45)'));
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: halo, color: light, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, opacity: 0.4 }));
+  glow.position.set(L / 2, 0, 0);
+  glow.scale.set(L * 1.5, h * 3.2, 1);
+  glow.raycast = () => {};
+  m.add(glow);
+  m.userData.glow = glow;
   // aimed mostly sideways, up its road a little: pointing straight up the roads they'd be seen end on from here
   m.rotation.y = Math.atan2(0.5, side(i));
   m.position.y = y;
@@ -279,7 +329,14 @@ function boardArt(id) {
   const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
   const shots = wildTypes(BIOMES_BY_ID[id]).map(([t]) => TYPE_INK[t] ?? '#c8c0a0');
   while (shots.length < 3) shots.push(shots[shots.length - 1] ?? '#c8c0a0');
-  return kioskArt({ white: '#fbf4e4', pale: '#eadcc0', grey: light, dark, ink: '#3a2e24', red: light, redDark: dark, shots: shots.slice(0, 3) });
+  const c = kioskArt({ white: '#fbf4e4', pale: '#eadcc0', grey: light, dark, ink: '#3a2e24', red: light, redDark: dark, shots: shots.slice(0, 3) });
+  // the poster's header says where the road goes, over the painted headline's place
+  const g = c.getContext('2d'), name = BIOMES_BY_ID[id]?.name ?? id;
+  g.fillStyle = '#fbf4e4'; g.fillRect(4.6, 12.7, 13, 2.2);
+  const [first, ...rest] = name.split(' ');
+  if (rest.length) { letter(g, first, 12.2, 11, 7.6, 1.7, '#fffaf0', dark); letter(g, rest.join(' '), 11, 13.85, 11.6, 1.9, '#3a2e24', '#fbf4e4'); }
+  else letter(g, name, 11, 13.85, 11.6, 1.9, '#3a2e24', '#fbf4e4');
+  return c;
 }
 
 function boardMesh(i, id) {
@@ -326,7 +383,7 @@ async function build(ids) {
   pole.position.y = 2.3; pole.castShadow = true;
   const cap = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.25, 8), std({ color: '#5a3818' }));
   cap.position.y = 4.7;
-  const arms = [arm(0, ids[0], 3.6), arm(1, ids[1], 2.9)];
+  const arms = [arm(0, ids[0], 3.75), arm(1, ids[1], 2.88)];
   post.add(pole, cap, ...arms);
   group.add(post);
   const boards = ids.map((id, i) => boardMesh(i, id));
@@ -473,7 +530,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   go.textContent = 'Which way?';
   scene.hidden = false;
 
-  const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', hop: 0 };
+  const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
   let picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
   let size = 1, vw = 0, vh = 0, raf = 0, last = 0, stepAt = 0, held = false;
   const read = new Set();   // boards opened: their "!" and glow stop
@@ -500,7 +557,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       picked = i;
       playSound('confirm');
       W.arms.forEach(a => { a.rotation.z = 0; });
-      W.arms.forEach((a, k) => a.material.forEach((m, j) => { m.emissive.set(k === i ? (j ? '#c89030' : '#f8c850') : m.color); m.emissiveIntensity = k === i ? 0.6 : 0.3; }));
+      W.arms.forEach((a, k) => { a.material[0].emissive.set(k === i ? '#fff0c0' : '#ffffff'); a.material[1].emissive.set(k === i ? '#c89030' : a.material[1].color); });
       go.disabled = false;
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
     };
@@ -597,7 +654,10 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       if (picked === 1) go.textContent = `To the ${BIOMES_BY_ID[roads[1]].name}`;
       // the second road's arm, glimpse and board follow the swap
       const [dark, light] = ARMS[roads[1]] ?? ['#7a5a3a', '#c8a070'];
-      W.arms[1].material.forEach((m, j) => { m.color.set(j ? dark : light); if (picked !== 1) m.emissive.set(m.color); });
+      const [face, edge] = W.arms[1].material;
+      face.map.dispose(); face.map = face.emissiveMap = armFace(roads[1], 1); face.needsUpdate = true;
+      edge.color.set(dark); edge.emissive.set(dark);
+      W.arms[1].userData.glow.material.color.set(light);
       const m = W.glimpses[1].material;
       m.map.dispose(); m.map = glimpseTex(roads[1]); m.needsUpdate = true;
       const bm = W.boards[1].material;
@@ -629,7 +689,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       if (to >= 0 && to !== from) { const [a, b] = mouth(to); route.push(b, a); }
       route.push([x, z]);
     }
-    const face = (to) => { if (walker.facing !== to && (to === 'front' || mon.sheets.back)) { walker.facing = to; mon.frame = 0; } };
+    const face = (to) => { if (to === 'back') walker.flip = false; if (walker.facing !== to && (to === 'front' || mon.sheets.back)) { walker.facing = to; mon.frame = 0; } };
 
     const loop = (now) => {
       const dt = Math.min(0.05, last ? (now - last) / 1000 : 0);
@@ -653,7 +713,9 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         const r = regionOf(x, z);
         if (r >= 0 && keys.size) { const [t] = along(r, x, z), [cx] = onRoad(r, t, 0); x += (cx - x) * Math.min(1, dt * 4); }   // keys steer along the road
         walker.x = x; walker.z = z;
-        if (gz > 0.5) face('front'); else if (gz < -0.3) face('back');
+        // as in the Clearing (walk() in js/hub-3d.js): up or down shows its back or front, sideways its front turned that way
+        if (Math.abs(gz) > Math.abs(gx)) { face(gz < 0 ? 'back' : 'front'); walker.flip = false; }
+        else { face('front'); walker.flip = gx > 0; }
         if (!calm && now > stepAt) { playSound('footstep'); stepAt = now + 360; }
         walker.hop += dt * 1000;
       } else walker.hop = 0;
@@ -679,6 +741,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       mon.group.position.set(walker.x, 0, walker.z);
       const bob = calm || !walker.hop ? 0 : Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08;
       mon.board.position.y = bob;
+      mon.board.scale.x = walker.flip ? -1 : 1;
       mon.board.rotation.x = -Math.atan2(camH - mon.top * 0.5 * mon.scale, dz) * 0.85;
       const t = calm ? 0 : now;
       for (const s of W.flies) {
@@ -694,13 +757,15 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         hint.position.y = b.userData.h + 0.55 + (calm ? 0 : Math.abs(Math.sin(t * 0.0035 + i * 1.3)) * 0.22);
         b.material.emissiveIntensity = on ? 0.14 + wave * 0.22 : 0.12;
       });
-      if (picked < 0) {
-        W.arms.forEach((a, k) => {
-          const wave = calm ? 0.5 : (Math.sin(t * 0.003 + k * Math.PI) + 1) / 2;   // in turn, one then the other
-          a.material.forEach(m => { m.emissiveIntensity = 0.3 + wave * 0.35; });
-          a.rotation.z = calm ? 0 : Math.sin(t * 0.0022 + k * 2) * 0.035;
-        });
-      }
+      // the signpost's arms glow and pulse, in turn till a road is picked, then the picked one brighter and the other dim
+      W.arms.forEach((a, k) => {
+        const wave = calm ? 0.5 : (Math.sin(t * (picked < 0 ? 0.003 : 0.005) + k * Math.PI) + 1) / 2;
+        const lit = picked < 0 ? 0.3 + wave * 0.5 : k === picked ? 0.55 + wave * 0.55 : 0.18;
+        a.material.forEach(m => { m.emissiveIntensity = lit; });
+        a.userData.glow.material.opacity = picked < 0 ? 0.15 + wave * 0.4 : k === picked ? 0.3 + wave * 0.5 : 0;
+        a.userData.glow.scale.x = ARM_L * (1.4 + wave * 0.25);
+        if (picked < 0) a.rotation.z = calm ? 0 : Math.sin(t * 0.0022 + k * 2) * 0.035;
+      });
       post.draw(W.scene, camera, (new THREE.Vector3(walker.x, 0.5, walker.z).project(camera).y + 1) / 2);
     }
     frame(performance.now(), 0);
