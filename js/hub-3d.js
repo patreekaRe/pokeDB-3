@@ -1467,9 +1467,10 @@ function dressSeason() {
       [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],   // and a pair down the trail
       [...P_(5), 3, 7, 4.4, 0, -0.1], [...P_(6), 2, 8, 2.2, 0, 0.1], [...P_(7, false), 4, 8, 1.9, 0, 0.15],   // the pumpkin patch
       [scarecrowArt(), 'white', 2, 6, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 10, 4, 1.7, 0, 0],   // the graveyard: a row of stones under the dead tree, a candle at each end
-      [graveArt(0), null, 8, 5, 1.4, 0, 0], [graveArt(1), null, 9, 5, 1.5, 0, 0], [graveArt(2), null, 11, 5, 1.5, 0, 0], [graveArt(3), null, 12, 5, 1.4, 0, 0],
-      [candlesArt(0), 'white', 8, 6, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 6, 1.1, 0, -0.1],
+      [deadTreeArt(0), 'white', 10, 6, 1.7, 0, -0.2],   // the graveyard, clear of the road along row 4: a row of stones under the dead tree, a candle at each end
+      [graveArt(0), null, 8, 7, 1.4, 0, 0], [graveArt(1), null, 9, 7, 1.5, 0, 0], [graveArt(2), null, 11, 7, 1.5, 0, 0], [graveArt(3), null, 12, 7, 1.4, 0, 0],
+      [candlesArt(0), 'white', 8, 8, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 8, 1.1, 0, -0.1],
+      [...P_(1), 7, 9, 1.4, 0.15, 0.1],   // a little one on the plaza
       [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
       [hayArt(0), 'white', 1, 13, 1.6, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0],   // hay either side of the way out
     ];
@@ -1503,7 +1504,7 @@ function dressSeason() {
       scene.add(l);
     }
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
-      spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      spawns: [{ x: 1, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
