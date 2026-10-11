@@ -23,7 +23,7 @@ test('a new save is never set a mission in a mode it has not opened', () => {
   for (let i = 0; i < 60; i++) {
     const day = `2026-${String(1 + (i % 12)).padStart(2, '0')}-${String(1 + (i % 28)).padStart(2, '0')}`;
     for (const id of [...rollMissions('daily', day, fresh), ...rollMissions('weekly', missionWeek(new Date(day)), fresh)]) {
-      assert.ok(!['d-catch', 'd-floors', 'w-catch', 'w-floors', 'w-level'].includes(id), id);
+      assert.ok(!['d-catch', 'd-floors', 'd-safari', 'w-catch', 'w-floors', 'w-level'].includes(id), id);
     }
   }
 });

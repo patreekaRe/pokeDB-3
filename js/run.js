@@ -426,6 +426,7 @@ export function beginSafari(daily = safariDaily()) {
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
   updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days, pass: d.safari.pass, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
   beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
+  mission('safari');
 }
 
 /** The Sky Pillar (js/data/tower.js): the week's tower with the week's starter, or `practice` with a starter of your own.
@@ -586,6 +587,7 @@ function peekRoom(id) {
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
+  if (!isSafari() && run.biome === 1) mission('biome');
   if (!isSafari() && !peeking) updateSave(d => {
     d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1);
     if (!d.stats.biomesSeen.includes(mainBiome().id)) d.stats.biomesSeen.push(mainBiome().id);   // for the Explorer Badge, once every road exists
@@ -1410,6 +1412,11 @@ function afterFight(node, result) {
     mission(['fight', 'fight-type']);
     if (node.type === 'elite') mission('alpha');
     if (node.type === 'boss' || node.type === 'ken') mission('boss');
+    if (node.type === 'boss' && run.hp > run.maxHp / 2) mission('healthy-boss');
+    if (result.tally && !result.tally.taken) mission('flawless');
+    if (result.tally?.biggest >= 30) mission('big-hit');
+    if (result.tally && result.tally.turns <= 2) mission('quick');
+    if (tough) mission('tough');
     if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     run.money += prize;
@@ -1655,6 +1662,7 @@ function newBadge(node, kind, thing) {
 function learnOption(card, next) {
   const option = cardOption(card, run.stage, () => {
       run.deck.push(card.id);
+      mission('learn');
       tell(`${card.name} added to your deck!`);
       next();
     });
@@ -1725,6 +1733,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     call, 2026-09-28: not when it's merely offered). */
 function gainRelic(relic, next) {
   run.relics.push(relic.id);
+  mission('relic');
   markSeen('relics', relic.id);
   showBadgeNews();
   tell(`Found ${relic.name}!`);
@@ -2262,6 +2271,7 @@ function upgradeMove(back, done = showMap, { title = 'PP Up', sub = 'Choose a mo
       const better = CARDS_BY_ID[upgradeId(card.id)];
       const option = cardOption(better, run.stage, () => {
         run.deck.splice(run.deck.indexOf(card.id), 1, better.id);
+        mission('upgrade');
         tell(`${card.name} became ${better.name}!`);
         done();
       }, count);
@@ -2810,7 +2820,7 @@ function ware(option, price, onBuy, { group, name }) {
     note: option.note,
     confirm: `Buy ₽${price}`,
     confirmSound: 'buy',
-    onPick: () => { spend(price); setMoney(run.money); onBuy(); },
+    onPick: () => { spend(price); setMoney(run.money); mission('mart'); onBuy(); },
   };
 }
 
@@ -2857,6 +2867,7 @@ function martRoom() {
     return ware(option, martPrice(item.price), () => {
       item.sold = true;
       run.relics.push(relic.id);
+      mission('relic');
       markSeen('relics', relic.id);
       showBadgeNews();
       tell(`Bought ${relic.name}!`);

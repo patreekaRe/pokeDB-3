@@ -36,6 +36,18 @@ export const DAILY = [
   { id: 'd-water', text: 'Win {n} fights with a Water Pokémon', n: 5, coins: 45, on: 'fight-type', when: typed('water') },
   { id: 'd-catch', text: 'Catch {n} Pokémon in the Safari Zone', n: 3, coins: 50, on: 'catch', needs: safariOpen },
   { id: 'd-floors', text: 'Climb {n} Sky Pillar floors', n: 10, coins: 50, on: 'floor', needs: towerOpen },
+  // the second batch (2026-10-11, the user's call: a pool of 25), asking to play differently, not only more
+  { id: 'd-flawless', text: 'Win a fight without losing any HP', n: 1, coins: 45, on: 'flawless' },
+  { id: 'd-bighit', text: 'Deal 30 damage or more in one hit', n: 1, coins: 40, on: 'big-hit' },
+  { id: 'd-quick', text: 'Win {n} fights in 2 turns or fewer', n: 3, coins: 45, on: 'quick' },
+  { id: 'd-tough', text: 'Win {n} fights against a type strong against yours', n: 2, coins: 50, on: 'tough' },
+  { id: 'd-healthy', text: 'Beat a boss with over half your HP left', n: 1, coins: 60, on: 'healthy-boss' },
+  { id: 'd-biome', text: 'Reach the second biome of a run', n: 1, coins: 40, on: 'biome' },
+  { id: 'd-learn', text: 'Learn {n} new moves', n: 4, coins: 35, on: 'learn' },
+  { id: 'd-relics', text: 'Find {n} relics', n: 2, coins: 45, on: 'relic' },
+  { id: 'd-upgrade', text: 'PP Up {n} moves', n: 2, coins: 40, on: 'upgrade' },
+  { id: 'd-mart', text: 'Buy {n} things at a Poké Mart', n: 2, coins: 35, on: 'mart' },
+  { id: 'd-safari', text: 'Play the Safari Zone', n: 1, coins: 40, on: 'safari', needs: safariOpen },
 ];
 
 export const WEEKLY = [
