@@ -13,7 +13,7 @@
 import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds } from './audio.js';
 import { sceneShot } from './scene.js';
-import { dexSeen } from './pokedex.js';
+import { getSave } from './storage.js';
 import { BIOMES_BY_ID, ENEMY_DEFS } from './data/enemies.js';
 import { TYPES } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -241,7 +241,10 @@ function frame(now) {
     if (b > 0.75) for (const [ax, ay] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) buf[(y + ay) * W + x + ax] = FLY[2];
   }
   ctx.putImageData(img, 0, 0);
-  const mon = $('xr-mon'), k = 1;   // the size it loads in at, wherever it walks (the user's call, 2026-10-11)
+  // the size it loads in at near the bottom, easing down to 70% by the fork and held there (the user's pick, 2026-10-11:
+  // full perspective felt like too much); walking off up a road at the end, the distance shrinks it on
+  const ease = smooth((startY - my) / Math.max(1, startY - fy)), held = 1 - 0.3 * ease;
+  const mon = $('xr-mon'), k = walking && my < fy ? held * near(my) / near(fy) : held;
   mon.style.left = `${sx * P}px`;
   mon.style.top = `${my * P}px`;
   mon.style.scale = `${k}`;
@@ -313,27 +316,30 @@ function routeTo(x, y) {
   if (to >= 0 && to !== from) route.push([joinOf(to)[0], fy + 1], joinOf(to));
   route.push([x, y]);
 }
-/** What lives on a road, by its wilds' types, the most common first: Alphas and bosses fight as Neutral. */
-function typeChips(biome) {
+/** A biome's wilds' types and how many of each, the most common first. */
+export function wildTypes(biome) {
   const counts = {};
   for (const id of biome.normals) counts[ENEMY_DEFS[id].type] = (counts[ENEMY_DEFS[id].type] || 0) + 1;
-  return Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([type, n]) => {
+  return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+}
+
+/** What lives on a road, by its wilds' types, the most common first: Alphas and bosses fight as Neutral. */
+function typeChips(biome) {
+  return wildTypes(biome).map(([type, n]) => {
     const chip = el('span', `chip type-${type}`, `${TYPES[type]?.icon ?? ''} ${n}`);
     chip.title = `${n} ${TYPES[type]?.label ?? type} wild Pokémon`;
     return chip;
   });
 }
 
-export function roadCard(id, i, pick, onSwap) {
+/** A road's sign, its bosses (silhouettes until the Pokédex has met them) and its wilds' types: a card's or a board's. */
+export function roadInfo(id) {
   const biome = BIOMES_BY_ID[id];
-  const card = el('button', 'xr-road');
-  card.type = 'button';
-  card.dataset.biome = id;
   const sign = el('div', 'biome-sign xr-sign', biome.name);
   sign.dataset.biome = id;
   const bosses = el('div', 'xr-bosses');
   for (const bossId of biome.bosses) {
-    const def = ENEMY_DEFS[bossId], met = dexSeen(bossId);
+    const def = ENEMY_DEFS[bossId], met = getSave().dex.seen.includes(bossId);   // read, never dexSeen(): that marks it seen
     const pic = el('img', `pixel xr-boss${met ? '' : ' unmet'}`);
     pic.src = def.image;
     pic.alt = met ? def.name : '???';
@@ -343,6 +349,14 @@ export function roadCard(id, i, pick, onSwap) {
   }
   const types = el('div', 'xr-types');
   types.append(...typeChips(biome));
+  return { sign, bosses, types };
+}
+
+export function roadCard(id, i, pick, onSwap) {
+  const card = el('button', 'xr-road');
+  card.type = 'button';
+  card.dataset.biome = id;
+  const { sign, bosses, types } = roadInfo(id);
   card.append(sign, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Wild Pokémon'), types);
   if (onSwap) {
     const swap = el('span', 'xr-swap', '🧭 Another road');   // the card is a button already, so not a nested one
@@ -359,7 +373,7 @@ export function roadCard(id, i, pick, onSwap) {
  * The fork between `ids` (CROSSROADS[slot], drawn left to right). `swap` (Wayfinder, the Savanna page's perk) lists the
  * biomes the second road can be swapped for: a button on its card steps through them and back. Resolves once a road is taken and the screen is dark,
  * with the biome id and a close() that takes the scene away: call it once the journey film or the next map covers it.
- * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), keeping the size it loaded in at; walking onto a road picks it, and on up it takes it.
+ * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), shrinking a little towards the fork; walking onto a road picks it, and on up it takes it.
  */
 export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
   // the 3D fork first (js/crossroads-3d.js, the user's pick, 2026-10-11); `?xr2d`, or no Three.js, paints this one

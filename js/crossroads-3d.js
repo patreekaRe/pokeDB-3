@@ -3,16 +3,23 @@
    up it (no pitch, so trees stand straight, the horizon shifted up the screen with a view offset) at the same heights on
    the screen as the painting's (the horizon, the fork, your Pokémon's feet). Dusk on the edge of the woods: the path from
    your Pokémon splits round a signpost into two roads, each running into a gap in the treeline that shows a still of its
-   biome (sceneShot()), a card over each road. Your Pokémon walks where you tap, keeping the size it loads in at (the
-   user's call for the painted one); walking onto a road picks it, on up it takes it. Without Three.js the painted one runs. */
+   biome (sceneShot()), and at each road's mouth a notice board in its sign's colours (the Clearing's kiosk, kioskArt(); the
+   user's pick, 2026-10-11, over the floating cards, the last part of the scene that looked like a menu): a tap walks your
+   Pokémon up to it and opens what it says (the road's bosses, wilds, places and Pokédex page). Reading never picks a road.
+   Your Pokémon walks where you tap, easing down to 70% of the size it loads in at by the fork; walking onto a road picks
+   it, on up it takes it. Without Three.js the painted one runs. */
 
-import { $, sleep, confirmDialog } from './ui.js';
+import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
 import { loadThree, tex, monBoard, drawMon, createPost } from './hd2d.js';
 import { sceneShot } from './scene.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { ARMS, roadCard } from './crossroads.js';
+import { ARMS, roadInfo, wildTypes } from './crossroads.js';
+import { kioskArt } from './hub-3d.js';
+import { progressBar } from './pokedex.js';
+import { getSave } from './storage.js';
+import { ALL_PAGES } from './data/pokedex.js';
 
 let THREE, renderer, post, view;
 
@@ -24,6 +31,10 @@ const ROAD_HW = 0.72, PATH_HW = 1.15;
 const TAKE_T = 4.5, MAX_T = 24, GONE_T = 14;
 const GLIMPSE_Z = -46.5;
 const HAZE = '#b8687a';
+const BOARD_Z = FORK_Z - 0.3;  // the boards stand just behind the fork's line, beside each road's mouth
+const BOARD_S = 1.45;          // painted pixels to units: kioskArt() is 22 x 32 of them, 16 a unit as in the Clearing
+const SHRINK = 0.7;            // your Pokémon's size at the fork, of the size it loads in at
+const TYPE_INK = { fire: '#f08030', water: '#6890f0', grass: '#78c850', normal: '#c8c0a0', psychic: '#f85888' };
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -248,6 +259,25 @@ function arm(i, id, y) {
   return m;
 }
 
+/** A road's notice board: the Clearing's kiosk in its sign's colours, its snapshots its wilds' types. */
+function boardArt(id) {
+  const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
+  const shots = wildTypes(BIOMES_BY_ID[id]).map(([t]) => TYPE_INK[t] ?? '#c8c0a0');
+  while (shots.length < 3) shots.push(shots[shots.length - 1] ?? '#c8c0a0');
+  return kioskArt({ white: '#fbf4e4', pale: '#eadcc0', grey: light, dark, ink: '#3a2e24', red: light, redDark: dark, shots: shots.slice(0, 3) });
+}
+
+function boardMesh(i, id) {
+  const art = boardArt(id), w = art.width / art.fine / 16 * BOARD_S, h = art.height / art.fine / 16 * BOARD_S;
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), std({ map: smoothTex(art), alphaTest: 0.5, side: THREE.DoubleSide, emissive: '#ffffff', emissiveIntensity: 0.12, roughness: 1 }));
+  m.material.emissiveMap = m.material.map;
+  m.geometry.translate(0, h / 2, 0);
+  m.rotation.y = -side(i) * 0.32;   // turned a little towards the path
+  m.castShadow = true;
+  m.userData = { board: i, w };
+  return m;
+}
+
 async function build(ids) {
   const group = new THREE.Group(), r = seeded(21);
   const scene = new THREE.Scene();
@@ -284,6 +314,8 @@ async function build(ids) {
   const arms = [arm(0, ids[0], 3.6), arm(1, ids[1], 2.9)];
   post.add(pole, cap, ...arms);
   group.add(post);
+  const boards = ids.map((id, i) => boardMesh(i, id));
+  group.add(...boards);
   // through each gap, a glimpse of the biome the road runs to, lit by itself
   const glimpses = ids.map((id, i) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: glimpseTex(id), fog: false, toneMapped: false, transparent: true, depthWrite: false }));
@@ -323,7 +355,7 @@ async function build(ids) {
   const fill = new THREE.DirectionalLight('#ff9060', 1.2);
   fill.position.set(0, 6, FORK_Z - 40);
   scene.add(group, hemi, sun, sun.target, fill);
-  return { scene, group, arms, glimpses, hills, sky, sunDisc, flies, ground, line, edges };
+  return { scene, group, arms, glimpses, boards, hills, sky, sunDisc, flies, ground, line, edges };
 }
 
 function glimpseTex(id) {
@@ -370,6 +402,14 @@ function fitCamera(camera, w, h, W) {
   // the two big trees cut by the screen's edges just past the fork, as the painting has them
   const z = FORK_Z - 1, half = (w / 2) / F * -z;
   W.edges.forEach((t, i) => t.position.set(side(i) * (half + 0.2), 0, z));
+  // each board beside its road's mouth, out towards the screen's edge so it never hides the glimpses (smaller on a wide
+  // screen, whose camera stands lower and nearer), but in far enough to show whole
+  const edge = (w / 2) / F * -BOARD_Z, k = tall ? 1 : 0.8;
+  W.boards.forEach((b, i) => {
+    const bw = b.userData.w * k;
+    b.scale.setScalar(k);
+    b.position.set(side(i) * Math.min(Math.max(Math.abs(roadX(i, BOARD_Z)) + ROAD_HW + 0.9 + bw / 2, edge * 0.68), edge - bw / 2 - 0.25), 0, BOARD_Z);
+  });
   W.sky.position.set(0, camH - (130 - 300 / 512 * 260), -120);
   W.sunDisc.position.set(0, camH + 1.5, -110);
 }
@@ -410,7 +450,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   scene.hidden = false;
 
   const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', hop: 0 };
-  let picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set();
+  let picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
   let size = 1, vw = 0, vh = 0, raf = 0, last = 0, stepAt = 0, held = false;
 
   function resize() {
@@ -419,20 +459,11 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     renderer.setSize(Math.round(vw * k), Math.round(vh * k), false);
     post.size(vw, vh);
     fitCamera(camera, vw, vh, W);
-    // your Pokémon as tall on the screen as the painted one, at the size it loads in at wherever it walks
+    // your Pokémon as tall on the screen as the painted one where it loads in (frame() eases it down towards the fork)
     const room = Math.min(vw * 0.3, vh * (vh > vw * 1.1 ? 0.15 : 0.2));
     size = room / F / Math.max(0.5, mon.top);
-    placeCards();
   }
   const project = (x, y, z) => { const p = new THREE.Vector3(x, y, z).project(camera); return [(p.x + 1) / 2 * vw, (1 - p.y) / 2 * vh]; };
-  function placeCards() {
-    const cards = [...document.querySelectorAll('.xr-road')];
-    const xs = [0, 1].map(i => Math.max(70, Math.min(vw - 70, project(roadX(i, -40), camH, -40)[0])));
-    const cardW = Math.min(vh > vw * 1.1 ? 200 : 290, xs[0] * 2 - 16, (xs[1] - xs[0]) - 12);
-    cards.forEach((card, i) => { card.style.left = `${xs[i]}px`; card.style.width = `${cardW}px`; card.style.minHeight = ''; });
-    const tallest = Math.max(...cards.map(c => c.offsetHeight));
-    cards.forEach(c => { c.style.minHeight = `${tallest}px`; });
-  }
 
   const box = $('xr-roads');
   const ways = swap && [ids[1], ...swap];
@@ -443,36 +474,86 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       if (picked === i) return;
       picked = i;
       playSound('stick');
-      document.querySelectorAll('.xr-road').forEach((c, k) => c.classList.toggle('on', k === i));
       W.arms.forEach((a, k) => a.material.forEach((m, j) => { m.emissive.set(k === i ? (j ? '#c89030' : '#f8c850') : m.color); m.emissiveIntensity = k === i ? 0.6 : 0.3; }));
       go.disabled = false;
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
     };
     const pick = (i) => {
-      if (walking || asking) return;
+      if (walking || asking || reading >= 0) return;
+      toRead = -1;
       if (picked === i) return take();
       choose(i);
       routeTo(...onRoad(i, 1.6, 0));
     };
-    const cards = () => {
-      box.replaceChildren(...roads.map((id, i) => roadCard(id, i, pick, ways && i === 1 ? turn : null)));
-      if (picked >= 0) box.children[picked].classList.add('on');
-    };
+    box.replaceChildren();
+    const panel = el('div', 'xr-panel');
+    panel.hidden = true;
+    scene.append(panel);
+    /** What road i's board says: its sign, places, bosses, wilds and how much of its Pokédex page you've met. */
+    function fillPanel(i) {
+      const id = roads[i], biome = BIOMES_BY_ID[id], page = ALL_PAGES.find(p => p.biome === id);
+      const { sign, bosses, types } = roadInfo(id);
+      const shut = el('button', 'xr-shut', '✕');
+      shut.type = 'button';
+      shut.setAttribute('aria-label', 'Close');
+      shut.onclick = (e) => { e.stopPropagation(); closePanel(); };
+      const places = el('div', 'xr-places');
+      biome.stages.forEach((name, k) => { if (k) places.append(el('span', 'xr-step', '›')); places.append(el('span', 'xr-place', name)); });
+      const parts = [shut, sign, el('span', 'xr-label', 'Places'), places, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Wild Pokémon'), types];
+      if (page) {
+        const beaten = getSave().dex.defeated, n = page.ids.filter(id => beaten.includes(id)).length;
+        const dex = el('div', 'xr-dex');
+        dex.append(progressBar(n, page.ids.length), el('span', 'xr-dex-n', `${n}/${page.ids.length}`));
+        parts.push(el('span', 'xr-label', 'Pokédex'), dex);
+      }
+      if (ways && i === 1) {
+        const swapBtn = el('button', 'xr-swap', '🧭 Another road');
+        swapBtn.type = 'button';
+        swapBtn.title = 'Wayfinder: swap this road for another biome you could walk.';
+        swapBtn.onclick = (e) => { e.stopPropagation(); turn(); };
+        parts.push(swapBtn);
+      }
+      panel.dataset.biome = id;
+      panel.replaceChildren(...parts);
+    }
+    function openPanel(i) {
+      reading = i;
+      route = [];
+      keys.clear();
+      face('back');
+      playSound('stick');
+      fillPanel(i);
+      panel.hidden = false;
+    }
+    function closePanel() {
+      if (reading < 0) return;
+      reading = -1;
+      panel.hidden = true;
+      playSound('stick');
+    }
+    /** Walks your Pokémon up in front of road i's board (on the grass, short of the road), then opens it. */
+    function readBoard(i) {
+      if (walking || asking || reading >= 0) return;
+      const b = W.boards[i].position, z = FORK_Z + 0.9, e = meadowHalf(z) - 0.15;
+      routeTo(side(i) * Math.min(e, Math.abs(b.x) - 1.5), z);   // beside it, not in front of it
+      toRead = i;
+    }
     function turn() {
       if (walking || asking) return;
       way = (way + 1) % ways.length;
       roads[1] = ways[way];
       playSound('stick');
-      cards();
       if (picked === 1) go.textContent = `To the ${BIOMES_BY_ID[roads[1]].name}`;
-      // the second road's arm and glimpse follow the swap
+      // the second road's arm, glimpse and board follow the swap
       const [dark, light] = ARMS[roads[1]] ?? ['#7a5a3a', '#c8a070'];
       W.arms[1].material.forEach((m, j) => { m.color.set(j ? dark : light); if (picked !== 1) m.emissive.set(m.color); });
       const m = W.glimpses[1].material;
       m.map.dispose(); m.map = glimpseTex(roads[1]); m.needsUpdate = true;
+      const bm = W.boards[1].material;
+      bm.map.dispose(); bm.map = bm.emissiveMap = smoothTex(boardArt(roads[1])); bm.needsUpdate = true;
+      if (reading === 1) fillPanel(1);
       resize();
     }
-    cards();
     resize();
 
     /** Where a step from (x0, z0) to (x, z) ends up: on the grass below the fork, or kept to the road it's on. */
@@ -503,7 +584,8 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       last = now;
       const speed = (walking ? 3.6 : 3) * dt;
       let gx = 0, gz = 0;
-      if (keys.size && !walking && !asking) {
+      if (keys.size && !walking && !asking && reading < 0) {
+        toRead = -1;
         gx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
         gz = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
         route = [];
@@ -523,6 +605,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         if (!calm && now > stepAt) { playSound('footstep'); stepAt = now + 360; }
         walker.hop += dt * 1000;
       } else walker.hop = 0;
+      if (toRead >= 0 && !route.length && !moving) { const i = toRead; toRead = -1; openPanel(i); }
       const r = regionOf(walker.x, walker.z);
       if (r < 0) backing = false;
       if (!walking && !asking && r >= 0) {
@@ -536,8 +619,10 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     function frame(now, dt) {
       drawMon(mon, walker, dt * 1000);
       const dz = -walker.z;
-      // as tall on the screen wherever it walks; walking off up the road at the end, it lets the distance shrink it
-      if (!walking) mon.scale = size * dz;
+      // as tall on the screen as it loads in near the bottom, easing down to SHRINK by the fork and held there (full
+      // perspective felt like too much in the painted one); walking off up the road at the end, the distance shrinks it on
+      const u = Math.max(0, Math.min(1, (START_Z - walker.z) / (START_Z - FORK_Z)));
+      if (!walking) mon.scale = size * dz * (1 - (1 - SHRINK) * u * u * (3 - 2 * u));
       mon.group.scale.setScalar(mon.scale);
       mon.group.position.set(walker.x, 0, walker.z);
       const bob = calm || !walker.hop ? 0 : Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08;
@@ -559,13 +644,16 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     const aim = (e) => {
       const rc = view.getBoundingClientRect(), y = e.clientY - rc.top, x = e.clientX - rc.left;
       ray.setFromCamera(new THREE.Vector2(x / rc.width * 2 - 1, -y / rc.height * 2 + 1), camera);
-      const hit = ray.intersectObjects([...W.arms, ...W.glimpses, W.ground], false)[0];
+      const hit = ray.intersectObjects([...W.boards, ...W.arms, ...W.glimpses, W.ground], false)[0];
+      if (hit?.object.userData.board !== undefined) { held = false; return readBoard(hit.object.userData.board); }
+      toRead = -1;
       if (hit?.object.userData.road !== undefined) return pick(hit.object.userData.road);   // a road's arm, or its glimpse
       if (!hit || y <= hzK * rc.height + 4 || hit.point.z < -32) return pick(x < project(0, camH, -40)[0] ? 0 : 1);
       routeTo(hit.point.x, hit.point.z);
     };
     const onDown = (e) => {
-      if (walking || asking || e.target.closest('.xr-road, .xr-go')) return;
+      if (walking || asking || e.target.closest('.xr-panel, .xr-go')) return;
+      if (reading >= 0) { closePanel(); return; }
       if (e.target === view) {
         // a tap on your Pokémon: its cry
         const rc = view.getBoundingClientRect();
@@ -580,6 +668,10 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     const KEYS = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down' };
     const onKey = (e) => {
       if (asking) return;
+      if (reading >= 0) {
+        if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { closePanel(); e.preventDefault(); e.stopPropagation(); }
+        return;
+      }
       const k = KEYS[e.key];
       if (k) keys.add(k);
       else if ((e.key === 'Enter' || e.key === ' ') && picked >= 0) take();
@@ -600,6 +692,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
 
     async function take() {
       if (walking || asking || picked < 0) return;
+      closePanel();
       asking = true;
       keys.clear();
       route = [];
@@ -636,6 +729,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
           scene.classList.remove('dark', 'chosen', 'x3d');
           view.classList.remove('on');
           view.remove();
+          panel.remove();
           W.scene.traverse(o => {
             o.geometry?.dispose();
             for (const m of [o.material].flat()) if (m) { m.map?.dispose(); m.dispose(); }
@@ -646,6 +740,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   } catch (e) {
     cancelAnimationFrame(raf);
     view.remove();
+    scene.querySelector('.xr-panel')?.remove();
     throw e;
   }
   return { chosen };

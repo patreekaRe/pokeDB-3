@@ -763,7 +763,7 @@ function mailArt() {
 
 /** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
     poster with a red header and three snapshots of today's catches. */
-function kioskArt(K = KIT) {
+export function kioskArt(K = KIT) {
   const { c, g, fill, rr, lin } = fine(22, 32);
   for (const x0 of [2, 18]) {   // the posts, each standing on a little arch
     rr(x0, 6, 2, 22, 0.6, lin(x0, 0, x0 + 2, 0, [K.white, K.pale, K.grey]));

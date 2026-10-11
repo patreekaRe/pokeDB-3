@@ -2111,3 +2111,10 @@ prop. Only Kenmatta's arena is still pixel.
 every room now stays until you walk out over its doormat (framed above the text box), found items float over the room,
 each room has the user's song (`event-room`, `event-outdoor`, `shrine-room`, `treasure`), and the Mart's relics are
 bigger with nothing in front of them. Playtested on `event-rooms-3d`, merged into `main` the same day (the user's call).
+
+**3D crossroads: notice boards and a gentle shrink** (2026-10-11): the floating road cards gave way to a notice board at
+each road's mouth (the Clearing's kiosk in the road's sign colours, its snapshots the wilds' types); a tap walks your
+Pokémon up beside it and opens a panel with the road's places, bosses, wilds and Pokédex page (and Wayfinder's swap).
+Reading never picks a road. Your Pokémon eases down to 70% of its loaded size by the fork (the painted fallback, which
+keeps its cards, too). Fixed on the way: the cards called `dexSeen()`, which *marks* a Pokémon seen, so showing the fork
+marked its bosses seen and never showed a met one in colour; they read `save.dex.seen` now.
