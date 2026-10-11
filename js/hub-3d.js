@@ -1871,6 +1871,20 @@ async function swapBuddy() {
   playCry(mon.id);
 }
 
+/** The new player's buddy (the title's first power-on), swapped in quietly while the Clearing still waits behind it. */
+export async function refreshBuddy() {
+  const mate = buddy(getSave());
+  if (!mon || mon.src === mate.src) return;
+  const old = mon, shown = old.group.visible;
+  const next = await monBoard(mate);
+  next.board.rotation.x = -PITCH;
+  next.board.userData.who = { mon: next, w: walker };
+  dispose(old.group); scene.remove(old.group);
+  mon = next;
+  mon.group.visible = shown;
+  scene.add(mon.group);
+}
+
 /** Back out of the base or the mall: on its doorstep, facing you, the base's door shutting behind. */
 function leftPlace() {
   const p = places.find(q => q.id === inside);

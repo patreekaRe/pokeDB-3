@@ -34,7 +34,9 @@ import { spriteFit } from './data/sprite-fit.js';
 import { showBadgeNews } from './trainercard.js';
 import { smoothIcon } from './smooth-icons.js';
 import { paintTitleLight, runTitleLight } from './title-light.js';
-import { showHub, hideHub, enterHub, hubDex } from './hub-3d.js';
+import { showHub, hideHub, enterHub, hubDex, refreshBuddy } from './hub-3d.js';
+import { pickedName, setTrainerName } from './leaderboard.js';
+import { NAME_MAX } from './data/leaderboard.js';
 import { pref } from './prefs.js';
 
 const PIXEL = 3;
@@ -255,10 +257,13 @@ async function start(e) {
   pressed = true;
   // the power-on's dex-on is the tap's answer; with motion off there's no power-on, so the blip stands in (the user heard silence)
   if (still()) playSound('confirm');
+  const setup = needsSetup();
   const first = actions.firstLaunch?.() ?? false;
   const dex = $('title-dex');
-  if (!still()) await powerOn(dex);
+  if (setup) await onboard(dex);
+  else if (!still()) await powerOn(dex);
   const hub = await hubReady;   // as a rule long since there; till then the device stays on
+  if (setup && hub) await refreshBuddy();
   if (first) {
     if (!still()) await dive(dex);
     // How to play shuts back into the Clearing's corner handheld, as it will every later time
@@ -304,6 +309,98 @@ async function powerOn(dex) {
   playSound('dex-on');
   dex.classList.add('open');
   await wait(1700);
+}
+
+/* A new player's first power-on (the user's ask, 2026-10-11, like the games asking your name first): the device opens
+   bigger, straight onto WHAT'S YOUR NAME?, then CHOOSE YOUR BUDDY from the three starters (the PC's walking buddy, which
+   walks in once it's shut), then the hello says the new name. `?onboard` shows it again (what's picked is kept). */
+const SETUP_BUDDIES = ['charmander', 'bulbasaur', 'squirtle'];
+const needsSetup = () => new URLSearchParams(location.search).has('onboard') || (!getSave().seenHelp && !pickedName());
+
+async function onboard(dex) {
+  const screen = $('title-dex').querySelector('.tdx-screen');
+  const box = el('div', 'tdx-setup');
+  screen.append(box);
+  dex.removeAttribute('aria-hidden');
+  $('title-screen').classList.add('powering');
+  dex.classList.add('setup', 'on');
+  if (still()) dex.classList.add('instant');
+  else { await wait(240); playSound('dex-on'); }
+  dex.classList.add('open');
+  let name = pickedName();
+  let mate = getSave().buddy?.replace(/^starter:|:shiny$/g, '');
+  if (!SETUP_BUDDIES.includes(mate)) mate = null;
+  for (let step = 0; step < 2;) {
+    step += (step === 0 ? await askName(box, name, (n) => { name = n; }) : await askBuddy(box, mate, (m) => { mate = m; }));
+  }
+  setTrainerName(name);
+  updateSave(d => { d.buddy = `starter:${mate}`; });
+  box.remove();
+  dex.classList.remove('setup', 'instant');
+  dex.setAttribute('aria-hidden', 'true');
+  $('tdx-hello').textContent = actions.hello?.() ?? '';
+  // the logo and hello come up as they would have, now saying the new name
+  screen.querySelectorAll(':scope > *').forEach(n => { n.style.animation = 'none'; void n.offsetWidth; n.style.animation = ''; });
+  await wait(still() ? 900 : 2000);
+}
+
+const pill = (label, cls = '') => {
+  const b = el('button', `tdx-ok ${cls}`.trim(), label);
+  b.type = 'button';
+  return b;
+};
+
+/** Step 1: the name, typed into an LCD box. Resolves +1 once it's OK'd. */
+function askName(box, name, keep) {
+  return new Promise(done => {
+    const field = el('input', 'tdx-field');
+    Object.assign(field, { type: 'text', maxLength: NAME_MAX, value: name, placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
+    field.setAttribute('aria-label', 'Trainer name');
+    field.setAttribute('autocapitalize', 'words');
+    const ok = pill('OK');
+    const go = () => { field.blur(); keep(field.value.trim()); playSound('confirm'); done(1); };
+    ok.addEventListener('click', go);
+    field.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+    box.replaceChildren(el('span', 'tdx-step', '1 / 2'), el('span', 'tdx-ask', "WHAT'S YOUR NAME?"), field, ok);
+    box.dataset.step = 'name';
+    // a phone only brings its keyboard up for a focus inside the tap itself, so a tap on the box does it; wider, it's ready
+    if (matchMedia('(pointer: fine)').matches) setTimeout(() => field.focus({ preventScroll: true }), still() ? 0 : 1000);
+  });
+}
+
+/** Step 2: one of the three starters, a tap picks (with its cry), OK takes it, Back goes to the name. Resolves +1 / -1. */
+function askBuddy(box, mate, keep) {
+  return new Promise(done => {
+    const ok = pill('OK');
+    const back = pill('Back', 'back');
+    const row = el('div', 'tdx-mates');
+    const pick = (id, btn) => {
+      mate = id;
+      row.querySelectorAll('.on').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      ok.disabled = false;
+      playCry(STARTERS_BY_ID[id].line[0].id);
+    };
+    for (const id of SETUP_BUDDIES) {
+      const st = STARTERS_BY_ID[id];
+      const btn = el('button', `tdx-mate type-${st.type}${id === mate ? ' on' : ''}`);
+      btn.type = 'button';
+      btn.dataset.type = st.type;
+      const img = el('img');
+      img.src = spriteUrl(st, 'front', 0, false);
+      img.alt = '';
+      btn.append(img, el('span', 'tdx-mate-name', st.line[0].name));
+      btn.addEventListener('click', () => pick(id, btn));
+      row.append(btn);
+    }
+    ok.disabled = !mate;
+    ok.addEventListener('click', () => { if (!mate) return; keep(mate); playSound('confirm'); done(1); });
+    back.addEventListener('click', () => { if (mate) keep(mate); playSound('cancel'); done(-1); });
+    const keys = el('div', 'tdx-keys');
+    keys.append(back, ok);
+    box.replaceChildren(el('span', 'tdx-step', '2 / 2'), el('span', 'tdx-ask', 'CHOOSE YOUR BUDDY'), el('span', 'tdx-note', 'It walks with you around the Clearing.'), row, keys);
+    box.dataset.step = 'buddy';
+  });
 }
 
 /** Into the screen: it grows until its glow fills the view, where the real device takes over. */
