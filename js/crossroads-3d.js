@@ -496,13 +496,17 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     /** What road i's board says, in boxes: its places in order, its bosses beside its wilds, then its Pokédex page. */
     function fillPanel(i) {
       const id = roads[i], biome = BIOMES_BY_ID[id], page = ALL_PAGES.find(p => p.biome === id);
-      const { sign, bosses } = roadInfo(id);
+      const { bosses } = roadInfo(id);
+      // the kiosk's poster, blown up: its roof, its frame in the road's sign colours, a header with a Poké Ball
+      const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
+      panel.style.setProperty('--xr-dark', dark);
+      panel.style.setProperty('--xr-light', light);
       const head = el('header', 'xr-head');
       const shut = el('button', 'xr-shut', '✕');
       shut.type = 'button';
       shut.setAttribute('aria-label', 'Close');
       shut.onclick = (e) => { e.stopPropagation(); closePanel(); };
-      head.append(sign, shut);
+      head.append(el('span', 'xr-ball'), el('h3', 'xr-title', biome.name), shut);
       const places = el('ol', 'xr-places');
       biome.stages.forEach((name, k) => {
         const li = el('li', `xr-place${k === biome.stages.length - 1 ? ' boss' : ''}`);
@@ -531,7 +535,10 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         body.append(swapBtn);
       }
       panel.dataset.biome = id;
-      panel.replaceChildren(head, body);
+      const frame = el('div', 'xr-frame'), poster = el('div', 'xr-poster');
+      poster.append(head, body);
+      frame.append(poster);
+      panel.replaceChildren(el('div', 'xr-roof'), frame, el('div', 'xr-rail'));
     }
     function openPanel(i) {
       reading = i;
