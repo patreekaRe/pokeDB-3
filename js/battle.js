@@ -259,6 +259,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   }
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
+  arena3d(land, encounter.kind, def, run);
   playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
@@ -274,6 +275,21 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     return () => playIntro();
   }
   playIntro();
+}
+
+/* An Alpha's or a boss's fight in a 3D place (js/arena-3d.js, a test in the Clearing): loaded only when one is, and laid
+   under the battle screen; a boss's stays hidden until its pixel prelude is over (playIntro()). */
+let arenaMod = null, arenaUp = false;
+function arena3d(land, kind, def, run) {
+  arenaMod?.unmountArena();
+  arenaUp = false;
+  if (!(kind === 'elite' || kind === 'boss') || new URLSearchParams(location.search).has('arena2d')) return;
+  import('./arena-3d.js').then(m => {
+    arenaMod = m;
+    if (!m.wantsArena({ land, kind, def, run })) return;
+    const where = journey(run.map, run.map?.byId[run.current]);
+    m.mountArena({ biome: land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp });
+  }).catch(() => {});
 }
 
 /**
@@ -308,6 +324,8 @@ async function playIntro() {
       document.body.classList.remove('boss-prelude');
       enemyZone.classList.remove('boss-waiting');
     }
+    arenaUp = true;
+    arenaMod?.revealArena();
     if (!still()) return;
     log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
@@ -1414,7 +1432,7 @@ async function ballAnimation(ball, shakes, caught) {
 async function caughtIt(ballId) {
   const b = battle;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   closeBallPicker();
   const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
   if (grew) abilityBanner();
@@ -1444,7 +1462,7 @@ function runsOff() {
 async function runAway() {
   const b = battle;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   closeBallPicker();
   renderAll();
   playSound('run-away');
@@ -1823,7 +1841,7 @@ async function finish(won) {
   if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
   if (battle !== b) return;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   renderAll();
 
   if (won) {
@@ -1862,7 +1880,7 @@ async function rebirth() {
   const motion = battleFx();
   b.phased = true;
   b.busy = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   renderAll();
   const box = $('enemy-portrait-box'), zone = $('enemy-zone');
   box.classList.remove('charging');
@@ -1892,7 +1910,7 @@ async function rebirth() {
   setupEnemy();
   document.body.classList.remove('boss-prelude');
   zone.classList.remove('boss-waiting');
-  setStorm(true);
+  setStorm(true); arenaMod?.stormArena(true);
   playMusic(next.music ?? 'boss', { restart: true });
   if (motion) zone.classList.add('emerging');
   renderAll();
@@ -2777,7 +2795,7 @@ async function finishingBlow(n) {
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */
 function checkStorm() {
   const en = battle.enemy;
-  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) setStorm(true);
+  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) { setStorm(true); arenaMod?.stormArena(true); }
 }
 
 /** A number or word that floats up from a spot on screen. */

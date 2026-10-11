@@ -504,6 +504,14 @@ export function peekFinalBoss(starter, bossHp = 1) {
 }
 let finalPeekHp = 1;
 
+/** Playtest shortcut: ?arena=elite (or boss) walks a throwaway run (&starter=id) straight into a Whispering Clearing
+    Alpha's fight (or its boss's, prelude and all), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's
+    place, &arena2d the pixel scene). Nothing about it is saved. */
+export function peekArena(starter, kind) {
+  peeking = true;
+  beginRun(starter, 0, kind === 'boss' ? ':boss' : ':elite');
+}
+
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
     fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
 export function peekDescent(starter) {
@@ -564,6 +572,12 @@ function peekRoom(id) {
     node.type = 'shop';
     node.stock ??= martStock();
     return enterNode(node);
+  }
+  if (id === ':elite') {
+    startBiome(true);
+    const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
+    const elites = Object.values(run.map.byId).filter(n => n.type === 'elite');
+    return enterNode(elites.find(n => stageOf(run.map, n).stage === stage) ?? elites[0]);
   }
   if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
   if (id === ':final') {
@@ -758,6 +772,7 @@ function showMap() {
   warmCenter3d();
   warmMart3d();
   warmEvent3d();
+  warmArena3d();
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -2042,6 +2057,16 @@ function warmCenter3d() {
 
 /** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
     in shows the room at once (the user saw a blank blue screen while it loaded). */
+/** The 3D arena's renderer readied while the map is up, in a biome whose Alphas and boss fight in it (js/arena-3d.js). */
+function warmArena3d() {
+  if (warmArena3d.done || isTower() || isSafari() || new URLSearchParams(location.search).has('arena2d')) return;
+  import('./arena-3d.js').then(m => {
+    if (!m.ARENA_3D.has(mainBiome().id) || warmArena3d.done) return;
+    warmArena3d.done = true;
+    setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 2000);
+  }).catch(() => {});
+}
+
 /** The map's 3D ? rooms built while it's up, so walking into one is quick. */
 function warmEvent3d() {
   if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
