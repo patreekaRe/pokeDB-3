@@ -165,7 +165,7 @@ live site.
   biome, `CAVE`, its Poké Ball chest following the page chest's `.shaking` / `.opened`), and since part d (same day, the
   user's pick: a 3D ground per biome) the outdoor four, the Berry Tree, Wishing Well, Item Ball and Team Rocket, on a
   patch of the biome's own ground (`wild()`). Only Kenmatta's arena stays pixel. `?event=day-care` (`&biome=shrine`, `&starter=id`;
-  `?event=treasure` the grotto; `&event2d` the pixel room). On branch `event-rooms-3d` until the user says. Detail in
+  `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
   `docs/reference/events.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).

@@ -73,11 +73,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
       the strongest; leave it unless a playtest says otherwise.
 
-**3D ? rooms** (the user's go, 2026-10-11, on branch `event-rooms-3d` until the user says): every ? room and the treasure
-grotto are walked in 3D (parts a-d, see the archive). Waiting on the user: a playtest of the branch, then the word to
-put it on `main` (`main` has the commit that took part a off it, so the merge re-adds those files). Kenmatta's arena is a
-battle backdrop, not a room: leave it unless asked.
-
 ## Ideas, not agreed yet (ask the user before building)
 
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a

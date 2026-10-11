@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.4',
+    name: 'Rooms to Walk In',
+    date: '2026-10-11',
+    notes: [
   ['hub', 'In October a different ghost Pokémon greets you in the Clearing each visit, not always Sableye.'],
   ['hub', 'The Clearing\'s Halloween cauldron is 3D now: it bubbles and stirs itself, and each tap plays the next of its six tricks in turn.'],
   ['hub', 'The glowing words before each Pokéstop (CONTINUE, SET OUT, EXPLORE, CLIMB) are bold arcade letters with a cyan glow, easy to read, lying flat on the ground, with arrows marching in on either side.'],
@@ -55,17 +71,8 @@ export const NEXT = [
   ['runs', 'After a ? room, the Center-style way: the room stays with its signs greyed, and you walk out over the doormat when you\'re ready; a found item or relic floats over the room it came from.'],
   ['runs', 'The Poké Mart\'s relics sit much bigger under their glass domes, with nothing in front of them or the shelves.'],
   ['music', 'The Move Tutor, Move Deleter, Day Care and Fan Club have a song of their own, and so do the Hot Spring, Berry Tree, Wishing Well and Item Ball, the Shrine and the treasure grotto.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+    ],
+  },
   {
     version: '1.3',
     name: 'Spooky Season',
@@ -247,11 +254,11 @@ export const IN_THE_GAME = [
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
   ['💎', '59 relics', 'Starter Abilities, relics for each type and boss relics that give extra PP with a catch.'],
   ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag.'],
-  ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine.'],
+  ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
-  ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 113 augments and a weekly leaderboard.'],
+  ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],

@@ -2106,3 +2106,8 @@ into a grotto.
 **3D ? rooms, part d** (2026-10-11, the user's pick: a 3D ground per biome): the Berry Tree, Wishing Well, Item Ball and
 Team Rocket stand on a patch of the biome's own 3D ground (`wild()` in `js/event-3d.js`), each choice played out on its
 prop. Only Kenmatta's arena is still pixel.
+
+**3D ? rooms, parts b-d and live** (2026-10-11): the Hot Spring, Shrine, treasure grotto and the outdoor four walked in 3D;
+every room now stays until you walk out over its doormat (framed above the text box), found items float over the room,
+each room has the user's song (`event-room`, `event-outdoor`, `shrine-room`, `treasure`), and the Mart's relics are
+bigger with nothing in front of them. Playtested on `event-rooms-3d`, merged into `main` the same day (the user's call).
