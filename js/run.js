@@ -1978,6 +1978,7 @@ function restSite() {
           showChoiceHp();
           await sleep(seconds * 1000);
           if (run !== thisRun) return;                 // the run was abandoned during the chime
+          playMusic('center', { restart: true });      // the games bring the Center's song back once the chime ends
           // a moment to see the full bar, with Chansey's goodbye, before heading back out
           sayLines([`${stageName(run.starter, run.stage)} is feeling much better! Come back any time!`]);
           await sleep(2200);
