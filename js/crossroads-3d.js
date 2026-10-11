@@ -175,43 +175,52 @@ function many(geo, list, { shadow = true, rough = 0.95, flat = true } = {}) {
 }
 
 /** Whether (x, z) is in a gap of the treeline, round where a road runs on. */
-const inGap = (x, z) => [0, 1].some(i => Math.abs(x - roadX(i, z)) < 2.6 + (FORK_Z - z) * 0.07);
+const inGap = (x, z) => [0, 1].some(i => Math.abs(x - roadX(i, z)) < 1.4 + (FORK_Z - z) * 0.17);
 
-function trees(group, r) {
-  const pines = [], trunks = [], blobs = [];
-  const pine = (x, z, h, cols) => {
-    const turn = r() * 6;
-    trunks.push([x, h * 0.18, z, h * 0.36, '#3e2c22', h * 0.05 + 0.08, turn]);
-    for (let k = 0; k < 3; k++) pines.push([x, h * (0.3 + k * 0.22), z, h * (0.46 - k * 0.08), cols[k % cols.length], h * (0.24 - k * 0.055), turn + k]);
-  };
-  // the treeline across the far edge of the clearing, a gap where each road runs on
-  for (let z = -27; z > -45; z -= 1.5) for (let x = -34; x < 34; x += 0.9 + r() * 1.1) {
+/** The far treeline, low across the horizon as in the painting, a wide gap where each road runs on. Built for the
+    phone's camera height, and squashed to the camera's (fitCamera()) so it rises as far over the horizon on any screen. */
+function treeline(r) {
+  const pines = [], trunks = [];
+  for (let z = -28; z > -45; z -= 1.5) for (let x = -40; x < 40; x += 0.9 + r() * 1.1) {
     const zz = z + (r() - 0.5) * 1.2;
     if (inGap(x, zz)) continue;
-    pine(x, zz, (6 + r() * 5) * (0.55 + 0.45 * Math.min(1, Math.abs(x) / 9)), ['#5a4466', '#4a3858', '#3e2e4c']);   // lower in the middle, the sun glowing over them
+    const h = (6.4 + r() * 2.6) * (0.75 + 0.25 * Math.min(1, Math.abs(x) / 9)), turn = r() * 6;   // lower in the middle, the sun glowing over them
+    trunks.push([x, h * 0.18, zz, h * 0.36, '#2e2234', h * 0.05 + 0.08, turn]);
+    for (let k = 0; k < 3; k++) pines.push([x, h * (0.3 + k * 0.22), zz, h * (0.46 - k * 0.08), ['#5a4466', '#4a3858', '#3e2e4c'][k], h * (0.24 - k * 0.055), turn + k]);
   }
-  // the woods down either side, the nearer ones tall and dark, framing the screen like the painting's trunks
-  for (let z = -2; z > -27; z -= 1.8) for (const s of [-1, 1]) {
-    for (let k = 0; k < 3; k++) {
-      const x = s * (meadowHalf(z) + 2.6 + k * 2.6 + r() * 1.8), zz = z + (r() - 0.5);
-      if (z < FORK_Z && inGap(x, zz)) continue;
-      if (r() < 0.6) pine(x, zz, 7 + r() * 5, ['#4a5a3a', '#3e4e32', '#33422a']);
-      else {
-        const h = 5 + r() * 3;
-        trunks.push([x, h * 0.35, zz, h * 0.7, '#6a4a34', 0.14 + r() * 0.06, r() * 6]);
-        for (let b = 0; b < 4; b++) blobs.push([x + (r() - 0.5) * 1.4, h * (0.72 + r() * 0.25), zz + (r() - 0.5) * 1.0, 0.9 + r() * 0.6, ['#4a5a3a', '#3e4e32', '#56663e'][b % 3]]);
-      }
-    }
+  const g = new THREE.Group();
+  g.add(many(new THREE.ConeGeometry(1, 1, 7), pines), many(new THREE.CylinderGeometry(0.7, 1, 1, 6), trunks));
+  return g;
+}
+
+/** One of the two big trees standing at the screen's edges level with the fork, as the painting frames it: a tall trunk
+    with roots, its dark crown up over the top corner. fitCamera() puts each at the edge. */
+function edgeTree(r) {
+  const g = new THREE.Group(), bark = std({ color: '#5a4030', roughness: 1 });
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.8, 26, 9), bark);
+  trunk.position.y = 13; trunk.castShadow = true;
+  g.add(trunk);
+  for (let k = 0; k < 5; k++) {
+    const a = k / 5 * Math.PI * 2 + r(), root = new THREE.Mesh(new THREE.ConeGeometry(0.32, 1.6, 6), bark);
+    root.position.set(Math.cos(a) * 0.75, 0.45, Math.sin(a) * 0.75);
+    root.rotation.set(Math.sin(a) * 1.1, 0, -Math.cos(a) * 1.1);
+    g.add(root);
   }
-  group.add(many(new THREE.ConeGeometry(1, 1, 7), pines));
-  group.add(many(new THREE.CylinderGeometry(0.7, 1, 1, 6), trunks));
-  group.add(many(new THREE.IcosahedronGeometry(1, 1), blobs));
+  const leaf = ['#36402e', '#2a3226', '#1e261c'];
+  for (let k = 0; k < 14; k++) {
+    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(2.2 + r() * 1.6, 1), std({ color: leaf[k % 3], flatShading: true }));
+    m.position.set((r() - 0.5) * 9, 17 + r() * 9, (r() - 0.5) * 3);
+    m.castShadow = true;
+    g.add(m);
+  }
+  g.traverse(o => { o.raycast = () => {}; });
+  return g;
 }
 
 function tufts(group, r) {
   const list = [], stones = [];
-  for (let i = 0; i < 420; i++) {
-    const z = 1 - r() * 26, x = (r() - 0.5) * 2 * (meadowHalf(z) + 4);
+  for (let i = 0; i < 900; i++) {
+    const z = 1 - r() * 27, x = (r() - 0.5) * 2 * (6 - z * 0.6);
     const onPath = z > FORK_Z ? Math.abs(x) < PATH_HW + 0.3 : [0, 1].some(k => Math.abs(x - roadX(k, z)) < ROAD_HW + 0.4);
     if (onPath) continue;
     const h = 0.14 + r() * 0.12;
@@ -261,7 +270,8 @@ async function build(ids) {
     for (let t = -1.6; t <= 36; t += 0.5) { const [x, z] = onRoad(i, t, Math.sin(t * 0.3) * 0.15 * Math.min(1, Math.max(0, t) / 3)); pts.push([x, z, ROAD_HW * (t < 0 ? 0.9 : 1)]); }
     group.add(ribbon(pts, dirt, 0.015 + i * 0.002));
   }
-  trees(group, r);
+  const line = treeline(r), edges = [edgeTree(r), edgeTree(r)];
+  group.add(line, ...edges);
   tufts(group, r);
   // the signpost in the split, an arm up each road
   const post = new THREE.Group();
@@ -313,7 +323,7 @@ async function build(ids) {
   const fill = new THREE.DirectionalLight('#ff9060', 1.2);
   fill.position.set(0, 6, FORK_Z - 40);
   scene.add(group, hemi, sun, sun.target, fill);
-  return { scene, group, arms, glimpses, hills, sky, sunDisc, flies, ground };
+  return { scene, group, arms, glimpses, hills, sky, sunDisc, flies, ground, line, edges };
 }
 
 function glimpseTex(id) {
@@ -356,6 +366,10 @@ function fitCamera(camera, w, h, W) {
     m.position.y = camH - (0.5 - 0.62) * ht;
   }
   W.hills.position.set(0, camH - 2, -82);
+  W.line.scale.y = (camH + 1.8) / 7.6;
+  // the two big trees cut by the screen's edges just past the fork, as the painting has them
+  const z = FORK_Z - 1, half = (w / 2) / F * -z;
+  W.edges.forEach((t, i) => t.position.set(side(i) * (half + 0.2), 0, z));
   W.sky.position.set(0, camH - (130 - 300 / 512 * 260), -120);
   W.sunDisc.position.set(0, camH + 1.5, -110);
 }
