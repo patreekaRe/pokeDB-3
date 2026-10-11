@@ -506,11 +506,12 @@ let finalPeekHp = 1;
 
 /** Playtest shortcut: ?arena=elite (or boss) walks a throwaway run (&starter=id) straight into a Whispering Clearing
     Alpha's fight (or its boss's, prelude and all), the 3D arena's test (js/arena-3d.js; &stage=0-2 picks the Alpha's
-    place, &arena2d the pixel scene); &biome=wastes (any but the Depths, &slot=1 / 2 for a pool biome) any biome's boss.
-    Nothing about it is saved. */
+    place, &arena2d the pixel scene); &biome=wastes (&slot=1 / 2 for a pool biome) any biome's Alpha or boss, the Depths'
+    with Mewtwo. Nothing about it is saved. */
 export function peekArena(starter, kind, biome = null, slot = null) {
   peeking = true;
   const home = BIOMES_BY_ID[biome];
+  peekDepths = !!home?.secret;
   peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
   beginRun(starter, 0, kind === 'boss' ? ':boss' : ':elite');
 }
@@ -533,7 +534,7 @@ export function peekBiome(starter, id, level = 0, slot = null) {
   beginRun(starter, Math.max(0, Math.min(MAX_LEVEL, level || 0)), ':biome');
   return true;
 }
-let peekAt = null;
+let peekAt = null, peekDepths = false;
 
 /** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
 function walkInto(at) {
@@ -581,8 +582,14 @@ function peekRoom(id) {
     node.stock ??= martStock();
     return enterNode(node);
   }
-  if (id === ':elite') {
-    if (peekAt) walkInto(peekAt);
+  if (id === ':elite' || (id === ':boss' && peekDepths)) {
+    if (peekDepths) {   // Mewtwo's last biome, fully powered up like after its fall
+      run.biome = finalBiome(run.starter);
+      run.stage = run.starter.line.length - 1;
+      run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
+    }
+    else if (peekAt) walkInto(peekAt);
+    if (id === ':boss') { startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
     startBiome(true);
     const stage = Number(new URLSearchParams(location.search).get('stage') ?? 1);
     const elites = Object.values(run.map.byId).filter(n => n.type === 'elite');

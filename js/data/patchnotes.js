@@ -46,6 +46,7 @@ export const NEXT = [
   ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
   ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
+  ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

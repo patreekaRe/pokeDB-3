@@ -11,11 +11,11 @@ import { loadThree, tex, createPost, dispose } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour } from './scene.js';
 
-/* Every main biome's boss fights on 3D pads in front of its own live pixel backdrop (the Ancient Tree's pulse, the lava,
-   the Well: the user's call, 2026-10-11); the Clearing, whose 3D place this was built for, also lays its 3D ground, bushes
-   and side trees up to the horizon, and keeps its Alphas in 3D too. */
+/* Every main biome's boss and Alphas (Team Rocket's too) fight on 3D pads in front of their own live pixel backdrop (the
+   Ancient Tree's pulse, the lava, the Well: the user's call, 2026-10-11); the Clearing, whose 3D place this was built for,
+   also lays its 3D ground, bushes and side trees up to the horizon. */
 const MAIN = new Set(['clearing', 'shrine', 'wastes', 'depths', 'ruins', 'thornwood', 'savanna']);
-export const arenaFor = (land, kind) => (kind === 'boss' ? MAIN.has(land) : kind === 'elite' && land === 'clearing');
+export const arenaFor = (land, kind) => (kind === 'boss' || kind === 'elite') && MAIN.has(land);
 const PAD_H = 0.2;
 
 let THREE, renderer, scene, camera, post, view, hemi, sun, backdrop;
