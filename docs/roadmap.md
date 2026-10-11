@@ -98,6 +98,16 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - c. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
       Shrine's stone, Thornwood's roots, the Savanna's grass), about a session a biome; then wild fights; then main.
 
+**3D crossroads: a gentle shrink** (the user's pick, 2026-10-11). Run in: CLOUD. Today your Pokémon stays the size it
+loads in at wherever it walks (`size` in `js/crossroads-3d.js`, `mon.scale = size * dz`), which looks too big near the
+far treeline. Let it shrink with distance, but only down to about 70% by the fork, then hold there (full perspective
+was tried in the painted version and felt like too much). Keep the camera still. Only if it still feels flat afterwards,
+a later option: a small forward/back camera drift with it (sideways at most ~10%, so cards and signpost barely move;
+the painted version's sideways parallax was disliked). Prompt: "Read CLAUDE.md and the roadmap's 3D crossroads entry.
+In js/crossroads-3d.js make your Pokémon shrink with depth from its loaded size to ~70% at the fork, clamped there,
+smoothly; the painted fallback (?xr2d, js/crossroads.js) the same. Check ?crossroads at 390x844, add a patch note, push
+to main."
+
 ## Ideas, not agreed yet (ask the user before building)
 
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
