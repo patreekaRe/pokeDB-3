@@ -1714,6 +1714,15 @@ function resize() {
 }
 
 /** The horizon sits at about 38% of the screen, but always above the enemy's pad, so the pad is on the ground on any layout. */
+/** Where the pixel scene's horizon is, 0-1 down the screen (js/arena-3d.js lays its 3D ground up to it), or null. */
+export const sceneHorizon = () => (H && S ? horizon / H : null);
+/** The pixel scene's colour at a point (0-1 each way) as [r, g, b], or null: js/arena-3d.js matches its pads and fog to it. */
+export function sceneColour(x, y) {
+  if (!px || !W || !H) return null;
+  const v = px[Math.min(H - 1, Math.max(0, Math.round(y * H))) * W + Math.min(W - 1, Math.max(0, Math.round(x * W)))];
+  return [v & 255, (v >> 8) & 255, (v >> 16) & 255];
+}
+
 function horizonRow(scale) {
   const box = $('enemy-portrait-box').getBoundingClientRect();
   const low = Math.round(H * 0.38);
@@ -5399,6 +5408,15 @@ function kombatLayout() {
   };
 }
 
+/* The 3D arena (js/arena-3d.js) builds Kenmatta's dais, its steps and the medallion itself, so the painted ones step
+   aside while it's up. */
+let bareKombat = { dais: false, medal: false };
+export function sceneBare(o) {
+  if (bareKombat.dais === o.dais && bareKombat.medal === o.medal) return;
+  bareKombat = o;
+  if (S?.raw.backdrop === 'kombat') resize();
+}
+
 function kombatBackdrop() {
   const { R: room, cx, cy, dais } = kombatLayout(), { R } = medallionFit(room), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
   const towerTop = Math.max(1, cy - R - roof - 4), wallTop = Math.max(towerTop + roof + 2, Math.round(horizon * 0.3));
@@ -5412,7 +5430,7 @@ function kombatBackdrop() {
     lacquerPillar(x + side * bay, wallTop - 4);
   }
   gateTower(cx, towerTop, roof, half);
-  const { eye } = medallion(cx, cy, room);
+  const { eye } = bareKombat.medal ? { eye: null } : medallion(cx, cy, room);
   life.braziers = [];
   for (const side of [-1, 1]) {
     const x = cx + side * (half + 6), py = Math.round(cy - R * 0.1);
@@ -5421,7 +5439,7 @@ function kombatBackdrop() {
     pixelMap(x - 3, py - 3, ['ooooooo', 'olggggo', '.odddo.', '..ooo..'], { o: S.gold[4], l: S.gold[0], g: S.gold[1], d: S.gold[3] });
     life.braziers.push({ x, y: py - 4 });
   }
-  if (dais) templeSteps(dais);
+  if (dais && !bareKombat.dais) templeSteps(dais);
   life.kombat = { eye };
 }
 
@@ -5631,6 +5649,7 @@ function drawKombat(t) {
     }
   }
   const e = life.kombat.eye, [hot, glow, ember] = S.eye, p = Math.sin(t / 3) + storm.level * 2;
+  if (!e) return;
   put(e.x, e.y, p > 0 ? hot : glow);
   if (p > 0.4) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) put(e.x + dx, e.y + dy, p > 1.4 ? glow : ember);
 }

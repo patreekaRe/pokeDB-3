@@ -5362,6 +5362,17 @@ body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pa
 body:has(.reward-focus) .mart3d-sign, body:not([data-screen="reward-screen"]) .mart3d-sign { display: none; }
 @keyframes martSign { 50% { margin-top: -5px; } }
 @media (prefers-reduced-motion: reduce) { .mart3d-sign { animation: none; } }
+
+/* ---------- an Alpha's or a boss's fight in 3D (js/arena-3d.js): the canvas over the pixel scene, the page's pads hidden
+   (they're still laid out: arena-3d.js casts them into the ground to place its own) ---------- */
+.arena3d-view { position: fixed; inset: 0; z-index: -2; width: 100%; height: 100%; pointer-events: none; opacity: 0; visibility: hidden; }
+.arena3d-view.on { opacity: 1; visibility: visible; }
+.arena3d-view.on.fade { animation: arena3dIn 0.9s ease-out both; }
+@keyframes arena3dIn { from { opacity: 0; filter: brightness(3.5); } 40% { opacity: 1; } to { opacity: 1; filter: none; } }
+body.arena3d .enemy-zone::after,
+body.arena3d .player-zone::before { opacity: 0; }
+body.arena3d-solid :is(#scene-bg, #scene-light) { visibility: hidden; }
+body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 /* the 3D fork (js/crossroads-3d.js): its canvas under the cards, the painted canvas and sprite put away */
 .xr3d-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; }
 .xr3d-view.on { opacity: 1; }

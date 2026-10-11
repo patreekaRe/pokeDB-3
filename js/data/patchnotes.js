@@ -45,6 +45,9 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['fixes', 'Sound no longer stays off after the first tap on the Pokédex: any tap now wakes it, also after locking the phone or switching apps.'],
   ['fixes', 'Players from early versions who never picked a name now get the name and buddy setup on their next start.'],
+  ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
+  ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
+  ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard is 3D too: its flagstones, his dais and carpeted steps, two braziers burning, and a smooth gold Dragonite medallion on the wall in place of the pixel one.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
