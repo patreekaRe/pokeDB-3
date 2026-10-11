@@ -73,6 +73,31 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
       the strongest; leave it unless a playtest says otherwise.
 
+22. **3D battles** (the user's ask, 2026-10-11: "I want to eventually use this new style for the main"). Battles look like
+    today's but in 3D: the battle screen (cards, sprites, nameplates, text box, animations) stays the page's own, and
+    `js/arena-3d.js` lays a 3D place under it with a fixed camera. Being built on the test branch
+    **`claude/jolly-ritchie-vdznxn`**, never on `main` until the user says it goes live; every session for it starts from
+    that branch and pushes only to it. Playtest at `https://raw.githack.com/patreekaRe/pokeDB-3/claude/jolly-ritchie-vdznxn/index.html`
+    with `?arena=boss` (`&biome=shrine` / `wastes` / `ruins` / `thornwood` / `savanna`, `&slot=1` / `2` for a pool biome),
+    `?bossfight=depths` (Eternatus), `?arena=elite` (a Clearing Alpha, `&stage=0-2`); `&arena2d` shows today's pixel
+    version of the same fight to compare.
+    - **Done (2026-10-11):** every main biome's **boss** fights in 3D. The live pixel scene is the 3D view's background
+      (`backdrop`, `#scene-bg` as a texture), so each boss's own backdrop keeps playing (the Ancient Tree's pulse, the lava,
+      the tide wheel, the storm at low HP); 3D pads stand where the page draws its Pokémon (`layout()`) and follow them
+      every few frames (`follow()`), so a sprite that loads late or resizes keeps its pad (the user saw a boss off its
+      platform). The Clearing also lays its 3D ground, bushes, flowers and side trees up to the pixel horizon
+      (`sceneHorizon()` / `sceneColour()` in `js/scene.js`); every other biome's pads take its floor's colour
+      (`padKit()`). Clearing Alphas are 3D too. A boss keeps its pixel prelude, then the 3D fades in.
+    - **b. Alphas, the same treatment.** Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt: "Read CLAUDE.md and
+      docs/roadmap.md's item 22, then check out the branch `claude/jolly-ritchie-vdznxn` and work only on it (push only
+      to it, never to main). Give every main biome's Alphas (elite fights, Team Rocket's included) the boss treatment
+      in js/arena-3d.js: 3D pads in front of their own live pixel backdrop, following the sprites, the Clearing's 3D
+      ground as now. Extend `arenaFor()` and the `?arena=elite&biome=` playtest, check every biome's Alpha at 390x844 and
+      1280x800 (Three.js loads from jsdelivr, which the cloud proxy blocks: route it to a local `npm pack three@0.160.0`
+      in Playwright), and give me raw.githack links for each."
+    - c. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
+      Shrine's stone, Thornwood's roots, the Savanna's grass), about a session a biome; then wild fights; then main.
+
 ## Ideas, not agreed yet (ask the user before building)
 
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
