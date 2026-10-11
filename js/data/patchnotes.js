@@ -51,6 +51,10 @@ export const NEXT = [
   ['modes', 'Sky Pillar: Mulligan, Scavenger, Ambush, Refresh and Thorn Garden are stronger and worth picking: Mulligan and Refresh also draw more on turn 1, Scavenger heals after won fights, Ambush hits harder first, and Thorn Garden seeds enemies from the start.'],
   ['runs', 'The Move Tutor\'s dojo, the Move Deleter\'s study, the Day Care and the Fan Club are 3D rooms you walk about, like the Pokémon Center: tap a sign or the thing itself to walk up to it, and each choice plays out in the room (the sandbag swings, the pendulum swirls, the Egg wobbles, confetti rains on the stage).'],
   ['fixes', 'The Fan Club no longer freezes the run when you walk in.'],
+  ['runs', 'Every other ? room and the treasure grotto are 3D places you walk about too, dressed for the biome you\'re in and lit by the time of day: soak in the Hot Spring, ring the Shrine\'s bell as it glows in your type\'s colour, shake berries off the Berry Tree or plant one, toss a coin down the Wishing Well, wade into the tall grass for the Item Ball (watch out for Voltorb), face Team Rocket at their roadblock, and watch the grotto\'s Poké Ball chest wobble and pop open in its shaft of light.'],
+  ['runs', 'After a ? room, the Center-style way: the room stays with its signs greyed, and you walk out over the doormat when you\'re ready; a found item or relic floats over the room it came from.'],
+  ['runs', 'The Poké Mart\'s relics sit much bigger under their glass domes, with nothing in front of them or the shelves.'],
+  ['music', 'The Move Tutor, Move Deleter, Day Care and Fan Club have a song of their own, and so do the Hot Spring, Berry Tree, Wishing Well and Item Ball, the Shrine and the treasure grotto.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

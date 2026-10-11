@@ -144,3 +144,45 @@ are built once a page load (`room()`, one at a time), ahead while the map is up 
 The decor is the Secret Base's furniture (`piece()`), the rest modelled or painted in the file (Dragonite's medallion
 is `DRAGONITE` from `js/scene.js`). `?event=move-tutor` (any of the four) walks in; `&event2d` keeps the pixel room. A
 `?event=` peek of an event the map didn't roll now rolls its dice too (`rollEvent()`), so Day Care's peek no longer crashes.
+
+**Open air and the grotto** (part b/c, 2026-10-11): the Hot Spring (`buildSpring()`) and the Shrine (`buildAltar()`) are
+open-air rooms: `yard()` lays the shell with no walls' tops, the biome's scenery painted on them behind a fence
+(`scenery()`: round trees in the garden, cedars and the roped sacred cedar in the mist, a cliff of cut rock with glowing
+seams) and a self-lit sky behind (`skyDome()`; painted on the walls it went grey under the light), the light by the hour
+(`SKY_LIGHT`, `timeOfDay()`; the rock looks keep a dusk by day) and a softer bloom (a room's `env`: its sky light, sun and
+bloom, set as it mounts; the indoor rooms keep `INDOORS`). The look is `LOOKS[biome]` (`GARDEN`, `CEDAR`, `ROCK`; the Ruins,
+Thornwood, Savanna and Depths one of those in their own colours; a Safari area the garden). Trees are modelled (`tree()`),
+not furniture. The Hot Spring: two rock-ringed pools (`pool()`: a basin, sliding ripples, a ring of `boulder()`s), steam
+(`steam()`, thicker during a soak), the rubber duck, the bamboo spout pouring (`spout()`), the ♨ board; act `soak` hops your
+Pokémon into the big pool and sinks it to its shoulders (an act can move it: `walker.ox` / `oy` / `oz`, put back by
+`still()`), `dip` leans it over the little one, rings spreading. The Shrine: `shrineModel()`, the pixel one in 3D (stone
+tiers and steps, the hall's lattice doors lit from inside in your type's colour, `TYPE_GLOW`, a tiled roof swept up at the
+eaves with chigi and katsuogi, the straw rope and paper zigzags, the bell and its cord, the offering box), big stone
+lanterns lit the same colour; act `pray` rings the bell, draws red HP motes into the doors, flares (the bloom with it) and
+sends a spark up. The grotto (`buildGrotto()`, `treasureRoom()` mounts it with `event3d(…, 'grotto', …, { onPick })`, since
+its chest is no `.reward-option`: `ROOM_OF()` / `SIGNS_OF()` say what is the room and its signs) is a cave per biome
+(`CAVE`, the pixel grotto's colours: `caveWall()`, `caveFloor()`, `crystals()`, moss, glowing veins, roots or a tide pool,
+wisps or embers), a stone dais in a soft shaft of light (`shaftOfLight()` and a spotlight), coins spilled round it, and the
+Poké Ball chest (`ballChest()`: a white box, the ball's band and button, a domed lid painted as that biome's ball by
+`lidArt()`). The page's chest button stays for its logic and sign (its pictures hidden, `.c3d`); the 3D chest watches its
+classes and wobbles while `.shaking`, then the lid swings up and the light pours out on `.opened`; `chest3dSpot()` in
+`js/run.js` floats the relics up from it. Rooms with a look are built per biome and hour (`PER_BIOME`). `?event=hot-spring`
+(`&biome=wastes`, `&time=night`), `?event=treasure`.
+
+**The outdoor four** (part d, 2026-10-11, the user's pick: a 3D ground per biome over a 3D prop on the painted scene): the
+Berry Tree, Wishing Well, Item Ball and Team Rocket stand on a patch of the biome itself, `wild()`: the same scenery and
+sky as the open-air rooms with no fence (`paintFence(…, 'none')`: a hedge of bushes, or tumbled rocks), wild ground
+(`wildFloor()`: grass and wildflowers, moss and fallen leaves, or ash with glowing cracks, a worn path up from the door;
+a look's `grass` / `dirt`), the look's trees about and grass tufts or pebbles (`tufts()`). `buildBerry()`: an Oran Berry
+tree over a soil plot (eat: three berries drop and are eaten) and an empty plot with a sign (plant: a berry arcs into it
+and a sprout comes up). `buildWell()`: the stone well under a tiled roof, crank, rope and bucket, coins in the water; a tap
+on its left half is the first toss (or Fish), its right the big one (`userData.spotAt`, read by `onTap()`); act `toss`
+(`{ big, win }`: a coin or a Nugget arcs in, splashes, a win lights the water and sends a column of light and sparkles up).
+`buildItemball()`: the Poké Ball at the front of a patch of tall grass that rustles as you wade in; act `pickup`
+(`{ trap }`: it wobbles and pops open, or opens a Voltorb's eyes, flashes and blows up over a scorch, knocking your Pokémon
+back). `buildRocket()`: a striped roadblock with the R board, the grunt (their GIF, lifted onto its feet by
+`standOnFeet()`) and their Alpha (1.35x) standing at it, a bush to run through; no doormat (`exit: false`, `noExit`: there
+is no Leave), acts `pay` (coins into the grunt's hand) and `run` (into the bush, which shakes), the grunt's hop and shake
+from `figureDoes()`. An act's `ms` and `cues` can be functions of its `opts` (`playOut(act, opts)`), and a room's `reset()`
+puts it back whole on a new visit (berries, the sprout, the ball). Team Rocket's room is built per grunt and Alpha, so it
+is not built ahead.

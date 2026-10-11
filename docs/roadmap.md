@@ -73,12 +73,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
       the strongest; leave it unless a playtest says otherwise.
 
-**3D ? rooms** (the user's go, 2026-10-11). Part a, the four indoor rooms with trainers (dojo, study, Day Care, Fan
-Club), is done: see the archive. Next, Run in: CLOUD (attach both repos), easiest first: b) the Hot Spring and the Shrine
-(built places in the open air, each with a look per biome); c) the treasure grotto (a cave, its look per biome); d) the
-outdoor four (Berry Tree, Wishing Well, Item Ball, Team Rocket), which stand in the biome's own scenery, so they need a 3D
-ground per biome or a 3D prop over the painted backdrop: ask the user which. Kenmatta's arena is a battle backdrop, not
-a room: leave it unless asked.
+**3D ? rooms** (the user's go, 2026-10-11, on branch `event-rooms-3d` until the user says): every ? room and the treasure
+grotto are walked in 3D (parts a-d, see the archive). Waiting on the user: a playtest of the branch, then the word to
+put it on `main` (`main` has the commit that took part a off it, so the merge re-adds those files). Kenmatta's arena is a
+battle backdrop, not a room: leave it unless asked.
 
 ## Ideas, not agreed yet (ask the user before building)
 

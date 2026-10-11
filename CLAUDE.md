@@ -160,8 +160,13 @@ live site.
   presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
 - **The walk-in 3D ? rooms** (2026-10-11, the user's ask): the Move Tutor's dojo, the Move Deleter's study, the Day Care
   and the Fan Club are walked in 3D like the Center (`js/event-3d.js`, mounted by `event3d()` under `eventRoom()`; the
-  choices' acts and the trainers' reactions play on the props). The Hot Spring, Shrine, Kenmatta's arena, the grotto and
-  the outdoor rooms stay pixel. `?event=day-care` (`&event2d` the pixel room). Detail in `docs/reference/events.md`.
+  choices' acts and the trainers' reactions play on the props); since part b/c (same day) so are the Hot Spring and the
+  Shrine (open air: a look per biome, `LOOKS`, lit by the hour) and the treasure grotto (`treasureRoom()`, a cave per
+  biome, `CAVE`, its Poké Ball chest following the page chest's `.shaking` / `.opened`), and since part d (same day, the
+  user's pick: a 3D ground per biome) the outdoor four, the Berry Tree, Wishing Well, Item Ball and Team Rocket, on a
+  patch of the biome's own ground (`wild()`). Only Kenmatta's arena stays pixel. `?event=day-care` (`&biome=shrine`, `&starter=id`;
+  `?event=treasure` the grotto; `&event2d` the pixel room). On branch `event-rooms-3d` until the user says. Detail in
+  `docs/reference/events.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
   decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
   Every other starter is a skin — same deck array reference, different

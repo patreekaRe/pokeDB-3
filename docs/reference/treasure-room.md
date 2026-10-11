@@ -17,3 +17,7 @@ box, its name under it, the room bar's A key turns to Take it); tapping it again
 (`item-get`), then `gainRelic()`. Leave is hidden with `visibility` meanwhile (`showChoice()`
 resets it) so the text box doesn't jump.
 
+Since 2026-10-11 (branch `event-rooms-3d`) it is walked in 3D like the ? rooms: `event3d()` lays `buildGrotto()` from
+`js/event-3d.js` under it, a cave per biome with a modelled Poké Ball chest on the dais that follows this page chest's
+`.shaking` / `.opened`; the page chest stays for its logic and its Open sign, its pictures hidden, and the relics float up
+from the 3D chest (`chest3dSpot()`). `?event=treasure` (`&biome=`) walks into one. Detail in `docs/reference/events.md`.
