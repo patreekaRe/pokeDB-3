@@ -101,13 +101,17 @@ export function confirmDialog(question, yesLabel = 'Yes') {
   $('confirm-yes').textContent = yesLabel;
   openDialog('confirm-dialog');
   return new Promise(resolve => {
+    let done = false;
     const finish = (answer) => {
+      if (done) return;
+      done = true;
       $('confirm-yes').onclick = $('confirm-no').onclick = null;
       closeDialog('confirm-dialog');
       resolve(answer);
     };
     $('confirm-yes').onclick = () => finish(true);
     $('confirm-no').onclick = () => finish(false);
+    $('confirm-dialog').addEventListener('close', () => finish(false), { once: true });   // Escape closes it too, and must answer No
   });
 }
 

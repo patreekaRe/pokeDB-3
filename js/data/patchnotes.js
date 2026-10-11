@@ -45,7 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['fixes', 'Alphas and bosses glow without a second shadow under them, so their fights should lag less on phones.'],
   ['runs', 'At a crossroads, picking a road now asks if you are sure before you walk into that biome.'],
-  ['dex', 'The Sunken Ruins, Thornwood Jungle and Sunscorch Savanna pages now each give a perk when finished, Lv 2 once researched: Unown Rubbing shows which event a ❓ room holds, Tracker\'s Eye marks tough match-ups on the map, and Wayfinder lets you swap the other road at a crossroads.'],
+  ['runs', 'At a crossroads you can walk about: tap the ground to walk your Pokémon there, and walk up a road to take it.'],  ['dex', 'The Sunken Ruins, Thornwood Jungle and Sunscorch Savanna pages now each give a perk when finished, Lv 2 once researched: Unown Rubbing shows which event a ❓ room holds, Tracker\'s Eye marks tough match-ups on the map, and Wayfinder lets you swap the other road at a crossroads.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
