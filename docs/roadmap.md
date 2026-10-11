@@ -96,10 +96,22 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&stage=0-2`). Since a wild fight is the most common, a device under ~40 fps steps the arena down, shadows then
       resolution, remembered in `pokedb.arena3d.low` (`keepUp()` / `stepDown()`, the Secret Base's way). Checked at
       390x844 and 1280x800, every biome.
+    - **Waiting on the user:** a phone playtest of the wild fights (`?arena=wild`, the Clearing first, which has the most
+      3D): does any stutter? The cloud's browser renders 3D in software, so phone frame rates were never measured.
     - Kenmatta's dojo arena stays pixel for now: his fight has its own scene (`def.arena`, `PLACE_ART.kombat`), which
-      `wantsArena()` skips. Ask the user whether it should get 3D pads over its Mortal Kombat backdrop too.
-    - d. Later: each biome's own 3D foreground like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
-      Shrine's stone, Thornwood's roots, the Savanna's grass), about a session a biome; then main.
+      `wantsArena()` skips. Asked the user (2026-10-11) whether it should get 3D pads over its Mortal Kombat backdrop too;
+      no answer yet. If yes, it's a small add to part d's first session ("and Kenmatta's arena too").
+    - **d. Each biome's own 3D foreground**, like the Clearing's (ash and rocks in the Wastes, water in the Ruins, the
+      Shrine's stone, Thornwood's roots, the Savanna's grass, the Depths' crystals), about a session a biome; then main.
+      Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome each session): "Read CLAUDE.md and
+      docs/roadmap.md's item 22, then check out the branch `claude/jolly-ritchie-vdznxn` and work only on it (push only
+      to it, never to main). Give the Wastes' 3D arena its own foreground in js/arena-3d.js, the way `build()` lays the
+      Clearing's: 3D ground from your feet up to the pixel horizon (`sceneHorizon()`), fading into the pixel floor,
+      with ash, rocks and lava cracks round the edges, kept off the middle and the pads, lit by the hour; boss, Alpha
+      and wild fights alike. Keep it cheap on a phone (instanced meshes, the step-down still working). Check it at
+      390x844 and 1280x800 for every place (`&stage=0-2`, `&arena=boss`) with Three.js routed to a local
+      `npm pack three@0.160.0` in Playwright, and give me raw.githack links." Order: Wastes, Shrine, Ruins, Thornwood,
+      Savanna, Depths.
 
 ## Ideas, not agreed yet (ask the user before building)
 
