@@ -365,6 +365,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   (`badgePop()` in `js/gym.js`), the doormat on to the rewards. `?event2d` or no Three.js keeps the old overlay talk
   (`gymTalk()`). The map shows the leader over the boss room in place of the boss (`gymOnMap()`, renderMap's `gym`), in
   colour once beaten.
+  **Bigger and more epic** (2026-10-12, the user's ask: "a little bigger and the walk up more epic"): the gym is a 13 x 16
+  hall (`SIZES` / `useSize()` in `js/event-3d.js`: a room kind may carry its own size, `view` rows in the shot that slides
+  up with you, `camZ`, and a closer `across`), stone statues of the leader's bosses at the door (`statue()`), an avenue of
+  five fire pillars a side lighting pair by pair with a taiko beat as you walk up (`AVENUE`, `tickFire()`), a two-tier dais
+  with steps, taller banners and board; the great braziers whoosh at the court's head, and as the leader speaks they flare
+  with a gong and the shot pushes in (`R.flare()` / `R.focus`, `PUSH`). Next: the user's playtest on a phone.
   **The user's placement** (2026-10-12; the first of each biome has two bosses; badge names are placeholders):
 
   | Biome | Leader (id) | Bosses | Badge |
