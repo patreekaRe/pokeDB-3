@@ -48,6 +48,7 @@ export const NEXT = [
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
   ['look', 'The shut Pokédex on the title now opens only with its blue power button, and no longer plays your buddy\'s cry as it opens.'],
+  ['look', 'The Game Corner\'s joystick, D-pad and Buy button now give a little buzz on phones (Settings > Vibration turns it off).'],
   ['pc', 'The PC\'s Sign in is now a gold SIGN IN / SIGN UP row near the top while you\'re signed out, and the sign-in window says how to make a free account.'],
   ['pc', 'The PC\'s Log off is now called Exit PC.'],
   ['pc', 'The PC menu is reordered: rewards first, then Walking buddy (showing who walks with you now) and Base residents straight off the menu, then your things and the game\'s records. Both the walking buddy and the Pokédex partner pickers now explain how the two differ.'],
