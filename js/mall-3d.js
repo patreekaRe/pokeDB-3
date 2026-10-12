@@ -23,8 +23,10 @@ import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRI
 import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { cabinetUp } from './home-arcade.js';
+import { dressHall, dressFronts } from './mall-hall.js';
 
-const COLS = 13, ROWS = 7;
+const COLS = 13, ROWS = 7;   // the shops' floors; the hall is bigger (the user's ask, 2026-10-12: it felt small)
+const HC = 21, HR = 10, HALL_DOOR = { x: 10, y: HR - 1 };
 const U = 20;                 // the paintings' units a tile
 const TOP = 11;               // the walls run up this high, so a tall phone shows no sky over them
 const DECK = 3.1, DECK_D = 1;   // the mezzanine's underside and how far it reaches out
@@ -37,27 +39,30 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 const FRONTS = [
   // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base, the Game Corner once Meowth
   // has been met at a crossroads (js/meowth.js); syncShop() opens both; ?mall= goes in either way
-  { id: 'furniture', name: 'Furniture', line: '', x: 2, step: { x: 2, y: 1 } },
-  { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 6, step: { x: 6, y: 1 } },
-  { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
+  { id: 'furniture', name: 'Furniture', line: '', x: 4, step: { x: 4, y: 1 } },
+  { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 10, step: { x: 10, y: 1 } },
+  { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 16, step: { x: 16, y: 1 }, colour: '#e88a30' },
 ];
 
 let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, hemi, sun;
-let mon, walker = { x: 0, z: 0, tile: { x: 6, y: ROWS - 1 }, path: [], facing: 'back', flip: false, hop: 0 };
+let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
 let places = {}, P = null, picked = null, riding = null;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
+let dressed = [], env = null;   // the hall's models' ticks (js/mall-hall.js) and its reflections
 let calm = false, last = 0, camX = 0, camZ = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
 // the place you're in can be bigger than the hall (the Game Corner): its tiles, set by setPlace()
-let PC = COLS, PR = ROWS;
+let PC = HC, PR = HR;
 /** What a place's tick() may draw over the view with: your partner, the camera, the view and its stage. */
 const hud = { partner: () => walker, get camera() { return camera; }, get view() { return view; }, get stage() { return root?.querySelector('.b3-stage'); } };
 const tileX = (tx) => tx + 0.5 - PC / 2;
 const tileZ = (ty) => ty + 0.5 - PR / 2;
+const hx = (tx) => tx + 0.5 - HC / 2;       // a hall tile's middle, whichever place is shown
+const hz = (ty) => ty + 0.5 - HR / 2;
 const key = (x, y) => `${x},${y}`;
 const wx = (t) => (t + 0.4) * U;            // a room tile's x on the back wall's painting (it runs 0.4 past each side)
 const wy = (y) => (TOP - y) * U;            // a height's y on it
@@ -148,11 +153,11 @@ const ICONS = {
 /** The back wall, all one painting: the shop fronts on the ground floor, the Game Corner's violet alcove in the middle, the
     upper floor's lit shops, then tall windows of sky under a white truss and POKé MALL in lights. */
 function wallArt() {
-  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
+  const W = (HC + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
   g.fillStyle = lin(0, 0, 0, H, [C.stone, C.cream, C.cream, C.stone]); g.fillRect(0, 0, W, H);
   // the tall windows, sky and a white truss
   const wt = wy(TOP - 0.3), wb = wy(DECK + 2.8);
-  for (let t = 0.3; t < COLS - 0.3; t += 2.6) {
+  for (let t = 0.3; t < HC - 0.3; t += 2.6) {
     const x0 = wx(t) + 3, x1 = wx(t + 2.6) - 3;
     rr(x0 - 1, wt - 1, x1 - x0 + 2, wb - wt + 2, 1, C.shade);
     g.fillStyle = lin(0, wt, 0, wb, ['#7ab8f0', '#a8d4f8', '#e0f0ff']); g.fillRect(x0, wt, x1 - x0, wb - wt);
@@ -175,7 +180,7 @@ function wallArt() {
   words(s, 'POKé MALL', W / 2 + 7, sy + 9.5, 10, '#ff8070');
   // the upper floor
   rr(0, wy(DECK + 2.6), W, wy(DECK) - wy(DECK + 2.6), 0, lin(0, wy(DECK + 2.6), 0, wy(DECK), [C.cream, C.stone]));
-  const ups = [['ball', '#e84838'], ['potion', '#8a5ad0'], ['berry', '#3a8ad8'], ['disc', '#58a858'], ['star', '#e8a830']];
+  const ups = [['ball', '#e84838'], ['potion', '#8a5ad0'], ['berry', '#3a8ad8'], ['disc', '#58a858'], ['star', '#e8a830'], ['ball', '#3a8ad8'], ['berry', '#e870b0'], ['potion', '#58a858']];
   ups.forEach(([icon, colour], i) => { const t = 0.4 + i * 2.6; upperShop(f, s, wx(t) + 2, wx(t + 2.3), ICONS[icon], colour); });
   // the ground floor: pilasters and the three fronts
   for (const fr of FRONTS) {
@@ -184,67 +189,68 @@ function wallArt() {
     else if (fr.id === 'furniture') frontArt(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
     else shutter(f, s, x0, x1, fr.colour);
   }
-  for (const t of [0, 4, 9, 13]) rr(wx(t) - 3, wy(DECK), 6, wy(0) - wy(DECK), 0.8, lin(wx(t) - 3, 0, wx(t) + 3, 0, ['#ffffff', C.cream, C.shade]));
   g.fillStyle = '#6a5a48'; g.fillRect(0, wy(0.12), W, wy(0) - wy(0.12));
   return f.c;
 }
 
-/** Marble in big squares, a red runner from the doors up to the Game Corner, gold edging it, a Poké Ball inlaid midway. */
+/** Polished marble: cream squares set on the diagonal inside a dark granite border, a gold-inlaid ring round the fountain
+    with a Poké Ball compass under it, and a red runner from the doors to the ring and on from it to the Game Corner. */
 function floorArt() {
-  const f = fine(COLS * 16, ROWS * 16, 5), { g, rr, lin } = f, T = 16;
-  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-    g.fillStyle = lin(x * T, y * T, x * T + T, y * T + T, (x + y) % 2 ? C.marble : [C.marble[1], C.marble[0]]);
-    g.fillRect(x * T, y * T, T, T);
+  const T = 16, W = HC * T, H = HR * T, f = fine(W, H, 5), { g, rr, lin } = f;
+  g.fillStyle = '#4a3e4a'; g.fillRect(0, 0, W, H);
+  const b = T * 0.45;
+  g.fillStyle = lin(0, 0, W, H, ['#f4ecdc', '#e6d8c0', '#f4ecdc']); g.fillRect(b, b, W - 2 * b, H - 2 * b);
+  g.save(); g.beginPath(); g.rect(b, b, W - 2 * b, H - 2 * b); g.clip();
+  const d = T * 1.5;
+  for (let i = -HR * 2; i < HC * 2; i++) for (let j = -2; j < HR * 2; j++) {
+    const cx = i * d + (j % 2) * d / 2, cy = j * d / 2;
+    if ((i + j) % 3) continue;
+    g.fillStyle = 'rgba(190,160,120,0.32)';
+    g.beginPath(); g.moveTo(cx, cy - d / 2); g.lineTo(cx + d / 2, cy); g.lineTo(cx, cy + d / 2); g.lineTo(cx - d / 2, cy); g.closePath(); g.fill();
   }
-  g.strokeStyle = C.grout; g.lineWidth = 0.4;
-  for (let x = 0; x <= COLS; x++) { g.beginPath(); g.moveTo(x * T, 0); g.lineTo(x * T, ROWS * T); g.stroke(); }
-  for (let y = 0; y <= ROWS; y++) { g.beginPath(); g.moveTo(0, y * T); g.lineTo(COLS * T, y * T); g.stroke(); }
-  const rx = 6 * T + 2, rw = T - 4, ry = 0;
-  rr(rx - 1, ry, rw + 2, ROWS * T - ry, 0, '#c89418');
-  rr(rx, ry, rw, ROWS * T - ry, 0, lin(rx, 0, rx + rw, 0, ['#a82838', '#c83848', '#a82838']));
-  ball(g, 6.5 * T, 4.5 * T, 5);
-  g.strokeStyle = '#c89418'; g.lineWidth = 0.8; g.beginPath(); g.arc(6.5 * T, 4.5 * T, 6.4, 0, Math.PI * 2); g.stroke();
-  return f.c;
-}
-
-/** A planter: a white tub banded red, a palm over it. */
-function planterArt() {
-  const f = fine(16, 26), { g, rr, lin } = f;
-  g.strokeStyle = '#7a5430'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(8, 18); g.quadraticCurveTo(7, 12, 8.5, 7); g.stroke();
-  for (const [a, l] of [[-2.6, 7], [-2, 8], [-1.2, 7], [-0.5, 6.5], [0.3, 7.5], [-3.2, 5.5]]) {
-    g.fillStyle = lin(0, 0, 0, 12, ['#7ad060', '#3a9038']);
-    g.save(); g.translate(8.5, 7); g.rotate(a); g.beginPath(); g.ellipse(l / 2, 0, l / 2, 1.3, 0, 0, Math.PI * 2); g.fill(); g.restore();
+  g.strokeStyle = 'rgba(170,150,120,0.35)'; g.lineWidth = 0.35;
+  for (let k = -H; k < W + H; k += d / 2) { g.beginPath(); g.moveTo(k, 0); g.lineTo(k + H, H); g.moveTo(k, H); g.lineTo(k + H, 0); g.stroke(); }
+  g.strokeStyle = 'rgba(150,130,110,0.18)'; g.lineWidth = 0.25;   // veins in the marble
+  for (let i = 0; i < 70; i++) {
+    const x = (i * 97) % W, y = (i * 61) % H;
+    g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + 8, y + 3, x + 12, y - 4, x + 22, y + 2); g.stroke();
   }
-  rr(2.5, 17, 11, 8.6, 1.6, lin(2.5, 0, 13.5, 0, ['#ffffff', '#f0ece4', '#cfc8bc']));
-  rr(2.5, 19, 11, 1.6, 0, C.red);
-  return f.c;
-}
-
-/** A bench: wooden slats on two steel legs. */
-function benchArt() {
-  const f = fine(28, 12), { rr, lin } = f;
-  for (const x of [3, 23]) rr(x, 6, 2, 6, 0.4, '#9aa0ae');
-  rr(1, 1, 26, 2.6, 0.8, lin(0, 1, 0, 3.6, ['#d8a868', '#a87840']));
-  rr(1, 4.4, 26, 2.6, 0.8, lin(0, 4.4, 0, 7, ['#d8a868', '#a87840']));
-  return f.c;
-}
-
-/** A banner hung from the mezzanine: red, a Poké Ball, a swallowtail end. */
-function bannerArt() {
-  const f = fine(10, 28), { g, lin } = f;
-  g.fillStyle = lin(0, 0, 10, 0, [C.redDark, C.red, C.redDark]);
-  g.beginPath(); g.moveTo(0, 0); g.lineTo(10, 0); g.lineTo(10, 28); g.lineTo(5, 24); g.lineTo(0, 28); g.closePath(); g.fill();
-  g.fillStyle = '#ffffff'; g.fillRect(0, 2, 10, 0.8);
-  ball(g, 5, 12, 3.4);
+  g.restore();
+  g.strokeStyle = '#c89418'; g.lineWidth = 0.7; g.strokeRect(b + 1.2, b + 1.2, W - 2 * b - 2.4, H - 2 * b - 2.4);
+  const fx = (HC / 2) * T, fy = 5.5 * T, R = 2.6 * T;
+  // the runner, under the ring
+  const runner = (y0, y1) => {
+    rr(fx - T / 2 + 1, y0, T - 2, y1 - y0, 0, '#c89418');
+    rr(fx - T / 2 + 2, y0, T - 4, y1 - y0, 0, lin(fx - T / 2, 0, fx + T / 2, 0, ['#a82838', '#d04050', '#a82838']));
+    g.strokeStyle = 'rgba(248,208,64,0.6)'; g.lineWidth = 0.35;
+    g.beginPath(); g.moveTo(fx - T / 2 + 3.2, y0); g.lineTo(fx - T / 2 + 3.2, y1); g.moveTo(fx + T / 2 - 3.2, y0); g.lineTo(fx + T / 2 - 3.2, y1); g.stroke();
+  };
+  runner(0, fy - R + 2); runner(fy + R - 2, H);
+  // the ring: a dark band set with gold, eight points of a compass, a Poké Ball under the basin
+  g.fillStyle = '#5a4a5a'; g.beginPath(); g.arc(fx, fy, R, 0, Math.PI * 2); g.fill();
+  g.fillStyle = lin(fx - R, fy - R, fx + R, fy + R, ['#fbf6ea', '#ece0c8']); g.beginPath(); g.arc(fx, fy, R - 2.2, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#c89418'; g.lineWidth = 0.8;
+  for (const r of [R - 0.4, R - 2.2, R - 6]) { g.beginPath(); g.arc(fx, fy, r, 0, Math.PI * 2); g.stroke(); }
+  for (let i = 0; i < 8; i++) {
+    const a = i * Math.PI / 4, r1 = R - 2.4, r0 = R - 6, w = i % 2 ? 1.4 : 2.4;
+    g.fillStyle = i % 2 ? '#c89418' : '#a82838';
+    g.beginPath(); g.moveTo(fx + Math.cos(a) * r1, fy + Math.sin(a) * r1);
+    g.lineTo(fx + Math.cos(a + 0.3) * r0 + Math.cos(a + Math.PI / 2) * w * 0, fy + Math.sin(a + 0.3) * r0);
+    g.lineTo(fx + Math.cos(a) * (r0 - 1), fy + Math.sin(a) * (r0 - 1));
+    g.lineTo(fx + Math.cos(a - 0.3) * r0, fy + Math.sin(a - 0.3) * r0); g.closePath(); g.fill();
+  }
+  ball(g, fx, fy, 1.5 * T * 0.62);
+  // brass medallions in the border, one before each front
+  for (const fr of FRONTS) { g.fillStyle = '#c89418'; star(g, (fr.x + 0.5) * T, b / 2, 2.6); }
   return f.c;
 }
 
 /** The mezzanine's face: white, a red stripe, little lights along it. */
 function fasciaArt() {
-  const f = fine((COLS + 0.8) * U, 8, 5), { g, lin, shine } = f, s = shine();
-  g.fillStyle = lin(0, 0, 0, 8, ['#ffffff', C.cream]); g.fillRect(0, 0, (COLS + 0.8) * U, 8);
-  g.fillStyle = C.red; g.fillRect(0, 3, (COLS + 0.8) * U, 2);
-  for (let x = 4; x < (COLS + 0.8) * U; x += 8) {
+  const W = (HC + 0.8) * U, f = fine(W, 8, 5), { g, lin, shine } = f, s = shine();
+  g.fillStyle = lin(0, 0, 0, 8, ['#ffffff', C.cream]); g.fillRect(0, 0, W, 8);
+  g.fillStyle = C.red; g.fillRect(0, 3, W, 2);
+  for (let x = 4; x < W; x += 8) {
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, 6.6, 0.7, 0, Math.PI * 2); g.fill();
     s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, 6.6, 0.8, 0, Math.PI * 2); s.fill();
   }
@@ -276,7 +282,7 @@ function tapeArt() {
 
 /** Two strips of tape crossed over a closed front and out onto the wall either side, a third straight across. */
 function tapeOver(fr, tape) {
-  const x = tileX(fr.x), z = -ROWS / 2 + 0.42;
+  const x = hx(fr.x), z = -HR / 2 + 0.42;
   for (const [rot, y, len, dz] of [[0.42, 1.15, 4.1, 0], [-0.42, 1.15, 4.1, 0.03], [0.04, 0.6, 3.6, 0.06]]) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(len, len * 7 / 96), std({ map: texOf(tape), side: THREE.DoubleSide, roughness: 0.5 }));
     m.position.set(x, y, z + dz);
@@ -297,7 +303,7 @@ function tapeOver(fr, tape) {
 // (2026-10-11, the user's ask) once Meowth has opened it at a crossroads (js/meowth.js): Meowth waits by it, saved as the
 // save's `cornerRibbon`. A shop's ribbon is a RIBBONS line.
 const RIBBON_PEEK = new URLSearchParams(location.search).has('ribbon');
-const RIBBON_Y = 0.82, RIBBON_Z = -ROWS / 2 + 0.72;
+const RIBBON_Y = 0.82, RIBBON_Z = -HR / 2 + 0.72;
 let ribbons = [], confetti = [];
 
 const RIBBONS = {
@@ -363,7 +369,7 @@ function grandSignArt() {
 
 /** The ribbon's parts, standing in the hall in front of the store's doors (hidden till syncShop() puts them up). */
 function buildRibbon(shop) {
-  const group = new THREE.Group(), cx = tileX(shop.x), half = 1.38;
+  const group = new THREE.Group(), cx = hx(shop.x), half = 1.38;
   const brass = std({ color: '#d8a838', metalness: 0.75, roughness: 0.3 }), tag = (m) => { m.userData.front = shop; m.castShadow = true; return m; };
   for (const s of [-1, 1]) {
     const x = cx + s * (half + 0.04);
@@ -410,7 +416,7 @@ function syncRibbon() {
 async function syncOne(r) {
   const up = ribbonUp(r);
   r.group.visible = up;
-  for (const k of ribbonTiles(r)) up ? places.hall?.blocked.add(k) : places.hall?.blocked.delete(k);
+  for (const k of ribbonTiles(r)) up ? places.hall?.blocked.add(k) : places.hall?.fixed.has(k) || places.hall?.blocked.delete(k);
   if (!up) { if (r.mon) r.mon.group.visible = false; return; }
   r.asked = false;
   if (!r.mon) {
@@ -419,7 +425,7 @@ async function syncOne(r) {
     r.mon.group.traverse(o => { o.userData.front = r.shop; });
     hall.add(r.mon.group);
   }
-  r.home = { x: tileX(r.shop.x) + 1.95, z: RIBBON_Z + 0.25 };
+  r.home = { x: hx(r.shop.x) + 1.95, z: RIBBON_Z + 0.25 };
   r.mon.group.position.set(r.home.x, 0, r.home.z);
   r.mon.group.visible = true;
   r.walkIn = 0;
@@ -462,7 +468,7 @@ const CONFETTI = ['#e84838', '#f8d040', '#3a8ad8', '#58b048', '#e870b0', '#fffff
 /** Confetti over the doors and off each post. */
 function burst(r) {
   if (calm) return;
-  const cx = tileX(r.shop.x), geo = new THREE.PlaneGeometry(0.06, 0.1);
+  const cx = hx(r.shop.x), geo = new THREE.PlaneGeometry(0.06, 0.1);
   const mats = CONFETTI.map(color => new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
   const spawn = (n, x, y, spread, up) => {
     for (let i = 0; i < n; i++) {
@@ -530,7 +536,7 @@ function tickOne(ribbon, dt, now) {
   m.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   if (ribbon.walkIn) {   // over to the middle of the doors and in through them
     const k = Math.min(1, (now - ribbon.walkIn) / 1400), e = k * k * (3 - 2 * k);
-    const tx = tileX(ribbon.shop.x), tz = -ROWS / 2 + 0.25;
+    const tx = hx(ribbon.shop.x), tz = -HR / 2 + 0.25;
     m.group.position.set(ribbon.home.x + (tx - ribbon.home.x) * e, 0, ribbon.home.z + (tz - ribbon.home.z) * Math.max(0, e * 2 - 1));
     m.board.scale.x = tx > ribbon.home.x ? -1 : 1;
     if (k >= 1) m.group.visible = false;
@@ -569,101 +575,105 @@ const lit = (m, src, colour, k) => {
   return m;
 };
 
-/** A smooth painting standing on the floor, `s` units a painted tile (16 units). */
-function stand(c, x, z, s = 1) {
-  const w = c.width / c.fine / 16 * s, h = c.height / c.fine / 16 * s;
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), std({ map: texOf(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
-  mesh.position.set(x, h / 2, z);
-  mesh.castShadow = true;
-  hall.add(mesh);
-  return mesh;
-}
-
 function buildHall() {
   hall = new THREE.Group();
   scene.add(hall);
   const edge = std({ color: '#3a3040' });
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(COLS, 0.6, ROWS), [edge, edge, std({ map: texOf(floorArt()), roughness: 0.35, metalness: 0.05 }), edge, std({ color: '#d8c8a8' }), edge]);
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(HC, 0.6, HR), [edge, edge, std({ map: texOf(floorArt()), color: '#e4dccc', roughness: 0.28, metalness: 0.05, envMapIntensity: 0.55 }), edge, std({ color: '#d8c8a8' }), edge]);
   floor.position.y = -0.3;
   floor.receiveShadow = true;
   hall.add(floor);
   // a plinth under it, cut at the front, so a tall phone shows no empty band below
-  const plinth = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 7, ROWS + 0.4), [edge, edge, edge, edge, std({ color: '#6a5a48' }), edge]);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(HC + 0.8, 7, HR + 0.4), [edge, edge, edge, edge, std({ color: '#6a5a48' }), edge]);
   plinth.position.set(0, -0.6 - 3.5, -0.2);
   hall.add(plinth);
 
   const wall = wallArt(), wm = lit(std({ map: texOf(wall), roughness: 0.9 }), wall, '#fff4dc', 1);
   wallMat = wm; painted = wallKey();
-  const cap = std({ color: C.shade }), back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [cap, cap, cap, cap, wm, cap]);
-  back.position.set(0, TOP / 2, -ROWS / 2 - 0.2);
+  const cap = std({ color: C.shade }), back = new THREE.Mesh(new THREE.BoxGeometry(HC + 0.8, TOP, 0.4), [cap, cap, cap, cap, wm, cap]);
+  back.position.set(0, TOP / 2, -HR / 2 - 0.2);
   back.receiveShadow = true;
   hall.add(back);
-  // side walls, cut away at the front like the base's
-  const side = std({ color: C.cream });
+  // side walls, cut away at the front like the base's: cream over a marble dado
+  const side = std({ color: C.cream }), dado = std({ color: '#d8ccb4', roughness: 0.3 });
   for (const s of [-1, 1]) {
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, ROWS), side);
-    m.position.set(s * (COLS / 2 + 0.2), TOP / 2, 0);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, HR), side);
+    m.position.set(s * (HC / 2 + 0.2), TOP / 2, 0);
     m.receiveShadow = true;
-    hall.add(m);
+    const d = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.9, HR), dado);
+    d.position.set(s * HC / 2, 0.45, 0);
+    d.receiveShadow = true;
+    hall.add(m, d);
   }
 
-  // the mezzanine, its lit face and glass rail
-  const deckZ = -ROWS / 2 + DECK_D / 2, fascia = fasciaArt();
+  // the mezzanine, its lit face and glass rail (the escalators come up through each end)
+  const deckZ = -HR / 2 + DECK_D / 2, fascia = fasciaArt();
   const fm = lit(std({ map: texOf(fascia) }), fascia, '#fff4c8', 1);
-  const slab = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.22, DECK_D + 0.4), [cap, cap, std({ color: '#e6dcc8' }), std({ color: '#f0e8d8' }), fm, cap]);
+  const slab = new THREE.Mesh(new THREE.BoxGeometry(HC + 0.8, 0.22, DECK_D + 0.4), [cap, cap, std({ color: '#e6dcc8' }), std({ color: '#f0e8d8' }), fm, cap]);
   slab.position.set(0, DECK + 0.11, deckZ - 0.2);
   slab.castShadow = slab.receiveShadow = true;
   hall.add(slab);
-  const glass = new THREE.Mesh(new THREE.PlaneGeometry(COLS + 0.8, 0.5), std({ color: '#cfeaff', transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.2, depthWrite: false }));
+  const railW = HC - 4.4;
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(railW, 0.5), std({ color: '#cfeaff', transparent: true, opacity: 0.3, roughness: 0.1, metalness: 0.2, depthWrite: false }));
   glass.position.set(0, DECK + 0.22 + 0.25, deckZ + DECK_D / 2 - 0.02);
   hall.add(glass);
   const steel = std({ color: C.steel, metalness: 0.6, roughness: 0.3 });
-  const rail = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, 0.05, 0.06), steel);
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(railW, 0.05, 0.06), steel);
   rail.position.set(0, DECK + 0.74, deckZ + DECK_D / 2);
   hall.add(rail);
-  for (let x = -COLS / 2; x <= COLS / 2 + 0.01; x += COLS / 8) {
+  for (let x = -railW / 2; x <= railW / 2 + 0.01; x += railW / 12) {
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.52, 0.04), steel);
     post.position.set(x, DECK + 0.48, deckZ + DECK_D / 2);
     hall.add(post);
-  }
-  for (const x of [-6.1, 6.1]) {   // clear of the shop fronts' signs
-    const b = bannerArt(), w = 0.4, h = w * 28 / 10;
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), std({ map: texOf(b), alphaTest: 0.5, side: THREE.DoubleSide }));
-    m.position.set(x, DECK - h / 2, deckZ + DECK_D / 2 + 0.03);
-    hall.add(m);
   }
 
   // the fronts answer a tap: an invisible board over each
   for (const fr of FRONTS) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 2.5), new THREE.MeshBasicMaterial({ visible: false }));
-    m.position.set(tileX(fr.x), 1.25, -ROWS / 2 + 0.02);
+    m.position.set(hx(fr.x), 1.25, -HR / 2 + 0.02);
     m.userData.front = fr;
     hall.add(m);
   }
-  const shop = FRONTS.find(f => f.id === 'furniture'), show = frontWindow(THREE, tileX(shop.x), -ROWS / 2);
+  const shop = FRONTS.find(f => f.id === 'furniture'), show = frontWindow(THREE, hx(shop.x), -HR / 2);
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
   const tape = tapeArt();
   for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
   ribbons = [buildRibbon(shop), buildRibbon(FRONTS.find(f => f.id === 'corner'))];
 
-  // planters and benches down the sides, light falling from the windows
-  const planter = planterArt(), bench = benchArt();
-  for (const [x, y] of [[0, 3], [12, 3], [3, 3], [9, 3]]) { stand(planter, tileX(x), tileZ(y), 1.3); blocked.add(key(x, y)); }
-  for (const [x, y] of [[1, 5], [11, 5]]) {
-    stand(bench, tileX(x), tileZ(y), 1); blocked.add(key(x, y));
-  }
+  // everything modelled: the fountain, planters, benches, lamps, escalators, the shops' entrances (js/mall-hall.js)
+  const at = (x, y) => [hx(x), hz(y)], block = (x, y) => blocked.add(key(x, y));
+  const decor = dressHall(THREE, { group: hall, at, cols: HC, rows: HR, deck: DECK, deckD: DECK_D, block, calm });
+  const fronts = dressFronts(THREE, { group: hall, fronts: FRONTS, at, wallZ: -HR / 2, block, calm });
+  dressed = [decor.tick, fronts.tick];
   const shaft = shaftArt();
-  for (const x of [-4.5, 0.5, 5]) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 7), new THREE.MeshBasicMaterial({ map: texOf(shaft), transparent: true, opacity: 0.32, blending: THREE.AdditiveBlending, depthWrite: false }));
-    m.position.set(x, 3.5, -0.6);
+  for (const x of [-7, -2.5, 2.5, 7]) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 7), new THREE.MeshBasicMaterial({ map: texOf(shaft), transparent: true, opacity: 0.26, blending: THREE.AdditiveBlending, depthWrite: false }));
+    m.position.set(x, 3.5, -1.2);
     m.rotation.z = 0.32;
     m.raycast = () => {};
     hall.add(m);
   }
   for (const m of glows) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, 0.9) * m.userData.glow;
-  places.hall = { id: 'hall', group: hall, blocked, spots: FRONTS, top: DECK + 0.8, title: 'Poké Mall' };
+  places.hall = { id: 'hall', group: hall, blocked, fixed: new Set(blocked), spots: FRONTS, top: DECK + 0.8, title: 'Poké Mall', cols: HC, rows: HR, door: HALL_DOOR };
   addDoor(places.hall);
+}
+
+/** Soft reflections for the hall's marble, brass and glass: a warm room with a skylight, a few lamps and the shop
+    windows' glow, baked once into an environment map. */
+function hallEnv() {
+  const pm = new THREE.PMREMGenerator(renderer), s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(30, 12, 30), new THREE.MeshBasicMaterial({ color: '#6a5a50', side: THREE.BackSide })));
+  const panel = (w, h, x, y, z, rx, ry, c) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
+    m.position.set(x, y, z); m.rotation.set(rx, ry, 0); s.add(m);
+  };
+  panel(18, 6, 0, 5.9, 0, Math.PI / 2, 0, new THREE.Color(3.2, 3.1, 2.8));
+  for (const x of [-9, -3, 3, 9]) panel(4, 2, x, 2, -14.9, 0, 0, new THREE.Color(2.4, 1.9, 1.2));
+  panel(26, 1.2, 0, 0.2, 14.9, 0, 0, new THREE.Color(0.9, 0.8, 0.7));
+  const t = pm.fromScene(s, 0.035).texture;
+  pm.dispose();
+  return t;
 }
 
 const DOOR = { x: 6, y: ROWS - 1 };   // the tile in from the doormat, where every place is walked into
@@ -802,11 +812,14 @@ function setPlace(p, at, facing = 'back') {
   u.uBand.value = shop ? 0.3 : 0.16;
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-  camX = walker.x; camZ = Math.max(-Math.max(0, (PR - ROWS) / 2), Math.min(Math.max(0, (PR - ROWS) / 2), walker.z));
   root.querySelector('.b3-top h2').textContent = P.title;
-  hemi.intensity = 1.7 * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
+  scene.environment = P.id === 'hall' ? env : null;
+  const glow = P.id === 'hall' ? 0.75 : 1;   // the hall's reflections light it too
+  hemi.intensity = 1.7 * glow * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
   showCoins();
   if (viewW) fitShot(viewW, viewH);
+  const deep = Math.max(0, (PR - (shot?.win ?? ROWS)) / 2);
+  camX = walker.x; camZ = Math.max(-deep, Math.min(deep, walker.z));
 }
 
 function showCoins() {
@@ -1073,23 +1086,30 @@ function aimCamera(x, d, z = 0) {
   camera.updateMatrixWorld();
 }
 
-/* The Clearing's shot: ACROSS tiles at least, and far enough back that the hall from the floor's front edge up to the
-   mezzanine's rail fits between the title and the speech window, the doorstep included; a lens shift centres it there. */
+/* The Clearing's shot: ACROSS tiles at least, and far enough back that ROWS of floor, from its front edge up to the
+   mezzanine's rail, fit between the title and the speech window, the doorstep included; a lens shift centres it there.
+   A place deeper than that slides the window with your partner; in the hall, a tall phone (whose shot ACROSS already
+   holds far back) sees as much more of its depth as fits without stepping back. */
 function fitShot(w, h) {
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
   const topBar = root.querySelector('.b3-top').offsetHeight, below = root.querySelector('.mall-foot').offsetHeight + 16;
   const avail = h - topBar - below, room = 2 * avail / h * 0.94;
-  const span = (d) => {
+  const span = (d, w) => {
     aimCamera(0, d);
-    return [new THREE.Vector3(0, P.top, -ROWS / 2).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
+    return [new THREE.Vector3(0, P.top, -w / 2).project(camera).y, new THREE.Vector3(0, -0.3, w / 2 + 0.95).project(camera).y];
   };
-  let lo = 2, hi = 80;
-  for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid); if (t - b > room) lo = mid; else hi = mid; }
-  const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  const d = Math.max(hi, ACROSS / 2 / halfTan);
-  const [t, b] = span(d);
-  shot = { dist: d, half: d * halfTan, shift: (1 - (t + b) / 2) / 2 * h - (topBar + avail / 2) };
+  const fit = (w) => {
+    let lo = 2, hi = 80;
+    for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid, w); if (t - b > room) lo = mid; else hi = mid; }
+    return hi;
+  };
+  const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect, wide = ACROSS / 2 / halfTan;
+  let win = ROWS;
+  if (P.id === 'hall') for (let w = PR; w > ROWS; w -= 0.25) if (fit(w) <= wide) { win = w; break; }
+  const d = Math.max(fit(win), wide);
+  const [t, b] = span(d, win);
+  shot = { dist: d, half: d * halfTan, win, shift: (1 - (t + b) / 2) / 2 * h - (topBar + avail / 2) };
 }
 
 function placeCamera(dt) {
@@ -1099,7 +1119,7 @@ function placeCamera(dt) {
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   // a room deeper than the hall slides a hall-deep window along with your partner, so it stays the hall's size
-  const deep = Math.max(0, (PR - ROWS) / 2), wantZ = Math.max(-deep, Math.min(deep, walker.z));
+  const deep = Math.max(0, (PR - shot.win) / 2), wantZ = Math.max(-deep, Math.min(deep, walker.z));
   camZ = calm ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 4);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist, camZ);
@@ -1147,6 +1167,7 @@ function frame(now) {
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
   P.tick?.(now, dt, hud);
+  if (P.id === 'hall') for (const t of dressed) t(now, dt);
   places.gc?.crowd?.tick(now, dt, P.id === 'gc');
   tickRibbon(dt, now);
   tickConfetti(dt, now);
@@ -1160,7 +1181,7 @@ function frame(now) {
 
 /** In at the doors: the bottom of the hall, facing in. */
 function atDoors() {
-  setPlace(places.hall, { x: 6, y: ROWS - 1 });
+  setPlace(places.hall, { ...HALL_DOOR });
 }
 
 /** Out over the doormat: from a shop to its doorstep in the hall, or out of the mall. */
@@ -1228,7 +1249,8 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   sun.shadow.bias = -0.0015;
   sun.shadow.normalBias = 0.02;
   scene.add(hemi, sun);
-  post = createPost(renderer);
+  post = createPost(renderer, { short: 760, crisp: false });   // smooth, like the Secret Base
+  env = hallEnv();
   syncShop();
   buildHall();
   syncShop();
@@ -1249,6 +1271,6 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   });
   requestAnimationFrame(frame);
   curtain(false);
-  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : { x: 6, y: ROWS - 1 });
+  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : DOOR);
   if (store === 'corner') goPlace('gc', null);
 }

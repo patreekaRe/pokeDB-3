@@ -43,6 +43,8 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'The Poké Mall\'s hall is bigger and done up: a Poké Ball fountain in a gold-inlaid marble plaza, palms and topiary in stone planters, park benches, street lamps, columns, vending machines, a mall guide and escalators up to the mezzanine, all in real 3D.'],
+  ['mall', 'The shop entrances are built out from the wall: lit sign boxes, a green striped awning and flower troughs at the Furniture store, a marquee of chasing bulbs, gold stars and velvet ropes at the Game Corner, and barriers and cones at the shop still moving in.'],
   ['base', 'What stands on top of furniture is modelled now, not a flat picture: the water cooler\'s bottle, the organ\'s pipes, the crates\' apples, carrots, corn, potatoes and cabbages, milk bottles, the till, the sink\'s tap, the fireplace\'s mantel things, the espresso machine, the prize counter\'s teddy and more.'],
   ['base', 'Over 60 boxy pieces of furniture are real boxes now, their picture on the front only: fridges, vending machines, shelves, cabinets, arcade machines and more no longer come out round or see-through from behind. The stove and air hockey table are fully modelled, like the arcade cabinets.'],
   ['mall', 'Poliwag Crossing and Ekans Trail are played by swiping the screen, with small Start and Exit keys under it.'],
