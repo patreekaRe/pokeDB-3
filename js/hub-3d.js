@@ -1596,11 +1596,11 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
 /** Head for a place's doorstep; `enter` opens it on arrival (`i`: which of its buttons, from the bar), else its card
     shows there. */
 function goTo(p, enter, i = null) {
+  playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
   hideCard();
-  playSound('confirm');
   if (!walker.path.length) open(p, i);
 }
 
@@ -1630,7 +1630,6 @@ function open(p, i = null) {
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
   walker.hopUntil = performance.now() + 400;
-  playSound('confirm');
   hideCard();
   const [label, go] = p.buttons[i ?? 0];
   if (p.id === 'trail' && label !== 'Escape Rope' && !calm) return setTimeout(() => walkOut(go), SPIN * 0.6);
@@ -1819,7 +1818,6 @@ async function enterBase() {
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
-  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
@@ -1834,7 +1832,6 @@ async function enterMall() {
   if (entering) return;
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
-  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
@@ -2129,6 +2126,7 @@ function onKey(e) {
   }
   if ((e.key === 'Enter' || e.key === ' ') && !walker.path.length && placeAt(walker.tile) && !document.activeElement?.closest?.('button')) {
     e.preventDefault();
+    playSound('confirm');
     open(placeAt(walker.tile), 0);
   }
   if (e.key === 'Escape' && !card.hidden) hideCard();

@@ -264,6 +264,11 @@ export const musicNow = () => current;
 
 let lastCue = -1;          // ctx time the latest effect started
 
+/* A 3D room presses its own buttons when your partner arrives at what you tapped; the blip already played on the tap
+   (the user's ask, 2026-10-12: the confirm sound on the tap, not on arrival), so that press stays quiet. */
+let hushUntil = 0;
+export function hushBlip() { hushUntil = performance.now() + 40; }
+
 // Like the games' menu blip: a tap on any control (a button, a map room, a card, a text box,
 // the dimmed area around a blown-up card, anything with a note in its title) plays the confirm sound, unless that tap already
 // set off an effect of its own (a card played, a purchase). Checked a tick later, once the
@@ -272,7 +277,7 @@ const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-
 // ...except these back out (Back / Skip / Leave, No, a window's Close or ✕, a zoomed card), so they blip `cancel`
 const CANCELS = '#reward-skip, #cdev-b, #sel-back, .pdx-back, #dex-close, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
-  if (!ctx || !e.target.closest?.(CONTROLS)) return;
+  if (!ctx || performance.now() < hushUntil || !e.target.closest?.(CONTROLS)) return;
   const at = ctx.currentTime;
   const name = e.target.closest(CANCELS) ? 'cancel' : 'confirm';
   setTimeout(() => { if (lastCue < at) playSound(name, 'confirm'); });

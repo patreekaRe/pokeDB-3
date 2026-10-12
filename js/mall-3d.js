@@ -13,6 +13,7 @@ import { getSave, updateSave } from './storage.js';
 import { cornerOpen } from './meowth.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
@@ -717,6 +718,7 @@ const frontAt = (t) => P.spots.find(f => f.step.x === t.x && f.step.y === t.y) ?
 
 /** To a front's doorstep; `enter` goes in on arrival. */
 function goTo(fr, enter) {
+  playSound('confirm');   // as you tap, not as you get there (the user's ask, 2026-10-12)
   if (!walker.path.length && frontAt(walker.tile) === fr) return enter ? enterFront(fr) : say(fr);
   walker.path = route(walker.tile, fr.step);
   aim = enter ? fr : null;
@@ -863,7 +865,6 @@ async function prizeTap(spot) {
   const e = cornerEntries(spot.row)[spot.i], coins = getSave().coins ?? 0;
   if (picked !== spot) {
     pick(spot);
-    playSound('select');
     if (e.blocked) return talk(`${e.dark ? 'Who\'s that Pokémon? ' : ''}${e.text}`, 4600);
     if (e.done) return talk(`${e.name}: ${e.done === 'Maxed' ? 'maxed out already, meow!' : 'that one\'s yours already, meow!'}`, 3600);
     const what = spot.row === 'perks' ? ` ${e.text}${e.level ? ` (${e.level})` : ''}` : spot.row === 'balls' ? ` ${e.text}` : '';
@@ -889,7 +890,6 @@ async function bayTap(spot) {
   const p = PIECES[spot.piece], n = styles(spot.piece).length, all = n > 1 ? ` (all ${n} styles)` : '';
   if (picked !== spot) {
     pick(spot);
-    playSound('select');
     const had = loadBase().owned[p.own] || 0;
     return talk(`Ooh, the ${p.name.toLowerCase()}${all}! That's ${p.price.toLocaleString()} PokéCoins. Tap again and it's yours.${had ? ` You have ${had} already.` : ''}`, 4600);
   }
@@ -908,10 +908,9 @@ async function bayTap(spot) {
 /** A Game Corner game (Voltorb Flip, the Gachapon): the first tap picks it and Meowth says what it is, the next sits
     down at it; coming back repaints the coins and the prize cases. */
 function gameTap(spot) {
-  if (picked !== spot) { pick(spot); playSound('select'); return talk(spot.game.line, 4600); }
-  if (spot.game.talkOnly) { playSound('select'); return talk(spot.game.line, 4600); }
+  if (picked !== spot) { pick(spot); return talk(spot.game.line, 4600); }
+  if (spot.game.talkOnly) return talk(spot.game.line, 4600);
   pick(null);
-  playSound('confirm');
   spot.game.open(() => { showCoins(); P?.refresh?.(); });
 }
 
@@ -929,7 +928,7 @@ function keeperTap() {
 /** The lift: roped off until the second floor is bought (a tap asks, a second buys), then ridden up, or down again. */
 async function liftTap(spot) {
   if (floorOf() === 1 && !loadBase().upstairs) {
-    if (picked !== spot) { pick(spot); playSound('select'); return talk(upstairsLine(), 4600); }
+    if (picked !== spot) { pick(spot); return talk(upstairsLine(), 4600); }
     const coins = getSave().coins ?? 0;
     if (coins >= UPSTAIRS_PRICE && !await ask(`Open the second floor for ${UPSTAIRS_PRICE.toLocaleString()} PokéCoins?`)) return pick(null);
     if (!buyUpstairs(loadBase())) { playSound('cancel'); return talk(`Hmm, you'd need ${(UPSTAIRS_PRICE - coins).toLocaleString()} more PokéCoins to open the second floor.`, 3600); }
@@ -998,11 +997,8 @@ function say(fr, ms = 2600) {
 
 const prizeLine = (e) => (e.blocked ? `${e.name}: not yet.` : e.done ? `${e.name}: ${e.done.toLowerCase()}.` : `${e.name}: ${e.cost.toLocaleString()} PokéCoins.`);
 
-/** Into a shop from the hall: the confirm blip as you step in (the user's ask, 2026-10-09), then its door. */
-function walkIn(id) {
-  playSound('confirm');
-  return goPlace(id, null);
-}
+/** Into a shop from the hall, through its door (its confirm blip was the tap's, 2026-10-12, the user's ask). */
+const walkIn = (id) => goPlace(id, null);
 
 /** In: a shop's place (the Furniture store, the Game Corner); a shutter only says so. Inside, a spot's own tap. */
 function enterFront(fr) {
@@ -1025,7 +1021,18 @@ function ndc(e) {
   return [(e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1];
 }
 
+/** The floor tile under a pointer, or null off the floor. */
+function floorTile(e) {
+  const ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const t = { x: Math.round(hit.x + PC / 2 - 0.5), y: Math.round(hit.z + PR / 2 - 0.5) };
+  return t.x < 0 || t.y < 0 || t.x >= PC || t.y >= PR ? null : t;
+}
+let drags = null;
+
 function onTap(e) {
+  if (drags?.swallowed()) return;
   if (answer) return closeAsk(false);
   if (riding || ribbons.some(r => r.cutAt && !r.done)) return;
   const ray = new THREE.Raycaster();
@@ -1050,6 +1057,7 @@ function onTap(e) {
 /** Your partner walks to the door tile and out over the doormat; then the place is left. */
 function headOut() {
   if (riding) return;
+  playSound('confirm');
   const door = P.door ?? DOOR;
   walker.path = route(walker.tile, door);
   walker.path.push({ x: door.x, y: PR - 0.03 });
@@ -1167,6 +1175,7 @@ async function leave() {
   playSound('door');
   await curtain(true);
   root.remove();
+  drags?.off(); drags = null;
   if (leaveTo) await leaveTo(); else location.href = location.pathname;
   curtain(false);
 }
@@ -1230,6 +1239,14 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   resize();
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
+  drags?.off();
+  drags = dragWalk({
+    target: view,
+    can: () => !answer && !riding && !ribbons.some(r => r.cutAt && !r.done),
+    tile: floorTile,
+    go: (t) => { walker.exit = false; aim = null; here = null; pick(null); walker.path = reroute(walker, route, t); },
+    done: () => { if (!walker.path.length) arrived(); },
+  });
   requestAnimationFrame(frame);
   curtain(false);
   if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : { x: 6, y: ROWS - 1 });

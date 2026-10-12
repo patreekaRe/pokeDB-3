@@ -9,7 +9,8 @@
    (`act()`, in place of the pixel scene's ACTS). The decor is the Secret Base's furniture models (js/base-mesh.js). */
 
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
+import { playSound, playCry, hushBlip } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -2338,6 +2339,7 @@ function arrived() {
   const kind = aim;
   aim = null;
   if (kind === null || kind === undefined) return;
+  hushBlip();
   if (kind === 'exit') return opts.onLeave();
   const step = R.spots[kind].step;
   if (walker.tile.x !== step.x || walker.tile.y !== step.y) return;
@@ -2347,12 +2349,31 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
+const canWalk = (e) => !busy && !acting && inRoom() && !document.querySelector('dialog[open]')
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
+
+/** The floor tile under a pointer, or null off the floor. */
+function floorTile(e) {
+  const r = view.getBoundingClientRect(), ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
+  return t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS ? null : t;
+}
+let drags = null;
+
+/** Off to what was tapped: the confirm blip now, as you tap (the user's ask, 2026-10-12), not when you get there. */
+function tapTo(spot) {
+  if (spot === 'exit' && R.noExit) return;
+  playSound('confirm');
+  goTo(spot);
+}
+
 function onTap(e) {
-  if (busy || acting || !inRoom()) return;
-  if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic')) return;
-  if (document.querySelector('dialog[open]')) return;
+  if (drags?.swallowed()) { e.stopPropagation(); e.preventDefault(); return; }
+  if (!canWalk(e)) return;
   const sign = signAt(e.clientX, e.clientY);
-  if (sign !== null) { playSound('select'); return goTo(sign); }
+  if (sign !== null) return tapTo(sign);
   const r = view.getBoundingClientRect();
   const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   const ray = new THREE.Raycaster();
@@ -2363,7 +2384,7 @@ function onTap(e) {
   let o = first;
   while (o && o.userData.spot === undefined && !o.userData.spotAt && !o.userData.who) o = o.parent;
   const spot = o?.userData.spotAt ? o.userData.spotAt(hits[0].point) : o?.userData.spot;   // the well: a toss a half
-  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) { playSound('select'); return goTo(spot); }
+  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) return tapTo(spot);
   if (o?.userData.who) {
     const who = R.who[o.userData.who];
     if (!who.npc) { playCry(who.id); does(who, 'hop'); return; }
@@ -2371,7 +2392,7 @@ function onTap(e) {
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return goTo('exit');   // the doorstep round the mat
+  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   aim = null;
   walker.path = route(walker.tile, t);
@@ -2508,6 +2529,7 @@ function unmount() {
   view?.classList.remove('on');
   view?.remove();
   removeEventListener('click', onTap, true);
+  drags?.off(); drags = null;
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   document.body.classList.remove('ev3d-held');
@@ -2620,6 +2642,8 @@ export async function mountEvent(o) {
   document.getElementById('reward-options').classList.add('c3d');
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = oneWord(label.textContent);
   addEventListener('click', onTap, true);
+  drags?.off();
+  drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
   addEventListener('resize', resize);
   resize();
   last = 0;
