@@ -875,7 +875,7 @@ one, which is the point: it costs nothing until it's needed.
 - Commits push directly to `main` — this is a solo project with no PR flow.
   Test locally first (see below), then commit and push.
 - Commit messages explain *why*, not *what*.
-- **No text under 12px** (0.75rem; the user's call, 2026-10-12: the pixel font is unreadable smaller). Card faces aside.
+- **No text under 12px** (0.75rem; the user's call, 2026-10-12: the pixel font is unreadable smaller). Card faces aside, and text that would otherwise be cut off or wrap where it must stay one line (a title on an LCD): `fitText()` in `js/ui.js` shrinks it only as far as it must (the user's call, 2026-10-12: the Arcade Leaderboard's title).
 - **Patch notes, every task** (2026-10-10, the user's ask): anything a player would notice that a session ships gets ONE
   plain line in `NEXT` in `js/data/patchnotes.js` (`[group, line]`, a `GROUPS` key: hub, base, mall, pc, runs, battle,
   modes, dex, music, look, fixes); too-small-to-notice fixes get none. The Clearing's PC shows them as "Since vX" with

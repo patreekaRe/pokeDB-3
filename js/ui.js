@@ -23,6 +23,18 @@ export function el(tag, className = '', text = '') {
   return node;
 }
 
+/** Keep a line of text on one line, shrinking it only as far as it must to fit: the one exception to the 12px floor,
+    since cut-off or wrapped text reads worse than small text. Measured a frame later, once the node is laid out. */
+export function fitText(node, min = 7) {
+  node.style.whiteSpace = 'nowrap';
+  node.style.fontSize = '';
+  requestAnimationFrame(() => {
+    if (!node.clientWidth) return;
+    let size = parseFloat(getComputedStyle(node).fontSize);
+    while (node.scrollWidth > node.clientWidth && size > min) node.style.fontSize = `${(size -= 0.5)}px`;
+  });
+}
+
 /** A pixel-art ∞ (the pixel font has none), 9x5 pixels, sized by `--ip` in CSS (`.inf-px`). */
 export function infGlyph() {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');

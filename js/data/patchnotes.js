@@ -49,6 +49,7 @@ export const NEXT = [
   ['hub', 'Hold and drag to walk everywhere you can walk: the Poké Mall and its shops, the Secret Base, the Pokémon Center, the Mart and the ? rooms.'],
   ['fixes', 'The confirm sound plays as you tap a door, a shop or anything you walk to, not when you get there.'],
   ['look', 'No more tiny text: every label in the game is at least a readable size, and the PC\'s text box is bigger.'],
+  ['fixes', 'The Arcade Leaderboard\'s title fits on one line again, never cut off or wrapped.'],
   ['mall', 'Every arcade machine\'s Start and Exit are small round buttons now, like a Neo Geo\'s.'],
 ];
 
