@@ -21,7 +21,8 @@ Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/r
 <game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
 headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
 `B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
-still the auto hull). Next: the user's idea of where to place them in the Game Corner (ask). In this order (the user may reorder):
+still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`;
+the left Plinko board gone, the other moved right; the user's layout, 2026-10-12). The claw and skee-ball aren't there yet. In this order (the user may reorder):
 1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
 2. Magikarp Fishing (`js/arcade-fishing.js`, `fishingcabinet`)
 3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)

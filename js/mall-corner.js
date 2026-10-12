@@ -7,7 +7,9 @@
    Painted smooth (fine()); js/mall-3d.js walks it (its own COLS x ROWS, the camera following you), this file builds it. */
 
 import { cornerEntries } from './shop.js';
-import { trim } from './hd2d.js';
+import { trim, tex } from './hd2d.js';
+import { furnitureModel } from './base-mesh.js';
+import { PIECES } from './base-furniture.js';
 import { fine, texOf, words, star, GC } from './hub-3d.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
@@ -21,9 +23,13 @@ const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user
   { row: 'shiny', c: 16.75 },
   { row: 'perks', c: 19.5 },
 ];
-const PLINKOS = [2.4, 6];   // two Plinko boards spaced evenly between the left wall and the counter (2026-10-12, the user's ask: the third hung over it)
+const PLINKOS = [6.5];   // one Plinko board left of the counter (2026-10-12, the user's ask: the left one taken down, this one a little right)
+/* the home arcade's machines in a row along the back wall's right half, under the screens (2026-10-12, the user's ask),
+   free to play for fun, the prize at Meowth's counter to take home */
+const ARCADE = ['whackmachine', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'fishingcabinet', 'volleycabinet', 'unowncabinet', 'pokepinball'];
+const ARCADE_X = [13, 21], ARCADE_K = 0.95;   // a tile each, to the right wall's corner
 const SHOW_W = 2.6, DESK_W = 4.2;
-const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
+const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 /* The puzzle games (the revamp, 2026-10-10). Every game pays into a shared daily pot (js/corner-pot.js). */
 const GAMES = {
@@ -582,12 +588,12 @@ export function buildCorner(THREE, size) {
     canvas.fine = 1;
     const map = texOf(canvas);
     const board = new THREE.Mesh(new THREE.BoxGeometry(w, h, SHOW_D), [gold, gold, gold, gold, new THREE.MeshBasicMaterial({ map, toneMapped: false }), gold]);
-    board.position.set(cx, SHOW_Y + h / 2, z);
+    board.position.set(cx, PLINKO_Y + h / 2, z);
     const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 0.1, 0.1), std({ color: NEON.cyan, emissive: new THREE.Color(NEON.cyan), emissiveIntensity: 1.2 }));
-    crown.position.set(cx, SHOW_Y + h + 0.06, z);
+    crown.position.set(cx, PLINKO_Y + h + 0.06, z);
     const gm = CASINO.plinko;
     const spot = { id: `plinko-${n}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name,
-      step: { x: Math.floor(c), y: 1 }, frame: { x: cx, y: SHOW_Y + h / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: h + 0.1 } };
+      step: { x: Math.floor(c), y: 1 }, frame: { x: cx, y: PLINKO_Y + h / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: h + 0.1 } };
     for (const m of [board, crown]) { m.userData.front = spot; group.add(m); }
     spots.push(spot);
     const wall = plinkoWall(canvas);
@@ -669,6 +675,26 @@ export function buildCorner(THREE, size) {
     t.traverse(o => { o.userData.front = spot; });
     group.add(t);
   }
+
+  // the arcade machines, their 3D models from the Secret Base (js/base-mesh.js), each a tap to play
+  const span = (ARCADE_X[1] - ARCADE_X[0]) / ARCADE.length;
+  ARCADE.forEach((id, i) => {
+    const p = PIECES[id], cx = ARCADE_X[0] + (i + 0.5) * span - cols / 2, tx = Math.floor(ARCADE_X[0] + (i + 0.5) * span);
+    const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (!model) return;
+    model.scale.setScalar(ARCADE_K);
+    model.position.set(cx, 0, -rows / 2 + 0.5);
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    blocked.add(`${tx},0`);
+    const H = model.userData.top * ARCADE_K, name = p.name;
+    const spot = { id: `arcade-${id}`, kind: 'game', name, open: true, line: name, step: { x: tx, y: 1 },
+      frame: { x: cx, y: H / 2, z: -rows / 2 + 0.95, w: span + 0.05, h: H + 0.1 },
+      game: { name, line: `${name}! Free to play, just for fun. Win one at my counter to play at home, meow.`,
+        open: (done) => import('./home-arcade.js').then(m => m.playAtHome(id, done)) } };
+    spots.push(spot);
+    model.traverse(o => { o.userData.front = spot; });
+    group.add(model);
+  });
 
   // the prize counter (made bigger 2026-10-12, the user's ask): a front and two sides running back to the wall, Meowth
   // closed in behind it and close up to the front, its stamp card on the wall behind it

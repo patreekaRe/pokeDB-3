@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'The Game Corner has a row of arcade machines under its screens, free to play for fun. One Plinko board now, a little further right.'],
   ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
 ];
 

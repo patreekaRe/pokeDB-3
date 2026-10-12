@@ -84,7 +84,7 @@ export function runArcade(def, onClose) {
 
   function render() {
     const head = el('div', 'vf-head');
-    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv', 'At home'), helpKey(help, () => { help = !help; render(); }));
+    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv', 'Free play'), helpKey(help, () => { help = !help; render(); }));
     const box = el('div', 'vf-panel ar-panel');
     if (help) {
       box.append(head, helpCard(def.help, { done: () => { help = false; render(); } }));
