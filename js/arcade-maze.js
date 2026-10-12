@@ -30,8 +30,9 @@ const LIVES = 3, SCARED = 6;
 
 export const openMaze = (onClose) => runArcade({
   id: 'maze', title: 'Gastly Maze', colour: '#7a4ac8', W, H,
-  intro: 'Eat every berry and dodge the Gastly! Swipe to steer.',
-  help: [['Swipe (or tap the side to go) to steer Pikachu,', 'or use the arrow keys.'], ['Eat every Oran Berry to clear the maze.', 'A Lum Berry scares the Gastly: zap them for 20!'], [`Gastly take a life; ${LIVES} and it\'s over.`, 'Berries 1, Lum Berries 5. Each new maze is quicker.']],
+  keys: { left: [['◀', 'left'], ['▶', 'right']], right: [['▲', 'up'], ['▼', 'down']] },
+  intro: 'Eat every berry and dodge the Gastly! Steer with the arrows.',
+  help: [['Steer Pikachu with the big arrow buttons:', '◀ ▶ under your left thumb, ▲ ▼ under your right. Swiping or the arrow keys work too.'], ['Eat every Oran Berry to clear the maze.', 'A Lum Berry scares the Gastly: zap them for 20!'], [`Gastly take a life; ${LIVES} and it\'s over.`, 'Berries 1, Lum Berries 5. Each new maze is quicker.']],
   make(api) {
     let food, left, lives = LIVES, level = 0, scared = 0, chain = 0, pause = 0.8, swipe = null, flash = 0, acc = 0;
     const start = find('P'), den = find('G');

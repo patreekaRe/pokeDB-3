@@ -21,6 +21,7 @@ const BTN = { x: 220, y: 312, w: 64, h: 36 }, SWAP = { x: 252, y: 275, r: 30 };
 
 export const openPuzzle = (onClose) => runArcade({
   id: 'puzzle', title: 'Poké Puzzle', colour: '#40b0a0', W, H,
+  stick: false,
   intro: 'Swap panels to line up three of a type! Tap one, then its neighbour.',
   help: [['Swap two panels side by side:', 'tap one then the one beside it, or drag it left or right. Arrow keys move the cursor, Space swaps.'], ['Line up 3 or more of a type', 'in a row or a column to clear them. Panels on top fall, and a clear they make is a chain: x2, x3... for big points. Clearing 4 or more at once is a combo.'], ['The stack keeps rising, faster as you go.', 'The round SWAP key swaps the two panels in the cursor. Hold RAISE (or Down on the bottom row) to push it up sooner. A panel pushed past the top ends the game.']],
   make(api) {
@@ -235,7 +236,24 @@ export const openPuzzle = (onClose) => runArcade({
   },
 }, onClose);
 
+const tiles = new Map();
+/** A panel, painted once a look and size at the screen's scale and stamped after that: painting each one afresh (with a
+    shadow under its symbol) every frame was what cost the game its frame rate (the user's ask, 2026-10-12). */
 function panel(g, x, y, t, look, s = P) {
+  const k = Math.round(g.getTransform().a * 100) / 100, id = `${t}|${look}|${s}|${k}`;
+  let c = tiles.get(id);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = c.height = Math.ceil(s * k);
+    const cg = c.getContext('2d');
+    cg.scale(c.width / s, c.height / s);
+    paint(cg, 0, 0, t, look, s);
+    tiles.set(id, c);
+  }
+  g.drawImage(c, x, y, s, s);
+}
+
+function paint(g, x, y, t, look, s) {
   const k = KINDS[t], pad = s * 0.05, w = s - pad * 2;
   g.save();
   g.translate(x + pad, y + pad);

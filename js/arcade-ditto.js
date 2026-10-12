@@ -10,6 +10,7 @@ const ease = (t) => t * t * (3 - 2 * t);
 
 export const openDitto = (onClose) => runArcade({
   id: 'ditto', title: 'Where\'s Ditto?', colour: '#b080e0', W, H,
+  stick: false,
   intro: 'Keep your eye on Ditto! Tap the Poké Ball it\'s under.',
   go: 'Watch closely...',
   help: [['Ditto hides under a Poké Ball, then they shuffle.', 'Keep your eye on the right one.'], ['Tap the ball Ditto is under', '(or Left / Right and Space). Each round scores 10 times its number.'], ['A wrong pick loses one of 3 lives.', 'Rounds get faster; a 4th ball from round 5, and from round 7 Ditto may hide among look-alikes.']],

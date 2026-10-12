@@ -15,8 +15,9 @@ const rowY = (r) => TOP + r * RH;
 
 export const openCrossing = (onClose) => runArcade({
   id: 'crossing', title: 'Poliwag Crossing', colour: '#3a8ae0', W, H,
+  keys: { left: [['◀', 'left'], ['▶', 'right']], right: [['▲', 'up'], ['▼', 'down']] },
   intro: 'Hop Poliwag over the road and river to the lily pads!',
-  help: [['Swipe or tap above, below or beside Poliwag to hop,', 'or use the arrow keys.'], ['Dodge the Tauros and Rapidash on the road.', 'In the river, ride Lapras and the logs: the water is too fast to swim.'], [`Fill all ${PADS.length} lily pads for a quicker crossing.`, `10 a new lane, 50 a pad plus the time left, 200 for all five. ${LIVES} lives.`]],
+  help: [['Hop with the big arrow buttons:', '◀ ▶ under your left thumb, ▲ ▼ under your right. Swiping or the arrow keys work too.'], ['Dodge the Tauros and Rapidash on the road.', 'In the river, ride Lapras and the logs: the water is too fast to swim.'], [`Fill all ${PADS.length} lily pads for a quicker crossing.`, `10 a new lane, 50 a pad plus the time left, 200 for all five. ${LIVES} lives.`]],
   make(api) {
     let level = 0, lives = LIVES, lanes, filled, me, best, time, dying = 0, cause = '', swipe = null, queued = null, cheer = 0;
     const build = () => {
@@ -97,17 +98,12 @@ export const openCrossing = (onClose) => runArcade({
       },
       key(k, down) { if (down && DIRS[k]) hop(k); },
       draw(g, now) {
-        g.fillStyle = '#1e2a3a'; g.fillRect(0, 0, W, TOP);
-        const grass = (r, a, b) => { const gg = g.createLinearGradient(0, rowY(r), 0, rowY(r) + RH); gg.addColorStop(0, a); gg.addColorStop(1, b); g.fillStyle = gg; g.fillRect(0, rowY(r), W, RH); };
-        const river = g.createLinearGradient(0, rowY(0), 0, rowY(BANK)); river.addColorStop(0, '#1a5aa8'); river.addColorStop(1, '#2a7ac8');
-        g.fillStyle = river; g.fillRect(0, rowY(0), W, RH * BANK);
+        g.drawImage(backdrop(g), 0, 0, W, H);
         g.strokeStyle = 'rgba(255, 255, 255, 0.14)'; g.lineWidth = 1.5;
         for (let r = 1; r < BANK; r++) for (let i = 0; i < 5; i++) {
           const x = ((i * 70 + now / 30 * (r % 2 ? 1 : -1)) % 350 + 350) % 350 - 25, y = rowY(r) + 8 + (i % 3) * 7;
           g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 6, y - 3, x + 12, y); g.quadraticCurveTo(x + 18, y + 3, x + 24, y); g.stroke();
         }
-        g.fillStyle = '#2e6a32'; g.fillRect(0, rowY(0), W, RH * 0.55);
-        for (let x = 0; x < W; x += 16) { g.fillStyle = x % 32 ? '#3a8a3e' : '#347a38'; g.beginPath(); g.arc(x + 8, rowY(0) + 14, 11, 0, Math.PI * 2); g.fill(); }
         PADS.forEach((px, i) => {
           const y = rowY(0) + RH / 2 + 2;
           g.fillStyle = '#1e5aa0'; g.beginPath(); g.ellipse(px, y, 19, 13, 0, 0, Math.PI * 2); g.fill();
@@ -116,19 +112,12 @@ export const openCrossing = (onClose) => runArcade({
           if (filled[i]) drawMon(g, 'poliwag', px, y + 8, 22);
           else { g.fillStyle = '#f4a8c8'; g.beginPath(); g.arc(px + 6, y - 2, 3, 0, Math.PI * 2); g.fill(); }
         });
-        grass(BANK, '#6ab84a', '#4e9a3a');
-        g.fillStyle = '#d8c890'; g.fillRect(0, rowY(BANK) + RH - 4, W, 4); g.fillRect(0, rowY(BANK), W, 3);
-        const road = g.createLinearGradient(0, rowY(7), 0, rowY(12)); road.addColorStop(0, '#4a4a54'); road.addColorStop(1, '#3a3a44');
-        g.fillStyle = road; g.fillRect(0, rowY(7), W, RH * 5);
-        g.fillStyle = 'rgba(255, 230, 120, 0.7)';
-        for (let r = 8; r < 12; r++) for (let x = 6; x < W; x += 30) g.fillRect(x, rowY(r) - 1, 14, 2);
-        grass(START, '#7ac85a', '#5aa83e');
-        for (let i = 0; i < 9; i++) { g.fillStyle = ['#f8f0a0', '#f8b0c8', '#ffffff'][i % 3]; g.beginPath(); g.arc(14 + i * 34, rowY(START) + 8 + (i % 2) * 14, 2.4, 0, Math.PI * 2); g.fill(); }
         for (const [r, lane] of Object.entries(lanes)) {
           const y = rowY(+r);
+          let lg = null;
+          if (lane.kind === 'log') { lg = g.createLinearGradient(0, y + 4, 0, y + RH - 4); lg.addColorStop(0, '#a8743e'); lg.addColorStop(0.5, '#8a5a2c'); lg.addColorStop(1, '#5e3a1a'); }
           for (const x of things(lane)) {
             if (lane.kind === 'log') {
-              const lg = g.createLinearGradient(0, y + 4, 0, y + RH - 4); lg.addColorStop(0, '#a8743e'); lg.addColorStop(0.5, '#8a5a2c'); lg.addColorStop(1, '#5e3a1a');
               g.fillStyle = lg; g.beginPath(); g.roundRect(x - lane.w / 2, y + 5, lane.w, RH - 10, 10); g.fill();
               g.strokeStyle = 'rgba(60, 30, 10, 0.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - lane.w / 2 + 12, y + 12); g.lineTo(x + lane.w / 2 - 16, y + 12); g.moveTo(x - lane.w / 2 + 20, y + 19); g.lineTo(x + lane.w / 2 - 10, y + 19); g.stroke();
               g.fillStyle = '#d8b07a'; g.beginPath(); g.ellipse(x + lane.dir * (lane.w / 2 - 4), y + RH / 2, 4, 9, 0, 0, Math.PI * 2); g.fill();
@@ -168,3 +157,34 @@ export const openCrossing = (onClose) => runArcade({
     };
   },
 }, onClose);
+
+/** The board's still parts (the bar, the river's water, the hedge, the bank, the road and the start), painted once at the
+    screen's scale: repainting their gradients every frame cost the game its frame rate (the user's ask, 2026-10-12). */
+let still = null;
+function backdrop(g) {
+  const k = g.getTransform().a;
+  if (still?.k === k) return still.c;
+  const c = document.createElement('canvas');
+  c.width = Math.ceil(W * k); c.height = Math.ceil(H * k);
+  const bg = c.getContext('2d');
+  bg.scale(k, k);
+  paintBackdrop(bg);
+  still = { k, c };
+  return c;
+}
+function paintBackdrop(g) {
+  g.fillStyle = '#1e2a3a'; g.fillRect(0, 0, W, TOP);
+  const grass = (r, a, b) => { const gg = g.createLinearGradient(0, rowY(r), 0, rowY(r) + RH); gg.addColorStop(0, a); gg.addColorStop(1, b); g.fillStyle = gg; g.fillRect(0, rowY(r), W, RH); };
+  const river = g.createLinearGradient(0, rowY(0), 0, rowY(BANK)); river.addColorStop(0, '#1a5aa8'); river.addColorStop(1, '#2a7ac8');
+  g.fillStyle = river; g.fillRect(0, rowY(0), W, RH * BANK);
+  g.fillStyle = '#2e6a32'; g.fillRect(0, rowY(0), W, RH * 0.55);
+  for (let x = 0; x < W; x += 16) { g.fillStyle = x % 32 ? '#3a8a3e' : '#347a38'; g.beginPath(); g.arc(x + 8, rowY(0) + 14, 11, 0, Math.PI * 2); g.fill(); }
+  grass(BANK, '#6ab84a', '#4e9a3a');
+  g.fillStyle = '#d8c890'; g.fillRect(0, rowY(BANK) + RH - 4, W, 4); g.fillRect(0, rowY(BANK), W, 3);
+  const road = g.createLinearGradient(0, rowY(7), 0, rowY(12)); road.addColorStop(0, '#4a4a54'); road.addColorStop(1, '#3a3a44');
+  g.fillStyle = road; g.fillRect(0, rowY(7), W, RH * 5);
+  g.fillStyle = 'rgba(255, 230, 120, 0.7)';
+  for (let r = 8; r < 12; r++) for (let x = 6; x < W; x += 30) g.fillRect(x, rowY(r) - 1, 14, 2);
+  grass(START, '#7ac85a', '#5aa83e');
+  for (let i = 0; i < 9; i++) { g.fillStyle = ['#f8f0a0', '#f8b0c8', '#ffffff'][i % 3]; g.beginPath(); g.arc(14 + i * 34, rowY(START) + 8 + (i % 2) * 14, 2.4, 0, Math.PI * 2); g.fill(); }
+}

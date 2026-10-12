@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.10',
+    name: 'Arcade Cabinets',
+    date: '2026-10-12',
+    notes: [
   ['base', 'New arcade game: Squirtle Bubble Shooter. Aim and fire bubbles, pop three of a colour, drop the ones left hanging, and keep them off the line as the ceiling comes down. At Meowth\'s prize counter and free to play in the Game Corner, in place of Unown Word Search.'],
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
   ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
@@ -55,17 +71,12 @@ export const NEXT = [
   ['base', 'Pachirisu Berry Catch runs smoother, and every arcade game gets a steadier frame rate: the room behind the cabinet stops drawing while you play.'],
   ['base', 'Every arcade game is now a real arcade cabinet: a lit marquee, the screen in a black bezel with LED scores, and a control deck with a joystick, START / EXIT and big round buttons.'],
   ['base', 'Squirtle Bubble Shooter aims with the joystick only (a tap just swaps bubbles), with a new glowing launcher and an underwater cave behind the bubbles. Pikachu Volleyball gets a round JUMP button.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+  ['base', 'Arcade controls fit each game: Poliwag Crossing and Gastly Maze have big ◀ ▶ buttons under your left thumb and ▲ ▼ under your right, Psyduck Pong a big ◀ and ▶ for each thumb, and the tap games (Pachirisu Berry Catch, Where\'s Ditto?, Snorlax Stacker, Voltorb Memory, Poké Puzzle) have no joystick.'],
+  ['base', 'Beedrill Invaders\' FIRE button is on the cabinet under the screen, beside the joystick.'],
+  ['base', 'Ponyta Dash: Ponyta comes down from a hop faster. Pidgey Flap\'s trees lose their leafy clumps.'],
+  ['base', 'Arcade games run smoother on phones, Poliwag Crossing and Poké Puzzle most of all.'],
+    ],
+  },
   {
     version: '1.9',
     name: 'Berry Season',

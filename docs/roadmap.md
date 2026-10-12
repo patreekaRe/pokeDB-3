@@ -28,6 +28,13 @@ polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's p
 in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
 from Psyduck Pong / Spearow Flap / Gastly Maze, Spearow made Pidgey); a first pass each, played headless. Twelve now,
 in this order (the user may reorder):
+**Controls and frame rate pass** (patch 1.10, 2026-10-12, branch `claude/arcade-cabinets-design-yh10el`, on `main` too):
+a cabinet's `stick: false` drops the joystick (Berry, Ditto, Stacker, Memory, Puzzle), `keys: { left, right }` puts big
+held arrow buttons under each thumb instead (Crossing and Maze ◀ ▶ / ▲ ▼, Pong ◀ / ▶), Invaders' FIRE is a deck button;
+Ponyta falls faster (`FALL`), Pidgey's trees lost their leaf clumps. Frame rate: sprites stamped from a cached first frame
+(`still()`), the canvas at most 1.5x, the cabinet's CSS lights still while playing (`.playing`), Crossing's backdrop and
+Puzzle's panels cached as bitmaps (4x CPU throttle headless: Pong 36→55 fps, Crossing 27→56, Puzzle 15→45). Volleyball
+keeps its joystick for now (the user's call). Waiting on the user's phone playtest of these.
 1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
 2. Pidgey Flap (`js/arcade-flap.js`, `flapcabinet`)
 3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)

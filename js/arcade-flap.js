@@ -54,9 +54,8 @@ export const openFlap = (onClose) => runArcade({
             g.fillStyle = tg; g.fillRect(t.x, a, TRUNK, b - a);
             g.strokeStyle = 'rgba(40, 20, 8, 0.35)'; g.lineWidth = 1.5;
             for (let k = a + 14; k < b - 6; k += 26) { g.beginPath(); g.moveTo(t.x + 8, k); g.quadraticCurveTo(t.x + TRUNK / 2, k + 6, t.x + TRUNK - 8, k); g.stroke(); }
+            g.fillStyle = '#4a2a12'; g.fillRect(t.x - 2, a ? a : b - 6, TRUNK + 4, 6);
           }
-          const leaf = (cy) => { for (const [dx, dy, r, c] of [[-6, 0, 20, '#3a8a3a'], [TRUNK + 6, 2, 20, '#3a8a3a'], [TRUNK / 2, -4, 26, '#4aa04a'], [TRUNK / 2 - 10, 4, 14, '#5ab85a']]) { g.fillStyle = c; g.beginPath(); g.arc(t.x + dx, cy + dy, r, 0, Math.PI * 2); g.fill(); } };
-          leaf(t.top - 8); leaf(t.top + t.g + 8);
         }
         g.fillStyle = '#5a9a3a'; g.fillRect(0, GROUND, W, H - GROUND);
         g.fillStyle = '#4a8a2a'; for (let i = 0; i < 16; i++) g.fillRect(((i * 24 - x0) % W + W) % W, GROUND + 6 + (i % 3) * 7, 12, 3);

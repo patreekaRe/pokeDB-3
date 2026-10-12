@@ -3,7 +3,8 @@
    (`help`), a logical canvas size (W x H) and make(api), which returns (and must not score or end the game until ticked or tapped, as the start screen draws one) { tick(dt, now), draw(g, now), down(x, y),
    move(x, y), up(x, y), key(k, down) } for one game. The kit runs the window (the Game Corner's panel), the loop, input
    in canvas units, Score / Best, the start and game-over screens and the cabinet's control deck (a joystick sent as
-   the arrow keys, START / EXIT, the game's own round buttons, `pad`), and keeps each game's best in the Game Corner's
+   the arrow keys, or `stick: false` for none, or `keys` for big arrow buttons; START / EXIT; the game's own round
+   buttons, `pad`), and keeps each game's best in the Game Corner's
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
@@ -16,23 +17,36 @@ import { postArcadeScore, openLeaderboard } from './leaderboard.js';
 import { ARCADE_BY_ID } from './data/leaderboard.js';
 import { buddy } from './trainercard.js';
 
-const sprites = new Map();
+const sprites = new Map(), stills = new Map();
 /** A Pokémon's front GIF as an image (its first frame when drawn on a canvas). */
 export function sprite(id) {
   if (!sprites.has(id)) { const img = new Image(); img.src = `assets/pokemon/${id}-front.gif`; sprites.set(id, img); }
   return sprites.get(id);
 }
+/** The sprite's first frame copied onto a canvas once, facing either way: drawing a GIF onto a canvas every frame (and
+    saving and restoring the context round it) cost the games their frame rate on phones (the user's ask, 2026-10-12). */
+function still(id, flip) {
+  const k = flip ? `${id}~` : id;
+  let c = stills.get(k);
+  if (c) return c;
+  const img = sprite(id);
+  if (!img.complete || !img.naturalWidth) return null;
+  c = document.createElement('canvas');
+  c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const x = c.getContext('2d');
+  if (flip) { x.translate(c.width, 0); x.scale(-1, 1); }
+  x.drawImage(img, 0, 0);
+  stills.set(k, c);
+  return c;
+}
 /** Draws a sprite with its feet at (x, y), `h` units tall, flipped if `flip`. */
 export function drawMon(g, id, x, y, h, flip = false) {
-  const img = sprite(id);
-  if (!img.complete || !img.naturalWidth) return;
-  const w = h * img.naturalWidth / img.naturalHeight;
-  g.save();
+  const c = still(id, flip);
+  if (!c) return;
+  const w = h * c.width / c.height, smooth = g.imageSmoothingEnabled;
   g.imageSmoothingEnabled = false;
-  g.translate(x, y);
-  if (flip) g.scale(-1, 1);
-  g.drawImage(img, -w / 2, -h, w, h);
-  g.restore();
+  g.drawImage(c, x - w / 2, y - h, w, h);
+  g.imageSmoothingEnabled = smooth;
 }
 export const rand = (a, b) => a + Math.random() * (b - a);
 export const pick = (list) => list[Math.floor(Math.random() * list.length)];
@@ -84,8 +98,9 @@ export function runArcade(def, onClose) {
   function meters() {
     const m = panel.root.querySelector('.vf-meters');
     if (!m) return;
-    m.querySelector('.ar-score').textContent = score.toLocaleString();
-    m.querySelector('.ar-best').textContent = Math.max(best(rec), score).toLocaleString();
+    const put = (cls, n) => { const b = m.querySelector(cls), t = n.toLocaleString(); if (b.textContent !== t) b.textContent = t; };
+    put('.ar-score', score);
+    put('.ar-best', Math.max(best(rec), score));
   }
 
   function render() {
@@ -116,6 +131,7 @@ export function runArcade(def, onClose) {
     bezel.append(m, stage);
     head.classList.add('ar-marquee');
     box.classList.add('ar-cab');
+    box.classList.toggle('playing', state === 'play');
     box.append(head, bezel, deck(), el('p', 'vf-say ar-say', line));
     panel.root.replaceChildren(box);
     meters();
@@ -133,29 +149,49 @@ export function runArcade(def, onClose) {
 
   /** The control deck under the screen, every cabinet's (the user's ask, 2026-10-12: an arcade's): a joystick on the
       left fed to the game as the arrow keys, START and EXIT in the middle, and the game's own round buttons on the right
-      (`def.pad`: [label, action], e.g. Bubble Shooter's SHOOT). Pressed on pointerdown so a phone's double-tap zoom never
-      eats them. */
+      (`def.pad`: [label, action], e.g. Bubble Shooter's SHOOT). A game played by taps alone has `stick: false`; one
+      steered by thumbs has `keys: { left, right }` instead, big arrow buttons held like the arrow keys ([label, key], e.g.
+      Poliwag Crossing's ◀ ▶ and ▲ ▼; the user's ask the same day). Pressed on pointerdown so a phone's double-tap zoom
+      never eats them. */
   function deck() {
     const row = el('div', 'ar-deck');
     const mid = el('div', 'ar-sys');
     mid.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-sys-key ar-start', start),
       key('Exit', 'ar-sys-key ar-exit', () => panel.shut()));
     const btns = el('div', 'ar-btns');
-    for (const [label, act] of def.pad || []) {
-      const b = el('button', `ar-btn ar-pad-${act}`, '');
-      b.type = 'button';
-      b.append(el('span', 'ar-btn-cap'), el('span', 'ar-btn-label', label));
-      b.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        b.classList.add('down');
-        if (state !== 'play') return begin();
-        game[act]?.();
-      });
-      for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => b.classList.remove('down'));
-      btns.append(b);
-    }
-    row.append(joystick(), mid, btns);
+    for (const [label, act] of def.pad || []) btns.append(button(label, `ar-pad-${act}`, () => game[act]?.()));
+    if (def.keys?.right) btns.append(arrows(def.keys.right));
+    const left = def.keys?.left ? arrows(def.keys.left) : def.keys || def.stick === false ? el('div') : joystick();
+    row.append(left, mid, btns);
     return row;
+  }
+
+  /** A round arcade button: `press` as it goes down, `lift` as it comes up (a held arrow key lets go). */
+  function button(label, cls, press, lift) {
+    const b = el('button', `ar-btn ${cls}`, '');
+    b.type = 'button';
+    b.append(el('span', 'ar-btn-cap'), el('span', 'ar-btn-label', label));
+    let held = false;
+    b.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      b.classList.add('down');
+      try { b.setPointerCapture(e.pointerId); } catch {}
+      if (state !== 'play') return begin();
+      held = true;
+      press();
+    });
+    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => {
+      b.classList.remove('down');
+      if (held) { held = false; if (state === 'play') lift?.(); }
+    });
+    return b;
+  }
+
+  /** Big arrow buttons for a thumb, held down like the arrow keys. */
+  function arrows(list) {
+    const box = el('div', `ar-arrows${list.some(([, k]) => k === 'up' || k === 'down') ? ' ar-col' : ''}`);
+    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => game.key?.(k, true), () => game.key?.(k, false)));
+    return box;
   }
 
   /** An 8-way stick: tilting it presses the arrow keys it leans towards, letting go lets them all up. */
@@ -225,11 +261,12 @@ export function runArcade(def, onClose) {
     raf = requestAnimationFrame(frame);
   }
 
-  /** The screen as big as its stage allows at the game's own shape (the cabinet is full screen since 2026-10-12). */
+  /** The screen as big as its stage allows at the game's own shape (the cabinet is full screen since 2026-10-12), at no
+      more than 1.5 pixels a CSS pixel: at a phone's 2x and over, filling the canvas cost more frames than it looked. */
   function size(fixed) {
     const st = cv.parentElement;
     const w = fixed || Math.max(120, Math.floor(Math.min(st.clientWidth, st.clientHeight * def.W / def.H))) || 360;
-    const dpr = Math.min(2, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
+    const dpr = Math.min(1.5, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
     if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
     cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;

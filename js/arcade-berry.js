@@ -57,6 +57,7 @@ function halo() {
 
 export const openBerry = (onClose) => runArcade({
   id: 'berry', title: 'Pachirisu Berry Catch', colour: '#4aa8e8', W, H,
+  stick: false,
   intro: 'Catch the falling Berries! Drag or tap to run.',
   help: [['Drag, or tap where you want Pachirisu to run.', 'The arrow keys work too.'], [`A Berry is ${KINDS.oran.pts}, a Sitrus ${KINDS.sitrus.pts}, a golden Starf ${KINDS.starf.pts}.`, 'Catch them in a row for a combo: up to x5.'], ['A Berry that hits the ground costs a heart, and so does catching a Pineco.', `${HEARTS} hearts, and it all falls faster as you go.`]],
   make(api) {

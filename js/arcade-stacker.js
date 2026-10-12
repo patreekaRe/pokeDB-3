@@ -8,6 +8,7 @@ const W = 280, H = 360, SLAB = 22, START = 150, COLS = ['#3a7a8a', '#4a8a9a', '#
 
 export const openStacker = (onClose) => runArcade({
   id: 'stacker', title: 'Snorlax Stacker', colour: '#3a7a8a', W, H,
+  stick: false,
   intro: 'Stack them up for Snorlax\'s nap! Tap to drop each slab.',
   help: [['A slab slides back and forth.', 'Tap to drop it on the stack.'], ['Whatever hangs over the edge falls off,', 'so the stack gets narrower. Land it exactly for a Perfect!'], ['Each slab is a point.', 'Miss the stack completely and the game is over.']],
   make(api) {

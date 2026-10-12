@@ -8,6 +8,7 @@ const W = 300, H = 330, POOL = ['pikachu', 'bulbasaur', 'charmander', 'squirtle'
 
 export const openMemory = (onClose) => runArcade({
   id: 'memory', title: 'Voltorb Memory', colour: '#d83a3a', W, H,
+  stick: false,
   intro: 'Find the matching pairs before the time runs out!',
   help: [['Tap a card to flip it, then another.', 'If they match they stay face up; if not, they flip back.'], ['Clear the board for 10 points a pair', 'plus a point for every second left. Then a new board, with less time.'], ['When the clock runs out,', 'the game is over.']],
   make(api) {

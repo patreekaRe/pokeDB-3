@@ -8,8 +8,9 @@ const W = 300, H = 380, PW = 64, PH = 10, ME_Y = H - 34, FOE_Y = 44, BR = 8, TO 
 
 export const openPong = (onClose) => runArcade({
   id: 'pong', title: 'Psyduck Pong', colour: '#e8c040', W, H,
-  intro: 'Beat Psyduck to 7! Drag to move your paddle.',
-  help: [['Drag left and right to move your paddle', '(or hold the arrow keys).'], ['Hit the Poké Ball past Psyduck to score.', 'Where it hits your paddle sets the angle.'], [`First to ${TO} wins.`, 'A return scores 1, a point 5, and winning adds 20.']],
+  keys: { left: [['◀', 'left']], right: [['▶', 'right']] },
+  intro: 'Beat Psyduck to 7! Hold ◀ or ▶ to move your paddle.',
+  help: [['Hold ◀ (left thumb) or ▶ (right thumb) to move your paddle.', 'Dragging on the screen or the arrow keys work too.'], ['Hit the Poké Ball past Psyduck to score.', 'Where it hits your paddle sets the angle.'], [`First to ${TO} wins.`, 'A return scores 1, a point 5, and winning adds 20.']],
   make(api) {
     let me = W / 2, foe = W / 2, target = null, keyDir = 0, mine = 0, theirs = 0, ball = null, wait = 0.8, toFoe = true, ouch = 0;
     const serve = () => { const a = (Math.random() - 0.5) * 0.9; ball = { x: W / 2, y: H / 2, vx: Math.sin(a) * 170, vy: (toFoe ? -1 : 1) * Math.cos(a) * 170 }; };
@@ -46,7 +47,7 @@ export const openPong = (onClose) => runArcade({
       down(x) { target = x; },
       move(x, y, pressed) { if (pressed) target = x; },
       up() { target = null; },
-      key(k, down) { if (k === 'left' || k === 'right') keyDir = down ? (k === 'left' ? -1 : 1) : 0; },
+      key(k, down) { if (k === 'left' || k === 'right') { const d = k === 'left' ? -1 : 1; keyDir = down ? d : keyDir === d ? 0 : keyDir; } },
       draw(g, now) {
         const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#2a7ac8'); bg.addColorStop(1, '#1a4a8a');
         g.fillStyle = bg; g.fillRect(0, 0, W, H);
