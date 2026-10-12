@@ -530,6 +530,14 @@ export function dressPlay(three, model, p) {
   return play;
 }
 
+/** What a crossing's or signal's blink lights: a modelled one's lamps, else (a carved one) every part that can glow. */
+function blinkers(model) {
+  const all = [];
+  model.traverse(x => { if (x.isMesh && x.material.emissive) all.push(x.material); });
+  const lamps = all.filter(m => m.userData.lamp);
+  return lamps.length ? lamps : all;
+}
+
 /* ---------- particles ---------- */
 
 function emit(play, kind, at, { vel = [0, 0.4, 0], spread = 0.08, size = 0.12, life = 1.6, grow = 0.6, add = GLOWY.has(kind), fall = 0, spin = 0 } = {}) {
@@ -673,7 +681,7 @@ export function tapPlay(play) {
     case 'chime': for (let i = 0; i < 3; i++) setTimeout(() => { playSound('fx-ding'); }, i * 700); go(play, 'swing', 600); return {};
     case 'treasure': playSound('item-get'); go(play, 'hop', 500); for (let i = 0; i < 10; i++) emit(play, i % 2 ? 'coin' : 'star', topOf(play), { vel: [rand(-0.5, 0.5), 1.1, rand(0, 0.4)], size: 0.1, life: 1.3, fall: 2.2, add: false }); return { cheer: true };
     case 'look': playSound('fx-whoosh'); go(play, 'spin', 1400, { turns: 0.5 }); setTimeout(() => go(play, 'spin', 1400, { turns: 0.5 }), 1500); return {};
-    case 'blink': play.on = !play.on; playSound(play.on ? 'fx-ring' : 'fx-click'); if (!play.on) model0(play).traverse(x => { if (x.isMesh && x.material.emissive) x.material.emissiveIntensity = 0; }); return {};
+    case 'blink': play.on = !play.on; playSound(play.on ? 'fx-ring' : 'fx-click'); if (!play.on) for (const m of blinkers(model0(play))) m.emissiveIntensity = 0; return {};
     case 'wobble': playSound('fx-tick'); go(play, 'wobble', 1400); return {};
     case 'doll': { const id = play.p.doll[0]; playCry(id); playSound('fx-squeak'); go(play, 'squash', 450); emit(play, 'heart', topOf(play), { vel: [0, 0.5, 0], size: 0.14, life: 1.2, add: false }); return { cheer: true }; }
     default: playSound('select'); go(play, 'squash', 300); return {};
@@ -782,7 +790,7 @@ export function tickPlay(play, now, dt) {
   if (D === 'steam' && chance(0.6)) emit(play, 'steam', topOf(play), { vel: [0, 0.3, 0], size: 0.12, life: 1.8, grow: 1.4, add: false });
   if (D === 'light' && how.stars && play.on && chance(3)) emit(play, 'star', topOf(play), { vel: [rand(-0.6, 0.6), rand(0.4, 1), rand(-0.6, 0.6)], spread: 0.05, size: 0.07, life: 3, grow: 0 });
   if (D === 'light' && how.flicker && play.on) for (const m of play.mats) m.emissiveIntensity = (m.userData.was ?? 1) * (0.75 + Math.random() * 0.25);
-  if (D === 'blink' && play.on) model.traverse(x => { if (x.isMesh && x.material.emissive) { x.material.emissive.set('#ff3030'); x.material.emissiveIntensity = Math.floor(now / 400) % 2 ? 0.8 : 0; } });
+  if (D === 'blink' && play.on) for (const m of blinkers(model)) { m.emissive.set('#ff3030'); m.emissiveIntensity = Math.floor(now / 400) % 2 ? 0.8 : 0; }
   if (D === 'zap' && chance(1.2)) emit(play, 'zap', topOf(play, 0.1), { vel: [0, 0, 0], spread: 0.12, size: 0.25, life: 0.15, grow: 0 });
   if (how.tick && play.on) { const beat = Math.floor(now / 500); if (beat !== play.beat) { play.beat = beat; playSound('fx-tick'); go(play, 'wobble', 480); } }
   if (play.glowAt && play.on && chance(1.5)) emit(play, how.inside === 'oven' ? 'spark' : 'snow', play.glowAt, { vel: [0, 0.1, 0.2], spread: 0.1, size: 0.08, life: 1, grow: 0.5 });
