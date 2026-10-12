@@ -259,6 +259,93 @@ const SCREENS = {
     disc(g, ux, uy - 4, 9, '#f4f4f4'); disc(g, ux, uy - 4, 4, '#202028');
     crt(g, w, h, false);
   },
+  crossingcabinet(g, w, h) {
+    g.fillStyle = '#58a848'; g.fillRect(0, 0, w, h);
+    rr(g, 0, 26, w, 58, 0, '#3a6ad0'); g.fillStyle = 'rgba(255,255,255,0.18)'; for (let x = 0; x < w; x += 22) g.fillRect(x, 40 + (x % 3) * 12, 12, 2);
+    for (const [x, y, l] of [[20, 34, 70], [150, 34, 80], [70, 60, 90]]) { rr(g, x, y, l, 16, 8, '#8a5a30'); g.fillStyle = '#6a4220'; g.fillRect(x + 6, y + 7, l - 12, 2); }
+    oval(g, 210, 70, 24, 10, '#58a8e8'); disc(g, 226, 60, 8, '#58a8e8');
+    rr(g, 0, 98, w, 64, 0, '#4a4a54'); g.fillStyle = '#f0e070'; for (let x = 6; x < w; x += 34) g.fillRect(x, 128, 18, 3);
+    for (const [x, y] of [[60, 112], [180, 140]]) { oval(g, x, y, 22, 11, '#a8784a'); disc(g, x + 18, y - 6, 8, '#a8784a'); g.fillStyle = '#e8e0d0'; g.beginPath(); g.moveTo(x + 22, y - 12); g.lineTo(x + 30, y - 20); g.lineTo(x + 26, y - 8); g.fill(); }
+    for (const x of [30, 100, 170, 240]) { oval(g, x, 12, 14, 7, '#3a8a3a'); }
+    disc(g, w / 2, 178, 12, '#4a7ad8'); disc(g, w / 2, 180, 7, '#f4f4f4'); g.strokeStyle = '#202028'; g.lineWidth = 2; g.beginPath(); g.arc(w / 2, 180, 4, 0, TAU * 0.8); g.stroke();
+    crt(g, w, h);
+  },
+  ekanscabinet(g, w, h) {
+    g.fillStyle = '#16301a'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = 'rgba(120,200,120,0.12)'; g.lineWidth = 1; for (let x = 0; x < w; x += 16) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); } for (let y = 0; y < h; y += 16) { g.beginPath(); g.moveTo(0, y); g.lineTo(w, y); g.stroke(); }
+    const path = [[40, 150], [56, 150], [72, 150], [88, 150], [104, 150], [104, 134], [104, 118], [120, 118], [136, 118], [152, 118], [152, 102], [152, 86], [168, 86]];
+    path.forEach(([x, y], i) => disc(g, x, y, 9, i % 2 ? '#8a4ab8' : '#9a5ac8'));
+    disc(g, 184, 86, 12, '#a86ad8'); disc(g, 188, 81, 3, '#f8d030'); disc(g, 188, 81, 1.4, '#202028'); disc(g, 190, 92, 3, '#f8d030');
+    g.strokeStyle = '#e83838'; g.lineWidth = 2; g.beginPath(); g.moveTo(196, 88); g.lineTo(206, 86); g.moveTo(206, 86); g.lineTo(210, 82); g.moveTo(206, 86); g.lineTo(210, 90); g.stroke();
+    for (const [x, y, c] of [[220, 40, '#e04848'], [60, 60, '#5a8ae0'], [200, 160, '#ffd84a']]) { disc(g, x, y, 7, c); g.fillStyle = '#3a8a3a'; g.fillRect(x - 1, y - 11, 2, 5); }
+    crt(g, w, h);
+  },
+  invaderscabinet(g, w, h) {
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#0a1028'); bg.addColorStop(1, '#1a2a5a'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 40; i++) disc(g, (i * 67) % w, (i * 41) % h, 0.9, 'rgba(255,255,255,0.7)');
+    for (let r = 0; r < 3; r++) for (let c = 0; c < 7; c++) {
+      const x = 34 + c * 30, y = 34 + r * 24, body = r ? '#f0c030' : '#e88030';
+      oval(g, x - 9, y - 4, 7, 4, 'rgba(220,240,255,0.7)', -0.4); oval(g, x + 9, y - 4, 7, 4, 'rgba(220,240,255,0.7)', 0.4);
+      oval(g, x, y, 8, 6, body); g.fillStyle = '#202028'; g.fillRect(x - 8, y - 1, 16, 2); disc(g, x - 3, y - 3, 1.6, '#e03030'); disc(g, x + 3, y - 3, 1.6, '#e03030');
+    }
+    g.strokeStyle = '#fff070'; g.lineWidth = 3; g.beginPath(); g.moveTo(130, 160); g.lineTo(124, 140); g.lineTo(134, 130); g.lineTo(128, 112); g.stroke();
+    pikachu(g, 130, 172, 0.9);
+    crt(g, w, h);
+  },
+  breakoutcabinet(g, w, h) {
+    g.fillStyle = '#16203a'; g.fillRect(0, 0, w, h);
+    for (let r = 0; r < 4; r++) for (let c = 0; c < 7; c++) {
+      const x = 8 + c * 35, y = 26 + r * 18, col = r < 1 ? '#6a6460' : '#9a9088';
+      rr(g, x, y, 32, 15, 6, col); disc(g, x + 10, y + 6, 1.6, '#202028'); disc(g, x + 20, y + 6, 1.6, '#202028');
+    }
+    const bx = 150, by = 132; disc(g, bx, by, 11, '#e84040'); g.fillStyle = '#f4f4f4'; g.beginPath(); g.arc(bx, by, 11, 0, Math.PI); g.fill();
+    g.fillStyle = '#202028'; g.fillRect(bx - 11, by - 1, 22, 2); g.save(); g.translate(bx, by); g.rotate(-0.2); g.fillRect(-6, -6, 4, 2); g.fillRect(2, -6, 4, 2); g.restore();
+    rr(g, 100, 172, 64, 9, 4, '#f4f4f4');
+    crt(g, w, h);
+  },
+  singalongcabinet(g, w, h) {
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#3a1a5a'); bg.addColorStop(1, '#1a0c2a'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    for (const x of [64, 128, 192]) { g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(x - 28, 0, 56, h); }
+    g.fillStyle = '#f8f0f8'; g.fillRect(20, 160, w - 40, 3);
+    for (const [x, y] of [[64, 60], [128, 120], [192, 90], [64, 150]]) { disc(g, x, y, 9, '#f8a8d0'); g.fillStyle = '#f8a8d0'; g.fillRect(x + 6, y - 24, 3, 24); g.fillRect(x + 6, y - 24, 10, 4); }
+    disc(g, 40, 40, 20, '#f8b8d0'); disc(g, 33, 38, 4, '#3a8ad8'); disc(g, 47, 38, 4, '#3a8ad8'); g.fillStyle = '#f8b8d0'; g.beginPath(); g.moveTo(26, 24); g.lineTo(22, 14); g.lineTo(34, 22); g.moveTo(54, 24); g.lineTo(58, 14); g.lineTo(46, 22); g.fill();
+    text(g, 'PERFECT!', 200, 30, 18, '#ffe060', '#5a1a40');
+    crt(g, w, h, false);
+  },
+  dittocabinet(g, w, h) {
+    const bg = g.createRadialGradient(w / 2, h * 0.6, 10, w / 2, h * 0.6, w * 0.7); bg.addColorStop(0, '#6a4a9a'); bg.addColorStop(1, '#2a1a4a'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    rr(g, 0, 140, w, 52, 0, '#4a2a2a');
+    for (const x of [58, 128, 198]) { pokeball(g, x, 128, 28); }
+    oval(g, 128, 64, 30, 20, '#c8a0e8'); disc(g, 118, 60, 2.4, '#202028'); disc(g, 138, 60, 2.4, '#202028'); g.strokeStyle = '#202028'; g.lineWidth = 2; g.beginPath(); g.arc(128, 66, 6, 0.2, Math.PI - 0.2); g.stroke();
+    g.strokeStyle = '#ffd84a'; g.lineWidth = 3; for (const [x0, x1] of [[58, 128], [128, 198]]) { g.beginPath(); g.moveTo(x0, 92); g.quadraticCurveTo((x0 + x1) / 2, 76, x1, 92); g.stroke(); }
+    text(g, '?', 200, 50, 40, '#ffffff', '#3a1a5a');
+    crt(g, w, h, false);
+  },
+  bowlingcabinet(g, w, h) {
+    g.fillStyle = '#2a1a10'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#d8a868'; g.beginPath(); g.moveTo(w / 2 - 34, 20); g.lineTo(w / 2 + 34, 20); g.lineTo(w / 2 + 110, h); g.lineTo(w / 2 - 110, h); g.fill();
+    g.strokeStyle = 'rgba(120,70,30,0.35)'; g.lineWidth = 1; for (let k = -4; k <= 4; k++) { g.beginPath(); g.moveTo(w / 2 + k * 7, 20); g.lineTo(w / 2 + k * 24, h); g.stroke(); }
+    for (const [i, j] of [[0, 3], [-1, 2], [1, 2], [-2, 1], [0, 1], [2, 1], [-3, 0], [-1, 0], [1, 0], [3, 0]]) {
+      const x = w / 2 + i * 10, y = 34 + j * 9; disc(g, x, y, 7, '#8a8478'); disc(g, x - 2, y - 2, 2, '#b8b0a4'); disc(g, x - 2, y, 1, '#202028'); disc(g, x + 2, y, 1, '#202028');
+    }
+    pokeball(g, w / 2 + 14, 150, 20);
+    text(g, 'STRIKE!', w / 2, 100, 26, '#ffe060', '#5a2a10');
+    crt(g, w, h);
+  },
+  pokepuzzle(g, w, h) {
+    g.fillStyle = '#1a2a3a'; g.fillRect(0, 0, w, h);
+    const C = [['#e85a3a', '🔥'], ['#3a8ae0', '💧'], ['#4ab84a', '🍃'], ['#f0c030', '⚡'], ['#b060d0', '✦']];
+    const s = 26, x0 = w / 2 - s * 3;
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 6; c++) {
+      if ((r * 7 + c * 3) % 6 === 5 && r > 2) continue;
+      const k = (r * 2 + c + (r > 1 ? 1 : 0)) % 5, x = x0 + c * s, y = h - 10 - (r + 1) * s;
+      rr(g, x + 1, y + 1, s - 2, s - 2, 6, C[k][0]); rr(g, x + 4, y + 3, s - 8, 5, 3, 'rgba(255,255,255,0.35)');
+      disc(g, x + s / 2, y + s / 2 + 1, 5, 'rgba(255,255,255,0.75)');
+    }
+    g.strokeStyle = '#ffffff'; g.lineWidth = 3; g.strokeRect(x0 + s * 2, h - 10 - 3 * s, s * 2, s);
+    text(g, '2 CHAIN!', w / 2, 26, 22, '#ffe060', '#0a2a3a');
+    crt(g, w, h, false);
+  },
 };
 
 /** A machine's screen picture, 256 x 192. */

@@ -43,14 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'The Game Corner has arcade machines along its back wall, free to play for fun: a row under the screens, and two more under the two Plinko boards, now raised up the wall.'],
-  ['mall', 'Four slot machines taken off the Game Corner\'s right wall, opening up the arcade corner.'],
-  ['base', 'Three new arcade games at Meowth\'s prize counter: Pidgey Flap (in place of Magikarp Fishing: anyone who had it now has Pidgey Flap), Psyduck Pong and Gastly Maze.'],
-  ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
-  ['fixes', 'The arcade machines\' screens and marquees no longer flicker from across the room.'],
-  ['base', 'The Game Corner\'s games are real 3D models in your Secret Base too: a slot machine with spinning-drum reels and a lever, Voltorb Flip and Who\'s That Pokémon? cabinets, Blackjack and High-Low card tables with cards dealt, and a Plinko board with real pegs hanging on the wall.'],
-  ['mall', 'Meowth\'s prize counter now sells only games, each shown as its 3D model turning on the screen. The jackpot sign, Lucky 7 block, casino carpet and dolls are gone from it; anyone who bought one keeps it.'],
-  ['fixes', 'The GAME CORNER sign over Meowth\'s counter is no longer cut off by the Pokémon screen, and the Game Corner\'s slot machines say FREE PLAY, not BET.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -62,6 +54,23 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.8',
+    name: 'Arcade Night',
+    date: '2026-10-12',
+    notes: [
+  ['mall', 'The Game Corner has arcade machines along its back wall, free to play for fun: a row under the screens, and two more under the two Plinko boards, now raised up the wall.'],
+  ['mall', 'Four slot machines taken off the Game Corner\'s right wall, opening up the arcade corner.'],
+  ['base', 'Three new arcade games at Meowth\'s prize counter: Pidgey Flap (in place of Magikarp Fishing: anyone who had it now has Pidgey Flap), Psyduck Pong and Gastly Maze.'],
+  ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
+  ['fixes', 'The arcade machines\' screens and marquees no longer flicker from across the room.'],
+  ['base', 'The Game Corner\'s games are real 3D models in your Secret Base too: a slot machine with spinning-drum reels and a lever, Voltorb Flip and Who\'s That Pokémon? cabinets, Blackjack and High-Low card tables with cards dealt, and a Plinko board with real pegs hanging on the wall.'],
+  ['mall', 'Meowth\'s prize counter now sells only games, each shown as its 3D model turning on the screen. The jackpot sign, Lucky 7 block, casino carpet and dolls are gone from it; anyone who bought one keeps it.'],
+  ['fixes', 'The GAME CORNER sign over Meowth\'s counter is no longer cut off by the Pokémon screen, and the Game Corner\'s slot machines say FREE PLAY, not BET.'],
+  ['mall', 'The Game Corner\'s back wall is lined with arcade machines either side of Meowth\'s counter, Whac-a-Diglett and Pokémon Pinball on the side walls, and its slot machines are new 3D cabinets, five a side.'],
+  ['base', 'Eight new arcade games at Meowth\'s prize counter, free to play in the Game Corner and to take home: Poliwag Crossing, Ekans Trail, Beedrill Invaders, Electrode Breakout, Jigglypuff\'s Sing-Along, Where\'s Ditto?, Geodude Bowling and Poké Puzzle.'],
+    ],
+  },
   {
     version: '1.7',
     name: 'Home Arcade',
@@ -337,6 +346,6 @@ export const IN_THE_GAME = [
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of Game Corner furniture and sixteen games to play at home, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 26 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

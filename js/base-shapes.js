@@ -113,6 +113,14 @@ set('dashcabinet', { make: 'arcade', colour: '#e87830', name: 'Ponyta Dash' });
 set('memorycabinet', { make: 'arcade', colour: '#d83a3a', name: 'Voltorb Memory' });
 set('volleycabinet', { make: 'arcade', colour: '#f0c020', name: 'Pikachu Volleyball' });
 set('unowncabinet', { make: 'arcade', colour: '#6a5ac8', name: 'Unown Word Search' });
+set('crossingcabinet', { make: 'arcade', colour: '#3a8ae0', name: 'Poliwag Crossing' });
+set('ekanscabinet', { make: 'arcade', colour: '#8a4ab8', name: 'Ekans Trail' });
+set('invaderscabinet', { make: 'arcade', colour: '#e8b020', name: 'Beedrill Invaders' });
+set('breakoutcabinet', { make: 'arcade', colour: '#e84040', name: 'Electrode Breakout' });
+set('singalongcabinet', { make: 'arcade', colour: '#f080b0', name: 'Jigglypuff\'s Sing-Along' });
+set('dittocabinet', { make: 'arcade', colour: '#b080e0', name: 'Where\'s Ditto?' });
+set('bowlingcabinet', { make: 'arcade', colour: '#8a7a6a', name: 'Geodude Bowling' });
+set('pokepuzzle', { make: 'arcade', colour: '#40b0a0', name: 'Poké Puzzle' });
 set('whackmachine', { make: 'whack' });
 /* the Game Corner's games */
 set('slotmachine', { make: 'slot' });

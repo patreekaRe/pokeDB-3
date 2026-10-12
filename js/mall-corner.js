@@ -28,9 +28,14 @@ const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user
    user's ask: the second board back) */
 const PLINKOS = [2.5, 5.5];
 /* the home arcade's machines along the back wall, under the screens and the Plinko boards (2026-10-12, the user's ask),
-   free to play for fun, the prize at Meowth's counter to take home: [kind, its tile] */
-const ARCADE = [['pongcabinet', 2], ['gastlymaze', 5],
-  ...['whackmachine', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'unowncabinet', 'pokepinball'].map((id, i) => [id, 13 + i])];
+   free to play for fun, the prize at Meowth's counter to take home: [kind, x, y, face]. Eight cabinets each side of the
+   counter (the user's layout, 2026-10-12), Whac-a-Diglett and the pinball table on the side walls where their top slot
+   machines stood. */
+const ARCADE = [
+  ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'singalongcabinet', 'dittocabinet'].map((id, x) => [id, x]),
+  ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'unowncabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
+  ['whackmachine', 0, 2, 1], ['pokepinball', COLS - 1, 2, -1],
+];
 const ARCADE_K = 0.95;
 const SHOW_W = 2.6, DESK_W = 4.2;
 const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = SHOW_Y, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
@@ -48,8 +53,8 @@ const GAMES = {
    (`face` 1 looks right, -1 left), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
-  /* the right wall's top four taken out (2026-10-12, the user's ask) */
-  slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, ...(y > 5 ? [{ x: COLS - 1, y, face: -1 }] : [])]), name: 'Slots', colour: '#ff5a5a',
+  /* both walls' top four taken out (2026-10-12, the user's asks), five a side */
+  slots: { ats: [6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! Five free spins a day, and you stop the reels yourself, so time it for a 7. Tap again to play, meow.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',
@@ -217,38 +222,6 @@ const PERK_ART = {
   scoutReport: (g) => { g.strokeStyle = '#d8dce6'; g.lineWidth = 1.6; g.beginPath(); g.arc(-1, -1, 3.4, 0, Math.PI * 2); g.stroke(); g.fillStyle = 'rgba(160,220,255,0.6)'; g.beginPath(); g.arc(-1, -1, 2.6, 0, Math.PI * 2); g.fill(); g.strokeStyle = '#a07040'; g.lineWidth = 2; g.beginPath(); g.moveTo(1.6, 1.6); g.lineTo(4.6, 4.6); g.stroke(); },
   scopeUpgrade: (g) => { g.fillStyle = '#5a5e6a'; g.fillRect(-1.2, -1.2, 2.4, 1.6); for (const x of [-3, 3]) { g.fillStyle = '#3a3e48'; g.beginPath(); g.arc(x, 0, 2.8, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e84838'; g.beginPath(); g.arc(x, 0, 1.8, 0, Math.PI * 2); g.fill(); g.fillStyle = '#ffb0a0'; g.beginPath(); g.arc(x - 0.6, -0.6, 0.6, 0, Math.PI * 2); g.fill(); } },
 };
-
-/** A game cabinet's face: a lit marquee in its colour, its screen's picture (`screen(g, s)` draws in the 2.2..15.8 x
-    7.6..18 box), the buttons lit, FREE PLAY. */
-function gameArt(title, colour, screen, foot = 'FREE PLAY', sharp = 10) {
-  const f = fine(18, 27, sharp), { g, rr, lin, shine } = f, s = shine();
-  rr(0, 0, 18, 27, 1.4, lin(0, 0, 18, 0, [GC.chrome[2], GC.chrome[0], GC.chrome[1], GC.chrome[2]]));
-  rr(1.2, 1.2, 15.6, 5, 1, lin(0, 1.2, 0, 6.2, [colour, '#00000060']));
-  rr(2, 2, 14, 3.4, 0.8, colour);
-  s.fillStyle = colour; s.beginPath(); s.roundRect(2, 2, 14, 3.4, 0.8); s.fill();
-  words(g, title, 9, 3.8, title.length > 12 ? 1.6 : 2, '#121226');
-  rr(1.6, 7, 14.8, 11.6, 1, '#120a22');
-  screen(g, s, rr);
-  for (const [x, c] of [[5, GC.red], [9, NEON.gold], [13, '#4a8ef0']]) {
-    g.fillStyle = c; g.beginPath(); g.arc(x, 21, 1.4, 0, Math.PI * 2); g.fill();
-    s.fillStyle = c; s.beginPath(); s.arc(x, 21, 1, 0, Math.PI * 2); s.fill();
-  }
-  words(g, foot, 9, 25, 1.9, NEON.gold); words(s, foot, 9, 25, 1.9, '#ffe890');
-  return f.c;
-}
-
-const SCREENS = {
-  slots(g, s, rr) {
-    rr(2.2, 7.6, 13.6, 10.4, 0.8, '#1a0e20');
-    for (let i = 0; i < 3; i++) {
-      rr(3 + i * 4.2, 8.6, 3.6, 8.4, 0.6, '#f8f4ec');
-      s.fillStyle = '#806040'; s.beginPath(); s.roundRect(3 + i * 4.2, 8.6, 3.6, 8.4, 0.6); s.fill();
-      words(g, '7', 4.8 + i * 4.2, 12.9, 4.6, '#e02030');
-    }
-    g.strokeStyle = '#ffd84a'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(2.6, 12.8); g.lineTo(15.4, 12.8); g.stroke();
-  },
-};
-
 
 /** A table's felt from above, `w` tiles by one: green, a gold line round it, and its game's markings. */
 function feltArt(id, w, d = 1) {
@@ -607,47 +580,27 @@ export function buildCorner(THREE, size) {
     ticks.push((now) => { if (now - last < 33) return; wall.step(now, Math.min(0.1, (now - last) / 1000)); last = now; map.needsUpdate = true; });
   });
 
-  // the game cabinets (rebuilt bigger 2026-10-11, the user's ask: they were small and scattered): one `w` tiles wide is a
-  // big cabinet, its face the full painting on a short plinth; a one-tile one (a slot machine) a taller, narrower one
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
-  const lever = std({ color: '#cdc8e0', metalness: 0.6, roughness: 0.3 });
-  const faces = new Map();   // eighteen slot machines share one painted face
-  const cab = (id, gm, x, y, foot, turn = 0) => {
-    const w = gm.w ?? 1, big = w > 1;
-    for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
-    const W = big ? Math.min(2.05, w * 0.86) : 0.92, D = big ? 0.85 : 0.72;
-    const aw = W - 0.1, ah = aw * 1.5, base = big ? 0.35 : 0.62, H = base + ah + 0.1;
-    const m = new THREE.Group();
-    m.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y));
-    m.rotation.y = turn * Math.PI / 2;
-    const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [chrome, chrome, violet, violet, violet, violet]);
-    body.position.y = H / 2;
-    body.castShadow = body.receiveShadow = true;
-    const key = `${id}|${foot}|${big}`;
-    if (!faces.has(key)) faces.set(key, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], foot, big ? 16 : 12), 1));
-    const face = new THREE.Mesh(new THREE.PlaneGeometry(aw, ah), faces.get(key));
-    face.position.set(0, base + ah / 2 + 0.03, D / 2 + 0.015);
-    const kick = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.12, D + 0.04), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.7 }));
-    kick.position.y = 0.06;
-    const topper = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 0.22, D * 0.8), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
-    topper.position.y = H + 0.11;
-    m.add(body, face, kick, topper);
-    if (id === 'slots') {
-      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 10), lever);
-      rod.position.set(W / 2 + 0.06, H * 0.6, 0.05);
-      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 10), std({ color: GC.red, emissive: new THREE.Color(GC.red), emissiveIntensity: 0.4 }));
-      knob.position.set(W / 2 + 0.06, H * 0.6 + 0.33, 0.05);
-      m.add(rod, knob);
-    }
-    const spot = { id: `${id}${x},${y}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name,
-      step: turn ? { x: x + turn, y } : { x: x + Math.floor((w - 1) / 2), y: y + 1 },
-      frame: turn ? { x: tileX(x) + turn * (D / 2 + 0.03), y: H / 2, z: tileZ(y), w: W + 0.1, h: H + 0.1, ry: turn * Math.PI / 2 }
-        : { x: tileX(x) - 0.5 + w / 2, y: H / 2, z: tileZ(y) + D / 2 + 0.03, w: W + 0.1, h: H + 0.1 } };
+  /* every machine on the floor and walls is its Secret Base 3D model (the slot machines since 2026-10-12, the user's ask:
+     new cabinets): `face` 0 looks into the room from the back wall, 1 right from the left wall, -1 left from the right */
+  const machine = (id, x, y, face, game) => {
+    const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (!model) return;
+    model.scale.setScalar(ARCADE_K);
+    model.position.set(tileX(x), 0, face ? tileZ(y) : -rows / 2 + 0.5);
+    model.rotation.y = face * Math.PI / 2;
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    blocked.add(`${x},${y}`);
+    const H = model.userData.top * ARCADE_K, edge = 0.36;
+    const spot = { id: `${id}${x},${y}`, kind: 'game', game, name: game.name, open: true, line: game.name,
+      step: face ? { x: x + face, y } : { x, y: y + 1 },
+      frame: face ? { x: tileX(x) + face * edge, y: H / 2, z: tileZ(y), w: 1.05, h: H + 0.1, ry: face * Math.PI / 2 }
+        : { x: tileX(x), y: H / 2, z: -rows / 2 + 0.95, w: 1.05, h: H + 0.1 } };
     spots.push(spot);
-    m.traverse(o => { o.userData.front = spot; });
-    group.add(m);
+    model.traverse(o => { o.userData.front = spot; });
+    group.add(model);
   };
-  for (const at of CASINO.slots.ats) cab('slots', CASINO.slots, at.x, at.y, 'FREE PLAY', at.face);
+  for (const at of CASINO.slots.ats) machine('slotmachine', at.x, at.y, at.face, CASINO.slots);
 
   // the tables: Blackjack and High-Low green felt on dark wood with cards dealt and a marquee over them; Voltorb Flip and
   // Who's That Pokémon? touchscreen tables, their tops lit with the game (2026-10-12, the user's ask)
@@ -683,23 +636,11 @@ export function buildCorner(THREE, size) {
   }
 
   // the arcade machines, their 3D models from the Secret Base (js/base-mesh.js), each a tap to play
-  ARCADE.forEach(([id, tx]) => {
-    const p = PIECES[id], cx = tx + 0.5 - cols / 2, span = 1;
-    const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
-    if (!model) return;
-    model.scale.setScalar(ARCADE_K);
-    model.position.set(cx, 0, -rows / 2 + 0.5);
-    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
-    blocked.add(`${tx},0`);
-    const H = model.userData.top * ARCADE_K, name = p.name;
-    const spot = { id: `arcade-${id}`, kind: 'game', name, open: true, line: name, step: { x: tx, y: 1 },
-      frame: { x: cx, y: H / 2, z: -rows / 2 + 0.95, w: span + 0.05, h: H + 0.1 },
-      game: { name, line: `${name}! Free to play, just for fun. Win one at my counter to play at home, meow.`,
-        open: (done) => import('./home-arcade.js').then(m => m.playAtHome(id, done)) } };
-    spots.push(spot);
-    model.traverse(o => { o.userData.front = spot; });
-    group.add(model);
-  });
+  for (const [id, x, y = 0, face = 0] of ARCADE) {
+    const name = PIECES[id].name;
+    machine(id, x, y, face, { name, line: `${name}! Free to play, just for fun. Win one at my counter to play at home, meow.`,
+      open: (done) => import('./home-arcade.js').then(m => m.playAtHome(id, done)) });
+  }
 
   // the prize counter (made bigger 2026-10-12, the user's ask): a front and two sides running back to the wall, Meowth
   // closed in behind it and close up to the front, its stamp card on the wall behind it

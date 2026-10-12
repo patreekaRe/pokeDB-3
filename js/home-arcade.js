@@ -23,6 +23,14 @@ const GAMES = {
   pokepinball: () => import('./arcade-pinball.js').then(m => m.openPinball),
   volleycabinet: () => import('./arcade-volley.js').then(m => m.openVolley),
   unowncabinet: () => import('./arcade-wordsearch.js').then(m => m.openWordSearch),
+  crossingcabinet: () => import('./arcade-crossing.js').then(m => m.openCrossing),
+  ekanscabinet: () => import('./arcade-snake.js').then(m => m.openSnake),
+  invaderscabinet: () => import('./arcade-invaders.js').then(m => m.openInvaders),
+  breakoutcabinet: () => import('./arcade-breakout.js').then(m => m.openBreakout),
+  singalongcabinet: () => import('./arcade-rhythm.js').then(m => m.openRhythm),
+  dittocabinet: () => import('./arcade-ditto.js').then(m => m.openDitto),
+  bowlingcabinet: () => import('./arcade-bowling.js').then(m => m.openBowling),
+  pokepuzzle: () => import('./arcade-puzzle.js').then(m => m.openPuzzle),
 };
 
 export const homeGame = (kind) => kind in GAMES;
