@@ -778,7 +778,7 @@ function pick(spot) {
   if (P?.frame) {   // the Game Corner's gold frame, over a case's thing or a machine
     const f = spot?.frame;
     P.frame.visible = !!f;
-    if (f) { P.frame.position.set(f.x, f.y, f.z); P.frame.scale.set(f.w, f.h, 1); }
+    if (f) { P.frame.position.set(f.x, f.y, f.z); P.frame.scale.set(f.w, f.h, 1); P.frame.rotation.y = f.ry ?? 0; }
   }
 }
 
