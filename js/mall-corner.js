@@ -48,10 +48,10 @@ const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 /* The puzzle games (the revamp, 2026-10-10). Every game pays into a shared daily pot (js/corner-pot.js). */
 const GAMES = {
   voltorb: { at: { x: 5, y: 5 }, w: 3, name: 'Voltorb Flip', colour: '#58d080',
-    line: 'Voltorb Flip! Clear the board for PokéCoins, two paying rounds a day. Tap again to sit down, meow.',
+    line: 'Voltorb Flip! Clear the board for PokéCoins, five paying rounds a day. Tap again to sit down, meow.',
     open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
   quiz: { at: { x: 13, y: 5 }, w: 3, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
-    line: 'Who\'s That Pokémon? Five silhouettes a day, name \'em for coins. Tap again to play, meow.',
+    line: 'Who\'s That Pokémon? Seven silhouettes a day, name \'em for coins. Tap again to play, meow.',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The table games, played with Meowth's house chips (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in

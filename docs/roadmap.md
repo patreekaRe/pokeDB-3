@@ -255,7 +255,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         - **Games (the user's keepers):** Voltorb Flip, Who's That Pokémon?, Slots (tap-to-stop, jackpot, Pikachu
           bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low. **No betting since 2026-10-12** (the user's
           call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
-          an average day ~250 (`tests/corner.test.mjs`). Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
+          an average day ~250 (`tests/corner.test.mjs`); raised later that day (the user's pick) to 10 slots, 10 Plinko, 5 each of Blackjack / High-Low / Voltorb Flip and a 7-question quiz, ~380 a day. Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
           Gen 1's prize dolls), records under every game and 8 Game Corner badges. Prize tickets for plays past the paying
           ones came and went the same day (the user's call: Plinko could be spammed): extra plays are for fun, the counter
           sells for PokéCoins (180-450, every game a prize: Blackjack, High-Low and quiz pieces added; the counter a showcase screen; every game prize playable at home, `js/home-arcade.js`, the quiz endless with a streak). Old tickets cashed in at 3 coins; the Chips meter and every "chips" line are gone,
