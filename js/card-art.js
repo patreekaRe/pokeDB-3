@@ -16,6 +16,8 @@ import { FIRE } from './card-art-fire.js';
 import { WATER } from './card-art-water.js';
 import { GRASS } from './card-art-grass.js';
 import { PSYCHIC } from './card-art-psychic.js';
+import { NEUTRAL } from './card-art-neutral.js';
+import { ALL_CARDS } from './data/cards.js';
 
 const OFF = new URLSearchParams(location.search).has('pixelcards');
 let drawn = 0;
@@ -25,6 +27,7 @@ const ART = {
   ...WATER,
   ...GRASS,
   ...PSYCHIC,
+  ...NEUTRAL,
   /* ---------- Neutral ---------- */
   tackle: `<defs>${radial('a', [[0, '#fff'], [0.35, '#fff3a0'], [1, '#ffb030']])}</defs>
     <path d="M3 18h9M2 25h11M4 32h8" ${line(2.4)} opacity="0.85"/>
@@ -204,8 +207,16 @@ const ART = {
 };
 
 /** The card's smooth picture in its art window, or null to keep the item sprite. */
+/** A Safari signature card sharing a pool card's move (Fire Punch, Aqua Ring...) borrows its picture. */
+let byName;
+function namesake(card) {
+  byName ||= new Map(ALL_CARDS.filter((c) => ART[c.id]).map((c) => [c.name, c.id]));
+  return ART[byName.get(card.name?.replace(/\+$/, ''))];
+}
+
 export function cardArt(card) {
-  const svg = !OFF && ART[(card.orig || card).id.replace(/\+$/, '')];
+  const base = card.orig || card;
+  const svg = !OFF && (ART[base.id.replace(/\+$/, '')] || (base.id.startsWith('sig-') && namesake(base)));
   if (!svg) return null;
   const tag = `ca${(drawn++).toString(36)}`;
   const art = document.createElement('div');
