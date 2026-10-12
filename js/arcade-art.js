@@ -312,6 +312,16 @@ const SCREENS = {
     text(g, 'PERFECT!', 200, 30, 18, '#ffe060', '#5a1a40');
     crt(g, w, h, false);
   },
+  berrycabinet(g, w, h) {
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#8ad0f8'); bg.addColorStop(1, '#d8f0ff'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#3a8a3a'; g.fillRect(0, 0, w, 26); g.fillStyle = '#4aa848'; for (let i = 0; i < 8; i++) disc(g, i * 36 + 10, 28, 20, '#4aa848');
+    rr(g, 0, 164, w, 28, 0, '#6aba48');
+    for (const [x, y, c, r] of [[52, 70, '#3a7ae0', 9], [128, 108, '#e84868', 9], [196, 60, '#ffd84a', 10], [90, 130, '#3a7ae0', 8]]) { disc(g, x, y, r, c); g.fillStyle = '#3a8a3a'; g.fillRect(x - 1, y - r - 5, 3, 6); }
+    oval(g, 150, 152, 20, 14, '#f4f4f4'); disc(g, 150, 136, 13, '#f4f4f4'); g.fillStyle = '#4a9ae0'; g.fillRect(146, 124, 8, 30);
+    disc(g, 174, 138, 12, '#4a9ae0'); disc(g, 144, 134, 2.4, '#202028'); disc(g, 156, 134, 2.4, '#202028'); disc(g, 140, 140, 3, '#f8d030'); disc(g, 160, 140, 3, '#f8d030');
+    text(g, 'COMBO x3!', 60, 40, 18, '#ffe060', '#1a4a6a');
+    crt(g, w, h, false);
+  },
   dittocabinet(g, w, h) {
     const bg = g.createRadialGradient(w / 2, h * 0.6, 10, w / 2, h * 0.6, w * 0.7); bg.addColorStop(0, '#6a4a9a'); bg.addColorStop(1, '#2a1a4a'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
     rr(g, 0, 140, w, 52, 0, '#4a2a2a');

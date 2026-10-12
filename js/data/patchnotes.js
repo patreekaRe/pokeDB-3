@@ -43,16 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'Slowpoke\'s Claw Machine and Poké Ball Skee-Ball are off Meowth\'s prize counter; anyone who bought one keeps it and can still play it at home.'],
-  ['look', 'Every arcade game\'s How to play is a neon attract screen with the game running on a little CRT, and FREE PLAY is a lit LED badge.'],
-  ['base', 'Poké Puzzle has a big round SWAP button (it swaps the two panels in the cursor), with a smaller RAISE under it.'],
-  ['base', 'Ponyta Dash: a quick tap is a smaller hop; hold it for the high jump.'],
-  ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
-  ['base', 'Beedrill Invaders: Pikachu no longer fires by itself. Tap the round FIRE button (or Space) to zap.'],
-  ['mall', 'Over Meowth\'s counter a big screen cycles through the arcade leaderboards, each game\'s top three this week (tap it for the full board); the GAME CORNER sign moved up above the pink neon, and the stamp card sits just over Meowth\'s head.'],
-  ['mall', 'The Game Corner has regulars: a few Pokémon playing the slots, arcade and tables, wandering about deciding, chatting with each other and with Meowth, coming and going through the day. Tap one to talk; walk up to its game and it makes room.'],
-  ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
-  ['mall', 'No more Deal of the Day: everything in the Game Corner is its normal price.'],
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
   ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
@@ -67,6 +57,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.9',
+    name: 'Berry Season',
+    date: '2026-10-12',
+    notes: [
+  ['mall', 'Slowpoke\'s Claw Machine and Poké Ball Skee-Ball are off Meowth\'s prize counter; anyone who bought one keeps it and can still play it at home.'],
+  ['look', 'Every arcade game\'s How to play is a neon attract screen with the game running on a little CRT, and FREE PLAY is a lit LED badge.'],
+  ['base', 'Poké Puzzle has a big round SWAP button (it swaps the two panels in the cursor), with a smaller RAISE under it.'],
+  ['base', 'Ponyta Dash: a quick tap is a smaller hop; hold it for the high jump.'],
+  ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
+  ['base', 'Beedrill Invaders: Pikachu no longer fires by itself. Tap the round FIRE button (or Space) to zap.'],
+  ['mall', 'Over Meowth\'s counter a big screen cycles through the arcade leaderboards, each game\'s top three this week (tap it for the full board); the GAME CORNER sign moved up above the pink neon, and the stamp card sits just over Meowth\'s head.'],
+  ['mall', 'The Game Corner has regulars: a few Pokémon playing the slots, arcade and tables, wandering about deciding, chatting with each other and with Meowth, coming and going through the day. Tap one to talk; walk up to its game and it makes room.'],
+  ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
+  ['mall', 'No more Deal of the Day: everything in the Game Corner is its normal price.'],
+  ['base', 'New arcade game: Pachirisu Berry Catch. Run along under the Berry tree catching Berries, build a combo and dodge the Pinecos. At Meowth\'s prize counter and free to play in the Game Corner, in place of Jigglypuff\'s Sing-Along.'],
+  ['mall', 'Jigglypuff\'s Sing-Along and Unown Word Search are off Meowth\'s prize counter; anyone who bought one keeps it and can still play it at home.'],
+    ],
+  },
   {
     version: '1.8',
     name: 'Arcade Night',
@@ -359,6 +368,6 @@ export const IN_THE_GAME = [
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 26 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 23 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

@@ -34,7 +34,7 @@ const PLINKOS = [2.5, 5.5];
    counter (the user's layout, 2026-10-12), Whac-a-Diglett and the pinball table on the side walls where their top slot
    machines stood. */
 const ARCADE = [
-  ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'singalongcabinet', 'dittocabinet'].map((id, x) => [id, x]),
+  ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'berrycabinet', 'dittocabinet'].map((id, x) => [id, x]),
   ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'unowncabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
   ['whackmachine', 0, 3, 1], ['pokepinball', COLS - 1, 3, -1],
 ];
@@ -86,7 +86,7 @@ export const KEEPER = {
     return true;
   }),
   hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up: tap me for my prize counter, things you can\'t buy anywhere else, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
-  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, play on for fun. Tap me for the prize counter, meow!', 'Blackjack against me? Bold. I like bold. Even when it\'s on the house, meow.'],
+  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, play on for fun. Tap me for the prize counter, meow!', 'Blackjack against me? Bold. I like bold. Even when it\'s on the house, meow.'],
 };
 
 /* ---------- painting ---------- */

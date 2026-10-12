@@ -2119,3 +2119,4 @@ Reading never picks a road. Your Pokémon eases down to 70% of its loaded size b
 keeps its cards, too). Fixed on the way: the cards called `dexSeen()`, which *marks* a Pokémon seen, so showing the fork
 marked its bosses seen and never showed a met one in colour; they read `save.dex.seen` now.
 - **Deal of the Day taken out** (2026-10-12, the user's call): the Game Corner's 30%-off pick is gone from the cabinet, the showcase screens and Meowth's lines (`todaysDeal()` / `pickDeal()` / `DEAL_OFF` removed); an old save's `corner.deal` is ignored. Branch `claude/arcade-cabinets-design-yh10el`.
+- **Pachirisu Berry Catch** (2026-10-12, patch 1.9, the user's pick): a home arcade game, `js/arcade-berry.js` / `berrycabinet`, in Jigglypuff's Sing-Along's place at Meowth's counter and on the Game Corner floor; Sing-Along and Unown Word Search retired (buyers keep them). Meowth's leftover DEAL line taken out.
