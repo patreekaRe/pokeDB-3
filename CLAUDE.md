@@ -30,7 +30,9 @@ Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep a
 for adding Pokémon. Read it before starting a task. Everything finished is in `docs/roadmap-done.md` (the archive, split
 off 2026-10-03), with its decisions, bot numbers and old prompts; "the roadmap's step N" / "Small asks N" in these notes
 means that file. When a task lands, move its entry from the roadmap to the archive in a line or two, so the roadmap never
-again lists finished work as open.
+again lists finished work as open. **Update the roadmap every time a step finishes, before you reply** (the user's ask, 2026-10-12: they `/clear` often, so
+the roadmap is how the next session knows where things stand): what was done, what's next, the branch and last commit if
+it sits on one, and commit and push it with the work.
 
 ## Running it locally
 

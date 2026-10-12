@@ -147,19 +147,24 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) ~~Furniture store~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-furniture.js`, the west front.
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
-     c) **The Game Corner revamp** (branch `game-corner-revamp`, 2026-10-10; the user's picks over prize tickets and
-        betting coins): the Game Corner is open; **Voltorb Flip** (free, coins from the score up to 250 a UTC day, HGSS's 8
-        levels; `js/voltorb.js`) and a **Deal of the Day** (30% off one skin, perk or shiny; `todaysDeal()` in `js/shop.js`).
-        Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Rebuilt huge the same day (four showcase screens,
-        `js/showcase.js`), then the lineup settled on 2026-10-11 (the user's pick): Roulette, Memory Match and the Gachapon
-        cut (the big dolls back in the Furniture store); tap-to-stop slots with a carried-over jackpot and a Pikachu bonus
-        round, Plinko, Blackjack, High-Low (bets 5-50, `js/data/casino.js`), Who's That Pokémon?
-        one round a day, and Meowth's scratch card for a full daily stamp card. Team Rocket Blast-Off came and went (cut 2026-10-12).
-        **Next:** the user is explaining a new room revamp. See CLAUDE.md.
-        **Next:** the user playtests and says whether it goes to `main` (Pages only serves `main`).
+     c) **The Game Corner revamp** (branch `game-corner-revamp`, NOT merged: the user said don't merge yet). Built
+        2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
+        detail. Where it stands (last commit 91165e0, 2026-10-12):
+        - **Games (the user's keepers):** Voltorb Flip and Who's That Pokémon? (free, 250 a day between them),
+          Slots (tap-to-stop, jackpot, Pikachu bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low (bets
+          5-50, 500-a-day win cap). Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
+          Rocket Blast-Off. Every game has a How to play card (the "?").
+        - **Meowth:** a daily stamp card (5 different games) over his head earns a scratch card.
+        - **The room:** casino carpet; back wall left a wall-sized live Plinko board, right three equal mounted screens
+          (Pokémon, Shinies, Perks; no Poké Balls); four tables (touchscreen Voltorb / Who's That behind, Blackjack /
+          High-Low in front); six slot machines down the side walls (my suggestion: the user may move them).
+        **Next:** the user playtests the latest pinned link and gives room/game feedback; then, on their word, merge to
+        `main`. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
-        with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. Balls stay in the Game
-        Corner until it's built. ▶ Run in: LOCAL (a 3D shop like `js/mall-furniture.js`).
+        with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. The user wants it right
+        after the Game Corner. Poké Balls are off the Game Corner's wall screens since 2026-10-12 (still in the Pokédex's
+        Game Corner app and the Safari prep window) until it's built. ▶ Run in: CLOUD (a 3D shop like
+        `js/mall-furniture.js`; the user has no local access, so check it headless and send screenshots).
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
