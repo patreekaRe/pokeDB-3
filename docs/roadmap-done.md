@@ -2175,3 +2175,15 @@ and Ponyta Dash's sky and sun are a `stamp()`. If it still drops, Low Power Mode
 canvas at a phone's fractional scale (1.4 pixels a unit), doubled and dropped different rows each frame as Ponyta bobbed;
 `drawMon()` in `js/arcade-kit.js` now snaps a sprite's box to whole screen pixels (unless rotated or mirrored by the
 context), so every frame draws the same shape, for every arcade game.
+
+**Phone frame on tablets and PCs** (2026-10-12, the user's ask: on an iPad the bars stretched and buttons floated): when
+the page is the top window and its short side is 600px or more, `index.html` marks `html.framed`, hides its own body and
+loads the same URL in `#phone-frame`, an iframe half as wide as it is tall (360px at least), so inside it every screen is a
+phone's; phones never frame. `?wide` turns it off. Last commit fc74dc7 on `claude/arcade-cabinets-design-yh10el` and `main`.
+
+**Full screen on iPads again, the map a handheld** (2026-10-12, the user's ask the same day: the phone frame wasted the
+iPad's screen; "the backgrounds and 3D worlds fit, the Pokédex smaller like a device"): the frame is opt-in, `?phone`.
+Wider than 720px the run map's device is 500px wide and at most 940px tall, centred in its scenery (`--mdex-gap` on the
+body moves the Bag, news box and Home key with it), and the map always uses the phone's grid (`fitGrid()` in `js/map.js`;
+the wider grid of more tiles is gone). The Collection's device already stood that way. Checked headless at 1180x820 and
+820x1180: the Clearing, Center and battles fill the screen as they did before the frame.

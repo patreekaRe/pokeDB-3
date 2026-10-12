@@ -5,6 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <!-- iOS zooms into a text box under 16px and never zooms back; only iOS gets maximum-scale, which it still lets you pinch past -->
   <script>if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.querySelector("meta[name=viewport]").content += ", maximum-scale=1";</script>
+  <!-- ?phone plays the game in a phone-shaped frame of this same page, to see a phone's layout on a tablet or PC. It was
+       the default on wide screens for a day; the user wanted an iPad's whole screen back (2026-10-12), so the scenery
+       and 3D places fill it and the Pokédex-shaped screens stand in it at a handheld's size instead. -->
+  <script>if (window.top === window && /[?&]phone(=|&|$)/.test(location.search)) document.documentElement.classList.add("framed");</script>
+  <style>
+    html.framed, html.framed body { height: 100%; margin: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #2a3160, #12152b 75%); }
+    html.framed body { display: grid; place-items: center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); box-sizing: border-box; }
+    html.framed body > :not(#phone-frame) { display: none !important; }
+    #phone-frame {
+      --tall: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 24px);
+      height: var(--tall); width: min(calc(100vw - 24px), max(360px, calc(var(--tall) * 0.5)));
+      border: 0; border-radius: 22px; background: #1b1f3a; display: block;
+      box-shadow: 0 0 0 4px #0b0d1a, 0 18px 60px rgba(0, 0, 0, 0.6);
+    }
+  </style>
   <title>Poké Deckbound – Roguelike Deckbuilder</title>
   <meta name="description" content="A free browser deck-builder and roguelike battle game. Pick a starter, build a deck of moves, and battle wild monsters. Fan project, not affiliated with Nintendo.">
   <meta name="theme-color" content="#1b1f3a">
@@ -19,6 +34,12 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://patreekare.github.io/pokeDB-3/assets/screenshots/social.jpg?v=2">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Deckbound">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -892,6 +913,24 @@
 
   <noscript><p class="noscript">Poké Deckbound needs JavaScript to run. Please enable it.</p></noscript>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module">
+    if (!document.documentElement.classList.contains("framed")) import("./js/main.js");
+    else {
+      const frame = document.createElement("iframe");
+      frame.id = "phone-frame";
+      frame.title = document.title;
+      frame.allow = "fullscreen; autoplay; vibrate";
+      frame.src = location.pathname + location.search.replace(/([?&])phone(=[^&]*)?&?/, "$1").replace(/[?&]$/, "") + location.hash;
+      document.body.append(frame);
+      const focus = () => frame.contentWindow?.focus();
+      frame.addEventListener("load", focus);
+      addEventListener("pointerdown", focus);
+      addEventListener("keydown", focus);
+    }
+  </script>
+  <div id="rotate-cover" aria-hidden="true">
+    <svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="45" r="2.5" fill="currentColor"/><path d="M50 22a20 20 0 0 1 0 20" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="m46 39 4 4 4-5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <p>Turn your phone upright to play</p>
+  </div>
 </body>
 </html>
