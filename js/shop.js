@@ -162,7 +162,7 @@ function skinEntry(item) {
   const name = starter.line[0].name;
   const owned = getSave().unlocked.includes(item.id);
   return {
-    id: item.id, name, sprite: spriteUrl(starter, 'front'),
+    id: item.id, name, sprite: spriteUrl(starter, 'front'), dark: !owned,   // a silhouette until bought (the user's ask, 2026-10-12)
     text: `${cap(starter.type)} skin`,
     done: owned && 'Owned',
     cost: item.cost,
@@ -199,7 +199,7 @@ function shinyEntry(starter) {
   const known = isStarterUnlocked(starter);
   const owned = getSave().shiny.owned.includes(starter.id);
   return {
-    id: starter.id, name: known ? `Shiny ${name}` : '???', sprite: spriteUrl(starter, 'front', 0, true), dark: !known,
+    id: starter.id, name: known ? `Shiny ${name}` : '???', sprite: spriteUrl(starter, 'front', 0, true), dark: !owned,
     text: known ? 'Its rare shiny colours, on the starter screen, the map and in battle. Just for looks: tap ✨ on its card to switch.'
       : 'Unlock this starter first.',
     blocked: !known,
