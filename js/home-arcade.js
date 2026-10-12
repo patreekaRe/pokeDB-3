@@ -37,6 +37,10 @@ const GAMES = {
 
 export const homeGame = (kind) => kind in GAMES;
 
+/** An arcade cabinet is full screen and opaque, so the 3D room behind it sits still till it shuts (it was drawing every
+    frame under the game and costing the game its frame rate). */
+export const cabinetUp = () => !!document.querySelector('.cg-overlay.ar');
+
 /** Opens `kind`'s game on the machine at home; `done` once it's shut. */
 export async function playAtHome(kind, done) {
   const open = await GAMES[kind]();

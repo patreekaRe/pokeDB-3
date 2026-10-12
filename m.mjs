@@ -1,0 +1,16 @@
+import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', args: ['--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader','--ignore-gpu-blocklist'] });
+const p = await b.newPage({ viewport: { width: 400, height: 800 }, deviceScaleFactor: 1 });
+p.on('console', m => m.type()==='error' && console.log('console', m.text().slice(0,200)));
+await p.goto('http://localhost:8123/index.html?base&coins=5000&fps');
+await p.waitForTimeout(15000);
+console.log(await p.evaluate(() => [...document.body.children].map(e => e.tagName + '.' + e.className).filter(s => /base|b3/.test(s)).join(' | ')));
+const fps = async () => p.evaluate(() => new Promise(res => { let n = 0, t0 = performance.now(); const f = (t) => { n++; if (t - t0 < 4000) requestAnimationFrame(f); else res((n / ((t - t0) / 1000)).toFixed(1)); }; requestAnimationFrame(f); }));
+console.log('room alone fps', await fps());
+await p.evaluate(() => import('./js/home-arcade.js').then(m => m.playAtHome('berrycabinet')));
+await p.waitForTimeout(800);
+await p.evaluate(() => { [...document.querySelectorAll('.cg-overlay button')].find(x => /got it/i.test(x.textContent))?.click(); });
+await p.waitForTimeout(300);
+await p.locator('.ar-canvas').click();
+console.log(process.argv[2], 'game fps', await fps());
+await b.close();

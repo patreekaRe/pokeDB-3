@@ -21,6 +21,7 @@ import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
+import { cabinetUp } from './home-arcade.js';
 
 const COLS = 13, ROWS = 7;
 const U = 20;                 // the paintings' units a tile
@@ -1108,6 +1109,7 @@ function resize() {
 
 function frame(now) {
   if (!root?.isConnected) return;
+  if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
   const dt = Math.min(100, now - (last || now));
   last = now;
   if (walk(dt)) arrived();

@@ -50,6 +50,7 @@ export const NEXT = [
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
   ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
   ['base', 'Squirtle Bubble Shooter: a SHOOT button (a tap only aims), an arrow showing where the shot goes (the dotted path only for the first three shots), "Tap to swap" under the bubbles, rows sliding down smoothly and a steadier frame rate.'],
+  ['base', 'Pachirisu Berry Catch runs smoother, and every arcade game gets a steadier frame rate: the room behind the cabinet stops drawing while you play.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
