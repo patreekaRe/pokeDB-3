@@ -51,6 +51,8 @@ export const NEXT = [
   ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
   ['base', 'Squirtle Bubble Shooter: a SHOOT button (a tap only aims), an arrow showing where the shot goes (the dotted path only for the first three shots), "Tap to swap" under the bubbles, rows sliding down smoothly and a steadier frame rate.'],
   ['base', 'Pachirisu Berry Catch runs smoother, and every arcade game gets a steadier frame rate: the room behind the cabinet stops drawing while you play.'],
+  ['base', 'Every arcade game is now a real arcade cabinet: a lit marquee, the screen in a black bezel with LED scores, and a control deck with a joystick, START / EXIT and big round buttons.'],
+  ['base', 'Squirtle Bubble Shooter aims with the joystick only (a tap just swaps bubbles), with a new glowing launcher and an underwater cave behind the bubbles. Pikachu Volleyball gets a round JUMP button.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
