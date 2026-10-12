@@ -157,7 +157,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
           the wall behind it earns a scratch card.
         - **The room:** casino carpet; back wall left two live Plinko boards spaced evenly up to the counter, right three
-          equal mounted screens clear of the counter (Pokémon, Shinies, Perks; no Poké Balls; a Pokémon or shiny you don't own is a silhouette, 2026-10-12; their sprites load through a
+          equal mounted screens clear of the counter (Pokémon, Shinies, Perks; no Poké Balls; a Pokémon or shiny you don't own is a silhouette and a perk's levels are pips, "Level 1 of 3 owned", Buy Level 2, 2026-10-12; their sprites load through a
           page canvas, as iPhone drew them blank into an OffscreenCanvas); no tilt-shift blur at all; four tables (touchscreen Voltorb / Who's That behind, Blackjack /
           High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.

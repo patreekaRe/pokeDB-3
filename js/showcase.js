@@ -53,6 +53,7 @@ function render(dir = 0) {
     img.src = e.sprite; img.alt = '';
     screen.append(img);
   } else screen.append(el('span', 'sc-icon', e.icon));
+  if (e.tier) screen.append(pips(e.tier));
   if (e.deal) screen.append(el('span', 'sc-deal', 'DEAL OF THE DAY'));
   if (e.done) screen.append(el('span', 'sc-owned', e.done.toUpperCase()));
   screen.append(el('span', 'sc-count', `${at + 1} / ${list.length}`));
@@ -66,7 +67,8 @@ function render(dir = 0) {
   const lcd = el('div', 'sc-lcd');
   lcd.append(el('strong', '', e.name), el('span', '', news ? news.join(' ') : e.text));
   const foot = el('div', 'sc-foot');
-  if (e.level) foot.append(el('span', 'sc-level', e.level));
+  if (e.tier) foot.append(el('span', 'sc-level', tierLine(e.tier)));
+  else if (e.level) foot.append(el('span', 'sc-level', e.level));
   if (!e.done) {
     const price = el('span', `sc-price${coins < e.cost || e.blocked ? ' short' : ''}`, `💰 ${e.cost.toLocaleString()}`);
     if (e.deal) price.prepend(el('s', '', e.full.toLocaleString()), ' ');
@@ -74,7 +76,7 @@ function render(dir = 0) {
   }
   lcd.append(foot);
 
-  const buyKey = key(e.done ? e.done : e.blocked ? 'Locked' : armed ? 'Sure? Buy!' : 'Buy', `vf-go sc-buy${armed ? ' armed' : ''}`, buy);
+  const buyKey = key(e.done ? e.done : e.blocked ? 'Locked' : armed ? 'Sure? Buy!' : e.tier?.of > 1 ? `Buy Level ${e.tier.have + 1}` : 'Buy', `vf-go sc-buy${armed ? ' armed' : ''}`, buy);
   buyKey.disabled = !!e.done || e.blocked || coins < e.cost;
   const keys = el('div', 'vf-keys');
   keys.append(buyKey, key('Close', 'vf-close', () => panel.shut()));
@@ -85,6 +87,17 @@ function render(dir = 0) {
   box.append(head, stage, lcd, keys);
   panel.root.replaceChildren(box);
 }
+
+/** A perk's levels as a row of pips over the screen: bought ones gold, the one Buy gets you blinking, the rest empty. */
+function pips({ have, of }) {
+  const row = el('span', 'sc-pips');
+  row.append(el('b', '', of > 1 ? 'LEVEL' : 'ONE-TIME'));
+  for (let n = 0; n < of; n++) row.append(el('i', n < have ? 'on' : n === have ? 'next' : ''));
+  return row;
+}
+
+const tierLine = ({ have, of }) => (have >= of ? `All ${of} level${of > 1 ? 's' : ''} owned`
+  : of > 1 ? `Level ${have} of ${of} owned` : 'Not owned yet');
 
 function buy() {
   const e = cornerEntries(row)[at];

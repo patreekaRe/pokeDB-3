@@ -465,6 +465,14 @@ function paintScreen(c, def, e, cut) {
   } else if (PERK_ART[e.id]) {
     g.save(); g.translate(W / 2, H * 0.44); g.scale(box / 15, box / 15); PERK_ART[e.id](g); g.restore();
   }
+  if (e.tier) {   // a perk's levels as pips, gold for each bought (the user's ask, 2026-10-12)
+    const r = H * 0.035, gap = r * 3, x0 = W / 2 - (e.tier.of - 1) * gap / 2, y = H * 0.74;
+    for (let n = 0; n < e.tier.of; n++) {
+      g.beginPath(); g.arc(x0 + n * gap, y, r, 0, Math.PI * 2);
+      g.fillStyle = n < e.tier.have ? '#ffd84a' : '#2a2a40'; g.fill();
+      g.lineWidth = r * 0.35; g.strokeStyle = n < e.tier.have ? '#fff2b8' : '#8a8aa8'; g.stroke();
+    }
+  }
   g.fillStyle = 'rgba(10,6,20,0.72)'; g.fillRect(0, H * 0.8, W, H * 0.2);
   words(g, e.name.toUpperCase(), W / 2, H * 0.9, Math.min(H * 0.09, W * 1.6 / Math.max(8, e.name.length)), '#ffffff');
   const tag = e.done ? e.done.toUpperCase() : e.blocked ? (e.dark ? '???' : 'LOCKED') : `${e.cost.toLocaleString()}`;

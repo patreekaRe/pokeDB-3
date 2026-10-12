@@ -181,6 +181,7 @@ function perkEntry(item) {
     id: item.id, name: item.name, icon: item.icon, text: locked ? 'Complete the Pokédex to get the Silph Scope first.' : item.text,
     blocked: locked,
     level: `Lv ${level}/${item.maxLevel}`,
+    tier: { have: level, of: item.maxLevel },   // drawn as pips on the showcase (the user's ask, 2026-10-12: Lv 1/3 was easy to miss)
     done: level >= item.maxLevel && 'Maxed',
     cost: item.costs[level],
     bought() {
