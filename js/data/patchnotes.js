@@ -53,6 +53,7 @@ export const NEXT = [
   ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
   ['mall', 'Every arcade cabinet has a lit marquee on top: the game\'s Pokémon bobbing on a spinning sunburst, chasing bulbs round the edge and its name as a gold arcade logo that always fits.'],
   ['fixes', 'The Poké Mall, the Game Corner and the Furniture store open without the stutter, run smoother on phones (a weaker phone turns its shadows and resolution down by itself), and the busier arcade games (Breakout, Bowling, Ekans Trail, Gastly Maze) hold their frame rate.'],
+  ['fixes', 'Smoother loading: the 3D scenes\' engine is half the size and downloads alongside the game, and walking into the Clearing, the Secret Base, Centers, Marts, ? rooms and the crossroads no longer stutters on the first frame.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

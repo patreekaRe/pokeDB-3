@@ -5,7 +5,8 @@
 import { spriteFit } from './data/sprite-fit.js';
 import { decodeGif } from './gif-frames.js';
 
-const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+// the minified build (half the bytes to fetch and parse); index.html preloads it, so keep the two URLs the same
+const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 export const MON_PX = 1 / 32;   // Pokémon GIFs are drawn at twice the furniture's detail
 
 let THREE = null;
@@ -13,6 +14,22 @@ let THREE = null;
 export async function loadThree() {
   THREE ??= await import(THREE_URL);
   return THREE;
+}
+
+/** Compiles what `scene` draws ahead of its first frame (with `into`'s lights, for a group not yet in it), where the
+    browser can off the main thread (KHR_parallel_shader_compile), so walking in doesn't freeze on it. Never waits past
+    `ms`. */
+export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
+  try {
+    // compiled for a render target, as createPost() draws the scene into one: for the screen every program would be a
+    // variant (another output colour space) the first frame never uses
+    const target = new THREE.WebGLRenderTarget(1, 1), was = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    const done = renderer.compileAsync(scene, camera, into ?? scene);
+    renderer.setRenderTarget(was);
+    target.dispose();
+    return Promise.race([done, new Promise(r => setTimeout(r, ms))]).catch(() => {});
+  } catch { return Promise.resolve(); }
 }
 
 let veil = null;
@@ -40,7 +57,7 @@ export function tex(canvas) {
 
 export function crop(src, x, y, w, h) {
   const c = new OffscreenCanvas(w, h);
-  c.getContext('2d').drawImage(src, x, y, w, h, 0, 0, w, h);
+  c.getContext('2d', { willReadFrequently: true }).drawImage(src, x, y, w, h, 0, 0, w, h);
   return c;
 }
 

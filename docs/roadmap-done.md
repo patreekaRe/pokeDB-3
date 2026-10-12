@@ -2147,3 +2147,18 @@ glowing pale / blue / gold by rarity with a slow shine on rares, a frosted art w
 Skill, round for a Power (`kind-*` from `kindOf()`, moved into `js/ui.js`), "Fire · Attack" on the type line; picked and
 pickable cards ring through `--ring` on `.card-face` (`css/cards.css`). Playtested on the branch, merged into `main`.
 
+
+### Load-time pass (2026-10-12, the user's ask: "a check on load times across the game, make sure it's all smooth")
+Measured in headless Chromium at phone size (title, Clearing, Secret Base, Poké Mall, Center, Mart, ? rooms, crossroads,
+map and fights; `--use-angle=swiftshader`, so GPU timings there are inflated, CPU ones real). The same day's Mall fix
+(30c1a90) had already put the furniture's pictures and `finish()`'s layers on CPU canvases (a GPU canvas stalls on every
+`getImageData`). This pass: Three.js is the minified build (166 KB gzipped, was 256 KB, half the code to parse) and
+`index.html` modulepreloads it with the game's scripts (it was fetched only once they had all loaded; keep its URL and
+`THREE_URL` in `js/hd2d.js` the same). `warmShaders()` in `js/hd2d.js` compiles a place's shaders before its first frame
+(`compileAsync`, for a render target, as `createPost()` draws the scene into one: compiled for the screen every program is
+a variant never used, which the Mall's `warm()` did, 43 programs linked where 28 are used): the Clearing, Base, Center,
+Mart, ? rooms and crossroads. The arena's `precompile()` was left alone (pointed at a target it built 63 programs where a
+fight uses 7). More read-back paintings made on CPU canvases (`willReadFrequently`): `crop()`, `roomArt()`, the
+Clearing's `art()`, the crossroads' canvases, `sceneShot()`, aura, bagdex, `filled()`, the medallion, tower statues. Not
+done, worth a look one day: every module loads at start (~116 files, ~3.5 MB unminified, ~0.9 MB gzipped), so the
+films, intros and card art could be imported when first needed.

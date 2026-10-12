@@ -11,7 +11,7 @@
 
 import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
-import { loadThree, tex, monBoard, drawMon, createPost } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, warmShaders } from './hd2d.js';
 import { sceneShot } from './scene.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -57,7 +57,7 @@ const regionOf = (x, z) => (z >= FORK_Z - 0.2 ? -1 : Math.abs(x - roadX(0, z)) <
 
 /* ---------- painting ---------- */
 
-function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d')]; }
+function canvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return [c, c.getContext('2d', { willReadFrequently: true })]; }
 function smoothTex(c, repeat = null) {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -549,6 +549,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   // Meowth, the first time after Biome 1: out of the trees on the right to talk, then off again (js/meowth.js)
   const cat = meowth ? await monBoard({ src: 'assets/pokemon/meowth-front.gif', name: 'Meowth', cry: 'meowth' }, false) : null;
   if (cat) { cat.group.visible = false; W.scene.add(cat.group); }
+  await warmShaders(renderer, W.scene, camera);
 
   const scene = $('crossroads-scene'), go = $('xr-go'), calm = still();
   scene.className = `crossroads-scene x3d held${calm ? ' still' : ''}`;

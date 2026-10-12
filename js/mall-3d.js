@@ -15,7 +15,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -766,7 +766,7 @@ const SHOPS = {
 async function warm() {
   try {
     scene.traverseVisible(o => { for (const m of [o.material].flat()) if (m) for (const t of [m.map, m.emissiveMap]) if (t?.image && !t.userData.warm) { renderer.initTexture(t); t.userData.warm = true; } });
-    await Promise.race([renderer.compileAsync(scene, camera), new Promise(r => setTimeout(r, 2000))]);
+    await warmShaders(renderer, scene, camera, null, 2000);   // for the post pass's target, as the frame is drawn
     // where the GPU can't compile in parallel that resolves at once and the first frame still links every shader, so
     // draw that frame here, unseen
     placeCamera(0);
