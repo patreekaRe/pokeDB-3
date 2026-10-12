@@ -829,9 +829,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment
   needs an `ICONS` line; a new fight key a mirror in pokeDB-sim's engine, whose bot picks augments by measured value
   (`sim/augranks.json`). Detail in `docs/reference/sky-pillar.md`.
-- **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; branch `claude/dreamy-galileo-0o4aqc` until
-  the user says): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots
-  in and talks (`js/meowth.js`, `meowthTalk()`, `meowth` in `crossroads()` / `crossroads3d()`), then saves `cornerOpen`,
+- **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; live on `main` since
+  that day): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots
+  in and talks (it has quit Team Rocket and means to earn its coins honestly) (`js/meowth.js`, `meowthTalk()`, `meowth` in `crossroads()` / `crossroads3d()`), then saves `cornerOpen`,
   which takes the tape off the mall's Game Corner front (`syncShop()` in `js/mall-3d.js`) and puts up its ribbon, Meowth
   beside it (a `RIBBONS` line like Smeargle's, saved `cornerRibbon`; `?ribbon` shows both). Every save meets it, old ones
   at their next crossroads (the user's call: everyone should witness Meowth); the Game Corner app is open to all from the

@@ -306,7 +306,7 @@ const RIBBONS = {
     up: () => RIBBON_PEEK || !getSave().cornerRibbon,
     cut: () => updateSave(d => { d.cornerRibbon = true; }),
     ask: 'Ya made it, meow! Grand openin\' of the Game Corner! Do the honours and snip that ribbon. Tap it again!',
-    done: 'Snip! The Game Corner is open for business! Step right in, the prizes won\'t buy themselves, meow!',
+    done: 'Snip! The Game Corner is open for business! My first honest day\'s work, meow! Step right in!',
   },
 };
 

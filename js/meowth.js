@@ -19,10 +19,13 @@ export function meowthLines() {
   return [
     `Meowth! Hold it right there, ${name}!`,
     'I saw ya beat that boss back there. Not bad, meow. Not bad at all.',
-    'Name\'s Meowth. I\'ve got a nose for coins, and you, pal, smell like PokéCoins.',
+    'Name\'s Meowth. Yeah, yeah, THAT Meowth. Team Rocket\'s Meowth. Easy, don\'t go reachin\' for your Poké Balls!',
+    'I\'m through with all that. Blastin\' off every week, swipin\' Pokémon that never wanted to come... it ain\'t me no more.',
+    'I quit, meow! Left the uniform hangin\' on a branch back there. No more schemes, no more nets, no more giant Meowth robots.',
+    'From now on I make my coins the honest way. Well... honest-ish. It\'s a Game Corner, after all!',
     'Every run ya win, every boss ya beat, pays ya PokéCoins. And coins are for spendin\', meow!',
     'Ya know the Poké Mall back in the Clearing? That shop in the middle with the tape all over it? It\'s mine now!',
-    'I\'m openin\' the Game Corner there for real. Prizes in a case, shinies on the wall, a machine for every perk.',
+    'Prizes in a case, shinies on the wall, a machine for every perk. All fair and square, I swear on my charm!',
     'Finish your run, then come to the grand openin\'. You can cut the ribbon! Now go on, pick a road. Meowth, that\'s right!',
   ];
 }
