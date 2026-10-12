@@ -280,6 +280,8 @@ function menuBlip(e) {
 
 /** Called once at startup. */
 export function initAudio() {
+  // iOS treats Web Audio as ringer sound, so Silent Mode muted the whole game; as playback it plays like a video does
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* older Safari: no setting */ }
   renderButton();
   // the Pokédex's Settings speaker + slider and the title's are the same control twice
   for (const id of SOUND_TOGGLES) $(id).addEventListener('click', () => setMuted(!getSave().muted));

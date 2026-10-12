@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'Sound now plays on iPhone and iPad with Silent Mode on, like a video does.'],
   ['mall', 'More Game Corner plays pay PokéCoins each day: 10 slot spins, 10 Plinko drops, 5 hands each of Blackjack and High-Low, 5 Voltorb Flip rounds, and 7 questions in Who\'s That Pokémon?.'],
   ['base', 'New arcade game: Squirtle Bubble Shooter. Aim and fire bubbles, pop three of a colour, drop the ones left hanging, and keep them off the line as the ceiling comes down. At Meowth\'s prize counter and free to play in the Game Corner, in place of Unown Word Search.'],
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
