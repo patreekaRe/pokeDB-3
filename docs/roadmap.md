@@ -339,12 +339,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Card revamp** (branch `claude/dreamy-galileo-0o4aqc`, commit `f4f6d60`, 2026-10-12, the user's pick of three mockups:
-  smooth like the Pokédex, plus Slay the Spire's art-window shapes, no name banners): glossy type gradient, the cost a lit
-  gem, an edge glowing blue / gold by rarity with a slow shine on rares, a frosted art window pointed for an Attack, square
-  for a Skill, round for a Power (`kind-*` from `kindOf()` in `js/ui.js`), "Fire · Attack" on the type line; picked and
-  pickable cards ring through `--ring` on `.card-face` (`css/cards.css`). Not on `main`: the user playtests the branch
-  link, then on their OK merge it into `main` and move this to the archive. ▶ Playtest: the branch link (`?coins=`).
 - **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, the user's ask: "like the Pokémon Center"): the run's Mart
   as a 3D room (`js/mart-3d.js`), every ware on one wall unit, Kecleon's counter with the PC. The user playtests it on the
   branch (`?mart`); on their OK, merge it into `main`. ▶ Run in: LOCAL (visual).
