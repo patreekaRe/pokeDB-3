@@ -15,6 +15,7 @@ import { fine, texOf, words, star, GC } from './hub-3d.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
 import { PLINKO_PAYS } from './data/casino.js';
+import { ARCADE_GAMES, arcadeValue } from './data/leaderboard.js';
 
 /* The room: `x` a thing's first tile, `w` its tiles; y 0 is the back wall. */
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
@@ -117,7 +118,7 @@ function paper(f, W, H) {
   }
 }
 
-/** The back wall: neon bands, GAME CORNER in bulbs over the counter, and up high a neon Poké Ball, a coin and 777. */
+/** The back wall: neon bands, GAME CORNER in bulbs over the pink tube, and up high a neon Poké Ball, a coin and 777. */
 function wallArt({ cols, top: TOP, u: U }) {
   const W = (cols + 0.8) * U, H = TOP * U, f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
   const wx = (t) => (t + 0.4) * U, wy = (y) => (TOP - y) * U;
@@ -127,19 +128,19 @@ function wallArt({ cols, top: TOP, u: U }) {
   tube(g, s, NEON.cyan, 1.1, (c) => { c.moveTo(0, wy(0.9)); c.lineTo(W, wy(0.9)); });
   tube(g, s, NEON.pink, 1.1, (c) => { c.moveTo(0, wy(5.4)); c.lineTo(W, wy(5.4)); });
   // the sign: a red board ringed with bulbs, gold letters
-  // narrow enough to sit between the Plinko boards and the first screen, which cut off its end (2026-10-12)
-  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 4.3 * U, sh = 22, sy = wy(4.6);
+  // up over the pink tube since 2026-10-12 (the user's layout: the arcade leaderboard took its place over the counter)
+  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 5.6 * U, sh = 26, sy = wy(6.9);
   rr(cx - sw / 2 - 2, sy - 2, sw + 4, sh + 4, 4, GC.goldDark);
   rr(cx - sw / 2, sy, sw, sh, 3, lin(0, sy, 0, sy + sh, [GC.red, GC.redDark]));
   s.fillStyle = '#3a1010'; s.beginPath(); s.roundRect(cx - sw / 2, sy, sw, sh, 3); s.fill();
-  for (let i = 0; i <= 22; i++) for (const y of [sy + 1.6, sy + sh - 1.6]) {
-    const x = cx - sw / 2 + 2 + i * (sw - 4) / 22;
+  for (let i = 0; i <= 30; i++) for (const y of [sy + 1.6, sy + sh - 1.6]) {
+    const x = cx - sw / 2 + 2 + i * (sw - 4) / 30;
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill();
     s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 1.1, 0, Math.PI * 2); s.fill();
   }
-  g.save(); glow(g, NEON.gold, 4); words(g, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 9.5, GC.gold); g.restore();
-  words(s, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 9.5, '#ffe890');
-  coin(g, cx - sw / 2 + 7, sy + sh / 2, 4); coin(g, cx + sw / 2 - 7, sy + sh / 2, 4);
+  g.save(); glow(g, NEON.gold, 4); words(g, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 12, GC.gold); g.restore();
+  words(s, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 12, '#ffe890');
+  coin(g, cx - sw / 2 + 9, sy + sh / 2, 5); coin(g, cx + sw / 2 - 9, sy + sh / 2, 5);
   // up high, for a tall phone: neon shapes
   const hy = wy(7.6);
   tube(g, s, NEON.pink, 1.2, (c) => { c.arc(wx(2.2), hy, 16, 0, Math.PI * 2); c.moveTo(wx(2.2) - 16, hy); c.lineTo(wx(2.2) - 5, hy); c.moveTo(wx(2.2) + 5, hy); c.lineTo(wx(2.2) + 16, hy); });
@@ -381,6 +382,44 @@ function stampSign(c, { n, of, ready, paid }) {
       for (const [dx, dy] of [[-12, -7], [-4, -14], [4, -14], [12, -7]]) { g.beginPath(); g.arc(x + dx, y + dy, 4.5, 0, Math.PI * 2); g.fill(); }
     }
   }
+}
+
+/** The arcade leaderboard over Meowth's counter: one ranked game at a time, its name and top three this week. `boards` is
+    arcadeTop()'s (null: unreachable, undefined: still loading). */
+function boardScreen(c, boards, at) {
+  const g = c.getContext('2d'), W = c.width, H = c.height, game = ARCADE_GAMES[at % ARCADE_GAMES.length];
+  g.clearRect(0, 0, W, H);
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#24123e'); bg.addColorStop(1, '#120824');
+  g.fillStyle = bg; g.strokeStyle = GC.gold; g.lineWidth = 8;
+  g.beginPath(); g.roundRect(6, 6, W - 12, H - 12, 22); g.fill(); g.stroke();
+  g.strokeStyle = 'rgba(255, 90, 184, 0.55)'; g.lineWidth = 2; g.beginPath(); g.roundRect(16, 16, W - 32, H - 32, 14); g.stroke();
+  g.textBaseline = 'middle'; g.textAlign = 'center';
+  g.font = '800 19px system-ui, sans-serif'; g.fillStyle = '#ffa8dc'; g.shadowColor = '#ff5ab8'; g.shadowBlur = 8;
+  g.fillText('🏆 WEEKLY HIGH SCORES 🏆', W / 2, 36);
+  g.font = '900 34px system-ui, sans-serif'; g.fillStyle = '#fff8e0'; g.shadowColor = game.b1; g.shadowBlur = 16;
+  g.fillText(game.name.toUpperCase(), W / 2, 68);
+  g.shadowBlur = 0;
+  const rows = boards?.find(b => b.id === game.id)?.rows ?? [];
+  if (!rows.length) {
+    g.font = '700 20px system-ui, sans-serif'; g.fillStyle = '#fffbea';
+    g.fillText(boards === undefined ? 'Loading…' : boards === null ? 'Play to beat your best!' : 'No scores yet. Be the first!', W / 2, 124);
+  }
+  const MEDAL = ['#ffd84a', '#d8d8e8', '#e09858'];
+  rows.slice(0, 3).forEach((r, i) => {
+    const y = 102 + i * 26;
+    g.fillStyle = r.mine ? 'rgba(255, 216, 74, 0.16)' : 'rgba(255, 255, 255, 0.05)';
+    g.beginPath(); g.roundRect(40, y - 12, W - 80, 24, 8); g.fill();
+    g.fillStyle = MEDAL[i]; g.beginPath(); g.arc(60, y, 10, 0, Math.PI * 2); g.fill();
+    g.font = '900 13px system-ui, sans-serif'; g.fillStyle = '#2a1648'; g.textAlign = 'center'; g.fillText(String(r.rank), 60, y + 1);
+    g.font = '800 18px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = r.mine ? '#ffe890' : '#ffffff';
+    g.fillText(r.entry.name, 80, y + 1);
+    g.textAlign = 'right'; g.fillStyle = '#c8ffb8'; g.fillText(arcadeValue(r.entry), W - 52, y + 1);
+  });
+  g.textAlign = 'center';
+  ARCADE_GAMES.forEach((_, i) => {   // which game is up, as dots
+    g.fillStyle = i === at % ARCADE_GAMES.length ? '#ffd84a' : 'rgba(255, 255, 255, 0.25)';
+    g.beginPath(); g.arc(W / 2 + (i - (ARCADE_GAMES.length - 1) / 2) * 16, H - 22, 4, 0, Math.PI * 2); g.fill();
+  });
 }
 
 /* ---------- pictures ---------- */
@@ -685,17 +724,45 @@ export function buildCorner(THREE, size) {
   group.add(desk);
   const keeperZ = deskZ - DD / 2 - 0.42;
 
-  // Meowth's stamp card, on the wall behind it under the GAME CORNER sign: how many games today, then the scratch card waiting
+  // Meowth's stamp card, on the wall just over its head (2026-10-12, the user's layout): how many games today, then the
+  // scratch card waiting
   const signCanvas = new OffscreenCanvas(480, 168);
   signCanvas.fine = 1;
   const signMap = texOf(signCanvas);
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.91), new THREE.MeshBasicMaterial({ map: signMap, transparent: true, toneMapped: false }));
-  sign.position.set(tileX(COUNTER.x + 2), 2.55, -rows / 2 + 0.03);
+  sign.position.set(tileX(COUNTER.x + 2), 1.95, -rows / 2 + 0.03);
   sign.userData.front = keeper;
   group.add(sign);
   const paintSign = () => { stampSign(signCanvas, stampState()); signMap.needsUpdate = true; };
   paintSign();
   redraws.push(paintSign);
+
+  // the arcade leaderboard where the GAME CORNER sign was (2026-10-12, the user's layout): each ranked game in turn, its
+  // top three this week; a tap opens the leaderboard
+  const BW = 4.3, BH = 1.75, boardCanvas = new OffscreenCanvas(480, Math.round(480 * BH / BW));
+  boardCanvas.fine = 1;
+  const boardMap = texOf(boardCanvas), lb = { boards: undefined, at: 0, next: 0, fetched: -Infinity };
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map: boardMap, transparent: true, toneMapped: false }));
+  board.position.set(tileX(COUNTER.x + 2), 4.45 - BH / 2, -rows / 2 + 0.03);
+  const paintBoard = () => { boardScreen(boardCanvas, lb.boards, lb.at); boardMap.needsUpdate = true; };
+  const fetchBoards = () => import('./leaderboard.js').then(m => m.arcadeTop()).then(b => { lb.boards = b; paintBoard(); }).catch(() => {});
+  const boardSpot = { id: 'arcade-board', kind: 'game', name: 'Arcade leaderboard', open: true, step: { x: COUNTER.x + 2, y: COUNTER.y + 1 },
+    frame: { x: board.position.x, y: board.position.y, z: board.position.z + 0.02, w: BW + 0.1, h: BH + 0.1 } };
+  boardSpot.line = boardSpot.name;
+  boardSpot.game = { name: boardSpot.name, line: 'This week\'s top scores on the arcade machines, meow! Tap again to see the whole board.',
+    open: (done) => import('./leaderboard.js').then(m => {
+      m.openLeaderboard(0, 'arcade');
+      const dlg = document.getElementById('board-dialog');
+      dlg?.addEventListener('close', () => { lb.fetched = -Infinity; done?.(); }, { once: true });
+    }) };
+  spots.push(boardSpot);
+  board.userData.front = boardSpot;
+  group.add(board);
+  paintBoard();
+  ticks.push((now) => {
+    if (now - lb.fetched > 90000) { lb.fetched = now; fetchBoards(); }
+    if (now >= lb.next) { if (lb.next) lb.at += 1; lb.next = now + 4500; paintBoard(); }
+  });
 
   const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: texOf(frameArt()), transparent: true, depthWrite: false }));
   ring.visible = false;

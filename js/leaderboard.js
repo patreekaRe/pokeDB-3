@@ -455,6 +455,16 @@ export async function towerTop(n = 5) {
   } catch (err) { return null; }
 }
 
+/** This week's arcade boards, for the Game Corner's leaderboard screen (js/mall-corner.js): rankArcade()'s boards, or null
+    when they can't be reached (no config, offline). */
+export async function arcadeTop() {
+  if (!cloudConfigured()) return null;
+  try {
+    const s = await cloudSession();
+    return rankArcade(await entriesFor(towerWeek(), s, KINDS.arcade), s.user?.uid, 3);
+  } catch (err) { return null; }
+}
+
 function attach(panel, which, day = 0) {
   shelf?.unmount();
   shown = day;

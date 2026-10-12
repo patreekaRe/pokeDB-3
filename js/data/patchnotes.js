@@ -49,6 +49,7 @@ export const NEXT = [
   ['base', 'Ponyta Dash: a quick tap is a smaller hop; hold it for the high jump.'],
   ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
   ['base', 'Beedrill Invaders: Pikachu no longer fires by itself. Tap the round FIRE button (or Space) to zap.'],
+  ['mall', 'Over Meowth\'s counter a big screen cycles through the arcade leaderboards, each game\'s top three this week (tap it for the full board); the GAME CORNER sign moved up above the pink neon, and the stamp card sits just over Meowth\'s head.'],
   ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
 ];
 
