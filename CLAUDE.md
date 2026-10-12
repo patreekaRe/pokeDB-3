@@ -180,7 +180,7 @@ live site.
   never reads it. 6 are Game Corner skins (`SKIN_SHOP_ITEMS`): the Gen 2/5 starters (150/250). Step 9a's six skins
   (Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole) were removed again: the user didn't want them. A new starter
   needs front/back GIFs and their `shiny/` pair for every stage (PokeAPI black-white animated), `SPRITE_FIT` lines for
-  the normal ones (a PIL median bbox over all frames matches the ImageDecoder numbers exactly), and a cry in `CRIES`
+  the normal ones (and `BODY_X` lines from `tools/body-centre.py`, so a long tail doesn't push it off centre) (a PIL median bbox over all frames matches the ImageDecoder numbers exactly), and a cry in `CRIES`
   (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
   at -13 LUFS integrated (ffmpeg `ebur128`, padded with 0.4 s of silence for short cries; see the archive's
   "Cry loudness pass").

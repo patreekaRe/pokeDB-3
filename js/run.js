@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
@@ -2693,7 +2693,7 @@ function placeEventSpots() {
     const k = spots.px / 2, { naturalWidth: w, naturalHeight: h } = sprite;
     const [, bottom, fitLeft, fitRight] = spriteFit(sprite.src), flip = figure.classList.contains('flip');
     const [left, right] = flip ? [fitRight, fitLeft] : [fitLeft, fitRight];
-    Object.assign(figure.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2) * k}px`, top: `${at.y - (h - bottom) * k}px` });
+    Object.assign(figure.style, { width: `${w * k}px`, left: `${at.x - (left + (w - left - right) / 2 + (flip ? -1 : 1) * bodyX(sprite.src)) * k}px`, top: `${at.y - (h - bottom) * k}px` });
   });
   $('reward-screen').style.setProperty('--counter-foot', `${spots.foot}px`);
   liftRoomLog();

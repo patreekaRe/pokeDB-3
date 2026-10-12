@@ -365,7 +365,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
   at the far screen edges (pull them in beside the hand?), and a tall iPad shows black above and below the Secret Base's
-  room (zoom its walk shot in to fill?). ▶ Playtest on the live site.
+  room (zoom its walk shot in to fill?). Since then (patch 1.14, same day) the deck, map-peek and every `.dev-window` and the deck
+  pickers (PP Up, Forget, Day Care) are the map's 500px handheld too, and starters stand centred on their body (`BODY_X` in
+  `js/data/sprite-fit.js`, `tools/body-centre.py`). Ask: does Charmeleon look centred now, and do any windows still
+  stretch? ▶ Playtest on the live site.
 - **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, the user's ask: "like the Pokémon Center"): the run's Mart
   as a 3D room (`js/mart-3d.js`), every ware on one wall unit, Kecleon's counter with the PC. The user playtests it on the
   branch (`?mart`); on their OK, merge it into `main`. ▶ Run in: LOCAL (visual).
