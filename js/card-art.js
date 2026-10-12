@@ -15,6 +15,7 @@ import { INK, f, line, flame, star, leaf, drop, sine, spiral, tube, sparkle, rad
 import { FIRE } from './card-art-fire.js';
 import { WATER } from './card-art-water.js';
 import { GRASS } from './card-art-grass.js';
+import { PSYCHIC } from './card-art-psychic.js';
 
 const OFF = new URLSearchParams(location.search).has('pixelcards');
 let drawn = 0;
@@ -23,6 +24,7 @@ const ART = {
   ...FIRE,
   ...WATER,
   ...GRASS,
+  ...PSYCHIC,
   /* ---------- Neutral ---------- */
   tackle: `<defs>${radial('a', [[0, '#fff'], [0.35, '#fff3a0'], [1, '#ffb030']])}</defs>
     <path d="M3 18h9M2 25h11M4 32h8" ${line(2.4)} opacity="0.85"/>
