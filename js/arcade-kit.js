@@ -189,7 +189,9 @@ export function runArcade(def, onClose) {
     bezel.append(m, stage);
     box.classList.add('ar-cab');
     box.classList.toggle('playing', state === 'play');
-    box.append(head, bezel, deck(), el('p', 'vf-say ar-say', line));
+    const controls = deck();
+    for (const part of [bezel, controls]) part.addEventListener('touchstart', noLoupe, { passive: false });
+    box.append(head, bezel, controls, el('p', 'vf-say ar-say', line));
     panel.root.replaceChildren(box);
     meters();
     size();
@@ -199,6 +201,10 @@ export function runArcade(def, onClose) {
     bind();
     loop();
   }
+
+  /** iOS opens its magnifying loupe on a double tap held on the screen or the deck, whatever user-select says; only a
+      cancelled touchstart stops it. START / EXIT answer `click`, which that would swallow, so they're let through. */
+  const noLoupe = (e) => { if (!e.target.closest('.vf-key')) e.preventDefault(); };
 
   /** Before a game or after one, any control starts it (not in the first moments after a game over, so a held
       button doesn't throw the next one away). */

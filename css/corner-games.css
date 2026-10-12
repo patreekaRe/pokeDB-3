@@ -291,7 +291,7 @@
 
 /* The home arcade's cabinet window (js/arcade-kit.js), in each game's colour, full screen (the user's ask, 2026-10-12):
    the screen takes whatever height is left, at the game's own shape (`size()`). */
-.cg-overlay.ar { padding: 0; background: #07040f; }
+.cg-overlay.ar { padding: 0; background: #07040f; touch-action: manipulation; }
 /* A held thumb on an arcade cabinet never selects its text or pops the iOS callout (the user saw RESTART highlighted) */
 .cg-overlay.ar, .cg-overlay.ar * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 .ar-panel { background: linear-gradient(color-mix(in srgb, var(--ar) 85%, #fff), color-mix(in srgb, var(--ar) 70%, #000)); }
