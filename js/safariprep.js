@@ -16,6 +16,7 @@ import { BALLS, THROW_PP, RARE, ballWeek, SAFARI_BALLS, DAY_PASS, safariAccess }
 import { CARDS_BY_ID } from './data/cards.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { getSave } from './storage.js';
+import { timeLeft } from './missions.js';
 import { safariDexApp } from './safaridex.js';
 import { boardApp, safariTop } from './leaderboard.js';
 import { cloudConfigured } from './cloud.js';
@@ -216,7 +217,7 @@ function render() {
   });
   const tries = el('p', `sp-try${first ? ' first' : ' replay'}`, first ? '🏆 Daily run: 1/1' : access === 'pass' ? 'Day Pass: replays today' : '🏆 Daily run: 0/1');
   $('sp-today').replaceChildren(head, areas, tries);
-  $('sp-date').textContent = new Date(`${daily.day}T00:00:00Z`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
+  $('sp-date').textContent = new Date(`${daily.day}T00:00:00Z`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) + ` · new in ${timeLeft('daily')}`;
   const gateMon = $('sp-gate-mon');
   gateMon.src = spriteUrl(daily.starter, 'front', 0);
   gateMon.alt = name;
