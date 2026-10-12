@@ -13,7 +13,7 @@ import { getSave } from './storage.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key, firstLook, helpKey, helpCard } from './corner-panel.js';
 import { stake, settle, wonText, bestLine, playsLeft, paysNow, tableMeters, sayLine, playLabel } from './casino-pot.js';
-import { record } from './corner-pot.js';
+import { record, atHome } from './corner-pot.js';
 
 /* The board in peg spacings (1 = the gap between two pegs in a row); the canvas scales it. */
 const GAP_Y = 0.88, TOP = 1.3, PEG_R = 0.1, BALL_R = 0.27, GRAVITY = 40, BOUNCE = 0.42;
@@ -38,7 +38,7 @@ let cv = null, g = null, balls = [], flashes = new Map(), binHits = new Map(), r
 export function openPlinko(onClose) {
   preloadSounds('stick', 'coins', 'cancel', 'select', 'plink-1', 'plink-2');
   balls = []; flashes = new Map(); binHits = new Map(); held = { coins: 0 };
-  line = 'Drop a Poké Ball! The edges pay big, the middle pays little.';
+  line = atHome() ? 'Your own Plinko board! Drop as many as you like and aim for the ×10s.' : 'Drop a Poké Ball! The edges pay big, the middle pays little.';
   help = firstLook('plinko');
   panel = openPanel('pk', 'Plinko', { onClose: () => { cancelAnimationFrame(raf); onClose?.(); }, busy: () => balls.length > 0 });
   render();
@@ -77,7 +77,7 @@ function sizeCanvas() {
 function refreshKeys() {
   const one = panel.root.querySelector('.pk-one'), all = panel.root.querySelector('.pk-five');
   if (one) one.textContent = playLabel('plinko', 'Drop');
-  if (all) all.hidden = !paysNow('plinko') || playsLeft('plinko') < 2;
+  if (all) all.hidden = atHome() || !paysNow('plinko') || playsLeft('plinko') < 2;
 }
 
 /** Pays `n` drops at once (so a refresh mid-fall loses nothing), then sets each ball off, a beat apart. What they won

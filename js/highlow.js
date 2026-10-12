@@ -11,7 +11,7 @@ import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { STAKE } from './data/corner.js';
 import { stake, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
-import { record } from './corner-pot.js';
+import { record, atHome } from './corner-pot.js';
 
 const NAMES = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 const SUIT = ['♠', '♥', '♦', '♣'];
@@ -23,7 +23,7 @@ export function openHighLow(onClose) {
   preloadSounds('card', 'coins', 'cancel', 'select', 'stat-up');
   hand = handOf('hl');
   if (hand?.over) hand = null;
-  line = hand ? 'Your pot is still riding. Higher or lower?' : 'Guess if the next card is higher or lower. Each right guess grows the pot; a wrong one or a tie loses it. Cash out and the pot is your PokéCoins.';
+  line = hand ? 'Your pot is still riding. Higher or lower?' : 'Guess if the next card is higher or lower. Each right guess grows the pot; a wrong one or a tie loses it.' + (atHome() ? ' How long a streak can you build?' : ' Cash out and the pot is your PokéCoins.');
   flip = null;
   panel = openPanel('hl', 'High-Low', { onClose });
   render();
@@ -44,7 +44,7 @@ function render() {
     if (flip) felt.append(card(flip.rank, hand.step - 1, 'old'));
     felt.append(card(rank, hand.step, flip ? 'new' : ''));
   } else if (flip) felt.append(card(flip.rank, 0, 'old'), card(flip.next, 1, 'new lost'));
-  else felt.append(el('span', 'bj-label', 'Every hand\'s on the house, meow.'));
+  else felt.append(el('span', 'bj-label', atHome() ? 'Your own table: deal as many hands as you like!' : 'Every hand\'s on the house, meow.'));
   const keys = el('div', 'vf-keys');
   if (hand) {
     const rank = cardAt(hand, hand.step);

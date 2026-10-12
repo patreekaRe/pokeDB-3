@@ -9,6 +9,12 @@ import { el, refreshCoins } from './ui.js';
 import { checkBadges } from './progress.js';
 import { playSound } from './audio.js';
 
+/* Home play (2026-10-12, the user's ask: the Game Corner's prizes playable in the Secret Base): while a game is open on a
+   machine at home it is free play, never using a paying play, a stamp or the day's saved hand or board. */
+let home = false;
+export const atHome = () => home;
+export const setHome = (on) => { home = !!on; };
+
 const pot = () => { const p = getSave().corner?.pot; return p?.day === safariDay() ? p : { won: 0, games: {} }; };
 
 /** The coins the games have paid today, all told. */
@@ -39,6 +45,7 @@ export function stamps() {
   return s?.day === safariDay() ? s.games : [];
 }
 export function stamp(game) {
+  if (home) return;
   const have = stamps();
   if (have.includes(game)) return;
   updateSave(d => { d.corner = { ...d.corner, stamps: { day: safariDay(), games: [...have, game] } }; });

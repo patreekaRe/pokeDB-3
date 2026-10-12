@@ -47,6 +47,8 @@ export const NEXT = [
   ['mall', 'Meowth\'s prize counter: tap Meowth in the Game Corner to buy, for PokéCoins, things the Furniture store never sells: every game (a slot machine, a Voltorb Flip machine, a Plinko board, a Blackjack table, a High-Low table and a Who\'s That Pokémon? machine), a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
   ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
   ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 2,500 PokéCoins won and every prize.'],
+  ['base', 'The Game Corner\'s game prizes work in your Secret Base: tap a slot machine, Voltorb Flip machine, Plinko board, Blackjack table, High-Low table or Who\'s That Pokémon? machine to play it as much as you like. At home Who\'s That Pokémon? never ends and counts your streak.'],
+  ['mall', 'Meowth\'s prize counter is a big screen now, like the Game Corner\'s showcases: one prize at a time, ◀ / ▶, the games first.'],
   ['fixes', 'Plinko no longer shows what a drop won before the ball lands: the coins and Today meter go up as it hits its bin.'],
   ['mall', 'The Game Corner no longer talks about chips: every play is free, so the Chips meter and the stake lines are gone.'],
 ];

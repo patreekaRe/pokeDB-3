@@ -18,6 +18,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
+import { homeGame, playAtHome } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
@@ -1100,6 +1101,7 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
+    if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();

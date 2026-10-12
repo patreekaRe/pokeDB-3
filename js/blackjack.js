@@ -9,7 +9,7 @@ import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { STAKE } from './data/corner.js';
 import { stake, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
-import { record } from './corner-pot.js';
+import { record, atHome } from './corner-pot.js';
 import { getSave, updateSave } from './storage.js';
 
 let panel = null, bet = STAKE, hand = null, result = null;
@@ -49,8 +49,8 @@ function render() {
     shown.player.forEach(c => prow.append(card(c)));
     felt.append(el('span', 'bj-label', hide ? `Meowth: ${handValue([shown.dealer[0]]).total} + ?` : `Meowth: ${handValue(shown.dealer).total}`), drow, prow,
       el('span', 'bj-label', `You: ${handValue(shown.player).total}${hand?.doubled || result?.doubled ? ' (doubled)' : ''}`));
-  } else felt.append(el('span', 'bj-label', 'Every hand\'s on the house, meow.'));
-  const say = el('p', 'vf-say', hand ? 'Hit for another card, Stand to stop, or Double what it pays for exactly one more card.' : sayLine('bj', result ? result.line : 'Get closer to 21 than Meowth without going over. Win and it pays PokéCoins; a Blackjack pays 3 to 2.'));
+  } else felt.append(el('span', 'bj-label', atHome() ? 'Your own table: deal as many hands as you like!' : 'Every hand\'s on the house, meow.'));
+  const say = el('p', 'vf-say', hand ? 'Hit for another card, Stand to stop, or Double what it pays for exactly one more card.' : sayLine('bj', result ? result.line : (atHome() ? 'Get closer to 21 than Meowth without going over.' : 'Get closer to 21 than Meowth without going over. Win and it pays PokéCoins; a Blackjack pays 3 to 2.')));
   const keys = el('div', 'vf-keys');
   if (hand) {
     const { player } = cards(hand);

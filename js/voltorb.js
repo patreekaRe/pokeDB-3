@@ -12,11 +12,11 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins } from './ui.js';
 import { calmFx } from './prefs.js';
-import { potWon, gameWon, payGame, stamp, record } from './corner-pot.js';
+import { potWon, gameWon, payGame, stamp, record, atHome } from './corner-pot.js';
 import { bestLine } from './casino-pot.js';
 
 /** Does this round pay? The day's first PLAYS.voltorb do, while the caps allow. */
-const roundPays = () => state.round < PLAYS.voltorb && capPay(1, potWon(), gameWon('voltorb')) > 0;
+const roundPays = () => !atHome() && state.round < PLAYS.voltorb && capPay(1, potWon(), gameWon('voltorb')) > 0;
 import { firstLook, helpKey, helpCard } from './corner-panel.js';
 
 const LINE_COLOURS = ['#e07060', '#58b060', '#e8a040', '#4a90d8', '#b070d0'];
@@ -24,13 +24,19 @@ const LINE_COLOURS = ['#e07060', '#58b060', '#e8a040', '#4a90d8', '#b070d0'];
 let help = false, root = null, just = -1, state = null, board = null, memo = false, marks = new Set(), ended = null, onClose = null;
 
 /** Today's record: a new day starts at round 0 with nothing won, keeping the level. */
+let homeState = null;   // a machine at home: its own boards, level and round for the page load, never saved
 function load() {
+  if (atHome()) {
+    state = homeState ?? freshVoltorb(`home${Math.floor(Math.random() * 1e9)}`, 1);
+    board = voltorbBoard(state.day, state.round, state.level);
+    return;
+  }
   const day = safariDay(), s = getSave().corner?.voltorb;
   state = s?.day === day ? { ...s, flipped: [...s.flipped] } : freshVoltorb(day, s?.level ?? 1);
   board = voltorbBoard(state.day, state.round, state.level);
 }
 
-const keep = () => updateSave(d => { d.corner = { ...d.corner, voltorb: state }; });
+const keep = () => (atHome() ? void (homeState = state) : updateSave(d => { d.corner = { ...d.corner, voltorb: state }; }));
 
 /** Opens the game; `close` runs once it's shut (the mall repaints its coins). */
 export function openVoltorb(close) {
@@ -80,8 +86,8 @@ function render() {
   const meters = el('div', 'vf-meters');
   meters.append(
     meter('Score', points.toLocaleString()),
-    !paying && !ended ? meter('Pays', 'For fun') : meter('Pays', `${pays} 💰`),
-    meter('Today', `${Math.min(won, DAILY_CAP)}/${DAILY_CAP}`),
+    atHome() ? meter('Level', String(state.level)) : !paying && !ended ? meter('Pays', 'For fun') : meter('Pays', `${pays} 💰`),
+    atHome() ? meter('At home', 'Free play') : meter('Today', `${Math.min(won, DAILY_CAP)}/${DAILY_CAP}`),
   );
   if (ended?.fresh && ended.paid) {   // the round's coins count up into the day's, once
     ended.fresh = false;
@@ -98,6 +104,7 @@ function render() {
   grid.append(el('span', 'vf-corner'));
 
   const say = el('p', 'vf-say', ended ? ended.line
+    : atHome() ? (state.flipped.length ? 'Flip every 2 and 3 to clear the board. Or quit and start a new one.' : 'Free play on your own machine! Flip the tiles: each one multiplies your score.')
     : !paying ? (won >= DAILY_CAP ? `The Game Corner has paid its ${DAILY_CAP} for today. Play on for fun, new coins come tomorrow.`
       : gameWon('voltorb') >= GAME_CAP ? `Voltorb Flip has paid its ${GAME_CAP} for today. Play on for fun, or try another game for coins.`
       : `Today's ${PLAYS.voltorb} paying rounds are done. Play on for fun; your level carries over to tomorrow.`)
@@ -239,11 +246,11 @@ function endRound({ won, quit, flips, boom, points, line }) {
   keep();
   if (paid) playSound('coins', 'buy');
   const left = paying && !roundPays() ? (state.round >= PLAYS.voltorb ? ' That was today\'s last paying round.' : ' That\'s the most for today!') : '';
-  const took = paying ? `${paid} PokéCoins` : 'nothing (just for fun)';
+  const took = paying ? `${paid} PokéCoins` : atHome() ? `${points.toLocaleString()} points` : 'nothing (just for fun)';
   record('voltorbLevel', Math.max(level, next));
   if (points) record('voltorbScore', points);
   ended = { level, points, paid, boom, flipped, fresh: true,
-    line: line ?? (won ? `Board cleared! ${points.toLocaleString()} points: ${took}.${left} On to Lv. ${next}.`
+    line: line ?? (won ? `Board cleared! ${points.toLocaleString()} points${atHome() ? '' : `: ${took}`}.${left} On to Lv. ${next}.`
       : `You took ${took}.${left}${next < level ? ` Next round is Lv. ${next}.` : ''}`) };
   refreshCoins();
   render();

@@ -7,7 +7,10 @@ import { PLAYS, DAILY_CAP, GAME_CAP, RECORDS } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el } from './ui.js';
-import { stamp, payGame, potWon, gameWon, canPay, best } from './corner-pot.js';
+import { stamp, payGame, potWon, gameWon, canPay, best, atHome } from './corner-pot.js';
+
+const homeHands = {};   // a hand in progress at home, kept for the page load only
+const homeSeed = () => ({ day: 'home', n: Math.floor(Math.random() * 1e9), paid: false });
 
 function today() {
   const b = getSave().corner?.bets, day = safariDay();
@@ -22,6 +25,7 @@ export const paysNow = (game) => playsLeft(game) > 0 && canPay(game);
 
 /** A new play of `game`: { day, n } (its seed) and whether it pays (`paid`); past that it's for fun. */
 export function stake(game) {
+  if (atHome()) return homeSeed();
   const b = today(), n = b.plays[game] ?? 0, paid = paysNow(game);
   write({ ...b, plays: { ...b.plays, [game]: n + 1 } });
   stamp(game);
@@ -30,6 +34,7 @@ export function stake(game) {
 
 /** A free extra play of `game` (a bonus round's spin): its seed, using up no play. */
 export function freePlay(game) {
+  if (atHome()) return homeSeed();
   const b = today(), n = (b.plays[`${game}Bonus`] ?? 0);
   write({ ...b, plays: { ...b.plays, [`${game}Bonus`]: n + 1 } });
   return { day: b.day, n: 1000 + n };
@@ -55,14 +60,15 @@ export function bestLine(keys) {
 }
 
 /** A game's saved hand in progress (`save.corner.bets[game + 'Hand']`), only if it's today's. */
-export const handOf = (game) => { const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
-export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: hand });
+export const handOf = (game) => { if (atHome()) return homeHands[game] ?? null; const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
+export const keepHand = (game, hand) => (atHome() ? void (homeHands[game] = hand) : write({ ...today(), [`${game}Hand`]: hand }));
 
 /** The meters every table shows: plays left that pay and today's coins against the cap (no chips meter since 2026-10-12,
     the user's call: a fixed stake told the player nothing).
     `held` is won but not yet shown (a Plinko ball still falling), kept off the meters till it lands. */
 export function tableMeters(game, held = { coins: 0 }) {
   const m = el('div', 'vf-meters');
+  if (atHome()) { const box = el('div', 'vf-meter'); box.append(el('span', '', 'At home'), el('b', '', 'Free play')); m.append(box); return m; }
   const left = playsLeft(game);
   for (const [k, v] of [['Plays', `${left}/${PLAYS[game]}`], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
@@ -78,7 +84,7 @@ export function funLine(game) {
 }
 
 /** A play key's label: "Spin (3 left)" while plays pay, "Spin for fun" after. */
-export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for fun`);
+export const playLabel = (game, word) => (atHome() ? word : paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for fun`);
 
 /** A table's words: `line`, and once its plays stop paying, why (not mid-play, `busy`). */
-export const sayLine = (game, line, busy = false) => (busy || paysNow(game) ? line : `${line} ${funLine(game)}`);
+export const sayLine = (game, line, busy = false) => (busy || atHome() || paysNow(game) ? line : `${line} ${funLine(game)}`);

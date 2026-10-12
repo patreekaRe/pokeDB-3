@@ -13,13 +13,20 @@ export const SHOWCASES = {
   shiny: { title: 'SHINY', colour: '#ffd84a' },
   perks: { title: 'PERKS', colour: '#9cf060' },
   balls: { title: 'POKé BALLS', colour: '#ff5ab8' },
+  prizes: { title: 'PRIZES', colour: '#ff8a3a' },
 };
+
+/* A row from somewhere other than js/shop.js (Meowth's prize counter, js/prizes.js): { entries(), buy(e) }. An entry may
+   carry `art`, a node painted for the screen, in place of a sprite. */
+const SOURCES = {};
+export const showcaseSource = (id, src) => { SOURCES[id] = src; };
+const entriesOf = (id) => SOURCES[id]?.entries() ?? cornerEntries(id);
 
 let panel = null, row = null, at = 0, armed = false, news = null, onStep = null;
 
 /** Opens on `row`'s entry `start`; `step(i)` follows along (the 3D screen shows the same one), `close` when shut. */
-export function openShowcase(rowId, start = 0, { step, close } = {}) {
-  row = rowId; at = start; armed = false; news = null; onStep = step ?? null;
+export function openShowcase(rowId, start = 0, { step, close, say } = {}) {
+  row = rowId; at = start; armed = false; news = say ? [say] : null; onStep = step ?? null;
   preloadSounds('stick', 'buy');
   panel = openPanel('sc', `${SHOWCASES[row].title} showcase`, { onClose: close });
   panel.root.style.setProperty('--sc', SHOWCASES[row].colour);
@@ -36,7 +43,7 @@ function onKey(e) {
 }
 
 function move(d) {
-  const n = cornerEntries(row).length;
+  const n = entriesOf(row).length;
   at = (at + d + n) % n;
   armed = false; news = null;
   playSound('stick', 'confirm');
@@ -45,10 +52,11 @@ function move(d) {
 }
 
 function render(dir = 0) {
-  const list = cornerEntries(row), e = list[at], coins = getSave().coins ?? 0;
+  const list = entriesOf(row), e = list[at], coins = getSave().coins ?? 0;
   const screen = el('div', `sc-screen${dir ? (dir > 0 ? ' from-right' : ' from-left') : ''}`);
   screen.append(el('span', 'sc-rays'));
-  if (e.sprite) {
+  if (e.art) screen.append(e.art());
+  else if (e.sprite) {
     const img = el('img', `pixel sc-art${e.dark ? ' dark' : ''}`);
     img.src = e.sprite; img.alt = '';
     screen.append(img);
@@ -100,11 +108,11 @@ const tierLine = ({ have, of }) => (have >= of ? `All ${of} level${of > 1 ? 's' 
   : of > 1 ? `Level ${have} of ${of} owned` : 'Not owned yet');
 
 function buy() {
-  const e = cornerEntries(row)[at];
+  const e = entriesOf(row)[at];
   if (e.done || e.blocked || (getSave().coins ?? 0) < e.cost) return;
   if (!armed) { armed = true; news = null; playSound('select'); return render(); }
   armed = false;
-  news = buyCorner(e);
+  news = SOURCES[row] ? SOURCES[row].buy(e) : buyCorner(e);
   if (news) playSound('buy');
   onStep?.(at);
   render();

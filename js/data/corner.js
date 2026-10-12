@@ -91,20 +91,20 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
 /** What one old prize ticket is worth in PokéCoins: the prizes' coin prices are their ticket prices times this. */
 export const TICKET_COINS = 3;
 
-export const PRIZES = [
-  { kind: 'abradoll', coins: 180 },
-  { kind: 'clefairydoll', coins: 180 },
-  { kind: 'casinorug', coins: 240 },
-  { kind: 'dratinidoll', coins: 270 },
-  { kind: 'bigdratinidoll', coins: 300 },
-  { kind: 'jackpotsign', coins: 300 },
-  { kind: 'luckyseven', coins: 360 },
-  { kind: 'plinkoboard', coins: 450 },
+export const PRIZES = [   // the games first (each playable at home, js/home-arcade.js), then the rest
   { kind: 'slotmachine', coins: 450 },
   { kind: 'voltorbflip', coins: 450 },
+  { kind: 'plinkoboard', coins: 450 },
   { kind: 'blackjacktable', coins: 450 },
   { kind: 'highlowtable', coins: 450 },
   { kind: 'quizmachine', coins: 450 },
+  { kind: 'jackpotsign', coins: 300 },
+  { kind: 'luckyseven', coins: 360 },
+  { kind: 'casinorug', coins: 240 },
+  { kind: 'abradoll', coins: 180 },
+  { kind: 'clefairydoll', coins: 180 },
+  { kind: 'dratinidoll', coins: 270 },
+  { kind: 'bigdratinidoll', coins: 300 },
 ];
 export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
 
@@ -113,7 +113,7 @@ export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
 /** What each record means, for the games' Best lines and the badges. */
 export const RECORDS = {
   slots: 'Biggest spin', jackpots: 'Jackpots', plinko: 'Best drop', bjStreak: 'Win streak', hl: 'Best streak',
-  voltorbLevel: 'Best level', voltorbScore: 'Best board', quizPerfect: 'Perfect rounds', coins: 'PokéCoins won',
+  voltorbLevel: 'Best level', voltorbScore: 'Best board', quizPerfect: 'Perfect rounds', quizStreak: 'Quiz streak', coins: 'PokéCoins won',
 };
 /** A record's new value: the higher of the old and `value`, or the old plus one for a count (`add`). */
 export const better = (best, key, value, add = false) => ({ ...best, [key]: add ? (best?.[key] ?? 0) + value : Math.max(best?.[key] ?? 0, value) });

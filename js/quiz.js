@@ -9,7 +9,7 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key, monPool, spriteOf } from './corner-panel.js';
-import { potWon, payGame, stamp, record } from './corner-pot.js';
+import { potWon, payGame, stamp, record, atHome, best } from './corner-pot.js';
 import { bestLine } from './casino-pot.js';
 
 let panel = null, names = null, round = null, st = null, picked = null, done = null, cur = 0;   // cur: the question on show
@@ -25,6 +25,7 @@ const keep = () => updateSave(d => { d.corner = { ...d.corner, quiz: st }; });
 export async function openQuiz(onClose) {
   names ??= await monPool();
   preloadSounds('select', 'cancel', 'coins', 'stat-up');
+  if (atHome()) return openEndless(onClose);
   load();
   picked = null; done = st.round >= 1 ? { ...st.last, line: `Today's round is done: ${st.last?.right ?? 0}/${QUIZ_LEN}. A new one tomorrow, meow!` } : null;
   panel = openPanel('qz', "Who's That Pokémon?", { onClose });
@@ -95,4 +96,72 @@ function finish() {
   st = { ...st, round: st.round + 1, q: 0, right: 0, last: result };
   keep();
   return result;
+}
+
+/* ---------- endless, on a machine at home (2026-10-12, the user's ask): one Pokémon after another, never paying, a
+   streak of right answers in a row and the best one kept (`quizStreak`). */
+
+let streak = 0, q = null, said = '';
+
+function question() {
+  const ids = [...names.keys()], pick = () => ids[Math.floor(Math.random() * ids.length)];
+  const answer = pick(), options = new Set([answer]);
+  while (options.size < 4) options.add(pick());
+  q = { answer, options: [...options].sort(() => Math.random() - 0.5) };
+  picked = null;
+}
+
+function openEndless(onClose) {
+  streak = 0; said = 'Free play on your own machine! How many can you get in a row?';
+  question();
+  panel = openPanel('qz', "Who's That Pokémon?", { onClose });
+  renderEndless();
+}
+
+function renderEndless() {
+  const head = el('div', 'vf-head');
+  head.append(el('strong', 'vf-title', "WHO'S THAT POKéMON?"), el('span', 'vf-lv', 'At home'));
+  const meters = el('div', 'vf-meters');
+  for (const [k, v] of [['Streak', `${streak}`], ['Best', `${best('quizStreak')}`]]) {
+    const m = el('div', 'vf-meter'); m.append(el('span', '', k), el('b', '', v)); meters.append(m);
+  }
+  const stage = el('div', `qz-stage${picked ? ' shown' : ''}`);
+  const img = el('img', 'pixel qz-mon');
+  img.src = spriteOf(q.answer); img.alt = picked ? names.get(q.answer) : 'A Pokémon in silhouette';
+  stage.append(el('span', 'qz-burst'), img);
+  if (picked) stage.append(el('span', 'qz-name', `It's ${names.get(q.answer)}!`));
+  const opts = el('div', 'qz-opts');
+  for (const id of q.options) {
+    const b = key(names.get(id), `qz-opt${picked ? (id === q.answer ? ' right' : id === picked ? ' wrong' : ' dim') : ''}`, () => answerEndless(id));
+    b.disabled = !!picked;
+    opts.append(b);
+  }
+  const keys = el('div', 'vf-keys');
+  keys.append(key('Close', 'vf-close', () => panel.shut()));
+  const box = el('div', 'vf-panel qz-panel');
+  box.append(head, meters, stage, opts, el('p', 'vf-say', said), keys);
+  panel.root.replaceChildren(box);
+}
+
+function answerEndless(id) {
+  if (picked) return;
+  picked = id;
+  const ok = id === q.answer;
+  if (ok) {
+    streak += 1;
+    const top = streak > best('quizStreak');
+    record('quizStreak', streak);
+    said = top && streak > 1 ? `${streak} in a row, a new best!` : `Right! ${streak} in a row.`;
+  } else {
+    said = streak ? `Not quite! Your streak ends at ${streak}.` : 'Not quite! Try the next one.';
+    streak = 0;
+  }
+  playSound(ok ? 'stat-up' : 'cancel', 'select');
+  playCry(q.answer);
+  renderEndless();
+  setTimeout(() => {
+    if (!panel?.root.isConnected) return;
+    question();
+    renderEndless();
+  }, 1500);
 }
