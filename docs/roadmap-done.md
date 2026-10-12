@@ -2147,3 +2147,8 @@ glowing pale / blue / gold by rarity with a slow shine on rares, a frosted art w
 Skill, round for a Power (`kind-*` from `kindOf()`, moved into `js/ui.js`), "Fire · Attack" on the type line; picked and
 pickable cards ring through `--ring` on `.card-face` (`css/cards.css`). Playtested on the branch, merged into `main`.
 
+
+**Arcade flicker fix** (2026-10-12, the user found it in Pidgey Flap): scrolling scenery wrapped while still on screen, so it
+blinked in and out at the edges (Flap's hills and grass, Ponyta Dash's mountains and dirt, Bubble Shooter's light shafts,
+Poké Puzzle's bubbles); each now wraps out of sight. The kit also repaints at once after a canvas resize (`paint()` in
+`js/arcade-kit.js`), which otherwise showed a blank frame.

@@ -47,7 +47,7 @@ export const openFlap = (onClose) => runArcade({
           g.beginPath(); g.ellipse(cx, cy, 30, 11, 0, 0, Math.PI * 2); g.ellipse(cx + 18, cy - 7, 18, 10, 0, 0, Math.PI * 2); g.fill();
         }
         g.fillStyle = '#7ab868';
-        for (let i = 0; i < 6; i++) { const cx = ((i * 70 - x0 * 0.4) % 420 + 420) % 420 - 60; g.beginPath(); g.arc(cx, GROUND, 46 + (i % 3) * 12, Math.PI, 0); g.fill(); }
+        for (let i = 0; i < 6; i++) { const cx = ((i * 75 - x0 * 0.4) % 450 + 450) % 450 - 75; g.beginPath(); g.arc(cx, GROUND, 46 + (i % 3) * 12, Math.PI, 0); g.fill(); }
         for (const t of trees) {
           for (const [a, b] of [[0, t.top], [t.top + t.g, GROUND]]) {
             const tg = g.createLinearGradient(t.x, 0, t.x + TRUNK, 0); tg.addColorStop(0, '#6a4022'); tg.addColorStop(0.45, '#9a6a3a'); tg.addColorStop(1, '#5a341a');
@@ -58,7 +58,7 @@ export const openFlap = (onClose) => runArcade({
           }
         }
         g.fillStyle = '#5a9a3a'; g.fillRect(0, GROUND, W, H - GROUND);
-        g.fillStyle = '#4a8a2a'; for (let i = 0; i < 16; i++) g.fillRect(((i * 24 - x0) % W + W) % W, GROUND + 6 + (i % 3) * 7, 12, 3);
+        g.fillStyle = '#4a8a2a'; for (let i = 0; i < 16; i++) g.fillRect(((i * 24 - x0) % 384 + 384) % 384 - 12, GROUND + 6 + (i % 3) * 7, 12, 3);
         g.save(); g.translate(BIRD_X, y); g.rotate(Math.max(-0.5, Math.min(0.9, vy / 500)));
         drawMon(g, 'pidgey', 0, R + 4 - (flapped > 0 ? 3 : 0), 34, true);
         g.restore();

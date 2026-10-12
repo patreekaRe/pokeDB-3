@@ -49,6 +49,7 @@ export const NEXT = [
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
   ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
   ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
+  ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -40,9 +40,9 @@ export const openRunner = (onClose) => runArcade({
         g.fillStyle = sky; g.fillRect(0, 0, W, GROUND);
         g.fillStyle = '#ffe070'; g.beginPath(); g.arc(250, 60, 26, 0, Math.PI * 2); g.fill();
         g.fillStyle = '#d88a58';
-        for (let i = 0; i < 4; i++) { const x = ((i * 130 - dist * 2) % 520 + 520) % 520 - 100; g.beginPath(); g.moveTo(x, GROUND); g.lineTo(x + 70, GROUND - 60); g.lineTo(x + 140, GROUND); g.fill(); }
+        for (let i = 0; i < 4; i++) { const x = ((i * 130 - dist * 2) % 520 + 520) % 520 - 140; g.beginPath(); g.moveTo(x, GROUND); g.lineTo(x + 70, GROUND - 60); g.lineTo(x + 140, GROUND); g.fill(); }
         g.fillStyle = '#c87a40'; g.fillRect(0, GROUND, W, H - GROUND);
-        g.fillStyle = '#a86030'; for (let i = 0; i < 12; i++) g.fillRect(((i * 40 - dist * 30) % W + W) % W, GROUND + 14 + (i % 3) * 8, 10, 2);
+        g.fillStyle = '#a86030'; for (let i = 0; i < 12; i++) g.fillRect(((i * 40 - dist * 30) % 480 + 480) % 480 - 10, GROUND + 14 + (i % 3) * 8, 10, 2);
         for (const t of things) {
           if (t.bird) drawMon(g, 'pidgey', t.x + t.w / 2, GROUND - t.y + 6, 30, true);
           else if (t.log) { g.fillStyle = '#7a4a24'; g.fillRect(t.x, GROUND - t.h, t.w, t.h); g.fillStyle = '#c89a60'; g.beginPath(); g.ellipse(t.x + t.w, GROUND - t.h / 2, 5, t.h / 2, 0, 0, Math.PI * 2); g.fill(); }

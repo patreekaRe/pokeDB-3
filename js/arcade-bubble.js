@@ -238,7 +238,7 @@ export const openBubble = (onClose) => runArcade({
         scale = g.getTransform().a;
         g.drawImage(seabed(scale), 0, 0, W, H);
         g.fillStyle = 'rgba(200, 235, 255, 0.07)';   // light shafts drifting
-        for (let i = 0; i < 4; i++) { const x = (i * 83 + now / 70) % (W + 60) - 30; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 26, 0); g.lineTo(x - 34, LINE); g.lineTo(x - 54, LINE); g.fill(); }
+        for (let i = 0; i < 4; i++) { const x = (i * 83 + now / 70) % (W + 80) - 26; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 26, 0); g.lineTo(x - 34, LINE); g.lineTo(x - 54, LINE); g.fill(); }
         for (const [sx, h, ph] of WEEDS) {   // kelp swaying up the walls
           g.strokeStyle = '#1e7a5a'; g.lineWidth = 5; g.lineCap = 'round';
           g.beginPath(); g.moveTo(sx, LINE + 6);
@@ -246,7 +246,7 @@ export const openBubble = (onClose) => runArcade({
           g.stroke();
         }
         g.fillStyle = 'rgba(200, 235, 255, 0.35)';   // little bubbles rising
-        for (let i = 0; i < 9; i++) { const y = LINE - ((i * 53 + now / 30) % LINE), x = (i * 37) % W + Math.sin(now / 500 + i) * 4; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.7, 0, TAU); g.fill(); }
+        for (let i = 0; i < 9; i++) { const y = LINE - ((i * 53 + now / 30) % (LINE + 6)), x = (i * 37) % W + Math.sin(now / 500 + i) * 4; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.7, 0, TAU); g.fill(); }
         rows.forEach((row, r) => row.forEach((v, c) => { if (v === null) return; const [px, py] = pos(r, c); bubble(g, px, py - slide, v); }));
         for (const b of bursts) { g.strokeStyle = COLOURS[b.colour][1]; g.globalAlpha = 1 - b.t / 0.35; g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, R * (1 + b.t * 3), 0, TAU); g.stroke(); g.globalAlpha = 1; }
         for (const f of falling) bubble(g, f.x, f.y, f.colour);
