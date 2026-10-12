@@ -3,7 +3,7 @@
    (js/corner-pot.js). Nobody bets (2026-10-12, the user's call): a play stakes STAKE of Meowth's house chips and pays
    what they win. Kept in `save.corner.bets` ({ day, plays }); a game's hand in progress is its own field there. */
 
-import { PLAYS, DAILY_CAP, GAME_CAP, ticketsFor, RECORDS } from './data/corner.js';
+import { PLAYS, NO_TICKETS, DAILY_CAP, GAME_CAP, ticketsFor, RECORDS } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el } from './ui.js';
@@ -40,12 +40,14 @@ export function freePlay(game) {
 export function settle(amount, game, paid) {
   const chips = Math.floor(amount);
   if (chips <= 0) return { coins: 0, tickets: 0, chips: 0 };
-  return paid ? { coins: payGame(chips, game), tickets: 0, chips } : { coins: 0, tickets: earnTickets(ticketsFor(chips)), chips };
+  if (paid) return { coins: payGame(chips, game), tickets: 0, chips };
+  return { coins: 0, tickets: NO_TICKETS.has(game) ? 0 : earnTickets(ticketsFor(chips)), chips, fun: NO_TICKETS.has(game) };
 }
 
 /** What a settled win paid, in words: "40 PokéCoins", "3 tickets", or the chips when today's tickets are used up. */
 export function wonText(r, paid) {
   if (paid) return `${r.coins} PokéCoins${r.coins < r.chips ? ' (all today allows)' : ''}`;
+  if (r.fun) return 'just for fun';
   return r.tickets ? `${r.tickets} prize ticket${r.tickets > 1 ? 's' : ''}` : 'no tickets (today\'s are used up)';
 }
 
@@ -65,7 +67,7 @@ export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: han
 export function tableMeters(game, held = { coins: 0, tickets: 0 }) {
   const m = el('div', 'vf-meters');
   const left = playsLeft(game);
-  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have - held.tickets}`], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
+  for (const [k, v] of [paysNow(game) || NO_TICKETS.has(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have - held.tickets}`], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
   }
   return m;
@@ -73,13 +75,14 @@ export function tableMeters(game, held = { coins: 0, tickets: 0 }) {
 
 /** Why `game` plays for fun now, in Meowth's words. */
 export function funLine(game) {
+  if (NO_TICKETS.has(game)) return 'Your paying drops are done for today. Drop on for fun, meow! New drops tomorrow.';
   if (potWon() >= DAILY_CAP) return `That's ${DAILY_CAP} PokéCoins today, the most the Game Corner pays! Play on for prize tickets, meow. New coins tomorrow.`;
   if (gameWon(game) >= GAME_CAP) return `This game's paid its ${GAME_CAP} for today. Try another for coins, or play on for prize tickets, meow!`;
   return 'Your paying plays here are done for today. Play on and wins earn prize tickets for my prize counter, meow! New plays tomorrow.';
 }
 
 /** A play key's label: "Spin (3 left)" while plays pay, "Spin for tickets" after. */
-export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for tickets`);
+export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : NO_TICKETS.has(game) ? `${word} for fun` : `${word} for tickets`);
 
 /** A table's words: `line`, and once its plays stop paying, why (not mid-play, `busy`). */
 export const sayLine = (game, line, busy = false) => (busy || paysNow(game) ? line : `${line} ${funLine(game)}`);

@@ -28,7 +28,7 @@ const tierOf = (b) => Math.abs(b - PLINKO_ROWS / 2);
 const HELP = [
   ['Drop a Poké Ball.', 'It\'s free, and it bounces down through the pegs into a bin.'],
   ['The bin it lands in sets what you win,', `its number times ${STAKE} PokéCoins: ×0.2 to ×0.55 in the middle, more further out, up to ×10 (${10 * STAKE}) at the very edges.`],
-  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun.'],
+  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun (Plinko earns no prize tickets).'],
 ];
 
 let panel = null, bet = STAKE, line = null, help = false;

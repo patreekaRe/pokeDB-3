@@ -92,6 +92,8 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
    and `save.corner.prizes` (kinds swapped for). */
 
 export const TICKET_CAP = 100;
+/** Games whose for-fun plays earn no tickets (2026-10-12, the user's call: Plinko drops could be spammed for them). */
+export const NO_TICKETS = new Set(['plinko']);
 /** Tickets a for-fun play's win earns: one per STAKE chips. */
 export const ticketsFor = (chips) => Math.max(0, Math.floor(chips / STAKE));
 /** Tickets a for-fun Voltorb round earns: one per 5 coins it would have paid. */
