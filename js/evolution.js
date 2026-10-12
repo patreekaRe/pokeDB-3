@@ -10,7 +10,7 @@ import { $, sleep } from './ui.js';
 import { playMusic, playCry, playSound, preloadMusic, preloadSounds, preloadCries } from './audio.js';
 import { sayLines } from './rewards.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { calmFx } from './prefs.js';
 
 const still = () => calmFx();   // reduced motion or Reduced flashing: the whole show is flashes, so it's skipped
@@ -193,33 +193,9 @@ function fit(starter, ...forms) {
   const scale = Math.min(4, Math.min(innerWidth * 0.6, innerHeight * 0.4) / Math.max(...forms.map(([img, s]) => pose(img) * grow(s))));
   for (const [img, stage] of forms) {
     const s = scale * grow(stage);
-    const [, bottom] = spriteFit(img.src);
+    const [, bottom, left, right] = spriteFit(img.src);
     img.style.width = `${img.naturalWidth * s}px`;
     img.style.height = `${img.naturalHeight * s}px`;
-    img.style.translate = `calc(-50% + ${(img.naturalWidth / 2 - massX(img)) * s}px) ${bottom * s}px`;
+    img.style.translate = `calc(-50% + ${((right - left) / 2 - bodyX(img.src)) * s}px) ${bottom * s}px`;
   }
-}
-
-const MASS = new Map();
-/* The body's middle, not the box's: Charmeleon's tail flame widens the box to the right, so a box-centred Charmeleon
-   looked off to the left (the user's call, 2026-09-28). Each column counts by its height squared, so the tall
-   body decides and a thin tail or arm barely moves it, while a bulb or shell still counts as body. */
-function massX(img) {
-  if (MASS.has(img.src)) return MASS.get(img.src);
-  const w = img.naturalWidth, h = img.naturalHeight;
-  let x = w / 2;
-  try {
-    const c = document.createElement('canvas');
-    c.width = w; c.height = h;
-    const g = c.getContext('2d', { willReadFrequently: true });
-    g.drawImage(img, 0, 0);
-    const data = g.getImageData(0, 0, w, h).data;
-    const cols = new Array(w).fill(0);
-    for (let i = 3; i < data.length; i += 4) if (data[i] > 0) cols[(i >> 2) % w]++;
-    let sum = 0, weight = 0;
-    cols.forEach((n, c) => { sum += n * n * (c + 0.5); weight += n * n; });
-    if (weight) x = sum / weight;
-  } catch { const [, , left, right] = spriteFit(img.src); x = (w + left - right) / 2; }
-  MASS.set(img.src, x);
-  return x;
 }

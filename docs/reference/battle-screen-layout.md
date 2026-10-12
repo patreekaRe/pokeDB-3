@@ -165,8 +165,9 @@ animations' transforms and the layout are untouched.
 applied). ~1.3 s into the victory fanfare the screen flashes white twice like `battleWipe()` and holds white
 (`#evolve-scene`, a fixed layer at z-index 950 over everything; the music fades out). The Pokémon fades in alone, stood on
 its feet at 58% of the height (both forms share one scale fitted to the bigger resting pose, `SPRITE_FIT` for the feet,
-centred on its body, not its box: `massX()` weights each column by its height squared, so Charmeleon's tail flame hangs off
-to the side (the user saw it sit left, 2026-09-28),
+centred on its body, not its box: `bodyX()` / `BODY_X` in `js/data/sprite-fit.js`, the middle of the columns at least 60%
+as tall as the tallest, so Charmeleon's tail flame hangs off to the side (the user saw it sit left, 2026-09-28, and still
+left of centre on 2026-10-12; the select, battle, Hall of Fame and gate scene use it too; `tools/body-centre.py` measures a new starter),
 legendaries' 78/90% stage steps folded in), and cries; its text box (`#evolve-log`, `sayLines()` with an `onDone`, taps
 anywhere on the white or Enter advance) says "What? X is evolving!". The tap starts the `evolution` track
 (`assets/audio/evolution.mp3`); `morph()` flashes it white three times, goes to a dark silhouette (`.dark`, `.white` are

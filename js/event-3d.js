@@ -2608,7 +2608,7 @@ export async function mountEvent(o) {
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   if (R !== next) {
-    if (R) scene.remove(R.group);
+    if (R) { scene.remove(R.group); for (const who of Object.values(R.who)) scene.remove(who.group); }   // its people stand in the scene, not its group
     R = next;
     scene.add(R.group);
     for (const who of Object.values(R.who)) if (!who.group.parent) scene.add(who.group);

@@ -850,6 +850,82 @@ export const SPRITE_FIT = {
 
 /** The gaps for a sprite's URL or file name. A starter's bought shiny is the same animation recoloured, so it
     borrows its normal sprite's entry. */
+/* How far right (+) of its pose box's middle a starter's body stands, in GIF pixels, where a tail, a tail flame or a
+   big arm widens the box to one side (Charmeleon, Infernape, Manaphy: box-centred, they looked off centre; the user's
+   call, 2026-10-12). Measured by tools/body-centre.py; Serperior and the big legendaries stay box-centred, their
+   coils and wings being the body. */
+export const BODY_X = {
+  'charmander-front': -6,
+  'charmeleon-front': -10,
+  'charmeleon-back': -3,
+  'charizard-front': 4,
+  'ivysaur-front': -3,
+  'ivysaur-back': 2,
+  'venusaur-back': -2,
+  'squirtle-front': -3,
+  'squirtle-back': 2,
+  'wartortle-back': 2,
+  'blastoise-front': 2,
+  'blastoise-back': -4,
+  'cyndaquil-back': 2,
+  'quilava-back': 2,
+  'typhlosion-front': -4,
+  'chikorita-front': -3,
+  'chikorita-back': 2,
+  'bayleef-front': -5,
+  'bayleef-back': 2,
+  'meganium-front': -4,
+  'meganium-back': 4,
+  'totodile-back': 2,
+  'croconaw-front': -4,
+  'croconaw-back': 4,
+  'feraligatr-back': 4,
+  'tepig-back': 2,
+  'pignite-front': -4,
+  'pignite-back': 3,
+  'snivy-front': -4,
+  'snivy-back': 4,
+  'servine-front': -10,
+  'servine-back': 8,
+  'samurott-front': -6,
+  'samurott-back': 3,
+  'combusken-back': -2,
+  'blaziken-front': 2,
+  'blaziken-back': 4,
+  'treecko-front': -4,
+  'treecko-back': 2,
+  'grovyle-front': 2,
+  'grovyle-back': -2,
+  'mudkip-front': -4,
+  'mudkip-back': 4,
+  'swampert-front': 2,
+  'swampert-back': -4,
+  'chimchar-back': 2,
+  'infernape-front': -9,
+  'infernape-back': 10,
+  'turtwig-front': -2,
+  'turtwig-back': 2,
+  'grotle-back': -2,
+  'torterra-back': -6,
+  'prinplup-front': 2,
+  'prinplup-back': -2,
+  'empoleon-front': 2,
+  'empoleon-back': -5,
+  'celebi-front': 2,
+  'victini-front': 5,
+  'victini-back': 2,
+  'manaphy-front': -8,
+  'manaphy-back': 8,
+  'keldeo-front': -4,
+  'mewtwo-front': 2,
+};
+
+/** GIF pixels to add to a sprite's pose-box centring so its body, not its box, stands in the middle. */
+export function bodyX(src) {
+  const name = src.split('/').pop().replace(/\.\w+$/, '');
+  return BODY_X[name] ?? BODY_X[name.replace(/-shiny|-awakened|-ascendant/g, '')] ?? 0;
+}
+
 export function spriteFit(src) {
   const name = src.split('/').pop().replace(/\.\w+$/, '');
   return SPRITE_FIT[name] || SPRITE_FIT[name.replace(/-shiny|-awakened|-ascendant/g, '')] || [0, 0, 0, 0];

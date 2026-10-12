@@ -44,16 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
-  ['base', 'Music, Library, Pirate and Space furniture is properly 3D: violins, a trumpet, banjo, ukulele, saxophone and flute on their stands, a grand piano with its lid propped open, the harp, cello, tuba, gramophone, metronome, tubular bells, the mixing desk, a library ladder, banker\'s lamp, an orrery whose planets turn, the book arch, marble bust, ship\'s mast, bell, rope coil, cannonballs, parrot perch, spyglass, ship in a bottle, a space suit, moon rover, lunar lander, UFO lamp, glowing alien plant and meteorite.'],
-  ['base', 'Japanese and Toys furniture is properly 3D: the shoji screen, torii gate, cherry tree, lucky cat, daruma, taiko drum, kimono stand, kadomatsu, rocking horse (sit on it), jack-in-the-box, an open dollhouse with tiny furniture, ball pit, toy train, wind-up robot, space hopper, marble run, puzzle cube, toy soldier and 6 more.'],
-  ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
-  ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
-  ['fixes', 'Pidgey Flap has no joystick any more: it only ever needed a tap on the screen.'],
-  ['fixes', 'Arcade games run smoother on iPhones: the cabinet\'s lit marquee holds still while you play.'],
-  ['fixes', 'Ponyta no longer shimmers as it gallops on a phone: arcade sprites are drawn on whole screen pixels.'],
-  ['look', 'The game has an app icon: add it to your home screen (Safari or Chrome: Share, then Add to Home Screen) and it shows a Fire, Grass and Water card, and opens full screen.'],
-  ['look', 'Phones play upright only: turned sideways, the game waits behind a "turn your phone upright" screen. Tablets and PCs still play either way.'],
-  ['look', 'On an iPad or a computer the game fills the whole screen again, and the run map is a handheld Pokédex standing in the middle of its scenery instead of stretching across it.'],
+  ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -65,6 +56,27 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.14',
+    name: 'Big Screens',
+    date: '2026-10-12',
+    notes: [
+  ['fixes', 'On an iPad the run map\'s floor, PokéCoins and ₽ sit on its Pokédex again, an item in the Bag shows full width, and your Pokémon on the map stands clear of the screen\'s edge.'],
+  ['base', 'Music, Library, Pirate and Space furniture is properly 3D: violins, a trumpet, banjo, ukulele, saxophone and flute on their stands, a grand piano with its lid propped open, the harp, cello, tuba, gramophone, metronome, tubular bells, the mixing desk, a library ladder, banker\'s lamp, an orrery whose planets turn, the book arch, marble bust, ship\'s mast, bell, rope coil, cannonballs, parrot perch, spyglass, ship in a bottle, a space suit, moon rover, lunar lander, UFO lamp, glowing alien plant and meteorite.'],
+  ['base', 'Japanese and Toys furniture is properly 3D: the shoji screen, torii gate, cherry tree, lucky cat, daruma, taiko drum, kimono stand, kadomatsu, rocking horse (sit on it), jack-in-the-box, an open dollhouse with tiny furniture, ball pit, toy train, wind-up robot, space hopper, marble run, puzzle cube, toy soldier and 6 more.'],
+  ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
+  ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
+  ['fixes', 'Pidgey Flap has no joystick any more: it only ever needed a tap on the screen.'],
+  ['fixes', 'Arcade games run smoother on iPhones: the cabinet\'s lit marquee holds still while you play.'],
+  ['fixes', 'Ponyta no longer shimmers as it gallops on a phone: arcade sprites are drawn on whole screen pixels.'],
+  ['look', 'The game has an app icon: add it to your home screen (Safari or Chrome: Share, then Add to Home Screen) and it shows a Fire, Grass and Water card, and opens full screen.'],
+  ['look', 'Phones play upright only: turned sideways, the game waits behind a "turn your phone upright" screen. Tablets and PCs still play either way.'],
+  ['fixes', 'Saved to the home screen, the game no longer slides up under the phone\'s clock and battery.'],
+  ['look', 'On an iPad or a computer the game fills the whole screen again, and the run map is a handheld Pokédex standing in the middle of its scenery instead of stretching across it.'],
+  ['look', 'On an iPad or a computer your deck, the PP Up, Forget a move and Day Care pickers and every other Pokédex window are handheld-sized like the run map, not stretched across the screen.'],
+  ['look', 'Charmeleon, Charmander, Infernape, Servine, Manaphy and about 25 more starters with long tails, tail flames or big arms stand centred on their body, not their tail, on the character select, in battle, evolving and in the Hall of Fame.'],
+    ],
+  },
   {
     version: '1.13',
     name: 'Arcade Polish',

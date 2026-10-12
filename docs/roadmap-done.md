@@ -2187,3 +2187,5 @@ Wider than 720px the run map's device is 500px wide and at most 940px tall, cent
 body moves the Bag, news box and Home key with it), and the map always uses the phone's grid (`fitGrid()` in `js/map.js`;
 the wider grid of more tiles is gone). The Collection's device already stood that way. Checked headless at 1180x820 and
 820x1180: the Clearing, Center and battles fill the screen as they did before the frame.
+
+- **? rooms stacking** (2026-10-12, the user's bug): a 3D ? room's trainer and Pokémon stand in the scene, not its group, so switching rooms left the last room's people behind (Alder and Slowpoke in the Item Ball and the Wishing Well); `mountEvent()` in `js/event-3d.js` now takes them out with it.
