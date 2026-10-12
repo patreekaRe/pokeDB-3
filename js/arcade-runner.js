@@ -3,7 +3,7 @@
 
 import { runArcade, drawMon, rand, banner } from './arcade-kit.js';
 
-const W = 320, H = 220, GROUND = 180, GRAV = 1500, JUMP = 520;
+const W = 320, H = 220, GROUND = 180, GRAV = 1500, JUMP = 440;
 
 export const openRunner = (onClose) => runArcade({
   id: 'runner', title: 'Ponyta Dash', colour: '#e87830', W, H,
@@ -18,7 +18,7 @@ export const openRunner = (onClose) => runArcade({
         speed = Math.min(520, speed + dt * 9);
         dist += speed * dt / 30;
         if (Math.floor(dist) > api.score) api.score = Math.floor(dist);
-        vy -= (held && vy > 0 ? GRAV * 0.55 : GRAV) * dt; y = Math.max(0, y + vy * dt); if (y === 0) vy = 0;
+        vy -= (held && vy > 0 ? GRAV * 0.5 : GRAV) * dt; y = Math.max(0, y + vy * dt); if (y === 0) vy = 0;
         next -= dt;
         if (next <= 0) {
           const r = Math.random(), bird = dist > 60 && r < 0.25;

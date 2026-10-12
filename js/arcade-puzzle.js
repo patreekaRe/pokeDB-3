@@ -17,12 +17,12 @@ const KINDS = [
   { name: 'ice', a: '#a8f0f0', b: '#40a8c0' },
 ];
 const CHAIN_PTS = [0, 0, 50, 80, 150, 300, 400, 500, 700, 900, 1100, 1300];
-const BTN = { x: 212, y: 296, w: 80, h: 54 };
+const BTN = { x: 220, y: 312, w: 64, h: 36 }, SWAP = { x: 252, y: 275, r: 30 };
 
 export const openPuzzle = (onClose) => runArcade({
   id: 'puzzle', title: 'Poké Puzzle', colour: '#40b0a0', W, H,
   intro: 'Swap panels to line up three of a type! Tap one, then its neighbour.',
-  help: [['Swap two panels side by side:', 'tap one then the one beside it, or drag it left or right. Arrow keys move the cursor, Space swaps.'], ['Line up 3 or more of a type', 'in a row or a column to clear them. Panels on top fall, and a clear they make is a chain: x2, x3... for big points. Clearing 4 or more at once is a combo.'], ['The stack keeps rising, faster as you go.', 'Hold RAISE (or Down on the bottom row) to push it up sooner. A panel pushed past the top ends the game.']],
+  help: [['Swap two panels side by side:', 'tap one then the one beside it, or drag it left or right. Arrow keys move the cursor, Space swaps.'], ['Line up 3 or more of a type', 'in a row or a column to clear them. Panels on top fall, and a clear they make is a chain: x2, x3... for big points. Clearing 4 or more at once is a combo.'], ['The stack keeps rising, faster as you go.', 'The round SWAP key swaps the two panels in the cursor. Hold RAISE (or Down on the bottom row) to push it up sooner. A panel pushed past the top ends the game.']],
   make(api) {
     const grid = Array.from({ length: ROWS }, () => Array(COLS).fill(null));
     const make = (t) => ({ t, clear: 0, pop: 0, end: 0, chain: false, hang: 0, drop: 0, falling: false, sw: 0 });
@@ -105,11 +105,14 @@ export const openPuzzle = (onClose) => runArcade({
 
     function cell(x, y) { return { r: Math.floor((GB - off - y) / P), c: Math.floor((x - GX) / P) }; }
     const inBtn = (x, y) => x >= BTN.x && x <= BTN.x + BTN.w && y >= BTN.y && y <= BTN.y + BTN.h;
+    const inSwap = (x, y) => Math.hypot(x - SWAP.x, y - SWAP.y) <= SWAP.r + 4;
+    let swapping = 0;
 
     return {
       tick(dt) {
         time += dt;
         shake = Math.max(0, shake - dt);
+        swapping = Math.max(0, swapping - dt);
         for (const row of grid) for (const p of row) if (p) { if (p.sw > 0) p.sw = Math.max(0, p.sw - dt * 14); }
         for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
           const p = grid[r][c];
@@ -142,6 +145,7 @@ export const openPuzzle = (onClose) => runArcade({
       },
       down(x, y) {
         if (inBtn(x, y)) { raising = true; return; }
+        if (inSwap(x, y)) { sel = null; swapping = 0.15; swap(cur.r, cur.c); return; }
         const { r, c } = cell(x, y);
         if (c < 0 || c >= COLS || r < 0 || r >= ROWS) { sel = null; return; }
         if (sel && sel.r === r && Math.abs(sel.c - c) === 1) { swap(r, Math.min(c, sel.c)); sel = null; drag = null; return; }
@@ -212,14 +216,20 @@ export const openPuzzle = (onClose) => runArcade({
         side('SPEED', `Lv ${level()}`, TOP - 4);
         side('CHAIN', chain > 1 ? `x${chain}` : '-', TOP + 48, chain > 1 ? '#ffd84a' : '#fff');
         side('BEST CHAIN', best > 1 ? `x${best}` : '-', TOP + 100);
-        KINDS.forEach((k, i) => panel(g, 214 + (i % 3) * 26, TOP + 158 + Math.floor(i / 3) * 26, i, null, 24));
-        if (grace > 0) banner(g, 'DANGER!', 252, TOP + 222, 14, `rgba(255, 90, 90, ${0.6 + 0.4 * Math.sin(now / 80)})`);
+        KINDS.forEach((k, i) => panel(g, 214 + (i % 3) * 26, TOP + 160 + Math.floor(i / 3) * 26, i, null, 24));
+        if (grace > 0) banner(g, 'DANGER!', 252, TOP + 151, 12, `rgba(255, 90, 90, ${0.6 + 0.4 * Math.sin(now / 80)})`);
+        const sw = swapping > 0, sy = SWAP.y + (sw ? 3 : 0), sg = g.createRadialGradient(SWAP.x - 9, sy - 11, 4, SWAP.x, sy, SWAP.r);
+        sg.addColorStop(0, sw ? '#fff4b0' : '#ffb0dc'); sg.addColorStop(1, sw ? '#e8a820' : '#d0408e');
+        g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.beginPath(); g.arc(SWAP.x, SWAP.y + 4, SWAP.r, 0, Math.PI * 2); g.fill();
+        g.fillStyle = sg; g.beginPath(); g.arc(SWAP.x, sy, SWAP.r, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = 'rgba(255, 255, 255, 0.55)'; g.lineWidth = 2; g.beginPath(); g.arc(SWAP.x, sy, SWAP.r - 3, Math.PI * 1.1, Math.PI * 1.75); g.stroke();
+        banner(g, '⇄', SWAP.x, sy - 7, 20, '#fff');
+        banner(g, 'SWAP', SWAP.x, sy + 12, 11, '#fff');
         const on = raising || keyRaise, gr = g.createLinearGradient(0, BTN.y, 0, BTN.y + BTN.h);
         gr.addColorStop(0, on ? '#ffe27a' : '#5ad8c4'); gr.addColorStop(1, on ? '#e8a820' : '#2a9a88');
-        g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.beginPath(); g.roundRect(BTN.x, BTN.y + 4, BTN.w, BTN.h, 12); g.fill();
-        g.fillStyle = gr; g.beginPath(); g.roundRect(BTN.x, BTN.y + (on ? 3 : 0), BTN.w, BTN.h, 12); g.fill();
-        banner(g, '▲', BTN.x + BTN.w / 2, BTN.y + 18 + (on ? 3 : 0), 14, '#fff');
-        banner(g, 'RAISE', BTN.x + BTN.w / 2, BTN.y + 38 + (on ? 3 : 0), 12, '#fff');
+        g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.beginPath(); g.roundRect(BTN.x, BTN.y + 3, BTN.w, BTN.h, 10); g.fill();
+        g.fillStyle = gr; g.beginPath(); g.roundRect(BTN.x, BTN.y + (on ? 2 : 0), BTN.w, BTN.h, 10); g.fill();
+        banner(g, '▲ RAISE', BTN.x + BTN.w / 2, BTN.y + BTN.h / 2 + (on ? 2 : 0), 10, '#fff');
       },
     };
   },

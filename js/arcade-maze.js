@@ -1,11 +1,11 @@
 /* arcade-maze.js  -  Gastly Maze, a home arcade game (js/arcade-kit.js; 2026-10-12, the user's pick), after Pac-Man:
    Pikachu eats the Oran Berries round a haunted maze while Gastly hunt it. A Lum Berry in each corner turns them pale and
    frightened for a while, and Pikachu can zap them back to the middle. Swipe, tap a side or use the arrow keys to steer.
-   Three lives; a cleared maze fills again, the Gastly quicker. */
+   Three lives; a cleared maze fills again, the Gastly quicker. A tunnel through each side wall wraps to the other side. */
 
 import { runArcade, drawMon, banner } from './arcade-kit.js';
 
-/* # wall, . berry, o Lum Berry, G where the Gastly start, P Pikachu */
+/* # wall, . berry, o Lum Berry, G where the Gastly start, P Pikachu, T a tunnel to the other side */
 const MAZE = [
   '###############',
   '#o.....#.....o#',
@@ -14,7 +14,7 @@ const MAZE = [
   '#.##.#.#.#.##.#',
   '#....#.G.#....#',
   '###.##...##.###',
-  '#.....#.#.....#',
+  'T.....#.#.....T',
   '#.###.....###.#',
   '#o..#.###.#..o#',
   '#.#.#..P..#.#.#',
@@ -24,7 +24,8 @@ const MAZE = [
 const C = 20, TOP = 22, COLS = MAZE[0].length, ROWS = MAZE.length, W = COLS * C, H = ROWS * C + TOP;
 const DIRS = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
 const find = (ch) => { const y = MAZE.findIndex(r => r.includes(ch)); return { x: MAZE[y].indexOf(ch), y }; };
-const open = (x, y) => MAZE[y]?.[x] !== undefined && MAZE[y][x] !== '#';
+const wrap = (x) => (x + COLS) % COLS;
+const open = (x, y) => MAZE[y]?.[wrap(x)] !== undefined && MAZE[y][wrap(x)] !== '#';
 const LIVES = 3, SCARED = 6;
 
 export const openMaze = (onClose) => runArcade({
@@ -50,7 +51,7 @@ export const openMaze = (onClose) => runArcade({
       if (m.d[0] || m.d[1]) {
         m.t += m.speed * (1 / 60);
         if (m.t < 1) return false;
-        m.x += m.d[0]; m.y += m.d[1]; m.t -= 1;
+        m.x = wrap(m.x + m.d[0]); m.y += m.d[1]; m.t -= 1;
       } else m.t = 0;
       choose(m);
       if (!open(m.x + m.d[0], m.y + m.d[1])) { m.d = [0, 0]; m.t = 0; }
@@ -72,7 +73,7 @@ export const openMaze = (onClose) => runArcade({
       const d = DIRS[name];
       if (!d) return;
       me.want = d;
-      if (d[0] === -me.d[0] && d[1] === -me.d[1] && (d[0] || d[1])) { me.x += me.d[0]; me.y += me.d[1]; me.d = d; me.t = 1 - me.t; }
+      if (d[0] === -me.d[0] && d[1] === -me.d[1] && (d[0] || d[1])) { me.x = wrap(me.x + me.d[0]); me.y += me.d[1]; me.d = d; me.t = 1 - me.t; }
     };
     return {
       tick(dt) {
@@ -98,7 +99,7 @@ export const openMaze = (onClose) => runArcade({
           for (const gh of ghosts) {
             if (gh.home || gh.wake > 0) continue;
             const [gx, gy] = pos(gh);
-            if (Math.hypot(mx - gx, my - gy) > 0.6) continue;
+            if (Math.hypot(Math.min(Math.abs(mx - gx), COLS - Math.abs(mx - gx)), my - gy) > 0.6) continue;
             if (scared) { gh.home = true; chain += 1; api.add(20 * chain); api.sound('fx-zap', 'select'); flash = 0.15; api.say(`Zapped a Gastly! +${20 * chain}`); continue; }
             lives -= 1; api.sound('cancel');
             if (lives <= 0) return api.over('Gastly got you!');
@@ -137,6 +138,13 @@ export const openMaze = (onClose) => runArcade({
             g.fillStyle = '#58c858'; g.beginPath(); g.arc(px + C / 2, py + C / 2, r, 0, Math.PI * 2); g.fill();
             g.fillStyle = '#e8f8a0'; g.beginPath(); g.arc(px + C / 2 - 1.5, py + C / 2 - 1.5, r * 0.35, 0, Math.PI * 2); g.fill();
           }
+        }
+        for (let y = 0; y < ROWS; y++) if (MAZE[y][0] === 'T') for (const x of [0, COLS - 1]) {
+          const tg = g.createLinearGradient(x ? W : 0, 0, x ? W - C : C, 0);
+          tg.addColorStop(0, '#000'); tg.addColorStop(1, 'rgba(20, 12, 38, 0)');
+          g.fillStyle = tg; g.fillRect(x * C, TOP + y * C, C, C);
+          g.fillStyle = `rgba(216, 200, 255, ${0.35 + 0.25 * Math.sin(now / 220)})`;
+          banner(g, x ? '›' : '‹', x * C + C / 2, TOP + y * C + C / 2, 14, g.fillStyle);
         }
         for (const gh of ghosts) {
           const [gx, gy] = pos(gh), cx = (gx + 0.5) * C, cy = TOP + (gy + 0.5) * C;

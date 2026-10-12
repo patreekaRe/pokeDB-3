@@ -51,6 +51,12 @@ in this order (the user may reorder):
 13-20 were the user's yes to eight proposed ideas (2026-10-12): a first pass each, built and played headless in one
 session, their cabinets on `B.arcade`, released as patch 1.8 "Arcade Night". All twenty stand in the Game Corner (the user's layout: eight each side of the counter,
 Whac-a-Diglett on the left wall, Pinball on the right, the slot machines five a side as the base's 3D model); spares if more are wanted: Lunatone Rocks (Asteroids), Pachirisu Berry Catch.
+Polish pass across them (2026-10-12, the user's asks): every cabinet's How to play is an attract screen, the game's own
+preview running on a little CRT over numbered step tiles (`helpScreen()` in `js/arcade-kit.js`, `.ar-help` in
+`css/corner-games.css`), the head's Free play an LED pill (`.ar-free`); Poké Puzzle a round SWAP key over a smaller RAISE
+(`SWAP` in `js/arcade-puzzle.js`), Ponyta Dash a smaller tap hop (`JUMP` 440), Gastly Maze side tunnels (`T` in `MAZE`,
+`wrap()`). Waiting on the user: which games get leaderboards (suggested Ponyta Dash, Pidgey Flap, Snorlax Stacker,
+Poké Puzzle, Beedrill Invaders, Ekans Trail: endless, skill-only score; a weekly board like the Sky Pillar's).
 Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
 The six casino games got real 3D models too (2026-10-12: `B.slot`, `B.cardtable`, `B.plinko`, Voltorb Flip and the quiz
 on `B.arcade`), Meowth's counter sells only the 18 games (the rest `RETIRED_PRIZES`, kept by buyers), each a turning 3D

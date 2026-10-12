@@ -44,6 +44,10 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['mall', 'Slowpoke\'s Claw Machine and Poké Ball Skee-Ball are off Meowth\'s prize counter; anyone who bought one keeps it and can still play it at home.'],
+  ['look', 'Every arcade game\'s How to play is a neon attract screen with the game running on a little CRT, and FREE PLAY is a lit LED badge.'],
+  ['base', 'Poké Puzzle has a big round SWAP button (it swaps the two panels in the cursor), with a smaller RAISE under it.'],
+  ['base', 'Ponyta Dash: a quick tap is a smaller hop; hold it for the high jump.'],
+  ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

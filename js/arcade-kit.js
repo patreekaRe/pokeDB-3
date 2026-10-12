@@ -9,7 +9,7 @@
 import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
-import { openPanel, key, firstLook, helpKey, helpCard } from './corner-panel.js';
+import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
 import { record, best } from './corner-pot.js';
 
 const sprites = new Map();
@@ -84,12 +84,13 @@ export function runArcade(def, onClose) {
 
   function render() {
     const head = el('div', 'vf-head');
-    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv', 'Free play'), helpKey(help, () => { help = !help; render(); }));
+    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv ar-free', 'Free play'), helpKey(help, () => { help = !help; render(); }));
     const box = el('div', 'vf-panel ar-panel');
     if (help) {
-      box.append(head, helpCard(def.help, { done: () => { help = false; render(); } }));
-      cv = null;
-      return panel.root.replaceChildren(box);
+      box.append(head, helpScreen());
+      panel.root.replaceChildren(box);
+      size(Math.min(cv.parentElement.clientWidth - 12, 170 * def.W / def.H));
+      return loop();
     }
     const m = el('div', 'vf-meters');
     for (const [k, cls] of [['Score', 'ar-score'], ['Best', 'ar-best']]) { const b = el('div', 'vf-meter'); b.append(el('span', '', k), el('b', cls, '0')); m.append(b); }
@@ -102,14 +103,37 @@ export function runArcade(def, onClose) {
     meters();
     size();
     bind();
+    loop();
+  }
+
+  /** How to play as an attract screen: the game itself playing on a little CRT, then the steps as numbered tiles. */
+  function helpScreen() {
+    const card = el('div', 'ar-help');
+    const scr = el('div', 'ar-help-screen');
+    cv = el('canvas', 'ar-canvas ar-help-cv');
+    g = cv.getContext('2d');
+    scr.append(cv);
+    const list = el('ol', 'ar-help-steps');
+    def.help.forEach(([lead, rest], i) => {
+      const li = el('li'), words = el('div');
+      words.append(el('b', '', lead), ` ${rest}`);
+      li.append(el('span', 'ar-step-no', String(i + 1)), words);
+      list.append(li);
+    });
+    card.append(el('strong', 'ar-help-title', 'HOW TO PLAY'), scr, list, key('Got it!', 'vf-go', () => { playSound('confirm'); help = false; render(); }));
+    return card;
+  }
+
+  function loop() {
     cancelAnimationFrame(raf);
     last = performance.now();
     raf = requestAnimationFrame(frame);
   }
 
-  function size() {
-    const w = cv.clientWidth || 360, dpr = Math.min(2, devicePixelRatio || 1);
+  function size(fixed) {
+    const w = fixed || cv.clientWidth || 360, dpr = Math.min(2, devicePixelRatio || 1);
     cv.width = Math.round(w * dpr); cv.height = Math.round(w * def.H / def.W * dpr);
+    if (fixed) cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;
   }
 
@@ -130,7 +154,7 @@ export function runArcade(def, onClose) {
   }
 
   function onKey(e) {
-    if (!cv?.isConnected) return;
+    if (!cv?.isConnected || help) return;
     const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'act', Enter: 'act', z: 'left', m: 'right' }[e.key];
     if (!k) return;
     e.preventDefault(); e.stopPropagation();
@@ -144,12 +168,12 @@ export function runArcade(def, onClose) {
     if (!cv?.isConnected) return;
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
-    if (state === 'play') game.tick?.(dt, now);
+    if (state === 'play' && !help) game.tick?.(dt, now);
     const s = cv.width / def.W;
     g.setTransform(s, 0, 0, s, 0, 0);
     g.clearRect(0, 0, def.W, def.H);
-    if (game) game.draw(g, now); else (preview ??= def.make(api)).draw(g, now);
-    if (state !== 'play') {
+    if (game && !help) game.draw(g, now); else (preview ??= def.make(api)).draw(g, now);
+    if (state !== 'play' && !help) {
       g.fillStyle = 'rgba(0, 0, 0, 0.45)'; g.fillRect(0, 0, def.W, def.H);
       if (state === 'over') banner(g, overText.toUpperCase(), def.W / 2, def.H * 0.4, def.W / 11, '#ffd84a');
       banner(g, state === 'over' ? `${score.toLocaleString()}` : def.title.toUpperCase(), def.W / 2, def.H * (state === 'over' ? 0.52 : 0.42), def.W / (state === 'over' ? 8 : 11));
