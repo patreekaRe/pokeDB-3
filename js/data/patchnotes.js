@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'Japanese and Toys furniture is properly 3D: the shoji screen, torii gate, cherry tree, lucky cat, daruma, taiko drum, kimono stand, kadomatsu, rocking horse (sit on it), jack-in-the-box, an open dollhouse with tiny furniture, ball pit, toy train, wind-up robot, space hopper, marble run, puzzle cube, toy soldier and 6 more.'],
   ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
   ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
   ['fixes', 'Pidgey Flap has no joystick any more: it only ever needed a tap on the screen.'],
