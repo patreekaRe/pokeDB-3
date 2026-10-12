@@ -2,6 +2,12 @@
    js/base-models-f.js's head says how a batch works. */
 
 export const SHAPES = {
+  // boxes, the painting on the front only (js/base-models-kit.js)
+  'speakerstack foodpods cardcatalogue': { make: 'frontbox', d: 0.5 },
+  'amplifier': { make: 'frontbox', d: 0.4 },
+  'mapcase': { make: 'frontbox', d: 0.6 },
+  'returnbox': { make: 'frontbox', d: 0.5 },
+  'navdesk': { make: 'frontbox', d: 0.6, top: 0.4 },
 };
 
 export const MAKES = {

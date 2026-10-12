@@ -49,6 +49,25 @@ const netMesh = () => once('net', () => sheet(256, 32, (g, w, h) => {
   g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, 6);
 }));
 
+/* the air hockey table's top: white, a field of air holes, red and blue halves' lines and a centre circle */
+const hockeyTop = () => once('hockey', () => sheet(512, 256, (g, w, h) => {
+  g.fillStyle = '#f4f8fc'; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(80,120,170,0.35)';
+  for (let y = 8; y < h; y += 12) for (let x = 8 + ((y / 12) % 2) * 6; x < w; x += 12) { g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fill(); }
+  g.lineWidth = 5;
+  g.strokeStyle = '#d83a3a'; g.beginPath(); g.moveTo(w / 2, 0); g.lineTo(w / 2, h); g.stroke();
+  g.beginPath(); g.arc(w / 2, h / 2, 34, 0, Math.PI * 2); g.stroke();
+  g.strokeStyle = '#3a6ad8'; for (const x of [w * 0.2, w * 0.8]) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, h); g.stroke(); }
+  for (const [x, a0, a1] of [[0, -Math.PI / 2, Math.PI / 2], [w, Math.PI / 2, Math.PI * 1.5]]) { g.strokeStyle = '#d83a3a'; g.beginPath(); g.arc(x, h / 2, 46, a0, a1); g.stroke(); }
+}));
+const scoreBoard = () => once('score', () => sheet(256, 72, (g, w, h) => {
+  g.fillStyle = '#16161c'; g.fillRect(0, 0, w, h);
+  g.font = 'bold 50px monospace'; g.textBaseline = 'middle'; g.textAlign = 'center';
+  g.fillStyle = '#ff4a3a'; g.fillText('07', 64, h / 2 + 3);
+  g.fillStyle = '#4a8aff'; g.fillText('05', 192, h / 2 + 3);
+  g.fillStyle = '#ffd84a'; g.fillRect(124, 22, 8, 8); g.fillRect(124, 42, 8, 8);
+}));
+
 /** A milk bottle on a shelf: milk, a glass shoulder, a cap. */
 function bottle(K, L, x, y, z, milk, cap) {
   K.put(L.lathe([[0.03, 0], [0.034, 0.01], [0.034, 0.09], [0.022, 0.12], [0.016, 0.135], [0, 0.135]], 14), K.gloss(milk), x, y, z);
@@ -56,6 +75,12 @@ function bottle(K, L, x, y, z, milk, cap) {
 }
 
 export const SHAPES = {
+  airhockey: { make: 'airhockey' },
+  prizecounter: { make: 'frontbox', d: 0.62, top: 0.36 },
+  // boxes, the painting on the front only (js/base-models-kit.js)
+  'tokenmachine capsuletoy': { make: 'frontbox', d: 0.5 },
+  'photobooth coinpusher': { make: 'frontbox', d: 0.7 },
+  'racercabinet shootercabinet puzzlecabinet fightercabinet mazecabinet rhythmcabinet': { make: 'frontbox', d: 0.6 },
   milkfridge: { make: 'milkcooler' },
   pingpong: { make: 'pingpong' },
   pottingbench: { make: 'pottingbench' },
@@ -132,6 +157,38 @@ export const MAKES = {
     bat(-tw * 0.3, 0.05, 0.6, K.pal.c);
     bat(tw * 0.26, -0.1, -2.4, '#2a2a30');
     K.put(L.ball(0.02, 14, 10), K.gloss('#fff6e8'), tw * 0.12, top + 0.02, 0.18);
+  },
+
+  airhockey(K, s, W, D, L) {
+    const { THREE, rbox, cyl } = L;
+    const red = K.gloss(K.pal.c), chrome = K.metal('#d8dce4'), dark = K.gloss('#22242a'), tw = W - 0.16, td = D - 0.14, top = 0.8;
+    // the table: a coloured body, chrome legs on feet, the white field inside raised rails
+    K.put(rbox(tw, 0.2, td, 0.03), red, 0, top - 0.1, 0);
+    K.put(rbox(tw - 0.06, 0.05, td - 0.06, 0.01), K.plain(L.tone(K.pal.c, 0.7)), 0, top - 0.22, 0);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+      K.put(rbox(0.06, top - 0.2, 0.06, 0.015), chrome, sx * (tw / 2 - 0.1), (top - 0.2) / 2, sz * (td / 2 - 0.1));
+      K.put(cyl(0.05, 0.03, 0.055, 14), dark, sx * (tw / 2 - 0.1), 0.015, sz * (td / 2 - 0.1));
+    }
+    const field = new THREE.PlaneGeometry(tw - 0.12, td - 0.12).rotateX(-Math.PI / 2);
+    K.put(field, K.pic(hockeyTop()), 0, top + 0.002, 0);
+    for (const sz of [-1, 1]) K.put(rbox(tw, 0.06, 0.06, 0.02), K.gloss(L.tone(K.pal.c, 1.15)), 0, top + 0.02, sz * (td / 2 - 0.03));
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(rbox(0.06, 0.06, td / 2 - 0.18, 0.02), K.gloss(L.tone(K.pal.c, 1.15)), sx * (tw / 2 - 0.03), top + 0.02, sz * (td / 4 + 0.09));
+    for (const sx of [-1, 1]) K.put(rbox(0.04, 0.03, 0.26, 0.01), dark, sx * (tw / 2 - 0.03), top + 0.005, 0);
+    // a coin slot on each end, the scoreboard over the back on two posts
+    for (const sx of [-1, 1]) {
+      K.put(rbox(0.02, 0.1, 0.16, 0.008), K.metal('#8a8e9a'), sx * (tw / 2 + 0.005), top - 0.12, 0);
+      K.put(rbox(0.012, 0.04, 0.03, 0.004), K.glow('#ff5a2a'), sx * (tw / 2 + 0.016), top - 0.1, 0);
+      K.put(rbox(0.04, 0.42, 0.04, 0.012), chrome, sx * 0.22, top + 0.21, -td / 2 + 0.03);
+    }
+    K.put(rbox(0.62, 0.2, 0.08, 0.02), dark, 0, top + 0.48, -td / 2 + 0.03);
+    K.put(new THREE.PlaneGeometry(0.56, 0.15), L.litPic(scoreBoard(), 0.8), 0, top + 0.48, -td / 2 + 0.072);
+    // two mallets and the puck
+    for (const [x, col] of [[-tw * 0.32, '#e83a3a'], [tw * 0.32, '#3a7ae8']]) {
+      K.put(cyl(0.07, 0.035, 0.075, 24), K.gloss(col), x, top + 0.02, 0.04);
+      K.put(cyl(0.03, 0.06, 0.035, 16), K.gloss(col), x, top + 0.065, 0.04);
+      K.put(L.ball(0.035, 14, 10), K.gloss(col), x, top + 0.1, 0.04);
+    }
+    K.put(cyl(0.045, 0.015, 0.045, 20), K.gloss('#202028'), tw * 0.08, top + 0.01, -0.08);
   },
 
   pottingbench(K, s, W, D, L) {

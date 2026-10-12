@@ -9,6 +9,19 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Furniture modelled like the arcade cabinets** (the user's ask, 2026-10-12: "I want my furniture as clean as these
+cabinets"; branch `claude/arcade-cabinets-design-yh10el`). The pieces' paintings are front views painted the same all
+round, so carved they wore the front on every side and came out oval or hollow behind. Done: the batch files
+`js/base-models-a.js` to `-k.js` (one per run of shelves; `-f.js`'s head says how they work), the pilot (milk cooler,
+table tennis table, potting bench), and the worst first (the user's pick): `frontbox` in `js/base-models-kit.js`, a real box
+the painting's outline, its picture on the front only, sides / back / top a colour read off its own edge (`top` cuts the
+box lower and stands what's above as a two-sided cut-out), on 64 boxy kinds (fridge, vending, shelves, cabinets, crates,
+the store's arcade cabinets...: the `frontbox` lines in each batch's `SHAPES`), and the stove and air hockey table built
+from parts. **Next:** the user looks at them in the base and the Furniture store; then the rest (~430 non-boxy pieces:
+carts, gym machines, booths, desks on legs, statues) one batch file a session, hand-built like the stove. Rendering
+works in the cloud: install `three@0.160.0` with npm in the scratchpad and route the CDN URL to it in Playwright, then
+`tools/models.html?ids=a,b` shows four sides each.
+
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
 Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on
