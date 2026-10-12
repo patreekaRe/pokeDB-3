@@ -47,6 +47,7 @@ export const NEXT = [
   ['battle', 'Alphas and bosses in the Whispering Clearing now fight in a 3D forest clearing; a boss still opens with its pixel prelude first.'],
   ['battle', 'Every biome\'s Alphas and bosses, Team Rocket\'s Alpha too, now stand on 3D platforms in front of their own living backdrop.'],
   ['battle', 'Fights in the Ember Wastes stand on 3D ashen ground: glowing lava cracks and pools, basalt rocks, obsidian and burnt trees, ash falling and embers rising. Chad Master Kenmatta\'s courtyard is 3D too: its flagstones, his dais and carpeted steps, two braziers burning, and a smooth gold Dragonite medallion on the wall in place of the pixel one.'],
+  ['mall', 'The Furniture store sells one of each piece: a buy poofs it off its platform and a SOLD OUT sign takes its place. Make more copies with your PC\'s Duplicate.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
