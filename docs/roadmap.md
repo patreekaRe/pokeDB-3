@@ -350,7 +350,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 ## Waiting on the user
 
 - **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, 2026-10-12, the user's ask: their 12 friends as Gym
-  Leaders, two a biome, in front of its bosses). Built: `js/data/gym.js` (who owns which boss, badge names, placeholder
+  Leaders, two a biome, in front of its bosses; the user placed them 2026-10-12: Clearing Lawrence / Britt, Shrine John /
+  Jahmes, Wastes Clarence Jasper / Shaun, Ruins Pat / Kayl, Thornwood Phil / Ricky, Savanna Machew / Jerome). Built: `js/data/gym.js` (who owns which boss, badge names, placeholder
   lines), `js/gym.js` (the talk before the boss, a shadow till beaten once; the last words and badge after the win),
   12 Gym Badges (`save.gym`, Badge Case group `gym`), the crossroads boards' Gym Leaders section (shadow and ??? till
   beaten). Playtest `?gym=phil` (`&n=2` their second boss). Waiting on the user for: each friend's sprite (Gen 5-style

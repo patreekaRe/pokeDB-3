@@ -186,9 +186,9 @@ for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shiel
 for (const n of [5, 10, 15, 20]) LOOK[`rare-${n}`] = ['gem', LOOK['rare-catch'][1], `n${n}`];
 // the Gym Badges: each leader's in their biome's colours, the two of a biome told apart by shape and glyph
 const GYM_LOOK = {
-  lawrence: ['star', 'sparkle'], phil: ['circle', 'tree'], john: ['octagon', 'sun'], jahmes: ['shield', 'torii'],
-  clarence: ['diamond', 'volcano'], shaun: ['hex', 'flame'], ricky: ['drop', 'wave'], kayl: ['book', 'eye'],
-  britt: ['leaf', 'thorns'], pat: ['circle', 'leafy'], machew: ['gem', 'facet'], jerome: ['star', 'sun'],
+  lawrence: ['star', 'sparkle'], britt: ['circle', 'tree'], john: ['octagon', 'sun'], jahmes: ['shield', 'torii'],
+  clarence: ['diamond', 'volcano'], shaun: ['hex', 'flame'], pat: ['drop', 'wave'], kayl: ['book', 'eye'],
+  phil: ['leaf', 'thorns'], ricky: ['circle', 'leafy'], machew: ['gem', 'facet'], jerome: ['star', 'sun'],
 };
 for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = [GYM_LOOK[l.id]?.[0] ?? 'circle', BIOME_INK[l.biome], GYM_LOOK[l.id]?.[1]];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];

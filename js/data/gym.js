@@ -24,15 +24,15 @@ const leader = (id, name, biome, bosses, badge, extra = {}) => ({
 
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK LAWRENCE', 'clearing', ['snorlax', 'kangaskhan'], 'Glitter Badge'),
-  leader('phil', 'PHIL', 'clearing', ['miltank'], 'Acorn Badge'),
+  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge'),
   leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),
   leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge'),
   leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge'),
-  leader('ricky', 'RICKY', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge'),
+  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge'),
   leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge'),
-  leader('britt', 'BRITT', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge'),
-  leader('pat', 'PAT', 'thornwood', ['porygon2'], 'Root Badge'),
+  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge'),
+  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge'),
   leader('machew', 'EDGELORD MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge'),
   leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge'),
 ];
