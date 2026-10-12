@@ -514,10 +514,6 @@ function paintScreen(c, def, e, cut) {
   g.fillStyle = e.done ? '#3a9a48' : e.blocked ? '#4a4458' : '#2a1648';
   g.beginPath(); g.roundRect(W - H * 0.42, H * 0.04, H * 0.38, H * 0.12, H * 0.06); g.fill();
   words(g, tag, W - H * 0.23, H * 0.1, H * 0.07, e.done ? '#ffffff' : '#ffe890');
-  if (e.deal) {
-    g.fillStyle = NEON.pink; g.beginPath(); g.roundRect(H * 0.04, H * 0.04, H * 0.3, H * 0.12, H * 0.06); g.fill();
-    words(g, 'DEAL', H * 0.19, H * 0.1, H * 0.07, '#ffffff');
-  }
 }
 
 /* ---------- building it ---------- */

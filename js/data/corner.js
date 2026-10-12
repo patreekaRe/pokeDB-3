@@ -1,5 +1,5 @@
 /* ============================================================
-   corner.js  -  the Game Corner's games and deals (the revamp, 2026-10-10; the user's picks: no betting coins and no
+   corner.js  -  the Game Corner's games (the revamp, 2026-10-10; the user's picks: no betting coins and no
    prize tickets). Pure rules, kept free of the DOM so node tests can read them.
 
    Every game is free (2026-10-12, the user's call: no betting). Each has PLAYS a UTC day that pay; past them, or past
@@ -11,10 +11,9 @@
                  A won (or quit) round pays coins from its score. Levels 1-8 as in HGSS. Each board comes from the day's seed and
                  the round number, so a refresh can't deal a new one.
    Who's That Pokémon?  one round of QUIZ_LEN silhouettes a UTC day.
-   Deal of the Day  one skin, perk level or shiny at DEAL_OFF off, picked once a UTC day from what you can still buy.
    ============================================================ */
 
-import { streamOf, randIndex, shuffled, hashString } from '../rng.js';
+import { streamOf, randIndex, shuffled } from '../rng.js';
 
 /* ---------- Voltorb Flip ---------- */
 
@@ -159,17 +158,3 @@ export function quizRound(day, n, pool) {
 
 /** Coins for the day's round: 5 a right answer, and 5 more for all of them. */
 export const quizPay = (right) => right * 5 + (right === QUIZ_LEN ? 5 : 0);
-
-/* ---------- Deal of the Day ---------- */
-
-export const DEAL_OFF = 0.3;
-export const DEAL_ROWS = ['skins', 'perks', 'shiny'];
-
-/** A discounted price, rounded to 5. */
-export const dealPrice = (cost) => Math.round(cost * (1 - DEAL_OFF) / 5) * 5;
-
-/** The day's deal from the keys you could buy now ("perks:hpBoost"): one, from the day's seed, or null. */
-export function pickDeal(day, keys) {
-  if (!keys.length) return null;
-  return [...keys].sort()[hashString(`deal:${day}`) % keys.length];
-}

@@ -139,7 +139,6 @@
 .sc-art.sc-piece { image-rendering: auto; }
 .sc-icon { position: relative; font-size: 96px; line-height: 1; }
 .sc-count { position: absolute; bottom: 6px; right: 8px; font-size: 12px; color: #c8c8e0; }
-.sc-deal { position: absolute; top: 8px; left: 8px; padding: 2px 8px; border-radius: 99px; background: #ff5ab8; font-size: 11px; box-shadow: 0 0 8px #ff5ab8; }
 .sc-pips { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 5px 10px;
   border-radius: 99px; background: rgba(10, 10, 20, 0.75); }
 .sc-pips b { font-size: 11px; color: #fff2b8; margin-right: 2px; }

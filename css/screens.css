@@ -2698,10 +2698,6 @@ body.battle-intro { pointer-events: none; }
 .gc-cell-icon { font-size: 24px; line-height: 0; }
 .gc-cell .shop-owned { position: absolute; right: -4px; bottom: -4px; }
 .gc-cell .shop-owned .pokeball { font-size: 20px; }
-.gc-deal { position: absolute; left: -4px; top: -6px; padding: 0 3px; border-radius: 3px; background: #ff5ab8; color: #fff;
-  font-size: 9px; line-height: 13px; letter-spacing: 0.5px; box-shadow: 0 0 6px #ff5ab8; }
-.gc-was { color: #c8a0b8; opacity: 0.8; }
-.gc-deal-tag { color: #ff9ad8; }
 .gc-cell.on { border-color: #f8e070; box-shadow: 0 0 0 2px #181010, 0 0 8px #f8e070; animation: gcCursor 0.8s steps(1) infinite; }
 @keyframes gcCursor { 50% { border-color: #e83828; } }
 .gc-more { align-self: center; width: 8px; font-size: 0.55rem; color: #b8f0dc; }   /* more cells past the row's window */

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   VOLTORB_BOARDS, dealBoard, voltorbBoard, clues, score, cleared, payout, nextLevel, bestScore,
-  pickDeal, dealPrice, capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
+  capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
   PRIZES, PRIZES_BY_KIND, RETIRED_PRIZES, better,
 } from '../js/data/corner.js';
 import {
@@ -54,14 +54,6 @@ test('levels go up on a win and drop to the flips on a Voltorb', () => {
   assert.equal(nextLevel(5, { won: false, flips: 2 }), 2);
   assert.equal(nextLevel(2, { won: false, flips: 6 }), 2);
   assert.equal(nextLevel(4, { won: false, flips: 0 }), 1);
-});
-
-test('the Deal of the Day is one of the keys, stable for the day', () => {
-  const keys = ['perks:hpBoost', 'skins:tepig', 'shiny:charmander'];
-  assert.ok(keys.includes(pickDeal('2026-10-10', keys)));
-  assert.equal(pickDeal('2026-10-10', keys), pickDeal('2026-10-10', [...keys].reverse()));
-  assert.equal(pickDeal('2026-10-10', []), null);
-  assert.equal(dealPrice(250), 175);
 });
 
 test('the games share one daily cap, and each has its own', () => {

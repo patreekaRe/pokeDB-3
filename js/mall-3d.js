@@ -857,7 +857,7 @@ async function prizeTap(spot) {
     if (e.blocked) return talk(`${e.dark ? 'Who\'s that Pokémon? ' : ''}${e.text}`, 4600);
     if (e.done) return talk(`${e.name}: ${e.done === 'Maxed' ? 'maxed out already, meow!' : 'that one\'s yours already, meow!'}`, 3600);
     const what = spot.row === 'perks' ? ` ${e.text}${e.level ? ` (${e.level})` : ''}` : spot.row === 'balls' ? ` ${e.text}` : '';
-    const price = e.deal ? `It's the Deal of the Day: ${e.cost.toLocaleString()} PokéCoins, not ${e.full.toLocaleString()}!` : `That's ${e.cost.toLocaleString()} PokéCoins.`;
+    const price = `That's ${e.cost.toLocaleString()} PokéCoins.`;
     return talk(`${e.name}!${what} ${price} Tap again and it's yours, meow.`, 5200);
   }
   if (e.done || e.blocked) { pick(null); return prizeTap(spot); }

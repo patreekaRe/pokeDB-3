@@ -2118,3 +2118,4 @@ Pokémon up beside it and opens a panel with the road's places, bosses, wilds an
 Reading never picks a road. Your Pokémon eases down to 70% of its loaded size by the fork (the painted fallback, which
 keeps its cards, too). Fixed on the way: the cards called `dexSeen()`, which *marks* a Pokémon seen, so showing the fork
 marked its bosses seen and never showed a met one in colour; they read `save.dex.seen` now.
+- **Deal of the Day taken out** (2026-10-12, the user's call): the Game Corner's 30%-off pick is gone from the cabinet, the showcase screens and Meowth's lines (`todaysDeal()` / `pickDeal()` / `DEAL_OFF` removed); an old save's `corner.deal` is ignored. Branch `claude/arcade-cabinets-design-yh10el`.

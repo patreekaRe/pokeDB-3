@@ -62,7 +62,6 @@ function render(dir = 0) {
     screen.append(img);
   } else screen.append(el('span', 'sc-icon', e.icon));
   if (e.tier) screen.append(pips(e.tier));
-  if (e.deal) screen.append(el('span', 'sc-deal', 'DEAL OF THE DAY'));
   if (e.done) screen.append(el('span', 'sc-owned', e.done.toUpperCase()));
   screen.append(el('span', 'sc-count', `${at + 1} / ${list.length}`));
 
@@ -79,7 +78,6 @@ function render(dir = 0) {
   else if (e.level) foot.append(el('span', 'sc-level', e.level));
   if (!e.done) {
     const price = el('span', `sc-price${coins < e.cost || e.blocked ? ' short' : ''}`, `💰 ${e.cost.toLocaleString()}`);
-    if (e.deal) price.prepend(el('s', '', e.full.toLocaleString()), ' ');
     foot.append(price);
   }
   lcd.append(foot);
