@@ -2,7 +2,8 @@
    machines as Game Corner prizes, each playable at home). A game is a definition: its look (`colour`), a How to play
    (`help`), a logical canvas size (W x H) and make(api), which returns (and must not score or end the game until ticked or tapped, as the start screen draws one) { tick(dt, now), draw(g, now), down(x, y),
    move(x, y), up(x, y), key(k, down) } for one game. The kit runs the window (the Game Corner's panel), the loop, input
-   in canvas units, Score / Best, the start and game-over screens and the game's own keys (`pad`), and keeps each game's best in the Game Corner's
+   in canvas units, Score / Best, the start and game-over screens and the cabinet's control deck (a joystick sent as
+   the arrow keys, START / EXIT, the game's own round buttons, `pad`), and keeps each game's best in the Game Corner's
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
@@ -105,17 +106,17 @@ export function runArcade(def, onClose) {
       size(Math.min(cv.parentElement.clientWidth - 12, 240 * def.W / def.H));
       return loop();
     }
-    const m = el('div', 'vf-meters');
+    const m = el('div', 'vf-meters ar-leds');
     for (const [k, cls] of [['Score', 'ar-score'], ['Best', 'ar-best']]) { const b = el('div', 'vf-meter'); b.append(el('span', '', k), el('b', cls, '0')); m.append(b); }
     cv = el('canvas', 'ar-canvas');
     g = cv.getContext('2d');
     const stage = el('div', 'ar-stage');
     stage.append(cv);
-    const keys = el('div', 'vf-keys');
-    keys.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Play again' : 'Play', 'vf-go', start), key('Close', 'vf-close', () => panel.shut()));
-    box.append(head, m, stage);
-    if (def.pad) box.append(padRow());
-    box.append(el('p', 'vf-say', line), keys);
+    const bezel = el('div', 'ar-bezel');
+    bezel.append(m, stage);
+    head.classList.add('ar-marquee');
+    box.classList.add('ar-cab');
+    box.append(head, bezel, deck(), el('p', 'vf-say ar-say', line));
     panel.root.replaceChildren(box);
     meters();
     size();
@@ -126,22 +127,79 @@ export function runArcade(def, onClose) {
     loop();
   }
 
-  /** A game's own big keys under the screen (`def.pad`: [label, action], e.g. Bubble Shooter's SHOOT); before a game
-      or after one, a press starts it. Pressed on pointerdown so a phone's double-tap zoom never eats it. */
-  function padRow() {
-    const row = el('div', 'ar-pad');
-    for (const [label, act] of def.pad) {
-      const b = el('button', `vf-key ar-pad-key ar-pad-${act}`, label);
+  /** Before a game or after one, any control starts it (not in the first moments after a game over, so a held
+      button doesn't throw the next one away). */
+  const begin = () => { if (state === 'ready' || performance.now() - overAt > 600) start(); };
+
+  /** The control deck under the screen, every cabinet's (the user's ask, 2026-10-12: an arcade's): a joystick on the
+      left fed to the game as the arrow keys, START and EXIT in the middle, and the game's own round buttons on the right
+      (`def.pad`: [label, action], e.g. Bubble Shooter's SHOOT). Pressed on pointerdown so a phone's double-tap zoom never
+      eats them. */
+  function deck() {
+    const row = el('div', 'ar-deck');
+    const mid = el('div', 'ar-sys');
+    mid.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-sys-key ar-start', start),
+      key('Exit', 'ar-sys-key ar-exit', () => panel.shut()));
+    const btns = el('div', 'ar-btns');
+    for (const [label, act] of def.pad || []) {
+      const b = el('button', `ar-btn ar-pad-${act}`, '');
       b.type = 'button';
+      b.append(el('span', 'ar-btn-cap'), el('span', 'ar-btn-label', label));
       b.addEventListener('pointerdown', (e) => {
         e.preventDefault();
-        if (state !== 'play') { if (state === 'ready' || performance.now() - overAt > 600) start(); return; }
+        b.classList.add('down');
+        if (state !== 'play') return begin();
         game[act]?.();
       });
-      row.append(b);
+      for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) b.addEventListener(ev, () => b.classList.remove('down'));
+      btns.append(b);
     }
+    row.append(joystick(), mid, btns);
     return row;
   }
+
+  /** An 8-way stick: tilting it presses the arrow keys it leans towards, letting go lets them all up. */
+  function joystick() {
+    const box = el('div', 'ar-stick');
+    const knob = el('span', 'ar-knob');
+    box.append(el('span', 'ar-stick-gate'), el('span', 'ar-shaft'), knob);
+    const down = new Set();
+    let id = null;
+    const press = (want) => {
+      for (const k of [...down]) if (!want.has(k)) { down.delete(k); if (state === 'play') game.key?.(k, false); }
+      for (const k of want) if (!down.has(k)) { down.add(k); if (state === 'play') game.key?.(k, true); }
+    };
+    const lean = (dx, dy) => {
+      const r = box.clientWidth / 2, d = Math.hypot(dx, dy), max = r * 0.42, f = d > max ? max / d : 1;
+      box.style.setProperty('--sx', `${dx * f}px`); box.style.setProperty('--sy', `${dy * f}px`);
+      const want = new Set(), dead = r * 0.22;
+      if (d > dead) {
+        const a = Math.atan2(dy, dx), c = Math.cos(a), s = Math.sin(a);
+        if (c > 0.38) want.add('right'); if (c < -0.38) want.add('left');
+        if (s > 0.38) want.add('down'); if (s < -0.38) want.add('up');
+      }
+      press(want);
+    };
+    const from = (e) => { const r = box.getBoundingClientRect(); lean(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2); };
+    box.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (state !== 'play') return begin();   // the deck is drawn afresh as a game starts, so this stick is gone
+      id = e.pointerId; try { box.setPointerCapture(id); } catch {} box.classList.add('held'); from(e);
+    });
+    box.addEventListener('pointermove', (e) => { if (e.pointerId === id) from(e); });
+    const free = (e) => { if (e.pointerId !== id) return; id = null; box.classList.remove('held'); lean(0, 0); };
+    box.addEventListener('pointerup', free);
+    box.addEventListener('pointercancel', free);
+    stick = (k, on) => {   // the arrow keys lean it too, so it reads as the controls
+      if (id !== null) return;
+      const [x, y] = [{ left: -1, right: 1 }[k] || 0, { up: -1, down: 1 }[k] || 0];
+      if (!x && !y) return;
+      box.style.setProperty('--sx', on ? `${x * box.clientWidth * 0.2}px` : '0px');
+      box.style.setProperty('--sy', on ? `${y * box.clientWidth * 0.2}px` : '0px');
+    };
+    return box;
+  }
+  let stick = () => {};
 
   /** How to play as an attract screen: the game itself playing on a little CRT, then the steps as numbered tiles. */
   function helpScreen() {
@@ -200,6 +258,7 @@ export function runArcade(def, onClose) {
     e.preventDefault(); e.stopPropagation();
     if (e.type === 'keydown' && state !== 'play' && k === 'act') { if (!e.repeat) start(); return; }
     if (state === 'play' && !(e.repeat && e.type === 'keydown')) game.key?.(k, e.type === 'keydown');
+    if (!e.repeat) stick(k, e.type === 'keydown');
   }
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('keyup', onKey, true);

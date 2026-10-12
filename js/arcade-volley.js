@@ -9,8 +9,9 @@ const W = 340, H = 240, FLOOR = 214, NET_X = W / 2, NET_TOP = 150, BR = 11, GRAV
 
 export const openVolley = (onClose) => runArcade({
   id: 'volley', title: 'Pikachu Volleyball', colour: '#f0c020', W, H,
-  intro: 'Beat Meowth to 7! Hold beside Pikachu to run, tap above it to jump.',
-  help: [['Hold to the left or right of Pikachu to run there,', 'tap above it to jump (or the arrow keys and Space).'], ['Bump the ball over the net with Pikachu\'s head.', 'If it lands on your side, Meowth scores.'], [`First to ${TO} wins.`, 'Every point you win scores, and winning the match adds 10.']],
+  intro: 'Beat Meowth to 7! Joystick to run, JUMP to jump.',
+  pad: [['JUMP', 'jump']],
+  help: [['Push the joystick to run, press JUMP to jump.', 'Or hold beside Pikachu to run and tap above it to jump (the arrow keys and Space work too).'], ['Bump the ball over the net with Pikachu\'s head.', 'If it lands on your side, Meowth scores.'], [`First to ${TO} wins.`, 'Every point you win scores, and winning the match adds 10.']],
   make(api) {
     const me = { x: 80, y: 0, vy: 0 }, foe = { x: W - 80, y: 0, vy: 0 };
     let ball = null, mine = 0, theirs = 0, serveTo = 'me', wait = 0.8, target = null, keyDir = 0, jumpAsk = false;
@@ -65,6 +66,7 @@ export const openVolley = (onClose) => runArcade({
       down(x, y) { if (y < FLOOR - me.y - PR * 2 - 6 && Math.abs(x - me.x) < 60) jumpAsk = true; else target = x; },
       move(x, y, pressed) { if (pressed && target != null) target = x; },
       up() { target = null; },
+      jump() { jumpAsk = true; },
       key(k, down) { if (k === 'left' || k === 'right') keyDir = down ? (k === 'left' ? -1 : 1) : 0; else if ((k === 'up' || k === 'act') && down) jumpAsk = true; },
       draw(g, now) {
         const sky = g.createLinearGradient(0, 0, 0, FLOOR); sky.addColorStop(0, '#58b8f8'); sky.addColorStop(1, '#c8ecff');
