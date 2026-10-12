@@ -52,6 +52,8 @@ let calm = false, last = 0, camX = 0, camZ = 0, shot = null, viewW = 0, viewH = 
 
 // the place you're in can be bigger than the hall (the Game Corner): its tiles, set by setPlace()
 let PC = COLS, PR = ROWS;
+/** What a place's tick() may draw over the view with: your partner, the camera, the view and its stage. */
+const hud = { partner: () => walker, get camera() { return camera; }, get view() { return view; }, get stage() { return root?.querySelector('.b3-stage'); } };
 const tileX = (tx) => tx + 0.5 - PC / 2;
 const tileZ = (ty) => ty + 0.5 - PR / 2;
 const key = (x, y) => `${x},${y}`;
@@ -784,7 +786,7 @@ const pickLine = (lines) => lines[Math.floor(Math.random() * lines.length)];
 const talk = (line, ms) => say({ line }, ms);
 
 function setPlace(p, at, facing = 'back') {
-  if (P) P.group.visible = false;
+  if (P) { P.group.visible = false; P.leave?.(); }
   P = p; P.group.visible = true; blocked = P.blocked;
   PC = P.cols ?? COLS; PR = P.rows ?? ROWS;
   pick(null);
@@ -906,6 +908,7 @@ async function bayTap(spot) {
     down at it; coming back repaints the coins and the prize cases. */
 function gameTap(spot) {
   if (picked !== spot) { pick(spot); playSound('select'); return talk(spot.game.line, 4600); }
+  if (spot.game.talkOnly) { playSound('select'); return talk(spot.game.line, 4600); }
   pick(null);
   playSound('confirm');
   spot.game.open(() => { showCoins(); P?.refresh?.(); });
@@ -1133,7 +1136,7 @@ function frame(now) {
     const left = (P.keeper.hopUntil || 0) - now;
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
-  P.tick?.(now, dt);
+  P.tick?.(now, dt, hud);
   places.gc?.crowd?.tick(now, dt, P.id === 'gc');
   tickRibbon(dt, now);
   tickConfetti(dt, now);
