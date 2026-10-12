@@ -34,6 +34,7 @@ import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
@@ -174,6 +175,8 @@ function init() {
   // Playtest shortcut (the user's ask): opening the game with ?levels unlocks every Trainer Level for good.
   const query = new URLSearchParams(location.search);
   if (query.has('levels')) updateSave(d => { d.maxLevel = MAX_LEVEL; });
+  // ?coins=5000: sets the PokéCoins for a playtest (a branch preview starts on its own empty save)
+  if (query.has('coins')) updateSave(d => { d.coins = Math.max(0, parseInt(query.get('coins'), 10) || 0); });
   if (query.has('walk')) updateSave(d => { d.titleHub = true; });   // Settings' Title screen, by URL (?signs only for the page load)
   if (query.has('hybrid') || query.has('pixel')) updateSave(d => { d.scenery = query.has('pixel') ? 'pixel' : 'hybrid'; });   // Settings' Scenery, by URL
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
@@ -208,6 +211,7 @@ function init() {
       d.stats.deepestBiome = Math.min(d.stats.deepestBiome, 3);
     });
   }
+  if (query.has('meowth')) updateSave(d => { d.cornerOpen = false; });   // ?meowth: the Poké Mall's Game Corner shut again till Meowth is met
   checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
   setHomeTrack(useHub() ? 'clearing-hub' : 'title');   // before initAudio() starts the menus' song, so title.mp3 isn't fetched for nothing
   initAudio();
@@ -426,7 +430,7 @@ async function peekCrossroads(params) {
   const road = [params.get('road'), LEGACY_ROADS[slot], ...POOL].find(id => POOL.includes(id) && id !== from);
   const others = POOL.filter(id => id !== road && id !== from);   // Wayfinder's swap, once its page is done
   const swap = dexPerkLevel('wayfinder') && others.length ? others : null;
-  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny });
+  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny, meowth: params.has('meowth') && meowthDue() });
   const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
   close?.();

@@ -3,7 +3,7 @@ rules_version = '2';
 // saves/<uid>: the cloud save (js/cloud.js). safariBoard/<day>_<uid>: the Safari Zone's daily leaderboard
 // (js/leaderboard.js; its bounds match LIMITS in js/data/leaderboard.js): anyone reads, a signed-in player posts
 // their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
-// way once a week.
+// way once a week. arcadeBoard/<week>_<game>_<uid>: the home arcade's weekly bests, raised only by a higher score.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -64,6 +64,29 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null && validClimb(id, request.resource.data);
       allow update, delete: if false;
+    }
+
+    // arcadeBoard/<week>_<game>_<uid>: the home arcade's weekly best scores (ARCADE_GAMES / ARCADE_SCORE in
+    // js/data/leaderboard.js). A player's own entry may be raised that week, never lowered or deleted.
+    function validArcade(id, d) {
+      return d.keys().hasOnly(['week', 'game', 'uid', 'name', 'starter', 'score', 'at'])
+        && d.keys().hasAll(['week', 'game', 'uid', 'name', 'starter', 'score', 'at'])
+        && d.uid == request.auth.uid
+        && isDay(d.week) && nearWeek(d.week)
+        && d.game in ['runner', 'flap', 'stacker', 'puzzle', 'invaders', 'snake']
+        && id == d.week + '_' + d.game + '_' + request.auth.uid
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.starter is string && d.starter.size() >= 1 && d.starter.size() <= 32
+        && inRange(d.score, 1, 9999999)
+        && d.at == request.time;
+    }
+
+    match /arcadeBoard/{id} {
+      allow read: if true;
+      allow create: if request.auth != null && validArcade(id, request.resource.data);
+      allow update: if request.auth != null && validArcade(id, request.resource.data)
+        && request.resource.data.score > resource.data.score;
+      allow delete: if false;
     }
   }
 }

@@ -21,6 +21,7 @@ import { TYPES } from './data/cards.js';
 import { progressBar } from './pokedex.js';
 import { getSave } from './storage.js';
 import { ALL_PAGES } from './data/pokedex.js';
+import { meowthTalk } from './meowth.js';
 
 let THREE, renderer, post, view;
 
@@ -525,7 +526,7 @@ function fitCamera(camera, w, h, W) {
  * The 3D fork: as crossroads() in js/crossroads.js, which calls it first. Throws before showing anything if Three.js
  * won't load, so the painted one can run instead.
  */
-export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny = false }) {
+export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny = false, meowth = false }) {
   THREE = await loadThree();
   if (!renderer) {
     view = document.createElement('canvas');
@@ -545,6 +546,9 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   const art = { back: spriteUrl(starter, 'back', stage, shiny), front: spriteUrl(starter, 'front', stage, shiny) };
   const mon = await monBoard({ src: art.front, name: stageName(starter, stage), cry: starter.line[stage]?.id });
   W.scene.add(mon.group);
+  // Meowth, the first time after Biome 1: out of the trees on the right to talk, then off again (js/meowth.js)
+  const cat = meowth ? await monBoard({ src: 'assets/pokemon/meowth-front.gif', name: 'Meowth', cry: 'meowth' }, false) : null;
+  if (cat) { cat.group.visible = false; W.scene.add(cat.group); }
 
   const scene = $('crossroads-scene'), go = $('xr-go'), calm = still();
   scene.className = `crossroads-scene x3d held${calm ? ' still' : ''}`;
@@ -554,8 +558,9 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
   go.textContent = 'Which way?';
   scene.hidden = false;
 
+  const kitty = { x: 0, z: START_Z, facing: 'front', flip: false, hop: 0 };
   const walker = { x: 0, z: START_Z, facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
-  let picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
+  let talking = !!cat, picked = -1, walking = false, asking = false, backing = false, route = [], keys = new Set(), toRead = -1, reading = -1;
   let size = 1, vw = 0, vh = 0, raf = 0, last = 0, stepAt = 0, held = false;
   const read = new Set();   // boards opened: their "!" and glow stop
 
@@ -586,7 +591,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       go.textContent = `To the ${BIOMES_BY_ID[roads[i]].name}`;
     };
     const pick = (i) => {
-      if (walking || asking || reading >= 0) return;
+      if (walking || asking || talking || reading >= 0) return;
       toRead = -1;
       if (picked === i) return take();
       choose(i);
@@ -664,7 +669,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     }
     /** Walks your Pokémon up in front of road i's board (on the grass, short of the road), then opens it. */
     function readBoard(i) {
-      if (walking || asking || reading >= 0) return;
+      if (walking || asking || talking || reading >= 0) return;
       const b = W.boards[i].position, z = FORK_Z + 0.9, e = meadowHalf(z) - 0.15;
       routeTo(side(i) * Math.min(e, Math.abs(b.x) - 1.5), z);   // beside it, not in front of it
       if (toRead !== i) playSound('confirm');
@@ -720,7 +725,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       last = now;
       const speed = (walking ? 3.6 : 3) * dt;
       let gx = 0, gz = 0;
-      if (keys.size && !walking && !asking && reading < 0) {
+      if (keys.size && !walking && !asking && !talking && reading < 0) {
         toRead = -1;
         gx = (keys.has('right') ? 1 : 0) - (keys.has('left') ? 1 : 0);
         gz = (keys.has('down') ? 1 : 0) - (keys.has('up') ? 1 : 0);
@@ -746,7 +751,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       if (toRead >= 0 && !route.length && !moving) { const i = toRead; toRead = -1; openPanel(i); }
       const r = regionOf(walker.x, walker.z);
       if (r < 0) backing = false;
-      if (!walking && !asking && r >= 0) {
+      if (!walking && !asking && !talking && r >= 0) {
         choose(r);
         if (along(r, walker.x, walker.z)[0] > TAKE_T && !backing) take();
       }
@@ -767,6 +772,16 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       mon.board.position.y = bob;
       mon.board.scale.x = walker.flip ? -1 : 1;
       mon.board.rotation.x = -Math.atan2(camH - mon.top * 0.5 * mon.scale, dz) * 0.85;
+      if (cat?.group.visible) {
+        drawMon(cat, kitty, dt * 1000);
+        const cu = Math.max(0, Math.min(1, (START_Z - kitty.z) / (START_Z - FORK_Z)));
+        cat.scale = size * -kitty.z * (1 - (1 - SHRINK) * cu * cu * (3 - 2 * cu));
+        cat.group.scale.setScalar(cat.scale);
+        cat.group.position.set(kitty.x, 0, kitty.z);
+        cat.board.position.y = calm || !kitty.hop ? 0 : Math.abs(Math.sin(kitty.hop / 1000 * Math.PI * 4)) * 0.08;
+        cat.board.scale.x = kitty.flip ? -1 : 1;
+        cat.board.rotation.x = -Math.atan2(camH - cat.top * 0.5 * cat.scale, -kitty.z) * 0.85;
+      }
       const t = calm ? 0 : now;
       for (const s of W.flies) {
         const u = s.userData, b = Math.sin(t * 0.0021 + u.ph * 3);
@@ -803,6 +818,37 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     frame(performance.now(), 0);
     raf = requestAnimationFrame(loop);
     requestAnimationFrame(() => view.classList.add('on'));
+    if (cat) meet();
+
+    /** Meowth trots in from the right, says its piece, opens the Game Corner and trots back off. */
+    async function meet() {
+      const edge = meadowHalf(START_Z - 1.4) + 3, spot = [walker.x + 1.5, START_Z - 1.4];
+      const trot = (x, z) => new Promise(done => {
+        kitty.flip = x > kitty.x;
+        const step = () => {
+          if (!cat.group.parent) return done();
+          const dt = 1 / 60, d = Math.hypot(x - kitty.x, z - kitty.z), sp = 3.2 * dt;
+          if (d <= sp) { kitty.x = x; kitty.z = z; kitty.hop = 0; return done(); }
+          kitty.x += (x - kitty.x) / d * sp; kitty.z += (z - kitty.z) / d * sp; kitty.hop += dt * 1000;
+          requestAnimationFrame(step);
+        };
+        step();
+      });
+      Object.assign(kitty, { x: edge, z: spot[1] });
+      await sleep(calm ? 200 : 700);
+      cat.group.visible = true;
+      if (calm) Object.assign(kitty, { x: spot[0], z: spot[1] });
+      else await trot(...spot);
+      kitty.flip = false;
+      face('front');
+      walker.flip = true;   // your Pokémon turns to it
+      await meowthTalk(scene);
+      walker.flip = false;
+      face('back');
+      if (!calm) await trot(edge, spot[1] - 1);
+      cat.group.visible = false;
+      talking = false;
+    }
 
     const ray = new THREE.Raycaster();
     const aim = (e) => {
@@ -816,7 +862,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
       routeTo(hit.point.x, hit.point.z);
     };
     const onDown = (e) => {
-      if (walking || asking || e.target.closest('.xr-panel, .xr-go')) return;
+      if (walking || asking || talking || e.target.closest('.xr-panel, .xr-go, .xr-talk')) return;
       if (reading >= 0) { closePanel(); return; }
       if (e.target === view) {
         // a tap on your Pokémon: its cry
@@ -831,7 +877,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     const onUp = () => { held = false; };
     const KEYS = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down' };
     const onKey = (e) => {
-      if (asking) return;
+      if (asking || talking) return;
       if (reading >= 0) {
         if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') { closePanel(); e.preventDefault(); e.stopPropagation(); }
         return;
@@ -855,7 +901,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     go.onclick = (e) => { e.stopPropagation(); take(); };
 
     async function take() {
-      if (walking || asking || picked < 0) return;
+      if (walking || asking || talking || picked < 0) return;
       closePanel();
       asking = true;
       keys.clear();

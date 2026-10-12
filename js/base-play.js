@@ -454,7 +454,26 @@ export function dressPlay(three, model, p) {
       play.screen = { c, g: c.getContext('2d'), tex, mesh: m, show: 0, cut: 0, last: 0 };
     }
   }
-  if (D === 'door') {
+  if (D === 'door' && model.userData.doors) {
+    // a modelled door (js/base-mesh.js's K.door): its own parts swing, the inside picture behind them
+    // (`bare` when what's inside is modelled, behind glass)
+    const r = model.userData.inside;
+    if (!r.bare) {
+      const inside = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.h), new THREE.MeshBasicMaterial({ map: insidePicture(how.inside, r.w, r.h), toneMapped: false }));
+      inside.position.set(r.x, r.y, r.z);
+      model.add(inside);
+    }
+    play.doors = model.userData.doors.map(({ leaf, hinge: [hx, hz], side }) => {
+      const hinge = new THREE.Group();
+      hinge.position.set(hx, 0, hz);
+      leaf.position.set(-hx, 0, -hz);
+      hinge.add(leaf);
+      hinge.userData.side = side;
+      model.add(hinge);
+      return hinge;
+    });
+    if ((how.inside === 'fridge' || how.inside === 'oven')) play.glowAt = new THREE.Vector3(r.x, r.y, r.z + 0.1);
+  } else if (D === 'door') {
     const b = boxOf(art, (r, g, b2, a) => a > 128);
     if (b) {
       // the door is the front painting itself (its body, not the feet or a top), cut out and hinged on its left edge

@@ -5,6 +5,18 @@
    be put on. A kind with no line here is still 3D: js/base-mesh.js turns a round piece on a lathe or puffs its painting
    up like a plush, and carves the rest from its paintings (js/base-model.js). */
 
+import { SHAPES as SHAPES_A } from './base-models-a.js';
+import { SHAPES as SHAPES_B } from './base-models-b.js';
+import { SHAPES as SHAPES_C } from './base-models-c.js';
+import { SHAPES as SHAPES_D } from './base-models-d.js';
+import { SHAPES as SHAPES_E } from './base-models-e.js';
+import { SHAPES as SHAPES_F } from './base-models-f.js';
+import { SHAPES as SHAPES_G } from './base-models-g.js';
+import { SHAPES as SHAPES_H } from './base-models-h.js';
+import { SHAPES as SHAPES_I } from './base-models-i.js';
+import { SHAPES as SHAPES_J } from './base-models-j.js';
+import { SHAPES as SHAPES_K } from './base-models-k.js';
+
 const S = {};
 const set = (ids, shape) => ids.split(' ').forEach(id => { S[id] = { ...shape }; });
 
@@ -103,6 +115,38 @@ set('globe', { make: 'globe' });
 set('pyramid', { make: 'pyramid' });
 set('toilet', { make: 'toilet' });
 set('drumkit', { make: 'drumkit' });
+
+/* the home arcade's machines: modelled, the game on the front only */
+set('flapcabinet', { make: 'arcade', colour: '#c8904a', name: 'Pidgey Flap' });
+set('pongcabinet', { make: 'arcade', colour: '#e8c040', name: 'Psyduck Pong' });
+set('gastlymaze', { make: 'arcade', colour: '#7a4ac8', name: 'Gastly Maze' });
+set('stackercabinet', { make: 'arcade', colour: '#3a7a8a', name: 'Snorlax Stacker' });
+set('dashcabinet', { make: 'arcade', colour: '#e87830', name: 'Ponyta Dash' });
+set('memorycabinet', { make: 'arcade', colour: '#d83a3a', name: 'Voltorb Memory' });
+set('volleycabinet', { make: 'arcade', colour: '#f0c020', name: 'Pikachu Volleyball' });
+set('unowncabinet', { make: 'arcade', colour: '#6a5ac8', name: 'Unown Word Search' });
+set('crossingcabinet', { make: 'arcade', colour: '#3a8ae0', name: 'Poliwag Crossing' });
+set('ekanscabinet', { make: 'arcade', colour: '#8a4ab8', name: 'Ekans Trail' });
+set('invaderscabinet', { make: 'arcade', colour: '#e8b020', name: 'Beedrill Invaders' });
+set('breakoutcabinet', { make: 'arcade', colour: '#e84040', name: 'Electrode Breakout' });
+set('singalongcabinet', { make: 'arcade', colour: '#f080b0', name: 'Jigglypuff\'s Sing-Along' });
+set('bubblecabinet', { make: 'arcade', colour: '#3a8ae8', name: 'Squirtle Bubble Shooter' });
+set('berrycabinet', { make: 'arcade', colour: '#4aa8e8', name: 'Pachirisu Berry Catch' });
+set('dittocabinet', { make: 'arcade', colour: '#b080e0', name: 'Where\'s Ditto?' });
+set('bowlingcabinet', { make: 'arcade', colour: '#8a7a6a', name: 'Geodude Bowling' });
+set('pokepuzzle', { make: 'arcade', colour: '#40b0a0', name: 'Poké Puzzle' });
+set('whackmachine', { make: 'whack' });
+/* the Game Corner's games */
+set('slotmachine', { make: 'slot' });
+set('voltorbflip', { make: 'arcade', colour: '#2a9a5a', name: 'Voltorb Flip' });
+set('quizmachine', { make: 'arcade', colour: '#3a7ae0', name: 'Who\'s That Pokémon?' });
+set('blackjacktable', { make: 'cardtable', game: 'blackjack' });
+set('highlowtable', { make: 'cardtable', game: 'highlow' });
+set('plinkoboard', { make: 'plinko' });
+set('pokepinball', { make: 'pinball' });
+
+/* the batches modelled after the arcade cabinets (js/base-models-*.js): `'id id2': shape` each */
+for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
 
 export const SHAPES = S;
 

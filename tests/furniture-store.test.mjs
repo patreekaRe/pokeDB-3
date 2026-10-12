@@ -24,3 +24,4 @@ test('the Shop tab lists the second floor only once it is open', () => {
   assert.equal(shopStock({}).length, 8);
   assert.equal(shopStock({ upstairs: true }).length, 16);
 });
+

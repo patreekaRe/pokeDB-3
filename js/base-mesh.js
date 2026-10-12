@@ -19,6 +19,18 @@ import { shapeOf } from './base-shapes.js';
 import { PIECES } from './base-furniture.js';
 import { PLUSH } from './base-dolls.js';
 import { sewPlush } from './base-plush3d.js';
+import { MAKES as MAKES_A } from './base-models-a.js';
+import { MAKES as MAKES_B } from './base-models-b.js';
+import { MAKES as MAKES_C } from './base-models-c.js';
+import { MAKES as MAKES_D } from './base-models-d.js';
+import { MAKES as MAKES_E } from './base-models-e.js';
+import { MAKES as MAKES_F } from './base-models-f.js';
+import { MAKES as MAKES_G } from './base-models-g.js';
+import { MAKES as MAKES_H } from './base-models-h.js';
+import { MAKES as MAKES_I } from './base-models-i.js';
+import { MAKES as MAKES_J } from './base-models-j.js';
+import { MAKES as MAKES_K } from './base-models-k.js';
+import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
 const U = 1 / FT;   // a painted unit, in tiles
@@ -213,27 +225,33 @@ function kit(id, paint) {
     if (!pics.has(canvas)) { const m = paint(canvas); m.userData.kind = 'pic'; pics.set(canvas, m); }
     return pics.get(canvas);
   };
-  const put = (geo, m, x = 0, y = 0, z = 0, ry = 0, rx = 0, rz = 0) => {
+  const into = (to) => (geo, m, x = 0, y = 0, z = 0, ry = 0, rx = 0, rz = 0) => {
     if (rx) geo.rotateX(rx);
     if (rz) geo.rotateZ(rz);
     if (ry) geo.rotateY(ry);
     geo.translate(x, y, z);
     if (m.userData.kind === 'wood') worldUV(geo, 1.4);
     else if (m.userData.kind === 'cloth') worldUV(geo, 3);
-    if (!bins.has(m)) bins.set(m, []);
-    bins.get(m).push(geo);
+    if (!to.has(m)) to.set(m, []);
+    to.get(m).push(geo);
     return geo;
   };
+  const put = into(bins), doors = [];
   return {
-    p, pal, M, pic, put, bins, r: rng(id),
+    p, pal, M, pic, put, bins, doors, r: rng(id),
+    /** A door of its own for js/base-play.js to swing (a fridge's, a wardrobe's): `K.door([x, z], side)` returns a put
+        for its parts, built shut in the model's frame, hinged at x, z (side 1 its left edge, -1 its right); `K.inside`
+        `{ x, y, w, h, z }` is where the picture of what's inside goes, behind it (`bare: true` for none, when the inside is
+        modelled behind glass). */
+    door: (hinge, side = 1) => { const d = { hinge, side, bins: new Map() }; doors.push(d); return into(d.bins); },
     wood: (h = pal.w) => M('wood', h), cloth: (h = pal.c) => M('cloth', h), plain: (h) => M('plain', h),
     metal: (h = pal.m) => M('metal', h), gloss: (h) => M('gloss', h), glass: () => M('glass', '#cfe8f4'), glow: (h = pal.g) => M('glow', h),
   };
 }
 
-function assemble(K) {
+function assemble(K, bins = K.bins) {
   const g = new THREE.Group();
-  for (const [m, geos] of K.bins) {
+  for (const [m, geos] of bins) {
     const mesh = new THREE.Mesh(merge(geos), m);
     mesh.castShadow = m.userData.kind !== 'glass';
     mesh.receiveShadow = true;
@@ -1062,6 +1080,245 @@ function drumHead(colour) {
   return t;
 }
 
+/* the home arcade's machines (the user's ask, 2026-10-12: their painting showed on every side): modelled cabinets, the
+   game only on the front, its pictures js/arcade-art.js's */
+/* a picture is laid a hair over its surface, and seen from across the Game Corner the depth buffer can't tell them
+   apart, so it flickered (2026-10-12): pulled forward in depth too */
+const OVER = { polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -4 };
+function litPic(c, k = 0.55) {
+  const key = 'lit:' + k;
+  c.mats = c.mats || {};
+  if (c.mats[key]) return c.mats[key];
+  const t = canvasTex(c, false);
+  const m = new THREE.MeshStandardMaterial({ map: t, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: k, roughness: 0.35, ...OVER });
+  m.userData.kind = 'pic';
+  return (c.mats[key] = m);
+}
+function decal(c) {
+  c.mats = c.mats || {};
+  if (c.mats.decal) return c.mats.decal;
+  const m = new THREE.MeshStandardMaterial({ map: canvasTex(c, false), roughness: 0.3, transparent: true, alphaTest: 0.05, depthWrite: false, ...OVER });
+  m.userData.kind = 'pic';
+  return (c.mats.decal = m);
+}
+/** A slab cut out of a side profile ([z, y] points), `t` thick, between x0 and x0 + t. */
+function profileSlab(pts, t, x0, bevel = 0.012) {
+  const sh = new THREE.Shape(pts.map(([z, y]) => new THREE.Vector2(z, y)));
+  const g = new THREE.ExtrudeGeometry(sh, { depth: t - bevel * 2, bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2 });
+  g.translate(0, 0, bevel);
+  g.rotateY(-Math.PI / 2);
+  g.translate(x0 + t, 0, 0);
+  return g;
+}
+const CAB = [[-0.34, 0], [0.3, 0], [0.3, 0.8], [0.4, 0.86], [0.4, 0.94], [0.2, 1.06], [0.12, 1.5], [0.27, 1.58], [0.27, 1.92], [-0.34, 1.92]];
+B.arcade = (K, s) => {
+  const col = s.colour, half = 0.42, T = 0.07, body = K.gloss('#22222c'), side = K.gloss(col), trim = K.metal('#c8ccd8');
+  // the two coloured sides, the black body between them, a chrome T-moulding along each side's front edge
+  for (const x of [-half, half - T]) K.put(profileSlab(CAB, T, x), side);
+  K.put(profileSlab(CAB, half * 2 - T * 2, -half + T, 0.004), body);
+  const art = sideArt(col);
+  for (const sg of [-1, 1]) {
+    const pl = new THREE.PlaneGeometry(0.66, 0.66);
+    K.put(pl, decal(art), sg * (half + 0.008), 0.5, -0.02, sg * Math.PI / 2);
+  }
+  for (const sg of [-1, 1]) {
+    K.put(rbox(0.016, 0.8, 0.016, 0.006), trim, sg * (half - 0.004), 0.4, 0.302);
+    K.put(rbox(0.016, 0.34, 0.016, 0.006), trim, sg * (half - 0.004), 1.75, 0.272);
+  }
+  // the lower front: coin door, slots lit, a kick plate
+  K.put(rbox(0.26, 0.3, 0.02, 0.01), K.metal('#8a8e9a'), 0, 0.46, 0.306);
+  for (const x of [-0.06, 0.06]) { K.put(rbox(0.05, 0.08, 0.012, 0.004), K.glow('#ff5a2a'), x, 0.52, 0.318); K.put(rbox(0.008, 0.04, 0.01), K.plain('#101014'), x, 0.52, 0.322); }
+  K.put(rbox(0.04, 0.04, 0.012, 0.006), K.metal('#d8dce4'), 0.08, 0.38, 0.318);
+  K.put(rbox(half * 2 - T * 2, 0.07, 0.02, 0.008), trim, 0, 0.035, 0.305);
+  // the control deck on the slope, its stick and buttons standing up off it
+  const deck = (geo, m, x, up, along) => { geo.translate(x, up, along); K.put(geo, m, 0, 1.0, 0.3, 0, 0.54); };
+  deck(rbox(half * 2 - T * 2 - 0.02, 0.016, 0.22, 0.006), K.gloss(tone(col, 0.55)), 0, 0.008, 0);
+  deck(cyl(0.04, 0.012, 0.04, 20), K.plain('#101014'), -0.16, 0.02, 0.01);
+  deck(cyl(0.009, 0.08, 0.009, 10), trim, -0.16, 0.06, 0.01);
+  deck(ball(0.032, 20, 14), K.gloss('#e83838'), -0.16, 0.11, 0.01);
+  for (const [x, c] of [[0.02, '#f8d030'], [0.1, '#3a9af8'], [0.18, '#58d858']]) {
+    deck(cyl(0.028, 0.012, 0.03, 18), K.plain('#101014'), x, 0.02, 0.02);
+    deck(cyl(0.022, 0.022, 0.022, 18), K.gloss(c), x, 0.034, 0.02);
+  }
+  // the screen in its bezel, leaning back
+  const lean = (geo, m, up, out) => { geo.translate(0, up, out); K.put(geo, m, 0, 1.28, 0.16, 0, -0.18); };
+  lean(rbox(half * 2 - T * 2 - 0.02, 0.44, 0.02, 0.01), K.gloss('#0c0c12'), 0, 0.006);
+  const scr = screenArt(K.p.fam);
+  if (scr) lean(new THREE.PlaneGeometry(0.52, 0.39), litPic(scr, 0.8), 0, 0.03);
+  lean(new THREE.PlaneGeometry(0.56, 0.42), K.glass(), 0, 0.045);
+  // the marquee, lit, a glow strip under its hood and a cap on top
+  K.put(new THREE.PlaneGeometry(0.66, 0.26), litPic(marqueeArt(s.name, col), 0.75), 0, 1.75, 0.285);
+  K.put(rbox(half * 2 - T * 2, 0.02, 0.1, 0.008), K.glow('#fff4d0'), 0, 1.57, 0.22, 0, 0.5);
+  K.put(rbox(half * 2 + 0.01, 0.03, 0.64, 0.012), side, 0, 1.935, -0.035);
+};
+B.whack = (K) => {
+  const gold = K.gloss('#f0b028'), red = K.gloss('#d83a2a'), wood = K.wood('#9a6a3a'), dirt = K.cloth('#6a4224');
+  K.put(rbox(0.86, 0.7, 0.82, 0.05), gold, 0, 0.35, 0);
+  K.put(rbox(0.9, 0.06, 0.86, 0.025), K.plain('#3a2a1a'), 0, 0.03, 0);
+  K.put(new THREE.PlaneGeometry(0.76, 0.5), litPic(whackFront(), 0.25), 0, 0.37, 0.42);
+  // the play top: a padded red rim round the dirt, five holes, three Digletts up
+  K.put(rbox(0.92, 0.08, 0.88, 0.035), red, 0, 0.73, 0);
+  K.put(rbox(0.78, 0.04, 0.74, 0.015), dirt, 0, 0.76, 0);
+  const holes = [[-0.24, -0.16], [0.24, -0.16], [0, 0], [-0.24, 0.17], [0.24, 0.17]];
+  for (const [x, z] of holes) {
+    K.put(cyl(0.1, 0.012, 0.1, 24), K.plain('#1a0e06'), x, 0.783, z);
+    K.put(torus(0.1, 0.012, Math.PI * 2, 24), K.cloth('#8a5a30'), x, 0.783, z, 0, Math.PI / 2);
+  }
+  const mole = K.gloss('#a8683a'), nose = K.gloss('#f0a0a8'), eye = K.plain('#141418');
+  for (const [i, up] of [[0, 0.16], [2, 0.11], [4, 0.19]]) {
+    const [x, z] = holes[i], y = 0.78;
+    K.put(cyl(0.068, up, 0.075, 20), mole, x, y + up / 2, z);
+    K.put(ball(0.068, 20, 12), mole, x, y + up, z);
+    K.put(blob(0.07, 0.042, 0.04, 0.7, 0.7), nose, x, y + up - 0.03, z + 0.06);
+    for (const sg of [-1, 1]) K.put(blob(0.016, 0.034, 0.014, 0.8, 0.8), eye, x + sg * 0.022, y + up + 0.012, z + 0.058);
+  }
+  // the backboard and its lit sign, posts either side
+  for (const sg of [-1, 1]) K.put(rbox(0.06, 0.62, 0.06, 0.02), red, sg * 0.42, 1.06, -0.4);
+  K.put(rbox(0.9, 0.44, 0.06, 0.03), red, 0, 1.2, -0.41);
+  K.put(new THREE.PlaneGeometry(0.82, 0.36), litPic(whackSign(), 0.7), 0, 1.2, -0.37);
+  for (let i = 0; i < 7; i++) K.put(ball(0.018, 10, 8), K.glow('#ffe890'), -0.39 + i * 0.13, 1.44, -0.4);
+  // the mallet lying across the front corner
+  K.put(cyl(0.016, 0.42, 0.016, 10), wood, 0.2, 0.8, 0.36, -0.5, 0, Math.PI / 2);
+  K.put(blob(0.12, 0.13, 0.13, 0.6, 0.9), K.gloss('#e83838'), 0.38, 0.81, 0.47, -0.5, 0, Math.PI / 2);
+};
+B.pinball = (K) => {
+  const purple = K.gloss('#3a1a6a'), chrome = K.metal('#d8dce4'), yellow = K.gloss('#e8c030'), W = 0.6, D = 0.94, tilt = -0.07;
+  // legs, the tilted table on them, its playfield lit under the glass, a lockdown bar
+  for (const [x, z, h] of [[-W / 2 + 0.04, D / 2 - 0.06, 0.62], [W / 2 - 0.04, D / 2 - 0.06, 0.62], [-W / 2 + 0.04, -D / 2 + 0.06, 0.7], [W / 2 - 0.04, -D / 2 + 0.06, 0.7]]) {
+    K.put(cyl(0.024, h, 0.03, 12), chrome, x, h / 2, z);
+    K.put(cyl(0.04, 0.03, 0.04, 14), chrome, x, 0.015, z);
+  }
+  const table = (geo, m, x, up, z) => { geo.translate(x, up, z); K.put(geo, m, 0, 0.79, 0, 0, tilt); };
+  table(rbox(W, 0.22, D, 0.03), purple, 0, 0, 0);
+  table(new THREE.PlaneGeometry(W - 0.08, D - 0.1).rotateX(-Math.PI / 2), litPic(pinField(), 0.55), 0, 0.12, 0);
+  table(new THREE.PlaneGeometry(W - 0.06, D - 0.08).rotateX(-Math.PI / 2), K.glass(), 0, 0.132, 0);
+  for (const sg of [-1, 1]) table(rbox(0.03, 0.03, D - 0.02, 0.01), chrome, sg * (W / 2 - 0.015), 0.125, 0);
+  table(rbox(W, 0.03, 0.06, 0.012), chrome, 0, 0.12, D / 2 - 0.03);
+  // flipper buttons on the sides, the plunger at the front right, a coin door
+  for (const sg of [-1, 1]) table(cyl(0.02, 0.025, 0.02, 14).rotateZ(Math.PI / 2), K.gloss('#e83838'), sg * (W / 2 + 0.01), 0.04, D / 2 - 0.14);
+  table(cyl(0.012, 0.1, 0.012, 10).rotateX(Math.PI / 2), chrome, W / 2 - 0.08, 0.02, D / 2 + 0.05);
+  table(ball(0.022, 14, 10), K.gloss('#e83838'), W / 2 - 0.08, 0.02, D / 2 + 0.1);
+  table(rbox(0.2, 0.12, 0.012, 0.006), K.metal('#8a8e9a'), 0, -0.02, D / 2 + 0.004);
+  for (const x of [-0.04, 0.04]) table(rbox(0.03, 0.05, 0.01, 0.004), K.glow('#ff5a2a'), x, -0.01, D / 2 + 0.012);
+  // the backbox, its backglass lit, a speaker grille under it
+  K.put(rbox(W + 0.02, 0.62, 0.16, 0.025), yellow, 0, 1.28, -D / 2 + 0.06);
+  K.put(rbox(W - 0.06, 0.04, 0.12, 0.01), purple, 0, 0.95, -D / 2 + 0.07);
+  K.put(new THREE.PlaneGeometry(W - 0.08, 0.5), litPic(pinGlass(), 0.75), 0, 1.3, -D / 2 + 0.152);
+  for (const sg of [-1, 1]) K.put(rbox(0.04, 0.5, 0.04, 0.015), K.glow('#ff70c0'), sg * (W / 2 + 0.005), 1.3, -D / 2 + 0.13);
+};
+
+/* the Game Corner's games, played at home (2026-10-12, the user's ask: they were still their painting puffed up) */
+B.slot = (K) => {
+  const red = K.gloss('#c82838'), dark = K.gloss('#7a1020'), gold = K.metal('#e8b830'), chrome = K.metal('#d8dce4');
+  // the base, its belly glass lit, a gold kick strip and the coin tray
+  K.put(rbox(0.8, 0.62, 0.62, 0.04), red, 0, 0.31, 0);
+  K.put(rbox(0.82, 0.06, 0.64, 0.02), gold, 0, 0.03, 0);
+  K.put(new THREE.PlaneGeometry(0.62, 0.42), litPic(slotBelly(), 0.6), 0, 0.33, 0.312);
+  K.put(rbox(0.5, 0.07, 0.14, 0.02), chrome, 0, 0.66, 0.28);
+  for (const [x, z] of [[-0.12, 0.29], [-0.06, 0.3], [0.1, 0.28]]) K.put(cyl(0.03, 0.008, 0.03, 16), gold, x, 0.7, z);
+  // the upper cabinet, the button deck sticking out under the reels
+  K.put(rbox(0.76, 0.96, 0.5, 0.04), red, 0, 1.1, -0.05);
+  K.put(rbox(0.78, 0.05, 0.2, 0.015), dark, 0, 0.74, 0.25);
+  for (const [x, c] of [[-0.2, '#f8d030'], [-0.05, '#58b8f8'], [0.1, '#58d858'], [0.24, '#e83838']]) {
+    K.put(cyl(0.032, 0.02, 0.034, 18), K.plain('#141418'), x, 0.775, 0.27);
+    K.put(cyl(0.026, 0.024, 0.026, 18), K.glow(c), x, 0.79, 0.27);
+  }
+  // three reels on their drums behind the glass, a win line across them, a bezel round the window
+  const reel = litPic(reelArt(), 0.45);
+  for (const x of [-0.18, 0, 0.18]) {
+    const g = cyl(0.15, 0.155, 0.15, 36), uv = g.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getY(i), uv.getX(i));
+    K.put(g, reel, x, 1.12, 0.06, 0, 0, Math.PI / 2);
+  }
+  K.put(rbox(0.6, 0.012, 0.01, 0.004), K.glow('#ff4040'), 0, 1.12, 0.215);
+  for (const [w, h, x, y] of [[0.64, 0.06, 0, 1.33], [0.64, 0.06, 0, 0.91], [0.06, 0.48, -0.3, 1.12], [0.06, 0.48, 0.3, 1.12]]) K.put(rbox(w, h, 0.1, 0.02), gold, x, y, 0.2);
+  K.put(new THREE.PlaneGeometry(0.56, 0.38), K.glass(), 0, 1.12, 0.24);
+  for (const sg of [-1, 1]) K.put(new THREE.PlaneGeometry(0.5, 0.5), decal(sideArt('#c82838')), sg * 0.405, 0.36, -0.02, sg * Math.PI / 2);
+  // the lever on the right, the topper with its lit name and a dome light
+  K.put(ball(0.05, 18, 12), chrome, 0.41, 1.0, 0.02);
+  K.put(cyl(0.016, 0.46, 0.016, 12), chrome, 0.44, 1.23, 0.02, 0, 0, -0.12);
+  K.put(ball(0.055, 20, 14), K.gloss('#e83838'), 0.47, 1.47, 0.02);
+  K.put(rbox(0.8, 0.3, 0.46, 0.05), dark, 0, 1.73, -0.04);
+  K.put(new THREE.PlaneGeometry(0.72, 0.26), litPic(marqueeArt('SLOTS', '#d82838'), 0.75), 0, 1.73, 0.196);
+  K.put(new THREE.SphereGeometry(0.09, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.glow('#ffd84a'), 0, 1.88, -0.04);
+};
+
+/** A card table, 2 tiles across: a half-round top on a pedestal or legs, its felt painted for the game, a padded rail
+    round the players' side, cards dealt, and the game's name lit on a sign at the dealer's side. */
+B.cardtable = (K, s) => {
+  const bj = s.game === 'blackjack', H = 0.78, RX = 0.96, RZ = 0.86, BACK = -0.42;
+  const edge = (k = 1, n = 40) => Array.from({ length: n + 1 }, (_, i) => { const t = i / n * Math.PI; return new THREE.Vector2(RX * k * Math.cos(t), -BACK - RZ * k * Math.sin(t)); });
+  const flat = (geo) => { geo.rotateX(-Math.PI / 2); return geo; };
+  const wood = K.wood(bj ? '#6a3a1a' : '#3a3a48'), leather = K.gloss('#1a1214'), gold = K.metal('#e8b830'), chrome = K.metal('#d8dce4');
+  // the apron and top
+  K.put(flat(new THREE.ExtrudeGeometry(new THREE.Shape(edge()), { depth: 0.1, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 2, curveSegments: 4 })), wood, 0, H - 0.12, 0);
+  const felt = flat(new THREE.ShapeGeometry(new THREE.Shape(edge(0.93)), 4)), uv = felt.attributes.uv, pos = felt.attributes.position;
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) + RX) / (RX * 2), 1 - (pos.getZ(i) - BACK) / RZ);
+  K.put(felt, litPic(feltArt(bj ? 'blackjack' : 'highlow'), 0.2), 0, H, 0);
+  // the padded rail round the front, ending on brass caps at the dealer's side
+  const curve = new THREE.CatmullRomCurve3(edge(0.97, 30).map(v => new THREE.Vector3(v.x, 0, -v.y)));
+  K.put(new THREE.TubeGeometry(curve, 60, 0.045, 10, false), leather, 0, H + 0.02, 0);
+  for (const sg of [-1, 1]) K.put(ball(0.048, 14, 10), gold, sg * RX * 0.97, H + 0.02, BACK);
+  // the stand
+  if (bj) {
+    K.put(rbox(1.1, H - 0.16, 0.34, 0.06), wood, 0, (H - 0.16) / 2 + 0.04, 0);
+    K.put(rbox(1.3, 0.06, 0.5, 0.025), K.plain('#2a1a10'), 0, 0.03, 0);
+  } else {
+    for (const [x, z] of [[-0.7, -0.3], [0.7, -0.3], [-0.5, 0.25], [0.5, 0.25]]) { K.put(cyl(0.025, H - 0.12, 0.03, 12), chrome, x, (H - 0.12) / 2, z); K.put(cyl(0.05, 0.03, 0.05, 14), chrome, x, 0.015, z); }
+    K.put(rbox(1.3, 0.03, 0.04, 0.01), chrome, 0, 0.18, -0.3);
+  }
+  // cards: face up for the hands, a shoe or a deck for the dealer
+  const card = (rank, suit, x, z, turn = 0) => {
+    K.put(rbox(0.13, 0.004, 0.18, 0.002), K.plain('#fffaf0'), x, H + 0.003, z, turn);
+    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(rank ? cardFace(rank, suit) : cardBack(), 0.12), x, H + 0.0065, z, turn, -Math.PI / 2);
+  };
+  if (bj) {
+    card('A', 's', -0.06, -0.18, 0.08); card('K', 'h', 0.06, -0.18, -0.06);
+    card('9', 'd', -0.5, 0.14, 0.5); card('7', 'c', -0.42, 0.18, 0.4);
+    card('Q', 's', 0.42, 0.18, -0.4); card(null, null, 0.5, 0.14, -0.5);
+    K.put(rbox(0.16, 0.1, 0.24, 0.015), K.gloss('#2a1a10'), 0.62, H + 0.05, -0.28, -0.3);
+    K.put(new THREE.PlaneGeometry(0.12, 0.08), litPic(cardBack(), 0.1), 0.66, H + 0.07, -0.18, -0.3, -0.5);
+    // the dealer's chip tray and chips on the players' spots
+    K.put(rbox(0.6, 0.03, 0.12, 0.01), K.plain('#141010'), 0, H + 0.015, -0.34);
+    ['#d82838', '#2858b8', '#3a9a48', '#202028', '#e8b830'].forEach((c, i) => { for (let n = 0; n < 5; n++) K.put(cyl(0.024, 0.008, 0.024, 16), K.gloss(c), -0.22 + i * 0.11, H + 0.035 + n * 0.009, -0.34); });
+    for (const [x, z, c, n] of [[-0.3, 0.3, '#d82838', 4], [0.3, 0.3, '#2858b8', 3], [0, 0.36, '#3a9a48', 5]]) for (let i = 0; i < n; i++) K.put(cyl(0.03, 0.01, 0.03, 18), K.gloss(c), x, H + 0.006 + i * 0.011, z);
+  } else {
+    card('3', 'h', -0.22, -0.02); card('7', 's', 0, -0.02); card('9', 'd', 0.22, -0.02);
+    for (let i = 0; i < 8; i++) K.put(rbox(0.13, 0.006, 0.18, 0.002), K.plain(i % 2 ? '#f0e8d8' : '#fffaf0'), 0.02, H + 0.004 + i * 0.006, -0.3);
+    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(cardBack(), 0.12), 0.02, H + 0.053, -0.3, 0, -Math.PI / 2);
+    // the HIGH and LOW buttons on the rail
+    for (const [x, c] of [[-0.55, '#58d858'], [0.55, '#f05050']]) {
+      K.put(cyl(0.07, 0.03, 0.075, 22), chrome, x, H + 0.02, 0.36);
+      K.put(new THREE.SphereGeometry(0.06, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.glow(c), x, H + 0.035, 0.36);
+    }
+  }
+  // the game's name lit over the dealer's side
+  for (const sg of [-1, 1]) K.put(cyl(0.014, 0.42, 0.014, 10), chrome, sg * 0.36, H + 0.21, -0.45);
+  K.put(rbox(0.84, 0.26, 0.04, 0.02), K.gloss('#141018'), 0, H + 0.5, -0.45);
+  K.put(new THREE.PlaneGeometry(0.8, 0.22), litPic(marqueeArt(bj ? 'BLACKJACK' : 'HIGH-LOW', bj ? '#3a9a48' : '#2a6ad8'), 0.75), 0, H + 0.5, -0.428);
+};
+
+/** The Plinko board, hung on the wall (its back at z 0): a gold frame, the board's face, real pegs and a Poké Ball
+    bouncing down them, a neon bar over it. */
+B.plinko = (K) => {
+  const W = 0.86, H = 1.78, Y = 1.86, gold = K.metal('#e8b830'), peg = K.metal('#e8ecf4');
+  K.put(rbox(W, H, 0.07, 0.025), gold, 0, Y, 0.035);
+  K.put(new THREE.PlaneGeometry(W - 0.08, H - 0.08), litPic(plinkoFace(), 0.5), 0, Y, 0.072);
+  const rows = 10, gap = 0.08, top = Y + H / 2 - 0.26;
+  for (let r = 0; r < rows; r++) {
+    const n = r % 2 ? 8 : 9, x0 = -(n - 1) * gap / 2;
+    for (let i = 0; i < n; i++) {
+      K.put(cyl(0.011, 0.05, 0.011, 10), peg, x0 + i * gap, top - r * 0.11, 0.097, 0, Math.PI / 2);
+      K.put(ball(0.014, 10, 8), peg, x0 + i * gap, top - r * 0.11, 0.122);
+    }
+  }
+  const bx = 0.04, by = top - 3 * 0.11 + 0.035, bz = 0.12;
+  K.put(new THREE.SphereGeometry(0.034, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.gloss('#e83838'), bx, by, bz);
+  K.put(new THREE.SphereGeometry(0.034, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), K.gloss('#f4f4f4'), bx, by, bz);
+  K.put(torus(0.034, 0.005, Math.PI * 2, 24), K.plain('#202028'), bx, by, bz, 0, Math.PI / 2);
+  K.put(rbox(W * 0.7, 0.06, 0.06, 0.02), K.glow('#4ae8f0'), 0, Y + H / 2 + 0.05, 0.05);
+};
+
 B.pyramid = (K) => {
   const stone = K.plain('#d8b878'), dark = K.plain('#b89058');
   for (let i = 0; i < 6; i++) {
@@ -1492,6 +1749,20 @@ function leafyModel(id, paint) {
   return g;
 }
 
+/* the furniture modelled after the arcade cabinets (2026-10-12, the user's ask: a table tennis table, a milk cooler and
+   a potting bench looked nothing like themselves, carved from their paintings): each batch of shelves is a file of
+   builders, js/base-models-*.js, handed this file's parts as `L` (they import nothing, so js/base-shapes.js can read
+   their shapes without Three.js) */
+const L = {
+  get THREE() { return THREE; },
+  rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
+  leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
+};
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K]) for (const [k, f] of Object.entries(makes)) {
+  if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
+  B[k] = f;
+}
+
 /** Any piece as a 3D group (see the file's head); null for a flat piece with no shape (the caller lays it as a slab).
     `paint(canvas)` makes the material for a painting. */
 export function furnitureModel(three, id, paint) {
@@ -1504,11 +1775,15 @@ export function furnitureModel(three, id, paint) {
     g = assemble(K);
   } else if (shape && B[shape.make]) {
     const K = kit(id, paint);
-    B[shape.make](K, shape, W, D);
+    B[shape.make](K, shape, W, D, L);
     g = assemble(K);
+    if (K.doors.length && K.inside) {
+      g.userData.inside = K.inside;
+      g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });
+    }
     // a part that turns on its own (the globe's Earth) is moved to turn about its middle, tipped on its axis
     for (const mesh of g.children) {
-      const pv = mesh.material.userData.pivot;
+      const pv = mesh.material?.userData.pivot;
       if (!pv) continue;
       mesh.geometry.translate(0, -pv.y, 0);
       mesh.position.y = pv.y;

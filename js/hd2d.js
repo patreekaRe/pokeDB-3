@@ -94,6 +94,36 @@ export async function gifFrames(src) {
   } catch { return null; }
 }
 
+/** A billboard leans back to face the camera, so its top tips into whatever stands just behind it: a counter, a wall,
+    a shop front. Taking its feet's depth (2026-10-12) still let a tall Pokémon's head sink into a wall half a tile back
+    (the user's report, same day). So each pixel takes the depth it would have if the Pokémon stood straight up at its
+    feet, a cardboard cutout facing the camera, where the camera's ray through it crosses that upright plane: anything
+    behind the feet can't cut it, anything in front of them still hides it. That depth is linear across the screen, so
+    it is passed as (depth x w, w) to undo the perspective-correct interpolation. */
+function feetDepth(m) {
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('void main() {', 'varying float vUpZ;\nvarying float vUpW;\nvoid main() {')
+      .replace('#include <project_vertex>', `#include <project_vertex>
+  vec3 feetW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  vec3 pixW = (modelMatrix * vec4(transformed, 1.0)).xyz;
+  vec3 look = vec3(feetW.x - cameraPosition.x, 0.0, feetW.z - cameraPosition.z);
+  vec3 upW = pixW;
+  if (length(look) > 0.001) {
+    vec3 n = normalize(look);
+    float along = dot(pixW - cameraPosition, n);
+    if (along > 0.001) upW = cameraPosition + (pixW - cameraPosition) * (dot(feetW - cameraPosition, n) / along);
+  }
+  vec4 upClip = projectionMatrix * viewMatrix * vec4(upW, 1.0);
+  vUpZ = (upClip.z / upClip.w - 0.0005) * gl_Position.w;
+  vUpW = gl_Position.w;`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('void main() {', 'varying float vUpZ;\nvarying float vUpW;\nvoid main() {')
+      .replace(/}\s*$/, '  gl_FragDepth = clamp((vUpZ / vUpW) * 0.5 + 0.5, 0.0, 1.0);\n}');
+  };
+  m.customProgramCacheKey = () => 'upright-depth';
+}
+
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
     `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
@@ -107,6 +137,7 @@ export async function monBoard(mate, back = true) {
   c.width = w; c.height = h;
   const t = tex(c);
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+  feetDepth(m);
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * MON_PX, h * MON_PX), m);
   board.castShadow = true;
   const [top, bottom, left, right] = spriteFit(front);
