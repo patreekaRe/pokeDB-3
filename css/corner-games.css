@@ -289,3 +289,8 @@
 .pz-pic { width: 100%; height: 76px; object-fit: contain; }
 .pz-name { font-size: 12px; line-height: 1.2; text-align: center; }
 .pz-cost { font-size: 13px; font-weight: 800; color: #8a3ad0; }
+
+/* The home arcade's cabinet window (js/arcade-kit.js), in each game's colour. */
+.ar-panel { background: linear-gradient(color-mix(in srgb, var(--ar) 85%, #fff), color-mix(in srgb, var(--ar) 70%, #000)); }
+.ar-canvas { display: block; width: 100%; border-radius: 12px; touch-action: none; user-select: none; -webkit-user-select: none;
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.15), 0 4px 14px rgba(0, 0, 0, 0.4); }

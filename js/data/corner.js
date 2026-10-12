@@ -91,13 +91,23 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
 /** What one old prize ticket is worth in PokéCoins: the prizes' coin prices are their ticket prices times this. */
 export const TICKET_COINS = 3;
 
-export const PRIZES = [   // the games first (each playable at home, js/home-arcade.js), then the rest
+export const PRIZES = [   // the games first (each playable at home, js/home-arcade.js), then the arcade machines, then the rest
   { kind: 'slotmachine', coins: 450 },
   { kind: 'voltorbflip', coins: 450 },
   { kind: 'plinkoboard', coins: 450 },
   { kind: 'blackjacktable', coins: 450 },
   { kind: 'highlowtable', coins: 450 },
   { kind: 'quizmachine', coins: 450 },
+  { kind: 'whackmachine', coins: 450 },
+  { kind: 'fishingcabinet', coins: 450 },
+  { kind: 'stackercabinet', coins: 450 },
+  { kind: 'dashcabinet', coins: 450 },
+  { kind: 'memorycabinet', coins: 450 },
+  { kind: 'slowpokeclaw', coins: 450 },
+  { kind: 'pokeskeeball', coins: 450 },
+  { kind: 'pokepinball', coins: 450 },
+  { kind: 'volleycabinet', coins: 450 },
+  { kind: 'unowncabinet', coins: 450 },
   { kind: 'jackpotsign', coins: 300 },
   { kind: 'luckyseven', coins: 360 },
   { kind: 'casinorug', coins: 240 },

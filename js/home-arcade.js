@@ -11,6 +11,16 @@ const GAMES = {
   blackjacktable: () => import('./blackjack.js').then(m => m.openBlackjack),
   highlowtable: () => import('./highlow.js').then(m => m.openHighLow),
   quizmachine: () => import('./quiz.js').then(m => m.openQuiz),
+  whackmachine: () => import('./arcade-whack.js').then(m => m.openWhack),
+  fishingcabinet: () => import('./arcade-fishing.js').then(m => m.openFishing),
+  stackercabinet: () => import('./arcade-stacker.js').then(m => m.openStacker),
+  dashcabinet: () => import('./arcade-runner.js').then(m => m.openRunner),
+  memorycabinet: () => import('./arcade-memory.js').then(m => m.openMemory),
+  slowpokeclaw: () => import('./arcade-claw.js').then(m => m.openClaw),
+  pokeskeeball: () => import('./arcade-skeeball.js').then(m => m.openSkeeball),
+  pokepinball: () => import('./arcade-pinball.js').then(m => m.openPinball),
+  volleycabinet: () => import('./arcade-volley.js').then(m => m.openVolley),
+  unowncabinet: () => import('./arcade-wordsearch.js').then(m => m.openWordSearch),
 };
 
 export const homeGame = (kind) => kind in GAMES;

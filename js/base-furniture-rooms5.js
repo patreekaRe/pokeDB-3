@@ -721,6 +721,52 @@ add('Arcade', [
       say('?', sx + 15, sy + 12, '#ffffff');
     });
   } },
+  { id: 'whackmachine', name: 'Whac-a-Diglett', w: 1, h: 1, price: 1200, glow: [MARQUEE], draw(x, b) {
+    floorShadow(x, b, 32); panel(x + 2, b - 40, 28, 40, k.c, 2); R(x + 2, b - 40, 28, 2, sh(k.c, 1));
+    panel(x + 1, b - 48, 30, 9, '#7a5030', 2);
+    for (const [i, j, up] of [[8, -46, 1], [16, -44, 0], [24, -46, 1]]) { oval(x + i, b + j, 4, 1.6, '#2a1608'); if (up) { disc(x + i, b + j - 4, 3.2, '#a8683a'); R(x + i - 3.2, b + j - 4, 6.4, 4, '#a8683a'); oval(x + i, b + j - 3, 1.6, 1, '#f0a0a8'); P(x + i - 1, b + j - 6, INK); P(x + i + 1, b + j - 6, INK); } }
+    panel(x + 4, b - 64, 24, 14, k.c, 2); R(x + 6, b - 62, 20, 10, MARQUEE); disc(x + 16, b - 57, 3.2, '#a8683a'); oval(x + 16, b - 56, 1.4, 0.9, '#f0a0a8');
+    line(x + 26, b - 50, x + 30, b - 70, '#c8a060', 2); oval(x + 30, b - 71, 3, 2, '#e04848');
+  } },
+  ...[
+    ['fishingcabinet', 'Magikarp Fishing', '#3a8ae0', (sx, sy) => { R(sx, sy, 20, 20, '#8ad0f8'); R(sx, sy + 9, 20, 11, '#2a7ad0'); line(sx + 2, sy + 2, sx + 12, sy + 10, '#6a4020', 1); disc(sx + 12, sy + 12, 1.5, '#e04848'); oval(sx + 13, sy + 16, 4, 2.5, '#f08030'); P(sx + 11, sy + 15, INK); }],
+    ['stackercabinet', 'Snorlax Stacker', '#3a7a8a', (sx, sy) => { R(sx, sy, 20, 20, '#1a2a5a'); for (let n = 0; n < 5; n++) { const w = 16 - n * 2.4; R(sx + 10 - w / 2 + (n % 2 ? 1 : -1), sy + 17 - n * 3.4, w, 3, n % 2 ? '#3a7a8a' : '#e8dcc0'); } R(sx + 2, sy + 1, 9, 2.6, '#e8dcc0'); }],
+    ['dashcabinet', 'Ponyta Dash', '#e87830', (sx, sy) => { R(sx, sy, 20, 20, '#f8b070'); R(sx, sy + 15, 20, 5, '#c87a40'); disc(sx + 15, sy + 5, 2.5, '#ffe070'); oval(sx + 6, sy + 12, 3, 2, '#f8e8b8'); for (const [i, c] of [[3, '#ff6020'], [5, '#ffa030'], [7, '#ffd040']]) disc(sx + i, sy + 9, 1.2, c); tri(sx + 15, sy + 11, 4, '#7a7a88'); }],
+    ['memorycabinet', 'Voltorb Memory', '#d83a3a', (sx, sy) => { R(sx, sy, 20, 20, '#2a1a3a'); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) { const tx = sx + 1 + c * 6.4, ty = sy + 1 + r * 6.4, up = (r + c * 2) % 4 === 0; R(tx, ty, 5.6, 5.6, up ? '#f8f8f8' : '#c82838'); if (!up) R(tx, ty + 2.8, 5.6, 2.8, '#f8f8f8'); else disc(tx + 2.8, ty + 2.8, 1.6, '#f8d030'); } }],
+    ['volleycabinet', 'Pikachu Volleyball', '#f0c020', (sx, sy) => { R(sx, sy, 20, 20, '#8ad0f8'); R(sx, sy + 16, 20, 4, '#f0d890'); R(sx + 9.5, sy + 9, 1, 7, '#f8f8f8'); disc(sx + 4, sy + 14, 2.4, '#f8d030'); P(sx + 3, sy + 11, INK); disc(sx + 16, sy + 14, 2.4, '#f0e0b0'); disc(sx + 11, sy + 4, 1.6, '#e04848'); }],
+    ['unowncabinet', 'Unown Word Search', '#6a5ac8', (sx, sy) => { R(sx, sy, 20, 20, '#1e1a3a'); for (let r = 0; r < 4; r++) for (let c = 0; c < 4; c++) { disc(sx + 2.5 + c * 5, sy + 2.5 + r * 5, 1.8, '#3e3a6a'); P(sx + 2.5 + c * 5, sy + 2.5 + r * 5, '#f8f8f8'); } line(sx + 2.5, sy + 2.5, sx + 17.5, sy + 17.5, '#78dc8c', 1); }],
+  ].map(([id, name, colour, screen]) => ({ id, name, w: 1, h: 1, price: 1200, glow: [MARQUEE, colour], draw(x, b) {
+    const [sx, sy, sw, sh2] = cabinet(x, b);
+    R(x + 4, b - 88, 24, 10, colour); for (let i = 6; i < 26; i += 4) R(x + i, b - 85, 2, 4, MARQUEE);
+    clipped(sx, sy, sw, sh2, () => screen(sx, sy));
+  } })),
+  { id: 'slowpokeclaw', name: 'Slowpoke Claw Machine', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#e870a8'], draw(x, b) {
+    floorShadow(x, b, 32); panel(x + 1, b - 36, 30, 36, '#e870a8', 2); inset(x + 4, b - 26, 10, 10, INK); panel(x + 16, b - 32, 13, 6, '#c85088');
+    R(x + 19, b - 36, 2, 4, INK); disc(x + 20, b - 37, 2, '#f8d030');
+    glass(x + 3, b - 80, 26, 44, GLASS);
+    [[7, -40, '#f8d030'], [13, -40, '#f8a8c8'], [19, -40, '#f0a0b8'], [25, -40, '#58b8f8'], [10, -45, '#f8f0e8'], [16, -45, '#f0c040'], [22, -45, '#a8683a']]
+      .forEach(([i, j, c]) => { sphere(x + i, b + j, 3, c); P(x + i - 1, b + j, INK); P(x + i + 1, b + j, INK); });
+    R(x + 12, b - 80, 1, 18, CHROME); R(x + 9, b - 62, 7, 2, CHROME); line(x + 9, b - 61, x + 7, b - 56, CHROME); line(x + 15, b - 61, x + 17, b - 56, CHROME);
+    panel(x + 1, b - 92, 30, 12, '#e870a8', 2); disc(x + 16, b - 86, 4, '#f0a0b8'); P(x + 14, b - 87, INK); P(x + 18, b - 87, INK); oval(x + 16, b - 84, 2, 1, '#f8e8e0');
+  } },
+  { id: 'pokeskeeball', name: 'Poké Ball Skee-Ball', w: 1, h: 1, price: 1200, glow: ['#3aa86a', MARQUEE], draw(x, b) {
+    floorShadow(x, b, 32);
+    for (let j = 0; j < 46; j++) { const hw = 13 - j * 0.12; R(x + 16 - hw, b - 4 - j, hw * 2, 1, (j % 8) < 4 ? '#c89a60' : '#a87a40'); }
+    line(x + 2, b - 2, x + 8, b - 50, '#3aa86a', 3); line(x + 29, b - 2, x + 23, b - 50, '#3aa86a', 3);
+    panel(x + 5, b - 84, 22, 34, '#2a6a4a', 2);
+    ring(x + 16, b - 64, 9, '#f8f0d8', 2); ring(x + 16, b - 64, 6, '#3aa86a', 2); ring(x + 16, b - 64, 3, '#f8f0d8', 1); disc(x + 16, b - 64, 1.5, '#f8d030');
+    disc(x + 8, b - 79, 2, '#e04848'); disc(x + 24, b - 79, 2, '#e04848');
+    for (const i of [11, 16, 21]) ball(x + i, b - 7, 2.5);
+  } },
+  { id: 'pokepinball', name: 'Pokémon Pinball', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#e8c030'], draw(x, b) {
+    floorShadow(x, b, 32); for (const i of [3, 26]) cyl(x + i, b - 30, 3, 30, CHROME);
+    panel(x + 1, b - 40, 30, 12, '#3a1a5a', 2); R(x, b - 37, 2, 4, '#e04848'); R(x + 30, b - 37, 2, 4, '#e04848');
+    panel(x + 2, b - 92, 28, 46, '#e8c030', 2); inset(x + 5, b - 88, 22, 30, '#1a2a6a');
+    for (const [i, j] of [[10, -80], [22, -80], [16, -72]]) { disc(x + i, b + j, 3, '#f8f8f8'); R(x + i - 3, b + j, 6, 3, '#e04848'); }
+    disc(x + 16, b - 64, 2.6, '#f8d030'); P(x + 15, b - 65, INK);
+    line(x + 9, b - 60, x + 14, b - 58, '#e04848', 2); line(x + 23, b - 60, x + 18, b - 58, '#e04848', 2);
+    inset(x + 5, b - 54, 22, 7, INK); for (let n = 0; n < 6; n++) R(x + 7 + n * 3, b - 52, 2, 3, '#f8d030');
+  } },
   { id: 'casinorug', name: 'Casino carpet', w: 3, h: 2, layer: 'rug', price: 700, high: 0.04, side: 'c', flat(w, h) {
     R(0, 0, w, h, '#6a101c'); R(2, 2, w - 4, h - 4, '#a82230');
     for (const i of [4, w - 5]) R(i, 4, 1, h - 8, GOLD);
