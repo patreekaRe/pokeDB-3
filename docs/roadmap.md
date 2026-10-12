@@ -200,8 +200,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
           an average day ~250 (`tests/corner.test.mjs`). Then (same day, the user's yes to all of it) prize tickets for plays
           past the paying ones, Meowth's prize counter (6 new Game Corner pieces and Gen 1's prize dolls), records under
-          every game, 8 Game Corner badges and a daily High-Low leaderboard. **Waiting on the user:** paste the new
-          `firestore.rules` into the Firebase console, or the High-Low board can't post. Next is their playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
+          every game and 8 Game Corner badges. A daily High-Low leaderboard came and went the same day: no leaderboards
+          in the Game Corner (the user's call). Next is their playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
           Rocket Blast-Off. Every game has a How to play card (the "?").
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
           the wall behind it earns a scratch card.

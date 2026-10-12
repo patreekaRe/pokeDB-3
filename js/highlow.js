@@ -12,7 +12,6 @@ import { openPanel, key } from './corner-panel.js';
 import { STAKE } from './data/corner.js';
 import { stake, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
 import { record } from './corner-pot.js';
-import { postCornerStreak } from './leaderboard.js';
 
 const NAMES = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 const SUIT = ['♠', '♥', '♦', '♣'];
@@ -58,7 +57,7 @@ function render() {
     }
     keys.append(key(`Cash out ${hand.pot}`, 'vf-go hl-cash', cashOut));
   } else {
-    keys.append(key(playLabel('hl', 'Deal'), 'vf-go', start), key('🏆 Ranks', 'vf-close', () => import('./leaderboard.js').then(m => m.openLeaderboard(0, 'corner'))), key('Close', 'vf-close', () => panel.shut()));
+    keys.append(key(playLabel('hl', 'Deal'), 'vf-go', start), key('Close', 'vf-close', () => panel.shut()));
   }
   const box = el('div', 'vf-panel hl-panel');
   box.append(head, tableMeters('hl'), felt);
@@ -82,7 +81,6 @@ function guess(g) {
   playSound('card');
   if (!right) {
     keepHand('hl', { ...hand, over: true });
-    postCornerStreak(hand.step);
     flip = { rank, next };
     line = `${NAMES[next] ?? next}! ${next === rank ? 'A tie loses' : 'Wrong way'}: the pot of ${hand.pot} goes back to Meowth.`;
     hand = null;
@@ -101,7 +99,6 @@ function guess(g) {
 function cashOut() {
   const res = settle(hand.pot, 'hl', hand.paid);
   keepHand('hl', { ...hand, over: true });
-  postCornerStreak(hand.step);
   line = `Cashed out: ${wonText(res, hand.paid)}!`;
   playSound('coins', 'buy');
   hand = null; flip = null;

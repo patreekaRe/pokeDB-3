@@ -47,7 +47,6 @@ export const NEXT = [
   ['mall', 'Prize tickets: once a Game Corner game\'s paying plays are done, keep playing and its wins earn tickets (up to 100 a day). Tap Meowth to swap them at its prize counter for things coins can\'t buy: a slot machine, a Voltorb Flip machine, a Plinko board, a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
   ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
   ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 1,000 tickets and every prize.'],
-  ['mall', 'A daily High-Low leaderboard: your longest streak of right guesses in one hand goes up by itself when you\'re signed in. Tap Ranks at the High-Low table.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
