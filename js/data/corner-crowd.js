@@ -17,8 +17,8 @@ export const PATRONS = [
   {
     id: 'jigglypuff', name: 'Jigglypuff', move: 'hop', speed: 1.8, likes: ['arcade', 'screens'],
     quips: ['Jiggly~', 'La la laaa...', 'Is anyone listening?', 'This place needs a stage.', 'Hmm, hm-hm, hmmm~'],
-    play: ['Jiggly-PUFF! Perfect!', 'I hit every note!', 'This machine gets me.', 'Sing-Along is too easy for a star.', 'Encore! Encore!', 'Who\'s asleep? Not me. Not yet.'],
-    you: ['Jiggly! Did you come to hear me sing, {name}?', 'Promise you won\'t fall asleep this time.', 'My Sing-Along score is 100% mine. All of it.', 'The neon here makes me look fabulous, right?', 'I drew on Meowth\'s face once. It snored through it.', 'Clap for me, {name}! Please?', 'Next week, I\'m top of the leaderboard. Mark my words.'],
+    play: ['Jiggly-PUFF! Perfect!', 'I hit every note!', 'This machine gets me.', 'Where did my Sing-Along machine go?!', 'Encore! Encore!', 'Who\'s asleep? Not me. Not yet.'],
+    you: ['Jiggly! Did you come to hear me sing, {name}?', 'Promise you won\'t fall asleep this time.', 'They took out my Sing-Along machine. I\'ll sing here anyway.', 'The neon here makes me look fabulous, right?', 'I drew on Meowth\'s face once. It snored through it.', 'Clap for me, {name}! Please?', 'Next week, I\'m top of the leaderboard. Mark my words.'],
     meowth: ['Can I sing on your counter?', 'One microphone, please. A shiny one.', 'Do you take requests, Meowth?'],
   },
   {
