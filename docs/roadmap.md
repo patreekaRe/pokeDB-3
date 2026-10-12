@@ -9,6 +9,40 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Wall furniture in 3D** (the user's ask, 2026-10-12: wall pieces stood in the store and hung in the room as flat
+paintings; "make new batches"). 204 wall kinds, built from parts like the floor batches, one file a batch
+(`js/base-models-w*.js`, its head says how: a wall piece's back is z 0, `X(i, W)` / `Y(j)` put a part where it was
+painted on its 96-unit strip, `cut()` crops the painting for a pane or canvas, fresh each hour for a window's sky). The
+room hangs a modelled wall piece by its back (`makePiece()` in `js/base-3d.js`, its crops lit in its `glow` colours,
+the window's light shaft kept) and the store hangs it on its display board (`buildFloor()` in `js/mall-furniture.js`).
+**Batch W1 done 2026-10-12** (`js/base-models-w.js`): the windows (sash window, small window with its herb pot,
+curtained window with real folds and ties, round window, arched window), the classic poster and the 13 motif posters
+(paper curling off the wall, a pin), the painting and the 8 framed pictures (moulding, a recessed canvas), the wall shelf
+(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. Next, one session each
+(Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
+- W2 cloth and paper: the 13 motif banners, 6 tapestries, 6 scrolls, 6 flags, sky banner, alphabet banner, noren, hot
+  spring curtain, shower curtain, calendar, treasure map, wanted / concert / coffee / pixel posters, sticky notes, the
+  type, element, gold star and sales charts, timetable.
+- W3 boards and plaques: region map, notice board, whiteboard, chalkboard, menu board, donut board, constellation map,
+  haunted and scholar's portraits, jigsaw picture, photo wall, brass plaque, quiet and hazard signs, projector screen,
+  scoreboard, high score board, departures board, badge case, the 6 tablets, winged sun, golden wings.
+- W4 windows, mirrors and doors: moonlit, frosted, stained glass, space, carriage and sky arch windows, porthole, arrow
+  slit, greenhouse glass, vanity, haunted and shell mirrors, medicine cabinet, portcullis, barn doors, airlock door, tile
+  and bamboo panels.
+- W5 shelves, racks and hooks: spice rack, pot rack, plate rack, utensil rail, mug shelf, tool rack, syrup shelf, tea
+  tins, jam shelf, first-aid kit, towel rail, hat hooks, coat pegs, bookends, record wall, window box, ivy trellis,
+  control panel, monitor wall, solar panel.
+- W6 lights, clocks and strings: cuckoo and station clocks, big stopwatch, wall lamp, wall torch, brass and ship
+  lanterns, paper lantern, ghost chandelier, disco ball, café bulbs, fairy lights, festival lanterns, bunting, bat and
+  snowflake garlands, mitten and washing lines, string of pearls, icicles, cobweb, star mobile, dreamcatcher, wind chime,
+  hanging plant, wreath, school bell, the neon, jackpot, Center, Gym and fair signs, café awning.
+- W7 mounted things: dartboard, wooden mask, medal, boxing gloves, climbing wall, starfish, fishing net, life ring,
+  anchor, ship's wheel, piñata, carnival mask, prize wheel, round shield, crossed cutlasses, figurehead, rope ladder,
+  folding fan, kite, lucky horseshoe, fish wall, trident, gear, vine, honeycomb and living walls, garden thermometer.
+- Touch-ups (floor pieces the survey of 2026-10-12 found weak): the pirate treasure hoard (its chest small and melted
+  into the gold), the Sky Palace orbs (floating loose over their cloud, the halo apart), the play tent / teepee (a flat
+  card), the small things on kitchen and office counters (too small to read), the tall Center plant (flat leaf cards).
+
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
