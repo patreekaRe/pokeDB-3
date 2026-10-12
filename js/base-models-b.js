@@ -31,7 +31,7 @@ export function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
 }
 
 /** A gable roof over a box `w` wide, `d` deep, its eaves at `y`, rising `rise`; the gables filled in `gable`. */
-function gableRoof(K, L, y, w, d, rise, over, roof, gable) {
+export function gableRoof(K, L, y, w, d, rise, over, roof, gable) {
   const { THREE, rbox } = L, half = w / 2 + over, slope = Math.hypot(half, rise), tilt = Math.atan2(rise, half);
   for (const sx of [-1, 1]) K.put(rbox(slope + 0.04, 0.06, d + over * 2, 0.02), roof, sx * half / 2, y + rise / 2 + 0.03, 0, 0, 0, -sx * tilt);
   if (!gable) return;
