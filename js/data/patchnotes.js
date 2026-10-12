@@ -48,6 +48,8 @@ export const NEXT = [
   ['look', 'Pokémon no longer sink into the walls, shop fronts and counters behind them.'],
   ['hub', 'Hold and drag to walk everywhere you can walk: the Poké Mall and its shops, the Secret Base, the Pokémon Center, the Mart and the ? rooms.'],
   ['fixes', 'The confirm sound plays as you tap a door, a shop or anything you walk to, not when you get there.'],
+  ['look', 'No more tiny text: every label in the game is at least a readable size, and the PC\'s text box is bigger.'],
+  ['mall', 'Every arcade machine\'s Start and Exit are small round buttons now, like a Neo Geo\'s.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

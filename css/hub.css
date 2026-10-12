@@ -37,7 +37,7 @@
 .hub-bar .room-home svg { width: 18px; height: 18px; }
 .hub-bar .hub-dex.dex-news::after { top: -3px; right: -3px; }
 .hub-dex.out, .hub-help.out { visibility: hidden; }
-.hub-bar .hbar-cash { flex: none; margin-left: 0; gap: 4px; padding-inline: 7px; font-size: 0.62rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hub-bar .hbar-cash { flex: none; margin-left: 0; gap: 4px; padding-inline: 7px; font-size: 0.75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .hbar-coin { width: 15px; height: 15px; flex: none; }
 /* a saved run's LCD: its Pokémon, where and the floor over the HP bar, the Escape Rope (battle's running figure) on the
    right. With no run it folds down into the bar (grid rows 1fr to 0fr), the bar's top edge sliding down after it */
@@ -46,7 +46,7 @@
 .hbar-fold-in { min-height: 0; overflow: hidden; }
 .hub-bar .hbar-run {
   display: grid; grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 8px; row-gap: 3px;
-  margin: 9px 5px 5px; padding: 5px 8px; font-size: 0.6rem; font-variant-numeric: tabular-nums;
+  margin: 9px 5px 5px; padding: 5px 8px; font-size: 0.75rem; font-variant-numeric: tabular-nums;
   transition: opacity 0.3s, translate 0.45s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .hub-bar.no-run .hbar-run { opacity: 0; translate: 0 12px; }
@@ -81,7 +81,7 @@
   .hub-bar .mdex-lights { gap: 3px; }
   .hub-bar .mdex-lights .pdx-light { width: 7px; height: 7px; }
   .hub-bar .hbar-cash, .hub-bar .hbar-sign { padding-inline: 5px; }
-  .hub-bar .hbar-sign b { font-size: 0.56rem; }
+  .hub-bar .hbar-sign b { font-size: 0.75rem; }
 }
 @media (prefers-reduced-motion: reduce) { .hbar-fold, .hub-bar .hbar-run { transition: none; } }
 @media (prefers-reduced-motion: reduce) { .hub-bar, .hbar-pop { animation: none; } }
@@ -96,7 +96,7 @@
 @keyframes hubCard { from { opacity: 0; translate: -50% 10px; } }
 .hub-card-name { display: block; font: 0.85rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .hub-card-line { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.35; }
-.hub-card-reset { margin: 6px 0 0; font: 0.6rem/1.3 var(--pixel-font); font-synthesis-weight: none; color: #8a5a10; }
+.hub-card-reset { margin: 6px 0 0; font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; color: #8a5a10; }
 .hub-card-reset::before { content: '⏱ '; }
 .hub-card-reset[hidden] { display: none; }
 .hub-card.locked { background: #eeeae4; }
@@ -105,7 +105,7 @@
 .hub-card-acts:empty { display: none; }
 .hub-card-btn {
   flex: 1; padding: 9px 6px 8px; border: 3px solid #2a2a3a; border-radius: 999px; background: #fff; color: #2a2a3a;
-  font: 0.62rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 #2a2a3a; cursor: pointer;
+  font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 #2a2a3a; cursor: pointer;
 }
 .hub-card-btn:active { translate: 0 3px; box-shadow: none; }
 /* asked, the card is the Pokédex's shell holding just its two keys: Continue the rooms' gold pill, New game a shell key */
@@ -158,7 +158,7 @@
 .mall3d .b3-top h2 { opacity: 1; }
 /* in the Furniture store, your PokéCoins on a little LCD beside its name */
 .mall-coins {
-  padding: 6px 10px; border-radius: 8px; background: var(--lcd, #9bbc6a); color: #1e2a10; font-size: 9px;
+  padding: 6px 10px; border-radius: 8px; background: var(--lcd, #9bbc6a); color: #1e2a10; font-size: 12px;
   box-shadow: inset 0 0 0 2px #0003, 0 2px 0 #0006;
 }
 .mall-coins[hidden] { display: none; }
@@ -253,19 +253,19 @@
 .pc-page { flex: 1; min-height: 0; overflow: auto; padding: 30px 14px 10px; scrollbar-width: thin; }
 .pc-say {
   flex: none; min-height: 4.4em; margin: 0 10px 10px; padding: 10px 12px; border: 3px solid #3a78b8; border-radius: 10px;
-  background: #fbfdff; color: #1e2a3a; font-size: 0.6rem; line-height: 1.7; box-shadow: inset 0 0 0 2px #cfe6ff;
+  background: #fbfdff; color: #1e2a3a; font-size: 0.9rem; line-height: 1.6; box-shadow: inset 0 0 0 2px #cfe6ff;
 }
 .pc-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .pc-title { flex: 1; font-size: 0.78rem; letter-spacing: 1px; color: #0e3446; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6); }
 .pc-back {
   flex: none; width: 34px; height: 34px; border: 2px solid #2a6a98; border-radius: 50%; cursor: pointer;
-  background: linear-gradient(#ffffff, #d6eefa); color: #2a6a98; font: 0.7rem var(--pixel-font);
+  background: linear-gradient(#ffffff, #d6eefa); color: #2a6a98; font: 0.75rem var(--pixel-font);
 }
-.pc-count { font-size: 0.66rem; color: #0e3446; }
+.pc-count { font-size: 0.75rem; color: #0e3446; }
 .pc-menu { display: flex; flex-direction: column; gap: 8px; }
 .pc-row {
   position: relative; padding: 14px 14px 14px 34px; border: 2px solid #3a78b8; border-radius: 10px; cursor: pointer; text-align: left;
-  background: #fbfdff; color: #1e2a3a; font: 0.66rem var(--pixel-font); font-synthesis-weight: none;
+  background: #fbfdff; color: #1e2a3a; font: 0.75rem var(--pixel-font); font-synthesis-weight: none;
   box-shadow: 0 3px 0 #2a5a90;
 }
 /* Gen 3's cursor: a blue arrow on the row pointed at */
@@ -275,7 +275,7 @@
 }
 .pc-row:hover::before, .pc-row:focus-visible::before, .pc-row:focus::before { opacity: 1; }
 .pc-row:active { translate: 0 2px; box-shadow: 0 1px 0 #2a5a90; }
-.pc-sub { display: block; margin-top: 6px; font-size: 0.48rem; letter-spacing: 0.5px; color: #2a6a80; }
+.pc-sub { display: block; margin-top: 6px; font-size: 0.75rem; letter-spacing: 0.5px; color: #2a6a80; }
 /* signed out: the account row in gold with a cloud, glowing, so it's the one to notice */
 .pc-row.pc-cloud {
   padding-right: 54px; border-color: #c08a10; background: linear-gradient(#fff6c8, #ffe27a); color: #3a2400; box-shadow: 0 3px 0 #8a5c00;
@@ -291,9 +291,9 @@
 @keyframes pcCloud { from { box-shadow: 0 3px 0 #8a5c00, 0 0 0 rgba(255, 200, 40, 0); } to { box-shadow: 0 3px 0 #8a5c00, 0 0 14px 2px rgba(255, 200, 40, 0.8); } }
 .pc-pick { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: -4px 0 12px; }
 .pc-pick-mon { width: 112px; height: 112px; object-fit: contain; image-rendering: pixelated; filter: drop-shadow(0 4px 0 rgba(0, 60, 90, 0.2)); }
-.pc-pick-name { font-size: 0.72rem; }
-.pc-pick-note { font-size: 0.5rem; color: #2a6a80; }
-.pc-explain { margin: 0 0 12px; padding: 8px 10px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; font-size: 0.48rem; line-height: 1.6; color: #1e2a3a; }
+.pc-pick-name { font-size: 0.75rem; }
+.pc-pick-note { font-size: 0.75rem; color: #2a6a80; }
+.pc-explain { margin: 0 0 12px; padding: 8px 10px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; font-size: 0.75rem; line-height: 1.6; color: #1e2a3a; }
 .pc-box { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
 .pc-mon {
   position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; cursor: pointer;
@@ -304,7 +304,7 @@
 .pc-mon img { position: absolute; inset: 6px; width: calc(100% - 12px); height: calc(100% - 12px); object-fit: contain; image-rendering: pixelated; }
 .pc-shiny {
   flex: none; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border: 2px solid #3a78b8; border-radius: 999px;
-  cursor: pointer; background: #fbfdff; color: #1e2a3a; font: 0.5rem var(--pixel-font); font-synthesis-weight: none;
+  cursor: pointer; background: #fbfdff; color: #1e2a3a; font: 0.75rem var(--pixel-font); font-synthesis-weight: none;
 }
 .pc-shiny::after {
   content: ""; width: 22px; height: 12px; border-radius: 999px; background: #b8c8d8 radial-gradient(circle at 6px 6px, #fff 4px, transparent 4.5px) no-repeat;
@@ -314,18 +314,18 @@
 .pc-shiny.on::after { background-color: #e0a820; background-position: 10px 0; }
 .pc-mon.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); box-shadow: 0 0 0 2px #f8d040, 0 0 12px rgba(255, 210, 60, 0.8); }
 .pc-mon:active { translate: 0 2px; }
-.pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.55rem; color: #8e5c06; }
+.pc-mon-tag { position: absolute; top: 3px; right: 5px; font-size: 0.75rem; color: #8e5c06; }
 .pc-deco .pc-mon-tag { z-index: 1; top: 2px; right: 2px; padding: 1px 4px; border-radius: 6px; background: rgba(255, 255, 255, 0.9); line-height: 1.3; }
-.pc-empty { margin-top: 24px; text-align: center; font-size: 0.62rem; }
+.pc-empty { margin-top: 24px; text-align: center; font-size: 0.75rem; }
 /* Patch notes: a white sheet of lines under blue headings on the striped screen */
 .pc-notes { padding: 12px 12px 14px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; box-shadow: 0 3px 0 #2a5a90; }
-.pc-notes .patch-title { margin: 0; font-size: 0.72rem; line-height: 1.5; color: #0e3446; }
-.pc-notes .patch-date { margin: 2px 0 4px; font-size: 0.55rem; color: #5a7088; }
-.pc-notes .patch-head { margin: 14px 0 6px; font-size: 0.62rem; color: #1e5a96; }
-.pc-notes .patch-list { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; font-size: 0.6rem; line-height: 1.6; }
+.pc-notes .patch-title { margin: 0; font-size: 0.75rem; line-height: 1.5; color: #0e3446; }
+.pc-notes .patch-date { margin: 2px 0 4px; font-size: 0.75rem; color: #5a7088; }
+.pc-notes .patch-head { margin: 14px 0 6px; font-size: 0.75rem; color: #1e5a96; }
+.pc-notes .patch-list { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; font-size: 0.75rem; line-height: 1.6; }
 .pc-notes .patch-game { display: flex; flex-direction: column; gap: 10px; }
-.pc-notes .patch-row-text { display: flex; flex-direction: column; gap: 3px; font-size: 0.58rem; line-height: 1.6; }
-.pc-notes .patch-row-text b { font-size: 0.64rem; color: #1e5a96; }
+.pc-notes .patch-row-text { display: flex; flex-direction: column; gap: 3px; font-size: 0.75rem; line-height: 1.6; }
+.pc-notes .patch-row-text b { font-size: 0.75rem; color: #1e5a96; }
 /* Decorations: the base's furniture, its pictures smooth (never pixelated), gold for what stands in the room */
 .pc-screen.in-base { z-index: 910; }
 /* The kinds as one tray of equal keys, five a row, so it always fits the screen's width and lines up */
@@ -335,7 +335,7 @@
 }
 .pc-chip {
   min-width: 0; padding: 8px 2px; border: 0; border-radius: 9px; cursor: pointer; overflow: hidden;
-  background: transparent; color: #1e2a3a; font: clamp(0.4rem, 2.3vw, 0.5rem) var(--pixel-font); font-synthesis-weight: none;
+  background: transparent; color: #1e2a3a; font: clamp(0.75rem, 2.3vw, 0.75rem) var(--pixel-font); font-synthesis-weight: none;
   white-space: nowrap; text-overflow: clip; text-align: center;
 }
 .pc-chip.on { background: #3a78b8; color: #fff; box-shadow: 0 1px 0 #24568a, inset 0 1px 0 rgba(255, 255, 255, 0.3); }
@@ -386,7 +386,7 @@
 }
 .pc-off {
   position: absolute; left: 14px; bottom: 14px; padding: 8px 12px; cursor: pointer; border: 2px solid #8e1c26; border-radius: 999px;
-  background: linear-gradient(#ffffff, #e4e8f0); color: #8e1c26; font: 0.55rem var(--pixel-font); text-transform: uppercase;
+  background: linear-gradient(#ffffff, #e4e8f0); color: #8e1c26; font: 0.75rem var(--pixel-font); text-transform: uppercase;
   box-shadow: 0 2px 0 #8e1c26;
 }
 .pc-off:active { translate: 0 2px; box-shadow: none; }
@@ -396,22 +396,22 @@
   display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 2px solid #3a78b8;
   border-radius: 10px; background: #fbfdff; box-shadow: 0 3px 0 #2a5a90;
 }
-.pc-rate-n small { font-size: 0.42rem; color: #2a6a80; letter-spacing: 0.5px; }
+.pc-rate-n small { font-size: 0.75rem; color: #2a6a80; letter-spacing: 0.5px; }
 .pc-rate-n b { font-weight: 400; font-size: 1rem; color: #1e2a3a; }
 .pc-hint {
   position: relative; display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 12px; width: 100%;
   margin-bottom: 14px; padding: 10px 12px 12px; cursor: pointer; text-align: left; border: 2px solid #c89418; border-radius: 10px;
-  background: linear-gradient(#fffbe6, #fff0b0); color: #3a2a08; font: 0.56rem/1.8 var(--pixel-font); font-synthesis-weight: none;
+  background: linear-gradient(#fffbe6, #fff0b0); color: #3a2a08; font: 0.75rem/1.8 var(--pixel-font); font-synthesis-weight: none;
   box-shadow: 0 3px 0 #a8780c;
 }
 .pc-hint:disabled { cursor: default; }
 .pc-hint:not(:disabled):active { translate: 0 2px; box-shadow: 0 1px 0 #a8780c; }
-.pc-hint-top { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 0.48rem; color: #8e5c06; letter-spacing: 0.5px; }
+.pc-hint-top { grid-column: 1 / -1; display: flex; justify-content: space-between; font-size: 0.75rem; color: #8e5c06; letter-spacing: 0.5px; }
 .pc-hint-art { width: 56px; height: 56px; object-fit: contain; image-rendering: pixelated; filter: brightness(0) opacity(0.7); }
 .pc-hint-text { grid-column: auto / -1; }
 .pc-done { display: flex; flex-direction: column; gap: 6px; }
-.pc-done-head { margin-top: 6px; font-weight: 400; font-size: 0.5rem; color: #0e3446; letter-spacing: 1px; }
-.pc-done-row { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 4.5em; align-items: center; gap: 8px; font-size: 0.48rem; color: #1e2a3a; }
+.pc-done-head { margin-top: 6px; font-weight: 400; font-size: 0.75rem; color: #0e3446; letter-spacing: 1px; }
+.pc-done-row { display: grid; grid-template-columns: minmax(0, 1.4fr) 1fr 4.5em; align-items: center; gap: 8px; font-size: 0.75rem; color: #1e2a3a; }
 .pc-done-name { line-height: 1.6; }
 .pc-done-n { text-align: right; }
 .pc-done-bar {
@@ -422,24 +422,24 @@
 .pc-done-row.star .pc-done-bar { background-image: linear-gradient(90deg, #e0a820, #f8d850); }
 /* Missions (js/missions.js): a card each, its goal and PokéCoins over a bar, Claim once done; the bonus for all of them last */
 .pc-quests { display: flex; flex-direction: column; gap: 8px; }
-.pc-quest-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; font-size: 0.56rem; color: #0e3446; letter-spacing: 1px; }
+.pc-quest-head { display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px; font-size: 0.75rem; color: #0e3446; letter-spacing: 1px; }
 .pc-quest-head b { font-weight: 400; }
-.pc-quest-left { font-size: 0.45rem; letter-spacing: 0; color: #2a6a80; }
+.pc-quest-left { font-size: 0.75rem; letter-spacing: 0; color: #2a6a80; }
 .pc-quest {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; gap: 8px 10px;
-  padding: 10px 12px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; font-size: 0.52rem;
+  padding: 10px 12px; border: 2px solid #3a78b8; border-radius: 10px; background: #fbfdff; color: #1e2a3a; font-size: 0.75rem;
   box-shadow: 0 3px 0 #2a5a90;
 }
 .pc-quest-text { line-height: 1.6; }
-.pc-quest-coins { display: flex; align-items: center; gap: 4px; justify-self: end; color: #8e5c06; font-size: 0.6rem; }
+.pc-quest-coins { display: flex; align-items: center; gap: 4px; justify-self: end; color: #8e5c06; font-size: 0.75rem; }
 .pc-quest-coins b { font-weight: 400; }
 .pc-quest-coin { width: 18px; height: 18px; }
 .pc-quest-coins.paid { animation: pcPaid 0.5s ease-out; }
-.pc-quest-prog { display: flex; align-items: center; gap: 8px; font-size: 0.45rem; color: #2a6a80; }
+.pc-quest-prog { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #2a6a80; }
 .pc-quest-prog .pc-done-bar { flex: 1; }
 .pc-quest-n { flex: none; }
-.pc-quest-claim { grid-column: 2; grid-row: 2; min-width: 70px; height: 28px; font-size: 0.5rem; }
-.pc-quest-tag { grid-column: 2; grid-row: 2; justify-self: end; font-size: 0.45rem; color: #c02a2a; letter-spacing: 1px; }
+.pc-quest-claim { grid-column: 2; grid-row: 2; min-width: 70px; height: 28px; font-size: 0.75rem; }
+.pc-quest-tag { grid-column: 2; grid-row: 2; justify-self: end; font-size: 0.75rem; color: #c02a2a; letter-spacing: 1px; }
 .pc-quest-tag.none { visibility: hidden; }
 .pc-quest.done { border-color: #c89018; box-shadow: 0 3px 0 #8e5c06, 0 0 10px rgba(255, 216, 64, 0.5); }
 .pc-quest.paid { opacity: 0.6; }
@@ -451,7 +451,7 @@
   position: relative; display: grid; grid-template-columns: 38px 1fr auto; grid-template-rows: auto auto; align-items: center;
   column-gap: 12px; padding: 10px 12px; cursor: pointer; text-align: left; border: 2px solid var(--ink); border-radius: 8px;
   background: linear-gradient(162deg, transparent 0 49.6%, rgba(0, 0, 0, 0.06) 50%, transparent 50.4%), var(--paper);
-  color: #2a2620; font: 0.6rem var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 rgba(0, 40, 70, 0.35);
+  color: #2a2620; font: 0.75rem var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 rgba(0, 40, 70, 0.35);
 }
 .pc-env:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(0, 40, 70, 0.35); }
 .pc-env.read { opacity: 0.62; }
@@ -461,10 +461,10 @@
     linear-gradient(transparent 46%, var(--ink) 46% 54%, transparent 54%), var(--ink);
   outline: 2px dashed #fff; outline-offset: -4px;
 }
-.pc-env-from { font-size: 0.48rem; color: var(--ink); letter-spacing: 0.5px; }
-.pc-env-title { grid-column: 2; font-weight: 400; font-size: 0.64rem; }
+.pc-env-from { font-size: 0.75rem; color: var(--ink); letter-spacing: 0.5px; }
+.pc-env-title { grid-column: 2; font-weight: 400; font-size: 0.75rem; }
 .pc-env-when { grid-column: 3; grid-row: 1 / span 2; }
-.pc-env-when { font-size: 0.45rem; color: #6a6258; }
+.pc-env-when { font-size: 0.75rem; color: #6a6258; }
 
 .pc-letter { position: relative; width: min(300px, 100%); height: 250px; margin: 0 auto 12px; overflow: hidden; perspective: 600px; }
 .pc-env-back, .pc-env-front, .pc-env-flap { position: absolute; left: 0; right: 0; bottom: 0; height: 110px; }
@@ -485,16 +485,16 @@
   padding: 14px 14px 16px; border-radius: 6px; background: #fffef9; color: #2a2620; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
   background-image: repeating-linear-gradient(transparent 0 19px, rgba(60, 110, 170, 0.12) 19px 20px);
 }
-.pc-sheet-from { font-size: 0.45rem; color: var(--ink); }
-.pc-sheet-title { font-weight: 400; font-size: 0.7rem; }
-.pc-sheet-text { margin: 0; font-size: 0.52rem; line-height: 1.8; }
+.pc-sheet-from { font-size: 0.75rem; color: var(--ink); }
+.pc-sheet-title { font-weight: 400; font-size: 0.75rem; }
+.pc-sheet-text { margin: 0; font-size: 0.75rem; line-height: 1.8; }
 .pc-prize { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; }
 .pc-prize-coin { width: 30px; height: 30px; }
 .pc-prize-n { font-weight: 400; font-size: 0.95rem; color: #8e5c06; }
 .pc-letter.paid .pc-prize { animation: pcPaid 0.5s ease-out; }
 .pc-claimed {
   position: absolute; right: 10px; top: 12px; padding: 4px 8px; border: 3px solid #c02a2a; border-radius: 6px;
-  color: #c02a2a; font-size: 0.55rem; rotate: -12deg; opacity: 0.85; animation: pcStamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+  color: #c02a2a; font-size: 0.75rem; rotate: -12deg; opacity: 0.85; animation: pcStamp 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 .pc-claim { display: block; margin: 0 auto; min-width: 140px; height: 44px; }
 /* opening: the flap swings up and over, the letter rises out of the envelope, then settles in front of it to be read */
@@ -531,7 +531,7 @@
 }
 .spook-bubble .mall-who {
   display: block; position: absolute; left: 12px; top: -11px; padding: 4px 10px; border-radius: 999px;
-  background: #f0a0b0; color: #6a2a3a; font-size: 10px; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
+  background: #f0a0b0; color: #6a2a3a; font-size: 12px; rotate: -4deg; box-shadow: 0 2px 0 #c87888;
 }
 .spook-bubble::after {
   content: ''; position: absolute; left: 50%; bottom: -8px; translate: -50% 0;
@@ -589,15 +589,15 @@
 .pc-build.pc-turn { min-width: 90px; }
 .pc-floors { margin-bottom: 8px; }
 .pc-plan { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
-.pc-plan-name { font-weight: 400; font-size: 0.72rem; }
-.pc-plan-note { font-size: 0.5rem; color: #2a6a80; line-height: 1.6; }
+.pc-plan-name { font-weight: 400; font-size: 0.75rem; }
+.pc-plan-note { font-size: 0.75rem; color: #2a6a80; line-height: 1.6; }
 .pc-build, .pc-dupe { margin: 8px auto 0; height: 40px; }
 .pc-build { display: block; margin: 0 auto 12px; }
 .pc-kinds { gap: 6px; margin-bottom: 4px; }
 .pc-kind { display: flex; justify-content: space-between; align-items: center; padding: 11px 12px 11px 30px; }
 .pc-kind.on { border-color: #c89418; background: linear-gradient(#fff8d8, #ffe890); }
 .pc-kind:disabled { opacity: 0.5; cursor: default; box-shadow: none; }
-.pc-kind-size { font-size: 0.5rem; color: #2a6a80; }
+.pc-kind-size { font-size: 0.75rem; color: #2a6a80; }
 .pc-screen.calm .pc-bp-pip { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .pc-bp-pip circle { animation: none !important; } }
 /* the Game Corner's regulars (js/corner-crowd.js) share the ghosts' bubble, kept on screen with its tail on the speaker */
