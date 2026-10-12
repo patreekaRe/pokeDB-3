@@ -91,7 +91,7 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
 /** What one old prize ticket is worth in PokéCoins: the prizes' coin prices are their ticket prices times this. */
 export const TICKET_COINS = 3;
 
-export const PRIZES = [   // the games first (each playable at home, js/home-arcade.js), then the arcade machines, then the rest
+export const PRIZES = [   // only the games (the user's call, 2026-10-12), each playable at home (js/home-arcade.js): the Game Corner's, then the arcade machines
   { kind: 'slotmachine', coins: 450 },
   { kind: 'voltorbflip', coins: 450 },
   { kind: 'plinkoboard', coins: 450 },
@@ -110,6 +110,10 @@ export const PRIZES = [   // the games first (each playable at home, js/home-arc
   { kind: 'pokepinball', coins: 450 },
   { kind: 'volleycabinet', coins: 450 },
   { kind: 'unowncabinet', coins: 450 },
+];
+/* Prizes the counter sold until it kept to the games (2026-10-12): whoever bought one keeps it, nobody else can get it
+   (js/data/furniture.js lists them `retired`, so the base's Shop never offers them). */
+export const RETIRED_PRIZES = [
   { kind: 'jackpotsign', coins: 300 },
   { kind: 'luckyseven', coins: 360 },
   { kind: 'casinorug', coins: 240 },
@@ -118,7 +122,7 @@ export const PRIZES = [   // the games first (each playable at home, js/home-arc
   { kind: 'dratinidoll', coins: 270 },
   { kind: 'bigdratinidoll', coins: 300 },
 ];
-export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
+export const PRIZES_BY_KIND = Object.fromEntries([...PRIZES, ...RETIRED_PRIZES].map(p => [p.kind, p]));
 
 /* ---------- Records: each game's personal bests, paid or for fun (`save.corner.best`) ---------- */
 

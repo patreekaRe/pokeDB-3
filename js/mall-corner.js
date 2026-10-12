@@ -1,9 +1,10 @@
 /* mall-corner.js  -  the Poké Mall's Game Corner, walked into: a huge neon arcade behind the hall's middle front
-   (rebuilt 2026-10-10, the user's ask: the room bigger, and no more cramped prize cases). Along the back wall four big
-   showcase screens, each cycling through what it sells, opened up close to step through one at a time (js/showcase.js):
-   Pokémon skins, shinies, perks and Poké Balls, either side of Meowth's prize counter (a tap on Meowth: the free daily
-   scratch card). Down the floor the games, all free (no betting since 2026-10-12): Voltorb Flip, Who's That Pokémon?, a
-   bank of slot machines, Plinko, High-Low and Blackjack, with neon pillars and attract cabinets round the walls.
+   (rebuilt 2026-10-10, the user's ask: the room bigger, and no more cramped prize cases). On the back wall three big
+   showcase screens right of Meowth's prize counter, each cycling through what it sells, opened up close to step through
+   one at a time (js/showcase.js): Pokémon skins, shinies and perks; two Plinko boards left of it, the home arcade's
+   machines under them all (a tap on Meowth: the scratch card or the prize counter). Down the floor the games, all free
+   (no betting since 2026-10-12): Voltorb Flip, Who's That Pokémon?, Blackjack and High-Low tables, slot machines down
+   the side walls.
    Painted smooth (fine()); js/mall-3d.js walks it (its own COLS x ROWS, the camera following you), this file builds it. */
 
 import { cornerEntries } from './shop.js';
@@ -121,18 +122,19 @@ function wallArt({ cols, top: TOP, u: U }) {
   tube(g, s, NEON.cyan, 1.1, (c) => { c.moveTo(0, wy(0.9)); c.lineTo(W, wy(0.9)); });
   tube(g, s, NEON.pink, 1.1, (c) => { c.moveTo(0, wy(5.4)); c.lineTo(W, wy(5.4)); });
   // the sign: a red board ringed with bulbs, gold letters
-  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 5.4 * U, sh = 22, sy = wy(4.6);
+  // narrow enough to sit between the Plinko boards and the first screen, which cut off its end (2026-10-12)
+  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 4.3 * U, sh = 22, sy = wy(4.6);
   rr(cx - sw / 2 - 2, sy - 2, sw + 4, sh + 4, 4, GC.goldDark);
   rr(cx - sw / 2, sy, sw, sh, 3, lin(0, sy, 0, sy + sh, [GC.red, GC.redDark]));
   s.fillStyle = '#3a1010'; s.beginPath(); s.roundRect(cx - sw / 2, sy, sw, sh, 3); s.fill();
-  for (let i = 0; i <= 26; i++) for (const y of [sy + 1.6, sy + sh - 1.6]) {
-    const x = cx - sw / 2 + 2 + i * (sw - 4) / 26;
+  for (let i = 0; i <= 22; i++) for (const y of [sy + 1.6, sy + sh - 1.6]) {
+    const x = cx - sw / 2 + 2 + i * (sw - 4) / 22;
     g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill();
     s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 1.1, 0, Math.PI * 2); s.fill();
   }
-  g.save(); glow(g, NEON.gold, 4); words(g, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 11, GC.gold); g.restore();
-  words(s, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 11, '#ffe890');
-  coin(g, cx - sw / 2 + 9, sy + sh / 2, 5); coin(g, cx + sw / 2 - 9, sy + sh / 2, 5);
+  g.save(); glow(g, NEON.gold, 4); words(g, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 9.5, GC.gold); g.restore();
+  words(s, 'GAME CORNER', cx, sy + sh / 2 + 0.6, 9.5, '#ffe890');
+  coin(g, cx - sw / 2 + 7, sy + sh / 2, 4); coin(g, cx + sw / 2 - 7, sy + sh / 2, 4);
   // up high, for a tall phone: neon shapes
   const hy = wy(7.6);
   tube(g, s, NEON.pink, 1.2, (c) => { c.arc(wx(2.2), hy, 16, 0, Math.PI * 2); c.moveTo(wx(2.2) - 16, hy); c.lineTo(wx(2.2) - 5, hy); c.moveTo(wx(2.2) + 5, hy); c.lineTo(wx(2.2) + 16, hy); });
@@ -645,7 +647,7 @@ export function buildCorner(THREE, size) {
     m.traverse(o => { o.userData.front = spot; });
     group.add(m);
   };
-  for (const at of CASINO.slots.ats) cab('slots', CASINO.slots, at.x, at.y, 'BET 5-50', at.face);
+  for (const at of CASINO.slots.ats) cab('slots', CASINO.slots, at.x, at.y, 'FREE PLAY', at.face);
 
   // the tables: Blackjack and High-Low green felt on dark wood with cards dealt and a marquee over them; Voltorb Flip and
   // Who's That Pokémon? touchscreen tables, their tops lit with the game (2026-10-12, the user's ask)

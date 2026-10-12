@@ -268,6 +268,15 @@ function makePiece(it, ghostly = false, lift = null) {
     group.add(mesh);
     return mesh;
   };
+  if (p.layer === 'wall' && shapeOf(p.fam, p)) {   // a modelled wall piece (the Plinko board), its back to the wall
+    const model = furnitureModel(THREE, it.id, (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 }));
+    if (ghostly) ownPictures(model);
+    model.traverse(o => { if (o.isMesh) { o.castShadow = !ghostly; o.receiveShadow = !ghostly; [o.material].flat().forEach(see); } });
+    model.position.set(it.x - COLS / 2 + p.w / 2, 0, topOf(it.x) - ROWS / 2 + (ghostly ? 0.01 : 0));
+    group.add(model);
+    group.userData.model = model;
+    return group;
+  }
   if (p.layer === 'wall') {
     const art = pieceArt(it.id, 0, HD), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
@@ -304,6 +313,7 @@ function makePiece(it, ghostly = false, lift = null) {
     return m;
   });
   if (!ghostly) dressPlay(THREE, model, p);
+  if (ghostly) ownPictures(model);
   model.traverse(o => {
     if (!o.isMesh) return;
     o.castShadow = o.castShadow !== false && !ghostly; o.receiveShadow = !ghostly;
@@ -319,6 +329,12 @@ function makePiece(it, ghostly = false, lift = null) {
   group.userData.model = model;
   if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.position.y + model.userData.top * k - 0.35, cz + 0.3);
   return group;
+}
+
+/** A model's pictures (a machine's screen, a card's face) share one material with every copy of the piece, so the ghost
+    takes its own before it is tinted and faded. */
+function ownPictures(model) {
+  model.traverse(o => { if (o.isMesh && o.material?.userData?.kind === 'pic') o.material = o.material.clone(); });
 }
 
 /** A soft shaft of light from the window down to the floor, drawn additive so bloom picks it up, and dust in it. */

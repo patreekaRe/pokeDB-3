@@ -279,7 +279,7 @@ export function putAway(b, id) {
 }
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
-export const lockedEarned = () => FURNITURE.filter(p => !isEarned(p, getSave()) && PIECES[p.kind])
+export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !isEarned(p, getSave()) && PIECES[p.kind])
   .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
 
 /** How many of a piece's kind (or set) are in storage, in any colour or style: owned, less those standing in the room. */

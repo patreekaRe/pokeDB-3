@@ -48,6 +48,9 @@ export const NEXT = [
   ['base', 'Three new arcade games at Meowth\'s prize counter: Pidgey Flap (in place of Magikarp Fishing: anyone who had it now has Pidgey Flap), Psyduck Pong and Gastly Maze.'],
   ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
   ['fixes', 'The arcade machines\' screens and marquees no longer flicker from across the room.'],
+  ['base', 'The Game Corner\'s games are real 3D models in your Secret Base too: a slot machine with spinning-drum reels and a lever, Voltorb Flip and Who\'s That Pokémon? cabinets, Blackjack and High-Low card tables with cards dealt, and a Plinko board with real pegs hanging on the wall.'],
+  ['mall', 'Meowth\'s prize counter now sells only games, each shown as its 3D model turning on the screen. The jackpot sign, Lucky 7 block, casino carpet and dolls are gone from it; anyone who bought one keeps it.'],
+  ['fixes', 'The GAME CORNER sign over Meowth\'s counter is no longer cut off by the Pokémon screen, and the Game Corner\'s slot machines say FREE PLAY, not BET.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -114,6 +114,13 @@ set('memorycabinet', { make: 'arcade', colour: '#d83a3a', name: 'Voltorb Memory'
 set('volleycabinet', { make: 'arcade', colour: '#f0c020', name: 'Pikachu Volleyball' });
 set('unowncabinet', { make: 'arcade', colour: '#6a5ac8', name: 'Unown Word Search' });
 set('whackmachine', { make: 'whack' });
+/* the Game Corner's games */
+set('slotmachine', { make: 'slot' });
+set('voltorbflip', { make: 'arcade', colour: '#2a9a5a', name: 'Voltorb Flip' });
+set('quizmachine', { make: 'arcade', colour: '#3a7ae0', name: 'Who\'s That Pokémon?' });
+set('blackjacktable', { make: 'cardtable', game: 'blackjack' });
+set('highlowtable', { make: 'cardtable', game: 'highlow' });
+set('plinkoboard', { make: 'plinko' });
 set('pokepinball', { make: 'pinball' });
 
 export const SHAPES = S;

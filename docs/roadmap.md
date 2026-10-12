@@ -41,6 +41,20 @@ in this order (the user may reorder):
 11. Psyduck Pong (`js/arcade-pong.js`, `pongcabinet`)
 12. Gastly Maze (`js/arcade-maze.js`, `gastlymaze`)
 Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
+The six casino games got real 3D models too (2026-10-12: `B.slot`, `B.cardtable`, `B.plinko`, Voltorb Flip and the quiz
+on `B.arcade`), Meowth's counter sells only the 18 games (the rest `RETIRED_PRIZES`, kept by buyers), each a turning 3D
+model on its screen, and the GAME CORNER sign was narrowed to clear the Pokémon screen.
+
+**Ideas: eight more arcade games** (proposed 2026-10-12, the user to pick; each would be a prize machine like the twelve):
+1. Poliwag Crossing (Frogger: hop over a road of Tauros and across a river on Lapras and logs)
+2. Ekans Trail (Snake: eat Berries, grow, don't bite your tail)
+3. Beedrill Invaders (Space Invaders: Pikachu's Thunderbolts at swooping waves, a Butterfree UFO)
+4. Electrode Breakout (Breakout: an Electrode bouncing off a paddle into Geodude bricks, power-ups)
+5. Jigglypuff's Sing-Along (rhythm: tap the notes in time to its song; miss too many and you fall asleep)
+6. Where's Ditto? (the shell game: Ditto hides under one of three Poké Balls that shuffle faster each round)
+7. Geodude Bowling (swipe to roll a Poké Ball at ten Geodude pins, spin with the swipe's curve)
+8. Poké Puzzle (Pokémon Puzzle League: swap panels to match three, chains and combos, the stack rising)
+Spares: Lunatone Rocks (Asteroids), Pachirisu Berry Catch (catch falling Berries, dodge Voltorb).
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - ~~D2~~ and ~~E~~ done 2026-10-07 (see the archive). Staying cream on purpose (the user's call): battle's nameplates,

@@ -15,7 +15,7 @@
 import { BADGES_BY_ID } from './badges.js';
 import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
-import { PRIZES_BY_KIND } from './corner.js';
+import { PRIZES, RETIRED_PRIZES } from './corner.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -23,7 +23,7 @@ const SOURCES = {
   achievement: { owned: (save, id) => (save.unlocked || []).includes(id), item: (id) => ACHIEVEMENT_FOR[id] },
   feat: { owned: (save, id) => (save.feats || []).includes(id), item: (id) => FEATS.find(f => f.id === id) },
   safari: { owned: (save, id) => (save.safariDex?.done || []).includes(id), item: (id) => SAFARI_DEX_PAGES.find(p => p.area === id) },
-  prize: { owned: (save, id) => (save.corner?.prizes || []).includes(id), item: (id) => PRIZES_BY_KIND[id] },
+  prize: { owned: (save, id) => (save.corner?.prizes || []).includes(id), item: (id) => [...PRIZES, ...RETIRED_PRIZES].find(p => p.kind === id) },
 };
 
 export const FURNITURE = [
@@ -73,8 +73,9 @@ export const FURNITURE = [
   { kind: 'boulder', from: ['safari', 'peak'] },
   { kind: 'saguaro', from: ['safari', 'desert'] },
   { kind: 'tent', from: ['badge', 'safari-master'] },
-  // The Game Corner's prizes, bought at Meowth's counter (PRIZES in js/data/corner.js).
-  ...Object.keys(PRIZES_BY_KIND).map(kind => ({ kind, from: ['prize', kind] })),
+  // The Game Corner's prizes, bought at Meowth's counter (PRIZES in js/data/corner.js), and the ones it no longer sells.
+  ...PRIZES.map(({ kind }) => ({ kind, from: ['prize', kind] })),
+  ...RETIRED_PRIZES.map(({ kind }) => ({ kind, from: ['prize', kind], retired: true })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));

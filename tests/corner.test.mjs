@@ -1,9 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   VOLTORB_BOARDS, dealBoard, voltorbBoard, clues, score, cleared, payout, nextLevel, bestScore,
   pickDeal, dealPrice, capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
-  PRIZES, PRIZES_BY_KIND, better,
+  PRIZES, PRIZES_BY_KIND, RETIRED_PRIZES, better,
 } from '../js/data/corner.js';
 import {
   STRIP, slotPay, stopAt, BONUS_SPINS, JACKPOT, PLINKO_ODDS, PLINKO_PAYS, shuffledDeck, handValue, isBlackjack,
@@ -132,7 +133,9 @@ test('a quiz round has distinct questions, each with its answer among distinct o
 });
 
 test('prizes are unique and priced to take a few days of Game Corner coins', () => {
-  assert.equal(Object.keys(PRIZES_BY_KIND).length, PRIZES.length);
+  assert.equal(Object.keys(PRIZES_BY_KIND).length, PRIZES.length + RETIRED_PRIZES.length);
+  const games = readFileSync(new URL('../js/home-arcade.js', import.meta.url), 'utf8');
+  for (const p of PRIZES) assert.match(games, new RegExp(`^  ${p.kind}:`, 'm'), `${p.kind} is a game you can play at home`);
   for (const p of PRIZES) assert.ok(p.coins >= 150 && p.coins <= DAILY_CAP * 2, p.kind);
 });
 

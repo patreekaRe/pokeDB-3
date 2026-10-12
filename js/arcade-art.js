@@ -74,6 +74,34 @@ function diglett(g, x, y, s) {
 /* ---------- the screens: each game's attract picture ---------- */
 
 const SCREENS = {
+  voltorbflip(g, w, h) {
+    g.fillStyle = '#2a8a58'; g.fillRect(0, 0, w, h);
+    const cell = 30, x0 = 22, y0 = 18;
+    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) {
+      const x = x0 + c * (cell + 3), y = y0 + r * (cell + 3), up = (r * 3 + c * 7) % 9;
+      rr(g, x, y, cell, cell, 4, up < 3 ? '#f8f0d8' : '#c87a40');
+      if (up >= 3) { rr(g, x + 3, y + 3, cell - 6, cell - 6, 3, '#e8a058'); g.strokeStyle = 'rgba(0,0,0,0.15)'; g.lineWidth = 1; g.strokeRect(x + 7, y + 7, cell - 14, cell - 14); }
+      else if (up === 0) { disc(g, x + cell / 2, y + cell / 2, 11, '#e03838'); g.fillStyle = '#f4f4f4'; g.beginPath(); g.arc(x + cell / 2, y + cell / 2, 11, 0, Math.PI); g.fill(); disc(g, x + cell / 2 - 4, y + cell / 2 - 3, 2, '#202028'); disc(g, x + cell / 2 + 4, y + cell / 2 - 3, 2, '#202028'); }
+      else text(g, String(up + 1), x + cell / 2, y + cell / 2 + 1, 18, '#2a4a9a');
+    }
+    for (let r = 0; r < 5; r++) { const y = y0 + r * (cell + 3); rr(g, 196, y, 46, cell, 4, ['#e86060', '#58c058', '#f0a030', '#4a90f0', '#b060d0'][r]); text(g, String(4 + r), 210, y + 10, 11, '#ffffff'); disc(g, 228, y + 21, 5, '#f4f4f4'); text(g, String(r % 3), 210, y + 22, 11, '#202028'); }
+    crt(g, w, h, false);
+  },
+  quizmachine(g, w, h) {
+    const bg = g.createRadialGradient(w * 0.38, h * 0.5, 6, w * 0.38, h * 0.5, w * 0.7); bg.addColorStop(0, '#ffe060'); bg.addColorStop(0.35, '#4a9af0'); bg.addColorStop(1, '#1a3a8a');
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    g.fillStyle = 'rgba(255,240,140,0.35)';
+    for (let k = 0; k < 14; k++) { g.beginPath(); g.moveTo(w * 0.38, h * 0.5); g.arc(w * 0.38, h * 0.5, w, k * TAU / 14, k * TAU / 14 + 0.2); g.fill(); }
+    g.save(); g.translate(w * 0.38, h * 0.56); g.scale(2.6, 2.6);   // a Pikachu-ish silhouette
+    g.fillStyle = '#141428';
+    for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 6, -12); g.lineTo(sx * 14, -34); g.lineTo(sx * 15, -10); g.fill(); }
+    oval(g, 0, 4, 18, 16, '#141428');
+    g.beginPath(); g.moveTo(16, 8); g.lineTo(30, -6); g.lineTo(26, -12); g.lineTo(36, -22); g.lineTo(22, -8); g.lineTo(26, -4); g.closePath(); g.fill();
+    g.restore();
+    glowOn(g, '#ffffff', 10); text(g, '?', w * 0.8, h * 0.48, 92, '#ffffff', '#1a3a8a'); glowOff(g);
+    text(g, 'WHO\'S THAT', w * 0.5, 18, 17, '#ffd84a', '#1a2a6a');
+    crt(g, w, h, false);
+  },
   flapcabinet(g, w, h) {
     const sky = g.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, '#58a8e8'); sky.addColorStop(1, '#d0ecff');
     g.fillStyle = sky; g.fillRect(0, 0, w, h);
@@ -345,4 +373,96 @@ export const pinGlass = () => once('pin:glass', 320, 288, (g, w, h) => {
   rr(g, 18, h - 66, w - 36, 52, 6, '#140a04');
   g.fillStyle = 'rgba(255,120,30,0.18)'; for (let y = h - 62; y < h - 18; y += 4) for (let x = 22; x < w - 22; x += 4) g.fillRect(x, y, 2, 2);
   glowOn(g, '#ff8a30', 12); text(g, '2,450,800', w / 2, h - 40, 34, '#ff9a40'); glowOff(g);
+});
+
+/* ---------- the casino games' pictures (2026-10-12, the user's ask: the six table games modelled too) ---------- */
+
+const SUITS = { s: ['♠', '#202028'], h: ['♥', '#d82838'], d: ['♦', '#d82838'], c: ['♣', '#202028'] };
+/** A playing card's face, 128 x 176: its rank and suit in two corners, a big pip in the middle. */
+export const cardFace = (rank, suit) => once(`card:${rank}${suit}`, 128, 176, (g, w, h) => {
+  const [pip, col] = SUITS[suit];
+  rr(g, 0, 0, w, h, 12, '#fffaf0'); g.strokeStyle = '#d8d0c0'; g.lineWidth = 3; g.beginPath(); g.roundRect(2, 2, w - 4, h - 4, 10); g.stroke();
+  for (const [x, y, r] of [[22, 26, 0], [w - 22, h - 26, Math.PI]]) {
+    g.save(); g.translate(x, y); g.rotate(r);
+    text(g, rank, 0, 0, 30, col); text(g, pip, 0, 28, 24, col);
+    g.restore();
+  }
+  text(g, pip, w / 2, h / 2 + 4, 70, col);
+});
+/** A card's back: a red Poké Ball pattern in a white border. */
+export const cardBack = () => once('card:back', 128, 176, (g, w, h) => {
+  rr(g, 0, 0, w, h, 12, '#fffaf0'); rr(g, 8, 8, w - 16, h - 16, 8, '#c82838');
+  g.globalAlpha = 0.35;
+  for (let y = 24; y < h; y += 34) for (let x = 24 + ((y / 34) % 2) * 17; x < w; x += 34) pokeball(g, x, y, 10);
+  g.globalAlpha = 1;
+  pokeball(g, w / 2, h / 2, 24);
+});
+
+/** A card table's felt seen from above, `w` x `h` for a table 2 x 1: Blackjack's betting arcs, or High-Low's arrows. */
+export const feltArt = (kind) => once(`felt:${kind}`, 512, 256, (g, w, h) => {
+  const bj = kind === 'blackjack', col = bj ? '#1e7a46' : '#1a4a9a';
+  const bg = g.createRadialGradient(w / 2, h * 0.2, 20, w / 2, h * 0.4, w * 0.6); bg.addColorStop(0, shade(col, 1.25)); bg.addColorStop(1, shade(col, 0.75));
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  g.strokeStyle = 'rgba(255,240,200,0.7)'; g.lineWidth = 3;
+  if (bj) {
+    g.beginPath(); g.ellipse(w / 2, 0, w * 0.36, h * 0.62, 0, 0.12, Math.PI - 0.12); g.stroke();
+    g.font = '900 20px "Arial Black", Arial, sans-serif'; g.fillStyle = '#ffd84a'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const say = 'BLACKJACK PAYS 3 TO 2';
+    for (let i = 0; i < say.length; i++) {
+      const a = Math.PI / 2 + (i - (say.length - 1) / 2) * 0.052;
+      g.save(); g.translate(w / 2 + Math.cos(a) * w * 0.3, Math.sin(a) * h * 0.48); g.rotate(a - Math.PI / 2); g.fillText(say[i], 0, 0); g.restore();
+    }
+    text(g, 'DEALER MUST HIT SOFT 16', w / 2, h * 0.3, 13, 'rgba(255,240,200,0.8)');
+    for (let i = 0; i < 5; i++) {
+      const a = Math.PI / 2 + (i - 2) * 0.42, x = w / 2 + Math.cos(a) * w * 0.42, y = Math.sin(a) * h * 0.8;
+      g.beginPath(); g.arc(x, y, 18, 0, TAU); g.stroke();
+    }
+    pokeball(g, w / 2, h * 0.14, 12);
+  } else {
+    text(g, 'HIGH', w * 0.2, h * 0.3, 34, '#7af07a'); text(g, 'LOW', w * 0.8, h * 0.3, 34, '#ff7a7a');
+    for (const [x, up, c] of [[0.2, 1, '#7af07a'], [0.8, -1, '#ff7a7a']]) {
+      g.fillStyle = c; g.beginPath(); g.moveTo(w * x, h * 0.55 - up * 30); g.lineTo(w * x - 26, h * 0.55 + up * 14); g.lineTo(w * x + 26, h * 0.55 + up * 14); g.fill();
+    }
+    g.beginPath(); g.roundRect(w * 0.36, h * 0.18, w * 0.28, h * 0.62, 12); g.stroke();
+    text(g, 'LET IT RIDE', w / 2, h * 0.9, 18, '#ffd84a');
+  }
+});
+
+/** A slot machine's reel strip, wrapped round its drum top to bottom: 7, Pikachu, cherries, a Poké Ball, BAR, a star. */
+export const reelArt = () => once('reel', 112, 576, (g, w, h) => {
+  const n = 6, ch = h / n;
+  for (let i = 0; i < n; i++) {
+    const x = w / 2, y = i * ch + ch / 2;
+    g.fillStyle = i % 2 ? '#f6efe0' : '#fffaf0'; g.fillRect(0, i * ch, w, ch);
+    if (i === 0) text(g, '7', x, y + 2, 76, '#d82838', '#7a1010');
+    if (i === 1) pikachu(g, x, y + 6, 1.8);
+    if (i === 2) { g.strokeStyle = '#3a8a3a'; g.lineWidth = 4; g.beginPath(); g.moveTo(x - 14, y + 6); g.quadraticCurveTo(x - 4, y - 30, x + 4, y - 32); g.moveTo(x + 16, y + 6); g.quadraticCurveTo(x + 10, y - 20, x + 4, y - 32); g.stroke(); disc(g, x - 14, y + 16, 17, '#d82838'); disc(g, x + 16, y + 16, 17, '#d82838'); disc(g, x - 19, y + 10, 5, '#ff9a9a'); disc(g, x + 11, y + 10, 5, '#ff9a9a'); }
+    if (i === 3) pokeball(g, x, y, 36);
+    if (i === 4) { rr(g, x - 46, y - 20, 92, 40, 8, '#202028'); text(g, 'BAR', x, y + 1, 32, '#ffd84a'); }
+    if (i === 5) { g.fillStyle = '#ffd84a'; g.beginPath(); for (let k = 0; k < 10; k++) { const a = k / 10 * TAU - Math.PI / 2, r = k % 2 ? 16 : 40; g.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); } g.fill(); }
+  }
+});
+
+/** A slot machine's belly glass: JACKPOT over 7 7 7, the pay table under it. */
+export const slotBelly = () => once('slot:belly', 256, 192, (g, w, h) => {
+  const bg = g.createRadialGradient(w / 2, h * 0.4, 10, w / 2, h * 0.4, w * 0.7); bg.addColorStop(0, '#ff6a6a'); bg.addColorStop(1, '#6a0a18');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(255,220,120,0.18)';
+  for (let k = 0; k < 16; k++) { g.beginPath(); g.moveTo(w / 2, h * 0.42); g.arc(w / 2, h * 0.42, w, k * TAU / 16, k * TAU / 16 + 0.18); g.fill(); }
+  glowOn(g, '#ffd84a', 14); text(g, 'JACKPOT', w / 2, 34, 40, '#ffe060', '#5a0a10'); glowOff(g);
+  text(g, '7 7 7', w / 2, 92, 54, '#ffffff', '#a01020');
+  rr(g, 22, 128, w - 44, 50, 8, 'rgba(20,8,12,0.75)');
+  text(g, '777 ......... 150', w / 2, 144, 15, '#ffd84a'); text(g, 'PIKACHU ... FREE SPINS', w / 2, 164, 13, '#ffffff');
+});
+
+/** A Plinko board's face behind its pegs: deep blue, a Poké Ball drop at the top, the pay bins at the bottom. */
+export const plinkoFace = () => once('plinko:face', 256, 512, (g, w, h) => {
+  const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#1c3a7a'); bg.addColorStop(1, '#0c1a3a');
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(120,180,255,0.08)';
+  for (let k = 0; k < 9; k++) g.fillRect(k * 32, 0, 1, h);
+  text(g, 'PLINKO', w / 2, 30, 36, '#ffd84a', '#0a1430');
+  const bins = [['10', '#ffd84a'], ['3', '#e85a3a'], ['1', '#3aa8d8'], ['0', '#5a6a80'], ['1', '#3aa8d8'], ['3', '#e85a3a'], ['10', '#ffd84a']], bw = (w - 16) / bins.length;
+  bins.forEach(([t, c], i) => { rr(g, 8 + i * bw + 2, h - 70, bw - 4, 62, 6, c); text(g, t, 8 + i * bw + bw / 2, h - 38, 22, '#ffffff', 'rgba(0,0,0,0.4)'); });
+  g.fillStyle = '#ffffff'; for (let i = 0; i <= bins.length; i++) g.fillRect(8 + i * bw - 2, h - 96, 4, 90);
 });
