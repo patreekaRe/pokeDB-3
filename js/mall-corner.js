@@ -898,7 +898,7 @@ export function buildCorner(THREE, size) {
         }
         if (bubble) {
           if (near) {
-            const text = `New coins in ${untilReset().short}`;
+            const text = `New coins & stamps in ${untilReset().short}`;
             if (text !== said) { bubble.lastChild.textContent = said = text; }
             hour.getWorldPosition(top); top.y += 0.9;
             const r = hud.view.getBoundingClientRect(), o = hud.stage.getBoundingClientRect(), v = top.project(hud.camera);
