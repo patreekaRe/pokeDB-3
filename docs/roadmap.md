@@ -55,8 +55,11 @@ Polish pass across them (2026-10-12, the user's asks): every cabinet's How to pl
 preview running on a little CRT over numbered step tiles (`helpScreen()` in `js/arcade-kit.js`, `.ar-help` in
 `css/corner-games.css`), the head's Free play an LED pill (`.ar-free`); Poké Puzzle a round SWAP key over a smaller RAISE
 (`SWAP` in `js/arcade-puzzle.js`), Ponyta Dash a smaller tap hop (`JUMP` 440), Gastly Maze side tunnels (`T` in `MAZE`,
-`wrap()`). Waiting on the user: which games get leaderboards (suggested Ponyta Dash, Pidgey Flap, Snorlax Stacker,
-Poké Puzzle, Beedrill Invaders, Ekans Trail: endless, skill-only score; a weekly board like the Sky Pillar's).
+`wrap()`). Weekly arcade leaderboards for those six (the user's yes, same day): `arcadeBoard/<week>_<game>_<uid>`, each player's best
+of the week (the Sky Pillar's Monday), raised by any higher score (`ARCADE_GAMES` / `rankArcade()` in
+`js/data/leaderboard.js`, `postArcadeScore()` / `KINDS.arcade` in `js/leaderboard.js`, posted from the kit's game over, a 🏆
+key in those cabinets' heads). **Waiting on the user: paste the new `firestore.rules` into the Firebase console**, or
+nothing posts. Not yet tried against the real Firestore (blocked in the cloud session).
 Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
 The six casino games got real 3D models too (2026-10-12: `B.slot`, `B.cardtable`, `B.plinko`, Voltorb Flip and the quiz
 on `B.arcade`), Meowth's counter sells only the 18 games (the rest `RETIRED_PRIZES`, kept by buyers), each a turning 3D

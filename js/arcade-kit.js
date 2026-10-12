@@ -11,6 +11,9 @@ import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
 import { record, best } from './corner-pot.js';
+import { postArcadeScore, openLeaderboard } from './leaderboard.js';
+import { ARCADE_BY_ID } from './data/leaderboard.js';
+import { buddy } from './trainercard.js';
 
 const sprites = new Map();
 /** A Pokémon's front GIF as an image (its first frame when drawn on a canvas). */
@@ -66,6 +69,8 @@ export function runArcade(def, onClose) {
       api.say(`${overText}${top && score > 0 ? ` A new best: ${score.toLocaleString()}!` : ` Score: ${score.toLocaleString()}.`} Tap to play again.`);
       playSound(top && score > 0 ? 'stat-up' : 'cancel', 'select');
       render();
+      const said = line, ranked = ARCADE_BY_ID[def.id];
+      if (ranked && score > 0) postArcadeScore(def.id, score, buddy().id).then(t => { if (t && line === said) api.say(`${said} 🏆 ${t}`); });
     },
   };
 
@@ -84,7 +89,15 @@ export function runArcade(def, onClose) {
 
   function render() {
     const head = el('div', 'vf-head');
-    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv ar-free', 'Free play'), helpKey(help, () => { help = !help; render(); }));
+    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv ar-free', 'Free play'));
+    if (ARCADE_BY_ID[def.id]) {
+      const board = el('button', 'cg-help-key ar-board-key', '🏆');
+      board.type = 'button';
+      board.setAttribute('aria-label', 'Weekly leaderboard');
+      board.addEventListener('click', () => { playSound('select'); openLeaderboard(0, 'arcade'); });
+      head.append(board);
+    }
+    head.append(helpKey(help, () => { help = !help; render(); }));
     const box = el('div', 'vf-panel ar-panel');
     if (help) {
       box.append(head, helpScreen());
@@ -154,7 +167,7 @@ export function runArcade(def, onClose) {
   }
 
   function onKey(e) {
-    if (!cv?.isConnected || help) return;
+    if (!cv?.isConnected || help || document.getElementById('board-dialog')?.open) return;
     const k = { ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down', ' ': 'act', Enter: 'act', z: 'left', m: 'right' }[e.key];
     if (!k) return;
     e.preventDefault(); e.stopPropagation();
