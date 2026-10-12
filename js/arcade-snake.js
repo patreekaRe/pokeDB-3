@@ -11,6 +11,7 @@ const BERRY = 10, GOLD = 50, GOLD_LIFE = 6, START = 0.17, FASTEST = 0.075;
 
 export const openSnake = (onClose) => runArcade({
   id: 'snake', title: 'Ekans Trail', colour: '#8a4ab8', W, H,
+  swipe: true,
   intro: 'Eat the Berries and don\'t bite your tail! Swipe to steer.',
   help: [['Swipe anywhere, or tap beside Ekans\'s head, to turn.', 'The arrow keys work too.'], ['Each Berry makes Ekans longer and a little quicker.', 'Hit the fence or your own tail and it\'s over.'], [`A Berry is ${BERRY}.`, `A golden Berry is ${GOLD}, but it vanishes after ${GOLD_LIFE} seconds.`]],
   make(api) {

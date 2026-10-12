@@ -292,6 +292,8 @@
 /* The home arcade's cabinet window (js/arcade-kit.js), in each game's colour, full screen (the user's ask, 2026-10-12):
    the screen takes whatever height is left, at the game's own shape (`size()`). */
 .cg-overlay.ar { padding: 0; background: #07040f; }
+/* A held thumb on an arcade cabinet never selects its text or pops the iOS callout (the user saw RESTART highlighted) */
+.cg-overlay.ar, .cg-overlay.ar * { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 .ar-panel { background: linear-gradient(color-mix(in srgb, var(--ar) 85%, #fff), color-mix(in srgb, var(--ar) 70%, #000)); }
 .cg-overlay.ar > .ar-panel { width: 100%; height: 100%; max-height: none; border-radius: 0; overflow: hidden; gap: 8px;
   padding: max(10px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
@@ -443,3 +445,26 @@ html.calm-fx .ar-free::before { animation: none; }
 .gd-row.done { background: rgba(120, 255, 160, 0.08); }
 .gd-row.done .gd-name { color: #c8ffb8; }
 .gd-won { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: #c8ffb8; font-weight: 800; }
+/* A swipe game's deck (`swipe: true`): a faint engraved "swipe to play" with a fingertip gliding along it, then START and
+   EXIT as a Game Boy's slanted rubber pills, side by side. */
+.ar-deck.ar-deck-swipe { grid-template-columns: 1fr; justify-items: center; gap: 10px; padding: 10px 16px 12px; }
+.ar-swipe { position: relative; width: 150px; height: 26px; pointer-events: none; }
+.ar-swipe-track { position: absolute; left: 14px; right: 14px; top: 7px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ar) 55%, #fff) 50%, transparent); opacity: 0.35; }
+.ar-swipe-dot { position: absolute; top: 3px; left: 14px; width: 10px; height: 10px; border-radius: 50%;
+  background: color-mix(in srgb, var(--ar) 40%, #fff); box-shadow: 0 0 8px color-mix(in srgb, var(--ar) 70%, transparent);
+  opacity: 0; animation: arSwipe 2.6s ease-in-out infinite; }
+@keyframes arSwipe { 0% { transform: translateX(0) scale(0.6); opacity: 0; } 15% { opacity: 0.75; transform: translateX(0) scale(1); }
+  60% { transform: translateX(112px) scale(1); opacity: 0.75; } 75%, 100% { transform: translateX(112px) scale(0.6); opacity: 0; } }
+.ar-swipe-text { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 8.5px; font-weight: 800;
+  letter-spacing: 3px; text-transform: uppercase; color: #8a8496; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.08); }
+.ar-cab.playing .ar-swipe-dot, html.calm-fx .ar-swipe-dot { animation: none; opacity: 0.5; left: calc(50% - 5px); }
+.ar-pills { display: flex; gap: 22px; }
+.ar-pill-box { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 4px 0; cursor: pointer; touch-action: manipulation; }
+.vf-key.ar-pill { flex: none; width: 40px; height: 12px; min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 6px; transform: rotate(-24deg);
+  background: linear-gradient(#6a6474, #3e3846); box-shadow: 0 0 0 2px #120f16, 0 2px 0 2px #05030a, inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  touch-action: manipulation; animation: none; }
+.vf-key.ar-pill.ar-start { background: linear-gradient(#7a7484, #4a4452); }
+.vf-key.ar-pill:active { transform: rotate(-24deg) translateY(2px); box-shadow: 0 0 0 2px #120f16, 0 0 0 2px #05030a; }
+.ar-pill-label { font-size: 8.5px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #a8a2b4;
+  transform: rotate(-24deg) translateX(-4px); }

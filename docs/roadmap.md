@@ -28,6 +28,10 @@ polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's p
 in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
 from Psyduck Pong / Spearow Flap / Gastly Maze, Spearow made Pidgey); a first pass each, played headless. Twelve now,
 in this order (the user may reorder):
+**Swipe cabinets** (2026-10-12, same branch and `main`, the user's ask): Poliwag Crossing and Ekans Trail have no play
+buttons (`swipe: true`, `swipeDeck()` in `js/arcade-kit.js`): a faint "swipe to play" with a gliding fingertip, and
+START / EXIT as two small Game Boy pills side by side (`.ar-pill`). Next: the user playtests; say if other cabinets want it.
+
 **Controls and frame rate pass** (patch 1.10, 2026-10-12, branch `claude/arcade-cabinets-design-yh10el`, on `main` too):
 a cabinet's `stick: false` drops the joystick (Berry, Ditto, Stacker, Memory, Puzzle), `keys: { left, right }` puts big
 held arrow buttons under each thumb instead (Crossing and Maze ◀ ▶ / ▲ ▼, Pong ◀ / ▶), Invaders' FIRE is a deck button;

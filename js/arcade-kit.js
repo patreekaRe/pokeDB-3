@@ -3,7 +3,7 @@
    (`help`), a logical canvas size (W x H) and make(api), which returns (and must not score or end the game until ticked or tapped, as the start screen draws one) { tick(dt, now), draw(g, now), down(x, y),
    move(x, y), up(x, y), key(k, down) } for one game. The kit runs the window (the Game Corner's panel), the loop, input
    in canvas units, Score / Best, the start and game-over screens and the cabinet's control deck (a joystick sent as
-   the arrow keys, or `stick: false` for none, or `keys` for big arrow buttons; START / EXIT; the game's own round
+   the arrow keys, or `stick: false` for none, or `keys` for big arrow buttons, or `swipe: true` for no buttons; START / EXIT; the game's own round
    buttons, `pad`), and keeps each game's best in the Game Corner's
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
@@ -154,6 +154,7 @@ export function runArcade(def, onClose) {
       Poliwag Crossing's ◀ ▶ and ▲ ▼; the user's ask the same day). Pressed on pointerdown so a phone's double-tap zoom
       never eats them. */
   function deck() {
+    if (def.swipe) return swipeDeck();
     const row = el('div', 'ar-deck');
     const mid = el('div', 'ar-sys');
     mid.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-sys-key ar-start', start),
@@ -163,6 +164,27 @@ export function runArcade(def, onClose) {
     if (def.keys?.right) btns.append(arrows(def.keys.right));
     const left = def.keys?.left ? arrows(def.keys.left) : def.keys || def.stick === false ? el('div') : joystick();
     row.append(left, mid, btns);
+    return row;
+  }
+
+  /** A game steered by swiping its screen (`swipe: true`) has no buttons to play with (the user's ask, 2026-10-12): a
+      faint "swipe to play" mark, a fingertip gliding along it, and the two system keys as small slanted pills side by
+      side, a Game Boy's START and SELECT. */
+  function swipeDeck() {
+    const row = el('div', 'ar-deck ar-deck-swipe');
+    const hint = el('div', 'ar-swipe');
+    hint.append(el('span', 'ar-swipe-track'), el('span', 'ar-swipe-dot'), el('span', 'ar-swipe-text', 'Swipe to play'));
+    const pills = el('div', 'ar-pills');
+    const pill = (label, cls, fn) => {
+      const b = key('', `ar-pill ${cls}`, fn);
+      b.setAttribute('aria-label', label);
+      const box = el('label', 'ar-pill-box');
+      box.append(b, el('span', 'ar-pill-label', label));
+      return box;
+    };
+    pills.append(pill(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-start', start),
+      pill('Exit', 'ar-exit', () => panel.shut()));
+    row.append(hint, pills);
     return row;
   }
 

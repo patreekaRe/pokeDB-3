@@ -15,9 +15,9 @@ const rowY = (r) => TOP + r * RH;
 
 export const openCrossing = (onClose) => runArcade({
   id: 'crossing', title: 'Poliwag Crossing', colour: '#3a8ae0', W, H,
-  keys: { left: [['◀', 'left'], ['▶', 'right']], right: [['▲', 'up'], ['▼', 'down']] },
+  swipe: true,
   intro: 'Hop Poliwag over the road and river to the lily pads!',
-  help: [['Hop with the big arrow buttons:', '◀ ▶ under your left thumb, ▲ ▼ under your right. Swiping or the arrow keys work too.'], ['Dodge the Tauros and Rapidash on the road.', 'In the river, ride Lapras and the logs: the water is too fast to swim.'], [`Fill all ${PADS.length} lily pads for a quicker crossing.`, `10 a new lane, 50 a pad plus the time left, 200 for all five. ${LIVES} lives.`]],
+  help: [['Swipe the screen to hop that way.', 'A tap beside Poliwag hops it there too, and the arrow keys work.'], ['Dodge the Tauros and Rapidash on the road.', 'In the river, ride Lapras and the logs: the water is too fast to swim.'], [`Fill all ${PADS.length} lily pads for a quicker crossing.`, `10 a new lane, 50 a pad plus the time left, 200 for all five. ${LIVES} lives.`]],
   make(api) {
     let level = 0, lives = LIVES, lanes, filled, me, best, time, dying = 0, cause = '', swipe = null, queued = null, cheer = 0;
     const build = () => {

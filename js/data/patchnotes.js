@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'Poliwag Crossing and Ekans Trail are played by swiping the screen, with small Start and Exit keys under it.'],
   ['look', 'Pokémon no longer sink into the walls, shop fronts and counters behind them.'],
   ['hub', 'Hold and drag to walk everywhere you can walk: the Poké Mall and its shops, the Secret Base, the Pokémon Center, the Mart and the ? rooms.'],
   ['fixes', 'The confirm sound plays as you tap a door, a shop or anything you walk to, not when you get there.'],
