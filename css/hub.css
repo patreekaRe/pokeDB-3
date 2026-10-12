@@ -597,3 +597,5 @@
 .pc-kind-size { font-size: 0.5rem; color: #2a6a80; }
 .pc-screen.calm .pc-bp-pip { animation: none !important; }
 @media (prefers-reduced-motion: reduce) { .pc-bp-pip circle { animation: none !important; } }
+/* the Game Corner's regulars (js/corner-crowd.js) share the ghosts' bubble, kept on screen with its tail on the speaker */
+.crowd-bubble::after { left: calc(50% + var(--tail, 0px)); }

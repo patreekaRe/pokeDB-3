@@ -50,6 +50,7 @@ export const NEXT = [
   ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
   ['base', 'Beedrill Invaders: Pikachu no longer fires by itself. Tap the round FIRE button (or Space) to zap.'],
   ['mall', 'Over Meowth\'s counter a big screen cycles through the arcade leaderboards, each game\'s top three this week (tap it for the full board); the GAME CORNER sign moved up above the pink neon, and the stamp card sits just over Meowth\'s head.'],
+  ['mall', 'The Game Corner has regulars: a few Pokémon playing the slots, arcade and tables, wandering about deciding, chatting with each other and with Meowth, coming and going through the day. Tap one to talk; walk up to its game and it makes room.'],
   ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
   ['mall', 'No more Deal of the Day: everything in the Game Corner is its normal price.'],
 ];

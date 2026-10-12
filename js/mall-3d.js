@@ -15,6 +15,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
+import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
@@ -757,7 +758,13 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     places[id] = { id, front: SHOPS[id].front, ...built };
     if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
     scene.add(built.group);
+    if (id === 'gc') places.gc.crowd = makeCrowd({   // the Game Corner's regulars (js/corner-crowd.js)
+      THREE, group: built.group, monBoard, drawMon, dispose, PITCH, spots: built.spots, door: built.door ?? DOOR,
+      cols: built.cols ?? COLS, rows: built.rows ?? ROWS, route, free, tileX, tileZ, camera, view, stage: root.querySelector('.b3-stage'),
+      say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,
+    });
   }
+  places[id].crowd?.enter();
   setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
   if (id === 'hall') syncRibbon();
   if (sound) playSound(sound);
@@ -1022,6 +1029,7 @@ function onTap(e) {
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
   const first = hits[0]?.object;
   walker.exit = false;
+  if (first?.userData.patron && P.crowd?.tap(first)) return;
   if (first?.userData.exit) return headOut();
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   let o = first;
@@ -1126,6 +1134,7 @@ function frame(now) {
     k.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
   }
   P.tick?.(now, dt);
+  places.gc?.crowd?.tick(now, dt, P.id === 'gc');
   tickRibbon(dt, now);
   tickConfetti(dt, now);
   if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
