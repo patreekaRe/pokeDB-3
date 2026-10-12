@@ -18,7 +18,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
-import { homeGame, playAtHome } from './home-arcade.js';
+import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
@@ -1473,6 +1473,7 @@ function resize() {
 
 function frame(now) {
   if (!root.isConnected) return;
+  if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();

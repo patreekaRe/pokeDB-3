@@ -20,6 +20,41 @@ const pic = (id) => {
   return pics.get(id);
 };
 
+/* The sky, hills, tree and grass never change, so they're painted once at the screen's scale and copied in each frame,
+   and the Starf Berry's glow is a painted halo, not shadowBlur: repainting it all every frame made the game stutter. */
+let back = null;
+function scenery(scale) {
+  if (back?.scale === scale) return back.cv;
+  const cv = document.createElement('canvas');
+  cv.width = Math.round(W * scale); cv.height = Math.round(H * scale);
+  const g = cv.getContext('2d');
+  g.scale(scale, scale);
+  const sky = g.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, '#8ad0f8'); sky.addColorStop(1, '#d8f0ff');
+  g.fillStyle = sky; g.fillRect(0, 0, W, GROUND);
+  g.fillStyle = '#a8d890';
+  for (const [cx, r] of [[40, 90], [160, 110], [270, 80]]) { g.beginPath(); g.arc(cx, GROUND + 30, r, Math.PI, 0); g.fill(); }
+  // the Berry tree's canopy along the top
+  g.fillStyle = '#3a8a3a'; g.fillRect(0, 0, W, 34);
+  g.fillStyle = '#4aa848';
+  for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(i * 38 + 6, 34 + Math.sin(i * 1.7) * 6, 26, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#5ac058';
+  for (let i = 0; i < 8; i++) { g.beginPath(); g.arc(i * 40 + 24, 22, 16, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = '#6aba48'; g.fillRect(0, GROUND, W, H - GROUND);
+  g.fillStyle = '#4a9a38'; for (let i = 0; i < 20; i++) g.fillRect(i * 16 + 4, GROUND, 3, 6 + (i % 3) * 2);
+  back = { scale, cv };
+  return cv;
+}
+let glow = null;
+function halo() {
+  if (glow) return glow;
+  glow = document.createElement('canvas');
+  glow.width = glow.height = 64;
+  const g = glow.getContext('2d'), r = g.createRadialGradient(32, 32, 6, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255, 224, 96, 0.9)'); r.addColorStop(1, 'rgba(255, 224, 96, 0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  return glow;
+}
+
 export const openBerry = (onClose) => runArcade({
   id: 'berry', title: 'Pachirisu Berry Catch', colour: '#4aa8e8', W, H,
   intro: 'Catch the falling Berries! Drag or tap to run.',
@@ -84,30 +119,18 @@ export const openBerry = (onClose) => runArcade({
       move(px, py, pressed) { if (pressed) target = px; },
       key(k, down) { if (k === 'left' || k === 'right') held[k] = down; },
       draw(g, now) {
-        const sky = g.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, '#8ad0f8'); sky.addColorStop(1, '#d8f0ff');
-        g.fillStyle = sky; g.fillRect(0, 0, W, GROUND);
-        g.fillStyle = '#a8d890';
-        for (const [cx, r] of [[40, 90], [160, 110], [270, 80]]) { g.beginPath(); g.arc(cx, GROUND + 30, r, Math.PI, 0); g.fill(); }
-        // the Berry tree's canopy along the top, its fruit hanging
-        g.fillStyle = '#3a8a3a'; g.fillRect(0, 0, W, 34);
-        g.fillStyle = '#4aa848';
-        for (let i = 0; i < 9; i++) { g.beginPath(); g.arc(i * 38 + 6, 34 + Math.sin(i * 1.7) * 6, 26, 0, Math.PI * 2); g.fill(); }
-        g.fillStyle = '#5ac058';
-        for (let i = 0; i < 8; i++) { g.beginPath(); g.arc(i * 40 + 24, 22, 16, 0, Math.PI * 2); g.fill(); }
+        g.drawImage(scenery(g.getTransform().a), 0, 0, W, H);
         for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? '#e84868' : '#3a7ae0'; g.beginPath(); g.arc(i * 52 + 26, 50 + Math.sin(now / 400 + i) * 1.5, 5, 0, Math.PI * 2); g.fill(); }
-        g.fillStyle = '#6aba48'; g.fillRect(0, GROUND, W, H - GROUND);
-        g.fillStyle = '#4a9a38'; for (let i = 0; i < 20; i++) g.fillRect(i * 16 + 4, GROUND, 3, 6 + (i % 3) * 2);
         for (const d of drops) {
           const k = KINDS[d.kind];
           g.save(); g.translate(d.x, d.y); g.rotate(d.a);
           if (k.bad) {
             drawMon(g, 'pineco', 0, k.r * 1.2, k.r * 2.6);
           } else {
-            if (k.gold) { g.shadowColor = '#ffe060'; g.shadowBlur = 12; }
+            if (k.gold) g.drawImage(halo(), -k.r * 2.4, -k.r * 2.4, k.r * 4.8, k.r * 4.8);
             const img = pic(k.img);
             if (img.complete && img.naturalWidth) { g.imageSmoothingEnabled = false; g.drawImage(img, -k.r * 1.6, -k.r * 1.6, k.r * 3.2, k.r * 3.2); }
             else { g.fillStyle = k.gold ? '#ffd84a' : '#3a7ae0'; g.beginPath(); g.arc(0, 0, k.r, 0, Math.PI * 2); g.fill(); }
-            g.shadowBlur = 0;
           }
           g.restore();
         }
