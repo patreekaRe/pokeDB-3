@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
