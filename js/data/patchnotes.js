@@ -48,6 +48,7 @@ export const NEXT = [
   ['base', 'Poké Puzzle has a big round SWAP button (it swaps the two panels in the cursor), with a smaller RAISE under it.'],
   ['base', 'Ponyta Dash: a quick tap is a smaller hop; hold it for the high jump.'],
   ['base', 'Gastly Maze has tunnels through both side walls: run in one side and come out the other.'],
+  ['base', 'Beedrill Invaders: Pikachu no longer fires by itself. Tap the round FIRE button (or Space) to zap.'],
   ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
 ];
 

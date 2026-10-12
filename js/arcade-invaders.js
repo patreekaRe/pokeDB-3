@@ -1,20 +1,21 @@
 /* arcade-invaders.js  -  Beedrill Invaders, a home arcade game (js/arcade-kit.js; 2026-10-12, the user's pick), after Space
    Invaders: Pikachu holds the ground under a swarm of Beedrill, Kakuna and Weedle marching side to side and stepping down,
-   dropping Poison Stings. Drag (or the arrow keys) to move; Pikachu fires Thunderbolts by itself. A Butterfree drifts over
+   dropping Poison Stings. Drag (or the arrow keys) to move; the round FIRE key under the ground (or Space) fires a
+   Thunderbolt (it fired by itself until 2026-10-12: the user found the constant zapping annoying). A Butterfree drifts over
    now and then for a bonus. Three lives; a cleared swarm brings a faster one, and the swarm reaching Pikachu ends it. */
 
 import { runArcade, drawMon, banner, rand, pick } from './arcade-kit.js';
 
-const W = 300, H = 380, GROUND = H - 22, ME_Y = GROUND, ME_H = 30, COLS = 7, CW = 32, RH = 28, LIVES = 3, FIRE = 0.36;
+const W = 300, H = 430, GROUND = 380, BTN = { x: W - 44, y: 405, r: 22 }, ME_Y = GROUND, ME_H = 30, COLS = 7, CW = 32, RH = 28, LIVES = 3, FIRE = 0.36;
 const ROWS = [['beedrill', 30], ['kakuna', 20], ['kakuna', 20], ['weedle', 10], ['weedle', 10]];
 const STARS = Array.from({ length: 40 }, (_, i) => [(i * 73) % W, (i * 131) % (GROUND - 40), 0.4 + (i % 5) / 6]);
 
 export const openInvaders = (onClose) => runArcade({
   id: 'invaders', title: 'Beedrill Invaders', colour: '#e8b020', W, H,
-  intro: 'Hold back the swarm! Drag to move; Pikachu fires by itself.',
-  help: [['Drag left and right to move Pikachu', '(or hold the arrow keys). It fires Thunderbolts by itself; tap or Space fires too.'], ['Dodge the Poison Stings.', `A sting takes a life; ${LIVES} and it's over, or when the swarm reaches Pikachu.`], ['Weedle 10, Kakuna 20, Beedrill 30.', 'Zap the Butterfree for 50 to 150. A cleared swarm comes back faster.']],
+  intro: 'Hold back the swarm! Drag to move, tap FIRE to zap.',
+  help: [['Drag left and right to move Pikachu', '(or hold the arrow keys).'], ['Tap the round FIRE button (or Space) for a Thunderbolt.', 'Up to three can fly at once, and they knock Poison Stings out of the air.'], ['Dodge the Stings:', `one takes a life; ${LIVES} and it's over, or when the swarm reaches Pikachu.`], ['Weedle 10, Kakuna 20, Beedrill 30.', 'Zap the Butterfree for 50 to 150. A cleared swarm comes back faster.']],
   make(api) {
-    let me = W / 2, target = null, keyDir = 0, cool = 0.6, lives = LIVES, wave = 0, hurt = 0, pause = 0, step = 0, dir = 1, ox, oy, fly = null, flyIn = rand(10, 18), shake = 0;
+    let press = 0, me = W / 2, target = null, keyDir = 0, cool = 0.6, lives = LIVES, wave = 0, hurt = 0, pause = 0, step = 0, dir = 1, ox, oy, fly = null, flyIn = rand(10, 18), shake = 0;
     let bugs = [];
     const bolts = [], stings = [], sparks = [], pops = [];
     const swarm = () => {
@@ -42,7 +43,7 @@ export const openInvaders = (onClose) => runArcade({
         while (sparks.length && sparks[0].t <= 0) sparks.shift();
         while (pops.length && pops[0].t <= 0) pops.shift();
         if (pause > 0) { pause -= dt; if (pause <= 0) swarm(); return; }
-        fire();
+        press = Math.max(0, press - dt);
         const alive = bugs.filter(b => !b.hit);
         const speed = (18 + wave * 7) * (1 + 2.6 * (1 - alive.length / bugs.length));
         ox += dir * speed * dt; step += dt * speed / 12;
@@ -82,9 +83,12 @@ export const openInvaders = (onClose) => runArcade({
         }
         if (bugs.every(b => b.hit)) { wave += 1; api.add(50 * wave); api.say(`Swarm cleared! Wave ${wave + 1} is faster.`); api.sound('stat-up', 'confirm'); pause = 1.4; bolts.length = 0; stings.length = 0; }
       },
-      down(x) { target = x; if (cool <= 0) fire(); },
-      move(x, y, pressed) { if (pressed) target = x; },
-      up() { target = null; },
+      down(x, y) {
+        if (Math.hypot(x - BTN.x, y - BTN.y) <= BTN.r + 8) { press = 0.12; fire(); return; }
+        target = x;
+      },
+      move(x, y, pressed) { if (pressed && y < GROUND) target = x; },
+      up(x, y) { if (Math.hypot(x - BTN.x, y - BTN.y) > BTN.r + 8) target = null; },
       key(k, down) { if (k === 'left' || k === 'right') keyDir = down ? (k === 'left' ? -1 : 1) : (keyDir === (k === 'left' ? -1 : 1) ? 0 : keyDir); if (down && (k === 'act' || k === 'up')) fire(); },
       draw(g, now) {
         g.save();
@@ -125,12 +129,22 @@ export const openInvaders = (onClose) => runArcade({
         for (const p of pops) { g.globalAlpha = Math.max(0, p.t); banner(g, p.text, p.x, p.y, 14, '#a8e0ff'); }
         g.globalAlpha = 1;
         g.restore();
+        const panel = g.createLinearGradient(0, GROUND + 8, 0, H); panel.addColorStop(0, '#1c1a30'); panel.addColorStop(1, '#100e1e');
+        g.fillStyle = panel; g.fillRect(0, GROUND + 8, W, H - GROUND - 8);
+        g.fillStyle = 'rgba(255, 216, 74, 0.35)'; g.fillRect(0, GROUND + 8, W, 1.5);
+        const on = press > 0, by = BTN.y + (on ? 2 : 0), bg = g.createRadialGradient(BTN.x - 7, by - 8, 3, BTN.x, by, BTN.r);
+        bg.addColorStop(0, on ? '#fffbe0' : '#fff070'); bg.addColorStop(1, on ? '#f0b820' : '#e8a010');
+        g.fillStyle = 'rgba(0, 0, 0, 0.4)'; g.beginPath(); g.arc(BTN.x, BTN.y + 3, BTN.r, 0, Math.PI * 2); g.fill();
+        g.save(); g.shadowColor = '#ffe060'; g.shadowBlur = cool <= 0 ? 10 : 0;
+        g.fillStyle = bg; g.beginPath(); g.arc(BTN.x, by, BTN.r, 0, Math.PI * 2); g.fill(); g.restore();
+        g.strokeStyle = 'rgba(255, 255, 255, 0.6)'; g.lineWidth = 1.5; g.beginPath(); g.arc(BTN.x, by, BTN.r - 3, Math.PI * 1.1, Math.PI * 1.7); g.stroke();
+        banner(g, 'FIRE', BTN.x, by + 1, 11, '#fff');
         for (let i = 0; i < lives; i++) {
-          const x = 14 + i * 16, y = H - 10;
+          const x = 18 + i * 16, y = BTN.y;
           g.fillStyle = '#f8d030'; g.beginPath(); g.moveTo(x - 3, y - 7); g.lineTo(x + 4, y - 7); g.lineTo(x, y - 1); g.lineTo(x + 4, y - 1); g.lineTo(x - 4, y + 7); g.lineTo(x - 1, y + 1); g.lineTo(x - 5, y + 1); g.closePath(); g.fill();
         }
         g.font = '700 11px system-ui, sans-serif'; g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillStyle = 'rgba(255, 255, 255, 0.85)';
-        g.fillText(`WAVE ${wave + 1}`, W - 8, H - 10);
+        g.textAlign = 'center'; g.fillText(`WAVE ${wave + 1}`, W / 2 - 10, BTN.y);
         if (pause > 0) banner(g, `WAVE ${wave + 1}`, W / 2, H * 0.42, 30, '#ffd84a');
       },
     };
