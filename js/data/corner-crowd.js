@@ -1,0 +1,250 @@
+/* corner-crowd.js  -  who hangs out in the Game Corner, and what they say (js/corner-crowd.js walks them about; the
+   user's ask, 2026-10-12: Pokémon at the games, a few wandering and deciding, some at Meowth's counter, coming and going
+   through the day, talking now and then but never too much).
+   {name} in any line is the player's nickname (js/leaderboard.js's trainerName()); {other} the Pokémon it's talking to.
+   Each regular: `likes`, the kinds of game it heads for (slots, arcade, cards, plinko, screens); `move` how it walks
+   (walk, hop, float); `quips` it mutters to itself; `play` it says at a game; `you` it says to you when tapped or when
+   you're near; `meowth` its lines at the prize counter. A new regular is an entry here (its front GIF in assets/pokemon/). */
+
+export const PATRONS = [
+  {
+    id: 'pikachu', name: 'Pikachu', move: 'hop', speed: 2.2, likes: ['arcade', 'plinko'],
+    quips: ['Pika pika!', 'Which one, which one...', 'I can feel a high score coming.', 'Static in the air tonight!', 'Chuuu... so many buttons.'],
+    play: ['Come on, come on!', 'PIKA! New record!', 'My cheeks are tingling. Lucky sign!', 'One more go. Just one.', 'Thunder... focus!', 'Aww, so close!'],
+    you: ['Pika! You came to play too, {name}?', 'I zapped the high score board once. Meowth was NOT happy.', 'Try Ponyta Dash! I can never beat it.', 'Hey {name}, wanna race at Pidgey Flap?', 'Pikachu Volleyball is my game. Obviously.', 'I only got 4 gaps on Pidgey Flap. Don\'t tell anyone.', 'This place hums like a Thunder Stone. I love it!'],
+    meowth: ['One Pikachu Volleyball please!', 'Got any Thunder Stones back there?', 'Can I trade my stamp card for a cookie?'],
+  },
+  {
+    id: 'jigglypuff', name: 'Jigglypuff', move: 'hop', speed: 1.8, likes: ['arcade', 'screens'],
+    quips: ['Jiggly~', 'La la laaa...', 'Is anyone listening?', 'This place needs a stage.', 'Hmm, hm-hm, hmmm~'],
+    play: ['Jiggly-PUFF! Perfect!', 'I hit every note!', 'This machine gets me.', 'Sing-Along is too easy for a star.', 'Encore! Encore!', 'Who\'s asleep? Not me. Not yet.'],
+    you: ['Jiggly! Did you come to hear me sing, {name}?', 'Promise you won\'t fall asleep this time.', 'My Sing-Along score is 100% mine. All of it.', 'The neon here makes me look fabulous, right?', 'I drew on Meowth\'s face once. It snored through it.', 'Clap for me, {name}! Please?', 'Next week, I\'m top of the leaderboard. Mark my words.'],
+    meowth: ['Can I sing on your counter?', 'One microphone, please. A shiny one.', 'Do you take requests, Meowth?'],
+  },
+  {
+    id: 'psyduck', name: 'Psyduck', move: 'walk', speed: 1.1, likes: ['arcade', 'cards'],
+    quips: ['Psy...?', 'Why am I here again?', 'My head hurts. Nice lights though.', 'Psyyy...', 'I forgot what I was looking for.'],
+    play: ['Is this the right button?', 'I... won? I won!', 'Psy-yi-yi!', 'Where did the ball go?', 'Psyduck Pong is about me. I\'m famous.', 'Headache... but fun headache.'],
+    you: ['Psy? Oh. Hi {name}. I think.', 'Do you know where I parked my head?', 'I keep losing at Pong. To myself.', 'Meowth said I was "a natural." At what?', 'Psyyy... too many beeps.', 'If I hold my head, the slots go slower. Probably.', 'Have we met? You look nice.'],
+    meowth: ['Psy... what was I buying?', 'One of those. No. That. Psy?', 'Do you sell headache medicine?'],
+  },
+  {
+    id: 'clefairy', name: 'Clefairy', move: 'hop', speed: 1.7, likes: ['slots', 'screens'],
+    quips: ['Clef clef!', 'It\'s a full moon somewhere.', 'Lucky star, lucky star...', 'Pi-pi!', 'So shiny in here.'],
+    play: ['Metronome luck, don\'t fail me!', 'Three moons! ...Wait, there\'s no moons.', 'Clefairy-fairy!', 'I can feel a 7 coming.', 'Spinny spinny!', 'Oooh, pretty lights!'],
+    you: ['Clef! Moon Stones are lucky, you know, {name}.', 'I wave my finger before every spin. It works sometimes!', 'Have you seen the shiny case? So sparkly.', 'The slots on the left wall are luckier. Trust me.', 'Do a little dance before you pull. Like this!', 'You have a lucky face, {name}!', 'I came down from Mt. Moon just for this place.'],
+    meowth: ['Do you have Moon Stones in the back?', 'Pi! One prize, please!', 'I\'ll take something sparkly.'],
+  },
+  {
+    id: 'snorlax', name: 'Snorlax', move: 'walk', speed: 0.7, likes: ['slots', 'cards'],
+    quips: ['Snorrr...', '*yawn*', 'Is there a snack bar?', 'Mmmh... five more minutes.', 'Comfy chair... where?'],
+    play: ['*pulls lever... very slowly*', 'Zzz... huh? I won?', 'Lax... jackpot means snacks.', 'Too much effort. But fun.', 'Mm. Mmm. Mmmm.', 'I bet my nap on red.'],
+    you: ['Snorrr... oh. Hey, {name}.', 'Got any berries? Asking for me.', 'The slot stools are just right for napping.', 'I only came in for the air conditioning.', 'Wake me up if I win.', 'Snorlax Stacker? No. Too much stacking.', 'Big day today. Played one game. Need rest.'],
+    meowth: ['Do prizes come in "edible"?', 'One snack. Two snacks. All the snacks.', 'Mmm. I\'ll take whatever\'s closest.'],
+  },
+  {
+    id: 'slowpoke', name: 'Slowpoke', move: 'walk', speed: 0.6, likes: ['slots', 'plinko'],
+    quips: ['...', '...Slow.', '...huh?', '...nice.', '...where was I...'],
+    play: ['...', '...oh. It stopped.', '...I won? ...yay.', '...pulled the lever... yesterday.', '...spinning...', '...ooh.'],
+    you: ['...oh. Hello, {name}. ...How long have you been there?', '...I\'ve been at this machine... since Tuesday.', '...the reels are... so fast.', '...have you seen... my tail?', '...Plinko is relaxing... the balls fall... like me.', '...good to see you... I think.', '...wait... what were we talking about?'],
+    meowth: ['...one... prize... please...', '...take your time... I will.', '...do you sell... time?'],
+  },
+  {
+    id: 'eevee', name: 'Eevee', move: 'hop', speed: 2, likes: ['screens', 'arcade'],
+    quips: ['Vee!', 'So many choices!', 'I could be anything... like this game!', 'Eevee-vee!', 'Ooh, what\'s that one?'],
+    play: ['Vee! I did it!', 'I\'m evolving my skills!', 'Again, again!', 'This one\'s my new favourite!', 'Whoa, that was close!', 'Eevee, focus...'],
+    you: ['Vee! Hi {name}! What are you playing?', 'I can\'t pick a favourite game. Can you?', 'Maybe if I win enough, I\'ll get a Stone. Which one though?', 'Show me your best game, {name}!', 'The shiny screen shows ME sometimes! Did you see?', 'I tried every machine today. Every one!', 'You\'re fun, {name}. Wanna team up?'],
+    meowth: ['Vee! What\'s the newest prize?', 'Do you have Evolution Stones?', 'Surprise me, Meowth!'],
+  },
+  {
+    id: 'wobbuffet', name: 'Wobbuffet', move: 'walk', speed: 1, likes: ['cards', 'slots'],
+    quips: ['Wobbuffet!', 'Wooooob!', 'WOBBUFFET!', 'Wobba?', 'Wob wob.'],
+    play: ['WOBBUFFET!', 'Wob! Counter!', 'Wobbuffet...', 'Woooob!', 'Wob! Wob!', 'Wobba-buffet!'],
+    you: ['Wobbuffet! ({name}! Nice to see you!)', 'WOBBUFFET! (Watch me win!)', 'Wob? (Do you know where Team Rocket went?)', 'Wobbuffet... (I always mirror the dealer.)', 'Woooob! (It\'s me! Wobbuffet!)', 'Wob wob. (Meowth used to be my teammate.)', 'WOBBUFFET! (That\'s all I say. Sorry.)'],
+    meowth: ['WOBBUFFET! (Hi old pal!)', 'Wob? (Remember the balloon?)', 'Wobbuffet. (One prize, please.)'],
+  },
+  {
+    id: 'chansey', name: 'Chansey', move: 'walk', speed: 1.3, likes: ['cards', 'slots'],
+    quips: ['Chansey!', 'Is everyone feeling alright?', 'Remember to take breaks!', 'Lucky Egg, don\'t fail me.', 'Chaaansey~'],
+    play: ['Lucky, lucky!', 'Chansey! I won!', 'The egg never lies!', 'Oh my, a win!', 'Hit me! Gently.', 'Fortune favours the round.'],
+    you: ['Chansey! Are you resting enough, {name}?', 'Drink some water between games!', 'My Lucky Egg says today\'s your day.', 'Eyes tired? Look at the carpet for a bit.', 'I\'m off duty from the Center. Shh!', 'Don\'t spend every coin in one place, dear.', 'You\'ve got a lucky look about you, {name}.'],
+    meowth: ['One prize, and how\'s your health, Meowth?', 'You look tired, Meowth. Nap time?', 'Something for the Center\'s waiting room, please.'],
+  },
+  {
+    id: 'mrmime', name: 'Mr. Mime', move: 'walk', speed: 1.3, likes: ['cards', 'screens'],
+    quips: ['*mimes pulling a lever*', '*leans on an invisible wall*', 'Mime mime!', '*pretends to win big*', '*juggles nothing*'],
+    play: ['*silently celebrates*', 'Mr. Mime!', '*throws invisible confetti*', '*shuffles invisible cards*', '*shocked face*', 'Barrier... of luck!'],
+    you: ['*waves at {name}*', '*points at you, then at the slots*', 'Mime! (I\'m talking. Rare.)', '*builds an invisible chair and sits on it*', '*mimes a big jackpot and points at you*', '*tips an invisible hat to {name}*', '*hands you an invisible prize*'],
+    meowth: ['*mimes buying the whole counter*', '*bows to Meowth*', '*points at a prize, very precisely*'],
+  },
+  {
+    id: 'machoke', name: 'Machoke', move: 'walk', speed: 1.5, likes: ['arcade', 'cards'],
+    quips: ['Machoke!', 'Gotta keep these arms warm.', 'Where\'s the punching game?', 'Hup! Hup!', 'Leg day tomorrow.'],
+    play: ['HYAAH!', 'That\'s the power of training!', 'Machoke! Strong win!', 'Easy. Too easy.', 'I pressed it too hard. Oops.', 'Again! Stronger!'],
+    you: ['Machoke! You look strong today, {name}!', 'Bowling is just lifting with extra steps.', 'I flexed at the claw machine. It didn\'t help.', 'Wanna arm wrestle for the high score?', 'Whac-a-Diglett is my cardio.', 'Belt\'s tight. Ready to play.', 'Respect, {name}. You\'ve got grit.'],
+    meowth: ['One prize. Make it a heavy one!', 'Do you have dumbbells?', 'Machoke! Thanks for keeping this place open!'],
+  },
+  {
+    id: 'farfetchd', name: 'Farfetch\'d', move: 'walk', speed: 1.4, likes: ['cards', 'plinko'],
+    quips: ['Farfetch\'d!', '*twirls leek*', 'A leek never folds.', 'Where\'s the High-Low table?', 'Quack. Classy quack.'],
+    play: ['Higher! No, lower!', 'Leek of faith!', 'Ha! Read like a book.', 'Quack! Twenty-one!', 'The leek knows.', 'Folding... never!'],
+    you: ['Farfetch\'d! Care for a hand, {name}?', 'This leek has won me three tables tonight.', 'Never trust a Meowth dealer. Trust a leek.', 'High-Low is all about nerves. Mine are steel.', 'Want a tip? Watch the dealer\'s whiskers.', 'I\'m a regular here, you know.', 'Fine evening for cards, {name}.'],
+    meowth: ['Your dealing\'s improved, Meowth.', 'Do you sell leek polish?', 'Something elegant, please.'],
+  },
+  {
+    id: 'porygon', name: 'Porygon', move: 'float', speed: 1.4, likes: ['arcade', 'screens'],
+    quips: ['*beep boop*', 'CALCULATING ODDS...', 'Porygon!', '*whirr*', 'ERROR 404: JACKPOT NOT FOUND.'],
+    play: ['WIN DETECTED.', '*happy beeping*', 'PATTERN FOUND.', 'Probability... favourable.', 'Rebooting strategy...', 'HIGH SCORE SAVED.'],
+    you: ['GREETINGS, {name}.', 'I have computed 9,999 strategies. None work.', 'Arcade machines are my cousins.', 'Your win rate today: unknown. Mine: excellent.', '*scans you* RESULT: FRIENDLY.', 'Do not let Meowth near my code.', 'PLEASE INSERT FUN TO CONTINUE.'],
+    meowth: ['TRANSACTION REQUEST: ONE PRIZE.', 'Your inventory is... optimal.', '*beeps politely*'],
+  },
+  {
+    id: 'persian', name: 'Persian', move: 'walk', speed: 1.6, likes: ['cards', 'slots'],
+    quips: ['Hmph.', 'Persian...', 'Such a common crowd.', '*grooms paw*', 'Classy place. Mostly.'],
+    play: ['Naturally, I won.', 'Hmph. Beginner\'s luck.', 'Deal again.', 'Purrfect.', 'The house always loses to me.', 'Elegant. As usual.'],
+    you: ['Persian. Oh, it\'s you, {name}.', 'I knew Meowth when it was a nobody. Still is, mostly.', 'You may watch me win.', 'This carpet clashes with my coat.', 'Hm. You play well. For a Trainer.', 'I used to be the Boss\'s favourite, you know.', 'Don\'t tell Meowth I come here every day.'],
+    meowth: ['Well, well. The scratching post runs a shop now.', 'Your counter is crooked, Meowth.', 'One prize. Gift-wrapped.'],
+  },
+  {
+    id: 'sudowoodo', name: 'Sudowoodo', move: 'walk', speed: 1, likes: ['slots', 'screens'],
+    quips: ['*stands very still*', 'I\'m a tree. Don\'t mind me.', 'Sudo...', 'No water please.', '*pretends to be a plant*'],
+    play: ['*silently pulls lever like a branch*', 'Sudo! A win!', 'Trees can gamble. Totally.', 'I\'m leafing with coins!', 'Rooted to this machine.', 'Wood you believe it?'],
+    you: ['I\'m a tree. ...Fine. Hi, {name}.', 'Don\'t water me. Please.', 'I stand next to the slots. Nobody notices me.', 'Best camouflage in the Game Corner.', 'Is it obvious I\'m not a tree?', 'Squirtle got me once. Never again.', 'I\'ve been here since they built it. Like furniture.'],
+    meowth: ['*stands at the counter like a plant*', 'One prize. I\'m not a tree.', 'Do you sell pots? Asking for a friend.'],
+  },
+  {
+    id: 'drifloon', name: 'Drifloon', move: 'float', speed: 1.2, likes: ['plinko', 'screens'],
+    quips: ['Fuwa...', 'Floaty floaty.', 'Don\'t pop me...', 'Wheee~', 'Who wants to go for a ride?'],
+    play: ['Fuwa-fuwa!', 'The balls float like me!', 'Oooh, bounce bounce!', 'I almost floated away!', 'Drif! Lucky bin!', 'Wheee! Again!'],
+    you: ['Fuwa! Hold my string, {name}?', 'I like Plinko. Things fall. I don\'t.', 'Are the air vents strong here?', 'I float up to the 777 sign sometimes.', 'Don\'t let me drift off, okay?', 'Want to go for a float later, {name}?', 'Fuwa~ you look kind.'],
+    meowth: ['Fuwa! One prize, floating please!', 'Can I hang off your sign?', 'Do you sell string?'],
+  },
+  {
+    id: 'kangaskhan', name: 'Kangaskhan', move: 'walk', speed: 1.2, likes: ['arcade', 'cards'],
+    quips: ['Kangaskhan!', 'Stay close to me, little one.', 'Baby wants the claw game again.', 'One more, then home.', 'So noisy for the little one.'],
+    play: ['Baby, you pick!', 'Kanga! We won together!', 'Shh, focus, sweetie.', 'Look what Mama won!', 'Not too loud now.', 'Baby\'s turn!'],
+    you: ['Kangaskhan! Say hi to {name}, baby!', 'My little one loves the bright screens.', 'Just one game. Then bedtime.', 'Baby says you\'re nice, {name}!', 'Arcade games build little reflexes!', 'Watch your step around the little ones.', 'Have you seen a kid wander off? ...Oh, never mind, it\'s here.'],
+    meowth: ['One little prize for my baby.', 'Something soft, please.', 'Thank you for keeping it family-friendly, Meowth.'],
+  },
+  {
+    id: 'smeargle', name: 'Smeargle', move: 'walk', speed: 1.4, likes: ['screens', 'arcade'],
+    quips: ['Smeargle!', 'Such colours in here.', 'Shop\'s closed for my break.', 'I should paint this neon.', 'Inspiration!'],
+    play: ['Sketch! I copied a win!', 'Art and luck. Same thing.', 'A masterpiece of a score!', 'Hmm, needs more pink.', 'Smear! Got it!', 'That was beautiful.'],
+    you: ['Oh, {name}! On a break from my shop.', 'I painted half the cabinets in here. Shh.', 'Come by the Furniture store later!', 'The carpet? My design. Meowth asked nicely.', 'Your Secret Base needs a slot machine, {name}.', 'I copy everyone\'s high scores. In paint.', 'Neon paint is so hard to mix.'],
+    meowth: ['How\'s business, neighbour?', 'Want a new sign? I\'ll do you a deal.', 'Smeargle! One prize, for inspiration.'],
+  },
+  {
+    id: 'spinda', name: 'Spinda', move: 'hop', speed: 1.5, likes: ['slots', 'plinko'],
+    quips: ['Spin-spin-spinda!', 'Whoa... dizzy...', 'Is the room spinning or me?', 'Weee~', 'Spinda!'],
+    play: ['Spin! Like me!', 'Wobble-win!', 'Everything\'s spinning! I love it!', 'Whoa, whoa, WIN!', 'The reels get me.', 'Dizzy... lucky...'],
+    you: ['Spinda! {name}, are you spinning too?', 'The slot reels are my cousins.', 'I fell into a Plinko board once. Fun!', 'Every Spinda has different spots. And luck!', 'Which way is the door? Spinny...', 'You stand so still, {name}. How?', 'Spinning makes me lucky. I think.'],
+    meowth: ['One spinny prize please!', 'Whoa, your counter is moving! ...No, it\'s me.', 'Spinda! Surprise me!'],
+  },
+  {
+    id: 'munchlax', name: 'Munchlax', move: 'walk', speed: 1.3, likes: ['arcade', 'slots'],
+    quips: ['Munch munch.', 'Smells like popcorn.', 'Is that a snack under the slot?', 'Hungry...', 'Munchlax!'],
+    play: ['Munch! Win means snacks!', 'Om nom win!', 'Ekans Trail makes me hungry.', 'Berries on the screen... yum.', 'I bit the joystick. Oops.', 'Munchlax!'],
+    you: ['Munch! Got any food, {name}?', 'Ekans eats berries in that game. Jealous.', 'Snorlax is my hero. And my uncle maybe.', 'I found a coin in the carpet! Not a snack though.', 'Prize counter snacks? No? Sad.', 'You smell like berries, {name}.', 'Munch... want to share a bean?'],
+    meowth: ['Do you sell food yet?', 'One snack prize please! Any snack!', 'Can I eat the prize?'],
+  },
+  {
+    id: 'chatot', name: 'Chatot', move: 'hop', speed: 1.6, likes: ['cards', 'screens'],
+    quips: ['Chatot! Chatot!', 'Jackpot! Jackpot! ...Just practising.', 'Meow! Ha, sounded like Meowth.', 'Squawk!', 'Pretty bird, pretty lights!'],
+    play: ['Hit me! Hit me!', 'Higher! Squawk!', 'Winner winner!', 'Twenty-one! Twenty-one!', 'Lucky bird!', 'Chatter! Win!'],
+    you: ['{name}! {name}! Ha, I learned your name!', 'Squawk! Welcome to the Game Corner, meow! ...I do impressions.', 'I copy every jingle in here.', 'Pretty Trainer! Pretty Trainer!', 'Want to hear Meowth? "Coins, coins, coins!"', 'Squawk! I\'m the best talker here.', 'Chatot! Good luck, {name}!'],
+    meowth: ['"A customer, meow!" Ha! Did I get it?', 'Squawk! One prize!', 'Your voice is the best one to copy, Meowth.'],
+  },
+  {
+    id: 'purrloin', name: 'Purrloin', move: 'walk', speed: 1.8, likes: ['slots', 'cards'],
+    quips: ['Purr...', 'Nobody saw that.', '*whistles innocently*', 'Shiny coin...', 'Mine. All mine.'],
+    play: ['Purrfect.', 'Heh. Easy pickings.', 'Totally fair win.', 'Another coin for my stash.', 'Don\'t look at my paws.', 'Purr-loin-ed it!'],
+    you: ['Purr. Hey {name}... nice coins you\'ve got.', 'I\'m not up to anything. Why?', 'Meowth taught me a trick or two. Before it went honest.', 'Purr... just browsing.', 'That shiny case? Just admiring. Honestly.', 'Keep your PokéCoins close, {name}. Heh.', 'I\'m reformed. Mostly. Purr.'],
+    meowth: ['You used to be fun, Meowth.', 'Purr... one prize. Paid for. See?', 'Honest work, huh? Weird.'],
+  },
+  {
+    id: 'kecleon', name: 'Kecleon', move: 'walk', speed: 1.2, likes: ['screens', 'slots'],
+    quips: ['Kecle!', '*blends into the carpet*', 'Mart\'s closed for lunch.', 'You can\'t see me.', '*turns purple*'],
+    play: ['Kecle! Changed colour for luck!', 'A win! Turning gold!', 'Camouflaged from bad luck.', 'Ooh, red reels, red me!', 'Kecleon!', 'Good deal!'],
+    you: ['Kecle! Shopping here instead of my Mart, {name}?', 'I run the Mart in your runs. Hi!', 'I\'m watching for shoplifters. Purrloin...', 'This carpet is hard to match.', 'Good prices here. Not as good as mine.', 'Can you see me? Really?', 'Come buy moves at my Mart, {name}!'],
+    meowth: ['Competition! Nice counter, Meowth.', 'Fair prices, fair prices.', 'Kecle! Want to trade stock?'],
+  },
+  {
+    id: 'togepi', name: 'Togepi', move: 'hop', speed: 1.4, likes: ['screens', 'plinko'],
+    quips: ['Toge-toge!', 'Prii!', 'So bright!', 'Toge?', 'Hehehe!'],
+    play: ['Toge! Toge!', 'Priii! Win!', 'Balls go bouncy!', 'Again! Again!', 'Toge-priii!', 'Ooooh!'],
+    you: ['Toge! {name}! Hug?', 'Priii! Pretty lights!', 'Toge-toge! (Happy!)', 'Toge? (Are you lost too?)', 'Toge! (Play with me!)', 'Priii! (I like you!)', 'Toge-toge-prii!'],
+    meowth: ['Toge! (A toy please!)', 'Priii! (Shiny!)', 'Toge? (Is that for me?)'],
+  },
+  {
+    id: 'lickitung', name: 'Lickitung', move: 'walk', speed: 0.9, likes: ['slots', 'arcade'],
+    quips: ['Lick lick.', 'Mm, this button tastes lucky.', 'Lickitung!', '*licks a coin*', 'Sticky fingers. Sticky tongue.'],
+    play: ['Lick! Win!', 'Tastes like victory!', 'The lever is so lickable.', 'Mm, jackpot flavour.', 'Lickitung!', 'Sticky win!'],
+    you: ['Lick! Hi, {name}! Don\'t worry, I won\'t lick you.', 'Every machine tastes different. The slots taste like 7s.', 'Meowth says no licking the prizes.', 'I licked the leaderboard once. Still on it.', 'Lick? ...No? Okay.', 'Your coins look delicious, {name}.', 'Tongue Whac-a-Diglett is harder than it looks.'],
+    meowth: ['Can I lick the bell?', 'One prize. I promise not to lick it.', 'Lickitung! Sticky thanks, Meowth.'],
+  },
+  {
+    id: 'machop', name: 'Machop', move: 'walk', speed: 1.7, likes: ['arcade', 'plinko'],
+    quips: ['Machop!', 'One day I\'ll lift a slot machine.', 'Hup!', 'Training never stops.', 'Where\'s Machoke?'],
+    play: ['Karate chop!', 'Hi-yah! Point!', 'Machop wins!', 'Pressing with discipline.', 'Chop chop!', 'Stronger next round!'],
+    you: ['Machop! Spar with me, {name}?', 'Machoke says I\'m not tall enough for bowling.', 'I count my reps on the Plinko pegs.', 'Hup! I can chop through any high score.', 'Machop! You look focused.', 'Discipline, {name}! Then fun.', 'I\'m saving coins for a belt.'],
+    meowth: ['Machop! One belt please!', 'Do you have training weights?', 'Hup! Prize!'],
+  },
+];
+
+/* lines anyone might say, by what they're doing */
+export const SHARED = {
+  deciding: ['Hmm, slots or cards?', 'What should I play next...', 'Ooh, which one?', 'So many games, so little time.', 'Eeny, meeny, miny...', 'That one looks lucky.', 'Hmm... decisions.', 'Plinko? Or the arcade?', 'Let\'s try something new.', 'I know what I want. I think.', 'Where\'s a free machine?', 'Maybe the screens first.'],
+  slots: ['Come on, 7s!', 'Spin, spin, spin...', 'Three Pikachu!', 'So close!', 'Stop... NOW!', 'Bonus spins!', 'Almost a jackpot.', 'This machine likes me.'],
+  arcade: ['High score incoming!', 'Ooh, new level!', 'Don\'t die, don\'t die...', 'One more go!', 'I\'m on a roll!', 'Game over? Nooo.'],
+  cards: ['Hit me.', 'Stand.', 'Higher!', 'Lower!', 'Twenty-one!', 'Bust. Ugh.', 'Let it ride!'],
+  plinko: ['Bounce, bounce...', 'Edge! Edge! ...Middle.', 'Here it comes!', 'Times ten!', 'Pegs, be kind.'],
+  screens: ['Ooh, that one\'s shiny.', 'I want that one!', 'Look at the price on that.', 'Someday...', 'So many shinies.'],
+  arriving: ['Made it!', 'Ooh, it\'s busy tonight.', 'Game Corner, here I come!', 'Smells like coins in here.', 'Back again!', 'Hi Meowth!'],
+  leaving: ['Okay, that\'s enough for today.', 'Bye, Meowth!', 'Time to go home.', 'See you tomorrow!', 'Out of luck. For now.', 'I\'ll be back!'],
+  nearYou: ['Oh! Hi, {name}!', 'Hey {name}, good luck!', '{name}! Fancy seeing you here.', 'Psst, {name}, the left slots are hot.', 'Hi {name}! Come play!', 'Nice to see you, {name}.', '{name}! Did you check the leaderboard?'],
+};
+
+/* Meowth's answers at the counter */
+export const MEOWTH_REPLIES = ['Comin\' right up, meow!', 'Ka-ching! Pleasure doin\' business.', 'Ya got the coins, I got the goods, meow.', 'Heh, good choice!', 'Come back soon, meow!', 'That\'s one of my best sellers!', 'No haggling, meow. ...Okay, a little.', 'Don\'t tell the others about the deal, meow.', 'Sure thing, pal!', 'Meow-velous choice!', 'Step right up, step right up!', 'Pay Day, baby!'];
+export const MEOWTH_FOR = {
+  persian: ['Hmph. Some of us work for a living, Persian.', 'Big words from the Boss\'s lap cat, meow.', 'Buy somethin\' or scram, meow!'],
+  wobbuffet: ['Wobbuffet! Long time no see, pal!', 'Heh, just like old times, meow.', 'Don\'t tell Jessie I\'m here, okay?'],
+  purrloin: ['Paws where I can see \'em, meow.', 'Honest work pays better. Trust me.', 'Nice try, kid.'],
+  chatot: ['Hey! That\'s my voice, meow!', 'Quit copyin\' me, bird!', 'Heh, not bad, meow.'],
+  kecleon: ['Friendly competition, meow.', 'Your prices, my prices... let\'s call it even.', 'Fair\'s fair, neighbour.'],
+  smeargle: ['Hey neighbour! Business is boomin\', meow.', 'Paint me a new sign sometime!', 'Heh, love the carpet, by the way.'],
+};
+
+/* two Pokémon passing the time: the first line is the one who starts, then they take turns */
+export const CHATS = [
+  ['Winning anything?', 'Not yet. You?', 'Nope. Fun though!'],
+  ['Have you tried the new arcade games?', 'All of them! Ponyta Dash is hard.', 'Hold the tap for a big jump!'],
+  ['Is that machine free?', 'All yours, {other}.', 'Thanks!'],
+  ['Did you see the leaderboard?', 'I\'m not on it... yet.', 'This week\'s the week!'],
+  ['Which slot is luckiest?', 'The one you\'re not on.', 'Rude. True, maybe.'],
+  ['Nice spin, {other}!', 'Thanks! Pure skill.', 'It\'s a slot machine.'],
+  ['Meowth\'s in a good mood today.', 'It always is when it\'s busy.', 'Coins, coins, coins.'],
+  ['Want to play Blackjack?', 'Only if Meowth deals slow.', 'Ha! Never.'],
+  ['I\'m one stamp away from a scratch card!', 'Lucky! I forgot to play five games.', 'Try the quiz, it\'s quick.'],
+  ['Did you just win?', 'A little!', 'Teach me your ways.'],
+  ['This carpet is so fancy.', 'Smeargle designed it.', 'I can tell.'],
+  ['Hey {other}! Long time!', 'Too long! Where\'ve you been?', 'Here. Always here.'],
+  ['Who\'s That Pokémon is so hard.', 'It\'s always Meowth, right?', 'It was never Meowth.'],
+  ['Plinko or Pinball?', 'Pinball. Always pinball.', 'Bold choice.'],
+  ['Shh, I\'m concentrating.', 'Sorry!', '...thanks.'],
+  ['You look lucky today, {other}.', 'I feel lucky!', 'Share some?'],
+  ['Can you believe Meowth went honest?', 'It\'s a better shopkeeper than a crook.', 'Heh, true.'],
+  ['My paws are tired.', 'Same. One more game?', 'Obviously.'],
+  ['I lost my coin.', 'Under the slot again?', 'How did you know?'],
+  ['Wanna team up at Volleyball?', 'Only if I\'m Pikachu.', 'Everyone wants to be Pikachu.'],
+  ['The shiny case has new stuff!', 'Where? Show me!', 'Right screen, look!'],
+  ['Ever won the jackpot?', 'Once. In a dream.', 'Best kind of jackpot.'],
+  ['I\'m going home after this.', 'You said that an hour ago.', '...I meant it this time.'],
+  ['Do you think Meowth sleeps here?', 'Behind the counter. I\'ve seen it.', 'Ha! Cute.'],
+  ['That Trainer\'s here again.', '{name}? They\'re nice.', 'And good at the arcade.'],
+  ['Bet you can\'t beat my Stacker score.', 'Bet I can.', 'Prove it!'],
+  ['Are you lost?', 'Nope! Just browsing.', 'Same, honestly.'],
+  ['Whoa, the screens just changed!', 'They cycle every few seconds.', 'So pretty though.'],
+  ['Want a turn?', 'You sure?', 'Go on, I\'m on a losing streak.'],
+  ['Good game, {other}.', 'Good game!', 'Rematch tomorrow?'],
+];
