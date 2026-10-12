@@ -135,7 +135,7 @@ function statue(id, h) {
     const k = h / sh, w = Math.max(4, Math.round(sw * k));
     const c = document.createElement('canvas');
     c.width = w + 2; c.height = h + 1;
-    const g = c.getContext('2d');
+    const g = c.getContext('2d', { willReadFrequently: true });
     g.imageSmoothingEnabled = false;
     g.drawImage(img, left, top, sw, sh, 1, 0, w, h);
     const data = g.getImageData(0, 0, c.width, c.height), d = data.data;

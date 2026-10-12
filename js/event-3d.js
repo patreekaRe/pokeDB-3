@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -2583,6 +2583,7 @@ function room(kind, figs, at = {}) {
     const b = B;
     await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome });
     B = null;
+    await warmShaders(renderer, b.group, camera, scene);
     return b;
   });
   built[id].catch(() => { delete built[id]; });

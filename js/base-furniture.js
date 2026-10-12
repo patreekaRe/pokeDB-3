@@ -395,7 +395,7 @@ function makePiece(fam, theme) {
     }
     c = new OffscreenCanvas(w * s, h * s);
     c.hd = s;
-    const ctx = c.getContext('2d');
+    const ctx = c.getContext('2d', { willReadFrequently: true });
     ctx.scale(s, s);
     setBare(bare);
     try { paintWith(ctx, pal, paint); } finally { setBare(false); }

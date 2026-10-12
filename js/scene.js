@@ -1445,7 +1445,7 @@ function shoot(look, w, h, at) {
   const kept = { canvas, ctx, S, tick, last, W, H, horizon, base, img, px, sky, rand, life, bossPrelude, floorAt, spanAt, storm };
   const shot = document.createElement('canvas');
   try {
-    canvas = shot; ctx = shot.getContext('2d');
+    canvas = shot; ctx = shot.getContext('2d', { willReadFrequently: true });
     floorAt = null; spanAt = null; bossPrelude = null; storm = { on: false, level: 0 }; tick = FPS * 7; last = tick;
     const raw = { ...look, horizon: at };
     S = colours(raw);

@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -110,7 +110,7 @@ const key = (x, y) => `${x},${y}`;
 /* ---------- painting ---------- */
 
 function art(w, h) {
-  const c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+  const c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
   const dot = (x, y, col, ww = 1, hh = 1) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };
   return { c, g, dot };
 }
@@ -1439,7 +1439,9 @@ function buildClearing() {
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
   // bushes along the gate's fence, outside it, the trail between
-  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45, 0.9 + rnd() * 0.25);
+  // each a step nearer than the last: side by side on one plane, where they overlap they z-fought and flickered
+  let b = 0;
+  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45 + (b++ % 2) * 0.08, 0.9 + rnd() * 0.25);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
@@ -2454,6 +2456,7 @@ async function build() {
   view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
+  await warmShaders(renderer, scene, camera);
 }
 
 /** Show the hub over the title (screen is #title-screen, acts what the places open). Resolves true once it's drawn,

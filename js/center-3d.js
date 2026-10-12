@@ -10,7 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -880,6 +880,7 @@ export function warmCenter() {
     anchors.nurse = new THREE.Vector3(tileX(5) + 0.7, 0.12 + nurse.top + 0.15, tileZ(1));
     scene.add(nurse.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
+    await warmShaders(renderer, scene, camera);
   })();
   warming.catch(() => { warming = null; });
   return warming;

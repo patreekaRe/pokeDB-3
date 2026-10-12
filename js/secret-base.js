@@ -405,7 +405,7 @@ export function buyPiece(b, id) {
 /** The wallpaper strip (WALL high) and the bare floor, painted on one canvas the room's size. */
 export function roomArt(b) {
   const c = new OffscreenCanvas(W, H), keep = g, kept = base;
-  g = c.getContext('2d'); base = b;
+  g = c.getContext('2d', { willReadFrequently: true }); base = b;
   paintWall(); paintFloor();
   g = keep; base = kept;
   return c;

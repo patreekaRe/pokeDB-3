@@ -3,7 +3,7 @@
    so the pixel steps round off; its shading kept as the relief's). The trace is baked once by tools/medallion.html into
    assets/arena/: on the user's iPhone it never appeared when traced in the page, so the game only draws the PNGs. */
 
-const canvas = (w, h) => Object.assign(document.createElement('canvas'), { width: w, height: h });
+const canvas = (w, h) => { const c = Object.assign(document.createElement('canvas'), { width: w, height: h }); c.getContext('2d', { willReadFrequently: true }); return c; };
 const DRAGONITE_EYE = [26, 19.5];   // the sprite's eye, in its pixels
 
 /** Paints the medallion into `out.map` (colour) and `out.bump` (heights): without `img` just the ring and field, with

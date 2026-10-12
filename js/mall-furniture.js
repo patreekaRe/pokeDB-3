@@ -90,12 +90,16 @@ export function frontArt(f, s, x0, x1, top, foot, closed = false) {
 export function frontWindow(THREE, cx, z) {
   const group = new THREE.Group(), stock = furnitureStock(), shown = stock.filter(id => !PIECES[id].flat && !PIECES[id].wall);
   const picks = [...shown, 'plant', 'lamp'].slice(0, 2);
-  picks.forEach((id, i) => {
-    const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 0.78 / w, 1.15 / h);
+  // painted once the hall is up, one a moment, at half HD (they stand a hand high): painting both while the hall was
+  // being built held the way in for up to a second (2026-10-12, the user saw the mall stutter as it opened)
+  const later = (fn) => (self.requestIdleCallback ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 400));
+  picks.forEach((id, i) => setTimeout(() => later(() => {
+    const cut = trim(pieceArt(id, 0, HD / 2)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1, 0.78 / w, 1.15 / h);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), new THREE.MeshStandardMaterial({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
     m.position.set(cx + (i ? 1 : -1), 0.42 + h * k / 2, z + 0.12);
+    m.userData.front = group.userData.front;
     group.add(m);
-  });
+  }), 700 + i * 350));
   const glass = new THREE.Mesh(new THREE.PlaneGeometry(2.9, 1.95), new THREE.MeshStandardMaterial({ color: '#d8f0ff', transparent: true, opacity: 0.16, roughness: 0.05, metalness: 0.3, depthWrite: false }));
   glass.position.set(cx, 0.98, z + 0.3);
   group.add(glass);

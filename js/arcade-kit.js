@@ -8,9 +8,9 @@
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
-import { playSound, preloadSounds } from './audio.js';
-import { el } from './ui.js';
-import { calmFx } from './prefs.js';
+import { hushBlip, playSound, preloadSounds } from './audio.js';
+import { el, fitText } from './ui.js';
+import { calmFx, vibrate } from './prefs.js';
 import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
 import { record, best } from './corner-pot.js';
 import { postArcadeScore, openLeaderboard } from './leaderboard.js';
@@ -48,22 +48,58 @@ export function drawMon(g, id, x, y, h, flip = false) {
   g.drawImage(c, x - w / 2, y - h, w, h);
   g.imageSmoothingEnabled = smooth;
 }
+const stamps = new Map();
+/** Something painted once onto a canvas of its own at the screen's scale, then stamped every frame: gradients, clips and
+    hundreds of little paths redrawn each frame cost the games their frame rate on phones (2026-10-12). `paint(g)` draws
+    it in a `w` x `h` box from 0, 0; `key` names what's in it. Call it from the top level of draw(), not under a rotate. */
+export function stamp(g, key, x, y, w, h, paint) {
+  const s = g.getTransform().a, k = `${key}@${s}`;
+  let c = stamps.get(k);
+  if (!c) {
+    c = document.createElement('canvas');
+    c.width = Math.max(1, Math.ceil(w * s)); c.height = Math.max(1, Math.ceil(h * s));
+    const cg = c.getContext('2d');
+    cg.scale(s, s);
+    paint(cg);
+    stamps.set(k, c);
+    if (stamps.size > 500) stamps.delete(stamps.keys().next().value);
+  }
+  g.drawImage(c, x, y, c.width / s, c.height / s);
+}
 export const rand = (a, b) => a + Math.random() * (b - a);
 export const pick = (list) => list[Math.floor(Math.random() * list.length)];
 
-/** Big centred text with a dark edge. */
-export function banner(g, text, x, y, size, colour = '#fff') {
-  g.font = `800 ${size}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+/** Big centred text with a dark edge, shrunk to fit `maxW` if given (the start screen's names ran off the sides). */
+export function banner(g, text, x, y, size, colour = '#fff', maxW = 0) {
+  g.font = `800 ${size}px system-ui, sans-serif`;
+  if (maxW) { const w = g.measureText(text).width; if (w > maxW) { size *= maxW / w; g.font = `800 ${size}px system-ui, sans-serif`; } }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
   g.lineWidth = size / 5; g.strokeStyle = 'rgba(0, 0, 0, 0.75)'; g.strokeText(text, x, y);
   g.fillStyle = colour; g.fillText(text, x, y);
 }
 
+/** Each cabinet's marquee (the user's ask, 2026-10-12: a proper title on top of every machine, with artwork, animation
+    and the game's Pokémon): [the Pokémon whose sprite stands on it, the small line over the name, the big name]. A new
+    game needs a line, or it shows its title alone. */
+const MARQUEE = {
+  berry: ['pachirisu', 'Pachirisu', 'Berry Catch'], bowling: ['geodude', 'Geodude', 'Bowling'], breakout: ['electrode', 'Electrode', 'Breakout'],
+  bubble: ['squirtle', 'Squirtle', 'Bubble Shooter'], claw: ['slowpoke', 'Slowpoke\'s', 'Claw Machine'], crossing: ['poliwag', 'Poliwag', 'Crossing'],
+  ditto: ['ditto', 'Where\'s', 'Ditto?'], flap: ['pidgey', 'Pidgey', 'Flap'], invaders: ['beedrill', 'Beedrill', 'Invaders'],
+  maze: ['gastly', 'Gastly', 'Maze'], memory: ['voltorb', 'Voltorb', 'Memory'], pinball: ['pikachu', 'Pokémon', 'Pinball'],
+  pong: ['psyduck', 'Psyduck', 'Pong'], puzzle: ['eevee', 'Poké', 'Puzzle'], rhythm: ['jigglypuff', 'Jigglypuff\'s', 'Sing-Along'],
+  runner: ['ponyta', 'Ponyta', 'Dash'], skeeball: ['clefairy', 'Poké Ball', 'Skee-Ball'], snake: ['ekans', 'Ekans', 'Trail'],
+  stacker: ['snorlax', 'Snorlax', 'Stacker'], volley: ['pikachu', 'Pikachu', 'Volleyball'], whack: ['diglett', 'Whac-a-', 'Diglett'],
+  words: ['unown', 'Unown', 'Word Search'],
+};
+const caps = (t) => t.toUpperCase().replace(/É/g, 'é');
+
 /** Opens `def`'s game in the cabinet window; `onClose` once it's shut. */
 export function runArcade(def, onClose) {
-  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', ...(def.sounds || []));
+  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', 'fx-tick', ...(def.sounds || []));
   const rec = `arc-${def.id}`;
   let state = 'ready', score = 0, game = null, raf = 0, last = 0, line = def.intro, help = firstLook(`arc-${def.id}`);
   let cv = null, g = null, overText = '', overAt = 0, preview = null, fit = null;
+  const calm = calmFx();
 
   const panel = openPanel(`ar ar-${def.id}`, def.title, { onClose: () => { cancelAnimationFrame(raf); fit?.disconnect(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('keyup', onKey, true); onClose?.(); } });
   panel.root.style.setProperty('--ar', def.colour);
@@ -103,17 +139,39 @@ export function runArcade(def, onClose) {
     put('.ar-best', Math.max(best(rec), score));
   }
 
-  function render() {
-    const head = el('div', 'vf-head');
-    head.append(el('strong', 'vf-title', def.title.toUpperCase()), el('span', 'vf-lv ar-free', 'Free play'));
+  /** The lit marquee on top of the cabinet: a sunburst turning behind the game's Pokémon, bulbs chasing round the edge,
+      the name as an arcade logo (fitted to one line, never wrapped or cut), Free play under it, 🏆 and ? on the right. */
+  function marquee() {
+    const head = el('div', 'vf-head ar-marquee');
+    const [mon, kick, name] = MARQUEE[def.id] || [null, '', def.title];
+    head.append(el('span', 'arm-rays'), el('span', 'arm-bulbs'), el('span', 'arm-bulbs arm-bulbs-b'));
+    if (mon) {
+      const fig = el('span', 'arm-mon'), img = new Image();
+      img.src = `assets/pokemon/${mon}-front.gif`; img.alt = ''; img.draggable = false;
+      fig.append(el('span', 'arm-spot'), img, el('span', 'arm-twinkle'), el('span', 'arm-twinkle arm-twinkle-b'));
+      head.append(fig);
+    }
+    const logo = el('div', 'arm-logo');
+    if (kick) logo.append(el('span', 'arm-kick', caps(kick)));
+    const big = el('strong', 'vf-title arm-name', caps(name));
+    big.dataset.text = caps(name);
+    logo.append(big, el('span', 'vf-lv ar-free', 'Free play'));
+    const keys = el('div', 'arm-keys');
     if (ARCADE_BY_ID[def.id]) {
       const board = el('button', 'cg-help-key ar-board-key', '🏆');
       board.type = 'button';
       board.setAttribute('aria-label', 'Weekly leaderboard');
       board.addEventListener('click', () => { playSound('select'); openLeaderboard(0, 'arcade'); });
-      head.append(board);
+      keys.append(board);
     }
-    head.append(helpKey(help, () => { help = !help; render(); }));
+    keys.append(helpKey(help, () => { help = !help; render(); }));
+    head.append(logo, keys);
+    fitText(big, 12);
+    return head;
+  }
+
+  function render() {
+    const head = marquee();
     const box = el('div', 'vf-panel ar-panel');
     if (help) {
       box.append(head, helpScreen());
@@ -129,10 +187,11 @@ export function runArcade(def, onClose) {
     stage.append(cv);
     const bezel = el('div', 'ar-bezel');
     bezel.append(m, stage);
-    head.classList.add('ar-marquee');
     box.classList.add('ar-cab');
     box.classList.toggle('playing', state === 'play');
-    box.append(head, bezel, deck(), el('p', 'vf-say ar-say', line));
+    const controls = deck();
+    for (const part of [bezel, controls]) part.addEventListener('touchstart', noLoupe, { passive: false });
+    box.append(head, bezel, controls, el('p', 'vf-say ar-say', line));
     panel.root.replaceChildren(box);
     meters();
     size();
@@ -142,6 +201,10 @@ export function runArcade(def, onClose) {
     bind();
     loop();
   }
+
+  /** iOS opens its magnifying loupe on a double tap held on the screen or the deck, whatever user-select says; only a
+      cancelled touchstart stops it. START / EXIT answer `click`, which that would swallow, so they're let through. */
+  const noLoupe = (e) => { if (!e.target.closest('.vf-key')) e.preventDefault(); };
 
   /** Before a game or after one, any control starts it (not in the first moments after a game over, so a held
       button doesn't throw the next one away). */
@@ -200,11 +263,13 @@ export function runArcade(def, onClose) {
     b.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       b.classList.add('down');
+      vibrate(8);
       try { b.setPointerCapture(e.pointerId); } catch {}
       if (state !== 'play') return begin();
       held = true;
       press();
     });
+    b.addEventListener('click', hushBlip);   // the game sounds its own buttons; the menu blip on release doubled them
     for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => {
       b.classList.remove('down');
       if (held) { held = false; if (state === 'play') lift?.(); }
@@ -215,7 +280,7 @@ export function runArcade(def, onClose) {
   /** Big arrow buttons for a thumb, held down like the arrow keys. */
   function arrows(list) {
     const box = el('div', `ar-arrows${list.some(([, k]) => k === 'up' || k === 'down') ? ' ar-col' : ''}`);
-    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => game.key?.(k, true), () => game.key?.(k, false)));
+    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => { playSound('fx-tick', 'select'); game.key?.(k, true); }, () => game.key?.(k, false)));
     return box;
   }
 
@@ -228,7 +293,7 @@ export function runArcade(def, onClose) {
     let id = null;
     const press = (want) => {
       for (const k of [...down]) if (!want.has(k)) { down.delete(k); if (state === 'play') game.key?.(k, false); }
-      for (const k of want) if (!down.has(k)) { down.add(k); if (state === 'play') game.key?.(k, true); }
+      for (const k of want) if (!down.has(k)) { down.add(k); if (state === 'play') { vibrate(6); game.key?.(k, true); } }
     };
     const lean = (dx, dy) => {
       const r = box.clientWidth / 2, d = Math.hypot(dx, dy), max = r * 0.42, f = d > max ? max / d : 1;
@@ -292,7 +357,8 @@ export function runArcade(def, onClose) {
     const st = cv.parentElement;
     const w = fixed || Math.max(120, Math.floor(Math.min(st.clientWidth, st.clientHeight * def.W / def.H))) || 360;
     const dpr = Math.min(1.5, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
-    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; paint(performance.now()); }   // a resize wipes the canvas, and the frame it happens in is shown before the next draw: a blank flash
+    // resizing clears the canvas, so it is painted again at once rather than shown blank till the next frame
+    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; if (last) paint(performance.now()); }
     cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;
   }
@@ -341,9 +407,9 @@ export function runArcade(def, onClose) {
     if (game && !help) game.draw(g, now); else (preview ??= def.make(api)).draw(g, now);
     if (state !== 'play' && !help) {
       g.fillStyle = 'rgba(0, 0, 0, 0.45)'; g.fillRect(0, 0, def.W, def.H);
-      if (state === 'over') banner(g, overText.toUpperCase(), def.W / 2, def.H * 0.4, def.W / 11, '#ffd84a');
-      banner(g, state === 'over' ? `${score.toLocaleString()}` : def.title.toUpperCase(), def.W / 2, def.H * (state === 'over' ? 0.52 : 0.42), def.W / (state === 'over' ? 8 : 11));
-      if (!calmFx() || state === 'ready') banner(g, 'TAP TO PLAY', def.W / 2, def.H * 0.64, def.W / 18, `rgba(255, 255, 255, ${0.6 + 0.4 * Math.sin(now / 250)})`);
+      if (state === 'over') banner(g, overText.toUpperCase(), def.W / 2, def.H * 0.4, def.W / 11, '#ffd84a', def.W * 0.9);
+      banner(g, state === 'over' ? `${score.toLocaleString()}` : def.title.toUpperCase(), def.W / 2, def.H * (state === 'over' ? 0.52 : 0.42), def.W / (state === 'over' ? 8 : 11), '#fff', def.W * 0.9);
+      if (!calm || state === 'ready') banner(g, 'TAP TO PLAY', def.W / 2, def.H * 0.64, def.W / 18, `rgba(255, 255, 255, ${0.6 + 0.4 * Math.sin(now / 250)})`);
     }
   }
 

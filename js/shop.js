@@ -21,6 +21,7 @@ import { checkAchievements, checkBadges, isStarterUnlocked } from './progress.js
 import { badgeLine } from './data/badges.js';
 import { showBadgeNews } from './trainercard.js';
 import { playSound, preloadSounds } from './audio.js';
+import { vibrate } from './prefs.js';
 import { $, el, refreshCoins } from './ui.js';
 
 const ROWS = [
@@ -284,6 +285,7 @@ function move(dx, dy) {
   cursor.armed = false;
   cursor.news = null;
   playSound('stick', 'confirm');
+  vibrate(8);
   render();
 }
 
@@ -293,6 +295,7 @@ function select(row, col) {
   cursor.armed = false;
   cursor.news = null;
   playSound('stick', 'confirm');
+  vibrate(8);
   render();
 }
 
@@ -314,9 +317,10 @@ export function buyCorner(pick) {
 function press() {
   const pick = rowEntries(ROWS[cursor.row])[cursor.col[cursor.row]];
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
-  if (!cursor.armed) { cursor.armed = true; cursor.news = null; render(); return; }
+  if (!cursor.armed) { cursor.armed = true; cursor.news = null; vibrate(12); render(); return; }
   cursor.armed = false;
   playSound('buy');
+  vibrate([20, 50, 35]);
   cursor.news = buyCorner(pick);
   render();
   flash('won');

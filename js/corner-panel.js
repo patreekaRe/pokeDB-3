@@ -3,6 +3,7 @@
 
 import { playSound } from './audio.js';
 import { el, refreshCoins } from './ui.js';
+import { vibrate } from './prefs.js';
 
 export function openPanel(cls, label, { onClose, busy = () => false, outside = false } = {}) {
   document.querySelector('.cg-overlay')?.remove();
@@ -28,7 +29,7 @@ export function openPanel(cls, label, { onClose, busy = () => false, outside = f
 export function key(text, cls, fn) {
   const b = el('button', `vf-key ${cls}`, text);
   b.type = 'button';
-  b.addEventListener('click', fn);
+  b.addEventListener('click', (e) => { vibrate(8); fn(e); });
   return b;
 }
 

@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -1017,6 +1017,7 @@ export function warmMart() {
     wares = { group: new THREE.Group(), list: [] };
     scene.add(wares.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
+    await warmShaders(renderer, scene, camera);
   })();
   warming.catch(() => { warming = null; });
   return warming;

@@ -43,15 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['look', 'Every card has new smooth art showing the move itself: a flaming fist for Fire Punch, a volcano for Eruption, a Venus flytrap for Snap Trap, a crab claw for Crabhammer, a bent spoon for Kinesis. Mewtwo\'s Psychic cards get pictures for the first time, and Safari moves that share a name borrow them.'],
-  ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
-  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
-  ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
-  ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
-  ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
   ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
-  ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
-  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -63,6 +55,45 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.13',
+    name: 'Arcade Polish',
+    date: '2026-10-12',
+    notes: [
+  ['fixes', 'The bushes along the Clearing\'s front fence no longer flicker.'],
+  ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
+  ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
+  ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
+  ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
+  ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
+  ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
+  ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
+  ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
+  ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
+  ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
+  ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
+  ['mall', 'Squirtle Bubble Shooter has endless levels: clear the board and the next one starts fuller, with more colours (a pink Fairy bubble from level 7), and the ceiling drops sooner. Each cleared level is worth more.'],
+    ],
+  },
+  {
+    version: '1.12',
+    name: 'Fresh Coat',
+    date: '2026-10-12',
+    notes: [
+  ['look', 'Every card has new smooth art showing the move itself: a flaming fist for Fire Punch, a volcano for Eruption, a Venus flytrap for Snap Trap, a crab claw for Crabhammer, a bent spoon for Kinesis. Mewtwo\'s Psychic cards get pictures for the first time, and Safari moves that share a name borrow them.'],
+  ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
+  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
+  ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
+  ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
+  ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
+  ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
+  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
+  ['base', 'Festival, Lab and Castle furniture is properly 3D: the six fair stalls with their striped awnings, the Ferris wheel, carousel horse, teacup ride, hook-a-duck pool, specimen tanks, robot, Tesla coil, cryo pod, rocket, DNA model, suit of armour, cannon, catapult, treasure hoard, dragon egg nest and 31 more.'],
+  ['mall', 'Every arcade cabinet has a lit marquee on top: the game\'s Pokémon bobbing on a spinning sunburst, chasing bulbs round the edge and its name as a gold arcade logo that always fits.'],
+  ['fixes', 'The Poké Mall, the Game Corner and the Furniture store open without the stutter, run smoother on phones (a weaker phone turns its shadows and resolution down by itself), and the busier arcade games (Breakout, Bowling, Ekans Trail, Gastly Maze) hold their frame rate.'],
+  ['fixes', 'Smoother loading: the 3D scenes\' engine is half the size and downloads alongside the game, and walking into the Clearing, the Secret Base, Centers, Marts, ? rooms and the crossroads no longer stutters on the first frame.'],
+    ],
+  },
   {
     version: '1.11',
     name: 'Grand Mall',

@@ -66,7 +66,7 @@ function trimmedSrc(src) {
           const { width: w, height: h } = probe;
           const c = document.createElement('canvas');
           c.width = w; c.height = h;
-          const g = c.getContext('2d');
+          const g = c.getContext('2d', { willReadFrequently: true });
           g.drawImage(probe, 0, 0);
           const px = g.getImageData(0, 0, w, h).data;
           let x0 = w, y0 = h, x1 = -1, y1 = -1;
