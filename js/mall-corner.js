@@ -11,7 +11,8 @@ import { cornerEntries } from './shop.js';
 import { trim, tex } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
 import { PIECES } from './base-furniture.js';
-import { fine, texOf, words, star, GC } from './hub-3d.js';
+import { fine, texOf, words, star, GC, newsArt } from './hub-3d.js';
+import { pcModel, livePc } from './hub-pc.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
 import { PLINKO_PAYS } from './data/casino.js';
@@ -394,31 +395,31 @@ function boardScreen(c, boards, at) {
   g.beginPath(); g.roundRect(6, 6, W - 12, H - 12, 22); g.fill(); g.stroke();
   g.strokeStyle = 'rgba(255, 90, 184, 0.55)'; g.lineWidth = 2; g.beginPath(); g.roundRect(16, 16, W - 32, H - 32, 14); g.stroke();
   g.textBaseline = 'middle'; g.textAlign = 'center';
-  g.font = '800 19px system-ui, sans-serif'; g.fillStyle = '#ffa8dc'; g.shadowColor = '#ff5ab8'; g.shadowBlur = 8;
-  g.fillText('🏆 WEEKLY HIGH SCORES 🏆', W / 2, 36);
-  g.font = '900 34px system-ui, sans-serif'; g.fillStyle = '#fff8e0'; g.shadowColor = game.b1; g.shadowBlur = 16;
-  g.fillText(game.name.toUpperCase(), W / 2, 68);
+  g.font = '800 20px system-ui, sans-serif'; g.fillStyle = '#ffa8dc'; g.shadowColor = '#ff5ab8'; g.shadowBlur = 8;
+  g.fillText('🏆 WEEKLY HIGH SCORES 🏆', W / 2, 34);
+  g.font = '900 38px system-ui, sans-serif'; g.fillStyle = '#fff8e0'; g.shadowColor = game.b1; g.shadowBlur = 16;
+  g.fillText(game.name.toUpperCase(), W / 2, 70, W - 60);
   g.shadowBlur = 0;
   const rows = boards?.find(b => b.id === game.id)?.rows ?? [];
   if (!rows.length) {
-    g.font = '700 20px system-ui, sans-serif'; g.fillStyle = '#fffbea';
-    g.fillText(boards === undefined ? 'Loading…' : boards === null ? 'Play to beat your best!' : 'No scores yet. Be the first!', W / 2, 124);
+    g.font = '800 26px system-ui, sans-serif'; g.fillStyle = '#fffbea';
+    g.fillText(boards === undefined ? 'Loading…' : boards === null ? 'Play to beat your best!' : 'No scores yet. Be the first!', W / 2, 140);
   }
   const MEDAL = ['#ffd84a', '#d8d8e8', '#e09858'];
-  rows.slice(0, 3).forEach((r, i) => {
-    const y = 102 + i * 26;
-    g.fillStyle = r.mine ? 'rgba(255, 216, 74, 0.16)' : 'rgba(255, 255, 255, 0.05)';
-    g.beginPath(); g.roundRect(40, y - 12, W - 80, 24, 8); g.fill();
-    g.fillStyle = MEDAL[i]; g.beginPath(); g.arc(60, y, 10, 0, Math.PI * 2); g.fill();
-    g.font = '900 13px system-ui, sans-serif'; g.fillStyle = '#2a1648'; g.textAlign = 'center'; g.fillText(String(r.rank), 60, y + 1);
-    g.font = '800 18px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = r.mine ? '#ffe890' : '#ffffff';
-    g.fillText(r.entry.name, 80, y + 1);
-    g.textAlign = 'right'; g.fillStyle = '#c8ffb8'; g.fillText(arcadeValue(r.entry), W - 52, y + 1);
+  rows.slice(0, 3).forEach((r, i) => {   // big enough to read from the door (the user's ask, 2026-10-12)
+    const y = 112 + i * 38;
+    g.fillStyle = r.mine ? 'rgba(255, 216, 74, 0.18)' : 'rgba(255, 255, 255, 0.06)';
+    g.beginPath(); g.roundRect(30, y - 17, W - 60, 34, 10); g.fill();
+    g.fillStyle = MEDAL[i]; g.beginPath(); g.arc(52, y, 14, 0, Math.PI * 2); g.fill();
+    g.font = '900 18px system-ui, sans-serif'; g.fillStyle = '#2a1648'; g.textAlign = 'center'; g.fillText(String(r.rank), 52, y + 1);
+    g.font = '800 26px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = r.mine ? '#ffe890' : '#ffffff';
+    g.fillText(r.entry.name, 76, y + 1, W - 230);
+    g.textAlign = 'right'; g.fillStyle = '#c8ffb8'; g.fillText(arcadeValue(r.entry), W - 44, y + 1);
   });
   g.textAlign = 'center';
   ARCADE_GAMES.forEach((_, i) => {   // which game is up, as dots
     g.fillStyle = i === at % ARCADE_GAMES.length ? '#ffd84a' : 'rgba(255, 255, 255, 0.25)';
-    g.beginPath(); g.arc(W / 2 + (i - (ARCADE_GAMES.length - 1) / 2) * 16, H - 22, 4, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.arc(W / 2 + (i - (ARCADE_GAMES.length - 1) / 2) * 16, H - 16, 4, 0, Math.PI * 2); g.fill();
   });
 }
 
@@ -717,6 +718,26 @@ export function buildCorner(THREE, size) {
   bell.position.set(0.75, 0.88, 0.18);
   desk.add(bell);
   desk.traverse(o => { o.userData.front = keeper; });
+  // a little PC on the counter's right end, a "!" always bobbing over it: a tap explains the Game Corner (the user's
+  // ask, 2026-10-12)
+  const guide = { id: 'guide', kind: 'game', name: 'Game Corner guide', open: true, line: 'Game Corner guide', step: { x: COUNTER.x + COUNTER.w - 1, y: COUNTER.y + 1 } };
+  guide.game = { name: guide.name, line: 'New here, meow? This PC explains every game and how to win up to 500 PokéCoins a day. Tap again to read it.',
+    open: (done) => import('./corner-guide.js').then(m => m.openGuide(done)) };
+  const pcGlows = [], pc = pcModel(THREE, pcGlows);
+  for (const m of pcGlows) m.emissiveIntensity = 0.9;
+  pc.scale.setScalar(0.42);
+  pc.position.set(1.62, 0.88, -0.02);
+  pc.rotation.y = -0.3;
+  desk.add(pc);
+  const bang = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.52), new THREE.MeshBasicMaterial({ map: texOf(newsArt()), transparent: true, alphaTest: 0.1, toneMapped: false }));
+  bang.rotation.x = -0.6;
+  bang.position.set(1.62, 2.0, -0.02);
+  bang.raycast = () => {};
+  desk.add(bang);
+  pc.traverse(o => { o.userData.front = guide; });
+  guide.frame = { x: tileX(COUNTER.x + 2) + 1.62, y: 1.28, z: deskZ + 0.22, w: 0.62, h: 0.85 };
+  spots.push(guide);
+  ticks.push((now) => { livePc(now); bang.position.y = 2.0 + Math.sin(now / 320) * 0.06; });
   group.add(desk);
   const keeperZ = deskZ - DD / 2 - 0.42;
 
@@ -726,7 +747,7 @@ export function buildCorner(THREE, size) {
   signCanvas.fine = 1;
   const signMap = texOf(signCanvas);
   const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.91), new THREE.MeshBasicMaterial({ map: signMap, transparent: true, toneMapped: false }));
-  sign.position.set(tileX(COUNTER.x + 2), 1.95, -rows / 2 + 0.03);
+  sign.position.set(tileX(COUNTER.x + 2), 1.9, -rows / 2 + 0.03);
   sign.userData.front = keeper;
   group.add(sign);
   const paintSign = () => { stampSign(signCanvas, stampState()); signMap.needsUpdate = true; };
@@ -735,7 +756,7 @@ export function buildCorner(THREE, size) {
 
   // the arcade leaderboard where the GAME CORNER sign was (2026-10-12, the user's layout): each ranked game in turn, its
   // top three this week; a tap opens the leaderboard
-  const BW = 4.3, BH = 1.75, boardCanvas = new OffscreenCanvas(480, Math.round(480 * BH / BW));
+  const BW = 4.3, BH = 2.05, boardCanvas = new OffscreenCanvas(480, Math.round(480 * BH / BW));
   boardCanvas.fine = 1;
   const boardMap = texOf(boardCanvas), lb = { boards: undefined, at: 0, next: 0, fetched: -Infinity };
   const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map: boardMap, transparent: true, toneMapped: false }));

@@ -268,6 +268,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           equal mounted screens clear of the counter (Pokémon, Shinies, Perks; no Poké Balls; a Pokémon or shiny you don't own is a silhouette and a perk's levels are pips, "Level 1 of 3 owned", Buy Level 2, 2026-10-12; their sprites load through a
           page canvas, as iPhone drew them blank into an OffscreenCanvas); no tilt-shift blur at all; four tables (touchscreen Voltorb / Who's That behind, Blackjack /
           High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
+        - **2026-10-12 feedback pass:** the arcade leaderboard over Meowth's text made bigger (`boardScreen()`, the board 2.05
+          tall); every Pokémon billboard takes its feet's depth (`feetDepth()` in `js/hd2d.js`, all 3D places), so a counter or
+          table behind one no longer cuts across it; a little PC on the counter's right end with a bobbing "!" opens the Game
+          Corner guide (`js/corner-guide.js`: what pays today and how much is left of the 500, the arcade and its weekly
+          boards, taking games home, the stamp card, the showcases).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked

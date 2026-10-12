@@ -53,6 +53,9 @@ export const NEXT = [
   ['mall', 'The Game Corner has regulars: a few Pokémon playing the slots, arcade and tables, wandering about deciding, chatting with each other and with Meowth, coming and going through the day. Tap one to talk; walk up to its game and it makes room.'],
   ['modes', 'Weekly arcade leaderboards for Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders and Ekans Trail: your best score of the week goes up by itself (signed in), and the 🏆 on those cabinets opens the boards.'],
   ['mall', 'No more Deal of the Day: everything in the Game Corner is its normal price.'],
+  ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
+  ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
+  ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

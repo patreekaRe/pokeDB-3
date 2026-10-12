@@ -737,7 +737,7 @@ export function texOf(canvas) {
 
 /** The PC's "you've got mail": a cream envelope in a white bubble with a red dot, like a phone's badge. */
 /** The "!" over the PC: the yellow bubble every Home key wears for news (.dex-news), a point at its foot. */
-function newsArt() {
+export function newsArt() {
   const { c, g, fill, rr } = fine(10, 13, 10);
   fill('#5a3a00', () => g.arc(5, 5, 4.6, 0, Math.PI * 2));
   fill('#5a3a00', () => { g.moveTo(3.4, 8.6); g.lineTo(5, 12.4); g.lineTo(6.6, 8.6); });
