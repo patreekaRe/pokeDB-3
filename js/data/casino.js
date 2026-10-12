@@ -1,8 +1,8 @@
 /* ============================================================
    casino.js  -  the Game Corner's betting games (2026-10-10, the user's asks; the lineup the user picked 2026-10-11):
-   tap-to-stop Slots with a jackpot and a bonus round, Blackjack, High-Low, Team Rocket Blast-Off and Plinko, bet in
-   PokéCoins, and Meowth's free daily scratch card. The luck games keep a small house edge (about 5%, measured in tests/casino.test.mjs); Slots, Blackjack, High-Low and
-   Blast-Off reward timing and judgement, so a good player can come out ahead, and the day's
+   tap-to-stop Slots with a jackpot and a bonus round, Blackjack, High-Low and Plinko, bet in
+   PokéCoins, and Meowth's free daily scratch card. The luck games keep a small house edge (about 5%, measured in tests/casino.test.mjs); Slots, Blackjack and High-Low
+   reward timing and judgement, so a good player can come out ahead, and the day's
    winnings from them are capped: once you're BET_CAP up on a UTC day the tables close till tomorrow, so a lucky night
    can't buy every perk. Losses aren't capped. Every roll comes from a stream keyed by the day and the play's number, so a
    refresh can't re-roll a spin or a hand. Pure rules, no DOM, so node tests read them.
@@ -90,21 +90,6 @@ export const hlChance = (rank, guess) => (guess === 'hi' ? 13 - rank : rank - 1)
 
 /** What a right guess multiplies the pot by (0 if it can't win). */
 export const hlMult = (rank, guess) => { const p = hlChance(rank, guess); return p > 0 ? HL_EDGE / p : 0; };
-
-/* ---------- Team Rocket Blast-Off: cash out before the balloon goes ---------- */
-
-export const CRASH_EDGE = 0.95;
-export const CRASH_RATE = 0.12;   // the multiplier grows as e^(rate x seconds)
-export const CRASH_MAX = 50;
-
-/** Where a flight's balloon blasts off: P(it reaches m) = 0.95 / m, so cashing out at any m returns 95%. */
-export const crashPoint = (rand) => Math.min(CRASH_MAX, Math.max(1, Math.floor(CRASH_EDGE / (1 - rand()) * 100) / 100));
-
-/** The multiplier `ms` into a flight. */
-export const crashMult = (ms) => Math.floor(Math.exp(CRASH_RATE * ms / 1000) * 100) / 100;
-
-/** How long a flight takes to reach `m`. */
-export const crashTime = (m) => Math.log(m) / CRASH_RATE * 1000;
 
 /* ---------- Plinko: a Poké Ball down twelve rows of pegs ---------- */
 

@@ -1,5 +1,5 @@
-/* The Game Corner's games (js/voltorb.js, js/quiz.js, js/slots.js, js/blackjack.js, js/highlow.js, js/blastoff.js,
-   js/plinko.js, js/scratch.js): each a panel over whatever is showing. */
+/* The Game Corner's games (js/voltorb.js, js/quiz.js, js/slots.js, js/blackjack.js, js/highlow.js, js/plinko.js,
+   js/scratch.js): each a panel over whatever is showing. */
 
 .cg-overlay {
   position: fixed; inset: 0; z-index: 960; display: grid; place-items: center; padding: 12px;
@@ -148,7 +148,7 @@
 .sc-buy.armed { background: linear-gradient(#ffb070, #f07830); }
 @media (prefers-reduced-motion: reduce) { .qz-burst, .sc-rays, .sc-screen *, .qz-stage.shown .qz-mon { animation: none; } .mm-card { transition: none; } }
 
-/* the betting tables (js/slots.js, js/blackjack.js, js/highlow.js, js/blastoff.js, js/plinko.js) */
+/* the betting tables (js/slots.js, js/blackjack.js, js/highlow.js, js/plinko.js) */
 .cs-chips { display: flex; gap: 8px; justify-content: center; }
 .cs-chip { --c: #d83040; --s: #fff; width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer; font: inherit; font-size: 15px; font-weight: 800; color: #fff;
   background: radial-gradient(circle, var(--c) 0 52%, var(--s) 53% 58%, transparent 59%), repeating-conic-gradient(var(--c) 0 15deg, var(--s) 15deg 30deg);
@@ -220,39 +220,6 @@
 @media (prefers-reduced-motion: reduce) { .sl-strip, .sl-sym.hit, .bj-card, .rl-disc.spinning { animation: none; } }
 
 
-/* Team Rocket Blast-Off */
-.bo-panel { background: linear-gradient(#3a2a6a, #201442); }
-.bo-sky { --rise: 0; position: relative; height: 240px; overflow: hidden; border-radius: 12px;
-  background: linear-gradient(#0c1030, #2a3a8a 45%, #7ab8f0); box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.15); }
-.bo-clouds { position: absolute; inset: 0; }
-.bo-cloud { position: absolute; left: var(--x); top: var(--y); width: 60px; height: 18px; border-radius: 99px; background: rgba(255, 255, 255, 0.55);
-  box-shadow: 16px -8px 0 2px rgba(255, 255, 255, 0.55); }
-.bo-sky.flying .bo-cloud { animation: boDrift 1.6s linear infinite; }
-@keyframes boDrift { from { transform: translateY(-260px); } to { transform: translateY(260px); } }
-.bo-balloon { position: absolute; left: 50%; bottom: calc(10px + var(--rise) * 110px); width: 90px; margin-left: -45px; display: flex; flex-direction: column; align-items: center;
-  transition: bottom 0.1s linear; }
-.bo-sky.flying .bo-balloon { animation: boSway 1.4s ease-in-out infinite; }
-@keyframes boSway { 50% { transform: translateX(6px) rotate(2deg); } }
-.bo-ball { width: 78px; height: 84px; display: grid; place-items: center; border-radius: 50% 50% 46% 46%; font-size: 40px; font-weight: 900; color: #e02030;
-  background: radial-gradient(circle at 35% 30%, #fff 0 8%, transparent 22%), radial-gradient(circle at 50% 45%, #f4f4f8, #b8b8c8);
-  box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.15); text-shadow: 0 2px 0 #801018; }
-.bo-ropes { width: 34px; height: 16px; border-left: 2px solid #6a4a20; border-right: 2px solid #6a4a20; }
-.bo-basket { width: 40px; height: 16px; border-radius: 3px 3px 8px 8px; background: repeating-linear-gradient(90deg, #a87028 0 5px, #8a5418 5px 8px); }
-.bo-meowth { position: absolute; bottom: 8px; width: 40px; height: 40px; object-fit: contain; }
-.bo-mult { position: absolute; left: 0; right: 0; top: 10px; text-align: center; font-size: 36px; color: #fff; font-variant-numeric: tabular-nums;
-  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 224, 112, 0.7); }
-.bo-sky.blasted .bo-balloon { animation: boGone 0.9s ease-in forwards; }
-@keyframes boGone { to { transform: translate(140px, -240px) rotate(540deg) scale(0.15); opacity: 0.8; } }
-.bo-sky.blasted .bo-mult { color: #ff6070; }
-.bo-star { position: absolute; right: 18%; top: 14%; width: 14px; height: 14px; background: #fff;
-  clip-path: polygon(50% 0, 61% 38%, 100% 50%, 61% 62%, 50% 100%, 39% 62%, 0 50%, 39% 38%); animation: boStar 1.4s 0.8s ease-out both; }
-@keyframes boStar { 0% { transform: scale(0); } 30% { transform: scale(3) rotate(45deg); filter: drop-shadow(0 0 8px #fff); } 100% { transform: scale(1.4) rotate(90deg); } }
-.bo-blast { position: absolute; left: 8px; right: 8px; bottom: 12px; text-align: center; font-size: 15px; font-weight: 900; color: #ffe070;
-  text-shadow: 0 2px 0 #000; animation: boBlast 0.5s 0.6s ease-out both; }
-@keyframes boBlast { from { transform: scale(0.4); opacity: 0; } }
-.bo-cash { background: linear-gradient(#a8f0a0, #50c060); animation: boPulse 0.7s ease-in-out infinite; }
-@keyframes boPulse { 50% { transform: scale(1.04); } }
-
 /* Plinko */
 .pk-panel { width: min(520px, 100%); background: linear-gradient(#1a5a9a, #0e3a6a); }
 .pk-canvas { display: block; width: 100%; border-radius: 12px; box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.15), 0 4px 14px rgba(0, 0, 0, 0.4); }
@@ -289,11 +256,3 @@
 .vf-ex-notes { display: grid; gap: 2px; justify-items: end; }
 .vf-ex-notes p { margin: 0; font-size: 12px; color: #fffbea; }
 .vf-ex-notes p::before { content: '▲ '; color: #ffe070; }
-
-/* Blast-Off's strip of the last flights, and what a cash out pays right now */
-.bo-history { display: flex; align-items: center; gap: 5px; overflow: hidden; font-size: 12px; white-space: nowrap; }
-.bo-history span { opacity: 0.75; margin-right: 2px; }
-.bo-history b { padding: 2px 6px; border-radius: 99px; background: rgba(232, 72, 72, 0.35); font-variant-numeric: tabular-nums; }
-.bo-history b.hi { background: rgba(156, 240, 96, 0.35); }
-.bo-worth { position: absolute; left: 0; right: 0; top: 52px; text-align: center; font-size: 14px; font-weight: 700; color: #fffbea; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5); }
-.bo-sky { height: 270px; }

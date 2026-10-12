@@ -153,8 +153,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         Rules in `js/data/corner.js`, `tests/corner.test.mjs`. Rebuilt huge the same day (four showcase screens,
         `js/showcase.js`), then the lineup settled on 2026-10-11 (the user's pick): Roulette, Memory Match and the Gachapon
         cut (the big dolls back in the Furniture store); tap-to-stop slots with a carried-over jackpot and a Pikachu bonus
-        round, Team Rocket Blast-Off, Plinko, Blackjack, High-Low (bets 5-50, `js/data/casino.js`), Who's That Pokémon?
-        one round a day, and Meowth's free daily scratch card. See CLAUDE.md.
+        round, Plinko, Blackjack, High-Low (bets 5-50, `js/data/casino.js`), Who's That Pokémon?
+        one round a day, and Meowth's scratch card for a full daily stamp card. Team Rocket Blast-Off came and went (cut 2026-10-12).
+        **Next:** the user is explaining a new room revamp. See CLAUDE.md.
         **Next:** the user playtests and says whether it goes to `main` (Pages only serves `main`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
         with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. Balls stay in the Game

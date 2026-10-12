@@ -49,7 +49,7 @@ export const NEXT = [
   ['modes', "Sky Pillar: Fire's own augments are stronger (Kindling, Ember Skin, Heat Shield, Cauterize, Wildfire and Phoenix), and Risky Climb's Alphas now start on floor 3."],
   ['mall', 'The Poké Mall\'s Game Corner is open, and huge: four big screens along the back wall show the Pokémon, shinies, perks and Poké Balls for sale; tap one and flip through them left and right, one at a time.'],
   ['mall', 'Two free games in the Game Corner: Voltorb Flip and a daily round of Who\'s That Pokémon?. Win PokéCoins, up to 250 a day between them.'],
-  ['mall', 'Bet your PokéCoins in the Game Corner, 5 to 50 a play: slots you stop yourself, with a growing jackpot and a Pikachu bonus round; Team Rocket Blast-Off (cash out before they blast off again!); Poké Ball Plinko, twelve rows of pegs with a ball that really falls; Blackjack against Meowth; and High-Low. The house closes for the day once you\'re 500 up.'],
+  ['mall', 'Bet your PokéCoins in the Game Corner, 5 to 50 a play: slots you stop yourself, with a growing jackpot and a Pikachu bonus round; Poké Ball Plinko, twelve rows of pegs with a ball that really falls; Blackjack against Meowth; and High-Low. The house closes for the day once you\'re 500 up.'],
   ['mall', 'Meowth\'s daily stamp card: play 5 different Game Corner games in a day and Meowth hands you a scratch card. It always wins something, up to 500 PokéCoins.'],
   ['mall', 'Every Game Corner game has a How to play card (the ? key), shown the first time you sit down. Voltorb Flip\'s works through a row\'s numbers for you.'],
   ['mall', 'Deal of the Day: one skin, perk or shiny in the Game Corner is 30% off each day, marked with a pink DEAL tag.'],

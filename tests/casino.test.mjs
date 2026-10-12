@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SYMBOLS, REEL_WEIGHT, STRIP, SLIP, slotPay, stopAt, shuffledDeck, handValue, dealerPlays, blackjackReturn, isBlackjack,
-  hlChance, hlMult, playRand, tablesOpen, BET_CAP, crashPoint, crashMult, crashTime, plinkoDrop, PLINKO_PAYS,
+  hlChance, hlMult, playRand, tablesOpen, BET_CAP, plinkoDrop, PLINKO_PAYS,
   PLINKO_ROWS, PLINKO_ODDS, scratchCard, SCRATCH_PRIZES,
 } from '../js/data/casino.js';
 import { makeRng } from '../js/rng.js';
@@ -48,15 +48,6 @@ test('high-low keeps a 5% edge each guess and never offers a sure loss', () => {
     const p = hlChance(r, g), m = hlMult(r, g);
     if (p === 0) assert.equal(m, 0); else assert.ok(Math.abs(p * m - 0.95) < 1e-9);
   }
-});
-
-test('Blast-Off returns about 95% whenever you cash out', () => {
-  const n = 40000, points = Array.from({ length: n }, (_, i) => crashPoint(makeRng(i + 1)));
-  for (const target of [1.5, 2, 5]) {
-    const back = points.reduce((s, p) => s + (p >= target ? target : 0), 0) / n;
-    assert.ok(back > 0.9 && back < 0.99, `cashing at ${target} returns ${back}`);
-  }
-  assert.ok(Math.abs(crashMult(crashTime(3)) - 3) < 0.02);
 });
 
 test('Plinko returns about 95%, and its paths land in their bins', () => {
