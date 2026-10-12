@@ -13,6 +13,7 @@ import { furnitureModel } from './base-mesh.js';
 import { PIECES } from './base-furniture.js';
 import { fine, texOf, words, star, GC, newsArt } from './hub-3d.js';
 import { pcModel, livePc } from './hub-pc.js';
+import { safariDay } from './data/safari.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
 import { PLINKO_PAYS } from './data/casino.js';
@@ -423,6 +424,14 @@ function boardScreen(c, boards, at) {
   });
 }
 
+/** The paying games opened today on this device, so their "!" stays down until the next UTC day. */
+function pipsSeen() {
+  try { const p = JSON.parse(localStorage.getItem('pokedb.cornerPips') || '{}'); return p.day === safariDay() ? p.seen : []; } catch { return []; }
+}
+function pipSeen(id) {
+  try { const seen = pipsSeen(); if (!seen.includes(id)) localStorage.setItem('pokedb.cornerPips', JSON.stringify({ day: safariDay(), seen: [...seen, id] })); } catch { /* private mode: shown again */ }
+}
+
 /* ---------- pictures ---------- */
 
 const pics = new Map();
@@ -779,6 +788,28 @@ export function buildCorner(THREE, size) {
   ticks.push((now) => {
     if (now - lb.fetched > 90000) { lb.fetched = now; fetchBoards(); }
     if (now >= lb.next) { if (lb.next) lb.at += 1; lb.next = now + 4500; paintBoard(); }
+  });
+
+  // a mini "!" over every game that pays today, gone once that game is opened, back the next UTC day (the user's ask,
+  // 2026-10-12); all the slot machines share one, as do the Plinko boards
+  const PAYS = new Map([[CASINO.slots, 'slots'], [CASINO.plinko, 'plinko'], [CASINO.blackjack, 'blackjack'], [CASINO.highlow, 'highlow'], [GAMES.voltorb, 'voltorb'], [GAMES.quiz, 'quiz']]);
+  const pipTex = texOf(newsArt()), pips = [];
+  for (const spot of spots) {
+    const id = PAYS.get(spot.game), f = spot.frame;
+    if (!id || !f) continue;
+    const gm = spot.game;
+    spot.game = { ...gm, open: (done) => { pipSeen(id); pips.forEach(p => { p.visible = !pipsSeen().includes(p.userData.game); }); return gm.open(done); } };
+    const pip = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.34), new THREE.MeshBasicMaterial({ map: pipTex, transparent: true, alphaTest: 0.1, toneMapped: false }));
+    pip.rotation.x = -0.6;
+    pip.position.set(f.x, f.y + f.h / 2 + 0.28, f.z);
+    pip.userData = { game: id, y: pip.position.y, k: pips.length };
+    pip.raycast = () => {};
+    pip.visible = !pipsSeen().includes(id);
+    group.add(pip);
+    pips.push(pip);
+  }
+  ticks.push((now) => {
+    for (const p of pips) if (p.visible) p.position.y = p.userData.y + Math.sin(now / 320 + p.userData.k) * 0.05;
   });
 
   const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: texOf(frameArt()), transparent: true, depthWrite: false }));

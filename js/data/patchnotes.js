@@ -46,6 +46,7 @@ export const NEXT = [
   ['base', 'New arcade game: Squirtle Bubble Shooter. Aim and fire bubbles, pop three of a colour, drop the ones left hanging, and keep them off the line as the ceiling comes down. At Meowth\'s prize counter and free to play in the Game Corner, in place of Unown Word Search.'],
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
   ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
+  ['mall', 'A little "!" bobs over every Game Corner game that pays coins today; it goes once you open that game, and comes back the next day.'],
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
   ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
   ['base', 'Squirtle Bubble Shooter: a SHOOT button (a tap only aims), an arrow showing where the shot goes (the dotted path only for the first three shots), "Tap to swap" under the bubbles, rows sliding down smoothly and a steadier frame rate.'],
