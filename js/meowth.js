@@ -1,7 +1,7 @@
-/* meowth.js  -  how the Game Corner opens (the user's ask, 2026-10-11): at the first crossroads after Biome 1, Meowth comes
-   out of the trees, talks your ear off about PokéCoins and opens it. Till then every way in (the top bar, the Pokédex's
-   dock, the Safari's Buy, a skin's Game Corner button) is hidden. The save's `cornerOpen`; an old save that had already
-   bought something keeps it open (boughtAny() in js/storage.js). */
+/* meowth.js  -  how the Poké Mall's Game Corner opens (the user's asks, 2026-10-11): at the first crossroads a save reaches
+   (the roads open after one won run), Meowth comes out of the trees, talks your ear off about PokéCoins and opens its shop
+   in the mall (syncShop() in js/mall-3d.js). Every save meets it, however far along: an old one at its next crossroads.
+   The Game Corner app in the Pokédex is open to everyone from the start. The save's `cornerOpen`. */
 
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
@@ -10,8 +10,8 @@ import { playSound, playCry } from './audio.js';
 
 export const cornerOpen = () => !!getSave().cornerOpen;
 
-/** Whether this crossroads is Meowth's: the fork after Biome 1, the Game Corner not open yet (`?meowth` locks it again; `?crossroads&meowth` plays it). */
-export const meowthDue = (slot) => slot === 1 && !cornerOpen();
+/** Whether this crossroads is Meowth's: any, till it has been met (`?meowth` shuts the shop again; `?crossroads&meowth` plays it). */
+export const meowthDue = () => !cornerOpen();
 
 /** What Meowth says, `{name}` the trainer's nickname. */
 export function meowthLines() {
@@ -21,9 +21,9 @@ export function meowthLines() {
     'I saw ya beat that boss back there. Not bad, meow. Not bad at all.',
     'Name\'s Meowth. I\'ve got a nose for coins, and you, pal, smell like PokéCoins.',
     'Every run ya win, every boss ya beat, pays ya PokéCoins. And coins are for spendin\', meow!',
-    'So I\'m openin\' a Game Corner! New starters, perks, shiny colours, Poké Balls. All for coins.',
-    'You\'ll find it on your Pokédex, any time ya like. Look for the slot machine, meow!',
-    'Now go on, pick a road. I got a shop to set up. Meowth, that\'s right!',
+    'Ya know the Poké Mall back in the Clearing? That shop in the middle with the tape all over it? It\'s mine now!',
+    'I\'m openin\' the Game Corner there for real. Prizes in a case, shinies on the wall, a machine for every perk.',
+    'Finish your run, then come walk right in. Now go on, pick a road. Meowth, that\'s right!',
   ];
 }
 
@@ -55,7 +55,7 @@ export function meowthTalk(host, { onLine = () => {} } = {}) {
       box.classList.add('xr-news');
       box.querySelector('b').textContent = 'Game Corner';
       onLine(-1);
-      return say('🎰 The Game Corner is open! Find it on your Pokédex, beside Settings and Help.');
+      return say('🎰 The Game Corner in the Poké Mall is open!');
     }
     host.removeEventListener('pointerdown', tap, true);
     removeEventListener('keydown', key, true);
@@ -77,9 +77,3 @@ export function meowthTalk(host, { onLine = () => {} } = {}) {
 }
 
 export const meetMeowth = () => updateSave(d => { d.cornerOpen = true; });
-
-/** Shows or hides every way into the Game Corner outside a run's screens (showScreen() keeps the top bar's hidden in a run). */
-export function syncCorner() {
-  const open = cornerOpen();
-  document.body.classList.toggle('corner-locked', !open);
-}

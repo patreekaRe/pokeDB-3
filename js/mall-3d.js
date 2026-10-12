@@ -10,6 +10,7 @@
    price, the second asks in a window with the thing's picture (ask()). */
 
 import { getSave } from './storage.js';
+import { cornerOpen } from './meowth.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { buddy } from './trainercard.js';
@@ -31,10 +32,10 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
-  // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base (syncShop()); the Game Corner
-  // is closed till the user has finished its insides (2026-10-08), `open: true` lets you in; ?mall= goes in either way
+  // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base, the Game Corner once Meowth
+  // has been met at a crossroads (js/meowth.js); syncShop() opens both; ?mall= goes in either way
   { id: 'furniture', name: 'Furniture', line: '', x: 2, step: { x: 2, y: 1 } },
-  { id: 'corner', name: 'Game Corner', line: 'Closed for now: the machines are still being set up.', x: 6, step: { x: 6, y: 1 } },
+  { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 6, step: { x: 6, y: 1 } },
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 10, step: { x: 10, y: 1 }, colour: '#e88a30' },
 ];
 
@@ -500,18 +501,21 @@ function tickRibbon(dt, now) {
   }
 }
 
-/** The Furniture store's doors by the save: taped up until Smeargle has said it opens, then until that UTC day. */
+/** The shops' doors by the save: the Furniture store taped up until Smeargle has said it opens, then until that UTC day;
+    the Game Corner until Meowth has been met. */
 function syncShop() {
-  const fr = FRONTS[0];
+  const [fr, gc] = FRONTS;
   fr.open = shopOpen(loadBase()) || RIBBON_PEEK;
-  for (const m of tapes[fr.id] || []) m.visible = !fr.open;
+  gc.open = cornerOpen();
+  for (const f of [fr, gc]) for (const m of tapes[f.id] || []) m.visible = !f.open;
   syncRibbon();
-  if (!wallMat || painted === fr.open) return;
+  if (!wallMat || painted === wallKey()) return;
   const wall = wallArt();
   wallMat.map = texOf(wall); wallMat.emissiveMap = texOf(wall.glow);
   wallMat.needsUpdate = true;
-  painted = fr.open;
+  painted = wallKey();
 }
+const wallKey = () => `${FRONTS[0].open}|${FRONTS[1].open}`;
 
 /** What the store's taped door says: a note from Smeargle, and once it has visited, how long until it opens. */
 function shopLine() {
@@ -553,7 +557,7 @@ function buildHall() {
   hall.add(plinth);
 
   const wall = wallArt(), wm = lit(std({ map: texOf(wall), roughness: 0.9 }), wall, '#fff4dc', 1);
-  wallMat = wm; painted = FRONTS[0].open;
+  wallMat = wm; painted = wallKey();
   const cap = std({ color: C.shade }), back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [cap, cap, cap, cap, wm, cap]);
   back.position.set(0, TOP / 2, -ROWS / 2 - 0.2);
   back.receiveShadow = true;

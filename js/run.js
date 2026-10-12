@@ -1618,7 +1618,7 @@ async function walkOn() {
   // the boss and its rewards are done: a refresh from here on (the crossroads or the journey film) comes back to the
   // crossroads rather than the map before the boss, so the boss can't be fought again (the user's ask, 2026-10-11)
   if (forks) { run.atFork = true; checkpoint(); }
-  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), meowth: !peeking && meowthDue(run.biome + 1) }) : null;
+  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), meowth: !peeking && meowthDue() }) : null;
   if (fork && !roads.includes(fork.id)) swapRoad(run.biome + 1, roads[1], fork.id);
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;
@@ -3381,7 +3381,7 @@ function endRun(won, atLastBoss = false, loss = null) {
     if (mewtwoRun) level5.push(`💎 ${stageName(run.starter, run.stage)} entered the Hall of Fame as Champion of the Depths No.${String(entry.champ).padStart(3, '0')}!`);
 
     if (!roadsWere && roadsOpen(getSave().stats)) {
-      level5.push(`🧭 New roads open! You've won ${ROADS_WINS} runs: from now on, after a boss, a crossroads lets you pick the next biome.`);
+      level5.push(`🧭 New roads open! You've won ${ROADS_WINS === 1 ? 'a run' : `${ROADS_WINS} runs`}: from now on, after a boss, a crossroads lets you pick the next biome.`);
     }
     // Winning on your highest unlocked Trainer Level unlocks the next one.
     if (!mewtwoRun && run.level === getSave().maxLevel && run.level < MAX_LEVEL) {

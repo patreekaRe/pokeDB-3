@@ -5437,9 +5437,6 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 /* the wilds' note runs down beside the bosses' and the Alphas' */
 .xr-sec-wilds { grid-row: span 2; }
 
-/* the Game Corner is shut till Meowth opens it at the first crossroads (js/meowth.js) */
-body.corner-locked #shop-btn, body.corner-locked .cdev-dock-btn.app-corner, body.corner-locked #sp-corner, body.corner-locked #sel-corner { display: none !important; }
-
 /* Meowth's talk at the crossroads: the Secret Base's cream speech window (.b3-talk) */
 .xr-talk {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); z-index: 6; translate: -50% 0;

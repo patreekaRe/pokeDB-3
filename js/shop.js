@@ -12,7 +12,6 @@
    presses (the first arms it).
    ============================================================ */
 
-import { cornerOpen } from './meowth.js';
 import { SKIN_SHOP_ITEMS, PASSIVE_SHOP_ITEMS, SHINY_COSTS } from './data/shop.js';
 import { BALLS } from './data/balls.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
@@ -45,7 +44,6 @@ const TRAVEL = 12;    // px the ball can lean
 export function toggleShop(highlightId, { modal = false } = {}) {
   const dialog = $('shop-dialog');
   if (dialog.open) { playSound('cancel', 'confirm'); return dialog.close(); }
-  if (!cornerOpen()) return;   // Meowth hasn't opened it yet (js/meowth.js)
 
   const at = aimCorner(highlightId);
   cursor.armed = false;

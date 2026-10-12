@@ -79,7 +79,7 @@ const TOPICS = [
       ['Run won', `+${COIN_REWARDS.winBonus}`],
       ['Trainer Level', `+${Math.round(COIN_LEVEL_BONUS * 100)}% each`],
     ]),
-    tip('corner', 'Game Corner', 'Spend PokéCoins on new starters, perks and Poké Balls. Meowth opens it at your first crossroads.'),
+    tip('corner', 'Game Corner', 'Spend PokéCoins on new starters, perks and Poké Balls.'),
     tip('ppup', 'Perks', 'Boosts that help every run: more HP, a relic to start with...'),
     tip('sparkle', 'Shinies', 'New colours for a starter you own.'),
   ] },
