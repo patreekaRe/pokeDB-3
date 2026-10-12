@@ -14,8 +14,8 @@ import { runArcade, drawMon, banner } from './arcade-kit.js';
 const R = 15, COLS = 10, ROWH = R * Math.sqrt(3), TOP = 8, W = COLS * R * 2, H = 420;
 const LINE = H - 78, GUN = [W / 2, H - 46], SPEED = 640, START_ROWS = 6;
 const POP = 10, DROP = 20, AIM_SHOTS = 3, SWAP_X = W / 2 + 62;
-/* the bubbles' colours: water, fire, grass, electric, psychic, and their glyphs */
-const COLOURS = [['#3a8ae8', '#a8d4ff'], ['#e8523a', '#ffb8a0'], ['#4ab84a', '#b8f0a8'], ['#f0c020', '#fff0a0'], ['#b060d0', '#e8c0ff']];
+/* the bubbles' colours (base, light, dark): water, fire, grass, electric, psychic, each with its glyph inside */
+const COLOURS = [['#2a7af0', '#b8e0ff', '#0a2c80'], ['#e83030', '#ffb0a0', '#701010'], ['#30c040', '#c0ffb0', '#0c5a18'], ['#f8d018', '#fff8b0', '#906800'], ['#b050e0', '#f0c8ff', '#4a1070']];
 const TAU = Math.PI * 2;
 
 /** The swap mark between the two bubbles: two arrows passing each other, drawn as paths (the ⇄ glyph flickered on iOS). */
@@ -33,7 +33,22 @@ function swapMark(g, x, y) {
 }
 
 const sprites = new Map();
-/** One bubble painted once at a scale, `r` units round, its canvas 1 unit wider each side. */
+/** A type's glyph, drawn round (0, 0) in a bubble `r` round: a drop, a flame, a leaf, a bolt, an eye. */
+function glyph(g, colour, r) {
+  const k = r / 15;
+  g.beginPath();
+  if (colour === 0) { g.moveTo(0, -7 * k); g.bezierCurveTo(5 * k, -1 * k, 6 * k, 2 * k, 6 * k, 3.5 * k); g.arc(0, 3.5 * k, 6 * k, 0, Math.PI); g.bezierCurveTo(-6 * k, 2 * k, -5 * k, -1 * k, 0, -7 * k); }
+  else if (colour === 1) { g.moveTo(0, -8 * k); g.bezierCurveTo(7 * k, -2 * k, 7 * k, 3 * k, 5 * k, 5 * k); g.quadraticCurveTo(0, 9 * k, -5 * k, 5 * k); g.bezierCurveTo(-7 * k, 2 * k, -4 * k, -1 * k, -3 * k, -4 * k); g.quadraticCurveTo(-1 * k, -1 * k, 0, -8 * k); }
+  else if (colour === 2) { g.moveTo(-6 * k, 6 * k); g.bezierCurveTo(-7 * k, -3 * k, 0, -7 * k, 7 * k, -7 * k); g.bezierCurveTo(7 * k, 0, 3 * k, 7 * k, -6 * k, 6 * k); }
+  else if (colour === 3) { g.moveTo(2 * k, -8 * k); g.lineTo(-5 * k, 1 * k); g.lineTo(0, 1 * k); g.lineTo(-2 * k, 8 * k); g.lineTo(5 * k, -1 * k); g.lineTo(0, -1 * k); g.closePath(); }
+  else { g.moveTo(-7 * k, 0); g.quadraticCurveTo(0, -7 * k, 7 * k, 0); g.quadraticCurveTo(0, 7 * k, -7 * k, 0); }
+  g.fill();
+  if (colour === 4) { g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(0, 0, 2.4 * k, 0, TAU); g.fill(); g.restore(); }
+}
+
+/** One bubble painted once at a scale, `r` units round, its canvas 1 unit wider each side: Puzzle Bobble's glossy
+    marbles, a dark outline, the colour deepening to the edge, a type glyph embossed inside, a bold shine top left and a
+    rim of light bottom right. */
 function bubbleSprite(colour, r, s) {
   const k = `${colour},${r},${s}`;
   if (sprites.has(k)) return sprites.get(k);
@@ -41,11 +56,22 @@ function bubbleSprite(colour, r, s) {
   c.width = c.height = px;
   const g = c.getContext('2d');
   g.scale(s, s);
-  const x = r + 1, y = r + 1, [base, light] = COLOURS[colour], grad = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-  grad.addColorStop(0, light); grad.addColorStop(0.6, base); grad.addColorStop(1, base);
-  g.fillStyle = grad; g.beginPath(); g.arc(x, y, r - 0.5, 0, TAU); g.fill();
-  g.strokeStyle = 'rgba(255, 255, 255, 0.35)'; g.lineWidth = 1; g.stroke();
-  g.fillStyle = 'rgba(255, 255, 255, 0.75)'; g.beginPath(); g.ellipse(x - r * 0.35, y - r * 0.45, r * 0.28, r * 0.16, -0.5, 0, TAU); g.fill();
+  const x = r + 1, y = r + 1, [base, light, dark] = COLOURS[colour];
+  g.fillStyle = dark; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();   // the outline
+  const body = g.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.05, x, y, r * 0.95);
+  body.addColorStop(0, light); body.addColorStop(0.35, base); body.addColorStop(0.8, base); body.addColorStop(1, dark);
+  g.fillStyle = body; g.beginPath(); g.arc(x, y, r - 1.2, 0, TAU); g.fill();
+  g.save(); g.beginPath(); g.arc(x, y, r - 1.2, 0, TAU); g.clip();
+  g.translate(x + r * 0.04, y + r * 0.08);
+  g.fillStyle = 'rgba(255, 255, 255, 0.35)'; g.translate(0.8, 0.8); glyph(g, colour, r);   // embossed: a light edge under
+  g.fillStyle = dark; g.globalAlpha = 0.7; g.translate(-0.8, -0.8); glyph(g, colour, r);
+  g.restore();
+  const rim = g.createRadialGradient(x - r * 0.2, y - r * 0.2, r * 0.6, x - r * 0.2, y - r * 0.2, r * 1.15);   // light through the bottom right
+  rim.addColorStop(0, 'rgba(255, 255, 255, 0)'); rim.addColorStop(0.75, 'rgba(255, 255, 255, 0)'); rim.addColorStop(1, 'rgba(255, 255, 255, 0.55)');
+  g.fillStyle = rim; g.beginPath(); g.arc(x, y, r - 1.2, 0, TAU); g.fill();
+  g.fillStyle = 'rgba(255, 255, 255, 0.92)';   // the shine
+  g.beginPath(); g.ellipse(x - r * 0.38, y - r * 0.42, r * 0.3, r * 0.17, -0.75, 0, TAU); g.fill();
+  g.beginPath(); g.arc(x - r * 0.62, y - r * 0.08, r * 0.08, 0, TAU); g.fill();
   sprites.set(k, c);
   return c;
 }

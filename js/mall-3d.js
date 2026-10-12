@@ -821,11 +821,7 @@ function setPlace(p, at, facing = 'back') {
   pick(null);
   closeAsk(false);
   walker.path = []; aim = null; here = null; riding = null;
-  // the shops' tilt-shift is gentle (the user found them too blurry), the Game Corner has none (the user's call,
-  // 2026-10-12), the hall keeps the Clearing's
-  const shop = P.id !== 'hall', u = post.final.uniforms;
-  u.uBlur.value = P.id === 'gc' ? 0 : shop ? 1.5 : 5;
-  u.uBand.value = shop ? 0.3 : 0.16;
+  post.final.uniforms.uBlur.value = 0;   // no tilt-shift blur anywhere in the mall (the user's call, 2026-10-12)
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   root.querySelector('.b3-top h2').textContent = P.title;
