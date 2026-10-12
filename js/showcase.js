@@ -28,7 +28,7 @@ let panel = null, row = null, at = 0, armed = false, news = null, onStep = null;
 export function openShowcase(rowId, start = 0, { step, close, say } = {}) {
   row = rowId; at = start; armed = false; news = say ? [say] : null; onStep = step ?? null;
   preloadSounds('stick', 'buy');
-  panel = openPanel('sc', `${SHOWCASES[row].title} showcase`, { onClose: close });
+  panel = openPanel('sc', `${SHOWCASES[row].title} showcase`, { onClose: close, outside: true });
   panel.root.style.setProperty('--sc', SHOWCASES[row].colour);
   document.addEventListener('keydown', onKey, true);
   const off = new MutationObserver(() => { if (!panel.root.isConnected) { document.removeEventListener('keydown', onKey, true); off.disconnect(); } });

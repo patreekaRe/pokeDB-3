@@ -49,7 +49,6 @@ export function openVoltorb(close) {
   root = el('div', 'cg-overlay vf');
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-label', 'Voltorb Flip');
-  root.addEventListener('pointerdown', (e) => { if (e.target === root) shut(); });
   document.body.append(root);
   document.addEventListener('keydown', onKey, true);
   render();

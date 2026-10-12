@@ -36,7 +36,7 @@ function section(title, ...rest) {
 
 /** Opens the guide over the Game Corner; `onClose` when it shuts. */
 export function openGuide(onClose) {
-  const { root, shut } = openPanel('gd', 'Game Corner guide', { onClose });
+  const { root, shut } = openPanel('gd', 'Game Corner guide', { onClose, outside: true });
   const box = el('div', 'vf-panel gd-panel');
   const won = Math.min(potWon(), DAILY_CAP);
   const head = el('div', 'vf-head');

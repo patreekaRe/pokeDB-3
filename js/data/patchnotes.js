@@ -50,6 +50,8 @@ export const NEXT = [
   ['mall', 'An hourglass on Meowth\'s counter counts down to the daily reset: walk near it for the time left, or tap it to hear more.'],
   ['fixes', 'The Game Corner guide shows how many of today\'s quiz questions you\'ve answered, each game\'s plays left, and says when the stamp card is complete.'],
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
+  ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
+  ['base', 'Squirtle Bubble Shooter: a SHOOT button (a tap only aims), an arrow showing where the shot goes (the dotted path only for the first three shots), "Tap to swap" under the bubbles, rows sliding down smoothly and a steadier frame rate.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
