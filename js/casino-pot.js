@@ -3,7 +3,7 @@
    (js/corner-pot.js). Nobody bets (2026-10-12, the user's call): a play stakes STAKE of Meowth's house chips and pays
    what they win. Kept in `save.corner.bets` ({ day, plays }); a game's hand in progress is its own field there. */
 
-import { PLAYS, STAKE, DAILY_CAP, GAME_CAP, ticketsFor, RECORDS } from './data/corner.js';
+import { PLAYS, DAILY_CAP, GAME_CAP, ticketsFor, RECORDS } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el } from './ui.js';
@@ -59,12 +59,13 @@ export function bestLine(keys) {
 export const handOf = (game) => { const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
 export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: hand });
 
-/** The meters every table shows: plays left that pay, the chips a play stakes, and today's coins against the cap.
+/** The meters every table shows: plays left that pay and today's coins against the cap (no chips meter since 2026-10-12,
+    the user's call: a fixed stake told the player nothing).
     `held` is won but not yet shown (a Plinko ball still falling), kept off the meters till it lands. */
 export function tableMeters(game, held = { coins: 0, tickets: 0 }) {
   const m = el('div', 'vf-meters');
   const left = playsLeft(game);
-  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have - held.tickets}`], ['Chips', String(STAKE)], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
+  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have - held.tickets}`], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
   }
   return m;
