@@ -1,17 +1,20 @@
-/* base-models-h.js  -  Japanese and Toys pieces, modelled from parts like the arcade cabinets (the user's ask, 2026-10-12).
+/* base-models-h.js  -  Japanese, Toys and Types pieces, modelled from parts like the arcade cabinets (the user's ask, 2026-10-12).
    js/base-models-f.js's head says how a batch works. Most builders here follow their painting (js/base-furniture-rooms3.js)
    pixel for pixel: `u(n)` is n of its 32 pixels a tile, `X(n, W)` a pixel across the painting as x from the middle.
    Left as they were: the rugs (tatami, koi pond, zen garden, train set, puzzle mat), the wall pieces, the low table, floor
-   cushion and race car bed (already shaped) and the Types shelf (its own batch). */
+   cushion and race car bed (already shaped); on the Types shelf the rugs and wall pieces, the cloud cushion (a seat
+   already) and the plasma globe (a true sphere). */
 
 import { rod, tube } from './base-models-kit.js';
 import { gableRoof } from './base-models-b.js';
+import { GLYPHS } from './base-furniture-rooms3.js';
 
 const u = (n) => n / 32;
 const X = (n, W = 1) => n / 32 - W / 2;
 const TAU = Math.PI * 2;
 const RAINBOW = ['#e04848', '#f08030', '#f8d030', '#58b848', '#4a98d8', '#5a58c8', '#a858d8'];
 const SKYB = '#a8d8f8', GOLD = '#f0c040', INK = '#303038', STRAW = '#e0c070', PAPER = '#fbf6e8', SKIN = '#fbe8d8';
+const STONE = '#9a9aa6', ICE = '#bfe6f8';
 
 const sheet = (w, h, draw) => { const c = new OffscreenCanvas(w, h); draw(c.getContext('2d'), w, h); return c; };
 const pics = {};
@@ -63,6 +66,53 @@ const turned = (K, x, z, ry) => (geo, m, lx = 0, ly = 0, lz = 0, rx = 0, rz = 0)
   return K.put(geo, m, x, 0, z, ry);
 };
 
+/* a type shrine's medallion face: the type's colour, its glyph in white, the glyph's `k` cells darker */
+const glyphFace = (type, dark) => once('glyph' + type, () => sheet(128, 128, (g, w) => {
+  const [, c, rows] = GLYPHS[type], cell = w * 2 / 25.2, n = rows.length;
+  g.fillStyle = c; g.fillRect(0, 0, w, w);
+  rows.forEach((row, j) => [...row].forEach((ch, i) => {
+    if (ch === '.') return;
+    g.fillStyle = ch === 'k' ? dark : '#ffffff';
+    g.beginPath(); g.roundRect(w / 2 + (i - 4.5) * cell - 0.5, w / 2 + (j - n / 2) * cell - 0.5, cell + 1, cell + 1, cell * 0.3); g.fill();
+  }));
+}));
+/* the generator's warning band */
+const hazard = () => once('hazard', () => sheet(256, 32, (g, w, h) => {
+  g.fillStyle = '#f8d030'; g.fillRect(0, 0, w, h);
+  g.fillStyle = INK;
+  for (let x = -h; x < w; x += 32) { g.beginPath(); g.moveTo(x, h); g.lineTo(x + 16, h); g.lineTo(x + 16 + h, 0); g.lineTo(x + h, 0); g.fill(); }
+}));
+/* the generator's front panel: a lightning bolt and four vents */
+const genPanel = (metal) => once('genpanel' + metal, () => sheet(160, 96, (g, w, h) => {
+  g.fillStyle = metal; g.fillRect(0, 0, w, h);
+  g.fillStyle = '#f8e070';
+  g.beginPath(); [[44, 8], [22, 52], [40, 52], [30, 90], [64, 38], [46, 38], [58, 8]].forEach(([x, y], i) => g[i ? 'lineTo' : 'moveTo'](x, y)); g.fill();
+  g.fillStyle = 'rgba(0,0,0,0.35)';
+  for (let i = 0; i < 4; i++) { g.beginPath(); g.roundRect(92 + i * 16, 14, 8, 68, 4); g.fill(); }
+}));
+/* a skull and crossbones for the poison vat */
+const skull = () => once('skull', () => sheet(64, 64, (g) => {
+  g.fillStyle = '#f4f4f0';
+  g.beginPath(); g.arc(32, 26, 16, 0, Math.PI * 2); g.fill(); g.fillRect(22, 34, 20, 12);
+  g.fillStyle = '#5a2a80';
+  for (const x of [25, 39]) { g.beginPath(); g.arc(x, 26, 5, 0, Math.PI * 2); g.fill(); }
+  g.fillRect(30, 32, 4, 5); for (const x of [26, 31, 36]) g.fillRect(x, 42, 2, 4);
+  g.strokeStyle = '#f4f4f0'; g.lineWidth = 5; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(10, 50); g.lineTo(54, 60); g.moveTo(54, 50); g.lineTo(10, 60); g.stroke();
+}));
+/** A strip of flat colours, one 4px cell each, for a part that is one material (the weathervane's turning top). */
+const strip = (cols) => once('strip' + cols.join(), () => sheet(cols.length * 4, 4, (g) => cols.forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 4, 0, 4, 4); })));
+/** Points every uv of `g` at cell `i` of a strip of `n`. */
+function cell(g, i, n) {
+  const uv = g.attributes.uv;
+  for (let k = 0; k < uv.count; k++) uv.setXY(k, (i + 0.5) / n, 0.5);
+  return g;
+}
+/** `g` with a face of its own per triangle, so a prism or a rock reads faceted, not smooth. */
+const facet = (g) => { const f = g.index ? g.toNonIndexed() : g; f.computeVertexNormals(); return f; };
+/** A flame: a teardrop `r` wide at its belly, `h` tall, its foot at y 0. */
+const flame = (L, r, h) => L.lathe([[0.001, 0], [r * 0.75, h * 0.1], [r, h * 0.3], [r * 0.75, h * 0.58], [r * 0.3, h * 0.84], [0.001, h]], 20);
+
 export const SHAPES = {
   // boxes, the painting on the front only (js/base-models-kit.js)
   'blocktoyshelf cartoyshelf robottoyshelf balltoyshelf boattoyshelf toptoyshelf': { make: 'frontbox', d: 0.4 },
@@ -90,6 +140,16 @@ export const SHAPES = {
   stackrings: { make: 'stackrings' },
   puzzlecube: { make: 'puzzlecube' },
   toysoldier: { make: 'toysoldier' },
+  // types
+  ...Object.fromEntries(Object.keys(GLYPHS).map(t => [`${t}shrine`, { make: 'shrine', type: t }])),
+  brazier: { make: 'brazier' },
+  generator: { make: 'generator' },
+  iceshards: { make: 'iceshards' },
+  boulder: { make: 'boulder' },
+  geode: { make: 'geode' },
+  anvil: { make: 'anvil' },
+  poisonvat: { make: 'poisonvat' },
+  weathervane: { make: 'weathervane' },
 };
 
 export const MAKES = {
@@ -619,5 +679,184 @@ export const MAKES = {
     K.put(cyl(u(6.2), u(2), u(6.2), 24), gold, 0, u(62), -u(0.5));
     K.put(rbox(u(2.5), u(4), 0.01, 0.003), gold, 0, u(71), u(5.6));
     K.put(cyl(u(1.2), u(3), u(1.6), 12), K.gloss('#e04848'), 0, u(78.5), -u(0.5));
+  },
+
+  /* ----- Types ----- */
+
+  shrine(K, s, W, D, L) {
+    const { THREE, rbox, lathe, cyl, torus, ball } = L, c = GLYPHS[s.type][1], stone = K.plain(STONE), pale = K.plain(L.tone(STONE, 1.12));
+    // a stepped stone base, a squat pillar banded in the accent, its cap, a lotus cup holding the medallion upright
+    K.put(rbox(u(28), u(8), u(22), 0.02), stone, 0, u(4), 0);
+    K.put(rbox(u(20), u(26), u(15), 0.015), stone, 0, u(21), 0);
+    K.put(rbox(u(20.6), u(2), u(15.6), 0.004), K.gloss(K.pal.a), 0, u(19), 0);
+    K.put(rbox(u(24), u(5), u(18), 0.015), pale, 0, u(35.5), 0);
+    K.put(lathe([[0.001, u(38)], [u(4), u(38)], [u(3), u(41)], [u(7), u(45)], [u(6), u(46)], [0.001, u(46)]], 24), pale, 0, 0, 0);
+    // the medallion: a rim in the type's darker colour, the glyph on both faces, ringed in the accent
+    const cy = u(60), R = u(13.4), t = u(4), face = L.litPic(glyphFace(s.type, L.tone(c, 0.62)), 0.3);
+    K.put(cyl(R, t, R, 48).rotateX(Math.PI / 2), K.gloss(L.tone(c, 0.75)), 0, cy, 0);
+    for (const side of [1, -1]) {
+      K.put(new THREE.CircleGeometry(u(12.6), 48).rotateY(side > 0 ? 0 : Math.PI), face, 0, cy, side * (t / 2 + 0.002));
+      K.put(torus(u(12.9), u(0.7), TAU, 48), K.metal(K.pal.a), 0, cy, side * t / 2);
+    }
+    // motes of the type's light drifting round it
+    for (const [i, j, z] of [[2, 76, 0.06], [30, 70, -0.04], [4, 46, 0.08]]) K.put(ball(u(1), 10, 8), K.glow(L.tone(c, 1.3)), X(i), u(j), z);
+  },
+
+  brazier(K, s, W, D, L) {
+    const { lathe, torus, ball } = L, iron = K.metal(), rim = K.metal(L.tone(K.pal.m, 1.25));
+    // three splayed iron legs, a wide bowl, its rim, coals heaped in it
+    for (let i = 0; i < 3; i++) { const a = Math.PI / 2 + i * TAU / 3; rod(K, L, iron, [Math.cos(a) * u(3), u(26), Math.sin(a) * u(3)], [Math.cos(a) * u(11), 0.01, Math.sin(a) * u(11)], u(1.1)); }
+    K.put(torus(u(6), u(0.8), TAU, 24).rotateX(Math.PI / 2), iron, 0, u(12), 0);
+    K.put(lathe([[0.001, u(24)], [u(6), u(24)], [u(9.5), u(27)], [u(12), u(31)], [u(13), u(34)], [u(12), u(34)], [u(10), u(31)], [0.001, u(31)]], 32), iron, 0, 0, 0);
+    K.put(torus(u(12.6), u(0.9), TAU, 32).rotateX(Math.PI / 2), rim, 0, u(34), 0);
+    for (let i = 0; i < 9; i++) { const a = i * 2.4, r = u(3 + (i % 3) * 3); K.put(ball(u(2.2), 8, 6), K.gloss(i % 3 ? '#3a2a2a' : '#5a3020'), Math.cos(a) * r, u(32.5), Math.sin(a) * r); }
+    // the fire: a red tongue behind, orange either side, yellow and white at its heart in front
+    K.put(flame(L, u(10), u(32)), K.glow('#e04828'), 0, u(32), -u(2));
+    K.put(flame(L, u(6.5), u(22)), K.glow('#f08030'), X(11), u(32), u(2), 0, 0, 0.18);
+    K.put(flame(L, u(6.5), u(24)), K.glow('#f08030'), X(21), u(32), u(2.5), 0, 0, -0.15);
+    K.put(flame(L, u(5), u(17)), K.glow('#f8d030'), 0, u(32), u(5));
+    K.put(flame(L, u(2.8), u(10)), K.glow('#fff4c0'), 0, u(32), u(7.5));
+    for (const [i, j] of [[6, 72], [26, 76], [14, 84]]) K.put(ball(u(0.8), 8, 6), K.glow('#f8d030'), X(i), u(j), 0);
+  },
+
+  generator(K, s, W, D, L) {
+    const { THREE, rbox, cyl, ball, torus } = L, d = u(20), front = d / 2;
+    // a yellow cabinet, a striped warning band round its top
+    K.put(rbox(u(28), u(34), d, 0.02), K.gloss('#f8d030'), 0, u(17), 0);
+    K.put(new THREE.BoxGeometry(u(28.2), u(6), d + 0.004), K.pic(hazard()), 0, u(37), 0);
+    K.put(rbox(u(28.6), u(1.2), d + 0.01, 0.004), K.gloss(INK), 0, u(34.2), 0);
+    K.put(rbox(u(29), u(2), d + 0.02, 0.006), K.gloss(L.tone('#f8d030', 0.75)), 0, u(1), 0);
+    // its panel: the bolt and vents, a gauge and two knobs below
+    K.put(rbox(u(21), u(13), 0.012, 0.004), K.metal(L.tone(K.pal.m, 0.7)), 0, u(24), front + 0.004);
+    K.put(new THREE.PlaneGeometry(u(20), u(12)), K.pic(genPanel(K.pal.m)), 0, u(24), front + 0.011);
+    K.put(cyl(u(4), 0.012, u(4), 24).rotateX(Math.PI / 2), K.gloss('#f4f4f0'), X(10), u(10), front + 0.006);
+    K.put(torus(u(4), u(0.6), TAU, 24), K.metal(), X(10), u(10), front + 0.012);
+    K.put(rbox(u(0.8), u(3.4), 0.004, 0.001), K.gloss('#e04848'), X(10.8), u(11.2), front + 0.014, 0, 0, -0.6);
+    for (const i of [20, 25]) K.put(cyl(u(2), u(2), u(2.2), 16).rotateX(Math.PI / 2), K.gloss(K.pal.c), X(i), u(10), front + u(1));
+    // two copper terminals with steel caps, a spark arcing between them
+    for (const i of [8.5, 24.5]) {
+      K.put(cyl(u(2.5), u(12), u(2.8), 18), K.metal('#c87838'), X(i), u(46), 0);
+      for (const y of [43, 47]) K.put(torus(u(2.7), u(0.5), TAU, 18).rotateX(Math.PI / 2), K.metal('#a85828'), X(i), u(y), 0);
+      K.put(ball(u(3), 16, 12), K.metal(), X(i), u(53), 0);
+    }
+    const arc = [[8.5, 55], [11, 60], [13, 58], [16, 64], [19, 59], [21, 61], [24.5, 55]].map(([i, j], n) => [X(i), u(j), n % 2 ? 0.02 : -0.02]);
+    K.put(tube(L, arc, 0.006, 40), K.glow('#f8f0a0'), 0, 0, 0);
+  },
+
+  iceshards(K, s, W, D, L) {
+    const { blob, cyl } = L, body = K.gloss(ICE), tip = K.gloss('#e8f8ff'), snow = K.gloss('#eef6ff');
+    // a mound of packed snow, five six-sided crystals leaning out of it, the tallest in the middle
+    K.put(blob(u(28), u(6), u(24), 0.6, 0.6), snow, 0, u(1), 0);
+    for (const [i, h, w, tilt, z, lean] of [[16, 58, 7, 0, -0.04, -0.05], [8, 34, 5, -0.15, 0.03, 0.08], [24, 40, 5, 0.18, -0.02, -0.1],
+      [12, 24, 4, -0.3, 0.13, 0.25], [21, 22, 4, 0.3, 0.12, 0.2]]) {
+      const r = u(w), len = u(h - 8), cap = u(8), a = -Math.atan(tilt), turn = (i * 0.7) % 1;
+      const g = facet(cyl(r, len, r, 6).rotateY(turn).translate(0, len / 2, 0));
+      const c = facet(cyl(0.001, cap, r, 6).rotateY(turn).translate(0, len + cap / 2, 0));
+      for (const [geo, m] of [[g, body], [c, tip]]) K.put(geo.rotateX(lean).rotateZ(a), m, X(i), u(1), z);
+    }
+  },
+
+  boulder(K, s, W, D, L) {
+    const { blob } = L, R = K.r, dirs = Array.from({ length: 6 }, () => [R() * 2 - 1, R() * 2 - 1, R() * 2 - 1, R() * TAU]);
+    // a round stone pushed out of shape by a few waves of lumps, flat where it sits on the floor
+    const g = blob(u(30), u(32), u(26), 0.75, 0.8), pos = g.attributes.position;
+    for (let k = 0; k < pos.count; k++) {
+      const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k), n = Math.hypot(x, y, z) || 1;
+      const f = 1 + dirs.reduce((a, [dx, dy, dz, ph]) => a + Math.sin((x * dx + y * dy + z * dz) / n * 3 + ph) * 0.03, 0);
+      pos.setXYZ(k, x * f, Math.max(-u(14), y * f), z * f);
+    }
+    g.computeVertexNormals();
+    K.put(g, K.plain(STONE), 0, u(14), 0);
+    // moss over its crown, a sprig or two
+    K.put(blob(u(15), u(4), u(13), 0.6, 0.5), K.cloth(K.pal.leaf), -u(3), u(29.5), -u(1), 0.2);
+    for (const [x, z] of [[-6, 3], [2, -2], [-1, 4]]) K.put(blob(u(4), u(2.5), u(4), 0.6, 0.5), K.cloth(L.tone(K.pal.leaf, 1.15)), u(x), u(30), u(z));
+  },
+
+  geode(K, s, W, D, L) {
+    const { THREE, rbox, cyl, lathe, torus, ball } = L, cy = u(34), r = u(14), open = 0.85;
+    // a wooden plinth, a steel post, the stone cracked open towards you
+    K.put(rbox(u(16), u(8), u(12), 0.02), K.wood(), 0, u(4), 0);
+    K.put(cyl(u(2), u(14), u(2), 14), K.metal(), 0, u(15), 0);
+    K.put(new THREE.SphereGeometry(r, 32, 22, 0, TAU, open, Math.PI - open).rotateX(Math.PI / 2), K.plain('#7a6a68'), 0, cy, 0);
+    K.put(torus(r * Math.sin(open), u(1.4), TAU, 40), K.plain('#a89890'), 0, cy, r * Math.cos(open));
+    // the hollow inside, lined in the theme's colour (a lathe run top to bottom faces inwards) and bristling with crystals
+    const ri = r * 0.88, bowl = [];
+    for (let i = 0; i <= 14; i++) { const t = open + (Math.PI - open) * i / 14; bowl.push([ri * Math.sin(t), ri * Math.cos(t)]); }
+    const lining = lathe(bowl, 32); lining.computeVertexNormals();
+    K.put(lining.rotateX(Math.PI / 2), K.gloss(L.tone(K.pal.c, 0.7)), 0, cy, 0);
+    const up = new THREE.Vector3(0, 1, 0);
+    for (let n = 0; n < 30; n++) {
+      const t = 1.15 + (n % 3) * 0.5 + K.r() * 0.3, a = n * 2.4, dir = new THREE.Vector3(Math.sin(t) * Math.cos(a), Math.sin(t) * Math.sin(a), Math.cos(t));
+      const len = u(2.5 + K.r() * 2.5), g = facet(cyl(0.001, len, u(1 + K.r() * 0.6), 6).translate(0, len / 2, 0));
+      g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, dir.clone().negate()));
+      const at = dir.multiplyScalar(ri * 0.97);
+      K.put(g, K.gloss(n % 2 ? K.pal.c : L.tone(K.pal.c, 1.25)), at.x, cy + at.y, at.z);
+    }
+    K.put(ball(u(1.6), 10, 8), K.glow('#ffffff'), 0, cy, -ri * 0.55);
+  },
+
+  anvil(K, s, W, D, L) {
+    const { THREE, rbox, cyl, torus } = L, iron = K.metal(L.tone(K.pal.m, 0.8));
+    // a tree-stump block, its rings on top
+    K.put(cyl(u(9), u(16), u(9.6), 28), K.wood(), 0, u(8), 0);
+    K.put(cyl(u(8.2), 0.004, u(8.2), 28), K.wood(L.tone(K.pal.w, 1.2)), 0, u(16.002), 0);
+    for (const r of [3, 6]) K.put(torus(u(r), 0.003, TAU, 28).rotateX(Math.PI / 2), K.wood(L.tone(K.pal.w, 0.75)), 0, u(16.004), 0);
+    // the anvil seen from the front: a flared foot, a waist, the face, its horn tapering off to the left
+    const side = new THREE.Shape([[-7, 16], [7, 16], [5, 19], [5, 26], [11, 26], [11, 32], [-11, 32], [-11, 30], [-17, 30.6], [-11, 26], [-5, 26], [-5, 19]]
+      .map(([x, y]) => new THREE.Vector2(u(x), u(y))));
+    const body = new THREE.ExtrudeGeometry(side, { depth: u(9), bevelEnabled: true, bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 2 }).translate(0, 0, -u(4.5));
+    K.put(body, iron, 0, 0, 0);
+    K.put(rbox(u(21.4), 0.008, u(9.4), 0.003), K.metal(L.tone(K.pal.m, 1.3)), 0, u(32) + 0.006, 0);
+    // a hammer leaning on it, its head up
+    const a = Math.atan2(8, 10);
+    rod(K, L, K.wood(), [X(21), u(32), u(3)], [X(29), u(44), u(3)], u(1));
+    K.put(rbox(u(7), u(4), u(4), 0.008), K.metal(L.tone(K.pal.m, 1.1)), X(29.6), u(45.2), u(3), 0, 0, -a);
+  },
+
+  poisonvat(K, s, W, D, L) {
+    const { THREE, lathe, torus, cyl, ball, blob } = L, rad = (y) => u(13 + Math.sin(y / 34 * Math.PI) * 2), ooze = '#7a3aa8';
+    // a bellied wooden barrel, three iron hoops
+    const pts = [[0.001, 0]];
+    for (let j = 0; j <= 12; j++) pts.push([rad(j / 12 * 34), u(j / 12 * 34)]);
+    pts.push([0.001, u(34)]);
+    K.put(lathe(pts, 36), K.wood(), 0, 0, 0);
+    for (const y of [5, 17, 29]) K.put(torus(rad(y) + u(0.3), u(0.9), TAU, 36).rotateX(Math.PI / 2), K.metal(), 0, u(y), 0);
+    // brimming with ooze, bubbles swelling out of it, drips running down the front
+    K.put(cyl(u(13.4), u(1.4), u(13.4), 36), K.glow(ooze), 0, u(34.2), 0);
+    K.put(blob(u(18), u(4), u(16), 0.5, 0.6), K.glow('#9a48d0'), u(1), u(35), 0);
+    for (let n = 0; n < 7; n++) K.put(ball(u(1.5 + K.r() * 2), 14, 10), K.gloss('#b860e8'), u(-8 + K.r() * 16), u(36 + K.r() * 4), u(-6 + K.r() * 12));
+    for (const [i, len] of [[8, 7], [22, 9], [15, 5]]) {
+      const x = X(i), z = Math.sqrt(rad(30) ** 2 - x * x) + u(0.3);
+      K.put(cyl(u(1), u(len), u(1), 10), K.gloss('#9a48d0'), x, u(34 - len / 2), z);
+      K.put(ball(u(1.4), 10, 8), K.gloss('#9a48d0'), x, u(34 - len), z);
+    }
+    K.put(new THREE.PlaneGeometry(u(10), u(10)), L.decal(skull()), 0, u(21), rad(21) + 0.004);
+  },
+
+  weathervane(K, s, W, D, L) {
+    const { THREE, rbox, cyl, ball } = L, iron = K.metal(), c = K.pal.c;
+    // a wooden foot, the pole, the compass cross with its tips in the accent
+    K.put(rbox(u(12), u(6), u(12), 0.015), K.wood(), 0, u(3), 0);
+    K.put(cyl(u(1), u(70), u(1.2), 12), iron, 0, u(41), 0);
+    for (const turn of [0, Math.PI / 2]) {
+      K.put(cyl(u(0.6), u(22), u(0.6), 8).rotateZ(Math.PI / 2).rotateY(turn), iron, 0, u(50), 0);
+      for (const sx of [-1, 1]) K.put(ball(u(1.2), 10, 8), K.metal(K.pal.a), Math.cos(turn) * sx * u(11), u(50), -Math.sin(turn) * sx * u(11));
+    }
+    // the arrow and the rooster on it turn about the pole in the wind (js/base-play.js's spin), one material on a strip
+    const cols = [K.pal.m, c, L.tone(c, 0.78), '#f8b040', INK], n = cols.length, y = u(74);
+    const m = new THREE.MeshStandardMaterial({ map: L.canvasTex(strip(cols), false), roughness: 0.35, metalness: 0.25 });
+    m.userData.kind = 'pic'; m.userData.pivot = { y, tilt: 0 };
+    const head = new THREE.Shape([[0, -2.5], [5, 0], [0, 2.5]].map(([a, b]) => new THREE.Vector2(u(a), u(b))));
+    const tail = new THREE.Shape([[0, -1], [-4, -4], [-6, -4], [-4, 0], [-6, 4], [-4, 4], [0, 1]].map(([a, b]) => new THREE.Vector2(u(a), u(b))));
+    K.put(cell(cyl(u(0.6), u(22), u(0.6), 8).rotateZ(Math.PI / 2), 0, n), m, 0, y, 0);
+    K.put(cell(new THREE.ExtrudeGeometry(head, { depth: u(0.8), bevelEnabled: false }).translate(0, 0, -u(0.4)), 0, n), m, u(11), y, 0);
+    K.put(cell(new THREE.ExtrudeGeometry(tail, { depth: u(0.8), bevelEnabled: false }).translate(0, 0, -u(0.4)), 0, n), m, -u(11), y, 0);
+    K.put(cell(cyl(u(0.8), u(4), u(0.8), 8), 0, n), m, 0, u(77), 0);
+    K.put(cell(ball(1, 16, 12).scale(u(6), u(4), u(3)), 1, n), m, -u(2), u(80), 0);
+    K.put(cell(ball(u(3), 14, 10), 1, n), m, -u(7), u(84), 0);
+    K.put(cell(cyl(0.001, u(3), u(1), 8).rotateZ(Math.PI / 2), 3, n), m, -u(11), u(84), 0);
+    for (const sz of [-1, 1]) K.put(cell(ball(u(0.6), 6, 4), 4, n), m, -u(8.5), u(85), sz * u(2.4));
+    K.put(cell(ball(u(1.2), 8, 6).scale(1, 1.4, 0.6), 1, n), m, -u(7), u(87.5), 0);
+    for (let i = 0; i < 3; i++) K.put(cell(rbox(u(2), u(7 - i), u(2.4), 0.004), 2, n), m, u(3.5 + i * 1.5), u(82 + i), 0, 0, 0, -0.3 - i * 0.15);
   },
 };

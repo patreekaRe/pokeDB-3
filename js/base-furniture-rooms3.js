@@ -879,7 +879,7 @@ add('Toys', [
 ]);
 
 /* ---------- types: a room per Pokémon type ---------- */
-const GLYPHS = {
+export const GLYPHS = {
   fire: ['Fire', '#f08030', MOTIFS.flame], water: ['Water', '#4a98d8', MOTIFS.drop], grass: ['Grass', '#58b848', MOTIFS.sprout],
   electric: ['Electric', '#f8d030', MOTIFS.bolt],
   psychic: ['Psychic', '#f85888', ['.........', '..#####..', '.##...##.', '##..k..##', '#..kkk..#', '##..k..##', '.##...##.', '..#####..']],
