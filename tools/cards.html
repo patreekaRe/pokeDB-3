@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card art</title>
+<link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/cards.css">
+<style>
+  body { background: #2a2440; padding: 16px; margin: 0; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+  .row .card { width: 150px; }
+  .row.small .card { width: 86px; }
+  h2 { color: #fff; font: 14px sans-serif; margin: 6px 0; }
+</style></head><body>
+<h2>Smooth card art (every card drawn so far; ?ids=ember,bubble for a few, &amp;pixel to see the old art beside it)</h2>
+<div id="big" class="row"></div><div id="old" class="row"></div><div id="small" class="row small"></div>
+<script type="module">
+  import { CARDS_BY_ID } from '../js/data/cards.js';
+  import { makeCard } from '../js/ui.js';
+  import { CARD_ART_IDS } from '../js/card-art.js';
+  const q = new URLSearchParams(location.search);
+  const ids = q.get('ids')?.split(',') || CARD_ART_IDS;
+  for (const id of ids) {
+    const card = CARDS_BY_ID[id];
+    if (!card) continue;
+    document.getElementById('big').append(makeCard(card));
+    const s = makeCard(card); s.classList.add('small'); document.getElementById('small').append(s);
+    if (q.has('pixel') && card.sprite) {
+      const { art, ...plain } = card;
+      const old = makeCard({ ...plain, id: `${id}-old`, art: card.art });
+      document.getElementById('old').append(old);
+    }
+  }
+</script></body></html>

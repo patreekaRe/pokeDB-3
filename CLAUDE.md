@@ -327,6 +327,7 @@ live site.
   `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
   window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
   Pokédex or `bossesDefeated`.
+- **Card art** (2026-10-12, the user's yes, by batches): a card's picture is smooth SVG from `ART` in `js/card-art.js` (keyed by base id, a picture of the move itself) when it has a line there, else its PokéSprite item (`sprite`); `tools/cards.html` shows them all, `?pixelcards` the old art. A new card gets an `ART` line.
 - **Cards** (`js/data/cards.js`): every effect is a key in a card's
   `effects` (the header comment lists them all) and `describe()` writes
   the card text from them, so new mechanics need a line there too. Beyond

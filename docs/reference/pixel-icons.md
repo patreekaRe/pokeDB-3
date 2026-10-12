@@ -13,7 +13,7 @@ read an emoji back out of the page with `textContent`: it's been replaced.
 Items and relics are the exception: they show real PokéSprite item sprites
 (`assets/items/<id>.png`, 32x32, from github.com/msikma/pokesprite, credited in
 About) through `itemSprite()` in `js/ui.js`, which falls back to the emoji if the
-file is missing. A card can use one as art with `sprite` (every card does), cropped to
+file is missing. A card can use one as art with `sprite` (every card does, unless `js/card-art.js` has smooth SVG art for it, which wins: the card art revamp, 2026-10-12, under way by batches), cropped to
 its visible pixels from `js/data/item-fit.js` and scaled to fill the art window
 (re-measure the alpha bounds when adding one); some are puns on the move. Tackle's
 `hit-spark` and Block's `shield` aren't PokéSprite: they're original 32x32 pixel art in
