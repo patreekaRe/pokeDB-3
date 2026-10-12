@@ -2166,3 +2166,7 @@ films, intros and card art could be imported when first needed.
 **Arcade flicker fix** (2026-10-12, the user found it in Pidgey Flap): scrolling scenery wrapped while still on screen, so it
 blinked in and out at the edges (Flap's hills and grass, Ponyta Dash's mountains and dirt, Bubble Shooter's light shafts,
 Poké Puzzle's bubbles); each now wraps out of sight.
+
+**Arcade fps on iPhone** (2026-10-12, the user found Ponyta Dash low on an iPhone 14): the marquee's masked bulbs, sunburst
+and sheen kept animating under play, which Safari repaints every frame; they pause while a game runs (`.ar-cab.playing`),
+and Ponyta Dash's sky and sun are a `stamp()`. If it still drops, Low Power Mode caps Safari at 30 fps.

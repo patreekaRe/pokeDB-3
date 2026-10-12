@@ -1,7 +1,7 @@
 /* arcade-runner.js  -  Ponyta Dash, a home arcade game (js/arcade-kit.js): Ponyta gallops on by itself, a tap jumps
    (held a little longer, higher) over rocks and logs; Pidgey swoop low later on. A point a metre, faster and faster. */
 
-import { runArcade, drawMon, rand, banner } from './arcade-kit.js';
+import { runArcade, drawMon, rand, banner, stamp } from './arcade-kit.js';
 
 const W = 320, H = 220, GROUND = 180, GRAV = 1500, JUMP = 440, FALL = 2.2;   // a hop drops quicker than it rises (the user's ask, 2026-10-12: it floated)
 
@@ -36,9 +36,11 @@ export const openRunner = (onClose) => runArcade({
       up() { held = false; },
       key(k, down) { if (k === 'act' || k === 'up') { if (down) jump(); else held = false; } },
       draw(g, now) {
-        const sky = g.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, '#f8a860'); sky.addColorStop(1, '#fde0a8');
-        g.fillStyle = sky; g.fillRect(0, 0, W, GROUND);
-        g.fillStyle = '#ffe070'; g.beginPath(); g.arc(250, 60, 26, 0, Math.PI * 2); g.fill();
+        stamp(g, 'runner-sky', 0, 0, W, GROUND, (s) => {
+          const sky = s.createLinearGradient(0, 0, 0, GROUND); sky.addColorStop(0, '#f8a860'); sky.addColorStop(1, '#fde0a8');
+          s.fillStyle = sky; s.fillRect(0, 0, W, GROUND);
+          s.fillStyle = '#ffe070'; s.beginPath(); s.arc(250, 60, 26, 0, Math.PI * 2); s.fill();
+        });
         g.fillStyle = '#d88a58';
         for (let i = 0; i < 4; i++) { const x = ((i * 130 - dist * 2) % 520 + 520) % 520 - 140; g.beginPath(); g.moveTo(x, GROUND); g.lineTo(x + 70, GROUND - 60); g.lineTo(x + 140, GROUND); g.fill(); }
         g.fillStyle = '#c87a40'; g.fillRect(0, GROUND, W, H - GROUND);
