@@ -1859,7 +1859,7 @@ body.battle-intro { pointer-events: none; }
 @keyframes stripeScroll { to { background-position: 0 8px; } }
 @media (prefers-reduced-motion: reduce) { :is(.battle-controls .energy-orb, #end-turn-btn, .ds-btn):hover { animation: none; } }
 .reward-option.picked { transform: translateY(-10px) scale(1.04); }
-.reward-option.picked .card-face { box-shadow: 0 0 0 1.2cqw #181010, 0 0 0 3cqw #f8d030, 1.6cqw 1.6cqw 0 3cqw rgba(0, 0, 0, 0.4); }   /* like a picked card in battle */
+.reward-option.picked .card-face { --ring: 0 0 0 1cqw #fff, 0 0 0 2.8cqw #f8d030, 0 0 6cqw 2cqw rgba(248, 208, 48, 0.7); }   /* like a picked card in battle */
 .reward-option.picked > .relic { outline: 4px solid #f8d030; outline-offset: 2px; }
 .reward-log {
   position: relative;
@@ -2375,7 +2375,7 @@ body.battle-intro { pointer-events: none; }
 .gate-strike.full .gate-strike-ring { background: #ffd040; box-shadow: 0 0 12px #ffd040; }
 .gate-strike.full .gate-strike-label { color: #fff8c0; text-shadow: 2px 2px 0 #0e0818, 0 0 8px #ffd040; }
 /* the breaking blow's card is gold foil; a lost run's is grey and cracked */
-.gate-strike.gold .card-face { border-color: #d8a020; box-shadow: 0 0 0 1.2cqw #181010, inset 0 0 0 1cqw rgba(255, 240, 160, 0.6), 0 0 18px 4px rgba(255, 208, 64, 0.6); }
+.gate-strike.gold .card-face { --edge: #ffd34a; --halo: 0 0 18px 4px rgba(255, 208, 64, 0.6); }
 .gate-foil {
   position: absolute; inset: 0; border-radius: inherit; mix-blend-mode: screen;
   background: linear-gradient(115deg, transparent 35%, rgba(255, 240, 170, 0.75) 48%, rgba(255, 255, 255, 0.9) 50%, rgba(255, 200, 80, 0.6) 53%, transparent 65%) 0 0 / 300% 100%;

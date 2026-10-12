@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
+  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
   ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
 ];

@@ -7,7 +7,7 @@
    ============================================================ */
 
 import { CARDS_BY_ID } from './data/cards.js';
-import { $, makeCard, zoomable, groupDeck, openDialog } from './ui.js';
+import { $, makeCard, zoomable, groupDeck, openDialog, kindOf } from './ui.js';
 import { getSave, updateSave } from './storage.js';
 
 /** Fill a container with the cards of a deck, grouping copies (Ember ×3). Tap one to read it bigger. */
@@ -17,7 +17,7 @@ export function fillDeck(container, ids, stage = 0) {
   );
 }
 
-export const kindOf = (card) =>card.power ? 'power' : (card.effects.damage || card.effects.blockDamage) ? 'attack' : 'skill';
+export { kindOf };
 // X after every number, unplayable cards last
 export const costRank = (card) => card.unplayable ? 99 : card.cost === 'X' ? 98 : card.cost;
 const SORTS = {

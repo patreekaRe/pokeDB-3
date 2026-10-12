@@ -2140,3 +2140,10 @@ more of its depth as fits (`win` in `fitShot()`). The ribbon logic only unblocks
 The two benches at the hall's front, facing out, were taken out the same day (the user's call).
 
 - **Sold-out furniture locked out** (2026-10-12, the user's ask): the Furniture store never deals a piece the player owns (`dealDay()` in `js/secret-base.js`); a day's stock is kept in the save (`furnitureDay`) so a buy stays sold out till the next restock. Commit cc4322d.
+
+**Card revamp** (2026-10-12, the user's pick of three mockups: A modern TCG, B Slay the Spire shapes, C smooth like the
+Pokédex; they took C with B's art-window shapes, no name banners): a glossy type gradient, the cost a lit gem, an edge
+glowing pale / blue / gold by rarity with a slow shine on rares, a frosted art window pointed for an Attack, square for a
+Skill, round for a Power (`kind-*` from `kindOf()`, moved into `js/ui.js`), "Fire · Attack" on the type line; picked and
+pickable cards ring through `--ring` on `.card-face` (`css/cards.css`). Playtested on the branch, merged into `main`.
+
