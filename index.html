@@ -57,8 +57,7 @@
       <div class="title-dex" id="title-dex" aria-hidden="true">
         <div class="tdx-top"><span class="pdx-lens"></span><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></div>
         <div class="tdx-glass"><div class="tdx-screen">
-          <span class="cdev-splash-ball"></span>
-          <span class="tdx-name"><small>POKÉ</small>DECKBOUND</span>
+          <img class="tdx-buddy" id="tdx-buddy" alt="">
           <span class="tdx-hello" id="tdx-hello"></span>
         </div></div>
         <div class="tdx-cover"><span class="pdx-cover-hinge"></span><span class="tdx-led"></span><span class="tdx-clock" id="tdx-clock"><span class="tdx-sky"></span><span class="tdx-time"></span><span class="tdx-date"></span></span><span class="tdx-power"></span></div>
@@ -105,7 +104,7 @@
           </div>
         </div>
       </div>
-      <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version"><span class="ta-pc"><svg class="refresh-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></span></button>
+      <button type="button" class="title-account title-refresh" id="title-refresh" aria-label="Get the newest version" title="Refresh now and then to get the newest updates"><span class="ta-pc"><svg class="refresh-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg></span><span class="ta-label ta-update" aria-hidden="true">Updates</span></button>
     </div>
   </div>
 
@@ -121,7 +120,7 @@
         <section class="set-group" data-tone="trainer">
           <header class="set-head"><span class="set-ico" data-icon="cap" aria-hidden="true"></span><b>Trainer</b></header>
           <form class="set-opt set-name-form" id="set-name-form"><label class="set-name" for="set-name-input">Nickname</label><small id="set-name-hint">On your Trainer Card and the leaderboards</small>
-            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="Trainer" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
+            <span class="set-name-row"><input type="text" class="set-name-input" id="set-name-input" placeholder="TRAINER" autocomplete="nickname" enterkeyhint="done" spellcheck="false"><button type="submit" class="set-chip set-name-save" aria-checked="true">Save</button></span></form>
         </section>
         <section class="set-group sound-ctl" data-tone="sound">
           <header class="set-head"><span class="set-ico" data-icon="sound" aria-hidden="true"></span><b>Sound</b>
@@ -370,7 +369,7 @@
            (js/run.js drawMap()); .map-keep survives renderMap() -->
       </div>
       <div class="mdex-glass">
-      <div class="map-wrap"><div class="map" id="map"><button class="scope-btn map-keep" id="scope-btn" type="button" hidden></button></div></div>
+      <div class="map-wrap"><div class="map" id="map"><div class="map-tools map-keep"><button class="scope-btn" id="scope-btn" type="button" hidden></button><button class="scope-btn rubbing-btn" id="rubbing-btn" type="button" hidden></button></div></div></div>
       <!-- news from the run (an event's outcome, a used item...), told in the same text box as the reward screens (rewards.js tell()) -->
       </div>
       <nav class="mdex-dock" id="mdex-dock" aria-label="Bag pockets">
@@ -827,7 +826,7 @@
     <h2>Cloud save</h2>
     <div class="dev-screen">
     <div id="cloud-out">
-      <p>Sign in to keep your progress safe in the cloud and carry on from your phone or PC. You can keep playing without it.</p>
+      <p>Sign in to keep your progress safe in the cloud and carry on from your phone or PC. <strong>New here?</strong> Sign in with Google, or type an email and password and press <strong>Sign up</strong>: the account is free. You can keep playing without it.</p>
       <button class="btn primary cloud-google" id="cloud-google">Sign in with Google</button>
       <p class="hint cloud-or" id="cloud-or">or with your email and a password (there are you happy now Brittany?):</p>
       <form class="cloud-email" id="cloud-email-form">

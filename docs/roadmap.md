@@ -69,17 +69,62 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
     in the bot today), every offer from the week's seed so the leaderboard stays even.
     - Parts a (the picks and effects) and b (the look) are done: see the archive.
     - Parts c (trade-offs, sets, badges) and its tuning (2026-10-08) are done: see the archive.
-    - Open, unprompted: Mulligan, Scavenger, Ambush, Refresh, Wildfire and Thorn Garden are still never taken by the bot.
-    - **Part d, augment balance (the user's pick, 2026-10-08: do it the weekend of 2026-10-10).** Run in: CLOUD (attach
-      `pokeDB-3` and `pokeDB-sim`). Prompt: "Read AGENTS.md, CLAUDE.md, docs/roadmap.md's item 21 and
-      docs/reference/sky-pillar.md. Balance the Sky Pillar's augments with the bot (pokeDB-sim's `sim/augranks.json`,
-      `towerCfg()` in `sim/run-node.mjs`). 1) Fire first: on full climbs Fire reaches floor 100 16% of the time against
-      Grass 49% and Water 32%; lift it (stronger Fire-only augments, or more healing / block for it) to within ~10 points
-      of Water, without moving Grass and Water. 2) Re-check the five that measured far below no augment, with more climbs
-      before touching them: Risky Climb (Grass -26 floors), Card Shark (-19), Golden Touch and Bodyguard (-13), Overcharge
-      (Water -11); fix any that is really a trap. 3) Re-measure what changed and confirm the full-climb rates once at
-      ~300. The ranks are one augment from floor 1, so read gaps under ~5 floors as even, and remember scaling augments
-      measure low there. Keep bot runs small (CLAUDE.md). Push both repos to main."
+    - Part e (the five augments the bot never took, reworked) is done: see the archive. Floor 100: Fire 23%, Grass 56%, Water 41%.
+    - Part d (Fire's augments, three new Fire augments, Risky Climb, the trap re-check) is done: see the archive. Grass is
+      the strongest; leave it unless a playtest says otherwise.
+
+22. **3D battles** (the user's ask, 2026-10-11: "I want to eventually use this new style for the main"). Battles look like
+    today's but in 3D: the battle screen (cards, sprites, nameplates, text box, animations) stays the page's own, and
+    `js/arena-3d.js` lays a 3D place under it with a fixed camera. Being built on the test branch
+    **`claude/jolly-ritchie-vdznxn`**, never on `main` until the user says it goes live; every session for it starts from
+    that branch and pushes only to it. Playtest at `https://raw.githack.com/patreekaRe/pokeDB-3/claude/jolly-ritchie-vdznxn/index.html`
+    with `?arena=boss` (`&biome=shrine` / `wastes` / `ruins` / `thornwood` / `savanna`, `&slot=1` / `2` for a pool biome),
+    `?bossfight=depths` (Eternatus), `?arena=elite` (an Alpha, any `&biome=`, the Depths too; `&stage=0-2`), `?arena=wild` (the same for a wild Pokémon); `&arena2d` shows today's pixel
+    version of the same fight to compare.
+    - **Done (2026-10-11):** every main biome's **boss** fights in 3D. The live pixel scene is the 3D view's background
+      (`backdrop`, `#scene-bg` as a texture), so each boss's own backdrop keeps playing (the Ancient Tree's pulse, the lava,
+      the tide wheel, the storm at low HP); 3D pads stand where the page draws its Pokémon (`layout()`) and follow them
+      every few frames (`follow()`), so a sprite that loads late or resizes keeps its pad (the user saw a boss off its
+      platform). The Clearing also lays its 3D ground, bushes, flowers and side trees up to the pixel horizon
+      (`sceneHorizon()` / `sceneColour()` in `js/scene.js`); every other biome's pads take its floor's colour
+      (`padKit()`). Clearing Alphas are 3D too. A boss keeps its pixel prelude, then the 3D fades in.
+    - **Done (2026-10-11): b, the Alphas.** Every main biome's Alphas (Team Rocket's too, an `elite` fight) get the boss
+      treatment: `arenaFor()` takes `elite` in every `MAIN` biome. `?arena=elite&biome=` takes any biome, the Depths
+      too (with Mewtwo, fully powered up; `peekDepths` in `js/run.js`). Checked at 390x844 and 1280x800, every biome.
+    - **Done (2026-10-11): c, wild fights.** Every main biome's wild fights get the same treatment (`arenaFor()` takes
+      `fight` / `wild`; not Safari, Sky Pillar or Kenmatta). `?arena=wild&biome=` (any biome, the Depths with Mewtwo,
+      `&stage=0-2`). Since a wild fight is the most common, a device under ~40 fps steps the arena down, shadows then
+      resolution, remembered in `pokedb.arena3d.low` (`keepUp()` / `stepDown()`, the Secret Base's way). Checked at
+      390x844 and 1280x800, every biome.
+    - **Waiting on the user:** a phone playtest of the wild fights (`?arena=wild`, the Clearing first, which has the most
+      3D): does any stutter? The cloud's browser renders 3D in software, so phone frame rates were never measured.
+    - **Done (2026-10-11): Kenmatta's arena** (the user's yes). His fight stands on 3D stone pads before his Mortal Kombat
+      courtyard (`wantsArena()` takes `def.arena` 'kombat', mounted as biome `kombat`). Since the same day (the user's ask)
+      the courtyard is 3D up to the painted wall (`dressKombat()`): flagstones in the painted floor's colours, his dais
+      against the wall with carpeted, gold-edged steps (his pad raised onto it, `kombatLift()`; the painted steps step
+      aside while it's up, `sceneDais()` in `js/scene.js`), two braziers with flickering fire and light, embers, and the medallion as a smooth gold relief (`medallion3d()`: Dragonite traced from its own sprite, blurred and cut again so its pixel steps round off, baked into `assets/arena/` by `tools/medallion.html` since traced live it never showed on the user's iPhone; hung on the wall between the nameplate and the Pokémon, clear of the dais; the painted one steps aside, `sceneBare()`). `?arena=ken`
+      (`&biome=`) walks a throwaway run straight into his fight.
+    - **d. Each biome's own 3D foreground**, like the Clearing's, about a session a biome; then main. `GROUNDS` in
+      `js/arena-3d.js` is one `dress*()` a biome, handed the ground's span, the fade and the placing tests by `build()`.
+      - **Done (2026-10-11): the Wastes** (`dressWastes()`). Its ground takes the pixel floor's own colours row by row
+        (`rowColour()`, divided by the light falling on it, `flatLight()`, so it fades into the pixel floor at the
+        horizon), read again once a boss's prelude is over (`retint()`: built under it, the floor was mid-eruption), its
+        haze the far floor's colour. Lava cracks are merged ribbons (`ribbons()`: scorch, molten core flowing, additive
+        glow breathing), lava pools in the Lava Fields and at the Crater Rim, instanced basalt rocks and ash heaps,
+        obsidian shards from the Volcano Slope on, charred snags at the sides (one merged mesh each), ash falling and
+        embers rising (`drift()`), smoke off the lava, a rain of cinders in the storm. Spots are picked on screen
+        (`spot()`) so a phone's narrow view gets its share; flat things keep off the middle between the Pokémon (the boss's
+        lava runs across it), tall ones to the sides. Light by the hour, `WASTES_TIMES`; its pads basalt with lava seams.
+        ~40 draw calls a frame (the Clearing ~300). Checked at 390x844 and 1280x800, every place, day / dusk / night.
+      - Merged into `main` and live since 2026-10-11 (the user's call). Next: the Shrine, then Ruins, Thornwood, Savanna, Depths.
+      Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome and its dressing each session): "Read
+      CLAUDE.md and docs/roadmap.md's item 22, then give the Shrine's 3D arena its own foreground in js/arena-3d.js, a `GROUNDS`
+      entry like `dressWastes()`: 3D ground from your feet up to the pixel horizon in the pixel floor's own colours,
+      with the Shrine's stone (flagstones, lanterns, moss, fallen leaves, a torii post or two) round the edges, kept off
+      the middle and the pads, lit by the hour; boss, Alpha and wild fights alike. Keep it cheap on a phone (instanced or
+      merged meshes, the step-down still working). Check it at 390x844 and 1280x800 for every place (`&stage=0-2`,
+      `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
+      links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -147,7 +192,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) ~~Furniture store~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-furniture.js`, the west front.
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
-     c) **The Game Corner revamp** (branch `game-corner-revamp`, NOT merged: the user said don't merge yet). Built
+     c) **The Game Corner revamp** (branch `game-corner-revamp`, merged into `main` and live since 2026-10-12, the user's call; patch 1.6 "Game Corner"). Built
         2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
         detail. Where it stands (2026-10-12, see the branch's last commit):
         - **Games (the user's keepers):** Voltorb Flip and Who's That Pokémon? (free, 250 a day between them),
@@ -161,8 +206,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           page canvas, as iPhone drew them blank into an OffscreenCanvas); no tilt-shift blur at all; four tables (touchscreen Voltorb / Who's That behind, Blackjack /
           High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
-        **Next:** the user playtests the latest pinned link and gives room/game feedback; then, on their word, merge to
-        `main`. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
+        **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
         with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. The user wants it right
         after the Game Corner. Poké Balls are off the Game Corner's wall screens since 2026-10-12 (still in the Pokédex's

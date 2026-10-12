@@ -55,6 +55,10 @@ const TRACKS = {
   seal:    'assets/audio/seal.mp3',   // the user's: from the fall into the shaft (descent.js) through the Sealed Gate's strike and break, and the Crystal Depths' map (its biome's `music`)
   'secret-base': 'assets/audio/secret-base.mp3',   // the user's (2026-10-09): inside the Secret Base, from its door till the doormat
   'clearing-hub': 'assets/audio/clearing-hub.mp3',   // the user's (2026-10-09): the walkable Clearing's song, in place of 'title' wherever the hub is the title (setHomeTrack())
+  'event-room': 'assets/audio/event-room.mp3',
+  'event-outdoor': 'assets/audio/event-outdoor.mp3',   // the user's (2026-10-11): the Hot Spring, Berry Tree, Wishing Well and Item Ball
+  treasure: 'assets/audio/treasure.mp3',
+  'shrine-room': 'assets/audio/shrine-room.mp3',   // the user's (2026-10-11): the Shrine ? room (its events.js `music`), till the map   // the user's (2026-10-11): the treasure grotto (treasureRoom()), till the map   // the user's (2026-10-11): the indoor ? rooms (their events.js `music`), till the map
   'team-rocket': 'assets/audio/team-rocket.mp3',   // the user's (2026-10-09): Team Rocket's ? room (its events.js `music`), till the fight or the map
 };
 // The battle files are hard-cut clips of songs that go on repeating, so looping the whole file jumped from mid-phrase back
@@ -79,6 +83,10 @@ const LOOP_POINTS = {
   // From here on found with tools/loop.html?song=<name>.
   'secret-base': [40.4, 84.2515],   // a 43.85 s repeat (0.997 sample correlation at the join); the file fades out after
   'clearing-hub': [22.3, 75.85327],   // a 53.55 s repeat (0.983 sample correlation at the join); the file is 84.5 s
+  'event-room': [33.02, 95.98612, 0.2],
+  'event-outdoor': [7.94, 45.18184, 0.3],   // a 37.24 s repeat (0.996 melody match, 0.79 at the join, so a longer cross-fade); the file is 86 s, its second pass fading from ~74 s
+  treasure: [33.02, 125.48009, 0.2],
+  'shrine-room': [10.96, 68.51116, 0.2],   // a 57.55 s repeat (0.995 melody match, 0.965 at the join); the file is 97.6 s, fading from ~88 s   // a 92.46 s repeat (0.997 melody match, 0.935 at the join); the file is 158.7 s, fading from ~140 s   // a 62.97 s repeat (0.998 melody match, 0.961 sample correlation at the join); the file is 145.6 s, fading from ~137 s
   'team-rocket': [2.5, 61.22894, 0.3],   // a 58.73 s repeat (0.93 melody match, 0.65 sample correlation at the join, so cross-faded); the file is 75.1 s
   savanna: [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.95 melody match, 0.58 sample correlation at the join, so cross-faded); the file is 56.7 s, fading from ~48 s
   ruins:   [16.05, 77.13694, 0.3],   // a 61.09 s repeat (0.968 melody match, 0.912 sample correlation at the join, so cross-faded); the file is 133.4 s
@@ -296,8 +304,9 @@ export function initAudio() {
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
-    if (document.hidden) ctx.suspend(); else ctx.resume();
+    if (document.hidden) ctx.suspend(); else ctx.resume().catch(() => {});
   });
+  window.addEventListener('pageshow', () => { if (ctx && !document.hidden) ctx.resume().catch(() => {}); });   // back from the bfcache
 
   playMusic('title');
 }
@@ -341,6 +350,17 @@ export function preloadSounds(...names) {
   names.forEach(name => loadSound(name));
 }
 
+/** Whether sound runs, giving a tap's resume a moment to land first (iOS can take a beat, which dropped the power-on's dex-on). */
+function awake() {
+  if (ctx.state === 'running') return true;
+  return new Promise(done => {
+    const check = () => { if (ctx.state === 'running') finish(true); };
+    const finish = (ok) => { clearTimeout(timer); ctx.removeEventListener('statechange', check); done(ok); };
+    const timer = setTimeout(() => finish(false), 400);
+    ctx.addEventListener('statechange', check);
+  });
+}
+
 /**
  * Play a sound effect, or `fallback` if its own file is missing.
  * Resolves with the clip's length in seconds (0 if nothing played).
@@ -349,7 +369,7 @@ export async function playSound(name, fallback) {
   if (getSave().muted) return 0;
   let buffer = await loadSound(name);
   if (!buffer && fallback) buffer = await loadSound(name = fallback);
-  if (!buffer || ctx.state !== 'running') return 0;
+  if (!buffer || !await awake()) return 0;
   const now = ctx.currentTime;
   const last = lastPlayed[name];
   if (last && now - last.at < SFX_MIN_GAP) return 0;
@@ -386,7 +406,7 @@ export async function playCry(spriteId) {
   stopCry();
   if (getSave().muted || !CRIES.has(id)) return;
   const buffer = await loadSound(`cry:${id}`, `assets/audio/cries/${id}.mp3`);
-  if (!buffer || ctx.state !== 'running' || getSave().muted) return;
+  if (!buffer || !await awake() || getSave().muted) return;
   stopCry();   // another cry may have been asked for while this one loaded
   const source = ctx.createBufferSource();
   source.buffer = buffer;
@@ -685,7 +705,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0)
+const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);
@@ -713,19 +733,24 @@ function stop(name) {
   p.el.pause();
 }
 
-/** The first tap or key press: now the browser lets us start sound. */
+/**
+ * Every tap or key press: if sound isn't running (the first tap, or iOS left the context suspended or "interrupted"
+ * after a lock, a call or an app switch, where a resume outside a tap is refused), wake it again. It used to stop
+ * listening once sound first worked, so a context that stalled afterwards stayed silent until a refresh.
+ */
+let primed = false;
 function unlock() {
   const context = audioContext();
-  context.resume();
-  preloadSounds('confirm', 'cancel', 'bag');   // so the first blip isn't late waiting on a download (or a missing file's 404)
+  if (!primed) { primed = true; preloadSounds('confirm', 'cancel', 'bag'); }   // so the first blip isn't late waiting on a download (or a missing file's 404)
+  const stuck = current && !getSave().muted && players[current]?.el.paused;
+  if (context.state === 'running' && !stuck) return;
+  context.resume().catch(() => {});
+  // iOS only lets a context start from inside the tap itself, and starting a sound there is what reliably wakes it
+  const blank = context.createBufferSource();
+  blank.buffer = context.createBuffer(1, 1, context.sampleRate);
+  blank.connect(context.destination);
+  blank.start();
   if (current && !getSave().muted) fadeIn(current);
-  // stay subscribed until sound really works: the context is running and the current track isn't stuck paused
-  setTimeout(() => {
-    const blocked = current && !getSave().muted && players[current] && players[current].el.paused;
-    if (context.state === 'running' && !blocked) {
-      UNLOCK_EVENTS.forEach(type => document.removeEventListener(type, unlock, true));
-    }
-  }, 250);
 }
 
 /**

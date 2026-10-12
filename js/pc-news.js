@@ -5,6 +5,7 @@
    ============================================================ */
 
 import { latestPatch, patchUnseen } from './patchnotes.js';
+import { claimable } from './missions.js';
 
 const SEEN_KEY = 'pokedb.pcSeen';   // per device, like the patch notes' "!"
 const LOOKED_KEY = 'pokedb.pcLooked';   // the news the hub's "!" over the PC last showed when you logged on
@@ -14,6 +15,7 @@ const hasBase = (save) => !!(save.baseOwned || save.secretBase);
 /** Each new page: the menu it sits in, and whether it's any use yet (a base page waits for a base). */
 const NEWS = {
   prof: { in: 'home', ready: () => true },
+  missions: { in: 'home', ready: () => true },
   house: { in: 'home', ready: hasBase },
   decor: { in: 'mine', ready: hasBase },
   dupe: { in: 'mine', ready: hasBase },
@@ -48,6 +50,7 @@ function newsNow(save) {
 /** The "!" over the Clearing's PC: something new it hasn't shown you yet (2026-10-10, the user's ask: it stayed up
     forever while a page inside was unread, and inside nothing said which). */
 export function pcBeckons(save) {
+  if (claimable(save)) return true;   // a mission reward waits, like the mail's envelope, till it's claimed
   const now = newsNow(save);
   try { return !!now && localStorage.getItem(LOOKED_KEY) !== now; } catch { return false; }
 }

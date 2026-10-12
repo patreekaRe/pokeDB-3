@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medallion bake</title>
+<style>
+  body { background: #222; color: #eee; font: 14px system-ui, sans-serif; margin: 16px; }
+  canvas { width: 320px; height: 320px; margin: 4px; background: #000; }
+  a { color: #ffd060; margin-right: 16px; }
+</style>
+<p>Kenmatta's medallion, traced from Dragonite's sprite. Save both into <code>assets/arena/</code> and put the eye in
+<code>MEDALLION_EYE</code> in <code>js/arena-3d.js</code>.</p>
+<p id="links"></p>
+<div id="out"></div>
+<script type="module">
+  import { paintMedallion } from '../js/medallion-art.js';
+  const canvas = (n) => Object.assign(document.createElement('canvas'), { width: n, height: n });
+  const out = { map: canvas(1024), bump: canvas(1024), eye: null };
+  const img = new Image();
+  img.onload = () => {
+    paintMedallion(img, out);
+    document.getElementById('out').append(out.map, out.bump);
+    const links = document.getElementById('links');
+    for (const [name, c] of [['ken-medallion.png', out.map], ['ken-medallion-bump.png', out.bump]]) {
+      links.append(Object.assign(document.createElement('a'), { href: c.toDataURL('image/png'), download: name, textContent: name }));
+    }
+    links.append(`eye: [${out.eye.map(v => v.toFixed(4)).join(', ')}]`);
+    window.baked = { map: out.map.toDataURL('image/png'), bump: out.bump.toDataURL('image/png'), eye: out.eye };
+  };
+  img.src = '../assets/pokemon/dragonite-front.gif';
+</script>

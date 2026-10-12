@@ -34,12 +34,13 @@ import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
-import { DEPTHS_PAGE } from './data/pokedex.js';
+import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -57,7 +58,7 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { initPlayTime } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
-import { initPokedex } from './pokedex.js';
+import { initPokedex, dexPerkLevel } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
@@ -193,6 +194,11 @@ function init() {
       d.gateHp = seedGate(d);
     });
   }
+  // a playtest (?biome=, ?bossfight=...) used to mark its Pokémon seen, so a road never walked showed its bosses at the
+  // crossroads: forget what a never-entered road's page only saw, never what was beaten
+  const leaked = (d) => BONUS_PAGES.filter(p => !d.stats.biomesSeen?.includes(p.biome))
+    .flatMap(p => p.ids).filter(id => d.dex.seen.includes(id) && !d.dex.defeated.includes(id) && !(d.dex.count?.[id] > 0));
+  if (leaked(getSave()).length) updateSave(d => { const gone = new Set(leaked(d)); d.dex.seen = d.dex.seen.filter(id => !gone.has(id)); });
   // ?lockdepths forgets the Crystal Depths' Pokédex page and how deep runs have gone, for a save whose playtests (before
   // peeked runs stopped counting) revealed the page early. Not while a saved run is down there.
   if (query.has('lockdepths') && !(loadRunData()?.starter === 'mewtwo' && loadRunData().biome >= 3)) {
@@ -205,6 +211,7 @@ function init() {
       d.stats.deepestBiome = Math.min(d.stats.deepestBiome, 3);
     });
   }
+  if (query.has('meowth')) updateSave(d => { d.cornerOpen = false; });   // ?meowth: the Poké Mall's Game Corner shut again till Meowth is met
   checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
   setHomeTrack(useHub() ? 'clearing-hub' : 'title');   // before initAudio() starts the menus' song, so title.mp3 isn't fetched for nothing
   initAudio();
@@ -317,7 +324,7 @@ function init() {
     return;
   }
   // ...and ?event=move-tutor (any event id) walks a throwaway, never-saved run straight into that event's room
-  if (params.get('event') && peekEvent(STARTERS.find(s => s.free), params.get('event'))) return;
+  if (params.get('event') && peekEvent(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('event'), params.get('biome'), params.has('money') ? Number(params.get('money')) : null)) return;
   // ?center: a throwaway run straight into a Pokémon Center (&starter=id), the walk-in 3D one on this branch
   if (params.has('center')) return peekCenter(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free));
   // ?mart: a throwaway run straight into a Poké Mart, the walk-in 3D one (&starter=id, &money=N)
@@ -327,6 +334,8 @@ function init() {
   // ?tower=25: a throwaway Sky Pillar climb starting at that floor (the week's tower and starter), never saved; &hp=0.1
   // shrinks every foe's HP
   if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1), (params.get('aug') || '').split(',').filter(Boolean));
+  // ?arena=elite / boss / wild / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
+  if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter') ?? (params.get('biome') === 'depths' ? 'mewtwo' : '')] ?? STARTERS.find(s => s.free), params.get('arena'), params.get('biome'), params.has('slot') ? Number(params.get('slot')) : null);
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
@@ -419,7 +428,9 @@ async function peekCrossroads(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage') ?? slot) || 0), shiny = getSave().shiny.on.includes(starter.id);
   const from = canWalk(params.get('from'), slot - 1) ? params.get('from') : BIOMES[slot - 1].id;
   const road = [params.get('road'), LEGACY_ROADS[slot], ...POOL].find(id => POOL.includes(id) && id !== from);
-  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), starter, stage, shiny });
+  const others = POOL.filter(id => id !== road && id !== from);   // Wayfinder's swap, once its page is done
+  const swap = dexPerkLevel('wayfinder') && others.length ? others : null;
+  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny, meowth: params.has('meowth') && meowthDue() });
   const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
   close?.();

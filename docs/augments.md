@@ -2,7 +2,7 @@
 
 The user's call (2026-10-07): the Sky Pillar gets its own run-changing **augments**, picked one of three like League's
 Arena / ARAM Mayhem or a roguelike's boons, and "a SHIT TON of them" so every climb plays differently. Roadmap item 21.
-All of it is built (parts a-c, 2026-10-07): 113 augments, 10 trade-offs, 6 sets, 6 augment badges. `js/data/augments.js` is
+All of it is built (parts a-c, 2026-10-07): 113 augments (116 since part d), 10 trade-offs, 6 sets, 6 augment badges. `js/data/augments.js` is
 the source of truth for names and numbers; the tables below are the first list, with what changed noted under
 "Part c's calls".
 
@@ -56,7 +56,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Early Bird | +1 PP on turn 1 of every fight |
 | Hoarder | +1 item slot, and an item now |
 | Lucky Find | A random relic now |
-| Scavenger | Fights drop an item twice as often |
+| Scavenger | Fights drop an item twice as often; heal 3 after every won fight |
 | Thorn Coat | Enemies take 3 damage when they hit you |
 | Steady Hands | Your block cards give +2 |
 | Heavy Hitter | Your attacks deal +2 |
@@ -68,7 +68,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Insight | See the enemy's next two moves |
 | Clean Slate | Remove a card at every Center as well as resting |
 | Lucky Coin | 25% chance for an extra relic from guardians |
-| Mulligan | Once a fight, shuffle your hand into the draw pile and draw that many |
+| Mulligan | Draw 2 more and +1 PP on turn 1; once a fight, shuffle your hand into the draw pile and draw that many |
 | Inner Focus | Start every fight with 1 strength |
 
 ### Gold (floors 40-60)
@@ -86,8 +86,8 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Executioner | Attacks deal double to enemies below 25% HP |
 | Opening Act | Your Power cards cost 0 on turn 1 |
 | Deck Diet | Remove 4 cards; max HP -5 |
-| Refresh | Draw 1 card whenever you shuffle your discard pile |
-| Ambush | Enemies start every fight Vulnerable 2 |
+| Refresh | Draw 2 more on turn 1, and 2 whenever you shuffle your discard pile |
+| Ambush | Enemies start every fight Vulnerable 3; your first attack +8 |
 | Intimidate | Enemies start every fight Weak 2 |
 | Bodyguard | The first time each fight you'd drop below half, gain 15 block |
 | Spoils of War | Guardians give a second boss relic to choose |
@@ -138,18 +138,21 @@ the source of truth for names and numbers; the tables below are the first list, 
 
 | Augment | Tier | Type | Effect |
 |---|---|---|---|
-| Kindling | Silver | Fire | Your Burn applies +1 |
-| Ember Skin | Silver | Fire | Start every fight with 8 block |
-| Heat Shield | Gold | Fire | Every Burn you apply also gives you 2 block |
-| Wildfire | Gold | Fire | Burn never goes down |
-| Cauterize | Gold | Fire | Heal 1 for every Burn tick on an enemy |
-| Phoenix | Prismatic | Fire | Blaze is always on and its bonus doubles |
+| Kindling | Silver | Fire | Your Burn applies +2 |
+| Ember Skin | Silver | Fire | Start every fight with 8 block; heal 4 after every won fight |
+| Flash Fire | Silver | Fire | Take 3 less damage from every enemy attack (part d) |
+| Heat Shield | Gold | Fire | Every Burn you apply also gives you 3 block |
+| Wildfire | Gold | Fire | Burn never goes down, and heals you 1 whenever it hurts |
+| Cauterize | Gold | Fire | Heal 3 for every Burn tick on an enemy |
+| Magma Armor | Gold | Fire | Start every fight with 10 block; enemies take 3 when they attack you (part d) |
+| Phoenix | Prismatic | Fire | Blaze is always on and its bonus doubles; heal 2 every turn |
 | Rebirth | Prismatic | Fire | Once a climb, at 0 HP: revive at full HP with 3 strength |
+| Eruption | Prismatic | Fire | Your attacks deal 30% more; heal 2 every turn (part d) |
 | Supernova | Prismatic | Fire | Burn stacks deal double; your exhausted cards deal 6 to the enemy |
 | Deep Roots | Silver | Grass | Overgrow heals 6 |
 | Pollinate | Silver | Grass | Leech Seed applies +1 |
 | Photosynthesis | Gold | Grass | Heal 2 at the start of every turn |
-| Thorn Garden | Gold | Grass | Enemies with Leech Seed take 3 when they attack |
+| Thorn Garden | Gold | Grass | Enemies start every fight with Leech Seed 2, and take 3 when they attack seeded |
 | Overbloom | Gold | Grass | Healing past max HP becomes block (twice as much) |
 | World Tree | Prismatic | Grass | Leech Seed never goes down and heals double |
 | Spore Storm | Prismatic | Grass | Every debuff you apply is applied twice |
@@ -175,7 +178,7 @@ the source of truth for names and numbers; the tables below are the first list, 
 | Monk | Remove all your attacks but 3; every Skill deals 4 |
 | Speed Demon | +1 PP a turn; enemies act twice on turn 1 |
 | Sudden Death | Guardians have half HP; you can't heal outside Centers |
-| Risky Climb | Every floor's fight is an Alpha, Alphas give double rewards |
+| Risky Climb | From floor 3, every floor's fight is an Alpha, Alphas give double rewards |
 | No Mercy | +40% damage; Centers are gone (fights) |
 
 ### Sets (part c)
@@ -240,3 +243,62 @@ Before (150 climbs a type) / after (300): floor 100 reached by Fire 26 / 16%, Gr
 Speed Demon 0 / 28%, Gambler 5 / 27%, Sudden Death 0 / 22%, Berserker 0 / 15%. Still near-always taken: Fire's own Rebirth
 (100%, 34 offers) and Cauterize (97%), Grass's Photosynthesis (93%), all type-only; left alone since Fire is the weakest
 climber. Never taken still: Mulligan, Scavenger, Ambush, Refresh, Wildfire, Thorn Garden (not reworked this pass).
+
+## Part d (2026-10-10, bot-checked)
+
+Re-checked with 72 climbs of 6 flights each (one augment from floor 1, ~±3.5 floors noise): Bodyguard +2.5, Golden Touch
++4.3, Card Shark +3.7 (Grass) and Overcharge +3.0 (Water) were noise at 24 climbs (-11 to -19), not traps; their ranks are
+fixed and the bot now takes them 42-47% of the time. Risky Climb was a real trap: Grass -21 floors, median floor 2, its
+Alphas dealt from floor 1 where the tower deals none. From floor 3 (`RISKY_FROM`) it measures Grass -6, Water +11, Fire +19.
+
+Fire's losses are spread over floors 20-80, and climbs reaching 90 nearly always win, so healing on its late Prismatics
+alone (Phoenix and Cauterize heal 3: 17%) didn't move floor 100. Its Silver and Gold augments got stronger too:
+
+| Augment | Was | Now |
+|---|---|---|
+| Kindling | Burn +1 | Burn +2 |
+| Ember Skin | 8 block | 8 block, heal 4 after every won fight |
+| Heat Shield | 2 block per Burn | 3 |
+| Cauterize | Heal 2 per Burn tick | 3 |
+| Wildfire | Burn never goes down | and heals 1 per tick |
+| Phoenix | Blaze always on, doubled | and heal 2 every turn |
+
+Full climbs (Fire 150 / 120 per candidate, then 200 a type): floor 100 Fire 16 -> 22% (median 53 -> 57), Grass 49 -> 51%,
+Water 32 -> 42% (median 65 -> 83). Water rose with the trap fixes (Risky Climb, taken 73% now, is worth +11 floors to it),
+so Fire still trailed Water by 20.
+
+Second pass (the user's go-ahead: keep Water's 42%, since it came from the bot picking correctly, which players do too). Fire
+had only 2 Silver augments of its own among ~31, so most climbs met none before floor 40; three new Fire-only augments,
+built from existing keys: Flash Fire (Silver, `hitReduce` 3: +15 floors from floor 1; 2 was +11), Magma Armor (Gold, 10
+block and 3 thorns: +12; 14 block no better) and Eruption (Prismatic, attacks x1.3 and heal 2 a turn). The first two lifted
+Fire's middle (reach 50: 58 -> 67%) but not floor 100 (20%): Fire converted only ~45% of climbs from floor 70 to the top
+against ~80% for the others, enemy HP compounding past what it could burst. Eruption, offered from floor 70, fixed that:
+Fire 28% over 350 climbs (median 66). A Gold Sunny Day (3 strength, Burn +1) alongside it measured 20%, so it was dropped.
+Risky Climb's ₽ was tried at 1.5x and 1x: still +9 to +19 floors, its pull is the Alphas' rewards, so it stays; it helps
+Fire most and costs Grass, which narrows the gap.
+
+Final, floor 100 reached: Fire 16 -> 28%, Water 32 -> 42%, Grass 49 -> 51% (Fire 350 climbs, the others 200; the others
+were not re-run after the second pass, which only touched Fire-only augments). Fire now trails Water by 14, within the
+cells' noise (~±7 each) of the ~10-point goal.
+
+## Part e (2026-10-11, bot-checked)
+
+The five augments the bot never took (Wildfire was already fixed in Part d) each measured below a bare climb. Each was
+reworked with keys that already existed, plus one new one, `startSeed` (mirrored in the sim). Measured with 72 climbs of
+6 flights holding only that augment (the `aug=` tweak). Floors gained over a bare climb (Fire 35.1, Grass 37.8, Water 31.3):
+
+| Augment | Was | Now | Fire | Grass | Water |
+|---|---|---|---|---|---|
+| Mulligan (Silver) | once a fight, a new hand | + draw 2 and +1 PP on turn 1 | +7.6 | +9.9 | +9.9 |
+| Scavenger (Silver) | items twice as often | + heal 3 after every won fight | +8.0 | +6.2 | +11.2 |
+| Ambush (Gold) | enemies start Vulnerable 2 | Vulnerable 3, first attack +8 | +7.7 | +10.9 | +5.5 |
+| Refresh (Gold) | draw 1 on a reshuffle | draw 2, and 2 more on turn 1 | +4.1 | +9.0 | +7.5 |
+| Thorn Garden (Gold, Grass) | seeded enemies take 3 when attacking | and they start with Leech Seed 2 | | +10.4 | |
+
+The old versions measured -1 to -12. Losing variants: Mulligan + turn-1 draw 2 alone (Fire flat) or + 1 PP alone (Fire
+worse); Scavenger at 3x items + a slot; Ambush at Vulnerable 4 alone; Refresh 3 alone. Thorn Garden at Leech Seed 3
+measured +16.6, but Grass is already the strongest climber, so it got 2.
+
+Full climbs, 200 a type (floor 100): Fire 23% (was 28 over 350), Grass 56% (51), Water 41% (42), all within the cells'
+noise (~±7). The bot now takes them when offered: Mulligan 77-98%, Scavenger 89-98%, Ambush 70-100%, Refresh 63-93%,
+Thorn Garden 92%.

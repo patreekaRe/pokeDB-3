@@ -356,7 +356,9 @@ function partnerPicker(body, done) {
     box.append(el('span', 'tc-case-label', `${g.name.toUpperCase()} · ${g.mons.length}`), grid);
     return box;
   });
-  body.replaceChildren(head, auto, ...groups);
+  // players mixed the two up (2026-10-11): this one is the card's and the cover's, the one walking about is the PC's
+  const note = el('p', 'tc-pick-note', 'Your partner shows on your Pokédex cover and this Trainer Card. The Pokémon that walks with you outside is your walking buddy: choose it at the PC in the Clearing.');
+  body.replaceChildren(head, note, auto, ...groups);
   head.querySelector('h2').tabIndex = -1;
   body.scrollTop = 0;
 }
@@ -414,7 +416,7 @@ function nameField(redraw) {
     playSound('confirm');
     const form = el('form', 'tc-name-form');
     const input = el('input', 'tc-name-input');
-    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'Trainer', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
+    Object.assign(input, { maxLength: NAME_MAX, value: pickedName(), placeholder: 'TRAINER', autocomplete: 'nickname', spellcheck: false, enterKeyHint: 'done' });
     input.setAttribute('aria-label', 'Your name');
     const ok = el('button', 'tc-name-ok', 'OK');
     ok.type = 'submit';

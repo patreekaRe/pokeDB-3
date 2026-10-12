@@ -1,15 +1,15 @@
 /* ============================================================
    pc.js  -  the Clearing's PC (2026-10-09, the user's ask), full screen over the hub: a white hood round a striped cyan
-   screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu: Bill's PC holds your
-   Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
-   `secretBase.mons`), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
-   the Hall of Fame and Log off. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
+   screen on a red stand, like the PC beside the plaza (pcModel() in js/hub-pc.js). Gen 3's PC menu, grouped since 2026-10-11:
+   rewards, then your Pokémon (the walking buddy, `save.buddy`, never the Pokédex's partner; and the Secret Base's residents,
+   `secretBase.mons`; Bill's PC that held them is gone), your own PC your name, Prof. Oak's PC rates your Pokédex and hints at the next unlock, the cloud save's Sign in (the title corner's PC, which the hub hides), then
+   the Hall of Fame and Exit PC. The Mailbox on top holds rewards posted to the PC (js/mail.js): a letter opens out of its
    envelope and its PokéCoins are claimed there. Patch notes (since 2026-10-10, the user's ask: the hub's corner version tag
    moved in) list each version, the small changes since the newest and what's in the game (js/patchnotes.js). Everything else about you and the game stays in the Pokédex; the PC is your Pokémon and
    your things.
    ============================================================ */
 
-import { getSave, updateSave } from './storage.js';
+import { getSave, updateSave, coinsWithBonus } from './storage.js';
 import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
@@ -21,6 +21,8 @@ import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
 import { SENDERS, unclaimed, claim } from './mail.js';
+import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
+import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
 import { smoothIcon } from './smooth-icons.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, DEX_COMPLETE_COINS, SCOPE, safariOpen } from './data/pokedex.js';
 import { researchCount, bonusKnown, depthsKnown } from './pokedex.js';
@@ -73,7 +75,7 @@ export function openPC(opts = {}) {
       <div class="pc-hood"><span class="pc-cam" aria-hidden="true"><i></i><i></i><i></i></span>
         <div class="pc-glass"><div class="pc-page"></div><p class="pc-say" aria-live="polite"></p></div></div>
       <div class="pc-ledge"></div>
-      <div class="pc-stand"><span class="pc-ball" aria-hidden="true"></span><button type="button" class="pc-off">Log off</button></div>
+      <div class="pc-stand"><span class="pc-ball" aria-hidden="true"></span><button type="button" class="pc-off">Exit PC</button></div>
     </div>`;
   glass = root.querySelector('.pc-page');
   say = root.querySelector('.pc-say');
@@ -107,7 +109,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', letter: 'mailbox', bill: 'home', buddy: 'bill', residents: 'bill', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
+const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', buddy: 'home', residents: 'home', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
 
 function back() {
   const up = UP[page];
@@ -145,12 +147,14 @@ function show(id) {
     was easy to miss), the same mark the Pokédex's keys wear. */
 const freshMark = () => { const m = el('span', 'pc-new', '!'); m.setAttribute('aria-label', 'New'); return m; };
 
-/** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new. */
+/** A menu: big rows with a cursor, a line said for each as it's pointed at; a row whose fourth value is true is new, and a
+    fifth, { cls, sub }, styles it and puts a small line under its label. */
 function menu(title, rows, line = rows[0][1]) {
   const list = el('div', 'pc-menu');
-  list.append(...rows.map(([label, line, go, fresh]) => {
-    const b = el('button', 'pc-row', label);
+  list.append(...rows.map(([label, line, go, fresh, look]) => {
+    const b = el('button', `pc-row ${look?.cls ?? ''}`.trim(), label);
     b.type = 'button';
+    if (look?.sub) b.append(el('small', 'pc-sub', look.sub));
     if (fresh) b.append(freshMark());
     const tell = () => { if (!hush) speak(line); };
     b.addEventListener('pointerenter', tell);
@@ -192,25 +196,26 @@ function monTile(src, name, on, tap, tag = '') {
 
 const PAGES = {
   home() {
-    const waiting = unclaimed().length;
+    const waiting = unclaimed().length, ready = claimable();
     const save = getSave();
+    const fame = bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
+    const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
+    // grouped the way a player looks (2026-10-11, the user's ask): rewards, your Pokémon and things, the game's records, the account
     const rows = [
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
-      ['BILL\'S PC', 'Your Pokémon: who walks with you, and who lives in your Secret Base.', () => show('bill')],
+      [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
+      ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
+      ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
+      ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
+      ...(fame && onFame ? [[fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]] : []),
+      patches,
     ];
-    if (inBase || save.baseOwned || save.secretBase) rows.splice(3, 0, ['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]);
-    const fame = bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
-    if (fame && onFame) rows.push([fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]);
-    const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
-    if (patchUnseen() && !waiting) rows.unshift(patches);   // the "!" over the PC leads straight to it
-    else rows.push(patches);
-    if (cloudConfigured()) {
-      const on = cloudRemembered();
-      rows.push([on ? 'CLOUD SAVE' : 'SIGN IN', on ? 'Your progress is kept in the cloud. Check it or sign out here.' : 'Keep your progress safe in the cloud and carry on from your phone or PC.', signIn]);
-    }
-    rows.push(['LOG OFF', 'Turn the PC off.', logOff]);
+    // signed out, the account row stands out near the top, so new players find how to make one (the user's ask, 2026-10-11)
+    if (cloudConfigured() && cloudRemembered()) rows.push(['CLOUD SAVE', 'Your progress is kept in the cloud. Check it or sign out here.', signIn]);
+    else if (cloudConfigured()) rows.splice(2, 0, ['SIGN IN / SIGN UP', 'Make a free account (Google or email) to keep your progress safe and carry on from your phone or PC.', signIn, false, { cls: 'pc-cloud', sub: 'Free account · saves your progress' }]);
+    rows.push(['EXIT PC', 'Turn the PC off and step away.', logOff]);
     const fresh = rows.filter(r => r[3]).map(r => r[0].replace(/ \(\d+\)$/, ''));
     menu('PC', rows, fresh.length ? `New: ${fresh.join(fresh.length > 2 ? ', ' : ' and ').replace(/, ([^,]*)$/, ' and $1')}! Look for the "!".` : rows[0][1]);
   },
@@ -313,6 +318,20 @@ const PAGES = {
     glass.replaceChildren(...kids);
     speak(fresh ? `A letter from ${from.name}!` : `Opened ${new Date(m.claimed).toLocaleDateString()}.`);
   },
+  missions() {
+    const all = missions(), ready = claimable();
+    const h = head('MISSIONS');
+    h.append(el('span', 'pc-count', ready ? `${ready} to claim` : ''));
+    const box = el('div', 'pc-quests');
+    for (const kind of ['daily', 'weekly']) {
+      const roll = all[kind];
+      const top = el('div', 'pc-quest-head');
+      top.append(el('b', '', kind === 'daily' ? 'DAILY' : 'WEEKLY'), el('span', 'pc-quest-left', `New in ${timeLeft(kind)}`));
+      box.append(top, ...roll.list.map(e => questRow(kind, e)), bonusRow(kind, roll));
+    }
+    glass.replaceChildren(h, box);
+    speak(ready ? 'Mission complete! Tap Claim for your PokéCoins.' : 'Missions count as you play: runs, the Safari Zone and the Sky Pillar all count. Come back to claim them.');
+  },
   patches() {
     const since = sincePatch(), fresh = patchUnseen();
     const rows = PATCHES.map((p, i) => [`V${p.version}`, `${p.name}, ${p.date}.`, () => { reading = i; show('patch'); }, i === 0 && fresh]);
@@ -336,18 +355,13 @@ const PAGES = {
     glass.replaceChildren(head('IN THE GAME'), notes);
     speak('Everything in the game so far.');
   },
-  bill() {
-    menu('BILL\'S PC', [
-      ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }],
-      ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
-    ]);
-  },
   buddy() {
     const save = getSave(), now = buddy(save), all = buddyChoices(save);
     const card = el('div', 'pc-pick');
     const img = el('img', 'pixel pc-pick-mon');
     Object.assign(img, { src: now.src, alt: '' });
     card.append(img, el('b', 'pc-pick-name', now.name.toUpperCase()), el('small', 'pc-pick-note', 'walks with you'));
+    const explain = el('p', 'pc-explain', 'Your walking buddy follows you in the Clearing, your Secret Base and the Poké Mall. It is not your Pokédex partner, the one on your Pokédex cover and Trainer Card: choose that by tapping the partner on your Trainer Card.');
     const anyShiny = all.some(m => m.shiny);
     if (!anyShiny || buddyShiny == null) buddyShiny = anyShiny && !!now.shiny;
     const grid = el('div', 'pc-box');
@@ -366,7 +380,7 @@ const PAGES = {
       t.addEventListener('click', () => { buddyShiny = !buddyShiny; playSound('select'); show('buddy'); });
       h.append(t);
     }
-    glass.replaceChildren(h, card, grid);
+    glass.replaceChildren(h, card, explain, grid);
     speak('Only first forms fit on the paths. Bigger Pokémon rest in the box.');
   },
   residents() {
@@ -563,7 +577,7 @@ const PAGES = {
   rename() {
     const form = el('form', 'pc-name');
     const box = el('input', 'pc-name-box');
-    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: getSave().trainerName || '', placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
+    Object.assign(box, { type: 'text', maxLength: NAME_MAX, value: (getSave().trainerName || '').toUpperCase(), placeholder: 'TRAINER', autocomplete: 'off', spellcheck: false });
     box.setAttribute('aria-label', 'Your name');
     const ok = el('button', 'room-ok pc-name-ok', 'Save');
     ok.type = 'submit';
@@ -788,13 +802,62 @@ function hints(save) {
     if (area) out.push({ text: `Catch the ${miss(area)} Pokémon still missing from the Safari's ${area.name}${(save.safariDex.done || []).includes(area.area) ? '.' : `: ${SAFARI_AREA_COINS} PokéCoins.`}` });
   }
   for (const p of BONUS_PAGES.filter(p => bonusKnown(p) && !save.dex.done.includes(p.biome))) {
-    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} bonus page: ${p.bonus.coins} PokéCoins.` });
+    out.push({ text: `Beat the ${left(p)} Pokémon still missing from the ${p.name} bonus page: ${p.bonus.coins} PokéCoins and its perk, ${p.perk.name}.` });
   }
   for (const a of ACHIEVEMENTS.filter(a => !STARTERS_BY_ID[a.starter]?.secret && !isStarterUnlocked(STARTERS_BY_ID[a.starter])).slice(0, 3)) {
     const s = STARTERS_BY_ID[a.starter];
     out.push({ text: `A Pokémon is waiting to join you. ${a.text}.`, art: spriteUrl(s, 'front', 0, false), say: 'Who could it be? Only one way to find out.' });
   }
   return out;
+}
+
+/** A mission on the Missions page: its goal, a bar of how far along it is, its PokéCoins, and Claim once it's done. */
+function questRow(kind, e) {
+  const m = MISSIONS_BY_ID[e.id];
+  if (!m) return el('span');
+  const done = isDone(e);
+  const r = el('div', `pc-quest${e.claimed ? ' paid' : done ? ' done' : ''}`);
+  const bar = el('span', 'pc-done-bar');
+  bar.style.setProperty('--k', Math.min(1, e.got / m.n));
+  const coin = el('span', 'pc-quest-coins');
+  coin.append(smoothIcon('coin', 'pc-quest-coin'), el('b', '', coinsWithBonus(m.coins).toLocaleString()));
+  const prog = el('span', 'pc-quest-prog');
+  prog.append(bar, el('span', 'pc-quest-n', `${e.got.toLocaleString()}/${m.n.toLocaleString()}`));
+  r.append(el('span', 'pc-quest-text', missionText(m)), coin, prog);
+  r.append(payKey(e.claimed, done, () => claimMission(kind, e.id), coin));
+  return r;
+}
+
+/** The bonus for finishing all of the day's or the week's missions. */
+function bonusRow(kind, roll) {
+  const left = roll.list.filter(e => !e.claimed).length;
+  const r = el('div', `pc-quest bonus${roll.bonus ? ' paid' : bonusReady(roll) ? ' done' : ''}`);
+  const coin = el('span', 'pc-quest-coins');
+  coin.append(smoothIcon('coin', 'pc-quest-coin'), el('b', '', coinsWithBonus(BONUS[kind]).toLocaleString()));
+  r.append(el('span', 'pc-quest-text', `★ Bonus: claim all ${roll.list.length}`), coin,
+    el('span', 'pc-quest-prog', roll.bonus ? 'Every mission done!' : left ? `${left} left to claim` : 'Ready!'));
+  r.append(payKey(roll.bonus, bonusReady(roll), () => claimBonus(kind), coin));
+  return r;
+}
+
+/** Claim (a gold pill) on a finished mission, CLAIMED once paid, nothing before it's done. */
+function payKey(claimed, done, pay, coin) {
+  if (claimed) return el('span', 'pc-quest-tag', 'CLAIMED');
+  if (!done) return el('span', 'pc-quest-tag none');
+  const ok = el('button', 'room-ok pc-quest-claim', 'Claim');
+  ok.type = 'button';
+  ok.addEventListener('click', () => {
+    if (ok.classList.contains('pressed')) return;
+    ok.classList.add('pressed');
+    const paid = pay();
+    if (!paid) return show('missions');
+    playSound('item-get');
+    countUp(coin.querySelector('b'), paid);
+    coin.classList.add('paid');
+    speak(`${trainerName().toUpperCase()} received ${paid.toLocaleString()} PokéCoins!`);
+    setTimeout(() => { if (root && page === 'missions') { const at = glass.scrollTop; show('missions'); glass.scrollTop = at; } }, calmFx() ? 300 : 900);
+  });
+  return ok;
 }
 
 /** The cloud save's window over the PC; the menu's row reads Sign in or Cloud save again once it closes. */

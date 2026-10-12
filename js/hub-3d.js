@@ -30,6 +30,7 @@ import { makeCauldron } from './hub-cauldron.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
+import { claimable } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -762,7 +763,7 @@ function mailArt() {
 
 /** The Safari's board, Scarlet / Violet's roadside kiosk: a white frame on arched legs under a ribbed, curved roof, a
     poster with a red header and three snapshots of today's catches. */
-function kioskArt(K = KIT) {
+export function kioskArt(K = KIT) {
   const { c, g, fill, rr, lin } = fine(22, 32);
   for (const x0 of [2, 18]) {   // the posts, each standing on a little arch
     rr(x0, 6, 2, 22, 0.6, lin(x0, 0, x0 + 2, 0, [K.white, K.pale, K.grey]));
@@ -1210,7 +1211,7 @@ function makePlaces() {
     {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
-      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
+      get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
@@ -1449,31 +1450,29 @@ function buildClearing() {
   dressSeason();
 }
 
-/** The season's decorations, built once with the forest. Halloween: big jack-o'-lanterns round the plaza, down the
-    trail and at the Ancient Tree's door, a giant pumpkin patch with a scarecrow, a graveyard lit by candles under a dead
-    tree, a bubbling cauldron, hay bales, lantern posts and glowing toadstools (lit with the clock, setTime()), ghost
+/** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door and
+    the gate, a pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    bubbling cauldron with toadstools, hay either side of the way out and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
 function dressSeason() {
   if (SEASON === 'halloween') {
     const P_ = (seed, lit = true) => [pumpkinArt(seed, lit), lit ? 'pumpkin' : null];
     // [art, glow, tile x, tile y, size, nudge x, nudge z]; a nudge keeps a thing on its tile but off its middle
+    // grouped into a few spots, mirrored across the trail where they frame it, the open ground left clear (the user's
+    // call, 2026-10-11: scattered everywhere it read as clutter)
     const yard = [
-      [...P_(0), 5, 9, 2.6, 0.1, 0], [...P_(1), 7, 9, 2.4, -0.1, 0],   // the plaza
-      [...P_(5), 3, 7, 5.6, 0, -0.1], [...P_(6), 4, 8, 2.4, 0.1, 0.1], [...P_(7, false), 2, 8, 2, -0.1, 0.15], [...P_(8, false), 2, 6, 1.8, 0, 0],   // the patch
-      [scarecrowArt(), 'white', 4, 6, 1.5, 0.1, 0],
-      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.1, 0, 0.2],   // the Ancient Tree's door
-      [...P_(13, false), 5, 14, 1.8, 0.1, 0], [...P_(14), 7, 15, 2, -0.1, 0],   // the trail
-      [...P_(15), 0, 5, 1.8, 0, 0], [...P_(16), 12, 3, 1.8, 0, 0], [...P_(17), 1, -1, 2, 0, 0], [...P_(18), -3, 11, 2.4, 0, 0], [...P_(19, false), -2, 12, 1.6, 0, 0],
-      [graveArt(0), null, 8, 5, 1.5, 0, 0], [graveArt(1), null, 10, 5, 1.6, 0, -0.1], [graveArt(2), null, 9, 6, 1.4, 0, 0.1], [graveArt(3), null, 11, 6, 1.5, 0, 0],   // the graveyard
-      [graveArt(4), null, 12, 5, 1.3, 0, 0], [candlesArt(0), 'white', 8, 6, 1.2, 0.1, 0.2], [candlesArt(1), 'white', 10, 6, 1.1, 0, 0.2], [candlesArt(2), 'white', 11, 5, 1, 0, 0.1],
-      [deadTreeArt(0), 'white', 12, 6, 1.7, 0.2, -0.2], [capsArt(1), 'white', 12, 7, 1.3, 0, 0.1],
-      [candlesArt(3), 'white', 2, 11, 1.1, 0, 0.1], [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner
-      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0], [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],
-      [hayArt(0), 'white', 1, 13, 1.7, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0], [hayArt(2), 'white', -3, 10, 1.6, 0, 0.2], [hayArt(3), 'white', 10, 14, 1.4, 0, 0.1],
-      [deadTreeArt(1), 'white', 1, 14, 1.8, 0, 0.2], [deadTreeArt(2), 'white', 12, 14, 1.6, 0.2, 0],
-      [graveArt(5), null, 2, 14, 1.3, 0, 0], [graveArt(6), null, -3, 13, 1.4, 0, 0], [candlesArt(4), 'white', -2, 13, 1, 0, 0.1], [capsArt(1), 'white', 3, 14, 1.1, 0, 0.1],
-      [capsArt(0), 'white', 9, 14, 1.1, 0, 0], [lanternArt(4), 'white', -1, 12, 1.3, 0, 0],
+      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.2, 0, 0.2],   // the Ancient Tree's door
+      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0],   // lantern posts, a pair at the back
+      [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],   // and a pair down the trail
+      [...P_(5), 3, 7, 4.4, 0, -0.1], [...P_(6), 2, 8, 2.2, 0, 0.1], [...P_(7, false), 4, 8, 1.9, 0, 0.15],   // the pumpkin patch
+      [scarecrowArt(), 'white', 2, 6, 1.5, 0, 0],
+      [deadTreeArt(0), 'white', 10, 6, 1.7, 0, -0.2],   // the graveyard, clear of the road along row 4: a row of stones under the dead tree, a candle at each end
+      [graveArt(0), null, 8, 7, 1.4, 0, 0], [graveArt(1), null, 9, 7, 1.5, 0, 0], [graveArt(2), null, 11, 7, 1.5, 0, 0], [graveArt(3), null, 12, 7, 1.4, 0, 0],
+      [candlesArt(0), 'white', 8, 8, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 8, 1.1, 0, -0.1],
+      [...P_(1), 7, 9, 1.4, 0.15, 0.1],   // a little one on the plaza
+      [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
+      [hayArt(0), 'white', 1, 13, 1.6, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0],   // hay either side of the way out
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
@@ -1498,14 +1497,14 @@ function dressSeason() {
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
     for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
-      const l = new THREE.PointLight(colour, 0, 4.5, 1.6);
+      const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;
       lamps.push(l);
       scene.add(l);
     }
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
-      spawns: [{ x: 1, y: 9 }, { x: 9, y: 7 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      spawns: [{ x: 1, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
@@ -1673,40 +1672,62 @@ function pokestop(g, id, x, z, S, saved, start) {
 /** Glowing words on the ground before a Pokéstop (the user's asks, 2026-10-09 / 10: make it obvious where to carry on
     or start): CONTINUE before the one holding the saved run, else what that stop starts, all the same size. Bungee, a
     heavy arcade face (the pixel font's thin strokes blurred into the glow), lying flat like a painted road marking, only
-    a little taller to make up for the floor's foreshortening (1.6 looked propped up), gold arcade letters on a dark extruded edge
-    between chevrons, see-through (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game). */
+    a little taller to make up for the floor's foreshortening (1.6 looked propped up), white letters with a cyan glow on a dark
+    extruded edge, a little see-through, chevrons marching in on either side
+    (the user's asks, 2026-10-10: smaller, dimmer, easy to read, more video game, something new, no sparkles). */
 let cueFont;
 function groundCue(g, x, z, text) {
   const c = document.createElement('canvas');
-  c.width = 640; c.height = 240;
+  c.width = 760; c.height = 240;
   c.hd = 2;
   const map = tex(c);
+  // the letters are painted once onto `base`; each frame lays the marching chevrons beside them
+  const base = document.createElement('canvas');
+  base.width = c.width; base.height = c.height;
+  const cx = 380, cy = 120;
+  let half = 0, px = 124, last = -1;
   const paint = () => {
-    const d = c.getContext('2d'), cx = 320, cy = 120;
-    d.clearRect(0, 0, c.width, c.height);
-    let px = 124;
+    const d = base.getContext('2d');
+    d.clearRect(0, 0, base.width, base.height);
+    px = 124;
     do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 500);
     d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
-    const half = d.measureText(text).width / 2;
-    const chevron = (x, dir) => {
-      d.beginPath(); d.moveTo(x - 22 * dir, cy - 30); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 22 * dir, cy + 30);
-      d.lineWidth = 22; d.strokeStyle = '#0c2c48'; d.stroke();
-      d.lineWidth = 11; d.strokeStyle = '#ffe14a'; d.stroke();
-    };
-    chevron(cx - half - 40, 1); chevron(cx + half + 40, -1);
-    d.shadowColor = 'rgba(95, 224, 255, 0.85)'; d.shadowBlur = 20;
-    d.lineWidth = 18; d.strokeStyle = 'rgba(40, 190, 240, 0.5)';
+    half = d.measureText(text).width / 2;
+    d.shadowColor = 'rgba(95, 224, 255, 0.9)'; d.shadowBlur = 22;
+    d.lineWidth = 16; d.strokeStyle = 'rgba(40, 190, 240, 0.55)';
     d.strokeText(text, cx, cy);
     d.shadowBlur = 0;
     // a chunky extruded edge under the letters, like an arcade title
-    d.lineWidth = 10; d.strokeStyle = d.fillStyle = '#06182a';
-    for (let i = 8; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
+    d.lineWidth = 9; d.strokeStyle = d.fillStyle = '#06182a';
+    for (let i = 6; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
     d.strokeStyle = '#0c2c48';
     d.strokeText(text, cx, cy);
     const g = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
-    g.addColorStop(0, '#ffffff'); g.addColorStop(0.48, '#fff6b0'); g.addColorStop(0.52, '#ffd23a'); g.addColorStop(1, '#ff9a1a');
+    g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#bff2ff');
     d.fillStyle = g;
     d.fillText(text, cx, cy);
+    draw(last < 0 ? 0 : last, true);
+  };
+  const chevron = (d, x, dir, a) => {
+    d.globalAlpha = a;
+    d.beginPath(); d.moveTo(x - 20 * dir, cy - 26); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 20 * dir, cy + 26);
+    d.lineWidth = 20; d.strokeStyle = '#0c2c48'; d.stroke();
+    d.lineWidth = 10; d.strokeStyle = '#8eecff'; d.stroke();
+  };
+  // `now` 0 (and Reduced motion) is the still look: one chevron each side
+  const draw = (now, force) => {
+    if (!force && now - last < 33) return;
+    last = now;
+    const d = c.getContext('2d');
+    d.clearRect(0, 0, c.width, c.height);
+    d.lineJoin = 'round'; d.lineCap = 'round';
+    if (!now) { chevron(d, cx - half - 40, 1, 1); chevron(d, cx + half + 40, -1, 1); }
+    else for (let k = 0; k < 2; k++) {
+      const t = (now / 1100 + k / 2) % 1, x = half + 92 - t * 44, a = Math.sin(t * Math.PI);
+      chevron(d, cx - x, 1, a); chevron(d, cx + x, -1, a);
+    }
+    d.globalAlpha = 1;
+    d.drawImage(base, 0, 0);
     map.needsUpdate = true;
   };
   paint();
@@ -1715,11 +1736,12 @@ function groundCue(g, x, z, text) {
   cueFont.then(paint, () => {});
   // drawn over the ground, not added to it: added light at 60% washed white letters into the grass (the user couldn't read them)
   const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
-  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 2.8 * 240 / 640 * 1.25), m);
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(2.8 * 760 / 640, 2.8 * 240 / 640 * 1.25), m);
   mesh.rotation.x = -Math.PI / 2;
   mesh.position.set(x, 0.03, z);
   mesh.renderOrder = 2;
   g.add(mesh);
+  m.userData.tick = draw;
   return m;
 }
 
@@ -1845,6 +1867,20 @@ async function swapBuddy() {
   walker.facing = 'front'; walker.flip = false;
   walker.hopUntil = performance.now() + 500;
   playCry(mon.id);
+}
+
+/** The new player's buddy (the title's first power-on), swapped in quietly while the Clearing still waits behind it. */
+export async function refreshBuddy() {
+  const mate = buddy(getSave());
+  if (!mon || mon.src === mate.src) return;
+  const old = mon, shown = old.group.visible;
+  const next = await monBoard(mate);
+  next.board.rotation.x = -PITCH;
+  next.board.userData.who = { mon: next, w: walker };
+  dispose(old.group); scene.remove(old.group);
+  mon = next;
+  mon.group.visible = shown;
+  scene.add(mon.group);
 }
 
 /** Back out of the base or the mall: on its doorstep, facing you, the base's door shutting behind. */
@@ -1990,6 +2026,7 @@ function ndc(e) {
 }
 
 function onTap(e) {
+  if (dragged) { dragged = false; return; }
   if (held || arriving || leaving || outbound || returning) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(ndc(e), camera);
@@ -2000,17 +2037,64 @@ function onTap(e) {
   if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
+  const to = groundTile(ray);
+  if (!to) return;
+  walkTo(to);
+  if (!walker.path.length) arrived();
+}
+
+/** The grid tile under a ray, or null off the ground. */
+function groundTile(ray) {
   const at = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return;
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return null;
   const to = { x: Math.floor(at.x + COLS / 2), y: Math.floor(at.z + ROWS / 2) };
-  if (!inGrid(to)) return;
-  walker.path = route(walker.tile, to);
+  return inGrid(to) ? to : null;
+}
+
+/** Off along a route to `to`, the ring marking where it ends; a step already under way is finished first. */
+function walkTo(to) {
+  const next = walker.path[0];
+  walker.path = next ? [next, ...route(next, to)] : route(walker.tile, to);
   aim = null;
   hideCard();
   const end = walker.path.at(-1) ?? walker.tile;
   ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
   ring.material.opacity = 0.9;
-  if (!walker.path.length) arrived();
+}
+
+/* Hold and drag to walk (the user's ask, 2026-10-11): your partner follows the finger tile by tile while it's down, and
+   the tap that ends a drag is swallowed so it doesn't walk again or open a place. */
+let drag = null, dragged = false;
+
+function onDown(e) {
+  if (held || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
+  drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, last: '' };
+}
+
+function onDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.moved) {
+    if (Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 12) return;
+    drag.moved = true;
+    view.setPointerCapture?.(e.pointerId);
+  }
+  if (held || arriving || leaving || outbound || returning) return;
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(ndc(e), camera);
+  const to = groundTile(ray);
+  if (!to || key(to.x, to.y) === drag.last) return;
+  drag.last = key(to.x, to.y);
+  walkTo(to);
+}
+
+function onUp(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (drag.moved) {
+    dragged = true;
+    setTimeout(() => { dragged = false; }, 400);   // a drag that ends off the canvas sends no click to clear it
+    if (!walker.path.length) arrived();
+  }
+  drag = null;
 }
 
 function onKey(e) {
@@ -2264,7 +2348,10 @@ function frame(now) {
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
-  for (const s of Object.values(stops)) if (s.cue) s.cue.opacity = calm ? 0.72 : 0.64 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
+  for (const s of Object.values(stops)) if (s.cue) {
+    s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
+    s.cue.userData.tick(calm ? 0 : now);
+  }
   liveSign(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
@@ -2346,6 +2433,10 @@ async function build() {
   makeBugs();
   await gateReady();
   view.addEventListener('click', onTap);
+  view.addEventListener('pointerdown', onDown);
+  view.addEventListener('pointermove', onDrag);
+  view.addEventListener('pointerup', onUp);
+  view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
 }

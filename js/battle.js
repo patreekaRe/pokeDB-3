@@ -212,7 +212,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     sashReady: run.relics.includes('focus-sash'),
     turn: 0,
     damageTaken: 0,
-    tally: { played: 0, dealt: 0, biggest: 0, items: [] },   // this fight's share of the run's record (js/halloffame.js)
+    tally: { played: 0, dealt: 0, biggest: 0, items: [], burn: 0, seed: 0, powers: 0, exhausted: 0 },   // this fight's share of the run's record (js/halloffame.js)
     hurtThisTurn: false,   // lost HP on this turn of yours (Temper Flare)
     timesHurt: 0,      // times you've lost HP this fight, however it happened (Mind Blown)
     played: 0,         // cards played this turn (this one included, while it resolves)
@@ -234,7 +234,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       strength: 0,                    // gained in the fight (buff moves, Enrage), shown as a badge
       dmgMult: encounter.dmgMult ?? 1,  // the Sky Pillar's compounding damage past floor 30
       burn: run.relics.includes('flame-orb') ? 3 : 0,
-      seed: run.relics.includes('gooey-mulch') ? 2 : 0,   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
+      seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
       weak: aug.startWeak || 0,       // turns left dealing WEAK_MULT damage
       vulnerable: aug.startVuln || 0, // turns left taking VULNERABLE_MULT damage from your attacks
@@ -259,6 +259,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   }
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
+  arena3d(land, encounter.kind, def, run);
   playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
@@ -274,6 +275,28 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     return () => playIntro();
   }
   playIntro();
+}
+
+/* A main biome's fight in a 3D place (js/arena-3d.js, a test on its own branch): loaded only when one is, and laid
+   under the battle screen; a boss's stays hidden until its pixel prelude is over (playIntro()). */
+let arenaMod = null, arenaUp = false;
+function arena3d(land, kind, def, run) {
+  arenaMod?.unmountArena();
+  arenaUp = false;
+  if (run.tower || run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
+  // Kenmatta's painted courtyard is never shown while his 3D one loads (the user saw it flash up first); it has no
+  // prelude, so the 3D one comes up as soon as it's built. Without WebGL the pixels come back.
+  const ken = def.arena === 'kombat';
+  if (ken) document.body.classList.add('arena3d-wait');
+  const fallBack = () => document.body.classList.remove('arena3d-wait');
+  if (ken) setTimeout(fallBack, 8000);
+  import('./arena-3d.js').then(async m => {
+    arenaMod = m;
+    if (!m.wantsArena({ land, kind, def, run })) return fallBack();
+    const where = journey(run.map, run.map?.byId[run.current]);
+    // Kenmatta's courtyard is his own place (`def.arena`), whatever biome his dojo stood in
+    if (!await m.mountArena({ biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp || ken })) fallBack();
+  }).catch(fallBack);
 }
 
 /**
@@ -308,6 +331,8 @@ async function playIntro() {
       document.body.classList.remove('boss-prelude');
       enemyZone.classList.remove('boss-waiting');
     }
+    arenaUp = true;
+    arenaMod?.revealArena();
     if (!still()) return;
     log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
@@ -848,6 +873,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     applyEffects(e.combo);
   }
   if (card.power) {
+    b.tally.powers += 1;
     for (const key of Object.keys(POWERS)) if (e[key]) b.powers[key] = (b.powers[key] || 0) + e[key];
     pop('player-zone', `${POWER_LENS[b.starter.type] ?? '🧬'} ${card.name}`, 'note good', 200);
     playSound('power');
@@ -959,6 +985,7 @@ function timesEach(extras, n) {
 function burnEnemy(n, delay = 0) {
   const add = n + (battle.powers.drought || 0) + (hasRelic('tamato-berry') ? 2 : 0) + (battle.aug.burnBonus || 0);
   battle.enemy.burn += add;
+  battle.tally.burn += add;
   pop('enemy-zone', `🔥 Burn ${add}`, 'note', delay);
   if (battle.aug.burnBlock) gainBlock(battle.aug.burnBlock);   // Heat Shield
 }
@@ -1083,6 +1110,7 @@ const settled = (card) => card.orig || card;
 function exhaustCard(card) {
   const b = battle;
   b.exhaust.push(settled(card));
+  b.tally.exhausted += 1;
   if (!card.status && !card.copied) b.recycled.push(baseId(settled(card).id));   // Recycler
   pop('player-zone', `💨 ${card.name} exhausted`, 'note', 300);
   if (card.onExhaust) applyEffects(card.onExhaust);
@@ -1414,7 +1442,7 @@ async function ballAnimation(ball, shakes, caught) {
 async function caughtIt(ballId) {
   const b = battle;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   closeBallPicker();
   const grew = hasAbility('overgrow') && healPlayer(b.ability.amount);
   if (grew) abilityBanner();
@@ -1444,7 +1472,7 @@ function runsOff() {
 async function runAway() {
   const b = battle;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   closeBallPicker();
   renderAll();
   playSound('run-away');
@@ -1479,7 +1507,7 @@ function enemyLoses(n) {
 }
 
 /** What this fight adds to the run's record. */
-const tallyOf = (b) => ({ ...b.tally, turns: b.turn, taken: b.damageTaken });
+const tallyOf = (b) => ({ ...b.tally, tide: b.tideGained || 0, turns: b.turn, taken: b.damageTaken });
 
 
 /** Damage the player: block first, then HP. Returns the damage that got through. `source` names a fatal blow for the loss recap. */
@@ -1667,6 +1695,7 @@ async function enemyTurn() {
     const n = Math.min(en.seed, en.hp);
     if (!b.powers.seedKeep && !b.aug.seedKeep) en.seed -= 1;
     enemyLoses(n);
+    b.tally.seed += n;
     checkStorm();
     hitEffect('enemy-portrait-box');
     pop('enemy-zone', `-${n} 🌱`, 'dmg');
@@ -1823,7 +1852,7 @@ async function finish(won) {
   if (won) await finishingBlow(b.lastHit);   // felled by Burn, Leech Seed, a relic...: the beat comes now
   if (battle !== b) return;
   b.over = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   renderAll();
 
   if (won) {
@@ -1862,7 +1891,7 @@ async function rebirth() {
   const motion = battleFx();
   b.phased = true;
   b.busy = true;
-  setStorm(false);
+  setStorm(false); arenaMod?.stormArena(false);
   renderAll();
   const box = $('enemy-portrait-box'), zone = $('enemy-zone');
   box.classList.remove('charging');
@@ -1892,7 +1921,7 @@ async function rebirth() {
   setupEnemy();
   document.body.classList.remove('boss-prelude');
   zone.classList.remove('boss-waiting');
-  setStorm(true);
+  setStorm(true); arenaMod?.stormArena(true);
   playMusic(next.music ?? 'boss', { restart: true });
   if (motion) zone.classList.add('emerging');
   renderAll();
@@ -2777,7 +2806,7 @@ async function finishingBlow(n) {
 /** A boss close to fainting brings the weather in (see setStorm in scene.js). */
 function checkStorm() {
   const en = battle.enemy;
-  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) setStorm(true);
+  if (battle.kind === 'boss' && en.hp > 0 && en.hp <= en.maxHp * 0.3 && !(battle.def.phase2 && !battle.phased)) { setStorm(true); arenaMod?.stormArena(true); }
 }
 
 /** A number or word that floats up from a spot on screen. */

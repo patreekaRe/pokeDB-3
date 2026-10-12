@@ -32,6 +32,7 @@ const wrote = () => listeners.forEach(fn => fn());
 const freshSave = () => ({
   seenHelp: false,
   trainerName: '',           // the nickname on the Trainer Card and the leaderboards (js/leaderboard.js), '' = "Trainer"
+  setupDone: false,          // the title's name / buddy setup was finished once (js/title.js), so a blank name isn't asked again
   helpTapped: false,         // the title's ? bubble on New game hops until it's first tapped
   muted: false,              // background music switched off with the 🔊 button
   volume: 1,                 // the old single volume slider, 0-1: where both bars below start on an old save
@@ -66,6 +67,7 @@ const freshSave = () => ({
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
+  cornerOpen: false,          // Meowth met at a crossroads (js/meowth.js): the Poké Mall's Game Corner opens; every save meets it, old ones too
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
@@ -73,6 +75,7 @@ const freshSave = () => ({
   badgesSeen: [],             // the badges the Trainer Card has shown: one not in here pops in with a shine (js/trainercard.js)
   partner: null,              // the Trainer Card's Pokémon, a key from partnerChoices() (js/trainercard.js); null picks the starter with the most wins
   buddy: null,                // who walks with you in the Clearing, the base and the mall, picked at the PC (js/pc.js): a key from buddyChoices(); null is the most-won starter's first form
+  missions: null,             // the daily and weekly missions (js/missions.js): each roll's day or week, its missions' counts and what's been paid; rolled when missing
   mail: [],                   // the Clearing's PC's mailbox (js/mail.js): letters with PokéCoins waiting to be claimed, newest last
   feats: [],                  // FEATS ids granted (js/data/achievements.js): Eternatus beaten, the Depths page's shiny Mewtwo
   tower: { week: null, tries: 0, best: 0, bestEver: 0, summits: 0, bestTurns: 0 },   // the Sky Pillar (js/data/tower.js): the week (its Monday), its tries (only the first counts), that try's floor, your highest floor ever (any try: the Tower Badges), climbs that reached the top, the fewest turns one took, the weeks climbed (`weeks`, missing in an old save: towerWeeks()) and guardians beaten (`guardians`, likewise: guardiansBeaten()); the augment badges' `augDex` (every augment taken), `sets` (sets completed) and `prismFloor` / `tradeFloor` (the highest floor cleared holding 3 Prismatics / trade-offs), all missing in an old save
@@ -266,7 +269,7 @@ export function countDex(id) {
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
 const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed',
-  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName'];
+  'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {
   const kept = Object.fromEntries(PREF_KEYS.filter(k => k in data).map(k => [k, data[k]]));

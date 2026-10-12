@@ -1714,6 +1714,15 @@ function resize() {
 }
 
 /** The horizon sits at about 38% of the screen, but always above the enemy's pad, so the pad is on the ground on any layout. */
+/** Where the pixel scene's horizon is, 0-1 down the screen (js/arena-3d.js lays its 3D ground up to it), or null. */
+export const sceneHorizon = () => (H && S ? horizon / H : null);
+/** The pixel scene's colour at a point (0-1 each way) as [r, g, b], or null: js/arena-3d.js matches its pads and fog to it. */
+export function sceneColour(x, y) {
+  if (!px || !W || !H) return null;
+  const v = px[Math.min(H - 1, Math.max(0, Math.round(y * H))) * W + Math.min(W - 1, Math.max(0, Math.round(x * W)))];
+  return [v & 255, (v >> 8) & 255, (v >> 16) & 255];
+}
+
 function horizonRow(scale) {
   const box = $('enemy-portrait-box').getBoundingClientRect();
   const low = Math.round(H * 0.38);
@@ -5277,6 +5286,19 @@ function fanScene() {
   life.confetti = Array.from({ length: Math.round(W / 3) }, (_, i) => ({ x: rand() * W, y: -rand() * H * 0.6, vx: (rand() - 0.5) * 0.6, vy: 0.8 + rand() * 1.2, c: i % S.flags.length }));
 }
 
+/** A string of little flags in the scene's `flags` colours, sagging between pins, along row `y0`. */
+function bunting(y0) {
+  const span = 34, flags = S.flags;
+  for (let x = 0; x < W; x++) {
+    const sag = Math.round(4 * Math.sin(Math.PI * (((x + 9) % span) / span)));
+    solid(x, y0 + sag, S.lamp[0]);
+    if ((x + 9) % 5 === 1) {
+      const c = flags[Math.floor((x + 9) / 5) % flags.length];
+      for (let k = 1; k <= 4; k++) for (let w = 0; w <= Math.max(0, 2 - Math.floor(k / 2)); w++) solid(x + w - (k < 3 ? 1 : 0), y0 + sag + k, c);
+    }
+  }
+}
+
 function fanWall() {
   const rail = roomWall({ stripes: 4 });
   bunting(Math.max(4, Math.round(horizon * 0.06)));
@@ -5386,6 +5408,15 @@ function kombatLayout() {
   };
 }
 
+/* The 3D arena (js/arena-3d.js) builds Kenmatta's dais, its steps and the medallion itself, so the painted ones step
+   aside while it's up. */
+let bareKombat = { dais: false, medal: false };
+export function sceneBare(o) {
+  if (bareKombat.dais === o.dais && bareKombat.medal === o.medal) return;
+  bareKombat = o;
+  if (S?.raw.backdrop === 'kombat') resize();
+}
+
 function kombatBackdrop() {
   const { R: room, cx, cy, dais } = kombatLayout(), { R } = medallionFit(room), half = Math.round(R * 1.3), roof = Math.max(4, Math.round(R * 0.4));
   const towerTop = Math.max(1, cy - R - roof - 4), wallTop = Math.max(towerTop + roof + 2, Math.round(horizon * 0.3));
@@ -5399,7 +5430,7 @@ function kombatBackdrop() {
     lacquerPillar(x + side * bay, wallTop - 4);
   }
   gateTower(cx, towerTop, roof, half);
-  const { eye } = medallion(cx, cy, room);
+  const { eye } = bareKombat.medal ? { eye: null } : medallion(cx, cy, room);
   life.braziers = [];
   for (const side of [-1, 1]) {
     const x = cx + side * (half + 6), py = Math.round(cy - R * 0.1);
@@ -5408,7 +5439,7 @@ function kombatBackdrop() {
     pixelMap(x - 3, py - 3, ['ooooooo', 'olggggo', '.odddo.', '..ooo..'], { o: S.gold[4], l: S.gold[0], g: S.gold[1], d: S.gold[3] });
     life.braziers.push({ x, y: py - 4 });
   }
-  if (dais) templeSteps(dais);
+  if (dais && !bareKombat.dais) templeSteps(dais);
   life.kombat = { eye };
 }
 
@@ -5492,7 +5523,7 @@ function kombatBanner(cx, top, len) {
 /* The medallion's Dragonite, roaring to the left like the MK dragon with its wing raised: antennae, open jaws, a reaching
    claw, the striped belly, its tail hooking up the ring. # body, w wing, = belly, e the eye (drawKombat lights it). Two
    sizes, each drawn at a whole number of pixels a cell (medallionFit), since squeezing one grid to fit blurred it. */
-const DRAGONITE = [
+export const DRAGONITE = [
   '................................',
   '................................',
   '................................',
@@ -5618,6 +5649,7 @@ function drawKombat(t) {
     }
   }
   const e = life.kombat.eye, [hot, glow, ember] = S.eye, p = Math.sin(t / 3) + storm.level * 2;
+  if (!e) return;
   put(e.x, e.y, p > 0 ? hot : glow);
   if (p > 0.4) for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) put(e.x + dx, e.y + dy, p > 1.4 ? glow : ember);
 }
