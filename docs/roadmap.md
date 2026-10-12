@@ -9,6 +9,15 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Poké Mall hall: fountains, palms, passers-by** (the user's asks, 2026-10-12, on `main`): the one big fountain was
+in the way of the Game Corner's carpet, so it's two smaller ones (`FOUNTAINS` / `FOUNTAIN_SCALE` in `js/mall-hall.js`,
+a ring painted under each by `floorArt()` in `js/mall-3d.js`) either side of a carpet running straight from the doors;
+the palms keep to the sides (beside Furniture and Coming soon, the front corners). The hall has Pokémon now: the Game
+Corner's crowd code with options (`makeCrowd()` in `js/corner-crowd.js`: `cast`, `stations`, `wants`, `castHours`...),
+`hallCrowd()` in `js/mall-3d.js`, 4 at once (2 standing at `HALL_STANDS`, 2 wandering), one swapped every 40-80 s,
+a cast of 6 from `SHOPPERS` (`js/data/mall-crowd.js`, 18) dealt anew every 8 UTC hours. Next: the user playtests (how
+many, how chatty, the fountains' size); move to the archive once they're happy.
+
 **Furniture modelled like the arcade cabinets** (the user's ask, 2026-10-12: "I want my furniture as clean as these
 cabinets"; branch `claude/arcade-cabinets-design-yh10el`). The pieces' paintings are front views painted the same all
 round, so carved they wore the front on every side and came out oval or hollow behind. Done: the batch files

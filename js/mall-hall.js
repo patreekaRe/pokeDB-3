@@ -1,5 +1,5 @@
 /* mall-hall.js  -  the Poké Mall hall's 3D dressing (2026-10-12, the user's ask: the hall was bland and small, its palms and
-   benches flat paintings, its shop entrances plain). Everything here is modelled: a fountain in the middle (a Poké Ball
+   benches flat paintings, its shop entrances plain). Everything here is modelled: two fountains either side of the carpet (a Poké Ball
    on top spraying, water spilling off its upper bowl, rings spreading in the basin), palms and topiary in stone planters,
    wooden benches on cast-iron frames, lamp posts, two escalators up to the mezzanine, the columns holding it up, vending
    machines and a directory against the back wall, banners swaying off the mezzanine. dressFronts() builds every shop's
@@ -50,6 +50,10 @@ function mats() {
 
 /* ---------- the fountain ---------- */
 
+/** The hall's two fountains (tiles), either side of the carpet; mall-3d.js paints a ring under each. */
+export const FOUNTAINS = [[6, 5], [14, 5]];
+export const FOUNTAIN_SCALE = 0.62;
+
 function rippleArt() {
   const f = fine(64, 64, 4), { g, lin } = f;
   g.fillStyle = lin(0, 0, 64, 64, ['#4aa8e0', '#68c4f0', '#4aa0d8']); g.fillRect(0, 0, 64, 64);
@@ -98,9 +102,10 @@ function pokeBall(r) {
   return g;
 }
 
-function fountain(parent, x, z, calm) {
+function fountain(parent, x, z, calm, scale = 1) {
   const g = new THREE.Group(), M = mats();
   g.position.set(x, 0, z);
+  g.scale.setScalar(scale);
   parent.add(g);
   put(g, lathe([[0, 0], [1.46, 0], [1.5, 0.06], [1.5, 0.34], [1.44, 0.4], [1.32, 0.4], [1.28, 0.34], [1.26, 0.14], [0, 0.14]], 72), M.stone);
   put(g, new THREE.TorusGeometry(1.38, 0.04, 10, 72), M.gold, 0, 0.41, 0).rotation.x = Math.PI / 2;
@@ -124,7 +129,7 @@ function fountain(parent, x, z, calm) {
   g.add(ball);
 
   // spray: drops arcing out of the ball's crown and falling into the upper bowl and the basin
-  const N = calm ? 0 : 150, pos = new Float32Array(N * 3), vel = new Float32Array(N * 3);
+  const N = calm ? 0 : Math.round(150 * scale), pos = new Float32Array(N * 3), vel = new Float32Array(N * 3);
   const spawn = (i, age = 0) => {
     const a = Math.random() * Math.PI * 2, out = 0.35 + Math.random() * 0.75, up = 1.9 + Math.random() * 0.7;
     pos[i * 3] = Math.cos(a) * 0.05; pos[i * 3 + 1] = 1.9; pos[i * 3 + 2] = Math.sin(a) * 0.05;
@@ -138,7 +143,7 @@ function fountain(parent, x, z, calm) {
   for (let i = 0; i < N; i++) spawn(i, Math.floor(Math.random() * 40));
   const geo = new THREE.BufferGeometry();
   geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  const spray = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.075, map: texOf(dotArt()), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: '#cfefff' }));
+  const spray = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.075 * scale, map: texOf(dotArt()), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, color: '#cfefff' }));
   spray.raycast = () => {};
   g.add(spray);
   // rings spreading where the sheet meets the basin
@@ -465,9 +470,12 @@ function bannerArt(col, dark, motif) {
 export function dressHall(three, { group, at, cols, rows, deck, deckD, block, calm }) {
   THREE = three;
   const ticks = [], glows = [], wallZ = -rows / 2, mid = (cols - 1) / 2;
-  const [cx, cz] = at(mid, 5);
-  ticks.push(fountain(group, cx, cz, calm));
-  for (let x = mid - 1; x <= mid + 1; x++) for (let y = 4; y <= 6; y++) block(x, y);
+  // twin fountains either side of the red carpet, so it runs clear from the doors to the Game Corner (the user found
+  // one big fountain in the middle too big and in the way, 2026-10-12)
+  for (const [fx, fy] of FOUNTAINS) {
+    ticks.push(fountain(group, ...at(fx, fy), calm, FOUNTAIN_SCALE));
+    for (let x = fx - 1; x <= fx + 1; x++) for (let y = fy - 1; y <= fy + 1; y++) block(x, y);
+  }
   // escalators up each side to the mezzanine
   const zFoot = at(0, 6)[1] + 0.5, zHead = wallZ + deckD;
   for (const [x0, x1] of [[0, 1], [cols - 2, cols - 1]]) {
@@ -482,15 +490,17 @@ export function dressHall(three, { group, at, cols, rows, deck, deckD, block, ca
   block(mid - 4, 0); block(mid - 2, 0);
   directory(group, at(mid + 2, 0)[0], wallZ + 0.4, glows);
   block(mid + 2, 0);
-  ticks.push(palm(group, ...at(mid + 4, 0).map((v, i) => v + (i ? 0.05 : 0)), 1.9, 3));
+  topiary(group, ...at(mid + 4, 0), 0.26, 6);
   block(mid + 4, 0);
-  // the plaza round the fountain: benches facing it, palms, lamps
-  bench(group, ...at(mid - 3, 5), Math.PI / 2); block(mid - 3, 5);
-  bench(group, ...at(mid + 3, 5), -Math.PI / 2); block(mid + 3, 5);
-  for (const [x, y, s] of [[mid - 6, 4, 1], [mid + 6, 4, 2], [2, 8, 4], [cols - 3, 8, 5]]) { ticks.push(palm(group, ...at(x, y), 2.1, s)); block(x, y); }
-  for (const [x, y] of [[mid - 6, 7], [mid + 6, 7]]) { bench(group, ...at(x, y), 0); block(x, y); }
-  for (const [x, y] of [[mid - 3, 2], [mid + 3, 2], [mid - 3, 8], [mid + 3, 8]]) { lamp(group, ...at(x, y), glows); block(x, y); }
-  for (const [x, y, s] of [[mid - 2, 7, 1], [mid + 2, 7, 2], [mid - 2, 3, 3], [mid + 2, 3, 4]]) { topiary(group, ...at(x, y), 0.26, s); block(x, y); }
+  // the tall palms keep to the room's sides, beside the outer shops and in the front corners (the user's call, 2026-10-12)
+  for (const [x, y, s, z] of [[2, 0, 3, 0.05], [cols - 3, 0, 4, 0.05], [0, rows - 2, 1, 0], [cols - 1, rows - 2, 2, 0]]) { ticks.push(palm(group, ...at(x, y).map((v, i) => v + (i ? z : 0)), 1.9, s)); block(x, y); }
+  // benches by the fountains and facing out at the front, lamps and topiary lining the carpet
+  const [lf, rf] = FOUNTAINS;
+  bench(group, ...at(lf[0] - 3, lf[1]), Math.PI / 2); block(lf[0] - 3, lf[1]);
+  bench(group, ...at(rf[0] + 3, rf[1]), -Math.PI / 2); block(rf[0] + 3, rf[1]);
+  for (const [x, y] of [[lf[0] - 2, rows - 2], [rf[0] + 2, rows - 2]]) { bench(group, ...at(x, y), 0); block(x, y); }
+  for (const [x, y] of [[mid - 1, 3], [mid + 1, 3], [mid - 1, 7], [mid + 1, 7]]) { lamp(group, ...at(x, y), glows); block(x, y); }
+  for (const [x, y, s] of [[mid - 2, 5, 1], [mid + 2, 5, 2]]) { topiary(group, ...at(x, y), 0.26, s); block(x, y); }
   // banners off the mezzanine, either side of each column
   const banners = [];
   [[mid - 4, '#e84838', '#a82820', 'ball'], [mid - 2, '#3a8ad8', '#2a5a9a', 'star'], [mid + 2, '#58b048', '#3a7a30', 'star'], [mid + 4, '#f0a830', '#c07818', 'ball']].forEach(([x, c, d, m], i) => {

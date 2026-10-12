@@ -17,13 +17,14 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
+import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { cabinetUp } from './home-arcade.js';
-import { dressHall, dressFronts } from './mall-hall.js';
+import { dressHall, dressFronts, FOUNTAINS, FOUNTAIN_SCALE } from './mall-hall.js';
 
 const COLS = 13, ROWS = 7;   // the shops' floors; the hall is bigger (the user's ask, 2026-10-12: it felt small)
 const HC = 21, HR = 10, HALL_DOOR = { x: 10, y: HR - 1 };
@@ -194,7 +195,7 @@ function wallArt() {
 }
 
 /** Polished marble: cream squares set on the diagonal inside a dark granite border, a gold-inlaid ring round the fountain
-    with a Poké Ball compass under it, and a red runner from the doors to the ring and on from it to the Game Corner. */
+    with a Poké Ball compass under each fountain, and a red runner straight from the doors to the Game Corner. */
 function floorArt() {
   const T = 16, W = HC * T, H = HR * T, f = fine(W, H, 5), { g, rr, lin } = f;
   g.fillStyle = '#4a3e4a'; g.fillRect(0, 0, W, H);
@@ -217,29 +218,29 @@ function floorArt() {
   }
   g.restore();
   g.strokeStyle = '#c89418'; g.lineWidth = 0.7; g.strokeRect(b + 1.2, b + 1.2, W - 2 * b - 2.4, H - 2 * b - 2.4);
-  const fx = (HC / 2) * T, fy = 5.5 * T, R = 2.6 * T;
-  // the runner, under the ring
-  const runner = (y0, y1) => {
-    rr(fx - T / 2 + 1, y0, T - 2, y1 - y0, 0, '#c89418');
-    rr(fx - T / 2 + 2, y0, T - 4, y1 - y0, 0, lin(fx - T / 2, 0, fx + T / 2, 0, ['#a82838', '#d04050', '#a82838']));
-    g.strokeStyle = 'rgba(248,208,64,0.6)'; g.lineWidth = 0.35;
-    g.beginPath(); g.moveTo(fx - T / 2 + 3.2, y0); g.lineTo(fx - T / 2 + 3.2, y1); g.moveTo(fx + T / 2 - 3.2, y0); g.lineTo(fx + T / 2 - 3.2, y1); g.stroke();
-  };
-  runner(0, fy - R + 2); runner(fy + R - 2, H);
-  // the ring: a dark band set with gold, eight points of a compass, a Poké Ball under the basin
-  g.fillStyle = '#5a4a5a'; g.beginPath(); g.arc(fx, fy, R, 0, Math.PI * 2); g.fill();
-  g.fillStyle = lin(fx - R, fy - R, fx + R, fy + R, ['#fbf6ea', '#ece0c8']); g.beginPath(); g.arc(fx, fy, R - 2.2, 0, Math.PI * 2); g.fill();
-  g.strokeStyle = '#c89418'; g.lineWidth = 0.8;
-  for (const r of [R - 0.4, R - 2.2, R - 6]) { g.beginPath(); g.arc(fx, fy, r, 0, Math.PI * 2); g.stroke(); }
-  for (let i = 0; i < 8; i++) {
-    const a = i * Math.PI / 4, r1 = R - 2.4, r0 = R - 6, w = i % 2 ? 1.4 : 2.4;
-    g.fillStyle = i % 2 ? '#c89418' : '#a82838';
-    g.beginPath(); g.moveTo(fx + Math.cos(a) * r1, fy + Math.sin(a) * r1);
-    g.lineTo(fx + Math.cos(a + 0.3) * r0 + Math.cos(a + Math.PI / 2) * w * 0, fy + Math.sin(a + 0.3) * r0);
-    g.lineTo(fx + Math.cos(a) * (r0 - 1), fy + Math.sin(a) * (r0 - 1));
-    g.lineTo(fx + Math.cos(a - 0.3) * r0, fy + Math.sin(a - 0.3) * r0); g.closePath(); g.fill();
+  // the runner, from the doors to the Game Corner
+  const rx = (HC / 2) * T;
+  rr(rx - T / 2 + 1, 0, T - 2, H, 0, '#c89418');
+  rr(rx - T / 2 + 2, 0, T - 4, H, 0, lin(rx - T / 2, 0, rx + T / 2, 0, ['#a82838', '#d04050', '#a82838']));
+  g.strokeStyle = 'rgba(248,208,64,0.6)'; g.lineWidth = 0.35;
+  g.beginPath(); g.moveTo(rx - T / 2 + 3.2, 0); g.lineTo(rx - T / 2 + 3.2, H); g.moveTo(rx + T / 2 - 3.2, 0); g.lineTo(rx + T / 2 - 3.2, H); g.stroke();
+  // a ring under each fountain: a dark band set with gold, eight points of a compass, a Poké Ball under the basin
+  for (const [tx, ty] of FOUNTAINS) {
+    const fx = (tx + 0.5) * T, fy = (ty + 0.5) * T, R = 2.6 * T * FOUNTAIN_SCALE + 1.5, k = FOUNTAIN_SCALE;
+    g.fillStyle = '#5a4a5a'; g.beginPath(); g.arc(fx, fy, R, 0, Math.PI * 2); g.fill();
+    g.fillStyle = lin(fx - R, fy - R, fx + R, fy + R, ['#fbf6ea', '#ece0c8']); g.beginPath(); g.arc(fx, fy, R - 1.6, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = '#c89418'; g.lineWidth = 0.7;
+    for (const r of [R - 0.4, R - 1.6, R - 4.5]) { g.beginPath(); g.arc(fx, fy, r, 0, Math.PI * 2); g.stroke(); }
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4, r1 = R - 1.8, r0 = R - 4.5;
+      g.fillStyle = i % 2 ? '#c89418' : '#a82838';
+      g.beginPath(); g.moveTo(fx + Math.cos(a) * r1, fy + Math.sin(a) * r1);
+      g.lineTo(fx + Math.cos(a + 0.3) * r0, fy + Math.sin(a + 0.3) * r0);
+      g.lineTo(fx + Math.cos(a) * (r0 - 1), fy + Math.sin(a) * (r0 - 1));
+      g.lineTo(fx + Math.cos(a - 0.3) * r0, fy + Math.sin(a - 0.3) * r0); g.closePath(); g.fill();
+    }
+    ball(g, fx, fy, 1.5 * T * 0.62 * k);
   }
-  ball(g, fx, fy, 1.5 * T * 0.62);
   // brass medallions in the border, one before each front
   for (const fr of FRONTS) { g.fillStyle = '#c89418'; star(g, (fr.x + 0.5) * T, b / 2, 2.6); }
   return f.c;
@@ -779,7 +780,6 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
       say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,
     });
   }
-  places[id].crowd?.enter();
   setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
   if (id === 'hall') syncRibbon();
   if (sound) playSound(sound);
@@ -820,6 +820,24 @@ function setPlace(p, at, facing = 'back') {
   if (viewW) fitShot(viewW, viewH);
   const deep = Math.max(0, (PR - (shot?.win ?? ROWS)) / 2);
   camX = walker.x; camZ = Math.max(-deep, Math.min(deep, walker.z));
+  if (P.id === 'hall' && !P.crowd) P.crowd = hallCrowd();
+  P.crowd?.enter();   // after the place is set, so they're dealt to its free tiles
+}
+
+// where the hall's Pokémon stand about: the shop windows, the vending machines, the guide, round the fountains
+const HALL_STANDS = [[3, 1], [5, 1], [6, 1], [8, 1], [12, 1], [15, 1], [17, 1], [6, 3], [14, 3], [6, 7], [14, 7], [3, 4], [17, 4], [4, 7], [16, 7]];
+
+/** The hall's passers-by (the user's ask, 2026-10-12): two standing about, two wandering, one coming or going now and
+    then, a new cast every 8 hours (js/data/mall-crowd.js, walked by js/corner-crowd.js). */
+function hallCrowd() {
+  return makeCrowd({
+    THREE, group: hall, monBoard, drawMon, dispose, PITCH, spots: FRONTS, door: HALL_DOOR, cols: HC, rows: HR,
+    route, free, tileX, tileZ, camera, view, stage: root.querySelector('.b3-stage'),
+    say, partner: () => walker, keeper: () => null, calm: () => calm,
+    cast: SHOPPERS, shared: MALL_SHARED, chats: MALL_CHATS, seed: 'hall', size: 4, castSize: 6, castHours: 8,
+    stations: HALL_STANDS.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
+    wants: ['stand', 'stand', null, null], swap: [40000, 80000],
+  });
 }
 
 function showCoins() {
@@ -1169,6 +1187,7 @@ function frame(now) {
   P.tick?.(now, dt, hud);
   if (P.id === 'hall') for (const t of dressed) t(now, dt);
   places.gc?.crowd?.tick(now, dt, P.id === 'gc');
+  places.hall?.crowd?.tick(now, dt, P.id === 'hall');
   tickRibbon(dt, now);
   tickConfetti(dt, now);
   if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
