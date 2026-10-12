@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.13',
+    name: 'Arcade Polish',
+    date: '2026-10-12',
+    notes: [
   ['fixes', 'The bushes along the Clearing\'s front fence no longer flicker.'],
   ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
   ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
@@ -55,17 +71,9 @@ export const NEXT = [
   ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
   ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
   ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+  ['mall', 'Squirtle Bubble Shooter has endless levels: clear the board and the next one starts fuller, with more colours (a pink Fairy bubble from level 7), and the ceiling drops sooner. Each cleared level is worth more.'],
+    ],
+  },
   {
     version: '1.12',
     name: 'Fresh Coat',
