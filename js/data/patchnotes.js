@@ -43,15 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['look', 'Every card has new smooth art showing the move itself: a flaming fist for Fire Punch, a volcano for Eruption, a Venus flytrap for Snap Trap, a crab claw for Crabhammer, a bent spoon for Kinesis. Mewtwo\'s Psychic cards get pictures for the first time, and Safari moves that share a name borrow them.'],
-  ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
-  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
-  ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
-  ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
-  ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
-  ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
-  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
-  ['base', 'Festival, Lab and Castle furniture is properly 3D: the six fair stalls with their striped awnings, the Ferris wheel, carousel horse, teacup ride, hook-a-duck pool, specimen tanks, robot, Tesla coil, cryo pod, rocket, DNA model, suit of armour, cannon, catapult, treasure hoard, dragon egg nest and 31 more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -63,6 +54,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.12',
+    name: 'Fresh Coat',
+    date: '2026-10-12',
+    notes: [
+  ['look', 'Every card has new smooth art showing the move itself: a flaming fist for Fire Punch, a volcano for Eruption, a Venus flytrap for Snap Trap, a crab claw for Crabhammer, a bent spoon for Kinesis. Mewtwo\'s Psychic cards get pictures for the first time, and Safari moves that share a name borrow them.'],
+  ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
+  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
+  ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
+  ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
+  ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
+  ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
+  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
+  ['base', 'Festival, Lab and Castle furniture is properly 3D: the six fair stalls with their striped awnings, the Ferris wheel, carousel horse, teacup ride, hook-a-duck pool, specimen tanks, robot, Tesla coil, cryo pod, rocket, DNA model, suit of armour, cannon, catapult, treasure hoard, dragon egg nest and 31 more.'],
+  ['mall', 'Every arcade cabinet has a lit marquee on top: the game\'s Pokémon bobbing on a spinning sunburst, chasing bulbs round the edge and its name as a gold arcade logo that always fits.'],
+  ['fixes', 'The Poké Mall, the Game Corner and the Furniture store open without the stutter, run smoother on phones (a weaker phone turns its shadows and resolution down by itself), and the busier arcade games (Breakout, Bowling, Ekans Trail, Gastly Maze) hold their frame rate.'],
+  ['fixes', 'Smoother loading: the 3D scenes\' engine is half the size and downloads alongside the game, and walking into the Clearing, the Secret Base, Centers, Marts, ? rooms and the crossroads no longer stutters on the first frame.'],
+    ],
+  },
   {
     version: '1.11',
     name: 'Grand Mall',

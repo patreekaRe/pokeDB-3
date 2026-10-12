@@ -3,7 +3,7 @@
    sets the power and a bend at its end puts hook on it. Ball and pins knock each other about in lane space (units of one
    lane width). Ten frames of real bowling, strikes and spares, on a scorecard up top. */
 
-import { runArcade, banner, rand } from './arcade-kit.js';
+import { runArcade, banner, rand, stamp } from './arcade-kit.js';
 
 const W = 300, H = 380, HEAD = 4, END = 5.15, BR = 0.105, PR = 0.057, LAY = 0.085, BALL_Z = 0.25;
 const PK = 985, PD = 4.28, HZ = -194, PC = 2310;
@@ -164,27 +164,29 @@ export const openBowling = (onClose) => runArcade({
         if (k === 'act') fire();
       },
       draw(g, now) {
-        const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1c1424'); bg.addColorStop(1, '#3a2a2a');
-        g.fillStyle = bg; g.fillRect(0, 0, W, H);
-        const quad = (x0, x1, z0, z1, fill) => { g.fillStyle = fill; g.beginPath(); g.moveTo(sx(x0, z0), sy(z0)); g.lineTo(sx(x1, z0), sy(z0)); g.lineTo(sx(x1, z1), sy(z1)); g.lineTo(sx(x0, z1), sy(z1)); g.closePath(); g.fill(); };
-        quad(-0.75, 0.75, -0.6, END, '#2a2026');
-        for (const s of [-1, 1]) { const gg = g.createLinearGradient(sx(s * 0.5, 0), 0, sx(s * 0.64, 0), 0); gg.addColorStop(0, '#4a4048'); gg.addColorStop(1, '#2a2228'); quad(Math.min(s * 0.5, s * 0.64), Math.max(s * 0.5, s * 0.64), -0.6, END, gg); }
-        const wood = g.createLinearGradient(0, sy(END), 0, H); wood.addColorStop(0, '#c89a5a'); wood.addColorStop(0.5, '#e8c088'); wood.addColorStop(1, '#d8a868');
-        quad(-0.5, 0.5, -0.6, END, wood);
-        quad(-0.5, 0.5, HEAD - 0.35, END, 'rgba(255, 240, 210, 0.35)');
-        g.strokeStyle = 'rgba(120, 70, 30, 0.22)'; g.lineWidth = 0.8;
-        for (let i = 1; i < 12; i++) { const x = -0.5 + i / 12; g.beginPath(); g.moveTo(sx(x, -0.6), sy(-0.6)); g.lineTo(sx(x, END), sy(END)); g.stroke(); }
-        const sheen = g.createLinearGradient(sx(-0.2, 1), 0, sx(0.2, 1), 0); sheen.addColorStop(0, 'rgba(255, 255, 255, 0)'); sheen.addColorStop(0.5, 'rgba(255, 255, 255, 0.16)'); sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        quad(-0.2, 0.2, -0.6, END, sheen);
-        g.fillStyle = 'rgba(160, 40, 40, 0.7)'; g.fillRect(sx(-0.5, 0), sy(0) - 1, sx(0.5, 0) - sx(-0.5, 0), 2);
-        for (let i = -3; i <= 3; i++) {
-          const x = i * 0.12, z = 1.3 + Math.abs(i) * 0.12, s = sc(z);
-          g.fillStyle = 'rgba(170, 50, 40, 0.75)'; g.beginPath(); g.moveTo(sx(x, z + 0.12), sy(z + 0.12)); g.lineTo(sx(x, z) + s * 0.02, sy(z)); g.lineTo(sx(x, z) - s * 0.02, sy(z)); g.fill();
-        }
-        const mask = g.createLinearGradient(0, 30, 0, sy(END)); mask.addColorStop(0, '#3a2048'); mask.addColorStop(1, '#5a3060');
-        g.fillStyle = mask; g.fillRect(sx(-0.75, END), 34, sx(0.75, END) - sx(-0.75, END), sy(END) - 34);
-        g.fillStyle = '#100810'; g.fillRect(sx(-0.75, END), sy(END) - 4, sx(0.75, END) - sx(-0.75, END), 6);
-        banner(g, 'GEODUDE LANES', W / 2, 42, 8, '#ffd84a');
+        stamp(g, 'bw-lane', 0, 0, W, H, (g) => {   // the lane never changes: painted once
+          const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1c1424'); bg.addColorStop(1, '#3a2a2a');
+          g.fillStyle = bg; g.fillRect(0, 0, W, H);
+          const quad = (x0, x1, z0, z1, fill) => { g.fillStyle = fill; g.beginPath(); g.moveTo(sx(x0, z0), sy(z0)); g.lineTo(sx(x1, z0), sy(z0)); g.lineTo(sx(x1, z1), sy(z1)); g.lineTo(sx(x0, z1), sy(z1)); g.closePath(); g.fill(); };
+          quad(-0.75, 0.75, -0.6, END, '#2a2026');
+          for (const s of [-1, 1]) { const gg = g.createLinearGradient(sx(s * 0.5, 0), 0, sx(s * 0.64, 0), 0); gg.addColorStop(0, '#4a4048'); gg.addColorStop(1, '#2a2228'); quad(Math.min(s * 0.5, s * 0.64), Math.max(s * 0.5, s * 0.64), -0.6, END, gg); }
+          const wood = g.createLinearGradient(0, sy(END), 0, H); wood.addColorStop(0, '#c89a5a'); wood.addColorStop(0.5, '#e8c088'); wood.addColorStop(1, '#d8a868');
+          quad(-0.5, 0.5, -0.6, END, wood);
+          quad(-0.5, 0.5, HEAD - 0.35, END, 'rgba(255, 240, 210, 0.35)');
+          g.strokeStyle = 'rgba(120, 70, 30, 0.22)'; g.lineWidth = 0.8;
+          for (let i = 1; i < 12; i++) { const x = -0.5 + i / 12; g.beginPath(); g.moveTo(sx(x, -0.6), sy(-0.6)); g.lineTo(sx(x, END), sy(END)); g.stroke(); }
+          const sheen = g.createLinearGradient(sx(-0.2, 1), 0, sx(0.2, 1), 0); sheen.addColorStop(0, 'rgba(255, 255, 255, 0)'); sheen.addColorStop(0.5, 'rgba(255, 255, 255, 0.16)'); sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          quad(-0.2, 0.2, -0.6, END, sheen);
+          g.fillStyle = 'rgba(160, 40, 40, 0.7)'; g.fillRect(sx(-0.5, 0), sy(0) - 1, sx(0.5, 0) - sx(-0.5, 0), 2);
+          for (let i = -3; i <= 3; i++) {
+            const x = i * 0.12, z = 1.3 + Math.abs(i) * 0.12, s = sc(z);
+            g.fillStyle = 'rgba(170, 50, 40, 0.75)'; g.beginPath(); g.moveTo(sx(x, z + 0.12), sy(z + 0.12)); g.lineTo(sx(x, z) + s * 0.02, sy(z)); g.lineTo(sx(x, z) - s * 0.02, sy(z)); g.fill();
+          }
+          const mask = g.createLinearGradient(0, 30, 0, sy(END)); mask.addColorStop(0, '#3a2048'); mask.addColorStop(1, '#5a3060');
+          g.fillStyle = mask; g.fillRect(sx(-0.75, END), 34, sx(0.75, END) - sx(-0.75, END), sy(END) - 34);
+          g.fillStyle = '#100810'; g.fillRect(sx(-0.75, END), sy(END) - 4, sx(0.75, END) - sx(-0.75, END), 6);
+          banner(g, 'GEODUDE LANES', W / 2, 42, 8, '#ffd84a');
+        });
         if (phase === 'ready' && !swipe) {
           const x0 = sx(startX, BALL_Z), y0 = sy(BALL_Z);
           g.setLineDash([4, 6]); g.strokeStyle = `rgba(255, 216, 74, ${0.5 + 0.3 * Math.sin(now / 200)})`; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y0);
@@ -213,6 +215,15 @@ export const openBowling = (onClose) => runArcade({
 
 function geodude(g, p, now) {
   const s = sc(p.z), r = Math.max(PR * 1.55 * s, 6), x = sx(p.x, p.z), y = sy(p.z);
+  // a standing Geodude is stamped from a sprite of its size (each one's gradients every frame cost the frame rate)
+  if (!p.fall && p.z <= END - 0.15) {
+    const q = Math.round(r * 2) / 2;
+    return stamp(g, `bw-g${q}${p.down ? 1 : 0}`, x - q * 2.1, y - q * 2.1, q * 4.2, q * 2.6, (cg) => body(cg, q * 2.1, q * 2.1, q, p));
+  }
+  body(g, x, y, r, p);
+}
+
+function body(g, x, y, r, p) {
   const tilt = p.fall * Math.PI / 2 * (p.fx >= 0 ? 1 : -1) * Math.min(1, Math.abs(p.fx) + 0.35), drop = p.fall * r * 0.5;
   g.save();
   g.globalAlpha = p.z > END - 0.15 ? Math.max(0, (END - p.z) / 0.15) : 1;

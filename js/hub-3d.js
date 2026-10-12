@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -110,7 +110,7 @@ const key = (x, y) => `${x},${y}`;
 /* ---------- painting ---------- */
 
 function art(w, h) {
-  const c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+  const c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
   const dot = (x, y, col, ww = 1, hh = 1) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };
   return { c, g, dot };
 }
@@ -2454,6 +2454,7 @@ async function build() {
   view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
+  await warmShaders(renderer, scene, camera);
 }
 
 /** Show the hub over the title (screen is #title-screen, acts what the places open). Resolves true once it's drawn,

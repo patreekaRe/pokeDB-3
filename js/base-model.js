@@ -32,7 +32,7 @@ export function mirror(src) {
 /** A painting with every clear pixel filled from its nearest painted one, so a face can sample anywhere on it. `under`
     (a canvas the same size, or none) is laid beneath first, for a back or side painted narrower than the model. */
 export function filled(src, under) {
-  const w = src.width, h = src.height, c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+  const w = src.width, h = src.height, c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
   if (under) g.drawImage(under, 0, 0);
   g.drawImage(src, 0, 0);
   const im = g.getImageData(0, 0, w, h), d = im.data;

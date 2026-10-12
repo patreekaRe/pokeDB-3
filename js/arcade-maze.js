@@ -3,7 +3,7 @@
    frightened for a while, and Pikachu can zap them back to the middle. Swipe, tap a side or use the arrow keys to steer.
    Three lives; a cleared maze fills again, the Gastly quicker. A tunnel through each side wall wraps to the other side. */
 
-import { runArcade, drawMon, banner } from './arcade-kit.js';
+import { runArcade, drawMon, banner, stamp } from './arcade-kit.js';
 
 /* # wall, . berry, o Lum Berry, G where the Gastly start, P Pikachu, T a tunnel to the other side */
 const MAZE = [
@@ -126,15 +126,21 @@ export const openMaze = (onClose) => runArcade({
       },
       key(k, down) { if (down) turn(k); },
       draw(g, now) {
-        g.fillStyle = flash ? '#3a2a6a' : '#140c26'; g.fillRect(0, 0, W, H);
-        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-          const px = x * C, py = TOP + y * C;
-          if (MAZE[y][x] === '#') {
+        stamp(g, `mz-walls${flash ? 1 : 0}`, 0, 0, W, H, (g) => {
+          g.fillStyle = flash ? '#3a2a6a' : '#140c26'; g.fillRect(0, 0, W, H);
+          for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAZE[y][x] === '#') {
+            const px = x * C, py = TOP + y * C;
             g.fillStyle = '#4a2a8a'; g.beginPath(); g.roundRect(px + 1, py + 1, C - 2, C - 2, 5); g.fill();
             g.fillStyle = '#6a4ab8'; g.fillRect(px + 4, py + 3, C - 8, 2);
-          } else if (food[y][x] === 1) {
-            g.fillStyle = '#3a8ae0'; g.beginPath(); g.arc(px + C / 2, py + C / 2, 2.6, 0, Math.PI * 2); g.fill();
-          } else if (food[y][x] === 2) {
+          }
+        });
+        g.fillStyle = '#3a8ae0'; g.beginPath();   // every dot in one path, one fill
+        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (MAZE[y][x] !== '#' && food[y][x] === 1) { const cx = x * C + C / 2, cy = TOP + y * C + C / 2; g.moveTo(cx + 2.6, cy); g.arc(cx, cy, 2.6, 0, Math.PI * 2); }
+        g.fill();
+        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+          const px = x * C, py = TOP + y * C;
+          if (MAZE[y][x] === '#') continue;
+          if (food[y][x] === 2) {
             const r = 5.5 + Math.sin(now / 160) * 1;
             g.fillStyle = '#58c858'; g.beginPath(); g.arc(px + C / 2, py + C / 2, r, 0, Math.PI * 2); g.fill();
             g.fillStyle = '#e8f8a0'; g.beginPath(); g.arc(px + C / 2 - 1.5, py + C / 2 - 1.5, r * 0.35, 0, Math.PI * 2); g.fill();

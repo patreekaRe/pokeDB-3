@@ -15,7 +15,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -636,6 +636,7 @@ function buildHall() {
     hall.add(m);
   }
   const shop = FRONTS.find(f => f.id === 'furniture'), show = frontWindow(THREE, hx(shop.x), -HR / 2);
+  show.userData.front = shop;
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
   const tape = tapeArt();
@@ -759,6 +760,20 @@ const SHOPS = {
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
 };
 
+/** A place's shaders compiled (in parallel where the GPU can), its pictures uploaded and its first frame drawn while the
+    curtain is still down: left to the first frame on screen, they froze the mall for a moment just after it opened (the
+    user's ask, 2026-10-12). */
+async function warm() {
+  try {
+    scene.traverseVisible(o => { for (const m of [o.material].flat()) if (m) for (const t of [m.map, m.emissiveMap]) if (t?.image && !t.userData.warm) { renderer.initTexture(t); t.userData.warm = true; } });
+    await warmShaders(renderer, scene, camera, null, 2000);   // for the post pass's target, as the frame is drawn
+    // where the GPU can't compile in parallel that resolves at once and the first frame still links every shader, so
+    // draw that frame here, unseen
+    placeCamera(0);
+    post.draw(scene, camera, 0.5);
+  } catch {}
+}
+
 /** Into a place: the hall, a store floor or the Game Corner (built the first time), at tile `at`, under the curtain. */
 async function goPlace(id, at, facing = 'back', sound = 'door') {
   await curtain(true);
@@ -782,6 +797,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
   }
   setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
   if (id === 'hall') syncRibbon();
+  await warm();
   if (sound) playSound(sound);
   await curtain(false);
   const b = loadBase();
@@ -1213,7 +1229,9 @@ function placeCamera(dt) {
 function resize() {
   const w = view.clientWidth, h = view.clientHeight;
   if (!w || !h) return;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // the canvas at the scene's own size, like the Secret Base's: the last pass (bloom, vignette) at a phone's 2x drew four
+  // times the pixels and showed nothing more, and cost the mall its frame rate (the user's ask, 2026-10-12)
+  renderer.setPixelRatio(post.scale(w, h));
   renderer.setSize(w, h, false);
   post.size(w, h);
   camera.aspect = w / h;
@@ -1228,6 +1246,8 @@ function frame(now) {
   if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
   const dt = Math.min(100, now - (last || now));
   last = now;
+  fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
+  keepUp(now);
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
@@ -1262,6 +1282,28 @@ function frame(now) {
   placeCamera(dt);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
   requestAnimationFrame(frame);
+}
+
+/** A device that can't hold ~40 fps for 3 s steps down, shadows first, then resolution, remembered per device (the
+    Secret Base's way, `keepUp()` in js/base-3d.js). */
+let fpsLog = [], slowSince = 0, lowered = 0;
+try { lowered = +localStorage.getItem('pokedb.mall3d.low') || 0; } catch {}
+function keepUp(now) {
+  if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
+  const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
+  if (avg < 25) { slowSince = 0; return; }
+  if (!slowSince) { slowSince = now; return; }
+  if (now - slowSince < 3000) return;
+  slowSince = 0;
+  if (!stepDown()) return;
+  try { localStorage.setItem('pokedb.mall3d.low', String(++lowered)); } catch {}
+  fpsLog.length = 0;
+}
+function stepDown() {
+  if (sun.shadow.mapSize.x > 512) { sun.shadow.mapSize.set(512, 512); sun.shadow.map?.dispose(); sun.shadow.map = null; return true; }
+  if (!post.lower(view.clientWidth || 9999, view.clientHeight || 9999)) return false;
+  resize();
+  return true;
 }
 
 /* ---------- in and out ---------- */
@@ -1300,7 +1342,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     syncShop();
     atDoors();
     resize();
-    last = 0;
+    last = 0; fpsLog.length = 0;
     requestAnimationFrame(frame);
     return curtain(false);
   }
@@ -1346,6 +1388,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   scene.add(mon.group);
   atDoors();
   resize();
+  for (let i = 0; i < lowered; i++) if (!stepDown()) break;
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
   drags?.off();
@@ -1356,6 +1399,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     go: (t) => { walker.exit = false; aim = null; here = null; pick(null); walker.path = reroute(walker, route, t); },
     done: () => { if (!walker.path.length) arrived(); },
   });
+  if (!store) await warm();
   requestAnimationFrame(frame);
   curtain(false);
   if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : DOOR);
