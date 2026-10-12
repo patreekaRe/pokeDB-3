@@ -272,7 +272,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           tall); every Pokémon billboard takes its feet's depth (`feetDepth()` in `js/hd2d.js`, all 3D places), so a counter or
           table behind one no longer cuts across it; a little PC on the counter's right end with a bobbing "!" opens the Game
           Corner guide (`js/corner-guide.js`: what pays today and how much is left of the 500, the arcade and its weekly
-          boards, taking games home, the stamp card, the showcases).
+          boards, taking games home, the stamp card, the showcases). Then a mini "!" over each paying game (slots, Plinko,
+          Blackjack, High-Low, Voltorb Flip, Who's That), down once that game is opened, back each UTC day (`pipsSeen()` in
+          `js/mall-corner.js`, per device in `pokedb.cornerPips`).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
