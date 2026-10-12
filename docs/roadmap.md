@@ -9,6 +9,29 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of all ten
+went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
+Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on
+`js/arcade-kit.js` (the shared cabinet window, Score / Best as record `arc-<id>`), its machine painted in
+`js/base-furniture-rooms5.js` after `cabinet()`. None was playtested by the user yet, and the tap in the 3D base was never
+tested (the cloud has no Three.js). Each session takes ONE game from a first pass to finished: the user plays it first
+and says what's off, then feel (controls on a phone, speed, difficulty curve), art (sprites, backgrounds, effects, sounds),
+a How to play that matches, a best-score moment, the machine's painting and 3D look in the base, and a patch-notes line.
+Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md. Finish the home arcade's
+<game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
+headless and send me a screenshot and a playtest link." In this order (the user may reorder):
+1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
+2. Magikarp Fishing (`js/arcade-fishing.js`, `fishingcabinet`)
+3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)
+4. Ponyta Dash (`js/arcade-runner.js`, `dashcabinet`)
+5. Voltorb Memory (`js/arcade-memory.js`, `memorycabinet`)
+6. Slowpoke's Claw Machine (`js/arcade-claw.js`, `slowpokeclaw`)
+7. Poké Ball Skee-Ball (`js/arcade-skeeball.js`, `pokeskeeball`)
+8. Pokémon Pinball (`js/arcade-pinball.js`, `pokepinball`)
+9. Pikachu Volleyball (`js/arcade-volley.js`, `volleycabinet`)
+10. Unown Word Search (`js/arcade-wordsearch.js`, `unowncabinet`)
+Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
+
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - ~~D2~~ and ~~E~~ done 2026-10-07 (see the archive). Staying cream on purpose (the user's call): battle's nameplates,
   Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
@@ -201,8 +224,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           an average day ~250 (`tests/corner.test.mjs`). Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
           Gen 1's prize dolls), records under every game and 8 Game Corner badges. Prize tickets for plays past the paying
           ones came and went the same day (the user's call: Plinko could be spammed): extra plays are for fun, the counter
-          sells for PokéCoins (180-450, every game a prize: Blackjack, High-Low and quiz pieces added; the counter a showcase screen; every game prize playable at home, `js/home-arcade.js`, the quiz endless with a streak). Then (the user's "I want all of these") the home arcade, patch 1.7: ten arcade machines as prizes, played at home on `js/arcade-kit.js` (CLAUDE.md lists them). Next is the user's playtest of them in the base (the 3D tap couldn't be tested in the cloud: no Three.js there), old tickets cashed in at 3 coins; the Chips meter and every "chips" line are gone,
-          and Plinko's coins show only once the ball lands (branch `claude/dreamy-galileo-0o4aqc`, pushed to `main`). A daily High-Low leaderboard came and went the same day: no leaderboards
+          sells for PokéCoins (180-450, every game a prize: Blackjack, High-Low and quiz pieces added; the counter a showcase screen; every game prize playable at home, `js/home-arcade.js`, the quiz endless with a streak). Old tickets cashed in at 3 coins; the Chips meter and every "chips" line are gone,
+          and Plinko's coins show only once the ball lands (branch `claude/dreamy-galileo-0o4aqc`, pushed to `main`). Then the home arcade (patch 1.7, below). A daily High-Low leaderboard came and went the same day: no leaderboards
           in the Game Corner (the user's call). Next is their playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
           Rocket Blast-Off. Every game has a How to play card (the "?").
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
