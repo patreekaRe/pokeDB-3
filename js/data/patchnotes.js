@@ -50,6 +50,7 @@ export const NEXT = [
   ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
   ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
   ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
+  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
