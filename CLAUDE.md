@@ -54,7 +54,7 @@ live site.
 
 ## Architecture
 
-- **Entry point**: `index.html` loads `js/main.js` as a module. Every other
+- **Entry point**: `index.html` loads `js/main.js` as a module. On a tablet or PC (short side 600px+, top window, no `?wide`) it loads nothing itself and plays the same URL in `#phone-frame`, a phone-shaped iframe, so wide screens get the phone layouts (2026-10-12, the user's call: phones are the way to play). Every other
   `js/*.js` file is imported from there or from each other.
 - **Data-driven design**: all game content — cards, starters, enemies,
   relics, achievements, shop items, difficulty levels — lives in plain

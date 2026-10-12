@@ -2175,3 +2175,8 @@ and Ponyta Dash's sky and sun are a `stamp()`. If it still drops, Low Power Mode
 canvas at a phone's fractional scale (1.4 pixels a unit), doubled and dropped different rows each frame as Ponyta bobbed;
 `drawMon()` in `js/arcade-kit.js` now snaps a sprite's box to whole screen pixels (unless rotated or mirrored by the
 context), so every frame draws the same shape, for every arcade game.
+
+**Phone frame on tablets and PCs** (2026-10-12, the user's ask: on an iPad the bars stretched and buttons floated): when
+the page is the top window and its short side is 600px or more, `index.html` marks `html.framed`, hides its own body and
+loads the same URL in `#phone-frame`, an iframe half as wide as it is tall (360px at least), so inside it every screen is a
+phone's; phones never frame. `?wide` turns it off. Last commit fc74dc7 on `claude/arcade-cabinets-design-yh10el` and `main`.
