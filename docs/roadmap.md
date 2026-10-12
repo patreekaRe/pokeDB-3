@@ -349,15 +349,39 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, 2026-10-12, the user's ask: their 12 friends as Gym
-  Leaders, two a biome, in front of its bosses; the user placed them 2026-10-12: Clearing Lawrence / Britt, Shrine John /
-  Jahmes, Wastes Clarence Jasper / Shaun, Ruins Pat / Kayl, Thornwood Phil / Ricky, Savanna Machew / Jerome). Built: `js/data/gym.js` (who owns which boss, badge names, placeholder
-  lines), `js/gym.js` (the talk before the boss, a shadow till beaten once; the last words and badge after the win),
-  12 Gym Badges (`save.gym`, Badge Case group `gym`), the crossroads boards' Gym Leaders section (shadow and ??? till
-  beaten). Playtest `?gym=phil` (`&n=2` their second boss). Waiting on the user for: each friend's sprite (Gen 5-style
-  trainer, transparent PNG/GIF, ~80px, into `assets/trainers/gym/<id>.png` and `sprite:` on their line; till then the
-  shadow `unknown.png`), their personalities (I write `intro` / `beaten` lines from them), and OK to merge into `main`
-  (with a patch note). ▶ Run in: CLOUD.
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `66c8991`, 2026-10-12, the user's ask: their
+  12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
+  **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
+  boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
+  and the badge spinning in, before the rewards / ending), 12 Gym Badges (`save.gym[id]` win counts, Badge Case group
+  `gym`, `GYM_LOOK` in `js/trainercard.js`), the crossroads boards' "Gym Leaders" section (`roadInfo().leaders` in
+  `js/crossroads.js`: shadow and ??? till beaten, their bosses under them). All fight as Normal. Eternatus, Safari bosses
+  and Sky Pillar guardians have none. Playtest `?gym=<id>` (`&n=2` their second boss, `peekGym()` in `js/run.js`).
+  **The user's placement** (2026-10-12; the first of each biome has two bosses; badge names are placeholders):
+
+  | Biome | Leader (id) | Bosses | Badge |
+  |---|---|---|---|
+  | Clearing | GAY TWINK LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Glitter |
+  | Clearing | BRITT (`britt`) | Miltank | Acorn |
+  | Shrine | JOHN (`john`) | Stoutland, Exploud | Lantern |
+  | Shrine | JAHMES (`jahmes`) | Ursaring | Torii |
+  | Wastes | CLARENCE JASPER (`clarence`) | Slaking, Regigigas | Magma |
+  | Wastes | SHAUN (`shaun`) | Lickilicky, Porygon-Z | Cinder |
+  | Sunken Ruins | PAT (`pat`) | Dunsparce, Wigglytuff | Tidal |
+  | Sunken Ruins | KAYL (`kayl`) | Granbull | Rune |
+  | Thornwood | PHIL (`phil`) | Blissey, Porygon | Bramble |
+  | Thornwood | RICKY (`ricky`) | Porygon2 | Root |
+  | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Eclipse |
+  | Savanna | JEROME (`jerome`) | Munchlax | Sunburst |
+
+  **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
+  from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
+  `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
+  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
+  biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
+  Case. Then, on the user's OK: merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned):
+  https://rawcdn.githack.com/patreekaRe/pokeDB-3/66c8991fd7fef48520ad1c9f87c55270a78e64c2/index.html?gym=britt
+  ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
   at the far screen edges (pull them in beside the hand?), and a tall iPad shows black above and below the Secret Base's
