@@ -94,6 +94,25 @@ export async function gifFrames(src) {
   } catch { return null; }
 }
 
+/** Every pixel of a billboard takes the depth of its feet, as a 2D game sorts its sprites: leaning back to face the
+    camera, its top used to sink into a counter or table just behind it, which then cut across the Pokémon (the user's
+    report, 2026-10-12). Things in front of its feet still hide it. */
+function feetDepth(m) {
+  m.onBeforeCompile = (sh) => {
+    sh.vertexShader = sh.vertexShader
+      .replace('void main() {', 'varying float vFeet;\nvoid main() {')
+      .replace('#include <project_vertex>', `#include <project_vertex>
+  vec4 feetView = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+  feetView.z += 0.06;
+  vec4 feetClip = projectionMatrix * feetView;
+  vFeet = clamp(feetClip.z / feetClip.w * 0.5 + 0.5, 0.0, 1.0);`);
+    sh.fragmentShader = sh.fragmentShader
+      .replace('void main() {', 'varying float vFeet;\nvoid main() {')
+      .replace(/}\s*$/, '  gl_FragDepth = vFeet;\n}');
+  };
+  m.customProgramCacheKey = () => 'feet-depth';
+}
+
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
     `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
 export async function monBoard(mate, back = true) {
@@ -107,6 +126,7 @@ export async function monBoard(mate, back = true) {
   c.width = w; c.height = h;
   const t = tex(c);
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
+  feetDepth(m);
   const board = new THREE.Mesh(new THREE.PlaneGeometry(w * MON_PX, h * MON_PX), m);
   board.castShadow = true;
   const [top, bottom, left, right] = spriteFit(front);

@@ -44,6 +44,9 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'New arcade game: Squirtle Bubble Shooter. Aim and fire bubbles, pop three of a colour, drop the ones left hanging, and keep them off the line as the ceiling comes down. At Meowth\'s prize counter and free to play in the Game Corner, in place of Unown Word Search.'],
+  ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
+  ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
+  ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
