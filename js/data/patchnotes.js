@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['look', 'The starting decks\' cards have new smooth art showing the move itself: a flame for Ember, a curling wave for Dive, a turtle shell for Withdraw. Mewtwo\'s cards get pictures for the first time.'],
   ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
   ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],

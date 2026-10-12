@@ -5,6 +5,7 @@
 
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
+import { cardArt } from './card-art.js';
 import { relicTerms } from './data/relics.js';
 import { getSave } from './storage.js';
 import { playMusic, playSound } from './audio.js';
@@ -156,7 +157,7 @@ export function makeCard(card, options = {}) {
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
   const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
   if (longest > 9) name.style.setProperty('--name-fit', (9.4 / longest).toFixed(3));
-  const art = card.sprite ? cardSprite(card) : el('div', 'card-art', card.art);
+  const art = cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
   const tag = el('div', 'card-type', `${type.icon} ${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`);
   const text = el('p', 'card-text');
   text.append(cardLine(card, options.stage || 0));

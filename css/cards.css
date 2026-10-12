@@ -109,6 +109,7 @@
 /* item art (cardSprite() in js/ui.js): the sprite's visible box (--bx/--by/--bw/--bh, in its 32px frame) scaled
    as big as fits --box-w x --box-h, whatever padding the file has, so every item fills the window the same way */
 .card-art { --box-w: 64cqw; --box-h: 25cqw; }
+.card:not(.small) .card-svg { --svg: 27cqw; }   /* the smooth art has its own margin, so it can take the window's height */
 .sprite-fit {
   --k: min(calc(var(--box-w) / var(--bw)), calc(var(--box-h) / var(--bh)));
   position: relative;
@@ -116,6 +117,13 @@
   height: calc(var(--k) * var(--bh));
   overflow: hidden;
   font-size: 21cqw;                    /* the emoji fallback, if the file is missing */
+}
+.card-svg {
+  --svg: min(var(--box-w), calc(var(--box-h) * 1.12));
+  height: var(--svg);
+  width: var(--svg);
+  overflow: visible;
+  filter: drop-shadow(0 0.5cqw 0 rgba(0, 0, 0, 0.18));
 }
 .sprite-fit .item-sprite {
   position: absolute;

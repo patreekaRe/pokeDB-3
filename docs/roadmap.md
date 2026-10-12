@@ -9,6 +9,15 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
+item pun, and new art for cards that had none). Pilot done: the four starting decks plus Tackle, 20 cards, drawn as SVG in
+`js/card-art.js` (`ART`, keyed by base id, so upgrades follow; a card without a line keeps its PokéSprite item, so the
+switch is gradual), shown by `makeCard()` in `js/ui.js`; `tools/cards.html` shows every one drawn (`?ids=`), `?pixelcards`
+the old art for a page load. Psychic's cards had no sprite at all (emoji). **Next: the user judges the pilot on the live
+site** (a battle, the Moves app); if they like it, batches by type (~70 each: Fire, Water, Grass, Psychic, then Neutral,
+the tokens Cinder / Seedling / Droplet, the status cards, the Safari `sig-*` cards). Open question for the user: relics
+and items stay pixel sprites, or a later batch.
+
 **Poké Mall hall: fountains, palms, passers-by** (the user's asks, 2026-10-12, on `main`): the one big fountain was
 in the way of the Game Corner's carpet, so it's two smaller ones (`FOUNTAINS` / `FOUNTAIN_SCALE` in `js/mall-hall.js`,
 a ring painted under each by `floorArt()` in `js/mall-3d.js`) either side of a carpet running straight from the doors;
