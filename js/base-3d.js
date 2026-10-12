@@ -11,13 +11,15 @@ import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
+import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
@@ -267,6 +269,15 @@ function makePiece(it, ghostly = false, lift = null) {
     group.add(mesh);
     return mesh;
   };
+  if (p.layer === 'wall' && shapeOf(p.fam, p)) {   // a modelled wall piece (the Plinko board), its back to the wall
+    const model = furnitureModel(THREE, it.id, (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 }));
+    if (ghostly) ownPictures(model);
+    model.traverse(o => { if (o.isMesh) { o.castShadow = !ghostly; o.receiveShadow = !ghostly; [o.material].flat().forEach(see); } });
+    model.position.set(it.x - COLS / 2 + p.w / 2, 0, topOf(it.x) - ROWS / 2 + (ghostly ? 0.01 : 0));
+    group.add(model);
+    group.userData.model = model;
+    return group;
+  }
   if (p.layer === 'wall') {
     const art = pieceArt(it.id, 0, HD), m = new THREE.MeshStandardMaterial({ map: tex(art), transparent: true, alphaTest: 0.5, roughness: 1 });
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
@@ -303,6 +314,7 @@ function makePiece(it, ghostly = false, lift = null) {
     return m;
   });
   if (!ghostly) dressPlay(THREE, model, p);
+  if (ghostly) ownPictures(model);
   model.traverse(o => {
     if (!o.isMesh) return;
     o.castShadow = o.castShadow !== false && !ghostly; o.receiveShadow = !ghostly;
@@ -318,6 +330,12 @@ function makePiece(it, ghostly = false, lift = null) {
   group.userData.model = model;
   if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.position.y + model.userData.top * k - 0.35, cz + 0.3);
   return group;
+}
+
+/** A model's pictures (a machine's screen, a card's face) share one material with every copy of the piece, so the ghost
+    takes its own before it is tinted and faded. */
+function ownPictures(model) {
+  model.traverse(o => { if (o.isMesh && o.material?.userData?.kind === 'pic') o.material = o.material.clone(); });
 }
 
 /** A soft shaft of light from the window down to the floor, drawn additive so bloom picks it up, and dust in it. */
@@ -1081,7 +1099,31 @@ function tapped(at, ray = new THREE.Raycaster()) {
   return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
+/** Off across the floor to `to`, getting up first if sitting; `drag` keeps the step under way (drag to walk). */
+function walkFloor(to, drag = false) {
+  const go = () => {
+    walker.path = drag ? reroute(walker, route, to) : route(walker.tile, to);
+    const end = walker.path.at(-1) ?? walker.tile;
+    ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
+    ring.material.opacity = 0.9;
+  };
+  follow = true;
+  walker.through = null; walker.goal = null; walker.seatTo = null;
+  if (walker.seat) getUp(go); else if (!walker.jump) go();
+}
+
+/** The floor tile under a pointer in walk mode, or null. */
+function floorTile(e) {
+  const ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
+  return inRoom(to) ? to : null;
+}
+let drags = null;
+
 function onTap(e) {
+  if (drags?.swallowed()) return;
   if (swallowClick || holding) { swallowClick = false; return; }
   if (performance.now() < quietUntil) return;   // the end of a pinch or a pan, not a tap
   const ray = new THREE.Raycaster();
@@ -1100,6 +1142,7 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
+    if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();
@@ -1121,15 +1164,7 @@ function onTap(e) {
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
   if (!inRoom(to)) return;
-  const go = () => {
-    walker.path = route(walker.tile, to);
-    const end = walker.path.at(-1) ?? walker.tile;
-    ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
-    ring.material.opacity = 0.9;
-  };
-  follow = true;
-  walker.goal = null; walker.seatTo = null;
-  if (walker.seat) getUp(go); else if (!walker.jump) go();
+  walkFloor(to);
   playSound('confirm');
 }
 
@@ -1455,6 +1490,7 @@ function resize() {
 
 function frame(now) {
   if (!root.isConnected) return;
+  if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
@@ -1716,6 +1752,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   for (let i = 0; i < lowered; i++) if (!stepDown()) break;
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
+  drags = dragWalk({ target: view, can: (e) => mode === 'walk' && !holding && visit?.phase !== 'talk' && e.target === view, tile: floorTile, go: (t) => walkFloor(t, true) });
   view.addEventListener('pointerdown', onDown);
   view.addEventListener('pointermove', onMove);
   view.addEventListener('pointerup', onUp);
@@ -1740,6 +1777,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   refresh();
   syncGuests();
   startVisit();
+  await warmShaders(renderer, scene, camera);
   requestAnimationFrame(frame);
   curtain(false);
 }

@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -30,7 +30,7 @@ import { makeCauldron } from './hub-cauldron.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
-import { claimable } from './missions.js';
+import { claimable, timeLeft } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
 const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
@@ -110,7 +110,7 @@ const key = (x, y) => `${x},${y}`;
 /* ---------- painting ---------- */
 
 function art(w, h) {
-  const c = new OffscreenCanvas(w, h), g = c.getContext('2d');
+  const c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
   const dot = (x, y, col, ww = 1, hh = 1) => { g.fillStyle = col; g.fillRect(x, y, ww, hh); };
   return { c, g, dot };
 }
@@ -737,7 +737,7 @@ export function texOf(canvas) {
 
 /** The PC's "you've got mail": a cream envelope in a white bubble with a red dot, like a phone's badge. */
 /** The "!" over the PC: the yellow bubble every Home key wears for news (.dex-news), a point at its foot. */
-function newsArt() {
+export function newsArt() {
   const { c, g, fill, rr } = fine(10, 13, 10);
   fill('#5a3a00', () => g.arc(5, 5, 4.6, 0, Math.PI * 2));
   fill('#5a3a00', () => { g.moveTo(3.4, 8.6); g.lineTo(5, 12.4); g.lineTo(6.6, 8.6); });
@@ -1238,6 +1238,7 @@ function makePlaces() {
     id: 'safari-gate', name: 'Safari Zone', step: { x: 0, y: -2 }, tiles: [], tag: [0, 4, -3], open: safari,
     line: safari ? 'Today\'s Safari Zone run, the same for everyone. Spin the Pokéstop to set out.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
+    reset: safari && 'daily',
     buttons: [],
     // back in the left corner, just behind the Ancient Tree, its fence across the cleared meadow (the user's call, 2026-10-09)
     build: (g) => {
@@ -1252,6 +1253,7 @@ function makePlaces() {
   if (safari) list.push({
     id: 'safari', name: 'Safari Pokéstop', step: { x: -1, y: -1 }, tiles: [[-1, -2]], tag: [-1, 2.6, -2], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
+    reset: 'daily',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
     build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun, 'EXPLORE'),
   });
@@ -1259,6 +1261,7 @@ function makePlaces() {
   list.push({
     id: 'safari-board', name: 'Safari Ranks', step: { x: -3, y: -1 }, tiles: [[-3, -2]], tag: [-3, 2.6, -2], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
+    reset: safari && 'daily',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(-3), tileZ(-2.3))),
   });
@@ -1274,6 +1277,7 @@ function makePlaces() {
   list.push({
     id: 'pillar-tower', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2), tag: [13, 4.2, -2], open: tower,
     line: tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''} Spin the Pokéstop to climb.` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
+    reset: tower && 'weekly',
     buttons: [],
     build: (g) => {
       const side = new THREE.MeshStandardMaterial({ map: texOf(pillarArt(false)), roughness: 1 });
@@ -1288,12 +1292,14 @@ function makePlaces() {
   if (tower) list.push({
     id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
     line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
+    reset: 'weekly',
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
     build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'CLIMB'),
   });
   list.push({
     id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
+    reset: tower && 'weekly',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
     build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.8), tileZ(-1.2))),
   });
@@ -1433,7 +1439,9 @@ function buildClearing() {
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
   // bushes along the gate's fence, outside it, the trail between
-  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45, 0.9 + rnd() * 0.25);
+  // each a step nearer than the last: side by side on one plane, where they overlap they z-fought and flickered
+  let b = 0;
+  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45 + (b++ % 2) * 0.08, 0.9 + rnd() * 0.25);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
@@ -1590,11 +1598,11 @@ const placeAt = (t) => places.find(p => p.step.x === t.x && p.step.y === t.y) ??
 /** Head for a place's doorstep; `enter` opens it on arrival (`i`: which of its buttons, from the bar), else its card
     shows there. */
 function goTo(p, enter, i = null) {
+  playSound('confirm');   // as you tap, not again as you get there (the user's ask, 2026-10-12)
   if (walker.path.length === 0 && placeAt(walker.tile) === p) return enter ? open(p, i) : showCard(p);
   walker.path = route(walker.tile, p.step);
   aim = enter ? { p, i } : null;
   hideCard();
-  playSound('confirm');
   if (!walker.path.length) open(p, i);
 }
 
@@ -1624,7 +1632,6 @@ function open(p, i = null) {
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
   walker.hopUntil = performance.now() + 400;
-  playSound('confirm');
   hideCard();
   const [label, go] = p.buttons[i ?? 0];
   if (p.id === 'trail' && label !== 'Escape Rope' && !calm) return setTimeout(() => walkOut(go), SPIN * 0.6);
@@ -1813,7 +1820,6 @@ async function enterBase() {
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
   if (tree) tree.m.map = tree.open;
-  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
@@ -1828,7 +1834,6 @@ async function enterMall() {
   if (entering) return;
   hideCard();
   walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
-  playSound('confirm');
   playSound('door');
   entering = { at: performance.now(), z: walker.z };
   await curtain(true, calm ? 0 : 420);
@@ -1924,6 +1929,7 @@ function showCard(p) {
   card.classList.toggle('ask', ask);
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
+  resetLine();
   card.querySelector('.hub-card-acts').replaceChildren(...(ask ? ['Continue', 'New game'] : []).map((label) => {
     const b = document.createElement('button');
     b.type = 'button';
@@ -1937,6 +1943,15 @@ function showCard(p) {
   if (!p.open) playSound('cancel');
 }
 function hideCard() { card.hidden = true; }
+
+/** When the Safari's day or the Sky Pillar's week turns over (midnight UTC, the week on Monday), counted down on their
+    places' cards (the user's ask, 2026-10-12: the reset was a guess at their own midnight). */
+let resetAt = 0;
+function resetLine() {
+  const kind = here?.reset, out = card.querySelector('.hub-card-reset');
+  out.hidden = !kind;
+  if (kind) out.textContent = `${kind === 'daily' ? 'New day' : 'New week'} in ${timeLeft(kind)}`;
+}
 
 /** A place where the saved run was started asks Continue or New game: the Pokéstop, the Safari gate or the Sky Pillar. */
 const asks = (p) => p.open && p.buttons[0]?.[0] === 'Continue';
@@ -2113,6 +2128,7 @@ function onKey(e) {
   }
   if ((e.key === 'Enter' || e.key === ' ') && !walker.path.length && placeAt(walker.tile) && !document.activeElement?.closest?.('button')) {
     e.preventDefault();
+    playSound('confirm');
     open(placeAt(walker.tile), 0);
   }
   if (e.key === 'Escape' && !card.hidden) hideCard();
@@ -2328,6 +2344,7 @@ function frame(now) {
   if (screen.hidden || !root.isConnected) { running = false; quiet(); return; }
   // under the device (its corner button opened it over the hub) the Clearing holds still rather than drawing unseen
   if (root.querySelector('.room-home.out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
+  if (!card.hidden && now - resetAt > 5000) { resetAt = now; resetLine(); }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
@@ -2374,7 +2391,7 @@ async function build() {
   root.addEventListener('animationend', () => root.classList.add('shown'), { once: true });
   root.innerHTML = `
     <canvas class="hub-view"></canvas>
-    <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><div class="hub-card-acts"></div></div>
+    <div class="hub-card" role="dialog" aria-live="polite" hidden><b class="hub-card-name"></b><p class="hub-card-line"></p><p class="hub-card-reset" hidden></p><div class="hub-card-acts"></div></div>
     <div class="hub-bar">
       <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
         <div class="room-keys"><button type="button" class="room-home hub-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help" title="How to play" aria-label="How to play"></button></div>
@@ -2439,6 +2456,7 @@ async function build() {
   view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
+  await warmShaders(renderer, scene, camera);
 }
 
 /** Show the hub over the title (screen is #title-screen, acts what the places open). Resolves true once it's drawn,

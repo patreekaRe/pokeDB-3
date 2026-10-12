@@ -2118,3 +2118,47 @@ Pokémon up beside it and opens a panel with the road's places, bosses, wilds an
 Reading never picks a road. Your Pokémon eases down to 70% of its loaded size by the fork (the painted fallback, which
 keeps its cards, too). Fixed on the way: the cards called `dexSeen()`, which *marks* a Pokémon seen, so showing the fork
 marked its bosses seen and never showed a met one in colour; they read `save.dex.seen` now.
+- **Deal of the Day taken out** (2026-10-12, the user's call): the Game Corner's 30%-off pick is gone from the cabinet, the showcase screens and Meowth's lines (`todaysDeal()` / `pickDeal()` / `DEAL_OFF` removed); an old save's `corner.deal` is ignored. Branch `claude/arcade-cabinets-design-yh10el`.
+- **Pachirisu Berry Catch** (2026-10-12, patch 1.9, the user's pick): a home arcade game, `js/arcade-berry.js` / `berrycabinet`, in Jigglypuff's Sing-Along's place at Meowth's counter and on the Game Corner floor; Sing-Along and Unown Word Search retired (buyers keep them). Meowth's leftover DEAL line taken out.
+- **Squirtle Bubble Shooter** (2026-10-12, the user's pick): `js/arcade-bubble.js` / `bubblecabinet`, Puzzle Bobble, in Unown Word Search's place at Meowth's counter and on the Game Corner floor.
+- **Reset countdowns** (2026-10-12, the user's ask: they thought resets were at their own midnight; all are midnight UTC): the Safari's and Sky Pillar's places in the Clearing carry `reset` ('daily' / 'weekly'), shown live on the card (`resetLine()` in `js/hub-3d.js`, `timeLeft()` from `js/missions.js`), and their lobbies' LCDs add "new in …".
+- **iPad / iPhone sound in Silent Mode** (2026-10-12, the user's report: no sound on their iPad): iOS mutes Web Audio under Silent Mode, and every sound runs through it; `initAudio()` in `js/audio.js` sets `navigator.audioSession.type = 'playback'` (Safari 16.4+), so it plays like a video. Chrome (and every other iOS browser) ignores that setting in its tab, so on iOS a silent looping <audio> element is also kept playing from a tap (`holdMediaSession()`), which switches the session to media playback; paused when hidden or muted. A home-screen app already worked.
+- **No clipping, drag to walk everywhere, the confirm on the tap** (2026-10-12, the user's three asks): a Pokémon's billboard takes the depth of an upright cutout at its feet (`feetDepth()` in `js/hd2d.js`, every `monBoard()`), so a wall, shop front or counter behind it can't cut its head off, while anything in front still hides it. Hold and drag walks in the Poké Mall (hall, stores, Game Corner), the Secret Base's walk mode, the Center, the Mart (its drag used to look along the shelves) and the ? rooms, through `js/drag-walk.js` (`dragWalk()`, `reroute()`); the Clearing and the crossroads already had it. The confirm blip plays as you tap a door, shop, doormat or spot, not on arrival: `goTo()` in `js/hub-3d.js` / `js/mall-3d.js`, `tapTo()` in the rooms, and the rooms' arrival press is hushed (`hushBlip()` in `js/audio.js`).
+
+**Readable text and round arcade keys** (2026-10-12, the user's asks): every `font-size` / `font:` under 12px (0.75rem) in `css/` raised to it (card faces in `css/cards.css` excepted, they scale with the card), the PC's text box 0.9rem, the leaderboard title on one line, shrunk only as far as it must to fit (`fitText()` in `js/ui.js`, the one exception to the 12px floor: text that would be cut off); the Game Corner guide's text shortened; every cabinet's START / EXIT are small round Neo Geo buttons (`sysKeys()` in `js/arcade-kit.js`, `.ar-dot`), the slanted pills gone. Branch `claude/dreamy-galileo-0o4aqc`.
+
+### Poké Mall hall revamp (2026-10-12, the user's ask: "so bland in there, and kind of small, I don't like the 2D plants or benches"; the shop entrances "way more attractive")
+The hall grew from 13 x 7 to 21 x 10 (`HC` / `HR` in `js/mall-3d.js`; the fronts moved to x 4 / 10 / 16) and every flat
+painting on its floor was replaced with a model from the new `js/mall-hall.js`: a fountain (a Poké Ball spraying, water
+spilling off an upper bowl, rings in the basin) in a gold-inlaid compass ring on diagonal marble, palms (bent frond strips
+that sway) and topiary in stone planters, iron-and-slat benches, triple-globe lamps, columns under the mezzanine, two
+escalators with moving steps, vending machines, a lit mall guide, swaying banners. `dressFronts()` builds each entrance out:
+pilasters, a lit sign box, the Furniture store's green scalloped awning and flower troughs, the Game Corner's marquee of
+chasing bulbs, spinning gold stars and velvet ropes, the empty shop's barrier, cones and board. The mall now renders smooth
+(like the Secret Base), the hall alone gets baked reflections (`hallEnv()`), and on a tall phone the hall shows as much
+more of its depth as fits (`win` in `fitShot()`). The ribbon logic only unblocks tiles it blocked (`places.hall.fixed`).
+The two benches at the hall's front, facing out, were taken out the same day (the user's call).
+
+- **Sold-out furniture locked out** (2026-10-12, the user's ask): the Furniture store never deals a piece the player owns (`dealDay()` in `js/secret-base.js`); a day's stock is kept in the save (`furnitureDay`) so a buy stays sold out till the next restock. Commit cc4322d.
+
+**Card revamp** (2026-10-12, the user's pick of three mockups: A modern TCG, B Slay the Spire shapes, C smooth like the
+Pokédex; they took C with B's art-window shapes, no name banners): a glossy type gradient, the cost a lit gem, an edge
+glowing pale / blue / gold by rarity with a slow shine on rares, a frosted art window pointed for an Attack, square for a
+Skill, round for a Power (`kind-*` from `kindOf()`, moved into `js/ui.js`), "Fire · Attack" on the type line; picked and
+pickable cards ring through `--ring` on `.card-face` (`css/cards.css`). Playtested on the branch, merged into `main`.
+
+
+### Load-time pass (2026-10-12, the user's ask: "a check on load times across the game, make sure it's all smooth")
+Measured in headless Chromium at phone size (title, Clearing, Secret Base, Poké Mall, Center, Mart, ? rooms, crossroads,
+map and fights; `--use-angle=swiftshader`, so GPU timings there are inflated, CPU ones real). The same day's Mall fix
+(30c1a90) had already put the furniture's pictures and `finish()`'s layers on CPU canvases (a GPU canvas stalls on every
+`getImageData`). This pass: Three.js is the minified build (166 KB gzipped, was 256 KB, half the code to parse) and
+`index.html` modulepreloads it with the game's scripts (it was fetched only once they had all loaded; keep its URL and
+`THREE_URL` in `js/hd2d.js` the same). `warmShaders()` in `js/hd2d.js` compiles a place's shaders before its first frame
+(`compileAsync`, for a render target, as `createPost()` draws the scene into one: compiled for the screen every program is
+a variant never used, which the Mall's `warm()` did, 43 programs linked where 28 are used): the Clearing, Base, Center,
+Mart, ? rooms and crossroads. The arena's `precompile()` was left alone (pointed at a target it built 63 programs where a
+fight uses 7). More read-back paintings made on CPU canvases (`willReadFrequently`): `crop()`, `roomArt()`, the
+Clearing's `art()`, the crossroads' canvases, `sceneShot()`, aura, bagdex, `filled()`, the medallion, tower statues. Not
+done, worth a look one day: every module loads at start (~116 files, ~3.5 MB unminified, ~0.9 MB gzipped), so the
+films, intros and card art could be imported when first needed.

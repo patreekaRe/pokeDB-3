@@ -18,6 +18,7 @@ import { BIOMES_BY_ID, ENEMY_DEFS } from './data/enemies.js';
 import { TYPES } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
+import { meowthTalk } from './meowth.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -379,13 +380,13 @@ export function roadCard(id, i, pick, onSwap) {
  * with the biome id and a close() that takes the scene away: call it once the journey film or the next map covers it.
  * Your Pokémon walks where you tap (or hold and drag, or the arrow keys), shrinking a little towards the fork; walking onto a road picks it, and on up it takes it.
  */
-export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false }) {
+export async function crossroads({ ids, swap = null, starter, stage = 0, shiny = false, meowth = false }) {
   // its backdrop at once, while the 3D place loads: on Continue the select under the leaving title showed through till then
   const sc = $('crossroads-scene');
   if (sc.hidden) { sc.className = `crossroads-scene wait${document.body.classList.contains('titling') || still() ? ' held' : ''}`; sc.hidden = false; }
   // the 3D fork first (js/crossroads-3d.js, the user's pick, 2026-10-11); `?xr2d`, or no Three.js, paints this one
   if (!new URLSearchParams(location.search).has('xr2d')) {
-    try { return (await (await import('./crossroads-3d.js')).crossroads3d({ ids, swap, starter, stage, shiny })).chosen; }
+    try { return (await (await import('./crossroads-3d.js')).crossroads3d({ ids, swap, starter, stage, shiny, meowth })).chosen; }
     catch (e) { console.warn('3D crossroads unavailable, painting it', e); }
   }
   roads = [...ids]; picked = -1; walking = false; asking = false; route = []; keys = new Set(); cam = 0; H = 0; facing = 'back'; monTall = 0;
@@ -513,6 +514,17 @@ export async function crossroads({ ids, swap = null, starter, stage = 0, shiny =
     addEventListener('keyup', onKeyUp, true);
     addEventListener('resize', onResize);
     go.onclick = (e) => { e.stopPropagation(); take(); };
+    if (meowth) {   // Meowth, the first time after Biome 1, standing by your Pokémon to talk (js/meowth.js)
+      asking = true;
+      const cat = el('img', 'xr-meowth');
+      cat.src = 'assets/pokemon/meowth-front.gif';
+      cat.alt = 'Meowth';
+      cat.style.left = `${(mx + W * 0.3) * P}px`;
+      cat.style.top = `${(my - H * 0.03) * P}px`;
+      cat.style.setProperty('--px', `${P}px`);
+      scene.append(cat);
+      meowthTalk(scene).then(() => { cat.remove(); asking = false; });
+    }
 
     async function take() {
       if (walking || asking || picked < 0) return;

@@ -67,6 +67,7 @@ const freshSave = () => ({
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
+  cornerOpen: false,          // Meowth met at a crossroads (js/meowth.js): the Poké Mall's Game Corner opens; every save meets it, old ones too
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
@@ -78,6 +79,7 @@ const freshSave = () => ({
   mail: [],                   // the Clearing's PC's mailbox (js/mail.js): letters with PokéCoins waiting to be claimed, newest last
   feats: [],                  // FEATS ids granted (js/data/achievements.js): Eternatus beaten, the Depths page's shiny Mewtwo
   tower: { week: null, tries: 0, best: 0, bestEver: 0, summits: 0, bestTurns: 0 },   // the Sky Pillar (js/data/tower.js): the week (its Monday), its tries (only the first counts), that try's floor, your highest floor ever (any try: the Tower Badges), climbs that reached the top, the fewest turns one took, the weeks climbed (`weeks`, missing in an old save: towerWeeks()) and guardians beaten (`guardians`, likewise: guardiansBeaten()); the augment badges' `augDex` (every augment taken), `sets` (sets completed) and `prismFloor` / `tradeFloor` (the highest floor cleared holding 3 Prismatics / trade-offs), all missing in an old save
+  corner: {},   // the Game Corner's day: Voltorb Flip's (js/data/corner.js) and the Gachapon's week ({ week, pulls })
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD"), its tries so far (only the first counts) the days played (`days`, missing in an old save: safariDays()), the day its Day Pass was bought (`pass`) and the Safari Balls left in the run under way (`balls`)
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
@@ -113,7 +115,7 @@ function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const saved = JSON.parse(raw);
+      const saved = JSON.parse(renameFurniture(raw));
       const base = freshSave();
       const merged = {
         ...base, ...saved,
@@ -125,6 +127,7 @@ function load() {
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
         tower: { ...base.tower, ...saved.tower },
+        corner: { ...base.corner, ...saved.corner },
         balls: migrateBalls({ ...base.balls, ...saved.balls }),
         stats: {
           ...base.stats, ...saved.stats,
@@ -136,6 +139,13 @@ function load() {
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** A furniture kind that was swapped out carries over to the one that took its place, wherever the save names it
+    (owned, placed, bought at Meowth's counter): Magikarp Fishing became Pidgey Flap (2026-10-12). */
+function renameFurniture(raw) {
+  for (const [from, to] of [['fishingcabinet', 'flapcabinet']]) raw = raw.replaceAll(`"${from}"`, `"${to}"`);
+  return raw;
 }
 
 /** Saves from before the Index hid unmet moves: the starting decks you own and the run in progress count as met. */

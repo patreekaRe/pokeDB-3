@@ -150,3 +150,58 @@ export function rankTower(entries, uid, top = BOARD_TOP) {
   const me = rows.slice(top).find(r => r.mine) || null;
   return [{ id: 'floor', name: 'Highest floor', rows: rows.slice(0, top), me, total: rows.length }];
 }
+
+
+/* ---------- the home arcade's weekly boards (2026-10-12, the user's pick of six games): arcadeBoard/<week>_<game>_<uid>,
+   each player's best score in a game that week (its Monday, the Sky Pillar's), raised whenever they beat it ---------- */
+
+export const ARCADE_COLLECTION = 'arcadeBoard';
+export const ARCADE_KEYS = ['week', 'game', 'uid', 'name', 'starter', 'score', 'at'];
+export const ARCADE_SCORE = [1, 9999999];
+/** The ranked games: endless, and only skill sets the score. `unit` follows the number on the board. Their ids must match
+    firestore.rules' list. */
+export const ARCADE_GAMES = [
+  { id: 'runner', name: 'Ponyta Dash', unit: 'm', b1: '#f8a050', b2: '#9a3a10' },
+  { id: 'flap', name: 'Pidgey Flap', unit: 'gaps', b1: '#e0b070', b2: '#7a4a1a' },
+  { id: 'stacker', name: 'Snorlax Stacker', unit: 'slabs', b1: '#5aa8b8', b2: '#1e4a5a' },
+  { id: 'puzzle', name: 'Poké Puzzle', unit: 'pts', b1: '#5ad0c0', b2: '#1a6a60' },
+  { id: 'invaders', name: 'Beedrill Invaders', unit: 'pts', b1: '#f0c840', b2: '#8a5a08' },
+  { id: 'snake', name: 'Ekans Trail', unit: 'pts', b1: '#a870d8', b2: '#4a1e78' },
+];
+export const ARCADE_BY_ID = Object.fromEntries(ARCADE_GAMES.map(g => [g.id, g]));
+
+export const arcadeId = (week, game, uid) => `${week}_${game}_${uid}`;
+
+/** A score as the board shows it: "1,234 m". */
+export const arcadeValue = (e) => `${Number(e.score).toLocaleString()} ${ARCADE_BY_ID[e.game]?.unit ?? 'pts'}`;
+
+/** The document posted for a best score (the server adds `at`). */
+export const arcadeEntry = ({ week, game, score, starter }, uid, name) =>
+  ({ week, game, uid, name: cleanName(name), starter: String(starter || 'pikachu').slice(0, 32), score: clamp(score, ARCADE_SCORE) });
+
+/** Why the rules would refuse an arcade entry (null when they'd take it): its week is this one or the last. */
+export function checkArcadeEntry(e, thisWeek) {
+  if (!e || typeof e !== 'object') return 'no entry';
+  const extra = Object.keys(e).filter(k => !ARCADE_KEYS.includes(k));
+  if (extra.length) return `unknown field ${extra[0]}`;
+  if (typeof e.week !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.week)) return 'bad week';
+  if (![dayOffset(thisWeek, -7), thisWeek].includes(e.week)) return 'week too far from now';
+  if (!ARCADE_BY_ID[e.game]) return 'bad game';
+  if (typeof e.uid !== 'string' || !e.uid) return 'no uid';
+  if (typeof e.name !== 'string' || !e.name || [...e.name].length > NAME_MAX) return 'bad name';
+  if (typeof e.starter !== 'string' || !e.starter || e.starter.length > 32) return 'bad starter';
+  if (!inRange(e.score, ARCADE_SCORE)) return 'bad score';
+  return null;
+}
+
+/** A week's entries as a board per game, highest score first (a tie keeps whoever got there first). */
+export function rankArcade(entries, uid, top = BOARD_TOP) {
+  const valid = entries.filter(e => e && typeof e === 'object');
+  return ARCADE_GAMES.map(game => {
+    const rows = valid.filter(e => e.game === game.id)
+      .sort((a, b) => b.score - a.score || when(a.at) - when(b.at))
+      .map((entry, i) => ({ rank: i + 1, entry, mine: Boolean(uid) && entry.uid === uid }));
+    const me = rows.slice(top).find(r => r.mine) || null;
+    return { id: game.id, name: game.name, rows: rows.slice(0, top), me, total: rows.length };
+  });
+}

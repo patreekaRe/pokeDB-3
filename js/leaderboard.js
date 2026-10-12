@@ -12,11 +12,12 @@
 
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { BOARD_COLLECTION, entryId, dayOffset, cleanName, buildEntry, checkEntry, rankBoards, boardValue, formatTime, NAME_MAX,
-  TOWER_COLLECTION, checkTowerEntry, rankTower } from './data/leaderboard.js';
+  TOWER_COLLECTION, checkTowerEntry, rankTower, ARCADE_COLLECTION, ARCADE_GAMES, ARCADE_BY_ID, arcadeId, arcadeEntry, arcadeValue,
+  checkArcadeEntry, rankArcade } from './data/leaderboard.js';
 import { safariDay, safariDaily } from './data/safari.js';
 import { towerWeek, weekOffset, towerWeekly } from './data/tower.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { $, el, openDialog, closeDialog } from './ui.js';
+import { $, el, openDialog, closeDialog, fitText } from './ui.js';
 import { AUGMENTS_BY_ID } from './data/augments.js';
 import { augIcon } from './augment-art.js';
 import { shelfApp, typed } from './bagdex.js';
@@ -25,6 +26,8 @@ import { getSave, updateSave } from './storage.js';
 
 const POST_KEY = 'pokedb.safari.post';
 const TOWER_POST_KEY = 'pokedb.tower.post';
+const ARCADE_POST_KEY = 'pokedb.arcade.post';   // { [game]: a best waiting to go up }
+const ARCADE_UP_KEY = 'pokedb.arcade.up';       // { [game]: { week, score } } the best already posted, so a lower one never asks
 const NAME_KEY = 'pokedb.safari.name';   // where the nickname lived before the save took it (nameFor())
 const FETCH_LIMIT = 1000;
 const CACHE_MS = 60000;
@@ -56,6 +59,14 @@ const KINDS = {
     mine: (e) => `Your climb: floor ${e.floor} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)}`,
     signin: 'Sign in to post your first climb of the week.', period: 'this week\'s',
   },
+  arcade: {
+    collection: ARCADE_COLLECTION, postKey: ARCADE_POST_KEY, field: 'week', title: '🕹️ Arcade Leaderboard', tabs: ['This week', 'Last week'],
+    now: () => towerWeek(), offset: (week, n) => weekOffset(week, n), step: 1,
+    rank: rankArcade,
+    header: (week) => `Week of ${week} · your best score in each game`,
+    mine: (list) => `Your bests: ${list.map(e => `${ARCADE_BY_ID[e.game]?.name ?? e.game} ${arcadeValue(e)}`).join(' · ')}`,
+    signin: 'Sign in to post your best scores of the week.', period: 'this week\'s',
+  },
 };
 let kind = 'safari';
 const K = () => KINDS[kind];
@@ -65,8 +76,17 @@ const posting = new Map();   // per board: the post in flight
 const cache = new Map(); // day -> { at, entries }
 let resultLine = null;   // the result window's line, kept up to date while it posts
 
+/** The arcade bests still waiting to go up, this week's or last week's. */
+function arcadeWaiting() {
+  const all = store.get(ARCADE_POST_KEY) || {}, now = towerWeek(), ok = [weekOffset(now, -1), now];
+  const keep = Object.fromEntries(Object.entries(all).filter(([, e]) => ok.includes(e?.week)));
+  if (Object.keys(keep).length !== Object.keys(all).length) store.set(ARCADE_POST_KEY, Object.keys(keep).length ? keep : null);
+  return Object.values(keep);
+}
+
 /** The result still waiting to go up, if its day (or week) can still be posted. */
 function pending(k = K()) {
+  if (k === KINDS.arcade) return arcadeWaiting().length ? arcadeWaiting() : null;
   const p = store.get(k.postKey);
   if (!p?.[k.field]) return null;
   const now = k.now();
@@ -105,8 +125,57 @@ function say(text) {
   if (resultLine) resultLine.textContent = `📮 ${text}`;
 }
 
+/** Posts the waiting arcade bests, each only if it beats the one up there: the last state, as post()'s. */
+async function postArcade() {
+  const waiting = arcadeWaiting();
+  if (!waiting.length) return 'none';
+  let s;
+  try { s = await cloudSession(); } catch (err) { return 'offline'; }
+  if (!s.user) return 'signin';
+  const name = nameFor();
+  if (!name) return 'name';
+  let state = 'none';
+  for (const best of waiting) {
+    const drop = () => { const all = store.get(ARCADE_POST_KEY) || {}; if (all[best.game]?.score === best.score) { delete all[best.game]; store.set(ARCADE_POST_KEY, Object.keys(all).length ? all : null); } };
+    const entry = arcadeEntry(best, s.user.uid, name);
+    if (checkArcadeEntry(entry, towerWeek())) { drop(); state = 'stale'; continue; }
+    const ref = s.F.doc(s.db, ARCADE_COLLECTION, arcadeId(entry.week, entry.game, entry.uid));
+    try {
+      const there = await s.F.getDoc(ref);
+      if (there.exists() && there.data().score >= entry.score) { drop(); state = 'already'; continue; }
+      await s.F.setDoc(ref, { ...entry, at: s.F.serverTimestamp() });
+    } catch (err) {
+      if (err?.code === 'permission-denied') { drop(); state = 'already'; continue; }
+      return 'offline';
+    }
+    drop();
+    store.set(ARCADE_UP_KEY, { ...(store.get(ARCADE_UP_KEY) || {}), [entry.game]: { week: entry.week, score: entry.score } });
+    cache.delete(`${ARCADE_COLLECTION}/${entry.week}`);
+    state = 'posted';
+  }
+  return state;
+}
+
+/** From the arcade cabinet's game over (js/arcade-kit.js): keeps a ranked game's score if it's the week's best yet and
+    posts it. Resolves to a short line for the cabinet ('' when there's nothing to say); never throws. */
+export async function postArcadeScore(game, score, starter) {
+  try {
+    if (!ARCADE_BY_ID[game] || !(score > 0) || !cloudConfigured()) return '';
+    const week = towerWeek(), up = store.get(ARCADE_UP_KEY)?.[game], all = store.get(ARCADE_POST_KEY) || {};
+    if ((up?.week === week && up.score >= score) || (all[game]?.week === week && all[game].score >= score)) return '';
+    store.set(ARCADE_POST_KEY, { ...all, [game]: { week, game, score: Math.round(score), starter } });
+    if (!cloudRemembered()) return 'Sign in to put it on the weekly leaderboard.';
+    const state = await post(KINDS.arcade);
+    return { posted: 'On this week\'s leaderboard!', name: 'Open the leaderboard (🏆) and pick a name to post it.', signin: 'Sign in to put it on the weekly leaderboard.', offline: 'Couldn\'t reach the leaderboard; it\'ll post next time.' }[state] || '';
+  } catch (err) { return ''; }
+}
+
 /** Posts the waiting result: 'posted', 'already', 'signin', 'name', 'none', 'stale' or 'offline'. Never throws. */
 async function post(k = K()) {
+  if (k === KINDS.arcade) {
+    if (!posting.has(k)) posting.set(k, postArcade());
+    try { return await posting.get(k); } finally { posting.delete(k); }
+  }
   if (posting.has(k)) return posting.get(k);
   posting.set(k, (async () => {
     const result = pending(k);
@@ -171,8 +240,9 @@ const LOOK = {
   turns: { b1: '#4ab8d8', b2: '#1a4a7a', sub: 'The fewest turns to cross', area: 1 },
   caught: { b1: '#f0a040', b2: '#8a3a14', sub: 'The biggest haul', area: 2 },
   floor: { b1: '#6aa8ff', b2: '#3a2a8a', sub: 'The furthest climb' },
+  ...Object.fromEntries(ARCADE_GAMES.map(g => [g.id, { b1: g.b1, b2: g.b2, sub: `The week's best ${g.unit === 'pts' ? 'score' : g.unit === 'm' ? 'run' : g.unit}` }])),
 };
-const EMPTY = { caught: 'Nobody has caught anything yet.', floor: 'Nobody has climbed yet.' };
+const EMPTY = { caught: 'Nobody has caught anything yet.', floor: 'Nobody has climbed yet.', ...Object.fromEntries(ARCADE_GAMES.map(g => [g.id, 'Nobody has played yet this week.'])) };
 const MEDAL = ['', 'gold', 'silver', 'bronze'];
 
 let host = null;     // where the board is mounted: the window's screen, or a lobby's app panel
@@ -192,7 +262,8 @@ function mon(e, cls) {
 function facts(e) {
   const box = el('div', 'pdx-lcd pdx-facts lb-facts');
   const fact = (k, v) => { const f = el('span', ''); f.append(el('b', '', `${k} `), v); return f; };
-  if (kind === 'tower') box.append(fact('Floor', `${e.floor}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)));
+  if (kind === 'arcade') box.append(fact('Game', ARCADE_BY_ID[e.game]?.name ?? e.game), fact('Score', arcadeValue(e)));
+  else if (kind === 'tower') box.append(fact('Floor', `${e.floor}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)));
   else box.append(fact('Result', e.won ? 'Crossed' : `Area ${e.area}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)), fact('Caught', `${e.caught}`));
   return box;
 }
@@ -207,6 +278,8 @@ function picks(e) {
   box.append(el('b', '', 'Augments'), row);
   return [box];
 }
+
+const value = (id, e) => (kind === 'arcade' ? arcadeValue(e) : boardValue(id, e));
 
 function boardsApp(boards, day) {
   const areas = kind === 'safari' ? safariDaily(day).areas : [];
@@ -232,8 +305,8 @@ function boardsApp(boards, day) {
     screenCls: (g, r) => `lb-screen${MEDAL[r.rank] ? ` medal-${MEDAL[r.rank]}` : ''}`,
     screen: (g, r) => [el('span', 'pdx-pad'), mon(r.entry, 'pdx-mon bdx-art'),
       el('span', `pdx-role lb-rank${MEDAL[r.rank] ? ` ${MEDAL[r.rank]}` : ''}`, r.rank === 1 ? '★ 1st' : `#${r.rank}`),
-      el('span', 'lb-value', boardValue(g.id, r.entry)), ...(r.mine ? [el('span', 'lb-you', 'You')] : [])],
-    lines: (g, r) => [typed('', `${g.name}: ${boardValue(g.id, r.entry)}${r.mine ? '. That\'s you!' : ''}`), facts(r.entry), ...picks(r.entry)],
+      el('span', 'lb-value', value(g.id, r.entry)), ...(r.mine ? [el('span', 'lb-you', 'You')] : [])],
+    lines: (g, r) => [typed('', `${g.name}: ${value(g.id, r.entry)}${r.mine ? '. That\'s you!' : ''}`), facts(r.entry), ...picks(r.entry)],
     tally: (g) => (mine(g) ? `Your rank: #${mine(g).rank} of` : 'Trainers on this board'),
     count: (g) => `${g.board.total}`,
     bannerArt: (g, rows) => {
@@ -275,7 +348,7 @@ async function entriesFor(day, s, k = K()) {
   if (hit && Date.now() - hit.at < CACHE_MS) return hit.entries;
   const q = s.F.query(s.F.collection(s.db, k.collection), s.F.where(k.field, '==', day), s.F.limit(FETCH_LIMIT));
   const entries = (await s.F.getDocs(q)).docs.map(d => d.data());
-  if (s.user && !entries.some(e => e.uid === s.user.uid)) {   // past the fetch limit, your own entry still shows
+  if (s.user && k !== KINDS.arcade && !entries.some(e => e.uid === s.user.uid)) {   // past the fetch limit, your own entry still shows
     const mine = await s.F.getDoc(s.F.doc(s.db, k.collection, entryId(day, s.user.uid)));
     if (mine.exists()) entries.push(mine.data());
   }
@@ -337,6 +410,7 @@ async function render() {
   const k = K(), was = kind, at = host;
   const day = k.offset(k.now(), shown);
   $('board-title').textContent = k.title.replace(/^\S+ /, '');
+  fitText($('board-title'));
   $('board-dialog').dataset.kind = kind;
   topBox = el('div', 'lb-top');
   const head = [periodKeys(), note(k.header(day), 'lb-day')];
@@ -352,20 +426,21 @@ async function render() {
   const waiting = pending(k);
   if (!nameFor() || editingName) top.push(nameRow(s.user, waiting && s.user));   // a nickname first, signed in or not
   else top.push(nameLine());
-  if (!s.user) top.push(signInRow(waiting ? 'Your first try is waiting on this device: sign in to post it.' : k.signin));
+  if (!s.user) top.push(signInRow(waiting ? (kind === 'arcade' ? 'Your best scores are waiting on this device: sign in to post them.' : 'Your first try is waiting on this device: sign in to post it.') : k.signin));
   else if (nameFor() && !editingName && waiting) {
     const state = await post(k);
-    if (POST_TEXT[state] && state !== 'none') top.push(note(POST_TEXT[state]));
+    const said = kind === 'arcade' ? { posted: 'Your new bests are on this week\'s board!', offline: POST_TEXT.offline }[state] : POST_TEXT[state];
+    if (said && state !== 'none') top.push(note(said));
   }
   let boards, mine;
   try {
     const entries = await entriesFor(day, s, k);
     boards = k.rank(entries, s.user?.uid);
-    mine = s.user && entries.find(e => e.uid === s.user.uid);
+    mine = s.user ? entries.filter(e => e.uid === s.user.uid) : [];
   }
   catch (err) { if (fresh()) show(...top, note(UNREACHABLE)); return; }
   if (!fresh()) return;   // the tab changed (or the board closed) while it loaded
-  if (mine) top.push(note(k.mine(mine), 'lb-mine'));   // your own try, even when it's on no board
+  if (mine.length) top.push(note(k.mine(kind === 'arcade' ? mine : mine[0]), 'lb-mine'));   // your own try, even when it's on no board
   show(...top);
   mountBoards(boards, day);
 }
@@ -378,6 +453,16 @@ export async function towerTop(n = 5) {
     const s = await cloudSession();
     const entries = await entriesFor(towerWeek(), s, KINDS.tower);
     return rankTower(entries, s.user?.uid)[0].rows.slice(0, n).map(r => ({ ...r.entry, mine: r.mine }));
+  } catch (err) { return null; }
+}
+
+/** This week's arcade boards, for the Game Corner's leaderboard screen (js/mall-corner.js): rankArcade()'s boards, or null
+    when they can't be reached (no config, offline). */
+export async function arcadeTop() {
+  if (!cloudConfigured()) return null;
+  try {
+    const s = await cloudSession();
+    return rankArcade(await entriesFor(towerWeek(), s, KINDS.arcade), s.user?.uid, 3);
   } catch (err) { return null; }
 }
 
@@ -408,8 +493,8 @@ function stepKey(e) {
   return true;
 }
 
-/** Open a board: `which` is 'safari' (the daily one) or 'tower' (the Sky Pillar's weekly one); `day` 0 the current day or
-    week, -1 the one before. */
+/** Open a board: `which` is 'safari' (the daily one), 'tower' (the Sky Pillar's weekly one) or 'arcade' (the home
+    arcade's weekly bests); `day` 0 the current day or week, -1 the one before. */
 export function openLeaderboard(day = 0, which = 'safari') {
   attach($('board-host'), which, day);
   openDialog('board-dialog');

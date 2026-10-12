@@ -30,6 +30,8 @@ const ROWS = [
   { id: 'shiny', name: 'Shiny', entries: () => STARTERS.filter(s => !s.secret).map(shinyEntry) },
   { id: 'balls', name: 'Poké Balls', entries: () => BALLS.filter(b => !b.free).map(ballEntry) },
 ];
+const rowEntries = (row) => row.entries();
+
 const cursor = { row: 0, col: [0, 0, 0, 0], armed: false, news: null };   // news: what the last purchase got you, on the screen in place of a toast
 const WINDOW = 6;     // cells a row shows at once
 const PUSH = 16;      // px the stick must be dragged before it counts as a push
@@ -142,7 +144,7 @@ function skinEntry(item) {
   const name = starter.line[0].name;
   const owned = getSave().unlocked.includes(item.id);
   return {
-    id: item.id, name, sprite: spriteUrl(starter, 'front'),
+    id: item.id, name, sprite: spriteUrl(starter, 'front'), dark: !owned,   // a silhouette until bought (the user's ask, 2026-10-12)
     text: `${cap(starter.type)} skin`,
     done: owned && 'Owned',
     cost: item.cost,
@@ -161,6 +163,7 @@ function perkEntry(item) {
     id: item.id, name: item.name, icon: item.icon, text: locked ? 'Complete the Pokédex to get the Silph Scope first.' : item.text,
     blocked: locked,
     level: `Lv ${level}/${item.maxLevel}`,
+    tier: { have: level, of: item.maxLevel },   // drawn as pips on the showcase (the user's ask, 2026-10-12: Lv 1/3 was easy to miss)
     done: level >= item.maxLevel && 'Maxed',
     cost: item.costs[level],
     bought() {
@@ -179,7 +182,7 @@ function shinyEntry(starter) {
   const known = isStarterUnlocked(starter);
   const owned = getSave().shiny.owned.includes(starter.id);
   return {
-    id: starter.id, name: known ? `Shiny ${name}` : '???', sprite: spriteUrl(starter, 'front', 0, true), dark: !known,
+    id: starter.id, name: known ? `Shiny ${name}` : '???', sprite: spriteUrl(starter, 'front', 0, true), dark: !owned,
     text: known ? 'Its rare shiny colours, on the starter screen, the map and in battle. Just for looks: tap ✨ on its card to switch.'
       : 'Unlock this starter first.',
     blocked: !known,
@@ -215,7 +218,7 @@ function ballEntry(ball) {
 function render() {
   refreshCoins();
   const coins = getSave().coins;
-  const rows = ROWS.map(row => row.entries());
+  const rows = ROWS.map(rowEntries);
   const pick = rows[cursor.row][cursor.col[cursor.row]];
 
   $('gc-section').textContent = `${ROWS[cursor.row].name} ${cursor.col[cursor.row] + 1}/${rows[cursor.row].length}`;
@@ -276,7 +279,7 @@ function render() {
 function move(dx, dy) {
   if (dy) cursor.row = (cursor.row + dy + ROWS.length) % ROWS.length;
   if (dx) {
-    const count = ROWS[cursor.row].entries().length;
+    const count = rowEntries(ROWS[cursor.row]).length;
     cursor.col[cursor.row] = (cursor.col[cursor.row] + dx + count) % count;
   }
   cursor.armed = false;
@@ -298,7 +301,7 @@ function select(row, col) {
 
 /** One of the Game Corner's things for sale, fresh from the save: a row's id ('skins', 'perks', 'shiny', 'balls') and its
     place in that row. The Poké Mall's walk-in Game Corner (js/mall-corner.js) sells the very same entries. */
-export const cornerEntries = (rowId) => ROWS.find(r => r.id === rowId).entries();
+export const cornerEntries = (rowId) => rowEntries(ROWS.find(r => r.id === rowId));
 
 /** Pays for an entry and hands it over; the lines saying what it got you (badges too), or null if it can't be bought. */
 export function buyCorner(pick) {
@@ -312,7 +315,7 @@ export function buyCorner(pick) {
 
 /** First press arms the button, the second buys (the menu blip covers the first). */
 function press() {
-  const pick = ROWS[cursor.row].entries()[cursor.col[cursor.row]];
+  const pick = rowEntries(ROWS[cursor.row])[cursor.col[cursor.row]];
   if (pick.done || pick.blocked || getSave().coins < pick.cost) return;
   if (!cursor.armed) { cursor.armed = true; cursor.news = null; vibrate(12); render(); return; }
   cursor.armed = false;

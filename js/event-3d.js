@@ -9,14 +9,15 @@
    (`act()`, in place of the pixel scene's ACTS). The decor is the Secret Base's furniture models (js/base-mesh.js). */
 
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX } from './hd2d.js';
+import { playSound, playCry, hushBlip } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES } from './secret-base.js';
-import { DRAGONITE } from './scene.js';
+import { paintMedallion } from './medallion-art.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
 
 const COLS = 11, ROWS = 8;
@@ -385,37 +386,52 @@ function dojoBands(f, W, posts = 2) {
   g.fillStyle = DOJO.wood[2]; g.fillRect(0, wy(TOP), W, 4);
 }
 
-/** The gold medallion with Dragonite in relief, the pixel arena's (DRAGONITE in js/scene.js), at radius `R`. */
-function medallion(f, s, cx, cy, Rr) {
-  const { g, lin } = f, k = Rr * 0.78 * 2 / DRAGONITE.length, Ri = DRAGONITE.length * k / 2;
-  g.fillStyle = lin(cx - Rr, cy - Rr, cx + Rr, cy + Rr, ['#fff0a0', '#e8b030', '#a87010', '#f8d058']);
-  g.beginPath(); g.arc(cx, cy, Rr, 0, Math.PI * 2); g.fill();
-  g.fillStyle = lin(0, cy - Ri, 0, cy + Ri, ['#5a1410', '#2a0806']);
-  g.beginPath(); g.arc(cx, cy, Ri * 1.04, 0, Math.PI * 2); g.fill();
-  const col = { '#': '#f0c048', w: '#d89a28', '=': '#fff0b0', e: '#ff3020' };
-  DRAGONITE.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (!col[ch]) return;
-    g.fillStyle = col[ch];
-    g.fillRect(cx - Ri + x * k, cy - Ri + y * k, k + 0.05, k + 0.05);
-    if (ch === 'e') { s.fillStyle = '#ff6040'; s.fillRect(cx - Ri + x * k - k, cy - Ri + y * k - k, k * 3, k * 3); }
-  }));
-  s.fillStyle = 'rgba(160,110,30,0.6)'; s.beginPath(); s.arc(cx, cy, Rr, 0, Math.PI * 2); s.arc(cx, cy, Ri * 1.04, 0, Math.PI * 2, true); s.fill();
+/* Kenmatta's arena medallion (js/arena-3d.js's, the relief baked into assets/arena/), hung in the alcove over his head: the
+   painted one sat behind him (the user's ask, 2026-10-11). */
+const MEDALLION = ['assets/arena/ken-medallion.jpg', 'assets/arena/ken-medallion-bump.jpg'];
+
+function medallion3d(x, y, z, r) {
+  const N = 1024, mk = () => Object.assign(document.createElement('canvas'), { width: N, height: N, fine: true });
+  const out = { map: mk(), bump: mk() };
+  paintMedallion(null, out);   // the ring at once, the Dragonite once its pictures load
+  const map = texOf(out.map), bumpMap = texOf(out.bump);
+  MEDALLION.forEach((src, i) => {
+    const img = new Image();
+    img.onload = () => {
+      try { (i ? out.bump : out.map).getContext('2d').drawImage(img, 0, 0, N, N); } catch { return; }
+      (i ? bumpMap : map).needsUpdate = true;
+    };
+    img.src = src;
+  });
+  const face = std({ map, bumpMap, bumpScale: 3, metalness: 0.25, roughness: 0.4, emissive: '#ffffff', emissiveMap: map, emissiveIntensity: 0.35 });
+  mesh(new THREE.CircleGeometry(r, 64), face, x, y, z + 0.06).castShadow = false;
+  const rim = mesh(new THREE.CylinderGeometry(r * 1.01, r * 1.01, 0.12, 64, 1, true), std({ color: '#a86a18', metalness: 0.5, roughness: 0.4 }), x, y, z);
+  rim.rotation.x = Math.PI / 2;
 }
 
 function dojoWall() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
   dojoBands(f, W);
-  // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags, the medallion
-  const a0 = wx(4.15), a1 = wx(5.85);
+  // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags (the medallion hangs over it, medallion3d())
+  const a0 = wx(4.65), a1 = wx(6.35);   // centred on Ken's tile, 5 (wx() is a tile's left edge)
   rr(a0 - 3, wy(3.9), a1 - a0 + 6, wy(0) - wy(3.9), 1, lin(a0, 0, a1, 0, DOJO.wood));
-  rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#3a2414', '#2a180c']));
-  medallion(f, s, (a0 + a1) / 2, wy(2.05), U * 0.72);
+  rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#9a6236', '#7a4a26']));
+  {   // planked in warm wood, the medallion's backboard
+    const n = 6, w = (a1 - a0) / n, r = seeded(17);
+    for (let i = 0; i < n; i++) {
+      const x = a0 + i * w;
+      g.fillStyle = `rgba(${r() < 0.5 ? '255,220,170' : '60,30,10'},${0.06 + r() * 0.08})`; g.fillRect(x, wy(3.7), w, wy(0.3) - wy(3.7));
+      g.strokeStyle = 'rgba(90,50,20,0.35)'; g.lineWidth = 0.3;
+      for (let k = 0; k < 3; k++) { const gx = x + w * (0.25 + r() * 0.5); g.beginPath(); g.moveTo(gx, wy(3.7)); g.bezierCurveTo(gx + 0.8, wy(2.6), gx - 0.8, wy(1.4), gx + 0.3, wy(0.3)); g.stroke(); }
+      g.fillStyle = '#4a2a14'; g.fillRect(x - 0.3, wy(3.7), 0.6, wy(0.3) - wy(3.7));
+    }
+  }
   g.strokeStyle = '#d8c078'; g.lineWidth = 3.4;
-  g.beginPath(); g.moveTo(a0 - 2, wy(3.55)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.15), a1 + 2, wy(3.55)); g.stroke();
+  g.beginPath(); g.moveTo(a0 - 2, wy(3.8)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.6), a1 + 2, wy(3.8)); g.stroke();
   g.strokeStyle = '#a88a48'; g.lineWidth = 0.6;
-  for (let t = 0; t < 1; t += 0.05) { const x = a0 + (a1 - a0) * t, y = wy(3.55) + Math.sin(t * Math.PI) * (wy(3.15) - wy(3.55)); g.beginPath(); g.moveTo(x - 1.4, y - 1.4); g.lineTo(x + 1.4, y + 1.4); g.stroke(); }
-  for (const t of [0.22, 0.5, 0.78]) {
-    const x = a0 + (a1 - a0) * t, y = wy(3.55) + Math.sin(t * Math.PI) * (wy(3.15) - wy(3.55)) + 1.6;
+  for (let t = 0; t < 1; t += 0.05) { const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)); g.beginPath(); g.moveTo(x - 1.4, y - 1.4); g.lineTo(x + 1.4, y + 1.4); g.stroke(); }
+  for (const t of [0.14, 0.86]) {
+    const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)) + 1.6;
     g.fillStyle = '#ffffff';
     g.beginPath(); g.moveTo(x - 1.5, y); g.lineTo(x + 1.5, y); g.lineTo(x + 0.4, y + 3); g.lineTo(x + 1.6, y + 3); g.lineTo(x + 0.2, y + 6.5); g.lineTo(x - 1.5, y + 3.5); g.lineTo(x - 0.3, y + 3.5); g.closePath(); g.fill();
   }
@@ -510,12 +526,13 @@ async function buildTutor(figs) {
   shell({ floor: dojoFloor(), wall: dojoWall(), side: dojoSide, edge: '#3a2414', cap: '#5a3418', under: '#24140a', bg: '#1a0e08' });
   // Kenmatta on his red cushion before the alcove (his challenge), the scroll (a lesson) and the sandbag (training)
   piece('zabuton', 5, 1, { scale: 1.1 });
+  medallion3d(tileX(5), 2.5, BACK_Z, 0.84);
   B.blocked.add(key(5, 1));
   const scroll = panel(scrollArt(0.12), 0.9, 2.2, tileX(3), 2.15, BACK_Z + 0.03, { live: true });
   scroll.userData.spot = 0;
   B.anchors[0] = new THREE.Vector3(tileX(3), 3.45, BACK_Z + 0.1);
   B.bag = sandbag(7, 2);
-  B.anchors[2] = new THREE.Vector3(tileX(5), 2.5, tileZ(1));
+  B.anchors[2] = new THREE.Vector3(tileX(5), 0.5, tileZ(1) + 0.55);   // at his cushion, the medallion over his head
   B.spots = [{ step: { x: 3, y: 1 } }, { step: { x: 7, y: 3 } }, { step: { x: 5, y: 2 } }];
   piece('scrollrack', 0, 0); piece('bonsai', 1, 0); piece('swordrack', 10, 0); piece('stonelantern', 8, 0, { scale: 0.85 });
   piece('dummy', 10, 2); piece('drum', 0, 3); piece('dumbbells', 10, 5); piece('getarack', 0, 6);
@@ -2322,6 +2339,7 @@ function arrived() {
   const kind = aim;
   aim = null;
   if (kind === null || kind === undefined) return;
+  hushBlip();
   if (kind === 'exit') return opts.onLeave();
   const step = R.spots[kind].step;
   if (walker.tile.x !== step.x || walker.tile.y !== step.y) return;
@@ -2331,12 +2349,31 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
+const canWalk = (e) => !busy && !acting && inRoom() && !document.querySelector('dialog[open]')
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
+
+/** The floor tile under a pointer, or null off the floor. */
+function floorTile(e) {
+  const r = view.getBoundingClientRect(), ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
+  return t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS ? null : t;
+}
+let drags = null;
+
+/** Off to what was tapped: the confirm blip now, as you tap (the user's ask, 2026-10-12), not when you get there. */
+function tapTo(spot) {
+  if (spot === 'exit' && R.noExit) return;
+  playSound('confirm');
+  goTo(spot);
+}
+
 function onTap(e) {
-  if (busy || acting || !inRoom()) return;
-  if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic')) return;
-  if (document.querySelector('dialog[open]')) return;
+  if (drags?.swallowed()) { e.stopPropagation(); e.preventDefault(); return; }
+  if (!canWalk(e)) return;
   const sign = signAt(e.clientX, e.clientY);
-  if (sign !== null) { playSound('select'); return goTo(sign); }
+  if (sign !== null) return tapTo(sign);
   const r = view.getBoundingClientRect();
   const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   const ray = new THREE.Raycaster();
@@ -2347,7 +2384,7 @@ function onTap(e) {
   let o = first;
   while (o && o.userData.spot === undefined && !o.userData.spotAt && !o.userData.who) o = o.parent;
   const spot = o?.userData.spotAt ? o.userData.spotAt(hits[0].point) : o?.userData.spot;   // the well: a toss a half
-  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) { playSound('select'); return goTo(spot); }
+  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) return tapTo(spot);
   if (o?.userData.who) {
     const who = R.who[o.userData.who];
     if (!who.npc) { playCry(who.id); does(who, 'hop'); return; }
@@ -2355,7 +2392,7 @@ function onTap(e) {
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return goTo('exit');   // the doorstep round the mat
+  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   aim = null;
   walker.path = route(walker.tile, t);
@@ -2492,6 +2529,7 @@ function unmount() {
   view?.classList.remove('on');
   view?.remove();
   removeEventListener('click', onTap, true);
+  drags?.off(); drags = null;
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   document.body.classList.remove('ev3d-held');
@@ -2545,6 +2583,7 @@ function room(kind, figs, at = {}) {
     const b = B;
     await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome });
     B = null;
+    await warmShaders(renderer, b.group, camera, scene);
     return b;
   });
   built[id].catch(() => { delete built[id]; });
@@ -2604,6 +2643,8 @@ export async function mountEvent(o) {
   document.getElementById('reward-options').classList.add('c3d');
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = oneWord(label.textContent);
   addEventListener('click', onTap, true);
+  drags?.off();
+  drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
   addEventListener('resize', resize);
   resize();
   last = 0;

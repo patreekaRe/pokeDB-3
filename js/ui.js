@@ -5,6 +5,7 @@
 
 import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './data/cards.js';
 import { ITEM_FIT } from './data/item-fit.js';
+import { cardArt } from './card-art.js';
 import { relicTerms } from './data/relics.js';
 import { getSave } from './storage.js';
 import { playMusic, playSound } from './audio.js';
@@ -21,6 +22,18 @@ export function el(tag, className = '', text = '') {
   if (className) node.className = className;
   if (text) node.textContent = text;
   return node;
+}
+
+/** Keep a line of text on one line, shrinking it only as far as it must to fit: the one exception to the 12px floor,
+    since cut-off or wrapped text reads worse than small text. Measured a frame later, once the node is laid out. */
+export function fitText(node, min = 7) {
+  node.style.whiteSpace = 'nowrap';
+  node.style.fontSize = '';
+  requestAnimationFrame(() => {
+    if (!node.clientWidth) return;
+    let size = parseFloat(getComputedStyle(node).fontSize);
+    while (node.scrollWidth > node.clientWidth && size > min) node.style.fontSize = `${(size -= 0.5)}px`;
+  });
 }
 
 /** A pixel-art ∞ (the pixel font has none), 9x5 pixels, sized by `--ip` in CSS (`.inf-px`). */
@@ -117,6 +130,8 @@ export function confirmDialog(question, yesLabel = 'Yes') {
 
 /* ---------- the card element ---------- */
 
+export const kindOf = (card) => card.power ? 'power' : (card.effects.damage || card.effects.blockDamage) ? 'attack' : 'skill';
+
 /**
  * Build the HTML for one card.
  *   options.stage    evolution stage (moves get stronger, so the text changes)
@@ -124,7 +139,9 @@ export function confirmDialog(question, yesLabel = 'Yes') {
  */
 export function makeCard(card, options = {}) {
   const type = TYPES[card.type];
-  const node = el('div', `card type-${card.type}${card.upgraded ? ' upgraded' : ''}${card.status ? ' status' : ''}`);
+  // Attack / Skill / Power, read at a glance from the art window's shape (cards.css), as in Slay the Spire
+  const kind = card.status ? '' : kindOf(card);
+  const node = el('div', `card type-${card.type}${kind ? ` kind-${kind}` : ''}${card.upgraded ? ' upgraded' : ''}${card.status ? ' status' : ''}`);
   node.dataset.id = card.id;
 
   // options.cost: what it costs right now in battle (Mind Blown, Blue Flare), green when cheaper, red when dearer.
@@ -140,8 +157,8 @@ export function makeCard(card, options = {}) {
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
   const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
   if (longest > 9) name.style.setProperty('--name-fit', (9.4 / longest).toFixed(3));
-  const art = card.sprite ? cardSprite(card) : el('div', 'card-art', card.art);
-  const tag = el('div', 'card-type', `${type.icon} ${type.label}`);
+  const art = cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
+  const tag = el('div', 'card-type', `${type.icon} ${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`);
   const text = el('p', 'card-text');
   text.append(cardLine(card, options.stage || 0));
 

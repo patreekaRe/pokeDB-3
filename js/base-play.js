@@ -113,7 +113,8 @@ set('sink washbasin shower soapvanity brushvanity perfumevanity towelsvanity sal
 set('duckvanity bigduck', { does: 'squeak' });
 set('toilet', { does: 'flush' });
 set('clawtub bubblebath', { does: 'bubbles', foam: true });
-set('fishbowl aquarium', { does: 'fish' });
+set('aquarium', { does: 'fish' });
+set('fishbowl', { does: 'fish', at: 0.78 });
 set('bubblecolumn eggtank helixtank dometank sprouttank crystaltank orbtank', { does: 'bubbles' });
 set('birdbath skyfountain well', { does: 'water', fountain: true });
 
@@ -454,7 +455,26 @@ export function dressPlay(three, model, p) {
       play.screen = { c, g: c.getContext('2d'), tex, mesh: m, show: 0, cut: 0, last: 0 };
     }
   }
-  if (D === 'door') {
+  if (D === 'door' && model.userData.doors) {
+    // a modelled door (js/base-mesh.js's K.door): its own parts swing, the inside picture behind them
+    // (`bare` when what's inside is modelled, behind glass)
+    const r = model.userData.inside;
+    if (!r.bare) {
+      const inside = new THREE.Mesh(new THREE.PlaneGeometry(r.w, r.h), new THREE.MeshBasicMaterial({ map: insidePicture(how.inside, r.w, r.h), toneMapped: false }));
+      inside.position.set(r.x, r.y, r.z);
+      model.add(inside);
+    }
+    play.doors = model.userData.doors.map(({ leaf, hinge: [hx, hz], side }) => {
+      const hinge = new THREE.Group();
+      hinge.position.set(hx, 0, hz);
+      leaf.position.set(-hx, 0, -hz);
+      hinge.add(leaf);
+      hinge.userData.side = side;
+      model.add(hinge);
+      return hinge;
+    });
+    if ((how.inside === 'fridge' || how.inside === 'oven')) play.glowAt = new THREE.Vector3(r.x, r.y, r.z + 0.1);
+  } else if (D === 'door') {
     const b = boxOf(art, (r, g, b2, a) => a > 128);
     if (b) {
       // the door is the front painting itself (its body, not the feet or a top), cut out and hinged on its left edge
@@ -506,8 +526,16 @@ export function dressPlay(three, model, p) {
   model.traverse(o => { if (o.userData.spins) play.spinner = o; });
   if (D === 'light') { play.on = true; play.mats = []; model.traverse(o => { if (o.isMesh) for (const m of [o.material].flat()) if (m.userData.lamp || m.emissiveMap || m.userData.kind === 'glow') play.mats.push(m); }); }
   if (D === 'fire' || D === 'brew') play.flame = glowRect(p, art) || { x: 0, y: play.top * (D === 'brew' ? 1 : 0.4), w: p.w * 0.4, h: 0.2 };
-  if (D === 'fish') play.fishAt = glowRect(p, art) || { x: 0, y: play.top * 0.55, w: p.w * 0.5, h: play.top * 0.4 };
+  if (D === 'fish') play.fishAt = glowRect(p, art) || { x: 0, y: play.top * (how.at || 0.55), w: p.w * 0.5, h: play.top * 0.4 };
   return play;
+}
+
+/** What a crossing's or signal's blink lights: a modelled one's lamps, else (a carved one) every part that can glow. */
+function blinkers(model) {
+  const all = [];
+  model.traverse(x => { if (x.isMesh && x.material.emissive) all.push(x.material); });
+  const lamps = all.filter(m => m.userData.lamp);
+  return lamps.length ? lamps : all;
 }
 
 /* ---------- particles ---------- */
@@ -653,7 +681,7 @@ export function tapPlay(play) {
     case 'chime': for (let i = 0; i < 3; i++) setTimeout(() => { playSound('fx-ding'); }, i * 700); go(play, 'swing', 600); return {};
     case 'treasure': playSound('item-get'); go(play, 'hop', 500); for (let i = 0; i < 10; i++) emit(play, i % 2 ? 'coin' : 'star', topOf(play), { vel: [rand(-0.5, 0.5), 1.1, rand(0, 0.4)], size: 0.1, life: 1.3, fall: 2.2, add: false }); return { cheer: true };
     case 'look': playSound('fx-whoosh'); go(play, 'spin', 1400, { turns: 0.5 }); setTimeout(() => go(play, 'spin', 1400, { turns: 0.5 }), 1500); return {};
-    case 'blink': play.on = !play.on; playSound(play.on ? 'fx-ring' : 'fx-click'); if (!play.on) model0(play).traverse(x => { if (x.isMesh && x.material.emissive) x.material.emissiveIntensity = 0; }); return {};
+    case 'blink': play.on = !play.on; playSound(play.on ? 'fx-ring' : 'fx-click'); if (!play.on) for (const m of blinkers(model0(play))) m.emissiveIntensity = 0; return {};
     case 'wobble': playSound('fx-tick'); go(play, 'wobble', 1400); return {};
     case 'doll': { const id = play.p.doll[0]; playCry(id); playSound('fx-squeak'); go(play, 'squash', 450); emit(play, 'heart', topOf(play), { vel: [0, 0.5, 0], size: 0.14, life: 1.2, add: false }); return { cheer: true }; }
     default: playSound('select'); go(play, 'squash', 300); return {};
@@ -762,7 +790,7 @@ export function tickPlay(play, now, dt) {
   if (D === 'steam' && chance(0.6)) emit(play, 'steam', topOf(play), { vel: [0, 0.3, 0], size: 0.12, life: 1.8, grow: 1.4, add: false });
   if (D === 'light' && how.stars && play.on && chance(3)) emit(play, 'star', topOf(play), { vel: [rand(-0.6, 0.6), rand(0.4, 1), rand(-0.6, 0.6)], spread: 0.05, size: 0.07, life: 3, grow: 0 });
   if (D === 'light' && how.flicker && play.on) for (const m of play.mats) m.emissiveIntensity = (m.userData.was ?? 1) * (0.75 + Math.random() * 0.25);
-  if (D === 'blink' && play.on) model.traverse(x => { if (x.isMesh && x.material.emissive) { x.material.emissive.set('#ff3030'); x.material.emissiveIntensity = Math.floor(now / 400) % 2 ? 0.8 : 0; } });
+  if (D === 'blink' && play.on) for (const m of blinkers(model)) { m.emissive.set('#ff3030'); m.emissiveIntensity = Math.floor(now / 400) % 2 ? 0.8 : 0; }
   if (D === 'zap' && chance(1.2)) emit(play, 'zap', topOf(play, 0.1), { vel: [0, 0, 0], spread: 0.12, size: 0.25, life: 0.15, grow: 0 });
   if (how.tick && play.on) { const beat = Math.floor(now / 500); if (beat !== play.beat) { play.beat = beat; playSound('fx-tick'); go(play, 'wobble', 480); } }
   if (play.glowAt && play.on && chance(1.5)) emit(play, how.inside === 'oven' ? 'spark' : 'snow', play.glowAt, { vel: [0, 0.1, 0.2], spread: 0.1, size: 0.08, life: 1, grow: 0.5 });

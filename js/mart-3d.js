@@ -6,8 +6,9 @@
    under them. A tap on a ware walks your Pokémon up to it and presses that choice; the doormat walks it out. */
 
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose } from './hd2d.js';
+import { playSound, playCry, hushBlip } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -38,7 +39,7 @@ let THREE, renderer, scene, camera, post, view;
 let room, wares = null, mon, clerk, plays = [], blocked = new Set(), mat = null, signEl = null, pcAt = null, shine = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let opts = null, aim = null, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, leftAt = 0, runId = null;
-let look = 0, drag = null;
+let look = 0;
 let flying = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -783,6 +784,7 @@ function arrived() {
   const kind = aim;
   aim = null;
   if (!kind) return;
+  hushBlip();
   if (kind === 'exit') return opts.onLeave();
   walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   if (kind === 'clerk') { playCry('kecleon'); clerk.hopUntil = performance.now() + 600; return opts.onClerk?.(); }
@@ -794,33 +796,30 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
-/** A sideways drag looks along the shelves (a phone shows only part of the room); walking brings the camera back. */
-function onDown(e) {
-  if (!alive() || !shot || e.target.closest('button, a, input, dialog, #room-bar, .room-hinge, .reward-bottom, .reward-focus')) return;
-  drag = { x: e.clientX, look, moved: false, id: e.pointerId };
-}
+/* A drag walks (the user's ask, 2026-10-12; it used to look along the shelves, but the camera follows your partner). */
+const canWalk = (e) => alive() && !flying.length && !document.querySelector('dialog[open], .reward-focus')
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .reward-focus');
 
-function onMove(e) {
-  if (!drag || e.pointerId !== drag.id) return;
-  const dx = e.clientX - drag.x;
-  if (Math.abs(dx) > 10) drag.moved = true;
-  if (drag.moved) look = drag.look - dx * shot.half * 2 / viewW;
+/** The floor tile under a pointer, or null off the floor. */
+function floorTile(e) {
+  const r = view.getBoundingClientRect(), ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
+  return t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS ? null : t;
 }
+let drags = null;
 
-function onUp(e) {
-  if (!drag || e.pointerId !== drag.id) return;
-  if (drag.moved) dragged = performance.now();
-  drag = null;
+/** Off to what was tapped, the confirm blip now rather than on arrival (the user's ask, 2026-10-12). */
+function tapTo(spot) {
+  playSound('confirm');
+  goTo(spot);
 }
-
-let dragged = 0;
 
 function onTap(e) {
-  if (performance.now() - dragged < 300) { e.stopPropagation(); e.preventDefault(); return; }
-  if (!alive() || flying.length) return;
-  if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .reward-focus')) return;
-  if (document.querySelector('dialog[open], .reward-focus')) return;
-  if (signEl && hitSign(e.clientX, e.clientY)) { playSound('select'); return goTo(wares.list.findIndex(w => w.kind === 'pc') >= 0 ? `ware:${wares.list.findIndex(w => w.kind === 'pc')}` : 'clerk'); }
+  if (drags?.swallowed()) { e.stopPropagation(); e.preventDefault(); return; }
+  if (!canWalk(e)) return;
+  if (signEl && hitSign(e.clientX, e.clientY)) return tapTo(wares.list.findIndex(w => w.kind === 'pc') >= 0 ? `ware:${wares.list.findIndex(w => w.kind === 'pc')}` : 'clerk');
   const r = view.getBoundingClientRect();
   const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   const ray = new THREE.Raycaster();
@@ -831,12 +830,12 @@ function onTap(e) {
   let o = first;
   while (o && !o.userData.spot) o = o.parent;
   const spot = o?.userData.spot;
-  if (spot === 'pc') { playSound('select'); return goTo(`ware:${wares.list.findIndex(w => w.kind === 'pc')}`); }
-  if (spot) { playSound('select'); return goTo(spot); }
+  if (spot === 'pc') return tapTo(`ware:${wares.list.findIndex(w => w.kind === 'pc')}`);
+  if (spot) return tapTo(spot);
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return goTo('exit');
+  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   aim = null;
   walker.path = route(walker.tile, t);
@@ -882,7 +881,7 @@ function fitShot() {
 function placeCamera(dt) {
   if (!shot) return;
   const edge = COLS / 2 + 0.4, half = shot.half;
-  if (walker.path.length && !drag) look = 0;
+  if (walker.path.length) look = 0;
   const want = half >= edge ? 0 : Math.max(-edge + half, Math.min(edge - half, walker.x + look));
   if (half < edge) look = want - walker.x;
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
@@ -972,10 +971,7 @@ function unmount() {
   view?.remove();
   signEl?.remove();
   removeEventListener('click', onTap, true);
-  removeEventListener('pointerdown', onDown, true);
-  removeEventListener('pointermove', onMove, true);
-  removeEventListener('pointerup', onUp, true);
-  removeEventListener('pointercancel', onUp, true);
+  drags?.off(); drags = null;
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('m3d');
   leftAt = performance.now();
@@ -1021,6 +1017,7 @@ export function warmMart() {
     wares = { group: new THREE.Group(), list: [] };
     scene.add(wares.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
+    await warmShaders(renderer, scene, camera);
   })();
   warming.catch(() => { warming = null; });
   return warming;
@@ -1065,10 +1062,8 @@ export async function mountMart(o) {
   document.body.append(view);
   document.getElementById('reward-options').classList.add('m3d');
   addEventListener('click', onTap, true);
-  addEventListener('pointerdown', onDown, true);
-  addEventListener('pointermove', onMove, true);
-  addEventListener('pointerup', onUp, true);
-  addEventListener('pointercancel', onUp, true);
+  drags?.off();
+  drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; look = 0; walker.path = reroute(walker, route, t); } });
   addEventListener('resize', resize);
   resize();
   last = 0;

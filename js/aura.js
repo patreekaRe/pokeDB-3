@@ -148,7 +148,7 @@ export function setAura(img, level) {
     if (!w) return;
     const grab = document.createElement('canvas');
     grab.width = w; grab.height = h;
-    const g = grab.getContext('2d');
+    const g = grab.getContext('2d', { willReadFrequently: true });
     g.drawImage(img, 0, 0);
     const set = makeFrames(g.getImageData(0, 0, w, h), level);
     const canvas = document.createElement('canvas');

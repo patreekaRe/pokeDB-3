@@ -91,3 +91,34 @@ test('firestore.rules keeps the same bounds', () => {
   for (const key of ENTRY_KEYS) assert.ok(rules.includes(`'${key}'`), key);
   assert.match(rules, /allow update, delete: if false/);
 });
+
+import { arcadeEntry, checkArcadeEntry, rankArcade, arcadeId, arcadeValue, ARCADE_GAMES, ARCADE_KEYS } from '../js/data/leaderboard.js';
+
+test('an arcade best becomes an entry the rules take, and the rules list every ranked game', () => {
+  const week = '2026-10-12';
+  const e = arcadeEntry({ week, game: 'runner', score: 1234.6, starter: 'ponyta' }, 'u1', ' Ash ');
+  assert.deepEqual(e, { week, game: 'runner', uid: 'u1', name: 'Ash', starter: 'ponyta', score: 1235 });
+  assert.equal(checkArcadeEntry(e, week), null);
+  assert.equal(checkArcadeEntry({ ...e, game: 'pong' }, week), 'bad game');
+  assert.equal(checkArcadeEntry({ ...e, score: 0 }, week), 'bad score');
+  assert.equal(checkArcadeEntry(e, '2026-10-26'), 'week too far from now');
+  assert.ok(Object.keys(e).every(k => ARCADE_KEYS.includes(k)));
+  assert.equal(arcadeId(week, 'runner', 'u1'), '2026-10-12_runner_u1');
+  assert.equal(arcadeValue(e), `${(1235).toLocaleString()} m`);
+  const rules = readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8');
+  const listed = rules.match(/d\.game in \[([^\]]*)\]/)[1].match(/'([^']+)'/g).map(s => s.slice(1, -1));
+  assert.deepEqual(listed, ARCADE_GAMES.map(g => g.id));
+});
+
+test('arcade boards rank each game by score, ties to the earlier post', () => {
+  const at = (n) => n;
+  const boards = rankArcade([
+    { game: 'flap', uid: 'a', score: 10, at: at(2) }, { game: 'flap', uid: 'b', score: 30, at: at(3) },
+    { game: 'flap', uid: 'c', score: 10, at: at(1) }, { game: 'snake', uid: 'a', score: 5, at: at(1) },
+  ], 'a');
+  const flap = boards.find(b => b.id === 'flap');
+  assert.deepEqual(flap.rows.map(r => r.entry.uid), ['b', 'c', 'a']);
+  assert.ok(flap.rows[2].mine);
+  assert.equal(boards.find(b => b.id === 'runner').total, 0);
+  assert.equal(boards.length, ARCADE_GAMES.length);
+});

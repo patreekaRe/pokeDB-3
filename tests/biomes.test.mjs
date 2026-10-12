@@ -146,10 +146,10 @@ test('the Thornwood Jungle: mostly Grass, one Normal wild, at the Wastes\' numbe
   assert.equal(biomeAt(['clearing', 'ruins', 'thornwood'], 2).id, 'thornwood');
 });
 
-test('the other roads open after two won runs', () => {
+test('the other roads open after one won run', () => {
   assert.equal(roadsOpen(undefined), false);
-  assert.equal(roadsOpen({ runsWon: 1 }), false);
-  assert.equal(roadsOpen({ runsWon: 2 }), true);
+  assert.equal(roadsOpen({ runsWon: 0 }), false);
+  assert.equal(roadsOpen({ runsWon: 1 }), true);
 });
 
 test('the Sunscorch Savanna is the pool\'s Fire road: 6 Fire wilds, the rest Water / Grass / pure Normal', () => {

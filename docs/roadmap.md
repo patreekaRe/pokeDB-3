@@ -9,6 +9,119 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
+item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
+(Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
+`js/card-art.js` (the starting decks) plus one file a type, `js/card-art-fire.js` / `-water` / `-grass` / `-psychic` /
+`-neutral`, on the shared brushes in `js/card-art-kit.js` (flame, blaze, puffs, fist, boot, sun, gear, thermo...). Keyed by
+base id, so upgrades follow; a Safari `sig-*` card sharing a pool card's name (Fire Punch, Aqua Ring...) borrows its
+picture (`namesake()`, 93 of 514). `tools/cards.html` shows every one (`?ids=`), `?pixelcards` the old art. **Next**: the
+other ~420 `sig-*` cards still use their PokéSprite item (batches when wanted); **relics and items**: the user wants to
+see a smooth test of them later (a handful drawn the same way, then judged) before any batch. Branch
+`claude/dreamy-galileo-0o4aqc`, pushed to `main` too.
+
+**Poké Mall hall: fountains, palms, passers-by** (the user's asks, 2026-10-12, on `main`): the one big fountain was
+in the way of the Game Corner's carpet, so it's two smaller ones (`FOUNTAINS` / `FOUNTAIN_SCALE` in `js/mall-hall.js`,
+a ring painted under each by `floorArt()` in `js/mall-3d.js`) either side of a carpet running straight from the doors;
+the palms keep to the sides (beside Furniture and Coming soon, the front corners). The hall has Pokémon now: the Game
+Corner's crowd code with options (`makeCrowd()` in `js/corner-crowd.js`: `cast`, `stations`, `wants`, `castHours`...),
+`hallCrowd()` in `js/mall-3d.js`, 4 at once (2 standing at `HALL_STANDS`, 2 wandering), one swapped every 40-80 s,
+a cast of 6 from `SHOPPERS` (`js/data/mall-crowd.js`, 18) dealt anew every 8 UTC hours. Next: the user playtests (how
+many, how chatty, the fountains' size); move to the archive once they're happy.
+
+**Furniture modelled like the arcade cabinets** (the user's ask, 2026-10-12: "I want my furniture as clean as these
+cabinets"; branch `claude/arcade-cabinets-design-yh10el`). The pieces' paintings are front views painted the same all
+round, so carved they wore the front on every side and came out oval or hollow behind. Done: the batch files
+`js/base-models-a.js` to `-k.js` (one per run of shelves; `-f.js`'s head says how they work), the pilot (milk cooler,
+table tennis table, potting bench), and the worst first (the user's pick): `frontbox` in `js/base-models-kit.js`, a real box
+the painting's outline, its picture on the front only, sides / back / top a colour read off its own edge (`top` cuts the
+box lower and stands what's above as a two-sided cut-out), on 64 boxy kinds (fridge, vending, shelves, cabinets, crates,
+the store's arcade cabinets...: the `frontbox` lines in each batch's `SHAPES`), and the stove and air hockey table built
+from parts. Done the same day (the user's ask: no paper cut-outs): what stands on every `top:` box is modelled (`TOPS` in `js/base-models-kit.js`, keyed by kind or a frontbox's `on:`; a new topped frontbox needs a `TOPS` line). Batch b (Plants, Kitchen, Garden) done 2026-10-12: 40 kinds built from parts in `js/base-models-b.js` (fern, cactus, tulips, sunflower, rose bush, bonsai, bamboo, succulent, mushroom pot, tall cactus, potted pine, the 8 Berry bushes from one builder (`BERRY_BUSH`), topiary, apple tree; tea trolley; watering can, wheelbarrow, gnome, birdbath, birdhouse, garden lamp, picket fence, rose arch, hedge, sundial, stone lantern, scarecrow, garden swing, hammock, planter, beehive, wishing well, hose reel), its pots after `potAt()` (`potOf()`), leaves as round clumps (`bush()`), the swing and hammock now seats; left as they were: the flat beds, patches, paths and the wall pieces. Batch c (Pokémon Center, Gym, Beach) done 2026-10-12: 34 kinds built from parts in `js/base-models-c.js` (trade machine, incubator, nurse's cart, candy jar, egg basket, scale; dummy, punching bag, dumbbell rack, weight bench, treadmill, exercise bike, kettlebells, flag, cones, beam, tires, jump box, bleachers, hurdle, pull-up bar, referee stand; umbrella, sandcastle, surfboard, swim ring, tiki torch, lifeguard chair, seashells, bottle, sand bucket, beach hut, driftwood, Lapras float), the weight bench, bleachers, referee stand and lifeguard chair now seats; left as they were: the Gym statue (a cut-out statue on its plinth), the plants and the Poké Balls / beach ball (true spheres). Batch a (Things, Classics, Seats) done 2026-10-12: 32 kinds built from parts in `js/base-models-a.js` (trophy, fishbowl, candle, lava lamp, hourglass, music box, telescope, record player, radio, computer, game console, fan, drum, guitar, trash bin, umbrella stand, coat rack, paper lantern, birdcage, cauldron, easel, pillar, arcade machine, jukebox, snowman, standing mirror, gong, toy box, book pile, tent, slide, healing machine), the Poké Ball, rod and tube helpers moved into `js/base-models-kit.js`, the fishbowl's swimming fish raised into the bowl (`at` in its `PLAY` line); left as they were: the snow globe, crystal ball and Poké Ball statue (true spheres) and the ball cushion. Batch k (Station, Sky Palace) done 2026-10-12: 32 kinds built from parts in `js/base-models-k.js` (the six train models on their display, ticket gate, luggage trolley, suitcase stack, railway signal, level crossing, water tower, station lamp, buffer stop, coal wagon, handcar; the six weather orbs (one `skyorb` builder, the sign painted front and back), rainbow arch, sky fountain, feather lamp, floating island, cloud column, airship, hot air balloon, sky bell, winged statue, cloud stairs), a shared `cloud()`; a blinking crossing or signal now flashes only its lamps (`blinkers()` in `js/base-play.js`); left as they were: the rugs and wall pieces. Batch e (Café, School, Winter) done 2026-10-12: 35 kinds built from parts in `js/base-models-e.js` (A-board, coffee sacks, bean grinder, ice cream cart, parasol table, bread oven (an iron door of its own for its `door` play, `K.door`), bread basket, milk churn, crêpe stand; abacus, microscope, fossil, giant crayons, library cart, school bag, xylophone, overhead projector; the star, heart, moon and flower ice sculptures (`icesculpt`), snowy fir, sled, ski rack, snowdrift, igloo, cocoa stand, wood stove, snowballs, skates, snow shovel, log pile, sleigh, ice lantern, snow fort), the sled and sleigh now seats; left as they were: the Poké Ball ice sculpture (a true sphere), the booth, chairs, tables and desks (already shaped), the rugs, cushion and wall pieces. Batch d (Spooky, Bathroom, Bedroom, Office) done 2026-10-12: 38 kinds built from parts in `js/base-models-d.js` (the three gravestones from one `grave` builder (the square one no longer a frontbox), jack-o'-lantern (a ribbed pumpkin, its face lit; no longer a true sphere), candelabra, coffin (its lid a `K.door`, so the `door` play swings it open on the ghost), black cat statue, broom, witch hat stand, spellbook stand, crooked lamp post, iron fence, dead tree, Litwick candles, pumpkin pile, ragged doll, sheet ghost; clawfoot tub (a roll-top swept round a rounded rectangle, `swept()`), bubble bath, shower, laundry hamper, toilet roll stand, towel ladder, hot tub (the flat `jacuzzi`, now a real tub), giant rubber duck (`duck()`, shared with the bubble bath's); bunk bed, crib, jewellery box, alarm clock, slippers, star projector, moon nightlight, laundry pile, folding screen (its panels wear the painting's own, `crop()`); mail trolley, paper boxes, printer stand, briefcase); left as they were: the frontboxes (witch's shelf, organ, mini fridge, copier, server rack, safe, shredder, cubicle), the already-shaped seats, tables, desks, beds and drawers, the rugs, cushions and wall pieces. Batch g (Festival, Lab, Castle) done 2026-10-12: 47 kinds built from parts in `js/base-models-g.js` (the six stalls from one `stall` builder, counter, posts and a striped awning with a scalloped edge, each its goods in `STALL_GOODS`; carousel horse, Ferris wheel, balloon bunch, high striker, ring toss, ticket booth, firework rack, maypole, stage, hay bale (now a seat), hook-a-duck (the flat pool, now a real one), teacup ride (now a seat); the six specimen tanks from one `tank` builder (its liquid see-through, `tint()`, what's inside in `TANK_HOLDS`), robot, robot arm, hologram projector, Tesla coil, cryo pod, test tube rack, centrifuge, DNA model, satellite dish, rocket, lab coat stand; suit of armour, treasure hoard, weapon rack, cannon, catapult, stone column, crown on a cushion, spinning wheel, iron candle stand, dragon egg nest, battlement wall, archery target); left as they were: the rugs, wall pieces and the starter and banquet tables (already shaped). A lathe's profile must run bottom to top or it renders inside out (the ghost did). Branch `claude/arcade-cabinets-design-yh10el`, pushed to `main`. **Next: ask the user before starting the next batch** (their rule), and which one: f (its pilot and boxes done), h, i or j (each file's head names its shelves). The rest (~400 non-boxy pieces:
+carts, machines, booths, desks on legs, statues) one batch file a session, hand-built like the stove. Rendering
+works in the cloud: install `three@0.160.0` with npm in the scratchpad and route the CDN URL to it in Playwright, then
+`tools/models.html?ids=a,b` shows four sides each.
+
+**Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
+went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
+Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on
+`js/arcade-kit.js` (the shared cabinet window, Score / Best as record `arc-<id>`), its machine painted in
+`js/base-furniture-rooms5.js` after `cabinet()`. None was playtested by the user yet, and the tap in the 3D base was never
+tested (the cloud has no Three.js). Each session takes ONE game from a first pass to finished: the user plays it first
+and says what's off, then feel (controls on a phone, speed, difficulty curve), art (sprites, backgrounds, effects, sounds),
+a How to play that matches, a best-score moment, the machine's painting and 3D look in the base, and a patch-notes line.
+Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md. Finish the home arcade's
+<game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
+headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
+`B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
+still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`),
+and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
+both raised like the screens; the right wall's top four slot machines taken out; the cabinets' flicker fixed by
+polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's phone). The claw and skee-ball aren't
+in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
+from Psyduck Pong / Spearow Flap / Gastly Maze, Spearow made Pidgey); a first pass each, played headless. Twelve now,
+in this order (the user may reorder):
+**Swipe cabinets** (2026-10-12, same branch and `main`, the user's ask): Poliwag Crossing and Ekans Trail have no play
+buttons (`swipe: true`, `swipeDeck()` in `js/arcade-kit.js`): a faint "swipe to play" with a gliding fingertip, and
+START / EXIT as two small Game Boy pills side by side (`.ar-pill`). Next: the user playtests; say if other cabinets want it.
+
+**Arcade marquees and the mall's frame rate** (2026-10-12, the user's ask; branch `claude/dreamy-galileo-0o4aqc`, on
+`main` too): every cabinet's head is a lit marquee (`marquee()` / `MARQUEE` in `js/arcade-kit.js`: the game's Pokémon GIF
+bobbing on a turning sunburst, two sets of chasing bulbs, a ribbon line over the name in gold, fitted to one line by
+`fitText()`; `.arm-*` in `css/corner-games.css`, composited animations only), and the start screen's name shrinks to fit
+(`banner(..., maxW)`). Frame rate: the mall's canvas at the scene's own size, never 2x (like the base), a weak device steps
+down shadows then resolution (`keepUp()` / `stepDown()` in `js/mall-3d.js`, `pokedb.mall3d.low`), a place's shaders,
+textures and first frame done under the curtain (`warm()`), the hall's window pieces painted after it opens; furniture
+painted on CPU-backed canvases (`willReadFrequently` in `p.art()` and `finish()`: `finish()`'s pixel readback from a GPU
+canvas stalled 40-95 ms a piece, now 2-5; the Furniture store opened ~5 s faster headless), the Plinko boards at 20 fps
+with no mipmaps; the kit's `stamp()` paints a game's still parts once (Breakout 325 fills a frame to 31, Bowling 97 to 4,
+Ekans and the Maze too). Measured headless only (SwiftShader: no phone GPU). Next: the user's phone playtest.
+
+**Controls and frame rate pass** (patch 1.10, 2026-10-12, branch `claude/arcade-cabinets-design-yh10el`, on `main` too):
+a cabinet's `stick: false` drops the joystick (Berry, Ditto, Stacker, Memory, Puzzle), `keys: { left, right }` puts big
+held arrow buttons under each thumb instead (Crossing and Maze ◀ ▶ / ▲ ▼, Pong ◀ / ▶), Invaders' FIRE is a deck button;
+Ponyta falls faster (`FALL`), Pidgey's trees lost their leaf clumps. Frame rate: sprites stamped from a cached first frame
+(`still()`), the canvas at most 1.5x, the cabinet's CSS lights still while playing (`.playing`), Crossing's backdrop and
+Puzzle's panels cached as bitmaps (4x CPU throttle headless: Pong 36→55 fps, Crossing 27→56, Puzzle 15→45). Volleyball
+keeps its joystick for now (the user's call). Waiting on the user's phone playtest of these.
+1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
+2. Pidgey Flap (`js/arcade-flap.js`, `flapcabinet`)
+3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)
+4. Ponyta Dash (`js/arcade-runner.js`, `dashcabinet`)
+5. Voltorb Memory (`js/arcade-memory.js`, `memorycabinet`)
+6. Slowpoke's Claw Machine (`js/arcade-claw.js`, `slowpokeclaw`)
+7. Poké Ball Skee-Ball (`js/arcade-skeeball.js`, `pokeskeeball`)
+8. Pokémon Pinball (`js/arcade-pinball.js`, `pokepinball`)
+9. Pikachu Volleyball (`js/arcade-volley.js`, `volleycabinet`)
+10. Unown Word Search (`js/arcade-wordsearch.js`, `unowncabinet`)
+11. Psyduck Pong (`js/arcade-pong.js`, `pongcabinet`)
+12. Gastly Maze (`js/arcade-maze.js`, `gastlymaze`)
+13. Poliwag Crossing (`js/arcade-crossing.js`, `crossingcabinet`)
+14. Ekans Trail (`js/arcade-snake.js`, `ekanscabinet`)
+15. Beedrill Invaders (`js/arcade-invaders.js`, `invaderscabinet`)
+16. Electrode Breakout (`js/arcade-breakout.js`, `breakoutcabinet`)
+17. Jigglypuff's Sing-Along (`js/arcade-rhythm.js`, `singalongcabinet`)
+18. Where's Ditto? (`js/arcade-ditto.js`, `dittocabinet`)
+19. Geodude Bowling (`js/arcade-bowling.js`, `bowlingcabinet`)
+20. Poké Puzzle (`js/arcade-puzzle.js`, `pokepuzzle`)
+13-20 were the user's yes to eight proposed ideas (2026-10-12): a first pass each, built and played headless in one
+session, their cabinets on `B.arcade`, released as patch 1.8 "Arcade Night". All twenty stand in the Game Corner (the user's layout: eight each side of the counter,
+Whac-a-Diglett on the left wall, Pinball on the right, the slot machines five a side as the base's 3D model); spares if more are wanted: Lunatone Rocks (Asteroids). Pachirisu Berry Catch was built 2026-10-12 (patch 1.9, `js/arcade-berry.js`) in Sing-Along's place; Sing-Along and Unown Word Search went into `RETIRED_PRIZES`. Squirtle Bubble Shooter (`js/arcade-bubble.js`) took Word Search's place the same day (the user's pick); its first playtest polish the same day (branch `claude/arcade-cabinets-design-yh10el`): a SHOOT key under the screen (`pad` in the kit; a tap only aims), an arrow for the aim (the dotted path only the first 3 shots), "Tap to swap" by the bubbles, new rows sliding down, bubbles drawn from cached sprites for the frame rate; Berry Catch's frame rate the same day (its sky, hills and tree painted once, `scenery()`, the Starf glow a painted `halo()` not shadowBlur) and, for every cabinet, the 3D base or Game Corner behind it stops drawing while one is up (`cabinetUp()` in `js/home-arcade.js`, read by `frame()` in `js/base-3d.js` / `js/mall-3d.js`; untested in the cloud, no Three.js); then (the user's ask, same day) every cabinet an arcade machine (`.ar-cab` in `css/corner-games.css`: a lit `.ar-marquee`, the screen in `.ar-bezel` with LED scores, `.ar-deck`: `joystick()` in `js/arcade-kit.js`, 8-way, sent to the game as the arrow keys, START / EXIT, the `pad` keys as round `.ar-btn`s); Bubble Shooter aims by the stick only (a tap only swaps), its launcher a dial, beam and chevrons, an underwater cave (`seabed()`); Volleyball a JUMP button. Next: the user says which other games need buttons (a `pad` line and the method it names); and every cabinet full screen (`.cg-overlay.ar`, `size()` fits the stage), no game closing on a tap outside (`openPanel()`'s `outside`, only the showcase and the guide keep it). Bubble Shooter's second playtest (2026-10-12, branch `claude/new-player-onboarding-ecwtke`): ◀ ▶ buttons in place of the joystick (`keys`; the stick leaning low sent "down", which swapped the bubbles by itself), the launcher kept drawn while a shot flies and the swap mark drawn as a path (both flickered on the phone), and the kit repaints a resized canvas at once (`paint()` in `js/arcade-kit.js`). Then (same day, same branch) its bubbles repainted after Puzzle Bobble's (`bubbleSprite()`: a dark outline, a glossy body, a type glyph embossed inside, `glyph()`, a bold shine and a rim of light), and the mall's tilt-shift blur off everywhere, the hall and shops too (`setPlace()` in `js/mall-3d.js`). Next: the user plays it again and says if the flicker is gone and how the bubbles look; ideas left over if more are wanted: Scyther Slice (Fruit Ninja), Spoink Bounce (Doodle Jump), Ampharos Lighthouse (Missile Command).
+Polish pass across them (2026-10-12, the user's asks): every cabinet's How to play is an attract screen, the game's own
+preview running on a little CRT over numbered step tiles (`helpScreen()` in `js/arcade-kit.js`, `.ar-help` in
+`css/corner-games.css`), the head's Free play an LED pill (`.ar-free`); Poké Puzzle a round SWAP key over a smaller RAISE
+(`SWAP` in `js/arcade-puzzle.js`), Ponyta Dash a smaller tap hop (`JUMP` 440), Gastly Maze side tunnels (`T` in `MAZE`,
+`wrap()`). Weekly arcade leaderboards for those six (the user's yes, same day): `arcadeBoard/<week>_<game>_<uid>`, each player's best
+of the week (the Sky Pillar's Monday), raised by any higher score (`ARCADE_GAMES` / `rankArcade()` in
+`js/data/leaderboard.js`, `postArcadeScore()` / `KINDS.arcade` in `js/leaderboard.js`, posted from the kit's game over, a 🏆
+key in those cabinets' heads). **Waiting on the user: paste the new `firestore.rules` into the Firebase console**, or
+nothing posts. Not yet tried against the real Firestore (blocked in the cloud session).
+Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
+The six casino games got real 3D models too (2026-10-12: `B.slot`, `B.cardtable`, `B.plinko`, Voltorb Flip and the quiz
+on `B.arcade`), Meowth's counter sells only the 18 games (the rest `RETIRED_PRIZES`, kept by buyers), each a turning 3D
+model on its screen, and the GAME CORNER sign was narrowed to clear the Pokémon screen.
+
+
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):
 - ~~D2~~ and ~~E~~ done 2026-10-07 (see the archive). Staying cream on purpose (the user's call): battle's nameplates,
   Ability banner, intent bubbles and log, tap tips, keyword boxes, the cards' own text windows, the scenes' text boxes.
@@ -192,12 +305,44 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      on `secret-base`, Run in: LOCAL (Desktop app):
      a) ~~Furniture store~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-furniture.js`, the west front.
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
-     c) **Prize games** in the Game Corner: slots, roulette and blackjack for PokéCoins, seeded by `js/rng.js`, a house
-        edge (~5-10%) and a daily stake cap so coins stay earned by playing runs; wins can also be **prize tickets** for a
-        prize counter of exclusives (dolls, wallpapers, a shiny-only trinket), Gen 1's Game Corner. Odds tested in `tests/`.
-     d) **The east front**: Claude's pick is a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on
-        its wall), so each shop is one thing coins buy: home, runs, the Safari. Waiting on the user's pick (balls could
-        also stay in the Game Corner, and the east front be a cosmetics Boutique instead).
+     c) **The Game Corner revamp** (branch `game-corner-revamp`, merged into `main` and live since 2026-10-12, the user's call; patch 1.6 "Game Corner"). Built
+        2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
+        detail. Where it stands (2026-10-12, see the branch's last commit):
+        - **Games (the user's keepers):** Voltorb Flip, Who's That Pokémon?, Slots (tap-to-stop, jackpot, Pikachu
+          bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low (their floor tables the base's 3D card tables since 2026-10-12, `B.cardtable` at 1.3x, `CARD_K` in `js/mall-corner.js`; the user's ask). **No betting since 2026-10-12** (the user's
+          call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
+          an average day ~250 (`tests/corner.test.mjs`); raised later that day (the user's pick) to 10 slots, 10 Plinko, 5 each of Blackjack / High-Low / Voltorb Flip and a 7-question quiz, ~380 a day. Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
+          Gen 1's prize dolls), records under every game and 8 Game Corner badges. Prize tickets for plays past the paying
+          ones came and went the same day (the user's call: Plinko could be spammed): extra plays are for fun, the counter
+          sells for PokéCoins (180-450, every game a prize: Blackjack, High-Low and quiz pieces added; the counter a showcase screen; every game prize playable at home, `js/home-arcade.js`, the quiz endless with a streak). Old tickets cashed in at 3 coins; the Chips meter and every "chips" line are gone,
+          and Plinko's coins show only once the ball lands (branch `claude/dreamy-galileo-0o4aqc`, pushed to `main`). Then the home arcade (patch 1.7, below). A daily High-Low leaderboard came and went the same day: no leaderboards
+          in the Game Corner (the user's call). Next is their playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
+          Rocket Blast-Off. Every game has a How to play card (the "?").
+        - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
+          the wall behind it earns a scratch card.
+        - **The room:** casino carpet; back wall left two live Plinko boards spaced evenly up to the counter, right three
+          equal mounted screens clear of the counter (Pokémon, Shinies, Perks; no Poké Balls; a Pokémon or shiny you don't own is a silhouette and a perk's levels are pips, "Level 1 of 3 owned", Buy Level 2, 2026-10-12; their sprites load through a
+          page canvas, as iPhone drew them blank into an OffscreenCanvas); no tilt-shift blur at all; four tables (touchscreen Voltorb / Who's That behind, Blackjack /
+          High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
+        - **2026-10-12 feedback pass:** the arcade leaderboard over Meowth's text made bigger (`boardScreen()`, the board 2.05
+          tall); every Pokémon billboard takes its feet's depth (`feetDepth()` in `js/hd2d.js`, all 3D places), so a counter or
+          table behind one no longer cuts across it; a little PC on the counter's right end with a bobbing "!" opens the Game
+          Corner guide (`js/corner-guide.js`: what pays today and how much is left of the 500, the arcade and its weekly
+          boards, taking games home, the stamp card, the showcases). Then a mini "!" over each paying game (slots, Plinko,
+          Blackjack, High-Low, Voltorb Flip, Who's That), hopping now and down only once that game's paying plays are used up
+          or its coins capped (`stillPays()` in `js/casino-pot.js`, rechecked every 3 s and after a game closes; the user's
+          ask, same day). Then an hourglass on the counter's left end, opposite the guide PC, always turning: walk within 2
+          tiles and a bubble over it counts down to UTC midnight, a tap walks up and Meowth says the time left and the day's
+          coins (`timer` / `untilReset()` in `js/mall-corner.js`; a place's `tick(now, dt, hud)` and `leave()` in
+          `js/mall-3d.js`, a game's `talkOnly`). The guide's rows say plays left for every game, the quiz "n of 5 answered",
+          the stamp card "complete", a ✓ on finished ones (`puzzlesPlayed()`).
+        **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
+        **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
+     d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
+        with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. The user wants it right
+        after the Game Corner. Poké Balls are off the Game Corner's wall screens since 2026-10-12 (still in the Pokédex's
+        Game Corner app and the Safari prep window) until it's built. ▶ Run in: CLOUD (a 3D shop like
+        `js/mall-furniture.js`; the user has no local access, so check it headless and send screenshots).
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

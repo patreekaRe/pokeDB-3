@@ -8,8 +8,9 @@
    it to the door and presses Leave. The decor is the Secret Base's furniture models (js/base-mesh.js). */
 
 import { calmFx } from './prefs.js';
-import { playSound, playCry } from './audio.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat } from './hd2d.js';
+import { playSound, playCry, hushBlip } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -606,6 +607,7 @@ function arrived() {
   const kind = aim;
   aim = null;
   if (!kind) return;
+  hushBlip();
   if (kind === 'exit') return opts.onLeave();
   if (walker.tile.x !== SPOTS[kind].step.x || walker.tile.y !== SPOTS[kind].step.y) return;
   walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
@@ -615,12 +617,24 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
+const canWalk = (e) => !busy && alive() && !document.querySelector('dialog[open]')
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over');
+
+/** The floor tile under a pointer, or null off the floor. */
+function floorTile(e) {
+  const r = view.getBoundingClientRect(), ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
+  return t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS ? null : t;
+}
+let drags = null;
+
 function onTap(e) {
-  if (busy || !alive()) return;
-  if (e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over')) return;
-  if (document.querySelector('dialog[open]')) return;
+  if (drags?.swallowed()) { e.stopPropagation(); e.preventDefault(); return; }
+  if (!canWalk(e)) return;
   const sign = signAt(e.clientX, e.clientY);
-  if (sign) { playSound('select'); return goTo(sign); }
+  if (sign) { playSound('confirm'); return goTo(sign); }
   const r = view.getBoundingClientRect();
   const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
   const ray = new THREE.Raycaster();
@@ -630,11 +644,11 @@ function onTap(e) {
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   let o = first;
   while (o && !o.userData.spot) o = o.parent;
-  if (o?.userData.spot) { playSound('select'); return goTo(o.userData.spot); }
+  if (o?.userData.spot) { playSound('confirm'); return goTo(o.userData.spot); }
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return goTo('exit');   // the doorstep round the mat
+  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) { playSound('confirm'); return goTo('exit'); }   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   aim = null;
   walker.path = route(walker.tile, t);
@@ -822,6 +836,7 @@ function unmount() {
   view?.classList.remove('on');
   view?.remove();
   removeEventListener('click', onTap, true);
+  drags?.off(); drags = null;
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   leftAt = performance.now();
@@ -865,6 +880,7 @@ export function warmCenter() {
     anchors.nurse = new THREE.Vector3(tileX(5) + 0.7, 0.12 + nurse.top + 0.15, tileZ(1));
     scene.add(nurse.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
+    await warmShaders(renderer, scene, camera);
   })();
   warming.catch(() => { warming = null; });
   return warming;
@@ -902,6 +918,8 @@ export async function mountCenter(o) {
   // one word a sign, so the three fit side by side this close in (the hint keeps the detail)
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = label.textContent.replace(/^(Heal|Upgrade|Forget) .*$/, '$1').replace(/ card$/, '');
   addEventListener('click', onTap, true);
+  drags?.off();
+  drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
   addEventListener('resize', resize);
   resize();
   last = 0;
