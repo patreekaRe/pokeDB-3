@@ -52,6 +52,7 @@ export const NEXT = [
   ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
   ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
+  ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

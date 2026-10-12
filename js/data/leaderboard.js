@@ -167,6 +167,7 @@ export const ARCADE_GAMES = [
   { id: 'puzzle', name: 'Poké Puzzle', unit: 'pts', b1: '#5ad0c0', b2: '#1a6a60' },
   { id: 'invaders', name: 'Beedrill Invaders', unit: 'pts', b1: '#f0c840', b2: '#8a5a08' },
   { id: 'snake', name: 'Ekans Trail', unit: 'pts', b1: '#a870d8', b2: '#4a1e78' },
+  { id: 'bubble', name: 'Squirtle Bubble Shooter', unit: 'pts', b1: '#5aa8f0', b2: '#1a4a8a' },
 ];
 export const ARCADE_BY_ID = Object.fromEntries(ARCADE_GAMES.map(g => [g.id, g]));
 

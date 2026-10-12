@@ -114,7 +114,7 @@ preview running on a little CRT over numbered step tiles (`helpScreen()` in `js/
 `wrap()`). Weekly arcade leaderboards for those six (the user's yes, same day): `arcadeBoard/<week>_<game>_<uid>`, each player's best
 of the week (the Sky Pillar's Monday), raised by any higher score (`ARCADE_GAMES` / `rankArcade()` in
 `js/data/leaderboard.js`, `postArcadeScore()` / `KINDS.arcade` in `js/leaderboard.js`, posted from the kit's game over, a 🏆
-key in those cabinets' heads). **Waiting on the user: paste the new `firestore.rules` into the Firebase console**, or
+key in those cabinets' heads); Squirtle Bubble Shooter joined them the same day (`bubble`). **Waiting on the user: paste the new `firestore.rules` into the Firebase console** (again since Bubble Shooter joined), or
 nothing posts. Not yet tried against the real Firestore (blocked in the cloud session).
 Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
 The six casino games got real 3D models too (2026-10-12: `B.slot`, `B.cardtable`, `B.plinko`, Voltorb Flip and the quiz
