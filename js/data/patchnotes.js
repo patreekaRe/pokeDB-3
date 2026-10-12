@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['mall', 'The Game Corner no longer takes bets: every game is free. Each has a few plays a day that pay PokéCoins (5 spins, 4 Plinko drops, 3 hands each of Blackjack and High-Low, 2 Voltorb Flip rounds, the daily quiz and scratch card), up to 500 a day all told and 150 from any one game.'],
-  ['mall', 'Meowth\'s prize counter: tap Meowth in the Game Corner to buy, for PokéCoins, things the Furniture store never sells: a slot machine, a Voltorb Flip machine, a Plinko board, a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
+  ['mall', 'Meowth\'s prize counter: tap Meowth in the Game Corner to buy, for PokéCoins, things the Furniture store never sells: every game (a slot machine, a Voltorb Flip machine, a Plinko board, a Blackjack table, a High-Low table and a Who\'s That Pokémon? machine), a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
   ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
   ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 2,500 PokéCoins won and every prize.'],
   ['fixes', 'Plinko no longer shows what a drop won before the ball lands: the coins and Today meter go up as it hits its bin.'],

@@ -25,7 +25,8 @@ const LETTERS = { G: ['###', '#..', '#.#', '#.#', '###'], A: ['.#.', '#.#', '###
   E: ['###', '#..', '##.', '#..', '###'], H: ['#.#', '#.#', '###', '#.#', '#.#'], I: ['###', '.#.', '.#.', '.#.', '###'],
   P: ['##.', '#.#', '##.', '#..', '#..'], O: ['###', '#.#', '#.#', '#.#', '###'], T: ['###', '.#.', '.#.', '.#.', '.#.'],
   J: ['###', '..#', '..#', '#.#', '###'], C: ['###', '#..', '#..', '#..', '###'], K: ['#.#', '##.', '#..', '##.', '#.#'],
-  7: ['###', '..#', '.#.', '.#.', '.#.'] };
+  7: ['###', '..#', '.#.', '.#.', '.#.'], 1: ['.#.', '##.', '.#.', '.#.', '###'], 2: ['##.', '..#', '.#.', '#..', '###'],
+  3: ['##.', '..#', '.#.', '..#', '##.'], 9: ['###', '#.#', '###', '..#', '##.'], '?': ['##.', '..#', '.#.', '...', '.#.'] };
 const bitmap = (rows, x, y, c, s) => rows.forEach((row, j) => [...row].forEach((ch, i) => { if (ch === '#') R(x + i * s, y + j * s, s, s, c); }));
 const say = (text, x, y, c, s = 1) => [...text].forEach((ch, n) => bitmap(LETTERS[ch], x + n * 4 * s, y, c, s));
 /** A bitmap turned a quarter clockwise. */
@@ -694,6 +695,31 @@ add('Arcade', [
     floorShadow(x + 2, b, 28); panel(x + 5, b - 12, 22, 12, MARBLE, 2); R(x + 5, b - 12, 22, 2, sh(MARBLE, 1));
     panel(x + 4, b - 40, 24, 28, GOLD, 3); R(x + 4, b - 40, 24, 2, sh(GOLD, 2)); R(x + 4, b - 14, 24, 2, sh(GOLD, -2));
     inset(x + 7, b - 37, 18, 22, '#fff8e8'); seven(x + 11, b - 34, 3.2, CASINO_RED);
+  } },
+  { id: 'blackjacktable', name: 'Blackjack table', w: 2, h: 1, price: 1200, glow: [GOLD], draw(x, b, vw, dir) {
+    if (dir % 2) return sideBox(x, b, vw, 30);
+    floorShadow(x, b, vw); for (const i of [6, vw - 10]) cyl(x + i, b - 26, 4, 26, k.w);
+    for (let j = 0; j < 12; j++) { const hw = (vw / 2 - 1) * Math.sqrt(1 - (j / 12) ** 2); R(x + vw / 2 - hw, b - 34 - j, hw * 2, 1, j < 1 ? sh('#1e7a46', -1) : '#1e7a46'); }
+    R(x + 1, b - 34, vw - 2, 3, k.w); R(x + 1, b - 32, vw - 2, 1, sh(k.w, -1)); panel(x + 2, b - 31, vw - 4, 6, k.w, 2);
+    for (const [i, up] of [[-12, 1], [-6, 1], [4, 0], [10, 1]]) { panel(x + vw / 2 + i, b - 44, 5, 7, up ? '#fffaf0' : '#2858b8'); if (up) P(x + vw / 2 + i + 2, b - 42, i < 0 ? '#202028' : CASINO_RED); }
+    for (const [i, c] of [[-22, CASINO_RED], [-19, '#2858b8'], [18, GOLD]]) for (let n = 0; n < 3; n++) oval(x + vw / 2 + i, b - 37 - n, 2, 1, n === 2 ? sh(c, 1) : c);
+    say('21', x + vw / 2 - 4, b - 30, GOLD);
+  } },
+  { id: 'highlowtable', name: 'High-Low table', w: 2, h: 1, price: 1200, glow: ['#58b8f8'], draw(x, b, vw, dir) {
+    if (dir % 2) return sideBox(x, b, vw, 30);
+    floorShadow(x, b, vw); for (const i of [4, vw - 8]) cyl(x + i, b - 26, 4, 26, k.m);
+    panel(x + 1, b - 40, vw - 2, 10, '#1a4a8a', 2); R(x + 1, b - 40, vw - 2, 1, sh('#1a4a8a', 2)); panel(x + 1, b - 30, vw - 2, 6, k.c, 2);
+    for (let n = 0; n < 4; n++) { const cx = x + 10 + n * 12; panel(cx, b - 50, 7, 10, n < 3 ? '#fffaf0' : '#c82838'); if (n < 3) say(String([3, 7, 9][n]), cx + 2, b - 48, n % 2 ? CASINO_RED : '#202028'); }
+    for (const [dy, up, c] of [[-50, 1, '#58d858'], [-44, 0, '#f85050']]) for (let j = 0; j < 3; j++) R(x + vw - 8 - (up ? j : 2 - j), b + dy + j, 1 + (up ? j : 2 - j) * 2, 1, c);
+  } },
+  { id: 'quizmachine', name: 'Who\'s That Pokémon? machine', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#58b8f8'], draw(x, b) {
+    const [sx, sy, sw, sh2] = cabinet(x, b);
+    clipped(sx, sy, sw, sh2, () => {
+      R(sx, sy, sw, sh2, '#3a8ae0');
+      for (let n = 0; n < 8; n++) { const a = n * Math.PI / 4; line(sx + 10, sy + 10, sx + 10 + Math.cos(a) * 16, sy + 10 + Math.sin(a) * 16, '#ffd84a'); }
+      disc(sx + 10, sy + 11, 6, '#1a1a2a'); for (const i of [-5, 3]) R(sx + 10 + i, sy + 2, 3, 6, '#1a1a2a');
+      say('?', sx + 15, sy + 12, '#ffffff');
+    });
   } },
   { id: 'casinorug', name: 'Casino carpet', w: 3, h: 2, layer: 'rug', price: 700, high: 0.04, side: 'c', flat(w, h) {
     R(0, 0, w, h, '#6a101c'); R(2, 2, w - 4, h - 4, '#a82230');

@@ -96,12 +96,15 @@ export const PRIZES = [
   { kind: 'clefairydoll', coins: 180 },
   { kind: 'casinorug', coins: 240 },
   { kind: 'dratinidoll', coins: 270 },
+  { kind: 'bigdratinidoll', coins: 300 },
   { kind: 'jackpotsign', coins: 300 },
   { kind: 'luckyseven', coins: 360 },
   { kind: 'plinkoboard', coins: 450 },
   { kind: 'slotmachine', coins: 450 },
   { kind: 'voltorbflip', coins: 450 },
-  { kind: 'bigdratinidoll', coins: 750 },
+  { kind: 'blackjacktable', coins: 450 },
+  { kind: 'highlowtable', coins: 450 },
+  { kind: 'quizmachine', coins: 450 },
 ];
 export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
 
