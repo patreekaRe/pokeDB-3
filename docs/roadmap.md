@@ -349,6 +349,14 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, 2026-10-12, the user's ask: their 12 friends as Gym
+  Leaders, two a biome, in front of its bosses). Built: `js/data/gym.js` (who owns which boss, badge names, placeholder
+  lines), `js/gym.js` (the talk before the boss, a shadow till beaten once; the last words and badge after the win),
+  12 Gym Badges (`save.gym`, Badge Case group `gym`), the crossroads boards' Gym Leaders section (shadow and ??? till
+  beaten). Playtest `?gym=phil` (`&n=2` their second boss). Waiting on the user for: each friend's sprite (Gen 5-style
+  trainer, transparent PNG/GIF, ~80px, into `assets/trainers/gym/<id>.png` and `sprite:` on their line; till then the
+  shadow `unknown.png`), their personalities (I write `intro` / `beaten` lines from them), and OK to merge into `main`
+  (with a patch note). ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
   at the far screen edges (pull them in beside the hand?), and a tall iPad shows black above and below the Secret Base's

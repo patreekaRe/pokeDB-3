@@ -7,6 +7,7 @@
    Also keeps `stats.playMs`, the play time, counted from its release.
    ============================================================ */
 
+import { GYM_LEADERS } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -183,6 +184,13 @@ for (const n of [10, 20, 30, 40, 50, 60, 70, 80, 90]) LOOK[`tower-${n}`] = ['tow
 LOOK['tower-100'] = ['tower', ['#fff4a0', '#d8b830', '#7a6410'], 't100'];
 for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shield', ['#f0e0b0', '#a88c58', '#584020'], `n${n}`];
 for (const n of [5, 10, 15, 20]) LOOK[`rare-${n}`] = ['gem', LOOK['rare-catch'][1], `n${n}`];
+// the Gym Badges: each leader's in their biome's colours, the two of a biome told apart by shape and glyph
+const GYM_LOOK = {
+  lawrence: ['star', 'sparkle'], phil: ['circle', 'tree'], john: ['octagon', 'sun'], jahmes: ['shield', 'torii'],
+  clarence: ['diamond', 'volcano'], shaun: ['hex', 'flame'], ricky: ['drop', 'wave'], kayl: ['book', 'eye'],
+  britt: ['leaf', 'thorns'], pat: ['circle', 'leafy'], machew: ['gem', 'facet'], jerome: ['star', 'sun'],
+};
+for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = [GYM_LOOK[l.id]?.[0] ?? 'circle', BIOME_INK[l.biome], GYM_LOOK[l.id]?.[1]];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 

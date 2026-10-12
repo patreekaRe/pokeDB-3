@@ -19,6 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
+import { gymTalk } from './gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
@@ -167,6 +168,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     biome: run.biome,
     def,
     kind: encounter.kind,
+    leader: encounter.leader ?? null,   // the Gym Leader sending out a boss (js/data/gym.js)
     relics: [...run.relics],
     ability,
     aug,
@@ -334,7 +336,13 @@ async function playIntro() {
     arenaUp = true;
     arenaMod?.revealArena();
     if (!still()) return;
-    log(b.def.intro ?? `${b.def.name} blocks the way!`);
+    if (b.leader) {   // a Gym Leader sends it out (js/data/gym.js)
+      enemyZone.classList.add('boss-waiting');   // the boss stays in its ball till they send it out
+      try { await gymTalk(b.leader, b.leader.intro, { vars: { boss: b.def.name } }); }
+      finally { enemyZone.classList.remove('boss-waiting'); }
+      if (!still()) return;
+      log(`Gym Leader ${b.leader.name} sent out ${b.def.name}!`);
+    } else log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see
   if (motion) {

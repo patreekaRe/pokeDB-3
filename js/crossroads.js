@@ -19,6 +19,7 @@ import { TYPES } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { meowthTalk } from './meowth.js';
+import { leadersOf, spriteOf, gymWins } from './data/gym.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
@@ -354,15 +355,27 @@ export function roadInfo(id) {
   const bosses = row(biome.bosses), alphas = row(biome.elites ?? []);
   const types = el('div', 'xr-types');
   types.append(...typeChips(biome));
-  return { sign, bosses, alphas, types };
+  // its Gym Leaders, each a shadow and ??? until beaten, over the bosses they send out (js/data/gym.js)
+  const leaders = el('div', 'xr-leaders');
+  for (const l of leadersOf(id)) {
+    const met = gymWins(getSave(), l.id) > 0;
+    const card = el('div', `xr-leader${met ? '' : ' unmet'}`);
+    const pic = el('img', 'pixel xr-leader-pic');
+    pic.src = spriteOf(l);
+    pic.alt = '';
+    pic.draggable = false;
+    card.append(pic, el('span', 'xr-leader-name', met ? l.name : '???'), row(l.bosses));
+    leaders.append(card);
+  }
+  return { sign, bosses, alphas, types, leaders: leaders.childElementCount ? leaders : bosses };
 }
 
 export function roadCard(id, i, pick, onSwap) {
   const card = el('button', 'xr-road');
   card.type = 'button';
   card.dataset.biome = id;
-  const { sign, bosses, alphas, types } = roadInfo(id);
-  card.append(sign, el('span', 'xr-label', 'Bosses'), bosses, el('span', 'xr-label', 'Alphas'), alphas, el('span', 'xr-label', 'Wild Pokémon'), types);
+  const { sign, alphas, types, leaders } = roadInfo(id);
+  card.append(sign, el('span', 'xr-label', 'Gym Leaders'), leaders, el('span', 'xr-label', 'Alphas'), alphas, el('span', 'xr-label', 'Wild Pokémon'), types);
   if (onSwap) {
     const swap = el('span', 'xr-swap', '🧭 Another road');   // the card is a button already, so not a nested one
     swap.setAttribute('role', 'button');

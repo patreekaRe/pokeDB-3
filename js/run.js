@@ -14,6 +14,8 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
+import { leaderFor, gymWins, GYM_BY_ID } from './data/gym.js';
+import { gymTalk } from './gym.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
@@ -528,6 +530,17 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'ken' ? ':ken' : ':elite');
 }
 
+/** Playtest shortcut: ?gym=phil (any Gym Leader, js/data/gym.js; &n=2 their second boss, &starter=id) walks a throwaway
+    run straight into that leader's boss fight, their talk before and after included. Nothing about it is saved. */
+export function peekGym(starter, id, n = 1) {
+  const l = GYM_BY_ID[id];
+  if (!l) return false;
+  peekBoss = l.bosses[Math.max(0, Math.min(l.bosses.length - 1, n - 1))];
+  peekArena(starter, 'boss', l.biome);
+  return true;
+}
+let peekBoss = null;
+
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
     fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
 export function peekDescent(starter) {
@@ -607,7 +620,13 @@ function peekRoom(id) {
     const type = id === ':wild' ? 'fight' : 'elite', fights = Object.values(run.map.byId).filter(n => n.type === type);
     return enterNode(fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0]);
   }
-  if (id === ':boss') { if (peekAt) walkInto(peekAt); startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
+  if (id === ':boss') {
+    if (peekAt) walkInto(peekAt);
+    startBiome(true);
+    const boss = Object.values(run.map.byId).find(n => n.type === 'boss');
+    if (peekBoss) boss.enemyId = peekBoss;
+    return enterNode(boss);
+  }
   if (id === ':ken') {   // as if challenged in his dojo, a ? room on the first floor
     if (peekAt) walkInto(peekAt);
     startBiome(true);
@@ -1451,6 +1470,7 @@ async function fight(node) {
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
+  encounter.leader = gymLeader(node);
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
@@ -1459,7 +1479,20 @@ async function fight(node) {
   } else enter();
 }
 
+/** The Gym Leader sending out this room's boss (js/data/gym.js): the main game's biomes only, never Kenmatta. */
+function gymLeader(node) {
+  return node.type === 'boss' && !isSafari() && !isTower() ? leaderFor(node.enemyId) : null;
+}
+
 function afterFight(node, result) {
+  // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
+  // the fight, so the win is only counted below with the boss's
+  const leader = result.won && !result.gymSaid && gymLeader(node);
+  if (leader) {
+    const first = gymWins(getSave(), leader.id) === 0;
+    return gymTalk(leader, first ? leader.beaten : leader.beaten.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
+      .then(() => afterFight(node, { ...result, gymSaid: true }));
+  }
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
@@ -1565,6 +1598,8 @@ function afterFight(node, result) {
     if (!isSafari() && !isTower() && !peeking) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
+      const leader = gymLeader(node);
+      if (leader) d.gym = { ...(d.gym || {}), [leader.id]: (d.gym?.[leader.id] || 0) + 1 };
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
     if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
