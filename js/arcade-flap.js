@@ -7,7 +7,7 @@ import { runArcade, drawMon, rand, banner } from './arcade-kit.js';
 const W = 300, H = 360, GROUND = 330, GRAV = 900, FLAP = -290, BIRD_X = 90, R = 13, TRUNK = 46;
 
 export const openFlap = (onClose) => runArcade({
-  id: 'flap', title: 'Pidgey Flap', colour: '#c8904a', W, H,
+  id: 'flap', title: 'Pidgey Flap', colour: '#c8904a', W, H, stick: false,
   intro: 'Tap to flap! Fly Pidgey through the gaps.',
   help: [['Tap (or press Space) to flap.', 'Pidgey drops when you stop.'], ['Fly through the gaps between the trees.', 'Touch a trunk or the ground and it\'s over.'], ['A point for every gap.', 'They get narrower and faster as you go.']],
   make(api) {
