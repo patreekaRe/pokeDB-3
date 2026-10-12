@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
+  ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -55,6 +56,26 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.13',
+    name: 'Arcade Polish',
+    date: '2026-10-12',
+    notes: [
+  ['fixes', 'The bushes along the Clearing\'s front fence no longer flicker.'],
+  ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
+  ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
+  ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
+  ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
+  ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
+  ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
+  ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
+  ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
+  ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
+  ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
+  ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
+  ['mall', 'Squirtle Bubble Shooter has endless levels: clear the board and the next one starts fuller, with more colours (a pink Fairy bubble from level 7), and the ceiling drops sooner. Each cleared level is worth more.'],
+    ],
+  },
   {
     version: '1.12',
     name: 'Fresh Coat',

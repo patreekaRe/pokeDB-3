@@ -68,7 +68,7 @@ const CASINO = {
   highlow: { at: { x: 13, y: 9 }, w: 3, name: 'High-Low', colour: '#ffd84a',
     line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
     open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
-  blackjack: { at: { x: 5, y: 9 }, w: 3, name: 'Blackjack',
+  blackjack: { at: { x: 5, y: 9 }, w: 3, name: 'Blackjack', colour: '#ff5ab8',
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
 };
@@ -228,32 +228,24 @@ const PERK_ART = {
   scopeUpgrade: (g) => { g.fillStyle = '#5a5e6a'; g.fillRect(-1.2, -1.2, 2.4, 1.6); for (const x of [-3, 3]) { g.fillStyle = '#3a3e48'; g.beginPath(); g.arc(x, 0, 2.8, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e84838'; g.beginPath(); g.arc(x, 0, 1.8, 0, Math.PI * 2); g.fill(); g.fillStyle = '#ffb0a0'; g.beginPath(); g.arc(x - 0.6, -0.6, 0.6, 0, Math.PI * 2); g.fill(); } },
 };
 
-/** A table's felt from above, `w` tiles by one: green, a gold line round it, and its game's markings. */
-function feltArt(id, w, d = 1) {
-  const W = w * 16, H = Math.round(16 * d), f = fine(W, H, 10), { g, rr, lin } = f;
-  rr(0, 0, W, H, 1.5, lin(0, 0, 0, H, ['#2f8a50', '#1f6a3a']));
-  g.strokeStyle = '#e8c860'; g.lineWidth = 0.4; g.beginPath(); g.roundRect(0.8, 0.8, W - 1.6, H - 1.6, 1.2); g.stroke();
-  if (id === 'highlow') {
-    words(g, 'HIGHER OR LOWER?', W / 2, H * 0.3, 2.2, '#ffe890');
-    words(g, 'LET IT RIDE OR CASH OUT', W / 2, H * 0.85, 1.5, '#c8f0c8');
-  }
-  if (id === 'blackjack') {
-    g.beginPath(); g.arc(W / 2, -H * 0.4, H * 1.05, 0.35 * Math.PI, 0.65 * Math.PI); g.stroke();
-    words(g, 'BLACKJACK PAYS 3 TO 2', W / 2, H * 0.3, 2.2, '#ffe890');
-    words(g, 'DEALER STANDS ON 17', W / 2, H * 0.85, 1.5, '#c8f0c8');
-  }
-  return f.c;
-}
-
-
-/** A table's front panel: its name lit in its colour, on violet over chrome (a touchscreen) or dark wood over gold. */
-function tableFront(title, colour, w, wood = false) {
+/** A touchscreen table's front panel: its name lit in its colour, on violet over chrome. */
+function tableFront(title, colour, w) {
   const W = w * 20, H = 14, f = fine(W, H, 12), { g, rr, lin, shine } = f, s = shine();
-  rr(0, 0, W, H, 0, lin(0, 0, 0, H, wood ? ['#5a321c', '#3a1e10'] : ['#3a2266', '#1e1038']));
-  rr(0, H - 2, W, 2, 0, wood ? '#c89418' : '#cdc8e0');
+  rr(0, 0, W, H, 0, lin(0, 0, 0, H, ['#3a2266', '#1e1038']));
+  rr(0, H - 2, W, 2, 0, '#cdc8e0');
   const size = Math.min(5.2, W * 1.5 / title.length);
   g.save(); glow(g, colour, 3); words(g, title, W / 2, H / 2 - 0.6, size, colour); g.restore();
   words(g, title, W / 2, H / 2 - 0.6, size, '#ffffff'); words(s, title, W / 2, H / 2 - 0.6, size, colour);
+  return f.c;
+}
+
+/** A card table's name in neon on the carpet at its foot (2026-10-12, the user's ask), on a clear ground: a wide halo,
+    the colour, a white-hot core, like the tubes. `w` tiles by `d`. */
+function floorSign(title, colour, w, d) {
+  const W = w * 20, H = d * 20, f = fine(W, H, 10), { g } = f, size = Math.min(H * 0.62, W * 1.5 / title.length);
+  for (const [blur, a] of [[6, 0.55], [3, 0.9]]) { g.save(); g.globalAlpha = a; glow(g, colour, blur); words(g, title, W / 2, H / 2, size, colour); g.restore(); }
+  g.save(); glow(g, colour, 1.5); words(g, title, W / 2, H / 2, size, colour); g.restore();
+  g.save(); g.globalAlpha = 0.45; words(g, title, W / 2, H / 2, size, '#ffffff'); g.restore();
   return f.c;
 }
 
@@ -649,32 +641,46 @@ export function buildCorner(THREE, size) {
   };
   for (const at of CASINO.slots.ats) machine('slotmachine', at.x, at.y, at.face, CASINO.slots);
 
-  // the tables: Blackjack and High-Low green felt on dark wood with cards dealt and a marquee over them; Voltorb Flip and
-  // Who's That Pokémon? touchscreen tables, their tops lit with the game (2026-10-12, the user's ask)
-  const wood = std({ color: '#4a2a18', roughness: 0.6 });
+  // the card tables, Blackjack and High-Low, are the Secret Base's 3D models (2026-10-12, the user's ask), grown to stand
+  // across three tiles like the touchscreen tables; Voltorb Flip and Who's That Pokémon? touchscreen tables, their tops lit
   const TABLE_D = 1.5;   // a tile and a half deep, into the row behind, so their tops read from the door
-  for (const [id, gm] of [['blackjack', CASINO.blackjack], ['highlow', CASINO.highlow], ['voltorb', GAMES.voltorb], ['quiz', GAMES.quiz]]) {
-    const { x, y } = gm.at, w = gm.w, glassTop = !!GAMES[id], D = TABLE_D;
+  const CARD_K = 1.3;
+  for (const [id, kind] of [['blackjack', 'blackjacktable'], ['highlow', 'highlowtable']]) {
+    const gm = CASINO[id], { x, y } = gm.at, w = gm.w;
+    const model = furnitureModel(THREE, kind, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (!model) continue;
+    for (let k = 0; k < w; k++) { blocked.add(`${x + k},${y}`); blocked.add(`${x + k},${y - 1}`); }
+    model.scale.setScalar(CARD_K);
+    model.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y) - (TABLE_D - 1) / 2);
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    const H = model.userData.top * CARD_K;
+    const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
+      frame: { x: tileX(x) - 0.5 + w / 2, y: H / 2, z: tileZ(y) + 0.4, w: w - 0.3, h: H + 0.1 } };
+    spots.push(spot);
+    model.traverse(o => { o.userData.front = spot; });
+    group.add(model);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.8), new THREE.MeshBasicMaterial({ map: texOf(floorSign(gm.name.toUpperCase(), gm.colour, w, 0.8)), transparent: true, depthWrite: false, toneMapped: false }));
+    sign.rotation.x = -Math.PI / 2;
+    sign.position.set(tileX(x) - 0.5 + w / 2, 0.012, tileZ(y + 1) - 0.02);
+    sign.renderOrder = 1;
+    const phase = x;
+    ticks.push((now) => { sign.material.opacity = 0.82 + Math.sin(now / 700 + phase) * 0.18; });
+    group.add(sign);
+  }
+  for (const [id, gm] of [['voltorb', GAMES.voltorb], ['quiz', GAMES.quiz]]) {
+    const { x, y } = gm.at, w = gm.w, D = TABLE_D;
     for (let k = 0; k < w; k++) { blocked.add(`${x + k},${y}`); blocked.add(`${x + k},${y - 1}`); }
     const t = new THREE.Group();
     t.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y) - (D - 1) / 2);
-    const side = glassTop ? violet : wood;
-    const base = new THREE.Mesh(new THREE.BoxGeometry(w - 0.1, 0.72, D - 0.14), [side, side, side, side, lit(tableFront(gm.name.toUpperCase(), gm.colour ?? NEON.gold, w - 0.1, !glassTop), 1), side]);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(w - 0.1, 0.72, D - 0.14), [violet, violet, violet, violet, lit(tableFront(gm.name.toUpperCase(), gm.colour, w - 0.1), 1), violet]);
     base.position.y = 0.36;
     base.castShadow = base.receiveShadow = true;
-    const rim = new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, 0.08, D - 0.02), glassTop ? chrome : gold);
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, 0.08, D - 0.02), chrome);
     rim.position.y = 0.74;
-    const felt = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.08, D - 0.14), glassTop
-      ? new THREE.MeshBasicMaterial({ map: texOf(tableScreen(id, w - 0.08, D - 0.14)), toneMapped: false }) : lit(feltArt(id, w, D), 0.5));
-    felt.rotation.x = -Math.PI / 2;
-    felt.position.y = 0.8;
-    t.add(base, rim, felt);
-    if (!glassTop) for (const [cx, cz, r] of [[-0.3, 0.1, 0.2], [0.05, 0.12, -0.1], [0.4, 0.08, 0.15]]) {   // cards dealt on the felt
-      const c = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.22), std({ color: '#ffffff' }));
-      c.rotation.set(-Math.PI / 2, 0, r);
-      c.position.set(cx, 0.81, cz);
-      t.add(c);
-    }
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.08, D - 0.14), new THREE.MeshBasicMaterial({ map: texOf(tableScreen(id, w - 0.08, D - 0.14)), toneMapped: false }));
+    screen.rotation.x = -Math.PI / 2;
+    screen.position.y = 0.8;
+    t.add(base, rim, screen);
     const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
       frame: { x: tileX(x) - 0.5 + w / 2, y: 0.45, z: tileZ(y) + 0.52, w: w + 0.1, h: 0.95 } };
     spots.push(spot);

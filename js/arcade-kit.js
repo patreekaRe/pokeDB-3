@@ -8,9 +8,9 @@
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
-import { playSound, preloadSounds } from './audio.js';
+import { hushBlip, playSound, preloadSounds } from './audio.js';
 import { el, fitText } from './ui.js';
-import { calmFx } from './prefs.js';
+import { calmFx, vibrate } from './prefs.js';
 import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
 import { record, best } from './corner-pot.js';
 import { postArcadeScore, openLeaderboard } from './leaderboard.js';
@@ -95,7 +95,7 @@ const caps = (t) => t.toUpperCase().replace(/É/g, 'é');
 
 /** Opens `def`'s game in the cabinet window; `onClose` once it's shut. */
 export function runArcade(def, onClose) {
-  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', ...(def.sounds || []));
+  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', 'fx-tick', ...(def.sounds || []));
   const rec = `arc-${def.id}`;
   let state = 'ready', score = 0, game = null, raf = 0, last = 0, line = def.intro, help = firstLook(`arc-${def.id}`);
   let cv = null, g = null, overText = '', overAt = 0, preview = null, fit = null;
@@ -189,7 +189,9 @@ export function runArcade(def, onClose) {
     bezel.append(m, stage);
     box.classList.add('ar-cab');
     box.classList.toggle('playing', state === 'play');
-    box.append(head, bezel, deck(), el('p', 'vf-say ar-say', line));
+    const controls = deck();
+    for (const part of [bezel, controls]) part.addEventListener('touchstart', noLoupe, { passive: false });
+    box.append(head, bezel, controls, el('p', 'vf-say ar-say', line));
     panel.root.replaceChildren(box);
     meters();
     size();
@@ -199,6 +201,10 @@ export function runArcade(def, onClose) {
     bind();
     loop();
   }
+
+  /** iOS opens its magnifying loupe on a double tap held on the screen or the deck, whatever user-select says; only a
+      cancelled touchstart stops it. START / EXIT answer `click`, which that would swallow, so they're let through. */
+  const noLoupe = (e) => { if (!e.target.closest('.vf-key')) e.preventDefault(); };
 
   /** Before a game or after one, any control starts it (not in the first moments after a game over, so a held
       button doesn't throw the next one away). */
@@ -257,11 +263,13 @@ export function runArcade(def, onClose) {
     b.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       b.classList.add('down');
+      vibrate(8);
       try { b.setPointerCapture(e.pointerId); } catch {}
       if (state !== 'play') return begin();
       held = true;
       press();
     });
+    b.addEventListener('click', hushBlip);   // the game sounds its own buttons; the menu blip on release doubled them
     for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => {
       b.classList.remove('down');
       if (held) { held = false; if (state === 'play') lift?.(); }
@@ -272,7 +280,7 @@ export function runArcade(def, onClose) {
   /** Big arrow buttons for a thumb, held down like the arrow keys. */
   function arrows(list) {
     const box = el('div', `ar-arrows${list.some(([, k]) => k === 'up' || k === 'down') ? ' ar-col' : ''}`);
-    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => game.key?.(k, true), () => game.key?.(k, false)));
+    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => { playSound('fx-tick', 'select'); game.key?.(k, true); }, () => game.key?.(k, false)));
     return box;
   }
 
@@ -285,7 +293,7 @@ export function runArcade(def, onClose) {
     let id = null;
     const press = (want) => {
       for (const k of [...down]) if (!want.has(k)) { down.delete(k); if (state === 'play') game.key?.(k, false); }
-      for (const k of want) if (!down.has(k)) { down.add(k); if (state === 'play') game.key?.(k, true); }
+      for (const k of want) if (!down.has(k)) { down.add(k); if (state === 'play') { vibrate(6); game.key?.(k, true); } }
     };
     const lean = (dx, dy) => {
       const r = box.clientWidth / 2, d = Math.hypot(dx, dy), max = r * 0.42, f = d > max ? max / d : 1;
@@ -349,7 +357,8 @@ export function runArcade(def, onClose) {
     const st = cv.parentElement;
     const w = fixed || Math.max(120, Math.floor(Math.min(st.clientWidth, st.clientHeight * def.W / def.H))) || 360;
     const dpr = Math.min(1.5, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
-    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+    // resizing clears the canvas, so it is painted again at once rather than shown blank till the next frame
+    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; if (last) paint(performance.now()); }
     cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;
   }
@@ -387,6 +396,11 @@ export function runArcade(def, onClose) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (state === 'play' && !help) game.tick?.(dt, now);
+    paint(now);
+    raf = requestAnimationFrame(frame);
+  }
+
+  function paint(now) {
     const s = cv.width / def.W;
     g.setTransform(s, 0, 0, s, 0, 0);
     g.clearRect(0, 0, def.W, def.H);
@@ -397,7 +411,6 @@ export function runArcade(def, onClose) {
       banner(g, state === 'over' ? `${score.toLocaleString()}` : def.title.toUpperCase(), def.W / 2, def.H * (state === 'over' ? 0.52 : 0.42), def.W / (state === 'over' ? 8 : 11), '#fff', def.W * 0.9);
       if (!calm || state === 'ready') banner(g, 'TAP TO PLAY', def.W / 2, def.H * 0.64, def.W / 18, `rgba(255, 255, 255, ${0.6 + 0.4 * Math.sin(now / 250)})`);
     }
-    raf = requestAnimationFrame(frame);
   }
 
   render();

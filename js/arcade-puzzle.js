@@ -174,7 +174,7 @@ export const openPuzzle = (onClose) => runArcade({
         const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1a4a5a'); bg.addColorStop(1, '#10283a');
         g.fillStyle = bg; g.fillRect(0, 0, W, H);
         g.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        for (let i = 0; i < 9; i++) { g.beginPath(); g.arc((i * 73) % W, (i * 131 + now / 40) % (H + 60) - 30, 18 + (i % 3) * 10, 0, Math.PI * 2); g.fill(); }
+        for (let i = 0; i < 9; i++) { g.beginPath(); g.arc((i * 73) % W, (i * 131 + now / 40) % (H + 80) - 40, 18 + (i % 3) * 10, 0, Math.PI * 2); g.fill(); }
         const sx = shake > 0 ? Math.sin(now / 18) * 3 * shake / 0.25 : 0;
         g.save(); g.translate(sx, 0);
         g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.beginPath(); g.roundRect(GX - 4, TOP - 4, COLS * P + 8, GB - TOP + 8, 8); g.fill();

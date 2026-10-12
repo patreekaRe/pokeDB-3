@@ -2162,3 +2162,7 @@ fight uses 7). More read-back paintings made on CPU canvases (`willReadFrequentl
 Clearing's `art()`, the crossroads' canvases, `sceneShot()`, aura, bagdex, `filled()`, the medallion, tower statues. Not
 done, worth a look one day: every module loads at start (~116 files, ~3.5 MB unminified, ~0.9 MB gzipped), so the
 films, intros and card art could be imported when first needed.
+
+**Arcade flicker fix** (2026-10-12, the user found it in Pidgey Flap): scrolling scenery wrapped while still on screen, so it
+blinked in and out at the edges (Flap's hills and grass, Ponyta Dash's mountains and dirt, Bubble Shooter's light shafts,
+Poké Puzzle's bubbles); each now wraps out of sight.
