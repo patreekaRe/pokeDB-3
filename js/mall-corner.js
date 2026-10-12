@@ -11,47 +11,44 @@ import { trim } from './hd2d.js';
 import { fine, texOf, words, star, GC } from './hub-3d.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
+import { jackpot } from './casino-pot.js';
 
 /* The room: `x` a thing's first tile, `w` its tiles; y 0 is the back wall. */
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
 const COUNTER = { x: 9, y: 2, w: 3 };   // Meowth stands a row behind it, clear of the back wall
-const SHOWS = [
-  { row: 'skins', x: 0, w: 3 },
-  { row: 'shiny', x: 4, w: 4 },
-  { row: 'perks', x: 13, w: 4 },
-  { row: 'balls', x: 18, w: 3 },
+const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user's ask), all one size; `c` its middle, in tiles
+  { row: 'skins', c: 13.2 },
+  { row: 'shiny', c: 16.15 },
+  { row: 'perks', c: 19.1 },
 ];
-const SHOW_H = 3.1, SHOW_D = 0.8, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
+const SHOW_W = 2.6, JACKPOT = { c: 4.8, w: 6.2 };   // the jackpot board on the left half, in the same frame
+const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
-const CAB_H = 1.6;    // an attract cabinet's height
 /* The free games (the revamp, 2026-10-10): they pay into a shared daily pot. */
 const GAMES = {
-  voltorb: { at: { x: 2, y: 4 }, w: 2, name: 'Voltorb Flip', colour: '#58d080',
+  voltorb: { at: { x: 3, y: 5 }, w: 2, name: 'Voltorb Flip', colour: '#58d080',
     line: 'Voltorb Flip! Clear the board for PokéCoins: the free games pay up to 250 a day between them. Tap again to sit down, meow.',
     open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
-  quiz: { at: { x: 5, y: 4 }, w: 2, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
+  quiz: { at: { x: 6, y: 5 }, w: 2, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
     line: 'Who\'s That Pokémon? Five silhouettes a day, name \'em for coins. Tap again to play, meow.',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The betting games (2026-10-10; the lineup the user picked 2026-10-11): a bank of tap-to-stop slot machines either side
    of the runner, Plinko and High-Low up front, and a Blackjack table. */
 const CASINO = {
-  slots: { ats: [{ x: 6, y: 8 }, { x: 7, y: 8 }, { x: 13, y: 8 }, { x: 14, y: 8 }], name: 'Slots', colour: '#ff5a5a',
+  slots: { ats: [{ x: 6, y: 9 }, { x: 7, y: 9 }, { x: 13, y: 9 }, { x: 14, y: 9 }], name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! You stop the reels yourself, so time it for a 7. Three 7s win the jackpot, meow. Tap again to play.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
-  plinko: { at: { x: 14, y: 4 }, w: 2, name: 'Plinko', colour: '#4ae8f0',
+  plinko: { at: { x: 14, y: 5 }, w: 3, name: 'Plinko', colour: '#4ae8f0',
     line: 'Plinko! Drop a Poké Ball and watch it bounce. The edges pay ×10, meow. Tap again to play.',
     open: (done) => import('./plinko.js').then(m => m.openPlinko(done)) },
-  highlow: { at: { x: 17, y: 4 }, w: 2, name: 'High-Low', colour: '#ffd84a',
+  highlow: { at: { x: 16, y: 9 }, w: 3, name: 'High-Low', colour: '#ffd84a',
     line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
     open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
-  blackjack: { at: { x: 2, y: 8 }, w: 3, name: 'Blackjack',
+  blackjack: { at: { x: 2, y: 9 }, w: 3, name: 'Blackjack',
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
 };
-const PILLARS = [[1, 11], [5, 11], [15, 11], [19, 11]];
-const ATTRACT = [[0, 6], [0, 10], [20, 6], [20, 10]];   // scenery cabinets down the side walls
-
 const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
 const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 
@@ -142,26 +139,42 @@ function sideArt({ rows, top: TOP, u: U }) {
   return f.c;
 }
 
-/** Arcade carpet: deep navy strewn with neon confetti, a red runner up the middle edged in gold. */
+/** A Pokémon casino's carpet (2026-10-12, the user's ask): deep crimson under a gold diamond lattice, a Poké Ball at
+    every crossing, card suits and coins in the diamonds, a gold border, and a royal blue runner up the middle studded
+    with gold Poké Ball medallions. */
 function floorArt({ cols, rows }) {
-  const T = 16, f = fine(cols * T, rows * T, 5), { g, rr, lin } = f;
-  g.fillStyle = '#1a1438'; g.fillRect(0, 0, cols * T, rows * T);
-  const cols4 = [NEON.pink, NEON.cyan, NEON.gold, NEON.lime, '#8a6aff'];
-  for (let i = 0; i < cols * rows * 7; i++) {
-    const x = (i * 37.17) % (cols * T), y = (i * 23.71 + (i % 7) * 11) % (rows * T), c = cols4[i % 5], k = i % 4;
-    g.fillStyle = c; g.strokeStyle = c; g.lineWidth = 0.7; g.globalAlpha = 0.75;
-    g.save(); g.translate(x, y); g.rotate(i * 0.7);
-    if (k === 0) { g.beginPath(); g.moveTo(0, -2); g.lineTo(1.8, 1.4); g.lineTo(-1.8, 1.4); g.fill(); }
-    else if (k === 1) { g.beginPath(); g.arc(0, 0, 1.4, 0, Math.PI * 2); g.stroke(); }
-    else if (k === 2) { g.beginPath(); g.moveTo(-2.4, 0); g.quadraticCurveTo(-1.2, -1.6, 0, 0); g.quadraticCurveTo(1.2, 1.6, 2.4, 0); g.stroke(); }
-    else star(g, 0, 0, 1.4);
-    g.restore();
+  const T = 16, W = cols * T, H = rows * T, f = fine(W, H, 5), { g, rr, lin } = f;
+  g.fillStyle = '#6a1424'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {   // each diamond a touch darker or lighter
+    g.fillStyle = (x + y) % 2 ? '#7a1a2c' : '#5e1020';
+    g.beginPath(); g.moveTo(x * T + T / 2, y * T); g.lineTo(x * T + T, y * T + T / 2); g.lineTo(x * T + T / 2, y * T + T); g.lineTo(x * T, y * T + T / 2); g.fill();
   }
-  g.globalAlpha = 1;
-  const rx = RUNNER * T + 2, rw = T - 4, ry = 2 * T;
-  rr(rx - 1, ry, rw + 2, rows * T - ry, 0, GC.goldDark);
-  rr(rx, ry, rw, rows * T - ry, 0, lin(rx, 0, rx + rw, 0, ['#a82838', '#c83848', '#a82838']));
-  for (const y of [5, 9]) coin(g, (RUNNER + 0.5) * T, y * T, 4.6);
+  g.strokeStyle = '#c89418'; g.lineWidth = 0.45;
+  for (let k = -rows; k <= cols + rows; k++) {
+    g.beginPath(); g.moveTo(k * T + T / 2, 0); g.lineTo(k * T + T / 2 + H, H); g.stroke();
+    g.beginPath(); g.moveTo(k * T + T / 2, 0); g.lineTo(k * T + T / 2 - H, H); g.stroke();
+  }
+  const ball = (x, y, r) => {
+    g.fillStyle = '#e8c860'; g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.fill();
+    g.fillStyle = '#fff0c0'; g.beginPath(); g.arc(x, y, r, 0, Math.PI); g.fill();
+    g.strokeStyle = '#6a4a10'; g.lineWidth = r * 0.22;
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.moveTo(x - r, y); g.lineTo(x + r, y); g.stroke();
+    g.fillStyle = '#fff0c0'; g.beginPath(); g.arc(x, y, r * 0.32, 0, Math.PI * 2); g.fill(); g.stroke();
+  };
+  for (let y = 0; y <= rows; y++) for (let x = 0; x <= cols; x++) ball(x * T + T / 2, y * T, 1.5);
+  const suits = ['♠', '♥', '♦', '♣'];
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '7px serif';
+  for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+    const k = (x * 3 + y * 5) % 6, cx = x * T + T / 2, cy = y * T + T / 2;
+    if (k < 4) { g.fillStyle = k % 3 === 1 || k === 2 ? '#e8506a' : '#2a0810'; g.globalAlpha = 0.85; g.fillText(suits[k], cx, cy + 0.4); g.globalAlpha = 1; }
+    else if (k === 4) coin(g, cx, cy, 2.4);
+    else { g.fillStyle = '#c89418'; star(g, cx, cy, 1.6); }
+  }
+  rr(0, 0, W, 2, 0, GC.goldDark); rr(0, H - 2, W, 2, 0, GC.goldDark); rr(0, 0, 2, H, 0, GC.goldDark); rr(W - 2, 0, 2, H, 0, GC.goldDark);
+  const rx = RUNNER * T + 1.5, rw = T - 3, ry = 3 * T;
+  rr(rx - 1.2, ry, rw + 2.4, H - ry, 0, '#e8c860');
+  rr(rx, ry, rw, H - ry, 0, lin(rx, 0, rx + rw, 0, ['#1a2a7a', '#2a44b0', '#1a2a7a']));
+  for (let y = ry + T / 2; y < H; y += T * 1.5) ball(rx + rw / 2, y, 3.6);
   return f.c;
 }
 
@@ -261,6 +274,10 @@ function feltArt(id, w) {
   const W = w * 16, H = 16, f = fine(W, H, 10), { g, rr, lin } = f;
   rr(0, 0, W, H, 1.5, lin(0, 0, 0, H, ['#2f8a50', '#1f6a3a']));
   g.strokeStyle = '#e8c860'; g.lineWidth = 0.4; g.beginPath(); g.roundRect(0.8, 0.8, W - 1.6, H - 1.6, 1.2); g.stroke();
+  if (id === 'highlow') {
+    words(g, 'HIGHER OR LOWER?', W / 2, 5, 1.6, '#ffe890');
+    words(g, 'LET IT RIDE OR CASH OUT', W / 2, 13.5, 1.2, '#c8f0c8');
+  }
   if (id === 'blackjack') {
     g.beginPath(); g.arc(W / 2, -6, 17, 0.35 * Math.PI, 0.65 * Math.PI); g.stroke();
     words(g, 'BLACKJACK PAYS 3 TO 2', W / 2, 5, 1.6, '#ffe890');
@@ -279,6 +296,27 @@ function marqueeArt(title, w) {
   }
   words(g, title, W / 2, H / 2 + 0.4, 6, NEON.pink); words(s, title, W / 2, H / 2 + 0.4, 6, '#ffb0e0');
   return f.c;
+}
+
+/** The jackpot board: JACKPOT in neon over the slots' pot in big gold digits, its bulbs chasing (`lit` flips them). */
+function jackpotArt(c, pot, lit) {
+  const g = c.getContext('2d'), W = c.width, H = c.height;
+  const bg = g.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#2a0e3a'); bg.addColorStop(1, '#12061e');
+  g.fillStyle = '#c89418'; g.fillRect(0, 0, W, H);
+  g.fillStyle = bg; g.beginPath(); g.roundRect(14, 14, W - 28, H - 28, 18); g.fill();
+  const n = 34;
+  for (let i = 0; i < n; i++) for (const y of [30, H - 30]) {
+    g.fillStyle = (i + (y > H / 2 ? 1 : 0) + lit) % 2 ? '#fff2a8' : '#8a6420';
+    g.beginPath(); g.arc(34 + i * (W - 68) / (n - 1), y, 7, 0, Math.PI * 2); g.fill();
+  }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 64px system-ui, sans-serif'; g.shadowColor = '#ff5ab8'; g.shadowBlur = 18; g.fillStyle = '#ff8ad0';
+  g.fillText('★ SLOTS JACKPOT ★', W / 2, H * 0.3);
+  g.font = '900 120px system-ui, sans-serif'; g.shadowColor = '#ffd84a'; g.shadowBlur = 24; g.fillStyle = '#ffe070';
+  g.fillText(pot.toLocaleString(), W / 2, H * 0.6);
+  g.shadowBlur = 0; g.font = '700 34px system-ui, sans-serif'; g.fillStyle = '#e8d8ff';
+  g.fillText('Line up three 7s to win it all!', W / 2, H * 0.82);
 }
 
 /** Meowth's stamp card sign: DAILY STAMPS and a row of stamps, or the scratch card waiting, or done for today. */
@@ -394,7 +432,7 @@ function paintScreen(c, def, e, cut) {
 export function buildCorner(THREE, size) {
   const { top: TOP, u: U } = size, cols = COLS, rows = ROWS, room = { cols, rows, top: TOP, u: U };
   const tileX = (tx) => tx + 0.5 - cols / 2, tileZ = (ty) => ty + 0.5 - rows / 2;
-  const group = new THREE.Group(), blocked = new Set(), spots = [], redraws = [], screens = [];
+  const group = new THREE.Group(), blocked = new Set(), spots = [], redraws = [], screens = [], ticks = [];
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const lit = (src, k = 1, colour = '#ffffff') => std({ map: texOf(src), emissive: new THREE.Color(colour), emissiveMap: texOf(src.glow ?? src), emissiveIntensity: k, roughness: 0.9 });
   const edge = std({ color: '#1a1028' });
@@ -425,19 +463,17 @@ export function buildCorner(THREE, size) {
   const cuts = new Map();
   const cutOf = (e) => (e.sprite ? cuts.get(e.sprite) ?? null : null);
   SHOWS.forEach((def, n) => {
-    const w = def.w - 0.15, cx = tileX(def.x) - 0.5 + def.w / 2, z = -rows / 2 + SHOW_D / 2 + 0.02;
-    for (let x = def.x; x < def.x + def.w; x++) blocked.add(`${x},0`);
+    const w = SHOW_W, cx = def.c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;
     const body = new THREE.Mesh(new THREE.BoxGeometry(w, SHOW_H, SHOW_D), [gold, gold, gold, gold, lit(showcaseArt(def, w), 0.9), gold]);
-    body.position.set(cx, SHOW_H / 2, z);
-    body.castShadow = body.receiveShadow = true;
-    const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 0.18, SHOW_D * 0.6), std({ color: SHOWCASES[def.row].colour, emissive: new THREE.Color(SHOWCASES[def.row].colour), emissiveIntensity: 1 }));
-    crown.position.set(cx, SHOW_H + 0.09, z);
+    body.position.set(cx, SHOW_Y + SHOW_H / 2, z);
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 0.1, 0.1), std({ color: SHOWCASES[def.row].colour, emissive: new THREE.Color(SHOWCASES[def.row].colour), emissiveIntensity: 1.2 }));
+    crown.position.set(cx, SHOW_Y + SHOW_H + 0.06, z);
     const sw = w * (SCREEN.x1 - SCREEN.x0), sh = SHOW_H * (SCREEN.y1 - SCREEN.y0);
     const canvas = new OffscreenCanvas(360, Math.round(360 * sh / sw));
     canvas.fine = 1;
     const map = texOf(canvas);
     const glass = new THREE.Mesh(new THREE.PlaneGeometry(sw, sh), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
-    glass.position.set(cx - w / 2 + w * (SCREEN.x0 + SCREEN.x1) / 2, SHOW_H * (1 - (SCREEN.y0 + SCREEN.y1) / 2), z + SHOW_D / 2 + 0.01);
+    glass.position.set(cx - w / 2 + w * (SCREEN.x0 + SCREEN.x1) / 2, SHOW_Y + SHOW_H * (1 - (SCREEN.y0 + SCREEN.y1) / 2), z + SHOW_D / 2 + 0.01);
     const sc = { def, canvas, map, at: 0, next: CYCLE * (1 + n * 0.25), held: false };
     sc.paint = () => {
       const list = cornerEntries(def.row);
@@ -446,8 +482,8 @@ export function buildCorner(THREE, size) {
       map.needsUpdate = true;
     };
     screens.push(sc);
-    const spot = { id: `show-${def.row}`, kind: 'game', name: `${SHOWCASES[def.row].title} showcase`, open: true, step: { x: def.x + Math.floor(def.w / 2), y: 1 },
-      frame: { x: cx, y: SHOW_H / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: SHOW_H + 0.1 } };
+    const spot = { id: `show-${def.row}`, kind: 'game', name: `${SHOWCASES[def.row].title} showcase`, open: true, step: { x: Math.floor(def.c), y: 1 },
+      frame: { x: cx, y: SHOW_Y + SHOW_H / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: SHOW_H + 0.1 } };
     spot.line = spot.name;
     spot.game = {
       name: spot.name,
@@ -465,6 +501,26 @@ export function buildCorner(THREE, size) {
   Promise.all(srcs.map(src => picture(src).then(c => cuts.set(src, c)))).then(() => screens.forEach(sc => sc.paint()));
   redraws.push(() => screens.forEach(sc => sc.paint()));
 
+  // the jackpot board on the back wall's left half: the slots' jackpot, live; a tap goes to the slots
+  {
+    const w = JACKPOT.w, cx = JACKPOT.c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;
+    const canvas = new OffscreenCanvas(Math.round(w * 120), Math.round(SHOW_H * 120));
+    canvas.fine = 1;
+    const map = texOf(canvas);
+    const board = new THREE.Mesh(new THREE.BoxGeometry(w, SHOW_H, SHOW_D), [gold, gold, gold, gold, new THREE.MeshBasicMaterial({ map, toneMapped: false }), gold]);
+    board.position.set(cx, SHOW_Y + SHOW_H / 2, z);
+    const spot = { id: 'jackpot', kind: 'game', game: { ...CASINO.slots, line: 'The slots\' jackpot! Three 7s on any machine win the lot. Tap again for the slots, meow.' }, name: 'Jackpot', open: true, line: 'Jackpot',
+      step: { x: Math.floor(JACKPOT.c), y: 1 }, frame: { x: cx, y: SHOW_Y + SHOW_H / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: SHOW_H + 0.1 } };
+    board.userData.front = spot;
+    spots.push(spot);
+    group.add(board);
+    let phase = -1;
+    const paint = (lit) => { jackpotArt(canvas, jackpot(), lit); map.needsUpdate = true; };
+    paint(0);
+    redraws.push(() => paint(Math.max(0, phase)));
+    ticks.push((now) => { const p = Math.floor(now / 400) % 2; if (p !== phase) { phase = p; paint(p); } });   // the bulbs chase
+  }
+
   // the game cabinets (rebuilt bigger 2026-10-11, the user's ask: they were small and scattered): one `w` tiles wide is a
   // big cabinet, its face the full painting on a short plinth; a one-tile one (a slot machine) a taller, narrower one
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
@@ -472,7 +528,7 @@ export function buildCorner(THREE, size) {
   const cab = (id, gm, x, y, foot) => {
     const w = gm.w ?? 1, big = w > 1;
     for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
-    const W = big ? Math.min(1.75, w * 0.86) : 0.92, D = big ? 0.85 : 0.72;
+    const W = big ? Math.min(2.05, w * 0.86) : 0.92, D = big ? 0.85 : 0.72;
     const aw = W - 0.1, ah = aw * 1.5, base = big ? 0.35 : 0.62, H = base + ah + 0.1;
     const m = new THREE.Group();
     m.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y));
@@ -501,11 +557,11 @@ export function buildCorner(THREE, size) {
   };
   for (const [id, gm] of Object.entries(GAMES)) cab(id, gm, gm.at.x, gm.at.y, 'FREE PLAY');
   for (const at of CASINO.slots.ats) cab('slots', CASINO.slots, at.x, at.y, 'BET 5-50');
-  for (const id of ['plinko', 'highlow']) cab(id, CASINO[id], CASINO[id].at.x, CASINO[id].at.y, 'BET 5-50');
+  for (const id of ['plinko']) cab(id, CASINO[id], CASINO[id].at.x, CASINO[id].at.y, 'BET 5-50');
 
   // the Blackjack table: green felt on a dark wood base, two tiles wide, cards dealt on it
   const wood = std({ color: '#4a2a18', roughness: 0.6 });
-  for (const id of ['blackjack']) {
+  for (const id of ['blackjack', 'highlow']) {
     const gm = CASINO[id], { x, y } = gm.at, w = gm.w;
     for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
     const t = new THREE.Group();
@@ -525,7 +581,7 @@ export function buildCorner(THREE, size) {
       c.position.set(cx, 0.79, cz);
       t.add(c);
     }
-    const board = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.8, 0.12), [gold, gold, gold, gold, lit(marqueeArt('BLACKJACK', w - 0.3), 1.1), gold]);
+    const board = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.8, 0.12), [gold, gold, gold, gold, lit(marqueeArt(id === 'highlow' ? 'HIGH-LOW' : 'BLACKJACK', w - 0.3), 1.1), gold]);
     board.position.set(0, 2.05, -0.62);
     t.add(board);
     for (const sx of [-1, 1]) {
@@ -539,40 +595,6 @@ export function buildCorner(THREE, size) {
     spots.push(spot);
     t.traverse(o => { o.userData.front = spot; });
     group.add(t);
-  }
-
-  // scenery: neon pillars on the floor, attract cabinets down the side walls (their screens cycle colours)
-  const tints = [NEON.pink, NEON.cyan, NEON.gold, NEON.lime];
-  const rings = [];
-  PILLARS.forEach(([x, y], n) => {
-    blocked.add(`${x},${y}`);
-    const p = new THREE.Group();
-    p.position.set(tileX(x), 0, tileZ(y));
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 3.2, 20), std({ color: '#2a1648', roughness: 0.5 }));
-    shaft.position.y = 1.6;
-    p.add(shaft);
-    for (let k = 0; k < 4; k++) {
-      const mat = std({ color: tints[(n + k) % 4], emissive: new THREE.Color(tints[(n + k) % 4]), emissiveIntensity: 1.2 });
-      const r = new THREE.Mesh(new THREE.TorusGeometry(0.27, 0.035, 8, 28), mat);
-      r.rotation.x = Math.PI / 2;
-      r.position.y = 0.5 + k * 0.75;
-      rings.push(mat);
-      p.add(r);
-    }
-    group.add(p);
-  });
-  const screenMats = [];
-  for (const [x, y] of ATTRACT) {
-    blocked.add(`${x},${y}`);
-    const face = std({ color: '#120a22', emissive: new THREE.Color(NEON.cyan), emissiveIntensity: 0.6 });
-    screenMats.push(face);
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.66, CAB_H, 0.9), [violet, violet, chrome, violet, violet, violet]);
-    m.position.set(tileX(x), CAB_H / 2, tileZ(y));
-    const glassSide = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.5), face);
-    glassSide.position.set(tileX(x) + (x === 0 ? 0.34 : -0.34), CAB_H * 0.62, tileZ(y));
-    glassSide.rotation.y = x === 0 ? Math.PI / 2 : -Math.PI / 2;
-    m.castShadow = true;
-    group.add(m, glassSide);
   }
 
   // the prize counter, Meowth's place behind it
@@ -629,9 +651,8 @@ export function buildCorner(THREE, size) {
     keeper: { ...KEEPER, x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1), lift: 0.6 },
     refresh: () => redraws.forEach(r => r()),
     tick(now) {
+      ticks.forEach(t => t(now));
       for (const sc of screens) if (!sc.held && now >= sc.next) { sc.at += 1; sc.next = now + CYCLE; sc.paint(); }
-      rings.forEach((m, i) => { m.emissiveIntensity = 0.7 + 0.6 * Math.max(0, Math.sin(now / 260 - i * 0.7)); });
-      screenMats.forEach((m, i) => { m.emissive.set(tints[Math.floor(now / 900 + i) % 4]); });
       sign.position.y = 2.35 + Math.sin(now / 900) * 0.04;
       if (stampState().ready) sign.scale.setScalar(1 + Math.max(0, Math.sin(now / 220)) * 0.04);
     },
