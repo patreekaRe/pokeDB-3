@@ -494,11 +494,10 @@ export function dressHall(three, { group, at, cols, rows, deck, deckD, block, ca
   block(mid + 4, 0);
   // the tall palms keep to the room's sides, beside the outer shops and in the front corners (the user's call, 2026-10-12)
   for (const [x, y, s, z] of [[2, 0, 3, 0.05], [cols - 3, 0, 4, 0.05], [0, rows - 2, 1, 0], [cols - 1, rows - 2, 2, 0]]) { ticks.push(palm(group, ...at(x, y).map((v, i) => v + (i ? z : 0)), 1.9, s)); block(x, y); }
-  // benches by the fountains and facing out at the front, lamps and topiary lining the carpet
+  // benches by the fountains (the two at the front taken out, 2026-10-12, the user's call), lamps and topiary lining the carpet
   const [lf, rf] = FOUNTAINS;
   bench(group, ...at(lf[0] - 3, lf[1]), Math.PI / 2); block(lf[0] - 3, lf[1]);
   bench(group, ...at(rf[0] + 3, rf[1]), -Math.PI / 2); block(rf[0] + 3, rf[1]);
-  for (const [x, y] of [[lf[0] - 2, rows - 2], [rf[0] + 2, rows - 2]]) { bench(group, ...at(x, y), 0); block(x, y); }
   for (const [x, y] of [[mid - 1, 3], [mid + 1, 3], [mid - 1, 7], [mid + 1, 7]]) { lamp(group, ...at(x, y), glows); block(x, y); }
   for (const [x, y, s] of [[mid - 2, 5, 1], [mid + 2, 5, 2]]) { topiary(group, ...at(x, y), 0.26, s); block(x, y); }
   // banners off the mezzanine, either side of each column

@@ -2137,5 +2137,6 @@ pilasters, a lit sign box, the Furniture store's green scalloped awning and flow
 chasing bulbs, spinning gold stars and velvet ropes, the empty shop's barrier, cones and board. The mall now renders smooth
 (like the Secret Base), the hall alone gets baked reflections (`hallEnv()`), and on a tall phone the hall shows as much
 more of its depth as fits (`win` in `fitShot()`). The ribbon logic only unblocks tiles it blocked (`places.hall.fixed`).
+The two benches at the hall's front, facing out, were taken out the same day (the user's call).
 
 - **Sold-out furniture locked out** (2026-10-12, the user's ask): the Furniture store never deals a piece the player owns (`dealDay()` in `js/secret-base.js`); a day's stock is kept in the save (`furnitureDay`) so a buy stays sold out till the next restock. Commit cc4322d.
