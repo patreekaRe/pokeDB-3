@@ -43,17 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'The Poké Mall\'s hall is bigger and done up: two Poké Ball fountains in gold-inlaid rings either side of a red carpet running straight to the Game Corner, palms along the sides, topiary in stone planters, park benches, street lamps, columns, vending machines, a mall guide and escalators up to the mezzanine, all in real 3D.'],
-  ['mall', 'Pokémon hang about the Poké Mall\'s hall: a few window-shopping or resting by the fountains, a couple wandering, one coming or going now and then, and a new lot every 8 hours. Tap one to chat.'],
-  ['mall', 'The shop entrances are built out from the wall: lit sign boxes, a green striped awning and flower troughs at the Furniture store, a marquee of chasing bulbs, gold stars and velvet ropes at the Game Corner, and barriers and cones at the shop still moving in.'],
-  ['base', 'What stands on top of furniture is modelled now, not a flat picture: the water cooler\'s bottle, the organ\'s pipes, the crates\' apples, carrots, corn, potatoes and cabbages, milk bottles, the till, the sink\'s tap, the fireplace\'s mantel things, the espresso machine, the prize counter\'s teddy and more.'],
-  ['base', 'Over 60 boxy pieces of furniture are real boxes now, their picture on the front only: fridges, vending machines, shelves, cabinets, arcade machines and more no longer come out round or see-through from behind. The stove and air hockey table are fully modelled, like the arcade cabinets.'],
-  ['mall', 'Poliwag Crossing and Ekans Trail are played by swiping the screen, with small Start and Exit keys under it.'],
-  ['look', 'Pokémon no longer sink into the walls, shop fronts and counters behind them.'],
-  ['hub', 'Hold and drag to walk everywhere you can walk: the Poké Mall and its shops, the Secret Base, the Pokémon Center, the Mart and the ? rooms.'],
-  ['fixes', 'The confirm sound plays as you tap a door, a shop or anything you walk to, not when you get there.'],
-  ['look', 'No more tiny text: every label in the game is at least a readable size, and the PC\'s text box is bigger.'],
-  ['mall', 'Every arcade machine\'s Start and Exit are small round buttons now, like a Neo Geo\'s.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -65,6 +54,27 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.11',
+    name: 'Grand Mall',
+    date: '2026-10-12',
+    notes: [
+  ['mall', 'The Furniture store never restocks a piece you already own: once it\'s yours it stays sold out for the day, then something new takes its place.'],
+  ['mall', 'The Poké Mall\'s hall is bigger and done up: two Poké Ball fountains in gold-inlaid rings either side of a red carpet running straight to the Game Corner, palms along the sides, topiary in stone planters, park benches, street lamps, columns, vending machines, a mall guide and escalators up to the mezzanine, all in real 3D.'],
+  ['mall', 'Pokémon hang about the Poké Mall\'s hall: a few window-shopping or resting by the fountains, a couple wandering, one coming or going now and then, and a new lot every 8 hours. Tap one to chat.'],
+  ['mall', 'The shop entrances are built out from the wall: lit sign boxes, a green striped awning and flower troughs at the Furniture store, a marquee of chasing bulbs, gold stars and velvet ropes at the Game Corner, and barriers and cones at the shop still moving in.'],
+  ['base', 'What stands on top of furniture is modelled now, not a flat picture: the water cooler\'s bottle, the organ\'s pipes, the crates\' apples, carrots, corn, potatoes and cabbages, milk bottles, the till, the sink\'s tap, the fireplace\'s mantel things, the espresso machine, the prize counter\'s teddy and more.'],
+  ['base', 'Over 60 boxy pieces of furniture are real boxes now, their picture on the front only: fridges, vending machines, shelves, cabinets, arcade machines and more no longer come out round or see-through from behind. The stove and air hockey table are fully modelled, like the arcade cabinets.'],
+  ['mall', 'Poliwag Crossing and Ekans Trail are played by swiping the screen, with small Start and Exit keys under it.'],
+  ['look', 'Pokémon no longer sink into the walls, shop fronts and counters behind them.'],
+  ['hub', 'Hold and drag to walk everywhere you can walk: the Poké Mall and its shops, the Secret Base, the Pokémon Center, the Mart and the ? rooms.'],
+  ['fixes', 'The confirm sound plays as you tap a door, a shop or anything you walk to, not when you get there.'],
+  ['look', 'No more tiny text: every label in the game is at least a readable size, and the PC\'s text box is bigger.'],
+  ['fixes', 'The Arcade Leaderboard\'s title fits on one line again, never cut off or wrapped.'],
+  ['mall', 'Every arcade machine\'s Start and Exit are small round buttons now, like a Neo Geo\'s.'],
+  ['mall', 'The Furniture store sells one of each piece: a buy poofs it off its platform and a SOLD OUT sign takes its place. Make more copies with your PC\'s Duplicate.'],
+    ],
+  },
   {
     version: '1.10',
     name: 'Arcade Cabinets',
@@ -400,7 +410,7 @@ export const IN_THE_GAME = [
   ['🏆', '138 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
-  ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
+  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

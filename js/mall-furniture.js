@@ -4,7 +4,7 @@
    next STOCK pieces of the same day's shuffle; its lift at the back right is roped off until it's open. Painted smooth
    like the hall (fine()), the furniture in its own pixels (pieceArt()). js/mall-3d.js walks it; this file only builds it. */
 
-import { PIECES, pieceArt, furnitureStock, UPSTAIRS_PRICE } from './secret-base.js';
+import { PIECES, pieceArt, furnitureStock, loadBase, UPSTAIRS_PRICE } from './secret-base.js';
 import { tex, trim } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
 import { fine, texOf, words, star } from './hub-3d.js';
@@ -341,6 +341,19 @@ function tagArt(text, L) {
   return f.c;
 }
 
+/** The board that stands on a platform once its piece is bought: a red SOLD OUT on cream, a leaf in the corner. */
+function soldArt(L) {
+  const f = fine(44, 22, 6), { g, rr } = f;
+  rr(0.6, 1.2, 43, 20.4, 3, 'rgba(60,30,10,0.25)');
+  rr(0, 0, 43, 20.4, 3, '#fbf3e0');
+  g.strokeStyle = '#d23a3a'; g.lineWidth = 1.2;
+  g.beginPath(); g.roundRect(1.8, 1.8, 39.4, 16.8, 2.2); g.stroke();
+  words(g, 'SOLD', 21.5, 7.4, 7.4, '#d23a3a');
+  words(g, 'OUT', 21.5, 14.6, 7.4, '#d23a3a');
+  leaf(g, 5.2, 16, 2.2, L.trim);
+  return f.c;
+}
+
 /** The rope across the lift's doors until the second floor is open: two brass posts, a red rope and its sign. */
 function ropeArt() {
   const f = fine(30, 12, 6), { g, rr } = f;
@@ -507,10 +520,12 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const top = std({ map: texOf(daisTop(L)), roughness: 0.8 }), side = std({ map: texOf(daisSide(L)), roughness: 0.7 });
   // the tallest four along the back, so nothing in front hides a rug or a doll behind it
   const tall = (id) => (PIECES[id].flat ? PIECES[id].high : PIECES[id].wall ? 3 : trim(pieceArt(id, 0, 1)).h * PX);
-  const stock = [...furnitureStock(undefined, floor)].sort((a, b) => tall(b) - tall(a));
+  const stock = [...furnitureStock(undefined, floor)].sort((a, b) => tall(b) - tall(a)), owned = loadBase().owned;
+  const soldMat = std({ map: texOf(soldArt(L)), alphaTest: 0.3, roughness: 0.7 });
   stock.forEach((id, i) => {
     const b = BAYS[i], p = PIECES[id], cx = tileX(b.x) + 0.5, cz = tileZ(b.y) + 0.5, H = DAIS_H;
-    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz } };
+    // one of each piece a player (the user's call, 2026-10-12): once owned it's sold out here, and copies are the PC's Duplicate
+    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz }, sold: (owned[p.own] || 0) > 0 };
     spots.push(spot);
     for (const [dx, dy] of [[0, 0], [1, 0], [0, 1], [1, 1]]) blocked.add(`${b.x + dx},${b.y + dy}`);
     const bay = new THREE.Group();
@@ -518,7 +533,8 @@ export function buildFloor(THREE, floor, size, upstairs) {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(DAIS, H, DAIS), [side, side, top, side, side, side]);
     slab.position.y = H / 2;
     slab.castShadow = slab.receiveShadow = true;
-    bay.add(slab);
+    const ware = new THREE.Group();   // the piece and its price card, which a buy poofs away (js/mall-3d.js's poof())
+    bay.add(slab, ware);
     const fit = Math.min(1.35, 1.8 / Math.max(p.w, p.h));   // small pieces a little larger than life, so they read on a platform
     const model = p.wall ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
     if (model) {
@@ -528,24 +544,24 @@ export function buildFloor(THREE, floor, size, upstairs) {
       model.position.y = H;
       model.rotation.y = -0.3;
       model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
-      bay.add(model);
+      ware.add(model);
     } else if (p.flat) {
       const k = Math.min(1, fit), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
       const box = new THREE.Mesh(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.9 }), s, s, s]);
       box.position.y = H + h / 2;
       box.castShadow = h > 0.1; box.receiveShadow = true;
-      bay.add(box);
+      ware.add(box);
     } else {
       const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1.35, 1.6 / w, b.tall / h);
       const board = new THREE.Mesh(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
       board.position.set(0, H + h * k / 2 + (p.wall ? 0.08 : 0), p.wall ? -0.5 : 0);
       board.castShadow = true;
-      bay.add(board);
+      ware.add(board);
       if (p.wall) {   // a wall piece hangs on a little display board of its own, on two legs
         const panel = new THREE.Mesh(new THREE.BoxGeometry(w * k + 0.2, h * k + 0.2, 0.06), std({ color: '#fbf3e0' }));
         panel.position.set(0, H + h * k / 2 + 0.08, -0.55);
         panel.castShadow = true;
-        bay.add(panel);
+        ware.add(panel);
       }
     }
     // the price card on a little wooden easel at the platform's front
@@ -555,7 +571,24 @@ export function buildFloor(THREE, floor, size, upstairs) {
     tag.castShadow = true;
     const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.24, 0.05), std({ color: L.dark }));
     leg.position.set(0.5, H + 0.1, DAIS / 2 - 0.16);
-    bay.add(tag, leg);
+    ware.add(tag, leg);
+    // the SOLD OUT board on its own easel in the platform's middle, shown once the piece is gone
+    const sold = new THREE.Group();
+    const card = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.65), soldMat);
+    card.position.set(0, 0.7, 0);
+    card.rotation.x = -0.12;
+    card.castShadow = true;
+    sold.add(card);
+    for (const x of [-0.36, 0.36]) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 0.05), std({ color: L.dark }));
+      post.position.set(x, 0.35, -0.06);
+      post.castShadow = true;
+      sold.add(post);
+    }
+    sold.position.set(0, H, 0.1);
+    ware.visible = !spot.sold; sold.visible = spot.sold;
+    bay.add(sold);
+    Object.assign(spot, { ware, soldSign: sold, bay });
     bay.traverse(o => { o.userData.front = spot; });
     group.add(bay);
   });

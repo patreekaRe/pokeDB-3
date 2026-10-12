@@ -1538,6 +1538,7 @@ Object.assign(SOUNDS, {
   'fx-boing': { synth: ac => render(ac, 0.6, t => Math.sin(TAU * (180 + 260 * Math.sin(t * 14) * Math.exp(-t * 3)) * t) * Math.exp(-t * 5), 0.4) },
   'fx-zap': noisy(0.45, (t, r) => (Math.sign(Math.sin(TAU * (900 + 600 * Math.sin(t * 90)) * t)) * 0.4 + r * 0.6) * Math.exp(-t * 6) * (0.5 + 0.5 * Math.sin(TAU * 40 * t)), 0.25),
   'fx-bubble': { synth: ac => render(ac, 0.12, t => Math.sin(TAU * (500 + 2400 * t) * t) * Math.exp(-t * 30), 0.3) },
+  'fx-poof': noisy(0.5, (t, r) => r * Math.min(1, t / 0.015) * Math.exp(-t * 9) * (0.6 + 0.4 * Math.sin(TAU * 90 * t)) + Math.sin(TAU * (520 - 380 * t) * t) * 0.25 * Math.exp(-t * 14), 0.3),
   'fx-whoosh': noisy(0.6, (t, r) => r * Math.sin(Math.PI * t / 0.6) ** 2, 0.25),
   'fx-drum': noisy(0.5, (t, r) => Math.sin(TAU * (60 + 120 * Math.exp(-t * 30)) * t) * Math.exp(-t * 7) + r * 0.3 * Math.exp(-t * 40), 0.55),
   'fx-snare': noisy(0.25, (t, r) => r * Math.exp(-t * 18) + Math.sin(TAU * 190 * t) * 0.4 * Math.exp(-t * 25), 0.4),

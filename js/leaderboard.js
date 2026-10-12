@@ -17,7 +17,7 @@ import { BOARD_COLLECTION, entryId, dayOffset, cleanName, buildEntry, checkEntry
 import { safariDay, safariDaily } from './data/safari.js';
 import { towerWeek, weekOffset, towerWeekly } from './data/tower.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
-import { $, el, openDialog, closeDialog } from './ui.js';
+import { $, el, openDialog, closeDialog, fitText } from './ui.js';
 import { AUGMENTS_BY_ID } from './data/augments.js';
 import { augIcon } from './augment-art.js';
 import { shelfApp, typed } from './bagdex.js';
@@ -410,6 +410,7 @@ async function render() {
   const k = K(), was = kind, at = host;
   const day = k.offset(k.now(), shown);
   $('board-title').textContent = k.title.replace(/^\S+ /, '');
+  fitText($('board-title'));
   $('board-dialog').dataset.kind = kind;
   topBox = el('div', 'lb-top');
   const head = [periodKeys(), note(k.header(day), 'lb-day')];

@@ -916,13 +916,17 @@ async function prizeTap(spot) {
   talk(`Ka-ching! ${news.join(' ')}`, 4600);
 }
 
-/** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. */
+/** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. One of each
+    piece a player (the user's call, 2026-10-12): once it's owned the platform is sold out, and copies are the PC's. */
 async function bayTap(spot) {
   const p = PIECES[spot.piece], n = styles(spot.piece).length, all = n > 1 ? ` (all ${n} styles)` : '';
+  if (spot.sold) {
+    pick(null);
+    return talk(`Sorry, the ${p.name.toLowerCase()} is sold out: you have one already! Your PC's Duplicate can make you more copies.`, 4600);
+  }
   if (picked !== spot) {
     pick(spot);
-    const had = loadBase().owned[p.own] || 0;
-    return talk(`Ooh, the ${p.name.toLowerCase()}${all}! That's ${p.price.toLocaleString()} PokéCoins. Tap again and it's yours.${had ? ` You have ${had} already.` : ''}`, 4600);
+    return talk(`Ooh, the ${p.name.toLowerCase()}${all}! That's ${p.price.toLocaleString()} PokéCoins. Tap again and it's yours.`, 4600);
   }
   const coins = getSave().coins ?? 0, short = () => { playSound('cancel'); talk(`Oh dear, you're ${(p.price - coins).toLocaleString()} PokéCoins short for the ${p.name.toLowerCase()}.`, 3600); };
   if (coins < p.price) return short();
@@ -933,7 +937,70 @@ async function bayTap(spot) {
   P.keeper.hopUntil = performance.now() + 600;
   pick(null);
   showCoins();
+  poof(spot);
   talk(n > 1 ? `Thank you! All ${n} styles of the ${p.name.toLowerCase()} are off to your Secret Base.` : `Thank you! The ${p.name.toLowerCase()} is off to your Secret Base.`, 3600);
+}
+
+/* The poof as a piece is bought: it swells and shrinks away into a cloud of soft puffs and a few gold sparkles, then the
+   SOLD OUT board pops up in its place. */
+const POOF_MS = 900, SIGN_AT = 320;
+let poofs = [];
+
+function poof(spot) {
+  spot.sold = true;
+  if (calm) { spot.ware.visible = false; spot.soldSign.visible = true; return; }
+  const box = new THREE.Box3().setFromObject(spot.ware), tall = Math.max(0.5, box.max.y - box.min.y), y0 = box.min.y - spot.bay.position.y;
+  const bits = [], puff = new THREE.SphereGeometry(0.26, 12, 8), glint = new THREE.OctahedronGeometry(0.07);
+  const smoke = new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, depthWrite: false });
+  const gold = new THREE.MeshBasicMaterial({ color: '#f8d040', transparent: true, depthWrite: false });
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 7 + Math.random() * 0.4, m = new THREE.Mesh(puff, smoke);
+    m.position.set(Math.cos(a) * 0.2, y0 + 0.15 + (i / 23) * tall * 0.9, Math.sin(a) * 0.2);
+    m.raycast = () => {};
+    spot.bay.add(m);
+    bits.push({ m, v: new THREE.Vector3(Math.cos(a) * (0.9 + Math.random() * 0.6), 0.5 + Math.random() * 0.9, Math.sin(a) * (0.9 + Math.random() * 0.6)), grow: 1.4 + Math.random() });
+  }
+  for (let i = 0; i < 10; i++) {
+    const a = Math.random() * Math.PI * 2, m = new THREE.Mesh(glint, gold);
+    m.position.set(0, y0 + tall * (0.4 + Math.random() * 0.4), 0);
+    m.raycast = () => {};
+    spot.bay.add(m);
+    bits.push({ m, v: new THREE.Vector3(Math.cos(a) * 1.8, 1.2 + Math.random() * 1.4, Math.sin(a) * 1.8), spark: true });
+  }
+  spot.soldSign.scale.setScalar(0.001);
+  poofs.push({ spot, bits, smoke, gold, t0: performance.now() });
+  playSound('fx-poof');
+}
+
+function tickPoofs(dt, now) {
+  if (!poofs.length) return;
+  const t = dt / 1000;
+  poofs = poofs.filter(f => {
+    const age = now - f.t0, k = Math.min(1, age / POOF_MS);
+    const w = Math.min(1, age / 200);   // the piece swells a touch, then shrinks to nothing
+    f.spot.ware.scale.setScalar(Math.max(0.001, (1 + Math.sin(w * Math.PI) * 0.15) * (1 - w * w)));
+    f.spot.ware.visible = w < 1;
+    if (age >= SIGN_AT) {   // the board pops up with a little overshoot
+      const s = Math.min(1, (age - SIGN_AT) / 380);
+      f.spot.soldSign.visible = true;
+      f.spot.soldSign.scale.setScalar(Math.max(0.001, 1 + Math.sin(s * Math.PI) * 0.25 * (1 - s) - (1 - s) ** 3));
+    }
+    for (const b of f.bits) {
+      b.v.multiplyScalar(1 - Math.min(1, t * (b.spark ? 1.5 : 3.2)));
+      if (b.spark) b.v.y -= 3 * t;
+      b.m.position.addScaledVector(b.v, t);
+      if (!b.spark) b.m.scale.setScalar(0.6 + k * b.grow);
+      else b.m.rotation.y += 9 * t;
+    }
+    f.smoke.opacity = 0.9 * (1 - k) ** 1.5;
+    f.gold.opacity = 1 - k;
+    if (k < 1) return true;
+    for (const b of f.bits) b.m.parent?.remove(b.m);
+    f.bits[0].m.geometry.dispose(); f.bits.at(-1).m.geometry.dispose(); f.smoke.dispose(); f.gold.dispose();
+    f.spot.ware.scale.setScalar(1);
+    f.spot.soldSign.scale.setScalar(1);
+    return false;
+  });
 }
 
 /** A Game Corner game (Voltorb Flip, the Gachapon): the first tap picks it and Meowth says what it is, the next sits
@@ -1190,6 +1257,7 @@ function frame(now) {
   places.hall?.crowd?.tick(now, dt, P.id === 'hall');
   tickRibbon(dt, now);
   tickConfetti(dt, now);
+  tickPoofs(dt, now);
   if (!calm) for (const m of mats) m.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
   post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
