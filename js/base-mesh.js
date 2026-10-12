@@ -19,6 +19,17 @@ import { shapeOf } from './base-shapes.js';
 import { PIECES } from './base-furniture.js';
 import { PLUSH } from './base-dolls.js';
 import { sewPlush } from './base-plush3d.js';
+import { MAKES as MAKES_A } from './base-models-a.js';
+import { MAKES as MAKES_B } from './base-models-b.js';
+import { MAKES as MAKES_C } from './base-models-c.js';
+import { MAKES as MAKES_D } from './base-models-d.js';
+import { MAKES as MAKES_E } from './base-models-e.js';
+import { MAKES as MAKES_F } from './base-models-f.js';
+import { MAKES as MAKES_G } from './base-models-g.js';
+import { MAKES as MAKES_H } from './base-models-h.js';
+import { MAKES as MAKES_I } from './base-models-i.js';
+import { MAKES as MAKES_J } from './base-models-j.js';
+import { MAKES as MAKES_K } from './base-models-k.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -214,27 +225,33 @@ function kit(id, paint) {
     if (!pics.has(canvas)) { const m = paint(canvas); m.userData.kind = 'pic'; pics.set(canvas, m); }
     return pics.get(canvas);
   };
-  const put = (geo, m, x = 0, y = 0, z = 0, ry = 0, rx = 0, rz = 0) => {
+  const into = (to) => (geo, m, x = 0, y = 0, z = 0, ry = 0, rx = 0, rz = 0) => {
     if (rx) geo.rotateX(rx);
     if (rz) geo.rotateZ(rz);
     if (ry) geo.rotateY(ry);
     geo.translate(x, y, z);
     if (m.userData.kind === 'wood') worldUV(geo, 1.4);
     else if (m.userData.kind === 'cloth') worldUV(geo, 3);
-    if (!bins.has(m)) bins.set(m, []);
-    bins.get(m).push(geo);
+    if (!to.has(m)) to.set(m, []);
+    to.get(m).push(geo);
     return geo;
   };
+  const put = into(bins), doors = [];
   return {
-    p, pal, M, pic, put, bins, r: rng(id),
+    p, pal, M, pic, put, bins, doors, r: rng(id),
+    /** A door of its own for js/base-play.js to swing (a fridge's, a wardrobe's): `K.door([x, z], side)` returns a put
+        for its parts, built shut in the model's frame, hinged at x, z (side 1 its left edge, -1 its right); `K.inside`
+        `{ x, y, w, h, z }` is where the picture of what's inside goes, behind it (`bare: true` for none, when the inside is
+        modelled behind glass). */
+    door: (hinge, side = 1) => { const d = { hinge, side, bins: new Map() }; doors.push(d); return into(d.bins); },
     wood: (h = pal.w) => M('wood', h), cloth: (h = pal.c) => M('cloth', h), plain: (h) => M('plain', h),
     metal: (h = pal.m) => M('metal', h), gloss: (h) => M('gloss', h), glass: () => M('glass', '#cfe8f4'), glow: (h = pal.g) => M('glow', h),
   };
 }
 
-function assemble(K) {
+function assemble(K, bins = K.bins) {
   const g = new THREE.Group();
-  for (const [m, geos] of K.bins) {
+  for (const [m, geos] of bins) {
     const mesh = new THREE.Mesh(merge(geos), m);
     mesh.castShadow = m.userData.kind !== 'glass';
     mesh.receiveShadow = true;
@@ -1732,6 +1749,20 @@ function leafyModel(id, paint) {
   return g;
 }
 
+/* the furniture modelled after the arcade cabinets (2026-10-12, the user's ask: a table tennis table, a milk cooler and
+   a potting bench looked nothing like themselves, carved from their paintings): each batch of shelves is a file of
+   builders, js/base-models-*.js, handed this file's parts as `L` (they import nothing, so js/base-shapes.js can read
+   their shapes without Three.js) */
+const L = {
+  get THREE() { return THREE; },
+  rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
+  leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
+};
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K]) for (const [k, f] of Object.entries(makes)) {
+  if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
+  B[k] = f;
+}
+
 /** Any piece as a 3D group (see the file's head); null for a flat piece with no shape (the caller lays it as a slab).
     `paint(canvas)` makes the material for a painting. */
 export function furnitureModel(three, id, paint) {
@@ -1744,11 +1775,15 @@ export function furnitureModel(three, id, paint) {
     g = assemble(K);
   } else if (shape && B[shape.make]) {
     const K = kit(id, paint);
-    B[shape.make](K, shape, W, D);
+    B[shape.make](K, shape, W, D, L);
     g = assemble(K);
+    if (K.doors.length && K.inside) {
+      g.userData.inside = K.inside;
+      g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });
+    }
     // a part that turns on its own (the globe's Earth) is moved to turn about its middle, tipped on its axis
     for (const mesh of g.children) {
-      const pv = mesh.material.userData.pivot;
+      const pv = mesh.material?.userData.pivot;
       if (!pv) continue;
       mesh.geometry.translate(0, -pv.y, 0);
       mesh.position.y = pv.y;

@@ -5,6 +5,18 @@
    be put on. A kind with no line here is still 3D: js/base-mesh.js turns a round piece on a lathe or puffs its painting
    up like a plush, and carves the rest from its paintings (js/base-model.js). */
 
+import { SHAPES as SHAPES_A } from './base-models-a.js';
+import { SHAPES as SHAPES_B } from './base-models-b.js';
+import { SHAPES as SHAPES_C } from './base-models-c.js';
+import { SHAPES as SHAPES_D } from './base-models-d.js';
+import { SHAPES as SHAPES_E } from './base-models-e.js';
+import { SHAPES as SHAPES_F } from './base-models-f.js';
+import { SHAPES as SHAPES_G } from './base-models-g.js';
+import { SHAPES as SHAPES_H } from './base-models-h.js';
+import { SHAPES as SHAPES_I } from './base-models-i.js';
+import { SHAPES as SHAPES_J } from './base-models-j.js';
+import { SHAPES as SHAPES_K } from './base-models-k.js';
+
 const S = {};
 const set = (ids, shape) => ids.split(' ').forEach(id => { S[id] = { ...shape }; });
 
@@ -132,6 +144,9 @@ set('blackjacktable', { make: 'cardtable', game: 'blackjack' });
 set('highlowtable', { make: 'cardtable', game: 'highlow' });
 set('plinkoboard', { make: 'plinko' });
 set('pokepinball', { make: 'pinball' });
+
+/* the batches modelled after the arcade cabinets (js/base-models-*.js): `'id id2': shape` each */
+for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
 
 export const SHAPES = S;
 
