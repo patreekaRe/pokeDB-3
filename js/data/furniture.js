@@ -4,7 +4,7 @@
    Each entry is a kind from the base's catalogue (js/base-furniture*.js, a
    family id) that is never sold: it comes from a badge, an achievement (the
    starter it unlocks), a feat or a finished Safari Pokédex page, named in its
-   `from`, or a Game Corner prize swapped for tickets. Every one of those is a list the save never shrinks (`badges`,
+   `from`, or a Game Corner prize bought at Meowth's counter. Every one of those is a list the save never shrinks (`badges`,
    `unlocked`, `feats`, `safariDex.done`, `corner.prizes`), so a kind is owned once its source
    is, with nothing saved of its own: `earnedFurniture(save)` works it out, and
    an old save has every kind it can prove. One of each comes with the source,
@@ -73,7 +73,7 @@ export const FURNITURE = [
   { kind: 'boulder', from: ['safari', 'peak'] },
   { kind: 'saguaro', from: ['safari', 'desert'] },
   { kind: 'tent', from: ['badge', 'safari-master'] },
-  // The Game Corner's prizes, swapped for tickets at Meowth's counter (PRIZES in js/data/corner.js).
+  // The Game Corner's prizes, bought at Meowth's counter (PRIZES in js/data/corner.js).
   ...Object.keys(PRIZES_BY_KIND).map(kind => ({ kind, from: ['prize', kind] })),
 ];
 
@@ -98,6 +98,6 @@ export function howToEarn(piece, save) {
   const src = sourceOf(piece);
   if (kind === 'badge') return `Earn the ${src.name}: ${src.text}`;
   if (kind === 'achievement' || kind === 'feat') return src.text;
-  if (kind === 'prize') return `Swap ${src.tickets} tickets for it at Meowth's prize counter in the Game Corner`;
+  if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

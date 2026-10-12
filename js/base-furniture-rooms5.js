@@ -645,7 +645,7 @@ add('Arcade', [
   } },
 ]);
 
-/* The Game Corner's prizes (2026-10-12, the user's ask): never sold, swapped for tickets at Meowth's prize counter
+/* The Game Corner's prizes (2026-10-12, the user's ask): never sold in the store, bought at Meowth's prize counter
    (PRIZES in js/data/corner.js, earned through js/data/furniture.js). */
 const SEVEN = LETTERS[7], CASINO_RED = '#c82838';
 /** A gold 7 with a darker edge and a glint, `s` pixels a dot. */

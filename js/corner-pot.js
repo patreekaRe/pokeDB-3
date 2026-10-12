@@ -1,7 +1,7 @@
 /* corner-pot.js  -  the Game Corner games' shared pot: what they've paid today, all told and by game, capped at
    DAILY_CAP and GAME_CAP a UTC day (js/data/corner.js), kept in `save.corner.pot` ({ day, won, games }). */
 
-import { capPay, TICKET_CAP, better } from './data/corner.js';
+import { capPay, TICKET_COINS, better } from './data/corner.js';
 import { badgeLine } from './data/badges.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
@@ -28,6 +28,7 @@ export function payGame(coins, game) {
     d.stats.coinsEarned += paid;
   });
   refreshCoins();
+  record('coins', paid, true);
   return paid;
 }
 
@@ -43,32 +44,25 @@ export function stamp(game) {
   updateSave(d => { d.corner = { ...d.corner, stamps: { day: safariDay(), games: [...have, game] } }; });
 }
 
-/* ---------- prize tickets and records (js/data/corner.js) ---------- */
+/* ---------- the prize counter and records (js/data/corner.js) ---------- */
 
-/** Tickets held, and earned today. */
-export function tickets() {
-  const t = getSave().corner?.tickets ?? {};
-  return { have: t.have ?? 0, today: t.day === safariDay() ? t.today : 0 };
-}
-
-/** Adds up to `n` tickets (what TICKET_CAP leaves today); returns how many. */
-export function earnTickets(n) {
-  const day = safariDay(), t = tickets(), got = Math.max(0, Math.min(n, TICKET_CAP - t.today));
-  if (!got) return 0;
-  updateSave(d => { d.corner = { ...d.corner, tickets: { have: t.have + got, day, today: t.today + got } }; });
-  record('tickets', got, true);
-  return got;
-}
-
-/** Spends `n` tickets on a prize; false if there aren't enough. */
-export function spendTickets(n, kind) {
-  const t = tickets();
-  if (t.have < n) return false;
-  updateSave(d => {
-    d.corner = { ...d.corner, tickets: { ...d.corner.tickets, have: t.have - n }, prizes: [...(d.corner?.prizes || []), kind] };
-  });
+/** Buys a prize for `coins` PokéCoins; false if there aren't enough. */
+export function buyPrize(coins, kind) {
+  if (getSave().coins < coins) return false;
+  updateSave(d => { d.coins -= coins; d.corner = { ...d.corner, prizes: [...(d.corner?.prizes || []), kind] }; });
+  refreshCoins();
   badgeNews();
   return true;
+}
+
+/** Cashes in a save's old prize tickets (the game gave them for a day); returns the PokéCoins paid, 0 if none. */
+export function cashTickets() {
+  const have = getSave().corner?.tickets?.have ?? 0;
+  if (!have) return 0;
+  const coins = have * TICKET_COINS;
+  updateSave(d => { d.coins += coins; d.corner = { ...d.corner, tickets: { ...d.corner.tickets, have: 0 } }; });
+  refreshCoins();
+  return coins;
 }
 
 /** Keeps a record (the higher value, or a count added to), then grants any badge it earns. */

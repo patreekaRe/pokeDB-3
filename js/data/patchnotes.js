@@ -44,9 +44,9 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['mall', 'The Game Corner no longer takes bets: every game is free. Each has a few plays a day that pay PokéCoins (5 spins, 4 Plinko drops, 3 hands each of Blackjack and High-Low, 2 Voltorb Flip rounds, the daily quiz and scratch card), up to 500 a day all told and 150 from any one game.'],
-  ['mall', 'Prize tickets: once a Game Corner game\'s paying plays are done, keep playing and its wins earn tickets (not Plinko: its extra drops are just for fun) (up to 100 a day). Tap Meowth to swap them at its prize counter for things coins can\'t buy: a slot machine, a Voltorb Flip machine, a Plinko board, a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
+  ['mall', 'Meowth\'s prize counter: tap Meowth in the Game Corner to buy, for PokéCoins, things the Furniture store never sells: a slot machine, a Voltorb Flip machine, a Plinko board, a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
   ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
-  ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 1,000 tickets and every prize.'],
+  ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 2,500 PokéCoins won and every prize.'],
   ['fixes', 'Plinko no longer shows what a drop won before the ball lands: the coins and Today meter go up as it hits its bin.'],
   ['mall', 'The Game Corner no longer talks about chips: every play is free, so the Chips meter and the stake lines are gone.'],
 ];
@@ -319,6 +319,6 @@ export const IN_THE_GAME = [
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day and prize tickets after that, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of Game Corner furniture, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

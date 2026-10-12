@@ -28,16 +28,16 @@ const tierOf = (b) => Math.abs(b - PLINKO_ROWS / 2);
 const HELP = [
   ['Drop a Poké Ball.', 'It\'s free, and it bounces down through the pegs into a bin.'],
   ['The bin it lands in sets what you win,', `its number times ${STAKE} PokéCoins: ×0.2 to ×0.55 in the middle, more further out, up to ×10 (${10 * STAKE}) at the very edges.`],
-  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun (Plinko earns no prize tickets).'],
+  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun.'],
 ];
 
 let panel = null, bet = STAKE, line = null, help = false;
-let held = { coins: 0, tickets: 0 };
+let held = { coins: 0 };
 let cv = null, g = null, balls = [], flashes = new Map(), binHits = new Map(), raf = 0, last = 0, plinked = 0;
 
 export function openPlinko(onClose) {
   preloadSounds('stick', 'coins', 'cancel', 'select', 'plink-1', 'plink-2');
-  balls = []; flashes = new Map(); binHits = new Map(); held = { coins: 0, tickets: 0 };
+  balls = []; flashes = new Map(); binHits = new Map(); held = { coins: 0 };
   line = 'Drop a Poké Ball! The edges pay big, the middle pays little.';
   help = firstLook('plinko');
   panel = openPanel('pk', 'Plinko', { onClose: () => { cancelAnimationFrame(raf); onClose?.(); }, busy: () => balls.length > 0 });
@@ -87,7 +87,7 @@ function drop(n) {
     const play = stake('plinko');
     const { bin, path } = plinkoDrop(playRand('plinko', play.day, play.n)), m = PLINKO_PAYS[bin];
     const res = settle(bet * m, 'plinko', play.paid);
-    held.coins += res.coins; held.tickets += res.tickets;
+    held.coins += res.coins;
     setTimeout(() => launch(bin, path, m, res, play.paid), i * 260);
   }
   playSound('select');
@@ -157,7 +157,7 @@ function step(b, dt, now) {
 
 function binHit(b, now) {
   binHits.set(b.bin, now);
-  held.coins -= b.res.coins; held.tickets -= b.res.tickets;
+  held.coins -= b.res.coins;
   showHeld();
   playSound(b.m >= 1 ? 'coins' : 'cancel', 'select');
   const won = wonText(b.res, b.paid);

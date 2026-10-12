@@ -84,32 +84,24 @@ export function nextLevel(level, { won, flips }) {
 /** A fresh Voltorb Flip record for a day. `level` carries over between days. */
 export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0, flipped: [] });
 
-/* ---------- Prize tickets (2026-10-12, the user's ask: playing on for fun is still worth something) ----------
-   A play that no longer pays coins earns tickets instead, one for every STAKE chips it wins (a Voltorb round one for
-   every 5 coins it would pay), up to TICKET_CAP a UTC day. Tickets buy PRIZES at Meowth's prize counter: Game Corner
-   furniture and Gen 1's Game Corner dolls, never sold for coins (js/data/furniture.js keeps them out of the store).
-   Priced so a regular player swaps for one every few days. Kept in `save.corner.tickets` ({ have, earned, day, today })
-   and `save.corner.prizes` (kinds swapped for). */
+/* ---------- Meowth's prize counter (2026-10-12; prize tickets were taken out the same day, the user's call: Plinko
+   could be spammed for them). Game Corner furniture and Gen 1's Game Corner dolls, never sold in the store, bought here
+   for PokéCoins. A save's old tickets are cashed in at TICKET_COINS each the first time it opens (js/prizes.js). */
 
-export const TICKET_CAP = 100;
-/** Games whose for-fun plays earn no tickets (2026-10-12, the user's call: Plinko drops could be spammed for them). */
-export const NO_TICKETS = new Set(['plinko']);
-/** Tickets a for-fun play's win earns: one per STAKE chips. */
-export const ticketsFor = (chips) => Math.max(0, Math.floor(chips / STAKE));
-/** Tickets a for-fun Voltorb round earns: one per 5 coins it would have paid. */
-export const voltorbTickets = (points) => Math.floor(payout(points) / 5);
+/** What one old prize ticket is worth in PokéCoins: the prizes' coin prices are their ticket prices times this. */
+export const TICKET_COINS = 3;
 
 export const PRIZES = [
-  { kind: 'abradoll', tickets: 60 },
-  { kind: 'clefairydoll', tickets: 60 },
-  { kind: 'casinorug', tickets: 80 },
-  { kind: 'dratinidoll', tickets: 90 },
-  { kind: 'jackpotsign', tickets: 100 },
-  { kind: 'luckyseven', tickets: 120 },
-  { kind: 'plinkoboard', tickets: 150 },
-  { kind: 'slotmachine', tickets: 150 },
-  { kind: 'voltorbflip', tickets: 150 },
-  { kind: 'bigdratinidoll', tickets: 250 },
+  { kind: 'abradoll', coins: 180 },
+  { kind: 'clefairydoll', coins: 180 },
+  { kind: 'casinorug', coins: 240 },
+  { kind: 'dratinidoll', coins: 270 },
+  { kind: 'jackpotsign', coins: 300 },
+  { kind: 'luckyseven', coins: 360 },
+  { kind: 'plinkoboard', coins: 450 },
+  { kind: 'slotmachine', coins: 450 },
+  { kind: 'voltorbflip', coins: 450 },
+  { kind: 'bigdratinidoll', coins: 750 },
 ];
 export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
 
@@ -118,7 +110,7 @@ export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
 /** What each record means, for the games' Best lines and the badges. */
 export const RECORDS = {
   slots: 'Biggest spin', jackpots: 'Jackpots', plinko: 'Best drop', bjStreak: 'Win streak', hl: 'Best streak',
-  voltorbLevel: 'Best level', voltorbScore: 'Best board', quizPerfect: 'Perfect rounds', tickets: 'Tickets earned',
+  voltorbLevel: 'Best level', voltorbScore: 'Best board', quizPerfect: 'Perfect rounds', coins: 'PokéCoins won',
 };
 /** A record's new value: the higher of the old and `value`, or the old plus one for a count (`add`). */
 export const better = (best, key, value, add = false) => ({ ...best, [key]: add ? (best?.[key] ?? 0) + value : Math.max(best?.[key] ?? 0, value) });

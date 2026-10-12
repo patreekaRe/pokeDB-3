@@ -198,9 +198,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         - **Games (the user's keepers):** Voltorb Flip, Who's That Pokémon?, Slots (tap-to-stop, jackpot, Pikachu
           bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low. **No betting since 2026-10-12** (the user's
           call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
-          an average day ~250 (`tests/corner.test.mjs`). Then (same day, the user's yes to all of it) prize tickets for plays
-          past the paying ones, Meowth's prize counter (6 new Game Corner pieces and Gen 1's prize dolls), records under
-          every game and 8 Game Corner badges. A daily High-Low leaderboard came and went the same day: no leaderboards
+          an average day ~250 (`tests/corner.test.mjs`). Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
+          Gen 1's prize dolls), records under every game and 8 Game Corner badges. Prize tickets for plays past the paying
+          ones came and went the same day (the user's call: Plinko could be spammed): extra plays are for fun, the counter
+          sells for PokéCoins (180-750), old tickets cashed in at 3 coins; the Chips meter and every "chips" line are gone,
+          and Plinko's coins show only once the ball lands (branch `claude/dreamy-galileo-0o4aqc`, pushed to `main`). A daily High-Low leaderboard came and went the same day: no leaderboards
           in the Game Corner (the user's call). Next is their playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
           Rocket Blast-Off. Every game has a How to play card (the "?").
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on

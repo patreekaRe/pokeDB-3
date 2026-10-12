@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   VOLTORB_BOARDS, dealBoard, voltorbBoard, clues, score, cleared, payout, nextLevel, bestScore,
   pickDeal, dealPrice, capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
-  PRIZES, PRIZES_BY_KIND, ticketsFor, voltorbTickets, TICKET_CAP, better,
+  PRIZES, PRIZES_BY_KIND, better,
 } from '../js/data/corner.js';
 import {
   STRIP, slotPay, stopAt, BONUS_SPINS, JACKPOT, PLINKO_ODDS, PLINKO_PAYS, shuffledDeck, handValue, isBlackjack,
@@ -131,12 +131,9 @@ test('a quiz round has distinct questions, each with its answer among distinct o
   assert.equal(quizPay(4), 20);
 });
 
-test('prize tickets: one per stake won, prizes unique and priced to take a few days', () => {
-  assert.equal(ticketsFor(STAKE * 3), 3);
-  assert.equal(ticketsFor(STAKE - 1), 0);
-  assert.equal(voltorbTickets(0), 0);
+test('prizes are unique and priced to take a few days of Game Corner coins', () => {
   assert.equal(Object.keys(PRIZES_BY_KIND).length, PRIZES.length);
-  for (const p of PRIZES) assert.ok(p.tickets >= 50 && p.tickets <= TICKET_CAP * 3, p.kind);
+  for (const p of PRIZES) assert.ok(p.coins >= 150 && p.coins <= DAILY_CAP * 2, p.kind);
 });
 
 test('records keep the best, and counts add up', () => {

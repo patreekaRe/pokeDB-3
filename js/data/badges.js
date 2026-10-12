@@ -305,10 +305,10 @@ export const BADGES = [
     text: 'Reach level 8 in Voltorb Flip', test: (s, save) => (save.corner?.best?.voltorbLevel || 0) >= 8 },
   { id: 'corner-quiz', group: 'corner', name: 'Quiz Whiz Badge', icon: 'corner-quiz', emoji: '❓',
     text: 'Get 5 perfect rounds of Who\'s That Pokémon?', test: (s, save) => (save.corner?.best?.quizPerfect || 0) >= 5 },
-  { id: 'corner-tickets', group: 'corner', name: 'Ticket Tycoon Badge', icon: 'corner-tickets', emoji: '🎟️',
-    text: 'Earn 1,000 prize tickets in all', test: (s, save) => (save.corner?.best?.tickets || 0) >= 1000 },
+  { id: 'corner-tickets', group: 'corner', name: 'Big Earner Badge', icon: 'corner-tickets', emoji: '💰',
+    text: 'Win 2,500 PokéCoins at the Game Corner in all', test: (s, save) => (save.corner?.best?.coins || 0) >= 2500 },
   { id: 'corner-prizes', group: 'corner', name: 'Prize Collector Badge', icon: 'corner-prizes', emoji: '🏅',
-    text: 'Swap tickets for every prize at Meowth\'s counter', test: (s, save) => PRIZES.every(p => (save.corner?.prizes || []).includes(p.kind)) },
+    text: 'Buy every prize at Meowth\'s counter', test: (s, save) => PRIZES.every(p => (save.corner?.prizes || []).includes(p.kind)) },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));
