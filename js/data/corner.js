@@ -105,8 +105,6 @@ export const PRIZES = [   // only the games (the user's call, 2026-10-12), each 
   { kind: 'stackercabinet', coins: 450 },
   { kind: 'dashcabinet', coins: 450 },
   { kind: 'memorycabinet', coins: 450 },
-  { kind: 'slowpokeclaw', coins: 450 },
-  { kind: 'pokeskeeball', coins: 450 },
   { kind: 'pokepinball', coins: 450 },
   { kind: 'volleycabinet', coins: 450 },
   { kind: 'unowncabinet', coins: 450 },
@@ -122,6 +120,8 @@ export const PRIZES = [   // only the games (the user's call, 2026-10-12), each 
 /* Prizes the counter sold until it kept to the games (2026-10-12): whoever bought one keeps it, nobody else can get it
    (js/data/furniture.js lists them `retired`, so the base's Shop never offers them). */
 export const RETIRED_PRIZES = [
+  { kind: 'slowpokeclaw', coins: 450 },   // off the counter 2026-10-12, the user's call
+  { kind: 'pokeskeeball', coins: 450 },
   { kind: 'jackpotsign', coins: 300 },
   { kind: 'luckyseven', coins: 360 },
   { kind: 'casinorug', coins: 240 },

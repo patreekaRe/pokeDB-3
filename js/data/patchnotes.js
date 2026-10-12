@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'Slowpoke\'s Claw Machine and Poké Ball Skee-Ball are off Meowth\'s prize counter; anyone who bought one keeps it and can still play it at home.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
