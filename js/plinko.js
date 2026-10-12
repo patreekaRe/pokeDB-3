@@ -9,6 +9,7 @@ import { PLINKO_ROWS, PLINKO_PAYS, plinkoDrop, playRand } from './data/casino.js
 import { STAKE } from './data/corner.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
+import { getSave } from './storage.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key, firstLook, helpKey, helpCard } from './corner-panel.js';
 import { stake, settle, wonText, bestLine, playsLeft, paysNow, tableMeters, sayLine, playLabel } from './casino-pot.js';
@@ -31,11 +32,12 @@ const HELP = [
 ];
 
 let panel = null, bet = STAKE, line = null, help = false;
+let held = { coins: 0, tickets: 0 };
 let cv = null, g = null, balls = [], flashes = new Map(), binHits = new Map(), raf = 0, last = 0, plinked = 0;
 
 export function openPlinko(onClose) {
   preloadSounds('stick', 'coins', 'cancel', 'select', 'plink-1', 'plink-2');
-  balls = []; flashes = new Map(); binHits = new Map();
+  balls = []; flashes = new Map(); binHits = new Map(); held = { coins: 0, tickets: 0 };
   line = 'Drop a Poké Ball! The edges pay big, the middle pays little.';
   help = firstLook('plinko');
   panel = openPanel('pk', 'Plinko', { onClose: () => { cancelAnimationFrame(raf); onClose?.(); }, busy: () => balls.length > 0 });
@@ -56,7 +58,7 @@ function render() {
   const one = key(playLabel('plinko', 'Drop'), 'vf-go pk-one', () => drop(1));
   const all = key('Drop them all', 'vf-go pk-five', () => drop(playsLeft('plinko')));
   keys.append(one, all, key('Close', 'vf-close', () => { if (!balls.length) panel.shut(); }));
-  box.append(head, tableMeters('plinko'), cv, el('p', 'vf-say', sayLine('plinko', line, balls.length > 0)), bestLine(['plinko']), keys);
+  box.append(head, tableMeters('plinko', held), cv, el('p', 'vf-say', sayLine('plinko', line, balls.length > 0)), bestLine(['plinko']), keys);
   panel.root.replaceChildren(box);
   sizeCanvas();
   refreshKeys();
@@ -78,18 +80,25 @@ function refreshKeys() {
   if (all) all.hidden = !paysNow('plinko') || playsLeft('plinko') < 2;
 }
 
-/** Pays `n` drops at once, then sets each ball off, a beat apart. */
+/** Pays `n` drops at once (so a refresh mid-fall loses nothing), then sets each ball off, a beat apart. What they won
+    stays off the meters and the coin count until each lands (the user's ask, 2026-10-12: it showed at the drop). */
 function drop(n) {
   for (let i = 0; i < Math.max(1, n); i++) {
     const play = stake('plinko');
     const { bin, path } = plinkoDrop(playRand('plinko', play.day, play.n)), m = PLINKO_PAYS[bin];
     const res = settle(bet * m, 'plinko', play.paid);
+    held.coins += res.coins; held.tickets += res.tickets;
     setTimeout(() => launch(bin, path, m, res, play.paid), i * 260);
   }
   playSound('select');
-  const meters = panel.root.querySelector('.vf-meters');
-  meters?.replaceWith(tableMeters('plinko'));
+  showHeld();
   refreshKeys();
+}
+
+function showHeld() {
+  panel.root.querySelector('.vf-meters')?.replaceWith(tableMeters('plinko', held));
+  const coins = String(getSave().coins - held.coins);
+  for (const node of document.querySelectorAll('.coin-value')) node.textContent = coins;
 }
 
 /* The fall, worked out up front as arcs between strikes: from each peg the ball leaves upwards at BOUNCE of the speed it
@@ -148,6 +157,8 @@ function step(b, dt, now) {
 
 function binHit(b, now) {
   binHits.set(b.bin, now);
+  held.coins -= b.res.coins; held.tickets -= b.res.tickets;
+  showHeld();
   playSound(b.m >= 1 ? 'coins' : 'cancel', 'select');
   const won = wonText(b.res, b.paid);
   record('plinko', b.m);

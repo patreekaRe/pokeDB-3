@@ -59,11 +59,12 @@ export function bestLine(keys) {
 export const handOf = (game) => { const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
 export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: hand });
 
-/** The meters every table shows: plays left that pay, the chips a play stakes, and today's coins against the cap. */
-export function tableMeters(game) {
+/** The meters every table shows: plays left that pay, the chips a play stakes, and today's coins against the cap.
+    `held` is won but not yet shown (a Plinko ball still falling), kept off the meters till it lands. */
+export function tableMeters(game, held = { coins: 0, tickets: 0 }) {
   const m = el('div', 'vf-meters');
   const left = playsLeft(game);
-  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have}`], ['Chips', String(STAKE)], ['Today', `${potWon()}/${DAILY_CAP}`]]) {
+  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have - held.tickets}`], ['Chips', String(STAKE)], ['Today', `${potWon() - held.coins}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
   }
   return m;
