@@ -51,6 +51,7 @@ export const NEXT = [
   ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
   ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
+  ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
