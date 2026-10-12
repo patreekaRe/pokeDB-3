@@ -1439,7 +1439,9 @@ function buildClearing() {
   }
   for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
   // bushes along the gate's fence, outside it, the trail between
-  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45, 0.9 + rnd() * 0.25);
+  // each a step nearer than the last: side by side on one plane, where they overlap they z-fought and flickered
+  let b = 0;
+  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45 + (b++ % 2) * 0.08, 0.9 + rnd() * 0.25);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
