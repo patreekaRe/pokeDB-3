@@ -9,7 +9,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of all ten
+**Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
 Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on
 `js/arcade-kit.js` (the shared cabinet window, Score / Best as record `arc-<id>`), its machine painted in
@@ -21,10 +21,15 @@ Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/r
 <game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
 headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
 `B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
-still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`;
-the left Plinko board gone, the other moved right; the user's layout, 2026-10-12). The claw and skee-ball aren't there yet. In this order (the user may reorder):
+still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`),
+and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
+both raised like the screens; the right wall's top four slot machines taken out; the cabinets' flicker fixed by
+polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's phone). The claw and skee-ball aren't
+in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
+from Psyduck Pong / Spearow Flap / Gastly Maze, Spearow made Pidgey); a first pass each, played headless. Twelve now,
+in this order (the user may reorder):
 1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
-2. Magikarp Fishing (`js/arcade-fishing.js`, `fishingcabinet`)
+2. Pidgey Flap (`js/arcade-flap.js`, `flapcabinet`)
 3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)
 4. Ponyta Dash (`js/arcade-runner.js`, `dashcabinet`)
 5. Voltorb Memory (`js/arcade-memory.js`, `memorycabinet`)
@@ -33,6 +38,8 @@ the left Plinko board gone, the other moved right; the user's layout, 2026-10-12
 8. Pokémon Pinball (`js/arcade-pinball.js`, `pokepinball`)
 9. Pikachu Volleyball (`js/arcade-volley.js`, `volleycabinet`)
 10. Unown Word Search (`js/arcade-wordsearch.js`, `unowncabinet`)
+11. Psyduck Pong (`js/arcade-pong.js`, `pongcabinet`)
+12. Gastly Maze (`js/arcade-maze.js`, `gastlymaze`)
 Also open: should the Furniture store's own Pinball, Claw machine and Skee-ball play too (now decoration only)? Ask.
 
 **UI fixes batch** (the user's asks, 2026-10-07). One session each, all Run in: LOCAL (Desktop app, visual):

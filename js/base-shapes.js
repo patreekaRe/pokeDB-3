@@ -105,7 +105,9 @@ set('toilet', { make: 'toilet' });
 set('drumkit', { make: 'drumkit' });
 
 /* the home arcade's machines: modelled, the game on the front only */
-set('fishingcabinet', { make: 'arcade', colour: '#3a8ae0', name: 'Magikarp Fishing' });
+set('flapcabinet', { make: 'arcade', colour: '#c8904a', name: 'Pidgey Flap' });
+set('pongcabinet', { make: 'arcade', colour: '#e8c040', name: 'Psyduck Pong' });
+set('gastlymaze', { make: 'arcade', colour: '#7a4ac8', name: 'Gastly Maze' });
 set('stackercabinet', { make: 'arcade', colour: '#3a7a8a', name: 'Snorlax Stacker' });
 set('dashcabinet', { make: 'arcade', colour: '#e87830', name: 'Ponyta Dash' });
 set('memorycabinet', { make: 'arcade', colour: '#d83a3a', name: 'Voltorb Memory' });

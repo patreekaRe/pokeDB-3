@@ -43,8 +43,11 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'The Game Corner has a row of arcade machines under its screens, free to play for fun. One Plinko board now, a little further right.'],
+  ['mall', 'The Game Corner has arcade machines along its back wall, free to play for fun: a row under the screens, and two more under the two Plinko boards, now raised up the wall.'],
+  ['mall', 'Four slot machines taken off the Game Corner\'s right wall, opening up the arcade corner.'],
+  ['base', 'Three new arcade games at Meowth\'s prize counter: Pidgey Flap (in place of Magikarp Fishing: anyone who had it now has Pidgey Flap), Psyduck Pong and Gastly Maze.'],
   ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
+  ['fixes', 'The arcade machines\' screens and marquees no longer flicker from across the room.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

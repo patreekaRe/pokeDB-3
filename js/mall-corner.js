@@ -23,13 +23,16 @@ const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user
   { row: 'shiny', c: 16.75 },
   { row: 'perks', c: 19.5 },
 ];
-const PLINKOS = [6.5];   // one Plinko board left of the counter (2026-10-12, the user's ask: the left one taken down, this one a little right)
-/* the home arcade's machines in a row along the back wall's right half, under the screens (2026-10-12, the user's ask),
-   free to play for fun, the prize at Meowth's counter to take home */
-const ARCADE = ['whackmachine', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'fishingcabinet', 'volleycabinet', 'unowncabinet', 'pokepinball'];
-const ARCADE_X = [13, 21], ARCADE_K = 0.95;   // a tile each, to the right wall's corner
+/* two Plinko boards left of the counter, raised like the screens so arcade machines stand under them (2026-10-12, the
+   user's ask: the second board back) */
+const PLINKOS = [2.5, 5.5];
+/* the home arcade's machines along the back wall, under the screens and the Plinko boards (2026-10-12, the user's ask),
+   free to play for fun, the prize at Meowth's counter to take home: [kind, its tile] */
+const ARCADE = [['pongcabinet', 2], ['gastlymaze', 5],
+  ...['whackmachine', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'unowncabinet', 'pokepinball'].map((id, i) => [id, 13 + i])];
+const ARCADE_K = 0.95;
 const SHOW_W = 2.6, DESK_W = 4.2;
-const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
+const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = SHOW_Y, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 /* The puzzle games (the revamp, 2026-10-10). Every game pays into a shared daily pot (js/corner-pot.js). */
 const GAMES = {
@@ -44,7 +47,8 @@ const GAMES = {
    (`face` 1 looks right, -1 left), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
-  slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
+  /* the right wall's top four taken out (2026-10-12, the user's ask) */
+  slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, ...(y > 5 ? [{ x: COLS - 1, y, face: -1 }] : [])]), name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! Five free spins a day, and you stop the reels yourself, so time it for a 7. Tap again to play, meow.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',
@@ -620,7 +624,7 @@ export function buildCorner(THREE, size) {
     const key = `${id}|${foot}|${big}`;
     if (!faces.has(key)) faces.set(key, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], foot, big ? 16 : 12), 1));
     const face = new THREE.Mesh(new THREE.PlaneGeometry(aw, ah), faces.get(key));
-    face.position.set(0, base + ah / 2 + 0.03, D / 2 + 0.005);
+    face.position.set(0, base + ah / 2 + 0.03, D / 2 + 0.015);
     const kick = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.12, D + 0.04), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.7 }));
     kick.position.y = 0.06;
     const topper = new THREE.Mesh(new THREE.BoxGeometry(W * 0.86, 0.22, D * 0.8), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.9 }));
@@ -661,12 +665,12 @@ export function buildCorner(THREE, size) {
     const felt = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.08, D - 0.14), glassTop
       ? new THREE.MeshBasicMaterial({ map: texOf(tableScreen(id, w - 0.08, D - 0.14)), toneMapped: false }) : lit(feltArt(id, w, D), 0.5));
     felt.rotation.x = -Math.PI / 2;
-    felt.position.y = 0.785;
+    felt.position.y = 0.8;
     t.add(base, rim, felt);
     if (!glassTop) for (const [cx, cz, r] of [[-0.3, 0.1, 0.2], [0.05, 0.12, -0.1], [0.4, 0.08, 0.15]]) {   // cards dealt on the felt
       const c = new THREE.Mesh(new THREE.PlaneGeometry(0.16, 0.22), std({ color: '#ffffff' }));
       c.rotation.set(-Math.PI / 2, 0, r);
-      c.position.set(cx, 0.79, cz);
+      c.position.set(cx, 0.81, cz);
       t.add(c);
     }
     const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
@@ -677,9 +681,8 @@ export function buildCorner(THREE, size) {
   }
 
   // the arcade machines, their 3D models from the Secret Base (js/base-mesh.js), each a tap to play
-  const span = (ARCADE_X[1] - ARCADE_X[0]) / ARCADE.length;
-  ARCADE.forEach((id, i) => {
-    const p = PIECES[id], cx = ARCADE_X[0] + (i + 0.5) * span - cols / 2, tx = Math.floor(ARCADE_X[0] + (i + 0.5) * span);
+  ARCADE.forEach(([id, tx]) => {
+    const p = PIECES[id], cx = tx + 0.5 - cols / 2, span = 1;
     const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
     if (!model) return;
     model.scale.setScalar(ARCADE_K);

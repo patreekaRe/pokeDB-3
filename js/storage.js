@@ -115,7 +115,7 @@ function load() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
-      const saved = JSON.parse(raw);
+      const saved = JSON.parse(renameFurniture(raw));
       const base = freshSave();
       const merged = {
         ...base, ...saved,
@@ -139,6 +139,13 @@ function load() {
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** A furniture kind that was swapped out carries over to the one that took its place, wherever the save names it
+    (owned, placed, bought at Meowth's counter): Magikarp Fishing became Pidgey Flap (2026-10-12). */
+function renameFurniture(raw) {
+  for (const [from, to] of [['fishingcabinet', 'flapcabinet']]) raw = raw.replaceAll(`"${from}"`, `"${to}"`);
+  return raw;
 }
 
 /** Saves from before the Index hid unmet moves: the starting decks you own and the run in progress count as met. */
