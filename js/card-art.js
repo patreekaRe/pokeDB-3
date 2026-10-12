@@ -11,83 +11,14 @@
    <svg> whose gradients live in another, hidden card paints blank.
    ============================================================ */
 
-const INK = '#1c1430';
+import { INK, f, line, flame, star, leaf, drop, sine, spiral, tube, sparkle, radial, linear, HOT } from './card-art-kit.js';
+import { FIRE } from './card-art-fire.js';
+
 const OFF = new URLSearchParams(location.search).has('pixelcards');
 let drawn = 0;
 
-const f = (n) => +n.toFixed(2);
-const line = (w = 2.4) => `stroke="${INK}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"`;
-
-/** A flame tongue standing on (cx, bottom), its tip at top, its body w wide. */
-function flame(cx, top, bottom, w) {
-  const h = bottom - top, r = w / 2;
-  return `M${f(cx)} ${f(top)}C${f(cx + 0.25 * r)} ${f(top + 0.22 * h)} ${f(cx + r)} ${f(top + 0.4 * h)} ${f(cx + r)} ${f(top + 0.68 * h)}`
-    + `C${f(cx + r)} ${f(top + 0.9 * h)} ${f(cx + 0.55 * r)} ${f(bottom)} ${f(cx)} ${f(bottom)}`
-    + `C${f(cx - 0.55 * r)} ${f(bottom)} ${f(cx - r)} ${f(top + 0.9 * h)} ${f(cx - r)} ${f(top + 0.68 * h)}`
-    + `C${f(cx - r)} ${f(top + 0.5 * h)} ${f(cx - 0.6 * r)} ${f(top + 0.42 * h)} ${f(cx - 0.45 * r)} ${f(top + 0.3 * h)}`
-    + `C${f(cx - 0.3 * r)} ${f(top + 0.4 * h)} ${f(cx - 0.12 * r)} ${f(top + 0.44 * h)} ${f(cx + 0.02 * r)} ${f(top + 0.45 * h)}`
-    + `C${f(cx - 0.2 * r)} ${f(top + 0.28 * h)} ${f(cx - 0.12 * r)} ${f(top + 0.12 * h)} ${f(cx)} ${f(top)}Z`;
-}
-
-/** An n-pointed star's points. */
-function star(cx, cy, n, out, inn, rot = -90) {
-  const pts = [];
-  for (let i = 0; i < n * 2; i++) {
-    const a = (rot + (i * 180) / n) * Math.PI / 180, r = i % 2 ? inn : out;
-    pts.push(`${f(cx + r * Math.cos(a))},${f(cy + r * Math.sin(a))}`);
-  }
-  return pts.join(' ');
-}
-
-/** A pointed leaf from its stem (x, y), len long, pointing at angle degrees. */
-function leaf(x, y, len, angle, fill, w = 0.42) {
-  const half = len * w / 2;
-  return `<g transform="translate(${x} ${y}) rotate(${angle})">
-    <path d="M0 0C${f(len * 0.3)} ${-half * 2} ${f(len * 0.75)} ${-half * 1.6} ${len} 0C${f(len * 0.75)} ${f(half * 1.6)} ${f(len * 0.3)} ${f(half * 2)} 0 0Z" fill="${fill}" ${line(1.8)}/>
-    <path d="M${f(len * 0.12)} 0H${f(len * 0.8)}" stroke="#1d5a2a" stroke-width="1.1" stroke-linecap="round" opacity="0.6"/>
-  </g>`;
-}
-
-/** A water drop, round end at (cx, cy), pointing at angle degrees. */
-function drop(cx, cy, r, angle = -90) {
-  return `<path transform="translate(${cx} ${cy}) rotate(${angle + 90})" d="M0 ${f(-r * 2.2)}C${f(r * 0.5)} ${f(-r * 1.2)} ${r} ${f(-r * 0.6)} ${r} 0A${r} ${r} 0 0 1 ${-r} 0C${-r} ${f(-r * 0.6)} ${f(-r * 0.5)} ${f(-r * 1.2)} 0 ${f(-r * 2.2)}Z" fill="#7cc8ff" ${line(1.5)}/>`;
-}
-
-/** A sine wave across from x0 to x1 at height y. */
-function sine(x0, x1, y, amp, waves) {
-  const pts = [];
-  for (let i = 0; i <= 48; i++) {
-    const t = i / 48;
-    pts.push(`${f(x0 + (x1 - x0) * t)} ${f(y + amp * Math.sin(t * waves * Math.PI * 2))}`);
-  }
-  return `M${pts.join('L')}`;
-}
-
-function spiral(cx, cy, turns, rMax) {
-  const pts = [], steps = Math.round(turns * 40);
-  for (let i = 0; i <= steps; i++) {
-    const t = i / steps, a = t * turns * Math.PI * 2;
-    pts.push(`${f(cx + rMax * t * Math.cos(a))} ${f(cy + rMax * t * Math.sin(a))}`);
-  }
-  return `M${pts.join('L')}`;
-}
-
-/** A path drawn as a thick tube: ink under, colour over, a highlight on top. */
-const tube = (d, w, colour, shine) => `<path d="${d}" fill="none" ${line(w + 2.6)}/>
-  <path d="${d}" fill="none" stroke="${colour}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
-  ${shine ? `<path d="${d}" fill="none" stroke="${shine}" stroke-width="${f(w * 0.3)}" stroke-linecap="round" opacity="0.8" transform="translate(-0.6 -0.8)"/>` : ''}`;
-
-const sparkle = (x, y, r, fill = '#fff') =>
-  `<path d="M${x} ${y - r}Q${x} ${y} ${x + r} ${y}Q${x} ${y} ${x} ${y + r}Q${x} ${y} ${x - r} ${y}Q${x} ${y} ${x} ${y - r}Z" fill="${fill}" stroke="${INK}" stroke-width="0.9" stroke-linejoin="round"/>`;
-
-const radial = (id, stops, cx = '50%', cy = '50%', r = '60%') =>
-  `<radialGradient id="$${id}" cx="${cx}" cy="${cy}" r="${r}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</radialGradient>`;
-const linear = (id, stops, x2 = 0, y2 = 1) =>
-  `<linearGradient id="$${id}" x1="0" y1="0" x2="${x2}" y2="${y2}">${stops.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('')}</linearGradient>`;
-
-const HOT = [[0, '#fff7b0'], [0.4, '#ffbe3a'], [1, '#ee4a1c']];
-
 const ART = {
+  ...FIRE,
   /* ---------- Neutral ---------- */
   tackle: `<defs>${radial('a', [[0, '#fff'], [0.35, '#fff3a0'], [1, '#ffb030']])}</defs>
     <path d="M3 18h9M2 25h11M4 32h8" ${line(2.4)} opacity="0.85"/>
