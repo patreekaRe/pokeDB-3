@@ -309,7 +309,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
         detail. Where it stands (2026-10-12, see the branch's last commit):
         - **Games (the user's keepers):** Voltorb Flip, Who's That Pokémon?, Slots (tap-to-stop, jackpot, Pikachu
-          bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low. **No betting since 2026-10-12** (the user's
+          bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low (their floor tables the base's 3D card tables since 2026-10-12, `B.cardtable` at 1.3x, `CARD_K` in `js/mall-corner.js`; the user's ask). **No betting since 2026-10-12** (the user's
           call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
           an average day ~250 (`tests/corner.test.mjs`); raised later that day (the user's pick) to 10 slots, 10 Plinko, 5 each of Blackjack / High-Low / Voltorb Flip and a 7-question quiz, ~380 a day. Then (same day, the user's yes to all of it) Meowth's prize counter (6 new Game Corner pieces and
           Gen 1's prize dolls), records under every game and 8 Game Corner badges. Prize tickets for plays past the paying
