@@ -47,6 +47,7 @@ export const NEXT = [
   ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
   ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
   ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
+  ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
 ];
 

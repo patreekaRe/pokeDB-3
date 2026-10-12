@@ -118,6 +118,7 @@ export const openBubble = (onClose) => runArcade({
   go: '◀ ▶ to aim, SHOOT to fire. Tap the bubbles at the bottom to swap colours.',
   keys: { left: [['◀', 'left'], ['▶', 'right']] },
   pad: [['SHOOT', 'fire']],
+  sounds: ['fx-bloop', 'fx-bubble'],
   help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap the bubbles at the bottom to swap.', 'The one in Squirtle\'s hands and the NEXT one trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!']],
   make(api) {
     let rows = [], flip = 0, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
@@ -194,7 +195,7 @@ export const openBubble = (onClose) => runArcade({
         }));
         if (dropped) { api.add(dropped * DROP); api.say(`${dropped} dropped! +${dropped * DROP}`); api.sound('coins', 'plink-2'); }
         else if (group.length >= 5) api.say(`${group.length} popped! Splashing!`);
-      } else api.sound('plink-0', 'select');
+      }
       trim();
       if (++shots % pushEvery() === 0) { lower(); api.say('The ceiling drops a row!'); }
       if (!rows.some(row => row.some(v => v !== null))) { api.add(500); api.say('Board cleared! +500'); for (let r = 0; r < START_ROWS; r++) rows.push(randomRow(r, 4)); }
@@ -206,7 +207,7 @@ export const openBubble = (onClose) => runArcade({
       shot = { x: GUN[0], y: GUN[1], vx: Math.cos(angle) * SPEED, vy: Math.sin(angle) * SPEED, colour: cur };
       fired++;
       cur = next; next = deal();
-      api.sound('select');
+      api.sound('fx-bloop', 'select');
     };
     const aimAt = (x, y) => { angle = Math.max(-Math.PI + 0.18, Math.min(-0.18, Math.atan2(y - GUN[1], x - GUN[0]))); };
     const onSwap = (x, y) => y > LINE + 6 && x > GUN[0] - R - 8 && x < SWAP_X + 26;
