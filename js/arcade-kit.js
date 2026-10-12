@@ -156,9 +156,7 @@ export function runArcade(def, onClose) {
   function deck() {
     if (def.swipe) return swipeDeck();
     const row = el('div', 'ar-deck');
-    const mid = el('div', 'ar-sys');
-    mid.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-sys-key ar-start', start),
-      key('Exit', 'ar-sys-key ar-exit', () => panel.shut()));
+    const mid = sysKeys('ar-sys');
     const btns = el('div', 'ar-btns');
     for (const [label, act] of def.pad || []) btns.append(button(label, `ar-pad-${act}`, () => game[act]?.()));
     if (def.keys?.right) btns.append(arrows(def.keys.right));
@@ -168,24 +166,29 @@ export function runArcade(def, onClose) {
   }
 
   /** A game steered by swiping its screen (`swipe: true`) has no buttons to play with (the user's ask, 2026-10-12): a
-      faint "swipe to play" mark, a fingertip gliding along it, and the two system keys as small slanted pills side by
-      side, a Game Boy's START and SELECT. */
+      faint "swipe to play" mark, a fingertip gliding along it, and the two system keys side by side. */
   function swipeDeck() {
     const row = el('div', 'ar-deck ar-deck-swipe');
     const hint = el('div', 'ar-swipe');
     hint.append(el('span', 'ar-swipe-track'), el('span', 'ar-swipe-dot'), el('span', 'ar-swipe-text', 'Swipe to play'));
-    const pills = el('div', 'ar-pills');
-    const pill = (label, cls, fn) => {
-      const b = key('', `ar-pill ${cls}`, fn);
-      b.setAttribute('aria-label', label);
-      const box = el('label', 'ar-pill-box');
-      box.append(b, el('span', 'ar-pill-label', label));
-      return box;
-    };
-    pills.append(pill(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-start', start),
-      pill('Exit', 'ar-exit', () => panel.shut()));
-    row.append(hint, pills);
+    row.append(hint, sysKeys('ar-pills'));
     return row;
+  }
+
+  /** START and EXIT as small round buttons with their names under them, a Neo Geo's (the user's call, 2026-10-12: the
+      Game Boy's slanted pills looked ugly). */
+  function sysKeys(cls) {
+    const box = el('div', cls);
+    const dot = (label, kind, fn) => {
+      const b = key('', `ar-dot ${kind}`, fn);
+      b.setAttribute('aria-label', label);
+      const wrap = el('label', 'ar-dot-box');
+      wrap.append(b, el('span', 'ar-dot-label', label));
+      return wrap;
+    };
+    box.append(dot(state === 'play' ? 'Restart' : state === 'over' ? 'Again' : 'Start', 'ar-start', start),
+      dot('Exit', 'ar-exit', () => panel.shut()));
+    return box;
   }
 
   /** A round arcade button: `press` as it goes down, `lift` as it comes up (a held arrow key lets go). */

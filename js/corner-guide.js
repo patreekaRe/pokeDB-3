@@ -55,18 +55,18 @@ export function openGuide(onClose) {
   }
 
   box.append(head,
-    section('💰 WIN UP TO 500 A DAY',
-      el('p', 'gd-p', `Every game here is free. Each day (UTC) the first plays of these games pay real PokéCoins, up to ${DAILY_CAP} a day in all and ${GAME_CAP} from any one game. After that they're just for fun.`),
+    section(`💰 WIN UP TO ${DAILY_CAP} A DAY`,
+      el('p', 'gd-p', `Every game is free. Each day's first plays pay PokéCoins, up to ${GAME_CAP} a game.`),
       bar, list),
     section('🕹️ ARCADE MACHINES',
-      el('p', 'gd-p', 'The machines by the walls are free to play for fun. They don\'t pay coins, but they keep your best score.'),
-      el('p', 'gd-p', `🏆 Weekly leaderboards: ${ARCADE_GAMES.map(g => g.name).join(', ')}. Your best score each week goes up, played here or at home. The board over Meowth shows the top three; tap it for the whole board.`)),
+      el('p', 'gd-p', 'Free, for fun and best scores.'),
+      el('p', 'gd-p', `🏆 Weekly boards: ${ARCADE_GAMES.map(g => g.name).join(', ')}. Tap the board over Meowth.`)),
     section('🏠 TAKE THEM HOME',
-      el('p', 'gd-p', 'Meowth\'s prize counter sells every game as furniture. Put one in your Secret Base and tap it there to play any time, as much as you like (home play pays no coins).')),
+      el('p', 'gd-p', 'Buy any game at Meowth\'s counter and play it in your Secret Base.')),
     section('🎟️ STAMP CARD',
-      el('p', 'gd-p', `Play ${STAMPS} different games in one day to fill Meowth's stamp card, then tap Meowth for a scratch card. It always wins!`)),
+      el('p', 'gd-p', `Play ${STAMPS} different games in a day, then tap Meowth for a scratch card.`)),
     section('✨ SHOWCASES',
-      el('p', 'gd-p', 'The screens on the back wall sell Pokémon, shinies and perks for PokéCoins. Tap one, then tap again to browse.')),
+      el('p', 'gd-p', 'The back wall screens sell Pokémon, shinies and perks.')),
     key('Got it!', 'vf-go', () => { playSound('confirm'); shut(); }));
   root.append(box);
 }

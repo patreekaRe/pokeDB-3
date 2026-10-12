@@ -21,7 +21,7 @@
 .vf-meters { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 6px; }
 .vf-meter { display: flex; flex-direction: column; align-items: center; padding: 4px; border-radius: 8px;
   background: #10301e; box-shadow: inset 0 0 0 2px #0a2014; }
-.vf-meter span { font-size: 11px; opacity: 0.75; }
+.vf-meter span { font-size: 12px; opacity: 0.75; }
 .vf-meter b { font-size: 16px; color: #c8ffb8; font-variant-numeric: tabular-nums; }
 
 .vf-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
@@ -141,13 +141,13 @@
 .sc-count { position: absolute; bottom: 6px; right: 8px; font-size: 12px; color: #c8c8e0; }
 .sc-pips { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 5px 10px;
   border-radius: 99px; background: rgba(10, 10, 20, 0.75); }
-.sc-pips b { font-size: 11px; color: #fff2b8; margin-right: 2px; }
+.sc-pips b { font-size: 12px; color: #fff2b8; margin-right: 2px; }
 .sc-pips i { width: 18px; height: 18px; border-radius: 50%; background: #2a2a40; box-shadow: inset 0 0 0 2px #6a6a88; }
 .sc-pips i.on { background: radial-gradient(circle at 35% 35%, #fff2a0, #ffc830 60%, #c08010); box-shadow: 0 0 6px #ffd84a; }
 .sc-pips i.next { box-shadow: inset 0 0 0 2px var(--sc); animation: scPip 1s ease-in-out infinite alternate; }
 @keyframes scPip { to { background: color-mix(in srgb, var(--sc) 55%, #2a2a40); } }
 .sc-level { font-weight: 700; }
-.sc-owned { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 99px; background: #6ad070; font-size: 11px; }
+.sc-owned { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 99px; background: #6ad070; font-size: 12px; }
 .sc-lcd { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 10px; background: #c8e8a8; color: #1a3a1a;
   box-shadow: inset 0 0 0 3px #7ca868; font-size: 14px; line-height: 1.35; }
 .sc-lcd strong { font-size: 17px; }
@@ -326,7 +326,7 @@ html.calm-fx .ar-marquee::after { animation: none; }
 .ar-bezel > .ar-stage { flex: 1 1 0; min-height: 0; }
 .ar-leds .vf-meter { flex-direction: row; justify-content: space-between; padding: 4px 10px; border-radius: 6px; background: #0a0306;
   box-shadow: inset 0 0 0 1px #3a1018, inset 0 2px 6px #000; }
-.ar-leds .vf-meter span { color: #ff7a6a; opacity: 0.8; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; }
+.ar-leds .vf-meter span { color: #ff7a6a; opacity: 0.8; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
 .ar-leds .vf-meter b { color: #ff5a4a; font-size: 17px; text-shadow: 0 0 6px rgba(255, 70, 50, 0.8); }
 .ar-cab .ar-canvas { border-radius: 10px; box-shadow: 0 0 0 2px #000, 0 0 18px color-mix(in srgb, var(--ar) 40%, transparent); }
 .ar-stage { position: relative; }
@@ -352,15 +352,18 @@ html.calm-fx .ar-marquee::after { animation: none; }
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35), 0 8px 10px rgba(0, 0, 0, 0.5), inset 0 -4px 6px rgba(0, 0, 0, 0.35);
   transition: transform 0.08s ease-out; }
 .ar-stick.held .ar-knob { transition: none; }
-.ar-sys { display: flex; flex-direction: column; gap: 8px; align-items: center; }
-.ar-sys-key { min-width: 64px; padding: 6px 10px; border: 0; border-radius: 8px; cursor: pointer; font: inherit; font-size: 10.5px;
-  font-weight: 900; letter-spacing: 2px; text-transform: uppercase; touch-action: manipulation; }
-.ar-start { color: #3a2a00; background: linear-gradient(#fff2a0, #f0b830);
-  box-shadow: 0 0 10px rgba(255, 216, 74, 0.55), 0 3px 0 #8a6010; animation: arStart 1.2s ease-in-out infinite; }
-@keyframes arStart { 50% { box-shadow: 0 0 2px rgba(255, 216, 74, 0.2), 0 3px 0 #8a6010; } }
-html.calm-fx .ar-start { animation: none; }
-.ar-exit { color: #e8e4f0; background: linear-gradient(#5a5464, #3a3442); box-shadow: 0 3px 0 #15121a; }
-.ar-sys-key:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
+.ar-sys { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+/* START / EXIT: a Neo Geo's small round buttons, the name engraved under each */
+.ar-dot-box { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; touch-action: manipulation;
+  user-select: none; -webkit-user-select: none; }
+.vf-key.ar-dot { --c: #f0c020; flex: none; width: 34px; height: 34px; min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 50%;
+  background: radial-gradient(circle at 50% 36%, color-mix(in srgb, var(--c) 35%, #fff) 0 16%, var(--c) 55%, color-mix(in srgb, var(--c) 55%, #000) 100%);
+  box-shadow: 0 0 0 3px #0c0a10, 0 0 0 5px #3a3644, 0 4px 0 3px #05030a, inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+  touch-action: manipulation; animation: none; transition: transform 0.05s; }
+.vf-key.ar-dot.ar-exit { --c: #e8423a; }
+.vf-key.ar-dot:active { transform: translateY(3px); box-shadow: 0 0 0 3px #0c0a10, 0 0 0 5px #3a3644, 0 1px 0 3px #05030a, 0 0 12px var(--c); }
+.ar-dot-label { font-size: 12px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #c8c2d4;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8); }
 .ar-btns { justify-self: end; display: flex; gap: 12px; align-items: flex-end; }
 .ar-btn { --c: #e8423a; position: relative; width: 82px; height: 82px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
   touch-action: manipulation; user-select: none; -webkit-user-select: none;
@@ -400,7 +403,7 @@ html.calm-fx .ar-start { animation: none; }
 .ar-panel .vf-title { flex: 1 1 auto; min-width: 0; font-size: 18px; line-height: 1.15; letter-spacing: 1.5px;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 0 12px color-mix(in srgb, var(--ar) 60%, #fff); }
 .ar-free { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 4px 10px 4px 8px; border-radius: 99px;
-  background: #120a1c; color: #ffd84a; font-size: 10.5px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+  background: #120a1c; color: #ffd84a; font-size: 12px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
   text-shadow: 0 0 6px rgba(255, 200, 60, 0.75);
   box-shadow: inset 0 0 0 1.5px rgba(255, 216, 74, 0.45), inset 0 2px 4px rgba(0, 0, 0, 0.6), 0 1px 0 rgba(255, 255, 255, 0.2); }
 .ar-free::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #6aff8a;
@@ -446,9 +449,9 @@ html.calm-fx .ar-free::before { animation: none; }
 .gd-row.done .gd-name { color: #c8ffb8; }
 .gd-won { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: #c8ffb8; font-weight: 800; }
 /* A swipe game's deck (`swipe: true`): a faint engraved "swipe to play" with a fingertip gliding along it, then START and
-   EXIT as a Game Boy's slanted rubber pills, side by side. */
+   EXIT side by side. */
 .ar-deck.ar-deck-swipe { grid-template-columns: 1fr; justify-items: center; gap: 10px; padding: 10px 16px 12px; }
-.ar-swipe { position: relative; width: 150px; height: 26px; pointer-events: none; }
+.ar-swipe { position: relative; width: 170px; height: 32px; pointer-events: none; }
 .ar-swipe-track { position: absolute; left: 14px; right: 14px; top: 7px; height: 2px; border-radius: 2px;
   background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--ar) 55%, #fff) 50%, transparent); opacity: 0.35; }
 .ar-swipe-dot { position: absolute; top: 3px; left: 14px; width: 10px; height: 10px; border-radius: 50%;
@@ -456,15 +459,7 @@ html.calm-fx .ar-free::before { animation: none; }
   opacity: 0; animation: arSwipe 2.6s ease-in-out infinite; }
 @keyframes arSwipe { 0% { transform: translateX(0) scale(0.6); opacity: 0; } 15% { opacity: 0.75; transform: translateX(0) scale(1); }
   60% { transform: translateX(112px) scale(1); opacity: 0.75; } 75%, 100% { transform: translateX(112px) scale(0.6); opacity: 0; } }
-.ar-swipe-text { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 8.5px; font-weight: 800;
+.ar-swipe-text { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font-size: 12px; font-weight: 800;
   letter-spacing: 3px; text-transform: uppercase; color: #8a8496; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8), 0 -1px 0 rgba(255, 255, 255, 0.08); }
 .ar-cab.playing .ar-swipe-dot, html.calm-fx .ar-swipe-dot { animation: none; opacity: 0.5; left: calc(50% - 5px); }
-.ar-pills { display: flex; gap: 22px; }
-.ar-pill-box { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 6px 4px 0; cursor: pointer; touch-action: manipulation; }
-.vf-key.ar-pill { flex: none; width: 40px; height: 12px; min-width: 0; min-height: 0; padding: 0; border: 0; border-radius: 6px; transform: rotate(-24deg);
-  background: linear-gradient(#6a6474, #3e3846); box-shadow: 0 0 0 2px #120f16, 0 2px 0 2px #05030a, inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  touch-action: manipulation; animation: none; }
-.vf-key.ar-pill.ar-start { background: linear-gradient(#7a7484, #4a4452); }
-.vf-key.ar-pill:active { transform: rotate(-24deg) translateY(2px); box-shadow: 0 0 0 2px #120f16, 0 0 0 2px #05030a; }
-.ar-pill-label { font-size: 8.5px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase; color: #a8a2b4;
-  transform: rotate(-24deg) translateX(-4px); }
+.ar-pills { display: flex; gap: 32px; }
