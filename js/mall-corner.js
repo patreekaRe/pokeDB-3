@@ -415,11 +415,17 @@ function picture(src) {
   return pics.get(src);
 }
 
+const shades = new WeakMap();
+/** A picture as a black silhouette, made once; a page canvas, as iPhone Safari left an OffscreenCanvas blank. */
 function silhouette(cut) {
-  const c = new OffscreenCanvas(cut.w, cut.h), g = c.getContext('2d');
-  g.drawImage(cut.c, 0, 0);
-  g.globalCompositeOperation = 'source-in'; g.fillStyle = '#140a24'; g.fillRect(0, 0, cut.w, cut.h);
-  return c;
+  if (!shades.has(cut)) {
+    const c = document.createElement('canvas'), g = c.getContext('2d');
+    c.width = cut.c.width; c.height = cut.c.height;
+    g.drawImage(cut.c, 0, 0);
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#0a0612'; g.fillRect(0, 0, c.width, c.height);
+    shades.set(cut, c);
+  }
+  return shades.get(cut);
 }
 
 /* ---------- the showcases ---------- */
@@ -460,7 +466,9 @@ function paintScreen(c, def, e, cut) {
   if (cut) {
     const k = Math.min(box / cut.h, box / cut.w) * 0.95;
     g.imageSmoothingEnabled = false;
+    if (e.dark) { g.save(); g.shadowColor = '#ffffff'; g.shadowBlur = H * 0.04; }   // a white glow round it, or black on the dark screen is lost
     g.drawImage(e.dark ? silhouette(cut) : cut.c, W / 2 - cut.w * k / 2, H * 0.47 - cut.h * k / 2, cut.w * k, cut.h * k);
+    if (e.dark) g.restore();
     g.imageSmoothingEnabled = true;
   } else if (PERK_ART[e.id]) {
     g.save(); g.translate(W / 2, H * 0.44); g.scale(box / 15, box / 15); PERK_ART[e.id](g); g.restore();
