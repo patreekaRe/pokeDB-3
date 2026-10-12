@@ -318,22 +318,32 @@ const SLOTS = ['Seats', 'Tables', 'Storage', 'Lights', 'Plants', 'Rugs', 'Wall',
 const DOLL_ODDS = 0.25;
 const stocked = new Map();
 
-/** The Furniture store's stock for a UTC day on a floor: STOCK designs (a kind, or a whole set), the same for everyone
-    that day, one of each of SLOTS in a shuffled order; the second floor's are dealt from what is left, so the two never
-    share a piece. */
+/** The Furniture store's stock for a UTC day on a floor: STOCK designs (a kind, or a whole set), one of each of SLOTS in a
+    shuffled order, the second floor's dealt from what is left, so the two never share a piece. A piece you own is never
+    dealt again (the user's call, 2026-10-12: sold out stays sold out), so each player's day is their own; it is dealt
+    once a day and kept in the save (`furnitureDay`), so a piece bought today stands sold out till tomorrow's restock. */
 export function furnitureStock(day = safariDay(), floor = 1) {
   if (!stocked.has(day)) {
-    const rand = streamOf('furniture', day), taken = new Set(), pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id]);
-    const deal = () => shuffled(SLOTS.map(slot => {
-      const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
-      const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));
-      const id = can.length ? can[Math.floor(rand() * can.length)] : pool.find(id => !taken.has(id));
-      taken.add(id);
-      return id;
-    }), rand).slice(0, STOCK);
-    stocked.set(day, [deal(), deal()]);
+    const kept = getSave().furnitureDay;
+    const ok = kept?.day === day && kept.floors?.length === 2 && kept.floors.flat().every(id => PIECES[id]);
+    stocked.set(day, ok ? kept.floors : dealDay(day, loadBase().owned));
+    if (!ok && getSave().secretBase) updateSave(d => { d.furnitureDay = { day, floors: stocked.get(day) }; });
   }
   return stocked.get(day)[floor - 1];
+}
+
+/** A day's two floors, from the day's seed, leaving out every design `owned` holds (by its `own` kind). */
+export function dealDay(day, owned = {}) {
+  const rand = streamOf('furniture', day), taken = new Set();
+  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !(owned[PIECES[id].own] > 0));
+  const deal = () => shuffled(SLOTS.map(slot => {
+    const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
+    const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));
+    const id = can.length ? can[Math.floor(rand() * can.length)] : pool.find(id => !taken.has(id));
+    if (id) taken.add(id);
+    return id;
+  }).filter(Boolean), rand).slice(0, STOCK);
+  return [deal(), deal()];
 }
 /** Everything for sale today: the ground floor's, and the second floor's once it's open. */
 export const shopStock = (b) => [...furnitureStock(), ...(b.upstairs ? furnitureStock(undefined, 2) : [])];

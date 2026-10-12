@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'The Furniture store never restocks a piece you already own: once it\'s yours it stays sold out for the day, then something new takes its place.'],
   ['mall', 'The Poké Mall\'s hall is bigger and done up: a Poké Ball fountain in a gold-inlaid marble plaza, palms and topiary in stone planters, park benches, street lamps, columns, vending machines, a mall guide and escalators up to the mezzanine, all in real 3D.'],
   ['mall', 'The shop entrances are built out from the wall: lit sign boxes, a green striped awning and flower troughs at the Furniture store, a marquee of chasing bulbs, gold stars and velvet ropes at the Game Corner, and barriers and cones at the shop still moving in.'],
   ['base', 'What stands on top of furniture is modelled now, not a flat picture: the water cooler\'s bottle, the organ\'s pipes, the crates\' apples, carrots, corn, potatoes and cabbages, milk bottles, the till, the sink\'s tap, the fireplace\'s mantel things, the espresso machine, the prize counter\'s teddy and more.'],
