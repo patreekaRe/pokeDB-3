@@ -361,7 +361,7 @@ export function finish(canvas, { outline = true, rim = true } = {}) {
   const layer = () => new OffscreenCanvas(w, h);
   if (rim) {
     for (const [d, col] of [[1, 'rgba(255,250,235,0.26)'], [-1, 'rgba(20,10,30,0.22)']]) {
-      const m = layer(), mg = m.getContext('2d'), o = d * Math.max(1, u * 0.9);
+      const m = layer(), mg = m.getContext('2d', { willReadFrequently: true }), o = d * Math.max(1, u * 0.9);
       mg.drawImage(canvas, 0, 0);
       mg.globalCompositeOperation = 'destination-out'; mg.drawImage(canvas, o, o);
       mg.globalCompositeOperation = 'source-in'; mg.fillStyle = col; mg.fillRect(0, 0, w, h);
@@ -370,7 +370,7 @@ export function finish(canvas, { outline = true, rim = true } = {}) {
   }
   if (outline) {
     // a dark copy of the piece, its own colours at a third, laid underneath in a ring
-    const dark = layer(), dg = dark.getContext('2d');
+    const dark = layer(), dg = dark.getContext('2d', { willReadFrequently: true });
     dg.drawImage(canvas, 0, 0);
     const im = dg.getImageData(0, 0, w, h), d = im.data;
     const soft = u > 1 ? 0.4 : 1, dk = u > 1 ? 0.55 : 0.3;

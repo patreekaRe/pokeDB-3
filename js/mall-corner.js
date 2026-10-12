@@ -610,8 +610,9 @@ export function buildCorner(THREE, size) {
   PLINKOS.forEach((c, n) => {
     const w = SHOW_W, h = SHOW_H, cx = c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;
     const canvas = new OffscreenCanvas(Math.round(w * 150), Math.round(h * 150));
-    canvas.fine = 1;
     const map = texOf(canvas);
+    // redrawn 20 times a second, so no mipmaps to rebuild on every upload (they cost the Game Corner frames on phones)
+    Object.assign(map, { magFilter: THREE.LinearFilter, minFilter: THREE.LinearFilter, generateMipmaps: false });
     const board = new THREE.Mesh(new THREE.BoxGeometry(w, h, SHOW_D), [gold, gold, gold, gold, new THREE.MeshBasicMaterial({ map, toneMapped: false }), gold]);
     board.position.set(cx, PLINKO_Y + h / 2, z);
     const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 0.1, 0.1), std({ color: NEON.cyan, emissive: new THREE.Color(NEON.cyan), emissiveIntensity: 1.2 }));
@@ -623,7 +624,7 @@ export function buildCorner(THREE, size) {
     spots.push(spot);
     const wall = plinkoWall(canvas);
     let last = n * 11;
-    ticks.push((now) => { if (now - last < 33) return; wall.step(now, Math.min(0.1, (now - last) / 1000)); last = now; map.needsUpdate = true; });
+    ticks.push((now) => { if (now - last < 50) return; wall.step(now, Math.min(0.1, (now - last) / 1000)); last = now; map.needsUpdate = true; });
   });
 
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });

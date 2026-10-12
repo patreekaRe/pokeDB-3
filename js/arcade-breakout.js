@@ -4,7 +4,7 @@
    then drops a power-up: a wider paddle, two more Electrode, or a slower bounce. Three lives; a cleared wall brings the
    next layout, quicker. */
 
-import { runArcade, banner, rand, pick } from './arcade-kit.js';
+import { runArcade, banner, rand, pick, stamp } from './arcade-kit.js';
 
 const W = 300, H = 380, TOP = 34, PY = H - 30, PH = 10, PW = 58, WIDE = 88, BR = 7, COLS = 8, BW = 34, BH = 17, GAP = 2, LIVES = 3;
 const BX = (W - COLS * (BW + GAP) + GAP) / 2;
@@ -108,16 +108,18 @@ export const openBreakout = (onClose) => runArcade({
       up() { target = null; },
       key(k, down) { if (k === 'left' || k === 'right') keyDir = down ? (k === 'left' ? -1 : 1) : (keyDir === (k === 'left' ? -1 : 1) ? 0 : keyDir); if (down && (k === 'act' || k === 'up')) launch(); },
       draw(g, now) {
-        const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#3a2a40'); bg.addColorStop(0.6, '#4a3a3a'); bg.addColorStop(1, '#2a2020');
-        g.fillStyle = bg; g.fillRect(0, 0, W, H);
-        g.fillStyle = 'rgba(255, 255, 255, 0.04)';
-        for (let i = 0; i < 14; i++) { g.beginPath(); g.ellipse((i * 67) % W, 60 + (i * 97) % (H - 80), 22 + (i % 4) * 8, 12 + (i % 3) * 5, i, 0, Math.PI * 2); g.fill(); }
-        g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.fillRect(0, 0, W, TOP);
+        stamp(g, 'bo-bg', 0, 0, W, H, (g) => {
+          const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#3a2a40'); bg.addColorStop(0.6, '#4a3a3a'); bg.addColorStop(1, '#2a2020');
+          g.fillStyle = bg; g.fillRect(0, 0, W, H);
+          g.fillStyle = 'rgba(255, 255, 255, 0.04)';
+          for (let i = 0; i < 14; i++) { g.beginPath(); g.ellipse((i * 67) % W, 60 + (i * 97) % (H - 80), 22 + (i % 4) * 8, 12 + (i % 3) * 5, i, 0, Math.PI * 2); g.fill(); }
+          g.fillStyle = 'rgba(0, 0, 0, 0.35)'; g.fillRect(0, 0, W, TOP);
+        });
         g.font = '700 11px system-ui, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'left'; g.fillStyle = 'rgba(255, 255, 255, 0.85)';
         g.fillText(`LEVEL ${level + 1}`, 10, TOP / 2);
         for (let i = 0; i < lives; i++) electrode(g, W - 14 - i * 18, TOP / 2, 6, 0);
         if (wide > 0 || slow > 0) { g.textAlign = 'center'; g.fillStyle = '#ffd84a'; g.fillText([wide > 0 && `WIDE ${Math.ceil(wide)}`, slow > 0 && `SLOW ${Math.ceil(slow)}`].filter(Boolean).join('  '), W / 2, TOP / 2); }
-        for (const k of bricks) rock(g, k);
+        for (const k of bricks) stamp(g, `bo-${k.seed}-${k.tough ? k.hp : 0}`, k.x - 2, k.y - 3, BW + 4, BH + 6, (cg) => { cg.translate(2 - k.x, 3 - k.y); rock(cg, k); });
         for (const s of bits) { g.globalAlpha = Math.max(0, s.t * 1.6); g.fillStyle = s.c; g.beginPath(); g.arc(s.x, s.y, 1.8, 0, Math.PI * 2); g.fill(); }
         g.globalAlpha = 1;
         for (const d of drops) {
@@ -131,7 +133,7 @@ export const openBreakout = (onClose) => runArcade({
         g.fillStyle = '#e84040'; g.beginPath(); g.roundRect(px - w / 2, PY, 8, PH, [5, 0, 0, 5]); g.fill(); g.beginPath(); g.roundRect(px + w / 2 - 8, PY, 8, PH, [0, 5, 5, 0]); g.fill();
         g.fillStyle = 'rgba(255, 255, 255, 0.6)'; g.fillRect(px - w / 2 + 10, PY + 2, w - 20, 2);
         for (const b of balls) {
-          if (!b.stuck && Math.hypot(b.vx, b.vy) > 260) { g.save(); g.shadowColor = '#ffe860'; g.shadowBlur = 10; g.fillStyle = 'rgba(255, 240, 120, 0.3)'; g.beginPath(); g.arc(b.x, b.y, BR + 2, 0, Math.PI * 2); g.fill(); g.restore(); }
+          if (!b.stuck && Math.hypot(b.vx, b.vy) > 260) stamp(g, 'bo-glow', b.x - BR - 9, b.y - BR - 9, BR * 2 + 18, BR * 2 + 18, (cg) => { const r = BR + 9, gl = cg.createRadialGradient(r, r, BR * 0.6, r, r, r); gl.addColorStop(0, 'rgba(255, 240, 120, 0.55)'); gl.addColorStop(1, 'rgba(255, 232, 96, 0)'); cg.fillStyle = gl; cg.fillRect(0, 0, r * 2, r * 2); });
           electrode(g, b.x, b.y, BR, b.spin);
         }
         if (flash > 0) { g.fillStyle = `rgba(255, 60, 60, ${flash * 0.5})`; g.fillRect(0, 0, W, H); }

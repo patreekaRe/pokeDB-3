@@ -3,7 +3,7 @@
    shows up for a while, worth more. Swipe, tap a side of the head or use the arrow keys; Ekans can't turn back on
    itself. Biting its own tail or hitting the fence ends it. */
 
-import { runArcade, banner } from './arcade-kit.js';
+import { runArcade, banner, stamp } from './arcade-kit.js';
 
 const COLS = 15, ROWS = 19, C = 20, TOP = 0, W = COLS * C, H = ROWS * C;
 const DIRS = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] };
@@ -91,10 +91,12 @@ export const openSnake = (onClose) => runArcade({
       },
       key(k, down) { if (down) turn(k); },
       draw(g, now) {
-        for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { g.fillStyle = (x + y) % 2 ? '#8ccf6a' : '#98d874'; g.fillRect(x * C, TOP + y * C, C, C); }
-        g.fillStyle = 'rgba(255, 255, 255, 0.35)';
-        for (let i = 0; i < 14; i++) { const x = (i * 97) % W + 6, y = (i * 61) % H + 4; g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fill(); }
-        g.strokeStyle = '#6a4a2a'; g.lineWidth = 3; g.strokeRect(1.5, TOP + 1.5, W - 3, H - 3);
+        stamp(g, 'sn-field', 0, 0, W, TOP + H, (g) => {
+          for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) { g.fillStyle = (x + y) % 2 ? '#8ccf6a' : '#98d874'; g.fillRect(x * C, TOP + y * C, C, C); }
+          g.fillStyle = 'rgba(255, 255, 255, 0.35)';
+          for (let i = 0; i < 14; i++) { const x = (i * 97) % W + 6, y = (i * 61) % H + 4; g.beginPath(); g.arc(x, y, 1.6, 0, Math.PI * 2); g.fill(); }
+          g.strokeStyle = '#6a4a2a'; g.lineWidth = 3; g.strokeRect(1.5, TOP + 1.5, W - 3, H - 3);
+        });
         if (berry) berryArt(g, berry[0], berry[1], 7, now, false);
         if (gold?.at && (gold.left > 2 || Math.floor(now / 120) % 2)) berryArt(g, gold.at[0], gold.at[1], 8, now, true);
         const t = dead || wait > 0 ? 1 : Math.min(1, acc / step);
@@ -107,9 +109,12 @@ export const openSnake = (onClose) => runArcade({
         g.strokeStyle = '#9a5ac8'; g.lineWidth = C * 0.66; path(); g.stroke();
         for (let i = n - 1; i >= 1; i--) {
           const [x, y] = pts[i], r = C * (0.34 - 0.1 * Math.max(0, (i - (n - 4)) / 4));
-          const sg = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-          sg.addColorStop(0, '#c89ae8'); sg.addColorStop(1, '#8a4ab8');
-          g.fillStyle = sg; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+          const q = Math.round(r * 4) / 4;
+          stamp(g, `sn-seg${q}`, x - q, y - q, q * 2, q * 2, (g) => {
+            const sg = g.createRadialGradient(q * 0.65, q * 0.6, q * 0.1, q, q, q);
+            sg.addColorStop(0, '#c89ae8'); sg.addColorStop(1, '#8a4ab8');
+            g.fillStyle = sg; g.beginPath(); g.arc(q, q, q, 0, Math.PI * 2); g.fill();
+          });
           if (i % 3 === 0 && i < n - 1) { g.fillStyle = '#f0d050'; g.beginPath(); g.arc(x, y, r * 0.38, 0, Math.PI * 2); g.fill(); }
         }
         const [tx, ty] = pts[n - 1];

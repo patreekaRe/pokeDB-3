@@ -65,6 +65,18 @@ in this order (the user may reorder):
 buttons (`swipe: true`, `swipeDeck()` in `js/arcade-kit.js`): a faint "swipe to play" with a gliding fingertip, and
 START / EXIT as two small Game Boy pills side by side (`.ar-pill`). Next: the user playtests; say if other cabinets want it.
 
+**Arcade marquees and the mall's frame rate** (2026-10-12, the user's ask; branch `claude/dreamy-galileo-0o4aqc`, on
+`main` too): every cabinet's head is a lit marquee (`marquee()` / `MARQUEE` in `js/arcade-kit.js`: the game's Pokémon GIF
+bobbing on a turning sunburst, two sets of chasing bulbs, a ribbon line over the name in gold, fitted to one line by
+`fitText()`; `.arm-*` in `css/corner-games.css`, composited animations only), and the start screen's name shrinks to fit
+(`banner(..., maxW)`). Frame rate: the mall's canvas at the scene's own size, never 2x (like the base), a weak device steps
+down shadows then resolution (`keepUp()` / `stepDown()` in `js/mall-3d.js`, `pokedb.mall3d.low`), a place's shaders,
+textures and first frame done under the curtain (`warm()`), the hall's window pieces painted after it opens; furniture
+painted on CPU-backed canvases (`willReadFrequently` in `p.art()` and `finish()`: `finish()`'s pixel readback from a GPU
+canvas stalled 40-95 ms a piece, now 2-5; the Furniture store opened ~5 s faster headless), the Plinko boards at 20 fps
+with no mipmaps; the kit's `stamp()` paints a game's still parts once (Breakout 325 fills a frame to 31, Bowling 97 to 4,
+Ekans and the Maze too). Measured headless only (SwiftShader: no phone GPU). Next: the user's phone playtest.
+
 **Controls and frame rate pass** (patch 1.10, 2026-10-12, branch `claude/arcade-cabinets-design-yh10el`, on `main` too):
 a cabinet's `stick: false` drops the joystick (Berry, Ditto, Stacker, Memory, Puzzle), `keys: { left, right }` puts big
 held arrow buttons under each thumb instead (Crossing and Maze ◀ ▶ / ▲ ▼, Pong ◀ / ▶), Invaders' FIRE is a deck button;
