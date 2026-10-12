@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'The home arcade machines are real 3D cabinets now, their game only on the front: lit screens and marquees, joysticks, a Whac-a-Diglett with Digletts up and a pinball table with its backglass.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

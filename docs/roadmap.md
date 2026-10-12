@@ -19,7 +19,9 @@ and says what's off, then feel (controls on a phone, speed, difficulty curve), a
 a How to play that matches, a best-score moment, the machine's painting and 3D look in the base, and a patch-notes line.
 Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md. Finish the home arcade's
 <game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
-headless and send me a screenshot and a playtest link." In this order (the user may reorder):
+headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
+`B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
+still the auto hull). Next: the user's idea of where to place them in the Game Corner (ask). In this order (the user may reorder):
 1. Whac-a-Diglett (`js/arcade-whack.js`, machine `whackmachine`)
 2. Magikarp Fishing (`js/arcade-fishing.js`, `fishingcabinet`)
 3. Snorlax Stacker (`js/arcade-stacker.js`, `stackercabinet`)

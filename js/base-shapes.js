@@ -104,6 +104,16 @@ set('pyramid', { make: 'pyramid' });
 set('toilet', { make: 'toilet' });
 set('drumkit', { make: 'drumkit' });
 
+/* the home arcade's machines: modelled, the game on the front only */
+set('fishingcabinet', { make: 'arcade', colour: '#3a8ae0', name: 'Magikarp Fishing' });
+set('stackercabinet', { make: 'arcade', colour: '#3a7a8a', name: 'Snorlax Stacker' });
+set('dashcabinet', { make: 'arcade', colour: '#e87830', name: 'Ponyta Dash' });
+set('memorycabinet', { make: 'arcade', colour: '#d83a3a', name: 'Voltorb Memory' });
+set('volleycabinet', { make: 'arcade', colour: '#f0c020', name: 'Pikachu Volleyball' });
+set('unowncabinet', { make: 'arcade', colour: '#6a5ac8', name: 'Unown Word Search' });
+set('whackmachine', { make: 'whack' });
+set('pokepinball', { make: 'pinball' });
+
 export const SHAPES = S;
 
 /** A kind's shape, or null: listed above, or a flat cushion-like seat (a puffed pillow wearing its painting). */
