@@ -48,6 +48,7 @@ export const NEXT = [
   ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
   ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
   ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
+  ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
 ];
 

@@ -1537,6 +1537,7 @@ Object.assign(SOUNDS, {
   'fx-gong': { synth: ac => render(ac, 4, t => partials(98, t, [[1, 1, 0.7], [1.48, 0.7, 0.8], [2.1, 0.6, 0.9], [2.9, 0.4, 1.1], [4.2, 0.3, 1.4]]) * (1 + 0.15 * Math.sin(TAU * 3 * t)) * Math.min(1, t / 0.02), 0.5) },
   'fx-boing': { synth: ac => render(ac, 0.6, t => Math.sin(TAU * (180 + 260 * Math.sin(t * 14) * Math.exp(-t * 3)) * t) * Math.exp(-t * 5), 0.4) },
   'fx-zap': noisy(0.45, (t, r) => (Math.sign(Math.sin(TAU * (900 + 600 * Math.sin(t * 90)) * t)) * 0.4 + r * 0.6) * Math.exp(-t * 6) * (0.5 + 0.5 * Math.sin(TAU * 40 * t)), 0.25),
+  'fx-tick': { synth: ac => render(ac, 0.05, t => Math.sin(TAU * (1300 - 4000 * t) * t) * Math.min(1, t / 0.002) * Math.exp(-t * 90), 0.18) },
   'fx-bloop': { synth: ac => render(ac, 0.16, t => Math.sin(TAU * (260 + 520 * Math.min(1, t / 0.05)) * t) * Math.min(1, t / 0.006) * Math.exp(-t * 22), 0.32) },
   'fx-bubble': { synth: ac => render(ac, 0.12, t => Math.sin(TAU * (500 + 2400 * t) * t) * Math.exp(-t * 30), 0.3) },
   'fx-poof': noisy(0.5, (t, r) => r * Math.min(1, t / 0.015) * Math.exp(-t * 9) * (0.6 + 0.4 * Math.sin(TAU * 90 * t)) + Math.sin(TAU * (520 - 380 * t) * t) * 0.25 * Math.exp(-t * 14), 0.3),

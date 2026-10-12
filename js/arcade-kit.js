@@ -8,7 +8,7 @@
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
-import { playSound, preloadSounds } from './audio.js';
+import { hushBlip, playSound, preloadSounds } from './audio.js';
 import { el, fitText } from './ui.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key, firstLook, helpKey } from './corner-panel.js';
@@ -95,7 +95,7 @@ const caps = (t) => t.toUpperCase().replace(/É/g, 'é');
 
 /** Opens `def`'s game in the cabinet window; `onClose` once it's shut. */
 export function runArcade(def, onClose) {
-  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', ...(def.sounds || []));
+  preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', 'fx-tick', ...(def.sounds || []));
   const rec = `arc-${def.id}`;
   let state = 'ready', score = 0, game = null, raf = 0, last = 0, line = def.intro, help = firstLook(`arc-${def.id}`);
   let cv = null, g = null, overText = '', overAt = 0, preview = null, fit = null;
@@ -262,6 +262,7 @@ export function runArcade(def, onClose) {
       held = true;
       press();
     });
+    b.addEventListener('click', hushBlip);   // the game sounds its own buttons; the menu blip on release doubled them
     for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) b.addEventListener(ev, () => {
       b.classList.remove('down');
       if (held) { held = false; if (state === 'play') lift?.(); }
@@ -272,7 +273,7 @@ export function runArcade(def, onClose) {
   /** Big arrow buttons for a thumb, held down like the arrow keys. */
   function arrows(list) {
     const box = el('div', `ar-arrows${list.some(([, k]) => k === 'up' || k === 'down') ? ' ar-col' : ''}`);
-    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => game.key?.(k, true), () => game.key?.(k, false)));
+    for (const [label, k] of list) box.append(button(label, `ar-arrow ar-arrow-${k}`, () => { playSound('fx-tick', 'select'); game.key?.(k, true); }, () => game.key?.(k, false)));
     return box;
   }
 
