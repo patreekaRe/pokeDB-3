@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['runs', 'The crossroads now open after your first won run, and Meowth waits at the first one you reach.'],
-  ['mall', 'Meet Meowth at a crossroads and it opens the Game Corner in the Poké Mall for you to walk into.'],
+  ['mall', 'Meet Meowth at a crossroads and it opens the Game Corner in the Poké Mall, with a ribbon for you to cut.'],
   ['look', 'Kenmatta\'s dojo now has a wooden wall behind him, filled by his gold Dragonite medallion from the arena.'],
   ['fixes', 'Sound no longer stays off after the first tap on the Pokédex: any tap now wakes it, also after locking the phone or switching apps.'],
   ['fixes', 'Players from early versions who never picked a name now get the name and buddy setup on their next start.'],

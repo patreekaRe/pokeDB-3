@@ -23,7 +23,7 @@ export function meowthLines() {
     'Every run ya win, every boss ya beat, pays ya PokéCoins. And coins are for spendin\', meow!',
     'Ya know the Poké Mall back in the Clearing? That shop in the middle with the tape all over it? It\'s mine now!',
     'I\'m openin\' the Game Corner there for real. Prizes in a case, shinies on the wall, a machine for every perk.',
-    'Finish your run, then come walk right in. Now go on, pick a road. Meowth, that\'s right!',
+    'Finish your run, then come to the grand openin\'. You can cut the ribbon! Now go on, pick a road. Meowth, that\'s right!',
   ];
 }
 

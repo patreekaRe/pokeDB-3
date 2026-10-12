@@ -9,7 +9,7 @@
    js/hd2d.js), but the store's second floor has none, its way out is the lift. A buy is two taps: the first says the
    price, the second asks in a window with the thing's picture (ask()). */
 
-import { getSave } from './storage.js';
+import { getSave, updateSave } from './storage.js';
 import { cornerOpen } from './meowth.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
@@ -19,7 +19,7 @@ import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
-import { buildCorner } from './mall-corner.js';
+import { buildCorner, KEEPER } from './mall-corner.js';
 
 const COLS = 13, ROWS = 7;
 const U = 20;                 // the paintings' units a tile
@@ -286,10 +286,29 @@ function tapeOver(fr, tape) {
 // The store's first opening day (2026-10-09, the user's ask): a red ribbon on brass posts across its front, a bow in the
 // middle, a GRAND OPENING board and Smeargle waiting beside it. A tap has Smeargle ask you to cut it, a second snips it:
 // the halves drop, the bow falls, confetti, and Smeargle leads you in. Saved as `ribbonCut`; a save that has already been
-// inside (`shopGreeted`) never sees it. `?ribbon` puts it up for the page load, never saved.
+// inside (`shopGreeted`) never sees it. `?ribbon` puts it up for the page load, never saved. The Game Corner gets its own
+// (2026-10-11, the user's ask) once Meowth has opened it at a crossroads (js/meowth.js): Meowth waits by it, saved as the
+// save's `cornerRibbon`. A shop's ribbon is a RIBBONS line.
 const RIBBON_PEEK = new URLSearchParams(location.search).has('ribbon');
-const RIBBON_Y = 0.82, RIBBON_Z = -ROWS / 2 + 0.72, RIBBON_TILES = ['1,0', '2,0', '3,0', '4,0'];
-let ribbon = null, confetti = [];
+const RIBBON_Y = 0.82, RIBBON_Z = -ROWS / 2 + 0.72;
+let ribbons = [], confetti = [];
+
+const RIBBONS = {
+  furniture: {
+    keeper: KEEPERS[1], into: 'f1',
+    up: (b) => RIBBON_PEEK || !(b.ribbonCut || b.shopGreeted),
+    cut: () => { const b = loadBase(); b.ribbonCut = true; saveBase(b); },
+    ask: 'It\'s the grand opening! Will you do the honours and cut the ribbon? Tap it again!',
+    done: 'Snip! The Furniture store is open! Thank you, thank you! Come in, come in!',
+  },
+  corner: {
+    keeper: KEEPER, into: 'gc',
+    up: () => RIBBON_PEEK || !getSave().cornerRibbon,
+    cut: () => updateSave(d => { d.cornerRibbon = true; }),
+    ask: 'Ya made it, meow! Grand openin\' of the Game Corner! Do the honours and snip that ribbon. Tap it again!',
+    done: 'Snip! The Game Corner is open for business! Step right in, the prizes won\'t buy themselves, meow!',
+  },
+};
 
 /** Red satin: a darker edge top and bottom, a sheen along the middle. */
 function ribbonArt() {
@@ -368,69 +387,75 @@ function buildRibbon(shop) {
   group.add(board);
   group.visible = false;
   hall.add(group);
-  return { group, halves, bow, shop, cutAt: 0, asked: false, done: false, mon: null };
+  return { group, halves, bow, shop, cfg: RIBBONS[shop.id], cutAt: 0, asked: false, done: false, mon: null };
 }
 
-const ribbonUp = (b) => FRONTS[0].open && !ribbon?.done && (RIBBON_PEEK || !(b.ribbonCut || b.shopGreeted));
+const ribbonUp = (r) => r.shop.open && !r.done && r.cfg.up(loadBase());
+/** The tiles a ribbon stands on, its keeper's too, walked round while it's up. */
+const ribbonTiles = (r) => [-1, 0, 1, 2].map(d => `${r.shop.x + d},0`);
 
-/** Puts the ribbon up or takes it down by the save, and Smeargle beside it; the tiles under it are walked round. */
-async function syncRibbon() {
-  if (!ribbon) return;
-  const up = ribbonUp(loadBase());
-  ribbon.group.visible = up;
-  for (const k of RIBBON_TILES) up ? places.hall?.blocked.add(k) : places.hall?.blocked.delete(k);
-  if (!up) { if (ribbon.mon) ribbon.mon.group.visible = false; return clearConfetti(); }
-  ribbon.asked = false;
-  if (!ribbon.mon) {
-    ribbon.mon = await monBoard(KEEPERS[1], false);
-    ribbon.mon.board.rotation.x = -PITCH;
-    ribbon.mon.group.traverse(o => { o.userData.front = ribbon.shop; });
-    hall.add(ribbon.mon.group);
-  }
-  ribbon.home = { x: tileX(ribbon.shop.x) + 1.95, z: RIBBON_Z + 0.25 };
-  ribbon.mon.group.position.set(ribbon.home.x, 0, ribbon.home.z);
-  ribbon.mon.group.visible = true;
-  ribbon.walkIn = 0;
+/** Puts each ribbon up or takes it down by the save, its keeper beside it. */
+function syncRibbon() {
+  for (const r of ribbons) syncOne(r);
+  if (!ribbons.some(r => r.group.visible)) clearConfetti();
 }
 
-/** Smeargle says it, in the speech window, out in the hall. */
-const smeargle = (line, ms) => say({ line, who: 'Smeargle' }, ms);
-
-/** A tap on the store while the ribbon is up: the first has Smeargle ask, the second cuts it. */
-async function ribbonTap() {
-  if (ribbon.cutAt) return;
-  ribbon.hopUntil = performance.now() + 600;
-  if (!ribbon.asked) {
-    ribbon.asked = true;
-    playCry('smeargle');
-    return smeargle('It\'s the grand opening! Will you do the honours and cut the ribbon? Tap it again!', 6000);
+async function syncOne(r) {
+  const up = ribbonUp(r);
+  r.group.visible = up;
+  for (const k of ribbonTiles(r)) up ? places.hall?.blocked.add(k) : places.hall?.blocked.delete(k);
+  if (!up) { if (r.mon) r.mon.group.visible = false; return; }
+  r.asked = false;
+  if (!r.mon) {
+    r.mon = await monBoard(r.cfg.keeper, false);
+    r.mon.board.rotation.x = -PITCH;
+    r.mon.group.traverse(o => { o.userData.front = r.shop; });
+    hall.add(r.mon.group);
   }
-  ribbon.cutAt = performance.now();
+  r.home = { x: tileX(r.shop.x) + 1.95, z: RIBBON_Z + 0.25 };
+  r.mon.group.position.set(r.home.x, 0, r.home.z);
+  r.mon.group.visible = true;
+  r.walkIn = 0;
+}
+
+/** The keeper says it, in the speech window, out in the hall. */
+const cheer = (r, line, ms) => say({ line, who: r.cfg.keeper.name }, ms);
+
+/** A tap on a shop while its ribbon is up: the first has its keeper ask, the second cuts it. */
+async function ribbonTap(r) {
+  if (r.cutAt) return;
+  r.hopUntil = performance.now() + 600;
+  if (!r.asked) {
+    r.asked = true;
+    playCry(r.cfg.keeper.id);
+    return cheer(r, r.cfg.ask, 6000);
+  }
+  r.cutAt = performance.now();
   playSound('snip');
-  if (!RIBBON_PEEK) { const b = loadBase(); b.ribbonCut = true; saveBase(b); }
-  burst();
+  if (!RIBBON_PEEK) r.cfg.cut();
+  burst(r);
   await later(260);
   playSound('fw-pop');
   playSound('achievement');
-  playCry('smeargle');
-  ribbon.hopUntil = performance.now() + 1400;
+  playCry(r.cfg.keeper.id);
+  r.hopUntil = performance.now() + 1400;
   walker.hopUntil = performance.now() + 900;
-  smeargle('Snip! The Furniture store is open! Thank you, thank you! Come in, come in!', 4200);
+  cheer(r, r.cfg.done, 4200);
   await later(1900);
-  ribbon.walkIn = performance.now();
+  r.walkIn = performance.now();
   await later(1700);
   if (P?.id !== 'hall' || !root?.isConnected) return;
-  ribbon.done = true;
-  await walkIn('f1');
+  r.done = true;
+  await walkIn(r.cfg.into);
   syncRibbon();
 }
 
 const CONFETTI = ['#e84838', '#f8d040', '#3a8ad8', '#58b048', '#e870b0', '#ffffff', '#ff9a30'];
 
 /** Confetti over the doors and off each post. */
-function burst() {
+function burst(r) {
   if (calm) return;
-  const cx = tileX(ribbon.shop.x), geo = new THREE.PlaneGeometry(0.06, 0.1);
+  const cx = tileX(r.shop.x), geo = new THREE.PlaneGeometry(0.06, 0.1);
   const mats = CONFETTI.map(color => new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide }));
   const spawn = (n, x, y, spread, up) => {
     for (let i = 0; i < n; i++) {
@@ -468,9 +493,13 @@ function clearConfetti() {
   confetti = [];
 }
 
-/** The cut halves swing down off their posts, the bow drops and bounces, and Smeargle hops, then walks in at the doors. */
+/** The cut halves swing down off their posts, the bow drops and bounces, and the keeper hops, then walks in at the doors. */
 function tickRibbon(dt, now) {
-  if (!ribbon?.group.visible) return;
+  for (const r of ribbons) tickOne(r, dt, now);
+}
+
+function tickOne(ribbon, dt, now) {
+  if (!ribbon.group.visible) return;
   const t = ribbon.cutAt ? (now - ribbon.cutAt) / 1000 : 0;
   for (const h of ribbon.halves) {
     const fall = !ribbon.cutAt ? 0 : calm ? 1 : 1 - Math.exp(-t * 3.4) * Math.cos(t * 9);
@@ -506,7 +535,7 @@ function tickRibbon(dt, now) {
 function syncShop() {
   const [fr, gc] = FRONTS;
   fr.open = shopOpen(loadBase()) || RIBBON_PEEK;
-  gc.open = cornerOpen();
+  gc.open = cornerOpen() || RIBBON_PEEK;
   for (const f of [fr, gc]) for (const m of tapes[f.id] || []) m.visible = !f.open;
   syncRibbon();
   if (!wallMat || painted === wallKey()) return;
@@ -609,7 +638,7 @@ function buildHall() {
   hall.add(show);
   const tape = tapeArt();
   for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
-  ribbon = buildRibbon(shop);
+  ribbons = [buildRibbon(shop), buildRibbon(FRONTS.find(f => f.id === 'corner'))];
 
   // planters and benches down the sides, light falling from the windows
   const planter = planterArt(), bench = benchArt();
@@ -953,7 +982,8 @@ function enterFront(fr) {
   if (fr.kind === 'lift') return liftTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
   if (!fr.open) { playSound('cancel'); return say(fr); }
-  if (fr.id === 'furniture' && ribbon?.group.visible) return ribbonTap();
+  const r = ribbons.find(r => r.shop === fr && r.group.visible);
+  if (r) return ribbonTap(r);
   if (fr.id === 'furniture') return walkIn('f1');
   if (fr.id === 'corner') return walkIn('gc');
 }
@@ -967,7 +997,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (answer) return closeAsk(false);
-  if (riding || (ribbon?.cutAt && !ribbon.done)) return;
+  if (riding || ribbons.some(r => r.cutAt && !r.done)) return;
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
   const hits = ray.intersectObjects([P.group, mon.group], true);   // not scene.children: a hidden place still answers a ray
