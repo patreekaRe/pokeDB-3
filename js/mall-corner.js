@@ -21,8 +21,8 @@ import { ARCADE_GAMES, arcadeValue } from './data/leaderboard.js';
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
 const COUNTER = { x: 8, y: 2, w: 5 };   // its front on row 2, its sides running back to the wall, Meowth inside
 const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user's ask), all one size; `c` its middle, in tiles
-  { row: 'skins', c: 14 },   // clear of the counter's corner (2026-10-12, the user's ask)
-  { row: 'shiny', c: 16.75 },
+  { row: 'skins', c: 14.3 },   // clear of the counter's corner and the leaderboard (2026-10-12, the user's asks)
+  { row: 'shiny', c: 16.9 },
   { row: 'perks', c: 19.5 },
 ];
 /* two Plinko boards left of the counter, raised like the screens so arcade machines stand under them (2026-10-12, the
@@ -38,8 +38,8 @@ const ARCADE = [
   ['whackmachine', 0, 3, 1], ['pokepinball', COLS - 1, 3, -1],
 ];
 const ARCADE_K = 0.95;
-const SHOW_W = 2.6, DESK_W = 4.2;
-const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = SHOW_Y, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
+const SHOW_W = 2.3, DESK_W = 4.2;   // a little smaller since 2026-10-12, off the leaderboard (the user's ask)
+const SHOW_H = 2.15, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = SHOW_Y, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 /* The puzzle games (the revamp, 2026-10-10). Every game pays into a shared daily pot (js/corner-pot.js). */
 const GAMES = {
