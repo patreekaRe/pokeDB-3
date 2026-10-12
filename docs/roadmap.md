@@ -17,7 +17,7 @@ table tennis table, potting bench), and the worst first (the user's pick): `fron
 the painting's outline, its picture on the front only, sides / back / top a colour read off its own edge (`top` cuts the
 box lower and stands what's above as a two-sided cut-out), on 64 boxy kinds (fridge, vending, shelves, cabinets, crates,
 the store's arcade cabinets...: the `frontbox` lines in each batch's `SHAPES`), and the stove and air hockey table built
-from parts. **Next:** the user looks at them in the base and the Furniture store; then the rest (~430 non-boxy pieces:
+from parts. **In progress (2026-10-12, the user's ask):** no paper cut-outs. Every `top:` piece (whatever stands on the box: the water cooler's bottle, the crates' fruit and veg, the organ's pipes, the sink's tap, the fireplace's mantel things, the clock's pediment, milk bottles, the till, cool box handle, mini fridge's plant, shredder, espresso machine, flasks, nav screens, the prize counter's bear and ticket) gets modelled in 3D (`TOPS` in `js/base-models-kit.js`, a frontbox's `on:`). **Then ask the user before starting the next batch** (their rule). After that, the rest (~430 non-boxy pieces:
 carts, gym machines, booths, desks on legs, statues) one batch file a session, hand-built like the stove. Rendering
 works in the cloud: install `three@0.160.0` with npm in the scratchpad and route the CDN URL to it in Playwright, then
 `tools/models.html?ids=a,b` shows four sides each.
