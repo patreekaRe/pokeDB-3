@@ -2170,3 +2170,8 @@ Poké Puzzle's bubbles); each now wraps out of sight.
 **Arcade fps on iPhone** (2026-10-12, the user found Ponyta Dash low on an iPhone 14): the marquee's masked bulbs, sunburst
 and sheen kept animating under play, which Safari repaints every frame; they pause while a game runs (`.ar-cab.playing`),
 and Ponyta Dash's sky and sun are a `stamp()`. If it still drops, Low Power Mode caps Safari at 30 fps.
+
+**Ponyta flicker on phones** (2026-10-12, the user still saw it after the scenery fix): the sprite, unsmoothed on a
+canvas at a phone's fractional scale (1.4 pixels a unit), doubled and dropped different rows each frame as Ponyta bobbed;
+`drawMon()` in `js/arcade-kit.js` now snaps a sprite's box to whole screen pixels (unless rotated or mirrored by the
+context), so every frame draws the same shape, for every arcade game.

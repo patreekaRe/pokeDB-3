@@ -48,6 +48,7 @@ export const NEXT = [
   ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
   ['fixes', 'Pidgey Flap has no joystick any more: it only ever needed a tap on the screen.'],
   ['fixes', 'Arcade games run smoother on iPhones: the cabinet\'s lit marquee holds still while you play.'],
+  ['fixes', 'Ponyta no longer shimmers as it gallops on a phone: arcade sprites are drawn on whole screen pixels.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
