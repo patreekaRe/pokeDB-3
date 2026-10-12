@@ -17,11 +17,11 @@ import { PLINKO_PAYS } from './data/casino.js';
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
 const COUNTER = { x: 8, y: 2, w: 5 };   // its front on row 2, its sides running back to the wall, Meowth inside
 const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user's ask), all one size; `c` its middle, in tiles
-  { row: 'skins', c: 13.2 },
-  { row: 'shiny', c: 16.15 },
-  { row: 'perks', c: 19.1 },
+  { row: 'skins', c: 14 },   // clear of the counter's corner (2026-10-12, the user's ask)
+  { row: 'shiny', c: 16.75 },
+  { row: 'perks', c: 19.5 },
 ];
-const PLINKOS = [1.9, 4.85, 7.8];   // three Plinko boards on the back wall's left half, mounted like the screens (2026-10-12, the user's ask)
+const PLINKOS = [2.4, 6];   // two Plinko boards spaced evenly between the left wall and the counter (2026-10-12, the user's ask: the third hung over it)
 const SHOW_W = 2.6, DESK_W = 4.2;
 const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
@@ -35,7 +35,7 @@ const GAMES = {
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The betting games (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in
-   (`face` 1 looks right, -1 left), three Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
+   (`face` 1 looks right, -1 left), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
   slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
@@ -403,9 +403,11 @@ function picture(src) {
   if (!pics.has(src)) pics.set(src, new Promise((resolve) => {
     const img = new Image();
     img.onload = () => {
-      const c = new OffscreenCanvas(img.naturalWidth, img.naturalHeight);
-      c.getContext('2d').drawImage(img, 0, 0);
-      resolve(trim(c));
+      // a page canvas, not an OffscreenCanvas: iPhone Safari drew the GIF into one blank, so the screens showed no Pokémon
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext('2d', { willReadFrequently: true }).drawImage(img, 0, 0);
+      try { resolve(trim(c)); } catch { resolve(null); }
     };
     img.onerror = () => resolve(null);
     img.src = src;
@@ -550,10 +552,10 @@ export function buildCorner(THREE, size) {
     sc.paint();
   });
   const srcs = [...new Set(SHOWS.flatMap(d => cornerEntries(d.row).map(e => e.sprite)).filter(Boolean))];
-  Promise.all(srcs.map(src => picture(src).then(c => cuts.set(src, c)))).then(() => screens.forEach(sc => sc.paint()));
+  for (const src of srcs) picture(src).then(c => { if (c) { cuts.set(src, c); screens.forEach(sc => sc.paint()); } });
   redraws.push(() => screens.forEach(sc => sc.paint()));
 
-  // Plinko, three boards on the back wall's left half, mounted like the screens across from them (2026-10-12, the user's
+  // Plinko, two boards on the back wall's left half, mounted like the screens across from them (2026-10-12, the user's
   // ask): each a live board, balls dropping on their own between plays; a tap goes to the game
   PLINKOS.forEach((c, n) => {
     const w = SHOW_W, h = SHOW_H, cx = c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;

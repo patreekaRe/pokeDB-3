@@ -156,8 +156,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           Rocket Blast-Off. Every game has a How to play card (the "?").
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
           the wall behind it earns a scratch card.
-        - **The room:** casino carpet; back wall left three live Plinko boards, right three equal mounted screens
-          (Pokémon, Shinies, Perks; no Poké Balls); four tables (touchscreen Voltorb / Who's That behind, Blackjack /
+        - **The room:** casino carpet; back wall left two live Plinko boards spaced evenly up to the counter, right three
+          equal mounted screens clear of the counter (Pokémon, Shinies, Perks; no Poké Balls; their sprites load through a
+          page canvas, as iPhone drew them blank into an OffscreenCanvas); no tilt-shift blur at all; four tables (touchscreen Voltorb / Who's That behind, Blackjack /
           High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
         **Next:** the user playtests the latest pinned link and gives room/game feedback; then, on their word, merge to
         `main`. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
