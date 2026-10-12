@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
 ];
 
