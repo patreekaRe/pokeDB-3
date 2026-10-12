@@ -343,9 +343,7 @@ export function reachableNodes(map, currentId) {
 
 const TILE = 8;                                   // canvas pixels per tile
 const NARROW_W = 3 + (COLS - 1) * 5 + 4;           // tiles across on a phone
-const WIDEST_W = 72;                              // tiles across at most, on a wide screen
-const WIDE_TILE = 11;                             // CSS px per tile on a wide screen (css/screens.css)
-let GRID_W = NARROW_W;                            // set per render by fitGrid()
+let GRID_W = NARROW_W;
 const BOSS_ROW = 10;                              // leaves room above the boss for its silhouette
 let rows = MAP_FLOORS;                            // the drawn map's floors (setRows())
 const rowY = (floor) => floor >= rows ? BOSS_ROW : BOSS_ROW + 7 + (rows - 1 - floor) * 6;   // tile row (boss on top)
@@ -363,14 +361,10 @@ const MAX_STEP = 8;                               // widest gap between columns 
 
 let colX = (col) => 3 + col * 5;                  // tile column of a room, set per map by spreadColumns()
 
-/**
- * The map always stays upright. A phone fits it to the screen's height (CSS: 78vh); a wider screen draws it
- * at WIDE_TILE px a tile and gives it more tiles across instead of stretching it, so it fills the width with
- * more terrain and the rooms spread further apart, and the page scrolls (showMap() keeps you in view).
- */
-function fitGrid(box) {
-  const room = Math.min(innerWidth, 1100) - 32 - 20;   // #map-screen's width and padding, then .map-wrap's (the screen may still be hidden)
-  GRID_W = innerWidth <= 720 ? NARROW_W : Math.max(NARROW_W, Math.min(WIDEST_W, Math.floor(room / WIDE_TILE)));
+/* Every screen gets the phone's map: wider than a phone the map's Pokédex stands at a handheld's size in its scenery
+   (css/screens.css), so a wider grid of more tiles across is gone (the user's call, 2026-10-12). */
+function fitGrid() {
+  GRID_W = NARROW_W;
   CENTER_X = Math.floor(GRID_W / 2);
 }
 
@@ -736,18 +730,6 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
   }, 220);
 }
 
-// Turning a tablet or resizing the window can change how many tiles fit across, so the map is drawn again.
-let lastRender = null, resizeTimer = 0;
-if (typeof addEventListener === 'function') addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    if (!lastRender || $('map-screen').hidden) return;
-    const before = GRID_W;
-    fitGrid($('map'));
-    if (GRID_W !== before) renderMap(...lastRender);
-  }, 200);
-});
-
 /**
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
@@ -756,11 +738,10 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
   // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
-  if (!peek) lastRender = [map, currentId, onPick, { biome, trainer, stage, reveal, read, track, type, ken }];
   const box = peek || $('map');
   box.replaceChildren(...box.querySelectorAll(':scope > .map-keep'));
   setRows(map.floors.length);
-  fitGrid(box);
+  fitGrid();
   box.style.setProperty('--grid-w', GRID_W);
   box.style.setProperty('--grid-h', GRID_H);
   spreadColumns(map);

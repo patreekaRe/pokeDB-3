@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <!-- iOS zooms into a text box under 16px and never zooms back; only iOS gets maximum-scale, which it still lets you pinch past -->
   <script>if (/iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) document.querySelector("meta[name=viewport]").content += ", maximum-scale=1";</script>
-  <!-- Tablets and PCs play the game in a phone-sized frame of this same page, so every screen is laid out exactly as on a
-       phone (the user's call, 2026-10-12: wide screens stretched the bars and floated the buttons). Inside the frame,
-       and on phones either way round, it's the game itself; ?wide turns the frame off. -->
-  <script>if (window.top === window && !/[?&]wide(=|&|$)/.test(location.search) && Math.min(innerWidth, innerHeight) >= 600) document.documentElement.classList.add("framed");</script>
+  <!-- ?phone plays the game in a phone-shaped frame of this same page, to see a phone's layout on a tablet or PC. It was
+       the default on wide screens for a day; the user wanted an iPad's whole screen back (2026-10-12), so the scenery
+       and 3D places fill it and the Pokédex-shaped screens stand in it at a handheld's size instead. -->
+  <script>if (window.top === window && /[?&]phone(=|&|$)/.test(location.search)) document.documentElement.classList.add("framed");</script>
   <style>
     html.framed, html.framed body { height: 100%; margin: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 40%, #2a3160, #12152b 75%); }
     html.framed body { display: grid; place-items: center; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); box-sizing: border-box; }
@@ -920,7 +920,7 @@
       frame.id = "phone-frame";
       frame.title = document.title;
       frame.allow = "fullscreen; autoplay; vibrate";
-      frame.src = location.pathname + location.search + location.hash;
+      frame.src = location.pathname + location.search.replace(/([?&])phone(=[^&]*)?&?/, "$1").replace(/[?&]$/, "") + location.hash;
       document.body.append(frame);
       const focus = () => frame.contentWindow?.focus();
       frame.addEventListener("load", focus);

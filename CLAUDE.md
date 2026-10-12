@@ -54,7 +54,7 @@ live site.
 
 ## Architecture
 
-- **Entry point**: `index.html` loads `js/main.js` as a module. On a tablet or PC (short side 600px+, top window, no `?wide`) it loads nothing itself and plays the same URL in `#phone-frame`, a phone-shaped iframe, so wide screens get the phone layouts (2026-10-12, the user's call: phones are the way to play). Every other
+- **Entry point**: `index.html` loads `js/main.js` as a module. Wide screens play full screen, the scenery and 3D places filling an iPad, while the Pokédex-shaped screens stand in them at a handheld's size (the Collection's device, and since 2026-10-12 the run map's: 500px wide, 940px tall at most, centred, the phone's map grid, `@media (min-width: 721px)` by `#map-screen` in `css/screens.css`; the user's call after a day of a phone-shaped frame round the whole game, which shrank the worlds with it). `?phone` still plays the same URL in `#phone-frame`, a phone-shaped iframe, to see a phone's layout on a wide screen. Every other
   `js/*.js` file is imported from there or from each other.
 - **Data-driven design**: all game content — cards, starters, enemies,
   relics, achievements, shop items, difficulty levels — lives in plain

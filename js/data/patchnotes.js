@@ -51,7 +51,7 @@ export const NEXT = [
   ['fixes', 'Ponyta no longer shimmers as it gallops on a phone: arcade sprites are drawn on whole screen pixels.'],
   ['look', 'The game has an app icon: add it to your home screen (Safari or Chrome: Share, then Add to Home Screen) and it shows a Fire, Grass and Water card, and opens full screen.'],
   ['look', 'Phones play upright only: turned sideways, the game waits behind a "turn your phone upright" screen. Tablets and PCs still play either way.'],
-  ['look', 'On an iPad or a computer the game plays in a phone-shaped window in the middle of the screen, laid out exactly like on a phone: no more stretched HP bars or buttons floating out of place. Add ?wide to the address for the old full-width view.'],
+  ['look', 'On an iPad or a computer the game fills the whole screen again, and the run map is a handheld Pokédex standing in the middle of its scenery instead of stretching across it.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
