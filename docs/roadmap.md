@@ -349,7 +349,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: the 3D gym's, 2026-10-12, the user's ask: their
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `f15eb63` (the 3D gym), 2026-10-12, the user's ask: their
   12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
   **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
   boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
@@ -388,8 +388,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome. Then, on the user's OK:
-  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): see the latest commit on the branch,
-  `https://rawcdn.githack.com/patreekaRe/pokeDB-3/<commit>/index.html?gym=britt&hp=0.05`
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/f15eb63bf5cfc4f9747eb0e97fd475426996278c/index.html?gym=britt&hp=0.05 (`?gym=` any leader).
+
   ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
