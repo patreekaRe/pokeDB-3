@@ -2,8 +2,8 @@
    (rebuilt 2026-10-10, the user's ask: the room bigger, and no more cramped prize cases). Along the back wall four big
    showcase screens, each cycling through what it sells, opened up close to step through one at a time (js/showcase.js):
    Pokémon skins, shinies, perks and Poké Balls, either side of Meowth's prize counter (a tap on Meowth: the free daily
-   scratch card). Down the floor the games: free Voltorb Flip and Who's That Pokémon?, and to bet on, a bank of slot
-   machines, Plinko, High-Low and Blackjack, with neon pillars and attract cabinets round the walls.
+   scratch card). Down the floor the games, all free (no betting since 2026-10-12): Voltorb Flip, Who's That Pokémon?, a
+   bank of slot machines, Plinko, High-Low and Blackjack, with neon pillars and attract cabinets round the walls.
    Painted smooth (fine()); js/mall-3d.js walks it (its own COLS x ROWS, the camera following you), this file builds it. */
 
 import { cornerEntries } from './shop.js';
@@ -25,21 +25,21 @@ const PLINKOS = [2.4, 6];   // two Plinko boards spaced evenly between the left 
 const SHOW_W = 2.6, DESK_W = 4.2;
 const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
-/* The free games (the revamp, 2026-10-10): they pay into a shared daily pot. */
+/* The puzzle games (the revamp, 2026-10-10). Every game pays into a shared daily pot (js/corner-pot.js). */
 const GAMES = {
   voltorb: { at: { x: 5, y: 5 }, w: 3, name: 'Voltorb Flip', colour: '#58d080',
-    line: 'Voltorb Flip! Clear the board for PokéCoins: the free games pay up to 250 a day between them. Tap again to sit down, meow.',
+    line: 'Voltorb Flip! Clear the board for PokéCoins, two paying rounds a day. Tap again to sit down, meow.',
     open: (done) => import('./voltorb.js').then(m => m.openVoltorb(done)) },
   quiz: { at: { x: 13, y: 5 }, w: 3, name: 'Who\'s That Pokémon?', colour: '#4a90f0',
     line: 'Who\'s That Pokémon? Five silhouettes a day, name \'em for coins. Tap again to play, meow.',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
-/* The betting games (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in
+/* The table games, played with Meowth's house chips (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in
    (`face` 1 looks right, -1 left), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
   slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
-    line: 'The slots! You stop the reels yourself, so time it for a 7. Three 7s win the jackpot, meow. Tap again to play.',
+    line: 'The slots! Five free spins a day, and you stop the reels yourself, so time it for a 7. Tap again to play, meow.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',
     line: 'Plinko! Drop a Poké Ball and watch it bounce. The edges pay ×10, meow. Tap again to play.',
@@ -65,7 +65,7 @@ export const KEEPER = {
     return `Your stamp card has ${st.n} of ${st.of} stamps. Play ${st.of - st.n} more different game${st.of - st.n > 1 ? 's' : ''} today and I\'ll hand you a scratch card, meow!`;
   }),
   hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
-  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Feeling lucky? The slots, Plinko, Blackjack and High-Low take bets. The house only closes once you\'re 500 up for the day, meow.', 'Blackjack against me? Bold. I like bold. I like your coins more.'],
+  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, play for fun, meow.', 'Blackjack against me? Bold. I like bold. Even with my own chips, meow.'],
 };
 
 /* ---------- painting ---------- */

@@ -1,101 +1,66 @@
-/* casino-pot.js  -  the betting games' bookkeeping (js/data/casino.js has the rules): what you're up today, how many
-   plays each game has had (the play's number seeds its roll), staking and paying out. Kept in `save.corner.bets`
-   ({ day, net, plays }); a game's hand in progress is its own field there. Winnings never count towards
-   `stats.coinsEarned`, so betting can't earn the coin badges. */
+/* casino-pot.js  -  the table games' bookkeeping (js/data/casino.js has the rules): how many plays each game has had
+   today (the play's number seeds its roll, and the first PLAYS of them pay) and paying out through the shared pot
+   (js/corner-pot.js). Nobody bets (2026-10-12, the user's call): a play stakes STAKE of Meowth's house chips and pays
+   what they win. Kept in `save.corner.bets` ({ day, plays }); a game's hand in progress is its own field there. */
 
-import { BETS, BET_CAP, tablesOpen, JACKPOT_BASE, JACKPOT_FEED } from './data/casino.js';
+import { PLAYS, STAKE, DAILY_CAP, GAME_CAP } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
-import { el, refreshCoins } from './ui.js';
-import { stamp } from './corner-pot.js';
+import { el } from './ui.js';
+import { stamp, payGame, potWon, gameWon, canPay } from './corner-pot.js';
 
 function today() {
   const b = getSave().corner?.bets, day = safariDay();
-  return b?.day === day ? b : { day, net: 0, plays: {} };
+  return b?.day === day ? b : { day, plays: {} };
 }
 const write = (b) => updateSave(d => { d.corner = { ...d.corner, bets: b }; });
 
-export const netToday = () => today().net;
-export const isOpen = () => tablesOpen(today().net);
-export const coins = () => getSave().coins ?? 0;
+/** Plays of `game` left today that pay. */
+export const playsLeft = (game) => Math.max(0, PLAYS[game] - (today().plays[game] ?? 0));
+/** Would `game`'s next play pay? */
+export const paysNow = (game) => playsLeft(game) > 0 && canPay(game);
 
-/** Takes a stake for a new play of `game`; returns { day, n } (the play's seed), or null if it can't be bet. */
-export function stake(game, amount) {
-  const b = today();
-  if (!tablesOpen(b.net) || coins() < amount) return null;
-  const n = b.plays[game] ?? 0;
-  write({ ...b, net: b.net - amount, plays: { ...b.plays, [game]: n + 1 } });
-  updateSave(d => { d.coins -= amount; });
-  stamp(game);
-  refreshCoins();
-  return { day: b.day, n };
-}
-
-/** A free play of `game` (a bonus round's spin): its seed, no stake. */
-export function freePlay(game) {
-  const b = today(), n = b.plays[game] ?? 0;
+/** A new play of `game`: { day, n } (its seed) and whether it pays (`paid`); past that it's for fun. */
+export function stake(game) {
+  const b = today(), n = b.plays[game] ?? 0, paid = paysNow(game);
   write({ ...b, plays: { ...b.plays, [game]: n + 1 } });
-  return { day: b.day, n };
+  stamp(game);
+  return { day: b.day, n, paid };
 }
 
-/** The slots' jackpot: it carries over between days (`save.corner.jackpot`), fed by every paid spin. */
-export const jackpot = () => getSave().corner?.jackpot ?? JACKPOT_BASE;
-export function feedJackpot(bet) {
-  const pot = jackpot() + Math.max(1, Math.round(bet * JACKPOT_FEED));
-  updateSave(d => { d.corner = { ...d.corner, jackpot: pot }; });
-}
-/** Three 7s: the whole pot, and it starts again from the floor. */
-export function winJackpot() {
-  const pot = jackpot();
-  updateSave(d => { d.corner = { ...d.corner, jackpot: JACKPOT_BASE }; });
-  settle(pot);
-  return pot;
+/** A free extra play of `game` (a bonus round's spin): its seed, using up no play. */
+export function freePlay(game) {
+  const b = today(), n = (b.plays[`${game}Bonus`] ?? 0);
+  write({ ...b, plays: { ...b.plays, [`${game}Bonus`]: n + 1 } });
+  return { day: b.day, n: 1000 + n };
 }
 
-/** More stake on a play already going (Blackjack's double). False if the coins aren't there. */
-export function stakeMore(amount) {
-  if (coins() < amount) return false;
-  const b = today();
-  write({ ...b, net: b.net - amount });
-  updateSave(d => { d.coins -= amount; });
-  refreshCoins();
-  return true;
-}
-
-/** Pays `amount` back (the stake included). */
-export function settle(amount) {
-  if (!amount) return;
-  const b = today();
-  write({ ...b, net: b.net + amount });
-  updateSave(d => { d.coins += amount; });
-  refreshCoins();
-}
+/** Pays a play's win: what the chips won, if the play pays, up to the caps. Returns the coins paid. */
+export const settle = (amount, game, paid) => (paid && amount > 0 ? payGame(Math.floor(amount), game) : 0);
 
 /** A game's saved hand in progress (`save.corner.bets[game + 'Hand']`), only if it's today's. */
 export const handOf = (game) => { const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
 export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: hand });
 
-/** The chips row: BETS to pick from, the picked one lit, and how much more today's tables allow. */
-export function chipRow(bet, pick, disabled = false) {
-  const row = el('div', 'cs-chips');
-  for (const v of BETS) {
-    const c = el('button', `cs-chip${v === bet ? ' on' : ''}`, String(v));
-    c.type = 'button';
-    c.disabled = disabled || coins() < v;
-    c.addEventListener('click', () => pick(v));
-    row.append(c);
-  }
-  return row;
-}
-
-/** The meters every table shows: your coins, the bet, and today's winnings against the cap. */
-export function tableMeters(bet) {
+/** The meters every table shows: plays left that pay, the chips a play stakes, and today's coins against the cap. */
+export function tableMeters(game) {
   const m = el('div', 'vf-meters');
-  const net = netToday();
-  for (const [k, v] of [['Coins', coins().toLocaleString()], ['Bet', String(bet)], ['Today', `${net >= 0 ? '+' : ''}${net}/${BET_CAP}`]]) {
+  const left = playsLeft(game);
+  for (const [k, v] of [['Plays', paysNow(game) ? `${left}/${PLAYS[game]}` : 'For fun'], ['Chips', String(STAKE)], ['Today', `${potWon()}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
   }
   return m;
 }
 
-export const closedLine = `The house is out of coins for today: you're ${BET_CAP} up! The tables open again tomorrow, meow.`;
+/** Why `game` plays for fun now, in Meowth's words. */
+export function funLine(game) {
+  if (potWon() >= DAILY_CAP) return `That's ${DAILY_CAP} PokéCoins today, the most the Game Corner pays! Play on for fun, meow. New coins tomorrow.`;
+  if (gameWon(game) >= GAME_CAP) return `This game's paid its ${GAME_CAP} for today. Try another for coins, or play on for fun, meow!`;
+  return 'Your plays here are used up for today. Play on for fun, or try another game, meow! New plays tomorrow.';
+}
+
+/** A play key's label: "Spin" while plays pay, "Spin for fun" after. */
+export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for fun`);
+
+/** A table's words: `line`, and once its plays stop paying, why (not mid-play, `busy`). */
+export const sayLine = (game, line, busy = false) => (busy || paysNow(game) ? line : `${line} ${funLine(game)}`);

@@ -1,17 +1,21 @@
 /* voltorb.js  -  Voltorb Flip, the Game Corner's game (the revamp, 2026-10-10): HGSS's board over whatever is showing,
-   its rules in js/data/corner.js. Free to play; a won or quit round pays coins from its score, up to the day's cap.
+   its rules in js/data/corner.js. Free to play; the day's first PLAYS.voltorb rounds pay coins from their score when won
+   or quit, up to the caps, and after that it's played for fun.
    The round in play is saved (`save.corner.voltorb`), so a refresh comes back to the same board and flips. A Memo key
    marks tiles you think are Voltorbs (not saved). */
 
 import {
-  SIZE, GAMES_CAP as VOLTORB_CAP, voltorbBoard, clues, score, cleared, payout, capPay, nextLevel, freshVoltorb,
+  SIZE, DAILY_CAP, GAME_CAP, PLAYS, voltorbBoard, clues, score, cleared, payout, capPay, nextLevel, freshVoltorb,
 } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el, refreshCoins } from './ui.js';
 import { calmFx } from './prefs.js';
-import { potWon, payGame, stamp } from './corner-pot.js';
+import { potWon, gameWon, payGame, stamp } from './corner-pot.js';
+
+/** Does this round pay? The day's first PLAYS.voltorb do, while the caps allow. */
+const roundPays = () => state.round < PLAYS.voltorb && capPay(1, potWon(), gameWon('voltorb')) > 0;
 import { firstLook, helpKey, helpCard } from './corner-panel.js';
 
 const LINE_COLOURS = ['#e07060', '#58b060', '#e8a040', '#4a90d8', '#b070d0'];
@@ -63,8 +67,8 @@ function shut() {
 const voltorbIcon = (cls = '') => { const v = el('span', `vf-voltorb ${cls}`); v.setAttribute('aria-hidden', 'true'); return v; };
 
 function render() {
-  const won = potWon(), points = ended ? ended.points : score(board, state.flipped);
-  const pays = ended ? ended.paid : capPay(payout(points), won);
+  const won = potWon(), points = ended ? ended.points : score(board, state.flipped), paying = roundPays();
+  const pays = ended ? ended.paid : paying ? capPay(payout(points), won, gameWon('voltorb')) : 0;
   const head = el('div', 'vf-head');
   head.append(el('strong', 'vf-title', 'VOLTORB FLIP'), el('span', 'vf-lv', `Lv. ${ended ? ended.level : state.level}`), helpKey(help, () => { help = !help; render(); }));
   if (help) {
@@ -75,8 +79,8 @@ function render() {
   const meters = el('div', 'vf-meters');
   meters.append(
     meter('Score', points.toLocaleString()),
-    meter('Pays', won >= VOLTORB_CAP && !ended ? 'For fun' : `${pays} 💰`),
-    meter('Today', `${Math.min(won, VOLTORB_CAP)}/${VOLTORB_CAP}`),
+    meter('Pays', !paying && !ended ? 'For fun' : `${pays} 💰`),
+    meter('Today', `${Math.min(won, DAILY_CAP)}/${DAILY_CAP}`),
   );
   if (ended?.fresh && ended.paid) {   // the round's coins count up into the day's, once
     ended.fresh = false;
@@ -93,7 +97,10 @@ function render() {
   grid.append(el('span', 'vf-corner'));
 
   const say = el('p', 'vf-say', ended ? ended.line
-    : won >= VOLTORB_CAP ? `The games have paid the most for today (${VOLTORB_CAP}). Play on for fun, new coins come tomorrow.`
+    : !paying ? (won >= DAILY_CAP ? `The Game Corner has paid its ${DAILY_CAP} for today. Play on for fun, new coins come tomorrow.`
+      : gameWon('voltorb') >= GAME_CAP ? `Voltorb Flip has paid its ${GAME_CAP} for today. Play on for fun, or try another game for coins.`
+      : `Today's ${PLAYS.voltorb} paying rounds are done. Play on for fun, your level carries over to tomorrow.`)
+    : !state.flipped.length && state.round === 0 ? `You get ${PLAYS.voltorb} paying rounds a day. Flip the tiles: each one multiplies your score. The numbers say each line\'s total and how many Voltorbs hide in it.`
     : state.flipped.length ? 'Flip every 2 and 3 to clear the board. Or quit and take what you have.'
     : 'Flip the tiles: each one multiplies your score. The numbers say each line\'s total and how many Voltorbs hide in it.');
 
@@ -102,7 +109,7 @@ function render() {
   else {
     const m = button(memo ? 'Memo: on' : 'Memo', `vf-memo${memo ? ' on' : ''}`, () => { memo = !memo; playSound('select'); render(); });
     m.setAttribute('aria-pressed', String(memo));
-    const quit = button(state.flipped.length ? `Quit · take ${pays}` : 'Quit', 'vf-quit', quitRound);
+    const quit = button(state.flipped.length && paying ? `Quit · take ${pays}` : 'Quit', 'vf-quit', quitRound);
     quit.disabled = !state.flipped.length;
     keys.append(m, quit);
   }
@@ -119,6 +126,7 @@ const HELP = [
   ['The Voltorb number under it', 'is how many Voltorbs hide in that line.'],
   ['Your score is multiplied by each tile you flip.', '1s keep it, 2s double it, 3s triple it.'],
   ['Find every 2 and 3 to clear the board.', 'Flip a Voltorb and the round\'s score is gone, so you can Quit any time and take your coins.'],
+  [`${PLAYS.voltorb} rounds a day pay PokéCoins;`, 'after that, play on for fun. Your level carries over to the next day.'],
   ['Tips:', 'a line with 0 Voltorbs is safe to flip. A line whose total is low with lots of Voltorbs is only 1s and Voltorbs, so leave it. Memo marks tiles you think are Voltorbs.'],
 ];
 
@@ -143,7 +151,7 @@ function countUp(b, from, to) {
   const t0 = performance.now(), ms = calmFx() ? 0 : 700;
   const step = (now) => {
     const k = ms ? Math.min(1, (now - t0) / ms) : 1;
-    b.textContent = `${Math.round(from + (to - from) * k)}/${VOLTORB_CAP}`;
+    b.textContent = `${Math.round(from + (to - from) * k)}/${DAILY_CAP}`;
     if (k < 1 && b.isConnected) requestAnimationFrame(step);
   };
   requestAnimationFrame(step);
@@ -224,15 +232,16 @@ function quitRound() {
 
 /** Pays the round, moves the saved record on to the next one, and holds this board face up until Next. */
 function endRound({ won, quit, flips, boom, points, line }) {
-  const paid = payGame(payout(points)), level = state.level, flipped = state.flipped;
+  const paying = roundPays(), paid = paying ? payGame(payout(points), 'voltorb') : 0, level = state.level, flipped = state.flipped;
   const next = nextLevel(level, { won, flips });
   state = { ...state, round: state.round + 1, level: next, flipped: [] };
   keep();
   if (paid) playSound('coins', 'buy');
-  const left = potWon() >= VOLTORB_CAP ? ' That\'s the most for today!' : '';
+  const left = paying && !roundPays() ? (state.round >= PLAYS.voltorb ? ' That was today\'s last paying round.' : ' That\'s the most for today!') : '';
+  const took = paying ? `${paid} PokéCoins` : `${payout(points)} for fun`;
   ended = { level, points, paid, boom, flipped, fresh: true,
-    line: line ?? (won ? `Board cleared! ${points.toLocaleString()} points: ${paid} PokéCoins.${left} On to Lv. ${next}.`
-      : `You took ${paid} PokéCoins.${left}${next < level ? ` Next round is Lv. ${next}.` : ''}`) };
+    line: line ?? (won ? `Board cleared! ${points.toLocaleString()} points: ${took}.${left} On to Lv. ${next}.`
+      : `You took ${took}.${left}${next < level ? ` Next round is Lv. ${next}.` : ''}`) };
   refreshCoins();
   render();
 }

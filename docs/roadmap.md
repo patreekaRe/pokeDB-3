@@ -195,9 +195,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      c) **The Game Corner revamp** (branch `game-corner-revamp`, merged into `main` and live since 2026-10-12, the user's call; patch 1.6 "Game Corner"). Built
         2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
         detail. Where it stands (2026-10-12, see the branch's last commit):
-        - **Games (the user's keepers):** Voltorb Flip and Who's That Pokémon? (free, 250 a day between them),
-          Slots (tap-to-stop, jackpot, Pikachu bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low (bets
-          5-50, 500-a-day win cap). Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
+        - **Games (the user's keepers):** Voltorb Flip, Who's That Pokémon?, Slots (tap-to-stop, jackpot, Pikachu
+          bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low. **No betting since 2026-10-12** (the user's
+          call, the cut-down numbers): all free, a few paying plays a game a day (`PLAYS`), 500 a day cap, 150 a game,
+          an average day ~250 (`tests/corner.test.mjs`). Pushed to `main` the same day; next is the user's playtest. Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
           Rocket Blast-Off. Every game has a How to play card (the "?").
         - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
           the wall behind it earns a scratch card.

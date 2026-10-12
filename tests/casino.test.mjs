@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   SYMBOLS, REEL_WEIGHT, STRIP, SLIP, slotPay, stopAt, shuffledDeck, handValue, dealerPlays, blackjackReturn, isBlackjack,
-  hlChance, hlMult, playRand, tablesOpen, BET_CAP, plinkoDrop, PLINKO_PAYS,
+  hlChance, hlMult, playRand, plinkoDrop, PLINKO_PAYS,
   PLINKO_ROWS, PLINKO_ODDS, scratchCard, SCRATCH_PRIZES,
 } from '../js/data/casino.js';
 import { makeRng } from '../js/rng.js';
@@ -76,8 +76,6 @@ test('the scratch card always wins its prize, the same for the day', () => {
   }
 });
 
-test('plays come from the day and their number, and the tables close once the day is won', () => {
+test('plays come from the day and their number', () => {
   assert.equal(playRand('slots', '2026-10-10', 4)(), playRand('slots', '2026-10-10', 4)());
-  assert.ok(tablesOpen(BET_CAP - 1));
-  assert.ok(!tablesOpen(BET_CAP));
 });

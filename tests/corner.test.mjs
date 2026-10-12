@@ -1,9 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  VOLTORB_BOARDS, VOLTORB_CAP, dealBoard, voltorbBoard, clues, score, cleared, payout, paysToday, nextLevel, bestScore,
-  pickDeal, dealPrice, capPay, GAMES_CAP, quizRound, quizPay, QUIZ_LEN,
+  VOLTORB_BOARDS, dealBoard, voltorbBoard, clues, score, cleared, payout, nextLevel, bestScore,
+  pickDeal, dealPrice, capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
 } from '../js/data/corner.js';
+import {
+  STRIP, slotPay, stopAt, BONUS_SPINS, JACKPOT, PLINKO_ODDS, PLINKO_PAYS, shuffledDeck, handValue, isBlackjack,
+  dealerPlays, blackjackReturn, hlMult, SCRATCH_PRIZES,
+} from '../js/data/casino.js';
 import { makeRng } from '../js/rng.js';
 
 test('every Voltorb Flip board fits 25 tiles', () => {
@@ -38,10 +42,8 @@ test('score, clearing and the payout', () => {
   assert.equal(score(board, [0, 1, 2]), 6);
   assert.equal(cleared(board, [0]), false);
   assert.equal(cleared(board, [0, 1]), true);
-  assert.ok(payout(bestScore(1)) >= 4 && payout(bestScore(1)) <= 8);
-  assert.ok(payout(bestScore(8)) <= 60);
-  assert.equal(paysToday(10000, VOLTORB_CAP - 5), 5);
-  assert.equal(paysToday(10000, VOLTORB_CAP), 0);
+  assert.ok(payout(bestScore(1)) >= 12 && payout(bestScore(1)) <= 24);
+  assert.ok(payout(bestScore(8)) <= 180);
 });
 
 test('levels go up on a win and drop to the flips on a Voltorb', () => {
@@ -60,10 +62,61 @@ test('the Deal of the Day is one of the keys, stable for the day', () => {
   assert.equal(dealPrice(250), 175);
 });
 
-test('the games share one daily cap', () => {
+test('the games share one daily cap, and each has its own', () => {
   assert.equal(capPay(40, 0), 40);
-  assert.equal(capPay(40, GAMES_CAP - 10), 10);
-  assert.equal(capPay(40, GAMES_CAP), 0);
+  assert.equal(capPay(40, DAILY_CAP - 10), 10);
+  assert.equal(capPay(40, DAILY_CAP), 0);
+  assert.equal(capPay(40, 100, GAME_CAP - 15), 15);
+  assert.equal(capPay(40, 100, GAME_CAP), 0);
+});
+
+/* What an average day pays, game by game: the table games played plainly (random reel stops, Blackjack by the book,
+   High-Low cashed out after one guess), Voltorb Flip by a careful player (only tiles a clue proves safe, then quit), 3.5
+   of 5 in the quiz and the scratch card's mean. The user's pick (2026-10-12) was about 250 a day, under a winning run;
+   this careful Voltorb player clears little, so the bot's day lands a little under it. */
+function averageDay() {
+  const N = 20000, rng = makeRng(77);
+  let slots = 0;
+  for (let i = 0; i < N; i++) {
+    let spins = 1, mult = 1;
+    while (spins-- > 0) {
+      const got = [0, 1, 2].map(() => STRIP[stopAt(Math.floor(rng() * STRIP.length), rng)]), m = slotPay(got);
+      slots += m === 'jackpot' ? JACKPOT : STAKE * m * mult;
+      if (got.every(s => s === 'pikachu')) { spins += BONUS_SPINS; mult = 2; }
+    }
+  }
+  slots = Math.min(GAME_CAP, PLAYS.slots * slots / N);
+  const plinko = PLAYS.plinko * STAKE * PLINKO_ODDS.reduce((s, c, i) => s + c * PLINKO_PAYS[i], 0) / 1000;
+  let bj = 0;
+  for (let i = 0; i < N; i++) {
+    const deck = shuffledDeck(makeRng(i * 7919 + 3)), p = [deck.shift(), deck.shift()], d = [deck.shift(), deck.shift()];
+    if (!isBlackjack(p) && !isBlackjack(d)) {
+      const up = handValue([d[0]]).total;
+      while (handValue(p).total < (up >= 7 ? 17 : 12) || (handValue(p).soft && handValue(p).total < 18)) p.push(deck.shift());
+    }
+    bj += STAKE * blackjackReturn(p, handValue(p).total > 21 ? d : dealerPlays(d, deck));
+  }
+  bj = PLAYS.bj * bj / N;
+  let hl = 0;
+  for (let r = 1; r <= 13; r++) { const g = r <= 7 ? 'hi' : 'lo', m = hlMult(r, g); hl += Math.floor(STAKE * m) * (g === 'hi' ? 13 - r : r - 1) / 13 / 13; }
+  hl *= PLAYS.hl;
+  let voltorb = 0;
+  for (let i = 0; i < 2000; i++) {
+    const board = dealBoard(1 + (i % 2), makeRng(i + 1)), c = clues(board), flipped = [];
+    for (let k = 0; k < SIZE * SIZE; k++) if (c.rows[Math.floor(k / SIZE)].bombs === 0 || c.cols[k % SIZE].bombs === 0) flipped.push(k);
+    voltorb += payout(score(board, flipped));
+  }
+  voltorb = PLAYS.voltorb * voltorb / 2000;
+  const quiz = (quizPay(3) + quizPay(4)) / 2;
+  const scratch = SCRATCH_PRIZES.reduce((s, [c, w]) => s + c * w, 0) / SCRATCH_PRIZES.reduce((s, [, w]) => s + w, 0);
+  return { slots, plinko, bj, hl, voltorb, quiz, scratch };
+}
+
+test('an average day pays about 250, well under the cap', () => {
+  const day = averageDay(), total = Object.values(day).reduce((a, b) => a + b, 0);
+  if (process.env.CORNER_DAY) console.log(Object.fromEntries(Object.entries(day).map(([k, v]) => [k, Math.round(v)])), Math.round(total));
+  assert.ok(total > 190 && total < 300, `an average day pays ${total}`);
+  for (const [game, v] of Object.entries(day)) assert.ok(v < GAME_CAP, `${game} averages ${v}`);
 });
 
 test('a quiz round has distinct questions, each with its answer among distinct options', () => {

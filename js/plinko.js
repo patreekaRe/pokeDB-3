@@ -1,16 +1,17 @@
-/* plinko.js  -  Poké Ball Plinko, a Game Corner betting game (2026-10-11, the user's pick; rebuilt the same day, the
+/* plinko.js  -  Poké Ball Plinko, a Game Corner game (2026-10-11, the user's pick; rebuilt the same day, the
    user's ask: bigger, and the ball should fall like a ball): drop a Poké Ball down twelve rows of pegs into one of
    thirteen bins paying ×0.2 to ×10 (js/data/casino.js: PLINKO_PAYS / PLINKO_ODDS, about 95% back). Each drop is paid
    the moment it's rolled (its bin and bounces from the play's stream), then the ball plays it out on a canvas under
-   gravity: every peg it strikes knocks it up a little and sideways, and it speeds up as it falls. Drop as many as you
-   like at once, one at a time or five. */
+   gravity: every peg it strikes knocks it up a little and sideways, and it speeds up as it falls. A drop stakes Meowth's
+   house chips; the day's first PLAYS.plinko pay (js/casino-pot.js). Drop one at a time or all you have left at once. */
 
 import { PLINKO_ROWS, PLINKO_PAYS, plinkoDrop, playRand } from './data/casino.js';
+import { STAKE } from './data/corner.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key, firstLook, helpKey, helpCard } from './corner-panel.js';
-import { stake, settle, isOpen, coins, chipRow, tableMeters, closedLine } from './casino-pot.js';
+import { stake, settle, playsLeft, paysNow, tableMeters, sayLine, playLabel } from './casino-pot.js';
 
 /* The board in peg spacings (1 = the gap between two pegs in a row); the canvas scales it. */
 const GAP_Y = 0.88, TOP = 1.3, PEG_R = 0.1, BALL_R = 0.27, GRAVITY = 40, BOUNCE = 0.42;
@@ -23,12 +24,12 @@ const TIERS = ['#5a6a80', '#4a9a68', '#3aa8d8', '#e8a030', '#e85a3a', '#ff2a68',
 const tierOf = (b) => Math.abs(b - PLINKO_ROWS / 2);
 
 const HELP = [
-  ['Pick a bet and drop a Poké Ball.', 'It bounces down through the pegs into one of the bins at the bottom.'],
-  ['The bin it lands in multiplies your bet.', 'The middle bins pay back less than you bet (×0.2 to ×0.55), the outer ones more, up to ×10 at the very edges.'],
-  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. Drop ×5 sends five at once.'],
+  ['Drop a Poké Ball.', `It's free: each drop stakes ${STAKE} of Meowth's chips, and it bounces down through the pegs into a bin.`],
+  ['The bin it lands in multiplies the chips,', 'and you win that many PokéCoins: ×0.2 to ×0.55 in the middle, more further out, up to ×10 at the very edges.'],
+  ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun.'],
 ];
 
-let panel = null, bet = 10, line = null, help = false;
+let panel = null, bet = STAKE, line = null, help = false;
 let cv = null, g = null, balls = [], flashes = new Map(), binHits = new Map(), raf = 0, last = 0, plinked = 0;
 
 export function openPlinko(onClose) {
@@ -51,10 +52,10 @@ function render() {
   cv = el('canvas', 'pk-canvas');
   g = cv.getContext('2d');
   const keys = el('div', 'vf-keys');
-  const one = key(`Drop · ${bet}`, 'vf-go pk-one', () => drop(1));
-  const five = key(`×5 · ${bet * 5}`, 'vf-go pk-five', () => drop(5));
-  keys.append(one, five, key('Close', 'vf-close', () => { if (!balls.length) panel.shut(); }));
-  box.append(head, tableMeters(bet), cv, chipRow(bet, (v) => { bet = v; playSound('stick'); render(); }), el('p', 'vf-say', isOpen() ? line : closedLine), keys);
+  const one = key(playLabel('plinko', 'Drop'), 'vf-go pk-one', () => drop(1));
+  const all = key('Drop them all', 'vf-go pk-five', () => drop(playsLeft('plinko')));
+  keys.append(one, all, key('Close', 'vf-close', () => { if (!balls.length) panel.shut(); }));
+  box.append(head, tableMeters('plinko'), cv, el('p', 'vf-say', sayLine('plinko', line, balls.length > 0)), keys);
   panel.root.replaceChildren(box);
   sizeCanvas();
   refreshKeys();
@@ -71,29 +72,28 @@ function sizeCanvas() {
 }
 
 function refreshKeys() {
-  const one = panel.root.querySelector('.pk-one'), five = panel.root.querySelector('.pk-five');
-  if (one) one.disabled = !isOpen() || coins() < bet;
-  if (five) five.disabled = !isOpen() || coins() < bet * 5;
+  const one = panel.root.querySelector('.pk-one'), all = panel.root.querySelector('.pk-five');
+  if (one) one.textContent = playLabel('plinko', 'Drop');
+  if (all) all.hidden = !paysNow('plinko') || playsLeft('plinko') < 2;
 }
 
-/** Stakes and pays `n` drops at once, then sets each ball off, a beat apart. */
+/** Pays `n` drops at once, then sets each ball off, a beat apart. */
 function drop(n) {
-  for (let i = 0; i < n; i++) {
-    const play = stake('plinko', bet);
-    if (!play) break;
-    const { bin, path } = plinkoDrop(playRand('plinko', play.day, play.n)), m = PLINKO_PAYS[bin], pay = Math.floor(bet * m);
-    settle(pay);
-    setTimeout(() => launch(bin, path, m, pay), i * 260);
+  for (let i = 0; i < Math.max(1, n); i++) {
+    const play = stake('plinko');
+    const { bin, path } = plinkoDrop(playRand('plinko', play.day, play.n)), m = PLINKO_PAYS[bin];
+    const pay = settle(bet * m, 'plinko', play.paid);
+    setTimeout(() => launch(bin, path, m, pay, play.paid), i * 260);
   }
   playSound('select');
   const meters = panel.root.querySelector('.vf-meters');
-  meters?.replaceWith(tableMeters(bet));
+  meters?.replaceWith(tableMeters('plinko'));
   refreshKeys();
 }
 
 /* The fall, worked out up front as arcs between strikes: from each peg the ball leaves upwards at BOUNCE of the speed it
    hit with, half a gap sideways, and gravity brings it down onto the next row's peg. */
-function launch(bin, path, m, pay) {
+function launch(bin, path, m, pay, paid) {
   if (!panel?.root.isConnected) return;
   const segs = [];
   let x = W / 2 + (Math.random() - 0.5) * 0.12, y = 0.2, vy = 0, c = 0;
@@ -107,7 +107,7 @@ function launch(bin, path, m, pay) {
   const bx = binX(bin), floorY = H - BALL_R - 0.08;
   segs.push(arc(x, y, bx, floorY, vy, { bin }));
   segs.push(arc(bx, floorY, bx, floorY, segs[segs.length - 1].vEnd * 0.3, { settle: true }));
-  balls.push({ segs, i: 0, t: 0, x, y: 0.2, spin: 0, bin, m, pay, trail: [] });
+  balls.push({ segs, i: 0, t: 0, x, y: 0.2, spin: 0, bin, m, pay, paid, trail: [] });
 }
 
 /** One arc from (x0, y0) to (x1, y1), leaving with upward speed `up` (canvas y grows downwards). */
@@ -148,10 +148,10 @@ function step(b, dt, now) {
 function binHit(b, now) {
   binHits.set(b.bin, now);
   playSound(b.m >= 1 ? 'coins' : 'cancel', 'select');
-  line = b.m >= 2.4 ? `×${b.m}! ${b.pay} PokéCoins!` : b.m >= 1 ? `×${b.m}: ${b.pay} PokéCoins.` : `×${b.m}: ${b.pay} back.`;
+  const won = b.paid ? `${b.pay} PokéCoins` : `${Math.floor(bet * b.m)} chips, for fun`;
+  line = b.m >= 2.4 ? `×${b.m}! ${won}!` : `×${b.m}: ${won}.`;
   const say = panel.root.querySelector('.vf-say');
-  if (say) say.textContent = line;
-  panel.root.querySelector('.vf-meters')?.replaceWith(tableMeters(bet));
+  if (say) say.textContent = sayLine('plinko', line, balls.length > 1);
   refreshKeys();
 }
 

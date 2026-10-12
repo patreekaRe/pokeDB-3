@@ -3,7 +3,7 @@
    from its seed (js/data/corner.js's quizRound()), and where you are in one is saved (`save.corner.quiz`), so a refresh
    never deals a question again. */
 
-import { QUIZ_LEN, GAMES_CAP, quizRound, quizPay } from './data/corner.js';
+import { QUIZ_LEN, DAILY_CAP, quizRound, quizPay } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
@@ -35,7 +35,7 @@ function render() {
   head.append(el('strong', 'vf-title', "WHO'S THAT POKéMON?"), el('span', 'vf-lv', done ? 'Done!' : `${cur + 1}/${QUIZ_LEN}`));
   const meters = el('div', 'vf-meters');
   const right = (done ?? ended)?.right ?? st.right;
-  for (const [k, v] of [['Right', `${right}`], ['Pays', `${done ? done.paid : quizPay(right)} 💰`], ['Today', `${Math.min(potWon(), GAMES_CAP)}/${GAMES_CAP}`]]) {
+  for (const [k, v] of [['Right', `${right}`], ['Pays', `${done ? done.paid : quizPay(right)} 💰`], ['Today', `${Math.min(potWon(), DAILY_CAP)}/${DAILY_CAP}`]]) {
     const m = el('div', 'vf-meter'); m.append(el('span', '', k), el('b', '', v)); meters.append(m);
   }
   const keys = el('div', 'vf-keys');
@@ -88,8 +88,8 @@ function answer(id) {
 
 /** The round's end: paid, and the record moved on to the next round. */
 function finish() {
-  const right = st.right, paid = payGame(quizPay(right));
-  const result = { right, paid, line: `${right}/${QUIZ_LEN} right${right === QUIZ_LEN ? ', a perfect round' : ''}! ${paid ? `${paid} PokéCoins.` : potWon() >= GAMES_CAP ? 'The games have paid the most for today.' : 'No coins this time.'} A new round tomorrow.` };
+  const right = st.right, paid = payGame(quizPay(right), 'quiz');
+  const result = { right, paid, line: `${right}/${QUIZ_LEN} right${right === QUIZ_LEN ? ', a perfect round' : ''}! ${paid ? `${paid} PokéCoins.` : potWon() >= DAILY_CAP ? 'The Game Corner has paid its most for today.' : 'No coins this time.'} A new round tomorrow.` };
   st = { ...st, round: st.round + 1, q: 0, right: 0, last: result };
   keep();
   return result;

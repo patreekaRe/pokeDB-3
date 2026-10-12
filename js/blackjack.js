@@ -1,14 +1,16 @@
 /* blackjack.js  -  the Game Corner's Blackjack table (2026-10-10), Meowth dealing: one deck a hand, the dealer stands
-   on 17, a blackjack pays 3:2, Double on your first two cards. The hand's deck comes from its play's stream, and what
+   on 17, a blackjack pays 3:2, Double on your first two cards. A hand stakes Meowth's house chips, never your coins; the
+   day's first PLAYS.bj pay what they win (js/casino-pot.js). The hand's deck comes from its play's stream, and what
    you've done is saved (`save.corner.bets.bjHand`), so a refresh deals the same cards back where you were. */
 
 import { shuffledDeck, handValue, isBlackjack, dealerPlays, blackjackReturn, playRand } from './data/casino.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
-import { stake, stakeMore, settle, isOpen, coins, chipRow, tableMeters, closedLine, handOf, keepHand } from './casino-pot.js';
+import { STAKE } from './data/corner.js';
+import { stake, settle, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
 
-let panel = null, bet = 10, hand = null, result = null;
+let panel = null, bet = STAKE, hand = null, result = null;
 
 /** The hand as it stands, rebuilt from its deck and what was done: { player, dealer, deck }. */
 function cards(h) {
@@ -45,32 +47,28 @@ function render() {
     shown.player.forEach(c => prow.append(card(c)));
     felt.append(el('span', 'bj-label', hide ? `Meowth: ${handValue([shown.dealer[0]]).total} + ?` : `Meowth: ${handValue(shown.dealer).total}`), drow, prow,
       el('span', 'bj-label', `You: ${handValue(shown.player).total}${hand?.doubled || result?.doubled ? ' (doubled)' : ''}`));
-  } else felt.append(el('span', 'bj-label', 'Place your bet, meow.'));
-  const say = el('p', 'vf-say', result ? result.line : hand ? 'Hit for another card, Stand to stop, or Double your bet for exactly one more card.' : isOpen() ? 'Get closer to 21 than Meowth without going over. Blackjack pays 3 to 2.' : closedLine);
+  } else felt.append(el('span', 'bj-label', `Meowth stakes you ${STAKE} chips a hand, meow.`));
+  const say = el('p', 'vf-say', hand ? 'Hit for another card, Stand to stop, or Double the chips for exactly one more card.' : sayLine('bj', result ? result.line : 'Get closer to 21 than Meowth without going over. Win and the chips are your PokéCoins; Blackjack pays 3 to 2.'));
   const keys = el('div', 'vf-keys');
   if (hand) {
     const { player } = cards(hand);
     keys.append(key('Hit', 'vf-go', hit), key('Stand', 'vf-go', stand));
     const dbl = key(`Double`, 'vf-go', double);
-    dbl.disabled = player.length !== 2 || coins() < hand.bet;
+    dbl.disabled = player.length !== 2;
     keys.append(dbl);
   } else {
-    const deal = key(`Deal · ${bet}`, 'vf-go', dealHand);
-    deal.disabled = !isOpen() || coins() < bet;
-    keys.append(deal, key('Close', 'vf-close', () => panel.shut()));
+    keys.append(key(playLabel('bj', 'Deal'), 'vf-go', dealHand), key('Close', 'vf-close', () => panel.shut()));
   }
   const box = el('div', 'vf-panel bj-panel');
-  box.append(head, tableMeters(hand?.bet ?? bet), felt);
-  if (!hand) box.append(chipRow(bet, (v) => { bet = v; playSound('select'); render(); }));
+  box.append(head, tableMeters('bj'), felt);
   box.append(say, keys);
   panel.root.replaceChildren(box);
 }
 
 function dealHand() {
-  const play = stake('bj', bet);
-  if (!play) return;
+  const play = stake('bj');
   result = null;
-  hand = { day: play.day, n: play.n, bet, hits: 0, doubled: false };
+  hand = { day: play.day, n: play.n, bet, paid: play.paid, hits: 0, doubled: false };
   keepHand('bj', hand);
   playSound('card');
   const { player, dealer } = cards(hand);
@@ -87,7 +85,6 @@ function hit() {
 }
 
 function double() {
-  if (!stakeMore(hand.bet)) return;
   hand = { ...hand, bet: hand.bet * 2, doubled: true, hits: hand.hits + 1 };
   keepHand('bj', hand);
   playSound('card');
@@ -99,11 +96,11 @@ const stand = () => finish();
 function finish() {
   const { player, dealer, deck } = cards(hand);
   const final = handValue(player).total > 21 ? dealer : dealerPlays(dealer, deck);
-  const ret = blackjackReturn(player, final), pay = Math.floor(hand.bet * ret);
-  settle(pay);
+  const ret = blackjackReturn(player, final), chips = Math.floor(hand.bet * ret), pay = settle(chips, 'bj', hand.paid);
+  const won = hand.paid ? `${pay} PokéCoins` : `${chips} chips, for fun`;
   keepHand('bj', { ...hand, over: true });
   const p = handValue(player).total, d = handValue(final).total;
-  const line = p > 21 ? `Bust at ${p}! Meowth takes it.` : ret === 2.5 ? `Blackjack! You win ${pay} PokéCoins.` : ret === 2 ? `${d > 21 ? `Meowth busts at ${d}!` : `${p} beats ${d}!`} You win ${pay} PokéCoins.` : ret === 1 ? `Push at ${p}: your ${pay} back.` : isBlackjack(final) ? 'Meowth has Blackjack. Meow-ha!' : `Meowth's ${d} beats your ${p}.`;
+  const line = p > 21 ? `Bust at ${p}! Meowth takes it.` : ret === 2.5 ? `Blackjack! You win ${won}.` : ret === 2 ? `${d > 21 ? `Meowth busts at ${d}!` : `${p} beats ${d}!`} You win ${won}.` : ret === 1 ? `Push at ${p}: ${won}.` : isBlackjack(final) ? 'Meowth has Blackjack. Meow-ha!' : `Meowth's ${d} beats your ${p}.`;
   playSound(ret > 1 ? 'coins' : ret === 1 ? 'select' : 'cancel', 'select');
   result = { player, dealer: final, line, doubled: hand.doubled };
   hand = null;

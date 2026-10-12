@@ -1,17 +1,18 @@
 /* slots.js  -  the Game Corner's slot machine (2026-10-10; reworked 2026-10-11, the user's pick): three reels you stop
    yourself, Gen 1's way. Each reel's STRIP turns under the line; a tap on its STOP stops it at the symbol under the line,
    then it slides on 0 to SLIP-1 more from the spin's own stream (js/data/casino.js), so timing pays but never quite
-   guarantees. Three Pikachu start a bonus round of free spins paying double; three 7s win the jackpot, which every paid
-   spin feeds (js/casino-pot.js). The two 7s on the first reels slow the last one down. A spin left half-stopped (a
+   guarantees. Three Pikachu start a bonus round of free spins paying double; three 7s win the JACKPOT. A spin stakes
+   Meowth's house chips, never your coins: the day's first PLAYS.slots pay (js/casino-pot.js). The two 7s on the first reels slow the last one down. A spin left half-stopped (a
    refresh) is settled the next time the machine opens, its last reels stopped where the stream says. */
 
-import { STRIP, slotPay, stopAt, playRand, PAY_THREE, PAY_TWO, PAY_BERRY, BONUS_SPINS } from './data/casino.js';
+import { STRIP, slotPay, stopAt, playRand, PAY_THREE, PAY_TWO, PAY_BERRY, BONUS_SPINS, JACKPOT } from './data/casino.js';
+import { STAKE } from './data/corner.js';
 import { randIndex } from './rng.js';
 import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key } from './corner-panel.js';
-import { stake, freePlay, settle, isOpen, coins, chipRow, tableMeters, closedLine, handOf, keepHand, jackpot, feedJackpot, winJackpot } from './casino-pot.js';
+import { stake, freePlay, settle, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
 
 export const SYMBOL_ART = {
   seven: null,   // a big red 7, in CSS
@@ -24,10 +25,10 @@ export const SYMBOL_ART = {
 const SPEED = 9;          // symbols a second under the line
 const AUTO_STOP = 7000;   // ms before a reel nobody stopped stops itself
 
-let panel = null, bet = 10, line = null, won = 0, spin = null, raf = 0;
+let panel = null, line = null, won = 0, spin = null, raf = 0;
 // spin: { play, free, reels: [{ pos, stopping, target, done }] }
 
-/** The saved hand: { day, n, bet, free, stops: [target or null] }, plus a bonus round's spins left (`bonus`). */
+/** The saved hand: { day, n, bet, paid, free, stops: [target or null] }, plus a bonus round's spins left (`bonus`). */
 const saved = () => handOf('sl') ?? {};
 
 export function openSlots(onClose) {
@@ -61,7 +62,7 @@ function render() {
   const head = el('div', 'vf-head');
   head.append(el('strong', 'vf-title', 'SLOTS'), el('span', `vf-lv${bonus ? ' sl-bonus-tag' : ''}`, bonus ? `BONUS ×2 · ${bonus} free` : won > 0 ? `+${won}` : 'Tap to stop'));
   const pot = el('div', 'sl-jackpot');
-  pot.append(el('span', '', 'JACKPOT'), el('b', '', jackpot().toLocaleString()));
+  pot.append(el('span', '', 'JACKPOT'), el('b', '', JACKPOT.toLocaleString()));
   const window_ = el('div', `sl-window${bonus ? ' bonus' : ''}`);
   reelEls = [0, 1, 2].map((i) => {
     const reel = el('div', 'sl-reel');
@@ -83,13 +84,12 @@ function render() {
   for (const s of ['pikachu', 'poliwag', 'ball', 'berry']) row([symbol(s, 'mini'), symbol(s, 'mini'), symbol(s, 'mini')], `×${PAY_THREE[s]}`, `${s === 'pikachu' ? '+BONUS · ' : ''}pair ×${PAY_TWO[s]}`);
   row([symbol('berry', 'mini'), el('span', '', 'first reel')], `×${PAY_BERRY}`);
   const keys = el('div', 'vf-keys');
-  const go = key(spin ? 'Stop the reels!' : bonus ? `Free spin (${bonus})` : `Spin · ${bet}`, 'vf-go', startSpin);
-  go.disabled = !!spin || (!bonus && (!isOpen() || coins() < bet));
+  const go = key(spin ? 'Stop the reels!' : bonus ? `Free spin (${bonus})` : playLabel('slots', 'Spin'), 'vf-go', startSpin);
+  go.disabled = !!spin;
   keys.append(go, key('Close', 'vf-close', () => { if (!spin) panel.shut(); }));
   const box = el('div', `vf-panel sl-panel${bonus ? ' bonus' : ''}`);
-  box.append(head, tableMeters(h.bonus?.bet ?? bet), pot, window_, stops);
-  if (!spin && !bonus) box.append(chipRow(bet, (v) => { bet = v; playSound('stick'); render(); }));
-  box.append(el('p', 'vf-say', isOpen() || bonus ? line : closedLine), table, keys);
+  box.append(head, tableMeters('slots'), pot, window_, stops);
+  box.append(el('p', 'vf-say', sayLine('slots', line, !!spin || !!bonus)), table, keys);
   panel.root.replaceChildren(box);
   drawReels();
 }
@@ -108,13 +108,11 @@ function drawReels() {
 function startSpin() {
   if (spin) return;
   const h = saved(), bonus = h.bonus?.left ?? 0;
-  const free = bonus > 0, b = free ? h.bonus.bet : bet;
-  const play = free ? freePlay('slots') : stake('slots', b);
-  if (!play) return;
-  if (!free) feedJackpot(b);
+  const free = bonus > 0, b = STAKE;
+  const play = free ? { ...freePlay('slots'), paid: h.bonus.paid } : stake('slots');
   const rand = playRand('slots', play.day, play.n);
   spin = { play, free, bet: b, rand, start: performance.now(), reels: [0, 1, 2].map(i => ({ pos: (h.last?.[i] ?? 0) + i * 0.37, stopping: false, done: false })) };
-  keepHand('sl', { ...h, day: play.day, n: play.n, bet: b, free, stops: [null, null, null], bonus: free ? { ...h.bonus, left: bonus - 1 } : h.bonus });
+  keepHand('sl', { ...h, day: play.day, n: play.n, bet: b, paid: play.paid, free, stops: [null, null, null], bonus: free ? { ...h.bonus, left: bonus - 1 } : h.bonus });
   won = 0;
   line = free ? 'Bonus spin! Everything pays double.' : 'Tap STOP on each reel. Time it for a 7!';
   playSound('stick');
@@ -166,15 +164,15 @@ function finishSpin() {
 /** Pays a stopped line and moves the bonus round on; the line's words in `line`. */
 function payLine(stops, h) {
   const got = stops.map(t => STRIP[t]), m = slotPay(got), mult = h.free ? 2 : 1;
-  let pay = 0, bonusLeft = h.bonus?.left ?? 0, bonusBet = h.bonus?.bet ?? h.bet;
-  if (m === 'jackpot') pay = winJackpot();
-  else { pay = h.bet * m * mult; settle(pay); }
-  if (got.every(s => s === 'pikachu')) { bonusLeft += BONUS_SPINS; bonusBet = h.bet; }
-  keepHand('sl', { day: h.day, n: h.n, bet: h.bet, stops, last: stops, bonus: bonusLeft ? { left: bonusLeft, bet: bonusBet } : null });
-  won = h.free ? pay : pay - h.bet;
-  if (m === 'jackpot') { playSound('achievement', 'coins'); line = `JACKPOT!!! Three 7s: ${pay.toLocaleString()} PokéCoins!`; }
-  else if (got.every(s => s === 'pikachu')) { playSound('achievement', 'coins'); line = `Pika-BONUS! ×${m * mult}: ${pay} PokéCoins, and ${BONUS_SPINS} free spins paying double!`; }
-  else if (pay) { playSound('coins', 'buy'); line = `×${m * mult}: ${pay} PokéCoins!${h.free ? ' (bonus)' : ''}`; }
+  let bonusLeft = h.bonus?.left ?? 0, bonusPaid = h.bonus?.paid ?? h.paid;
+  const chips = m === 'jackpot' ? JACKPOT : h.bet * m * mult, pay = settle(chips, 'slots', h.paid);
+  if (got.every(s => s === 'pikachu')) { bonusLeft += BONUS_SPINS; bonusPaid = h.paid; }
+  keepHand('sl', { day: h.day, n: h.n, bet: h.bet, stops, last: stops, bonus: bonusLeft ? { left: bonusLeft, paid: bonusPaid } : null });
+  won = pay;
+  const coins = (n) => (h.paid ? (n === chips ? `${n} PokéCoins` : `${n} PokéCoins (all today allows)`) : `${chips} chips, for fun`);
+  if (m === 'jackpot') { playSound('achievement', 'coins'); line = `JACKPOT!!! Three 7s: ${coins(pay)}!`; }
+  else if (got.every(s => s === 'pikachu')) { playSound('achievement', 'coins'); line = `Pika-BONUS! ×${m * mult}: ${coins(pay)}, and ${BONUS_SPINS} free spins paying double!`; }
+  else if (chips) { playSound('coins', 'buy'); line = `×${m * mult}: ${coins(pay)}!${h.free ? ' (bonus)' : ''}`; }
   else {
     playSound('cancel');
     line = got[0] === 'seven' && got[1] === 'seven' ? 'So close! Two 7s...' : h.free ? 'No luck on that free spin.' : 'No luck. Spin again?';

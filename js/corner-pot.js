@@ -1,23 +1,26 @@
-/* corner-pot.js  -  the Game Corner games' shared pot: what they've paid today, capped at GAMES_CAP a UTC day
-   (js/data/corner.js), kept in `save.corner.pot`. */
+/* corner-pot.js  -  the Game Corner games' shared pot: what they've paid today, all told and by game, capped at
+   DAILY_CAP and GAME_CAP a UTC day (js/data/corner.js), kept in `save.corner.pot` ({ day, won, games }). */
 
 import { capPay } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { refreshCoins } from './ui.js';
 
-/** The coins the games have paid today. */
-export function potWon() {
-  const p = getSave().corner?.pot;
-  return p?.day === safariDay() ? p.won : 0;
-}
+const pot = () => { const p = getSave().corner?.pot; return p?.day === safariDay() ? p : { won: 0, games: {} }; };
 
-/** Pays up to `coins` (what the cap leaves), and returns what was paid. */
-export function payGame(coins) {
-  const day = safariDay(), won = potWon(), paid = capPay(coins, won);
+/** The coins the games have paid today, all told. */
+export const potWon = () => pot().won;
+/** The coins one game has paid today. */
+export const gameWon = (game) => pot().games?.[game] ?? 0;
+/** Can `game` still pay today? */
+export const canPay = (game) => capPay(1, potWon(), gameWon(game)) > 0;
+
+/** Pays `game`'s win of up to `coins` (what the caps leave), and returns what was paid. */
+export function payGame(coins, game) {
+  const day = safariDay(), p = pot(), paid = capPay(coins, p.won, p.games?.[game] ?? 0);
   if (!paid) return 0;
   updateSave(d => {
-    d.corner = { ...d.corner, pot: { day, won: won + paid } };
+    d.corner = { ...d.corner, pot: { day, won: p.won + paid, games: { ...p.games, [game]: (p.games?.[game] ?? 0) + paid } } };
     d.coins += paid;
     d.stats.coinsEarned += paid;
   });

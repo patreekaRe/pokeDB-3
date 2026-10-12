@@ -2,11 +2,13 @@
    corner.js  -  the Game Corner's games and deals (the revamp, 2026-10-10; the user's picks: no betting coins and no
    prize tickets). Pure rules, kept free of the DOM so node tests can read them.
 
-   The games share one pot: GAMES_CAP PokéCoins a UTC day across them all (`save.corner.pot`).
+   Every game is free (2026-10-12, the user's call: no betting). Each has PLAYS a UTC day that pay; past them, or past
+   GAME_CAP from one game or DAILY_CAP from them all (`save.corner.pot`), it's played for fun. The table games stake
+   STAKE of Meowth's house chips a play, never your coins, and pay what the chips win. Average play pays about 250 a
+   day all told (tests/corner.test.mjs works it out), under a winning run, so runs stay the way to earn.
    Voltorb Flip  HeartGold / SoulSilver's: a 5x5 board of 1s, 2s, 3s and Voltorbs, each row and column's sum and
                  Voltorbs told at its edge. Flip a tile to multiply the round's score; flip every 2 and 3 to win it.
-                 Free to play; a won (or quit) round pays coins from its score, up to VOLTORB_CAP a UTC day, so it's a
-                 fun extra and never replaces runs. Levels 1-8 as in HGSS. Each board comes from the day's seed and
+                 A won (or quit) round pays coins from its score. Levels 1-8 as in HGSS. Each board comes from the day's seed and
                  the round number, so a refresh can't deal a new one.
    Who's That Pokémon?  one round of QUIZ_LEN silhouettes a UTC day.
    Deal of the Day  one skin, perk level or shiny at DEAL_OFF off, picked once a UTC day from what you can still buy.
@@ -16,11 +18,14 @@ import { streamOf, randIndex, shuffled, hashString } from '../rng.js';
 
 /* ---------- Voltorb Flip ---------- */
 
-export const GAMES_CAP = 250;   // PokéCoins a UTC day from all the games together; after that they're played for fun
-export const VOLTORB_CAP = GAMES_CAP;
+export const DAILY_CAP = 500;   // PokéCoins a UTC day from every game together
+export const GAME_CAP = 150;    // from any one game, so the cap takes several
+export const STAKE = 10;        // house chips a table play stakes
+/** Plays a UTC day that pay, by game (the cut-down numbers, the user's pick 2026-10-12). Who's That is one round a day. */
+export const PLAYS = { slots: 5, plinko: 4, bj: 3, hl: 3, voltorb: 2 };
 
-/** What a game's win pays today, after `won` coins already. */
-export const capPay = (coins, won) => Math.max(0, Math.min(coins, GAMES_CAP - won));
+/** What a win pays today, after `won` from every game and `gameWon` from this one. */
+export const capPay = (coins, won, gameWon = 0) => Math.max(0, Math.min(coins, DAILY_CAP - won, GAME_CAP - gameWon));
 export const VOLTORB_LEVELS = 8;
 export const SIZE = 5;
 
@@ -67,11 +72,8 @@ export const cleared = (board, flipped) => board.every((v, i) => v < 2 || flippe
 /** The most a level's boards can score (for the payout table). */
 export const bestScore = (level) => Math.max(...VOLTORB_BOARDS[level - 1].map(([t, h]) => 2 ** t * 3 ** h));
 
-/** PokéCoins a score pays: its square root, so a level 1 board pays ~5 and a level 8 one ~50. */
-export const payout = (points) => (points > 0 ? Math.round(Math.sqrt(points)) : 0);
-
-/** What today still pays, after `won` coins already. */
-export const paysToday = (points, won) => Math.max(0, Math.min(payout(points), VOLTORB_CAP - won));
+/** PokéCoins a score pays: three times its square root, so a cleared level 1 board pays ~15-20 and a level 8 one 150. */
+export const payout = (points) => (points > 0 ? Math.round(3 * Math.sqrt(points)) : 0);
 
 /** The next round's level: up one after a win; after a Voltorb, down to the tiles flipped that round if fewer (HGSS). */
 export function nextLevel(level, { won, flips }) {

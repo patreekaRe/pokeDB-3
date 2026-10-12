@@ -1,20 +1,13 @@
 /* ============================================================
    casino.js  -  the Game Corner's betting games (2026-10-10, the user's asks; the lineup the user picked 2026-10-11):
-   tap-to-stop Slots with a jackpot and a bonus round, Blackjack, High-Low and Plinko, bet in
-   PokéCoins, and Meowth's free daily scratch card. The luck games keep a small house edge (about 5%, measured in tests/casino.test.mjs); Slots, Blackjack and High-Low
-   reward timing and judgement, so a good player can come out ahead, and the day's
-   winnings from them are capped: once you're BET_CAP up on a UTC day the tables close till tomorrow, so a lucky night
-   can't buy every perk. Losses aren't capped. Every roll comes from a stream keyed by the day and the play's number, so a
-   refresh can't re-roll a spin or a hand. Pure rules, no DOM, so node tests read them.
+   tap-to-stop Slots with a jackpot and a bonus round, Blackjack, High-Low and Plinko, and Meowth's daily scratch card.
+   Since 2026-10-12 (the user's call) nobody bets: each play stakes Meowth's house chips (js/data/corner.js's STAKE,
+   PLAYS and caps) and pays what they win, so the odds below (about 95% back) set what a play is worth. Every roll comes
+   from a stream keyed by the day and the play's number, so a refresh can't re-roll a spin or a hand. Pure rules, no
+   DOM, so node tests read them.
    ============================================================ */
 
 import { streamOf, randIndex, shuffled } from '../rng.js';
-
-export const BETS = [5, 10, 25, 50];
-export const BET_CAP = 500;   // PokéCoins up on a UTC day before the tables close
-
-/** May you bet today, `net` up so far? */
-export const tablesOpen = (net) => net < BET_CAP;
 
 /** A play's stream: the game, the day and how many plays of it came before. */
 export const playRand = (game, day, n) => streamOf(`casino:${game}`, `${day}:${n}`);
@@ -31,8 +24,7 @@ export const PAY_TWO = { seven: 5, pikachu: 3, poliwag: 2, ball: 2, berry: 2, vo
 export const PAY_BERRY = 2;          // an Oran Berry on the first reel alone
 export const SLIP = 3;               // a stopped reel slides on 0 to SLIP-1 more symbols, from the spin's stream
 export const BONUS_SPINS = 5;        // three Pikachu: free spins paying double
-export const JACKPOT_BASE = 300;     // the jackpot's floor; three 7s win it all
-export const JACKPOT_FEED = 0.1;     // of every slot bet goes into it
+export const JACKPOT = 150;          // three 7s: a whole day's worth from the slots (GAME_CAP)
 
 /** Where a reel stops when tapped with `at` under the line: a slip of 0 to SLIP-1 from the spin's roll. */
 export const stopAt = (at, rand) => (at + randIndex(SLIP, rand)) % STRIP.length;
@@ -108,11 +100,11 @@ export function plinkoDrop(rand) {
   return { bin, path };
 }
 
-/* ---------- Meowth's scratch card: one free a UTC day, always a prize ---------- */
+/* ---------- Meowth's scratch card: one free a UTC day, always a prize, counted in the day's cap ---------- */
 
-export const SCRATCH_PRIZES = [[10, 40], [25, 25], [50, 15], [100, 10], [200, 7], [500, 3]];   // [coins, weight]
+export const SCRATCH_PRIZES = [[10, 40], [25, 25], [50, 15], [75, 10], [100, 7], [150, 3]];   // [coins, weight]
 export const SCRATCH_SYMBOLS = ['berry', 'ball', 'poliwag', 'pikachu', 'seven', 'voltorb'];
-const PRIZE_SYMBOL = { 10: 'berry', 25: 'ball', 50: 'poliwag', 100: 'pikachu', 200: 'voltorb', 500: 'seven' };
+const PRIZE_SYMBOL = { 10: 'berry', 25: 'ball', 50: 'poliwag', 75: 'pikachu', 100: 'voltorb', 150: 'seven' };
 
 /** A day's card: its prize and nine cells, three of the prize's symbol and no other symbol three times. */
 export function scratchCard(day) {

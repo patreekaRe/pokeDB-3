@@ -1,17 +1,18 @@
 /* scratch.js  -  Meowth's scratch card (2026-10-11, the user's pick): earned each UTC day by filling Meowth's stamp card
    (a stamp for each different game played, js/corner-pot.js), handed over at the prize counter, nine
    foil spots to scratch (a tap, or a finger dragged across), three of a kind somewhere under them, and it always pays
-   (js/data/casino.js's scratchCard(), the same card for everyone that day). What's scratched and whether it's paid are
+   (js/data/casino.js's scratchCard(), the same card for everyone that day), counted in the games' daily cap. What's scratched and whether it's paid are
    saved (`save.corner.scratch`), so a refresh keeps the card. */
 
 import { scratchCard } from './data/casino.js';
+import { DAILY_CAP } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds } from './audio.js';
-import { el, refreshCoins } from './ui.js';
+import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { SYMBOL_ART } from './slots.js';
-import { stamps, STAMPS } from './corner-pot.js';
+import { stamps, STAMPS, payGame } from './corner-pot.js';
 
 let panel = null, card = null, st = null, down = false;   // down: a finger pressed, scratching what it crosses
 addEventListener('pointerup', () => { down = false; });
@@ -56,7 +57,8 @@ function render() {
     cell.addEventListener('pointerenter', () => { if (down) scratch(i); });
     grid.append(cell);
   });
-  const say = st.paid ? `Three ${card.symbol === 'seven' ? '7s' : `${card.symbol}s`}! ${card.prize} PokéCoins, meow! Come back tomorrow for another.`
+  const won = st.won ?? card.prize, short = won < card.prize ? ` (${won} under today's ${DAILY_CAP} cap)` : '';
+  const say = st.paid ? `Three ${card.symbol === 'seven' ? '7s' : `${card.symbol}s`}! ${card.prize} PokéCoins${short}, meow! Come back tomorrow for another.`
     : 'Scratch the spots! Find three of a kind to win what they\'re worth.';
   const keys = el('div', 'vf-keys');
   if (!st.paid) keys.append(key('Scratch all', 'vf-go', () => { card.cells.forEach((_, i) => scratch(i, true)); render(); }));
@@ -74,8 +76,7 @@ function scratch(i, quiet = false) {
   if (!st.paid && (found >= 3 || st.open.length === 9)) {
     st.paid = true;
     st.open = card.cells.map((_, k) => k);
-    updateSave(d => { d.coins += card.prize; d.stats.coinsEarned += card.prize; });
-    refreshCoins();
+    st.won = payGame(card.prize, 'scratch');
     setTimeout(() => playSound(card.prize >= 200 ? 'achievement' : 'coins', 'buy'), 150);
   }
   keep();
