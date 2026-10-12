@@ -68,7 +68,7 @@ const CASINO = {
   highlow: { at: { x: 13, y: 9 }, w: 3, name: 'High-Low', colour: '#ffd84a',
     line: 'High-Low: higher or lower, let it ride or cash out. Tap again to play, meow.',
     open: (done) => import('./highlow.js').then(m => m.openHighLow(done)) },
-  blackjack: { at: { x: 5, y: 9 }, w: 3, name: 'Blackjack',
+  blackjack: { at: { x: 5, y: 9 }, w: 3, name: 'Blackjack', colour: '#ff5ab8',
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
 };
@@ -236,6 +236,16 @@ function tableFront(title, colour, w) {
   const size = Math.min(5.2, W * 1.5 / title.length);
   g.save(); glow(g, colour, 3); words(g, title, W / 2, H / 2 - 0.6, size, colour); g.restore();
   words(g, title, W / 2, H / 2 - 0.6, size, '#ffffff'); words(s, title, W / 2, H / 2 - 0.6, size, colour);
+  return f.c;
+}
+
+/** A card table's name in neon on the carpet at its foot (2026-10-12, the user's ask), on a clear ground: a wide halo,
+    the colour, a white-hot core, like the tubes. `w` tiles by `d`. */
+function floorSign(title, colour, w, d) {
+  const W = w * 20, H = d * 20, f = fine(W, H, 10), { g } = f, size = Math.min(H * 0.62, W * 1.5 / title.length);
+  for (const [blur, a] of [[6, 0.55], [3, 0.9]]) { g.save(); g.globalAlpha = a; glow(g, colour, blur); words(g, title, W / 2, H / 2, size, colour); g.restore(); }
+  g.save(); glow(g, colour, 1.5); words(g, title, W / 2, H / 2, size, colour); g.restore();
+  g.save(); g.globalAlpha = 0.45; words(g, title, W / 2, H / 2, size, '#ffffff'); g.restore();
   return f.c;
 }
 
@@ -649,6 +659,13 @@ export function buildCorner(THREE, size) {
     spots.push(spot);
     model.traverse(o => { o.userData.front = spot; });
     group.add(model);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(w, 0.8), new THREE.MeshBasicMaterial({ map: texOf(floorSign(gm.name.toUpperCase(), gm.colour, w, 0.8)), transparent: true, depthWrite: false, toneMapped: false }));
+    sign.rotation.x = -Math.PI / 2;
+    sign.position.set(tileX(x) - 0.5 + w / 2, 0.012, tileZ(y + 1) - 0.02);
+    sign.renderOrder = 1;
+    const phase = x;
+    ticks.push((now) => { sign.material.opacity = 0.82 + Math.sin(now / 700 + phase) * 0.18; });
+    group.add(sign);
   }
   for (const [id, gm] of [['voltorb', GAMES.voltorb], ['quiz', GAMES.quiz]]) {
     const { x, y } = gm.at, w = gm.w, D = TABLE_D;
