@@ -54,6 +54,7 @@ export const NEXT = [
   ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
   ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
   ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
+  ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

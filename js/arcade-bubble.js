@@ -373,7 +373,7 @@ export const openBubble = (onClose) => runArcade({
         squirtle(g, 'squirtle', LOADER, H - 1 - (l < 1 ? hop(l) : 0) - hop(cheer / 0.6 * 2, cheer ? 1 : 0), 58, true, now);
         squirtle(g, 'squirtle-shiny', CRANK, H - 3 - hop(cheer / 0.6 * 2, cheer ? 1 : 0) - (l < 1 ? hop(l, 0.5) : 0), 58, false, now + 400);
         banner(g, 'NEXT', BAG[0], BAG[1] - 60, 9, '#a8d4ff');
-        banner(g, 'TAP TO SWAP', BAG[0], H - 4, 8, '#ffd84a');
+        banner(g, 'TAP TO SWAP', GUN[0], H - 5, 9, '#ffd84a');
         banner(g, `Row in ${pushEvery() - (shots % pushEvery())}`, W - 30, LINE + 14, 10, '#ffffff');
       },
     };
