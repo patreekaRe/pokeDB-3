@@ -53,6 +53,7 @@ import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
+import { meowthDue } from './meowth.js';
 import { renderTower, hideTower, guardianIntro, towerFall, barReady } from './tower.js';
 import { postSafariResult, postTowerResult, openLeaderboard } from './leaderboard.js';
 import { runResult, towerResult } from './data/leaderboard.js';
@@ -1617,7 +1618,7 @@ async function walkOn() {
   // the boss and its rewards are done: a refresh from here on (the crossroads or the journey film) comes back to the
   // crossroads rather than the map before the boss, so the boss can't be fought again (the user's ask, 2026-10-11)
   if (forks) { run.atFork = true; checkpoint(); }
-  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) }) : null;
+  const fork = forks ? await crossroads({ ids: roads, swap: wayfinder(roads), starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), meowth: !peeking && meowthDue(run.biome + 1) }) : null;
   if (fork && !roads.includes(fork.id)) swapRoad(run.biome + 1, roads[1], fork.id);
   run.route[run.biome + 1] = fork?.id ?? BIOMES[run.biome + 1].id;
   const to = biomeAt(run.route, run.biome + 1).id;

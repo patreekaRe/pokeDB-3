@@ -5436,3 +5436,30 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .xr-sec-bosses .xr-bosses { flex: 1; align-items: center; }
 /* the wilds' note runs down beside the bosses' and the Alphas' */
 .xr-sec-wilds { grid-row: span 2; }
+
+/* the Game Corner is shut till Meowth opens it at the first crossroads (js/meowth.js) */
+body.corner-locked #shop-btn, body.corner-locked .cdev-dock-btn.app-corner, body.corner-locked #sp-corner, body.corner-locked #sel-corner { display: none !important; }
+
+/* Meowth's talk at the crossroads: the Secret Base's cream speech window (.b3-talk) */
+.xr-talk {
+  position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); z-index: 6; translate: -50% 0;
+  width: min(460px, calc(100% - 32px)); margin: 0; padding: 24px 22px 20px; box-sizing: border-box;
+  border-radius: 26px / 22px; background: #fbf4df; color: #6a5440; font-size: 16px; line-height: 1.6; text-align: left;
+  box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005; cursor: pointer;
+}
+.xr-talk[hidden] { display: none; }
+.xr-talk.xr-say { animation: xrPop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+.xr-talk b {
+  position: absolute; left: 18px; top: -15px; padding: 7px 14px; border-radius: 999px; font-weight: normal; font-size: 12px;
+  background: #f8d878; color: #6a4a10; rotate: -4deg; box-shadow: 0 2px 0 #c8a048;
+}
+.xr-talk i {
+  position: absolute; right: 18px; bottom: 8px; width: 0; height: 0;
+  border: 6px solid transparent; border-top: 7px solid #e8a040; border-bottom: 0; animation: xrNudge 0.8s ease-in-out infinite;
+}
+.xr-talk.xr-news { text-align: center; color: #7a5410; }
+@keyframes xrPop { from { scale: 0.85; opacity: 0; } }
+@keyframes xrNudge { 50% { translate: 0 3px; } }
+.crossroads-scene.talking .xr-go { opacity: 0; pointer-events: none; }
+.xr-meowth { position: absolute; z-index: 2; height: calc(var(--px, 4px) * 22); image-rendering: pixelated; translate: -50% -100%; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .xr-talk.xr-say, .xr-talk i { animation: none; } }

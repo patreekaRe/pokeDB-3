@@ -33,7 +33,8 @@ import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './da
 import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
-import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
+import { getSave, updateSave, clearRunData, loadRunData, isShiny, onSaveWrite } from './storage.js';
+import { syncCorner, meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
 import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
@@ -208,6 +209,9 @@ function init() {
       d.stats.deepestBiome = Math.min(d.stats.deepestBiome, 3);
     });
   }
+  if (query.has('meowth')) updateSave(d => { d.cornerOpen = false; });   // ?meowth: the Game Corner locked again till Meowth is met
+  syncCorner();
+  onSaveWrite(syncCorner);   // a cloud download or Meowth opening it
   checkBadges();   // an old save gets every badge it can already prove, on day one (a quiet grant: no line)
   setHomeTrack(useHub() ? 'clearing-hub' : 'title');   // before initAudio() starts the menus' song, so title.mp3 isn't fetched for nothing
   initAudio();
@@ -426,7 +430,7 @@ async function peekCrossroads(params) {
   const road = [params.get('road'), LEGACY_ROADS[slot], ...POOL].find(id => POOL.includes(id) && id !== from);
   const others = POOL.filter(id => id !== road && id !== from);   // Wayfinder's swap, once its page is done
   const swap = dexPerkLevel('wayfinder') && others.length ? others : null;
-  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny });
+  const fork = await crossroads({ ids: forkRoads(slot, { [slot]: road }), swap, starter, stage, shiny, meowth: params.has('meowth') && meowthDue(slot) });
   const close = hasTravel(from, fork.id) ? await travel({ from, to: fork.id, starter, stage, shiny, first: true }) : null;
   fork.close();
   close?.();

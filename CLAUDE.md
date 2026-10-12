@@ -829,6 +829,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment
   needs an `ICONS` line; a new fight key a mirror in pokeDB-sim's engine, whose bot picks augments by measured value
   (`sim/augranks.json`). Detail in `docs/reference/sky-pillar.md`.
+- **Meowth opens the Game Corner** (2026-10-11, the user's ask; branch `claude/dreamy-galileo-0o4aqc` until the user says):
+  at the first crossroads after Biome 1 Meowth trots in and talks (`js/meowth.js`, `meowthTalk()`, `meowth` in
+  `crossroads()` / `crossroads3d()`), then saves `cornerOpen`. Till then `body.corner-locked` hides the top bar's, the
+  dock's, the Safari's and the select's ways in and `toggleShop()` does nothing; an old save that bought anything keeps it
+  open (`boughtAny()` in `js/storage.js`). `?meowth` locks it again; `?crossroads&meowth` plays the talk.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

@@ -17,6 +17,7 @@
 import { RENAMED_STARTERS, STARTERS } from './data/starters.js';
 import { GATE_HP, seedGate } from './data/gate.js';
 import { migrateBalls } from './data/balls.js';
+import { SKIN_SHOP_ITEMS } from './data/shop.js';
 
 const KEY = 'pokedb.save.v2';
 const RUN_KEY = 'pokedb.run.v1';
@@ -67,6 +68,7 @@ const freshSave = () => ({
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
+  cornerOpen: false,          // Meowth met at the first crossroads after Biome 1 (js/meowth.js): the Game Corner opens. Old saves: boughtAny()
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
@@ -118,6 +120,7 @@ function load() {
       const merged = {
         ...base, ...saved,
         gateHp: saved.gateHp ?? seedGate(saved),
+        cornerOpen: saved.cornerOpen ?? boughtAny(saved),
         passives: { ...base.passives, ...saved.passives },
         seen: { ...base.seen, ...saved.seen, cards: saved.seen?.cards ?? seedCards(saved) },
         newFinds: { ...base.newFinds, ...saved.newFinds },
@@ -136,6 +139,13 @@ function load() {
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
+}
+
+/** Saves from before Meowth kept the Game Corner: whoever already bought something there keeps it open. */
+function boughtAny(saved) {
+  const b = saved.balls || {};
+  return Object.values(saved.passives || {}).some(Boolean) || !!saved.shiny?.owned?.length || !!b.great || !!b.ultra || !!b.owned?.length
+    || SKIN_SHOP_ITEMS.some(item => (saved.unlocked || []).includes(item.id));
 }
 
 /** Saves from before the Index hid unmet moves: the starting decks you own and the run in progress count as met. */
