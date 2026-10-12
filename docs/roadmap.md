@@ -349,7 +349,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `edd7ccc` (the bigger gym), 2026-10-12, the user's ask: their
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `ce1c8d0` (the gym music), 2026-10-12, the user's ask: their
   12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
   **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
   boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
