@@ -47,7 +47,7 @@ export const NEXT = [
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
   ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
   ['mall', 'A little "!" hops over every Game Corner game that still pays coins today, and goes once its paying plays are used up; it comes back the next day.'],
-  ['mall', 'An hourglass on Meowth\'s counter counts down to the daily reset: walk near it for the time left, or tap it to hear more.'],
+  ['mall', 'An hourglass on Meowth\'s counter counts down to the daily reset of coins and stamps: walk near it for the time left, or tap it to hear more.'],
   ['fixes', 'The Game Corner guide shows how many of today\'s quiz questions you\'ve answered, each game\'s plays left, and says when the stamp card is complete.'],
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
   ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
