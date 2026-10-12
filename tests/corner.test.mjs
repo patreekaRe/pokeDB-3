@@ -65,9 +65,10 @@ test('the games share one daily cap, and each has its own', () => {
 });
 
 /* What an average day pays, game by game: the table games played plainly (random reel stops, Blackjack by the book,
-   High-Low cashed out after one guess), Voltorb Flip by a careful player (only tiles a clue proves safe, then quit), 3.5
-   of 5 in the quiz and the scratch card's mean. The user's pick (2026-10-12) was about 250 a day, under a winning run;
-   this careful Voltorb player clears little, so the bot's day lands a little under it. */
+   High-Low cashed out after one guess), Voltorb Flip by a careful player (only tiles a clue proves safe, then quit), 5
+   of 7 in the quiz and the scratch card's mean. The user's first pick (2026-10-12) was about 250 a day; they raised the paying plays the same day
+   (10 slots, 10 Plinko, 5 each of Blackjack, High-Low and Voltorb Flip, 7 quiz questions), so it's about 380 now,
+   still under the cap. */
 function averageDay() {
   const N = 20000, rng = makeRng(77);
   let slots = 0;
@@ -101,15 +102,15 @@ function averageDay() {
     voltorb += payout(score(board, flipped));
   }
   voltorb = PLAYS.voltorb * voltorb / 2000;
-  const quiz = (quizPay(3) + quizPay(4)) / 2;
+  const quiz = quizPay(5);
   const scratch = SCRATCH_PRIZES.reduce((s, [c, w]) => s + c * w, 0) / SCRATCH_PRIZES.reduce((s, [, w]) => s + w, 0);
   return { slots, plinko, bj, hl, voltorb, quiz, scratch };
 }
 
-test('an average day pays about 250, well under the cap', () => {
+test('an average day pays about 380, under the cap', () => {
   const day = averageDay(), total = Object.values(day).reduce((a, b) => a + b, 0);
   if (process.env.CORNER_DAY) console.log(Object.fromEntries(Object.entries(day).map(([k, v]) => [k, Math.round(v)])), Math.round(total));
-  assert.ok(total > 190 && total < 300, `an average day pays ${total}`);
+  assert.ok(total > 300 && total < 450, `an average day pays ${total}`);
   for (const [game, v] of Object.entries(day)) assert.ok(v < GAME_CAP, `${game} averages ${v}`);
 });
 
@@ -120,7 +121,7 @@ test('a quiz round has distinct questions, each with its answer among distinct o
   assert.equal(new Set(round.map(q => q.answer)).size, QUIZ_LEN);
   for (const q of round) { assert.ok(q.options.includes(q.answer)); assert.equal(new Set(q.options).size, 4); }
   assert.deepEqual(round, quizRound('2026-10-10', 0, [...pool].reverse()));
-  assert.equal(quizPay(QUIZ_LEN), 30);
+  assert.equal(quizPay(QUIZ_LEN), 40);
   assert.equal(quizPay(4), 20);
 });
 

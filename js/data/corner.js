@@ -20,8 +20,8 @@ import { streamOf, randIndex, shuffled } from '../rng.js';
 export const DAILY_CAP = 500;   // PokéCoins a UTC day from every game together
 export const GAME_CAP = 150;    // from any one game, so the cap takes several
 export const STAKE = 10;        // house chips a table play stakes
-/** Plays a UTC day that pay, by game (the cut-down numbers, the user's pick 2026-10-12). Who's That is one round a day. */
-export const PLAYS = { slots: 5, plinko: 4, bj: 3, hl: 3, voltorb: 2 };
+/** Plays a UTC day that pay, by game (raised 2026-10-12, the user's pick). Who's That is one round a day. */
+export const PLAYS = { slots: 10, plinko: 10, bj: 5, hl: 5, voltorb: 5 };
 
 /** What a win pays today, after `won` from every game and `gameWon` from this one. */
 export const capPay = (coins, won, gameWon = 0) => Math.max(0, Math.min(coins, DAILY_CAP - won, GAME_CAP - gameWon));
@@ -145,7 +145,7 @@ export const better = (best, key, value, add = false) => ({ ...best, [key]: add 
 
 
 
-export const QUIZ_LEN = 5;       // silhouettes in the day's one round (slimmed 2026-10-11, the user's pick)
+export const QUIZ_LEN = 7;       // silhouettes in the day's one round (7 since 2026-10-12, the user's pick)
 export const QUIZ_CHOICES = 4;
 
 /** A round's questions: QUIZ_LEN Pokémon from `pool` (ids), each with QUIZ_CHOICES names to pick from, the same for
