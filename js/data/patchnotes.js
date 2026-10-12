@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
+  ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

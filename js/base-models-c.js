@@ -2,6 +2,8 @@
    js/base-models-f.js's head says how a batch works. Most builders here follow their painting (js/base-furniture-rooms.js)
    pixel for pixel: `u(n)` is n of its 32 pixels a tile, `X(n, W)` a pixel across the painting as x from the middle. */
 
+import { pokeBall, rod, tube } from './base-models-kit.js';
+
 const u = (n) => n / 32;
 const X = (n, W = 1) => n / 32 - W / 2;
 const SAND = '#e8d090';
@@ -35,36 +37,12 @@ const speedScreen = () => once('speed', () => sheet(96, 40, (g, w, h) => {
   g.fillStyle = '#f8a030'; for (let i = 0; i < 4; i++) g.fillRect(64 + i * 7, 28 - i * 5, 5, 6 + i * 5);
 }));
 
-/** The top colour of a Poké Ball drawn in the theme, as js/base-furniture-rooms.js's `ballTop()`. */
-const ballTop = (K) => (K.pal.c === '#f4f4f0' ? K.pal.w : K.pal.c);
-
-/** A Poké Ball of radius r at x, y, z, its button facing +z. */
-function pokeBall(K, L, x, y, z, r, top = ballTop(K)) {
-  const { THREE } = L, dark = K.gloss('#26262e');
-  K.put(new THREE.SphereGeometry(r, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.gloss(top), x, y, z);
-  K.put(new THREE.SphereGeometry(r, 24, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), K.gloss('#f6f6f2'), x, y, z);
-  K.put(L.cyl(r * 1.01, r * 0.16, r * 1.01, 24), dark, x, y, z);
-  K.put(L.cyl(r * 0.34, r * 0.2, r * 0.34, 18).rotateX(Math.PI / 2), dark, x, y, z + r * 0.92);
-  K.put(L.cyl(r * 0.22, r * 0.12, r * 0.22, 18).rotateX(Math.PI / 2), K.gloss('#f6f6f2'), x, y, z + r * 1.02);
-}
-
 /** A glass dome on a base: a capsule r across, from y0 up h, its top a half sphere. */
 const dome = (L, r, h) => {
   const pts = [[r, 0]];
   for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; pts.push([Math.cos(a) * r, h - r + Math.sin(a) * r]); }
   return L.lathe(pts, 32);
 };
-
-/** A tube along points [[x, y, z]...], radius r. */
-const tube = (L, pts, r, seg = 40) => new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3(pts.map(p => new L.THREE.Vector3(...p))), seg, r, 10, false);
-
-/** A rod from a to b ([x, y, z] each), radius r. */
-function rod(K, L, m, a, b, r) {
-  const { THREE } = L, va = new THREE.Vector3(...a), vb = new THREE.Vector3(...b), len = va.distanceTo(vb);
-  const g = L.cyl(r, len, r, 12);
-  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), vb.clone().sub(va).normalize()));
-  K.put(g, m, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2);
-}
 
 /** A seat and back on a platform at height y, `w` across: the lifeguard's and the referee's. */
 function highSeat(K, L, y, w, back, cushion, d = 0.62) {

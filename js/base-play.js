@@ -113,7 +113,8 @@ set('sink washbasin shower soapvanity brushvanity perfumevanity towelsvanity sal
 set('duckvanity bigduck', { does: 'squeak' });
 set('toilet', { does: 'flush' });
 set('clawtub bubblebath', { does: 'bubbles', foam: true });
-set('fishbowl aquarium', { does: 'fish' });
+set('aquarium', { does: 'fish' });
+set('fishbowl', { does: 'fish', at: 0.78 });
 set('bubblecolumn eggtank helixtank dometank sprouttank crystaltank orbtank', { does: 'bubbles' });
 set('birdbath skyfountain well', { does: 'water', fountain: true });
 
@@ -525,7 +526,7 @@ export function dressPlay(three, model, p) {
   model.traverse(o => { if (o.userData.spins) play.spinner = o; });
   if (D === 'light') { play.on = true; play.mats = []; model.traverse(o => { if (o.isMesh) for (const m of [o.material].flat()) if (m.userData.lamp || m.emissiveMap || m.userData.kind === 'glow') play.mats.push(m); }); }
   if (D === 'fire' || D === 'brew') play.flame = glowRect(p, art) || { x: 0, y: play.top * (D === 'brew' ? 1 : 0.4), w: p.w * 0.4, h: 0.2 };
-  if (D === 'fish') play.fishAt = glowRect(p, art) || { x: 0, y: play.top * 0.55, w: p.w * 0.5, h: play.top * 0.4 };
+  if (D === 'fish') play.fishAt = glowRect(p, art) || { x: 0, y: play.top * (how.at || 0.55), w: p.w * 0.5, h: play.top * 0.4 };
   return play;
 }
 
