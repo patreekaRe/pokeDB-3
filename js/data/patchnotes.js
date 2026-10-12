@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'On an iPad the run map\'s floor, PokéCoins and ₽ sit on its Pokédex again, an item in the Bag shows full width, and your Pokémon on the map stands clear of the screen\'s edge.'],
   ['base', 'Music, Library, Pirate and Space furniture is properly 3D: violins, a trumpet, banjo, ukulele, saxophone and flute on their stands, a grand piano with its lid propped open, the harp, cello, tuba, gramophone, metronome, tubular bells, the mixing desk, a library ladder, banker\'s lamp, an orrery whose planets turn, the book arch, marble bust, ship\'s mast, bell, rope coil, cannonballs, parrot perch, spyglass, ship in a bottle, a space suit, moon rover, lunar lander, UFO lamp, glowing alien plant and meteorite.'],
   ['base', 'Japanese and Toys furniture is properly 3D: the shoji screen, torii gate, cherry tree, lucky cat, daruma, taiko drum, kimono stand, kadomatsu, rocking horse (sit on it), jack-in-the-box, an open dollhouse with tiny furniture, ball pit, toy train, wind-up robot, space hopper, marble run, puzzle cube, toy soldier and 6 more.'],
   ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
