@@ -118,6 +118,7 @@ set('ekanscabinet', { make: 'arcade', colour: '#8a4ab8', name: 'Ekans Trail' });
 set('invaderscabinet', { make: 'arcade', colour: '#e8b020', name: 'Beedrill Invaders' });
 set('breakoutcabinet', { make: 'arcade', colour: '#e84040', name: 'Electrode Breakout' });
 set('singalongcabinet', { make: 'arcade', colour: '#f080b0', name: 'Jigglypuff\'s Sing-Along' });
+set('bubblecabinet', { make: 'arcade', colour: '#3a8ae8', name: 'Squirtle Bubble Shooter' });
 set('berrycabinet', { make: 'arcade', colour: '#4aa8e8', name: 'Pachirisu Berry Catch' });
 set('dittocabinet', { make: 'arcade', colour: '#b080e0', name: 'Where\'s Ditto?' });
 set('bowlingcabinet', { make: 'arcade', colour: '#8a7a6a', name: 'Geodude Bowling' });

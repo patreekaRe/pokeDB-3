@@ -34,7 +34,7 @@ const PLINKOS = [2.5, 5.5];
    machines stood. */
 const ARCADE = [
   ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'berrycabinet', 'dittocabinet'].map((id, x) => [id, x]),
-  ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'unowncabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
+  ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'bubblecabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
   ['whackmachine', 0, 3, 1], ['pokepinball', COLS - 1, 3, -1],
 ];
 const ARCADE_K = 0.95;

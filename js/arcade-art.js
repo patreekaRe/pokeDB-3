@@ -312,6 +312,21 @@ const SCREENS = {
     text(g, 'PERFECT!', 200, 30, 18, '#ffe060', '#5a1a40');
     crt(g, w, h, false);
   },
+  bubblecabinet(g, w, h) {
+    const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#0c3a6a'); bg.addColorStop(1, '#2a8ac8'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    const C = [['#3a8ae8', '#a8d4ff'], ['#e8523a', '#ffb8a0'], ['#4ab84a', '#b8f0a8'], ['#f0c020', '#fff0a0'], ['#b060d0', '#e8c0ff']];
+    for (let r = 0; r < 4; r++) for (let c = 0; c < (r % 2 ? 9 : 10); c++) {
+      if ((r * 3 + c) % 7 === 6 && r > 1) continue;
+      const x = 13 + c * 25.5 + (r % 2 ? 12.7 : 0), y = 16 + r * 22, [base, light] = C[(r * 2 + c + (c > 4 ? 1 : 0)) % 5];
+      disc(g, x, y, 12, base); disc(g, x - 4, y - 4, 4, light);
+    }
+    g.fillStyle = 'rgba(255,255,255,0.8)'; for (let i = 0; i < 8; i++) disc(g, 128 - i * 7, 168 - i * 12, 2, 'rgba(255,255,255,0.8)');
+    g.strokeStyle = '#ff6a6a'; g.setLineDash([8, 6]); g.lineWidth = 2; g.beginPath(); g.moveTo(0, 150); g.lineTo(w, 150); g.stroke(); g.setLineDash([]);
+    disc(g, 128, 176, 12, '#e8523a'); disc(g, 124, 172, 4, '#ffb8a0');
+    disc(g, 82, 172, 16, '#78c0e8'); disc(g, 76, 168, 3, '#202028'); disc(g, 88, 168, 3, '#202028');
+    text(g, '7 POPPED!', 190, 120, 18, '#ffe060', '#0a2a4a');
+    crt(g, w, h, false);
+  },
   berrycabinet(g, w, h) {
     const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#8ad0f8'); bg.addColorStop(1, '#d8f0ff'); g.fillStyle = bg; g.fillRect(0, 0, w, h);
     g.fillStyle = '#3a8a3a'; g.fillRect(0, 0, w, 26); g.fillStyle = '#4aa848'; for (let i = 0; i < 8; i++) disc(g, i * 36 + 10, 28, 20, '#4aa848');

@@ -28,6 +28,7 @@ const GAMES = {
   invaderscabinet: () => import('./arcade-invaders.js').then(m => m.openInvaders),
   breakoutcabinet: () => import('./arcade-breakout.js').then(m => m.openBreakout),
   singalongcabinet: () => import('./arcade-rhythm.js').then(m => m.openRhythm),
+  bubblecabinet: () => import('./arcade-bubble.js').then(m => m.openBubble),
   berrycabinet: () => import('./arcade-berry.js').then(m => m.openBerry),
   dittocabinet: () => import('./arcade-ditto.js').then(m => m.openDitto),
   bowlingcabinet: () => import('./arcade-bowling.js').then(m => m.openBowling),

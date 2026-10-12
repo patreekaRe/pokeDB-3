@@ -106,6 +106,7 @@ export const PRIZES = [   // only the games (the user's call, 2026-10-12), each 
   { kind: 'memorycabinet', coins: 450 },
   { kind: 'pokepinball', coins: 450 },
   { kind: 'volleycabinet', coins: 450 },
+  { kind: 'bubblecabinet', coins: 450 },
   { kind: 'crossingcabinet', coins: 450 },
   { kind: 'ekanscabinet', coins: 450 },
   { kind: 'invaderscabinet', coins: 450 },
@@ -119,7 +120,7 @@ export const PRIZES = [   // only the games (the user's call, 2026-10-12), each 
    (js/data/furniture.js lists them `retired`, so the base's Shop never offers them). */
 export const RETIRED_PRIZES = [
   { kind: 'singalongcabinet', coins: 450 },   // off the counter 2026-10-12, the user's call: Berry Catch took its place
-  { kind: 'unowncabinet', coins: 450 },   // off the counter 2026-10-12, the user's call, till a new game takes its place
+  { kind: 'unowncabinet', coins: 450 },   // off the counter 2026-10-12, the user's call: Squirtle Bubble Shooter took its place
   { kind: 'slowpokeclaw', coins: 450 },   // off the counter 2026-10-12, the user's call
   { kind: 'pokeskeeball', coins: 450 },
   { kind: 'jackpotsign', coins: 300 },
