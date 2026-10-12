@@ -4,7 +4,7 @@
 import { playSound } from './audio.js';
 import { el, refreshCoins } from './ui.js';
 
-export function openPanel(cls, label, { onClose, busy = () => false } = {}) {
+export function openPanel(cls, label, { onClose, busy = () => false, outside = false } = {}) {
   document.querySelector('.cg-overlay')?.remove();
   const root = el('div', `cg-overlay ${cls}`);
   root.setAttribute('role', 'dialog');
@@ -17,7 +17,8 @@ export function openPanel(cls, label, { onClose, busy = () => false } = {}) {
     refreshCoins();
     onClose?.();
   }
-  root.addEventListener('pointerdown', (e) => { if (e.target === root && !busy()) shut(); });
+  // a game never closes on a tap outside it (the user's call, 2026-10-12: a stray tap lost a game); only a browsing window does
+  if (outside) root.addEventListener('pointerdown', (e) => { if (e.target === root && !busy()) shut(); });
   document.addEventListener('keydown', onKey, true);
   document.body.append(root);
   return { root, shut };

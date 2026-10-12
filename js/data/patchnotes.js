@@ -47,6 +47,8 @@ export const NEXT = [
   ['mall', 'A little PC with a "!" on Meowth\'s counter explains the Game Corner: which games pay coins today (up to 500 a day) and how much is left, the arcade and its weekly leaderboards, and taking games home.'],
   ['mall', 'The arcade leaderboard over Meowth has much bigger text.'],
   ['fixes', 'Counters, tables and furniture no longer cut across a Pokémon standing just in front of them.'],
+  ['base', 'Arcade games now fill the whole screen, and a tap outside a Game Corner game no longer closes it.'],
+  ['base', 'Squirtle Bubble Shooter: a SHOOT button (a tap only aims), an arrow showing where the shot goes (the dotted path only for the first three shots), "Tap to swap" under the bubbles, rows sliding down smoothly and a steadier frame rate.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

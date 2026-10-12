@@ -2,23 +2,46 @@
    place of Unown Word Search), after Puzzle Bobble: Squirtle fires coloured bubbles up into a cluster hanging from the
    ceiling. Three or more of a colour touching pop, and any bubbles left hanging from nothing fall for a bonus. Every few
    shots the ceiling drops a new row; a bubble past the line at the bottom ends it. Endless, faster rows as it goes.
-   Drag to aim and let go to fire, or turn with the arrow keys and fire with Space; a tap on the next bubble swaps it. */
+   Drag to aim and press SHOOT (a tap never fires: the user's call, 2026-10-12), or turn with the arrow keys and fire with
+   Space; a tap on either bubble at the bottom swaps them. The dotted path shows for the first AIM_SHOTS shots, then only
+   the arrow. Bubbles are drawn from sprites cached per colour and scale (a gradient each a frame lagged on phones), and a
+   new row slides the cluster down instead of jumping. */
 
 import { runArcade, drawMon, banner } from './arcade-kit.js';
 
 const R = 15, COLS = 10, ROWH = R * Math.sqrt(3), TOP = 8, W = COLS * R * 2, H = 420;
 const LINE = H - 78, GUN = [W / 2, H - 46], SPEED = 640, START_ROWS = 6;
-const POP = 10, DROP = 20;
+const POP = 10, DROP = 20, AIM_SHOTS = 3, SWAP_X = W / 2 + 62;
 /* the bubbles' colours: water, fire, grass, electric, psychic, and their glyphs */
 const COLOURS = [['#3a8ae8', '#a8d4ff'], ['#e8523a', '#ffb8a0'], ['#4ab84a', '#b8f0a8'], ['#f0c020', '#fff0a0'], ['#b060d0', '#e8c0ff']];
 const TAU = Math.PI * 2;
 
+const sprites = new Map();
+/** One bubble painted once at a scale, `r` units round, its canvas 1 unit wider each side. */
+function bubbleSprite(colour, r, s) {
+  const k = `${colour},${r},${s}`;
+  if (sprites.has(k)) return sprites.get(k);
+  const c = document.createElement('canvas'), px = Math.ceil((r + 1) * 2 * s);
+  c.width = c.height = px;
+  const g = c.getContext('2d');
+  g.scale(s, s);
+  const x = r + 1, y = r + 1, [base, light] = COLOURS[colour], grad = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  grad.addColorStop(0, light); grad.addColorStop(0.6, base); grad.addColorStop(1, base);
+  g.fillStyle = grad; g.beginPath(); g.arc(x, y, r - 0.5, 0, TAU); g.fill();
+  g.strokeStyle = 'rgba(255, 255, 255, 0.35)'; g.lineWidth = 1; g.stroke();
+  g.fillStyle = 'rgba(255, 255, 255, 0.75)'; g.beginPath(); g.ellipse(x - r * 0.35, y - r * 0.45, r * 0.28, r * 0.16, -0.5, 0, TAU); g.fill();
+  sprites.set(k, c);
+  return c;
+}
+
 export const openBubble = (onClose) => runArcade({
   id: 'bubble', title: 'Squirtle Bubble Shooter', colour: '#3a8ae8', W, H,
-  intro: 'Match three bubbles to pop them! Drag to aim, let go to fire.',
-  help: [['Drag to aim, let go to fire.', 'Or turn with the arrow keys and fire with Space. Bounce shots off the walls!'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots the ceiling drops a row.', 'Tap the next bubble to swap it. Don\'t let them past the line!']],
+  intro: 'Match three bubbles to pop them! Drag to aim, then press SHOOT.',
+  go: 'Drag to aim, press SHOOT. Tap the bubbles at the bottom to swap colours.',
+  pad: [['SHOOT', 'fire']],
+  help: [['Drag to aim, then press SHOOT.', 'The arrow shows where it goes. Or turn with the arrow keys and fire with Space. Bounce shots off the walls!'], ['Tap the bubbles at the bottom to swap.', 'The one in Squirtle\'s hands and the NEXT one trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!']],
   make(api) {
-    let rows = [], flip = 0, angle = -Math.PI / 2, aiming = false, shot = null, shots = 0, cur, next;
+    let rows = [], flip = 0, angle = -Math.PI / 2, aiming = false, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
     const falling = [], bursts = [];
     let pressed = { left: false, right: false };
     const offset = (r) => ((r + flip) % 2 ? R : 0);
@@ -51,6 +74,7 @@ export const openBubble = (onClose) => runArcade({
     const lower = () => {
       flip ^= 1;
       rows.unshift(randomRow(0, Math.max(3, colours().length)));
+      slide += ROWH;
     };
     const trim = () => { while (rows.length && rows[rows.length - 1].every(v => v === null)) rows.pop(); };
     const tooLow = () => rows.some((row, r) => row.some(v => v !== null) && pos(r, 0)[1] + R > LINE);
@@ -101,18 +125,30 @@ export const openBubble = (onClose) => runArcade({
     const fire = () => {
       if (shot) return;
       shot = { x: GUN[0], y: GUN[1], vx: Math.cos(angle) * SPEED, vy: Math.sin(angle) * SPEED, colour: cur };
+      fired++;
       cur = next; next = deal();
       api.sound('select');
     };
     const aimAt = (x, y) => { angle = Math.max(-Math.PI + 0.18, Math.min(-0.18, Math.atan2(y - GUN[1], x - GUN[0]))); };
-    const onNext = (x, y) => (x - (GUN[0] + 62)) ** 2 + (y - (GUN[1] + 14)) ** 2 < 22 ** 2;
+    const onSwap = (x, y) => y > LINE + 6 && x > GUN[0] - R - 8 && x < SWAP_X + 26;
+    const swap = () => { if (cur === next) return; [cur, next] = [next, cur]; api.sound('select'); };
 
     const bubble = (g, x, y, colour, r = R) => {
-      const [base, light] = COLOURS[colour], grad = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
-      grad.addColorStop(0, light); grad.addColorStop(0.6, base); grad.addColorStop(1, base);
-      g.fillStyle = grad; g.beginPath(); g.arc(x, y, r - 0.5, 0, TAU); g.fill();
-      g.strokeStyle = 'rgba(255, 255, 255, 0.35)'; g.lineWidth = 1; g.stroke();
-      g.fillStyle = 'rgba(255, 255, 255, 0.75)'; g.beginPath(); g.ellipse(x - r * 0.35, y - r * 0.45, r * 0.28, r * 0.16, -0.5, 0, TAU); g.fill();
+      const c = bubbleSprite(colour, r, scale);
+      g.drawImage(c, x - r - 1, y - r - 1, c.width / scale, c.height / scale);
+    };
+
+    /** Where the shot goes: a fat arrow out of the bubble along the aim, gently pulsing. */
+    const arrow = (g, now) => {
+      const len = 46 + 3 * Math.sin(now / 180), cx = Math.cos(angle), cy = Math.sin(angle), nx = -cy, ny = cx;
+      const x0 = GUN[0] + cx * (R + 4), y0 = GUN[1] + cy * (R + 4), x1 = GUN[0] + cx * (R + len), y1 = GUN[1] + cy * (R + len);
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      const shape = () => {
+        g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1 - cx * 8, y1 - cy * 8);
+        g.moveTo(x1, y1); g.lineTo(x1 - cx * 13 + nx * 9, y1 - cy * 13 + ny * 9); g.lineTo(x1 - cx * 13 - nx * 9, y1 - cy * 13 - ny * 9); g.closePath();
+      };
+      shape(); g.strokeStyle = 'rgba(0, 20, 40, 0.6)'; g.lineWidth = 8; g.stroke();
+      shape(); g.strokeStyle = COLOURS[cur][1]; g.fillStyle = COLOURS[cur][1]; g.lineWidth = 4; g.stroke(); g.fill();
     };
 
     return {
@@ -122,22 +158,26 @@ export const openBubble = (onClose) => runArcade({
         if (shot) {
           const steps = 6;
           for (let i = 0; i < steps && shot; i++) {
+            const lift = slide;
             shot.x += shot.vx * dt / steps; shot.y += shot.vy * dt / steps;
             if (shot.x < R) { shot.x = R; shot.vx = Math.abs(shot.vx); }
             if (shot.x > W - R) { shot.x = W - R; shot.vx = -Math.abs(shot.vx); }
             let hit = shot.y <= TOP + R;
-            if (!hit) rows.forEach((row, r) => row.forEach((v, c) => { if (v === null || hit) return; const [px, py] = pos(r, c); if ((px - shot.x) ** 2 + (py - shot.y) ** 2 < (R * 1.75) ** 2) hit = true; }));
-            if (hit) { const s = shot; shot = null; land(s.x, s.y, s.colour); }
+            if (!hit) rows.forEach((row, r) => row.forEach((v, c) => { if (v === null || hit) return; const [px, py] = pos(r, c); if ((px - shot.x) ** 2 + (py - lift - shot.y) ** 2 < (R * 1.75) ** 2) hit = true; }));
+            if (hit) { const s = shot; shot = null; land(s.x, s.y + lift, s.colour); }
           }
         }
+        if (slide) { slide *= Math.exp(-dt * 9); if (slide < 0.2) slide = 0; }
         for (let i = falling.length - 1; i >= 0; i--) { const f = falling[i]; f.vy += 900 * dt; f.y += f.vy * dt; f.x += f.vx * dt; if (f.y > H + R) falling.splice(i, 1); }
         for (let i = bursts.length - 1; i >= 0; i--) if ((bursts[i].t += dt) > 0.35) bursts.splice(i, 1);
       },
-      down(x, y) { if (onNext(x, y)) { [cur, next] = [next, cur]; api.sound('select'); return; } aiming = true; aimAt(x, y); },
+      fire,
+      down(x, y) { if (onSwap(x, y)) return swap(); aiming = true; aimAt(x, y); },
       move(x, y, held) { if (held && aiming) aimAt(x, y); },
-      up() { if (aiming) { aiming = false; fire(); } },
-      key(k, down) { if (k === 'left' || k === 'right') pressed[k] = down; else if (k === 'act' && down) fire(); else if (k === 'down' && down) [cur, next] = [next, cur]; },
+      up() { aiming = false; },
+      key(k, down) { if (k === 'left' || k === 'right') pressed[k] = down; else if (k === 'act' && down) fire(); else if (k === 'down' && down) swap(); },
       draw(g, now) {
+        scale = g.getTransform().a;
         const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#0c3a6a'); bg.addColorStop(1, '#2a8ac8');
         g.fillStyle = bg; g.fillRect(0, 0, W, H);
         g.fillStyle = 'rgba(255, 255, 255, 0.06)';
@@ -145,13 +185,13 @@ export const openBubble = (onClose) => runArcade({
         g.fillStyle = '#082848'; g.fillRect(0, 0, W, TOP);
         // the ceiling's stalactites so a dropped row reads as the ceiling coming down
         g.fillStyle = '#0a3058'; for (let i = 0; i < 15; i++) { g.beginPath(); g.moveTo(i * 20, TOP); g.lineTo(i * 20 + 10, TOP + 6); g.lineTo(i * 20 + 20, TOP); g.fill(); }
-        rows.forEach((row, r) => row.forEach((v, c) => { if (v !== null) bubble(g, ...pos(r, c), v); }));
+        rows.forEach((row, r) => row.forEach((v, c) => { if (v === null) return; const [px, py] = pos(r, c); bubble(g, px, py - slide, v); }));
         for (const b of bursts) { g.strokeStyle = COLOURS[b.colour][1]; g.globalAlpha = 1 - b.t / 0.35; g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, R * (1 + b.t * 3), 0, TAU); g.stroke(); g.globalAlpha = 1; }
         for (const f of falling) bubble(g, f.x, f.y, f.colour);
         g.strokeStyle = `rgba(255, 90, 90, ${0.5 + 0.3 * Math.sin(now / 200)})`; g.setLineDash([8, 6]); g.lineWidth = 2;
         g.beginPath(); g.moveTo(0, LINE); g.lineTo(W, LINE); g.stroke(); g.setLineDash([]);
-        // the aim: dots along the path, one bounce shown
-        if (!shot) {
+        // the aim: dots along the path for the first shots, one bounce shown; the arrow always
+        if (!shot && fired < AIM_SHOTS) {
           let x = GUN[0], y = GUN[1], vx = Math.cos(angle), vy = Math.sin(angle);
           g.fillStyle = 'rgba(255, 255, 255, 0.7)';
           for (let i = 0; i < 26 && y > TOP + R; i++) {
@@ -161,11 +201,14 @@ export const openBubble = (onClose) => runArcade({
           }
         }
         g.fillStyle = '#0a2a4a'; g.fillRect(0, LINE + 6, W, H - LINE - 6);
+        if (!shot) arrow(g, now);
         drawMon(g, 'squirtle', GUN[0] - 34, H - 4, 50);
         bubble(g, GUN[0], GUN[1], cur);
         if (shot) bubble(g, shot.x, shot.y, shot.colour);
-        bubble(g, GUN[0] + 62, GUN[1] + 14, next, R * 0.8);
-        banner(g, 'NEXT', GUN[0] + 62, GUN[1] - 8, 9, '#a8d4ff');
+        bubble(g, SWAP_X, GUN[1] + 14, next, R * 0.8);
+        banner(g, 'NEXT', SWAP_X, GUN[1] - 8, 9, '#a8d4ff');
+        banner(g, '⇄', (GUN[0] + SWAP_X) / 2 + 2, GUN[1] + 8, 15, '#ffd84a');
+        banner(g, 'TAP TO SWAP', (GUN[0] + SWAP_X) / 2 + 4, H - 9, 9, '#ffd84a');
         banner(g, `Row in ${pushEvery() - (shots % pushEvery())}`, 40, H - 22, 11, '#ffffff');
       },
     };

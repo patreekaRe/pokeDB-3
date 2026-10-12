@@ -2,7 +2,7 @@
    machines as Game Corner prizes, each playable at home). A game is a definition: its look (`colour`), a How to play
    (`help`), a logical canvas size (W x H) and make(api), which returns (and must not score or end the game until ticked or tapped, as the start screen draws one) { tick(dt, now), draw(g, now), down(x, y),
    move(x, y), up(x, y), key(k, down) } for one game. The kit runs the window (the Game Corner's panel), the loop, input
-   in canvas units, Score / Best and the start and game-over screens, and keeps each game's best in the Game Corner's
+   in canvas units, Score / Best, the start and game-over screens and the game's own keys (`pad`), and keeps each game's best in the Game Corner's
    records (`arc-<id>`). Nothing here pays: these are free play. A new game is a file using runArcade() and a line in
    js/home-arcade.js. */
 
@@ -48,9 +48,9 @@ export function runArcade(def, onClose) {
   preloadSounds('select', 'confirm', 'cancel', 'coins', 'stat-up', 'plink-1', 'plink-2', ...(def.sounds || []));
   const rec = `arc-${def.id}`;
   let state = 'ready', score = 0, game = null, raf = 0, last = 0, line = def.intro, help = firstLook(`arc-${def.id}`);
-  let cv = null, g = null, overText = '', overAt = 0, preview = null;
+  let cv = null, g = null, overText = '', overAt = 0, preview = null, fit = null;
 
-  const panel = openPanel(`ar ar-${def.id}`, def.title, { onClose: () => { cancelAnimationFrame(raf); document.removeEventListener('keydown', onKey, true); document.removeEventListener('keyup', onKey, true); onClose?.(); } });
+  const panel = openPanel(`ar ar-${def.id}`, def.title, { onClose: () => { cancelAnimationFrame(raf); fit?.disconnect(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('keyup', onKey, true); onClose?.(); } });
   panel.root.style.setProperty('--ar', def.colour);
 
   const api = {
@@ -102,21 +102,45 @@ export function runArcade(def, onClose) {
     if (help) {
       box.append(head, helpScreen());
       panel.root.replaceChildren(box);
-      size(Math.min(cv.parentElement.clientWidth - 12, 170 * def.W / def.H));
+      size(Math.min(cv.parentElement.clientWidth - 12, 240 * def.W / def.H));
       return loop();
     }
     const m = el('div', 'vf-meters');
     for (const [k, cls] of [['Score', 'ar-score'], ['Best', 'ar-best']]) { const b = el('div', 'vf-meter'); b.append(el('span', '', k), el('b', cls, '0')); m.append(b); }
     cv = el('canvas', 'ar-canvas');
     g = cv.getContext('2d');
+    const stage = el('div', 'ar-stage');
+    stage.append(cv);
     const keys = el('div', 'vf-keys');
     keys.append(key(state === 'play' ? 'Restart' : state === 'over' ? 'Play again' : 'Play', 'vf-go', start), key('Close', 'vf-close', () => panel.shut()));
-    box.append(head, m, cv, el('p', 'vf-say', line), keys);
+    box.append(head, m, stage);
+    if (def.pad) box.append(padRow());
+    box.append(el('p', 'vf-say', line), keys);
     panel.root.replaceChildren(box);
     meters();
     size();
+    fit?.disconnect();
+    fit = new ResizeObserver(() => { if (cv.isConnected && !help) size(); });
+    fit.observe(stage);
     bind();
     loop();
+  }
+
+  /** A game's own big keys under the screen (`def.pad`: [label, action], e.g. Bubble Shooter's SHOOT); before a game
+      or after one, a press starts it. Pressed on pointerdown so a phone's double-tap zoom never eats it. */
+  function padRow() {
+    const row = el('div', 'ar-pad');
+    for (const [label, act] of def.pad) {
+      const b = el('button', `vf-key ar-pad-key ar-pad-${act}`, label);
+      b.type = 'button';
+      b.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (state !== 'play') { if (state === 'ready' || performance.now() - overAt > 600) start(); return; }
+        game[act]?.();
+      });
+      row.append(b);
+    }
+    return row;
   }
 
   /** How to play as an attract screen: the game itself playing on a little CRT, then the steps as numbered tiles. */
@@ -143,10 +167,13 @@ export function runArcade(def, onClose) {
     raf = requestAnimationFrame(frame);
   }
 
+  /** The screen as big as its stage allows at the game's own shape (the cabinet is full screen since 2026-10-12). */
   function size(fixed) {
-    const w = fixed || cv.clientWidth || 360, dpr = Math.min(2, devicePixelRatio || 1);
-    cv.width = Math.round(w * dpr); cv.height = Math.round(w * def.H / def.W * dpr);
-    if (fixed) cv.style.width = `${w}px`;
+    const st = cv.parentElement;
+    const w = fixed || Math.max(120, Math.floor(Math.min(st.clientWidth, st.clientHeight * def.W / def.H))) || 360;
+    const dpr = Math.min(2, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
+    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+    cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;
   }
 
