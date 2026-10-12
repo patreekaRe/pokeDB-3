@@ -43,13 +43,15 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['look', 'The starting decks\' cards have new smooth art showing the move itself: a flame for Ember, a curling wave for Dive, a turtle shell for Withdraw. Mewtwo\'s cards get pictures for the first time.'],
+  ['look', 'Every card has new smooth art showing the move itself: a flaming fist for Fire Punch, a volcano for Eruption, a Venus flytrap for Snap Trap, a crab claw for Crabhammer, a bent spoon for Kinesis. Mewtwo\'s Psychic cards get pictures for the first time, and Safari moves that share a name borrow them.'],
   ['base', 'Plants, kitchen and garden furniture is properly 3D: every potted plant and Berry bush, the apple tree, wishing well, hammock, garden swing, gnome, scarecrow, beehive, tea trolley and 13 more, built piece by piece.'],
   ['look', 'Cards have a new look: glossy and smooth like the Pokédex, a glowing gem for the cost, an edge that glows blue or gold by rarity, and the art window\'s shape tells you the kind: pointed for an Attack, square for a Skill, round for a Power.'],
   ['base', 'Pokémon Center, Gym and Beach furniture is properly 3D: treadmills, bleachers, beach huts and 31 more look right from every side.'],
   ['base', 'Everyday furniture is properly 3D too: the trophy, guitar, jukebox, arcade machine, telescope, tent, slide, healing machine and 24 more, built piece by piece instead of flat cut-outs.'],
   ['base', 'Station and Sky Palace furniture is properly 3D: the six model trains, the water tower, crossing, signal, handcar, the weather orbs, rainbow arch, floating island, airship, hot air balloon and 20 more.'],
   ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
+  ['base', 'Café, School and Winter furniture is properly 3D: the igloo, sleigh, snowy fir, wood stove, bread oven, ice cream cart, crêpe stand, ice sculptures, microscope, abacus, xylophone and 24 more.'],
+  ['base', 'Spooky, Bathroom, Bedroom and Office furniture is properly 3D: the coffin (its lid opens), gravestones, jack-o\'-lantern, candelabra, black cat, sheet ghost, clawfoot tub, shower, hot tub, giant rubber duck, bunk bed, crib, alarm clock, folding screen, mail trolley, printer and 22 more.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
