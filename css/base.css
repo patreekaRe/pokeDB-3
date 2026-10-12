@@ -663,3 +663,15 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 
 /* names are in capitals everywhere (the user's call, 2026-10-11): every box you type one in shows it so as you type */
 .tdx-field, .tc-name-input, .pc-name-box, .lb-name-input, .set-name-input { text-transform: uppercase; }
+
+/* iOS can't lock a page's rotation, so a phone held sideways gets this cover instead; tablets and PCs keep landscape.
+   Modal dialogs sit in the top layer over any z-index, so they're faded out under it. */
+#rotate-cover { display: none; }
+@media (orientation: landscape) and (pointer: coarse) and (max-height: 500px) {
+  #rotate-cover {
+    position: fixed; inset: 0; z-index: 2147483647; display: grid; place-content: center; justify-items: center; gap: 18px;
+    background: #1b1f3a; color: #fff; text-align: center; font: 0.875rem/1.6 var(--pixel-font); font-synthesis-weight: none;
+  }
+  #rotate-cover svg { width: 72px; height: 72px; color: #ffcb05; }
+  dialog, dialog::backdrop { opacity: 0 !important; pointer-events: none !important; }
+}
