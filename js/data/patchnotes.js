@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'What stands on top of furniture is modelled now, not a flat picture: the water cooler\'s bottle, the organ\'s pipes, the crates\' apples, carrots, corn, potatoes and cabbages, milk bottles, the till, the sink\'s tap, the fireplace\'s mantel things, the espresso machine, the prize counter\'s teddy and more.'],
   ['base', 'Over 60 boxy pieces of furniture are real boxes now, their picture on the front only: fridges, vending machines, shelves, cabinets, arcade machines and more no longer come out round or see-through from behind. The stove and air hockey table are fully modelled, like the arcade cabinets.'],
   ['mall', 'Poliwag Crossing and Ekans Trail are played by swiping the screen, with small Start and Exit keys under it.'],
   ['look', 'Pokémon no longer sink into the walls, shop fronts and counters behind them.'],
