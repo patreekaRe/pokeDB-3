@@ -44,7 +44,7 @@ import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
-import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
+import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
@@ -364,7 +364,7 @@ export function continueRun(saved) {
   run = saved;
   mapFilm = null;
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
-    playMusic('trainer-victory');
+    playMusic(bossWin());
     walkOn();
     return null;
   }
@@ -1466,7 +1466,7 @@ async function fight(node, { talked = false } = {}) {
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
-  const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
+  const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : gymLeader(node) ? 'gym-leader-battle' : undefined);
   intro?.();
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
@@ -1502,6 +1502,7 @@ function gymRoom(node, leader, won = null) {
     sayLines(intro, 'reward-log', () => { if (run === thisRun) fight(node, { talked: true }); });
   };
   const after = !!won;
+  if (!after) playMusic('gym-room');   // after the win the fight's gym-victory plays on through the badge
   const leave = () => afterFight(node, { ...won, gymSaid: true });
   showChoice({
     title: 'POKéMON GYM',
@@ -1536,6 +1537,8 @@ function gymOnMap() {
 function gymLeader(node) {
   return node.type === 'boss' && !isSafari() && !isTower() ? leaderFor(node.enemyId) : null;
 }
+/** The song a boss's win plays on with: a Gym Leader's has its own. */
+const bossWin = () => (run.map?.boss && gymLeader(run.map.boss) ? 'gym-victory' : 'trainer-victory');
 
 function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
@@ -2268,7 +2271,7 @@ function warmEvent3d() {
   setTimeout(() => import('./event-3d.js').then(m => {
     event3dMod = m;
     kinds.forEach(k => m.preloadEvent(k, at));
-    if (leader) m.preloadEvent('gym', { ...at, leader }, { npc: { npc: spriteOf(leader) } });
+    if (leader) { m.preloadEvent('gym', { ...at, leader }, { npc: { npc: spriteOf(leader) } }); preloadMusic('gym-room'); }
   }).catch(() => { warmEvent3d.map = null; }), 1800);
 }
 
@@ -3272,7 +3275,7 @@ async function evolve(next) {
   const fadeOut = await evolutionScene(r.starter, from,
     [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
   if (run !== r) return fadeOut();   // left for the menu meanwhile
-  playMusic('trainer-victory');   // only a boss evolves you
+  playMusic(bossWin());   // only a boss evolves you
   next();
   fadeOut();
 }

@@ -371,6 +371,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   five fire pillars a side lighting pair by pair with a taiko beat as you walk up (`AVENUE`, `tickFire()`), a two-tier dais
   with steps, taller banners and board; the great braziers whoosh at the court's head, and as the leader speaks they flare
   with a gong and the shot pushes in (`R.flare()` / `R.focus`, `PUSH`). Next: the user's playtest on a phone.
+  **Music** (2026-10-12, the user's three songs): `gym-room` in the gym, `gym-leader-battle` for the fight, `gym-victory` from
+  the faint through the badge, rewards and evolution (`docs/reference/music.md`). The battle file has no repeat in it, so its
+  loop is the closest bars with a long cross-fade: worth a listen.
   **The user's placement** (2026-10-12; the first of each biome has two bosses; badge names are placeholders):
 
   | Biome | Leader (id) | Bosses | Badge |

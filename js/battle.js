@@ -263,8 +263,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   arena3d(land, encounter.kind, def, run);
-  playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
-  preloadMusic(winTrack(encounter.kind));
+  playMusic(def.music ?? (encounter.leader ? 'gym-leader-battle' : encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
+  preloadMusic(winTrack(encounter.kind, encounter.leader));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
   setupBattleScreen();
 
@@ -1852,7 +1852,7 @@ function attackDamage(move) {
 }
 
 /** The fanfare after a win: the wild one, or Red/Blue's trainer victory after an Alpha (Team Rocket's too) or a boss. */
-const winTrack = (kind) => (kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
+const winTrack = (kind, leader) => (leader ? 'gym-victory' : kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
 
 async function finish(won) {
   const b = battle;
@@ -1869,7 +1869,7 @@ async function finish(won) {
     if (grew) abilityBanner();
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
-    playMusic(winTrack(b.kind), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
+    playMusic(winTrack(b.kind, b.leader), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
     log(`${b.def.name} was defeated!`);
   } else {
     $('player-sprite').classList.add('defeated');
