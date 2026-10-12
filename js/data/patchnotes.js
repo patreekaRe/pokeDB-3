@@ -48,7 +48,7 @@ export const NEXT = [
   ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
   ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 1,000 tickets and every prize.'],
   ['fixes', 'Plinko no longer shows what a drop won before the ball lands: the coins and Today meter go up as it hits its bin.'],
-  ['mall', 'The Game Corner tables no longer show a Chips meter: every play is free, so it only showed the same 10 every time.'],
+  ['mall', 'The Game Corner no longer talks about chips: every play is free, so the Chips meter and the stake lines are gone.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

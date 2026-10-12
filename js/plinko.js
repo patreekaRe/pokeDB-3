@@ -26,8 +26,8 @@ const TIERS = ['#5a6a80', '#4a9a68', '#3aa8d8', '#e8a030', '#e85a3a', '#ff2a68',
 const tierOf = (b) => Math.abs(b - PLINKO_ROWS / 2);
 
 const HELP = [
-  ['Drop a Poké Ball.', `It's free: each drop stakes ${STAKE} of Meowth's chips, and it bounces down through the pegs into a bin.`],
-  ['The bin it lands in multiplies the chips,', 'and you win that many PokéCoins: ×0.2 to ×0.55 in the middle, more further out, up to ×10 at the very edges.'],
+  ['Drop a Poké Ball.', 'It\'s free, and it bounces down through the pegs into a bin.'],
+  ['The bin it lands in sets what you win,', `its number times ${STAKE} PokéCoins: ×0.2 to ×0.55 in the middle, more further out, up to ×10 (${10 * STAKE}) at the very edges.`],
   ['Most balls land near the middle,', 'but about 1 in 25 reaches an edge. You get a few paying drops a day; after that, drop for fun.'],
 ];
 

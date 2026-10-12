@@ -46,7 +46,7 @@ export function settle(amount, game, paid) {
 /** What a settled win paid, in words: "40 PokéCoins", "3 tickets", or the chips when today's tickets are used up. */
 export function wonText(r, paid) {
   if (paid) return `${r.coins} PokéCoins${r.coins < r.chips ? ' (all today allows)' : ''}`;
-  return r.tickets ? `${r.tickets} prize ticket${r.tickets > 1 ? 's' : ''}` : `${r.chips} chips`;
+  return r.tickets ? `${r.tickets} prize ticket${r.tickets > 1 ? 's' : ''}` : 'no tickets (today\'s are used up)';
 }
 
 /** A game's Best line: its records as "Best streak 6 · Jackpots 1" (nothing before the first). */

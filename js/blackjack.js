@@ -49,8 +49,8 @@ function render() {
     shown.player.forEach(c => prow.append(card(c)));
     felt.append(el('span', 'bj-label', hide ? `Meowth: ${handValue([shown.dealer[0]]).total} + ?` : `Meowth: ${handValue(shown.dealer).total}`), drow, prow,
       el('span', 'bj-label', `You: ${handValue(shown.player).total}${hand?.doubled || result?.doubled ? ' (doubled)' : ''}`));
-  } else felt.append(el('span', 'bj-label', `Meowth stakes you ${STAKE} chips a hand, meow.`));
-  const say = el('p', 'vf-say', hand ? 'Hit for another card, Stand to stop, or Double the chips for exactly one more card.' : sayLine('bj', result ? result.line : 'Get closer to 21 than Meowth without going over. Win and the chips are your PokéCoins; Blackjack pays 3 to 2.'));
+  } else felt.append(el('span', 'bj-label', 'Every hand\'s on the house, meow.'));
+  const say = el('p', 'vf-say', hand ? 'Hit for another card, Stand to stop, or Double what it pays for exactly one more card.' : sayLine('bj', result ? result.line : 'Get closer to 21 than Meowth without going over. Win and it pays PokéCoins; a Blackjack pays 3 to 2.'));
   const keys = el('div', 'vf-keys');
   if (hand) {
     const { player } = cards(hand);

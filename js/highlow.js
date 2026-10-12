@@ -37,14 +37,14 @@ function card(rank, step, cls = '') {
 
 function render() {
   const head = el('div', 'vf-head');
-  head.append(el('strong', 'vf-title', 'HIGH-LOW'), el('span', 'vf-lv', hand ? `Pot ${hand.pot}` : `${STAKE} chips a hand`));
+  head.append(el('strong', 'vf-title', 'HIGH-LOW'), el('span', 'vf-lv', hand ? `Pot ${hand.pot}` : 'Higher or lower'));
   const felt = el('div', 'bj-felt hl-felt');
   if (hand) {
     const rank = cardAt(hand, hand.step);
     if (flip) felt.append(card(flip.rank, hand.step - 1, 'old'));
     felt.append(card(rank, hand.step, flip ? 'new' : ''));
   } else if (flip) felt.append(card(flip.rank, 0, 'old'), card(flip.next, 1, 'new lost'));
-  else felt.append(el('span', 'bj-label', `Meowth stakes you ${STAKE} chips a hand, meow.`));
+  else felt.append(el('span', 'bj-label', 'Every hand\'s on the house, meow.'));
   const keys = el('div', 'vf-keys');
   if (hand) {
     const rank = cardAt(hand, hand.step);
