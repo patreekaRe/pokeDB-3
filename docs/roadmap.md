@@ -149,15 +149,16 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
      b) ~~Game Corner, walked into~~ done 2026-10-09 (`docs/roadmap-done.md`): `js/mall-corner.js`, the middle front.
      c) **The Game Corner revamp** (branch `game-corner-revamp`, NOT merged: the user said don't merge yet). Built
         2026-10-10 to 10-12 in cloud sessions (the user has no local access); CLAUDE.md's Game Corner paragraph has the
-        detail. Where it stands (last commit 91165e0, 2026-10-12):
+        detail. Where it stands (2026-10-12, see the branch's last commit):
         - **Games (the user's keepers):** Voltorb Flip and Who's That Pokémon? (free, 250 a day between them),
           Slots (tap-to-stop, jackpot, Pikachu bonus), Plinko (12 rows, real-feeling fall), Blackjack, High-Low (bets
           5-50, 500-a-day win cap). Cut: Roulette, Memory Match, Gachapon (big dolls back in the Furniture store), Team
           Rocket Blast-Off. Every game has a How to play card (the "?").
-        - **Meowth:** a daily stamp card (5 different games) over his head earns a scratch card.
-        - **The room:** casino carpet; back wall left a wall-sized live Plinko board, right three equal mounted screens
+        - **Meowth:** inside a U-shaped prize counter (front and both sides), its daily stamp card (5 different games) on
+          the wall behind it earns a scratch card.
+        - **The room:** casino carpet; back wall left three live Plinko boards, right three equal mounted screens
           (Pokémon, Shinies, Perks; no Poké Balls); four tables (touchscreen Voltorb / Who's That behind, Blackjack /
-          High-Low in front); six slot machines down the side walls (my suggestion: the user may move them).
+          High-Low in front); a line of nine slot machines down each side wall (rows 2-10; the user's ask, 2026-10-12).
         **Next:** the user playtests the latest pinned link and gives room/game feedback; then, on their word, merge to
         `main`. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked

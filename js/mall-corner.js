@@ -15,13 +15,14 @@ import { PLINKO_PAYS } from './data/casino.js';
 
 /* The room: `x` a thing's first tile, `w` its tiles; y 0 is the back wall. */
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
-const COUNTER = { x: 9, y: 2, w: 3 };   // Meowth stands a row behind it, clear of the back wall
+const COUNTER = { x: 8, y: 2, w: 5 };   // its front on row 2, its sides running back to the wall, Meowth inside
 const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user's ask), all one size; `c` its middle, in tiles
   { row: 'skins', c: 13.2 },
   { row: 'shiny', c: 16.15 },
   { row: 'perks', c: 19.1 },
 ];
-const SHOW_W = 2.6, PLINKO_WALL = { c: 4.6, w: 7.4, y: 0.3, h: 2.85 };   // Plinko fills the back wall's left half
+const PLINKOS = [1.9, 4.85, 7.8];   // three Plinko boards on the back wall's left half, mounted like the screens (2026-10-12, the user's ask)
+const SHOW_W = 2.6, DESK_W = 4.2;
 const SHOW_H = 2.4, SHOW_D = 0.12, SHOW_Y = 0.95, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
 /* The free games (the revamp, 2026-10-10): they pay into a shared daily pot. */
@@ -34,10 +35,10 @@ const GAMES = {
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
 /* The betting games (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in
-   (`face` 1 looks right, -1 left), Plinko the back wall's left half, Blackjack and High-Low card tables up front. The free
+   (`face` 1 looks right, -1 left), three Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
-  slots: { ats: [{ x: 0, y: 5, face: 1 }, { x: 0, y: 6, face: 1 }, { x: 0, y: 7, face: 1 }, { x: 20, y: 5, face: -1 }, { x: 20, y: 6, face: -1 }, { x: 20, y: 7, face: -1 }], name: 'Slots', colour: '#ff5a5a',
+  slots: { ats: [2, 3, 4, 5, 6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! You stop the reels yourself, so time it for a 7. Three 7s win the jackpot, meow. Tap again to play.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',
@@ -312,6 +313,7 @@ function tableScreen(id, w, d) {
 function plinkoWall(c) {
   const g = c.getContext('2d'), W = c.width, H = c.height;
   const TOP = H * 0.24, BIN = H * 0.84, ROWS = 8, COLS = 13, gx = W / (COLS + 1), gy = (BIN - TOP - H * 0.05) / ROWS;
+  const pr = gx * 0.12, R = gx * 0.32, bw = W / COLS, fit = W * 0.92, pays = PLINKO_PAYS.map(m => `×${m}`);
   const pegs = [];
   for (let r = 0; r < ROWS; r++) for (let k = 0; k < COLS + (r % 2 ? 0 : 1); k++) pegs.push({ x: gx * (k + (r % 2 ? 1 : 0.5)), y: TOP + r * gy, lit: 0 });
   const bins = PLINKO_PAYS.map(() => 0), balls = [];
@@ -322,30 +324,28 @@ function plinkoWall(c) {
     bg.addColorStop(0, '#1d3c66'); bg.addColorStop(1, '#0b1830');
     g.fillStyle = bg; g.fillRect(0, 0, W, H);
     g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.font = `900 ${H * 0.12}px system-ui, sans-serif`; g.shadowColor = '#4ae8f0'; g.shadowBlur = 16; g.fillStyle = '#c8fbff';
-    g.fillText('POKé BALL PLINKO', W / 2, H * 0.1); g.shadowBlur = 0;
+    g.font = `900 ${H * 0.09}px system-ui, sans-serif`; g.shadowColor = '#4ae8f0'; g.shadowBlur = 16; g.fillStyle = '#c8fbff';
+    g.fillText('POKé BALL PLINKO', W / 2, H * 0.09, fit); g.shadowBlur = 0;
     g.font = `700 ${H * 0.045}px system-ui, sans-serif`; g.fillStyle = '#ffe070';
-    g.fillText('TAP TO PLAY · EDGES PAY ×10', W / 2, H * 0.185);
+    g.fillText('TAP TO PLAY · EDGES PAY ×10', W / 2, H * 0.17, fit);
     for (const p of pegs) {
       p.lit = Math.max(0, p.lit - 0.06);
-      if (p.lit) { g.fillStyle = `rgba(255,230,140,${0.5 * p.lit})`; g.beginPath(); g.arc(p.x, p.y, 9, 0, Math.PI * 2); g.fill(); }
-      g.fillStyle = p.lit ? '#ffe07a' : '#a8c8ec'; g.beginPath(); g.arc(p.x, p.y, 3.2, 0, Math.PI * 2); g.fill();
+      if (p.lit) { g.fillStyle = `rgba(255,230,140,${0.5 * p.lit})`; g.beginPath(); g.arc(p.x, p.y, pr * 2.8, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = p.lit ? '#ffe07a' : '#a8c8ec'; g.beginPath(); g.arc(p.x, p.y, pr, 0, Math.PI * 2); g.fill();
     }
-    const bw = W / COLS;
     PLINKO_PAYS.forEach((m, b) => {
       bins[b] = Math.max(0, bins[b] - 0.04);
       const y = BIN + bins[b] * 6;
       g.fillStyle = tier(b); g.beginPath(); g.roundRect(b * bw + 3, y, bw - 6, H - y - 4, 6); g.fill();
       if (bins[b]) { g.fillStyle = `rgba(255,255,255,${0.6 * bins[b]})`; g.beginPath(); g.roundRect(b * bw + 3, y, bw - 6, H - y - 4, 6); g.fill(); }
-      g.fillStyle = '#ffffff'; g.font = `800 ${H * 0.055}px system-ui, sans-serif`; g.fillText(`×${m}`, b * bw + bw / 2, (y + H) / 2);
+      g.fillStyle = '#ffffff'; g.font = `800 ${Math.min(H * 0.05, bw * 0.5)}px system-ui, sans-serif`; g.fillText(pays[b], b * bw + bw / 2, (y + H) / 2, bw - 4);
     });
     for (const b of balls) {
       g.save(); g.translate(b.x, b.y); g.rotate(b.spin);
-      const R = 8;
       g.fillStyle = '#e83a3a'; g.beginPath(); g.arc(0, 0, R, Math.PI, 0); g.fill();
       g.fillStyle = '#f6f6f6'; g.beginPath(); g.arc(0, 0, R, 0, Math.PI); g.fill();
       g.strokeStyle = '#202028'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.moveTo(-R, 0); g.lineTo(R, 0); g.stroke();
-      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 2.6, 0, Math.PI * 2); g.fill(); g.stroke();
+      g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, R * 0.32, 0, Math.PI * 2); g.fill(); g.stroke();
       g.restore();
     }
   }
@@ -553,31 +553,32 @@ export function buildCorner(THREE, size) {
   Promise.all(srcs.map(src => picture(src).then(c => cuts.set(src, c)))).then(() => screens.forEach(sc => sc.paint()));
   redraws.push(() => screens.forEach(sc => sc.paint()));
 
-  // Plinko, wall-sized on the back wall's left half (2026-10-12, the user's ask): a live board, balls dropping on their
-  // own between plays; a tap goes to the game
-  {
-    const { w, h, y: y0 } = PLINKO_WALL, cx = PLINKO_WALL.c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;
-    const canvas = new OffscreenCanvas(Math.round(w * 110), Math.round(h * 110));
+  // Plinko, three boards on the back wall's left half, mounted like the screens across from them (2026-10-12, the user's
+  // ask): each a live board, balls dropping on their own between plays; a tap goes to the game
+  PLINKOS.forEach((c, n) => {
+    const w = SHOW_W, h = SHOW_H, cx = c - cols / 2, z = -rows / 2 + SHOW_D / 2 + 0.01;
+    const canvas = new OffscreenCanvas(Math.round(w * 150), Math.round(h * 150));
     canvas.fine = 1;
     const map = texOf(canvas);
     const board = new THREE.Mesh(new THREE.BoxGeometry(w, h, SHOW_D), [gold, gold, gold, gold, new THREE.MeshBasicMaterial({ map, toneMapped: false }), gold]);
-    board.position.set(cx, y0 + h / 2, z);
+    board.position.set(cx, SHOW_Y + h / 2, z);
     const crown = new THREE.Mesh(new THREE.BoxGeometry(w * 0.7, 0.1, 0.1), std({ color: NEON.cyan, emissive: new THREE.Color(NEON.cyan), emissiveIntensity: 1.2 }));
-    crown.position.set(cx, y0 + h + 0.06, z);
+    crown.position.set(cx, SHOW_Y + h + 0.06, z);
     const gm = CASINO.plinko;
-    const spot = { id: 'plinko', kind: 'game', game: gm, name: gm.name, open: true, line: gm.name,
-      step: { x: Math.floor(PLINKO_WALL.c), y: 1 }, frame: { x: cx, y: y0 + h / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: h + 0.1 } };
+    const spot = { id: `plinko-${n}`, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name,
+      step: { x: Math.floor(c), y: 1 }, frame: { x: cx, y: SHOW_Y + h / 2, z: z + SHOW_D / 2 + 0.03, w: w + 0.1, h: h + 0.1 } };
     for (const m of [board, crown]) { m.userData.front = spot; group.add(m); }
     spots.push(spot);
     const wall = plinkoWall(canvas);
-    let last = 0;
+    let last = n * 11;
     ticks.push((now) => { if (now - last < 33) return; wall.step(now, Math.min(0.1, (now - last) / 1000)); last = now; map.needsUpdate = true; });
-  }
+  });
 
   // the game cabinets (rebuilt bigger 2026-10-11, the user's ask: they were small and scattered): one `w` tiles wide is a
   // big cabinet, its face the full painting on a short plinth; a one-tile one (a slot machine) a taller, narrower one
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
   const lever = std({ color: '#cdc8e0', metalness: 0.6, roughness: 0.3 });
+  const faces = new Map();   // eighteen slot machines share one painted face
   const cab = (id, gm, x, y, foot, turn = 0) => {
     const w = gm.w ?? 1, big = w > 1;
     for (let k = 0; k < w; k++) blocked.add(`${x + k},${y}`);
@@ -589,7 +590,9 @@ export function buildCorner(THREE, size) {
     const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [chrome, chrome, violet, violet, violet, violet]);
     body.position.y = H / 2;
     body.castShadow = body.receiveShadow = true;
-    const face = new THREE.Mesh(new THREE.PlaneGeometry(aw, ah), lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], foot, big ? 16 : 12), 1));
+    const key = `${id}|${foot}|${big}`;
+    if (!faces.has(key)) faces.set(key, lit(gameArt(gm.name.toUpperCase(), gm.colour, SCREENS[id], foot, big ? 16 : 12), 1));
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(aw, ah), faces.get(key));
     face.position.set(0, base + ah / 2 + 0.03, D / 2 + 0.005);
     const kick = new THREE.Mesh(new THREE.BoxGeometry(W + 0.04, 0.12, D + 0.04), std({ color: gm.colour, emissive: new THREE.Color(gm.colour), emissiveIntensity: 0.7 }));
     kick.position.y = 0.06;
@@ -646,44 +649,55 @@ export function buildCorner(THREE, size) {
     group.add(t);
   }
 
-  // the prize counter, Meowth's place behind it
-  const keeper = { id: 'keeper', kind: 'keeper', name: KEEPER.name, open: true, step: { x: COUNTER.x + 1, y: COUNTER.y + 1 } };
+  // the prize counter (made bigger 2026-10-12, the user's ask): a front and two sides running back to the wall, Meowth
+  // closed in behind it and close up to the front, its stamp card on the wall behind it
+  const keeper = { id: 'keeper', kind: 'keeper', name: KEEPER.name, open: true, step: { x: COUNTER.x + 2, y: COUNTER.y + 1 } };
   spots.push(keeper);
   for (let x = COUNTER.x; x < COUNTER.x + COUNTER.w; x++) for (let y = 0; y <= COUNTER.y; y++) blocked.add(`${x},${y}`);
-  const desk = new THREE.Group();
-  desk.position.set(tileX(COUNTER.x + 1), 0, tileZ(COUNTER.y));
+  const desk = new THREE.Group(), DD = 0.72, ARM = 0.4, deskZ = tileZ(COUNTER.y);
+  desk.position.set(tileX(COUNTER.x + 2), 0, deskZ);
   const redDark = std({ color: GC.redDark, roughness: 0.6 });
-  const frontArt = (() => {
-    const f = fine(COUNTER.w * 16, 14, 6), { g, rr, lin, shine } = f, s = shine();
-    rr(0, 0, COUNTER.w * 16, 14, 0, lin(0, 0, 0, 14, [GC.red, GC.redDark]));
-    rr(0, 0, COUNTER.w * 16, 1.4, 0, GC.gold);
-    for (let x = 3; x < COUNTER.w * 16; x += 4) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, 12.4, 0.6, 0, Math.PI * 2); g.fill(); s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, 12.4, 0.7, 0, Math.PI * 2); s.fill(); }
-    rr(COUNTER.w * 8 - 13, 3, 26, 7.4, 1.4, '#1a0e30');
-    words(g, 'PRIZE COUNTER', COUNTER.w * 8, 6.8, 3, GC.gold); words(s, 'PRIZE COUNTER', COUNTER.w * 8, 6.8, 3, '#ffe890');
+  const deskArt = (w, label) => {
+    const W = Math.round(w * 16), f = fine(W, 14, 6), { g, rr, lin, shine } = f, s = shine();
+    rr(0, 0, W, 14, 0, lin(0, 0, 0, 14, [GC.red, GC.redDark]));
+    rr(0, 0, W, 1.4, 0, GC.gold);
+    for (let x = 3; x < W; x += 4) { g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, 12.4, 0.6, 0, Math.PI * 2); g.fill(); s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, 12.4, 0.7, 0, Math.PI * 2); s.fill(); }
+    if (label) { rr(W / 2 - 13, 3, 26, 7.4, 1.4, '#1a0e30'); words(g, label, W / 2, 6.8, 3, GC.gold); words(s, label, W / 2, 6.8, 3, '#ffe890'); }
     return f.c;
-  })();
-  const deskBody = new THREE.Mesh(new THREE.BoxGeometry(COUNTER.w - 0.1, 0.8, 0.72), [redDark, redDark, redDark, redDark, lit(frontArt, 0.8), redDark]);
+  };
+  const deskBody = new THREE.Mesh(new THREE.BoxGeometry(DESK_W, 0.8, DD), [redDark, redDark, redDark, redDark, lit(deskArt(DESK_W, 'PRIZE COUNTER'), 0.8), redDark]);
   deskBody.position.y = 0.4;
   deskBody.castShadow = deskBody.receiveShadow = true;
-  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(COUNTER.w + 0.04, 0.08, 0.86), gold);
+  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(DESK_W + 0.04, 0.08, DD + 0.14), gold);
   deskTop.position.y = 0.84;
-  for (const [x, n] of [[-1.05, 4], [-0.82, 2], [0.95, 3]]) for (let i = 0; i < n; i++) {   // stacks of coins
+  desk.add(deskBody, deskTop);
+  const armL = rows / 2 + deskZ - DD / 2, armArt = lit(deskArt(armL, ''), 0.8);   // from the front's back edge to the wall
+  for (const sgn of [-1, 1]) {
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(ARM, 0.8, armL), sgn < 0 ? [redDark, armArt, redDark, redDark, redDark, redDark] : [armArt, redDark, redDark, redDark, redDark, redDark]);
+    arm.position.set(sgn * (DESK_W - ARM) / 2, 0.4, -DD / 2 - armL / 2);
+    arm.castShadow = arm.receiveShadow = true;
+    const top = new THREE.Mesh(new THREE.BoxGeometry(ARM + 0.04, 0.08, armL), gold);
+    top.position.set(arm.position.x, 0.84, arm.position.z);
+    desk.add(arm, top);
+  }
+  for (const [x, n] of [[-1.45, 4], [-1.2, 2], [1.3, 3]]) for (let i = 0; i < n; i++) {   // stacks of coins
     const c = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.035, 14), gold);
     c.position.set(x, 0.9 + i * 0.037, 0.12);
     desk.add(c);
   }
   const bell = new THREE.Mesh(new THREE.SphereGeometry(0.1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), gold);
-  bell.position.set(0.55, 0.88, 0.18);
-  desk.add(deskBody, deskTop, bell);
+  bell.position.set(0.75, 0.88, 0.18);
+  desk.add(bell);
   desk.traverse(o => { o.userData.front = keeper; });
   group.add(desk);
+  const keeperZ = deskZ - DD / 2 - 0.42;
 
-  // Meowth's stamp card, hung over its head: how many games today, then the scratch card waiting
+  // Meowth's stamp card, on the wall behind it under the GAME CORNER sign: how many games today, then the scratch card waiting
   const signCanvas = new OffscreenCanvas(480, 168);
   signCanvas.fine = 1;
   const signMap = texOf(signCanvas);
-  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 0.945), new THREE.MeshBasicMaterial({ map: signMap, transparent: true, toneMapped: false }));
-  sign.position.set(tileX(COUNTER.x + 1), 2.35, tileZ(COUNTER.y - 1) + 0.1);
+  const sign = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 0.91), new THREE.MeshBasicMaterial({ map: signMap, transparent: true, toneMapped: false }));
+  sign.position.set(tileX(COUNTER.x + 2), 2.55, -rows / 2 + 0.03);
   sign.userData.front = keeper;
   group.add(sign);
   const paintSign = () => { stampSign(signCanvas, stampState()); signMap.needsUpdate = true; };
@@ -697,13 +711,12 @@ export function buildCorner(THREE, size) {
 
   return {
     group, blocked, spots, frame: ring, top: 4.7, title: 'Game Corner', light: 0.6, cols, rows, door: DOOR,
-    keeper: { ...KEEPER, x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1), lift: 0.6 },
+    keeper: { ...KEEPER, x: tileX(COUNTER.x + 2), z: keeperZ, lift: 0.6 },
     refresh: () => redraws.forEach(r => r()),
     tick(now) {
       ticks.forEach(t => t(now));
       for (const sc of screens) if (!sc.held && now >= sc.next) { sc.at += 1; sc.next = now + CYCLE; sc.paint(); }
-      sign.position.y = 2.35 + Math.sin(now / 900) * 0.04;
-      if (stampState().ready) sign.scale.setScalar(1 + Math.max(0, Math.sin(now / 220)) * 0.04);
+      sign.scale.setScalar(stampState().ready ? 1 + Math.max(0, Math.sin(now / 220)) * 0.04 : 1);
     },
   };
 }
