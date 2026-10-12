@@ -11,6 +11,7 @@ import { getSave } from './storage.js';
 import { timeOfDay } from './daytime.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
+import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat } from './hd2d.js';
@@ -1098,7 +1099,31 @@ function tapped(at, ray = new THREE.Raycaster()) {
   return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
+/** Off across the floor to `to`, getting up first if sitting; `drag` keeps the step under way (drag to walk). */
+function walkFloor(to, drag = false) {
+  const go = () => {
+    walker.path = drag ? reroute(walker, route, to) : route(walker.tile, to);
+    const end = walker.path.at(-1) ?? walker.tile;
+    ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
+    ring.material.opacity = 0.9;
+  };
+  follow = true;
+  walker.through = null; walker.goal = null; walker.seatTo = null;
+  if (walker.seat) getUp(go); else if (!walker.jump) go();
+}
+
+/** The floor tile under a pointer in walk mode, or null. */
+function floorTile(e) {
+  const ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
+  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
+  return inRoom(to) ? to : null;
+}
+let drags = null;
+
 function onTap(e) {
+  if (drags?.swallowed()) return;
   if (swallowClick || holding) { swallowClick = false; return; }
   if (performance.now() < quietUntil) return;   // the end of a pinch or a pan, not a tap
   const ray = new THREE.Raycaster();
@@ -1139,15 +1164,7 @@ function onTap(e) {
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
   if (!inRoom(to)) return;
-  const go = () => {
-    walker.path = route(walker.tile, to);
-    const end = walker.path.at(-1) ?? walker.tile;
-    ring.position.set(tileX(end.x), 0.02, tileZ(end.y));
-    ring.material.opacity = 0.9;
-  };
-  follow = true;
-  walker.goal = null; walker.seatTo = null;
-  if (walker.seat) getUp(go); else if (!walker.jump) go();
+  walkFloor(to);
   playSound('confirm');
 }
 
@@ -1735,6 +1752,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   for (let i = 0; i < lowered; i++) if (!stepDown()) break;
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
+  drags = dragWalk({ target: view, can: (e) => mode === 'walk' && !holding && visit?.phase !== 'talk' && e.target === view, tile: floorTile, go: (t) => walkFloor(t, true) });
   view.addEventListener('pointerdown', onDown);
   view.addEventListener('pointermove', onMove);
   view.addEventListener('pointerup', onUp);
