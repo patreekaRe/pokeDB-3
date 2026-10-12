@@ -169,6 +169,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     def,
     kind: encounter.kind,
     leader: encounter.leader ?? null,   // the Gym Leader sending out a boss (js/data/gym.js)
+    leaderTalked: !!encounter.leaderTalked,   // they spoke in their 3D gym first (gymRoom() in js/run.js)
     relics: [...run.relics],
     ability,
     aug,
@@ -338,7 +339,7 @@ async function playIntro() {
     if (!still()) return;
     if (b.leader) {   // a Gym Leader sends it out (js/data/gym.js)
       enemyZone.classList.add('boss-waiting');   // the boss stays in its ball till they send it out
-      try { await gymTalk(b.leader, b.leader.intro, { vars: { boss: b.def.name } }); }
+      try { if (!b.leaderTalked) await gymTalk(b.leader, b.leader.intro, { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
       finally { enemyZone.classList.remove('boss-waiting'); }
       if (!still()) return;
       log(`Gym Leader ${b.leader.name} sent out ${b.def.name}!`);

@@ -10,6 +10,22 @@ import { battleFx } from './prefs.js';
 
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
+/** Their lines with their name, badge and `vars` (`{boss}`) filled in, for the 3D gym's speech window. */
+export const gymLines = (l, lines, vars = {}) => lines.map(line => fill(line, { name: l.name, badge: l.badge, ...vars }));
+
+/** Their badge spinning in over the 3D gym as they hand it over. */
+export function badgePop(l) {
+  import('./trainercard.js').then(({ badgeArt }) => {
+    const layer = el('div', 'gym-pop'), mark = el('img', 'gym-badge');
+    mark.src = badgeArt(`gym-${l.id}`, true);
+    mark.alt = l.badge;
+    layer.append(mark);
+    document.body.append(layer);
+    playSound('achievement');
+    setTimeout(() => { layer.classList.add('out'); setTimeout(() => layer.remove(), 400); }, 2600);
+  });
+}
+
 /** Their lines, one a tap. `badge` shows the badge they hand over with the last line. */
 export async function gymTalk(l, lines, { vars = {}, badge = false } = {}) {
   const calm = !battleFx();
@@ -34,7 +50,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false } = {}) {
     mark.src = badgeArt(`gym-${l.id}`, true);
     mark.alt = l.badge;
   }
-  const said = lines.map(line => fill(line, { name: l.name, badge: l.badge, ...vars }));
+  const said = gymLines(l, lines, vars);
   for (let i = 0; i < said.length; i++) {
     text.textContent = said[i];
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }

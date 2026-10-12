@@ -5532,3 +5532,10 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .xr-road .xr-leader-pic { height: 48px; }
 .xr-leader .xr-boss { max-width: none; }
 .xr-road .xr-leader .xr-boss { height: 30px; }
+
+/* the map's Gym Leader over the boss room (renderMap()'s `gym`): a trainer is narrower than a Pokémon's canvas */
+.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -1.4); }
+.map-boss-shadow.map-leader.met { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+/* their badge spinning in over the 3D gym (badgePop() in js/gym.js) */
+.gym-pop { position: fixed; inset: 0; z-index: 990; pointer-events: none; transition: opacity 0.4s; }
+.gym-pop.out { opacity: 0; }

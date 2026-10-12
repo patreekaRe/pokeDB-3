@@ -26,7 +26,7 @@ const TOP = 8;
 const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8;
 const DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
@@ -277,9 +277,10 @@ async function bitmap(src) {
 }
 
 /** A trainer's sprite on a billboard, feet at its group's origin (found from the sprite's lowest opaque row), with its
-    eyes-closed copy for blinking. */
+    eyes-closed copy for blinking. `id` is a trainer in assets/trainers/, or a whole path (a Gym Leader's, no blink). */
 async function npcBoard(id) {
-  const [open, shut] = await Promise.all([bitmap(`assets/trainers/${id}.png`), bitmap(`assets/trainers/${id}-blink.png`).catch(() => null)]);
+  const path = id.includes('/');
+  const [open, shut] = await Promise.all([bitmap(path ? id : `assets/trainers/${id}.png`), path ? null : bitmap(`assets/trainers/${id}-blink.png`).catch(() => null)]);
   const w = open.width, h = open.height, c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d', { willReadFrequently: true });
@@ -298,7 +299,12 @@ async function npcBoard(id) {
   blob.raycast = () => {};
   const group = new THREE.Group();
   group.add(board, blob);
-  return { group, board, c, g, t, open, shut, top: (bottom + 1) * NPC_PX, blinkAt: 0, shut0: false, npc: true };
+  // their silhouette, for a Gym Leader you haven't beaten yet (setDark())
+  const dark = new OffscreenCanvas(w, h), dg = dark.getContext('2d');
+  dg.drawImage(open, 0, 0); dg.globalCompositeOperation = 'source-in'; dg.fillStyle = '#0c0a14'; dg.fillRect(0, 0, w, h);
+  const who = { group, board, c, g, t, open, shut, dark, top: (bottom + 1) * NPC_PX, blinkAt: 0, shut0: false, npc: true, dim: false };
+  who.setDark = (on) => { who.dim = on; who.blinkAt = 0; };
+  return who;
 }
 
 /** Someone standing in the room: a trainer or a Pokémon (a front GIF, `flip` facing right), at tile `at`, `y` up. */
@@ -342,9 +348,9 @@ function tickFigures(now, dt) {
   for (const who of Object.values(R.who)) {
     if (who.npc) {
       if (now > who.blinkAt) {
-        const shutNow = !who.shut0 && who.shut && !calm;
+        const shutNow = !who.shut0 && who.shut && !calm && !who.dim;
         who.g.clearRect(0, 0, who.c.width, who.c.height);
-        who.g.drawImage(shutNow ? who.shut : who.open, 0, 0);
+        who.g.drawImage(who.dim ? who.dark : shutNow ? who.shut : who.open, 0, 0);
         who.t.needsUpdate = true;
         who.shut0 = shutNow;
         who.blinkAt = now + (shutNow ? 120 : 2000 + Math.random() * 4000);
@@ -1903,9 +1909,9 @@ function tufts(L, n, rnd) {
 
 /** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
     the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
-function wild(L, time, { to = 2, trees = [], exit = true } = {}) {
+function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c } = {}) {
   const sky = graded(L.sky[0], time);
-  shell({ floor: wildFloor(L, { to }), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
+  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
   skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
@@ -2279,10 +2285,143 @@ async function buildRocket(figs, { look: L, time }) {
   };
 }
 
+/* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, the leader on a stone dais at the far end over a
+   battle court painted on the biome's own ground, banners in the biome's colour, a fire in a bowl either side, the
+   POKéMON GYM board behind; the doormat opens once they're beaten ---------- */
+
+const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
+
+/** Pokéball, painted at `x`, `y`, radius `r`, onto a fine() painting. */
+function ballMark(g, x, y, r, top = '#e83c30') {
+  g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.fillStyle = top; g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.fill();
+  g.fillStyle = '#28242c'; g.fillRect(x - r, y - r * 0.12, r * 2, r * 0.24);
+  g.beginPath(); g.arc(x, y, r * 0.36, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(x, y, r * 0.2, 0, Math.PI * 2); g.fill();
+}
+
+/** The battle court over the ground: your half tinted blue, theirs in the gym's colour, white lines, a Poké Ball at the middle. */
+function court(ink) {
+  return (c) => {
+    const g = c.getContext('2d'), T = 16, x0 = 2 * T + 3, x1 = 9 * T - 3, y0 = 2 * T + 2, y1 = 8 * T - 4, mid = (y0 + y1) / 2;
+    g.save();
+    g.globalAlpha = 0.2; g.fillStyle = ink; g.fillRect(x0, y0, x1 - x0, mid - y0);
+    g.fillStyle = '#3a78d8'; g.fillRect(x0, mid, x1 - x0, y1 - mid);
+    g.globalAlpha = 0.85; g.strokeStyle = '#ffffff'; g.lineWidth = 1.1;
+    g.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    g.beginPath(); g.moveTo(x0, mid); g.lineTo(x1, mid); g.stroke();
+    g.strokeRect(x0 + 1.6 * T, y0, x1 - x0 - 3.2 * T, 0.9 * T);
+    g.strokeRect(x0 + 1.6 * T, y1 - 0.9 * T, x1 - x0 - 3.2 * T, 0.9 * T);
+    g.beginPath(); g.arc((x0 + x1) / 2, mid, 1.15 * T, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha = 0.9;
+    ballMark(g, (x0 + x1) / 2, mid, 0.75 * T, ink);
+    g.restore();
+    return c;
+  };
+}
+
+function gymSignArt(ink) {
+  const f = fine(64, 20, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 20, 4, '#2a2230');
+  rr(1.4, 1.4, 61.2, 17.2, 3, lin(0, 0, 0, 20, [shadeOf(ink, 1), ink, shadeOf(ink, -1)]));
+  rr(10, 3.6, 51, 12.8, 2.4, 'rgba(255,255,255,0.92)');
+  ballMark(g, 6.2, 10, 4.2);
+  g.fillStyle = '#2a2230'; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const text = 'POKéMON GYM', w = g.measureText(text).width, k = Math.min(1, 47 / w);
+  g.save(); g.translate(35.5, 10.4); g.scale(k, 1); g.fillText(text, 0, 0); g.restore();
+  return f.c;
+}
+
+function gymBannerArt(ink) {
+  const f = fine(16, 34, 8), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 16, 0, [shadeOf(ink, -1), ink, shadeOf(ink, 1), ink, shadeOf(ink, -1)]);
+  g.beginPath(); g.moveTo(0, 0); g.lineTo(16, 0); g.lineTo(16, 34); g.lineTo(8, 28); g.lineTo(0, 34); g.closePath(); g.fill();
+  g.fillStyle = '#f8d860'; g.fillRect(0, 2, 16, 1.2); g.fillRect(0, 24, 16, 1);
+  ballMark(g, 8, 13, 5, '#f8f8f8');
+  return f.c;
+}
+
+/** A flame: a teardrop from a white-hot core out to the fire's colour. */
+function flameArt(col) {
+  const { c, g } = fine(16, 24, 8);
+  const tear = (s) => { g.beginPath(); g.moveTo(8, 24 - 22 * s); g.bezierCurveTo(8 + 7 * s, 24 - 12 * s, 8 + 7 * s, 23, 8, 23); g.bezierCurveTo(8 - 7 * s, 23, 8 - 7 * s, 24 - 12 * s, 8, 24 - 22 * s); g.fill(); };
+  g.fillStyle = col; g.globalAlpha = 0.85; tear(1);
+  g.fillStyle = '#ffd860'; g.globalAlpha = 0.95; tear(0.68);
+  g.fillStyle = '#fffbe8'; tear(0.36);
+  return c;
+}
+
+/** A stone bowl on a pillar, a fire in it lighting the court. */
+function brazier(tx, ty, L, fire) {
+  const x = tileX(tx), z = tileZ(ty), stone = std({ color: L.stone[1], roughness: 0.9 }), dark = std({ color: L.stone[3], roughness: 0.9 });
+  mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.95, 10), stone, x, 0.475, z);
+  mesh(new THREE.CylinderGeometry(0.34, 0.2, 0.22, 14), dark, x, 1.04, z);
+  const flame = sprite(flameArt(fire), 0.5);
+  flame.visible = true;
+  flame.center.set(0.5, 0);
+  flame.position.set(x, 1.1, z);
+  const light = new THREE.PointLight('#ffb060', 2.2, 4.5, 1.6);
+  light.position.set(x, 1.6, z);
+  B.group.add(light);
+  B.blocked.add(key(tx, ty));
+  return { flame, light, seed: tx };
+}
+
+async function buildGym(figs, { look: L, time, biome }) {
+  const ink = GYM_INK[biome] || '#e85848';
+  const rnd = wild(L, time, { to: 1, trees: [[0, 0, 1.4], [10, 0, 1.3], [0, 3, 1.1], [10, 3, 1.2], [0, 6, 1], [10, 6, 1]], exit: false, ground: court(ink) });
+  B.shotTop = 4.4;
+  // the dais, a red carpet up it
+  const top = 0.36, dz = tileZ(0.5);
+  mesh(rbox(3.4, top, 1.95, 0.08), std({ color: L.stone[1], roughness: 0.85 }), 0, top / 2, dz);
+  mesh(rbox(3.6, 0.12, 2.1, 0.05), std({ color: L.stone[3], roughness: 0.9 }), 0, 0.06, dz);
+  mesh(new THREE.BoxGeometry(1.1, 0.02, 1.95), std({ color: shadeOf(ink, -1), roughness: 0.9 }), 0, top + 0.01, dz).raycast = () => {};
+  for (let x = 4; x <= 6; x++) for (let y = 0; y <= 1; y++) B.blocked.add(key(x, y));
+  // the board behind, on two posts
+  const post = std({ color: '#3a2e34', roughness: 0.7 });
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.07, 4.2, 8), post, s * 1.5, 2.1, BACK_Z + 0.45);
+  panel(gymSignArt(ink), 3.4, 1.06, 0, 3.75, BACK_Z + 0.5).castShadow = true;
+  // banners either side of the dais
+  for (const tx of [3, 7]) {
+    const x = tileX(tx), z = tileZ(0.3);
+    mesh(new THREE.CylinderGeometry(0.035, 0.04, 2.7, 8), post, x, 1.35, z);
+    mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: '#f8d860', metalness: 0.6, roughness: 0.3 }), x, 2.74, z);
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.8, 6), post, x, 2.5, z + 0.04).rotation.z = Math.PI / 2;
+    panel(gymBannerArt(ink), 0.72, 1.5, x, 1.74, z + 0.05).castShadow = true;
+    B.blocked.add(key(tx, 0));
+  }
+  const fires = [brazier(2, 1, L, L.drift?.[1] || '#f8a040'), brazier(8, 1, L, L.drift?.[1] || '#f8a040')];
+  // tufts round the court, never on it
+  const court0 = [];
+  for (let x = 2; x <= 8; x++) for (let y = 2; y <= 7; y++) if (!B.blocked.has(key(x, y))) { B.blocked.add(key(x, y)); court0.push(key(x, y)); }
+  tufts(L, 40, rnd);
+  for (const k of court0) B.blocked.delete(k);
+  // the leader on the dais; a tap on them walks you up to talk
+  B.who.npc = await figure('npc', figs.npc, { x: 5, ty: 1, y: top, dz: -0.1, scale: 0.92 });
+  B.who.npc.group.traverse(o => { o.userData.spot = 0; });
+  B.spots = [{ step: { x: 5, y: 2 } }];
+  B.anchors[0] = new THREE.Vector3(0, top + B.who.npc.top * 0.92 + 0.3, tileZ(1) - 0.1);
+  // the sparkle as they light up
+  const sparks = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4b0' : ink), 0.24));
+  let fly = null, from = 0;
+  B.shine = () => { if (calm) return; from = performance.now(); fly = burst(sparks, new THREE.Vector3(0, top + 0.6, tileZ(1)), { spread: 0.7, rise: 1.6 }); };
+  B.ticks.push((now) => {
+    for (const f of fires) {
+      const k = calm ? 0 : Math.sin(now / 90 + f.seed) * 0.5 + Math.sin(now / 37 + f.seed * 3) * 0.5;
+      f.flame.scale.set(0.42 + k * 0.04, 0.66 + k * 0.1, 1);
+      f.light.intensity = 2.2 + k * 0.4;
+    }
+    if (!fly) return;
+    const k = Math.min(1, (now - from) / 1300);
+    fly(k);
+    if (k >= 1) { fly = null; for (const s of sparks) s.visible = false; }
+  });
+}
+
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -2575,13 +2714,13 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
     B = { kind, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS };
     const b = B;
-    await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome });
+    await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader });
     B = null;
     await warmShaders(renderer, b.group, camera, scene);
     return b;
@@ -2591,8 +2730,8 @@ function room(kind, figs, at = {}) {
 }
 
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
-export function preloadEvent(kind, at = {}) {
-  if (BUILD[kind] && kind !== 'rocket') room(kind, {}, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha
+export function preloadEvent(kind, at = {}, figs = {}) {
+  if (BUILD[kind] && kind !== 'rocket') room(kind, figs, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha
 }
 
 /** Lays the 3D room `o.kind` under the event room eventRoom() just showed. `o`: { kind, run, node (to tell coming back from a
@@ -2604,7 +2743,7 @@ export async function mountEvent(o) {
   visit = { node: o.node, run: o.run };
   opts = o;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type });
+  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader });
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   if (R !== next) {
@@ -2619,6 +2758,7 @@ export async function mountEvent(o) {
     mat = R.mat;
   }
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
+  R.who.npc?.setDark?.(!!o.dark);   // a Gym Leader you haven't beaten: their silhouette till they speak
   R.held = false;
   document.body.classList.remove('ev3d-held');
   R.noExit = !!R.lockedExit && !o.spent;   // Team Rocket's way out opens once you've paid or run
@@ -2676,6 +2816,14 @@ const controls = {
       act.start?.call(act, opts);
       acting = { name, act, from: performance.now(), ms: of(act.ms), cues: cues.map(c => [...c]), done };
     });
+  },
+  /** A Gym Leader's silhouette lit up as they start to speak, with a sparkle. */
+  light() {
+    const who = R?.who.npc;
+    if (!who?.dim || !alive()) return;
+    who.setDark(false);
+    playSound('stat-up');
+    R.shine?.();
   },
   /** Someone in the room reacts (figureDoes()). */
   does(stand, move) {

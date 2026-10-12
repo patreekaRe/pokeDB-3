@@ -349,14 +349,22 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `66c8991`, 2026-10-12, the user's ask: their
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: the 3D gym's, 2026-10-12, the user's ask: their
   12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
   **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
   boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
   and the badge spinning in, before the rewards / ending), 12 Gym Badges (`save.gym[id]` win counts, Badge Case group
   `gym`, `GYM_LOOK` in `js/trainercard.js`), the crossroads boards' "Gym Leaders" section (`roadInfo().leaders` in
   `js/crossroads.js`: shadow and ??? till beaten, their bosses under them). All fight as Normal. Eternatus, Safari bosses
-  and Sky Pillar guardians have none. Playtest `?gym=<id>` (`&n=2` their second boss, `peekGym()` in `js/run.js`).
+  and Sky Pillar guardians have none. Playtest `?gym=<id>` (`&n=2` their second boss, `&hp=0.05` a quick win, `peekGym()` in `js/run.js`).
+  **The 3D gym** (2026-10-12, the user's go): the boss room is walked first, `gymRoom()` in `js/run.js` over `buildGym()` in
+  `js/event-3d.js` (kind `gym`, one a biome and leader: the biome's wild ground with a battle court painted on it, a stone
+  dais with the leader, banners in `GYM_INK`'s colour, two braziers, the POKéMON GYM board); a tap on the leader walks you up,
+  they light up from a silhouette (`setDark()` / `light()`) and talk in the speech window, the last line starts the fight
+  (the battle skips its own talk, `leaderTalked`); after a win you're back in it for their last words and the badge
+  (`badgePop()` in `js/gym.js`), the doormat on to the rewards. `?event2d` or no Three.js keeps the old overlay talk
+  (`gymTalk()`). The map shows the leader over the boss room in place of the boss (`gymOnMap()`, renderMap's `gym`), in
+  colour once beaten.
   **The user's placement** (2026-10-12; the first of each biome has two bosses; badge names are placeholders):
 
   | Biome | Leader (id) | Bosses | Badge |
@@ -379,8 +387,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
-  Case. Then, on the user's OK: merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned):
-  https://rawcdn.githack.com/patreekaRe/pokeDB-3/66c8991fd7fef48520ad1c9f87c55270a78e64c2/index.html?gym=britt
+  Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome. Then, on the user's OK:
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): see the latest commit on the branch,
+  `https://rawcdn.githack.com/patreekaRe/pokeDB-3/<commit>/index.html?gym=britt&hp=0.05`
   ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
