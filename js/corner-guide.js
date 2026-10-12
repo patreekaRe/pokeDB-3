@@ -5,20 +5,28 @@
 import { el } from './ui.js';
 import { playSound } from './audio.js';
 import { openPanel, key } from './corner-panel.js';
-import { PLAYS, DAILY_CAP, GAME_CAP } from './data/corner.js';
+import { PLAYS, DAILY_CAP, GAME_CAP, QUIZ_LEN } from './data/corner.js';
 import { ARCADE_GAMES } from './data/leaderboard.js';
 import { potWon, gameWon, STAMPS } from './corner-pot.js';
-import { playsLeft } from './casino-pot.js';
+import { playsLeft, puzzlesPlayed } from './casino-pot.js';
+import { stampState } from './scratch.js';
 
-const PAYING = [
-  ['slots', 'Slot machines', `${PLAYS.slots} paying spins`],
-  ['plinko', 'Poké Ball Plinko', `${PLAYS.plinko} paying drops`],
-  ['bj', 'Blackjack', `${PLAYS.bj} paying hands`],
-  ['hl', 'High-Low', `${PLAYS.hl} paying hands`],
-  ['voltorb', 'Voltorb Flip', `${PLAYS.voltorb} paying rounds`],
-  ['quiz', "Who's That Pokémon?", '1 round of 5'],
-  ['scratch', 'Scratch card', `fill the stamp card (${STAMPS} games)`],
-];
+/** Each paying game's row: its name and how far through today's paying plays you are (the user's ask, 2026-10-12: the
+    quiz read "1 round of 5" after all five were answered, and a scratched stamp card never said it was complete). */
+function paying() {
+  const done = puzzlesPlayed(), st = stampState();
+  const left = (id, n, what) => [`${n} paying ${what} · ${playsLeft(id)} left`, playsLeft(id) === 0];
+  return [
+    ['slots', 'Slot machines', ...left('slots', PLAYS.slots, 'spins')],
+    ['plinko', 'Poké Ball Plinko', ...left('plinko', PLAYS.plinko, 'drops')],
+    ['bj', 'Blackjack', ...left('bj', PLAYS.bj, 'hands')],
+    ['hl', 'High-Low', ...left('hl', PLAYS.hl, 'hands')],
+    ['voltorb', 'Voltorb Flip', `${PLAYS.voltorb} paying rounds · ${PLAYS.voltorb - done.voltorb} left`, done.voltorb >= PLAYS.voltorb],
+    ['quiz', "Who's That Pokémon?", done.quiz >= QUIZ_LEN ? `${QUIZ_LEN} of ${QUIZ_LEN} answered · done` : `${done.quiz} of ${QUIZ_LEN} answered`, done.quiz >= QUIZ_LEN],
+    ['scratch', 'Scratch card', st.paid ? 'Stamp card complete · scratched'
+      : st.ready ? 'Stamp card complete! Tap Meowth for it' : `stamp card ${st.n} of ${STAMPS} games`, st.paid],
+  ];
+}
 
 function section(title, ...rest) {
   const s = el('section', 'gd-sec');
@@ -40,10 +48,9 @@ export function openGuide(onClose) {
   bar.append(fill, el('b', '', `${won} / ${DAILY_CAP} PokéCoins won today`));
 
   const list = el('ul', 'gd-list');
-  for (const [id, name, plays] of PAYING) {
-    const li = el('li', 'gd-row');
-    const left = ['slots', 'plinko', 'bj', 'hl'].includes(id) ? ` · ${playsLeft(id)} left` : '';
-    li.append(el('span', 'gd-name', name), el('span', 'gd-plays', `${plays}${left}`), el('span', 'gd-won', `${gameWon(id)} won`));
+  for (const [id, name, plays, done] of paying()) {
+    const li = el('li', `gd-row${done ? ' done' : ''}`);
+    li.append(el('span', 'gd-name', `${done ? '✓ ' : ''}${name}`), el('span', 'gd-plays', plays), el('span', 'gd-won', `${gameWon(id)} won`));
     list.append(li);
   }
 

@@ -13,6 +13,7 @@ import { towerWeekly, FLIGHT, TOP_FLOOR } from './data/tower.js';
 import { STARTERS, STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { getSave } from './storage.js';
+import { timeLeft } from './missions.js';
 import { cloudConfigured } from './cloud.js';
 import { boardApp, towerTop } from './leaderboard.js';
 import { bootDevice } from './device-boot.js';
@@ -164,7 +165,7 @@ export function openTowerPrep() {
   const thisWeek = t.week === weekly.week;
   const first = !(thisWeek && t.tries);
   const name = weekly.starter.line[0].name;
-  $('tower-week').textContent = `Week of ${weekLabel(weekly.week)}`;
+  $('tower-week').textContent = `Week of ${weekLabel(weekly.week)} · new in ${timeLeft('weekly')}`;
   const mon = $('tower-mon');
   mon.src = spriteUrl(weekly.starter, 'front', 0);
   mon.alt = name;

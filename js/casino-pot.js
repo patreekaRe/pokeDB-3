@@ -3,7 +3,7 @@
    (js/corner-pot.js). Nobody bets (2026-10-12, the user's call): a play stakes STAKE of Meowth's house chips and pays
    what they win. Kept in `save.corner.bets` ({ day, plays }); a game's hand in progress is its own field there. */
 
-import { PLAYS, DAILY_CAP, GAME_CAP, RECORDS } from './data/corner.js';
+import { PLAYS, DAILY_CAP, GAME_CAP, RECORDS, QUIZ_LEN } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el } from './ui.js';
@@ -22,6 +22,24 @@ const write = (b) => updateSave(d => { d.corner = { ...d.corner, bets: b }; });
 export const playsLeft = (game) => Math.max(0, PLAYS[game] - (today().plays[game] ?? 0));
 /** Would `game`'s next play pay? */
 export const paysNow = (game) => playsLeft(game) > 0 && canPay(game);
+
+/** Rounds of Voltorb Flip (of PLAYS.voltorb) and questions of today's quiz (of QUIZ_LEN) played today. */
+export function puzzlesPlayed() {
+  const c = getSave().corner ?? {}, day = safariDay();
+  const v = c.voltorb?.day === day ? c.voltorb.round : 0;
+  const q = c.quiz?.day === day ? (c.quiz.round >= 1 ? QUIZ_LEN : c.quiz.q ?? 0) : 0;
+  return { voltorb: Math.min(PLAYS.voltorb, v), quiz: Math.min(QUIZ_LEN, q) };
+}
+
+/** Has `game` (a pot key: slots, plinko, bj, hl, voltorb, quiz) still a paying play today? The Game Corner's "!" over it
+    stays until it hasn't (the user's ask, 2026-10-12). */
+export function stillPays(game) {
+  if (!canPay(game)) return false;
+  const done = puzzlesPlayed();
+  if (game === 'voltorb') return done.voltorb < PLAYS.voltorb;
+  if (game === 'quiz') return done.quiz < QUIZ_LEN;
+  return playsLeft(game) > 0;
+}
 
 /** A new play of `game`: { day, n } (its seed) and whether it pays (`paid`); past that it's for fun. */
 export function stake(game) {

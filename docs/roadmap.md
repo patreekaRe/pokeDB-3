@@ -273,8 +273,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           table behind one no longer cuts across it; a little PC on the counter's right end with a bobbing "!" opens the Game
           Corner guide (`js/corner-guide.js`: what pays today and how much is left of the 500, the arcade and its weekly
           boards, taking games home, the stamp card, the showcases). Then a mini "!" over each paying game (slots, Plinko,
-          Blackjack, High-Low, Voltorb Flip, Who's That), down once that game is opened, back each UTC day (`pipsSeen()` in
-          `js/mall-corner.js`, per device in `pokedb.cornerPips`).
+          Blackjack, High-Low, Voltorb Flip, Who's That), hopping now and down only once that game's paying plays are used up
+          or its coins capped (`stillPays()` in `js/casino-pot.js`, rechecked every 3 s and after a game closes; the user's
+          ask, same day). Then an hourglass on the counter's left end, opposite the guide PC, always turning: walk within 2
+          tiles and a bubble over it counts down to UTC midnight, a tap walks up and Meowth says the time left and the day's
+          coins (`timer` / `untilReset()` in `js/mall-corner.js`; a place's `tick(now, dt, hud)` and `leave()` in
+          `js/mall-3d.js`, a game's `talkOnly`). The guide's rows say plays left for every game, the quiz "n of 5 answered",
+          the stamp card "complete", a ✓ on finished ones (`puzzlesPlayed()`).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
      d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked

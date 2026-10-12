@@ -13,7 +13,9 @@ import { furnitureModel } from './base-mesh.js';
 import { PIECES } from './base-furniture.js';
 import { fine, texOf, words, star, GC, newsArt } from './hub-3d.js';
 import { pcModel, livePc } from './hub-pc.js';
-import { safariDay } from './data/safari.js';
+import { stillPays } from './casino-pot.js';
+import { potWon } from './corner-pot.js';
+import { DAILY_CAP } from './data/corner.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
 import { PLINKO_PAYS } from './data/casino.js';
@@ -424,12 +426,11 @@ function boardScreen(c, boards, at) {
   });
 }
 
-/** The paying games opened today on this device, so their "!" stays down until the next UTC day. */
-function pipsSeen() {
-  try { const p = JSON.parse(localStorage.getItem('pokedb.cornerPips') || '{}'); return p.day === safariDay() ? p.seen : []; } catch { return []; }
-}
-function pipSeen(id) {
-  try { const seen = pipsSeen(); if (!seen.includes(id)) localStorage.setItem('pokedb.cornerPips', JSON.stringify({ day: safariDay(), seen: [...seen, id] })); } catch { /* private mode: shown again */ }
+/** Time left till the UTC day turns over and every game pays again: "5h 12m", or "4:59" in the last hour. */
+function untilReset(now = Date.now()) {
+  const d = new Date(now), next = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
+  const sec = Math.max(0, Math.ceil((next - now) / 1000)), h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, ss = sec % 60;
+  return { h, m, s: ss, short: h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}:${String(ss).padStart(2, '0')}` };
 }
 
 /* ---------- pictures ---------- */
@@ -718,7 +719,7 @@ export function buildCorner(THREE, size) {
     top.position.set(arm.position.x, 0.84, arm.position.z);
     desk.add(arm, top);
   }
-  for (const [x, n] of [[-1.45, 4], [-1.2, 2], [1.3, 3]]) for (let i = 0; i < n; i++) {   // stacks of coins
+  for (const [x, n] of [[-1.05, 4], [-0.8, 2], [1.3, 3]]) for (let i = 0; i < n; i++) {   // stacks of coins
     const c = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.035, 14), gold);
     c.position.set(x, 0.9 + i * 0.037, 0.12);
     desk.add(c);
@@ -747,6 +748,58 @@ export function buildCorner(THREE, size) {
   guide.frame = { x: tileX(COUNTER.x + 2) + 1.62, y: 1.28, z: deskZ + 0.22, w: 0.62, h: 0.85 };
   spots.push(guide);
   ticks.push((now) => { livePc(now); bang.position.y = 2.0 + Math.sin(now / 320) * 0.06; });
+  // an hourglass on the counter's other end, opposite the guide PC, always turning (the user's ask, 2026-10-12): walk
+  // near and a bubble over it counts down to the UTC midnight that resets every game's paying plays; a tap walks up to it
+  const timer = { id: 'timer', kind: 'game', name: 'Reset timer', open: true, line: 'Reset timer', step: { x: COUNTER.x, y: COUNTER.y + 1 } };
+  timer.game = { name: timer.name, talkOnly: true,
+    get line() {
+      const t = untilReset(), won = Math.min(potWon(), DAILY_CAP);
+      return `The games reset in ${t.short}, meow! That's midnight UTC: every game pays again and the stamp card starts over. You've won ${won} of today's ${DAILY_CAP}.`;
+    },
+    open: (done) => done?.() };
+  const hour = new THREE.Group(), turn = new THREE.Group();
+  hour.position.set(-1.62, 0.88, -0.02);
+  hour.scale.setScalar(1.5);
+  turn.position.y = 0.27;
+  hour.add(turn);
+  const glassProfile = [[0.012, 0], [0.05, 0.03], [0.12, 0.1], [0.135, 0.17], [0.115, 0.22], [0.02, 0.232]];
+  const lathe = [...glassProfile.slice().reverse().map(([x, y]) => new THREE.Vector2(x, -y)), ...glassProfile.slice(1).map(([x, y]) => new THREE.Vector2(x, y))];
+  const glass = new THREE.Mesh(new THREE.LatheGeometry(lathe, 24), new THREE.MeshStandardMaterial({ color: '#bfe8ff', transparent: true, opacity: 0.28, roughness: 0.1, metalness: 0.2, depthWrite: false, side: THREE.DoubleSide }));
+  const sandMat = std({ color: '#ffd84a', emissive: new THREE.Color('#ffb020'), emissiveIntensity: 0.7, roughness: 0.7 });
+  const topSand = new THREE.Mesh(new THREE.ConeGeometry(0.11, 0.17, 20).rotateX(Math.PI).translate(0, 0.085, 0), sandMat);
+  topSand.position.y = 0.02;
+  const pile = new THREE.Mesh(new THREE.ConeGeometry(0.105, 0.1, 20).translate(0, 0.05, 0), sandMat);
+  pile.position.y = -0.225;
+  const stream = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.24, 6).translate(0, -0.12, 0), sandMat);
+  stream.position.y = 0.02;
+  turn.add(topSand, pile, stream, glass);
+  for (const sy of [-1, 1]) {
+    const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.035, 24), gold);
+    plate.position.y = sy * 0.252;
+    turn.add(plate);
+  }
+  for (let i = 0; i < 3; i++) {
+    const a = (i / 3) * Math.PI * 2 + 0.5, post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.5, 6), gold);
+    post.position.set(Math.cos(a) * 0.15, 0, Math.sin(a) * 0.15);
+    turn.add(post);
+  }
+  hour.traverse(o => { o.userData.front = timer; });
+  desk.add(hour);
+  timer.frame = { x: tileX(COUNTER.x + 2) - 1.62, y: 1.3, z: deskZ + 0.22, w: 0.65, h: 0.9 };
+  spots.push(timer);
+  const FLOW = 7000, FLIP = 800;
+  ticks.push((now) => {
+    const t = now % (FLOW + FLIP), k = Math.min(1, t / FLOW), f = Math.max(0, (t - FLOW) / FLIP);
+    topSand.scale.setScalar(Math.max(0.001, Math.cbrt(1 - k)));
+    pile.scale.setScalar(Math.max(0.001, Math.cbrt(k)));
+    stream.visible = k > 0.02 && k < 0.99;
+    turn.rotation.z = f ? Math.PI * (f * f * (3 - 2 * f)) : 0;
+    hour.rotation.y = Math.sin(now / 1800) * 0.25;
+  });
+  let bubble = null, said = '';
+  const top = new THREE.Vector3();
+  const showBubble = (on) => { if (bubble) bubble.hidden = !on; };
+
   group.add(desk);
   const keeperZ = deskZ - DD / 2 - 0.42;
 
@@ -790,26 +843,35 @@ export function buildCorner(THREE, size) {
     if (now >= lb.next) { if (lb.next) lb.at += 1; lb.next = now + 4500; paintBoard(); }
   });
 
-  // a mini "!" over every game that pays today, gone once that game is opened, back the next UTC day (the user's ask,
-  // 2026-10-12); all the slot machines share one, as do the Plinko boards
-  const PAYS = new Map([[CASINO.slots, 'slots'], [CASINO.plinko, 'plinko'], [CASINO.blackjack, 'blackjack'], [CASINO.highlow, 'highlow'], [GAMES.voltorb, 'voltorb'], [GAMES.quiz, 'quiz']]);
+  // a mini "!" hopping over every game while it still has paying plays today, gone once they're used up or the day's
+  // coins are all won, back the next UTC day (the user's asks, 2026-10-12); every slot machine and Plinko board has one
+  const PAYS = new Map([[CASINO.slots, 'slots'], [CASINO.plinko, 'plinko'], [CASINO.blackjack, 'bj'], [CASINO.highlow, 'hl'], [GAMES.voltorb, 'voltorb'], [GAMES.quiz, 'quiz']]);
   const pipTex = texOf(newsArt()), pips = [];
+  const syncPips = () => { const on = {}; for (const p of pips) p.visible = on[p.userData.game] ??= stillPays(p.userData.game); };
   for (const spot of spots) {
     const id = PAYS.get(spot.game), f = spot.frame;
     if (!id || !f) continue;
     const gm = spot.game;
-    spot.game = { ...gm, open: (done) => { pipSeen(id); pips.forEach(p => { p.visible = !pipsSeen().includes(p.userData.game); }); return gm.open(done); } };
+    spot.game = { ...gm, open: (done) => gm.open((...a) => { syncPips(); done?.(...a); }) };
     const pip = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.34), new THREE.MeshBasicMaterial({ map: pipTex, transparent: true, alphaTest: 0.1, toneMapped: false }));
     pip.rotation.x = -0.6;
     pip.position.set(f.x, f.y + f.h / 2 + 0.28, f.z);
     pip.userData = { game: id, y: pip.position.y, k: pips.length };
     pip.raycast = () => {};
-    pip.visible = !pipsSeen().includes(id);
     group.add(pip);
     pips.push(pip);
   }
+  syncPips();
+  redraws.push(syncPips);
+  let pipsAt = 0;
   ticks.push((now) => {
-    for (const p of pips) if (p.visible) p.position.y = p.userData.y + Math.sin(now / 320 + p.userData.k) * 0.05;
+    if (now - pipsAt > 3000) { pipsAt = now; syncPips(); }   // a play's coins, or midnight UTC
+    for (const p of pips) {
+      if (!p.visible) continue;
+      const t = ((now / 700 + p.userData.k * 0.37) % 1), up = Math.sin(t * Math.PI);
+      p.position.y = p.userData.y + up * 0.16;
+      p.scale.set(1 + (1 - up) * 0.12 * (t < 0.15 || t > 0.85 ? 1 : 0), 1 - (1 - up) * 0.12 * (t < 0.15 || t > 0.85 ? 1 : 0), 1);
+    }
   });
 
   const ring = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: texOf(frameArt()), transparent: true, depthWrite: false }));
@@ -821,8 +883,31 @@ export function buildCorner(THREE, size) {
     group, blocked, spots, frame: ring, top: 4.7, title: 'Game Corner', light: 0.6, cols, rows, door: DOOR,
     keeper: { ...KEEPER, x: tileX(COUNTER.x + 2), z: keeperZ, lift: 0.6 },
     refresh: () => redraws.forEach(r => r()),
-    tick(now) {
+    leave: () => showBubble(false),
+    tick(now, dt, hud) {
       ticks.forEach(t => t(now));
+      if (hud) {   // the reset timer's bubble, while your partner is within a couple of tiles of it
+        const me = hud.partner(), near = Math.abs(me.tile.x - timer.step.x) + Math.abs(me.tile.y - timer.step.y) <= 2;
+        if (near && (!bubble || !bubble.isConnected)) {
+          bubble = document.createElement('p');
+          bubble.className = 'spook-bubble crowd-bubble timer-bubble';
+          bubble.innerHTML = '<b class="mall-who">⏳ Reset</b><span></span>';
+          bubble.hidden = true;
+          hud.stage.append(bubble);
+          said = '';
+        }
+        if (bubble) {
+          if (near) {
+            const text = `New coins in ${untilReset().short}`;
+            if (text !== said) { bubble.lastChild.textContent = said = text; }
+            hour.getWorldPosition(top); top.y += 0.9;
+            const r = hud.view.getBoundingClientRect(), o = hud.stage.getBoundingClientRect(), v = top.project(hud.camera);
+            bubble.style.left = `${r.left - o.left + (v.x + 1) / 2 * r.width}px`;
+            bubble.style.top = `${r.top - o.top + (1 - v.y) / 2 * r.height}px`;
+            if (bubble.hidden) { bubble.hidden = false; bubble.classList.remove('spook-in'); void bubble.offsetWidth; bubble.classList.add('spook-in'); }
+          } else bubble.hidden = true;
+        }
+      }
       for (const sc of screens) if (!sc.held && now >= sc.next) { sc.at += 1; sc.next = now + CYCLE; sc.paint(); }
       sign.scale.setScalar(stampState().ready ? 1 + Math.max(0, Math.sin(now / 220)) * 0.04 : 1);
     },
