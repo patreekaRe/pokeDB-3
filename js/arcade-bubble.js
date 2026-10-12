@@ -2,8 +2,10 @@
    place of Unown Word Search), after Puzzle Bobble: Squirtle fires coloured bubbles up into a cluster hanging from the
    ceiling. Three or more of a colour touching pop, and any bubbles left hanging from nothing fall for a bonus. Every few
    shots the ceiling drops a new row; a bubble past the line at the bottom ends it. Endless, faster rows as it goes.
-   Aim with the cabinet's joystick (or the arrow keys) and press SHOOT (or Space): a tap on the screen never aims or fires
-   (the user's call, 2026-10-12), it only swaps the two bubbles at the bottom. The dotted path shows for the first
+   Aim with the cabinet's ◀ ▶ buttons (or the arrow keys) and press SHOOT (or Space): a tap on the screen never aims or fires
+   (the user's call, 2026-10-12), it only swaps the two bubbles at the bottom. Buttons, not the joystick (the user's ask, the
+   same day): a stick leaning low sent "down", which swapped the bubbles by itself. The launcher stays drawn while a shot
+   flies and the swap mark is a drawn path, not a glyph: both flickered on phones. The dotted path shows for the first
    AIM_SHOTS shots, then only the launcher's beam. The sea behind is painted once a scale (`seabed()`). Bubbles are drawn from sprites cached per colour and scale (a gradient each a frame lagged on phones), and a
    new row slides the cluster down instead of jumping. */
 
@@ -15,6 +17,20 @@ const POP = 10, DROP = 20, AIM_SHOTS = 3, SWAP_X = W / 2 + 62;
 /* the bubbles' colours: water, fire, grass, electric, psychic, and their glyphs */
 const COLOURS = [['#3a8ae8', '#a8d4ff'], ['#e8523a', '#ffb8a0'], ['#4ab84a', '#b8f0a8'], ['#f0c020', '#fff0a0'], ['#b060d0', '#e8c0ff']];
 const TAU = Math.PI * 2;
+
+/** The swap mark between the two bubbles: two arrows passing each other, drawn as paths (the ⇄ glyph flickered on iOS). */
+function swapMark(g, x, y) {
+  g.save();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (const [w, c] of [[5, 'rgba(0, 0, 0, 0.75)'], [2.2, '#ffd84a']]) {
+    g.strokeStyle = c; g.lineWidth = w;
+    g.beginPath();
+    g.moveTo(x - 7, y - 3); g.lineTo(x + 7, y - 3); g.moveTo(x + 4, y - 6); g.lineTo(x + 7, y - 3); g.lineTo(x + 4, y);
+    g.moveTo(x + 7, y + 4); g.lineTo(x - 7, y + 4); g.moveTo(x - 4, y + 1); g.lineTo(x - 7, y + 4); g.lineTo(x - 4, y + 7);
+    g.stroke();
+  }
+  g.restore();
+}
 
 const sprites = new Map();
 /** One bubble painted once at a scale, `r` units round, its canvas 1 unit wider each side. */
@@ -72,10 +88,11 @@ function seabed(scale) {
 
 export const openBubble = (onClose) => runArcade({
   id: 'bubble', title: 'Squirtle Bubble Shooter', colour: '#3a8ae8', W, H,
-  intro: 'Match three bubbles to pop them! Aim with the joystick, then press SHOOT.',
-  go: 'Joystick to aim, SHOOT to fire. Tap the bubbles at the bottom to swap colours.',
+  intro: 'Match three bubbles to pop them! Aim with ◀ ▶, then press SHOOT.',
+  go: '◀ ▶ to aim, SHOOT to fire. Tap the bubbles at the bottom to swap colours.',
+  keys: { left: [['◀', 'left'], ['▶', 'right']] },
   pad: [['SHOOT', 'fire']],
-  help: [['Push the joystick left or right to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap the bubbles at the bottom to swap.', 'The one in Squirtle\'s hands and the NEXT one trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!']],
+  help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap the bubbles at the bottom to swap.', 'The one in Squirtle\'s hands and the NEXT one trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!']],
   make(api) {
     let rows = [], flip = 0, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
     const falling = [], bursts = [];
@@ -210,7 +227,7 @@ export const openBubble = (onClose) => runArcade({
 
     return {
       tick(dt) {
-        // the stick turns slowly at first for fine aim, then faster the longer it's held
+        // the aim turns slowly at first for fine aim, then faster the longer it's held
         const turn = (pressed.right ? 1 : 0) - (pressed.left ? 1 : 0);
         held = turn ? held + dt : 0;
         const rate = 0.7 + Math.min(1.5, held * 2.2);
@@ -262,13 +279,13 @@ export const openBubble = (onClose) => runArcade({
             g.beginPath(); g.arc(x, y, i % 2 ? 1.6 : 2.4, 0, TAU); g.fill();
           }
         }
-        if (!shot) arrow(g, now);
+        arrow(g, now);
         drawMon(g, 'squirtle', GUN[0] - 34, H - 4, 50);
         bubble(g, GUN[0], GUN[1], cur);
         if (shot) bubble(g, shot.x, shot.y, shot.colour);
         bubble(g, SWAP_X, GUN[1] + 14, next, R * 0.8);
         banner(g, 'NEXT', SWAP_X, GUN[1] - 8, 9, '#a8d4ff');
-        banner(g, '⇄', (GUN[0] + SWAP_X) / 2 + 2, GUN[1] + 8, 15, '#ffd84a');
+        swapMark(g, (GUN[0] + SWAP_X) / 2 + 2, GUN[1] + 8);
         banner(g, 'TAP TO SWAP', (GUN[0] + SWAP_X) / 2 + 4, H - 9, 9, '#ffd84a');
         banner(g, `Row in ${pushEvery() - (shots % pushEvery())}`, 40, H - 22, 11, '#ffffff');
       },

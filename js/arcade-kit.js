@@ -349,7 +349,8 @@ export function runArcade(def, onClose) {
     const st = cv.parentElement;
     const w = fixed || Math.max(120, Math.floor(Math.min(st.clientWidth, st.clientHeight * def.W / def.H))) || 360;
     const dpr = Math.min(1.5, devicePixelRatio || 1), cw = Math.round(w * dpr), ch = Math.round(w * def.H / def.W * dpr);
-    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+    // resizing clears the canvas, so it is painted again at once rather than shown blank till the next frame
+    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; if (last) paint(performance.now()); }
     cv.style.width = `${w}px`;
     cv.style.height = `${w * def.H / def.W}px`;
   }
@@ -387,6 +388,11 @@ export function runArcade(def, onClose) {
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (state === 'play' && !help) game.tick?.(dt, now);
+    paint(now);
+    raf = requestAnimationFrame(frame);
+  }
+
+  function paint(now) {
     const s = cv.width / def.W;
     g.setTransform(s, 0, 0, s, 0, 0);
     g.clearRect(0, 0, def.W, def.H);
@@ -397,7 +403,6 @@ export function runArcade(def, onClose) {
       banner(g, state === 'over' ? `${score.toLocaleString()}` : def.title.toUpperCase(), def.W / 2, def.H * (state === 'over' ? 0.52 : 0.42), def.W / (state === 'over' ? 8 : 11), '#fff', def.W * 0.9);
       if (!calm || state === 'ready') banner(g, 'TAP TO PLAY', def.W / 2, def.H * 0.64, def.W / 18, `rgba(255, 255, 255, ${0.6 + 0.4 * Math.sin(now / 250)})`);
     }
-    raf = requestAnimationFrame(frame);
   }
 
   render();
