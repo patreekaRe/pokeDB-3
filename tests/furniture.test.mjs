@@ -26,6 +26,13 @@ test('a fresh save has nothing; an old one has what its lists prove', () => {
   assert.deepEqual(kinds(save), ['plasmaglobe', 'torchicdoll']);
 });
 
+test('a Game Corner prize is owned once swapped for, and says where to get it', () => {
+  const save = { ...fresh(), corner: { prizes: ['slotmachine'] } };
+  assert.ok(kinds(save).includes('slotmachine'));
+  assert.ok(!kinds(save).includes('casinorug'));
+  assert.match(howToEarn(FURNITURE_BY_KIND.casinorug, save), /prize counter/);
+});
+
 test('how a kind is earned, secret ones hidden until they are', () => {
   const save = fresh();
   assert.match(howToEarn(FURNITURE_BY_KIND.stump, save), /Clearing Badge/);

@@ -8,7 +8,9 @@ import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { STAKE } from './data/corner.js';
-import { stake, settle, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { stake, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { record } from './corner-pot.js';
+import { getSave, updateSave } from './storage.js';
 
 let panel = null, bet = STAKE, hand = null, result = null;
 
@@ -61,7 +63,7 @@ function render() {
   }
   const box = el('div', 'vf-panel bj-panel');
   box.append(head, tableMeters('bj'), felt);
-  box.append(say, keys);
+  box.append(say, bestLine(['bjStreak']), keys);
   panel.root.replaceChildren(box);
 }
 
@@ -96,8 +98,13 @@ const stand = () => finish();
 function finish() {
   const { player, dealer, deck } = cards(hand);
   const final = handValue(player).total > 21 ? dealer : dealerPlays(dealer, deck);
-  const ret = blackjackReturn(player, final), chips = Math.floor(hand.bet * ret), pay = settle(chips, 'bj', hand.paid);
-  const won = hand.paid ? `${pay} PokéCoins` : `${chips} chips, for fun`;
+  const ret = blackjackReturn(player, final), res = settle(hand.bet * ret, 'bj', hand.paid);
+  const won = wonText(res, hand.paid);
+  if (ret !== 1) {   // a push keeps the streak going
+    const streak = ret > 1 ? (getSave().corner?.bjStreak ?? 0) + 1 : 0;
+    updateSave(d => { d.corner = { ...d.corner, bjStreak: streak }; });
+    if (streak) record('bjStreak', streak);
+  }
   keepHand('bj', { ...hand, over: true });
   const p = handValue(player).total, d = handValue(final).total;
   const line = p > 21 ? `Bust at ${p}! Meowth takes it.` : ret === 2.5 ? `Blackjack! You win ${won}.` : ret === 2 ? `${d > 21 ? `Meowth busts at ${d}!` : `${p} beats ${d}!`} You win ${won}.` : ret === 1 ? `Push at ${p}: ${won}.` : isBlackjack(final) ? 'Meowth has Blackjack. Meow-ha!' : `Meowth's ${d} beats your ${p}.`;

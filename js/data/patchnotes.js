@@ -43,7 +43,11 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'The Game Corner no longer takes bets: every game is free. Each has a few plays a day that pay PokéCoins (5 spins, 4 Plinko drops, 3 hands each of Blackjack and High-Low, 2 Voltorb Flip rounds, the daily quiz and scratch card), up to 500 a day all told and 150 from any one game. After that, play on for fun.'],
+  ['mall', 'The Game Corner no longer takes bets: every game is free. Each has a few plays a day that pay PokéCoins (5 spins, 4 Plinko drops, 3 hands each of Blackjack and High-Low, 2 Voltorb Flip rounds, the daily quiz and scratch card), up to 500 a day all told and 150 from any one game.'],
+  ['mall', 'Prize tickets: once a Game Corner game\'s paying plays are done, keep playing and its wins earn tickets (up to 100 a day). Tap Meowth to swap them at its prize counter for things coins can\'t buy: a slot machine, a Voltorb Flip machine, a Plinko board, a jackpot sign, a Lucky 7 block, a casino carpet and Gen 1\'s Game Corner dolls (Abra, Clefairy, Dratini and a big Dratini) for your Secret Base.'],
+  ['mall', 'Every Game Corner game keeps your records (best streaks, jackpots, best Voltorb Flip level and more), shown under the game.'],
+  ['dex', '8 Game Corner badges for the Trainer Card: hit the jackpot, land a Plinko ball on ×10, win 5 Blackjack hands in a row, 8 right in one High-Low hand, reach Voltorb Flip level 8, 5 perfect quizzes, 1,000 tickets and every prize.'],
+  ['mall', 'A daily High-Low leaderboard: your longest streak of right guesses in one hand goes up by itself when you\'re signed in. Tap Ranks at the High-Low table.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -310,10 +314,10 @@ export const IN_THE_GAME = [
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '130 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '138 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'Smeargle\'s Furniture store, with new stock every day.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day and prize tickets after that, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

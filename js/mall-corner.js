@@ -57,15 +57,18 @@ const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 /* Meowth keeps the Game Corner (Pay Day: it can't keep its paws off a coin). */
 export const KEEPER = {
   id: 'meowth', name: 'Meowth', src: 'assets/pokemon/meowth-front.gif',
-  /* A tap on Meowth hands over the day's scratch card once the stamp card is full (js/scratch.js), else says how full it is. */
-  special: (done) => import('./scratch.js').then(m => {
+  /* A tap on Meowth hands over the day's scratch card once the stamp card is full (js/scratch.js), else opens the prize
+     counter (js/prizes.js) with a word on how full the stamp card is. */
+  special: (done) => import('./scratch.js').then(async m => {
     const st = m.stampState();
     if (st.ready) { m.openScratch(done); return true; }
-    if (st.paid) return 'You\'ve had today\'s scratch card, meow. Fill a new stamp card tomorrow!';
-    return `Your stamp card has ${st.n} of ${st.of} stamps. Play ${st.of - st.n} more different game${st.of - st.n > 1 ? 's' : ''} today and I\'ll hand you a scratch card, meow!`;
+    const stamps = st.paid ? 'You\'ve had today\'s scratch card. Fill a new stamp card tomorrow!'
+      : `Stamp card: ${st.n} of ${st.of}. Play ${st.of - st.n} more different game${st.of - st.n > 1 ? 's' : ''} today for a scratch card!`;
+    (await import('./prizes.js')).openPrizes(done, stamps);
+    return true;
   }),
-  hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up, the prizes won\'t buy themselves, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
-  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, play for fun, meow.', 'Blackjack against me? Bold. I like bold. Even with my own chips, meow.'],
+  hello: ['Welcome to the Game Corner, meow! Play 5 different games today to fill your stamp card, and I\'ll give you a scratch card.', 'A customer! Step right up: play on past your paying plays for prize tickets, and swap \'em at my counter, meow.', 'Big screens on the back wall, games on the floor. Tap anything!'],
+  chat: ['Coins, coins, coins! You win \'em on your runs, you spend \'em here. That\'s the deal, meow.', 'Voltorb Flip\'s on the house. Just mind the Voltorbs, meow!', 'Something\'s on sale every day. Look for the pink DEAL tag, meow.', 'Stop the slot reels yourself. Good timing means more 7s, meow!', 'Tap a big screen and flip through it, left and right. Every shiny\'s in there, meow.', 'Who\'s That Pokémon? I always say Meowth. I\'m usually wrong.', 'Pay Day is my favourite move. Can you tell?', 'Every game here\'s on the house: a few plays a day that pay, up to 500 PokéCoins a day all told. After that, wins earn prize tickets. Tap me for the prize counter, meow!', 'Blackjack against me? Bold. I like bold. Even with my own chips, meow.'],
 };
 
 /* ---------- painting ---------- */

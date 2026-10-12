@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   VOLTORB_BOARDS, dealBoard, voltorbBoard, clues, score, cleared, payout, nextLevel, bestScore,
   pickDeal, dealPrice, capPay, DAILY_CAP, GAME_CAP, PLAYS, STAKE, quizRound, quizPay, QUIZ_LEN, SIZE,
+  PRIZES, PRIZES_BY_KIND, ticketsFor, voltorbTickets, TICKET_CAP, better,
 } from '../js/data/corner.js';
 import {
   STRIP, slotPay, stopAt, BONUS_SPINS, JACKPOT, PLINKO_ODDS, PLINKO_PAYS, shuffledDeck, handValue, isBlackjack,
@@ -128,4 +129,20 @@ test('a quiz round has distinct questions, each with its answer among distinct o
   assert.deepEqual(round, quizRound('2026-10-10', 0, [...pool].reverse()));
   assert.equal(quizPay(QUIZ_LEN), 30);
   assert.equal(quizPay(4), 20);
+});
+
+test('prize tickets: one per stake won, prizes unique and priced to take a few days', () => {
+  assert.equal(ticketsFor(STAKE * 3), 3);
+  assert.equal(ticketsFor(STAKE - 1), 0);
+  assert.equal(voltorbTickets(0), 0);
+  assert.equal(Object.keys(PRIZES_BY_KIND).length, PRIZES.length);
+  for (const p of PRIZES) assert.ok(p.tickets >= 50 && p.tickets <= TICKET_CAP * 3, p.kind);
+});
+
+test('records keep the best, and counts add up', () => {
+  let best = better(undefined, 'hl', 4);
+  best = better(best, 'hl', 2);
+  assert.equal(best.hl, 4);
+  best = better(better(best, 'jackpots', 1, true), 'jackpots', 1, true);
+  assert.equal(best.jackpots, 2);
 });

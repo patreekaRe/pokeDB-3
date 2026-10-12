@@ -20,6 +20,7 @@ import { SAFARI_AREAS, SAFARI_DEX_PAGES } from './safari.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES } from './pokedex.js';
 import { FLIGHT } from './tower.js';
 import { AUGMENTS, AUG_SETS } from './augments.js';
+import { PRIZES } from './corner.js';
 
 /** Every main biome, the default road's and the pool's (the Explorer Badge's; the Depths are Mewtwo's own). */
 const MAIN_BIOMES = [...BIOMES, ...ALT_BIOMES].filter(b => !b.secret).map(b => b.id);
@@ -116,6 +117,7 @@ export const BADGE_GROUPS = [
   { id: 'safari', name: 'Safari Zone' },
   { id: 'safari-types', name: 'Safari types' },
   { id: 'tower', name: 'Sky Pillar' },
+  { id: 'corner', name: 'Game Corner' },
 ];
 
 export const BADGES = [
@@ -289,6 +291,24 @@ export const BADGES = [
     text: 'Clear floor 90 holding 3 Prismatic augments', test: (s, save) => (save.tower?.prismFloor || 0) >= 90 },
   { id: 'aug-trade', group: 'tower', name: 'Devil\'s Bargain Badge', icon: 'aug-trade', emoji: '😈',
     text: 'Clear floor 50 holding 3 trade-off augments', test: (s, save) => (save.tower?.tradeFloor || 0) >= 50 },
+
+  // Game Corner: its records (`save.corner.best`, js/data/corner.js), paid plays or for fun
+  { id: 'corner-jackpot', group: 'corner', name: 'Triple Seven Badge', icon: 'corner-jackpot', emoji: '🎰',
+    text: 'Hit the slots\' jackpot', test: (s, save) => (save.corner?.best?.jackpots || 0) >= 1 },
+  { id: 'corner-plinko', group: 'corner', name: 'Edge Badge', icon: 'corner-plinko', emoji: '🔴',
+    text: 'Land a Plinko ball on ×10', test: (s, save) => (save.corner?.best?.plinko || 0) >= 10 },
+  { id: 'corner-blackjack', group: 'corner', name: 'Card Shark Badge', icon: 'corner-blackjack', emoji: '🃏',
+    text: 'Win 5 Blackjack hands in a row', test: (s, save) => (save.corner?.best?.bjStreak || 0) >= 5 },
+  { id: 'corner-highlow', group: 'corner', name: 'Lucky Streak Badge', icon: 'corner-highlow', emoji: '🎴',
+    text: 'Guess right 8 times in one High-Low hand', test: (s, save) => (save.corner?.best?.hl || 0) >= 8 },
+  { id: 'corner-voltorb', group: 'corner', name: 'Voltorb Ace Badge', icon: 'corner-voltorb', emoji: '💣',
+    text: 'Reach level 8 in Voltorb Flip', test: (s, save) => (save.corner?.best?.voltorbLevel || 0) >= 8 },
+  { id: 'corner-quiz', group: 'corner', name: 'Quiz Whiz Badge', icon: 'corner-quiz', emoji: '❓',
+    text: 'Get 5 perfect rounds of Who\'s That Pokémon?', test: (s, save) => (save.corner?.best?.quizPerfect || 0) >= 5 },
+  { id: 'corner-tickets', group: 'corner', name: 'Ticket Tycoon Badge', icon: 'corner-tickets', emoji: '🎟️',
+    text: 'Earn 1,000 prize tickets in all', test: (s, save) => (save.corner?.best?.tickets || 0) >= 1000 },
+  { id: 'corner-prizes', group: 'corner', name: 'Prize Collector Badge', icon: 'corner-prizes', emoji: '🏅',
+    text: 'Swap tickets for every prize at Meowth\'s counter', test: (s, save) => PRIZES.every(p => (save.corner?.prizes || []).includes(p.kind)) },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

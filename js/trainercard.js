@@ -144,6 +144,14 @@ const LOOK = {
   'aug-sets': ['crown', ['#d0ccff', '#6c64d0', '#2c2878'], 'cards'],
   'aug-prism': ['gem', ['#ffe0f8', '#c070f0', '#4c2090'], 'facet'],
   'aug-trade': ['diamond', ['#ff9c9c', '#b02838', '#500c18'], 'coin'],
+  'corner-jackpot': ['octagon', ['#ff9c9c', '#d83040', '#701020'], 'coin'],
+  'corner-plinko': ['hex', ['#a8e8ff', '#3aa8d8', '#145878'], 'ball'],
+  'corner-blackjack': ['shield', ['#a8e0b8', '#2a8a58', '#104828'], 'cards'],
+  'corner-highlow': ['diamond', ['#fff090', '#f0c030', '#a07010'], 'cards'],
+  'corner-voltorb': ['circle', ['#ff9890', '#e04040', '#801818'], 'ball'],
+  'corner-quiz': ['book', ['#b8d0ff', '#4a90f0', '#1c4890'], 'eye'],
+  'corner-tickets': ['circle', ['#ffc8e0', '#f070a8', '#902858'], 'sparkle'],
+  'corner-prizes': ['crown', ['#fff090', '#f0c030', '#a07010']],
 };
 
 // the badges made in bulk: a Safari area's shape and colours, a type's colours and glyph, a biome's colours

@@ -3,7 +3,7 @@ rules_version = '2';
 // saves/<uid>: the cloud save (js/cloud.js). safariBoard/<day>_<uid>: the Safari Zone's daily leaderboard
 // (js/leaderboard.js; its bounds match LIMITS in js/data/leaderboard.js): anyone reads, a signed-in player posts
 // their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
-// way once a week.
+// way once a week. cornerBoard/<day>_<uid>: the Game Corner's daily High-Low streak, which its owner may only raise.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -64,6 +64,27 @@ service cloud.firestore {
       allow read: if true;
       allow create: if request.auth != null && validClimb(id, request.resource.data);
       allow update, delete: if false;
+    }
+
+    // cornerBoard/<day>_<uid>: the day's longest High-Low streak (bounds match CORNER_LIMITS in js/data/leaderboard.js)
+    function validStreak(id, d) {
+      return d.keys().hasOnly(['day', 'uid', 'name', 'starter', 'streak', 'at'])
+        && d.keys().hasAll(['day', 'uid', 'name', 'starter', 'streak', 'at'])
+        && d.uid == request.auth.uid
+        && isDay(d.day) && id == d.day + '_' + request.auth.uid && nearToday(d.day)
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.starter is string && d.starter.size() >= 1 && d.starter.size() <= 32
+        && inRange(d.streak, 1, 60)
+        && d.at == request.time;
+    }
+
+    match /cornerBoard/{id} {
+      allow read: if true;
+      allow create: if request.auth != null && validStreak(id, request.resource.data);
+      allow update: if request.auth != null && validStreak(id, request.resource.data)
+        && resource.data.uid == request.auth.uid && request.resource.data.day == resource.data.day
+        && request.resource.data.streak > resource.data.streak;
+      allow delete: if false;
     }
   }
 }

@@ -84,7 +84,44 @@ export function nextLevel(level, { won, flips }) {
 /** A fresh Voltorb Flip record for a day. `level` carries over between days. */
 export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0, flipped: [] });
 
-/* ---------- Who's That Pokémon? ---------- */
+/* ---------- Prize tickets (2026-10-12, the user's ask: playing on for fun is still worth something) ----------
+   A play that no longer pays coins earns tickets instead, one for every STAKE chips it wins (a Voltorb round one for
+   every 5 coins it would pay), up to TICKET_CAP a UTC day. Tickets buy PRIZES at Meowth's prize counter: Game Corner
+   furniture and Gen 1's Game Corner dolls, never sold for coins (js/data/furniture.js keeps them out of the store).
+   Priced so a regular player swaps for one every few days. Kept in `save.corner.tickets` ({ have, earned, day, today })
+   and `save.corner.prizes` (kinds swapped for). */
+
+export const TICKET_CAP = 100;
+/** Tickets a for-fun play's win earns: one per STAKE chips. */
+export const ticketsFor = (chips) => Math.max(0, Math.floor(chips / STAKE));
+/** Tickets a for-fun Voltorb round earns: one per 5 coins it would have paid. */
+export const voltorbTickets = (points) => Math.floor(payout(points) / 5);
+
+export const PRIZES = [
+  { kind: 'abradoll', tickets: 60 },
+  { kind: 'clefairydoll', tickets: 60 },
+  { kind: 'casinorug', tickets: 80 },
+  { kind: 'dratinidoll', tickets: 90 },
+  { kind: 'jackpotsign', tickets: 100 },
+  { kind: 'luckyseven', tickets: 120 },
+  { kind: 'plinkoboard', tickets: 150 },
+  { kind: 'slotmachine', tickets: 150 },
+  { kind: 'voltorbflip', tickets: 150 },
+  { kind: 'bigdratinidoll', tickets: 250 },
+];
+export const PRIZES_BY_KIND = Object.fromEntries(PRIZES.map(p => [p.kind, p]));
+
+/* ---------- Records: each game's personal bests, paid or for fun (`save.corner.best`) ---------- */
+
+/** What each record means, for the games' Best lines and the badges. */
+export const RECORDS = {
+  slots: 'Biggest spin', jackpots: 'Jackpots', plinko: 'Best drop', bjStreak: 'Win streak', hl: 'Best streak',
+  voltorbLevel: 'Best level', voltorbScore: 'Best board', quizPerfect: 'Perfect rounds', tickets: 'Tickets earned',
+};
+/** A record's new value: the higher of the old and `value`, or the old plus one for a count (`add`). */
+export const better = (best, key, value, add = false) => ({ ...best, [key]: add ? (best?.[key] ?? 0) + value : Math.max(best?.[key] ?? 0, value) });
+
+
 
 export const QUIZ_LEN = 5;       // silhouettes in the day's one round (slimmed 2026-10-11, the user's pick)
 export const QUIZ_CHOICES = 4;

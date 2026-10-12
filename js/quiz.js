@@ -9,7 +9,8 @@ import { getSave, updateSave } from './storage.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key, monPool, spriteOf } from './corner-panel.js';
-import { potWon, payGame, stamp } from './corner-pot.js';
+import { potWon, payGame, stamp, record } from './corner-pot.js';
+import { bestLine } from './casino-pot.js';
 
 let panel = null, names = null, round = null, st = null, picked = null, done = null, cur = 0;   // cur: the question on show
 
@@ -59,7 +60,7 @@ function render() {
   }
   keys.append(key('Close', 'vf-close', () => panel.shut()));
   const box = el('div', 'vf-panel qz-panel');
-  box.append(head, meters, ...body, keys);
+  box.append(head, meters, ...body, bestLine(['quizPerfect']), keys);
   panel.root.replaceChildren(box);
 }
 
@@ -89,6 +90,7 @@ function answer(id) {
 /** The round's end: paid, and the record moved on to the next round. */
 function finish() {
   const right = st.right, paid = payGame(quizPay(right), 'quiz');
+  if (right === QUIZ_LEN) record('quizPerfect', 1, true);
   const result = { right, paid, line: `${right}/${QUIZ_LEN} right${right === QUIZ_LEN ? ', a perfect round' : ''}! ${paid ? `${paid} PokéCoins.` : potWon() >= DAILY_CAP ? 'The Game Corner has paid its most for today.' : 'No coins this time.'} A new round tomorrow.` };
   st = { ...st, round: st.round + 1, q: 0, right: 0, last: result };
   keep();

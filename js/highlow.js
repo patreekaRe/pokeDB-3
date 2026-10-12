@@ -10,7 +10,9 @@ import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { openPanel, key } from './corner-panel.js';
 import { STAKE } from './data/corner.js';
-import { stake, settle, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { stake, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { record } from './corner-pot.js';
+import { postCornerStreak } from './leaderboard.js';
 
 const NAMES = { 1: 'A', 11: 'J', 12: 'Q', 13: 'K' };
 const SUIT = ['♠', '♥', '♦', '♣'];
@@ -56,11 +58,11 @@ function render() {
     }
     keys.append(key(`Cash out ${hand.pot}`, 'vf-go hl-cash', cashOut));
   } else {
-    keys.append(key(playLabel('hl', 'Deal'), 'vf-go', start), key('Close', 'vf-close', () => panel.shut()));
+    keys.append(key(playLabel('hl', 'Deal'), 'vf-go', start), key('🏆 Ranks', 'vf-close', () => import('./leaderboard.js').then(m => m.openLeaderboard(0, 'corner'))), key('Close', 'vf-close', () => panel.shut()));
   }
   const box = el('div', 'vf-panel hl-panel');
   box.append(head, tableMeters('hl'), felt);
-  box.append(el('p', 'vf-say', sayLine('hl', line, !!hand)), keys);
+  box.append(el('p', 'vf-say', sayLine('hl', line, !!hand)), bestLine(['hl']), keys);
   panel.root.replaceChildren(box);
 }
 
@@ -80,6 +82,7 @@ function guess(g) {
   playSound('card');
   if (!right) {
     keepHand('hl', { ...hand, over: true });
+    postCornerStreak(hand.step);
     flip = { rank, next };
     line = `${NAMES[next] ?? next}! ${next === rank ? 'A tie loses' : 'Wrong way'}: the pot of ${hand.pot} goes back to Meowth.`;
     hand = null;
@@ -88,6 +91,7 @@ function guess(g) {
   }
   hand = { ...hand, pot: Math.floor(hand.pot * m), step: hand.step + 1 };
   keepHand('hl', hand);
+  record('hl', hand.step);
   flip = { rank };
   line = `${NAMES[next] ?? next}! Right: the pot is ${hand.pot}. Again, or cash out?`;
   playSound('stat-up', 'select');
@@ -95,9 +99,10 @@ function guess(g) {
 }
 
 function cashOut() {
-  const pay = settle(hand.pot, 'hl', hand.paid);
+  const res = settle(hand.pot, 'hl', hand.paid);
   keepHand('hl', { ...hand, over: true });
-  line = hand.paid ? `Cashed out: ${pay} PokéCoins!${pay < hand.pot ? ' (all today allows)' : ''}` : `Cashed out ${hand.pot} chips, for fun.`;
+  postCornerStreak(hand.step);
+  line = `Cashed out: ${wonText(res, hand.paid)}!`;
   playSound('coins', 'buy');
   hand = null; flip = null;
   render();

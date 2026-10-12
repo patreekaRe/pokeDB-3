@@ -12,7 +12,7 @@
 
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { BOARD_COLLECTION, entryId, dayOffset, cleanName, buildEntry, checkEntry, rankBoards, boardValue, formatTime, NAME_MAX,
-  TOWER_COLLECTION, checkTowerEntry, rankTower } from './data/leaderboard.js';
+  TOWER_COLLECTION, checkTowerEntry, rankTower, CORNER_COLLECTION, checkCornerEntry, rankCorner, cornerResult } from './data/leaderboard.js';
 import { safariDay, safariDaily } from './data/safari.js';
 import { towerWeek, weekOffset, towerWeekly } from './data/tower.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
@@ -25,6 +25,8 @@ import { getSave, updateSave } from './storage.js';
 
 const POST_KEY = 'pokedb.safari.post';
 const TOWER_POST_KEY = 'pokedb.tower.post';
+const CORNER_POST_KEY = 'pokedb.corner.post';
+const CORNER_SENT_KEY = 'pokedb.corner.sent';   // the day's best streak already posted, so a shorter one never goes up
 const NAME_KEY = 'pokedb.safari.name';   // where the nickname lived before the save took it (nameFor())
 const FETCH_LIMIT = 1000;
 const CACHE_MS = 60000;
@@ -55,6 +57,15 @@ const KINDS = {
     header: (week) => `Week of ${week} · ${towerWeekly(week).starter.line[0].name}`,
     mine: (e) => `Your climb: floor ${e.floor} · ${e.turns} turn${e.turns === 1 ? '' : 's'} · ${formatTime(e.time)}`,
     signin: 'Sign in to post your first climb of the week.', period: 'this week\'s',
+  },
+  corner: {
+    collection: CORNER_COLLECTION, postKey: CORNER_POST_KEY, field: 'day', title: '🎴 High-Low Leaderboard', tabs: ['Today', 'Yesterday'],
+    now: () => safariDay(), offset: dayOffset, step: 1,
+    check: (entry) => checkCornerEntry(entry, safariDay()), rank: rankCorner,
+    header: (day) => `${day} · the Game Corner's High-Low: most right guesses in one hand`,
+    mine: (e) => `Your best today: ${e.streak} right in a row`,
+    signin: 'Sign in to post your best High-Low streak of the day.', period: 'today\'s',
+    better: (entry, old) => entry.streak > (old.streak ?? 0),
   },
 };
 let kind = 'safari';
@@ -120,7 +131,8 @@ async function post(k = K()) {
     if (k.check(entry)) { store.set(k.postKey, null); return 'stale'; }
     const ref = s.F.doc(s.db, k.collection, entryId(entry[k.field], entry.uid));
     try {
-      if ((await s.F.getDoc(ref)).exists()) { store.set(k.postKey, null); return 'already'; }
+      const old = await s.F.getDoc(ref);
+      if (old.exists() && !k.better?.(entry, old.data())) { store.set(k.postKey, null); return 'already'; }
       await s.F.setDoc(ref, { ...entry, at: s.F.serverTimestamp() });
     } catch (err) {
       if (err?.code === 'permission-denied') { store.set(k.postKey, null); return 'already'; }
@@ -147,6 +159,20 @@ export const postSafariResult = (result) => postResult(KINDS.safari, result);
 /** From endTower(): the week's first climb, the same way. */
 export const postTowerResult = (result) => postResult(KINDS.tower, result);
 
+/** From the Game Corner's High-Low (js/highlow.js): a finished hand's streak goes up quietly if it's the day's best yet
+    from this device; a better one later raises the entry. Never throws. */
+export async function postCornerStreak(streak) {
+  try {
+    const day = safariDay(), sent = store.get(CORNER_SENT_KEY), waiting = store.get(CORNER_POST_KEY);
+    const top = Math.max(sent?.day === day ? sent.streak : 0, waiting?.day === day ? waiting.streak : 0);
+    if (streak < 1 || streak <= top || !cloudConfigured()) return;
+    const { buddy } = await import('./trainercard.js');
+    store.set(CORNER_POST_KEY, cornerResult({ day, starter: buddy().id, streak }));
+    store.set(CORNER_SENT_KEY, { day, streak });
+    if (cloudRemembered()) await post(KINDS.corner);
+  } catch (err) { /* the game never waits on the board */ }
+}
+
 function postResult(k, result) {
   try {
     if (!cloudConfigured()) return null;
@@ -171,8 +197,9 @@ const LOOK = {
   turns: { b1: '#4ab8d8', b2: '#1a4a7a', sub: 'The fewest turns to cross', area: 1 },
   caught: { b1: '#f0a040', b2: '#8a3a14', sub: 'The biggest haul', area: 2 },
   floor: { b1: '#6aa8ff', b2: '#3a2a8a', sub: 'The furthest climb' },
+  streak: { b1: '#ffd84a', b2: '#8a2a5a', sub: 'The most right guesses in one hand' },
 };
-const EMPTY = { caught: 'Nobody has caught anything yet.', floor: 'Nobody has climbed yet.' };
+const EMPTY = { caught: 'Nobody has caught anything yet.', floor: 'Nobody has climbed yet.', streak: 'Nobody has a streak yet today.' };
 const MEDAL = ['', 'gold', 'silver', 'bronze'];
 
 let host = null;     // where the board is mounted: the window's screen, or a lobby's app panel
@@ -192,7 +219,8 @@ function mon(e, cls) {
 function facts(e) {
   const box = el('div', 'pdx-lcd pdx-facts lb-facts');
   const fact = (k, v) => { const f = el('span', ''); f.append(el('b', '', `${k} `), v); return f; };
-  if (kind === 'tower') box.append(fact('Floor', `${e.floor}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)));
+  if (kind === 'corner') box.append(fact('Streak', `${e.streak} in a row`));
+  else if (kind === 'tower') box.append(fact('Floor', `${e.floor}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)));
   else box.append(fact('Result', e.won ? 'Crossed' : `Area ${e.area}`), fact('Turns', `${e.turns}`), fact('Time', formatTime(e.time)), fact('Caught', `${e.caught}`));
   return box;
 }

@@ -12,7 +12,8 @@ import { playSound, preloadSounds } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { openPanel, key } from './corner-panel.js';
-import { stake, freePlay, settle, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { stake, freePlay, settle, wonText, bestLine, tableMeters, sayLine, playLabel, handOf, keepHand } from './casino-pot.js';
+import { record } from './corner-pot.js';
 
 export const SYMBOL_ART = {
   seven: null,   // a big red 7, in CSS
@@ -89,7 +90,7 @@ function render() {
   keys.append(go, key('Close', 'vf-close', () => { if (!spin) panel.shut(); }));
   const box = el('div', `vf-panel sl-panel${bonus ? ' bonus' : ''}`);
   box.append(head, tableMeters('slots'), pot, window_, stops);
-  box.append(el('p', 'vf-say', sayLine('slots', line, !!spin || !!bonus)), table, keys);
+  box.append(el('p', 'vf-say', sayLine('slots', line, !!spin || !!bonus)), bestLine(['jackpots', 'slots']), table, keys);
   panel.root.replaceChildren(box);
   drawReels();
 }
@@ -165,14 +166,16 @@ function finishSpin() {
 function payLine(stops, h) {
   const got = stops.map(t => STRIP[t]), m = slotPay(got), mult = h.free ? 2 : 1;
   let bonusLeft = h.bonus?.left ?? 0, bonusPaid = h.bonus?.paid ?? h.paid;
-  const chips = m === 'jackpot' ? JACKPOT : h.bet * m * mult, pay = settle(chips, 'slots', h.paid);
+  const chips = m === 'jackpot' ? JACKPOT : h.bet * m * mult, res = settle(chips, 'slots', h.paid), pay = res.coins;
   if (got.every(s => s === 'pikachu')) { bonusLeft += BONUS_SPINS; bonusPaid = h.paid; }
   keepHand('sl', { day: h.day, n: h.n, bet: h.bet, stops, last: stops, bonus: bonusLeft ? { left: bonusLeft, paid: bonusPaid } : null });
   won = pay;
-  const coins = (n) => (h.paid ? (n === chips ? `${n} PokéCoins` : `${n} PokéCoins (all today allows)`) : `${chips} chips, for fun`);
-  if (m === 'jackpot') { playSound('achievement', 'coins'); line = `JACKPOT!!! Three 7s: ${coins(pay)}!`; }
-  else if (got.every(s => s === 'pikachu')) { playSound('achievement', 'coins'); line = `Pika-BONUS! ×${m * mult}: ${coins(pay)}, and ${BONUS_SPINS} free spins paying double!`; }
-  else if (chips) { playSound('coins', 'buy'); line = `×${m * mult}: ${coins(pay)}!${h.free ? ' (bonus)' : ''}`; }
+  const coins = () => wonText(res, h.paid);
+  if (chips) record('slots', chips);
+  if (m === 'jackpot') record('jackpots', 1, true);
+  if (m === 'jackpot') { playSound('achievement', 'coins'); line = `JACKPOT!!! Three 7s: ${coins()}!`; }
+  else if (got.every(s => s === 'pikachu')) { playSound('achievement', 'coins'); line = `Pika-BONUS! ×${m * mult}: ${coins()}, and ${BONUS_SPINS} free spins paying double!`; }
+  else if (chips) { playSound('coins', 'buy'); line = `×${m * mult}: ${coins()}!${h.free ? ' (bonus)' : ''}`; }
   else {
     playSound('cancel');
     line = got[0] === 'seven' && got[1] === 'seven' ? 'So close! Two 7s...' : h.free ? 'No luck on that free spin.' : 'No luck. Spin again?';

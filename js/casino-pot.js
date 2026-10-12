@@ -3,11 +3,11 @@
    (js/corner-pot.js). Nobody bets (2026-10-12, the user's call): a play stakes STAKE of Meowth's house chips and pays
    what they win. Kept in `save.corner.bets` ({ day, plays }); a game's hand in progress is its own field there. */
 
-import { PLAYS, STAKE, DAILY_CAP, GAME_CAP } from './data/corner.js';
+import { PLAYS, STAKE, DAILY_CAP, GAME_CAP, ticketsFor, RECORDS } from './data/corner.js';
 import { safariDay } from './data/safari.js';
 import { getSave, updateSave } from './storage.js';
 import { el } from './ui.js';
-import { stamp, payGame, potWon, gameWon, canPay } from './corner-pot.js';
+import { stamp, payGame, potWon, gameWon, canPay, earnTickets, best, tickets } from './corner-pot.js';
 
 function today() {
   const b = getSave().corner?.bets, day = safariDay();
@@ -35,8 +35,25 @@ export function freePlay(game) {
   return { day: b.day, n: 1000 + n };
 }
 
-/** Pays a play's win: what the chips won, if the play pays, up to the caps. Returns the coins paid. */
-export const settle = (amount, game, paid) => (paid && amount > 0 ? payGame(Math.floor(amount), game) : 0);
+/** Pays a play's win: what the chips won as coins if the play pays (up to the caps), else as prize tickets.
+    Returns { coins, tickets, chips }. */
+export function settle(amount, game, paid) {
+  const chips = Math.floor(amount);
+  if (chips <= 0) return { coins: 0, tickets: 0, chips: 0 };
+  return paid ? { coins: payGame(chips, game), tickets: 0, chips } : { coins: 0, tickets: earnTickets(ticketsFor(chips)), chips };
+}
+
+/** What a settled win paid, in words: "40 PokéCoins", "3 tickets", or the chips when today's tickets are used up. */
+export function wonText(r, paid) {
+  if (paid) return `${r.coins} PokéCoins${r.coins < r.chips ? ' (all today allows)' : ''}`;
+  return r.tickets ? `${r.tickets} prize ticket${r.tickets > 1 ? 's' : ''}` : `${r.chips} chips`;
+}
+
+/** A game's Best line: its records as "Best streak 6 · Jackpots 1" (nothing before the first). */
+export function bestLine(keys) {
+  const parts = keys.filter(k => best(k) > 0).map(k => `${RECORDS[k]} ${k === 'plinko' ? `×${best(k)}` : best(k).toLocaleString()}`);
+  return parts.length ? el('p', 'cg-best', `🏆 ${parts.join(' · ')}`) : el('span', '');
+}
 
 /** A game's saved hand in progress (`save.corner.bets[game + 'Hand']`), only if it's today's. */
 export const handOf = (game) => { const b = today(), h = b[`${game}Hand`]; return h?.day === b.day ? h : null; };
@@ -46,7 +63,7 @@ export const keepHand = (game, hand) => write({ ...today(), [`${game}Hand`]: han
 export function tableMeters(game) {
   const m = el('div', 'vf-meters');
   const left = playsLeft(game);
-  for (const [k, v] of [['Plays', paysNow(game) ? `${left}/${PLAYS[game]}` : 'For fun'], ['Chips', String(STAKE)], ['Today', `${potWon()}/${DAILY_CAP}`]]) {
+  for (const [k, v] of [paysNow(game) ? ['Plays', `${left}/${PLAYS[game]}`] : ['Tickets', `🎟️${tickets().have}`], ['Chips', String(STAKE)], ['Today', `${potWon()}/${DAILY_CAP}`]]) {
     const box = el('div', 'vf-meter'); box.append(el('span', '', k), el('b', '', v)); m.append(box);
   }
   return m;
@@ -54,13 +71,13 @@ export function tableMeters(game) {
 
 /** Why `game` plays for fun now, in Meowth's words. */
 export function funLine(game) {
-  if (potWon() >= DAILY_CAP) return `That's ${DAILY_CAP} PokéCoins today, the most the Game Corner pays! Play on for fun, meow. New coins tomorrow.`;
-  if (gameWon(game) >= GAME_CAP) return `This game's paid its ${GAME_CAP} for today. Try another for coins, or play on for fun, meow!`;
-  return 'Your plays here are used up for today. Play on for fun, or try another game, meow! New plays tomorrow.';
+  if (potWon() >= DAILY_CAP) return `That's ${DAILY_CAP} PokéCoins today, the most the Game Corner pays! Play on for prize tickets, meow. New coins tomorrow.`;
+  if (gameWon(game) >= GAME_CAP) return `This game's paid its ${GAME_CAP} for today. Try another for coins, or play on for prize tickets, meow!`;
+  return 'Your paying plays here are done for today. Play on and wins earn prize tickets for my prize counter, meow! New plays tomorrow.';
 }
 
-/** A play key's label: "Spin" while plays pay, "Spin for fun" after. */
-export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for fun`);
+/** A play key's label: "Spin (3 left)" while plays pay, "Spin for tickets" after. */
+export const playLabel = (game, word) => (paysNow(game) ? `${word} (${playsLeft(game)} left)` : `${word} for tickets`);
 
 /** A table's words: `line`, and once its plays stop paying, why (not mid-play, `busy`). */
 export const sayLine = (game, line, busy = false) => (busy || paysNow(game) ? line : `${line} ${funLine(game)}`);

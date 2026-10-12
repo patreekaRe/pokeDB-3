@@ -4,8 +4,8 @@
    Each entry is a kind from the base's catalogue (js/base-furniture*.js, a
    family id) that is never sold: it comes from a badge, an achievement (the
    starter it unlocks), a feat or a finished Safari Pokédex page, named in its
-   `from`. Every one of those is a list the save never shrinks (`badges`,
-   `unlocked`, `feats`, `safariDex.done`), so a kind is owned once its source
+   `from`, or a Game Corner prize swapped for tickets. Every one of those is a list the save never shrinks (`badges`,
+   `unlocked`, `feats`, `safariDex.done`, `corner.prizes`), so a kind is owned once its source
    is, with nothing saved of its own: `earnedFurniture(save)` works it out, and
    an old save has every kind it can prove. One of each comes with the source,
    every colour of it like a bought kind; the daily Shop never stocks them.
@@ -15,6 +15,7 @@
 import { BADGES_BY_ID } from './badges.js';
 import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
+import { PRIZES_BY_KIND } from './corner.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -22,6 +23,7 @@ const SOURCES = {
   achievement: { owned: (save, id) => (save.unlocked || []).includes(id), item: (id) => ACHIEVEMENT_FOR[id] },
   feat: { owned: (save, id) => (save.feats || []).includes(id), item: (id) => FEATS.find(f => f.id === id) },
   safari: { owned: (save, id) => (save.safariDex?.done || []).includes(id), item: (id) => SAFARI_DEX_PAGES.find(p => p.area === id) },
+  prize: { owned: (save, id) => (save.corner?.prizes || []).includes(id), item: (id) => PRIZES_BY_KIND[id] },
 };
 
 export const FURNITURE = [
@@ -71,6 +73,8 @@ export const FURNITURE = [
   { kind: 'boulder', from: ['safari', 'peak'] },
   { kind: 'saguaro', from: ['safari', 'desert'] },
   { kind: 'tent', from: ['badge', 'safari-master'] },
+  // The Game Corner's prizes, swapped for tickets at Meowth's counter (PRIZES in js/data/corner.js).
+  ...Object.keys(PRIZES_BY_KIND).map(kind => ({ kind, from: ['prize', kind] })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -94,5 +98,6 @@ export function howToEarn(piece, save) {
   const src = sourceOf(piece);
   if (kind === 'badge') return `Earn the ${src.name}: ${src.text}`;
   if (kind === 'achievement' || kind === 'feat') return src.text;
+  if (kind === 'prize') return `Swap ${src.tickets} tickets for it at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

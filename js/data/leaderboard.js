@@ -102,7 +102,7 @@ export function formatTime(sec) {
 }
 
 /** A board row's number. */
-export const boardValue = (id, e) => (id === 'floor' ? `F${e.floor}` : id === 'fastest' ? formatTime(e.time) : id === 'turns' ? `${e.turns} turn${e.turns === 1 ? '' : 's'}` : `${e.caught} caught`);
+export const boardValue = (id, e) => (id === 'streak' ? `${e.streak} in a row` : id === 'floor' ? `F${e.floor}` : id === 'fastest' ? formatTime(e.time) : id === 'turns' ? `${e.turns} turn${e.turns === 1 ? '' : 's'}` : `${e.caught} caught`);
 
 
 /* ---------- the Sky Pillar's weekly board (js/data/tower.js): towerBoard/<week>_<uid>, the week's first climb only ---------- */
@@ -149,4 +149,38 @@ export function rankTower(entries, uid, top = BOARD_TOP) {
     .map((entry, i) => ({ rank: i + 1, entry, mine: Boolean(uid) && entry.uid === uid }));
   const me = rows.slice(top).find(r => r.mine) || null;
   return [{ id: 'floor', name: 'Highest floor', rows: rows.slice(0, top), me, total: rows.length }];
+}
+
+
+/* ---------- the Game Corner's daily High-Low board: cornerBoard/<day>_<uid>, the day's best streak (right guesses in one
+   hand), raised whenever you beat it (the rules allow an update only to a longer streak) ---------- */
+
+export const CORNER_COLLECTION = 'cornerBoard';
+export const CORNER_LIMITS = { streak: [1, 60] };
+export const CORNER_KEYS = ['day', 'uid', 'name', 'starter', 'streak', 'at'];
+
+/** What a High-Low hand posts, before the uid and name: the day, your walking buddy (its picture) and the streak. */
+export const cornerResult = ({ day, starter, streak }) => ({ day, starter: String(starter), streak: clamp(streak, CORNER_LIMITS.streak) });
+
+/** Why the rules would refuse a streak's entry (null when they'd take it). */
+export function checkCornerEntry(e, today) {
+  if (!e || typeof e !== 'object') return 'no entry';
+  const extra = Object.keys(e).filter(k => !CORNER_KEYS.includes(k));
+  if (extra.length) return `unknown field ${extra[0]}`;
+  if (typeof e.day !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(e.day)) return 'bad day';
+  if (![dayOffset(today, -1), today, dayOffset(today, 1)].includes(e.day)) return 'day too far from today';
+  if (typeof e.uid !== 'string' || !e.uid) return 'no uid';
+  if (typeof e.name !== 'string' || !e.name || [...e.name].length > NAME_MAX) return 'bad name';
+  if (typeof e.starter !== 'string' || !e.starter || e.starter.length > 32) return 'bad starter';
+  if (!inRange(e.streak, CORNER_LIMITS.streak)) return 'bad streak';
+  return null;
+}
+
+/** A day's streaks as one board, longest first (then the earlier post). */
+export function rankCorner(entries, uid, top = BOARD_TOP) {
+  const rows = entries.filter(e => e && typeof e === 'object')
+    .sort((a, b) => b.streak - a.streak || when(a.at) - when(b.at))
+    .map((entry, i) => ({ rank: i + 1, entry, mine: Boolean(uid) && entry.uid === uid }));
+  const me = rows.slice(top).find(r => r.mine) || null;
+  return [{ id: 'streak', name: 'Longest streak', rows: rows.slice(0, top), me, total: rows.length }];
 }
