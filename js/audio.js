@@ -306,7 +306,7 @@ export function initAudio() {
 
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
-    if (document.hidden) ctx.suspend(); else ctx.resume().catch(() => {});
+    if (document.hidden) { ctx.suspend(); keepAlive?.pause(); } else ctx.resume().catch(() => {});
   });
   window.addEventListener('pageshow', () => { if (ctx && !document.hidden) ctx.resume().catch(() => {}); });   // back from the bfcache
 
@@ -459,7 +459,7 @@ function stopCry() {
 function setMuted(muted) {
   updateSave(d => { d.muted = muted; });
   renderButton();
-  if (muted) stopCry();
+  if (muted) { stopCry(); keepAlive?.pause(); } else holdMediaSession();
   if (muted) Object.keys(loops).forEach(name => setLoop(name, false));
   if (!current) return;
   if (muted) Object.keys(players).forEach(fadeOut);
@@ -735,6 +735,31 @@ function stop(name) {
   p.el.pause();
 }
 
+/* Chrome and the other iOS browsers run pages in their own app, whose audio session obeys Silent Mode and ignores
+   navigator.audioSession (only Safari and home-screen apps honour it). A plain <audio> element playing counts as media,
+   which switches the session to playback, so a silent loop is kept going from a tap and Web Audio is heard too. */
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let keepAlive = null;
+function holdMediaSession() {
+  if (!IOS || getSave().muted) return;
+  if (!keepAlive) {
+    const n = 4000, bytes = new Uint8Array(44 + n), v = new DataView(bytes.buffer);   // half a second of 8 kHz 8-bit silence
+    [...'RIFF'].forEach((c, i) => { bytes[i] = c.charCodeAt(0); });
+    v.setUint32(4, 36 + n, true);
+    [...'WAVEfmt '].forEach((c, i) => { bytes[8 + i] = c.charCodeAt(0); });
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, 8000, true); v.setUint32(28, 8000, true); v.setUint16(32, 1, true); v.setUint16(34, 8, true);
+    [...'data'].forEach((c, i) => { bytes[36 + i] = c.charCodeAt(0); });
+    v.setUint32(40, n, true);
+    bytes.fill(128, 44);
+    keepAlive = new Audio(URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' })));
+    keepAlive.loop = true;
+    keepAlive.setAttribute('x-webkit-airplay', 'deny');
+    keepAlive.disableRemotePlayback = true;
+  }
+  if (keepAlive.paused && !document.hidden) keepAlive.play().catch(() => {});
+}
+
 /**
  * Every tap or key press: if sound isn't running (the first tap, or iOS left the context suspended or "interrupted"
  * after a lock, a call or an app switch, where a resume outside a tap is refused), wake it again. It used to stop
@@ -743,6 +768,7 @@ function stop(name) {
 let primed = false;
 function unlock() {
   const context = audioContext();
+  holdMediaSession();
   if (!primed) { primed = true; preloadSounds('confirm', 'cancel', 'bag'); }   // so the first blip isn't late waiting on a download (or a missing file's 404)
   const stuck = current && !getSave().muted && players[current]?.el.paused;
   if (context.state === 'running' && !stuck) return;
