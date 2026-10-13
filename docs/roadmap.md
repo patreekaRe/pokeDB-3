@@ -21,15 +21,13 @@ curtained window with real folds and ties, round window, arched window), the cla
 (real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. **Batch W2 done
 2026-10-13** (`js/base-models-w2.js`, cloth and paper, 50 kinds): `drape()` lays a crop on a finely cut sheet whose depth
 is a function (folds, ripples, curls), its outline the painting's alpha (`clipped()` cuts what the painting filled with
-shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. `?stock=id,id...` fills the
+shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. **Batch W3 done 2026-10-13** (`js/base-models-w3.js`, boards and plaques, 27 kinds): frames round a crop of the
+painting with what stood on it stood off it (pinned notes and photos, donuts on pegs, tray markers and chalk, metal
+badges under glass, lit seven-segment digits, a pull-down screen on its roller); `inlay()` lifts a tablet's coloured
+glyph proud of the stone (the crop with every unsaturated pixel cleared); the winged sun and golden wings are two layers
+of the painting bent back towards the wall. **Batch W4 done 2026-10-13** (`js/base-models-w4.js`, windows, mirrors and doors, 18 kinds): arched frames by `archPane()` (moonlit, sky arch, stained glass with lead came), sashes and viewports round the hour's sky, frost as the painting's white specks in front of the glass, the carriage window's curtains cut to their painted edge, silvered glass (`silver()`), and stone laid block by block round its openings (`masonry()`: the arrow slit, the portcullis's gateway). `?stock=id,id...` fills the
 store with those pieces for a page load (`furnitureStock()`), and `tools/models.html` frames wall pieces by their middle. Next, one session each
 (Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
-- W3 boards and plaques: region map, notice board, whiteboard, chalkboard, menu board, donut board, constellation map,
-  haunted and scholar's portraits, jigsaw picture, photo wall, brass plaque, quiet and hazard signs, projector screen,
-  scoreboard, high score board, departures board, badge case, the 6 tablets, winged sun, golden wings.
-- W4 windows, mirrors and doors: moonlit, frosted, stained glass, space, carriage and sky arch windows, porthole, arrow
-  slit, greenhouse glass, vanity, haunted and shell mirrors, medicine cabinet, portcullis, barn doors, airlock door, tile
-  and bamboo panels.
 - W5 shelves, racks and hooks: spice rack, pot rack, plate rack, utensil rail, mug shelf, tool rack, syrup shelf, tea
   tins, jam shelf, first-aid kit, towel rail, hat hooks, coat pegs, bookends, record wall, window box, ivy trellis,
   control panel, monitor wall, solar panel.

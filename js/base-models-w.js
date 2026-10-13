@@ -62,7 +62,7 @@ export function paper(K, L, box, pins = []) {
 }
 
 /** A picture frame: moulding over the outer box, the canvas over the inner one set back a little. */
-function frame(K, L, m, outer, inner, d = 0.06) {
+export function frame(K, L, m, outer, inner, d = 0.06) {
   const [ox0, oy0, ox1, oy1] = outer, [ix0, iy0, ix1, iy1] = inner;
   for (const box of [[ox0, oy0, ox1, iy0], [ox0, iy1, ox1, oy1], [ox0, iy0, ix0, iy1], [ix1, iy0, ox1, iy1]]) bar(K, L, m, box, d, 0, 0.018);
   // a lip inside the moulding, darker, so the canvas sits in a recess
@@ -73,8 +73,8 @@ function frame(K, L, m, outer, inner, d = 0.06) {
 }
 
 /** A rectangular window: the frame over `outer`, the pane over `glass` set back, bars over `bars`, a sill over `sill`. */
-function sash(K, L, { outer, glass, bars = [], sill }) {
-  const wood = K.wood(), [ox0, oy0, ox1, oy1] = outer, [gx0, gy0, gx1, gy1] = glass, d = 0.08;
+export function sash(K, L, { outer, glass, bars = [], sill, wood = K.wood() }) {
+  const [ox0, oy0, ox1, oy1] = outer, [gx0, gy0, gx1, gy1] = glass, d = 0.08;
   for (const box of [[ox0, oy0, ox1, gy0], [ox0, gy1, ox1, oy1], [ox0, gy0, gx0, gy1], [gx1, gy0, ox1, gy1]]) bar(K, L, wood, box, d);
   bar(K, L, K.plain('#1a2030'), glass, 0.01);
   pic(K, L, glass, 0.03);
@@ -95,14 +95,14 @@ export function ring(K, L, m, cx, cy, ro, ri, d, sy = 1) {
 }
 
 /** A disc or oval of the painting (a window's view, a clock face) cut from its box round (cx, cy), at depth z. */
-function round(K, L, m, cx, cy, r, z, sy = 1) {
+export function round(K, L, m, cx, cy, r, z, sy = 1) {
   const g = new L.THREE.CircleGeometry(u(r), 40);
   g.scale(1, sy, 1);
   return K.put(g, m, X(cx, K.p.w), Y(cy), z);
 }
 
 /** An arch's outline, x0..x1 wide, its straight sides from `spring` down to `foot`, in painted units round (cx, ·). */
-function archShape(L, cx, x0, x1, spring, foot, W) {
+export function archShape(L, cx, x0, x1, spring, foot, W) {
   const { THREE } = L, r = (x1 - x0) / 2, sh = new THREE.Shape();
   sh.moveTo(X(x0, W), Y(foot)); sh.lineTo(X(x1, W), Y(foot)); sh.lineTo(X(x1, W), Y(spring));
   sh.absarc(X(cx, W), Y(spring), u(r), 0, Math.PI, false);
@@ -111,7 +111,7 @@ function archShape(L, cx, x0, x1, spring, foot, W) {
 }
 
 /** Uvs for a flat shape over painted box [x0, y0, x1, y1], so its crop lands where it was painted. */
-function boxUV(g, box, W) {
+export function boxUV(g, box, W) {
   const [x0, y0, x1, y1] = box, pos = g.attributes.position, uv = g.attributes.uv;
   for (let i = 0; i < pos.count; i++) uv.setXY(i, (pos.getX(i) - X(x0, W)) / u(x1 - x0), (pos.getY(i) - Y(y1)) / u(y1 - y0));
 }
