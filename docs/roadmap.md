@@ -450,6 +450,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   glow was two big drop-shadows animated on the GIF, re-blurred every frame; now one still violet shadow in place of the
   boss's gold, and a halo behind it breathing by opacity alone (`.possessed .enemy-pose::before`); the aura only re-places
   its canvas twice a second, and only when the sprite moved.
+  **Chat and battle names** (2026-10-13, the user's list): `name` is the chat name on the speech tag, boards and badges
+  (LAW, BRITT, JOHN, JAHMES, CLARENCE, SHAUN, PAT, KAYL, PHIL, RICKY, MACHEW, JEROME), `battleName` the send-out line's
+  (GAY TWINK DADDY LAWRENCE, EXHAUSTED TEACHER BRITT, INDECISIVE GAMER JOHN, CRACKHEAD 11PM CURFEW JAHMES, BURLESQUE BOI
+  CLARENCE, TECH SUPPORT IGL SHAUN, PROPERTY COORDINATOR KAYL, GHOST HUNTER PHIL, EAST COAST RICKY, EDGELORD MACHEW, GTA
+  FANATIC JEROME). Pat has no battle name yet (ask the user).
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

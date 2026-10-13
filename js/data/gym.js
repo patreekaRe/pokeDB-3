@@ -12,7 +12,7 @@
    `beaten` once you win (its first line alone on a rematch), `won` when they
    beat you. Each is a list of speech-window lines, or a list of such lists, one
    picked at random each time (`talkOf()`). `battleName`, if set, is what the battle
-   calls them when they send out their Pokémon (`name` everywhere else).
+   calls them when they send out their Pokémon (`name`, the chat name, everywhere else; the user's names, 2026-10-13).
    ============================================================ */
 
 export const UNKNOWN_SPRITE = 'assets/trainers/gym/unknown.png';
@@ -432,19 +432,19 @@ const JEROME = {
 };
 
 export const GYM_LEADERS = [
-  leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
-  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
+  leader('lawrence', 'LAW', 'clearing', ['snorlax'], 'Glitter Badge', { ...LAWRENCE, battleName: 'GAY TWINK DADDY LAWRENCE' }),
+  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', { ...BRITT, battleName: 'EXHAUSTED TEACHER BRITT' }),
   leader('nietos', 'THE NIETOS', 'clearing', ['kangaskhan'], 'Pacifier Badge', NIETOS),
-  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge', JOHN),
-  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge', JAHMES),
-  leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', CLARENCE),
-  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge', SHAUN),
+  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge', { ...JOHN, battleName: 'INDECISIVE GAMER JOHN' }),
+  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge', { ...JAHMES, battleName: 'CRACKHEAD 11PM CURFEW JAHMES' }),
+  leader('clarence', 'CLARENCE', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', { ...CLARENCE, battleName: 'BURLESQUE BOI CLARENCE' }),
+  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge', { ...SHAUN, battleName: 'TECH SUPPORT IGL SHAUN' }),
   leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', PAT),
-  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', KAYL),
-  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', PHIL),
-  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', RICKY),
-  leader('machew', 'EDGELORD MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge', MACHEW),
-  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge', JEROME),
+  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', { ...KAYL, battleName: 'PROPERTY COORDINATOR KAYL' }),
+  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', { ...PHIL, battleName: 'GHOST HUNTER PHIL' }),
+  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', { ...RICKY, battleName: 'EAST COAST RICKY' }),
+  leader('machew', 'MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge', { ...MACHEW, battleName: 'EDGELORD MACHEW' }),
+  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge', { ...JEROME, battleName: 'GTA FANATIC JEROME' }),
 ];
 
 export const GYM_BY_ID = Object.fromEntries(GYM_LEADERS.map(l => [l.id, l]));
