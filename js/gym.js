@@ -157,7 +157,7 @@ async function badgeGet(layer, l) {
   spin.style.transform = from;
   await sleep(20);
   stage.classList.add('go', 'wait');
-  playSound('charge');
+  playSound('badge-ready');
   await new Promise(done => {
     const take = (e) => { e?.preventDefault?.(); spin.removeEventListener('pointerup', take); document.removeEventListener('keydown', key); done(); };
     const key = (e) => { if (e.key === 'Enter' || e.key === ' ') take(e); };
@@ -177,8 +177,8 @@ async function badgeGet(layer, l) {
     playSound('aug-silver');
     flights.push(await settle([{ transform: `${from} scale(1)` }, { transform: big, easing: 'cubic-bezier(.3, 1.5, .5, 1)' }], 320));
     stage.classList.add('spinning');
-    [0, 450, 900].forEach(t => setTimeout(() => playSound('aug-reroll'), t));
-    setTimeout(() => playSound('aug-gold'), 1500);
+    playSound('badge-spin');
+    setTimeout(() => playSound('aug-gold'), 1900);
     await sleep(2100);
     stage.classList.remove('spinning');
     stage.classList.add('popped');

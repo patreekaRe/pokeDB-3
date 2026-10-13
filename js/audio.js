@@ -209,6 +209,9 @@ const SOUNDS = {
   'aug-gold':      { synth: ac => augChime(ac, [1047, 1319, 1568, 2093], 0.055, 0.8, 0.2) },
   'aug-prismatic': { synth: ac => augChime(ac, [1047, 1319, 1568, 2093, 2637, 3136, 4186], 0.045, 1.3, 0.22, true) },
   'aug-reroll':    { synth: augShuffle },
+  // a Gym badge handed over (gym.js): a soft sparkle rising as it glows on the arch, and the whirr of it spun like a Pokéstop
+  'badge-ready': { synth: badgeReady },
+  'badge-spin':  { synth: badgeSpin },
 };
 const SFX_MIN_GAP = 0.07;     // seconds: the same effect asked for again sooner than this is dropped
 // Sprite ids that have a file in assets/audio/cries/. Listed rather than probed so
@@ -1047,6 +1050,48 @@ function augShuffle(ac) {
     out[i] = low * Math.sin(Math.PI * x) ** 1.5 * flutter;
   }
   return normalize(buffer, 0.2);
+}
+
+/** The badge glowing on the arch, waiting: a rising arpeggio of soft bells over a warm swell, pure sines so it rings clean. */
+function badgeReady(ac) {
+  const rate = ac.sampleRate, seconds = 1.4, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const notes = [784, 988, 1175, 1568, 1976];
+  for (let i = 0; i < length; i++) {
+    const t = i / rate;
+    let v = 0;
+    notes.forEach((f, n) => {
+      const s = t - n * 0.09;
+      if (s >= 0) v += (Math.sin(2 * Math.PI * f * s) + Math.sin(2 * Math.PI * f * 2.01 * s) * 0.25) * Math.exp(-s / 0.35) * 0.5;
+    });
+    const swell = Math.sin(Math.PI * Math.min(1, t / seconds)) ** 2;
+    v += (Math.sin(2 * Math.PI * 392 * t) + Math.sin(2 * Math.PI * 587 * t) * 0.6) * swell * 0.18 * (0.85 + 0.15 * Math.sin(2 * Math.PI * 5 * t));
+    out[i] = v * Math.min(1, t / 0.004, (length - i) / (rate * 0.15));
+  }
+  return normalize(buffer, 0.2);
+}
+
+/** The badge spun: a smooth whirr that follows the turn (a wind back, ten turns racing and easing to a stop, as
+    gymStopSpin in css/screens.css), swelling each time its face sweeps past, a soft bell tick every turn rising in pitch. */
+function badgeSpin(ac) {
+  const rate = ac.sampleRate, seconds = 2.2, length = Math.round(rate * seconds);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  const turn = (x) => x < 0.08 ? -0.08 * Math.sin(Math.PI / 2 * x / 0.08) : -0.08 + 10.08 * (1 - (1 - (x - 0.08) / 0.92) ** 3);
+  let phase = 0, last = 0, ticks = 0, tickAt = -1, tickF = 0;
+  for (let i = 0; i < length; i++) {
+    const t = i / rate, x = Math.min(1, t / 2.1), a = turn(x);
+    const speed = Math.min(1, Math.abs(a - last) * rate / 12);   // turns a second, 12 at the fastest
+    last = a;
+    phase += 2 * Math.PI * (220 + 520 * speed) / rate;
+    const sweep = 0.35 + 0.65 * Math.cos(Math.PI * 2 * a) ** 2;
+    let v = (Math.sin(phase) + Math.sin(phase * 1.5) * 0.35 + Math.sin(phase * 2) * 0.15) * sweep * (0.15 + 0.85 * speed) * 0.4;
+    if (a >= ticks + 1) { ticks++; tickAt = t; tickF = 1046 * 2 ** (ticks / 12); }
+    if (tickAt >= 0) { const s = t - tickAt; v += Math.sin(2 * Math.PI * tickF * s) * Math.exp(-s / 0.07) * 0.35; }
+    out[i] = v * Math.min(1, t / 0.01, (length - i) / (rate * 0.12));
+  }
+  return normalize(buffer, 0.18);
 }
 
 function chipNoise(length, hold) {

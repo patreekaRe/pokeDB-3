@@ -370,7 +370,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   flights, the landing's flash on the frames drawn) and slams down mid-screen. Since the same day (the user's ask) a tap first
   spins it ten turns on the arch like a Pokéstop (`.spinning`, `aug-reroll` whirrs, `aug-gold` as it slows), then it pops
   out; it swells up on the arch first and the turn is the picture's own CSS `rotate` (`gymStopSpin`), since the first try
-  rode on the badge's `transform` and the user saw no spin on their phone, only heard it. Open: the user's look.
+  rode on the badge's `transform` and the user saw no spin on their phone, only heard it. Its sounds are sine-only synths
+  (`badge-ready` while it waits, `badge-spin` following the turn, in `js/audio.js`), the user's ask: the reroll shuffle and
+  Eternamax's `charge` they had sounded gritty. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
