@@ -29,44 +29,37 @@ export const TOWNS = {
     // the village from above (the user's ask, 2026-10-13: laid out like a Pokémon town, after their picture): a ring of
     // forest, stone roads, houses in rows, tall grass. T forest, . grass, # road, , tall grass, f flowers, L a stone
     // lantern, b a bench, R the request board; a capital is a building's footprint (BUILDINGS). You come in at the
-    // bottom (`door`) and go on through the torii at the top (`gate`). 24 x 24 (js/event-3d.js's buildTown()).
+    // bottom (`door`) and go on through the torii at the top (`gate`). 20 x 18 (js/event-3d.js's buildTown()).
     map: [
-      'TTTTTTTTTTT##TTTTTTTTTTT',
-      'TTTTTTTTTTT##TTTTTTTTTTT',
-      'TT..,,,,..L##L..,,,,..TT',
-      'TT.SSS.AAA.##.JJJ.BBB.TT',
-      'TT.SSS.AAA.##.JJJ.BBB.TT',
-      'TT.SSS.AAA.##.JJJ.BBB.TT',
-      'TT..#...#..##..#...#..TT',
-      'TT.##################.TT',
-      'TT.##################.TT',
-      'TT.f.##f...##..##,,,,,TT',
-      'TT...##...L##L.##,,,,,TT',
-      'TTCCC##.DDDDDD.##.MMM.TT',
-      'TTCCC##.DDDDDD.##.MMM.TT',
-      'TTCCC##.DDDDDD.##.MMM.TT',
-      'TT.#.##.DDDDDD.##..#..TT',
-      'TTPPP##.DDDDDD.##,,,,.TT',
-      'TTPPP##...##...##,,,,.TT',
-      'TTPPP########R###,,,,.TT',
-      'TT.L.##b######b##,,,,.TT',
-      'TT.##################.TT',
-      'TT.##################.TT',
-      'TT.f.L.##L.f..ff.f..f.TT',
-      'TTTTTTT##TTTTTTTTTTTTTTT',
-      'TTTTTTT##TTTTTTTTTTTTTTT',
+      'TTTTTTTTT##TTTTTTTTT',
+      'TTTTTTTTT##TTTTTTTTT',
+      'TT.,,,..L##L..,,,.TT',
+      'TTSSS.AAA##.JJJ.,,TT',
+      'TTSSS.AAA##.JJJ.,,TT',
+      'TTSSS.AAA##.JJJ.,,TT',
+      'TT.#...#.##..#....TT',
+      'TT.##############.TT',
+      'TT.f.##......##.f.TT',
+      'TTMMM##DDDDDD##PPPTT',
+      'TTMMM##DDDDDD##PPPTT',
+      'TTMMM##DDDDDD##PPPTT',
+      'TT.#.##DDDDDD##,,,TT',
+      'TT.#.##.L##L.##,,,TT',
+      'TT.##########R###.TT',
+      'TT.b..L..##.L.f.,.TT',
+      'TTTTTTTTT##TTTTTTTTT',
+      'TTTTTTTTT##TTTTTTTTT',
     ],
-    door: { x: 7, y: 23 }, gate: { x: 11, y: 0 },
-    // the buildings: `at` the map's letter, `door` the tile in front of it, `home` the one you walk into (HOMES below),
-    // else locked (a knock says one of `knock`); `roof` its tiles' colour
+    door: { x: 9, y: 17 }, gate: { x: 9, y: 0 },
+    // the buildings, every one facing south, its door on the road below it: `at` the map's letter, `door` the tile in
+    // front of it, `home` the one you walk into (`homes` below), else locked (a knock says one of `knock`); `roof` its
+    // tiles' colour
     buildings: [
-      { at: 'S', id: 'shop', name: 'DELIBIRD\'S GOODS', door: { x: 4, y: 6 }, home: 'shop', roof: '#3a78c8', kind: 'shop' },
-      { at: 'A', id: 'a', door: { x: 8, y: 6 }, roof: '#d8508a', knock: ['Nobody answers. A wind chime rings somewhere inside.', 'A sign on the door: "Out at the Shrine. Back at dusk."'] },
-      { at: 'J', id: 'john', name: 'JOHN', door: { x: 15, y: 6 }, home: 'john', roof: '#e8803a' },
-      { at: 'B', id: 'b', door: { x: 19, y: 6 }, roof: '#5aa060', knock: ['Someone inside calls out: "Not today, thank you!"', 'The door\'s locked. You hear a kettle whistling.'] },
-      { at: 'C', id: 'c', door: { x: 3, y: 14 }, roof: '#3a78c8', knock: ['No answer. A Hoothoot peeks out of the window and hides again.', 'A note: "Gone dancing. - the Kimono Girls\' biggest fan"'] },
-      { at: 'D', id: 'theater', name: 'DANCE THEATER', door: { x: 10, y: 16 }, home: 'theater', roof: '#c84838', kind: 'theater' },
-      { at: 'M', id: 'jahmes', name: 'JAHMES', door: { x: 19, y: 14 }, home: 'jahmes', roof: '#e8803a' },
+      { at: 'S', id: 'shop', name: 'DELIBIRD\'S GOODS', door: { x: 3, y: 6 }, home: 'shop', roof: '#3a78c8', kind: 'shop' },
+      { at: 'A', id: 'a', door: { x: 7, y: 6 }, roof: '#d8508a', knock: ['Nobody answers. A wind chime rings somewhere inside.', 'A sign on the door: "Out at the Shrine. Back at dusk."', 'Someone inside calls out: "Not today, thank you!"'] },
+      { at: 'J', id: 'john', name: 'JOHN', door: { x: 13, y: 6 }, home: 'john', roof: '#e8803a' },
+      { at: 'M', id: 'jahmes', name: 'JAHMES', door: { x: 3, y: 12 }, home: 'jahmes', roof: '#5aa060' },
+      { at: 'D', id: 'theater', name: 'DANCE THEATER', door: { x: 9, y: 13 }, home: 'theater', roof: '#c84838', kind: 'theater' },
       { at: 'P', id: 'pagoda', kind: 'pagoda' },
     ],
     // the rooms you can walk into
@@ -112,7 +105,7 @@ export const TOWNS = {
       ],
     },
     // where townsfolk stand about (tiles of `map`)
-    stands: [[9, 9], [4, 10], [17, 8], [13, 18], [9, 18], [16, 12], [3, 19], [20, 19], [12, 20], [14, 9]],
+    stands: [[5, 8], [14, 8], [11, 7], [4, 14], [15, 14], [8, 14], [16, 8], [12, 2], [13, 15], [4, 7]],
     folk: [
       { id: 'eevee', name: 'Eevee', move: 'hop', speed: 2.0, likes: ['stand'],
         quips: ['Vee!', 'Which one will I become?', 'The kimono dancers are practising again.', 'Eevee~'],
