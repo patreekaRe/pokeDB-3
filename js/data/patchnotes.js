@@ -48,6 +48,7 @@ export const NEXT = [
   ['base', 'Farm, Underwater and Desert furniture is properly 3D: a silo, hen coop with a hen at its window, tractor, windpump, corn row, mailbox, water pump, wool basket, six corals, kelp, a shipwreck, diving helmet, jellyfish lamp, giant pearl, seahorse, lanternfish, sunken arch, an obelisk, sphinx, a sarcophagus whose lid swings open, canopic jars, date palm, scarab lamp, desert tent, cobra, lotus column and 19 more.'],
   ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
   ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
+  ['hub', 'The Clearing\'s Halloween ghosts mostly stand about now, one strolling at a time in turn, and none ever stops in front of a door.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

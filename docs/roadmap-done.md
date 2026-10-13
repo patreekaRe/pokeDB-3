@@ -2204,3 +2204,10 @@ from parts. Done the same day (the user's ask: no paper cut-outs): what stands o
 carts, machines, booths, desks on legs, statues) one batch file a session, hand-built like the stove. Rendering
 works in the cloud: install `three@0.160.0` with npm in the scratchpad and route the CDN URL to it in Playwright, then
 `tools/models.html?ids=a,b` shows four sides each.
+
+**The Clearing's ghosts take turns** (2026-10-13, the user's ask: a Pokémon stood in front of the Poké Mall's doors; most
+should stand still, one walking at a time). `js/hub-spooky.js`: the four Halloween ghosts (the only Pokémon wandering the
+Clearing) stand at their spots; one at a time, in turn, strolls to a new one (`turn` / `nextWalk`, `PAUSE` 3-6 s between),
+the greeting walk counting as the turn. No ghost starts, stops or greets on or beside any place's doorstep (`byDoor` from
+`js/hub-3d.js`, every `places` step ±1 tile; `standAt()` moves a spawn off one). Checked headless: 45 s, never more than
+one walking, none standing by a door.
