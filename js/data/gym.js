@@ -375,6 +375,7 @@ const SHAUN = {
 /* Machew (the user's, 2026-10-13): the ultimate edgelord weeb, obsessed with Tales of Berseria, sure he is a character in
    it out to save the world, all ninja, swords and brooding. */
 const MACHEW = {
+  sprite: 'assets/trainers/gym/machew.png',
   intro: [
     ['...So. You found me. Few ever do.', 'The wind whispered your name. I did not listen. Go, {boss}.'],
     ['This world is rotting. The Abbey calls it "order". I call it a cage.', 'And I am the blade that cuts it open. Go, {boss}!'],
@@ -403,6 +404,7 @@ const MACHEW = {
 /* Jerome (the user's, 2026-10-13): madly obsessed with Reddit posts about GTA 6, it's all he talks about; his baby was just
    born and he barely notices; he doesn't care about being a Gym Leader, he's only doing it to pay for GTA 6. */
 const JEROME = {
+  sprite: 'assets/trainers/gym/jerome.png',
   intro: [
     ['Hold on, hold on. Did you see the new GTA 6 post on Reddit? Someone zoomed in on the trailer and found a gas station.', 'A GAS STATION. Anyway. Go, {boss}.'],
     ['I\'m only a Gym Leader for the money. GTA 6 Ultimate Edition doesn\'t pay for itself.', 'Go, {boss}. Make it quick.'],

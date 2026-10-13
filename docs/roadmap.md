@@ -456,11 +456,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
-  **Machew and Jerome** (2026-10-13, the user's personalities, no sprites yet, so still the shadow): Machew the edgelord
+  **Machew and Jerome** (2026-10-13, the user's personalities and sprites): Machew the edgelord
   weeb who thinks he's in Tales of Berseria (Velvet, Rokurou, Eizen, the Abbey, daemonblight, a plastic katana), Jerome
   who only talks about r/GTA6 posts, ignores his newborn and leads the gym to pay for GTA 6. 8 / 5 / 4 speeches each.
-  Every leader is now written; Machew's and Jerome's sprites still wanted (`assets/trainers/gym/machew.png` / `jerome.png`,
-  then `sprite:` on their lines).
+  Their sprites came the same day (`machew.png`, `jerome.png`): every leader now has lines and a sprite.
   **Next, the user's yes, 2026-10-13 (every leader is now written):** the 3D gym's
   before / after talk becomes the slide-in cinematic like Phil's (`gymTalk()` over the room once the braziers flare:
   big sprite, name plate, shadow till beaten; after the win their last words with the badge spinning in), the walk-up
