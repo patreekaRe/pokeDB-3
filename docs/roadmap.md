@@ -349,7 +349,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: Pat all singing, more Clarence, 2026-10-12, the user's ask: their
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: the slide-in talk in the 3D gym, 2026-10-13, the user's ask: their
   12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
   **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
   boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
@@ -470,7 +470,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   the room's speech window stepping aside; after the win they slide in again for their last words with the badge spinning
   in, then "You received the X Badge!" in the box and the doormat out; a tap on them later says their last line again
   (`gymRoom()` in `js/run.js`; `event3d()`'s new `onIn`, run once the room is up). Checked headless with Britt. Then, on the user's OK:
-  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/4abd289cd20235912c5f947b7c22d1d9e5a41346/index.html?gym=phil&hp=0.05 (`?gym=` any leader).
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/78523ad5496b35f01fd8a61902f38f41f4ffd5e3/index.html?gym=britt&hp=0.05 (`?gym=` any leader).
 
   ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
