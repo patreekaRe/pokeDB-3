@@ -37,6 +37,7 @@ import { MAKES as MAKES_W4 } from './base-models-w4.js';
 import { MAKES as MAKES_W5 } from './base-models-w5.js';
 import { MAKES as MAKES_W6 } from './base-models-w6.js';
 import { MAKES as MAKES_W7 } from './base-models-w7.js';
+import { MAKES as MAKES_T, ITEMS } from './base-models-t.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -762,7 +763,8 @@ B.desk = (K, s, W, D) => {
     K.put(cyl(0.25, 0.02, 0.25, 32).scale(0.85, 1, 1.1), K.gloss('#cfe6f4'), 0, h + 0.4, -dd / 2 + 0.07, 0, Math.PI / 2);
     K.put(rbox(0.06, 0.16, 0.04, 0.01), K.gloss(K.pal.a), 0, h + 0.08, -dd / 2 + 0.08);
   }
-  if (s.thing) thing(K, s, D, 0.02);
+  if (s.items) ITEMS[K.p.fam.replace(/desk$/, '')](K, L, h);
+  else if (s.thing) thing(K, s, D, 0.02);
 };
 
 /* storage */
@@ -841,7 +843,8 @@ B.counter = (K, s, W, D) => {
     K.put(cyl(0.02, 0.18, 0.025, 10), K.metal('#c8ccd4'), 0, h + 0.09, -0.16);
     K.put(torus(0.07, 0.016, Math.PI, 12), K.metal('#c8ccd4'), 0, h + 0.18, -0.09, Math.PI / 2);
   }
-  if (s.thing) thing(K, s, D, s.sink ? -0.05 : 0);
+  if (s.items) ITEMS[K.p.fam.replace(/counter$/, '')](K, L, h);
+  else if (s.thing) thing(K, s, D, s.sink ? -0.05 : 0);
 };
 
 B.crate = (K, s, W, D) => {
@@ -1701,7 +1704,7 @@ function ballMeshes(p, b, mats, paint) {
 
 // plants on other shelves (every unshaped kind on the Plants shelf is one too), and open frames, ladders, stands and
 // spindly things whose rounded hull lost their holes or their tops (the user's ask, 2026-10-09: the same as the plants)
-const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand',
+const LEAFY = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'orchidstand',
   'topiary', 'tomatovine', 'kelp', 'iceflower', 'sakura', 'fancoral', 'beanpole', 'plantstair', 'gourdarch', 'cornrow',
   'coatrack', 'gong', 'slide', 'rosearch', 'hurdle', 'pullupbar', 'refstand', 'lifeguard', 'dumbbells', 'easel', 'ferriswheel',
   'bunkbed', 'towelladder', 'crib', 'skirack', 'xylophone', 'logpile', 'skates', 'satdish', 'teslacoil', 'catapult',
@@ -1721,7 +1724,7 @@ const POT_MAX = 21;   // the tallest pot potAt() paints, in units
 const leafy = (p) => (p.w === p.h && p.group === 'Plants') || LEAFY.has(p.fam);
 // only a plant's base is a pot to turn on a lathe; anything else's would spin a bag or a stack of cases round
 const potted = (p) => p.group === 'Plants' || LEAFY.has(p.fam) && LEAFY_PLANTS.has(p.fam);
-const LEAFY_PLANTS = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'centerplant', 'orchidstand',
+const LEAFY_PLANTS = new Set(['alienplant', 'appletree', 'citrustree', 'datepalm', 'deadtree', 'palmtree', 'orchidstand',
   'topiary', 'tomatovine', 'kelp', 'iceflower', 'sakura', 'fancoral', 'beanpole', 'plantstair', 'cornrow', 'kadomatsu', 'papyrus',
   'flytrap', 'monstera', 'lilytub', 'coral', 'tubecoral', 'stagcoral', 'bubblecoral', 'anemone', 'tomatocrate', 'umbrellas',
   'trophy', 'candelabra', 'litwick', 'gymstatue', 'cobrastatue', 'wingstatue', 'icestar', 'iceheart', 'icemoon', 'iceshards', 'breadbasket']);
@@ -1765,7 +1768,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }

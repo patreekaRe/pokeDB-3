@@ -466,18 +466,66 @@ export const MAKES = {
   },
 
   teepee(K, s, W, D, L) {
-    const { THREE, cyl } = L, r = u(18), h = u(72), side = Math.PI / 6;
-    // a six-sided canvas cone in stripes, one face turned to you with its dark doorway
-    K.put(cyl(0.002, h, r, 6, true).rotateY(side), K.pic(stripes(K.pal.c, K.pal.p, 12)), 0, h / 2, 0);
-    const a = r * Math.cos(side), tilt = Math.atan2(a, h), slope = (y) => y / Math.cos(tilt);
-    const door = new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-u(7), 0), new THREE.Vector2(u(7), 0), new THREE.Vector2(0, slope(u(32)))]));
-    K.put(door.rotateX(-tilt), K.plain('#3a2a3a'), 0, 0.002, a + 0.004);
-    const flap = new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(u(6), 0), new THREE.Vector2(0, slope(u(30)))]));
-    K.put(flap.rotateX(-tilt).rotateY(0.5), K.gloss(L.tone(K.pal.c, 0.85)), u(5.5), 0.002, a + 0.02);
-    // its poles crossing out of the top, a pennant on one
-    const top = [0, h - u(4), 0];
-    for (const [dx, dz] of [[-1, 0.4], [1, 0.4], [0, -1]]) rod(K, L, K.wood(), top, [dx * u(6), h + u(14), dz * u(5)], u(0.9));
-    K.put(L.rbox(u(5), u(4), 0.008, 0.002), K.gloss(K.pal.a), u(6) + u(2.5), h + u(12), u(2));
+    const { THREE, cyl, ball, blob } = L, r = u(19), h = u(70), sides = 6, door = sides - 1;
+    // six cloth panels between six poles, each sagging in a little between them; the front one is the doorway, its two
+    // halves tied back; a dark inside, a cushion peeking out, the poles crossing out of the top, bunting, a pennant
+    const pole = (i, t) => { const a = (i + 0.5) / sides * TAU; return [Math.sin(a) * r * (1 - t), t * h, Math.cos(a) * r * (1 - t)]; };
+    const panel = (i, cut) => {
+      const n = 24, m = 28, pos = [], uv = [], idx = [];
+      for (let j = 0; j <= m; j++) for (let k = 0; k <= n; k++) {
+        const s = k / n, t = j / m * 0.94, a = pole(i, t), b = pole(i + 1, t), sag = 0.05 * Math.sin(s * Math.PI) * (1 - t);
+        const x = a[0] + (b[0] - a[0]) * s, z = a[2] + (b[2] - a[2]) * s, len = Math.hypot(x, z) || 1;
+        pos.push(x - x / len * sag, t * h, z - z / len * sag);
+        uv.push((i + s) / sides, t);
+      }
+      for (let j = 0; j < m; j++) for (let k = 0; k < n; k++) {
+        const s = (k + 0.5) / n, t = (j + 0.5) / m * 0.94;
+        if (cut && t < 0.5 && Math.abs(s - 0.5) < 0.5 * (1 - t / 0.5) + 0.04) continue;
+        const q = j * (n + 1) + k;
+        idx.push(q, q + 1, q + n + 1, q + 1, q + n + 2, q + n + 1);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      return g;
+    };
+    const cloth = K.pic(stripes(K.pal.c, K.pal.p, sides * 2)), dark = K.plain('#2a2030');
+    for (let i = 0; i < sides; i++) {
+      const g = panel(i, i === door);
+      K.put(g.clone(), cloth);
+      const back = g.clone(), ix = back.index.array;
+      for (let q = 0; q < ix.length; q += 3) [ix[q + 1], ix[q + 2]] = [ix[q + 2], ix[q + 1]];
+      back.computeVertexNormals();
+      K.put(back, dark);
+    }
+    K.put(cyl(r - 0.03, 0.006, r - 0.03, sides), K.cloth(L.tone(K.pal.c, 0.55)), 0, 0.003, 0, Math.PI / sides);
+    // the doorway's flaps rolled up and tied either side of it
+    for (const sg of [-1, 1]) {
+      const a = pole(door + (sg > 0 ? 1 : 0), 0.28), b = pole(door + (sg > 0 ? 1 : 0), 0.02);
+      const mid = [(a[0] + b[0]) / 2 * 0.9 + (sg > 0 ? -0.02 : 0.02), (a[1] + b[1]) / 2, (a[2] + b[2]) / 2 + 0.03];
+      K.put(blob(0.07, 0.36, 0.07, 0.6, 0.6), K.cloth(L.tone(K.pal.c, 0.9)), mid[0] - sg * 0.04, mid[1] + 0.1, mid[2], 0, 0, sg * 0.32);
+      K.put(L.torus(0.04, 0.008, TAU, 12), K.cloth(K.pal.a), mid[0] - sg * 0.07, mid[1] + 0.2, mid[2], 0, Math.PI / 2, sg * 0.32);
+    }
+    K.put(blob(0.3, 0.1, 0.24, 0.45, 0.5), K.cloth(K.pal.a), 0, 0.05, 0.12);
+    K.put(ball(0.06, 12, 10), K.gloss('#f8d030'), 0.08, 0.12, 0.08);
+    // its poles out of the top
+    for (let i = 0; i < sides; i++) {
+      const a = pole(i, 0), b = pole(i, 1.22);
+      rod(K, L, K.wood(), [a[0] * 1.01, 0, a[2] * 1.01], [b[0], b[1], b[2]], u(0.8));
+    }
+    K.put(cyl(u(2), u(2.4), u(2.6), 10), K.cloth(L.tone(K.pal.p, 0.9)), 0, h * 0.95, 0);
+    const tip = pole(1, 1.22);
+    K.put(L.rbox(u(6), u(4), 0.008, 0.002), K.gloss(K.pal.a), tip[0] + u(3), tip[1] - u(2.5), tip[2]);
+    // bunting swagged round the cone at a third of its height
+    const flags = ['#e04848', '#f8d030', '#4a98d8', '#58b848'];
+    for (let i = 0; i < 18; i++) {
+      const a = i / 18 * TAU, t = 0.52 + 0.04 * Math.sin(i / 3 * Math.PI), rr = r * (1 - t) + 0.012;
+      if (Math.abs(Math.sin(a / 2)) < 0.22) continue;
+      const g = new THREE.ConeGeometry(0.03, 0.06, 3).rotateZ(Math.PI).scale(1, 1, 0.2);
+      K.put(g, K.gloss(flags[i % 4]), Math.sin(a) * rr, t * h - 0.03, Math.cos(a) * rr, a);
+    }
   },
 
   ballpit(K, s, W, D, L) {

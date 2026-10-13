@@ -9,28 +9,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Wall furniture in 3D** (the user's ask, 2026-10-12: wall pieces stood in the store and hung in the room as flat
-paintings; "make new batches"). 204 wall kinds, built from parts like the floor batches, one file a batch
-(`js/base-models-w*.js`, its head says how: a wall piece's back is z 0, `X(i, W)` / `Y(j)` put a part where it was
-painted on its 96-unit strip, `cut()` crops the painting for a pane or canvas, fresh each hour for a window's sky). The
-room hangs a modelled wall piece by its back (`makePiece()` in `js/base-3d.js`, its crops lit in its `glow` colours,
-the window's light shaft kept) and the store hangs it on its display board (`buildFloor()` in `js/mall-furniture.js`).
-**Batch W1 done 2026-10-12** (`js/base-models-w.js`): the windows (sash window, small window with its herb pot,
-curtained window with real folds and ties, round window, arched window), the classic poster and the 13 motif posters
-(paper curling off the wall, a pin), the painting and the 8 framed pictures (moulding, a recessed canvas), the wall shelf
-(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. **Batch W2 done
-2026-10-13** (`js/base-models-w2.js`, cloth and paper, 50 kinds): `drape()` lays a crop on a finely cut sheet whose depth
-is a function (folds, ripples, curls), its outline the painting's alpha (`clipped()` cuts what the painting filled with
-shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. **Batch W3 done 2026-10-13** (`js/base-models-w3.js`, boards and plaques, 27 kinds): frames round a crop of the
-painting with what stood on it stood off it (pinned notes and photos, donuts on pegs, tray markers and chalk, metal
-badges under glass, lit seven-segment digits, a pull-down screen on its roller); `inlay()` lifts a tablet's coloured
-glyph proud of the stone (the crop with every unsaturated pixel cleared); the winged sun and golden wings are two layers
-of the painting bent back towards the wall. **Batch W4 done 2026-10-13** (`js/base-models-w4.js`, windows, mirrors and doors, 18 kinds): arched frames by `archPane()` (moonlit, sky arch, stained glass with lead came), sashes and viewports round the hour's sky, frost as the painting's white specks in front of the glass, the carriage window's curtains cut to their painted edge, silvered glass (`silver()`), and stone laid block by block round its openings (`masonry()`: the arrow slit, the portcullis's gateway). **Batch W5 done 2026-10-13** (`js/base-models-w5.js`, shelves, racks and hooks, 20 kinds): `plank()` / `brace()` stand jars, bottles, tins and jam pots on shelves deep enough to hold them, `hook()` hangs pans and utensils over their rails, towels fold over theirs (`drape()`), Poké Ball bookends (`pokeball()`), records in shadow boxes, the control panel's desk slopes out under its screens, the solar panel leans out from its foot (`leaning()`). **Batch W6 done 2026-10-13** (`js/base-models-w6.js`, lights, clocks and strings, 33 kinds): what hangs, hangs: lanterns, the disco ball, chandelier, mobile and pots swing from a bracket out of the wall (`arm()`), strings sag out from their two screw eyes as well as down (`string()`, returning its depth for what hangs off it: bulbs, pennants, bats, flakes, mittens, washing), shades, paper, bulbs and flames are `K.glow()`, clocks share `face()` (dial, ticks, hands, glass dome), and a sign's letters are its own painted pixels lifted proud of its face (`lift()`, a colour test by `near()`), so the glow mask still lights them. **Batch W7 done 2026-10-13, the last** (`js/base-models-w7.js`, mounted things, 27 kinds; every wall kind now has a model): built whole from rods between painted points (`between()`), parts laid along a painted line (`along()`), cones (`spike()`), puffed stars (`puff()`), flattened tubes (`flat()`), gears and hex cells; the painting laid on where it is the thing's surface (the dartboard's rings, the prize wheel, the masks' carving with real eye holes, the fan's pleats, the kite's billow); the piñata is the star motif's own tufts. `?stock=id,id...` fills the
-store with those pieces for a page load (`furnitureStock()`), and `tools/models.html` frames wall pieces by their middle. Next (Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
-- Touch-ups (floor pieces the survey of 2026-10-12 found weak): the pirate treasure hoard (its chest small and melted
-  into the gold), the Sky Palace orbs (floating loose over their cloud, the halo apart), the play tent / teepee (a flat
-  card), the small things on kitchen and office counters (too small to read), the tall Center plant (flat leaf cards).
-
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
