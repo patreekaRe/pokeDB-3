@@ -45,6 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
   ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
+  ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

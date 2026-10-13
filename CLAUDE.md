@@ -841,8 +841,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   start. `?meowth` shuts the shop again; `?crossroads&meowth` plays the talk.
 - **Gym Leaders** (2026-10-13, live since patch 1.16; the user's friends, history in `docs/roadmap-done.md`): `GYM_LEADERS`
   in `js/data/gym.js`, 13 leaders, two or three a biome, each sending out its bosses (`leaderFor()`; never Eternatus, the
-  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by
-  boss), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
+  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by boss, `talk` one for the slide-in talks only,
+  Clarence's), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
   Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
   `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
   the room or, without 3D, over the battle; after a win their `beaten` pair is split: the losing line slides in on the battle

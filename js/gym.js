@@ -55,7 +55,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}`);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
-  who.src = spriteOf(l);
+  who.src = l.talk || spriteOf(l);
   who.alt = '';
   const plate = el('div', 'gym-plate');
   plate.append(el('small', '', 'GYM LEADER '), l.name);
