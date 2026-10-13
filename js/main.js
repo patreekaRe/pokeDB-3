@@ -129,10 +129,13 @@ function previewStarter(starter) {
 
 // The run stays saved (the user's call: going to the menu shouldn't cost it). Only the map is a checkpoint, so
 // leaving from a fight or room means replaying it, as a refresh would. True once it has gone.
-async function requestMenu() {
+async function requestMenu(sure) {
   if (isRunActive()) {
-    if (document.body.dataset.screen !== 'map-screen'
-      && !(await confirmDialog('Back to the menu? Your run is saved, but this room will start over when you continue.', 'Menu'))) return false;
+    const onMap = document.body.dataset.screen === 'map-screen';
+    const line = isPeeking() ? 'Back to the menu? This test run won\'t be kept.'
+      : onMap ? 'Back to the menu? Your run is saved, so you can carry on from Continue.'
+      : 'Back to the menu? Your run is saved, but this room will start over when you continue.';
+    if (sure !== true && !(await confirmDialog(line, 'Menu'))) return false;
     suspendRun();
     showHome();
     return true;
@@ -290,7 +293,7 @@ function init() {
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {
     const left = isPeeking() ? 'This test climb won\'t be kept.' : 'Your climb is saved, so you can carry on from Continue.';
-    if (await confirmDialog(`Leave the Sky Pillar for the menu? ${left}`, 'Menu')) requestMenu();
+    if (await confirmDialog(`Leave the Sky Pillar for the menu? ${left}`, 'Menu')) requestMenu(true);
   });
   $('room-home').addEventListener('click', () => $('brand-btn').click());
   // only shown while it's the room bar's Leave key, or its Skip key

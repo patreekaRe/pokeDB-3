@@ -2383,3 +2383,4 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
 
 - **Map: Gym Leader beside the boss** (2026-10-13, the user's call): the leader and the boss Pokémon's silhouette stand side by side over the boss room, z-index 3 in front of rooms, rocks and lava (`.map-boss-shadow.paired` / `.map-leader`, `renderMap()` in `js/map.js`); the Pokémon stays a silhouette till sent out.
 - **Clarence's talk sprite** (2026-10-13, the user's call): `clarence-2.png` only in his slide-in talks (`talk` in `js/data/gym.js`, read by `gymTalk()`), `clarence.png` everywhere else; his per-boss `sprites` dropped.
+- **Main menu asks on the map too** (2026-10-13, the user's ask): `requestMenu()` in `js/main.js` skipped the ask on the map; it now always asks (a line for the map, a room, a test run), the Sky Pillar dock's own ask passing `sure`. The only way to the menu mid-run; nothing else missed it.

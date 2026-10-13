@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'Main menu in the Pokédex now asks first on the map too, so a stray tap can\'t drop you out of your run.'],
   ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
   ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
   ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
