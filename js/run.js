@@ -15,7 +15,8 @@
    ============================================================ */
 
 import { leaderFor, gymWins, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
-import { gymTalk, gymLines, badgePop } from './gym.js';
+import { gymTalk } from './gym.js';
+import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
@@ -41,7 +42,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, speaker, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
@@ -1484,45 +1485,57 @@ async function fight(node, { talked = false } = {}) {
   } else enter();
 }
 
-/** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court and they talk,
-    a silhouette till they speak if you've never beaten them, then the fight; after a win you're back in it for their last
-    words and the badge, and walk out over the doormat to the rewards. `won` is the fight's result once it's over. Without
-    the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk (gymTalk()). */
+/** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
+    flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
+    the fight; after a win you're back in it, they slide in for their last words and the badge, and you walk out over the
+    doormat to the rewards. `won` is the fight's result once it's over. Without the 3D room (`?event2d`, or Three.js won't
+    load) it's the battle's own talk. */
 function gymRoom(node, leader, won = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const intro = gymLines(leader, talkOf(leader, 'intro', first), { boss }), said = talkOf(leader, 'beaten');
-  const beaten = gymLines(leader, first ? said : said.slice(0, 1), { boss });
+  const said = talkOf(leader, 'beaten'), beaten = first ? said : said.slice(0, 1);
   let talking = false;
-  const talk = () => {
-    if (talking || run !== thisRun) return;
+  // the speech window steps aside while they talk over the room
+  const say = async (lines, opts) => {
     talking = true;
+    sayLines([]);
+    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; }
+  };
+  const talk = async () => {
+    if (talking || run !== thisRun) return;
     const room = event3dMod?.eventRoom3d();
     room?.light();
     room?.does('npc', 'npc-nod');
-    speaker(leader.name);
-    sayLines(intro, 'reward-log', () => { if (run === thisRun) fight(node, { talked: true }); });
+    talking = true;
+    await sleep(battleFx() ? 700 : 0);   // the gong and the push in first
+    if (run !== thisRun) return;
+    await say(talkOf(leader, 'intro', first));
+    talking = true;   // the fight is coming: no second talk
+    if (run === thisRun) fight(node, { talked: true });
   };
   const after = !!won;
   if (!after) playMusic('gym-room');   // after the win the fight's gym-victory plays on through the badge
   const leave = () => afterFight(node, { ...won, gymSaid: true });
+  const lastWords = async () => {
+    if (talking || run !== thisRun) return;
+    event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
+    const badge = first && !peeking;
+    await say(beaten, { badge });
+    if (run === thisRun && badge) sayLines([`You received the ${leader.badge}!`]);
+  };
   showChoice({
     title: 'POKéMON GYM',
-    sub: after ? beaten : first ? 'A Gym Leader waits at the far end. Walk up to them to battle.' : `Gym Leader ${leader.name} waits at the far end. Walk up to them to battle.`,
+    sub: after ? [] : first ? 'A Gym Leader waits at the far end. Walk up to them to battle.' : `Gym Leader ${leader.name} waits at the far end. Walk up to them to battle.`,
     options: after ? [] : [spotOption('Battle', 'Challenge the Gym Leader.', talk)],   // beaten, a tap on them just talks
     skipLabel: 'Leave',
     onSkip: after ? leave : undefined,
     layout: 'event-room gym-room',
   });
-  if (after) speaker(leader.name);
+  let spoke = false;
   event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
     spent: after,
-    onPick: after ? () => { speaker(leader.name); sayLines([beaten.at(-1)]); } : talk,
+    onPick: after ? () => { if (spoke && !talking && run === thisRun) say([said.at(-1)]); } : talk,
     extra: { leader, dark: first && !after },
-    onSaid: after ? () => {
-      if (run !== thisRun) return;
-      event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-      if (first && !peeking) { badgePop(leader); speaker(); sayLines([`You received the ${leader.badge}!`]); }
-    } : null,
+    onIn: after ? () => { spoke = true; lastWords(); } : null,
     onFail: () => (after ? leave() : fight(node)),
   });
 }
@@ -2676,7 +2689,7 @@ let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
     how a choice is pressed (the grotto's chest is no `.reward-option`). */
-function event3d(node, kind, figures, after, { onPick = null, spent = false, extra = {}, onSaid = null, onFail = null } = {}) {
+function event3d(node, kind, figures, after, { onPick = null, spent = false, extra = {}, onSaid = null, onIn = null, onFail = null } = {}) {
   if (!EVENT_3D.includes(kind) || new URLSearchParams(location.search).has('event2d')) return;
   const box = $('reward-options'), thisRun = run;
   box.classList.add('c3d-wait');
@@ -2691,7 +2704,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
       onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
     });
-  }).then(() => setTimeout(greet, 350))
+  }).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
     .catch(err => {
       console.warn('3D event room unavailable', err);
       if (!onFail) return greet();

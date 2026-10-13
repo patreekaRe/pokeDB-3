@@ -465,10 +465,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   weeb who thinks he's in Tales of Berseria (Velvet, Rokurou, Eizen, the Abbey, daemonblight, a plastic katana), Jerome
   who only talks about r/GTA6 posts, ignores his newborn and leads the gym to pay for GTA 6. 8 / 5 / 4 speeches each.
   Their sprites came the same day (`machew.png`, `jerome.png`): every leader now has lines and a sprite.
-  **Next, the user's yes, 2026-10-13 (every leader is now written):** the 3D gym's
-  before / after talk becomes the slide-in cinematic like Phil's (`gymTalk()` over the room once the braziers flare:
-  big sprite, name plate, shadow till beaten; after the win their last words with the badge spinning in), the walk-up
-  kept as the build-up. Then, on the user's OK:
+  **The slide-in talk in the 3D gym** (2026-10-13, the user's yes): walking up, the great braziers flare with the gong and
+  the shot pushes in, then the leader slides in big over the room to talk (`gymTalk()`, shadow till beaten once, name plate),
+  the room's speech window stepping aside; after the win they slide in again for their last words with the badge spinning
+  in, then "You received the X Badge!" in the box and the doormat out; a tap on them later says their last line again
+  (`gymRoom()` in `js/run.js`; `event3d()`'s new `onIn`, run once the room is up). Checked headless with Britt. Then, on the user's OK:
   merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/4abd289cd20235912c5f947b7c22d1d9e5a41346/index.html?gym=phil&hp=0.05 (`?gym=` any leader).
 
   ▶ Run in: CLOUD.
