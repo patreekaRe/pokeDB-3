@@ -3943,9 +3943,9 @@ function thatchArt() {
 }
 
 /** A hip roof `w` x `d` at its eaves, `rise` tall: thatch, a cap painted the hut's colour over its top, a finial. */
-function hipRoof(parent, { w, d, rise, y, col, crest }) {
+function hipRoof(parent, { w, d, rise, y, col, crest, thatch = thatchArt() }) {
   const geo = new THREE.CylinderGeometry(0.0, Math.SQRT1_2, 1, 4, 1); geo.rotateY(Math.PI / 4); geo.translate(0, 0.5, 0);
-  const thatch = thatchArt(); thatch.repeat.set(Math.max(w, d) / 1.2, rise * 2);
+  thatch.repeat.set(Math.max(w, d) / 1.2, rise * 2);
   const roof = mesh(geo, std({ map: thatch, roughness: 0.95, flatShading: true }), 0, y, 0, parent);
   roof.scale.set(w, rise, d);
   const cap = mesh(geo, std({ color: col, roughness: 0.6, flatShading: true }), 0, y + rise * 0.55, 0, parent);
@@ -4245,6 +4245,796 @@ function lagoonExtras(town, L) {
   }));
 }
 
+/* Highbough, Thornwood's (Fortree's): a village up in the canopy. The ground is cut away everywhere but the platforms
+   (`holes`), so you walk on round decks of planks round the giant trunks and on rope bridges between them, with the
+   jungle floor far below in the mist; treehouses with leaf-shingle roofs, their trees going up through them into crowns;
+   the Great Tree in the middle, its deck in rings of planks round it; lone giants standing in the drop; lifts on their
+   ropes; the vine gate out. */
+const DROP = -3.6;   // the jungle floor, far below the decks
+const ROUND = 0.45;  // a platform's outside corners are rounded this far (in tiles), its rim curving round with them
+const CANOPY = { deck: ['#b07a4c', '#a06c40', '#c08a58', '#946238'], seam: '#4a2c18', rim: '#5a3a22', leaf: ['#4e9a3a', '#3a7e30', '#2a6226', '#6ab04a'], bark: '#6a4a32', barkDark: '#4a3222' };
+
+/** What each tile of a canopy town is: open air (a lone trunk's and a lift's too), a rope bridge, a platform's planks, the
+    Great Tree's deck or the canopy round the town; a prop stands on what's round it. */
+function canopyKinds(town) {
+  const { map } = town, at = (x, y) => map[y]?.[x];
+  const great = new Set(town.buildings.filter(b => b.kind === 'greattree' || b.kind === 'waystone').map(b => b.at));
+  return (x, y) => {
+    const ch = at(x, y);
+    if (ch === undefined || ch === 'T') return 'canopy';
+    if (ch === '~' || ch === '|' || ch === 'y') return 'air';
+    if (ch === '-') return 'bridge';
+    if (ch === '#' || great.has(ch)) return 'plaza';
+    if ('LbckR'.includes(ch)) return STEPS.some(([dx, dy]) => at(x + dx, y + dy) === '#') ? 'plaza' : 'deck';
+    return 'deck';
+  };
+}
+
+/** The ground of a canopy town: nothing over the drop, rope bridges of slats with gaps you see down through, platforms of
+    planks with planters and moss, the Great Tree's deck in rings round its trunk, the canopy's leaves round the edge. */
+function canopyGround(town) {
+  const kind = canopyKinds(town), { map } = town;
+  const tree = footprint(map, town.buildings.find(b => b.kind === 'greattree')?.at ?? '?');
+  return (c) => {
+    const g = c.getContext('2d'), T = 16, r = seeded(83);
+    g.clearRect(-1, -1, COLS * T + 2, ROWS * T + 2);
+    const open = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && kind(x, y) === 'air';
+    const solid = (x, y) => !['air', 'canopy'].includes(kind(x, y)) && x >= 0 && y >= 0 && x < COLS && y < ROWS;
+    const each = (fn) => map.forEach((row, y) => [...row].forEach((ch, x) => fn(ch, x, y, kind(x, y))));
+    // the Great Tree's deck first, in one go: rings of planks round the trunk
+    g.save();
+    g.beginPath();
+    each((ch, x, y, k) => { if (k === 'plaza') g.rect(x * T, y * T, T, T); });
+    g.clip();
+    const cx = (tree.x0 + tree.x1 + 1) / 2 * T, cy = (tree.y0 + tree.y1 + 1) / 2 * T;
+    g.fillStyle = CANOPY.seam; g.fillRect(0, 0, COLS * T, ROWS * T);
+    for (let rad = 6, n = 0; rad < 14 * T; rad += 4.2, n++) {
+      const segs = Math.max(6, Math.round(rad / 9));
+      for (let i = 0; i < segs; i++) {
+        const a0 = (i + (n % 2) * 0.5) / segs * Math.PI * 2, a1 = a0 + Math.PI * 2 / segs - 0.7 / rad;
+        g.strokeStyle = CANOPY.deck[Math.floor(r() * 4)]; g.lineWidth = 3.5; g.lineCap = 'butt';
+        g.beginPath(); g.arc(cx, cy, rad, a0, a1); g.stroke();
+      }
+      g.strokeStyle = 'rgba(255,240,210,0.12)'; g.lineWidth = 0.6; g.beginPath(); g.arc(cx, cy, rad - 1.2, 0, Math.PI * 2); g.stroke();
+    }
+    g.restore();
+    each((ch, x, y, k) => {
+      if (k === 'air' || k === 'plaza') return;
+      const X = x * T, Y = y * T;
+      g.save();
+      g.beginPath();
+      const rad = (dx, dy) => (k !== 'bridge' && open(x + dx, y) && open(x, y + dy) ? ROUND * T : 0);
+      g.roundRect(X, Y, T, T, [rad(-1, -1), rad(1, -1), rad(1, 1), rad(-1, 1)]);
+      g.clip();
+      if (k === 'canopy') {   // the canopy's top: a mat of leaves, darker in its gaps
+        g.fillStyle = '#20381a'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 16; i++) { g.fillStyle = CANOPY.leaf[Math.floor(r() * 4)]; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 1.6 + r() * 2.4, 1 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
+      } else if (k === 'bridge') {
+        // slats across the way you walk, a gap between each, carried on two ropes; a turn gets a square landing
+        const along = (dx, dy) => solid(x + dx, y + dy);
+        const h = along(-1, 0) || along(1, 0), v = along(0, -1) || along(0, 1);
+        const slat = (i, across) => {
+          g.fillStyle = CANOPY.deck[Math.floor(r() * 4)];
+          if (across) g.fillRect(X + i + 0.3, Y + 2.6, 2.6, T - 5.2); else g.fillRect(X + 2.6, Y + i + 0.3, T - 5.2, 2.6);
+          g.fillStyle = 'rgba(255,240,200,0.14)';
+          if (across) g.fillRect(X + i + 0.5, Y + 2.6, 0.5, T - 5.2); else g.fillRect(X + 2.6, Y + i + 0.5, T - 5.2, 0.5);
+        };
+        if (h && v) { g.fillStyle = CANOPY.seam; g.fillRect(X + 2, Y + 2, T - 4, T - 4); for (let i = 2; i < T - 3; i += 3.4) { g.fillStyle = CANOPY.deck[Math.floor(r() * 4)]; g.fillRect(X + 2, Y + i, T - 4, 2.8); } }
+        else for (let i = 0; i < T; i += 4) slat(i, !v);
+        g.strokeStyle = '#c8b080'; g.lineWidth = 0.9;
+        g.beginPath();
+        if (!v || h) { g.moveTo(X, Y + 3.1); g.lineTo(X + T, Y + 3.1); g.moveTo(X, Y + T - 3.1); g.lineTo(X + T, Y + T - 3.1); }
+        if (!h || v) { g.moveTo(X + 3.1, Y); g.lineTo(X + 3.1, Y + T); g.moveTo(X + T - 3.1, Y); g.lineTo(X + T - 3.1, Y + T); }
+        g.stroke();
+      } else {
+        // a platform's planks, laid across; moss, planters of flowers
+        g.fillStyle = CANOPY.seam; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 4; i++) {
+          const off = ((x * 7 + i * 3) % 4) * 4;
+          for (let sx = -off; sx < T; sx += 16) {
+            g.fillStyle = CANOPY.deck[Math.floor(r() * 4)]; g.fillRect(X + sx + 0.3, Y + i * 4 + 0.3, 15.4, 3.4);
+            g.fillStyle = 'rgba(60,30,10,0.4)'; g.fillRect(X + sx + 1.2, Y + i * 4 + 1.6, 0.7, 0.7); g.fillRect(X + sx + 14, Y + i * 4 + 1.6, 0.7, 0.7);
+          }
+          g.fillStyle = 'rgba(255,240,200,0.12)'; g.fillRect(X, Y + i * 4 + 0.6, T, 0.5);
+        }
+        if (ch === ',') for (let i = 0; i < 9; i++) { g.fillStyle = ['#5a9a3a', '#4a8a30', '#6aaa48'][i % 3]; g.globalAlpha = 0.8; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 1.5 + r() * 2.5, 1 + r() * 1.5, r() * 3, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+        if (ch === 'f') {   // a planter box of jungle flowers
+          g.fillStyle = '#5a3a20'; g.fillRect(X + 2, Y + 3, T - 4, T - 6);
+          g.fillStyle = '#3a2412'; g.fillRect(X + 3, Y + 4, T - 6, T - 8);
+          for (let i = 0; i < 6; i++) {
+            const fx = X + 4 + r() * (T - 8), fy = Y + 5 + r() * (T - 10);
+            g.fillStyle = '#3e8a34'; g.beginPath(); g.ellipse(fx + 1.2, fy + 1, 1.8, 0.9, 0.5, 0, Math.PI * 2); g.fill();
+            g.fillStyle = ['#f84a8a', '#f8a030', '#b070f0', '#f8e050'][i % 4];
+            for (let p = 0; p < 5; p++) { const a = p / 5 * Math.PI * 2; g.beginPath(); g.arc(fx + Math.cos(a) * 1.1, fy + Math.sin(a) * 1.1, 0.9, 0, Math.PI * 2); g.fill(); }
+          }
+        }
+      }
+      if (k !== 'bridge') {   // a dark lip where it drops away
+        g.fillStyle = k === 'canopy' ? 'rgba(10,20,8,0.4)' : 'rgba(30,16,8,0.45)';
+        if (open(x - 1, y)) g.fillRect(X, Y, 1.4, T);
+        if (open(x + 1, y)) g.fillRect(X + T - 1.4, Y, 1.4, T);
+        if (open(x, y - 1)) g.fillRect(X, Y, T, 1.4);
+        if (open(x, y + 1)) g.fillRect(X, Y + T - 1.4, T, 1.4);
+      }
+      g.restore();
+    });
+    return c;
+  };
+}
+
+/** Many beams between pairs of points ([ax, ay, az, bx, by, bz]), cheaply: struts, ropes, vines. */
+function beams(list, r, m, { taper = 1, sides = 6, shadow = true } = {}) {
+  if (!list.length) return null;
+  const geo = new THREE.CylinderGeometry(r * taper, r, 1, sides);
+  const o = new THREE.InstancedMesh(geo, m, list.length), m4 = new THREE.Matrix4(), q = new THREE.Quaternion();
+  const up = new THREE.Vector3(0, 1, 0), d = new THREE.Vector3(), p = new THREE.Vector3(), s = new THREE.Vector3();
+  list.forEach(([ax, ay, az, bx, by, bz], i) => {
+    d.set(bx - ax, by - ay, bz - az);
+    const len = d.length();
+    q.setFromUnitVectors(up, d.normalize());
+    o.setMatrixAt(i, m4.compose(p.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2), q, s.set(1, len, 1)));
+  });
+  o.castShadow = shadow; o.receiveShadow = true;
+  o.raycast = () => {};
+  B.group.add(o);
+  return o;
+}
+
+/** A rope from a to b sagging `sag` at its middle, as `n` beams, onto `out`. */
+function sagging(out, [ax, ay, az], [bx, by, bz], sag, n = 6) {
+  const pt = (t) => [ax + (bx - ax) * t, ay + (by - ay) * t - Math.sin(t * Math.PI) * sag, az + (bz - az) * t];
+  for (let i = 0; i < n; i++) out.push([...pt(i / n), ...pt((i + 1) / n)]);
+}
+
+/** Bark: grooves down a trunk, for its texture. */
+function barkArt() {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 128;
+  const g = c.getContext('2d'), r = seeded(61);
+  g.fillStyle = CANOPY.bark; g.fillRect(0, 0, 64, 128);
+  for (let i = 0; i < 26; i++) {
+    let x = r() * 64;
+    g.strokeStyle = r() < 0.5 ? CANOPY.barkDark : '#8a6648'; g.lineWidth = 1 + r() * 2.2;
+    g.beginPath(); g.moveTo(x, 0);
+    for (let y = 0; y <= 128; y += 16) { x += (r() - 0.5) * 5; g.lineTo(x, y); }
+    g.stroke();
+  }
+  for (let i = 0; i < 30; i++) { g.fillStyle = r() < 0.5 ? 'rgba(90,150,60,0.55)' : 'rgba(40,24,14,0.4)'; g.beginPath(); g.ellipse(r() * 64, r() * 128, 2 + r() * 4, 1 + r() * 2, 0, 0, Math.PI * 2); g.fill(); }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+let barkMat = null;
+const bark = () => (barkMat ??= std({ map: barkArt(), roughness: 0.95 }));
+
+/** A crown of leaves at (x, y, z), `k` its size: a few lumpy blobs, flat shaded. */
+function crown(parent, x, y, z, k, rnd, { cols = CANOPY.leaf } = {}) {
+  const leaf = cols.map(c => std({ color: c, roughness: 0.9, flatShading: true, transparent: true }));
+  const at = parent === B.group ? { x, z } : { x: parent.position.x + x, z: parent.position.z + z };
+  if (!B.crowns) {   // a crown between the camera and your Pokémon fades, so the trees never hide it
+    B.crowns = [];
+    const list = B.crowns;
+    B.ticks.push(() => {
+      for (const c of list) {
+        const behind = Math.abs(walker.x - c.x) < c.r && walker.z < c.z + 0.6 && walker.z > c.z - c.y * 1.3;
+        const to = behind ? 0.28 : 1, op = c.leaf[0].opacity + (to - c.leaf[0].opacity) * 0.15;
+        for (const m of c.leaf) { m.opacity = op; m.depthWrite = op > 0.95; }
+      }
+    });
+  }
+  B.crowns.push({ ...at, y, r: k * 1.5 + 0.4, leaf });
+  for (const [dx, dy, dz, rr] of [[0, 0, 0, 1], [0.55, -0.15, 0.2, 0.75], [-0.5, -0.1, -0.15, 0.78], [0.1, 0.35, -0.3, 0.7], [-0.2, -0.25, 0.45, 0.62]]) {
+    const m = mesh(new THREE.IcosahedronGeometry(rr * k, 1), leaf[Math.floor(rnd() * leaf.length)], x + dx * k, y + dy * k, z + dz * k, parent);
+    m.scale.y = 0.72;
+    m.raycast = () => {};
+  }
+}
+
+/** The canopy round the town, a tree a tile: trunks from the jungle floor, crowns over the edge; the front rows only the
+    leaves' tops, low, so they never hide you; vines hanging from the crowns over the drop. */
+function canopyRim(map, L, rnd) {
+  const trees = [], tops = [], vines = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'T') return;
+    B.blocked.add(key(x, y));
+    const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 0.9 + rnd() * 0.5, rnd() * 6];
+    if (y >= ROWS - 2) { tops.push([at[0], at[1], 0.75 + rnd() * 0.4, at[3], CANOPY.leaf[Math.floor(rnd() * 4)]]); return; }
+    trees.push([...at, CANOPY.leaf[Math.floor(rnd() * 4)]]);
+    tops.push([at[0] + (rnd() - 0.5) * 0.4, at[1] + (rnd() - 0.5) * 0.4, 0.7 + rnd() * 0.3, at[3], CANOPY.leaf[Math.floor(rnd() * 4)]]);
+    if (rnd() < 0.3) { const vx = at[0] + (rnd() - 0.5) * 0.8, vz = at[1] + 0.4; vines.push([vx, 2.0, vz, vx + (rnd() - 0.5) * 0.2, 0.4 - rnd() * 1.6, vz + 0.1]); }
+  }));
+  const top = new THREE.IcosahedronGeometry(0.62, 1); top.scale(1, 0.55, 1); top.translate(0, 0.22, 0);
+  instanced(top, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), tops);
+  const trunk = new THREE.CylinderGeometry(0.16, 0.24, 2.4 - DROP, 8); trunk.translate(0, (2.4 + DROP) / 2, 0);
+  instanced(trunk, bark(), trees);
+  for (const [dy, rad, dx] of [[2.3, 0.85, 0], [2.75, 0.62, 0.3], [2.55, 0.66, -0.35]]) {
+    const blob = new THREE.IcosahedronGeometry(rad, 1); blob.scale(1, 0.75, 1); blob.translate(dx, dy, 0);
+    instanced(blob, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), trees);
+  }
+  beams(vines, 0.025, std({ color: '#3e7a2e', roughness: 0.9 }), { sides: 4, shadow: false });
+}
+
+/** The jungle floor far below, through the mist: dark loam, roots, ferns and a stream; glow caps lit at night. */
+function jungleFloor(town, lit) {
+  const T = 16, f = fine(COLS * T, ROWS * T, 2), { g } = f, s = f.shine(), r = seeded(97), W = COLS * T, H = ROWS * T;
+  g.fillStyle = '#2a3a1a'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 900; i++) { g.fillStyle = ['#3a4a22', '#2a4a1e', '#46582a', '#22381a', '#3a3420'][i % 5]; g.beginPath(); g.ellipse(r() * W, r() * H, 3 + r() * 9, 2 + r() * 5, r() * 3, 0, Math.PI * 2); g.fill(); }
+  // a stream winding down the middle
+  g.strokeStyle = '#2a6a6a'; g.lineWidth = 11; g.beginPath();
+  for (let y = -10; y <= H + 10; y += 20) g.lineTo(W * 0.5 + Math.sin(y / 90) * W * 0.28 + Math.sin(y / 31) * 14, y);
+  g.stroke();
+  for (const ctx of [g, s]) { ctx.strokeStyle = ctx === s ? 'rgba(60,140,140,0.6)' : '#4a9a9a'; ctx.lineWidth = 4; ctx.beginPath(); for (let y = -10; y <= H + 10; y += 20) ctx.lineTo(W * 0.5 + Math.sin(y / 90) * W * 0.28 + Math.sin(y / 31) * 14, y); ctx.stroke(); }
+  for (let i = 0; i < 90; i++) {   // roots snaking over it
+    let x = r() * W, y = r() * H;
+    g.strokeStyle = r() < 0.5 ? '#4a3622' : '#5a442c'; g.lineWidth = 1.5 + r() * 2.5;
+    g.beginPath(); g.moveTo(x, y);
+    for (let k = 0; k < 4; k++) { x += (r() - 0.5) * 30; y += (r() - 0.5) * 30; g.lineTo(x, y); }
+    g.stroke();
+  }
+  for (let i = 0; i < 160; i++) {   // glow caps, lit
+    const x = r() * W, y = r() * H, col = ['#9af0c0', '#c8f070', '#70d8f8'][i % 3];
+    for (const ctx of [g, s]) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 1 + r() * 1.2, 0, Math.PI * 2); ctx.fill(); }
+  }
+  const m = std({ map: texOf(f.c), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 0.6, roughness: 1 });
+  lit.push(m);
+  const bed = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), m);
+  bed.rotation.x = -Math.PI / 2; bed.position.y = DROP; bed.receiveShadow = true; bed.raycast = () => {};
+  B.group.add(bed);
+  // ferns and bushes on it
+  const kind = canopyKinds(town), ferns = [], saplings = [], rnd = seeded(11);
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (kind(x, y) !== 'air') return;
+    for (let i = 0; i < 3; i++) if (rnd() < 0.65) ferns.push([tileX(x) + (rnd() - 0.5) * 0.95, tileZ(y) + (rnd() - 0.5) * 0.95, 0.8 + rnd() * 0.8, rnd() * 6, ['#3e7a2e', '#4a8a34', '#2e6a28', '#5a9a3a'][Math.floor(rnd() * 4)], DROP]);
+    if (rnd() < 0.12) saplings.push([tileX(x) + (rnd() - 0.5) * 0.6, tileZ(y) + (rnd() - 0.5) * 0.6, 0.8 + rnd() * 0.5, rnd() * 6, CANOPY.leaf[Math.floor(rnd() * 4)], DROP]);
+  }));
+  const fern = new THREE.IcosahedronGeometry(0.5, 1); fern.scale(1, 0.5, 1); fern.translate(0, 0.18, 0);
+  instanced(fern, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), ferns).castShadow = false;
+  const sapling = new THREE.IcosahedronGeometry(0.45, 1); sapling.scale(1, 1.3, 1); sapling.translate(0, 0.9, 0);
+  instanced(sapling, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), saplings);
+  const stem = new THREE.CylinderGeometry(0.04, 0.06, 0.6, 5); stem.translate(0, 0.3, 0);
+  instanced(stem, bark(), saplings);
+}
+
+/** The mist between the decks and the floor: two soft layers drifting, so the drop reads deep. */
+function canopyMist() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), r = seeded(3);
+  for (let i = 0; i < 40; i++) {
+    const x = r() * 128, y = r() * 128, rad = 10 + r() * 26;
+    for (const ox of [0, -128, 128]) for (const oy of [0, -128, 128]) {
+      const rg = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, rad);
+      rg.addColorStop(0, 'rgba(225,245,230,0.55)'); rg.addColorStop(1, 'rgba(225,245,230,0)');
+      g.fillStyle = rg; g.fillRect(x + ox - rad, y + oy - rad, rad * 2, rad * 2);
+    }
+  }
+  const tint = { night: '#2a3a4c', dusk: '#e8c8a8', dawn: '#f0d8d0' }[timeOfDay()] ?? '#dcece0';   // mist takes no light: it's tinted by the hour
+  const layers = [[-1.4, 0.12, 1], [-2.5, 0.18, -1.3]].map(([y, op, dir]) => {
+    const map = new THREE.CanvasTexture(c);
+    map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.repeat.set(COLS / 9, ROWS / 9);
+    const o = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), new THREE.MeshBasicMaterial({ map, transparent: true, opacity: op, depthWrite: false, color: tint }));
+    o.rotation.x = -Math.PI / 2; o.position.y = y; o.raycast = () => {}; o.renderOrder = 1;
+    B.group.add(o);
+    return { map, dir };
+  });
+  B.ticks.push((now) => { if (!calm) for (const { map, dir } of layers) map.offset.set(now / 90000 * dir, now / 140000); });
+}
+
+/** The connected platforms (decks and the Great Tree's, not the bridges): their tiles, and a trunk to stand each on. */
+function platformsOf(town) {
+  const kind = canopyKinds(town), seen = new Set(), out = [];
+  const on = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && ['deck', 'plaza'].includes(kind(x, y));
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (!on(x, y) || seen.has(key(x, y))) return;
+    const tiles = [], q = [[x, y]];
+    seen.add(key(x, y));
+    while (q.length) {
+      const [a, b] = q.pop();
+      tiles.push([a, b]);
+      for (const [dx, dy] of STEPS) if (on(a + dx, b + dy) && !seen.has(key(a + dx, b + dy))) { seen.add(key(a + dx, b + dy)); q.push([a + dx, b + dy]); }
+    }
+    const letters = new Set(tiles.map(([a, b]) => town.map[b][a]));
+    const b = town.buildings.find(o => letters.has(o.at) && o.kind === 'greattree') ?? town.buildings.find(o => letters.has(o.at) && o.kind !== 'waystone');
+    let ax, az;
+    if (b) { const f = footprint(town.map, b.at); ax = f.cx; az = b.kind === 'greattree' ? f.cz : f.cz - f.h / 2 + 0.35; }
+    else { ax = tiles.reduce((s, [a]) => s + tileX(a), 0) / tiles.length; az = tiles.reduce((s, [, b2]) => s + tileZ(b2), 0) / tiles.length; }
+    out.push({ tiles, b, ax, az });
+  }));
+  return out;
+}
+
+/** What holds the town up: a trunk under each platform from the jungle floor, struts from its edges in to the trunk, a
+    deep rim of boards round every edge; the rope bridges' posts, hand ropes sagging between them, netting down their sides
+    and the ropes under their slats. */
+function canopySupports(town) {
+  const kind = canopyKinds(town), air = (x, y) => kind(x, y) === 'air';
+  const solid = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && !['air', 'canopy'].includes(kind(x, y));
+  const rims = [], leafRims = [], struts = [], trunks = [];
+  // one edge of a tile over the drop: its straight run, short of any rounded corner at either end, and that corner's arc
+  // (a quarter turn: 1 south-east, 2 north-east, 3 north-west, 4 south-west, the arc's own start round the y axis)
+  const edge = (out, x, y, dx, dy, col) => {
+    const [ax, ay] = dx ? [0, 1] : [1, 0], round = (s) => air(x + ax * s, y + ay * s) && air(x + dx, y + dy);
+    const lo = round(-1) ? ROUND : 0, hi = round(1) ? ROUND : 0, len = 1 - lo - hi, mid = (lo - hi) / 2;
+    const at = [tileX(x) + dx * 0.47 + ax * mid, tileZ(y) + dy * 0.47 + ay * mid, 1, dx ? Math.PI / 2 : 0, col, 0];
+    at.len = Math.round(len * 100) / 100;
+    if (len > 0.01) out.push(at);
+    for (const s of [-1, 1]) {
+      if (!round(s) || dx) continue;   // each corner once, from its north or south edge
+      const ex = dx || ax * s, ey = dy || ay * s;
+      const q = ex > 0 ? (ey > 0 ? 1 : 2) : (ey > 0 ? 4 : 3);
+      const c = [tileX(x) + ex * (0.5 - ROUND), tileZ(y) + ey * (0.5 - ROUND), 1, 0, col, 0];
+      c.corner = q;
+      out.push(c);
+    }
+  };
+  for (const p of platformsOf(town)) {
+    if (p.b?.kind !== 'greattree') trunks.push([p.ax, 0, p.az, p.tiles.length > 14 ? 0.5 : 0.36]);
+    for (const [x, y] of p.tiles) for (const [dx, dy] of STEPS) {
+      if (!air(x + dx, y + dy)) continue;
+      edge(rims, x, y, dx, dy, null);
+      if ((x * 3 + y * 5) % 3 === 0) struts.push([tileX(x) + dx * 0.4, -0.3, tileZ(y) + dy * 0.4, p.ax + (tileX(x) - p.ax) * 0.15, -1.7, p.az + (tileZ(y) - p.az) * 0.15]);
+    }
+  }
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (kind(x, y) !== 'canopy') return;
+    for (const [dx, dy] of STEPS) if (air(x + dx, y + dy)) edge(leafRims, x, y, dx, dy, CANOPY.leaf[(x + y) % 4]);
+  }));
+  const rimMat = std({ color: CANOPY.rim, roughness: 0.9 }), leafMat = std({ color: '#ffffff', roughness: 0.9, flatShading: true });
+  for (const len of new Set(rims.filter(a => !a.corner).map(a => a.len))) {
+    const rim = new THREE.BoxGeometry(len, 0.3, 0.08); rim.translate(0, -0.15, 0);
+    instanced(rim, rimMat, rims.filter(a => !a.corner && a.len === len)).castShadow = false;
+  }
+  for (const len of new Set(leafRims.filter(a => !a.corner).map(a => a.len))) {
+    const lr = new THREE.BoxGeometry(len, 0.5, 0.16); lr.translate(0, -0.22, 0);
+    instanced(lr, leafMat, leafRims.filter(a => !a.corner && a.len === len)).castShadow = false;
+  }
+  for (let q = 0; q < 4; q++) {   // the curved rim round each rounded corner, a quarter turn of it per corner
+    const arc = new THREE.CylinderGeometry(ROUND - 0.03, ROUND - 0.03, 0.3, 8, 1, true, q * Math.PI / 2, Math.PI / 2); arc.translate(0, -0.15, 0);
+    instanced(arc, std({ color: CANOPY.rim, roughness: 0.9, side: THREE.DoubleSide }), rims.filter(a => a.corner === q + 1)).castShadow = false;
+    const leafArc = new THREE.CylinderGeometry(ROUND - 0.04, ROUND - 0.04, 0.5, 8, 1, true, q * Math.PI / 2, Math.PI / 2); leafArc.translate(0, -0.22, 0);
+    instanced(leafArc, std({ color: '#ffffff', roughness: 0.9, flatShading: true, side: THREE.DoubleSide }), leafRims.filter(a => a.corner === q + 1)).castShadow = false;
+  }
+  beams(struts, 0.07, std({ color: '#5a3c24', roughness: 0.9 }));
+  for (const [x, y, z, r] of trunks) {
+    const geo = new THREE.CylinderGeometry(r, r * 1.5, y - DROP, 12); geo.translate(0, (y + DROP) / 2, 0);
+    mesh(geo, bark(), x, 0, z).raycast = () => {};
+    const flare = mesh(new THREE.ConeGeometry(r * 2.4, 0.7, 12, 1, true), bark(), x, DROP + 0.35, z); flare.raycast = () => {};
+  }
+  // the rope bridges: along each run, a hand rope on each side where it isn't against a deck, posts, netting, ropes under
+  const hands = [], under = [], posts = [], nets = [];
+  const runs = [];
+  for (const horiz of [true, false]) {
+    const seen = new Set();
+    town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+      if (ch !== '-' || seen.has(key(x, y))) return;
+      const [dx, dy] = horiz ? [1, 0] : [0, 1];
+      if (!(solid(x - dx, y - dy) || solid(x + dx, y + dy))) return;   // it doesn't run this way
+      const tiles = [];
+      let a = x, b = y;
+      while (town.map[b]?.[a] === '-') { tiles.push([a, b]); seen.add(key(a, b)); a += dx; b += dy; }
+      if (tiles.length) runs.push({ tiles, horiz });
+    }));
+  }
+  for (const { tiles, horiz } of runs) {
+    const [dx, dy] = horiz ? [1, 0] : [0, 1];
+    for (const side of [-1, 1]) {
+      const [sx, sy] = horiz ? [0, side] : [side, 0];
+      let stretch = [];
+      const flush = () => {
+        if (!stretch.length) return;
+        const [fx, fy] = stretch[0], [lx, ly] = stretch[stretch.length - 1];
+        const a = [tileX(fx) - dx * 0.5 + sx * 0.38, 0, tileZ(fy) - dy * 0.5 + sy * 0.38];
+        const b = [tileX(lx) + dx * 0.5 + sx * 0.38, 0, tileZ(ly) + dy * 0.5 + sy * 0.38];
+        const len = stretch.length, sag = 0.05 + len * 0.025;
+        sagging(hands, [a[0], 0.62, a[2]], [b[0], 0.62, b[2]], sag, Math.max(3, len * 2));
+        sagging(hands, [a[0], 0.32, a[2]], [b[0], 0.32, b[2]], sag * 0.6, Math.max(3, len * 2));
+        for (let i = 0; i <= len; i += Math.max(1, Math.min(2, len))) posts.push([a[0] + (b[0] - a[0]) * i / len, a[2] + (b[2] - a[2]) * i / len]);
+        if (len % 2) posts.push([b[0], b[2]]);
+        for (const [x, y] of stretch) nets.push([tileX(x) + sx * 0.38, tileZ(y) + sy * 0.38, 1, horiz ? 0 : Math.PI / 2, null, 0]);
+        stretch = [];
+      };
+      for (const [x, y] of tiles) { if (air(x + sx, y + sy)) stretch.push([x, y]); else flush(); }
+      flush();
+    }
+    const [fx, fy] = tiles[0], [lx, ly] = tiles[tiles.length - 1];
+    for (const s of [-0.3, 0.3]) {
+      const ox = horiz ? 0 : s, oz = horiz ? s : 0;
+      sagging(under, [tileX(fx) - dx * 0.5 + ox, -0.04, tileZ(fy) - dy * 0.5 + oz], [tileX(lx) + dx * 0.5 + ox, -0.04, tileZ(ly) + dy * 0.5 + oz], 0, 1);
+    }
+  }
+  const rope = std({ color: '#c8b080', roughness: 0.9 });
+  beams(hands, 0.022, rope, { sides: 5, shadow: false });
+  beams(under, 0.035, rope, { sides: 5 });
+  const post = new THREE.CylinderGeometry(0.04, 0.05, 0.85, 6); post.translate(0, 0.32, 0);
+  instanced(post, std({ color: '#6a4a2c', roughness: 0.9 }), posts.map(([x, z]) => [x, z, 1, 0]));
+  const net = new THREE.PlaneGeometry(1, 0.6); net.translate(0, 0.32, 0);
+  instanced(net, std({ map: texOf(netArt()), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 1 }), nets).castShadow = false;
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => { if (air(x, y)) B.blocked.add(key(x, y)); }));
+}
+
+/** A lone giant standing in the drop ('|'): a great trunk from the floor, bracket fungi up it (lit), a crown, vines. */
+function loneGiant(x, z, rnd, lit) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const r = 0.34 + rnd() * 0.14, tall = 2.2 + rnd() * 0.8;
+  const geo = new THREE.CylinderGeometry(r * 0.8, r * 1.3, tall - DROP, 12); geo.translate(0, (tall + DROP) / 2, 0);
+  mesh(geo, bark(), 0, 0, 0, g).raycast = () => {};
+  const cap = std({ color: '#e8d8a0', emissive: new THREE.Color('#a8f070'), emissiveIntensity: 0.6, roughness: 0.6 });
+  lit.push(cap);
+  for (let i = 0; i < 3; i++) {
+    const a = rnd() * Math.PI * 2, y = -1.6 + i * 1.1 + rnd() * 0.4;
+    const m = mesh(new THREE.CylinderGeometry(0.2, 0.22, 0.05, 10, 1, false, 0, Math.PI), cap, Math.cos(a) * r, y, Math.sin(a) * r, g);
+    m.rotation.y = -a + Math.PI / 2; m.castShadow = false;
+  }
+  crown(g, 0, tall + 0.2, 0, 0.95 + rnd() * 0.3, rnd);
+  const vines = [];
+  for (let i = 0; i < 4; i++) { const a = rnd() * Math.PI * 2, vx = Math.cos(a) * 0.7, vz = Math.sin(a) * 0.7; vines.push([x + vx, tall, z + vz, x + vx * 1.1, tall - 1.2 - rnd() * 1.6, z + vz * 1.1]); }
+  beams(vines, 0.025, std({ color: '#3e7a2e', roughness: 0.9 }), { sides: 4, shadow: false });
+  return g;
+}
+
+/** A lift ('y'): a mast up from the jungle floor with a pulley arm, a basket on its rope going up and down. */
+function lift(x, z, rnd) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const wood = std({ color: '#6a4a2c', roughness: 0.9 }), rope = std({ color: '#c8b080', roughness: 0.9 });
+  const geo = new THREE.CylinderGeometry(0.07, 0.09, 1.9 - DROP, 8); geo.translate(0, (1.9 + DROP) / 2, 0);
+  mesh(geo, wood, -0.3, 0, 0, g);
+  mesh(new THREE.BoxGeometry(0.7, 0.07, 0.07), wood, 0.02, 1.85, 0, g);
+  const wheel = mesh(new THREE.TorusGeometry(0.1, 0.03, 6, 14), wood, 0.3, 1.78, 0, g);
+  const basket = new THREE.Group();
+  g.add(basket);
+  const weave = std({ color: '#b08850', roughness: 0.95 });
+  mesh(new THREE.CylinderGeometry(0.3, 0.24, 0.32, 12, 1, true), weave, 0, 0.16, 0, basket).material.side = THREE.DoubleSide;
+  mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 12), weave, 0, 0.01, 0, basket);
+  mesh(new THREE.TorusGeometry(0.3, 0.025, 6, 16), wood, 0, 0.32, 0, basket).rotation.x = Math.PI / 2;
+  basket.position.set(0.3, -1, 0);
+  const line = mesh(new THREE.CylinderGeometry(0.012, 0.012, 1, 4), rope, 0.3, 0, 0, g);
+  line.castShadow = false;
+  const k = rnd() * 20000;
+  B.ticks.push((now) => {
+    const t = calm ? 0.5 : ((now + k) % 24000) / 24000;   // up, a wait at the top, down, a wait below
+    const h = t < 0.3 ? t / 0.3 : t < 0.5 ? 1 : t < 0.8 ? 1 - (t - 0.5) / 0.3 : 0;
+    const y = DROP + 0.3 + ease(h) * (-0.1 - DROP - 0.3);
+    basket.position.y = y;
+    line.scale.y = 1.78 - y - 0.32; line.position.y = (1.78 + y + 0.32) / 2;
+    wheel.rotation.z = y * 3;
+  });
+  return g;
+}
+
+/** Leaf shingles, overlapping rows of them, for the treehouses' roofs (the cap over them is the house's colour). */
+function shinglesArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), r = seeded(29);
+  g.fillStyle = '#2e5a22'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 72; y += 8) for (let x = -8 + (y / 8 % 2) * 4; x < 72; x += 8) {
+    g.fillStyle = ['#4e9a3a', '#3e8a30', '#5aaa44', '#468e36'][Math.floor(r() * 4)];
+    g.beginPath(); g.ellipse(x, y, 4.6, 6, 0, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = 'rgba(20,50,16,0.5)'; g.lineWidth = 0.6; g.beginPath(); g.moveTo(x, y - 5); g.lineTo(x, y + 5); g.stroke();
+  }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+
+/** Round logs laid up a wall, for the treehouses' sides and backs. */
+function logsArt(dark = false) {
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 64;
+  const g = c.getContext('2d'), r = seeded(dark ? 5 : 31);
+  for (let y = 0; y < 64; y += 8) {
+    const l = g.createLinearGradient(0, y, 0, y + 8), base = dark ? ['#4a3a4a', '#3a2c3a', '#241a24'] : ['#b08058', '#946640', '#5a3a22'];
+    l.addColorStop(0, base[0]); l.addColorStop(0.55, base[1]); l.addColorStop(1, base[2]);
+    g.fillStyle = l; g.fillRect(0, y, 32, 8);
+    g.fillStyle = 'rgba(0,0,0,0.2)'; for (let i = 0; i < 3; i++) g.fillRect(r() * 32, y + 2 + r() * 4, 4 + r() * 8, 0.6);
+  }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+
+/** A treehouse's front: round logs, a round-topped door painted its colour, round windows lit (violet at Phil's, a
+    monitor's blue behind Ricky's blinds, the shop's wide window of jars), a garland of leaves along the top. */
+function treeFront(w, col, kind) {
+  const W = Math.round(w * 20), Hh = 26, f = fine(W, Hh, 6), { g, rr, lin } = f, s = f.shine(), r = seeded(W + col.length);
+  const haunted = kind === 'haunted';
+  for (let y = 0; y < Hh; y += 4) {
+    g.fillStyle = lin(0, y, 0, y + 4, haunted ? ['#4a3a4a', '#3a2c3a', '#241a24'] : ['#b88a60', '#9a6c44', '#5e3c22']);
+    g.fillRect(0, y, W, 4);
+    g.fillStyle = haunted ? '#2a1e2a' : '#7a5232'; g.beginPath(); g.arc(1.6, y + 2, 1.6, 0, Math.PI * 2); g.arc(W - 1.6, y + 2, 1.6, 0, Math.PI * 2); g.fill();
+  }
+  const glow = haunted ? ['#f0d0ff', '#a050f0'] : kind === 'gamer' ? ['#d0f0ff', '#3a78f0'] : ['#fff4c8', '#f8a040'];
+  const lit = (x, y, w2, h2, round) => {
+    rr(x - 1.2, y - 1.2, w2 + 2.4, h2 + 2.4, round ? (w2 + 2.4) / 2 : 1, haunted ? '#1a121a' : '#4a2e1c');
+    for (const ctx of [g, s]) {
+      const rg = ctx.createRadialGradient(x + w2 / 2, y + h2 / 2, 0, x + w2 / 2, y + h2 / 2, w2);
+      rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(x, y, w2, h2, round ? w2 / 2 : 0.5); ctx.fill();
+    }
+    if (kind === 'gamer') for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : 'rgba(30,40,70,0.75)'; for (let yy = y + 1; yy < y + h2; yy += 1.6) ctx.fillRect(x, yy, w2, 0.6); }
+    else if (kind === 'shop') for (let i = 0; i < 5; i++) { g.fillStyle = ['#f84a5a', '#f8c040', '#70c050', '#a070f0', '#f89040'][i]; g.beginPath(); g.roundRect(x + 1 + i * (w2 - 2) / 5, y + h2 - 4.5, (w2 - 2) / 5 - 0.8, 3.6, 0.8); g.fill(); }
+    else for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : haunted ? '#1a121a' : '#4a2e1c'; ctx.fillRect(x + w2 / 2 - 0.3, y, 0.6, h2); ctx.fillRect(x, y + h2 / 2 - 0.3, w2, 0.6); }
+  };
+  const mid = W / 2;
+  // the door, round-topped, in the house's colour
+  g.fillStyle = haunted ? '#1a121a' : '#3a2414'; g.beginPath(); g.roundRect(mid - 4.8, Hh - 16.5, 9.6, 16.5, [4.8, 4.8, 0, 0]); g.fill();
+  g.fillStyle = lin(mid - 4, 0, mid + 4, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]); g.beginPath(); g.roundRect(mid - 4, Hh - 15.7, 8, 15.7, [4, 4, 0, 0]); g.fill();
+  g.fillStyle = 'rgba(0,0,0,0.22)'; for (let x = mid - 2; x < mid + 4; x += 2) g.fillRect(x, Hh - 14, 0.4, 14);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(mid + 2.3, Hh - 7.5, 0.7, 0, Math.PI * 2); g.fill();
+  if (kind === 'shop') { lit(3, 7, mid - 9, 10, false); lit(mid + 6, 7, W - mid - 9, 10, false); }
+  else if (W > 50) for (const x of [mid - 15, mid + 7]) lit(x, 7, 8, 8, true);
+  else if (W > 34) { lit(3.5, 8, 7, 7, true); lit(W - 10.5, 8, 7, 7, true); }
+  else lit(2.5, 8, 6, 6, true);
+  if (haunted) {   // a boarded window and a cobweb in the corner
+    g.fillStyle = '#6a5040'; g.save(); g.translate(W - 6.5, 11.5); g.rotate(0.35); g.fillRect(-5, -0.9, 10, 1.8); g.rotate(-0.7); g.fillRect(-5, -0.9, 10, 1.8); g.restore();
+    g.strokeStyle = 'rgba(240,240,250,0.7)'; g.lineWidth = 0.35;
+    for (let i = 0; i < 4; i++) { const a = i / 3 * Math.PI / 2; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * 7, Math.sin(a) * 7); g.stroke(); }
+    for (const rad of [2.5, 4.5, 6.5]) { g.beginPath(); g.arc(0, 0, rad, 0, Math.PI / 2); g.stroke(); }
+  }
+  // the leaf garland along the top
+  for (let x = 0; x < W; x += 2.2) { g.fillStyle = ['#4e9a3a', '#3a7e30', '#6ab04a'][Math.floor(r() * 3)]; g.beginPath(); g.ellipse(x, 1.6 + Math.sin(x / 3) * 0.8, 1.7, 1.1, r() * 3, 0, Math.PI * 2); g.fill(); }
+  return f.c;
+}
+
+/** A treehouse on its platform, its front to you: log walls, a round-topped door, round windows lit, a leaf-shingle hip
+    roof capped in its colour, its tree going up through the back of it into a crown; a lantern by the door. Phil's is
+    dark and crooked, lit violet; Ricky's has a dish and an aerial on its roof and his monitors' blue in the window; the
+    shop an awning and its sign. A tap is its door. */
+function treehouse(b, f, L, lit) {
+  const g = new THREE.Group(), rnd = seeded(b.id.charCodeAt(0) * 7);
+  g.position.set(f.cx, 0, f.cz - 0.05);
+  B.group.add(g);
+  const haunted = b.kind === 'haunted', w = f.w - 0.45, d = f.h - 0.6, h = 1.3;
+  const sides = logsArt(haunted); sides.repeat.set(d / 1.2, h / 1.0);
+  const wall = std({ map: sides, roughness: 0.95 }), dark = std({ color: haunted ? '#1a121a' : '#3a2414', roughness: 0.8 });
+  const art = treeFront(w, b.roof, b.kind), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  mesh(new THREE.BoxGeometry(w, h, d), [wall, wall, dark, dark, front, wall], 0, h / 2, 0, g);
+  // its tree, up through the back of the roof into a crown
+  const tz = -f.h / 2 + 0.4, tall = h + 2.0;
+  const trunk = new THREE.CylinderGeometry(0.3, 0.4, tall + 0.1, 12); trunk.translate(0, tall / 2 - 0.05, 0);
+  mesh(trunk, bark(), 0, 0, tz, g).raycast = () => {};
+  for (const s of [-1, 1]) {   // two boughs out of it
+    const bough = new THREE.CylinderGeometry(0.06, 0.12, 1.1, 7); bough.translate(0, 0.55, 0);
+    const m = mesh(bough, bark(), s * 0.15, tall - 0.5, tz, g); m.rotation.z = -s * 0.9; m.raycast = () => {};
+  }
+  crown(g, 0, tall + 0.35, tz - 0.15, 1.15 + rnd() * 0.2, rnd, { cols: haunted ? ['#3a5a3a', '#2e4a30', '#4a3a4a'] : CANOPY.leaf });
+  const ink = b.home && LEADER_INK[B.town?.homes?.[b.home]?.leader];
+  const crest = b.kind === 'shop' ? houseCrest('ball') : ink ? houseCrest('ink', ink, (b.name || '?')[0]) : null;
+  const roof = new THREE.Group();
+  g.add(roof);
+  hipRoof(roof, { w: w + 0.7, d: d + 0.7, rise: 0.85 + d * 0.12, y: h, col: b.roof, crest, thatch: shinglesArt() });
+  if (haunted) { roof.rotation.z = 0.05; roof.position.x = 0.04; }
+  if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, h - 0.08, f.cz - 0.05 + d / 2 + 0.04);
+  if (b.kind === 'gamer') {   // a dish and an aerial on the roof, its light blinking
+    const metal = std({ color: '#c8ccd4', roughness: 0.4, metalness: 0.5 });
+    const dish = mesh(new THREE.SphereGeometry(0.22, 14, 8, 0, Math.PI * 2, 0, Math.PI / 3), metal, w / 2 - 0.25, h + 0.5, 0.1, g);
+    dish.rotation.set(-0.9, 0.5, 0); dish.material.side = THREE.DoubleSide;
+    mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.0, 5), metal, -w / 2 + 0.3, h + 0.75, 0, g);
+    const tip = std({ color: '#f04040', emissive: new THREE.Color('#ff3030'), emissiveIntensity: 1, roughness: 0.5 });
+    mesh(new THREE.SphereGeometry(0.035, 8, 6), tip, -w / 2 + 0.3, h + 1.26, 0, g).castShadow = false;
+    B.ticks.push((now) => { tip.emissiveIntensity = calm ? 1 : (now % 1600) < 800 ? 1.4 : 0.15; });
+  }
+  if (b.kind === 'shop') {   // a striped awning over the front, a basket of fruit by the door
+    const stripes = document.createElement('canvas'); stripes.width = 16; stripes.height = 2;
+    const sg = stripes.getContext('2d'); for (let x = 0; x < 16; x += 4) { sg.fillStyle = x % 8 ? '#f8f0e0' : b.roof; sg.fillRect(x, 0, 4, 2); }
+    const sm = new THREE.CanvasTexture(stripes); sm.colorSpace = THREE.SRGBColorSpace; sm.repeat.set(w / 1.2, 1); sm.wrapS = THREE.RepeatWrapping;
+    const awning = mesh(new THREE.PlaneGeometry(w + 0.1, 0.5), std({ map: sm, roughness: 0.8, side: THREE.DoubleSide }), 0, h * 0.9, d / 2 + 0.22, g);
+    awning.rotation.x = -1.0;
+    for (let i = 0; i < 4; i++) mesh(new THREE.SphereGeometry(0.07, 8, 6), std({ color: ['#f84a5a', '#f8c040', '#70c050', '#f89040'][i], roughness: 0.5 }), w / 2 - 0.2 - (i % 2) * 0.12, 0.12 + Math.floor(i / 2) * 0.1, d / 2 + 0.25, g).castShadow = false;
+  }
+  const glow = std({ color: haunted ? '#8040c0' : '#f8a040', emissive: new THREE.Color(haunted ? '#b060ff' : '#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, 0.62, h * 0.72, d / 2 + 0.1, g).castShadow = false;
+  if (haunted) {   // a violet glow that flickers, now and then
+    B.ticks.push((now) => { if (!calm) glow.emissiveIntensity = Math.sin(now / 230) * Math.sin(now / 1700) > 0.6 ? 0.2 : 1; });
+  }
+  return g;
+}
+
+/** The Nursery: a glasshouse up in a tree, white frames, panes glowing green, a gable of glass and planters showing
+    through it. A tap is its door. */
+function nursery(b, f, L, lit) {
+  const g = new THREE.Group(), rnd = seeded(17);
+  g.position.set(f.cx, 0, f.cz - 0.05);
+  B.group.add(g);
+  const w = f.w - 0.4, d = f.h - 0.5, h = 1.35, rise = 0.75;
+  const frame = std({ color: '#f4f4ec', roughness: 0.5 });
+  const glass = std({ color: '#b8f0c8', emissive: new THREE.Color('#60c870'), emissiveIntensity: 0.35, transparent: true, opacity: 0.38, roughness: 0.08, metalness: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  lit.push(glass);
+  mesh(new THREE.BoxGeometry(w, 0.3, d), std({ map: logsArt(), roughness: 0.9 }), 0, 0.15, 0, g);
+  const box = mesh(new THREE.BoxGeometry(w, h - 0.3, d), glass, 0, 0.3 + (h - 0.3) / 2, 0, g);
+  box.castShadow = false; box.renderOrder = 2;
+  // plants inside, seen through the glass
+  const pots = std({ color: '#c06a40', roughness: 0.8 }), leaves = CANOPY.leaf.map(c => std({ color: c, roughness: 0.9, flatShading: true }));
+  for (let i = 0; i < 9; i++) {
+    const px = -w / 2 + 0.35 + (i % 5) * (w - 0.7) / 4, pz = -d / 2 + 0.35 + Math.floor(i / 5) * (d - 0.7);
+    mesh(new THREE.CylinderGeometry(0.13, 0.1, 0.2, 10), pots, px, 0.4, pz, g);
+    const m = mesh(new THREE.IcosahedronGeometry(0.22 + rnd() * 0.12, 1), leaves[i % 4], px, 0.68, pz, g); m.scale.y = 1.2;
+    if (i % 2) mesh(new THREE.SphereGeometry(0.06, 8, 6), std({ color: ['#f84a8a', '#f8d040', '#f8a030', '#b070f0'][i % 4], roughness: 0.5 }), px + 0.08, 0.86, pz + 0.08, g);
+  }
+  // white frames at the corners and mullions, a gabled glass roof
+  for (let i = 0; i <= 4; i++) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.05, h, 0.05), frame, -w / 2 + i * w / 4, h / 2, sz * d / 2, g);
+  for (const sx of [-1, 1]) mesh(new THREE.BoxGeometry(0.05, h, 0.05), frame, sx * w / 2, h / 2, 0, g);
+  mesh(new THREE.BoxGeometry(w + 0.06, 0.06, d + 0.06), frame, 0, h, 0, g);
+  const slope = Math.hypot(d / 2, rise), tilt = Math.atan2(rise, d / 2);
+  for (const s of [-1, 1]) {
+    const pane = mesh(new THREE.PlaneGeometry(w + 0.1, slope), glass, 0, h + rise / 2, s * d / 4, g);
+    pane.rotation.x = -s * (Math.PI / 2 - tilt); pane.castShadow = false; pane.renderOrder = 2;
+    for (let i = 0; i <= 5; i++) { const bar = mesh(new THREE.BoxGeometry(0.04, 0.04, slope), frame, -w / 2 - 0.05 + i * (w + 0.1) / 5, h + rise / 2, s * d / 4, g); bar.rotation.x = s * tilt; }
+  }
+  mesh(new THREE.BoxGeometry(w + 0.14, 0.07, 0.07), frame, 0, h + rise, 0, g);
+  for (const s of [-1, 1]) {   // the gable ends
+    const sh = new THREE.Shape(); sh.moveTo(-d / 2, 0); sh.lineTo(d / 2, 0); sh.lineTo(0, rise); sh.closePath();
+    const end = mesh(new THREE.ShapeGeometry(sh), glass, s * w / 2, h, 0, g); end.rotation.y = Math.PI / 2; end.castShadow = false;
+  }
+  // a door of glass in a white frame, the sign over it, its tree behind
+  mesh(new THREE.BoxGeometry(0.6, 0.95, 0.04), frame, 0, 0.78, d / 2 + 0.01, g);
+  mesh(new THREE.BoxGeometry(0.5, 0.85, 0.05), std({ color: '#7ac890', emissive: new THREE.Color('#60c870'), emissiveIntensity: 0.4, roughness: 0.2 }), 0, 0.78, d / 2 + 0.02, g);
+  panel(greenSign(b.name), 1.5, 0.34, f.cx, h + 0.2, f.cz - 0.05 + d / 2 + 0.06);
+  const tz = -f.h / 2 + 0.2;
+  const trunk = new THREE.CylinderGeometry(0.32, 0.42, h + rise + 1.6, 12); trunk.translate(0, (h + rise + 1.6) / 2, 0);
+  mesh(trunk, bark(), w / 2 - 0.2, 0, tz - 0.2, g).raycast = () => {};
+  crown(g, w / 2 - 0.2, h + rise + 1.8, tz - 0.3, 1.2, rnd);
+  return g;
+}
+
+/** The Nursery's sign: leaf green, a sprout, its name. */
+function greenSign(name) {
+  const f = fine(96, 22, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 22, 3, '#f4f4ec');
+  rr(1.8, 1.8, 92.4, 18.4, 2, lin(0, 0, 0, 22, ['#5ab84a', '#2e8a34']));
+  g.fillStyle = '#c8f070'; g.beginPath(); g.ellipse(10, 9, 4, 2, -0.5, 0, Math.PI * 2); g.fill(); g.beginPath(); g.ellipse(16, 9, 4, 2, 0.5, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#c8f070'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(13, 18); g.lineTo(13, 10); g.stroke();
+  g.fillStyle = '#f8f8f0'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillText(name, 57, 12, 66);
+  return f.c;
+}
+
+/** The Great Tree in the middle of town: a vast trunk from the jungle floor, roots spread over its deck, a hollow in its
+    front glowing amber (a tap knocks), bracket fungi up it lit at night, a ring of lanterns strung round it, and a crown
+    spread wide and low over the deck. */
+function greatTree(b, f, L, lit) {
+  const g = new THREE.Group(), rnd = seeded(23);
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const R0 = 1.25, tall = 3.4;
+  const trunk = new THREE.CylinderGeometry(R0 * 0.75, R0 * 1.05, tall - DROP, 20, 6); trunk.translate(0, (tall + DROP) / 2, 0);
+  const p = trunk.attributes.position;
+  for (let i = 0; i < p.count; i++) {   // buttressed, not a pipe
+    const a = Math.atan2(p.getZ(i), p.getX(i)), k = 1 + Math.sin(a * 5) * 0.08 + Math.sin(a * 3 + p.getY(i)) * 0.05;
+    p.setX(i, p.getX(i) * k); p.setZ(i, p.getZ(i) * k);
+  }
+  trunk.computeVertexNormals();
+  const barkMap = barkArt(); barkMap.repeat.set(3, 3);
+  const bigBark = std({ map: barkMap, roughness: 0.95 });
+  mesh(trunk, bigBark, 0, 0, 0, g);
+  for (let i = 0; i < 7; i++) {   // roots spread over the deck
+    const a = i / 7 * Math.PI * 2 + 0.3, len = 0.9 + rnd() * 0.5;
+    if (Math.abs(a - Math.PI / 2) < 0.4) continue;   // none across the hollow's way in
+    const root = new THREE.CylinderGeometry(0.06, 0.26, len, 8); root.translate(0, len / 2, 0); root.rotateZ(-Math.PI / 2 - 0.08);
+    const m = mesh(root, bigBark, Math.cos(a) * R0 * 0.85, 0.05, Math.sin(a) * R0 * 0.85, g);
+    m.rotation.y = -a;
+  }
+  // the hollow, facing you, warm inside
+  const glowIn = std({ color: '#3a2010', emissive: new THREE.Color('#f8a040'), emissiveIntensity: 0.5, roughness: 1 });
+  lit.push(glowIn);
+  const hollow = new THREE.Shape(); hollow.moveTo(-0.38, 0); hollow.lineTo(-0.38, 0.75); hollow.quadraticCurveTo(-0.38, 1.25, 0, 1.3); hollow.quadraticCurveTo(0.38, 1.25, 0.38, 0.75); hollow.lineTo(0.38, 0); hollow.closePath();
+  mesh(new THREE.ShapeGeometry(hollow), glowIn, 0, 0.02, R0 * 0.96, g).castShadow = false;
+  // bracket fungi up it, lit
+  const cap = std({ color: '#f0e0b0', emissive: new THREE.Color('#c8f080'), emissiveIntensity: 0.6, roughness: 0.6 });
+  lit.push(cap);
+  for (let i = 0; i < 9; i++) {
+    const a = i * 2.4, y = -2.8 + i * 0.6, rr2 = R0 * (0.95 - (y + 3) * 0.03);
+    if (y > -0.1 && y < 1.5 && Math.abs(((a % (Math.PI * 2)) - Math.PI / 2)) < 0.6) continue;
+    const m = mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.06, 12, 1, false, 0, Math.PI), cap, Math.cos(a) * rr2, y, Math.sin(a) * rr2, g);
+    m.rotation.y = -a + Math.PI / 2; m.castShadow = false;
+  }
+  // a ring of lanterns strung round it
+  const bulb = new THREE.SphereGeometry(0.06, 8, 6), ropes = [];
+  for (let i = 0; i < 14; i++) {
+    const a = i / 14 * Math.PI * 2, rr2 = R0 + 0.35, y = 2.1 + Math.sin(i * 1.7) * 0.06;
+    const m = std({ color: '#fff0c0', emissive: new THREE.Color(['#ffc060', '#ff8060', '#ffe080'][i % 3]), emissiveIntensity: 1, roughness: 0.4 });
+    lit.push(m);
+    mesh(bulb, m, Math.cos(a) * rr2, y - 0.12, Math.sin(a) * rr2, g).castShadow = false;
+    const a2 = (i + 1) / 14 * Math.PI * 2;
+    sagging(ropes, [f.cx + Math.cos(a) * rr2, y, f.cz + Math.sin(a) * rr2], [f.cx + Math.cos(a2) * rr2, y, f.cz + Math.sin(a2) * rr2], 0.08, 2);
+  }
+  beams(ropes, 0.012, std({ color: '#3a2a1a', roughness: 0.9 }), { sides: 4, shadow: false });
+  // the crown: boughs out, then leaves spread wide and low
+  for (let i = 0; i < 5; i++) {
+    const a = i / 5 * Math.PI * 2 + 0.6, bough = new THREE.CylinderGeometry(0.1, 0.3, 1.9, 8); bough.translate(0, 0.95, 0);
+    const m = mesh(bough, bigBark, 0, tall - 0.6, 0, g); m.rotation.set(0, -a, 1.0); m.raycast = () => {};
+  }
+  crown(g, 0, tall + 0.6, -0.3, 1.7, rnd);
+  for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2 + 0.6; crown(g, Math.cos(a) * 1.7, tall + 0.3, Math.sin(a) * 1.3 - 0.4, 0.95, rnd); }
+  return g;
+}
+
+/** A sign carved in a plank, hung on two ropes (the vine gate's). */
+function plankArt(name) {
+  const f = fine(96, 22, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 22, 4, '#4a2c18');
+  rr(1.6, 1.6, 92.8, 18.8, 3, lin(0, 0, 0, 22, ['#c89a68', '#9a6a40']));
+  g.strokeStyle = 'rgba(80,46,20,0.35)'; g.lineWidth = 0.5;
+  for (let y = 5; y < 20; y += 3.5) { g.beginPath(); g.moveTo(4, y); g.bezierCurveTo(30, y - 1, 60, y + 1, 92, y); g.stroke(); }
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 10px sans-serif';
+  g.fillStyle = 'rgba(255,240,210,0.4)'; g.fillText(name.toUpperCase(), 48.5, 12.5, 84);
+  g.fillStyle = '#3a2212'; g.fillText(name.toUpperCase(), 48, 12, 84);
+  return f.c;
+}
+
+/** The way out, the vine gate: two great log posts wound with vines and thorns, a log across them hung with leaves, the
+    town's name on a plank swinging on its ropes, a lantern each side. Its posts block their tiles; the way between them
+    is `R.exitAt`. */
+function vineGate(x, z, span, tall, name, L, lit) {
+  const g = new THREE.Group(), rnd = seeded(47);
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const logGeo = (r, len) => { const geo = new THREE.CylinderGeometry(r * 0.9, r, len, 12); geo.translate(0, len / 2, 0); return geo; };
+  const vine = std({ color: '#3e7a2e', roughness: 0.9 }), thorn = std({ color: '#5a3a2a', roughness: 0.8 });
+  const wound = [];
+  for (const s of [-1, 1]) {
+    const px = s * (span / 2 + 0.1);
+    mesh(logGeo(0.3, tall + 0.3), bark(), px, 0, 0, g);
+    for (let i = 0; i < 18; i++) {   // a vine spiralling up it, thorns on it
+      const a0 = i * 0.9 + s, a1 = a0 + 0.9, y0 = i * tall / 18, y1 = y0 + tall / 18;
+      wound.push([x + px + Math.cos(a0) * 0.32, y0, z + Math.sin(a0) * 0.32, x + px + Math.cos(a1) * 0.32, y1, z + Math.sin(a1) * 0.32]);
+      if (i % 3 === 1) { const t = mesh(new THREE.ConeGeometry(0.035, 0.14, 4), thorn, px + Math.cos(a0) * 0.36, y0, Math.sin(a0) * 0.36, g); t.rotation.z = -Math.cos(a0) * 1.4; t.rotation.x = Math.sin(a0) * 1.4; t.castShadow = false; }
+    }
+    crown(g, px + s * 0.25, 0.25, 0.1, 0.38, rnd, { cols: ['#3a6a2a', '#2e5a24', '#4a7a30'] });   // brambles at its foot
+  }
+  beams(wound, 0.035, vine, { sides: 5, shadow: false });
+  const beam = mesh(new THREE.CylinderGeometry(0.24, 0.26, span + 1.4, 12), bark(), 0, tall + 0.12, 0, g);
+  beam.rotation.z = Math.PI / 2;
+  for (let i = 0; i < 11; i++) { const m = mesh(new THREE.IcosahedronGeometry(0.2 + rnd() * 0.08, 0), std({ color: CANOPY.leaf[i % 4], roughness: 0.9, flatShading: true }), -span / 2 - 0.55 + i * (span + 1.1) / 10, tall + 0.32 + rnd() * 0.08, 0.05, g); m.scale.y = 0.7; }
+  const hang = [];
+  for (const s of [-1, 1]) hang.push([x + s * 0.7, tall - 0.05, z + 0.2, x + s * 0.7, tall - 0.55, z + 0.2]);
+  beams(hang, 0.015, std({ color: '#c8b080', roughness: 0.9 }), { sides: 4, shadow: false });
+  const sign = panel(plankArt(name), 1.7, 0.4, x, tall - 0.72, z + 0.2);
+  sign.userData.spot = 'exit';
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.9, roughness: 0.6 });
+  lit.push(glow);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(0.3, 0.04, 0.04), thorn, s * (span / 2 + 0.25), tall - 0.35, 0.3, g);
+    mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.22, 8), glow, s * (span / 2 + 0.38), tall - 0.55, 0.3, g).castShadow = false;
+  }
+  B.ticks.push((now) => { sign.rotation.z = calm ? 0 : Math.sin(now / 1300) * 0.04; });
+  for (const s of [-1, 1]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + s * (span / 2 + 0.1) + COLS / 2 - 0.5), y));
+  const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
+  way.castShadow = way.receiveShadow = false;
+  g.traverse(o => { o.userData.spot = 'exit'; });
+  return g;
+}
+
+/** The canopy's own things from the map: the floor far below and the mist over it, what holds the town up, the lone
+    giants in the drop and the lifts. */
+function canopyExtras(town, L, lit) {
+  const plinth = B.group.children.find(o => o.geometry?.parameters?.height === 7);   // the room's plinth would be a lid over the drop
+  if (plinth) plinth.position.y = DROP - 3.6;
+  jungleFloor(town, lit);
+  canopyMist();
+  canopySupports(town);
+  const rnd = seeded(71);
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '|') loneGiant(tileX(x) + (rnd() - 0.5) * 0.2, tileZ(y) + (rnd() - 0.5) * 0.2, rnd, lit);
+    if (ch === 'y') lift(tileX(x) - 0.1, tileZ(y), rnd);
+  }));
+}
+
+/** A firefly, a soft green-gold spot of light. */
+function fireflyArt(col) {
+  const f = fine(12, 12, 8), { g } = f;
+  const rg = g.createRadialGradient(6, 6, 0, 6, 6, 6);
+  rg.addColorStop(0, '#ffffff'); rg.addColorStop(0.3, col); rg.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = rg; g.fillRect(0, 0, 12, 12);
+  return f.c;
+}
+
 /** How each town's dressed (js/data/towns.js's `style`; the Shrine's is the village): the ground's tints, its flowers and
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
@@ -4262,6 +5052,11 @@ const TOWN_STYLES = {
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
     drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },
+  canopy: { holes: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
+    house: (b, f, L, lit) => (b.kind === 'greattree' ? greatTree(b, f, L, lit) : b.kind === 'nursery' ? nursery(b, f, L, lit) : treehouse(b, f, L, lit)),
+    gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.6, town.name, L, lit),
+    extras: canopyExtras,
+    drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#d8ff70' : '#f8e070'), size: 0.12, rise: true }) },
 };
 
 async function buildTown(figs, { look, time, town }) {
@@ -4302,7 +5097,7 @@ async function buildTown(figs, { look, time, town }) {
   const cart = map.findLastIndex(row => row.includes('='));   // a mine cart at the rails' far end, away from the mine's door
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
   springs(map, L, steam);
-  S.extras?.(town, L);
+  S.extras?.(town, L, lit);
   if (smoke.length) puffs(smoke.map(([x, y, z]) => [x, y, z]), { col: 'rgba(150,140,136,0.7)', n: 3, size: 0.5, rise: 1.8, speed: 0.14 });
   const stacks = smoke.filter(s => s[3]);
   if (stacks.length || steam.length) puffs([...steam, ...stacks.map(([x, y, z]) => [x, y, z])], { col: 'rgba(250,250,248,0.8)', n: 2, size: 0.7, rise: 1.4, speed: 0.2 });
@@ -4353,6 +5148,15 @@ const HOMES = {
     aquarium: { cols: 11, rows: 9, floor: 'tiles', walls: 'aqua', cold: true, castAt: [[1.5, 0.5, -0.18], [4.5, 0.5, -0.18], [7.5, 0.5, -0.18], [2.5, 3.5, -0.18], [7.5, 3.5, -0.18]],
       furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 7, 3], ['bubblecolumn', 0, 0], ['bubblecolumn', 10, 0], ['aquarium', 0, 7], ['aquarium', 9, 7], ['jellylamp', 0, 4], ['jellylamp', 10, 4], ['kelp', 0, 2], ['kelp', 10, 2], ['bench', 3, 7], ['bench', 6, 7]] },
   },
+  thornwood: {
+    shop: { floor: 'planks', walls: 'boards', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['monstera', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['barrel', 0, 4], ['barrel', 8, 3], ['fern', 8, 4], ['lantern', 8, 1], ['umbrellas', 1, 1]] },
+    phil: { floor: 'planks', walls: 'dusk', leaderAt: { x: 4, ty: 2.2 }, castAt: [[7, 1.8, 0.4]],
+      furnish: [['witchshelf', 0, 0], ['bookstack', 1, 0], ['lectern', 3, 0], ['crystalball', 5, 0], ['candelabra', 6, 0], ['spookylamp', 8, 0], ['wingchair', 6, 4], ['candle', 0, 4], ['candle', 8, 4], ['candelabra', 1, 5]] },
+    ricky: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 },
+      furnish: [['singlebed', 0, 0], ['desk', 3, 0], ['computer', 3, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 4, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 4, 1], ['minifridge', 7, 0], ['speakerstack', 8, 0], ['beanbag', 7, 3], ['console', 1, 4], ['plant', 8, 5]] },
+    nursery: { cols: 11, rows: 9, floor: 'planks', walls: 'glass', castAt: [[1.5, 0.1, 0.12], [4.5, 0.1, 0.12], [7.5, 0.1, 0.12], [2.5, 3.1, 0.12], [6.5, 3.1, 0.12]],
+      furnish: [['daisybed', 1, 0], ['rosebed', 4, 0], ['violetbed', 7, 0], ['marigoldbed', 2, 3], ['bluebellbed', 6, 3], ['growlamp', 0, 0], ['growlamp', 10, 0], ['monstera', 0, 2], ['citrustree', 10, 2], ['lilytub', 0, 4], ['seedrack', 10, 4], ['orchidstand', 10, 6], ['plantstair', 0, 7], ['wateringcan', 2, 7], ['sprinkler', 8, 7], ['fern', 10, 8]] },
+  },
 };
 const homeSize = (town, id) => { const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
@@ -4379,9 +5183,16 @@ function homeFloor(kind) {
 function homeWall(width, time, { window: win = true, curtain = false, walls = 'plaster' } = {}) {
   const f = fine(width, TOP * U, 5), { g, lin } = f, s = f.shine();
   g.fillStyle = lin(0, wy(TOP), 0, wy(1), ['#e8dcc0', '#f4ead4']); g.fillRect(0, 0, width, TOP * U);
-  if (walls === 'boards') {   // a lagoon home's: weathered boards, laid across
+  if (walls === 'boards' || walls === 'dusk') {   // a lagoon home's: weathered boards, laid across (Phil's, dark and cold)
     const r = seeded(width);
-    for (let y = 0; y < wy(1); y += 6) { g.fillStyle = ['#c8a87c', '#bc9a6c', '#d4b688', '#b08e62'][Math.floor(r() * 4)]; g.fillRect(0, y, width, 6); g.fillStyle = 'rgba(60,36,16,0.45)'; g.fillRect(0, y + 5.4, width, 0.6); }
+    for (let y = 0; y < wy(1); y += 6) { g.fillStyle = (walls === 'dusk' ? ['#4a3e52', '#3e3446', '#54485c', '#362c3e'] : ['#c8a87c', '#bc9a6c', '#d4b688', '#b08e62'])[Math.floor(r() * 4)]; g.fillRect(0, y, width, 6); g.fillStyle = 'rgba(60,36,16,0.45)'; g.fillRect(0, y + 5.4, width, 0.6); }
+  } else if (walls === 'glass') {   // the Nursery's: panes in white frames, the canopy's green through them
+    g.fillStyle = lin(0, 0, 0, wy(1), ['#a8e0b0', '#d8f4d0']); g.fillRect(0, 0, width, wy(1));
+    const r = seeded(width);
+    for (let i = 0; i < width / 4; i++) { g.fillStyle = ['rgba(80,160,70,0.5)', 'rgba(50,120,50,0.45)', 'rgba(110,180,80,0.4)'][i % 3]; g.beginPath(); g.ellipse(r() * width, wy(2.2) + r() * (wy(1) - wy(2.2)), 3 + r() * 6, 2 + r() * 3, r() * 3, 0, Math.PI * 2); g.fill(); }
+    g.fillStyle = '#f4f4ec';
+    for (let x = 0; x <= width; x += U) g.fillRect(x - 1, 0, 2, wy(1));
+    for (let y = wy(TOP); y < wy(1); y += U) g.fillRect(0, y - 1, width, 2);
   } else if (walls === 'aqua') {   // the aquarium's: deep water blue, bubbles rising
     g.fillStyle = lin(0, 0, 0, wy(1), ['#1a4a78', '#3a8ab8']); g.fillRect(0, 0, width, wy(1));
     const r = seeded(width);
@@ -4402,7 +5213,7 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
 
 async function buildHome(figs, { time, town, home }) {
   const h = HOMES[town.id]?.[home] || {};
-  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage, curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = 2.1;
   B.talks = new Set();
   for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);

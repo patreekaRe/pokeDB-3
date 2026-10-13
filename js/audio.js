@@ -248,6 +248,7 @@ const CRIES = new Set([
   'eevee', 'espeon', 'jolteon', 'leafeon', 'glaceon', 'hoothoot', 'misdreavus', 'natu', 'chimecho', 'delibird', 'umbreon', 'vaporeon',
   'geodude', 'numel', 'machop', 'cubone', 'larvitar', 'drilbur', 'camerupt', 'magcargo', 'graveler', 'machoke', 'rhyhorn',
   'pelipper', 'wooper', 'buizel', 'wingull', 'lapras', 'mantine', 'corsola', 'chinchou', 'purrloin',
+  'bellossom',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1

@@ -81,8 +81,19 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    10 locked huts, 10 folk (Wooper, Psyduck, Slowpoke, Corphish, Marill, Poliwag, Buizel, Krabby, Wingull, Staryu; 9 cries
    added), its own requests (fights, the Mart, ❓ rooms, a flawless fight, the Gym). Homes' walls can be `boards` / `aqua`.
    The towns test now knows a bench takes two tiles. Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's
-   playtest. Next town: Thornwood's treehouses on rope bridges (or session 2, the Waystone ring, if the user wants that
-   first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
+   playtest. **Thornwood done (2026-10-13): Highbough**, a village in the treetops (`style: 'canopy'`), laid out unlike the other
+   three (the user's ask): no roads at all, round platforms on giant trunks scattered over the drop like stepping stones,
+   joined by rope bridges in no pattern but the trees', in up the lift at the bottom right, the Great Tree's deck in the
+   middle (the broken Waystone, the board, a ring of lanterns round the trunk, its hollow to knock on), out through the vine
+   gate at the top left. The ground is cut away everywhere but the platforms, so you look down through the bridges' slats
+   to the jungle floor in the mist (ferns, a stream, glow caps lit at night); treehouses of logs with leaf-shingle roofs,
+   their trees going up through them into crowns that fade while you're behind them; lone giants in the drop, lifts going
+   up and down. Walked in: Kecleon's Canopy Goods (the trade), Phil's (candles, Misdreavus, JONA after 11 p.m.), Ricky's
+   (gaming with the boys after 10 p.m.), the glass Bloom Nursery (Bellossom, Sunflora, Cherrim, Oddish, Chikorita; Bellossom's
+   cry added). 8 locked treehouses, 10 folk (Aipom, Hoothoot, Sentret, Hoppip, Seedot, Shroomish, Treecko, Teddiursa, Natu,
+   Paras), its own requests (fights, ❓ rooms, an Alpha, a PP Up, the Gym) and broken Waystone. Branch `towns` (and
+   `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. Next town: the Savanna's caravan trading post
+   (or session 2, the Waystone ring, if the user wants that first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
