@@ -36,7 +36,7 @@ function hook(K, L, m, i, j, z, r = 2) {
 }
 
 /** A Poké Ball of radius r units at painted (i, j), its button facing out at depth z. */
-function pokeball(K, L, i, j, r, z) {
+export function pokeball(K, L, i, j, r, z) {
   const W = K.p.w, { THREE } = L;
   K.put(new THREE.SphereGeometry(u(r), 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), K.gloss('#e04848'), X(i, W), Y(j), z);
   K.put(new THREE.SphereGeometry(u(r), 28, 14, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), K.gloss('#f4f4f0'), X(i, W), Y(j), z);
