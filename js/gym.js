@@ -1,4 +1,5 @@
-/* The Gym Leader's moments (js/data/gym.js): before their boss, they slide in and talk, a shadow until you've beaten
+/* The Gym Leader's moments (js/data/gym.js): before their boss, they slide in from the right, their speech window up from
+   below, and talk, a shadow until you've beaten
    them once, lit up as they speak; after you win, their last words and the badge. One layer over whatever is showing,
    a tap (or Enter / Space) for each line. */
 
@@ -62,7 +63,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   box.append(plate, text, el('i', 'gym-more'));
   layer.append(who, box);
   document.body.append(layer);
-  if (!calm) { await sleep(20); layer.classList.add('in'); await sleep(450); } else layer.classList.add('in');
+  if (!calm) { await sleep(20); layer.classList.add('in'); await sleep(600); } else layer.classList.add('in');
 
   let mark = null;
   if (badge) {

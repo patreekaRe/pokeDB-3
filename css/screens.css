@@ -5504,16 +5504,20 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-trainer {
   position: absolute; right: max(6%, calc(50% - 260px)); bottom: calc(max(18px, env(safe-area-inset-bottom) + 10px) + 150px);
   height: min(46vh, 300px); width: auto; image-rendering: pixelated; filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.35));
-  translate: 120% 0; transition: translate 0.45s cubic-bezier(.2, .9, .3, 1.1), filter 0.6s;
+  translate: 100vw 0; transition: translate 0.6s cubic-bezier(.2, .9, .3, 1.08), filter 0.6s;
 }
 .gym-scene.in .gym-trainer { translate: 0 0; }
+.gym-scene.out .gym-trainer { translate: 100vw 0; transition: translate 0.32s cubic-bezier(.6, 0, .9, .5), filter 0.6s; }
 .gym-trainer.shadow { filter: brightness(0) drop-shadow(0 0 2px rgba(255, 240, 200, 0.9)); }
 .gym-say {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   width: min(480px, calc(100% - 32px)); min-height: 110px; margin: 0; padding: 26px 22px 22px; box-sizing: border-box;
   border-radius: 26px / 22px; background: #fbf4df; color: #6a5440; font-size: 16px; line-height: 1.6; text-align: left;
   box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
+  translate: -50% calc(100% + 40px); transition: translate 0.45s cubic-bezier(.2, .9, .3, 1.1) 0.15s;
 }
+.gym-scene.in .gym-say { translate: -50% 0; }
+.gym-scene.out .gym-say { translate: -50% calc(100% + 40px); transition: translate 0.28s ease-in; }
 .gym-text { margin: 0; }
 .gym-plate {
   position: absolute; left: 18px; top: -16px; padding: 7px 14px; border-radius: 999px; font-size: 13px;
@@ -5530,7 +5534,7 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
   filter: drop-shadow(0 0 18px rgba(255, 230, 120, 0.9)); animation: gymBadge 0.7s cubic-bezier(.3, 1.6, .5, 1);
 }
 @keyframes gymBadge { from { scale: 0; rotate: -200deg; } }
-@media (prefers-reduced-motion: reduce) { .gym-trainer { transition: none; } .gym-more, .gym-badge { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gym-trainer, .gym-say { transition: none; } .gym-more, .gym-badge { animation: none; } }
 
 /* the crossroads boards' Gym Leaders: a card each, a shadow and ??? till beaten, over the bosses they send out */
 .xr-leaders { display: flex; gap: 8px; justify-content: center; }

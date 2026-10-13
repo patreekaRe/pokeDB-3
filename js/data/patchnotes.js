@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['look', 'Each Gym now has a stone arch behind its leader, their badge turning over it with their name on a ribbon (a dark seal till you earn it).'],
+  ['look', 'Gym Leaders now slide in from the edge of the screen when they talk, their speech window rising up beneath them, and slide back out when they\'re done.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
