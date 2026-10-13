@@ -100,9 +100,12 @@ const NIETOS = {
     ['LAW: Hold on, hold on. Babe, did you pack the snacks?', 'BRITT: I packed the snacks, the wipes, the backup Pikachu suit AND you.', 'LINC: Num num!', 'BRITT: Go, {boss}! Mommy needs to go home.'],
     ['BRITT: I taught twenty-six kids today. Now I have to battle one more.', 'LAW: Technically they\'re a trainer, babe.', 'BRITT: Technically I don\'t care.', 'LINC: Bwaaa!', 'LAW: Go, {boss}!'],
     ['LAW: Our babysitter cancelled. Again. Third time this week.', 'BRITT: So you get all three of us.', 'LINC: Pikaaa-chuuu! *blows a raspberry*', 'LAW: That means good luck. Go, {boss}!'],
+    ['LAW: Babe, I\'m all yours tonight. No Valorant, I swear.', 'LAW: Oh, umm... I mean, after one match. Or five.', 'BRITT: LAW.', 'LINC: Five! Fiiive!', 'LAW: ...Go, {boss}!'],
+    ['LAW: I already changed Linc\'s diaper before we came!', 'LAW: Oh, umm... I mean, Britt did. I watched. Supportively.', 'BRITT: He held the wipes. Barely.', 'LINC: Poo-poo!', 'BRITT: Go, {boss}!'],
     ['LINC: Dada! Dada! Ba!', 'LAW: Not now, buddy, Daddy\'s working.', 'BRITT: Daddy\'s "working" with his headset still on.', 'LAW: ...Go, {boss}!'],
   ],
   beaten: [
+    ['LAW: Britt, I love you more than anything, but we LOST.', 'LAW: Oh, umm... I mean, more than ALMOST anything. Ranked is ranked.', 'BRITT: Take the {badge} and leave before I hurt him.', 'LINC: Hehehe!'],
     ['LAW: Well, that\'s game. Can we go home now?', 'BRITT: You\'re carrying the diaper bag.', 'LINC: Bye-bye! Bye-bye!', 'BRITT: Take the {badge}, sweetie.'],
     ['BRITT: I told you we should have healed, Law.', 'LAW: You\'re the Sage, babe, that\'s literally your job.', 'BRITT: Don\'t you DARE.', 'LAW: ...Here, take the {badge}.'],
     ['LINC: Waaaah!', 'BRITT: It\'s okay, baby, Mommy and Daddy just lost a little.', 'LAW: A lot, actually.', 'BRITT: Take the {badge} before he gets louder.'],
@@ -110,6 +113,8 @@ const NIETOS = {
     ['BRITT: You know what? Good. Now we can go home early.', 'LAW: Early enough for one ranked match?', 'BRITT: No.', 'LINC: Nooo! *giggles*', 'LAW: Take the {badge}...'],
   ],
   won: [
+    ['LAW: Rez me, Sage! Oh, umm... I mean, heal me, honey. Gym words.', 'BRITT: We won, Law. Nobody needs a rez.', 'LINC: Rez! Rez! Bababa!'],
+    ['LAW: Did you see that? I\'m the fun parent!', 'LAW: Oh, umm, I mean... we\'re both fun. Equally.', 'BRITT: Linc, give Daddy back his headset.', 'LINC: Mine!'],
     ['LAW: Family wins! Family wins!', 'BRITT: Great. Now pack up, it\'s past his bedtime.', 'LINC: Yay-yay! Pika!'],
     ['BRITT: Gold star for trying.', 'LAW: Heal, wall, rez. Sage diff.', 'BRITT: That\'s MY line, Law.', 'LINC: Sage diff! Bababa!'],
     ['LINC: *throws a Poké Ball at you*', 'BRITT: Linc! We don\'t throw balls at people!', 'LAW: ...Unless they lose. Then it\'s fine.'],

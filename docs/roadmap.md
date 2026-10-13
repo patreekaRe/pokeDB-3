@@ -405,7 +405,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **THE NIETOS** (2026-10-13, the user's): Law and Britt with baby Linc (no babysitter), the Clearing's third leader,
   Kangaskhan theirs (taken from Lawrence), Pacifier Badge; `assets/trainers/gym/nietos.png` is the user's two sprites
   side by side. A leader's `voices` lets a line start "LAW: " to put that name on the tag (`voiced()` in `js/data/gym.js`,
-  read by `gymTalk()` and `showLine()` in `js/rewards.js`). 6 / 5 / 5 speeches. Playtest `?gym=nietos`.
+  read by `gymTalk()` and `showLine()` in `js/rewards.js`). 8 / 6 / 7 speeches, Law's "Oh, umm... I mean" slips among them. Playtest `?gym=nietos`.
   **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
   `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
   foot to just over the bar when a room leaves it unset.
