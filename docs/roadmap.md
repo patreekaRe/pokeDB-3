@@ -432,6 +432,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   all fight (`.enemy-portrait.possessed`). **Fix (2026-10-13, the user's iPhone):** the possession talk stuck on its
   narration line, where Phil starts shuddering and his aura redraws: iOS sent no `click` for a tap there; `tap()` in
   `js/gym.js` now takes `pointerup` too, and an error in the talk can't leave its layer up over the battle.
+  **The possession on the battle screen** (2026-10-13, the user's ask: Phil needed the Super Saiyan aura and Blissey never
+  looked possessed): auras are a level 3 now (taller flames, five rings, more lightning and embers; `aura.js`), drawn
+  from ImageData into one canvas each (iOS caps all canvases' memory, and a canvas past it draws nothing). After JONA's
+  last line `infuse()` in `js/gym.js` plays it over the battle itself: the window and dim go, a stream and tendrils of dark
+  energy flow from Phil into his Pokémon as it writhes and cries (`.writhing`), Phil's aura gutters out and he goes grey,
+  then a violet burst and shockwaves, its level 3 aura lights and it cries again in JONA's echoing voice (`playCry(id,
+  { rate, echo })` in `js/audio.js`), and Phil slides away.
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

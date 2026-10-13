@@ -5592,6 +5592,16 @@ body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, c
 .gym-scene.demon .gym-trainer { animation: jonaFlicker 3s steps(1) infinite; }
 @keyframes jonaBox { 50% { box-shadow: 0 3px 0 #4a1a7a, 0 0 36px rgba(170, 70, 255, 0.85); } }
 @keyframes jonaFlicker { 0%, 46%, 50%, 100% { filter: drop-shadow(0 0 10px #a050e8) brightness(0.8) saturate(0.6); } 47%, 49% { filter: invert(1) hue-rotate(250deg) drop-shadow(0 0 14px #ff3060); } }
+/* JONA poured into his Pokémon (infuse() in js/gym.js): the speech window and the dim go so the battle shows, a stream of
+   dark energy on its own canvas, his Pokémon writhing and going dark as it fills, then Phil left grey and lifeless */
+.gym-scene.possess.infusing { background: radial-gradient(ellipse at 50% 40%, rgba(60, 10, 110, 0.05), rgba(10, 0, 24, 0.35) 80%); cursor: default; }
+.gym-scene.infusing .gym-say { opacity: 0; translate: -50% 30px; transition: opacity 0.3s, translate 0.3s; }
+.gym-infuse { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.gym-scene.possess.taken .gym-trainer.drained { animation: none; filter: grayscale(1) brightness(0.45) drop-shadow(0 0 4px #301050); transition: filter 0.5s, translate 0.5s ease-in, opacity 0.5s; }
+.gym-scene .gym-trainer.drained.gone { translate: 120% 0; opacity: 0; }
+.enemy-portrait.sprite.writhing img { animation: writhe 0.1s steps(2) infinite; filter: brightness(0.55) saturate(0.4) drop-shadow(0 0 14px #a040ff) drop-shadow(0 0 4px #ff3868); }
+@keyframes writhe { 0% { transform: translate(-3px, 1px) scale(1.02, 0.98); } 50% { transform: translate(3px, -1px) scale(0.98, 1.03); } }
+@media (prefers-reduced-motion: reduce) { .enemy-portrait.sprite.writhing img { animation: none; } }
 /* his Pokémon, once the dark is poured in: a violet glow breathing round it on top of the aura */
 .enemy-portrait.sprite.boss.possessed img { --rest: drop-shadow(0 0 10px #b050ff) drop-shadow(0 0 22px #6010c0) brightness(0.85); animation: possessedBreath 1.8s ease-in-out infinite; }
 @keyframes possessedBreath { 50% { filter: drop-shadow(0 0 16px #d080ff) drop-shadow(0 0 32px #7020e0) brightness(0.75) saturate(1.3); } }

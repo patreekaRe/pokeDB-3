@@ -414,7 +414,7 @@ export async function playSound(name, fallback) {
  * Shiny forms use the base cry. Resolves once the cry has finished or been
  * cut off; straight away if sound is muted, still blocked, or it has no file.
  */
-export async function playCry(spriteId) {
+export async function playCry(spriteId, { rate = 1, echo = false } = {}) {
   const id = cryId(spriteId);
   stopCry();
   if (getSave().muted || !CRIES.has(id)) return;
@@ -423,7 +423,16 @@ export async function playCry(spriteId) {
   stopCry();   // another cry may have been asked for while this one loaded
   const source = ctx.createBufferSource();
   source.buffer = buffer;
+  source.playbackRate.value = rate;
   source.connect(cryBus);
+  if (echo) {   // a possessed Pokémon's cry (Phil's, js/gym.js): it rings on in the dark, each repeat lower and fainter
+    const delay = ctx.createDelay(1), back = ctx.createGain(), wet = ctx.createGain(), low = ctx.createBiquadFilter();
+    delay.delayTime.value = 0.23; back.gain.value = 0.45; wet.gain.value = 0.6;
+    low.type = 'lowpass'; low.frequency.value = 1400;
+    source.connect(delay).connect(low).connect(back).connect(delay);
+    low.connect(wet).connect(cryBus);
+    setTimeout(() => { wet.disconnect(); back.disconnect(); }, (buffer.duration / rate + 2.5) * 1000);
+  }
   cryPlaying = source;
   await new Promise(resolve => { source.onended = resolve; source.start(); });
   if (cryPlaying === source) cryPlaying = null;

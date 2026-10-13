@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { gymTalk, demonSwap } from './gym.js';
+import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -357,10 +357,12 @@ async function playIntro() {
   if (!still()) return;
   enemyZone.classList.remove('revealed');
   if (b.leader?.possess) {   // Phil gives himself to the dark, then pours it into his Pokémon (js/data/gym.js)
-    await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: () => {
-      setAura($('enemy-img'), 2, 'dark');
-      $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
-      demonSwap(true);
+    await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: {
+      img: $('enemy-img'), box: $('enemy-portrait-box'), spriteId: b.def.spriteId,
+      ignite: () => {
+        setAura($('enemy-img'), 3, 'dark');
+        $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
+      },
     } });
     if (!still()) return;
     log(`${b.def.name} is filled with dark energy!`);

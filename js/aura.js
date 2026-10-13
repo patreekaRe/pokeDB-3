@@ -32,21 +32,23 @@ function seeded(seed) {
   return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
 }
 
-/** The level's 16 frames for a sprite's pixels (an ImageData), each a canvas of the padded size. */
+/** The level's 16 frames for a sprite's pixels (an ImageData), each an ImageData of the padded size: not canvases, since
+    iOS caps the memory all canvases share and a new one past it draws nothing, so an aura is one canvas. */
 function makeFrames(src, level, look = GOLD) {
   const SPARK = look.spark ?? SPARK0, BOLT = look.bolt ?? BOLT0;
   const w0 = src.width, h0 = src.height;
-  const pad = level === 2 ? Math.max(14, Math.round(Math.max(w0, h0) * 0.16)) : Math.max(10, Math.round(Math.max(w0, h0) * 0.1));
+  const big = level >= 2, huge = level >= 3;   // level 3 is a possession's (Phil's and his Pokémon's): taller, wider, wilder
+  const pad = Math.max(huge ? 20 : big ? 14 : 10, Math.round(Math.max(w0, h0) * (huge ? 0.26 : big ? 0.16 : 0.1)));
   const w = w0 + pad * 2, h = h0 + pad * 2;
   const aura = look.aura.map(rgba), flare = look.flare.map(rgba), bits = look.bits.map(rgba);
   const body = new Uint8Array(w * h);
   for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) if (src.data[(y * w0 + x) * 4 + 3] > 0) body[(y + pad) * w + x + pad] = 1;
   const inBody = (x, y) => x >= 0 && y >= 0 && x < w && y < h && body[y * w + x];
   const rnd = seeded(level * 7919 + w);
-  const motes = Array.from({ length: level === 2 ? Math.max(8, Math.floor(w / 9)) : Math.max(4, Math.floor(w / 22)) }, () => ({
+  const motes = Array.from({ length: huge ? Math.max(14, Math.floor(w / 6)) : big ? Math.max(8, Math.floor(w / 9)) : Math.max(4, Math.floor(w / 22)) }, () => ({
     x: pad * 0.6 + rnd() * (w - pad * 1.2), phase: rnd(), sway: 1 + rnd() * 2, speed: rnd() < 0.67 ? 1 : 2, c: Math.floor(rnd() * bits.length),
   }));
-  const orbiters = level === 2 ? (w < 110 ? 3 : 4) : 2;
+  const orbiters = huge ? (w < 110 ? 4 : 5) : big ? (w < 110 ? 3 : 4) : 2;
   const ringOf = (filled) => {
     const out = [];
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
@@ -58,20 +60,18 @@ function makeFrames(src, level, look = GOLD) {
   const edge = ringOf(body);
   const frames = [];
   for (let i = 0; i < FRAMES; i++) {
-    const t = i / FRAMES, canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    const ctx = canvas.getContext('2d'), out = ctx.createImageData(w, h), px = out.data;
+    const t = i / FRAMES, out = new ImageData(w, h), px = out.data;
     const at = (x, y) => (y * w + x) * 4;
     const put = (x, y, c) => { if (x >= 0 && y >= 0 && x < w && y < h) px.set(c, at(x, y)); };
     const empty = (x, y) => px[at(x, y) + 3] === 0;
     // the power pulse: the body flashes lighter twice a loop
-    const pulse = Math.pow(Math.max(0, Math.cos(t * Math.PI * 4)), 6) * (level === 2 ? 0.45 : 0.18);
+    const pulse = Math.pow(Math.max(0, Math.cos(t * Math.PI * 4)), 6) * (huge ? 0.5 : big ? 0.45 : 0.18);
     if (pulse > 0.02) for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) {
       const k = (y * w0 + x) * 4;
       if (src.data[k + 3]) put(x + pad, y + pad, lighten([...src.data.slice(k, k + 4)], pulse));
     }
     // flame tongues off every upward edge, shorter ones licking up the sides
-    const reach = Math.max(pad * (level === 2 ? 0.6 : 0.4), level === 2 ? 5 : 3);
+    const reach = Math.max(pad * (huge ? 0.85 : big ? 0.6 : 0.4), huge ? 8 : big ? 5 : 3);
     for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       if (!body[y * w + x]) continue;
       const up = !inBody(x, y - 1), side = !inBody(x - 1, y) || !inBody(x + 1, y);
@@ -88,11 +88,11 @@ function makeFrames(src, level, look = GOLD) {
     }
     // rings of aura, their colours cycling so the glow seems to pour outwards
     const filled = body.slice();
-    for (let r = 0; r < (level === 2 ? 3 : 2); r++) {
+    for (let r = 0; r < (huge ? 5 : big ? 3 : 2); r++) {
       const rim = ringOf(filled);
-      const c = level === 2 ? aura[(((r - i) % 4) + 4) % 4] : aura[(r + Math.floor(i / 3)) % 2];
+      const c = big ? aura[(((r - i) % 4) + 4) % 4] : aura[(r + Math.floor(i / 3)) % 2];
       for (const [x, y] of rim) {
-        if ((empty(x, y) || r === 0) && (r < 2 || (x + y + i) % 2 === 0)) put(x, y, c);
+        if ((empty(x, y) || r === 0) && (r < 2 || (x + y + i) % (r < 4 ? 2 : 3) === 0)) put(x, y, c);
         filled[y * w + x] = 1;
       }
     }
@@ -105,7 +105,7 @@ function makeFrames(src, level, look = GOLD) {
     }
     // sparkles orbiting on an ellipse, passing behind the body on the far side
     const cx = w / 2, cy = h / 2;
-    for (let k = 0; k < orbiters; k++) for (let trail = 0; trail < (level === 2 ? 4 : 2); trail++) {
+    for (let k = 0; k < orbiters; k++) for (let trail = 0; trail < (huge ? 5 : big ? 4 : 2); trail++) {
       const a = (t - trail * 0.018 + k / orbiters) * Math.PI * 2;
       const x = Math.floor(cx + Math.cos(a) * (w / 2 - 3)), y = Math.floor(cy + Math.sin(a) * (h / 2 - 3) * 0.55);
       if (Math.sin(a) < 0 || !inBody(x, y)) {
@@ -116,13 +116,13 @@ function makeFrames(src, level, look = GOLD) {
       }
     }
     // Super Saiyan 2's lightning: jagged bolts out from the body, new ones every other frame
-    if (level === 2) {
+    if (big) {
       const zap = seeded(131 * w + Math.floor(i / 2) + 1);
-      for (let n = 0; n < (w < 110 ? 3 : 4); n++) {
+      for (let n = 0; n < (huge ? (w < 110 ? 5 : 6) : w < 110 ? 3 : 4); n++) {
         if (!edge.length || zap() < 0.15) continue;
         let [x, y] = edge[Math.floor(zap() * edge.length)];
         let dx = x > w / 2 ? 1 : -1, dy = y < h * 0.6 ? -1 : 1;
-        const run = 2 + Math.floor(zap() * 3), steps = 12 + Math.floor(zap() * 11);
+        const run = 2 + Math.floor(zap() * 3), steps = (huge ? 16 : 12) + Math.floor(zap() * 11);
         for (let s = 0; s < steps; s++) {
           if (s % run === 0) {
             if (zap() < 0.5) dy = -dy;
@@ -140,8 +140,7 @@ function makeFrames(src, level, look = GOLD) {
         }
       }
     }
-    ctx.putImageData(out, 0, 0);
-    frames.push(canvas);
+    frames.push(out);
   }
   return { frames, pad, w0, h0 };
 }
@@ -158,13 +157,16 @@ export function auraOn(img, level, look = 'gold') {
     grab.width = w; grab.height = h;
     const g = grab.getContext('2d', { willReadFrequently: true });
     g.drawImage(img, 0, 0);
-    const set = makeFrames(g.getImageData(0, 0, w, h), level, LOOKS[look] ?? GOLD);
+    const pixels = g.getImageData(0, 0, w, h);
+    grab.width = grab.height = 0;
+    const set = makeFrames(pixels, level, LOOKS[look] ?? GOLD);
     const canvas = document.createElement('canvas');
     canvas.className = 'aura-fx';
     canvas.width = set.w0 + set.pad * 2;
     canvas.height = set.h0 + set.pad * 2;
     img.after(canvas);
     const ctx = canvas.getContext('2d');
+    if (!ctx) { canvas.remove(); return; }
     let i = 0;
     const tick = () => {
       // follow the <img>'s drawn picture: object-fit contain at the bottom, moved by --shift / --drop (screens.css)
@@ -176,8 +178,7 @@ export function auraOn(img, level, look = 'gold') {
         left: `${left - set.pad * scale}px`, top: `${top - set.pad * scale}px`,
         width: `${canvas.width * scale}px`, height: `${canvas.height * scale}px`,
       });
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(set.frames[i++ % FRAMES], 0, 0);
+      ctx.putImageData(set.frames[i++ % FRAMES], 0, 0);
     };
     tick();
     state.canvas = canvas;
@@ -185,7 +186,10 @@ export function auraOn(img, level, look = 'gold') {
   };
   if (img.complete && img.naturalWidth) go();
   else img.addEventListener('load', go, { once: true });
-  return () => { state.off = true; clearInterval(state.timer); state.canvas?.remove(); };
+  return () => {
+    state.off = true; clearInterval(state.timer);
+    if (state.canvas) { state.canvas.remove(); state.canvas.width = state.canvas.height = 0; }
+  };
 }
 
 let live = null;

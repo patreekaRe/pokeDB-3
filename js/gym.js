@@ -3,7 +3,7 @@
    a tap (or Enter / Space) for each line. */
 
 import { el, sleep } from './ui.js';
-import { playSound } from './audio.js';
+import { playSound, playCry } from './audio.js';
 import { getSave } from './storage.js';
 import { spriteOf, gymWins, voiced } from './data/gym.js';
 import { battleFx, calmFx } from './prefs.js';
@@ -46,7 +46,8 @@ export function badgePop(l) {
 
 /** Their lines, one a tap. `badge` shows the badge they hand over with the last line. */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
-   thins so the boss shows behind), and on his last `possess()` fills his Pokémon with it. */
+   thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
+   `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
 export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}`);
@@ -84,18 +85,122 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
     if (possess && i === Math.min(1, said.length - 1)) {
       layer.classList.add('taken');
-      try { darkness = auraOn(who, 2, 'dark'); } catch (e) { console.error(e); }   // the talk must go on without it
+      try { darkness = auraOn(who, 3, 'dark'); } catch (e) { console.error(e); }   // the talk must go on without it
       playSound('power');
     }
-    if (possess && i === said.length - 1) try { possess(); } catch (e) { console.error(e); }
     await tap(layer);
     playSound('confirm');
-  } } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
+  }
+  if (possess) await infuse(layer, who, possess, () => { darkness?.(); darkness = null; });
+  } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
   layer.classList.remove('in');
   layer.classList.add('out');
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/** Phil pours JONA into his Pokémon, on the battle screen: the speech window and the dim go, a stream of dark energy and
+    tendrils flows from him into it while it writhes and cries, his aura gutters out and he goes grey and lifeless, then a
+    violet burst, a shockwave, and it rises burning with JONA's aura, crying again in her echoing voice. Calm effects:
+    the burst and the cries only. */
+async function infuse(layer, who, { img, box, spriteId, ignite }, snuff) {
+  const calm = !battleFx() || calmFx();
+  layer.classList.add('infusing');
+  const fx = el('canvas', 'gym-infuse');
+  layer.append(fx);
+  const dpr = Math.min(2, devicePixelRatio || 1);
+  fx.width = innerWidth * dpr; fx.height = innerHeight * dpr;
+  const g = fx.getContext('2d');
+  const from = () => { const r = who.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height * 0.42]; };
+  const to = () => { const r = img.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height * 0.6]; };
+  const bits = [], rings = [];
+  let pouring = !calm, start = performance.now(), live = true;
+  const draw = (now) => {
+    if (!live || !g) return;
+    const t = (now - start) / 1000, [ax, ay] = from(), [bx, by] = to();
+    const cx = (ax + bx) / 2 - 40, cy = Math.min(ay, by) - 120;   // the stream arcs up over the field
+    const along = (k, wob = 0) => {
+      const u = 1 - k;
+      return [u * u * ax + 2 * u * k * cx + k * k * bx + Math.sin(k * 9 + t * 7 + wob) * 14 * Math.sin(k * Math.PI),
+        u * u * ay + 2 * u * k * cy + k * k * by + Math.cos(k * 7 + t * 5 + wob) * 10 * Math.sin(k * Math.PI)];
+    };
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, innerWidth, innerHeight);
+    g.globalCompositeOperation = 'lighter';
+    if (pouring) {
+      for (let n = 0; n < 3; n++) {   // three tendrils writhing along the stream
+        g.beginPath();
+        for (let k = 0; k <= 1.001; k += 0.04) { const [x, y] = along(k, n * 2.1); k ? g.lineTo(x, y) : g.moveTo(x, y); }
+        g.strokeStyle = ['rgba(150, 60, 255, 0.55)', 'rgba(255, 60, 140, 0.35)', 'rgba(210, 150, 255, 0.4)'][n];
+        g.lineWidth = [7, 4, 2][n] * (0.8 + 0.3 * Math.sin(t * 13 + n));
+        g.stroke();
+      }
+      for (let n = 0; n < 6; n++) bits.push({ k: 0, v: 0.55 + Math.random() * 0.6, wob: Math.random() * 6, s: 2 + Math.random() * 4,
+        c: ['#c878ff', '#8a34e0', '#ff3868', '#f8e8ff', '#3c0c66'][Math.floor(Math.random() * 5)] });
+    }
+    for (let i = bits.length - 1; i >= 0; i--) {
+      const p = bits[i];
+      p.k += p.v / 60;
+      if (p.k >= 1) { bits.splice(i, 1); continue; }
+      const [x, y] = along(p.k, p.wob);
+      g.globalAlpha = Math.min(1, (1 - p.k) * 3, p.k * 6);
+      g.fillStyle = p.c;
+      g.fillRect(x - p.s / 2, y - p.s / 2, p.s, p.s);
+    }
+    g.globalAlpha = 1;
+    for (let i = rings.length - 1; i >= 0; i--) {   // the burst's shockwaves
+      const r = rings[i], age = (now - r.at) / 1000;
+      if (age < 0) continue;
+      if (age > r.life) { rings.splice(i, 1); continue; }
+      const k = age / r.life;
+      g.beginPath();
+      g.arc(bx, by, r.r0 + k * r.grow, 0, Math.PI * 2);
+      g.strokeStyle = `rgba(${r.c}, ${1 - k})`;
+      g.lineWidth = r.w * (1 - k) + 1;
+      g.stroke();
+    }
+    const swell = pouring ? Math.min(1, t / 1.4) : 0;
+    if (swell) {   // the dark gathering round its Pokémon as it fills
+      const glow = g.createRadialGradient(bx, by, 0, bx, by, 60 + 40 * swell);
+      glow.addColorStop(0, `rgba(200, 110, 255, ${0.5 * swell})`);
+      glow.addColorStop(1, 'rgba(60, 0, 120, 0)');
+      g.fillStyle = glow;
+      g.fillRect(bx - 110, by - 110, 220, 220);
+    }
+    requestAnimationFrame(draw);
+  };
+  requestAnimationFrame(draw);
+  try {
+    if (!calm) {
+      playSound('charge');
+      setTimeout(() => playSound('gate-hum'), 300);
+      await sleep(500);
+      box.classList.add('writhing');
+      playCry(spriteId);   // it fights it
+      await sleep(1500);
+      snuff();
+      who.classList.add('drained');
+      playSound('gate-crack');
+      await sleep(500);
+      pouring = false;
+      await sleep(250);
+    } else snuff();
+    box.classList.remove('writhing');
+    demonSwap(true);
+    playSound('thunder');
+    const now = performance.now();
+    if (!calm) for (const [i, r] of [[0, '255, 220, 255'], [140, '170, 60, 255'], [300, '255, 50, 110']].entries())
+      rings.push({ at: now + r[0], r0: 10 + i * 6, grow: 220 + i * 60, w: 10 - i * 2, life: 0.9 + i * 0.2, c: r[1] });
+    ignite();
+    await sleep(calm ? 300 : 650);
+    await Promise.race([playCry(spriteId, { rate: 0.72, echo: true }), sleep(2600)]);   // and it answers in JONA's voice
+    if (!calm) { who.classList.add('gone'); await sleep(500); }
+  } finally {
+    live = false;
+    box.classList.remove('writhing');
+    fx.remove();
+  }
 }
 
 /** One tap anywhere on the layer, or Enter / Space. `pointerup` as well as `click`: iOS sends no click for a tap on
