@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { leaderFor, gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
+import { leaderFor, gymWins, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
 import { gymTalk, gymLines, badgePop } from './gym.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -1490,8 +1490,8 @@ async function fight(node, { talked = false } = {}) {
     the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk (gymTalk()). */
 function gymRoom(node, leader, won = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const intro = gymLines(leader, leader.intro, { boss });
-  const beaten = gymLines(leader, first ? leader.beaten : leader.beaten.slice(0, 1), { boss });
+  const intro = gymLines(leader, talkOf(leader, 'intro'), { boss }), said = talkOf(leader, 'beaten');
+  const beaten = gymLines(leader, first ? said : said.slice(0, 1), { boss });
   let talking = false;
   const talk = () => {
     if (talking || run !== thisRun) return;
@@ -1546,10 +1546,12 @@ function afterFight(node, result) {
   const leader = result.won && !result.gymSaid && gymLeader(node);
   if (leader && gym3d()) return gymRoom(node, leader, result);
   if (leader) {
-    const first = gymWins(getSave(), leader.id) === 0;
-    return gymTalk(leader, first ? leader.beaten : leader.beaten.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
+    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
+    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
       .then(() => afterFight(node, { ...result, gymSaid: true }));
   }
+  const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
+  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name } }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)

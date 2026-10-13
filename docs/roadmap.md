@@ -394,6 +394,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
   right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
   reaching the steps or a tap anywhere on the dais does (a spot's `walkUp` / `area` in `js/event-3d.js`).
+  **Lawrence** (2026-10-13, the user's sprite and personality): `assets/trainers/gym/lawrence.png`; married to Britt,
+  secretly gay, always on about his boyfriends, wants every match over fast to play Valorant with the boys, hiding it all
+  from his wife. A leader's `intro` / `beaten` / `won` can now be a list of speeches, one picked at random (`talkOf()` in
+  `js/data/gym.js`): Lawrence has 7 / 5 / 5. `won` is new: when a leader's boss beats you they say it over the battle
+  before the run ends (`afterFight()` in `js/run.js`); the others say a stock line till theirs are written.
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

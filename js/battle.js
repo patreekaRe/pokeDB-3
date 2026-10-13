@@ -20,6 +20,7 @@
    ============================================================ */
 
 import { gymTalk } from './gym.js';
+import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
@@ -339,7 +340,7 @@ async function playIntro() {
     if (!still()) return;
     if (b.leader) {   // a Gym Leader sends it out (js/data/gym.js)
       enemyZone.classList.add('boss-waiting');   // the boss stays in its ball till they send it out
-      try { if (!b.leaderTalked) await gymTalk(b.leader, b.leader.intro, { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
+      try { if (!b.leaderTalked) await gymTalk(b.leader, talkOf(b.leader, 'intro'), { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
       finally { enemyZone.classList.remove('boss-waiting'); }
       if (!still()) return;
       log(`Gym Leader ${b.leader.name} sent out ${b.def.name}!`);

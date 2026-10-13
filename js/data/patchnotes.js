@@ -47,6 +47,7 @@ export const NEXT = [
   ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
   ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
   ['music', 'Gym Leaders have music of their own: one for walking up their gym, one for the battle and a victory theme for beating them.'],
+  ['runs', 'Gym Leader Lawrence has his own look and plenty to say, and a different speech each time: before the battle, when you beat him and when he beats you.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
