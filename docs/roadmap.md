@@ -47,6 +47,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    visit for `REQUEST_COINS` 40 and +1 friendship (`MEND_AT` 5 mends the Waystone, session 2). Leave asks first only while
    a real pick is left (`askFirst()` skips `.locked` and info-only options now). Patch-notes line in `NEXT` (cut the patch
    on merge, not on the branch). Branch `towns` (and `claude/jolly-ritchie-vdznxn`), **waiting on the user's playtest**.
+   **Redone the same day as a Pokémon town** (the user's ask, with a picture of a top-down town: "I want to be able to enter
+   some homes"): still 3D, now 24 x 24 from a tile map (`map` in `TOWNS.shrine`, `tests/towns.test.mjs` checks every door,
+   stand and the gate can be reached): a ring of forest (instanced, the front rows low bushes), stone roads, rows of houses
+   in Pokémon roof colours, tall grass, a pagoda, the Dance Theater, the torii at the top; the camera higher (`pitch` 0.7).
+   Four houses go in (`homes`, `HOMES` in `js/event-3d.js`): Delibird's Goods (the trade moved inside), John's and Jahmes's
+   homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
+   five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
+   no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
 2. **The Waystone ring and visiting from home.** ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns
    and Waystones entry. Add the Shrine town's Waystone (mended by its requests), the ring of standing stones by the Ancient
    Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its

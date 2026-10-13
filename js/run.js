@@ -1595,16 +1595,15 @@ function gymRoom(node, leader, won = null, said = null) {
   });
 }
 /** A gateway town (js/data/towns.js; docs/roadmap.md's Towns and Waystones), walked in 3D between the journey film and
-    the biome's map: its Gym Leaders off duty, townsfolk, one trade at a stall and the request board. Nothing in it makes a
-    run stronger (the user's call). `covered` is called once it is up under the journey film (walkOn()), which then lifts;
-    the far gate (or Leave) walks on into the biome. */
-function townRoom(covered = null) {
+    the biome's map, laid out like a Pokémon town (the user's ask): townsfolk about, the request board in its square, houses
+    to walk into (homeRoom(): the shop's one trade, the Gym Leaders at home, the Dance Theater) and locked ones to knock
+    on. Nothing in it makes a run stronger (the user's call). `covered` is called once it is up under the journey film
+    (walkOn()), which then lifts; `at` puts you on a house's doorstep. The far gate (or Leave) walks on into the biome. */
+function townRoom(covered = null, at = null) {
   const town = TOWNS[run.town.id], thisRun = run, t = run.town;
   const st = townState(getSave(), town.id), r = currentRequest(town, st);
   if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
-  const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
-  if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
-  const again = () => { if (run === thisRun) { checkpoint(); townRoom(); } };
+  const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
   const leave = () => {
     if (run !== thisRun) return;
     run.town = null;
@@ -1625,48 +1624,89 @@ function townRoom(covered = null) {
         again();
       })
     : { ...spotOption('Requests', `Up now: ${requestText(r)} (${progress}). Hand it in here on a later run. ${friends}`, again), info: true };
-  const trade = !t.trade
-    ? spotOption('Trade', town.trader.none, null, true)
-    : t.traded
-      ? spotOption('Trade', town.trader.done, null, true)
-      : spotOption('Trade', town.trader.offer.replace('{give}', give.name).replace('{get}', get.name), () => {
-          if (run !== thisRun) return;
-          const at = run.items.indexOf(give.id);
-          if (at < 0) return again();
-          run.items[at] = get.id;
-          t.traded = true;
-          playSound('item-get');
-          event3dMod?.eventRoom3d()?.does('trader', 'hop');
-          tell(`Traded your ${give.name} for ${get.name}!`);
-          again();
-        });
   const first = !peeking && !st.met;
   if (first) metTown(town.id);
   playMusic(town.music);
   showChoice({
     title: town.name.toUpperCase(),
     sub: first ? [town.first, town.sub] : townVisit ? [] : [town.sub],
-    options: [board, trade],
+    options: [board],
     skipLabel: 'Leave',
     onSkip: leave,
     layout: 'event-room town-room',
   });
   const visit = townVisit ??= { id: town.id };
-  const figures = { trader: { src: `assets/pokemon/${town.trader.id}-front.gif` } };
-  for (const id of Object.keys(town.leaders)) figures[id] = { npc: spriteOf(GYM_BY_ID[id]) };
-  const talks = {};
-  event3d(visit, 'town', figures, null, {
-    extra: { town, onTalk: (stand) => {
+  const knocks = {};
+  event3d(visit, 'town', {}, null, {
+    extra: { town, at, onDoor: (id) => {
       if (run !== thisRun) return;
-      const lines = town.leaders[stand];
-      if (!lines) return;
-      const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
-      said(lines[n], GYM_BY_ID[stand]?.name);
+      const b = town.buildings.find(o => o.id === id);
+      if (b?.home) { playSound('door'); return homeRoom(b); }
+      if (!b?.knock) return;
+      playSound('stick');
+      said(b.knock[knocks[id] = ((knocks[id] ?? -1) + 1) % b.knock.length]);
     }, onSay: (who, line) => { if (run === thisRun) said(line, who); } },
     onIn: () => { covered?.(); covered = null; },
     onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) leave(); },
   });
 }
+
+/** A town house you walk into (js/data/towns.js's `homes`): its own small room, its doormat back out onto its doorstep.
+    Delibird's shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
+    dancers. */
+function homeRoom(b) {
+  const town = TOWNS[run.town.id], home = town.homes[b.home], thisRun = run, t = run.town;
+  const out = () => { if (run === thisRun) townRoom(null, b.door); };
+  const again = () => { if (run === thisRun) { checkpoint(); homeRoom(b); } };
+  const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
+  const options = [];
+  if (b.home === 'shop') {
+    const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
+    if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
+    options.push(!t.trade
+      ? spotOption('Trade', town.trader.none, null, true)
+      : t.traded
+        ? spotOption('Trade', town.trader.done, null, true)
+        : spotOption('Trade', town.trader.offer.replace('{give}', give.name).replace('{get}', get.name), () => {
+            if (run !== thisRun) return;
+            const at = run.items.indexOf(give.id);
+            if (at < 0) return again();
+            run.items[at] = get.id;
+            t.traded = true;
+            playSound('item-get');
+            event3dMod?.eventRoom3d()?.does('trader', 'hop');
+            tell(`Traded your ${give.name} for ${get.name}!`);
+            again();
+          }));
+  }
+  const sleepy = home.night && (new Date().getHours() >= 23 || new Date().getHours() < 6);
+  showChoice({
+    title: home.name.toUpperCase(),
+    sub: [sleepy ? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    options,
+    skipLabel: 'Leave',
+    onSkip: out,
+    layout: 'event-room home-room',
+    ask: false,   // only a door back into the town
+  });
+  const figures = {};
+  if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
+  if (home.leader) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
+  for (const id of Object.keys(home.dancers || {})) figures[`dancer:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
+  const talks = {};
+  homeVisits[b.id] ??= { id: b.id };
+  event3d(homeVisits[b.id], 'home', figures, null, {
+    extra: { town, home: b.home, onTalk: (stand) => {
+      if (run !== thisRun) return;
+      const lines = home.dancers?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
+      if (!lines) return;
+      const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
+      said(lines[n], home.dancers ? '' : GYM_BY_ID[stand]?.name);
+    } },
+    onFail: out,
+  });
+}
+const homeVisits = {};
 let townVisit = null;
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
 const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
@@ -2861,7 +2901,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps

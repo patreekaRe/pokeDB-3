@@ -28,10 +28,11 @@ import { ENEMY_DEFS } from './data/enemies.js';
 let COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
-const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8;
+const ACROSS = 6.4, LOOK_Y = 0.8;
+let PITCH = 0.42;   // the camera's tilt: a town's is higher, to show its layout (useSize())
 let DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
@@ -49,11 +50,18 @@ const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
 const ease = (k) => k * k * (3 - 2 * k);
 let BACK_Z = -ROWS / 2;
 /** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
-const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 }, town: { cols: 13, rows: 18, view: 9, across: 9, shadow: 14 } };
+const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
+/** A town's size is its map's, a home's its HOMES entry's. */
+function sizeOf(kind, at) {
+  if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 11, across: 10.5, shadow: 16, pitch: 0.7 };
+  if (kind === 'home') return homeSize(at.home);
+  return SIZES[kind];
+}
 function useSize(r) {
-  const z = SIZES[r.kind] || {};
+  const z = r.size || SIZES[r.kind] || {};
   COLS = z.cols || 11; ROWS = z.rows || 8;
-  DOOR = { x: (COLS - 1) / 2, y: ROWS - 1 };
+  DOOR = { x: z.door ?? (COLS - 1) / 2, y: ROWS - 1 };
+  PITCH = z.pitch ?? 0.42;
   BACK_Z = -ROWS / 2;
   if (sun) { const k = z.shadow || 9; Object.assign(sun.shadow.camera, { left: -k, right: k, top: k, bottom: -k }); sun.shadow.camera.updateProjectionMatrix(); }
 }
@@ -2822,41 +2830,57 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
 
 /* ---------- the gateway towns (js/data/towns.js) ---------- */
 
-/* The Shrine's Lantern Village (the user's idea, 2026-10-13, after Ecruteak): a stone road from where the journey film
-   leaves you up to a vermilion torii at the far end, the way on into the biome; machiya either side, a five-storey
-   pagoda over the roofs, stone lanterns lining the road, maples among the cedars dropping their leaves; half-way up a
-   square with the request board on the left and Delibird's stall on the right. Its Gym Leaders stand about off duty
-   (a tap chats), and townsfolk come and go (townCrowd()). Tiles: 13 x 18, the road x 5-7. */
+/* A town is laid out like a Pokémon town from above (the user's ask, 2026-10-13, after their picture): `town.map` is a
+   tile map, a ring of forest round stone roads, rows of houses, tall grass and flowers; you come in at the bottom and go
+   on through a torii at the top, into the biome. Some houses you walk into (`home`, built by buildHome() as rooms of
+   their own), the rest are locked. The camera is higher than the other rooms' (`pitch`) to show the layout. Lantern
+   Village is the Shrine's, after Ecruteak: Japanese houses in Pokémon roof colours, a pagoda, stone lanterns, cedars and
+   maples dropping their leaves. Townsfolk come and go on the crowd code (townCrowd()). */
 const MAPLE = ['#f8b868', '#ec7030', '#c84a24', '#8a2c18'];
 const VERMILION = '#d8402c';
-const TOWN_MID = 6;
+const ROADY = new Set(['#', 'R', 'b']);
 
-/** The stone road, door to gate, and the square half-way up, over the wild ground; fallen maple leaves over it all. */
-function townGround(L) {
+/** A building's tiles on the map (its letter): its corners, size and middle. */
+function footprint(map, ch) {
+  let x0 = Infinity, y0 = Infinity, x1 = -1, y1 = -1;
+  map.forEach((row, y) => [...row].forEach((c, x) => { if (c === ch) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); } }));
+  return { x0, y0, x1, y1, w: x1 - x0 + 1, h: y1 - y0 + 1, cx: tileX((x0 + x1) / 2), cz: tileZ((y0 + y1) / 2) };
+}
+
+/** The ground from the map: the forest's floor, roads of stone flags, plots under the buildings, tall grass and flowers. */
+function townGround(L, map) {
   return (c) => {
     const g = c.getContext('2d'), T = 16, r = seeded(71), W = COLS * T, H = ROWS * T;
+    const each = (fn) => map.forEach((row, y) => [...row].forEach((ch, x) => fn(ch, x, y)));
     g.save();
-    const area = () => {
-      g.beginPath();
-      g.rect((TOWN_MID - 1.45) * T, 0, 2.9 * T, H);
-      g.roundRect(2.55 * T, 7.45 * T, 7.9 * T, 3.1 * T, 6);
-    };
-    g.save(); area(); g.fillStyle = 'rgba(40,30,20,0.35)'; g.translate(0, 1.2); g.fill(); g.restore();
-    area(); g.fillStyle = L.gap; g.fill();
+    each((ch, x, y) => {
+      if (ch === 'T') { g.fillStyle = 'rgba(30,50,30,0.45)'; g.fillRect(x * T, y * T, T, T); }
+      else if (ch === ',') { g.fillStyle = 'rgba(40,90,40,0.35)'; g.fillRect(x * T - 1, y * T - 1, T + 2, T + 2); }
+      else if (/[A-Z]/.test(ch) && ch !== 'T' && ch !== 'L' && ch !== 'R') { g.fillStyle = L.stone[3]; g.globalAlpha = 0.55; g.fillRect(x * T - 2, y * T - 2, T + 4, T + 4); g.globalAlpha = 1; }
+    });
+    const roads = () => { g.beginPath(); each((ch, x, y) => { if (ROADY.has(ch)) g.rect(x * T, y * T, T, T); }); };
+    g.save(); roads(); g.fillStyle = 'rgba(40,30,20,0.4)'; g.translate(0.8, 1.4); g.fill(); g.restore();
+    roads(); g.fillStyle = L.gap; g.fill();
     g.clip();
     for (let y = 0; y < H; y += 7) for (let x = -((y / 7) % 2) * 3.5; x < W; x += 7) {
       g.fillStyle = L.stone[Math.floor(r() * 3)];
       g.beginPath(); g.roundRect(x + 0.35, y + 0.35, 6.3, 6.3, 1.3); g.fill();
       g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(x + 1.1, y + 0.9, 3.2, 0.6);
-      if (r() < 0.25) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+      if (r() < 0.2) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     }
     g.restore();
     g.save();
-    g.strokeStyle = L.stone[3]; g.lineWidth = 1.1; area(); g.stroke();
-    // the leaves, thicker off the road
-    for (let i = 0; i < 520; i++) {
-      const x = r() * W, y = r() * H, onRoad = Math.abs(x / T - TOWN_MID - 0.5) < 1.45;
-      if (onRoad && r() < 0.7) continue;
+    each((ch, x, y) => {
+      if (ch !== 'f') return;
+      for (let i = 0; i < 7; i++) {
+        const fx = x * T + 2 + r() * (T - 4), fy = y * T + 2 + r() * (T - 4);
+        g.fillStyle = ['#ffffff', '#f8d040', '#f890b0', '#f8a060'][i % 4]; g.beginPath(); g.arc(fx, fy, 1.3, 0, Math.PI * 2); g.fill();
+        g.fillStyle = '#f8c838'; g.fillRect(fx - 0.35, fy - 0.35, 0.7, 0.7);
+      }
+    });
+    for (let i = 0; i < 900; i++) {
+      const x = r() * W, y = r() * H, road = ROADY.has(map[Math.floor(y / T)]?.[Math.floor(x / T)]);
+      if (road && r() < 0.75) continue;
       g.fillStyle = MAPLE[Math.floor(r() * 4)]; g.globalAlpha = 0.85;
       g.save(); g.translate(x, y); g.rotate(r() * 6.3);
       g.beginPath(); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; g.lineTo(Math.cos(a) * 1.5, Math.sin(a) * 1.5); g.lineTo(Math.cos(a + 0.63) * 0.6, Math.sin(a + 0.63) * 0.6); } g.fill();
@@ -2865,6 +2889,143 @@ function townGround(L) {
     g.restore();
     return c;
   };
+}
+
+/** Many of one shape, cheaply: an instanced mesh over `at` ([x, z, scale, turn, colour?]). */
+function instanced(geo, m, at) {
+  const o = new THREE.InstancedMesh(geo, m, at.length), d = new THREE.Object3D(), col = new THREE.Color();
+  at.forEach(([x, z, k, turn, c, y = 0], i) => {
+    d.position.set(x, y, z); d.scale.setScalar(k); d.rotation.set(0, turn, 0); d.updateMatrix();
+    o.setMatrixAt(i, d.matrix);
+    if (c) o.setColorAt(i, col.set(c));
+  });
+  o.castShadow = o.receiveShadow = true;
+  o.raycast = () => {};
+  B.group.add(o);
+  return o;
+}
+
+/** The forest round the town, a tree a tile: cedars, a maple now and then. */
+function forest(map, L, rnd) {
+  const cedars = [], maples = [], bushes = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'T') return;
+    B.blocked.add(key(x, y));
+    const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 1 + rnd() * 0.55, rnd() * 6];
+    if (y >= ROWS - 2) bushes.push([at[0], at[1], 0.7 + rnd() * 0.4, at[3], L.leaf[1 + Math.floor(rnd() * 3)]]);   // the front edge low, so it never hides you
+    else (rnd() < 0.16 ? maples : cedars).push(at);
+  }));
+  const bush = new THREE.IcosahedronGeometry(0.55, 1); bush.scale(1, 0.7, 1); bush.translate(0, 0.3, 0);
+  instanced(bush, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), bushes);
+  const bark = std({ color: L.trunk[0], roughness: 0.95 });
+  const trunk = new THREE.CylinderGeometry(0.1, 0.16, 1.4, 8); trunk.translate(0, 0.7, 0);
+  instanced(trunk, bark, [...cedars, ...maples]);
+  for (let i = 0; i < 4; i++) {
+    const cone = new THREE.ConeGeometry(0.85 - i * 0.17, 0.95, 9); cone.translate(0, 0.9 + i * 0.55, 0);
+    instanced(cone, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), cedars.map(a => [...a, L.leaf[i % 2 ? 1 : 2 + Math.floor(rnd() * 2)]]));
+  }
+  for (const [dy, r] of [[1.45, 0.72], [1.9, 0.5]]) {
+    const blob = new THREE.IcosahedronGeometry(r, 1); blob.translate(0, dy, 0);
+    instanced(blob, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), maples.map(a => [...a, MAPLE[1 + Math.floor(rnd() * 3)]]));
+  }
+}
+
+/** Tall grass on its tiles, blades in clumps (walked through, as in the games). */
+function townGrass(map, L, rnd) {
+  const at = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== ',') return;
+    for (let i = 0; i < 16; i++) at.push([tileX(x) + (rnd() - 0.5) * 0.95, tileZ(y) + (rnd() - 0.5) * 0.95, 0.8 + rnd() * 0.5, rnd() * 6, L.grass[Math.floor(rnd() * 3)]]);
+  }));
+  const blade = new THREE.ConeGeometry(0.08, 0.5, 4); blade.translate(0, 0.25, 0);
+  instanced(blade, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), at).castShadow = false;
+}
+
+/** A name on a little wooden plaque, over a door. */
+function nameArt(text) {
+  const f = fine(64, 16, 8), { g, rr } = f;
+  rr(0, 0, 64, 16, 2, '#4a2c18');
+  rr(1.5, 1.5, 61, 13, 1.4, '#f4e6c4');
+  g.fillStyle = '#4a2c18'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 9px sans-serif';
+  g.fillText(text, 32, 8.5, 58);
+  return f.c;
+}
+
+/** A town house over its footprint, its front to you: a lattice front lit from inside, plaster sides, dark posts, a tiled
+    roof in its Pokémon colour, a paper lantern by the door, a name plate over a home you can visit. A tap on it is its door. */
+function house(b, f, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz + 0.05);
+  B.group.add(g);
+  const w = f.w - 0.35, d = f.h - 0.6, h = 1.55;
+  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 });
+  const art = latticeArt('#ffc070'), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
+  lit.push(front);
+  mesh(rbox(w + 0.25, 0.16, d + 0.25, 0.03), std({ color: L.stone[2], roughness: 0.95 }), 0, 0.08, 0, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [plaster, plaster, dark, dark, front, plaster], 0, 0.16 + h / 2, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.12, h + 0.02, 0.12), dark, sx * (w / 2 + 0.01), 0.16 + h / 2, sz * (d / 2 + 0.01), g);
+  mesh(new THREE.BoxGeometry(w + 0.1, 0.1, 0.1), dark, 0, 0.16 + h * 0.66, d / 2 + 0.03, g);
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const roofMat = std({ map: roofTiles(roof, 1.6, 1.6), roughness: 0.55 }), eave = std({ color: roof[2], roughness: 0.7 });
+  const geo = new THREE.ExtrudeGeometry(roofShape(d / 2 + 0.45, 1.0, 0.12), { depth: w + 0.55, bevelEnabled: false, curveSegments: 12 });
+  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.55) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], 0, 0.16 + h, 0, g);
+  mesh(new THREE.BoxGeometry(w + 0.65, 0.13, 0.17), eave, 0, 0.16 + h + 0.97, 0, g);
+  const small = mesh(new THREE.BoxGeometry(w * 0.6, 0.06, 0.5), roofMat, 0, 0.16 + h * 0.72, d / 2 + 0.22, g);
+  small.rotation.x = 0.32;
+  const glow = std({ color: '#e84a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  const ball = mesh(new THREE.SphereGeometry(0.14, 16, 12), glow, w / 2 - 0.3, 0.16 + h * 0.6, d / 2 + 0.25, g);
+  ball.scale.y = 1.3; ball.castShadow = false;
+  if (b.name) panel(nameArt(b.name), 1.15, 0.29, f.cx, 0.16 + h * 0.86, f.cz + 0.05 + d / 2 + 0.04);
+  if (b.kind === 'shop') {   // a shop's noren across its door
+    const noren = std({ color: roof[2], roughness: 0.95, side: THREE.DoubleSide });
+    for (const dx of [-0.3, 0, 0.3]) mesh(new THREE.BoxGeometry(0.28, 0.4, 0.02), noren, dx, 0.16 + h * 0.66 - 0.22, d / 2 + 0.07, g).castShadow = false;
+  }
+  return g;
+}
+
+/** A wide sign, gold on black (the theater's). */
+function signArt(text) {
+  const f = fine(96, 20, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 20, 2.5, '#c8902c');
+  rr(2, 2, 92, 16, 1.6, lin(0, 0, 0, 20, ['#2a1c18', '#120a08']));
+  g.fillStyle = '#f0c860'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillText(text, 48, 10.5, 88);
+  return f.c;
+}
+
+/** The Dance Theater: a great hall on a veranda of red pillars, two tiers of roof, its name in gold over the doors. */
+function theater(b, f, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz - 0.1);
+  B.group.add(g);
+  const w = f.w - 0.4, d = f.h - 1.0, h = 1.9;
+  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 }), red = std({ color: VERMILION, roughness: 0.55 });
+  const art = latticeArt('#ffb860'), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
+  lit.push(front);
+  mesh(rbox(w + 0.9, 0.22, d + 1.2, 0.04), std({ color: L.stone[2], roughness: 0.95 }), 0, 0.11, 0.2, g);
+  mesh(rbox(w + 0.5, 0.1, 0.8, 0.03), std({ color: L.wood[1], roughness: 0.8 }), 0, 0.27, d / 2 + 0.45, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [plaster, plaster, dark, dark, front, plaster], 0, 0.22 + h / 2, 0, g);
+  for (let i = 0; i < 6; i++) mesh(new THREE.CylinderGeometry(0.09, 0.1, h, 12), red, -w / 2 + 0.1 + i * (w - 0.2) / 5, 0.22 + h / 2, d / 2 + 0.75, g);
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const roofMat = std({ map: roofTiles(roof, 2.4, 1.8), roughness: 0.55 }), eave = std({ color: roof[2], roughness: 0.7 });
+  const low = new THREE.ExtrudeGeometry(roofShape(d / 2 + 1.0, 1.1, 0.14), { depth: w + 0.9, bevelEnabled: false, curveSegments: 12 });
+  low.rotateY(Math.PI / 2); low.translate(-(w + 0.9) / 2, 0, 0);
+  mesh(low, [roofMat, eave], 0, 0.22 + h, 0.25, g);
+  mesh(new THREE.BoxGeometry(w * 0.55, 0.5, d * 0.45), plaster, 0, 0.22 + h + 1.25, 0.25, g);
+  const up = new THREE.ExtrudeGeometry(roofShape(d * 0.3 + 0.45, 0.8, 0.12), { depth: w * 0.55 + 0.7, bevelEnabled: false, curveSegments: 12 });
+  up.rotateY(Math.PI / 2); up.translate(-(w * 0.55 + 0.7) / 2, 0, 0);
+  mesh(up, [roofMat, eave], 0, 0.22 + h + 1.5, 0.25, g);
+  mesh(new THREE.BoxGeometry(w * 0.55 + 0.8, 0.12, 0.16), eave, 0, 0.22 + h + 2.28, 0.25, g);
+  panel(signArt(b.name), 1.9, 0.4, f.cx, 0.22 + h + 0.15, f.cz - 0.1 + d / 2 + 1.25);
+  for (const sx of [-1, 1]) {   // paper lanterns hung from the eaves
+    const glow = std({ color: '#f04a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
+    lit.push(glow);
+    const ball = mesh(new THREE.SphereGeometry(0.17, 16, 12), glow, sx * (w / 2 - 0.5), 0.22 + h - 0.35, d / 2 + 0.85, g);
+    ball.scale.y = 1.3; ball.castShadow = false;
+  }
+  return g;
 }
 
 /** The town's name on the torii's plaque: gold on black, framed. */
@@ -2904,40 +3065,6 @@ function torii(x, z, span, tall, name) {
   const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
   way.castShadow = way.receiveShadow = false;
   g.traverse(o => { o.userData.spot = 'exit'; });
-  return g;
-}
-
-/** A town house (machiya): lattice front lit from inside, plaster sides, dark posts, a tiled roof, a red paper lantern
-    by the door and a noren in `hue`; `turn` faces it up the road. */
-function machiya(x, z, turn, L, hue, lit) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  g.rotation.y = turn;
-  B.group.add(g);
-  const w = 2.5, d = 1.9, h = 1.4;
-  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 }), wood = std({ color: L.wood[1], roughness: 0.8 });
-  const art = latticeArt('#ffc070'), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
-  lit.push(front);
-  mesh(rbox(w + 0.2, 0.16, d + 0.2, 0.03), std({ color: L.stone[2], roughness: 0.95 }), 0, 0.08, 0, g);
-  mesh(new THREE.BoxGeometry(w, h, d), [plaster, plaster, dark, dark, front, plaster], 0, 0.16 + h / 2, 0, g);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.11, h + 0.02, 0.11), dark, sx * (w / 2 + 0.01), 0.16 + h / 2, sz * (d / 2 + 0.01), g);
-  mesh(new THREE.BoxGeometry(w + 0.1, 0.1, 0.1), dark, 0, 0.16 + h * 0.62, d / 2 + 0.03, g);
-  // the little eave over the door, then the roof
-  const roofMat = std({ map: roofTiles(['#5a6a78', '#3e4a58', '#28323e'], 1.4, 1.4), roughness: 0.55 }), eave = std({ color: '#28323e', roughness: 0.7 });
-  const small = mesh(new THREE.BoxGeometry(w + 0.3, 0.06, 0.55), roofMat, 0, 0.16 + h * 0.66, d / 2 + 0.24, g);
-  small.rotation.x = 0.32;
-  const geo = new THREE.ExtrudeGeometry(roofShape(d / 2 + 0.4, 0.85, 0.11), { depth: w + 0.5, bevelEnabled: false, curveSegments: 12 });
-  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.5) / 2, 0, 0);
-  mesh(geo, [roofMat, eave], 0, 0.16 + h, 0, g);
-  mesh(new THREE.BoxGeometry(w + 0.6, 0.12, 0.16), eave, 0, 0.16 + h + 0.82, 0, g);
-  // the noren over the door and a paper lantern hung by it
-  const noren = std({ color: hue, roughness: 0.95, side: THREE.DoubleSide });
-  for (const dx of [-0.2, 0.2]) mesh(new THREE.BoxGeometry(0.36, 0.42, 0.02), noren, dx, 0.16 + h * 0.62 - 0.24, d / 2 + 0.08, g).castShadow = false;
-  const glow = std({ color: '#e84a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
-  lit.push(glow);
-  const ball = mesh(new THREE.SphereGeometry(0.15, 16, 12), glow, w / 2 - 0.25, 0.16 + h * 0.62 - 0.25, d / 2 + 0.3, g);
-  ball.scale.y = 1.3; ball.castShadow = false;
-  for (const dy of [0.2, -0.2]) mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 12), dark, w / 2 - 0.25, 0.16 + h * 0.62 - 0.25 + dy, d / 2 + 0.3, g);
   return g;
 }
 
@@ -3003,38 +3130,6 @@ function noticeBoard(x, z, turn, L) {
   return g;
 }
 
-/** Stripes for the stall's awning. */
-function awningArt() {
-  const f = fine(32, 16, 6), { g } = f;
-  for (let x = 0; x < 32; x += 4) { g.fillStyle = (x / 4) % 2 ? '#fff4e0' : '#d84a34'; g.fillRect(x, 0, 4, 16); }
-  g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 13, 32, 3);
-  return f.c;
-}
-
-/** Delibird's stall: a counter under a striped awning, its wares on top. */
-function tradeStall(x, z, L) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  B.group.add(g);
-  const wood = std({ color: L.wood[0], roughness: 0.8 }), dark = std({ color: L.wood[2], roughness: 0.8 });
-  const cloth = std({ color: '#2c4a8a', roughness: 0.95 });
-  mesh(rbox(1.9, 0.72, 0.62, 0.04), wood, 0, 0.36, 0, g);
-  mesh(new THREE.BoxGeometry(1.8, 0.5, 0.02), cloth, 0, 0.36, 0.32, g).castShadow = false;
-  mesh(rbox(2.0, 0.07, 0.72, 0.02), dark, 0, 0.74, 0, g);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.CylinderGeometry(0.04, 0.045, 1.9, 8), dark, sx * 0.95, 0.95, sz * 0.32 - 0.25, g);
-  const aw = mesh(new THREE.BoxGeometry(2.25, 0.04, 1.2), std({ map: texOf(awningArt()), roughness: 0.9 }), 0, 1.92, -0.05, g);
-  aw.rotation.x = 0.24;
-  const box = (w, h, d, col, px, pz) => mesh(rbox(w, h, d, 0.02), std({ color: col, roughness: 0.8 }), px, 0.78 + h / 2, pz, g);
-  box(0.26, 0.18, 0.22, '#c89058', -0.62, -0.05);
-  box(0.2, 0.14, 0.2, '#e8d0a0', -0.6, 0.1).rotation.y = 0.4;
-  const basket = mesh(new THREE.CylinderGeometry(0.17, 0.13, 0.16, 14), std({ color: '#b88a50', roughness: 0.9 }), 0.55, 0.86, 0.02, g);
-  void basket;
-  for (const [px, col] of [[0.48, '#e84838'], [0.6, '#f0a030'], [0.54, '#70b840']]) mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: col, roughness: 0.6 }), px, 0.97, 0.02 + (px - 0.54) * 0.6, g);
-  mesh(new THREE.SphereGeometry(0.12, 14, 10), std({ color: '#f8f0e0', roughness: 0.7 }), 0.05, 0.9, 0.05, g);
-  g.traverse(o => { o.userData.spot = 1; });
-  return g;
-}
-
 /** A maple leaf, for the ones drifting down. */
 function leafArt(col) {
   const f = fine(12, 12, 8), { g } = f;
@@ -3045,59 +3140,42 @@ function leafArt(col) {
 }
 
 async function buildTown(figs, { look: L, time, town }) {
-  const maple = { ...L, look: 'garden', leaf: MAPLE, trunk: ['#6a3e28', '#4a2a1c'] };
-  const rnd = wild(L, time, { to: 0, ground: townGround(L) });
+  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: townGround(L, map) });
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
-  B.talks = new Set(Object.keys(town.leaders));
-  B.shotTop = 3.6;
+  B.talks = new Set();
+  B.shotTop = 2.4;
+  B.speed = 4.8;
   const lit = [];
-  torii(tileX(TOWN_MID), tileZ(0), 2.9, 2.75, town.name);
-  for (const tx of [4, 8]) B.blocked.add(key(tx, 0));
-  B.exitAt = { x: TOWN_MID, y: 0 };
-  // the stone lanterns along the road
-  for (const ty of [2, 5, 12, 15]) for (const tx of [4, 8]) {
-    const m = piece('stonelantern', tx, ty, { scale: 0.95 });
-    m?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+  forest(map, L, rnd);
+  townGrass(map, L, rnd);
+  torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name);
+  B.exitAt = { ...town.gate };
+  B.doors = {};
+  for (const b of town.buildings) {
+    const f = footprint(map, b.at);
+    for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
+    const g = b.kind === 'pagoda' ? pagoda(f.cx, f.cz, L) : b.kind === 'theater' ? theater(b, f, L, lit) : house(b, f, L, lit);
+    if (!b.door) continue;
+    B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
+    g.traverse(o => { o.userData.spot = `door:${b.id}`; });
   }
-  // the houses either side, turned a little up the road
-  const block = (x0, x1, y0, y1) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) B.blocked.add(key(x, y)); };
-  machiya(tileX(1) - 0.1, tileZ(4), 0.42, L, '#2c4a8a', lit); block(0, 2, 3, 5);
-  machiya(tileX(1) - 0.1, tileZ(12), 0.42, L, '#7a2a3a', lit); block(0, 2, 11, 13);
-  machiya(tileX(11) + 0.1, tileZ(4), -0.42, L, '#3a6a3a', lit); block(10, 12, 3, 5);
-  machiya(tileX(11) + 0.1, tileZ(12), -0.42, L, '#8a5a1a', lit); block(10, 12, 11, 13);
-  pagoda(tileX(1), tileZ(0.6), L); block(0, 2, 0, 1);
-  // the square: the board on the left, Delibird's stall on the right
-  noticeBoard(tileX(3), tileZ(8) - 0.1, 0.3, L); B.blocked.add(key(3, 8));
-  tradeStall(tileX(9.5), tileZ(8.1), L); block(9, 10, 7, 8);
-  // trees: cedars at the edges and the back, maples among them
-  const rt = seeded(91);
-  for (const [tx, ty, tall] of [[0, 7, 1.3], [12, 8, 1.4], [0, 10, 1.2], [12, 10, 1.1], [0, 16, 1.3], [12, 16, 1.4], [11, 1, 1.6], [12, 0, 1.5], [10, 0, 1.3], [3, 0, 1.2]]) tree(L, tx, ty, rt, tall);
-  for (const [tx, ty, tall] of [[2, 7, 1.1], [11, 9, 1], [2, 16, 1.05], [10, 15, 1.1], [1, 9, 0.95], [9, 1, 1.05]]) tree(maple, tx, ty, rt, tall);
-  // tufts off the road and the square
-  const keep = [];
-  for (let x = 2; x <= 10; x++) for (let y = 0; y < ROWS; y++) if (!B.blocked.has(key(x, y)) && (Math.abs(x - TOWN_MID) <= 1 || (y >= 7 && y <= 10 && x >= 3 && x <= 10))) { B.blocked.add(key(x, y)); keep.push(key(x, y)); }
-  tufts(L, 50, rnd);
-  for (const k of keep) B.blocked.delete(k);
-  // the Gym Leaders off duty, Delibird behind its counter
-  const stands = { john: { x: 3, ty: 11, flip: true }, jahmes: { x: 9, ty: 5 } };
-  for (const [id, at] of Object.entries(stands)) {
-    if (!figs[id]) continue;
-    B.who[id] = await figure(id, { ...figs[id], flip: at.flip }, { x: at.x, ty: at.ty });
-    B.blocked.add(key(at.x, at.ty));
-  }
-  if (figs.trader) {
-    B.who.trader = await figure('trader', figs.trader, { x: 9.5, ty: 7.35, scale: 0.9 });
-    B.who.trader.group.traverse(o => { o.userData.spot = 1; });
-  }
-  B.spots = [{ step: { x: 3, y: 9 } }, { step: { x: 9, y: 9 } }];
-  B.anchors[0] = new THREE.Vector3(tileX(3), 2.25, tileZ(8));
-  B.anchors[1] = new THREE.Vector3(tileX(9.5), 2.45, tileZ(8));
+  let board = null;
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === 'L' || ch === 'b') {
+      const m = piece(ch === 'L' ? 'stonelantern' : 'bench', x, y, { scale: ch === 'L' ? 0.95 : 0.9 });
+      m?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+      B.blocked.add(key(x, y));
+    }
+    if (ch === 'R') { noticeBoard(tileX(x), tileZ(y) - 0.1, 0, L); B.blocked.add(key(x, y)); board = { x, y }; }
+  }));
+  B.spots = [{ step: { x: board.x, y: board.y + 1 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
   // lanterns glow brighter as it gets dark; maple leaves drift down
   const dark = time === 'night' ? 1.6 : time === 'dusk' ? 1.2 : time === 'dawn' ? 0.9 : 0.55;
-  const leaves = Array.from({ length: 22 }, (_, i) => {
-    const sp = sprite(leafArt(MAPLE[i % 4]), 0.16 + (i % 3) * 0.03);
+  const leaves = Array.from({ length: 30 }, (_, i) => {
+    const sp = sprite(leafArt(MAPLE[i % 4]), 0.18 + (i % 3) * 0.03);
     sp.userData = { x: (Math.random() - 0.5) * COLS, z: (Math.random() - 0.5) * ROWS, at: Math.random(), speed: 0.05 + Math.random() * 0.05, sway: Math.random() * 6 };
     return sp;
   });
@@ -3114,6 +3192,86 @@ async function buildTown(figs, { look: L, time, town }) {
   });
 }
 
+/* ---------- inside a town's houses ---------- */
+
+/** A home's room: its size (the theater is bigger), the floor, and what stands in it, [piece, x, y, options]. */
+const HOMES = {
+  shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
+  john: { floor: 'tatami', furnish: [['tv', 3, 0], ['console', 5, 1], ['kotatsu', 3, 2], ['zabuton', 2, 2], ['zabuton', 5, 3], ['computer', 7, 0], ['shelf', 0, 0], ['bookstack', 8, 2], ['daruma', 0, 3], ['plant', 8, 4]] },
+  jahmes: { floor: 'planks', furnish: [['singlebed', 1, 0], ['nightstand', 2, 0], ['alarmclock', 2, 0, { y: 0.55, scale: 0.72, free: true }], ['alarmclock', 0, 0], ['alarmclock', 3, 0], ['wardrobe', 4, 0], ['computer', 6, 0], ['swivelchair', 6, 1], ['speakerstack', 7, 0], ['beanbag', 7, 3], ['plant', 0, 4]] },
+  theater: { cols: 11, rows: 9, floor: 'stage', furnish: [['taiko', 0, 2], ['taiko', 10, 2], ['kimonostand', 0, 0], ['kimonostand', 10, 0], ['zabuton', 3, 5], ['zabuton', 5, 5], ['zabuton', 7, 5], ['zabuton', 4, 6], ['zabuton', 6, 6], ['andon', 1, 6], ['andon', 9, 6]] },
+};
+const homeSize = (id) => ({ cols: HOMES[id]?.cols || 9, rows: HOMES[id]?.rows || 7, across: HOMES[id]?.cols ? 7.5 : 6.2 });
+
+function homeFloor(kind) {
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
+  if (kind === 'tatami') {
+    g.fillStyle = '#4a3a20'; g.fillRect(0, 0, W, H);
+    for (let y = 0; y < ROWS; y += 1) for (let x = (y % 2) * -1; x < COLS; x += 2) {
+      rr(x * T + 0.6, y * T + 0.6, 2 * T - 1.2, T - 1.2, 1, lin(0, y * T, 0, (y + 1) * T, ['#dcd494', '#c8bc78']));
+      g.fillStyle = '#3a5a3a'; g.fillRect(x * T + 0.6, y * T + 0.6, 2 * T - 1.2, 1.2); g.fillRect(x * T + 0.6, (y + 1) * T - 1.8, 2 * T - 1.2, 1.2);
+    }
+  } else planks(f, W, H, T, kind === 'stage' ? ['#a87048', '#8a5a38'] : ['#c89a68', '#b0845a']);
+  if (kind === 'stage') { g.fillStyle = 'rgba(160,30,40,0.85)'; g.fillRect(W / 2 - T, 4 * T, 2 * T, H - 4 * T); }
+  return f.c;
+}
+
+function homeWall(width, time, { window: win = true, curtain = false } = {}) {
+  const f = fine(width, TOP * U, 5), { g, lin } = f, s = f.shine();
+  g.fillStyle = lin(0, wy(TOP), 0, wy(1), ['#e8dcc0', '#f4ead4']); g.fillRect(0, 0, width, TOP * U);
+  g.fillStyle = lin(0, wy(1), 0, wy(0), ['#8a5a34', '#6a4024']); g.fillRect(0, wy(1), width, U);
+  g.fillStyle = '#3a241a';
+  for (let x = 0; x <= width; x += 2 * U) g.fillRect(x - 1.5, 0, 3, TOP * U);
+  g.fillRect(0, wy(2.7), width, 3); g.fillRect(0, wy(1) - 1.5, width, 3);
+  if (win) skyWindow(f, s, width * 0.25, width * 0.25 + 1.6 * U, wy(2.4), wy(1.3), { frame: '#5a3a22', curtain: null, night: time === 'night', sky: time === 'night' ? ['#101830', '#1a2850', '#283868'] : time === 'dusk' ? ['#f08850', '#f8b070', '#fcd8a0'] : ['#68b0f0', '#a8d8f8', '#e0f4ff'] });
+  if (curtain) {   // the theater's stage curtains, red, swagged
+    for (const [a, b] of [[0, width * 0.32], [width * 0.68, width]]) { g.fillStyle = lin(a, 0, b, 0, ['#a01828', '#d83040', '#a01828']); g.fillRect(a, wy(3.4), b - a, wy(0) - wy(3.4)); }
+    g.fillStyle = lin(0, wy(3.6), 0, wy(2.9), ['#d83040', '#a01828']); g.fillRect(0, wy(3.6), width, wy(2.9) - wy(3.6));
+    g.fillStyle = '#e8c050'; g.fillRect(0, wy(2.9) - 1, width, 1.5);
+  }
+  return f.c;
+}
+
+async function buildHome(figs, { time, town, home }) {
+  const h = HOMES[home] || {};
+  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: home !== 'theater', curtain: home === 'theater' }), side: () => homeWall(ROWS * U, time, { window: false }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  B.shotTop = 2.1;
+  B.talks = new Set();
+  for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
+  if (home === 'shop' && figs.trader) {
+    B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9 });
+    B.who.trader.group.traverse(o => { o.userData.spot = 0; });
+    B.spots = [{ step: { x: 4, y: 3 } }];
+    B.anchors[0] = new THREE.Vector3(tileX(3.5), 2.2, tileZ(1.2));
+  }
+  const leader = town.homes[home]?.leader;
+  if (leader && figs[leader]) {
+    B.who[leader] = await figure(leader, figs[leader], home === 'john' ? { x: 4, ty: 1.4 } : { x: 3, ty: 2.4 });
+    B.talks.add(leader);
+  }
+  if (home === 'theater') {
+    // the stage across the back, the five dancers on it, one after another stepping out in a hop
+    const stage = std({ color: '#7a4a2a', roughness: 0.7 });
+    mesh(rbox(COLS - 2.2, 0.4, 3.2, 0.05), stage, 0, 0.2, tileZ(1));
+    mesh(new THREE.BoxGeometry(COLS - 2.1, 0.04, 0.12), std({ color: '#e8c050', metalness: 0.6, roughness: 0.3 }), 0, 0.41, tileZ(1) + 1.58);
+    for (let x = 1; x < COLS - 1; x++) for (let y = 0; y < 3; y++) B.blocked.add(key(x, y));
+    const ids = Object.keys(figs).filter(k => k.startsWith('dancer:'));
+    for (const [i, k] of ids.entries()) {
+      const id = k.slice(7);
+      B.who[id] = await figure(id, { ...figs[k], flip: i < ids.length / 2 }, { x: 2.3 + i * 1.6, ty: 1 + (i % 2) * 0.6, y: 0.4 });
+      B.talks.add(id);
+    }
+    let next = 0, turn = 0;
+    const who = B.who;
+    B.ticks.push((now) => {
+      if (calm || now < next || !ids.length) return;
+      next = now + 900;
+      does(who[ids[turn++ % ids.length].slice(7)], 'hop');
+    });
+  }
+  B.env = INDOORS;
+}
+
 /** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up
     the road from the door. Their lines go in the room's speech window. */
 let folkLayer = null;
@@ -3122,16 +3280,16 @@ function townCrowd(town) {
     THREE, group: R.group, monBoard, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
     route, free, tileX, tileZ, camera, view, stage: folkLayer,
     say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
-    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 4, castSize: 8, castHours: 6,
+    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 5, castSize: 8, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
-    wants: ['stand', 'stand', null, null], swap: [35000, 70000],
+    wants: ['stand', 'stand', 'stand', null, null], swap: [35000, 70000],
   });
 }
 
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown, home: buildHome };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -3165,7 +3323,7 @@ function walk(dt) {
   const w = walker, step = w.path[0];
   if (!step) { w.hop = 0; return false; }
   const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
-  const d = Math.hypot(dx, dz), move = dt / 1000 * 3.4;
+  const d = Math.hypot(dx, dz), move = dt / 1000 * (R.speed ?? 3.4);
   if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
   else { w.facing = 'front'; w.flip = dx > 0; }
   if (d <= move) { w.x = tx; w.z = tz; w.tile = step; w.path.shift(); }
@@ -3177,7 +3335,7 @@ function walk(dt) {
 /** Up to a choice's prop, or to the door to leave; `aim` is acted on as it arrives. */
 function goTo(kind) {
   if (kind === 'exit' && R.noExit) return;   // Team Rocket's: no way back past them
-  const target = kind === 'exit' ? R.exitAt ?? DOOR : R.spots[kind]?.step;   // a town's way on is its far gate
+  const target = kind === 'exit' ? R.exitAt ?? DOOR : R.doors?.[kind]?.step ?? R.spots[kind]?.step;   // a town's way on is its far gate, its houses' doors their own
   if (!target) return;
   aim = kind;
   walker.path = route(walker.tile, target);
@@ -3192,6 +3350,7 @@ function arrived() {
   if (kind === null || kind === undefined || kind < 0) return;
   hushBlip();
   if (kind === 'exit') return opts.onLeave();
+  if (R.doors?.[kind]) { walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false; return opts.onDoor?.(R.doors[kind].id); }   // at a town house's door
   const step = R.spots[kind].step;
   if (walker.tile.x !== step.x || walker.tile.y !== step.y) return;
   walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
@@ -3236,7 +3395,7 @@ function onTap(e) {
   let o = first;
   while (o && o.userData.spot === undefined && !o.userData.spotAt && !o.userData.who) o = o.parent;
   const spot = o?.userData.spotAt ? o.userData.spotAt(hits[0].point) : o?.userData.spot;   // the well: a toss a half
-  if (spot !== undefined && (spot === 'exit' || R.spots[spot])) return tapTo(spot);
+  if (spot !== undefined && (spot === 'exit' || R.spots[spot] || R.doors?.[spot])) return tapTo(spot);
   if (o?.userData.who) {
     const who = R.who[o.userData.who];
     if (who && R.talks?.has(o.userData.who)) { opts.onTalk?.(o.userData.who); if (!who.npc) playCry(who.id); does(who, who.npc ? 'npc-nod' : 'hop'); return; }   // a town's Gym Leaders and stall keeper chat
@@ -3442,14 +3601,15 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : kind === 'home' ? `${at.town?.id}:${at.home}` : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
-    B = { kind, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: SIZES[kind]?.view, across: SIZES[kind]?.across };
+    const size = sizeOf(kind, at);
+    B = { kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home }); }
     finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
     return b;
@@ -3473,7 +3633,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town });
+  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home });
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   useSize(next);
@@ -3501,12 +3661,13 @@ export async function mountEvent(o) {
   if (mon?.src !== o.mate.src) {
     if (mon) scene.remove(mon.group);
     mon = await monBoard(o.mate);
-    mon.board.rotation.x = -PITCH;
     scene.add(mon.group);
   }
+  mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
   if (!showing() || opts !== o) return null;
-  if (!back) {
-    walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
+  if (!back || o.at) {   // `at`: back out of a town's house, on its doorstep
+    const at = o.at ?? DOOR;
+    walker = { x: tileX(at.x), z: tileZ(at.y), tile: { ...at }, path: [], facing: o.at || !mon.sheets.back ? 'front' : 'back', flip: false, hop: 0 };
     camX = walker.x; camZ = NaN;
   }
   walker.path = []; still();

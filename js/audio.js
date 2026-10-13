@@ -245,7 +245,7 @@ const CRIES = new Set([
   'ponyta', 'magby', 'ninetales', 'arcanine', 'houndoom', 'simisear', 'panpour', 'golduck', 'sunflora', 'cherrim',
   'meowth', 'minccino', 'patrat', 'buneary', 'glameow', 'castform', 'loudred', 'munchlax',
   'chansey', 'kecleon',
-  'eevee', 'espeon', 'jolteon', 'leafeon', 'glaceon', 'hoothoot', 'misdreavus', 'natu', 'chimecho', 'delibird',
+  'eevee', 'espeon', 'jolteon', 'leafeon', 'glaceon', 'hoothoot', 'misdreavus', 'natu', 'chimecho', 'delibird', 'umbreon', 'vaporeon',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1
 const SFX_VOLUME = 0.6;       // 0-1

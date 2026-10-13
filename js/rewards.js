@@ -135,7 +135,7 @@ export function speaker(name = null) {
   if (name) $('reward-log').dataset.who = name; else { delete $('reward-log').dataset.who; $('reward-log').classList.remove('demon'); }
 }
 
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false, ask = true }) {
   speaker();
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
@@ -223,7 +223,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   skip.style.visibility = '';   // an event's gift hides it this way
   skip.disabled = false;   // a take holds it, inert, while the thing flies to the Bag
   $('reward-skip-text').textContent = skipLabel;
-  skip.onclick = onSkip ? askFirst(once(onSkip), skip, title) : null;
+  skip.onclick = onSkip ? (ask ? askFirst(once(onSkip), skip, title) : doorOut(once(onSkip))) : null;   // `ask: false`: a door you can come back through
   $('reward-reroll').hidden = !reroll;
   // over the Sky Pillar the reroll is the gold pill too (the user's call, 2026-10-08)
   $('reward-reroll').classList.toggle('room-ok', over);

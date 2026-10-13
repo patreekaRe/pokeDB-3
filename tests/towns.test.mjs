@@ -48,3 +48,33 @@ test('a request counts only its event in its own biome, then waits to be handed 
   assert.ok(mended(st));
   assert.equal(currentRequest(town, st).id, town.requests[MEND_AT % town.requests.length].id);
 });
+
+test("a town's map: square, its buildings' letters there, every door, stand and the gate reachable from the way in", () => {
+  for (const town of Object.values(TOWNS)) {
+    const { map } = town, W = map[0].length;
+    assert.ok(map.every(row => row.length === W), `${town.id}: ragged map`);
+    const letters = new Set(town.buildings.map(b => b.at));
+    for (const ch of new Set(map.join(''))) assert.ok('T.#,fLbR'.includes(ch) || letters.has(ch), `${town.id}: '${ch}' isn't a building`);
+    for (const b of town.buildings) {
+      assert.ok(map.some(row => row.includes(b.at)), `${b.id}: not on the map`);
+      if (b.home) assert.ok(town.homes[b.home], `${b.id}: no home ${b.home}`);
+      if (b.door && !b.home) assert.ok(b.knock?.length, `${b.id}: locked with nothing to say`);
+    }
+    const open = (x, y) => '.#,f'.includes(map[y]?.[x] ?? 'T');
+    const seen = new Set([`${town.door.x},${town.door.y}`]), queue = [[town.door.x, town.door.y]];
+    assert.ok(open(town.door.x, town.door.y));
+    while (queue.length) {
+      const [x, y] = queue.shift();
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const k = `${x + dx},${y + dy}`;
+        if (!seen.has(k) && open(x + dx, y + dy)) { seen.add(k); queue.push([x + dx, y + dy]); }
+      }
+    }
+    const reach = ({ x, y }, what) => assert.ok(seen.has(`${x},${y}`), `${town.id}: ${what} at ${x},${y} can't be reached`);
+    reach(town.gate, 'the gate');
+    for (const b of town.buildings) if (b.door) reach(b.door, `${b.id}'s door`);
+    for (const [x, y] of town.stands) reach({ x, y }, 'a stand');
+    const board = map.findIndex(row => row.includes('R'));
+    reach({ x: map[board].indexOf('R'), y: board + 1 }, 'the board');
+  }
+});

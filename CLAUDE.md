@@ -862,8 +862,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   biome ahead's town is walked after the journey film (`walkOn()` → `townRoom()` in `js/run.js`, saved as `run.town`),
   never on Mewtwo's or a Safari run. Its data and request rules are `TOWNS` in `js/data/towns.js`, the save side
   `js/towns.js` (`save.towns[id]`: `done` friendship, `got`, `ready`, `met`), the room `buildTown()` in `js/event-3d.js`
-  (kind `town`; its far gate is `R.exitAt`, its leaders chat through `R.talks` / `onTalk`, its folk `townCrowd()` on
-  `makeCrowd()`). A town makes no run stronger: one sidegrade trade, requests paying PokéCoins. `?town=shrine`.
+  (kind `town`, laid out from `town.map`, a tile map like a Pokémon town's, the user's ask after their picture; its far gate
+  is `R.exitAt`, its houses' doors `R.doors`, its folk `townCrowd()` on `makeCrowd()`, its camera higher, `pitch`). Houses
+  with a `home` are walked into (`homeRoom()` in `js/run.js`, kind `home`, `HOMES` in `js/event-3d.js`: Delibird's shop
+  holds the trade, the Gym Leaders are at home, `R.talks`), the rest knock. A town makes no run stronger: one sidegrade
+  trade, requests paying PokéCoins. `?town=shrine`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
