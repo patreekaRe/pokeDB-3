@@ -365,7 +365,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 - **Mart fixes on branch `claude/pokedex-title-cry-bug-4bqe5z`** (2026-10-13, Britt's playtest): in `js/mart-3d.js` a tap
   goes to the ware behind your Pokémon (Reshiram's sprite swallowed every tap), your Pokémon is capped at `MON_MAX` 1.6
   tall there, and Britt (`assets/trainers/britt.png`, the user's friend, a Gym Leader off duty) runs the counter in place of
-  Kecleon (`trainerBoard()`). The user playtests the branch; on their OK, push to `main` (and cut the patch: `NEXT` is past
+  Kecleon (`trainerBoard()`), a tap on her saying the next of `BRITT_TALKS` (`js/data/mart.js`: a little Gym Leader, mostly the second job feeding LINC and paying his college). The user playtests the branch; on their OK, push to `main` (and cut the patch: `NEXT` is past
   `RELEASE_AT`). ▶ Run in: CLOUD.
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the

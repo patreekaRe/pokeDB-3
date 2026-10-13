@@ -26,7 +26,7 @@ import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/diffi
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
-import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
+import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
@@ -3117,6 +3117,8 @@ function martRoom() {
   playMusic('mart');
 }
 
+let brittTalk = 0;
+
 /** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
     order, each pointing at its choice (a sold one stays an empty slot). Without Three.js only the list of wares shows. */
 function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
@@ -3149,7 +3151,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
       if (btn.disabled) { playSound('cancel'); return sayLines([why(options[i])]); }
       btn.click();
     },
-    onClerk: () => sayLines(['Britt: Welcome! Take a good look round. Tap anything on the shelves to see it up close.']),
+    onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length].map(l => `Britt: ${l}`)),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
   })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
