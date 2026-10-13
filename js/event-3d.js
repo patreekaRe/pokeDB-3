@@ -3265,4 +3265,16 @@ export function freezeEvent(on) {
 export const gymBadgeAt = () => (R?.crest && alive() ? R.crest.at() : null);
 export function gymBadgeShown(on) { if (alive()) R?.crest?.show(on); }
 
+/** Your Pokémon as it is now, swapped in where it stands: it evolved in the room (a Gym Leader's, after the badge). */
+export async function swapMate(mate) {
+  if (!alive() || !mon || mon.src === mate.src) return;
+  const next = await monBoard(mate);
+  if (!alive()) return;
+  next.board.rotation.x = -PITCH;
+  scene.remove(mon.group);
+  mon = next;
+  scene.add(mon.group);
+  if (opts) opts.mate = mate;
+}
+
 export const eventRoom3d = () => (R && alive() ? controls : null);

@@ -1521,12 +1521,26 @@ function gymRoom(node, leader, won = null, said = null) {
   };
   const after = !!won;
   if (!after) playMusic('gym-room');   // after the win the fight's gym-victory plays on through the badge
-  const leave = () => afterFight(node, { ...won, gymSaid: true });
+  // the evolution comes right after the badge is taken, still in the gym (the user's ask, 2026-10-13), so the rewards
+  // after the doormat skip it
+  let evolving = false, evolved = false;
+  const leave = () => { if (!evolving) afterFight(node, { ...won, gymSaid: true, evolved }); };
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    await say(said.slice(-1), { badge: true, again, lit: true, bubble: true });
-    if (run === thisRun) sayLines([again ? `You received the ${leader.badge} again! ${leader.name} beaten ${again + 1} times.` : `You received the ${leader.badge}!`]);
+    const evolves = canEvolve();
+    evolving = evolves;
+    await say(said.slice(-1), { badge: true, again, lit: true, bubble: true }, evolves);
+    if (run !== thisRun) return;
+    const got = again ? `You received the ${leader.badge} again! ${leader.name} beaten ${again + 1} times.` : `You received the ${leader.badge}!`;
+    sayLines([got]);
+    if (!evolves) return;
+    await new Promise(done => evolve(done));
+    if (run !== thisRun) return;
+    evolved = true;
+    await event3dMod?.swapMate({ src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id });
+    evolving = false;
+    if (run === thisRun) freeze(false);
   };
   showChoice({
     title: 'POKéMON GYM',
@@ -1690,7 +1704,8 @@ function afterFight(node, result) {
     if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
     // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
-    if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
+    if (result.evolved) steps.push(next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));   // in the Gym, after the badge
+    else if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
     else steps.push(next => unlockWindow(unlocked, next));
     if (isTower()) steps.push(next => { guardianHeal(); next(); });
     steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));

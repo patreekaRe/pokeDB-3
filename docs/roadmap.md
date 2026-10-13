@@ -374,7 +374,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   rode on the badge's `transform` and the user saw no spin on their phone, only heard it. Its sounds are sine-only synths
   (`badge-ready` while it waits, `badge-spin` following the turn, in `js/audio.js`), the user's ask: the reroll shuffle and
   Eternamax's `charge` they had sounded gritty. The leader's board stands upright, stretched by 1 / cos(PITCH) to look
-  the same (`buildGym()`), since leaning back like the others put a tall leader's head (Phil's) behind the plaque. Open: the user's look.
+  the same (`buildGym()`), since leaning back like the others put a tall leader's head (Phil's) behind the plaque. **Evolving after the badge** (same day, the user's ask): `lastWords()` in `gymRoom()` plays `evolve()` right after the badge is taken, still in the gym, swaps the evolved sprite in where it stands (`swapMate()` in `js/event-3d.js`) and the doormat's rewards skip it (`result.evolved`); untested by hand past a load of `?gym=britt`. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
