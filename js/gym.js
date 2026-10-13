@@ -117,19 +117,25 @@ function speedLines(layer) {
   setTimeout(() => lines.remove(), 1400);
 }
 
-/** Their badge handed over, after their last words: the talk steps back into the dark, golden rays wheel open, the
-    badge comes spinning in out of the distance and lands with a flash, a shockwave and a burst of sparks, a shine runs
-    over it and YOU RECEIVED the badge rises under it. A tap after it lands goes on. Calm effects: it fades in, still. */
+/** Their badge handed over, after their last words (the user's ask, 2026-10-13): the screen goes dark but for the badge on
+    the gym's arch (or, without the 3D gym, the middle of the screen's top), glowing, and the badge is the only thing that
+    takes a tap. Grabbed, it pops off the arch, tumbles out towards you spinning and lands mid-screen with a flash, a
+    shockwave and sparks; golden rays wheel open, a shine runs over it and YOU RECEIVED the badge rises under it. A tap
+    after it lands goes on. Calm effects: it glides down, still. */
 async function badgeGet(layer, l) {
   const calm = !battleFx() || calmFx();
   const { badgeArt } = await import('./trainercard.js');
+  const room = await import('./event-3d.js').catch(() => null);
   const src = badgeArt(`gym-${l.id}`, true);
   const stage = el('div', `gym-get${calm ? ' calm' : ''}`);
   const spin = el('div', 'gym-get-badge'), mark = el('img', 'gym-get-mark'), shine = el('i', 'gym-get-shine');
   mark.src = src;
   mark.alt = l.badge;
+  mark.draggable = false;
   shine.style.maskImage = shine.style.webkitMaskImage = `url("${src}")`;
-  spin.append(mark, shine);
+  spin.append(el('i', 'gym-get-halo'), mark, shine);
+  spin.setAttribute('role', 'button');
+  spin.setAttribute('aria-label', `Take the ${l.badge}`);
   const sparks = el('div', 'gym-get-sparks');
   for (let i = 0; i < 28; i++) {
     const s = el('i');
@@ -140,21 +146,54 @@ async function badgeGet(layer, l) {
   }
   const cap = el('div', 'gym-get-cap');
   cap.append(el('small', '', 'YOU RECEIVED THE'), el('b', '', l.badge.toUpperCase()));
-  stage.append(el('div', 'gym-get-rays'), el('i', 'gym-get-ring'), sparks, spin, el('i', 'gym-get-flash'), cap);
+  const hint = el('div', 'gym-get-hint', 'TAP THE BADGE');
+  stage.append(el('div', 'gym-get-rays'), el('i', 'gym-get-ring'), sparks, spin, el('i', 'gym-get-flash'), cap, hint);
   layer.classList.add('getting');
   layer.append(stage);
+  // where it waits: over the badge on the arch, the same size, or near the top of the screen
+  const box = stage.getBoundingClientRect(), size = spin.getBoundingClientRect().width || 160;
+  const at = room?.gymBadgeAt?.() || { x: box.left + box.width / 2, y: box.top + box.height * 0.2, r: size * 0.32 };
+  const from = `translate(${at.x - box.left - box.width / 2}px, ${at.y - box.top - box.height * 0.4}px) scale(${Math.max(0.15, at.r * 2 / size)})`;
+  spin.style.transform = from;
   await sleep(20);
-  stage.classList.add('go');
-  if (calm) { playSound('achievement'); await sleep(400); }
+  stage.classList.add('go', 'wait');
+  playSound('charge');
+  await new Promise(done => {
+    const take = (e) => { e?.preventDefault?.(); spin.removeEventListener('pointerup', take); document.removeEventListener('keydown', key); done(); };
+    const key = (e) => { if (e.key === 'Enter' || e.key === ' ') take(e); };
+    setTimeout(() => { spin.addEventListener('pointerup', take); document.addEventListener('keydown', key); }, 350);
+  });
+  stage.classList.remove('wait');
+  room?.gymBadgeShown?.(false);
+  playSound('confirm');
+  const settle = (keys, duration) => { const a = spin.animate(keys, { duration, fill: 'forwards' }); return a.finished.catch(() => {}).then(() => a); };
+  const flights = [];
+  if (calm) flights.push(await settle([{ transform: from }, { transform: 'none' }], 500));
   else {
-    playSound('charge');
-    await sleep(1050);   // gymGetFly's landing
+    playSound('run-away');
+    setTimeout(() => playSound('fw-launch'), 120);
+    // it pops off the arch towards you, tumbles up over the screen and slams down in the middle (timed on the frames
+    // drawn, so the landing's flash never comes before the badge does)
+    flights.push(await settle([
+      { transform: `${from} rotateY(0deg)` },
+      { transform: `${from} translateY(-14%) scale(1.5) rotateY(180deg)`, offset: 0.19, easing: 'cubic-bezier(.4, 0, .6, 1)' },
+      { transform: 'translate(0, -22vh) scale(1.6) rotateY(900deg) rotateZ(-12deg)', offset: 0.72, easing: 'cubic-bezier(.5, 0, .9, .5)' },
+      { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg) rotateZ(0deg)' },
+    ], 1300));
     stage.classList.add('land');
     playSound('fw-boom');
     setTimeout(() => playSound('fw-crackle'), 180);
     setTimeout(() => playSound('achievement'), 450);
-    await sleep(900);
+    flights.push(await settle([
+      { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg)', easing: 'ease-out' },
+      { transform: 'translate(0, -3vh) scale(0.96, 1.06) rotateY(1440deg)', offset: 0.5, easing: 'ease-in' },
+      { transform: 'none' },
+    ], 260));
+    await sleep(600);
   }
+  if (calm) playSound('achievement');
+  spin.style.transform = '';
+  flights.forEach(a => a.cancel());
   stage.classList.add('done');
   await tap(layer);
   playSound('confirm');

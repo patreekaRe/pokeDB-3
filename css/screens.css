@@ -5567,8 +5567,9 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 @keyframes enemyBallOut { from { scale: 0.15; } 55% { scale: 1.12; } to { scale: 1; } }
 @keyframes enemyBallGlow { from { filter: brightness(8) var(--rest); } 55% { filter: brightness(2.5) var(--rest); } 75%, to { filter: brightness(1) var(--rest); } }
 
-/* their badge handed over (badgeGet() in js/gym.js): the talk steps back, rays wheel open, the badge spins in from far
-   off and lands with a flash, a shockwave and sparks, then YOU RECEIVED rises under it */
+/* their badge handed over (badgeGet() in js/gym.js): the talk steps back and the screen goes dark but for the badge,
+   glowing where it hangs on the arch and the only thing that takes a tap (`.wait`); grabbed, it tumbles out and lands
+   mid-screen with a flash, a shockwave and sparks, rays wheel open, then YOU RECEIVED rises under it */
 .gym-scene.getting .gym-say { translate: -50% calc(100% + 40px); transition: translate 0.3s ease-in; }
 .gym-scene.getting .gym-trainer { opacity: 0.25; transition: opacity 0.5s, translate 0.6s; }
 .gym-get {
@@ -5577,6 +5578,7 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
   opacity: 0; transition: opacity 0.4s;
 }
 .gym-get.go { opacity: 1; }
+.gym-get.wait { background: rgba(3, 3, 10, 0.88); }
 .gym-get > :is(.gym-get-rays, .gym-get-badge, .gym-get-ring, .gym-get-sparks) { position: absolute; left: 50%; top: 40%; translate: -50% -50%; }
 .gym-get-rays {
   width: 180vmax; height: 180vmax; opacity: 0; scale: 0.3;
@@ -5590,21 +5592,34 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
   width: min(46vw, 200px); aspect-ratio: 1; opacity: 0;
   filter: drop-shadow(0 0 22px rgba(255, 220, 110, 0.85)) drop-shadow(0 6px 0 rgba(0, 0, 0, 0.4));
 }
-.gym-get.go .gym-get-badge { animation: gymGetFly 1.05s cubic-bezier(.3, .1, .3, 1) forwards; }
+.gym-get.go .gym-get-badge { opacity: 1; transition: opacity 0.5s; }
+.gym-get.wait .gym-get-badge { pointer-events: auto; cursor: pointer; }
 .gym-get.done .gym-get-badge { opacity: 1; animation: gymGetFloat 3.2s ease-in-out infinite; }
-.gym-get-mark { width: 100%; height: 100%; display: block; }
+.gym-get-mark { position: relative; width: 100%; height: 100%; display: block; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.gym-get.wait .gym-get-mark { animation: gymBeckon 1.3s ease-in-out infinite; }
+@keyframes gymBeckon {
+  0%, 100% { scale: 1; filter: brightness(1.05) drop-shadow(0 0 10px rgba(255, 220, 110, 0.7)); }
+  50% { scale: 1.07; filter: brightness(1.3) drop-shadow(0 0 26px rgba(255, 230, 140, 1)); }
+}
+.gym-get-halo {
+  position: absolute; inset: -45%; border-radius: 50%; opacity: 0.55; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 236, 160, 0.85), rgba(255, 200, 80, 0.35) 35%, transparent 68%);
+}
+.gym-get.wait .gym-get-halo { animation: gymHalo 1.3s ease-in-out infinite; }
+@keyframes gymHalo { 0%, 100% { opacity: 0.55; scale: 0.92; } 50% { opacity: 1; scale: 1.12; } }
+.gym-get-hint {
+  position: absolute; left: 0; right: 0; bottom: max(16vh, calc(env(safe-area-inset-bottom) + 100px)); text-align: center;
+  font-size: 16px; letter-spacing: 3px; color: #ffe9a8; text-shadow: 0 0 12px rgba(255, 200, 60, 0.8), 0 2px 0 #0008;
+  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
+.gym-get.wait .gym-get-hint { opacity: 1; animation: gymHint 1.3s ease-in-out 0.6s infinite; }
+@keyframes gymHint { 50% { opacity: 0.4; } }
 .gym-get-shine {
   position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
   background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.95) 48%, transparent 60%) -200% 0 / 300% 100% no-repeat;
 }
 .gym-get.land .gym-get-shine { animation: gymShine 2.4s ease-in-out 0.1s infinite; }
 @keyframes gymShine { 0% { background-position: 150% 0; } 45%, 100% { background-position: -150% 0; } }
-@keyframes gymGetFly {
-  0% { opacity: 0; transform: translateY(-38vh) scale(0.08) rotateY(0deg) rotateZ(-30deg); }
-  15% { opacity: 1; }
-  85% { transform: translateY(0) scale(1.22) rotateY(1440deg) rotateZ(0deg); }
-  100% { opacity: 1; transform: scale(1) rotateY(1440deg); }
-}
 @keyframes gymGetFloat { 0%, 100% { transform: translateY(0) rotateY(-14deg); } 50% { transform: translateY(-8px) rotateY(14deg); } }
 .gym-get-ring {
   width: 60px; height: 60px; border-radius: 50%; opacity: 0;
@@ -5643,7 +5658,8 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-get.calm .gym-get-badge { opacity: 1; animation: none; }
 .gym-get.calm .gym-get-rays { opacity: 0.6; scale: 1; animation: none; }
 @media (prefers-reduced-motion: reduce) {
-  .gym-get .gym-get-badge, .gym-get .gym-get-rays, .gym-get .gym-get-shine { animation: none !important; opacity: 1; }
+  .gym-get .gym-get-badge, .gym-get .gym-get-rays, .gym-get .gym-get-shine, .gym-get .gym-get-mark, .gym-get .gym-get-halo { animation: none !important; }
+  .gym-get.go .gym-get-badge { opacity: 1; }
 }
 
 /* the crossroads boards' Gym Leaders: a card each, a shadow and ??? till beaten, over the bosses they send out */

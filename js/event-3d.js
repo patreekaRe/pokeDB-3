@@ -2442,8 +2442,16 @@ async function gymCrest(leader, ink, y, z, back = z - 0.3) {
   // out in front of the arch and drawn over it, so turning or spinning it never sinks into the stones (the user's ask)
   for (const o of [ring, ...group.children]) { o.material.depthTest = false; o.renderOrder = 2; }
   let spinUntil = 0;
+  const parts = [group, ring, halo, burst, ...motes];
   return {
     flare() { spinUntil = performance.now() + 1400; },
+    /** Where it is on the screen, in CSS px: its middle and its half width (badgeGet() in js/gym.js lays the badge over it). */
+    at() {
+      const r = view.getBoundingClientRect(), on = (v) => { v.project(camera); return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; };
+      const [x, y] = on(new THREE.Vector3(0, group.position.y, z)), [ex] = on(new THREE.Vector3(size / 2, group.position.y, z));
+      return { x, y, r: Math.abs(ex - x) };
+    },
+    show(on) { for (const o of parts) o.visible = on; },
     tick(now) {
       if (calm) return;
       const fast = Math.max(0, (spinUntil - now) / 1400);
@@ -2710,7 +2718,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   // fire on the lintel's ends and light pouring down on the dais
   const az = BACK_Z + 0.5, { torches, lunette, ly } = gymArch(L, ink, fire, az);
   panel(gymPlaqueArt(ink, leader?.name || 'Gym Leader'), 5.2, 1.14, 0, ly, az + 0.43);
-  const crest = await gymCrest(leader, ink, 5.2, az + 0.75, az - 0.2);
+  const crest = B.crest = await gymCrest(leader, ink, 5.2, az + 0.75, az - 0.2);
   const shafts = [[-0.9, 0.12], [0.2, -0.05], [1.1, -0.14]].map(([x, tilt], i) => {
     const m = new THREE.MeshBasicMaterial({ map: texOf(shaftArt('#fff4d0')), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
     const o = new THREE.Mesh(new THREE.PlaneGeometry(0.9 + i * 0.25, 6.4), m);
@@ -2761,6 +2769,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
     const lit = !!opts?.spent;
     for (const f of [...avenue.flat(), ...great, ...torches]) { f.lit = lit; f.at = 0; }
     focus.on = false; focus.k = 0;
+    crest.show(true);
   };
   B.flare = () => {
     focus.on = true;
@@ -3245,5 +3254,10 @@ export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }
 }
+
+/** The gym's badge on its arch: where it is on the screen (null without the 3D gym), and taking it down as it's grabbed
+    or putting it back (badgeGet() in js/gym.js). */
+export const gymBadgeAt = () => (R?.crest && alive() ? R.crest.at() : null);
+export function gymBadgeShown(on) { if (alive()) R?.crest?.show(on); }
 
 export const eventRoom3d = () => (R && alive() ? controls : null);

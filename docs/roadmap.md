@@ -364,7 +364,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   in, only the speech window pops up (`bubble`). **The arch revamp** (same day, the user's ask): the banners by the pillars
   are gone, and `gymArch()` builds a round arch: fluted columns on stepped bases, the plaque's lintel, eleven wedge stones in
   two shades with an ink keystone, gold trim and gem, the badge (`gymCrest()`, now at 5.2, out in front of the arch and drawn over it, `depthTest` off; its sunburst stays behind in the lunette) in a lunette that glows with the
-  great fires. Open: the user's look.
+  great fires. **The badge grab** (same day, the user's ask): after the hand-over line `badgeGet()` in `js/gym.js` darkens
+  the screen but for the badge laid over the arch's (`gymBadgeAt()` / `gymBadgeShown()` in `js/event-3d.js`, the crest's
+  `at()` / `show()`), glowing, the only thing a tap takes; grabbed, it leaves the arch, tumbles out spinning (two WAAPI
+  flights, the landing's flash on the frames drawn) and slams down mid-screen. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
