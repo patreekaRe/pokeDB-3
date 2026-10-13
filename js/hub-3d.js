@@ -1512,7 +1512,9 @@ function dressSeason() {
       scene.add(l);
     }
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
-      spawns: [{ x: 1, y: 9 }, { x: 10, y: 8 }, { x: 8, y: 14 }, { x: 4, y: 9 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
+      byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
+      spawns: [{ x: 1, y: 6 }, { x: 8, y: 6 }, { x: 8, y: 13 }, { x: 4, y: 11 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });

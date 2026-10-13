@@ -43,15 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['runs', 'Every Gym Badge is redrawn and renamed after its Gym Leader: a closet with a rainbow peeking out, a teacher\'s apple, a headset, a lavender cat, a demon\'s eye and more.'],
-  ['base', 'Farm, Underwater and Desert furniture is properly 3D: a silo, hen coop with a hen at its window, tractor, windpump, corn row, mailbox, water pump, wool basket, six corals, kelp, a shipwreck, diving helmet, jellyfish lamp, giant pearl, seahorse, lanternfish, sunken arch, an obelisk, sphinx, a sarcophagus whose lid swings open, canopic jars, date palm, scarab lamp, desert tent, cobra, lotus column and 19 more.'],
-  ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
-  ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
-  ['music', 'Gym Leaders have music of their own: one for walking up their gym, one for the battle and a victory theme for beating them.'],
-  ['runs', 'Gym Leader Lawrence has his own look and plenty to say, and a different speech each time: before the battle, when you beat him and when he beats you.'],
-  ['runs', 'In their gym a Gym Leader slides in big over the room to talk once the great braziers flare, before the battle and again with their badge after you win.'],
-  ['runs', 'Gym Leader Britt has her own look and plenty to say: before the battle, when you beat her and when she beats you.'],
-  ['runs', 'A third Clearing Gym Leader: THE NIETOS, Law and Britt with baby Linc along, each with their own name tag as they talk.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -63,6 +54,41 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.16',
+    name: 'Gym Leaders',
+    date: '2026-10-13',
+    notes: [
+  ['runs', 'Gym Leaders: thirteen of them, two or three a biome, stand in front of its boss. You walk up their 3D gym as the fire pillars light, they slide in to talk, and every one has their own look, speeches and badge.'],
+  ['runs', 'Lawrence, Britt and THE NIETOS (Law and Britt with baby Linc along) lead the Clearing; John and Jahmes the Shrine; Clarence and Shaun the Wastes; Pat and Kayl the Ruins; Phil and Ricky Thornwood; Machew and Jerome the Savanna.'],
+  ['runs', 'Each leader has a different speech each time: before the battle, when you beat them and when they beat you, with their name on a tag as they talk.'],
+  ['runs', 'Phil is possessed by JONA, who takes over the talk, blacks out the screen and pours her dark aura into his Pokémon.'],
+  ['runs', 'Beating a leader the first time hands you their badge: a closet with a rainbow peeking out, a teacher\'s apple, a headset, a lavender cat, a demon\'s eye and more, kept in the Badge Case.'],
+  ['runs', 'The crossroads boards show each road\'s Gym Leaders, and the map shows the leader over the boss room.'],
+  ['music', 'Gym Leaders have music of their own: one for walking up their gym, one for the battle and a victory theme for beating them.'],
+    ],
+  },
+  {
+    version: '1.15',
+    name: 'Hung Up',
+    date: '2026-10-13',
+    notes: [
+  ['base', 'Lights, clocks and strings are properly 3D on your wall and in the Furniture store: lanterns of brass, paper and ship\'s iron swinging from brackets, a wall lamp with a glowing shade, a torch with real flames, a mirror-tiled disco ball, a ghost chandelier of violet candles, café bulbs, fairy lights, festival lanterns, bunting, bats and snowflakes on sagging strings, mittens and washing pegged on the line, a cuckoo clock with its pine cone weights, a station clock and a big stopwatch under glass, icicles, a cobweb with its spider, a star mobile, a dreamcatcher, a glass wind chime, hanging plants, a wreath with a bow, a school bell, and the neon, jackpot, Center, Gym and fair signs with their letters standing proud.'],
+  ['base', 'Shelves, racks and hooks are properly 3D on your wall and in the Furniture store: jars, bottles, tins and jam pots standing on real planks, pans and a ladle, spatula and whisk hooked over their rails, plates leaning in their rack, mugs with handles, towels folded over the rail, a cap, straw hat and scarf on hooks, bags and a raincoat on pegs, Poké Ball bookends, records in shadow boxes, flowers in the window box, ivy climbing the trellis, a sloping control desk of glowing buttons, a monitor wall and a solar panel tipped up to the sky.'],
+  ['base', 'Windows, mirrors and doors are properly 3D on your wall and in the Furniture store: a moonlit arch with a candle on its sill, frost and icicles, leaded stained glass, a riveted space viewport, the carriage window\'s curtains and cup of tea, a brass porthole, an arrow slit through real stonework, a vanity mirror ringed with bulbs, a ghost leaning out of its mirror, shells round a mirror, the medicine cabinet\'s shelves, a portcullis, sliding barn doors, an airlock with its wheel, and glazed tiles and lashed bamboo.'],
+  ['base', 'Boards, signs and plaques are properly 3D on your wall and in the Furniture store: notes and photos pinned up and curling, donuts on pegs, markers and chalk on their ledges, a lit scoreboard and departures board, metal badges behind glass, a pull-down projector screen, framed and oval portraits whose eyes glow, a jigsaw with a piece missing, inlaid desert tablets and golden wings.'],
+  ['base', 'Banners, tapestries, scrolls, flags and curtains are properly 3D on your wall and in the Furniture store: cloth hanging in real folds from rods and cords, flags rippling off their poles, scrolls on weighted rollers, the alphabet cards pegged on a sagging string, the shower curtain on its rings, a tacked-up treasure map rolled at the ends, posters and charts curling off the wall, sticky notes lifting and gold star stickers.'],
+  ['base', 'Windows, posters, pictures, the wall shelf, the clock and the mirror are properly 3D on your wall and in the Furniture store: window frames with sills round the hour\'s sky, curtains in real folds, posters curling off the wall, pictures in deep frames, real books on the shelf and a clock with a swinging pendulum.'],
+  ['base', 'Farm, Underwater and Desert furniture is properly 3D: a silo, hen coop with a hen at its window, tractor, windpump, corn row, mailbox, water pump, wool basket, six corals, kelp, a shipwreck, diving helmet, jellyfish lamp, giant pearl, seahorse, lanternfish, sunken arch, an obelisk, sphinx, a sarcophagus whose lid swings open, canopic jars, date palm, scarab lamp, desert tent, cobra, lotus column and 19 more.'],
+  ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
+  ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
+  ['hub', 'The Clearing\'s Halloween ghosts mostly stand about now, one strolling at a time in turn, and none ever stops in front of a door.'],
+  ['mall', 'The Game Corner\'s regulars walk one at a time now, the rest at their games or standing about, and none ever stops on the doormat.'],
+  ['fixes', 'In the Poké Mart a big Pokémon like Reshiram no longer stops you tapping the wares behind it, and it stands a little smaller there.'],
+  ['fixes', 'On a short phone the Poké Mart\'s text box no longer hides behind the bottom bar.'],
+  ['runs', 'BRITT, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon. Tap her to chat: she works a second job to feed baby LINC and save for his college fund.'],
+    ],
+  },
   {
     version: '1.14',
     name: 'Big Screens',
@@ -473,10 +499,11 @@ export const IN_THE_GAME = [
   ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag.'],
   ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
+  ['🏅', '13 Gym Leaders', 'Two or three in every biome, standing in front of its boss, each with their own gym, speeches and badge.'],
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '138 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '151 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],

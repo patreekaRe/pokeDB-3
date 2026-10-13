@@ -790,6 +790,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
     scene.add(built.group);
     if (id === 'gc') places.gc.crowd = makeCrowd({   // the Game Corner's regulars (js/corner-crowd.js)
+      oneWalker: true,
       THREE, group: built.group, monBoard, drawMon, dispose, PITCH, spots: built.spots, door: built.door ?? DOOR,
       cols: built.cols ?? COLS, rows: built.rows ?? ROWS, route, free, tileX, tileZ, camera, view, stage: root.querySelector('.b3-stage'),
       say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,

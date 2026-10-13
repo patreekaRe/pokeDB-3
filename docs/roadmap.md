@@ -9,6 +9,32 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Wall furniture in 3D** (the user's ask, 2026-10-12: wall pieces stood in the store and hung in the room as flat
+paintings; "make new batches"). 204 wall kinds, built from parts like the floor batches, one file a batch
+(`js/base-models-w*.js`, its head says how: a wall piece's back is z 0, `X(i, W)` / `Y(j)` put a part where it was
+painted on its 96-unit strip, `cut()` crops the painting for a pane or canvas, fresh each hour for a window's sky). The
+room hangs a modelled wall piece by its back (`makePiece()` in `js/base-3d.js`, its crops lit in its `glow` colours,
+the window's light shaft kept) and the store hangs it on its display board (`buildFloor()` in `js/mall-furniture.js`).
+**Batch W1 done 2026-10-12** (`js/base-models-w.js`): the windows (sash window, small window with its herb pot,
+curtained window with real folds and ties, round window, arched window), the classic poster and the 13 motif posters
+(paper curling off the wall, a pin), the painting and the 8 framed pictures (moulding, a recessed canvas), the wall shelf
+(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. **Batch W2 done
+2026-10-13** (`js/base-models-w2.js`, cloth and paper, 50 kinds): `drape()` lays a crop on a finely cut sheet whose depth
+is a function (folds, ripples, curls), its outline the painting's alpha (`clipped()` cuts what the painting filled with
+shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. **Batch W3 done 2026-10-13** (`js/base-models-w3.js`, boards and plaques, 27 kinds): frames round a crop of the
+painting with what stood on it stood off it (pinned notes and photos, donuts on pegs, tray markers and chalk, metal
+badges under glass, lit seven-segment digits, a pull-down screen on its roller); `inlay()` lifts a tablet's coloured
+glyph proud of the stone (the crop with every unsaturated pixel cleared); the winged sun and golden wings are two layers
+of the painting bent back towards the wall. **Batch W4 done 2026-10-13** (`js/base-models-w4.js`, windows, mirrors and doors, 18 kinds): arched frames by `archPane()` (moonlit, sky arch, stained glass with lead came), sashes and viewports round the hour's sky, frost as the painting's white specks in front of the glass, the carriage window's curtains cut to their painted edge, silvered glass (`silver()`), and stone laid block by block round its openings (`masonry()`: the arrow slit, the portcullis's gateway). **Batch W5 done 2026-10-13** (`js/base-models-w5.js`, shelves, racks and hooks, 20 kinds): `plank()` / `brace()` stand jars, bottles, tins and jam pots on shelves deep enough to hold them, `hook()` hangs pans and utensils over their rails, towels fold over theirs (`drape()`), Poké Ball bookends (`pokeball()`), records in shadow boxes, the control panel's desk slopes out under its screens, the solar panel leans out from its foot (`leaning()`). **Batch W6 done 2026-10-13** (`js/base-models-w6.js`, lights, clocks and strings, 33 kinds): what hangs, hangs: lanterns, the disco ball, chandelier, mobile and pots swing from a bracket out of the wall (`arm()`), strings sag out from their two screw eyes as well as down (`string()`, returning its depth for what hangs off it: bulbs, pennants, bats, flakes, mittens, washing), shades, paper, bulbs and flames are `K.glow()`, clocks share `face()` (dial, ticks, hands, glass dome), and a sign's letters are its own painted pixels lifted proud of its face (`lift()`, a colour test by `near()`), so the glow mask still lights them. `?stock=id,id...` fills the
+store with those pieces for a page load (`furnitureStock()`), and `tools/models.html` frames wall pieces by their middle. Next, one session each
+(Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
+- W7 mounted things: dartboard, wooden mask, medal, boxing gloves, climbing wall, starfish, fishing net, life ring,
+  anchor, ship's wheel, piñata, carnival mask, prize wheel, round shield, crossed cutlasses, figurehead, rope ladder,
+  folding fan, kite, lucky horseshoe, fish wall, trident, gear, vine, honeycomb and living walls, garden thermometer.
+- Touch-ups (floor pieces the survey of 2026-10-12 found weak): the pirate treasure hoard (its chest small and melted
+  into the gold), the Sky Palace orbs (floating loose over their cloud, the halo apart), the play tent / teepee (a flat
+  card), the small things on kitchen and office counters (too small to read), the tall Center plant (flat leaf cards).
+
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
@@ -349,136 +375,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: badges after their personalities, 2026-10-13, the user's ask: their
-  12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
-  **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
-  boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
-  and the badge spinning in, before the rewards / ending), 12 Gym Badges (`save.gym[id]` win counts, Badge Case group
-  `gym`, `GYM_LOOK` in `js/trainercard.js`), the crossroads boards' "Gym Leaders" section (`roadInfo().leaders` in
-  `js/crossroads.js`: shadow and ??? till beaten, their bosses under them). All fight as Normal. Eternatus, Safari bosses
-  and Sky Pillar guardians have none. Playtest `?gym=<id>` (`&n=2` their second boss, `&hp=0.05` a quick win, `peekGym()` in `js/run.js`).
-  **The 3D gym** (2026-10-12, the user's go): the boss room is walked first, `gymRoom()` in `js/run.js` over `buildGym()` in
-  `js/event-3d.js` (kind `gym`, one a biome and leader: the biome's wild ground with a battle court painted on it, a stone
-  dais with the leader, banners in `GYM_INK`'s colour, two braziers, the POKéMON GYM board); a tap on the leader walks you up,
-  they light up from a silhouette (`setDark()` / `light()`) and talk in the speech window, the last line starts the fight
-  (the battle skips its own talk, `leaderTalked`); after a win you're back in it for their last words and the badge
-  (`badgePop()` in `js/gym.js`), the doormat on to the rewards. `?event2d` or no Three.js keeps the old overlay talk
-  (`gymTalk()`). The map shows the leader over the boss room in place of the boss (`gymOnMap()`, renderMap's `gym`), in
-  colour once beaten.
-  **Bigger and more epic** (2026-10-12, the user's ask: "a little bigger and the walk up more epic"): the gym is a 13 x 16
-  hall (`SIZES` / `useSize()` in `js/event-3d.js`: a room kind may carry its own size, `view` rows in the shot that slides
-  up with you, `camZ`, and a closer `across`), stone statues of the leader's bosses at the door (`statue()`), an avenue of
-  five fire pillars a side lighting pair by pair with a taiko beat as you walk up (`AVENUE`, `tickFire()`), a two-tier dais
-  with steps, taller banners and board; the great braziers whoosh at the court's head, and as the leader speaks they flare
-  with a gong and the shot pushes in (`R.flare()` / `R.focus`, `PUSH`). Next: the user's playtest on a phone.
-  **Music** (2026-10-12, the user's three songs): `gym-room` in the gym, `gym-leader-battle` for the fight, `gym-victory` from
-  the faint through the badge, rewards and evolution (`docs/reference/music.md`). The battle file has no repeat in it, so its
-  loop is the closest bars with a long cross-fade: worth a listen.
-  **The user's placement** (2026-10-12; the first of each biome has two bosses; badges renamed after their personalities 2026-10-13):
+- **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
+  first-win badge land in the Badge Case and the outro straight after a real boss win (a peek gives no badge); the user's
+  word on the 13 badges' looks and names; `won` lines (when they beat you) for leaders still on the stock line.
 
-  | Biome | Leader (id) | Bosses | Badge |
-  |---|---|---|---|
-  | Clearing | GAY TWINK DADDY LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Closet |
-  | Clearing | BRITT (`britt`) | Miltank | Apple |
-  | Shrine | JOHN (`john`) | Stoutland, Exploud | Dilemma |
-  | Shrine | JAHMES (`jahmes`) | Ursaring | Curfew |
-  | Wastes | CLARENCE JASPER (`clarence`) | Slaking, Regigigas | Peach |
-  | Wastes | SHAUN (`shaun`) | Lickilicky, Porygon-Z | Comms |
-  | Sunken Ruins | PAT (`pat`) | Dunsparce, Wigglytuff | Serenade |
-  | Sunken Ruins | KAYL (`kayl`) | Granbull | Whisker |
-  | Thornwood | PHIL (`phil`) | Blissey, Porygon | Possession |
-  | Thornwood | RICKY (`ricky`) | Porygon2 | All-Nighter |
-  | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Katana |
-  | Savanna | JEROME (`jerome`) | Munchlax | Vice |
-
-  **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
-  right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
-  reaching the steps or a tap anywhere on the dais does (a spot's `walkUp` / `area` in `js/event-3d.js`).
-  **Lawrence** (2026-10-13, the user's sprite and personality; named GAY TWINK DADDY LAWRENCE, the user's call): `assets/trainers/gym/lawrence.png`; married to Britt,
-  secretly gay, always on about his boyfriends, wants every match over fast to play Valorant with the boys, hiding it all
-  from his wife. A leader's `intro` / `beaten` / `won` can now be a list of speeches, one picked at random (`talkOf()` in
-  `js/data/gym.js`): Lawrence has 7 / 5 / 5. `won` is new: when a leader's boss beats you they say it over the battle
-  before the run ends (`afterFight()` in `js/run.js`); the others say a stock line till theirs are written.
-  **Britt** (2026-10-13, the user's sprite and lines): `assets/trainers/gym/britt.png`; a worn-out elementary teacher, mom of
-  Linc, a Valorant Sage main her friends tease. 6 / 7 / 7 speeches; `firstIntro: true` makes her first intro the one you
-  meet till you beat her (`talkOf(l, kind, fresh)`). Playtest `?gym=britt`.
-  **THE NIETOS** (2026-10-13, the user's): Law and Britt with baby Linc (no babysitter), the Clearing's third leader,
-  Kangaskhan theirs (taken from Lawrence), Pacifier Badge; `assets/trainers/gym/nietos.png` is the user's two sprites
-  side by side. A leader's `voices` lets a line start "LAW: " to put that name on the tag (`voiced()` in `js/data/gym.js`,
-  read by `gymTalk()` and `showLine()` in `js/rewards.js`). 8 / 6 / 7 speeches, Law's "Oh, umm... I mean" slips among them. Playtest `?gym=nietos`.
-  **Clarence and Pat** (2026-10-13, the user's sprites and personalities): Clarence lives to show his ass to the boys on
-  Discord, a burlesque show every night to help them play Valorant, and is furious a gym battle keeps him from it; two
-  sprites, one per boss (`sprites` by boss id, `leaderFor()` dresses him: `clarence.png` for Slaking, `clarence-2.png` for
-  Regigigas). Pat keeps "accidentally" singing a line of Lemonade (Passion) or She Was Mine (AJ Rafael), then "Oh, you heard
-  that?" (one short line at a time; every line about the singing, no teaching kids since 2026-10-13, the user's call).
-  Clarence 11 / 8 / 8 speeches (more about the show for the boys, the user's ask), Pat 7 / 5 / 5. Playtest
-  `?gym=clarence&n=2`, `?gym=pat`.
-  **John, Jahmes and Shaun** (2026-10-13, the user's personalities and sprites): John (an
-  engineer who only wants to play Fire Emblem, never able to pick Steam Deck, Switch 2 or his new AYN Thor), Jahmes (a PA
-  who screams at everything gaming and is in bed at 11 p.m. sharp, throwing the battle or walking out mid-goodbye for it),
-  Shaun (tech support, a Valorant smurf who coaches and flames his friends). 7 / 5 / 4 speeches each.
-  **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
-  `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
-  foot to just over the bar when a room leaves it unset.
-  **Their name on the box** (2026-10-13, the user's ask): while a leader talks in the 3D gym their name is on a tilted pink
-  tag over the text box (`speaker()` in `js/rewards.js`, `.reward-log[data-who]`; every `showChoice()` starts as narration).
-  **Kayl, Phil and Ricky** (2026-10-13, the user's sprites and personalities): Kayl (ADHD project coordinator, lavender,
-  Tame Impala, bass, games, and her cats Spooky and Reya in every speech), Ricky (thirty-something who looks old from 2 a.m.
-  Valorant / ARAM with friends in another time zone, a meeting every morning). Phil is possessed by a demon named JONA (the user's calls: she always takes him and talks for him; `voices` PHIL / JONA, her name on the tag): a leader's `possess`
-  speeches (`js/data/gym.js`) play in the battle once his Pokémon is out (`playIntro()` in `js/battle.js`): on the second
-  line the dark takes him (a dark Super Saiyan aura over his sprite, `auraOn(img, level, 'dark')` in `js/aura.js`, which
-  now lets several auras burn at once and has a `DARK` look), the screen's edges bleed violet, and on the last he pours it
-  into his Pokémon, which keeps the dark aura all fight (`setAura(..., 'dark')`). Playtest `?gym=phil&hp=0.05`. **JONA's takeover** (2026-10-13, the user's asks: the aura wasn't
-  seen on a phone, and a more dramatic swap): the first JONA line of a speech blacks the screen out with violet static, a
-  shudder and thunder (`demonSwap()` in `js/gym.js`, a leader's `demon`), and while JONA talks the speech window is black with
-  violet text and a blood-red tag (the battle overlay's `.demon`, and the 3D gym's `.reward-log.demon` in
-  `js/rewards.js`); the infusion is a violet burst, the dark aura is brighter, and his Pokémon also breathes a violet glow
-  all fight (`.enemy-portrait.possessed`). **Fix (2026-10-13, the user's iPhone):** the possession talk stuck on its
-  narration line, where Phil starts shuddering and his aura redraws: iOS sent no `click` for a tap there; `tap()` in
-  `js/gym.js` now takes `pointerup` too, and an error in the talk can't leave its layer up over the battle.
-  **The possession on the battle screen** (2026-10-13, the user's ask: Phil needed the Super Saiyan aura and Blissey never
-  looked possessed): auras are a level 3 now (taller flames, five rings, more lightning and embers; `aura.js`), drawn
-  from ImageData into one canvas each (iOS caps all canvases' memory, and a canvas past it draws nothing). After JONA's
-  last line `infuse()` in `js/gym.js` plays it over the battle itself: the window and dim go, a stream and tendrils of dark
-  energy flow from Phil into his Pokémon as it writhes and cries (`.writhing`), Phil's aura gutters out and he goes grey,
-  then a violet burst and shockwaves, its level 3 aura lights and it cries again in JONA's echoing voice (`playCry(id,
-  { rate, echo })` in `js/audio.js`), and Phil slides away. **Fix (2026-10-13, the user's iPhone):** Blissey fought on
-  with only the boss's gold glow: iOS refused the aura's canvases while the full-screen infusion canvas was alive, the throw
-  skipped the violet glow too. `auraOn()` now tries again a moment later, the glow class goes on first, and battle.js
-  lights both again once the talk is gone.
-  **Fps after the possession** (2026-10-13, the user's iPhone: the fight lagged once Blissey was possessed): its violet
-  glow was two big drop-shadows animated on the GIF, re-blurred every frame; now one still violet shadow in place of the
-  boss's gold, and a halo behind it breathing by opacity alone (`.possessed .enemy-pose::before`); the aura only re-places
-  its canvas twice a second, and only when the sprite moved.
-  **Chat and battle names** (2026-10-13, the user's list): `name` is the chat name on the speech tag, boards and badges
-  (LAW, BRITT, JOHN, JAHMES, CLARENCE, SHAUN, PAT, KAYL, PHIL, RICKY, MACHEW, JEROME), `battleName` the send-out line's
-  (GAY TWINK DADDY LAWRENCE, EXHAUSTED TEACHER BRITT, INDECISIVE GAMER JOHN, CRACKHEAD 11PM CURFEW JAHMES, BURLESQUE BOI
-  CLARENCE, TECH SUPPORT IGL SHAUN, PROPERTY COORDINATOR KAYL, GHOST HUNTER PHIL, EAST COAST RICKY, EDGELORD MACHEW, GTA
-  FANATIC JEROME, HOPELESS ROMANTIC PAT).
-  **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
-  from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
-  `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
-  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); who of a
-  biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
-  Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
-  **Machew and Jerome** (2026-10-13, the user's personalities and sprites): Machew the edgelord
-  weeb who thinks he's in Tales of Berseria (Velvet, Rokurou, Eizen, the Abbey, daemonblight, a plastic katana), Jerome
-  who only talks about r/GTA6 posts, ignores his newborn and leads the gym to pay for GTA 6. 8 / 5 / 4 speeches each.
-  Their sprites came the same day (`machew.png`, `jerome.png`): every leader now has lines and a sprite.
-  **Badges after their personalities** (2026-10-13, the user's ask): each Gym Badge its own shape, colours and glyph
-  (`GYM_LOOK` / `PATHS` and the glyphs in `js/trainercard.js`) and a new name (`js/data/gym.js`): Closet (Law, a rainbow
-  peeking out), Apple (Britt, A+), Pacifier (the Nietos), Dilemma (John, a handheld with a ?), Curfew (Jahmes, a clock at
-  11), Peach (Clarence), Comms (Shaun, a headset), Serenade (Pat, a lemon heart and a note), Whisker (Kayl, a lavender
-  cat), Possession (Phil, JONA's horns and eye), All-Nighter (Ricky, a mug under the moon), Katana (Machew), Vice (Jerome,
-  GTA VI pink). Next: the user says which to change.
-  **The slide-in talk in the 3D gym** (2026-10-13, the user's yes): walking up, the great braziers flare with the gong and
-  the shot pushes in, then the leader slides in big over the room to talk (`gymTalk()`, shadow till beaten once, name plate),
-  the room's speech window stepping aside; after the win they slide in again for their last words with the badge spinning
-  in, then "You received the X Badge!" in the box and the doormat out; a tap on them later says their last line again
-  (`gymRoom()` in `js/run.js`; `event3d()`'s new `onIn`, run once the room is up). Checked headless with Britt. Then, on the user's OK:
-  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/b64e09d85925a01eac080ef82760a4697e990873/index.html?gym=britt&hp=0.05 (`?gym=` any leader).
-
-  ▶ Run in: CLOUD.
+  ▶ Run in: PLAYTEST on the live site.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
   at the far screen edges (pull them in beside the hand?), and a tall iPad shows black above and below the Secret Base's
@@ -486,9 +387,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   pickers (PP Up, Forget, Day Care) are the map's 500px handheld too, and starters stand centred on their body (`BODY_X` in
   `js/data/sprite-fit.js`, `tools/body-centre.py`). Ask: does Charmeleon look centred now, and do any windows still
   stretch? ▶ Playtest on the live site.
-- **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, the user's ask: "like the Pokémon Center"): the run's Mart
-  as a 3D room (`js/mart-3d.js`), every ware on one wall unit, Kecleon's counter with the PC. The user playtests it on the
-  branch (`?mart`); on their OK, merge it into `main`. ▶ Run in: LOCAL (visual).
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
   Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and

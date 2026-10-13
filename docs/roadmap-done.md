@@ -2204,3 +2204,152 @@ from parts. Done the same day (the user's ask: no paper cut-outs): what stands o
 carts, machines, booths, desks on legs, statues) one batch file a session, hand-built like the stove. Rendering
 works in the cloud: install `three@0.160.0` with npm in the scratchpad and route the CDN URL to it in Playwright, then
 `tools/models.html?ids=a,b` shows four sides each.
+
+**The Clearing's ghosts take turns** (2026-10-13, the user's ask: a Pokémon stood in front of the Poké Mall's doors; most
+should stand still, one walking at a time). `js/hub-spooky.js`: the four Halloween ghosts (the only Pokémon wandering the
+Clearing) stand at their spots; one at a time, in turn, strolls to a new one (`turn` / `nextWalk`, `PAUSE` 3-6 s between),
+the greeting walk counting as the turn. No ghost starts, stops or greets on or beside any place's doorstep (`byDoor` from
+`js/hub-3d.js`, every `places` step ±1 tile; `standAt()` moves a spawn off one). Checked headless: 45 s, never more than
+one walking, none standing by a door.
+
+**The Game Corner's regulars take turns too** (2026-10-13, the user's ask: the ghosts' rule for the Game Corner). `js/corner-crowd.js`'s
+`oneWalker` (passed only by the Game Corner in `js/mall-3d.js`; the hall's shoppers are unchanged): one regular walks at a
+time, the rest playing or standing (`mayWalk()`: no one else walking, `GAP` 1.5-3.5 s after the last walk), comings and
+goings and the hello wait their turn (`incoming`), a newcomer walks straight on off the mat, and none stops, wanders to
+or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game still makes it step aside at once.
+
+- **Mart fixes and Britt** (2026-10-13, Britt's playtest; patch 1.15): in `js/mart-3d.js` a tap goes to the ware behind your Pokémon (Reshiram's sprite swallowed every tap), your Pokémon is capped at `MON_MAX` 1.6 tall there, and Britt (`assets/trainers/britt.png`, the user's friend, a Gym Leader off duty) runs the counter in place of Kecleon (`trainerBoard()`), a tap on her saying the next of `BRITT_TALKS` (`js/data/mart.js`: mostly her second job feeding baby LINC and saving for his college fund) in the cream speech window with BRITT on a pink tag (`sayLines(…, who)`, `data-who` on `.reward-log`); the Mart's text box is pinned above the room bar (it sank under it on short phones).
+
+## Gym Leaders (merged into `main` 2026-10-13, patch 1.16)
+
+- **Gym Leaders** (built on branch `claude/new-player-onboarding-ecwtke`, the user's ask: their
+  12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
+  **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
+  boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
+  and the badge spinning in, before the rewards / ending), 12 Gym Badges (`save.gym[id]` win counts, Badge Case group
+  `gym`, `GYM_LOOK` in `js/trainercard.js`), the crossroads boards' "Gym Leaders" section (`roadInfo().leaders` in
+  `js/crossroads.js`: shadow and ??? till beaten, their bosses under them). All fight as Normal. Eternatus, Safari bosses
+  and Sky Pillar guardians have none. Playtest `?gym=<id>` (`&n=2` their second boss, `&hp=0.05` a quick win, `peekGym()` in `js/run.js`).
+  **The 3D gym** (2026-10-12, the user's go): the boss room is walked first, `gymRoom()` in `js/run.js` over `buildGym()` in
+  `js/event-3d.js` (kind `gym`, one a biome and leader: the biome's wild ground with a battle court painted on it, a stone
+  dais with the leader, banners in `GYM_INK`'s colour, two braziers, the POKéMON GYM board); a tap on the leader walks you up,
+  they light up from a silhouette (`setDark()` / `light()`) and talk in the speech window, the last line starts the fight
+  (the battle skips its own talk, `leaderTalked`); after a win you're back in it for their last words and the badge
+  (`badgePop()` in `js/gym.js`), the doormat on to the rewards. `?event2d` or no Three.js keeps the old overlay talk
+  (`gymTalk()`). The map shows the leader over the boss room in place of the boss (`gymOnMap()`, renderMap's `gym`), in
+  colour once beaten.
+  **Bigger and more epic** (2026-10-12, the user's ask: "a little bigger and the walk up more epic"): the gym is a 13 x 16
+  hall (`SIZES` / `useSize()` in `js/event-3d.js`: a room kind may carry its own size, `view` rows in the shot that slides
+  up with you, `camZ`, and a closer `across`), stone statues of the leader's bosses at the door (`statue()`), an avenue of
+  five fire pillars a side lighting pair by pair with a taiko beat as you walk up (`AVENUE`, `tickFire()`), a two-tier dais
+  with steps, taller banners and board; the great braziers whoosh at the court's head, and as the leader speaks they flare
+  with a gong and the shot pushes in (`R.flare()` / `R.focus`, `PUSH`). Next: the user's playtest on a phone.
+  **Music** (2026-10-12, the user's three songs): `gym-room` in the gym, `gym-leader-battle` for the fight, `gym-victory` from
+  the faint through the badge, rewards and evolution (`docs/reference/music.md`). The battle file has no repeat in it, so its
+  loop is the closest bars with a long cross-fade: worth a listen.
+  **The user's placement** (2026-10-12; the first of each biome has two bosses; badges renamed after their personalities 2026-10-13):
+
+  | Biome | Leader (id) | Bosses | Badge |
+  |---|---|---|---|
+  | Clearing | GAY TWINK DADDY LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Closet |
+  | Clearing | BRITT (`britt`) | Miltank | Apple |
+  | Shrine | JOHN (`john`) | Stoutland, Exploud | Dilemma |
+  | Shrine | JAHMES (`jahmes`) | Ursaring | Curfew |
+  | Wastes | CLARENCE JASPER (`clarence`) | Slaking, Regigigas | Peach |
+  | Wastes | SHAUN (`shaun`) | Lickilicky, Porygon-Z | Comms |
+  | Sunken Ruins | PAT (`pat`) | Dunsparce, Wigglytuff | Serenade |
+  | Sunken Ruins | KAYL (`kayl`) | Granbull | Whisker |
+  | Thornwood | PHIL (`phil`) | Blissey, Porygon | Possession |
+  | Thornwood | RICKY (`ricky`) | Porygon2 | All-Nighter |
+  | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Katana |
+  | Savanna | JEROME (`jerome`) | Munchlax | Vice |
+
+  **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
+  right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
+  reaching the steps or a tap anywhere on the dais does (a spot's `walkUp` / `area` in `js/event-3d.js`).
+  **Lawrence** (2026-10-13, the user's sprite and personality; named GAY TWINK DADDY LAWRENCE, the user's call): `assets/trainers/gym/lawrence.png`; married to Britt,
+  secretly gay, always on about his boyfriends, wants every match over fast to play Valorant with the boys, hiding it all
+  from his wife. A leader's `intro` / `beaten` / `won` can now be a list of speeches, one picked at random (`talkOf()` in
+  `js/data/gym.js`): Lawrence has 7 / 5 / 5. `won` is new: when a leader's boss beats you they say it over the battle
+  before the run ends (`afterFight()` in `js/run.js`); the others say a stock line till theirs are written.
+  **Britt** (2026-10-13, the user's sprite and lines): `assets/trainers/gym/britt.png`; a worn-out elementary teacher, mom of
+  Linc, a Valorant Sage main her friends tease. 6 / 7 / 7 speeches; `firstIntro: true` makes her first intro the one you
+  meet till you beat her (`talkOf(l, kind, fresh)`). Playtest `?gym=britt`.
+  **THE NIETOS** (2026-10-13, the user's): Law and Britt with baby Linc (no babysitter), the Clearing's third leader,
+  Kangaskhan theirs (taken from Lawrence), Pacifier Badge; `assets/trainers/gym/nietos.png` is the user's two sprites
+  side by side. A leader's `voices` lets a line start "LAW: " to put that name on the tag (`voiced()` in `js/data/gym.js`,
+  read by `gymTalk()` and `showLine()` in `js/rewards.js`). 8 / 6 / 7 speeches, Law's "Oh, umm... I mean" slips among them. Playtest `?gym=nietos`.
+  **Clarence and Pat** (2026-10-13, the user's sprites and personalities): Clarence lives to show his ass to the boys on
+  Discord, a burlesque show every night to help them play Valorant, and is furious a gym battle keeps him from it; two
+  sprites, one per boss (`sprites` by boss id, `leaderFor()` dresses him: `clarence.png` for Slaking, `clarence-2.png` for
+  Regigigas). Pat keeps "accidentally" singing a line of Lemonade (Passion) or She Was Mine (AJ Rafael), then "Oh, you heard
+  that?" (one short line at a time; every line about the singing, no teaching kids since 2026-10-13, the user's call).
+  Clarence 11 / 8 / 8 speeches (more about the show for the boys, the user's ask), Pat 7 / 5 / 5. Playtest
+  `?gym=clarence&n=2`, `?gym=pat`.
+  **John, Jahmes and Shaun** (2026-10-13, the user's personalities and sprites): John (an
+  engineer who only wants to play Fire Emblem, never able to pick Steam Deck, Switch 2 or his new AYN Thor), Jahmes (a PA
+  who screams at everything gaming and is in bed at 11 p.m. sharp, throwing the battle or walking out mid-goodbye for it),
+  Shaun (tech support, a Valorant smurf who coaches and flames his friends). 7 / 5 / 4 speeches each.
+  **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
+  `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
+  foot to just over the bar when a room leaves it unset.
+  **Their name on the box** (2026-10-13, the user's ask): while a leader talks in the 3D gym their name is on a tilted pink
+  tag over the text box (`speaker()` in `js/rewards.js`, `.reward-log[data-who]`; every `showChoice()` starts as narration).
+  **Kayl, Phil and Ricky** (2026-10-13, the user's sprites and personalities): Kayl (ADHD project coordinator, lavender,
+  Tame Impala, bass, games, and her cats Spooky and Reya in every speech), Ricky (thirty-something who looks old from 2 a.m.
+  Valorant / ARAM with friends in another time zone, a meeting every morning). Phil is possessed by a demon named JONA (the user's calls: she always takes him and talks for him; `voices` PHIL / JONA, her name on the tag): a leader's `possess`
+  speeches (`js/data/gym.js`) play in the battle once his Pokémon is out (`playIntro()` in `js/battle.js`): on the second
+  line the dark takes him (a dark Super Saiyan aura over his sprite, `auraOn(img, level, 'dark')` in `js/aura.js`, which
+  now lets several auras burn at once and has a `DARK` look), the screen's edges bleed violet, and on the last he pours it
+  into his Pokémon, which keeps the dark aura all fight (`setAura(..., 'dark')`). Playtest `?gym=phil&hp=0.05`. **JONA's takeover** (2026-10-13, the user's asks: the aura wasn't
+  seen on a phone, and a more dramatic swap): the first JONA line of a speech blacks the screen out with violet static, a
+  shudder and thunder (`demonSwap()` in `js/gym.js`, a leader's `demon`), and while JONA talks the speech window is black with
+  violet text and a blood-red tag (the battle overlay's `.demon`, and the 3D gym's `.reward-log.demon` in
+  `js/rewards.js`); the infusion is a violet burst, the dark aura is brighter, and his Pokémon also breathes a violet glow
+  all fight (`.enemy-portrait.possessed`). **Fix (2026-10-13, the user's iPhone):** the possession talk stuck on its
+  narration line, where Phil starts shuddering and his aura redraws: iOS sent no `click` for a tap there; `tap()` in
+  `js/gym.js` now takes `pointerup` too, and an error in the talk can't leave its layer up over the battle.
+  **The possession on the battle screen** (2026-10-13, the user's ask: Phil needed the Super Saiyan aura and Blissey never
+  looked possessed): auras are a level 3 now (taller flames, five rings, more lightning and embers; `aura.js`), drawn
+  from ImageData into one canvas each (iOS caps all canvases' memory, and a canvas past it draws nothing). After JONA's
+  last line `infuse()` in `js/gym.js` plays it over the battle itself: the window and dim go, a stream and tendrils of dark
+  energy flow from Phil into his Pokémon as it writhes and cries (`.writhing`), Phil's aura gutters out and he goes grey,
+  then a violet burst and shockwaves, its level 3 aura lights and it cries again in JONA's echoing voice (`playCry(id,
+  { rate, echo })` in `js/audio.js`), and Phil slides away. **Fix (2026-10-13, the user's iPhone):** Blissey fought on
+  with only the boss's gold glow: iOS refused the aura's canvases while the full-screen infusion canvas was alive, the throw
+  skipped the violet glow too. `auraOn()` now tries again a moment later, the glow class goes on first, and battle.js
+  lights both again once the talk is gone.
+  **Fps after the possession** (2026-10-13, the user's iPhone: the fight lagged once Blissey was possessed): its violet
+  glow was two big drop-shadows animated on the GIF, re-blurred every frame; now one still violet shadow in place of the
+  boss's gold, and a halo behind it breathing by opacity alone (`.possessed .enemy-pose::before`); the aura only re-places
+  its canvas twice a second, and only when the sprite moved.
+  **Chat and battle names** (2026-10-13, the user's list): `name` is the chat name on the speech tag, boards and badges
+  (LAW, BRITT, JOHN, JAHMES, CLARENCE, SHAUN, PAT, KAYL, PHIL, RICKY, MACHEW, JEROME), `battleName` the send-out line's
+  (GAY TWINK DADDY LAWRENCE, EXHAUSTED TEACHER BRITT, INDECISIVE GAMER JOHN, CRACKHEAD 11PM CURFEW JAHMES, BURLESQUE BOI
+  CLARENCE, TECH SUPPORT IGL SHAUN, PROPERTY COORDINATOR KAYL, GHOST HUNTER PHIL, EAST COAST RICKY, EDGELORD MACHEW, GTA
+  FANATIC JEROME, HOPELESS ROMANTIC PAT).
+  **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
+  from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
+  `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
+  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); who of a
+  biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
+  Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
+  **Machew and Jerome** (2026-10-13, the user's personalities and sprites): Machew the edgelord
+  weeb who thinks he's in Tales of Berseria (Velvet, Rokurou, Eizen, the Abbey, daemonblight, a plastic katana), Jerome
+  who only talks about r/GTA6 posts, ignores his newborn and leads the gym to pay for GTA 6. 8 / 5 / 4 speeches each.
+  Their sprites came the same day (`machew.png`, `jerome.png`): every leader now has lines and a sprite.
+  **Badges after their personalities** (2026-10-13, the user's ask): each Gym Badge its own shape, colours and glyph
+  (`GYM_LOOK` / `PATHS` and the glyphs in `js/trainercard.js`) and a new name (`js/data/gym.js`): Closet (Law, a rainbow
+  peeking out), Apple (Britt, A+), Pacifier (the Nietos), Dilemma (John, a handheld with a ?), Curfew (Jahmes, a clock at
+  11), Peach (Clarence), Comms (Shaun, a headset), Serenade (Pat, a lemon heart and a note), Whisker (Kayl, a lavender
+  cat), Possession (Phil, JONA's horns and eye), All-Nighter (Ricky, a mug under the moon), Katana (Machew), Vice (Jerome,
+  GTA VI pink). Next: the user says which to change.
+  **The slide-in talk in the 3D gym** (2026-10-13, the user's yes): walking up, the great braziers flare with the gong and
+  the shot pushes in, then the leader slides in big over the room to talk (`gymTalk()`, shadow till beaten once, name plate),
+  the room's speech window stepping aside; after the win they slide in again for their last words with the badge spinning
+  in, then "You received the X Badge!" in the box and the doormat out; a tap on them later says their last line again
+  (`gymRoom()` in `js/run.js`; `event3d()`'s new `onIn`, run once the room is up). Checked headless with Britt. Then, on the user's OK:
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/b64e09d85925a01eac080ef82760a4697e990873/index.html?gym=britt&hp=0.05 (`?gym=` any leader).
+
+  ▶ Run in: CLOUD.
+

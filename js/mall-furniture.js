@@ -7,6 +7,7 @@
 import { PIECES, pieceArt, furnitureStock, loadBase, UPSTAIRS_PRICE } from './secret-base.js';
 import { tex, trim } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
+import { shapeOf } from './base-shapes.js';
 import { fine, texOf, words, star } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 
@@ -540,8 +541,20 @@ export function buildFloor(THREE, floor, size, upstairs) {
     const ware = new THREE.Group();   // the piece and its price card, which a buy poofs away (js/mall-3d.js's poof())
     bay.add(slab, ware);
     const fit = Math.min(1.35, 1.8 / Math.max(p.w, p.h));   // small pieces a little larger than life, so they read on a platform
-    const model = p.wall ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
-    if (model) {
+    const model = p.wall && !shapeOf(p.fam, p) ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (model && p.wall) {
+      // a modelled wall piece hangs on its little display board as on the room's wall, its back flat to the board
+      const box = new THREE.Box3().setFromObject(model), mw = box.max.x - box.min.x, mh = box.max.y - box.min.y;
+      const k = Math.min(1.35, 1.6 / mw, (b.tall - 0.3) / mh), cy = H + 0.18 + mh * k / 2 + 0.1;
+      model.scale.setScalar(k);
+      model.position.set(-(box.min.x + box.max.x) / 2 * k, cy - (box.min.y + box.max.y) / 2 * k, -0.52);
+      model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+      ware.add(model);
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(mw * k + 0.2, mh * k + 0.2, 0.06), std({ color: '#fbf3e0' }));
+      panel.position.set(0, cy, -0.55);
+      panel.castShadow = panel.receiveShadow = true;
+      ware.add(panel);
+    } else if (model) {
       // its 3D model (js/base-mesh.js), turned a little so its depth shows
       const k = Math.min(fit, b.tall / model.userData.top);
       model.scale.setScalar(k);
