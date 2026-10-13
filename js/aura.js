@@ -171,17 +171,24 @@ export function auraOn(img, level, look = 'gold') {
     img.after(canvas);
     const ctx = canvas.getContext('2d');
     if (!ctx) { canvas.remove(); canvas.width = canvas.height = 0; return retry(); }
-    let i = 0;
-    const tick = () => {
+    let i = 0, placed = '';
+    const style = getComputedStyle(img);
+    const place = () => {
       // follow the <img>'s drawn picture: object-fit contain at the bottom, moved by --shift / --drop (screens.css)
-      const bw = img.offsetWidth, bh = img.offsetHeight, style = getComputedStyle(img);
+      const bw = img.offsetWidth, bh = img.offsetHeight;
       const scale = Math.min(bw / w, bh / h), shift = parseFloat(style.getPropertyValue('--shift')) || 0;
       const drop = parseFloat(style.getPropertyValue('--drop')) || 0;
       const left = img.offsetLeft + (bw - w * scale) / 2 + shift * bw, top = img.offsetTop + bh - h * scale + drop * bh;
+      const key = `${left}|${top}|${scale}`;
+      if (key === placed) return;   // rewriting the same box every frame still costs a layout on iOS
+      placed = key;
       Object.assign(canvas.style, {
         left: `${left - set.pad * scale}px`, top: `${top - set.pad * scale}px`,
         width: `${canvas.width * scale}px`, height: `${canvas.height * scale}px`,
       });
+    };
+    const tick = () => {
+      if (i % 8 === 0) place();   // the sprite only moves when the screen resizes, so a check twice a second is plenty
       ctx.putImageData(set.frames[i++ % FRAMES], 0, 0);
     };
     tick();

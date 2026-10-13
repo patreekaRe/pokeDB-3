@@ -5602,9 +5602,13 @@ body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, c
 .enemy-portrait.sprite.writhing img { animation: writhe 0.1s steps(2) infinite; filter: brightness(0.55) saturate(0.4) drop-shadow(0 0 14px #a040ff) drop-shadow(0 0 4px #ff3868); }
 @keyframes writhe { 0% { transform: translate(-3px, 1px) scale(1.02, 0.98); } 50% { transform: translate(3px, -1px) scale(0.98, 1.03); } }
 @media (prefers-reduced-motion: reduce) { .enemy-portrait.sprite.writhing img { animation: none; } }
-/* his Pokémon, once the dark is poured in: a violet glow breathing round it on top of the aura */
-.enemy-portrait.sprite.boss.possessed img { --rest: drop-shadow(0 0 10px #b050ff) drop-shadow(0 0 22px #6010c0) brightness(0.85); animation: possessedBreath 1.8s ease-in-out infinite; }
-@keyframes possessedBreath { 50% { filter: drop-shadow(0 0 16px #d080ff) drop-shadow(0 0 32px #7020e0) brightness(0.75) saturate(1.3); } }
+/* his Pokémon, once the dark is poured in: violet in place of the boss's gold, one still shadow on the sprite (an animated
+   filter re-blurred the GIF every frame and dropped the battle's fps on a phone) and a halo behind it that breathes by
+   opacity alone, which the compositor runs for free */
+.enemy-portrait.sprite.boss.possessed img { --rest: drop-shadow(0 0 8px #a040ff); }
+.enemy-portrait.sprite.possessed .enemy-pose::before { content: ''; position: absolute; inset: 0 -15% -5%; background: radial-gradient(ellipse 50% 45% at 50% 62%, rgba(176, 80, 255, 0.55), rgba(96, 16, 192, 0.25) 55%, transparent 72%); pointer-events: none; will-change: opacity; animation: possessedBreath 1.8s ease-in-out infinite; }
+@keyframes possessedBreath { 50% { opacity: 0.45; } }
+.enemy-portrait.sprite.possessed:is(.defeated, .sinking, .captured, .ran) .enemy-pose::before { content: none; }
 @media (prefers-reduced-motion: reduce) {
-  #reward-screen .reward-log.demon, .gym-scene.demon .gym-say, .gym-scene.demon .gym-trainer, .enemy-portrait.sprite.boss.possessed img { animation: none; }
+  #reward-screen .reward-log.demon, .gym-scene.demon .gym-say, .gym-scene.demon .gym-trainer, .enemy-portrait.sprite.possessed .enemy-pose::before { animation: none; }
 }
