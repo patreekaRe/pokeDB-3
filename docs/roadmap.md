@@ -377,7 +377,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
   first-win badge land in the Badge Case and the outro straight after a real boss win (a peek gives no badge); the user's
-  word on the 13 badges' looks and names; `won` lines (when they beat you) for leaders still on the stock line.
+  word on the 13 badges' looks and names. (Every leader has their own intro / beaten / won speeches.)
 
   ▶ Run in: PLAYTEST on the live site.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
