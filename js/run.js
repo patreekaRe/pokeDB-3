@@ -1495,7 +1495,8 @@ async function fight(node, { talked = false } = {}) {
     Without the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk. */
 function gymRoom(node, leader, won = null, said = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const handOver = !!won && (first || peeking);   // a playtest always shows the badge moment, never saved
+  const handOver = !!won;   // every win hands the badge over, a repeat counted on it (the user's call, 2026-10-13)
+  const again = peeking ? 0 : gymWins(getSave(), leader.id);
   let talking = false;
   const freeze = (on) => event3dMod?.freezeEvent(on);
   // the speech window steps aside while they talk over the room; `keep` holds you still after (the fight is coming)
@@ -1524,8 +1525,8 @@ function gymRoom(node, leader, won = null, said = null) {
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    await say(said.slice(-1), { badge: true, lit: true, bubble: true });
-    if (run === thisRun) sayLines([`You received the ${leader.badge}!`]);
+    await say(said.slice(-1), { badge: true, again, lit: true, bubble: true });
+    if (run === thisRun) sayLines([again ? `You received the ${leader.badge} again! ${leader.name} beaten ${again + 1} times.` : `You received the ${leader.badge}!`]);
   };
   showChoice({
     title: 'POKéMON GYM',
@@ -1565,13 +1566,13 @@ function afterFight(node, result) {
   // the fight, so the win is only counted below with the boss's
   const leader = result.won && !result.gymSaid && gymLeader(node);
   if (leader) {   // their losing words on the battle screen as their Pokémon falls, then the badge in their gym
-    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten'), thisRun = run;
+    const said = talkOf(leader, 'beaten'), thisRun = run;
     const vars = { boss: ENEMY_DEFS[node.enemyId]?.name };
     return gymTalk(leader, said.slice(0, -1), { vars, lit: true }).then(() => {
       if (run !== thisRun) return;
       if (gym3d()) return gymRoom(node, leader, result, said);
       const done = () => afterFight(node, { ...result, gymSaid: true });
-      return first || peeking ? gymTalk(leader, said.slice(-1), { vars, badge: true, lit: true }).then(done) : done();
+      return gymTalk(leader, said.slice(-1), { vars, badge: true, again: peeking ? 0 : gymWins(getSave(), leader.id), lit: true }).then(done);
     });
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends

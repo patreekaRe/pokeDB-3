@@ -50,7 +50,7 @@ export function badgePop(l) {
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null, lit = false, speed = null, bubble = false } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}`);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
@@ -88,7 +88,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     playSound('confirm');
   }
   if (possess) await infuse(layer, who, possess, () => { darkness?.(); darkness = null; });
-  if (badge) await badgeGet(layer, l);
+  if (badge) await badgeGet(layer, l, again);
   } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
   layer.classList.remove('in');
   layer.classList.add('out');
@@ -122,7 +122,7 @@ function speedLines(layer) {
     takes a tap. Tapped, it spins ten turns on the arch like a Pokéstop, then pops off it, tumbles out towards you spinning and lands mid-screen with a flash, a
     shockwave and sparks; golden rays wheel open, a shine runs over it and YOU RECEIVED the badge rises under it. A tap
     after it lands goes on. Calm effects: it glides down, still. */
-async function badgeGet(layer, l) {
+async function badgeGet(layer, l, again = 0) {
   const calm = !battleFx() || calmFx();
   const { badgeArt } = await import('./trainercard.js');
   const room = await import('./event-3d.js').catch(() => null);
@@ -146,6 +146,7 @@ async function badgeGet(layer, l) {
   }
   const cap = el('div', 'gym-get-cap');
   cap.append(el('small', '', 'YOU RECEIVED THE'), el('b', '', l.badge.toUpperCase()));
+  if (again) cap.append(el('small', '', `BEATEN ${again + 1} TIMES`));   // every win hands it over, a repeat counted (the user's call, 2026-10-13)
   const hint = el('div', 'gym-get-hint', 'TAP THE BADGE');
   stage.append(el('div', 'gym-get-rays'), el('i', 'gym-get-ring'), sparks, spin, el('i', 'gym-get-flash'), cap, hint);
   layer.classList.add('getting');

@@ -2755,9 +2755,14 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   // the leader up on the dais; a tap on them walks you up to talk
   B.who.npc = await figure('npc', figs.npc, { x: MID, ty: 0.5, y: high, dz: 0, scale: 1 });
   B.who.npc.group.traverse(o => { o.userData.spot = 0; });
+  // stood upright and stretched to look the same: leaning back like the others, a tall leader's head (Phil's) sank
+  // behind the arch's plaque (the user's ask, 2026-10-13)
+  const stretch = 1 / Math.cos(PITCH);
+  B.who.npc.board.rotation.x = 0;
+  B.who.npc.group.scale.y = stretch;
   // walking up the court to the steps, or a tap anywhere on the dais, is going to talk to them too (`area`, `walkUp`)
   B.spots = [{ step: { x: MID, y: 3 }, walkUp: true, area: (t) => Math.abs(t.x - MID) <= 2 && t.y <= 2 }];
-  B.anchors[0] = new THREE.Vector3(0, high + B.who.npc.top + 0.3, tileZ(0.5));
+  B.anchors[0] = new THREE.Vector3(0, high + B.who.npc.top * stretch + 0.3, tileZ(0.5));
   const focus = B.focus = { z: tileZ(1.5), k: 0, on: false };
   // the sparkle as they light up
   const sparks = Array.from({ length: 18 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4b0' : ink), 0.26));

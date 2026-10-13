@@ -355,7 +355,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   (`gymPlaqueArt()`; POKéMON GYM only on the hinge's LCD), the badge in a sunburst over it, fires on the lintel, light
   shafts on the dais, a ring of runes round the court's Poké Ball and embers rising, both lit with the great fires.
   **The win's talks** (same day): the losing line slides in on the battle screen as their Pokémon falls, then the gym, where
-  (first win only) they slide in again with the badge line and the badge; repeats get only the battle line. You can't walk
+  they slide in again with the badge line and the badge, every win since the same day (the user's call: the grab is the
+  ritual; a repeat's caption says BEATEN N TIMES, `again` in `gymTalk()`). You can't walk
   while a leader talks (`freezeEvent()`). Checked headless (`?gym=britt&hp=0.02`, every line in its place). **The send-out** (same day, the user's ask): on the
   battle screen the leader slides in over anime speed lines (`speedLines()` in `js/gym.js`: only on their "Go, X!" line
   in the room, `speed: 'last'`, and this entry, `'in'`; the user's two) to say "Gym Leader X sent out
@@ -372,7 +373,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   out; it swells up on the arch first and the turn is the picture's own CSS `rotate` (`gymStopSpin`), since the first try
   rode on the badge's `transform` and the user saw no spin on their phone, only heard it. Its sounds are sine-only synths
   (`badge-ready` while it waits, `badge-spin` following the turn, in `js/audio.js`), the user's ask: the reroll shuffle and
-  Eternamax's `charge` they had sounded gritty. Open: the user's look.
+  Eternamax's `charge` they had sounded gritty. The leader's board stands upright, stretched by 1 / cos(PITCH) to look
+  the same (`buildGym()`), since leaning back like the others put a tall leader's head (Phil's) behind the plaque. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
