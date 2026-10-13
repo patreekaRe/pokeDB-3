@@ -43,6 +43,22 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+];
+
+/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
+export function sectionsOf(p) {
+  if (p.sections) return p.sections;
+  return Object.entries(GROUPS)
+    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
+    .filter(([, , lines]) => lines.length);
+}
+
+export const PATCHES = [
+  {
+    version: '1.17',
+    name: 'The Gym Badge',
+    date: '2026-10-13',
+    notes: [
   ['battle', 'A Gym Leader sends out their Pokémon in style: speed lines flash as they call it out, again as they slide in on the battle screen, then they slide away and throw its Poké Ball onto the field themselves before you send out yours. Talking to them in their gym after the fight just pops up their speech window.'],
   ['look', 'Each Gym is grander: a dark stone hall of columns, their best Pokémon as two giant statues flanking an arch carved GYM LEADER and their name, their badge turning over it in a sunburst, fires on the arch, light pouring down on the dais, and a ring of runes in the court that glows with embers rising once the great fires light.'],
   ['look', 'The Gym\'s arch is rebuilt as a grand round arch: fluted columns, wedge stones with a gem in the keystone, and the badge turning in a lunette that glows once the great fires light. The banners by the pillars are gone.'],
@@ -56,17 +72,8 @@ export const NEXT = [
   ['look', 'When you pick a new move, a gently pulsing SKIP label sits under the Skip key, so it is easy to find.'],
   ['fixes', 'Tall Gym Leaders like Phil no longer have their head cut off by the arch behind them.'],
   ['base', 'Touch-ups in 3D: the treasure hoard\'s chest stands open over a heap of real coins with a crown and a goblet, the Sky Palace orbs sit in a gold cup with their halo ringing them, the play tent has a real doorway with its flaps tied back, the tall Center plant has real leaves, and what stands on kitchen counters and office desks is life size: toasters, kettles, microwaves, mixers, laptops, typewriters and the rest.'],
-];
-
-/** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
-export function sectionsOf(p) {
-  if (p.sections) return p.sections;
-  return Object.entries(GROUPS)
-    .map(([key, [icon, heading]]) => [icon, heading, p.notes.filter(([g]) => g === key).map(([, line]) => line)])
-    .filter(([, , lines]) => lines.length);
-}
-
-export const PATCHES = [
+    ],
+  },
   {
     version: '1.16',
     name: 'Gym Leaders',
