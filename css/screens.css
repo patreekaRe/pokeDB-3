@@ -5607,7 +5607,13 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 }
 .gym-get.wait .gym-get-halo { animation: gymHalo 1.3s ease-in-out infinite; }
 @keyframes gymHalo { 0%, 100% { opacity: 0.55; scale: 0.92; } 50% { opacity: 1; scale: 1.12; } }
-.gym-get.spinning .gym-get-mark { filter: brightness(1.35) drop-shadow(0 0 24px rgba(255, 230, 140, 1)); }
+.gym-get-badge { perspective: 520px; }
+.gym-get.spinning .gym-get-mark { filter: brightness(1.35) drop-shadow(0 0 24px rgba(255, 230, 140, 1)); animation: gymStopSpin 2.1s forwards; }
+@keyframes gymStopSpin {
+  0% { rotate: y 0deg; animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  8% { rotate: y -30deg; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  100% { rotate: y 3600deg; }
+}
 .gym-get.spinning .gym-get-halo { opacity: 1; scale: 1.25; transition: opacity 0.3s, scale 0.3s; }
 .gym-get-hint {
   position: absolute; left: 0; right: 0; bottom: max(16vh, calc(env(safe-area-inset-bottom) + 100px)); text-align: center;

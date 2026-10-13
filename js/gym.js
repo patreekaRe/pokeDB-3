@@ -170,16 +170,16 @@ async function badgeGet(layer, l) {
   const flights = [];
   if (calm) flights.push(await settle([{ transform: from }, { transform: 'none' }], 500));
   else {
-    // spun on the arch like a Pokéstop: it winds up, whirls ten turns in a blur of light and slows to a stop, then pops
-    stage.classList.add('spinning');
+    // spun on the arch like a Pokéstop: it swells up where it is, then whirls ten turns in a blur of light and slows to a
+    // stop before it pops. The turn is the picture's own `rotate` (gymStopSpin in css/screens.css), apart from the
+    // badge's place, and it swells to a size a phone can see: the arch's badge is small on one.
+    const big = `${from} scale(${Math.max(1.3, 0.55 * size / Math.max(1, at.r * 2))})`;
     playSound('aug-silver');
-    [200, 650, 1100].forEach(t => setTimeout(() => playSound('aug-reroll'), t));
-    setTimeout(() => playSound('aug-gold'), 1700);
-    flights.push(await settle([
-      { transform: `${from} rotateY(0deg)` },
-      { transform: `${from} scale(1.08) rotateY(-30deg)`, offset: 0.08, easing: 'cubic-bezier(.5, 0, .2, 1)' },
-      { transform: `${from} scale(1.18) rotateY(3600deg)`, easing: 'cubic-bezier(.3, 0, .2, 1)' },
-    ], 2100));
+    flights.push(await settle([{ transform: `${from} scale(1)` }, { transform: big, easing: 'cubic-bezier(.3, 1.5, .5, 1)' }], 320));
+    stage.classList.add('spinning');
+    [0, 450, 900].forEach(t => setTimeout(() => playSound('aug-reroll'), t));
+    setTimeout(() => playSound('aug-gold'), 1500);
+    await sleep(2100);
     stage.classList.remove('spinning');
     stage.classList.add('popped');
     playSound('run-away');
@@ -187,8 +187,8 @@ async function badgeGet(layer, l) {
     // it pops off the arch towards you, tumbles up over the screen and slams down in the middle (timed on the frames
     // drawn, so the landing's flash never comes before the badge does)
     flights.push(await settle([
-      { transform: `${from} scale(1.18) rotateY(0deg)` },
-      { transform: `${from} translateY(-14%) scale(1.5) rotateY(180deg)`, offset: 0.19, easing: 'cubic-bezier(.4, 0, .6, 1)' },
+      { transform: `${big} rotateY(0deg)` },
+      { transform: `${big} translateY(-14%) scale(1.2) rotateY(180deg)`, offset: 0.19, easing: 'cubic-bezier(.4, 0, .6, 1)' },
       { transform: 'translate(0, -22vh) scale(1.6) rotateY(900deg) rotateZ(-12deg)', offset: 0.72, easing: 'cubic-bezier(.5, 0, .9, .5)' },
       { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg) rotateZ(0deg)' },
     ], 1300));
