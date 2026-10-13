@@ -2503,7 +2503,10 @@ function placeCenterSpots() {
 function liftRoomLog() {
   const screen = $('reward-screen'), box = screen.querySelector('.reward-bottom');
   if (!screen.querySelector(':is(.center-room, .event-room)')) return;
-  const foot = parseFloat(screen.style.getPropertyValue('--counter-foot')) || 0;
+  // a room that never set the foot (the gym) would sit at the CSS's 70vh, which on iOS is measured with the toolbars
+  // hidden, under the bar; the 3D rooms' own rule, just over the bar, is the safe one
+  if (!screen.style.getPropertyValue('--counter-foot')) screen.style.setProperty('--counter-foot', `${innerHeight}px`);
+  const foot = parseFloat(screen.style.getPropertyValue('--counter-foot'));
   const floor = $('room-bar').getBoundingClientRect().top;
   const room = floor - 8 - box.offsetHeight - (foot + 12);
   screen.style.setProperty('--log-lift', `${Math.max(0, -room)}px`);
