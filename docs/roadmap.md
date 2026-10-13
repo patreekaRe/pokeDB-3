@@ -420,7 +420,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   tag over the text box (`speaker()` in `js/rewards.js`, `.reward-log[data-who]`; every `showChoice()` starts as narration).
   **Kayl, Phil and Ricky** (2026-10-13, the user's sprites and personalities): Kayl (ADHD project coordinator, lavender,
   Tame Impala, bass, games, and her cats Spooky and Reya in every speech), Ricky (thirty-something who looks old from 2 a.m.
-  Valorant / ARAM with friends in another time zone, a meeting every morning). Phil is possessed: a leader's `possess`
+  Valorant / ARAM with friends in another time zone, a meeting every morning). Phil is possessed by a demon named JONA (the user's call: it always takes him and talks for him; `voices` PHIL / JONA, its name on the tag): a leader's `possess`
   speeches (`js/data/gym.js`) play in the battle once his Pokémon is out (`playIntro()` in `js/battle.js`): on the second
   line the dark takes him (a dark Super Saiyan aura over his sprite, `auraOn(img, level, 'dark')` in `js/aura.js`, which
   now lets several auras burn at once and has a `DARK` look), the screen's edges bleed violet, and on the last he pours it
