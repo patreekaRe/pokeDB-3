@@ -45,6 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['look', 'Each Gym now has a stone arch behind its leader, their badge turning over it with their name on a ribbon (a dark seal till you earn it).'],
   ['look', 'Gym Leaders now slide in from the edge of the screen when they talk, their speech window rising up beneath them, and slide back out when they\'re done.'],
+  ['base', 'Mounted things are properly 3D on your wall and in the Furniture store, so every wall piece is now: a dartboard with a dart in the treble, a carved mask with a nose and gold horns, a medal on its ribbon, boxing gloves hung by their laces, a climbing wall of bolted holds, puffy starfish, a net with its floats, a striped life ring in its rope, an anchor with rope wound round it, a ship\'s wheel with turned handles, a piñata of crepe tufts, a feathered carnival mask, a prize wheel ringed with lights, a shield over crossed spears, a pleated fan, a kite on its tail, climbing vines, a wall of gears, a honeycomb with its bee, a sea horse figurehead, a rope ladder, crossed cutlasses, a lucky horseshoe, a school of fish, a golden trident, a garden thermometer and a living wall of moss.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
