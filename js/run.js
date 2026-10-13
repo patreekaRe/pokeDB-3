@@ -14,6 +14,9 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
+import { leaderFor, gymWins, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
+import { gymTalk } from './gym.js';
+import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
@@ -26,7 +29,7 @@ import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/diffi
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
-import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK } from './data/mart.js';
+import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
@@ -42,7 +45,7 @@ import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
-import { playMusic, playSound, preloadSounds, playCry, duckMusic } from './audio.js';
+import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
@@ -362,7 +365,7 @@ export function continueRun(saved) {
   run = saved;
   mapFilm = null;
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
-    playMusic('trainer-victory');
+    playMusic(bossWin());
     walkOn();
     return null;
   }
@@ -528,6 +531,18 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'ken' ? ':ken' : ':elite');
 }
 
+/** Playtest shortcut: ?gym=phil (any Gym Leader, js/data/gym.js; &n=2 their second boss, &starter=id, &hp=0.1 shrinks the
+    boss) walks a throwaway run straight into that leader's gym, their talk before and after included. Nothing about it is saved. */
+export function peekGym(starter, id, n = 1, hp = 1) {
+  const l = GYM_BY_ID[id];
+  if (!l) return false;
+  peekBoss = l.bosses[Math.max(0, Math.min(l.bosses.length - 1, n - 1))];
+  peekBossHp = hp > 0 ? hp : 1;
+  peekArena(starter, 'boss', l.biome);
+  return true;
+}
+let peekBoss = null, peekBossHp = 1;
+
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
     fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
 export function peekDescent(starter) {
@@ -607,7 +622,14 @@ function peekRoom(id) {
     const type = id === ':wild' ? 'fight' : 'elite', fights = Object.values(run.map.byId).filter(n => n.type === type);
     return enterNode(fights.find(n => stageOf(run.map, n).stage === stage) ?? fights[0]);
   }
-  if (id === ':boss') { if (peekAt) walkInto(peekAt); startBiome(true); return enterNode(Object.values(run.map.byId).find(n => n.type === 'boss')); }
+  if (id === ':boss') {
+    if (peekAt) walkInto(peekAt);
+    startBiome(true);
+    const boss = Object.values(run.map.byId).find(n => n.type === 'boss');
+    if (peekBoss) boss.enemyId = peekBoss;
+    if (peekBossHp !== 1) run.mods = { ...run.mods, bossHp: (run.mods.bossHp ?? 1) * peekBossHp };
+    return enterNode(boss);
+  }
   if (id === ':ken') {   // as if challenged in his dojo, a ? room on the first floor
     if (peekAt) walkInto(peekAt);
     startBiome(true);
@@ -1184,7 +1206,7 @@ function openMapPeek() {
   closeBag(true);
   const biome = land();
   renderMap(run.map, run.current, null, {
-    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten, ...tracking(),
+    biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, peek: $('map-peek'), ken: getSave().kenBeaten, gym: gymOnMap(), ...tracking(),
   });
   const stage = biome.stages?.[stageOf(run.map, run.map.byId[run.current]).stage];
   $('map-dialog-title').textContent = stage ? `${biome.name}: ${stage}` : biome.name;
@@ -1317,7 +1339,7 @@ function drawMap() {
   if (rubbing && !nodes.some(readable)) rubbing = false;
   renderMap(run.map, run.current, enterNode, {
     biome: biome.id, trainer: spriteUrl(run.starter, 'front', run.stage), stage: run.stage, reveal: scoping ? revealRoom : null, ken: getSave().kenBeaten,
-    read: rubbing ? readRoom : null, ...tracking(),
+    read: rubbing ? readRoom : null, gym: gymOnMap(), ...tracking(),
   });
   $('key-ken').hidden = !getSave().kenBeaten;
   $('map').classList.toggle('scoping', scoping || rubbing);
@@ -1417,8 +1439,8 @@ function enterNode(node) {
 
   if (node.type === 'rest' || node.type === 'shop') {
     playSound('door');
-    // Chansey or Kecleon greets you once the door has chimed (here, not in the room, which redraws after every purchase)
-    setTimeout(() => playCry(node.type === 'rest' ? 'chansey' : 'kecleon'), 700);
+    // Chansey greets you once the door has chimed (here, not in the room, which redraws after every purchase); Britt runs the Mart
+    if (node.type === 'rest') setTimeout(() => playCry('chansey'), 700);
   }
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
@@ -1428,6 +1450,8 @@ function enterNode(node) {
     return martRoom();
   }
   if (node.type === 'event') { run.tally.events += 1; mission('event'); playSound('event'); return eventRoom(node); }
+  const leader = gymLeader(node);
+  if (leader && gym3d()) return gymRoom(node, leader);
   fight(node);   // 'fight', 'elite' or 'boss'
 }
 
@@ -1435,7 +1459,7 @@ function enterNode(node) {
    FIGHTS AND WHAT COMES AFTER
    ============================================================ */
 
-async function fight(node) {
+async function fight(node, { talked = false } = {}) {
   const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
@@ -1443,7 +1467,7 @@ async function fight(node) {
   }
   const ken = node.type === 'ken';   // Chad Master Kenmatta, challenged in his dojo: a boss fight that doesn't end the biome
   const intro = isTower() && node.type === 'boss' ? await guardianIntro({ def: ENEMY_DEFS[node.enemyId], floor: floorOf(run.tower.flight, node.floor) }) : null;
-  const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : undefined);
+  const enter = await battleWipe(ken ? 'boss' : node.type, ken ? KEN.music : gymLeader(node) ? 'gym-leader-battle' : undefined);
   intro?.();
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
@@ -1451,6 +1475,8 @@ async function fight(node) {
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
+  encounter.leader = gymLeader(node);
+  encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
   if (deferIntro) {
@@ -1459,7 +1485,88 @@ async function fight(node) {
   } else enter();
 }
 
+/** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
+    flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
+    the fight; after a win you're back in it, they slide in for their last words and the badge, and you walk out over the
+    doormat to the rewards. `won` is the fight's result once it's over. Without the 3D room (`?event2d`, or Three.js won't
+    load) it's the battle's own talk. */
+function gymRoom(node, leader, won = null) {
+  const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
+  const said = talkOf(leader, 'beaten'), beaten = first ? said : said.slice(0, 1);
+  let talking = false;
+  // the speech window steps aside while they talk over the room
+  const say = async (lines, opts) => {
+    talking = true;
+    sayLines([]);
+    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; }
+  };
+  const talk = async () => {
+    if (talking || run !== thisRun) return;
+    const room = event3dMod?.eventRoom3d();
+    room?.light();
+    room?.does('npc', 'npc-nod');
+    talking = true;
+    await sleep(battleFx() ? 700 : 0);   // the gong and the push in first
+    if (run !== thisRun) return;
+    await say(talkOf(leader, 'intro', first));
+    talking = true;   // the fight is coming: no second talk
+    if (run === thisRun) fight(node, { talked: true });
+  };
+  const after = !!won;
+  if (!after) playMusic('gym-room');   // after the win the fight's gym-victory plays on through the badge
+  const leave = () => afterFight(node, { ...won, gymSaid: true });
+  const lastWords = async () => {
+    if (talking || run !== thisRun) return;
+    event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
+    const badge = first && !peeking;
+    await say(beaten, { badge });
+    if (run === thisRun && badge) sayLines([`You received the ${leader.badge}!`]);
+  };
+  showChoice({
+    title: 'POKéMON GYM',
+    sub: after ? [] : first ? 'A Gym Leader waits at the far end. Walk up to them to battle.' : `Gym Leader ${leader.name} waits at the far end. Walk up to them to battle.`,
+    options: after ? [] : [spotOption('Battle', 'Challenge the Gym Leader.', talk)],   // beaten, a tap on them just talks
+    skipLabel: 'Leave',
+    onSkip: after ? leave : undefined,
+    layout: 'event-room gym-room',
+  });
+  let spoke = false;
+  event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
+    spent: after,
+    onPick: after ? () => { if (spoke && !talking && run === thisRun) say([said.at(-1)]); } : talk,
+    extra: { leader, dark: first && !after },
+    onIn: after ? () => { spoke = true; lastWords(); } : null,
+    onFail: () => (after ? leave() : fight(node)),
+  });
+}
+/** The Gym's 3D room can be walked: not under `?event2d`, and not once Three.js has failed to load this page. */
+const gym3d = () => !gym3d.failed && !new URLSearchParams(location.search).has('event2d');
+
+/** The boss room's Gym Leader for the map, a silhouette above it till beaten once (renderMap()'s `gym`). */
+function gymOnMap() {
+  const boss = run.map?.boss, leader = boss && gymLeader(boss);
+  return leader ? { src: spriteOf(leader), met: gymWins(getSave(), leader.id) > 0 } : null;
+}
+
+/** The Gym Leader sending out this room's boss (js/data/gym.js): the main game's biomes only, never Kenmatta. */
+function gymLeader(node) {
+  return node.type === 'boss' && !isSafari() && !isTower() ? leaderFor(node.enemyId) : null;
+}
+/** The song a boss's win plays on with: a Gym Leader's has its own. */
+const bossWin = () => (run.map?.boss && gymLeader(run.map.boss) ? 'gym-victory' : 'trainer-victory');
+
 function afterFight(node, result) {
+  // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
+  // the fight, so the win is only counted below with the boss's
+  const leader = result.won && !result.gymSaid && gymLeader(node);
+  if (leader && gym3d()) return gymRoom(node, leader, result);
+  if (leader) {
+    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
+    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
+      .then(() => afterFight(node, { ...result, gymSaid: true }));
+  }
+  const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
+  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name } }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
@@ -1565,6 +1672,8 @@ function afterFight(node, result) {
     if (!isSafari() && !isTower() && !peeking) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
+      const leader = gymLeader(node);
+      if (leader) d.gym = { ...(d.gym || {}), [leader.id]: (d.gym?.[leader.id] || 0) + 1 };
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
     if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
@@ -2172,10 +2281,15 @@ function warmArena3d() {
 function warmEvent3d() {
   if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
   const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
-  if (!kinds.length) return;
+  const leader = run.map?.boss && gymLeader(run.map.boss);
+  if (!kinds.length && !leader) return;
   warmEvent3d.map = run.map;
   const at = { biome: land().id, type: run.starter.type };
-  setTimeout(() => import('./event-3d.js').then(m => { event3dMod = m; kinds.forEach(k => m.preloadEvent(k, at)); }).catch(() => { warmEvent3d.map = null; }), 1800);
+  setTimeout(() => import('./event-3d.js').then(m => {
+    event3dMod = m;
+    kinds.forEach(k => m.preloadEvent(k, at));
+    if (leader) { m.preloadEvent('gym', { ...at, leader }, { npc: { npc: spriteOf(leader) } }); preloadMusic('gym-room'); }
+  }).catch(() => { warmEvent3d.map = null; }), 1800);
 }
 
 function warmMart3d() {
@@ -2404,7 +2518,10 @@ function placeCenterSpots() {
 function liftRoomLog() {
   const screen = $('reward-screen'), box = screen.querySelector('.reward-bottom');
   if (!screen.querySelector(':is(.center-room, .event-room)')) return;
-  const foot = parseFloat(screen.style.getPropertyValue('--counter-foot')) || 0;
+  // a room that never set the foot (the gym) would sit at the CSS's 70vh, which on iOS is measured with the toolbars
+  // hidden, under the bar; the 3D rooms' own rule, just over the bar, is the safe one
+  if (!screen.style.getPropertyValue('--counter-foot')) screen.style.setProperty('--counter-foot', `${innerHeight}px`);
+  const foot = parseFloat(screen.style.getPropertyValue('--counter-foot'));
   const floor = $('room-bar').getBoundingClientRect().top;
   const room = floor - 8 - box.offsetHeight - (foot + 12);
   screen.style.setProperty('--log-lift', `${Math.max(0, -room)}px`);
@@ -2567,28 +2684,33 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
     how a choice is pressed (the grotto's chest is no `.reward-option`). */
-function event3d(node, kind, figures, after, { onPick = null, spent = false } = {}) {
+function event3d(node, kind, figures, after, { onPick = null, spent = false, extra = {}, onSaid = null, onIn = null, onFail = null } = {}) {
   if (!EVENT_3D.includes(kind) || new URLSearchParams(location.search).has('event2d')) return;
   const box = $('reward-options'), thisRun = run;
   box.classList.add('c3d-wait');
   // its text waits until you're inside (the box coming and going jolted the camera while it loaded)
   const lines = holdLines();
-  const greet = () => { if (lines && run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
+  const greet = () => { if (lines && run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines, 'reward-log', onSaid); };
   import('./event-3d.js').then(m => {
     event3dMod = m;
     return m.mountEvent({
-      kind, run: thisRun, node, figures, after, spent, biome: land().id, type: run.starter.type,
+      kind, run: thisRun, node, figures, after, spent, biome: land().id, type: run.starter.type, ...extra,
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
       onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
     });
-  }).then(() => setTimeout(greet, 350))
-    .catch(err => { console.warn('3D event room unavailable', err); greet(); })
+  }).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
+    .catch(err => {
+      console.warn('3D event room unavailable', err);
+      if (!onFail) return greet();
+      gym3d.failed = true;
+      if (run === thisRun) onFail();
+    })
     .finally(() => box.classList.remove('c3d-wait'));
 }
 
@@ -3117,6 +3239,8 @@ function martRoom() {
   playMusic('mart');
 }
 
+let brittTalk = 0;
+
 /** The walk-in 3D Mart (js/mart-3d.js) under the shop martRoom() just showed: every slot of the stock on its shelf, in
     order, each pointing at its choice (a sold one stays an empty slot). Without Three.js only the list of wares shows. */
 function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, atMin }) {
@@ -3149,7 +3273,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
       if (btn.disabled) { playSound('cancel'); return sayLines([why(options[i])]); }
       btn.click();
     },
-    onClerk: () => sayLines(['Kecleon: Welcome! Take a good look round. Tap anything on the shelves to see it up close.']),
+    onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length], 'reward-log', null, 'BRITT'),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
   })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
@@ -3173,7 +3297,7 @@ async function evolve(next) {
   const fadeOut = await evolutionScene(r.starter, from,
     [`Max HP +${HP_PER_STAGE} and ${healed}. All your moves are now ${STAGE_POWER * 100 * r.stage}% stronger.`]);
   if (run !== r) return fadeOut();   // left for the menu meanwhile
-  playMusic('trainer-victory');   // only a boss evolves you
+  playMusic(bossWin());   // only a boss evolves you
   next();
   fadeOut();
 }

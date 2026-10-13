@@ -19,19 +19,21 @@ import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES } from './secret-base.js';
 import { paintMedallion } from './medallion-art.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
+import { ENEMY_DEFS } from './data/enemies.js';
 
-const COLS = 11, ROWS = 8;
+// the room's size in tiles: 11 x 8, or its kind's in SIZES (a gym is a long hall); set for the room built or shown, useSize()
+let COLS = 11, ROWS = 8;
 const U = 20;                 // the paintings' units a tile
 const TOP = 8;
 const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8;
-const DOOR = { x: 5, y: ROWS - 1 };
+let DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
 let walker = { x: 0, z: 0, tile: { ...DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
-let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0;
+let opts = null, aim = null, busy = false, raf = 0, last = 0, calm = false, shot = null, viewW = 0, viewH = 0, camX = 0, camZ = NaN;
 let leftAt = 0, visit = null, acting = null, queued = [];
 
 const tileX = (tx) => tx + 0.5 - COLS / 2;
@@ -41,7 +43,16 @@ const wx = (t) => (t + 0.4) * U;            // a room tile's x on the back wall'
 const wy = (y) => (TOP - y) * U;            // a height's y on it
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
 const ease = (k) => k * k * (3 - 2 * k);
-const BACK_Z = -ROWS / 2;
+let BACK_Z = -ROWS / 2;
+/** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
+const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
+function useSize(r) {
+  const z = SIZES[r.kind] || {};
+  COLS = z.cols || 11; ROWS = z.rows || 8;
+  DOOR = { x: (COLS - 1) / 2, y: ROWS - 1 };
+  BACK_Z = -ROWS / 2;
+  if (sun) { const k = z.shadow || 9; Object.assign(sun.shadow.camera, { left: -k, right: k, top: k, bottom: -k }); sun.shadow.camera.updateProjectionMatrix(); }
+}
 
 function seeded(n) { return () => { n = (n + 0x6d2b79f5) | 0; let t = Math.imul(n ^ (n >>> 15), 1 | n); t ^= t + Math.imul(t ^ (t >>> 7), 61 | t); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
 
@@ -277,9 +288,10 @@ async function bitmap(src) {
 }
 
 /** A trainer's sprite on a billboard, feet at its group's origin (found from the sprite's lowest opaque row), with its
-    eyes-closed copy for blinking. */
+    eyes-closed copy for blinking. `id` is a trainer in assets/trainers/, or a whole path (a Gym Leader's, no blink). */
 async function npcBoard(id) {
-  const [open, shut] = await Promise.all([bitmap(`assets/trainers/${id}.png`), bitmap(`assets/trainers/${id}-blink.png`).catch(() => null)]);
+  const path = id.includes('/');
+  const [open, shut] = await Promise.all([bitmap(path ? id : `assets/trainers/${id}.png`), path ? null : bitmap(`assets/trainers/${id}-blink.png`).catch(() => null)]);
   const w = open.width, h = open.height, c = document.createElement('canvas');
   c.width = w; c.height = h;
   const g = c.getContext('2d', { willReadFrequently: true });
@@ -298,7 +310,12 @@ async function npcBoard(id) {
   blob.raycast = () => {};
   const group = new THREE.Group();
   group.add(board, blob);
-  return { group, board, c, g, t, open, shut, top: (bottom + 1) * NPC_PX, blinkAt: 0, shut0: false, npc: true };
+  // their silhouette, for a Gym Leader you haven't beaten yet (setDark())
+  const dark = new OffscreenCanvas(w, h), dg = dark.getContext('2d');
+  dg.drawImage(open, 0, 0); dg.globalCompositeOperation = 'source-in'; dg.fillStyle = '#0c0a14'; dg.fillRect(0, 0, w, h);
+  const who = { group, board, c, g, t, open, shut, dark, top: (bottom + 1) * NPC_PX, blinkAt: 0, shut0: false, npc: true, dim: false };
+  who.setDark = (on) => { who.dim = on; who.blinkAt = 0; };
+  return who;
 }
 
 /** Someone standing in the room: a trainer or a Pokémon (a front GIF, `flip` facing right), at tile `at`, `y` up. */
@@ -342,9 +359,9 @@ function tickFigures(now, dt) {
   for (const who of Object.values(R.who)) {
     if (who.npc) {
       if (now > who.blinkAt) {
-        const shutNow = !who.shut0 && who.shut && !calm;
+        const shutNow = !who.shut0 && who.shut && !calm && !who.dim;
         who.g.clearRect(0, 0, who.c.width, who.c.height);
-        who.g.drawImage(shutNow ? who.shut : who.open, 0, 0);
+        who.g.drawImage(who.dim ? who.dark : shutNow ? who.shut : who.open, 0, 0);
         who.t.needsUpdate = true;
         who.shut0 = shutNow;
         who.blinkAt = now + (shutNow ? 120 : 2000 + Math.random() * 4000);
@@ -1861,13 +1878,13 @@ function wildFloor(L, { to = 2 } = {}) {
   }
   // the path: worn earth from the doorstep up to the middle
   for (let y = H + 4; y > to * T; y -= 3) {
-    const x = 5.5 * T + Math.sin(y / 23) * 3, w = 1.3 * T + Math.sin(y / 11) * 2;
+    const x = COLS / 2 * T + Math.sin(y / 23) * 3, w = 1.3 * T + Math.sin(y / 11) * 2;
     g.fillStyle = L.dirt[0]; g.beginPath(); g.ellipse(x, y, w / 2, 3.2, 0, 0, Math.PI * 2); g.fill();
   }
-  for (let i = 0; i < 120; i++) { const y = to * T + r() * (H - to * T), x = 5.5 * T + (r() - 0.5) * T; g.fillStyle = L.dirt[1]; g.fillRect(x, y, 0.8, 0.8); }
+  for (let i = 0; i < 120; i++) { const y = to * T + r() * (H - to * T), x = COLS / 2 * T + (r() - 0.5) * T; g.fillStyle = L.dirt[1]; g.fillRect(x, y, 0.8, 0.8); }
   if (L.look === 'garden') for (let i = 0; i < 70; i++) {   // wildflowers
     const x = r() * W, y = r() * H;
-    if (Math.abs(x - 5.5 * T) < T) continue;
+    if (Math.abs(x - COLS / 2 * T) < T) continue;
     g.fillStyle = ['#ffffff', '#f8e060', '#f890b0', '#b0a0f8'][i % 4]; g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#f8c838'; g.fillRect(x - 0.25, y - 0.25, 0.5, 0.5);
   }
@@ -1903,9 +1920,9 @@ function tufts(L, n, rnd) {
 
 /** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
     the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
-function wild(L, time, { to = 2, trees = [], exit = true } = {}) {
+function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c } = {}) {
   const sky = graded(L.sky[0], time);
-  shell({ floor: wildFloor(L, { to }), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
+  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
   skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
@@ -2279,10 +2296,258 @@ async function buildRocket(figs, { look: L, time }) {
   };
 }
 
+/* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
+   statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
+   pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais under banners in
+   the biome's colour, the POKéMON GYM board high behind; as they speak the great braziers flare with a gong and the shot
+   draws in on them. ---------- */
+
+const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
+const AVENUE = [12, 10, 8, 6, 4];   // the fire pillars' rows, from the door up
+const MID = 6;                      // the hall's middle column (13 wide)
+
+/** Pokéball, painted at `x`, `y`, radius `r`, onto a fine() painting. */
+function ballMark(g, x, y, r, top = '#e83c30') {
+  g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  g.fillStyle = top; g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.fill();
+  g.fillStyle = '#28242c'; g.fillRect(x - r, y - r * 0.12, r * 2, r * 0.24);
+  g.beginPath(); g.arc(x, y, r * 0.36, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(x, y, r * 0.2, 0, Math.PI * 2); g.fill();
+}
+
+/** The ground: a flagstone causeway from the door to the court, the court (your half blue, theirs in the gym's colour,
+    white lines, a Poké Ball at the middle), then the causeway on up to the dais. */
+function court(ink, L) {
+  return (c) => {
+    const g = c.getContext('2d'), T = 16, x0 = 4 * T + 2, x1 = 9 * T - 2, y0 = 4 * T + 2, y1 = 12 * T - 2, mid = (y0 + y1) / 2, r = seeded(61);
+    g.save();
+    const flags = (from, to) => {
+      for (let y = from; y < to; y += 8) for (let x = MID * T - 4 + ((y / 8) % 2) * 4; x < (MID + 1) * T + 4; x += 8) {
+        g.fillStyle = L.stone[1 + Math.floor(r() * 2)]; g.globalAlpha = 0.9;
+        g.beginPath(); g.roundRect(x + 0.4, y + 0.4, 7.2, 7.2, 1.2); g.fill();
+      }
+    };
+    flags(y1, ROWS * T); flags(2 * T, y0);
+    g.globalAlpha = 0.22; g.fillStyle = ink; g.fillRect(x0, y0, x1 - x0, mid - y0);
+    g.fillStyle = '#3a78d8'; g.fillRect(x0, mid, x1 - x0, y1 - mid);
+    g.globalAlpha = 0.85; g.strokeStyle = '#ffffff'; g.lineWidth = 1.2;
+    g.strokeRect(x0, y0, x1 - x0, y1 - y0);
+    g.beginPath(); g.moveTo(x0, mid); g.lineTo(x1, mid); g.stroke();
+    g.strokeRect(x0 + 1.2 * T, y0, x1 - x0 - 2.4 * T, 1.1 * T);
+    g.strokeRect(x0 + 1.2 * T, y1 - 1.1 * T, x1 - x0 - 2.4 * T, 1.1 * T);
+    g.beginPath(); g.arc((x0 + x1) / 2, mid, 1.4 * T, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha = 0.9;
+    ballMark(g, (x0 + x1) / 2, mid, 0.9 * T, ink);
+    g.restore();
+    return c;
+  };
+}
+
+function gymSignArt(ink) {
+  const f = fine(64, 20, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 20, 4, '#2a2230');
+  rr(1.4, 1.4, 61.2, 17.2, 3, lin(0, 0, 0, 20, [shadeOf(ink, 1), ink, shadeOf(ink, -1)]));
+  rr(10, 3.6, 51, 12.8, 2.4, 'rgba(255,255,255,0.92)');
+  ballMark(g, 6.2, 10, 4.2);
+  g.fillStyle = '#2a2230'; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const text = 'POKéMON GYM', w = g.measureText(text).width, k = Math.min(1, 47 / w);
+  g.save(); g.translate(35.5, 10.4); g.scale(k, 1); g.fillText(text, 0, 0); g.restore();
+  return f.c;
+}
+
+function gymBannerArt(ink) {
+  const f = fine(16, 34, 8), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 16, 0, [shadeOf(ink, -1), ink, shadeOf(ink, 1), ink, shadeOf(ink, -1)]);
+  g.beginPath(); g.moveTo(0, 0); g.lineTo(16, 0); g.lineTo(16, 34); g.lineTo(8, 28); g.lineTo(0, 34); g.closePath(); g.fill();
+  g.fillStyle = '#f8d860'; g.fillRect(0, 2, 16, 1.2); g.fillRect(0, 24, 16, 1);
+  ballMark(g, 8, 13, 5, '#f8f8f8');
+  return f.c;
+}
+
+/** A flame: a teardrop from a white-hot core out to the fire's colour. */
+function flameArt(col) {
+  const { c, g } = fine(16, 24, 8);
+  const tear = (s) => { g.beginPath(); g.moveTo(8, 24 - 22 * s); g.bezierCurveTo(8 + 7 * s, 24 - 12 * s, 8 + 7 * s, 23, 8, 23); g.bezierCurveTo(8 - 7 * s, 23, 8 - 7 * s, 24 - 12 * s, 8, 24 - 22 * s); g.fill(); };
+  g.fillStyle = col; g.globalAlpha = 0.85; tear(1);
+  g.fillStyle = '#ffd860'; g.globalAlpha = 0.95; tear(0.68);
+  g.fillStyle = '#fffbe8'; tear(0.36);
+  return c;
+}
+
+/** A soft round glow, drawn over a fire so it lights the air round it (no light of its own: a dozen would cost a phone). */
+function haloArt(col) {
+  const { c, g } = fine(16, 16, 8), l = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+  l.addColorStop(0, col); l.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = l; g.fillRect(0, 0, 16, 16);
+  return c;
+}
+
+/** A fire in a stone bowl at tile `tx`, `ty`, on a pillar `tall` high; `big` ones light the court (a point light). */
+function brazier(tx, ty, L, fire, { tall = 0.95, big = false } = {}) {
+  const x = tileX(tx), z = tileZ(ty), stone = std({ color: L.stone[1], roughness: 0.9 }), dark = std({ color: L.stone[3], roughness: 0.9 });
+  const w = big ? 1.25 : 1;
+  mesh(rbox(0.5 * w, 0.14, 0.5 * w, 0.04), dark, x, 0.07, z);
+  mesh(new THREE.CylinderGeometry(0.15 * w, 0.2 * w, tall, 10), stone, x, tall / 2 + 0.1, z);
+  mesh(new THREE.CylinderGeometry(0.34 * w, 0.2 * w, 0.22, 14), dark, x, tall + 0.2, z);
+  const ember = mesh(new THREE.CylinderGeometry(0.26 * w, 0.26 * w, 0.02, 14), new THREE.MeshBasicMaterial({ color: '#ff7030', toneMapped: false }), x, tall + 0.31, z);
+  ember.raycast = () => {};
+  const flame = sprite(flameArt(fire), 0.5);
+  flame.visible = true;
+  flame.center.set(0.5, 0);
+  flame.position.set(x, tall + 0.28, z);
+  const halo = sprite(haloArt(fire), 1.4 * w);
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.5;
+  halo.position.set(x, tall + 0.6, z);
+  let light = null;
+  if (big) {
+    light = new THREE.PointLight('#ffb060', 2.4, 6, 1.5);
+    light.position.set(x, tall + 0.8, z);
+    B.group.add(light);
+  }
+  B.blocked.add(key(tx, ty));
+  return { flame, halo, light, ember, w, z, seed: tx * 7 + ty, lit: true, at: 0 };
+}
+
+/** A fire's look this frame: out (an ember), lighting (whooshing up past its size and settling) or burning. */
+function tickFire(f, now) {
+  const since = now - f.at, up = !f.lit ? 0 : calm || since > 700 ? 1 : since < 220 ? ease(since / 220) * 1.6 : 1.6 - ease((since - 220) / 480) * 0.6;
+  const k = calm ? 0 : Math.sin(now / 90 + f.seed) * 0.5 + Math.sin(now / 37 + f.seed * 3) * 0.5;
+  f.flame.visible = up > 0.02;
+  f.flame.scale.set((0.42 + k * 0.04) * f.w * up, (0.66 + k * 0.1) * f.w * up, 1);
+  f.halo.visible = up > 0.02;
+  f.halo.material.opacity = Math.min(1, up) * (0.42 + k * 0.06);
+  f.ember.material.color.set(f.lit ? '#ffd070' : '#a83818');
+  if (f.light) f.light.intensity = (2.4 + k * 0.4) * Math.min(1.4, up);
+}
+
+/** A stone statue of a Pokémon from its sprite's first frame, grey with the light kept, on a plinth with a gold plate. */
+async function statue(src, tx, ty, L, ink) {
+  const x = tileX(tx), z = tileZ(ty), stone = std({ color: L.stone[1], roughness: 0.9 }), dark = std({ color: L.stone[3], roughness: 0.9 });
+  mesh(rbox(1.0, 0.16, 1.0, 0.04), dark, x, 0.08, z);
+  mesh(rbox(0.82, 0.62, 0.82, 0.05), stone, x, 0.47, z);
+  mesh(rbox(0.94, 0.1, 0.94, 0.03), dark, x, 0.83, z);
+  mesh(new THREE.BoxGeometry(0.42, 0.16, 0.02), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }), x, 0.5, z + 0.42);
+  mesh(new THREE.BoxGeometry(0.82, 0.05, 0.84), std({ color: ink, roughness: 0.7 }), x, 0.2, z);
+  B.blocked.add(key(tx, ty));
+  if (!src) return;
+  const bmp = await bitmap(src).catch(() => null);
+  if (!bmp) return;
+  const w = bmp.width, h = bmp.height, c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(bmp, 0, 0);
+  const img = g.getImageData(0, 0, w, h), d = img.data, lo = new THREE.Color(L.stone[3]), hi = new THREE.Color('#f4efe6'), col = new THREE.Color();
+  let bottom = 0, left = w, right = 0;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 8) continue;
+    const p = i / 4, lum = Math.min(1, Math.max(0, ((0.3 * d[i] + 0.59 * d[i + 1] + 0.11 * d[i + 2]) / 255 - 0.5) * 1.3 + 0.55));
+    col.copy(lo).lerp(hi, lum);
+    d[i] = col.r * 255; d[i + 1] = col.g * 255; d[i + 2] = col.b * 255; d[i + 3] = 255;
+    bottom = Math.max(bottom, Math.floor(p / w)); left = Math.min(left, p % w); right = Math.max(right, p % w);
+  }
+  g.putImageData(img, 0, 0);
+  const px = MON_PX * 0.85, board = new THREE.Mesh(new THREE.PlaneGeometry(w * px, h * px), std({ map: tex(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.95 }));
+  board.geometry.translate((w / 2 - (left + right + 1) / 2) * px, (bottom + 1 - h / 2) * px, 0);
+  board.rotation.x = -PITCH;
+  board.position.set(x, 0.88, z);
+  board.castShadow = true;
+  B.group.add(board);
+}
+
+async function buildGym(figs, { look: L, time, biome, leader }) {
+  const ink = GYM_INK[biome] || '#e85848', fire = L.drift?.[1] || '#f8a040';
+  const sides = [];
+  for (let y = 1; y < ROWS - 1; y += 2) sides.push([0, y, 1 + (y % 4) * 0.08], [COLS - 1, y + 1, 1.1 - (y % 4) * 0.05]);
+  const rnd = wild(L, time, { to: 2, trees: sides, exit: false, ground: court(ink, L) });
+  B.shotTop = 5.4;
+  // the dais: a broad lower tier, the leader's upper one, a carpet down both and the steps out front
+  const low = 0.32, high = 0.7, dz = tileZ(1), stoneA = std({ color: L.stone[1], roughness: 0.85 }), stoneB = std({ color: L.stone[3], roughness: 0.9 });
+  mesh(rbox(5.6, 0.12, 3.3, 0.05), stoneB, 0, 0.06, dz);
+  mesh(rbox(5.4, low, 3.1, 0.08), stoneA, 0, low / 2, dz);
+  mesh(rbox(3.2, high, 1.9, 0.08), stoneA, 0, high / 2, tileZ(0.6));
+  mesh(rbox(3.4, 0.08, 2.05, 0.04), stoneB, 0, high - 0.02, tileZ(0.6));
+  const carpet = std({ color: shadeOf(ink, -1), roughness: 0.9 });
+  mesh(new THREE.BoxGeometry(1.1, 0.02, 3.1), carpet, 0, low + 0.01, dz).raycast = () => {};
+  mesh(new THREE.BoxGeometry(1.1, 0.02, 1.9), carpet, 0, high + 0.03, tileZ(0.6)).raycast = () => {};
+  for (let i = 0; i < 3; i++) mesh(rbox(1.6, low * (3 - i) / 3, 0.22, 0.03), stoneA, 0, low * (3 - i) / 6, tileZ(2.5) + 0.06 + i * 0.22);
+  for (let x = MID - 2; x <= MID + 2; x++) for (let y = 0; y <= 2; y++) B.blocked.add(key(x, y));
+  // the board high behind, on two tall posts
+  const post = std({ color: '#3a2e34', roughness: 0.7 });
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.08, 0.09, 5.4, 8), post, s * 2.1, 2.7, BACK_Z + 0.4);
+  panel(gymSignArt(ink), 4.6, 1.44, 0, 4.7, BACK_Z + 0.46).castShadow = true;
+  // tall banners either side of the dais
+  for (const tx of [MID - 3, MID + 3]) {
+    const x = tileX(tx), z = tileZ(0.3);
+    mesh(new THREE.CylinderGeometry(0.04, 0.05, 3.6, 8), post, x, 1.8, z);
+    mesh(new THREE.SphereGeometry(0.09, 10, 8), std({ color: '#f8d860', metalness: 0.6, roughness: 0.3 }), x, 3.66, z);
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 6), post, x, 3.4, z + 0.04).rotation.z = Math.PI / 2;
+    panel(gymBannerArt(ink), 0.84, 1.8, x, 2.48, z + 0.05).castShadow = true;
+    B.blocked.add(key(tx, 0));
+  }
+  // the great braziers by the steps, and the avenue of fire pillars down to the door
+  const great = [brazier(MID - 3, 2, L, fire, { tall: 1.2, big: true }), brazier(MID + 3, 2, L, fire, { tall: 1.2, big: true })];
+  const avenue = AVENUE.map(y => [brazier(MID - 3, y, L, fire, { tall: 1.35 }), brazier(MID + 3, y, L, fire, { tall: 1.35 })]);
+  // their Pokémon in stone either side of the doorway
+  const aces = (leader?.bosses || []).map(id => ENEMY_DEFS[id]?.image).filter(Boolean);
+  await Promise.all([statue(aces[0], MID - 2, ROWS - 2, L, ink), statue(aces[1] || aces[0], MID + 2, ROWS - 2, L, ink)]);
+  // tufts round the court and the causeway, never on them
+  const keep = [];
+  for (let x = 2; x <= COLS - 3; x++) for (let y = 2; y <= ROWS - 1; y++) if (!B.blocked.has(key(x, y)) && (Math.abs(x - MID) <= 1 || (x >= 4 && x <= 8 && y >= 4 && y <= 11))) { B.blocked.add(key(x, y)); keep.push(key(x, y)); }
+  tufts(L, 70, rnd);
+  for (const k of keep) B.blocked.delete(k);
+  // the leader up on the dais; a tap on them walks you up to talk
+  B.who.npc = await figure('npc', figs.npc, { x: MID, ty: 0.5, y: high, dz: 0, scale: 1 });
+  B.who.npc.group.traverse(o => { o.userData.spot = 0; });
+  // walking up the court to the steps, or a tap anywhere on the dais, is going to talk to them too (`area`, `walkUp`)
+  B.spots = [{ step: { x: MID, y: 3 }, walkUp: true, area: (t) => Math.abs(t.x - MID) <= 2 && t.y <= 2 }];
+  B.anchors[0] = new THREE.Vector3(0, high + B.who.npc.top + 0.3, tileZ(0.5));
+  const focus = B.focus = { z: tileZ(1.5), k: 0, on: false };
+  // the sparkle as they light up
+  const sparks = Array.from({ length: 18 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4b0' : ink), 0.26));
+  let fly = null, from = 0, enteredAt = 0;
+  B.shine = () => { if (calm) return; from = performance.now(); fly = burst(sparks, new THREE.Vector3(0, high + 0.6, tileZ(0.6)), { spread: 0.8, rise: 1.8 }); };
+  // the walk up: out till you're in, then each pair lights as you come level with it (all burning once they're beaten)
+  B.reset = () => {
+    enteredAt = performance.now();
+    const lit = !!opts?.spent;
+    for (const f of [...avenue.flat(), ...great]) { f.lit = lit; f.at = 0; }
+    focus.on = false; focus.k = 0;
+  };
+  B.flare = () => {
+    focus.on = true;
+    if (great[0].lit) return;
+    const now = performance.now();
+    for (const f of great) { f.lit = true; f.at = now; }
+    playSound('fx-gong');
+  };
+  B.ticks.push((now, dt) => {
+    if (now - enteredAt > 450) avenue.forEach((pair, i) => {
+      if (pair[0].lit || walker.z > pair[0].z + 3.4 || (i && !avenue[i - 1][0].lit)) return;
+      for (const f of pair) { f.lit = true; f.at = now; }
+      playSound('fx-taiko');
+    });
+    if (!great[0].lit && avenue.at(-1)[0].lit && walker.z < tileZ(4.5)) {   // reached the court's head: the great fires too
+      for (const f of great) { f.lit = true; f.at = now; }
+      playSound('fx-whoosh');
+    }
+    for (const pair of avenue) for (const f of pair) tickFire(f, now);
+    for (const f of great) tickFire(f, now);
+    const near = Math.hypot(walker.x - tileX(MID), walker.z - tileZ(3)) < 1.6;
+    const want = focus.on && near ? 1 : 0;
+    focus.k = calm ? want : focus.k + (want - focus.k) * Math.min(1, dt / 1000 * 1.6);
+    if (!fly) return;
+    const k = Math.min(1, (now - from) / 1300);
+    fly(k);
+    if (k >= 1) { fly = null; for (const s of sparks) s.visible = false; }
+  });
+  B.reset();
+}
+
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -2336,9 +2601,10 @@ function goTo(kind) {
 }
 
 function arrived() {
-  const kind = aim;
+  let kind = aim;
   aim = null;
-  if (kind === null || kind === undefined) return;
+  if (kind === null || kind === undefined) kind = R.spots.findIndex(s => s.walkUp && s.step.x === walker.tile.x && s.step.y === walker.tile.y);
+  if (kind === null || kind === undefined || kind < 0) return;
   hushBlip();
   if (kind === 'exit') return opts.onLeave();
   const step = R.spots[kind].step;
@@ -2394,21 +2660,25 @@ function onTap(e) {
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
   if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
+  const near = R.spots.findIndex(s => s.area?.(t));
+  if (near >= 0) return tapTo(near);
   aim = null;
   walker.path = route(walker.tile, t);
+  if (!walker.path.length) arrived();
 }
 
 /* ---------- camera (the Center's) ---------- */
 
-function aimCamera(x, d) {
-  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, Math.cos(PITCH) * d);
-  camera.lookAt(x, LOOK_Y, 0);
+function aimCamera(x, d, z = 0) {
+  camera.position.set(x, LOOK_Y + Math.sin(PITCH) * d, z + Math.cos(PITCH) * d);
+  camera.lookAt(x, LOOK_Y, z);
   camera.updateMatrixWorld();
 }
 
 // the text box over the bar: a room says something nearly all the time, so the shot always leaves it this much room
 // (measuring the box itself swung the camera every time it came and went) and the doormat shows above it
 const BOX_ROOM = 104;
+const PUSH = 0.3;   // how far in the shot draws on a Gym Leader as they speak
 
 function below() {
   const tops = ['#room-bar', '#reward-screen .room-hinge']
@@ -2416,7 +2686,8 @@ function below() {
   return tops.length ? Math.max(0, viewH - Math.min(...tops)) + 6 : 120;
 }
 
-/** ACROSS tiles at least, and far enough back that the room from the doorstep up to its signs fits over the bar. */
+/** ACROSS tiles at least, and far enough back that the room from the doorstep up to its signs fits over the bar; a room
+    longer than its `view` fits that many rows, the shot sliding up it with you (placeCamera()). */
 function fitShot() {
   const h = viewH;
   camera.clearViewOffset();
@@ -2424,23 +2695,29 @@ function fitShot() {
   const topGap = 10, low = below() + BOX_ROOM, avail = Math.max(120, h - topGap - low), room = 2 * avail / h * 0.96;
   const span = (d) => {
     aimCamera(0, d);
-    return [new THREE.Vector3(0, R.shotTop ?? 3.4, BACK_Z).project(camera).y, new THREE.Vector3(0, -0.3, ROWS / 2 + 0.95).project(camera).y];
+    const half = Math.min(ROWS, R.view ?? ROWS) / 2;
+    return [new THREE.Vector3(0, R.shotTop ?? 3.4, -half).project(camera).y, new THREE.Vector3(0, -0.3, half + 0.95).project(camera).y];
   };
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = span(mid); if (t - b > room) lo = mid; else hi = mid; }
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  const d = Math.max(hi, ACROSS / 2 / halfTan);
+  const d = Math.max(hi, (R.across ?? ACROSS) / 2 / halfTan);
   const [, b] = span(d);
   shot = { dist: d, half: d * halfTan, shift: (1 - b) / 2 * h - (h - low - 2), low };
 }
 
 function placeCamera(dt) {
   if (!shot) return;
-  const room = COLS / 2 + 0.4, half = shot.half;
+  const room = COLS / 2 + 0.4, push = R.focus?.k || 0, half = shot.half * (1 - push * PUSH);
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
+  // a long room: the shot a little ahead of you, up to its back; drawn in on whoever you walked up to (R.focus)
+  const v = Math.min(ROWS, R.view ?? ROWS) / 2, far = BACK_Z + v, near = ROWS / 2 - v;
+  let wantZ = Math.max(far, Math.min(near, walker.z - v * 0.25));
+  if (push) wantZ += (R.focus.z - wantZ) * push;
+  camZ = calm || !Number.isFinite(camZ) ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 3);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
-  aimCamera(camX, shot.dist);
+  aimCamera(camX, shot.dist * (1 - push * PUSH), camZ);
 }
 
 function resize() {
@@ -2575,14 +2852,15 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
-    B = { kind, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS };
+    B = { kind, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: SIZES[kind]?.view, across: SIZES[kind]?.across };
     const b = B;
-    await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome });
-    B = null;
+    useSize(b);
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader }); }
+    finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
     return b;
   });
@@ -2591,8 +2869,8 @@ function room(kind, figs, at = {}) {
 }
 
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
-export function preloadEvent(kind, at = {}) {
-  if (BUILD[kind] && kind !== 'rocket') room(kind, {}, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha
+export function preloadEvent(kind, at = {}, figs = {}) {
+  if (BUILD[kind] && kind !== 'rocket') room(kind, figs, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha
 }
 
 /** Lays the 3D room `o.kind` under the event room eventRoom() just showed. `o`: { kind, run, node (to tell coming back from a
@@ -2604,9 +2882,10 @@ export async function mountEvent(o) {
   visit = { node: o.node, run: o.run };
   opts = o;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type });
+  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader });
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
+  useSize(next);
   if (R !== next) {
     if (R) { scene.remove(R.group); for (const who of Object.values(R.who)) scene.remove(who.group); }   // its people stand in the scene, not its group
     R = next;
@@ -2619,6 +2898,7 @@ export async function mountEvent(o) {
     mat = R.mat;
   }
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
+  R.who.npc?.setDark?.(!!o.dark);   // a Gym Leader you haven't beaten: their silhouette till they speak
   R.held = false;
   document.body.classList.remove('ev3d-held');
   R.noExit = !!R.lockedExit && !o.spent;   // Team Rocket's way out opens once you've paid or run
@@ -2636,7 +2916,7 @@ export async function mountEvent(o) {
   if (!showing() || opts !== o) return null;
   if (!back) {
     walker = { x: tileX(DOOR.x), z: tileZ(DOOR.y), tile: { ...DOOR }, path: [], facing: mon.sheets.back ? 'back' : 'front', flip: false, hop: 0 };
-    camX = walker.x;
+    camX = walker.x; camZ = NaN;
   }
   walker.path = []; still();
   document.body.append(view);
@@ -2676,6 +2956,15 @@ const controls = {
       act.start?.call(act, opts);
       acting = { name, act, from: performance.now(), ms: of(act.ms), cues: cues.map(c => [...c]), done };
     });
+  },
+  /** A Gym Leader's silhouette lit up as they start to speak, with a sparkle. */
+  light() {
+    const who = R?.who.npc;
+    if (alive()) R.flare?.();
+    if (!who?.dim || !alive()) return;
+    who.setDark(false);
+    playSound('stat-up');
+    R.shine?.();
   },
   /** Someone in the room reacts (figureDoes()). */
   does(stand, move) {

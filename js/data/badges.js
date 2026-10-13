@@ -12,6 +12,7 @@
    ============================================================ */
 
 import { STARTERS } from './starters.js';
+import { GYM_LEADERS } from './gym.js';
 import { MAX_LEVEL } from './difficulty.js';
 import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, FORKS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
@@ -109,6 +110,7 @@ const RARE_COUNTS = [5, 10, 15, 20];
 
 export const BADGE_GROUPS = [
   { id: 'journey', name: 'Journey' },
+  { id: 'gym', name: 'Gym Badges' },
   { id: 'levels', name: 'Trainer Levels' },
   { id: 'challenges', name: 'Challenges' },
   { id: 'collector', name: 'Collector' },
@@ -309,6 +311,10 @@ export const BADGES = [
     text: 'Win 2,500 PokéCoins at the Game Corner in all', test: (s, save) => (save.corner?.best?.coins || 0) >= 2500 },
   { id: 'corner-prizes', group: 'corner', name: 'Prize Collector Badge', icon: 'corner-prizes', emoji: '🏅',
     text: 'Buy every prize at Meowth\'s counter', test: (s, save) => PRIZES.every(p => (save.corner?.prizes || []).includes(p.kind)) },
+
+  // Gym Badges: one for beating each Gym Leader (`save.gym`, js/data/gym.js)
+  ...GYM_LEADERS.map(l => ({ id: `gym-${l.id}`, group: 'gym', name: l.badge, icon: `gym-${l.id}`, emoji: '🏅',
+    text: `Beat Gym Leader ${l.name}`, test: (s, save) => (save.gym?.[l.id] || 0) >= 1 })),
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

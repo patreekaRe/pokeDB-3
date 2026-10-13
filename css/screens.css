@@ -4933,6 +4933,14 @@ body[data-screen="map-screen"]:has(#map-screen.tower.bar-in) .topbar { animation
 .reward-bottom { gap: 18px; }
 :where(#reward-screen, .map-bottom) .reward-log.more::after { color: #1f3a14; }
 #reward-screen.in-room .reward-log.more::after { color: #c02020; }
+/* who is speaking (speaker() in js/rewards.js: a Gym Leader), on a tilted tag over the box like the Poké Mall's shopkeepers */
+#reward-screen .reward-log[data-who] { margin-top: 12px; padding-top: 16px; }
+#reward-screen .reward-log[data-who]::before {
+  content: attr(data-who);
+  position: absolute; left: 14px; top: -16px; max-width: calc(100% - 28px);
+  padding: 4px 12px; border-radius: 999px; background: #f0a0b0; color: #6a2a3a; box-shadow: 0 2px 0 #c87888;
+  font-size: 0.75rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; rotate: -3deg;
+}
 .relic .relic-text, .relic .relic-term { color: #3a5a28; }
 .relic .relic-term { background: #d6e8b8; border-left-color: #1f3a14; }
 .relic.item-tile { border-color: #1d58b8; }
@@ -5361,6 +5369,10 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
 #reward-options.mart-window:is(.m3d, .m3d-wait) { visibility: hidden; pointer-events: none; }
 #reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; }
 body:has(#reward-options:is(.m3d, .m3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+/* the hidden ware grid still takes its height, which pushed the sticky box down under the room bar on a short phone */
+body:has(#reward-options.m3d) #reward-screen .reward-bottom {
+  position: fixed; left: 50%; bottom: calc(var(--room-bar-h, 120px) + 14px); translate: -50% 0; width: min(calc(100% - 32px), var(--log-w));
+}
 body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 /* the PC's sign, a cream speech window like the 3D Center's, bobbing over it */
 .mart3d-sign {
@@ -5477,3 +5489,135 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .crossroads-scene.talking .xr-go { opacity: 0; pointer-events: none; }
 .xr-meowth { position: absolute; z-index: 2; height: calc(var(--px, 4px) * 22); image-rendering: pixelated; translate: -50% -100%; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .xr-talk.xr-say, .xr-talk i { animation: none; } }
+
+/* a Gym Leader's moment before and after their boss (gymTalk() in js/gym.js): they slide in on the right over a dim, a
+   shadow until beaten once, and talk in the cream speech window, their name on its tag */
+.gym-scene {
+  position: fixed; inset: 0; z-index: 990; cursor: pointer; overflow: hidden;
+  background: radial-gradient(ellipse at 70% 60%, rgba(255, 220, 150, 0.18), rgba(8, 10, 24, 0.72) 70%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.gym-scene.in { opacity: 1; }
+.gym-scene.out { opacity: 0; }
+.gym-trainer {
+  position: absolute; right: max(6%, calc(50% - 260px)); bottom: calc(max(18px, env(safe-area-inset-bottom) + 10px) + 150px);
+  height: min(46vh, 300px); width: auto; image-rendering: pixelated; filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.35));
+  translate: 120% 0; transition: translate 0.45s cubic-bezier(.2, .9, .3, 1.1), filter 0.6s;
+}
+.gym-scene.in .gym-trainer { translate: 0 0; }
+.gym-trainer.shadow { filter: brightness(0) drop-shadow(0 0 2px rgba(255, 240, 200, 0.9)); }
+.gym-say {
+  position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
+  width: min(480px, calc(100% - 32px)); min-height: 110px; margin: 0; padding: 26px 22px 22px; box-sizing: border-box;
+  border-radius: 26px / 22px; background: #fbf4df; color: #6a5440; font-size: 16px; line-height: 1.6; text-align: left;
+  box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
+}
+.gym-text { margin: 0; }
+.gym-plate {
+  position: absolute; left: 18px; top: -16px; padding: 7px 14px; border-radius: 999px; font-size: 13px;
+  background: #e85848; color: #fff; rotate: -3deg; box-shadow: 0 2px 0 #a02c20; white-space: nowrap; max-width: calc(100% - 36px);
+  overflow: hidden; text-overflow: ellipsis;
+}
+.gym-plate small { font-size: 12px; opacity: 0.8; }
+.gym-more {
+  position: absolute; right: 18px; bottom: 10px; width: 0; height: 0;
+  border: 6px solid transparent; border-top: 7px solid #e8a040; border-bottom: 0; animation: b3Nudge 0.8s ease-in-out infinite;
+}
+.gym-badge {
+  position: absolute; left: 50%; top: 30%; width: 96px; height: 96px; translate: -50% -50%;
+  filter: drop-shadow(0 0 18px rgba(255, 230, 120, 0.9)); animation: gymBadge 0.7s cubic-bezier(.3, 1.6, .5, 1);
+}
+@keyframes gymBadge { from { scale: 0; rotate: -200deg; } }
+@media (prefers-reduced-motion: reduce) { .gym-trainer { transition: none; } .gym-more, .gym-badge { animation: none; } }
+
+/* the crossroads boards' Gym Leaders: a card each, a shadow and ??? till beaten, over the bosses they send out */
+.xr-leaders { display: flex; gap: 8px; justify-content: center; }
+.xr-leader { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px;
+  border-radius: 8px; background: rgba(255, 255, 255, 0.35); box-shadow: inset 0 0 0 1px rgba(58, 46, 36, 0.18); }
+.xr-leader-pic { height: 64px; width: auto; image-rendering: pixelated; }
+.xr-leader.unmet .xr-leader-pic { filter: brightness(0) opacity(0.8); }
+.xr-leader-name { font-size: 0.75rem; font-weight: bold; text-align: center; line-height: 1.2; overflow-wrap: anywhere; }
+.xr-leader .xr-bosses { justify-content: center; min-height: 0; }
+.xr-leader .xr-boss { height: 36px; min-height: 0; }
+.xr-sec-leaders { grid-column: 1 / -1; }
+.xr-road .xr-leader { background: rgba(0, 0, 0, 0.2); }
+.xr-road .xr-leader-pic { height: 48px; }
+.xr-leader .xr-boss { max-width: none; }
+.xr-road .xr-leader .xr-boss { height: 30px; }
+
+/* the map's Gym Leader over the boss room (renderMap()'s `gym`): a trainer is narrower than a Pokémon's canvas */
+.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -1.4); }
+.map-boss-shadow.map-leader.met { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
+/* their badge spinning in over the 3D gym (badgePop() in js/gym.js) */
+.gym-pop { position: fixed; inset: 0; z-index: 990; pointer-events: none; transition: opacity 0.4s; }
+.gym-pop.out { opacity: 0; }
+/* Phil's possession (gymTalk()'s `possess`): a thinner dim so his Pokémon shows behind; once the dark takes him the
+   screen's edges bleed violet and he shudders */
+.gym-scene.possess { background: radial-gradient(ellipse at 70% 60%, rgba(120, 40, 200, 0.12), rgba(8, 4, 20, 0.45) 75%); }
+.gym-scene.possess.taken { animation: gymDark 1.6s ease-in-out infinite; }
+.gym-scene.possess.taken .gym-trainer { animation: gymShudder 0.12s steps(2) infinite; filter: drop-shadow(0 0 10px #a050e8) brightness(0.8) saturate(0.6); }
+.gym-scene.possess .gym-plate { background: #5a1a9a; box-shadow: 0 2px 0 #2c0a50; }
+@keyframes gymDark {
+  0%, 100% { box-shadow: inset 0 0 80px 10px rgba(90, 20, 150, 0.6); }
+  50% { box-shadow: inset 0 0 140px 40px rgba(40, 0, 70, 0.85); }
+}
+@keyframes gymShudder { 50% { translate: 2px 0; } }
+@media (prefers-reduced-motion: reduce) { .gym-scene.possess.taken, .gym-scene.possess.taken .gym-trainer { animation: none; } }
+
+/* JONA takes over (demonSwap() in js/gym.js): the screen blacks out, violet static rolls over it and everything shudders;
+   while it talks the speech window is its own, black with violet text, the tag blood red */
+.jona-flash {
+  position: fixed; inset: 0; z-index: 2000; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(200, 120, 255, 0.18) 0 2px, transparent 2px 5px),
+    radial-gradient(ellipse at 50% 55%, rgba(160, 40, 255, 0.55), rgba(0, 0, 0, 0.96) 70%);
+  animation: jonaFlash 1.2s steps(12) forwards;
+}
+.jona-flash.infuse { background: radial-gradient(circle at 50% 25%, rgba(255, 220, 255, 0.95), rgba(170, 60, 255, 0.7) 30%, rgba(20, 0, 40, 0) 70%); animation: jonaInfuse 1.1s ease-out forwards; }
+.jona-flash.calm { animation: jonaCalm 0.9s ease-out forwards; }
+@keyframes jonaFlash {
+  0% { opacity: 0; } 8% { opacity: 1; background-position: 0 0; } 16% { opacity: 0.4; } 24% { opacity: 1; background-position: 0 7px; }
+  40% { opacity: 0.85; background-position: 0 -4px; } 60% { opacity: 0.6; } 100% { opacity: 0; }
+}
+@keyframes jonaInfuse { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes jonaCalm { 0% { opacity: 0; } 30% { opacity: 0.45; } 100% { opacity: 0; } }
+body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, canvas) { animation: jonaShake 0.6s steps(1); }
+@keyframes jonaShake {
+  0% { translate: 0 0; } 10% { translate: -6px 3px; } 20% { translate: 5px -4px; } 30% { translate: -4px -2px; }
+  40% { translate: 6px 2px; } 50% { translate: -3px 4px; } 60% { translate: 3px -3px; } 80% { translate: -1px 1px; } 100% { translate: 0 0; }
+}
+.gym-scene.demon .gym-say,
+#reward-screen .reward-log.demon {
+  background: #120818; color: #e8c8ff; box-shadow: 0 3px 0 #4a1a7a, 0 0 22px rgba(170, 70, 255, 0.55);
+  text-shadow: 0 0 6px rgba(200, 120, 255, 0.8); letter-spacing: 1px; animation: jonaBox 2.4s ease-in-out infinite;
+}
+.gym-scene.demon .gym-plate,
+#reward-screen .reward-log.demon[data-who]::before { background: #b01030; color: #fff; box-shadow: 0 2px 0 #50040e, 0 0 10px rgba(255, 40, 80, 0.7); }
+.gym-scene.demon .gym-trainer { animation: jonaFlicker 3s steps(1) infinite; }
+@keyframes jonaBox { 50% { box-shadow: 0 3px 0 #4a1a7a, 0 0 36px rgba(170, 70, 255, 0.85); } }
+@keyframes jonaFlicker { 0%, 46%, 50%, 100% { filter: drop-shadow(0 0 10px #a050e8) brightness(0.8) saturate(0.6); } 47%, 49% { filter: invert(1) hue-rotate(250deg) drop-shadow(0 0 14px #ff3060); } }
+/* JONA poured into his Pokémon (infuse() in js/gym.js): the speech window and the dim go so the battle shows, a stream of
+   dark energy on its own canvas, his Pokémon writhing and going dark as it fills, then Phil left grey and lifeless */
+.gym-scene.possess.infusing { background: radial-gradient(ellipse at 50% 40%, rgba(60, 10, 110, 0.05), rgba(10, 0, 24, 0.35) 80%); cursor: default; }
+.gym-scene.infusing .gym-say { opacity: 0; translate: -50% 30px; transition: opacity 0.3s, translate 0.3s; }
+.gym-infuse { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.gym-scene.possess.taken .gym-trainer.drained { animation: none; filter: grayscale(1) brightness(0.45) drop-shadow(0 0 4px #301050); transition: filter 0.5s, translate 0.5s ease-in, opacity 0.5s; }
+.gym-scene .gym-trainer.drained.gone { translate: 120% 0; opacity: 0; }
+.enemy-portrait.sprite.writhing img { animation: writhe 0.1s steps(2) infinite; filter: brightness(0.55) saturate(0.4) drop-shadow(0 0 14px #a040ff) drop-shadow(0 0 4px #ff3868); }
+@keyframes writhe { 0% { transform: translate(-3px, 1px) scale(1.02, 0.98); } 50% { transform: translate(3px, -1px) scale(0.98, 1.03); } }
+@media (prefers-reduced-motion: reduce) { .enemy-portrait.sprite.writhing img { animation: none; } }
+/* his Pokémon, once the dark is poured in: violet in place of the boss's gold, one still shadow on the sprite (an animated
+   filter re-blurred the GIF every frame and dropped the battle's fps on a phone) and a halo behind it that breathes by
+   opacity alone, which the compositor runs for free */
+.enemy-portrait.sprite.boss.possessed img { --rest: drop-shadow(0 0 8px #a040ff); }
+.enemy-portrait.sprite.possessed .enemy-pose::before { content: ''; position: absolute; inset: 0 -15% -5%; background: radial-gradient(ellipse 50% 45% at 50% 62%, rgba(176, 80, 255, 0.55), rgba(96, 16, 192, 0.25) 55%, transparent 72%); pointer-events: none; will-change: opacity; animation: possessedBreath 1.8s ease-in-out infinite; }
+@keyframes possessedBreath { 50% { opacity: 0.45; } }
+.enemy-portrait.sprite.possessed:is(.defeated, .sinking, .captured, .ran) .enemy-pose::before { content: none; }
+@media (prefers-reduced-motion: reduce) {
+  #reward-screen .reward-log.demon, .gym-scene.demon .gym-say, .gym-scene.demon .gym-trainer, .enemy-portrait.sprite.possessed .enemy-pose::before { animation: none; }
+}
+/* who's talking, on a tag over the speech window's corner (Britt at the Mart counter), like the Poké Mall shopkeepers' */
+.reward-log:not([data-who=""])[data-who]::before {
+  content: attr(data-who); position: absolute; left: 14px; top: -16px; padding: 4px 12px; border-radius: 999px;
+  background: #f0a0b0; color: #6a2a3a; font-size: 0.75rem; line-height: 1.4; rotate: -4deg; box-shadow: 0 2px 0 #c87888, 0 0 0 2px #303038;
+}

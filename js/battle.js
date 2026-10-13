@@ -19,6 +19,8 @@
    stay separate and easy to read.
    ============================================================ */
 
+import { gymTalk } from './gym.js';
+import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
@@ -167,6 +169,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     biome: run.biome,
     def,
     kind: encounter.kind,
+    leader: encounter.leader ?? null,   // the Gym Leader sending out a boss (js/data/gym.js)
+    leaderTalked: !!encounter.leaderTalked,   // they spoke in their 3D gym first (gymRoom() in js/run.js)
     relics: [...run.relics],
     ability,
     aug,
@@ -260,8 +264,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
   arena3d(land, encounter.kind, def, run);
-  playMusic(def.music ?? (encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
-  preloadMusic(winTrack(encounter.kind));
+  playMusic(def.music ?? (encounter.leader ? 'gym-leader-battle' : encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
+  preloadMusic(winTrack(encounter.kind, encounter.leader));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
   setupBattleScreen();
 
@@ -334,7 +338,13 @@ async function playIntro() {
     arenaUp = true;
     arenaMod?.revealArena();
     if (!still()) return;
-    log(b.def.intro ?? `${b.def.name} blocks the way!`);
+    if (b.leader) {   // a Gym Leader sends it out (js/data/gym.js)
+      enemyZone.classList.add('boss-waiting');   // the boss stays in its ball till they send it out
+      try { if (!b.leaderTalked) await gymTalk(b.leader, talkOf(b.leader, 'intro', !getSave().gym?.[b.leader.id]), { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
+      finally { enemyZone.classList.remove('boss-waiting'); }
+      if (!still()) return;
+      log(`Gym Leader ${b.leader.battleName || b.leader.name} sent out ${b.def.name}!`);
+    } else log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see
   if (motion) {
@@ -346,6 +356,19 @@ async function playIntro() {
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
   enemyZone.classList.remove('revealed');
+  const possessed = () => {
+    $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
+    setAura($('enemy-img'), 3, 'dark');
+  };
+  if (b.leader?.possess) {   // Phil gives himself to the dark, then pours it into his Pokémon (js/data/gym.js)
+    await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: {
+      img: $('enemy-img'), box: $('enemy-portrait-box'), spriteId: b.def.spriteId,
+      ignite: possessed,
+    } });
+    if (!still()) return;
+    possessed();   // again once the talk is gone, in case anything in it failed before the dark was poured in
+    log(`${b.def.name} is filled with dark energy!`);
+  }
 
   if (motion) {
     ball.hidden = false;
@@ -1843,7 +1866,7 @@ function attackDamage(move) {
 }
 
 /** The fanfare after a win: the wild one, or Red/Blue's trainer victory after an Alpha (Team Rocket's too) or a boss. */
-const winTrack = (kind) => (kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
+const winTrack = (kind, leader) => (leader ? 'gym-victory' : kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
 
 async function finish(won) {
   const b = battle;
@@ -1860,7 +1883,7 @@ async function finish(won) {
     if (grew) abilityBanner();
     $('enemy-portrait-box').classList.add('defeated');
     playSound('faint');
-    playMusic(winTrack(b.kind), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
+    playMusic(winTrack(b.kind, b.leader), { restart: true, cut: true });   // like the games: the fanfare starts as the enemy faints
     log(`${b.def.name} was defeated!`);
   } else {
     $('player-sprite').classList.add('defeated');
@@ -2072,7 +2095,7 @@ function setupEnemy() {
   img.classList.toggle('pixel', !b.def.art);
   setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
-  box.classList.remove('defeated', 'hit', 'attacking');
+  box.classList.remove('defeated', 'hit', 'attacking', 'possessed');
   box.classList.toggle('sprite', !b.def.art);
   const zone = $('enemy-zone');
   if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));

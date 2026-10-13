@@ -162,7 +162,7 @@ live site.
   (`&starter=id`) walks a throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
 - **The walk-in 3D Poké Mart** (2026-10-09; merged into `main` and live since 2026-10-10, the user's call): `js/mart-3d.js`
   lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit
-  of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Kecleon's counter with the PC, a tap walks up and
+  of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Britt's counter with the PC (Britt, the user's friend, took over from Kecleon 2026-10-13; a tap on her says the next of `BRITT_TALKS`, her name on the box's tag), a tap walks up and
   presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
 - **The walk-in 3D ? rooms** (2026-10-11, the user's ask): the Move Tutor's dojo, the Move Deleter's study, the Day Care
   and the Fan Club are walked in 3D like the Center (`js/event-3d.js`, mounted by `event3d()` under `eventRoom()`; the
@@ -839,6 +839,15 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   beside it (a `RIBBONS` line like Smeargle's, saved `cornerRibbon`; `?ribbon` shows both). Every save meets it, old ones
   at their next crossroads (the user's call: everyone should witness Meowth); the Game Corner app is open to all from the
   start. `?meowth` shuts the shop again; `?crossroads&meowth` plays the talk.
+- **Gym Leaders** (2026-10-13, live since patch 1.16; the user's friends, history in `docs/roadmap-done.md`): `GYM_LEADERS`
+  in `js/data/gym.js`, 13 leaders, two or three a biome, each sending out its bosses (`leaderFor()`; never Eternatus, the
+  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by
+  boss), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
+  Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
+  `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
+  the room or, without 3D, over the battle; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
+  each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
+  Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite and a `GYM_LOOK` line.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

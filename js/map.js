@@ -734,7 +734,7 @@ function paintTerrain(canvas, map, biomeId, tiles, flow = true) {
  * Draw the map into #map. onPick(node) is called when you click a reachable node.
  * biome is the biome id (it picks the terrain), trainer is your Pokémon's sprite url.
  */
-export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false } = {}) {
+export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer, stage = 2, reveal = null, read = null, track = 0, type = null, peek = null, ken = false, gym = null } = {}) {
   // peek: a look-only copy drawn into another box (the Bag's map, from a battle or a reward), leaving the map screen's own alone
   // ken: Kenmatta has been beaten once, so the Move Tutor's ❓ room shows his face
   // read: picking a ❓ room for Unown Rubbing; track: Tracker's Eye's level, marking wild fights by match-up against `type`
@@ -828,11 +828,12 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
   }
 
-  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming.
+  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming; in a Gym it's the Gym Leader
+  // instead, in colour once beaten (the boss stays a surprise till they send it out)
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
   if (boss?.image) {
-    const img = el('img', 'map-boss-shadow');
-    img.src = boss.image;
+    const img = el('img', `map-boss-shadow${gym ? ` map-leader${gym.met ? ' met' : ''}` : ''}`);
+    img.src = gym ? gym.src : boss.image;
     img.alt = '';
     place(img, CENTER_X, rowY(rows));
     box.append(img);

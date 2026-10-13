@@ -608,7 +608,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     /** What road i's board says, in boxes: its places in order, its bosses beside its wilds, then its Pokédex page. */
     function fillPanel(i) {
       const id = roads[i], biome = BIOMES_BY_ID[id], page = ALL_PAGES.find(p => p.biome === id);
-      const { bosses, alphas } = roadInfo(id);
+      const { leaders, alphas } = roadInfo(id);
       // the kiosk's poster, blown up: its roof, its frame in the road's sign colours, a header with a Poké Ball
       const [dark, light] = ARMS[id] ?? ['#7a5a3a', '#c8a070'];
       panel.style.setProperty('--xr-dark', dark);
@@ -632,7 +632,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
         wilds.append(row);
       }
       const body = el('div', 'xr-body');
-      body.append(section('xr-sec-places', 'Places', places), section('xr-sec-bosses', 'Bosses', bosses), section('xr-sec-wilds', 'Wild Pokémon', wilds), section('xr-sec-bosses xr-sec-alphas', 'Alphas', alphas));
+      body.append(section('xr-sec-places', 'Places', places), section('xr-sec-bosses xr-sec-leaders', 'Gym Leaders', leaders), section('xr-sec-wilds', 'Wild Pokémon', wilds), section('xr-sec-bosses xr-sec-alphas', 'Alphas', alphas));
       if (page) {
         const beaten = getSave().dex.defeated, n = page.ids.filter(id => beaten.includes(id)).length;
         const dex = el('div', 'xr-dex');

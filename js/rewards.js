@@ -129,7 +129,14 @@ export function showChoiceHp() {
   if (hp) { setHpBar('choice', hp.hp, hp.maxHp); setHpBar('room', hp.hp, hp.maxHp); }
 }
 
+/** Who is speaking in the reward screen's text box, on a name tag over it (a Gym Leader), or null for narration.
+    Every new choice screen starts as narration. */
+export function speaker(name = null) {
+  if (name) $('reward-log').dataset.who = name; else { delete $('reward-log').dataset.who; $('reward-log').classList.remove('demon'); }
+}
+
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
+  speaker();
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;
@@ -372,10 +379,11 @@ function closeFocus() {
 // The map has its own copy of the box (#map-log), so `box` names which one to use.
 let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
-export function sayLines(lines, boxId = 'reward-log', onDone) {
+export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
   clearInterval(say.typing);
   say = { lines, at: 0, typing: 0, box: boxId };
   const box = $(boxId);
+  if (who) box.dataset.who = who; else delete box.dataset.who;   // a speaker's name on a tag over the box (Britt at the Mart)
   box.hidden = !lines.length;
   box.onclick = () => {
     if (say.box !== boxId) return;
@@ -411,7 +419,15 @@ export const dropNotes = () => { notes.length = 0; };
 function showLine(i) {
   say.at = i;
   const box = $(say.box);
-  const line = say.lines[i];
+  let line = say.lines[i];
+  if (line?.who) {   // a voiced line { who, text } (a Gym Leader family) changes the name tag
+    if (say.box === 'reward-log') {
+      speaker(line.who);
+      if (line.demon && !box.classList.contains('demon')) import('./gym.js').then(m => m.demonSwap());   // JONA takes over
+      box.classList.toggle('demon', !!line.demon);
+    }
+    line = line.text;
+  }
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   const pace = textPace();
@@ -433,7 +449,7 @@ function finishLine() {
   clearInterval(say.typing);
   say.typing = 0;
   $(say.box).classList.remove('typing');
-  $(`${say.box}-text`).textContent = say.lines[say.at];
+  $(`${say.box}-text`).textContent = say.lines[say.at]?.text ?? say.lines[say.at];
   $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
 }
 

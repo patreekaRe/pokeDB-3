@@ -40,7 +40,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -335,6 +335,8 @@ function init() {
   // shrinks every foe's HP
   if (params.get('tower')) return peekTower(Number(params.get('tower')), Number(params.get('hp') ?? 1), (params.get('aug') || '').split(',').filter(Boolean));
   // ?arena=elite / boss / wild / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
+  // ?gym=phil: straight into that Gym Leader's gym, then their boss fight (&n=2 their second boss, &starter=id, &hp=0.1)
+  if (params.get('gym')) return peekGym(STARTERS_BY_ID[params.get('starter') ?? ''] ?? STARTERS.find(s => s.free), params.get('gym'), Number(params.get('n') ?? 1), Number(params.get('hp') ?? 1));
   if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter') ?? (params.get('biome') === 'depths' ? 'mewtwo' : '')] ?? STARTERS.find(s => s.free), params.get('arena'), params.get('biome'), params.has('slot') ? Number(params.get('slot')) : null);
   if (params.get('bossfight') === 'depths') eternatusGuest();   // back on the title, it crosses the sky
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
