@@ -8,7 +8,7 @@
 
    A leader's `sprite` is a file in assets/trainers/gym/ (front-facing, a
    transparent background, Gen 5 style); until one is given it's the shadow
-   `unknown.png`. Lines: `intro` before the boss (`{boss}` is its name),
+   `unknown.png`; `sprites` (by boss id) dresses them for the boss they send out. Lines: `intro` before the boss (`{boss}` is its name),
    `beaten` once you win (its first line alone on a rematch), `won` when they
    beat you. Each is a list of speech-window lines, or a list of such lists, one
    picked at random each time (`talkOf()`).
@@ -123,15 +123,76 @@ const NIETOS = {
   ],
 };
 
+/* Clarence (the user's, 2026-10-13): lives to show his ass to his friends on Discord, a burlesque show every night "to help
+   them play better" at Valorant, and is FURIOUS that a gym battle is keeping him from it. Two sprites, one per boss
+   (`sprites`, read by leaderFor()). */
+const CLARENCE = {
+  sprite: 'assets/trainers/gym/clarence.png',
+  sprites: { slaking: 'assets/trainers/gym/clarence.png', regigigas: 'assets/trainers/gym/clarence-2.png' },
+  intro: [
+    ['ARE YOU KIDDING ME?! A CHALLENGER? NOW?!', 'The boys are on Discord RIGHT NOW waiting for the show!', 'Go, {boss}! END THIS!'],
+    ['Do you know what time it is? It\'s SHOWTIME. Not gym time. SHOWTIME.', 'Every night at nine the cheeks come out. That\'s TRADITION.', 'Go, {boss}, and make it FAST!'],
+    ['I had the lighting set up. I had the music queued. I had the feather boa ON.', 'And YOU walk in.', '{boss}! Get them OUT of here!'],
+    ['You think the boys win their Valorant matches on SKILL?', 'No! They win because I show them my ass before every game! It\'s a MORALE thing!', 'And you\'re making them play without it. Go, {boss}!'],
+    ['Listen, I don\'t WANT to be here. I want to be on camera doing my burlesque routine.', 'Twelve viewers. Twelve! That\'s a full house!', 'Go, {boss}! I\'m ANGRY now!'],
+    ['Lawrence gets to leave early. Britt gets to leave early. Why do I get the challengers?!', 'My cheeks have an AUDIENCE, you know!', 'Go, {boss}!'],
+    ['RAAAGH! Every second you\'re here is a second my ass is NOT on Discord!', 'Go, {boss}! Rage mode!'],
+  ],
+  beaten: [
+    ['FINE! YOU WIN! Are you happy?!', 'Take the {badge} and GET OUT. The boys have been waiting TWENTY MINUTES.'],
+    ['Great. Just great. Now I\'m late AND I lost.', 'Here, the {badge}. I need to go stretch. The routine doesn\'t do itself.'],
+    ['You beat me. Whatever. My ass is still undefeated.', 'Take the {badge}.'],
+    ['I hope you know Shaun\'s about to go into ranked WITHOUT his pregame show. That\'s on YOU.', 'The {badge}. Take it. Go.'],
+    ['Okay, you won. Congrats. Wanna know a secret?', '...No. You don\'t get the show. The show is for the BOYS. Take the {badge}.'],
+  ],
+  won: [
+    ['HA! Done! Now if you\'ll excuse me, I have a PERFORMANCE to give!', 'Boys, unmute me! The cheeks are coming!'],
+    ['That took way too long. The boys already lost two rounds without me.', 'Showtime! Hit the lights!'],
+    ['Finally! Out of my gym!', 'Five, six, seven, eight, and... TURN AROUND.'],
+    ['You wasted my time, so I wasted you.', 'Now where\'s my boa? The boys need their good luck charm.'],
+    ['GG. Now go home.', 'The boys always say they aim better after the show. That\'s SCIENCE.'],
+  ],
+};
+
+/* Pat (the user's, 2026-10-13): a music teacher who hates teaching kids, always "accidentally" singing bits of Lemonade
+   (Passion) and She Was Mine (AJ Rafael), then pretending he didn't know anyone was listening. Only a short line of a song
+   at a time. */
+const PAT = {
+  sprite: 'assets/trainers/gym/pat.png',
+  intro: [
+    ['*strums* ♪ She\'s my sunshine in the rain... ♪', 'Oh. You heard that? Didn\'t know someone was there.', 'Whatever. Go, {boss}.'],
+    ['♪ So I hopped on a train, three in the afternoon... ♪', '...Oh, a challenger. Sorry, I\'m kind of in my zone right now.', 'Fine. Go, {boss}.'],
+    ['I teach music to forty kids a day. Forty recorders. Hot Cross Buns. Forty times.', 'You know what that does to a man with my range?', 'Go, {boss}.'],
+    ['♪ Like a tall glass of lemonade... ♪', 'Hm? Oh, no, don\'t clap. It\'s just something I do. Naturally.', 'Go, {boss}.'],
+    ['Shh. Listen. ♪ Love has no distance, baby... ♪', 'You felt that, right? Everyone feels that.', 'Anyway. Go, {boss}.'],
+    ['You\'re not a kid, are you? Good. I\'m off the clock.', '♪ She\'s exactly what I need... ♪ Sorry, sorry, it just comes out of me.', 'Go, {boss}.'],
+    ['Oh, hey. Wasn\'t expecting an audience. ♪ In my eyes, you were mine... ♪', 'Yeah. I\'ve still got it.', 'Go, {boss}.'],
+  ],
+  beaten: [
+    ['Huh. Off-key performance from me today. Happens to the greats.', '♪ ...but in my eyes, she\'s still mine... ♪ Oh, you\'re still here? Take the {badge}.'],
+    ['Wow. Okay. I lost. ♪ She\'s my Tylenol when I\'m in pain... ♪', 'What? I\'m coping. Here, the {badge}.'],
+    ['Losing to you is still better than a room full of kids with kazoos.', 'Take the {badge}.'],
+    ['♪ It\'s been three years, she hasn\'t written back... ♪', 'Huh? No, that\'s not about you. Here\'s your {badge}.'],
+    ['Fine. You win. I\'ll be roasting Lawrence in voice chat to feel better.', '♪ She\'s soothing like the ocean... ♪ Ah. Didn\'t mean to sing. Take the {badge}.'],
+  ],
+  won: [
+    ['♪ She helps me be a better man... ♪', 'Oh, you heard that? Yeah, I sing when I win. And when I don\'t. Mostly when I win.'],
+    ['And that\'s the final note. Class dismissed.', '♪ No matter where you go, I won\'t be very far... ♪ Sorry. Habit.'],
+    ['Practice your scales and come back.', '♪ She\'s exactly what I need... ♪ Me, I mean. The win. That\'s what I need.'],
+    ['You fought like a third-grader with a tambourine.', 'And trust me, I\'d know.'],
+    ['Ooh. ♪ Kinda like the feeling after your first kiss... ♪', 'That\'s what winning feels like. You wouldn\'t know.'],
+  ],
+};
+
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
   leader('nietos', 'THE NIETOS', 'clearing', ['kangaskhan'], 'Pacifier Badge', NIETOS),
   leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),
-  leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge'),
+  leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', CLARENCE),
   leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge'),
-  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge'),
+  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', PAT),
   leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge'),
   leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge'),
   leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge'),
@@ -143,7 +204,11 @@ export const GYM_BY_ID = Object.fromEntries(GYM_LEADERS.map(l => [l.id, l]));
 const BY_BOSS = Object.fromEntries(GYM_LEADERS.flatMap(l => l.bosses.map(b => [b, l])));
 
 /** The leader who sends out this boss, or null (Eternatus, Safari bosses, Sky Pillar guardians). */
-export const leaderFor = (bossId) => BY_BOSS[bossId] ?? null;
+export function leaderFor(bossId) {
+  const l = BY_BOSS[bossId];
+  return l?.sprites?.[bossId] ? (AS_BOSS[bossId] ??= { ...l, sprite: l.sprites[bossId] }) : l ?? null;
+}
+const AS_BOSS = {};
 
 /** A biome's leaders, in order. */
 export const leadersOf = (biomeId) => GYM_LEADERS.filter(l => l.biome === biomeId);

@@ -406,6 +406,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   Kangaskhan theirs (taken from Lawrence), Pacifier Badge; `assets/trainers/gym/nietos.png` is the user's two sprites
   side by side. A leader's `voices` lets a line start "LAW: " to put that name on the tag (`voiced()` in `js/data/gym.js`,
   read by `gymTalk()` and `showLine()` in `js/rewards.js`). 8 / 6 / 7 speeches, Law's "Oh, umm... I mean" slips among them. Playtest `?gym=nietos`.
+  **Clarence and Pat** (2026-10-13, the user's sprites and personalities): Clarence lives to show his ass to the boys on
+  Discord, a burlesque show every night to help them play Valorant, and is furious a gym battle keeps him from it; two
+  sprites, one per boss (`sprites` by boss id, `leaderFor()` dresses him: `clarence.png` for Slaking, `clarence-2.png` for
+  Regigigas). Pat is a music teacher who hates teaching kids and keeps "accidentally" singing a line of Lemonade (Passion)
+  or She Was Mine (AJ Rafael), then "Oh, you heard that?" (one short line at a time). 7 / 5 / 5 speeches each. Playtest
+  `?gym=clarence&n=2`, `?gym=pat`.
   **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
   `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
   foot to just over the bar when a room leaves it unset.
