@@ -11,13 +11,13 @@
 import { BOOKS } from './base-paint-scenes.js';
 import { MOTIFS } from './base-furniture-kinds.js';
 
-const X = (i, W = 1) => i / 32 - W / 2;
-const Y = (j) => (96 - j) / 32;
-const u = (n) => n / 32;
+export const X = (i, W = 1) => i / 32 - W / 2;
+export const Y = (j) => (96 - j) / 32;
+export const u = (n) => n / 32;
 
 const cuts = new WeakMap();
 /** The painting's units [x0, y0, x1, y1] as a canvas, cut from its HD painting (the hour's, for a window). */
-function cut(K, L, [x0, y0, x1, y1]) {
+export function cut(K, L, [x0, y0, x1, y1]) {
   const art = K.p.art(0, L.HD, true);
   let got = cuts.get(art);
   if (!got) cuts.set(art, got = new Map());
@@ -32,19 +32,19 @@ function cut(K, L, [x0, y0, x1, y1]) {
 }
 
 /** A box over painted units [x0, y0, x1, y1], `d` deep from z0 out. */
-function bar(K, L, m, [x0, y0, x1, y1], d, z0 = 0, r = 0.012) {
+export function bar(K, L, m, [x0, y0, x1, y1], d, z0 = 0, r = 0.012) {
   const W = K.p.w, w = u(x1 - x0), h = u(y1 - y0);
   return K.put(L.rbox(w, h, d, Math.min(r, w / 2.2, h / 2.2, d / 2.2)), m, X((x0 + x1) / 2, W), Y((y0 + y1) / 2), z0 + d / 2);
 }
 
 /** A crop of the painting laid flat over painted units `box` at depth z. */
-function pic(K, L, box, z) {
+export function pic(K, L, box, z) {
   const [x0, y0, x1, y1] = box, W = K.p.w;
   return K.put(new L.THREE.PlaneGeometry(u(x1 - x0), u(y1 - y0)), K.pic(cut(K, L, box)), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), z);
 }
 
 /** A sheet of paper over `box`: the painting on it, its bottom corners curling off the wall, pinned at `pins`. */
-function paper(K, L, box, pins = []) {
+export function paper(K, L, box, pins = []) {
   const [x0, y0, x1, y1] = box, W = K.p.w, w = u(x1 - x0), h = u(y1 - y0);
   const g = new L.THREE.PlaneGeometry(w, h, 8, 12), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) {
@@ -84,7 +84,7 @@ function sash(K, L, { outer, glass, bars = [], sill }) {
 }
 
 /** A ring frame (outer and inner radius in units) round (cx, cy), `d` deep: a flat annulus, its edges rounded. */
-function ring(K, L, m, cx, cy, ro, ri, d, sy = 1) {
+export function ring(K, L, m, cx, cy, ro, ri, d, sy = 1) {
   const { THREE } = L, sh = new THREE.Shape(), hole = new THREE.Path();
   sh.absellipse(0, 0, u(ro), u(ro) * sy, 0, Math.PI * 2, false);
   hole.absellipse(0, 0, u(ri), u(ri) * sy, 0, Math.PI * 2, true);

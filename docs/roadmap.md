@@ -18,11 +18,12 @@ the window's light shaft kept) and the store hangs it on its display board (`bui
 **Batch W1 done 2026-10-12** (`js/base-models-w.js`): the windows (sash window, small window with its herb pot,
 curtained window with real folds and ties, round window, arched window), the classic poster and the 13 motif posters
 (paper curling off the wall, a pin), the painting and the 8 framed pictures (moulding, a recessed canvas), the wall shelf
-(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. Next, one session each
+(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. **Batch W2 done
+2026-10-13** (`js/base-models-w2.js`, cloth and paper, 50 kinds): `drape()` lays a crop on a finely cut sheet whose depth
+is a function (folds, ripples, curls), its outline the painting's alpha (`clipped()` cuts what the painting filled with
+shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. `?stock=id,id...` fills the
+store with those pieces for a page load (`furnitureStock()`), and `tools/models.html` frames wall pieces by their middle. Next, one session each
 (Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
-- W2 cloth and paper: the 13 motif banners, 6 tapestries, 6 scrolls, 6 flags, sky banner, alphabet banner, noren, hot
-  spring curtain, shower curtain, calendar, treasure map, wanted / concert / coffee / pixel posters, sticky notes, the
-  type, element, gold star and sales charts, timetable.
 - W3 boards and plaques: region map, notice board, whiteboard, chalkboard, menu board, donut board, constellation map,
   haunted and scholar's portraits, jigsaw picture, photo wall, brass plaque, quiet and hazard signs, projector screen,
   scoreboard, high score board, departures board, badge case, the 6 tablets, winged sun, golden wings.
