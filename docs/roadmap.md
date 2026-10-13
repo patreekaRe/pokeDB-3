@@ -361,7 +361,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   in the room, `speed: 'last'`, and this entry, `'in'`; the user's two) to say "Gym Leader X sent out
   Y!", slides out, then throws their own Poké Ball in from the right onto the boss's pad (`leaderThrow()` in
   `js/battle.js`) and it bursts out (`.ball-out`), then your ball. After the fight their gym talks (badge, re-talks) don't slide
-  in, only the speech window pops up (`bubble`). Open: the user's look.
+  in, only the speech window pops up (`bubble`). **The arch revamp** (same day, the user's ask): the banners by the pillars
+  are gone, and `gymArch()` builds a round arch: fluted columns on stepped bases, the plaque's lintel, eleven wedge stones in
+  two shades with an ink keystone, gold trim and gem, the badge (`gymCrest()`, now at 5.2) in a lunette that glows with the
+  great fires. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
