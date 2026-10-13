@@ -625,29 +625,52 @@ export const MAKES = {
   },
 
   hoard(K, s, W, D, L) {
-    const { rbox, cyl, ball, lathe, THREE } = L, pal = K.pal, gold = K.metal(GOLD), wood = K.wood(), band = K.metal(pal.a);
-    // a wooden chest at the back, its rounded lid and gold bands, a lock
-    const cx = X(21), cz = -0.12, w = u(18), d = 0.36;
-    K.put(rbox(w, u(16), d, 0.015), wood, cx, u(8) + u(4), cz);
-    K.put(new THREE.CylinderGeometry(d / 2, d / 2, w, 20, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).scale(1, 0.6, 1), wood, cx, u(20), cz);
-    for (const x of [-w / 2 + 0.04, w / 2 - 0.04]) {
-      K.put(rbox(0.03, u(16), d + 0.01, 0.006), band, cx + x, u(12), cz);
-      K.put(new THREE.CylinderGeometry(d / 2 + 0.006, d / 2 + 0.006, 0.03, 20, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).scale(1, 0.6, 1), band, cx + x, u(20), cz);
+    const { rbox, cyl, ball, lathe, THREE } = L, pal = K.pal, R = K.r, wood = K.wood(), inner = K.wood(L.tone(pal.w, 0.7)), band = K.metal(pal.a);
+    const golds = [K.metal(GOLD), K.metal(L.tone(GOLD, 1.12)), K.metal(L.tone(GOLD, 0.88))];
+    const coin = (x, y, z, ry = R() * 3, rx = (R() - 0.5) * 0.9, rz = (R() - 0.5) * 0.9) => K.put(cyl(0.034, 0.009, 0.034, 14), golds[(R() * 3) | 0], x, y, z, ry, rx, rz);
+    // a big chest at the back, standing on the floor, its lid thrown open against its hinges
+    const cx = 0.1, cz = -0.16, w = 0.62, d = 0.4, h = 0.34;
+    K.put(rbox(w, h, d, 0.02), wood, cx, h / 2, cz);
+    for (const x of [-w / 2 + 0.05, 0, w / 2 - 0.05]) K.put(rbox(0.035, h + 0.004, d + 0.012, 0.006), band, cx + x, h / 2, cz);
+    K.put(rbox(w + 0.012, 0.035, d + 0.012, 0.006), band, cx, h - 0.02, cz);
+    K.put(rbox(0.07, 0.08, 0.02, 0.008), K.metal(GOLD), cx, h - 0.06, cz + d / 2 + 0.008);
+    const open = 1.95, hinge = [cx, h, cz - d / 2];
+    const lid = (g) => g.translate(0, 0, d / 2).rotateX(-open);
+    K.put(lid(rbox(w, 0.04, d, 0.015).translate(0, 0.02, 0)), inner, ...hinge);
+    K.put(lid(new THREE.CylinderGeometry(d / 2, d / 2, w, 24, 1, false, 0, Math.PI).rotateZ(Math.PI / 2).scale(1, 0.55, 1).translate(0, 0.04, 0)), wood, ...hinge);
+    for (const x of [-w / 2 + 0.05, w / 2 - 0.05]) K.put(lid(rbox(0.035, 0.05, d + 0.01, 0.006).translate(x, 0.02, 0)), band, ...hinge);
+    // the chest full to the brim, a mound of coins over its top
+    K.put(lathe([[w * 0.47, 0], [w * 0.4, 0.05], [w * 0.2, 0.09], [0.001, 0.1]], 28).scale(1, 1, d / w), golds[2], cx, h - 0.03, cz);
+    for (let i = 0; i < 40; i++) {
+      const a = R() * TAU, rr = Math.sqrt(R()) * w * 0.44;
+      coin(cx + Math.cos(a) * rr, h - 0.025 + 0.1 * (1 - (rr / (w * 0.47)) ** 2) + 0.004, cz + Math.sin(a) * rr * d / w);
     }
-    K.put(rbox(u(5), u(4), 0.03, 0.008), gold, cx, u(18), cz + d / 2);
-    // a heap of gold coins spilling out in front, gems in it
-    const heap = [];
-    for (let i = 0; i <= 10; i++) { const a = i / 10 * Math.PI / 2; heap.push([Math.cos(a) * 0.42, Math.sin(a) * u(12)]); }
-    K.put(lathe([[0.42, -0.005], ...heap], 32).scale(1, 1, 0.75), gold, X(13), 0, 0.08);
-    const R = K.r;
-    for (let i = 0; i < 26; i++) {
-      const a = R() * TAU, rr = R() * 0.42, x = X(13) + Math.cos(a) * rr, z = 0.08 + Math.sin(a) * rr * 0.75, y = u(12) * Math.sqrt(Math.max(0, 1 - (rr / 0.42) ** 2));
-      K.put(cyl(0.03, 0.008, 0.03, 14), K.metal(R() < 0.5 ? GOLD : L.tone(GOLD, 1.15)), x, y + 0.004, z, R() * 3, (R() - 0.5) * 0.8, (R() - 0.5) * 0.8);
+    // a pearl string hanging over its front edge
+    const pearls = [];
+    for (let i = 0; i <= 12; i++) { const t = i / 12; pearls.push([cx - 0.18 + t * 0.2, h + 0.02 - Math.sin(t * Math.PI) * 0.12, cz + d / 2 + 0.02]); }
+    for (const p of pearls) K.put(ball(0.014, 8, 6), K.gloss('#f8f4ec'), ...p);
+    // the spill before it: a low heap of coins, every coin its own, gems, a crown and a goblet in it
+    const hx = -0.12, hz = 0.2, hr = 0.34, hh = 0.13, heapY = (rr) => hh * Math.max(0, 1 - (rr / hr) ** 2);
+    K.put(lathe([[hr, 0], ...[1, 2, 3, 4, 5, 6].map(i => { const rr = hr * (1 - i / 6); return [Math.max(0.001, rr), heapY(rr) - 0.012]; })], 32).scale(1, 1, 0.8), golds[2], hx, 0, hz);
+    for (let i = 0; i < 150; i++) {
+      const a = R() * TAU, rr = Math.sqrt(R()) * hr * 1.05;
+      coin(hx + Math.cos(a) * rr, Math.max(0.005, heapY(rr)) + 0.002, hz + Math.sin(a) * rr * 0.8);
     }
-    for (const [i, j, z, c] of [[9, 7, 0.22, '#e04848'], [18, 4, 0.3, '#58b848'], [24, 3, 0.18, '#4a98d8'], [12, 9, 0.02, '#a858d8']]) {
-      K.put(new THREE.OctahedronGeometry(0.04).scale(1, 1.2, 1), K.gloss(c), X(i), u(j), z);
+    for (let i = 0; i < 10; i++) { const a = R() * TAU, rr = hr + 0.03 + R() * 0.12; coin(hx + Math.cos(a) * rr, 0.005, hz + Math.sin(a) * rr * 0.8, R() * 3, 0, 0); }
+    for (const [x, z, c] of [[-0.2, 0.12, '#e04848'], [0.0, 0.3, '#58b848'], [-0.02, 0.1, '#4a98d8'], [-0.3, 0.3, '#a858d8'], [0.12, 0.2, '#e04848']]) {
+      const rr = Math.hypot(x - hx, (z - hz) / 0.8);
+      K.put(new THREE.OctahedronGeometry(0.035).scale(1, 1.3, 1), K.gloss(c), x, heapY(rr) + 0.03, z, R() * 3, 0.3);
     }
-    K.put(L.lathe([[0.001, 0], [0.04, 0], [0.05, 0.06], [0.035, 0.09], [0.04, 0.1], [0.001, 0.1]], 16), gold, X(19), u(9), 0.24, 0, 0.3, 0.4);
+    K.put(lathe([[0.001, 0], [0.04, 0], [0.012, 0.015], [0.01, 0.07], [0.05, 0.1], [0.055, 0.16], [0.045, 0.16], [0.001, 0.105]], 20), K.metal(GOLD), -0.3, heapY(0.15) - 0.01, 0.1, 0, -0.1, 0.12);
+    // a crown sat tilted on the heap: a band and its points, a red gem at each
+    const crown = [hx + 0.02, hh - 0.005, hz - 0.02];
+    K.put(cyl(0.08, 0.05, 0.075, 24, true), K.metal(GOLD), crown[0], crown[1] + 0.025, crown[2], 0, 0.12, -0.18);
+    for (let i = 0; i < 6; i++) {
+      const a = i / 6 * TAU, x = Math.cos(a) * 0.08, z = Math.sin(a) * 0.08;
+      const g = new THREE.ConeGeometry(0.022, 0.06, 8).translate(x, 0.08, z).rotateZ(-0.18).rotateX(0.12);
+      K.put(g, K.metal(GOLD), ...crown);
+      K.put(ball(0.012, 8, 6).translate(x * 1.02, 0.03, z * 1.02).rotateZ(-0.18).rotateX(0.12), K.gloss('#e04848'), ...crown);
+    }
   },
 
   swordrack(K, s, W, D, L) {

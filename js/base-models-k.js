@@ -10,6 +10,7 @@ const X = (n, W = 1) => n / 32 - W / 2;
 const GOLD = '#f0c040', BRASS = '#d8a838', INK = '#303038', CHROME = '#c8ccd8', STONE = '#9a9aa6', MARBLE = '#ece8e0',
   CLOUD = '#eef2fc', WATER = '#58b0e0';
 const RAINBOW = ['#e04848', '#f08030', '#f8d030', '#58b848', '#4a98d8', '#5a58c8', '#a858d8'];
+const TAU = Math.PI * 2;
 
 const sheet = (w, h, draw) => { const c = new OffscreenCanvas(w, h); draw(c.getContext('2d'), w, h); return c; };
 const pics = {};
@@ -457,17 +458,29 @@ export const MAKES = {
   /* ----- Sky Palace ----- */
 
   skyorb(K, s, W, D, L) {
-    const { torus, ball, cyl } = L, id = K.p.fam.replace('orb', ''), [col] = ORB_ART[id];
-    // a cloud, a gold ring floating over it, the orb floating over that, wearing its sign
+    const { torus, ball, cyl, lathe } = L, id = K.p.fam.replace('orb', ''), [col] = ORB_ART[id], gold = K.metal(GOLD);
+    // a cloud, a gold stem rising out of it to a cup holding the orb; a halo ringing the orb, tilted, held by the cup's
+    // three prongs; sparkles round it
+    const oy = u(40), or = u(10);
     cloud(K, L, 0, 0, 0, u(14), u(9), 0.36);
-    K.put(torus(u(6.5), 0.022, Math.PI * 2, 36), K.metal(GOLD), 0, u(24.5), 0, 0, Math.PI / 2);
-    for (let n = 0; n < 3; n++) K.put(ball(0.018, 8, 6), K.glow('#ffffff'), X(9 + n * 7), u(30 + (n % 2) * 3), 0.08 - n * 0.06);
-    K.put(ball(u(10), 40, 28), L.litPic(orbPic(id), 0.3), 0, u(52), 0);
-    if (id === 'sun') for (let n = 0; n < 12; n++) {
-      const a = n / 12 * Math.PI * 2;
-      K.put(cyl(0.001, u(4), u(1.6), 10), K.glow(GOLD), Math.cos(a) * u(13.2), u(52) + Math.sin(a) * u(13.2), 0, 0, 0, a - Math.PI / 2);
+    K.put(lathe([[u(4), 0], [u(2.4), u(3)], [u(1.3), u(6)], [u(1.3), u(10)], [u(2), u(12)], [u(1.3), u(13)], [0.001, u(13)]], 20), gold, 0, u(14), 0);
+    K.put(lathe([[u(1.3), 0], [u(4), u(1.5)], [u(6.4), u(4)], [u(6.9), u(4.8)], [u(6.4), u(4.8)], [u(3.5), u(2.4)], [0.001, u(2)]], 28), gold, 0, oy - u(12.3), 0);
+    K.put(ball(or, 40, 28), L.litPic(orbPic(id), 0.3), 0, oy, 0);
+    const tilt = 0.42, hr = or + u(3.2);
+    K.put(torus(hr, 0.018, TAU, 48), gold, 0, oy, 0, 0, Math.PI / 2 - tilt, 0.15);
+    K.put(torus(hr, 0.007, TAU, 48), K.glow(L.tone(col, 1.4)), 0, oy, 0, 0, Math.PI / 2 - tilt, 0.15);
+    for (let n = 0; n < 3; n++) {
+      const a = n / 3 * TAU + 0.5, x = Math.cos(a), z = Math.sin(a);
+      const pts = [[x * u(6.6), oy - u(7.6), z * u(6.6)], [x * (or + u(1.2)), oy - or * 0.3, z * (or + u(1.2))], [x * (or + u(1)), oy + or * 0.15, z * (or + u(1))]];
+      K.put(tube(L, pts, 0.01, 16), gold);
+      K.put(ball(0.016, 10, 8), gold, ...pts[2]);
     }
-    if (id === 'moon') K.put(ball(u(10.4), 40, 28), K.M('glass', col, { key: 'moonhalo' }), 0, u(52), 0);
+    for (let n = 0; n < 5; n++) { const a = n / 5 * TAU + 0.3; K.put(ball(0.014 + (n % 2) * 0.006, 8, 6), K.glow('#ffffff'), Math.cos(a) * (hr + u(2)), oy + Math.sin(n * 2.1) * u(6), Math.sin(a) * (hr + u(2))); }
+    if (id === 'sun') for (let n = 0; n < 12; n++) {
+      const a = n / 12 * TAU;
+      K.put(cyl(0.001, u(4), u(1.6), 10), K.glow(GOLD), Math.cos(a) * u(13.2), oy + Math.sin(a) * u(13.2), 0, 0, 0, a - Math.PI / 2);
+    }
+    if (id === 'moon') K.put(ball(u(10.4), 40, 28), K.M('glass', col, { key: 'moonhalo' }), 0, oy, 0);
   },
 
   rainbowarch(K, s, W, D, L) {
