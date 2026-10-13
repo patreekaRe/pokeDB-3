@@ -469,7 +469,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   before / after talk becomes the slide-in cinematic like Phil's (`gymTalk()` over the room once the braziers flare:
   big sprite, name plate, shadow till beaten; after the win their last words with the badge spinning in), the walk-up
   kept as the build-up. Then, on the user's OK:
-  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/2c42d3292394e36178378808d76d8336d8348531/index.html?gym=phil&hp=0.05 (`?gym=` any leader).
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/4abd289cd20235912c5f947b7c22d1d9e5a41346/index.html?gym=phil&hp=0.05 (`?gym=` any leader).
 
   ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
