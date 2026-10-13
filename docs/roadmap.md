@@ -451,7 +451,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
-  Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome. Then, on the user's OK:
+  Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
+  **After every leader is written (John, Jahmes, Shaun, Machew, Jerome left), the user's yes, 2026-10-13:** the 3D gym's
+  before / after talk becomes the slide-in cinematic like Phil's (`gymTalk()` over the room once the braziers flare:
+  big sprite, name plate, shadow till beaten; after the win their last words with the badge spinning in), the walk-up
+  kept as the build-up. Then, on the user's OK:
   merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/86c5bdc33707fb63868e7806968f6d84de88048e/index.html?gym=phil&hp=0.05 (`?gym=` any leader).
 
   ▶ Run in: CLOUD.
