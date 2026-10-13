@@ -72,7 +72,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   }
   const said = gymLines(l, lines, vars);
   let darkness = null;
-  for (let i = 0; i < said.length; i++) {
+  try { for (let i = 0; i < said.length; i++) {
     const line = said[i];
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
     if (line.who) {
@@ -84,13 +84,13 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
     if (possess && i === Math.min(1, said.length - 1)) {
       layer.classList.add('taken');
-      darkness = auraOn(who, 2, 'dark');
+      try { darkness = auraOn(who, 2, 'dark'); } catch (e) { console.error(e); }   // the talk must go on without it
       playSound('power');
     }
-    if (possess && i === said.length - 1) possess();
+    if (possess && i === said.length - 1) try { possess(); } catch (e) { console.error(e); }
     await tap(layer);
     playSound('confirm');
-  }
+  } } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
   layer.classList.remove('in');
   layer.classList.add('out');
   darkness?.();
@@ -98,11 +98,17 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   layer.remove();
 }
 
-/** One tap anywhere on the layer, or Enter / Space. */
+/** One tap anywhere on the layer, or Enter / Space. `pointerup` as well as `click`: iOS sends no click for a tap on
+    Phil once he shudders and his aura redraws under the finger, which left the talk stuck there. */
 function tap(layer) {
   return new Promise(done => {
-    const end = () => { layer.removeEventListener('click', end); document.removeEventListener('keydown', key); done(); };
+    const end = () => {
+      layer.removeEventListener('pointerup', end); layer.removeEventListener('click', end);
+      document.removeEventListener('keydown', key); done();
+    };
     const key = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); end(); } };
-    setTimeout(() => { layer.addEventListener('click', end); document.addEventListener('keydown', key); }, 150);
+    setTimeout(() => {
+      layer.addEventListener('pointerup', end); layer.addEventListener('click', end); document.addEventListener('keydown', key);
+    }, 150);
   });
 }

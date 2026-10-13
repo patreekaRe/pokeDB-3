@@ -429,7 +429,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   shudder and thunder (`demonSwap()` in `js/gym.js`, a leader's `demon`), and while JONA talks the speech window is black with
   violet text and a blood-red tag (the battle overlay's `.demon`, and the 3D gym's `.reward-log.demon` in
   `js/rewards.js`); the infusion is a violet burst, the dark aura is brighter, and his Pokémon also breathes a violet glow
-  all fight (`.enemy-portrait.possessed`).
+  all fight (`.enemy-portrait.possessed`). **Fix (2026-10-13, the user's iPhone):** the possession talk stuck on its
+  narration line, where Phil starts shuddering and his aura redraws: iOS sent no `click` for a tap there; `tap()` in
+  `js/gym.js` now takes `pointerup` too, and an error in the talk can't leave its layer up over the battle.
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
