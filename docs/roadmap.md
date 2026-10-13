@@ -431,7 +431,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome. Then, on the user's OK:
-  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/5fbc716f13779cd1d0a11576d97a76ee3a5b898e/index.html?gym=pat&hp=0.05 (`?gym=` any leader).
+  merge into `main` with a patch note and a CLAUDE.md line. Playtest link (pinned): https://rawcdn.githack.com/patreekaRe/pokeDB-3/2b05861640d72820f354d9fd2833aaa846b1a51c/index.html?gym=pat&hp=0.05 (`?gym=` any leader).
 
   ▶ Run in: CLOUD.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
