@@ -2405,7 +2405,7 @@ async function crestArt(id, earned) {
 }
 
 /** The crest over the arch: the leader's badge, a thick cut-out turning slowly in a glow, a ring of motes round it. */
-async function gymCrest(leader, ink, y, z) {
+async function gymCrest(leader, ink, y, z, back = z - 0.3) {
   const earned = !!leader && gymWins(getSave(), leader.id) > 0;
   const art = await crestArt(leader?.id, earned), map = texOf(art), group = new THREE.Group(), size = 1.5;
   const face = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, metalness: earned ? 0.5 : 0.1, roughness: 0.35 });
@@ -2424,7 +2424,7 @@ async function gymCrest(leader, ink, y, z) {
   burst.visible = true;
   burst.material.blending = THREE.AdditiveBlending;
   burst.material.opacity = earned ? 0.55 : 0.35;
-  burst.position.set(0, y, z - 0.3);
+  burst.position.set(0, y, back);
   halo.visible = true;
   halo.material.blending = THREE.AdditiveBlending;
   halo.material.opacity = earned ? 0.7 : 0.4;
@@ -2439,6 +2439,8 @@ async function gymCrest(leader, ink, y, z) {
   const ring = new THREE.Mesh(new THREE.TorusGeometry(size * 0.62, 0.035, 8, 48), std({ color: '#e8c050', metalness: 0.8, roughness: 0.25 }));
   ring.position.set(0, y, z - 0.12);
   B.group.add(ring);
+  // out in front of the arch and drawn over it, so turning or spinning it never sinks into the stones (the user's ask)
+  for (const o of [ring, ...group.children]) { o.material.depthTest = false; o.renderOrder = 2; }
   let spinUntil = 0;
   return {
     flare() { spinUntil = performance.now() + 1400; },
@@ -2708,7 +2710,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   // fire on the lintel's ends and light pouring down on the dais
   const az = BACK_Z + 0.5, { torches, lunette, ly } = gymArch(L, ink, fire, az);
   panel(gymPlaqueArt(ink, leader?.name || 'Gym Leader'), 5.2, 1.14, 0, ly, az + 0.43);
-  const crest = await gymCrest(leader, ink, 5.2, az + 0.1);
+  const crest = await gymCrest(leader, ink, 5.2, az + 0.75, az - 0.2);
   const shafts = [[-0.9, 0.12], [0.2, -0.05], [1.1, -0.14]].map(([x, tilt], i) => {
     const m = new THREE.MeshBasicMaterial({ map: texOf(shaftArt('#fff4d0')), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
     const o = new THREE.Mesh(new THREE.PlaneGeometry(0.9 + i * 0.25, 6.4), m);
