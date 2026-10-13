@@ -18,6 +18,8 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES } from './secret-base.js';
 import { paintMedallion } from './medallion-art.js';
+import { getSave } from './storage.js';
+import { gymWins } from './data/gym.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 
@@ -2299,7 +2301,7 @@ async function buildRocket(figs, { look: L, time }) {
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais under banners in
-   the biome's colour, the POKéMON GYM board high behind; as they speak the great braziers flare with a gong and the shot
+   the biome's colour, a stone arch behind, their badge turning over it with their name on a ribbon (gold once earned, a dark seal till then); as they speak the great braziers flare with a gong and the shot
    draws in on them. ---------- */
 
 const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
@@ -2343,16 +2345,92 @@ function court(ink, L) {
   };
 }
 
-function gymSignArt(ink) {
-  const f = fine(64, 20, 8), { g, rr, lin } = f;
-  rr(0, 0, 64, 20, 4, '#2a2230');
-  rr(1.4, 1.4, 61.2, 17.2, 3, lin(0, 0, 0, 20, [shadeOf(ink, 1), ink, shadeOf(ink, -1)]));
-  rr(10, 3.6, 51, 12.8, 2.4, 'rgba(255,255,255,0.92)');
-  ballMark(g, 6.2, 10, 4.2);
-  g.fillStyle = '#2a2230'; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-  const text = 'POKéMON GYM', w = g.measureText(text).width, k = Math.min(1, 47 / w);
-  g.save(); g.translate(35.5, 10.4); g.scale(k, 1); g.fillText(text, 0, 0); g.restore();
+/** The arch's lintel: a dark stone plaque trimmed in gold, POKéMON GYM between two Poké Balls in the gym's colour. */
+function gymPlaqueArt(ink) {
+  const f = fine(64, 14, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 14, 2.4, '#1e1a22');
+  rr(1, 1, 62, 12, 1.8, lin(0, 0, 0, 14, ['#3a3440', '#2a2430', '#1a161e']));
+  g.strokeStyle = '#e8c050'; g.lineWidth = 0.5; g.beginPath(); g.roundRect(2.2, 2.2, 59.6, 9.6, 1.2); g.stroke();
+  ballMark(g, 7, 7, 3, ink); ballMark(g, 57, 7, 3, ink);
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 5.6px "Trebuchet MS", sans-serif';
+  g.fillStyle = '#5a3a10'; g.fillText('POKéMON GYM', 32.3, 7.4);
+  g.fillStyle = lin(0, 4, 0, 10, ['#fff4b0', '#f0c850', '#b07a20']); g.fillText('POKéMON GYM', 32, 7);
   return f.c;
+}
+
+/** The leader's name on a ribbon in the gym's colour, its ends folded back, hung under their badge. */
+function nameRibbonArt(ink, name) {
+  const f = fine(72, 16, 8), { g, lin } = f, dark = shadeOf(ink, -1);
+  const tail = (x, d) => { g.fillStyle = shadeOf(dark, -1); g.beginPath(); g.moveTo(x, 5); g.lineTo(x + d * 12, 5); g.lineTo(x + d * 8, 10); g.lineTo(x + d * 12, 15); g.lineTo(x, 15); g.closePath(); g.fill(); };
+  tail(10, -1); tail(62, 1);
+  g.fillStyle = lin(0, 1, 0, 13, [shadeOf(ink, 1), ink, dark]);
+  g.beginPath(); g.moveTo(8, 2); g.quadraticCurveTo(36, -1, 64, 2); g.lineTo(64, 12); g.quadraticCurveTo(36, 9, 8, 12); g.closePath(); g.fill();
+  g.strokeStyle = '#f8d860'; g.lineWidth = 0.6;
+  g.beginPath(); g.moveTo(9, 3.4); g.quadraticCurveTo(36, 0.4, 63, 3.4); g.moveTo(9, 10.6); g.quadraticCurveTo(36, 7.6, 63, 10.6); g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 6.4px "Trebuchet MS", sans-serif';
+  const text = name.toUpperCase(), w = g.measureText(text).width, k = Math.min(1, 46 / w);
+  g.save(); g.translate(36, 6.2); g.scale(k, 1);
+  g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillText(text, 0.3, 0.5);
+  g.fillStyle = '#ffffff'; g.fillText(text, 0, 0); g.restore();
+  return f.c;
+}
+
+/** The leader's badge as a painting for the crest, `earned` gold or a dark seal until it's yours. */
+async function crestArt(id, earned) {
+  const { badgeArt } = await import('./trainercard.js');
+  const img = new Image();
+  img.src = badgeArt(`gym-${id}`, earned);
+  await img.decode().catch(() => {});
+  const f = fine(36, 36, 8);
+  try { f.g.drawImage(img, 0, 0, 36, 36); } catch {}
+  return f.c;
+}
+
+/** The crest over the arch: the leader's badge, a thick cut-out turning slowly in a glow, a ring of motes round it. */
+async function gymCrest(leader, ink, y, z) {
+  const earned = !!leader && gymWins(getSave(), leader.id) > 0;
+  const art = await crestArt(leader?.id, earned), map = texOf(art), group = new THREE.Group(), size = 1.5;
+  const face = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, metalness: earned ? 0.5 : 0.1, roughness: 0.35 });
+  if (earned) { face.emissive = new THREE.Color('#ffffff'); face.emissiveMap = map; face.emissiveIntensity = 0.25; }
+  const edge = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: earned ? '#8a6020' : '#3a3440', roughness: 0.6 });
+  const plane = new THREE.PlaneGeometry(size, size);
+  for (let i = 0; i <= 8; i++) {
+    const m = new THREE.Mesh(plane, i === 0 || i === 8 ? face : edge);
+    m.position.z = (i - 4) * 0.014;
+    m.castShadow = i === 4;
+    group.add(m);
+  }
+  const halo = sprite(haloArt(earned ? '#ffe9a0' : ink), 3.2);
+  halo.visible = true;
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = earned ? 0.7 : 0.4;
+  halo.position.set(0, y, z - 0.2);
+  const motes = Array.from({ length: 10 }, (_, i) => {
+    const s = sprite(sparkArt(i % 2 ? '#fff4b0' : ink), 0.16);
+    s.visible = true;
+    return s;
+  });
+  group.position.set(0, y, z);
+  B.group.add(group);
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(size * 0.62, 0.035, 8, 48), std({ color: '#e8c050', metalness: 0.8, roughness: 0.25 }));
+  ring.position.set(0, y, z - 0.12);
+  B.group.add(ring);
+  let spinUntil = 0;
+  return {
+    flare() { spinUntil = performance.now() + 1400; },
+    tick(now) {
+      if (calm) return;
+      const fast = Math.max(0, (spinUntil - now) / 1400);
+      group.rotation.y = Math.sin(now / 1800) * 0.55 + fast * fast * Math.PI * 4;
+      group.position.y = y + Math.sin(now / 900) * 0.06;
+      ring.rotation.z = now / 2600;
+      halo.material.opacity = (earned ? 0.6 : 0.32) + Math.sin(now / 500) * 0.08 + fast * 0.5;
+      motes.forEach((s, i) => {
+        const a = now / 1600 + i * Math.PI * 2 / motes.length;
+        s.position.set(Math.cos(a) * 1.15, y + Math.sin(a) * 0.95 + Math.sin(now / 300 + i) * 0.05, z + Math.sin(a * 2) * 0.1);
+      });
+    },
+  };
 }
 
 function gymBannerArt(ink) {
@@ -2460,7 +2538,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   const sides = [];
   for (let y = 1; y < ROWS - 1; y += 2) sides.push([0, y, 1 + (y % 4) * 0.08], [COLS - 1, y + 1, 1.1 - (y % 4) * 0.05]);
   const rnd = wild(L, time, { to: 2, trees: sides, exit: false, ground: court(ink, L) });
-  B.shotTop = 5.4;
+  B.shotTop = 7.6;
   // the dais: a broad lower tier, the leader's upper one, a carpet down both and the steps out front
   const low = 0.32, high = 0.7, dz = tileZ(1), stoneA = std({ color: L.stone[1], roughness: 0.85 }), stoneB = std({ color: L.stone[3], roughness: 0.9 });
   mesh(rbox(5.6, 0.12, 3.3, 0.05), stoneB, 0, 0.06, dz);
@@ -2472,10 +2550,21 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   mesh(new THREE.BoxGeometry(1.1, 0.02, 1.9), carpet, 0, high + 0.03, tileZ(0.6)).raycast = () => {};
   for (let i = 0; i < 3; i++) mesh(rbox(1.6, low * (3 - i) / 3, 0.22, 0.03), stoneA, 0, low * (3 - i) / 6, tileZ(2.5) + 0.06 + i * 0.22);
   for (let x = MID - 2; x <= MID + 2; x++) for (let y = 0; y <= 2; y++) B.blocked.add(key(x, y));
-  // the board high behind, on two tall posts
-  const post = std({ color: '#3a2e34', roughness: 0.7 });
-  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.08, 0.09, 5.4, 8), post, s * 2.1, 2.7, BACK_Z + 0.4);
-  panel(gymSignArt(ink), 4.6, 1.44, 0, 4.7, BACK_Z + 0.46).castShadow = true;
+  // a stone arch behind the dais, their badge turning over it and their name on a ribbon under it
+  const post = std({ color: '#3a2e34', roughness: 0.7 }), gold = std({ color: '#e8c050', metalness: 0.75, roughness: 0.3 });
+  const az = BACK_Z + 0.5, inkStone = std({ color: shadeOf(ink, -1), roughness: 0.8 });
+  for (const s of [-1, 1]) {
+    mesh(rbox(0.86, 0.3, 0.86, 0.05), stoneB, s * 2.5, 0.15, az);
+    mesh(rbox(0.66, 2.9, 0.66, 0.06), stoneA, s * 2.5, 1.75, az);
+    mesh(rbox(0.7, 0.44, 0.7, 0.04), inkStone, s * 2.5, 1.1, az);
+    mesh(rbox(0.86, 0.22, 0.86, 0.05), stoneB, s * 2.5, 3.3, az);
+  }
+  mesh(rbox(5.9, 0.95, 0.72, 0.08), stoneB, 0, 3.85, az);
+  mesh(rbox(6.2, 0.16, 0.8, 0.04), gold, 0, 4.38, az);
+  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.16, 14, 10), gold, s * 2.9, 4.58, az);
+  panel(gymPlaqueArt(ink), 5.2, 1.14, 0, 3.85, az + 0.37);
+  const crest = await gymCrest(leader, ink, 5.6, az);
+  panel(nameRibbonArt(ink, leader?.name || 'Gym Leader'), 3.1, 0.69, 0, 4.86, az + 0.3);
   // tall banners either side of the dais
   for (const tx of [MID - 3, MID + 3]) {
     const x = tileX(tx), z = tileZ(0.3);
@@ -2516,6 +2605,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   };
   B.flare = () => {
     focus.on = true;
+    crest.flare();
     if (great[0].lit) return;
     const now = performance.now();
     for (const f of great) { f.lit = true; f.at = now; }
@@ -2533,6 +2623,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
     }
     for (const pair of avenue) for (const f of pair) tickFire(f, now);
     for (const f of great) tickFire(f, now);
+    crest.tick(now);
     const near = Math.hypot(walker.x - tileX(MID), walker.z - tileZ(3)) < 1.6;
     const want = focus.on && near ? 1 : 0;
     focus.k = calm ? want : focus.k + (want - focus.k) * Math.min(1, dt / 1000 * 1.6);
