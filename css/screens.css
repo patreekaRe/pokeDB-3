@@ -5344,6 +5344,10 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
 #reward-options.mart-window:is(.m3d, .m3d-wait) { visibility: hidden; pointer-events: none; }
 #reward-options.mart-window:is(.m3d, .m3d-wait) * { visibility: hidden !important; pointer-events: none !important; }
 body:has(#reward-options:is(.m3d, .m3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+/* the hidden ware grid still takes its height, which pushed the sticky box down under the room bar on a short phone */
+body:has(#reward-options.m3d) #reward-screen .reward-bottom {
+  position: fixed; left: 50%; bottom: calc(var(--room-bar-h, 120px) + 14px); translate: -50% 0; width: min(calc(100% - 32px), var(--log-w));
+}
 body:has(#reward-options.m3d) #reward-screen { cursor: pointer; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
 /* the PC's sign, a cream speech window like the 3D Center's, bobbing over it */
 .mart3d-sign {
@@ -5460,3 +5464,9 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .crossroads-scene.talking .xr-go { opacity: 0; pointer-events: none; }
 .xr-meowth { position: absolute; z-index: 2; height: calc(var(--px, 4px) * 22); image-rendering: pixelated; translate: -50% -100%; pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .xr-talk.xr-say, .xr-talk i { animation: none; } }
+
+/* who's talking, on a tag over the speech window's corner (Britt at the Mart counter), like the Poké Mall shopkeepers' */
+.reward-log:not([data-who=""])[data-who]::before {
+  content: attr(data-who); position: absolute; left: 14px; top: -16px; padding: 4px 12px; border-radius: 999px;
+  background: #f0a0b0; color: #6a2a3a; font-size: 0.75rem; line-height: 1.4; rotate: -4deg; box-shadow: 0 2px 0 #c87888, 0 0 0 2px #303038;
+}

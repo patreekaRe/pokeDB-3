@@ -372,10 +372,11 @@ function closeFocus() {
 // The map has its own copy of the box (#map-log), so `box` names which one to use.
 let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
-export function sayLines(lines, boxId = 'reward-log', onDone) {
+export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
   clearInterval(say.typing);
   say = { lines, at: 0, typing: 0, box: boxId };
   const box = $(boxId);
+  box.dataset.who = who;   // a speaker's name on a tag over the box (Britt at the Mart)
   box.hidden = !lines.length;
   box.onclick = () => {
     if (say.box !== boxId) return;
