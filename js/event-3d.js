@@ -2301,7 +2301,7 @@ async function buildRocket(figs, { look: L, time }) {
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais under banners in
-   the biome's colour, a stone arch behind, their badge turning over it with their name on a ribbon (gold once earned, a dark seal till then); as they speak the great braziers flare with a gong and the shot
+   the biome's colour, a stone arch behind, GYM LEADER and their name carved on its lintel, their badge turning over it in a sunburst (gold once earned, a dark seal till then), fire on the lintel's ends, light pouring down on the dais; as they speak the great braziers flare with a gong and the shot
    draws in on them. ---------- */
 
 const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
@@ -2345,34 +2345,51 @@ function court(ink, L) {
   };
 }
 
-/** The arch's lintel: a dark stone plaque trimmed in gold, POKéMON GYM between two Poké Balls in the gym's colour. */
-function gymPlaqueArt(ink) {
+/** The arch's lintel: a dark stone plaque trimmed in gold, GYM LEADER over their name between two Poké Balls in the
+    gym's colour (the user's call, 2026-10-13: the hinge's LCD already says POKéMON GYM, and the name ribbon hid the badge). */
+function gymPlaqueArt(ink, name) {
   const f = fine(64, 14, 8), { g, rr, lin } = f;
   rr(0, 0, 64, 14, 2.4, '#1e1a22');
   rr(1, 1, 62, 12, 1.8, lin(0, 0, 0, 14, ['#3a3440', '#2a2430', '#1a161e']));
   g.strokeStyle = '#e8c050'; g.lineWidth = 0.5; g.beginPath(); g.roundRect(2.2, 2.2, 59.6, 9.6, 1.2); g.stroke();
   ballMark(g, 7, 7, 3, ink); ballMark(g, 57, 7, 3, ink);
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 5.6px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#5a3a10'; g.fillText('POKéMON GYM', 32.3, 7.4);
-  g.fillStyle = lin(0, 4, 0, 10, ['#fff4b0', '#f0c850', '#b07a20']); g.fillText('POKéMON GYM', 32, 7);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  const carve = (text, y, px, room) => {
+    g.font = `900 ${px}px "Trebuchet MS", sans-serif`;
+    const k = Math.min(1, room / g.measureText(text).width);
+    g.save(); g.translate(32, y); g.scale(k, 1);
+    g.fillStyle = '#5a3a10'; g.fillText(text, 0.3, 0.4);
+    g.fillStyle = lin(0, -px / 2, 0, px / 2, ['#fff4b0', '#f0c850', '#b07a20']); g.fillText(text, 0, 0);
+    g.restore();
+  };
+  carve('GYM LEADER', 4.6, 2.6, 30);
+  carve(name.toUpperCase(), 8.6, 5, 40);
   return f.c;
 }
 
-/** The leader's name on a ribbon in the gym's colour, its ends folded back, hung under their badge. */
-function nameRibbonArt(ink, name) {
-  const f = fine(72, 16, 8), { g, lin } = f, dark = shadeOf(ink, -1);
-  const tail = (x, d) => { g.fillStyle = shadeOf(dark, -1); g.beginPath(); g.moveTo(x, 5); g.lineTo(x + d * 12, 5); g.lineTo(x + d * 8, 10); g.lineTo(x + d * 12, 15); g.lineTo(x, 15); g.closePath(); g.fill(); };
-  tail(10, -1); tail(62, 1);
-  g.fillStyle = lin(0, 1, 0, 13, [shadeOf(ink, 1), ink, dark]);
-  g.beginPath(); g.moveTo(8, 2); g.quadraticCurveTo(36, -1, 64, 2); g.lineTo(64, 12); g.quadraticCurveTo(36, 9, 8, 12); g.closePath(); g.fill();
-  g.strokeStyle = '#f8d860'; g.lineWidth = 0.6;
-  g.beginPath(); g.moveTo(9, 3.4); g.quadraticCurveTo(36, 0.4, 63, 3.4); g.moveTo(9, 10.6); g.quadraticCurveTo(36, 7.6, 63, 10.6); g.stroke();
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = '900 6.4px "Trebuchet MS", sans-serif';
-  const text = name.toUpperCase(), w = g.measureText(text).width, k = Math.min(1, 46 / w);
-  g.save(); g.translate(36, 6.2); g.scale(k, 1);
-  g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillText(text, 0.3, 0.5);
-  g.fillStyle = '#ffffff'; g.fillText(text, 0, 0); g.restore();
-  return f.c;
+/** Light pouring down on the dais: a soft band, bright at the top, fading to nothing at its foot. */
+function shaftArt(col) {
+  const { c, g } = fine(8, 32, 8), l = g.createLinearGradient(0, 0, 0, 32);
+  l.addColorStop(0, col); l.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = l; g.fillRect(0, 0, 8, 32);
+  const e = g.createLinearGradient(0, 0, 8, 0);
+  e.addColorStop(0, 'rgba(0,0,0,1)'); e.addColorStop(0.3, 'rgba(0,0,0,0)'); e.addColorStop(0.7, 'rgba(0,0,0,0)'); e.addColorStop(1, 'rgba(0,0,0,1)');
+  g.globalCompositeOperation = 'destination-out'; g.fillStyle = e; g.fillRect(0, 0, 8, 32);
+  return c;
+}
+
+/** Rays round the badge, a sunburst in the gym's colour turning slowly behind it. */
+function burstArt(col) {
+  const { c, g } = fine(32, 32, 8);
+  g.translate(16, 16);
+  for (let i = 0; i < 16; i++) {
+    g.rotate(Math.PI / 8);
+    const l = g.createLinearGradient(0, 0, 16, 0);
+    l.addColorStop(0, col); l.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = l; g.globalAlpha = i % 2 ? 0.55 : 1;
+    g.beginPath(); g.moveTo(0, 0); g.lineTo(16, -1.6); g.lineTo(16, 1.6); g.closePath(); g.fill();
+  }
+  return c;
 }
 
 /** The leader's badge as a painting for the crest, `earned` gold or a dark seal until it's yours. */
@@ -2400,7 +2417,13 @@ async function gymCrest(leader, ink, y, z) {
     m.castShadow = i === 4;
     group.add(m);
   }
-  const halo = sprite(haloArt(earned ? '#ffe9a0' : ink), 3.2);
+  const glowCol = earned ? '#ffe9a0' : ink;
+  const halo = sprite(haloArt(glowCol), 3.2);
+  const burst = sprite(burstArt(glowCol), 4.4);
+  burst.visible = true;
+  burst.material.blending = THREE.AdditiveBlending;
+  burst.material.opacity = earned ? 0.55 : 0.35;
+  burst.position.set(0, y, z - 0.3);
   halo.visible = true;
   halo.material.blending = THREE.AdditiveBlending;
   halo.material.opacity = earned ? 0.7 : 0.4;
@@ -2424,6 +2447,8 @@ async function gymCrest(leader, ink, y, z) {
       group.rotation.y = Math.sin(now / 1800) * 0.55 + fast * fast * Math.PI * 4;
       group.position.y = y + Math.sin(now / 900) * 0.06;
       ring.rotation.z = now / 2600;
+      burst.material.rotation = now / 9000;
+      burst.material.opacity = (earned ? 0.5 : 0.3) + Math.sin(now / 700) * 0.06 + fast * 0.4;
       halo.material.opacity = (earned ? 0.6 : 0.32) + Math.sin(now / 500) * 0.08 + fast * 0.5;
       motes.forEach((s, i) => {
         const a = now / 1600 + i * Math.PI * 2 / motes.length;
@@ -2485,6 +2510,22 @@ function brazier(tx, ty, L, fire, { tall = 0.95, big = false } = {}) {
   }
   B.blocked.add(key(tx, ty));
   return { flame, halo, light, ember, w, z, seed: tx * 7 + ty, lit: true, at: 0 };
+}
+
+/** A fire in a small gold bowl on the arch's lintel, lit with the great braziers. */
+function lintelFire(x, y, z, fire) {
+  const gold = std({ color: '#e8c050', metalness: 0.75, roughness: 0.3 });
+  mesh(new THREE.CylinderGeometry(0.26, 0.14, 0.2, 14), gold, x, y, z);
+  const ember = mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.02, 14), new THREE.MeshBasicMaterial({ color: '#ff7030', toneMapped: false }), x, y + 0.1, z);
+  ember.raycast = () => {};
+  const flame = sprite(flameArt(fire), 0.5);
+  flame.visible = true;
+  flame.center.set(0.5, 0);
+  flame.position.set(x, y + 0.08, z);
+  const halo = sprite(haloArt(fire), 1.4);
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.position.set(x, y + 0.4, z);
+  return { flame, halo, light: null, ember, w: 1, z, seed: Math.round(x * 13), lit: true, at: 0 };
 }
 
 /** A fire's look this frame: out (an ember), lighting (whooshing up past its size and settling) or burning. */
@@ -2550,21 +2591,33 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   mesh(new THREE.BoxGeometry(1.1, 0.02, 1.9), carpet, 0, high + 0.03, tileZ(0.6)).raycast = () => {};
   for (let i = 0; i < 3; i++) mesh(rbox(1.6, low * (3 - i) / 3, 0.22, 0.03), stoneA, 0, low * (3 - i) / 6, tileZ(2.5) + 0.06 + i * 0.22);
   for (let x = MID - 2; x <= MID + 2; x++) for (let y = 0; y <= 2; y++) B.blocked.add(key(x, y));
-  // a stone arch behind the dais, their badge turning over it and their name on a ribbon under it
+  // a stone arch behind the dais, GYM LEADER and their name on its lintel, their badge turning over it in a sunburst,
+  // fire on the lintel's ends and light pouring down on the dais
   const post = std({ color: '#3a2e34', roughness: 0.7 }), gold = std({ color: '#e8c050', metalness: 0.75, roughness: 0.3 });
   const az = BACK_Z + 0.5, inkStone = std({ color: shadeOf(ink, -1), roughness: 0.8 });
+  const glowBand = new THREE.MeshBasicMaterial({ color: shadeOf(ink, 1), toneMapped: false });
   for (const s of [-1, 1]) {
     mesh(rbox(0.86, 0.3, 0.86, 0.05), stoneB, s * 2.5, 0.15, az);
     mesh(rbox(0.66, 2.9, 0.66, 0.06), stoneA, s * 2.5, 1.75, az);
     mesh(rbox(0.7, 0.44, 0.7, 0.04), inkStone, s * 2.5, 1.1, az);
+    mesh(rbox(0.72, 0.06, 0.72, 0.02), glowBand, s * 2.5, 1.1, az).raycast = () => {};
     mesh(rbox(0.86, 0.22, 0.86, 0.05), stoneB, s * 2.5, 3.3, az);
   }
   mesh(rbox(5.9, 0.95, 0.72, 0.08), stoneB, 0, 3.85, az);
   mesh(rbox(6.2, 0.16, 0.8, 0.04), gold, 0, 4.38, az);
-  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.16, 14, 10), gold, s * 2.9, 4.58, az);
-  panel(gymPlaqueArt(ink), 5.2, 1.14, 0, 3.85, az + 0.37);
-  const crest = await gymCrest(leader, ink, 5.6, az);
-  panel(nameRibbonArt(ink, leader?.name || 'Gym Leader'), 3.1, 0.69, 0, 4.86, az + 0.3);
+  const torches = [-1, 1].map(s => lintelFire(s * 2.75, 4.46, az, fire));
+  panel(gymPlaqueArt(ink, leader?.name || 'Gym Leader'), 5.2, 1.14, 0, 3.85, az + 0.37);
+  const crest = await gymCrest(leader, ink, 5.75, az + 0.1);
+  const shafts = [[-0.9, 0.12], [0.2, -0.05], [1.1, -0.14]].map(([x, tilt], i) => {
+    const m = new THREE.MeshBasicMaterial({ map: texOf(shaftArt('#fff4d0')), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
+    const o = new THREE.Mesh(new THREE.PlaneGeometry(0.9 + i * 0.25, 6.4), m);
+    o.geometry.translate(0, -3.2, 0);
+    o.position.set(x, 7.2, tileZ(0.6) - 0.4);
+    o.rotation.z = tilt;
+    o.raycast = () => {};
+    B.group.add(o);
+    return o;
+  });
   // tall banners either side of the dais
   for (const tx of [MID - 3, MID + 3]) {
     const x = tileX(tx), z = tileZ(0.3);
@@ -2600,7 +2653,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   B.reset = () => {
     enteredAt = performance.now();
     const lit = !!opts?.spent;
-    for (const f of [...avenue.flat(), ...great]) { f.lit = lit; f.at = 0; }
+    for (const f of [...avenue.flat(), ...great, ...torches]) { f.lit = lit; f.at = 0; }
     focus.on = false; focus.k = 0;
   };
   B.flare = () => {
@@ -2608,7 +2661,7 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
     crest.flare();
     if (great[0].lit) return;
     const now = performance.now();
-    for (const f of great) { f.lit = true; f.at = now; }
+    for (const f of [...great, ...torches]) { f.lit = true; f.at = now; }
     playSound('fx-gong');
   };
   B.ticks.push((now, dt) => {
@@ -2618,12 +2671,13 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
       playSound('fx-taiko');
     });
     if (!great[0].lit && avenue.at(-1)[0].lit && walker.z < tileZ(4.5)) {   // reached the court's head: the great fires too
-      for (const f of great) { f.lit = true; f.at = now; }
+      for (const f of [...great, ...torches]) { f.lit = true; f.at = now; }
       playSound('fx-whoosh');
     }
     for (const pair of avenue) for (const f of pair) tickFire(f, now);
-    for (const f of great) tickFire(f, now);
+    for (const f of [...great, ...torches]) tickFire(f, now);
     crest.tick(now);
+    shafts.forEach((o, i) => { o.material.opacity = (great[0].lit ? 0.22 : 0.08) + (calm ? 0 : Math.sin(now / 1300 + i * 2) * 0.03); });
     const near = Math.hypot(walker.x - tileX(MID), walker.z - tileZ(3)) < 1.6;
     const want = focus.on && near ? 1 : 0;
     focus.k = calm ? want : focus.k + (want - focus.k) * Math.min(1, dt / 1000 * 1.6);
