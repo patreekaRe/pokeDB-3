@@ -34,6 +34,7 @@ import { MAKES as MAKES_W } from './base-models-w.js';
 import { MAKES as MAKES_W2 } from './base-models-w2.js';
 import { MAKES as MAKES_W3 } from './base-models-w3.js';
 import { MAKES as MAKES_W4 } from './base-models-w4.js';
+import { MAKES as MAKES_W5 } from './base-models-w5.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1762,7 +1763,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }
