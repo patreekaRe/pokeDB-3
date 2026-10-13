@@ -270,6 +270,7 @@ function checkpoint() {
     roads: run.roads,
     wayfound: run.wayfound,   // Wayfinder Lv 1's one swap a run, spent
     atFork: run.atFork,       // saved at the crossroads, so Continue comes back to it (walkOn())
+    gymWon: run.gymWon,       // saved in the gym after its leader's beaten, so Continue comes back to it (afterFight())
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -367,6 +368,14 @@ export function continueRun(saved) {
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
     playMusic(bossWin());
     walkOn();
+    return null;
+  }
+  const gymNode = run.gymWon && run.map.byId[run.current], leader = gymNode && gymLeader(gymNode);
+  if (leader) {   // left in the gym after beating its leader: back to the hand-over, not to the map to fight them again
+    playMusic('gym-victory');
+    const { result, said } = run.gymWon;
+    if (gym3d()) gymRoom(gymNode, leader, result, said);
+    else afterFight(gymNode, { ...result, gymSaid: true });
     return null;
   }
   reseed(`map:${zone()}:${run.current}`);
@@ -670,6 +679,7 @@ function peekRoom(id) {
    ============================================================ */
 
 function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= playtest goes straight in)
+  run.gymWon = null;   // Mewtwo falls in from its third gym (fallIn()) without walkOn()
   reseed(`biome:${zone()}`);
   if (isTower()) return startFlight(quiet);
   if (!isSafari() && !peeking) updateSave(d => {
@@ -1595,6 +1605,10 @@ function afterFight(node, result) {
     const vars = { boss: ENEMY_DEFS[node.enemyId]?.name };
     return gymTalk(leader, said.slice(0, -1), { vars, lit: true }).then(() => {
       if (run !== thisRun) return;
+      // the boss is beaten: a refresh from the gym (or the rewards after it) comes back to the gym rather than the map
+      // before the boss (the user's ask, 2026-10-13)
+      run.gymWon = { result, said };
+      checkpoint();
       if (gym3d()) return gymRoom(node, leader, result, said);
       const done = () => afterFight(node, { ...result, gymSaid: true });
       const again = peeking ? 0 : gymWins(getSave(), leader.id), { lines, badge } = rematch(leader, again);
@@ -1705,13 +1719,19 @@ function afterFight(node, result) {
   }
 
   if (node.type === 'boss') {
-    if (!isSafari() && !isTower() && !peeking) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
+    const recount = run.gymWon?.counted;   // back in the gym after a refresh in its rewards: this win is already counted
+    if (!isSafari() && !isTower() && !peeking && !recount) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
       d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       const leader = gymLeader(node);
       if (leader) d.gym = { ...(d.gym || {}), [leader.id]: (d.gym?.[leader.id] || 0) + 1 };
       if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
     });
+    if (run.gymWon && !recount && !peeking) {
+      run.gymWon.counted = true;
+      const saved = loadRunData();
+      if (saved) saveRunData({ ...saved, gymWon: run.gymWon });
+    }
     if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
     if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
@@ -1757,6 +1777,7 @@ function afterFight(node, result) {
 /** On to the next biome: the journey film there first (js/travel.js; not on Mewtwo's speedrun or in the Safari), ending
     dark while the next biome's map and intro film come up beneath it. */
 async function walkOn() {
+  run.gymWon = null;   // the gym and its rewards are behind you
   const from = mainBiome().id, roads = FORKS.includes(run.biome + 1) && forkRoads(run.biome + 1, run.roads);
   // the crossroads (js/crossroads.js), where the next slot has two roads, once roadsOpen(); Mewtwo keeps its one road.
   // A peeked run always gets it, so it can be playtested.

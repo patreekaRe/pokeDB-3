@@ -51,6 +51,7 @@ export const NEXT = [
   ['runs', 'Beat a Gym Leader 5 times for their Gold badge, a second badge in the Badge Case for each leader.'],
   ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
   ['mall', 'The Poké Mall has the Clearing\'s Pokédex bar along the bottom: Home and How to play, your PokéCoins, and the name of the shop you\'re in.'],
+  ['fixes', 'Closing the game in a Gym after beating its Leader now brings you back to the Gym on Continue, not to the map to fight them again.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
