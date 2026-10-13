@@ -1681,10 +1681,11 @@ function homeRoom(b) {
             again();
           }));
   }
-  const hour = new Date().getHours(), sleepy = home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
+  const away = !!home.leader && gymWins(getSave(), home.leader) === 0;   // up at their Gym till you've beaten them once
+  const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    sub: [away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
     options,
     skipLabel: 'Leave',
     onSkip: out,
@@ -1693,12 +1694,12 @@ function homeRoom(b) {
   });
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
-  if (home.leader) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
+  if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, onTalk: (stand) => {
+    extra: { town, home: b.home, away, onTalk: (stand) => {
       if (run !== thisRun) return;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
       if (!lines) return;

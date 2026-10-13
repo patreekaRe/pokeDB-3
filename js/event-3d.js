@@ -20,7 +20,7 @@ import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES } from './secret-base.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
-import { gymWins } from './data/gym.js';
+import { gymWins, GYM_INK as LEADER_INK } from './data/gym.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 
@@ -2977,6 +2977,160 @@ function townGrass(map, L, rnd) {
   instanced(blade, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), at).castShadow = false;
 }
 
+/* ---------- tiled roofs (the town's houses and theater) ---------- */
+
+/** One column of kawara for a roof slope, courses down it: `cols` [light, mid, dark]. u runs along the ridge (a column a
+    repeat), v down the slope (four courses a repeat). */
+function kawaraArt(cols) {
+  const c = document.createElement('canvas');
+  c.width = 32; c.height = 64;
+  const g = c.getContext('2d'), lin = g.createLinearGradient(0, 0, 32, 0);
+  lin.addColorStop(0, cols[2]); lin.addColorStop(0.3, cols[1]); lin.addColorStop(0.5, cols[0]); lin.addColorStop(0.72, cols[1]); lin.addColorStop(1, cols[2]);
+  g.fillStyle = lin; g.fillRect(0, 0, 32, 64);
+  for (let y = 0; y < 64; y += 16) {
+    const sh = g.createLinearGradient(0, y, 0, y + 6);
+    sh.addColorStop(0, 'rgba(0,0,0,0.42)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = sh; g.fillRect(0, y, 32, 6);
+    g.fillStyle = 'rgba(255,255,255,0.18)'; g.fillRect(6, y + 13, 20, 1.5);
+  }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4;
+  return map;
+}
+
+/** A crest disc for a house you can walk into: a Poké Ball for a shop, a Gym Leader's initial in their colours. */
+function houseCrest(kind, ink, letter) {
+  const f = fine(32, 32, 8), { g } = f;
+  g.fillStyle = '#c8902c'; g.beginPath(); g.arc(16, 16, 15.5, 0, Math.PI * 2); g.fill();
+  if (kind === 'ball') {
+    g.fillStyle = '#e83828'; g.beginPath(); g.arc(16, 16, 13, Math.PI, 0); g.fill();
+    g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(16, 16, 13, 0, Math.PI); g.fill();
+    g.fillStyle = '#2a1c18'; g.fillRect(3, 14.6, 26, 2.8);
+    g.beginPath(); g.arc(16, 16, 4.6, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(16, 16, 2.8, 0, Math.PI * 2); g.fill();
+  } else {
+    g.fillStyle = ink[1]; g.beginPath(); g.arc(16, 16, 13, 0, Math.PI * 2); g.fill();
+    g.strokeStyle = ink[0]; g.lineWidth = 1.4; g.beginPath(); g.arc(16, 16, 10.5, 0, Math.PI * 2); g.stroke();
+    g.fillStyle = '#ffffff'; g.font = 'bold 15px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(letter, 16, 17);
+  }
+  return f.c;
+}
+
+/** A Japanese tiled roof, ridge along x, `length` long, its curve roofShape(half, rise, t) on the parent at height `y`:
+    ribbed columns of kawara down both slopes, round tile ends along the eaves, a stacked ridge with onigawara at each end,
+    dark bargeboards round each gable with a gold gegyo at the apex. `fancy` (a house you walk into) adds gold
+    shachihoko-ish finials on the ridge. Returns the front slope's height at a z (`slopeAt`) for things set on it. */
+function kawaraRoof(parent, { length, half, rise, t, y, z = 0, roof, fancy = false, back = true }) {
+  const g = new THREE.Group();
+  g.position.set(0, y, z);
+  parent.add(g);
+  const eave = std({ color: roof[2], roughness: 0.7 }), ridgeMat = std({ color: shadeOf(roof[2], -1), roughness: 0.6 });
+  const wood = std({ color: '#3a241a', roughness: 0.75 }), gold = std({ color: '#e8b040', metalness: 0.7, roughness: 0.3 });
+  // the shell, plain, under the tiles: it closes the gables' edges
+  const shell = new THREE.ExtrudeGeometry(roofShape(half, rise, t), { depth: length, bevelEnabled: false, curveSegments: 12 });
+  shell.rotateY(Math.PI / 2); shell.translate(-length / 2, 0, 0);
+  mesh(shell, eave, 0, 0, 0, g);
+  // the front half of the curve: eave (s = 0) to ridge (s = 1), as roofShape draws it
+  const at = (s) => { const a = (1 - s) ** 2, b = 2 * (1 - s) * s, c = s * s; return [a * half + b * half * 0.45, a * 0.08 + b * rise * 0.32 + c * rise]; };
+  const slopeAt = (zz) => { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (at(m)[0] > zz) lo = m; else hi = m; } return at(lo)[1]; };
+  const COL = 0.24, cols = Math.max(4, Math.round(length / COL)), cw = length / cols, PER = 4, NT = 14, RIB = 0.04;
+  const map = kawaraArt(roof), tiles = std({ map, roughness: 0.5 });
+  const pos = [], uv = [], idx = [];
+  const ends = [];
+  for (const side of back ? [1, -1] : [1]) {
+    const base = pos.length / 3;
+    let arc = 0, prev = at(0);
+    for (let j = 0; j <= NT; j++) {
+      const s = j / NT, [pz, py] = at(s), [qz, qy] = at(Math.min(1, s + 0.01)), [rz, ry] = at(Math.max(0, s - 0.01));
+      if (j) arc += Math.hypot(pz - prev[0], py - prev[1]);
+      prev = [pz, py];
+      let tz = qz - rz, ty = qy - ry; const n = Math.hypot(tz, ty) || 1; tz /= n; ty /= n;
+      const nz = ty, ny = -tz;   // the outward normal of the front slope
+      for (let i = 0; i <= cols * PER; i++) {
+        const x = -length / 2 + i * cw / PER, k = (i % PER) / PER, bump = 0.012 + RIB * Math.sin(Math.PI * k) ** 0.8;
+        pos.push(x, py + ny * bump, side * (pz + nz * bump));
+        uv.push(i / PER, arc / 0.62);
+      }
+    }
+    const row = cols * PER + 1;
+    for (let j = 0; j < NT; j++) for (let i = 0; i < row - 1; i++) {
+      const a = base + j * row + i, b = a + 1, c = a + row, d = c + 1;
+      if (side > 0) idx.push(a, b, d, a, d, c); else idx.push(a, d, b, a, c, d);
+    }
+    const [ez, ey] = at(0);
+    for (let i = 0; i < cols; i++) ends.push([-length / 2 + (i + 0.5) * cw, ey + 0.035, side * (ez + 0.01), side]);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  mesh(geo, tiles, 0, 0, 0, g).receiveShadow = true;
+  // the round tile ends along the eaves
+  const disc = new THREE.CylinderGeometry(0.075, 0.075, 0.06, 12); disc.rotateX(Math.PI / 2);
+  const caps = new THREE.InstancedMesh(disc, std({ color: shadeOf(roof[1], -1), roughness: 0.5 }), ends.length), o = new THREE.Object3D();
+  ends.forEach(([x, yy, zz, side], i) => { o.position.set(x, yy, zz); o.rotation.set(side * 0.35, 0, 0); o.updateMatrix(); caps.setMatrixAt(i, o.matrix); });
+  caps.castShadow = false; caps.raycast = () => {};
+  g.add(caps);
+  // the ridge: a stack of flat tiles under a round cap, onigawara at its ends
+  mesh(new THREE.BoxGeometry(length + 0.1, 0.16, 0.24), ridgeMat, 0, rise + 0.02, 0, g);
+  const cap = new THREE.CylinderGeometry(0.1, 0.1, length + 0.16, 14); cap.rotateZ(Math.PI / 2);
+  mesh(cap, eave, 0, rise + 0.12, 0, g);
+  for (const sx of [-1, 1]) {
+    const oni = mesh(rbox(0.14, 0.36, 0.34, 0.06), ridgeMat, sx * (length / 2 + 0.06), rise + 0.12, 0, g);
+    const boss = new THREE.CylinderGeometry(0.07, 0.07, 0.04, 12); boss.rotateZ(Math.PI / 2);
+    mesh(boss, fancy ? gold : eave, sx * (length / 2 + 0.14), rise + 0.12, 0, g);
+    if (fancy) {   // a gold finial curling up off each end of the ridge
+      const fin = mesh(new THREE.ConeGeometry(0.07, 0.34, 8), gold, sx * (length / 2 + 0.02), rise + 0.42, 0, g);
+      fin.rotation.z = -sx * 0.45;
+      mesh(new THREE.SphereGeometry(0.07, 12, 8), gold, sx * (length / 2 + 0.07), rise + 0.3, 0, g);
+    }
+    oni.castShadow = true;
+    // the bargeboard round the gable and the gegyo hanging at its apex
+    const barge = new THREE.ExtrudeGeometry(roofShape(half + 0.03, rise + 0.035, t + 0.08), { depth: 0.07, bevelEnabled: false, curveSegments: 12 });
+    barge.rotateY(Math.PI / 2);
+    mesh(barge, wood, sx > 0 ? length / 2 - 0.02 : -length / 2 - 0.05, 0, 0, g);
+    const gegyo = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.03, 6), fancy ? gold : wood, sx * (length / 2 + 0.03), rise - t - 0.12, 0, g);
+    gegyo.rotation.z = Math.PI / 2;
+  }
+  return { group: g, slopeAt, ridge: rise + 0.22 };
+}
+
+/** The gable's plaster under a roof's curve at x, with a dark tie beam (the house's ends were open under its roof). */
+function gableWall(parent, x, { half, rise, t, wide, y, z = 0 }) {
+  const sh = new THREE.Shape(), a = (s) => { const p = (1 - s) ** 2, q = 2 * (1 - s) * s, c = s * s; return [p * half + q * half * 0.45, p * 0.08 + q * rise * 0.32 + c * rise - t - 0.01]; };
+  const pts = [];
+  for (let i = 0; i <= 16; i++) { const [zz, yy] = a(i / 16); if (zz <= wide) pts.push([zz, yy]); }
+  sh.moveTo(-wide, 0); sh.lineTo(wide, 0);
+  for (const [zz, yy] of pts) sh.lineTo(zz, Math.max(0, yy));
+  for (const [zz, yy] of pts.reverse()) sh.lineTo(-zz, Math.max(0, yy));
+  sh.closePath();
+  const geo = new THREE.ShapeGeometry(sh); geo.rotateY(Math.PI / 2);
+  const m = mesh(geo, std({ color: '#efe4cc', roughness: 0.95, side: THREE.DoubleSide }), x, y, z, parent);
+  m.castShadow = false;
+  mesh(new THREE.BoxGeometry(0.06, 0.07, wide * 2), std({ color: '#3a241a', roughness: 0.75 }), x, y + rise * 0.3, z, parent);
+}
+
+/** A house's front gable (chidori-hafu) over the door of a house you walk into: a little tiled roof set on the front
+    slope, its ridge running to you, plaster in its triangle and a crest. */
+function frontGable(parent, main, { zf, y, roof, crest }) {
+  const wide = 0.85, rise = 0.85, t = 0.09, zFront = zf - 0.05, foot = main.slopeAt(zFront);
+  let len = 0.6;
+  while (len < zFront - 0.15 && main.slopeAt(zFront - len) - foot < rise + 0.1) len += 0.05;   // its ridge runs back into the main roof
+  const g = new THREE.Group();
+  g.position.set(0, y + foot - 0.02, zFront - len / 2);
+  g.rotation.y = -Math.PI / 2;   // its local +x is towards you
+  parent.add(g);
+  kawaraRoof(g, { length: len, half: wide, rise, t, y: 0, roof, fancy: true });
+  // its triangle, facing you, and the crest on it
+  gableWall(g, len / 2 - 0.03, { half: wide, rise, t, wide: wide - 0.06, y: 0 });
+  if (crest) {
+    const c = panel(crest, 0.5, 0.5, 0, 0, 0);
+    c.parent?.remove(c); g.add(c);
+    c.position.set(len / 2 + 0.02, rise * 0.4, 0); c.rotation.set(0, Math.PI / 2, 0); c.rotateX(-0.35);   // tipped up to the camera
+  }
+}
+
 /** A name on a little wooden plaque, over a door. */
 function nameArt(text) {
   const f = fine(64, 16, 8), { g, rr } = f;
@@ -3002,12 +3156,17 @@ function house(b, f, L, lit) {
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.12, h + 0.02, 0.12), dark, sx * (w / 2 + 0.01), 0.16 + h / 2, sz * (d / 2 + 0.01), g);
   mesh(new THREE.BoxGeometry(w + 0.1, 0.1, 0.1), dark, 0, 0.16 + h * 0.66, d / 2 + 0.03, g);
   const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
-  const roofMat = std({ map: roofTiles(roof, 1.6, 1.6), roughness: 0.55 }), eave = std({ color: roof[2], roughness: 0.7 });
-  const geo = new THREE.ExtrudeGeometry(roofShape(d / 2 + 0.45, 1.0, 0.12), { depth: w + 0.55, bevelEnabled: false, curveSegments: 12 });
-  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.55) / 2, 0, 0);
-  mesh(geo, [roofMat, eave], 0, 0.16 + h, 0, g);
-  mesh(new THREE.BoxGeometry(w + 0.65, 0.13, 0.17), eave, 0, 0.16 + h + 0.97, 0, g);
-  const small = mesh(new THREE.BoxGeometry(w * 0.6, 0.06, 0.5), roofMat, 0, 0.16 + h * 0.72, d / 2 + 0.22, g);
+  const eave = std({ color: roof[2], roughness: 0.7 });
+  // a tiled roof, plaster in its gables; a house you walk into gets gold on its ridge and a front gable with its crest
+  const top = { length: w + 0.55, half: d / 2 + 0.45, rise: 1.0, t: 0.12, y: 0.16 + h };
+  const main = kawaraRoof(g, { ...top, roof, fancy: !!b.home });
+  for (const sx of [-1, 1]) gableWall(g, sx * (w / 2 + 0.005), { ...top, wide: d / 2 });
+  if (b.home) {
+    const leader = B.town?.homes?.[b.home]?.leader, ink = leader && LEADER_INK[leader];
+    frontGable(g, main, { zf: top.half, y: top.y, roof, crest: b.kind === 'shop' || !ink ? houseCrest('ball') : houseCrest('ink', ink, (b.name || leader)[0]) });
+  }
+  const pentTiles = kawaraArt(roof); pentTiles.repeat.set(w * 0.6 / 0.24, 0.8);
+  const small = mesh(new THREE.BoxGeometry(w * 0.6, 0.06, 0.5), [eave, eave, std({ map: pentTiles, roughness: 0.5 }), eave, eave, eave], 0, 0.16 + h * 0.72, d / 2 + 0.22, g);
   small.rotation.x = 0.32;
   const glow = std({ color: '#e84a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
   lit.push(glow);
@@ -3045,15 +3204,13 @@ function theater(b, f, L, lit) {
   mesh(new THREE.BoxGeometry(w, h, d), [plaster, plaster, dark, dark, front, plaster], 0, 0.22 + h / 2, 0, g);
   for (let i = 0; i < 6; i++) mesh(new THREE.CylinderGeometry(0.09, 0.1, h, 12), red, -w / 2 + 0.1 + i * (w - 0.2) / 5, 0.22 + h / 2, d / 2 + 0.75, g);
   const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
-  const roofMat = std({ map: roofTiles(roof, 2.4, 1.8), roughness: 0.55 }), eave = std({ color: roof[2], roughness: 0.7 });
-  const low = new THREE.ExtrudeGeometry(roofShape(d / 2 + 1.0, 1.1, 0.14), { depth: w + 0.9, bevelEnabled: false, curveSegments: 12 });
-  low.rotateY(Math.PI / 2); low.translate(-(w + 0.9) / 2, 0, 0);
-  mesh(low, [roofMat, eave], 0, 0.22 + h, 0.25, g);
+  const low = { length: w + 0.9, half: d / 2 + 1.0, rise: 1.1, t: 0.14, y: 0.22 + h, z: 0.25 };
+  kawaraRoof(g, { ...low, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (w / 2 + 0.005), { ...low, wide: d / 2 });
   mesh(new THREE.BoxGeometry(w * 0.55, 0.5, d * 0.45), plaster, 0, 0.22 + h + 1.25, 0.25, g);
-  const up = new THREE.ExtrudeGeometry(roofShape(d * 0.3 + 0.45, 0.8, 0.12), { depth: w * 0.55 + 0.7, bevelEnabled: false, curveSegments: 12 });
-  up.rotateY(Math.PI / 2); up.translate(-(w * 0.55 + 0.7) / 2, 0, 0);
-  mesh(up, [roofMat, eave], 0, 0.22 + h + 1.5, 0.25, g);
-  mesh(new THREE.BoxGeometry(w * 0.55 + 0.8, 0.12, 0.16), eave, 0, 0.22 + h + 2.28, 0.25, g);
+  const up = { length: w * 0.55 + 0.7, half: d * 0.3 + 0.45, rise: 0.8, t: 0.12, y: 0.22 + h + 1.5, z: 0.25 };
+  kawaraRoof(g, { ...up, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (w * 0.275 + 0.005), { ...up, wide: d * 0.225 });
   panel(signArt(b.name), 1.9, 0.4, f.cx, 0.22 + h + 0.15, f.cz - 0.1 + d / 2 + 1.25);
   for (const sx of [-1, 1]) {   // paper lanterns hung from the eaves
     const glow = std({ color: '#f04a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
@@ -4020,7 +4177,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : kind === 'home' ? `${at.town?.id}:${at.home}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
