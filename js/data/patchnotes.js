@@ -48,6 +48,7 @@ export const NEXT = [
   ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
   ['music', 'Gym Leaders have music of their own: one for walking up their gym, one for the battle and a victory theme for beating them.'],
   ['runs', 'Gym Leader Lawrence has his own look and plenty to say, and a different speech each time: before the battle, when you beat him and when he beats you.'],
+  ['runs', 'In their gym a Gym Leader\'s name sits on a tag over the text box while they talk.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

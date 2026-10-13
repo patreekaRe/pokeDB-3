@@ -129,7 +129,14 @@ export function showChoiceHp() {
   if (hp) { setHpBar('choice', hp.hp, hp.maxHp); setHpBar('room', hp.hp, hp.maxHp); }
 }
 
+/** Who is speaking in the reward screen's text box, on a name tag over it (a Gym Leader), or null for narration.
+    Every new choice screen starts as narration. */
+export function speaker(name = null) {
+  if (name) $('reward-log').dataset.who = name; else delete $('reward-log').dataset.who;
+}
+
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
+  speaker();
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
   $('reward-coins').hidden = !coins;

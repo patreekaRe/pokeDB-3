@@ -41,7 +41,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, speaker, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
@@ -1499,6 +1499,7 @@ function gymRoom(node, leader, won = null) {
     const room = event3dMod?.eventRoom3d();
     room?.light();
     room?.does('npc', 'npc-nod');
+    speaker(leader.name);
     sayLines(intro, 'reward-log', () => { if (run === thisRun) fight(node, { talked: true }); });
   };
   const after = !!won;
@@ -1512,14 +1513,15 @@ function gymRoom(node, leader, won = null) {
     onSkip: after ? leave : undefined,
     layout: 'event-room gym-room',
   });
+  if (after) speaker(leader.name);
   event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
     spent: after,
-    onPick: after ? () => sayLines([beaten.at(-1)]) : talk,
+    onPick: after ? () => { speaker(leader.name); sayLines([beaten.at(-1)]); } : talk,
     extra: { leader, dark: first && !after },
     onSaid: after ? () => {
       if (run !== thisRun) return;
       event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-      if (first && !peeking) { badgePop(leader); sayLines([`You received the ${leader.badge}!`]); }
+      if (first && !peeking) { badgePop(leader); speaker(); sayLines([`You received the ${leader.badge}!`]); }
     } : null,
     onFail: () => (after ? leave() : fight(node)),
   });

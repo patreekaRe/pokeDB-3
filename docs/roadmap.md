@@ -402,6 +402,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
   `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
   foot to just over the bar when a room leaves it unset.
+  **Their name on the box** (2026-10-13, the user's ask): while a leader talks in the 3D gym their name is on a tilted pink
+  tag over the text box (`speaker()` in `js/rewards.js`, `.reward-log[data-who]`; every `showChoice()` starts as narration).
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
