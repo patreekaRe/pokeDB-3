@@ -372,6 +372,62 @@ const SHAUN = {
   ],
 };
 
+/* Machew (the user's, 2026-10-13): the ultimate edgelord weeb, obsessed with Tales of Berseria, sure he is a character in
+   it out to save the world, all ninja, swords and brooding. */
+const MACHEW = {
+  intro: [
+    ['...So. You found me. Few ever do.', 'The wind whispered your name. I did not listen. Go, {boss}.'],
+    ['This world is rotting. The Abbey calls it "order". I call it a cage.', 'And I am the blade that cuts it open. Go, {boss}!'],
+    ['You think this is a gym? Fool. This is a battlefield. My battlefield.', '*draws his katana. It\'s plastic.* Go, {boss}!'],
+    ['Velvet would understand me. Rokurou would understand me. You? You understand nothing.', 'Go, {boss}. Show them the darkness.'],
+    ['I don\'t battle for badges. I battle for a world where no one has to cry again.', '...Also it\'s my shift till six. Go, {boss}!'],
+    ['My left arm... it\'s acting up again. The daemonblight wants out.', 'Stand back. Go, {boss}!'],
+    ['Tch. Another challenger. They always come at sunset, when my power is strongest.', 'It\'s 2 p.m. Go, {boss}!'],
+    ['I\'ve walked the path of the shadow ninja for nine years. Since I was twelve.', 'It ends here. For you. Go, {boss}!'],
+  ],
+  beaten: [
+    ['...Impossible. My Mystic Arte...', 'Take the {badge}. You\'ve earned the right to walk my path. For now.'],
+    ['Heh. So this is defeat. Velvet tasted it too, before she rose again.', 'The {badge} is yours. We will meet again. In the next arc.'],
+    ['*kneels dramatically, sword in the ground*', '...Take the {badge}. I need a moment. Don\'t look at me.'],
+    ['You fight with conviction. Like Eizen. Like a true pirate of the Aifread.', 'Here. The {badge}. Use it to save this world. I couldn\'t.'],
+    ['My hood fell down. You saw my face. Now you must take the {badge} and leave.', 'And tell no one.'],
+  ],
+  won: [
+    ['...Hmph. As expected. Darkness always wins.', 'Come back when you\'ve felt true despair.'],
+    ['Nothing personnel, kid.', '*vanishes in a puff of smoke. He\'s behind the pillar.*'],
+    ['Was that your strongest? Even Laphicet hits harder.', 'Train in the mountains. Find your reason to fight.'],
+    ['Another soul falls to my blade. The world is one step closer to salvation.', '...I\'m going to go play Berseria again. Fourth time.'],
+  ],
+};
+
+/* Jerome (the user's, 2026-10-13): madly obsessed with Reddit posts about GTA 6, it's all he talks about; his baby was just
+   born and he barely notices; he doesn't care about being a Gym Leader, he's only doing it to pay for GTA 6. */
+const JEROME = {
+  intro: [
+    ['Hold on, hold on. Did you see the new GTA 6 post on Reddit? Someone zoomed in on the trailer and found a gas station.', 'A GAS STATION. Anyway. Go, {boss}.'],
+    ['I\'m only a Gym Leader for the money. GTA 6 Ultimate Edition doesn\'t pay for itself.', 'Go, {boss}. Make it quick.'],
+    ['Yeah, I had a baby last week. Cool. Did you know Leonida has a whole Florida Keys map?', 'Go, {boss}.'],
+    ['Someone on r/GTA6 counted every palm tree in trailer 2. Four hundred and twelve. I checked. It\'s four hundred and eleven.', 'Go, {boss}.'],
+    ['My wife says I don\'t hold the baby enough. I said I\'d hold the baby when GTA 6 comes out.', 'She didn\'t like that. Go, {boss}.'],
+    ['Every badge I hand out is two dollars. The game\'s seventy. I need thirty-five of you.', 'You\'re number nine. Go, {boss}.'],
+    ['Lucia and Jason, man. Bonnie and Clyde. That\'s me and my wife. Except she\'s mad at me.', 'Go, {boss}.'],
+    ['Wait, I\'m reading a theory. Hold on. ...It\'s about the alligators.', 'Okay, go, {boss}.'],
+  ],
+  beaten: [
+    ['Cool. Whatever. Take the {badge}.', 'Hey, is it true you can rob a Vice City strip mall in one go? Someone on Reddit said...'],
+    ['That\'s fine, they pay me the same either way.', 'Here, the {badge}. That\'s two more dollars to GTA 6.'],
+    ['You won? Huh. I was scrolling. Didn\'t see.', 'Take the {badge}. Did you see the new leak though?'],
+    ['My baby cried the whole time I was battling. I didn\'t notice. I was refreshing r/GTA6.', 'Take the {badge}.'],
+    ['Okay, gg. Hey, if GTA 6 gets delayed again I\'m going to lose it. Again.', 'The {badge}\'s yours.'],
+  ],
+  won: [
+    ['Nice. That\'s one more paycheck. One step closer to Vice City.', '...What? Oh. Yeah. Good battle or whatever.'],
+    ['I won? Cool. Did you know you can have a pet in GTA 6? Unconfirmed. Probably.'],
+    ['GG. My kid\'s first word is going to be "Leonida". I\'m making sure of it.'],
+    ['That\'s it? Cool. Back to Reddit.', '*he\'s already scrolling*'],
+  ],
+};
+
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
@@ -384,8 +440,8 @@ export const GYM_LEADERS = [
   leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', KAYL),
   leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', PHIL),
   leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', RICKY),
-  leader('machew', 'EDGELORD MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge'),
-  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge'),
+  leader('machew', 'EDGELORD MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge', MACHEW),
+  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge', JEROME),
 ];
 
 export const GYM_BY_ID = Object.fromEntries(GYM_LEADERS.map(l => [l.id, l]));
