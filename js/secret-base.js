@@ -12,6 +12,7 @@ import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
+import { GYM_LEADERS, GYM_GOLD, posterKind } from './data/gym.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -368,6 +369,20 @@ export function meetSmeargle(b) {
   saveBase(b);
 }
 export const shopOpen = (b) => new URLSearchParams(location.search).has('shopopen') || (!!b.shopOpens && safariDay() >= b.shopOpens);
+/* A Gym Leader beaten GYM_GOLD times drops by now and then (2026-10-13, the user's pick): one a UTC day, dealt by the
+   date from those you've beaten that often, standing in the main room until you talk to them (`b.leaderVisit`, the day
+   they last did). `?visit` brings one for the page load. */
+export function leaderVisitor(b, save = getSave()) {
+  const day = safariDay(), again = new URLSearchParams(location.search).has('visit');
+  if (b.leaderVisit === day && !again) return null;
+  const pool = GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD);
+  if (!pool.length) return null;
+  return pool[streamOf(day, 'leader-visit')() * pool.length | 0];
+}
+export function leaderVisited(b) { b.leaderVisit = safariDay(); saveBase(b); }
+/** Whether their poster hangs in any room. */
+export const postersUp = (b, id) => allItems(b).some(it => PIECES[it.id]?.fam === posterKind(id));
+
 /** Minutes until the next UTC midnight, when a new day's stock (and a waiting shop) opens. */
 export const tillMidnight = () => Math.ceil((864e5 - Date.now() % 864e5) / 6e4);
 

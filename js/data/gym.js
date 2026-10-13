@@ -23,8 +23,41 @@ const leader = (id, name, biome, bosses, badge, extra = {}) => ({
   intro: [`I'm ${name}, and this is my turf!`, 'You want to get past? You go through me. Go, {boss}!'],
   beaten: ['...Huh. You actually did it.', `Fine, you earned it. Take the ${badge}!`],
   won: ['Ha! Not today.', 'Come back when you\'re stronger.'],
+  poster: ['Three times now. Okay, you\'re officially my biggest fan.', 'Here, a signed poster of me. Hang it somewhere everyone can see it!'],
+  gold: ['FIVE times?! Nobody beats me five times.', 'You know what, you\'ve earned this. The Gold {badge}. Wear it with pride.'],
+  visit: [
+    ['Oh, hey! I was in the neighbourhood and thought I\'d drop by.', 'Cute place, {trainer}. Very you.', 'Anyway, I\'d better get going. See you at the gym!'],
+    ['Knock knock! Surprise!', 'I wanted to see where my toughest challenger lives.', 'Not bad at all. Next time, though, I\'m winning. Bye!'],
+    ['{trainer}! There you are.', 'I\'ve been training nonstop since you beat me. Five times. Not that I\'m counting.', 'Okay, I am counting. See you soon!'],
+  ],
+  posterSeen: 'Wait, is that my poster? Up on your wall? Okay, that\'s actually so sweet.',
   ...extra,
 });
+
+/* The rematch rewards (2026-10-13, the user's picks): a third win against a leader brings their signed poster for the
+   Secret Base (js/data/furniture.js's `gym` source), a fifth their Gold badge (js/data/badges.js), and from then on they
+   drop by your base now and then (leaderVisitor() in js/secret-base.js). */
+export const GYM_POSTER = 3, GYM_GOLD = 5;
+/** What this win (the `wins`th) brings: 'poster', 'gold' or null. */
+export const gymMilestone = (wins) => (wins === GYM_POSTER ? 'poster' : wins === GYM_GOLD ? 'gold' : null);
+/** Each leader's colours, light to dark: their badge's (js/trainercard.js) and their poster's. */
+export const GYM_INK = {
+  lawrence: ['#ffd0ec', '#e8509c', '#7a1850'],
+  britt: ['#ffb4a0', '#e03c30', '#7a1410'],
+  nietos: ['#e0f2ff', '#88c4f0', '#3a6ea8'],
+  john: ['#c8d4ff', '#4c64d8', '#1c2470'],
+  jahmes: ['#b8c4f0', '#38428c', '#121636'],
+  clarence: ['#ffe0c0', '#ff8c70', '#a83c48'],
+  shaun: ['#c0fff4', '#20b8b0', '#0c4a5a'],
+  pat: ['#fff8b0', '#f8d040', '#b05a18'],
+  kayl: ['#f0e0ff', '#b088e0', '#523478'],
+  phil: ['#e0a0ff', '#6a1ca8', '#1c0630'],
+  ricky: ['#f4d8b0', '#a86c40', '#40220e'],
+  machew: ['#ff8a8a', '#a01020', '#1a0408'],
+  jerome: ['#ffd0f0', '#ff5aa8', '#6a2a9c'],
+};
+/** A leader's poster, a Secret Base wall piece. */
+export const posterKind = (id) => `${id}poster`;
 
 /* Lawrence (the user's, 2026-10-13): married to Britt, secretly gay, can't stop talking about his boyfriends, wants every
    match over fast so he can play Valorant with the boys, and Britt must never find out. */

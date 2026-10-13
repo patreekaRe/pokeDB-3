@@ -44,7 +44,7 @@ export function badgePop(l) {
   });
 }
 
-/** Their lines, one a tap. `badge` shows the badge they hand over with the last line. */
+/** Their lines, one a tap. `badge` shows the badge they hand over with the last line (`'gold'` its Gold one). */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
@@ -68,8 +68,9 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   if (badge) {
     const { badgeArt } = await import('./trainercard.js');
     mark = el('img', 'gym-badge');
-    mark.src = badgeArt(`gym-${l.id}`, true);
-    mark.alt = l.badge;
+    const gold = badge === 'gold';
+    mark.src = badgeArt(`gym-${l.id}${gold ? '-gold' : ''}`, true);
+    mark.alt = gold ? `Gold ${l.badge}` : l.badge;
   }
   const said = gymLines(l, lines, vars);
   let darkness = null;

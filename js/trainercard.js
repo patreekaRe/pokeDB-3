@@ -7,7 +7,7 @@
    Also keeps `stats.playMs`, the play time, counted from its release.
    ============================================================ */
 
-import { GYM_LEADERS } from './data/gym.js';
+import { GYM_LEADERS, GYM_INK } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -208,23 +208,25 @@ for (const n of [10, 20, 30, 40, 50, 60, 70, 80, 90]) LOOK[`tower-${n}`] = ['tow
 LOOK['tower-100'] = ['tower', ['#fff4a0', '#d8b830', '#7a6410'], 't100'];
 for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shield', ['#f0e0b0', '#a88c58', '#584020'], `n${n}`];
 for (const n of [5, 10, 15, 20]) LOOK[`rare-${n}`] = ['gem', LOOK['rare-catch'][1], `n${n}`];
-// the Gym Badges: each one after its leader's personality (js/data/gym.js), its own shape, colours and glyph
+// the Gym Badges: each one after its leader's personality, its own shape and glyph (its colours are GYM_INK in js/data/gym.js)
 const GYM_LOOK = {
-  lawrence: ['door', 'closet', ['#ffd0ec', '#e8509c', '#7a1850']],     // the rainbow he keeps from his wife
-  britt: ['apple', 'aplus', ['#ffb4a0', '#e03c30', '#7a1410']],        // the teacher's apple
-  nietos: ['circle', 'pacifier', ['#e0f2ff', '#88c4f0', '#3a6ea8']],   // baby Linc's
-  john: ['handheld', 'handheld', ['#c8d4ff', '#4c64d8', '#1c2470']],   // which handheld, though?
-  jahmes: ['circle', 'curfew', ['#b8c4f0', '#38428c', '#121636']],     // bed at 11 sharp
-  clarence: ['peach', 'peach', ['#ffe0c0', '#ff8c70', '#a83c48']],     // the show for the boys
-  shaun: ['hex', 'headset', ['#c0fff4', '#20b8b0', '#0c4a5a']],        // the IGL's comms
-  pat: ['heart', 'note', ['#fff8b0', '#f8d040', '#b05a18']],           // Lemonade, sung by accident
-  kayl: ['cat', 'catface', ['#f0e0ff', '#b088e0', '#523478']],         // Spooky and Reya, in lavender
-  phil: ['horns', 'demoneye', ['#e0a0ff', '#6a1ca8', '#1c0630']],      // JONA
-  ricky: ['octagon', 'mug', ['#f4d8b0', '#a86c40', '#40220e']],        // 2 a.m. games, 9 a.m. meetings
-  machew: ['jagged', 'katana', ['#ff8a8a', '#a01020', '#1a0408']],     // the plastic katana
-  jerome: ['book', 'vi', ['#ffd0f0', '#ff5aa8', '#6a2a9c']],           // GTA VI
+  lawrence: ['door', 'closet'],     // the rainbow he keeps from his wife
+  britt: ['apple', 'aplus'],        // the teacher's apple
+  nietos: ['circle', 'pacifier'],   // baby Linc's
+  john: ['handheld', 'handheld'],   // which handheld, though?
+  jahmes: ['circle', 'curfew'],     // bed at 11 sharp
+  clarence: ['peach', 'peach'],     // the show for the boys
+  shaun: ['hex', 'headset'],        // the IGL's comms
+  pat: ['heart', 'note'],           // Lemonade, sung by accident
+  kayl: ['cat', 'catface'],         // Spooky and Reya, in lavender
+  phil: ['horns', 'demoneye'],      // JONA
+  ricky: ['octagon', 'mug'],        // 2 a.m. games, 9 a.m. meetings
+  machew: ['jagged', 'katana'],     // the plastic katana
+  jerome: ['book', 'vi'],           // GTA VI
 };
-for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = GYM_LOOK[l.id] ? [GYM_LOOK[l.id][0], GYM_LOOK[l.id][2], GYM_LOOK[l.id][1]] : ['circle', BIOME_INK[l.biome]];
+for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = GYM_LOOK[l.id] ? [GYM_LOOK[l.id][0], GYM_INK[l.id], GYM_LOOK[l.id][1]] : ['circle', BIOME_INK[l.biome]];
+// a Gold badge is its badge's shape and glyph in gold
+for (const l of GYM_LEADERS) LOOK[`gym-${l.id}-gold`] = [LOOK[`gym-${l.id}`][0], ['#fff6b8', '#f0bc30', '#7a4c08'], LOOK[`gym-${l.id}`][2]];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 

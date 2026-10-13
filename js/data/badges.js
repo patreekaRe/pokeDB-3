@@ -12,7 +12,7 @@
    ============================================================ */
 
 import { STARTERS } from './starters.js';
-import { GYM_LEADERS } from './gym.js';
+import { GYM_LEADERS, GYM_GOLD } from './gym.js';
 import { MAX_LEVEL } from './difficulty.js';
 import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, FORKS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
@@ -312,9 +312,13 @@ export const BADGES = [
   { id: 'corner-prizes', group: 'corner', name: 'Prize Collector Badge', icon: 'corner-prizes', emoji: '🏅',
     text: 'Buy every prize at Meowth\'s counter', test: (s, save) => PRIZES.every(p => (save.corner?.prizes || []).includes(p.kind)) },
 
-  // Gym Badges: one for beating each Gym Leader (`save.gym`, js/data/gym.js)
-  ...GYM_LEADERS.map(l => ({ id: `gym-${l.id}`, group: 'gym', name: l.badge, icon: `gym-${l.id}`, emoji: '🏅',
-    text: `Beat Gym Leader ${l.name}`, test: (s, save) => (save.gym?.[l.id] || 0) >= 1 })),
+  // Gym Badges: one for beating each Gym Leader (`save.gym`, js/data/gym.js), and its Gold one for beating them GYM_GOLD times
+  ...GYM_LEADERS.flatMap(l => [
+    { id: `gym-${l.id}`, group: 'gym', name: l.badge, icon: `gym-${l.id}`, emoji: '🏅',
+      text: `Beat Gym Leader ${l.name}`, test: (s, save) => (save.gym?.[l.id] || 0) >= 1 },
+    { id: `gym-${l.id}-gold`, group: 'gym', name: `Gold ${l.badge}`, icon: `gym-${l.id}-gold`, emoji: '🥇',
+      text: `Beat Gym Leader ${l.name} ${GYM_GOLD} times`, test: (s, save) => (save.gym?.[l.id] || 0) >= GYM_GOLD },
+  ]),
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

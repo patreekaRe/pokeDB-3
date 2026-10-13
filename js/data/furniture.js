@@ -3,7 +3,7 @@
 
    Each entry is a kind from the base's catalogue (js/base-furniture*.js, a
    family id) that is never sold: it comes from a badge, an achievement (the
-   starter it unlocks), a feat or a finished Safari Pokédex page, named in its
+   starter it unlocks), a feat, a finished Safari Pokédex page or three wins against a Gym Leader, named in its
    `from`, or a Game Corner prize bought at Meowth's counter. Every one of those is a list the save never shrinks (`badges`,
    `unlocked`, `feats`, `safariDex.done`, `corner.prizes`), so a kind is owned once its source
    is, with nothing saved of its own: `earnedFurniture(save)` works it out, and
@@ -16,6 +16,7 @@ import { BADGES_BY_ID } from './badges.js';
 import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
 import { PRIZES, RETIRED_PRIZES } from './corner.js';
+import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -24,6 +25,7 @@ const SOURCES = {
   feat: { owned: (save, id) => (save.feats || []).includes(id), item: (id) => FEATS.find(f => f.id === id) },
   safari: { owned: (save, id) => (save.safariDex?.done || []).includes(id), item: (id) => SAFARI_DEX_PAGES.find(p => p.area === id) },
   prize: { owned: (save, id) => (save.corner?.prizes || []).includes(id), item: (id) => [...PRIZES, ...RETIRED_PRIZES].find(p => p.kind === id) },
+  gym: { owned: (save, id) => (save.gym?.[id] || 0) >= GYM_POSTER, item: (id) => GYM_BY_ID[id] },   // wins only ever count up
 };
 
 export const FURNITURE = [
@@ -76,6 +78,8 @@ export const FURNITURE = [
   // The Game Corner's prizes, bought at Meowth's counter (PRIZES in js/data/corner.js), and the ones it no longer sells.
   ...PRIZES.map(({ kind }) => ({ kind, from: ['prize', kind] })),
   ...RETIRED_PRIZES.map(({ kind }) => ({ kind, from: ['prize', kind], retired: true })),
+  // A Gym Leader's signed poster, from the third win against them (js/base-furniture-gym.js paints it).
+  ...GYM_LEADERS.map(l => ({ kind: posterKind(l.id), from: ['gym', l.id] })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -99,6 +103,7 @@ export function howToEarn(piece, save) {
   const src = sourceOf(piece);
   if (kind === 'badge') return `Earn the ${src.name}: ${src.text}`;
   if (kind === 'achievement' || kind === 'feat') return src.text;
+  if (kind === 'gym') return `Beat Gym Leader ${src.name} ${GYM_POSTER} times (${Math.min(save.gym?.[src.id] || 0, GYM_POSTER)}/${GYM_POSTER})`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

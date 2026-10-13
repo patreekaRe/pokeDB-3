@@ -42,3 +42,15 @@ test('how a kind is earned, secret ones hidden until they are', () => {
   save.feats = ['eternatus'];
   assert.match(howToEarn(FURNITURE_BY_KIND.plasmaglobe, save), /Eternatus/);
 });
+
+test('a Gym Leader\'s poster comes with the third win against them', () => {
+  const save = fresh();
+  const poster = FURNITURE_BY_KIND.lawrenceposter;
+  assert.ok(poster, 'every leader has a poster');
+  save.gym = { lawrence: 2 };
+  assert.ok(!kinds(save).includes('lawrenceposter'));
+  assert.match(howToEarn(poster, save), /3 times \(2\/3\)/);
+  save.gym.lawrence = 3;
+  assert.ok(kinds(save).includes('lawrenceposter'));
+  assert.ok(!kinds(save).includes('brittposter'));
+});

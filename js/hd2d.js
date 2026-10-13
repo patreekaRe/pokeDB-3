@@ -92,6 +92,7 @@ export async function gifFrames(src) {
   try {
     const res = await fetch(src);
     if (!res.ok) return null;
+    if (/\.png$/.test(src)) return [{ bmp: await createImageBitmap(await res.blob()), ms: 1e9 }];   // a still: a trainer
     const data = await res.arrayBuffer();
     if (typeof ImageDecoder === 'function' && !new URLSearchParams(location.search).has('gifjs')) {
       const dec = new ImageDecoder({ data, type: 'image/gif' });
@@ -155,10 +156,11 @@ export async function monBoard(mate, back = true) {
   const t = tex(c);
   const m = new THREE.MeshStandardMaterial({ map: t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 });
   feetDepth(m);
-  const board = new THREE.Mesh(new THREE.PlaneGeometry(w * MON_PX, h * MON_PX), m);
+  const px = mate.px || MON_PX;
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(w * px, h * px), m);
   board.castShadow = true;
-  const [top, bottom, left, right] = spriteFit(front);
-  board.geometry.translate((right - left) / 2 * MON_PX, (h / 2 - bottom) * MON_PX, 0);
+  const [top, bottom, left, right] = first && /\.png$/.test(front) ? gaps(first) : spriteFit(front);
+  board.geometry.translate((right - left) / 2 * px, (h / 2 - bottom) * px, 0);
   const blob = new THREE.Mesh(new THREE.CircleGeometry(0.34, 20), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0.28, depthWrite: false }));
   blob.rotation.x = -Math.PI / 2;
   blob.position.y = 0.011;
@@ -167,8 +169,18 @@ export async function monBoard(mate, back = true) {
   group.add(board, blob);
   return {
     group, board, c, g: c.getContext('2d', { willReadFrequently: true }), t, sheets, frame: 0, clock: 0, src: front,
-    id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * MON_PX,
+    id: mate.cry ?? front.split('/').pop().replace(/-front\.gif$/, ''), name: mate.name, top: (h - bottom - top) * px,
   };
+}
+
+/** A still's empty rows and columns round what is painted, [top, bottom, left, right], as SPRITE_FIT keeps a GIF's. */
+function gaps(bmp) {
+  const w = bmp.width, h = bmp.height, c = new OffscreenCanvas(w, h), g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(bmp, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 8) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  return x1 < 0 ? [0, 0, 0, 0] : [y0, h - 1 - y1, x0, w - 1 - x1];
 }
 
 /** The GIF's next frame on its billboard; a sleeping Pokémon breathes at a third of the speed. */

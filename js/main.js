@@ -69,6 +69,7 @@ import { stageOf } from './map.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
+import { GYM_LEADERS } from './data/gym.js';
 
 /* ---------- moving between screens ---------- */
 
@@ -182,6 +183,9 @@ function init() {
   // ?mewtwo unlocks Mewtwo for good, to playtest its run without winning Level 5 with every starter first.
   if (query.has('safari')) updateSave(d => { d.safariPass = true; });
   if (query.has('mail')) sampleMail();   // three letters in the Clearing PC's Mailbox, if it's empty
+  // ?gymwins=5 counts that many wins against every Gym Leader for good (never fewer than the save has): their badges,
+  // posters (3) and Gold badges and visits (5), without the climbs
+  if (query.has('gymwins')) updateSave(d => { const n = parseInt(query.get('gymwins'), 10) || 0; d.gym = Object.fromEntries(GYM_LEADERS.map(l => [l.id, Math.max(d.gym?.[l.id] || 0, n)])); });
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
   // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
   // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.

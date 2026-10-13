@@ -43,6 +43,9 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['runs', 'Beat a Gym Leader 3 times and they hand you a signed poster of themselves for your Secret Base wall.'],
+  ['runs', 'Beat a Gym Leader 5 times for their Gold badge, a second badge in the Badge Case for each leader.'],
+  ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

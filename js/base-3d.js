@@ -24,7 +24,9 @@ import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp } from './secret-base.js';
+import { spriteOf } from './data/gym.js';
+import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
@@ -856,7 +858,7 @@ function showGiftCard(got) {
 const SMEARGLE = { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif', cry: 'smeargle' };
 const DABS = ['#e84838', '#f8c830', '#3a8ad8', '#58b858', '#c868d8', '#f88838'];
 const SAVED_AT = 4;
-let visit = null;   // { mon, w, easel, tiles, lines, i, phase: paint / talk / leave, t, dab }
+let visit = null;   // { mon, w, easel, tiles, lines, i, phase: paint / stand / talk / leave, t, dab, leader }
 
 const visitLines = () => [
   'Oh! Hello there! You must be the one who lives here. Welcome home!',
@@ -876,7 +878,8 @@ function visitSpot() {
 }
 
 async function startVisit() {
-  if (visit || metSmeargle(base) || base.here) return;
+  if (visit || base.here) return;
+  if (metSmeargle(base)) return leaderVisit();
   const spot = visitSpot();
   if (!spot) return;
   visit = { phase: 'load', tiles: [key(spot.x, spot.y), key(spot.x + 1, spot.y)] };
@@ -890,6 +893,42 @@ async function startVisit() {
   const top = v.easel ? new THREE.Box3().setFromObject(v.easel).max.y : 1.6;
   Object.assign(v, { mon: m, canvasAt: [tileX(spot.x + 1), top * 0.72, tileZ(spot.y) + 0.12], phase: 'paint', t: performance.now() + 2200, dab: 0,
     w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: true, hop: 0 } });
+}
+
+/* A Gym Leader beaten five times, dropping by (leaderVisitor() in js/secret-base.js): they stand about in the room until
+   you tap them, say their piece in the same speech window, and walk out over the doormat. */
+const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
+
+async function leaderVisit() {
+  const l = leaderVisitor(base), spot = l && visitSpot();
+  if (!spot) return;
+  visit = { leader: l, phase: 'load', tiles: [key(spot.x, spot.y)] };
+  const v = visit;
+  blocked.add(v.tiles[0]);
+  const m = await makeMon({ src: spriteOf(l), name: l.name, cry: '', px: TRAINER_PX }, false);
+  if (visit !== v) { dispose(m.group); scene.remove(m.group); return; }
+  m.board.userData.who = { mon: m };
+  Object.assign(v, { mon: m, phase: 'stand', w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: false, hop: 0 } });
+  refresh();
+}
+
+/** Their lines for this visit: one of their `visit` speeches, a word on their poster if it's up. */
+function leaderLines(l) {
+  const said = l.visit[Math.floor(Math.random() * l.visit.length)];
+  const lines = postersUp(base, l.id) && l.posterSeen ? [said[0], l.posterSeen, ...said.slice(1)] : said;
+  const vars = { name: l.name, badge: l.badge, trainer: trainerName().toUpperCase() };
+  return lines.map(line => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/^[A-Z]+: /, ''));
+}
+
+function leaderTalk() {
+  const { w, leader: l } = visit, now = performance.now();
+  Object.assign(visit, { phase: 'talk', lines: leaderLines(l), i: -1 });
+  w.hopUntil = now + 500;
+  walker.hopUntil = now + 500;
+  root.querySelector('.b3-talk b').textContent = l.name;
+  root.classList.add('visiting');
+  playSound('select');
+  sayNext();
 }
 
 function liveVisit(dt, now) {
@@ -931,6 +970,7 @@ function dab() {
 function startTalk(now) {
   const { w } = visit;
   Object.assign(visit, { phase: 'talk', lines: visitLines(), i: -1 });
+  root.querySelector('.b3-talk b').textContent = SMEARGLE.name;
   w.flip = walker.x > w.x;
   w.hopUntil = now + 500;
   walker.hopUntil = now + 500;
@@ -940,7 +980,7 @@ function startTalk(now) {
 
 function sayNext() {
   visit.i++;
-  if (visit.i === SAVED_AT) meetSmeargle(base);
+  if (visit.i === SAVED_AT && !visit.leader) meetSmeargle(base);
   const box = root.querySelector('.b3-talk');
   if (visit.i >= visit.lines.length) return leaveVisit();
   box.querySelector('span').textContent = visit.lines[visit.i];
@@ -952,7 +992,7 @@ function sayNext() {
 function leaveVisit() {
   const { w } = visit;
   root.querySelector('.b3-talk').hidden = true;
-  meetSmeargle(base);
+  if (visit.leader) leaderVisited(base); else meetSmeargle(base);
   visit.phase = 'leave';
   for (const t of visit.tiles) blocked.delete(t);
   if (visit.easel) {
@@ -960,7 +1000,7 @@ function leaveVisit() {
     for (let i = 0; i < 6; i++) setTimeout(() => puff('star', { x: fx + rand(-0.3, 0.3), y: 0, z: fz }, { top: rand(0.2, 1) }), i * 60);
     dispose(visit.easel); scene.remove(visit.easel); visit.easel = null;
   }
-  playSound('item-get');
+  if (!visit.leader) playSound('item-get');
   const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
   w.path = route(w.tile, door);
   w.path.push({ x: door.x, y: ROWS + 0.6 });
@@ -1101,7 +1141,7 @@ function pieceUnder(at) {
 /** What's under a point on the view: a Pokémon's billboard (where its sprite is), a piece's mesh, or nothing. */
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
-  const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board)];
+  const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
   return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
@@ -1141,6 +1181,7 @@ function onTap(e) {
     walker.hopUntil = performance.now() + 500;
     return;
   }
+  if (visit?.phase === 'stand' && first === visit.mon.board) return leaderTalk();
   if (first?.userData.who) return cheer(first.userData.who);
   let g = first;
   while (g && g.userData.index === undefined) g = g.parent;

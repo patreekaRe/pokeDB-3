@@ -847,7 +847,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
   the room or, without 3D, over the battle; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
   each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
-  Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite and a `GYM_LOOK` line.
+  Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite, a `GYM_INK` line
+  (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd
+  win hands over their signed poster (`<id>poster`, a wall piece painted from their sprite in `js/base-furniture-gym.js`,
+  earned by `js/data/furniture.js`'s `gym` source), the 5th their Gold badge (`gym-<id>-gold`), `beatenTalk()` /
+  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped
+  (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
+  `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

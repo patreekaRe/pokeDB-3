@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { leaderFor, gymWins, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
+import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
 import { gymTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -1492,7 +1492,7 @@ async function fight(node, { talked = false } = {}) {
     load) it's the battle's own talk. */
 function gymRoom(node, leader, won = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const said = talkOf(leader, 'beaten'), beaten = first ? said : said.slice(0, 1);
+  const said = talkOf(leader, 'beaten'), { lines: beaten, badge, got } = beatenTalk(leader, first ? said : said.slice(0, 1));
   let talking = false;
   // the speech window steps aside while they talk over the room
   const say = async (lines, opts) => {
@@ -1518,9 +1518,8 @@ function gymRoom(node, leader, won = null) {
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    const badge = first && !peeking;
     await say(beaten, { badge });
-    if (run === thisRun && badge) sayLines([`You received the ${leader.badge}!`]);
+    if (run === thisRun && got) sayLines([got]);
   };
   showChoice({
     title: 'POKéMON GYM',
@@ -1539,6 +1538,19 @@ function gymRoom(node, leader, won = null) {
     onFail: () => (after ? leave() : fight(node)),
   });
 }
+/** What they say once beaten and what they hand over: the badge the first time, their signed poster on the third win, the
+    Gold badge on the fifth (js/data/gym.js's gymMilestone()). The win isn't saved yet here, so this one is wins + 1; a
+    playtest is handed nothing. */
+function beatenTalk(leader, lines) {
+  const wins = gymWins(getSave(), leader.id) + 1;
+  if (peeking) return { lines, badge: false, got: null };
+  if (wins === 1) return { lines, badge: true, got: `You received the ${leader.badge}!` };
+  const step = gymMilestone(wins);
+  if (step === 'poster') return { lines: [...lines, ...leader.poster], badge: false, got: `${leader.name} gave you a signed poster! It's waiting in your Secret Base.` };
+  if (step === 'gold') return { lines: [...lines, ...leader.gold], badge: 'gold', got: `You received the Gold ${leader.badge}! ${leader.name} might drop by your Secret Base now.` };
+  return { lines, badge: false, got: null };
+}
+
 /** The Gym's 3D room can be walked: not under `?event2d`, and not once Three.js has failed to load this page. */
 const gym3d = () => !gym3d.failed && !new URLSearchParams(location.search).has('event2d');
 
@@ -1562,7 +1574,8 @@ function afterFight(node, result) {
   if (leader && gym3d()) return gymRoom(node, leader, result);
   if (leader) {
     const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
-    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
+    const { lines, badge } = beatenTalk(leader, first ? said : said.slice(0, 1));
+    return gymTalk(leader, lines, { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge })
       .then(() => afterFight(node, { ...result, gymSaid: true }));
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends

@@ -378,6 +378,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
   first-win badge land in the Badge Case and the outro straight after a real boss win (a peek gives no badge); the user's
   word on the 13 badges' looks and names. (Every leader has their own intro / beaten / won speeches.)
+  **Rematch rewards** (2026-10-13, the user's picks, no plush): a 3rd win hands over the leader's signed poster (a Secret
+  Base wall piece, `js/base-furniture-gym.js`), a 5th their Gold badge, and from then on one such leader a UTC day stands
+  in the base till tapped, talks and walks out. Their poster / gold / visit lines are one generic set in `leader()` in
+  `js/data/gym.js`: ask the user if they want each friend's own. Playtest `?gymwins=5` (for good) then `?base&visit`.
 
   ▶ Run in: PLAYTEST on the live site.
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the

@@ -240,3 +240,9 @@ test('the Pokédex pages: researched, beaten, and the Safari Zone opened', () =>
   savanna.dex.done = ['savanna'];
   assert.deepEqual(ids(savanna).filter(id => /savanna|^sun$/.test(id)), ['beat-savanna', 'page-savanna', 'sun']);
 });
+
+test('a Gym Leader\'s Gold badge comes with the fifth win against them', () => {
+  const ids = (gym) => newBadges({ badges: [], stats: {}, gym }).map(b => b.id).filter(id => id.startsWith('gym-'));
+  assert.deepEqual(ids({ pat: 4 }), ['gym-pat']);
+  assert.deepEqual(ids({ pat: 5 }), ['gym-pat', 'gym-pat-gold']);
+});
