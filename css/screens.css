@@ -5607,6 +5607,8 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 }
 .gym-get.wait .gym-get-halo { animation: gymHalo 1.3s ease-in-out infinite; }
 @keyframes gymHalo { 0%, 100% { opacity: 0.55; scale: 0.92; } 50% { opacity: 1; scale: 1.12; } }
+.gym-get.spinning .gym-get-mark { filter: brightness(1.35) drop-shadow(0 0 24px rgba(255, 230, 140, 1)); }
+.gym-get.spinning .gym-get-halo { opacity: 1; scale: 1.25; transition: opacity 0.3s, scale 0.3s; }
 .gym-get-hint {
   position: absolute; left: 0; right: 0; bottom: max(16vh, calc(env(safe-area-inset-bottom) + 100px)); text-align: center;
   font-size: 16px; letter-spacing: 3px; color: #ffe9a8; text-shadow: 0 0 12px rgba(255, 200, 60, 0.8), 0 2px 0 #0008;

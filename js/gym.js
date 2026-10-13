@@ -119,7 +119,7 @@ function speedLines(layer) {
 
 /** Their badge handed over, after their last words (the user's ask, 2026-10-13): the screen goes dark but for the badge on
     the gym's arch (or, without the 3D gym, the middle of the screen's top), glowing, and the badge is the only thing that
-    takes a tap. Grabbed, it pops off the arch, tumbles out towards you spinning and lands mid-screen with a flash, a
+    takes a tap. Tapped, it spins ten turns on the arch like a Pokéstop, then pops off it, tumbles out towards you spinning and lands mid-screen with a flash, a
     shockwave and sparks; golden rays wheel open, a shine runs over it and YOU RECEIVED the badge rises under it. A tap
     after it lands goes on. Calm effects: it glides down, still. */
 async function badgeGet(layer, l) {
@@ -170,12 +170,24 @@ async function badgeGet(layer, l) {
   const flights = [];
   if (calm) flights.push(await settle([{ transform: from }, { transform: 'none' }], 500));
   else {
+    // spun on the arch like a Pokéstop: it winds up, whirls ten turns in a blur of light and slows to a stop, then pops
+    stage.classList.add('spinning');
+    playSound('aug-silver');
+    [200, 650, 1100].forEach(t => setTimeout(() => playSound('aug-reroll'), t));
+    setTimeout(() => playSound('aug-gold'), 1700);
+    flights.push(await settle([
+      { transform: `${from} rotateY(0deg)` },
+      { transform: `${from} scale(1.08) rotateY(-30deg)`, offset: 0.08, easing: 'cubic-bezier(.5, 0, .2, 1)' },
+      { transform: `${from} scale(1.18) rotateY(3600deg)`, easing: 'cubic-bezier(.3, 0, .2, 1)' },
+    ], 2100));
+    stage.classList.remove('spinning');
+    stage.classList.add('popped');
     playSound('run-away');
     setTimeout(() => playSound('fw-launch'), 120);
     // it pops off the arch towards you, tumbles up over the screen and slams down in the middle (timed on the frames
     // drawn, so the landing's flash never comes before the badge does)
     flights.push(await settle([
-      { transform: `${from} rotateY(0deg)` },
+      { transform: `${from} scale(1.18) rotateY(0deg)` },
       { transform: `${from} translateY(-14%) scale(1.5) rotateY(180deg)`, offset: 0.19, easing: 'cubic-bezier(.4, 0, .6, 1)' },
       { transform: 'translate(0, -22vh) scale(1.6) rotateY(900deg) rotateZ(-12deg)', offset: 0.72, easing: 'cubic-bezier(.5, 0, .9, .5)' },
       { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg) rotateZ(0deg)' },
