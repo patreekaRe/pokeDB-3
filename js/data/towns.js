@@ -95,8 +95,11 @@ export const TOWNS = {
     // the rooms you can walk into
     homes: {
       shop: { name: 'Delibird\'s Goods', sub: 'Shelves of odds and ends from far away. Delibird waves from behind the counter.' },
-      john: { name: 'John\'s House', leader: 'john', sub: 'Three handhelds on the table, all charging. John hasn\'t picked one yet.' },
+      john: { name: 'John\'s House', leader: 'john', sub: 'Three handhelds on the table, all charging. John hasn\'t picked one yet.',
+        // till you've beaten them once a Gym Leader is up at their Gym, not at home (the user's call, 2026-10-13)
+        away: 'Nobody\'s home. A note by the handhelds: "Up at the Gym. Beat me there and I\'ll be home after."' },
       jahmes: { name: 'Jahmes\'s House', leader: 'jahmes', sub: 'Three alarm clocks by the bed, a gaming PC humming in the corner.',
+        away: 'Nobody\'s home. Three alarm clocks tick by an empty bed. A note: "AT THE GYM. COME FIND ME. BEFORE ELEVEN."',
         // after 11 p.m. (your clock) he's in bed, and talks in his sleep
         night: ['*snore* ...eleven o\'clock... bed...', '*mumbles* ...one more ARAM... no... bed...', '*snore* ...LET\'S GOOO... *snore*'] },
       theater: { name: 'Dance Theater', sub: 'Five dancers practise on the stage, each with their Pokémon\'s grace.',

@@ -53,7 +53,7 @@ export const NEXT = [
   ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
   ['mall', 'The Poké Mall has the Clearing\'s Pokédex bar along the bottom: Home and How to play, your PokéCoins, and the name of the shop you\'re in.'],
   ['fixes', 'Closing the game in a Gym after beating its Leader now brings you back to the Gym on Continue, not to the map to fight them again.'],
-  ['runs', 'Lantern Village: on the road into the Shrine you now walk through a whole village, laid out like a big Pokémon town: stone roads through a ring of forest, houses, tall grass, a pagoda and a torii out to the Shrine. Walk into Delibird\'s shop (one item swap), the Dance Theater, and John\'s and Jahmes\'s homes; knock on the others. The request board asks favours across runs that raise the village\'s friendship, and the broken Waystone stands in the plaza at its heart.'],
+  ['runs', 'Lantern Village: on the road into the Shrine you now walk through a whole village, laid out like a big Pokémon town: stone roads through a ring of forest, houses, tall grass, a pagoda and a torii out to the Shrine. Walk into Delibird\'s shop (one item swap), the Dance Theater, and John\'s and Jahmes\'s homes; knock on the others. The request board asks favours across runs that raise the village\'s friendship, and the broken Waystone stands in the plaza at its heart. Its houses wear tiled roofs, the ones you can walk into with gold on the ridge and a crest over the door, and a Gym Leader is only home once you\'ve beaten them.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
