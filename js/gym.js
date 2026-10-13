@@ -65,13 +65,6 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   document.body.append(layer);
   if (!calm) { await sleep(20); layer.classList.add('in'); await sleep(600); } else layer.classList.add('in');
 
-  let mark = null;
-  if (badge) {
-    const { badgeArt } = await import('./trainercard.js');
-    mark = el('img', 'gym-badge');
-    mark.src = badgeArt(`gym-${l.id}`, true);
-    mark.alt = l.badge;
-  }
   const said = gymLines(l, lines, vars);
   let darkness = null;
   try { for (let i = 0; i < said.length; i++) {
@@ -83,7 +76,6 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     }
     text.textContent = line.text ?? line;
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
-    if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
     if (possess && i === Math.min(1, said.length - 1)) {
       layer.classList.add('taken');
       try { darkness = auraOn(who, 3, 'dark'); } catch (e) { console.error(e); }   // the talk must go on without it
@@ -93,12 +85,56 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     playSound('confirm');
   }
   if (possess) await infuse(layer, who, possess, () => { darkness?.(); darkness = null; });
+  if (badge) await badgeGet(layer, l);
   } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
   layer.classList.remove('in');
   layer.classList.add('out');
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/** Their badge handed over, after their last words: the talk steps back into the dark, golden rays wheel open, the
+    badge comes spinning in out of the distance and lands with a flash, a shockwave and a burst of sparks, a shine runs
+    over it and YOU RECEIVED the badge rises under it. A tap after it lands goes on. Calm effects: it fades in, still. */
+async function badgeGet(layer, l) {
+  const calm = !battleFx() || calmFx();
+  const { badgeArt } = await import('./trainercard.js');
+  const src = badgeArt(`gym-${l.id}`, true);
+  const stage = el('div', `gym-get${calm ? ' calm' : ''}`);
+  const spin = el('div', 'gym-get-badge'), mark = el('img', 'gym-get-mark'), shine = el('i', 'gym-get-shine');
+  mark.src = src;
+  mark.alt = l.badge;
+  shine.style.maskImage = shine.style.webkitMaskImage = `url("${src}")`;
+  spin.append(mark, shine);
+  const sparks = el('div', 'gym-get-sparks');
+  for (let i = 0; i < 28; i++) {
+    const s = el('i');
+    s.style.setProperty('--a', `${i * 360 / 28 + Math.random() * 8}deg`);
+    s.style.setProperty('--d', `${120 + Math.random() * 140}px`);
+    s.style.setProperty('--t', `${0.7 + Math.random() * 0.6}s`);
+    sparks.append(s);
+  }
+  const cap = el('div', 'gym-get-cap');
+  cap.append(el('small', '', 'YOU RECEIVED THE'), el('b', '', l.badge.toUpperCase()));
+  stage.append(el('div', 'gym-get-rays'), el('i', 'gym-get-ring'), sparks, spin, el('i', 'gym-get-flash'), cap);
+  layer.classList.add('getting');
+  layer.append(stage);
+  await sleep(20);
+  stage.classList.add('go');
+  if (calm) { playSound('achievement'); await sleep(400); }
+  else {
+    playSound('charge');
+    await sleep(1050);   // gymGetFly's landing
+    stage.classList.add('land');
+    playSound('fw-boom');
+    setTimeout(() => playSound('fw-crackle'), 180);
+    setTimeout(() => playSound('achievement'), 450);
+    await sleep(900);
+  }
+  stage.classList.add('done');
+  await tap(layer);
+  playSound('confirm');
 }
 
 /** Phil pours JONA into his Pokémon, on the battle screen: the speech window and the dim go, a stream of dark energy and

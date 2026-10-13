@@ -1518,7 +1518,7 @@ function gymRoom(node, leader, won = null) {
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    const badge = first && !peeking;
+    const badge = first || peeking;   // a playtest always shows the badge moment, never saved
     await say(beaten, { badge });
     if (run === thisRun && badge) sayLines([`You received the ${leader.badge}!`]);
   };
@@ -1562,7 +1562,7 @@ function afterFight(node, result) {
   if (leader && gym3d()) return gymRoom(node, leader, result);
   if (leader) {
     const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
-    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first && !peeking })
+    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first || peeking })
       .then(() => afterFight(node, { ...result, gymSaid: true }));
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
