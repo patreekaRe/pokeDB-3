@@ -49,6 +49,7 @@ export const NEXT = [
   ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
   ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
   ['hub', 'The Clearing\'s Halloween ghosts mostly stand about now, one strolling at a time in turn, and none ever stops in front of a door.'],
+  ['mall', 'The Game Corner\'s regulars walk one at a time now, the rest at their games or standing about, and none ever stops on the doormat.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

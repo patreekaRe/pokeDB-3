@@ -2211,3 +2211,9 @@ Clearing) stand at their spots; one at a time, in turn, strolls to a new one (`t
 the greeting walk counting as the turn. No ghost starts, stops or greets on or beside any place's doorstep (`byDoor` from
 `js/hub-3d.js`, every `places` step ±1 tile; `standAt()` moves a spawn off one). Checked headless: 45 s, never more than
 one walking, none standing by a door.
+
+**The Game Corner's regulars take turns too** (2026-10-13, the user's ask: the ghosts' rule for the Game Corner). `js/corner-crowd.js`'s
+`oneWalker` (passed only by the Game Corner in `js/mall-3d.js`; the hall's shoppers are unchanged): one regular walks at a
+time, the rest playing or standing (`mayWalk()`: no one else walking, `GAP` 1.5-3.5 s after the last walk), comings and
+goings and the hello wait their turn (`incoming`), a newcomer walks straight on off the mat, and none stops, wanders to
+or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game still makes it step aside at once.

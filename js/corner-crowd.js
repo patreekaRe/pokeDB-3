@@ -21,6 +21,7 @@ const BUBBLE_MS = 3600;
 const QUIET = [9000, 17000];     // the pause between lines over heads
 const GREET_AFTER = [25000, 55000];
 const PLAY = [25000, 70000], PONDER = [1800, 4500], COUNTER = [5000, 8000];
+const GAP = [1500, 3500];        // with oneWalker, the quiet between one walk ending and the next starting
 
 const between = ([a, b]) => a + Math.random() * (b - a);
 const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
@@ -49,7 +50,9 @@ function kindOf(spot) {
     `castSize`, `castHours` (deal a new cast every that many UTC hours, else one a day), `seed`, `stations` (where they
     stand, else the place's games), `wants` (what each of the first crowd heads for, null to wander), `swap` ([ms, ms]).
     THREE, group, monBoard, drawMon, dispose, PITCH, spots, door, cols, rows, route, free, tileX, tileZ, camera, view,
-    stage (where the bubble goes), say(fr, ms), partner() (your walker), keeper() (the shop's keeper, its mon), calm(). */
+    stage (where the bubble goes), say(fr, ms), partner() (your walker), keeper() (the shop's keeper, its mon), calm(),
+    oneWalker (only one walks at a time, the rest at their games or standing, and none stops on or beside the doormat:
+    the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts). */
 export function makeCrowd(H) {
   const { THREE } = H;
   const LIST = H.cast ?? PATRONS, LINES = H.shared ?? SHARED, TALKS = H.chats ?? CHATS, SIZE = H.size ?? CROWD;
@@ -60,6 +63,7 @@ export function makeCrowd(H) {
   let deal = dealing(), cast = dealt(LIST, seeded(`${SEED}:${deal}`), H.castSize ?? CAST);
   const here = [];
   let bubble = null, chat = null, nextTalk = 0, nextSwap = 0, greetAt = 0, greeted = false, lastTick = 0, gone = false, hour = -1;
+  let walkAfter = 0, incoming = null;
 
   const el = document.createElement('p');
   el.className = 'spook-bubble crowd-bubble';
@@ -73,6 +77,10 @@ export function makeCrowd(H) {
   const taken = (t, but) => held.has(key(t)) || here.some(p => p !== but && !p.leaving && ((p.goal && key(p.goal) === key(t)) || (!p.w.path.length && key(p.w.tile) === key(t))));
   const yours = (t) => { const me = H.partner(); return key(me.tile) === key(t) || (me.path.length && key(me.path.at(-1)) === key(t)); };
   const open = (t) => H.free(t) && !taken(t) && !yours(t);
+  const byDoor = (t) => H.oneWalker && Math.abs(t.x - H.door.x) <= 1 && Math.abs(t.y - H.door.y) <= 1;
+  const walking = (but) => here.some(o => o !== but && ((o.state === 'walk' && o.w.path.length) || o.resume?.state === 'walk'));
+  /** Whether `p` may set off now: always, unless only one walks at a time and someone is (or just was). */
+  const mayWalk = (p, now) => !H.oneWalker || (!walking(p) && now >= walkAfter);
 
   /* ---------- coming and going ---------- */
 
@@ -110,6 +118,7 @@ export function makeCrowd(H) {
   function populate() {
     for (const p of [...here]) remove(p);
     hour = new Date().getUTCHours();
+    walkAfter = 0; incoming = null;
     if (dealing() !== deal) { deal = dealing(); cast = dealt(LIST, seeded(`${SEED}:${deal}`), H.castSize ?? CAST); }
     const rnd = seeded(`${SEED}:${deal}:${hour}`), who = dealt(cast, rnd, SIZE);
     who.forEach(async (def, i) => {
@@ -138,9 +147,9 @@ export function makeCrowd(H) {
   }
 
   function spotAround() {
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
       const t = { x: 1 + Math.floor(Math.random() * (H.cols - 2)), y: 3 + Math.floor(Math.random() * (H.rows - 4)) };
-      if (open(t)) return t;
+      if (open(t) && !byDoor(t)) return t;
     }
     return { ...H.door };
   }
@@ -152,6 +161,8 @@ export function makeCrowd(H) {
   }
 
   function decide(p) {
+    const now = performance.now();
+    if (!byDoor(p.w.tile) && !mayWalk(p, now)) { p.until = now + 500 + Math.random() * 1500; return; }
     const r = Math.random() + (p.roam ? 0.45 : 0);   // a wanderer mostly wanders
     if (r < 0.62) { const st = free(p.def) || free(p.def, pickOne([...new Set(stations.map(s => s.kind))])); if (st) return go(p, st.spot.step, 'play', st); }
     if (r < 0.78 && counter && !here.some(o => o !== p && o.then === 'counter')) {
@@ -176,12 +187,14 @@ export function makeCrowd(H) {
 
   function reach(p) {
     const now = performance.now();
+    if (H.oneWalker && p.state === 'walk' && (p.then === 'gone' || !byDoor(p.w.tile))) walkAfter = now + between(GAP);
     if (p.then === 'gone') { p.state = 'out'; p.shrink = now; return; }
     if (p.then === 'play' && p.station) { p.state = 'play'; p.until = now + between(PLAY); faceStation(p); return; }
     if (p.then === 'counter') { p.state = 'counter'; p.until = now + between(COUNTER); p.w.flip = H.keeper().x > p.w.x; atCounter(p); return; }
     if (p.then === 'greet') { p.state = 'talk'; p.until = now + 4500; p.w.flip = H.partner().x > p.w.x; p.hopUntil = now + 500; playCry(p.def.id); blurt(p, pickOne([...LINES.nearYou, ...p.def.you]), 4200, true); return; }
     p.state = 'ponder'; p.until = now + between(PONDER);
     p.goal = null;
+    if (byDoor(p.w.tile)) decide(p);   // one just in walks straight on off the mat, its walk unbroken
   }
 
   /* ---------- talking ---------- */
@@ -343,21 +356,25 @@ export function makeCrowd(H) {
       }
 
       // comings and goings: one heads home, another walks in a few seconds later
-      if (now > nextSwap) {
+      if (now > nextSwap && !incoming && mayWalk(null, now)) {
         nextSwap = now + between(SWAPS);
         const out = shuffled(here.filter(p => !p.leaving && p.state !== 'talk' && !chat?.with.includes(p)))[0];
-        if (out) {
-          leave(out);
-          const away = cast.filter(d => !here.some(p => p.def === d));
-          setTimeout(() => { if (!gone && here.filter(p => !p.leaving).length < SIZE && away.length) arrive(pickOne(away)).then(p => { if (p) p.roam = !!H.stations && Math.random() < 0.5; }); }, between([5000, 14000]));
+        if (out) { leave(out); incoming = now + between([5000, 14000]); }
+      }
+      if (incoming && now > incoming && mayWalk(null, now)) {
+        incoming = null;
+        const away = cast.filter(d => !here.some(p => p.def === d));
+        if (here.filter(p => !p.leaving).length < SIZE && away.length) {
+          if (H.oneWalker) walkAfter = Infinity;   // held while it loads, so nobody sets off before it walks in
+          arrive(pickOne(away)).then(p => { if (H.oneWalker && walkAfter === Infinity) walkAfter = 0; if (p) p.roam = !!H.stations && Math.random() < 0.5; });
         }
       }
 
       // once a visit, one comes over to say hi
-      if (!greeted && now > greetAt && !bubble && !chat) {
+      if (!greeted && now > greetAt && !bubble && !chat && mayWalk(null, now)) {
         greeted = true;
         const p = shuffled(here.filter(o => !o.leaving && (o.state === 'ponder' || o.state === 'play')))[0];
-        const spot = p && [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: me.tile.x + dx, y: me.tile.y + dy })).find(open);
+        const spot = p && [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: me.tile.x + dx, y: me.tile.y + dy })).find(t => open(t) && !byDoor(t));
         if (spot && !me.path.length) go(p, spot, 'greet');
       }
 
