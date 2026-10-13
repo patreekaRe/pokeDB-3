@@ -153,17 +153,13 @@
 /* the cloud save's Sign in moved into the Clearing's PC (js/pc.js), so the corner's PC goes (2026-10-09, the user's call) */
 .title-screen.hub-mode #title-account { display: none; }
 
-/* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a front's
-   line pops up a moment (no pill since 2026-10-09, the user's call). */
-.mall3d .b3-top h2 { opacity: 1; }
-/* in the Furniture store, your PokéCoins on a little LCD beside its name */
-.mall-coins {
-  padding: 6px 10px; border-radius: 8px; background: var(--lcd, #9bbc6a); color: #1e2a10; font-size: 12px;
-  box-shadow: inset 0 0 0 2px #0003, 0 2px 0 #0006;
-}
-.mall-coins[hidden] { display: none; }
+/* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: the Clearing's Pokédex bar along the bottom
+   (2026-10-13, the user's ask), the place's name and the coins on its LCDs, and over it a front's line pops up a moment. */
+.mall3d .b3-top h2 { display: none; }
+/* the device (Home, How to play) opens over the mall, which stands over every screen */
+body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mall-foot {
-  position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
+  position: absolute; left: 50%; bottom: calc(var(--hub-bar-h, 60px) + 12px); translate: -50% 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px; width: calc(100% - 32px); pointer-events: none;
 }
 /* every line is Animal Crossing's cream speech window (the user's call, 2026-10-09: the dark pill was too small to read) */

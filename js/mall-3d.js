@@ -14,7 +14,9 @@ import { cornerOpen } from './meowth.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { buddy } from './trainercard.js';
+import { buddy, deviceNews } from './trainercard.js';
+import { smoothIcon, roundKey } from './smooth-icons.js';
+import { openPokedex, openHowto } from './collection.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
@@ -826,6 +828,7 @@ function setPlace(p, at, facing = 'back') {
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   root.querySelector('.b3-top h2').textContent = P.title;
+  placeSign(P.title);
   scene.environment = P.id === 'hall' ? env : null;
   const glow = P.id === 'hall' ? 0.75 : 1;   // the hall's reflections light it too
   hemi.intensity = 1.7 * glow * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
@@ -854,9 +857,30 @@ function hallCrowd() {
 }
 
 function showCoins() {
-  const el = root.querySelector('.mall-coins');
-  el.hidden = P.id === 'hall';
-  el.textContent = `${(getSave().coins ?? 0).toLocaleString()} coins`;
+  root.querySelector('.hbar-coins').textContent = (getSave().coins ?? 0).toLocaleString();
+  dexNews();
+}
+
+/** The Clearing's Pokédex bar along the bottom (the user's ask, 2026-10-13): lens, lights, Home and How to play, the
+    PokéCoins on their LCD and the place's name on the right, which pops in as you walk into a shop. No run's LCD here. */
+function placeSign(name) {
+  const sign = root.querySelector('.hbar-sign b');
+  if (sign.textContent === name) return;
+  sign.textContent = name;
+  sign.classList.remove('hbar-pop');
+  void sign.offsetWidth;
+  sign.classList.add('hbar-pop');
+}
+
+const dexNews = () => root.querySelector('.mall-dex').classList.toggle('dex-news', deviceNews());
+
+/** The device grows out of its key over the mall and shuts back into it, as in the Clearing. */
+function fromKey(open, key) {
+  if (key.classList.contains('out') || answer || riding) return;
+  walker.path = []; aim = null;
+  playSound('confirm');
+  open(key, () => { key.classList.remove('out'); dexNews(); showCoins(); });
+  key.classList.add('out');
 }
 
 function pick(spot) {
@@ -1191,7 +1215,8 @@ function aimCamera(x, d, z = 0) {
 function fitShot(w, h) {
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
-  const topBar = root.querySelector('.b3-top').offsetHeight, below = root.querySelector('.mall-foot').offsetHeight + 16;
+  const topBar = root.querySelector('.b3-top').offsetHeight;
+  const below = root.querySelector('.mall-foot').offsetHeight + root.querySelector('.hub-bar').offsetHeight + 16;
   const avail = h - topBar - below, room = 2 * avail / h * 0.94;
   const span = (d, w) => {
     aimCamera(0, d);
@@ -1348,8 +1373,14 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   root.innerHTML = `
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
-      <header class="b3-top"><h2>Poké Mall</h2><span class="mall-coins" hidden></span></header>
+      <header class="b3-top"><h2>Poké Mall</h2></header>
       <div class="mall-foot"><p class="mall-line" aria-live="polite"><b class="mall-who"></b><span></span></p><div class="mall-ask" hidden><b class="mall-ask-who"></b><div class="mall-ask-pic"></div><p class="mall-ask-q"></p><div class="mall-ask-keys"><button type="button" class="mall-ask-yes">Buy</button><button type="button" class="mall-ask-no">No</button></div></div></div>
+      <div class="hub-bar mall-bar">
+        <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
+          <div class="room-keys"><button type="button" class="room-home hub-dex mall-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help mall-help" title="How to play" aria-label="How to play"></button></div>
+          <div class="room-sign hbar-cash" title="PokéCoins"><span class="hbar-coins">0</span></div>
+          <div class="room-sign hbar-sign" aria-live="polite"><b></b></div></div>
+      </div>
     </div>`;
   document.body.append(root);
   view = root.querySelector('.b3-view');
@@ -1357,6 +1388,14 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   askEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
   askEl.querySelector('.mall-ask-no').addEventListener('click', () => { playSound('cancel'); closeAsk(false); });
   lineEl = root.querySelector('.mall-line');
+  const bar = root.querySelector('.mall-bar');
+  bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
+  new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (P) resize(); }).observe(bar);
+  const dex = bar.querySelector('.mall-dex'), help = bar.querySelector('.mall-help');
+  dex.append(roundKey('home'));
+  dex.addEventListener('click', () => fromKey((from, onClose) => openPokedex({}, { from, onClose }), dex));
+  help.append(roundKey('help'));
+  help.addEventListener('click', () => fromKey(openHowto, help));
 
   THREE = await loadThree();
   await hubThree();

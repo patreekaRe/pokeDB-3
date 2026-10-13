@@ -386,6 +386,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `js/data/gym.js`: ask the user if they want each friend's own. Playtest `?gymwins=5` (for good) then `?base&visit`.
 
   ▶ Run in: PLAYTEST on the live site.
+- **The Poké Mall's Pokédex bar** (2026-10-13, the user's ask; branch `claude/new-player-onboarding-ecwtke` and `main`): the
+  Clearing's bottom bar in the hall and every shop (`.mall-bar` in `js/mall-3d.js`, the hub's `.hub-bar` classes): Home
+  (the device grows out of it over the mall, `fromKey()`; `body:has(.mall3d) .collection-screen.over` lifts it over the
+  mall's z-index 900), How to play, the PokéCoins (`showCoins()`, the old Furniture-only coins LCD gone) and the place's
+  name (`placeSign()`; the top title hidden). Checked headless at 390x844. **Next: the user playtests it on the live site.**
 - **iPad playtest of the full-screen layout** (2026-10-12, branch `claude/arcade-cabinets-design-yh10el` and `main`): the
   frame is off, the run map is a handheld in its scenery. Ask the user: in a landscape battle the PP and End Turn keys sit
   at the far screen edges (pull them in beside the hand?), and a tall iPad shows black above and below the Secret Base's
