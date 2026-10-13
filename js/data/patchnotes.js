@@ -43,6 +43,10 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'Main menu in the Pokédex now asks first on the map too, so a stray tap can\'t drop you out of your run.'],
+  ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
+  ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
+  ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
   ['runs', 'Beat a Gym Leader 3 times and they hand you a signed poster of themselves for your Secret Base wall.'],
   ['runs', 'Beat a Gym Leader 5 times for their Gold badge, a second badge in the Badge Case for each leader.'],
   ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
@@ -57,6 +61,26 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.17',
+    name: 'The Gym Badge',
+    date: '2026-10-13',
+    notes: [
+  ['battle', 'A Gym Leader sends out their Pokémon in style: speed lines flash as they call it out, again as they slide in on the battle screen, then they slide away and throw its Poké Ball onto the field themselves before you send out yours. Talking to them in their gym after the fight just pops up their speech window.'],
+  ['look', 'Each Gym is grander: a dark stone hall of columns, their best Pokémon as two giant statues flanking an arch carved GYM LEADER and their name, their badge turning over it in a sunburst, fires on the arch, light pouring down on the dais, and a ring of runes in the court that glows with embers rising once the great fires light.'],
+  ['look', 'The Gym\'s arch is rebuilt as a grand round arch: fluted columns, wedge stones with a gem in the keystone, and the badge turning in a lunette that glows once the great fires light. The banners by the pillars are gone.'],
+  ['runs', 'Beating a Gym Leader: they slide in on the battle screen with their losing words as their Pokémon falls, then back in their gym slide in again to hand over the badge. Your Pokémon stays still while a Gym Leader talks.'],
+  ['look', 'Gym Leaders now slide in from the edge of the screen when they talk, their speech window rising up beneath them, and slide back out when they\'re done.'],
+  ['runs', 'Earning a Gym badge is a moment now: the gym goes dark but for the badge glowing on its arch, and you tap it to take it. It spins round and round on the arch like a Pokéstop, then pops off, tumbles out and slams down in the middle of the screen with a flash, a shockwave and sparks, golden rays burst open, and YOU RECEIVED rises under it.'],
+  ['base', 'Mounted things are properly 3D on your wall and in the Furniture store, so every wall piece is now: a dartboard with a dart in the treble, a carved mask with a nose and gold horns, a medal on its ribbon, boxing gloves hung by their laces, a climbing wall of bolted holds, puffy starfish, a net with its floats, a striped life ring in its rope, an anchor with rope wound round it, a ship\'s wheel with turned handles, a piñata of crepe tufts, a feathered carnival mask, a prize wheel ringed with lights, a shield over crossed spears, a pleated fan, a kite on its tail, climbing vines, a wall of gears, a honeycomb with its bee, a sea horse figurehead, a rope ladder, crossed cutlasses, a lucky horseshoe, a school of fish, a golden trident, a garden thermometer and a living wall of moss.'],
+  ['runs', 'You take the Gym badge from its arch every time you beat a Gym Leader, not just the first, and a rematch counts how many times you\'ve beaten them.'],
+  ['runs', 'After a Gym battle your Pokémon evolves right after you take the badge, there in the gym, then walks out to its rewards.'],
+  ['look', 'An evolution plays out in full: a tap no longer skips the song.'],
+  ['look', 'When you pick a new move, a gently pulsing SKIP label sits under the Skip key, so it is easy to find.'],
+  ['fixes', 'Tall Gym Leaders like Phil no longer have their head cut off by the arch behind them.'],
+  ['base', 'Touch-ups in 3D: the treasure hoard\'s chest stands open over a heap of real coins with a crown and a goblet, the Sky Palace orbs sit in a gold cup with their halo ringing them, the play tent has a real doorway with its flaps tied back, the tall Center plant has real leaves, and what stands on kitchen counters and office desks is life size: toasters, kettles, microwaves, mixers, laptops, typewriters and the rest.'],
+    ],
+  },
   {
     version: '1.16',
     name: 'Gym Leaders',

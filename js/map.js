@@ -828,15 +828,22 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
   }
 
-  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming; in a Gym it's the Gym Leader
-  // instead, in colour once beaten (the boss stays a surprise till they send it out)
+  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming; in a Gym its Gym Leader stands
+  // beside it, in colour once beaten (the Pokémon stays a silhouette till they send it out)
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
   if (boss?.image) {
-    const img = el('img', `map-boss-shadow${gym ? ` map-leader${gym.met ? ' met' : ''}` : ''}`);
-    img.src = gym ? gym.src : boss.image;
+    const img = el('img', `map-boss-shadow${gym ? ' paired' : ''}`);
+    img.src = boss.image;
     img.alt = '';
-    place(img, CENTER_X, rowY(rows));
+    place(img, CENTER_X + (gym ? 3.5 : 0), rowY(rows));
     box.append(img);
+    if (gym) {
+      const leader = el('img', `map-boss-shadow map-leader${gym.met ? ' met' : ''}`);
+      leader.src = gym.src;
+      leader.alt = '';
+      place(leader, CENTER_X - 3.5, rowY(rows));
+      box.append(leader);
+    }
     if (!peek && reachable.has(map.boss.id)) preloadBoss(boss.spriteId);
   }
 

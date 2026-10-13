@@ -1649,16 +1649,16 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .map-node.current .map-building { filter: drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)); }
 
 /* Your Pokémon stands on the room you're in, like the trainer's head on the Pokégear */
-/* The biome's boss as a grey silhouette standing just above its room (the room and its badge stay in front) */
+/* The biome's boss as a grey silhouette standing just above its room, in front of the map's rocks and lava */
 .map-boss-shadow {
   position: absolute;
-  z-index: 0;
+  z-index: 3;
   width: calc(var(--tile) * 9);
   margin-top: calc(var(--tile) * -2.2);
   transform: translate(-50%, -90%);
   pointer-events: none;
   image-rendering: pixelated;
-  filter: brightness(0) invert(0.3) opacity(0.75) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  filter: brightness(0) invert(0.3) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
   transition: filter 0.45s ease;
 }
 /* the boss reveal (js/transition.js): the silhouette colours in and rears up */
@@ -3234,6 +3234,8 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
 :is(.center-room, .event-room) .reward-option:is(:disabled, .locked) .center-label { animation: none; color: #5a6a50; border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
+/* the gym has no Battle sign over its leader (the user's call, 2026-10-13): walking up or a tap on them is the challenge */
+.gym-room .center-label { visibility: hidden; }
 /* an event sign tapped once (spotOption()): it holds still, raised, in a gold ring, while the text box says what it does
    and a second tap takes it */
 .event-room .reward-option.picked .center-label {
@@ -4518,6 +4520,18 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }
 .mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
+/* the Pokédex shortcut, after the Home key (30px, laid over the hinge at the lights' end): this biome's page at a tap
+   (the user's ask, 2026-10-13) */
+.map-dex-btn {
+  flex: none; margin-left: 38px; height: 28px; padding: 0 10px; cursor: pointer;
+  border: 2px solid var(--shell-rim); border-radius: 999px;
+  background: linear-gradient(var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
+  color: #fff; font: 0.75rem var(--pixel-font); font-synthesis-weight: none; white-space: nowrap;
+  text-shadow: 0 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent; transition: translate 0.06s, box-shadow 0.06s;
+}
+.map-dex-btn:active { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 1px 0 var(--shell-deep); }
+#map-screen.tower .map-dex-btn { display: none; }
 #map-screen .mdex-hinge .map-head {
   flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
   margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
@@ -5082,6 +5096,14 @@ body[data-screen="reward-screen"]:has(#reward-options.deck-pick, #reward-screen.
 #reward-skip:is(.room-leave, .room-skip):active { transform: none; }
 #reward-skip:is(.room-leave, .room-skip):active .round-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 #reward-skip:is(.room-leave, .room-skip)[hidden] { display: grid; visibility: hidden; }   /* Team Rocket has no Leave: the LCD keeps its place */
+#reward-skip.room-skip.labelled { position: relative; place-items: start center; }
+#reward-skip.room-skip.labelled::after {
+  content: 'SKIP'; position: absolute; left: 50%; bottom: -5px; translate: -50% 0; pointer-events: none;
+  font: 0.75rem var(--pixel-font); color: #fff; text-shadow: 0 1px 0 var(--shell-deep), 0 0 4px var(--shell-deep);
+  animation: skipPulse 1.6s ease-in-out infinite;
+}
+@keyframes skipPulse { 50% { opacity: 0.55; scale: 0.94; } }
+@media (prefers-reduced-motion: reduce) { #reward-skip.room-skip.labelled::after { animation: none; } }
 #reward-skip:is(.room-leave, .room-skip) .pp-pill {
   position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
 }
@@ -5502,16 +5524,20 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-trainer {
   position: absolute; right: max(6%, calc(50% - 260px)); bottom: calc(max(18px, env(safe-area-inset-bottom) + 10px) + 150px);
   height: min(46vh, 300px); width: auto; image-rendering: pixelated; filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.35));
-  translate: 120% 0; transition: translate 0.45s cubic-bezier(.2, .9, .3, 1.1), filter 0.6s;
+  translate: 100vw 0; transition: translate 0.6s cubic-bezier(.2, .9, .3, 1.08), filter 0.6s;
 }
 .gym-scene.in .gym-trainer { translate: 0 0; }
+.gym-scene.out .gym-trainer { translate: 100vw 0; transition: translate 0.32s cubic-bezier(.6, 0, .9, .5), filter 0.6s; }
 .gym-trainer.shadow { filter: brightness(0) drop-shadow(0 0 2px rgba(255, 240, 200, 0.9)); }
 .gym-say {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   width: min(480px, calc(100% - 32px)); min-height: 110px; margin: 0; padding: 26px 22px 22px; box-sizing: border-box;
   border-radius: 26px / 22px; background: #fbf4df; color: #6a5440; font-size: 16px; line-height: 1.6; text-align: left;
   box-shadow: 0 3px 0 #d8c8a4, 0 6px 16px #0005;
+  translate: -50% calc(100% + 40px); transition: translate 0.45s cubic-bezier(.2, .9, .3, 1.1) 0.15s;
 }
+.gym-scene.in .gym-say { translate: -50% 0; }
+.gym-scene.out .gym-say { translate: -50% calc(100% + 40px); transition: translate 0.28s ease-in; }
 .gym-text { margin: 0; }
 .gym-plate {
   position: absolute; left: 18px; top: -16px; padding: 7px 14px; border-radius: 999px; font-size: 13px;
@@ -5528,7 +5554,141 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
   filter: drop-shadow(0 0 18px rgba(255, 230, 120, 0.9)); animation: gymBadge 0.7s cubic-bezier(.3, 1.6, .5, 1);
 }
 @keyframes gymBadge { from { scale: 0; rotate: -200deg; } }
-@media (prefers-reduced-motion: reduce) { .gym-trainer { transition: none; } .gym-more, .gym-badge { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gym-trainer, .gym-say { transition: none; } .gym-more, .gym-badge { animation: none; } }
+/* the speed lines as they slide in: a dark band behind them, white streaks racing past, fading once they've landed */
+.gym-speed {
+  position: absolute; left: 0; right: 0; bottom: calc(max(18px, env(safe-area-inset-bottom) + 10px) + 150px);
+  height: min(46vh, 300px); overflow: hidden; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(20, 24, 60, 0.55) 25%, rgba(232, 88, 72, 0.35) 75%, transparent);
+}
+.gym-speed { animation: gymSpeed 1.3s ease-out both; }
+/* talking to them in their gym after the fight: no slide-in or dim, the speech window just pops up (the dim comes back
+   for the badge) */
+.gym-scene.bubble:not(.getting) { background: none; }
+.gym-scene.bubble .gym-say { translate: -50% 0; scale: 0.6; opacity: 0; transition: scale 0.22s cubic-bezier(.3, 1.6, .5, 1), opacity 0.15s; }
+.gym-scene.bubble.in .gym-say { scale: 1; opacity: 1; }
+.gym-scene.bubble.out .gym-say { scale: 0.8; opacity: 0; transition: scale 0.18s ease-in, opacity 0.18s; }
+@keyframes gymSpeed { 0% { opacity: 0; scale: 1 0.2; } 12% { opacity: 1; scale: 1 1; } 55% { opacity: 1; } 100% { opacity: 0; scale: 1 0.85; } }
+.gym-speed i {
+  position: absolute; left: 100%; top: var(--y); width: var(--w); height: var(--h); border-radius: 99px;
+  background: linear-gradient(90deg, transparent, #fff 40%, rgba(255, 255, 255, 0.6));
+  animation: gymStreak var(--t) linear var(--d) infinite;
+}
+@keyframes gymStreak { to { translate: -260% 0; } }
+@media (prefers-reduced-motion: reduce) { .gym-speed { display: none; } }
+/* their own ball, thrown from the right onto the boss's pad (leaderThrow() in js/battle.js), and the boss bursting out */
+.intro-ball.enemy-ball { position: fixed; z-index: 980; }
+.intro-ball.enemy-ball.thrown { animation: ballArcX 0.7s linear both; }
+.intro-ball.enemy-ball.thrown .pokeball { animation: ballArcY 0.7s both, ballSpinBack 0.7s linear both; }
+@keyframes ballSpinBack { from { rotate: 900deg; } }
+.enemy-zone.ball-out .enemy-portrait { transform-origin: 50% 85%; animation: enemyBallOut 0.6s ease-out; }
+.enemy-zone.ball-out #enemy-img { animation: enemyBallGlow 0.6s ease-out; }
+.enemy-zone.ball-out .intent { visibility: hidden; }
+@keyframes enemyBallOut { from { scale: 0.15; } 55% { scale: 1.12; } to { scale: 1; } }
+@keyframes enemyBallGlow { from { filter: brightness(8) var(--rest); } 55% { filter: brightness(2.5) var(--rest); } 75%, to { filter: brightness(1) var(--rest); } }
+
+/* their badge handed over (badgeGet() in js/gym.js): the talk steps back and the screen goes dark but for the badge,
+   glowing where it hangs on the arch and the only thing that takes a tap (`.wait`); grabbed, it tumbles out and lands
+   mid-screen with a flash, a shockwave and sparks, rays wheel open, then YOU RECEIVED rises under it */
+.gym-scene.getting .gym-say { translate: -50% calc(100% + 40px); transition: translate 0.3s ease-in; }
+.gym-scene.getting .gym-trainer { opacity: 0.25; transition: opacity 0.5s, translate 0.6s; }
+.gym-get {
+  position: absolute; inset: 0; perspective: 700px; perspective-origin: 50% 40%; pointer-events: none; overflow: hidden;
+  background: radial-gradient(circle at 50% 42%, rgba(60, 40, 0, 0.35), rgba(4, 4, 14, 0.9) 70%);
+  opacity: 0; transition: opacity 0.4s;
+}
+.gym-get.go { opacity: 1; }
+.gym-get.wait { background: rgba(3, 3, 10, 0.88); }
+.gym-get > :is(.gym-get-rays, .gym-get-badge, .gym-get-ring, .gym-get-sparks) { position: absolute; left: 50%; top: 40%; translate: -50% -50%; }
+.gym-get-rays {
+  width: 180vmax; height: 180vmax; opacity: 0; scale: 0.3;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 216, 100, 0.34) 0 7deg, transparent 7deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, #000 4%, transparent 38%); mask-image: radial-gradient(circle, #000 4%, transparent 38%);
+  transition: opacity 0.5s, scale 0.7s cubic-bezier(.2, .9, .3, 1.2); animation: gymRays 14s linear infinite;
+}
+.gym-get.land .gym-get-rays { opacity: 1; scale: 1; }
+@keyframes gymRays { to { rotate: 360deg; } }
+.gym-get-badge {
+  width: min(46vw, 200px); aspect-ratio: 1; opacity: 0;
+  filter: drop-shadow(0 0 22px rgba(255, 220, 110, 0.85)) drop-shadow(0 6px 0 rgba(0, 0, 0, 0.4));
+}
+.gym-get.go .gym-get-badge { opacity: 1; transition: opacity 0.5s; }
+.gym-get.wait .gym-get-badge { pointer-events: auto; cursor: pointer; }
+.gym-get.done .gym-get-badge { opacity: 1; animation: gymGetFloat 3.2s ease-in-out infinite; }
+.gym-get-mark { position: relative; width: 100%; height: 100%; display: block; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.gym-get.wait .gym-get-mark { animation: gymBeckon 1.3s ease-in-out infinite; }
+@keyframes gymBeckon {
+  0%, 100% { scale: 1; filter: brightness(1.05) drop-shadow(0 0 10px rgba(255, 220, 110, 0.7)); }
+  50% { scale: 1.07; filter: brightness(1.3) drop-shadow(0 0 26px rgba(255, 230, 140, 1)); }
+}
+.gym-get-halo {
+  position: absolute; inset: -45%; border-radius: 50%; opacity: 0.55; pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 236, 160, 0.85), rgba(255, 200, 80, 0.35) 35%, transparent 68%);
+}
+.gym-get.wait .gym-get-halo { animation: gymHalo 1.3s ease-in-out infinite; }
+@keyframes gymHalo { 0%, 100% { opacity: 0.55; scale: 0.92; } 50% { opacity: 1; scale: 1.12; } }
+.gym-get-badge { perspective: 520px; }
+.gym-get.spinning .gym-get-mark { filter: brightness(1.35) drop-shadow(0 0 24px rgba(255, 230, 140, 1)); animation: gymStopSpin 2.1s forwards; }
+@keyframes gymStopSpin {
+  0% { rotate: y 0deg; animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  8% { rotate: y -30deg; animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+  100% { rotate: y 3600deg; }
+}
+.gym-get.spinning .gym-get-halo { opacity: 1; scale: 1.25; transition: opacity 0.3s, scale 0.3s; }
+.gym-get-hint {
+  position: absolute; left: 0; right: 0; bottom: max(16vh, calc(env(safe-area-inset-bottom) + 100px)); text-align: center;
+  font-size: 16px; letter-spacing: 3px; color: #ffe9a8; text-shadow: 0 0 12px rgba(255, 200, 60, 0.8), 0 2px 0 #0008;
+  opacity: 0; transition: opacity 0.4s; pointer-events: none;
+}
+.gym-get.wait .gym-get-hint { opacity: 1; animation: gymHint 1.3s ease-in-out 0.6s infinite; }
+@keyframes gymHint { 50% { opacity: 0.4; } }
+.gym-get-shine {
+  position: absolute; inset: 0; -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.95) 48%, transparent 60%) -200% 0 / 300% 100% no-repeat;
+}
+.gym-get.land .gym-get-shine { animation: gymShine 2.4s ease-in-out 0.1s infinite; }
+@keyframes gymShine { 0% { background-position: 150% 0; } 45%, 100% { background-position: -150% 0; } }
+@keyframes gymGetFloat { 0%, 100% { transform: translateY(0) rotateY(-14deg); } 50% { transform: translateY(-8px) rotateY(14deg); } }
+.gym-get-ring {
+  width: 60px; height: 60px; border-radius: 50%; opacity: 0;
+  border: 6px solid rgba(255, 236, 160, 0.95); box-shadow: 0 0 24px rgba(255, 210, 90, 0.9), inset 0 0 18px rgba(255, 210, 90, 0.7);
+}
+.gym-get.land .gym-get-ring { animation: gymRing 0.8s ease-out forwards; }
+@keyframes gymRing { 0% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 9; border-width: 1px; } }
+.gym-get-flash { position: absolute; inset: 0; background: #fff8e0; opacity: 0; }
+.gym-get.land .gym-get-flash { animation: gymFlash 0.6s ease-out; }
+@keyframes gymFlash { 0% { opacity: 0.9; } 100% { opacity: 0; } }
+.gym-get-sparks { width: 0; height: 0; }
+.gym-get-sparks i {
+  position: absolute; left: -4px; top: -4px; width: 8px; height: 8px; opacity: 0;
+  background: #ffe48a; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 4px #ffd040);
+}
+.gym-get-sparks i:nth-child(3n) { background: #fff; width: 6px; height: 6px; }
+.gym-get-sparks i:nth-child(4n) { background: #ffb040; }
+.gym-get.land .gym-get-sparks i { animation: gymSpark var(--t) cubic-bezier(.1, .7, .3, 1) forwards; }
+@keyframes gymSpark {
+  0% { opacity: 1; transform: rotate(var(--a)) translateY(0) scale(1.6); }
+  100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(0.3); }
+}
+.gym-get-cap {
+  position: absolute; left: 0; right: 0; bottom: max(14vh, calc(env(safe-area-inset-bottom) + 90px)); text-align: center; align-items: center;
+  display: flex; flex-direction: column; gap: 6px; opacity: 0; translate: 0 24px;
+  transition: opacity 0.5s 0.25s, translate 0.6s cubic-bezier(.2, .9, .3, 1.2) 0.25s;
+}
+.gym-get.land .gym-get-cap, .gym-get.calm.done .gym-get-cap { opacity: 1; translate: 0 0; }
+.gym-get-cap small { font-size: 14px; letter-spacing: 3px; color: #f4e6c0; text-shadow: 0 2px 0 #0008; }
+.gym-get-cap b {
+  font-size: clamp(22px, 7vw, 34px); letter-spacing: 2px; padding: 0 16px;
+  background: linear-gradient(180deg, #fff6c8, #ffd040 55%, #e09018); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 3px 0 #6a3a08) drop-shadow(0 0 14px rgba(255, 200, 60, 0.6));
+}
+.gym-get.calm .gym-get-badge { opacity: 1; animation: none; }
+.gym-get.calm .gym-get-rays { opacity: 0.6; scale: 1; animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .gym-get .gym-get-badge, .gym-get .gym-get-rays, .gym-get .gym-get-shine, .gym-get .gym-get-mark, .gym-get .gym-get-halo { animation: none !important; }
+  .gym-get.go .gym-get-badge { opacity: 1; }
+}
 
 /* the crossroads boards' Gym Leaders: a card each, a shadow and ??? till beaten, over the bosses they send out */
 .xr-leaders { display: flex; gap: 8px; justify-content: center; }
@@ -5546,7 +5706,8 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .xr-road .xr-leader .xr-boss { height: 30px; }
 
 /* the map's Gym Leader over the boss room (renderMap()'s `gym`): a trainer is narrower than a Pokémon's canvas */
-.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -1.4); }
+.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -2.4); }
+.map-boss-shadow.paired { width: calc(var(--tile) * 8); margin-top: calc(var(--tile) * -2.6); }   /* beside its leader, clear of the room */
 .map-boss-shadow.map-leader.met { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
 /* their badge spinning in over the 3D gym (badgePop() in js/gym.js) */
 .gym-pop { position: fixed; inset: 0; z-index: 990; pointer-events: none; transition: opacity 0.4s; }

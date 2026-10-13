@@ -158,11 +158,11 @@ const NIETOS = {
 };
 
 /* Clarence (the user's, 2026-10-13): lives to show his ass to his friends on Discord, a burlesque show every night "to help
-   them play better" at Valorant, and is FURIOUS that a gym battle is keeping him from it. Two sprites, one per boss
-   (`sprites`, read by leaderFor()). */
+   them play better" at Valorant, and is FURIOUS that a gym battle is keeping him from it. His second sprite is only for his
+   slide-in talks (`talk`, read by gymTalk() in js/gym.js), the first everywhere else (the user's call, 2026-10-13). */
 const CLARENCE = {
   sprite: 'assets/trainers/gym/clarence.png',
-  sprites: { slaking: 'assets/trainers/gym/clarence.png', regigigas: 'assets/trainers/gym/clarence-2.png' },
+  talk: 'assets/trainers/gym/clarence-2.png',
   intro: [
     ['ARE YOU KIDDING ME?! A CHALLENGER? NOW?!', 'The boys are on Discord RIGHT NOW waiting for the show!', 'Go, {boss}! END THIS!'],
     ['Do you know what time it is? It\'s SHOWTIME. Not gym time. SHOWTIME.', 'Every night at nine the cheeks come out. That\'s TRADITION.', 'Go, {boss}, and make it FAST!'],

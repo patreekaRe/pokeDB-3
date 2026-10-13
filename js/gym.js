@@ -1,4 +1,5 @@
-/* The Gym Leader's moments (js/data/gym.js): before their boss, they slide in and talk, a shadow until you've beaten
+/* The Gym Leader's moments (js/data/gym.js): before their boss, they slide in from the right, their speech window up from
+   below, and talk, a shadow until you've beaten
    them once, lit up as they speak; after you win, their last words and the badge. One layer over whatever is showing,
    a tap (or Enter / Space) for each line. */
 
@@ -12,7 +13,7 @@ import { auraOn } from './aura.js';
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
 /** Their lines with their name, badge and `vars` (`{boss}`) filled in, for the 3D gym's speech window. */
-export const gymLines = (l, lines, vars = {}) => lines.map(line => voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })));
+export const gymLines = (l, lines, vars = {}) => lines.map(line => typeof line === 'string' ? voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })) : line);
 
 /** JONA takes the screen (Phil's demon, `demon` in js/data/gym.js): a black-out, violet static and a shudder, a crack of
     thunder. `infuse` is the dark pouring into his Pokémon: a violet burst instead of the black. Calm effects: one soft fade. */
@@ -44,46 +45,40 @@ export function badgePop(l) {
   });
 }
 
-/** Their lines, one a tap. `badge` shows the badge they hand over with the last line (`'gold'` its Gold one). */
+/** Their lines, one a tap (`bubble`: no slide-in, no dim, only their speech window popping up, for talking to them in
+    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line (`'gold'` its Gold one). */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false } = {}) {
   const calm = !battleFx();
-  const layer = el('div', `gym-scene${possess ? ' possess' : ''}`);
-  const shadow = !possess && gymWins(getSave(), l.id) === 0;
+  const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}`);
+  const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
-  who.src = spriteOf(l);
+  who.src = l.talk || spriteOf(l);
   who.alt = '';
   const plate = el('div', 'gym-plate');
   plate.append(el('small', '', 'GYM LEADER '), l.name);
   const box = el('div', 'gym-say');
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
-  layer.append(who, box);
+  if (bubble) layer.append(box); else layer.append(who, box);
   document.body.append(layer);
-  if (!calm) { await sleep(20); layer.classList.add('in'); await sleep(450); } else layer.classList.add('in');
+  if (!calm) { await sleep(20); layer.classList.add('in'); if (speed === 'in') speedLines(layer); await sleep(bubble ? 300 : 600); } else layer.classList.add('in');
 
-  let mark = null;
-  if (badge) {
-    const { badgeArt } = await import('./trainercard.js');
-    mark = el('img', 'gym-badge');
-    const gold = badge === 'gold';
-    mark.src = badgeArt(`gym-${l.id}${gold ? '-gold' : ''}`, true);
-    mark.alt = gold ? `Gold ${l.badge}` : l.badge;
-  }
   const said = gymLines(l, lines, vars);
   let darkness = null;
   try { for (let i = 0; i < said.length; i++) {
     const line = said[i];
+    if (line.plate) plate.replaceChildren(el('small', '', 'GYM LEADER '), l.name);   // a narrated line after a family's talk
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
     if (line.who) {
       if (line.demon && !layer.classList.contains('demon')) demonSwap();
       layer.classList.toggle('demon', !!line.demon);
     }
     text.textContent = line.text ?? line;
+    if (!calm && i === (speed === 'last' ? said.length - 1 : speed)) speedLines(layer);   // a number: that line
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
-    if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
     if (possess && i === Math.min(1, said.length - 1)) {
       layer.classList.add('taken');
       try { darkness = auraOn(who, 3, 'dark'); } catch (e) { console.error(e); }   // the talk must go on without it
@@ -93,12 +88,128 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
     playSound('confirm');
   }
   if (possess) await infuse(layer, who, possess, () => { darkness?.(); darkness = null; });
+  if (badge) await badgeGet(layer, l, again, badge === 'gold');
   } catch (e) { console.error(e); }   // never leave the layer stuck over the battle
   layer.classList.remove('in');
   layer.classList.add('out');
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/** Anime speed lines racing past for a beat: only as they call their Pokémon out (`speed: 'last'`) and as they slide in
+    on the battle screen to send it out (`speed: 'in'`), the user's two. */
+function speedLines(layer) {
+  if (calmFx()) return;
+  const lines = el('div', 'gym-speed');
+  lines.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 18; i++) {
+    const s = el('i');
+    s.style.setProperty('--y', `${4 + Math.random() * 92}%`);
+    s.style.setProperty('--w', `${30 + Math.random() * 50}%`);
+    s.style.setProperty('--h', `${1 + Math.floor(Math.random() * 4)}px`);
+    s.style.setProperty('--t', `${0.22 + Math.random() * 0.2}s`);
+    s.style.setProperty('--d', `${-Math.random() * 0.4}s`);
+    lines.append(s);
+  }
+  layer.prepend(lines);
+  playSound('run-away');
+  setTimeout(() => lines.remove(), 1400);
+}
+
+/** Their badge handed over, after their last words (the user's ask, 2026-10-13): the screen goes dark but for the badge on
+    the gym's arch (or, without the 3D gym, the middle of the screen's top), glowing, and the badge is the only thing that
+    takes a tap. Tapped, it spins ten turns on the arch like a Pokéstop, then pops off it, tumbles out towards you spinning and lands mid-screen with a flash, a
+    shockwave and sparks; golden rays wheel open, a shine runs over it and YOU RECEIVED the badge rises under it. A tap
+    after it lands goes on. Calm effects: it glides down, still. */
+async function badgeGet(layer, l, again = 0, gold = false) {
+  const calm = !battleFx() || calmFx();
+  const { badgeArt } = await import('./trainercard.js');
+  const room = await import('./event-3d.js').catch(() => null);
+  const src = badgeArt(`gym-${l.id}${gold ? '-gold' : ''}`, true), name = gold ? `Gold ${l.badge}` : l.badge;
+  const stage = el('div', `gym-get${calm ? ' calm' : ''}`);
+  const spin = el('div', 'gym-get-badge'), mark = el('img', 'gym-get-mark'), shine = el('i', 'gym-get-shine');
+  mark.src = src;
+  mark.alt = name;
+  mark.draggable = false;
+  shine.style.maskImage = shine.style.webkitMaskImage = `url("${src}")`;
+  spin.append(el('i', 'gym-get-halo'), mark, shine);
+  spin.setAttribute('role', 'button');
+  spin.setAttribute('aria-label', `Take the ${name}`);
+  const sparks = el('div', 'gym-get-sparks');
+  for (let i = 0; i < 28; i++) {
+    const s = el('i');
+    s.style.setProperty('--a', `${i * 360 / 28 + Math.random() * 8}deg`);
+    s.style.setProperty('--d', `${120 + Math.random() * 140}px`);
+    s.style.setProperty('--t', `${0.7 + Math.random() * 0.6}s`);
+    sparks.append(s);
+  }
+  const cap = el('div', 'gym-get-cap');
+  cap.append(el('small', '', 'YOU RECEIVED THE'), el('b', '', name.toUpperCase()));
+  if (again) cap.append(el('small', '', `BEATEN ${again + 1} TIMES`));   // every win hands it over, a repeat counted (the user's call, 2026-10-13)
+  const hint = el('div', 'gym-get-hint', 'TAP THE BADGE');
+  stage.append(el('div', 'gym-get-rays'), el('i', 'gym-get-ring'), sparks, spin, el('i', 'gym-get-flash'), cap, hint);
+  layer.classList.add('getting');
+  layer.append(stage);
+  // where it waits: over the badge on the arch, the same size, or near the top of the screen
+  const box = stage.getBoundingClientRect(), size = spin.getBoundingClientRect().width || 160;
+  const at = room?.gymBadgeAt?.() || { x: box.left + box.width / 2, y: box.top + box.height * 0.2, r: size * 0.32 };
+  const from = `translate(${at.x - box.left - box.width / 2}px, ${at.y - box.top - box.height * 0.4}px) scale(${Math.max(0.15, at.r * 2 / size)})`;
+  spin.style.transform = from;
+  await sleep(20);
+  stage.classList.add('go', 'wait');
+  playSound('badge-ready');
+  await new Promise(done => {
+    const take = (e) => { e?.preventDefault?.(); spin.removeEventListener('pointerup', take); document.removeEventListener('keydown', key); done(); };
+    const key = (e) => { if (e.key === 'Enter' || e.key === ' ') take(e); };
+    setTimeout(() => { spin.addEventListener('pointerup', take); document.addEventListener('keydown', key); }, 350);
+  });
+  stage.classList.remove('wait');
+  room?.gymBadgeShown?.(false);
+  playSound('confirm');
+  const settle = (keys, duration) => { const a = spin.animate(keys, { duration, fill: 'forwards' }); return a.finished.catch(() => {}).then(() => a); };
+  const flights = [];
+  if (calm) flights.push(await settle([{ transform: from }, { transform: 'none' }], 500));
+  else {
+    // spun on the arch like a Pokéstop: it swells up where it is, then whirls ten turns in a blur of light and slows to a
+    // stop before it pops. The turn is the picture's own `rotate` (gymStopSpin in css/screens.css), apart from the
+    // badge's place, and it swells to a size a phone can see: the arch's badge is small on one.
+    const big = `${from} scale(${Math.max(1.3, 0.55 * size / Math.max(1, at.r * 2))})`;
+    playSound('aug-silver');
+    flights.push(await settle([{ transform: `${from} scale(1)` }, { transform: big, easing: 'cubic-bezier(.3, 1.5, .5, 1)' }], 320));
+    stage.classList.add('spinning');
+    playSound('badge-spin');
+    setTimeout(() => playSound('aug-gold'), 1900);
+    await sleep(2100);
+    stage.classList.remove('spinning');
+    stage.classList.add('popped');
+    playSound('run-away');
+    setTimeout(() => playSound('fw-launch'), 120);
+    // it pops off the arch towards you, tumbles up over the screen and slams down in the middle (timed on the frames
+    // drawn, so the landing's flash never comes before the badge does)
+    flights.push(await settle([
+      { transform: `${big} rotateY(0deg)` },
+      { transform: `${big} translateY(-14%) scale(1.2) rotateY(180deg)`, offset: 0.19, easing: 'cubic-bezier(.4, 0, .6, 1)' },
+      { transform: 'translate(0, -22vh) scale(1.6) rotateY(900deg) rotateZ(-12deg)', offset: 0.72, easing: 'cubic-bezier(.5, 0, .9, .5)' },
+      { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg) rotateZ(0deg)' },
+    ], 1300));
+    stage.classList.add('land');
+    playSound('fw-boom');
+    setTimeout(() => playSound('fw-crackle'), 180);
+    setTimeout(() => playSound('achievement'), 450);
+    flights.push(await settle([
+      { transform: 'translate(0, 0) scale(1.18, 0.82) rotateY(1440deg)', easing: 'ease-out' },
+      { transform: 'translate(0, -3vh) scale(0.96, 1.06) rotateY(1440deg)', offset: 0.5, easing: 'ease-in' },
+      { transform: 'none' },
+    ], 260));
+    await sleep(600);
+  }
+  if (calm) playSound('achievement');
+  spin.style.transform = '';
+  flights.forEach(a => a.cancel());
+  stage.classList.add('done');
+  await tap(layer);
+  playSound('confirm');
 }
 
 /** Phil pours JONA into his Pokémon, on the battle screen: the speech window and the dim go, a stream of dark energy and

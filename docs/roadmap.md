@@ -9,32 +9,6 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Wall furniture in 3D** (the user's ask, 2026-10-12: wall pieces stood in the store and hung in the room as flat
-paintings; "make new batches"). 204 wall kinds, built from parts like the floor batches, one file a batch
-(`js/base-models-w*.js`, its head says how: a wall piece's back is z 0, `X(i, W)` / `Y(j)` put a part where it was
-painted on its 96-unit strip, `cut()` crops the painting for a pane or canvas, fresh each hour for a window's sky). The
-room hangs a modelled wall piece by its back (`makePiece()` in `js/base-3d.js`, its crops lit in its `glow` colours,
-the window's light shaft kept) and the store hangs it on its display board (`buildFloor()` in `js/mall-furniture.js`).
-**Batch W1 done 2026-10-12** (`js/base-models-w.js`): the windows (sash window, small window with its herb pot,
-curtained window with real folds and ties, round window, arched window), the classic poster and the 13 motif posters
-(paper curling off the wall, a pin), the painting and the 8 framed pictures (moulding, a recessed canvas), the wall shelf
-(real books, a pot of leaves, a vase), the clock (glass dome, hands, pendulum) and the oval mirror. **Batch W2 done
-2026-10-13** (`js/base-models-w2.js`, cloth and paper, 50 kinds): `drape()` lays a crop on a finely cut sheet whose depth
-is a function (folds, ripples, curls), its outline the painting's alpha (`clipped()` cuts what the painting filled with
-shadow, the tapestries' V); rods, cords, rings, poles, pins and the star stickers modelled. **Batch W3 done 2026-10-13** (`js/base-models-w3.js`, boards and plaques, 27 kinds): frames round a crop of the
-painting with what stood on it stood off it (pinned notes and photos, donuts on pegs, tray markers and chalk, metal
-badges under glass, lit seven-segment digits, a pull-down screen on its roller); `inlay()` lifts a tablet's coloured
-glyph proud of the stone (the crop with every unsaturated pixel cleared); the winged sun and golden wings are two layers
-of the painting bent back towards the wall. **Batch W4 done 2026-10-13** (`js/base-models-w4.js`, windows, mirrors and doors, 18 kinds): arched frames by `archPane()` (moonlit, sky arch, stained glass with lead came), sashes and viewports round the hour's sky, frost as the painting's white specks in front of the glass, the carriage window's curtains cut to their painted edge, silvered glass (`silver()`), and stone laid block by block round its openings (`masonry()`: the arrow slit, the portcullis's gateway). **Batch W5 done 2026-10-13** (`js/base-models-w5.js`, shelves, racks and hooks, 20 kinds): `plank()` / `brace()` stand jars, bottles, tins and jam pots on shelves deep enough to hold them, `hook()` hangs pans and utensils over their rails, towels fold over theirs (`drape()`), Poké Ball bookends (`pokeball()`), records in shadow boxes, the control panel's desk slopes out under its screens, the solar panel leans out from its foot (`leaning()`). **Batch W6 done 2026-10-13** (`js/base-models-w6.js`, lights, clocks and strings, 33 kinds): what hangs, hangs: lanterns, the disco ball, chandelier, mobile and pots swing from a bracket out of the wall (`arm()`), strings sag out from their two screw eyes as well as down (`string()`, returning its depth for what hangs off it: bulbs, pennants, bats, flakes, mittens, washing), shades, paper, bulbs and flames are `K.glow()`, clocks share `face()` (dial, ticks, hands, glass dome), and a sign's letters are its own painted pixels lifted proud of its face (`lift()`, a colour test by `near()`), so the glow mask still lights them. `?stock=id,id...` fills the
-store with those pieces for a page load (`furnitureStock()`), and `tools/models.html` frames wall pieces by their middle. Next, one session each
-(Run in: CLOUD; send the user a sheet from `tools/models.html?ids=...` and the store with them in stock, a pinned link):
-- W7 mounted things: dartboard, wooden mask, medal, boxing gloves, climbing wall, starfish, fishing net, life ring,
-  anchor, ship's wheel, piñata, carnival mask, prize wheel, round shield, crossed cutlasses, figurehead, rope ladder,
-  folding fan, kite, lucky horseshoe, fish wall, trident, gear, vine, honeycomb and living walls, garden thermometer.
-- Touch-ups (floor pieces the survey of 2026-10-12 found weak): the pirate treasure hoard (its chest small and melted
-  into the gold), the Sky Palace orbs (floating loose over their cloud, the halo apart), the play tent / teepee (a flat
-  card), the small things on kitchen and office counters (too small to read), the tall Center plant (flat leaf cards).
-
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
@@ -375,6 +349,34 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
+  `js/event-3d.js`: a dark stone wall with a colonnade in place of the woods, the leader's first boss as twin stone colossi
+  on tall plinths flanking the arch (`stoneBoard()`, upright), the arch's lintel GYM LEADER over their name
+  (`gymPlaqueArt()`; POKéMON GYM only on the hinge's LCD), the badge in a sunburst over it, fires on the lintel, light
+  shafts on the dais, a ring of runes round the court's Poké Ball and embers rising, both lit with the great fires.
+  **The win's talks** (same day): the losing line slides in on the battle screen as their Pokémon falls, then the gym, where
+  they slide in again with the badge line and the badge, every win since the same day (the user's call: the grab is the
+  ritual; a repeat's caption says BEATEN N TIMES, `again` in `gymTalk()`). You can't walk
+  while a leader talks (`freezeEvent()`). Checked headless (`?gym=britt&hp=0.02`, every line in its place). **The send-out** (same day, the user's ask): on the
+  battle screen the leader slides in over anime speed lines (`speedLines()` in `js/gym.js`: only on their "Go, X!" line
+  in the room, `speed: 'last'`, and this entry, `'in'`; the user's two) to say "Gym Leader X sent out
+  Y!", slides out, then throws their own Poké Ball in from the right onto the boss's pad (`leaderThrow()` in
+  `js/battle.js`) and it bursts out (`.ball-out`), then your ball. After the fight their gym talks (badge, re-talks) don't slide
+  in, only the speech window pops up (`bubble`). **The arch revamp** (same day, the user's ask): the banners by the pillars
+  are gone, and `gymArch()` builds a round arch: fluted columns on stepped bases, the plaque's lintel, eleven wedge stones in
+  two shades with an ink keystone, gold trim and gem, the badge (`gymCrest()`, now at 5.2, out in front of the arch and drawn over it, `depthTest` off; its sunburst stays behind in the lunette) in a lunette that glows with the
+  great fires. **The badge grab** (same day, the user's ask): after the hand-over line `badgeGet()` in `js/gym.js` darkens
+  the screen but for the badge laid over the arch's (`gymBadgeAt()` / `gymBadgeShown()` in `js/event-3d.js`, the crest's
+  `at()` / `show()`), glowing, the only thing a tap takes; grabbed, it leaves the arch, tumbles out spinning (two WAAPI
+  flights, the landing's flash on the frames drawn) and slams down mid-screen. Since the same day (the user's ask) a tap first
+  spins it ten turns on the arch like a Pokéstop (`.spinning`, `aug-reroll` whirrs, `aug-gold` as it slows), then it pops
+  out; it swells up on the arch first and the turn is the picture's own CSS `rotate` (`gymStopSpin`), since the first try
+  rode on the badge's `transform` and the user saw no spin on their phone, only heard it. Its sounds are sine-only synths
+  (`badge-ready` while it waits, `badge-spin` following the turn, in `js/audio.js`), the user's ask: the reroll shuffle and
+  Eternamax's `charge` they had sounded gritty. The leader's board stands upright, stretched by 1 / cos(PITCH) to look
+  the same (`buildGym()`), since leaning back like the others put a tall leader's head (Phil's) behind the plaque. **Evolving after the badge** (same day, the user's ask): `lastWords()` in `gymRoom()` plays `evolve()` right after the badge is taken, still in the gym, swaps the evolved sprite in where it stands (`swapMate()` in `js/event-3d.js`) and the doormat's rewards skip it (`result.evolved`); untested by hand past a load of `?gym=britt`. The evolution can't be tapped through any more (`skipper()` gone from `js/evolution.js`), and the move picks wear a pulsing SKIP under the » key (`.labelled` in `showChoice()`, `learn-room` only). All shipped as patch 1.17, The Gym Badge. After it, the map's hinge got a POKéDEX shortcut (`#map-dex-btn`, in `NEXT`). Open: the user's look.
+
+  ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
   first-win badge land in the Badge Case and the outro straight after a real boss win (a peek gives no badge); the user's
   word on the 13 badges' looks and names. (Every leader has their own intro / beaten / won speeches.)

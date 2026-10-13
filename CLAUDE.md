@@ -138,7 +138,7 @@ live site.
   lobbies fade in over the title (`lobbyIn`).
 - **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
   device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
-  later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD; on top since 2026-10-08, above the run card),
+  later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD; on top since 2026-10-08, above the run card; after the Home key a POKéDEX pill, `#map-dex-btn`, opening the device straight on the run's biome page or Safari area, 2026-10-13, the user's ask; not on a climb),
   `.mdex-glass` (the map scrolls inside it), the top bar's Pokédex shown as a round Home key (`.home-key`) and `.mdex-dock`, the Bag's pockets as a menu bar (it opens the Bag over it, the
   top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, each pocket on a green LCD), and so are the deck and map-peek windows and the run's end windows (result, unlock, yes/no, loss recap) (`.dev-window`), and the deck pickers (Forget a move, PP Up, Day Care: `showChoice()`'s `deck-pick` layout, the deck on a dark screen scrolling in the glass, 2026-10-07; under the text box the yes/no window's two keys, the one-word confirm `#reward-ok` left, gold like the room bar's, greyed until a card is picked, then glowing, and Skip right, the picked card's dim stopping above them, 2026-10-08). Detail
   in `docs/reference/map-screen.md`. **Rooms** (? events, the Center, the Mart, the grotto) and the deck pickers have no
@@ -841,11 +841,15 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   start. `?meowth` shuts the shop again; `?crossroads&meowth` plays the talk.
 - **Gym Leaders** (2026-10-13, live since patch 1.16; the user's friends, history in `docs/roadmap-done.md`): `GYM_LEADERS`
   in `js/data/gym.js`, 13 leaders, two or three a biome, each sending out its bosses (`leaderFor()`; never Eternatus, the
-  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by
-  boss), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
+  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by boss, `talk` one for the slide-in talks only,
+  Clarence's), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
   Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
   `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
-  the room or, without 3D, over the battle; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
+  the room or, without 3D, over the battle; after a win their `beaten` pair is split: the losing line slides in on the battle
+  screen as their Pokémon falls (`afterFight()`), the last, handing over the badge, slides in back in the gym, every win (a repeat's badge caption counts it, `again`), then your Pokémon evolves there before you walk out (`evolve()` in `lastWords()`, `swapMate()` in `js/event-3d.js`, `result.evolved` skipping the rewards' evolution; 2026-10-13, the user's ask)
+  (`gymRoom(…, won, said)`); you can't walk while a leader talks (`freezeEvent()` in `js/event-3d.js`, and no walking while
+  a `.gym-scene` is up; 2026-10-13, the user's ask); the gym's back is `gymBack()`: a wall of columns, the ace as twin
+  colossi, the arch's lintel GYM LEADER + name, a rune ring in the court and embers lit with the great fires; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
   each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
   Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite, a `GYM_INK` line
   (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd

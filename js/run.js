@@ -1487,39 +1487,60 @@ async function fight(node, { talked = false } = {}) {
 
 /** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
     flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
-    the fight; after a win you're back in it, they slide in for their last words and the badge, and you walk out over the
-    doormat to the rewards. `won` is the fight's result once it's over. Without the 3D room (`?event2d`, or Three.js won't
-    load) it's the battle's own talk. */
-function gymRoom(node, leader, won = null) {
+    the fight. After a win they slide in on the battle screen the moment their Pokémon falls for their losing words
+    (afterFight()), then it cuts back here and, the first time, their speech window pops up (no slide-in, they're standing there) to hand
+    over the badge; you walk out
+    over the doormat to the rewards. While they talk, from the first beat to the last line, you can't walk
+    (freezeEvent(); the user's ask, 2026-10-13). `won` is the fight's result once it's over, `said` their `beaten` pair.
+    Without the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk. */
+function gymRoom(node, leader, won = null, said = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const said = talkOf(leader, 'beaten'), { lines: beaten, badge, got } = beatenTalk(leader, first ? said : said.slice(0, 1));
+  const handOver = !!won;   // every win hands the badge over, a repeat counted on it (the user's call, 2026-10-13)
+  const again = peeking ? 0 : gymWins(getSave(), leader.id);
   let talking = false;
-  // the speech window steps aside while they talk over the room
-  const say = async (lines, opts) => {
+  const freeze = (on) => event3dMod?.freezeEvent(on);
+  // the speech window steps aside while they talk over the room; `keep` holds you still after (the fight is coming)
+  const say = async (lines, opts, keep = false) => {
     talking = true;
+    freeze(true);
     sayLines([]);
-    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; }
+    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; if (!keep && run === thisRun) freeze(false); }
   };
   const talk = async () => {
     if (talking || run !== thisRun) return;
+    freeze(true);
     const room = event3dMod?.eventRoom3d();
     room?.light();
     room?.does('npc', 'npc-nod');
     talking = true;
     await sleep(battleFx() ? 700 : 0);   // the gong and the push in first
     if (run !== thisRun) return;
-    await say(talkOf(leader, 'intro', first));
+    await say(talkOf(leader, 'intro', first), { speed: 'last' }, true);
     talking = true;   // the fight is coming: no second talk
     if (run === thisRun) fight(node, { talked: true });
   };
   const after = !!won;
   if (!after) playMusic('gym-room');   // after the win the fight's gym-victory plays on through the badge
-  const leave = () => afterFight(node, { ...won, gymSaid: true });
+  // the evolution comes right after the badge is taken, still in the gym (the user's ask, 2026-10-13), so the rewards
+  // after the doormat skip it
+  let evolving = false, evolved = false;
+  const leave = () => { if (!evolving) afterFight(node, { ...won, gymSaid: true, evolved }); };
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    await say(beaten, { badge });
-    if (run === thisRun && got) sayLines([got]);
+    const evolves = canEvolve();
+    evolving = evolves;
+    const { lines, badge, got } = rematch(leader, again);
+    await say([...said.slice(-1), ...lines], { badge, again, lit: true, bubble: true }, evolves);
+    if (run !== thisRun) return;
+    sayLines([got]);
+    if (!evolves) return;
+    await new Promise(done => evolve(done));
+    if (run !== thisRun) return;
+    evolved = true;
+    await event3dMod?.swapMate({ src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id });
+    evolving = false;
+    if (run === thisRun) freeze(false);
   };
   showChoice({
     title: 'POKéMON GYM',
@@ -1529,26 +1550,24 @@ function gymRoom(node, leader, won = null) {
     onSkip: after ? leave : undefined,
     layout: 'event-room gym-room',
   });
-  let spoke = false;
+  let spoke = !handOver;
   event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
     spent: after,
-    onPick: after ? () => { if (spoke && !talking && run === thisRun) say([said.at(-1)]); } : talk,
-    extra: { leader, dark: first && !after },
-    onIn: after ? () => { spoke = true; lastWords(); } : null,
+    onPick: after ? () => { if (spoke && !talking && run === thisRun) say(said.slice(-1), { lit: true, bubble: true }); } : talk,
+    extra: { leader, dark: first && !after, frozen: handOver },
+    onIn: handOver ? () => { spoke = true; lastWords(); } : null,
     onFail: () => (after ? leave() : fight(node)),
   });
 }
-/** What they say once beaten and what they hand over: the badge the first time, their signed poster on the third win, the
-    Gold badge on the fifth (js/data/gym.js's gymMilestone()). The win isn't saved yet here, so this one is wins + 1; a
-    playtest is handed nothing. */
-function beatenTalk(leader, lines) {
-  const wins = gymWins(getSave(), leader.id) + 1;
-  if (peeking) return { lines, badge: false, got: null };
-  if (wins === 1) return { lines, badge: true, got: `You received the ${leader.badge}!` };
-  const step = gymMilestone(wins);
-  if (step === 'poster') return { lines: [...lines, ...leader.poster], badge: false, got: `${leader.name} gave you a signed poster! It's waiting in your Secret Base.` };
-  if (step === 'gold') return { lines: [...lines, ...leader.gold], badge: 'gold', got: `You received the Gold ${leader.badge}! ${leader.name} might drop by your Secret Base now.` };
-  return { lines, badge: false, got: null };
+/** What a win's hand-over adds (`again`: the wins before this one, 0 on a playtest): on the third their signed poster, on
+    the fifth the Gold badge (js/data/gym.js's gymMilestone()); `lines` follow their last words, `badge` is the one they
+    hand over, `got` the line it leaves in the speech window. */
+function rematch(leader, again) {
+  const step = gymMilestone(again + 1);
+  const got = again ? `You received the ${leader.badge} again! ${leader.name} beaten ${again + 1} times.` : `You received the ${leader.badge}!`;
+  if (step === 'poster') return { lines: leader.poster, badge: true, got: `${got} And a signed poster for your Secret Base!` };
+  if (step === 'gold') return { lines: leader.gold, badge: 'gold', got: `You received the Gold ${leader.badge}! ${leader.name} might drop by your Secret Base now.` };
+  return { lines: [], badge: true, got };
 }
 
 /** The Gym's 3D room can be walked: not under `?event2d`, and not once Three.js has failed to load this page. */
@@ -1571,15 +1590,19 @@ function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
   // the fight, so the win is only counted below with the boss's
   const leader = result.won && !result.gymSaid && gymLeader(node);
-  if (leader && gym3d()) return gymRoom(node, leader, result);
-  if (leader) {
-    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
-    const { lines, badge } = beatenTalk(leader, first ? said : said.slice(0, 1));
-    return gymTalk(leader, lines, { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge })
-      .then(() => afterFight(node, { ...result, gymSaid: true }));
+  if (leader) {   // their losing words on the battle screen as their Pokémon falls, then the badge in their gym
+    const said = talkOf(leader, 'beaten'), thisRun = run;
+    const vars = { boss: ENEMY_DEFS[node.enemyId]?.name };
+    return gymTalk(leader, said.slice(0, -1), { vars, lit: true }).then(() => {
+      if (run !== thisRun) return;
+      if (gym3d()) return gymRoom(node, leader, result, said);
+      const done = () => afterFight(node, { ...result, gymSaid: true });
+      const again = peeking ? 0 : gymWins(getSave(), leader.id), { lines, badge } = rematch(leader, again);
+      return gymTalk(leader, [...said.slice(-1), ...lines], { vars, badge, again, lit: true }).then(done);
+    });
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
-  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name } }).then(() => afterFight(node, { ...result, gymSaid: true }));
+  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
@@ -1693,7 +1716,8 @@ function afterFight(node, result) {
     if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
     // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
-    if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
+    if (result.evolved) steps.push(next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));   // in the Gym, after the badge
+    else if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
     else steps.push(next => unlockWindow(unlocked, next));
     if (isTower()) steps.push(next => { guardianHeal(); next(); });
     steps.push(next => offerCard('boss', next), next => offerRelic('Boss relic', next, { boss: true }));

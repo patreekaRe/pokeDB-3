@@ -46,7 +46,7 @@ export function pokeball(K, L, i, j, r, z) {
 }
 
 /** A five-petalled flower facing out at painted (i, j), depth z. */
-function flower(K, L, c, i, j, z, s = 1) {
+export function flower(K, L, c, i, j, z, s = 1) {
   const W = K.p.w;
   for (let n = 0; n < 5; n++) {
     const a = n / 5 * Math.PI * 2 + 0.3;
@@ -56,7 +56,7 @@ function flower(K, L, c, i, j, z, s = 1) {
 }
 
 /** A leaf facing out at painted (i, j), its tip turned by `a`. */
-function leaf(K, L, m, i, j, z, a = 0, s = 1) {
+export function leaf(K, L, m, i, j, z, a = 0, s = 1) {
   K.put(L.ball(u(1.6 * s), 12, 8).scale(0.62, 1.15, 0.28), m, X(i, K.p.w), Y(j), z, 0, 0.35, a);
 }
 

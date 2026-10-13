@@ -116,8 +116,8 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   (the user's call: they're all Normal); their `title` doesn't name the Pokémon either. Your starter's
   sprite (`.map-trainer`) stands on the current room like the Pokégear's
   trainer head, and the biome's boss (`map.boss.enemyId`) stands above its
-  room as a grey silhouette (`.map-boss-shadow`). Stacking: silhouette 0,
-  rooms 1, your sprite 2.
+  room as a grey silhouette (`.map-boss-shadow`), a Gym Leader beside it. Stacking: rooms 1, your sprite 2, the boss (and leader) 3, in front of everything;
+  the user's call, 2026-10-13.
 - Tapping a reachable room walks your sprite there first (`walkTo()`):
   along the same route `linkPoints()` gives `routeLines()`, gliding every
   frame on `translate` (since 2026-10-05, the user's ask: it stepped a tile
