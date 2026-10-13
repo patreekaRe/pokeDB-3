@@ -5,13 +5,13 @@
 import { el, sleep } from './ui.js';
 import { playSound } from './audio.js';
 import { getSave } from './storage.js';
-import { spriteOf, gymWins } from './data/gym.js';
+import { spriteOf, gymWins, voiced } from './data/gym.js';
 import { battleFx } from './prefs.js';
 
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
 /** Their lines with their name, badge and `vars` (`{boss}`) filled in, for the 3D gym's speech window. */
-export const gymLines = (l, lines, vars = {}) => lines.map(line => fill(line, { name: l.name, badge: l.badge, ...vars }));
+export const gymLines = (l, lines, vars = {}) => lines.map(line => voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })));
 
 /** Their badge spinning in over the 3D gym as they hand it over. */
 export function badgePop(l) {
@@ -52,7 +52,9 @@ export async function gymTalk(l, lines, { vars = {}, badge = false } = {}) {
   }
   const said = gymLines(l, lines, vars);
   for (let i = 0; i < said.length; i++) {
-    text.textContent = said[i];
+    const line = said[i];
+    if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
+    text.textContent = line.text ?? line;
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
     if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
     await tap(layer);

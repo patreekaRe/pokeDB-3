@@ -50,6 +50,7 @@ export const NEXT = [
   ['runs', 'Gym Leader Lawrence has his own look and plenty to say, and a different speech each time: before the battle, when you beat him and when he beats you.'],
   ['runs', 'In their gym a Gym Leader\'s name sits on a tag over the text box while they talk.'],
   ['runs', 'Gym Leader Britt has her own look and plenty to say: before the battle, when you beat her and when she beats you.'],
+  ['runs', 'A third Clearing Gym Leader: THE NIETOS, Law and Britt with baby Linc along, each with their own name tag as they talk.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

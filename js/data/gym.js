@@ -1,7 +1,7 @@
 /* ============================================================
    gym.js  -  the Gym Leaders (the user's friends, 2026-10-12).
 
-   Two a biome, standing in front of its boss: each owns one or two of the
+   Two a biome (the Clearing three), standing in front of its boss: each owns one or two of the
    biome's bosses and sends out whichever the run meets. Beating one earns
    their badge (`save.gym[id]`, counted per win; the Badge Case's Gym Badges,
    js/data/badges.js). They fight as Normal, like every boss.
@@ -88,9 +88,40 @@ const BRITT = {
   ],
 };
 
+/* The Nietos (the user's, 2026-10-13): Law and Britt battling together, their baby Linc in a Pikachu suit along because
+   they couldn't find a babysitter. `voices`: a line starting "LAW: " / "BRITT: " / "LINC: " puts that name on the tag. */
+const NIETOS = {
+  sprite: 'assets/trainers/gym/nietos.png',
+  voices: ['LAW', 'BRITT', 'LINC'],
+  firstIntro: true,
+  intro: [
+    ['LAW: Welcome to the gym of THE NIETOS!', 'BRITT: We couldn\'t find a babysitter, so this is a family battle now.', 'LINC: Pika-boo! Bababa!', 'LAW: Go, {boss}! Make it quick, he naps at seven.'],
+    ['BRITT: Okay, we have twenty minutes before Linc melts down.', 'LAW: Fifteen. The boys are already in the lobby.', 'BRITT: Law, NO Valorant tonight. You promised.', 'LINC: Gaaah!', 'LAW: ...Go, {boss}!'],
+    ['LAW: Hold on, hold on. Babe, did you pack the snacks?', 'BRITT: I packed the snacks, the wipes, the backup Pikachu suit AND you.', 'LINC: Num num!', 'BRITT: Go, {boss}! Mommy needs to go home.'],
+    ['BRITT: I taught twenty-six kids today. Now I have to battle one more.', 'LAW: Technically they\'re a trainer, babe.', 'BRITT: Technically I don\'t care.', 'LINC: Bwaaa!', 'LAW: Go, {boss}!'],
+    ['LAW: Our babysitter cancelled. Again. Third time this week.', 'BRITT: So you get all three of us.', 'LINC: Pikaaa-chuuu! *blows a raspberry*', 'LAW: That means good luck. Go, {boss}!'],
+    ['LINC: Dada! Dada! Ba!', 'LAW: Not now, buddy, Daddy\'s working.', 'BRITT: Daddy\'s "working" with his headset still on.', 'LAW: ...Go, {boss}!'],
+  ],
+  beaten: [
+    ['LAW: Well, that\'s game. Can we go home now?', 'BRITT: You\'re carrying the diaper bag.', 'LINC: Bye-bye! Bye-bye!', 'BRITT: Take the {badge}, sweetie.'],
+    ['BRITT: I told you we should have healed, Law.', 'LAW: You\'re the Sage, babe, that\'s literally your job.', 'BRITT: Don\'t you DARE.', 'LAW: ...Here, take the {badge}.'],
+    ['LINC: Waaaah!', 'BRITT: It\'s okay, baby, Mommy and Daddy just lost a little.', 'LAW: A lot, actually.', 'BRITT: Take the {badge} before he gets louder.'],
+    ['LAW: Okay, you win. Can you babysit on Friday?', 'BRITT: LAW.', 'LAW: What? They clearly have their life together.', 'LINC: Goo!', 'BRITT: The {badge} is yours. Ignore him.'],
+    ['BRITT: You know what? Good. Now we can go home early.', 'LAW: Early enough for one ranked match?', 'BRITT: No.', 'LINC: Nooo! *giggles*', 'LAW: Take the {badge}...'],
+  ],
+  won: [
+    ['LAW: Family wins! Family wins!', 'BRITT: Great. Now pack up, it\'s past his bedtime.', 'LINC: Yay-yay! Pika!'],
+    ['BRITT: Gold star for trying.', 'LAW: Heal, wall, rez. Sage diff.', 'BRITT: That\'s MY line, Law.', 'LINC: Sage diff! Bababa!'],
+    ['LINC: *throws a Poké Ball at you*', 'BRITT: Linc! We don\'t throw balls at people!', 'LAW: ...Unless they lose. Then it\'s fine.'],
+    ['LAW: GG, no re. Okay, home. The boys have been waiting an hour.', 'BRITT: Linc, say bye-bye.', 'LINC: Buh-bye! *falls over*'],
+    ['BRITT: Back to your seat. We\'re going home.', 'LAW: You heard the teacher.', 'LINC: Home! Home! Bwaa!'],
+  ],
+};
+
 export const GYM_LEADERS = [
-  leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax', 'kangaskhan'], 'Glitter Badge', LAWRENCE),
+  leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
+  leader('nietos', 'THE NIETOS', 'clearing', ['kangaskhan'], 'Pacifier Badge', NIETOS),
   leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),
   leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge'),
@@ -111,6 +142,12 @@ export const leaderFor = (bossId) => BY_BOSS[bossId] ?? null;
 
 /** A biome's leaders, in order. */
 export const leadersOf = (biomeId) => GYM_LEADERS.filter(l => l.biome === biomeId);
+
+/** A line's voice: `{ who, text }` when it starts with one of the leader's `voices` ("LAW: ..."), else the line. */
+export function voiced(l, line) {
+  const m = l.voices && /^([A-Z]+): (.*)$/s.exec(line);
+  return m && l.voices.includes(m[1]) ? { who: m[1], text: m[2] } : line;
+}
 
 export const spriteOf = (l) => l.sprite || UNKNOWN_SPRITE;
 

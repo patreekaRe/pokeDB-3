@@ -418,7 +418,11 @@ export const dropNotes = () => { notes.length = 0; };
 function showLine(i) {
   say.at = i;
   const box = $(say.box);
-  const line = say.lines[i];
+  let line = say.lines[i];
+  if (line?.who) {   // a voiced line { who, text } (a Gym Leader family) changes the name tag
+    if (say.box === 'reward-log') speaker(line.who);
+    line = line.text;
+  }
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   const pace = textPace();
@@ -440,7 +444,7 @@ function finishLine() {
   clearInterval(say.typing);
   say.typing = 0;
   $(say.box).classList.remove('typing');
-  $(`${say.box}-text`).textContent = say.lines[say.at];
+  $(`${say.box}-text`).textContent = say.lines[say.at]?.text ?? say.lines[say.at];
   $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
 }
 
