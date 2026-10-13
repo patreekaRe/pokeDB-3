@@ -5535,6 +5535,32 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 }
 @keyframes gymBadge { from { scale: 0; rotate: -200deg; } }
 @media (prefers-reduced-motion: reduce) { .gym-trainer, .gym-say { transition: none; } .gym-more, .gym-badge { animation: none; } }
+/* the speed lines as they slide in: a dark band behind them, white streaks racing past, fading once they've landed */
+.gym-speed {
+  position: absolute; left: 0; right: 0; bottom: calc(max(18px, env(safe-area-inset-bottom) + 10px) + 150px);
+  height: min(46vh, 300px); overflow: hidden; pointer-events: none; opacity: 0;
+  background: linear-gradient(90deg, transparent, rgba(20, 24, 60, 0.55) 25%, rgba(232, 88, 72, 0.35) 75%, transparent);
+}
+.gym-speed:empty { display: none; }
+.gym-scene.in .gym-speed { animation: gymSpeed 1.3s ease-out both; }
+@keyframes gymSpeed { 0% { opacity: 0; scale: 1 0.2; } 12% { opacity: 1; scale: 1 1; } 55% { opacity: 1; } 100% { opacity: 0; scale: 1 0.85; } }
+.gym-speed i {
+  position: absolute; left: 100%; top: var(--y); width: var(--w); height: var(--h); border-radius: 99px;
+  background: linear-gradient(90deg, transparent, #fff 40%, rgba(255, 255, 255, 0.6));
+  animation: gymStreak var(--t) linear var(--d) infinite;
+}
+@keyframes gymStreak { to { translate: -260% 0; } }
+@media (prefers-reduced-motion: reduce) { .gym-speed { display: none; } }
+/* their own ball, thrown from the right onto the boss's pad (leaderThrow() in js/battle.js), and the boss bursting out */
+.intro-ball.enemy-ball { position: fixed; z-index: 980; }
+.intro-ball.enemy-ball.thrown { animation: ballArcX 0.7s linear both; }
+.intro-ball.enemy-ball.thrown .pokeball { animation: ballArcY 0.7s both, ballSpinBack 0.7s linear both; }
+@keyframes ballSpinBack { from { rotate: 900deg; } }
+.enemy-zone.ball-out .enemy-portrait { transform-origin: 50% 85%; animation: enemyBallOut 0.6s ease-out; }
+.enemy-zone.ball-out #enemy-img { animation: enemyBallGlow 0.6s ease-out; }
+.enemy-zone.ball-out .intent { visibility: hidden; }
+@keyframes enemyBallOut { from { scale: 0.15; } 55% { scale: 1.12; } to { scale: 1; } }
+@keyframes enemyBallGlow { from { filter: brightness(8) var(--rest); } 55% { filter: brightness(2.5) var(--rest); } 75%, to { filter: brightness(1) var(--rest); } }
 
 /* their badge handed over (badgeGet() in js/gym.js): the talk steps back, rays wheel open, the badge spins in from far
    off and lands with a flash, a shockwave and sparks, then YOU RECEIVED rises under it */

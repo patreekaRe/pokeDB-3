@@ -340,14 +340,24 @@ async function playIntro() {
     if (!still()) return;
     if (b.leader) {   // a Gym Leader sends it out (js/data/gym.js)
       enemyZone.classList.add('boss-waiting');   // the boss stays in its ball till they send it out
-      try { if (!b.leaderTalked) await gymTalk(b.leader, talkOf(b.leader, 'intro', !getSave().gym?.[b.leader.id]), { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
-      finally { enemyZone.classList.remove('boss-waiting'); }
+      const sent = `Gym Leader ${b.leader.battleName || b.leader.name} sent out ${b.def.name}!`;
+      // they slide in to say it (after their talk if the 3D gym didn't have it), slide out, then throw its ball themselves
+      const lines = [...(b.leaderTalked ? [] : talkOf(b.leader, 'intro', !getSave().gym?.[b.leader.id])), { text: sent, plate: true }];
+      try { await gymTalk(b.leader, lines, { vars: { boss: b.def.name }, lit: b.leaderTalked }); }
+      catch (e) { console.error(e); }
+      if (!still()) { enemyZone.classList.remove('boss-waiting'); return; }
+      log(sent);
+      if (motion) await leaderThrow(still);
+      enemyZone.classList.remove('boss-waiting');
       if (!still()) return;
-      log(`Gym Leader ${b.leader.battleName || b.leader.name} sent out ${b.def.name}!`);
+      if (motion) {
+        enemyZone.classList.add('ball-out');
+        await sleep(330);
+      }
     } else log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see
-  if (motion) {
+  if (motion && !(b.leader && b.kind === 'boss')) {
     enemyZone.classList.add('entering');
     await sleep(800);
     if (!still()) return;
@@ -355,7 +365,7 @@ async function playIntro() {
   }
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
-  enemyZone.classList.remove('revealed');
+  enemyZone.classList.remove('revealed', 'ball-out');
   const possessed = () => {
     $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
     setAura($('enemy-img'), 3, 'dark');
@@ -420,7 +430,30 @@ function resetIntro() {
   ball.classList.remove('thrown', 'open');
   $('player-sprite').classList.remove('released');
   $('player-zone').classList.remove('awaiting');
-  $('enemy-zone').classList.remove('entering', 'revealed', 'boss-waiting');
+  $('enemy-zone').classList.remove('entering', 'revealed', 'boss-waiting', 'ball-out');
+  document.querySelectorAll('.enemy-ball').forEach(n => n.remove());
+}
+
+/** A Gym Leader's own Poké Ball, thrown in from the right where they stood, arcing onto the boss's pad and bursting open. */
+async function leaderThrow(still) {
+  const at = $('enemy-portrait-box').getBoundingClientRect();
+  const ball = el('div', 'intro-ball enemy-ball');
+  ball.setAttribute('aria-hidden', 'true');
+  ball.append(el('span', 'pokeball'));
+  const x = at.left + at.width / 2, y = at.top + at.height * 0.62;
+  ball.style.left = `${x}px`;
+  ball.style.top = `${y}px`;
+  ball.style.setProperty('--from-x', `${innerWidth - x + 60}px`);
+  ball.style.setProperty('--from-y', `${Math.min(innerHeight * 0.75, y + 220) - y}px`);
+  document.body.append(ball);
+  ball.classList.add('thrown');
+  playSound('ball-throw');
+  await sleep(700);
+  if (!still()) { ball.remove(); return; }
+  ball.classList.replace('thrown', 'open');
+  playSound('ball-open');
+  await sleep(180);
+  setTimeout(() => ball.remove(), 400);
 }
 
 function beginPlayerTurn() {

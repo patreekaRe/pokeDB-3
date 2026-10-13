@@ -356,8 +356,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   shafts on the dais, a ring of runes round the court's Poké Ball and embers rising, both lit with the great fires.
   **The win's talks** (same day): the losing line slides in on the battle screen as their Pokémon falls, then the gym, where
   (first win only) they slide in again with the badge line and the badge; repeats get only the battle line. You can't walk
-  while a leader talks (`freezeEvent()`). Checked headless (`?gym=britt&hp=0.02`, every line in its place). Open: the
-  user's look.
+  while a leader talks (`freezeEvent()`). Checked headless (`?gym=britt&hp=0.02`, every line in its place). **The send-out** (same day, the user's ask): on the
+  battle screen the leader slides in over anime speed lines (`.gym-speed` in `gymTalk()`) to say "Gym Leader X sent out
+  Y!", slides out, then throws their own Poké Ball in from the right onto the boss's pad (`leaderThrow()` in
+  `js/battle.js`) and it bursts out (`.ball-out`), then your ball. Open: the user's look.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the

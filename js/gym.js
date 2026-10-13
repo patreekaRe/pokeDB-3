@@ -13,7 +13,7 @@ import { auraOn } from './aura.js';
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
 /** Their lines with their name, badge and `vars` (`{boss}`) filled in, for the 3D gym's speech window. */
-export const gymLines = (l, lines, vars = {}) => lines.map(line => voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })));
+export const gymLines = (l, lines, vars = {}) => lines.map(line => typeof line === 'string' ? voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })) : line);
 
 /** JONA takes the screen (Phil's demon, `demon` in js/data/gym.js): a black-out, violet static and a shudder, a crack of
     thunder. `infuse` is the dark pouring into his Pokémon: a violet burst instead of the black. Calm effects: one soft fade. */
@@ -45,7 +45,7 @@ export function badgePop(l) {
   });
 }
 
-/** Their lines, one a tap. `badge` shows the badge they hand over with the last line. */
+/** Their lines, one a tap (a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line. */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
@@ -61,14 +61,26 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   const box = el('div', 'gym-say');
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
-  layer.append(who, box);
+  const speed = el('div', 'gym-speed');   // anime speed lines streaking past as they slide in
+  speed.setAttribute('aria-hidden', 'true');
+  if (!calm && !calmFx()) for (let i = 0; i < 18; i++) {
+    const s = el('i');
+    s.style.setProperty('--y', `${4 + Math.random() * 92}%`);
+    s.style.setProperty('--w', `${30 + Math.random() * 50}%`);
+    s.style.setProperty('--h', `${1 + Math.floor(Math.random() * 4)}px`);
+    s.style.setProperty('--t', `${0.22 + Math.random() * 0.2}s`);
+    s.style.setProperty('--d', `${-Math.random() * 0.4}s`);
+    speed.append(s);
+  }
+  layer.append(speed, who, box);
   document.body.append(layer);
-  if (!calm) { await sleep(20); layer.classList.add('in'); await sleep(600); } else layer.classList.add('in');
+  if (!calm) { await sleep(20); layer.classList.add('in'); playSound('run-away'); await sleep(600); } else layer.classList.add('in');
 
   const said = gymLines(l, lines, vars);
   let darkness = null;
   try { for (let i = 0; i < said.length; i++) {
     const line = said[i];
+    if (line.plate) plate.replaceChildren(el('small', '', 'GYM LEADER '), l.name);   // a narrated line after a family's talk
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
     if (line.who) {
       if (line.demon && !layer.classList.contains('demon')) demonSwap();
