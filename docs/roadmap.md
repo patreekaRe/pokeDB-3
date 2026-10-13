@@ -438,7 +438,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   last line `infuse()` in `js/gym.js` plays it over the battle itself: the window and dim go, a stream and tendrils of dark
   energy flow from Phil into his Pokémon as it writhes and cries (`.writhing`), Phil's aura gutters out and he goes grey,
   then a violet burst and shockwaves, its level 3 aura lights and it cries again in JONA's echoing voice (`playCry(id,
-  { rate, echo })` in `js/audio.js`), and Phil slides away.
+  { rate, echo })` in `js/audio.js`), and Phil slides away. **Fix (2026-10-13, the user's iPhone):** Blissey fought on
+  with only the boss's gold glow: iOS refused the aura's canvases while the full-screen infusion canvas was alive, the throw
+  skipped the violet glow too. `auraOn()` now tries again a moment later, the glow class goes on first, and battle.js
+  lights both again once the talk is gone.
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

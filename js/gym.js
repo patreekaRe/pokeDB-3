@@ -192,7 +192,7 @@ async function infuse(layer, who, { img, box, spriteId, ignite }, snuff) {
     const now = performance.now();
     if (!calm) for (const [i, r] of [[0, '255, 220, 255'], [140, '170, 60, 255'], [300, '255, 50, 110']].entries())
       rings.push({ at: now + r[0], r0: 10 + i * 6, grow: 220 + i * 60, w: 10 - i * 2, life: 0.9 + i * 0.2, c: r[1] });
-    ignite();
+    try { ignite(); } catch (e) { console.error(e); }   // battle.js lights it again once the talk is gone
     await sleep(calm ? 300 : 650);
     await Promise.race([playCry(spriteId, { rate: 0.72, echo: true }), sleep(2600)]);   // and it answers in JONA's voice
     if (!calm) { who.classList.add('gone'); await sleep(500); }
@@ -200,6 +200,7 @@ async function infuse(layer, who, { img, box, spriteId, ignite }, snuff) {
     live = false;
     box.classList.remove('writhing');
     fx.remove();
+    fx.width = fx.height = 0;   // hand iOS its canvas memory back, for the aura
   }
 }
 

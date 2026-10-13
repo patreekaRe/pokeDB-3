@@ -148,14 +148,18 @@ function makeFrames(src, level, look = GOLD) {
 /** An aura over an <img> in a positioned box, `look` 'gold' or 'dark'; returns what puts it out. Several can burn at
     once (Phil and the Pokémon he possesses). */
 export function auraOn(img, level, look = 'gold') {
-  const state = { canvas: null, timer: 0, off: false };
+  const state = { canvas: null, timer: 0, off: false, tries: 0 };
+  // iOS hands out no 2D context past its canvas memory cap (a full-screen effect still alive), so a failed light tries
+  // again a moment later instead of throwing out of whatever lit it
+  const retry = () => { if (!state.off && ++state.tries < 8) setTimeout(go, 400); };
   const go = () => {
-    if (state.off) return;
+    if (state.off || state.canvas) return;
     const w = img.naturalWidth, h = img.naturalHeight;
     if (!w) return;
     const grab = document.createElement('canvas');
     grab.width = w; grab.height = h;
     const g = grab.getContext('2d', { willReadFrequently: true });
+    if (!g) { grab.width = grab.height = 0; return retry(); }
     g.drawImage(img, 0, 0);
     const pixels = g.getImageData(0, 0, w, h);
     grab.width = grab.height = 0;
@@ -166,7 +170,7 @@ export function auraOn(img, level, look = 'gold') {
     canvas.height = set.h0 + set.pad * 2;
     img.after(canvas);
     const ctx = canvas.getContext('2d');
-    if (!ctx) { canvas.remove(); return; }
+    if (!ctx) { canvas.remove(); canvas.width = canvas.height = 0; return retry(); }
     let i = 0;
     const tick = () => {
       // follow the <img>'s drawn picture: object-fit contain at the bottom, moved by --shift / --drop (screens.css)
@@ -184,8 +188,9 @@ export function auraOn(img, level, look = 'gold') {
     state.canvas = canvas;
     state.timer = setInterval(tick, FRAME_MS);
   };
-  if (img.complete && img.naturalWidth) go();
-  else img.addEventListener('load', go, { once: true });
+  const safeGo = () => { try { go(); } catch (e) { console.error(e); retry(); } };
+  if (img.complete && img.naturalWidth) safeGo();
+  else img.addEventListener('load', safeGo, { once: true });
   return () => {
     state.off = true; clearInterval(state.timer);
     if (state.canvas) { state.canvas.remove(); state.canvas.width = state.canvas.height = 0; }

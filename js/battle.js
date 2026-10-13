@@ -356,15 +356,17 @@ async function playIntro() {
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
   enemyZone.classList.remove('revealed');
+  const possessed = () => {
+    $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
+    setAura($('enemy-img'), 3, 'dark');
+  };
   if (b.leader?.possess) {   // Phil gives himself to the dark, then pours it into his Pokémon (js/data/gym.js)
     await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: {
       img: $('enemy-img'), box: $('enemy-portrait-box'), spriteId: b.def.spriteId,
-      ignite: () => {
-        setAura($('enemy-img'), 3, 'dark');
-        $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
-      },
+      ignite: possessed,
     } });
     if (!still()) return;
+    possessed();   // again once the talk is gone, in case anything in it failed before the dark was poured in
     log(`${b.def.name} is filled with dark energy!`);
   }
 
