@@ -170,7 +170,7 @@ live site.
   Shrine (open air: a look per biome, `LOOKS`, lit by the hour) and the treasure grotto (`treasureRoom()`, a cave per
   biome, `CAVE`, its Poké Ball chest following the page chest's `.shaking` / `.opened`), and since part d (same day, the
   user's pick: a 3D ground per biome) the outdoor four, the Berry Tree, Wishing Well, Item Ball and Team Rocket, on a
-  patch of the biome's own ground (`wild()`). Only Kenmatta's arena stays pixel. `?event=day-care` (`&biome=shrine`, `&starter=id`;
+  patch of the biome's own ground (`wild()`). Kenmatta's fight is the 3D arena's (`?arena=ken`, `dressKombat()` in `js/arena-3d.js`, 2026-10-11). `?event=day-care` (`&biome=shrine`, `&starter=id`;
   `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
   `docs/reference/events.md`.
 - **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
