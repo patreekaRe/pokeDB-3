@@ -2380,3 +2380,5 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
 
   ▶ Run in: CLOUD.
 
+
+- **Map: Gym Leader beside the boss** (2026-10-13, the user's call): the leader and the boss Pokémon's silhouette stand side by side over the boss room, z-index 3 in front of rooms, rocks and lava (`.map-boss-shadow.paired` / `.map-leader`, `renderMap()` in `js/map.js`); the Pokémon stays a silhouette till sent out.
