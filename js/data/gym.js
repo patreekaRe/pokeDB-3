@@ -137,6 +137,10 @@ const CLARENCE = {
     ['Listen, I don\'t WANT to be here. I want to be on camera doing my burlesque routine.', 'Twelve viewers. Twelve! That\'s a full house!', 'Go, {boss}! I\'m ANGRY now!'],
     ['Lawrence gets to leave early. Britt gets to leave early. Why do I get the challengers?!', 'My cheeks have an AUDIENCE, you know!', 'Go, {boss}!'],
     ['RAAAGH! Every second you\'re here is a second my ass is NOT on Discord!', 'Go, {boss}! Rage mode!'],
+    ['The boys just pinged me. "Where\'s the cheeks, Clarence?" FIVE TIMES.', 'You know what I had to type back? "Gym battle." Do you know how EMBARRASSING that is?!', 'Go, {boss}!'],
+    ['I\'ve got my webcam angled. I\'ve got the ring light. The boys are spamming peach emojis.', 'And I\'m standing here in a GYM. Talking to YOU.', '{boss}! Make this QUICK!'],
+    ['Last week I missed ONE show and the boys went 0 and 5.', 'Zero. And. Five. Because they didn\'t see my ass first. You want that on your conscience?', 'Go, {boss}!'],
+    ['New routine tonight. Took me all week. There\'s a SPIN at the end.', 'The boys don\'t even know it\'s coming. And YOU\'RE making me late for the premiere!', 'Go, {boss}!'],
   ],
   beaten: [
     ['FINE! YOU WIN! Are you happy?!', 'Take the {badge} and GET OUT. The boys have been waiting TWENTY MINUTES.'],
@@ -144,6 +148,9 @@ const CLARENCE = {
     ['You beat me. Whatever. My ass is still undefeated.', 'Take the {badge}.'],
     ['I hope you know Shaun\'s about to go into ranked WITHOUT his pregame show. That\'s on YOU.', 'The {badge}. Take it. Go.'],
     ['Okay, you won. Congrats. Wanna know a secret?', '...No. You don\'t get the show. The show is for the BOYS. Take the {badge}.'],
+    ['Whatever. The boys don\'t care if I win. They care if I shake it.', 'Take the {badge}. I\'ve got cheeks to deliver.'],
+    ['You beat me AND made me miss the opening number.', 'The boys are gonna have to watch the REPLAY. Like ANIMALS. Take the {badge}.'],
+    ['Fine. Here\'s the {badge}. Now turn around. ALL the way around.', 'I\'m dropping my pants to get ready and you are NOT the boys.'],
   ],
   won: [
     ['HA! Done! Now if you\'ll excuse me, I have a PERFORMANCE to give!', 'Boys, unmute me! The cheeks are coming!'],
@@ -151,35 +158,38 @@ const CLARENCE = {
     ['Finally! Out of my gym!', 'Five, six, seven, eight, and... TURN AROUND.'],
     ['You wasted my time, so I wasted you.', 'Now where\'s my boa? The boys need their good luck charm.'],
     ['GG. Now go home.', 'The boys always say they aim better after the show. That\'s SCIENCE.'],
+    ['Done! Boys, I\'m back! Who\'s ready for the cheeks?!', '...What do you mean you started without me? THERE IS NO STARTING WITHOUT ME.'],
+    ['That\'s how fast I win when my ass has somewhere to be.', 'Webcam on. Pants off. Boys, LET\'S GO!'],
+    ['You lost. Don\'t feel bad, everyone loses to the cheeks eventually.', 'Ask the boys. They\'ve been losing to them for YEARS.'],
   ],
 };
 
-/* Pat (the user's, 2026-10-13): a music teacher who hates teaching kids, always "accidentally" singing bits of Lemonade
-   (Passion) and She Was Mine (AJ Rafael), then pretending he didn't know anyone was listening. Only a short line of a song
-   at a time. */
+/* Pat (the user's, 2026-10-13): always "accidentally" singing bits of Lemonade (Passion) and She Was Mine (AJ Rafael),
+   then pretending he didn't know anyone was listening; every line is about the singing (the user's call, 2026-10-13: no
+   teaching kids). Only a short line of a song at a time. */
 const PAT = {
   sprite: 'assets/trainers/gym/pat.png',
   intro: [
     ['*strums* ♪ She\'s my sunshine in the rain... ♪', 'Oh. You heard that? Didn\'t know someone was there.', 'Whatever. Go, {boss}.'],
     ['♪ So I hopped on a train, three in the afternoon... ♪', '...Oh, a challenger. Sorry, I\'m kind of in my zone right now.', 'Fine. Go, {boss}.'],
-    ['I teach music to forty kids a day. Forty recorders. Hot Cross Buns. Forty times.', 'You know what that does to a man with my range?', 'Go, {boss}.'],
+    ['*hums* Mm-mm-mmm... ♪ Like a tall glass of lemonade... ♪', 'Wait, was I humming out loud? Ugh, it happens every time I\'m near water.', 'Go, {boss}.'],
     ['♪ Like a tall glass of lemonade... ♪', 'Hm? Oh, no, don\'t clap. It\'s just something I do. Naturally.', 'Go, {boss}.'],
     ['Shh. Listen. ♪ Love has no distance, baby... ♪', 'You felt that, right? Everyone feels that.', 'Anyway. Go, {boss}.'],
-    ['You\'re not a kid, are you? Good. I\'m off the clock.', '♪ She\'s exactly what I need... ♪ Sorry, sorry, it just comes out of me.', 'Go, {boss}.'],
+    ['Hold on, I\'m warming up. Mi-mi-mi-miii...', '♪ She\'s exactly what I need... ♪ Sorry, sorry, it just comes out of me.', 'Go, {boss}.'],
     ['Oh, hey. Wasn\'t expecting an audience. ♪ In my eyes, you were mine... ♪', 'Yeah. I\'ve still got it.', 'Go, {boss}.'],
   ],
   beaten: [
     ['Huh. Off-key performance from me today. Happens to the greats.', '♪ ...but in my eyes, she\'s still mine... ♪ Oh, you\'re still here? Take the {badge}.'],
     ['Wow. Okay. I lost. ♪ She\'s my Tylenol when I\'m in pain... ♪', 'What? I\'m coping. Here, the {badge}.'],
-    ['Losing to you is still better than a room full of kids with kazoos.', 'Take the {badge}.'],
+    ['♪ She was mine... ♪ Mm. That one\'s for my loss.', 'Don\'t look at me like that. Take the {badge}.'],
     ['♪ It\'s been three years, she hasn\'t written back... ♪', 'Huh? No, that\'s not about you. Here\'s your {badge}.'],
     ['Fine. You win. I\'ll be roasting Lawrence in voice chat to feel better.', '♪ She\'s soothing like the ocean... ♪ Ah. Didn\'t mean to sing. Take the {badge}.'],
   ],
   won: [
     ['♪ She helps me be a better man... ♪', 'Oh, you heard that? Yeah, I sing when I win. And when I don\'t. Mostly when I win.'],
-    ['And that\'s the final note. Class dismissed.', '♪ No matter where you go, I won\'t be very far... ♪ Sorry. Habit.'],
-    ['Practice your scales and come back.', '♪ She\'s exactly what I need... ♪ Me, I mean. The win. That\'s what I need.'],
-    ['You fought like a third-grader with a tambourine.', 'And trust me, I\'d know.'],
+    ['And that\'s the final note. Hold it... hold it...', '♪ No matter where you go, I won\'t be very far... ♪ Sorry. Habit.'],
+    ['That win deserves an encore.', '♪ She\'s exactly what I need... ♪ Me, I mean. The win. That\'s what I need.'],
+    ['♪ Like a tall glass of lemonade... ♪ Refreshing, right? Winning always is.', 'Oh, you\'re still here? I thought I was singing to myself.'],
     ['Ooh. ♪ Kinda like the feeling after your first kiss... ♪', 'That\'s what winning feels like. You wouldn\'t know.'],
   ],
 };

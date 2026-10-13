@@ -349,7 +349,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit `9c2107c` (Clarence and Pat), 2026-10-12, the user's ask: their
+- **Gym Leaders** (branch `claude/new-player-onboarding-ecwtke`, last commit: Pat all singing, more Clarence, 2026-10-12, the user's ask: their
   12 friends as Gym Leaders, two a biome, standing in front of its bosses; test branch first, not on `main`).
   **Built:** `js/data/gym.js` (the table below, placeholder lines, `sprite: null`), `js/gym.js` (`gymTalk()`: before the
   boss they slide in and talk, a shadow till beaten once, the boss hidden till sent out; after the win their last words
@@ -409,8 +409,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **Clarence and Pat** (2026-10-13, the user's sprites and personalities): Clarence lives to show his ass to the boys on
   Discord, a burlesque show every night to help them play Valorant, and is furious a gym battle keeps him from it; two
   sprites, one per boss (`sprites` by boss id, `leaderFor()` dresses him: `clarence.png` for Slaking, `clarence-2.png` for
-  Regigigas). Pat is a music teacher who hates teaching kids and keeps "accidentally" singing a line of Lemonade (Passion)
-  or She Was Mine (AJ Rafael), then "Oh, you heard that?" (one short line at a time). 7 / 5 / 5 speeches each. Playtest
+  Regigigas). Pat keeps "accidentally" singing a line of Lemonade (Passion) or She Was Mine (AJ Rafael), then "Oh, you heard
+  that?" (one short line at a time; every line about the singing, no teaching kids since 2026-10-13, the user's call).
+  Clarence 11 / 8 / 8 speeches (more about the show for the boys, the user's ask), Pat 7 / 5 / 5. Playtest
   `?gym=clarence&n=2`, `?gym=pat`.
   **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
   `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
