@@ -290,6 +290,7 @@ const RICKY = {
 /* John (the user's, 2026-10-13): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
    never decide whether to play on his Steam Deck, his Switch 2 or his new AYN Thor. */
 const JOHN = {
+  sprite: 'assets/trainers/gym/john.png',
   intro: [
     ['I was on chapter 14. Chapter FOURTEEN. Do you know how hard it is to keep everyone alive on Classic?', 'And now I have to battle. Go, {boss}!'],
     ['I had a whole day planned. Work, then Fire Emblem. Work ran late. Then this.', 'Every single thing gets between me and Fire Emblem. Go, {boss}!'],
@@ -318,6 +319,7 @@ const JOHN = {
    night, screaming at everything, but he is in bed at 11 p.m. sharp, no exceptions: he'd throw the battle to make it, and
    sometimes he just leaves without saying goodbye. */
 const JAHMES = {
+  sprite: 'assets/trainers/gym/jahmes.png',
   intro: [
     ['YOOOOO! A CHALLENGER! LET\'S GOOOOO!', 'Okay, it\'s 10:41. We have nineteen minutes. Go, {boss}!'],
     ['I saw patients for ten hours today. TEN HOURS. I\'M SO HYPED TO NOT BE AT WORK!', 'Bed at eleven though. Go, {boss}!'],
@@ -345,6 +347,7 @@ const JAHMES = {
 /* Shaun (the user's, 2026-10-13): tech support by day, fixing computers all day, a Valorant pro who smurfs on noobs and is
    obsessed with coaching his friends, flaming them when they're bad and reminding them he carries them. */
 const SHAUN = {
+  sprite: 'assets/trainers/gym/shaun.png',
   intro: [
     ['Have you tried turning your team off and on again?', 'Because it\'s not working. Go, {boss}!'],
     ['I fixed eleven laptops today. Every one of them was "the internet\'s broken". It was never the internet.', 'Let\'s see if you\'re broken too. Go, {boss}!'],

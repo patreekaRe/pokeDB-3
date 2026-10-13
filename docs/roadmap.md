@@ -413,7 +413,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   that?" (one short line at a time; every line about the singing, no teaching kids since 2026-10-13, the user's call).
   Clarence 11 / 8 / 8 speeches (more about the show for the boys, the user's ask), Pat 7 / 5 / 5. Playtest
   `?gym=clarence&n=2`, `?gym=pat`.
-  **John, Jahmes and Shaun** (2026-10-13, the user's personalities; sprites still to come, the shadow till then): John (an
+  **John, Jahmes and Shaun** (2026-10-13, the user's personalities and sprites): John (an
   engineer who only wants to play Fire Emblem, never able to pick Steam Deck, Switch 2 or his new AYN Thor), Jahmes (a PA
   who screams at everything gaming and is in bed at 11 p.m. sharp, throwing the battle or walking out mid-goodbye for it),
   Shaun (tech support, a Valorant smurf who coaches and flames his friends). 7 / 5 / 4 speeches each.
@@ -456,7 +456,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
-  **After every leader is written (Machew and Jerome left; John, Jahmes and Shaun need sprites), the user's yes, 2026-10-13:** the 3D gym's
+  **After every leader is written (Machew and Jerome left), the user's yes, 2026-10-13:** the 3D gym's
   before / after talk becomes the slide-in cinematic like Phil's (`gymTalk()` over the room once the braziers flare:
   big sprite, name plate, shadow till beaten; after the win their last words with the badge spinning in), the walk-up
   kept as the build-up. Then, on the user's OK:
