@@ -399,6 +399,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   from his wife. A leader's `intro` / `beaten` / `won` can now be a list of speeches, one picked at random (`talkOf()` in
   `js/data/gym.js`): Lawrence has 7 / 5 / 5. `won` is new: when a leader's boss beats you they say it over the battle
   before the run ends (`afterFight()` in `js/run.js`); the others say a stock line till theirs are written.
+  **Britt** (2026-10-13, the user's sprite and lines): `assets/trainers/gym/britt.png`; a worn-out elementary teacher, mom of
+  Linc, a Valorant Sage main her friends tease. 6 / 7 / 7 speeches; `firstIntro: true` makes her first intro the one you
+  meet till you beat her (`talkOf(l, kind, fresh)`). Playtest `?gym=britt`.
   **The gym's text box** (2026-10-13, the user's iPhone): it hid under the bottom bar, since the gym never set
   `--counter-foot` and the CSS's 70vh is measured with iOS's toolbars hidden; `liftRoomLog()` in `js/run.js` now sets the
   foot to just over the bar when a room leaves it unset.

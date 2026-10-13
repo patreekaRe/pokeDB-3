@@ -1490,7 +1490,7 @@ async function fight(node, { talked = false } = {}) {
     the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk (gymTalk()). */
 function gymRoom(node, leader, won = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const intro = gymLines(leader, talkOf(leader, 'intro'), { boss }), said = talkOf(leader, 'beaten');
+  const intro = gymLines(leader, talkOf(leader, 'intro', first), { boss }), said = talkOf(leader, 'beaten');
   const beaten = gymLines(leader, first ? said : said.slice(0, 1), { boss });
   let talking = false;
   const talk = () => {

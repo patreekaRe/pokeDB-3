@@ -54,9 +54,43 @@ const LAWRENCE = {
   ],
 };
 
+/* Britt (the user's, 2026-10-13): an elementary school teacher worn out by the kids, who only wants to get home to her son
+   Linc and play Valorant (a Sage main, which her friends never let go) and Pokémon on her phone. `firstIntro`: her first
+   intro is the one you meet till you beat her. */
+const BRITT = {
+  sprite: 'assets/trainers/gym/britt.png',
+  firstIntro: true,
+  intro: [
+    ['I\'ve had twenty-six seven-year-olds today. You think YOU scare me?', 'Go, {boss}!'],
+    ['School\'s out, and I\'m on my way home to Linc. Make this quick.', 'Go, {boss}!'],
+    ['Sit down. Hands to yourself. We\'re going to battle NICELY.', 'Go, {boss}!'],
+    ['Do you have a hall pass? No? Then it\'s a battle.', 'Go, {boss}!'],
+    ['Linc\'s asleep, the dishes are done, and I was THIS close to logging on. Let\'s go.', 'Go, {boss}!'],
+    ['Go ahead, make a Sage joke. My friends already did.', 'Go, {boss}!'],
+  ],
+  beaten: [
+    ['...Fine. I\'m going home. Linc doesn\'t care if I lose.', 'Take the {badge}.'],
+    ['I didn\'t sign up for this. I signed up for summers off.', 'Here, the {badge}. You earned it.'],
+    ['My team never protects the Sage. Story of my life.', 'The {badge} is yours.'],
+    ['That\'s it. I\'m putting your name on the board.', '...Next to a gold star. Take the {badge}.'],
+    ['I\'m too tired to be mad. Wake me up at 3:15.', 'The {badge}. Go on, take it.'],
+    ['You won, but I still have papers to grade, so we both lost.', 'Here\'s the {badge}.'],
+    ['Don\'t tell my friends about this. They\'ll never let me hear the end of it.', 'Take the {badge} and go.'],
+  ],
+  won: [
+    ['Gold star for trying.', 'Now go home. I want to go home.'],
+    ['That\'s what happens when you don\'t do your homework.'],
+    ['Heal, wall, rez. Sage diff, sweetie.'],
+    ['See? Support wins games.', 'Tell my friends.'],
+    ['Back to your seat.', 'I\'ve got a son to feed and a ranked match to lose.'],
+    ['I\'ve broken up recess fights tougher than you.'],
+    ['You\'d last about four minutes in my classroom.'],
+  ],
+};
+
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax', 'kangaskhan'], 'Glitter Badge', LAWRENCE),
-  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge'),
+  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
   leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),
   leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge'),
@@ -80,9 +114,11 @@ export const leadersOf = (biomeId) => GYM_LEADERS.filter(l => l.biome === biomeI
 
 export const spriteOf = (l) => l.sprite || UNKNOWN_SPRITE;
 
-/** One of their `intro` / `beaten` / `won` speeches: the list itself, or one of its lists at random (cosmetic, so not seeded). */
-export function talkOf(l, kind) {
+/** One of their `intro` / `beaten` / `won` speeches: the list itself, or one of its lists at random (cosmetic, so not seeded).
+    `fresh` (never beaten) gives a `firstIntro` leader their first intro. */
+export function talkOf(l, kind, fresh = false) {
   const said = l[kind];
+  if (fresh && kind === 'intro' && l.firstIntro && Array.isArray(said[0])) return said[0];
   return Array.isArray(said[0]) ? said[Math.floor(Math.random() * said.length)] : said;
 }
 
