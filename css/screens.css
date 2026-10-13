@@ -3234,6 +3234,8 @@ body[data-screen="reward-screen"]:has(:is(.center-room, .event-room)) #backdrop:
 @keyframes spotBounce { 50% { transform: translateY(-7px); } }
 :is(.center-room, .event-room) .reward-option:is(:disabled, .locked) .center-label { animation: none; color: #5a6a50; border-color: #909098; filter: grayscale(1); }
 :is(.center-room, .event-room).resting .center-label { visibility: hidden; }
+/* the gym has no Battle sign over its leader (the user's call, 2026-10-13): walking up or a tap on them is the challenge */
+.gym-room .center-label { visibility: hidden; }
 /* an event sign tapped once (spotOption()): it holds still, raised, in a gold ring, while the text box says what it does
    and a second tap takes it */
 .event-room .reward-option.picked .center-label {

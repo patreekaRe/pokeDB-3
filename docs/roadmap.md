@@ -380,7 +380,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   board on two posts for a stone arch behind the dais (POKéMON GYM on its lintel), the leader's badge over it as a thick
   turning cut-out in a gold ring with a glow and motes (`gymCrest()`: gold once earned, a dark seal till then; it spins
   fast when they speak, `crest.flare()`), their name on a ribbon under it (`nameRibbonArt()`); `B.shotTop` 7.6 so it's
-  in the shot. Open: the user's look on the branch link, then merge to `main`.
+  in the shot. The Battle sign over the leader is hidden too (`.gym-room .center-label`, the user's call): walking up or a
+  tap on them still challenges. Open: the user's look on the branch link, then merge to `main`.
 
   ▶ Run in: PLAYTEST on the branch link (`?gym=pat`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
