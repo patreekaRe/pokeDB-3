@@ -432,19 +432,19 @@ const JEROME = {
 };
 
 export const GYM_LEADERS = [
-  leader('lawrence', 'LAW', 'clearing', ['snorlax'], 'Glitter Badge', { ...LAWRENCE, battleName: 'GAY TWINK DADDY LAWRENCE' }),
-  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', { ...BRITT, battleName: 'EXHAUSTED TEACHER BRITT' }),
+  leader('lawrence', 'LAW', 'clearing', ['snorlax'], 'Closet Badge', { ...LAWRENCE, battleName: 'GAY TWINK DADDY LAWRENCE' }),
+  leader('britt', 'BRITT', 'clearing', ['miltank'], 'Apple Badge', { ...BRITT, battleName: 'EXHAUSTED TEACHER BRITT' }),
   leader('nietos', 'THE NIETOS', 'clearing', ['kangaskhan'], 'Pacifier Badge', NIETOS),
-  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge', { ...JOHN, battleName: 'INDECISIVE GAMER JOHN' }),
-  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge', { ...JAHMES, battleName: 'CRACKHEAD 11PM CURFEW JAHMES' }),
-  leader('clarence', 'CLARENCE', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', { ...CLARENCE, battleName: 'BURLESQUE BOI CLARENCE' }),
-  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge', { ...SHAUN, battleName: 'TECH SUPPORT IGL SHAUN' }),
-  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', { ...PAT, battleName: 'HOPELESS ROMANTIC PAT' }),
-  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', { ...KAYL, battleName: 'PROPERTY COORDINATOR KAYL' }),
-  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', { ...PHIL, battleName: 'GHOST HUNTER PHIL' }),
-  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', { ...RICKY, battleName: 'EAST COAST RICKY' }),
-  leader('machew', 'MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge', { ...MACHEW, battleName: 'EDGELORD MACHEW' }),
-  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge', { ...JEROME, battleName: 'GTA FANATIC JEROME' }),
+  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Dilemma Badge', { ...JOHN, battleName: 'INDECISIVE GAMER JOHN' }),
+  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Curfew Badge', { ...JAHMES, battleName: 'CRACKHEAD 11PM CURFEW JAHMES' }),
+  leader('clarence', 'CLARENCE', 'wastes', ['slaking', 'regigigas'], 'Peach Badge', { ...CLARENCE, battleName: 'BURLESQUE BOI CLARENCE' }),
+  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Comms Badge', { ...SHAUN, battleName: 'TECH SUPPORT IGL SHAUN' }),
+  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Serenade Badge', { ...PAT, battleName: 'HOPELESS ROMANTIC PAT' }),
+  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Whisker Badge', { ...KAYL, battleName: 'PROPERTY COORDINATOR KAYL' }),
+  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Possession Badge', { ...PHIL, battleName: 'GHOST HUNTER PHIL' }),
+  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'All-Nighter Badge', { ...RICKY, battleName: 'EAST COAST RICKY' }),
+  leader('machew', 'MACHEW', 'savanna', ['castform', 'loudred'], 'Katana Badge', { ...MACHEW, battleName: 'EDGELORD MACHEW' }),
+  leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Vice Badge', { ...JEROME, battleName: 'GTA FANATIC JEROME' }),
 ];
 
 export const GYM_BY_ID = Object.fromEntries(GYM_LEADERS.map(l => [l.id, l]));

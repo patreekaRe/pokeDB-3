@@ -46,8 +46,19 @@ const SHAPES = {
   bolt: [[10.5, 0], [2, 9], [7.4, 9], [5, 16], [14, 6.6], [8.6, 6.6], [12, 0]],
   book: [[1.4, 1.4], [14.6, 1.4], [14.6, 14.6], [1.4, 14.6]],
   tower: [[8, 0], [13.6, 4.4], [13.6, 15.6], [2.4, 15.6], [2.4, 4.4]],
+  jagged: [[8, 0], [10, 4.6], [15.6, 2.2], [12.4, 7.4], [16, 11.2], [10.6, 10.6], [8, 16], [5.4, 10.6], [0, 11.2], [3.6, 7.4], [0.4, 2.2], [6, 4.6]],
 };
 const ROUND = { book: 4, circle: 0 };
+// outlines drawn straight on the 36x36 badge
+const PATHS = {
+  heart: 'M18 31.5 5.6 19A7.2 7.2 0 0 1 18 9.6 7.2 7.2 0 0 1 30.4 19Z',
+  apple: 'M18 11.2C14.6 8.4 5.6 8.6 5 17.2c-.5 7.2 4.4 14 8.6 14 1.8 0 2.6-.9 4.4-.9s2.6.9 4.4.9c4.2 0 9.1-6.8 8.6-14-.6-8.6-9.6-8.8-13-6Z',
+  peach: 'M18 9.4C10.6 4.8 4.2 11.4 4.6 19c.4 7.2 6.4 12.4 13.4 12.4S31 26.2 31.4 19C31.8 11.4 25.4 4.8 18 9.4Z',
+  cat: 'M5 31V16.5L6.6 4.8l7.6 6.6h7.6l7.6-6.6L31 16.5V31Z',
+  horns: 'M5.4 3.6Q7.6 10 10.4 12.6A11 11 0 1 0 25.6 12.6Q28.4 10 30.6 3.6 25.6 7.6 21.8 9.8A11 11 0 0 0 14.2 9.8Q10.4 7.6 5.4 3.6Z',
+  door: 'M8 32V12.4a10 10 0 0 1 20 0V32Z',
+  handheld: 'M9 8.6h18a5 5 0 0 1 5 5v8.8a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-8.8a5 5 0 0 1 5-5Z',
+};
 
 const num = (t, size, y = 24) => (d) => `<text x="18" y="${y}" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="${size}" fill="${d}">${t}</text>`;
 // glyphs on the 36x36 badge, centred on 18,18: d is the dark ink, h the badge's light colour
@@ -76,6 +87,19 @@ const G = {
   heart: (d) => `<path d="M18 25.5 11 18.6a4 4 0 0 1 7-4.8 4 4 0 0 1 7 4.8Z" fill="#fff" stroke="${d}" stroke-width="1.4" stroke-linejoin="round"/>`,
   cards: (d) => `<rect x="11" y="12.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(-12 15.5 18.5)"/><rect x="16" y="11.5" width="9" height="12" rx="1.4" fill="#fff" stroke="${d}" stroke-width="1.4" transform="rotate(10 20.5 17.5)"/>`,
   coin: (d, h) => `<circle cx="18" cy="18" r="7.2" fill="${h}" stroke="${d}" stroke-width="1.6"/><circle cx="18" cy="18" r="4.8" fill="none" stroke="${d}" stroke-width="1" opacity=".6"/><text x="18" y="21.4" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9" fill="${d}">P</text>`,
+  closet: (d) => `<rect x="11" y="13" width="9" height="17" rx="1" fill="${d}"/>${['#ff5050', '#ffa030', '#ffe040', '#50d060', '#4890ff', '#a060f0'].map((c, i) => `<rect x="20" y="${13 + i * 2.84}" width="4.6" height="2.9" fill="${c}"/>`).join('')}<circle cx="18" cy="21.6" r="1.1" fill="#fff"/>`,
+  aplus: (d) => `<path d="M18 11.4q.4-3.4 2-5" fill="none" stroke="${d}" stroke-width="1.6" stroke-linecap="round"/><ellipse cx="22.6" cy="7.8" rx="3" ry="1.5" fill="#6cd050" transform="rotate(-24 22.6 7.8)"/><text x="18" y="25" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="11" fill="#fff">A+</text>`,
+  pacifier: (d) => `<ellipse cx="18" cy="11.8" rx="2.6" ry="2.4" fill="#fff" stroke="${d}" stroke-width="1.2"/><ellipse cx="18" cy="17" rx="8.4" ry="4.4" fill="#fff" stroke="${d}" stroke-width="1.5"/><circle cx="18" cy="17" r="2.2" fill="${d}"/><circle cx="18" cy="24.6" r="3.8" fill="none" stroke="#fff" stroke-width="2.2"/>`,
+  handheld: (d) => `<rect x="12.6" y="12" width="10.8" height="12" rx="1.2" fill="#fff" stroke="${d}" stroke-width="1.4"/><text x="18" y="21.8" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="9" fill="${d}">?</text><path d="M8.4 15.8v4.4M6.2 18h4.4" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="27.4" cy="16.4" r="1.4" fill="#fff"/><circle cx="25.6" cy="20" r="1.4" fill="#fff"/>`,
+  curfew: (d) => `<circle cx="18" cy="18" r="10" fill="#fff" stroke="${d}" stroke-width="1.4"/><path d="M18 9.4v1.8M26.6 18h-1.8M18 26.6v-1.8M9.4 18h1.8" stroke="${d}" stroke-width="1.4" stroke-linecap="round"/><path d="M18 18 15.6 13.8M18 18V11.2" stroke="${d}" stroke-width="1.8" stroke-linecap="round"/><circle cx="18" cy="18" r="1.3" fill="#e84040"/>`,
+  peach: (d) => `<path d="M18 9.8q-4.4 9 0 21" fill="none" stroke="${d}" stroke-width="1.4" stroke-linecap="round" opacity=".55"/><ellipse cx="21.6" cy="7" rx="3.6" ry="1.7" fill="#5cc048" stroke="${d}" stroke-width=".8" transform="rotate(-18 21.6 7)"/><path d="M26 13.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z" fill="#fff"/>`,
+  headset: () => `<path d="M10.4 21v-2.4a7.6 7.6 0 0 1 15.2 0V21" fill="none" stroke="#fff" stroke-width="2.4"/><rect x="8.4" y="19" width="4.4" height="7" rx="1.8" fill="#fff"/><rect x="23.2" y="19" width="4.4" height="7" rx="1.8" fill="#fff"/><path d="M11.2 25.6q1.6 4 6 3.6" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="18" cy="29.2" r="1.5" fill="#fff"/>`,
+  note: (d) => `<g transform="translate(18.6 16.6) scale(.82) translate(-18.6 -18.6)"><path d="M15.4 25V13.2l9-2.2v11" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M15.4 13.2l9-2.2v2.6l-9 2.2Z" fill="#fff"/><ellipse cx="13.4" cy="25" rx="2.8" ry="2.1" fill="#fff" stroke="${d}" stroke-width=".8"/><ellipse cx="22.4" cy="22" rx="2.8" ry="2.1" fill="#fff" stroke="${d}" stroke-width=".8"/></g>`,
+  catface: (d) => `<path d="M10.6 18.4q2.6-2.4 5.2 0-2.6 2.4-5.2 0ZM20.2 18.4q2.6-2.4 5.2 0-2.6 2.4-5.2 0Z" fill="#ffe060" stroke="${d}" stroke-width=".9"/><path d="M13.2 16.8v3.2M22.8 16.8v3.2" stroke="${d}" stroke-width="1.2" stroke-linecap="round"/><path d="M16.6 22.4h2.8L18 24Z" fill="#ff8cb4"/><path d="M18 24q-1.2 1.6-2.6.6M18 24q1.2 1.6 2.6.6M6.8 22.6l6 .4M6.8 25.4l6-.8M29.2 22.6l-6 .4M29.2 25.4l-6-.8" fill="none" stroke="#fff" stroke-width=".9" stroke-linecap="round"/>`,
+  demoneye: (d) => `<path d="M9 20q9-8.4 18 0-9 8.4-18 0Z" fill="#ffe8f0" stroke="${d}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="18" cy="20" r="3.6" fill="#e01848"/><path d="M18 17v6" stroke="${d}" stroke-width="1.6" stroke-linecap="round"/>`,
+  mug: (d) => `<path d="M10.6 15.4h11.6v9.4a3 3 0 0 1-3 3h-5.6a3 3 0 0 1-3-3Z" fill="#fff" stroke="${d}" stroke-width="1.3"/><path d="M22.2 17.4h1.6a2.6 2.6 0 0 1 0 5.2h-1.6" fill="none" stroke="#fff" stroke-width="1.8"/><path d="M14 13q-1.4-1.8 0-3.6M18.6 13q-1.4-1.8 0-3.6" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".85"/><path d="M27.6 8.4a3.4 3.4 0 1 0 2 5.8 2.8 2.8 0 0 1-2-5.8Z" fill="#fff4b0"/>`,
+  katana: (d) => `<path d="M10.6 25.4 27.4 8.6" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M11.4 21.6l4 4" stroke="#ffd060" stroke-width="2" stroke-linecap="round"/><path d="M12.2 23.8 7.4 28.6" stroke="${d}" stroke-width="3" stroke-linecap="round"/><path d="M12.2 23.8 7.4 28.6" stroke="#e03040" stroke-width="1" stroke-dasharray="1 1.2"/>`,
+  vi: (d) => `<text x="18" y="24.4" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="15" fill="#fff" stroke="${d}" stroke-width=".9" font-style="italic">VI</text>`,
   sun: () => `<circle cx="18" cy="18" r="4.2" fill="#fff" opacity=".95"/><path d="M18 8.5v3.2M18 24.3v3.2M8.5 18h3.2M24.3 18h3.2M11.3 11.3l2.3 2.3M22.4 22.4l2.3 2.3M11.3 24.7l2.3-2.3M22.4 13.6l2.3-2.3" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".95"/>`,
   clock: (d) => `<circle cx="18" cy="18" r="7.4" fill="#fff" stroke="${d}" stroke-width="1.6"/><path d="M18 13.2V18l3.4 2.2" fill="none" stroke="${d}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`,
 };
@@ -184,13 +208,23 @@ for (const n of [10, 20, 30, 40, 50, 60, 70, 80, 90]) LOOK[`tower-${n}`] = ['tow
 LOOK['tower-100'] = ['tower', ['#fff4a0', '#d8b830', '#7a6410'], 't100'];
 for (const n of [1, 5, 10, 15, 20, 30, 40, 50]) LOOK[`guardians-${n}`] = ['shield', ['#f0e0b0', '#a88c58', '#584020'], `n${n}`];
 for (const n of [5, 10, 15, 20]) LOOK[`rare-${n}`] = ['gem', LOOK['rare-catch'][1], `n${n}`];
-// the Gym Badges: each leader's in their biome's colours, the two of a biome told apart by shape and glyph
+// the Gym Badges: each one after its leader's personality (js/data/gym.js), its own shape, colours and glyph
 const GYM_LOOK = {
-  lawrence: ['star', 'sparkle'], britt: ['circle', 'tree'], nietos: ['hex', 'ball'], john: ['octagon', 'sun'], jahmes: ['shield', 'torii'],
-  clarence: ['diamond', 'volcano'], shaun: ['hex', 'flame'], pat: ['drop', 'wave'], kayl: ['book', 'eye'],
-  phil: ['leaf', 'thorns'], ricky: ['circle', 'leafy'], machew: ['gem', 'facet'], jerome: ['star', 'sun'],
+  lawrence: ['door', 'closet', ['#ffd0ec', '#e8509c', '#7a1850']],     // the rainbow he keeps from his wife
+  britt: ['apple', 'aplus', ['#ffb4a0', '#e03c30', '#7a1410']],        // the teacher's apple
+  nietos: ['circle', 'pacifier', ['#e0f2ff', '#88c4f0', '#3a6ea8']],   // baby Linc's
+  john: ['handheld', 'handheld', ['#c8d4ff', '#4c64d8', '#1c2470']],   // which handheld, though?
+  jahmes: ['circle', 'curfew', ['#b8c4f0', '#38428c', '#121636']],     // bed at 11 sharp
+  clarence: ['peach', 'peach', ['#ffe0c0', '#ff8c70', '#a83c48']],     // the show for the boys
+  shaun: ['hex', 'headset', ['#c0fff4', '#20b8b0', '#0c4a5a']],        // the IGL's comms
+  pat: ['heart', 'note', ['#fff8b0', '#f8d040', '#b05a18']],           // Lemonade, sung by accident
+  kayl: ['cat', 'catface', ['#f0e0ff', '#b088e0', '#523478']],         // Spooky and Reya, in lavender
+  phil: ['horns', 'demoneye', ['#e0a0ff', '#6a1ca8', '#1c0630']],      // JONA
+  ricky: ['octagon', 'mug', ['#f4d8b0', '#a86c40', '#40220e']],        // 2 a.m. games, 9 a.m. meetings
+  machew: ['jagged', 'katana', ['#ff8a8a', '#a01020', '#1a0408']],     // the plastic katana
+  jerome: ['book', 'vi', ['#ffd0f0', '#ff5aa8', '#6a2a9c']],           // GTA VI
 };
-for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = [GYM_LOOK[l.id]?.[0] ?? 'circle', BIOME_INK[l.biome], GYM_LOOK[l.id]?.[1]];
+for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = GYM_LOOK[l.id] ? [GYM_LOOK[l.id][0], GYM_LOOK[l.id][2], GYM_LOOK[l.id][1]] : ['circle', BIOME_INK[l.biome]];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 
@@ -199,6 +233,7 @@ const INK = '#181820';
 const at = ([x, y]) => `${+(x * 2 + 2).toFixed(2)},${+(y * 2 + 2).toFixed(2)}`;
 function outline(shape) {
   if (shape === 'circle') return `<circle cx="18" cy="18" r="15.2"/>`;
+  if (PATHS[shape]) return `<path d="${PATHS[shape]}"/>`;
   if (shape === 'book') return `<rect x="4.8" y="4.8" width="26.4" height="26.4" rx="${ROUND.book}"/>`;
   return `<polygon points="${SHAPES[shape].map(at).join(' ')}"/>`;
 }

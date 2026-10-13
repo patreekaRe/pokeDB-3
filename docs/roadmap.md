@@ -374,22 +374,22 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **Music** (2026-10-12, the user's three songs): `gym-room` in the gym, `gym-leader-battle` for the fight, `gym-victory` from
   the faint through the badge, rewards and evolution (`docs/reference/music.md`). The battle file has no repeat in it, so its
   loop is the closest bars with a long cross-fade: worth a listen.
-  **The user's placement** (2026-10-12; the first of each biome has two bosses; badge names are placeholders):
+  **The user's placement** (2026-10-12; the first of each biome has two bosses; badges renamed after their personalities 2026-10-13):
 
   | Biome | Leader (id) | Bosses | Badge |
   |---|---|---|---|
-  | Clearing | GAY TWINK DADDY LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Glitter |
-  | Clearing | BRITT (`britt`) | Miltank | Acorn |
-  | Shrine | JOHN (`john`) | Stoutland, Exploud | Lantern |
-  | Shrine | JAHMES (`jahmes`) | Ursaring | Torii |
-  | Wastes | CLARENCE JASPER (`clarence`) | Slaking, Regigigas | Magma |
-  | Wastes | SHAUN (`shaun`) | Lickilicky, Porygon-Z | Cinder |
-  | Sunken Ruins | PAT (`pat`) | Dunsparce, Wigglytuff | Tidal |
-  | Sunken Ruins | KAYL (`kayl`) | Granbull | Rune |
-  | Thornwood | PHIL (`phil`) | Blissey, Porygon | Bramble |
-  | Thornwood | RICKY (`ricky`) | Porygon2 | Root |
-  | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Eclipse |
-  | Savanna | JEROME (`jerome`) | Munchlax | Sunburst |
+  | Clearing | GAY TWINK DADDY LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Closet |
+  | Clearing | BRITT (`britt`) | Miltank | Apple |
+  | Shrine | JOHN (`john`) | Stoutland, Exploud | Dilemma |
+  | Shrine | JAHMES (`jahmes`) | Ursaring | Curfew |
+  | Wastes | CLARENCE JASPER (`clarence`) | Slaking, Regigigas | Peach |
+  | Wastes | SHAUN (`shaun`) | Lickilicky, Porygon-Z | Comms |
+  | Sunken Ruins | PAT (`pat`) | Dunsparce, Wigglytuff | Serenade |
+  | Sunken Ruins | KAYL (`kayl`) | Granbull | Whisker |
+  | Thornwood | PHIL (`phil`) | Blissey, Porygon | Possession |
+  | Thornwood | RICKY (`ricky`) | Porygon2 | All-Nighter |
+  | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Katana |
+  | Savanna | JEROME (`jerome`) | Munchlax | Vice |
 
   **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
   right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
@@ -458,13 +458,19 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
-  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); badge names; who of a
+  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
   **Machew and Jerome** (2026-10-13, the user's personalities and sprites): Machew the edgelord
   weeb who thinks he's in Tales of Berseria (Velvet, Rokurou, Eizen, the Abbey, daemonblight, a plastic katana), Jerome
   who only talks about r/GTA6 posts, ignores his newborn and leads the gym to pay for GTA 6. 8 / 5 / 4 speeches each.
   Their sprites came the same day (`machew.png`, `jerome.png`): every leader now has lines and a sprite.
+  **Badges after their personalities** (2026-10-13, the user's ask): each Gym Badge its own shape, colours and glyph
+  (`GYM_LOOK` / `PATHS` and the glyphs in `js/trainercard.js`) and a new name (`js/data/gym.js`): Closet (Law, a rainbow
+  peeking out), Apple (Britt, A+), Pacifier (the Nietos), Dilemma (John, a handheld with a ?), Curfew (Jahmes, a clock at
+  11), Peach (Clarence), Comms (Shaun, a headset), Serenade (Pat, a lemon heart and a note), Whisker (Kayl, a lavender
+  cat), Possession (Phil, JONA's horns and eye), All-Nighter (Ricky, a mug under the moon), Katana (Machew), Vice (Jerome,
+  GTA VI pink). Next: the user says which to change.
   **The slide-in talk in the 3D gym** (2026-10-13, the user's yes): walking up, the great braziers flare with the gong and
   the shot pushes in, then the leader slides in big over the room to talk (`gymTalk()`, shadow till beaten once, name plate),
   the room's speech window stepping aside; after the win they slide in again for their last words with the badge spinning
