@@ -391,6 +391,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   | Savanna | EDGELORD MACHEW (`machew`) | Castform, Loudred | Eclipse |
   | Savanna | JEROME (`jerome`) | Munchlax | Sunburst |
 
+  **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
+  right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
+  reaching the steps or a tap anywhere on the dais does (a spot's `walkUp` / `area` in `js/event-3d.js`).
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

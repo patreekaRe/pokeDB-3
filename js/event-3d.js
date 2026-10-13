@@ -2499,7 +2499,8 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   // the leader up on the dais; a tap on them walks you up to talk
   B.who.npc = await figure('npc', figs.npc, { x: MID, ty: 0.5, y: high, dz: 0, scale: 1 });
   B.who.npc.group.traverse(o => { o.userData.spot = 0; });
-  B.spots = [{ step: { x: MID, y: 3 } }];
+  // walking up the court to the steps, or a tap anywhere on the dais, is going to talk to them too (`area`, `walkUp`)
+  B.spots = [{ step: { x: MID, y: 3 }, walkUp: true, area: (t) => Math.abs(t.x - MID) <= 2 && t.y <= 2 }];
   B.anchors[0] = new THREE.Vector3(0, high + B.who.npc.top + 0.3, tileZ(0.5));
   const focus = B.focus = { z: tileZ(1.5), k: 0, on: false };
   // the sparkle as they light up
@@ -2600,9 +2601,10 @@ function goTo(kind) {
 }
 
 function arrived() {
-  const kind = aim;
+  let kind = aim;
   aim = null;
-  if (kind === null || kind === undefined) return;
+  if (kind === null || kind === undefined) kind = R.spots.findIndex(s => s.walkUp && s.step.x === walker.tile.x && s.step.y === walker.tile.y);
+  if (kind === null || kind === undefined || kind < 0) return;
   hushBlip();
   if (kind === 'exit') return opts.onLeave();
   const step = R.spots[kind].step;
@@ -2658,8 +2660,11 @@ function onTap(e) {
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
   if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
+  const near = R.spots.findIndex(s => s.area?.(t));
+  if (near >= 0) return tapTo(near);
   aim = null;
   walker.path = route(walker.tile, t);
+  if (!walker.path.length) arrived();
 }
 
 /* ---------- camera (the Center's) ---------- */
