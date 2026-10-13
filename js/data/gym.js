@@ -287,14 +287,96 @@ const RICKY = {
   ],
 };
 
+/* John (the user's, 2026-10-13): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
+   never decide whether to play on his Steam Deck, his Switch 2 or his new AYN Thor. */
+const JOHN = {
+  intro: [
+    ['I was on chapter 14. Chapter FOURTEEN. Do you know how hard it is to keep everyone alive on Classic?', 'And now I have to battle. Go, {boss}!'],
+    ['I had a whole day planned. Work, then Fire Emblem. Work ran late. Then this.', 'Every single thing gets between me and Fire Emblem. Go, {boss}!'],
+    ['Okay, quick question before we start. Steam Deck, Switch 2 or my new AYN Thor?', 'I\'ve been standing here for twenty minutes deciding. Go, {boss}!'],
+    ['I just got the AYN Thor. Two screens. TWO. Do you know what that does for Fire Emblem?', '...I haven\'t actually played it yet. I keep getting interrupted. Go, {boss}!'],
+    ['I fix bridges all day. Real ones. Load-bearing. And I still can\'t fix my lack of Fire Emblem time.', 'Go, {boss}!'],
+    ['A gym battle is basically a Fire Emblem map. You\'re the enemy phase.', 'I\'m going to bait you into my best unit. Go, {boss}!'],
+    ['I brought the Steam Deck. Then I thought, no, the Switch 2. Then I grabbed the Thor too.', 'My bag weighs nine kilos. Go, {boss}!'],
+  ],
+  beaten: [
+    ['That\'s fine. In Fire Emblem I\'d just reset the chapter.', '...I can\'t reset this, can I? Take the {badge}.'],
+    ['You lost me my best unit. Permadeath. I\'m going to need a minute.', 'Here, the {badge}. Now I\'m going home to play Fire Emblem. On... the Switch 2. Or the Deck.'],
+    ['Okay, that was a good strategy. Very Fire Emblem of you. Weapon triangle and everything.', 'The {badge} is yours.'],
+    ['Good. Great. Now I have NO reason not to play Fire Emblem tonight.', 'Take the {badge}. ...Thor. Definitely the Thor. Maybe the Deck.'],
+    ['I lost because I was thinking about my support conversations. That\'s on me.', 'Take the {badge}.'],
+  ],
+  won: [
+    ['Ha! Turn one, no losses. That\'s how you clear a map.', 'Now if you\'ll excuse me, I have a save file waiting.'],
+    ['GG. That\'s my S rank. Back to Fire Emblem.', '...On which one though. Steam Deck? Switch 2? The Thor?'],
+    ['You walked right into my range. Should\'ve checked the danger zone.', 'Fire Emblem teaches you that.'],
+    ['Okay, I won, and it\'s still early. Fire Emblem time.', '...My work phone\'s ringing. Of course it is.'],
+  ],
+};
+
+/* Jahmes (the user's, 2026-10-13): a PA who treats patients all day and only wants to play Valorant and ARAM Mayhem all
+   night, screaming at everything, but he is in bed at 11 p.m. sharp, no exceptions: he'd throw the battle to make it, and
+   sometimes he just leaves without saying goodbye. */
+const JAHMES = {
+  intro: [
+    ['YOOOOO! A CHALLENGER! LET\'S GOOOOO!', 'Okay, it\'s 10:41. We have nineteen minutes. Go, {boss}!'],
+    ['I saw patients for ten hours today. TEN HOURS. I\'M SO HYPED TO NOT BE AT WORK!', 'Bed at eleven though. Go, {boss}!'],
+    ['WHAT\'S UP! I was in the middle of ARAM Mayhem and I SCREAMED when I saw you walk in!', 'My neighbours hate me. Go, {boss}!'],
+    ['Okay, listen, it\'s IMPORTANT that I\'m asleep by 11 p.m. Not 11:01. ELEVEN.', 'If this goes long, I WILL forfeit. Go, {boss}!'],
+    ['AAAAAAAH! Sorry, sorry. I just clutched a 1v4 before I came here. I\'m still SCREAMING inside.', 'Go, {boss}!'],
+    ['I set three alarms. One says "BATTLE". One says "VALORANT". One says "SLEEP. NOW. JAHMES."', 'Let\'s go! Go, {boss}!'],
+    ['Patients today told me I look tired. I AM tired. I am also SO READY.', 'Ten minutes. Then bed. Go, {boss}!'],
+  ],
+  beaten: [
+    ['NOOOOOO! ...Okay, wait, it\'s 10:58. This is actually perfect.', 'Take the {badge}. I\'m going to bed.'],
+    ['AAAAAAAH! GG! GG! You were CRACKED!', 'Here\'s the {badge}. Goodnight! Eleven o\'clock! BYE!'],
+    ['I could\'ve won that. I let you win. It\'s 10:59.', 'The {badge}\'s yours. Sleep is mine.'],
+    ['*checks the clock* 11:00.', '*he drops the {badge} on the floor and is gone*'],
+    ['WHAT A GAME! WHAT A GAME! I\'M SCREAMING!', '...It\'s eleven. Take the {badge}. *walks out mid-sentence*'],
+  ],
+  won: [
+    ['LET\'S GOOOOOOO! I\'M SCREAMING! I\'M ACTUALLY SCREAMING!', 'Okay, bed. Goodnight.'],
+    ['YESSSS! Okay, that took four minutes. That\'s one ARAM Mayhem before eleven.', 'BYE!'],
+    ['*his alarm goes off*', '*he leaves*'],
+    ['AAAAAAH, GG! I had patients all day and I STILL had energy for that!', 'It\'s 10:57. I need to brush my teeth. Bye!'],
+  ],
+};
+
+/* Shaun (the user's, 2026-10-13): tech support by day, fixing computers all day, a Valorant pro who smurfs on noobs and is
+   obsessed with coaching his friends, flaming them when they're bad and reminding them he carries them. */
+const SHAUN = {
+  intro: [
+    ['Have you tried turning your team off and on again?', 'Because it\'s not working. Go, {boss}!'],
+    ['I fixed eleven laptops today. Every one of them was "the internet\'s broken". It was never the internet.', 'Let\'s see if you\'re broken too. Go, {boss}!'],
+    ['I\'m on my smurf account right now, basically. This is my Iron 1 lobby.', 'Go, {boss}. Don\'t make it too easy.'],
+    ['Okay, before we start, quick coaching: your positioning is terrible.', 'Like, I can tell from here. Go, {boss}!'],
+    ['My friends are hardstuck. I carry them every night. Every. Night.', 'You\'re about to see why. Go, {boss}!'],
+    ['Last night I dropped 34 kills and my friends still lost me the game.', 'I\'m in a mood. Go, {boss}!'],
+    ['Ticket #4471: challenger thinks they can win.', 'Status: closing it now. Go, {boss}!'],
+  ],
+  beaten: [
+    ['Okay, that was lag. My ping spiked. That\'s on my ISP.', 'Fine. Take the {badge}. I\'ll be on my main next time.'],
+    ['Not bad. You\'d still need me to carry you in ranked, but not bad.', 'The {badge}\'s yours.'],
+    ['Huh. Okay. You can come play with my friends. You\'re better than them, at least.', 'Take the {badge}.'],
+    ['I wasn\'t even trying. I was thinking about the VOD I have to review for the boys.', 'Here, the {badge}. Watch your crosshair placement.'],
+    ['Did you just... outplay me? Me?', 'Take the {badge}. I need to go flame my friends to feel better.'],
+  ],
+  won: [
+    ['Diff.', 'Watch the replay. I\'ll send you notes.'],
+    ['That\'s what I do to noobs on my smurf every night.', 'Come back after you\'ve watched some guides.'],
+    ['GG EZ. And I mean that as coaching. It was easy. Get better.'],
+    ['You played like my friends. That\'s not a compliment.', 'Ticket closed.'],
+  ],
+};
+
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
   leader('nietos', 'THE NIETOS', 'clearing', ['kangaskhan'], 'Pacifier Badge', NIETOS),
-  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
-  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),
+  leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge', JOHN),
+  leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge', JAHMES),
   leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', CLARENCE),
-  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge'),
+  leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge', SHAUN),
   leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', PAT),
   leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', KAYL),
   leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', PHIL),
