@@ -442,6 +442,8 @@ html.calm-fx .arm-twinkle { opacity: 0; }
 .ar-pad-fire .ar-btn-label { color: #3a2a00; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5); }
 /* While a game runs the cabinet's lights hold still: their repaints every frame cost the game its frame rate on phones */
 .ar-cab.playing .ar-start, .ar-cab.playing .ar-free::before { animation: none; }
+/* the marquee too: its masked bulbs and spinning sunburst were repainted every frame by Safari, dropping the game's fps on an iPhone */
+.ar-cab.playing .ar-marquee::after, .ar-cab.playing .arm-rays, .ar-cab.playing .arm-bulbs, .ar-cab.playing .arm-mon img, .ar-cab.playing .arm-twinkle { animation-play-state: paused; }
 .ar-stage, .ar-deck, .ar-marquee { contain: layout paint; }
 .ar-say { min-height: calc(2.7em + 12px); }
 @media (max-height: 700px) { .ar-btn.ar-arrow { width: 68px; height: 68px; } .ar-arrows.ar-col .ar-arrow { width: 58px; height: 58px; } }

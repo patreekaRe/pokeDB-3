@@ -26,7 +26,7 @@ import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { vibrate, battleFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { $, el, makeCard, makeRelic, showScreen, setTheme, sleep, confirmDialog, setHpBar,cardTips, itemSprite, zoomable, openDialog, closeDialog } from './ui.js';
 import { showScene, showPlaceScene, showTowerScene, setStorm, bossArenaPrelude, bossPreludeSounds, bossRebirth, bossRebirthSounds } from './scene.js';
 import { biomeAt, TRAITS } from './data/enemies.js';
@@ -1971,7 +1971,7 @@ function sizeSprite(img, lean, times, min, max, stage = 1, target = img) {
     const f = Math.min(max, Math.max(min, Math.pow(pose / 64, lean) * times)) * stage;
     const set = (name, value) => target.style.setProperty(name, value.toFixed(3));
     set('--size', f * long / pose);
-    set('--shift', (right - left) / 2 / long);
+    set('--shift', ((right - left) / 2 - bodyX(img.src)) / long);
     set('--drop', bottom / long);
     set('--head-room', (long - H + top + bottom) / long);
   };

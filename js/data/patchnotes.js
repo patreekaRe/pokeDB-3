@@ -43,21 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'The bushes along the Clearing\'s front fence no longer flicker.'],
-  ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
-  ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
-  ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
-  ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
-  ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
-  ['fixes', 'In the Poké Mart a big Pokémon like Reshiram no longer stops you tapping the wares behind it, and it stands a little smaller there.'],
-  ['fixes', 'On a short phone the Poké Mart\'s text box no longer hides behind the bottom bar.'],
-  ['runs', 'BRITT, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon. Tap her to chat: she works a second job to feed baby LINC and save for his college fund.'],
-  ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
-  ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
-  ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
-  ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
-  ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
-  ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -69,6 +54,68 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.15',
+    name: 'Hung Up',
+    date: '2026-10-13',
+    notes: [
+  ['base', 'Lights, clocks and strings are properly 3D on your wall and in the Furniture store: lanterns of brass, paper and ship\'s iron swinging from brackets, a wall lamp with a glowing shade, a torch with real flames, a mirror-tiled disco ball, a ghost chandelier of violet candles, café bulbs, fairy lights, festival lanterns, bunting, bats and snowflakes on sagging strings, mittens and washing pegged on the line, a cuckoo clock with its pine cone weights, a station clock and a big stopwatch under glass, icicles, a cobweb with its spider, a star mobile, a dreamcatcher, a glass wind chime, hanging plants, a wreath with a bow, a school bell, and the neon, jackpot, Center, Gym and fair signs with their letters standing proud.'],
+  ['base', 'Shelves, racks and hooks are properly 3D on your wall and in the Furniture store: jars, bottles, tins and jam pots standing on real planks, pans and a ladle, spatula and whisk hooked over their rails, plates leaning in their rack, mugs with handles, towels folded over the rail, a cap, straw hat and scarf on hooks, bags and a raincoat on pegs, Poké Ball bookends, records in shadow boxes, flowers in the window box, ivy climbing the trellis, a sloping control desk of glowing buttons, a monitor wall and a solar panel tipped up to the sky.'],
+  ['base', 'Windows, mirrors and doors are properly 3D on your wall and in the Furniture store: a moonlit arch with a candle on its sill, frost and icicles, leaded stained glass, a riveted space viewport, the carriage window\'s curtains and cup of tea, a brass porthole, an arrow slit through real stonework, a vanity mirror ringed with bulbs, a ghost leaning out of its mirror, shells round a mirror, the medicine cabinet\'s shelves, a portcullis, sliding barn doors, an airlock with its wheel, and glazed tiles and lashed bamboo.'],
+  ['base', 'Boards, signs and plaques are properly 3D on your wall and in the Furniture store: notes and photos pinned up and curling, donuts on pegs, markers and chalk on their ledges, a lit scoreboard and departures board, metal badges behind glass, a pull-down projector screen, framed and oval portraits whose eyes glow, a jigsaw with a piece missing, inlaid desert tablets and golden wings.'],
+  ['base', 'Banners, tapestries, scrolls, flags and curtains are properly 3D on your wall and in the Furniture store: cloth hanging in real folds from rods and cords, flags rippling off their poles, scrolls on weighted rollers, the alphabet cards pegged on a sagging string, the shower curtain on its rings, a tacked-up treasure map rolled at the ends, posters and charts curling off the wall, sticky notes lifting and gold star stickers.'],
+  ['base', 'Windows, posters, pictures, the wall shelf, the clock and the mirror are properly 3D on your wall and in the Furniture store: window frames with sills round the hour\'s sky, curtains in real folds, posters curling off the wall, pictures in deep frames, real books on the shelf and a clock with a swinging pendulum.'],
+  ['base', 'Farm, Underwater and Desert furniture is properly 3D: a silo, hen coop with a hen at its window, tractor, windpump, corn row, mailbox, water pump, wool basket, six corals, kelp, a shipwreck, diving helmet, jellyfish lamp, giant pearl, seahorse, lanternfish, sunken arch, an obelisk, sphinx, a sarcophagus whose lid swings open, canopic jars, date palm, scarab lamp, desert tent, cobra, lotus column and 19 more.'],
+  ['base', 'Types furniture is properly 3D: the nine type shrines with their glyph on a glowing medallion, a burning brazier, the generator with a spark between its terminals, ice crystals, a mossy boulder, a geode split open on its crystals, an anvil with its hammer, a bubbling poison vat and a weathervane whose rooster turns in the wind.'],
+  ['fixes', 'A ? room no longer keeps the trainer and Pokémon of the last ? room you walked into.'],
+  ['hub', 'The Clearing\'s Halloween ghosts mostly stand about now, one strolling at a time in turn, and none ever stops in front of a door.'],
+  ['mall', 'The Game Corner\'s regulars walk one at a time now, the rest at their games or standing about, and none ever stops on the doormat.'],
+  ['fixes', 'In the Poké Mart a big Pokémon like Reshiram no longer stops you tapping the wares behind it, and it stands a little smaller there.'],
+  ['fixes', 'On a short phone the Poké Mart\'s text box no longer hides behind the bottom bar.'],
+  ['runs', 'BRITT, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon. Tap her to chat: she works a second job to feed baby LINC and save for his college fund.'],
+    ],
+  },
+  {
+    version: '1.14',
+    name: 'Big Screens',
+    date: '2026-10-12',
+    notes: [
+  ['fixes', 'On an iPad the run map\'s floor, PokéCoins and ₽ sit on its Pokédex again, an item in the Bag shows full width, and your Pokémon on the map stands clear of the screen\'s edge.'],
+  ['base', 'Music, Library, Pirate and Space furniture is properly 3D: violins, a trumpet, banjo, ukulele, saxophone and flute on their stands, a grand piano with its lid propped open, the harp, cello, tuba, gramophone, metronome, tubular bells, the mixing desk, a library ladder, banker\'s lamp, an orrery whose planets turn, the book arch, marble bust, ship\'s mast, bell, rope coil, cannonballs, parrot perch, spyglass, ship in a bottle, a space suit, moon rover, lunar lander, UFO lamp, glowing alien plant and meteorite.'],
+  ['base', 'Japanese and Toys furniture is properly 3D: the shoji screen, torii gate, cherry tree, lucky cat, daruma, taiko drum, kimono stand, kadomatsu, rocking horse (sit on it), jack-in-the-box, an open dollhouse with tiny furniture, ball pit, toy train, wind-up robot, space hopper, marble run, puzzle cube, toy soldier and 6 more.'],
+  ['base', 'Hot Spring, Arcade and Greenhouse furniture is properly 3D: the folding screens, a real hot spring of rocks and steaming water, the bamboo fountain, snow monkey statue, claw machines, skee-ball, hoop shot, racing cockpit (sit in it), Lucky 7 block, the six terrariums under glass, monstera, Venus flytrap, lemon tree, gourd arch and 23 more.'],
+  ['fixes', 'Arcade games no longer flicker: Pidgey Flap\'s hills and grass, Ponyta Dash\'s mountains, and the background bits in Bubble Shooter and Poké Puzzle glide off the edge instead of blinking in and out.'],
+  ['fixes', 'Pidgey Flap has no joystick any more: it only ever needed a tap on the screen.'],
+  ['fixes', 'Arcade games run smoother on iPhones: the cabinet\'s lit marquee holds still while you play.'],
+  ['fixes', 'Ponyta no longer shimmers as it gallops on a phone: arcade sprites are drawn on whole screen pixels.'],
+  ['look', 'The game has an app icon: add it to your home screen (Safari or Chrome: Share, then Add to Home Screen) and it shows a Fire, Grass and Water card, and opens full screen.'],
+  ['look', 'Phones play upright only: turned sideways, the game waits behind a "turn your phone upright" screen. Tablets and PCs still play either way.'],
+  ['fixes', 'Saved to the home screen, the game no longer slides up under the phone\'s clock and battery.'],
+  ['look', 'On an iPad or a computer the game fills the whole screen again, and the run map is a handheld Pokédex standing in the middle of its scenery instead of stretching across it.'],
+  ['look', 'On an iPad or a computer your deck, the PP Up, Forget a move and Day Care pickers and every other Pokédex window are handheld-sized like the run map, not stretched across the screen.'],
+  ['look', 'Charmeleon, Charmander, Infernape, Servine, Manaphy and about 25 more starters with long tails, tail flames or big arms stand centred on their body, not their tail, on the character select, in battle, evolving and in the Hall of Fame.'],
+    ],
+  },
+  {
+    version: '1.13',
+    name: 'Arcade Polish',
+    date: '2026-10-12',
+    notes: [
+  ['fixes', 'The bushes along the Clearing\'s front fence no longer flicker.'],
+  ['mall', 'The Game Corner\'s Blackjack and High-Low tables are the new 3D card tables: a half-round felt with a padded rail, cards and chips dealt, and the game\'s name lit over the dealer\'s side.'],
+  ['mall', 'Squirtle Bubble Shooter aims with ◀ ▶ buttons instead of the joystick, the bubbles no longer swap by themselves, and the launcher no longer flickers with every shot.'],
+  ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
+  ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
+  ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
+  ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
+  ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
+  ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],
+  ['mall', 'Squirtle Bubble Shooter has a weekly leaderboard: your best score of the week goes up on the 🏆 board.'],
+  ['fixes', 'Double-tapping an arcade cabinet\'s screen or buttons on an iPhone no longer pops up the magnifying glass.'],
+  ['mall', 'Squirtle Bubble Shooter\'s TAP TO SWAP sits in the middle, under the launcher.'],
+  ['mall', 'Squirtle Bubble Shooter has endless levels: clear the board and the next one starts fuller, with more colours (a pink Fairy bubble from level 7), and the ceiling drops sooner. Each cleared level is worth more.'],
+    ],
+  },
   {
     version: '1.12',
     name: 'Fresh Coat',

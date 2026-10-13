@@ -45,7 +45,15 @@ export function drawMon(g, id, x, y, h, flip = false) {
   if (!c) return;
   const w = h * c.width / c.height, smooth = g.imageSmoothingEnabled;
   g.imageSmoothingEnabled = false;
-  g.drawImage(c, x - w / 2, y - h, w, h);
+  const m = g.getTransform();
+  if (m.b || m.c || m.a <= 0 || m.d <= 0) g.drawImage(c, x - w / 2, y - h, w, h);
+  else {
+    // Snapped to whole screen pixels: unsmoothed at a phone's fractional scale, a sprite moving by part of a pixel
+    // doubled and dropped different rows each frame, so a bobbing Ponyta flickered (2026-10-12)
+    const left = Math.round(m.a * (x - w / 2) + m.e), top = Math.round(m.d * (y - h) + m.f);
+    const dw = Math.max(1, Math.round(m.a * w)), dh = Math.max(1, Math.round(m.d * h));
+    g.drawImage(c, (left - m.e) / m.a, (top - m.f) / m.d, dw / m.a, dh / m.d);
+  }
   g.imageSmoothingEnabled = smooth;
 }
 const stamps = new Map();

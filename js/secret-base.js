@@ -323,6 +323,9 @@ const stocked = new Map();
     dealt again (the user's call, 2026-10-12: sold out stays sold out), so each player's day is their own; it is dealt
     once a day and kept in the save (`furnitureDay`), so a piece bought today stands sold out till tomorrow's restock. */
 export function furnitureStock(day = safariDay(), floor = 1) {
+  // `?stock=id,id...` fills the store with those pieces for the page load, 8 a floor (to playtest new models)
+  const peek = new URLSearchParams(location.search).get('stock')?.split(',').filter(id => PIECES[id]);
+  if (peek?.length) return peek.slice((floor - 1) * STOCK, floor * STOCK);
   if (!stocked.has(day)) {
     const kept = getSave().furnitureDay;
     const ok = kept?.day === day && kept.floors?.length === 2 && kept.floors.flat().every(id => PIECES[id]);

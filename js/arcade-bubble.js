@@ -1,7 +1,10 @@
 /* arcade-bubble.js  -  Squirtle Bubble Shooter, a home arcade game (js/arcade-kit.js; 2026-10-12, the user's pick, in
    place of Unown Word Search), after Puzzle Bobble: Squirtle fires coloured bubbles up into a cluster hanging from the
    ceiling. Three or more of a colour touching pop, and any bubbles left hanging from nothing fall for a bonus. Every few
-   shots the ceiling drops a new row; a bubble past the line at the bottom ends it. Endless, faster rows as it goes.
+   shots the ceiling drops a new row; a bubble past the line at the bottom ends it. Endless levels (2026-10-12, the user's
+   ask: clearing a board only to refill the same one was boring): a cleared board is the next level, `LEVELS` deciding its
+   rows, colours (a 6th, Fairy, from level 7) and how few shots bring the ceiling down, past its last line every level
+   one shot fewer than the one before, never under `MIN_PUSH`.
    Aim with the cabinet's ◀ ▶ buttons (or the arrow keys) and press SHOOT (or Space): a tap on the screen never aims or fires
    (the user's call, 2026-10-12), it only swaps the two bubbles at the bottom. Buttons, not the joystick (the user's ask, the
    same day): a stick leaning low sent "down", which swapped the bubbles by itself. The launcher stays drawn while a shot
@@ -15,15 +18,18 @@
 import { runArcade, banner, stamp } from './arcade-kit.js';
 import { gifFrames } from './hd2d.js';
 
+/* a level's [starting rows, colours, shots a row]; past the last, the last with one shot fewer a level */
+const LEVELS = [[5, 3, 9], [6, 4, 8], [6, 4, 7], [7, 5, 7], [7, 5, 6], [8, 5, 6], [8, 6, 5], [9, 6, 5], [9, 6, 4]];
+const MIN_PUSH = 2, CLEAR = 500, LEVEL_S = 1.8;
 const R = 15, COLS = 10, ROWH = R * Math.sqrt(3), TOP = 8, W = COLS * R * 2, H = 420;
-const LINE = H - 78, GUN = [W / 2, H - 46], SPEED = 640, START_ROWS = 6;
+const LINE = H - 78, GUN = [W / 2, H - 46], SPEED = 640;
 const POP = 10, DROP = 20, AIM_SHOTS = 3, BAG = [36, H - 6], LOADER = 84, CRANK = W - 76, LOAD_S = 0.32;
-/* the bubbles' colours (base, light, dark): water, fire, grass, electric, psychic, each with its glyph inside */
-const COLOURS = [['#2a7af0', '#b8e0ff', '#0a2c80'], ['#e83030', '#ffb0a0', '#701010'], ['#30c040', '#c0ffb0', '#0c5a18'], ['#f8d018', '#fff8b0', '#906800'], ['#b050e0', '#f0c8ff', '#4a1070']];
+/* the bubbles' colours (base, light, dark): water, fire, grass, electric, psychic, fairy, each with its glyph inside */
+const COLOURS = [['#2a7af0', '#b8e0ff', '#0a2c80'], ['#e83030', '#ffb0a0', '#701010'], ['#30c040', '#c0ffb0', '#0c5a18'], ['#f8d018', '#fff8b0', '#906800'], ['#b050e0', '#f0c8ff', '#4a1070'], ['#f060a8', '#ffd0e8', '#801850']];
 const TAU = Math.PI * 2;
 
 const sprites = new Map();
-/** A type's glyph, drawn round (0, 0) in a bubble `r` round: a drop, a flame, a leaf, a bolt, an eye. */
+/** A type's glyph, drawn round (0, 0) in a bubble `r` round: a drop, a flame, a leaf, a bolt, an eye, a star. */
 function glyph(g, colour, r) {
   const k = r / 15;
   g.beginPath();
@@ -31,7 +37,8 @@ function glyph(g, colour, r) {
   else if (colour === 1) { g.moveTo(0, -8 * k); g.bezierCurveTo(7 * k, -2 * k, 7 * k, 3 * k, 5 * k, 5 * k); g.quadraticCurveTo(0, 9 * k, -5 * k, 5 * k); g.bezierCurveTo(-7 * k, 2 * k, -4 * k, -1 * k, -3 * k, -4 * k); g.quadraticCurveTo(-1 * k, -1 * k, 0, -8 * k); }
   else if (colour === 2) { g.moveTo(-6 * k, 6 * k); g.bezierCurveTo(-7 * k, -3 * k, 0, -7 * k, 7 * k, -7 * k); g.bezierCurveTo(7 * k, 0, 3 * k, 7 * k, -6 * k, 6 * k); }
   else if (colour === 3) { g.moveTo(2 * k, -8 * k); g.lineTo(-5 * k, 1 * k); g.lineTo(0, 1 * k); g.lineTo(-2 * k, 8 * k); g.lineTo(5 * k, -1 * k); g.lineTo(0, -1 * k); g.closePath(); }
-  else { g.moveTo(-7 * k, 0); g.quadraticCurveTo(0, -7 * k, 7 * k, 0); g.quadraticCurveTo(0, 7 * k, -7 * k, 0); }
+  else if (colour === 4) { g.moveTo(-7 * k, 0); g.quadraticCurveTo(0, -7 * k, 7 * k, 0); g.quadraticCurveTo(0, 7 * k, -7 * k, 0); }
+  else for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = (i % 2 ? 3.2 : 7.5) * k; g.lineTo(Math.cos(a) * d, Math.sin(a) * d + 0.5 * k); }
   g.fill();
   if (colour === 4) { g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath(); g.arc(0, 0, 2.4 * k, 0, TAU); g.fill(); g.restore(); }
 }
@@ -202,9 +209,9 @@ export const openBubble = (onClose) => runArcade({
   keys: { left: [['◀', 'left'], ['▶', 'right']] },
   pad: [['SHOOT', 'fire']],
   sounds: ['fx-bloop', 'fx-bubble'],
-  help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap under the line to swap.', 'The loaded bubble and the one in the bag trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!']],
+  help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap under the line to swap.', 'The loaded bubble and the one in the bag trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots a new row pushes down.', 'Don\'t let them past the line!'], ['Clear the board for the next level.', `+${CLEAR} a level cleared. Each level starts fuller, with more colours, and the ceiling drops sooner.`]],
   make(api) {
-    let load = null, cheer = 0, rows = [], flip = 0, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
+    let level = 1, levelUp = 0, load = null, cheer = 0, rows = [], flip = 0, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
     const falling = [], bursts = [];
     let pressed = { left: false, right: false };
     const offset = (r) => ((r + flip) % 2 ? R : 0);
@@ -213,9 +220,14 @@ export const openBubble = (onClose) => runArcade({
     const randomRow = (r, n = COLOURS.length) => Array.from({ length: width(r) }, () => Math.floor(Math.random() * n));
     const colours = () => { const s = new Set(); rows.forEach(row => row.forEach(v => v !== null && v !== undefined && s.add(v))); return [...s]; };
     const deal = () => { const c = colours(); return c.length ? c[Math.floor(Math.random() * c.length)] : Math.floor(Math.random() * COLOURS.length); };
-    for (let r = 0; r < START_ROWS; r++) rows.push(randomRow(r, 4));
+    const rule = () => {
+      const last = LEVELS.length - 1, [rowsN, coloursN, push] = LEVELS[Math.min(level - 1, last)];
+      return { rowsN, coloursN, push: Math.max(MIN_PUSH, push - Math.max(0, level - 1 - last)) };
+    };
+    const setUp = () => { const { rowsN, coloursN } = rule(); for (let r = 0; r < rowsN; r++) rows.push(randomRow(r, coloursN)); };
+    setUp();
     cur = deal(); next = deal();
-    const pushEvery = () => Math.max(4, 8 - Math.floor(api.score / 800));
+    const pushEvery = () => rule().push;
 
     const neighbours = (r, c) => {
       const d = offset(r) ? [0, 1] : [-1, 0], out = [[r, c - 1], [r, c + 1]];
@@ -236,7 +248,7 @@ export const openBubble = (onClose) => runArcade({
     };
     const lower = () => {
       flip ^= 1;
-      rows.unshift(randomRow(0, Math.max(3, colours().length)));
+      rows.unshift(randomRow(0, rule().coloursN));
       slide += ROWH;
     };
     const trim = () => { while (rows.length && rows[rows.length - 1].every(v => v === null)) rows.pop(); };
@@ -281,8 +293,18 @@ export const openBubble = (onClose) => runArcade({
         else if (group.length >= 5) api.say(`${group.length} popped! Splashing!`);
       }
       trim();
+      if (!rows.some(row => row.some(v => v !== null))) {
+        const bonus = CLEAR * level;
+        api.add(bonus);
+        level++; levelUp = LEVEL_S; shots = 0; rows = [];
+        setUp();
+        slide = TOP + rows.length * ROWH;
+        cur = deal(); next = deal();
+        api.say(`Board cleared! +${bonus}. Level ${level}: ${level > LEVELS.length ? 'the ceiling drops faster!' : 'more bubbles!'}`);
+        api.sound('coins', 'plink-2');
+        return;
+      }
       if (++shots % pushEvery() === 0) { lower(); api.say('The ceiling drops a row!'); }
-      if (!rows.some(row => row.some(v => v !== null))) { api.add(500); api.say('Board cleared! +500'); for (let r = 0; r < START_ROWS; r++) rows.push(randomRow(r, 4)); }
       if (tooLow()) api.over('The bubbles reached the line!');
     };
 
@@ -324,6 +346,7 @@ export const openBubble = (onClose) => runArcade({
         }
         if (load && (load.t += dt) >= LOAD_S) load = null;
         if (cheer) cheer = Math.max(0, cheer - dt);
+        if (levelUp) levelUp = Math.max(0, levelUp - dt);
         if (slide) { slide *= Math.exp(-dt * 9); if (slide < 0.2) slide = 0; }
         for (let i = falling.length - 1; i >= 0; i--) { const f = falling[i]; f.vy += 900 * dt; f.y += f.vy * dt; f.x += f.vx * dt; if (f.y > H + R) falling.splice(i, 1); }
         for (let i = bursts.length - 1; i >= 0; i--) if ((bursts[i].t += dt) > 0.35) bursts.splice(i, 1);
@@ -335,7 +358,7 @@ export const openBubble = (onClose) => runArcade({
         scale = g.getTransform().a;
         g.drawImage(seabed(scale), 0, 0, W, H);
         g.fillStyle = 'rgba(200, 235, 255, 0.07)';   // light shafts drifting
-        for (let i = 0; i < 4; i++) { const x = (i * 83 + now / 70) % (W + 60) - 30; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 26, 0); g.lineTo(x - 34, LINE); g.lineTo(x - 54, LINE); g.fill(); }
+        for (let i = 0; i < 4; i++) { const x = (i * 83 + now / 70) % (W + 80) - 26; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 26, 0); g.lineTo(x - 34, LINE); g.lineTo(x - 54, LINE); g.fill(); }
         for (const [sx, h, ph] of WEEDS) {   // kelp swaying up the walls
           g.strokeStyle = '#1e7a5a'; g.lineWidth = 5; g.lineCap = 'round';
           g.beginPath(); g.moveTo(sx, LINE + 6);
@@ -343,7 +366,7 @@ export const openBubble = (onClose) => runArcade({
           g.stroke();
         }
         g.fillStyle = 'rgba(200, 235, 255, 0.35)';   // little bubbles rising
-        for (let i = 0; i < 9; i++) { const y = LINE - ((i * 53 + now / 30) % LINE), x = (i * 37) % W + Math.sin(now / 500 + i) * 4; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.7, 0, TAU); g.fill(); }
+        for (let i = 0; i < 9; i++) { const y = LINE - ((i * 53 + now / 30) % (LINE + 6)), x = (i * 37) % W + Math.sin(now / 500 + i) * 4; g.beginPath(); g.arc(x, y, 1.2 + (i % 3) * 0.7, 0, TAU); g.fill(); }
         rows.forEach((row, r) => row.forEach((v, c) => { if (v === null) return; const [px, py] = pos(r, c); bubble(g, px, py - slide, v); }));
         for (const b of bursts) { g.strokeStyle = COLOURS[b.colour][1]; g.globalAlpha = 1 - b.t / 0.35; g.lineWidth = 2; g.beginPath(); g.arc(b.x, b.y, R * (1 + b.t * 3), 0, TAU); g.stroke(); g.globalAlpha = 1; }
         for (const f of falling) bubble(g, f.x, f.y, f.colour);
@@ -374,7 +397,12 @@ export const openBubble = (onClose) => runArcade({
         squirtle(g, 'squirtle-shiny', CRANK, H - 3 - hop(cheer / 0.6 * 2, cheer ? 1 : 0) - (l < 1 ? hop(l, 0.5) : 0), 58, false, now + 400);
         banner(g, 'NEXT', BAG[0], BAG[1] - 60, 9, '#a8d4ff');
         banner(g, 'TAP TO SWAP', GUN[0], H - 5, 9, '#ffd84a');
-        banner(g, `Row in ${pushEvery() - (shots % pushEvery())}`, W - 30, LINE + 14, 10, '#ffffff');
+        banner(g, `Lv ${level} · Row in ${pushEvery() - (shots % pushEvery())}`, W - 44, LINE + 14, 10, '#ffffff');
+        if (levelUp) {
+          g.globalAlpha = Math.min(1, levelUp / 0.4);
+          banner(g, `LEVEL ${level}`, W / 2, LINE * 0.55, 34 + (1 - Math.min(1, (LEVEL_S - levelUp) / 0.25)) * 14, '#ffd84a');
+          g.globalAlpha = 1;
+        }
       },
     };
   },

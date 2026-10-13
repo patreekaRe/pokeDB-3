@@ -19,7 +19,7 @@ import { sceneSay } from './evolution.js';
 import { makeGate, gateReady, gateBar, setGateBar, settleGateBar } from './gate.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER, gateStage } from './data/gate.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const GW = 72, GH = 88;   // the gate, in its own pixels
@@ -700,7 +700,7 @@ function place(img, s) {
   img.style.width = `${img.naturalWidth * s}px`;
   img.style.height = `${img.naturalHeight * s}px`;
   img.style.setProperty('--foot', `${bottom * s}px`);
-  img.style.setProperty('--dx', `${((right - left) / 2) * s}px`);
+  img.style.setProperty('--dx', `${((right - left) / 2 - bodyX(img.src)) * s}px`);
 }
 
 /** The door blows apart: every pixel of it a shard flying out from the seal and falling. */

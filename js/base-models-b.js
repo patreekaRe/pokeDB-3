@@ -11,7 +11,7 @@ const STONE = '#9a9aa6';
 const STRAW = '#e8c860';
 
 /** A clump of leaves round x, y, z, about `r` across: a round core puffed out all over with smaller balls in three greens. */
-function bush(K, L, x, y, z, r, n = 12) {
+export function bush(K, L, x, y, z, r, n = 12) {
   const R = K.r, greens = [K.gloss(K.pal.leaf), K.gloss(L.tone(K.pal.leaf, 1.08)), K.gloss(L.tone(K.pal.leaf, 0.9))];
   K.put(L.ball(r * 0.8, 20, 14), greens[2], x, y, z);
   for (let i = 0; i < n; i++) {
@@ -21,7 +21,7 @@ function bush(K, L, x, y, z, r, n = 12) {
 }
 
 /** A five-petalled flower facing `turn` round and `tip` up, its middle in the accent. */
-function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
+export function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
   const petal = K.gloss(col);
   for (let i = 0; i < 5; i++) {
     const a = i / 5 * Math.PI * 2;
@@ -31,7 +31,7 @@ function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
 }
 
 /** A gable roof over a box `w` wide, `d` deep, its eaves at `y`, rising `rise`; the gables filled in `gable`. */
-function gableRoof(K, L, y, w, d, rise, over, roof, gable) {
+export function gableRoof(K, L, y, w, d, rise, over, roof, gable) {
   const { THREE, rbox } = L, half = w / 2 + over, slope = Math.hypot(half, rise), tilt = Math.atan2(rise, half);
   for (const sx of [-1, 1]) K.put(rbox(slope + 0.04, 0.06, d + over * 2, 0.02), roof, sx * half / 2, y + rise / 2 + 0.03, 0, 0, 0, -sx * tilt);
   if (!gable) return;
@@ -42,7 +42,7 @@ function gableRoof(K, L, y, w, d, rise, over, roof, gable) {
 }
 
 /** A plant's pot as js/base-furniture-kinds.js's `potAt()` paints it (round, square, tray or basket); returns its soil's height. */
-function potOf(K, L, kind = 'round') {
+export function potOf(K, L, kind = 'round') {
   const { lathe, rbox, cyl, torus } = L, pot = K.gloss(K.pal.pot), rim = K.gloss(L.tone(K.pal.pot, 1.12)), soil = K.plain('#3a2416');
   if (kind === 'square') {
     K.put(rbox(u(16), u(13), u(16), 0.03), pot, 0, u(6.5), 0);
@@ -72,7 +72,7 @@ function potOf(K, L, kind = 'round') {
 }
 
 /** A leaf `len` long and `wid` wide from x, y, z, `turn` round, its tip `tip` from upright, curling down by `curl`. */
-function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
+export function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
   const g = L.ball(1, 12, 8).scale(wid, 0.012 + wid * 0.08, len / 2);
   const pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) { const t = (pos.getZ(i) / len + 0.5); pos.setY(i, pos.getY(i) - curl * t * t * len); }
@@ -82,7 +82,7 @@ function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
 }
 
 /** A ribbed column of a cactus from y0 up h, r across, its top rounded, its spines dotted on. */
-function column(K, L, x, y0, z, r, h, m, spine) {
+export function column(K, L, x, y0, z, r, h, m, spine) {
   const pts = [[r * 0.9, 0], [r, 0.03]];
   for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pts.push([Math.cos(a) * r, h - r + Math.sin(a) * r]); }
   const g = L.lathe(pts, 24), pos = g.attributes.position;
@@ -97,7 +97,7 @@ function column(K, L, x, y0, z, r, h, m, spine) {
 }
 
 /** A cactus arm: out sideways from the trunk at y, then up `h`. */
-function cactusArm(K, L, x, y, z, side, out, r, h, m, spine) {
+export function cactusArm(K, L, x, y, z, side, out, r, h, m, spine) {
   K.put(L.cyl(r, out, r, 18).rotateZ(Math.PI / 2), m, x + side * out / 2, y, z);
   K.put(L.ball(r, 18, 12), m, x + side * out, y, z);
   column(K, L, x + side * out, y, z, r, h, m, spine);

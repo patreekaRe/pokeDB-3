@@ -25,7 +25,7 @@ and saved with the map, so a refresh can't reroll the shelves.
 re-renders itself after each purchase; `ware()` wraps a card/item/relic tile with
 its price tag (red and disabled when you can't afford it), a `group` and a
 two-tap "Buy ₽N" confirm. `layout: 'mart-window'` is a plain grid of the wares, hidden under the 3D Mart below and only seen if Three.js won't load (the pixel Mart scene, its painted room, Kecleon, hanging signs and props, was deleted 2026-10-10, the user's call: it slowed the walk in).
-Removal (the PC on Kecleon's counter) reuses `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
+Removal (the PC on Britt's counter) reuses `forgetMove(martRoom, pay)`, so backing out of the picker costs nothing; it can be
 bought once per Mart (`stock.removed`, then the PC says "Sold out"). Every forget picker
 (Center, Mart, Cleanse Tag, events) takes two taps, like adding a card: `ask`/`confirm` "Forget it".
 Purchases are only saved when you leave for the map. Items are covered
@@ -46,7 +46,7 @@ price stands over it, big, tilted to the camera (red when too dear, SOLD OUT onc
 (`header()` / `emblem()`; bigger and cleaner since 2026-10-10, the user's ask). The camera starts centred on the
 door and follows your Pokémon (it began leaning right, the user's call); a phone's shot is `ACROSS` 8.8 tiles, then brought in to `ZOOM` 0.7 of that distance (0.6 on 2026-10-09, the user's ask: much closer; eased to 0.7 on 2026-10-10 as the right side was hard to see). Since 2026-10-10 the camera follows your Pokémon all the way (it was 0.6 of its x) and a sideways drag looks along the room (`look`, `onDown()` / `onMove()`, a drag swallowing its click; walking brings it back). The wares'
 PNGs load with `crossOrigin` (githack can serve them from its CDN's domain, which taints the canvas so WebGL uploads it
-blank: on the user's phone every card and sprite was missing). Kecleon stands behind a
+blank: on the user's phone every card and sprite was missing). Britt (a trainer sprite, `trainerBoard()`; Kecleon until 2026-10-13) stands behind a
 blue counter on the left with the PC on it (its "Forget ₽N" sign, `.mart3d-sign`). A tap on a ware walks your Pokémon up
 and presses its choice (a greyed one says why in the text box); a bought ware flies into your Pokémon as the shop redraws;
 the doormat presses Leave. `preloadMart()` (from `warmMart3d()` in `js/run.js`) builds it while the map is up, with your Pokémon and every Mart's wares painted ahead; the room shows at once, no fade, and its shelves fill as their pictures are ready, all painted in parallel (`paintAll()`; 2026-10-10, the user saw a blank blue screen while they loaded one by one). `?mart` (`&starter=id`, `&money=N`) walks a

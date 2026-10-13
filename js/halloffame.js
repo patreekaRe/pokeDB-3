@@ -16,7 +16,7 @@ import { rollCredits } from './credits.js';
 import { fillDeck } from './deckpreview.js';
 import { getSave, updateSave } from './storage.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { CARDS_BY_ID, TYPES } from './data/cards.js';
 import { RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID } from './data/items.js';
@@ -177,7 +177,7 @@ function fit(img, box) {
   const s = Math.max(1, Math.min(4, Math.floor((room / pose) * 2) / 2));
   img.style.width = `${img.naturalWidth * s}px`;
   img.style.height = `${img.naturalHeight * s}px`;
-  img.style.translate = `calc(-50% + ${((right - left) / 2) * s}px) ${bottom * s}px`;
+  img.style.translate = `calc(-50% + ${((right - left) / 2 - bodyX(img.src)) * s}px) ${bottom * s}px`;
 }
 
 const loaded = (img) => img.complete && img.naturalWidth ? null

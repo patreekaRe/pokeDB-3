@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>App icon</title>
+<link rel="stylesheet" href="../css/base.css">
+<style>
+  /* The home-screen icon: How to play's fanned hand on the theme's navy. tools/app-icon.mjs shoots it at each size. */
+  html, body { margin: 0; background: none; }
+  #icon {
+    width: 512px; height: 512px; display: grid; place-items: center; overflow: hidden;
+    background: radial-gradient(circle at 50% 42%, #34407a 0%, #1b1f3a 72%);
+  }
+  .hand { display: flex; align-items: flex-end; translate: 0 0; }
+  .card {
+    position: relative; display: grid; place-items: center; width: 150px; height: 206px; margin: 0 -14px;
+    border: 7px solid #fff; border-radius: 18px; box-shadow: 0 7px 0 rgba(0, 0, 0, 0.35);
+  }
+  .card svg { width: 100px; height: 100px; }
+  .fire  { background: linear-gradient(160deg, #ffa070, #e0602c); rotate: -12deg; translate: 0 16px; }
+  .grass { background: linear-gradient(160deg, #98d880, #4ea040); z-index: 1; }
+  .water { background: linear-gradient(160deg, #8ab0ff, #3c70d8); rotate: 12deg; translate: 0 16px; }
+  .cost {
+    position: absolute; top: -18px; left: -18px; width: 48px; height: 48px; display: grid; place-items: center;
+    border: 5px solid #e06058; border-radius: 50%; background: #fff; color: #2a2a3a;
+    font: 1.8rem/1 var(--pixel-font); font-synthesis-weight: none;
+  }
+</style>
+<div id="icon"><div class="hand"></div></div>
+<script type="module">
+  import { smoothIcon } from '../js/smooth-icons.js';
+  const hand = document.querySelector('.hand');
+  for (const type of ['fire', 'grass', 'water']) {
+    const card = document.createElement('span');
+    card.className = `card ${type}`;
+    const cost = document.createElement('b');
+    cost.className = 'cost';
+    cost.textContent = '1';
+    card.append(cost, smoothIcon(type));
+    hand.append(card);
+  }
+  await document.fonts.ready;
+  document.body.dataset.ready = '1';
+</script>

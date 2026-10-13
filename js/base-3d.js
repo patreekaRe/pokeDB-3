@@ -269,13 +269,19 @@ function makePiece(it, ghostly = false, lift = null) {
     group.add(mesh);
     return mesh;
   };
-  if (p.layer === 'wall' && shapeOf(p.fam, p)) {   // a modelled wall piece (the Plinko board), its back to the wall
-    const model = furnitureModel(THREE, it.id, (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 }));
+  if (p.layer === 'wall' && shapeOf(p.fam, p)) {   // a modelled wall piece (js/base-models-w.js), its back to the wall
+    const model = furnitureModel(THREE, it.id, (art) => {
+      const m = new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 });
+      // a window's pane is a crop of its painting: its sky glows by the hour as the flat one did
+      if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
+      return m;
+    });
     if (ghostly) ownPictures(model);
     model.traverse(o => { if (o.isMesh) { o.castShadow = !ghostly; o.receiveShadow = !ghostly; [o.material].flat().forEach(see); } });
     model.position.set(it.x - COLS / 2 + p.w / 2, 0, topOf(it.x) - ROWS / 2 + (ghostly ? 0.01 : 0));
     group.add(model);
     group.userData.model = model;
+    if (p.fam === 'window' && !ghostly) addShaft(group, model.position.x, model.position.z);
     return group;
   }
   if (p.layer === 'wall') {

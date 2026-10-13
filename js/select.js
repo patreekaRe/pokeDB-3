@@ -19,7 +19,7 @@ import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
 import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
-import { spriteFit } from './data/sprite-fit.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { aimCorner } from './shop.js';
@@ -313,7 +313,7 @@ function sizeSprite() {
   if (picked && LEGENDS(picked)) fits = Math.min(fits, stage.clientHeight * 0.62 / LEGEND_POSE);
   const s = Math.max(1, Math.floor(fits * 2) / 2);
   img.style.width = `${img.naturalWidth * s}px`;
-  img.style.translate = `calc(-50% + ${((right - left) / 2) * s}px) ${bottom * s}px`;
+  img.style.translate = `calc(-50% + ${((right - left) / 2 - bodyX(img.src)) * s}px) ${bottom * s}px`;
 }
 
 /** A portrait: the resting pose fills the frame whatever padding its GIF has (SPRITE_FIT). */
@@ -324,7 +324,7 @@ function fitThumb(img) {
     if (!W) return;
     const pose = Math.max(W - left - right, H - top - bottom) || W;
     const k = Math.min(2.2, 0.86 * Math.max(W, H) / pose);
-    img.style.transform = `translate(${((right - left) / 2 / W) * 100}%, ${((bottom - top) / 2 / H) * 100}%) scale(${k.toFixed(3)})`;
+    img.style.transform = `translate(${(((right - left) / 2 - bodyX(img.src)) / W) * 100}%, ${((bottom - top) / 2 / H) * 100}%) scale(${k.toFixed(3)})`;
   };
   img.addEventListener('load', apply, { once: true });
 }

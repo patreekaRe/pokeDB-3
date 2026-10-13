@@ -59,6 +59,7 @@ const paint = (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness
 function model(id) {
   const p = PIECES[id], g = furnitureModel(THREE, id, paint) || new THREE.Mesh(new THREE.BoxGeometry(p.w, p.high || 0.05, p.h), paint(p.art(0, 4)));
   if (g.isMesh) g.position.y = (p.high || 0.05) / 2;
+  g.userData.id = id;
   return g;
 }
 function shoot(g, angle, size) {
@@ -66,7 +67,7 @@ function shoot(g, angle, size) {
   const box = new THREE.Box3().setFromObject(g), r = Math.max(1.2, box.getSize(new THREE.Vector3()).length() * 0.62);
   g.rotation.y = angle;
   scene.add(g);
-  const y = box.max.y / 2;
+  const y = PIECES[g.userData.id]?.wall ? (box.min.y + box.max.y) / 2 : box.max.y / 2;
   camera.position.set(Math.sin(0.5) * r * 3.2, y + r * 1.6, Math.cos(0.5) * r * 3.2);
   camera.lookAt(0, y, 0);
   renderer.render(scene, camera);
@@ -114,7 +115,7 @@ function spin(id) {
   big.onclick = () => { spinning = null; big.hidden = true; };
 }
 if (pinned) document.body.classList.add('pinned');
-draw();
+draw(); window.done = true;
 </script>
 </body>
 </html>
