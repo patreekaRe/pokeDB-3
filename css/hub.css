@@ -156,6 +156,15 @@
 /* The Poké Mall's hall (js/mall-3d.js), on the Secret Base's .base3d frame: its title shows, and at the bottom a front's
    line pops up a moment (no pill since 2026-10-09, the user's call). */
 .mall3d .b3-top h2 { opacity: 1; }
+/* the Clearing's Pokédex bar along the bottom of the mall and the base too (js/dex-bar.js, the user's ask, 2026-10-13):
+   the place's name and the coins are on it, so the mall's title and coin LCD up top go; decorating, the sheet takes its
+   place. The Pokédex opened from it comes up over the place (.base3d is z-index 900), its zoomed cards over that */
+.base3d .place-bar { z-index: 3; transition: translate 0.35s cubic-bezier(.2, .9, .3, 1); }
+.base3d.editing .place-bar { translate: -50% calc(100% + 20px); pointer-events: none; }
+.mall3d .b3-top h2, .mall3d .mall-coins { display: none; }
+body:has(> .base3d) .collection-screen.over { z-index: 930; }
+body:has(> .base3d) .card-zoom { z-index: 935; }
+@media (prefers-reduced-motion: reduce) { .base3d .place-bar { transition: none; } }
 /* in the Furniture store, your PokéCoins on a little LCD beside its name */
 .mall-coins {
   padding: 6px 10px; border-radius: 8px; background: var(--lcd, #9bbc6a); color: #1e2a10; font-size: 12px;
@@ -163,7 +172,7 @@
 }
 .mall-coins[hidden] { display: none; }
 .mall-foot {
-  position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
+  position: absolute; left: 50%; bottom: calc(var(--place-bar-h, 64px) + 10px); translate: -50% 0;
   display: flex; flex-direction: column; align-items: center; gap: 8px; width: calc(100% - 32px); pointer-events: none;
 }
 /* every line is Animal Crossing's cream speech window (the user's call, 2026-10-09: the dark pill was too small to read) */

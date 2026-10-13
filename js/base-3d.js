@@ -13,6 +13,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
+import { dexBar } from './dex-bar.js';
 import { RESIDENTS, openPC } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -45,7 +46,7 @@ const LIGHT = {
   night: { sky: '#6070b0', ground: '#14142a', amb: 0.9, sun: '#90a8f0', sunI: 0.7, at: [4, 12, 5], lamp: 4, win: 0.35, shaft: 0.12, motes: 0.25, bg: '#080a18' },
 };
 
-let THREE, renderer, scene, camera, root, view, hud;
+let THREE, renderer, scene, camera, root, view, hud, dbar;
 let post;
 let hemi, sun, lampLights = [], winMats = [], shafts = [], motes = [], ring;
 let roomGroup, pieceGroup, ghost, foot, selBox;
@@ -1409,7 +1410,7 @@ function fitCamera(w, h) {
   camera.updateProjectionMatrix();
   const sheet = root.querySelector('.b3-sheet').offsetHeight;
   root.style.setProperty('--b3-sheet', sheet + 'px');
-  fitted = { walk: fitShot(SHOT.walk, w, h, 0), edit: fitShot({ ...SHOT.edit, across: COLS + 1.2 }, w, h, sheet) };
+  fitted = { walk: fitShot(SHOT.walk, w, h, dbar.el.offsetHeight), edit: fitShot({ ...SHOT.edit, across: COLS + 1.2 }, w, h, sheet) };
   shots ??= structuredClone(fitted);
 }
 
@@ -1501,6 +1502,7 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
   keepUp(now);
+  dbar.tick();
 
   if (!hopping(walker, now) && walk(walker, mon, dt)) {
     if (walker.goal) partnerUp();
@@ -1611,7 +1613,9 @@ async function travel(d) {
 function showRoom(spot = () => null) {
   useRoom(base);
   const lv = here().lv;
-  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
+  const title = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
+  root.querySelector('.b3-top h2').textContent = title;
+  dbar.setPlace(title);
   buildRoom();
   Object.assign(walker, { path: [], through: null, seat: null, seatTo: null, goal: null, jump: null, y: 0 });
   buildPieces();
@@ -1702,6 +1706,8 @@ export async function openBase3d({ onLeave = null } = {}) {
   document.body.append(root);
   view = root.querySelector('.b3-view');
   hud = { hint: root.querySelector('.b3-hint'), fps: null };
+  dbar = dexBar(root);
+  dbar.setPlace('Secret Base');
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
   // like every window in the game, a tap anywhere else puts the cream ones away: the hint, and the present's card
   root.addEventListener('pointerdown', (e) => {
@@ -1779,6 +1785,7 @@ export async function openBase3d({ onLeave = null } = {}) {
   // with a piece in hand the gold pill puts it down; with one picked it lets go of it; else it ends decorating
   root.querySelector('.b3-ok').addEventListener('click', () => holding ? place() : sel >= 0 ? act('done') : setMode('walk'));
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
+  new ResizeObserver(resize).observe(dbar.el);
   tray('furniture');
   refresh();
   syncGuests();

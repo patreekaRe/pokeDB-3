@@ -280,7 +280,8 @@ export function hideDevice() {
 
 /** Laid over a screen (the top bar's Pokédex, the Bag), not the title's Collection. */
 // over a screen, not the title (the hub's corner handheld): only then are Main menu and Abandon run in its dock
-export const deviceOver = () => $('collection-screen').classList.contains('over') && $('title-screen').hidden;
+// the Poké Mall and the Secret Base (.base3d) keep their own way out, the doormat
+export const deviceOver = () => $('collection-screen').classList.contains('over') && $('title-screen').hidden && !document.querySelector('.base3d');
 
 /** A: opens the highlighted pick on the home screen. */
 function press() {

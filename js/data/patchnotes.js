@@ -47,6 +47,7 @@ export const NEXT = [
   ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
   ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
   ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
+  ['mall', 'The Clearing\'s Pokédex bar now runs along the bottom of the Poké Mall, the Game Corner, the Furniture store and your Secret Base too: Home, How to play, your PokéCoins and where you are.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

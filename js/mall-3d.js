@@ -15,6 +15,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
+import { dexBar } from './dex-bar.js';
 import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
@@ -45,7 +46,7 @@ const FRONTS = [
   { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 16, step: { x: 16, y: 1 }, colour: '#e88a30' },
 ];
 
-let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, hemi, sun;
+let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, hemi, sun, dbar;
 let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
@@ -826,6 +827,7 @@ function setPlace(p, at, facing = 'back') {
   walker.tile = { ...at }; walker.x = tileX(at.x); walker.z = tileZ(at.y);
   walker.facing = facing === 'back' && mon.sheets.back ? 'back' : 'front'; walker.flip = false;
   root.querySelector('.b3-top h2').textContent = P.title;
+  dbar.setPlace(P.title);
   scene.environment = P.id === 'hall' ? env : null;
   const glow = P.id === 'hall' ? 0.75 : 1;   // the hall's reflections light it too
   hemi.intensity = 1.7 * glow * (P.light ?? 1); sun.intensity = 2.2 * (P.light ?? 1);   // the arcade is dim, its neon does the lighting
@@ -857,6 +859,7 @@ function showCoins() {
   const el = root.querySelector('.mall-coins');
   el.hidden = P.id === 'hall';
   el.textContent = `${(getSave().coins ?? 0).toLocaleString()} coins`;
+  dbar.refresh();
 }
 
 function pick(spot) {
@@ -1191,7 +1194,7 @@ function aimCamera(x, d, z = 0) {
 function fitShot(w, h) {
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
-  const topBar = root.querySelector('.b3-top').offsetHeight, below = root.querySelector('.mall-foot').offsetHeight + 16;
+  const topBar = root.querySelector('.b3-top').offsetHeight, below = root.querySelector('.mall-foot').offsetHeight + dbar.el.offsetHeight + 16;
   const avail = h - topBar - below, room = 2 * avail / h * 0.94;
   const span = (d, w) => {
     aimCamera(0, d);
@@ -1245,6 +1248,7 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
   keepUp(now);
+  dbar.tick();
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
@@ -1357,6 +1361,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   askEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
   askEl.querySelector('.mall-ask-no').addEventListener('click', () => { playSound('cancel'); closeAsk(false); });
   lineEl = root.querySelector('.mall-line');
+  dbar = dexBar(root);
 
   THREE = await loadThree();
   await hubThree();
