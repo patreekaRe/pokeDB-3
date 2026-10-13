@@ -1487,28 +1487,33 @@ async function fight(node, { talked = false } = {}) {
 
 /** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
     flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
-    the fight; after a win you're back in it, they slide in for their last words and the badge, and you walk out over the
-    doormat to the rewards. `won` is the fight's result once it's over. Without the 3D room (`?event2d`, or Three.js won't
-    load) it's the battle's own talk. */
-function gymRoom(node, leader, won = null) {
+    the fight. After a win they slide in on the battle screen the moment their Pokémon falls for their losing words
+    (afterFight()), then it cuts back here and, the first time, they slide in again to hand over the badge; you walk out
+    over the doormat to the rewards. While they talk, from the first beat to the last line, you can't walk
+    (freezeEvent(); the user's ask, 2026-10-13). `won` is the fight's result once it's over, `said` their `beaten` pair.
+    Without the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk. */
+function gymRoom(node, leader, won = null, said = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
-  const said = talkOf(leader, 'beaten'), beaten = first ? said : said.slice(0, 1);
+  const handOver = !!won && (first || peeking);   // a playtest always shows the badge moment, never saved
   let talking = false;
-  // the speech window steps aside while they talk over the room
-  const say = async (lines, opts) => {
+  const freeze = (on) => event3dMod?.freezeEvent(on);
+  // the speech window steps aside while they talk over the room; `keep` holds you still after (the fight is coming)
+  const say = async (lines, opts, keep = false) => {
     talking = true;
+    freeze(true);
     sayLines([]);
-    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; }
+    try { await gymTalk(leader, lines, { vars: { boss }, ...opts }); } finally { talking = false; if (!keep && run === thisRun) freeze(false); }
   };
   const talk = async () => {
     if (talking || run !== thisRun) return;
+    freeze(true);
     const room = event3dMod?.eventRoom3d();
     room?.light();
     room?.does('npc', 'npc-nod');
     talking = true;
     await sleep(battleFx() ? 700 : 0);   // the gong and the push in first
     if (run !== thisRun) return;
-    await say(talkOf(leader, 'intro', first));
+    await say(talkOf(leader, 'intro', first), {}, true);
     talking = true;   // the fight is coming: no second talk
     if (run === thisRun) fight(node, { talked: true });
   };
@@ -1518,9 +1523,8 @@ function gymRoom(node, leader, won = null) {
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    const badge = first || peeking;   // a playtest always shows the badge moment, never saved
-    await say(beaten, { badge });
-    if (run === thisRun && badge) sayLines([`You received the ${leader.badge}!`]);
+    await say(said.slice(-1), { badge: true, lit: true });
+    if (run === thisRun) sayLines([`You received the ${leader.badge}!`]);
   };
   showChoice({
     title: 'POKéMON GYM',
@@ -1530,12 +1534,12 @@ function gymRoom(node, leader, won = null) {
     onSkip: after ? leave : undefined,
     layout: 'event-room gym-room',
   });
-  let spoke = false;
+  let spoke = !handOver;
   event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
     spent: after,
-    onPick: after ? () => { if (spoke && !talking && run === thisRun) say([said.at(-1)]); } : talk,
-    extra: { leader, dark: first && !after },
-    onIn: after ? () => { spoke = true; lastWords(); } : null,
+    onPick: after ? () => { if (spoke && !talking && run === thisRun) say(said.slice(-1), { lit: true }); } : talk,
+    extra: { leader, dark: first && !after, frozen: handOver },
+    onIn: handOver ? () => { spoke = true; lastWords(); } : null,
     onFail: () => (after ? leave() : fight(node)),
   });
 }
@@ -1559,14 +1563,18 @@ function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
   // the fight, so the win is only counted below with the boss's
   const leader = result.won && !result.gymSaid && gymLeader(node);
-  if (leader && gym3d()) return gymRoom(node, leader, result);
-  if (leader) {
-    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten');
-    return gymTalk(leader, first ? said : said.slice(0, 1), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, badge: first || peeking })
-      .then(() => afterFight(node, { ...result, gymSaid: true }));
+  if (leader) {   // their losing words on the battle screen as their Pokémon falls, then the badge in their gym
+    const first = gymWins(getSave(), leader.id) === 0, said = talkOf(leader, 'beaten'), thisRun = run;
+    const vars = { boss: ENEMY_DEFS[node.enemyId]?.name };
+    return gymTalk(leader, said.slice(0, -1), { vars, lit: true }).then(() => {
+      if (run !== thisRun) return;
+      if (gym3d()) return gymRoom(node, leader, result, said);
+      const done = () => afterFight(node, { ...result, gymSaid: true });
+      return first || peeking ? gymTalk(leader, said.slice(-1), { vars, badge: true, lit: true }).then(done) : done();
+    });
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
-  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name } }).then(() => afterFight(node, { ...result, gymSaid: true }));
+  if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)

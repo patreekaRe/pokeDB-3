@@ -845,7 +845,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   boss), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
   Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
   `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
-  the room or, without 3D, over the battle; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
+  the room or, without 3D, over the battle; after a win their `beaten` pair is split: the losing line slides in on the battle
+  screen as their Pokémon falls (`afterFight()`), the last, handing over the badge, slides in back in the gym the first time
+  (`gymRoom(…, won, said)`); you can't walk while a leader talks (`freezeEvent()` in `js/event-3d.js`, and no walking while
+  a `.gym-scene` is up; 2026-10-13, the user's ask); the gym's back is `gymBack()`: a wall of columns, the ace as twin
+  colossi, the arch's lintel GYM LEADER + name, a rune ring in the court and embers lit with the great fires; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
   each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
   Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite and a `GYM_LOOK` line.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`

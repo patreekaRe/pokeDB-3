@@ -49,10 +49,10 @@ export function badgePop(l) {
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null, lit = false } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}`);
-  const shadow = !possess && gymWins(getSave(), l.id) === 0;
+  const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
   who.src = spriteOf(l);
   who.alt = '';

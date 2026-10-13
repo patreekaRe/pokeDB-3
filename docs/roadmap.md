@@ -371,19 +371,17 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **The gym's arch** (2026-10-13, the user's asks: the POKéMON GYM signboard over the leader was whack; then no ribbon,
-  the badge in the clear, the arch to say GYM LEADER BRITT, "more epic"; on `main` and the branch): `buildGym()` in
-  `js/event-3d.js` puts a stone arch behind the dais, its lintel carved GYM LEADER over the leader's name (`gymPlaqueArt(ink,
-  name)`; POKéMON GYM stays on the hinge's LCD only), the leader's badge over it as a thick turning cut-out in a gold ring
-  with a glow, motes and a turning sunburst (`gymCrest()`, `burstArt()`: gold once earned, a dark seal till then; it spins
-  fast when they speak), a fire in a gold bowl on each end of the lintel lighting with the great braziers
-  (`lintelFire()`), the pillars' bands glowing in the gym's colour and three light shafts down onto the dais
-  (`shaftArt()`, brighter once the fires are lit; faint by day, strong at dusk / night). The name ribbon is gone. The
-  Battle sign over the leader is hidden (`.gym-room .center-label`). Open: the user's look (`?gym=britt`, `&time=night`);
-  more ideas offered: a dark back wall of columns in place of the trees, the leader's ace as a giant statue behind the
-  arch, a rune circle on the court that lights with the fires, embers rising, POKéMON GYM on a gate over the door.
+- **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
+  `js/event-3d.js`: a dark stone wall with a colonnade in place of the woods, the leader's first boss as twin stone colossi
+  on tall plinths flanking the arch (`stoneBoard()`, upright), the arch's lintel GYM LEADER over their name
+  (`gymPlaqueArt()`; POKéMON GYM only on the hinge's LCD), the badge in a sunburst over it, fires on the lintel, light
+  shafts on the dais, a ring of runes round the court's Poké Ball and embers rising, both lit with the great fires.
+  **The win's talks** (same day): the losing line slides in on the battle screen as their Pokémon falls, then the gym, where
+  (first win only) they slide in again with the badge line and the badge; repeats get only the battle line. You can't walk
+  while a leader talks (`freezeEvent()`). Checked headless (`?gym=britt&hp=0.02`, every line in its place). Open: the
+  user's look.
 
-  ▶ Run in: PLAYTEST on the branch link (`?gym=britt`).
+  ▶ Run in: PLAYTEST on the branch link (`?gym=britt&hp=0.05`, `&time=night`).
 - **Gym Leaders** (live on `main` since 2026-10-13, patch 1.16; the full history is in the archive). Open: see the
   first-win badge land in the Badge Case and the outro straight after a real boss win (a peek gives no badge); the user's
   word on the 13 badges' looks and names. (Every leader has their own intro / beaten / won speeches.)
