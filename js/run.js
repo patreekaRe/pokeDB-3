@@ -1643,8 +1643,10 @@ function townRoom(covered = null, at = null) {
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }
       if (!b?.knock) return;
+      const line = b.knock[knocks[id] = ((knocks[id] ?? -1) + 1) % b.knock.length];
+      if (b.kind === 'waystone') { playSound('gate-hum'); return said(`${line} (${friends} Hand in requests to mend it.)`); }
       playSound('stick');
-      said(b.knock[knocks[id] = ((knocks[id] ?? -1) + 1) % b.knock.length]);
+      said(line);
     }, onSay: (who, line) => { if (run === thisRun) said(line, who); } },
     onIn: () => { covered?.(); covered = null; },
     onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) leave(); },

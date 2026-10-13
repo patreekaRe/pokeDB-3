@@ -49,11 +49,12 @@ const wy = (y) => (TOP - y) * U;            // a height's y on it
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
 const ease = (k) => k * k * (3 - 2 * k);
 let BACK_Z = -ROWS / 2;
+let FOLLOW = false;          // a big room (a town): the sun's shadow box goes with the camera, not the room's middle
 /** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
 const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
 /** A town's size is its map's, a home's its HOMES entry's. */
 function sizeOf(kind, at) {
-  if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 11, across: 10.5, shadow: 16, pitch: 0.7 };
+  if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 12, across: 12, shadow: 16, pitch: 0.7, follow: true };
   if (kind === 'home') return homeSize(at.home);
   return SIZES[kind];
 }
@@ -62,6 +63,7 @@ function useSize(r) {
   COLS = z.cols || 11; ROWS = z.rows || 8;
   DOOR = { x: z.door ?? (COLS - 1) / 2, y: ROWS - 1 };
   PITCH = z.pitch ?? 0.42;
+  FOLLOW = !!z.follow;
   BACK_Z = -ROWS / 2;
   if (sun) { const k = z.shadow || 9; Object.assign(sun.shadow.camera, { left: -k, right: k, top: k, bottom: -k }); sun.shadow.camera.updateProjectionMatrix(); }
 }
@@ -1880,13 +1882,13 @@ async function buildGrotto(figs, { biome }) {
 /** Wild ground: grass with tufts and flowers in the garden, moss and fallen leaves under the cedars, ash with glowing
     cracks among the rocks, and a worn path from where you came in up to the thing. */
 function wildFloor(L, { to = 2 } = {}) {
-  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f, r = seeded(43);
-  const s = L.vein ? f.shine() : null;
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, Math.min(5, 2560 / Math.max(W, H))), { g } = f, r = seeded(43);
+  const s = L.vein ? f.shine() : null, more = Math.max(1, COLS * ROWS / 88);   // a town's ground keeps the rooms' density
   g.fillStyle = L.grass[1]; g.fillRect(0, 0, W, H);
-  for (let i = 0; i < 900; i++) { g.fillStyle = L.grass[Math.floor(r() * 3)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 3, 0.6 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
+  for (let i = 0; i < 900 * more; i++) { g.fillStyle = L.grass[Math.floor(r() * 3)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 3, 0.6 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
   if (L.look !== 'rock') {
     g.strokeStyle = L.grass[2]; g.lineWidth = 0.4;
-    for (let i = 0; i < 700; i++) { const x = r() * W, y = r() * H; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 1.4, y - 1.6 - r()); g.stroke(); }
+    for (let i = 0; i < 700 * more; i++) { const x = r() * W, y = r() * H; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 1.4, y - 1.6 - r()); g.stroke(); }
   }
   // the path: worn earth from the doorstep up to the middle
   for (let y = H + 4; y > to * T; y -= 3) {
@@ -1900,7 +1902,7 @@ function wildFloor(L, { to = 2 } = {}) {
     g.fillStyle = ['#ffffff', '#f8e060', '#f890b0', '#b0a0f8'][i % 4]; g.beginPath(); g.arc(x, y, 0.9, 0, Math.PI * 2); g.fill();
     g.fillStyle = '#f8c838'; g.fillRect(x - 0.25, y - 0.25, 0.5, 0.5);
   }
-  if (L.look === 'cedar') for (let i = 0; i < 90; i++) { g.fillStyle = L.drift[i % 2]; g.beginPath(); g.ellipse(r() * W, r() * H, 1.3, 0.7, r() * 3, 0, Math.PI * 2); g.fill(); }
+  if (L.look === 'cedar') for (let i = 0; i < 90 * more; i++) { g.fillStyle = L.drift[i % 2]; g.beginPath(); g.ellipse(r() * W, r() * H, 1.3, 0.7, r() * 3, 0, Math.PI * 2); g.fill(); }
   if (s) for (let i = 0; i < 8; i++) {
     let x = r() * W, y = r() * H;
     for (const ctx of [g, s]) { ctx.strokeStyle = L.vein[i % 2]; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(x, y); }
@@ -3068,6 +3070,51 @@ function torii(x, z, span, tall, name) {
   return g;
 }
 
+/** A town's broken Waystone (js/data/towns.js), the plaza's middle: a stepped stone plinth in a ring of runes, the stone
+    split and its top fallen at its foot, a faint light flickering in the crack and the runes. Mended (the next session's)
+    it will stand whole and blaze. */
+function waystone(f, L) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  g.scale.setScalar(1.45);   // the plaza's centrepiece, over the lanterns
+  B.group.add(g);
+  const stone = std({ color: L.stone[1], roughness: 0.95, flatShading: true }), dark = std({ color: L.stone[3], roughness: 1, flatShading: true });
+  const glow = std({ color: '#2a4060', emissive: new THREE.Color('#70d8ff'), emissiveIntensity: 0.6, roughness: 0.5 });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: '#203040', emissive: new THREE.Color('#58c0f0'), emissiveIntensity: 0.35, transparent: true, opacity: 0.7, roughness: 1 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.raycast = () => {}; ring.receiveShadow = true;
+  g.add(ring);
+  for (let i = 0; i < 8; i++) {   // rune stones round the ring, a gap where the light went out
+    if (i === 5) continue;
+    const a = i / 8 * Math.PI * 2, m = mesh(new THREE.BoxGeometry(0.16, 0.05, 0.1), glow, Math.cos(a) * 1.14, 0.04, Math.sin(a) * 1.14, g);
+    m.rotation.y = -a; m.castShadow = false;
+  }
+  mesh(new THREE.CylinderGeometry(0.9, 0.98, 0.18, 8), dark, 0, 0.09, 0, g);
+  mesh(new THREE.CylinderGeometry(0.66, 0.74, 0.16, 8), stone, 0, 0.26, 0, g);
+  // the standing half, split down the middle, the two shards leaning apart; the crack between them lit
+  const shard = (sx, tall, lean) => {
+    const geo = new THREE.CylinderGeometry(0.17, 0.26, tall, 4, 1); geo.translate(0, tall / 2, 0); geo.rotateY(Math.PI / 4);
+    const m = mesh(geo, stone, sx * 0.15, 0.34, 0, g);
+    m.scale.set(1, 1, 1.25); m.rotation.z = lean;
+    return m;
+  };
+  shard(-1, 1.6, 0.06); shard(1, 1.25, -0.1);
+  const crack = mesh(new THREE.BoxGeometry(0.05, 1.15, 0.2), glow, 0, 0.34 + 0.6, 0, g); crack.castShadow = false;
+  // the top, broken off, lying at its foot, and rubble
+  const top = new THREE.CylinderGeometry(0.02, 0.24, 0.7, 4, 1); top.rotateY(Math.PI / 4);
+  const fallen = mesh(top, stone, 0.62, 0.42, 0.5, g); fallen.rotation.set(0.3, 0.7, Math.PI / 2.3);
+  const rnd = seeded(7);
+  for (let i = 0; i < 6; i++) {
+    const a = rnd() * Math.PI * 2, r = 0.55 + rnd() * 0.5;
+    const m = mesh(new THREE.DodecahedronGeometry(0.06 + rnd() * 0.07, 0), i % 2 ? stone : dark, Math.cos(a) * r, 0.36, Math.sin(a) * r, g);
+    m.position.y = r > 0.7 ? 0.22 : 0.4; m.rotation.set(rnd() * 3, rnd() * 3, 0);
+  }
+  B.ticks.push((now) => {   // a weak, uneven flicker: something still alive in it
+    const k = calm ? 0.5 : 0.5 + 0.25 * Math.sin(now / 900) * Math.sin(now / 370 + 1);
+    glow.emissiveIntensity = k;
+  });
+  return g;
+}
+
 /** The five-storey pagoda over the rooftops, its roofs copper-green, a gold spire on top. */
 function pagoda(x, z, L) {
   const g = new THREE.Group();
@@ -3146,7 +3193,7 @@ async function buildTown(figs, { look: L, time, town }) {
   B.town = town;
   B.talks = new Set();
   B.shotTop = 2.4;
-  B.speed = 4.8;
+  B.speed = 5.6;
   const lit = [];
   forest(map, L, rnd);
   townGrass(map, L, rnd);
@@ -3156,7 +3203,7 @@ async function buildTown(figs, { look: L, time, town }) {
   for (const b of town.buildings) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
-    const g = b.kind === 'pagoda' ? pagoda(f.cx, f.cz, L) : b.kind === 'theater' ? theater(b, f, L, lit) : house(b, f, L, lit);
+    const g = b.kind === 'pagoda' ? pagoda(f.cx, f.cz, L) : b.kind === 'theater' ? theater(b, f, L, lit) : b.kind === 'waystone' ? waystone(f, L) : house(b, f, L, lit);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
     g.traverse(o => { o.userData.spot = `door:${b.id}`; });
@@ -3174,7 +3221,7 @@ async function buildTown(figs, { look: L, time, town }) {
   B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
   // lanterns glow brighter as it gets dark; maple leaves drift down
   const dark = time === 'night' ? 1.6 : time === 'dusk' ? 1.2 : time === 'dawn' ? 0.9 : 0.55;
-  const leaves = Array.from({ length: 30 }, (_, i) => {
+  const leaves = Array.from({ length: Math.min(90, Math.round(COLS * ROWS / 12)) }, (_, i) => {
     const sp = sprite(leafArt(MAPLE[i % 4]), 0.18 + (i % 3) * 0.03);
     sp.userData = { x: (Math.random() - 0.5) * COLS, z: (Math.random() - 0.5) * ROWS, at: Math.random(), speed: 0.05 + Math.random() * 0.05, sway: Math.random() * 6 };
     return sp;
@@ -3280,9 +3327,9 @@ function townCrowd(town) {
     THREE, group: R.group, monBoard, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
     route, free, tileX, tileZ, camera, view, stage: folkLayer,
     say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
-    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 5, castSize: 8, castHours: 6,
+    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
-    wants: ['stand', 'stand', 'stand', null, null], swap: [35000, 70000],
+    wants: ['stand', 'stand', 'stand', 'stand', null, null, null], swap: [30000, 60000],
   });
 }
 
@@ -3464,6 +3511,10 @@ function placeCamera(dt) {
   camZ = calm || !Number.isFinite(camZ) ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 3);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist * (1 - push * PUSH), camZ);
+  const sx = FOLLOW ? Math.round(camX) : 0, sz = FOLLOW ? Math.round(camZ) : 0;   // whole tiles, so the shadows don't crawl
+  if (sun.target.position.x !== sx || sun.target.position.z !== sz) {
+    sun.position.set(sx - 4, 12, sz + 7); sun.target.position.set(sx, 0, sz); sun.target.updateMatrixWorld();
+  }
 }
 
 function resize() {

@@ -48,7 +48,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    a real pick is left (`askFirst()` skips `.locked` and info-only options now). Patch-notes line in `NEXT` (cut the patch
    on merge, not on the branch). Branch `towns` (and `claude/jolly-ritchie-vdznxn`), **waiting on the user's playtest**.
    **Redone the same day as a Pokémon town** (the user's ask, with a picture of a top-down town: "I want to be able to enter
-   some homes"): still 3D, from a tile map (24 x 24, then 20 x 18 the same day: "doesn't have to be this big", every house facing south, its door on the road below) (`map` in `TOWNS.shrine`, `tests/towns.test.mjs` checks every door,
+   some homes"): still 3D, from a tile map (24 x 24, then 20 x 18 the same day: "doesn't have to be this big", every house facing south, its door on the road below; then **38 x 36**, the user's call the same evening: "huge and not feel cramped", with the broken Waystone in a plaza at the middle (`waystone()` in `js/event-3d.js`, a `kind: 'waystone'` building: a tap reads it and says the friendship; mending and lighting it is session 2), 12 houses (8 locked to knock on), 7 folk about at once, the sun's shadow box following the camera (`follow`), the ground's texture scaled to fit; every later town should be this big) (`map` in `TOWNS.shrine`, `tests/towns.test.mjs` checks every door,
    stand and the gate can be reached): a ring of forest (instanced, the front rows low bushes), stone roads, rows of houses
    in Pokémon roof colours, tall grass, a pagoda, the Dance Theater, the torii at the top; the camera higher (`pitch` 0.7).
    Four houses go in (`homes`, `HOMES` in `js/event-3d.js`): Delibird's Goods (the trade moved inside), John's and Jahmes's
