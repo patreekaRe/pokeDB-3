@@ -67,9 +67,23 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    locked houses, 10 folk (Geodude, Numel, Slugma, Torkoal, Machop, Cubone, Vulpix, Larvitar, Drilbur, Houndour; 11 cries
    added), its own 5 requests and Waystone. Built as a `style` over the village's code (CLAUDE.md's Gateway towns), so
    the next three are a style, a map and lines each. Its Waystone is broken like the village's (mending is session 2's).
-   Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's playtest. Next town: the Sunken Ruins' stilted
-   fishing village (or session 2, the Waystone ring, if the user wants that first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
-   <biome>'s town the way the Shrine's was built, then its Waystone."
+   Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's playtest.
+   **Ruins done (2026-10-13): Driftwood Landing**, a fishing village on stilts over the lagoon (`style: 'lagoon'`), laid out
+   unlike both (the user's ask: a new shape a town): a ring of boardwalk round the drowned temple's island (the Waystone at
+   its middle, the request board, benches, tiki torches), spokes out to thatched huts on stilts with coloured caps, in up a
+   jetty from the beach at the bottom, out through the temple's stone arch on the far shore. The ground is cut away over the
+   water (`holes` in `wild()` / `shell()`: the floor's alpha), so the boardwalks stand on posts over a lit lagoon bed (the
+   courtyard's flagstones and runes) under a clear rippling surface with lily pads (`lagoonWater()`, `lagoonSupports()`,
+   `lagoonKinds()` in `js/event-3d.js`); jungle banks of palms (`lagoonJungle()`), moored rowboats (`y`), drowned columns
+   (`|`), nets drying (`n`), the beacon on its rock (Wingull nesting), the Aquarium's glass dome (walked in: Lapras, Mantine,
+   Corsola, Chinchou, Lanturn in its pools), Pat's houseboat (fairy lights, a rose in a bottle; he serenades the moon after
+   10 p.m.), Kayl's house (Spooky the Purrloin and Reya the Glameow, a home's `names`), Pelipper's Bait & Tackle (the trade);
+   10 locked huts, 10 folk (Wooper, Psyduck, Slowpoke, Corphish, Marill, Poliwag, Buizel, Krabby, Wingull, Staryu; 9 cries
+   added), its own requests (fights, the Mart, ❓ rooms, a flawless fight, the Gym). Homes' walls can be `boards` / `aqua`.
+   The towns test now knows a bench takes two tiles. Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's
+   playtest. Next town: Thornwood's treehouses on rope bridges (or session 2, the Waystone ring, if the user wants that
+   first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
+   <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

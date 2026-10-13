@@ -214,10 +214,10 @@ function panel(c, w, h, x, y, z, { glow = null, live = false } = {}) {
 }
 
 /** The floor, the back wall and the side walls from their paintings, the plinth under them and the doormat out. */
-function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true }) {
+function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true, holes = false }) {
   B.bg = bg;
   const e = std({ color: edge });
-  const top = std({ map: texOf(floor), roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: floor.glow ? texOf(floor.glow) : null, emissiveIntensity: floor.glow ? 0.9 : 0 });
+  const top = std({ map: texOf(floor), alphaTest: holes ? 0.5 : 0, roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: floor.glow ? texOf(floor.glow) : null, emissiveIntensity: floor.glow ? 0.9 : 0 });
   const fl = new THREE.Mesh(new THREE.BoxGeometry(COLS, 0.6, ROWS), [e, e, top, e, std({ color: edge }), e]);
   fl.position.y = -0.3;
   fl.receiveShadow = true;
@@ -1934,9 +1934,9 @@ function tufts(L, n, rnd) {
 
 /** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
     the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
-function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c } = {}) {
+function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c, holes = false } = {}) {
   const sky = graded(L.sky[0], time);
-  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit });
+  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit, holes });
   skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
@@ -3654,6 +3654,597 @@ function ashArt() {
   return f.c;
 }
 
+/* Driftwood Landing, the Sunken Ruins' (a stilted fishing village): the lagoon under it all (the ground is cut away over
+   its water, `holes` in wild(), so the boardwalks stand on posts over a drowned temple's floor), jungle banks of palms
+   round it, thatched huts on stilts, the aquarium's glass dome, Pat's houseboat, the old beacon on its rock, drowned
+   columns and moored boats, nets drying on the beaches, and the temple's arch out. */
+const WATER_Y = -0.26, BED_Y = -0.6;
+const PALM = ['#6ab84a', '#4e9a3a', '#3a7a30', '#80c858'];
+const SAND = { sand: '#d8c890', stone: '#a8a080', rock: '#7a7468', bank: '#4a4028', deck: '#5a3c24' };
+
+/** What each tile of a lagoon town is: water (a houseboat's too), deck (a boardwalk, a hut's platform), sand, stone, the
+    jungle bank or the beacon's rock; a prop stands on what's round it. */
+function lagoonKinds(town) {
+  const { map } = town, at = (x, y) => map[y]?.[x];
+  const wet = new Set(town.buildings.filter(b => b.kind === 'houseboat').map(b => b.at));
+  const rock = new Set(town.buildings.filter(b => b.kind === 'beacon').map(b => b.at));
+  return (x, y) => {
+    const ch = at(x, y);
+    if (ch === undefined || ch === 'T') return 'bank';
+    if (ch === '~' || ch === 'y' || ch === '|' || wet.has(ch)) return 'water';
+    if (ch === '-') return 'deck';
+    if (ch === '.' || ch === ',' || ch === 'f') return 'sand';
+    if (ch === '#' || ch === 'W') return 'stone';
+    if (rock.has(ch)) return 'rock';
+    if (/[A-Z]/.test(ch) && ch !== 'L' && ch !== 'R') return 'deck';
+    const near = STEPS.map(([dx, dy]) => at(x + dx, y + dy));
+    return near.includes('#') ? 'stone' : near.some(c => c === '.' || c === ',') ? 'sand' : near.includes('-') ? 'deck' : 'sand';
+  };
+}
+
+/** The ground of a lagoon town: nothing over the water (the lagoon shows through), planks on the boardwalks and the huts'
+    platforms, sand with shells, the temple's paving, the jungle's dark earth; land rounded where it meets the water. */
+function lagoonGround(town) {
+  const kind = lagoonKinds(town), { map } = town;
+  return (c) => {
+    const g = c.getContext('2d'), T = 16, r = seeded(73);
+    g.clearRect(-1, -1, COLS * T + 2, ROWS * T + 2);
+    const wet = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && kind(x, y) === 'water';
+    map.forEach((row, y) => [...row].forEach((ch, x) => {
+      const k = kind(x, y), X = x * T, Y = y * T;
+      if (k === 'water') return;
+      g.save();
+      // land is rounded off at a corner with water on both sides; decks stay square, cut timber
+      g.beginPath();
+      const rad = (dx, dy) => (k !== 'deck' && wet(x + dx, y) && wet(x, y + dy) ? 7 : 0);
+      g.roundRect(X, Y, T, T, [rad(-1, -1), rad(1, -1), rad(1, 1), rad(-1, 1)]);
+      g.clip();
+      if (k === 'deck') {
+        const along = ['-', 'n'].includes(map[y][x - 1]) || ['-', 'n'].includes(map[y][x + 1]) || /[A-Z]/.test(ch);
+        g.fillStyle = '#3a2414'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 4; i++) {
+          g.fillStyle = ['#b08458', '#a07448', '#c0956a', '#94683e'][Math.floor(r() * 4)];
+          if (along) g.fillRect(X + i * 4 + 0.3, Y, 3.4, T); else g.fillRect(X, Y + i * 4 + 0.3, T, 3.4);
+          g.fillStyle = 'rgba(60,30,10,0.35)';
+          for (let n = 0; n < 2; n++) { const o = 2 + n * 11; if (along) g.fillRect(X + i * 4 + 1.6, Y + o, 0.7, 0.7); else g.fillRect(X + o, Y + i * 4 + 1.6, 0.7, 0.7); }
+          g.fillStyle = 'rgba(255,240,200,0.12)';
+          if (along) g.fillRect(X + i * 4 + 0.5, Y, 0.6, T); else g.fillRect(X, Y + i * 4 + 0.5, T, 0.6);
+        }
+      } else if (k === 'stone') {
+        g.fillStyle = L_RUIN.gap; g.fillRect(X, Y, T, T);
+        for (let sy = 0; sy < T; sy += 8) for (let sx = (sy / 8 % 2) * -4; sx < T; sx += 8) {
+          g.fillStyle = L_RUIN.stone[Math.floor(r() * 3)];
+          g.beginPath(); g.roundRect(X + sx + 0.4, Y + sy + 0.4, 7.2, 7.2, 1.2); g.fill();
+          if (r() < 0.3) { g.fillStyle = 'rgba(90,140,70,0.5)'; g.beginPath(); g.arc(X + sx + r() * 8, Y + sy + r() * 8, 1 + r() * 1.5, 0, Math.PI * 2); g.fill(); }
+        }
+      } else if (k === 'rock') {
+        g.fillStyle = '#8a8478'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 6; i++) { g.fillStyle = ['#9a9488', '#6e685e', '#a8a296'][i % 3]; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 2 + r() * 3, 1.5 + r() * 2, r() * 3, 0, Math.PI * 2); g.fill(); }
+      } else if (k === 'bank') {
+        g.fillStyle = '#4a4028'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 10; i++) { g.fillStyle = ['#3a5a28', '#5a4a30', '#2e4a22', '#6a5a36'][i % 4]; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 1 + r() * 1.6, 0.6 + r(), r() * 3, 0, Math.PI * 2); g.fill(); }
+      } else {
+        g.fillStyle = '#e4d4a4'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 14; i++) { g.fillStyle = ['#d4c08c', '#f0e4c0', '#c8b480'][i % 3]; g.fillRect(X + r() * T, Y + r() * T, 0.8, 0.8); }
+        if (r() < 0.25) { g.fillStyle = ['#f8e8e0', '#f0b8a8', '#fff4d8'][Math.floor(r() * 3)]; g.beginPath(); g.ellipse(X + 3 + r() * 10, Y + 3 + r() * 10, 1.4, 1, r() * 3, 0, Math.PI * 2); g.fill(); }
+        if (ch === 'f') for (let i = 0; i < 5; i++) {   // hibiscus
+          const fx = X + 3 + r() * 10, fy = Y + 3 + r() * 10;
+          g.fillStyle = '#3e8a34'; g.beginPath(); g.ellipse(fx + 1.5, fy + 1, 2, 1, 0.5, 0, Math.PI * 2); g.fill();
+          g.fillStyle = ['#e83a5a', '#f8708a', '#f8a030'][i % 3];
+          for (let p = 0; p < 5; p++) { const a = p / 5 * Math.PI * 2; g.beginPath(); g.arc(fx + Math.cos(a) * 1.3, fy + Math.sin(a) * 1.3, 1.1, 0, Math.PI * 2); g.fill(); }
+          g.fillStyle = '#f8e050'; g.fillRect(fx - 0.4, fy - 0.4, 0.8, 0.8);
+        }
+      }
+      // a soft dark lip where it meets the water
+      g.fillStyle = 'rgba(20,30,30,0.28)';
+      if (wet(x - 1, y)) g.fillRect(X, Y, 1.6, T);
+      if (wet(x + 1, y)) g.fillRect(X + T - 1.6, Y, 1.6, T);
+      if (wet(x, y - 1)) g.fillRect(X, Y, T, 1.6);
+      if (wet(x, y + 1)) g.fillRect(X, Y + T - 1.6, T, 1.6);
+      g.restore();
+    }));
+    return c;
+  };
+}
+const L_RUIN = { stone: ['#d8c8a0', '#c8b890', '#b8a880'], gap: '#7a6a48' };
+
+/** The lagoon under the town: its bed (silt, weed, the drowned temple's courtyard in a great ring of flagstones, its runes
+    faintly lit) and the water over it, clear, rippling, lily pads afloat. */
+function lagoonWater(town) {
+  const kind = lagoonKinds(town), T = 16, f = fine(COLS * T, ROWS * T, 2), { g } = f, s = f.shine(), r = seeded(91);
+  const W = COLS * T, H = ROWS * T, cx = W / 2, cy = H / 2;
+  g.fillStyle = '#86a888'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 500; i++) { g.fillStyle = ['#76987a', '#96b494', '#a8c09c', '#6a8a70'][i % 4]; g.beginPath(); g.ellipse(r() * W, r() * H, 3 + r() * 10, 2 + r() * 6, r() * 3, 0, Math.PI * 2); g.fill(); }
+  // the courtyard: rings of flagstones round the island, broken, half silted over
+  for (let ring = 0; ring < 9; ring++) {
+    const rad = (5.5 + ring * 1.15) * T, n = Math.round(rad / 7);
+    for (let i = 0; i < n; i++) {
+      if (r() < 0.3) continue;
+      const a = i / n * Math.PI * 2 + ring * 0.2;
+      g.save(); g.translate(cx + Math.cos(a) * rad, cy + Math.sin(a) * rad); g.rotate(a + (r() - 0.5) * 0.2);
+      g.fillStyle = ['#9a9a80', '#8a8c74', '#a8a68a'][Math.floor(r() * 3)]; g.globalAlpha = 0.55 + r() * 0.3;
+      g.beginPath(); g.roundRect(-3, -7, 6.2, 13, 1.5); g.fill();
+      g.restore();
+    }
+  }
+  g.globalAlpha = 1;
+  // runes round the courtyard's rim, lit
+  for (let i = 0; i < 24; i++) {
+    const a = i / 24 * Math.PI * 2, x = cx + Math.cos(a) * 15.6 * T, y = cy + Math.sin(a) * 15.6 * T;
+    for (const ctx of [g, s]) {
+      ctx.strokeStyle = '#78e0f0'; ctx.lineWidth = 1.2; ctx.globalAlpha = 0.8;
+      ctx.beginPath(); ctx.arc(x, y, 3.2, a, a + 4); ctx.moveTo(x, y - 3); ctx.lineTo(x, y + 3); ctx.stroke();
+    }
+  }
+  g.globalAlpha = s.globalAlpha = 1;
+  for (let i = 0; i < 160; i++) {   // waterweed
+    const x = r() * W, y = r() * H;
+    g.strokeStyle = ['#3e6a3a', '#4e8a46', '#2e5a30'][i % 3]; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(x, y); g.bezierCurveTo(x + 3, y - 4, x - 3, y - 7, x + 1, y - 10); g.stroke();
+  }
+  const bed = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), std({ map: texOf(f.c), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 0.7, roughness: 1 }));
+  bed.rotation.x = -Math.PI / 2; bed.position.y = BED_Y; bed.receiveShadow = true; bed.raycast = () => {};
+  B.group.add(bed);
+  // the surface: clear blue-green, a ripple pattern drifting over it
+  const wc = document.createElement('canvas');
+  wc.width = wc.height = 128;
+  const wg = wc.getContext('2d'), wr = seeded(5);
+  wg.fillStyle = '#c8e4e8'; wg.fillRect(0, 0, 128, 128);
+  wg.strokeStyle = '#ffffff'; wg.lineWidth = 1.4;
+  for (let i = 0; i < 26; i++) {
+    const x = wr() * 128, y = wr() * 128, w = 8 + wr() * 18;
+    for (const ox of [0, -128, 128]) for (const oy of [0, -128, 128]) { wg.beginPath(); wg.moveTo(x + ox - w / 2, y + oy); wg.quadraticCurveTo(x + ox, y + oy - 3, x + ox + w / 2, y + oy); wg.stroke(); }
+  }
+  const map = new THREE.CanvasTexture(wc);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.repeat.set(COLS / 4, ROWS / 4);
+  const water = std({ color: '#48c0c4', map, emissive: new THREE.Color('#1a7888'), emissiveIntensity: 0.35, transparent: true, opacity: 0.58, roughness: 0.06, metalness: 0.2, depthWrite: false });   // a little light of its own, so dusk keeps it lagoon blue
+  const surface = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), water);
+  surface.rotation.x = -Math.PI / 2; surface.position.y = WATER_Y; surface.receiveShadow = true; surface.raycast = () => {};
+  surface.renderOrder = 1;
+  B.group.add(surface);
+  B.ticks.push((now) => { if (!calm) map.offset.set(now / 70000, Math.sin(now / 9000) * 0.04 + now / 110000); });
+  // lily pads, some in flower, away from the boardwalks
+  const pads = [], blooms = [], rnd = seeded(37);
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== '~' || rnd() > 0.16 || STEPS.some(([dx, dy]) => kind(x + dx, y + dy) === 'deck')) return;
+    for (let i = 0; i < 1 + Math.floor(rnd() * 3); i++) {
+      const px = tileX(x) + (rnd() - 0.5) * 0.8, pz = tileZ(y) + (rnd() - 0.5) * 0.8;
+      pads.push([px, pz, 0.6 + rnd() * 0.6, rnd() * 6, ['#5aa848', '#4a9a3e', '#6ab858'][Math.floor(rnd() * 3)], WATER_Y + 0.005]);
+      if (rnd() < 0.3) blooms.push([px, pz, 0.8 + rnd() * 0.4, rnd() * 6, rnd() < 0.5 ? '#f8a8c8' : '#ffffff', WATER_Y + 0.03]);
+    }
+  }));
+  const pad = new THREE.CylinderGeometry(0.16, 0.16, 0.01, 14, 1, false, 0.3, Math.PI * 2 - 0.6);
+  instanced(pad, std({ color: '#ffffff', roughness: 0.6 }), pads).castShadow = false;
+  const bloom = new THREE.ConeGeometry(0.06, 0.08, 6); bloom.translate(0, 0.04, 0); bloom.rotateX(Math.PI);
+  bloom.translate(0, 0.08, 0);
+  instanced(bloom, std({ color: '#ffffff', roughness: 0.6, flatShading: true }), blooms).castShadow = false;
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => { if (kind(x, y) === 'water') B.blocked.add(key(x, y)); }));
+}
+
+/** What the town stands on: land as a bank sloping down into the water, the boardwalks and huts on posts to the bed, a
+    fascia board along every edge over the water. */
+function lagoonSupports(town) {
+  const kind = lagoonKinds(town), banks = [], posts = [], fascia = [], corners = new Set();
+  const wet = (x, y) => kind(x, y) === 'water';
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    const k = kind(x, y);
+    if (k === 'water') return;
+    if (k !== 'deck') { if (STEPS.some(([dx, dy]) => wet(x + dx, y + dy))) banks.push([tileX(x), tileZ(y), 1, Math.PI / 4, SAND[k], -0.01]); return; }
+    for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      if (!wet(x + dx, y) && !wet(x, y + dy) && !wet(x + dx, y + dy)) continue;
+      const cx = x + (dx > 0 ? 1 : 0), cy = y + (dy > 0 ? 1 : 0), c = `${cx},${cy}`;
+      if (corners.has(c)) continue;
+      corners.add(c);
+      posts.push([cx - COLS / 2 - dx * 0.06, cy - ROWS / 2 - dy * 0.06, 1, 0, null, 0]);
+    }
+    for (const [dx, dy] of STEPS) if (wet(x + dx, y + dy)) fascia.push([tileX(x) + dx * 0.48, tileZ(y) + dy * 0.48, 1, dx ? Math.PI / 2 : 0, null, 0]);
+  }));
+  const bank = new THREE.CylinderGeometry(0.707, 0.95, 0.6, 4, 1, true); bank.translate(0, -0.3, 0);
+  instanced(bank, std({ color: '#ffffff', roughness: 1 }), banks).castShadow = false;
+  const post = new THREE.CylinderGeometry(0.055, 0.07, 0.66, 7); post.translate(0, BED_Y + 0.33, 0);   // poking up a hand at the corners
+  instanced(post, std({ color: '#4a3020', roughness: 0.95 }), posts);
+  const board = new THREE.BoxGeometry(1.0, 0.13, 0.05); board.translate(0, -0.075, 0);
+  instanced(board, std({ color: '#5a3c24', roughness: 0.9 }), fascia).castShadow = false;
+}
+
+/** The jungle on the banks round the lagoon, a tree a tile: palms leaning out over the water, broadleaf trees, an old
+    column stub in the green; the front rows ferns, low, so they never hide you. */
+function lagoonJungle(map, L, rnd) {
+  const palms = [], broad = [], ferns = [], stubs = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'T') return;
+    B.blocked.add(key(x, y));
+    const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 0.85 + rnd() * 0.45, rnd() * 6];
+    if (y >= ROWS - 2) { ferns.push([at[0], at[1], 0.7 + rnd() * 0.4, at[3], PALM[Math.floor(rnd() * 3)]]); return; }
+    const k = rnd();
+    if (k < 0.5) palms.push(at); else if (k < 0.93) broad.push([...at, PALM[1 + Math.floor(rnd() * 2)]]); else stubs.push([at[0], at[1], 0.8 + rnd() * 0.5, at[3]]);
+  }));
+  const fern = new THREE.IcosahedronGeometry(0.55, 1); fern.scale(1, 0.55, 1); fern.translate(0, 0.25, 0);
+  instanced(fern, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), ferns);
+  // palms: a curved trunk, seven drooping fronds and coconuts at its top
+  const H = 2.4, lean = 0.5;
+  const trunk = new THREE.CylinderGeometry(0.07, 0.12, H, 7, 8); trunk.translate(0, H / 2, 0);
+  const p = trunk.attributes.position;
+  for (let i = 0; i < p.count; i++) { const t = p.getY(i) / H; p.setX(i, p.getX(i) + lean * t * t); }
+  trunk.computeVertexNormals();
+  instanced(trunk, std({ color: '#8a6a48', roughness: 0.95 }), palms);
+  for (let k = 0; k < 7; k++) {
+    const leaf = new THREE.ConeGeometry(0.2, 1.35, 4); leaf.translate(0, 0.675, 0); leaf.scale(0.2, 1, 1);   // flat once it's laid out
+    leaf.rotateZ(-Math.PI / 2 - 0.15 - (k % 2) * 0.25); leaf.rotateY(k / 7 * Math.PI * 2); leaf.translate(lean, H - 0.02, 0);
+    instanced(leaf, std({ color: '#ffffff', roughness: 0.85, flatShading: true }), palms.map(a => [...a, PALM[k % 4]]));
+  }
+  const nut = new THREE.SphereGeometry(0.07, 8, 6); nut.translate(lean, H - 0.12, 0.06);
+  instanced(nut, std({ color: '#6a4a2a', roughness: 0.7 }), palms);
+  const bark = new THREE.CylinderGeometry(0.11, 0.17, 1.5, 8); bark.translate(0, 0.75, 0);
+  instanced(bark, std({ color: '#6a5038', roughness: 0.95 }), broad);
+  for (const [dy, rad, dx] of [[1.5, 0.8, 0], [2.0, 0.55, 0.25], [1.8, 0.6, -0.3]]) {
+    const blob = new THREE.IcosahedronGeometry(rad, 1); blob.translate(dx, dy, 0);
+    instanced(blob, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), broad);
+  }
+  const stub = new THREE.CylinderGeometry(0.26, 0.3, 0.9, 10); stub.translate(0, 0.45, 0);
+  instanced(stub, std({ color: L.stone[1], roughness: 1 }), stubs);
+}
+
+/** Weathered boards up a wall, for the huts' sides and backs. */
+function boardsArt() {
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 32;
+  const g = c.getContext('2d'), r = seeded(19);
+  for (let x = 0; x < 64; x += 8) {
+    g.fillStyle = ['#c8b088', '#bca07a', '#d4bc94', '#b09470'][Math.floor(r() * 4)]; g.fillRect(x, 0, 8, 32);
+    g.fillStyle = 'rgba(60,40,20,0.45)'; g.fillRect(x, 0, 1, 32);
+    g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(x + 1, 0, 1, 32);
+  }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+
+/** A hut's front: weathered boards, a door painted its colour, lit windows behind shutters of the same, a float hung up. */
+function hutFront(w, col, { aqua = false } = {}) {
+  const W = Math.round(w * 20), Hh = aqua ? 30 : 26, f = fine(W, Hh, 6), { g, rr, lin } = f, s = f.shine(), r = seeded(W);
+  for (let x = 0; x < W; x += 4) { g.fillStyle = ['#c8b088', '#bca07a', '#d4bc94', '#b09470'][Math.floor(r() * 4)]; g.fillRect(x, 0, 4, Hh); g.fillStyle = 'rgba(60,40,20,0.4)'; g.fillRect(x, 0, 0.5, Hh); }
+  const lit = (x, y, w, h, round = false) => {
+    rr(x - 1, y - 1, w + 2, h + 2, round ? (w + 2) / 2 : 0.8, '#4a2e1c');
+    for (const ctx of [g, s]) {
+      const rg = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, w);
+      rg.addColorStop(0, aqua ? '#e8ffff' : '#fff4c8'); rg.addColorStop(1, aqua ? '#40b0e0' : '#f8a040');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(x, y, w, h, round ? w / 2 : 0.4); ctx.fill();
+    }
+    if (aqua) for (let i = 0; i < 3; i++) {   // fish going by
+      const fx = x + 2 + r() * (w - 4), fy = y + 2 + r() * (h - 4);
+      for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : ['#f86030', '#f8d040', '#3a5aa8'][i]; ctx.beginPath(); ctx.ellipse(fx, fy, 1.6, 0.9, 0, 0, Math.PI * 2); ctx.fill(); ctx.beginPath(); ctx.moveTo(fx + 1.4, fy); ctx.lineTo(fx + 2.6, fy - 0.9); ctx.lineTo(fx + 2.6, fy + 0.9); ctx.fill(); }
+    } else for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#4a2e1c'; ctx.fillRect(x + w / 2 - 0.3, y, 0.6, h); }
+  };
+  const mid = W / 2;
+  rr(mid - 4.6, Hh - 17, 9.2, 17, 0.8, '#3a2414');
+  rr(mid - 3.8, Hh - 16.2, 7.6, 16.2, 0.6, lin(mid - 4, 0, mid + 4, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]));
+  g.fillStyle = 'rgba(0,0,0,0.25)'; for (let x = mid - 2; x < mid + 4; x += 2) g.fillRect(x, Hh - 16, 0.4, 16);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(mid + 2.4, Hh - 8, 0.7, 0, Math.PI * 2); g.fill();
+  if (aqua) { lit(4, 5, mid - 10, Hh - 11); lit(mid + 6, 5, W - mid - 10, Hh - 11); }
+  else if (W > 40) for (const x of [mid - 15, mid + 7]) { rr(x - 2.6, 6, 2.2, 9, 0.4, col); rr(x + 8.4, 6, 2.2, 9, 0.4, col); lit(x, 7, 8, 7); }
+  else lit(mid - 13 < 2 ? 2 : mid - 13, 7, 6, 6, true);
+  return f.c;
+}
+
+/** Thatch, rows of it, for the huts' roofs. */
+function thatchArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), r = seeded(23);
+  g.fillStyle = '#c8a860'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 8) {
+    for (let x = 0; x < 64; x += 1.5) { g.fillStyle = ['#d8b870', '#b89850', '#e4c880', '#a88a48'][Math.floor(r() * 4)]; g.fillRect(x, y, 1.2, 7 + r() * 2); }
+    g.fillStyle = 'rgba(70,50,20,0.45)'; g.fillRect(0, y + 7, 64, 1.2);
+  }
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+
+/** A hip roof `w` x `d` at its eaves, `rise` tall: thatch, a cap painted the hut's colour over its top, a finial. */
+function hipRoof(parent, { w, d, rise, y, col, crest }) {
+  const geo = new THREE.CylinderGeometry(0.0, Math.SQRT1_2, 1, 4, 1); geo.rotateY(Math.PI / 4); geo.translate(0, 0.5, 0);
+  const thatch = thatchArt(); thatch.repeat.set(Math.max(w, d) / 1.2, rise * 2);
+  const roof = mesh(geo, std({ map: thatch, roughness: 0.95, flatShading: true }), 0, y, 0, parent);
+  roof.scale.set(w, rise, d);
+  const cap = mesh(geo, std({ color: col, roughness: 0.6, flatShading: true }), 0, y + rise * 0.55, 0, parent);
+  cap.scale.set(w * 0.47, rise * 0.47, d * 0.47);
+  mesh(new THREE.SphereGeometry(0.08, 10, 8), std({ color: shadeOf(col, 1), roughness: 0.4 }), 0, y + rise + 0.03, 0, parent);
+  mesh(rbox(w + 0.04, 0.07, d + 0.04, 0.02), std({ color: '#7a5a34', roughness: 0.9 }), 0, y + 0.02, 0, parent).castShadow = false;
+  if (crest) {
+    const c = panel(crest, 0.42, 0.42, 0, 0, 0);
+    c.parent?.remove(c); parent.add(c);
+    c.position.set(0, y + rise * 0.42, d * 0.29 + 0.03); c.rotation.x = -(Math.PI / 2 - Math.atan2(rise, d / 2));   // lying on the front slope
+  }
+}
+
+/** A hut on its platform over the water, its front to you: board walls, a coloured door and shutters, a thatched hip roof
+    with a coloured cap; a lantern by the door, a net and floats on its side. `aquarium`: the big hall, glass in its front
+    and a glass dome lit blue on top. A tap is its door. */
+function stiltHut(b, f, L, lit) {
+  const aqua = b.kind === 'aquarium', g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz - 0.05);
+  B.group.add(g);
+  const w = f.w - (aqua ? 0.5 : 0.45), d = f.h - (aqua ? 0.9 : 0.6), h = aqua ? 1.5 : 1.25;
+  const sides = boardsArt(); sides.repeat.set(d / 1.4, h / 0.9);
+  const wall = std({ map: sides, roughness: 0.95 }), dark = std({ color: '#3a2414', roughness: 0.8 });
+  const art = hutFront(w, b.roof, { aqua }), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  mesh(new THREE.BoxGeometry(w, h, d), [wall, wall, dark, dark, front, wall], 0, h / 2, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.1, h + 0.02, 0.1), dark, sx * (w / 2 + 0.01), h / 2, sz * (d / 2 + 0.01), g);
+  const ink = b.home && LEADER_INK[B.town?.homes?.[b.home]?.leader];
+  const crest = b.kind === 'shop' ? houseCrest('ball') : ink ? houseCrest('ink', ink, (b.name || '?')[0]) : null;
+  if (aqua) {
+    mesh(rbox(w + 0.3, 0.14, d + 0.3, 0.04), std({ color: '#e8eef0', roughness: 0.6 }), 0, h + 0.07, 0, g);
+    const glass = std({ color: '#90d8f0', emissive: new THREE.Color('#3aa8e0'), emissiveIntensity: 0.5, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.3 });
+    lit.push(glass);
+    const dome = mesh(new THREE.SphereGeometry(Math.min(w, d) * 0.42, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, h + 0.14, -0.1, g);
+    dome.scale.set(1.25, 0.8, 1);
+    const frame = std({ color: '#e8eef0', roughness: 0.5, metalness: 0.3 });
+    for (let k = 0; k < 6; k++) { const rib = mesh(new THREE.TorusGeometry(Math.min(w, d) * 0.42, 0.018, 4, 24, Math.PI), frame, 0, h + 0.14, -0.1, g); rib.rotation.y = k * Math.PI / 6; rib.scale.set(1.25, 0.8, 1); }
+    panel(aquaSign(b.name), 1.9, 0.42, f.cx, h + 0.36, f.cz - 0.05 + d / 2 + 0.12);   // standing on the roof's front edge
+  } else {
+    hipRoof(g, { w: w + 0.75, d: d + 0.75, rise: 1.0 + d * 0.12, y: h, col: b.roof, crest });
+    if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, h - 0.08, f.cz - 0.05 + d / 2 + 0.04);
+  }
+  if (b.kind === 'shop') {   // a fish on a bracket over the door, and a bait barrel
+    mesh(new THREE.BoxGeometry(0.05, 0.05, 0.45), dark, w / 2 - 0.3, h * 0.82, d / 2 + 0.22, g);
+    const fish = mesh(new THREE.SphereGeometry(0.16, 12, 8), std({ color: '#e8a030', roughness: 0.5 }), w / 2 - 0.3, h * 0.82 - 0.2, d / 2 + 0.42, g);
+    fish.scale.set(1.6, 0.8, 0.35);
+    const tail = mesh(new THREE.ConeGeometry(0.1, 0.18, 4), fish.material, w / 2 - 0.3 + 0.3, h * 0.82 - 0.2, d / 2 + 0.42, g);
+    tail.rotation.z = Math.PI / 2; tail.scale.z = 0.35;
+  }
+  // a net and two floats on the side wall
+  const side = (b.id.charCodeAt(0) % 2 ? 1 : -1);
+  const net = mesh(new THREE.PlaneGeometry(d * 0.6, h * 0.55), std({ map: texOf(netArt()), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 1 }), side * (w / 2 + 0.02), h * 0.55, 0, g);
+  net.rotation.y = side * Math.PI / 2; net.castShadow = false;
+  for (const dz of [-0.2, 0.15]) mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: dz < 0 ? '#f05a30' : '#f8f0e0', roughness: 0.5 }), side * (w / 2 + 0.06), h * 0.35, dz, g).castShadow = false;
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  const lamp = mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, aqua ? 1.1 : 0.62, h * 0.72, d / 2 + 0.1, g);
+  lamp.castShadow = false;
+  return g;
+}
+
+/** The aquarium's sign: deep blue, a fish, its name. */
+function aquaSign(name) {
+  const f = fine(96, 22, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 22, 3, '#e8eef0');
+  rr(1.8, 1.8, 92.4, 18.4, 2, lin(0, 0, 0, 22, ['#2a7ab8', '#1a4a88']));
+  g.fillStyle = '#f8b040'; g.beginPath(); g.ellipse(13, 11, 5.5, 3.2, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(17.5, 11); g.lineTo(21.5, 7.5); g.lineTo(21.5, 14.5); g.fill();
+  g.fillStyle = '#1a2a48'; g.beginPath(); g.arc(10.5, 10, 0.9, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f8f0'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillText(name, 57, 12, 66);
+  return f.c;
+}
+
+/** A fishing net's mesh, with a ragged edge. */
+function netArt() {
+  const f = fine(32, 24, 6), { g } = f;
+  g.strokeStyle = '#e8dcb8'; g.lineWidth = 0.6;
+  for (let i = -24; i < 40; i += 3) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 20, 24); g.stroke(); g.beginPath(); g.moveTo(i + 20, 0); g.lineTo(i, 24); g.stroke(); }
+  g.strokeStyle = '#8a6a40'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(0, 0.8); g.lineTo(32, 0.8); g.stroke();
+  return f.c;
+}
+
+/** A net drying on its rack: two posts, a pole, the net hung over it with floats along its foot. */
+function netRack(x, z, turn) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z); g.rotation.y = turn;
+  B.group.add(g);
+  const wood = std({ color: '#6a4a30', roughness: 0.9 });
+  for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.04, 0.05, 1.1, 6), wood, s * 0.45, 0.55, 0, g);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 6), wood, 0, 1.08, 0, g).rotation.z = Math.PI / 2;
+  const net = mesh(new THREE.PlaneGeometry(0.9, 0.8), std({ map: texOf(netArt()), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 1 }), 0, 0.68, 0, g);
+  net.castShadow = false;
+  for (let i = 0; i < 4; i++) mesh(new THREE.SphereGeometry(0.05, 8, 6), std({ color: i % 2 ? '#f05a30' : '#f8f0e0', roughness: 0.5 }), -0.33 + i * 0.22, 0.3, 0, g).castShadow = false;
+  return g;
+}
+
+/** A rowboat moored on the water, bobbing: a pointed hull, a seat across it, an oar laid in. */
+function rowboat(x, z, turn, col) {
+  const g = new THREE.Group();
+  g.position.set(x, WATER_Y, z); g.rotation.y = turn;
+  B.group.add(g);
+  const s = new THREE.Shape();
+  s.moveTo(-0.62, 0); s.quadraticCurveTo(-0.5, 0.26, 0, 0.27); s.quadraticCurveTo(0.45, 0.26, 0.68, 0); s.quadraticCurveTo(0.45, -0.26, 0, -0.27); s.quadraticCurveTo(-0.5, -0.26, -0.62, 0);
+  const hull = new THREE.ExtrudeGeometry(s, { depth: 0.2, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 2, curveSegments: 12 });
+  hull.rotateX(-Math.PI / 2); hull.translate(0, -0.06, 0);
+  mesh(hull, [std({ color: '#6a4a30', roughness: 0.8 }), std({ color: col, roughness: 0.6 })], 0, 0, 0, g);
+  mesh(new THREE.BoxGeometry(0.08, 0.03, 0.46), std({ color: '#a07448', roughness: 0.8 }), 0.05, 0.13, 0, g);
+  const oar = mesh(new THREE.BoxGeometry(0.9, 0.02, 0.05), std({ color: '#c09a68', roughness: 0.8 }), -0.05, 0.15, 0.1, g);
+  oar.rotation.y = 0.15;
+  const k = Math.random() * 6;
+  B.ticks.push((now) => { if (calm) return; g.position.y = WATER_Y + Math.sin(now / 1100 + k) * 0.015; g.rotation.z = Math.sin(now / 1500 + k) * 0.04; });
+  return g;
+}
+
+/** A drowned column standing in the water, broken off, moss at the waterline. */
+function drownedColumn(x, z, tall, L) {
+  const g = new THREE.Group();
+  g.position.set(x, BED_Y, z);
+  B.group.add(g);
+  const stone = std({ color: L.stone[1], roughness: 1, flatShading: true });
+  mesh(new THREE.CylinderGeometry(0.34, 0.36, 0.14, 10), stone, 0, 0.07, 0, g);
+  const shaft = new THREE.CylinderGeometry(0.24, 0.26, tall, 12, 1); shaft.translate(0, tall / 2 + 0.14, 0);
+  const p = shaft.attributes.position;
+  for (let i = 0; i < p.count; i++) if (p.getY(i) > tall) p.setY(i, p.getY(i) - (Math.atan2(p.getZ(i), p.getX(i)) + Math.PI) / (Math.PI * 2) * 0.25);   // snapped off on a slant
+  shaft.computeVertexNormals();
+  mesh(shaft, stone, 0, 0, 0, g);
+  mesh(new THREE.TorusGeometry(0.255, 0.04, 6, 16), std({ color: '#4a7a3a', roughness: 1 }), 0, -BED_Y + WATER_Y + 0.03, 0, g).rotation.x = Math.PI / 2;
+  return g;
+}
+
+/** Pat's houseboat, moored by its gangway: a hull painted white with a stripe in his colour, a cabin with a rounded roof,
+    fairy lights strung to a little mast, a hammock-coloured awning; it rocks on the water. A tap is its door. */
+function houseboat(b, f, L, lit) {
+  const g = new THREE.Group(), boat = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  g.add(boat);
+  const len = f.w - 0.3, beam = f.h - 0.35;
+  const s = new THREE.Shape(), hl = len / 2, hb = beam / 2;
+  s.moveTo(-hl, -hb * 0.9); s.lineTo(hl * 0.55, -hb); s.quadraticCurveTo(hl * 1.05, -hb * 0.6, hl * 1.1, 0); s.quadraticCurveTo(hl * 1.05, hb * 0.6, hl * 0.55, hb); s.lineTo(-hl, hb * 0.9); s.closePath();
+  const hullGeo = new THREE.ExtrudeGeometry(s, { depth: 0.5, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 2, curveSegments: 14 });
+  hullGeo.rotateX(-Math.PI / 2);
+  const deckArt = (() => { const c = boardsArt(); c.repeat.set(len, beam); c.rotation = Math.PI / 2; return c; })();
+  mesh(hullGeo, [std({ map: deckArt, roughness: 0.85 }), std({ color: '#f4f0e6', roughness: 0.5 })], 0, WATER_Y - 0.12, 0, boat);
+  const stripe = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: false, curveSegments: 14 }); stripe.rotateX(-Math.PI / 2); stripe.scale(1.012, 1, 1.02);
+  mesh(stripe, std({ color: b.roof, roughness: 0.5 }), 0, WATER_Y + 0.12, 0, boat);
+  const top = WATER_Y + 0.42;
+  // the cabin
+  const cw = len * 0.5, cd = beam * 0.72, ch = 0.75;
+  const art = hutFront(cw, b.roof), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  const white = std({ color: '#f4f0e6', roughness: 0.6 });
+  mesh(new THREE.BoxGeometry(cw, ch, cd), [white, white, white, white, front, white], -hl * 0.25, top + ch / 2, 0, boat);
+  const roofGeo = new THREE.CylinderGeometry(cd * 0.62, cd * 0.62, cw + 0.2, 20, 1, false, 0, Math.PI);
+  roofGeo.rotateZ(Math.PI / 2); roofGeo.scale(1, 0.45, 1);
+  mesh(roofGeo, std({ color: b.roof, roughness: 0.5, side: THREE.DoubleSide }), -hl * 0.25, top + ch, 0, boat);
+  // a little mast at the bow, fairy lights strung back to the cabin roof
+  const mastX = hl * 0.75;
+  mesh(new THREE.CylinderGeometry(0.03, 0.035, 1.3, 8), std({ color: '#8a6a48', roughness: 0.8 }), mastX, top + 0.65, 0, boat);
+  const pennant = mesh(new THREE.ConeGeometry(0.1, 0.36, 3), std({ color: b.roof, roughness: 0.6 }), mastX + 0.18, top + 1.18, 0, boat);
+  pennant.rotation.z = -Math.PI / 2; pennant.scale.z = 0.15;
+  const bulb = new THREE.SphereGeometry(0.035, 8, 6), endX = -hl * 0.25 + cw / 2, endY = top + ch + 0.22;
+  for (let i = 0; i <= 12; i++) {
+    const t = i / 12, x = mastX + (endX - mastX) * t, y = top + 1.25 + (endY - top - 1.25) * t - Math.sin(t * Math.PI) * 0.15;
+    const m = std({ color: '#fff0c0', emissive: new THREE.Color(['#ffd060', '#ff8090', '#80d0ff'][i % 3]), emissiveIntensity: 1, roughness: 0.4 });
+    lit.push(m);
+    mesh(bulb, m, x, y, cd * 0.35, boat).castShadow = false;
+  }
+  // a rose in a bottle on the bow, a lifebuoy on the cabin
+  const rose = std({ color: '#e0284a', roughness: 0.5 });
+  mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.2, 10), std({ color: '#90d0a0', transparent: true, opacity: 0.7, roughness: 0.1 }), mastX - 0.3, top + 0.1, beam * 0.25, boat);
+  mesh(new THREE.SphereGeometry(0.06, 10, 8), rose, mastX - 0.3, top + 0.32, beam * 0.25, boat);
+  const buoy = mesh(new THREE.TorusGeometry(0.12, 0.04, 8, 18), std({ color: '#f05a30', roughness: 0.5 }), -hl * 0.25 + cw * 0.32, top + 0.42, cd / 2 + 0.04, boat);
+  buoy.castShadow = false;
+  const plate = panel(nameArt(b.name), 0.9, 0.22, 0, 0, 0); plate.removeFromParent(); boat.add(plate);
+  plate.position.set(-hl * 0.25, top + ch - 0.12, cd / 2 + 0.01);
+  // the gangway, from the door down onto the deck
+  const z0 = tileZ(b.door.y) - f.cz + 0.3, z1 = -beam / 2 + 0.3;
+  const way = mesh(new THREE.BoxGeometry(0.42, 0.04, Math.hypot(z1 - z0, top)), std({ color: '#a07448', roughness: 0.85 }), tileX(b.door.x) - f.cx, (top + 0.02) / 2, (z0 + z1) / 2, g);
+  way.rotation.x = -Math.atan2(top - 0.02, z1 - z0);
+  B.ticks.push((now) => { if (calm) return; boat.position.y = Math.sin(now / 1500) * 0.025; boat.rotation.x = Math.sin(now / 1900) * 0.015; boat.rotation.z = Math.sin(now / 2300) * 0.02; });
+  return g;
+}
+
+/** The old beacon on its rock: a stone tower banded white and sea green, a gallery, its lamp room lit, a Wingull's nest on
+    its cap; its light sweeps round slowly. A tap is its (stuck) door. */
+function beacon(f, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const rnd = seeded(13), rockAt = [];
+  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; rockAt.push([f.cx + Math.cos(a) * 1.15, f.cz + Math.sin(a) * 1.0, 0.5 + rnd() * 0.35, rnd() * 6, ['#7a7468', '#8a8478', '#6a645a'][i % 3]]); }
+  const rock = new THREE.DodecahedronGeometry(0.6, 0); rock.scale(1, 0.6, 1); rock.translate(0, 0.05, 0);
+  instanced(rock, std({ color: '#ffffff', roughness: 1, flatShading: true }), rockAt);
+  const bands = document.createElement('canvas');
+  bands.width = 8; bands.height = 64;
+  const bg = bands.getContext('2d');
+  for (let y = 0; y < 64; y += 16) { bg.fillStyle = '#f0ece0'; bg.fillRect(0, y, 8, 8); bg.fillStyle = '#3a9a8a'; bg.fillRect(0, y + 8, 8, 8); }
+  const bmap = new THREE.CanvasTexture(bands); bmap.colorSpace = THREE.SRGBColorSpace;
+  const tall = 3.0;
+  mesh(new THREE.CylinderGeometry(0.42, 0.62, tall, 18), std({ map: bmap, roughness: 0.8 }), 0, tall / 2, 0, g);
+  mesh(new THREE.BoxGeometry(0.34, 0.55, 0.06), std({ color: '#3a2414', roughness: 0.8 }), 0, 0.3, 0.58, g);
+  mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.08, 18), std({ color: '#3a3a40', roughness: 0.6, metalness: 0.4 }), 0, tall + 0.04, 0, g);
+  const light = std({ color: '#fff4c0', emissive: new THREE.Color('#ffd070'), emissiveIntensity: 1.2, transparent: true, opacity: 0.85, roughness: 0.2 });
+  lit.push(light);
+  mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.45, 14), light, 0, tall + 0.3, 0, g).castShadow = false;
+  mesh(new THREE.ConeGeometry(0.42, 0.45, 14), std({ color: '#d84a3a', roughness: 0.5 }), 0, tall + 0.75, 0, g);
+  mesh(new THREE.TorusGeometry(0.16, 0.06, 6, 12), std({ color: '#8a6a40', roughness: 1 }), 0, tall + 0.98, 0, g).rotation.x = Math.PI / 2;
+  const beam = new THREE.Group();
+  beam.position.y = tall + 0.3;
+  g.add(beam);
+  const ray = std({ color: '#fff4c0', emissive: new THREE.Color('#fff0b0'), emissiveIntensity: 0.6, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
+  for (const s of [-1, 1]) { const cone = mesh(new THREE.ConeGeometry(0.35, 3.2, 12, 1, true), ray, s * 1.6, 0, 0, beam); cone.rotation.z = s * Math.PI / 2; cone.castShadow = cone.receiveShadow = false; cone.raycast = () => {}; }
+  const night = ['dusk', 'night'].includes(timeOfDay());
+  beam.visible = night;
+  B.ticks.push((now) => { if (!calm) beam.rotation.y = now / 3000; });
+  return g;
+}
+
+/** A stone tablet, the town's name carved in it (the temple arch's). */
+function tabletArt(name) {
+  const f = fine(96, 22, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 22, 2, '#8a7a58');
+  rr(1.8, 1.8, 92.4, 18.4, 1.4, lin(0, 0, 0, 22, ['#d8c8a0', '#b8a880']));
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 10px sans-serif';
+  g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillText(name.toUpperCase(), 48.5, 12.5, 86);
+  g.fillStyle = '#4a3a24'; g.fillText(name.toUpperCase(), 48, 12, 86);
+  return f.c;
+}
+
+/** The way out, the drowned temple's arch on the far shore: two carved pillars, a lintel with a cracked stepped crown and a
+    rune wheel glowing in it, vines hanging, the town's name on a tablet. Its pillars block their tiles; the way between
+    them is `R.exitAt`. */
+function templeArch(x, z, span, tall, name, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const stone = std({ color: L.stone[0], roughness: 0.95 }), carved = std({ color: L.stone[2], roughness: 1 });
+  const rune = std({ color: '#20404a', emissive: new THREE.Color('#70e0f0'), emissiveIntensity: 0.8, roughness: 0.5 });
+  lit.push(rune);
+  for (const s of [-1, 1]) {
+    const px = s * (span / 2 + 0.1);
+    mesh(rbox(0.8, 0.3, 0.8, 0.04), carved, px, 0.15, 0, g);
+    mesh(rbox(0.6, tall, 0.6, 0.05), stone, px, tall / 2 + 0.3, 0, g);
+    for (const y of [0.9, 1.7, 2.5]) mesh(new THREE.BoxGeometry(0.64, 0.1, 0.64), carved, px, y, 0, g).castShadow = false;
+    for (const y of [1.3, 2.1]) mesh(new THREE.BoxGeometry(0.18, 0.18, 0.02), rune, px, y, 0.31, g).castShadow = false;
+    mesh(rbox(0.78, 0.22, 0.78, 0.04), carved, px, tall + 0.4, 0, g);
+  }
+  mesh(rbox(span + 1.5, 0.5, 0.82, 0.05), stone, 0, tall + 0.76, 0, g);
+  mesh(rbox(span + 0.6, 0.36, 0.7, 0.05), stone, 0, tall + 1.19, 0, g);
+  const wheel = mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.1, 24), carved, 0, tall + 1.25, 0.36, g);
+  wheel.rotation.x = Math.PI / 2;
+  const ring = mesh(new THREE.TorusGeometry(0.3, 0.035, 6, 24), rune, 0, tall + 1.25, 0.42, g);
+  ring.castShadow = false;
+  // the crack down the lintel, and its broken corner
+  mesh(new THREE.BoxGeometry(0.04, 0.5, 0.84), std({ color: '#3a3020', roughness: 1 }), 0.55, tall + 0.76, 0, g).castShadow = false;
+  const chip = mesh(new THREE.DodecahedronGeometry(0.22, 0), stone, span / 2 + 0.95, 0.15, 0.5, g);
+  chip.rotation.set(0.5, 0.3, 0.2);
+  // vines down the front
+  const vine = std({ color: '#4a8a38', roughness: 0.9 }), rnd = seeded(41);
+  for (let i = 0; i < 9; i++) {
+    const vx = -span / 2 - 0.6 + rnd() * (span + 1.2), len = 0.4 + rnd() * 0.9;
+    mesh(new THREE.BoxGeometry(0.05, len, 0.03), vine, vx, tall + 0.52 - len / 2, 0.42, g).castShadow = false;
+    mesh(new THREE.SphereGeometry(0.07, 6, 5), vine, vx, tall + 0.52 - len, 0.43, g).castShadow = false;
+  }
+  panel(tabletArt(name), 1.75, 0.4, x, tall + 0.76, z + 0.42).userData.spot = 'exit';
+  for (const s of [-1, 1]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + s * (span / 2 + 0.1) + COLS / 2 - 0.5), y));
+  const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
+  way.castShadow = way.receiveShadow = false;
+  B.ticks.push((now) => { ring.rotation.z = calm ? 0 : now / 4000; });
+  g.traverse(o => { o.userData.spot = 'exit'; });
+  return g;
+}
+
+/** A leaf blown off the palms, long and pointed. */
+function leafletArt(col) {
+  const f = fine(12, 12, 8), { g } = f;
+  g.fillStyle = col; g.translate(6, 6); g.rotate(0.6);
+  g.beginPath(); g.moveTo(-5.5, 0); g.quadraticCurveTo(0, -2.6, 5.5, 0); g.quadraticCurveTo(0, 2.6, -5.5, 0); g.fill();
+  g.strokeStyle = 'rgba(30,60,20,0.5)'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(-5, 0); g.lineTo(5, 0); g.stroke();
+  return f.c;
+}
+
+/** The lagoon's own things from the map: moored boats, drowned columns, nets drying, the lagoon and what holds the town up. */
+function lagoonExtras(town, L) {
+  lagoonWater(town);
+  lagoonSupports(town);
+  const rnd = seeded(57), kind = lagoonKinds(town);
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === 'y') {
+      const along = STEPS.some(([dx]) => dx && kind(x + dx, y) !== 'water');
+      rowboat(tileX(x), tileZ(y), (along ? Math.PI / 2 : 0) + (rnd() - 0.5) * 0.3, ['#3a8ab8', '#d85a48', '#e8c050', '#4aa060'][Math.floor(rnd() * 4)]);
+    }
+    if (ch === '|') drownedColumn(tileX(x) + (rnd() - 0.5) * 0.2, tileZ(y) + (rnd() - 0.5) * 0.2, 0.7 + rnd() * 0.9, L);
+    if (ch === 'n') { netRack(tileX(x), tileZ(y), (rnd() - 0.5) * 0.4); B.blocked.add(key(x, y)); }
+  }));
+}
+
 /** How each town's dressed (js/data/towns.js's `style`; the Shrine's is the village): the ground's tints, its flowers and
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
@@ -3666,11 +4257,16 @@ const TOWN_STYLES = {
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
     drift: (i) => (i % 3 ? { art: ashArt(), size: 0.1 } : { art: emberArt(i % 2 ? '#f8a030' : '#f06020'), size: 0.12, rise: true }) },
+  lagoon: { holes: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
+    house: (b, f, L, lit) => (b.kind === 'houseboat' ? houseboat(b, f, L, lit) : b.kind === 'beacon' ? beacon(f, L, lit) : stiltHut(b, f, L, lit)),
+    gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
+    extras: lagoonExtras,
+    drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },
 };
 
 async function buildTown(figs, { look, time, town }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
-  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: townGround(L, map, S) });
+  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes });
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
@@ -3680,7 +4276,7 @@ async function buildTown(figs, { look, time, town }) {
   const lit = [], smoke = [], steam = [];
   S.trees(map, L, rnd);
   townGrass(map, L, rnd);
-  S.gate(town, lit);
+  S.gate(town, lit, L);
   B.exitAt = { ...town.gate };
   B.doors = {};
   const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L), minehead: (b, f) => minehead(f, L, lit) };
@@ -3706,6 +4302,7 @@ async function buildTown(figs, { look, time, town }) {
   const cart = map.findLastIndex(row => row.includes('='));   // a mine cart at the rails' far end, away from the mine's door
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
   springs(map, L, steam);
+  S.extras?.(town, L);
   if (smoke.length) puffs(smoke.map(([x, y, z]) => [x, y, z]), { col: 'rgba(150,140,136,0.7)', n: 3, size: 0.5, rise: 1.8, speed: 0.14 });
   const stacks = smoke.filter(s => s[3]);
   if (stacks.length || steam.length) puffs([...steam, ...stacks.map(([x, y, z]) => [x, y, z])], { col: 'rgba(250,250,248,0.8)', n: 2, size: 0.7, rise: 1.4, speed: 0.2 });
@@ -3748,6 +4345,14 @@ const HOMES = {
     bath: { cols: 11, rows: 9, floor: 'tiles', castAt: [[1.5, 0.5, -0.3], [4.5, 0.5, -0.3], [7.5, 0.5, -0.3], [2.5, 3.5, -0.3], [6.5, 3.5, -0.3]],
       furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 6, 3], ['steamrocks', 0, 0], ['steamrocks', 10, 0], ['okebucket', 0, 2], ['okebucket', 10, 2], ['milkfridge', 0, 6], ['massagechair', 10, 6], ['yukatarack', 10, 4], ['washbasin', 0, 4], ['shishiodoshi', 9, 3]] },
   },
+  ruins: {
+    shop: { floor: 'planks', walls: 'boards', furnish: [['barrel', 0, 0], ['crate', 1, 0], ['surfboard', 7, 0], ['surfboard', 8, 0], ['aquarium', 3, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['fishbowl', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['barrel', 0, 3], ['barrel', 0, 4], ['crate', 8, 3], ['milkcrate', 8, 4], ['seashells', 8, 1], ['tikitorch', 0, 2]] },
+    kayl: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 }, castAt: [[0, 3, 0.12], [7, 3, 0.12]],
+      furnish: [['amplifier', 0, 0], ['guitar', 1, 0], ['sofa', 3, 0], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['candle', 8, 1], ['petbed', 0, 3], ['petbed', 7, 3], ['bookstack', 8, 0], ['plant', 8, 5], ['beanbag', 1, 5]] },
+    pat: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 }, furnish: [['hammock', 0, 0], ['guitar', 3, 0], ['micstand', 5, 0], ['amplifier', 6, 0], ['rosebush', 8, 0], ['heartpillow', 2, 3], ['heartpillow', 6, 3], ['candle', 0, 4], ['fishbowl', 8, 3], ['plant', 8, 5]] },
+    aquarium: { cols: 11, rows: 9, floor: 'tiles', walls: 'aqua', cold: true, castAt: [[1.5, 0.5, -0.18], [4.5, 0.5, -0.18], [7.5, 0.5, -0.18], [2.5, 3.5, -0.18], [7.5, 3.5, -0.18]],
+      furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 7, 3], ['bubblecolumn', 0, 0], ['bubblecolumn', 10, 0], ['aquarium', 0, 7], ['aquarium', 9, 7], ['jellylamp', 0, 4], ['jellylamp', 10, 4], ['kelp', 0, 2], ['kelp', 10, 2], ['bench', 3, 7], ['bench', 6, 7]] },
+  },
 };
 const homeSize = (town, id) => { const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
@@ -3771,12 +4376,20 @@ function homeFloor(kind) {
   return f.c;
 }
 
-function homeWall(width, time, { window: win = true, curtain = false } = {}) {
+function homeWall(width, time, { window: win = true, curtain = false, walls = 'plaster' } = {}) {
   const f = fine(width, TOP * U, 5), { g, lin } = f, s = f.shine();
   g.fillStyle = lin(0, wy(TOP), 0, wy(1), ['#e8dcc0', '#f4ead4']); g.fillRect(0, 0, width, TOP * U);
+  if (walls === 'boards') {   // a lagoon home's: weathered boards, laid across
+    const r = seeded(width);
+    for (let y = 0; y < wy(1); y += 6) { g.fillStyle = ['#c8a87c', '#bc9a6c', '#d4b688', '#b08e62'][Math.floor(r() * 4)]; g.fillRect(0, y, width, 6); g.fillStyle = 'rgba(60,36,16,0.45)'; g.fillRect(0, y + 5.4, width, 0.6); }
+  } else if (walls === 'aqua') {   // the aquarium's: deep water blue, bubbles rising
+    g.fillStyle = lin(0, 0, 0, wy(1), ['#1a4a78', '#3a8ab8']); g.fillRect(0, 0, width, wy(1));
+    const r = seeded(width);
+    for (let i = 0; i < width / 6; i++) { g.strokeStyle = 'rgba(200,240,255,0.5)'; g.lineWidth = 0.6; g.beginPath(); g.arc(r() * width, r() * wy(1), 0.8 + r() * 2, 0, Math.PI * 2); g.stroke(); }
+  }
   g.fillStyle = lin(0, wy(1), 0, wy(0), ['#8a5a34', '#6a4024']); g.fillRect(0, wy(1), width, U);
   g.fillStyle = '#3a241a';
-  for (let x = 0; x <= width; x += 2 * U) g.fillRect(x - 1.5, 0, 3, TOP * U);
+  if (walls === 'plaster') for (let x = 0; x <= width; x += 2 * U) g.fillRect(x - 1.5, 0, 3, TOP * U);
   g.fillRect(0, wy(2.7), width, 3); g.fillRect(0, wy(1) - 1.5, width, 3);
   if (win) skyWindow(f, s, width * 0.25, width * 0.25 + 1.6 * U, wy(2.4), wy(1.3), { frame: '#5a3a22', curtain: null, night: time === 'night', sky: time === 'night' ? ['#101830', '#1a2850', '#283868'] : time === 'dusk' ? ['#f08850', '#f8b070', '#fcd8a0'] : ['#68b0f0', '#a8d8f8', '#e0f4ff'] });
   if (curtain) {   // the theater's stage curtains, red, swagged
@@ -3789,7 +4402,7 @@ function homeWall(width, time, { window: win = true, curtain = false } = {}) {
 
 async function buildHome(figs, { time, town, home }) {
   const h = HOMES[town.id]?.[home] || {};
-  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage, curtain: !!h.stage }), side: () => homeWall(ROWS * U, time, { window: false }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage, curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = 2.1;
   B.talks = new Set();
   for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
@@ -3811,7 +4424,7 @@ async function buildHome(figs, { time, town, home }) {
       B.who[id] = await figure(id, { ...figs[k], flip: i % 2 === 1 }, { x, ty, y, scale: 0.85 });
       B.talks.add(id);
     }
-    const steam = h.furnish.filter(([id]) => id === 'onsenpool').map(([, x, y]) => [tileX(x + 0.5), 0.3, tileZ(y + 0.5)]);
+    const steam = h.cold ? [] : h.furnish.filter(([id]) => id === 'onsenpool').map(([, x, y]) => [tileX(x + 0.5), 0.3, tileZ(y + 0.5)]);
     puffs(steam, { col: 'rgba(255,255,255,0.7)', n: 3, size: 0.8, rise: 1.6, speed: 0.15 });
     let next = 0, turn = 0;
     const who = B.who;

@@ -1704,7 +1704,7 @@ function homeRoom(b) {
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
       if (!lines) return;
       const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
-      said(lines[n], home.cast ? '' : GYM_BY_ID[stand]?.name);
+      said(lines[n], home.cast?.[stand] ? home.names?.[stand] ?? '' : GYM_BY_ID[stand]?.name);   // Kayl's cats have names
     } },
     onFail: out,
   });
