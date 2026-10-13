@@ -343,7 +343,7 @@ async function playIntro() {
       try { if (!b.leaderTalked) await gymTalk(b.leader, talkOf(b.leader, 'intro', !getSave().gym?.[b.leader.id]), { vars: { boss: b.def.name } }); else await sleep(motion ? 500 : 0); }
       finally { enemyZone.classList.remove('boss-waiting'); }
       if (!still()) return;
-      log(`Gym Leader ${b.leader.name} sent out ${b.def.name}!`);
+      log(`Gym Leader ${b.leader.battleName || b.leader.name} sent out ${b.def.name}!`);
     } else log(b.def.intro ?? `${b.def.name} blocks the way!`);
   }
   // each Pokémon only cries once it's actually there to see

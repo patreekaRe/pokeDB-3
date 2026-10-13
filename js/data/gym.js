@@ -11,7 +11,8 @@
    `unknown.png`; `sprites` (by boss id) dresses them for the boss they send out. Lines: `intro` before the boss (`{boss}` is its name),
    `beaten` once you win (its first line alone on a rematch), `won` when they
    beat you. Each is a list of speech-window lines, or a list of such lists, one
-   picked at random each time (`talkOf()`).
+   picked at random each time (`talkOf()`). `battleName`, if set, is what the battle
+   calls them when they send out their Pokémon (`name` everywhere else).
    ============================================================ */
 
 export const UNKNOWN_SPRITE = 'assets/trainers/gym/unknown.png';
