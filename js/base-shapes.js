@@ -19,6 +19,7 @@ import { SHAPES as SHAPES_K } from './base-models-k.js';
 import { SHAPES as SHAPES_W } from './base-models-w.js';
 import { SHAPES as SHAPES_W2 } from './base-models-w2.js';
 import { SHAPES as SHAPES_W3 } from './base-models-w3.js';
+import { SHAPES as SHAPES_W4 } from './base-models-w4.js';
 
 const S = {};
 const set = (ids, shape) => ids.split(' ').forEach(id => { S[id] = { ...shape }; });
@@ -149,7 +150,7 @@ set('plinkoboard', { make: 'plinko' });
 set('pokepinball', { make: 'pinball' });
 
 /* the batches modelled after the arcade cabinets (js/base-models-*.js): `'id id2': shape` each */
-for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K, SHAPES_W, SHAPES_W2, SHAPES_W3]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
+for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K, SHAPES_W, SHAPES_W2, SHAPES_W3, SHAPES_W4]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
 
 export const SHAPES = S;
 

@@ -73,8 +73,8 @@ export function frame(K, L, m, outer, inner, d = 0.06) {
 }
 
 /** A rectangular window: the frame over `outer`, the pane over `glass` set back, bars over `bars`, a sill over `sill`. */
-function sash(K, L, { outer, glass, bars = [], sill }) {
-  const wood = K.wood(), [ox0, oy0, ox1, oy1] = outer, [gx0, gy0, gx1, gy1] = glass, d = 0.08;
+export function sash(K, L, { outer, glass, bars = [], sill, wood = K.wood() }) {
+  const [ox0, oy0, ox1, oy1] = outer, [gx0, gy0, gx1, gy1] = glass, d = 0.08;
   for (const box of [[ox0, oy0, ox1, gy0], [ox0, gy1, ox1, oy1], [ox0, gy0, gx0, gy1], [gx1, gy0, ox1, gy1]]) bar(K, L, wood, box, d);
   bar(K, L, K.plain('#1a2030'), glass, 0.01);
   pic(K, L, glass, 0.03);
@@ -102,7 +102,7 @@ export function round(K, L, m, cx, cy, r, z, sy = 1) {
 }
 
 /** An arch's outline, x0..x1 wide, its straight sides from `spring` down to `foot`, in painted units round (cx, ·). */
-function archShape(L, cx, x0, x1, spring, foot, W) {
+export function archShape(L, cx, x0, x1, spring, foot, W) {
   const { THREE } = L, r = (x1 - x0) / 2, sh = new THREE.Shape();
   sh.moveTo(X(x0, W), Y(foot)); sh.lineTo(X(x1, W), Y(foot)); sh.lineTo(X(x1, W), Y(spring));
   sh.absarc(X(cx, W), Y(spring), u(r), 0, Math.PI, false);

@@ -14,7 +14,7 @@ import { drape, rod, cord, nail, star } from './base-models-w2.js';
 
 const keyed = new WeakMap();
 /** A crop with every pixel `test(r, g, b)` turns down cleared. */
-function keep(c, test) {
+export function keep(c, test) {
   if (!keyed.has(c)) keyed.set(c, new Map());
   const got = keyed.get(c);
   if (got.has(test)) return got.get(test);
@@ -42,12 +42,12 @@ function pin(K, L, i, j, c, z = 0.03) {
 }
 
 /** A pane of glass over painted `box` at depth z. */
-function glass(K, L, [x0, y0, x1, y1], z) {
+export function glass(K, L, [x0, y0, x1, y1], z) {
   K.put(new L.THREE.PlaneGeometry(u(x1 - x0), u(y1 - y0)), K.glass(), X((x0 + x1) / 2, K.p.w), Y((y0 + y1) / 2), z);
 }
 
 /** A bezel over the band between painted boxes `outer` and `inner`, `d` deep. */
-function bezel(K, L, m, outer, inner, d, r = 0.008) {
+export function bezel(K, L, m, outer, inner, d, r = 0.008) {
   const [ox0, oy0, ox1, oy1] = outer, [ix0, iy0, ix1, iy1] = inner;
   for (const box of [[ox0, oy0, ox1, iy0], [ox0, iy1, ox1, oy1], [ox0, iy0, ix0, iy1], [ix1, iy0, ox1, iy1]]) bar(K, L, m, box, d, 0, r);
 }
