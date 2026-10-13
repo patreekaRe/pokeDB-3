@@ -1488,7 +1488,8 @@ async function fight(node, { talked = false } = {}) {
 /** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
     flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
     the fight. After a win they slide in on the battle screen the moment their Pokémon falls for their losing words
-    (afterFight()), then it cuts back here and, the first time, they slide in again to hand over the badge; you walk out
+    (afterFight()), then it cuts back here and, the first time, their speech window pops up (no slide-in, they're standing there) to hand
+    over the badge; you walk out
     over the doormat to the rewards. While they talk, from the first beat to the last line, you can't walk
     (freezeEvent(); the user's ask, 2026-10-13). `won` is the fight's result once it's over, `said` their `beaten` pair.
     Without the 3D room (`?event2d`, or Three.js won't load) it's the battle's own talk. */
@@ -1513,7 +1514,7 @@ function gymRoom(node, leader, won = null, said = null) {
     talking = true;
     await sleep(battleFx() ? 700 : 0);   // the gong and the push in first
     if (run !== thisRun) return;
-    await say(talkOf(leader, 'intro', first), {}, true);
+    await say(talkOf(leader, 'intro', first), { speed: 'last' }, true);
     talking = true;   // the fight is coming: no second talk
     if (run === thisRun) fight(node, { talked: true });
   };
@@ -1523,7 +1524,7 @@ function gymRoom(node, leader, won = null, said = null) {
   const lastWords = async () => {
     if (talking || run !== thisRun) return;
     event3dMod?.eventRoom3d()?.does('npc', 'npc-jump');
-    await say(said.slice(-1), { badge: true, lit: true });
+    await say(said.slice(-1), { badge: true, lit: true, bubble: true });
     if (run === thisRun) sayLines([`You received the ${leader.badge}!`]);
   };
   showChoice({
@@ -1537,7 +1538,7 @@ function gymRoom(node, leader, won = null, said = null) {
   let spoke = !handOver;
   event3d(node, 'gym', { npc: { npc: spriteOf(leader) } }, null, {
     spent: after,
-    onPick: after ? () => { if (spoke && !talking && run === thisRun) say(said.slice(-1), { lit: true }); } : talk,
+    onPick: after ? () => { if (spoke && !talking && run === thisRun) say(said.slice(-1), { lit: true, bubble: true }); } : talk,
     extra: { leader, dark: first && !after, frozen: handOver },
     onIn: handOver ? () => { spoke = true; lastWords(); } : null,
     onFail: () => (after ? leave() : fight(node)),

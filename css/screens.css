@@ -5541,8 +5541,13 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
   height: min(46vh, 300px); overflow: hidden; pointer-events: none; opacity: 0;
   background: linear-gradient(90deg, transparent, rgba(20, 24, 60, 0.55) 25%, rgba(232, 88, 72, 0.35) 75%, transparent);
 }
-.gym-speed:empty { display: none; }
-.gym-scene.in .gym-speed { animation: gymSpeed 1.3s ease-out both; }
+.gym-speed { animation: gymSpeed 1.3s ease-out both; }
+/* talking to them in their gym after the fight: no slide-in or dim, the speech window just pops up (the dim comes back
+   for the badge) */
+.gym-scene.bubble:not(.getting) { background: none; }
+.gym-scene.bubble .gym-say { translate: -50% 0; scale: 0.6; opacity: 0; transition: scale 0.22s cubic-bezier(.3, 1.6, .5, 1), opacity 0.15s; }
+.gym-scene.bubble.in .gym-say { scale: 1; opacity: 1; }
+.gym-scene.bubble.out .gym-say { scale: 0.8; opacity: 0; transition: scale 0.18s ease-in, opacity 0.18s; }
 @keyframes gymSpeed { 0% { opacity: 0; scale: 1 0.2; } 12% { opacity: 1; scale: 1 1; } 55% { opacity: 1; } 100% { opacity: 0; scale: 1 0.85; } }
 .gym-speed i {
   position: absolute; left: 100%; top: var(--y); width: var(--w); height: var(--h); border-radius: 99px;

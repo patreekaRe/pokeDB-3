@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['battle', 'A Gym Leader sends out their Pokémon in style: they slide in over speed lines to call it out, slide away, then throw its Poké Ball onto the field themselves before you send out yours.'],
+  ['battle', 'A Gym Leader sends out their Pokémon in style: speed lines flash as they call it out, again as they slide in on the battle screen, then they slide away and throw its Poké Ball onto the field themselves before you send out yours. Talking to them in their gym after the fight just pops up their speech window.'],
   ['look', 'Each Gym is grander: a dark stone hall of columns, their best Pokémon as two giant statues flanking an arch carved GYM LEADER and their name, their badge turning over it in a sunburst, fires on the arch, light pouring down on the dais, and a ring of runes in the court that glows with embers rising once the great fires light.'],
   ['runs', 'Beating a Gym Leader: they slide in on the battle screen with their losing words as their Pokémon falls, then back in their gym slide in again to hand over the badge. Your Pokémon stays still while a Gym Leader talks.'],
   ['look', 'Gym Leaders now slide in from the edge of the screen when they talk, their speech window rising up beneath them, and slide back out when they\'re done.'],

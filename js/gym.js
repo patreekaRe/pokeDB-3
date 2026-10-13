@@ -45,13 +45,14 @@ export function badgePop(l) {
   });
 }
 
-/** Their lines, one a tap (a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line. */
+/** Their lines, one a tap (`bubble`: no slide-in, no dim, only their speech window popping up, for talking to them in
+    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line. */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null, lit = false } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null, lit = false, speed = null, bubble = false } = {}) {
   const calm = !battleFx();
-  const layer = el('div', `gym-scene${possess ? ' possess' : ''}`);
+  const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}`);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
   who.src = spriteOf(l);
@@ -61,20 +62,9 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   const box = el('div', 'gym-say');
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
-  const speed = el('div', 'gym-speed');   // anime speed lines streaking past as they slide in
-  speed.setAttribute('aria-hidden', 'true');
-  if (!calm && !calmFx()) for (let i = 0; i < 18; i++) {
-    const s = el('i');
-    s.style.setProperty('--y', `${4 + Math.random() * 92}%`);
-    s.style.setProperty('--w', `${30 + Math.random() * 50}%`);
-    s.style.setProperty('--h', `${1 + Math.floor(Math.random() * 4)}px`);
-    s.style.setProperty('--t', `${0.22 + Math.random() * 0.2}s`);
-    s.style.setProperty('--d', `${-Math.random() * 0.4}s`);
-    speed.append(s);
-  }
-  layer.append(speed, who, box);
+  if (bubble) layer.append(box); else layer.append(who, box);
   document.body.append(layer);
-  if (!calm) { await sleep(20); layer.classList.add('in'); playSound('run-away'); await sleep(600); } else layer.classList.add('in');
+  if (!calm) { await sleep(20); layer.classList.add('in'); if (speed === 'in') speedLines(layer); await sleep(bubble ? 300 : 600); } else layer.classList.add('in');
 
   const said = gymLines(l, lines, vars);
   let darkness = null;
@@ -87,6 +77,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
       layer.classList.toggle('demon', !!line.demon);
     }
     text.textContent = line.text ?? line;
+    if (!calm && i === (speed === 'last' ? said.length - 1 : speed)) speedLines(layer);   // a number: that line
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
     if (possess && i === Math.min(1, said.length - 1)) {
       layer.classList.add('taken');
@@ -104,6 +95,26 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/** Anime speed lines racing past for a beat: only as they call their Pokémon out (`speed: 'last'`) and as they slide in
+    on the battle screen to send it out (`speed: 'in'`), the user's two. */
+function speedLines(layer) {
+  if (calmFx()) return;
+  const lines = el('div', 'gym-speed');
+  lines.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < 18; i++) {
+    const s = el('i');
+    s.style.setProperty('--y', `${4 + Math.random() * 92}%`);
+    s.style.setProperty('--w', `${30 + Math.random() * 50}%`);
+    s.style.setProperty('--h', `${1 + Math.floor(Math.random() * 4)}px`);
+    s.style.setProperty('--t', `${0.22 + Math.random() * 0.2}s`);
+    s.style.setProperty('--d', `${-Math.random() * 0.4}s`);
+    lines.append(s);
+  }
+  layer.prepend(lines);
+  playSound('run-away');
+  setTimeout(() => lines.remove(), 1400);
 }
 
 /** Their badge handed over, after their last words: the talk steps back into the dark, golden rays wheel open, the

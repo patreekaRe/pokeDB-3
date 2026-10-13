@@ -343,7 +343,7 @@ async function playIntro() {
       const sent = `Gym Leader ${b.leader.battleName || b.leader.name} sent out ${b.def.name}!`;
       // they slide in to say it (after their talk if the 3D gym didn't have it), slide out, then throw its ball themselves
       const lines = [...(b.leaderTalked ? [] : talkOf(b.leader, 'intro', !getSave().gym?.[b.leader.id])), { text: sent, plate: true }];
-      try { await gymTalk(b.leader, lines, { vars: { boss: b.def.name }, lit: b.leaderTalked }); }
+      try { await gymTalk(b.leader, lines, { vars: { boss: b.def.name }, lit: b.leaderTalked, speed: b.leaderTalked ? 'in' : lines.length - 2 }); }
       catch (e) { console.error(e); }
       if (!still()) { enemyZone.classList.remove('boss-waiting'); return; }
       log(sent);
