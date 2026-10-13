@@ -10,7 +10,7 @@ import { X, Y, u, cut, bar, pic, paper, ring } from './base-models-w.js';
 import { MOTIFS } from './base-furniture-kinds.js';
 
 /** A sheet of the painting over painted box `box`, its depth `z(fx, fy)` (0..1 across and down), turned `rz` about its middle. */
-function drape(K, L, box, z, rz = 0, seg = [14, 20], keep = null) {
+export function drape(K, L, box, z, rz = 0, seg = [14, 20], keep = null) {
   const [x0, y0, x1, y1] = box, w = u(x1 - x0), h = u(y1 - y0);
   const g = new L.THREE.PlaneGeometry(w, h, seg[0], seg[1]), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) pos.setZ(i, z(pos.getX(i) / w + 0.5, 0.5 - pos.getY(i) / h));
@@ -36,26 +36,26 @@ function clipped(c, [x0, y0], keep) {
 }
 
 /** A rod across painted x0..x1 at height j, r units round, `z` out from the wall, a knob at each end. */
-function rod(K, L, m, x0, x1, j, r, z, knob = K.gloss(K.pal.a), kr = r * 1.5) {
+export function rod(K, L, m, x0, x1, j, r, z, knob = K.gloss(K.pal.a), kr = r * 1.5) {
   const W = K.p.w;
   K.put(L.cyl(u(r), u(x1 - x0), u(r), 16).rotateZ(Math.PI / 2), m, X((x0 + x1) / 2, W), Y(j), z);
   if (knob) for (const i of [x0, x1]) K.put(L.ball(u(kr), 14, 10), knob, X(i, W), Y(j), z);
 }
 
 /** A cord through painted points [i, j, z]. */
-function cord(K, L, m, pts, r = 0.5) {
+export function cord(K, L, m, pts, r = 0.5) {
   const W = K.p.w, curve = new L.THREE.CatmullRomCurve3(pts.map(([i, j, z]) => new L.THREE.Vector3(X(i, W), Y(j), z)));
   K.put(new L.THREE.TubeGeometry(curve, 16, u(r), 6, false), m, 0, 0, 0);
 }
 
 /** A nail in the wall at painted (i, j), its head out from it. */
-function nail(K, L, i, j) {
+export function nail(K, L, i, j) {
   K.put(L.cyl(u(0.4), 0.03, u(0.4), 6).rotateX(Math.PI / 2), K.metal('#c8ccd8'), X(i, K.p.w), Y(j), 0.015);
   K.put(L.ball(u(0.9), 10, 8), K.metal('#d8dce4'), X(i, K.p.w), Y(j), 0.03);
 }
 
 /** A five-point star `r` units round, `d` deep, laid on the wall at painted (i, j). */
-function star(K, L, m, i, j, r, z, d = 0.012) {
+export function star(K, L, m, i, j, r, z, d = 0.012) {
   const sh = new L.THREE.Shape();
   for (let n = 0; n < 10; n++) {
     const a = Math.PI / 2 + n * Math.PI / 5, rr = n % 2 ? u(r) * 0.45 : u(r);
