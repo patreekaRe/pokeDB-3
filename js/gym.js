@@ -6,13 +6,30 @@ import { el, sleep } from './ui.js';
 import { playSound } from './audio.js';
 import { getSave } from './storage.js';
 import { spriteOf, gymWins, voiced } from './data/gym.js';
-import { battleFx } from './prefs.js';
+import { battleFx, calmFx } from './prefs.js';
 import { auraOn } from './aura.js';
 
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
 /** Their lines with their name, badge and `vars` (`{boss}`) filled in, for the 3D gym's speech window. */
 export const gymLines = (l, lines, vars = {}) => lines.map(line => voiced(l, fill(line, { name: l.name, badge: l.badge, ...vars })));
+
+/** JONA takes the screen (Phil's demon, `demon` in js/data/gym.js): a black-out, violet static and a shudder, a crack of
+    thunder. `infuse` is the dark pouring into his Pokémon: a violet burst instead of the black. Calm effects: one soft fade. */
+export function demonSwap(infuse = false) {
+  const fx = el('div', `jona-flash${infuse ? ' infuse' : ''}${calmFx() ? ' calm' : ''}`);
+  fx.setAttribute('aria-hidden', 'true');
+  document.body.append(fx);
+  playSound(infuse ? 'charge' : 'gate-crack');
+  if (!infuse) setTimeout(() => playSound('thunder'), 120);
+  if (!calmFx()) {
+    document.body.classList.remove('jona-shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('jona-shake');
+    setTimeout(() => document.body.classList.remove('jona-shake'), 700);
+  }
+  setTimeout(() => fx.remove(), 1300);
+}
 
 /** Their badge spinning in over the 3D gym as they hand it over. */
 export function badgePop(l) {
@@ -58,6 +75,10 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, possess = nu
   for (let i = 0; i < said.length; i++) {
     const line = said[i];
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
+    if (line.who) {
+      if (line.demon && !layer.classList.contains('demon')) demonSwap();
+      layer.classList.toggle('demon', !!line.demon);
+    }
     text.textContent = line.text ?? line;
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
     if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }

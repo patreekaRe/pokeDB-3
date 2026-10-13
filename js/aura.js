@@ -13,8 +13,8 @@ const GOLD = {   // Super Saiyan gold
 };
 // Phil's possession (js/data/gym.js `possess`): the same aura in a ghost's shadow, violet fading to near black, red sparks
 const DARK = {
-  aura: ['#ecd2ff', '#a050e8', '#561896', '#1c0630'],
-  flare: ['#f4dcff', '#9a40e0', '#46107c', '#12031c'],
+  aura: ['#f8e8ff', '#c878ff', '#8a34e0', '#3c0c66'],
+  flare: ['#fff0ff', '#d080ff', '#8028d8', '#2a0650'],
   bits: ['#ffc8ff', '#b060f0', '#ff3868'],
   spark: [255, 120, 160, 255],
   bolt: [[255, 210, 255, 255], [200, 90, 255, 255], [120, 30, 180, 255]],

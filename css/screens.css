@@ -5559,3 +5559,42 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 }
 @keyframes gymShudder { 50% { translate: 2px 0; } }
 @media (prefers-reduced-motion: reduce) { .gym-scene.possess.taken, .gym-scene.possess.taken .gym-trainer { animation: none; } }
+
+/* JONA takes over (demonSwap() in js/gym.js): the screen blacks out, violet static rolls over it and everything shudders;
+   while it talks the speech window is its own, black with violet text, the tag blood red */
+.jona-flash {
+  position: fixed; inset: 0; z-index: 2000; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(200, 120, 255, 0.18) 0 2px, transparent 2px 5px),
+    radial-gradient(ellipse at 50% 55%, rgba(160, 40, 255, 0.55), rgba(0, 0, 0, 0.96) 70%);
+  animation: jonaFlash 1.2s steps(12) forwards;
+}
+.jona-flash.infuse { background: radial-gradient(circle at 50% 25%, rgba(255, 220, 255, 0.95), rgba(170, 60, 255, 0.7) 30%, rgba(20, 0, 40, 0) 70%); animation: jonaInfuse 1.1s ease-out forwards; }
+.jona-flash.calm { animation: jonaCalm 0.9s ease-out forwards; }
+@keyframes jonaFlash {
+  0% { opacity: 0; } 8% { opacity: 1; background-position: 0 0; } 16% { opacity: 0.4; } 24% { opacity: 1; background-position: 0 7px; }
+  40% { opacity: 0.85; background-position: 0 -4px; } 60% { opacity: 0.6; } 100% { opacity: 0; }
+}
+@keyframes jonaInfuse { 0% { opacity: 0; } 12% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes jonaCalm { 0% { opacity: 0; } 30% { opacity: 0.45; } 100% { opacity: 0; } }
+body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, canvas) { animation: jonaShake 0.6s steps(1); }
+@keyframes jonaShake {
+  0% { translate: 0 0; } 10% { translate: -6px 3px; } 20% { translate: 5px -4px; } 30% { translate: -4px -2px; }
+  40% { translate: 6px 2px; } 50% { translate: -3px 4px; } 60% { translate: 3px -3px; } 80% { translate: -1px 1px; } 100% { translate: 0 0; }
+}
+.gym-scene.demon .gym-say,
+#reward-screen .reward-log.demon {
+  background: #120818; color: #e8c8ff; box-shadow: 0 3px 0 #4a1a7a, 0 0 22px rgba(170, 70, 255, 0.55);
+  text-shadow: 0 0 6px rgba(200, 120, 255, 0.8); letter-spacing: 1px; animation: jonaBox 2.4s ease-in-out infinite;
+}
+.gym-scene.demon .gym-plate,
+#reward-screen .reward-log.demon[data-who]::before { background: #b01030; color: #fff; box-shadow: 0 2px 0 #50040e, 0 0 10px rgba(255, 40, 80, 0.7); }
+.gym-scene.demon .gym-trainer { animation: jonaFlicker 3s steps(1) infinite; }
+@keyframes jonaBox { 50% { box-shadow: 0 3px 0 #4a1a7a, 0 0 36px rgba(170, 70, 255, 0.85); } }
+@keyframes jonaFlicker { 0%, 46%, 50%, 100% { filter: drop-shadow(0 0 10px #a050e8) brightness(0.8) saturate(0.6); } 47%, 49% { filter: invert(1) hue-rotate(250deg) drop-shadow(0 0 14px #ff3060); } }
+/* his Pokémon, once the dark is poured in: a violet glow breathing round it on top of the aura */
+.enemy-portrait.sprite.boss.possessed img { --rest: drop-shadow(0 0 10px #b050ff) drop-shadow(0 0 22px #6010c0) brightness(0.85); animation: possessedBreath 1.8s ease-in-out infinite; }
+@keyframes possessedBreath { 50% { filter: drop-shadow(0 0 16px #d080ff) drop-shadow(0 0 32px #7020e0) brightness(0.75) saturate(1.3); } }
+@media (prefers-reduced-motion: reduce) {
+  #reward-screen .reward-log.demon, .gym-scene.demon .gym-say, .gym-scene.demon .gym-trainer, .enemy-portrait.sprite.boss.possessed img { animation: none; }
+}

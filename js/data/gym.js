@@ -233,6 +233,7 @@ const KAYL = {
 const PHIL = {
   sprite: 'assets/trainers/gym/phil.png',
   voices: ['PHIL', 'JONA'],
+  demon: 'JONA',   // its lines take the screen over (demonSwap() in js/gym.js)
   intro: [
     ['PHIL: You shouldn\'t have come. I can\'t... hold him back much longer...', 'JONA: Phil isn\'t home right now. I am JONA, and I answer the door.', 'JONA: Go, {boss}.'],
     ['PHIL: Run. Please. Before he wakes up.', 'JONA: Too late. JONA is always awake.', 'JONA: Go, {boss}. Show them what we are.'],
@@ -318,7 +319,7 @@ export const leadersOf = (biomeId) => GYM_LEADERS.filter(l => l.biome === biomeI
 /** A line's voice: `{ who, text }` when it starts with one of the leader's `voices` ("LAW: ..."), else the line. */
 export function voiced(l, line) {
   const m = l.voices && /^([A-Z]+): (.*)$/s.exec(line);
-  return m && l.voices.includes(m[1]) ? { who: m[1], text: m[2] } : line;
+  return m && l.voices.includes(m[1]) ? { who: m[1], text: m[2], demon: m[1] === l.demon } : line;
 }
 
 export const spriteOf = (l) => l.sprite || UNKNOWN_SPRITE;

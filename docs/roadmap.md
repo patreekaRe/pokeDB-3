@@ -424,7 +424,12 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   speeches (`js/data/gym.js`) play in the battle once his Pokémon is out (`playIntro()` in `js/battle.js`): on the second
   line the dark takes him (a dark Super Saiyan aura over his sprite, `auraOn(img, level, 'dark')` in `js/aura.js`, which
   now lets several auras burn at once and has a `DARK` look), the screen's edges bleed violet, and on the last he pours it
-  into his Pokémon, which keeps the dark aura all fight (`setAura(..., 'dark')`). Playtest `?gym=phil&hp=0.05`.
+  into his Pokémon, which keeps the dark aura all fight (`setAura(..., 'dark')`). Playtest `?gym=phil&hp=0.05`. **JONA's takeover** (2026-10-13, the user's asks: the aura wasn't
+  seen on a phone, and a more dramatic swap): the first JONA line of a speech blacks the screen out with violet static, a
+  shudder and thunder (`demonSwap()` in `js/gym.js`, a leader's `demon`), and while JONA talks the speech window is black with
+  violet text and a blood-red tag (the battle overlay's `.demon`, and the 3D gym's `.reward-log.demon` in
+  `js/rewards.js`); the infusion is a violet burst, the dark aura is brighter, and his Pokémon also breathes a violet glow
+  all fight (`.enemy-portrait.possessed`).
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

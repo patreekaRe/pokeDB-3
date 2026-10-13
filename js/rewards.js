@@ -132,7 +132,7 @@ export function showChoiceHp() {
 /** Who is speaking in the reward screen's text box, on a name tag over it (a Gym Leader), or null for narration.
     Every new choice screen starts as narration. */
 export function speaker(name = null) {
-  if (name) $('reward-log').dataset.who = name; else delete $('reward-log').dataset.who;
+  if (name) $('reward-log').dataset.who = name; else { delete $('reward-log').dataset.who; $('reward-log').classList.remove('demon'); }
 }
 
 export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false }) {
@@ -420,7 +420,11 @@ function showLine(i) {
   const box = $(say.box);
   let line = say.lines[i];
   if (line?.who) {   // a voiced line { who, text } (a Gym Leader family) changes the name tag
-    if (say.box === 'reward-log') speaker(line.who);
+    if (say.box === 'reward-log') {
+      speaker(line.who);
+      if (line.demon && !box.classList.contains('demon')) import('./gym.js').then(m => m.demonSwap());   // JONA takes over
+      box.classList.toggle('demon', !!line.demon);
+    }
     line = line.text;
   }
   $(`${say.box}-live`).textContent = line;

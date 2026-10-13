@@ -19,7 +19,7 @@
    stay separate and easy to read.
    ============================================================ */
 
-import { gymTalk } from './gym.js';
+import { gymTalk, demonSwap } from './gym.js';
 import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -359,7 +359,8 @@ async function playIntro() {
   if (b.leader?.possess) {   // Phil gives himself to the dark, then pours it into his Pokémon (js/data/gym.js)
     await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: () => {
       setAura($('enemy-img'), 2, 'dark');
-      playSound('charge');
+      $('enemy-portrait-box').classList.add('possessed');   // a violet glow too, so the dark reads on a dark arena
+      demonSwap(true);
     } });
     if (!still()) return;
     log(`${b.def.name} is filled with dark energy!`);
@@ -2090,7 +2091,7 @@ function setupEnemy() {
   img.classList.toggle('pixel', !b.def.art);
   setAura(img, 0);   // puts out Kenmatta's aura from a previous fight (aura.js)
   const box = $('enemy-portrait-box');
-  box.classList.remove('defeated', 'hit', 'attacking');
+  box.classList.remove('defeated', 'hit', 'attacking', 'possessed');
   box.classList.toggle('sprite', !b.def.art);
   const zone = $('enemy-zone');
   if (b.def.art) ['--size', '--shift', '--drop', '--head-room'].forEach(name => zone.style.removeProperty(name));
