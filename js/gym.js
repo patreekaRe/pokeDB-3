@@ -7,6 +7,7 @@ import { playSound } from './audio.js';
 import { getSave } from './storage.js';
 import { spriteOf, gymWins, voiced } from './data/gym.js';
 import { battleFx } from './prefs.js';
+import { auraOn } from './aura.js';
 
 const fill = (line, vars) => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m);
 
@@ -27,10 +28,12 @@ export function badgePop(l) {
 }
 
 /** Their lines, one a tap. `badge` shows the badge they hand over with the last line. */
-export async function gymTalk(l, lines, { vars = {}, badge = false } = {}) {
+/* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
+   thins so the boss shows behind), and on his last `possess()` fills his Pokémon with it. */
+export async function gymTalk(l, lines, { vars = {}, badge = false, possess = null } = {}) {
   const calm = !battleFx();
-  const layer = el('div', 'gym-scene');
-  const shadow = gymWins(getSave(), l.id) === 0;
+  const layer = el('div', `gym-scene${possess ? ' possess' : ''}`);
+  const shadow = !possess && gymWins(getSave(), l.id) === 0;
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
   who.src = spriteOf(l);
   who.alt = '';
@@ -51,17 +54,25 @@ export async function gymTalk(l, lines, { vars = {}, badge = false } = {}) {
     mark.alt = l.badge;
   }
   const said = gymLines(l, lines, vars);
+  let darkness = null;
   for (let i = 0; i < said.length; i++) {
     const line = said[i];
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
     text.textContent = line.text ?? line;
     if (i === 0 && shadow && l.sprite) { await sleep(calm ? 0 : 260); who.classList.remove('shadow'); }
     if (mark && i === said.length - 1) { layer.append(mark); playSound('achievement'); }
+    if (possess && i === Math.min(1, said.length - 1)) {
+      layer.classList.add('taken');
+      darkness = auraOn(who, 2, 'dark');
+      playSound('power');
+    }
+    if (possess && i === said.length - 1) possess();
     await tap(layer);
     playSound('confirm');
   }
   layer.classList.remove('in');
   layer.classList.add('out');
+  darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
 }

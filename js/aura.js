@@ -11,8 +11,17 @@ const GOLD = {   // Super Saiyan gold
   flare: ['#fffff0', '#fff060', '#ffc820', '#d88800'],
   bits: ['#fffff0', '#fff070', '#ffc820'],
 };
-const SPARK = [255, 255, 255, 255];
-const BOLT = [[255, 255, 255, 255], [184, 224, 255, 255], [120, 170, 255, 255]];
+// Phil's possession (js/data/gym.js `possess`): the same aura in a ghost's shadow, violet fading to near black, red sparks
+const DARK = {
+  aura: ['#ecd2ff', '#a050e8', '#561896', '#1c0630'],
+  flare: ['#f4dcff', '#9a40e0', '#46107c', '#12031c'],
+  bits: ['#ffc8ff', '#b060f0', '#ff3868'],
+  spark: [255, 120, 160, 255],
+  bolt: [[255, 210, 255, 255], [200, 90, 255, 255], [120, 30, 180, 255]],
+};
+const LOOKS = { gold: GOLD, dark: DARK };
+const SPARK0 = [255, 255, 255, 255];
+const BOLT0 = [[255, 255, 255, 255], [184, 224, 255, 255], [120, 170, 255, 255]];
 
 const rgba = (h) => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)).concat(255);
 const lighten = (c, k) => c.slice(0, 3).map(v => Math.min(255, Math.round(v + (255 - v) * k))).concat(c[3]);
@@ -24,11 +33,12 @@ function seeded(seed) {
 }
 
 /** The level's 16 frames for a sprite's pixels (an ImageData), each a canvas of the padded size. */
-function makeFrames(src, level) {
+function makeFrames(src, level, look = GOLD) {
+  const SPARK = look.spark ?? SPARK0, BOLT = look.bolt ?? BOLT0;
   const w0 = src.width, h0 = src.height;
   const pad = level === 2 ? Math.max(14, Math.round(Math.max(w0, h0) * 0.16)) : Math.max(10, Math.round(Math.max(w0, h0) * 0.1));
   const w = w0 + pad * 2, h = h0 + pad * 2;
-  const aura = GOLD.aura.map(rgba), flare = GOLD.flare.map(rgba), bits = GOLD.bits.map(rgba);
+  const aura = look.aura.map(rgba), flare = look.flare.map(rgba), bits = look.bits.map(rgba);
   const body = new Uint8Array(w * h);
   for (let y = 0; y < h0; y++) for (let x = 0; x < w0; x++) if (src.data[(y * w0 + x) * 4 + 3] > 0) body[(y + pad) * w + x + pad] = 1;
   const inBody = (x, y) => x >= 0 && y >= 0 && x < w && y < h && body[y * w + x];
@@ -136,21 +146,19 @@ function makeFrames(src, level) {
   return { frames, pad, w0, h0 };
 }
 
-let live = null;
-
-/** Light (or change) the aura over an <img> in a `position: relative` box; level 0 puts it out. */
-export function setAura(img, level) {
-  if (live && live.img === img && live.level === level) return;
-  stopAura();
-  if (!level) return;
+/** An aura over an <img> in a positioned box, `look` 'gold' or 'dark'; returns what puts it out. Several can burn at
+    once (Phil and the Pokémon he possesses). */
+export function auraOn(img, level, look = 'gold') {
+  const state = { canvas: null, timer: 0, off: false };
   const go = () => {
+    if (state.off) return;
     const w = img.naturalWidth, h = img.naturalHeight;
     if (!w) return;
     const grab = document.createElement('canvas');
     grab.width = w; grab.height = h;
     const g = grab.getContext('2d', { willReadFrequently: true });
     g.drawImage(img, 0, 0);
-    const set = makeFrames(g.getImageData(0, 0, w, h), level);
+    const set = makeFrames(g.getImageData(0, 0, w, h), level, LOOKS[look] ?? GOLD);
     const canvas = document.createElement('canvas');
     canvas.className = 'aura-fx';
     canvas.width = set.w0 + set.pad * 2;
@@ -172,16 +180,26 @@ export function setAura(img, level) {
       ctx.drawImage(set.frames[i++ % FRAMES], 0, 0);
     };
     tick();
-    live = { img, level, canvas, timer: setInterval(tick, FRAME_MS) };
+    state.canvas = canvas;
+    state.timer = setInterval(tick, FRAME_MS);
   };
-  live = { img, level, canvas: null, timer: 0 };
   if (img.complete && img.naturalWidth) go();
-  else img.addEventListener('load', () => { if (live?.img === img && live.level === level) go(); }, { once: true });
+  else img.addEventListener('load', go, { once: true });
+  return () => { state.off = true; clearInterval(state.timer); state.canvas?.remove(); };
+}
+
+let live = null;
+
+/** Light (or change) the enemy's aura over an <img>; level 0 puts it out. */
+export function setAura(img, level, look = 'gold') {
+  if (live && live.img === img && live.level === level && live.look === look) return;
+  stopAura();
+  if (!level) return;
+  live = { img, level, look, stop: auraOn(img, level, look) };
 }
 
 export function stopAura() {
   if (!live) return;
-  clearInterval(live.timer);
-  live.canvas?.remove();
+  live.stop();
   live = null;
 }

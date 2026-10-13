@@ -418,6 +418,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   foot to just over the bar when a room leaves it unset.
   **Their name on the box** (2026-10-13, the user's ask): while a leader talks in the 3D gym their name is on a tilted pink
   tag over the text box (`speaker()` in `js/rewards.js`, `.reward-log[data-who]`; every `showChoice()` starts as narration).
+  **Kayl, Phil and Ricky** (2026-10-13, the user's sprites and personalities): Kayl (ADHD project coordinator, lavender,
+  Tame Impala, bass, games, and her cats Spooky and Reya in every speech), Ricky (thirty-something who looks old from 2 a.m.
+  Valorant / ARAM with friends in another time zone, a meeting every morning). Phil is possessed: a leader's `possess`
+  speeches (`js/data/gym.js`) play in the battle once his Pokémon is out (`playIntro()` in `js/battle.js`): on the second
+  line the dark takes him (a dark Super Saiyan aura over his sprite, `auraOn(img, level, 'dark')` in `js/aura.js`, which
+  now lets several auras burn at once and has a `DARK` look), the screen's edges bleed violet, and on the last he pours it
+  into his Pokémon, which keeps the dark aura all fight (`setAura(..., 'dark')`). Playtest `?gym=phil&hp=0.05`.
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities

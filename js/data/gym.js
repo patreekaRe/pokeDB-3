@@ -194,6 +194,96 @@ const PAT = {
   ],
 };
 
+/* Kayl (the user's, 2026-10-13): a project coordinator at a property management company, heavy ADHD, loves lavender and
+   Tame Impala, and only wants to work on her music, play bass and play video games, but work (and gym battles) keep
+   getting in the way. She can't stop talking about her cats, Spooky and Reya: every speech has them in it. */
+const KAYL = {
+  sprite: 'assets/trainers/gym/kayl.png',
+  intro: [
+    ['Oh! Hi! Sorry, I was texting my cat sitter. Spooky knocked a mug off the counter again.', 'Wait, why are you here? Oh, the battle. Right. Go, {boss}!'],
+    ['Okay, so I had a whole bass line in my head on the way here and now it\'s GONE.', 'Reya would\'ve remembered it. She sits on my amp when I practise. Go, {boss}!'],
+    ['I have three tenant emails, a work order and a lease renewal due by five. And now you.', 'Spooky and Reya are home alone judging me. Let\'s do this. Go, {boss}!'],
+    ['Do you smell lavender? I put lavender in everything. Reya hates it. Spooky rolls in it.', 'Anyway! Battle! Focus! ...Go, {boss}!'],
+    ['♪ Feels like we only go backwards... ♪ Sorry, Tame Impala\'s been on repeat all week.', 'Spooky sleeps through the whole album. Reya only likes the bass parts. Go, {boss}!'],
+    ['Wait, did I feed Reya? I fed Spooky. I think I fed Reya. Reya would tell me.', 'She would SCREAM at me. Okay, she\'s fed. Go, {boss}!'],
+    ['I was literally about to play video games. Controller in hand. Spooky on my lap. Reya on my keyboard.', 'And then my phone buzzed: GYM BATTLE. Go, {boss}!'],
+    ['Okay, okay, I\'m here! I parked, forgot my keys, went back, Reya was sitting on them.', 'Is that a sign? That\'s a sign. Go, {boss}!'],
+  ],
+  beaten: [
+    ['Okay, you win! Good, now I can go home and practise. Spooky\'s been waiting by the door.', 'Here, the {badge}. It smells like lavender. Everything I own does.'],
+    ['Wait, I lost? I was thinking about a riff the whole time. That counts as a warm-up, right?', 'Take the {badge}. Reya\'s going to be so disappointed in me. Spooky won\'t care.'],
+    ['Ugh, fine, you earned it. I\'m going home to lie on the floor with my cats and Currents on vinyl.', 'The {badge}\'s yours!'],
+    ['You know what, this is a sign. Quit work, play bass, live with Spooky and Reya forever.', '...Okay, maybe not quit. Take the {badge}.'],
+    ['Good battle! I forgot what I was saying. Oh! Your badge! The {badge}!', 'Also Reya learned to open cabinets. Unrelated. Bye!'],
+  ],
+  won: [
+    ['Wait, I won? I wasn\'t even paying attention! I was thinking about Spooky\'s little toe beans.', 'Okay, I have to go, Reya\'s on the cat cam doing something illegal.'],
+    ['Yes! Okay, that\'s it, I\'m going home to play bass for six hours.', 'Spooky and Reya will sit in the case like it\'s a bed. It IS a bed. It\'s their bed now.'],
+    ['GG! Okay, back to work emails. Then games. Then music. Then cats. Actually, cats first.'],
+    ['That win was so clean. Like, Tame Impala bass line clean.', 'Reya would\'ve purred. Spooky would\'ve slept through it. Both valid.'],
+    ['Okay I won, cool, can I go now? I left a lavender candle on and Spooky has a big fluffy tail.'],
+  ],
+};
+
+/* Phil (the user's, 2026-10-13): straight up possessed by a ghost. He links his soul with his Pokémon, fills them with dark
+   energy and they become lifeless pawns. Every line is dark. `possess`: in the battle, once his Pokémon is out, he speaks
+   again, you see the dark take him (an aura over his sprite) and he pours it into his Pokémon, which burns with a dark
+   Super Saiyan aura (gymTalk()'s `possess` in js/gym.js, the battle's intro in js/battle.js). */
+const PHIL = {
+  sprite: 'assets/trainers/gym/phil.png',
+  intro: [
+    ['...You came. They always come.', 'The thing inside me has been hungry for a long time. Go, {boss}.'],
+    ['Phil isn\'t home right now. Something else answers the door.', 'Step closer. Go, {boss}.'],
+    ['Do you hear the whispering? No? You will.', 'It\'s been telling me your name all night. Go, {boss}.'],
+    ['I stopped sleeping a long time ago. It sleeps for me.', 'Go, {boss}. Let\'s give it something to feed on.'],
+    ['My Pokémon used to have eyes like yours. Bright. Alive.', 'Now they have mine. Go, {boss}.'],
+  ],
+  possess: [
+    ['{boss}... come here.', '*his eyes roll back and a cold, black light pours out of him*', 'WE ARE ONE SOUL NOW.', 'Take it, {boss}. Take all of it. Become my pawn.'],
+    ['Give me your heart, {boss}. You won\'t be needing it.', '*his shadow tears loose from the floor and climbs up his back*', 'THE DARK HAS TAKEN ITS SEAT.', 'Now drink, {boss}. Drink until there is nothing left of you but me.'],
+    ['Don\'t be afraid, {boss}. It only hurts while you\'re still yourself.', '*violet fire swallows him and the room goes cold*', 'I AM NOT PHIL. I WEAR PHIL.', '{boss}... your soul is mine to move. RISE.'],
+  ],
+  beaten: [
+    ['...Impossible. The dark has never let go before.', 'Take the {badge}. It will remember you. So will I.'],
+    ['*the shadow peels off him and slithers away into the corner*', '...Where am I? Was I talking weird again? Take the {badge}, I guess.'],
+    ['You broke the link. My Pokémon is... looking at me again.', 'Take the {badge}. It will be back. It always comes back.'],
+    ['The voice is quiet. First time in months.', 'Here, the {badge}. Don\'t stand in my shadow on your way out.'],
+  ],
+  won: [
+    ['Another soul for the dark.', 'Sleep now. It will visit you tonight.'],
+    ['You see? There is no light here. There never was.'],
+    ['Your Pokémon looked into my eyes at the end. It saw what I see.', 'It will never be the same.'],
+    ['Lights out.', 'The thing inside me says thank you for the meal.'],
+  ],
+};
+
+/* Ricky (the user's, 2026-10-13): in his thirties, he only looks this old because his friends keep him up playing
+   Valorant and ARAM from a different time zone. It's always 1 or 2 a.m., he has a meeting in the morning, and he should not
+   be battling at this hour. */
+const RICKY = {
+  sprite: 'assets/trainers/gym/ricky.png',
+  intro: [
+    ['*yawns* It\'s 1 a.m. Do you know it\'s 1 a.m.? I have a meeting at nine.', 'Fine. One battle. Go, {boss}.'],
+    ['I\'m thirty-two. I know. I know what I look like. It\'s the time zones.', 'The boys get on at their dinner. That\'s my 2 a.m. Go, {boss}.'],
+    ['I said "one ARAM" four hours ago.', 'And now this. Go, {boss}.'],
+    ['My back hurts, my eyes hurt, and my standup is in six hours.', 'Let\'s get this over with. Go, {boss}.'],
+    ['The boys said "one more Valorant game." That was at midnight. It\'s ten to two.', 'I should be asleep. I should NOT be battling. Go, {boss}.'],
+    ['Do you know what my calendar says for tomorrow? "8:30 Sync. 9:00 Planning. 10:00 Review."', 'And here I am. In a gym. At 2 a.m. Go, {boss}.'],
+  ],
+  beaten: [
+    ['Okay, you win. Good. That means I can go to bed.', 'Take the {badge}. If the boys ask, I\'m asleep. I\'m SO asleep.'],
+    ['I lost because it\'s 2 a.m. That\'s my excuse and I\'m keeping it.', 'Here, the {badge}. Goodnight. Please.'],
+    ['Four hours of sleep before my meeting. Three if the boys ping me again.', 'Take the {badge}.'],
+    ['You know how old I am? Thirty-two. Remember that when you take the {badge}.', 'Now let me sleep.'],
+  ],
+  won: [
+    ['Okay, I won. Great. Bed now.', '...The boys just invited me to an ARAM. No. NO. ...Okay, one.'],
+    ['GG. It\'s 2:14 a.m. My meeting is in six hours and forty-six minutes.', 'I did that math in my head. That\'s how tired I am.'],
+    ['Good game. Don\'t tell my manager I was up.'],
+    ['That\'s game. Goodnight. I mean good morning. What day is it?'],
+  ],
+};
+
 export const GYM_LEADERS = [
   leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge', BRITT),
@@ -203,9 +293,9 @@ export const GYM_LEADERS = [
   leader('clarence', 'CLARENCE JASPER', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', CLARENCE),
   leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge'),
   leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', PAT),
-  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge'),
-  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge'),
-  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge'),
+  leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', KAYL),
+  leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', PHIL),
+  leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', RICKY),
   leader('machew', 'EDGELORD MACHEW', 'savanna', ['castform', 'loudred'], 'Eclipse Badge'),
   leader('jerome', 'JEROME', 'savanna', ['munchlax'], 'Sunburst Badge'),
 ];

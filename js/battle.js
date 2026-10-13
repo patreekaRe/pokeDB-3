@@ -356,6 +356,14 @@ async function playIntro() {
   await Promise.all([cry(b.def.spriteId), sleep(motion ? 500 : 300)]);
   if (!still()) return;
   enemyZone.classList.remove('revealed');
+  if (b.leader?.possess) {   // Phil gives himself to the dark, then pours it into his Pokémon (js/data/gym.js)
+    await gymTalk(b.leader, talkOf(b.leader, 'possess'), { vars: { boss: b.def.name }, possess: () => {
+      setAura($('enemy-img'), 2, 'dark');
+      playSound('charge');
+    } });
+    if (!still()) return;
+    log(`${b.def.name} is filled with dark energy!`);
+  }
 
   if (motion) {
     ball.hidden = false;
