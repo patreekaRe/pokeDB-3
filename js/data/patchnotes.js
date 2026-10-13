@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
+  ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

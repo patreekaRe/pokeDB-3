@@ -1649,16 +1649,16 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
 .map-node.current .map-building { filter: drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)) drop-shadow(0 0 1px var(--gold)); }
 
 /* Your Pokémon stands on the room you're in, like the trainer's head on the Pokégear */
-/* The biome's boss as a grey silhouette standing just above its room (the room and its badge stay in front) */
+/* The biome's boss as a grey silhouette standing just above its room, in front of the map's rocks and lava */
 .map-boss-shadow {
   position: absolute;
-  z-index: 0;
+  z-index: 3;
   width: calc(var(--tile) * 9);
   margin-top: calc(var(--tile) * -2.2);
   transform: translate(-50%, -90%);
   pointer-events: none;
   image-rendering: pixelated;
-  filter: brightness(0) invert(0.3) opacity(0.75) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
+  filter: brightness(0) invert(0.3) drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35));
   transition: filter 0.45s ease;
 }
 /* the boss reveal (js/transition.js): the silhouette colours in and rears up */
@@ -5706,7 +5706,8 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .xr-road .xr-leader .xr-boss { height: 30px; }
 
 /* the map's Gym Leader over the boss room (renderMap()'s `gym`): a trainer is narrower than a Pokémon's canvas */
-.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -1.4); }
+.map-boss-shadow.map-leader { width: calc(var(--tile) * 5.4); margin-top: calc(var(--tile) * -2.4); }
+.map-boss-shadow.paired { width: calc(var(--tile) * 8); margin-top: calc(var(--tile) * -2.6); }   /* beside its leader, clear of the room */
 .map-boss-shadow.map-leader.met { filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.35)); }
 /* their badge spinning in over the 3D gym (badgePop() in js/gym.js) */
 .gym-pop { position: fixed; inset: 0; z-index: 990; pointer-events: none; transition: opacity 0.4s; }
