@@ -9,6 +9,43 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
+in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
+ahead** → biome 2 → boss → crossroads → film → town → biome 3 → boss → Sealed Gate. In `walkOn()` (`js/run.js`) the town
+comes after `travel()` and before `startBiome()`; before the roads open (`roadsOpen()`) it is still the default road's town.
+The settled calls (the user's, 2026-10-13):
+- **The town is the biome you're entering**, so the crossroads pick pays off at once, each road has its own town, and you
+  meet that biome's Gym Leaders (`leadersOf(biome)` in `js/data/gym.js`) there before fighting them at its boss.
+- **Five towns**: Shrine (a lantern village on a mountain stair, Ecruteak's), Wastes (a mining and hot-spring town at the
+  volcano's foot, Lavaridge's), Sunken Ruins (a stilted fishing village over the lagoon), Thornwood (treehouses on rope
+  bridges, Fortree's), Savanna (a caravan trading post by the watering hole). The Clearing is home, no town. Mewtwo's runs
+  and the Safari never stop at one (no journey films there); a Depths crystal miners' camp is a maybe for later.
+- **Runs stay balanced**: in a run a town gives only one small choice (one trade or one request's reward) and no healing,
+  cards or relics that make a run stronger, so no bot check. The big rewards are on the home side.
+- **Waystones**: each town has a broken Waystone, mended by finishing its requests over a few runs (a town's friendship,
+  saved per town). A mended one lights its stone in **one ring of standing stones by the Ancient Tree** in the Clearing;
+  tapping a lit stone teleports you into that town outside a run: its shop (its own furniture set from the existing
+  shelves: Japanese for the Shrine, Hot Spring for the Wastes, Underwater for the Ruins, Greenhouse/Garden for Thornwood,
+  Desert for the Savanna, sold only there), its request board (PokéCoins, the missions' `track()` events), its leaders to
+  chat with, and a townsperson to invite to the Secret Base. All five mended: a reward to decide then.
+- Townsfolk reuse the Game Corner crowd's code (`makeCrowd()` in `js/corner-crowd.js`, lines in a data file per town).
+
+Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk one straight in):
+1. **The Shrine's lantern village, in a run.** ▶ Run in: CLOUD (attach pokeDB-3). Prompt: "Read CLAUDE.md and
+   docs/roadmap.md's Towns and Waystones entry. Build the first town, the Shrine's lantern village: a 3D place walked
+   between the journey film and the Shrine's map (the Center / event-3d way), its Gym Leaders standing about with lines,
+   a few townsfolk on the crowd code, one small trade and a request board (requests tracked across runs, the town's
+   friendship saved), the walk out of its far gate into the biome, and `?town=shrine`. Keep it out of Mewtwo and Safari
+   runs. Test it headless, send a screenshot and a playtest link."
+2. **The Waystone ring and visiting from home.** ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns
+   and Waystones entry. Add the Shrine town's Waystone (mended by its requests), the ring of standing stones by the Ancient
+   Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its
+   Japanese furniture shop, requests paying PokéCoins, inviting a townsperson to the Secret Base."
+3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
+   and Waystone. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
+   <biome>'s town the way the Shrine's was built, then its Waystone."
+4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
