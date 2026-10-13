@@ -51,7 +51,7 @@ export const NEXT = [
   ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
   ['fixes', 'In the Poké Mart a big Pokémon like Reshiram no longer stops you tapping the wares behind it, and it stands a little smaller there.'],
   ['fixes', 'On a short phone the Poké Mart\'s text box no longer hides behind the bottom bar.'],
-  ['runs', 'Britt, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon. Tap her to chat: she works a second job to feed baby LINC and save for his college fund.'],
+  ['runs', 'BRITT, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon. Tap her to chat: she works a second job to feed baby LINC and save for his college fund.'],
   ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
   ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],

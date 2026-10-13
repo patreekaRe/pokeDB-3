@@ -3151,7 +3151,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
       if (btn.disabled) { playSound('cancel'); return sayLines([why(options[i])]); }
       btn.click();
     },
-    onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length], 'reward-log', null, 'Britt'),
+    onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length], 'reward-log', null, 'BRITT'),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
   })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
