@@ -5355,6 +5355,8 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
    machine, PC and Chansey, so the pixel room's nurse and monitor go */
 .center3d-view { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.35s; touch-action: manipulation; }
 .center3d-view.on { opacity: 1; }
+/* a gateway town's folk talk in bubbles over their heads (js/event-3d.js's townCrowd()), under the room's own keys */
+.town-stage { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .mart3d-view { transition: none; }   /* the Mart shows at once: a fade let the page's navy through */
 #reward-options.c3d-wait :is(.reward-option, .center-nurse, .center-vitals), #reward-options.c3d :is(.center-nurse, .center-vitals) { visibility: hidden; pointer-events: none; }
 /* the indoor ? rooms walked in 3D (js/event-3d.js): their trainer and Pokémon stand in the room instead */

@@ -173,6 +173,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.type = 'button';
     btn.append(option.node);
     btn.disabled = !!option.disabled;
+    if (option.info) btn.classList.add('info');   // only says something: Leave needn't ask about it
     const take = once(option.ask ? () => { playSound(option.confirmSound || 'confirm'); option.onPick(); } : option.onPick);
     if (option.peek) {
       // a disabled one still answers a tap, so you can read why it's greyed out
@@ -182,9 +183,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
       btn.addEventListener('click', () => {
         if (btn.classList.contains('picked')) return take();
         box.querySelectorAll('.reward-option.picked').forEach(b => b.classList.remove('picked'));
-        if (!option.disabled) btn.classList.add('picked');
+        if (!option.disabled && !option.info) btn.classList.add('picked');
         playSound('stick');
-        sayLines([option.disabled ? option.peek : `${option.peek} Tap it again to choose.`]);
+        sayLines([option.disabled || option.info ? option.peek : `${option.peek} Tap it again to choose.`]);
       });
     } else btn.addEventListener('click', () => (option.ask ? openFocus(option, btn, take) : take()));
     home(option.group).append(btn);
@@ -248,7 +249,7 @@ function askFirst(go, skip, title) {
   return async () => {
     const leave = skip.classList.contains('room-leave');
     if (leave) go = doorOut(go);
-    if (leave && !$('reward-options').querySelector('.reward-option:not(:disabled)')) return go();
+    if (leave && !$('reward-options').querySelector('.reward-option:not(:disabled):not(.locked):not(.info)')) return go();
     if (!leave && $('reward-skip-text').textContent === 'Back') return go();
     playSound('stick');
     const sure = await confirmDialog(leave ? `Leave ${title}? You can't come back.` : "Skip this? You can't come back for it.",

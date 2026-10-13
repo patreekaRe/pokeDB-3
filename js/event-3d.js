@@ -11,7 +11,8 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, MON_PX, warmShaders } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders } from './hd2d.js';
+import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -30,7 +31,7 @@ const TOP = 8;
 const PITCH = 0.42, ACROSS = 6.4, LOOK_Y = 0.8;
 let DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
@@ -48,7 +49,7 @@ const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
 const ease = (k) => k * k * (3 - 2 * k);
 let BACK_Z = -ROWS / 2;
 /** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
-const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
+const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 }, town: { cols: 13, rows: 18, view: 9, across: 9, shadow: 14 } };
 function useSize(r) {
   const z = SIZES[r.kind] || {};
   COLS = z.cols || 11; ROWS = z.rows || 8;
@@ -2819,10 +2820,318 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
   B.reset();
 }
 
+/* ---------- the gateway towns (js/data/towns.js) ---------- */
+
+/* The Shrine's Lantern Village (the user's idea, 2026-10-13, after Ecruteak): a stone road from where the journey film
+   leaves you up to a vermilion torii at the far end, the way on into the biome; machiya either side, a five-storey
+   pagoda over the roofs, stone lanterns lining the road, maples among the cedars dropping their leaves; half-way up a
+   square with the request board on the left and Delibird's stall on the right. Its Gym Leaders stand about off duty
+   (a tap chats), and townsfolk come and go (townCrowd()). Tiles: 13 x 18, the road x 5-7. */
+const MAPLE = ['#f8b868', '#ec7030', '#c84a24', '#8a2c18'];
+const VERMILION = '#d8402c';
+const TOWN_MID = 6;
+
+/** The stone road, door to gate, and the square half-way up, over the wild ground; fallen maple leaves over it all. */
+function townGround(L) {
+  return (c) => {
+    const g = c.getContext('2d'), T = 16, r = seeded(71), W = COLS * T, H = ROWS * T;
+    g.save();
+    const area = () => {
+      g.beginPath();
+      g.rect((TOWN_MID - 1.45) * T, 0, 2.9 * T, H);
+      g.roundRect(2.55 * T, 7.45 * T, 7.9 * T, 3.1 * T, 6);
+    };
+    g.save(); area(); g.fillStyle = 'rgba(40,30,20,0.35)'; g.translate(0, 1.2); g.fill(); g.restore();
+    area(); g.fillStyle = L.gap; g.fill();
+    g.clip();
+    for (let y = 0; y < H; y += 7) for (let x = -((y / 7) % 2) * 3.5; x < W; x += 7) {
+      g.fillStyle = L.stone[Math.floor(r() * 3)];
+      g.beginPath(); g.roundRect(x + 0.35, y + 0.35, 6.3, 6.3, 1.3); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(x + 1.1, y + 0.9, 3.2, 0.6);
+      if (r() < 0.25) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    }
+    g.restore();
+    g.save();
+    g.strokeStyle = L.stone[3]; g.lineWidth = 1.1; area(); g.stroke();
+    // the leaves, thicker off the road
+    for (let i = 0; i < 520; i++) {
+      const x = r() * W, y = r() * H, onRoad = Math.abs(x / T - TOWN_MID - 0.5) < 1.45;
+      if (onRoad && r() < 0.7) continue;
+      g.fillStyle = MAPLE[Math.floor(r() * 4)]; g.globalAlpha = 0.85;
+      g.save(); g.translate(x, y); g.rotate(r() * 6.3);
+      g.beginPath(); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; g.lineTo(Math.cos(a) * 1.5, Math.sin(a) * 1.5); g.lineTo(Math.cos(a + 0.63) * 0.6, Math.sin(a + 0.63) * 0.6); } g.fill();
+      g.restore();
+    }
+    g.restore();
+    return c;
+  };
+}
+
+/** The town's name on the torii's plaque: gold on black, framed. */
+function plaqueArt(name) {
+  const f = fine(40, 54, 8), { g, rr, lin } = f;
+  rr(0, 0, 40, 54, 2.5, '#c8902c');
+  rr(2.5, 2.5, 35, 49, 1.6, lin(0, 0, 0, 54, ['#2a1c18', '#120a08']));
+  g.fillStyle = '#f0c860'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const words = name.toUpperCase().split(' ');
+  g.font = `bold ${words.length > 1 ? 9 : 11}px sans-serif`;
+  words.forEach((w, i) => g.fillText(w, 20, 27 + (i - (words.length - 1) / 2) * 13, 32));
+  return f.c;
+}
+
+/** The far gate, a vermilion torii: two pillars on black feet, the tie beam, the top beam swept up at the ends. Its
+    pillars block their tiles; the way between them is `R.exitAt`. */
+function torii(x, z, span, tall, name) {
+  const red = std({ color: VERMILION, roughness: 0.5 }), black = std({ color: '#241a18', roughness: 0.55 });
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.14, 0.17, tall, 18), red, s * span / 2, tall / 2, 0, g);
+    mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.24, 18), black, s * span / 2, 0.12, 0, g);
+  }
+  mesh(rbox(span + 0.75, 0.17, 0.22, 0.03), red, 0, tall - 0.55, 0, g);
+  mesh(rbox(span + 0.95, 0.16, 0.28, 0.03), red, 0, tall + 0.02, 0, g);
+  const half = span / 2 + 0.95, sh = new THREE.Shape();
+  sh.moveTo(-half, 0.34); sh.quadraticCurveTo(-half * 0.55, 0.02, 0, 0); sh.quadraticCurveTo(half * 0.55, 0.02, half, 0.34);
+  sh.lineTo(half + 0.04, 0.56); sh.quadraticCurveTo(half * 0.55, 0.24, 0, 0.22); sh.quadraticCurveTo(-half * 0.55, 0.24, -half - 0.04, 0.56); sh.closePath();
+  const beam = new THREE.ExtrudeGeometry(sh, { depth: 0.36, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1, curveSegments: 14 });
+  beam.translate(0, 0, -0.18);
+  mesh(beam, black, 0, tall + 0.1, 0, g);
+  mesh(rbox(0.12, 0.5, 0.14, 0.02), red, 0, tall - 0.28, 0, g);
+  panel(plaqueArt(name), 0.5, 0.67, x, tall - 0.27, z + 0.13).userData.spot = 'exit';
+  // the way through, unseen: a tap in the opening (the scenery beyond shows there) is the gate too
+  const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
+  way.castShadow = way.receiveShadow = false;
+  g.traverse(o => { o.userData.spot = 'exit'; });
+  return g;
+}
+
+/** A town house (machiya): lattice front lit from inside, plaster sides, dark posts, a tiled roof, a red paper lantern
+    by the door and a noren in `hue`; `turn` faces it up the road. */
+function machiya(x, z, turn, L, hue, lit) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = turn;
+  B.group.add(g);
+  const w = 2.5, d = 1.9, h = 1.4;
+  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 }), wood = std({ color: L.wood[1], roughness: 0.8 });
+  const art = latticeArt('#ffc070'), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
+  lit.push(front);
+  mesh(rbox(w + 0.2, 0.16, d + 0.2, 0.03), std({ color: L.stone[2], roughness: 0.95 }), 0, 0.08, 0, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [plaster, plaster, dark, dark, front, plaster], 0, 0.16 + h / 2, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.11, h + 0.02, 0.11), dark, sx * (w / 2 + 0.01), 0.16 + h / 2, sz * (d / 2 + 0.01), g);
+  mesh(new THREE.BoxGeometry(w + 0.1, 0.1, 0.1), dark, 0, 0.16 + h * 0.62, d / 2 + 0.03, g);
+  // the little eave over the door, then the roof
+  const roofMat = std({ map: roofTiles(['#5a6a78', '#3e4a58', '#28323e'], 1.4, 1.4), roughness: 0.55 }), eave = std({ color: '#28323e', roughness: 0.7 });
+  const small = mesh(new THREE.BoxGeometry(w + 0.3, 0.06, 0.55), roofMat, 0, 0.16 + h * 0.66, d / 2 + 0.24, g);
+  small.rotation.x = 0.32;
+  const geo = new THREE.ExtrudeGeometry(roofShape(d / 2 + 0.4, 0.85, 0.11), { depth: w + 0.5, bevelEnabled: false, curveSegments: 12 });
+  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.5) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], 0, 0.16 + h, 0, g);
+  mesh(new THREE.BoxGeometry(w + 0.6, 0.12, 0.16), eave, 0, 0.16 + h + 0.82, 0, g);
+  // the noren over the door and a paper lantern hung by it
+  const noren = std({ color: hue, roughness: 0.95, side: THREE.DoubleSide });
+  for (const dx of [-0.2, 0.2]) mesh(new THREE.BoxGeometry(0.36, 0.42, 0.02), noren, dx, 0.16 + h * 0.62 - 0.24, d / 2 + 0.08, g).castShadow = false;
+  const glow = std({ color: '#e84a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  const ball = mesh(new THREE.SphereGeometry(0.15, 16, 12), glow, w / 2 - 0.25, 0.16 + h * 0.62 - 0.25, d / 2 + 0.3, g);
+  ball.scale.y = 1.3; ball.castShadow = false;
+  for (const dy of [0.2, -0.2]) mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 12), dark, w / 2 - 0.25, 0.16 + h * 0.62 - 0.25 + dy, d / 2 + 0.3, g);
+  return g;
+}
+
+/** The five-storey pagoda over the rooftops, its roofs copper-green, a gold spire on top. */
+function pagoda(x, z, L) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const stone = std({ color: L.stone[2], roughness: 0.95 }), red = std({ color: VERMILION, roughness: 0.6 }), white = std({ color: '#efe6d2', roughness: 0.9 });
+  const roofMat = std({ map: roofTiles(['#9ad8bc', '#5aa88a', '#2e7458'], 2, 1), roughness: 0.6, flatShading: true });
+  const gold = std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 });
+  mesh(rbox(2.0, 0.3, 2.0, 0.04), stone, 0, 0.15, 0, g);
+  let y = 0.3;
+  for (let i = 0; i < 5; i++) {
+    const s = 1.45 - i * 0.17, hgt = i ? 0.42 : 0.6;
+    mesh(new THREE.BoxGeometry(s, hgt, s), [red, red, white, white, red, red], 0, y + hgt / 2, 0, g);
+    mesh(new THREE.BoxGeometry(s + 0.06, 0.07, s + 0.06), white, 0, y + hgt - 0.08, 0, g);
+    y += hgt;
+    const roof = mesh(new THREE.CylinderGeometry(0.12, s * 0.98, 0.32, 4, 1), roofMat, 0, y + 0.12, 0, g);
+    roof.rotation.y = Math.PI / 4;
+    y += 0.22;
+  }
+  mesh(new THREE.CylinderGeometry(0.035, 0.05, 1.1, 10), gold, 0, y + 0.55, 0, g);
+  for (let k = 0; k < 6; k++) mesh(new THREE.TorusGeometry(0.11 - k * 0.008, 0.02, 6, 16), gold, 0, y + 0.18 + k * 0.12, 0, g).rotation.x = Math.PI / 2;
+  mesh(new THREE.SphereGeometry(0.07, 12, 10), gold, 0, y + 1.12, 0, g);
+  return g;
+}
+
+/** The request board's face: planks, papers pinned up, one stamped. */
+function boardArt() {
+  const f = fine(56, 36, 8), { g, rr, lin } = f, r = seeded(83);
+  rr(0, 0, 56, 36, 2, '#5a3418');
+  rr(1.8, 1.8, 52.4, 32.4, 1.2, lin(0, 0, 0, 36, ['#b88050', '#9a6438']));
+  g.fillStyle = 'rgba(60,30,10,0.35)'; for (let y = 8; y < 34; y += 7) g.fillRect(2, y, 52, 0.5);
+  const notes = [[5, 5, 13, 12], [21, 4, 14, 15], [38, 6, 12, 11], [7, 20, 15, 12], [26, 22, 11, 10], [40, 20, 11, 13]];
+  notes.forEach(([x, y, w, h], i) => {
+    g.save(); g.translate(x + w / 2, y + h / 2); g.rotate((r() - 0.5) * 0.12);
+    rr(-w / 2 + 0.5, -h / 2 + 0.6, w, h, 0.4, 'rgba(0,0,0,0.25)');
+    rr(-w / 2, -h / 2, w, h, 0.4, i === 1 ? '#fff6dc' : '#f4ead0');
+    g.fillStyle = '#5a4a3a';
+    for (let k = 0; k < 4; k++) g.fillRect(-w / 2 + 2, -h / 2 + 3 + k * 2.4, (w - 4) * (0.5 + r() * 0.5), 0.6);
+    if (i === 1) { g.strokeStyle = '#d83828'; g.lineWidth = 0.9; g.beginPath(); g.arc(w / 2 - 3.5, h / 2 - 3.5, 2.2, 0, Math.PI * 2); g.stroke(); }
+    g.fillStyle = '#d83828'; g.beginPath(); g.arc(0, -h / 2 + 1, 0.8, 0, Math.PI * 2); g.fill();
+    g.restore();
+  });
+  return f.c;
+}
+
+/** The request board by the road: a roofed frame on two posts. */
+function noticeBoard(x, z, turn, L) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = turn;
+  B.group.add(g);
+  const dark = std({ color: '#4a2c18', roughness: 0.8 }), roofMat = std({ map: roofTiles(['#5a6a78', '#3e4a58', '#28323e'], 0.8, 0.6), roughness: 0.55 });
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.1, 1.75, 0.1), dark, s * 0.72, 0.875, 0, g);
+  const face = std({ map: texOf(boardArt()), roughness: 0.9 });
+  mesh(new THREE.BoxGeometry(1.4, 0.9, 0.06), [dark, dark, dark, dark, face, dark], 0, 1.15, 0.02, g);
+  const geo = new THREE.ExtrudeGeometry(roofShape(0.32, 0.26, 0.05), { depth: 1.75, bevelEnabled: false, curveSegments: 8 });
+  geo.rotateY(Math.PI / 2); geo.translate(-0.875, 0, 0);
+  mesh(geo, [roofMat, dark], 0, 1.72, 0, g);
+  g.traverse(o => { o.userData.spot = 0; });
+  return g;
+}
+
+/** Stripes for the stall's awning. */
+function awningArt() {
+  const f = fine(32, 16, 6), { g } = f;
+  for (let x = 0; x < 32; x += 4) { g.fillStyle = (x / 4) % 2 ? '#fff4e0' : '#d84a34'; g.fillRect(x, 0, 4, 16); }
+  g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 13, 32, 3);
+  return f.c;
+}
+
+/** Delibird's stall: a counter under a striped awning, its wares on top. */
+function tradeStall(x, z, L) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const wood = std({ color: L.wood[0], roughness: 0.8 }), dark = std({ color: L.wood[2], roughness: 0.8 });
+  const cloth = std({ color: '#2c4a8a', roughness: 0.95 });
+  mesh(rbox(1.9, 0.72, 0.62, 0.04), wood, 0, 0.36, 0, g);
+  mesh(new THREE.BoxGeometry(1.8, 0.5, 0.02), cloth, 0, 0.36, 0.32, g).castShadow = false;
+  mesh(rbox(2.0, 0.07, 0.72, 0.02), dark, 0, 0.74, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.CylinderGeometry(0.04, 0.045, 1.9, 8), dark, sx * 0.95, 0.95, sz * 0.32 - 0.25, g);
+  const aw = mesh(new THREE.BoxGeometry(2.25, 0.04, 1.2), std({ map: texOf(awningArt()), roughness: 0.9 }), 0, 1.92, -0.05, g);
+  aw.rotation.x = 0.24;
+  const box = (w, h, d, col, px, pz) => mesh(rbox(w, h, d, 0.02), std({ color: col, roughness: 0.8 }), px, 0.78 + h / 2, pz, g);
+  box(0.26, 0.18, 0.22, '#c89058', -0.62, -0.05);
+  box(0.2, 0.14, 0.2, '#e8d0a0', -0.6, 0.1).rotation.y = 0.4;
+  const basket = mesh(new THREE.CylinderGeometry(0.17, 0.13, 0.16, 14), std({ color: '#b88a50', roughness: 0.9 }), 0.55, 0.86, 0.02, g);
+  void basket;
+  for (const [px, col] of [[0.48, '#e84838'], [0.6, '#f0a030'], [0.54, '#70b840']]) mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: col, roughness: 0.6 }), px, 0.97, 0.02 + (px - 0.54) * 0.6, g);
+  mesh(new THREE.SphereGeometry(0.12, 14, 10), std({ color: '#f8f0e0', roughness: 0.7 }), 0.05, 0.9, 0.05, g);
+  g.traverse(o => { o.userData.spot = 1; });
+  return g;
+}
+
+/** A maple leaf, for the ones drifting down. */
+function leafArt(col) {
+  const f = fine(12, 12, 8), { g } = f;
+  g.fillStyle = col; g.translate(6, 6);
+  g.beginPath(); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2 - Math.PI / 2; g.lineTo(Math.cos(a) * 5.4, Math.sin(a) * 5.4); g.lineTo(Math.cos(a + 0.63) * 2.2, Math.sin(a + 0.63) * 2.2); } g.fill();
+  g.strokeStyle = 'rgba(80,20,10,0.5)'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 5); g.stroke();
+  return f.c;
+}
+
+async function buildTown(figs, { look: L, time, town }) {
+  const maple = { ...L, look: 'garden', leaf: MAPLE, trunk: ['#6a3e28', '#4a2a1c'] };
+  const rnd = wild(L, time, { to: 0, ground: townGround(L) });
+  for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
+  B.exitParts = [];
+  B.town = town;
+  B.talks = new Set(Object.keys(town.leaders));
+  B.shotTop = 3.6;
+  const lit = [];
+  torii(tileX(TOWN_MID), tileZ(0), 2.9, 2.75, town.name);
+  for (const tx of [4, 8]) B.blocked.add(key(tx, 0));
+  B.exitAt = { x: TOWN_MID, y: 0 };
+  // the stone lanterns along the road
+  for (const ty of [2, 5, 12, 15]) for (const tx of [4, 8]) {
+    const m = piece('stonelantern', tx, ty, { scale: 0.95 });
+    m?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+  }
+  // the houses either side, turned a little up the road
+  const block = (x0, x1, y0, y1) => { for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) B.blocked.add(key(x, y)); };
+  machiya(tileX(1) - 0.1, tileZ(4), 0.42, L, '#2c4a8a', lit); block(0, 2, 3, 5);
+  machiya(tileX(1) - 0.1, tileZ(12), 0.42, L, '#7a2a3a', lit); block(0, 2, 11, 13);
+  machiya(tileX(11) + 0.1, tileZ(4), -0.42, L, '#3a6a3a', lit); block(10, 12, 3, 5);
+  machiya(tileX(11) + 0.1, tileZ(12), -0.42, L, '#8a5a1a', lit); block(10, 12, 11, 13);
+  pagoda(tileX(1), tileZ(0.6), L); block(0, 2, 0, 1);
+  // the square: the board on the left, Delibird's stall on the right
+  noticeBoard(tileX(3), tileZ(8) - 0.1, 0.3, L); B.blocked.add(key(3, 8));
+  tradeStall(tileX(9.5), tileZ(8.1), L); block(9, 10, 7, 8);
+  // trees: cedars at the edges and the back, maples among them
+  const rt = seeded(91);
+  for (const [tx, ty, tall] of [[0, 7, 1.3], [12, 8, 1.4], [0, 10, 1.2], [12, 10, 1.1], [0, 16, 1.3], [12, 16, 1.4], [11, 1, 1.6], [12, 0, 1.5], [10, 0, 1.3], [3, 0, 1.2]]) tree(L, tx, ty, rt, tall);
+  for (const [tx, ty, tall] of [[2, 7, 1.1], [11, 9, 1], [2, 16, 1.05], [10, 15, 1.1], [1, 9, 0.95], [9, 1, 1.05]]) tree(maple, tx, ty, rt, tall);
+  // tufts off the road and the square
+  const keep = [];
+  for (let x = 2; x <= 10; x++) for (let y = 0; y < ROWS; y++) if (!B.blocked.has(key(x, y)) && (Math.abs(x - TOWN_MID) <= 1 || (y >= 7 && y <= 10 && x >= 3 && x <= 10))) { B.blocked.add(key(x, y)); keep.push(key(x, y)); }
+  tufts(L, 50, rnd);
+  for (const k of keep) B.blocked.delete(k);
+  // the Gym Leaders off duty, Delibird behind its counter
+  const stands = { john: { x: 3, ty: 11, flip: true }, jahmes: { x: 9, ty: 5 } };
+  for (const [id, at] of Object.entries(stands)) {
+    if (!figs[id]) continue;
+    B.who[id] = await figure(id, { ...figs[id], flip: at.flip }, { x: at.x, ty: at.ty });
+    B.blocked.add(key(at.x, at.ty));
+  }
+  if (figs.trader) {
+    B.who.trader = await figure('trader', figs.trader, { x: 9.5, ty: 7.35, scale: 0.9 });
+    B.who.trader.group.traverse(o => { o.userData.spot = 1; });
+  }
+  B.spots = [{ step: { x: 3, y: 9 } }, { step: { x: 9, y: 9 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(3), 2.25, tileZ(8));
+  B.anchors[1] = new THREE.Vector3(tileX(9.5), 2.45, tileZ(8));
+  // lanterns glow brighter as it gets dark; maple leaves drift down
+  const dark = time === 'night' ? 1.6 : time === 'dusk' ? 1.2 : time === 'dawn' ? 0.9 : 0.55;
+  const leaves = Array.from({ length: 22 }, (_, i) => {
+    const sp = sprite(leafArt(MAPLE[i % 4]), 0.16 + (i % 3) * 0.03);
+    sp.userData = { x: (Math.random() - 0.5) * COLS, z: (Math.random() - 0.5) * ROWS, at: Math.random(), speed: 0.05 + Math.random() * 0.05, sway: Math.random() * 6 };
+    return sp;
+  });
+  B.ticks.push((now) => {
+    const k = calm ? 0 : Math.sin(now / 1700) * 0.08;
+    for (const m of lit) m.emissiveIntensity = dark + k;
+    for (const sp of leaves) {
+      const u = sp.userData, t = (u.at + now / 1000 * u.speed) % 1;
+      sp.visible = !calm;
+      sp.position.set(u.x + Math.sin(t * 9 + u.sway) * 0.4, 4.2 - t * 4.2, u.z + Math.cos(t * 5 + u.sway) * 0.2);
+      sp.material.opacity = Math.min(1, t * 8, (1 - t) * 6);
+      sp.material.rotation = t * 7 + u.sway;
+    }
+  });
+}
+
+/** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up
+    the road from the door. Their lines go in the room's speech window. */
+let folkLayer = null;
+function townCrowd(town) {
+  return makeCrowd({
+    THREE, group: R.group, monBoard, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
+    route, free, tileX, tileZ, camera, view, stage: folkLayer,
+    say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
+    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 4, castSize: 8, castHours: 6,
+    stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
+    wants: ['stand', 'stand', null, null], swap: [35000, 70000],
+  });
+}
+
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -2868,7 +3177,7 @@ function walk(dt) {
 /** Up to a choice's prop, or to the door to leave; `aim` is acted on as it arrives. */
 function goTo(kind) {
   if (kind === 'exit' && R.noExit) return;   // Team Rocket's: no way back past them
-  const target = kind === 'exit' ? DOOR : R.spots[kind]?.step;
+  const target = kind === 'exit' ? R.exitAt ?? DOOR : R.spots[kind]?.step;   // a town's way on is its far gate
   if (!target) return;
   aim = kind;
   walker.path = route(walker.tile, target);
@@ -2878,6 +3187,7 @@ function goTo(kind) {
 function arrived() {
   let kind = aim;
   aim = null;
+  if ((kind === null || kind === undefined) && R.exitAt && walker.tile.x === R.exitAt.x && walker.tile.y === R.exitAt.y) kind = 'exit';   // walked into a town's far gate
   if (kind === null || kind === undefined) kind = R.spots.findIndex(s => s.walkUp && s.step.x === walker.tile.x && s.step.y === walker.tile.y);
   if (kind === null || kind === undefined || kind < 0) return;
   hushBlip();
@@ -2922,18 +3232,20 @@ function onTap(e) {
   const hits = ray.intersectObjects([R.group, mon.group, ...Object.values(R.who).map(w => w.group)], true);
   const first = hits[0]?.object;
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
+  if (R.crowd?.tap(first)) return;   // a townsperson stops to talk
   let o = first;
   while (o && o.userData.spot === undefined && !o.userData.spotAt && !o.userData.who) o = o.parent;
   const spot = o?.userData.spotAt ? o.userData.spotAt(hits[0].point) : o?.userData.spot;   // the well: a toss a half
   if (spot !== undefined && (spot === 'exit' || R.spots[spot])) return tapTo(spot);
   if (o?.userData.who) {
     const who = R.who[o.userData.who];
-    if (!who.npc) { playCry(who.id); does(who, 'hop'); return; }
+    if (who && R.talks?.has(o.userData.who)) { opts.onTalk?.(o.userData.who); if (!who.npc) playCry(who.id); does(who, who.npc ? 'npc-nod' : 'hop'); return; }   // a town's Gym Leaders and stall keeper chat
+    if (who && !who.npc) { playCry(who.id); does(who, 'hop'); return; }
   }
   const hit = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
-  if (t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
+  if (!R.exitAt && t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
   const near = R.spots.findIndex(s => s.area?.(t));
   if (near >= 0) return tapTo(near);
@@ -3031,6 +3343,7 @@ function frame(now) {
   tickFigures(now, dt);
   for (const p of R.plays) tickPlay(p, now, dt);
   for (const t of R.ticks) t(now, dt);
+  R.crowd?.tick(now, dt, inRoom());
   tickAct(now);
   if (!calm && mat) mat.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
@@ -3085,6 +3398,8 @@ function unmount() {
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   document.body.classList.remove('ev3d-held');
+  R?.crowd?.hide();
+  folkLayer?.remove();
   if (R) R.held = false;
   leftAt = performance.now();
   busy = false; aim = null; frozen = false;
@@ -3127,14 +3442,14 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
     B = { kind, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: SIZES[kind]?.view, across: SIZES[kind]?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town }); }
     finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
     return b;
@@ -3158,7 +3473,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader });
+  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town });
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   useSize(next);
@@ -3196,6 +3511,12 @@ export async function mountEvent(o) {
   }
   walker.path = []; still();
   document.body.append(view);
+  if (R.town) {   // a town's folk, walked by the Game Corner's crowd code (js/corner-crowd.js), their bubbles on a layer of their own
+    folkLayer ??= Object.assign(document.createElement('div'), { className: 'town-stage' });
+    document.body.append(folkLayer);
+    R.crowd ??= townCrowd(R.town);
+    R.crowd.enter();
+  }
   document.getElementById('reward-options').classList.add('c3d');
   for (const label of document.querySelectorAll('#reward-options .reward-option .center-label')) label.textContent = oneWord(label.textContent);
   addEventListener('click', onTap, true);

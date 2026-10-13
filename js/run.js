@@ -22,7 +22,7 @@ import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
-import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP } from './data/items.js';
+import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
@@ -67,6 +67,8 @@ import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/bal
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
+import { trackTowns, handInRequest, metTown } from './towns.js';
+import { TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText } from './data/towns.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -236,8 +238,9 @@ function spend(price) {
 function mission(events, amount = 1) {
   if (peeking || !run) return;
   const road = !run.safari && !run.tower && (run.route || []).some((id, slot) => id && id !== BIOMES[slot]?.id);
-  const ctx = { type: run.starter.type, level: run.level, safari: !!run.safari, special: !run.starter.free, rests: run.restCount, road, day: run.safari?.day };
-  for (const line of track(events, amount, ctx)) tell(line);
+  const biome = !run.safari && !run.tower ? mainBiome()?.id : null;   // a town's requests count only in its own biome
+  const ctx = { type: run.starter.type, level: run.level, safari: !!run.safari, special: !run.starter.free, rests: run.restCount, road, day: run.safari?.day, biome };
+  for (const line of [...track(events, amount, ctx), ...trackTowns(events, amount, ctx)]) tell(line);
 }
 
 /** A fight's moves played, damage dealt and items used, for the missions. */
@@ -271,6 +274,7 @@ function checkpoint() {
     wayfound: run.wayfound,   // Wayfinder Lv 1's one swap a run, spent
     atFork: run.atFork,       // saved at the crossroads, so Continue comes back to it (walkOn())
     gymWon: run.gymWon,       // saved in the gym after its leader's beaten, so Continue comes back to it (afterFight())
+    town: run.town,           // saved in a gateway town, so Continue comes back to it (walkOn())
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -365,6 +369,10 @@ export const hasSavedRun = () => loadSavedRun() !== null;
 export function continueRun(saved) {
   run = saved;
   mapFilm = null;
+  if (run.town && TOWNS[run.town.id]) {   // left in a gateway town: back to it, the biome's map after its far gate
+    townRoom();
+    return null;
+  }
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
     playMusic(bossWin());
     walkOn();
@@ -552,6 +560,17 @@ export function peekGym(starter, id, n = 1, hp = 1) {
 }
 let peekBoss = null, peekBossHp = 1;
 
+/** Playtest shortcut: ?town=shrine (any town's biome, js/data/towns.js; &starter=id) walks a throwaway run straight into
+    that biome's gateway town, as if off the journey film, then on into the biome. Nothing about it is saved. */
+export function peekTown(starter, id) {
+  if (!TOWNS[id] || !starter) return false;
+  const home = BIOMES_BY_ID[id];
+  peeking = true;
+  peekAt = home;
+  beginRun(starter, 0, ':town');
+  return true;
+}
+
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
     fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
 export function peekDescent(starter) {
@@ -588,6 +607,12 @@ function peekRoom(id) {
   if (id === ':biome') {
     walkInto(peekAt);
     return startBiome();
+  }
+  if (id === ':town') {
+    walkInto(peekAt);
+    run.items = [...run.items, 'potion'].filter(i => ITEMS_BY_ID[i]).slice(0, itemSlots());   // something to trade
+    run.town = { id: peekAt.id };
+    return townRoom();
   }
   if (id === ':tower') {
     const { flight, at } = run.tower;
@@ -1569,6 +1594,93 @@ function gymRoom(node, leader, won = null, said = null) {
     onFail: () => (after ? leave() : fight(node)),
   });
 }
+/** A gateway town (js/data/towns.js; docs/roadmap.md's Towns and Waystones), walked in 3D between the journey film and
+    the biome's map: its Gym Leaders off duty, townsfolk, one trade at a stall and the request board. Nothing in it makes a
+    run stronger (the user's call). `covered` is called once it is up under the journey film (walkOn()), which then lifts;
+    the far gate (or Leave) walks on into the biome. */
+function townRoom(covered = null) {
+  const town = TOWNS[run.town.id], thisRun = run, t = run.town;
+  const st = townState(getSave(), town.id), r = currentRequest(town, st);
+  if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
+  const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
+  if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
+  const again = () => { if (run === thisRun) { checkpoint(); townRoom(); } };
+  const leave = () => {
+    if (run !== thisRun) return;
+    run.town = null;
+    townVisit = null;
+    startBiome();
+  };
+  const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
+  const progress = st.ready ? 'Done!' : `${st.got}/${r.n}`;
+  const friends = `Friendship ${st.done}${st.done < MEND_AT ? `/${MEND_AT}` : ''}.`;
+  const board = st.ready && !t.handedIn
+    ? spotOption('Hand in', `${requestText(r)}: done! Hand it in for ${coinsWithBonus(REQUEST_COINS)} PokéCoins.`, () => {
+        if (run !== thisRun) return;
+        t.handedIn = true;
+        const coins = peeking ? 0 : handInRequest(town.id);
+        playSound('stat-up');
+        refreshCoins();
+        tell(peeking ? 'Request handed in! (A playtest: nothing is saved.)' : `Request handed in! +${coins} PokéCoins. ${town.name}'s friendship went up!`);
+        again();
+      })
+    : { ...spotOption('Requests', `Up now: ${requestText(r)} (${progress}). Hand it in here on a later run. ${friends}`, again), info: true };
+  const trade = !t.trade
+    ? spotOption('Trade', town.trader.none, null, true)
+    : t.traded
+      ? spotOption('Trade', town.trader.done, null, true)
+      : spotOption('Trade', town.trader.offer.replace('{give}', give.name).replace('{get}', get.name), () => {
+          if (run !== thisRun) return;
+          const at = run.items.indexOf(give.id);
+          if (at < 0) return again();
+          run.items[at] = get.id;
+          t.traded = true;
+          playSound('item-get');
+          event3dMod?.eventRoom3d()?.does('trader', 'hop');
+          tell(`Traded your ${give.name} for ${get.name}!`);
+          again();
+        });
+  const first = !peeking && !st.met;
+  if (first) metTown(town.id);
+  playMusic(town.music);
+  showChoice({
+    title: town.name.toUpperCase(),
+    sub: first ? [town.first, town.sub] : townVisit ? [] : [town.sub],
+    options: [board, trade],
+    skipLabel: 'Leave',
+    onSkip: leave,
+    layout: 'event-room town-room',
+  });
+  const visit = townVisit ??= { id: town.id };
+  const figures = { trader: { src: `assets/pokemon/${town.trader.id}-front.gif` } };
+  for (const id of Object.keys(town.leaders)) figures[id] = { npc: spriteOf(GYM_BY_ID[id]) };
+  const talks = {};
+  event3d(visit, 'town', figures, null, {
+    extra: { town, onTalk: (stand) => {
+      if (run !== thisRun) return;
+      const lines = town.leaders[stand];
+      if (!lines) return;
+      const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
+      said(lines[n], GYM_BY_ID[stand]?.name);
+    }, onSay: (who, line) => { if (run === thisRun) said(line, who); } },
+    onIn: () => { covered?.(); covered = null; },
+    onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) leave(); },
+  });
+}
+let townVisit = null;
+/** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
+const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
+
+/** The stall's one trade: one of your items for another of the same rarity from your type's (a sidegrade, never more);
+    null with an empty Bag. */
+function rollTrade() {
+  const held = run.items.filter(id => ITEMS_BY_ID[id]);
+  if (!held.length) return null;
+  const give = pickOne(held), rarity = ITEMS_BY_ID[give].rarity;
+  const pool = itemsForType(run.starter.type).filter(i => i.rarity === rarity && !held.includes(i.id));
+  return pool.length ? { give, get: pickOne(pool).id } : null;
+}
+
 /** What a win's hand-over adds (`again`: the wins before this one, 0 on a playtest): on the third their signed poster, on
     the fifth the Gold badge (js/data/gym.js's gymMilestone()); `lines` follow their last words, `badge` is the one they
     hand over, `got` the line it leaves in the speech window. */
@@ -1678,6 +1790,7 @@ function afterFight(node, result) {
     mission(['fight', 'fight-type', 'fight-special']);
     if (node.type === 'elite') mission('alpha');
     if (node.type === 'boss' || node.type === 'ken') mission('boss');
+    if (gymLeader(node)) mission('gym');
     if (node.type === 'boss' && run.hp > run.maxHp / 2) mission('healthy-boss');
     if (result.tally && !result.tally.taken) mission('flawless');
     if (result.tally?.biggest >= 50) mission('big-hit');
@@ -1799,9 +1912,15 @@ async function walkOn() {
   }
   run.biome += 1;
   run.atFork = false;
+  const covered = () => { close?.(); fork?.close(); };
+  // the town at the gate of the biome ahead (js/data/towns.js): walked before its map, never on Mewtwo's or a Safari run
+  if (TOWNS[to] && !isSafari() && !isMewtwoRun(run.starter) && town3d()) {
+    run.town = { id: to };
+    checkpoint();
+    return townRoom(covered);
+  }
   startBiome();
-  close?.();
-  fork?.close();
+  covered();
 }
 
 /** Wayfinder (the Savanna page's perk): the other pool biomes the crossroads' second road can be swapped for, never one this
@@ -2742,7 +2861,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps

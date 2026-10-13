@@ -858,6 +858,12 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped
   (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
   `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
+- **Gateway towns** (2026-10-13, branch `towns` only until the user says; `docs/roadmap.md`'s Towns and Waystones): the
+  biome ahead's town is walked after the journey film (`walkOn()` → `townRoom()` in `js/run.js`, saved as `run.town`),
+  never on Mewtwo's or a Safari run. Its data and request rules are `TOWNS` in `js/data/towns.js`, the save side
+  `js/towns.js` (`save.towns[id]`: `done` friendship, `got`, `ready`, `met`), the room `buildTown()` in `js/event-3d.js`
+  (kind `town`; its far gate is `R.exitAt`, its leaders chat through `R.talks` / `onTalk`, its folk `townCrowd()` on
+  `makeCrowd()`). A town makes no run stronger: one sidegrade trade, requests paying PokéCoins. `?town=shrine`.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

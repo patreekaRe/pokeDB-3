@@ -35,12 +35,18 @@ every session works on `towns`, gives a pinned playtest link (`rawcdn.githack.co
 and merges `main` into it now and then so it doesn't drift.
 
 Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk one straight in):
-1. **The Shrine's lantern village, in a run.** ▶ Run in: CLOUD (attach pokeDB-3). Prompt: "Read CLAUDE.md and
-   docs/roadmap.md's Towns and Waystones entry. Work on branch `towns` (create it from `main`), never push to `main`. Build the first town, the Shrine's lantern village: a 3D place walked
-   between the journey film and the Shrine's map (the Center / event-3d way), its Gym Leaders standing about with lines,
-   a few townsfolk on the crowd code, one small trade and a request board (requests tracked across runs, the town's
-   friendship saved), the walk out of its far gate into the biome, and `?town=shrine`. Keep it out of Mewtwo and Safari
-   runs. Test it headless, send a screenshot and a playtest link."
+1. **Done (2026-10-13): the Shrine's Lantern Village, in a run.** `TOWNS.shrine` in `js/data/towns.js` (pure: requests,
+   friendship, `tests/towns.test.mjs`), the save side `js/towns.js` (`trackTowns()` from `mission()` in `js/run.js`, whose
+   ctx now carries `biome`; a beaten Gym Leader sends `mission('gym')`), `townRoom()` / `rollTrade()` / `peekTown()` in
+   `js/run.js` (walkOn() checkpoints `run.town` after the journey film and shows it, Continue comes back to it; no town
+   without Three.js), and `buildTown()` / `townCrowd()` in `js/event-3d.js` (kind `town`, 13 x 18: a stone road to a
+   vermilion torii, the far gate, `R.exitAt`; machiya, a pagoda, stone lanterns, cedars and maples dropping leaves; the
+   request board and Delibird's stall in the square; John and Jahmes off duty, a tap chatting, `R.talks`; 4 of 10 Eevee-
+   family and Ecruteak folk on the crowd code, cries added). The trade is one Bag item for another of the same rarity; the
+   board shows one request at a time (5, in order, counted only in the Shrine) and hands a finished one in on a later
+   visit for `REQUEST_COINS` 40 and +1 friendship (`MEND_AT` 5 mends the Waystone, session 2). Leave asks first only while
+   a real pick is left (`askFirst()` skips `.locked` and info-only options now). Patch-notes line in `NEXT` (cut the patch
+   on merge, not on the branch). Branch `towns` (and `claude/jolly-ritchie-vdznxn`), **waiting on the user's playtest**.
 2. **The Waystone ring and visiting from home.** ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns
    and Waystones entry. Add the Shrine town's Waystone (mended by its requests), the ring of standing stones by the Ancient
    Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its
