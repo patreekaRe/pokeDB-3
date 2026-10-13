@@ -225,31 +225,31 @@ const KAYL = {
   ],
 };
 
-/* Phil (the user's, 2026-10-13): possessed by a demon named JONA (the user's call, 2026-10-13), who always takes him and
-   always talks for him: Phil gets a word in, then JONA ("JONA: " lines, `voices`, its name on the tag). JONA links his soul
+/* Phil (the user's, 2026-10-13): possessed by a demon named JONA (the user's calls, 2026-10-13: she always takes him and
+   always talks for him): Phil gets a word in, then JONA ("JONA: " lines, `voices`, her name on the tag). JONA links his soul
    with his Pokémon, fills them with dark energy and they become lifeless pawns. `possess`: in the battle, once his
-   Pokémon is out, you see JONA take him (a dark aura over his sprite) and pour itself into his Pokémon, which burns with a
+   Pokémon is out, you see JONA take him (a dark aura over his sprite) and pour herself into his Pokémon, which burns with a
    dark Super Saiyan aura all fight (gymTalk()'s `possess` in js/gym.js, the battle's intro in js/battle.js). */
 const PHIL = {
   sprite: 'assets/trainers/gym/phil.png',
   voices: ['PHIL', 'JONA'],
-  demon: 'JONA',   // its lines take the screen over (demonSwap() in js/gym.js)
+  demon: 'JONA',   // her lines take the screen over (demonSwap() in js/gym.js)
   intro: [
-    ['PHIL: You shouldn\'t have come. I can\'t... hold him back much longer...', 'JONA: Phil isn\'t home right now. I am JONA, and I answer the door.', 'JONA: Go, {boss}.'],
-    ['PHIL: Run. Please. Before he wakes up.', 'JONA: Too late. JONA is always awake.', 'JONA: Go, {boss}. Show them what we are.'],
-    ['PHIL: I haven\'t slept in weeks. He won\'t let me.', 'JONA: Sleep is for the living. Phil is mine now.', 'JONA: Go, {boss}.'],
-    ['PHIL: Do you hear that whispering? That\'s him.', 'JONA: I have been saying your name all night, little trainer.', 'JONA: Go, {boss}. Let us feed.'],
+    ['PHIL: You shouldn\'t have come. I can\'t... hold her back much longer...', 'JONA: Phil isn\'t home right now. I am JONA, and I answer the door.', 'JONA: Go, {boss}.'],
+    ['PHIL: Run. Please. Before she wakes up.', 'JONA: Too late. JONA is always awake.', 'JONA: Go, {boss}. Show them what we are.'],
+    ['PHIL: I haven\'t slept in weeks. She won\'t let me.', 'JONA: Sleep is for the living. Phil is mine now.', 'JONA: Go, {boss}.'],
+    ['PHIL: Do you hear that whispering? That\'s her.', 'JONA: I have been saying your name all night, little trainer.', 'JONA: Go, {boss}. Let us feed.'],
     ['PHIL: My Pokémon used to have eyes like yours. Bright. Alive.', 'JONA: Now they have mine.', 'JONA: Go, {boss}.'],
   ],
   possess: [
     ['PHIL: {boss}... no... get away from me...', '*his eyes roll back and a cold, black light pours out of him*', 'JONA: WE ARE ONE SOUL NOW.', 'JONA: Take it, {boss}. Take all of me. Become my pawn.'],
     ['PHIL: JONA, not {boss}. Please, not {boss}...', '*his shadow tears loose from the floor and climbs up his back*', 'JONA: Phil does not give the orders here.', 'JONA: Drink, {boss}. Drink until there is nothing left of you but JONA.'],
-    ['PHIL: I can feel him moving...', '*violet fire swallows him and the room goes cold*', 'JONA: I AM JONA. I WEAR PHIL.', 'JONA: {boss}... your soul is mine to move. RISE.'],
+    ['PHIL: I can feel her moving...', '*violet fire swallows him and the room goes cold*', 'JONA: I AM JONA. I WEAR PHIL.', 'JONA: {boss}... your soul is mine to move. RISE.'],
   ],
   beaten: [
     ['JONA: Impossible... no host has ever broken my hold...', '*the shadow peels off him and slithers away into the corner*', 'PHIL: ...Where am I? Was JONA talking again? Here, take the {badge}.'],
-    ['JONA: This body is weak. I will find a stronger one.', 'PHIL: *gasps* It\'s quiet. First time in months. Take the {badge}, quick, before he\'s back.'],
-    ['JONA: You broke the link... my pawn is looking at you, not at me...', 'PHIL: Thank you. Take the {badge}. He always comes back. He ALWAYS comes back.'],
+    ['JONA: This body is weak. I will find a stronger one.', 'PHIL: *gasps* It\'s quiet. First time in months. Take the {badge}, quick, before she\'s back.'],
+    ['JONA: You broke the link... my pawn is looking at you, not at me...', 'PHIL: Thank you. Take the {badge}. She always comes back. She ALWAYS comes back.'],
     ['JONA: Remember my name, trainer. JONA.', 'PHIL: Please don\'t. Just take the {badge} and don\'t stand in my shadow on your way out.'],
   ],
   won: [
