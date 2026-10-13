@@ -561,12 +561,14 @@ export function peekGym(starter, id, n = 1, hp = 1) {
 let peekBoss = null, peekBossHp = 1;
 
 /** Playtest shortcut: ?town=shrine (any town's biome, js/data/towns.js; &starter=id) walks a throwaway run straight into
-    that biome's gateway town, as if off the journey film, then on into the biome. Nothing about it is saved. */
-export function peekTown(starter, id) {
+    that biome's gateway town, as if off the journey film, then on into the biome; &home=<building id> walks straight into
+    that house (Gym Leaders are at home with &gymwins=1). Nothing about it is saved. */
+export function peekTown(starter, id, house = null) {
   if (!TOWNS[id] || !starter) return false;
   const home = BIOMES_BY_ID[id];
   peeking = true;
   peekAt = home;
+  peekHouse = house;
   beginRun(starter, 0, ':town');
   return true;
 }
@@ -589,7 +591,7 @@ export function peekBiome(starter, id, level = 0, slot = null) {
   beginRun(starter, Math.max(0, Math.min(MAX_LEVEL, level || 0)), ':biome');
   return true;
 }
-let peekAt = null, peekDepths = false;
+let peekAt = null, peekDepths = false, peekHouse = null;
 
 /** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
 function walkInto(at) {
@@ -611,8 +613,9 @@ function peekRoom(id) {
   if (id === ':town') {
     walkInto(peekAt);
     run.items = [...run.items, 'potion'].filter(i => ITEMS_BY_ID[i]).slice(0, itemSlots());   // something to trade
-    run.town = { id: peekAt.id };
-    return townRoom();
+    run.town = { id: peekAt.id, trade: rollTrade() };
+    const house = TOWNS[peekAt.id].buildings.find(b => b.id === peekHouse && b.home);
+    return house ? homeRoom(house) : townRoom();
   }
   if (id === ':tower') {
     const { flight, at } = run.tower;

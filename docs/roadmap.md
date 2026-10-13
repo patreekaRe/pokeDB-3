@@ -92,8 +92,19 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (gaming with the boys after 10 p.m.), the glass Bloom Nursery (Bellossom, Sunflora, Cherrim, Oddish, Chikorita; Bellossom's
    cry added). 8 locked treehouses, 10 folk (Aipom, Hoothoot, Sentret, Hoppip, Seedot, Shroomish, Treecko, Teddiursa, Natu,
    Paras), its own requests (fights, ❓ rooms, an Alpha, a PP Up, the Gym) and broken Waystone. Branch `towns` (and
-   `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. Next town: the Savanna's caravan trading post
-   (or session 2, the Waystone ring, if the user wants that first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
+   `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. **Savanna done (2026-10-13): Sunwell Bazaar**, a
+   caravan trading post (`style: 'bazaar'`), laid out unlike the other four (the user's ask): one dusty caravan road cutting
+   straight across the map on the diagonal, in at the bottom left, out through a sandstone sun gate at the top right; the
+   market where it crosses the middle (the broken Waystone, the board, striped stalls, torches); the watering hole off to the
+   top left, cut into the ground like the lagoon (mud bed, still water, reeds, a plank jetty, a windpump with a trough);
+   round mud huts under conical thatch either side of the road, wagons drawn up bottom right, a kopje of boulders; the bush
+   round it acacias, baobabs and termite mounds; dust drifting up. Walked in: Persian's Bazaar (a striped tent, the trade),
+   Machew's hut (dark, a plastic katana; meditating by candle after 10 p.m.), Jerome's hut (the baby, r/GTA6 in eleven tabs;
+   whispering at Reddit after 9 p.m.), the Caravanserai (Tauros, Rapidash, Zebstrika, Bouffalant, Kangaskhan). 6 locked huts
+   and 2 locked wagons, 10 folk (Girafarig, Phanpy, Hippopotas, Sandile, Blitzle, Mankey, Trapinch, Doduo, Ponyta,
+   Sudowoodo; 10 cries added), its own requests (fights, quick wins, the Mart, a relic, the Gym) and broken Waystone.
+   `?town=savanna&home=machew&gymwins=1` walks straight into a house. Branch `towns` (and `claude/next-town-savanna-fpkg29`),
+   waiting on the user's playtest. **All five towns are built**; next is session 2, the Waystone ring and visiting from home. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
