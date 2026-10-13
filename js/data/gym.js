@@ -439,7 +439,7 @@ export const GYM_LEADERS = [
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge', { ...JAHMES, battleName: 'CRACKHEAD 11PM CURFEW JAHMES' }),
   leader('clarence', 'CLARENCE', 'wastes', ['slaking', 'regigigas'], 'Magma Badge', { ...CLARENCE, battleName: 'BURLESQUE BOI CLARENCE' }),
   leader('shaun', 'SHAUN', 'wastes', ['lickilicky', 'porygonz'], 'Cinder Badge', { ...SHAUN, battleName: 'TECH SUPPORT IGL SHAUN' }),
-  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', PAT),
+  leader('pat', 'PAT', 'ruins', ['dunsparce', 'wigglytuff'], 'Tidal Badge', { ...PAT, battleName: 'HOPELESS ROMANTIC PAT' }),
   leader('kayl', 'KAYL', 'ruins', ['granbull'], 'Rune Badge', { ...KAYL, battleName: 'PROPERTY COORDINATOR KAYL' }),
   leader('phil', 'PHIL', 'thornwood', ['blissey', 'porygon'], 'Bramble Badge', { ...PHIL, battleName: 'GHOST HUNTER PHIL' }),
   leader('ricky', 'RICKY', 'thornwood', ['porygon2'], 'Root Badge', { ...RICKY, battleName: 'EAST COAST RICKY' }),
