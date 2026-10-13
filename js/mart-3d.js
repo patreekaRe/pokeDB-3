@@ -1,7 +1,7 @@
 /* mart-3d.js  -  the run's Poké Mart as a 3D room you walk about (branch pokemart-3d; the user's ask, 2026-10-09, after
    the HeartGold / SoulSilver Marts and the walk-in Center, js/center-3d.js): white walls over a blue wainscot, pale blue
    tiles, the moves on sale standing on a lit rack along the back wall, the items on a unit on the right, the relics under
-   glass domes on a table in front of it, Kecleon's counter on the left with the PC to forget a move, ball bins and plants. It is only
+   glass domes on a table in front of it, Britt's counter on the left with the PC to forget a move, ball bins and plants. It is only
    the scene: martRoom() in js/run.js keeps the shop's choices, its two-tap Buy, text box and bar, and this lays the room
    under them. A tap on a ware walks your Pokémon up to it and presses that choice; the doormat walks it out. */
 
@@ -29,6 +29,8 @@ const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
 const SHELF = { x0: 0, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
 const DOOR = { x: 5, y: ROWS - 1 };
 const CLERK = { x: 1.0, y: 1 };
+const MON_MAX = 1.6;          // your Pokémon's height cap here, so a legendary doesn't stand in front of the whole shelf
+const NPC_PX = 1 / 34;        // a trainer's sprite pixel, as the ? rooms' (js/event-3d.js)
 
 const C = { blue: ['#5aa0f8', '#3a7ce0', '#2a60c0'], navy: '#1c3270', white: ['#ffffff', '#f2f6fc', '#e2eaf6'],
   tile: ['#eef5ff', '#dceaff'], grout: '#bcd2f0', ink: '#1e2a48', red: '#e84838' };
@@ -112,7 +114,7 @@ function goods(f, x0, x1, y0, y1, seed) {
   }
 }
 
-/** The back wall: goods behind Kecleon, POKé MART on a blue sign, long ceiling lights. */
+/** The back wall: goods behind Britt, POKé MART on a blue sign, long ceiling lights. */
 function wallArt() {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine: lit } = f, s = lit();
   wallBands(f, W);
@@ -523,7 +525,7 @@ function buildTable() {
   for (let i = 0; i < TABLE.n; i++) blocked.add(key(TABLE.x0 + i, TABLE.y));
 }
 
-/** Kecleon's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its right end. */
+/** Britt's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its right end. */
 function buildCounter() {
   const w = COUNTER.x1 - COUNTER.x0 + 1, cx = (tileX(COUNTER.x0) + tileX(COUNTER.x1)) / 2, cz = tileZ(COUNTER.y), H = COUNTER.h, D = COUNTER.d;
   const blue = std({ color: C.blue[1], roughness: 0.5 }), top = std({ color: '#fbfcff', roughness: 0.3 });
@@ -771,7 +773,7 @@ function walk(dt) {
   return !w.path.length;
 }
 
-/** Up to a ware, Kecleon or the door; `aim` is acted on as it arrives. */
+/** Up to a ware, Britt or the door; `aim` is acted on as it arrives. */
 function goTo(kind) {
   aim = kind;
   const target = kind === 'exit' ? DOOR : kind === 'clerk' ? { x: COUNTER.x0, y: COUNTER.y + 1 } : wares.list[+kind.split(':')[1]]?.spot.step;
@@ -787,7 +789,7 @@ function arrived() {
   hushBlip();
   if (kind === 'exit') return opts.onLeave();
   walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
-  if (kind === 'clerk') { playCry('kecleon'); clerk.hopUntil = performance.now() + 600; return opts.onClerk?.(); }
+  if (kind === 'clerk') { playSound('confirm'); clerk.hopUntil = performance.now() + 600; return opts.onClerk?.(); }
   const w = wares.list[+kind.split(':')[1]];
   if (!w || w.sold) return w && opts.onSoldOut?.();
   w.lift = performance.now();
@@ -825,11 +827,10 @@ function onTap(e) {
   const ray = new THREE.Raycaster();
   ray.setFromCamera(v, camera);
   const hits = ray.intersectObjects([room, wares.group, mon.group, clerk.group], true);
-  const first = hits[0]?.object;
-  if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
-  let o = first;
-  while (o && !o.userData.spot) o = o.parent;
-  const spot = o?.userData.spot;
+  // whatever stands behind your Pokémon wins the tap: a big one (Reshiram) in front of the shelves hid every ware (2026-10-13)
+  const spotOf = (o) => { while (o && !o.userData.spot) o = o.parent; return o?.userData.spot; };
+  const spot = hits.map(h => h.object !== mon.board && spotOf(h.object)).find(Boolean);
+  if (!spot && hits[0]?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (spot === 'pc') return tapTo(`ware:${wares.list.findIndex(w => w.kind === 'pc')}`);
   if (spot) return tapTo(spot);
   const hit = new THREE.Vector3();
@@ -917,7 +918,6 @@ function frame(now) {
   mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
   drawMon(mon, walker, dt);
-  drawMon(clerk, { facing: 'front' }, dt);
   clerk.board.scale.x = walker.x > clerk.group.position.x + 0.3 ? -1 : 1;
   const left = (clerk.hopUntil || 0) - now;
   clerk.board.position.y = !calm && left > 0 ? Math.abs(Math.sin(left / 600 * Math.PI * 2)) * 0.3 : 0;
@@ -1009,9 +1009,8 @@ export function warmMart() {
     post.final.uniforms.uBlur.value = 0;
     post.final.uniforms.uBloom.value = 0.45;
     buildRoom();
-    clerk = await monBoard({ src: 'assets/pokemon/kecleon-front.gif', name: 'Kecleon', cry: 'kecleon' }, false);
-    clerk.board.rotation.x = -PITCH;
-    clerk.group.position.set(tileX(CLERK.x), 0.16, tileZ(CLERK.y) + 0.2);
+    clerk = await trainerBoard('assets/trainers/britt.png');
+    clerk.group.position.set(tileX(CLERK.x), 0, tileZ(CLERK.y) + 0.2);
     clerk.group.traverse(n => { n.userData.spot = 'clerk'; });
     scene.add(clerk.group);
     wares = { group: new THREE.Group(), list: [] };
@@ -1094,6 +1093,28 @@ async function restock(list, bought) {
   scene.add(wares.group);
 }
 
+/** Britt behind the counter (the user's friend, a Gym Leader off duty; she took over from Kecleon, 2026-10-13): a still
+    trainer sprite, feet at the group's origin. */
+async function trainerBoard(src) {
+  const res = await fetch(src);
+  if (!res.ok) throw new Error(src);
+  const img = await createImageBitmap(await res.blob());
+  const w = img.width, h = img.height, c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, w, h).data;
+  let bottom = 0, left = w, right = 0;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3] > 8) { bottom = y; left = Math.min(left, x); right = Math.max(right, x); }
+  const board = new THREE.Mesh(new THREE.PlaneGeometry(w * NPC_PX, h * NPC_PX), new THREE.MeshStandardMaterial({ map: tex(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }));
+  board.castShadow = true;
+  board.geometry.translate((w / 2 - (left + right + 1) / 2) * NPC_PX, (bottom + 1 - h / 2) * NPC_PX, 0);
+  board.rotation.x = -PITCH;
+  const group = new THREE.Group();
+  group.add(board);
+  return { group, board };
+}
+
 let monReady = null;
 function ensureMon(mate) {
   if (monReady?.src !== mate.src) {
@@ -1101,6 +1122,7 @@ function ensureMon(mate) {
     monReady = monBoard(mate).then(m => {
       if (old) scene.remove(old.group);
       m.board.rotation.x = -PITCH;
+      m.group.scale.setScalar(Math.min(1, MON_MAX / m.top));
       scene.add(m.group);
       return (mon = m);
     });

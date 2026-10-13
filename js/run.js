@@ -1417,8 +1417,8 @@ function enterNode(node) {
 
   if (node.type === 'rest' || node.type === 'shop') {
     playSound('door');
-    // Chansey or Kecleon greets you once the door has chimed (here, not in the room, which redraws after every purchase)
-    setTimeout(() => playCry(node.type === 'rest' ? 'chansey' : 'kecleon'), 700);
+    // Chansey greets you once the door has chimed (here, not in the room, which redraws after every purchase); Britt runs the Mart
+    if (node.type === 'rest') setTimeout(() => playCry('chansey'), 700);
   }
   if (node.type === 'rest') return restSite();
   if (node.type === 'treasure') return treasureRoom();
@@ -3149,7 +3149,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
       if (btn.disabled) { playSound('cancel'); return sayLines([why(options[i])]); }
       btn.click();
     },
-    onClerk: () => sayLines(['Kecleon: Welcome! Take a good look round. Tap anything on the shelves to see it up close.']),
+    onClerk: () => sayLines(['Britt: Welcome! Take a good look round. Tap anything on the shelves to see it up close.']),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
   })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })

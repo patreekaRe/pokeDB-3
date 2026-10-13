@@ -49,6 +49,8 @@ export const NEXT = [
   ['mall', 'The Blackjack and High-Low tables have their names glowing on the carpet at their feet, in pink and gold.'],
   ['mall', 'Squirtle Bubble Shooter plays one soft bloop when you shoot, not two sounds.'],
   ['mall', 'The arcade cabinets\' ◀ ▶ buttons tick softly as you press them, and no button plays a second menu blip.'],
+  ['fixes', 'In the Poké Mart a big Pokémon like Reshiram no longer stops you tapping the wares behind it, and it stands a little smaller there.'],
+  ['runs', 'Britt, a Gym Leader off duty, now runs the Poké Mart counter in place of Kecleon.'],
   ['mall', 'Arcade buttons, joysticks, the card tables\' keys and the Game Corner cabinet now give a little buzz on phones as you press them (Settings > Vibration turns it off).'],
   ['mall', 'Squirtle Bubble Shooter\'s bubbles are glossy arcade marbles now, each with its type\'s mark inside, and the whole Poké Mall is sharp, with no blur.'],
   ['mall', 'Squirtle Bubble Shooter has a brass launcher like the arcade classic, with two Squirtles, one of them shiny, facing each other across it. One pulls the next bubble out of a bag and loads it after every shot, and both hop when bubbles pop.'],

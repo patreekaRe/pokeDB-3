@@ -362,9 +362,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **The walk-in 3D Poké Mart** (branch `pokemart-3d`, 2026-10-09, the user's ask: "like the Pokémon Center"): the run's Mart
-  as a 3D room (`js/mart-3d.js`), every ware on one wall unit, Kecleon's counter with the PC. The user playtests it on the
-  branch (`?mart`); on their OK, merge it into `main`. ▶ Run in: LOCAL (visual).
+- **Mart fixes on branch `claude/pokedex-title-cry-bug-4bqe5z`** (2026-10-13, Britt's playtest): in `js/mart-3d.js` a tap
+  goes to the ware behind your Pokémon (Reshiram's sprite swallowed every tap), your Pokémon is capped at `MON_MAX` 1.6
+  tall there, and Britt (`assets/trainers/britt.png`, the user's friend, a Gym Leader off duty) runs the counter in place of
+  Kecleon (`trainerBoard()`). The user playtests the branch; on their OK, push to `main` (and cut the patch: `NEXT` is past
+  `RELEASE_AT`). ▶ Run in: CLOUD.
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
 - Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
   Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
