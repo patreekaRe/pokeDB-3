@@ -55,7 +55,7 @@ const LAWRENCE = {
 };
 
 export const GYM_LEADERS = [
-  leader('lawrence', 'GAY TWINK LAWRENCE', 'clearing', ['snorlax', 'kangaskhan'], 'Glitter Badge', LAWRENCE),
+  leader('lawrence', 'GAY TWINK DADDY LAWRENCE', 'clearing', ['snorlax', 'kangaskhan'], 'Glitter Badge', LAWRENCE),
   leader('britt', 'BRITT', 'clearing', ['miltank'], 'Acorn Badge'),
   leader('john', 'JOHN', 'shrine', ['stoutland', 'exploud'], 'Lantern Badge'),
   leader('jahmes', 'JAHMES', 'shrine', ['ursaring'], 'Torii Badge'),

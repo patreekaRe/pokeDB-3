@@ -378,7 +378,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
   | Biome | Leader (id) | Bosses | Badge |
   |---|---|---|---|
-  | Clearing | GAY TWINK LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Glitter |
+  | Clearing | GAY TWINK DADDY LAWRENCE (`lawrence`) | Snorlax, Kangaskhan | Glitter |
   | Clearing | BRITT (`britt`) | Miltank | Acorn |
   | Shrine | JOHN (`john`) | Stoutland, Exploud | Lantern |
   | Shrine | JAHMES (`jahmes`) | Ursaring | Torii |
@@ -394,7 +394,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   **Walking up starts it** (2026-10-13, the user couldn't battle Lawrence): the room said "walk up to them", but only a tap
   right on the leader or the small Battle sign started the talk; walking up the court by floor taps did nothing. Now
   reaching the steps or a tap anywhere on the dais does (a spot's `walkUp` / `area` in `js/event-3d.js`).
-  **Lawrence** (2026-10-13, the user's sprite and personality): `assets/trainers/gym/lawrence.png`; married to Britt,
+  **Lawrence** (2026-10-13, the user's sprite and personality; named GAY TWINK DADDY LAWRENCE, the user's call): `assets/trainers/gym/lawrence.png`; married to Britt,
   secretly gay, always on about his boyfriends, wants every match over fast to play Valorant with the boys, hiding it all
   from his wife. A leader's `intro` / `beaten` / `won` can now be a list of speeches, one picked at random (`talkOf()` in
   `js/data/gym.js`): Lawrence has 7 / 5 / 5. `won` is new: when a leader's boss beats you they say it over the battle
