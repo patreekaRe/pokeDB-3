@@ -3703,7 +3703,7 @@ async function buildTown(figs, { look, time, town }) {
   }));
   B.spots = [{ step: { x: board.x, y: board.y + 1 } }];
   B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
-  const cart = map.findIndex(row => row.includes('='));   // a mine cart at the rails' end
+  const cart = map.findLastIndex(row => row.includes('='));   // a mine cart at the rails' far end, away from the mine's door
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
   springs(map, L, steam);
   if (smoke.length) puffs(smoke.map(([x, y, z]) => [x, y, z]), { col: 'rgba(150,140,136,0.7)', n: 3, size: 0.5, rise: 1.8, speed: 0.14 });

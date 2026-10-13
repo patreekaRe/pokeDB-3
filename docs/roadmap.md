@@ -60,7 +60,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its
    Japanese furniture shop, requests paying PokéCoins, inviting a townsperson to the Secret Base."
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
-   and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36): crags and
+   and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
    open-air springs steaming, the mine head with its turning wheel and rails, a timber mine gate out, ash falling and
    embers rising; Heatmor's Forge holds the trade, Shaun and Clarence at home (Clarence live for the boys from 9 p.m.), 8
