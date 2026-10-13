@@ -30,9 +30,13 @@ The settled calls (the user's, 2026-10-13):
   chat with, and a townsperson to invite to the Secret Base. All five mended: a reward to decide then.
 - Townsfolk reuse the Game Corner crowd's code (`makeCrowd()` in `js/corner-crowd.js`, lines in a data file per town).
 
+**On branch `towns` only, never pushed to `main` until the user says** (the user's call, 2026-10-13, like `secret-base`):
+every session works on `towns`, gives a pinned playtest link (`rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html`),
+and merges `main` into it now and then so it doesn't drift.
+
 Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk one straight in):
 1. **The Shrine's lantern village, in a run.** ▶ Run in: CLOUD (attach pokeDB-3). Prompt: "Read CLAUDE.md and
-   docs/roadmap.md's Towns and Waystones entry. Build the first town, the Shrine's lantern village: a 3D place walked
+   docs/roadmap.md's Towns and Waystones entry. Work on branch `towns` (create it from `main`), never push to `main`. Build the first town, the Shrine's lantern village: a 3D place walked
    between the journey film and the Shrine's map (the Center / event-3d way), its Gym Leaders standing about with lines,
    a few townsfolk on the crowd code, one small trade and a request board (requests tracked across runs, the town's
    friendship saved), the walk out of its far gate into the biome, and `?town=shrine`. Keep it out of Mewtwo and Safari
