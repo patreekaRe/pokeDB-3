@@ -55,7 +55,7 @@ const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
 /** A town's size is its map's, a home's its HOMES entry's. */
 function sizeOf(kind, at) {
   if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 12, across: 12, shadow: 16, pitch: 0.7, follow: true };
-  if (kind === 'home') return homeSize(at.home);
+  if (kind === 'home') return homeSize(at.town?.id, at.home);
   return SIZES[kind];
 }
 function useSize(r) {
@@ -2849,15 +2849,17 @@ function footprint(map, ch) {
   return { x0, y0, x1, y1, w: x1 - x0 + 1, h: y1 - y0 + 1, cx: tileX((x0 + x1) / 2), cz: tileZ((y0 + y1) / 2) };
 }
 
-/** The ground from the map: the forest's floor, roads of stone flags, plots under the buildings, tall grass and flowers. */
-function townGround(L, map) {
+/** The ground from the map: the forest's floor, roads of stone flags, plots under the buildings, tall grass and flowers,
+    the mine's rails and the springs' wet rims; the litter over it all is the town's (`S.litter`). */
+function townGround(L, map, S) {
   return (c) => {
     const g = c.getContext('2d'), T = 16, r = seeded(71), W = COLS * T, H = ROWS * T;
     const each = (fn) => map.forEach((row, y) => [...row].forEach((ch, x) => fn(ch, x, y)));
     g.save();
     each((ch, x, y) => {
-      if (ch === 'T') { g.fillStyle = 'rgba(30,50,30,0.45)'; g.fillRect(x * T, y * T, T, T); }
-      else if (ch === ',') { g.fillStyle = 'rgba(40,90,40,0.35)'; g.fillRect(x * T - 1, y * T - 1, T + 2, T + 2); }
+      if (ch === 'T') { g.fillStyle = S.under; g.fillRect(x * T, y * T, T, T); }
+      else if (ch === ',') { g.fillStyle = S.scrub; g.fillRect(x * T - 1, y * T - 1, T + 2, T + 2); }
+      else if (ch === 'o') { g.fillStyle = 'rgba(30,24,22,0.55)'; g.beginPath(); g.roundRect(x * T - 3, y * T - 3, T + 6, T + 6, 5); g.fill(); }
       else if (/[A-Z]/.test(ch) && ch !== 'T' && ch !== 'L' && ch !== 'R') { g.fillStyle = L.stone[3]; g.globalAlpha = 0.55; g.fillRect(x * T - 2, y * T - 2, T + 4, T + 4); g.globalAlpha = 1; }
     });
     const roads = () => { g.beginPath(); each((ch, x, y) => { if (ROADY.has(ch)) g.rect(x * T, y * T, T, T); }); };
@@ -2871,26 +2873,58 @@ function townGround(L, map) {
       if (r() < 0.2) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     }
     g.restore();
+    rails(g, map, T);
     g.save();
     each((ch, x, y) => {
       if (ch !== 'f') return;
       for (let i = 0; i < 7; i++) {
         const fx = x * T + 2 + r() * (T - 4), fy = y * T + 2 + r() * (T - 4);
-        g.fillStyle = ['#ffffff', '#f8d040', '#f890b0', '#f8a060'][i % 4]; g.beginPath(); g.arc(fx, fy, 1.3, 0, Math.PI * 2); g.fill();
+        g.fillStyle = S.flowers[i % 4]; g.beginPath(); g.arc(fx, fy, 1.3, 0, Math.PI * 2); g.fill();
         g.fillStyle = '#f8c838'; g.fillRect(fx - 0.35, fy - 0.35, 0.7, 0.7);
       }
     });
     for (let i = 0; i < 900; i++) {
       const x = r() * W, y = r() * H, road = ROADY.has(map[Math.floor(y / T)]?.[Math.floor(x / T)]);
       if (road && r() < 0.75) continue;
-      g.fillStyle = MAPLE[Math.floor(r() * 4)]; g.globalAlpha = 0.85;
       g.save(); g.translate(x, y); g.rotate(r() * 6.3);
-      g.beginPath(); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; g.lineTo(Math.cos(a) * 1.5, Math.sin(a) * 1.5); g.lineTo(Math.cos(a + 0.63) * 0.6, Math.sin(a + 0.63) * 0.6); } g.fill();
+      S.litter(g, r);
       g.restore();
     }
     g.restore();
     return c;
   };
+}
+
+/** A fallen maple leaf, at the origin. */
+function mapleLitter(g, r) {
+  g.fillStyle = MAPLE[Math.floor(r() * 4)]; g.globalAlpha = 0.85;
+  g.beginPath(); for (let k = 0; k < 5; k++) { const a = k / 5 * Math.PI * 2; g.lineTo(Math.cos(a) * 1.5, Math.sin(a) * 1.5); g.lineTo(Math.cos(a + 0.63) * 0.6, Math.sin(a + 0.63) * 0.6); } g.fill();
+  g.globalAlpha = 1;
+}
+
+/** Ash drifted on the ground, a cinder now and then. */
+function ashLitter(g, r) {
+  const ember = r() < 0.12;
+  g.fillStyle = ember ? (r() < 0.5 ? '#e8702a' : '#f8a830') : ['#8a827c', '#a69e96', '#6a625c'][Math.floor(r() * 3)];
+  g.globalAlpha = ember ? 0.9 : 0.55;
+  g.beginPath(); g.ellipse(0, 0, ember ? 0.6 : 1.4 + r(), ember ? 0.6 : 0.7, 0, 0, Math.PI * 2); g.fill();
+  g.globalAlpha = 1;
+}
+
+/** The mine's rails on their tiles ('='): ballast, sleepers across, two rails along, joined to the next rail tile. */
+function rails(g, map, T) {
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== '=') return;
+    const across = row[x - 1] === '=' || row[x + 1] === '=';
+    g.save();
+    g.translate(x * T + T / 2, y * T + T / 2);
+    if (!across) g.rotate(Math.PI / 2);
+    g.fillStyle = 'rgba(40,32,28,0.6)'; g.fillRect(-T / 2, -5.5, T, 11);
+    g.fillStyle = '#5a3e2c';
+    for (let i = -T / 2 + 1.5; i < T / 2; i += 4) g.fillRect(i, -5, 2.2, 10);
+    for (const ry of [-3, 3]) { g.fillStyle = '#3a3438'; g.fillRect(-T / 2, ry - 0.7, T, 1.4); g.fillStyle = '#a8a4ac'; g.fillRect(-T / 2, ry - 0.7, T, 0.5); }
+    g.restore();
+  }));
 }
 
 /** Many of one shape, cheaply: an instanced mesh over `at` ([x, z, scale, turn, colour?]). */
@@ -3186,32 +3220,325 @@ function leafArt(col) {
   return f.c;
 }
 
-async function buildTown(figs, { look: L, time, town }) {
-  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: townGround(L, map) });
+/* Cinder Springs, the Wastes' (Lavaridge's): crags and dead trees for its forest, adobe houses on stone with clay roofs
+   and smoking chimneys, a bathhouse, the mine's headframe and rails, steaming springs, a timber mine gate out, ash
+   drifting down and embers rising. */
+
+/** The crags round the town, a rock a tile: boulders, spires of rock, a dead tree now and then; the front rows rubble. */
+function crags(map, L, rnd) {
+  const rocks = [], spires = [], dead = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'T') return;
+    B.blocked.add(key(x, y));
+    const cx = tileX(x) + (rnd() - 0.5) * 0.4, cz = tileZ(y) + (rnd() - 0.5) * 0.4;
+    if (y >= ROWS - 2) { rocks.push([cx, cz, 0.45 + rnd() * 0.3, rnd() * 6, L.rock[1 + Math.floor(rnd() * 2)]]); return; }   // low, so it never hides you
+    const k = rnd();
+    if (k < 0.4) spires.push([cx, cz, 0.7 + rnd() * 0.8, rnd() * 6, L.rock[Math.floor(rnd() * 3)]]);
+    else if (k < 0.48) dead.push([cx, cz, 0.8 + rnd() * 0.5, rnd() * 6]);
+    rocks.push([cx + (rnd() - 0.5) * 0.3, cz + (rnd() - 0.5) * 0.3, 0.7 + rnd() * 0.6, rnd() * 6, L.rock[Math.floor(rnd() * 3)]]);
+  }));
+  const rock = new THREE.DodecahedronGeometry(0.62, 0); rock.scale(1, 0.72, 1); rock.translate(0, 0.32, 0);
+  instanced(rock, std({ color: '#ffffff', roughness: 1, flatShading: true }), rocks);
+  const spire = new THREE.ConeGeometry(0.42, 2.3, 6, 2); spire.translate(0, 1.15, 0);
+  instanced(spire, std({ color: '#ffffff', roughness: 1, flatShading: true }), spires);
+  const bark = std({ color: '#4a3a34', roughness: 1 });
+  const trunk = new THREE.CylinderGeometry(0.05, 0.11, 1.7, 6); trunk.translate(0, 0.85, 0);
+  instanced(trunk, bark, dead);
+  for (const [tilt, up, len] of [[0.9, 1.0, 0.7], [-0.8, 1.3, 0.55], [0.6, 1.55, 0.4]]) {
+    const b = new THREE.CylinderGeometry(0.02, 0.045, len, 5); b.translate(0, len / 2, 0); b.rotateZ(tilt); b.translate(0, up, 0);
+    instanced(b, bark, dead);
+  }
+}
+
+/** A soft puff, for chimney smoke and the springs' steam. */
+function puffArt(col) {
+  const f = fine(16, 16, 6), { g } = f, r = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+  r.addColorStop(0, col); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 16, 16);
+  return f.c;
+}
+
+/** Puffs rising off `from` ([x, y, z] each), swelling and fading as they go: `n` a source, `size`, `rise` in tiles. */
+function puffs(from, { col = 'rgba(240,240,236,0.85)', n = 3, size = 0.6, rise = 1.6, speed = 0.18 } = {}) {
+  const art = puffArt(col), all = [];
+  for (const [x, y, z] of from) for (let i = 0; i < n; i++) {
+    const sp = sprite(art, size);
+    sp.userData = { x, y, z, at: i / n + Math.random() * 0.1, speed: speed * (0.8 + Math.random() * 0.4), sway: Math.random() * 6 };
+    all.push(sp);
+  }
+  B.ticks.push((now) => {
+    for (const sp of all) {
+      const u = sp.userData, t = (u.at + now / 1000 * u.speed) % 1;
+      sp.visible = !calm;
+      sp.position.set(u.x + Math.sin(t * 4 + u.sway) * 0.2 + t * 0.3, u.y + t * rise, u.z);
+      sp.scale.setScalar(size * (0.5 + t * 1.2));
+      sp.material.opacity = Math.min(1, t * 6) * (1 - t);
+    }
+  });
+}
+
+/** An adobe house's front: a plank door with a little lit window, a lit window either side, a stone footing. */
+function cabinFront(w) {
+  const W = Math.round(w * 20), f = fine(W, 30, 6), { g, rr, lin } = f, s = f.shine();
+  g.fillStyle = lin(0, 0, 0, 30, ['#e4cca8', '#d4b892']); g.fillRect(0, 0, W, 30);
+  g.fillStyle = 'rgba(120,80,50,0.12)'; for (let i = 0; i < 40; i++) g.fillRect(Math.random() * W, Math.random() * 30, 2, 0.6);
+  for (let x = 0; x < W; x += 5) for (const y of [25, 27.5]) rr(x + ((y > 26) ? 2.5 : 0) + 0.3, y, 4.4, 2.3, 0.6, ['#8a7a6c', '#a0907e', '#766658'][Math.floor(Math.random() * 3)]);
+  const lit = (x, y, w, h) => {
+    rr(x - 1, y - 1, w + 2, h + 2, 0.6, '#4a2e1c');
+    for (const ctx of [g, s]) { const r = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, w); r.addColorStop(0, '#fff4c8'); r.addColorStop(1, '#f8a040'); ctx.fillStyle = r; ctx.fillRect(x, y, w, h); }
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#4a2e1c'; ctx.fillRect(x + w / 2 - 0.4, y, 0.8, h); ctx.fillRect(x, y + h / 2 - 0.4, w, 0.8); }
+  };
+  const mid = W / 2;
+  rr(mid - 5, 9, 10, 21, 0.8, '#4a2e1c');
+  rr(mid - 4, 10, 8, 20, 0.6, lin(mid - 4, 0, mid + 4, 0, ['#8a5a34', '#a06a40', '#8a5a34']));
+  g.fillStyle = 'rgba(40,20,10,0.4)'; for (let x = mid - 2; x < mid + 4; x += 2) g.fillRect(x, 10, 0.5, 20);
+  lit(mid - 1.8, 12.5, 3.6, 3.2);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(mid + 2.6, 21, 0.7, 0, Math.PI * 2); g.fill();
+  if (W > 40) { lit(mid - 14, 10, 6, 6); lit(mid + 8, 10, 6, 6); }
+  return f.c;
+}
+
+/** A gable roof's end: two straight slopes, `t` thick. */
+function gableShape(half, rise, t) {
+  const s = new THREE.Shape();
+  s.moveTo(-half, 0); s.lineTo(0, rise); s.lineTo(half, 0); s.lineTo(half, -t); s.lineTo(0, rise - t); s.lineTo(-half, -t); s.closePath();
+  return s;
+}
+
+/** The hot-spring mark, ♨: a bowl and three wavy plumes (drawn, so no font needs the glyph). */
+function onsenMark(g, x, y, k, col) {
+  g.strokeStyle = col; g.lineWidth = 1.4 * k; g.lineCap = 'round';
+  g.beginPath(); g.ellipse(x, y + 3 * k, 6 * k, 3 * k, 0, 0.15, Math.PI - 0.15); g.stroke();
+  for (const dx of [-3, 0, 3]) {
+    g.beginPath(); g.moveTo(x + dx * k, y + 2 * k);
+    g.bezierCurveTo(x + (dx - 1.6) * k, y - 1 * k, x + (dx + 1.6) * k, y - 3 * k, x + dx * k, y - 6 * k); g.stroke();
+  }
+}
+
+/** The bathhouse's banner: indigo, the ♨ mark, its name. */
+function bathSign(name) {
+  const f = fine(96, 22, 8), { g, rr, lin } = f;
+  rr(0, 0, 96, 22, 2.5, '#2a3a5a');
+  rr(1.8, 1.8, 92.4, 18.4, 1.6, lin(0, 0, 0, 22, ['#3a5a8a', '#2a4268']));
+  onsenMark(g, 13, 11.5, 1, '#f8f0e0');
+  g.fillStyle = '#f8f0e0'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillText(name, 55, 12, 66);
+  return f.c;
+}
+
+/** An adobe house on a stone footing, its front to you: lit windows, a plank door, a clay roof in its Pokémon colour, a
+    chimney smoking. `big`: the bathhouse, two storeys of it with a tall stack steaming and its banner. A tap is its door. */
+function cabin(b, f, L, lit, smoke) {
+  const big = b.kind === 'bathhouse', g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz + 0.05);
+  B.group.add(g);
+  const w = f.w - 0.35, d = f.h - 0.6, h = big ? 2.3 : 1.45;
+  const adobe = std({ color: '#dcc4a0', roughness: 1 }), dark = std({ color: '#4a2e1c', roughness: 0.8 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
+  const art = cabinFront(w), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 });
+  lit.push(front);
+  mesh(rbox(w + 0.25, 0.18, d + 0.25, 0.04), stone, 0, 0.09, 0, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, dark, dark, front, adobe], 0, 0.18 + h / 2, 0, g);
+  for (const sx of [-1, 1]) for (let k = 0; k < (big ? 6 : 4); k++) {   // stone quoins up the corners
+    mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), stone, sx * (w / 2 + 0.01), 0.3 + k * 0.38, d / 2 + 0.01, g).castShadow = false;
+  }
+  if (big) mesh(new THREE.BoxGeometry(w + 0.12, 0.12, d + 0.12), dark, 0, 0.18 + h * 0.55, 0, g);
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
+  const geo = new THREE.ExtrudeGeometry(gableShape(d / 2 + 0.3, big ? 1.1 : 0.85, 0.1), { depth: w + 0.4, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.4) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], 0, 0.18 + h, 0, g);
+  const cw = big ? 0.5 : 0.28, ch = big ? 1.9 : 1.0, chx = (w / 2 - (big ? 0.7 : 0.35)) * (b.id.charCodeAt(0) % 2 ? 1 : -1);
+  mesh(new THREE.BoxGeometry(cw, ch, cw), stone, chx, 0.18 + h + ch / 2, -0.1, g);
+  mesh(new THREE.BoxGeometry(cw + 0.08, 0.08, cw + 0.08), dark, chx, 0.18 + h + ch, -0.1, g);
+  smoke.push([f.cx + chx, 0.3 + h + ch, f.cz - 0.05, big]);
+  const awn = std({ color: roof[1], roughness: 0.9, side: THREE.DoubleSide });   // a little porch roof over the door
+  const porch = mesh(new THREE.BoxGeometry(big ? 1.6 : 0.9, 0.05, 0.45), awn, 0, 0.18 + (big ? 1.2 : 1.05), d / 2 + 0.2, g);
+  porch.rotation.x = 0.35;
+  if (big) {
+    panel(bathSign(b.name), 2.2, 0.5, f.cx, 0.18 + h * 0.55 + 0.55, f.cz + 0.05 + d / 2 + 0.07);
+    const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
+    for (const dx of [-0.32, 0, 0.32]) mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, 0.18 + 0.95, d / 2 + 0.06, g).castShadow = false;
+  } else if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, 0.18 + h * 0.9, f.cz + 0.05 + d / 2 + 0.04);
+  if (b.kind === 'shop') {   // the forge's anvil sign on a bracket
+    mesh(new THREE.BoxGeometry(0.05, 0.05, 0.5), dark, w / 2 - 0.25, 0.18 + h * 0.8, d / 2 + 0.25, g);
+    const sign = mesh(new THREE.BoxGeometry(0.42, 0.3, 0.04), std({ color: '#e0602a', roughness: 0.6 }), w / 2 - 0.25, 0.18 + h * 0.8 - 0.22, d / 2 + 0.45, g);
+    sign.rotation.y = Math.PI / 2;
+  }
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });   // a lamp by the door
+  lit.push(glow);
+  mesh(new THREE.BoxGeometry(0.12, 0.17, 0.12), glow, (big ? 1.0 : 0.62), 0.18 + 0.95, d / 2 + 0.1, g).castShadow = false;
+  return g;
+}
+
+/** The mine gate out, timber on stone cairns: two posts, braces, a beam with the town's name hung from it on chains, a
+    lamp on each post. Its posts block their tiles; the way between them is `R.exitAt`. */
+function mineGate(x, z, span, tall, name, lit) {
+  const wood = std({ color: '#6a4a32', roughness: 0.9 }), dark = std({ color: '#3a2a20', roughness: 0.9 }), stone = std({ color: '#7a6a62', roughness: 1, flatShading: true });
+  const iron = std({ color: '#3a3a40', metalness: 0.6, roughness: 0.5 });
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  for (const sgn of [-1, 1]) {
+    const px = sgn * span / 2;
+    mesh(new THREE.DodecahedronGeometry(0.38, 0), stone, px, 0.2, 0, g).scale.set(1, 0.6, 1);
+    mesh(rbox(0.24, tall, 0.24, 0.03), wood, px, tall / 2, 0, g);
+    const brace = mesh(new THREE.BoxGeometry(0.1, 0.9, 0.1), wood, px - sgn * 0.3, tall - 0.75, 0, g);
+    brace.rotation.z = sgn * 0.75;
+    const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+    lit.push(glow);
+    mesh(new THREE.BoxGeometry(0.14, 0.2, 0.14), glow, px, tall * 0.55, 0.18, g).castShadow = false;
+    mesh(new THREE.BoxGeometry(0.18, 0.04, 0.18), iron, px, tall * 0.55 + 0.12, 0.18, g);
+  }
+  mesh(rbox(span + 0.8, 0.22, 0.28, 0.03), wood, 0, tall, 0, g);
+  mesh(rbox(span + 0.3, 0.14, 0.22, 0.03), dark, 0, tall - 0.42, 0, g);
+  for (const sx of [-0.7, 0.7]) mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.3, 4), iron, sx, tall - 0.62, 0.08, g);
+  panel(signArt(name.toUpperCase()), 1.7, 0.36, x, tall - 0.95, z + 0.1).userData.spot = 'exit';
+  const way = mesh(new THREE.PlaneGeometry(span - 0.3, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
+  way.castShadow = way.receiveShadow = false;
+  g.traverse(o => { o.userData.spot = 'exit'; });
+  return g;
+}
+
+/** The mine head over its footprint: a shed with the shaft's dark mouth, a timber headframe over it whose wheel turns,
+    and a mine cart on the rails out front. */
+function minehead(f, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const wood = std({ color: '#6a4a32', roughness: 0.9 }), dark = std({ color: '#2a1e18', roughness: 0.9 }), iron = std({ color: '#4a4a52', metalness: 0.6, roughness: 0.45 });
+  const plank = std({ color: '#8a6a4a', roughness: 0.95 }), stone = std({ color: '#7a6a62', roughness: 1, flatShading: true });
+  const w = f.w - 0.6, d = f.h - 0.8;
+  mesh(rbox(w + 0.3, 0.2, d + 0.3, 0.04), stone, 0, 0.1, 0, g);
+  mesh(new THREE.BoxGeometry(w, 1.3, d * 0.55), plank, 0, 0.85, d * 0.2, g);
+  const roofMat = std({ map: roofTiles(['#8a8a96', '#62626e', '#44444e'], 2, 1), roughness: 0.6, metalness: 0.3 });
+  const geo = new THREE.ExtrudeGeometry(gableShape(d * 0.3 + 0.25, 0.55, 0.08), { depth: w + 0.3, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.3) / 2, 0, 0);
+  mesh(geo, [roofMat, dark], 0, 1.5, d * 0.2, g);
+  mesh(new THREE.BoxGeometry(1.0, 1.0, 0.1), dark, 0, 0.7, d * 0.2 + d * 0.275 + 0.01, g);   // the shaft's mouth
+  for (const sx of [-0.55, 0.55]) mesh(new THREE.BoxGeometry(0.14, 1.2, 0.14), wood, sx, 0.8, d * 0.2 + d * 0.275 + 0.05, g);
+  mesh(new THREE.BoxGeometry(1.3, 0.16, 0.16), wood, 0, 1.38, d * 0.2 + d * 0.275 + 0.05, g);
+  // the headframe: four legs leaning in, braced, the wheel on top
+  const top = 3.6, bz = -d * 0.2;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const leg = mesh(new THREE.BoxGeometry(0.12, top + 0.2, 0.12), wood, sx * 0.75, top / 2, bz + sz * 0.55, g);
+    leg.rotation.z = -sx * 0.12; leg.rotation.x = sz * 0.08;
+  }
+  for (let k = 1; k < 4; k++) {
+    const y = k * top / 4, s = 0.75 - k * 0.11;
+    for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(s * 2 + 0.1, 0.08, 0.08), wood, 0, y, bz + sz * (0.55 - k * 0.07), g);
+    for (const sx of [-1, 1]) mesh(new THREE.BoxGeometry(0.08, 0.08, (0.55 - k * 0.07) * 2 + 0.1), wood, sx * s, y, bz, g);
+  }
+  mesh(new THREE.BoxGeometry(0.7, 0.12, 1.0), wood, 0, top, bz, g);
+  const wheel = new THREE.Group();
+  wheel.position.set(0, top + 0.6, bz);
+  g.add(wheel);
+  mesh(new THREE.TorusGeometry(0.5, 0.05, 8, 28), iron, 0, 0, 0, wheel);
+  for (let k = 0; k < 6; k++) mesh(new THREE.BoxGeometry(0.03, 1.0, 0.03), iron, 0, 0, 0, wheel).rotation.z = k * Math.PI / 6;
+  mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.16, 10), iron, 0, 0, 0, wheel).rotation.x = Math.PI / 2;
+  for (const sx of [-0.3, 0.3]) mesh(new THREE.BoxGeometry(0.06, 0.7, 0.06), wood, sx, top + 0.3, bz, g);
+  mesh(new THREE.CylinderGeometry(0.012, 0.012, top - 0.2, 4), iron, 0.5, (top + 0.4) / 2, bz, g);
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  mesh(new THREE.BoxGeometry(0.14, 0.18, 0.14), glow, 0.7, 1.15, d * 0.2 + d * 0.275 + 0.12, g).castShadow = false;
+  B.ticks.push((now) => { if (!calm) wheel.rotation.z = -now / 2600; });
+  return g;
+}
+
+/** A mine cart standing on the rails, full of ore. */
+function mineCart(x, z) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const iron = std({ color: '#5a5258', metalness: 0.5, roughness: 0.55 }), rust = std({ color: '#8a4a2c', roughness: 0.8 });
+  mesh(rbox(0.8, 0.42, 0.55, 0.05), rust, 0, 0.4, 0, g);
+  mesh(new THREE.BoxGeometry(0.84, 0.05, 0.59), iron, 0, 0.6, 0, g);
+  for (const sx of [-0.25, 0.25]) for (const sz of [-0.24, 0.24]) mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 12), iron, sx, 0.1, sz, g).rotation.x = Math.PI / 2;
+  const ore = std({ color: '#4a4044', roughness: 1, flatShading: true }), gem = std({ color: '#f0a040', emissive: new THREE.Color('#f08030'), emissiveIntensity: 0.6, roughness: 0.4 });
+  const rnd = seeded(5);
+  for (let i = 0; i < 7; i++) mesh(new THREE.DodecahedronGeometry(0.09 + rnd() * 0.05, 0), i % 3 ? ore : gem, (rnd() - 0.5) * 0.5, 0.64 + rnd() * 0.06, (rnd() - 0.5) * 0.3, g);
+  return g;
+}
+
+/** The springs ('o' tiles): steaming water a hand below the ground, rimmed with rocks. Their steam rises from `steam`. */
+function springs(map, L, steam) {
+  const water = std({ color: '#68c8d0', emissive: new THREE.Color('#3aa0b0'), emissiveIntensity: 0.25, roughness: 0.1, metalness: 0.1 });
+  const rim = [], rnd = seeded(61), isO = (x, y) => map[y]?.[x] === 'o';
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'o') return;
+    B.blocked.add(key(x, y));
+    const m = mesh(new THREE.BoxGeometry(1.02, 0.06, 1.02), water, tileX(x), 0.05, tileZ(y));
+    m.castShadow = false;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      if (isO(x + dx, y + dy)) continue;
+      for (let i = 0; i < 3; i++) {
+        const along = (i - 1) * 0.34 + (rnd() - 0.5) * 0.1;
+        rim.push([tileX(x) + dx * 0.5 + (dy ? along : 0), tileZ(y) + dy * 0.5 + (dx ? along : 0), 0.28 + rnd() * 0.16, rnd() * 6, L.rock[Math.floor(rnd() * 2)]]);
+      }
+    }
+    if (rnd() < 0.6) steam.push([tileX(x) + (rnd() - 0.5) * 0.4, 0.15, tileZ(y) + (rnd() - 0.5) * 0.4]);
+  }));
+  const rock = new THREE.DodecahedronGeometry(0.5, 0); rock.scale(1, 0.6, 1); rock.translate(0, 0.12, 0);
+  instanced(rock, std({ color: '#ffffff', roughness: 1, flatShading: true }), rim);
+  B.ticks.push((now) => { water.emissiveIntensity = calm ? 0.25 : 0.25 + Math.sin(now / 900) * 0.06; });
+}
+
+/** An ember, for the ones rising off the town. */
+function emberArt(col) {
+  const f = fine(8, 8, 8), { g } = f, r = g.createRadialGradient(4, 4, 0, 4, 4, 4);
+  r.addColorStop(0, '#fff4c0'); r.addColorStop(0.35, col); r.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 8, 8);
+  return f.c;
+}
+
+/** A flake of ash, for the ones falling. */
+function ashArt() {
+  const f = fine(8, 8, 8), { g } = f;
+  g.fillStyle = '#b8b0a8'; g.beginPath(); g.ellipse(4, 4, 2.6, 1.6, 0.4, 0, Math.PI * 2); g.fill();
+  return f.c;
+}
+
+/** How each town's dressed (js/data/towns.js's `style`; the Shrine's is the village): the ground's tints, its flowers and
+    litter, its forest, houses and gate, what drifts through the air, and its lamps. */
+const TOWN_STYLES = {
+  village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
+    trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
+    gate: (town, lit) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name),
+    drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
+  springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
+    look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
+    trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
+    gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
+    drift: (i) => (i % 3 ? { art: ashArt(), size: 0.1 } : { art: emberArt(i % 2 ? '#f8a030' : '#f06020'), size: 0.12, rise: true }) },
+};
+
+async function buildTown(figs, { look, time, town }) {
+  const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
+  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: townGround(L, map, S) });
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
   B.talks = new Set();
   B.shotTop = 2.4;
   B.speed = 5.6;
-  const lit = [];
-  forest(map, L, rnd);
+  const lit = [], smoke = [], steam = [];
+  S.trees(map, L, rnd);
   townGrass(map, L, rnd);
-  torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name);
+  S.gate(town, lit);
   B.exitAt = { ...town.gate };
   B.doors = {};
+  const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L), minehead: (b, f) => minehead(f, L, lit) };
   for (const b of town.buildings) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
-    const g = b.kind === 'pagoda' ? pagoda(f.cx, f.cz, L) : b.kind === 'theater' ? theater(b, f, L, lit) : b.kind === 'waystone' ? waystone(f, L) : house(b, f, L, lit);
+    const g = LANDMARKS[b.kind]?.(b, f) ?? S.house(b, f, L, lit, smoke);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
     g.traverse(o => { o.userData.spot = `door:${b.id}`; });
   }
   let board = null;
   map.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === 'L' || ch === 'b') {
-      const m = piece(ch === 'L' ? 'stonelantern' : 'bench', x, y, { scale: ch === 'L' ? 0.95 : 0.9 });
+    if (ch === 'L' || ch === 'b' || ch === 'c' || ch === 'k') {
+      const m = piece({ L: S.lamp, b: 'bench', c: 'crate', k: 'barrel' }[ch], x, y, { scale: ch === 'L' ? S.lampScale ?? 0.95 : 0.9, turn: ch === 'c' ? (x % 2) * 0.4 : 0 });
       m?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
       B.blocked.add(key(x, y));
     }
@@ -3219,11 +3546,17 @@ async function buildTown(figs, { look: L, time, town }) {
   }));
   B.spots = [{ step: { x: board.x, y: board.y + 1 } }];
   B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
-  // lanterns glow brighter as it gets dark; maple leaves drift down
+  const cart = map.findIndex(row => row.includes('='));   // a mine cart at the rails' end
+  if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
+  springs(map, L, steam);
+  if (smoke.length) puffs(smoke.map(([x, y, z]) => [x, y, z]), { col: 'rgba(150,140,136,0.7)', n: 3, size: 0.5, rise: 1.8, speed: 0.14 });
+  const stacks = smoke.filter(s => s[3]);
+  if (stacks.length || steam.length) puffs([...steam, ...stacks.map(([x, y, z]) => [x, y, z])], { col: 'rgba(250,250,248,0.8)', n: 2, size: 0.7, rise: 1.4, speed: 0.2 });
+  // lanterns glow brighter as it gets dark; the town's leaves (or ash and embers) drift through the air
   const dark = time === 'night' ? 1.6 : time === 'dusk' ? 1.2 : time === 'dawn' ? 0.9 : 0.55;
   const leaves = Array.from({ length: Math.min(90, Math.round(COLS * ROWS / 12)) }, (_, i) => {
-    const sp = sprite(leafArt(MAPLE[i % 4]), 0.18 + (i % 3) * 0.03);
-    sp.userData = { x: (Math.random() - 0.5) * COLS, z: (Math.random() - 0.5) * ROWS, at: Math.random(), speed: 0.05 + Math.random() * 0.05, sway: Math.random() * 6 };
+    const d = S.drift(i), sp = sprite(d.art, d.size);
+    sp.userData = { x: (Math.random() - 0.5) * COLS, z: (Math.random() - 0.5) * ROWS, at: Math.random(), speed: 0.05 + Math.random() * 0.05, sway: Math.random() * 6, rise: d.rise };
     return sp;
   });
   B.ticks.push((now) => {
@@ -3232,7 +3565,7 @@ async function buildTown(figs, { look: L, time, town }) {
     for (const sp of leaves) {
       const u = sp.userData, t = (u.at + now / 1000 * u.speed) % 1;
       sp.visible = !calm;
-      sp.position.set(u.x + Math.sin(t * 9 + u.sway) * 0.4, 4.2 - t * 4.2, u.z + Math.cos(t * 5 + u.sway) * 0.2);
+      sp.position.set(u.x + Math.sin(t * 9 + u.sway) * 0.4, u.rise ? 0.3 + t * 4 : 4.2 - t * 4.2, u.z + Math.cos(t * 5 + u.sway) * 0.2);
       sp.material.opacity = Math.min(1, t * 8, (1 - t) * 6);
       sp.material.rotation = t * 7 + u.sway;
     }
@@ -3241,14 +3574,25 @@ async function buildTown(figs, { look: L, time, town }) {
 
 /* ---------- inside a town's houses ---------- */
 
-/** A home's room: its size (the theater is bigger), the floor, and what stands in it, [piece, x, y, options]. */
+/** A town's homes (by town, then its `homes` key): the room's size (the theater and bathhouse are bigger), the floor,
+    what stands in it ([piece, x, y, options]), where its Gym Leader stands (`leaderAt`) and its cast (`castAt`: the
+    bathers, each [x, ty, y] in a pool). */
 const HOMES = {
+  shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
   john: { floor: 'tatami', furnish: [['tv', 3, 0], ['console', 5, 1], ['kotatsu', 3, 2], ['zabuton', 2, 2], ['zabuton', 5, 3], ['computer', 7, 0], ['shelf', 0, 0], ['bookstack', 8, 2], ['daruma', 0, 3], ['plant', 8, 4]] },
   jahmes: { floor: 'planks', furnish: [['singlebed', 1, 0], ['nightstand', 2, 0], ['alarmclock', 2, 0, { y: 0.55, scale: 0.72, free: true }], ['alarmclock', 0, 0], ['alarmclock', 3, 0], ['wardrobe', 4, 0], ['computer', 6, 0], ['swivelchair', 6, 1], ['speakerstack', 7, 0], ['beanbag', 7, 3], ['plant', 0, 4]] },
-  theater: { cols: 11, rows: 9, floor: 'stage', furnish: [['taiko', 0, 2], ['taiko', 10, 2], ['kimonostand', 0, 0], ['kimonostand', 10, 0], ['zabuton', 3, 5], ['zabuton', 5, 5], ['zabuton', 7, 5], ['zabuton', 4, 6], ['zabuton', 6, 6], ['andon', 1, 6], ['andon', 9, 6]] },
+  theater: { cols: 11, rows: 9, floor: 'stage', stage: true, furnish: [['taiko', 0, 2], ['taiko', 10, 2], ['kimonostand', 0, 0], ['kimonostand', 10, 0], ['zabuton', 3, 5], ['zabuton', 5, 5], ['zabuton', 7, 5], ['zabuton', 4, 6], ['zabuton', 6, 6], ['andon', 1, 6], ['andon', 9, 6]] },
+  },
+  wastes: {
+    shop: { floor: 'flags', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['brazier', 2, 0], ['anvil', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['barrel', 8, 4], ['steamrocks', 1, 1], ['plant', 8, 1]] },
+    shaun: { floor: 'planks', leaderAt: { x: 4, ty: 2.2 }, furnish: [['desk', 3, 0], ['computer', 3, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 4, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 4, 1], ['serverrack', 0, 0], ['serverrack', 1, 0], ['bookstack', 7, 0], ['bookstack', 8, 0], ['beanbag', 7, 3], ['console', 1, 4], ['plant', 8, 4]] },
+    clarence: { floor: 'planks', leaderAt: { x: 4, ty: 2.6 }, furnish: [['speakerstack', 0, 0], ['speakerstack', 8, 0], ['computer', 3, 0], ['swivelchair', 3, 1], ['wardrobe', 5, 0], ['sofa', 6, 4], ['dresser', 0, 3], ['plant', 0, 5]] },
+    bath: { cols: 11, rows: 9, floor: 'tiles', castAt: [[1.5, 0.5, -0.3], [4.5, 0.5, -0.3], [7.5, 0.5, -0.3], [2.5, 3.5, -0.3], [6.5, 3.5, -0.3]],
+      furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 6, 3], ['steamrocks', 0, 0], ['steamrocks', 10, 0], ['okebucket', 0, 2], ['okebucket', 10, 2], ['milkfridge', 0, 6], ['massagechair', 10, 6], ['yukatarack', 10, 4], ['washbasin', 0, 4], ['shishiodoshi', 9, 3]] },
+  },
 };
-const homeSize = (id) => ({ cols: HOMES[id]?.cols || 9, rows: HOMES[id]?.rows || 7, across: HOMES[id]?.cols ? 7.5 : 6.2 });
+const homeSize = (town, id) => { const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
 function homeFloor(kind) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
@@ -3258,6 +3602,13 @@ function homeFloor(kind) {
       rr(x * T + 0.6, y * T + 0.6, 2 * T - 1.2, T - 1.2, 1, lin(0, y * T, 0, (y + 1) * T, ['#dcd494', '#c8bc78']));
       g.fillStyle = '#3a5a3a'; g.fillRect(x * T + 0.6, y * T + 0.6, 2 * T - 1.2, 1.2); g.fillRect(x * T + 0.6, (y + 1) * T - 1.8, 2 * T - 1.2, 1.2);
     }
+  } else if (kind === 'flags') {   // the forge's flagstones
+    g.fillStyle = '#3a302c'; g.fillRect(0, 0, W, H);
+    const r = seeded(17);
+    for (let y = 0; y < H; y += 8) for (let x = -(y / 8 % 2) * 5; x < W; x += 10) rr(x + 0.4, y + 0.4, 9.2, 7.2, 1.2, ['#8a7a6e', '#7a6a60', '#968678'][Math.floor(r() * 3)]);
+  } else if (kind === 'tiles') {   // the bathhouse's blue and white tiles
+    for (let y = 0; y < H; y += 4) for (let x = 0; x < W; x += 4) { g.fillStyle = (x + y) % 8 ? '#e8f0f4' : '#b8d4e4'; g.fillRect(x, y, 4, 4); }
+    g.fillStyle = 'rgba(80,110,130,0.35)'; for (let x = 0; x < W; x += 4) g.fillRect(x, 0, 0.3, H); for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 0.3);
   } else planks(f, W, H, T, kind === 'stage' ? ['#a87048', '#8a5a38'] : ['#c89a68', '#b0845a']);
   if (kind === 'stage') { g.fillStyle = 'rgba(160,30,40,0.85)'; g.fillRect(W / 2 - T, 4 * T, 2 * T, H - 4 * T); }
   return f.c;
@@ -3280,8 +3631,8 @@ function homeWall(width, time, { window: win = true, curtain = false } = {}) {
 }
 
 async function buildHome(figs, { time, town, home }) {
-  const h = HOMES[home] || {};
-  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: home !== 'theater', curtain: home === 'theater' }), side: () => homeWall(ROWS * U, time, { window: false }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  const h = HOMES[town.id]?.[home] || {};
+  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage, curtain: !!h.stage }), side: () => homeWall(ROWS * U, time, { window: false }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = 2.1;
   B.talks = new Set();
   for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
@@ -3293,18 +3644,35 @@ async function buildHome(figs, { time, town, home }) {
   }
   const leader = town.homes[home]?.leader;
   if (leader && figs[leader]) {
-    B.who[leader] = await figure(leader, figs[leader], home === 'john' ? { x: 4, ty: 1.4 } : { x: 3, ty: 2.4 });
+    B.who[leader] = await figure(leader, figs[leader], h.leaderAt ?? (home === 'john' ? { x: 4, ty: 1.4 } : { x: 3, ty: 2.4 }));
     B.talks.add(leader);
   }
-  if (home === 'theater') {
+  if (h.castAt) {   // the bathers, up to their chins in the pools, bobbing now and then
+    const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
+    for (const [i, k] of ids.entries()) {
+      const [x, ty, y] = h.castAt[i % h.castAt.length], id = k.slice(5);
+      B.who[id] = await figure(id, { ...figs[k], flip: i % 2 === 1 }, { x, ty, y, scale: 0.85 });
+      B.talks.add(id);
+    }
+    const steam = h.furnish.filter(([id]) => id === 'onsenpool').map(([, x, y]) => [tileX(x + 0.5), 0.3, tileZ(y + 0.5)]);
+    puffs(steam, { col: 'rgba(255,255,255,0.7)', n: 3, size: 0.8, rise: 1.6, speed: 0.15 });
+    let next = 0, turn = 0;
+    const who = B.who;
+    B.ticks.push((now) => {
+      if (calm || now < next || !ids.length) return;
+      next = now + 2600;
+      does(who[ids[turn++ % ids.length].slice(5)], 'hop');
+    });
+  }
+  if (h.stage) {
     // the stage across the back, the five dancers on it, one after another stepping out in a hop
     const stage = std({ color: '#7a4a2a', roughness: 0.7 });
     mesh(rbox(COLS - 2.2, 0.4, 3.2, 0.05), stage, 0, 0.2, tileZ(1));
     mesh(new THREE.BoxGeometry(COLS - 2.1, 0.04, 0.12), std({ color: '#e8c050', metalness: 0.6, roughness: 0.3 }), 0, 0.41, tileZ(1) + 1.58);
     for (let x = 1; x < COLS - 1; x++) for (let y = 0; y < 3; y++) B.blocked.add(key(x, y));
-    const ids = Object.keys(figs).filter(k => k.startsWith('dancer:'));
+    const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
     for (const [i, k] of ids.entries()) {
-      const id = k.slice(7);
+      const id = k.slice(5);
       B.who[id] = await figure(id, { ...figs[k], flip: i < ids.length / 2 }, { x: 2.3 + i * 1.6, ty: 1 + (i % 2) * 0.6, y: 0.4 });
       B.talks.add(id);
     }
@@ -3313,7 +3681,7 @@ async function buildHome(figs, { time, town, home }) {
     B.ticks.push((now) => {
       if (calm || now < next || !ids.length) return;
       next = now + 900;
-      does(who[ids[turn++ % ids.length].slice(7)], 'hop');
+      does(who[ids[turn++ % ids.length].slice(5)], 'hop');
     });
   }
   B.env = INDOORS;

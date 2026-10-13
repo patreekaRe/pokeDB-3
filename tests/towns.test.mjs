@@ -15,6 +15,7 @@ test('every town stands at a real biome, with its own Gym Leaders and folk who c
     assert.deepEqual(Object.keys(town.leaders).sort(), leadersOf(town.biome).map(l => l.id).sort(), `${id}: its leaders are the biome's`);
     for (const lid of Object.keys(town.leaders)) assert.ok(GYM_BY_ID[lid] && town.leaders[lid].length >= 3);
     for (const f of [...town.folk, { id: town.trader.id }]) assert.ok(existsSync(new URL(`../assets/pokemon/${f.id}-front.gif`, import.meta.url)), `${id}: ${f.id} has no front GIF`);
+    for (const home of Object.values(town.homes)) for (const id of Object.keys(home.cast || {})) assert.ok(existsSync(new URL(`../assets/pokemon/${id}-front.gif`, import.meta.url)), `${id}: no front GIF`);
     for (const f of town.folk) for (const k of ['quips', 'play', 'you']) assert.ok(f[k]?.length, `${f.id}.${k}`);
     for (const k of ['deciding', 'stand', 'arriving', 'leaving', 'nearYou']) assert.ok(town.shared[k]?.length, `${id}: shared.${k}`);
   }
@@ -54,13 +55,13 @@ test("a town's map: square, its buildings' letters there, every door, stand and 
     const { map } = town, W = map[0].length;
     assert.ok(map.every(row => row.length === W), `${town.id}: ragged map`);
     const letters = new Set(town.buildings.map(b => b.at));
-    for (const ch of new Set(map.join(''))) assert.ok('T.#,fLbR'.includes(ch) || letters.has(ch), `${town.id}: '${ch}' isn't a building`);
+    for (const ch of new Set(map.join(''))) assert.ok('T.#,fLbR=cko'.includes(ch) || letters.has(ch), `${town.id}: '${ch}' isn't a building`);
     for (const b of town.buildings) {
       assert.ok(map.some(row => row.includes(b.at)), `${b.id}: not on the map`);
       if (b.home) assert.ok(town.homes[b.home], `${b.id}: no home ${b.home}`);
       if (b.door && !b.home) assert.ok(b.knock?.length, `${b.id}: locked with nothing to say`);
     }
-    const open = (x, y) => '.#,f'.includes(map[y]?.[x] ?? 'T');
+    const open = (x, y) => '.#,f='.includes(map[y]?.[x] ?? 'T');
     const seen = new Set([`${town.door.x},${town.door.y}`]), queue = [[town.door.x, town.door.y]];
     assert.ok(open(town.door.x, town.door.y));
     while (queue.length) {

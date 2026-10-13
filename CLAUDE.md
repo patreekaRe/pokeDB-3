@@ -866,7 +866,13 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   is `R.exitAt`, its houses' doors `R.doors`, its folk `townCrowd()` on `makeCrowd()`, its camera higher, `pitch`). Houses
   with a `home` are walked into (`homeRoom()` in `js/run.js`, kind `home`, `HOMES` in `js/event-3d.js`: Delibird's shop
   holds the trade, the Gym Leaders are at home, `R.talks`), the rest knock. A town makes no run stronger: one sidegrade
-  trade, requests paying PokéCoins. `?town=shrine`.
+  trade, requests paying PokéCoins. `?town=shrine`. Since session 3 (2026-10-13) the Wastes' **Cinder Springs** too (`?town=wastes`):
+  a town's `style` picks its dress (`TOWN_STYLES` in `js/event-3d.js`: ground tints, flowers, litter, forest, houses, gate,
+  lamps, what drifts; the Shrine's is `village`, the Wastes' `springs`: `crags()`, adobe `cabin()`s with smoking chimneys,
+  `mineGate()`, `minehead()`, `springs()` on `o` tiles, `puffs()` of smoke and steam), its map tiles `= c k o` (rails,
+  crate, barrel, spring) beside the village's; `HOMES` is by town (`leaderAt`, `castAt` for the bathers, `stage` for the
+  theater), a home's `cast` its Pokémon to chat to, `nightAt` / `nightSub` / `night` its leader's evening (Jahmes asleep
+  at 23, Clarence live at 21). A new town is a `TOWNS` entry, a style (or the village's), and a `HOMES` line a home.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.

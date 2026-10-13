@@ -1654,8 +1654,8 @@ function townRoom(covered = null, at = null) {
 }
 
 /** A town house you walk into (js/data/towns.js's `homes`): its own small room, its doormat back out onto its doorstep.
-    Delibird's shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
-    dancers. */
+    The shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
+    dancers, the bathhouse its bathers (a home's `cast`). */
 function homeRoom(b) {
   const town = TOWNS[run.town.id], home = town.homes[b.home], thisRun = run, t = run.town;
   const out = () => { if (run === thisRun) townRoom(null, b.door); };
@@ -1681,10 +1681,10 @@ function homeRoom(b) {
             again();
           }));
   }
-  const sleepy = home.night && (new Date().getHours() >= 23 || new Date().getHours() < 6);
+  const hour = new Date().getHours(), sleepy = home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [sleepy ? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    sub: [sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
     options,
     skipLabel: 'Leave',
     onSkip: out,
@@ -1694,16 +1694,16 @@ function homeRoom(b) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.leader) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
-  for (const id of Object.keys(home.dancers || {})) figures[`dancer:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
+  for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
     extra: { town, home: b.home, onTalk: (stand) => {
       if (run !== thisRun) return;
-      const lines = home.dancers?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
+      const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
       if (!lines) return;
       const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
-      said(lines[n], home.dancers ? '' : GYM_BY_ID[stand]?.name);
+      said(lines[n], home.cast ? '' : GYM_BY_ID[stand]?.name);
     } },
     onFail: out,
   });

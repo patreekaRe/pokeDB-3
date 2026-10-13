@@ -60,7 +60,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its
    Japanese furniture shop, requests paying PokéCoins, inviting a townsperson to the Secret Base."
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
-   and Waystone. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
+   and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36): crags and
+   dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
+   open-air springs steaming, the mine head with its turning wheel and rails, a timber mine gate out, ash falling and
+   embers rising; Heatmor's Forge holds the trade, Shaun and Clarence at home (Clarence live for the boys from 9 p.m.), 8
+   locked houses, 10 folk (Geodude, Numel, Slugma, Torkoal, Machop, Cubone, Vulpix, Larvitar, Drilbur, Houndour; 11 cries
+   added), its own 5 requests and Waystone. Built as a `style` over the village's code (CLAUDE.md's Gateway towns), so
+   the next three are a style, a map and lines each. Its Waystone is broken like the village's (mending is session 2's).
+   Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's playtest. Next town: the Sunken Ruins' stilted
+   fishing village (or session 2, the Waystone ring, if the user wants that first). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
    <biome>'s town the way the Shrine's was built, then its Waystone."
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
