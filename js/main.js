@@ -163,6 +163,7 @@ function initPokedexButton() {
   $('brand-btn').append(homeKey());
   $('room-home').append(homeKey());
   $('brand-btn').addEventListener('click', () => openPokedex({ dex: runBiome(), safari: runSafariArea() }));
+  $('map-dex-btn').addEventListener('click', () => (runSafariArea() !== undefined ? openDeviceApp('safari', runSafariArea()) : openDeviceApp('dex', runBiome())));
   // leaving from inside the device puts it away once the confirm (if any) has said yes
   $('abandon-btn').addEventListener('click', async () => { if (await requestAbandon()) hideDevice(); });
 }

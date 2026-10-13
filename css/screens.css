@@ -4520,6 +4520,18 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) { --hinge-h: 44px; }
 .mdex-hinge .pdx-lens { width: 30px; height: 30px; border-width: 3px; }
 .mdex-lights { display: flex; gap: 5px; }
 .mdex-lights .pdx-light { width: 9px; height: 9px; }
+/* the Pokédex shortcut, after the Home key (30px, laid over the hinge at the lights' end): this biome's page at a tap
+   (the user's ask, 2026-10-13) */
+.map-dex-btn {
+  flex: none; margin-left: 38px; height: 28px; padding: 0 10px; cursor: pointer;
+  border: 2px solid var(--shell-rim); border-radius: 999px;
+  background: linear-gradient(var(--shell-hi), var(--shell) 60%, var(--shell-lo));
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--shell-deep);
+  color: #fff; font: 0.75rem var(--pixel-font); font-synthesis-weight: none; white-space: nowrap;
+  text-shadow: 0 1px 0 var(--shell-deep); -webkit-tap-highlight-color: transparent; transition: translate 0.06s, box-shadow 0.06s;
+}
+.map-dex-btn:active { translate: 0 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 1px 0 var(--shell-deep); }
+#map-screen.tower .map-dex-btn { display: none; }
 #map-screen .mdex-hinge .map-head {
   flex: 0 1 auto; min-width: 0; display: flex; align-items: center;
   margin: 0 0 0 auto; padding: 5px 10px; border: 3px solid var(--shell-rim); border-radius: 8px;
