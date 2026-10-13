@@ -53,6 +53,7 @@ export const NEXT = [
   ['runs', 'You take the Gym badge from its arch every time you beat a Gym Leader, not just the first, and a rematch counts how many times you\'ve beaten them.'],
   ['runs', 'After a Gym battle your Pokémon evolves right after you take the badge, there in the gym, then walks out to its rewards.'],
   ['look', 'An evolution plays out in full: a tap no longer skips the song.'],
+  ['look', 'When you pick a new move, a gently pulsing SKIP label sits under the Skip key, so it is easy to find.'],
   ['fixes', 'Tall Gym Leaders like Phil no longer have their head cut off by the arch behind them.'],
   ['base', 'Touch-ups in 3D: the treasure hoard\'s chest stands open over a heap of real coins with a crown and a goblet, the Sky Palace orbs sit in a gold cup with their halo ringing them, the play tent has a real doorway with its flaps tied back, the tall Center plant has real leaves, and what stands on kitchen counters and office desks is life size: toasters, kettles, microwaves, mixers, laptops, typewriters and the rest.'],
 ];

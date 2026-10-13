@@ -216,6 +216,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   else $('reward-reroll').after(skip);
   skip.classList.toggle('room-leave', inBar);
   skip.classList.toggle('room-skip', roomy && !inBar);
+  // the move picks spell it out under the key, pulsing gently: the icon alone was missed after a boss (the user's ask, 2026-10-13)
+  skip.classList.toggle('labelled', /\blearn-room\b/.test(layout) && skipLabel === 'Skip');
   skip.hidden = !onSkip;
   skip.style.visibility = '';   // an event's gift hides it this way
   skip.disabled = false;   // a take holds it, inert, while the thing flies to the Bag
