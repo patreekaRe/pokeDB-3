@@ -1015,7 +1015,7 @@ const GARDEN = {
   grass: ['#98d868', '#7ac050', '#5aa040'], dirt: ['#d8b888', '#b89868'],
 };
 const CEDAR = {
-  ...GARDEN, look: 'cedar', sky: ['#4e7e58', '#7aa088', '#b8d0c0'], far: ['#7a9a84', '#6a8a74'], leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36'],
+  ...GARDEN, look: 'cedar', sky: ['#6a8cb4', '#9cb8d0', '#dce6e8'], far: ['#7a9a84', '#6a8a74'], leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36'],
   trunk: ['#9a6a50', '#5a362a'], stone: ['#b8c0aa', '#a2ac94', '#909e86', '#7a8870'], gap: '#4e5a48', moss: '#7ab060',
   bamboo: ['#b0a070', '#8a7850', '#5e5034', '#2a2418'], rock: ['#d0d4c0', '#a8ae98', '#7c846e', '#4e5444'],
   water: ['#f0fff8', '#b0f0e0', '#70d0c0', '#3a9aa0', '#20687a'], edge: '#4a4a38', under: '#24241a',
@@ -1033,7 +1033,7 @@ const ROCK = {
 };
 const LOOKS = {
   clearing: GARDEN, shrine: CEDAR, wastes: ROCK,
-  thornwood: { ...GARDEN, sky: ['#4a8a58', '#7ab080', '#c0e0b8'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], drift: ['#c8f078', '#78c048'], grass: ['#5aa048', '#3e8a38', '#2a6a2c'], dirt: ['#8a6a48', '#6a5038'] },
+  thornwood: { ...GARDEN, sky: ['#4a8ed0', '#8cc0e4', '#d4ecf0'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], drift: ['#c8f078', '#78c048'], grass: ['#5aa048', '#3e8a38', '#2a6a2c'], dirt: ['#8a6a48', '#6a5038'] },
   savanna: { ...GARDEN, sky: ['#f0a860', '#f8c888', '#fce8c0'], far: ['#d8b070', '#c89c5c'], leaf: ['#b8b850', '#8a9a3a', '#6a7a2c', '#4a5a20'], stone: ['#e8d0a8', '#dcc298', '#ceb488', '#bca070'], gap: '#9a7a50', moss: '#b8a858', drift: ['#fff0a0', '#f8a830'], grass: ['#e0c878', '#c8b060', '#a89048'], dirt: ['#e8d0a0', '#c8a878'] },
   ruins: { ...CEDAR, stone: ['#d8c8a0', '#c8b890', '#b8a880', '#a09068'], rock: ['#e0d0a8', '#c0b088', '#988860', '#6a5a40'], water: ['#f0fffc', '#a8e8f0', '#58c0d8', '#2888b0', '#145a88'], fence: ['#e8d8b0', '#c0a878', '#8a7450'], roof: ['#e0d0a8', '#b0a078', '#7a6a48'], grass: ['#8ab878', '#6a9a60', '#4a7a4c'], dirt: ['#d8c8a0', '#b8a880'] },
   depths: { ...ROCK, sky: ['#140c24', '#2a1a48', '#4a2a70'], stone: ['#4a4058', '#40384e', '#383046', '#30283c'], gap: '#140c1c', rock: ['#6a5a80', '#4e4064', '#382c4a', '#20182c'], vein: ['#e0a0ff', '#a050f0'], roof: ['#6a5a80', '#4e4064', '#382c4a'], drift: ['#f0d0ff', '#b070f0'], grass: ['#4a4060', '#3e3652', '#322a44'], dirt: ['#5a5070', '#4a4060'] },

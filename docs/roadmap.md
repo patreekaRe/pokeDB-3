@@ -205,7 +205,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    are cut so they bend (`fineTris()`). Archived in `docs/roadmap-done.md`, details in `docs/reference/towns.md`.
    **Done (2026-10-14): a view past every town** (the user: "I don't like that wall of green"): the back wall and sky dome
    are gone; each town stands the Clearing's vista painting (`vistaArt()`, in its own colours: `TOWN_VISTAS` in
-   `js/event-3d.js`) on its back edge, and its sides are trees only. Details in `docs/reference/towns.md`.
+   `js/event-3d.js`) on its back edge, and its sides are trees only. Then the Shrine/Ruins and Thornwood looks' green skies became
+   blue (every outdoor room there). Details in `docs/reference/towns.md`.
    **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
    `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set

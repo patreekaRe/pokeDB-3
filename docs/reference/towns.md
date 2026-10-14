@@ -174,6 +174,10 @@ plain top sky; the room's background is that sky's top colour, so nothing flat s
 `TOWN_VISTAS` line by style (a trail on from the gate where there's a road; the lagoon's ground is sea; Cinder Springs a
 warm volcanic haze). Painted at 32 px a unit (about 2000 x 450), not the Clearing's 48: the tilt-shift blurs it anyway.
 
+**No green skies** (2026-10-14, the user: "maybe its the green sky i dont like"). The cedar look's sky (the Shrine, and the
+Ruins, which inherit it) and Thornwood's were greens; both are blues now (`CEDAR` and `LOOKS.thornwood` in
+`js/event-3d.js`), so every outdoor ? room, event and the towns' room colour under them read as sky.
+
 **The Gym Leaders' homes, inside** (2026-10-14, the user: "they're so small and very bland, we need to beef them up
 ALOT"). A town home with a `leader` is built by `js/leader-homes.js`, not `HOMES` in `js/event-3d.js` (`buildHome()`
 hands it the room's kit; the leaders' old `HOMES` lines are gone). Every one is 13 x 10 (`LEADER_SIZE`, `view: 8`, the
