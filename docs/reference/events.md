@@ -28,7 +28,8 @@ trails at L5, ~56%, with or without the new events). Paid choices use `moneyOpti
 unaffordable, and HP costs never faint you), and money/HP is only taken once
 the reward is actually received, so "Back" is free. Team Rocket's Battle
 runs `fight()` with a copy of the node typed `elite`, so it pays elite
-rewards; it has no Leave. A new event needs an entry in both places, an
+rewards; it has no Leave. Its Run goes straight to the map once the run-away plays (`doorOut(showMap)`, the user's call,
+2026-10-14), no walking back out. A new event needs an entry in both places, an
 icon in `ICONS` for any new emoji, and a `RUN_SAVE_VERSION` bump only if the
 node shape changes.
 

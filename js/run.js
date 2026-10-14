@@ -3290,7 +3290,8 @@ const EVENT_CHOICES = {
         loseHp(flee);
         await showHpChange();
         tell(`Got away, but lost ${flee} HP.`);
-        done();
+        checkpoint();
+        doorOut(showMap)();   // you ran past them: straight on to the map, no walking back out (the user's call, 2026-10-14)
       }),
     ] };
   },
