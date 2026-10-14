@@ -191,7 +191,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the locked houses stepped adobe `cottage()`s, the bathhouse timbered with a pent roof and lanterns. Then the benches
    (the user: "move those benches somewhere else"): off the Waystone's island and the open ash (each painted a stray
    cobble), now on paved nooks off the roads, two looking onto the springs, two either side of the road to the forge.
-   Waiting on the user's playtest.
+   Then (the user, again: "move any awkward brazier torches... and move those benches somewhere else"): one bench on a
+   paved terrace looking down over the lava moat (row 12, between Clarence's road and the gate road), one in a little
+   square before the forge where its road meets the main one (row 29); braziers in pairs at the mine's mouth, the way in
+   and the lava bridge, the strays (in the ash, behind the forge, squeezed by the bathhouse) gone. Waiting on the user's
+   playtest.
    **Done (2026-10-14): Sunwell Bazaar's clean-up** (the user: nothing specific, "go ahead with the checklist"): the
    diagonal caravan road kept but three wide (two through the gate), the jetty two wide with a rope railing and a pale
    trim, pale stones along the watering hole's bank, huts a and d gone (their knocks moved onto b, e, g and h), the rest
