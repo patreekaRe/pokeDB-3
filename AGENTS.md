@@ -12,6 +12,7 @@ three places:
 
 ## Where we left off (2026-10-14)
 
+- 2026-10-14: **Streetlamps moved to grassy street corners** (branch `towns`): 24 lamps now mark the inside and outside corners of the ring road and avenue junctions, with grass-only clearance from roads, paths, plaza and pond walk. Browser loaded `?aerial&time=night&season=none`, no console errors.
 - 2026-10-14: **Cleared the Waystone plaza of streetlamps** (branch `towns`): removed the three lamps closest to the Waystone; avenue lighting remains. Added a patch-notes line. Browser-checked at `?aerial&time=day`, no console errors. Commit `059ddfc`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/059ddfcf35a646ec85b5e0ee5c11438c3264de4d/index.html?aerial&time=day>.
 - 2026-10-14: **Violet Fissure moved onto grass** (branch `towns`): shifted it one tile north off the west avenue. Checked
   in the browser at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
