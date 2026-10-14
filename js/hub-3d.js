@@ -90,10 +90,10 @@ const BUGS = 90;
 // the Safari gate and the Sky Pillar in the back corners, out on the meadow, each up a trail off the ring road
 const SAFARI_AT = { tx: 4, ty: -3 };
 const PILLAR_AT = { tx: 28, ty: -3 };
-// each by its top-left tile: the Nietos' house in the lower-right garden (steps stopping short of the south street);
+// each by its top-left tile: the Nietos' house in the lower-right garden (steps meeting the south street);
 // Kenmatta's dojo north-west, the Ancient Tree / Secret Base north-east; the Poké Mall in the lower-left garden; the
 // Sealed Gate on the old Mall site, once broken
-const NIETOS_AT = { tx: 23, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
+const NIETOS_AT = { tx: 23, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
@@ -1368,7 +1368,7 @@ function nietosHouse(g, x, z) {
     const flowers = ['#e85868', '#f8d850', '#c088e8'];
     for (let i = 0; i < 3; i++) add(new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 6), std({ color: flowers[i] })), wx + (i - 1) * 0.26, 0.99, fz + 0.2);
   }
-  // A little covered porch makes the entrance feel lived in; the short steps stop before the south street.
+  // A little covered porch makes the entrance feel lived in; the last step meets the south street's edge.
   const porch = add(new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.16, 0.88), stone), 0, 0.29, D / 2 + 0.39);
   porch.castShadow = false;
   const canopy = add(new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.14, 0.88), roofM), 0, bodyTop + 0.06, D / 2 + 0.3);
@@ -1659,7 +1659,7 @@ function makePlaces() {
     id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: rect(NIETOS_AT.tx - 1, NIETOS_AT.ty, NIETOS_AT.tx + 4, NIETOS_AT.ty + 1), tag: [NIETOS_AT.tx + 1, 4.1, NIETOS_AT.ty + 1.6], open: true,
     line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
     buttons: [['Go in', () => {}]],
-    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 0.65)),
+    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 0.335)),
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,

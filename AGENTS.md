@@ -19,6 +19,8 @@ three places:
   preview `?aerial` and `?hubat=25,12`, waiting on the user's visual playtest. Gym Leader visits remain switched off.
 - 2026-10-14: **Poké Mall moved down to the street** (branch `towns`): moved it two tiles south and aligned the front doors
   flush with the south ring road, so the entrance meets the street. Waiting on the user's visual playtest of `?aerial`.
+- 2026-10-14: **Nietos' house moved down to the street** (branch `towns`): shifted it about two-thirds of a tile south so
+  its bottom step meets the south ring road; its approach step is on the road. Waiting on the user's visual playtest.
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
   PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in

@@ -886,7 +886,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
   asked: like Gen 3's Secret Power bases), the Poké Mall in the lower-left garden (`MALL_TILE`), moved south so its front
   doors meet the south ring road (`MALL_AT`), the Nietos' house in the
-  lower-right garden (`NIETOS_AT`; its steps stop before the south street), the PC in its marked place beside the plaza,
+  lower-right garden (`NIETOS_AT`; its front steps meet the south ring road), the PC in its marked place beside the plaza,
   facing the player head-on (`PC_AT`), a pond garden down the south avenue (`POND`), the Sealed Gate at the old Mall site
   on the west side once unlocked (`SEALED_AT`); the moved garden beds and seasonal pumpkin patch keep clear of the buildings;
   lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,

@@ -99,9 +99,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     PC into the small blue space by the plaza, facing the player square-on; and moved the Sealed Gate to the purple site
     on the west side. Removed the beds under the buildings and moved Halloween's pumpkin patch clear of the home. Next:
     the user's visual playtest of `?aerial` before another layout pass.
-     **Done (2026-10-14): the Poké Mall meets the street** (branch `towns`, follow-up to pass 3): moved the Mall two tiles
-     south and aligned its front doors flush with the south ring road. The player approaches from the street. Next: the user's
-     visual playtest of `?aerial`.
+    **Done (2026-10-14): the Poké Mall meets the street** (branch `towns`, follow-up to pass 3): moved the Mall two tiles
+    south and aligned its front doors flush with the south ring road. The player approaches from the street. Next: the user's
+    visual playtest of `?aerial`.
+    **Done (2026-10-14): the Nietos' house meets the street** (branch `towns`): moved it about two-thirds of a tile south
+    and lined the bottom step up with the south ring road. Its approach step is on the road. Next: the user's visual playtest
+    of `?aerial`.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 
