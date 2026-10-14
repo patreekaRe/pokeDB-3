@@ -101,6 +101,8 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
 const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
+// Kurt's Workshop (its top-left tile) in the plaza's north-east, its door on a path down to the east avenue
+const WORKSHOP_AT = { tx: 23, ty: 6 };
 // the pond in the garden at the south avenue's end, down past the ring road (the user's drawing, 2026-10-14: by the ring
 // road it crowded the Waystone), the low road round the garden running into it from the ring road's sides
 const POND = { x: 15, y: 21.6, r: 1.5 };
@@ -129,6 +131,7 @@ const ROADS = [
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, POND.y], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the low road
   { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, POND.y], w: 0.6 },
+  { a: [WORKSHOP_AT.tx + 1, WORKSHOP_AT.ty + 2.6], b: [WORKSHOP_AT.tx + 1, START.y], w: 0.6, towns: true },   // Kurt's doorstep down to the east avenue
 ];
 // round the pond, a ring of stone to walk
 const RINGS = [{ x: POND.x, y: POND.y, r: POND.r + 0.75, w: 0.42 }];
@@ -233,7 +236,7 @@ function groundArt() {
   const snowy = (c, x, y) => (GROUND.snowy ? mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.6 : 0.2) : c);
   const roadsAt = (u, v, dirt) => {
     let d = Infinity;
-    for (const r of ROADS) if (!!r.dirt === dirt) d = Math.min(d, seg(u, v, [r.a, r.b]) - r.w);
+    for (const r of ROADS) if (!!r.dirt === dirt && !(r.towns && !townsOpen())) d = Math.min(d, seg(u, v, [r.a, r.b]) - r.w);
     if (!dirt) for (const r of RINGS) d = Math.min(d, Math.abs(Math.hypot(u - r.x, v - r.y) - r.r) - r.w);
     return d;
   };
@@ -1727,6 +1730,77 @@ function nietosSign(g, x, z) {
   add(new THREE.BoxGeometry(W + 0.14, 0.05, 0.18), std({ color: '#2e5e98' }), 0, RY + 0.025, -0.03);
 }
 
+/** Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): a timber workshop on a stone footing under a mossy
+    shingle roof, wide double doors, a lit window either side, its signboard (KURT'S WORKSHOP over an Apricorn) on the
+    gable, logs stacked by one wall and an Apricorn tree, its fruit in the five colours, by the other. Shown only while
+    the towns are on. */
+function kurtWorkshop(g, x, z) {
+  const W = 2.5, D = 2, H = 1.3, FY = 0.18, E = FY + H, R = 0.9, fz = D / 2;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const h = new THREE.Group();
+  h.position.set(x, 0, z);
+  g.add(h);
+  const add = (geo, m, px, py, pz, shadow = true) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = shadow; o.receiveShadow = true; h.add(o); return o; };
+  const box = (w, hh, d, m, px, py, pz, shadow) => add(new THREE.BoxGeometry(w, hh, d), m, px, py, pz, shadow);
+  const beam = std({ color: '#4a2e18' }), wall = std({ color: '#c8925a' }), stone = std({ color: '#9a948a', roughness: 1 });
+  const roof = std({ color: '#5a6a3a', roughness: 0.9 }), door = std({ color: '#7a4a24' });
+  const pane = std({ color: '#fff0c0', emissive: new THREE.Color('#ffc870'), roughness: 0.3 });
+  pane.userData.glow = 1.2; pane.userData.glowMin = 0.15;
+  glowMats.push(pane);
+
+  // the footing, the planked walls framed in dark beams, a gable at each end
+  box(W + 0.12, FY, D + 0.12, stone, 0, FY / 2, 0);
+  box(W, H, D, wall, 0, FY + H / 2, 0);
+  for (const sx of [-1, 0, 1]) for (const sz of [-1, 1]) box(0.1, H, 0.1, beam, sx * W / 2, FY + H / 2, sz * D / 2);
+  for (const sz of [-1, 1]) box(W + 0.04, 0.1, 0.1, beam, 0, E - 0.05, sz * D / 2);
+  for (const sz of [-1, 1]) box(W + 0.04, 0.08, 0.1, beam, 0, FY + 0.04, sz * D / 2);
+  const gable = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-D / 2, 0), new THREE.Vector2(D / 2, 0), new THREE.Vector2(0, R)]), { depth: W - 0.02, bevelEnabled: false });
+  gable.translate(0, 0, -(W - 0.02) / 2); gable.rotateY(Math.PI / 2);
+  add(gable, wall, 0, E, 0);
+  // the roof: two slopes from the ridge, overhanging, and a ridge beam
+  for (const side of [-1, 1]) {
+    const L = Math.hypot(D / 2, R) + 0.36, s = new THREE.Group(), p = new THREE.Group();
+    s.position.set(0, E + R, 0); s.rotation.y = side < 0 ? Math.PI : 0; p.rotation.x = Math.atan2(R, D / 2);
+    s.add(p); h.add(s);
+    const o = new THREE.Mesh(new THREE.BoxGeometry(W + 0.4, 0.08, L), roof);
+    o.position.set(0, 0, L / 2); o.castShadow = o.receiveShadow = true; p.add(o);
+    for (let i = 1; i < 5; i++) { const r = new THREE.Mesh(new THREE.BoxGeometry(W + 0.42, 0.03, 0.05), beam); r.position.set(0, 0.05, L * i / 5); p.add(r); }
+  }
+  box(W + 0.5, 0.1, 0.14, beam, 0, E + R + 0.03, 0);
+  // the doors under a little lintel, a lit window either side, a stone step
+  box(0.9, 0.98, 0.06, door, 0, FY + 0.49, fz + 0.03);
+  box(0.03, 0.98, 0.07, beam, 0, FY + 0.49, fz + 0.04);
+  for (const sx of [-1, 1]) box(0.06, 0.06, 0.08, std({ color: '#d8b040', metalness: 0.6, roughness: 0.3 }), sx * 0.09, FY + 0.5, fz + 0.08);
+  box(1.06, 0.1, 0.12, beam, 0, FY + 1.03, fz + 0.05);
+  box(1, 0.1, 0.3, stone, 0, 0.05, fz + 0.2);
+  for (const sx of [-1, 1]) {
+    box(0.5, 0.42, 0.04, pane, sx * 0.85, FY + 0.72, fz + 0.02, false);
+    box(0.58, 0.06, 0.08, beam, sx * 0.85, FY + 0.48, fz + 0.04);
+    box(0.58, 0.06, 0.08, beam, sx * 0.85, FY + 0.96, fz + 0.04);
+    box(0.04, 0.42, 0.06, beam, sx * 0.85, FY + 0.72, fz + 0.04);
+  }
+  // its signboard on the gable end facing you: over the eaves, on the roof's front
+  const sign = board(plankArt(40, 14, [['KURT\'S WORKSHOP', 4.6, '#fff4dc'], ['● APRICORNS ●', 3.2, '#ffd858']], ['#7a4a24', '#5a3418', '#3a2010']), 0, 0, { s: 0.62, shadow: false });
+  sign.position.set(0, E + 0.24, fz + 0.12);
+  h.add(sign);
+  // logs stacked by the left wall, and the Apricorn tree on the right, its fruit in Kurt's five colours
+  const logM = std({ color: '#8a5a30' }), cut = std({ color: '#e0b878' });
+  [[0, 0], [0.24, 0], [0.12, 0.2]].forEach(([dz, dy]) => {
+    const l = add(new THREE.CylinderGeometry(0.1, 0.1, 0.7, 10), logM, -W / 2 - 0.2, 0.1 + dy, 0.2 + dz);
+    l.rotation.x = Math.PI / 2;
+    add(new THREE.CircleGeometry(0.09, 10), cut, -W / 2 - 0.2, 0.1 + dy, 0.2 + dz + 0.351, false);
+  });
+  const TX = W / 2 + 0.55, TZ = 0.45;
+  add(new THREE.CylinderGeometry(0.08, 0.11, 0.9, 8), std({ color: '#6a4a2a' }), TX, 0.45, TZ);
+  const leaf = std({ color: '#3e8a3a' });
+  for (const [dx, dy, dz, r] of [[0, 1.15, 0, 0.5], [-0.25, 0.95, 0.15, 0.35], [0.28, 1.0, -0.1, 0.36], [0.05, 1.45, 0.05, 0.32]]) add(new THREE.SphereGeometry(r, 12, 10), leaf, TX + dx, dy, TZ + dz);
+  ['#e83a3a', '#3a6ae8', '#f8d030', '#48b848', '#f878b0'].forEach((c, i) => {
+    const a = i / 5 * Math.PI * 2 + 0.4;
+    add(new THREE.SphereGeometry(0.09, 10, 8), std({ color: c, roughness: 0.5 }), TX + Math.cos(a) * 0.42, 1.0 + (i % 2) * 0.22, TZ + Math.sin(a) * 0.42 + 0.12);
+  });
+  mergeStatic(h);
+}
+
 /** `root`'s still meshes that share a material (and shadow) baked into one mesh each: the Nietos' house is ~110 small
     pieces, and every draw call counts on a phone's GPU (2026-10-14). Animated ones (their own raycast) are left be. */
 function mergeStatic(root) {
@@ -2040,6 +2114,13 @@ function makePlaces() {
     line: 'THE NIETOS. Law, Britt and baby Linc. Underneath, in crayon: "LINC LIVS HEAR TOO."',
     buttons: [],
     build: (g) => nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3),
+  });
+  // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): walked into like the Nietos' house, only while the towns are on
+  if (townsOpen()) list.push({
+    id: 'workshop', name: 'Kurt\'s Workshop', step: { x: WORKSHOP_AT.tx + 1, y: WORKSHOP_AT.ty + 3 }, tiles: rect(WORKSHOP_AT.tx, WORKSHOP_AT.ty, WORKSHOP_AT.tx + 2, WORKSHOP_AT.ty + 2), tag: [WORKSHOP_AT.tx + 1, 3.2, WORKSHOP_AT.ty + 2], open: true,
+    line: 'Kurt\'s Workshop. Hammering inside, and the smell of Apricorns. Materials from the towns\' roads become things here.',
+    buttons: [['Go in', () => {}]],
+    build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1)),
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
@@ -2361,8 +2442,9 @@ function dressSeason() {
       [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0],   // by the Ancient Tree's door
       [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
       [lanternArt(2), 'white', 12, 16, 1.3, 0, 0], [lanternArt(3), 'white', 18, 16, 1.3, 0, 0],   // and down the south one
-      [...P_(5), 24, 9, 4.4, 0, -0.1], [...P_(6), 23, 10, 2.2, 0, 0.1], [...P_(7, false), 25, 10, 1.9, 0, 0.15],   // the pumpkin patch, where the Nietos' house stood
-      [scarecrowArt(), 'white', 26, 9, 1.5, 0, 0],
+      // the pumpkin patch, where the Nietos' house stood, either side of Kurt's path (his Workshop above it)
+      [...P_(5), 26, 10, 4.4, 0, -0.1], [...P_(6), 22, 10, 2.2, 0, 0.1], [...P_(7, false), 23, 10, 1.9, 0, 0.15],
+      [scarecrowArt(), 'white', 22, 9, 1.5, 0, 0],
       [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
@@ -2535,7 +2617,7 @@ function open(p, i = null) {
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
-  if (p.id === 'nietos') return enterHouse(p);
+  if (p.id === 'nietos' || p.id === 'workshop') return enterHouse(p);
   walker.hopUntil = performance.now() + 400;
   hideCard();
   const [label, go] = p.buttons[i ?? 0];

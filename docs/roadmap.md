@@ -326,7 +326,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      one (`DROPS` in `js/data/satchel.js`: wild 40%, Alpha 1-2, boss 2-3; a line in the reward box) and 1-2 rooms a map
      sparkle (✧, `markSparkles()`, 2-3 of one material on walking in); Pat's bottles only sparkle. Refresh-safe
      (`run.gleaned`), kept on a lost run; the Satchel says where each turns up. Detail: `docs/reference/towns.md`. Branch
-     `claude/sharp-ramanujan-nh2503`, pushed to `main` too. **Next: session 3, Kurt's Workshop and its recipes.**
+     `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+   - **Session 3 done (2026-10-14): Kurt's Workshop.** A timber workshop in the Clearing's north-east (towns on only), walked
+     into like the Nietos' house: Kurt (a sprite drawn for him) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
+     His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
+     Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
+     their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
+     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
+     **Next: session 4, the shard** (the marked Alpha node, the pickup, the mending scene, leaders coming home).
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

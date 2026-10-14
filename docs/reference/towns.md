@@ -128,6 +128,25 @@ drops from a fight and takes a biome's first sparkle. Each gift is keyed in `run
 at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All rolls go through `js/rng.js`. About 10 a
 biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
 
+**Kurt's Workshop** (session 3 of Towns step 6, 2026-10-14; only while `townsOpen()`). A timber workshop in the
+Clearing's north-east (`WORKSHOP_AT` 23,6 in `js/hub-3d.js`, `kurtWorkshop()`, its path down to the east avenue a `towns:
+true` road; Halloween's pumpkin patch moved either side of it), walked into like the Nietos' house: `CLEARING.buildings` /
+`homes.workshop` (`kurt: true`, a Slowpoke cast) in `js/data/towns.js`, `HOMES.clearing.workshop` in `js/event-3d.js`
+(`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). His window is
+`openWorkshop()` in `js/workshop.js` (tabs Quest / Furniture / Gifts / Apricorns, tap a recipe, Make); recipes are
+`RECIPES` in `js/data/workshop.js` (pure, `tests/workshop.test.mjs`), each `needs` materials from the Satchel, and
+`shows()` gates them: a quest item once its town's questline is open, a town's two pieces once you've been there (`met`;
+John's festival piece only for the festival picked), a gift once its leader is beaten, the seven Apricorns always. Made:
+a key item into the Satchel; a piece is earned furniture (`from: ['craft', recipe]` in `js/data/furniture.js`, so the
+town shop no longer sells it, and `towns: true` keeps it out of the base's locked list while the towns are off); a gift
+is counted (`save.workshop.gifts`); a skin is kept (`made`) and carried (`skin`). `save.workshop = { made, gifts, liked,
+fond, skin }` (`workshopOf()`). **Gifts**: one favourite a town Gym Leader (`FAVOURITE`); at their home, awake and in,
+holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:gift`; `pickGift()` / `handGift()`): any
+gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
+leader]`). Liking does nothing else yet. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
+`js/battle.js`: the picker and the throw), never its odds. The Satchel app has a fourth shelf, Gifts. The `?satchel` loan
+counts toward a recipe's needs, and what's made is saved (a playtest save only).
+
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
 towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat
 under `?aerial`). In `js/event-3d.js` (by `AERIAL`): one uniform `BEND` `{ k, z }`, `k` set to `CURVE` when a `kind:

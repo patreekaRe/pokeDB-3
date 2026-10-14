@@ -36,6 +36,7 @@ import { journey } from './map.js';
 import { playMusic, preloadMusic, playCry, preloadCries, playSound, preloadSounds, setLoop } from './audio.js';
 import { setAura, stopAura } from './aura.js';
 import { randIndex, pickOne, random } from './rng.js';
+import { safariSprite, workshopOf } from './data/workshop.js';
 import { BALLS_BY_ID, THROW_PP, BAIT, ROCK_FLEE, RARE, catchChance, ballWeek, ballsInBag, masterThrows, safariBallsLeft } from './data/balls.js';
 import { timeOfDay } from './daytime.js';
 import { flyTrail, burnAway } from './cardfx.js';
@@ -1361,6 +1362,9 @@ function whyNotThrow() {
   return null;
 }
 
+/** A ball as it looks: the Safari Ball wears the Apricorn skin carried from Kurt's Workshop (looks only). */
+const looks = (ball) => (ball.id === 'safari' ? { ...ball, sprite: safariSprite(workshopOf(getSave())) } : ball);
+
 /** The odds a ball catches right now, 0-1. */
 function catchOdds(ball) {
   const b = battle, en = b.enemy;
@@ -1387,7 +1391,7 @@ function toggleBallPicker() {
     const row = el('button', 'ball-row');
     row.type = 'button';
     const odds = Math.round(catchOdds(ball.id) * 100);
-    row.append(itemSprite(ball, 'ball-icon'), el('span', 'ball-name', ball.name),
+    row.append(itemSprite(looks(ball), 'ball-icon'), el('span', 'ball-name', ball.name),
       el('span', 'ball-left', left === Infinity ? '' : `×${left}`), el('b', 'ball-odds', `${odds}%`));
     row.title = ball.text;
     row.setAttribute('aria-label', `${ball.name}${left === Infinity ? '' : `, ${left} left`}: ${odds}% to catch`);
@@ -1445,7 +1449,7 @@ async function ballAnimation(ball, shakes, caught) {
   const motion = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const box = $('enemy-portrait-box'), arena = $('arena');
   const thrown = el('span', 'thrown-ball');
-  thrown.append(itemSprite(ball));
+  thrown.append(itemSprite(looks(ball)));
   arena.append(thrown);
   const a = arena.getBoundingClientRect(), target = box.getBoundingClientRect(), from = $('player-zone').getBoundingClientRect();
   const x = target.left + target.width / 2 - a.left, y = target.top + target.height * 0.45 - a.top;
