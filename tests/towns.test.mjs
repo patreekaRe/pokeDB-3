@@ -55,13 +55,13 @@ test("a town's map: square, its buildings' letters there, every door, stand and 
     const { map } = town, W = map[0].length;
     assert.ok(map.every(row => row.length === W), `${town.id}: ragged map`);
     const letters = new Set(town.buildings.map(b => b.at));
-    for (const ch of new Set(map.join(''))) assert.ok('T.#,fLbR=cko~-|yn'.includes(ch) || letters.has(ch), `${town.id}: '${ch}' isn't a building`);
+    for (const ch of new Set(map.join(''))) assert.ok('T.#,fLbR=cko~-|yns'.includes(ch) || letters.has(ch), `${town.id}: '${ch}' isn't a building`);
     for (const b of town.buildings) {
       assert.ok(map.some(row => row.includes(b.at)), `${b.id}: not on the map`);
       if (b.home) assert.ok(town.homes[b.home], `${b.id}: no home ${b.home}`);
       if (b.door && !b.home) assert.ok(b.knock?.length, `${b.id}: locked with nothing to say`);
     }
-    const open = (x, y) => '.#,f=-'.includes(map[y]?.[x] ?? 'T') && map[y]?.[x - 1] !== 'b';   // a bench takes its tile and the next
+    const open = (x, y) => '.#,f=-s'.includes(map[y]?.[x] ?? 'T') && map[y]?.[x - 1] !== 'b';   // a bench takes its tile and the next
     const seen = new Set([`${town.door.x},${town.door.y}`]), queue = [[town.door.x, town.door.y]];
     assert.ok(open(town.door.x, town.door.y));
     while (queue.length) {

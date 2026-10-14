@@ -572,7 +572,7 @@ export function peekGym(starter, id, n = 1, hp = 1) {
 }
 let peekBoss = null, peekBossHp = 1;
 
-/** Playtest shortcut: ?town=shrine (any town's biome, js/data/towns.js; &starter=id) walks a throwaway run straight into
+/** Playtest shortcut: ?town=shrine (any town's biome, js/data/towns.js; &starter=id, &aerial for the overhead layout) walks a throwaway run straight into
     that biome's gateway town, as if off the journey film, then on into the biome; &home=<building id> walks straight into
     that house (Gym Leaders are at home with &gymwins=1). Nothing about it is saved. */
 export function peekTown(starter, id, house = null) {
