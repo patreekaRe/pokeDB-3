@@ -268,6 +268,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
 **Done (2026-10-14): the Gym Leaders' homes, inside, made big** (the user: "so small and very bland"): 13 x 10 rooms, each
    leader's own walls, floor, light and props (`js/leader-homes.js`, `docs/reference/towns.md`'s last section). On `main`,
    waiting on the user's playtest (`?town=<biome>&home=<leader>&gymwins=1`); ask which house to push further next.
+   Same day, the user's ask: the Nietos' house in the Clearing got the same revamp (`LEADER_HOMES.nietos`; walk in from
+   the hub with `?nietos&gymwins=1`, or without `?nietos` to see it "out"). On `main`, waiting on their playtest.
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
    home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
    (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;

@@ -34,7 +34,7 @@ Linc babbles ("Pika-boo! Bababa!", raspberries, falls over). Their home: toys ev
 one very tired couch. (Not home in the Clearing for now; the user is working out how they turn up.)
 
 **JOHN: INDECISIVE GAMER JOHN** (`john`; Shrine, Stoutland / Exploud; Dilemma Badge, a handheld with a ?; blue).
-An engineer (he fixes bridges, real load-bearing ones) who only wants to play Fire Emblem (Classic mode, permadeath,
+A mechanical engineer (he designs and tests parts for aircraft and spacecraft; the user's correction, 2026-10-14) who only wants to play Fire Emblem (Classic mode, permadeath,
 support conversations, weapon triangle, danger zones) and keeps getting pulled away by work. Can never decide whether
 to play on his Steam Deck, his Switch 2 or his new AYN Thor; carries all three. At home: three handhelds charging on
 the table, none picked.

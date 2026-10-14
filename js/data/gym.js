@@ -64,7 +64,7 @@ export const GYM_BIO = {
   lawrence: 'Married to Britt and very straight, he says, too fast. His three "Valorant teammates" are waiting in the lobby, so every battle is over in minutes.',
   britt: 'Teaches 26 seven-year-olds all day. All she wants is to get home to Linc and play Sage, which her friends will never let her live down.',
   nietos: 'Law and Britt, battling together with baby Linc in a Pikachu suit, because nobody could babysit. Law swears there\'s no Valorant tonight.',
-  john: 'A mechanical engineer at Northrop. Carries a Steam Deck, a Switch 2 and an AYN Thor, and still can\'t pick which one to play Fire Emblem on.',
+  john: 'A mechanical engineer who designs and tests parts for aircraft and spacecraft. Carries a Steam Deck, a Switch 2 and an AYN Thor, and still can\'t pick which one to play Fire Emblem on.',
   jahmes: 'A PA by day who screams with hype at every Valorant round by night. In bed at 11 p.m. sharp, no exceptions, mid-battle or not.',
   clarence: 'Puts on a burlesque show for the boys on Discord every night at nine, for morale. The week he missed one they went 0 and 5.',
   shaun: 'Tech support by day, Valorant IGL by night. Smurfs on noobs, flames his hardstuck friends, and will send you VOD notes whether you asked or not.',
@@ -340,7 +340,7 @@ const RICKY = {
   ],
 };
 
-/* John (the user's, 2026-10-13): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
+/* John (the user's, 2026-10-13; a mechanical engineer on aircraft and spacecraft, 2026-10-14): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
    never decide whether to play on his Steam Deck, his Switch 2 or his new AYN Thor. */
 const JOHN = {
   sprite: 'assets/trainers/gym/john.png',
@@ -349,7 +349,7 @@ const JOHN = {
     ['I had a whole day planned. Work, then Fire Emblem. Work ran late. Then this.', 'Every single thing gets between me and Fire Emblem. Go, {boss}!'],
     ['Okay, quick question before we start. Steam Deck, Switch 2 or my new AYN Thor?', 'I\'ve been standing here for twenty minutes deciding. Go, {boss}!'],
     ['I just got the AYN Thor. Two screens. TWO. Do you know what that does for Fire Emblem?', '...I haven\'t actually played it yet. I keep getting interrupted. Go, {boss}!'],
-    ['I fix bridges all day. Real ones. Load-bearing. And I still can\'t fix my lack of Fire Emblem time.', 'Go, {boss}!'],
+    ['I design parts that fly. Real ones. Stress-tested. And I still can\'t engineer more Fire Emblem time.', 'Go, {boss}!'],
     ['A gym battle is basically a Fire Emblem map. You\'re the enemy phase.', 'I\'m going to bait you into my best unit. Go, {boss}!'],
     ['I brought the Steam Deck. Then I thought, no, the Switch 2. Then I grabbed the Thor too.', 'My bag weighs nine kilos. Go, {boss}!'],
   ],
