@@ -927,6 +927,11 @@ one, which is the point: it costs nothing until it's needed.
 - Commits push directly to `main` — this is a solo project with no PR flow.
   Test locally first (see below), then commit and push.
 - Commit messages explain *why*, not *what*.
+- **Every 3D place shares the GPU** (2026-10-14: iPhone Safari reloaded the tab mid-run when every place kept its WebGL
+  context): a new place with its own `THREE.WebGLRenderer` calls `wakeGL(renderer)` from `js/hd2d.js` each time it is
+  shown (it puts every other place to sleep), and on leaving either `sleepGL(renderer)` (kept, restored on its next wake)
+  or `dropGL(renderer, scene)` (built afresh next visit). A place that builds rooms on demand keeps only the last few
+  (`forgetRooms()` in `js/event-3d.js`). Check headless that only one context is awake.
 - **No text under 12px** (0.75rem; the user's call, 2026-10-12: the pixel font is unreadable smaller). Card faces aside, and text that would otherwise be cut off or wrap where it must stay one line (a title on an LCD): `fitText()` in `js/ui.js` shrinks it only as far as it must (the user's call, 2026-10-12: the Arcade Leaderboard's title).
 - **Patch notes, every task** (2026-10-10, the user's ask): anything a player would notice that a session ships gets ONE
   plain line in `NEXT` in `js/data/patchnotes.js` (`[group, line]`, a `GROUPS` key: hub, base, mall, pc, runs, battle,
