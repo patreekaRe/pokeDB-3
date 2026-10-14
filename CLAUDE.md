@@ -19,6 +19,15 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
 
+## No screenshots unless the user asks (their rule, 2026-10-14)
+
+**Never take or send a screenshot unless the user asks for one in that session.** This overrides any default
+"verify, then share a screenshot as proof" step, even for visual work. A screenshot stays in the context and is re-read
+on every later turn. Still test every change, but with text: the console (`read_console_messages`), the page
+(`read_page`, `get_page_text`), `javascript_tool` for computed styles or positions, `node --test`. Then give the
+playtest link (the live site, or the githack link for a branch) and say in a line what to look at. The user checks
+the look themselves, at no usage cost.
+
 ## Town clean-ups: read the handoff first
 
 **Any session cleaning up a gateway town** (Lantern Village, Cinder Springs, Driftwood Landing, Sunwell Bazaar; the
@@ -282,11 +291,8 @@ turn, but it can't take screenshots. So:
 - **Terminal** for balance, logic, enemies, moves, rewards, data, docs, git.
 - **Desktop app** for anything the user has to *see*: UI, layout, animation,
   boss intros, events, art, sprites.
-- **Don't screenshot unless the user asks for a look, or the change is
-  inherently visual.** Confirm with `curl`, the console or the code first. A
-  screenshot stays in the context and is re-read on every later turn, so one
-  unasked-for image costs for the rest of the session. While iterating on an
-  animation, check one viewport and finish before checking the rest.
+- **No screenshots unless the user asks** (see the rule near the top), even
+  for visual work. Confirm with `curl`, the console, `read_page` or the code.
 - The user playtests on the live site themselves, at no usage cost. When a
   visual judgement is needed, say what you need them to look at rather than
   asking for a screenshot.
@@ -305,8 +311,8 @@ being actual conversation. So, each session:
   — make the reasonable call and say what you decided. Only ask if genuinely
   blocked; each question is a full re-read of the context.
 - **Don't re-read** files already read this session unless something changed.
-- **Screenshot a UI change once**, when it looks finished. One viewport while
-  iterating, the rest at the end — not all five on every pass.
+- **When the user asks for a screenshot**, take one, when the change looks
+  finished, in one viewport, not one per pass.
 - **Keep replies short.** No recapping back what the user just said.
 - `/clear` between sub-tasks, not only between tasks.
 - Per-system detail lives in `docs/reference/` (see above); read it on demand,
