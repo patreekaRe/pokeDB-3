@@ -1341,7 +1341,7 @@ function back() {
   goPlace('hall', FRONTS.find(f => f.id === P.front).step, 'front');
 }
 
-async function leave() {
+export async function leave() {
   const shop = document.getElementById('shop-dialog');
   if (shop?.open) shop.close();
   playSound('door');
