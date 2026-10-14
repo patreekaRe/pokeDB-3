@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
   ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
   ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
 ];

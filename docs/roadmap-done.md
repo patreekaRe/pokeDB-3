@@ -2430,3 +2430,8 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   of their own (John's three handhelds, Clarence's stage and disco ball, Phil's rocking chair in salt, the tree in
   Ricky's den...). Rugs with no model now show (`flatPiece()`). Tested headless in the browser pane at 390 and 900 wide,
   day and night, no console errors; `tests/leader-homes.test.mjs` for the layouts.
+- **Fifty more lines each** (2026-10-14, the user's ask: "about 50 more lines to each gym leader... for talking to them
+  before and after"): every leader gets 41-50 new speech-window lines in `js/data/gym.js`: more `intro` / `beaten` /
+  `won` speeches (Phil one more `possess`), and their own `poster`, `gold`, `visit` and `posterSeen` in place of the
+  generic ones from `leader()`. Same voices and cross-references as `docs/reference/gym-leaders.md`; Pat only reuses the
+  song fragments already in the file.

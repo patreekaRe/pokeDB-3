@@ -4,7 +4,9 @@ The Gym Leaders are the user's real friends. The user gave each one's personalit
 gone; this page is rebuilt from the comments and speeches in `js/data/gym.js` and their homes in `js/data/towns.js`.
 Read it before writing a new line for any of them, and keep their voice: short lines, one joke a line, `{boss}` /
 `{badge}` / `{trainer}` placeholders. Anything new the user says about a friend goes here too, in their words where
-possible. The mechanics (talks, badges, posters, visits) are in CLAUDE.md's Gym Leaders note.
+possible. Since 2026-10-14 every leader has their own `poster`, `gold`, `visit` and `posterSeen` lines (the generic ones
+in `leader()` are only a fallback); `visit` lines lose their `LAW:` / `JONA:` tags in the Secret Base
+(`leaderLines()` in `js/base-3d.js`), so the Nietos' and Phil's are written without them. The mechanics (talks, badges, posters, visits) are in CLAUDE.md's Gym Leaders note.
 
 ## Who knows whom
 
