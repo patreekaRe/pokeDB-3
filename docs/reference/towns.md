@@ -229,3 +229,8 @@ the pick made (`questLine()`: John's festival, or the pick's `fallback`, "autumn
 mended by the old requests). `HOME_LINES[id]` is a list of speeches (4 each, several about the other leaders):
 `waystoneGuest()` deals one a day (`speech`; the welcome is the first), the Secret Base picks one a visit. Tests:
 `tests/quests.test.mjs`, `tests/shard.test.mjs`.
+
+**Highbough's name boards** (2026-10-14, the user: "legible aesthetic signs for gym leaders and trade house"): `s` tiles by
+Phil's, Ricky's and the Curio Shop's doors; `boughBoards()` (from `canopyExtras()`) hangs a walnut plank (`boughBoardArt()`: cream
+letters, GYM LEADER in the leader's ink on a gold rim, the shop's TRADE HOUSE in violet) from a log bar with a ghost lantern;
+`treehouse()` and `canopyManor()` no longer hang the small `nameArt()` plate.

@@ -6668,7 +6668,6 @@ function treehouse(b, f, L, lit) {
     moss.push([x, y, z, x + (rnd() - 0.5) * 0.04, y - 0.18 - rnd() * 0.3, z]);
   }
   beams(moss, 0.02, std({ color: '#3e6a2e', roughness: 1 }), { taper: 0.3, sides: 4, shadow: false });
-  if (b.name) panel(nameArt(b.name), 1.1, 0.28, wx(0), base + h + 0.02, wz(ez + 0.04));
   if (b.kind === 'shop') {   // a striped awning over the door, a basket of fruit by it
     const stripes = document.createElement('canvas'); stripes.width = 16; stripes.height = 2;
     const sg = stripes.getContext('2d'); for (let x = 0; x < 16; x += 4) { sg.fillStyle = x % 8 ? '#f8f0e0' : b.roof; sg.fillRect(x, 0, 4, 2); }
@@ -6819,7 +6818,6 @@ function canopyManor(b, f, L, lit, leader) {
   small(mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24), gold, 0, gy + gr * 0.4, gz + 0.02, g)).rotation.x = Math.PI / 2;
   g.attach(panel(houseCrest('ink', ink, letter), 0.36, 0.36, wx(0), gy + gr * 0.4, wz(gz + 0.04)));
   small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, 0, gy + gr + 0.1, gz + 0.04, g));
-  if (b.name) g.attach(panel(nameArt(b.name), 1.1, 0.28, wx(0), vy - 0.12, wz(vz + 0.1)));
   // the hall's roof a terrace, railed in the leader's colour, gold knobs on its posts
   mesh(rbox(hw + 0.24, 0.12, hd + 0.24, 0.03), rim, 0, top + 0.06, hz0, g);
   const ty = top + 0.12, tf = fz + 0.06, tb = hz0 - hd / 2 - 0.06, trail = [];
@@ -7148,6 +7146,63 @@ function plankArt(name) {
   return f.c;
 }
 
+/** Highbough's name board (the user's ask, 2026-10-14: readable signs for the Gym Leaders and the trade house): a dark
+    walnut plank, mossy along the top, big cream letters, the second line in the leader's ink (the Curio Shop's in ghost
+    violet), a gold rim for a leader. */
+function boughBoardArt(lines, ink) {
+  const f = fine(64, 28, 8), { g, rr, lin } = f;
+  rr(0, 2, 64, 26, 3, ink ? '#d8b050' : '#2a1a10');
+  rr(1.4, 3.4, 61.2, 23.2, 2.2, lin(0, 0, 0, 28, ['#6a4428', '#3e2616']));
+  g.strokeStyle = 'rgba(20,10,4,0.4)'; g.lineWidth = 0.5;
+  for (let y = 8; y < 26; y += 4) { g.beginPath(); g.moveTo(3, y); g.bezierCurveTo(22, y - 1.2, 42, y + 1.2, 61, y); g.stroke(); }
+  g.fillStyle = '#c8a060';
+  for (const x of [4.5, 59.5]) { g.beginPath(); g.arc(x, 7, 1, 0, Math.PI * 2); g.fill(); }
+  const r = seeded(lines[0].length * 7 + 3);
+  for (let i = 0; i < 26; i++) { g.fillStyle = ['#4a7a30', '#3a6a2a', '#5a8a3a'][i % 3]; g.beginPath(); g.ellipse(2 + r() * 60, 3 + r() * 1.6, 1.4 + r() * 2, 0.9 + r() * 1.1, 0, 0, Math.PI * 2); g.fill(); }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = 'bold 11px sans-serif'; g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(lines[0], 32.4, (lines[1] ? 12 : 15.5) + 0.5, 56);
+  g.fillStyle = '#fff4dc'; g.fillText(lines[0], 32, lines[1] ? 12 : 15.5, 56);
+  if (lines[1]) { g.font = 'bold 7px sans-serif'; g.fillStyle = ink || '#d0a0ff'; g.fillText(lines[1], 32, 21.5, 56); }
+  return f.c;
+}
+
+/** A name board by each of Highbough's named houses (`s`): the board hung on two ropes from a log crossbar, swaying a
+    little, a ghost lantern off one end. */
+function boughBoards(town, lit) {
+  const { map } = town, wood = bark(), rope = std({ color: '#b89a6a', roughness: 1 });
+  const ghost = std({ color: '#b070ff', emissive: new THREE.Color('#c890ff'), emissiveIntensity: 0.9, roughness: 0.5 });
+  lit.push(ghost);
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 's') return;
+    const near = (f) => Math.hypot(Math.max(f.x0 - x, 0, x - f.x1), Math.max(f.y0 - y, 0, y - f.y1));
+    const named = town.buildings.filter(b => b.name).map(b => ({ b, d: near(footprint(map, b.at)) })).sort((p, q) => p.d - q.d)[0]?.b;
+    if (!named) return;
+    const leader = town.homes?.[named.home]?.leader;
+    const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
+    const g = new THREE.Group(), W = 1.3, H = 0.57, top = 1.62;
+    g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    B.group.add(g);
+    for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.08, top + 0.08, 10), wood, sx * (W / 2 + 0.04), (top + 0.08) / 2, 0, g);
+    mesh(new THREE.CylinderGeometry(0.055, 0.055, W + 0.36, 10), wood, 0.06, top, 0, g).rotation.z = Math.PI / 2;
+    const swing = new THREE.Group();
+    swing.position.set(0, top - 0.02, 0.04);
+    g.add(swing);
+    for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 5), rope, sx * (W / 2 - 0.12), -0.15, 0, swing).castShadow = false;
+    const board = panel(boughBoardArt(lines, leader && LEADER_INK[leader]?.[0]), W, W * 28 / 64, 0, -0.3 - H / 2, 0);
+    board.removeFromParent(); swing.add(board); board.raycast = () => {};
+    const lamp = new THREE.Group();
+    lamp.position.set(W / 2 + 0.2, top - 0.04, 0.02);
+    g.add(lamp);
+    mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 4), rope, 0, -0.08, 0, lamp).castShadow = false;
+    mesh(new THREE.CylinderGeometry(0.06, 0.075, 0.15, 8), ghost, 0, -0.24, 0, lamp).castShadow = false;
+    mesh(new THREE.ConeGeometry(0.08, 0.06, 8), wood, 0, -0.14, 0, lamp).castShadow = false;
+    const s = x * 0.7 + y;
+    B.ticks.push((now) => { swing.rotation.z = calm ? 0 : Math.sin(now / 1500 + s) * 0.035; lamp.rotation.z = calm ? 0 : Math.sin(now / 1100 + s) * 0.09; });
+    B.blocked.add(key(x, y));
+  }));
+}
+
+
 /** The way out, the Bough Gate (the user's ask, 2026-10-14: the exit "more grand", noticeable as the way out): two giant
     trunks on flaring roots, wound with vines and thorns, growing together overhead into a living arch crowned with leaves
     and lit with ghost-blooms; vines hanging off its shoulders, a ghost-lantern swaying either side under it, wisps of
@@ -7274,6 +7329,7 @@ function canopyExtras(town, L, lit) {
   canopyMist();
   canopySupports(town);
   planters(town);
+  boughBoards(town, lit);
   const rnd = seeded(71);
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === '|') loneGiant(tileX(x) + (rnd() - 0.5) * 0.2, tileZ(y) + (rnd() - 0.5) * 0.2, rnd, lit);

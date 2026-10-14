@@ -569,7 +569,7 @@ export const TOWNS = {
     // planks, # the Great Tree's deck, f a planter box (only the Nursery's pair: the user's ask, 2026-10-14, they were in the
     // way everywhere), T the canopy, L a lantern (in a platform's outer corner, clear of every bridge and door: the user's
     // ask, 2026-10-14, they stood in the walkways), b a bench, c a crate, k a barrel, |
-    // a lone giant trunk, y a lift's basket on its rope, R the request board; a capital is a building, up on its tree. Round
+    // a lone giant trunk, y a lift's basket on its rope, R the request board, s a name board; a capital is a building, up on its tree. Round
     // platforms scattered over the drop like stepping stones, joined by rope bridges in no pattern but the trees': in up
     // the lift at the bottom right, the Great Tree's deck in the middle with the broken Waystone, out through the vine gate
     // at the top left.
@@ -581,7 +581,7 @@ export const TOWNS = {
       'TT~~.....AAA~~..QQQQQ..~~.KKKKK..~~~TT',
       'TT~~........~~.........~~.KKKKK..~~~TT',
       'TT~~........--.........--.KKKKK..~~~TT',
-      'TT~~L....b..--.........--........~~~TT',
+      'TT~~L....b..--.........--.....s..~~~TT',
       'TT~~~~--~~~~~~~~~~~--~~~~........~~~TT',
       'TT~~~~--~~~~~|~~~~~--~~~~........~~~TT',
       'TT~~~~--~y~~~~~~~~~--~~~~~~~~~~--~~~TT',
@@ -591,7 +591,7 @@ export const TOWNS = {
       'TT.......~~##R#OOO####~~~L.SSSS..~~~TT',
       'TT.......--###########~~~..SSSS..~~~TT',
       'TT.......--###########~~~..SSSS..~~~TT',
-      'TTL......~~####WWW####---........~~~TT',
+      'TTL......~~####WWW####---.......s~~~TT',
       'TT~~~~--~~~####WWW####---........~~~TT',
       'TT~~~~--~~~###########~~~.....ck.~~~TT',
       'TT~~~~--~~~###########~~~~~--~~~~~~~TT',
@@ -602,7 +602,7 @@ export const TOWNS = {
       'TT.DDD.....~~..HHHHH..~~~~~--~~~~~~~TT',
       'TT.DDD.....~~..HHHHH..~~~........L~~TT',
       'TT.........~~..HHHHH..~~~.........~~TT',
-      'TT.........--.........---.........~~TT',
+      'TT.........--......s..---.........~~TT',
       'TT.........--.........---.........~~TT',
       'TT.........~~.........~~~.........~~TT',
       'TTL...b....~~L.b...b.L~~~.........~~TT',

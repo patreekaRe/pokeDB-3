@@ -176,6 +176,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    house on it, its top level with the planks (now just under, and the deck rims too); `vineGate()` now the Bough Gate, a
    living arch of two trunks on flaring roots, crowned, lit with ghost-blooms, ghost-lanterns swaying under it, wisps
    circling, a wider name plank (`B.reach` 2 so it fits the shot). Tests pass, no console errors. Waiting on the user's playtest.
+   **Done (2026-10-14): Highbough's name boards** (the user: "legible aesthetic signs for gym leaders and trade house"):
+   `s` tiles by Phil's, Ricky's and the Curio Shop's doors, each a dark walnut plank on ropes from a log crossbar
+   (`boughBoards()`, `boughBoardArt()`): big cream letters, mossy top, GYM LEADER in the leader's ink on a gold rim, the
+   shop's TRADE HOUSE in ghost violet, a ghost lantern swinging off the bar; the small pale plates on the houses gone.
    **Done (2026-10-14): Cinder Springs' roads and houses** (the user: Shaun's gym "in front of the waystone", "better
    designs of the other houses... especially the trade house", "all roads need to connect"): Shaun's lodge east of the
    moat on its own drive, a road straight down from the Waystone's bridge where it stood; a two-wide road to every door
