@@ -2833,14 +2833,14 @@ async function buildGym(figs, { look: L, time, biome, leader }) {
 /* ---------- the gateway towns (js/data/towns.js) ---------- */
 
 /* A town is laid out like a Pokémon town from above (the user's ask, 2026-10-13, after their picture): `town.map` is a
-   walkable tile map of paths, buildings, forest and gardens; you come in at the bottom and go out through its far gate.
-   Some houses you walk into (`home`, built by buildHome() as rooms of their own), the rest are locked. The camera is
-   higher than the other rooms' (`pitch`). Lantern Village is the Shrine's, after Ecruteak: its maple terraces wrap a
-   winding lantern stair and an offset Waystone court; the pagoda, tiled houses and stone lanterns sit off the road.
-   Townsfolk come and go on the crowd code (townCrowd()). */
+   tile map, a ring of forest round stone roads, rows of houses, tall grass and flowers; you come in at the bottom and go
+   on through a torii at the top, into the biome. Some houses you walk into (`home`, built by buildHome() as rooms of
+   their own), the rest are locked. The camera is higher than the other rooms' (`pitch`) to show the layout. Lantern
+   Village is the Shrine's, after Ecruteak: Japanese houses in Pokémon roof colours, a pagoda, stone lanterns, cedars and
+   maples dropping their leaves. Townsfolk come and go on the crowd code (townCrowd()). */
 const MAPLE = ['#f8b868', '#ec7030', '#c84a24', '#8a2c18'];
 const VERMILION = '#d8402c';
-const ROADY = new Set(['#', 'R', 'b', 's']);
+const ROADY = new Set(['#', 'R', 'b']);
 
 /** A building's tiles on the map (its letter): its corners, size and middle. */
 function footprint(map, ch) {
@@ -2871,27 +2871,6 @@ function townGround(L, map, S) {
       g.beginPath(); g.roundRect(x + 0.35, y + 0.35, 6.3, 6.3, 1.3); g.fill();
       g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(x + 1.1, y + 0.9, 3.2, 0.6);
       if (r() < 0.2) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-    }
-    if (S.steps) each((ch, x, y) => {
-      if (ch !== 's') return;
-      for (let i = 1; i < 4; i++) {
-        const sy = y * T + i * T / 4;
-        g.fillStyle = 'rgba(38,30,24,0.5)'; g.fillRect(x * T + 1, sy, T - 2, 1.1);
-        g.fillStyle = 'rgba(255,238,196,0.28)'; g.fillRect(x * T + 2, sy - 0.8, T - 4, 0.55);
-      }
-    });
-    if (S.plaza) {
-      const stone = footprint(map, 'W');
-      if (Number.isFinite(stone.x0)) {
-        const cx = (stone.x0 + stone.x1 + 1) * T / 2, cy = (stone.y0 + stone.y1 + 1) * T / 2;
-        g.strokeStyle = 'rgba(238,198,112,0.72)'; g.lineWidth = 0.8;
-        for (const radius of [T * 2.25, T * 3.15]) { g.beginPath(); g.arc(cx, cy, radius, 0, Math.PI * 2); g.stroke(); }
-        g.strokeStyle = 'rgba(255,232,176,0.6)'; g.lineWidth = 0.7;
-        for (let i = 0; i < 8; i++) {
-          const a = i / 8 * Math.PI * 2, inner = T * 2.55, outer = T * 2.9;
-          g.beginPath(); g.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner); g.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer); g.stroke();
-        }
-      }
     }
     g.restore();
     rails(g, map, T);
@@ -2963,14 +2942,14 @@ function instanced(geo, m, at) {
 }
 
 /** The forest round the town, a tree a tile: cedars, a maple now and then. */
-function forest(map, L, rnd, { mapleChance = 0.16 } = {}) {
+function forest(map, L, rnd) {
   const cedars = [], maples = [], bushes = [];
   map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch !== 'T') return;
     B.blocked.add(key(x, y));
     const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 1 + rnd() * 0.55, rnd() * 6];
     if (y >= ROWS - 2) bushes.push([at[0], at[1], 0.7 + rnd() * 0.4, at[3], L.leaf[1 + Math.floor(rnd() * 3)]]);   // the front edge low, so it never hides you
-    else (rnd() < mapleChance ? maples : cedars).push(at);
+    else (rnd() < 0.16 ? maples : cedars).push(at);
   }));
   const bush = new THREE.IcosahedronGeometry(0.55, 1); bush.scale(1, 0.7, 1); bush.translate(0, 0.3, 0);
   instanced(bush, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), bushes);
@@ -3256,7 +3235,7 @@ function plaqueArt(name) {
 
 /** The far gate, a vermilion torii: two pillars on black feet, the tie beam, the top beam swept up at the ends. Its
     pillars block their tiles; the way between them is `R.exitAt`. */
-function torii(x, z, span, tall, name, exit = true) {
+function torii(x, z, span, tall, name) {
   const red = std({ color: VERMILION, roughness: 0.5 }), black = std({ color: '#241a18', roughness: 0.55 });
   const g = new THREE.Group();
   g.position.set(x, 0, z);
@@ -3274,30 +3253,26 @@ function torii(x, z, span, tall, name, exit = true) {
   beam.translate(0, 0, -0.18);
   mesh(beam, black, 0, tall + 0.1, 0, g);
   mesh(rbox(0.12, 0.5, 0.14, 0.02), red, 0, tall - 0.28, 0, g);
-  if (exit) panel(plaqueArt(name), 0.5, 0.67, x, tall - 0.27, z + 0.13).userData.spot = 'exit';
-  else panel(plaqueArt(name), 0.5, 0.67, x, tall - 0.27, z + 0.13);
-  if (exit) {
-    // the way through, unseen: a tap in the opening (the scenery beyond shows there) is the gate too
-    const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
-    way.castShadow = way.receiveShadow = false;
-    g.traverse(o => { o.userData.spot = 'exit'; });
-  }
+  panel(plaqueArt(name), 0.5, 0.67, x, tall - 0.27, z + 0.13).userData.spot = 'exit';
+  // the way through, unseen: a tap in the opening (the scenery beyond shows there) is the gate too
+  const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
+  way.castShadow = way.receiveShadow = false;
+  g.traverse(o => { o.userData.spot = 'exit'; });
   return g;
 }
 
 /** A town's broken Waystone (js/data/towns.js), the plaza's middle: a stepped stone plinth in a ring of runes, the stone
     split and its top fallen at its foot, a faint light flickering in the crack and the runes. Mended (the next session's)
     it will stand whole and blaze. */
-function waystone(f, L, mended = false, amber = false) {
-  if (mended) return wholeWaystone(f, L, amber);
+function waystone(f, L, mended = false) {
+  if (mended) return wholeWaystone(f, L);
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
   g.scale.setScalar(1.45);   // the plaza's centrepiece, over the lanterns
   B.group.add(g);
   const stone = std({ color: L.stone[1], roughness: 0.95, flatShading: true }), dark = std({ color: L.stone[3], roughness: 1, flatShading: true });
-  const shine = amber ? '#ffc86b' : '#70d8ff', shade = amber ? '#60431f' : '#2a4060';
-  const glow = std({ color: shade, emissive: new THREE.Color(shine), emissiveIntensity: 0.6, roughness: 0.5 });
-  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: amber ? '#49351e' : '#203040', emissive: new THREE.Color(amber ? '#e8a840' : '#58c0f0'), emissiveIntensity: 0.35, transparent: true, opacity: 0.7, roughness: 1 }));
+  const glow = std({ color: '#2a4060', emissive: new THREE.Color('#70d8ff'), emissiveIntensity: 0.6, roughness: 0.5 });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: '#203040', emissive: new THREE.Color('#58c0f0'), emissiveIntensity: 0.35, transparent: true, opacity: 0.7, roughness: 1 }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.raycast = () => {}; ring.receiveShadow = true;
   g.add(ring);
   for (let i = 0; i < 8; i++) {   // rune stones round the ring, a gap where the light went out
@@ -3335,15 +3310,14 @@ function waystone(f, L, mended = false, amber = false) {
 /** A mended Waystone (friendship MEND_AT, js/data/towns.js; session 2, 2026-10-14): the stone whole again on its plinth,
     every rune round its ring lit, runes glowing up its faces, a crystal turning over its tip and a soft light on the
     plaza. Its crystal on the Clearing's Waystone is lit, and a tap here on a visit from home travels back. */
-function wholeWaystone(f, L, amber = false) {
+function wholeWaystone(f, L) {
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
   g.scale.setScalar(1.45);
   B.group.add(g);
   const stone = std({ color: L.stone[1], roughness: 0.9, flatShading: true }), dark = std({ color: L.stone[3], roughness: 1, flatShading: true });
-  const shine = amber ? '#ffd477' : '#8ae8ff', shade = amber ? '#705027' : '#2a5070';
-  const glow = std({ color: shade, emissive: new THREE.Color(shine), emissiveIntensity: 1.4, roughness: 0.4 });
-  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: amber ? '#725124' : '#205060', emissive: new THREE.Color(amber ? '#f0b84d' : '#70e0ff'), emissiveIntensity: 1, transparent: true, opacity: 0.85, roughness: 1 }));
+  const glow = std({ color: '#2a5070', emissive: new THREE.Color('#8ae8ff'), emissiveIntensity: 1.4, roughness: 0.4 });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: '#205060', emissive: new THREE.Color('#70e0ff'), emissiveIntensity: 1, transparent: true, opacity: 0.85, roughness: 1 }));
   ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.raycast = () => {};
   g.add(ring);
   for (let i = 0; i < 8; i++) {
@@ -3359,9 +3333,9 @@ function wholeWaystone(f, L, amber = false) {
   }
   const gem = mesh(new THREE.OctahedronGeometry(0.16, 0), glow, 0, 2.55, 0, g);
   gem.castShadow = false;
-  const point = new THREE.PointLight(shine, 2.2, 7, 1.6);
-  point.position.set(0, 2, 0.4);
-  g.add(point);
+  const light = new THREE.PointLight('#8ae8ff', 2.2, 7, 1.6);
+  light.position.set(0, 2, 0.4);
+  g.add(light);
   B.ticks.push((now) => {
     const k = calm ? 1.3 : 1.3 + 0.3 * Math.sin(now / 700);
     glow.emissiveIntensity = k;
@@ -5763,18 +5737,12 @@ function fireflyArt(col) {
   return f.c;
 }
 
-function villageExtras() {
-  torii(tileX(21) + 0.5, tileZ(8) + 0.3, 2.2, 2.35, 'SHRINE STAIR', false);
-}
-
 /** How each town's dressed (js/data/towns.js's `style`; the Shrine's is the village): the ground's tints, its flowers and
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
-  village: { under: 'rgba(27,42,28,0.5)', scrub: 'rgba(40,78,42,0.35)', flowers: ['#fff0c8', '#f8c840', '#e87868', '#f8a060'], litter: mapleLitter,
-    look: { stone: ['#c4b69a', '#a59678', '#7c6c56', '#3e342c'], gap: '#302a24', moss: '#596b49', grass: ['#64804f', '#506a42', '#3e5738'] },
-    steps: true, plaza: true, trees: (map, L, rnd) => forest(map, L, rnd, { mapleChance: 0.34 }), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
+  village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
+    trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name),
-    extras: villageExtras,
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
@@ -5813,7 +5781,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
   S.gate(town, lit, L);
   B.exitAt = { ...town.gate };
   B.doors = {};
-  const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L, mended, town.id === 'shrine'), minehead: (b, f) => minehead(f, L, lit), windpump: (b, f) => windpump(f, L), kopje: (b, f) => kopje(f) };
+  const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L, mended), minehead: (b, f) => minehead(f, L, lit), windpump: (b, f) => windpump(f, L), kopje: (b, f) => kopje(f) };
   for (const b of town.buildings) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
@@ -6185,7 +6153,6 @@ function aimCamera(x, d, z = 0) {
 // (measuring the box itself swung the camera every time it came and went) and the doormat shows above it
 const BOX_ROOM = 104;
 const PUSH = 0.3;   // how far in the shot draws on a Gym Leader as they speak
-const TOWN_AERIAL = new URLSearchParams(location.search).has('aerial');
 
 function below() {
   const tops = ['#room-bar', '#reward-screen .room-hinge']
@@ -6197,11 +6164,8 @@ function below() {
     longer than its `view` fits that many rows, the shot sliding up it with you (placeCamera()). */
 function fitShot() {
   const h = viewH;
-  camera.up.set(0, 1, 0);
-  camera.far = 140;
   camera.clearViewOffset();
   camera.updateProjectionMatrix();
-  if (TOWN_AERIAL && R?.town) { shot = null; return; }
   const topGap = 10, low = below() + BOX_ROOM, avail = Math.max(120, h - topGap - low), room = 2 * avail / h * 0.96;
   const span = (d) => {
     aimCamera(0, d);
@@ -6217,18 +6181,6 @@ function fitShot() {
 }
 
 function placeCamera(dt) {
-  if (TOWN_AERIAL && R?.town) {
-    const fov = THREE.MathUtils.degToRad(camera.fov), width = COLS / Math.max(0.1, camera.aspect);
-    const height = Math.max(ROWS, width) / (2 * Math.tan(fov / 2)) * 1.12;
-    camera.far = Math.max(140, height + 20);
-    camera.updateProjectionMatrix();
-    camera.clearViewOffset();
-    camera.up.set(0, 0, -1);
-    camera.position.set(0, height, 0);
-    camera.lookAt(0, 0, 0);
-    camera.updateMatrixWorld();
-    return;
-  }
   if (!shot) return;
   const room = COLS / 2 + 0.4, push = R.focus?.k || 0, half = shot.half * (1 - push * PUSH);
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
@@ -6336,7 +6288,7 @@ function unmount() {
   drags?.off(); drags = null;
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
-  document.body.classList.remove('ev3d-held', 'town-aerial');
+  document.body.classList.remove('ev3d-held');
   R?.crowd?.hide();
   folkLayer?.remove();
   if (R) R.held = false;
@@ -6452,7 +6404,6 @@ export async function mountEvent(o) {
     post.final.uniforms.uBloom.value = R.env.bloom;
     mat = R.mat;
   }
-  document.body.classList.toggle('town-aerial', TOWN_AERIAL && !!R.town);
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
   R.who.npc?.setDark?.(!!o.dark);   // a Gym Leader you haven't beaten: their silhouette till they speak
   R.held = false;

@@ -868,8 +868,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   holds the trade, the Gym Leaders are at home, `R.talks`), the rest knock. A town makes no run stronger: one sidegrade
   trade, requests paying PokéCoins. `?town=shrine`. Since session 3 (2026-10-13) the Wastes' **Cinder Springs** too (`?town=wastes`):
   a town's `style` picks its dress (`TOWN_STYLES` in `js/event-3d.js`: ground tints, flowers, litter, forest, houses, gate,
-   lamps, what drifts; the Shrine's is `village` (maple terraces, winding step-tile lanes, an amber Waystone court and a
-   second torii; `?town=shrine&aerial` is the overhead preview), the Wastes' `springs`: `crags()`, adobe `cabin()`s with smoking chimneys,
+  lamps, what drifts; the Shrine's is `village`, the Wastes' `springs`: `crags()`, adobe `cabin()`s with smoking chimneys,
   `mineGate()`, `minehead()`, `springs()` on `o` tiles, `puffs()` of smoke and steam), its map tiles `= c k o` (rails,
   crate, barrel, spring) beside the village's; `HOMES` is by town (`leaderAt`, `castAt` for the bathers, `stage` for the
   theater), a home's `cast` its Pokémon to chat to, `nightAt` / `nightSub` / `night` its leader's evening (Jahmes asleep
