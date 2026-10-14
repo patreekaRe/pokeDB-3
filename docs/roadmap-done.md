@@ -2396,3 +2396,6 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   shows their Pokémon, wins, losses (`save.gymLost`, counted in `afterFight()`) and the next rematch reward; Profile
   slides in their first line, the record and the badge / poster / Gold track. Fully researched = Gold (a gold slot).
   A newly met leader wears the device's "!" (`newFinds.gym`). Locked till the first leader is met.
+- **Patch notes condensed** (2026-10-14, the user's ask: small-change lines made them convoluted): every patch from 1.2
+  to 1.18 and `NEXT` rewritten to 3-7 short lines each (296 lines to 140), merging tweaks into their feature's line and
+  small fixes into one; 0.9 lost its smallest lines. CLAUDE.md's patch-notes rule now says keep them short and few.

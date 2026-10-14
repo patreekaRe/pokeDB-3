@@ -220,7 +220,10 @@ gets at most a line.
 - **No text under 12px** (0.75rem; the user's call, 2026-10-12: the pixel font is unreadable smaller). Card faces aside, and text that would otherwise be cut off or wrap where it must stay one line (a title on an LCD): `fitText()` in `js/ui.js` shrinks it only as far as it must (the user's call, 2026-10-12: the Arcade Leaderboard's title).
 - **Patch notes, every task** (2026-10-10, the user's ask): anything a player would notice that a session ships gets ONE
   plain line in `NEXT` in `js/data/patchnotes.js` (`[group, line]`, a `GROUPS` key: hub, base, mall, pc, runs, battle,
-  modes, dex, music, look, fixes); too-small-to-notice fixes get none. The Clearing's PC shows them as "Since vX" with
+  modes, dex, music, look, fixes); too-small-to-notice fixes get none. **Keep them short and few** (the user's call,
+  2026-10-14, after condensing every patch: "small change ones made the patch notes very convoluted"): one sentence,
+  about 25 words at most, no lists of every piece; a tweak, polish or follow-up to something already in `NEXT` edits that
+  line instead of adding one; small fixes share a single `fixes` line. The Clearing's PC shows them as "Since vX" with
   no "!". Once `NEXT` holds `RELEASE_AT` (12) lines, or a headline feature (a new mode, biome or place) and 6, cut a
   patch: move them into a new `PATCHES` entry at the top (next minor version, a short name, the date), empty `NEXT`, and
   bring `IN_THE_GAME`'s counts up to date. The PC's "!" (`pcMarks()` in `js/hub-3d.js`) and the PC's PATCH NOTES (NEW)
