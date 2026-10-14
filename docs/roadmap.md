@@ -99,6 +99,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    is behind it (`fadeBehind()`, the style's `fade`). `?town=shrine&towns&aerial` for the overview (the towns' `?aerial`,
    added this session). Checked in a browser: map test logic passes for all five towns, every door reachable as Lugia,
    fades and koi checked by hand, no errors; the live GPU in-and-out check couldn't run (the pane draws no frames hidden).
+   Follow-up (same day, the user: walkways "more aesthetic and less blocky"): the village's roads are painted by
+   `softRoads()` (the style's `soft: true`): corners rounded out and in, uneven slabs in courses, a darker kerb, grass
+   creeping over it. Paint only, at build time; the Springs keep the square flags (any town can take `soft` later).
    **Next: Cinder Springs' clean-up** (`?town=wastes`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Wastes' Cinder
    Springs the way the Clearing, Highbough and Lantern Village were (ask me what bothers me about it first), and send an

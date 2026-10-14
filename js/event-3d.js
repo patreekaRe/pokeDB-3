@@ -2862,15 +2862,18 @@ function townGround(L, map, S) {
       else if (ch === 'o') { g.fillStyle = 'rgba(30,24,22,0.55)'; g.beginPath(); g.roundRect(x * T - 3, y * T - 3, T + 6, T + 6, 5); g.fill(); }
       else if (/[A-Z]/.test(ch) && ch !== 'T' && ch !== 'L' && ch !== 'R') { g.fillStyle = L.stone[3]; g.globalAlpha = 0.55; g.fillRect(x * T - 2, y * T - 2, T + 4, T + 4); g.globalAlpha = 1; }
     });
-    const roads = () => { g.beginPath(); each((ch, x, y) => { if (ROADY.has(ch)) g.rect(x * T, y * T, T, T); }); };
-    g.save(); roads(); g.fillStyle = 'rgba(40,30,20,0.4)'; g.translate(0.8, 1.4); g.fill(); g.restore();
-    roads(); g.fillStyle = L.gap; g.fill();
-    g.clip();
-    for (let y = 0; y < H; y += 7) for (let x = -((y / 7) % 2) * 3.5; x < W; x += 7) {
-      g.fillStyle = L.stone[Math.floor(r() * 3)];
-      g.beginPath(); g.roundRect(x + 0.35, y + 0.35, 6.3, 6.3, 1.3); g.fill();
-      g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(x + 1.1, y + 0.9, 3.2, 0.6);
-      if (r() < 0.2) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    if (S.soft) softRoads(g, map, L, r, T);
+    else {
+      const roads = () => { g.beginPath(); each((ch, x, y) => { if (ROADY.has(ch)) g.rect(x * T, y * T, T, T); }); };
+      g.save(); roads(); g.fillStyle = 'rgba(40,30,20,0.4)'; g.translate(0.8, 1.4); g.fill(); g.restore();
+      roads(); g.fillStyle = L.gap; g.fill();
+      g.clip();
+      for (let y = 0; y < H; y += 7) for (let x = -((y / 7) % 2) * 3.5; x < W; x += 7) {
+        g.fillStyle = L.stone[Math.floor(r() * 3)];
+        g.beginPath(); g.roundRect(x + 0.35, y + 0.35, 6.3, 6.3, 1.3); g.fill();
+        g.fillStyle = 'rgba(255,255,255,0.13)'; g.fillRect(x + 1.1, y + 0.9, 3.2, 0.6);
+        if (r() < 0.2) { g.fillStyle = L.moss; g.globalAlpha = 0.45; g.beginPath(); g.arc(x + r() * 7, y + r() * 7, 0.8 + r(), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+      }
     }
     g.restore();
     rails(g, map, T);
@@ -2933,6 +2936,75 @@ function townGround(L, map, S) {
     g.restore();
     return c;
   };
+}
+
+/** The village's roads, soft (the user's ask, 2026-10-14: "more aesthetic and less blocky"): the tiles' outline rounded
+    at every corner, outside and in, slabs of uneven length laid in courses, a kerb of darker stone round the edge and
+    grass creeping over it. Off the map's edge a road runs on, so it isn't rounded off there. */
+function softRoads(g, map, L, r, T) {
+  const k = 6, rows = map.length, cols = map[0].length, W = cols * T, H = rows * T;
+  const road = (x, y) => ROADY.has(map[Math.max(0, Math.min(rows - 1, y))][Math.max(0, Math.min(cols - 1, x))]);
+  const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+  const each = (fn) => { for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) fn(x, y, road(x, y)); };
+  const round = (x, y, dx, dy) => !road(x + dx, y) && !road(x, y + dy);
+  // a quarter circle into the corner (cx, cy), from the direction (dx, dy) points
+  const quarter = (cx, cy, dx, dy) => { g.moveTo(cx, cy - dy * k); g.arcTo(cx, cy, cx - dx * k, cy, k); };
+  const outline = () => {
+    g.beginPath();
+    each((x, y, on) => {
+      if (on) { g.roundRect(x * T, y * T, T, T, CORNERS.map(([dx, dy]) => (round(x, y, dx, dy) ? k : 0))); return; }
+      for (const [dx, dy] of CORNERS) {
+        if (!road(x + dx, y) || !road(x, y + dy)) continue;
+        const cx = (x + (dx > 0 ? 1 : 0)) * T, cy = (y + (dy > 0 ? 1 : 0)) * T;
+        g.moveTo(cx, cy); g.lineTo(cx - dx * k, cy); g.arcTo(cx, cy, cx, cy - dy * k, k); g.closePath();
+      }
+    });
+  };
+  g.save(); outline(); g.fillStyle = 'rgba(40,30,20,0.35)'; g.translate(0.6, 1.2); g.fill(); g.restore();
+  g.save(); outline(); g.fillStyle = L.gap; g.fill(); g.clip();
+  for (let y = 0; y < H; y += 5.2) for (let x = -r() * 9; x < W;) {
+    const w = 5 + r() * 6;
+    g.fillStyle = L.stone[Math.floor(r() * 3)];
+    g.beginPath(); g.roundRect(x + 0.45, y + 0.45, w - 0.9, 4.3, 1.6); g.fill();
+    if (r() < 0.5) { g.fillStyle = `rgba(${r() < 0.5 ? '255,255,255' : '40,30,20'},${0.04 + r() * 0.07})`; g.fill(); }
+    g.fillStyle = 'rgba(255,255,255,0.14)'; g.fillRect(x + 1.4, y + 0.9, w - 3, 0.5);
+    if (L.moss && r() < 0.14) { g.fillStyle = L.moss; g.globalAlpha = 0.5; g.beginPath(); g.ellipse(x + (r() < 0.5 ? 0.2 : w - 0.2), y + r() * 5, 0.6 + r() * 0.6, 1 + r(), 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+    x += w;
+  }
+  g.restore();
+  // the kerb: only the road's outer edge (each open side of a road tile, cut short where its corner rounds) and the arcs
+  const edge = [];
+  g.beginPath();
+  each((x, y, on) => {
+    for (const [dx, dy] of CORNERS) {
+      if (on ? round(x, y, dx, dy) : road(x + dx, y) && road(x, y + dy)) quarter((x + (dx > 0 ? 1 : 0)) * T, (y + (dy > 0 ? 1 : 0)) * T, dx, dy);
+    }
+    if (!on) return;
+    for (const [sx, sy] of STEPS) {
+      if (road(x + sx, y + sy)) continue;
+      const ex = sy ? 1 : 0, ey = sx ? 1 : 0;   // along the side
+      const cut = (e) => (!road(x + ex * e, y + ey * e) || road(x + ex * e + sx, y + ey * e + sy) ? k : 0);
+      const ox = (x + (sx > 0 ? 1 : 0)) * T, oy = (y + (sy > 0 ? 1 : 0)) * T;
+      const a = [ox + (sy ? cut(-1) : 0), oy + (sx ? cut(-1) : 0)], b = [ox + (sy ? T - cut(1) : 0), oy + (sx ? T - cut(1) : 0)];
+      g.moveTo(...a); g.lineTo(...b);
+      edge.push([a, b, sx, sy]);
+    }
+  });
+  g.save();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.strokeStyle = L.stone[3] ?? L.gap; g.lineWidth = 2.8; g.stroke();
+  g.setLineDash([3.2, 0.9]); g.strokeStyle = L.stone[2]; g.lineWidth = 1.6; g.stroke();
+  g.restore();
+  // grass over the kerb here and there, so the edge isn't ruled
+  for (const [[ax, ay], [bx, by], sx, sy] of edge) {
+    const n = Math.hypot(bx - ax, by - ay) / 2.4;
+    for (let i = 0; i < n; i++) {
+      if (r() < 0.45) continue;
+      const t = r(), out = 0.4 + r() * 1.4;
+      g.fillStyle = L.grass[Math.floor(r() * 3)];
+      g.beginPath(); g.ellipse(ax + (bx - ax) * t + sx * out, ay + (by - ay) * t + sy * out, sx ? 0.9 + r() : 1.4 + r() * 1.4, sy ? 0.9 + r() : 1.4 + r() * 1.4, 0, 0, Math.PI * 2); g.fill();
+    }
+  }
 }
 
 /** A fallen maple leaf, at the origin. */
@@ -5983,7 +6055,7 @@ function fireflyArt(col) {
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
-    holes: true, fade: true, extras: villageExtras,
+    holes: true, fade: true, soft: true, extras: villageExtras,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
