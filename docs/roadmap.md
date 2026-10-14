@@ -145,9 +145,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `?town=savanna&home=machew&gymwins=1` walks straight into a house. Branch `towns` (and `claude/next-town-savanna-fpkg29`),
    waiting on the user's playtest. **All five towns are built**; next is session 2, the Waystone ring and visiting from home. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
-**The Nietos' house** (2026-10-14, the user's ask): it now goes up in the Clearing only once THE NIETOS (Kangaskhan) are
-   beaten at the Clearing's Gym, and the whole house is switched off (`NIETOS_LIVE` false in `js/data/towns.js`) while the
-   user works out more of how the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
+**The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
+   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
+   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note) while the user works out more of how
+   the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

@@ -68,7 +68,7 @@ import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, 
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk } from './towns.js';
-import { townsOpen, TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey } from './data/towns.js';
+import { townsOpen, TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome } from './data/towns.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -1776,11 +1776,13 @@ function homeRoom(b) {
             again();
           }));
   }
-  const away = !!home.leader && gymWins(getSave(), home.leader) === 0;   // up at their Gym till you've beaten them once
+  const wins = home.leader ? gymWins(getSave(), home.leader) : 0;
+  const notBack = home.leader === 'nietos' && wins > 0 && !nietosHome(wins);   // beaten, but the Nietos aren't moving in yet (NIETOS_LIVE)
+  const away = !!home.leader && (wins === 0 || notBack);   // up at their Gym till you've beaten them once
   const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
     options,
     skipLabel: 'Leave',
     onSkip: out,
@@ -1790,7 +1792,7 @@ function homeRoom(b) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
-  for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
+  if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
