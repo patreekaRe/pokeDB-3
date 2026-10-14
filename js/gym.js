@@ -46,12 +46,11 @@ export function badgePop(l) {
 }
 
 /** Their lines, one a tap (`bubble`: no slide-in, no dim, only their speech window popping up, for talking to them in
-    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line (`'gold'` its Gold one).
-    `title` is the small word before the name (Mewtwo at the Sealed Gate has none). */
+    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line (`'gold'` its Gold one). */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ' } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}`);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
@@ -59,7 +58,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   who.src = l.talk || spriteOf(l);
   who.alt = '';
   const plate = el('div', 'gym-plate');
-  plate.append(el('small', '', title), l.name);
+  plate.append(el('small', '', 'GYM LEADER '), l.name);
   const box = el('div', 'gym-say');
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
@@ -71,7 +70,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   let darkness = null;
   try { for (let i = 0; i < said.length; i++) {
     const line = said[i];
-    if (line.plate) plate.replaceChildren(el('small', '', title), l.name);   // a narrated line after a family's talk
+    if (line.plate) plate.replaceChildren(el('small', '', 'GYM LEADER '), l.name);   // a narrated line after a family's talk
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
     if (line.who) {
       if (line.demon && !layer.classList.contains('demon')) demonSwap();

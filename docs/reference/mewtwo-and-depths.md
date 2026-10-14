@@ -119,7 +119,3 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
   window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
   Pokédex or `bossesDefeated`.
-- **The Depths for every starter** (Towns step 5, 2026-10-14): with the towns on, the five Waystones lit and the gate
-  broken, any starter's won third boss leads on into the Crystal Depths, Mewtwo holding the gate open after a word (and,
-  with fewer lit, saying how many are left instead of the nameless throw-back). Mewtwo's runs, ending, feat and shiny are
-  unchanged. Detail in `docs/reference/towns.md`'s last section.

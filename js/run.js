@@ -27,7 +27,7 @@ import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.j
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
-import { GATE_HP, GATE_HIT, GATE_SLIVER, gateTalk } from './data/gate.js';
+import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
@@ -54,7 +54,7 @@ import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
 import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
-import { descent, descentLines } from './descent.js';
+import { descent } from './descent.js';
 import { travel, hasTravel } from './travel.js';
 import { crossroads } from './crossroads.js';
 import { meowthDue } from './meowth.js';
@@ -68,7 +68,7 @@ import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/bal
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
-import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest, litStones, depthsOpen } from './towns.js';
+import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
   homeTalk, stepNudge, folkChats } from './data/towns.js';
@@ -98,12 +98,6 @@ const isSafari = () => Boolean(run?.safari);
     rerolls, pick }`, the week's seed driving every roll like the Safari's, `flight` the guardians beaten, `floor` the
     highest floor cleared, `augments` the ones taken (js/data/augments.js), `pick` the floor whose augment is still owed. */
 const isTower = () => Boolean(run?.tower);
-
-/** A run that goes on into the Crystal Depths after its third boss: Mewtwo's, or since Towns step 5 any other starter's
-    once the five Waystones are lit and the gate is broken (depthsOpen()); `run.deep` keeps it there once it fell. */
-const deepRun = () => Boolean(run.deep) || (!isMewtwoRun(run.starter) && !isSafari() && !isTower() && depthsOpen());
-/** The biome whose boss ends the run (finalBiome() for this run). */
-const lastBiome = () => finalBiome(run.starter, deepRun());
 /** The climb's LCD: the flight's floors, or once the guardian is the next door (or the room you're in), that guardian. */
 export function towerPlace(here, tower = run.tower) {
   const top = (tower.flight + 1) * FLIGHT;
@@ -320,7 +314,6 @@ function checkpoint() {
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
     gleaned: run.gleaned,
-    deep: run.deep,           // fallen into the Crystal Depths (fallIn()), so a reload keeps the run going to Eternatus
     tally: run.tally,
     safari: run.safari,
     tower: run.tower,
@@ -628,11 +621,10 @@ export function peekTown(starter, id, house = null) {
 }
 
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
-    fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map; ?descent=deep (&starter=, &level=)
-    another starter's, Mewtwo holding the gate open (Towns step 5). Nothing about the run is saved. */
-export function peekDescent(starter, level = 0) {
+    fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
+export function peekDescent(starter) {
   peeking = true;
-  beginRun(starter, Math.max(0, Math.min(MAX_LEVEL, level || 0)), ':descent');
+  beginRun(starter, 0, ':descent');
 }
 
 /** Playtest shortcut: ?biome=ruins (any biome but the Depths; &starter=id, &level=0-5) starts a throwaway run at that
@@ -723,7 +715,7 @@ function peekRoom(id) {
     return showMap();
   }
   if (id === ':descent') {
-    run.biome = BIOMES.length - 2;   // the third boss just beaten
+    run.biome = finalBiome(run.starter) - 1;
     run.stage = run.starter.line.length - 1;
     run.hp = Math.ceil(run.maxHp / 2);
     return fallIn();
@@ -744,9 +736,8 @@ function peekRoom(id) {
     return enterNode(node);
   }
   if (id === ':elite' || id === ':wild' || (id === ':boss' && peekDepths)) {
-    if (peekDepths) {   // the Depths, fully powered up like after the fall (any other starter on a deep run)
-      run.deep = !isMewtwoRun(run.starter);
-      run.biome = BIOMES.length - 1;
+    if (peekDepths) {   // Mewtwo's last biome, fully powered up like after its fall
+      run.biome = finalBiome(run.starter);
       run.stage = run.starter.line.length - 1;
       run.maxHp = run.hp = run.maxHp + HP_PER_STAGE * run.stage;
     }
@@ -773,8 +764,7 @@ function peekRoom(id) {
     return fight({ ...node, type: 'ken' });
   }
   if (id === ':final') {
-    run.deep = !isMewtwoRun(run.starter);
-    run.biome = BIOMES.length - 1;
+    run.biome = finalBiome(run.starter);
     run.stage = run.starter.line.length - 1;
     run.maxHp = run.hp = 300;   // a starting deck at the bottom of the Depths: sturdy enough to see both forms through
     startBiome(true);
@@ -938,7 +928,7 @@ function showExp(floor, floors) {
   $('run-exp-fill').style.width = `${Math.round(Math.min(1, floor / steps) * 100)}%`;
   bar.setAttribute('aria-valuemax', String(steps));
   bar.setAttribute('aria-valuenow', String(floor));
-  const goal = last ? (!isTower() && run.biome === lastBiome() ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
+  const goal = last ? (!isTower() && run.biome === finalBiome(run.starter) ? 'the final boss' : 'the boss') : 'the boss, where you evolve';
   bar.title = `EXP: floor ${floor} of ${floors}. Full at ${goal}.`;
 }
 
@@ -1602,7 +1592,7 @@ function enterNode(node) {
    ============================================================ */
 
 async function fight(node, { talked = false } = {}) {
-  const last = !isTower() && run.biome === lastBiome();   // a climb has no last boss
+  const last = !isTower() && run.biome === finalBiome(run.starter);   // a climb has no last boss
   if (node.type === 'boss' && !last && canEvolve()) preloadEvolution(run.starter, run.stage);
   if (node.type === 'boss' && last) {
     preloadWinScene(run.starter, isMewtwoRun(run.starter) || run.level === MAX_LEVEL);
@@ -2032,7 +2022,7 @@ function afterFight(node, result) {
     return showMap();
   }
   if (!result.won) missionTally(result.tally);
-  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === lastBiome(), { foe: result.foe, move: result.move, kind: node.type });
+  if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, move: result.move, kind: node.type });
 
   run.hp = result.hp;
   run.fights += 1;
@@ -2068,7 +2058,7 @@ function afterFight(node, result) {
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
   if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
-  if (!(node.type === 'boss' && run.biome === lastBiome())) unlock();
+  if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
   const shard = node.type === 'elite' && node.shard && !gleaned(gleanKey(node, 'shard')) ? KEY_BY_ID[node.shard] : null;
@@ -2134,9 +2124,7 @@ function afterFight(node, result) {
   if (node.type === 'boss') {
     const recount = run.gymWon?.counted;   // back in the gym after a refresh in its rewards: this win is already counted
     if (!isSafari() && !isTower() && !peeking && !recount) updateSave(d => {   // a Safari area or a guardian isn't one of the main game's biomes (nor is a playtest saved)
-      // Eternatus beaten by another starter is its own win (stats.deepWins): Champion of the Depths stays Mewtwo's feat
-      if (run.biome === BIOMES.length - 1 && !isMewtwoRun(run.starter)) d.stats.deepWins = (d.stats.deepWins || 0) + 1;
-      else d.stats.bossesDefeated[run.biome + 1] = true;
+      d.stats.bossesDefeated[run.biome + 1] = true;
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       const leader = gymLeader(node);
       if (leader) d.gym = { ...(d.gym || {}), [leader.id]: (d.gym?.[leader.id] || 0) + 1 };
@@ -2148,10 +2136,9 @@ function afterFight(node, result) {
       if (saved) saveRunData({ ...saved, gymWon: run.gymWon });
     }
     if (isTower() && run.tower.flight >= TOP_FLIGHT) { collect(); climbed(TOP_FLOOR); return endRun(true); }   // Rayquaza on floor 100: the summit
-    if (!isTower() && run.biome === lastBiome()) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
+    if (!isTower() && run.biome === finalBiome(run.starter)) { run.pendingCoins.told = true; run.dexNews = dexComplete ? dexNews.slice(0, -1) : dexNews; run.research = research; collect(); return endRun(true); }       // final boss: you win!
     unlock();
-    // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn()),
-    // as it does any starter once the five Waystones are lit (deepRun())
+    // Mewtwo is fully powered up after biome 2, so its third boss sends it down into the Crystal Depths instead (fallIn())
     if (result.evolved) steps.push(next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));   // in the Gym, after the badge
     else if (canEvolve()) steps.push(next => evolve(next), next => unlockWindow(unlocked, next), next => offerEvolutionCard(next));
     else steps.push(next => unlockWindow(unlocked, next));
@@ -2185,7 +2172,7 @@ function afterFight(node, result) {
     collect();
     if (node.type !== 'boss') showMap();
     else if (isTower()) climbOn();
-    else if (run.biome + 1 === BIOMES.length - 1 && run.biome + 1 === lastBiome()) fallIn();   // the Depths next (BIOMES' secret last)
+    else if (isMewtwoRun(run.starter) && run.biome + 1 === finalBiome(run.starter)) fallIn();   // everyone else's last biome is Biome 3
     else walkOn();
   });
 }
@@ -2255,40 +2242,22 @@ function guardianHeal() {
   tell(`The guardian's fall clears the air: +${gain} HP.`);
 }
 
-/** After the biome 3 boss and its rewards, the fall into the Crystal Depths (v1.0's secret biome, roadmap Small asks 5):
-    Mewtwo's own (it senses the call and dives), or since Towns step 5 any starter's once the five Waystones are lit, Mewtwo
-    holding the broken gate open for it after a word. Healed in full by the crystals (Slay the Spire's between-acts heal,
-    since there's no form left to evolve into), then the Depths' intro film over their map. */
+/** After the biome 3 boss and its rewards, Mewtwo falls into the Crystal Depths (v1.0's secret biome, roadmap Small asks
+    5): item 4's descent with its own lines, healed in full by the crystals (Slay the Spire's between-acts heal, since it
+    has no form left to evolve into), then the Depths' intro film over their map. */
 async function fallIn() {
   const name = stageName(run.starter, run.stage), healed = run.hp < run.maxHp;
-  const heal = healed ? `The crystals' energy floods into ${name}: HP fully restored!` : `The crystals' energy surges through ${name}!`;
-  const at = { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id) };
-  let close;
-  if (isMewtwoRun(run.starter)) close = await descent({ ...at, lines: {
+  const close = await descent({ starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), lines: {
     arena: ['The crater trembles beneath the arena...', `${name} senses something calling from far below.`],
-    fall: [`${name} dives into the dark towards the call!`, 'Crystals line the shaft, glowing with a strange energy...', heal],
+    fall: [`${name} dives into the dark towards the call!`, 'Crystals line the shaft, glowing with a strange energy...',
+      healed ? `The crystals' energy floods into ${name}: HP fully restored!` : `The crystals' energy surges through ${name}!`],
   } });
-  else {
-    run.deep = true;
-    const said = descentLines({ name, kind: 'mewtwo' }), first = !getSave().gateTalks;
-    if (!peeking) updateSave(d => { d.gateTalks = (d.gateTalks || 0) + 1; });
-    close = await descent({ ...at, kind: 'mewtwo', land: gateLand(), lines: { arena: said.arena, fall: [...said.fall, heal] }, meet: mewtwoMeet(5, first) });
-  }
   run.hp = run.maxHp;
   if (healed) playSound('heal-hp');
   setHpBar('run', run.hp, run.maxHp);
   run.biome += 1;
   startBiome();   // the map, and the Depths' intro film over it, before the dark lifts
   close();
-}
-
-/** Mewtwo talking from the open gate (Towns step 5): its lines for `lit` Waystones, in the gym's slide-in window. */
-function mewtwoMeet(lit, first) {
-  return async () => {
-    const mewtwo = STARTERS_BY_ID.mewtwo;
-    playCry(mewtwo.line[0].id);
-    await gymTalk({ id: 'mewtwo', name: mewtwo.line[0].name, talk: spriteUrl(mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) }, gateTalk(lit, first), { lit: true, title: '' });
-  };
 }
 
 /** Run a list of steps in order. Each step gets a function to call when it is finished. */
@@ -3883,19 +3852,9 @@ function announceUnlocks() {
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
   if (peeking || isMewtwoRun(run.starter) || isSafari() || !(won || atLastBoss)) return null;
-  // broken already: with the towns on, Mewtwo waits in the open gate and says how many Waystones are left (a run with all
-  // five went down into the Depths instead); without them, until a Mewtwo run has reached the Depths, a win is thrown back
-  // from the open gate (a hint, no strike)
-  if (before <= 0) {
-    if (!won || run.deep) return null;
-    const at = { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), land: gateLand() };
-    if (townsOpen()) {
-      const first = !getSave().gateTalks;
-      updateSave(d => { d.gateTalks = (d.gateTalks || 0) + 1; });
-      return { scene: { ...at, kind: 'mewtwo', lit: litStones(), first } };
-    }
-    return getSave().stats.deepestBiome < 4 ? { scene: { ...at, kind: 'open' } } : null;
-  }
+  // broken already: until a Mewtwo run has reached the Depths, a win is thrown back from the open gate (a hint, no strike)
+  if (before <= 0) return won && getSave().stats.deepestBiome < 4 ? { scene: { starter: run.starter, stage: run.stage,
+    shiny: getSave().shiny.on.includes(run.starter.id), kind: 'open', land: gateLand() } } : null;
   const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
@@ -4030,7 +3989,6 @@ function endRun(won, atLastBoss = false, loss = null) {
       level5.push(`🏆 ${stageName(run.starter, run.stage)} entered the Hall of Fame as ${fameNo(entry)}!`);
     }
     if (mewtwoRun) level5.push(`💎 ${stageName(run.starter, run.stage)} entered the Hall of Fame as Champion of the Depths No.${String(entry.champ).padStart(3, '0')}!`);
-    else if (entry.deep) level5.push(`💎 ${stageName(run.starter, run.stage)} beat Eternatus in the Crystal Depths! Its win carries the Depths' mark.`);
 
     if (!roadsWere && roadsOpen(getSave().stats)) {
       level5.push(`🧭 New roads open! You've won ${ROADS_WINS === 1 ? 'a run' : `${ROADS_WINS} runs`}: from now on, after a boss, a crossroads lets you pick the next biome.`);
@@ -4043,7 +4001,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   }
 
   // ?bossfight=depths: the ending plays (scene, credits, the achievement's window) without a thing saved
-  if (won && peeking && (mewtwoRun || run.deep)) record = draftWin(run, getSave().shiny.on.includes(run.starter.id));
+  if (won && peeking && mewtwoRun) record = draftWin(run, getSave().shiny.on.includes(run.starter.id));
   const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
   if (won && run.research) fresh.unshift(run.research);   // the last boss's own research, first so Mewtwo's reveal stays last
@@ -4051,9 +4009,9 @@ function endRun(won, atLastBoss = false, loss = null) {
 
   const name = stageName(run.starter, run.stage);
   const biome = mainBiome();
-  $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : run.deep ? '🏆 You conquered the Crystal Depths!' : `🏆 You conquered ${conquered(run.route)}!`) : '💀 Your run has ended';
+  $('result-title').textContent = won ? (safari ? '🏆 You crossed the Safari Zone!' : mewtwoRun ? '🏆 You reached the last energy!' : `🏆 You conquered ${conquered(run.route)}!`) : '💀 Your run has ended';
   $('result-text').textContent = won
-    ? `${name} beat all ${mewtwoRun || run.deep ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
+    ? `${name} beat all ${mewtwoRun ? 'four' : 'three'} bosses! Fights won: ${run.fights}. Relics: ${run.relics.length}. Deck: ${run.deck.length} cards.`
     : safari ? `${name} fainted in the Safari Zone's ${safariArea().name} after ${run.fights} won fights. Today's run is the same every try: try another path!`
     : `${name} fainted in Biome ${run.biome + 1} (${biome.name}) after ${run.fights} won fights. Try a different path or a different starter!`;
 
@@ -4106,7 +4064,6 @@ function badgeItem(badge) {
     there's no strike: it resolves with the descent's close(), for the caller to call once the next scene covers it. */
 export async function playGate(scene) {
   if (!scene) return;
-  if (scene.kind === 'mewtwo') return descent({ ...scene, meet: mewtwoMeet(scene.lit, scene.first), hold: true });   // the floor holds after its word
   const close = await descent(scene);
   if (scene.kind === 'open') return close;   // no strike: the caller closes it under whatever comes next
   await gateScene({ ...scene, onShow: close });

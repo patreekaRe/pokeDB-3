@@ -5,12 +5,11 @@
 
 import { getSave, updateSave, awardCoins } from './storage.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended, folkKey,
-  openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest, RING } from './data/towns.js';
+  openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest } from './data/towns.js';
 import { satchelOf } from './data/satchel.js';
 import { streamOf } from './rng.js';
 import { safariDay } from './data/safari.js';
 import { gainMat, gainKey } from './satchel.js';
-import { gatePinned } from './data/gate.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
@@ -67,17 +66,6 @@ export function metTown(id) {
 
 /** Whether `id`'s Waystone is mended, so its crystal on the Clearing's Waystone is lit and you can travel there from home. */
 export const isMended = (id, save = getSave()) => mended(townState(save, id));
-
-/** How many of the five Waystones are lit (`?shards=N` pins it for a page load, to playtest Mewtwo at the gate). */
-export function litStones(save = getSave()) {
-  const pin = new URLSearchParams(location.search).get('shards');
-  if (pin !== null && pin !== '' && !Number.isNaN(Number(pin))) return Math.max(0, Math.min(RING.length, Math.round(Number(pin))));
-  return RING.filter(t => isMended(t.id, save)).length;
-}
-
-/** Towns step 5: with the towns on, all five Waystones lit and the Sealed Gate broken, a won run's fall drops any starter
-    into the Crystal Depths. */
-export const depthsOpen = (save = getSave()) => townsOpen() && (gatePinned() ?? save.gateHp) <= 0 && litStones(save) === RING.length;
 
 /** The townsfolk you've invited to live in your Secret Base ("<town>:<pokemon>" keys, js/data/towns.js's folkKey()). */
 export const invitedFolk = (save = getSave()) => save.townsfolk || [];

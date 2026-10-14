@@ -229,23 +229,3 @@ the pick made (`questLine()`: John's festival, or the pick's `fallback`, "autumn
 mended by the old requests). `HOME_LINES[id]` is a list of speeches (4 each, several about the other leaders):
 `waystoneGuest()` deals one a day (`speech`; the welcome is the first), the Secret Base picks one a visit. Tests:
 `tests/quests.test.mjs`, `tests/shard.test.mjs`.
-
-**The all-five reward: the Depths for every starter** (Towns step 5, 2026-10-14). `litStones()` / `depthsOpen()` in
-`js/towns.js` (the towns on, all five Waystones lit, the gate broken; `?shards=N` pins the count, `?gate=0` the gate). A
-run is `deepRun()` in `js/run.js` once that holds (or `run.deep`, saved with the run, once it fell): `lastBiome()`
-(`finalBiome(starter, deep)` in `js/data/enemies.js`) is then the Depths, so the third boss isn't the end. After its
-rewards `fallIn()` plays the descent with `kind: 'mewtwo'`: the crack opens on the gate, Mewtwo talks in the gym's
-slide-in window (`mewtwoMeet()`: `gymTalk()` with `title: ''`, its lines `gateTalk(lit, first)` in `js/data/gate.js`,
-the whole story the first time, `save.gateTalks` counting), then the floor gives way, the crystals heal in full and the
-Depths' film and map come up. The Depths play at the run's Trainer Level plus `DEPTHS_MODS[level]` (`runMods()` in
-`js/data/difficulty.js`; Mewtwo keeps `MEWTWO_MODE`). With fewer than five lit, a won run's end (`strikeGate()`) plays the
-same descent with `hold`: Mewtwo says how many are left and the floor holds (the towns off, the old `kind: 'open'` throw-back
-stays). Beating Eternatus with another starter counts `stats.deepWins`, not `bossesDefeated[4]`, so Champion of the Depths,
-its feat and its shiny stay Mewtwo's; the entry carries `deep: true` (a 💎 after its Level in the Hall of Fame and Record
-Book, the win scene in the violet cavern titled "Victory in the Depths", no credits); the Eternatus badge counts it. Mewtwo's
-own runs still go down with no shards (it is the one holding the door). In the Clearing, the broken gate's card gains "The
-Depths" (`goDepths()` in `js/hub-3d.js`, `onDepths` in `js/main.js`: the Depths' intro film, then back on the gate's
-doorstep; a camp is a maybe for later), and the Waystone's line says whether the seal still holds. A place with more than
-one button now lists them on its card. Playtest: `?descent=deep&starter=<id>` (the fall), `?strike=0&gate=0&towns&shards=N`
-(Mewtwo's word after a win, `&first` for the story), `?bossfight=depths&starter=<id>` (a deep run's last fight),
-`?towns&shards=5&gate=0&mewtwo` (the gate's second button). Tests: `tests/depths.test.mjs`.

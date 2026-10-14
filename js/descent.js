@@ -10,9 +10,7 @@
  *
  * Its lines are picked per case by descentLines(), or handed in (`lines`), so another fall (Mewtwo's, item 5) reuses it.
  * Once the gate is broken, until a Mewtwo run has reached the Depths, a win plays `kind: 'open'`: the crack opens but the
- * floor holds, and your Pokémon is thrown back by the psychic force below (a hint that only Mewtwo can go down). With the
- * towns on it plays `kind: 'mewtwo'` instead (Towns step 5): the crack opens on the gate, `meet()` lets Mewtwo talk from
- * it, and then the floor holds (`hold`, fewer than five Waystones lit) or gives way into the Crystal Depths.
+ * floor holds, and your Pokémon is thrown back by the psychic force below (a hint that only Mewtwo can go down).
  */
 import { $, sleep } from './ui.js';
 import { playSound, playMusic } from './audio.js';
@@ -58,10 +56,6 @@ export function descentLines({ name, kind = 'win', first = false, land = 'wastes
     held: [`${name} steps towards the light...`, '...and a wave of psychic force throws it back!',
       'Whatever waits down there answers only to a mind as strong as its own.', 'Only Mewtwo could follow that call down.'],
   };
-  if (kind === 'mewtwo') return {
-    arena: ['The ground shakes beneath the arena!', 'Far below, the Sealed Gate stands open... and someone waits in its light.'],
-    fall: [`${name} leaps into the light!`, 'Crystals line the shaft, glowing with the Waystones\' energy...'],
-  };
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
@@ -83,7 +77,7 @@ let dust = [], bits = [], crackPts = [], loss = false, chimeAt = 0, monY = 0, la
  * Play the descent. Resolves once your Pokémon has fallen into the light and the screen is dark, with a close() that
  * takes the scene away; call it once the next scene (the gate's) is showing, so the page never shows through between them.
  */
-export async function descent({ starter, stage = 0, shiny = false, kind = 'win', first = false, lines = null, land: where = 'wastes', meet = null, hold = false }) {
+export async function descent({ starter, stage = 0, shiny = false, kind = 'win', first = false, lines = null, land: where = 'wastes' }) {
   land = where;
   const scene = $('descent-scene'), mon = $('descent-mon');
   const name = stageName(starter, stage);
@@ -116,14 +110,6 @@ export async function descent({ starter, stage = 0, shiny = false, kind = 'win',
   shake = 3;
   await sleep(still() ? 0 : 500);
   if (kind === 'open') return repelled(scene, said.held);
-  if (meet) {   // Mewtwo in the open gate below: the light rises while it talks
-    scene.classList.remove('shaking');
-    shake = 0;
-    scene.classList.add('glowing');
-    playSound('gate-hum');
-    await meet();
-    if (hold) return goDark(scene);
-  }
 
   // the floor gives way: a violet flash, and the shaft
   playSound('eruption');
@@ -169,11 +155,6 @@ async function repelled(scene, lines) {
   await sleep(still() ? 0 : 400);
   shake = 0;
   await say(lines.slice(1));
-  return goDark(scene);
-}
-
-/** The floor held: the screen goes dark for whatever comes next, which covers it before close() is called. */
-async function goDark(scene) {
   scene.classList.add('dark');
   await sleep(still() ? 0 : 600);
   return () => {

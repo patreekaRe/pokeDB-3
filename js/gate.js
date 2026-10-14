@@ -13,7 +13,7 @@
  * crack, chunk and mote comes from a seeded random, so a gate at a given HP always looks the same.
  */
 import { getSave } from './storage.js';
-import { GATE_HP, GATE_STAGES, gateStage, gatePinned } from './data/gate.js';
+import { GATE_HP, GATE_STAGES, gateStage } from './data/gate.js';
 
 // the damage each stage paints (as an HP share: cracks, light behind the door, holes), whole to past 25%
 const STAGE_LOOK = [1, 0.68, 0.4, 0.1];
@@ -50,7 +50,11 @@ function seeded(seed) {
 }
 
 /** The gate's HP: the save's, or `?gate=NNN` while playtesting (never saved). */
-export const gateHp = () => gatePinned() ?? getSave().gateHp;
+export function gateHp() {
+  const pin = new URLSearchParams(location.search).get('gate');
+  if (pin !== null && pin !== '' && !Number.isNaN(Number(pin))) return Math.max(0, Math.min(GATE_HP, Math.round(Number(pin))));
+  return getSave().gateHp;
+}
 
 /**
  * The gate's HP bar (title, gate scene, result window): a dark crystal track in a stone frame, the seal's gem at its
