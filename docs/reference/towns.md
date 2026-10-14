@@ -57,3 +57,21 @@ centre, the river crossing the top leg on a bridge, a moat round the Waystone's 
 and road D), on out at its far corner under roads D and B; the mine top left, Clarence's lodge top middle, house a top
 right; the bathhouse mid-left on its own road (rows 20-21) with its springs (`o`) below it; the forge and Shaun's lodge
 bottom middle, house e bottom right. Houses k and n are gone.
+
+**Driftwood Landing cleaned up** (2026-10-14, the user's call: fix what the map review found plus the handoff's
+checklist): the ring kept as the Landing's shape but drawn plainly, a square of boardwalk two tiles wide round the
+temple's island with two tiles of water between them and a pier in from each side; every spoke two wide; the ring's top
+runs on as a promenade to the beacon (top left, tall, at the back) and Kayl's; the aquarium and Pat's boat sit north of
+the west and east spokes so they never stand between you and the camera at their doors; four locked huts (a, p, x, y;
+g, e, j, m, n and d gone, a few of their knock lines kept on the rest). `lagoonSupports()` now rails every boardwalk edge
+over the water (a wooden top rail and a rope, posts at the ends, open where a houseboat's gangway lands) and
+`lagoonGround()` paints a pale trim inside it, Highbough's idea. The lagoon style has `fade: true`. Its name boards are
+`s` tiles (`n` is a net drying there; `nameBoards(town, at)` takes the letter, and `tests/towns.test.mjs` knows `s`);
+`stiltHut()` no longer hangs a small plate, and the aquarium's sign is part of its group so it fades with it. Kayl lives
+in a `stiltManor()` (5 x 4: a raised deck up steps, a veranda on posts in her `GYM_INK` with gold bands and a railing,
+glass-float lanterns, a deep thatch with an upper storey rising out of it under a second thatch, her crest on its front
+slope, a gold spire, lavender planters, banners on mooring poles clear of the eaves); `stiltHut()` hands any home with a
+`leader` to it. Pat's `houseboat()` is a two-deck riverboat on a 6 x 3 lot: a stripe and gold rub rail, his crest on
+the hull and over the wheelhouse eave, the upper deck railed in his colours, a paddlewheel turning at the stern, his
+banners on mast and flagstaff, fairy lights (three instanced meshes, `instancedIn()` for things inside a rocking group),
+a hammock and the rose in a bottle; its gangway runs to the door's side of the boat.

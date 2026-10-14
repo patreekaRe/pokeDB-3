@@ -14,7 +14,7 @@ town). The other four need the same care, **one town a session**, in this order 
 |---|---|---|---|---|
 | Lantern Village | Shrine | `village` | `?town=shrine` | done 2026-10-14 (the koi pond, `fadeBehind()`): a model too |
 | Cinder Springs | Wastes | `springs` | `?town=wastes` | done 2026-10-14 (the leaders in `lodge()`s on 5 x 4 lots, `nameBoards()`, `fade`; then a lava field, `lavaField()`, two locked houses) |
-| Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | `shop`, `kayl`, `pat`, `aquarium` |
+| Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | done 2026-10-14 (a square ring two wide, railings, four locked huts, Kayl's `stiltManor()`, Pat's two-deck `houseboat()`, `s` name boards, `fade`) |
 | Sunwell Bazaar | Savanna | `bazaar` | `?town=savanna` | `shop`, `machew`, `jerome`, `caravanserai` |
 | Highbough | Thornwood | `canopy` | `?town=thornwood` | already cleaned up: the model to copy |
 

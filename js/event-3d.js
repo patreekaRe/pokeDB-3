@@ -3739,11 +3739,12 @@ function nameBoardArt(lines) {
   return f.c;
 }
 
-/** A name board by each named house (`n`): the nearest named building's name, a leader's with GYM LEADER under it.
-    Lantern Village's and Cinder Springs' (the user's ask, 2026-10-14: every name readable from the path). */
-function nameBoards(town) {
+/** A name board by each named house (`n`, or `at`: Driftwood Landing's `n` is a net): the nearest named building's
+    name, a leader's with GYM LEADER under it. Lantern Village's, Cinder Springs' and Driftwood Landing's (the user's ask,
+    2026-10-14: every name readable from the path). */
+function nameBoards(town, at = 'n') {
   const { map } = town;
-  for (const [x, y] of map.flatMap((row, y) => [...row].map((ch, x) => (ch === 'n' ? [x, y] : null)).filter(Boolean))) {
+  for (const [x, y] of map.flatMap((row, y) => [...row].map((ch, x) => (ch === at ? [x, y] : null)).filter(Boolean))) {
     const named = town.buildings.filter(b => b.name).map(b => ({ b, f: footprint(map, b.at) }))
       .sort((p, q) => Math.hypot(Math.max(p.f.x0 - x, 0, x - p.f.x1), Math.max(p.f.y0 - y, 0, y - p.f.y1)) - Math.hypot(Math.max(q.f.x0 - x, 0, x - q.f.x1), Math.max(q.f.y0 - y, 0, y - q.f.y1)))[0]?.b;
     if (!named) continue;
@@ -4556,6 +4557,13 @@ function lagoonGround(town) {
         }
       }
       // a soft dark lip where it meets the water
+      if (k === 'deck') {   // a pale trim just inside the railing, so the boardwalk's edge reads at a glance (as Highbough's)
+        g.fillStyle = 'rgba(248,232,196,0.6)';
+        if (wet(x - 1, y)) g.fillRect(X + 1.6, Y, 1.2, T);
+        if (wet(x + 1, y)) g.fillRect(X + T - 2.8, Y, 1.2, T);
+        if (wet(x, y - 1)) g.fillRect(X, Y + 1.6, T, 1.2);
+        if (wet(x, y + 1)) g.fillRect(X, Y + T - 2.8, T, 1.2);
+      }
       g.fillStyle = 'rgba(20,30,30,0.28)';
       if (wet(x - 1, y)) g.fillRect(X, Y, 1.6, T);
       if (wet(x + 1, y)) g.fillRect(X + T - 1.6, Y, 1.6, T);
@@ -4644,8 +4652,8 @@ function lagoonWater(town) {
 /** What the town stands on: land as a bank sloping down into the water, the boardwalks and huts on posts to the bed, a
     fascia board along every edge over the water. */
 function lagoonSupports(town) {
-  const kind = lagoonKinds(town), banks = [], posts = [], fascia = [], corners = new Set();
-  const wet = (x, y) => kind(x, y) === 'water';
+  const kind = lagoonKinds(town), banks = [], posts = [], fascia = [], corners = new Set(), tops = [], ropes = [], railPosts = new Map();
+  const wet = (x, y) => kind(x, y) === 'water', moored = new Set(town.buildings.filter(b => b.kind === 'houseboat').map(b => b.at));
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     const k = kind(x, y);
     if (k === 'water') return;
@@ -4658,7 +4666,19 @@ function lagoonSupports(town) {
       posts.push([cx - COLS / 2 - dx * 0.06, cy - ROWS / 2 - dy * 0.06, 1, 0, null, 0]);
     }
     for (const [dx, dy] of STEPS) if (wet(x + dx, y + dy)) fascia.push([tileX(x) + dx * 0.48, tileZ(y) + dy * 0.48, 1, dx ? Math.PI / 2 : 0, null, 0]);
+    if (/[A-Z]/.test(ch)) return;   // a hut's own platform: the hut stands to its edges
+    for (const [dx, dy] of STEPS) {   // a railing along every boardwalk edge over the water (the user's ask, 2026-10-14: where you can walk reads at a glance), open to a houseboat's gangway
+      if (!wet(x + dx, y + dy) || moored.has(town.map[y + dy]?.[x + dx])) continue;
+      const [ax, ay] = dx ? [0, 1] : [1, 0], ex = tileX(x) + dx * 0.44, ez = tileZ(y) + dy * 0.44;
+      const end = (s) => (wet(x + ax * s, y + ay * s) ? 0.44 : 0.5), a = [ex - ax * end(-1), ez - ay * end(-1)], b = [ex + ax * end(1), ez + ay * end(1)];
+      for (const [h, list] of [[0.5, tops], [0.28, ropes]]) list.push([a[0], h, a[1], b[0], h, b[1]]);
+      for (const [px, pz] of [a, b]) railPosts.set(`${px.toFixed(2)},${pz.toFixed(2)}`, [px, pz, 1, 0, null, 0]);
+    }
   }));
+  beams(tops, 0.028, std({ color: '#7a5434', roughness: 0.85 }), { shadow: false });
+  beams(ropes, 0.016, std({ color: '#d8c8a0', roughness: 0.95 }), { shadow: false });
+  const railPost = new THREE.CylinderGeometry(0.035, 0.042, 0.56, 6); railPost.translate(0, 0.28, 0);
+  instanced(railPost, std({ color: '#5a3c24', roughness: 0.9 }), [...railPosts.values()]).castShadow = false;
   const bank = new THREE.CylinderGeometry(0.707, 0.95, 0.6, 4, 1, true); bank.translate(0, -0.3, 0);
   instanced(bank, std({ color: '#ffffff', roughness: 1 }), banks).castShadow = false;
   const post = new THREE.CylinderGeometry(0.055, 0.07, 0.66, 7); post.translate(0, BED_Y + 0.33, 0);   // poking up a hand at the corners
@@ -4783,6 +4803,8 @@ function hipRoof(parent, { w, d, rise, y, col, crest, thatch = thatchArt() }) {
     with a coloured cap; a lantern by the door, a net and floats on its side. `aquarium`: the big hall, glass in its front
     and a glass dome lit blue on top. A tap is its door. */
 function stiltHut(b, f, L, lit) {
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  if (leader) return stiltManor(b, f, L, lit, leader);
   const aqua = b.kind === 'aquarium', g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz - 0.05);
   B.group.add(g);
@@ -4803,11 +4825,8 @@ function stiltHut(b, f, L, lit) {
     dome.scale.set(1.25, 0.8, 1);
     const frame = std({ color: '#e8eef0', roughness: 0.5, metalness: 0.3 });
     for (let k = 0; k < 6; k++) { const rib = mesh(new THREE.TorusGeometry(Math.min(w, d) * 0.42, 0.018, 4, 24, Math.PI), frame, 0, h + 0.14, -0.1, g); rib.rotation.y = k * Math.PI / 6; rib.scale.set(1.25, 0.8, 1); }
-    panel(aquaSign(b.name), 1.9, 0.42, f.cx, h + 0.36, f.cz - 0.05 + d / 2 + 0.12);   // standing on the roof's front edge
-  } else {
-    hipRoof(g, { w: w + 0.75, d: d + 0.75, rise: 1.0 + d * 0.12, y: h, col: b.roof, crest });
-    if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, h - 0.08, f.cz - 0.05 + d / 2 + 0.04);
-  }
+    g.attach(panel(aquaSign(b.name), 1.9, 0.42, f.cx, h + 0.36, f.cz - 0.05 + d / 2 + 0.12));   // standing on the roof's front edge
+  } else hipRoof(g, { w: w + 0.75, d: d + 0.75, rise: 1.0 + d * 0.12, y: h, col: b.roof, crest });
   if (b.kind === 'shop') {   // a fish on a bracket over the door, and a bait barrel
     mesh(new THREE.BoxGeometry(0.05, 0.05, 0.45), dark, w / 2 - 0.3, h * 0.82, d / 2 + 0.22, g);
     const fish = mesh(new THREE.SphereGeometry(0.16, 12, 8), std({ color: '#e8a030', roughness: 0.5 }), w / 2 - 0.3, h * 0.82 - 0.2, d / 2 + 0.42, g);
@@ -4824,6 +4843,108 @@ function stiltHut(b, f, L, lit) {
   lit.push(glow);
   const lamp = mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, aqua ? 1.1 : 0.62, h * 0.72, d / 2 + 0.1, g);
   lamp.castShadow = false;
+  return g;
+}
+
+/** Many small copies of one thing inside a group that moves (a houseboat rocking): one instanced mesh, untappable. */
+function instancedIn(parent, geo, m, at) {
+  const o = new THREE.InstancedMesh(geo, m, at.length), d = new THREE.Object3D();
+  at.forEach(([x, y, z, turn = 0], i) => { d.position.set(x, y, z); d.rotation.set(0, turn, 0); d.updateMatrix(); o.setMatrixAt(i, d.matrix); });
+  o.castShadow = false; o.raycast = () => {};
+  parent.add(o);
+  return o;
+}
+
+/** A Gym Leader's home in Driftwood Landing (the user's ask, 2026-10-14: every leader's house "more grand and extravagant
+    and aesthetic", each town in its own style; the village's are manor()s, the Springs' lodge()s): a great stilt house
+    on a raised deck over the lagoon, up steps, a veranda across its front on posts in the leader's colour, railed, gold
+    bands on the posts, glass fishing-float lanterns lit in their colour under the eaves, a deep thatched roof with an
+    upper storey rising out of it under a second, taller thatch, the crest on its front slope and a gold spire on top,
+    lavender in planters and two banners. Its lot is 5 x 4 tiles. A tap anywhere is its door. */
+function stiltManor(b, f, L, lit, leader) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const ink = LEADER_INK[leader] || ['#f0e0ff', '#b088e0', '#523478'], letter = (b.name || leader)[0].toUpperCase();
+  const W = f.w - 0.3, D = f.h - 0.25, P = 0.36;
+  const dark = std({ color: '#3a2414', roughness: 0.8 }), wood = std({ color: '#8a6440', roughness: 0.85 });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const inked = std({ color: ink[1], roughness: 0.6 }), deep = std({ color: ink[2], roughness: 0.7 });
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 }); lit.push(m); return m; };
+  const small = (m) => { m.castShadow = false; return m; };
+  // the raised deck: planks on a dark skirt, a band in the leader's colour and a gold line round it, steps down the front
+  const planks = boardsArt(); planks.repeat.set(W / 1.2, D / 1.2);
+  mesh(new THREE.BoxGeometry(W, P, D), [dark, dark, std({ map: planks, roughness: 0.9 }), dark, dark, dark], 0, P / 2, 0, g);
+  small(mesh(new THREE.BoxGeometry(W + 0.04, 0.09, D + 0.04), deep, 0, P - 0.14, 0, g));
+  small(mesh(new THREE.BoxGeometry(W + 0.06, 0.025, D + 0.06), gold, 0, P - 0.07, 0, g));
+  for (let i = 0; i < 3; i++) mesh(rbox(1.3 - i * 0.06, P / 3, 0.22, 0.02), wood, 0, P / 6 + i * P / 3, D / 2 + 0.33 - i * 0.18, g);
+  // the hall: weathered boards, its front lit
+  const hw = W - 0.9, hd = 2.1, hz = -0.55, H = 1.4, top = P + H;
+  const sides = boardsArt(); sides.repeat.set(hd / 1.4, H / 0.9);
+  const wall = std({ map: sides, roughness: 0.95 });
+  mesh(new THREE.BoxGeometry(hw, H, hd), [wall, wall, dark, dark, lights(hutFront(hw, b.roof)), wall], 0, P + H / 2, hz, g);
+  // the veranda: posts in the leader's colour with gold bands, a railing either side of the steps and down its ends
+  const vz = D / 2 - 0.2, px = W / 2 - 0.28, fz = hz + hd / 2, posts = [-px, -px * 0.62, -0.66, 0.66, px * 0.62, px];
+  for (const x of posts) {
+    mesh(new THREE.CylinderGeometry(0.075, 0.085, H, 10), inked, x, P + H / 2, vz, g);
+    for (const y of [P + 0.04, P + H - 0.12]) small(mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.05, 10), gold, x, y, vz, g));
+  }
+  for (const s of [-1, 1]) {
+    const x0 = s * 0.66, x1 = s * px, mid = (x0 + x1) / 2, span = Math.abs(x1 - x0);
+    for (const y of [P + 0.46, P + 0.24]) small(mesh(rbox(span, 0.045, 0.045, 0.015), y > P + 0.3 ? inked : wood, mid, y, vz, g));
+    for (const y of [P + 0.46, P + 0.24]) small(mesh(rbox(0.045, 0.045, vz - fz, 0.015), y > P + 0.3 ? inked : wood, x1, y, (vz + fz) / 2, g));
+  }
+  const balusters = [];
+  for (const s of [-1, 1]) for (let i = 1; i < 8; i++) balusters.push([s * (0.66 + i * (px - 0.66) / 8), P + 0.24, vz]);
+  instancedIn(g, (() => { const p = new THREE.BoxGeometry(0.03, 0.22, 0.03); p.translate(0, 0.11, 0); return p; })(), wood, balusters);
+  // lavender in planters at the veranda's ends (Kayl's: lavender everywhere), sprigs on one mesh
+  const sprigs = [];
+  for (const s of [-1, 1]) {
+    small(mesh(rbox(0.6, 0.2, 0.24, 0.02), dark, s * (px - 0.42), P + 0.1, vz - 0.32, g));
+    for (let i = 0; i < 6; i++) sprigs.push([s * (px - 0.42) - 0.24 + i * 0.096, P + 0.2, vz - 0.32 + (i % 2 ? 0.05 : -0.05), i]);
+  }
+  instancedIn(g, (() => { const c = new THREE.ConeGeometry(0.045, 0.3, 5); c.translate(0, 0.15, 0); return c; })(), std({ color: '#9a78d8', roughness: 0.8 }), sprigs);
+  // the deep lower thatch over hall and veranda, a gold line along its front eave
+  const back = hz - hd / 2 - 0.35, front = vz + 0.38, rd = front - back, rz = (front + back) / 2, rw = W + 0.05;
+  const lower = new THREE.Group(); lower.position.z = rz; g.add(lower);
+  hipRoof(lower, { w: rw, d: rd, rise: 1.15, y: top, col: b.roof });
+  small(mesh(new THREE.BoxGeometry(rw + 0.08, 0.035, 0.035), gold, 0, top + 0.07, front + 0.04, g));
+  // the upper storey rising out of the thatch, lit, under a taller thatch with the crest on its front and a gold spire
+  const uw = 2.5, ud = 1.5, uy = top + 0.74, uh = 0.9;
+  const usides = boardsArt(); usides.repeat.set(ud / 1.4, uh / 0.9);
+  const uwall = std({ map: usides, roughness: 0.95 });
+  mesh(new THREE.BoxGeometry(uw, uh, ud), [uwall, uwall, dark, dark, lights(hutFront(uw, b.roof)), uwall], 0, uy + uh / 2, rz, g);
+  for (const sx of [-1, 1]) small(mesh(new THREE.BoxGeometry(0.1, uh, 0.1), inked, sx * (uw / 2 + 0.01), uy + uh / 2, rz + ud / 2 + 0.01, g));
+  const upper = new THREE.Group(); upper.position.z = rz; g.add(upper);
+  const ur = 1.2, ut = uy + uh;
+  hipRoof(upper, { w: uw + 0.75, d: ud + 0.75, rise: ur, y: ut, col: b.roof, crest: houseCrest('ink', ink, letter) });
+  small(mesh(new THREE.BoxGeometry(uw + 0.83, 0.035, 0.035), gold, 0, ut + 0.07, rz + (ud + 0.75) / 2 + 0.04, g));
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.42, 8), gold, 0, ut + ur + 0.2, rz, g);
+  for (let k = 0; k < 3; k++) small(mesh(new THREE.TorusGeometry(0.08 - k * 0.016, 0.016, 6, 14), gold, 0, ut + ur + 0.1 + k * 0.08, rz, g)).rotation.x = Math.PI / 2;
+  mesh(new THREE.ConeGeometry(0.06, 0.2, 10), gold, 0, ut + ur + 0.48, rz, g);
+  // glass fishing floats lit in the leader's colour, hung from the lower eave
+  const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.25, transparent: true, opacity: 0.9 });
+  lit.push(glow);
+  for (const x of [-px * 0.81, -0.33, 0, 0.33, px * 0.81]) {
+    const y = top - 0.3 - (x ? 0 : 0.06);
+    small(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.24, 4), dark, x, y + 0.22, vz + 0.12, g));
+    small(mesh(new THREE.SphereGeometry(0.11, 14, 10), glow, x, y, vz + 0.12, g));
+    small(mesh(new THREE.TorusGeometry(0.11, 0.012, 4, 14), dark, x, y, vz + 0.12, g));
+  }
+  // two banners at the deck's front corners, swaying a little
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [-1, 1].map(s => {
+    const x = s * (W / 2 + 0.1), z = vz, tall = 2.6;   // just clear of the thatch, on mooring poles down into the water
+    mesh(new THREE.CylinderGeometry(0.035, 0.045, tall + P - WATER_Y, 8), dark, x, (P + tall + WATER_Y) / 2, z, g);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x + s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x + s * 0.22, P + tall - 0.12, z + 0.02);
+    g.add(hang);
+    small(mesh(new THREE.PlaneGeometry(0.4, 1.5), cloth, 0, -0.75, 0, hang));
+    return hang;
+  });
+  B.ticks.push((now) => { if (!calm) flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; }); });
   return g;
 }
 
@@ -4897,57 +5018,118 @@ function drownedColumn(x, z, tall, L) {
   return g;
 }
 
-/** Pat's houseboat, moored by its gangway: a hull painted white with a stripe in his colour, a cabin with a rounded roof,
-    fairy lights strung to a little mast, a hammock-coloured awning; it rocks on the water. A tap is its door. */
+/** Pat's houseboat, moored by its gangway, grand as a Gym Leader's home (the user's ask, 2026-10-14: every leader's house
+    "more grand and extravagant and aesthetic", each town in its own style): a long two-deck riverboat, its hull white with
+    a stripe in his colour, his crest on its side and a gold rub rail; a cabin lit along its length, its roof an upper
+    deck railed in his colours with gold knobs, a wheelhouse under a rounded roof with his crest over its eave; a
+    paddlewheel turning slowly at the stern, fairy lights strung mast to flagstaff and along the rail, his banners on
+    both, a hammock at the bow, a rose in a bottle. Its lot is 6 x 3 tiles of water; it rocks. A tap is its door. */
 function houseboat(b, f, L, lit) {
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  const ink = LEADER_INK[leader] || [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)], letter = (b.name || '?')[0].toUpperCase();
   const g = new THREE.Group(), boat = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
   B.group.add(g);
   g.add(boat);
-  const len = f.w - 0.3, beam = f.h - 0.35;
-  const s = new THREE.Shape(), hl = len / 2, hb = beam / 2;
+  boat.position.x = 0.25;   // its bow to the east, room for the wheel at the stern
+  const len = f.w - 0.8, beam = f.h - 0.45, hl = len / 2, hb = beam / 2;
+  const white = std({ color: '#f4f0e6', roughness: 0.55 }), wood = std({ color: '#8a6a48', roughness: 0.8 });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const inked = std({ color: ink[1], roughness: 0.55 }), deep = std({ color: ink[2], roughness: 0.6 }), rose = std({ color: b.roof, roughness: 0.5 });
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 }); lit.push(m); return m; };
+  const small = (m) => { m.castShadow = false; return m; };
+  const plate = (art, w, h, x, y, z, tilt = 0) => { const p = panel(art, w, h, 0, 0, 0); p.removeFromParent(); boat.add(p); p.position.set(x, y, z); p.rotation.x = tilt; return p; };
+  // the hull, a stripe in his colour round it, a gold rub rail at the deck's edge, his crest on its side
+  const s = new THREE.Shape();
   s.moveTo(-hl, -hb * 0.9); s.lineTo(hl * 0.55, -hb); s.quadraticCurveTo(hl * 1.05, -hb * 0.6, hl * 1.1, 0); s.quadraticCurveTo(hl * 1.05, hb * 0.6, hl * 0.55, hb); s.lineTo(-hl, hb * 0.9); s.closePath();
+  const band = (depth, k) => { const e = new THREE.ExtrudeGeometry(s, { depth, bevelEnabled: false, curveSegments: 14 }); e.rotateX(-Math.PI / 2); e.scale(k, 1, k); return e; };
   const hullGeo = new THREE.ExtrudeGeometry(s, { depth: 0.5, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 2, curveSegments: 14 });
   hullGeo.rotateX(-Math.PI / 2);
-  const deckArt = (() => { const c = boardsArt(); c.repeat.set(len, beam); c.rotation = Math.PI / 2; return c; })();
-  mesh(hullGeo, [std({ map: deckArt, roughness: 0.85 }), std({ color: '#f4f0e6', roughness: 0.5 })], 0, WATER_Y - 0.12, 0, boat);
-  const stripe = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: false, curveSegments: 14 }); stripe.rotateX(-Math.PI / 2); stripe.scale(1.012, 1, 1.02);
-  mesh(stripe, std({ color: b.roof, roughness: 0.5 }), 0, WATER_Y + 0.12, 0, boat);
+  const deckArt = boardsArt(); deckArt.repeat.set(len, beam); deckArt.rotation = Math.PI / 2;
+  mesh(hullGeo, [std({ map: deckArt, roughness: 0.85 }), white], 0, WATER_Y - 0.12, 0, boat);
+  mesh(band(0.09, 1.012), rose, 0, WATER_Y + 0.1, 0, boat);
+  small(mesh(band(0.03, 1.02), gold, 0, WATER_Y + 0.4, 0, boat));
+  plate(houseCrest('ink', ink, letter), 0.34, 0.34, hl * 0.45, WATER_Y + 0.25, hb * 0.98 + 0.05);
   const top = WATER_Y + 0.42;
-  // the cabin
-  const cw = len * 0.5, cd = beam * 0.72, ch = 0.75;
-  const art = hutFront(cw, b.roof), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
-  lit.push(front);
-  const white = std({ color: '#f4f0e6', roughness: 0.6 });
-  mesh(new THREE.BoxGeometry(cw, ch, cd), [white, white, white, white, front, white], -hl * 0.25, top + ch / 2, 0, boat);
-  const roofGeo = new THREE.CylinderGeometry(cd * 0.62, cd * 0.62, cw + 0.2, 20, 1, false, 0, Math.PI);
-  roofGeo.rotateZ(Math.PI / 2); roofGeo.scale(1, 0.45, 1);
-  mesh(roofGeo, std({ color: b.roof, roughness: 0.5, side: THREE.DoubleSide }), -hl * 0.25, top + ch, 0, boat);
-  // a little mast at the bow, fairy lights strung back to the cabin roof
-  const mastX = hl * 0.75;
-  mesh(new THREE.CylinderGeometry(0.03, 0.035, 1.3, 8), std({ color: '#8a6a48', roughness: 0.8 }), mastX, top + 0.65, 0, boat);
-  const pennant = mesh(new THREE.ConeGeometry(0.1, 0.36, 3), std({ color: b.roof, roughness: 0.6 }), mastX + 0.18, top + 1.18, 0, boat);
-  pennant.rotation.z = -Math.PI / 2; pennant.scale.z = 0.15;
-  const bulb = new THREE.SphereGeometry(0.035, 8, 6), endX = -hl * 0.25 + cw / 2, endY = top + ch + 0.22;
-  for (let i = 0; i <= 12; i++) {
-    const t = i / 12, x = mastX + (endX - mastX) * t, y = top + 1.25 + (endY - top - 1.25) * t - Math.sin(t * Math.PI) * 0.15;
-    const m = std({ color: '#fff0c0', emissive: new THREE.Color(['#ffd060', '#ff8090', '#80d0ff'][i % 3]), emissiveIntensity: 1, roughness: 0.4 });
-    lit.push(m);
-    mesh(bulb, m, x, y, cd * 0.35, boat).castShadow = false;
+  // the cabin, long and lit, a gold band under its eave, lifebuoys on its side
+  const cw = len * 0.6, cd = beam * 0.68, ch = 0.82, cx = -hl * 0.12;
+  mesh(new THREE.BoxGeometry(cw, ch, cd), [white, white, white, white, lights(hutFront(cw, b.roof)), white], cx, top + ch / 2, 0, boat);
+  small(mesh(new THREE.BoxGeometry(cw + 0.02, 0.05, cd + 0.02), gold, cx, top + ch - 0.07, 0, boat));
+  for (const dx of [-cw * 0.4, cw * 0.4]) small(mesh(new THREE.TorusGeometry(0.11, 0.04, 8, 18), std({ color: '#f05a30', roughness: 0.5 }), cx + dx, top + 0.5, cd / 2 + 0.04, boat));
+  // the upper deck: its lip in his deepest colour, a railing round it in his colour, gold knobs at the corners
+  const ut = top + ch, rw = cw + 0.2, rd = cd + 0.2, ry = ut + 0.08;
+  mesh(rbox(cw + 0.3, 0.08, cd + 0.3, 0.03), deep, cx, ut + 0.04, 0, boat);
+  for (const y of [ry + 0.36, ry + 0.18]) for (const sz of [-1, 1]) {
+    small(mesh(rbox(rw, 0.035, 0.035, 0.01), y > ry + 0.3 ? inked : white, cx, y, sz * rd / 2, boat));
+    small(mesh(rbox(0.035, 0.035, rd, 0.01), y > ry + 0.3 ? inked : white, cx + sz * rw / 2, y, 0, boat));
   }
-  // a rose in a bottle on the bow, a lifebuoy on the cabin
-  const rose = std({ color: '#e0284a', roughness: 0.5 });
-  mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.2, 10), std({ color: '#90d0a0', transparent: true, opacity: 0.7, roughness: 0.1 }), mastX - 0.3, top + 0.1, beam * 0.25, boat);
-  mesh(new THREE.SphereGeometry(0.06, 10, 8), rose, mastX - 0.3, top + 0.32, beam * 0.25, boat);
-  const buoy = mesh(new THREE.TorusGeometry(0.12, 0.04, 8, 18), std({ color: '#f05a30', roughness: 0.5 }), -hl * 0.25 + cw * 0.32, top + 0.42, cd / 2 + 0.04, boat);
-  buoy.castShadow = false;
-  const plate = panel(nameArt(b.name), 0.9, 0.22, 0, 0, 0); plate.removeFromParent(); boat.add(plate);
-  plate.position.set(-hl * 0.25, top + ch - 0.12, cd / 2 + 0.01);
-  // the gangway, from the door down onto the deck
-  const z0 = tileZ(b.door.y) - f.cz + 0.3, z1 = -beam / 2 + 0.3;
+  const rp = [], nx = Math.round(rw / 0.32), nz = Math.round(rd / 0.32);
+  for (let i = 0; i <= nx; i++) for (const sz of [-1, 1]) rp.push([cx - rw / 2 + i * rw / nx, ry, sz * rd / 2]);
+  for (let j = 1; j < nz; j++) for (const sx of [-1, 1]) rp.push([cx + sx * rw / 2, ry, -rd / 2 + j * rd / nz]);
+  instancedIn(boat, (() => { const p = new THREE.BoxGeometry(0.03, 0.36, 0.03); p.translate(0, 0.18, 0); return p; })(), white, rp);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) small(mesh(new THREE.SphereGeometry(0.045, 10, 8), gold, cx + sx * rw / 2, ry + 0.4, sz * rd / 2, boat));
+  // the wheelhouse at the stern end of the upper deck, its rounded roof in his colour, his crest over its eave
+  const ww = cw * 0.4, wd = cd * 0.7, wh = 0.62, wx = cx - cw / 2 + ww / 2 + 0.18;
+  mesh(new THREE.BoxGeometry(ww, wh, wd), [white, white, white, white, lights(hutFront(ww, b.roof)), white], wx, ry + wh / 2, 0, boat);
+  const roofGeo = new THREE.CylinderGeometry(wd * 0.62, wd * 0.62, ww + 0.2, 20, 1, false, 0, Math.PI);
+  roofGeo.rotateZ(Math.PI / 2); roofGeo.scale(1, 0.45, 1);
+  mesh(roofGeo, std({ color: b.roof, roughness: 0.5, side: THREE.DoubleSide }), wx, ry + wh, 0, boat);
+  small(mesh(new THREE.BoxGeometry(ww + 0.22, 0.04, 0.04), gold, wx, ry + wh + 0.02, wd * 0.62, boat));
+  plate(houseCrest('ink', ink, letter), 0.36, 0.36, wx, ry + wh + 0.16, wd * 0.62 + 0.03, -0.35);
+  // the paddlewheel at the stern under its white guard, turning slowly
+  const wheel = new THREE.Group();
+  wheel.position.set(-hl - 0.42, WATER_Y + 0.18, 0);
+  boat.add(wheel);
+  for (const z of [-0.36, 0.36]) small(mesh(new THREE.TorusGeometry(0.46, 0.03, 6, 24), deep, 0, 0, z, wheel));
+  mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.84, 12), gold, 0, 0, 0, wheel).rotation.x = Math.PI / 2;
+  for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2, p = mesh(new THREE.BoxGeometry(0.05, 0.3, 0.72), k % 2 ? rose : inked, Math.cos(a) * 0.36, Math.sin(a) * 0.36, 0, wheel); p.rotation.z = a + Math.PI / 2; }
+  const guard = new THREE.CylinderGeometry(0.56, 0.56, 0.86, 20, 1, true, -Math.PI / 2, Math.PI);
+  guard.rotateX(Math.PI / 2);
+  mesh(guard, std({ color: '#f4f0e6', roughness: 0.55, side: THREE.DoubleSide }), -hl - 0.42, WATER_Y + 0.18, 0, boat);
+  small(mesh(new THREE.TorusGeometry(0.56, 0.025, 6, 20, Math.PI), gold, -hl - 0.42, WATER_Y + 0.18, 0.43, boat));
+  // a mast at the bow, a flagstaff at the stern, his banners on both and a pennant up top
+  const mastX = hl * 0.72, staffX = -hl + 0.14, tall = 2.5;
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [[mastX, 1], [staffX, -1]].map(([x, sd]) => {
+    mesh(new THREE.CylinderGeometry(0.03, 0.04, tall, 8), wood, x, top + tall / 2, 0, boat);
+    small(mesh(new THREE.SphereGeometry(0.05, 10, 8), gold, x, top + tall + 0.03, 0, boat));
+    mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 6), wood, x - sd * 0.2, top + tall - 0.35, 0.05, boat).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x - sd * 0.2, top + tall - 0.37, 0.07);
+    boat.add(hang);
+    small(mesh(new THREE.PlaneGeometry(0.34, 1.2), cloth, 0, -0.6, 0, hang));
+    return hang;
+  });
+  const pennant = small(mesh(new THREE.ConeGeometry(0.1, 0.4, 3), inked, mastX + 0.2, top + tall - 0.1, 0, boat));
+  pennant.rotation.z = -Math.PI / 2; pennant.scale.z = 0.15;
+  // fairy lights, sagging from the mast to the flagstaff over the wheelhouse, and along the upper deck's front rail
+  const bulbs = [[], [], []];
+  for (let i = 0; i <= 22; i++) { const t = i / 22; bulbs[i % 3].push([mastX + (staffX - mastX) * t, top + tall - 0.12 - Math.sin(t * Math.PI) * 0.4, 0]); }
+  for (let i = 0; i <= 14; i++) bulbs[i % 3].push([cx - rw / 2 + i * rw / 14, ry + 0.33 - (i % 2) * 0.05, rd / 2 + 0.03]);
+  const bulb = new THREE.SphereGeometry(0.035, 8, 6);
+  ['#ffd060', ink[0], '#ff8090'].forEach((c, i) => {
+    const m = std({ color: '#fff0c0', emissive: new THREE.Color(c), emissiveIntensity: 1, roughness: 0.4 });
+    lit.push(m);
+    instancedIn(boat, bulb, m, bulbs[i]);
+  });
+  // a hammock slung from the mast to the cabin's bow end, and a rose in a bottle on the bow
+  const hy = top + 0.62, hx0 = mastX - 0.06, hx1 = cx + cw / 2 + 0.02;
+  const sling = new THREE.CatmullRomCurve3(Array.from({ length: 7 }, (_, i) => { const t = i / 6; return new THREE.Vector3(hx0 + (hx1 - hx0) * t, hy - Math.sin(t * Math.PI) * 0.26, 0); }));
+  const hammock = new THREE.TubeGeometry(sling, 20, 0.07, 8);
+  hammock.scale(1, 0.55, 1.6);
+  small(mesh(hammock, std({ color: b.roof, roughness: 0.9 }), 0, 0, 0.12, boat));
+  mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.2, 10), std({ color: '#90d0a0', transparent: true, opacity: 0.7, roughness: 0.1 }), mastX + 0.3, top + 0.1, -hb * 0.35, boat);
+  mesh(new THREE.SphereGeometry(0.06, 10, 8), std({ color: '#e0284a', roughness: 0.5 }), mastX + 0.3, top + 0.32, -hb * 0.35, boat);
+  // the gangway, from the door onto the deck on the door's side of the boat
+  const rel = tileZ(b.door.y) - f.cz, side = Math.sign(rel) || -1, z0 = rel - side * 0.3, z1 = side * (beam / 2 - 0.25);
   const way = mesh(new THREE.BoxGeometry(0.42, 0.04, Math.hypot(z1 - z0, top)), std({ color: '#a07448', roughness: 0.85 }), tileX(b.door.x) - f.cx, (top + 0.02) / 2, (z0 + z1) / 2, g);
   way.rotation.x = -Math.atan2(top - 0.02, z1 - z0);
-  B.ticks.push((now) => { if (calm) return; boat.position.y = Math.sin(now / 1500) * 0.025; boat.rotation.x = Math.sin(now / 1900) * 0.015; boat.rotation.z = Math.sin(now / 2300) * 0.02; });
+  B.ticks.push((now) => {
+    if (calm) return;
+    boat.position.y = Math.sin(now / 1500) * 0.025; boat.rotation.x = Math.sin(now / 1900) * 0.015; boat.rotation.z = Math.sin(now / 2300) * 0.02;
+    wheel.rotation.z = now / 2600;
+    flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; });
+  });
   return g;
 }
 
@@ -5054,6 +5236,7 @@ function leafletArt(col) {
 function lagoonExtras(town, L) {
   lagoonWater(town);
   lagoonSupports(town);
+  nameBoards(town, 's');
   const rnd = seeded(57), kind = lagoonKinds(town);
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === 'y') {
@@ -6553,7 +6736,7 @@ const TOWN_STYLES = {
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
     drift: (i) => (i % 3 ? { art: ashArt(), size: 0.1 } : { art: emberArt(i % 2 ? '#f8a030' : '#f06020'), size: 0.12, rise: true }) },
-  lagoon: { holes: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
+  lagoon: { holes: true, fade: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
     house: (b, f, L, lit) => (b.kind === 'houseboat' ? houseboat(b, f, L, lit) : b.kind === 'beacon' ? beacon(f, L, lit) : stiltHut(b, f, L, lit)),
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
