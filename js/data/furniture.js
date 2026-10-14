@@ -17,6 +17,7 @@ import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
 import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
+import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE } from './workshop.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -26,6 +27,9 @@ const SOURCES = {
   safari: { owned: (save, id) => (save.safariDex?.done || []).includes(id), item: (id) => SAFARI_DEX_PAGES.find(p => p.area === id) },
   prize: { owned: (save, id) => (save.corner?.prizes || []).includes(id), item: (id) => [...PRIZES, ...RETIRED_PRIZES].find(p => p.kind === id) },
   gym: { owned: (save, id) => (save.gym?.[id] || 0) >= GYM_POSTER, item: (id) => GYM_BY_ID[id] },   // wins only ever count up
+  // Kurt's Workshop (js/data/workshop.js): a piece made there, and a Gym Leader's signature piece once given their favourite
+  craft: { owned: (save, id) => (save.workshop?.made || []).includes(id), item: (id) => RECIPES_BY_ID[id] },
+  gift: { owned: (save, id) => (save.workshop?.fond || []).includes(id), item: (id) => GYM_BY_ID[id] },
 };
 
 export const FURNITURE = [
@@ -80,6 +84,9 @@ export const FURNITURE = [
   ...RETIRED_PRIZES.map(({ kind }) => ({ kind, from: ['prize', kind], retired: true })),
   // A Gym Leader's signed poster, from the third win against them (js/base-furniture-gym.js paints it).
   ...GYM_LEADERS.map(l => ({ kind: posterKind(l.id), from: ['gym', l.id] })),
+  // Kurt's Workshop: its craft-only pieces, and each Gym Leader's signature piece for their favourite gift
+  ...RECIPES.filter(r => r.kind === 'piece').map(r => ({ kind: r.makes, from: ['craft', r.id], towns: true })),
+  ...GIFTS.map(g => ({ kind: g.sig, from: ['gift', g.leader], towns: true })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -104,6 +111,8 @@ export function howToEarn(piece, save) {
   if (kind === 'badge') return `Earn the ${src.name}: ${src.text}`;
   if (kind === 'achievement' || kind === 'feat') return src.text;
   if (kind === 'gym') return `Beat Gym Leader ${src.name} ${GYM_POSTER} times (${Math.min(save.gym?.[src.id] || 0, GYM_POSTER)}/${GYM_POSTER})`;
+  if (kind === 'craft') return `Make it at Kurt's Workshop in the Whispering Clearing`;
+  if (kind === 'gift') return `Give ${src.name} their favourite gift, made at Kurt's Workshop (${FAVOURITE[src.id].name})`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

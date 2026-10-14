@@ -275,7 +275,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
-5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+5. **The all-five reward: the Depths open to every starter** (the user's pick, 2026-10-14). With all five Waystone
+   Shards placed, a won run's fall at the last boss no longer holds (`kind: 'open'` in `descent()`): any starter drops
+   into the Crystal Depths as a 4th biome and fights Eternatus. Mewtwo needs no shards and keeps the Champion of the
+   Depths ending, its feat and its shiny; other starters get their own Depths win (a Hall of Fame mark). The Depths need
+   their own numbers per Trainer Level for non-Mewtwo starters (sim check). Builds after step 6 (shards must drop).
+   Open: what the lit Waystone ring does at the moment it completes (asked 2026-10-14). A Depths camp is still a maybe.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
    in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
@@ -329,7 +334,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      one (`DROPS` in `js/data/satchel.js`: wild 40%, Alpha 1-2, boss 2-3; a line in the reward box) and 1-2 rooms a map
      sparkle (✧, `markSparkles()`, 2-3 of one material on walking in); Pat's bottles only sparkle. Refresh-safe
      (`run.gleaned`), kept on a lost run; the Satchel says where each turns up. Detail: `docs/reference/towns.md`. Branch
-     `claude/sharp-ramanujan-nh2503`, pushed to `main` too. **Next: session 3, Kurt's Workshop and its recipes.**
+     `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+   - **Session 3 done (2026-10-14): Kurt's Workshop.** A timber workshop in the Clearing's north-east (towns on only), walked
+     into like the Nietos' house: Kurt (a sprite drawn for him) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
+     His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
+     Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
+     their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
+     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
+     Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
+     **Next: session 4, the shard** (the marked Alpha node, the pickup, the mending scene, leaders coming home).
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

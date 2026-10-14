@@ -8222,6 +8222,10 @@ const HOMES = {
   clearing: {
     nietos: { floor: 'planks', leaderAt: { x: 4, ty: 2.4 }, castAt: [[1.2, 3.2, 0]],
       furnish: [['crib', 0, 0], ['tv', 3, 0], ['console', 3, 1], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 7, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 6, 1], ['swivelchair', 7, 1], ['sofa', 5, 4], ['toybox', 0, 4], ['beanbag', 2, 5], ['bookstack', 8, 3], ['plant', 8, 5]] },
+    // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, Apricorn trees
+    workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
+      furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
+        ['appletree', 0, 3], ['appletree', 8, 3], ['crate', 0, 5], ['crate', 1, 5], ['barrel', 8, 5], ['barrel', 7, 5]] },
   },
   shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
@@ -8312,7 +8316,7 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
   return f.c;
 }
 
-async function buildHome(figs, { time, town, home }) {
+async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
   if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm }, home);
@@ -8326,10 +8330,23 @@ async function buildHome(figs, { time, town, home }) {
     B.spots = [{ step: { x: 4, y: 3 } }];
     B.anchors[0] = new THREE.Vector3(tileX(3.5), 2.2, tileZ(1.2));
   }
+  if (h.kurtAt && figs.kurt) {   // a tap on Kurt is his Workshop's window, like the shop's keeper
+    B.who.kurt = await figure('kurt', figs.kurt, h.kurtAt);
+    B.who.kurt.group.traverse(o => { o.userData.spot = 0; });
+    B.spots = [{ step: { x: Math.round(h.kurtAt.x), y: Math.round(h.kurtAt.ty) + 1 } }];
+    B.anchors[0] = new THREE.Vector3(tileX(h.kurtAt.x), 2.4, tileZ(h.kurtAt.ty));
+  }
   const leader = town.homes[home]?.leader;
   if (leader && figs[leader]) {
-    B.who[leader] = await figure(leader, figs[leader], h.leaderAt ?? { x: 3, ty: 2.4 });
+    const at = h.leaderAt ?? { x: 3, ty: 2.4 };
+    B.who[leader] = await figure(leader, figs[leader], at);
     B.talks.add(leader);
+    if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot
+      const x = Math.round(at.x), y = Math.round(at.ty) + 1;   // the nearest free tile in front of them (John's kotatsu is right there)
+      const step = [[x, y], [x + 1, y], [x - 1, y], [x, y + 1], [x + 1, y + 1], [x - 1, y + 1]].find(([i, j]) => j < ROWS && !B.blocked.has(key(i, j))) ?? [x, y + 1];
+      B.spots = [{ step: { x: step[0], y: step[1] } }];
+      B.anchors[0] = new THREE.Vector3(tileX(at.x) + 0.9, 2.3, tileZ(at.ty));
+    }
   }
   if (h.castAt) {   // the bathers, up to their chins in the pools, bobbing now and then
     const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
@@ -8826,7 +8843,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -8835,7 +8852,7 @@ function room(kind, figs, at = {}) {
     B = { kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, gift: at.gift }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -8882,7 +8899,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended }));
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   await wakeGL(renderer);

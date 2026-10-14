@@ -105,6 +105,9 @@ The first section began as the note on playtesting the live site and grew into t
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
 
+- **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
+  east avenue; Halloween's pumpkin patch sits either side of that path now. Detail: `docs/reference/towns.md`.
+
 - **The Nietos' house, a storybook cottage** (2026-10-14, the user's ask: "more aesthetic than a stupid bland house"):
   `nietosHouse(g, x, z, home)` in `js/hub-3d.js`. Its paintings are made once in `cottageArt()` (butter-cream clapboard,
   scalloped baby-blue shingles drawn eave-up so each row laps the one below, a stone footing, bricks, a fanlit four-panel

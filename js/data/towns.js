@@ -1206,8 +1206,15 @@ export const CLEARING = {
   id: 'clearing', biome: 'clearing', name: 'Whispering Clearing', music: 'title', home: true,
   buildings: [
     { id: 'nietos', name: 'THE NIETOS', home: 'nietos' },
+    { id: 'workshop', name: 'KURT\'S WORKSHOP', home: 'workshop' },
   ],
   homes: {
+    // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): Kurt at his workbench (a tap opens js/workshop.js's
+    // window), a cauldron, Apricorn trees, and a Slowpoke from Azalea Town asleep by the door
+    workshop: { name: 'Kurt\'s Workshop', kurt: true, sub: 'Sawdust, Apricorns drying on every shelf, a cauldron bubbling, and Kurt at his workbench.',
+      cast: {
+        slowpoke: ['Slowpoke is asleep against the cauldron. Kurt says it came with him from Azalea Town.', 'Slowpoke yawns. Several seconds later, it notices you.', 'Slowpoke\'s tail is in a bucket of water. Nobody knows why. Slowpoke doesn\'t either.'],
+      } },
     nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
       away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',
       // beaten, but not home yet (NIETOS_LIVE off)
