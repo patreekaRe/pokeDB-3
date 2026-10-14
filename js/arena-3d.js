@@ -7,7 +7,7 @@
    and behind your Pokémon like the games' battle view. A boss keeps its pixel prelude; the 3D fades in out of its last
    white flash (`revealArena()`). */
 
-import { loadThree, tex, createPost, dispose, wakeGL } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, wakeGL, restGL } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1379,6 +1379,7 @@ export function warmArena() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => { if (A) rebuild(); }, 200);
     });
+    restGL(renderer);
   })();
   warming.catch(() => { warming = null; });
   return warming;

@@ -41,6 +41,7 @@ export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
    restored on their next wakeGL(), where three.js uploads again whatever they draw. Their scenes stay as they are. */
 const places = new Set();
 const asleep = new WeakSet();
+let shown = null, spare = null;   // the place on screen, and the one place warmed ahead that may stay awake beside it
 
 /** Puts a place's renderer to sleep (its GPU memory let go); it draws nothing until wakeGL(). */
 export function sleepGL(renderer) {
@@ -53,6 +54,7 @@ export function sleepGL(renderer) {
 export function wakeGL(renderer) {
   if (!renderer) return Promise.resolve();
   places.add(renderer);
+  shown = renderer; spare = null;
   for (const other of places) if (other !== renderer) sleepGL(other);
   if (!asleep.has(renderer)) return Promise.resolve();
   asleep.delete(renderer);
@@ -63,10 +65,23 @@ export function wakeGL(renderer) {
   });
 }
 
+/** A place built ahead of being shown (warmed while the map is up). Only the last one warmed stays awake beside the
+    place on screen: every place warming its own context at once kept four awake on the map, and an iPhone still
+    reloaded the tab late in a run (after Clarence's badge, 2026-10-14). The others sleep till they're shown. */
+export function restGL(renderer) {
+  if (!renderer) return;
+  places.add(renderer);
+  if (renderer === shown || asleep.has(renderer)) return;
+  if (spare && spare !== renderer) sleepGL(spare);
+  spare = renderer;
+}
+
 /** A place built afresh on every visit (the Secret Base, the mall), let go for good as it's left. */
 export function dropGL(renderer, scene) {
   if (!renderer) return;
   places.delete(renderer);
+  if (shown === renderer) shown = null;
+  if (spare === renderer) spare = null;
   if (scene) dispose(scene);
   renderer.dispose();
   sleepGL(renderer);

@@ -95,7 +95,7 @@ It was fixed in commit `29bbb01` (`git show 29bbb01`). The rules that came out o
    shared by every room. It calls `wakeGL(renderer)` from `js/hd2d.js` when shown, which puts every other 3D place to
    sleep. A clean-up never needs a new renderer, scene, camera or `createPost()`.
 2. **Add everything a town builds to `B.group`** (or to `B.who` for people). `forgetRooms()` in `js/event-3d.js` keeps
-   only the last `KEEP_ROOMS` (4) rooms and frees the older ones with `dispose(b.group)`. Anything added straight to
+   only the last `KEEP_ROOMS` (3) rooms and frees the older ones with `dispose(b.group)`. Anything added straight to
    `scene` (only the lights and your Pokémon are) or kept in a module-level array outlives its room and leaks. Don't
    change `KEEP_ROOMS` or `forgetRooms()`.
 3. **Animate with `B.ticks.push((now, dt) => ...)`**, never `setInterval`, `setTimeout` loops or your own

@@ -37,7 +37,7 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
@@ -2600,13 +2600,16 @@ function warmArena3d() {
   }).catch(() => {});
 }
 
-/** The map's 3D ? rooms built while it's up, so walking into one is quick. */
+/** The 3D ? rooms you can walk into next built while the map is up, so walking into one is quick. Only the next step's:
+    building every room on the map at once is what an iPhone ran out of memory on. */
 function warmEvent3d() {
-  if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
-  const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
-  const leader = run.map?.boss && gymLeader(run.map.boss);
+  if (!run.map || (warmEvent3d.map === run.map && warmEvent3d.at === run.current) || new URLSearchParams(location.search).has('event2d')) return;
+  const next = reachableNodes(run.map, run.current);
+  const kinds = [...new Set(next.map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
+  const leader = next.some(n => n.type === 'boss') && gymLeader(run.map.boss);
   if (!kinds.length && !leader) return;
   warmEvent3d.map = run.map;
+  warmEvent3d.at = run.current;
   const at = { biome: land().id, type: run.starter.type };
   setTimeout(() => import('./event-3d.js').then(m => {
     event3dMod = m;

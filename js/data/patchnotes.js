@@ -91,6 +91,7 @@ export const PATCHES = [
   ['hub', 'The Nietos have a house in the Clearing (Law, Britt, baby Linc and Kangaskhan are home once you\'ve beaten them), and Chad Master Kenmatta\'s dojo has gone up across the Clearing from it. Coming soon.'],
   ['hub', 'The Whispering Clearing is laid out anew: a paved round plaza in the middle, wide lamp-lit avenues off it and a ring road round them, flower beds, benches and a pond garden. The way out is now north up the avenue through the Whispering Clearing\'s gate, the Ancient Tree and your Secret Base stand in the north-east, the Poké Mall at the west avenue\'s end and the Nietos\' house on the east one.'],
   ['fixes', 'Phones no longer reload the game mid-run after a while (most often in the Safari Zone): only the 3D place you\'re in is kept in memory now, the rest let go until you walk back in.'],
+  ['fixes', 'And the reload late in a run (after a Gym Leader\'s badge): the map no longer readies every 3D room on it at once, only the ones you can walk into next.'],
     ],
   },
   {
