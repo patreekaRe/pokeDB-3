@@ -1614,6 +1614,16 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   0%, 100% { translate: 0 0; scale: 0.9; rotate: 0deg; filter: drop-shadow(0 0 2px rgba(160, 230, 255, 0.5)); }
   50% { translate: 0 -3px; scale: 1.15; rotate: 20deg; filter: drop-shadow(0 0 6px rgba(190, 240, 255, 0.95)); }
 }
+/* a town's Waystone Shard over its Alpha: a crystal in the town's colour (--gem), turning as it bobs */
+.map-shard { top: -30px; animation-name: shardBob; animation-duration: 2.6s; filter: drop-shadow(0 0 4px var(--gem)) drop-shadow(0 0 1px #fff); }
+.map-shard-gem { display: inline-block; width: 14px; height: 22px; clip-path: polygon(50% 0, 100% 38%, 50% 100%, 0 38%);
+  background: linear-gradient(115deg, #fff 0 22%, var(--gem) 23% 58%, color-mix(in srgb, var(--gem) 55%, #102030) 59%); }
+@keyframes shardBob {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  25% { scale: 0.55 1; }
+  50% { translate: 0 -4px; scale: 1 1; }
+  75% { scale: 0.55 1; }
+}
 @media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
 /* Kenmatta's face for his dojo's room once he's been beaten: a 26x26 crop of Alder's sprite (62x66), head and spiky hair */
 .ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;

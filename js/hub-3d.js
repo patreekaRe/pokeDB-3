@@ -29,8 +29,9 @@ import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, townState, townsOpen, nietosHome, mended, questProgress } from './data/towns.js';
-import { gymWins } from './data/gym.js';
+import { RING, TOWNS, townState, townsOpen, nietosHome, mended, questProgress, guestLines } from './data/towns.js';
+import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
+import { todaysGuest, welcomeHome } from './towns.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -2100,6 +2101,15 @@ function makePlaces() {
     buttons: [],
     build: (g) => clearingWaystone(g, lit),
   });
+  // a mended town's Gym Leader come through the Waystone (docs/roadmap.md's Towns step 6, session 4): one a day stands
+  // beside it, the one who put a shard in the first time you're home after
+  const guest = todaysGuest(save), leader = guest && GYM_BY_ID[guest.id];
+  if (leader) list.push({
+    id: 'guest', guest, name: leader.name, step: { x: GUEST_AT.x, y: GUEST_AT.y + 1 }, tiles: [[GUEST_AT.x, GUEST_AT.y]], tag: [GUEST_AT.x, 2.6, GUEST_AT.y], open: true,
+    line: guestLines(guest).join(' '),
+    buttons: [],
+    build: (g) => standGuest(g, leader),
+  });
   // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom());
   // they're home only once THE NIETOS are beaten at their Gym, and not at all while NIETOS_LIVE is off
   const nietosIn = nietosHome(gymWins(save, 'nietos') || 0);
@@ -2159,6 +2169,20 @@ function makePlaces() {
     });
   }
   return list;
+}
+
+/** Where a visiting Gym Leader stands: on the plaza, left of the Waystone. */
+const GUEST_AT = { x: START.x - 2, y: START.y };
+const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
+async function standGuest(g, l) {
+  const m = await monBoard({ src: spriteOf(l), name: l.name, cry: '', px: TRAINER_PX }, false);
+  if (!g.parent) { dispose(m.group); return; }   // the places were built again while it loaded
+  m.board.rotation.x = -PITCH;
+  m.group.position.set(tileX(GUEST_AT.x), 0, tileZ(GUEST_AT.y));
+  const p = places.find(q => q.id === 'guest');
+  m.group.traverse(o => { o.userData.place = p; });
+  drawMon(m, { facing: 'front' }, 0);
+  g.add(m.group);
 }
 
 function rect(x0, y0, x1, y1) {
@@ -2915,6 +2939,7 @@ function liveLeaving(now) {
 function showCard(p) {
   here = p;
   if (p.waystone) return showWaystone(p);
+  if (p.guest?.welcome) welcomeHome(p.guest.town);
   card.classList.remove('way');
   // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
   const ask = asks(p);
