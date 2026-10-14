@@ -172,7 +172,7 @@ lets its glows carry it), its own `floor` and wallpaper (`paint`, both painted p
 `skirt`, `furnish` (Secret Base pieces, `mid` setting a two-wide piece on the middle of an odd-width room), `hang` (wall
 pieces: the back wall at x, or a side one, `side: 'l' | 'r'` and `row`), `blocks` (the tiles its own props stand on)
 and `props(K, P)` (P: the first of each piece laid, to set things on its top). Each house says who they are (the corners
-in `docs/reference/gym-leaders.md`): John's kotatsu with three handhelds charging and a truss bridge on his desk, Jahmes's
+in `docs/reference/gym-leaders.md`): John's kotatsu with three handhelds charging and a model jet on his desk, Jahmes's
 bed side (a wall clock keeping your time, LIGHTS OUT at 11 in neon) against his RGB gaming side, Shaun's three monitors
 (VOD, tickets, the boys in voice) and a pile of laptops tagged FIXED, Clarence's stage (velvet, SHOWTIME neon, ring light,
 webcam, a turning disco ball, ON AIR lit at night, the boa on the sofa), Kayl's music corner, cat tree (Reya sits on top)

@@ -340,7 +340,7 @@ const RICKY = {
   ],
 };
 
-/* John (the user's, 2026-10-13): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
+/* John (the user's, 2026-10-13; a mechanical engineer on aircraft and spacecraft, 2026-10-14): an engineer who only wants to play Fire Emblem, keeps getting pulled away from it, and can
    never decide whether to play on his Steam Deck, his Switch 2 or his new AYN Thor. */
 const JOHN = {
   sprite: 'assets/trainers/gym/john.png',
@@ -349,7 +349,7 @@ const JOHN = {
     ['I had a whole day planned. Work, then Fire Emblem. Work ran late. Then this.', 'Every single thing gets between me and Fire Emblem. Go, {boss}!'],
     ['Okay, quick question before we start. Steam Deck, Switch 2 or my new AYN Thor?', 'I\'ve been standing here for twenty minutes deciding. Go, {boss}!'],
     ['I just got the AYN Thor. Two screens. TWO. Do you know what that does for Fire Emblem?', '...I haven\'t actually played it yet. I keep getting interrupted. Go, {boss}!'],
-    ['I fix bridges all day. Real ones. Load-bearing. And I still can\'t fix my lack of Fire Emblem time.', 'Go, {boss}!'],
+    ['I design parts that fly. Real ones. Stress-tested. And I still can\'t engineer more Fire Emblem time.', 'Go, {boss}!'],
     ['A gym battle is basically a Fire Emblem map. You\'re the enemy phase.', 'I\'m going to bait you into my best unit. Go, {boss}!'],
     ['I brought the Steam Deck. Then I thought, no, the Switch 2. Then I grabbed the Thor too.', 'My bag weighs nine kilos. Go, {boss}!'],
   ],

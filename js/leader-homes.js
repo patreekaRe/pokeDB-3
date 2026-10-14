@@ -286,7 +286,7 @@ function note(K, x, y, z, w, h, draw, { ry = 0, tilt = 0, paper = '#fffaf0' } = 
 const NIGHT = (t) => t === 'night';
 
 export const LEADER_HOMES = {
-  /* JOHN: a tatami room in Lantern Village. The engineer's desk with a truss bridge on it, a Fire Emblem shrine of a TV
+  /* JOHN: a tatami room in Lantern Village. The engineer's desk with a model jet on it, a Fire Emblem shrine of a TV
      corner, and the kotatsu with three handhelds charging on it, none picked. */
   john: {
     leaderAt: { x: 6, ty: 3.1 },
@@ -347,15 +347,16 @@ export const LEADER_HOMES = {
       const leds = [deck, sw, thor].map((d, i) => quiet(part(K, new T.SphereGeometry(0.012, 6, 4), lit(K, '#60ff80'), 0.13 - i * 0.02, 0.03, 0.07, d)));
       K.B.ticks.push((now) => { leds.forEach((l, i) => { l.visible = K.calm() || Math.sin(now / 600 + i * 2.1) > -0.3; }); });
       quiet(g);
-      // a truss bridge on the desk, the engineer's own load test, and its blueprint
-      const desk = P.desk, b = group(K, ex(K, 11.5), topOf(desk) + 0.005, ez(K, 0.5), 0.1), red = mat(K, '#c8483a', { roughness: 0.5, metalness: 0.3 });
-      part(K, new T.BoxGeometry(0.86, 0.025, 0.16), mat(K, '#6a6a72'), 0, 0.09, 0, b);
-      for (const dx of [-0.36, 0.36]) part(K, new T.BoxGeometry(0.08, 0.09, 0.14), mat(K, '#9a948a'), dx, 0.045, 0, b);
-      for (const dz of [-0.075, 0.075]) {
-        part(K, new T.BoxGeometry(0.62, 0.016, 0.016), red, 0, 0.27, dz, b);
-        for (let i = 0; i < 6; i++) { const d = part(K, new T.BoxGeometry(0.014, 0.21, 0.014), red, -0.36 + 0.072 + i * 0.12, 0.18, dz, b); d.rotation.z = i % 2 ? -0.62 : 0.62; }
-      }
-      sheet(K, 40, 28, (f) => { const { g: c } = f; c.fillStyle = '#2a5ab0'; c.fillRect(0, 0, 40, 28); c.strokeStyle = '#d8e8ff'; c.lineWidth = 0.5; c.strokeRect(2, 2, 36, 24); c.beginPath(); for (let i = 0; i < 6; i++) { c.moveTo(6 + i * 5, 18); c.lineTo(8.5 + i * 5, 10); c.lineTo(11 + i * 5, 18); } c.moveTo(4, 18); c.lineTo(36, 18); c.stroke(); text(c, 'LOAD TEST', 20, 23, 3.4, '#ffffff'); }, 0.36, 0.25, 0.42, 0.006, 0.12, { parent: b, rx: -Math.PI / 2, k: 4 });
+      // a model jet on a stand, the part he designed for it, and its blueprint
+      const desk = P.desk, b = group(K, ex(K, 11.5), topOf(desk) + 0.005, ez(K, 0.5), 0.1), hull = mat(K, '#d8dce2', { roughness: 0.4, metalness: 0.5 });
+      part(K, new T.BoxGeometry(0.2, 0.02, 0.14), mat(K, '#3a3a42'), 0, 0.01, 0, b);
+      part(K, new T.CylinderGeometry(0.008, 0.008, 0.17, 6), mat(K, '#9a948a'), 0, 0.1, 0, b);
+      const body = part(K, new T.CylinderGeometry(0.035, 0.03, 0.56, 10), hull, 0, 0.2, 0, b); body.rotation.z = Math.PI / 2;
+      const nose = part(K, new T.ConeGeometry(0.035, 0.12, 10), hull, 0.34, 0.2, 0, b); nose.rotation.z = -Math.PI / 2;
+      const wing = part(K, new T.BoxGeometry(0.16, 0.01, 0.58), hull, 0.02, 0.19, 0, b); wing.rotation.y = 0.08;
+      part(K, new T.BoxGeometry(0.08, 0.01, 0.22), hull, -0.25, 0.21, 0, b);
+      part(K, new T.BoxGeometry(0.1, 0.12, 0.01), mat(K, '#c8483a', { roughness: 0.5, metalness: 0.3 }), -0.25, 0.27, 0, b);
+      sheet(K, 40, 28, (f) => { const { g: c } = f; c.fillStyle = '#2a5ab0'; c.fillRect(0, 0, 40, 28); c.strokeStyle = '#d8e8ff'; c.lineWidth = 0.5; c.strokeRect(2, 2, 36, 24); c.beginPath(); c.moveTo(6, 11); c.lineTo(34, 11); c.moveTo(19, 4); c.lineTo(22, 11); c.lineTo(19, 18); c.moveTo(8, 8); c.lineTo(8, 14); c.stroke(); text(c, 'STRESS TEST', 20, 23, 3.4, '#ffffff'); }, 0.36, 0.25, 0.42, 0.006, 0.12, { parent: b, rx: -Math.PI / 2, k: 4 });
       quiet(b);
       // the Fire Emblem shrine over the byobu: a tactics map, danger zone in red
       sheet(K, 64, 44, (f) => {
