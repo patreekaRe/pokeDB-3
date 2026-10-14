@@ -52,7 +52,7 @@ export const NEXT = [
   ['runs', 'After a fight and in the Poké Mart, a Bag key lets you check your items and deck, and a found item shows what it does at once, no text to tap through.'],
   ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, picking a card to upgrade or forget keeps the 3D room behind it, and running from Team Rocket takes you straight to the map.'],
   ['hub', 'The Clearing\'s ground now rolls away into the distance, like a little round world.'],
-  ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden and baby Linc\'s washing out.'],
+  ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden, baby Linc\'s washing out and a name board you can read.'],
   ['hub', 'The gate out to an adventure is grander: a glowing gold crest, lanterns and banners, and a shimmer you can spot from across the Clearing.'],
 ];
 
