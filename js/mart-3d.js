@@ -26,9 +26,8 @@ const RACK = { x0: 3, n: 5, low: 0.9, h: 1.0, top: 2.45 };
 const ITEMS = { x0: 8, n: 3, cx: 3.6, w: 2.7, top: 2.45 };
 const TABLE = { x0: 8, n: 2, y: 4, h: 0.72 };
 const COUNTER = { x0: 1, x1: 2, y: 2, h: 0.95, d: 0.8 };
-const SHELF = { x0: 0, n: 2, y: 4, h: 0.98 };         // a gondola of the Mart's everyday goods
 const DOOR = { x: 5, y: ROWS - 1 };
-const CLERK = { x: 1.0, y: 1 };
+const CLERK = { x: 1.9, y: 1 };   // on the counter's right, the PC on its left (the user's ask, 2026-10-14: the PC hid the cards)
 const MON_MAX = 1.6;          // your Pokémon's height cap here, so a legendary doesn't stand in front of the whole shelf
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, as the ? rooms' (js/event-3d.js)
 
@@ -525,7 +524,7 @@ function buildTable() {
   for (let i = 0; i < TABLE.n; i++) blocked.add(key(TABLE.x0 + i, TABLE.y));
 }
 
-/** Britt's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its right end. */
+/** Britt's counter left of the unit: blue, a white stripe with the Poké Ball, a white top; the PC on its left end. */
 function buildCounter() {
   const w = COUNTER.x1 - COUNTER.x0 + 1, cx = (tileX(COUNTER.x0) + tileX(COUNTER.x1)) / 2, cz = tileZ(COUNTER.y), H = COUNTER.h, D = COUNTER.d;
   const blue = std({ color: C.blue[1], roughness: 0.5 }), top = std({ color: '#fbfcff', roughness: 0.3 });
@@ -550,34 +549,11 @@ function buildCounter() {
   const glows = [], pc = pcModel(THREE, glows);
   for (const m of glows) m.emissiveIntensity = 0.85;
   pc.scale.setScalar(0.4);
-  pc.position.set(tileX(COUNTER.x1) + 0.3, H, cz + 0.02);
-  pc.rotation.y = -0.3;
+  pc.position.set(tileX(COUNTER.x0) - 0.3, H, cz + 0.02);
+  pc.rotation.y = 0.3;
   pc.traverse(o => { o.userData.spot = 'pc'; });
   room.add(pc);
   pcAt = new THREE.Vector3(pc.position.x, H + 0.95, pc.position.z);
-}
-
-/** A gondola of the Mart's everyday goods on the right: white tiers with blue ends, stocked, boxes and bottles on top. */
-function buildShelf() {
-  const w = SHELF.n, cx = tileX(SHELF.x0) + (w - 1) / 2, z = tileZ(SHELF.y), H = SHELF.h;
-  const white = std({ color: '#f8fafe', roughness: 0.35 }), blue = std({ color: '#3a7ce0', roughness: 0.4 });
-  box(w - 0.1, H, 0.12, std({ color: '#e6eef8', roughness: 0.6 }), cx, H / 2, z - 0.25);
-  for (const s of [-1, 1]) box(0.08, H + 0.04, 0.66, blue, cx + s * (w / 2 - 0.09), (H + 0.04) / 2, z);
-  for (const y of [0.08, 0.5, H - 0.03]) box(w - 0.2, 0.05, 0.6, white, cx, y, z);
-  box(w - 0.2, 0.06, 0.03, blue, cx, H - 0.03, z + 0.31);
-  for (const [y, seed] of [[0.29, 3], [0.71, 5]]) {
-    const f = fine(w * 20, 9, 6);
-    goods(f, 1, w * 20 - 1, -16.5, 8.6, seed);   // three rows, only the last on the canvas
-    const front = new THREE.Mesh(new THREE.PlaneGeometry(w - 0.24, 0.36), std({ map: texOf(f.c), roughness: 0.7 }));
-    front.position.set(cx, y, z + 0.02);
-    room.add(front);
-  }
-  for (let i = 0; i < 4; i++) {   // the top tier: a box and a bottle a step along
-    const x = cx - w / 2 + 0.32 + i * (w - 0.64) / 3, col = ['#e85848', '#4a8ae8', '#f8c840', '#58b868'][i];
-    mesh(rbox(0.22, 0.3, 0.2, 0.03), std({ color: col, roughness: 0.5 }), x - 0.07, H + 0.15, z - 0.06);
-    mesh(new THREE.CylinderGeometry(0.05, 0.06, 0.26, 16), std({ color: '#ffffff', roughness: 0.3 }), x + 0.1, H + 0.13, z + 0.1);
-  }
-  for (let i = 0; i < w; i++) blocked.add(key(SHELF.x0 + i, SHELF.y));
 }
 
 function buildRoom() {
@@ -610,8 +586,7 @@ function buildRoom() {
   buildItems();
   buildCounter();
   buildTable();
-  buildShelf();
-  ballBin(2, 6);
+  ballBin(0, 4);
   piece('centerplant', tileX(0), tileZ(6)); blocked.add(key(0, 6));
   piece('centerplant', tileX(10), tileZ(6)); blocked.add(key(10, 6));
   piece('centerplant', tileX(0), tileZ(0)); blocked.add(key(0, 0));
@@ -679,7 +654,7 @@ async function buildWares(list) {
   const group = new THREE.Group(), out = [];
   const counts = { card: 0, item: 0, relic: 0 }, of = (k) => list.filter(w => w.kind === k).length;
   for (const w of list) {
-    if (w.kind === 'pc') { out.push({ ...w, spot: { at: pcAt, step: { x: COUNTER.x1, y: COUNTER.y + 1 } } }); continue; }
+    if (w.kind === 'pc') { out.push({ ...w, spot: { at: pcAt, step: { x: COUNTER.x0, y: COUNTER.y + 1 } } }); continue; }
     const spot = slotOf(w.kind, counts[w.kind]++, of(w.kind)), g = new THREE.Group();
     g.position.copy(spot.at);
     const entry = { ...w, spot, group: g, base: spot.at.clone(), seed: Math.random() * 6 };
@@ -776,7 +751,7 @@ function walk(dt) {
 /** Up to a ware, Britt or the door; `aim` is acted on as it arrives. */
 function goTo(kind) {
   aim = kind;
-  const target = kind === 'exit' ? DOOR : kind === 'clerk' ? { x: COUNTER.x0, y: COUNTER.y + 1 } : wares.list[+kind.split(':')[1]]?.spot.step;
+  const target = kind === 'exit' ? DOOR : kind === 'clerk' ? { x: COUNTER.x1, y: COUNTER.y + 1 } : wares.list[+kind.split(':')[1]]?.spot.step;
   if (!target) { aim = null; return; }
   walker.path = route(walker.tile, target);
   if (!walker.path.length) arrived();
