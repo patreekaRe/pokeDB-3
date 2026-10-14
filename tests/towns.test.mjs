@@ -111,3 +111,14 @@ test('the Clearing\'s houses are the Clearing\'s own Gym Leaders\', and townsfol
   for (const town of Object.values(TOWNS)) for (const f of town.folk) assert.equal(folkOf(folkKey(town.id, f.id))?.id, f.id);
   assert.equal(folkOf('nowhere:eevee'), null);
 });
+
+test('Cinder Springs: a road runs to every door, and nothing stands between the Waystone and the road up to it', () => {
+  const { map, buildings } = TOWNS.wastes, road = (x, y) => map[y]?.[x] === '#';
+  for (const b of buildings) {
+    if (!b.door || b.kind === 'waystone') continue;
+    const { x, y } = b.door;
+    assert.ok(road(x, y) || [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => road(x + dx, y + dy)), `${b.id}'s door at ${x},${y} is off the road`);
+  }
+  const stone = buildings.find(b => b.kind === 'waystone').door;
+  for (let y = stone.y + 1; y < map.length - 4; y++) assert.ok(!/[A-Z]/.test(map[y][stone.x]), `a building at ${stone.x},${y} stands in front of the Waystone`);
+});
