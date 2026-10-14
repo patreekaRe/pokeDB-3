@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
@@ -54,6 +55,7 @@ export const TOWN_NOTES = [
   ['runs', 'Highbough: on the road into Thornwood you now walk through a village up in the treetops, round platforms on the giant trunks joined by wide rope bridges with railings round every deck, the jungle floor far below in the mist. Its builders are long gone and only ghost Pokémon live there now. Ride up on the lift, swap an item at Mismagius\'s Curio Shop, tiptoe past the ghosts asleep in the Withered Nursery, call on Phil in his crooked, haunted manor (not after eleven) and Ricky in his treehouse den (up gaming with the boys after ten), and help with the requests to mend the broken Waystone on the Great Tree\'s deck. The way out is a living arch of boughs hung with ghost-lanterns.'],
   ['runs', 'Sunwell Bazaar: on the road into the Savanna you now walk through a caravan trading post, one wide dusty road straight across it past round thatched huts, a market of striped stalls round the broken Waystone, wagons drawn up in a ring and a watering hole with a railed jetty and a windpump. Trade at Persian\'s Bazaar, meet the caravans\' Pokémon in the Caravanserai, and visit Machew and Jerome in their grand mud-brick kasbahs once you\'ve beaten them.'],
   ['runs', 'Every town has a questline: beat one of its Gym Leaders and next time you pass they ask for your help mending its Waystone, a few steps over several runs. The new Satchel app keeps your key items, materials and quests between runs.'],
+  ['runs', 'Every town\'s ground now rolls away over the horizon as you walk, like the Clearing\'s.'],
   ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base.'],
 ];
 

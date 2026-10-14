@@ -47,7 +47,7 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 // the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
 // side of the avenue just inside it
 const GATE_AT = { tx: 15, ty: -2 };
-const STOP_AT = { tx: 18, ty: 0 }, SIGN_AT = { tx: 12, ty: 0 };   // a step out from the gate's sides (2026-10-14), so neither hides its face
+const STOP_AT = { tx: 17, ty: 1 }, SIGN_AT = { tx: 12, ty: 0 };   // a step out from the gate's sides (2026-10-14), so neither hides its face; the stop a step nearer the avenue (the user's ask, same day)
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
@@ -2196,7 +2196,7 @@ function routeSignArt() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block): a few in the corners, kept off the roads and the ground in front of places
-const TREE_TILES = [[0, 15], [1, 20], [0, 24], [9, 24], [21, 24], [18, 2]];
+const TREE_TILES = [[0, 15], [1, 20], [0, 24], [9, 24], [21, 24]];
 
 // a copse behind the fence between the Safari gate and the Whispering Clearing's (the user's ask, 2026-10-14: the open
 // meadow there read as a hole in the Clearing's edge), on the meadow `cleared` keeps the forest off; [x, y, kind, size]
@@ -3284,9 +3284,9 @@ function fitCamera(w, h) {
 const AERIAL = new URLSearchParams(location.search).has('aerial');
 
 // the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), at the strength the user picked from 1 to 3
-// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat
+// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat. Every town rolls the same (js/event-3d.js).
 const CURVE_AT = 3;
-const CURVE = (() => {
+export const CURVE = (() => {
   const q = new URLSearchParams(location.search);
   if (AERIAL) return 0;
   const n = parseFloat(q.get('curve'));

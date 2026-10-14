@@ -214,7 +214,7 @@ function feetDepth(m) {
   m.customProgramCacheKey = () => 'upright-depth';
 }
 
-/* ---------- the rolling-log bend (?curve=, the Clearing only for now; every town to follow, docs/roadmap.md) ----------
+/* ---------- the rolling-log bend (?curve=: the Clearing, and every town since 2026-10-14) ----------
    Animal Crossing's world: the ground rolls away round a log lying across the view, so the far side drops below the
    horizon and the near side dips under the bar. Each vertex is lowered by k x (its distance from the view's focus along
    the ground)², once it's already in view space, so shadows and lighting (worked out from the unbent world) still land

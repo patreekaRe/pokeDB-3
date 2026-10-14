@@ -119,3 +119,19 @@ save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelO
 `gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
 `save.satchel = { keys, mats, seen, fresh }`, kept on a lost run, never the run's Bag; on the Collection and the device's
 "!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load.
+
+**The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
+towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat
+under `?aerial`). In `js/event-3d.js` (by `AERIAL`): one uniform `BEND` `{ k, z }`, `k` set to `CURVE` when a `kind:
+'town'` room is shown and 0 for every other room (so a house's inside, a ? room and a gym stay flat, and your Pokémon,
+whose material is always bent, draws straight there), `z` the shot's focus (`camZ`) every frame. `room()` bends a town's
+`B.group` and `B.who` once after its build and before `warmShaders()`, so the cut shapes are the only ones sent to the GPU;
+`mountEvent()` catches anything added since, and the crowd's boards are bent as they're made (a wrapped `monBoard` in
+`townCrowd()`). Nothing runs per frame but setting `z`. `bendFine()` cuts big boxes and planes; `fineTris()` halves any
+other shape's triangles (a rounded box's top, a gable, a pond, an instanced railing's ropes, measured by its longest
+instance) till none is over 2.2 tiles, with a triangle budget, as a manor's plinth top sagged a fifth of a tile under its
+walls (about +13% triangles in Lantern Village). Taps and drags go through `tapRays()`: the screen's ray in 1.5-tile
+pieces put back where they stand unbent (`unbend()`), reused, not made per move; `hitsOf()` and `floorHit()` take the
+nearest piece that hits. The floating signs (`placeSigns()`) and the folk's bubbles (`drawn` handed to `makeCrowd()`) are
+placed where things are drawn (`drawn()`). Far things drop below the horizon (12 tiles off sinks ~4 tiles), so a far
+door or the gate can't be tapped until you walk nearer, as in the Clearing.

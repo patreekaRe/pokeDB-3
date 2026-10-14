@@ -88,7 +88,7 @@ The first section began as the note on playtesting the live site and grew into t
   painted px, a gold-rayed leaf crest on a green-shingled roof, lanterns off its tips, teal banners, carved stone feet with
   glowing runes, `clearingGateArt()`; its opening shimmers and motes rise out of it, `gateVeilArt()` / `liveGateway()`, and
   a teal lamp lights the ground before it after dark; Halloween's hay there taken out as clutter), New game's Pokéstop
-  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`); setting out walks
+  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`; the stop moved a step nearer the avenue and the camera 2026-10-14, the orange tree that stood behind it taken out, the user's ask); setting out walks
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
