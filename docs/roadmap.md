@@ -131,6 +131,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    crest and a sacred rope, stone lanterns at the steps, paper lanterns and two swaying banners in the leader's `GYM_INK`
    (`noboriArt()`). John's and Jahmes's lots grew to 5 x 4 (John's moved down a row, his door now on the south road).
    **Every town clean-up does the same for its leaders** in its own style (the handoff's checklist, item 12).
+   Follow-up (same day, the user: "clean up any awkward lanterns and benches"): the plaza is a clean paved square now (its four
+   corner lanterns, the one at the east lane's mouth and its three flower patches gone), two benches along its top facing
+   the Waystone, and the entrance lawn's two benches moved to the roadside by the avenue facing the south road. A bench takes
+   two tiles (its x and x + 1), so mirror one at x with 36 - x. Map only (`js/data/towns.js`).
    **Done (2026-10-14): Cinder Springs' clean-up** (the user's call: fix what the map review found plus the checklist):
    four locked houses not eight, the crag stubs and stray pool out of the middle, the right road legs a tile left so
    nothing stands flush on the crags, the Waystone centred on its plaza, name boards (`n`, `nameBoards()`), `fade`, and
