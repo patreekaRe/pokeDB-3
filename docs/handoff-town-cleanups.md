@@ -60,6 +60,10 @@ These are the fixes the user asked for in the Clearing and Highbough. Check each
    them into one template.
 10. **Townsfolk fit the place.** Highbough became a ghost town on the user's ask. Don't change a town's cast unless
     the user asks, and ask before swapping a town's furniture shelf (`SHOP_SHELVES`).
+11. **The ground rolls away like Animal Crossing's** (the user's ask, 2026-10-14: every town gets the Clearing's curve
+    before the towns go live). Adding it to the town rooms is its own session for all five at once (the roadmap's Towns
+    and Waystones, "the Clearing's curve in every town"), not part of one town's clean-up. Once it's in, walk your town
+    with it on and check nothing far off pokes up wrong or vanishes too early.
 
 ## Where things live
 

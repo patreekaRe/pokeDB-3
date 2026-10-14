@@ -55,7 +55,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`.
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`, once every town has the Clearing's curve (below, the user's ask, 2026-10-14).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -118,6 +118,20 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Wastes' Cinder
    Springs the way the Clearing, Highbough and Lantern Village were (ask me what bothers me about it first), and send an
    aerial view." Then Driftwood Landing and Sunwell Bazaar the same way, one a session.
+   **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
+   crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
+   can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it
+   (`js/hub-3d.js`, near `CURVE_AT`): `bend()` / `bendFine()` / `unbend()` from `js/hd2d.js`, one shared uniform
+   `{ k, z }` (k 0.03 = `CURVE_AT` 3, `?curve=N` to try another, off under `?aerial`), `z` set to the camera's focus
+   every frame, `bendAll()` each frame catching anything added since, billboards marked `userData.upright` so they drop
+   whole, and taps raycast along the bent view in pieces (`tapRays()`), since the bend only moves what's drawn. For the
+   towns: bend only `kind: 'town'` rooms (house insides stay flat, as in Animal Crossing), on `B.group` / `B.who`
+   materials so other rooms sharing `js/event-3d.js`'s renderer stay straight, and route its tap handler through the
+   same piecewise rays. Check every town (`?town=shrine|wastes|ruins|thornwood|savanna&towns`): doors, folk and the
+   Waystone still tap right, Highbough's drop and the lagoon's water bend with the decks, and no new per-frame
+   allocation (the handoff's GPU rules). Prompt: "Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's
+   Towns and Waystones entry. Give every gateway town the Clearing's Animal Crossing curve, as the roadmap's 'Clearing's
+   curve in every town' item describes."
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
