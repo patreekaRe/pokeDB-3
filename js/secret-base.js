@@ -12,7 +12,7 @@ import { safariDay } from './data/safari.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
-import { GYM_LEADERS, GYM_GOLD, posterKind } from './data/gym.js';
+import { GYM_LEADERS, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
 import { TOWN_SHELVES, nietosHome } from './data/towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
@@ -376,6 +376,7 @@ export const shopOpen = (b) => new URLSearchParams(location.search).has('shopope
    they last did). `?visit` brings one for the page load. */
 export function leaderVisitor(b, save = getSave()) {
   const day = safariDay(), again = new URLSearchParams(location.search).has('visit');
+  if (!LEADER_VISITS_LIVE && !again) return null;
   if (b.leaderVisit === day && !again) return null;
   const pool = GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD && (l.id !== 'nietos' || nietosHome(save.gym[l.id])));   // the Nietos stay away while NIETOS_LIVE is off
   if (!pool.length) return null;

@@ -47,6 +47,7 @@ export const NEXT = [
   ['hub', 'The Clearing tidied up: your buddy walks in to the crossing above the plaza, the Poké Mall stands off the road, trees and a fence close the gap by the cauldron, and the Ancient Tree lost a pumpkin and its stray branches.'],
   ['hub', 'The Nietos\' name board is bigger, white on deep blue, so it can be read from the path, and the tree by the cauldron is gone.'],
   ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
+  ['base', 'Gym Leaders no longer drop by your Secret Base for now.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when

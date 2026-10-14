@@ -855,7 +855,7 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd
   win hands over their signed poster (`<id>poster`, a wall piece painted from their sprite in `js/base-furniture-gym.js`,
   earned by `js/data/furniture.js`'s `gym` source), the 5th their Gold badge (`gym-<id>-gold`), `beatenTalk()` /
-  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped
+  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
   (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
   `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
 - **Gateway towns** (2026-10-13; the code is on `main` since 2026-10-14 with the new Clearing, but **switched off** till the user says: `TOWNS_LIVE` / `townsOpen()` in `js/data/towns.js` (off: no town after the journey film, no requests counted, the Clearing's Waystone only reading `RIDDLES`), `?towns` on for a page load, `?town=` peeks either way; their patch lines wait in `TOWN_NOTES` in `js/data/patchnotes.js`, back into `NEXT` when they go live; `docs/roadmap.md`'s Towns and Waystones): the

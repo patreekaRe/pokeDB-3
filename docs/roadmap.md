@@ -150,6 +150,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
    only their house shows, and their Gym fight in runs is unchanged) while the user works out more of how
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
+   **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
+   `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
