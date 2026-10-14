@@ -16,8 +16,8 @@ const HZ = 0.95;                                   // the horizon, units up from
 const FADE = 0.3;                                  // its foot fading into the ground
 
 /** The painting for `time`, `W` units wide; `roads` the roads leaving the ground's back edge into it, each its x from the
-    painting's left edge and its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js), or a
-    town's (townVista() in js/event-3d.js), which may also bring its own `sky` and `clouds` for the hour and its `ranges`
+    painting's left edge and its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js), which may
+    also bring its own `sky` and `clouds` for the hour and its `ranges`
     ([[body, body], snow or null], far then near); `k` its canvas pixels a unit. */
 export function vistaArt(time, W, roads, look = null, k = K) {
   const H = VISTA.h, c = new OffscreenCanvas(Math.round(W * k), H * k), g = c.getContext('2d');
