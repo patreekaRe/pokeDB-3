@@ -5209,6 +5209,9 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { position
 }
 .room-home .home-key { width: 38px; height: 38px; }
 .room-bag[hidden] { display: none; }
+.room-hinge .room-bag { width: 34px; min-height: 32px; }
+.room-hinge .room-bag .home-key { width: 30px; height: 30px; }
+.room-hinge .room-bag .home-key svg { width: 17px; height: 17px; }
 .room-bag:active .home-key, .room-bag[aria-expanded="true"] .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
 /* the reward steps' Bag key opens the top bar's Bag, though that bar is put away there: the bar comes back out of the
    flow and unseen, only its Bag showing, risen over the room bar like the map's over its dock */

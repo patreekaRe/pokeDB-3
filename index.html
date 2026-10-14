@@ -437,13 +437,14 @@
           <!-- the screen's confirm as a glowing one-word pill beside the lights (Take, Add, Learn...; the user's call,
                2026-10-08); rewards.js roomConfirm() names and arms it -->
           <button type="button" class="room-ok" id="room-ok" hidden><span id="room-ok-text"></span></button>
+          <!-- the Bag, on a fight's reward steps only (the move pick, a relic, a found item): no top bar there to reach it from. Beside the
+               gold pill, not by Home (the user's call, 2026-10-14) -->
+          <button type="button" class="room-home room-bag" id="room-bag" hidden aria-controls="bag" aria-expanded="false" aria-label="Bag" title="Bag"></button>
           <div class="room-sign" aria-live="polite"><b id="room-title"></b></div>
         </div>
         <div class="room-row">
         <div class="room-keys" id="room-keys">
           <button type="button" class="room-home" id="room-home" aria-label="Pokédex: Collection, Settings and Main menu"></button>
-          <!-- the Bag, on a fight's reward steps only (the move pick, a relic, a found item): no top bar there to reach it from -->
-          <button type="button" class="room-home room-bag" id="room-bag" hidden aria-controls="bag" aria-expanded="false" aria-label="Bag" title="Bag"></button>
         </div>
         <div class="room-lcd">
           <div class="gb-hp" id="room-hp" role="progressbar" aria-label="Your HP" aria-valuemin="0">
