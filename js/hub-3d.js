@@ -93,9 +93,9 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // each by its top-left tile: Kenmatta's dojo north-west; the Ancient Tree, the Secret Base, north-east (TREE_AT its middle
 // tile); moved 2026-10-14 from the user's drawing: the Nietos' house south-east and the Poké Mall south-west, their doors
 // on the ring road's south side, and the Sealed Gate (once broken) where the mall stood, at the west avenue's end
-// the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the name board and washing line left, the garden either
-// side of the doorstep, the pram and sandbox right; nothing walks through them
-const NIETOS_YARD = [[-1, 1], [-1, 2], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
+// the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
+// is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
+const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
 const NIETOS_AT = { tx: 24, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 14 };
 const SEALED_AT = { tx: 2, ty: 9 };
 // the pond in the garden at the south avenue's end
@@ -1672,14 +1672,7 @@ function nietosHouse(g, x, z, home) {
   many(new THREE.SphereGeometry(0.07, 8, 6), leaf, tufts, false, 0.7);
   many(new THREE.SphereGeometry(0.04, 8, 6), std({ color: '#ffffff', roughness: 0.7 }), blooms, false);
 
-  // the name board on the left, on two posts under a little roof
-  // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
-  const sign = board(plankArt(34, 14, [['THE NIETOS', 4.8, '#ffffff'], ['LAW · BRITT · LINC', 2.8, '#ffe070']], ['#2c5a94', '#234a7e', '#183660']), 0, 0, { s: 0.85, shadow: false });
-  sign.position.set(-2.18, 0.85, fz - 0.1);
-  h.add(sign);
-  for (const px of [-2.85, -1.5]) add(new THREE.CylinderGeometry(0.035, 0.035, 1.28, 6), wood, px, 0.64, fz - 0.13);
-  box(1.98, 0.05, 0.16, navy, -2.18, 1.29, fz - 0.11);
-  // baby Linc's washing on a line behind it
+  // the name board on the left is a place of its own (nietosSign()); baby Linc's washing on a line behind it
   const LZ = -0.4;
   for (const px of [-2.4, -1.55]) {
     add(new THREE.CylinderGeometry(0.025, 0.025, 1.1, 6), wood, px, 0.55, LZ);
@@ -1708,6 +1701,25 @@ function nietosHouse(g, x, z, home) {
   add(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' }), 1.82, 0.17, 0.95);
   add(new THREE.SphereGeometry(0.09, 12, 8), std({ color: '#f8e048' }), 2.04, 0.21, 1.06);
   mergeStatic(h);
+}
+
+/** The Nietos' name board, front left of their garden, on two posts under a little roof and turned to the path; tapped,
+    it reads out (the user's ask, 2026-10-14). Its posts stand at its ends behind it and stop under the roof: set inside
+    its width they poked through the board's face. Its own place, so the house's merged meshes don't swallow the tap. */
+function nietosSign(g, x, z) {
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const s = new THREE.Group();
+  s.position.set(x, 0, z); s.rotation.y = 0.3;
+  g.add(s);
+  // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
+  const b = board(plankArt(36, 15, [['THE NIETOS', 5.2, '#ffffff'], ['LAW · BRITT · LINC', 3, '#ffe070']], ['#2c5a94', '#234a7e', '#183660']), 0, 0, { s: 0.66, shadow: false });
+  const { width: W, height: H } = b.geometry.parameters, Y = 0.8, RY = Y + H / 2 + 0.04;
+  b.position.y = Y;
+  s.add(b);
+  const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = o.receiveShadow = true; s.add(o); };
+  const wood = std({ color: '#8a6038' });
+  for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.035, 0.035, RY, 6), wood, sx * (W / 2 - 0.08), RY / 2, -0.05);
+  add(new THREE.BoxGeometry(W + 0.14, 0.05, 0.18), std({ color: '#2e5e98' }), 0, RY + 0.025, -0.03);
 }
 
 /** `root`'s still meshes that share a material (and shadow) baked into one mesh each: the Nietos' house is ~110 small
@@ -2017,6 +2029,12 @@ function makePlaces() {
     line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
     buttons: [['Go in', () => {}]],
     build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn),
+  });
+  list.push({
+    id: 'nietos-sign', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx - 1, y: NIETOS_AT.ty + 3 }, tiles: [[NIETOS_AT.tx - 1, NIETOS_AT.ty + 2]], tag: [NIETOS_AT.tx - 1, 1.6, NIETOS_AT.ty + 2], open: true,
+    line: 'THE NIETOS. Law, Britt and baby Linc. Underneath, in crayon: "LINC LIVS HEAR TOO."',
+    buttons: [],
+    build: (g) => nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3),
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,

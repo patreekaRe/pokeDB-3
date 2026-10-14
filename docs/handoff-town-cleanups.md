@@ -60,6 +60,10 @@ These are the fixes the user asked for in the Clearing and Highbough. Check each
    them into one template.
 10. **Townsfolk fit the place.** Highbough became a ghost town on the user's ask. Don't change a town's cast unless
     the user asks, and ask before swapping a town's furniture shelf (`SHOP_SHELVES`).
+12. **Gym Leaders live grandly** (the user's ask, 2026-10-14: their houses "more grand and extravagant and aesthetic",
+    for every Gym Leader to come). A leader's home is the grandest house in town, on a bigger lot (Lantern Village's are
+    5 x 4), in the town's own style, never a copy of the village's `manor()`: raised up, two storeys or tiers, gold
+    trim, their crest, and banners or lights in their `GYM_INK`. Lantern Village's `manor()` is the bar to match.
 11. **The ground rolls away like Animal Crossing's** (the user's ask, 2026-10-14: every town gets the Clearing's curve
     before the towns go live). Adding it to the town rooms is its own session for all five at once (the roadmap's Towns
     and Waystones, "the Clearing's curve in every town"), not part of one town's clean-up. Once it's in, walk your town

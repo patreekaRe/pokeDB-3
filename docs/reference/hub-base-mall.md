@@ -112,6 +112,11 @@ The first section began as the note on playtesting the live site and grew into t
   and `mergeStatic()` bakes the rest that share a material into one mesh each (117 meshes down to 53: draw calls on a
   phone). Outside its 3 x 3 it stands on `NIETOS_YARD` (the name board and washing line west, the fenced garden either
   side of the doorstep, the pram and sandbox east), added to the place's tiles so nothing walks through it.
+- **The Nietos' name board** (2026-10-14, the user's ask: fix it, bring it closer, stop its sticks sticking out, make it
+  readable): `nietosSign()`, its own place `nietos-sign` on yard tile [-1, 2] (doorstep the tile south of it), so a tap
+  isn't swallowed by the house's merged meshes and shows its card's line. It stands at the garden's front left, turned
+  0.3 rad to the path; its posts sit at the board's ends behind it and stop under its roof (inside its width they poked
+  through the face).
 
 ### The rolling-log bend (on by default, 2026-10-14)
 
