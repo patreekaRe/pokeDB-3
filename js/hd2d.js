@@ -20,6 +20,7 @@ export async function loadThree() {
     browser can off the main thread (KHR_parallel_shader_compile), so walking in doesn't freeze on it. Never waits past
     `ms`. */
 export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
+  if (asleep.has(renderer)) return Promise.resolve();   // a lost context never finishes compiling: it'd only wait out `ms`
   try {
     // compiled for a render target, as createPost() draws the scene into one: for the screen every program would be a
     // variant (another output colour space) the first frame never uses
@@ -30,6 +31,45 @@ export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
     target.dispose();
     return Promise.race([done, new Promise(r => setTimeout(r, ms))]).catch(() => {});
   } catch { return Promise.resolve(); }
+}
+
+/* ---------- one 3D place awake at a time ----------
+   Every 3D place keeps its renderer, and a WebGL context holds every texture, shadow map and render target it ever
+   drew until it's let go. Kept awake together (the Clearing, the mall, the arena, the rooms...) they filled an iPhone's
+   memory until Safari reloaded the tab, mid-run (the user saw a Safari run "refresh" after its fights, 2026-10-14). So
+   waking one puts the others to sleep: their contexts are lost on purpose, which frees all of it on the GPU, and
+   restored on their next wakeGL(), where three.js uploads again whatever they draw. Their scenes stay as they are. */
+const places = new Set();
+const asleep = new WeakSet();
+
+/** Puts a place's renderer to sleep (its GPU memory let go); it draws nothing until wakeGL(). */
+export function sleepGL(renderer) {
+  if (!renderer || asleep.has(renderer)) return;
+  asleep.add(renderer);
+  try { renderer.forceContextLoss(); } catch { /* already gone */ }
+}
+
+/** The place about to be shown: every other one sleeps, and this one's context is back once this resolves. */
+export function wakeGL(renderer) {
+  if (!renderer) return Promise.resolve();
+  places.add(renderer);
+  for (const other of places) if (other !== renderer) sleepGL(other);
+  if (!asleep.has(renderer)) return Promise.resolve();
+  asleep.delete(renderer);
+  return new Promise(done => {
+    const timer = setTimeout(done, 2000);
+    renderer.domElement.addEventListener('webglcontextrestored', () => { clearTimeout(timer); done(); }, { once: true });
+    try { renderer.forceContextRestore(); } catch { clearTimeout(timer); done(); }
+  });
+}
+
+/** A place built afresh on every visit (the Secret Base, the mall), let go for good as it's left. */
+export function dropGL(renderer, scene) {
+  if (!renderer) return;
+  places.delete(renderer);
+  if (scene) dispose(scene);
+  renderer.dispose();
+  sleepGL(renderer);
 }
 
 let veil = null;

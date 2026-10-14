@@ -7,7 +7,7 @@
    and behind your Pokémon like the games' battle view. A boss keeps its pixel prelude; the 3D fades in out of its last
    white flash (`revealArena()`). */
 
-import { loadThree, tex, createPost, dispose } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, wakeGL } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1411,6 +1411,7 @@ export async function mountArena(o, { reveal = true } = {}) {
   const stage = new URLSearchParams(location.search).get('stage');
   current = { ...o, stage: stage != null ? Math.max(0, Math.min(3, Number(stage) || 0)) : o.stage, time: timeOfDay() };
   try { await warmArena(); } catch { return false; }
+  await wakeGL(renderer);
   // the page's sprites must be laid out (sizeSprite()) before their pads are cast into the ground
   await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
   if (id !== building || !onBattle()) return false;

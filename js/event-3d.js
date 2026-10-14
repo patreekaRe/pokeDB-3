@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -6334,6 +6334,7 @@ export function warmEvent() {
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
   const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
+  if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
@@ -6347,7 +6348,28 @@ function room(kind, figs, at = {}) {
     return b;
   });
   built[id].catch(() => { delete built[id]; });
-  return built[id];
+  const asked = built[id];
+  forgetRooms();
+  return asked;
+}
+
+/** Only the last few rooms built are kept for a visit back: a long session's towns, homes and gyms would otherwise all
+    stay in memory, which on an iPhone ends with Safari reloading the tab. */
+const KEEP_ROOMS = 4;
+let entering = null;   // the room mountEvent() is walking into
+function forgetRooms() {
+  const ids = Object.keys(built);
+  for (const id of ids.slice(0, Math.max(0, ids.length - KEEP_ROOMS))) {
+    const kept = built[id];
+    if (kept === entering) continue;
+    delete built[id];
+    kept.then(b => {
+      if (b === R || kept === entering) { built[id] ??= kept; return; }   // still standing in it, or about to be
+      b.crowd?.hide();
+      for (const who of Object.values(b.who)) { scene.remove(who.group); dispose(who.group); }
+      dispose(b.group);
+    }).catch(() => {});
+  }
 }
 
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
@@ -6365,8 +6387,10 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended });
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
+  if (!showing() || opts !== o) return null;
+  await wakeGL(renderer);
   if (!showing() || opts !== o) return null;
   useSize(next);
   if (R !== next) {

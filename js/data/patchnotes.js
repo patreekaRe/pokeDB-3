@@ -61,6 +61,7 @@ export const NEXT = [
   ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Hand in a town\'s requests until its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base.'],
   ['hub', 'The Nietos have a house in the Clearing (Law, Britt, baby Linc and Kangaskhan are home once you\'ve beaten them), and Chad Master Kenmatta\'s dojo has gone up across the Clearing from it. Coming soon.'],
   ['hub', 'The Whispering Clearing is laid out anew: a paved round plaza in the middle, wide lamp-lit avenues off it and a ring road round them, flower beds, benches and a pond garden. The way out is now north up the avenue through the Whispering Clearing\'s gate, the Ancient Tree and your Secret Base stand in the north-east, the Poké Mall at the west avenue\'s end and the Nietos\' house on the east one.'],
+  ['fixes', 'Phones no longer reload the game mid-run after a while (most often in the Safari Zone): only the 3D place you\'re in is kept in memory now, the rest let go until you walk back in.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
