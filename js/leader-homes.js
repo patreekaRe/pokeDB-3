@@ -1011,6 +1011,222 @@ export const LEADER_HOMES = {
       lamp(K, '#40e8f0', 1.1, 5, ex(K, 3), 1.6, ez(K, 3));
     },
   },
+
+  /* THE NIETOS: Law, Britt and baby Linc's house in the Clearing, and Kangaskhan's. Linc's nursery in the corner (the crib
+     Kangaskhan rocks with one foot, the laundry it folds, his toys everywhere and Lego underfoot), two gaming desks side
+     by side (Law's party waiting on him, Britt's Sage, her phone on Pokémon), the very tired couch, fish sticks on the
+     stove, Britt's corner of papers to grade and the house's gold star chart, Law at the bottom. From seven at night
+     (your clock, as the door says) Linc is asleep in his crib in his Pikachu suit and the night light is on. */
+  nietos: {
+    leaderAt: { x: 6, ty: 3.4 },
+    castAt: [[1, 1.3, 0]],
+    blocks: [[1, 1, 1, 1]],   // Kangaskhan, by the crib
+    mood: { hemi: ['#fff8ec', '#8a7a68', 1.55], sun: ['#fff2dc', 1.8], bloom: 0.9 },
+    floor: (K, f, W, H, T) => K.planks(f, W, H, T, ['#d4aa74', '#c49a64']),
+    skirt: ['#f4ead8', '#ddceb2', '#a89070'],
+    paint(K, f, w, { back, x, s }) {
+      const { g, lin } = f, ink = GYM_INK.nietos, r = K.seeded((w | 0) + 7);
+      // baby blue over a cream wainscot, soft clouds drifting along the top
+      g.fillStyle = lin(0, 0, 0, wy(1.6), ['#bcdcf6', ink[0]]); g.fillRect(0, 0, w, wy(1.6));
+      g.fillStyle = 'rgba(255,255,255,0.75)';
+      for (let i = 0; i < w / 26; i++) {
+        const cx = 10 + i * 26 + r() * 8, cy = wy(3.2) + r() * 14;
+        g.beginPath(); for (const [dx, dy, rr] of [[0, 0, 4], [4.5, 0.8, 3.2], [-4.5, 1, 3], [1.5, -2.4, 3]]) g.ellipse(cx + dx, cy + dy, rr * 1.2, rr, 0, 0, Math.PI * 2); g.fill();
+      }
+      g.fillStyle = '#f7f0e2'; g.fillRect(0, wy(1.6), w, wy(0.9) - wy(1.6));
+      g.strokeStyle = 'rgba(150,128,96,0.4)'; g.lineWidth = 0.6;
+      for (let px = 3; px < w - 10; px += 15) g.strokeRect(px, wy(1.48), 12, wy(1.0) - wy(1.48));
+      g.fillStyle = '#ffffff'; g.fillRect(0, wy(1.6) - 1.4, w, 2.6);
+      // Linc's crayon, at his height, all along the wainscot
+      for (let i = 0; i < w / 30; i++) {
+        const cx = 6 + i * 30 + r() * 12, cy = wy(1.25) + r() * 4;
+        g.strokeStyle = ['#e83a3a', '#3a6ae8', '#3aa050', '#f0a020'][i % 4]; g.lineWidth = 0.9; g.globalAlpha = 0.7;
+        g.beginPath(); for (let k = 0; k < 14; k++) g.lineTo(cx + k * 0.9, cy + Math.sin(k * 1.7 + i) * 2.4 + (r() - 0.5)); g.stroke();
+      }
+      g.globalAlpha = 1;
+      if (!back) { text(g, 'LINC', w * 0.3, wy(1.2), 4.2, '#e83a3a', { font: HAND }); return; }
+      sky(K, f, s, x(1.1), x(1.1) + 1.4 * U, 2.6, 1.75, '#ffffff', [ink[1], ink[2]]);
+      // bunting over the nursery, L I N C
+      g.strokeStyle = '#8a7a6a'; g.lineWidth = 0.4; g.beginPath(); g.moveTo(x(-0.4), wy(3.45)); g.quadraticCurveTo(x(1.6), wy(3.2), x(3.8), wy(3.45)); g.stroke();
+      'LINCLINC'.split('').forEach((ch, i) => {
+        const fx = x(-0.15) + i * 9, fy = wy(3.45) + Math.sin((i + 0.5) / 8 * Math.PI) * 2.6;
+        g.fillStyle = ['#f8d040', ink[1], '#f890b0', '#90d0a0'][i % 4]; g.beginPath(); g.moveTo(fx - 3.6, fy); g.lineTo(fx + 3.6, fy); g.lineTo(fx, fy + 7); g.fill();
+        text(g, ch, fx, fy + 2.6, 3.4, '#ffffff', { font: HAND });
+      });
+      // the growth chart by the toy shelf: Linc's marks low down, everyone else's a long way up
+      const gx = x(4.25), gw = 0.42 * U, top = wy(3.0), bot = wy(0.92);
+      g.fillStyle = '#f8f0d8'; g.fillRect(gx, top, gw, bot - top);
+      g.fillStyle = '#c8a870'; for (let yy = bot; yy > top; yy -= 2) g.fillRect(gx, yy, (Math.round((bot - yy) / 2) % 5) ? 1.6 : 3.2, 0.3);
+      for (const [h, who, col] of [[1.12, 'LINC 1', '#3a6ae8'], [1.3, 'LINC 2', '#3a6ae8'], [2.42, 'BRITT', '#d04a8a'], [2.62, 'LAW', '#c83a3a'], [2.9, 'KANGASKHAN ^', '#8a6a3a']]) {
+        g.fillStyle = col; g.fillRect(gx, wy(h), gw, 0.5); text(g, who, gx + gw - 0.6, wy(h) - 1.5, 1.7, col, { font: HAND, align: 'right' });
+      }
+      // their posters over the desks: Law's ranked red, Britt's Sage
+      f.rr(x(9.15), wy(2.95), 1.5 * U, 1.0 * U, 1, '#1a1a24');
+      g.fillStyle = '#ff4655'; g.beginPath(); g.moveTo(x(9.5), wy(2.8)); g.lineTo(x(9.9), wy(2.8)); g.lineTo(x(10.15), wy(2.3)); g.lineTo(x(10.4), wy(2.8)); g.lineTo(x(10.8), wy(2.8)); g.lineTo(x(10.15), wy(2.1)); g.fill();
+      text(g, 'ONE MORE', x(9.9), wy(2.05), 3, '#ffffff');
+      f.rr(x(11.15), wy(2.95), 1.5 * U, 1.0 * U, 1, '#1e6a62');
+      g.strokeStyle = '#8ef0d8'; g.lineWidth = 0.8; g.beginPath(); for (let j = 0; j <= 6; j++) { const a = j / 6 * Math.PI * 2 + Math.PI / 6; g.lineTo(x(11.9) + Math.cos(a) * 6, wy(2.5) + Math.sin(a) * 6); } g.stroke();
+      text(g, '+', x(11.9), wy(2.5), 8, '#ffffff');
+      text(g, 'HEAL WALL REZ', x(11.9), wy(2.08), 2.4, '#d8fff4');
+    },
+    furnish: [['crib', 0, 0], ['dresser', 1, 0], ['blocktoyshelf', 3, 0], ['fireplace', 5, 0, { mid: true }], ['minifridge', 8, 0],
+      ['desk', 9, 0], ['desk', 11, 0], ['laundrypile', 2, 1], ['swivelchair-fire', 9, 1], ['swivelchair-aqua', 11, 1],
+      ['puzzlemat', 1, 2], ['stackrings', 3, 2], ['blocktower', 2, 3], ['toybox', 0, 3], ['rockinghorse', 0, 4], ['bigpikachudoll', 0, 5],
+      ['fluffyrug-aqua', 5, 2, { mid: true }], ['checkbigrug-aqua', 8, 3], ['console', 12, 3],
+      ['sofa-ragged', 8, 4, { turn: Math.PI / 2 }], ['coffeetable', 10, 4, { turn: Math.PI / 2 }], ['tv', 12, 4, { turn: -Math.PI / 2 }],
+      ['highchair', 3, 6], ['fridge', 0, 7], ['stove', 1, 7], ['coffeecounter', 2, 7], ['bin', 0, 9],
+      ['schoolbag', 9, 7], ['teacherdesk', 10, 7], ['bookcart', 12, 7], ['plant', 12, 9]],
+    hang: [['starmobile', 0], ['kite', 0, { side: 'l', row: 2 }], ['calendar', 0, { side: 'l', row: 5 }], ['firstaid', 0, { side: 'r', row: 1 }]],
+    props(K, P) {
+      const T = K.THREE, hour = new Date().getHours(), asleep = !K.away && (hour >= 19 || hour < 6);
+      // the family's photos over the fireplace
+      put(K, 'photowall', 5, -0.5, { free: true, dx: 0.5 });
+      // the changing table: a pad, a stack of nappies, the baby monitor (its sound bars dancing while he sleeps), the night light
+      const dr = P.dresser, dy = topOf(dr), ct = group(K, ex(K, 2), dy, ez(K, 0.5));
+      part(K, K.rbox(0.62, 0.08, 0.42, 0.04), mat(K, '#cfe6f8', { roughness: 0.9 }), -0.36, 0.04, 0.02, ct);
+      for (let i = 0; i < 4; i++) part(K, K.rbox(0.16, 0.05, 0.12, 0.02), mat(K, '#fbfbf6', { roughness: 1 }), 0.2, 0.025 + i * 0.052, -0.06, ct);
+      const mon = new T.Group(); mon.position.set(0.52, 0, 0.08); ct.add(mon);
+      part(K, K.rbox(0.12, 0.16, 0.06, 0.02), mat(K, '#f4f4f0', { roughness: 0.4 }), 0, 0.08, 0, mon);
+      part(K, new T.CylinderGeometry(0.008, 0.008, 0.1, 5), mat(K, '#d8d8d4'), 0.04, 0.2, 0, mon);
+      const bars = [0, 1, 2].map(i => quiet(part(K, new T.BoxGeometry(0.02, 0.05, 0.005), lit(K, asleep ? '#60ff90' : '#3a8a5a'), -0.03 + i * 0.03, 0.1, 0.032, mon)));
+      K.B.ticks.push((now) => { bars.forEach((b, i) => { b.scale.y = asleep && !K.calm() ? 0.35 + Math.abs(Math.sin(now / 260 + i * 1.3)) * 0.65 : 0.4; }); });
+      quiet(ct);
+      if (asleep) K.piece('starprojector', 1, 0, { y: dy, scale: 0.5, free: true, dx: 0.15 });
+      // in the crib: Linc fast asleep in his Pikachu suit after seven, his Pikachu plush the rest of the day
+      const crib = group(K, ex(K, 0.5), 0.58, ez(K, 0.5), 0.35);
+      if (asleep) {
+        const yel = K.std({ color: '#f8d030', roughness: 0.85 });
+        part(K, new T.CapsuleGeometry(0.07, 0.16, 4, 10), yel, 0.04, 0.07, 0, crib).rotation.z = Math.PI / 2;
+        part(K, new T.SphereGeometry(0.075, 12, 10), yel, -0.16, 0.085, 0, crib);
+        part(K, new T.SphereGeometry(0.05, 10, 8), K.std({ color: '#f0c8a0', roughness: 0.8 }), -0.17, 0.08, 0.045, crib);
+        for (const s of [-1, 1]) { const ear = part(K, new T.ConeGeometry(0.025, 0.12, 8), yel, -0.22, 0.12, s * 0.04, crib); ear.rotation.z = 1.1; ear.rotation.x = s * 0.4; }
+        part(K, new T.SphereGeometry(0.012, 6, 4), lit(K, '#ff6a5a'), -0.19, 0.075, 0.07, crib);
+        part(K, K.rbox(0.36, 0.03, 0.22, 0.015), K.std({ color: '#a8d4f4', roughness: 1 }), 0.08, 0.1, 0.02, crib);
+        // z's drifting up out of the crib
+        const zc = K.fine(16, 16, 6); text(zc.g, 'z', 8, 9, 12, '#eef4ff', { font: HAND });
+        const zs = [0, 1, 2].map(() => { const sp = K.sprite(zc.c, 0.16); sp.visible = true; return sp; });
+        K.B.ticks.push((now) => {
+          zs.forEach((sp, i) => {
+            const p = K.calm() ? 0.3 + i * 0.25 : ((now / 3200) + i / 3) % 1;
+            sp.position.set(ex(K, 0.6) + p * 0.35 + Math.sin(p * 6) * 0.05, 0.95 + p * 0.8, ez(K, 0.5));
+            sp.material.opacity = Math.sin(p * Math.PI) * 0.9;
+            sp.scale.setScalar(0.1 + p * 0.1);
+          });
+        });
+      } else K.piece('pikachudoll', 0, 0, { y: 0.58, scale: 0.5, free: true, dz: 0.05 });
+      quiet(crib);
+      // Lego, everywhere, the nursery worst of all ("mind the Lego")
+      const r = K.seeded(23), cols = ['#e83a3a', '#3a7ae8', '#f8d040', '#3ab060', '#f8f8f4', '#f08a2a'], at = [];
+      for (let i = 0; at.length < 34 && i < 600; i++) {
+        const tx = r() < 0.55 ? 0.6 + r() * 4.2 : 0.6 + r() * 11.8, ty = 1.2 + r() * 7.6;
+        if (K.B.blocked.has(`${Math.floor(tx)},${Math.floor(ty)}`) || (Math.abs(tx - 6.5) < 0.7 && ty > 7.5)) continue;
+        at.push([tx, ty, r() * Math.PI, r() < 0.3]);
+      }
+      const bricks = new T.InstancedMesh(new T.BoxGeometry(0.12, 0.045, 0.06), K.std({ color: '#ffffff', roughness: 0.3 }), at.length);
+      const studs = new T.InstancedMesh(new T.CylinderGeometry(0.017, 0.017, 0.022, 8), K.std({ color: '#ffffff', roughness: 0.3 }), at.length * 2);
+      const o = new T.Object3D(), c = new T.Color();
+      at.forEach(([tx, ty, a, tall], i) => {
+        o.position.set(ex(K, tx), 0.0225, ez(K, ty)); o.rotation.set(0, a, 0); o.scale.set(1, tall ? 1.6 : 1, 1); o.updateMatrix();
+        bricks.setMatrixAt(i, o.matrix); bricks.setColorAt(i, c.set(cols[i % cols.length]));
+        for (const s of [-1, 1]) {
+          o.position.set(ex(K, tx) + Math.cos(a) * s * 0.03, (tall ? 0.072 : 0.045) + 0.011, ez(K, ty) - Math.sin(a) * s * 0.03); o.scale.set(1, 1, 1); o.updateMatrix();
+          studs.setMatrixAt(i * 2 + (s > 0), o.matrix); studs.setColorAt(i * 2 + (s > 0), c.set(cols[i % cols.length]));
+        }
+      });
+      for (const m of [bricks, studs]) { m.castShadow = true; m.receiveShadow = true; m.raycast = () => {}; K.B.group.add(m); }
+      // Cheerios round the high chair, a sippy cup on its tray
+      const hc = P.highchair, cheer = new T.InstancedMesh(new T.TorusGeometry(0.016, 0.007, 5, 8), K.std({ color: '#e0b060', roughness: 0.9 }), 18);
+      for (let i = 0; i < 18; i++) { const a = i * 2.4, d = 0.3 + (i % 5) * 0.08; o.position.set(ex(K, 3.5) + Math.cos(a) * d, 0.008, ez(K, 6.5) + Math.sin(a) * d * 0.8); o.rotation.set(-Math.PI / 2, 0, 0); o.updateMatrix(); cheer.setMatrixAt(i, o.matrix); }
+      cheer.raycast = () => {}; K.B.group.add(cheer);
+      const sip = group(K, ex(K, 3.5) + 0.1, topOf(hc), ez(K, 6.5) + 0.1);
+      part(K, new T.CylinderGeometry(0.04, 0.036, 0.1, 12), mat(K, '#88c4f0', { roughness: 0.4 }), 0, 0.05, 0, sip);
+      part(K, new T.CylinderGeometry(0.03, 0.04, 0.03, 12), mat(K, '#f8d040', { roughness: 0.4 }), 0, 0.115, 0, sip);
+      quiet(sip);
+      // fish sticks on the stove, just out of the oven
+      const st = group(K, ex(K, 1.5), topOf(P.stove), ez(K, 7.5), 0.1);
+      part(K, K.rbox(0.5, 0.02, 0.34, 0.01), mat(K, '#5a5a62', { metalness: 0.6, roughness: 0.4 }), 0, 0.01, 0, st);
+      const crumb = K.std({ color: '#d88a3a', roughness: 0.9 });
+      for (let i = 0; i < 8; i++) part(K, K.rbox(0.18, 0.035, 0.05, 0.012), crumb, -0.1 + (i % 2) * 0.2, 0.038, -0.12 + Math.floor(i / 2) * 0.08, st);
+      quiet(st);
+      mug(K, K.B.group, ex(K, 2.5) + 0.18, topOf(P.coffeecounter), ez(K, 7.5) + 0.12, '#f8f4ec');
+      // the fridge: Linc's drawing of everyone (Kangaskhan biggest), dinner's timings, and while they're out, the note
+      const fb = new T.Box3().setFromObject(P.fridge), fz = fb.max.z + 0.01;
+      note(K, ex(K, 0.5) - 0.12, 1.25, fz, 0.42, 0.34, (g, w, h) => {
+        g.lineWidth = 0.8; g.lineCap = 'round';
+        for (const [px, size, col] of [[4.5, 4, '#3a6ae8'], [8, 4, '#d04a8a'], [11, 2.2, '#f0c020'], [15, 6, '#8a5a2a']]) {
+          g.strokeStyle = col; g.beginPath(); g.arc(px, h - 5 - size * 1.6, size * 0.4, 0, Math.PI * 2); g.moveTo(px, h - 5 - size * 1.2); g.lineTo(px, h - 5 - size * 0.4); g.lineTo(px - size * 0.4, h - 4); g.moveTo(px, h - 5 - size * 0.4); g.lineTo(px + size * 0.4, h - 4); g.stroke();
+        }
+        g.fillStyle = '#f8c020'; g.beginPath(); g.arc(w - 3, 3.6, 1.6, 0, Math.PI * 2); g.fill();
+      }, { tilt: -0.08 });
+      note(K, ex(K, 0.5) + 0.14, 0.82, fz, 0.32, 0.26, (g, w) => { text(g, 'FISH STX', w / 2, 5.4, 2.4, '#2a2a3a', { font: HAND }); text(g, '425° 12m', w / 2, 8.6, 2.4, '#2a2a3a', { font: HAND }); }, { tilt: 0.06, paper: '#fff8a0' });
+      if (K.away) note(K, ex(K, 0.5), 1.62, fz, 0.38, 0.26, (g, w) => { text(g, 'OUT!', w / 2, 5, 4, '#e02040', { font: HAND }); text(g, 'back soon - L&B', w / 2, 9, 1.8, '#2a2a3a', { font: HAND }); }, { tilt: 0.04 });
+      // the desks, side by side: Law's party waiting on him, Britt mid-match as Sage
+      const y = topOf(P.desk);
+      monitor(K, K.B.group, ex(K, 10), y, ez(K, 0.36), 0.06, 0.62, 0.36, (f) => {
+        const { g, rr } = f;
+        g.fillStyle = '#10121a'; g.fillRect(0, 0, 37, 22); g.fillStyle = '#ff4655'; g.fillRect(0, 0, 37, 3.6);
+        text(g, 'PARTY 4/5', 18.5, 1.9, 2.4, '#ffffff');
+        for (let i = 0; i < 5; i++) { rr(2 + i * 6.8, 6, 5.8, 9, 0.6, i < 4 ? '#2a2e3e' : '#1a1c26'); if (i < 4) { g.fillStyle = '#ff8a90'; g.beginPath(); g.arc(4.9 + i * 6.8, 9.4, 1.6, 0, Math.PI * 2); g.fill(); } else text(g, '?', 4.9 + i * 6.8, 10.5, 5, '#ff4655'); }
+        text(g, 'WAITING ON LAW...', 18.5, 18.6, 2.6, '#ffd0d4');
+      });
+      headset(K, K.B.group, ex(K, 9.4), y + 0.05, ez(K, 0.7), '#ff4655', 0.3);
+      for (let i = 0; i < 3; i++) { const can = quiet(part(K, new T.CylinderGeometry(0.035, 0.035, 0.13, 10), mat(K, ['#3ad070', '#2a2a30', '#3ad070'][i], { metalness: 0.6, roughness: 0.3 }), ex(K, 10.7) + i * 0.08, y + 0.065, ez(K, 0.3) + (i % 2) * 0.08)); if (i === 1) { can.rotation.z = Math.PI / 2; can.position.y = y + 0.035; } }
+      monitor(K, K.B.group, ex(K, 12), y, ez(K, 0.36), -0.06, 0.62, 0.36, (f) => {
+        const { g, lin } = f;
+        g.fillStyle = lin(0, 0, 0, 22, ['#2a5a6a', '#123038']); g.fillRect(0, 0, 37, 22);
+        g.strokeStyle = '#8ef0d8'; g.lineWidth = 0.6; g.strokeRect(8, 4, 21, 9); g.fillStyle = 'rgba(142,240,216,0.25)'; g.fillRect(8, 4, 21, 9);
+        text(g, 'SAGE', 18.5, 8.5, 4, '#ffffff');
+        g.fillStyle = '#ff4655'; g.fillRect(2, 15.5, 33, 2.4); g.fillStyle = '#5af0c0'; g.fillRect(2, 15.5, 26, 2.4);
+        text(g, 'REZ READY', 18.5, 20, 2.4, '#d8fff4');
+      });
+      headset(K, K.B.group, ex(K, 12.6), y + 0.05, ez(K, 0.7), '#40e0c0', -0.3);
+      // her phone by the keyboard, on a Pokémon battle
+      const ph = group(K, ex(K, 11.4), y + 0.008, ez(K, 0.75), 0.4);
+      part(K, K.rbox(0.09, 0.012, 0.17, 0.012), mat(K, '#2a2a30'), 0, 0, 0, ph);
+      sheet(K, 16, 30, (f) => { const { g, lin } = f; g.fillStyle = lin(0, 0, 0, 30, ['#a8e0ff', '#e8f8e0']); g.fillRect(0, 0, 16, 30); g.fillStyle = '#7ac860'; g.beginPath(); g.ellipse(11, 10, 5, 1.6, 0, 0, Math.PI * 2); g.ellipse(5, 21, 5.5, 1.8, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#f8d030'; g.beginPath(); g.arc(5, 19, 2.4, 0, Math.PI * 2); g.fill(); g.fillStyle = '#e04a4a'; g.beginPath(); g.arc(11, 8, 2, 0, Math.PI * 2); g.fill(); g.fillStyle = '#2a2a30'; g.fillRect(0, 25, 16, 5); }, 0.08, 0.15, 0, 0.007, 0, { parent: ph, bright: true, rx: -Math.PI / 2, k: 6 });
+      quiet(ph);
+      ledStrip(K, 1.9, ex(K, 10), 0.05, ez(K, 0.95), { col: '#ff4655' });
+      ledStrip(K, 1.9, ex(K, 12), 0.05, ez(K, 0.95), { col: '#40e0c0' });
+      // the coffee table: two controllers, juice boxes out of Kangaskhan's pouch, a bottle
+      const tb = group(K, ex(K, 10.5), topOf(P.coffeetable), ez(K, 5));
+      for (const [dz, col] of [[-0.42, '#c83a3a'], [-0.18, '#2a8a80']]) { const pad = part(K, K.rbox(0.16, 0.035, 0.1, 0.03), mat(K, col, { roughness: 0.4 }), 0.02, 0.018, dz, tb); pad.rotation.y = dz * 2; }
+      for (const [dx, dz, col] of [[-0.1, 0.12, '#f05a8a'], [0.08, 0.2, '#f8a030'], [-0.04, 0.32, '#60b0f0']]) {
+        part(K, new T.BoxGeometry(0.07, 0.11, 0.045), mat(K, col, { roughness: 0.6 }), dx, 0.055, dz, tb);
+        part(K, new T.CylinderGeometry(0.004, 0.004, 0.07, 4), mat(K, '#f8f8f8'), dx + 0.02, 0.13, dz, tb).rotation.z = 0.25;
+      }
+      part(K, new T.CylinderGeometry(0.03, 0.03, 0.12, 10), new T.MeshStandardMaterial({ color: '#f8fbff', transparent: true, opacity: 0.6, roughness: 0.2 }), 0.08, 0.06, 0.42, tb);
+      part(K, new T.ConeGeometry(0.025, 0.05, 10), mat(K, '#e8b880'), 0.08, 0.145, 0.42, tb);
+      quiet(tb);
+      // Britt's corner: papers to grade, the red pen, an apple, the gold star stickers
+      const td = group(K, ex(K, 11), topOf(P.teacherdesk), ez(K, 7.5)), paper = mat(K, '#f8f6f0', { roughness: 1 });
+      for (const [dx, h] of [[-0.55, 0.12], [-0.3, 0.07]]) part(K, new T.BoxGeometry(0.22, h, 0.28), paper, dx, h / 2, 0, td);
+      part(K, new T.CylinderGeometry(0.006, 0.006, 0.14, 5), mat(K, '#e02030'), -0.3, 0.078, 0.06, td).rotation.z = Math.PI / 2;
+      part(K, new T.SphereGeometry(0.05, 12, 10), K.std({ color: '#d82a2a', roughness: 0.35 }), 0.4, 0.05, 0.02, td);
+      part(K, new T.CylinderGeometry(0.004, 0.004, 0.04, 4), mat(K, '#5a3a1a'), 0.4, 0.11, 0.02, td);
+      part(K, new T.CylinderGeometry(0.045, 0.045, 0.09, 12), new T.MeshStandardMaterial({ color: '#f8f4e0', transparent: true, opacity: 0.45 }), 0.15, 0.045, -0.06, td);
+      quiet(part(K, new T.CylinderGeometry(0.04, 0.04, 0.06, 12), lit(K, '#f8c830'), 0.15, 0.03, -0.06, td));
+      mug(K, td, 0.6, 0, -0.08, '#d04a8a');
+      quiet(td);
+      // and the house's gold star chart on the wall over it, Law at the bottom
+      sheet(K, 90, 56, (f) => {
+        const { g, rr } = f;
+        rr(0, 0, 90, 56, 2, '#fffaf0'); g.fillStyle = '#88c4f0'; g.fillRect(0, 0, 90, 10);
+        text(g, 'GOLD STARS!', 45, 5.4, 6, '#ffffff', { font: HAND });
+        const star = (cx, cy, k, col) => { g.fillStyle = col; g.beginPath(); for (let j = 0; j < 10; j++) { const a = -Math.PI / 2 + j * Math.PI / 5, d = j % 2 ? k * 0.45 : k; g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); } g.fill(); };
+        [['LINC', 6], ['KANGASKHAN', 5], ['BRITT', 4], ['LAW', 0]].forEach(([who, n], i) => {
+          const ry = 17 + i * 10;
+          g.fillStyle = 'rgba(136,196,240,0.35)'; g.fillRect(3, ry + 4.4, 84, 0.4);
+          text(g, who, 4, ry, 4, '#2a3a5a', { font: HAND, align: 'left' });
+          for (let j = 0; j < n; j++) star(42 + j * 7.4, ry, 3, '#f8c020');
+          if (!n) text(g, 'see me.', 60, ry, 4, '#e02030', { font: HAND });
+        });
+      }, 1.6, 1.0, ex(K, K.cols) - 0.03, 1.75, ez(K, 7.6), { ry: -Math.PI / 2, k: 4 });
+      // the fire's glow on the room, and the night light (or the lamp over the couch) on the other
+      lamp(K, '#ffb060', NIGHT(K.time) ? 1.8 : 1.0, 5, ex(K, 6.5), 0.8, ez(K, 1.3));
+      if (asleep) lamp(K, '#a8c0ff', 1.0, 3.5, ex(K, 1.2), 1.3, ez(K, 1.2));
+      else lamp(K, '#ffe0b0', 0.9, 5, ex(K, 10), 2.2, ez(K, 4.6));
+    },
+  },
 };
 
 /** The room's light, by the leader's mood; night dims the room and lets its glows carry it. */

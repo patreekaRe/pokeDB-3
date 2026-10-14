@@ -8216,12 +8216,11 @@ async function buildTown(figs, { look, time, town, mended = false }) {
 
 /** A town's homes (by town, then its `homes` key): the room's size (the theater and bathhouse are bigger), the floor,
     what stands in it ([piece, x, y, options]), where its Gym Leader stands (`leaderAt`) and its cast (`castAt`: the
-    bathers, each [x, ty, y] in a pool). A Gym Leader's home in a town is js/leader-homes.js's instead. */
+    bathers, each [x, ty, y] in a pool). A Gym Leader's home in a town (and the Nietos' in the Clearing) is
+    js/leader-homes.js's instead. */
 const HOMES = {
-  // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING): the Nietos' family home
+  // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING); the Nietos' is js/leader-homes.js's
   clearing: {
-    nietos: { floor: 'planks', leaderAt: { x: 4, ty: 2.4 }, castAt: [[1.2, 3.2, 0]],
-      furnish: [['crib', 0, 0], ['tv', 3, 0], ['console', 3, 1], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 7, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 6, 1], ['swivelchair', 7, 1], ['sofa', 5, 4], ['toybox', 0, 4], ['beanbag', 2, 5], ['bookstack', 8, 3], ['plant', 8, 5]] },
     // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, Apricorn trees
     workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
       furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
@@ -8319,7 +8318,7 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
 async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
-  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm }, home);
+  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, away: !figs[town.homes[home].leader] }, home);
   else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = L ? 3.1 : 2.1;
   B.talks = new Set();
