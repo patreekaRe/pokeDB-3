@@ -277,22 +277,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
-5. **The all-five reward: the Depths open to every starter** (the user's pick, 2026-10-14). With all five Waystone
-   Shards placed, a won run's fall at the last boss no longer holds (`kind: 'open'` in `descent()`): any starter drops
-   into the Crystal Depths as a 4th biome and fights Eternatus. Mewtwo needs no shards and keeps the Champion of the
-   Depths ending, its feat and its shiny; other starters get their own Depths win (a Hall of Fame mark). The Depths need
-   their own numbers per Trainer Level for non-Mewtwo starters (sim check). Builds after step 6 (shards must drop).
-   **It needs the Sealed Gate broken too** (the fall goes past the gate): five shards with the gate still whole, the lit
-   crystals say the seal still holds. **The Sealed Gate's spot in the Clearing** (`SEALED_AT`, `js/hub-3d.js`) stays
-   Mewtwo's door ("Go through" starts its run); with five shards and the gate broken it gains a second button into the
-   Depths (a visit outside a run, the Depths camp if built). The Waystone stays the towns' stone (all 2026-10-14).
-   **Mewtwo waits at the broken gate** (the user's idea, 2026-10-14): once Mewtwo is freed, a won run's fall no longer
-   throws your Pokémon back by a nameless force (`kind: 'open'` in `descent()`); Mewtwo stands in the open gate and you
-   talk to it. It says what's down there (Eternatus) must be beaten to save the world, and that it needs the energy
-   of the five Waystones to do it. That is the story that ties the shards to the Depths, so it replaces the "only Mewtwo
-   goes down" hint. Its lines follow the shards placed (n/5); with all five, it opens the way and the fall drops you
-   into the Depths. Open: how this sits with Mewtwo's own runs reaching the Depths with no shards (keep them as they are,
-   or have Mewtwo say it can go alone but can't win alone?), and whether the talk uses the gym's slide-in dialogue.
+5. **The all-five reward: open.** Dropped (2026-10-14, the user's call): **the Crystal Depths stay Mewtwo's alone**, no
+   other starter ever goes down there. (Built and reverted the same day: Mewtwo talking at the broken gate and opening it
+   with five shards lit, commit 3dfe9ca, reverted in dcbbca6, if any of it is ever wanted back.) What lighting all five
+   Waystones gives is undecided: ask the user before building anything.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
@@ -366,7 +354,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change; then step 5 (the Depths for every starter). Open: what gift friendship (`liked`) is for, and
+     and says what to change. Step 5 (the all-five reward) is open: ask the user. Open: what gift friendship (`liked`) is for, and
      whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
