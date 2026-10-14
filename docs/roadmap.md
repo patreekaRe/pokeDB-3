@@ -160,7 +160,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **Give every town Highbough's clean-up** (the user's ask, 2026-10-14, after Highbough's tidy: "much cleaner"). One
    town a pass, the user circling what's in the way on a playtest first if they like: the Lantern Village, Cinder Springs,
-   Driftwood Landing and Sunwell Bazaar. The rules Highbough's tidy set: fewer locked houses (only enough to read as a
+   Driftwood Landing and Sunwell Bazaar (Lantern Village done 2026-10-14, step 2 above: the Waystone centred on its plaza on the avenue's axis, the bridge two wide and landing squarely, roofs fading over the paths behind them, `fadeBehind()`, rather than moved; `?town=<biome>&towns&aerial` now shows any town from above). The rules Highbough's tidy set: fewer locked houses (only enough to read as a
    town), every walkway a clean rectangle, every bridge / boardwalk / road two tiles wide and landing squarely (no notches
    or half-lanes), no tree, crown or roof hiding a path (`tree: false`), clutter that only fills gaps taken out, and the
    Waystone centred on its square or deck, on the axis of what it faces. Keep each town's own shape. `node --test
