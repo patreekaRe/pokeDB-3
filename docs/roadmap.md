@@ -120,7 +120,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    railing round every deck edge over the drop and a pale trim inside it; a ghost town: 10 ghost folk (Gastly, Haunter,
    Duskull, Shuppet, Banette, Drifloon, Yamask, Lampent, Shedinja, Golett), Mismagius's Curio Shop for Kecleon's, the
    Withered Nursery's sleepers (Chandelure, Cofagrigus, Dusclops, Spiritomb, Gengar) on web rugs among graves, will-o'-wisps;
-   16 cries added. Its furniture shelf is still Greenhouse / Garden (Spooky is the mall's; ask the user before swapping). **Tidied 2026-10-14 after a second playtest** (the user's circles): the Curio Shop moved to Phil's old spot right of the Great Tree, Phil's treehouse to its own deck at the bottom middle; five locked treehouses (P, X, Y, M, N) and the lone giant and canopy clumps they circled taken out; every deck a clean rectangle and every bridge two wide, landing squarely on a deck (no notches or half-lanes); the shop and Phil's have no tree through the roof (`tree: false` on a building, `treehouse()`), since those crowns hid the walkways. Last commit on `claude/next-town-oahwio`. Branch `towns` (and
+   16 cries added. Its furniture shelf is still Greenhouse / Garden (Spooky is the mall's; ask the user before swapping). **Tidied 2026-10-14 after a second playtest** (the user's circles): the Curio Shop moved to Phil's old spot right of the Great Tree, Phil's treehouse to its own deck at the bottom middle; five locked treehouses (P, X, Y, M, N) and the lone giant and canopy clumps they circled taken out; every deck a clean rectangle and every bridge two wide, landing squarely on a deck (no notches or half-lanes); the shop and Phil's have no tree through the roof (`tree: false` on a building, `treehouse()`), since those crowns hid the walkways. The user liked it ("much cleaner"); after it the Waystone moved onto the Great Tree's axis, 3 tiles wide under its hollow (it stood half a tile off, low on the deck by the bottom bridge, the user found it awkward). Last commit on `claude/next-town-oahwio`. Branch `towns` (and
    `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. **Savanna done (2026-10-13): Sunwell Bazaar**, a
    caravan trading post (`style: 'bazaar'`), laid out unlike the other four (the user's ask): one dusty caravan road cutting
    straight across the map on the diagonal, in at the bottom left, out through a sandstone sun gate at the top right; the
@@ -135,7 +135,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `?town=savanna&home=machew&gymwins=1` walks straight into a house. Branch `towns` (and `claude/next-town-savanna-fpkg29`),
    waiting on the user's playtest. **All five towns are built**; next is session 2, the Waystone ring and visiting from home. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns and Waystones entry. Build the
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
-4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+4. **Give every town Highbough's clean-up** (the user's ask, 2026-10-14, after Highbough's tidy: "much cleaner"). One
+   town a pass, the user circling what's in the way on a playtest first if they like: the Lantern Village, Cinder Springs,
+   Driftwood Landing and Sunwell Bazaar. The rules Highbough's tidy set: fewer locked houses (only enough to read as a
+   town), every walkway a clean rectangle, every bridge / boardwalk / road two tiles wide and landing squarely (no notches
+   or half-lanes), no tree, crown or roof hiding a path (`tree: false`), clutter that only fills gaps taken out, and the
+   Waystone centred on its square or deck, on the axis of what it faces. Keep each town's own shape. `node --test
+   tests/*.test.mjs` checks every door stays reachable. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
+   Towns step 4. Give <town> Highbough's clean-up."
+5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
