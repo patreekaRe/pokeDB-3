@@ -277,6 +277,42 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
 5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
+   in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
+   - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
+     **slides in to greet you** (the gym intro's slide-in dialogue) and tells you about the Waystone (what broke it,
+     what the town lost), unlocking the board. About 4 steps over a few runs, mixing **Do** (the `track()` events),
+     **Find** (biome materials) and **Make** (crafted at home, brought back). **The last step is always a Waystone
+     Shard** floating over an **Alpha node** on that biome's map: beat it, the shard goes into Key Items, and the next
+     visit the leader puts it in and the stone lights (a short scene). Then the town's leaders can come to the Clearing's
+     Waystone and the Secret Base (this replaces `LEADER_VISITS_LIVE` being off), and the board rotates small coin
+     requests after. Story under it all: the shards are Crystal Depths crystal, cracked when the Sealed Gate was shut;
+     all five fully light the Clearing's Waystone (ties into step 5).
+   - **The towns' stories**: Lantern Village (John, Jahmes): the lanterns won't stay lit, spirits roam after dark,
+     Jahmes's 11pm curfew, John can't pick the festival: wicks, **the player picks John's festival** (which furniture
+     you get), relight the lantern ring, shard. Cinder Springs (Clarence, Shaun): the springs went cold, Shaun's comms
+     tower is down, Clarence wants a reopening show: Magma Ore, a relay for Shaun, Clarence's costume, shard. Driftwood
+     Landing (Pat, Kayl): stilt houses sinking, Pat's love letters in bottles across the lagoon: bottles on the map, pier
+     supports for Kayl, deliver Pat's letter, shard. Highbough (Phil, Ricky): something haunts the ruined conservatory,
+     Phil hunts it, Ricky films it all night: a Spirit Lantern, a night ghost fight, Thornwood seeds to restore the
+     conservatory, shard. Sunwell Bazaar (Machew, Jerome): the watering hole drying, a robbed caravan, Jerome's "heist",
+     Machew's broken katana: the stolen crates, **reforge the katana from Cinder Springs ore** (recipes across towns give
+     the other roads a reason), shard.
+   - **The Satchel**: a new Pokédex app (a `shelfApp()` in `js/bagdex.js`), the home stash that outlives runs, readable
+     mid-run too: **Key Items** (shards, letters, the katana; one of a kind, never used up), **Materials** (counts by
+     biome, each saying what it's for) and **Quests** (each town's step and what it still needs). "!" on new things.
+     Named the Satchel since the Bag is the run's.
+   - **Materials**: 2–3 per biome (wicks, ore, driftwood, seeds, spice...), from fight rewards and 1–2 sparkling map
+     nodes a run; into the Satchel, never the run's Bag, and **kept on a lost run**. Rolled through `js/rng.js` anyway.
+   - **Kurt's Workshop** in the Clearing (Johto's Apricorn ball maker): a workbench and a cauldron. Crafts quest items,
+     **craft-only furniture** from each town's set, **gifts and dishes for visiting leaders** (each has a favourite; it
+     raises friendship and they give their signature piece) and Apricorn ball **skins** for the Safari (looks only, the
+     leaderboard stays fair). **Nothing crafted gives power in a run** (a carried potion would need a bot check first).
+   - Sessions: (1) the quest engine: `QUESTS` per town in `js/data/towns.js` (step kinds `track` / `gather` / `craft` /
+     `shard`), the leader-beaten unlock and slide-in greeting, the Satchel, tests; (2) materials: drops, sparkling nodes;
+     (3) Kurt's Workshop and its recipes; (4) the shard: the marked Alpha node, the pickup, the mending scene, leaders
+     coming home; (5) the dialogue, a town a session if it runs long. Towns stay off (`TOWNS_LIVE`) till the user says.
+     ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
