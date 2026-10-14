@@ -789,7 +789,7 @@ export const TOWNS = {
       'TT......###L........................TT',
       'TT.....###....EEE.......KKK...,,,,..TT',
       'TT....###.....EEE.......KKK...,b,,..TT',
-      'TT...###.,,,..EEE....f..KKK.|.,,,,..TT',
+      'TT...###.,,,..EEE....f..KKK...,,,,..TT',
       'TTT..###.,,,.......................TTT',
       'TTTT###...........................TTTT',
       'TTT###TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT',
