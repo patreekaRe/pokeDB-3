@@ -210,7 +210,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Done (2026-10-14): a view past every town** (the user: "I don't like that wall of green"): the back wall and sky dome
    are gone; each town stands the Clearing's vista painting (`vistaArt()`, in its own colours: `TOWN_VISTAS` in
    `js/event-3d.js`) on its back edge, and its sides are trees only. Then the Shrine/Ruins and Thornwood looks' green skies became
-   blue (every outdoor room there). Details in `docs/reference/towns.md`.
+   blue (every outdoor room there). **Then (2026-10-14) every town's backdrop rebuilt** (the user: "make them all grand
+   and aesthetic and animated"): `js/town-backdrop.js`, layered and moving, hung on the rolled ground's crest, each town's
+   landmark behind its exit gate. Details in `docs/reference/towns.md`.
    **Done (2026-10-14): Cinder Springs' bathhouse** (the user: "so stupid looking"): the two-storey adobe box with a pent
    roof stuck on is now a sento (`bathhouse()` in `js/event-3d.js`): wide and low, timbered plaster and lit lattice windows
    under a kawara roof with a steam vent on its ridge, a curved karahafu porch (`karahafu()`) with the ♨ crest, sign and

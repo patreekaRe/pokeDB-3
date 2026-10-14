@@ -141,7 +141,7 @@ export function dispose(group) {
   group.traverse(o => {
     o.geometry?.dispose();
     // shared textures (js/base-mesh.js's grain and weave) are marked `keep` and outlive the room
-    for (const m of [o.material].flat()) if (m) { if (!m.map?.userData.keep) m.map?.dispose(); if (!m.emissiveMap?.userData.keep) m.emissiveMap?.dispose(); m.dispose(); }
+    for (const m of [o.material].flat()) if (m) { if (!m.map?.userData.keep) m.map?.dispose(); if (!m.emissiveMap?.userData.keep) m.emissiveMap?.dispose(); if (!m.alphaMap?.userData.keep) m.alphaMap?.dispose(); m.dispose(); }
   });
   group.clear();
 }
