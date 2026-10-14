@@ -152,21 +152,46 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (6 x 3, paddlewheel, banners, fairy lights). Tests pass; no console errors headless; all doors reachable by the game's
    blocked tiles; fades checked by hand; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the
    user's playtest.
+   **Done (2026-10-14): Driftwood Landing's homes, trade house and gate made grand** (the user: "make the other homes
+   look more cool and aesthetic, especially the trade house, and the exit"): the four locked huts overwater
+   `bungalow()`s (woven bamboo, railed porches, lit glass floats; a and p `shape: 'saddle'` roofs swept into horns, x
+   and y two-tier thatch), Pelipper's a seaside `baitShop()` (striped awnings, fish stall, rods, BAIT sign, mast,
+   bunting, weathervane, smoking stovepipe), the exit the drowned temple's great gate (`templeArch()`: stepped crown,
+   frieze, turning wheel, blue spirit-fire braziers, light in the opening, a glowing mosaic under it, broken columns,
+   coral, kelp; `B.reach` 2). Tests pass; no console errors headless. Waiting on the user's playtest.
    **Done (2026-10-14): Highbough's leaders, huts and Nursery made grand** (the user: "make the gym leaders houses more
    grand... fix the aesthetic of the huts too and the green house, they're all lame"): Phil's and Ricky's lots 5 x 4,
    both `canopyManor()`s (Ricky's a den round a living tree, Phil's crooked and haunted); the treehouses round huts
    (`treehouse()`); the Nursery a ruined Victorian conservatory (`nursery()`). Tests pass, no console errors. Waiting on
    the user's playtest.
+   **Done (2026-10-14): Highbough's small props tidied** (the user: the request board left of the tree, awkward benches,
+   "crates with fruits... like paper", "random grass patches"): the board off the north bridge's landing to the Great
+   Tree's left (13, 14); benches only as lookouts on south edges over the drop; the painted planters now 3D boxes
+   (`planters()`), a pair either side of each plain house's door and the Waystone; the moss tufts gone; crates square
+   (the style's `neat`). Tests pass, no console errors. Waiting on the user's playtest.
+   **Done (2026-10-14): Highbough's lanterns, planters, start-deck flicker and gate** (the user: lantern posts "in the way of
+   walkways", "the constant flower crates everywhere", "a weird flicker at the beginning platform", the exit "more grand"):
+   13 lanterns, each in a platform's outer corner clear of every bridge mouth and door path; planters only the Nursery's
+   pair at the back; the start deck's crate and barrel off the way in; the flicker was the trunk under the only deck with no
+   house on it, its top level with the planks (now just under, and the deck rims too); `vineGate()` now the Bough Gate, a
+   living arch of two trunks on flaring roots, crowned, lit with ghost-blooms, ghost-lanterns swaying under it, wisps
+   circling, a wider name plank (`B.reach` 2 so it fits the shot). Tests pass, no console errors. Waiting on the user's playtest.
    **Done (2026-10-14): Cinder Springs' roads and houses** (the user: Shaun's gym "in front of the waystone", "better
    designs of the other houses... especially the trade house", "all roads need to connect"): Shaun's lodge east of the
    moat on its own drive, a road straight down from the Waystone's bridge where it stood; a two-wide road to every door
    (the mine, Clarence, house a, the forge, house e; a test holds it); Heatmor's Forge a fieldstone smithy (`forge()`),
-   the locked houses stepped adobe `cottage()`s, the bathhouse timbered with a pent roof and lanterns. Waiting on the
-   user's playtest.
-   **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
-   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
-   Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what
-   bothers me about it first, with an aerial link), Machew's and Jerome's homes grand in the Bazaar's own style."
+   the locked houses stepped adobe `cottage()`s, the bathhouse timbered with a pent roof and lanterns. Then the benches
+   (the user: "move those benches somewhere else"): off the Waystone's island and the open ash (each painted a stray
+   cobble), now on paved nooks off the roads, two looking onto the springs, two either side of the road to the forge.
+   Waiting on the user's playtest.
+   **Done (2026-10-14): Sunwell Bazaar's clean-up** (the user: nothing specific, "go ahead with the checklist"): the
+   diagonal caravan road kept but three wide (two through the gate), the jetty two wide with a rope railing and a pale
+   trim, pale stones along the watering hole's bank, huts a and d gone (their knocks moved onto b, e, g and h), the rest
+   spread out, buildings fading while you're behind them (`fade`). Machew and Jerome in `kasbah()`s on 5 x 4 lots
+   (Jerome's at the top by the windpump, Machew's out on the east edge), with `s` name boards; their homes are now
+   "Machew's / Jerome's Kasbah". Tests pass, no console errors; the walk-in-and-out leak loop wasn't run (the pane draws no
+   frames hidden), so the user should walk in and out of a few houses on their phone. Every town's clean-up is done.
+   **Next: the Clearing's curve in every town** (below).
    **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
    crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
    can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it
@@ -238,7 +263,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **Give every town Highbough's clean-up** (the user's ask, 2026-10-14, after Highbough's tidy: "much cleaner"). One
    town a pass, the user circling what's in the way on a playtest first if they like: the Lantern Village, Cinder Springs,
-   Driftwood Landing and Sunwell Bazaar (Lantern Village done 2026-10-14, step 2 above: the Waystone centred on its plaza on the avenue's axis, the bridge two wide and landing squarely, roofs fading over the paths behind them, `fadeBehind()`, rather than moved; `?town=<biome>&towns&aerial` now shows any town from above). The rules Highbough's tidy set: fewer locked houses (only enough to read as a
+   Driftwood Landing and Sunwell Bazaar (all four done 2026-10-14, see the Towns and Waystones entry; Lantern Village, step 2 above: the Waystone centred on its plaza on the avenue's axis, the bridge two wide and landing squarely, roofs fading over the paths behind them, `fadeBehind()`, rather than moved; `?town=<biome>&towns&aerial` now shows any town from above). The rules Highbough's tidy set: fewer locked houses (only enough to read as a
    town), every walkway a clean rectangle, every bridge / boardwalk / road two tiles wide and landing squarely (no notches
    or half-lanes), no tree, crown or roof hiding a path (`tree: false`), clutter that only fills gaps taken out, and the
    Waystone centred on its square or deck, on the axis of what it faces. Keep each town's own shape. `node --test
@@ -257,6 +282,42 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
 5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
+   in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
+   - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
+     **slides in to greet you** (the gym intro's slide-in dialogue) and tells you about the Waystone (what broke it,
+     what the town lost), unlocking the board. About 4 steps over a few runs, mixing **Do** (the `track()` events),
+     **Find** (biome materials) and **Make** (crafted at home, brought back). **The last step is always a Waystone
+     Shard** floating over an **Alpha node** on that biome's map: beat it, the shard goes into Key Items, and the next
+     visit the leader puts it in and the stone lights (a short scene). Then the town's leaders can come to the Clearing's
+     Waystone and the Secret Base (this replaces `LEADER_VISITS_LIVE` being off), and the board rotates small coin
+     requests after. Story under it all: the shards are Crystal Depths crystal, cracked when the Sealed Gate was shut;
+     all five fully light the Clearing's Waystone (ties into step 5).
+   - **The towns' stories**: Lantern Village (John, Jahmes): the lanterns won't stay lit, spirits roam after dark,
+     Jahmes's 11pm curfew, John can't pick the festival: wicks, **the player picks John's festival** (which furniture
+     you get), relight the lantern ring, shard. Cinder Springs (Clarence, Shaun): the springs went cold, Shaun's comms
+     tower is down, Clarence wants a reopening show: Magma Ore, a relay for Shaun, Clarence's costume, shard. Driftwood
+     Landing (Pat, Kayl): stilt houses sinking, Pat's love letters in bottles across the lagoon: bottles on the map, pier
+     supports for Kayl, deliver Pat's letter, shard. Highbough (Phil, Ricky): something haunts the ruined conservatory,
+     Phil hunts it, Ricky films it all night: a Spirit Lantern, a night ghost fight, Thornwood seeds to restore the
+     conservatory, shard. Sunwell Bazaar (Machew, Jerome): the watering hole drying, a robbed caravan, Jerome's "heist",
+     Machew's broken katana: the stolen crates, **reforge the katana from Cinder Springs ore** (recipes across towns give
+     the other roads a reason), shard.
+   - **The Satchel**: a new Pokédex app (a `shelfApp()` in `js/bagdex.js`), the home stash that outlives runs, readable
+     mid-run too: **Key Items** (shards, letters, the katana; one of a kind, never used up), **Materials** (counts by
+     biome, each saying what it's for) and **Quests** (each town's step and what it still needs). "!" on new things.
+     Named the Satchel since the Bag is the run's.
+   - **Materials**: 2–3 per biome (wicks, ore, driftwood, seeds, spice...), from fight rewards and 1–2 sparkling map
+     nodes a run; into the Satchel, never the run's Bag, and **kept on a lost run**. Rolled through `js/rng.js` anyway.
+   - **Kurt's Workshop** in the Clearing (Johto's Apricorn ball maker): a workbench and a cauldron. Crafts quest items,
+     **craft-only furniture** from each town's set, **gifts and dishes for visiting leaders** (each has a favourite; it
+     raises friendship and they give their signature piece) and Apricorn ball **skins** for the Safari (looks only, the
+     leaderboard stays fair). **Nothing crafted gives power in a run** (a carried potion would need a bot check first).
+   - Sessions: (1) the quest engine: `QUESTS` per town in `js/data/towns.js` (step kinds `track` / `gather` / `craft` /
+     `shard`), the leader-beaten unlock and slide-in greeting, the Satchel, tests; (2) materials: drops, sparkling nodes;
+     (3) Kurt's Workshop and its recipes; (4) the shard: the marked Alpha node, the pickup, the mending scene, leaders
+     coming home; (5) the dialogue, a town a session if it runs long. Towns stay off (`TOWNS_LIVE`) till the user says.
+     ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
