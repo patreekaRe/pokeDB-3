@@ -43,6 +43,8 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['hub', 'The Clearing tidied up: your buddy walks in to the crossing above the plaza, the Poké Mall stands off the road, trees and a fence close the gap by the cauldron, and the Ancient Tree lost a pumpkin and its stray branches.'],
+  ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
