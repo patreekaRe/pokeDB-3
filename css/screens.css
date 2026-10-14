@@ -1608,6 +1608,12 @@ button.pile:is(:hover, :focus-visible) { translate: 0 -2px; }
   0%, 100% { translate: 0 0; scale: 1; color: #f8d030; filter: drop-shadow(0 0 2px rgba(255, 224, 96, 0.55)); }
   50% { translate: 0 -3px; scale: 1.15; color: #fff4b0; filter: drop-shadow(0 0 6px rgba(255, 236, 140, 0.95)); }
 }
+/* a town's material on the map: a pale glint, not the Safari's gold star */
+.map-sparkle { color: #e8fbff; animation-name: sparkleGlint; }
+@keyframes sparkleGlint {
+  0%, 100% { translate: 0 0; scale: 0.9; rotate: 0deg; filter: drop-shadow(0 0 2px rgba(160, 230, 255, 0.5)); }
+  50% { translate: 0 -3px; scale: 1.15; rotate: 20deg; filter: drop-shadow(0 0 6px rgba(190, 240, 255, 0.95)); }
+}
 @media (prefers-reduced-motion: reduce) { .map-rare { animation: none; } }
 /* Kenmatta's face for his dojo's room once he's been beaten: a 26x26 crop of Alder's sprite (62x66), head and spiky hair */
 .ken-face { display: block; width: 1.25em; aspect-ratio: 1; background: url(../assets/trainers/alder.png) 47.22% 12.5% / 238.46% 253.85% no-repeat;
