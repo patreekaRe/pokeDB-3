@@ -5375,6 +5375,8 @@ svg.aug-node.spent { filter: grayscale(1); opacity: 0.55; }
 #reward-options:is(.c3d, .c3d-wait) .event-figure { display: none; }
 /* a found item or relic picked over the 3D room it came from (hold() in js/event-3d.js), not the pixel scene */
 body.ev3d-held :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+/* a deck picker over a walk-in room keeps the room behind it (pickingOver() in js/hd2d.js), not its signs and bubbles */
+body:has(#reward-options.deck-pick) :is(.mart3d-sign, .town-stage) { display: none; }
 /* the signs float over the 3D machine, PC and Chansey (placeSigns()); a tap on one goes through to the room, which walks
    your Pokémon over first */
 #reward-options.c3d .reward-option { pointer-events: none; background: none; }

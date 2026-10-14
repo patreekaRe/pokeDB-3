@@ -43,6 +43,12 @@ const places = new Set();
 const asleep = new WeakSet();
 let shown = null, spare = null;   // the place on screen, and the one place warmed ahead that may stay awake beside it
 
+/** A deck picker (PP Up, Forget, the Day Care) opened from a walk-in room, on a screen wide enough to show the room
+    around it: the room stays up behind it, still, instead of the pixel scene it was drawn over (the user's ask,
+    2026-10-14). A phone's picker covers everything, so the room is put away there as before. */
+export const pickingOver = () => !!document.querySelector('#reward-options.deck-pick') && !document.getElementById('reward-screen').hidden
+  && matchMedia('(min-width: 721px)').matches;
+
 /** Puts a place's renderer to sleep (its GPU memory let go); it draws nothing until wakeGL(). */
 export function sleepGL(renderer) {
   if (!renderer || asleep.has(renderer)) return;
