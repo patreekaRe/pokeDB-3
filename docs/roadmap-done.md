@@ -2358,7 +2358,7 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   **Next, waiting on the user:** each friend's sprite (Gen 5-style trainer, front-facing, transparent PNG/GIF, ~80px, e.g.
   from play.pokemonshowdown.com/sprites/trainers/, which the cloud can't reach, so the user sends them; save as
   `assets/trainers/gym/<id>.png` and set `sprite:` on their line; till then the shadow `unknown.png`); their personalities
-  one by one (write `intro` / `beaten` lines from them; maybe a line when they beat you, not built); who of a
+  one by one (done 2026-10-13, all 13; written up in `docs/reference/gym-leaders.md`); who of a
   biome gets two bosses. Not yet seen end to end: the outro right after a real boss win and the badge landing in the Badge
   Case (a real run's first win; peeks give no badge). Ask the user how the gym looks per biome.
   **Machew and Jerome** (2026-10-13, the user's personalities and sprites): Machew the edgelord

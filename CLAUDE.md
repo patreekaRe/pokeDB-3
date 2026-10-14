@@ -920,6 +920,7 @@ one, which is the point: it costs nothing until it's needed.
 - Top bar and start screen - `docs/reference/top-bar-and-start-screen.md`
 - Pixel icons - `docs/reference/pixel-icons.md`
 - Music - `docs/reference/music.md`
+- Gym Leaders (who each friend is, for writing their lines) - `docs/reference/gym-leaders.md`
 ## Conventions
 
 - No comments unless they explain a non-obvious *why* (a workaround, a
