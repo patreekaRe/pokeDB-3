@@ -216,7 +216,7 @@ gets at most a line.
   `restGL(renderer)` once warm: only the last one warmed stays awake beside the one on screen (2026-10-14: four warmed
   contexts awake on the map still reloaded an iPhone after Clarence's badge). A place that builds rooms on demand keeps
   only the last few (`forgetRooms()` in `js/event-3d.js`, `KEEP_ROOMS` 3), and the map builds only the ? rooms you can
-  walk into next (`warmEvent3d()` in `js/run.js`). Check headless that at most two contexts are awake.
+  walk into next (`warmEvent3d()` in `js/run.js`). Check headless that at most two contexts are awake. Sprite frames stay on CPU canvases (`keep()` in `js/hd2d.js`) and a big animated overlay is a 1x canvas, not a masked CSS gradient (2026-10-14: the badge's rays crashed Safari's GPU process, taking the sound and every sprite with it).
 - **No text under 12px** (0.75rem; the user's call, 2026-10-12: the pixel font is unreadable smaller). Card faces aside, and text that would otherwise be cut off or wrap where it must stay one line (a title on an LCD): `fitText()` in `js/ui.js` shrinks it only as far as it must (the user's call, 2026-10-12: the Arcade Leaderboard's title).
 - **Patch notes, every task** (2026-10-10, the user's ask): anything a player would notice that a session ships gets ONE
   plain line in `NEXT` in `js/data/patchnotes.js` (`[group, line]`, a `GROUPS` key: hub, base, mall, pc, runs, battle,

@@ -83,7 +83,7 @@ export function decodeGif(buf) {
     });
     const c = document.createElement('canvas');
     c.width = W; c.height = H;
-    c.getContext('2d').putImageData(new ImageData(screen.slice(), W, H), 0, 0);
+    c.getContext('2d', { willReadFrequently: true }).putImageData(new ImageData(screen.slice(), W, H), 0, 0);
     const ms = gce.delay * 10;
     frames.push({ bmp: c, ms: ms < 20 ? 100 : ms });
     if (gce.dispose === 2) for (let r = y; r < Math.min(H, y + h); r++) screen.fill(0, (r * W + x) * 4, (r * W + Math.min(W, x + w)) * 4);
