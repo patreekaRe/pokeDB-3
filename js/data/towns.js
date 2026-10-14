@@ -952,7 +952,10 @@ export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT;
      shard   the town's Waystone Shard, from the marked Alpha on its map (session 4); handing it in lights the stone
    A step finished is handed in at the board, to the leader `by` (their `thanks`, sliding in), paying QUEST_COINS; a step
    may hand you a key item (`gives`) or ask you to pick (`pick`: John's festival). The last step is always the shard.
-   Then the board rotates the town's small coin requests (`requests`). Story under it all: the shards are Crystal Depths
+   Then the board rotates the town's small coin requests (`requests`). The dialogue (session 5): each step's `talk`, its
+   `nudge` (its leader's word on the board while it isn't done) and what each leader says about it at home; `after`, what
+   they say at home once the stone is lit, and `chats`, the folk's talk then. `{pick}` is the pick made (homeTalk()).
+   Story under it all: the shards are Crystal Depths
    crystal, cracked when the Sealed Gate was shut. Nothing in a questline gives power in a run. */
 
 /** What handing in a quest step pays, in PokéCoins (Coin Finder applies). */
@@ -990,7 +993,7 @@ export const QUESTS = {
         ['The avenue was quiet last night. Quiet in a good way. Thank you.',
           'So the festival\'s on. The {pick}. You picked it, I didn\'t have to. I\'d have picked that one too. Probably.',
           'Now the lantern ring round the Waystone needs relighting, and plain lanterns won\'t hold. Kurt in the Clearing makes festival ones.'],
-        { pick: { ask: 'Pick John\'s festival', options: [
+        { pick: { ask: 'Pick John\'s festival', fallback: 'autumn festival', options: [
           { id: 'lantern', label: 'Lantern Festival', text: 'A thousand paper lanterns down the avenue, set floating on the koi pond at midnight.' },
           { id: 'moon', label: 'Moon Viewing', text: 'Dumplings, pampas grass and the harvest moon over the torii.' },
           { id: 'fireworks', label: 'Fireworks Night', text: 'Fireworks off the Shrine\'s stair, food stalls and yukata till late.' },
@@ -1000,6 +1003,75 @@ export const QUESTS = {
       shard('shrine', 'jahmes', 'Bring back Lantern Village\'s Waystone Shard from the Shrine', [
         'THE SHARD! You found it! I\'m not even tired! ...I\'m a little tired.',
         'Put it in. Go on. Together. One, two... YOOOO!']),
+    ],
+    talk: {
+      'sh-wicks': {
+        nudge: 'WICKS! Six of them! From the Shrine! I\'d go myself but it\'s 10:40.',
+        john: [
+          'Jahmes wanted the wicks first. I wanted the spirits first. He decided. Somebody had to.',
+          'The lanterns gutter out about an hour after dusk. Every night. I\'ve logged it. Engineer habits.',
+        ],
+        jahmes: [
+          'Got the wicks yet? No pressure. MASSIVE pressure.',
+          'The lanterns go out at ten now. TEN. So I go to bed at ten. That\'s an HOUR of Valorant a night, GONE!',
+        ],
+      },
+      'sh-spirits': {
+        nudge: 'They drift through the Shrine\'s rooms. Visit a few. I think they just want company.',
+        john: [
+          'The spirits aren\'t angry, I don\'t think. Lost. Like a unit with no orders. Go and keep them company in the Shrine.',
+          'I\'ve narrowed the festival down to three. That\'s progress. Last week it was nine.',
+        ],
+        jahmes: [
+          'A spirit walked through my bedroom wall at 10:59. I said "NOT NOW" and it LEFT. Respect.',
+          'John\'s down to three festivals. THREE! He\'s going to make you pick. Pick FAST. I\'ll be asleep.',
+        ],
+      },
+      'sh-lanterns': {
+        nudge: 'Plain lanterns burn out. Kurt in the Clearing makes festival ones that hold.',
+        john: [
+          'The {pick} needs the ring round the Waystone lit. Kurt makes lanterns that hold. Mine didn\'t. I tested them. To failure.',
+          'I drew Kurt a lantern spec. Twelve pages. He said "I\'ll just make a nice one". Fair.',
+        ],
+        jahmes: [
+          'The {pick}! It\'s DECIDED! I\'m SCREAMING. Quietly. People are asleep. I should be asleep.',
+          'Kurt\'s lanterns, then the ring\'s lit, then the festival. Then I sleep. I\'d sleep anyway, but HAPPIER.',
+        ],
+      },
+      'shrine-shard': {
+        nudge: 'The shard\'s out in the Shrine, over some huge Alpha. It GLOWS. Go! Before eleven!',
+        john: [
+          'The ring\'s lit, but the stone\'s still cracked. The shard\'s out in the Shrine, over an Alpha. Something big is guarding it.',
+          'Once the stone\'s whole, the {pick} goes ahead. I\'m committed. Mostly.',
+        ],
+        jahmes: [
+          'That Alpha is HUGE. Don\'t lose! Or lose, and come back! But WIN!',
+          'I set a fourth alarm. It says "SHARD". It goes off at 10:30. In case you forget. I won\'t be awake to check.',
+        ],
+      },
+    },
+    after: {
+      john: [
+        'The {pick} was everything. I didn\'t have to decide a single thing. Best night of my life.',
+        'The Waystone reaches your Clearing now. I measured the hum. It\'s in tune.',
+        'I\'m bringing the Steam Deck to your Clearing next time. ...Or the Thor.',
+      ],
+      jahmes: [
+        'The lanterns stay lit ALL NIGHT now! I still go to bed at eleven! But I COULD stay up!',
+        'The {pick} went on till midnight. I left at 10:55. BEST NIGHT EVER.',
+        'The spirits drop by to say hi now. Polite ones. They leave before eleven.',
+      ],
+    },
+    chats: [
+      ['The lanterns are still lit!', 'It\'s past ten!', 'Is Jahmes still up?', 'No. But the lanterns are.'],
+      ['Were you at the {pick}?', 'Front row.', 'John says he\'ll pick next year\'s too.', 'He won\'t.'],
+      [
+        'The Waystone hums at night now.',
+        'Like it\'s happy.',
+        'Where does it go?',
+        'Wherever the traveller lives, they say.',
+      ],
+      ['A spirit bowed to me on the bridge.', 'Did you bow back?', 'Of course.', 'Good. They remember.'],
     ],
   },
   wastes: {
@@ -1029,6 +1101,85 @@ export const QUESTS = {
       shard('wastes', 'shaun', 'Bring back Cinder Springs\' Waystone Shard from the Wastes', [
         'That\'s the shard. Hand it here. I\'ll seat it. Carefully. Unlike your plays.', 'And... there. Connection established.']),
     ],
+    talk: {
+      'wa-ore': {
+        nudge: 'Magma Ore. From the Wastes. Five. My pores are waiting.',
+        clarence: [
+          'Cold springs. I sat in one this morning. I made a noise I\'m not proud of.',
+          'Bring me Magma Ore from the Wastes and the springs steam again. The skin thanks you in advance.',
+        ],
+        shaun: [
+          'Clarence has been sitting in the cold spring all morning "on principle". Ticket #4511: Clarence. Status: won\'t close.',
+          'My tower\'s down, so I\'ve been shouting calls to the boys off the roof. The range is bad.',
+        ],
+      },
+      'wa-relay': {
+        nudge: 'Kurt has the parts. I have the patience. Mostly he has the parts.',
+        clarence: [
+          'Shaun needs his tower before there can be a stream. No stream, and the show is just me. In a room. Dancing. For no one.',
+          'I rehearsed to the steam last night. It was very moving. It moved me.',
+        ],
+        shaun: [
+          'The relay\'s the one part I can\'t fix with what\'s here. Kurt can make one. Bring it and don\'t touch the pins.',
+          'I turned the tower off and on again. Twice. It didn\'t help. That never happens. It\'s the crack.',
+        ],
+      },
+      'wa-costume': {
+        nudge: 'Sequins. A cape. Kurt knows. Kurt understands.',
+        clarence: [
+          'A reopening show needs a reopening COSTUME. Kurt\'s on it. I sent him a mood board. Fourteen pages.',
+          'Don\'t look at the sketch. Okay, look. Look at the CAPE.',
+        ],
+        shaun: [
+          'The stream\'s back, so now he wants a costume. I said the old one\'s fine. He said I wouldn\'t understand. I don\'t.',
+          'The boys won two last night. Clarence says it\'s the show coming back. It was my calls.',
+        ],
+      },
+      'wastes-shard': {
+        nudge: 'Shard\'s out in the Wastes, over an Alpha. Play it safe. You won\'t, but play it safe.',
+        clarence: [
+          'The show\'s back, but the Waystone\'s still dull. A dull stage is a sin.',
+          'Shaun says the shard\'s over an Alpha out in the Wastes. Beat it with FLAIR.',
+        ],
+        shaun: [
+          'The stone\'s the last bit of packet loss in this town. The shard\'s out in the Wastes, over an Alpha.',
+          'Don\'t overpeek the Alpha. I\'ll know. I always know.',
+        ],
+      },
+    },
+    after: {
+      clarence: [
+        'The springs are hot, the stream is up, and the Waystone glows like a footlight. Nine o\'clock is SACRED again.',
+        'The reopening show? Sold out. It was free. Sold out anyway.',
+        'The Waystone reaches your Clearing now. A touring show. I\'ve always wanted a touring show.',
+      ],
+      shaun: [
+        'Tower\'s up, ping\'s eleven, and the boys are climbing. Don\'t tell Clarence it isn\'t the show.',
+        'Ticket #4502: traveller enters town. Status: resolved. Good work. Your positioning\'s still bad.',
+        'The Waystone runs to your Clearing now. Zero latency. I tested it with a ping. And a Clarence.',
+      ],
+    },
+    chats: [
+      [
+        'The springs are hot again!',
+        'Finally!',
+        'Clarence has been in there six hours.',
+        'He says it\'s for the show.',
+      ],
+      [
+        'Did you see the reopening show?',
+        'It\'s for the boys only.',
+        'Then what was that music at nine?',
+        'Don\'t ask.',
+      ],
+      ['The Wi-Fi works again!', 'Shaun fixed the tower.', 'He says it was the crack.', 'He also said it was you.'],
+      [
+        'The Waystone glows at night now.',
+        'Clarence uses it as a spotlight.',
+        'Does the Waystone mind?',
+        'It glowed brighter. So, no.',
+      ],
+    ],
   },
   ruins: {
     story: 'The stilt houses are sinking, and Pat\'s love letters are adrift across the lagoon.',
@@ -1056,6 +1207,70 @@ export const QUESTS = {
         ['You delivered it? To the end of the Ruins? And...?', '...They said they\'d think about it. THINK ABOUT IT! ♪ Like a tall glass of lemonade... ♪']),
       shard('ruins', 'kayl', 'Bring back Driftwood Landing\'s Waystone Shard from the Sunken Ruins', [
         'The shard! Oh, it\'s beautiful. It\'s the colour of the lagoon at night.', 'Let\'s put it back. Spooky, OFF the Waystone.']),
+    ],
+    talk: {
+      'ru-bottles': {
+        nudge: '♪ Message in a bottle... ♪ Three of them, out in the Ruins. Please don\'t read them.',
+        pat: [
+          'The tide took them further than I meant. I meant it to take them a bit. Romantically.',
+          '♪ She was mine... ♪ Oh, you heard that. The bottles, yes. They sparkle out on the Ruins\' map. Like my feelings.',
+        ],
+        kayl: [
+          'Pat\'s bottles keep washing up under the tenants\' houses. One was addressed to "the moon".',
+          'Reya fished a cork out of the lagoon and screamed at it for an hour. Honestly? Proud of her.',
+        ],
+      },
+      'ru-pier': {
+        nudge: 'Pier supports! Kurt makes them! Tarred, ideally. Lavender tar, ideally ideally.',
+        pat: [
+          'Kayl\'s houses lean a little further every night. I\'ve been singing to them. It hasn\'t helped. It hasn\'t hurt.',
+          'You\'ve got my letter. Hold onto it. I\'ll tell you who it\'s for when I\'m brave. Or when the houses stop sinking.',
+        ],
+        kayl: [
+          'Seventeen work orders, all "house is sinking". I\'ve put them in a folder called "house is sinking".',
+          'Kurt can make pier supports. I went to ask him three times. I forgot why I was there twice.',
+        ],
+      },
+      'ru-letter': {
+        nudge: 'Carry it to the end of the Ruins. You\'ll know who it\'s for when you get there.',
+        pat: [
+          'The letter. Take it all the way, to the end of the Ruins. Whoever\'s waiting there... they\'ll know.',
+          '♪ Like a tall glass of lemonade... ♪ That\'s the first line. It\'s in the letter. Don\'t read the letter.',
+        ],
+        kayl: [
+          'The houses stopped sinking. I cried. Spooky rolled in the varnish. Lavender everywhere. Best day.',
+          'Pat\'s pacing the jetty. He gave you the letter, didn\'t he? Go. He\'s scaring the Wingull.',
+        ],
+      },
+      'ruins-shard': {
+        nudge: 'The shard\'s out in the Ruins, over an Alpha. Bring it back and I can close the work order. FINALLY.',
+        pat: [
+          'They\'re thinking about it. I\'m thinking about them thinking about it. It\'s a lot of thinking.',
+          'The stone\'s still cracked. Kayl says the shard\'s out in the Ruins. ♪ Bring it home... ♪',
+        ],
+        kayl: [
+          'Work order #1: "Waystone, cracked". Opened the night the Sealed Gate shut. Still open. The shard\'s over an Alpha in the Ruins.',
+          'Close it and I\'ll frame the work order. With pressed lavender.',
+        ],
+      },
+    },
+    after: {
+      pat: [
+        'They wrote back! In a bottle! It says "maybe"! ♪ MAYBE ♪',
+        'The lagoon\'s calm again. Everything sounds like a love song. Even more than before. Somehow.',
+        'The Waystone reaches your Clearing now. I could serenade you from here. I\'ve tried.',
+      ],
+      kayl: [
+        'Every house is level, every lease renewed. I have NOTHING to do. I wrote three songs. Spooky slept on all three.',
+        'The Waystone hums in B flat. I\'m sampling it. For a Tame Impala cover. Don\'t tell anyone.',
+        'Reya sits on the Waystone at night now. It\'s warm. She\'s claimed it. It\'s hers.',
+      ],
+    },
+    chats: [
+      ['The houses stopped leaning!', 'Kayl cried.', 'Kayl cries at everything.', 'Kayl cried at a lease.'],
+      ['Pat got a letter back!', 'From who?', 'He won\'t say.', 'He\'s been singing about it for three days.'],
+      ['The tide\'s right again.', 'Since the Waystone mended.', 'Was it the stone?', 'Everything here is the stone.'],
+      ['A bottle washed up this morning.', 'Another of Pat\'s?', 'No. One addressed TO Pat.', 'Oh no. He\'ll cry.'],
     ],
   },
   thornwood: {
@@ -1085,6 +1300,76 @@ export const QUESTS = {
       shard('thornwood', 'ricky', 'Bring back Highbough\'s Waystone Shard from Thornwood', [
         'The shard? Nice. I\'ll film it going in. For the VOD.', 'Three, two... it\'s glowing. It\'s actually glowing. I\'m awake now.']),
     ],
+    talk: {
+      'th-lantern': {
+        nudge: 'PHIL: A Spirit Lantern. From Kurt. Please. I can hear it at night.',
+        phil: [
+          'PHIL: It hums in the Nursery. Under the floor. I need light to see it.',
+          'JONA: He wants a LANTERN. I have lived nine hundred years in the dark. Pathetic.',
+          'PHIL: Kurt\'s Workshop. A Spirit Lantern. Please hurry. She\'s rolling my eyes for me.',
+        ],
+        ricky: [
+          'I\'ve got eleven hours of footage of the Nursery. It\'s mostly dark. Phil needs a lantern so I can get the good stuff.',
+          'Sleep maths: Phil gets the lantern tonight, the hunt\'s tomorrow night, the meeting\'s at nine... I lose either way.',
+        ],
+      },
+      'th-ghost': {
+        nudge: 'It\'s out in Thornwood now. An Alpha. A big one. I\'ll be filming.',
+        phil: [
+          'PHIL: I saw it. With the lantern. It\'s... big. It went out into Thornwood. An Alpha now.',
+          'JONA: It is not a ghost. It is RUDE. Nothing haunts Highbough but ME.',
+        ],
+        ricky: [
+          'Ring light\'s charged. Batteries are charged. I\'m not charged. Go get the Alpha.',
+          'The boys say my footage is fake. Beat the thing and I\'ll prove it. Then I\'ll sleep. Maybe.',
+        ],
+      },
+      'th-seeds': {
+        nudge: 'PHIL: Thornwood Seeds. Six. Something should grow up here that isn\'t afraid.',
+        phil: [
+          'PHIL: The Nursery\'s quiet now. It used to grow things. I want it to grow things again.',
+          'JONA: Plant WEEDS. Black ones. ...No? Fine. Seeds.',
+        ],
+        ricky: [
+          'The Nursery got its first good night\'s sleep in months. I didn\'t. I was editing.',
+          'Phil wants Thornwood seeds. I\'ll film them growing. A timelapse. A twelve-hour timelapse. Oh no.',
+        ],
+      },
+      'thornwood-shard': {
+        nudge: 'The shard\'s over an Alpha in Thornwood. Get it before my meeting. Or after. I\'ll be up either way.',
+        phil: [
+          'PHIL: The Nursery\'s green. The ghost\'s gone. The Waystone is still cracked.',
+          'JONA: Bring me the shard, little traveller. ...Bring it to the STONE. I meant the stone.',
+        ],
+        ricky: [
+          'Last one: the shard. It\'s out in Thornwood, over an Alpha. The camera\'s already on a branch.',
+          'If the stone lights up at 3 a.m., that\'s the best content I\'ll ever make.',
+        ],
+      },
+    },
+    after: {
+      phil: [
+        'PHIL: The Nursery\'s blooming. I sleep in it sometimes. It\'s the only place she\'s quiet.',
+        'JONA: The stone hums. I HATE it. ...It is somewhat soothing.',
+        'PHIL: The Waystone reaches your Clearing now. I checked it for ghosts. It\'s clean. I\'ll keep checking.',
+      ],
+      ricky: [
+        'The VOD of the mending hit a thousand views. Nine hundred and ninety were the boys saying it\'s fake.',
+        'I slept six hours last night. SIX. The Nursery\'s so quiet now. The boys were furious.',
+        'The Waystone glows all night now. Great nightlight. Terrible for sleep. I\'m used to that.',
+      ],
+    },
+    chats: [
+      ['Something green in the Nursery!', 'Phil planted it.', 'Phil? Planting?', 'Jona hates it. So it\'s staying.'],
+      ['The knocking stopped.', 'The ghost?', 'No, Ricky. He finally went to bed.', 'At four. But still.'],
+      [
+        'The Great Tree stopped creaking.',
+        'Since the stone mended.',
+        'Ricky filmed it not creaking.',
+        'For six hours?',
+      ],
+      ['Did you see Ricky\'s video?', 'The boys say it\'s fake.', 'I was there.', 'They say you\'re fake too.'],
+    ],
   },
   savanna: {
     story: 'The watering hole is drying, a caravan was robbed, and Machew\'s katana is broken.',
@@ -1112,27 +1397,286 @@ export const QUESTS = {
       shard('savanna', 'jerome', 'Bring back Sunwell Bazaar\'s Waystone Shard from the Savanna', [
         'The shard! That\'s worth like, at least two GTA 6s.', 'Okay, okay, it\'s going in. Not selling it. Fine.']),
     ],
+    talk: {
+      'sv-crates': {
+        nudge: 'The bandits left a trail through the Savanna\'s ❓ rooms. Follow it. As a shadow would.',
+        machew: [
+          '...The crates held the caravan\'s spice. Without spice the market is only sand. And I am only a man. In a hood.',
+          'My blade broke on the first strike. Nine years I trained for that strike. It was plastic. It is still nine years.',
+        ],
+        jerome: [
+          'Caravan got robbed. Persian says it\'s a crime. I say it\'s a heist. There\'s a difference. Style.',
+          'Find where the crates went. Then it\'s my turn. I\'ve watched the trailer four hundred times. I\'m ready.',
+        ],
+      },
+      'sv-heist': {
+        nudge: 'In and out. Four turns or less. Twice. That\'s how they\'d do it in GTA 6. Probably.',
+        machew: [
+          'Jerome has a "plan". He drew it on a napkin. The napkin is a drawing of a car.',
+          '...I will not join the heist. My blade is broken. I will watch from the shadows. Behind that pillar.',
+        ],
+        jerome: [
+          'The plan: you go in, you win fast, you get out. That\'s it. That\'s every heist.',
+          'My wife asked where I was going. I said "a heist". She said the baby needs changing. Do the heist for me.',
+        ],
+      },
+      'sv-katana': {
+        nudge: 'Kurt can reforge it. With ore from Cinder Springs. Real steel. ...Real.',
+        machew: [
+          'Kurt says he can make it real, with ore from the Wastes. A real blade. I have dreamed of this. I am terrified of this.',
+          'Velvet\'s blade was forged in grief. Mine will be forged in a workshop in a clearing. It is the same.',
+        ],
+        jerome: [
+          'Heist worked. I spent my fifty on a GTA 6 poster. The baby likes it. Or it\'s asleep.',
+          'Machew wants a real sword. Kurt\'s making one. I asked Kurt for a car. He said no.',
+        ],
+      },
+      'savanna-shard': {
+        nudge: 'The shard\'s over an Alpha out in the Savanna. Glowing. Legendary drop. Like a gold chest.',
+        machew: [
+          '...The blade is real. It is heavy. The shard waits over an Alpha in the Savanna. Go. I will hold the market.',
+          'The next arc begins when the stone is whole. I can feel it. That might be the heat.',
+        ],
+        jerome: [
+          'The shard\'s out in the Savanna, over an Alpha. Legendary drop. Don\'t sell it.',
+          'If you DO sell it, I want ten percent. You won\'t. Fine. Five.',
+        ],
+      },
+    },
+    after: {
+      machew: [
+        '...The watering hole is full. The Waystone sings. And my blade is real. I sharpen it every evening. It sharpens now.',
+        'The Waystone reaches your Clearing now. A shadow may travel anywhere. I will visit. After my shift. It ends at six.',
+        'This was a good arc. The next will be darker. ...A little less dark. The baby next door is asleep.',
+      ],
+      jerome: [
+        'Watering hole\'s full, the caravan\'s back, the Waystone\'s on. Basically a new map dropped.',
+        'The Waystone glows pink at sunset. Very Vice City. I posted it. Three upvotes.',
+        'Baby\'s asleep. Wife\'s asleep. Just me and the trailer. Peace.',
+      ],
+    },
+    chats: [
+      [
+        'The watering hole is full again!',
+        'Since the Waystone lit.',
+        'Phanpy hasn\'t left it all day.',
+        'Can you blame Phanpy?',
+      ],
+      ['The caravan\'s crates came back!', 'Who found them?', 'Jerome says he did a heist.', 'Jerome was on Reddit.'],
+      ['Machew\'s sword is real now.', 'He looks scared of it.', 'He sheathes it so carefully.', 'Good. Very good.'],
+      [
+        'The Waystone glows at sunset.',
+        'Pink.',
+        'Jerome says it\'s Vice City pink.',
+        'Jerome says everything is Vice City pink.',
+      ],
+    ],
   },
 };
 
 /** A town's questline, or null. */
 export const questOf = (town) => QUESTS[town.id] || null;
 
+/** A questline's line with `{pick}` filled: the pick made (John's festival), or its `fallback` before one is (or on a
+    save mended before the questlines). */
+export function questLine(town, st, line) {
+  const s = questOf(town)?.steps.find(o => o.pick);
+  if (!s || !line.includes('{pick}')) return line;
+  return line.replaceAll('{pick}', s.pick.options.find(o => o.id === st.quest?.picks?.[s.id])?.label ?? s.pick.fallback);
+}
+
+/** What a Gym Leader says in their home: a word on the questline where it stands (the step up now's `talk`, or `after`
+    once the stone is lit), said first (`topical` lines of them), then their usual lines. */
+export function homeTalk(town, id, st) {
+  const q = questOf(town), step = questStep(town, st);
+  const now = !q ? [] : step ? q.talk?.[step.id]?.[id] ?? [] : mended(st) ? q.after?.[id] ?? [] : [];
+  return { lines: [...now, ...(town.leaders[id] || [])].map(l => questLine(town, st, l)), topical: now.length };
+}
+
+/** The step's leader's word on the board while it isn't done, their name first unless the line has one (Phil's JONA). */
+export function stepNudge(town, step, name) {
+  const line = questOf(town)?.talk?.[step.id]?.nudge;
+  return !line ? '' : /^[A-Z]+: /.test(line) ? line : `${name}: ${line}`;
+}
+
+/** The town's folk talk: once its stone is lit, about that first (`chats`), then their usual chats. */
+export const folkChats = (town, st) => (mended(st) && questOf(town)?.chats
+  ? [...questOf(town).chats.map(c => c.map(l => questLine(town, st, l))), ...town.chats] : town.chats);
+
 /* ---------- leaders coming home (session 4, 2026-10-14) ----------
    Once a town's shard is back in, its Waystone reaches the Clearing's, and its Gym Leaders come through: one a UTC day
    stands by the Clearing's Waystone (waystoneGuest(); the one who put the shard in, the first time home after), and they
-   drop by the Secret Base (js/secret-base.js's leaderVisitor()). This replaces LEADER_VISITS_LIVE being off. */
+   drop by the Secret Base (js/secret-base.js's leaderVisitor()). This replaces LEADER_VISITS_LIVE being off. Each has a
+   few speeches (session 5): the Clearing deals one a day, the base one a visit. */
 export const HOME_LINES = {
-  john: ['Stepped out of the Waystone and my ears popped. Cabin pressure. I\'d know.', 'Nice Clearing. It needs a festival. I\'d need a week to pick which.'],
-  jahmes: ['YOOO, the Clearing! The Waystone just YEETED me here!', 'Gotta be back by eleven, though. Curfew\'s curfew.'],
-  clarence: ['A round plaza with a glowing centrepiece. It\'s practically a stage.', 'Tell everyone I\'m here. Discreetly. Loudly.'],
-  shaun: ['Waystone latency: zero. Better than your internet.', 'I ran diagnostics on yours. It\'s fine. I\'d still file a ticket.'],
-  pat: ['♪ Through the stone and straight to you... ♪ Oh. Hi.', 'Got any lemonade here? No? I\'ll wait.'],
-  kayl: ['Free travel and no rent! Do you know how rare that is for me?', 'Reya stayed home. She\'s in charge of the leases now. Heaven help us.'],
-  phil: ['Your Clearing isn\'t haunted. I checked. Twice.', 'Jona says it\'s boring. Jona says that about everywhere.'],
-  ricky: ['*yawns* Came through the Waystone. Filmed it. The boys still think it\'s fake.', 'If I nap on that bench, wake me in twenty. Or forty.'],
-  machew: ['...The Waystone carried me here in silence. As a shadow should travel.', 'My blade stays sheathed. It is real now. I am still nervous.'],
-  jerome: ['The Waystone\'s basically fast travel. GTA 6 has fast travel. Probably.', 'Baby\'s asleep. I\'ve got like forty minutes. Let\'s hang.'],
+  john: [
+    [
+      'Stepped out of the Waystone and my ears popped. Cabin pressure. I\'d know.',
+      'Nice Clearing. It needs a festival. I\'d need a week to pick which.',
+    ],
+    [
+      'One road in, a plaza in the middle: your Clearing\'s a great Fire Emblem map. I\'d put the healer by the stone.',
+      'I brought all three handhelds. I\'ve played none of them. Great day.',
+    ],
+    [
+      'Somebody at work asked what I did this weekend. I said "travelled by magic rock". They asked for a report.',
+      'I wrote one. Eleven pages. Peer-reviewed by Jahmes. He wrote LET\'S GO on every page.',
+    ],
+    [
+      'Jahmes wanted to come. It\'s nine, so he\'s doing his skincare and then bed.',
+      'Tell him I said hi. He\'ll say it back in capitals.',
+    ],
+  ],
+  jahmes: [
+    ['YOOO, the Clearing! The Waystone just YEETED me here!', 'Gotta be back by eleven, though. Curfew\'s curfew.'],
+    [
+      'A patient told me "it\'s probably nothing" this morning. It WAS nothing! I was SO hyped!',
+      'Anyway, I\'m on a break. Breaks are for screaming. Quietly. Somewhere scenic.',
+    ],
+    [
+      'Ricky\'s up till THREE every night?! THREE?! I\'d DIE. I\'d be SO dead.',
+      'He said I should try it. I said I\'d try it at 10:59. He laughed. Why did he laugh.',
+    ],
+    [
+      'ARAM tonight, then bed. An ARAM\'s twenty minutes. Bed\'s at eleven. I\'ve done the maths: time for ONE.',
+      'If I\'m not home by 10:45, send a search party. Or let me sleep here. Is that a bench?',
+    ],
+  ],
+  clarence: [
+    [
+      'A round plaza with a glowing centrepiece. It\'s practically a stage.',
+      'Tell everyone I\'m here. Discreetly. Loudly.',
+    ],
+    [
+      'Shaun says the Clearing can\'t hold a stream. "The trees", he says. The trees should learn.',
+      'At nine I\'m back in the Springs. Nobody stops the show. Not even geography.',
+    ],
+    [
+      'Shaun and I came through the Waystone together once. He timed it. I posed in it.',
+      'The photos are for the boys. Only the boys. You understand.',
+    ],
+    [
+      'Pat sang at me through the Waystone yesterday. All the way from Driftwood Landing. Beautiful.',
+      'I\'ve hired him as my opening act. He doesn\'t know yet.',
+    ],
+  ],
+  shaun: [
+    [
+      'Waystone latency: zero. Better than your internet.',
+      'I ran diagnostics on yours. It\'s fine. I\'d still file a ticket.',
+    ],
+    [
+      'I ran a speed test by your Waystone. Forty down. I get four hundred at home. Just saying.',
+      'Not that it matters. Skill issue either way.',
+    ],
+    [
+      'The boys went five and oh last week. Clarence says it was the show. I made the calls. It was the calls.',
+      'Write that down. Date it.',
+    ],
+    [
+      'Kayl filed a ticket: her router was down. It was unplugged. Spooky was asleep on the cable.',
+      'Ticket closed: cat. Hardest one this month.',
+    ],
+  ],
+  pat: [
+    ['♪ Through the stone and straight to you... ♪ Oh. Hi.', 'Got any lemonade here? No? I\'ll wait.'],
+    [
+      '♪ She was mine... ♪ Oh, you heard that? I didn\'t know anyone was out here. In your yard.',
+      'The acoustics by your Waystone are almost as good as the lagoon\'s. Almost.',
+    ],
+    [
+      'I wrote a song about the Waystone. It\'s also about someone. Mostly about someone.',
+      'I\'ll sing it at sunset. If there\'s lemonade.',
+    ],
+    [
+      'Kayl charges me rent in songs, and now Clarence wants me as his opening act. I\'m in demand.',
+      '♪ Like a tall glass of lemonade... ♪ That\'s my rate card.',
+    ],
+  ],
+  kayl: [
+    [
+      'Free travel and no rent! Do you know how rare that is for me?',
+      'Reya stayed home. She\'s in charge of the leases now. Heaven help us.',
+    ],
+    [
+      'I came to look at your Secret Base. Professionally. Oh, I forgot my clipboard. And my keys.',
+      'Wait, why did I come? ...Oh! Visiting! Hi!',
+    ],
+    [
+      'Spooky followed me to the Waystone and lay down on it. It\'s warm. She\'s still there. She\'s fine.',
+      'Reya screamed at it and it hummed back. They\'re friends now.',
+    ],
+    [
+      'I put "Let It Happen" on and walked through the Waystone. Perfect timing. I\'m doing it again later.',
+      'The whole Clearing should smell of lavender. I\'ll leave you a sachet. Three.',
+    ],
+  ],
+  phil: [
+    ['Your Clearing isn\'t haunted. I checked. Twice.', 'Jona says it\'s boring. Jona says that about everywhere.'],
+    [
+      'I came through the Waystone while she was asleep. She doesn\'t sleep. She was pretending.',
+      'She says your Clearing has "potential". Please don\'t ask for what.',
+    ],
+    [
+      'I salted the path from your Waystone to here. Just a little. Just in case.',
+      'It\'s not for grip. You know it\'s not for grip.',
+    ],
+    [
+      'Ricky filmed me stepping out of the Waystone. My eyes glowed in the footage. It\'s the lighting.',
+      'He says it\'s fake. I hope he\'s right.',
+    ],
+  ],
+  ricky: [
+    [
+      '*yawns* Came through the Waystone. Filmed it. The boys still think it\'s fake.',
+      'If I nap on that bench, wake me in twenty. Or forty.',
+    ],
+    [
+      'It\'s 2 p.m. here. That\'s 2 a.m. somewhere, which is where the boys are. And where I am, spiritually.',
+      'Meeting at nine tomorrow. I\'ll be up till three. The maths never changes.',
+    ],
+    ['Jahmes went to bed at eleven on the dot last night. Mid-round. We were in a match.', 'We lost. He slept great.'],
+    [
+      'Phil came through the Waystone with me. His eyes went purple on camera. He says it\'s the lighting.',
+      'It\'s not the lighting.',
+    ],
+  ],
+  machew: [
+    [
+      '...The Waystone carried me here in silence. As a shadow should travel.',
+      'My blade stays sheathed. It is real now. I am still nervous.',
+    ],
+    [
+      '...Your Clearing has too much light. I will stand under that tree. Do not look for me. I am behind the tree.',
+      'My shift starts at four. I came early to brood.',
+    ],
+    [
+      'Kurt forged my blade. I come to thank him sometimes. Silently.',
+      'He gives me tea. I drink it in the shadows. It is good tea.',
+    ],
+    [
+      'Jerome asked if the Waystone is "basically fast travel". I told him it is the path of the shadow.',
+      'He said "so, fast travel". ...Yes.',
+    ],
+  ],
+  jerome: [
+    [
+      'The Waystone\'s basically fast travel. GTA 6 has fast travel. Probably.',
+      'Baby\'s asleep. I\'ve got like forty minutes. Let\'s hang.',
+    ],
+    [
+      'Somebody on r/GTA6 counted the trees in your Clearing. It\'s not in the trailer. They counted anyway.',
+      'Forty-one, they said. Wrong. I counted forty-two.',
+    ],
+    [
+      'My wife said "take the baby for a walk". So I took the baby through the Waystone.',
+      'Kidding. Baby\'s with her. I\'m on a "walk".',
+    ],
+    [
+      'Machew holds his real sword like it\'s a live grenade. Very GTA.',
+      'If you want to do another heist, I\'m around. Weekdays. Before the baby wakes up.',
+    ],
+  ],
 };
 
 /** The leaders whose town's Waystone is mended: [{ id, town }], in RING order. */
@@ -1142,13 +1686,15 @@ export const homeLeaders = (save) => (townsOpen() ? RING.filter(t => mended(town
     who put it in (`welcome`: their town says thanks); else one of the home leaders, dealt by `rand` (the UTC day's). */
 export function waystoneGuest(save, rand) {
   const fresh = RING.find(t => townState(save, t.id).quest?.lit && !townState(save, t.id).quest.welcomed);
-  if (fresh) return { id: QUESTS[fresh.id].steps.at(-1).by, town: fresh.id, welcome: true };
+  if (fresh) return { id: QUESTS[fresh.id].steps.at(-1).by, town: fresh.id, welcome: true, speech: 0 };
   const pool = homeLeaders(save);
-  return pool.length ? pool[Math.floor(rand() * pool.length)] : null;
+  if (!pool.length) return null;
+  const g = pool[Math.floor(rand() * pool.length)];
+  return { ...g, speech: Math.floor(rand() * (HOME_LINES[g.id]?.length || 1)) };
 }
 
-/** What a home leader says: their HOME_LINES, with a thank-you first when they've come to welcome you. */
-export const guestLines = (g) => [...(g.welcome ? [`The Waystone lit all the way to here! I came straight through. ${TOWNS[g.town].name} says thank you.`] : []), ...(HOME_LINES[g.id] || [])];
+/** What a home leader says: one of their HOME_LINES speeches, with a thank-you first when they've come to welcome you. */
+export const guestLines = (g) => [...(g.welcome ? [`The Waystone lit all the way to here! I came straight through. ${TOWNS[g.town].name} says thank you.`] : []), ...(HOME_LINES[g.id]?.[g.speech ?? 0] || [])];
 
 /** The leader who greets you and opens the questline: the first of the town's leaders you've beaten, or null. */
 export const greeterOf = (town, save) => Object.keys(town.leaders).find(id => (save.gym?.[id] || 0) > 0) ?? null;

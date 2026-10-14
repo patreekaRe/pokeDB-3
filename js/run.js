@@ -70,7 +70,8 @@ import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
-  questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING } from './data/towns.js';
+  questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
+  homeTalk, stepNudge, folkChats } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
 /** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
@@ -1762,7 +1763,7 @@ function townRoom(covered = null, at = null) {
   } else if (step && ready) {
     options = [spotOption('Hand in', `${stepText(step)}: done! Hand it in to ${GYM_BY_ID[step.by].name} for ${coinsWithBonus(QUEST_COINS)} PokéCoins.`, () => handStep())];
   } else if (step) {
-    options = [{ ...spotOption('Quest', `${stepText(step)}. ${need(step)} ${friends}`, again), info: true }];
+    options = [{ ...spotOption('Quest', `${stepText(step)}. ${need(step)} ${friends} ${stepNudge(town, step, GYM_BY_ID[step.by].name)}`.trim(), again), info: true }];
   } else {
     const progress = st.ready ? 'Done!' : `${st.got}/${r.n}`;
     options = [st.ready && !t.handedIn
@@ -1824,7 +1825,7 @@ function townRoom(covered = null, at = null) {
   const visit = townVisit ??= { id: town.id };
   const knocks = {}, asked = new Set();
   event3d(visit, 'town', {}, null, {
-    extra: { town, at, mended: lit, onDoor: (id) => {
+    extra: { town, at, mended: lit, chats: folkChats(town, st), onDoor: (id) => {
       if (run !== thisRun) return;
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }
@@ -1929,13 +1930,16 @@ function homeRoom(b) {
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
+  const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
     extra: { town, home: b.home, away, gift: gifting, onTalk: (stand) => {
       if (run !== thisRun) return;
-      const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
+      // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
+      const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt()) : null;
+      const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);
       if (!lines) return;
-      const n = talks[stand] = ((talks[stand] ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
+      const n = talks[stand] = ((talks[stand] ?? (talk?.topical ? -1 : Math.floor(Math.random() * lines.length))) + 1) % lines.length;
       said(lines[n], home.cast?.[stand] ? home.names?.[stand] ?? '' : GYM_BY_ID[stand]?.name);   // Kayl's cats have names
     } },
     onFail: out,

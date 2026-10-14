@@ -8390,12 +8390,12 @@ async function buildHome(figs, { time, town, home, gift }) {
 /** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up
     the road from the door. Their lines go in the room's speech window. */
 let folkLayer = null;
-function townCrowd(town) {
+function townCrowd(town, chats) {
   return makeCrowd({
     THREE, group: R.group, monBoard: async (...a) => { const m = await monBoard(...a); bendAll(m.group); return m; }, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
     route, free, tileX, tileZ, camera, view, stage: folkLayer, drawn,
     say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
-    cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
+    cast: town.folk, shared: town.shared, chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
     wants: ['stand', 'stand', 'stand', 'stand', null, null, null], swap: [30000, 60000],
     walkers: 2,   // most stand at their spots, one or two about at a time (the user's ask, 2026-10-14)
@@ -8944,7 +8944,11 @@ export async function mountEvent(o) {
   if (R.town) {   // a town's folk, walked by the Game Corner's crowd code (js/corner-crowd.js), their bubbles on a layer of their own
     folkLayer ??= Object.assign(document.createElement('div'), { className: 'town-stage' });
     document.body.append(folkLayer);
-    R.crowd ??= townCrowd(R.town);
+    // their chats follow the town's story (js/data/towns.js's folkChats(), handed in as `o.chats`): one array kept per room,
+    // refilled on every visit, as the crowd reads it each time two folk talk
+    R.chats ??= [];
+    R.chats.splice(0, R.chats.length, ...(o.chats ?? R.town.chats));
+    R.crowd ??= townCrowd(R.town, R.chats);
     R.crowd.enter();
   }
   document.getElementById('reward-options').classList.add('c3d');

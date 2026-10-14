@@ -286,8 +286,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    crystals say the seal still holds. **The Sealed Gate's spot in the Clearing** (`SEALED_AT`, `js/hub-3d.js`) stays
    Mewtwo's door ("Go through" starts its run); with five shards and the gate broken it gains a second button into the
    Depths (a visit outside a run, the Depths camp if built). The Waystone stays the towns' stone (all 2026-10-14).
-6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
-   in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
+6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
+   waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
      **slides in to greet you** (the gym intro's slide-in dialogue) and tells you about the Waystone (what broke it,
      what the town lost), unlocking the board. About 4 steps over a few runs, mixing **Do** (the `track()` events),
@@ -352,8 +352,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      town's leaders come home: one a day by the Clearing's Waystone (the one who put the shard in, first), the others
      dropping by the Secret Base (`HOME_LINES`). Detail: `docs/reference/towns.md`. Playtest: `?town=shrine&mend` (the
      scene), `?biome=shrine&shard` (the marked Alpha). Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
-     **Next: session 5, the dialogue** (a town a session if it runs long; the leaders' `HOME_LINES` are one pair each so far).
-     ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
+   - **Session 5 done (2026-10-14): the dialogue, all five towns.** Each step's `talk` in `QUESTS`: its leader's word on
+     the board while it isn't done (`nudge`, `stepNudge()`) and what both leaders say about it at home, said first
+     (`homeTalk()`); `after`, their lines at home once the stone is lit; `chats`, the folk's talk then (`folkChats()`, the
+     crowd's `R.chats` refilled each visit). `{pick}` is John's festival (`questLine()`, "autumn festival" before one).
+     `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
+     visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+     **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
+     and says what to change; then step 5 (the Depths for every starter). Open: what gift friendship (`liked`) is for, and
+     whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

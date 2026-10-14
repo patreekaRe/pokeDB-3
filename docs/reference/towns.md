@@ -216,3 +216,16 @@ house's GOLD STARS chart (Law: "see me."), and Lego scattered everywhere. The ki
 OUT! note on the fridge; from 19:00 on your clock (the home's `nightAt`) Linc sleeps in the crib in his Pikachu suit, z's
 rising, the monitor's bars moving and a night light on, else his plush lies there. The gym posters (`nietosposter`...)
 have no 3D model, so a walk-in room can't hang them.
+
+**The questlines' dialogue** (session 5 of Towns step 6, 2026-10-14). Each town's `QUESTS` entry carries `talk` (per
+step id: `nudge`, the step's leader's word added to the board's Quest sign while it isn't done, via `stepNudge()`, which
+puts their name first unless the line has one, as Phil's PHIL / JONA lines do; and a list per leader of what they say
+about that step at home), `after` (per leader, at home once the stone is lit) and `chats` (the folk's two-way talk once
+lit). `homeTalk()` gives a leader's home lines: the topical ones first (`homeRoom()` in `js/run.js` starts its cycle at
+them; asleep, the night lines still win), then their usual `leaders` lines. `folkChats()` puts the lit chats ahead of the
+usual ones; `townRoom()` hands them to the room as `extra.chats`, and the crowd reads `R.chats`, one array per room
+refilled on every visit, so the mending's redraw changes what the folk say without a rebuild. `{pick}` in any of it is
+the pick made (`questLine()`: John's festival, or the pick's `fallback`, "autumn festival", before one or on a save
+mended by the old requests). `HOME_LINES[id]` is a list of speeches (4 each, several about the other leaders):
+`waystoneGuest()` deals one a day (`speech`; the welcome is the first), the Secret Base picks one a visit. Tests:
+`tests/quests.test.mjs`, `tests/shard.test.mjs`.

@@ -382,7 +382,7 @@ export function leaderVisitor(b, save = getSave()) {
   if (b.leaderVisit === day && !again) return null;
   const gold = LEADER_VISITS_LIVE || again ? GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD && (l.id !== 'nietos' || nietosHome(save.gym[l.id]))) : [];   // the Nietos stay away while NIETOS_LIVE is off
   const out = todaysGuest(save)?.id;
-  const home = homeLeaders(save).filter(h => h.id !== out && !gold.some(l => l.id === h.id)).map(h => ({ ...GYM_BY_ID[h.id], visit: [HOME_LINES[h.id]] }));
+  const home = homeLeaders(save).filter(h => h.id !== out && !gold.some(l => l.id === h.id)).map(h => ({ ...GYM_BY_ID[h.id], visit: HOME_LINES[h.id] }));
   const pool = [...gold, ...home];
   if (!pool.length) return null;
   return pool[streamOf(day, 'leader-visit')() * pool.length | 0];

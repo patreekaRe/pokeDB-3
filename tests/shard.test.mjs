@@ -23,8 +23,11 @@ test('a mended town\'s leaders come home, each with something to say', () => {
   assert.deepEqual(home.map(h => h.id).sort(), [...Object.keys(TOWNS.shrine.leaders), ...Object.keys(TOWNS.ruins.leaders)].sort());
   for (const town of Object.values(TOWNS)) for (const id of Object.keys(town.leaders)) {
     assert.ok(GYM_BY_ID[id], `${id} is a Gym Leader`);
-    assert.ok(HOME_LINES[id]?.length >= 2, `${id}: no lines for coming home`);
-    for (const line of HOME_LINES[id]) assert.ok(!/^[A-Z]+: /.test(line), `${id}: the Secret Base strips a speaker's name`);
+    assert.ok(HOME_LINES[id]?.length >= 3, `${id}: a few speeches for coming home`);
+    for (const speech of HOME_LINES[id]) {
+      assert.ok(Array.isArray(speech) && speech.length >= 2, `${id}: a speech is a few lines`);
+      for (const line of speech) assert.ok(!/^[A-Z]+: /.test(line), `${id}: the Secret Base strips a speaker's name`);
+    }
   }
   assert.ok(mended(lit(['wastes']).towns.wastes));
 });
@@ -36,5 +39,6 @@ test('the leader who put the shard in welcomes you home first, then the guests r
   assert.match(guestLines(first)[0], /Cinder Springs says thank you/);
   const after = waystoneGuest(lit(['wastes']), () => 0.99);
   assert.ok(!after.welcome && Object.keys(TOWNS.wastes.leaders).includes(after.id));
+  assert.deepEqual(guestLines(after), HOME_LINES[after.id].at(-1), 'the day deals one of their speeches');
   assert.equal(waystoneGuest({}, () => 0), null);
 });
