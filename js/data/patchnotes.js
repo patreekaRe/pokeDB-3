@@ -43,7 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'The Clearing was rearranged: the Nietos’ home is in the south garden, the Mall is in their old spot, and the locked Sealed Gate will appear at the Mall’s old site when unlocked. The PC faces you beside the plaza, two pond lamps are gone, and the post no longer crosses the Nietos’ name board.'],
   ['hub', 'The Nietos\' house moved closer to the east avenue and grew into a blue-roofed family cottage, with a covered porch, flower boxes, and room for Linc\'s sandbox.'],
   ['hub', 'The Nietos are out of their house in the Clearing for now, even once you\'ve beaten them. They\'ll be back.'],
   ['hub', 'The Clearing tidied up: your buddy walks in to the crossing above the plaza, the Poké Mall stands off the road, trees and a fence close the gap by the cauldron, and the Ancient Tree lost a pumpkin and its stray branches.'],

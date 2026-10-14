@@ -49,7 +49,7 @@ const STOP_AT = { tx: 17, ty: 0 }, SIGN_AT = { tx: 13, ty: 0 };
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 11 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
-const PC_AT = { tx: 17, ty: 10 };
+const PC_AT = { tx: 18, ty: 8 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -90,11 +90,11 @@ const BUGS = 90;
 // the Safari gate and the Sky Pillar in the back corners, out on the meadow, each up a trail off the ring road
 const SAFARI_AT = { tx: 4, ty: -3 };
 const PILLAR_AT = { tx: 28, ty: -3 };
-// each by its top-left tile: the Nietos' house in the south garden; Kenmatta's dojo north-west, across the Clearing from
-// them (the user's ask, 2026-10-14); the Ancient Tree, the Secret Base, north-east (TREE_AT its middle tile); the Poké Mall
-// where the Nietos used to live; the Sealed Gate where the Mall used to stand, once unlocked
-const NIETOS_AT = { tx: 7, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 25, ty: 8 };
-const SEALED_AT = { tx: 2, ty: 8 };
+// each by its top-left tile: the Nietos' house east, its door on the east avenue; Kenmatta's dojo north-west, across the
+// Clearing from it (the user's ask, 2026-10-14); the Ancient Tree, the Secret Base, north-east (TREE_AT its middle tile);
+// the Poké Mall west, its doors on the west avenue; the Sealed Gate south-west once broken
+const NIETOS_AT = { tx: 24, ty: 9 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 2, ty: 8 };
+const SEALED_AT = { tx: 7, ty: 16 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
@@ -111,9 +111,8 @@ const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
 const ROADS = [
   { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
   { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
-  { a: [12, 11], b: [1.3, 11], w: AVE },                                    // west avenue across the Clearing
-  { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Poké Mall
-  { a: [MALL_TILE.tx, 9.75], b: [MALL_TILE.tx, 11], w: AVE * 0.7 }, // short walk to the Mall's doors
+  { a: [12, 11], b: [MALL_TILE.tx - 0.7, 11], w: AVE },                                    // west avenue, to the Poké Mall
+  { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Nietos' house
   { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
   { a: [4, 17.2], b: [28, 17.2], w: LANE },
@@ -1095,8 +1094,10 @@ export function cornerStall(glows = glowMats) {
 // its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
-// on the east, centred over the Nietos' old house, its doors facing the ring road and the camera
-const MALL_AT = { x: tileX(MALL_TILE.tx), z: tileZ(MALL_TILE.ty) + 0.25, turn: 0 };
+// on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
+// its doors on row 9 over tile -1 where the road from the plaza comes up to them, facing the camera
+// set back off the ring road (x 4) a little left of its tiles' middle (the user's ask, 2026-10-14: its side stood on it)
+const MALL_AT = { x: tileX(MALL_TILE.tx) - 0.7, z: tileZ(MALL_TILE.ty) + 0.25, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1388,8 +1389,7 @@ function nietosHouse(g, x, z) {
   const signX = -W / 2 - 0.72, signZ = D / 2 + 0.86;
   b.position.set(signX, 0.9, signZ);
   h.add(b);
-  // Keep the support behind the board so it doesn't cut across the lettering.
-  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.0, 6), darkWood), signX, 0.5, signZ - 0.08);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.0, 6), darkWood), signX, 0.5, signZ);
   const toyX = W / 2 + 0.72, toyZ = 0.25;
   add(new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.14, 0.62), std({ color: '#c89a60' })), toyX, 0.08, toyZ);
   add(new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.05, 0.52), std({ color: '#f0dca0' })), toyX, 0.17, toyZ);
@@ -1566,7 +1566,7 @@ function makePlaces() {
         g.add(pcMail, pcNews);
         pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
-        pc.rotation.y = 0;   // its front (+z) faces the player and the camera
+        pc.rotation.y = -0.35;   // turned a little, so its right side shows
         g.add(pc);
       },
     },
@@ -1831,9 +1831,9 @@ function buildClearing() {
 // the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues and
 // round the plaza, benches looking onto it, flower beds in the grass between the avenues
 const LAMPS = [[13, 9], [17, 9], [13, 13], [17, 13], [13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [9, 13], [6, 13], [21, 9], [21, 13], [24, 13],
-  [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18]];
+  [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18], [13, 16], [17, 16]];
 const BENCHES = [[11, 13, Math.PI / 4], [19, 13, -Math.PI / 4], [12, 18, 0], [18, 18, 0]];
-const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [24, 15, 1.1], [21, 7, 0.7]];
+const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [10, 14, 0.8], [24, 15, 1.1], [7, 14, 0.75], [21, 7, 0.7]];
 const dressTiles = new Set();
 
 function dressClearing() {
