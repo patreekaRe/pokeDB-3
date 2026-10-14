@@ -120,7 +120,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    railing round every deck edge over the drop and a pale trim inside it; a ghost town: 10 ghost folk (Gastly, Haunter,
    Duskull, Shuppet, Banette, Drifloon, Yamask, Lampent, Shedinja, Golett), Mismagius's Curio Shop for Kecleon's, the
    Withered Nursery's sleepers (Chandelure, Cofagrigus, Dusclops, Spiritomb, Gengar) on web rugs among graves, will-o'-wisps;
-   16 cries added. Its furniture shelf is still Greenhouse / Garden (Spooky is the mall's; ask the user before swapping). Branch `towns` (and
+   16 cries added. Its furniture shelf is still Greenhouse / Garden (Spooky is the mall's; ask the user before swapping). **Tidied 2026-10-14 after a second playtest** (the user's circles): the Curio Shop moved to Phil's old spot right of the Great Tree, Phil's treehouse to its own deck at the bottom middle; five locked treehouses (P, X, Y, M, N) and the lone giant and canopy clumps they circled taken out; every deck a clean rectangle and every bridge two wide, landing squarely on a deck (no notches or half-lanes); the shop and Phil's have no tree through the roof (`tree: false` on a building, `treehouse()`), since those crowns hid the walkways. Last commit on `claude/next-town-oahwio`. Branch `towns` (and
    `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. **Savanna done (2026-10-13): Sunwell Bazaar**, a
    caravan trading post (`style: 'bazaar'`), laid out unlike the other four (the user's ask): one dusty caravan road cutting
    straight across the map on the diagonal, in at the bottom left, out through a sandstone sun gate at the top right; the

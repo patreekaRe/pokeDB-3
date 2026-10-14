@@ -4889,15 +4889,17 @@ function treehouse(b, f, L, lit) {
   const art = treeFront(w, b.roof, b.kind), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
   lit.push(front);
   mesh(new THREE.BoxGeometry(w, h, d), [wall, wall, dark, dark, front, wall], 0, h / 2, 0, g);
-  // its tree, up through the back of the roof into a crown
+  // its tree, up through the back of the roof into a crown; a building with `tree: false` has none, so it hides nothing
   const tz = -f.h / 2 + 0.4, tall = h + 2.0;
-  const trunk = new THREE.CylinderGeometry(0.3, 0.4, tall + 0.1, 12); trunk.translate(0, tall / 2 - 0.05, 0);
-  mesh(trunk, bark(), 0, 0, tz, g).raycast = () => {};
-  for (const s of [-1, 1]) {   // two boughs out of it
-    const bough = new THREE.CylinderGeometry(0.06, 0.12, 1.1, 7); bough.translate(0, 0.55, 0);
-    const m = mesh(bough, bark(), s * 0.15, tall - 0.5, tz, g); m.rotation.z = -s * 0.9; m.raycast = () => {};
+  if (b.tree !== false) {
+    const trunk = new THREE.CylinderGeometry(0.3, 0.4, tall + 0.1, 12); trunk.translate(0, tall / 2 - 0.05, 0);
+    mesh(trunk, bark(), 0, 0, tz, g).raycast = () => {};
+    for (const s of [-1, 1]) {   // two boughs out of it
+      const bough = new THREE.CylinderGeometry(0.06, 0.12, 1.1, 7); bough.translate(0, 0.55, 0);
+      const m = mesh(bough, bark(), s * 0.15, tall - 0.5, tz, g); m.rotation.z = -s * 0.9; m.raycast = () => {};
+    }
+    crown(g, 0, tall + 0.35, tz - 0.15, 1.15 + rnd() * 0.2, rnd, { cols: haunted ? ['#3a5a3a', '#2e4a30', '#4a3a4a'] : CANOPY.leaf });
   }
-  crown(g, 0, tall + 0.35, tz - 0.15, 1.15 + rnd() * 0.2, rnd, { cols: haunted ? ['#3a5a3a', '#2e4a30', '#4a3a4a'] : CANOPY.leaf });
   const ink = b.home && LEADER_INK[B.town?.homes?.[b.home]?.leader];
   const crest = b.kind === 'shop' ? houseCrest('ball') : ink ? houseCrest('ink', ink, (b.name || '?')[0]) : null;
   const roof = new THREE.Group();
