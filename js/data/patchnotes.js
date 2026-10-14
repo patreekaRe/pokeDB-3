@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
+  ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
   ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
 ];
 
