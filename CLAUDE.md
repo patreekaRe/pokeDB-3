@@ -164,7 +164,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?mall=furniture|2f|corner`
   (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
-  `?town=<biome>` (`&home=`), `?nietos`, `?aerial`, `?hubat=x,y`.
+  `?town=<biome>` (`&home=`, `&aerial` the whole town from above), `?nietos`, `?aerial`, `?hubat=x,y`.
 
 ## Reference
 
