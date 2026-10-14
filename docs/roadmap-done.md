@@ -2399,3 +2399,4 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
 - **Patch notes condensed** (2026-10-14, the user's ask: small-change lines made them convoluted): every patch from 1.2
   to 1.18 and `NEXT` rewritten to 3-7 short lines each (296 lines to 140), merging tweaks into their feature's line and
   small fixes into one; 0.9 lost its smallest lines. CLAUDE.md's patch-notes rule now says keep them short and few.
+- **Mart camera on wide screens** (2026-10-14, the user's report: the camera locked on the entrance): `fitShot()` in `js/mart-3d.js` multiplied the room's height fit by `ZOOM` 0.7, so on a PC or a sideways tablet (where the height decides the distance) the back shelves were off the top of the screen; `ZOOM` now shrinks only the across-shot. Phones' shots are unchanged.

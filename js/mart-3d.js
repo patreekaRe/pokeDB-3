@@ -874,7 +874,8 @@ function fitShot() {
   let lo = 2, hi = 80;
   for (let i = 0; i < 30; i++) { const mid = (lo + hi) / 2; const [t, b] = ends(mid); if (t - b > span) lo = mid; else hi = mid; }
   const halfTan = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.aspect;
-  const d = Math.max(hi, ACROSS / 2 / halfTan) * ZOOM;
+  // ZOOM brings a phone's across-shot in, never the room's height: zoomed past `hi`, a wide screen saw only the doorway
+  const d = Math.max(hi, ACROSS / 2 / halfTan * ZOOM);
   const [, b] = ends(d);
   shot = { dist: d, half: d * halfTan, shift: (1 - b) / 2 * h - (h - low - 2), low };
 }
