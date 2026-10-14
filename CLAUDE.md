@@ -11,15 +11,10 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
 - **CLOUD**: building cards/mechanics, balance and bot checks (the sim), anything with long runs or many downloads.
   It saves the user's data and has Node, Python and Chromium. Attach both `pokeDB-3` and `pokeDB-sim`.
 - **PLAYTEST ON THE LIVE SITE** (no session needed): https://patreekare.github.io/pokeDB-3/ on their phone or PC,
-  a few minutes after a push. This is the default way to playtest. Adding `?levels` to the URL unlocks every Trainer
-  Level for good (`init()` in `js/main.js`), so the user can playtest Level 3/5 without climbing. `?coins=5000` sets the PokéCoins (the same place). **A branch's playtest link** (the user's ask, 2026-10-10: give one every time work sits on a branch): `https://rawcdn.githack.com/patreekaRe/pokeDB-3/<full commit hash>/index.html`, pinned to the pushed commit (2026-10-11: a branch link, `raw.githack.com/.../<branch>/`, served the user an old build from its cache, so they saw none of the new games), its own empty save, so add `?coins=` and what the test needs. `?safari` opens the Safari Zone for good (`save.safariPass`, read by `safariOpen()`), to test it and its leaderboard without finishing the Pokédex. `?mewtwo` unlocks Mewtwo for good the same way, to playtest its run (and the Crystal Depths). `?base` (branch `secret-base` only, until the user says) opens the Secret Base, a 3D room you decorate in place, its first room always a bed, a lamp, a rug under the window and a present of starter furniture to tap open (`FIRST_ROOM` / `STARTER_GIFT` in `js/secret-base.js`), furniture owned by kind (`secretBase.owned[kind]`, every colour of it free: a picked piece's Colour key lists its 20, `recolour()` in `js/base-3d.js`; the user's call, 2026-10-08; and a reskin family, one painter's kinds differing only by the picture on them or the thing on top, is a `set` bought and owned as one by its first kind, `own` / `DESIGNS` / `styles()` in `js/base-furniture.js`, its styles on the Colour key too: 31 sets, 1,096 kinds, 907 designs to buy; a new reskin family needs `set:`) and bought at the Poké Mall's Furniture store, 8 kinds a UTC day for PokéCoins, one of each kind (seat, table, storage, light, plant, rug, wall, and a doll or anything else; `SLOTS` / `KINDS_OF` in `js/secret-base.js`), every piece 50 to 150 (`shopPrice()` in `js/base-furniture.js` puts the authored prices on a log curve, wallpapers and floors too; the user's call, 2026-10-09) (`furnitureStock()`; the sheet's Shop tab was removed 2026-10-09, the user's call, and its Furniture tab got filter chips by kind, `KINDS_OF` / `filters()` in `js/base-3d.js`, and bigger text; since 2026-10-09 (the user's pick) the sheet's tiles are small and nameless, five across, a taken piece's name said for a moment in the hint (`named`), and a grip on its top edge or a tap on the hinge's lens folds it to its hinge (`folded`, `.base3d.folded`), a tab opening it again; wallpapers and floors with a `price` are tried on with a tap and bought with a second in their own tabs, `paperTap()`, saved in `secretBase.papers`), out of a catalogue of 19,602 painted in code, 1,096 kinds x 20 themes, painted smooth since 2026-10-08, clean and detailed like Animal Crossing (the user's call, reversing the same day's pick of detailed pixel art: the kit is `js/base-paint.js`, painters still draw in a tile's 32 units but every brush is anti-aliased, gradients, round padded cushions, true circles, fine wood grain, and `finish()` gives a soft edge and rim light; a piece's picture is `p.art(dir, s)`, `s` canvas pixels a unit: 1 for the carving and the 2D room, `HD` (4) for every texture, the store and tray (2), cached least-recently-used; `tex()` / `trim()` in `js/hd2d.js` read a canvas's `hd`; a piece's picture is `p.art(dir)`; in the 3D room and the Furniture store every piece is a real 3D model (`furnitureModel()` in `js/base-mesh.js`, 2026-10-09, the user's ask: carved pieces looked blocky, some had no side or didn't turn): a kind with a shape in `js/base-shapes.js` (seats, tables, desks, storage, beds, cushions, lamps, plants: ~150 kinds) is built from parts (rounded boxes, superellipsoid cushions, lathed legs and pots, wood grain / cloth weave, its theme's colours; a flat table's or quilt's painting on its top, a desk's or counter's `thing` its painting puffed up); any other piece is turned on a lathe where its rows are one centred run, and the rest is its rounded hull (front ∩ side silhouettes, each slice an ellipse, meshed by surface nets; a piece painted the same all round makes each run a round tube, dolls get a softened back), plants (the Plants shelf and `LEAFY`) are a lathed pot under two crossed cards of the painting, cut out by alpha (`leafyModel()`, 2026-10-09: the hull made their leaves a lumpy blob), and so are ~50 open frames, ladders, stands and spindly pieces in `LEAFY` whose hull lost their holes or tops (arches, Ferris wheel, bunk bed...; a new such kind joins the set); the hull is Taubin-smoothed (`taubin()`), its row steps read as 3D-print layers; the globe and drum kit are modelled (`B.globe`, `B.drumkit`; a part whose material has `userData.pivot` turns about its middle); round things in `ORBS` (item ball, beach ball, planets, crystal ball, globes, pumpkin...) are a true sphere (`ballOf()` finds the ball in the painting, `ballMeshes()`; 2026-10-09, the user's ask: the item ball was lumpy), their stand or stem made as before, Poké Balls (`POKEBALLS`) drawn with one button facing front, the rest wearing front and back paintings, the planets a modelled meridian and pin (`MERIDIAN`). **Furniture does things** (2026-10-09, the user's ask): `js/base-play.js`, one `PLAY` line a kind (`does`: screen, light, fire, door, note, beat, player, heal, give, steam, water, bubbles, fish, zap, spin, rock, boing...), `dressPlay()` fitting a model in `makePiece()` (a live canvas screen over its glow colour, a door cut from its painting with an inside picture, the Healing machine's six Poké Balls), `tapPlay()` from a walk-mode tap (before sitting), `tickPlay()` each frame; TV channels and arcade attract modes are `SHOWS` painters (a set with several flips to the next by itself every 12 s, `CHANNEL_MS`, a tap at once), notes and knocks are synths in `js/audio.js` (`<voice>-<n>`, `fx-*`, `FURNITURE_NOTES`); anything without a line wiggles; a lamp switched off keeps `userData.off` through `setTime()`; `tools/play.html` shows them, tap to try. Bigger rugs (2026-10-09, the user's ask): every pattern also comes as a Large rug (4x3, fringed), a Grand rug (6x4 oval) and, for the runner patterns, a Long runner (5x1): sets `bigrug`, `grandrug`, `longrunner` in `js/base-furniture-kinds.js`, 20 more kinds; so a new kind needs no model, only paintings (`p.art(dir, 1, true)` is the shadow-free one read for shapes); `js/base-model.js`'s carving is only the fallback; `tools/models.html` shows every model (`?ids=sofa,bed` four sides); a shape's `seat` is where a Pokémon sits (guests pick any seat; a tap on one walks your partner there, a floor tap gets it down: `sitPartner()` / `getUp()`), its `top` a table top small pieces stand on (`small()`, ≤ 2 tiles painted, one a tile, saved `up: 1`, at 0.72 size; moving, turning or storing the table takes them along: `ridersOf()` / `standing()` in `js/secret-base.js`, `pickUp()` / `turnRiders()` in `js/base-3d.js`); the room renders sharper and smooth (`createPost(renderer, { short: 820, crisp: false })`, 4x MSAA; its canvas drawn at the scene's own size, never 2x, and a device under ~40 fps steps down, shadows then resolution, remembered in `pokedb.base3d.low`: `keepUp()` / `stepDown()`, 2026-10-09, the user found it laggy); the first 25 kinds in `js/base-furniture.js`, the rest in `js/base-furniture-kinds.js` and the themed shelves in `js/base-furniture-rooms.js` (batch 1 of the road to 1,000: Kitchen, Garden, Pokémon Center, Gym, Beach, Spooky) and `js/base-furniture-rooms2.js` (batch 2: Bathroom, Bedroom, Office, Café, School, Winter) and `js/base-furniture-rooms3.js` (batch 3: Festival, Lab, Castle, Japanese, Toys, Types) and `js/base-furniture-rooms4.js` (batch 4: Music, Library, Pirate, Space, Farm, Underwater) and `js/base-furniture-rooms5.js` (batch 5, the last: Desert, Hot Spring, Arcade, Greenhouse, Station, Sky Palace), built from shared painters: chairs by back, rugs / mats / posters / banners / cushions by pattern or a 9x9 `MOTIFS` stamp, plants and Berry bushes, ~50 things, and 120 Pokémon dolls (60 Pokémon, small and big) sewn as real plushies (`PLUSH` in `js/base-dolls.js`, 2026-10-08, the user's ask: a build, biped / quad / ball / blob / fish, its fabrics, ears, tail and `EXTRAS` each; big head, stubby limbs, button eyes, a stitched mouth; the old `DOLLS` bitmap is only the fallback, `plush()` in the kit; in 3D since 2026-10-09 each is sewn from the same pattern, `sewPlush()` in `js/base-plush3d.js` lending `js/base-dolls.js` a 3D pen (`sewWith()`): stuffed ellipsoids, soft extruded patches hugging what is under them, bead eyes, the tail swung behind; the puffed-up dolls looked like melted candles, the user's call; a piece's `doll` is [pattern, height]), `solo`: one look, never themed; a family's `group` is its shelf, `seat` makes a Pokémon rest on it, `sky` makes a window; `tools/furniture.html` shows them all by group; a new kind is a family entry, a new theme a `THEMES` palette; `&basefresh` the first room again, `&allfurniture` every piece to hand), up to 6 Safari catches living in it (`js/base-3d.js`; it opens on Walk: just the room and a round Decorate key, and a red doormat (the only way out since 2026-10-09, the user's call: no ✕ in the base or the mall; `doormat()` in `js/hd2d.js`, shared with every place of the Poké Mall, `addDoor()` / `headOut()` in `js/mall-3d.js`, a shop's mat back to its doorstep in the hall, the hall's out to the Clearing) on a doorstep outside the front edge (no tile taken) whose tap walks your partner out over it like a Pokémon house (`makeExitMat()` / `headOut()`, 2026-10-09, the user's ask), the camera low and close on your partner; Decorate blends to a higher shot of the whole room over a sheet in the Pokédex's shell since 2026-10-09 (the user's pick: the hinge one line since 2026-10-08, no LCDs (the user's call): lens, lights, the tabs as round keys and Done as the gold pill, then the filter chips, the tiles on a pale screen; `.b3-sheet` in `css/secret-base.css`), a piece in hand or picked tucking the sheet down to its hinge, the tabs swapped for round keys Turn / Colour / Store / Cancel and the gold pill Place or Done, no hint box over the room (`.tucked`, 2026-10-08, the user's ask: the sheet, hint and key strip covered the room), the camera gliding to the new fit (`easeShots()`), Done back to Walk, `setMode()` / `SHOT`; Walk uses the Clearing's tilt and framing, Pokémon leaning back like outside (the tall walls and wooden base, `dressRoom()`, were taken out again 2026-10-09, the user's call: they liked the open diorama of the start); Decorate zooms in with a pinch or the wheel (up to `ZOOM_MAX`) and a drag on the floor pans it, the tilt-shift's focus following the view (`setZoom()` / `panBy()`, 2026-10-09, the user's ask); `&flat` the 2D fallback, `js/secret-base.js`; `&time=night`, `&fps`; `&guests` lends every Safari Pokémon as caught). On the same branch the title is a walkable 3D Clearing after PRESS START (`js/hub-3d.js`, tap to walk, or hold and drag and your partner follows the finger (`onDown()` / `onDrag()` / `walkTo()`, 2026-10-11, the user's ask), places open what the signs do, the Pokédex the round Home key on its bottom bar, the device growing out of it (`from` in `openDevice()`), the Safari gate at the back-left road's end, set back behind the Ancient Tree since 2026-10-09 (the user's ask: the Safari lobby's own gate, `safariArt()`, log posts, a thatched roof and the green board, a fence either side, `safariFence()`; the trees in that corner cleared and the road running on through the gate into a painted view of meadow, trail and snowy mountains square to the camera, `js/hub-vista.js`, lit by the hour; the camera looks on ahead up that road, `ahead` in `placeCamera()`; you walk right up to it over the cleared meadow, `MEADOW` tiles outside the grid, where a small Pokéstop of its own, `pokestop()`, starts or continues the Safari run (only the Pokéstops do, here and at the Sky Pillar: the gate and the Pillar are their own places with no buttons, a tap just says what they are; 2026-10-09, the user's call) and its leaderboard kiosk stands along the fence to the left, 2026-10-09, the user's ask); the Sky Pillar likewise back in the right corner (`PILLAR_AT`, its own meadow tiles, the trees in its corner cleared but those behind it kept), a small Pokéstop left of its door and its board the Safari kiosk in sky blues (`kioskArt(SKY_KIT)`) to the right, 2026-10-09, the user's ask, the Poké Mall out on the left, lined up under the Safari gate a step left of its road and far enough forward that its roof never hides it, facing the camera, a road from the plaza up into the middle of its doors (the plaza, `START`, and the mall moved two rows forward, level with each other, 2026-10-09, the user's ask); the left side forest is gone, open meadow (`MALL_AT`, 2026-10-09, the user's ask: in the grid it stood too near the middle; the title's fade in is off in hub mode, it showed the character select through the Clearing, and the logo greets once, `hub-greeted`; `mallBuilding()`, 2026-10-08, the user's ask: a cream two-storey shopping centre facing you, POKé MALL under a red cornice, shop-lit glass, a glass pyramid; its doors walk into `js/mall-3d.js`, a 3D hall with the Base's look and the Clearing's Pokédex bar along the bottom (`.mall-bar`: Home, How to play, the PokéCoins, the place's name; 2026-10-13, the user's ask): shop fronts on the back wall (`FRONTS`), the hall 21 x 10 since 2026-10-12 (`HC` / `HR`; the shops' floors keep `COLS` / `ROWS`) and dressed in real 3D by `js/mall-hall.js` (the user's ask: bland, small, flat plants and benches): a Poké Ball fountain in a gold-ringed plaza, palms, topiary, benches, lamps, escalators, columns, vending machines, a mall guide, and each shop's entrance built out from the wall (`dressFronts()`: sign boxes, the Furniture store's awning, the Game Corner's marquee of chasing bulbs and velvet ropes, the empty shop's barrier); the mall renders smooth (`createPost(..., { crisp: false })`) and the hall alone has reflections (`hallEnv()`); a tall phone sees more of its depth (`win` in `fitShot()`), the Game Corner the middle one, a flat violet front on the wall since 2026-10-09 (`cornerFront()`; the 3D booth stuck out into the hall), walked into since 2026-10-09; **the Game Corner's revamp** (branch `game-corner-revamp`, 2026-10-10, the user's picks: no betting coins, no prize tickets; rebuilt huge the same day, the user's ask: the shiny case was too small) opens once Meowth is met at a crossroads (`js/meowth.js`; `syncShop()` takes the tape off, Meowth's ribbon to cut; without that, caution tape, `tapeOver()`): its own 21 x 13 floor (`COLS` / `ROWS` / `DOOR` in `js/mall-corner.js`; a place may carry `cols` / `rows` / `door`, `PC` / `PR` in `js/mall-3d.js`, and a deeper one slides a hall-deep camera window with your partner, `camZ`; a place's `tick()` runs each frame), three equal screens mounted on the back wall's right half (`SHOWS`: Pokémon, shinies, perks; Poké Balls dropped 2026-10-12, the user's call) cycling through what they sell on a live canvas (`paintScreen()`), two Plinko boards left of the counter the same size as the screens and raised like them (`PLINKOS`, a live board of balls dropping on its own, `plinkoWall()`; a tap opens the game; 2026-10-12, the user's ask), the home arcade's machines along the back wall, eight each side of the counter, under the screens and the Plinko boards, Whac-a-Diglett on the left wall and the pinball table on the right (`ARCADE`, [kind, x, y, face] each, the user's layout 2026-10-12, their Secret Base 3D models, a tap and a second playing one free, the prize to take home at the counter; 2026-10-12, the user's ask), a tap and a second opening `js/showcase.js` (one thing on a Pokédex screen, ◀ / ▶, arrow keys or a swipe, Buy twice), Meowth's counter between them (a front and two sides back to the wall, Meowth inside close to the front, `COUNTER` / `DESK_W`; 2026-10-12, the user's ask: the stamp sign hid it); down the floor two free games, Voltorb Flip (`js/voltorb.js`) and Who's That Pokémon? (`js/quiz.js`, one 7-question round a UTC day), each round seeded by day and round and saved (`save.corner.voltorb` / `quiz`); the table games (`CASINO` in `js/mall-corner.js`; the lineup the user picked 2026-10-11, Roulette, Memory Match and the Gachapon cut, and Team Rocket Blast-Off on 2026-10-12): ten tap-to-stop slot machines, five down each side wall (both walls' top four taken out 2026-10-12, the user's asks; each the Secret Base's 3D slot machine since then, `machine()` in `js/mall-corner.js`, `js/slots.js`: each reel's STOP lands within `SLIP` of the symbol under the line, three 7s win `JACKPOT` 150, three Pikachu `BONUS_SPINS` free spins paying double), Poké Ball Plinko (`js/plinko.js`, `PLINKO_PAYS`, Drop them all), a Blackjack table with Meowth dealing (`js/blackjack.js`) and High-Low (`js/highlow.js`), **no betting since 2026-10-12** (the user's call: earn, never spend): every game is free, a play staking `STAKE` 10 of Meowth's house chips, and the day's first `PLAYS` of each pay what they win (slots 10, Plinko 10, Blackjack 5, High-Low 5, Voltorb Flip 5 rounds, raised 2026-10-12, the user's pick; the quiz's one round and the scratch card too), up to `DAILY_CAP` 500 a UTC day all told and `GAME_CAP` 150 from one game (`js/data/corner.js`, `capPay()`; `payGame(coins, game)` in `js/corner-pot.js`, `save.corner.pot` `{ day, won, games }`), past them played for fun (`funLine()` / `sayLine()` / `playLabel()` in `js/casino-pot.js`); an average day ~380 since the raise (~250 before) (`averageDay()` in `tests/corner.test.mjs` works it out, under a winning run); the odds about 95% back (`js/data/casino.js`, `tests/casino.test.mjs`), every roll from the day and the play's number (`playRand()`), paid the moment it's rolled, a hand in progress saved (`slHand` / `bjHand` / `hlHand`); plays counted in `save.corner.bets.plays`, a bonus spin its own seed (`freePlay()`), winnings counted in `coinsEarned`; past the paying plays a game is played for fun, earning nothing (prize tickets for them were tried and taken out the same day, 2026-10-12, the user's call: Plinko could be spammed for them; an old save's tickets are cashed in at `TICKET_COINS` 3 each when the counter opens, `cashTickets()`), and **Meowth's prize counter** sells for PokéCoins (`buyPrize()` in `js/corner-pot.js`; a showcase row since 2026-10-12, the user's ask: `showcaseSource()` in `js/showcase.js` lends it a row with painted `art`, games first). **The game prizes are playable at home** (2026-10-12, the user's ask): a walk-mode tap on one in the Secret Base opens its game as free play (`js/home-arcade.js`, `GAMES`, a new playable prize a line there; `setHome()` / `atHome()` in `js/corner-pot.js`: no paying plays, stamps, saved hands or Voltorb boards, records still kept), Who's That Pokémon? endless with a streak (`openEndless()` in `js/quiz.js`, record `quizStreak`). **The home arcade** (patch 1.7, 2026-10-12, the user's ask: "a lot of arcade games to place in their home", all ten offered): twelve more prize machines, 450 each, played at home (and ten of them free in the Game Corner since 2026-10-12, `ARCADE` in `js/mall-corner.js`), each a file on `runArcade()` in `js/arcade-kit.js` (the cabinet window, loop, input in canvas units, Score / Best kept as record `arc-<id>`): Whac-a-Diglett `js/arcade-whack.js`, Pidgey Flap `arcade-flap.js` (`flapcabinet`, in place of Magikarp Fishing, 2026-10-12, the user's call; `RENAMED_FURNITURE` in `js/storage.js` carries an old save's `fishingcabinet` over), Psyduck Pong `arcade-pong.js` (`pongcabinet`), Gastly Maze `arcade-maze.js` (`gastlymaze`; the store's own `mazecabinet` is decoration), Snorlax Stacker `arcade-stacker.js`, Ponyta Dash `arcade-runner.js`, Voltorb Memory `arcade-memory.js`, Slowpoke's Claw Machine `arcade-claw.js`, Poké Ball Skee-Ball `arcade-skeeball.js`, Pokémon Pinball `arcade-pinball.js`, Pikachu Volleyball `arcade-volley.js`, Unown Word Search `arcade-wordsearch.js`, and since patch 1.8 (2026-10-12, the user's yes to eight ideas) Poliwag Crossing `arcade-crossing.js`, Ekans Trail `arcade-snake.js`, Beedrill Invaders `arcade-invaders.js` (a FIRE key under the ground since 2026-10-12, no auto-fire: the user found it annoying), Electrode Breakout `arcade-breakout.js`, Jigglypuff's Sing-Along `arcade-rhythm.js`, Where's Ditto? `arcade-ditto.js`, Geodude Bowling `arcade-bowling.js` and Poké Puzzle `arcade-puzzle.js`, and since patch 1.9 (2026-10-12, the user's pick) Pachirisu Berry Catch `arcade-berry.js` (`berrycabinet`: catch falling Berries, combos up to x5, Pinecos and dropped Berries cost one of 3 hearts), which took Jigglypuff's Sing-Along's place on the counter and the Game Corner floor, and Squirtle Bubble Shooter `arcade-bubble.js` (`bubblecabinet`, after Puzzle Bobble: fire bubbles, three of a colour pop, the ones left hanging drop, the ceiling a row lower every few shots, Puzzle Bobble's levels since 2026-10-13, the user's pick: 20 boards laid out by hand, `BOARDS` in `js/data/bubble-boards.js`, never added to, the ceiling itself lowering them a row every `push` shots (`drop`), coming round recoloured and a shot quicker each lap, `boardCells()`, `tests/bubble.test.mjs`), which took Unown Word Search's (their cabinets `B.arcade`, a `SCREENS` picture each in `js/arcade-art.js`); seven have weekly leaderboards (2026-10-12, the user's pick: Ponyta Dash, Pidgey Flap, Snorlax Stacker, Poké Puzzle, Beedrill Invaders, Ekans Trail, and Squirtle Bubble Shooter the same day; `ARCADE_GAMES` in `js/data/leaderboard.js`, whose ids `firestore.rules` lists too: `arcadeBoard/<week>_<game>_<uid>`, a player's best of the week, raised by a higher score; posted from the kit's game over by `postArcadeScore()`, a 🏆 key on those cabinets opens `openLeaderboard(0, 'arcade')`); every cabinet is full screen and a game's own big keys sit under its screen (`pad`, e.g. Bubble Shooter's SHOOT; 2026-10-12, the user's ask), no Game Corner game closing on a tap outside it (`openPanel()`'s `outside`, the showcase and guide only); every cabinet's How to play is an attract screen with the game's own preview running (`helpScreen()` in `js/arcade-kit.js`); every cabinet wears a lit marquee, the game's Pokémon on a sunburst and its name in a gold logo (`MARQUEE` in `js/arcade-kit.js`, a new game a line there); a game's still parts are painted once and stamped (`stamp()` in the kit: no gradients or hundreds of paths a frame); their machines are painted after the Arcade shelf's `cabinet()` in `js/base-furniture-rooms5.js` (the store's own Pinball, Claw machine and Skee-ball stay decoration) (`js/prizes.js`, a tap on Meowth when no scratch card waits; `PRIZES` in `js/data/corner.js`: only the games since 2026-10-12 (the user's call): the slot machine, Voltorb Flip machine, Plinko board, Blackjack table, High-Low table and Who's That Pokémon? machine and the arcade machines but the claw and skee-ball (retired the same day, the user's call) and Jigglypuff's Sing-Along and Unown Word Search (retired the same day too, the user's call), 450 each, every one shown on the screen as its 3D model turning (`turntable()`, one small renderer); the jackpot sign, Lucky 7 block, casino carpet and Gen 1's prize dolls it sold before are `RETIRED_PRIZES`, kept by whoever bought them, never offered again (`retired` in `js/data/furniture.js`, skipped by `lockedEarned()`); never sold in the store, earned through `js/data/furniture.js`'s `prize` source, `save.corner.prizes`; the six casino games are modelled in 3D since 2026-10-12 (`B.slot`, `B.cardtable`, `B.plinko` in `js/base-mesh.js`, Voltorb Flip and the quiz on `B.arcade`, their pictures in `js/arcade-art.js`), the Plinko board the first wall piece with a model (`makePiece()` in `js/base-3d.js` hangs it, its back to the wall)); every game keeps records (`record()` / `better()`, `save.corner.best`, `RECORDS`, a 🏆 line under each game, `bestLine()`), read by 8 Game Corner badges (`group: 'corner'`, popped up by `badgeNews()`); no leaderboards in the Game Corner (a daily High-Low one was taken out the same day, the user's call); **its regulars** (2026-10-12, the user's ask: alive, never crowded or chatty): `js/corner-crowd.js` (made by `goPlace('gc')` in `js/mall-3d.js`, `crowd.enter()` / `tick()` / `tap()`) keeps `CROWD` 5 of the day's 12 (dealt from `PATRONS` by the UTC date, the five by the hour) at the games, wandering, at Meowth's counter (it answers, `MEOWTH_REPLIES` / `MEOWTH_FOR`), one leaving and another walking in every 45-90 s, only one walking at a time and none stopping by the doormat (`oneWalker`, 2026-10-13, the user's ask); one bubble at a time (`.crowd-bubble`, the ghosts' `.spook-bubble`), 9-17 s apart, now and then a two-Pokémon `CHATS` talk, a word to you nearby, once a visit one walks over to say hi; a tap talks in the speech window; walking up to its game makes it step aside; ~730 lines in `js/data/corner-crowd.js`, a new regular a `PATRONS` entry; Meowth's daily stamp card (a stamp for each different game played that UTC day, `stamp()` / `STAMPS` 5 in `js/corner-pot.js`, `save.corner.stamps`; table games stamp in `stake()`), shown on a sign on the wall just over Meowth's head (`stampSign()`; over it since 2026-10-12, the user's layout, the arcade leaderboard screen, `boardScreen()` cycling `ARCADE_GAMES`' top three from `arcadeTop()` in `js/leaderboard.js`, a tap opening the board, and the GAME CORNER sign moved up over the pink tube), which a full card turns into a scratch card handed over by a tap on Meowth (`KEEPER.special`, `stampState()` in `js/scratch.js`, `scratchCard()`, always a win, `save.corner.scratch`); every game has a How to play card behind a "?" in its head, opened by itself the first time per device (`firstLook()` / `helpKey()` / `helpCard()` in `js/corner-panel.js`); Plinko is 12 rows on a canvas, its bin dealt from `PLINKO_ODDS` (flatter than a coin flip a peg) and its bounces shuffled to land there (`plinkoDrop()`), the ball falling under gravity between strikes; the slot cabinets are `cab()` in `js/mall-corner.js`; no tilt-shift blur (`setPlace()` in `js/mall-3d.js`, 2026-10-12, the user's call); a Pokémon casino carpet (crimson and gold, Poké Balls and card suits, a royal blue runner; `floorArt()`), the side cabinets and neon pillars gone (2026-10-12, the user's call); the floor four tables, two a side of the runner (the user's ask, 2026-10-12): Voltorb Flip and Who's That Pokémon? touchscreen tables behind (`tableScreen()`), Blackjack and High-Low card tables in front, each its name on its front panel (`tableFront()`), 1.5 tiles deep (`TABLE_D`); the slot machines down the side walls facing in (a slot's `face`, `cab(..., turn)`; a spot's `frame.ry` turns the gold frame with it, `pick()` in `js/mall-3d.js`); no Deal of the Day (taken out 2026-10-12, the user's call; an old save's `corner.deal` is ignored); rules in `js/data/corner.js`, `tests/corner.test.mjs`; game panels share `js/corner-panel.js`; a Game Corner spot of `kind: 'game'` opens its `game`; **the Furniture store opens after Smeargle's housewarming** (2026-10-09, the user's ask, Animal Crossing's way): the first time in the Secret Base Smeargle is at an easel painting, says in a cream speech window (`.b3-talk`, a tap a line) that it is opening a shop, then walks out over the doormat (`startVisit()` / `sayNext()` in `js/base-3d.js`); the store opens the next UTC day (`secretBase.shopOpens`, `meetSmeargle()` / `shopOpen()` in `js/secret-base.js`; `syncShop()` in `js/mall-3d.js` takes the tape off and repaints the plaque; till then its door has a note from Smeargle and a countdown), on its first open day a red ribbon crosses its front, Smeargle beside it asking you to cut it, a second tap snips it with confetti and leads you in (`buildRibbon()` / `ribbonTap()`, saved `ribbonCut`; `?ribbon` puts it up for a page load; 2026-10-09, the user's ask), and Smeargle greets the first visit (`shopGreeted`); `?shopopen` opens it for the page load, `&basefresh` brings Smeargle again, `?mall=furniture` still goes in (`js/mall-corner.js`: a neon arcade, confetti carpet, the cabinet's very items and prices (`cornerEntries()` / `buyCorner()` in `js/shop.js`) bought in person with a tap and a second: skins and Poké Balls in a lit PRIZES case, every shiny in a SHINY case (silhouettes till owned), a perk machine each, one dark machine waiting for the prize games, and Meowth (`KEEPER`) behind the prize counter saying every line; a gold frame marks the pick; `?mall=corner` opens it straight away; the cabinet app in the Pokédex stays), the west front the Furniture store since 2026-10-09 (`js/mall-furniture.js`: walked into, laid out like Animal Crossing's Nook's Cranny since 2026-10-09 (the user's pick): restyled after New Horizons' Nook's Cranny on 2026-10-09 (the user's ask): cream plaster between timber posts over light wood wainscoting, a plank floor, leaf-green trim (rose on 2F), a green leaf sign and counter, few things on the walls; the day's stock near life size on 2 x 2 wooden platforms with a sage mat, four along the back and four in front, the tallest at the back, each with a big price card on an easel (`BAYS`, `daisTop()`, `tagArt()`), a counter with a shopkeeper Pokémon behind it saying every line in a cream speech window with its name tag (`KEEPERS`: Smeargle, Minccino upstairs; `talk()` in `js/mall-3d.js`), `?mall=furniture` / `?mall=2f` opens it straight away (`&stock=id,id...` stocks it with those pieces, 8 a floor, for the page load); one of each piece a player (2026-10-12, the user's call: once `owned[p.own]` it poofs off its platform for a SOLD OUT board, `poof()` in `js/mall-3d.js`, `spot.sold` in `buildFloor()`; more copies are the PC's Duplicate; and never dealt again: `dealDay()` leaves owned designs out, so each player's stock is their own, dealt once a UTC day and kept in the save's `furnitureDay`, so a buy stays sold out till the next restock); a tap
-  says the price and a second asks in a buy window with its picture, Buy / No (`ask()`, 2026-10-09, the user's ask; the shops' tilt-shift blur is gentler than the hall's, no click sound on walking, the shopkeeper's and Smeargle's speech text big, the second floor has no doormat, its way out the lift); a lift at the back right, its shaft running up to the top of the walls (`liftShaftArt()`; a booth looked odd, the user's call) (`LIFT` in `js/mall-furniture.js`, since 2026-10-09: the stair it replaced sank your partner into its treads, the user's call; its doors slide open with a ding, your partner steps in, they shut, the dial swings and it steps out on the other floor, `liftTap()` / `rideOn()` in `js/mall-3d.js`) roped off till `secretBase.upstairs` is bought for 1,000 rides to a second
-  floor of 8 more, `furnitureStock(day, 2)`; one place is shown at a time, `goPlace()`, and rays only test it), the east
-  one a "Coming soon" shutter (a new shop is a `FRONTS` line and its painting in `wallArt()`), a mezzanine with the upper floor's lit shops; tap to walk, a tap on a front goes in (no bottom pill since 2026-10-09), the doormat back out to its doorstep, `leftPlace()`), New game a Pokémon Go Pokéstop (`stopDiscArt()`, 70% size: a blue holo disc over a post, bobbing; a tap spins it three turns, a violet flash, then your partner walks out under the Whispering Clearing's gate and New game (or Continue) opens, `spinStop()` / `walkOut()`; back from the select it walks in again, `walkBackIn()`), the Whispering Clearing's gate across the front since 2026-10-09 (the user's ask: `GATE_AT`, `clearingGateArt()`, a torii-like log arch with a hanging WHISPERING CLEARING board and wind chimes lit at dusk, a fence and hedge either side closing the hub off; since 2026-10-09 the gate is scenery you walk under (`buildGateway()`, no place), New game's Pokéstop stands outside it right of the trail (`STOP_AT`) and a Scarlet / Violet-style route sign left (`SIGN_AT`, `routeSignArt()`), the user's ask; the ground runs four rows further down to it, walkable through `MEADOW`, and the camera stops the ground's front edge at the bar's top, not under it, `fitCamera()`), the side forests set back a tile, the Sealed Gate once broken right, no name tags since 2026-10-08: the bottom bar is the rooms' Pokédex bar (`placeBar()`, `.hub-bar`, the room bar's classes): the hinge's LCD names the place your partner walks near (`SEEN`; no gold pill since 2026-10-08, the user's call: a tap on the place does it), on the same line (2026-10-09, the user's layout) small Home and How to play keys that never change into anything else (Home wearing the yellow `.dex-news` "!"; `roundKey()` in `js/smooth-icons.js`), the PokéCoins alone on a mini LCD, the place's LCD on the right; under it a saved run's LCD (its Pokémon, `place` (biome or mode) and floor over a full-width HP bar, the Escape Rope, `smoothIcon('run')`, on the right) that folds down into the bar while there is no run, like an auto-hiding taskbar (`.hub-bar.no-run`, `.hbar-fold`); a saved run is continued where it was started (2026-10-08, the user's call: a Safari run at the Safari gate, a climb at the Sky Pillar, any other at the Pokéstop; `runAt()` in `makePlaces()`, `asks()`), and a tap on that place shows just Continue (the rooms' glowing gold pill, `.room-ok`) and New game on a small red Pokédex shell, no words (`.hub-card.ask`, `showCard()`); the card above it only says what a place is, notice boards by the Safari gate (a white roadside kiosk, `kioskArt()`) and the Sky Pillar (a red pin marker, `pinArt()`; both drawn smooth, not pixel, on `fine()` canvases, and since 2026-10-08 so are the Safari gate, the Sky Pillar and the Ancient Tree, each lit part painted on its own `shine()` map) opening their leaderboards, its light, fireflies and sounds by the hour, a legendary flying over now and then; the Ancient Tree's door walks into the base and its ✕ back out, your partner stepping out of the open door onto its doorstep (`liveLeaving()`, 2026-10-09) (bought once for 1500 PokéCoins, the save's `baseOwned`, `buyBase()`: till then the door is boarded up and a tap asks to buy; over the door a broken "Home" sign hangs off one nail by a frayed rope, swinging left and right, and buying swings it up level and mends it, `homeSignArt(fixed)` / `liveSign()`; 2026-10-08, the user's ask; `?base` still opens it straight away); shared HD-2D parts in `js/hd2d.js`); `?signs` shows the signs for that page load, Settings' Title screen (`titleHub`) for good, `?walk` turns it back on. `?lockdepths` hides the Depths' Pokédex tab again (forgets its Pokémon and `deepestBiome` 4), for a save an old playtest revealed it on. `?smooth` paints the Clearing in the pilot smooth style on that device for good (`js/smooth-clearing.js`, the Sky Pillar lobby's look: full resolution, gradients, glows; it draws in the pixel scene's own units over scene.js's layout and `life`, so sprites, pads and landmarks stay put; events in the Clearing and the Pokédex stills stay pixel); the hybrid (the default since 2026-10-08: Settings' Display has Scenery, Hybrid / Pixel, the save's `scenery`, `hybridScenery()` in `js/prefs.js`; `?hybrid` / `?pixel` set it too, and the title's light follows it) keeps every biome's pixels (the Clearing, Shrine, Wastes, Depths, Ruins, Thornwood, Savanna, the Safari's areas; not events' rooms) and lays smooth light over them instead (HD-2D, `js/hybrid-light.js` on `#scene-light`, a canvas screened over `#scene-bg`: sun / moon bloom, glowing fireflies and pollen, haze on the far hills, a dawn / dusk tint (half strength outside the Clearing, less under a roof), and a bloom read from the frame itself on every pixel in one of the look's `GLOWS` colours: lava, lanterns, crystals, runes, preludes included, so a new biome needs no light code; the Clearing's Deep Woods beams and prelude are `js/hybrid-clearing.js`), saved the same way; the two replace each other, and `?pixel` turns both off. `?time=dawn`, `day`, `dusk` or
-  `night` pins the day/night cycle for that page load (`js/daytime.js`); `?season=halloween` / `winter` / `none` pins the Clearing's seasonal dress (`season()` in `js/season.js`, October and December by the date; its look in `js/hub-season.js`; Halloween's yard since 2026-10-10, the user's ask: giant jack-o'-lanterns, a pumpkin patch and scarecrow, a candlelit graveyard, a cauldron (a real 3D model since 2026-10-10, the user's ask: `makeCauldron()` in `js/hub-cauldron.js`, its brew swirling and bubbling, a ladle stirring itself, its fire and brew lamps; a tap plays the next of `TRICKS` in order, cycling (the user's call, 2026-10-10): bubbles, a new brew colour, sparks, boiling over, a ghost rising out, smoke rings), hay, lanterns, a dead tree, glowing caps, each on its own blocked tile (`yardTiles` in `dressSeason()`), grouped since 2026-10-11 into a few spots, mirrored pairs framing the trail and the open ground left clear (the user's call: scattered everywhere it read as clutter), and `js/hub-spooky.js`: Gengar, Litwick, Duskull and Sableye standing about, one strolling at a time in turn, never stopping on or beside a doorstep (`byDoor`, 2026-10-13, the user's ask), a short line now and then in a little cream speech window over the speaker's head (`.spook-bubble`, placed each frame by `place()`; its pop-in class is `spook-in`, never `pop`: screens.css's global `.pop` is battle's damage number at opacity 0, which hid every bubble), a line or a story when tapped in the Furniture store's speech window (`.mall-line`, `.spook-foot` over the bar), and the first time the Clearing shows on a page load the next of the four in turn (`pokedb.spookGreeter`, per device; it was always Sableye, the nearest) walks up to your partner and greets you by nickname (`{name}` in a line is `trainerName()`, mixed through their lines too), their ~400 lines in `js/data/spooky-lines.js`, bats round the Ancient Tree). `?event=move-tutor` (any event id) walks a throwaway, never-saved run straight into that ? room, fights included (`peekEvent()` in `js/run.js`). `?bossfight=wetland` (any Safari area, `&starter=id`) walks one straight into that area's boss fight, prelude and arena included (`peekSafariBoss()`); `?bossfight=depths` (`&hp=0.1`) does it for Eternatus, the final boss, with Mewtwo. `?tower=25` starts a throwaway Sky Pillar climb at that floor (`&hp=0.1` shrinks every foe's HP; `&aug=echo,nova` hands it those augments; `peekTower()`). `?climb` plays the climb's opening film (Climb's, `js/climb-intro.js`) after PRESS START, then that throwaway climb from floor 1. `?biome=ruins` (any biome, `&starter=id`, `&level=0-5`, `&slot=1` / `2` for a pool biome at that fork) starts a throwaway run in that biome (`peekBiome()`). `?descent=mewtwo` plays Mewtwo's fall into the Crystal Depths (after its Biome 3 boss), then the Depths' film and map (`peekDescent()`). `?travel=shrine` (the biome walked to: `?travel=ruins`, or `?travel=wastes&from=ruins` for the Ruins' road; `&starter=id`, `&stage=`) plays that journey film after PRESS START with its first-time lines, never saved; `&at=0.5` holds it at that point of the trip (`peekTravel()` in `js/main.js`). `?scene=tutor` (any `PLACE_ART` room: `kombat`,
-  `center`...; `&biome=shrine` / `wastes`, or a Safari area) shows just that room's painted scene, without starting a run. `?area=wetland` (any Safari area, or a main biome: `?area=depths` walks the Crystal Depths;
-  `&stage=0-3`, `&kind=boss`) shows that area's scene the same way, and each tap walks on a floor (11 an area, the boss's last), then the next area (`peekSafari()` in `js/main.js`); each area opens with its intro film and each new place with its walk-on (`js/safari-intro.js`; `&intro=0` skips them); the boss's place then plays its boss prelude (a tap replays it, a tap on the label walks on). `?gate=380` shows the Sealed Gate at that HP; `?strike=120&gate=50` plays its attack scene (here, the
-  break that frees Mewtwo) after PRESS START; `?gate=0&strike=0` the open gate throwing your Pokémon back. Neither is saved.
+  a few minutes after a push. This is the default way to playtest. **A branch's playtest link** (the user's ask,
+  2026-10-10: give one every time work sits on a branch): `https://rawcdn.githack.com/patreekaRe/pokeDB-3/<full commit hash>/index.html`,
+  pinned to the pushed commit (2026-10-11: a branch link, `raw.githack.com/.../<branch>/`, served an old build from its
+  cache), its own empty save, so add `?coins=` and what the test needs. Every URL flag is under "Playtest URLs" below.
 - **LOCAL** (their Windows PC, `serve.ps1`): only for visual work they want to see change live as it's edited
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
@@ -72,851 +67,119 @@ live site.
 - **Screens** (`js/ui.js`): a `SCREENS` array of section ids; `showScreen(id)`
   hides all but one via the `hidden` attribute. The DOM isn't destroyed,
   just hidden, so screen state survives being hidden.
-- **Dialogs**: native `<dialog>` elements. Most use `openDialog`/`closeDialog`
-  in `js/ui.js`, which wrap `.showModal()`/`.close()`. The **shop dialog is
-  the exception** — it uses `.show()`/`.close()` directly (non-modal), so it
-  floats above whatever screen is showing without blocking or hiding it.
-  That's intentional: don't "fix" it back to `showModal()`. The one exception: the Safari's prep window opens it with
-  `toggleShop('balls', { modal: true })`, since it must pop up over that modal window (`docs/reference/safari.md`).
-  **Every window closes on a tap outside it** (the user's call, 2026-09-27): `js/ui.js` closes any modal dialog when
-  a press starts and ends on its backdrop (with the `cancel` sound); the result and yes/no windows click
-  their stand-in button instead (`OUTSIDE_TAP`: Main menu, No). The Game Corner, having no backdrop,
-  closes on any tap elsewhere and swallows that tap (`initShop()`; the shop button and locked starters still toggle
-  it). The Bag, zooms and
-  focus layers already did. **The Collection is a device** (2026-10-05, three passes): the
-  red handheld grown into `js/device.js` (`#collection-screen`, fixed, full screen on phones with a thin frame, a 500px
-  device on the title's sky wider). It comes up closed (its cover shows your partner and badges, an LED blinking for an
-  unseen badge; a beat later, or on a tap, it swings open) and the screen boots ("HELLO, NAME!") onto
-  the home screen (`js/collection.js`): the owner's ID strip (the Trainer Card; the lid's yellow light blinks for an unseen badge) and a 3x3
-  grid of apps, each with its count, "???" + a padlock until unlocked (a tap says how). Its app and dock icons are smooth vector art, `smoothIcon()` in `js/smooth-icons.js` (the user's call, 2026-10-05: no pixels; since 2026-10-06 every emoji inside it too, `SMOOTH_EMOJI` swapped in by `js/icons.js` under `[data-smooth-icons]`, cards excepted; Record Book and Hall of Fame are a book and a crown, no longer the newest winner's sprite). `openApp()` slides an app over the home
-  screen: Pokédex (`pokedexApp`: `#dex-list` / `#dex-device` move into the screen, the page drops its lid, and move back
-  into `#dex-dialog` when its window opens), Relics and Items (`bagApp()` in `js/bagdex.js`, 2026-10-06: the Pokédex's banners and
-  handheld, a banner per group in flat colours, each thing blown up on a screen in its group's colours, sprites trimmed by `thingArt()`), Stats (`statsApp` in `js/statsdex.js`, 2026-10-06: "Trainer Data", five banners onto the handheld, seven-segment digits counting up, an HP-bar win rate, boss badge slots, a PC Box of champions), Achievements (`achievementsApp` in `js/records.js`, 2026-10-06: the same banners and handheld, one goal per screen, a gold UNLOCKED stamp; Relics, Items and it all run on `shelfApp()` in `js/bagdex.js`), Trainer Card (its `open*(into)` draws into
-  the screen instead of opening the window), and since pass 2 Moves (`movesApp()` in `js/cardindex.js`, redone 2026-10-06: the Pokédex's green LCD, smooth type keys,
-  the Index's All / Attack / Skill / Power filter and Cost / A-Z sort (saved), then the real cards in a
-  grid, ??? silhouettes after the known ones, a tap zooms one; the old Index window was retired in D2, 2026-10-07), the Safari
-  Pokédex (`safariDexApp`, the Pokédex's banners and handheld on `shelfApp()` since 2026-10-07: a painted banner per area;
-  no window of its own, and no longer a banner in the Pokédex app) and the Record Book / Hall
-  of Fame (`recordsApp()` in `js/halloffame.js`, Pokédex style on `shelfApp()` since 2026-10-06, the user's picks: the Record
-  Book a banner per Trainer Level, the Crystal Depths and Lost runs, one run a screen; the Hall of Fame no banners, one gold
-  handheld, each champion on a gold pedestal under a spotlight on a starry screen, A replays its win scene. A tap on the
-  screen, A in the Record Book or "Full record" slides the run's full page over it (shelfApp's `sheet`), B closes it; since 2026-10-06 that page is the handheld too,
-  `.bdx-sheet` in `css/menus.css`: a red lid, the run's Pokémon on a screen in its type's colours, its numbers, relics,
-  items and HP chart on green LCDs, the deck on a dark screen, gold in the Hall of Fame; the loss recap window outside the device is unchanged).
-  D-pad left / right steps Moves' and the Safari's tabs. Only the Leaderboard and zoomed cards open over it. The
-  hardware: D-pad (the highlight, shown once used: `.keyed`; in an app it steps a Pokédex page or scrolls), A opens, B
-  backs out (a Pokédex page to its biomes, an app to home, home shuts the device with the screen collapsing and the cover
-  closing). Escape is B; a tap on the sky around it shuts it (pointer events, as iOS Safari sends no `click` for a tap
-  on a plain section). Shut, the screen is hidden again so the title's keys aren't taken. Pass 3: the old Poké Ball menu's
-  Collection (one button, which replaced its Pokédex / Stats / Achievements) and the Bag's Trainer Card open it straight into an app (`openDeviceApp()`: the run's
-  biome page, a Safari run's area) as an overlay over whatever is showing (`.over`, z-index 100, never `showScreen()`, so a
-  run underneath is untouched); B out of the Bag's Trainer Card shuts it. **The top bar's Pokédex** (2026-10-05, the
-  user's call: `#brand-btn`, an 18x18 pixel handheld, replaced the Poké Ball and its whole drop-down menu) opens the
-  device over any screen on its home screen (`openPokedex({ dex, safari })` in `js/collection.js`: its Pokédex / Safari apps
-  open on the run's page). Under the app grid a **dock** (`dockRow()`): Settings and Help (Settings borrows
-  `#dev-settings` from `#dev-parts` in `index.html` while open; Settings is a games' OPTIONS screen since
-  2026-10-06, a card per group (Trainer: the nickname box, `setTrainerName()`; Sound: mute, Music / Effects / Cries bars with LCD numbers; Display: Scenery (Hybrid / Pixel), Device colour (the shell in six colours: `data-shell` on `<html>` swaps the `--shell-*` variables in `css/base.css`, which every red part of the device, Pokédex and full record reads; a new red part there must use them; a shell that would swallow its buttons also swaps `--pad` / `--pad-on` (D-pad) and `--btn-a` (A and round buttons): Black gets a grey D-pad and red A, Blue a pink A), Text speed, Day & night, Flashing & shake (`calmFx()` in `js/prefs.js`, `html.calm-fx`: Reduced, or reduced motion, stops every shake and strobe and softens white-outs to one faint fade; the scene painter's preludes skip their white frames via `whiteOut()`, and the evolution plays its still version; a new flash or shake should check it);
-  Battle: speed, animations (`battleFx()` in `js/prefs.js`: off skips move effects and slow intros, like reduced motion; a new battle effect should check it), end-turn warning, Vibration; Save: Sign in, Abandon run only over a run, and Reset save (two asks, `resetAll()`; keeps Settings' choices, `PREF_KEYS` in `js/storage.js`); `js/settings.js`'s `OPTIONS`); Help is How to play, an app on `shelfApp()` since 2026-10-08, `howtoApp` in `js/howto.js`: a banner per topic (Your Run, Battle, Cards, Types, The Map, Money, Going Further), one tip a screen in smooth vector art, About & credits above the banners, each banner's pictures its own (`bannerArt()`: big and huddled, a Pokémon in the middle, Cards the old fanned hand of a Fire, Grass and Water card); the title's ? bubble on the New game sign (`helpRow()` in `js/title.js`) and the first launch open it over the title, `openHowto()` in `js/collection.js`; numbers come from the data, a new mechanic worth explaining is a `tip()` line), the Game Corner, and only over a screen (`deviceOver()`) Main
-  menu, which puts the device away at once (`hideDevice()` in `js/device.js`). The Game Corner is an app since 2026-10-07
-  (the user's call: it closed the whole device): `cornerApp` in `js/shop.js` moves the cabinet's CRT into the screen, the
-  D-pad is the joystick, A or its Buy pill buys (twice), B goes back home; the top bar's and the title's Game Corner
-  still open the cabinet. The character select has no top bar (2026-10-07, the user's call): its device reaches the top,
-  the coins sit on its LCD (`.sel-coins`), and a locked skin's Game Corner button opens this app on that skin
-  (`aimCorner()` + `openDeviceApp('corner', …, refreshSelect)`), B shutting it back to the select. The old menu's
-  Index is gone (the Moves, Relics and Items apps are it). **The Pokédex** (`#dex-dialog`, `js/pokedex.js`) is full screen with its own ✕, no backdrop: a banner per biome opens a red handheld on that page, and Escape there goes back to the banners (2026-10-05). Pass 2 (same day): each banner and the device's screen show a still of the biome's own scene at the current hour (`sceneShot()` in `js/scene.js` paints one off-screen and puts the live scene back; wilds in the first two places, an Alpha in the third, a boss in its arena, on its battle pad); a banner zooms up into the device, a front cover swings open on its left hinge with the `dex-on` blip, the lights blink and the screen flickers on (`bootDevice()` / `shutDevice()`, reversed going back); entries slide across the screen and their text types itself out (a tap finishes it). Reduced motion skips it all.
-- **The title opens on a shut Pokédex** (2026-10-08): the first tap powers it on (logo and hello on its screen), then it
-  lifts away onto the menu; a first launch dives into its screen, onto How to play, so the device boots once. Smooth light
-  over the title's pixel sky is `js/title-light.js`. Detail in `docs/reference/title-screen.md`. On `secret-base`
-  (2026-10-08, the user's calls): `#title-screen` is not `hidden` in the HTML, so the shut Pokédex is the first paint (the
-  select's empty device showed while the scripts loaded), and its `hub-mode` class keeps the old pixel sky, signs and
-  flyer off from that first frame; `showTitle()` builds the walkable Clearing behind the veil at once (`showHub(…, { hold:
-  true })`: no partner, no keys), and after the power-on `enterHub()` walks your partner in from the bottom of the screen
-  as the logo comes up. A new player (no `seenHelp`, no nickname; `?onboard` any time) powers it on straight into setup
-  (2026-10-11, the user's ask: `onboard()` in `js/title.js`): WHAT'S YOUR NAME? then CHOOSE YOUR BUDDY of the three free
-  starters, saved as the nickname and the PC's walking buddy (`refreshBuddy()` in `js/hub-3d.js` swaps it in before it walks
-  in); the opened screen shows the walking buddy over the hello in place of the title, hopping with its cry (`showBuddy()`).
-  Names are in capitals everywhere (`upper()` in `js/leaderboard.js`, every name box `text-transform: uppercase`). How to play, from the hub's ? or the first launch, grows out of / shrinks back into the bar's
-  `?` key beside Home (`openHowto(from, onClose)`, `bootHowto(from)`, `hubDex()`).
-- **Every way in boots the device** (2026-10-07, the user's ask): New game (the select, `newGame()` in `js/main.js`),
-  Continue (the map, `continueGame()`, not a Sky Pillar climb) and the Safari / Sky Pillar lobbies open under the
-  Collection's cover (`coverArt()` from `js/collection.js`), which swings open onto the screen saying "HELLO, NAME!"
-  (`bootDevice(host, { below: lid, screen })` in `js/device-boot.js`; a tap on the cover opens it at once). A film over
-  the device boots it after it ends (`after`: the film's promise keeps the device hidden till then): Continue waits for a
-  place's walk-on (`continueRun()` returns it), a new run's map boots after the first biome's film (`startBiome()`), and after any perk screen in front of the map (Relic Charm, Chansey's Gift, Move Tutor Notes: `bootMap()` in `js/run.js` waits for `showMap()` to reach the map itself). The
-  lobbies fade in over the title (`lobbyIn`).
-- **The map is a Pokédex** (2026-10-07, the user's call): `#map-screen` (not in a Sky Pillar climb, `.tower`) is the
-  device full screen: `.mdex-window` (the run card on the scenery; the shell round it is its own `100vmax` shadow, so every
-  later part must be positioned to paint over it), `.mdex-hinge` (lens, lights, the biome / place signs restyled as an LCD; on top since 2026-10-08, above the run card; after the Home key a POKéDEX pill, `#map-dex-btn`, opening the device straight on the run's biome page or Safari area, 2026-10-13, the user's ask; not on a climb),
-  `.mdex-glass` (the map scrolls inside it), the top bar's Pokédex shown as a round Home key (`.home-key`) and `.mdex-dock`, the Bag's pockets as a menu bar (it opens the Bag over it, the
-  top bar's Bag hidden there). The Bag itself is the device's too (shell, LCD title, pocket buttons, each pocket on a green LCD), and so are the deck and map-peek windows and the run's end windows (result, unlock, yes/no, loss recap) (`.dev-window`), and the deck pickers (Forget a move, PP Up, Day Care: `showChoice()`'s `deck-pick` layout, the deck on a dark screen scrolling in the glass, 2026-10-07; under the text box the yes/no window's two keys, the one-word confirm `#reward-ok` left, gold like the room bar's, greyed until a card is picked, then glowing, and Skip right, the picked card's dim stopping above them, 2026-10-08). Detail
-  in `docs/reference/map-screen.md`. **Rooms** (? events, the Center, the Mart, the grotto) and the deck pickers have no
-  top bar (2026-10-07): the rooms get `#room-bar` along the bottom, one row: Home (the Pokédex, the map's round `.home-key`), Leave (`#reward-skip` moved in
-  by `showChoice()` as `.room-leave`, a round key like Home with a door and an arrow out, `roundKey()` in `js/main.js`), then HP and ₽ on one LCD (no PokéCoins, 2026-10-07); on top
-  of it the Pokédex's hinge (`.room-hinge`: lens, lights, the room's title alone on a small LCD sized to it, no biome line (the user's call, 2026-10-07), in place of the title plate).
-  The move pick after a fight (`layout: 'learn-room'`, `.learn`; the signature-move picks too) and the found item and relic picks (`item-found`) get the bar and hinge too, keeping their own Reroll (since 2026-10-08, the user's calls: their Skip is a round key by Home like it, a double chevron, `.room-skip`, and every confirm, Take it / Put in Bag / Add to deck / a card's focus confirm over a room, is a glowing gold pill beside the hinge's lights saying one word (Take, Add, Learn, Upgrade...: `ONE_WORD` or the label's first word), `#room-ok`, armed by `roomConfirm()` in `js/rewards.js`, greyed in place until a pick and, once pressed, pushed in and lit until the screen moves on (`pressConfirm()`, never hidden under the finger; the user's call, 2026-10-08); Skip and Leave ask "are you sure?" first (`askFirst()`: Leave only while the room still has a pick, Back never); no pills over the scene; and the text box on every `.in-room` screen is the cream speech window, green kept for the device's readouts);
-  `showChoice()` sets `#reward-screen.in-room` for all of them. There is no page footer any more; the disclaimer is in About.
-- **The walk-in 3D Pokémon Center** (merged into `main` and live since 2026-10-09; asked for after DPPt's
-  Centers): `js/center-3d.js` lays a 3D room under the run's Center (`restSite()` in `js/run.js` keeps its choices,
-  text box and room bar; `mountCenter()` puts a canvas where the pixel scene was, `#reward-options.c3d` hides the
-  pixel room's nurse and monitor and floats the choices' signs, one word each, small cream speech windows with a thin border in the choice's colour, over the 3D things, Heal on the counter's front under the machine, `placeSigns()`; the pixel room never shows while the 3D one loads, `c3d-wait`):
-  orange walls over a red band, a cream tiled floor with the Poké Ball seal and a red runner, the red counter (no plants, 2026-10-09, the user's call) and Chansey behind it (Upgrade), a modelled healing machine (Heal, after a "Heal N HP?" ask; its one
-  Poké Ball, a true sphere, appears only then: your Pokémon shrinks into it in a red glow, it's thrown into the dish, flashing with the chime, hopping
-  back and your Pokémon popping out, `tickHeal()`) under a big patient monitor counting the HP up, the Clearing's PC model (`pcModel()`, js/hub-pc.js,
-  whose screens now roll together) on the floor before the counter (Forget, or why not), a cabinet of varied stock
-  (`STOCK` / `cabinet()`: books, binders, potions, jars, towels, a first-aid kit, a photo, a plant; never two shelves
-  alike), benches, an escalator down in each front corner; the doormat presses Leave. A choice no longer sends you to the map: the room stays with every sign greyed and you walk out yourself (`restSite({ used })`; 2026-10-09, the user's ask). A gentle tilt, close in, no tilt-shift blur (2026-10-09, the user's call)
-  (`PITCH`, `ACROSS`, `SHOT_TOP`). Your Pokémon walks to the spot first; back from a deck picker it stands where it was.
-  `warmCenter()` builds it while the map is up (`warmCenter3d()`); without Three.js the pixel room stays. `?center`
-  (`&starter=id`) walks a throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
-- **The walk-in 3D Poké Mart** (2026-10-09; merged into `main` and live since 2026-10-10, the user's call): `js/mart-3d.js`
-  lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit
-  of their own, the items on another on the right, the domed relics on a table of their own in front (the user's asks), each price over its ware, the camera centred on the door, Britt's counter with the PC (Britt, the user's friend, took over from Kecleon 2026-10-13; a tap on her says the next of `BRITT_TALKS`, her name on the box's tag), a tap walks up and
-  presses the choice. `?mart` (`&money=N`). Detail in `docs/reference/mart.md`.
-- **The walk-in 3D ? rooms** (2026-10-11, the user's ask): the Move Tutor's dojo, the Move Deleter's study, the Day Care
-  and the Fan Club are walked in 3D like the Center (`js/event-3d.js`, mounted by `event3d()` under `eventRoom()`; the
-  choices' acts and the trainers' reactions play on the props); since part b/c (same day) so are the Hot Spring and the
-  Shrine (open air: a look per biome, `LOOKS`, lit by the hour) and the treasure grotto (`treasureRoom()`, a cave per
-  biome, `CAVE`, its Poké Ball chest following the page chest's `.shaking` / `.opened`), and since part d (same day, the
-  user's pick: a 3D ground per biome) the outdoor four, the Berry Tree, Wishing Well, Item Ball and Team Rocket, on a
-  patch of the biome's own ground (`wild()`). Kenmatta's fight is the 3D arena's (`?arena=ken`, `dressKombat()` in `js/arena-3d.js`, 2026-10-11). `?event=day-care` (`&biome=shrine`, `&starter=id`;
-  `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
-  `docs/reference/events.md`.
-- **Skins share decks**: only Charmander/Bulbasaur/Squirtle have unique
-  decks (`FIRE_DECK`/`GRASS_DECK`/`WATER_DECK` in `js/data/starters.js`).
-  Every other starter is a skin — same deck array reference, different
-  sprite/name/blurb. `skinOf` on a skin entry is documentation only; code
-  never reads it. 6 are Game Corner skins (`SKIN_SHOP_ITEMS`): the Gen 2/5 starters (150/250). Step 9a's six skins
-  (Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole) were removed again: the user didn't want them. A new starter
-  needs front/back GIFs and their `shiny/` pair for every stage (PokeAPI black-white animated), `SPRITE_FIT` lines for
-  the normal ones (and `BODY_X` lines from `tools/body-centre.py`, so a long tail doesn't push it off centre) (a PIL median bbox over all frames matches the ImageDecoder numbers exactly), and a cry in `CRIES`
-  (play.pokemonshowdown.com is blocked in cloud sessions: PokeAPI's `cries/pokemon/latest/<dex>.ogg`, mono 64 kbps MP3
-  at -13 LUFS integrated (ffmpeg `ebur128`, padded with 0.4 s of silence for short cries; see the archive's
-  "Cry loudness pass").
-- **Legendaries** don't evolve into a different species. Their `line` array
-  reuses the same sprite id for stages 0–1 and points stage 2 at a `-shiny` id (only read for its cry, which drops the
-  suffix). They never change colours: they power up, Super Saiyan style (the user's calls, 2026-09-28), in their normal
-  colours, or their shiny ones once bought and switched on. `spriteUrl()` gives stage 1 `<id>[-shiny]-awakened-*.gif` (Super
-  Saiyan: a flame aura in the type's colours engulfing the body, tongues off every upward edge and up its sides, two
-  shimmering rings, a gentle pulse, a few drifting particles, two circling sparkles) and stage 2 `<id>[-shiny]-ascendant-*.gif`
-  (Super Saiyan 2: the aura taller and denser, three rings pouring outwards, lightning crackling round it, a body flash
-  twice a loop, a shower of the type's particles (embers, bubbles, leaves, stars), orbiting sparkles with trails). Baked
-  into the GIFs, not CSS, since those sprites already carry their own filters (the intro's silhouette, the evolution's
-  flashes). `tools/legendary-aura.py <id> <type>` (Pillow) makes all eight of a legendary's files and prints their
-  `SPRITE_FIT` lines (the source's gaps plus the padding) for the end of `js/data/sprite-fit.js`; a new legendary needs both.
-  Fifteen earned ones (plus Mewtwo, below; this said sixteen before Rayquaza, a miscount): Moltres / Virizion / Suicune (a Level 2 win per type), and since step 9b Entei / Celebi / Kyogre
-  (a Level 3 win per type; Level 3 and 5 until 2026-09-28, the user's call) and Ho-Oh / Lugia / Palkia (the Clearing / Shrine / Wastes Pokédex page, `save.dex.done`;
-  ids `hooh` etc.), and since step 9c Reshiram (`dex.complete`), Victini (`stats.bestStreak` >= 3: 3 wins in a row on Level 2+, `STREAK_LEVEL` in `js/run.js`; a loss or an Abandon (`forfeitRun()`) resets `winStreak`, a lower-Level win neither counts nor breaks it, Mewtwo and Safari runs never touch it; the result window says the streak (`streakLine()`) and the Achievements window shows "Current streak: n/3" from the goal's optional `progress`; since 2026-10-03, after a day as no duplicate cards / no moves forgotten; 15 cards or fewer before that
-  (any Level until 2026-09-28)), Heatran (`stats.noRestWin`: `restCount` 0; PP Up at a Center isn't a rest), Manaphy (`stats.maxTide`, raised
-  in `gainTide()` in `js/battle.js`) and Keldeo (wins with 3 different Water starters, Keldeo aside: `winsBy`; was every one you own until 2026-09-28), and since 2026-10-02 Rayquaza (Grass, the full Safari
-  Pokédex: `save.safariDex.complete`; `safariPrize: true` keeps it out of the Safari's daily starters).
-  `checkAchievements()` runs after every won fight's Pokédex update (`afterFight()`, quietly: `{ sound: false }`; its
-  unlocks get a window of their own, `unlockWindow()` / `#unlock-dialog`, with the `achievement` jingle then the cry, as the
-  first reward step, or after the evolution for a boss, whose chime sounds just like it; the user heard it early, 2026-09-28;
-  at a run's end `announceUnlocks()` is quiet too and the windows come after the win scene, before the result window; the
-  music dips under the jingle, `duckMusic()` in `js/audio.js`; only the Game Corner still plays it straight away), after each boss, at every run's end, won or lost (so an old save that
-  already met a goal gets it then), and after a Game Corner buy.
-  Shaymin was swapped for Virizion; `RENAMED_STARTERS` in
-  `js/data/starters.js` moves an old id's unlock, wins and saved run over
-  to the new one (add to it if a starter is ever replaced again).
-- **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
-  the last portrait in the character select's Legendaries tab). It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
-  every other starter + a Level 5 win): the save's `gateHp` (`js/data/gate.js`: 1000 HP) takes `GATE_HIT[level]`
-  (40/50/60/75/90/120) after every won run; a loss at the last biome's boss still plays the scene, but your Pokémon is
-  too weak to harm it (the user's call, 2026-10-02: no more loss chip) (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and the seal bar in the result window); only a
-  Level 5 win takes it below `GATE_SLIVER` (50). Mewtwo's own runs leave it be. Old saves: `seedGate()` counts each
-  Record Book win once (never past the sliver), and anyone who has Mewtwo gets 0. That achievement (`gateHp <= 0`) must
-  stay last in `ACHIEVEMENTS`, since `checkAchievements()` grants in order (the shop also runs it after a purchase).
-  **The gate's art and scenes** (part B, 2026-10-02): `makeGate(W, H)` in `js/gate.js` paints it pixel by pixel at any
-  size from its HP (since 2026-10-02 fantasy, not bricks, the user's call: ice-crystal spires, floating shards, an obsidian
-  frame trimmed in gold whose glyphs glow, a dark crystal door chained shut, Eternatus's seal as a turning magic circle;
-  the damage in steps, not smoothly (`GATE_STAGES` / `gateStage()` in `js/data/gate.js`: past 75%, 50%, 25%, then broken;
-  the user's call, 2026-10-02; `STAGE_LOOK` in `js/gate.js` is what each step paints): past 75% seeded cracks out from the
-  seal leaking light; past 50% more, the crystal cracks, a chain snaps, the light behind the door rises with Mewtwo's
-  silhouette, from its sprite, eyes glowing; past 25% the other chain, chunks fall out; the frame's glyphs go out a quarter
-  at a time; broken, steps down into violet light). **The seal bar** (`gateBar()` / `setGateBar()` in `js/gate.js`,
-  `.seal-bar` in `css/base.css`, `.big` in the scene) is its HP in the scene and the result window: the seal's gem at its
-  head, a crystal track in a stone frame with light running along it, a rune at each stage that goes dark once passed, a
-  pale trail lagging behind a hit (`settleGateBar()`), a flicker past 25%. **The run's end order** (the user's pick, 2026-10-02): last boss falls → the
-  **descent** → the gate strike → the win scene / Hall of Fame with its song → the unlock windows (Mewtwo's last, so the run
-  ends on the reveal) → the result window; a loss at the last boss gets the descent and the strike, no pedestal.
-  `playGate()` in `js/run.js` chains the first two: `descent()` in `js/descent.js` (`#descent-scene`, z-index 949, one
-  low-res canvas) shakes the arena (a dusky wasteland), opens a violet crack under your Pokémon, and drops it down an
-  endless crystal shaft (walls, crystals and strata painted every frame from the depth; crystals chime as they pass) for as
-  long as its lines last, then the light below floods up and it goes dark; it resolves with a `close()` the gate scene
-  calls once it covers the screen (`onShow`). Its lines are `descentLines()` (first time: the chamber's lore; later wins one
-  line each way; a loss "Something drags it down..."), or handed in as `lines` (Mewtwo's fall, roadmap Small asks 5). The
-  win's fanfare fades as it starts; the break no longer brings a song back (`music` is null), the win scene starts its own.
-  Then `gateScene()` in `js/gatescene.js` (`#gate-scene`, z-index 950): a crystal cavern on one low-res canvas, the gate's
-  HP in a boss plate (`.gate-plate`, the big seal bar), your Pokémon from behind using its type's move (`MOVES`: a loss Ember / Water Gun / Vine
-  Whip, a win Flamethrower / Hydro Pump / Leaf Storm, a Level 5 win Blast Burn / Hydro Cannon / Frenzy Plant), played
-  as a **strike card** you hold to charge and let go to throw (`strikeCard()`, `.gate-strike`, every time, the user's call
-  2026-10-02: gold foil for the breaking blow, grey and cracked for a loss; the damage is fixed, the charge only scales the
-  show; a quick tap charges it for you, and it waits for the player, never playing itself (the user's call, 2026-10-02); no long-press select/callout/scroll on phones, pointer
-  capture, Android vibration), then the flash, shake, -N and the bar running down; each stage it passes jolts the gate a step more broken
-  (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
-  chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
-  its aura GIF and cry; the pedestal follows, then its unlock window. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
-  `js/audio.js`. **Until it breaks, the gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
-  win another run): not on the title (Mewtwo never flies by either, it has no flying sprite), and the locked "???" panel
-  only hints. **Once broken** (and Mewtwo unlocked) it stands open on the title's ledge (`sizeGate()` / `paintGate()` in
-  `js/title.js`, `.title-gate` in `css/screens.css`): a tap swells its violet light over the screen (`.gate-opening`)
-  with Mewtwo's cry, then `onGate` in `js/main.js` opens Mewtwo's Prepare step, a shortcut to the same screen as its
-  Legendaries portrait (the user's ask, 2026-10-02). Playtest: `?mewtwo&gate=0`. The story is told on the way: the first time (`save.gateSeen`) the
-  descent tells the chamber's lore, the gate scene a line that past victories already cracked it (if old wins were counted) and, after the hit, that every win weakens the seal and higher Trainer Levels hit
-  harder; later wins say what the next Level would deal. Playtest: `?gate=NNN` shows that HP (never saved),
-  `?strike=90` (with `&starter=`, `&stage=`, `&level=`, `&kind=loss`, `&first`, `&land=jungle`) plays the descent and the scene after PRESS START; a
-  strike past the HP plays the break. **Once broken**, until a Mewtwo run reaches the Depths (`deepestBiome` 4), a won run
-  still shakes the arena and opens the crack (in its last biome's look), but the floor holds and your Pokémon is thrown back
-  by the psychic force below, a hint that only Mewtwo goes down (`kind: 'open'` in `descent()`, from `strikeGate()`; no
-  strike, then the win scene; 2026-10-07, the user's ask). Playtest `?gate=0&strike=0` (`&land=`). `?lockmewtwo` undoes `?mewtwo` (relocks it, drops its shiny and a saved Mewtwo
-  run, and re-seeds the gate from the Record Book; only while Mewtwo is unlocked). It is `type: 'psychic'`, has its own 10-card `PSYCHIC_DECK`, 68-card Psychic pool (including 8 evolution
-  cards), and the Pressure Ability. Psychic is neutral in the type chart. Part A removed `comingSoon` once the deck and
-  Ability landed; run-end guards (`isMewtwoRun()`) keep Mewtwo out of Level-based rewards and stats.
-  **Mewtwo's run is its own game mode** (v1.0 part B, 2026-10-02): no Trainer Level (`prepare()` in `js/select.js` hides
-  the picker and shows its rule), one fixed setting, `MEWTWO_MODE` in `js/data/difficulty.js` (`runMods()` per biome,
-  `runFloors()`): biomes 1-3 are a speedrun, one road with no forks (`generateMap({ floors: [types] })` builds it,
-  `roadMap()`: fight, fight, ? event, elite, Mart, Center, boss; Mewtwo's attacks +25% there, `playerDmg`, and no Pokédex research; a short map stays in its first place, `stageOf()`), at Level 0's
-  rules with 2.5x prize money (`prizeMult`) and biomes 2-3 trimmed so Mewtwo shreds them (the user's calls after a
-  playtest, 2026-10-02), then the **Crystal Depths**, the
-  `secret` 4th `BIOMES` entry only Mewtwo enters (`finalBiome(starter)` in `js/data/enemies.js` is every "is this the last
-  biome?" check). Mewtwo is fully powered up after Boss 2, so after the Biome 3 boss's rewards (card, relic, item) it
-  falls in instead of evolving: `fallIn()` in `js/run.js` plays the Sealed Gate's `descent()` with Mewtwo's own lines (it
-  senses a call from below, dives, and the shaft's crystals restore it: the full heal, StS's between-acts heal), then
-  `startBiome()` brings the Depths' map and intro film up under the dark before `close()` takes the descent away. No pedestal
-  or victory song until Eternamax falls. Playtest: `?descent=mewtwo` (`peekDescent()`, a throwaway run at half HP, never saved). Its 12 wilds, 3 Alphas and boss Eternatus (Gen 8: its sprite is
-  PokeAPI's `other/showdown/` Gen 5-style GIF) are themed to a crystal cave and shown as Neutral or Psychic. Some carry a
-  `trait` (`TRAITS` in `js/data/enemies.js`, `enemyTrait()` in `js/battle.js`, a nameplate badge): `barbs` (each attack you
-  play hurts you, block first, never fatal), `analytic` (strength per Power you play), `stamina` (block per card past the
-  Nth in a turn). **Eternatus is a two-bar set piece** (part C, 2026-10-02, the user's calls): its `phase2` def, Eternamax,
-  rises when it faints (`finish()` hands over to `rebirth()` in `js/battle.js`: it sinks into the Well, `bossRebirth()` in
-  `js/scene.js` plays the Darkest Day (C2, the user's pick: the cave goes dark, red cracks race over the roof, it splits on a
-  blood-red sky with Dynamax hexagons, rock rains down, Eternamax's silhouette from its sprite comes down through the rift,
-  its markings ignite, a crimson burst; `depthsMax()` / `darkestDay()`, `MAX_*` frames; the rift stays open all fight and the
-  sprite drops in from above, `.emerging`), then a fresh bar scaled by `b.hpScale`, its debuffs / block / strength gone, its
-  own sprite (`eternamax-front.gif`, PokeAPI's showdown 10190 at every 2nd frame), cry, music and a red `.max` glow, in the
-  storm at its fiercest, `storm.fury`; a tap skips the show; risen on its own turn, rising was that turn). The storm waits
-  for Eternamax (`checkStorm()`). Its moves: `kind: 'charge'` (a turn's warning, its intent shows the next move's hit) and
-  `grow` (the move hits N harder each use, `enemy.grown`). Music `eternatus` / `eternamax` play `boss` until the user's
-  files arrive. Playtest: `?bossfight=depths` (`&hp=0.1` shrinks both bars; Mewtwo at 300 HP; `peekFinalBoss()`, never saved).
-  Every per-biome array (events, Kenmatta's HP) has a 4th value. `secret` keeps it out of `DEX_PAGES` and
-  the records until reached. **Its scenery** (B2, 2026-10-02): `BIOME_ART.depths` in `js/scene.js`, no clock (one `day` look,
-  `marks` skipped so nothing is graded), each place its own palette (`voids` / `rocks` / `floors` by stage), its glows
-  (`crystal`, `amethyst`, `ruby`, `energy`...) in `GLOWS`. One painter (`depthsBackdrop()` / `depthsFloor()` / `depthsFront()`,
-  life in `drawDepths()`): **Cave Mouth** a tunnel of rock arches, a crack of daylight fading as you go in, glowing
-  mushrooms; **Crystal Halls** giant crystal columns, prism-light shafts, a mirror lake (landmarks keep to the right there);
-  **Deep Core** black rock split by energy veins (`wallVeins()`), glowing floor cracks, floating boulders, a red fissure;
-  **Energy Well** a bottomless pit whose energy column climbs to a vortex on the roof, five black crystal monoliths
-  orbiting, cracks fanning out of the pit, an energy ring under the fight. Every crystal is `prism()` / `gemCluster()`; the
-  energy in the veins and seams pulses towards the Well (`life.veins` / `life.seams`). From the Deep Core on the battle
-  pad turns red (`padDeep`). Landmarks are `DEEP_MARKS` (lamp, mine cart, geode, Unown tablet, crystal arch, vent,
-  obelisk, floating boulder...). Its boss prelude (`depthsWake()` / `depthsPortal()`, `CORE_AT`): the column is drawn
-  down, the seams light inwards, Eternatus's five-sided core rises out of the Well and bursts (a shock ring, shards off the
-  walls, the vortex spreading over the roof), then the energy floods out in a hex grid; the arena keeps the big column and
-  red vortex (`wellState()`). Sounds `gate-hum`, `quake`, `eruption`, `core-surge`. Its intro film is `js/depths-intro.js`
-  (`DEPTHS_INTRO`): down a crystal shaft into the cavern, its crystals lighting one by one with `crystal-0..2` chimes, a
-  push towards the far Well; walk-ons for the Halls and the red Deep Core. Map: `PALETTES.depths` with `rift` (flowing
-  energy), `crystal` and `geode` (crystal tips twinkle); signs `[data-biome="depths"]` in `css/screens.css`; its own
-  treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). Its map plays `seal`, the fall's song
-  carrying on (its `music`, 2026-10-09, the user's call); `map4`, the user's song that was the Depths' (looped at
-  6.0-45.747 s, `TRACK_GAIN` 0.18), is the Sky Pillar climb's since (`showMap()`).
-  **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
-  `js/halloffame.js` plays its own version (`.hof-scene.depths`: a violet cavern with crystal clusters and stalactites, a
-  crystal pedestal trimmed in gold, the party in violet / crystal / gold, `celebrate()`'s `psychic` palette), then
-  `rollCredits()` (`js/credits.js`, `.hof-credits`: the staff roll with the cast's sprites, THE END; a tap skips to it).
-  Its entry (`isDepths()`, numbered `champ`, "Depths 001") stands in the Hall of Fame and the Record Book in gold and violet
-  (`.hof-row.depths`). Achievements that unlock something other than a starter are **feats** (`FEATS` in
-  `js/data/achievements.js`, `checkFeats()` in `js/progress.js`, saved in `save.feats`, their own window in `unlockWindow()`,
-  a "Crystal Depths" section in the Achievements window, ??? until Mewtwo is free): **Champion of the Depths** (beat
-  Eternatus, `bossesDefeated[4]`: 1000 PokéCoins) and **Shiny Mewtwo** (the Depths page done; it can't be bought). The
-  Depths' **Pokédex page** is `DEPTHS_PAGE` in `js/data/pokedex.js` (in `ALL_PAGES` and `DEX_NUMBER`, No.056-071, never in
-  `DEX_PAGES`, so `dex.complete`, Reshiram, the Safari Zone and the Collection / Stats counts never wait on it); its tab is
-  "???" until a Mewtwo run reaches the Depths (`depthsKnown()` in `js/pokedex.js`), and Eternatus's entry lists Eternamax's
-  moves too. Once its feat is earned **Eternatus crosses the title sky** in the flyers' round (`nextFlyer()` in
-  `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
-  window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
-  Pokédex or `bossesDefeated`.
-- **Card art** (2026-10-12, the user's yes, by batches): a card's picture is smooth SVG from `ART` in `js/card-art.js` (keyed by base id, a picture of the move itself) when it has a line there, else its PokéSprite item (`sprite`); `tools/cards.html` shows them all, `?pixelcards` the old art. A new card gets an `ART` line.
-- **Cards** (`js/data/cards.js`): every effect is a key in a card's
-  `effects` (the header comment lists them all) and `describe()` writes
-  the card text from them, so new mechanics need a line there too. Beyond
-  damage/block/heal there are multi-hits (`hits`), player `strength`,
-  `power: true` cards whose `POWERS` keys (played with a Power Lens pop-up in
-the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
-  each turn, thorns, blaze) stay on all fight as nameplate badges,
-  `retain`, `exhaust`, `selfDamage`, `blockDamage` and `bonusPerBurn`.
-  Power, exhaust and retain cards carry a bold "Power." / "Exhaust." / "Retain." keyword
-  (`keywords()` in `js/data/cards.js`, drawn by `makeCard()`, with a
-  `title` explaining it); powers leave the fight once played, like StS.
-  **Keyword boxes** (StS's): `cardTerms(card)` in `js/data/cards.js` lists every term a card uses as
-  `[label, text]` (its keywords, then Tide, Burn, Leech Seed, Weak, Vulnerable, Sap, Strength, Focus, Discard, X,
-  Combo... found by regex over its effect keys, nested ones too), and `termTips()` is the same minus the
-  keywords, for the text's `title`. `cardTips()` / `withTips()` in `js/ui.js` draw them as little parchment
-  windows beside any blown-up card: battle's risen card (`placeTips()` in `js/battle.js`: beside it on
-  whichever side has 190px, else stacked over it, with taps passing through), `zoomCard()`, the reward /
-  Mart focus (`openFocus()`) and the pile picker (`pickFromPile()`: since 2026-10-03 a first tap picks a card and shows its boxes and the take button under the row, a second takes it); on phones (`.tip-row`, ≤720px) they stack under the card, which shrinks by
-  `--tips`; wider, they hang off the card's right side (absolute), so the card itself stays centred over its button. A new mechanic only needs a line in `cardTerms()`; every term with a box is
-  coloured in the card's own text and on its box's name (`colourTerms()` / `TERM_KIND` in `js/ui.js`, `.term-*` in
-  `css/cards.css`: Burn orange-red, Tide blue, Leech Seed green, debuffs purple, Strength red, the rest keyword gold; StS 2's,
-  the user's pick 2026-09-28); keep each box's text short (~55 characters,
-  the user's call 2026-09-28: "Burn: Damage each enemy turn, then -1."), longer only when short stops explaining it: Tide says
-  what it is and what spending it does (the user couldn't tell from "Builds up all fight"). Block, Draw and Heal get no box:
-  their words say it (the user's call). A card that makes cards (`addCard`, however nested) gets a box per made card with its cost,
-  keywords and text (`addedCards()` / `madeCardText()`: Rage, Paralysis, Poison, Cinder...; Rage's says it's a copy of itself).
-  Each gameplay type has three archetypes (docs/card-design.md): Fire Burn / Reckless / Kindling, Grass Growth /
-  Drain / Spores, Water Tsunami / Shell / Flow, Psychic Force / Barrier / Mind Games.
-  Psychic (Part A, 2026-09-29): 20 common / 26 uncommon / 14 rare + 8 evolution cards; Psychic is neutral both ways and
-  all cards use existing mechanics. Keep Mewtwo's type and all 68 cards masked as `???` in player-facing selection and
-  the Index until the starter is unlocked. Mewtwo's Pressure starts each fight with 2 Focus.
-  Water rework (2026-09-26, the user found Water bland): **Tide** is Water's
-  "build up, cash in" resource, `battle.tide`, shown as a 🌊 nameplate badge and
-  lasting all fight. `tide: N` cards build it (Bubble, Dive, Rain Dance, Surf,
-  Origin Pulse); `perTide: N` cards add N damage per Tide, then spend it all
-  (Water Pulse, retained so you can hold it until the Tide is high, replaces a
-  Water Gun in the starting deck; Hydro Pump, now 2 cost; Brine). `makeCard()`
-  explains Tide in the text's `title`. Shell Armor (rare power, StS's Barricade)
-  is `keepBlock`: `beginPlayerTurn()` keeps your block instead of zeroing it, so
-  Razor Shell builds are worth aiming for; a `POWERS` entry with `flag: true`
-  shows its badge without a number. Withdraw deliberately builds no Tide: 4 of
-  them made Water win ~95% at Level 3 in the bot, and Tide on Bubble made the bot
-  hoard Bubbles until it dropped to 5 damage (Rain Dance to 4 block). After (human
-  bot, 600 runs/cell) fire / grass / water: L0 66 / 77 / 78, L3 61 / 57 / 67,
-  L5 35 / 37 / 41; Water was 76 / 65 / 39 before, so it stays level.
-  StS revamp (2026-09-26, the user's call: "more like StS"): every card is
-  modelled on a Slay the Spire 1 card (named in a comment on its line) at
-  StS's numbers x~1.2 (Strike 6 -> 7, Defend 5 -> 6), keeping StS's price
-  per energy. Starting decks are StS-shaped: 4 attacks, 4 blocks, 2
-  signature cards (Fire: Scorch = Bash + Will-O-Wisp; Grass: Seed Bomb =
-  Bash + Absorb, one of its blocks a Cotton Guard; Water: Bubble + Dive =
-  Shrug It Off, one of its attacks a Water Pulse), no Tailwind. `weaken: N` is StS's Weak (enemy deals 25%
-  less for N enemy turns, `WEAK_MULT`) and `vulnerable: N` its Vulnerable
-  (your attacks deal 50% more, `VULNERABLE_MULT`); both tick down at the end
-  of each enemy turn (`enemy.weak` / `enemy.vulnerable` in `js/battle.js`),
-  and `makeCard()` puts an explaining `title` on the text. Enemy numbers
-  were retuned around the cards (biome `dmgBonus` 4/11/22, `bossBonus`
-  5/16/28, `hpMult` 1.2/2.9/5.2; Fierce Bosses +2 damage, not +4), then
-  again over the new 54-Pokémon roster (2026-09-26, see Items below). Fire
-  has the fewest defensive cards, so its Defend (Flame Wall) blocks 8 and
-  its Flame Barrier (Burning Bulwark) is 1 cost; without that Fire trailed
-  the others by 15-30 points.
-  Card-pool review (bot harness, 2026-09-24): as one extra copy in the
-  starting deck, block, Weaken, healing and powers raise win rates and big
-  attacks lower them (Flare Blitz, Fire Blast, Solar Beam: −15 to −30
-  points), since a turn spent without defending costs more HP than it saves.
-  So check defensive numbers first: +1 or +2 block on a starting card moves
-  a type 10–30 points at Level 5. Don't remove a card id:
-  a saved run holding it would be discarded.
-  **Card pool expansion (roadmap 6c)**: `docs/card-design.md` is the plan (12 archetypes, ~70 cards a
-  type, each on a StS card); the user approved it (2026-09-26); its Decisions section settles the open questions. The engine for it
-  landed first (6c.2), all in `js/battle.js` and described by `describe()` (the header of
-  `js/data/cards.js` lists every key): X cost (`cost: 'X'` + `perX`, `xPlus`), `discard` / `exhaustPick`
-  (the hand glows and one tap picks, `pickFromHand()`; no more cards than asked takes them all),
-  `onDiscard` / `onExhaust` (only a card's discard counts, not the end of turn, like StS), exhaust and
-  discard powers (`exhaustBlock`, `exhaustDraw`, `discardTide`, `discardBlock`), played-this-turn
-  (`battle.played` / `attacks` / `discarded`: `perPlayed`, `hitsPerAttack`, `perDiscard`,
-  `combo: { at, ... }`, powers `cardDamage` / `cardBlock`), `addCard: { id, n, to }`, keywords
-  `unplayable` / `ethereal` / `innate` (bold via `keywords()`; `termTips()` explains terms in the text's
-  `title`), a 10-card hand cap (`MAX_HAND`: draws stop, made cards go to the discard pile). Played cards
-  now reach their pile *after* resolving (their own draw can't reshuffle them), and every exhaust goes
-  through `exhaustCard()` (so Eject Pack also fires for ethereal and picked exhausts). `TOKEN_CARDS`
-  (Cinder, Seedling, Droplet) and `STATUS_CARDS` (Confusion, Paralysis, Poison, Sludge: grey `.status`
-  cards) are in `CARDS_BY_ID` only, never in `ALL_CARDS`, so they're never offered or indexed. Enemy
-  moves can carry `adds: { card, n, to }` (default the discard pile), or be `kind: 'status'` (only
-  that; a grey intent bubble; on an attack the junk card's icon follows the move name). Enemies using them since 6c.9
-  are listed in the doc's Status cards table (Psyduck, Oddish, Alpha Raticate, Snorlax, Slowpoke, Shellos, Stantler, Alpha
-  Watchog, Exploud, Tangela, Tauros).
-  **Fire's pool (6c.3, 2026-09-26)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards, each with its StS
-  model in a comment and a hand-picked `upgrade` (the doc's Fire section lists them and what changed). Fire's
-  mechanics, all in `js/battle.js` with `describe()` lines: `burnTimes`, `burnMult` (Catalyst), power `drought`
-  (every Burn a card applies +N, via `burnEnemy()`), `ifBurned` / `ifHurt` (`{ bonus, ...effects }` merged in by
-  `effectsOf()` as the card is played), `costDownOnHurt` (Mind Blown), `exhaustHand: 'all' | 'skills'` with
-  `perExhausted` / `hitsPerExhausted` / `blockPerExhausted` (resolved before the damage), `playTop` (Wildfire, StS's
-  Havoc: `resolveCard()` plays the top card free and exhausts it), `exhume` (Fusion Flare: `pickFromPile()` lays the
-  exhaust pile over the dimmed battle, `.pile-pick`; two taps, like TM's picker), `healDealt`, powers `rupture`, `combust` (end of your turn,
-  in `endTurn()`), `brutality`, `corruption` (Blue Flare: `costOf()` makes non-attacks 0 and `resolveCard()`
-  exhausts them), `cinderDamage`, `exhaustBurn`. `loseHp()` is every self-inflicted HP loss (Raging Fury triggers
-  on it) and `markHurt()` counts every HP loss, the enemy's too (`battle.hurtThisTurn`, `battle.timesHurt`). A card's
-  cost in the hand comes from `costOf()` (`makeCard(card, { cost })` shows a cheaper one in green).
-  Human bot, Fire L0 / L3 / L5: 71.2 / 63.3 / 34.5 before, 70.7 / 62.2 / 39.3 after (600 runs/cell); the bot never
-  takes the combo cards, so those builds are for the user's playtest.
-  **Water's pool (6c.4, 2026-09-26)**: 20 common / 32 uncommon / 13 rare + 8 evolution cards, the same way (the doc's
-  Water section lists them and what changed). Water's mechanics, all in `js/battle.js` with `describe()` lines: Tide goes
-  through `gainTide()` (Drizzle adds to every gain; `battle.tideGained` counts it all for Tsunami's `perTideGained`) and
-  `spendTide()` (every "spend all your Tide": `perTide`, `blockPerTide`; Rain Dish's `tideSpendBlock` turns it into
-  block), `perTideHeld` (counts without spending), `tideMult`, powers `tideEachTurn`, `tideSurge` (Primal Reversion, 1 more
-  each turn, `battle.surgeTurns`). Block: `blockMult`, `blockPerCard`, `blockNext` and `blur` (`battle.blockNext` /
-  `battle.blur`, used in `beginPlayerTurn()`, with badges), `blockDamage` true or a multiple (with `block`, the block comes
-  first: Aqua Tail), power `riptide` (every `gainBlock()` and the turn's first block hit the enemy). Hand: `drawTo`,
-  `ifDiscarded`, `costDownOnDiscard`, `discardHand` + `perDiscarded` (`timesEach()`). At the end of your turn Still
-  Waters' `retainN` asks which card to keep (`pickFromHand()` takes an `only` filter; `choosing.only` greys the rest),
-  then every kept card with a `growOnRetain` (next to `effects`: Aqua Cutter, Life Dew, Hydro Cannon) or under Ebb and
-  Flow (`retainDiscount`) becomes its own copy for the fight, with bigger effects or a `discount` that `costOf()`
-  subtracts; the deck's card is untouched. The sim mirrors it all; its bot check (6c.5) found the pool 7-16 points
-  weaker, so Shelter blocks 9, Mist 12 and Chilling Water trades a draw for Weak 1 (human bot L0 / L3 / L5 ~74 / 57 / 36).
-  **Grass's pool (6c.5, 2026-09-27)**: 20 common / 32 uncommon / 14 rare + 8 evolution cards (the doc's Grass section).
-  Grass's mechanics, all in `js/battle.js` with `describe()` lines: **Leech Seed** (`seed`, `enemy.seed`, 🌱 badge: at the
-  start of the enemy's turn, after Burn, it loses that much HP, you heal as much, then it drops by 1; Grassy Surge's
-  `seedKeep` stops the drop; Seed Sower's `attackSeed` seeds on every hit that gets through) and **Sap** (`sap`,
-  `enemy.sap`, 🍂 badge: `attackDamage()` subtracts it, all fight). Every debuff from a card or power goes through
-  `applyDebuff()` (Effect Spore's `debuffDamage`, Sap Sipper's `weakBlock`); `debuffKinds()` counts Weak / Vulnerable / Seed /
-  Sap / Burn (`perDebuff`, `drawPerDebuff`). Every heal goes through `healPlayer()` (Chlorophyll's `overheal`: healing past
-  max HP becomes block; Grass Pledge's `healStrength`, once a turn via `battle.pledged`; `battle.healedThisTurn` for
-  `ifHealed`), every strength gain through `gainStrength()` (Harvest's `strengthHeal`; `flex` strength is kept in
-  `battle.flex` and taken off in `endTurn()`). Also `ifWeak` / `ifVulnerable` / `ifSeeded` / `ifEnemyAttacks`,
-  `healPerStrength`, `healPerSeed`, `doubleStrength`, powers `attackHeal`, `weakEachTurn`, `exhaustHand: 'status'`, and
-  `feed` (Jungle Healing, StS's Feed: +max HP on a kill; `onEnd` now passes `maxHp` and `afterFight()` keeps it). Leech Seed
-  skips block and heals, so its numbers are small (Worry Seed 3): at 4-6 the human bot won 89 / 77 / 59 at L0 / L3 / L5.
-  **Neutral pool (6c.9, 2026-09-27)**: 21 cards any type can be offered (the doc's Neutral section), 9 of them new:
-  Quick Attack, Rapid Spin, Double Team, Substitute, Mimic (`copyPick`), Endure (`endure`: `battle.endure`, a 🎗️ badge,
-  `hurtPlayer()` stops at 1 HP until your next turn), Metronome (`randomCard`: a random card from `typePool(type)`, free
-  this turn; the free copy carries `orig` and `settled()` puts the real card back wherever it goes, and in the hand at the
-  end of the turn), Hyper Beam (a negative `nextEnergy`, a red ⚡ badge) and Last Resort (`needsEmptyDraw`).
-  **Reward rules (6c.9)**: a fight's card reward (`cardChoices(run, source, 3, { reward: true })`, not the Mart or events)
-  offers commons/uncommons upgraded at `REWARD_UPGRADE_ODDS` per biome (0 / 25% / 50%, StS's) and adds `run.rarePity`
-  (StS's rare pity: +1 rare weight per common offered, up to 40, reset once a rare is offered; saved with the run, an old
-  save's missing value counts as 0) to the rare weight. Both live in `js/rewards.js`.
-  Bot pass after 6c.9 (human bot, fire / grass / water): L0 ~75 / 76 / 69, L3 ~64 / 59 / 49, L5 ~39 / 33 / 26; Water
-  trails at Levels 3-5 (the status cards clog its hand-based decks). Numbers per part are in the roadmap's step 6c.9.
-  **Upgrades (PP Up)**: `CARDS_BY_ID['<id>+']` is every card's upgraded copy (name `<name>+`, green
-  name, `upgraded: true`, `base`), built at load from its `upgrade` field or the default rule
-  (`upgradeOf()`), so a deck saves upgraded cards as ids and old saves load unchanged (no version
-  bump). Anything counting copies uses `baseId()` (MAX_COPIES, Mart, Day Care, Move Tutor, rewards).
-  `ALL_CARDS` stays base cards only. The Center's third choice is PP Up (see Deck thinning). Every PP Up picker
-  (`upgradeMove()`) shows the cards upgraded with what changes in big bright green text, no box (`markUpgrade()` in `js/ui.js`) and the blown-up
-  one beside the card as it is now (an option's `before`, 2026-10-07).
-  **No duplicates in one run** (the user found Fire Lash = Double Hit, 2026-09-28): no two cards a run can meet (its type's
-  pool, the neutral pool, its starting deck) may share cost and text. `noOffer: true` keeps a card out of `poolForType()`
-  (Block: Grass's starting Defend, which offered doubled Water's Withdraw); Tackle is Pommel Strike (6 + draw 1) and Fire
-  Lash burns. Cross-type twins (Scorch / Seed Bomb, Firestorm / Solar Beam...) never meet in a run, so they stay.
-- **Starter Abilities** (StS's starter relics): `ABILITIES` in `js/data/relics.js`, one per type, so
-  every skin shares it and nothing is saved (it comes from `starter.type`). Fire **Blaze**: attacks +3
-  while HP is below half (a 🔥 badge shows while it's on); Grass **Overgrow**: heal 3 after each won
-   fight (in `finish()`; see Items for the bot numbers); Water **Torrent**: start each fight with 2 Tide; Psychic **Pressure**:
-   start each fight with 2 Focus (Mewtwo's first attack deals +2). It's the first row of the
-  Bag's Relics pocket, an "Ability: X" line in the character select's panel (`#sel-ability`), an "Ability" pill in the
-  starter's type colour beside the map run card's Level chip (`#run-ability`, a `.chip` like the Level chip, its colours by `data-type`; always alive with a sheen sweeping across it and a glow breathing in its colour, `abilitySheen` / `abilityGlow`), and the same pill under your battle nameplate's HP bar, left of the HP numbers (`#player-ability`,
-  `showAbilityState()` in `js/battle.js`; tap for its text), whose title shows the starter's type icon (`#player-type`), like the enemy's. When it does something,
-  `abilityBanner()` in `js/battle.js` slides in Gen 5's "Charmander's Blaze" window (`#ability-banner`) on
-   your side for 1.9 s: Torrent and Pressure on turn 1, Blaze each time HP drops below half (`checkBlaze()` in
-  `renderAll()`, again after a heal took it back over), Overgrow when it heals after a win (the faint pause
-  is 1.7 s then). The rare power card `blaze`
-  is named Solar Power now (same id) so the two don't share a name.
-- **Types**: five types (fire/grass/water, `normal`, shown as Neutral, and `psychic`), with Neutral and Psychic x1 both ways.
-  `typeMultiplier()` in `js/battle.js` is the chart; a card
-  uses its own `type`. An enemy attack uses the move's `type` if it has one,
-  else the enemy's: moves whose real type isn't Fire/Grass/Water (Body Slam,
-  Bite, Vice Grip, Acid) carry `type: 'normal'` in `js/data/enemies.js`, so
-  give any new off-type move one too. **Elites and bosses ignore the chart
-  both ways** (`typeless()`, by `battle.kind`, so Team Rocket's Alpha too;
-  the user's call: type walls there felt unfair, match-ups are for wild
-  fights). Since 6c.10 every elite and boss is also a pure Normal Pokémon (the user's call: a Gloom that
-  wasn't weak to Charmander looked like a bug), with no Fire/Grass/Water move names. So the elite type-disadvantage coin bonus is gone, and they *show* as Neutral too
-  (the nameplate chip, `setupBattleScreen()` in `js/battle.js`; the map shows no type badge at all), since
-  their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
-  mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
-- **Economy**: `js/storage.js` holds `coins` and `passives`. `awardCoins()`
-  applies the Coin Finder bonus and persists. `COIN_REWARDS` live in
-  `js/run.js` (a won run pays 100 since 2026-09-28, was 50; a wild Pokémon whose type beats your starter's pays an
-  elite's coins and ₽, `tough` / `payAs` in `afterFight()`, with a "tough match-up" line in the reward box; the user's calls); fight and win coins grow +10% per Trainer Level played (`COIN_LEVEL_BONUS`, `levelCoins()`; shown
-  on the Prepare step's coins chip and How to play's PokéCoins tip). Shop catalog is `js/data/shop.js`; `js/shop.js`
-  renders it. The Starting Relic Charm's relic is saved as `run.charm` and handed over on the map by `relicCharm()` in `js/run.js` (`showRelics()` with one relic and no Skip: it floats in the middle, a tap says what it does, Take it flies it into the Bag; the user's call, 2026-10-01). **Game Corner perks** (step 8, 8 in all, each shown `Lv n/m`; `perkLevel(id)` in `js/storage.js` reads
-  one, true/false or a number): Max HP Boost, Starting Relic Charm, Well-Fed, Coin Finder, and since step 8 **Bag
-  Pocket** (StS's Potion Belt: `itemSlots()` in `js/run.js`, 4 items), **Mart Card** (Membership Card, 3 levels:
-  `MART_DISCOUNT` 10/15/20% off every Mart price and the removal, applied at the counter by `martPrice()`, so the
-  saved stock keeps its base prices), **Move Tutor Notes** (Neow's upgrade, 1 level; a Lv 2 of two moves was +8 to +28 points at Level 3: `run.tutorLeft` starting moves
-  to PP Up, asked by `tutorNotes()` at the end of `showMap()` after the checkpoint, so a refresh asks again) and
-  **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
-  passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
-  (`SHINY_COSTS`: 250 the free three, 350 skins, 500 legendaries, the user's call 2026-09-27; only once you own the starter, else a silhouette).
-  The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny pill in the character select's panel
-  (`#sel-shiny`, only once owned; a ✨ marks the portrait too) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
-  (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows,
-  a legendary's Super Saiyan forms too. The 126 GIFs are PokeAPI's black-white animated `shiny/` and
-  `back/shiny/` sprites (the same source as the normal ones, byte for byte); `spriteFit()` in
-  `js/data/sprite-fit.js` lends a shiny its normal sprite's entry. In battle a shiny comes out of its ball in a
-  burst of ✨ (`shinySparkle()` in `js/battle.js`).
-- **Level 5 rewards** (part 1, the user's picks 2026-09-28; the Hall of Fame is part 2): `level5Rewards()` in
-  `js/run.js`, from `endRun()` on a won run at `MAX_LEVEL`, before `announceUnlocks()` (Mewtwo reads it). It counts
-  `stats.level5WinsBy[starter]` (a gold ⭐ on that starter's portrait, `.sel-star`, and after its name in the character
-  select's panel, `.sel-name-star`), gives the starter's shiny and switches it on if it isn't owned, and pays
-  `LEVEL5_JACKPOT` (500, Coin Finder applies) once per type (`stats.level5Jackpot`). Each reward is a line in the
-  result window. Old saves seed nothing (the user's call): rewards start from the next Level 5 win.
-  **Hall of Fame** (part 2, 2026-09-28) and its **record book** (the user's follow-up, same day): `endRun()` saves *every*
-  won run, any Level, in the save's `hallOfFame` list (oldest first; `recordWin()` in `js/halloffame.js`): `no` (win
-  number), `fame` (Hall of Fame number, Level 5 wins only; `fameNo()`, and entries saved before the record book were all
-  Level 5, numbered by `no`), starter, stage, shiny, type, local `date` / `started` "YYYY-MM-DD", level, the final deck,
-  relics and Bag (`items`), `itemsUsed`, HP, and the run's numbers from `run.tally`. The tally (`freshTally()` in
-  `js/run.js`, saved with the run; a run saved before it counts from its restore, with no `startedAt`) adds up each fight's
-  `tally` from `onEnd` (`battle.tally` in `js/battle.js`: cards played, damage dealt without overkill via `enemyLoses()`
-  for hits, Burn and Leech Seed, the biggest hit, items used, plus turns and damage taken) in `addTally()`, and counts
-  Alphas, ❓ rooms, moves forgotten (`forgetMove()`) and ₽ spent (every Pokédollar payment goes through `spend()`; earned
-  is money left + spent). Every win awaits `winScene()` before opening the result window (a modal dialog would sit in the
-  top layer over it; the user wanted normal wins to feel satisfying too): the pedestal scene below, then the run's numbers
-  as a grid of dark tiles popping in (`statsPanel()`, short labels, from the same `statList()` as the record's page), then
-  the deck. A Level 5 win is the Hall of Fame version (gold pedestal, title, its song, "Welcome to the HALL OF FAME!");
-  any other is "Victory!" on a silver pedestal with its own song, `run-win` (`assets/audio/run-win.mp3`, the user's, 112 s; if it's ever missing the victory fanfare already playing carries on), saved "as Win NNN". A Level 5 win also throws a **party** (part 3, 2026-09-28; `.party`, never under reduced motion, where it
-  has no sound either): `celebrate()` in `js/celebrate.js` draws on `#hof-fx`, one low-res canvas behind the layout (3 CSS px a
-  pixel on phones, 4 wider; ~30 fps; `stop()` when the scene closes), all in whole pixels, fading by stepping down a palette,
-  never by alpha: two spotlights sweeping from the bottom corners (filled row by row), rockets on ember trails bursting in the
-  starters' type colours and gold (sphere, ring, Poké Ball, gold willow, a crackler fizzing into white sparks), shooting
-  stars, four-point twinkles; `land()` fountains gold sparkles off the pedestal as the Pokémon hops onto it (`.hop`); the
-  title's letters (`.hof-letter`, `setTitle()`) flash in one by one, then a rainbow sweeps across them every 2.6 s;
-  `finale()` at "Welcome to the HALL OF FAME!" launches a huge Poké Ball burst with a rainbow core (its `onBoom` flashes
-  `.hof-boom` white and shakes the layout, `.boom`), two side bursts and a 14 s rain of gold confetti and ribbon streamers.
-  Its sounds are synths in `js/audio.js` (`fw-launch`, `fw-pop`, `fw-boom`, `fw-crackle`: NES-style held noise,
-  `chipNoise()`). Headless at 390x844 and 1280x800 it held 30 fps. The Hall of Fame scene (`#hof-scene`, z-index 950 like the evolution's) is Gold/Silver's: a
-  white flash onto a starry night, your Pokémon slides onto a gold pedestal under a spotlight (`SPRITE_FIT` feet, half
-  steps) and cries, its plate pops up (No.NNN, name, type chip, date, Lv.5), "Welcome to the HALL OF FAME!", then the
-  final deck rises as a strip of `.card.small`s (`.scene-keep`: it scrolls, taps on it don't advance the text) over the
-  text box. Its text box is the evolution scene's, `sceneSay()` exported from `js/evolution.js`. Music: `hall-of-fame`
-  (`assets/audio/hall-of-fame.mp3`, the user's, 52 s), preloaded before a Level 5 final boss; while the file is missing
-  `TRACK_FALLBACK` in `js/audio.js` plays `victory` instead (the element's `error` marks it `missing`). The Collection has two
-  cards for it (the user's call: Level 5 champions and normal runs both worth seeing), each a grey "???" with a 🔒 until its
-  first entry (`book()` in `js/collection.js`; a tap says how to unlock it, `tipAt()`), and the result window says "Record
-  Book unlocked!" / "Hall of Fame unlocked!" the first time: **Record Book** (every win, "Win NNN", Level 5 ones with a ⭐)
-  and **Hall of Fame** (Level 5 wins, numbered No.NNN), the last card (the user's call). Both open `#hof-dialog` (`openRecords('fame' | 'record')`,
-  `bookEntries()`): entries newest first, the Record Book's lost runs as greyed lines between them (`save.losses`, `recordLoss()`; since 2026-10-04 one opens its **loss recap**, `lossPage()`, the same page a lost run shows before its result window: the fatal move, HP over the run from `run.tally.hpTrail`, its numbers and deck); tap one for its page: plate, a grid of its numbers (old entries show "-" for what
-  they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
-  the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
-- **Chad Master Kenmatta** (2026-10-01): the Move Tutor can be challenged to a boss fight from his dojo (a third sign,
-  on him); beating him gives his `unique` Mata-Mindset relic (+1 PP, +1 draw, +1 strength). He's fought in his own Mortal
-  Kombat arena with a Dragonite medallion (`arena: 'kombat'`, `PLACE_ART.kombat`), to his own music (`KEN.music`), and
-  FORTIFY YOUR MIND shouts Wong's line (a move's `sound`, played as the enemy uses it). His first defeat is an achievement
-  window (the relic), his third another, and from then on every map shows his dojo's ❓ room with his face (`save.kenWins`,
-  `save.kenBeaten`). See `docs/reference/events.md`.
+
+Each system below has its full notes (the user's calls, dates, function names) in a `docs/reference/` file. **Read
+that file before changing the system.** The notes were moved out of this file on 2026-10-14 to keep every session's
+context small. Where two notes disagree, the later date wins.
+
+- **Windows and the Pokédex device** (`device-and-screens.md`): native `<dialog>`s through `openDialog` /
+  `closeDialog` in `js/ui.js`. The shop dialog is non-modal on purpose (`.show()`); don't "fix" it. Every window closes
+  on a tap outside it. The Collection is a red handheld (`js/device.js`, `js/collection.js`) whose apps run on
+  `shelfApp()` in `js/bagdex.js`. The title opens on a shut Pokédex, every way into a run boots the device, and the
+  map, Bag, rooms and run-end windows all wear its look (`.mdex-*`, `#room-bar`, `.dev-window`).
+- **Walk-in 3D rooms** (`walk-in-rooms.md`, plus `mart.md` and `events.md`): the Center (`js/center-3d.js`), the Mart
+  (`js/mart-3d.js`), the ? rooms, the grotto, the outdoor events and the gyms (`js/event-3d.js`). The pixel room stays
+  as the fallback.
+- **Starters, skins, legendaries and Abilities** (`starters.md`): only Charmander / Bulbasaur / Squirtle (and Mewtwo)
+  have their own decks, and every other starter is a skin. Legendaries power up (aura GIFs from
+  `tools/legendary-aura.py`) and never evolve. One Ability per type (`ABILITIES` in `js/data/relics.js`).
+- **Mewtwo, the Sealed Gate and the Crystal Depths** (`mewtwo-and-depths.md`): the secret starter, the gate every won
+  run strikes, Mewtwo's own mode, the Depths biome, Eternatus / Eternamax and the Depths' ending.
+- **Cards and types** (`cards.md`; the design plan is `docs/card-design.md`): every effect is a key in `effects`,
+  written out by `describe()`. Keyword boxes come from `cardTerms()`. Upgrades are `<id>+`. Five types, chart in
+  `typeMultiplier()`; elites and bosses ignore it.
+- **Economy, perks, shinies, Level 5 rewards, the Hall of Fame and Record Book** (`economy-and-hall-of-fame.md`).
+- **Chad Master Kenmatta** (`events.md`): the Move Tutor's boss fight and the Mata-Mindset relic.
+- **Safari Zone and catching** (`safari.md`) · **Sky Pillar and augments** (`sky-pillar.md`).
+- **Journey films, the crossroads and branching biomes** (`biomes-and-journeys.md`): the pool biomes (Ruins,
+  Thornwood, Savanna) at either fork, their scenery, films and bonus Pokédex pages.
+- **Badges and the Trainer Card** (`badges-and-trainer-card.md`), plus the "!" trail for new finds.
+- **The Clearing, Secret Base, Poké Mall and Game Corner** (`hub-base-mall.md`): the walkable 3D hub
+  (`js/hub-3d.js`), its PC (`js/pc.js`: mail, missions, house upgrades, patch notes), the Secret Base (`js/base-3d.js`,
+  `js/secret-base.js`, furniture in `js/base-furniture*.js`, models in `js/base-mesh.js`), the mall (`js/mall-3d.js`,
+  `js/mall-furniture.js`, `js/mall-corner.js`) and its arcade (`js/arcade-*.js`). The Clearing's layout of 2026-10-14
+  (the last section there) replaces the older positions in that file.
+- **Gym Leaders** (`gym-leaders.md`: who each friend is, and how the gym works).
+- **Gateway towns** (`towns.md`; switched off, `TOWNS_LIVE`): any town clean-up reads
+  `docs/handoff-town-cleanups.md` first.
 - **Seeded rolls** (Safari Zone phase 1, 2026-10-02): every gameplay roll goes through `random()` / `randIndex()` /
   `pickOne()` / `shuffled()` in `js/rng.js`, never `Math.random` (cosmetic rolls stay on it). A Safari run
   (`run.safari`, `js/data/safari.js`) seeds a stream per biome and per room (`reseed()` in `js/run.js`); every other run
   is unseeded. A new gameplay roll that skips `js/rng.js` breaks the daily run being the same for everyone. Tests:
   `node --test` (`tests/`).
-- **Catching** (Safari Zone phase 2, 2026-10-02; detail in `docs/reference/safari.md`): only in a Safari run's wild rooms,
-  any turn a Throw button (`#throw-btn`) opens a ball picker (`#ball-picker`); a throw costs 1 PP and ends your turn, and its
-  odds are `catchChance()` in `js/data/balls.js` (pure, `tests/catch.test.mjs`), rolled on the seed. A catch pays half the ₽
-  and offers the Pokémon's signature card (`SIGNATURE_FOR` / `sig-*` cards, `safari: true`, never in `ALL_CARDS`); a new
-  Safari Pokémon needs one. `save.safariDex` and `save.balls` (the Game Corner's 4th row). Rare spawns (`markRares()`) run
-  off after 4 turns; Bait / Rock (`SAFARI_ONLY_CARDS`) are Safari-only rewards. The day's first try reads every perk
-  through `perk()` / `dexPerk()` in `js/run.js`, which are off for it (`fairTry()`): read any new perk through them.
-- **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
-  an app on `shelfApp()`) is a banner per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
-  joins it; it opens from the Collection's Safari app, the prep window's Pokédex key and, in a Safari run, the top bar's Pokédex.
-  **Prep window** (2026-10-02): the title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`: today's run,
-  the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start; its Pokédex / Ranks / Buy keys slide their apps over its own screen, `APPS` in `js/safariprep.js`); a 🏆 beside the gem
-  (`#title-board`) opens the leaderboard. Every ball but the Safari and Master Balls is a pack used up when thrown
-  (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws. Since 2026-10-07 every run
-  has 30 Safari Balls (`SAFARI_BALLS`), and replays after the free daily try need a 100-coin **Day Pass** for the day
-  (`safariTicket()` in `js/daypass.js`; `docs/reference/safari.md`).
-  **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 1000 PokéCoins once and doubles its rare spawns
-  on replays (`rareOdds()`, never the first try); the whole Safari Pokédex unlocks Rayquaza. `creditSafari()` in
-  `js/run.js`; earned stays earned in `save.safariDex.done` / `complete`, however the roster grows.
-  **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role
-  `TEMPLATES`, move names, Pokédex line, signature card); `PLACE` grows them with the area's place in the run. A new one
-  also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.
-  **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
-  the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
-  the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged. Its
-  window and the lobbies' Ranks apps (the Sky Pillar's board too) are the Pokédex look on `shelfApp()` (2026-10-07): a
-  banner per board, the handheld one trainer a screen; `shelfApp()`'s `empty(g)` keeps a board with no rows as a banner.
-  **Its scenery** (phase 5b): each area is a `BIOME_ART` entry built from `SAFARI_ART` in `js/scene.js` (Meadow, Forest,
-  Wetland, Marsh, Peak, Desert; painted by `SAFARI_PAINT`, with the Zone's own fence, sign, rest house and tall grass over
-  all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's
-  goal ahead growing nearer every floor, a different roadside landmark each floor. A Safari run asks for its area (`land()` in `js/run.js`)
-  for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.
-- **Journey films** (roadmap steps 10-11, 2026-10-04): between a boss's rewards and the next biome, `walkOn()` in `js/run.js`
-  plays `travel()` from `js/travel.js` (not on Mewtwo's runs or in the Safari): your Pokémon (front GIF, flipped) walks a
-  side-on parallax road, a low-res canvas per layer slid the last fraction of a pixel by CSS so it glides (`into()`; `#travel-scene`, z-index 945), the land turning from one biome into the
-  next by where each thing stands on the road, the sky dusk → night → dawn (land graded between `GRADES`), one set piece
-  mid-way. It ends dark and resolves with a `close()` called once `startBiome()` has the map and biome film up beneath.
-  One `ROUTES` entry per trip: `clearing>shrine` (the Ancient Tree's roots, the Shrine's lantern stair) and `shrine>wastes`
-  (three looks, `a` / `d` dried out / `b`; a rope bridge over a lava chasm that sags and sways under your Pokémon, a
-  route's `deck` in `groundY()`, its `walk` slowing the steps; ash falls, the volcano rises glowing on the horizon);
-  a trip without one is skipped. Since item 20 part c (2026-10-07) every pairing the pool allows has one: the nine newer
-  trips run on one painter, `paintPool()`, crossing two `LANDS` kits (palette, trees, roadside; a new pool biome needs a
-  kit) with the trip's set piece in hooks (its doc comment lists them; `poolTrip()` builds the route). First-time lines once per trip, `save.travelSeen` (`{ 'shrine>wastes': true }`; an
-  old save's `true` counts as the Clearing's). Early in each trip (a route's `fly`) a legendary you haven't unlocked flies
-  over as a silhouette with its shadow on the road, or, with the Sealed Gate at half HP or less, sometimes Eternatus's red
-  glow pulses on the horizon (`pickGuest()`, seeded by `run.tally.startedAt` and the trip). Playtest `?travel=shrine` /
-  `?travel=wastes` (`&at=0.5`, `&flyer=lugia` / `eternatus` / `none`). The Ruins' two trips are under Branching biomes below.
-- **Branching biomes** (roadmap item 19 part a, 2026-10-06; the user's settled calls: other roads' Pokédex pages are bonus
-  pages, Mewtwo keeps its one road, each new biome is bot-checked against the one it pairs with): `BIOMES` in
-  `js/data/enemies.js` is the default road, each entry with its `slot`; `ALT_BIOMES` holds the other roads, since item 20 part
-  a (2026-10-07) one **pool** (`POOL`) of three that can each stand at either fork (`FORKS`, slots 1 and 2): each run rolls at
-  its start which pool biome each fork offers beside its default (`rollRoads(stats.biomesSeen)`, saved as `run.roads`, never
-  the same one twice; an unseen biome is offered before a seen one, a coin flip between equals; a save without `roads` gets
-  `LEGACY_ROADS`, the Ruins then Thornwood), `forkRoads(slot, roads)` the fork's two. A pool biome has no numbers of its own:
-  `walkAt(biome, slot)` lends it the slot's hpMult / dmgBonus / bossBonus, and `forkGrowth()` grows or shrinks its Pokémon
-  (authored at its `home` slot) to the default road's at that slot (average HP per kind and average hit, measured from
-  `BIOMES`); `biomeAt()` returns the walked copy, `BIOMES_BY_ID` the one at `home`, `canWalk(id, slot)` checks a route. The
-  pool: the **Sunken Ruins** (home 1: a flooded temple, 5 Water / 2 Fire / 2 Grass / 3 Normal wilds, Alphas Lickitung / Herdier / Audino, bosses
-  Dunsparce / Wigglytuff / Granbull), since part c (2026-10-07) the **Thornwood Jungle** (home 2: a primeval forest, 7 Grass / 2 Fire / 2 Water / 1 Normal wilds (the only Normal one Slakoth, Team Rocket's whole
-  `team` there), Alphas Vigoroth / Delcatty / Spinda, bosses Blissey / Porygon / Porygon2; its look is part d's, below),
-  and since item 20 part a the **Sunscorch Savanna** (home 1: a sun-baked grassland of wildfires round one watering hole,
-  places Tall Grass / Burnt Plain / Watering Hole / Sun Rock; 6 Fire (Ponyta, Magby, Ninetales, Arcanine, Houndoom, Simisear)
-  / 2 Water / 2 Grass / 2 Normal wilds (Meowth and Minccino, Team Rocket's), Alphas Patrat / Buneary / Glameow, bosses
-  Castform / Loudred / Munchlax; its look is item 20 part b's, below). A win
-  "conquered" its last biome (`conquered(route)` in `js/halloffame.js`, from the `route` a record keeps; a Wastes descent
-  scene unless the last biome is another road's: `descent({ land })`, `jungle` / `savanna` / `ruins`, each its own sky and skyline, `onSkyline()` in `js/descent.js`). The other roads stay hidden, no crossroads at all, until one won run (`stats.runsWon`, any starter or Level; `roadsOpen(stats)`, `ROADS_WINS`: 1 since 2026-10-11 for Meowth, 2 from 2026-10-10, a Level 2+ win with each type before); the result window says when they open; a peeked run always gets the fork),
-  `biomeAt(route, slot)` the biome a run is in. The run saves `run.route` (a biome id per slot; a save without one is the
-  default road, no version bump). The Shrine / Ember Badges read their own bosses from `dex.defeated` (a slot's
-  `bossesDefeated` is any road's), the Wanderer a win through every road at either fork, the Explorer every main biome entered. After a boss's rewards `walkOn()` plays `crossroads()` (`js/crossroads.js`,
-  `#crossroads-scene`, z-index 944 under the journey film; part b, 2026-10-06): a dusk fork painted on one low-res canvas, the
-  path splitting round a signpost (an arm a road in its biome sign's colours, `ARMS`; a new biome needs one) into two gaps in
-  the treeline, each a glimpse of its biome (`sceneShot(id, { time: 'dusk' })`), a card over each road (sign, bosses as
-  silhouettes until `dexSeen()`, wild types), your Pokémon from behind on the path. Since 2026-10-11 (the user's ask: keep the scene, move like in 3D) you walk it: a tap (or hold and drag, arrows / WASD) walks your Pokémon there, in ground perspective (`toWorld()` / `fromWorld()`), easing down to 70% of the size it loads in at by the fork and held there (the user's pick: full perspective was tried and felt too much), the painting in layers (`far`, `ground`, `trees`, the post) under a still camera (`cam` 0: a following, parallax camera was tried and the user didn't like it); walking onto a road picks it, on up it takes it. Since later that day (the user's pick: "I want the 3D room instead") it is a 3D place, `js/crossroads-3d.js`, tried first by `crossroads()` (`?xr2d`, or no Three.js, paints the old one): the same button, ask and walking, the floating cards replaced by a notice board at each road's mouth (`boardMesh()`, the Clearing's `kioskArt()` in its `ARMS` colours; a tap walks your Pokémon up beside it and opens `.xr-panel`: sign, places, bosses, wilds, Pokédex page; reading never picks a road; the user's pick, same day), your Pokémon easing to 70% of its loaded size by the fork (`SHRINK`; the painted one too), in the painting's camera (level and high over the path, the horizon shifted up by a view offset to the painting's 42% / 50%, its fork and your Pokémon's feet at the painting's heights, `fitCamera()`), open meadow like the painting (a big tree cut by each screen edge, `edgeTree()`, the far treeline low across the horizon, `treeline()`, squashed to the camera's height, a wide gap per road showing a faded `sceneShot()` of its biome), a signpost whose arms light on a pick, fireflies; your Pokémon keeps its size on the screen until it walks off. A tap (card or road) or an arrow key picks,
-  a second tap, the button or Enter takes it: it walks up that road into the dark. No way out without choosing. It resolves
-  `{ id, close }`, closed once the journey film or the map covers it. Never on Mewtwo's or a Safari run. Playtest
-  `?crossroads` (`&starter=`, `&stage=`, `&slot=2` for the second fork with `&from=ruins`, `&road=savanna` the pool biome it offers, never saved). `dealEnemies()` / `buildEncounter()` / `buildKenEncounter()` / `pickEnemyId()` take the
-  biome object (or a slot number for the default road). Every per-biome array (events' numbers, Kenmatta's HP,
-  `deepestBiome`, `bossesDefeated`, `map${n}` music) stays by slot; Team Rocket's `team` and `BOSS_PRELUDE_LINES` are by
-  biome id. `stats.biomesSeen` lists every biome walked into (the Explorer Badge's: every main biome entered, the user's call; six since item 20). The pool's
-  Pokédex pages are `BONUS_PAGES` in `js/data/pokedex.js` (after the Depths in `ALL_PAGES`, so old indices and numbers stay;
-  the Ruins No.072-089, Thornwood No.090-107, the Savanna No.108-125; 500 PokéCoins each once, `bonus`, and since 2026-10-11 a perk each like the three's, `DEX_PERKS` (the user's call: perks that show or choose, never make a run stronger, so no bot test): the Ruins' Unown Rubbing reads a ❓ room's event on the map (`rubbing-btn` beside the Scope, `node.read`), Thornwood's Tracker's Eye rings wild fights by match-up (`.map-match`, `matchUp()` in `js/map.js`), the Savanna's Wayfinder swaps the crossroads' pool road (`wayfinder()` / `swapRoad()` in `js/run.js`, `run.wayfound`, `swap` in `crossroads()`); never in `DEX_PAGES`; "???" until met, `bonusKnown()` in `js/pokedex.js`). The
-  pool's Pokémon are **Safari Pokémon, shared** (2026-10-07, the user's call: official Gen 5 sprites only, the Gen 6-9 Showdown
-  ones they had were swapped out), like the Safari's 44 borrowed wilds: the biome's `ENEMY_DEFS` entry wins over
-  `safariMonDef()` everywhere, Safari included, and keeps the Safari Pokédex's line as `safariLine` (`js/safaridex.js` reads it);
-  their area, rare spawn and `sig-<id>` card stay in `SAFARI_MONS`. **Its look**
-  (part b, 2026-10-06): `BIOME_ART.ruins` in `js/scene.js`, a temple drowned in a jungle lagoon. Its ground is water:
-  `ruinsFloor()` mirrors the backdrop in it, things standing in it are painted with `dry()` and mirrored by `reflect()`, and
-  `rippleRuins()` ripples every wet pixel each frame from a still `snap` (`ruinsSettle()`, after the landmark); a new thing
-  in the water must be painted `dry()` (or it ripples) and reflected. Places: Flooded Steps (`steppedTemple()`, its stair on
-  under the water, an aqueduct pouring), Drowned Halls (`colonnade()` in perspective, lintels, light shafts), Sunken Court
-  (`colossalHead()`, `fountain()`, lily pads), Tide Altar (`altarRing()`, `tideAltar()`: the tide wheel, whose 12 runes
-  `wheelRunes()` draws live). Its boss prelude (`ruinsWake()` / `ruinsPortal()`, `TIDE_AT`): the runes light round the
-  wheel, the pool spins into a whirlpool (`whirl()`), a geyser bursts up through the altar, then a wave rises over the
-  screen. Landmarks `LANDMARKS.ruins`; runes glow (`S.rune`, `life.runes`). `kin: 'shrine'` now only dresses its ? events'
-  outdoor props (a place's `biomes[biome]` wins over `biomes[kin]`); its grotto is its own (a Dive Ball chest, tide pools).
-  Intro film `js/ruins-intro.js` (`RUINS_INTRO`: tilts down out of a drizzle, glides between 3D columns, runes plink,
-  Pokémon surface with a `splash`, a film's `pop` sound); map `PALETTES.ruins` (`paving`, `flood`, the `colonnade` prop);
-  signs glint (`runeGlint`). Journey films `clearing>ruins` (down a flooded stair in whole steps, `stairDeck()`, wading
-  a drowned arcade) and `ruins>wastes` (the lagoon boils away round geysers; `volcano()` is shared with the Shrine's
-  trip). Playtest `?area=ruins` (`&stage=`, `&kind=boss`), `?travel=ruins`, `?travel=wastes&from=ruins`. Before part b
-  it borrowed the Shrine's scenery. **Thornwood's look** (part d, 2026-10-07): `BIOME_ART.thornwood` (`kin: 'clearing'` dresses
-  its ? events' props only), `thornBackdrop()` / `thornFloor()` / `thornFront()`, life in `drawThorn()`. Places: Tangled Edge
-  (the forest's wall, giants standing out of it, `emergent()`, a dark way in, `bramble()`s, a trail), Canopy Walk (a plank
-  deck, `canopyDeck()`, its far rail over a sea of treetops, `crowns()`, mist drifting, `life.thMist`; giants' trunks,
-  `barkColumn()`, with `platform()`s and rope `bridge()`s), Strangler Grove (`gloomUnderRoof()`, figs as a lattice of cords,
-  `cordTrunk({ lattice: true })`, aerial roots, `glowCap()` fungi), Heart Tree (`heartTree()`: a cord trunk, its heart in a
-  split, `life.heart`, `archRoots()` over the arena). Its prelude (`thornWake()` / `thornPortal()`, `THORN_AT`): `tendrils()`
-  writhe in from the edges as the heart beats faster, `thornBurst()`, then a briar closes over the screen. Spores and the
-  heart glow (`S.spore`, in `GLOWS`). Landmarks `LANDMARKS.thornwood`; grotto `treasure.biomes.thornwood` (a tree hollow,
-  `grottoRoots()`, a Nest Ball, `marks: 'nest'`). Intro film `js/thornwood-intro.js` (`THORNWOOD_INTRO`: down through the
-  canopy's leaves, along the trail between 3D giant trunks to the Heart Tree). Map `PALETTES.thornwood` (`litter`, `canopy`,
-  `bramble`, the `giant` and `bloom` props). Journey films `shrine>thornwood` (a vine-choked torii) and `ruins>thornwood` (a
-  fallen log over a river at a waterfall's foot), sharing `farAndHills()`, `jungleTree()`, `jungleBush()`, `fernFront()`. A run
-  lost at its last boss falls through a jungle floor (`descent({ land: 'jungle' })`, from `strikeGate()`). Playtest
-  `?area=thornwood`, `?travel=thornwood` (`&from=ruins`), `?strike=40&land=jungle`. **The Savanna's look** (item 20 part b,
-  2026-10-07): `BIOME_ART.savanna`, `savannaBackdrop()` / `savannaFloor()` / `savannaFront()`, life in `drawSavanna()` (a heat
-  shimmer over the horizon by day, embers, glowing cracks `life.svGlow`, the far wildfire `life.svFire` and its smoke
-  `life.svSmoke`). Places: Tall Grass (acacias, a track, `tallGrassEdge()`), Burnt Plain (`wildfireLine()`, `charredGrove()`,
-  stumps smoking), Watering Hole (`wateringHole()`, reeds, a `baobab()`), Sun Rock (`sunRock()`: a prow jutting out from the
-  right, the sun moved up over it, `life.rock`). Its prelude (`savannaWake()` / `savannaPortal()`, `FLARE_AT`): the sun swells,
-  rays wheeling, then `grassFire()` races out from the rock (it burns on, sparse, through the fight); a wall of flame rises
-  into the white. Landmarks `LANDMARKS.savanna`; grotto `treasure.biomes.savanna` (sandstone, citrine, a Fast Ball). Intro
-  film `js/savanna-intro.js` (`SAVANNA_INTRO`: up out of the tall grass, over the plain between 3D acacias to Sun Rock). Map
-  `PALETTES.savanna` (`savgrass`, `scorch`, `kopje`, the `acacia` prop). Journey films `clearing>savanna` and
-  `savanna>wastes` (`ridgeFire()`, `acaciaMid()`, `embersUp()`, `sunRock()`). Playtest `?area=savanna`, `?travel=savanna`,
-  `?travel=wastes&from=savanna`, `?strike=40&land=savanna`. Playtest `?biome=ruins` (any biome; `&starter=id`,
-  `&level=0-5`; `peekBiome()` in `js/run.js`, never saved). Tests: `tests/biomes.test.mjs`.
-- **Badges** (roadmap item 17 part a, 2026-10-05): `BADGES` in `js/data/badges.js` (id, `group`, name, `icon` for part b's
-  pixel art, `emoji` for text lines, `text` how to earn, `test(stats, save)` like `ACHIEVEMENTS`'), in nine `BADGE_GROUPS` (130 since 2026-10-07: the user's list, then 6 augment badges):
-  Journey (each biome's boss, the Ruins' and Thornwood's read from `dex.defeated`, Champion,
-  Fire / Water / Grass, Wanderer: a win through every road, at either fork, Explorer; the Savanna's Sun Badge, page and Savanna Hunter badges like the Ruins' and Thornwood's), Trainer Levels (Rookie 1 to Gold 5, a crown per type, Master,
-  Veteran: 5 starters on Level 5), Challenges (one win's Record Book entry, Mewtwo's skipped: full HP, 12 cards, no move
-  forgotten, under ₽100 spent, under 60 turns, 5 Alphas, no item; plus no rest, a 100 hit (losses too), 30 Tide), Collector
-  (shinies, every starter, every ball held at once, every perk maxed, 10,000 coins earned), Pokédex (each page researched,
-  and every Pokémon on the Ruins' / Thornwood's / Depths' page beaten: the main game's "capture"), Secrets (Dojo, Black Belt,
-  Seal, Depths and Eternal `secret`, Pokédex, Safari, Streak 3 / Thunder 5, every legendary), Safari Zone (opened, 7 days,
-  the Master Ball thrown 10 times: it's one buy with a throw a week, so `balls.masterThrows`, `masterThrows()` in
-  `js/data/balls.js`; 1/5/10/15/20 different rares, each area's page, each area's rares, the whole Safari Pokédex), Safari
-  types (each area x each type it holds, generated from `SAFARI_DEX_PAGES`, so a new area or type adds its own) and Sky
-  Pillar (each guardian floor 10-100 from `bestEver`; 1-50 guardians in all, `tower.guardians`, counted in `climbed()` and
-  read by `guardiansBeaten()`, an old save proving its best climb's or 10 a summit; Sky King, 4 weeks `tower.weeks`).
-  `towerWeeks()` / `safariDays()` read an old save as one. The Game Corner checks
-  them after a purchase too. Each test reads only what the save already keeps (the
-  Level legendaries, `maxLevelWinByType`, `level5WinsBy` / `level5Jackpot`, the Hall of Fame, `winsBy` by the starter's
-  type), so `checkBadges()` in `js/progress.js` (pure part `newBadges(save)`) granting into `save.badges` at load (`init()`
-  in `js/main.js`, silent) gives an old save everything it can prove on day one. In a run it's quiet, no window: a
-  `badgeLine()` in the fight's reward box (`unlock()` in `afterFight()`; Kenmatta's Dojo Badge in his relic window, once
-  `kenWins` is saved) and in the result window (`announceUnlocks()` keeps them in `run.badges`). Peeked runs grant none.
-  Tests: `tests/badges.test.mjs`. **The Trainer Card** (part b, 2026-10-04): `js/trainercard.js`, the Collection device's ID strip
-  (`ownerStrip()`, drawn in the device's screen; `#trainer-dialog` from the title's Trainer Card sign and the Bag): the leaderboard nickname (`trainerName()`, never the sign-in's real name) or
-  TRAINER (a tap on NAME edits it in place, `nameField()`, the same nickname as Settings' box, 2026-10-08; kept in the save's `trainerName` since then, so it follows a cloud save, a device's old `pokedb.safari.name` moving in if the save has none: `nameFor()` in `js/leaderboard.js`; posted board entries keep the name they went up with), wins, Pokédex / Safari counts, gold stars, play time (`stats.playMs`: `initPlayTime()` feeds `addPlayTime()` in
-  `js/storage.js`, which adds only its own minutes to the save on disk and never wakes the cloud, so a hiding page can't
-  write an old save over a cloud download), the partner (a tap picks it: any owned starter at any stage, a defeated Pokédex entry or a Safari catch, `partnerChoices()`, saved as `save.partner`; an owned shiny comes both ways, a "Shiny" group in the picker and a ✨ toggle on the card (`:shiny` on the key; only starters have shiny sprites); Auto is the starter with the most wins; it also shows on the device cover and ID strip), and the Badge Case. Each badge is drawn as smooth SVG (2026-10-05, no pixels) from `LOOK` (a shape
-  polygon, three colours, a glyph) by `badgeArt()`; a new badge needs a `LOOK` line (the bulk ones are made in loops after it: `AREA_LOOK`, `TYPE_LOOK`, `BIOME_INK`). Its colour steps up with badges
-  (`cardTier()`: green, bronze 10, silver 25, gold 40, violet with the Depths Badge). Badges not in `save.badgesSeen` pop in
-  the next time it opens, and the gold "!" follows the trail (2026-10-07, the user's ask: it was hard to find what was new): on the
-  home screen's ID strip, the new badge's group and the badge itself (`.tc-new`, a gold ring), opened scrolled to the first; a
-  badge is seen only once tapped (`markSeen()` in `js/trainercard.js`), or by "Clear all !" when there are several.
-  **New finds** get the same trail (2026-10-08, the user's ask: a relic found on a climb showed no "!"), in every mode: the
-  first `markSeen()` of a relic, item or move also files it in `save.newFinds`, and while any is there the title's Pokédex
-  sign, the top bar's / map's / rooms' Home keys (`.dex-news`, `deviceNews()` in `showBadgeNews()`), the device's LED, the
-  app's tile, the group's banner and the slot (`shelfApp()`'s `fresh` / `shown`; the group opens on it) or the Moves tab
-  and card wear a "!"; once on screen it's cleared (`clearFinds()`). `newFinds()` ignores ids no app lists (tokens, status cards). **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
-  Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
-  (`badgeItem()`); `showBadgeNews()` colours the title's Pokédex sign and the Bag by tier and puts a gold "!" on them while a badge
-  is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Pokédex** (2026-10-05, the user's pick over
-  two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
-  `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
-  (`docs/reference/title-screen.md`).
-- **The Clearing's PC** (2026-10-09, the user's ask; finished the same day): right of the plaza (`PC_AT`; a real 3D model since 2026-10-09, the user's ask, `pcModel()` in `js/hub-pc.js`, its screen's scan lines rolling, `livePc()`; was `pcArt()` in
-  `js/hub-3d.js`, after Pokopia's Pokémon Center PC), a tap logs on to `js/pc.js`, full screen over the hub: Gen 3's menu,
-  the Mailbox (the big PokéCoin prizes, Pokédex / bonus / Safari pages, the whole Pokédex, a type's first Level 5 jackpot, feats' coins, are posted there as letters by `post()` in `js/mail.js`, `save.mail`, and claimed with a little moment: the envelope opens, the letter rises, the coins count up; an envelope bobs over the PC while one waits, `pcMail` in `js/hub-3d.js`; with the Signs title they're paid at once; `?mail` drops sample letters into an empty mailbox), Walking buddy and Base residents (straight off the menu since 2026-10-11, the user's ask; Bill's PC held them; both pickers say the buddy and the Pokédex partner differ), your PC (Rename, the same nickname as Settings'), Prof. Oak's PC (the Pokédex rating, a bar per page and a Next unlock card cycling hints, `rating()` / `hints()`), Decorations (your PC's: the base's furniture, in the room or in storage, Put away; every base owns one Storage PC, `FREE_PC` in `js/secret-base.js`, which tapped in the room opens it there, `logOn()` in `js/base-3d.js`), Sign in / Cloud save (the cloud save's window, `openCloud()`; the title corner's Sign in PC is hidden in hub mode since, `#title-account` in `css/hub.css`), the Hall of Fame / Record
-  Book (the device's app, `onApp`) and Exit PC (was Log off) (`pc-on` / `pc-off`). **The walking buddy is not the Pokédex's partner**
-  (the user's call): `buddy()` / `buddyChoices()` in `js/trainercard.js`, the save's `buddy`, only first forms of owned
-  starters, no legendaries (too big to walk about), shinies once bought; the Clearing, the Secret Base and the Poké Mall
-  all walk it, `partner()` stays the cover's, ID strip's and Trainer Card's. Logging off swaps it in place (`swapBuddy()`).
-  Base residents write `secretBase.mons` (`residents()`, `RESIDENTS` 6, shared with `js/base-3d.js`).
-- **Daily and weekly missions** (2026-10-11, the user's ask: more ways to earn PokéCoins; balanced the same day, the
-  user's call "all worked out and balanced"): 3 a UTC day and 3 a week (its Monday, the Sky Pillar's), one per `tier`
-  (easy / medium / hard, paying `TIER_COINS` 30 / 45 / 65 a day, 200 / 250 / 300 a week; all three claimed pays `BONUS`
-  60 / 250), rolled from the date's seed out of the pool open to that save (`needs`: Safari / Sky Pillar / crossroads /
-  Level 3 / a skin wait for it), never two on one event or one `group` (type-locked goals, bosses, modes, a week's run
-  wins); `DAILY` / `WEEKLY` / `rollMissions()` in `js/data/missions.js`, pure, `tests/missions.test.mjs` (every roll is
-  one a tier; every `on` is sent by the game). Goals were set from the human-like bot at Level 0 (150 runs a type, a
-  scratch copy of pokeDB-sim counting Burn / Tide / Seed / Powers / exhausts / biggest hit / turns a fight): easy is done
-  in a first biome, medium about a run into biome 2, hard one good run (the numbers are in the comment over `DAILY`).
-  `track()` in `js/missions.js` counts play from `mission()` in `js/run.js` (never on a peeked run); a fight's in
-  `collect()` (a refresh replays the fight), from battle's `tally` (`burn` / `seed` / `powers` / `exhausted`, and
-  `tallyOf()`'s `tide`); a mission's `distinct(ctx)` counts each type or day once. Saved in `save.missions`; a roll
-  holding an id taken out of the pool is rolled again. Claimed at the Clearing's PC (MISSIONS, `questRow()` in
-  `js/pc.js`), whose "!" stays while one waits (`pcBeckons()`); with the Signs title they're paid at once. A new mission
-  is a pool line in a tier (its `on` event fed by a `mission()` call).
-- **House upgrades** (2026-10-10, the user's ask after WoW's housing blueprint): the PC's HOUSE UPGRADES page draws the Secret
-  Base from above (`blueprint()` in `js/pc.js`: grey rooms, Entry under the main room, a tab per floor, `floor`). First the main
-  room grows 11x8 to 14x10 (`BIG_PRICE` 500, `buyBigRoom()`), with no doorways of its own (the user's call: they're the
-  blueprint's to place). Then as many rooms as you like (no cap, the user's call), `ROOM_PRICE` 500 each: a green pip on any
-  tile of any wall builds one there (every kind has a pip on every edge tile but the corners, generated after its authored
-  ones so saved links' pip indices hold), Turn cycling its fits (`fitsOf()`, one per footprint); closet, hallway, bedroom,
-  den, L-shaped, cross-shaped, great hall (`ROOM_KINDS` in `js/data/house.js`; `tests/house.test.mjs`). A new room joins only
-  where it was built; a gold pip opens a doorway between two rooms already wall to wall (`joinPips()` / `buyDoor()`,
-  `DOOR_PRICE` 100). Upstairs: on a floor's tab the floor below shows faint, green pips on its back walls build a room a
-  floor up (`lv`, `fitRoom(…, up)`), a link ending `'up'`, walked as a staircase (steps up into the back wall, the top of a
-  flight going down in the room above; `addDoor()` in `js/base-3d.js`), its title "Bedroom · 2F". A tapped room can be taken
-  down (`takeDown()` / `removeRoom()`: never the main room or one others are only reached through; its furniture is back in
-  storage, which is what you own less what stands in rooms; no refund). The plan is
-  `secretBase.house`. Each room is walked as its own diorama (the user's pick over one open dollhouse): doorways are a
-  dark way through a wall or a doormat on the front edge, a tap walks your partner through and `travel()` in
-  `js/base-3d.js` builds the next room. The room you're in keeps its things on the base itself (`items` / `wall` /
-  `floor`, `here`), the others on their records (`goRoom()` / `roomContents()` in `js/secret-base.js`), so anything
-  outside the room counts every room's (`allItems()`, `eachRoom()`); `useRoom()` sets the live `COLS` / `ROWS` and the
-  floor mask, walls and doorways `fits()` reads. Opening the base always starts in the main room. A new doorway clears
-  its furniture into storage (`clearDoors()`). **Duplicate** (the same day): the PC's DUPLICATE copies any owned piece into
-  storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
-  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
-- **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
-  names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
-  achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
-  shrink, so nothing is saved; `owns()` in `js/secret-base.js` adds one to `owned[kind]`, every colour with it). The daily
-  stock skips them (`furnitureStock()`); the Shop tab lists the unearned after the stock, greyed with an "Earn" tag, a
-  tap saying how (`lockedEarned()`, `howToEarn()`; a secret source's piece is a black "???"). A new earned kind's source
-  must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
-  user's calls, 2026-10-09). **Live since 2026-10-09** (the user's call): `secret-base` was
-  merged into `main`, the Clearing, Secret Base and Poké Mall with it; work goes to `main` again like everything else.
-- **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
-  100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
-  seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
-  replays and Practice (any owned starter but Mewtwo) don't. Flights of 10 floors: 9 landings of 2-3 doors, then a guardian
-  (a biome boss in turn; Rayquaza on floor 100, `rayquaza-guardian`, the top: beating it wins the climb, `TOP_FLOOR`, with a
-  summit version of the win scene, `draftSummit()` / `.hof-scene.summit`, never saved as a run); a guardian evolves you at 10
-  and 20 and heals 50%.
-  Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
-  `run.tower` (`isTower()`, seeded streams keyed by `zone()`); each flight is still a `landingMap()` (`js/map.js`) underneath,
-  but since part b (2026-10-05) the tower is the map: `js/tower.js` paints a side-on cutaway behind the run card (doors with
-  room icons, the walk in, the spiral-stair climb with the altitude gauge (the floor range on the bar's LCD, numbers on gold plaques), lit floors below with a
-  statue of every foe beaten, `run.tower.trail`), the guardian intros (Rayquaza's the grandest) and the fall on a loss, all
-  from `js/tower-art.js`'s painters, which also give its fights a tower-room arena (`showTowerScene()` in `js/scene.js`) and
-  the summit win scene its backdrop (`paintSummit()`). The windows show the sky by height. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
-  Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's Game
-  Modes, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
-  **Augments** (roadmap item 21 part a, 2026-10-07): no perks on any climb (`fairTry()`); one of three augments
-  (`js/data/augments.js`, shared with the bot) before floor 1 and after every guardian, Silver / Gold / Prismatic by height,
-  dealt from the week's seed (`augmentOffer()`), 1 reroll; effects are data keys summed by `augEffects()` (shown in the Bag's Augments pocket, the climb dock's 5th button) and read off
-  `battle.aug` in `js/battle.js` and `augs()` in `js/run.js` (the file's header lists every key). Saved on `run.tower`, posted
-  in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
-  a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and
-  flipped with tier chimes (`aug-*` synths in `js/audio.js`), the reroll turning them away, and the picks under each climb on
-  the board. Part c (2026-10-07): 113 augments in all (116 since part d, 2026-10-10: Fire's Flash Fire, Magma Armor and Eruption), 10 trade-offs (`trade: true`, a red chip: Darkrai's Deal's Prismatic
-  comes from the week's seed, `dealPrismatic()`), 6 sets (`AUG_SETS`: 2 / 3 held add bonus keys inside `augEffects()`; a set
-  chip on the tile, a row per set in the Bag; High Roller's 3 is a 4th offer that never shifts everyone's three,
-  `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment
-  needs an `ICONS` line; a new fight key a mirror in pokeDB-sim's engine, whose bot picks augments by measured value
-  (`sim/augranks.json`). Detail in `docs/reference/sky-pillar.md`.
-- **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; live on `main` since
-  that day): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots
-  in and talks (it has quit Team Rocket and means to earn its coins honestly) (`js/meowth.js`, `meowthTalk()`, `meowth` in `crossroads()` / `crossroads3d()`), then saves `cornerOpen`,
-  which takes the tape off the mall's Game Corner front (`syncShop()` in `js/mall-3d.js`) and puts up its ribbon, Meowth
-  beside it (a `RIBBONS` line like Smeargle's, saved `cornerRibbon`; `?ribbon` shows both). Every save meets it, old ones
-  at their next crossroads (the user's call: everyone should witness Meowth); the Game Corner app is open to all from the
-  start. `?meowth` shuts the shop again; `?crossroads&meowth` plays the talk.
-- **Gym Leaders** (2026-10-13, live since patch 1.16; the user's friends, history in `docs/roadmap-done.md`): `GYM_LEADERS`
-  in `js/data/gym.js`, 13 leaders, two or three a biome, each sending out its bosses (`leaderFor()`; never Eternatus, the
-  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by boss, `talk` one for the slide-in talks only,
-  Clarence's), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
-  Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
-  `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
-  the room or, without 3D, over the battle; after a win their `beaten` pair is split: the losing line slides in on the battle
-  screen as their Pokémon falls (`afterFight()`), the last, handing over the badge, slides in back in the gym, every win (a repeat's badge caption counts it, `again`), then your Pokémon evolves there before you walk out (`evolve()` in `lastWords()`, `swapMate()` in `js/event-3d.js`, `result.evolved` skipping the rewards' evolution; 2026-10-13, the user's ask)
-  (`gymRoom(…, won, said)`); you can't walk while a leader talks (`freezeEvent()` in `js/event-3d.js`, and no walking while
-  a `.gym-scene` is up; 2026-10-13, the user's ask); the gym's back is `gymBack()`: a wall of columns, the ace as twin
-  colossi, the arch's lintel GYM LEADER + name, a rune ring in the court and embers lit with the great fires; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
-  each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
-  Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite, a `GYM_INK` line
-  (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd
-  win hands over their signed poster (`<id>poster`, a wall piece painted from their sprite in `js/base-furniture-gym.js`,
-  earned by `js/data/furniture.js`'s `gym` source), the 5th their Gold badge (`gym-<id>-gold`), `beatenTalk()` /
-  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
-  (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
-  `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
-- **Gateway towns** (2026-10-13; the code is on `main` since 2026-10-14 with the new Clearing, but **switched off** till the user says: `TOWNS_LIVE` / `townsOpen()` in `js/data/towns.js` (off: no town after the journey film, no requests counted, the Clearing's Waystone only reading `RIDDLES`), `?towns` on for a page load, `?town=` peeks either way; their patch lines wait in `TOWN_NOTES` in `js/data/patchnotes.js`, back into `NEXT` when they go live; `docs/roadmap.md`'s Towns and Waystones): the
-  biome ahead's town is walked after the journey film (`walkOn()` → `townRoom()` in `js/run.js`, saved as `run.town`),
-  never on Mewtwo's or a Safari run. Its data and request rules are `TOWNS` in `js/data/towns.js`, the save side
-  `js/towns.js` (`save.towns[id]`: `done` friendship, `got`, `ready`, `met`), the room `buildTown()` in `js/event-3d.js`
-  (kind `town`, laid out from `town.map`, a tile map like a Pokémon town's, the user's ask after their picture; its far gate
-  is `R.exitAt`, its houses' doors `R.doors`, its folk `townCrowd()` on `makeCrowd()`, its camera higher, `pitch`). Houses
-  with a `home` are walked into (`homeRoom()` in `js/run.js`, kind `home`, `HOMES` in `js/event-3d.js`: Delibird's shop
-  holds the trade, the Gym Leaders are at home, `R.talks`), the rest knock. A town makes no run stronger: one sidegrade
-  trade, requests paying PokéCoins. `?town=shrine`. Since session 3 (2026-10-13) the Wastes' **Cinder Springs** too (`?town=wastes`):
-  a town's `style` picks its dress (`TOWN_STYLES` in `js/event-3d.js`: ground tints, flowers, litter, forest, houses, gate,
-  lamps, what drifts; the Shrine's is `village`, the Wastes' `springs`: `crags()`, adobe `cabin()`s with smoking chimneys,
-  `mineGate()`, `minehead()`, `springs()` on `o` tiles, `puffs()` of smoke and steam), its map tiles `= c k o` (rails,
-  crate, barrel, spring) beside the village's; `HOMES` is by town (`leaderAt`, `castAt` for the bathers, `stage` for the
-  theater), a home's `cast` its Pokémon to chat to, `nightAt` / `nightSub` / `night` its leader's evening (Jahmes asleep
-  at 23, Clarence live at 21). Since session 4 the Ruins' **Driftwood Landing** (`?town=ruins`, `style: 'lagoon'`): a ring of boardwalk on stilts over the lagoon round the temple's island, the ground cut away over the water (`holes`, its tiles `~ - | y n`), a style's `ground` / `extras` hooks, homes' `walls` (`boards`, `aqua`) and a home's `names` (Kayl's cats). Every town gets its own layout, not a copy (the user's ask). Since session 5 Thornwood's **Highbough** (`?town=thornwood`, `style: 'canopy'`): a village in the treetops, round platforms on giant trunks scattered over the drop and joined by rope bridges two tiles wide (`-`, slats with gaps you see through, hand ropes sagging, netting; `bridgeAxes()` tells a lane's way from its reach; the user's ask, 2026-10-14: a big Pokémon hung off one-tile ones), a rope railing round every deck over the drop so where you can walk reads at a glance, a ghost town (the user's call, 2026-10-14: every townsperson, Mismagius's Curio Shop and the Withered Nursery's sleepers are Ghost types, will-o'-wisps drifting), the jungle floor far below (`DROP`) under two layers of mist tinted by the hour; `canopyGround()` / `canopySupports()` (a trunk under each platform, struts, a rim curving round rounded corners, `ROUND`) / `canopyRim()` / `jungleFloor()`, lone giants (`|`), lifts (`y`), `treehouse()` (Phil's `haunted`, Ricky's `gamer`), the glass `nursery()`, `greatTree()` (its deck in rings of planks), `vineGate()`; every crown (`crown()`) fades while your Pokémon is behind it (`B.crowns`), so a tall town never hides you; homes' walls can be `dusk` / `glass`. Since session 6 the Savanna's **Sunwell Bazaar** (`?town=savanna`, `style: 'bazaar'`): a caravan trading post, one dusty road straight across the map on the diagonal (its wheel ruts one pair of grooves down its middle, `savannaGround()`), the market where it crosses the middle round the Waystone (`n` stalls, `stall()`), the watering hole cut into the ground (`~`, `holes`, `wateringHole()`: a mud bed, still water, banks, reeds and bulrushes, the jetty `-` on posts), round mud huts under conical thatch (`rondavel()`, crests and name plates attached to the hut so a tap on them is its door), Persian's striped tent (`bazaarTent()`), the sandstone `caravanserai()` (walked in: the caravans' Pokémon resting), `wagon()`s (`kind: 'wagon'`, locked), the `windpump()` and `kopje()` landmarks, the bush of acacias, baobabs and termite mounds (`savannaBush()`; `|` a lone acacia in town), the `sunGate()`; homes' walls `tent` / `sandstone` / `mud`. `&home=<building id>` on `?town=` walks straight into that house (`peekTown()`; `&gymwins=1` puts the leaders at home). A new town is a `TOWNS` entry, a style (or the village's), and a `HOMES` line a home. **The Waystone and visits from home** (session 2, 2026-10-14; the Clearing grown to 20 x 16 for it, `X0` / `Z0` keeping the back where it was): one Waystone on the plaza's Poké Ball (`clearingWaystone()`, on `START`'s tile; one, not five, the user's pick 2026-10-14), five crystals orbiting its tip, one a town in its `RING` colour (`RING` in `js/data/towns.js`, a later town a line there), each lit once its town's friendship mends its Waystone (`MEND_AT`, `isMended()` in `js/towns.js`, the town's own Waystone whole then, `wholeWaystone()`), the worn ring path round it (`RING_R`), its menu's step a tile in front of it (`SPAWN`); your buddy walks in from the gate to the north avenue's crossing with the ring road and first stands there (`ARRIVE`, 2026-10-14, the user's ask); a tap opens its menu (`showWaystone()`, `.hub-card.way`: the Pokédex shell round a green LCD, a town a row, mended ones with Travel, met ones their friendship n/5, the rest ???), and Travel walks your buddy there outside any run (`warpTo()` in `js/hub-3d.js` → `onTown` → `visitTown()` in `js/run.js`: a throwaway run that saves nothing of itself, `visiting` / `isVisiting()`, but requests, buys and invites are real), and its Waystone, far gate or Leave bring you home in front of the Clearing's Waystone (`goHome('waystone', town)` → `cameHome()`). On a visit the trader's Shop sells the town's furniture shelf (`js/town-shop.js`, `SHOP_SHELVES`, never in the mall's stock), and a tapped townsperson asks once to move into the Secret Base (`inviteFolk()`, `save.townsfolk`, `resident()` in `js/pc.js`). The Clearing's own houses are `CLEARING` (the Nietos', `HOMES.clearing`, `visitTown(…, 'clearing', …, 'nietos')`); the house always stands, but the Nietos (and their Kangaskhan) are home only once THE NIETOS are beaten at their Gym, and since 2026-10-14 not at all, **switched off** while the user works out how they turn up (`NIETOS_LIVE` / `nietosHome()` in `js/data/towns.js`, the home's `out` line, and `leaderVisitor()` leaves them out of Secret Base visits; `?nietos&gymwins=1` brings them home for a page load); Kenmatta's dojo beside it is COMING SOON (`dojo()`).
-- **The Clearing's layout** (2026-10-14, branch `towns`; the user's ask: everything spread out, wide roads setting off the
-  plaza, the way out going north, Kenmatta away from the Nietos, the Secret Base moved): this supersedes the positions
-  named above. A 31 x 21 grid (`COLS` / `ROWS`, the plaza's middle the world's origin, `X0` / `Z0`): a round paved plaza
-  (`PLAZA_R`, stones in rings, a Poké Ball laid in the middle under the Waystone, `plaza()` in `groundArt()`), four
-  cobbled avenues off it and a stone ring road round them, earth trails out to the wild places (`ROADS` / `RINGS`, `dirt`;
-  `STONE` the paving's colours); the Whispering Clearing's gate at the north avenue's end (`GATE_AT`, a stretch of fence
-  either side, `FENCES`), New game's Pokéstop and the route sign just inside it (`STOP_AT` / `SIGN_AT`); setting out walks
-  your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
-  `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
-  behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
-  Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
-  asked: like Gen 3's Secret Power bases), the Poké Mall at the west avenue's end (`MALL_TILE`), the Nietos' house on the
-  east one (`NIETOS_AT`), the PC off the plaza's north-east rim, a pond garden down the south avenue (`POND`), the Sealed
-  Gate south-west once broken (`SEALED_AT`); lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
-  `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
-  your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
-  starts your partner on that tile.
 - **Achievements vs shop unlocks**: `js/progress.js`'s `isShopUnlock(starter)`
   (`!starter.free && !ACHIEVEMENT_FOR[starter.id]`) is the switch between
   the two unlock paths.
 
+## Rules that are easy to break
+
+These used to be buried in the notes. Each one has its detail in the reference file named.
+
+- **Never remove a card id.** A saved run holding it would be thrown away. Count copies with `baseId()`. (`cards.md`)
+- **No two cards one run can meet may share a cost and text.** `noOffer: true` keeps a card out of the pools. (`cards.md`)
+- A new card gets an `ART` line in `js/card-art.js`. A new mechanic gets a `describe()` line and a `cardTerms()` line.
+  A battle rule change is mirrored in pokeDB-sim's `sim/engine.js`. (`cards.md`)
+- Keep Mewtwo's type and all its cards masked as `???` until it's unlocked. The gate's achievement stays last in
+  `ACHIEVEMENTS`. (`mewtwo-and-depths.md`)
+- Read every perk through `perk()` / `dexPerk()` in `js/run.js`, so a first try stays fair. (`safari.md`)
+- An enemy move whose real type isn't Fire / Grass / Water carries `type: 'normal'`. Elites and bosses are pure Normal
+  and typeless. (`cards.md`)
+- A new flash or shake checks `calmFx()`, and a new battle effect checks `battleFx()` (both in `js/prefs.js`).
+- Replacing an id moves old saves over: `RENAMED_STARTERS`, `RENAMED_FURNITURE`.
+- What a new thing needs:
+  - **Starter**: front / back / shiny GIFs per stage, `SPRITE_FIT` and `BODY_X` lines, and a cry in `CRIES`. A
+    legendary also needs `tools/legendary-aura.py`. (`starters.md`)
+  - **Safari Pokémon**: a signature card, its GIF and a `SPRITE_FIT` line. (`safari.md`)
+  - **Badge**: a `LOOK` line in `js/trainercard.js`. (`badges-and-trainer-card.md`)
+  - **Augment**: an `ICONS` line, plus a mirror in the sim for a new fight key. (`sky-pillar.md`)
+  - **Biome**: a crossroads `ARMS` line, and a `LANDS` kit for a pool biome. (`biomes-and-journeys.md`)
+  - **Gym Leader**: a `leader()` line, a sprite, a `GYM_INK` line and a `GYM_LOOK` line. (`gym-leaders.md`)
+  - **PC page**: a `NEWS` line in `js/pc-news.js`.
+  - **Furniture reskin family**: a `set:`. An earned piece needs a source of its own. (`hub-base-mall.md`)
+  - **Arcade game**: a `MARQUEE` line, and a `GAMES` line to play it at home. (`hub-base-mall.md`)
+  - **Song**: loop points.
+
+## Playtest URLs
+
+Flags on the live site or a githack link. Most are never saved. Details are in the file named.
+
+- **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
+  `?lockdepths`, `?gymwins=N`, `?onboard` (new-player setup), `?mail` (sample letters).
+- **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
+  `?pixelcards`, `?phone` (a phone frame on a wide screen), `?signs` / `?walk` (old title / walkable Clearing).
+- **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
+  (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
+  `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
+  `?arena=ken`.
+- **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
+  (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
+- **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?mall=furniture|2f|corner`
+  (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
+  `?town=<biome>` (`&home=`), `?nietos`, `?aerial`, `?hubat=x,y`.
 
 ## Reference
 
-The Architecture notes above are the map. The per-system detail behind them
-lives in `docs/reference/`. **Before changing anything in one of these systems,
-read its file first** - don't work from the summary alone, or you'll miss the
-decisions recorded in there. Sessions that don't touch these systems never open
-one, which is the point: it costs nothing until it's needed.
+The per-system detail lives in `docs/reference/`. **Before changing anything in one of these systems, read its file
+first.** Don't work from the summary above alone, or you'll miss decisions recorded there. Sessions that don't touch a
+system never open its file, which is the point. When a task changes a system, update its file, not this one; this file
+gets at most a line.
 
+- Windows, the Pokédex device, title, map and rooms' look - `docs/reference/device-and-screens.md`
+- Walk-in 3D Center, Mart and ? rooms - `docs/reference/walk-in-rooms.md`
+- Starters, skins, legendaries, Abilities - `docs/reference/starters.md`
+- Mewtwo, the Sealed Gate, the Crystal Depths - `docs/reference/mewtwo-and-depths.md`
+- Cards, card pools, upgrades, types - `docs/reference/cards.md`
+- Economy, perks, shinies, Level 5 rewards, Hall of Fame - `docs/reference/economy-and-hall-of-fame.md`
+- Journey films, crossroads, branching biomes - `docs/reference/biomes-and-journeys.md`
+- Badges and the Trainer Card - `docs/reference/badges-and-trainer-card.md`
+- The Clearing, PC, missions, Secret Base, Poké Mall, Game Corner, arcade - `docs/reference/hub-base-mall.md`
+- Gateway towns - `docs/reference/towns.md`
 - Saved runs - `docs/reference/saved-runs.md`
 - Cloud save - `docs/reference/cloud-save.md`
 - Deck thinning - `docs/reference/deck-thinning.md`
 - Poké Mart and Pokédollars - `docs/reference/mart.md`
 - Treasure room - `docs/reference/treasure-room.md`
-- ? events - `docs/reference/events.md`
+- ? events and Kenmatta - `docs/reference/events.md`
 - Items - `docs/reference/items.md`
 - Relics - `docs/reference/relics.md`
 - Battle screen layout - `docs/reference/battle-screen-layout.md`
@@ -924,11 +187,12 @@ one, which is the point: it costs nothing until it's needed.
 - Windows - `docs/reference/windows.md`
 - Title screen - `docs/reference/title-screen.md`
 - Safari Zone (seed, catching, balls, rare spawns, leaderboard) - `docs/reference/safari.md`
-- Sky Pillar (the tower climb, its week, the tower leaderboard) - `docs/reference/sky-pillar.md`
+- Sky Pillar (the climb, its week, augments, leaderboard) - `docs/reference/sky-pillar.md`
 - Top bar and start screen - `docs/reference/top-bar-and-start-screen.md`
 - Pixel icons - `docs/reference/pixel-icons.md`
 - Music - `docs/reference/music.md`
-- Gym Leaders (who each friend is, for writing their lines) - `docs/reference/gym-leaders.md`
+- Gym Leaders (who each friend is, and the gym) - `docs/reference/gym-leaders.md`
+
 ## Conventions
 
 - No comments unless they explain a non-obvious *why* (a workaround, a

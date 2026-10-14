@@ -3,9 +3,11 @@
 This project was built with Claude Code until 2026-09-29. It moved to opencode then. Everything an agent needs is in
 three places:
 
-1. **`CLAUDE.md`**: the architecture, every system, the conventions and how to test. It's long because it holds the
-   user's calls about the game. `opencode.json` loads it on every session, so treat it as your own instructions. Where
-   it says "Claude", read "you".
+1. **`CLAUDE.md`**: a short map of every system, the rules that are easy to break, the playtest URLs, the conventions
+   and how to test. `opencode.json` loads it on every session, so treat it as your own instructions. Where it says
+   "Claude", read "you". Each system's full notes (the user's calls about the game) are in its `docs/reference/` file,
+   moved there 2026-10-14 to keep every session small: read that file before changing the system, and record new
+   detail there, not in `CLAUDE.md`.
 2. **`docs/roadmap.md`**: only what's still open, plus the rules for adding Pokémon. Read it before any task. Finished
    work (and "the roadmap's step N" in older notes) is in `docs/roadmap-done.md`; move an entry there when it lands.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.

@@ -235,3 +235,37 @@ plays the opening film after PRESS START, then `?tower=1`'s throwaway climb.
 
 `tests/tower.test.mjs` (the week, the deal, landing rules, guardians, scaling, the badges, the board and the rules' bounds).
 The bot climbs with `cfg.tower` (and `cfg.towerFlights`, default 3); `progress()` is then the floors cleared.
+
+## From CLAUDE.md (moved 2026-10-14)
+
+The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
+
+- **The Sky Pillar** (roadmap item 18 part a, 2026-10-05; detail in `docs/reference/sky-pillar.md`, read it first): a
+  100-floor climb with a weekly leaderboard, its rules in `js/data/tower.js` (shared with the bot). The week (its Monday, UTC)
+  seeds every roll and picks the starter; its first try posts to `towerBoard/<week>_<uid>` without perks (`fairTry()`),
+  replays and Practice (any owned starter but Mewtwo) don't. Flights of 10 floors: 9 landings of 2-3 doors, then a guardian
+  (a biome boss in turn; Rayquaza on floor 100, `rayquaza-guardian`, the top: beating it wins the climb, `TOP_FLOOR`, with a
+  summit version of the win scene, `draftSummit()` / `.hof-scene.summit`, never saved as a run); a guardian evolves you at 10
+  and 20 and heals 50%.
+  Floors 1-30 are the biomes in order, past 30 all three biomes' Pokémon at the Wastes' numbers plus `PAST_TOP` a flight.
+  `run.tower` (`isTower()`, seeded streams keyed by `zone()`); each flight is still a `landingMap()` (`js/map.js`) underneath,
+  but since part b (2026-10-05) the tower is the map: `js/tower.js` paints a side-on cutaway behind the run card (doors with
+  room icons, the walk in, the spiral-stair climb with the altitude gauge (the floor range on the bar's LCD, numbers on gold plaques), lit floors below with a
+  statue of every foe beaten, `run.tower.trail`), the guardian intros (Rayquaza's the grandest) and the fall on a loss, all
+  from `js/tower-art.js`'s painters, which also give its fights a tower-room arena (`showTowerScene()` in `js/scene.js`) and
+  the summit win scene its backdrop (`paintSummit()`). The windows show the sky by height. It counts only for `save.tower` (`bestEver`, the week's `best`, `summits`, `bestTurns`) and the
+  Tower Badges: no unlocks, gate, streak, Record Book, Stats runs or research. Opens after a won run (the title's Game
+  Modes, `#tower-dialog` in `js/towerprep.js`). Playtest `?tower=25` (`&hp=0.1` shrinks foes; never saved).
+  **Augments** (roadmap item 21 part a, 2026-10-07): no perks on any climb (`fairTry()`); one of three augments
+  (`js/data/augments.js`, shared with the bot) before floor 1 and after every guardian, Silver / Gold / Prismatic by height,
+  dealt from the week's seed (`augmentOffer()`), 1 reroll; effects are data keys summed by `augEffects()` (shown in the Bag's Augments pocket, the climb dock's 5th button) and read off
+  `battle.aug` in `js/battle.js` and `augs()` in `js/run.js` (the file's header lists every key). Saved on `run.tower`, posted
+  in the board entry's `augments`. Their look (part b) is `js/augment-art.js`, never the data file: an icon per augment (`ICONS`:
+  a glyph on a tier medallion, a new augment needs a line), tiles in Silver / Gold / Prismatic frames dealt face down and
+  flipped with tier chimes (`aug-*` synths in `js/audio.js`), the reroll turning them away, and the picks under each climb on
+  the board. Part c (2026-10-07): 113 augments in all (116 since part d, 2026-10-10: Fire's Flash Fire, Magma Armor and Eruption), 10 trade-offs (`trade: true`, a red chip: Darkrai's Deal's Prismatic
+  comes from the week's seed, `dealPrismatic()`), 6 sets (`AUG_SETS`: 2 / 3 held add bonus keys inside `augEffects()`; a set
+  chip on the tile, a row per set in the Bag; High Roller's 3 is a 4th offer that never shifts everyone's three,
+  `augmentOffer({ extra })`) and 6 augment badges (`save.tower.augDex` / `sets` / `prismFloor` / `tradeFloor`). A new augment
+  needs an `ICONS` line; a new fight key a mirror in pokeDB-sim's engine, whose bot picks augments by measured value
+  (`sim/augranks.json`). Detail in `docs/reference/sky-pillar.md`.

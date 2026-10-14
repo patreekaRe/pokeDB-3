@@ -93,3 +93,27 @@ posts (trailer zoom-ins, palm tree counts, leaks, alligator theories, Leonida, V
 talks about. His baby was just born and he barely notices; his wife is mad at him. Doesn't care about being a Gym
 Leader, only doing it to pay for GTA 6 ("every badge is two dollars"). Flat and distracted, always scrolling. At home: a
 crib, eleven r/GTA6 tabs, a release countdown taped over the crib.
+
+## From CLAUDE.md (moved 2026-10-14)
+
+The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
+
+- **Gym Leaders** (2026-10-13, live since patch 1.16; the user's friends, history in `docs/roadmap-done.md`): `GYM_LEADERS`
+  in `js/data/gym.js`, 13 leaders, two or three a biome, each sending out its bosses (`leaderFor()`; never Eternatus, the
+  Safari or the Sky Pillar), a chat `name` and a send-out `battleName`, a sprite (`assets/trainers/gym/<id>.png`, `sprites` by boss, `talk` one for the slide-in talks only,
+  Clarence's), speeches `intro` / `beaten` / `won` (lists, one picked by `talkOf()`; `firstIntro`, `voices` for a family's tags,
+  Phil's `possess` / `demon` for JONA). The boss room is a walked 3D gym (`gymRoom()` in `js/run.js`, kind `gym` in
+  `js/event-3d.js`: the avenue of fire pillars, the braziers' flare), the talk the slide-in `gymTalk()` in `js/gym.js` over
+  the room or, without 3D, over the battle; after a win their `beaten` pair is split: the losing line slides in on the battle
+  screen as their Pokémon falls (`afterFight()`), the last, handing over the badge, slides in back in the gym, every win (a repeat's badge caption counts it, `again`), then your Pokémon evolves there before you walk out (`evolve()` in `lastWords()`, `swapMate()` in `js/event-3d.js`, `result.evolved` skipping the rewards' evolution; 2026-10-13, the user's ask)
+  (`gymRoom(…, won, said)`); you can't walk while a leader talks (`freezeEvent()` in `js/event-3d.js`, and no walking while
+  a `.gym-scene` is up; 2026-10-13, the user's ask); the gym's back is `gymBack()`: a wall of columns, the ace as twin
+  colossi, the arch's lintel GYM LEADER + name, a rune ring in the court and embers lit with the great fires; the first win hands over their badge (`save.gym[id]`, Badge Case group `gym`,
+  each drawn after the leader in `GYM_LOOK` in `js/trainercard.js`). Music `gym-room` / `gym-leader-battle` / `gym-victory`.
+  Playtest `?gym=<id>` (`&n=2` the second boss, `&hp=0.05`). A new leader is a `leader()` line, a sprite, a `GYM_INK` line
+  (their colours, in `js/data/gym.js`) and a `GYM_LOOK` line. **Rematch rewards** (2026-10-13, the user's picks): the 3rd
+  win hands over their signed poster (`<id>poster`, a wall piece painted from their sprite in `js/base-furniture-gym.js`,
+  earned by `js/data/furniture.js`'s `gym` source), the 5th their Gold badge (`gym-<id>-gold`), `beatenTalk()` /
+  `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
+  (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
+  `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).

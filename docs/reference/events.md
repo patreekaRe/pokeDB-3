@@ -186,3 +186,14 @@ is no Leave), acts `pay` (coins into the grunt's hand) and `run` (into the bush,
 from `figureDoes()`. An act's `ms` and `cues` can be functions of its `opts` (`playOut(act, opts)`), and a room's `reset()`
 puts it back whole on a new visit (berries, the sprout, the ball). Team Rocket's room is built per grunt and Alpha, so it
 is not built ahead.
+
+## From CLAUDE.md (moved 2026-10-14)
+
+The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
+
+- **Chad Master Kenmatta** (2026-10-01): the Move Tutor can be challenged to a boss fight from his dojo (a third sign,
+  on him); beating him gives his `unique` Mata-Mindset relic (+1 PP, +1 draw, +1 strength). He's fought in his own Mortal
+  Kombat arena with a Dragonite medallion (`arena: 'kombat'`, `PLACE_ART.kombat`), to his own music (`KEN.music`), and
+  FORTIFY YOUR MIND shouts Wong's line (a move's `sound`, played as the enemy uses it). His first defeat is an achievement
+  window (the relic), his third another, and from then on every map shows his dojo's ❓ room with his face (`save.kenWins`,
+  `save.kenBeaten`). See `docs/reference/events.md`.
