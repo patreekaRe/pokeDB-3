@@ -65,9 +65,9 @@ These are the fixes the user asked for in the Clearing and Highbough. Check each
     5 x 4), in the town's own style, never a copy of the village's `manor()`: raised up, two storeys or tiers, gold
     trim, their crest, and banners or lights in their `GYM_INK`. Lantern Village's `manor()` is the bar to match.
 11. **The ground rolls away like Animal Crossing's** (the user's ask, 2026-10-14: every town gets the Clearing's curve
-    before the towns go live). Adding it to the town rooms is its own session for all five at once (the roadmap's Towns
-    and Waystones, "the Clearing's curve in every town"), not part of one town's clean-up. Once it's in, walk your town
-    with it on and check nothing far off pokes up wrong or vanishes too early.
+    before the towns go live). Done for all five at once (2026-10-14, `docs/reference/towns.md`). Walk your town with it
+    on (`?curve=0` lays it flat to compare) and check nothing far off pokes up wrong or vanishes too early; a new long,
+    flat shape is cut to bend by itself (`fineTris()`), and a new tappable thing needs nothing more than `userData.spot`.
 
 ## Where things live
 

@@ -2407,6 +2407,11 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   default at strength 3 (`CURVE_AT` in `js/hub-3d.js`; the user picked it over 1 and 2 on the `clearing-curve` branch,
   merged into `main`). The first build floated everything over the ground, which sank as one slab; `bendFine()` cuts big
   boxes and planes into tile cells. Details in `docs/reference/hub-base-mall.md`.
+- **The same bend in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
+  towns", the last thing before they go live): the five towns roll at the Clearing's `CURVE`, house insides and every
+  other room flat; taps, drags, signs and folk bubbles follow what's drawn. Checked headless in all five: tile taps land on
+  the tile tapped, doors, the Waystone, the gate and folk tap right, walking in and out of a house four times leaves the
+  GPU's geometry and texture counts unchanged. Details in `docs/reference/towns.md`.
 - **Found items say what they do at once** (2026-10-14, the user's ask): no "Open" sign over the item ball and no text box
   to tap through; once the item rises, a window under it (`.swap-found` in `offerItem()`) says what it does. Relic drops
   still say theirs in the text box. Details in `docs/reference/items.md`.

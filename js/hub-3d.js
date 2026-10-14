@@ -3262,9 +3262,9 @@ function fitCamera(w, h) {
 const AERIAL = new URLSearchParams(location.search).has('aerial');
 
 // the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), at the strength the user picked from 1 to 3
-// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat
+// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat. Every town rolls the same (js/event-3d.js).
 const CURVE_AT = 3;
-const CURVE = (() => {
+export const CURVE = (() => {
   const q = new URLSearchParams(location.search);
   if (AERIAL) return 0;
   const n = parseFloat(q.get('curve'));
