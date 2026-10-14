@@ -96,6 +96,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    shrine gate with a glowing leaf crest, lanterns, banners and runed stone feet, a shimmer and motes in its opening, a lamp
    before it; the Pokéstop and route sign a step out to its sides, Halloween's hay there gone (`clearingGateArt()`,
    `liveGateway()`). On `main`, waiting on the user's look.
+   **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
+   `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
+   swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the
+   road; `forest()` leaves a glade round a town's gate, two big stone lanterns in it; `R.reach` lets the camera lean past
+   the back row so the gate shows whole. Commit 8eb7285. Other towns' gates could get the same if the user asks.
    **Done (2026-10-14): Lantern Village cleaned up** (the user: "a lot of houses"; same treatment as the Clearing and
    Thornwood, with a shape of its own): a shrine's approach, one 4-wide stone avenue from the way in to the torii between
    pairs of stone lanterns, the Waystone's plaza halfway up, two cross lanes; only four houses (Delibird's, John's,
