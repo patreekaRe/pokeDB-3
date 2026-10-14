@@ -2407,3 +2407,6 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   default at strength 3 (`CURVE_AT` in `js/hub-3d.js`; the user picked it over 1 and 2 on the `clearing-curve` branch,
   merged into `main`). The first build floated everything over the ground, which sank as one slab; `bendFine()` cuts big
   boxes and planes into tile cells. Details in `docs/reference/hub-base-mall.md`.
+- **Found items say what they do at once** (2026-10-14, the user's ask): no "Open" sign over the item ball and no text box
+  to tap through; once the item rises, a window under it (`.swap-found` in `offerItem()`) says what it does. Relic drops
+  still say theirs in the text box. Details in `docs/reference/items.md`.
