@@ -272,7 +272,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
-5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
+5. **The all-five reward: the Depths open to every starter** (the user's pick, 2026-10-14). With all five Waystone
+   Shards placed, a won run's fall at the last boss no longer holds (`kind: 'open'` in `descent()`): any starter drops
+   into the Crystal Depths as a 4th biome and fights Eternatus. Mewtwo needs no shards and keeps the Champion of the
+   Depths ending, its feat and its shiny; other starters get their own Depths win (a Hall of Fame mark). The Depths need
+   their own numbers per Trainer Level for non-Mewtwo starters (sim check). Builds after step 6 (shards must drop).
+   Open: what the lit Waystone ring does at the moment it completes (asked 2026-10-14). A Depths camp is still a maybe.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
    in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
