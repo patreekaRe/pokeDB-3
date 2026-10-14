@@ -93,7 +93,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // each by its top-left tile: the Nietos' house east, its door on the east avenue; Kenmatta's dojo north-west, across the
 // Clearing from it (the user's ask, 2026-10-14); the Ancient Tree, the Secret Base, north-east (TREE_AT its middle tile);
 // the Poké Mall west, its doors on the west avenue; the Sealed Gate south-west once broken
-const NIETOS_AT = { tx: 24, ty: 7 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 2, ty: 8 };
+const NIETOS_AT = { tx: 24, ty: 9 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 2, ty: 8 };
 const SEALED_AT = { tx: 7, ty: 16 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
@@ -1303,54 +1303,98 @@ function plankArt(w, h, lines, wood = ['#c89a60', '#a8763e', '#7a5226']) {
   return c;
 }
 
-/** The Nietos' house (the user's ask, 2026-10-14): a cream family cottage under a sky-blue gabled roof in their Gym
-    colours, a blue door, lit windows, a chimney, a name board, a sandbox with a bucket and a ball out front. */
+/** The Nietos' house (the user's ask, 2026-10-14): a roomy family cottage in their Gym colours, with a blue-tiled roof,
+    covered porch, framed windows, flower boxes, chimney, a readable sign and Linc's sandbox. */
 function nietosHouse(g, x, z) {
-  const W = 2.5, D = 2.1, H = 1.45;
-  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const W = 3.6, D = 2.15, H = 1.72, EAVE = D / 2 + 0.34, RISE = 1.05;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, flatShading: true, ...o });
   const h = new THREE.Group();
   h.position.set(x, 0, z);
   g.add(h);
   const add = (mesh, px, py, pz) => { mesh.position.set(px, py, pz); mesh.castShadow = mesh.receiveShadow = true; h.add(mesh); return mesh; };
-  const wall = std({ color: '#f6ecd8' }), trim = std({ color: '#ffffff' }), blue = std({ color: '#3a6ea8' }), roofM = std({ color: '#5a96d0', roughness: 0.7, flatShading: true });
-  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.16, D + 0.12), std({ color: '#b8b0a0' })), 0, 0.08, 0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), wall), 0, 0.16 + H / 2, 0);
-  // the gabled roof, its ridge across, eaves out over the walls
-  const tri = new THREE.Shape([new THREE.Vector2(-D / 2 - 0.25, 0), new THREE.Vector2(D / 2 + 0.25, 0), new THREE.Vector2(0, 0.95)]);
-  const roof = new THREE.ExtrudeGeometry(tri, { depth: W + 0.35, bevelEnabled: false });
-  roof.translate(0, 0, -(W + 0.35) / 2);
-  roof.rotateY(Math.PI / 2);
-  add(new THREE.Mesh(roof, roofM), 0, 0.16 + H, 0);
-  const gable = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-D / 2, 0), new THREE.Vector2(D / 2, 0), new THREE.Vector2(0, 0.78)]), { depth: W - 0.02, bevelEnabled: false });
-  gable.translate(0, 0, -(W - 0.02) / 2); gable.rotateY(Math.PI / 2);
-  add(new THREE.Mesh(gable, wall), 0, 0.16 + H, 0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.6, 0.28), std({ color: '#c87858' })), 0.7, 0.16 + H + 0.75, -0.25);
-  // the door, its step and a round window over it; two lit windows either side
-  const fz = D / 2 + 0.01;
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.86, 0.06), blue), 0, 0.16 + 0.43, fz);
-  add(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), std({ color: '#f0c040', metalness: 0.6, roughness: 0.3 })), 0.16, 0.6, fz + 0.04);
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 0.3), std({ color: '#b8b0a0' })), 0, 0.12, fz + 0.15);
+  const wall = std({ color: '#f6ecd8' }), plaster = std({ color: '#fff4df' }), trim = std({ color: '#e0f2ff' });
+  const blue = std({ color: '#3a6ea8' }), paleBlue = std({ color: '#88c4f0' });
+  const roofM = std({ color: '#4c82bc', roughness: 0.72 }), roofEdge = std({ color: '#315d91' });
+  const stone = std({ color: '#b8b0a0' }), darkWood = std({ color: '#684b3a' });
+  const bodyY = 0.2 + H / 2, bodyTop = 0.2 + H, fz = D / 2 + 0.035;
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.42, 0.2, D + 0.46), stone), 0, 0.1, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.2, D + 0.12), trim), 0, 0.3, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), wall), 0, bodyY, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W - 0.12, 0.36, 0.045), paleBlue), 0, 0.53, fz);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.08, 0.12, 0.12), blue), 0, bodyTop - 0.08, fz + 0.025);
+  for (const sx of [-1, 1]) {
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.16, H + 0.04, 0.15), blue), sx * (W / 2 - 0.08), bodyY, fz);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.12, H + 0.04, 0.12), darkWood), sx * (W / 2 - 0.07), bodyY, -D / 2);
+  }
+  // A proper pitched roof with a visible eave, ridge cap and rows of blue tile courses.
+  const tri = new THREE.Shape([new THREE.Vector2(-EAVE, 0), new THREE.Vector2(EAVE, 0), new THREE.Vector2(0, RISE)]);
+  const roof = new THREE.ExtrudeGeometry(tri, { depth: W + 0.5, bevelEnabled: false });
+  roof.translate(0, 0, -(W + 0.5) / 2); roof.rotateY(Math.PI / 2);
+  add(new THREE.Mesh(roof, roofM), 0, bodyTop, 0);
+  const tileBlue = std({ color: '#5689bd', roughness: 0.75 });
+  for (const side of [-1, 1]) for (let row = 0; row < 8; row++) {
+    const t = (row + 0.5) / 8;
+    const tile = add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.56, 0.026, 0.15), row % 2 ? roofM : tileBlue),
+      0, bodyTop + RISE * t + 0.025, side * EAVE * (1 - t));
+    tile.rotation.x = side * 0.58;
+  }
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.62, 0.16, 0.2), roofEdge), 0, bodyTop + RISE + 0.04, 0);
+  for (const side of [-1, 1]) add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.52, 0.13, 0.13), blue), 0, bodyTop - 0.02, side * EAVE);
+  const gable = new THREE.ExtrudeGeometry(new THREE.Shape([
+    new THREE.Vector2(-D / 2, 0), new THREE.Vector2(D / 2, 0), new THREE.Vector2(0, RISE - 0.08),
+  ]), { depth: W - 0.04, bevelEnabled: false });
+  gable.translate(0, 0, -(W - 0.04) / 2); gable.rotateY(Math.PI / 2);
+  add(new THREE.Mesh(gable, plaster), 0, bodyTop, 0);
+  const chimney = std({ color: '#b85e48' }), chimneyCap = std({ color: '#74483a' });
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 1.12, 0.42), chimney), W * 0.31, bodyTop + 0.72, -0.56);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.58, 0.12, 0.58), chimneyCap), W * 0.31, bodyTop + 1.3, -0.56);
+  // A deep blue front door with a pale surround.
+  const doorFrame = add(new THREE.Mesh(new THREE.BoxGeometry(1.02, 1.55, 0.14), trim), 0, 0.98, fz + 0.035);
+  doorFrame.castShadow = false;
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 1.3, 0.08), blue), 0, 0.87, fz + 0.12);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.4, 0.025), paleBlue), 0, 1.24, fz + 0.18);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), std({ color: '#f0c040', metalness: 0.55, roughness: 0.3 })), 0.25, 0.76, fz + 0.19);
   const pane = std({ color: '#fff0c0', emissive: new THREE.Color('#ffd890'), roughness: 0.3 });
   pane.userData.glow = 1.2; pane.userData.glowMin = 0.15;
   glowMats.push(pane);
   for (const sx of [-1, 1]) {
-    add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.46, 0.04), trim), sx * 0.82, 0.95, fz);
-    add(new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.38, 0.05), pane), sx * 0.82, 0.95, fz + 0.005);
-    add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.12), std({ color: '#6ab060' })), sx * 0.82, 0.67, fz + 0.06);   // a window box
+    const wx = sx * 1.12, wy = 1.25;
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.94, 0.9, 0.1), blue), wx, wy, fz + 0.02);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.72, 0.04), pane), wx, wy, fz + 0.09);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.72, 0.04), trim), wx, wy, fz + 0.12);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.07, 0.04), trim), wx, wy, fz + 0.12);
+    for (const side of [-1, 1]) add(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.78, 0.08), paleBlue), wx + side * 0.52, wy, fz + 0.09);
+    add(new THREE.Mesh(new THREE.BoxGeometry(1.08, 0.12, 0.32), blue), wx, 0.76, fz + 0.17);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.13, 0.27), std({ color: '#5a9848' })), wx, 0.88, fz + 0.19);
+    const flowers = ['#e85868', '#f8d850', '#c088e8'];
+    for (let i = 0; i < 3; i++) add(new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 6), std({ color: flowers[i] })), wx + (i - 1) * 0.26, 0.99, fz + 0.2);
   }
-  const round = add(new THREE.Mesh(new THREE.CircleGeometry(0.17, 20), pane), 0, 0.16 + H + 0.32, D / 2 + 0.02);
-  round.castShadow = false;
-  // the name board on its post by the path, and the sandbox
-  // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
-  const sign = plankArt(34, 14, [['THE NIETOS', 4.8, '#ffffff'], ['LAW · BRITT · LINC', 2.8, '#ffe070']], ['#2c5a94', '#234a7e', '#183660']);
-  const b = board(sign, 0, 0, { s: 1, shadow: false });
-  b.position.set(-1.35, 0.92, D / 2 + 0.8);
+  // A little covered porch makes the entrance feel lived in; broad steps meet the east avenue.
+  const porch = add(new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.16, 0.88), stone), 0, 0.29, D / 2 + 0.39);
+  porch.castShadow = false;
+  const canopy = add(new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.14, 0.88), roofM), 0, bodyTop + 0.06, D / 2 + 0.3);
+  canopy.rotation.x = 0.12;
+  add(new THREE.Mesh(new THREE.BoxGeometry(2.08, 0.1, 0.1), roofEdge), 0, bodyTop - 0.02, D / 2 + 0.72);
+  for (const sx of [-0.84, 0.84]) add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.58, 0.1), blue), sx, 1.1, D / 2 + 0.66);
+  for (let i = 0; i < 2; i++) add(new THREE.Mesh(new THREE.BoxGeometry(1.38 - i * 0.16, 0.12, 0.26), stone), 0, 0.12 - i * 0.02, D / 2 + 0.93 + i * 0.26);
+  for (const sx of [-1, 1]) {
+    const lamp = std({ color: '#fff0c0', emissive: new THREE.Color('#ffd070'), emissiveIntensity: 0.7 });
+    lamp.userData.glow = 0.8; lamp.userData.glowMin = 0.12; glowMats.push(lamp);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.12), lamp), sx * 0.62, 1.88, fz + 0.16);
+  }
+
+  // The sign remains legible but no longer dwarfs the house.
+  const sign = plankArt(30, 12, [['THE NIETOS', 3.4, '#ffffff'], ['LAW · BRITT · LINC', 2, '#e8f4ff']], ['#88c4f0', '#5a96d0', '#3a6ea8']);
+  const b = board(sign, 0, 0, { s: 0.85 });
+  const signX = -W / 2 - 0.72, signZ = D / 2 + 0.86;
+  b.position.set(signX, 0.9, signZ);
   h.add(b);
-  add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.95, 6), std({ color: '#7a5430' })), -1.35, 0.47, D / 2 + 0.75);
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.1, 0.5), std({ color: '#c89a60' })), 1.0, 0.05, D / 2 + 0.6);
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.04, 0.42), std({ color: '#f0dca0' })), 1.0, 0.1, D / 2 + 0.6);
-  add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' })), 0.9, 0.17, D / 2 + 0.55);
-  add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), std({ color: '#f8e048' })), 1.12, 0.21, D / 2 + 0.66);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.0, 6), darkWood), signX, 0.5, signZ);
+  const toyX = W / 2 + 0.72, toyZ = 0.25;
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.14, 0.62), std({ color: '#c89a60' })), toyX, 0.08, toyZ);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.05, 0.52), std({ color: '#f0dca0' })), toyX, 0.17, toyZ);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 0.12, 10), std({ color: '#e84838' })), toyX - 0.15, 0.25, toyZ - 0.08);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), std({ color: '#f8e048' })), toyX + 0.18, 0.25, toyZ + 0.11);
 }
 
 /** Chad Master Kenmatta's dojo, not open yet (the user's ask, 2026-10-14): a raised timber hall, white walls between dark
@@ -1613,10 +1657,10 @@ function makePlaces() {
   // they're home only once THE NIETOS are beaten at their Gym, and not at all while NIETOS_LIVE is off
   const nietosIn = nietosHome(gymWins(save, 'nietos') || 0);
   list.push({
-    id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
+    id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: rect(NIETOS_AT.tx - 1, NIETOS_AT.ty, NIETOS_AT.tx + 4, NIETOS_AT.ty + 1), tag: [NIETOS_AT.tx + 1, 4.1, NIETOS_AT.ty + 1.6], open: true,
     line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
     buttons: [['Go in', () => {}]],
-    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1)),
+    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 0.65)),
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
