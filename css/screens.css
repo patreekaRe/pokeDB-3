@@ -5208,6 +5208,17 @@ body[data-screen="map-screen"]:has(#map-screen:not(.tower)) .home-dex { position
   }
 }
 .room-home .home-key { width: 38px; height: 38px; }
+.room-bag[hidden] { display: none; }
+.room-bag:active .home-key, .room-bag[aria-expanded="true"] .home-key { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
+/* the reward steps' Bag key opens the top bar's Bag, though that bar is put away there: the bar comes back out of the
+   flow and unseen, only its Bag showing, risen over the room bar like the map's over its dock */
+body[data-screen="reward-screen"]:has(#reward-screen.in-room) .topbar:has(#bag:not([hidden])) {
+  display: flex; position: fixed; inset: 0 0 auto; visibility: hidden;
+}
+body[data-screen="reward-screen"]:has(#reward-screen.in-room) .bag:not([hidden]) {
+  visibility: visible; position: fixed; top: auto; right: auto; left: 50%; bottom: calc(var(--room-bar-h, 120px) + 8px); translate: -50% 0;
+  max-height: min(60dvh, calc(100dvh - var(--room-bar-h, 120px) - 24px)); animation: bagRise 0.18s ease-out;
+}
 .room-home .home-key svg { width: 21px; height: 21px; }
 /* in battle the Pokédex button shrinks to 24px (the user's ask, 2026-10-07: at 36px it crowded the enemy's nameplate) */
 body[data-screen="battle-screen"] .home-dex .dex-sprite { width: 24px; height: 24px; }

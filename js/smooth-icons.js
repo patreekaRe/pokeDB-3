@@ -441,6 +441,7 @@ const KEY_GLYPHS = {
   home: '<path d="M4 11.2 12 4.5l8 6.7" stroke-width="2.4"/><path d="M6.6 10v8.6a1.4 1.4 0 0 0 1.4 1.4h2.6v-5h2.8v5H16a1.4 1.4 0 0 0 1.4-1.4V10" stroke-width="2.2"/>',
   leave: '<path d="M12.5 4.5H7a1.4 1.4 0 0 0-1.4 1.4v12.2A1.4 1.4 0 0 0 7 19.5h5.5" stroke-width="2.2"/><path d="M10.5 12h9.5M16.5 8.5 20 12l-3.5 3.5" stroke-width="2.4"/>',
   skip: '<path d="M5.5 6.5 11 12l-5.5 5.5M12.5 6.5 18 12l-5.5 5.5" stroke-width="2.6"/>',
+  bag: '<path d="M9 8.5V7a3 3 0 0 1 6 0v1.5" stroke-width="2.2"/><path d="M6.7 8.5h10.6a1.2 1.2 0 0 1 1.2 1.3l-.7 8.8a1.5 1.5 0 0 1-1.5 1.4H7.7a1.5 1.5 0 0 1-1.5-1.4l-.7-8.8a1.2 1.2 0 0 1 1.2-1.3Z" stroke-width="2.2"/><path d="M9.5 13h5" stroke-width="2.4"/>',
   ok: '<path d="M5.5 12.5 10 17l8.5-9.5" stroke-width="2.8"/>',
   play: '<path d="M8 5.5v13l10.5-6.5Z" fill="currentColor" stroke-width="2"/>',
   plus: '<path d="M12 5v14M5 12h14" stroke-width="2.8"/>',

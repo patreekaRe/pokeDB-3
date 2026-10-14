@@ -35,7 +35,7 @@ import { post, mailOn } from './mail.js';
 import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
-import { smoothIcon } from './smooth-icons.js';
+import { smoothIcon, roundKey } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
 import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
@@ -1218,6 +1218,8 @@ let pocket = 'relics';
 function initBag() {
   $('run-mon').addEventListener('click', toggleMon);
   $('bag-btn').addEventListener('click', () => ($('bag').hidden ? openBag() : closeBag()));
+  $('room-bag').append(roundKey('bag'));
+  $('room-bag').addEventListener('click', () => ($('bag').hidden ? openBag('items') : closeBag()));
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
@@ -1246,7 +1248,7 @@ function initBag() {
   }
   $('bag-prev').addEventListener('click', () => flip(-1));
   $('bag-next').addEventListener('click', () => flip(1));
-  document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #bag, #mdex-dock')) closeBag(); });
+  document.addEventListener('click', (e) => { if (!e.target.closest('#bag-btn, #room-bag, #bag, #mdex-dock')) closeBag(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeBag();
     if ($('bag').hidden) return;
@@ -1262,6 +1264,7 @@ function openBag(at = pocket) {
   $('bag-map-btn').hidden = document.body.dataset.screen === 'map-screen';
   $('bag').hidden = false;
   $('bag-btn').setAttribute('aria-expanded', 'true');
+  $('room-bag').setAttribute('aria-expanded', 'true');
   showPocket(at);
 }
 
@@ -1276,6 +1279,7 @@ function closeBag(quiet = false) {
   if (!quiet && !$('bag').hidden) playSound('bag');   // closing sounds just like opening (the user's call)
   $('bag').hidden = true;
   $('bag-btn').setAttribute('aria-expanded', 'false');
+  $('room-bag').setAttribute('aria-expanded', 'false');
   for (const b of document.querySelectorAll('.mdex-btn')) b.removeAttribute('aria-current');
 }
 
