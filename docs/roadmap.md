@@ -320,6 +320,19 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    goes down" hint. Its lines follow the shards placed (n/5); with all five, it opens the way and the fall drops you
    into the Depths. Open: how this sits with Mewtwo's own runs reaching the Depths with no shards (keep them as they are,
    or have Mewtwo say it can go alone but can't win alone?), and whether the talk uses the gym's slide-in dialogue.
+   **Settled (the user's design, 2026-10-14): Mewtwo's Sealed Weakness.** Freed from the gate, Mewtwo is still too weak
+   for what's below (its break-out talk already says so: `MEWTWO_LINES` in `js/gatescene.js`). It can always go down,
+   but in the Depths only it carries a **permanent damage debuff** (a "Sealed Weakness" nameplate badge), and each
+   Waystone Shard you give it lifts a fifth of it; all five, full strength. Its first three biomes are unchanged. Start
+   around 50% less damage, 10% back a shard, and check with the bot that 0 shards is hard but winnable (never a wasted
+   run). **The shards' progress is shown big**: a **pentagram of five shard slots**, slid in full screen like the gym's
+   dialogue, the placed shards glowing in their towns' `RING` colours, the missing ones dark; seen before a Mewtwo run
+   and when you meet Mewtwo after one. **The Depths camp**: once the seal is broken, the fall (or the Sealed Gate's
+   second button) takes you down to a camp in the Depths you can walk round, between runs too, Mewtwo standing by the
+   way in to the Depths proper; talking to it brings up the pentagram, and its lines change with the shards placed
+   (why it needs them, what Eternatus is, how much of its strength is back). This answers the open question above:
+   Mewtwo goes alone but weakened; all five shards also let every other starter down, as above. Builds with step 6
+   (the shards must drop first).
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
