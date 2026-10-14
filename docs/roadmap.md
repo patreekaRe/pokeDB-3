@@ -336,6 +336,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
      `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
+     Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
      **Next: session 4, the shard** (the marked Alpha node, the pickup, the mending scene, leaders coming home).
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
