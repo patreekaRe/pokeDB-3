@@ -25,4 +25,8 @@ from `townGround()`, its rounded corners and pebble lip there), `extras: village
 rim stones, irises, lily pads, seven koi on one instanced mesh; the vermilion bridge `-`: planks painted on the ground,
 railings arching along it on posts to the bed, gold caps; `n` an indigo name board by a named door, `nameBoardArt()`),
 `fade: true` (`fadeBehind()` in `buildTown()`: a building goes see-through while your Pokémon is behind it), and `|` a
-lone maple in `forest()`. The theater's sign is bigger. `?town=<id>&aerial` shows a whole town from above (`aerialShot()`).
+lone maple in `forest()`. The theater's sign is bigger. **Gym Leaders' manors** (2026-10-14, the user's ask: "more grand and extravagant and
+aesthetic", for every leader to come): `house()` hands a home with a `leader` to `manor()` (a 5 x 4 lot: stone podium
+and steps, vermilion veranda, gold-leafed upper storey, a gold jewel on the top ridge, a gabled porch with the crest and
+a sacred rope, stone lanterns, paper lanterns and `noboriArt()` banners in the leader's `GYM_INK`); every other town's
+leaders get a grand home in that town's style at its clean-up (the handoff's item 12). `?town=<id>&aerial` shows a whole town from above (`aerialShot()`).

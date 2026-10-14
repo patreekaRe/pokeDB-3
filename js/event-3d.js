@@ -3258,6 +3258,8 @@ function nameArt(text) {
 /** A town house over its footprint, its front to you: a lattice front lit from inside, plaster sides, dark posts, a tiled
     roof in its Pokémon colour, a paper lantern by the door, a name plate over a home you can visit. A tap on it is its door. */
 function house(b, f, L, lit) {
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  if (leader) return manor(b, f, L, lit, leader);
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz + 0.05);
   B.group.add(g);
@@ -3291,6 +3293,147 @@ function house(b, f, L, lit) {
     const noren = std({ color: roof[2], roughness: 0.95, side: THREE.DoubleSide });
     for (const dx of [-0.3, 0, 0.3]) mesh(new THREE.BoxGeometry(0.28, 0.4, 0.02), noren, dx, 0.16 + h * 0.66 - 0.22, d / 2 + 0.07, g).castShadow = false;
   }
+  return g;
+}
+
+/** A Gym Leader's banner (nobori): their colours, a gold band, their initial on a white disc, gold diamonds, a fringe. */
+function noboriArt(ink, letter) {
+  const f = fine(16, 64, 8), { g, rr, lin } = f;
+  rr(0, 0, 16, 64, 0.6, lin(0, 0, 16, 0, [ink[2], ink[1], ink[1], ink[2]]));
+  g.fillStyle = '#e8b040'; g.fillRect(0, 0, 16, 5); g.fillRect(0, 57, 16, 1.4);
+  g.fillStyle = ink[0]; g.fillRect(1.6, 5, 1.2, 52); g.fillRect(13.2, 5, 1.2, 52);
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(8, 17, 5.6, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#e8b040'; g.lineWidth = 0.9; g.stroke();
+  g.fillStyle = ink[2]; g.font = 'bold 8px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(letter, 8, 17.5);
+  g.fillStyle = '#e8b040';
+  for (const y of [30, 38, 46]) { g.beginPath(); g.moveTo(8, y - 2.6); g.lineTo(10.2, y); g.lineTo(8, y + 2.6); g.lineTo(5.8, y); g.closePath(); g.fill(); }
+  g.fillStyle = ink[2];
+  for (let x = 0.5; x < 16; x += 2) g.fillRect(x, 58.4, 1.1, 5.6);
+  return f.c;
+}
+
+/** A Gym Leader's home in Lantern Village (the user's ask, 2026-10-14: "more grand and extravagant and aesthetic", for
+    every Gym Leader's house to come too): a manor on a stone podium up a flight of steps, a vermilion veranda under a
+    deep tiled roof, a gold-leafed upper storey (Kinkaku-ji's) under a second roof with a gold jewel on its ridge, a gabled
+    porch over the door with the leader's crest and a sacred rope, stone lanterns at the steps, paper lanterns and tall
+    banners in the leader's colours. Its lot is 5 x 4 tiles. A tap anywhere on it is its door. */
+function manor(b, f, L, lit, leader) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const ink = LEADER_INK[leader] || ['#ffe0c0', '#d84838', '#5a1810'], letter = (b.name || leader)[0].toUpperCase();
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const W = f.w - 0.3, D = f.h - 0.3, P = 0.48;
+  const plaster = std({ color: '#f2e8d2', roughness: 0.95 }), dark = std({ color: '#2e1c14', roughness: 0.7 }), red = std({ color: VERMILION, roughness: 0.5 });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const leaf = std({ color: '#d8a838', metalness: 0.85, roughness: 0.32, emissive: new THREE.Color('#6a4008'), emissiveIntensity: 0.3 });
+  const stone = std({ color: L.stone[2], roughness: 0.95 }), cope = std({ color: L.stone[1], roughness: 0.9 });
+  const art = latticeArt('#ffc070'), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
+  lit.push(front);
+  // the podium: battered stone, a coping round its top, steps up the front
+  mesh(rbox(W, P - 0.06, D, 0.05), stone, 0, (P - 0.06) / 2, 0, g);
+  mesh(rbox(W + 0.1, 0.07, D + 0.1, 0.03), cope, 0, P - 0.035, 0, g);
+  for (let i = 0; i < 3; i++) mesh(rbox(1.5 - i * 0.06, P / 3, 0.2, 0.02), cope, 0, P / 6 + i * P / 3, D / 2 + 0.36 - i * 0.18, g);
+  // the hall: lattice front lit from inside, dark posts, a gold frieze under the eaves; a veranda of vermilion pillars
+  const hw = W - 0.8, hd = 2.0, hz = -0.5, H = 1.45, top = P + H;
+  mesh(new THREE.BoxGeometry(hw, H, hd), [plaster, plaster, dark, dark, front, plaster], 0, P + H / 2, hz, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.13, H, 0.13), dark, sx * (hw / 2 + 0.01), P + H / 2, hz + sz * (hd / 2 + 0.01), g);
+  mesh(new THREE.BoxGeometry(hw + 0.06, 0.08, 0.04), gold, 0, top - 0.1, hz + hd / 2 + 0.02, g);
+  mesh(rbox(hw + 0.5, 0.07, 0.95, 0.02), std({ color: L.wood[1], roughness: 0.8 }), 0, P + 0.035, hz + hd / 2 + 0.47, g);
+  const vz = hz + hd / 2 + 0.85;
+  for (let i = 0; i < 6; i++) {
+    const x = -hw / 2 - 0.15 + i * (hw + 0.3) / 5;
+    mesh(new THREE.CylinderGeometry(0.075, 0.085, H, 14), red, x, P + H / 2, vz, g);
+    mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.05, 14), gold, x, P + 0.03, vz, g).castShadow = false;
+    mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 14), gold, x, top - 0.18, vz, g).castShadow = false;
+  }
+  mesh(rbox(hw + 0.5, 0.14, 0.16, 0.02), red, 0, top - 0.07, vz, g);
+  for (let i = 0; i < 9; i++) mesh(new THREE.SphereGeometry(0.03, 8, 6), gold, -hw / 2 - 0.1 + i * (hw + 0.2) / 8, top - 0.07, vz + 0.08, g).castShadow = false;
+  // the deep lower roof over hall and veranda, its gables plastered
+  const low = { length: W + 0.5, half: D / 2 + 0.25, rise: 1.05, t: 0.13, y: top };
+  kawaraRoof(g, { ...low, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (hw / 2 + 0.25), { ...low, wide: D / 2 - 0.2 });
+  // the upper storey, gold-leafed with a lit lattice front, a vermilion rail round it, under its own roof
+  const uw = W * 0.5, ud = 1.3, uh = 1.05, uy = top + 0.42;
+  const uart = latticeArt('#ffd890'), ufront = std({ map: texOf(uart), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(uart.glow), emissiveIntensity: 0.6, roughness: 0.6 });
+  lit.push(ufront);
+  mesh(new THREE.BoxGeometry(uw, uh, ud), [leaf, leaf, dark, dark, ufront, leaf], 0, uy + uh / 2, 0, g);
+  for (const sx of [-1, 1]) mesh(new THREE.BoxGeometry(0.1, uh, 0.1), dark, sx * (uw / 2 + 0.01), uy + uh / 2, ud / 2 + 0.01, g);
+  mesh(rbox(uw + 0.4, 0.05, 0.32, 0.02), dark, 0, uy + 0.24, ud / 2 + 0.12, g);
+  mesh(rbox(uw + 0.3, 0.05, 0.05, 0.02), red, 0, uy + 0.64, ud / 2 + 0.24, g);
+  mesh(rbox(uw + 0.3, 0.04, 0.04, 0.02), red, 0, uy + 0.42, ud / 2 + 0.24, g);
+  for (let i = 0; i < 9; i++) mesh(new THREE.BoxGeometry(0.035, 0.4, 0.035), red, -uw / 2 - 0.12 + i * (uw + 0.24) / 8, uy + 0.46, ud / 2 + 0.24, g).castShadow = false;
+  const up = { length: uw + 0.6, half: ud / 2 + 0.45, rise: 0.85, t: 0.11, y: uy + uh };
+  const upper = kawaraRoof(g, { ...up, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (uw / 2 + 0.005), { ...up, wide: ud / 2 });
+  frontGable(g, upper, { zf: up.half, y: up.y, roof, crest: houseCrest('ink', ink, letter) });
+  // a gold jewel (hoju) on a stepped base in the middle of the top ridge
+  const ry = up.y + upper.ridge;
+  mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.1, 12), gold, 0, ry, 0, g);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8), gold, 0, ry + 0.2, 0, g);
+  for (let k = 0; k < 3; k++) mesh(new THREE.TorusGeometry(0.09 - k * 0.018, 0.018, 6, 14), gold, 0, ry + 0.12 + k * 0.08, 0, g).rotation.x = Math.PI / 2;
+  const jewel = mesh(new THREE.SphereGeometry(0.12, 14, 10), gold, 0, ry + 0.46, 0, g);
+  jewel.scale.y = 1.15;
+  mesh(new THREE.ConeGeometry(0.06, 0.16, 10), gold, 0, ry + 0.62, 0, g);
+  // the porch over the steps: a little gabled roof, its ridge to you, on two pillars, the leader's crest in its gable
+  const pz0 = vz - 0.1, pz1 = D / 2 + 0.25, plen = pz1 - pz0, ph = H + 0.05;
+  for (const sx of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.09, 0.1, ph, 14), red, sx * 0.62, P + ph / 2, pz1 - 0.2, g);
+    mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 14), gold, sx * 0.62, P + 0.03, pz1 - 0.2, g).castShadow = false;
+  }
+  mesh(rbox(1.5, 0.13, 0.15, 0.02), red, 0, P + ph - 0.05, pz1 - 0.2, g);
+  const porch = new THREE.Group();
+  porch.position.set(0, P + ph + 0.02, pz0 + plen / 2);
+  porch.rotation.y = -Math.PI / 2;
+  g.add(porch);
+  const pr = { length: plen, half: 0.85, rise: 0.62, t: 0.09, y: 0 };
+  kawaraRoof(porch, { ...pr, roof, fancy: true });
+  gableWall(porch, plen / 2 - 0.03, { ...pr, wide: 0.78 });
+  const pc = panel(houseCrest('ink', ink, letter), 0.42, 0.42, 0, 0, 0);
+  pc.parent?.remove(pc); porch.add(pc);
+  pc.position.set(plen / 2 + 0.01, 0.26, 0); pc.rotation.set(0, Math.PI / 2, 0); pc.rotateX(-0.3);
+  // the sacred rope sagging between the porch pillars, paper streamers hung off it
+  const ropeY = P + ph - 0.22;
+  const curve = new THREE.CatmullRomCurve3(Array.from({ length: 7 }, (_, i) => { const t = i / 6 * 2 - 1; return new THREE.Vector3(t * 0.55, ropeY - 0.12 * (1 - t * t), pz1 - 0.12); }));
+  mesh(new THREE.TubeGeometry(curve, 24, 0.045, 8), std({ color: '#d8c080', roughness: 0.95 }), 0, 0, 0, g).castShadow = false;
+  const shide = std({ map: texOf(shideArt()), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 1 });
+  for (const t of [-0.5, 0, 0.5]) {
+    const s = mesh(new THREE.PlaneGeometry(0.1, 0.22), shide, t * 0.55, ropeY - 0.12 * (1 - t * t) - 0.14, pz1 - 0.1, g);
+    s.castShadow = false;
+  }
+  // paper lanterns in the leader's colours hung from the veranda beam
+  const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  for (const sx of [-1, 1]) {
+    const x = sx * (hw / 2 - 0.35);
+    mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 4), dark, x, top - 0.22, vz, g).castShadow = false;
+    const ball = mesh(new THREE.SphereGeometry(0.15, 16, 12), glow, x, top - 0.47, vz, g);
+    ball.scale.y = 1.35; ball.castShadow = false;
+    for (const dy of [-0.2, 0.2]) mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 12), dark, x, top - 0.47 + dy, vz, g).castShadow = false;
+  }
+  // a stone lantern either side of the steps, lit
+  for (const sx of [-1, 1]) {
+    const wx = f.cx + sx * 1.25, wz = f.cz + D / 2 - 0.3;
+    const m = piece('stonelantern', wx + COLS / 2 - 0.5, wz + ROWS / 2 - 0.5, { scale: 0.8, y: P, free: true });
+    if (!m) continue;
+    m.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+    g.attach(m);
+  }
+  // two tall banners at the podium's front corners, swaying a little
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [-1, 1].map(sx => {
+    const x = sx * (W / 2 - 0.12), z = D / 2 - 0.12, tall = 2.7;
+    mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
+    mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g).castShadow = false;
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - sx * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x - sx * 0.22, P + tall - 0.12, z + 0.02);
+    g.add(hang);
+    const m = mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang);
+    m.castShadow = false;
+    return hang;
+  });
+  B.ticks.push((now) => { if (!calm) flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; }); });
   return g;
 }
 

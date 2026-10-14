@@ -114,6 +114,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Follow-up (same day, the user: walkways "more aesthetic and less blocky"): the village's roads are painted by
    `softRoads()` (the style's `soft: true`): corners rounded out and in, uneven slabs in courses, a darker kerb, grass
    creeping over it. Paint only, at build time; the Springs keep the square flags (any town can take `soft` later).
+   Follow-up (same day, the user: Gym Leaders' houses "more grand and extravagant and aesthetic", in the Shrine "and all
+   future gym leaders"): a village house whose home has a `leader` is now `manor()` in `js/event-3d.js` (any later
+   village-style leader gets it unasked): a stone podium up steps, a vermilion veranda, a deep tiled roof, a gold-leafed
+   upper storey under a second roof with a gold jewel on the ridge and the crest in a front gable, a gabled porch with the
+   crest and a sacred rope, stone lanterns at the steps, paper lanterns and two swaying banners in the leader's `GYM_INK`
+   (`noboriArt()`). John's and Jahmes's lots grew to 5 x 4 (John's moved down a row, his door now on the south road).
+   **Every town clean-up does the same for its leaders** in its own style (the handoff's checklist, item 12).
    **Next: Cinder Springs' clean-up** (`?town=wastes`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Wastes' Cinder
    Springs the way the Clearing, Highbough and Lantern Village were (ask me what bothers me about it first), and send an
