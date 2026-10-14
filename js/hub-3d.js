@@ -2810,12 +2810,14 @@ function fitCamera(w, h) {
 // ?aerial: the whole Clearing from high above, to see its layout at a glance
 const AERIAL = new URLSearchParams(location.search).has('aerial');
 
-// ?curve=N: the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), N its strength (1 when left out)
+// the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), at the strength the user picked from 1 to 3
+// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat
+const CURVE_AT = 3;
 const CURVE = (() => {
   const q = new URLSearchParams(location.search);
-  if (!q.has('curve') || AERIAL) return 0;
+  if (AERIAL) return 0;
   const n = parseFloat(q.get('curve'));
-  return Math.max(0, Number.isFinite(n) ? n : 1) * 0.01;
+  return Math.max(0, q.has('curve') && Number.isFinite(n) ? n : CURVE_AT) * 0.01;
 })();
 const BEND = { k: { value: CURVE }, z: { value: 0 } };
 

@@ -98,10 +98,11 @@ The first section began as the note on playtesting the live site and grew into t
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
 
-### The rolling-log bend (`?curve=N`, 2026-10-14, branch `clearing-curve`)
+### The rolling-log bend (on by default, 2026-10-14)
 
-The user's ask: Animal Crossing's curved world, in the Clearing only, behind a flag with a strength. `?curve=N` sets
-`CURVE` (N x 0.01; 1 when the number is left out; off under `?aerial`), and `bendAll()` runs every material in the
+The user's ask: Animal Crossing's curved world, in the Clearing only. Tried behind `?curve=N` at 1, 2 and 3 on a branch,
+the user picked 3, now `CURVE_AT`, the default. `CURVE` is N x 0.01 (`?curve=N` tries another, `?curve=0` lays it flat;
+off under `?aerial`), and `bendAll()` runs every material in the
 Clearing through `bend()` in `js/hd2d.js` once (at build, then each frame for whatever was added since). Each vertex drops
 by k x (its world z minus the view's focus `camZ`)², applied to `mvPosition` after `project_vertex`, so shadows and lights,
 worked out from the unbent world, still fall right. A material marked `userData.upright` (every `monBoard()` billboard,

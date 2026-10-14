@@ -520,13 +520,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **The Clearing's rolling-log bend** (2026-10-14, the user's ask; branch `clearing-curve` only, not on `main`): `?curve=N`
-  bends the Clearing's ground round a log across the view like Animal Crossing's, N its strength (1 when left out; try
-  0.5 to 3). `bend()` / `unbend()` in `js/hd2d.js`, `CURVE` / `bendAll()` / `tapRays()` in `js/hub-3d.js`; details in
-  `docs/reference/hub-base-mall.md`. Checked headless: every shader compiles, the GPU draws where `unbend()` says, taps land
-  on the tile drawn under them. Next: the user playtests the strengths and says whether to keep it, make it the default,
-  or take it to the other places (the Secret Base, the mall, the walk-in rooms).
-
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
   `js/event-3d.js`: a dark stone wall with a colonnade in place of the woods, the leader's first boss as twin stone colossi
   on tall plinths flanking the arch (`stoneBoard()`, upright), the arch's lintel GYM LEADER over their name
