@@ -82,6 +82,7 @@ export function draftWin(run, shiny) {
     fame: !mewtwo && run.level === MAX_LEVEL ? wins.filter(w => w.level === MAX_LEVEL && w.starter !== 'mewtwo').length + 1 : null,
     champ: mewtwo ? wins.filter(isDepths).length + 1 : null,   // a Champion of the Depths' own number
     ...runRecord(run, shiny),
+    ...(!mewtwo && run.deep ? { deep: true } : {}),   // Eternatus beaten by another starter (Towns step 5): the Depths' mark on its win
   };
 }
 
@@ -131,6 +132,9 @@ export const fameNo = (entry) => entry.starter !== 'mewtwo' && entry.level === M
 const winNo = (entry) => `Win ${pad3(entry.no)}`;
 /** A Mewtwo win: Eternatus beaten, the Champion of the Depths (v1.0's ending), gold-violet in both books. */
 export const isDepths = (entry) => entry.starter === 'mewtwo';
+/** Any other starter's win in the Crystal Depths (once the five Waystones are lit): its own mark, not Mewtwo's title. */
+const deepWin = (entry) => !isDepths(entry) && Boolean(entry.deep);
+const levelTag = (entry) => `Lv.${entry.level}${deepWin(entry) ? ' 💎' : ''}`;
 /** Its number among them; entries from before part D are numbered by their place. */
 const champNo = (entry) => `Depths ${pad3(entry.champ ?? getSave().hallOfFame.filter(isDepths).indexOf(entry) + 1)}`;
 // the window shows either book: the Hall of Fame numbers its champions, the Record Book every win
@@ -149,7 +153,7 @@ function plate(entry) {
   const head = el('div', 'hof-plate-head');
   head.append(el('span', 'hof-no', numberOf(entry)), el('strong', 'hof-name', `${nameOf(entry)}${entry.shiny ? ' ✨' : ''}`));
   const foot = el('div', 'hof-plate-foot');
-  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', isDepths(entry) ? '💎 Depths' : entry.summit ? '🗼 Summit' : `Lv.${entry.level}`));
+  foot.append(chip(entry), el('span', 'hof-date', dateOf(entry.date)), el('span', 'hof-level', isDepths(entry) ? '💎 Depths' : entry.summit ? '🗼 Summit' : levelTag(entry)));
   box.append(head, foot);
   return box;
 }
@@ -223,7 +227,7 @@ function replay(scene, cls) {
  * playing. Resolves once the last line is tapped away and the scene has faded out.
  */
 export async function winScene(entry) {
-  const depths = isDepths(entry), summit = Boolean(entry.summit);
+  const depths = isDepths(entry), summit = Boolean(entry.summit), cave = depths || deepWin(entry);
   const fame = Boolean(fameNo(entry)) || depths || summit;
   book = fame ? 'fame' : 'record';
   const scene = $('hof-scene');
@@ -234,11 +238,11 @@ export async function winScene(entry) {
   img.src = imgOf(entry);
   img.alt = name;
   const party = fame && !still();
-  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : fame ? 'Hall of Fame' : 'Victory!', party);
+  setTitle(depths ? 'Champion of the Depths' : summit ? 'Sky Pillar Summit' : fame ? 'Hall of Fame' : cave ? 'Victory in the Depths' : 'Victory!', party);
   $('hof-plate-slot').replaceChildren(plate(entry));
   extra.replaceChildren(statsPanel(entry));
   $('hof-log').hidden = true;
-  scene.className = `hof-scene${fame ? ' fame' : ''}${depths ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
+  scene.className = `hof-scene${fame ? ' fame' : ''}${cave ? ' depths' : ''}${summit ? ' summit' : ''}${party ? ' party' : ''}${still() ? ' still' : ''}`;
   scene.hidden = false;
   const peak = $('hof-summit-bg');
   peak.hidden = !summit;
@@ -342,6 +346,7 @@ function quick(entry) {
 function storyOf(entry, lost) {
   if (lost) return `${blowOf(entry)} in ${whereOf(entry)}, ${dateOf(entry.date)}.`;
   if (isDepths(entry)) return `Beat Eternatus in the Crystal Depths, ${dateOf(entry.date)}.`;
+  if (deepWin(entry)) return `Beat Eternatus in the Crystal Depths on Trainer Level ${entry.level}, ${dateOf(entry.date)}.`;
   return `Won on Trainer Level ${entry.level}, ${LEVELS[entry.level]?.name ?? ''}, ${dateOf(entry.date)}.`;
 }
 
@@ -390,13 +395,13 @@ const hallOfFame = () => shelfApp({
   art: (g, e) => monImg(e, 'pdx-slot-mon'),
   screenCls: (g, e) => `hofx${isDepths(e) ? ' depths' : ''}`,
   screen: (g, e) => [el('span', 'hofx-light'), el('span', 'hofx-pedestal'), monImg(e, 'pdx-mon bdx-art'), typeChip(e.type),
-    el('span', 'pdx-role rbk-tag gold', isDepths(e) ? '💎 Depths' : `Lv.${e.level}`)],
+    el('span', 'pdx-role rbk-tag gold', isDepths(e) ? '💎 Depths' : levelTag(e))],
   lines(g, e) {
     const again = el('button', 'pdx-lcd bdx-open hofx-replay', '★ Replay the ceremony');
     again.type = 'button';
     again.addEventListener('click', () => ceremony(e));
     return [typed('', isDepths(e) ? `Became the Champion of the Depths, ${dateOf(e.date)}.`
-      : `Entered the Hall of Fame on ${dateOf(e.date)}, a champion on Trainer Level ${e.level}.`), quick(e), again];
+      : `Entered the Hall of Fame on ${dateOf(e.date)}, a champion on Trainer Level ${e.level}${deepWin(e) ? ', Eternatus beaten in the Depths' : ''}.`), quick(e), again];
   },
   tally: () => 'Champions',
   sheet: (g, e) => entryPage(e, 'fame'),
@@ -466,7 +471,7 @@ function entryPage(entry, which) {
   img.alt = nameOf(entry);
   pic.append(img);
   const info = plate(entry);
-  info.append(el('p', 'hof-rule', (isDepths(entry) ? 'Champion of the Depths: Eternatus beaten' : `Trainer Level ${entry.level}: ${LEVELS[entry.level]?.name ?? ''}`)
+  info.append(el('p', 'hof-rule', (isDepths(entry) ? 'Champion of the Depths: Eternatus beaten' : `Trainer Level ${entry.level}: ${LEVELS[entry.level]?.name ?? ''}${deepWin(entry) ? ' · 💎 Eternatus beaten' : ''}`)
     + (entry.started && entry.started !== entry.date ? ` · set out ${dateOf(entry.started)}` : '')));
   top.append(pic, info);
 

@@ -31,6 +31,8 @@
 
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
+import { townsOpen } from './data/towns.js';
+import { litStones } from './towns.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL } from './data/difficulty.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
@@ -298,6 +300,19 @@ function init() {
     onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
     // the Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
     // any run (visitTown() in js/run.js), and comes home in front of the Waystone or on the doorstep
+    // the broken gate's second way, once the five Waystones are lit (Towns step 5): down into the Crystal Depths outside any
+    // run, the Depths' own film, then back on the gate's doorstep
+    onDepths: async () => {
+      leaveTitle();
+      playMusic('seal', { restart: true });
+      const film = biomeIntro(BIOMES_BY_ID.depths, 4);
+      curtain(false, 300);
+      await film;
+      await curtain(true, 300);
+      cameHome('gate');
+      await showHome();
+      curtain(false, 420);
+    },
     onTown: (id, house = null) => {
       const mate = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
       leaveTitle();
@@ -368,6 +383,8 @@ function init() {
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
   if (params.get('descent') === 'mewtwo') return peekDescent(STARTERS_BY_ID.mewtwo);
+  // ?descent=deep (&starter=, &level=): any starter's fall once the five Waystones are lit, Mewtwo holding the gate open
+  if (params.get('descent') === 'deep') return peekDescent(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), Number(params.get('level')) || 0);
   // ?biome=ruins (any biome; &starter=id, &level=0-5; &slot=1 or 2 walks a pool biome at that fork): a throwaway run
   // starting in that biome, on the road through it
   if (params.get('biome') && peekBiome(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('biome'), Number(params.get('level') ?? 0), Number(params.get('slot')) || null)) return;
@@ -432,8 +449,9 @@ function peekStrike(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
-  const kind = params.get('kind') || (before === 0 ? 'open' : after === 0 ? 'ultimate' : 'win');
-  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
+  // the open gate: with the towns on (?towns), Mewtwo waits in it (&shards=0-4 the Waystones lit, &first its whole story)
+  const kind = params.get('kind') || (before === 0 ? (townsOpen() ? 'mewtwo' : 'open') : after === 0 ? 'ultimate' : 'win');
+  playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title', lit: litStones() })
     .then((close) => { close?.(); playMusic('title'); });   // back to the title's song after the seal's
 }
 

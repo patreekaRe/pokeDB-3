@@ -1370,8 +1370,9 @@ export const BIOMES = [
     hpMult: 5.2, dmgBonus: 27, bossBonus: 33,
   },
   {
-    // Mewtwo's alone (v1.0): `secret` keeps it out of every other run, the Pokédex and the records. Its numbers are fixed:
-    // no Trainer Level reaches it (MEWTWO_MODE in difficulty.js). Its scenery is BIOME_ART.depths in scene.js.
+    // Mewtwo's (v1.0), and since Towns step 5 any starter's once the five Waystones are lit (a `deep` run): `secret` keeps it
+    // out of the Pokédex and the records until reached. Mewtwo plays it at MEWTWO_MODE's numbers, the others at their Trainer
+    // Level's plus DEPTHS_MODS (difficulty.js). Its scenery is BIOME_ART.depths in scene.js.
     id: 'depths', name: 'Crystal Depths', secret: true, slot: 3, music: 'seal',   // the fall's song carries on into the map (the user's call, 2026-10-09)
     stages: ['Cave Mouth', 'Crystal Halls', 'Deep Core', 'Energy Well'],
     normals: ['crobat', 'sableye', 'gigalith', 'steelix', 'excadrill', 'haxorus',
@@ -1470,8 +1471,9 @@ export function forkGrowth(biome, kind) {
   return { hp: at[kind] / home[kind], dmg: Math.round(boss ? at.bossHit - home.bossHit : at.hit - home.hit) };
 }
 
-/** The biome a run ends in: the third, or for Mewtwo its secret fourth. */
-export const finalBiome = (starter) => (starter?.id === 'mewtwo' ? BIOMES.length : BIOMES.filter(b => !b.secret).length) - 1;
+/** The biome a run ends in: the third, or the secret fourth for Mewtwo and for a `deep` run (all five Waystones lit and the
+    Sealed Gate broken: the fall drops any starter into the Crystal Depths, Towns step 5). */
+export const finalBiome = (starter, deep = false) => (starter?.id === 'mewtwo' || deep ? BIOMES.length : BIOMES.filter(b => !b.secret).length) - 1;
 
 /* Traits: what some of the Crystal Depths' Pokémon do whenever you play a card (enemyTrait() in js/battle.js). Each
    enemy's `trait` names one by `id`, with its own `name` (an Ability) and numbers. */

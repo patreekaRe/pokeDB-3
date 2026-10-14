@@ -219,7 +219,7 @@ export const BADGES = [
   { id: 'seal', group: 'secrets', name: 'Seal Badge', icon: 'seal', emoji: '🔮',
     text: 'Break the Sealed Gate', test: (s, save) => save.gateHp <= 0 },
   { id: 'depths', group: 'secrets', name: 'Depths Badge', icon: 'depths', emoji: '💎', secret: true,
-    text: 'Defeat Eternatus in the Crystal Depths', test: (s, save) => !!s.bossesDefeated?.[4] || (save.feats || []).includes('eternatus') },
+    text: 'Defeat Eternatus in the Crystal Depths', test: (s, save) => !!s.bossesDefeated?.[4] || !!s.deepWins || (save.feats || []).includes('eternatus') },
   { id: 'eternal', group: 'secrets', name: 'Eternal Badge', icon: 'eternal', emoji: '♾️', secret: true,
     text: 'Defeat Eternatus twice',
     test: (s, save) => (s.bossKills?.[4] || 0) >= 2 || (save.hallOfFame || []).filter(w => w.starter === 'mewtwo').length >= 2 },

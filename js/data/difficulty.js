@@ -59,9 +59,15 @@ export const MEWTWO_MODE = {
 
 export const isMewtwoRun = (starter) => starter?.id === 'mewtwo';
 
-/** The rules a run plays in a biome: its Trainer Level's, or Mewtwo's fixed ones. */
+/* The Crystal Depths for every other starter (Towns step 5: all five Waystones lit and the gate broken), on top of their
+   Trainer Level's rules, one entry a Level. Its numbers were set for Mewtwo's deck and its 25% sprint. */
+const DEPTHS_SLOT = 3;
+export const DEPTHS_MODS = [{}, {}, {}, {}, {}, {}];
+
+/** The rules a run plays in a biome: its Trainer Level's (and DEPTHS_MODS in the Depths), or Mewtwo's fixed ones. */
 export function runMods(starter, level, biome) {
-  return isMewtwoRun(starter) ? { ...BASE_MODS, ...MEWTWO_MODE.mods[biome] } : modsFor(level);
+  if (isMewtwoRun(starter)) return { ...BASE_MODS, ...MEWTWO_MODE.mods[biome] };
+  return biome === DEPTHS_SLOT ? { ...modsFor(level), ...DEPTHS_MODS[level] } : modsFor(level);
 }
 
 /** How many floors a biome's map has in this run (undefined: the map's own 10). */
