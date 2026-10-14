@@ -2040,11 +2040,10 @@ function buildClearing() {
   dressSeason();
 }
 
-// the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps at grassy corners on
-// both sides of the ring road and its avenue junctions, benches looking onto the plaza, flower beds between the avenues
-const LAMPS = [[5, 6], [3, 4], [27, 6], [29, 4], [5, 16], [3, 19], [27, 16], [30, 18],
-  [13, 4], [17, 4], [13, 6], [17, 6], [27, 9], [29, 9], [27, 13], [29, 13],
-  [12, 16], [18, 16], [12, 19], [18, 19], [3, 7], [6, 7], [3, 15], [6, 15]];
+// the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues,
+// benches looking onto the plaza, flower beds in the grass between the avenues
+const LAMPS = [[13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [21, 9],
+  [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18], [13, 16], [17, 16]];
 const BENCHES = [[11, 13, Math.PI / 4], [19, 13, -Math.PI / 4], [12, 18, 0], [18, 18, 0]];
 const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [21, 7, 0.7]];
 const dressTiles = new Set();
