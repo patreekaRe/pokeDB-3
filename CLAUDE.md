@@ -884,9 +884,11 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
   Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
-  asked: like Gen 3's Secret Power bases), the Poké Mall at the west avenue's end (`MALL_TILE`), the Nietos' house on the
-  east one (`NIETOS_AT`), the PC off the plaza's north-east rim, a pond garden down the south avenue (`POND`), the Sealed
-  Gate south-west once broken (`SEALED_AT`); lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
+  asked: like Gen 3's Secret Power bases), the Poké Mall in the lower-left garden (`MALL_TILE`), the Nietos' house in the
+  lower-right garden (`NIETOS_AT`; its steps stop before the south street), the PC in its marked place beside the plaza,
+  facing the player head-on (`PC_AT`), a pond garden down the south avenue (`POND`), the Sealed Gate at the old Mall site
+  on the west side once unlocked (`SEALED_AT`); the moved garden beds and seasonal pumpkin patch keep clear of the buildings;
+  lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
   `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.

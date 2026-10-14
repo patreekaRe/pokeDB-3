@@ -94,6 +94,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    it as a wider family cottage with a tiled blue roof, porch, framed windows, flower boxes, chimney and Linc's sandbox.
    Kept the latest `main` home-availability logic. Browser preview at `?hubat=25,12` and `?aerial`; awaiting the user's
    visual playtest before the next layout pass.
+    **Done (2026-10-14): the Clearing's marked layout, pass 3** (branch `towns`): moved the Nietos into the red lower-right
+    garden, keeping their steps short of the south street; moved the Poké Mall into the yellow lower-left garden; set the
+    PC into the small blue space by the plaza, facing the player square-on; and moved the Sealed Gate to the purple site
+    on the west side. Removed the beds under the buildings and moved Halloween's pumpkin patch clear of the home. Next:
+    the user's visual playtest of `?aerial` before another layout pass.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

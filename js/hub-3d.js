@@ -49,7 +49,7 @@ const STOP_AT = { tx: 17, ty: 0 }, SIGN_AT = { tx: 13, ty: 0 };
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 11 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
-const PC_AT = { tx: 18, ty: 8 };
+const PC_AT = { tx: 19, ty: 9 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -90,11 +90,11 @@ const BUGS = 90;
 // the Safari gate and the Sky Pillar in the back corners, out on the meadow, each up a trail off the ring road
 const SAFARI_AT = { tx: 4, ty: -3 };
 const PILLAR_AT = { tx: 28, ty: -3 };
-// each by its top-left tile: the Nietos' house east, its door on the east avenue; Kenmatta's dojo north-west, across the
-// Clearing from it (the user's ask, 2026-10-14); the Ancient Tree, the Secret Base, north-east (TREE_AT its middle tile);
-// the Poké Mall west, its doors on the west avenue; the Sealed Gate south-west once broken
-const NIETOS_AT = { tx: 24, ty: 9 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 2, ty: 8 };
-const SEALED_AT = { tx: 7, ty: 16 };
+// each by its top-left tile: the Nietos' house in the lower-right garden (steps stopping short of the south street);
+// Kenmatta's dojo north-west, the Ancient Tree / Secret Base north-east; the Poké Mall in the lower-left garden; the
+// Sealed Gate on the old Mall site, once broken
+const NIETOS_AT = { tx: 23, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 13 };
+const SEALED_AT = { tx: 2, ty: 10 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
@@ -1369,14 +1369,14 @@ function nietosHouse(g, x, z) {
     const flowers = ['#e85868', '#f8d850', '#c088e8'];
     for (let i = 0; i < 3; i++) add(new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 6), std({ color: flowers[i] })), wx + (i - 1) * 0.26, 0.99, fz + 0.2);
   }
-  // A little covered porch makes the entrance feel lived in; broad steps meet the east avenue.
+  // A little covered porch makes the entrance feel lived in; the short steps stop before the south street.
   const porch = add(new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.16, 0.88), stone), 0, 0.29, D / 2 + 0.39);
   porch.castShadow = false;
   const canopy = add(new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.14, 0.88), roofM), 0, bodyTop + 0.06, D / 2 + 0.3);
   canopy.rotation.x = 0.12;
   add(new THREE.Mesh(new THREE.BoxGeometry(2.08, 0.1, 0.1), roofEdge), 0, bodyTop - 0.02, D / 2 + 0.72);
   for (const sx of [-0.84, 0.84]) add(new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.58, 0.1), blue), sx, 1.1, D / 2 + 0.66);
-  for (let i = 0; i < 2; i++) add(new THREE.Mesh(new THREE.BoxGeometry(1.38 - i * 0.16, 0.12, 0.26), stone), 0, 0.12 - i * 0.02, D / 2 + 0.93 + i * 0.26);
+  for (let i = 0; i < 2; i++) add(new THREE.Mesh(new THREE.BoxGeometry(1.38 - i * 0.16, 0.12, 0.26), stone), 0, 0.12 - i * 0.02, D / 2 + 0.68 + i * 0.26);
   for (const sx of [-1, 1]) {
     const lamp = std({ color: '#fff0c0', emissive: new THREE.Color('#ffd070'), emissiveIntensity: 0.7 });
     lamp.userData.glow = 0.8; lamp.userData.glowMin = 0.12; glowMats.push(lamp);
@@ -1566,7 +1566,7 @@ function makePlaces() {
         g.add(pcMail, pcNews);
         pcMarks();
         pc.position.set(tileX(PC_AT.tx), 0, tileZ(PC_AT.ty));
-        pc.rotation.y = -0.35;   // turned a little, so its right side shows
+        pc.rotation.y = 0;   // its front (+z) faces the player and the camera
         g.add(pc);
       },
     },
@@ -1609,7 +1609,7 @@ function makePlaces() {
   });
   // at the west avenue's end, the avenue running up to the middle of its doors
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: MALL_TILE.tx, y: MALL_TILE.ty + 2 }, tiles: rect(MALL_TILE.tx - 2, MALL_TILE.ty - 1, MALL_TILE.tx + 1, MALL_TILE.ty + 1), tag: [MALL_TILE.tx, 3.4, MALL_TILE.ty + 1], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: MALL_TILE.tx - 1, y: MALL_TILE.ty + 2 }, tiles: rect(MALL_TILE.tx - 3, MALL_TILE.ty - 1, MALL_TILE.tx + 1, MALL_TILE.ty + 1), tag: [MALL_TILE.tx - 1, 3.4, MALL_TILE.ty + 1], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
@@ -1830,10 +1830,10 @@ function buildClearing() {
 
 // the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues and
 // round the plaza, benches looking onto it, flower beds in the grass between the avenues
-const LAMPS = [[13, 9], [17, 9], [13, 13], [17, 13], [13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [9, 13], [6, 13], [21, 9], [21, 13], [24, 13],
+const LAMPS = [[13, 9], [17, 9], [17, 13], [13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [21, 9],
   [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18], [13, 16], [17, 16]];
 const BENCHES = [[11, 13, Math.PI / 4], [19, 13, -Math.PI / 4], [12, 18, 0], [18, 18, 0]];
-const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [10, 14, 0.8], [24, 15, 1.1], [7, 14, 0.75], [21, 7, 0.7]];
+const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [21, 7, 0.7]];
 const dressTiles = new Set();
 
 function dressClearing() {
@@ -1915,8 +1915,8 @@ function dressSeason() {
       [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0],   // by the Ancient Tree's door
       [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
       [lanternArt(2), 'white', 12, 15, 1.3, 0, 0], [lanternArt(3), 'white', 18, 15, 1.3, 0, 0],   // and down the south one
-      [...P_(5), 22, 15, 4.4, 0, -0.1], [...P_(6), 21, 16, 2.2, 0, 0.1], [...P_(7, false), 23, 16, 1.9, 0, 0.15],   // the pumpkin patch
-      [scarecrowArt(), 'white', 26, 15, 1.5, 0, 0],
+      [...P_(5), 11, 14, 4.4, 0, -0.1], [...P_(6), 12, 15, 2.2, 0, 0.1], [...P_(7, false), 13, 15, 1.9, 0, 0.15],   // the pumpkin patch, clear of the new home and Mall
+      [scarecrowArt(), 'white', 13, 13, 1.5, 0, 0],
       [deadTreeArt(0), 'white', 11, 8, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
       [graveArt(0), null, 5, 8, 1.4, 0, 0], [graveArt(1), null, 6, 8, 1.5, 0, 0], [graveArt(2), null, 8, 8, 1.5, 0, 0], [graveArt(3), null, 9, 8, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 9, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 9, 1.1, 0, -0.1],
@@ -1946,7 +1946,7 @@ function dressSeason() {
     yardTiles.add(key(10, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(22), 1.2, tileZ(15) + 1.4], 0.8]]) {
+    for (const [colour, at, k] of [['#ff9030', [tileX(11), 1.2, tileZ(14) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;

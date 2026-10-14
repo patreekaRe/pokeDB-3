@@ -12,10 +12,11 @@ three places:
 
 ## Where we left off (2026-10-14)
 
-- 2026-10-14: **The Clearing's Nietos home, pass 2** (branch `towns`, not `main`): the user clarified this is a Clearing
-  layout change, not the Shrine town cleanup. Sync `towns` with `main` before work. Move the home one tile south toward
-  the east avenue/player, give it a wider blue-roofed cottage facade, and keep Gym Leader visits switched off. Preview at
-  `?hubat=25,12` and `?aerial`; waiting on the user's look before the next Clearing or town pass.
+- 2026-10-14: **The Clearing's marked layout, pass 3** (branch `towns`, not `main`): the user's boxes mean the Nietos in
+  the red lower-right garden (steps clear of the street), Poké Mall in the yellow lower-left garden, PC in the small blue
+  plaza-side box facing the player straight on, and the unlocked Sealed Gate at the purple west-side site. The obstructing
+  garden beds were removed and Halloween's pumpkin patch moved clear. `towns` was synced with `main` before this pass;
+  preview `?aerial` and `?hubat=25,12`, waiting on the user's visual playtest. Gym Leader visits remain switched off.
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
   PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in
