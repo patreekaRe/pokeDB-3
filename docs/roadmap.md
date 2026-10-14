@@ -115,6 +115,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     **Done (2026-10-14): a buried rift at the Sealed Gate** (branch `towns`): while the teleporter is locked, violet cracks
     glow on the ground and a tap gives a mysterious hint about something pressing up from below. The actual gate replaces
     the rift when unlocked. Next: the user's visual playtest of `?aerial`.
+    **Done (2026-10-14): Violet Fissure polish** (branch `towns`, user's ask): replaced the chunky neon mark with smooth,
+    tapered cracks around a recessed violet core; Three.js shader flow, broken pulse rings and a few rising motes add
+    motion, while reduced-motion mode holds it still. The glow is quieter and the rift sits clear of its approach. Browser
+    checked at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

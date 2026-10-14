@@ -1516,58 +1516,196 @@ function liveWarp(now) {
 
 const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
 
-/** A branching seam of violet light under the ground, foreshadowing the Sealed Gate before it breaks through. */
+/** A smooth, layered fracture that lets the Sealed Gate's light leak up through the Clearing. */
 function riftCracksArt() {
-  const a = art(128, 96), glow = art(128, 96);
+  const a = fine(128, 96, 4), glow = a.shine(), flow = fine(128, 96, 4);
   const paths = [
-    [[0, 61], [17, 60], [27, 51], [41, 54], [52, 43], [66, 47], [78, 37], [94, 41], [108, 31], [127, 32]],
-    [[27, 51], [24, 40], [14, 32], [18, 22], [9, 15]],
-    [[52, 43], [47, 32], [55, 22], [50, 9]],
-    [[66, 47], [72, 59], [84, 64], [88, 76], [101, 86]],
-    [[78, 37], [88, 28], [84, 17], [96, 8]],
-    [[41, 54], [36, 66], [24, 72], [19, 86]],
-    [[94, 41], [105, 49], [118, 50], [127, 61]],
+    { points: [[2, 63], [14, 62], [25, 64], [37, 56], [48, 58], [58, 51], [70, 53], [81, 45], [94, 47], [106, 38], [126, 33]], width: 1.35 },
+    { points: [[25, 64], [22, 54], [26, 46], [18, 40], [13, 31], [17, 24]], width: 0.76 },
+    { points: [[48, 58], [45, 50], [51, 43], [48, 35], [55, 29], [52, 18]], width: 0.68 },
+    { points: [[70, 53], [74, 62], [72, 69], [81, 74], [88, 86]], width: 0.72 },
+    { points: [[94, 47], [101, 42], [99, 34], [107, 27], [107, 17]], width: 0.7 },
+    { points: [[37, 56], [33, 67], [25, 73], [23, 83]], width: 0.62 },
+    { points: [[106, 38], [116, 43], [125, 42]], width: 0.56 },
   ];
-  const trace = (g, points, colour, width, alpha = 1) => {
-    g.globalAlpha = alpha;
-    g.strokeStyle = colour; g.lineWidth = width; g.lineCap = 'square'; g.lineJoin = 'miter';
-    g.beginPath(); g.moveTo(...points[0]);
-    for (const point of points.slice(1)) g.lineTo(...point);
-    g.stroke();
-    g.globalAlpha = 1;
+  flow.g.lineCap = flow.g.lineJoin = 'round';
+
+  const path = (ctx, points) => {
+    ctx.beginPath();
+    ctx.moveTo(...points[0]);
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[Math.max(0, i - 1)], p1 = points[i], p2 = points[i + 1], p3 = points[Math.min(points.length - 1, i + 2)];
+      ctx.bezierCurveTo(
+        p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6,
+        p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6,
+        p2[0], p2[1],
+      );
+    }
   };
-  for (const path of paths) {
-    trace(a.g, path, '#28123f', 12, 0.9);
-    trace(a.g, path, '#63218f', 7, 0.95);
-    trace(a.g, path, '#b04ce8', 3, 0.95);
-    trace(a.g, path, '#f0cbff', 1, 0.9);
-    trace(glow.g, path, '#ffffff', 12, 0.9);
+  const trace = (ctx, points, colour, width, alpha = 1) => {
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = colour; ctx.lineWidth = width; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    path(ctx, points); ctx.stroke();
+    ctx.globalAlpha = 1;
+  };
+  const core = (ctx, kind) => {
+    ctx.save(); ctx.translate(64, 52); ctx.rotate(-0.43);
+    ctx.beginPath(); ctx.ellipse(0, 0, 8.4, 2.2, 0, 0, Math.PI * 2);
+    if (kind === 'surface') {
+      ctx.fillStyle = '#191321'; ctx.fill();
+      ctx.strokeStyle = 'rgba(115, 73, 146, 0.72)'; ctx.lineWidth = 0.8; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0, 0, 5.6, 0.84, 0, 0, Math.PI * 2);
+      const inner = ctx.createLinearGradient(0, -0.9, 0, 0.9);
+      inner.addColorStop(0, 'rgba(108, 50, 158, 0.4)');
+      inner.addColorStop(0.48, 'rgba(221, 165, 255, 0.92)');
+      inner.addColorStop(1, 'rgba(114, 54, 164, 0.45)');
+      ctx.fillStyle = inner; ctx.fill();
+    } else {
+      ctx.fillStyle = 'rgba(235, 202, 255, 0.84)'; ctx.fill();
+    }
+    ctx.restore();
+  };
+
+  const haze = a.g.createRadialGradient(64, 52, 1, 64, 52, 43);
+  haze.addColorStop(0, 'rgba(143, 73, 201, 0.2)');
+  haze.addColorStop(0.38, 'rgba(103, 47, 155, 0.12)');
+  haze.addColorStop(1, 'rgba(76, 33, 116, 0)');
+  a.g.save(); a.g.translate(64, 52); a.g.rotate(-0.43); a.g.scale(1.45, 0.72);
+  a.g.fillStyle = haze; a.g.beginPath(); a.g.ellipse(0, 0, 42, 22, 0, 0, Math.PI * 2); a.g.fill();
+  a.g.restore();
+
+  for (const { points, width } of paths) {
+    trace(a.g, points, '#16121e', width * 4.1, 0.78);
+    trace(a.g, points, '#33203f', width * 2.7, 0.94);
+    trace(a.g, points, '#684080', width * 1.55, 0.9);
+    trace(a.g, points, '#ad71d0', width * 0.72, 0.76);
+    trace(a.g, points, '#e3caff', width * 0.2, 0.72);
+    trace(glow, points, '#ffffff', width * 3.2, 0.14);
+    trace(glow, points, '#ffffff', width * 1.2, 0.62);
+    trace(glow, points, '#ffffff', width * 0.3, 0.9);
+    trace(flow.g, points, '#ffffff', width * 1.5, 0.86);
   }
-  a.c.glow = glow.c;
-  return a.c;
+  core(a.g, 'surface'); core(glow, 'glow'); core(flow.g, 'flow');
+  a.c.glow = glow.canvas;
+  return { surface: a.c, flow: flow.c };
 }
 
 function buildBuriedRift(g) {
-  const art = riftCracksArt();
-  const material = new THREE.MeshStandardMaterial({ map: texOf(art), transparent: true, alphaTest: 0.01, depthWrite: false, side: THREE.DoubleSide, roughness: 1 });
-  glowing(material, art, null, '#a84cff', 1.25);
-  const x = tileX(SEALED_AT.tx), z = tileZ(SEALED_AT.ty + 0.75);
-  const cracks = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 3.2), material);
+  const art = riftCracksArt(), x = tileX(SEALED_AT.tx), z = tileZ(SEALED_AT.ty + 0.25), w = 3.3, d = 2.2;
+  const material = new THREE.MeshStandardMaterial({ map: texOf(art.surface), transparent: true, alphaTest: 0.01, depthWrite: false, side: THREE.DoubleSide, roughness: 0.92 });
+  glowing(material, art.surface, null, '#b47be2', 0.72);
+  const cracks = new THREE.Mesh(new THREE.PlaneGeometry(w, d), material);
   cracks.rotation.x = -Math.PI / 2;
-  cracks.position.set(x, 0.035, z);
+  cracks.position.set(x, 0.04, z);
   cracks.castShadow = false;
   g.add(cracks);
-  const light = new THREE.PointLight('#a84cff', 0.22, 3.6, 2);
-  light.position.set(x, 0.16, z);
+
+  const flowTexture = texOf(art.flow), flowMaterial = new THREE.ShaderMaterial({
+    uniforms: { uMask: { value: flowTexture }, uTime: { value: 0 }, uMotion: { value: calm ? 0 : 1 } },
+    vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D uMask; uniform float uTime; uniform float uMotion; varying vec2 vUv;
+      void main() {
+        float mask = texture2D(uMask, vUv).a;
+        if (mask < 0.02) discard;
+        float radius = length((vUv - vec2(0.5, 0.54)) * vec2(3.3, 2.2));
+        float cycle = mod(uTime, 7.2) / 7.2;
+        float front = cycle * 2.05;
+        float fade = smoothstep(0.0, 0.08, cycle) * (1.0 - smoothstep(0.78, 0.97, cycle));
+        float wave = exp(-pow((radius - front) / 0.12, 2.0)) * fade * uMotion;
+        float shimmer = (0.5 + 0.5 * sin(uTime * 1.1 - radius * 4.0)) * uMotion;
+        float strength = 0.035 + wave * 0.42 + shimmer * 0.035;
+        vec3 violet = vec3(0.34, 0.12, 0.55);
+        vec3 pearl = vec3(0.82, 0.68, 1.0);
+        gl_FragColor = vec4(mix(violet, pearl, wave * 0.8), mask * strength);
+        #include <colorspace_fragment>
+      }`,
+    transparent: true, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, toneMapped: false,
+  });
+  flowMaterial.map = flowTexture; // the shared scene disposer releases the uniform texture through .map
+  const flow = new THREE.Mesh(new THREE.PlaneGeometry(w, d), flowMaterial);
+  flow.rotation.x = -Math.PI / 2;
+  flow.position.set(x, 0.048, z);
+  flow.castShadow = false;
+  flow.raycast = () => {};
+  g.add(flow);
+
+  const auraArt = fine(128, 96, 4), aura = auraArt.g;
+  aura.save(); aura.translate(64, 52); aura.rotate(-0.43); aura.scale(1.45, 0.72);
+  const wash = aura.createRadialGradient(0, 0, 2, 0, 0, 48);
+  wash.addColorStop(0, 'rgba(174, 103, 239, 0.3)');
+  wash.addColorStop(0.42, 'rgba(119, 66, 180, 0.14)');
+  wash.addColorStop(1, 'rgba(78, 37, 122, 0)');
+  aura.fillStyle = wash; aura.beginPath(); aura.ellipse(0, 0, 48, 23, 0, 0, Math.PI * 2); aura.fill();
+  aura.restore();
+  const auraMesh = new THREE.Mesh(new THREE.PlaneGeometry(w + 0.45, d + 0.35), new THREE.MeshBasicMaterial({
+    map: texOf(auraArt.c), color: '#c494f0', transparent: true, opacity: 0.5, depthWrite: false,
+    blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false,
+  }));
+  auraMesh.rotation.x = -Math.PI / 2;
+  auraMesh.position.set(x, 0.03, z);
+  auraMesh.raycast = () => {};
+  g.add(auraMesh);
+
+  const ringGeometry = new THREE.BufferGeometry(), ringPoints = [], arcs = [[-2.7, -1.35], [-0.65, 0.65], [1.45, 2.55]];
+  for (const [start, end] of arcs) for (let i = 0; i < 18; i++) {
+    for (const a of [start + (end - start) * i / 18, start + (end - start) * (i + 1) / 18]) {
+      ringPoints.push(Math.cos(a) * 0.34, 0, Math.sin(a) * 0.12);
+    }
+  }
+  ringGeometry.setAttribute('position', new THREE.Float32BufferAttribute(ringPoints, 3));
+  const waves = [0, 0.48].map((phase) => {
+    const material = new THREE.LineBasicMaterial({ color: '#d8b7fa', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+    const mesh = new THREE.LineSegments(ringGeometry, material);
+    mesh.position.set(x, 0.055, z);
+    mesh.rotation.y = -0.43;
+    mesh.raycast = () => {};
+    g.add(mesh);
+    return { mesh, material, phase };
+  });
+
+  const seeds = [[0.43, 0.5, 0.08, 0.17], [0.55, 0.56, 0.29, 0.2], [0.49, 0.43, 0.52, 0.16], [0.62, 0.53, 0.73, 0.19], [0.37, 0.58, 0.87, 0.15]];
+  const positions = new Float32Array(seeds.length * 3), colours = new Float32Array(seeds.length * 3);
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colours, 3));
+  const motes = new THREE.Points(geometry, new THREE.PointsMaterial({
+    color: '#d6b0ff', map: dotTexture(), size: 0.1, vertexColors: true, transparent: true,
+    opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+  }));
+  motes.userData = { seeds, x, z, w, d };
+  motes.raycast = () => {};
+  g.add(motes);
+
+  const light = new THREE.PointLight('#9c61d5', 0.12, 2.8, 2);
+  light.position.set(x, 0.12, z);
   g.add(light);
-  buriedRift = { material, light };
+  buriedRift = { material, light, flow: flowMaterial, motes, waves };
 }
 
 function liveBuriedRift(now) {
   if (!buriedRift) return;
-  const pulse = calm ? 0.5 : 0.5 + 0.5 * Math.sin(now / 1250);
-  buriedRift.material.emissiveIntensity = Math.max(0.8, LIGHT[time]?.glow ?? 0.8) * buriedRift.material.userData.glow * (0.9 + pulse * 0.16);
-  buriedRift.light.intensity = 0.18 + pulse * 0.18;
+  const t = calm ? 0 : now / 1000, pulse = calm ? 0.5 : 0.5 + 0.5 * Math.sin(now / 1800);
+  const { material, light, flow, motes, waves } = buriedRift;
+  material.emissiveIntensity = Math.max(0.35, LIGHT[time]?.glow ?? 0.35) * material.userData.glow * (calm ? 0.88 : 0.9 + pulse * 0.14);
+  flow.uniforms.uTime.value = t;
+  flow.uniforms.uMotion.value = calm ? 0 : 1;
+  light.intensity = (0.07 + pulse * 0.1) * Math.max(0.5, LIGHT[time]?.glow ?? 0.5);
+  waves.forEach(({ mesh, material: wave, phase }) => {
+    const age = calm ? 0.45 : (now / 5200 + phase) % 1;
+    mesh.scale.setScalar(0.55 + age * 1.8);
+    wave.opacity = calm ? 0.07 : (1 - age) ** 2 * 0.22;
+  });
+
+  const { seeds, x, z, w, d } = motes.userData, pos = motes.geometry.attributes.position, col = motes.geometry.attributes.color;
+  seeds.forEach(([u, v, phase, speed], i) => {
+    const age = calm ? 0.25 + phase * 0.3 : (t * speed + phase) % 1;
+    const lift = Math.sin(age * Math.PI);
+    const sway = calm ? 0 : Math.sin(t * 1.4 + phase * Math.PI * 2) * 0.045;
+    pos.setXYZ(i, x + (u - 0.5) * w + sway, 0.055 + age * 0.34, z + (v - 0.54) * d + Math.cos(t + phase * 7) * (calm ? 0 : 0.025));
+    const glow = lift * 0.55;
+    col.setXYZ(i, glow * 0.82, glow * 0.62, glow);
+  });
+  pos.needsUpdate = true; col.needsUpdate = true;
 }
 
 /** Every place: where it stands (`tiles` it blocks), its doorstep (`step`), whether it's open, what its card says and
