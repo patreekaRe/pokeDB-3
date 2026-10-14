@@ -95,6 +95,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // Sealed Gate on the old Mall site, once broken
 const NIETOS_AT = { tx: 23, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
 const SEALED_AT = { tx: 2, ty: 10 };
+const SEALED_STEP = { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
@@ -111,7 +112,7 @@ const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
 const ROADS = [
   { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
   { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
-  { a: [12, 11], b: [MALL_TILE.tx - 0.7, 11], w: AVE },                                    // west avenue, to the Poké Mall
+  { a: [12, SEALED_STEP.y], b: [SEALED_STEP.x, SEALED_STEP.y], w: AVE }, // west avenue, across the west street to the Sealed Gate
   { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Nietos' house
   { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
@@ -1668,7 +1669,7 @@ function makePlaces() {
     build: (g) => dojo(g, tileX(DOJO_AT.tx + 1), tileZ(DOJO_AT.ty + 1.5)),
   });
   if (gateOpen()) list.push({
-    id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
+    id: 'gate', name: 'Sealed Gate', step: SEALED_STEP, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
     line: 'The broken Sealed Gate. Something waits beyond it.',
     buttons: [['Go through', acts.onGate]],
     build: (g) => {
