@@ -147,6 +147,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (6 x 3, paddlewheel, banners, fairy lights). Tests pass; no console errors headless; all doors reachable by the game's
    blocked tiles; fades checked by hand; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the
    user's playtest.
+   **Done (2026-10-14): Highbough's leaders, huts and Nursery made grand** (the user: "make the gym leaders houses more
+   grand... fix the aesthetic of the huts too and the green house, they're all lame"): Phil's and Ricky's lots 5 x 4,
+   both `canopyManor()`s (Ricky's a den round a living tree, Phil's crooked and haunted); the treehouses round huts
+   (`treehouse()`); the Nursery a ruined Victorian conservatory (`nursery()`). Tests pass, no console errors. Waiting on
+   the user's playtest.
    **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
    Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what

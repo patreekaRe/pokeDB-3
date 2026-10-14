@@ -5796,151 +5796,517 @@ function logsArt(dark = false) {
   return map;
 }
 
-/** A treehouse's front: round logs, a round-topped door painted its colour, round windows lit (violet at Phil's, a
-    monitor's blue behind Ricky's blinds, the shop's wide window of jars), a garland of leaves along the top. */
-function treeFront(w, col, kind) {
-  const W = Math.round(w * 20), Hh = 26, f = fine(W, Hh, 6), { g, rr, lin } = f, s = f.shine(), r = seeded(W + col.length);
-  const haunted = kind === 'haunted';
-  for (let y = 0; y < Hh; y += 4) {
-    g.fillStyle = lin(0, y, 0, y + 4, haunted ? ['#4a3a4a', '#3a2c3a', '#241a24'] : ['#b88a60', '#9a6c44', '#5e3c22']);
-    g.fillRect(0, y, W, 4);
-    g.fillStyle = haunted ? '#2a1e2a' : '#7a5232'; g.beginPath(); g.arc(1.6, y + 2, 1.6, 0, Math.PI * 2); g.arc(W - 1.6, y + 2, 1.6, 0, Math.PI * 2); g.fill();
+/** A round window for a hut: a log frame, its panes lit, a cross of bars, shutters in the house's colour. */
+function hutWindowArt(col, glow) {
+  const f = fine(28, 20, 8), { g, rr } = f, s = f.shine();
+  for (const x of [0.5, 21.5]) {
+    rr(x, 2.5, 6, 15, 1, col);
+    g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(x + 2.7, 3.5, 0.6, 13); g.fillRect(x + 0.8, 9.6, 4.4, 0.8);
   }
-  const glow = haunted ? ['#f0d0ff', '#a050f0'] : kind === 'gamer' ? ['#d0f0ff', '#3a78f0'] : ['#fff4c8', '#f8a040'];
-  const lit = (x, y, w2, h2, round) => {
-    rr(x - 1.2, y - 1.2, w2 + 2.4, h2 + 2.4, round ? (w2 + 2.4) / 2 : 1, haunted ? '#1a121a' : '#4a2e1c');
-    for (const ctx of [g, s]) {
-      const rg = ctx.createRadialGradient(x + w2 / 2, y + h2 / 2, 0, x + w2 / 2, y + h2 / 2, w2);
-      rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
-      ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(x, y, w2, h2, round ? w2 / 2 : 0.5); ctx.fill();
-    }
-    if (kind === 'gamer') for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : 'rgba(30,40,70,0.75)'; for (let yy = y + 1; yy < y + h2; yy += 1.6) ctx.fillRect(x, yy, w2, 0.6); }
-    else if (kind === 'shop') for (let i = 0; i < 5; i++) { g.fillStyle = ['#f84a5a', '#f8c040', '#70c050', '#a070f0', '#f89040'][i]; g.beginPath(); g.roundRect(x + 1 + i * (w2 - 2) / 5, y + h2 - 4.5, (w2 - 2) / 5 - 0.8, 3.6, 0.8); g.fill(); }
-    else for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : haunted ? '#1a121a' : '#4a2e1c'; ctx.fillRect(x + w2 / 2 - 0.3, y, 0.6, h2); ctx.fillRect(x, y + h2 / 2 - 0.3, w2, 0.6); }
-  };
-  const mid = W / 2;
-  // the door, round-topped, in the house's colour
-  g.fillStyle = haunted ? '#1a121a' : '#3a2414'; g.beginPath(); g.roundRect(mid - 4.8, Hh - 16.5, 9.6, 16.5, [4.8, 4.8, 0, 0]); g.fill();
-  g.fillStyle = lin(mid - 4, 0, mid + 4, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]); g.beginPath(); g.roundRect(mid - 4, Hh - 15.7, 8, 15.7, [4, 4, 0, 0]); g.fill();
-  g.fillStyle = 'rgba(0,0,0,0.22)'; for (let x = mid - 2; x < mid + 4; x += 2) g.fillRect(x, Hh - 14, 0.4, 14);
-  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(mid + 2.3, Hh - 7.5, 0.7, 0, Math.PI * 2); g.fill();
-  if (kind === 'shop') { lit(3, 7, mid - 9, 10, false); lit(mid + 6, 7, W - mid - 9, 10, false); }
-  else if (W > 50) for (const x of [mid - 15, mid + 7]) lit(x, 7, 8, 8, true);
-  else if (W > 34) { lit(3.5, 8, 7, 7, true); lit(W - 10.5, 8, 7, 7, true); }
-  else lit(2.5, 8, 6, 6, true);
-  if (haunted) {   // a boarded window and a cobweb in the corner
-    g.fillStyle = '#6a5040'; g.save(); g.translate(W - 6.5, 11.5); g.rotate(0.35); g.fillRect(-5, -0.9, 10, 1.8); g.rotate(-0.7); g.fillRect(-5, -0.9, 10, 1.8); g.restore();
-    g.strokeStyle = 'rgba(240,240,250,0.7)'; g.lineWidth = 0.35;
-    for (let i = 0; i < 4; i++) { const a = i / 3 * Math.PI / 2; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * 7, Math.sin(a) * 7); g.stroke(); }
-    for (const rad of [2.5, 4.5, 6.5]) { g.beginPath(); g.arc(0, 0, rad, 0, Math.PI / 2); g.stroke(); }
+  g.fillStyle = '#4a2e1c'; g.beginPath(); g.arc(14, 10, 8.8, 0, Math.PI * 2); g.fill();
+  for (const ctx of [g, s]) {
+    const rg = ctx.createRadialGradient(14, 10, 0, 14, 10, 7.2);
+    rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(14, 10, 7.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = ctx === s ? '#000' : '#4a2e1c'; ctx.fillRect(13.6, 2.8, 0.8, 14.4); ctx.fillRect(6.8, 9.6, 14.4, 0.8);
   }
-  // the leaf garland along the top
-  for (let x = 0; x < W; x += 2.2) { g.fillStyle = ['#4e9a3a', '#3a7e30', '#6ab04a'][Math.floor(r() * 3)]; g.beginPath(); g.ellipse(x, 1.6 + Math.sin(x / 3) * 0.8, 1.7, 1.1, r() * 3, 0, Math.PI * 2); g.fill(); }
   return f.c;
 }
 
-/** A treehouse on its platform, its front to you: log walls, a round-topped door, round windows lit, a leaf-shingle hip
-    roof capped in its colour, its tree going up through the back of it into a crown; a lantern by the door. Phil's is
-    dark and crooked, lit violet; Ricky's has a dish and an aerial on its roof and his monitors' blue in the window; the
-    shop an awning and its sign. A tap is its door. */
+/** A hut's door: round-topped, planks painted its colour, a gold knob, a little round window lit in it. */
+function hutDoorArt(col, glow) {
+  const f = fine(20, 34, 8), { g, lin } = f, s = f.shine();
+  g.fillStyle = '#3a2414'; g.beginPath(); g.roundRect(0, 0, 20, 34, [10, 10, 0, 0]); g.fill();
+  g.fillStyle = lin(2, 0, 18, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]); g.beginPath(); g.roundRect(1.6, 1.6, 16.8, 32.4, [8.4, 8.4, 0, 0]); g.fill();
+  g.fillStyle = 'rgba(0,0,0,0.22)'; for (let x = 5.6; x < 17; x += 4) g.fillRect(x, 3, 0.5, 31);
+  g.fillStyle = 'rgba(0,0,0,0.3)'; g.fillRect(1.6, 16, 16.8, 1.2); g.fillRect(1.6, 27, 16.8, 1.2);
+  g.fillStyle = '#3a2414'; g.beginPath(); g.arc(10, 9, 4.4, 0, Math.PI * 2); g.fill();
+  for (const ctx of [g, s]) {
+    const rg = ctx.createRadialGradient(10, 9, 0, 10, 9, 3.3);
+    rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(10, 9, 3.3, 0, Math.PI * 2); ctx.fill();
+  }
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(15, 21, 1.1, 0, Math.PI * 2); g.fill();
+  return f.c;
+}
+
+/** A hut on its platform, Fortree's: round log walls built round its tree, a porch railed all round but for the door,
+    a round-topped door and round windows with shutters and flower boxes in its colour, a flared cone of leaf shingles
+    banded in its colour, its tree coming out of the top into a crown high over it, moss hanging off the eaves, a lantern
+    by the door (the user's ask, 2026-10-14: the square treehouses were "lame"). The shop has an awning and its sign; a
+    house with `tree: false` a spire instead of a tree. A Gym Leader's is grand (`canopyManor()`). A tap is its door. */
 function treehouse(b, f, L, lit) {
-  const g = new THREE.Group(), rnd = seeded(b.id.charCodeAt(0) * 7);
-  g.position.set(f.cx, 0, f.cz - 0.05);
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  if (leader) return canopyManor(b, f, L, lit, leader);
+  const g = new THREE.Group(), rnd = seeded(b.id.charCodeAt(0) * 7), z0 = -0.15;
+  g.position.set(f.cx, 0, f.cz + z0);
   B.group.add(g);
-  const haunted = b.kind === 'haunted', w = f.w - 0.45, d = f.h - 0.6, h = 1.3;
-  const sides = logsArt(haunted); sides.repeat.set(d / 1.2, h / 1.0);
-  const wall = std({ map: sides, roughness: 0.95 }), dark = std({ color: haunted ? '#1a121a' : '#3a2414', roughness: 0.8 });
-  const art = treeFront(w, b.roof, b.kind), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
-  lit.push(front);
-  mesh(new THREE.BoxGeometry(w, h, d), [wall, wall, dark, dark, front, wall], 0, h / 2, 0, g);
-  // its tree, up through the back of the roof into a crown; a building with `tree: false` has none, so it hides nothing
-  const tz = -f.h / 2 + 0.4, tall = h + 2.0;
-  if (b.tree !== false) {
-    const trunk = new THREE.CylinderGeometry(0.3, 0.4, tall + 0.1, 12); trunk.translate(0, tall / 2 - 0.05, 0);
-    mesh(trunk, bark(), 0, 0, tz, g).raycast = () => {};
-    for (const s of [-1, 1]) {   // two boughs out of it
-      const bough = new THREE.CylinderGeometry(0.06, 0.12, 1.1, 7); bough.translate(0, 0.55, 0);
-      const m = mesh(bough, bark(), s * 0.15, tall - 0.5, tz, g); m.rotation.z = -s * 0.9; m.raycast = () => {};
+  const rx = (f.w - 1.0) / 2, rz = (f.h - 1.1) / 2, h = 1.35, base = 0.12, tree = b.tree !== false;
+  const wx = (x) => f.cx + x, wz = (z) => f.cz + z0 + z;
+  const wood = std({ color: '#7a5232', roughness: 0.9 }), rim = std({ color: CANOPY.rim, roughness: 0.9 });
+  const glow = ['#fff4c8', '#f8a040'];
+  // the porch: a ring of planks round the hut, railed but for the way in
+  const px = rx + 0.38, pz = rz + 0.38;
+  mesh(new THREE.CylinderGeometry(1, 1, base, 28), [rim, std({ color: CANOPY.deck[0], roughness: 0.9 }), rim], 0, base / 2, 0, g).scale.set(px, 1, pz);
+  const N = 16, post = new THREE.CylinderGeometry(0.035, 0.04, 0.5, 6), rails = [], kept = [];
+  for (let i = 0; i <= N; i++) {
+    const a = i / N * Math.PI * 2, open = Math.cos(a) > 0.95;
+    kept.push(open ? null : [(px - 0.07) * Math.sin(a), (pz - 0.07) * Math.cos(a)]);
+    if (!open && i < N) mesh(post, wood, kept[i][0], base + 0.25, kept[i][1], g).castShadow = false;
+  }
+  for (let i = 0; i < N; i++) {
+    const p = kept[i], q = kept[i + 1];
+    if (!p || !q) continue;
+    for (const y of [base + 0.27, base + 0.48]) rails.push([wx(p[0]), y, wz(p[1]), wx(q[0]), y, wz(q[1])]);
+  }
+  beams(rails, 0.022, wood, { sides: 5, shadow: false });
+  // the walls: round logs all the way round
+  const sides = logsArt(); sides.repeat.set(Math.round((rx + rz) * 2.5), h);
+  mesh(new THREE.CylinderGeometry(1, 1, h, 28, 1, true), std({ map: sides, roughness: 0.95 }), 0, base + h / 2, 0, g).scale.set(rx, 1, rz);
+  const onWall = (t, y, o, geo, m) => {   // set on the wall at angle t, facing out
+    const nx = Math.sin(t) / rx, nz = Math.cos(t) / rz, n = Math.hypot(nx, nz);
+    const p = mesh(geo, m, rx * Math.sin(t) + nx / n * o, y, rz * Math.cos(t) + nz / n * o, g);
+    p.rotation.y = Math.atan2(nx, nz); p.castShadow = false;
+    return p;
+  };
+  const art = (c) => { const m = std({ map: texOf(c), transparent: true, alphaTest: 0.4, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(c.glow), emissiveIntensity: 0.6, roughness: 0.85 }); lit.push(m); return m; };
+  onWall(0, base + 0.5, 0.045, new THREE.PlaneGeometry(0.56, 0.95), art(hutDoorArt(b.roof, glow)));
+  const win = art(hutWindowArt(b.roof, glow));
+  const box = std({ color: shadeOf(b.roof, -1), roughness: 0.8 }), soil = std({ color: '#3a2a1a', roughness: 1 });
+  const blooms = ['#f84a8a', '#f8d040', '#ffffff', '#b070f0'].map(c => std({ color: c, roughness: 0.6 }));
+  for (const s of [-1, 1]) {
+    const t = s * 0.8;
+    onWall(t, base + 0.82, 0.05, new THREE.PlaneGeometry(0.6, 0.43), win);
+    const fb = onWall(t, base + 0.56, 0.1, new THREE.BoxGeometry(0.4, 0.09, 0.12), box);   // a flower box under it
+    mesh(new THREE.BoxGeometry(0.36, 0.02, 0.09), soil, 0, 0.045, 0, fb);
+    for (let k = 0; k < 4; k++) mesh(new THREE.SphereGeometry(0.035 + rnd() * 0.015, 8, 6), blooms[(k + (s > 0 ? 1 : 0)) % 4], -0.14 + k * 0.095, 0.08, (rnd() - 0.5) * 0.04, fb).castShadow = false;
+  }
+  // the roof: a flared cone of leaf shingles, banded in its colour where it meets the walls
+  const ex = rx + 0.55, ez = rz + 0.55, rh = 1.2, ry = base + h - 0.04, top = tree ? 0.3 : 0;
+  const shingles = shinglesArt(); shingles.repeat.set(Math.round((ex + ez) * 2.4), 2);
+  const leafRoof = std({ map: shingles, roughness: 0.95 });
+  mesh(new THREE.CylinderGeometry(top / Math.min(ex, ez), 0.92, rh, 28, 1, true), leafRoof, 0, ry + 0.16 + rh / 2, 0, g).scale.set(ex, 1, ez);
+  mesh(new THREE.CylinderGeometry(0.92, 1, 0.2, 28, 1, true), leafRoof, 0, ry + 0.06, 0, g).scale.set(ex, 1, ez);
+  const band = std({ color: b.roof, roughness: 0.6 });
+  const ring = mesh(new THREE.TorusGeometry(1, 0.05, 6, 40), band, 0, ry - 0.04, 0, g);
+  ring.rotation.x = Math.PI / 2; ring.scale.set(ex, ez, 1); ring.castShadow = false;
+  const crestTop = ry + 0.16 + rh;
+  if (tree) {   // its tree, out through the top of the roof into a crown high over it
+    const tall = crestTop + 1.2;
+    const trunk = new THREE.CylinderGeometry(0.24, 0.32, tall, 12); trunk.translate(0, tall / 2, 0);
+    mesh(trunk, bark(), 0, 0, 0, g).raycast = () => {};
+    const collar = mesh(new THREE.TorusGeometry(0.29, 0.05, 6, 18), band, 0, crestTop, 0, g);
+    collar.rotation.x = Math.PI / 2; collar.castShadow = false;
+    for (const s of [-1, 1]) {
+      const bough = new THREE.CylinderGeometry(0.05, 0.1, 0.9, 7); bough.translate(0, 0.45, 0);
+      const m = mesh(bough, bark(), s * 0.1, tall - 0.4, 0, g); m.rotation.z = -s * 0.9; m.raycast = () => {};
     }
-    crown(g, 0, tall + 0.35, tz - 0.15, 1.15 + rnd() * 0.2, rnd, { cols: haunted ? ['#3a5a3a', '#2e4a30', '#4a3a4a'] : CANOPY.leaf });
+    crown(g, 0, tall + 0.35, -0.1, 0.9 + rnd() * 0.15, rnd);
+  } else {   // a spire in its colour
+    mesh(new THREE.SphereGeometry(0.1, 12, 8), band, 0, crestTop + 0.02, 0, g);
+    mesh(new THREE.ConeGeometry(0.04, 0.35, 8), std({ color: '#e8b040', metalness: 0.7, roughness: 0.3 }), 0, crestTop + 0.25, 0, g).castShadow = false;
   }
-  const ink = b.home && LEADER_INK[B.town?.homes?.[b.home]?.leader];
-  const crest = b.kind === 'shop' ? houseCrest('ball') : ink ? houseCrest('ink', ink, (b.name || '?')[0]) : null;
-  const roof = new THREE.Group();
-  g.add(roof);
-  hipRoof(roof, { w: w + 0.7, d: d + 0.7, rise: 0.85 + d * 0.12, y: h, col: b.roof, crest, thatch: shinglesArt() });
-  if (haunted) { roof.rotation.z = 0.05; roof.position.x = 0.04; }
-  if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, h - 0.08, f.cz - 0.05 + d / 2 + 0.04);
-  if (b.kind === 'gamer') {   // a dish and an aerial on the roof, its light blinking
-    const metal = std({ color: '#c8ccd4', roughness: 0.4, metalness: 0.5 });
-    const dish = mesh(new THREE.SphereGeometry(0.22, 14, 8, 0, Math.PI * 2, 0, Math.PI / 3), metal, w / 2 - 0.25, h + 0.5, 0.1, g);
-    dish.rotation.set(-0.9, 0.5, 0); dish.material.side = THREE.DoubleSide;
-    mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.0, 5), metal, -w / 2 + 0.3, h + 0.75, 0, g);
-    const tip = std({ color: '#f04040', emissive: new THREE.Color('#ff3030'), emissiveIntensity: 1, roughness: 0.5 });
-    mesh(new THREE.SphereGeometry(0.035, 8, 6), tip, -w / 2 + 0.3, h + 1.26, 0, g).castShadow = false;
-    B.ticks.push((now) => { tip.emissiveIntensity = calm ? 1 : (now % 1600) < 800 ? 1.4 : 0.15; });
+  // moss hanging off the eaves, none over the door
+  const moss = [];
+  for (let i = 0; i < 14; i++) {
+    const a = (i + rnd() * 0.6) / 14 * Math.PI * 2;
+    if (Math.cos(a) > 0.8) continue;
+    const x = wx(Math.sin(a) * ex * 0.98), z = wz(Math.cos(a) * ez * 0.98), y = ry - 0.02;
+    moss.push([x, y, z, x + (rnd() - 0.5) * 0.04, y - 0.18 - rnd() * 0.3, z]);
   }
-  if (b.kind === 'shop') {   // a striped awning over the front, a basket of fruit by the door
+  beams(moss, 0.02, std({ color: '#3e6a2e', roughness: 1 }), { taper: 0.3, sides: 4, shadow: false });
+  if (b.name) panel(nameArt(b.name), 1.1, 0.28, wx(0), base + h + 0.02, wz(ez + 0.04));
+  if (b.kind === 'shop') {   // a striped awning over the door, a basket of fruit by it
     const stripes = document.createElement('canvas'); stripes.width = 16; stripes.height = 2;
     const sg = stripes.getContext('2d'); for (let x = 0; x < 16; x += 4) { sg.fillStyle = x % 8 ? '#f8f0e0' : b.roof; sg.fillRect(x, 0, 4, 2); }
-    const sm = new THREE.CanvasTexture(stripes); sm.colorSpace = THREE.SRGBColorSpace; sm.repeat.set(w / 1.2, 1); sm.wrapS = THREE.RepeatWrapping;
-    const awning = mesh(new THREE.PlaneGeometry(w + 0.1, 0.5), std({ map: sm, roughness: 0.8, side: THREE.DoubleSide }), 0, h * 0.9, d / 2 + 0.22, g);
-    awning.rotation.x = -1.0;
-    for (let i = 0; i < 4; i++) mesh(new THREE.SphereGeometry(0.07, 8, 6), std({ color: ['#f84a5a', '#f8c040', '#70c050', '#f89040'][i], roughness: 0.5 }), w / 2 - 0.2 - (i % 2) * 0.12, 0.12 + Math.floor(i / 2) * 0.1, d / 2 + 0.25, g).castShadow = false;
+    const sm = new THREE.CanvasTexture(stripes); sm.colorSpace = THREE.SRGBColorSpace; sm.repeat.set(1, 1); sm.wrapS = THREE.RepeatWrapping;
+    const awning = mesh(new THREE.PlaneGeometry(1.0, 0.45), std({ map: sm, roughness: 0.8, side: THREE.DoubleSide }), 0, base + 1.08, rz + 0.18, g);
+    awning.rotation.x = -1.0; awning.castShadow = false;
+    for (let i = 0; i < 4; i++) mesh(new THREE.SphereGeometry(0.07, 8, 6), std({ color: ['#f84a5a', '#f8c040', '#70c050', '#f89040'][i], roughness: 0.5 }), 0.62 - (i % 2) * 0.12, base + 0.1 + Math.floor(i / 2) * 0.1, rz + 0.22, g).castShadow = false;
   }
-  const glow = std({ color: haunted ? '#8040c0' : '#f8a040', emissive: new THREE.Color(haunted ? '#b060ff' : '#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
-  lit.push(glow);
-  mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, 0.62, h * 0.72, d / 2 + 0.1, g).castShadow = false;
-  if (haunted) {   // a violet glow that flickers, now and then
-    B.ticks.push((now) => { if (!calm) glow.emissiveIntensity = Math.sin(now / 230) * Math.sin(now / 1700) > 0.6 ? 0.2 : 1; });
-  }
+  // a lantern on a bracket by the door
+  const lamp = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(lamp);
+  const lx = 0.48, lz = rz * Math.sqrt(Math.max(0, 1 - (lx / rx) ** 2));
+  mesh(new THREE.BoxGeometry(0.03, 0.03, 0.2), wood, lx, base + 1.08, lz + 0.08, g).castShadow = false;
+  mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), lamp, lx, base + 0.96, lz + 0.17, g).castShadow = false;
   return g;
 }
 
-/** The Nursery: a glasshouse up in a tree, white frames, panes glowing green, a gable of glass and planters showing
-    through it. A tap is its door. */
+/** A Gym Leader's treehouse front: logs, double doors in the house's colour under a lit fanlight, tall windows lit
+    either side, a gold frieze along the top. Phil's: dark logs, pointed windows lit violet, one boarded over, a cobweb.
+    `door: false` for an upper storey, its windows spread along it. */
+function grandFront(w, h, col, haunted, door = true) {
+  const W = Math.round(w * 20), Hh = Math.round(h * 20), f = fine(W, Hh, 6), { g, lin } = f, s = f.shine();
+  for (let y = 0; y < Hh; y += 4) {
+    g.fillStyle = lin(0, y, 0, y + 4, haunted ? ['#4a3a4a', '#3a2c3a', '#241a24'] : ['#b88a60', '#9a6c44', '#5e3c22']);
+    g.fillRect(0, y, W, 4);
+  }
+  const glow = haunted ? ['#f0d0ff', '#a050f0'] : ['#fff4c8', '#f8a040'], frame = haunted ? '#1a121a' : '#4a2e1c', mid = W / 2;
+  const arch = (ctx, x, y, ww, hh) => {
+    ctx.beginPath();
+    if (haunted) { ctx.moveTo(x, y + hh); ctx.lineTo(x, y + ww * 0.5); ctx.quadraticCurveTo(x, y, x + ww / 2, y - ww * 0.35); ctx.quadraticCurveTo(x + ww, y, x + ww, y + ww * 0.5); ctx.lineTo(x + ww, y + hh); ctx.closePath(); }
+    else ctx.roundRect(x, y, ww, hh, [ww / 2, ww / 2, 0.6, 0.6]);
+  };
+  const pane = (x, y, ww, hh) => {
+    g.fillStyle = frame; arch(g, x - 1.2, y - 1.2, ww + 2.4, hh + 2.4); g.fill();
+    for (const ctx of [g, s]) {
+      const rg = ctx.createRadialGradient(x + ww / 2, y + hh / 2, 0, x + ww / 2, y + hh / 2, hh * 0.7);
+      rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
+      ctx.fillStyle = rg; arch(ctx, x, y, ww, hh); ctx.fill();
+      ctx.fillStyle = ctx === s ? '#000' : frame; ctx.fillRect(x + ww / 2 - 0.3, y - 1, 0.6, hh + 1); ctx.fillRect(x, y + hh * 0.55, ww, 0.6);
+    }
+  };
+  const top = haunted ? 8 : 6, wh = Hh - top - 9;
+  const n = Math.max(2, Math.floor(W / 15));
+  const spots = door ? [mid - 27, mid - 17, mid + 10, mid + 20] : Array.from({ length: n }, (_, i) => (i + 0.5) * W / n - 3.5);
+  for (const x of spots) pane(x, top, 7, wh);
+  if (door) {   // the double doors under a fanlight
+    g.fillStyle = frame; g.beginPath(); g.roundRect(mid - 7.6, 5.4, 15.2, Hh - 5.4, [7.6, 7.6, 0, 0]); g.fill();
+    for (const ctx of [g, s]) {
+      const rg = ctx.createRadialGradient(mid, 12, 0, mid, 12, 6);
+      rg.addColorStop(0, glow[0]); rg.addColorStop(1, glow[1]);
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(mid, 12.6, 6.2, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = ctx === s ? '#000' : frame; for (const a of [-0.5, 0, 0.5]) ctx.fillRect(mid + Math.sin(a) * 3 - 0.3, 7, 0.6, 5.6);
+    }
+    g.fillStyle = lin(mid - 6.2, 0, mid + 6.2, 0, [shadeOf(col, -1), col, shadeOf(col, 1), col, shadeOf(col, -1)]); g.fillRect(mid - 6.2, 13.4, 12.4, Hh - 13.4);
+    g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 0.3, 13.4, 0.6, Hh - 13.4);
+    g.strokeStyle = 'rgba(0,0,0,0.25)'; g.lineWidth = 0.5; for (const dx of [-5, 0.8]) g.strokeRect(mid + dx, 15.5, 4.2, Hh - 18);
+    g.fillStyle = '#e8c050'; for (const dx of [-1.4, 1.4]) { g.beginPath(); g.arc(mid + dx, Hh - 8, 0.8, 0, Math.PI * 2); g.fill(); }
+  }
+  g.fillStyle = '#e8b040'; g.fillRect(0, 0.6, W, 1.3);
+  for (let x = 3; x < W; x += 6) { g.beginPath(); g.arc(x, 3.2, 0.7, 0, Math.PI * 2); g.fill(); }
+  if (haunted) {   // a window boarded over, a cobweb in the corner
+    const bx = spots[spots.length - 1] + 3.5, by = top + wh / 2;
+    g.fillStyle = '#6a5040'; g.save(); g.translate(bx, by); g.rotate(0.4); g.fillRect(-6, -1, 12, 2); g.rotate(-0.8); g.fillRect(-6, -1, 12, 2); g.restore();
+    g.strokeStyle = 'rgba(240,240,250,0.7)'; g.lineWidth = 0.35;
+    for (let i = 0; i < 4; i++) { const a = i / 3 * Math.PI / 2; g.beginPath(); g.moveTo(0, 0); g.lineTo(Math.cos(a) * 8, Math.sin(a) * 8); g.stroke(); }
+    for (const rad of [2.5, 4.8, 7]) { g.beginPath(); g.arc(0, 0, rad, 0, Math.PI / 2); g.stroke(); }
+  }
+  return f.c;
+}
+
+/** A Gym Leader's home in Highbough (the user's ask, 2026-10-14: grand, like Lantern Village's manors, in the town's own
+    style): a two-storey treehouse on a podium of planks railed round and up a flight of steps, a log hall with a veranda
+    of posts on gold collars under a leaf-shingle roof, a gable over the steps with the leader's crest, the hall's roof a
+    terrace railed in the leader's colour, banners at the front and lanterns at the steps. Ricky's is built round a living
+    tree: a round den up top, its band of windows cycling his monitors' colours, a dish and an aerial, fairy lights strung
+    to the banners, the tree out of its roof into a crown. Phil's is dark and crooked: windows lit violet, a steep gabled
+    upper storey leaning a little, a witch-hat turret, a dead tree up through the terrace hung with violet lanterns,
+    candles on the steps. Its lot is 5 x 4 tiles. A tap anywhere is its door. */
+function canopyManor(b, f, L, lit, leader) {
+  const haunted = b.kind === 'haunted', g = new THREE.Group(), rnd = seeded(b.id.charCodeAt(0) * 13);
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const ink = LEADER_INK[leader] || ['#e0f0d0', '#2e7a3a', '#0e2a12'], letter = (b.name || leader)[0].toUpperCase();
+  const W = f.w - 0.3, D = f.h - 0.3, P = 0.4;
+  const wx = (x) => f.cx + x, wz = (z) => f.cz + z, small = (m) => { m.castShadow = false; return m; };
+  const wood = std({ color: haunted ? '#3a2c34' : '#7a5232', roughness: 0.9 }), dark = std({ color: haunted ? '#1a121a' : '#3a2414', roughness: 0.8 });
+  const planks = std({ color: haunted ? '#5a4a52' : CANOPY.deck[0], roughness: 0.9 }), rim = std({ color: haunted ? '#2a1e26' : CANOPY.rim, roughness: 0.9 });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const inked = std({ color: ink[1], roughness: 0.7 });
+  const logWall = (u, v) => { const t = logsArt(haunted); t.repeat.set(u, v); return std({ map: t, roughness: 0.95 }); };
+  const leafy = (u, v) => { const t = shinglesArt(); t.repeat.set(u, v); return std({ map: t, color: haunted ? '#8a7a9a' : '#ffffff', roughness: 0.95 }); };
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 }); lit.push(m); return m; };
+  const glowOf = (col, emit) => std({ color: col, emissive: new THREE.Color(emit), emissiveIntensity: 0.9, roughness: 0.6 });
+  const flicker = (m, k = 0) => B.ticks.push((now) => { if (!calm) m.emissiveIntensity = Math.sin(now / 230 + k) * Math.sin(now / 1700 + k * 3) > 0.6 ? 0.25 : 1.1; });
+  // the podium: planks on a dark rim, gold along its front, steps up to it, a railing round it but for the steps
+  mesh(rbox(W, P - 0.06, D, 0.06), rim, 0, (P - 0.06) / 2, 0, g);
+  mesh(rbox(W - 0.08, 0.07, D - 0.08, 0.02), planks, 0, P - 0.035, 0, g);
+  small(mesh(new THREE.BoxGeometry(W + 0.02, 0.05, 0.03), gold, 0, P - 0.12, D / 2 + 0.01, g));
+  for (let i = 0; i < 3; i++) mesh(rbox(1.5 - i * 0.06, P / 3, 0.2, 0.02), planks, 0, P / 6 + i * P / 3, D / 2 + 0.36 - i * 0.18, g);
+  const hx = W / 2 - 0.08, hz = D / 2 - 0.08, rails = [];
+  const fence = [[-0.95, hz], [-hx, hz], [-hx, -hz], [hx, -hz], [hx, hz], [0.95, hz]];
+  for (let i = 0; i < fence.length - 1; i++) {
+    const [ax, az] = fence[i], [bx, bz] = fence[i + 1], n = Math.max(1, Math.round(Math.hypot(bx - ax, bz - az) / 0.55));
+    for (const y of [P + 0.24, P + 0.44]) rails.push([wx(ax), y, wz(az), wx(bx), y, wz(bz)]);
+    for (let k = 0; k <= n; k++) {
+      const x = ax + (bx - ax) * k / n, z = az + (bz - az) * k / n;
+      small(mesh(new THREE.BoxGeometry(0.06, 0.48, 0.06), wood, x, P + 0.24, z, g));
+      if (k === 0 || k === n) small(mesh(new THREE.SphereGeometry(0.045, 10, 8), gold, x, P + 0.5, z, g));
+    }
+  }
+  beams(rails, 0.022, wood, { sides: 5, shadow: false });
+  // the hall: log walls, its lit front, thick log posts at the corners, a gold frieze along the top
+  const hw = W - 0.9, hd = 2.0, hz0 = -0.45, H = 1.45, top = P + H, fz = hz0 + hd / 2;
+  const side = logWall(hd / 1.2, H), back = logWall(hw / 1.2, H);
+  mesh(new THREE.BoxGeometry(hw, H, hd), [side, side, dark, dark, lights(grandFront(hw, H, b.roof, haunted)), back], 0, P + H / 2, hz0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.CylinderGeometry(0.11, 0.12, H + 0.04, 10), wood, sx * hw / 2, P + H / 2, hz0 + sz * hd / 2, g);
+  // the veranda: posts on gold collars, a beam, a leaf-shingle roof sloping down to it, lanterns in the leader's colours
+  const vz = fz + 0.7, vh = H - 0.4, vy = P + vh;
+  for (const x of [-(hw / 2 + 0.05), -0.75, 0.75, hw / 2 + 0.05]) {
+    mesh(new THREE.CylinderGeometry(0.07, 0.08, vh, 10), wood, x, P + vh / 2, vz, g);
+    for (const y of [P + 0.03, vy - 0.05]) small(mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 12), gold, x, y, vz, g));
+  }
+  mesh(rbox(hw + 0.4, 0.14, 0.16, 0.03), wood, 0, vy + 0.07, vz, g);
+  small(mesh(new THREE.BoxGeometry(hw + 0.42, 0.035, 0.02), gold, 0, vy + 0.02, vz + 0.09, g));
+  const slopeZ = vz + 0.2 - fz, slopeY = top + 0.02 - (vy + 0.16), len = Math.hypot(slopeZ, slopeY);
+  const pent = mesh(new THREE.BoxGeometry(hw + 0.5, 0.07, len), leafy((hw + 0.5) / 1.2, len), 0, (top + 0.02 + vy + 0.16) / 2, (fz + vz + 0.2) / 2, g);
+  pent.rotation.x = Math.atan2(slopeY, slopeZ);
+  small(mesh(new THREE.BoxGeometry(hw + 0.52, 0.05, 0.05), gold, 0, vy + 0.15, vz + 0.22, g));
+  const paper = haunted ? glowOf('#8040c0', '#b060ff') : glowOf(ink[1], ink[0]);
+  if (!haunted) lit.push(paper); else flicker(paper);
+  for (const sx of [-1, 1]) {
+    const x = sx * 1.4;
+    small(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 4), dark, x, vy - 0.08, vz, g));
+    const ball = small(mesh(new THREE.SphereGeometry(0.14, 16, 12), paper, x, vy - 0.32, vz, g));
+    ball.scale.y = 1.3;
+    for (const dy of [-0.18, 0.18]) small(mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.04, 12), dark, x, vy - 0.32 + dy, vz, g));
+  }
+  // a gable over the steps, its roof in leaf shingles, the leader's crest on gold in it, their name hung under the beam
+  const gr = haunted ? 0.78 : 0.56, gw = 0.78, gy = vy + 0.15, gz = vz + 0.22;
+  const tri = new THREE.Shape(); tri.moveTo(-gw, 0); tri.lineTo(0, gr); tri.lineTo(gw, 0); tri.closePath();
+  small(mesh(new THREE.ShapeGeometry(tri), inked, 0, gy, gz, g));
+  const pitch = Math.atan2(gr, gw), plen = Math.hypot(gr, gw) + 0.14;
+  for (const s of [-1, 1]) {
+    const slab = mesh(new THREE.BoxGeometry(plen, 0.07, 0.75), leafy(plen / 1.2, 0.6), s * gw / 2, gy + gr / 2 + 0.05, gz - 0.3, g);
+    slab.rotation.z = -s * pitch;
+    small(mesh(new THREE.BoxGeometry(plen, 0.05, 0.04), gold, s * gw / 2, gy + gr / 2 + 0.02, gz + 0.08, g)).rotation.z = -s * pitch;
+  }
+  small(mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24), gold, 0, gy + gr * 0.4, gz + 0.02, g)).rotation.x = Math.PI / 2;
+  g.attach(panel(houseCrest('ink', ink, letter), 0.36, 0.36, wx(0), gy + gr * 0.4, wz(gz + 0.04)));
+  small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, 0, gy + gr + 0.1, gz + 0.04, g));
+  if (b.name) g.attach(panel(nameArt(b.name), 1.1, 0.28, wx(0), vy - 0.12, wz(vz + 0.1)));
+  // the hall's roof a terrace, railed in the leader's colour, gold knobs on its posts
+  mesh(rbox(hw + 0.24, 0.12, hd + 0.24, 0.03), rim, 0, top + 0.06, hz0, g);
+  const ty = top + 0.12, tf = fz + 0.06, tb = hz0 - hd / 2 - 0.06, trail = [];
+  for (const [ax, az, bx, bz] of [[-hw / 2 - 0.06, tf, hw / 2 + 0.06, tf], [-hw / 2 - 0.06, tf, -hw / 2 - 0.06, tb], [hw / 2 + 0.06, tf, hw / 2 + 0.06, tb]]) {
+    for (const y of [ty + 0.2, ty + 0.38]) trail.push([wx(ax), y, wz(az), wx(bx), y, wz(bz)]);
+    const n = Math.max(1, Math.round(Math.hypot(bx - ax, bz - az) / 0.6));
+    for (let k = 0; k <= n; k++) {
+      const x = ax + (bx - ax) * k / n, z = az + (bz - az) * k / n;
+      small(mesh(new THREE.BoxGeometry(0.06, 0.42, 0.06), inked, x, ty + 0.21, z, g));
+      small(mesh(new THREE.SphereGeometry(0.045, 10, 8), gold, x, ty + 0.45, z, g));
+    }
+  }
+  beams(trail, 0.02, inked, { sides: 5, shadow: false });
+  if (haunted) {
+    // the upper storey, leaning a little, under a steep roof with its gable to you, a round window lit in the gable
+    const uw = 2.3, ud = 1.4, uh = 1.15, up = new THREE.Group();
+    up.position.set(-0.45, ty, hz0 - 0.2); up.rotation.z = 0.035;
+    g.add(up);
+    const uside = logWall(ud / 1.2, uh);
+    mesh(new THREE.BoxGeometry(uw, uh, ud), [uside, uside, dark, dark, lights(grandFront(uw, uh, b.roof, true, false)), uside], 0, uh / 2, 0, up);
+    const rise = 1.25, geo = new THREE.ExtrudeGeometry(gableShape(uw / 2 + 0.25, rise, 0.1), { depth: ud + 0.5, bevelEnabled: false });
+    geo.translate(0, 0, -(ud + 0.5) / 2);
+    mesh(geo, [leafy(1, 1), dark], 0, uh, 0, up);
+    const gable = new THREE.Shape(); gable.moveTo(-uw / 2, 0); gable.lineTo(0, rise - 0.12); gable.lineTo(uw / 2, 0); gable.closePath();
+    small(mesh(new THREE.ShapeGeometry(gable), dark, 0, uh, ud / 2 + 0.005, up));
+    const eye = glowOf('#a050f0', '#c070ff');
+    flicker(eye, 2);
+    small(mesh(new THREE.CircleGeometry(0.2, 20), eye, 0, uh + 0.42, ud / 2 + 0.02, up));
+    small(mesh(new THREE.TorusGeometry(0.21, 0.03, 6, 20), gold, 0, uh + 0.42, ud / 2 + 0.03, up));
+    for (const s of [-1, 1]) small(mesh(new THREE.BoxGeometry(Math.hypot(uw / 2 + 0.25, rise) + 0.05, 0.06, 0.04), gold, s * (uw / 4 + 0.12), uh + rise / 2 - 0.02, ud / 2 + 0.26, up)).rotation.z = -s * Math.atan2(rise, uw / 2 + 0.25);
+    small(mesh(new THREE.ConeGeometry(0.04, 0.4, 8), gold, 0, uh + rise + 0.2, ud / 2 + 0.2, up));
+    // a witch-hat turret at the front corner, its window flickering violet
+    const tx = hw / 2 - 0.4, tz = fz - 0.45, th = 1.75, tr = 0.4;
+    mesh(new THREE.CylinderGeometry(tr, tr + 0.04, th, 16), logWall(2.5, th), tx, ty + th / 2, tz, g);
+    const slit = glowOf('#a050f0', '#c070ff');
+    flicker(slit, 5);
+    const win = new THREE.Shape(); win.moveTo(-0.09, 0); win.lineTo(-0.09, 0.3); win.quadraticCurveTo(0, 0.48, 0.09, 0.3); win.lineTo(0.09, 0); win.closePath();
+    small(mesh(new THREE.ShapeGeometry(win), slit, tx, ty + th - 0.75, tz + tr + 0.02, g));
+    small(mesh(new THREE.TorusGeometry(tr + 0.05, 0.035, 6, 24), gold, tx, ty + th, tz, g)).rotation.x = Math.PI / 2;
+    const hat = new THREE.Group();
+    hat.position.set(tx, ty + th, tz); hat.rotation.set(-0.06, 0, -0.14);
+    g.add(hat);
+    const tip = new THREE.ConeGeometry(0.62, 1.55, 18); tip.translate(0, 0.775, 0);
+    mesh(tip, leafy(2, 1.4), 0, 0, 0, hat);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, 0, 1.6, 0, hat));
+    small(mesh(new THREE.TorusGeometry(0.1, 0.022, 6, 16, Math.PI * 1.3), gold, 0, 1.78, 0, hat)).rotation.z = 0.9;
+    // a dead tree up through the terrace, bare, violet lanterns hung off its boughs
+    const dx = 1.15, dz = hz0 - 0.55, tall = ty + 2.6;
+    const trunk = new THREE.CylinderGeometry(0.11, 0.24, tall, 9); trunk.translate(0, tall / 2, 0);
+    const dead = std({ color: '#4a3e44', roughness: 1 });
+    mesh(trunk, dead, dx, 0, dz, g).rotation.z = -0.05;
+    const boughs = [], hang = [], lamp = glowOf('#8040c0', '#b060ff');
+    flicker(lamp, 7);
+    for (let i = 0; i < 6; i++) {
+      const a = i * 2.2 + 0.4, y0 = ty + 0.9 + i * 0.28, l = 0.7 + rnd() * 0.5;
+      const ax = wx(dx + 0.02 * i), az = wz(dz), bx = ax + Math.cos(a) * l, bz = az + Math.sin(a) * l * 0.7, by = y0 + 0.35 + rnd() * 0.3;
+      boughs.push([ax, y0, az, bx, by, bz]);
+      boughs.push([bx, by, bz, bx + Math.cos(a + 0.6) * 0.3, by + 0.25, bz + Math.sin(a + 0.6) * 0.2]);
+      if (i % 2) {
+        hang.push([bx, by, bz, bx, by - 0.35, bz]);
+        small(mesh(new THREE.CylinderGeometry(0.06, 0.075, 0.15, 8), lamp, bx - f.cx, by - 0.43, bz - f.cz, g));
+      }
+    }
+    beams(boughs, 0.05, dead, { taper: 0.45, sides: 6 });
+    beams(hang, 0.008, dark, { sides: 4, shadow: false });
+    // candles on the steps, guttering
+    const wax = std({ color: '#efe6d0', roughness: 0.8 }), flame = glowOf('#ffd890', '#ffb040');
+    flicker(flame, 11);
+    for (const [x, i] of [[-0.62, 0], [0.62, 0], [-0.55, 1], [0.58, 2]]) {
+      const y = P / 3 * (i + 1), z = D / 2 + 0.36 - i * 0.18;
+      small(mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.1 + i * 0.03, 8), wax, x, y + 0.05, z, g));
+      small(mesh(new THREE.SphereGeometry(0.02, 8, 6), flame, x, y + 0.14 + i * 0.03, z, g)).scale.y = 1.6;
+    }
+  } else {
+    // a round den up top built round the living tree, its band of windows cycling his monitors' colours
+    const dz = hz0 - 0.15, dr = 0.85, dh = 1.2;
+    mesh(new THREE.CylinderGeometry(dr, dr, dh, 28, 1, true), logWall(5, dh), 0, ty + dh / 2, dz, g);
+    const screen = std({ color: '#203050', emissive: new THREE.Color('#40a0ff'), emissiveIntensity: 1, roughness: 0.3 });
+    small(mesh(new THREE.CylinderGeometry(dr + 0.012, dr + 0.012, 0.4, 28, 1, true, -1.05, 2.1), screen, 0, ty + 0.66, dz, g));
+    for (let k = 0; k < 5; k++) {
+      const a = -1.05 + k * 0.525;
+      small(mesh(new THREE.BoxGeometry(0.05, 0.46, 0.05), dark, (dr + 0.02) * Math.sin(a), ty + 0.66, dz + (dr + 0.02) * Math.cos(a), g)).rotation.y = a;
+    }
+    const sill = small(mesh(new THREE.TorusGeometry(dr + 0.03, 0.03, 6, 32), gold, 0, ty + dh - 0.04, dz, g));
+    sill.rotation.x = Math.PI / 2;
+    B.ticks.push((now) => { if (!calm) screen.emissive.setHSL((now / 7000) % 1, 0.75, 0.55); });
+    const cone = 0.95, roofTop = ty + dh + cone;
+    mesh(new THREE.CylinderGeometry(0.34, dr + 0.45, cone, 28, 1, true), leafy(6, 1.6), 0, ty + dh + cone / 2, dz, g);
+    const band = std({ color: b.roof, roughness: 0.6 });
+    for (const [r, y] of [[dr + 0.45, ty + dh], [0.36, roofTop]]) small(mesh(new THREE.TorusGeometry(r, 0.05, 6, 32), band, 0, y, dz, g)).rotation.x = Math.PI / 2;
+    const tall = roofTop + 1.5, trunk = new THREE.CylinderGeometry(0.28, 0.4, tall, 14); trunk.translate(0, tall / 2, 0);
+    mesh(trunk, bark(), 0, 0, dz, g).raycast = () => {};
+    for (let i = 0; i < 3; i++) {
+      const bough = new THREE.CylinderGeometry(0.06, 0.13, 1.1, 7); bough.translate(0, 0.55, 0);
+      const m = mesh(bough, bark(), 0, tall - 0.5, dz, g); m.rotation.set(0, i * 2.1, 0.95); m.raycast = () => {};
+    }
+    crown(g, 0, tall + 0.4, dz - 0.1, 1.25, rnd);
+    for (const s of [-1, 1]) crown(g, s * 1.05, tall - 0.05, dz - 0.35, 0.75, rnd);
+    // a dish and an aerial on the den's roof, the aerial's light blinking
+    const metal = std({ color: '#c8ccd4', roughness: 0.4, metalness: 0.5 });
+    const dish = mesh(new THREE.SphereGeometry(0.24, 14, 8, 0, Math.PI * 2, 0, Math.PI / 3), metal, 0.72, ty + dh + 0.32, dz + 0.3, g);
+    dish.rotation.set(-0.9, 0.5, 0); dish.material.side = THREE.DoubleSide;
+    mesh(new THREE.CylinderGeometry(0.015, 0.015, 1.1, 5), metal, -0.75, ty + dh + 0.5, dz + 0.2, g);
+    const blink = std({ color: '#f04040', emissive: new THREE.Color('#ff3030'), emissiveIntensity: 1, roughness: 0.5 });
+    small(mesh(new THREE.SphereGeometry(0.035, 8, 6), blink, -0.75, ty + dh + 1.06, dz + 0.2, g));
+    B.ticks.push((now) => { blink.emissiveIntensity = calm ? 1 : (now % 1600) < 800 ? 1.4 : 0.15; });
+    // fairy lights strung from the den to the banners
+    const bulbs = ['#ff5a8a', '#5ad0ff', '#ffd04a', '#7aff7a'].map(c => glowOf(c, c));
+    lit.push(...bulbs);
+    const string = [];
+    for (const s of [-1, 1]) {
+      const a = [wx(s * 0.75), ty + dh - 0.1, wz(dz + 0.4)], e = [wx(s * (W / 2 - 0.12)), P + 2.55, wz(D / 2 - 0.12)];
+      sagging(string, a, e, 0.35, 10);
+      for (let k = 1; k < 10; k++) {
+        const t = k / 10, x = a[0] + (e[0] - a[0]) * t, y = a[1] + (e[1] - a[1]) * t - Math.sin(t * Math.PI) * 0.35, zz = a[2] + (e[2] - a[2]) * t;
+        small(mesh(new THREE.SphereGeometry(0.04, 8, 6), bulbs[k % 4], x - f.cx, y - 0.05, zz - f.cz, g));
+      }
+    }
+    beams(string, 0.008, dark, { sides: 4, shadow: false });
+  }
+  // a lantern either side of the steps
+  for (const s of [-1, 1]) {
+    const m = piece('lantern', wx(s * 1.15) + COLS / 2 - 0.5, wz(D / 2 - 0.3) + ROWS / 2 - 0.5, { scale: 0.7, y: P, free: true });
+    if (!m) continue;
+    m.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color(haunted ? '#c070ff' : '#ffc070'); lit.push(o.material); } });
+    g.attach(m);
+  }
+  // two tall banners at the podium's front corners, swaying a little
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [-1, 1].map(s => {
+    const x = s * (W / 2 - 0.12), z = D / 2 - 0.12, tall = 2.7;
+    mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
+    g.add(hang);
+    small(mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang));
+    return hang;
+  });
+  B.ticks.push((now) => { if (!calm) flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; }); });
+  return g;
+}
+
+/** The Withered Nursery (the user's ask, 2026-10-14: the glass box was "lame"): a Victorian conservatory gone to ruin, a
+    glass rotunda under a ribbed dome with a lantern and finial between two wings under glass barrel vaults, white iron
+    frames and cresting, panes grimed and some broken, ivy creeping up it, dead plants inside and a ghost's glow drifting
+    among them. A tap is its door. */
 function nursery(b, f, L, lit) {
   const g = new THREE.Group(), rnd = seeded(17);
   g.position.set(f.cx, 0, f.cz - 0.05);
   B.group.add(g);
-  const w = f.w - 0.4, d = f.h - 0.5, h = 1.35, rise = 0.75;
-  const frame = std({ color: '#f4f4ec', roughness: 0.5 });
-  const glass = std({ color: '#b8f0c8', emissive: new THREE.Color('#60c870'), emissiveIntensity: 0.35, transparent: true, opacity: 0.38, roughness: 0.08, metalness: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  const w = f.w - 0.4, d = f.h - 0.6, base = 0.3, small = (m) => { m.castShadow = false; return m; };
+  const frame = std({ color: '#e8eae0', roughness: 0.5, metalness: 0.2 });
+  const glass = std({ color: '#a8d8b8', emissive: new THREE.Color('#3a8a5a'), emissiveIntensity: 0.35, transparent: true, opacity: 0.36, roughness: 0.08, metalness: 0.2, depthWrite: false, side: THREE.DoubleSide });
+  const grime = std({ color: '#4a5a40', transparent: true, opacity: 0.7, roughness: 1, depthWrite: false, side: THREE.DoubleSide });
   lit.push(glass);
-  mesh(new THREE.BoxGeometry(w, 0.3, d), std({ map: logsArt(), roughness: 0.9 }), 0, 0.15, 0, g);
-  const box = mesh(new THREE.BoxGeometry(w, h - 0.3, d), glass, 0, 0.3 + (h - 0.3) / 2, 0, g);
-  box.castShadow = false; box.renderOrder = 2;
-  // plants inside, seen through the glass
-  const pots = std({ color: '#c06a40', roughness: 0.8 }), leaves = CANOPY.leaf.map(c => std({ color: c, roughness: 0.9, flatShading: true }));
-  for (let i = 0; i < 9; i++) {
-    const px = -w / 2 + 0.35 + (i % 5) * (w - 0.7) / 4, pz = -d / 2 + 0.35 + Math.floor(i / 5) * (d - 0.7);
-    mesh(new THREE.CylinderGeometry(0.13, 0.1, 0.2, 10), pots, px, 0.4, pz, g);
-    const m = mesh(new THREE.IcosahedronGeometry(0.22 + rnd() * 0.12, 1), leaves[i % 4], px, 0.68, pz, g); m.scale.y = 1.2;
-    if (i % 2) mesh(new THREE.SphereGeometry(0.06, 8, 6), std({ color: ['#f84a8a', '#f8d040', '#f8a030', '#b070f0'][i % 4], roughness: 0.5 }), px + 0.08, 0.86, pz + 0.08, g);
+  const pane = (m) => { m.castShadow = false; m.renderOrder = 2; return m; };
+  // the plinth: stone on a log footing, a step to the door
+  mesh(rbox(w, base, d, 0.05), std({ color: '#8a8478', roughness: 1 }), 0, base / 2, 0, g);
+  mesh(rbox(w + 0.08, 0.06, d + 0.08, 0.02), std({ color: '#a8a294', roughness: 1 }), 0, base - 0.03, 0, g);
+  mesh(rbox(0.9, base / 2, 0.24, 0.02), std({ color: '#a8a294', roughness: 1 }), 0, base / 4, d / 2 + 0.1, g);
+  // the rotunda: an octagon of glass, white posts at its corners, a ribbed dome, a little lantern and a finial on top
+  const r = 0.95, rh = 1.25, ry = base + rh;
+  pane(mesh(new THREE.CylinderGeometry(r, r, rh, 8, 1, true), glass, 0, base + rh / 2, 0, g)).rotation.y = Math.PI / 8;
+  for (let k = 0; k < 8; k++) {
+    const a = k * Math.PI / 4 + Math.PI / 8;
+    mesh(new THREE.BoxGeometry(0.06, rh, 0.06), frame, r * Math.sin(a), base + rh / 2, r * Math.cos(a), g).rotation.y = a;
   }
-  // white frames at the corners and mullions, a gabled glass roof
-  for (let i = 0; i <= 4; i++) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.05, h, 0.05), frame, -w / 2 + i * w / 4, h / 2, sz * d / 2, g);
-  for (const sx of [-1, 1]) mesh(new THREE.BoxGeometry(0.05, h, 0.05), frame, sx * w / 2, h / 2, 0, g);
-  mesh(new THREE.BoxGeometry(w + 0.06, 0.06, d + 0.06), frame, 0, h, 0, g);
-  const slope = Math.hypot(d / 2, rise), tilt = Math.atan2(rise, d / 2);
+  for (const y of [base + 0.04, base + rh * 0.62, ry]) small(mesh(new THREE.TorusGeometry(r, 0.03, 4, 8), frame, 0, y, 0, g)).rotation.set(Math.PI / 2, 0, Math.PI / 8);
+  const dome = pane(mesh(new THREE.SphereGeometry(r, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, ry, 0, g));
+  dome.scale.y = 0.85;
+  for (let k = 0; k < 4; k++) { const rib = small(mesh(new THREE.TorusGeometry(r, 0.025, 4, 24, Math.PI), frame, 0, ry, 0, g)); rib.rotation.y = k * Math.PI / 4; rib.scale.set(1, 0.85, 1); }
+  const lt = ry + r * 0.85;
+  pane(mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.26, 8, 1, true), glass, 0, lt + 0.11, 0, g));
+  mesh(new THREE.ConeGeometry(0.26, 0.22, 8), frame, 0, lt + 0.35, 0, g);
+  mesh(new THREE.SphereGeometry(0.05, 10, 8), frame, 0, lt + 0.5, 0, g);
+  small(mesh(new THREE.ConeGeometry(0.025, 0.24, 6), frame, 0, lt + 0.64, 0, g));
+  // the wings, set back so the rotunda stands proud: glass boxes under barrel vaults, mullions and cresting in white iron
+  const ww = (w - 2 * r) / 2 + 0.15, wd = d - 0.6, wh = 0.95, wy = base + wh, vr = wd / 2, back = -0.15;
   for (const s of [-1, 1]) {
-    const pane = mesh(new THREE.PlaneGeometry(w + 0.1, slope), glass, 0, h + rise / 2, s * d / 4, g);
-    pane.rotation.x = -s * (Math.PI / 2 - tilt); pane.castShadow = false; pane.renderOrder = 2;
-    for (let i = 0; i <= 5; i++) { const bar = mesh(new THREE.BoxGeometry(0.04, 0.04, slope), frame, -w / 2 - 0.05 + i * (w + 0.1) / 5, h + rise / 2, s * d / 4, g); bar.rotation.x = s * tilt; }
+    const wg = new THREE.Group();
+    wg.position.set(s * (r - 0.15 + ww / 2), 0, back);
+    g.add(wg);
+    pane(mesh(new THREE.BoxGeometry(ww, wh, wd), glass, 0, base + wh / 2, 0, wg));
+    const vault = pane(mesh(new THREE.CylinderGeometry(vr, vr, ww, 18, 1, true, 0, Math.PI), glass, 0, wy, 0, wg));
+    vault.rotation.z = Math.PI / 2; vault.scale.set(0.55, 1, 1);
+    const cap = pane(mesh(new THREE.CircleGeometry(vr, 18, 0, Math.PI), glass, s * ww / 2, wy, 0, wg));
+    cap.rotation.y = Math.PI / 2; cap.scale.y = 0.55;
+    for (let i = 0; i <= 4; i++) {
+      const x = -ww / 2 + i * ww / 4;
+      for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.045, wh, 0.045), frame, x, base + wh / 2, sz * wd / 2, wg);
+      const rib = small(mesh(new THREE.TorusGeometry(vr, 0.022, 4, 18, Math.PI), frame, x, wy, 0, wg));
+      rib.rotation.y = Math.PI / 2; rib.scale.set(1, 0.55, 1);
+    }
+    for (const sz of [-1, 1]) small(mesh(new THREE.BoxGeometry(ww, 0.05, 0.05), frame, 0, wy, sz * wd / 2, wg));
+    small(mesh(new THREE.BoxGeometry(ww, 0.035, 0.035), frame, 0, wy + vr * 0.55, 0, wg));
+    for (let i = 0; i < 7; i++) small(mesh(new THREE.ConeGeometry(0.03, 0.12, 4), frame, -ww / 2 + 0.1 + i * (ww - 0.2) / 6, wy + vr * 0.55 + 0.07, 0, wg));
+    for (let i = 0; i < 4; i++) {   // grime and broken panes on its front
+      if (rnd() < 0.45) continue;
+      const hh = 0.25 + rnd() * 0.4;
+      pane(mesh(new THREE.PlaneGeometry(ww / 4 - 0.06, hh), grime, -ww / 2 + (i + 0.5) * ww / 4, base + 0.05 + hh / 2, wd / 2 + 0.005, wg));
+    }
   }
-  mesh(new THREE.BoxGeometry(w + 0.14, 0.07, 0.07), frame, 0, h + rise, 0, g);
-  for (const s of [-1, 1]) {   // the gable ends
-    const sh = new THREE.Shape(); sh.moveTo(-d / 2, 0); sh.lineTo(d / 2, 0); sh.lineTo(0, rise); sh.closePath();
-    const end = mesh(new THREE.ShapeGeometry(sh), glass, s * w / 2, h, 0, g); end.rotation.y = Math.PI / 2; end.castShadow = false;
+  // the door: glass doors in a white frame under a little pediment, the sign over it
+  const fz = r * Math.cos(Math.PI / 8);
+  mesh(new THREE.BoxGeometry(0.62, 0.98, 0.04), frame, 0, base + 0.49, fz + 0.01, g);
+  small(mesh(new THREE.BoxGeometry(0.52, 0.88, 0.05), std({ color: '#3a5a48', emissive: new THREE.Color('#4a9a6a'), emissiveIntensity: 0.4, roughness: 0.2 }), 0, base + 0.47, fz + 0.02, g));
+  small(mesh(new THREE.BoxGeometry(0.02, 0.88, 0.06), frame, 0, base + 0.47, fz + 0.03, g));
+  const ped = new THREE.Shape(); ped.moveTo(-0.42, 0); ped.lineTo(0, 0.24); ped.lineTo(0.42, 0); ped.closePath();
+  small(mesh(new THREE.ShapeGeometry(ped), frame, 0, base + 0.98, fz + 0.04, g));
+  panel(greenSign(b.name), 1.5, 0.34, f.cx, ry + 0.12, f.cz - 0.05 + fz + 0.12);
+  // dead plants inside, a dead palm under the dome, a ghost's glow drifting among them
+  const pots = std({ color: '#8a5a40', roughness: 0.9 }), dead = ['#6a5a3a', '#5a4a30', '#7a6a48', '#4a5a38'].map(c => std({ color: c, roughness: 1, flatShading: true }));
+  for (let i = 0; i < 8; i++) {
+    const s = i < 4 ? -1 : 1, k = i % 4, x = s * (r + 0.05 + (k % 2) * (ww - 0.6) / 1.4), z = back + (k < 2 ? -1 : 1) * (wd / 2 - 0.3);
+    mesh(new THREE.CylinderGeometry(0.12, 0.09, 0.18, 10), pots, x, base + 0.09, z, g);
+    const m = mesh(new THREE.IcosahedronGeometry(0.16 + rnd() * 0.08, 0), dead[i % 4], x, base + 0.3, z, g);
+    m.scale.set(1, 0.7, 1); m.rotation.z = (rnd() - 0.5) * 0.8;
   }
-  // a door of glass in a white frame, the sign over it, its tree behind
-  mesh(new THREE.BoxGeometry(0.6, 0.95, 0.04), frame, 0, 0.78, d / 2 + 0.01, g);
-  mesh(new THREE.BoxGeometry(0.5, 0.85, 0.05), std({ color: '#7ac890', emissive: new THREE.Color('#60c870'), emissiveIntensity: 0.4, roughness: 0.2 }), 0, 0.78, d / 2 + 0.02, g);
-  panel(greenSign(b.name), 1.5, 0.34, f.cx, h + 0.2, f.cz - 0.05 + d / 2 + 0.06);
-  const tz = -f.h / 2 + 0.2;
-  const trunk = new THREE.CylinderGeometry(0.32, 0.42, h + rise + 1.6, 12); trunk.translate(0, (h + rise + 1.6) / 2, 0);
-  mesh(trunk, bark(), w / 2 - 0.2, 0, tz - 0.2, g).raycast = () => {};
-  crown(g, w / 2 - 0.2, h + rise + 1.8, tz - 0.3, 1.2, rnd);
+  const palm = new THREE.CylinderGeometry(0.06, 0.09, 1.3, 8); palm.translate(0, 0.65, 0);
+  mesh(palm, std({ color: '#6a5440', roughness: 1 }), -0.15, base, -0.25, g).rotation.z = 0.12;
+  const frond = [], px = f.cx - 0.3, py = base + 1.28, pz = f.cz - 0.3;   // its fronds hang dead off the top
+  for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2 + 0.3; frond.push([px, py, pz, px + Math.sin(a) * 0.55, py - 0.3 - rnd() * 0.15, pz + Math.cos(a) * 0.45]); }
+  beams(frond, 0.03, std({ color: '#7a6a40', roughness: 1 }), { taper: 0.2, sides: 4, shadow: false });
+  const wisp = std({ color: '#c8a0ff', emissive: new THREE.Color('#b080ff'), emissiveIntensity: 1.2, transparent: true, opacity: 0.85, roughness: 0.4 });
+  const wisps = [0, 1, 2].map(i => small(mesh(new THREE.SphereGeometry(0.07, 12, 8), wisp, 0, base + 0.6, 0, g)));
+  B.ticks.push((now) => {
+    wisps.forEach((m, i) => {
+      const t = calm ? i : now / 2600 + i * 2.1;
+      m.position.set(Math.sin(t) * (w / 2 - 0.5), base + 0.55 + Math.sin(t * 1.7) * 0.18, Math.cos(t * 1.3) * 0.25);
+    });
+  });
+  // ivy creeping up its corners and over the vaults
+  const ivy = ['#2e5a24', '#3a6a2a', '#24461e'].map(c => std({ color: c, roughness: 0.95, flatShading: true }));
+  for (const s of [-1, 1]) for (let i = 0; i < 9; i++) {
+    const t = i / 8, x = s * (w / 2 - 0.05 - t * 0.6), y = base + t * (wh + 0.35), z = back + wd / 2 + 0.06;
+    small(mesh(new THREE.IcosahedronGeometry(0.1 + rnd() * 0.06, 0), ivy[i % 3], x, y, z, g)).scale.set(1, 0.8, 0.6);
+  }
+  for (let i = 0; i < 6; i++) small(mesh(new THREE.IcosahedronGeometry(0.09 + rnd() * 0.05, 0), ivy[i % 3], -r * 0.7 + i * 0.05, base + 0.2 + i * 0.22, r * 0.72, g)).scale.set(1, 0.8, 0.6);
   return g;
 }
 
