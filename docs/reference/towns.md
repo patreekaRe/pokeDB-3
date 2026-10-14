@@ -163,6 +163,17 @@ nearest piece that hits. The floating signs (`placeSigns()`) and the folk's bubb
 placed where things are drawn (`drawn()`). Far things drop below the horizon (12 tiles off sinks ~4 tiles), so a far
 door or the gate can't be tapped until you walk nearer, as in the Clearing.
 
+**A view past every town, not a wall** (2026-10-14, the user: "can it just be like the clearing where you can see
+everything? but its just blurry? i dont like that wall of green"). Once the ground rolls away, what showed over it was the
+room's flat sky colour (green in the Shrine, Ruins and Thornwood looks), the old sky dome and the back wall's band of far
+hills and mist. Now `buildTown()` calls `wild(..., { walled: false })`: no back wall, no `skyDome()`, and the side walls
+painted `bare` (`scenery()`: trees only, no far-hills band or mist). `townVista()` stands the Clearing's painting
+(`vistaArt()` in `js/hub-vista.js`, which now takes a town's `sky`, `clouds`, `ranges` and a pixels-per-unit `k`) on the
+back edge, square to the camera, 12 tiles past each side, `upright` so the bend drops it whole, run on 40 units up as its
+plain top sky; the room's background is that sky's top colour, so nothing flat shows over it. Each town's colours are a
+`TOWN_VISTAS` line by style (a trail on from the gate where there's a road; the lagoon's ground is sea; Cinder Springs a
+warm volcanic haze). Painted at 32 px a unit (about 2000 x 450), not the Clearing's 48: the tilt-shift blurs it anyway.
+
 **The Gym Leaders' homes, inside** (2026-10-14, the user: "they're so small and very bland, we need to beef them up
 ALOT"). A town home with a `leader` is built by `js/leader-homes.js`, not `HOMES` in `js/event-3d.js` (`buildHome()`
 hands it the room's kit; the leaders' old `HOMES` lines are gone). Every one is 13 x 10 (`LEADER_SIZE`, `view: 8`, the

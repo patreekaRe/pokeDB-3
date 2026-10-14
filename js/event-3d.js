@@ -14,6 +14,8 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
+import { vistaArt, VISTA } from './hub-vista.js';
+import { SKY } from './safari-lobby.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
@@ -227,7 +229,7 @@ function panel(c, w, h, x, y, z, { glow = null, live = false } = {}) {
 }
 
 /** The floor, the back wall and the side walls from their paintings, the plinth under them and the doormat out. */
-function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true, holes = false }) {
+function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true, holes = false, walled = true }) {
   B.bg = bg;
   const e = std({ color: edge });
   const top = std({ map: texOf(floor), alphaTest: holes ? 0.5 : 0, roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: floor.glow ? texOf(floor.glow) : null, emissiveIntensity: floor.glow ? 0.9 : 0 });
@@ -239,11 +241,13 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
   plinth.position.set(0, -0.62 - 3.5, -0.2);
   B.group.add(plinth);
   const c = open ? new THREE.MeshBasicMaterial({ color: cap, transparent: true, opacity: 0 }) : std({ color: cap });   // open air: no tops, the sky shows through
-  const wm = std({ map: texOf(wall), alphaTest: open ? 0.5 : 0, roughness: 0.9, emissive: new THREE.Color('#fff4dc'), emissiveMap: wall.glow ? texOf(wall.glow) : null, emissiveIntensity: wall.glow ? 0.9 : 0 });
-  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [c, c, c, c, wm, c]);
-  back.position.set(0, TOP / 2, BACK_Z - 0.2);
-  back.receiveShadow = true;
-  B.group.add(back);
+  if (walled) {   // a town's back is open, its vista standing there instead (townVista())
+    const wm = std({ map: texOf(wall), alphaTest: open ? 0.5 : 0, roughness: 0.9, emissive: new THREE.Color('#fff4dc'), emissiveMap: wall.glow ? texOf(wall.glow) : null, emissiveIntensity: wall.glow ? 0.9 : 0 });
+    const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [c, c, c, c, wm, c]);
+    back.position.set(0, TOP / 2, BACK_Z - 0.2);
+    back.receiveShadow = true;
+    B.group.add(back);
+  }
   for (const s of [-1, 1]) {
     const inside = std({ map: texOf(side(s < 0)), alphaTest: open ? 0.5 : 0, roughness: 0.9 });
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, ROWS), s < 0 ? [inside, c, c, c, c, c] : [c, inside, c, c, c, c]);
@@ -1094,8 +1098,9 @@ function paintFence(f, W, kind, L) {
 }
 
 /** The scenery behind a fence, for an open-air room's back wall and sides: the biome's trees, cedars or cliff, then the
-    fence; the sky above them is left clear, for skyDome() behind. */
-function scenery(W, L, time, fence, { side = false } = {}) {
+    fence; the sky above them is left clear, for skyDome() behind. `bare`: a town's sides, trees only, with no flat band of
+    far hills or mist over them (the user's ask, 2026-10-14: "I don't like that wall of green"). */
+function scenery(W, L, time, fence, { side = false, bare = false } = {}) {
   const H = TOP * U, f = fine(W, H, side ? 4 : 5), { g, lin } = f, s = f.shine(), r = seeded(side ? 21 : 7);
   if (L.look === 'rock') {
     // a cliff of cut volcanic rock, facets and glowing veins
@@ -1117,9 +1122,11 @@ function scenery(W, L, time, fence, { side = false } = {}) {
     }
   } else {
     // far hills, then trees: round clumps in the garden, cedars in the mist
-    g.fillStyle = L.far[0]; g.beginPath(); g.moveTo(0, wy(4.6));
-    for (let x = 0; x <= W; x += 10) g.lineTo(x, wy(4.6 + Math.sin(x / 37) * 0.5 + Math.sin(x / 13) * 0.15));
-    g.lineTo(W, H); g.lineTo(0, H); g.fill();
+    if (!bare) {
+      g.fillStyle = L.far[0]; g.beginPath(); g.moveTo(0, wy(4.6));
+      for (let x = 0; x <= W; x += 10) g.lineTo(x, wy(4.6 + Math.sin(x / 37) * 0.5 + Math.sin(x / 13) * 0.15));
+      g.lineTo(W, H); g.lineTo(0, H); g.fill();
+    }
     if (L.look === 'cedar') {
       for (let i = 0; i < W / 14; i++) {
         const x = r() * W, foot = wy(1), tall = wy(6.6 + r() * 1.2);
@@ -1140,7 +1147,7 @@ function scenery(W, L, time, fence, { side = false } = {}) {
         g.beginPath(); g.moveTo(x - 11, wy(3.1)); g.quadraticCurveTo(x, wy(2.8), x + 11, wy(3.1)); g.stroke();
         for (const dx of [-6, 0, 6]) { g.fillStyle = '#ffffff'; g.fillRect(x + dx - 1, wy(2.95), 2, 4); g.fillRect(x + dx, wy(2.95) + 4, 2, 4); }
       }
-      for (let k = 0; k < 4; k++) { g.fillStyle = 'rgba(232,240,236,0.22)'; g.fillRect(0, wy(2.6 + k * 1.1) + r() * 4, W, 5 + r() * 4); }
+      if (!bare) for (let k = 0; k < 4; k++) { g.fillStyle = 'rgba(232,240,236,0.22)'; g.fillRect(0, wy(2.6 + k * 1.1) + r() * 4, W, 5 + r() * 4); }
     } else {
       for (let i = 0; i < W / 22; i++) {
         const x = i * 22 + r() * 12, y = wy(3.4 + r() * 1.1);
@@ -1947,10 +1954,10 @@ function tufts(L, n, rnd) {
 
 /** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
     the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
-function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c, holes = false } = {}) {
+function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c, holes = false, walled = true } = {}) {
   const sky = graded(L.sky[0], time);
-  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit, holes });
-  skyDome(L, time);
+  shell({ floor: ground(wildFloor(L, { to })), wall: walled && scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true, bare: !walled }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit, holes, walled });
+  if (walled) skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
   const rnd = seeded(29);
@@ -8205,9 +8212,46 @@ const TOWN_STYLES = {
     drift: (i) => (i % 4 ? { art: dustArt(), size: 0.08, rise: true } : { art: leafletArt(SAVANNA.grass[i % 3]), size: 0.14 }) },
 };
 
+/** What each town sees past its back edge (vistaArt() in js/hub-vista.js, the Clearing's view out past its Safari gate):
+    the land it stands in, clear to the horizon, its far side blurred by the tilt-shift like the Clearing's. Ranges are
+    [[body, body], snow or null], far then near; `road`: a trail on from the gate. Cinder Springs's sky is a warm volcanic haze. */
+const TOWN_VISTAS = {
+  village: { meadow: ['#a8d888', '#88c468', '#70b052'], trees: ['#5a8a64', '#284a36'], flowers: ['#ffffff', '#f8b0c8', '#f8d040'], road: true },
+  springs: { meadow: ['#a89480', '#8e7a66', '#76624e'], trees: ['#6a5a50', '#3a2e2a'], flowers: [], road: true, smoky: true,
+    ranges: [[['#7a6060', '#604848'], null], [['#5a4444', '#463434'], null]] },
+  lagoon: { meadow: ['#88dce8', '#58c0d8', '#38a0c8'], trees: ['#58b048', '#2a6a30'], flowers: [],
+    ranges: [[['#90b8c8', '#78a0b8'], null], [['#5a9a78', '#3e7a5c'], null]] },
+  canopy: { meadow: ['#78b058', '#5a9a44', '#447e38'], trees: ['#4e9a3c', '#1e5a26'], flowers: ['#c890ff', '#90f0e0'],
+    ranges: [[['#88b0b0', '#6e9898'], null], [['#5e8e78', '#4a7860'], null]] },
+  bazaar: { meadow: ['#ecd498', '#dcc078', '#ccac60'], trees: ['#a0a848', '#5e6a2a'], flowers: [], road: true,
+    ranges: [[['#e4bc90', '#cca078'], null], [['#d09468', '#b07a52'], null]] },
+};
+const VISTA_PAST = 12, VISTA_K = 32, VISTA_SKY = 40;   // tiles past each side; canvas pixels a unit (blurred anyway); sky run on up over it
+
+/** The town's vista, stood square to the camera on its back edge, its foot fading into the forest there; it runs on up
+    past the painting as its plain top sky, so where the ground rolls away no flat colour shows over it, and the room's
+    background is that sky too. */
+function townVista(town, time) {
+  const V = TOWN_VISTAS[town.style || 'village'], dim = time === 'day' ? 'dusk' : time;
+  const sky = V.smoky ? ['#7a6070', '#c08878', '#f0b890'].map(h => graded(h, dim)) : SKY[time];
+  const look = { ...V, sky, clouds: V.smoky ? ['#9a8480', '#4a3a3e'].map(h => graded(h, dim)) : undefined };
+  const x0 = tileX(-0.5) - VISTA_PAST, w = COLS + VISTA_PAST * 2, h = VISTA.h, tall = h + VISTA_SKY;
+  const roads = V.road ? [{ x: tileX(town.gate.x) + 0.5 - x0, half: 0.9 }] : [];
+  const geo = new THREE.PlaneGeometry(w, tall).translate(0, tall / 2, 0), uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * tall / h);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: texOf(vistaArt(time, w, roads, look, VISTA_K)), transparent: true, fog: false, toneMapped: false }));
+  m.material.userData.upright = true;
+  m.rotation.x = -PITCH;
+  m.position.set(x0 + w / 2, 0, BACK_Z - 0.2);
+  m.raycast = () => {};
+  B.group.add(m);
+  B.bg = sky[0];
+}
+
 async function buildTown(figs, { look, time, town, mended = false }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
-  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes });
+  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes, walled: false });
+  townVista(town, time);
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
