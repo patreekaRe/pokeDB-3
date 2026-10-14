@@ -27,7 +27,7 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, MEND_AT, townState, townsOpen } from './data/towns.js';
+import { RING, TOWNS, MEND_AT, townState, townsOpen, nietosMovedIn } from './data/towns.js';
 import { gymWins } from './data/gym.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
@@ -1609,11 +1609,11 @@ function makePlaces() {
     buttons: [],
     build: (g) => clearingWaystone(g, lit),
   });
-  // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom())
-  const nietosHome = (gymWins(save, 'nietos') || 0) > 0;
-  list.push({
+  // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom());
+  // the house goes up only once THE NIETOS are beaten at their Gym, and not at all while NIETOS_LIVE is off
+  if (nietosMovedIn(gymWins(save, 'nietos') || 0)) list.push({
     id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
-    line: nietosHome ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "At the Gym!"',
+    line: 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.',
     buttons: [['Go in', () => {}]],
     build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1)),
   });

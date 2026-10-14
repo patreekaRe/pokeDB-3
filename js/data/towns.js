@@ -978,6 +978,12 @@ export function folkOf(key) {
   return f ? { ...f, town } : null;
 }
 
+/** Whether the Nietos' house stands in the Clearing (the user's call, 2026-10-14: switched off while they work out how the
+    Nietos turn up). On, it goes up only once you've beaten THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their
+    Gym wins. `?nietos` turns it on for a page load (`&gymwins=1` to have beaten them). On for good: NIETOS_LIVE. */
+export const NIETOS_LIVE = false;
+export const nietosMovedIn = (wins) => (NIETOS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('nietos'))) && wins > 0;
+
 /** The Clearing's own houses (the user's ask, 2026-10-14): walked in from the hub like a town's homes (homeRoom() in
     js/run.js), a pseudo-town with no map, crowd or requests. The Nietos live here, the Clearing's third Gym Leaders. */
 export const CLEARING = {
