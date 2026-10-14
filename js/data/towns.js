@@ -222,6 +222,8 @@ export const TOWNS = {
     // Waystone's island in the middle, two locked houses; the bathhouse has its own road and its springs out beside it.
     // A road to every door (the user's ask, 2026-10-14: "all roads need to connect to other houses and gym houses"), and
     // Shaun's lodge east of the moat, out of the Waystone's way, a road straight down from its bridge in its place.
+    // Benches moved (the user's ask, 2026-10-14): off the Waystone's island and out of the open ash, each on a paved
+    // nook off a road, two looking onto the springs and two either side of the road down to the forge.
     map: [
       'TTTTTTTTTTTTTTTTTTTTTTTTTTTT##TTTTTTTT',
       'TTTTTTTTTTTTTTTTTTTTTTTTTTTT##TTTTTTTT',
@@ -242,15 +244,15 @@ export const TOWNS = {
       'TTBBBBBB.##.~~L......R.L.~~...HHHHH,TT',
       'TTBBBBBB.##.--....WW.....~~...HHHHH,TT',
       'TTBBBBBBn##.--....WW.....~~...HHHHH,TT',
-      'TTBBBBBBL##.~~.b.....b...~~...HHHHH,TT',
+      'TTBBBBBBL##.~~...........~~...HHHHH,TT',
       'TT.########.~~L........L.~~...n##...TT',
       'TT.########.~~~~~~--~~~~~~~....##...TT',
-      'TT.......###############---######...TT',
+      'TT.b#.b#.###############---######...TT',
       'TT.ooo...###############---######...TT',
       'TTooooof...L.....L##L...~~~.##......TT',
       'TTooooo....SSSS...##.f..~~~.##.EEE..TT',
-      'TT.ooo.f...SSSS...##....~~~.##.EEEc.TT',
-      'TTb........SSSS...##.b..~~~.##.EEEk.TT',
+      'TT.ooo.f...SSSS.b###b#..~~~.##.EEEc.TT',
+      'TT.........SSSS...##....~~~.##.EEEk.TT',
       'TT,,,,,....n##....##....~~~.######..TT',
       'TT,,,,,.....##.ff.##..L.~~~L######L.TT',
       'TT.....#################---###......TT',
@@ -316,7 +318,7 @@ export const TOWNS = {
         'Go win some fights in the Wastes. Warm up. I don\'t want an Iron 1 lobby when you get to me.',
       ],
     },
-    stands: [[8, 8], [11, 10], [19, 10], [25, 10], [32, 9], [6, 13], [16, 18], [22, 18], [20, 20], [28, 18], [33, 21], [3, 22],
+    stands: [[8, 8], [11, 10], [19, 10], [25, 10], [32, 9], [6, 13], [16, 18], [22, 18], [20, 20], [28, 18], [33, 21], [5, 22],
       [8, 24], [16, 24], [22, 26], [27, 26], [32, 23], [14, 32], [31, 32], [4, 30]],
     folk: [
       { id: 'geodude', name: 'Geodude', move: 'hop', speed: 1.4, likes: ['stand'],
