@@ -152,6 +152,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    both `canopyManor()`s (Ricky's a den round a living tree, Phil's crooked and haunted); the treehouses round huts
    (`treehouse()`); the Nursery a ruined Victorian conservatory (`nursery()`). Tests pass, no console errors. Waiting on
    the user's playtest.
+   **Done (2026-10-14): Highbough's small props tidied** (the user: the request board left of the tree, awkward benches, "crates with fruits... like paper", "random grass patches"): the board moved off the north bridge's landing to the Great Tree's left (13, 14); benches only as lookouts on south edges over the drop; the painted planters now 3D boxes (), a pair either side of each plain house's door and the Waystone; the moss tufts gone; crates square ( style). Tests pass, no console errors. Waiting on the user's playtest.
+   **Done (2026-10-14): Highbough's small props tidied** (the user: the request board left of the tree, awkward benches,
+   "crates with fruits... like paper", "random grass patches"): the board off the north bridge's landing to the Great
+   Tree's left (13, 14); benches only as lookouts on south edges over the drop; the painted planters now 3D boxes
+   (`planters()`), a pair either side of each plain house's door and the Waystone; the moss tufts gone; crates square
+   (the style's `neat`). Tests pass, no console errors. Waiting on the user's playtest.
    **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
    Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what

@@ -5268,7 +5268,7 @@ function canopyKinds(town) {
     if (ch === '~' || ch === '|' || ch === 'y') return 'air';
     if (ch === '-') return 'bridge';
     if (ch === '#' || great.has(ch)) return 'plaza';
-    if ('LbckR'.includes(ch)) return STEPS.some(([dx, dy]) => at(x + dx, y + dy) === '#') ? 'plaza' : 'deck';
+    if ('LbckRf'.includes(ch)) return STEPS.some(([dx, dy]) => at(x + dx, y + dy) === '#') ? 'plaza' : 'deck';
     return 'deck';
   };
 }
@@ -5345,7 +5345,7 @@ function canopyGround(town) {
           g.stroke();
         }
       } else {
-        // a platform's planks, laid across; moss, planters of flowers
+        // a platform's planks, laid across (a planter stands on them in 3D, planters())
         g.fillStyle = CANOPY.seam; g.fillRect(X, Y, T, T);
         for (let i = 0; i < 4; i++) {
           const off = ((x * 7 + i * 3) % 4) * 4;
@@ -5354,17 +5354,6 @@ function canopyGround(town) {
             g.fillStyle = 'rgba(60,30,10,0.4)'; g.fillRect(X + sx + 1.2, Y + i * 4 + 1.6, 0.7, 0.7); g.fillRect(X + sx + 14, Y + i * 4 + 1.6, 0.7, 0.7);
           }
           g.fillStyle = 'rgba(255,240,200,0.12)'; g.fillRect(X, Y + i * 4 + 0.6, T, 0.5);
-        }
-        if (ch === ',') for (let i = 0; i < 9; i++) { g.fillStyle = ['#5a9a3a', '#4a8a30', '#6aaa48'][i % 3]; g.globalAlpha = 0.8; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 1.5 + r() * 2.5, 1 + r() * 1.5, r() * 3, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-        if (ch === 'f') {   // a planter box of jungle flowers
-          g.fillStyle = '#5a3a20'; g.fillRect(X + 2, Y + 3, T - 4, T - 6);
-          g.fillStyle = '#3a2412'; g.fillRect(X + 3, Y + 4, T - 6, T - 8);
-          for (let i = 0; i < 6; i++) {
-            const fx = X + 4 + r() * (T - 8), fy = Y + 5 + r() * (T - 10);
-            g.fillStyle = '#3e8a34'; g.beginPath(); g.ellipse(fx + 1.2, fy + 1, 1.8, 0.9, 0.5, 0, Math.PI * 2); g.fill();
-            g.fillStyle = ['#f84a8a', '#f8a030', '#b070f0', '#f8e050'][i % 4];
-            for (let p = 0; p < 5; p++) { const a = p / 5 * Math.PI * 2; g.beginPath(); g.arc(fx + Math.cos(a) * 1.1, fy + Math.sin(a) * 1.1, 0.9, 0, Math.PI * 2); g.fill(); }
-          }
         }
       }
       if (k !== 'bridge') {   // a dark lip where it drops away, and on a deck a pale trim inside it, so the edge reads
@@ -6438,6 +6427,32 @@ function vineGate(x, z, span, tall, name, L, lit) {
   return g;
 }
 
+/** A planter box on each `f` (the user's ask, 2026-10-14: painted ones read as paper crates of fruit): a plank box with a
+    dark rim, soil, three leafy clumps and ghost-town blooms (violet, pink, pale) over them. */
+function planters(town) {
+  const boxes = [], clumps = [], blooms = [], rnd = seeded(29);
+  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'f') return;
+    B.blocked.add(key(x, y));
+    const cx = tileX(x), cz = tileZ(y);
+    boxes.push([cx, cz, 1, 0]);
+    for (const dx of [-0.22, 0, 0.22]) {
+      clumps.push([cx + dx, cz + (rnd() - 0.5) * 0.06, 0.9 + rnd() * 0.25, rnd() * 6, CANOPY.leaf[Math.floor(rnd() * 4)], 0.36]);
+      for (let i = 0; i < 3; i++) blooms.push([cx + dx + (rnd() - 0.5) * 0.2, cz + (rnd() - 0.5) * 0.18, 1, rnd() * 6, ['#c890ff', '#f07ab8', '#f4eefc', '#9a70e8'][Math.floor(rnd() * 4)], 0.47 + rnd() * 0.07]);
+    }
+  }));
+  if (!boxes.length) return;
+  const box = new THREE.BoxGeometry(0.78, 0.32, 0.46); box.translate(0, 0.16, 0);
+  instanced(box, std({ map: boardsArt(), color: '#a87850', roughness: 0.9 }), boxes);
+  const lip = new THREE.BoxGeometry(0.84, 0.06, 0.52); lip.translate(0, 0.32, 0);
+  instanced(lip, std({ color: CANOPY.rim, roughness: 0.9 }), boxes).castShadow = false;
+  const soil = new THREE.BoxGeometry(0.7, 0.02, 0.38); soil.translate(0, 0.33, 0);
+  instanced(soil, std({ color: '#3a2a1a', roughness: 1 }), boxes).castShadow = false;
+  const clump = new THREE.IcosahedronGeometry(0.16, 0); clump.scale(1, 0.8, 1);
+  instanced(clump, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), clumps).castShadow = false;
+  instanced(new THREE.IcosahedronGeometry(0.045, 0), std({ color: '#ffffff', roughness: 0.6 }), blooms).castShadow = false;
+}
+
 /** The canopy's own things from the map: the floor far below and the mist over it, what holds the town up, the lone
     giants in the drop and the lifts. */
 function canopyExtras(town, L, lit) {
@@ -6446,6 +6461,7 @@ function canopyExtras(town, L, lit) {
   jungleFloor(town, lit);
   canopyMist();
   canopySupports(town);
+  planters(town);
   const rnd = seeded(71);
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === '|') loneGiant(tileX(x) + (rnd() - 0.5) * 0.2, tileZ(y) + (rnd() - 0.5) * 0.2, rnd, lit);
@@ -7107,7 +7123,7 @@ const TOWN_STYLES = {
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
     drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },
-  canopy: { holes: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
+  canopy: { holes: true, neat: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
     house: (b, f, L, lit) => (b.kind === 'greattree' ? greatTree(b, f, L, lit) : b.kind === 'nursery' ? nursery(b, f, L, lit) : treehouse(b, f, L, lit)),
     gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.6, town.name, L, lit),
     extras: canopyExtras,
@@ -7147,7 +7163,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
   let board = null;
   map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === 'L' || ch === 'b' || ch === 'c' || ch === 'k') {
-      const m = piece({ L: S.lamp, b: 'bench', c: 'crate', k: 'barrel' }[ch], x, y, { scale: ch === 'L' ? S.lampScale ?? 0.95 : 0.9, turn: ch === 'c' ? (x % 2) * 0.4 : 0 });
+      const m = piece({ L: S.lamp, b: 'bench', c: 'crate', k: 'barrel' }[ch], x, y, { scale: ch === 'L' ? S.lampScale ?? 0.95 : 0.9, turn: ch === 'c' && !S.neat ? (x % 2) * 0.4 : 0 });
       m?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
       B.blocked.add(key(x, y));
     }
