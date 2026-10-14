@@ -147,7 +147,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
    home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
-   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note) while the user works out more of how
+   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
+   only their house shows, and their Gym fight in runs is unchanged) while the user works out more of how
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
 4. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 

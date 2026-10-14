@@ -13,7 +13,7 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_GOLD, posterKind } from './data/gym.js';
-import { TOWN_SHELVES } from './data/towns.js';
+import { TOWN_SHELVES, nietosHome } from './data/towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -377,7 +377,7 @@ export const shopOpen = (b) => new URLSearchParams(location.search).has('shopope
 export function leaderVisitor(b, save = getSave()) {
   const day = safariDay(), again = new URLSearchParams(location.search).has('visit');
   if (b.leaderVisit === day && !again) return null;
-  const pool = GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD);
+  const pool = GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD && (l.id !== 'nietos' || nietosHome(save.gym[l.id])));   // the Nietos stay away while NIETOS_LIVE is off
   if (!pool.length) return null;
   return pool[streamOf(day, 'leader-visit')() * pool.length | 0];
 }
