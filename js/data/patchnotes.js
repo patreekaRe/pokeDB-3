@@ -45,7 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['fixes', 'Typing your name on a phone no longer brings up the "turn your phone upright" screen: the keyboard made the screen look sideways.'],
   ['dex', 'A Gym Leaders app in the Pokédex: every leader, a silhouette till beaten, who they are, your record against them and their rematch rewards.'],
-  ['hub', 'The Clearing is tidied up: the Poké Mall and the Nietos\' house now stand south of the plaza, the PC faces you, the Waystone stands clear of lamp posts, and a Pokéstop\'s CONTINUE or SET OUT floats over its disc.'],
+  ['hub', 'The Clearing is tidied up: the Poké Mall and the Nietos\' house now stand south of the plaza, the PC faces you, the Waystone stands clear of lamp posts, the pond garden sits further south, and a Pokéstop\'s CONTINUE or SET OUT floats over its disc.'],
   ['battle', 'A Gym Leader\'s badge over the arch is shown in full colour before you win it, so you can see what you\'re fighting for.'],
   ['hub', 'The Nietos\' house and Gym Leaders\' visits to your Secret Base are switched off for now. They\'ll be back.'],
   ['fixes', 'A Gym win no longer counts twice after Continue, badges no longer cut iPhone sound, and Main menu leaves the Poké Mall, Secret Base and run rooms cleanly. Three relics on offer float in a triangle, so their names never overlap.'],

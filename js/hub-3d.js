@@ -38,8 +38,8 @@ import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 // the walkable grid, tile (0, 0) at the back left. Laid out anew 2026-10-14 (the user's ask: everything spread out, wide
 // roads that set off the plaza in the middle, the way out going north, Kenmatta's dojo away from the Nietos, the Secret
 // Base moved): a round paved plaza in the middle, four avenues off it, a ring road round them linking every place
-const COLS = 31, ROWS = 21;
-const X0 = 15.5, Z0 = 11.5;   // the world's origin, the plaza's middle
+const COLS = 31, ROWS = 26;
+const X0 = 15.5, Z0 = 12.5;   // the world's origin, the plaza's middle
 const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind, the forest down the sides, a hedge in front
 // the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
 // the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
@@ -47,9 +47,9 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 const GATE_AT = { tx: 15, ty: -2 };
 const STOP_AT = { tx: 18, ty: 0 }, SIGN_AT = { tx: 12, ty: 0 };   // a step out from the gate's sides (2026-10-14), so neither hides its face
 const TP = 16;                // painted pixels a tile
-const START = { x: 15, y: 11 };  // the plaza's middle, the Waystone's tile
+const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
-const PC_AT = { tx: 19, ty: 9 };
+const PC_AT = { tx: 19, ty: 10 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -96,10 +96,12 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
 // is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
-const NIETOS_AT = { tx: 24, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 14 };
-const SEALED_AT = { tx: 2, ty: 9 };
-// the pond in the garden at the south avenue's end
-const POND = { x: 15, y: 17.2, r: 1.5 };
+const NIETOS_AT = { tx: 24, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
+const SEALED_AT = { tx: 2, ty: 10 };
+// the pond in the garden at the south avenue's end, down past the ring road (the user's drawing, 2026-10-14: by the ring
+// road it crowded the Waystone), the low road round the garden running into it from the ring road's sides
+const POND = { x: 15, y: 21.6, r: 1.5 };
+const LOW = 18.2;   // the ring road's south side
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
 // the plaza's Poké Ball, START's tile, five crystals orbiting its tip, one a town in its RING colour (js/data/towns.js);
 // your partner starts a step in front of it, a ring of dark stone RING_R out set into the plaza round it
@@ -112,19 +114,19 @@ const ARRIVE = { x: START.x, y: 5 };
 // the wild places (the Safari, the Pillar, the road on through the gate)
 const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
 const ROADS = [
-  { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
+  { a: [15, 9], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
   { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
-  { a: [12, 11], b: [SEALED_AT.tx, 11], w: AVE },                         // west avenue, to the Sealed Gate
-  { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue
-  { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
-  { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
-  { a: [4, 17.2], b: [28, 17.2], w: LANE },
+  { a: [12, START.y], b: [SEALED_AT.tx, START.y], w: AVE },                         // west avenue, to the Sealed Gate
+  { a: [18, START.y], b: [28, START.y], w: AVE },                                   // east avenue
+  { a: [15, 15], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
+  { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, POND.y], w: LANE }, { a: [28, 5], b: [28, POND.y], w: LANE },   // the ring road
+  { a: [4, LOW], b: [28, LOW], w: LANE }, { a: [4, POND.y], b: [28, POND.y], w: LANE },   // and the low road to the pond
   { a: [4, 5], b: [4, -M - 0.6], w: TRAIL, dirt: true },                 // trails to the Safari gate, on through it, and the Sky Pillar
   { a: [28, 5], b: [28, PILLAR_AT.ty + 1], w: TRAIL, dirt: true },
   { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
-  { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, 17.2], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the ring road
-  { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, 17.2], w: 0.6 },
+  { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, LOW], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the ring road
+  { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, LOW], w: 0.6 },
 ];
 // round the pond, a ring of stone to walk
 const RINGS = [{ x: POND.x, y: POND.y, r: POND.r + 0.75, w: 0.42 }];
@@ -2179,7 +2181,7 @@ function routeSignArt() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block): a few in the corners, kept off the roads and the ground in front of places
-const TREE_TILES = [[0, 14], [1, 19], [0, 20], [30, 14], [29, 19], [30, 20], [10, 20], [20, 20], [18, 2]];
+const TREE_TILES = [[0, 15], [1, 20], [0, 24], [30, 15], [29, 20], [30, 24], [9, 24], [21, 24], [18, 2]];
 
 // a copse behind the fence between the Safari gate and the Whispering Clearing's (the user's ask, 2026-10-14: the open
 // meadow there read as a hole in the Clearing's edge), on the meadow `cleared` keeps the forest off; [x, y, kind, size]
@@ -2236,10 +2238,10 @@ function buildClearing() {
 
 // the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues and
 // round the plaza, benches looking onto it, flower beds in the grass between the avenues
-const LAMPS = [[13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [21, 9], [21, 13],
-  [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18], [13, 16], [17, 16]];
-const BENCHES = [[11, 13, Math.PI / 4], [19, 13, -Math.PI / 4], [12, 18, 0], [18, 18, 0]];
-const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [10, 14, 0.8], [11, 15, 0.75], [21, 7, 0.7]];
+const LAMPS = [[13, 6], [17, 6], [13, 3], [17, 3], [9, 10], [21, 10], [21, 14],
+  [3, 8], [3, 14], [27, 8], [27, 14], [10, 19], [20, 19]];
+const BENCHES = [[11, 14, Math.PI / 4], [19, 14, -Math.PI / 4], [12, 19, 0], [18, 19, 0]];
+const BEDS = [[10, 8, 0.9], [20, 15, 0.8], [10, 15, 0.8], [11, 16, 0.75], [21, 8, 0.7]];
 const dressTiles = new Set();
 
 function dressClearing() {
@@ -2320,13 +2322,13 @@ function dressSeason() {
     const yard = [
       [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0],   // by the Ancient Tree's door
       [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
-      [lanternArt(2), 'white', 12, 15, 1.3, 0, 0], [lanternArt(3), 'white', 18, 15, 1.3, 0, 0],   // and down the south one
-      [...P_(5), 24, 8, 4.4, 0, -0.1], [...P_(6), 23, 9, 2.2, 0, 0.1], [...P_(7, false), 25, 9, 1.9, 0, 0.15],   // the pumpkin patch, where the Nietos' house stood
-      [scarecrowArt(), 'white', 26, 8, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 11, 8, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
-      [graveArt(0), null, 5, 8, 1.4, 0, 0], [graveArt(1), null, 6, 8, 1.5, 0, 0], [graveArt(2), null, 8, 8, 1.5, 0, 0], [graveArt(3), null, 9, 8, 1.4, 0, 0],
-      [candlesArt(0), 'white', 5, 9, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 9, 1.1, 0, -0.1],
-      [...P_(1), 16, 12, 1.4, 0.15, 0.1],   // a little one on the plaza
+      [lanternArt(2), 'white', 12, 16, 1.3, 0, 0], [lanternArt(3), 'white', 18, 16, 1.3, 0, 0],   // and down the south one
+      [...P_(5), 24, 9, 4.4, 0, -0.1], [...P_(6), 23, 10, 2.2, 0, 0.1], [...P_(7, false), 25, 10, 1.9, 0, 0.15],   // the pumpkin patch, where the Nietos' house stood
+      [scarecrowArt(), 'white', 26, 9, 1.5, 0, 0],
+      [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
+      [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
+      [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
+      [...P_(1), 16, 13, 1.4, 0.15, 0.1],   // a little one on the plaza
       [capsArt(0), 'white', 10, 3, 1.2, 0, 0.2],   // the witch's corner by the dojo, beside the cauldron
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
@@ -2351,7 +2353,7 @@ function dressSeason() {
     yardTiles.add(key(10, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(22), 1.2, tileZ(15) + 1.4], 0.8]]) {
+    for (const [colour, at, k] of [['#ff9030', [tileX(22), 1.2, tileZ(16) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;
@@ -2361,10 +2363,10 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 11, y: 7 }, { x: 20, y: 9 }, { x: 12, y: 15 }, { x: 26, y: 12 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
+      spawns: [{ x: 11, y: 8 }, { x: 20, y: 10 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
   }
   if (SEASON === 'winter') {
-    const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(15) - 0.2, { s: 1.2 });
+    const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(16) - 0.2, { s: 1.2 });
     b.raycast = () => {};
     forest.add(b);
     makeSnow();

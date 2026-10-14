@@ -89,6 +89,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    layout). `?aerial` for the overview. Headless-checked: every place reachable, no errors, Halloween's dress re-placed.
    Follow-up (same day, the user's ask): the tree beside the cauldron (`TREE_TILES` [11, 2]) taken out, and the Nietos'
    name board made readable (bigger, white on deep blue, `nietosHouse()`).
+   Follow-up (same day, the user's drawing): the Clearing grown south to 31 x 26, the plaza and everything south of the
+   north ring road a row lower (a longer north avenue), the pond moved down past the ring road onto a low road from the
+   ring road's sides (`POND`, `LOW`), its two lamps taken out. Headless-checked, no errors; waiting on the user's look.
    **Done (2026-10-14): the Nietos' house a storybook cottage** (the user: "more aesthetic than a stupid bland house"):
    painted clapboard, scalloped shingles, porch, curtains, chimney smoke, picket garden, washing line, pram (`cottageArt()`,
    `NIETOS_YARD`, `mergeStatic()`; docs/reference/hub-base-mall.md). On `main`, waiting on the user's look.
