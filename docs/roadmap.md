@@ -152,6 +152,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    both `canopyManor()`s (Ricky's a den round a living tree, Phil's crooked and haunted); the treehouses round huts
    (`treehouse()`); the Nursery a ruined Victorian conservatory (`nursery()`). Tests pass, no console errors. Waiting on
    the user's playtest.
+   **Done (2026-10-14): Cinder Springs' roads and houses** (the user: Shaun's gym "in front of the waystone", "better
+   designs of the other houses... especially the trade house", "all roads need to connect"): Shaun's lodge east of the
+   moat on its own drive, a road straight down from the Waystone's bridge where it stood; a two-wide road to every door
+   (the mine, Clarence, house a, the forge, house e; a test holds it); Heatmor's Forge a fieldstone smithy (`forge()`),
+   the locked houses stepped adobe `cottage()`s, the bathhouse timbered with a pent roof and lanterns. Waiting on the
+   user's playtest.
    **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
    Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what

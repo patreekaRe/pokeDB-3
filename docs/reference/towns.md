@@ -75,3 +75,13 @@ slope, a gold spire, lavender planters, banners on mooring poles clear of the ea
 the hull and over the wheelhouse eave, the upper deck railed in his colours, a paddlewheel turning at the stern, his
 banners on mast and flagstaff, fairy lights (three instanced meshes, `instancedIn()` for things inside a rocking group),
 a hammock and the rose in a bottle; its gangway runs to the door's side of the boat.
+
+**Cinder Springs' roads and houses** (2026-10-14, the user: Shaun's lodge stood in front of the Waystone, the other houses
+needed better designs, the trade house most, and every road should reach a house): Shaun's lodge is east of the moat
+(x 30-34, rows 16-19) on a drive up from road D; a two-wide road runs straight down from the Waystone's south bridge to
+road A where it stood; every door has a road to it (the mine's beside its rails, Clarence's, house a's, the forge's, house
+e's; `tests/towns.test.mjs` checks each door is on or by a `#`, and nothing stands below the Waystone). `cabin()` now
+builds only the bathhouse (timbered, a tiled pent roof under its banner, red paper lanterns) and hands the rest on:
+`lodge()` for leaders, `forge()` for the shop (a fieldstone smithy, its arched mouth glowing, its FORGE sign under the
+eave, a tapered brick stack spitting embers, a lean-to over the anvil, hearth and quench tub), `cottage()` for locked
+houses (stepped adobe, beam ends and a parapet, an upper room under a gable, a ladder, a tiled porch, chillies, lilies).

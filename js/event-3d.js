@@ -4068,49 +4068,286 @@ function bathSign(name) {
   return f.c;
 }
 
-/** An adobe house on a stone footing, its front to you: lit windows, a plank door, a clay roof in its Pokémon colour, a
-    chimney smoking. `big`: the bathhouse, two storeys of it with a tall stack steaming and its banner. A tap is its door. */
+/** A wall of fieldstone, a tile of it that repeats: rounded stones of a few greys in dark mortar. */
+function fieldstoneArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), r = seeded(19);
+  g.fillStyle = '#3a302a'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 8) for (let x = -((y / 8) % 2) * 6; x < 64; x += 12) {
+    const w = 9 + r() * 3;
+    g.fillStyle = ['#7a6e64', '#6a5e56', '#867a6e', '#5e544c'][Math.floor(r() * 4)];
+    g.beginPath(); g.roundRect(x + 0.8, y + 0.8, w, 6.4, 2.4); g.fill();
+    g.fillStyle = 'rgba(255,255,255,0.08)'; g.fillRect(x + 2, y + 1.4, w - 3, 1);
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** Brick, a tile of it that repeats, smoke-blackened, for the forge's stack. */
+function brickArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 64;
+  const g = c.getContext('2d'), r = seeded(23);
+  g.fillStyle = '#3a2620'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 6) for (let x = -((y / 6) % 2) * 5; x < 64; x += 10) {
+    g.fillStyle = ['#8a4a34', '#7a3e2c', '#9a5a40', '#6a3424'][Math.floor(r() * 4)];
+    g.fillRect(x + 0.6, y + 0.6, 8.8, 4.8);
+  }
+  const fade = g.createLinearGradient(0, 0, 0, 64);
+  fade.addColorStop(0, 'rgba(20,14,12,0.55)'); fade.addColorStop(1, 'rgba(20,14,12,0)');
+  g.fillStyle = fade; g.fillRect(0, 0, 64, 64);
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+/** The forge's front: fieldstone, a pale arch of voussoirs round its mouth, the furnace glowing inside behind a grate. */
+function forgeFront(w, h) {
+  const W = Math.round(w * 20), H = Math.round(h * 20), f = fine(W, H, 6), { g, rr } = f, s = f.shine(), r = seeded(31);
+  g.fillStyle = '#3a302a'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < H; y += 4.2) for (let x = -(Math.round(y / 4.2) % 2) * 3; x < W; x += 6.4) rr(x + 0.4, y + 0.4, 5.2 + r() * 1.2, 3.4, 1.2, ['#7a6e64', '#6a5e56', '#867a6e', '#5e544c'][Math.floor(r() * 4)]);
+  const mid = W / 2, aw = 9.5, top = H - 20;
+  g.strokeStyle = '#b4a48c'; g.lineWidth = 3.2;
+  g.beginPath(); g.moveTo(mid - aw, H); g.lineTo(mid - aw, top + aw); g.arc(mid, top + aw, aw, Math.PI, 0); g.lineTo(mid + aw, H); g.stroke();
+  g.strokeStyle = '#5a4c40'; g.lineWidth = 0.5;
+  for (let k = 0; k <= 8; k++) { const a = Math.PI + k / 8 * Math.PI; g.beginPath(); g.moveTo(mid + Math.cos(a) * (aw - 1.6), top + aw + Math.sin(a) * (aw - 1.6)); g.lineTo(mid + Math.cos(a) * (aw + 1.6), top + aw + Math.sin(a) * (aw + 1.6)); g.stroke(); }
+  rr(mid - 1.8, top - 2.2, 3.6, 3.4, 0.6, '#c8b89c');
+  for (const ctx of [g, s]) {
+    const fire = ctx.createRadialGradient(mid, H - 3, 0, mid, H - 3, aw * 1.6);
+    fire.addColorStop(0, '#fff4b0'); fire.addColorStop(0.35, '#f8a030'); fire.addColorStop(1, '#a02a08');
+    ctx.fillStyle = fire;
+    ctx.beginPath(); ctx.moveTo(mid - aw + 1.6, H); ctx.lineTo(mid - aw + 1.6, top + aw); ctx.arc(mid, top + aw, aw - 1.6, Math.PI, 0); ctx.lineTo(mid + aw - 1.6, H); ctx.fill();
+  }
+  g.fillStyle = '#1a1210';
+  for (let x = mid - 6; x <= mid + 6; x += 2.4) g.fillRect(x - 0.4, H - 6, 0.8, 6);
+  g.fillRect(mid - 7, H - 6.4, 14, 0.9);
+  return f.c;
+}
+
+/** The forge's sign, hung on chains under the eave: dark planks in an iron frame, a gold anvil and the word FORGE. */
+function forgeSignArt() {
+  const f = fine(64, 24, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 24, 2, '#26201e');
+  rr(1.6, 1.6, 60.8, 20.8, 1.4, lin(0, 0, 0, 24, ['#6a4428', '#4e3018']));
+  g.fillStyle = 'rgba(30,16,8,0.4)'; for (let y = 7; y < 22; y += 5) g.fillRect(2, y, 60, 0.5);
+  g.fillStyle = '#e8b040';
+  g.beginPath(); g.moveTo(5, 8); g.lineTo(18, 8); g.lineTo(18, 11); g.quadraticCurveTo(14, 12, 13.5, 14); g.lineTo(15.5, 17); g.lineTo(7.5, 17); g.lineTo(9.5, 14); g.quadraticCurveTo(9, 11.5, 5, 10); g.closePath(); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 12px sans-serif'; g.fillText('FORGE', 40, 12.5, 40);
+  return f.c;
+}
+
+/** Heatmor's Forge, Cinder Springs' trade house (the user's ask, 2026-10-14: "better designs of the other houses...
+    especially the trade house"): a smithy of fieldstone on a basalt plinth, its arched mouth glowing with the furnace
+    inside, a tiled roof in its colour and its sign hung under the eave; a great tapered brick stack at its back,
+    smoking, embers spitting off its top; beside it an open lean-to on timber posts over the anvil, a hearth of glowing
+    coals under an iron hood and a quench tub. Its lot is 4 x 3. A tap anywhere is its door. */
+function forge(b, f, L, lit, smoke) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const W = f.w - 0.3, D = f.h - 0.4, P = 0.16;
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const basalt = std({ color: '#3e3432', roughness: 1, flatShading: true }), cope = std({ color: '#8a7a6a', roughness: 1 });
+  const wall = fieldstoneArt(), wood = std({ color: '#5a3c26', roughness: 0.9 }), dark = std({ color: '#2a201c', roughness: 0.8 });
+  const iron = std({ color: '#2a2624', roughness: 0.45, metalness: 0.6 }), roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
+  const coals = std({ color: '#f87a20', emissive: new THREE.Color('#ff6010'), emissiveIntensity: 1, roughness: 0.6 });
+  lit.push(coals);
+  const small = (m) => { m.castShadow = false; return m; };
+  mesh(rbox(W, P, D, 0.04), basalt, 0, P / 2, 0, g);
+  // the smithy: fieldstone, its glowing mouth to you, the tiled roof over it, its sign under the eave
+  const sw = 2.25, sd = D - 0.3, sh = 1.7, sx = -W / 2 + sw / 2 + 0.06, sz = -0.12, front = sz + sd / 2;
+  const sideMat = (u) => { const t = wall.clone(); t.repeat.set(u, sh); return std({ map: t, roughness: 1 }); };
+  const art = forgeFront(sw, sh), face = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.9, roughness: 0.95 });
+  lit.push(face);
+  const ends = sideMat(sd), back = sideMat(sw);
+  mesh(new THREE.BoxGeometry(sw, sh, sd), [ends, ends, dark, dark, face, back], sx, P + sh / 2, sz, g);
+  for (const s of [-1, 1]) for (let k = 0; k < 4; k++) small(mesh(new THREE.BoxGeometry(0.18, 0.22, 0.18), cope, sx + s * (sw / 2 + 0.01), P + 0.14 + k * 0.44, front + 0.01, g));
+  const geo = new THREE.ExtrudeGeometry(gableShape(sd / 2 + 0.28, 0.8, 0.1), { depth: sw + 0.3, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-(sw + 0.3) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], sx, P + sh, sz, g);
+  for (const s of [-1, 1]) small(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.22, 4), iron, sx + s * 0.45, P + sh - 0.06, front + 0.12, g));
+  g.attach(panel(forgeSignArt(), 1.1, 0.41, f.cx + sx, P + sh - 0.38, f.cz + front + 0.13));
+  // the stack: tapered brick at the back, a soot-black cap glowing inside, smoke and embers off its top
+  const kx = sx - sw / 2 + 0.45, kz = sz - sd / 2 + 0.42, kh = 3.0, bricks = brickArt();
+  bricks.repeat.set(2, 4);
+  mesh(new THREE.CylinderGeometry(0.28, 0.42, kh, 8), std({ map: bricks, roughness: 1 }), kx, P + kh / 2, kz, g);
+  mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.14, 8), dark, kx, P + kh + 0.07, kz, g);
+  small(mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.02, 8), coals, kx, P + kh + 0.15, kz, g));
+  smoke.push([f.cx + kx, P + kh + 0.3, f.cz + kz, false]);
+  const sparks = Array.from({ length: 8 }, (_, i) => { const sp = sprite(emberArt(i % 2 ? '#ffd060' : '#ff8020'), 0.09); sp.userData = { at: i / 8, sway: i * 1.7 }; return sp; });
+  const ox = f.cx + kx, oy = P + kh + 0.2, oz = f.cz + kz;
+  B.ticks.push((now) => {
+    for (const sp of sparks) {
+      const u = sp.userData, t = (u.at + now / 2600) % 1;
+      sp.visible = !calm;
+      sp.position.set(ox + Math.sin(t * 7 + u.sway) * 0.25 + t * 0.3, oy + t * 1.6, oz + Math.cos(t * 5 + u.sway) * 0.15);
+      sp.material.opacity = Math.min(1, t * 10) * (1 - t);
+    }
+  });
+  // the lean-to: posts and a sloped roof off the smithy's side, the hearth and its hood at the back, the anvil, a tub
+  const lx0 = sx + sw / 2, lw = W / 2 - lx0, lx = lx0 + lw / 2, hi = P + 1.45, lo = P + 1.1;
+  for (const z of [front - 0.12, sz - sd / 2 + 0.12]) mesh(new THREE.BoxGeometry(0.09, lo - P, 0.09), wood, W / 2 - 0.1, P + (lo - P) / 2, z, g);
+  mesh(new THREE.BoxGeometry(0.08, 0.1, sd), wood, W / 2 - 0.1, lo - 0.02, sz, g);
+  const lean = mesh(new THREE.BoxGeometry(Math.hypot(lw + 0.2, hi - lo), 0.05, sd + 0.3), [eave, eave, roofMat, eave, eave, eave], lx + 0.05, (hi + lo) / 2 + 0.03, sz, g);
+  lean.rotation.z = -Math.atan2(hi - lo, lw + 0.2);
+  const hz = sz - sd / 2 + 0.38;
+  mesh(new THREE.BoxGeometry(0.75, 0.48, 0.5), std({ map: bricks, roughness: 1 }), lx, P + 0.24, hz, g);
+  small(mesh(new THREE.BoxGeometry(0.6, 0.04, 0.36), coals, lx, P + 0.49, hz, g));
+  const hood = new THREE.ConeGeometry(0.45, 0.42, 4, 1, true); hood.rotateY(Math.PI / 4);
+  mesh(hood, std({ color: '#2a2624', roughness: 0.45, metalness: 0.6, side: THREE.DoubleSide }), lx, P + 0.95, hz, g);
+  mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.5, 8), iron, lx, P + 1.35, hz, g);
+  const anvil = piece('anvil', f.cx + lx + COLS / 2 - 0.5, f.cz + front - 0.55 + ROWS / 2 - 0.5, { scale: 0.75, y: P, free: true });
+  if (anvil) g.attach(anvil);
+  const tub = mesh(new THREE.CylinderGeometry(0.2, 0.17, 0.34, 12), wood, W / 2 - 0.3, P + 0.17, front + 0.12, g);
+  for (const y of [0.08, 0.26]) small(mesh(new THREE.TorusGeometry(0.195, 0.014, 4, 16), iron, 0, y - 0.17, 0, tub)).rotation.x = Math.PI / 2;
+  small(mesh(new THREE.CircleGeometry(0.17, 14), std({ color: '#3a5a60', roughness: 0.15, metalness: 0.2 }), 0, 0.15, 0, tub)).rotation.x = -Math.PI / 2;
+  return g;
+}
+
+/** A cottage's ground-floor front: adobe, an arched plank door with a lamp-lit pane, a lit window either side between
+    shutters in the house's colour, a box of fire lilies under each. */
+function cottageFront(w, h, shutter) {
+  const W = Math.round(w * 20), H = Math.round(h * 20), f = fine(W, H, 6), { g, rr, lin } = f, s = f.shine(), r = seeded(41);
+  g.fillStyle = lin(0, 0, 0, H, ['#ead4ae', '#d8bc94']); g.fillRect(0, 0, W, H);
+  g.fillStyle = 'rgba(120,80,50,0.14)'; for (let i = 0; i < 50; i++) g.fillRect(r() * W, r() * H, 1.6 + r() * 2, 0.6);
+  g.fillStyle = 'rgba(90,60,40,0.22)'; g.fillRect(0, H - 2.5, W, 2.5);
+  const glass = (x, y, w, h) => {
+    for (const ctx of [g, s]) { const gr = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, w); gr.addColorStop(0, '#fff4c8'); gr.addColorStop(1, '#f8a040'); ctx.fillStyle = gr; ctx.fillRect(x, y, w, h); }
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#4a2e1c'; ctx.fillRect(x + w / 2 - 0.35, y, 0.7, h); ctx.fillRect(x, y + h / 2 - 0.35, w, 0.7); }
+  };
+  const mid = W / 2;
+  g.fillStyle = '#4a2e1c'; g.beginPath(); g.moveTo(mid - 5, H); g.lineTo(mid - 5, 9); g.arc(mid, 9, 5, Math.PI, 0); g.lineTo(mid + 5, H); g.fill();
+  g.fillStyle = lin(mid - 4, 0, mid + 4, 0, ['#8a5a34', '#a86e42', '#8a5a34']); g.beginPath(); g.moveTo(mid - 4, H); g.lineTo(mid - 4, 9); g.arc(mid, 9, 4, Math.PI, 0); g.lineTo(mid + 4, H); g.fill();
+  g.fillStyle = 'rgba(40,20,10,0.4)'; for (let x = mid - 2; x < mid + 4; x += 2) g.fillRect(x, 6, 0.5, H - 6);
+  glass(mid - 1.6, 8, 3.2, 3);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(mid + 2.5, H - 8, 0.7, 0, Math.PI * 2); g.fill();
+  for (const x of [mid - 16, mid + 9]) {
+    rr(x - 0.8, 6.2, 8.6, 8.6, 0.6, '#4a2e1c');
+    glass(x, 7, 7, 7);
+    for (const sx of [x - 3.4, x + 7.4]) { rr(sx, 6.2, 3, 8.6, 0.5, shutter); g.fillStyle = 'rgba(0,0,0,0.25)'; for (let y = 7.4; y < 14.4; y += 1.4) g.fillRect(sx + 0.4, y, 2.2, 0.4); }
+    rr(x - 1, 15, 9, 2.4, 0.5, '#6a4428');
+    for (let k = 0; k < 6; k++) { g.fillStyle = ['#f86030', '#f8a030', '#e83a3a', '#f8d050'][k % 4]; g.beginPath(); g.arc(x + 0.4 + k * 1.45, 14.6 - (k % 2) * 0.6, 0.9, 0, Math.PI * 2); g.fill(); }
+  }
+  return f.c;
+}
+
+/** A cottage's upper room's front: adobe, one lit window between shutters. */
+function upperFront(w, h, shutter) {
+  const W = Math.round(w * 20), H = Math.round(h * 20), f = fine(W, H, 6), { g, rr, lin } = f, s = f.shine();
+  g.fillStyle = lin(0, 0, 0, H, ['#ead4ae', '#dcc29c']); g.fillRect(0, 0, W, H);
+  const x = W / 2 - 3.5, y = H / 2 - 3.2;
+  rr(x - 0.8, y - 0.8, 8.6, 8.2, 0.6, '#4a2e1c');
+  for (const ctx of [g, s]) { const gr = ctx.createRadialGradient(x + 3.5, y + 3.3, 0, x + 3.5, y + 3.3, 7); gr.addColorStop(0, '#fff4c8'); gr.addColorStop(1, '#f8a040'); ctx.fillStyle = gr; ctx.fillRect(x, y, 7, 6.6); }
+  for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#4a2e1c'; ctx.fillRect(x + 3.15, y, 0.7, 6.6); ctx.fillRect(x, y + 2.95, 7, 0.7); }
+  for (const sx of [x - 3.4, x + 7.4]) rr(sx, y - 0.8, 3, 8.2, 0.5, shutter);
+  return f.c;
+}
+
+/** A Cinder Springs cottage (the user's ask, 2026-10-14: better designs for the town's other houses): stepped adobe on
+    a stone footing, the ground floor flat-roofed with beam ends along its top and a low parapet, an upper room set back
+    on one side under a tiled gable in the house's colour, a ladder up the other side to the roof, a chimney smoking, a
+    tiled porch on two posts over an arched door with a string of red chillies, and fire lilies in pots. */
+function cottage(b, f, L, lit, smoke) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const w = f.w - 0.4, d = f.h - 0.8, h = 1.2, P = 0.18, top = P + h, fz = d / 2 - 0.1, side = b.id.charCodeAt(0) % 2 ? 1 : -1;
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const adobe = std({ color: '#e2caa4', roughness: 1 }), deep = std({ color: '#c8aa82', roughness: 1 }), dark = std({ color: '#4a2e1c', roughness: 0.8 });
+  const wood = std({ color: '#6a4a32', roughness: 0.9 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
+  const roofMat = std({ map: roofTiles(roof, 1.2, 1.2), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 }); lit.push(m); return m; };
+  const small = (m) => { m.castShadow = false; return m; };
+  mesh(rbox(w + 0.2, P, d + 0.2, 0.05), stone, 0, P / 2, -0.1, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, deep, dark, lights(cottageFront(w, h, roof[1])), adobe], 0, P + h / 2, -0.1, g);
+  mesh(rbox(w + 0.1, 0.12, d + 0.1, 0.04), deep, 0, top + 0.02, -0.1, g);
+  for (const [lw, ld, x, z] of [[w + 0.1, 0.1, 0, fz + 0.05], [0.1, d + 0.1, -w / 2, -0.1], [0.1, d + 0.1, w / 2, -0.1]]) small(mesh(rbox(lw, 0.16, ld, 0.03), adobe, x, top + 0.14, z, g));
+  for (let i = 0; i < 6; i++) small(mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.24, 8), wood, -w / 2 + 0.25 + i * (w - 0.5) / 5, top - 0.14, fz + 0.1, g)).rotation.x = Math.PI / 2;
+  // the upper room, set back on one side, under its gable
+  const uw = 1.2, ud = 1.15, uh = 0.8, ux = side * (w / 2 - uw / 2 - 0.08), uz = -0.1 - d / 2 + ud / 2 + 0.08;
+  mesh(new THREE.BoxGeometry(uw, uh, ud), [adobe, adobe, deep, dark, lights(upperFront(uw, uh, roof[1])), adobe], ux, top + 0.08 + uh / 2, uz, g);
+  const geo = new THREE.ExtrudeGeometry(gableShape(ud / 2 + 0.2, 0.55, 0.08), { depth: uw + 0.3, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-(uw + 0.3) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], ux, top + 0.08 + uh, uz, g);
+  // a chimney on the low roof behind, smoking; a ladder up the other side
+  const cx = -side * (w / 2 - 0.35), cz = -0.1 - d / 2 + 0.35;
+  mesh(new THREE.BoxGeometry(0.26, 0.7, 0.26), stone, cx, top + 0.35, cz, g);
+  mesh(new THREE.BoxGeometry(0.32, 0.06, 0.32), dark, cx, top + 0.7, cz, g);
+  smoke.push([f.cx + cx, top + 0.8, f.cz + cz, false]);
+  const lad = new THREE.Group(), lh = top + 0.45;
+  lad.position.set(-side * (w / 2 + 0.4), 0, -0.25);
+  lad.rotation.z = -side * 0.22;
+  g.add(lad);
+  for (const z of [-0.17, 0.17]) small(mesh(new THREE.BoxGeometry(0.04, lh, 0.04), wood, 0, lh / 2, z, lad));
+  for (let k = 1; k < 6; k++) small(mesh(new THREE.BoxGeometry(0.03, 0.03, 0.34), wood, 0, k * lh / 6, 0, lad));
+  // the porch: two posts, a beam, a tiled roof; a ristra of chillies off the beam; fire lilies in pots by the door
+  const pz = fz + 0.42, ph = 1.05;
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.07, ph, 0.07), wood, s * 0.55, P + ph / 2, pz, g);
+  small(mesh(new THREE.BoxGeometry(1.25, 0.07, 0.07), wood, 0, P + ph, pz, g));
+  const porch = mesh(new THREE.BoxGeometry(1.4, 0.05, 0.62), [eave, eave, roofMat, eave, eave, eave], 0, P + ph + 0.1, fz + 0.24, g);
+  porch.rotation.x = 0.3;
+  const chilli = std({ color: '#d82a18', roughness: 0.5 }), pod = new THREE.ConeGeometry(0.035, 0.1, 6);
+  for (let k = 0; k < 6; k++) small(mesh(pod, chilli, 0.42 + (k % 2 ? 0.03 : -0.03), P + ph - 0.1 - k * 0.07, pz - 0.02, g)).rotation.z = Math.PI + (k % 2 ? 0.3 : -0.3);
+  const clay = std({ color: '#b8603a', roughness: 0.9 }), leaf = std({ color: '#5a8a3a', roughness: 0.9 });
+  const lily = [std({ color: '#f86030', roughness: 0.6 }), std({ color: '#f8a030', roughness: 0.6 })];
+  for (const s of [-1, 1]) {
+    const x = s * 0.82, z = fz + 0.22;
+    small(mesh(new THREE.CylinderGeometry(0.11, 0.08, 0.18, 10), clay, x, P + 0.09, z, g));
+    small(mesh(new THREE.ConeGeometry(0.1, 0.2, 6), leaf, x, P + 0.26, z, g));
+    for (let k = 0; k < 3; k++) small(mesh(new THREE.SphereGeometry(0.045, 8, 6), lily[k % 2], x + (k - 1) * 0.06, P + 0.34 + (k % 2) * 0.04, z + 0.02, g));
+  }
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  small(mesh(new THREE.BoxGeometry(0.11, 0.15, 0.11), glow, -0.42, P + 0.85, fz + 0.12, g));
+  return g;
+}
+
+/** The bathhouse: two storeys of adobe on a stone footing, timbered, its front to you: a tiled pent roof between its
+    storeys with its banner over it, a clay gable on top and a tall stack steaming, noren across the door and a red paper
+    lantern either side (the user's ask, 2026-10-14: better designs for the town's other houses). Leaders live in
+    lodge()s, the forge is forge() and the rest are cottage()s. A tap is its door. */
 function cabin(b, f, L, lit, smoke) {
   const leader = b.home && B.town?.homes?.[b.home]?.leader;
   if (leader) return lodge(b, f, L, lit, smoke, leader);
-  const big = b.kind === 'bathhouse', g = new THREE.Group();
+  if (b.kind === 'shop') return forge(b, f, L, lit, smoke);
+  if (b.kind !== 'bathhouse') return cottage(b, f, L, lit, smoke);
+  const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz + 0.05);
   B.group.add(g);
-  const w = f.w - 0.35, d = f.h - 0.6, h = big ? 2.3 : 1.45;
+  const w = f.w - 0.35, d = f.h - 0.6, h = 2.3, P = 0.18, fz = d / 2;
   const adobe = std({ color: '#dcc4a0', roughness: 1 }), dark = std({ color: '#4a2e1c', roughness: 0.8 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
+  const timber = std({ color: '#5a3a24', roughness: 0.85 });
   const art = cabinFront(w), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 });
   lit.push(front);
-  mesh(rbox(w + 0.25, 0.18, d + 0.25, 0.04), stone, 0, 0.09, 0, g);
-  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, dark, dark, front, adobe], 0, 0.18 + h / 2, 0, g);
-  for (const sx of [-1, 1]) for (let k = 0; k < (big ? 6 : 4); k++) {   // stone quoins up the corners
-    mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), stone, sx * (w / 2 + 0.01), 0.3 + k * 0.38, d / 2 + 0.01, g).castShadow = false;
-  }
-  if (big) mesh(new THREE.BoxGeometry(w + 0.12, 0.12, d + 0.12), dark, 0, 0.18 + h * 0.55, 0, g);
+  const small = (m) => { m.castShadow = false; return m; };
+  mesh(rbox(w + 0.25, P, d + 0.25, 0.04), stone, 0, P / 2, 0, g);
+  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, dark, dark, front, adobe], 0, P + h / 2, 0, g);
+  for (const x of [-w / 2, -w / 4 - 0.25, w / 4 + 0.25, w / 2]) small(mesh(new THREE.BoxGeometry(0.12, h, 0.08), timber, x, P + h / 2, fz + 0.02, g));
+  for (const y of [P + 0.06, P + h - 0.06]) small(mesh(new THREE.BoxGeometry(w + 0.12, 0.12, 0.08), timber, 0, y, fz + 0.02, g));
   const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
   const roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
-  const geo = new THREE.ExtrudeGeometry(gableShape(d / 2 + 0.3, big ? 1.1 : 0.85, 0.1), { depth: w + 0.4, bevelEnabled: false });
+  const pent = mesh(new THREE.BoxGeometry(w + 0.5, 0.06, 0.55), [eave, eave, roofMat, eave, eave, eave], 0, P + h * 0.55 + 0.02, fz + 0.24, g);
+  pent.rotation.x = 0.42;
+  const geo = new THREE.ExtrudeGeometry(gableShape(d / 2 + 0.3, 1.1, 0.1), { depth: w + 0.4, bevelEnabled: false });
   geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.4) / 2, 0, 0);
-  mesh(geo, [roofMat, eave], 0, 0.18 + h, 0, g);
-  const cw = big ? 0.5 : 0.28, ch = big ? 1.9 : 1.0, chx = (w / 2 - (big ? 0.7 : 0.35)) * (b.id.charCodeAt(0) % 2 ? 1 : -1);
-  mesh(new THREE.BoxGeometry(cw, ch, cw), stone, chx, 0.18 + h + ch / 2, -0.1, g);
-  mesh(new THREE.BoxGeometry(cw + 0.08, 0.08, cw + 0.08), dark, chx, 0.18 + h + ch, -0.1, g);
-  smoke.push([f.cx + chx, 0.3 + h + ch, f.cz - 0.05, big]);
-  const awn = std({ color: roof[1], roughness: 0.9, side: THREE.DoubleSide });   // a little porch roof over the door
-  const porch = mesh(new THREE.BoxGeometry(big ? 1.6 : 0.9, 0.05, 0.45), awn, 0, 0.18 + (big ? 1.2 : 1.05), d / 2 + 0.2, g);
-  porch.rotation.x = 0.35;
-  if (big) {
-    panel(bathSign(b.name), 2.2, 0.5, f.cx, 0.18 + h * 0.55 + 0.55, f.cz + 0.05 + d / 2 + 0.07);
-    const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
-    for (const dx of [-0.32, 0, 0.32]) mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, 0.18 + 0.95, d / 2 + 0.06, g).castShadow = false;
+  mesh(geo, [roofMat, eave], 0, P + h, 0, g);
+  small(mesh(new THREE.BoxGeometry(w + 0.5, 0.1, 0.12), eave, 0, P + h + 1.1, 0, g));
+  const chx = (w / 2 - 0.7) * (b.id.charCodeAt(0) % 2 ? 1 : -1);
+  mesh(new THREE.BoxGeometry(0.5, 1.9, 0.5), stone, chx, P + h + 0.95, -0.1, g);
+  mesh(new THREE.BoxGeometry(0.58, 0.08, 0.58), dark, chx, P + h + 1.9, -0.1, g);
+  smoke.push([f.cx + chx, 0.3 + h + 1.9, f.cz - 0.05, true]);
+  g.attach(panel(bathSign(b.name), 2.2, 0.5, f.cx, P + h * 0.55 + 0.62, f.cz + 0.05 + fz + 0.09));
+  const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
+  for (const dx of [-0.32, 0, 0.32]) small(mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, P + 0.95, fz + 0.06, g));
+  const paper = std({ color: '#e84a3a', emissive: new THREE.Color('#ff5a3a'), emissiveIntensity: 0.8, roughness: 0.7 });
+  lit.push(paper);
+  const lantern = new THREE.SphereGeometry(0.15, 14, 10); lantern.scale(1, 1.3, 1);
+  for (const s of [-1, 1]) {
+    small(mesh(lantern, paper, s * 0.75, P + 1.0, fz + 0.16, g));
+    for (const y of [0.2, -0.2]) small(mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 10), dark, s * 0.75, P + 1.0 + y, fz + 0.16, g));
   }
-  if (b.kind === 'shop') {   // the forge's anvil sign on a bracket
-    mesh(new THREE.BoxGeometry(0.05, 0.05, 0.5), dark, w / 2 - 0.25, 0.18 + h * 0.8, d / 2 + 0.25, g);
-    const sign = mesh(new THREE.BoxGeometry(0.42, 0.3, 0.04), std({ color: '#e0602a', roughness: 0.6 }), w / 2 - 0.25, 0.18 + h * 0.8 - 0.22, d / 2 + 0.45, g);
-    sign.rotation.y = Math.PI / 2;
-  }
-  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });   // a lamp by the door
-  lit.push(glow);
-  mesh(new THREE.BoxGeometry(0.12, 0.17, 0.12), glow, (big ? 1.0 : 0.62), 0.18 + 0.95, d / 2 + 0.1, g).castShadow = false;
   return g;
 }
 
