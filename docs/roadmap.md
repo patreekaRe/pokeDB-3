@@ -87,6 +87,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    road, the way out north through the Whispering Clearing's gate, Kenmatta's dojo north-west away from the Nietos (east),
    the Ancient Tree / Secret Base north-east (kept a tree), the Mall west, a pond garden south (CLAUDE.md's The Clearing's
    layout). `?aerial` for the overview. Headless-checked: every place reachable, no errors, Halloween's dress re-placed.
+   Follow-up (same day, the user's ask): the tree beside the cauldron (`TREE_TILES` [11, 2]) taken out, and the Nietos'
+   name board made readable (bigger, white on deep blue, `nietosHouse()`).
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

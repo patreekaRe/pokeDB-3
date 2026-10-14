@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', 'The Clearing tidied up: your buddy walks in to the crossing above the plaza, the Poké Mall stands off the road, trees and a fence close the gap by the cauldron, and the Ancient Tree lost a pumpkin and its stray branches.'],
+  ['hub', 'The Nietos\' name board is bigger, white on deep blue, so it can be read from the path, and the tree by the cauldron is gone.'],
   ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
 ];
 

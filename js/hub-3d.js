@@ -1341,11 +1341,12 @@ function nietosHouse(g, x, z) {
   const round = add(new THREE.Mesh(new THREE.CircleGeometry(0.17, 20), pane), 0, 0.16 + H + 0.32, D / 2 + 0.02);
   round.castShadow = false;
   // the name board on its post by the path, and the sandbox
-  const sign = plankArt(30, 12, [['THE NIETOS', 3.4, '#ffffff'], ['LAW · BRITT · LINC', 2, '#e8f4ff']], ['#88c4f0', '#5a96d0', '#3a6ea8']);
-  const b = board(sign, 0, 0, { s: 0.85 });
-  b.position.set(-1.25, 0.72, D / 2 + 0.8);
+  // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
+  const sign = plankArt(34, 14, [['THE NIETOS', 4.8, '#ffffff'], ['LAW · BRITT · LINC', 2.8, '#ffe070']], ['#2c5a94', '#234a7e', '#183660']);
+  const b = board(sign, 0, 0, { s: 1, shadow: false });
+  b.position.set(-1.35, 0.92, D / 2 + 0.8);
   h.add(b);
-  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 6), std({ color: '#7a5430' })), -1.25, 0.37, D / 2 + 0.75);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.95, 6), std({ color: '#7a5430' })), -1.35, 0.47, D / 2 + 0.75);
   add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.1, 0.5), std({ color: '#c89a60' })), 1.0, 0.05, D / 2 + 0.6);
   add(new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.04, 0.42), std({ color: '#f0dca0' })), 1.0, 0.1, D / 2 + 0.6);
   add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' })), 0.9, 0.17, D / 2 + 0.55);
@@ -1727,7 +1728,7 @@ function routeSignArt() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block): a few in the corners, kept off the roads and the ground in front of places
-const TREE_TILES = [[0, 14], [1, 19], [0, 20], [30, 14], [29, 19], [30, 20], [10, 20], [20, 20], [11, 2], [18, 2]];
+const TREE_TILES = [[0, 14], [1, 19], [0, 20], [30, 14], [29, 19], [30, 20], [10, 20], [20, 20], [18, 2]];
 
 // a copse behind the fence between the Safari gate and the Whispering Clearing's (the user's ask, 2026-10-14: the open
 // meadow there read as a hole in the Clearing's edge), on the meadow `cleared` keeps the forest off; [x, y, kind, size]
