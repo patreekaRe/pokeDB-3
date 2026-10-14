@@ -605,11 +605,11 @@ export function peekBiome(starter, id, level = 0, slot = null) {
 }
 let peekAt = null, peekDepths = false, peekHouse = null;
 
-/** Visiting from home (docs/roadmap.md's Towns and Waystones, session 2): a lit stone in the Clearing's ring walks your
+/** Visiting from home (docs/roadmap.md's Towns and Waystones, session 2): the Clearing's Waystone walks your
     walking buddy into that town, outside any run (the Nietos' house in the Clearing the same way, `id` 'clearing' with
     its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
     but what's done there is real: requests handed in, furniture bought, townsfolk invited. Leaving (the far gate, Leave,
-    the Waystone, a house's doormat) calls `onHome(from)`: the hub, at that stone or doorstep. */
+    the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. */
 export function visitTown(starter, id, onHome, house = null) {
   const at = placeOf(id);
   if (!at || !starter) return false;
@@ -623,7 +623,7 @@ export function visitTown(starter, id, onHome, house = null) {
 let visiting = null;
 
 /** Back from a visit to the Clearing, the throwaway run gone and the playtest flag down again. */
-async function goHome(from) {
+async function goHome(from, town = null) {
   const back = visiting?.onHome;
   if (!back) return;
   visiting.onHome = null;   // once
@@ -632,7 +632,7 @@ async function goHome(from) {
   abandonRun();
   townVisit = null;
   for (const k of Object.keys(homeVisits)) delete homeVisits[k];
-  back?.(from);
+  back?.(from, town);
 }
 
 /** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
@@ -1658,13 +1658,13 @@ function gymRoom(node, leader, won = null, said = null) {
     (walkOn()), which then lifts; `at` puts you on a house's doorstep. The far gate (or Leave) walks on into the biome. */
 function townRoom(covered = null, at = null) {
   const town = TOWNS[run.town.id], thisRun = run, t = run.town;
-  const home = !!t.visit;   // walked in from home through the Clearing's Waystone ring: no run, its gate goes home
+  const home = !!t.visit;   // walked in from home through the Clearing's Waystone: no run, its gate goes home
   const st = townState(getSave(), town.id), r = currentRequest(town, st), lit = isMended(town.id);
   if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
   const leave = () => {
     if (run !== thisRun) return;
-    if (home) return goHome(`stone-${town.id}`);
+    if (home) return goHome('waystone', town.id);
     run.town = null;
     townVisit = null;
     startBiome();
@@ -1684,7 +1684,7 @@ function townRoom(covered = null, at = null) {
         tell(real ? `Request handed in! +${coins} PokéCoins. ${town.name}'s friendship went up!` : 'Request handed in! (A playtest: nothing is saved.)');
         if (real && !lit && isMended(town.id)) {   // the friendship that mends its Waystone
           playSound('gate-hum');
-          tell(`The Waystone in the square shudders... and knits itself whole! Its stone in the Whispering Clearing's ring is lit: from home you can travel here any time.`);
+          tell(`The Waystone in the square shudders... and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time.`);
         }
         again();
       })
@@ -1693,7 +1693,7 @@ function townRoom(covered = null, at = null) {
   if (first) metTown(town.id);
   const travelHome = async () => {
     playSound('gate-hum');
-    if (await confirmDialog('The Waystone hums. Travel home to the Whispering Clearing?', 'Travel') && run === thisRun) goHome(`stone-${town.id}`);
+    if (await confirmDialog('The Waystone hums. Travel home to the Whispering Clearing?', 'Travel') && run === thisRun) goHome('waystone', town.id);
   };
   // on a visit, a townsperson you've chatted to can be asked home to the Secret Base, once a visit
   const invite = async (who) => {
@@ -1727,7 +1727,7 @@ function townRoom(covered = null, at = null) {
       if (!b?.knock) return;
       const line = b.knock[knocks[id] = ((knocks[id] ?? -1) + 1) % b.knock.length];
       if (b.kind === 'waystone' && home) return travelHome();
-      if (b.kind === 'waystone' && lit) { playSound('gate-hum'); return said('The Waystone stands whole, humming, its runes lit. From the ring of stones in the Whispering Clearing you can come back here any time.'); }
+      if (b.kind === 'waystone' && lit) { playSound('gate-hum'); return said('The Waystone stands whole, humming, its runes lit. From the Whispering Clearing\'s Waystone you can come back here any time.'); }
       if (b.kind === 'waystone') { playSound('gate-hum'); return said(`${line} (${friends} Hand in requests to mend it.)`); }
       playSound('stick');
       said(line);

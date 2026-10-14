@@ -296,12 +296,12 @@ function init() {
     onBase: () => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome })); },
     // the Poké Mall's doors in the Clearing (js/hub-3d.js); the Game Corner is a shop in its hall
     onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
-    // a lit stone in the Clearing's Waystone ring, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town
-    // (or house) outside any run (visitTown() in js/run.js), and comes home onto that stone or doorstep
+    // the Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
+    // any run (visitTown() in js/run.js), and comes home in front of the Waystone or on the doorstep
     onTown: (id, house = null) => {
       const mate = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
       leaveTitle();
-      visitTown(mate, id, async (from) => { cameHome(from); await showHome(); curtain(false, 420); }, house);
+      visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house);
     },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));

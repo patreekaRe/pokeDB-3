@@ -940,8 +940,8 @@ export const mended = (st) => st.done >= MEND_AT;
 
 /* ---------- the Waystone ring and visiting from home (session 2, 2026-10-14) ---------- */
 
-/** The ring of standing stones round the Clearing's plaza (js/hub-3d.js), one a town in this order round the circle, each
-    lit in its town's colour once its Waystone is mended. */
+/** The towns the Clearing's Waystone reaches (js/hub-3d.js), in its menu's order: a crystal each orbiting its tip, lit
+    in its town's colour once that town's Waystone is mended. A later town (a Depths camp) is a line here. */
 export const RING = [
   { id: 'shrine', glow: '#ff7a5a' },
   { id: 'wastes', glow: '#ffa040' },

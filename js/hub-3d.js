@@ -48,7 +48,7 @@ const GATE_AT = { tx: 6, ty: ROWS + 4 };
 // the trail and a Pokémon route sign left of it
 const STOP_AT = { tx: 8, ty: GATE_AT.ty + 1 }, SIGN_AT = { tx: 4, ty: GATE_AT.ty + 1 };
 const TP = 16;                // painted pixels a tile
-const START = { x: 6, y: 14 };
+const START = { x: 6, y: 14 };   // the plaza's middle, the Waystone's tile
 const PC_AT = { tx: 11, ty: 14 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
@@ -92,21 +92,17 @@ const PILLAR_AT = { tx: 13, ty: -3 };
 // on the grown right side, along the road east from the plaza's path: the Nietos' house and Kenmatta's dojo, each by its
 // top-left tile (the user's ask, 2026-10-14)
 const NIETOS_AT = { tx: 13, ty: 6 }, DOJO_AT = { tx: 17, ty: 5 };
-// the Waystone ring round the plaza's Poké Ball (docs/roadmap.md's Towns and Waystones): one standing stone a town (RING
-// in js/data/towns.js) on a circle RING_R tiles out, turned so none stands on the paths leaving it north, south and west
+// the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
+// the plaza's Poké Ball, START's tile, five crystals orbiting its tip, one a town in its RING colour (js/data/towns.js);
+// your partner starts a step in front of it, and the worn ring path RING_R out stays round it
 const RING_R = 3;
-const STONES = RING.map((t, i) => {
-  const a = (i + 1) * 2 * Math.PI / RING.length, x = START.x + RING_R * Math.cos(a), y = START.y - RING_R * Math.sin(a);
-  const tx = Math.round(x), ty = Math.round(y), dx = START.x - tx, dy = START.y - ty;
-  const step = Math.abs(dx) >= Math.abs(dy) ? { x: tx + Math.sign(dx), y: ty } : { x: tx, y: ty + Math.sign(dy) };   // a tile in towards the plaza
-  return { ...t, x, y, tx, ty, step, a };
-});
+const SPAWN = { x: START.x, y: START.y + 1 };
 const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 13.5], [-1, 14]], [[-1, 14], [6, 14]],
   [[6, 10], [18, 10]], [[NIETOS_AT.tx + 1, NIETOS_AT.ty + 3], [NIETOS_AT.tx + 1, 10]], [[DOJO_AT.tx + 1, DOJO_AT.ty + 4], [DOJO_AT.tx + 1, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
-let mon = null, walker = { x: 0, z: 0, tile: START, path: [], facing: 'front', flip: false, hop: 0 };
+let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
@@ -214,7 +210,7 @@ function groundArt() {
     const wob = (smooth(x, y, 5) - 0.5) * 0.22;
     let path = Math.min(...PATHS.map(s => seg(u, v, s))) - 0.42 - wob;
     path = Math.min(path, Math.hypot(u - START.x, v - START.y) - 1.55 - wob * 2);
-    path = Math.min(path, Math.abs(Math.hypot(u - START.x, v - START.y) - RING_R) - 0.3 - wob);   // the worn ring the Waystones stand on
+    path = Math.min(path, Math.abs(Math.hypot(u - START.x, v - START.y) - RING_R) - 0.3 - wob);   // the worn ring round the Waystone
     let c;
     if (path < 0) {
       const n = smooth(x + 99, y, 3) + hash(x, y) * 0.35;
@@ -1180,58 +1176,68 @@ function mallBuilding() {
 
 /* ---------- the Waystone ring, the Nietos' house and Kenmatta's dojo (2026-10-14) ---------- */
 
-let stoneLit = [];   // the lit stones' runes and crystals, pulsed each frame (liveStones())
+let stoneLit = null;   // the Waystone's runes and crystals, pulsed and turned each frame (liveStones())
 
-/** A standing stone of the ring: rough grey, a rune panel on its face and a crystal over its tip that light in its town's
-    colour once that town's Waystone is mended; dark, the panel is worn and the crystal a dull pebble. */
-function standingStone(g, t, lit) {
-  const x = tileX(t.x), z = tileZ(t.y), s = new THREE.Group();
-  s.position.set(x, 0, z);
-  s.rotation.y = Math.atan2(START.x - t.x, START.y - t.y) * 0.25;   // a little turned in towards the plaza
-  const rock = new THREE.MeshStandardMaterial({ color: '#a8a49a', roughness: 0.95, flatShading: true, emissive: new THREE.Color(lit ? t.glow : '#000000'), emissiveIntensity: lit ? 0.12 : 0 });
-  const base = new THREE.MeshStandardMaterial({ color: '#7a766c', roughness: 1, flatShading: true });
-  const geo = new THREE.CylinderGeometry(0.26, 0.4, 1.55, 5, 2);
-  const pos = geo.attributes.position, rnd = seeded(t.id.length * 7 + 3);
-  for (let i = 0; i < pos.count; i++) if (pos.getY(i) > -0.8) pos.setX(i, pos.getX(i) + (rnd() - 0.5) * 0.06), pos.setZ(i, pos.getZ(i) + (rnd() - 0.5) * 0.06);
-  geo.computeVertexNormals();
-  const body = new THREE.Mesh(geo, rock);
-  body.position.y = 0.78;
-  body.scale.z = 0.75;
-  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.14, 7), base);
-  foot.position.y = 0.07;
-  const glow = new THREE.MeshStandardMaterial({ color: lit ? t.glow : '#56524a', emissive: new THREE.Color(lit ? t.glow : '#000000'), emissiveIntensity: lit ? 1.4 : 0, roughness: 0.5 });
-  const rune = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.8), glow);
-  rune.position.set(0, 0.85, 0.262);
-  rune.rotation.x = -0.1;
-  rune.material.map = texOf(runeArt());
-  rune.material.transparent = true;
-  rune.material.alphaTest = 0.3;
-  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(lit ? 0.17 : 0.1, 0), lit ? glow : base);
-  gem.position.y = lit ? 1.95 : 1.6;
-  for (const m of [body, foot, gem]) { m.castShadow = true; m.receiveShadow = true; }
-  s.add(body, foot, rune, gem);
-  if (lit) {   // its light pooled on the ground round it
-    const pool = new THREE.Mesh(new THREE.CircleGeometry(0.75, 32), new THREE.MeshBasicMaterial({ color: t.glow, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }));
+/** The Clearing's Waystone (one, not five, 2026-10-14): the towns' whole Waystone (js/event-3d.js's wholeWaystone()) on a
+    plinth over the plaza's Poké Ball, its runes a pale silver light, and round its tip five small crystals orbiting, one a
+    town in its RING colour, lit once that town's Waystone is mended, else a dull pebble. */
+function clearingWaystone(g, lit) {
+  const s = new THREE.Group(), S = 1.7;
+  s.position.set(tileX(START.x), 0, tileZ(START.y));
+  s.scale.setScalar(S);
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true, ...o });
+  const stone = std({ color: '#b4b0a4' }), dark = std({ color: '#6e6a60', roughness: 1 });
+  const any = lit.some(Boolean);
+  const glow = std({ color: '#3a4a60', emissive: new THREE.Color(any ? '#d8f0ff' : '#90a8c0'), emissiveIntensity: any ? 1.2 : 0.45, roughness: 0.4, flatShading: false });
+  const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; s.add(o); return o; };
+  add(new THREE.CylinderGeometry(0.4, 0.45, 0.12, 8), dark, 0, 0.06, 0);
+  add(new THREE.CylinderGeometry(0.3, 0.35, 0.12, 8), stone, 0, 0.18, 0);
+  const geo = new THREE.CylinderGeometry(0.035, 0.23, 1.45, 4, 1); geo.translate(0, 0.725, 0); geo.rotateY(Math.PI / 4);
+  add(geo, stone, 0, 0.24, 0).scale.set(1, 1, 1.25);
+  for (const [y, w] of [[0.46, 0.13], [0.68, 0.11], [0.9, 0.09], [1.12, 0.065]]) {   // runes up its front and back
+    for (const z of [1, -1]) add(new THREE.BoxGeometry(w, 0.035, 0.015), glow, 0, y, z * (0.18 * (1.69 - y) / 1.45 + 0.008)).castShadow = false;
+  }
+  for (let i = 0; i < 8; i++) {   // rune stones round its foot
+    const a = i / 8 * Math.PI * 2, m = add(new THREE.BoxGeometry(0.09, 0.035, 0.06), glow, Math.cos(a) * 0.52, 0.03, Math.sin(a) * 0.52);
+    m.rotation.y = -a; m.castShadow = false;
+  }
+  const orbit = new THREE.Group();
+  orbit.position.y = 1.6;
+  s.add(orbit);
+  const gems = RING.map((t, i) => {
+    const on = lit[i], m = on
+      ? std({ color: t.glow, emissive: new THREE.Color(t.glow), emissiveIntensity: 1.5, roughness: 0.35, flatShading: true })
+      : std({ color: '#5e5a54', roughness: 0.9 });
+    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(on ? 0.085 : 0.065, 0), m);
+    const a = i / RING.length * Math.PI * 2;
+    gem.position.set(Math.cos(a) * 0.32, 0, Math.sin(a) * 0.32);
+    gem.scale.y = 1.5;
+    orbit.add(gem);
+    return { gem, m, on, a };
+  });
+  if (any) {   // its light pooled on the plaza, in the colour of the towns it reaches
+    const c = new THREE.Color(0, 0, 0);
+    RING.forEach((t, i) => { if (lit[i]) c.add(new THREE.Color(t.glow)); });
+    c.multiplyScalar(1 / Math.max(1, lit.filter(Boolean).length));
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(0.7, 40), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.3, depthWrite: false, blending: THREE.AdditiveBlending }));
     pool.rotation.x = -Math.PI / 2; pool.position.y = 0.02; pool.raycast = () => {};
     s.add(pool);
   }
-  if (lit) stoneLit.push({ glow, gem, phase: t.a });   // no lamp of its own: a light per lit stone would recompile the scene's shaders
+  stoneLit = { glow, orbit, gems, any };   // no lamp of its own: a light here would recompile the scene's shaders
   g.add(s);
 }
 
-/** A rune panel: carved marks down a stone's face (white on clear, tinted by its material). */
-function runeArt() {
-  const { c, g } = fine(5, 16, 10);
-  g.strokeStyle = '#ffffff'; g.lineWidth = 0.55;
-  const marks = [[[1, 2], [4, 2], [2.5, 4]], [[1.2, 6], [3.8, 8], [1.2, 10]], [[2.5, 11], [2.5, 14.5], [1, 13], [4, 13]]];
-  for (const m of marks) { g.beginPath(); g.moveTo(...m[0]); for (const p of m.slice(1)) g.lineTo(...p); g.stroke(); }
-  return c;
-}
-
 function liveStones(now) {
-  for (const s of stoneLit) {
-    s.glow.emissiveIntensity = calm ? 1.3 : 1.2 + 0.35 * Math.sin(now / 650 + s.phase);
-    if (!calm) { s.gem.rotation.y = now / 800 + s.phase; s.gem.position.y = 1.95 + Math.sin(now / 520 + s.phase) * 0.06; }
+  if (!stoneLit) return;
+  const { glow, orbit, gems, any } = stoneLit;
+  glow.emissiveIntensity = calm ? (any ? 1.2 : 0.45) : any ? 1.1 + 0.3 * Math.sin(now / 700) : 0.35 + 0.15 * Math.sin(now / 1100);
+  if (calm) return;
+  orbit.rotation.y = now / 2400;
+  orbit.position.y = 1.6 + Math.sin(now / 900) * 0.04;
+  for (const o of gems) {
+    o.gem.rotation.y = now / 600 + o.a;
+    o.gem.position.y = Math.sin(now / 520 + o.a * 2) * 0.05;
+    if (o.on) o.m.emissiveIntensity = 1.3 + 0.4 * Math.sin(now / 650 + o.a);
   }
 }
 
@@ -1352,26 +1358,27 @@ async function enterHouse(p) {
 
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
 
-/** Off through a lit stone: a column of its light rises round your partner, which fades up into it, then the town. */
-async function warpTo(p) {
+/** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
+    fades up into it, then the town. */
+async function warpTo(p, t) {
   if (entering) return;
   hideCard();
   walker.path = []; aim = null; walker.facing = 'front';
   entering = { at: performance.now(), z: walker.z, still: true };
   playSound('gate-hum');
-  warp = { at: performance.now(), out: true, colour: p.stone.glow };
+  warp = { at: performance.now(), out: true, colour: t.glow };
   await new Promise(r => setTimeout(r, calm ? 0 : 1000));
   await curtain(true, calm ? 0 : 300);
   entering = null;
   inside = p.id;
-  await acts.onTown(p.stone.id);
+  await acts.onTown(t.id);
 }
 
-/** Back from a visit (js/run.js's visitTown()): onto that stone's step, the light setting your partner down, or on the
-    house's doorstep. */
-export function cameHome(from) {
+/** Back from a visit (js/run.js's visitTown()): in front of the Waystone, the light of the town it came from setting your
+    partner down, or on the house's doorstep. */
+export function cameHome(from, town) {
   inside = from;
-  const t = STONES.find(o => `stone-${o.id}` === from);
+  const t = from === 'waystone' && RING.find(o => o.id === town);
   warp = t ? { at: performance.now() + 300, out: false, colour: t.glow } : null;
 }
 
@@ -1541,19 +1548,15 @@ function makePlaces() {
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
     build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.8), tileZ(-1.2))),
   });
-  // the Waystone ring round the plaza (docs/roadmap.md's Towns and Waystones, session 2): a stone a town, lit once its
-  // Waystone is mended; a lit one takes you there
-  for (const t of STONES) {
-    const town = TOWNS[t.id], st = townState(save, t.id), lit = st.done >= MEND_AT;
-    list.push({
-      id: `stone-${t.id}`, stone: t, name: lit || st.met ? `${town.name} Waystone` : 'Waystone', step: t.step, tiles: [[t.tx, t.ty]], tag: [t.tx, 2.6, t.ty], open: true,
-      line: lit ? `${town.name}'s Waystone, lit and humming. Step up to it to travel there.`
-        : st.met ? `A dark standing stone. Mend ${town.name}'s Waystone and it lights: ${st.done}/${MEND_AT} requests handed in at its board.`
-          : 'A dark standing stone, its runes worn smooth. Somewhere on the roads out of the Clearing is a town that can light it.',
-      buttons: lit ? [['Travel', () => {}]] : [],
-      build: (g) => standingStone(g, t, lit),
-    });
-  }
+  // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
+  // mended one travelled to from there
+  const lit = RING.map(t => townState(save, t.id).done >= MEND_AT);
+  list.push({
+    id: 'waystone', waystone: true, name: 'Waystone', step: SPAWN, tiles: [[START.x, START.y]], tag: [START.x, 3, START.y], open: true,
+    line: lit.some(Boolean) ? 'The Clearing\'s Waystone, humming. Its crystals light the way to every town you\'ve mended.' : 'The Clearing\'s Waystone. Five dull crystals circle its tip, waiting on the towns out on the roads.',
+    buttons: [],
+    build: (g) => clearingWaystone(g, lit),
+  });
   // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom())
   const nietosHome = (gymWins(save, 'nietos') || 0) > 0;
   list.push({
@@ -1607,7 +1610,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = [];
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1889,6 +1892,7 @@ function arrived() {
 /** What a place does: a closed one says why; with more than one thing to do (the trail with a saved run) a tap on the
     place only shows its card, the bar's keys choosing; else straight in. */
 function open(p, i = null) {
+  if (p.waystone) return showWaystone(p);
   if (!p.open || !p.buttons.length || (i == null && p.buttons.length > 1)) return showCard(p);
   const stop = stops[p.id];
   if (stop) {
@@ -1898,7 +1902,6 @@ function open(p, i = null) {
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
-  if (p.stone) return warpTo(p);
   if (p.id === 'nietos') return enterHouse(p);
   walker.hopUntil = performance.now() + 400;
   hideCard();
@@ -2192,6 +2195,8 @@ function liveLeaving(now) {
 
 function showCard(p) {
   here = p;
+  if (p.waystone) return showWaystone(p);
+  card.classList.remove('way');
   // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
   const ask = asks(p);
   // the user's call, 2026-10-08: that question is the Pokédex's shell, its two keys and no words
@@ -2212,6 +2217,52 @@ function showCard(p) {
   if (!p.open) playSound('cancel');
 }
 function hideCard() { card.hidden = true; }
+
+/** The Waystone's menu (the user's pick, 2026-10-14): the Pokédex's shell round a green LCD listing every town it reaches,
+    a mended one with Travel (the rooms' gold pill), one met but not yet mended with its friendship, one not yet reached
+    as ???. A later town is a RING line. */
+function showWaystone(p) {
+  here = p;
+  const save = getSave();
+  card.querySelector('.hub-card-name').textContent = p.name;
+  card.querySelector('.hub-card-line').textContent = p.line;
+  resetLine();
+  const head = document.createElement('div');
+  head.className = 'way-head';
+  head.innerHTML = '<b>WAYSTONE</b>';
+  const list = document.createElement('div');
+  list.className = 'way-list';
+  for (const t of RING) {
+    const town = TOWNS[t.id], st = townState(save, t.id), lit = st.done >= MEND_AT, known = lit || st.met;
+    const row = document.createElement('div');
+    row.className = `way-row ${lit ? 'lit' : known ? 'dark' : 'unmet'}`;
+    row.style.setProperty('--gem', t.glow);
+    const gem = document.createElement('i'), name = document.createElement('b');
+    gem.className = 'way-gem';
+    name.className = 'way-name';
+    name.textContent = known ? town.name : '???';
+    row.append(gem, name);
+    if (lit) {
+      const go = document.createElement('button');
+      go.type = 'button';
+      go.className = 'room-ok way-go';
+      go.textContent = 'Travel';
+      go.addEventListener('click', () => warpTo(p, t));
+      row.append(go);
+    } else {
+      const n = document.createElement('span');
+      n.className = 'way-count';
+      n.textContent = known ? `${Math.min(st.done, MEND_AT)}/${MEND_AT}` : '';
+      if (known) n.title = `${st.done} of ${MEND_AT} requests handed in at ${town.name}'s board mends its Waystone.`;
+      row.append(n);
+    }
+    list.append(row);
+  }
+  card.querySelector('.hub-card-acts').replaceChildren(head, list);
+  card.classList.remove('locked', 'ask');
+  card.classList.add('way');
+  card.hidden = false;
+}
 
 /** When the Safari's day or the Sky Pillar's week turns over (midnight UTC, the week on Monday), counted down on their
     places' cards (the user's ask, 2026-10-12: the reset was a guess at their own midnight). */
@@ -2588,7 +2639,7 @@ function placeCamera(dt) {
   const ahead = !arriving && (walker.tile.x <= 1 || (walker.tile.x >= 11 && walker.tile.x <= 15)) && walker.tile.y <= 3 ? 2.5 : 0;
   const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
-  const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z - ahead;
+  const wx = arriving ? tileX(SPAWN.x) : walker.x, wz = arriving ? tileZ(SPAWN.y) : walker.z - ahead;
   // a tile further on the left, so the Poké Mall out there is whole in the view
   const loX = tileX(-0.5) - 3.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
   const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
@@ -2764,7 +2815,7 @@ async function openHub(titleScreen, actions, hold) {
   held = hold;
   root.classList.toggle('held', held);
   mon.group.visible = !held;
-  if (!placed) { placed = true; walker.tile = START; walker.x = tileX(START.x); walker.z = tileZ(START.y); camX = walker.x; camZ = walker.z; }
+  if (!placed) { placed = true; walker.tile = SPAWN; walker.x = tileX(SPAWN.x); walker.z = tileZ(SPAWN.y); camX = walker.x; camZ = walker.z; }
   walker.path = []; aim = null; here = placeAt(walker.tile);
   outbound = null; returning = false;
   if (inside) leftPlace();
@@ -2793,9 +2844,9 @@ export function enterHub() {
   nextFly = performance.now() + 6000;
   if (calm) return;
   const from = ROWS + FRONT + 2;
-  walker.x = tileX(START.x); walker.z = tileZ(from); walker.tile = { x: START.x, y: from };
+  walker.x = tileX(SPAWN.x); walker.z = tileZ(from); walker.tile = { x: SPAWN.x, y: from };
   walker.path = [];
-  for (let y = from - 1; y >= START.y; y--) walker.path.push({ x: START.x, y });
+  for (let y = from - 1; y >= SPAWN.y; y--) walker.path.push({ x: SPAWN.x, y });
   walker.facing = mon.sheets.back ? 'back' : 'front';
   here = null;
   arriving = true;

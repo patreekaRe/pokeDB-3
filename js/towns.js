@@ -35,7 +35,7 @@ export function metTown(id) {
   updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...townState(d, id), met: true } }; });
 }
 
-/** Whether `id`'s Waystone is mended, so its stone in the Clearing's ring is lit and you can travel there from home. */
+/** Whether `id`'s Waystone is mended, so its crystal on the Clearing's Waystone is lit and you can travel there from home. */
 export const isMended = (id, save = getSave()) => mended(townState(save, id));
 
 /** The townsfolk you've invited to live in your Secret Base ("<town>:<pokemon>" keys, js/data/towns.js's folkKey()). */

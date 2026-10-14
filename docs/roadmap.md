@@ -71,16 +71,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
    Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to
    come and live in your Secret Base (`inviteFolk()`, `save.townsfolk` keys `town:pokemon`, read by the PC's Base residents
-   and the base's guests, `resident()` in `js/pc.js`). Branch `towns`, waiting on the user's playtest. **Next**: the user
-   playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
-   **Next, decided 2026-10-14 (the user's pick): one Waystone, not five.** ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
-   docs/roadmap.md's Towns and Waystones entry. On branch `towns`, replace the Clearing's five-stone ring with ONE big
-   Waystone standing on the plaza's Poké Ball, five small crystals orbiting its tip, one per town in its `RING` colour, dark
-   until that town is mended. A tap opens a mini menu (the Pokédex look) listing all five towns: lit ones with Travel,
-   dark ones with their friendship n/5, unmet ones as ???. Your buddy starts just in front of it (it takes `START`'s tile);
-   coming home from a town sets you down there. Keep the worn ring path round it. Test headless, send a screenshot and a
-   pinned playtest link." Why: it matches each town's single Waystone, frees the plaza and the gate's view, the menu says
-   more than five stones can, and a later town (a Depths camp) is just a menu line.
+   and the base's guests, `resident()` in `js/pc.js`).
+   **Done (2026-10-14): one Waystone, not five** (the user's pick). The ring's five stones are gone: one big Waystone stands on
+   the plaza's Poké Ball (`clearingWaystone()` in `js/hub-3d.js`, `START`'s tile; the towns' whole Waystone on a plinth,
+   silver runes), five crystals orbiting its tip in their `RING` colours, dull until that town is mended. A tap opens its menu
+   (`showWaystone()`, `.hub-card.way`: the Pokédex shell round a green LCD, mended towns with Travel, met ones n/5, the rest
+   ???); your buddy starts a step in front of it (`SPAWN`) and comes home there (`goHome('waystone', town)` →
+   `cameHome(from, town)`); the worn ring path stays. Player lines that said "ring of stones" now say the Waystone.
+   Headless-tested (menu, Travel to Lantern Village, Leave home, no errors). Branch `towns`, waiting on the user's playtest.
+   **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),

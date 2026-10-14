@@ -123,6 +123,31 @@
 /* Continue is the rooms' glowing gold pill itself (.room-ok), only as big as New game */
 .hub-card.ask .hub-card-ok { flex: 1; min-width: 0; height: auto; padding: 12px 6px 11px; }
 .hub-card.ask .hub-card-btn:active { box-shadow: inset 0 0 0 2px var(--shell-rim); }
+/* the Waystone's menu (2026-10-14): the same shell round a green LCD, a town a row */
+.hub-card.way {
+  width: min(320px, calc(100% - 32px)); padding: 10px; border: 0; border-radius: 18px;
+  background: linear-gradient(180deg, var(--shell-hi), var(--shell) 40%, var(--shell-lo));
+  box-shadow: inset 0 0 0 3px var(--shell-rim), 0 4px 0 var(--shell-deep), 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+.hub-card.way :is(.hub-card-name, .hub-card-line, .hub-card-reset) { display: none; }
+.hub-card.way .hub-card-acts { display: block; margin: 0; }
+.way-head { margin: 0 0 8px; text-align: center; color: #fff; text-shadow: 1px 1px 0 var(--shell-deep); font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.08em; }
+.way-head b { font-weight: 400; }
+.way-list {
+  display: flex; flex-direction: column; gap: 2px; padding: 6px; border: 2px solid #2a2a30; border-radius: 8px;
+  background: radial-gradient(120% 140% at 30% 0%, #c2dc9a, #a8c97e); color: #1f3a14;
+  box-shadow: inset 0 2px 0 rgba(31, 58, 20, 0.14), 0 0 0 3px #e4e4ea, 0 0 0 5px var(--shell-rim);
+}
+.way-row { display: flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 4px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
+.way-row + .way-row { border-top: 1px dashed rgba(31, 58, 20, 0.3); }
+.way-gem { flex: none; width: 10px; height: 14px; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); background: #6a7a5a; }
+.way-row.lit .way-gem { background: var(--gem); filter: drop-shadow(0 0 3px var(--gem)); animation: wayGem 1.6s ease-in-out infinite alternate; }
+@keyframes wayGem { to { filter: drop-shadow(0 0 6px var(--gem)) brightness(1.25); } }
+.way-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
+.way-row.unmet .way-name { opacity: 0.55; letter-spacing: 0.1em; }
+.way-count { flex: none; font-variant-numeric: tabular-nums; }
+.hub-card.way .way-go { flex: none; min-width: 0; height: auto; padding: 7px 12px 6px; font-size: 0.75rem; }
+@media (prefers-reduced-motion: reduce) { .way-row.lit .way-gem { animation: none; } }
 
 .hub-fps { position: absolute; right: 60px; top: 18px; padding: 2px 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.6); color: #8f8; font: 12px/1.2 monospace; }
 

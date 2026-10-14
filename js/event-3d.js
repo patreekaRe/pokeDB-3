@@ -3309,7 +3309,7 @@ function waystone(f, L, mended = false) {
 
 /** A mended Waystone (friendship MEND_AT, js/data/towns.js; session 2, 2026-10-14): the stone whole again on its plinth,
     every rune round its ring lit, runes glowing up its faces, a crystal turning over its tip and a soft light on the
-    plaza. Its stone in the Clearing's ring is lit, and a tap here on a visit from home travels back. */
+    plaza. Its crystal on the Clearing's Waystone is lit, and a tap here on a visit from home travels back. */
 function wholeWaystone(f, L) {
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
