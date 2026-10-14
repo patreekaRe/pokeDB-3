@@ -184,12 +184,13 @@ export async function gifFrames(src) {
     behind the feet can't cut it, anything in front of them still hides it. That depth is linear across the screen, so
     it is passed as (depth x w, w) to undo the perspective-correct interpolation. */
 function feetDepth(m) {
+  m.userData.upright = true;
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
-      .replace('void main() {', 'varying float vUpZ;\nvarying float vUpW;\nvoid main() {')
+      .replace('void main() {', '#ifndef BEND_DROP\n#define BEND_DROP vec3(0.0)\n#endif\nvarying float vUpZ;\nvarying float vUpW;\nvoid main() {')
       .replace('#include <project_vertex>', `#include <project_vertex>
-  vec3 feetW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-  vec3 pixW = (modelMatrix * vec4(transformed, 1.0)).xyz;
+  vec3 feetW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz + BEND_DROP;
+  vec3 pixW = (modelMatrix * vec4(transformed, 1.0)).xyz + BEND_DROP;
   vec3 look = vec3(feetW.x - cameraPosition.x, 0.0, feetW.z - cameraPosition.z);
   vec3 upW = pixW;
   if (length(look) > 0.001) {
@@ -206,6 +207,64 @@ function feetDepth(m) {
   };
   m.customProgramCacheKey = () => 'upright-depth';
 }
+
+/* ---------- the rolling-log bend (?curve=, the Clearing only for now) ----------
+   Animal Crossing's world: the ground rolls away round a log lying across the view, so the far side drops below the
+   horizon and the near side dips under the bar. Each vertex is lowered by k x (its distance from the view's focus along
+   the ground)², once it's already in view space, so shadows and lighting (worked out from the unbent world) still land
+   where they should. A billboard drops whole, by its feet's drop, so it stays a flat, upright sprite, and its upright
+   depth (feetDepth()) is worked out from where it is drawn. `u` is `{ k: { value }, z: { value } }`, shared by every
+   material so one change moves them all. */
+export function bend(m, u) {
+  if (m.userData.bent) return;
+  m.userData.bent = true;
+  const was = m.onBeforeCompile, key = m.customProgramCacheKey();
+  m.onBeforeCompile = (sh, r) => {
+    was.call(m, sh, r);
+    sh.uniforms.uBendK = u.k;
+    sh.uniforms.uBendZ = u.z;
+    sh.vertexShader = `${m.userData.upright ? '#define BEND_RIGID\n' : ''}#define BEND_DROP bendD\nuniform float uBendK;\nuniform float uBendZ;\n` + sh.vertexShader
+      .replace('#include <project_vertex>', `#include <project_vertex>
+  #ifdef BEND_RIGID
+  vec3 bendW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  #else
+  vec3 bendW = (mvPosition.xyz - viewMatrix[3].xyz) * mat3(viewMatrix);
+  #endif
+  float bendZ = bendW.z - uBendZ;
+  vec3 bendD = vec3(0.0, -uBendK * bendZ * bendZ, 0.0);
+  mvPosition.xyz += mat3(viewMatrix) * bendD;
+  gl_Position = projectionMatrix * mvPosition;`);
+  };
+  m.customProgramCacheKey = () => key + '|bend';
+  m.needsUpdate = true;
+}
+
+/** The bend moves only a shape's corners and draws straight between them, so the Clearing's ground (one box, its corners
+    tiles away) sank as a slab while everything on it bent, and stood floating over it, Bulbasaur apart from its own
+    shadow (the user's playtest, 2026-10-14). So a big box or plane is built again cut into cells a tile or less across,
+    the same size, faces and materials, where it can bend with the rest; one made and then moved about in its own space
+    (its bounds differ) is left as it is. Shared shapes stay shared. */
+const fine = new WeakMap();
+export function bendFine(o) {
+  const g = o.geometry, p = g?.parameters;
+  if (!p || o.isInstancedMesh || o.material?.userData?.upright || !/^(Box|Plane)Geometry$/.test(g.type)) return;
+  if (fine.has(g)) { o.geometry = fine.get(g); return; }
+  o.updateWorldMatrix(true, false);
+  const s = o.getWorldScale(new THREE.Vector3()), k = Math.max(s.x, s.y, s.z), n = (len) => Math.max(1, Math.ceil(len * k));
+  const box = g.type === 'BoxGeometry';
+  if (Math.max(p.width, p.height, box ? p.depth : 0) * k <= 1.5) { fine.set(g, g); return; }
+  const made = box ? new THREE.BoxGeometry(p.width, p.height, p.depth, n(p.width), n(p.height), n(p.depth))
+    : new THREE.PlaneGeometry(p.width, p.height, n(p.width), n(p.height));
+  g.computeBoundingBox(); made.computeBoundingBox();
+  const same = g.boundingBox.min.distanceTo(made.boundingBox.min) < 1e-4 && g.boundingBox.max.distanceTo(made.boundingBox.max) < 1e-4;
+  if (!same) { made.dispose(); fine.set(g, g); return; }
+  fine.set(g, made);
+  fine.set(made, made);
+  o.geometry = made;
+}
+
+/** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
+export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
     `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */

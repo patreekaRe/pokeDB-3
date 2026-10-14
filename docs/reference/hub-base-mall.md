@@ -97,3 +97,17 @@ The first section began as the note on playtesting the live site and grew into t
   `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
+
+### The rolling-log bend (`?curve=N`, 2026-10-14, branch `clearing-curve`)
+
+The user's ask: Animal Crossing's curved world, in the Clearing only, behind a flag with a strength. `?curve=N` sets
+`CURVE` (N x 0.01; 1 when the number is left out; off under `?aerial`), and `bendAll()` runs every material in the
+Clearing through `bend()` in `js/hd2d.js` once (at build, then each frame for whatever was added since). Each vertex drops
+by k x (its world z minus the view's focus `camZ`)², applied to `mvPosition` after `project_vertex`, so shadows and lights,
+worked out from the unbent world, still fall right. A material marked `userData.upright` (every `monBoard()` billboard,
+through `feetDepth()`, and the painted vista, whose origin moved to its foot for this) drops whole by its origin's drop,
+so a sprite stays flat and upright, and `feetDepth()`'s upright depth is worked out from the bent feet and pixel
+(`BEND_DROP`). The bend only moves what's drawn, so a tap follows the screen's ray in 1.5-unit pieces, each put back
+unbent (`unbend()`), against the places and the ground (`tapRays()`, `groundTile()`). Shadow depth materials stay unbent
+on purpose. A big box or plane (the ground, the meadow) is built again cut into tile-sized cells (`bendFine()`), as the bend
+moves only corners: the first playtest had the ground sink as one slab under everything (2026-10-14).
