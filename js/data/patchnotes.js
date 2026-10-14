@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'Leaving for the main menu during a Gym Leader\'s rewards and continuing no longer hands the badge over as a second win.'],
   ['hub', 'The Nietos are out of their house in the Clearing for now, even once you\'ve beaten them. They\'ll be back.'],
   ['hub', 'The Clearing tidied up: your buddy walks in to the crossing above the plaza, the Poké Mall stands off the road, trees and a fence close the gap by the cauldron, and the Ancient Tree lost a pumpkin and its stray branches.'],
   ['hub', 'The Nietos\' name board is bigger, white on deep blue, so it can be read from the path, and the tree by the cauldron is gone.'],

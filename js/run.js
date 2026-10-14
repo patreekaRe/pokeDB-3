@@ -1588,7 +1588,7 @@ async function fight(node, { talked = false } = {}) {
 function gymRoom(node, leader, won = null, said = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
   const handOver = !!won;   // every win hands the badge over, a repeat counted on it (the user's call, 2026-10-13)
-  const again = peeking ? 0 : gymWins(getSave(), leader.id);
+  const again = peeking ? 0 : winsBefore(leader);
   let talking = false;
   const freeze = (on) => event3dMod?.freezeEvent(on);
   // the speech window steps aside while they talk over the room; `keep` holds you still after (the fight is coming)
@@ -1820,6 +1820,9 @@ function rollTrade() {
   const pool = itemsForType(run.starter.type).filter(i => i.rarity === rarity && !held.includes(i.id));
   return pool.length ? { give, get: pickOne(pool).id } : null;
 }
+/** A leader's wins before this one: back in the gym from Continue after its rewards began, this win is already in the
+    save (afterFight()'s `counted`), so the hand-over mustn't read it as one more (it said "beaten 2 times" after one). */
+const winsBefore = (leader) => Math.max(0, gymWins(getSave(), leader.id) - (run.gymWon?.counted ? 1 : 0));
 
 /** What a win's hand-over adds (`again`: the wins before this one, 0 on a playtest): on the third their signed poster, on
     the fifth the Gold badge (js/data/gym.js's gymMilestone()); `lines` follow their last words, `badge` is the one they
@@ -1863,7 +1866,7 @@ function afterFight(node, result) {
       checkpoint();
       if (gym3d()) return gymRoom(node, leader, result, said);
       const done = () => afterFight(node, { ...result, gymSaid: true });
-      const again = peeking ? 0 : gymWins(getSave(), leader.id), { lines, badge } = rematch(leader, again);
+      const again = peeking ? 0 : winsBefore(leader), { lines, badge } = rematch(leader, again);
       return gymTalk(leader, [...said.slice(-1), ...lines], { vars, badge, again, lit: true }).then(done);
     });
   }
@@ -1886,7 +1889,8 @@ function afterFight(node, result) {
   if (isTower()) augmentsAfterFight(result);
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
-  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
+  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
