@@ -6,7 +6,8 @@
    Shown only while the towns are on (townsOpen()).
    ============================================================ */
 
-import { MATERIALS, KEY_ITEMS, satchelOf } from './data/satchel.js';
+import { MATERIALS, MATERIALS_BY_ID, KEY_ITEMS, satchelOf } from './data/satchel.js';
+import { GIFTS, workshopOf } from './data/workshop.js';
 import { TOWNS, RING, townState, questOf, questStep, questDone, greeterOf, stepText, stepHave, mended } from './data/towns.js';
 import { GYM_BY_ID, spriteOf } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
@@ -31,7 +32,9 @@ const GROUPS = [
   { id: 'keys', name: 'Key Items', sub: 'One of a kind', b1: '#e8b830', b2: '#6a4a08', list: () => KEY_ITEMS },
   { id: 'mats', name: 'Materials', sub: 'Kept between runs', b1: '#8ac060', b2: '#2c5a1c', list: () => MATERIALS },
   { id: 'quests', name: 'Quests', sub: 'The towns\' Waystones', b1: '#5a8ef0', b2: '#24448a', list: () => QUEST_TOWNS },
+  { id: 'gifts', name: 'Gifts', sub: 'From Kurt\'s Workshop', b1: '#f07aa8', b2: '#8a2a5a', list: () => GIFTS },
 ];
+const held = (t) => workshopOf(getSave()).gifts[t.makes];
 
 /** Who stands for a town's questline: the leader of its step up now, else the one who greeted you, else its first. */
 function questLeader(town, st) {
@@ -55,6 +58,7 @@ const known = (g, t) => {
   const s = sat();
   if (g.id === 'keys') return s.keys.includes(t.id);
   if (g.id === 'mats') return s.seen.includes(t.id);
+  if (g.id === 'gifts') return held(t) !== undefined;
   return !!townState(getSave(), t.id).quest;
 };
 
@@ -93,10 +97,16 @@ export const satchelApp = () => shelfApp({
     }
     const nodes = [el('span', 'bdx-glow'), glyph(t, 'bdx-thing bdx-art', k)];
     if (g.id === 'mats' && k) nodes.push(el('span', 'pdx-role sdx-count', `×${sat().mats[t.id] || 0}`));
+    if (g.id === 'gifts' && k) nodes.push(el('span', 'pdx-role sdx-count', `×${held(t) || 0}`));
     return nodes;
   },
   lines(g, t, k) {
     if (g.id === 'keys') return k ? [typed('', t.text), typed('muted', t.how)] : [typed('muted', 'Not found yet.'), typed('muted', t.how)];
+    if (g.id === 'gifts') {
+      const fond = workshopOf(getSave()).fond.includes(t.leader), who = GYM_BY_ID[t.leader]?.name;
+      return k ? [typed('', `Held: ${held(t) || 0}`), typed('', t.text), typed('muted', fond ? `${who}'s favourite. You've given them one.` : `Someone's favourite. Give it to them at home.`)]
+        : [typed('muted', 'Not made yet.'), typed('muted', `Kurt makes it from ${Object.entries(t.needs).map(([id, n]) => `${n} ${MATERIALS_BY_ID[id].name}`).join(' and ')}.`)];
+    }
     if (g.id === 'mats') return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use), typed('muted', where(t))]
       : [typed('muted', 'Not found yet.'), typed('muted', where(t))];
     if (!k) return [typed('muted', 'Quiet for now.'), typed('muted', `Beat one of ${t.name}'s Gym Leaders at the end of the ${BIOMES_BY_ID[t.biome]?.name}, then pass through.`)];
@@ -106,6 +116,6 @@ export const satchelApp = () => shelfApp({
       typed(now ? '' : 'muted', now ? `Up now: ${stepText(now)}.` : `${t.name}'s Waystone is whole again.`),
       questLines(t)];
   },
-  tally: (g, done) => (g.id === 'quests' ? (done ? '★ Every quest under way' : 'Under way') : done ? `★ Every ${g.id === 'keys' ? 'key item' : 'material'} found` : 'Found'),
+  tally: (g, done) => (g.id === 'quests' ? (done ? '★ Every quest under way' : 'Under way') : g.id === 'gifts' ? (done ? '★ Every gift made' : 'Made') : done ? `★ Every ${g.id === 'keys' ? 'key item' : 'material'} found` : 'Found'),
   doneSub: 'All found!',
 });

@@ -57,7 +57,9 @@ export const TOWN_NOTES = [
   ['runs', 'Sunwell Bazaar: on the road into the Savanna you now walk through a caravan trading post, one wide dusty road straight across it past round thatched huts, a market of striped stalls round the broken Waystone, wagons drawn up in a ring and a watering hole with a railed jetty and a windpump. Trade at Persian\'s Bazaar, meet the caravans\' Pokémon in the Caravanserai, and visit Machew and Jerome in their grand mud-brick kasbahs once you\'ve beaten them.'],
   ['runs', 'Every town has a questline: beat one of its Gym Leaders and next time you pass they ask for your help mending its Waystone, a few steps over several runs. The new Satchel app keeps your key items, materials and quests between runs.'],
   ['runs', 'Every town\'s ground now rolls away over the horizon as you walk, like the Clearing\'s.'],
+  ['runs', 'Every Gym Leader\'s home is now a big room that\'s all them: their own walls, lights and corners, from Clarence\'s stage to the tree through Ricky\'s den.'],
   ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base.'],
+  ['hub', 'Kurt\'s Workshop opens in the Clearing: turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders and Apricorn looks for your Safari Balls.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

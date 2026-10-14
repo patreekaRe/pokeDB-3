@@ -265,6 +265,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    looking down (a throwaway `window.__top` hook in the town camera, never committed), sent with `SendUserFile`; a
    playtest link with it. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
    Towns step 4. Give <town> Highbough's clean-up, and send me an aerial screenshot before and after."
+**Done (2026-10-14): the Gym Leaders' homes, inside, made big** (the user: "so small and very bland"): 13 x 10 rooms, each
+   leader's own walls, floor, light and props (`js/leader-homes.js`, `docs/reference/towns.md`'s last section). On `main`,
+   waiting on the user's playtest (`?town=<biome>&home=<leader>&gymwins=1`); ask which house to push further next.
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
    home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
    (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
@@ -331,7 +334,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      one (`DROPS` in `js/data/satchel.js`: wild 40%, Alpha 1-2, boss 2-3; a line in the reward box) and 1-2 rooms a map
      sparkle (✧, `markSparkles()`, 2-3 of one material on walking in); Pat's bottles only sparkle. Refresh-safe
      (`run.gleaned`), kept on a lost run; the Satchel says where each turns up. Detail: `docs/reference/towns.md`. Branch
-     `claude/sharp-ramanujan-nh2503`, pushed to `main` too. **Next: session 3, Kurt's Workshop and its recipes.**
+     `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+   - **Session 3 done (2026-10-14): Kurt's Workshop.** A timber workshop in the Clearing's north-east (towns on only), walked
+     into like the Nietos' house: Kurt (a sprite drawn for him) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
+     His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
+     Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
+     their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
+     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
+     Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
+     **Next: session 4, the shard** (the marked Alpha node, the pickup, the mending scene, leaders coming home).
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

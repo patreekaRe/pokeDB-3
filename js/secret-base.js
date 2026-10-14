@@ -13,7 +13,7 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
-import { TOWN_SHELVES, nietosHome } from './data/towns.js';
+import { TOWN_SHELVES, nietosHome, townsOpen } from './data/towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -281,7 +281,7 @@ export function putAway(b, id) {
 }
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
-export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !isEarned(p, getSave()) && PIECES[p.kind])
+export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !(p.towns && !townsOpen()) && !isEarned(p, getSave()) && PIECES[p.kind])
   .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
 
 /** How many of a piece's kind (or set) are in storage, in any colour or style: owned, less those standing in the room. */

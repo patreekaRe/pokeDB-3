@@ -14,10 +14,11 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
-import { sh as shadeOf } from './base-paint.js';
+import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
-import { PIECES } from './secret-base.js';
+import { PIECES, pieceArt } from './secret-base.js';
+import { LEADER_HOMES, LEADER_SIZE, buildLeaderHome, leaderEnv } from './leader-homes.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
 import { gymWins, GYM_INK as LEADER_INK } from './data/gym.js';
@@ -157,7 +158,7 @@ function piece(id, tx, ty, { turn = 0, scale = 1, y = 0, dx = 0, dz = 0, free = 
     if (p.glow) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.emissiveIntensity = 0.8; }
     return m;
   });
-  if (!model) return null;
+  if (!model) return p.flat ? flatPiece(id, p, tx, ty, turn, dx, dz) : null;
   const play = dressPlay(THREE, model, p);
   if (play) B.plays.push(play);
   model.traverse(o => { if (o.isMesh) { o.castShadow = o.castShadow !== false; o.receiveShadow = true; } });
@@ -168,6 +169,18 @@ function piece(id, tx, ty, { turn = 0, scale = 1, y = 0, dx = 0, dz = 0, free = 
   B.group.add(model);
   if (!free) for (let x = tx; x < tx + w; x++) for (let yy = ty; yy < ty + h; yy++) B.blocked.add(key(x, yy));
   return model;
+}
+
+/** A flat piece with no model (a rug, a mat): its painting on the floor, never in your way. */
+function flatPiece(id, p, tx, ty, turn, dx, dz) {
+  const m = std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.95 });
+  const o = new THREE.Mesh(new THREE.PlaneGeometry(p.w, p.h), m);
+  const turned = Math.round(turn / (Math.PI / 2)) % 2 !== 0, w = turned ? p.h : p.w, h = turned ? p.w : p.h;
+  o.rotation.set(-Math.PI / 2, 0, turn);
+  o.position.set(tx - COLS / 2 + w / 2 + dx, 0.012 + (B.rugs = (B.rugs || 0) + 1) * 0.002, ty - ROWS / 2 + h / 2 + dz);
+  o.receiveShadow = true;
+  B.group.add(o);
+  return o;
 }
 
 function box(w, h, d, mats, x, y, z, parent = B.group) {
@@ -8203,54 +8216,43 @@ async function buildTown(figs, { look, time, town, mended = false }) {
 
 /** A town's homes (by town, then its `homes` key): the room's size (the theater and bathhouse are bigger), the floor,
     what stands in it ([piece, x, y, options]), where its Gym Leader stands (`leaderAt`) and its cast (`castAt`: the
-    bathers, each [x, ty, y] in a pool). */
+    bathers, each [x, ty, y] in a pool). A Gym Leader's home in a town is js/leader-homes.js's instead. */
 const HOMES = {
   // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING): the Nietos' family home
   clearing: {
     nietos: { floor: 'planks', leaderAt: { x: 4, ty: 2.4 }, castAt: [[1.2, 3.2, 0]],
       furnish: [['crib', 0, 0], ['tv', 3, 0], ['console', 3, 1], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 7, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 6, 1], ['swivelchair', 7, 1], ['sofa', 5, 4], ['toybox', 0, 4], ['beanbag', 2, 5], ['bookstack', 8, 3], ['plant', 8, 5]] },
+    // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, Apricorn trees
+    workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
+      furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
+        ['appletree', 0, 3], ['appletree', 8, 3], ['crate', 0, 5], ['crate', 1, 5], ['barrel', 8, 5], ['barrel', 7, 5]] },
   },
   shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
-  john: { floor: 'tatami', furnish: [['tv', 3, 0], ['console', 5, 1], ['kotatsu', 3, 2], ['zabuton', 2, 2], ['zabuton', 5, 3], ['computer', 7, 0], ['shelf', 0, 0], ['bookstack', 8, 2], ['daruma', 0, 3], ['plant', 8, 4]] },
-  jahmes: { floor: 'planks', furnish: [['singlebed', 1, 0], ['nightstand', 2, 0], ['alarmclock', 2, 0, { y: 0.55, scale: 0.72, free: true }], ['alarmclock', 0, 0], ['alarmclock', 3, 0], ['wardrobe', 4, 0], ['computer', 6, 0], ['swivelchair', 6, 1], ['speakerstack', 7, 0], ['beanbag', 7, 3], ['plant', 0, 4]] },
   theater: { cols: 11, rows: 9, floor: 'stage', stage: true, furnish: [['taiko', 0, 2], ['taiko', 10, 2], ['kimonostand', 0, 0], ['kimonostand', 10, 0], ['zabuton', 3, 5], ['zabuton', 5, 5], ['zabuton', 7, 5], ['zabuton', 4, 6], ['zabuton', 6, 6], ['andon', 1, 6], ['andon', 9, 6]] },
   },
   wastes: {
     shop: { floor: 'flags', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['brazier', 2, 0], ['anvil', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['barrel', 8, 4], ['steamrocks', 1, 1], ['plant', 8, 1]] },
-    shaun: { floor: 'planks', leaderAt: { x: 4, ty: 2.2 }, furnish: [['desk', 3, 0], ['computer', 3, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 4, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 4, 1], ['serverrack', 0, 0], ['serverrack', 1, 0], ['bookstack', 7, 0], ['bookstack', 8, 0], ['beanbag', 7, 3], ['console', 1, 4], ['plant', 8, 4]] },
-    clarence: { floor: 'planks', leaderAt: { x: 4, ty: 2.6 }, furnish: [['speakerstack', 0, 0], ['speakerstack', 8, 0], ['computer', 3, 0], ['swivelchair', 3, 1], ['wardrobe', 5, 0], ['sofa', 6, 4], ['dresser', 0, 3], ['plant', 0, 5]] },
     bath: { cols: 11, rows: 9, floor: 'tiles', castAt: [[1.5, 0.5, -0.3], [4.5, 0.5, -0.3], [7.5, 0.5, -0.3], [2.5, 3.5, -0.3], [6.5, 3.5, -0.3]],
       furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 6, 3], ['steamrocks', 0, 0], ['steamrocks', 10, 0], ['okebucket', 0, 2], ['okebucket', 10, 2], ['milkfridge', 0, 6], ['massagechair', 10, 6], ['yukatarack', 10, 4], ['washbasin', 0, 4], ['shishiodoshi', 9, 3]] },
   },
   ruins: {
     shop: { floor: 'planks', walls: 'boards', furnish: [['barrel', 0, 0], ['crate', 1, 0], ['surfboard', 7, 0], ['surfboard', 8, 0], ['aquarium', 3, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['fishbowl', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['barrel', 0, 3], ['barrel', 0, 4], ['crate', 8, 3], ['milkcrate', 8, 4], ['seashells', 8, 1], ['tikitorch', 0, 2]] },
-    kayl: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 }, castAt: [[0, 3, 0.12], [7, 3, 0.12]],
-      furnish: [['amplifier', 0, 0], ['guitar', 1, 0], ['sofa', 3, 0], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['candle', 8, 1], ['petbed', 0, 3], ['petbed', 7, 3], ['bookstack', 8, 0], ['plant', 8, 5], ['beanbag', 1, 5]] },
-    pat: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 }, furnish: [['hammock', 0, 0], ['guitar', 3, 0], ['micstand', 5, 0], ['amplifier', 6, 0], ['rosebush', 8, 0], ['heartpillow', 2, 3], ['heartpillow', 6, 3], ['candle', 0, 4], ['fishbowl', 8, 3], ['plant', 8, 5]] },
     aquarium: { cols: 11, rows: 9, floor: 'tiles', walls: 'aqua', cold: true, castAt: [[1.5, 0.5, -0.18], [4.5, 0.5, -0.18], [7.5, 0.5, -0.18], [2.5, 3.5, -0.18], [7.5, 3.5, -0.18]],
       furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 7, 3], ['bubblecolumn', 0, 0], ['bubblecolumn', 10, 0], ['aquarium', 0, 7], ['aquarium', 9, 7], ['jellylamp', 0, 4], ['jellylamp', 10, 4], ['kelp', 0, 2], ['kelp', 10, 2], ['bench', 3, 7], ['bench', 6, 7]] },
   },
   thornwood: {
     shop: { floor: 'planks', walls: 'dusk', furnish: [['witchshelf', 0, 0], ['witchshelf', 7, 0], ['candelabra', 2, 0], ['hauntmirror', 5, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crystalball', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['coffin', 0, 3], ['hatstand', 0, 4], ['pumpkins', 8, 3], ['deadtree', 8, 4], ['spookylamp', 8, 1], ['broom', 1, 1]] },
-    phil: { floor: 'planks', walls: 'dusk', leaderAt: { x: 4, ty: 2.2 }, castAt: [[7, 1.8, 0.4]],
-      furnish: [['witchshelf', 0, 0], ['bookstack', 1, 0], ['lectern', 3, 0], ['crystalball', 5, 0], ['candelabra', 6, 0], ['spookylamp', 8, 0], ['wingchair', 6, 4], ['candle', 0, 4], ['candle', 8, 4], ['candelabra', 1, 5]] },
-    ricky: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 },
-      furnish: [['singlebed', 0, 0], ['desk', 3, 0], ['computer', 3, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 4, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 4, 1], ['minifridge', 7, 0], ['speakerstack', 8, 0], ['beanbag', 7, 3], ['console', 1, 4], ['plant', 8, 5]] },
     nursery: { cols: 11, rows: 9, floor: 'planks', walls: 'glass', castAt: [[1.5, 0.6, 0.3], [4.5, 0.6, 0.3], [7.5, 0.6, 0.3], [2.5, 3.6, 0.3], [6.5, 3.6, 0.3]],
       furnish: [['webrug', 1, 0, { free: true }], ['webrug', 4, 0, { free: true }], ['webrug', 7, 0, { free: true }], ['webrug', 2, 3, { free: true }], ['webrug', 6, 3, { free: true }], ['spookylamp', 0, 0], ['spookylamp', 10, 0], ['deadtree', 0, 2], ['deadtree', 10, 2], ['roundgrave', 0, 4], ['squaregrave', 10, 4], ['obeliskgrave', 10, 6], ['jackolantern', 0, 7], ['pumpkins', 2, 7], ['candelabra', 8, 7], ['ghostsheet', 10, 8]] },
   },
   savanna: {
     shop: { floor: 'planks', walls: 'tent', furnish: [['canopicjars', 0, 0], ['goldurn', 1, 0], ['featherfan', 7, 0], ['scarablamp', 8, 0], ['dunerug', 3, 4, { free: true }], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['waterjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['waterjar', 0, 4], ['barrel', 8, 3], ['cobrastatue', 8, 4], ['datepalm', 8, 1], ['pharaohthrone', 6, 0]] },
-    machew: { floor: 'planks', walls: 'dusk', leaderAt: { x: 4, ty: 2.4 },
-      furnish: [['swordrack', 0, 0], ['swordrack', 1, 0], ['bookstack', 3, 0], ['spookylamp', 5, 0], ['singlebed', 7, 0], ['candle', 0, 3], ['candelabra', 8, 4], ['beanbag', 7, 3], ['candle', 8, 2]] },
-    jerome: { floor: 'planks', walls: 'mud', leaderAt: { x: 5, ty: 2.4 },
-      furnish: [['crib', 0, 0], ['tv', 2, 0], ['console', 2, 1], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 7, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 6, 1], ['toybox', 0, 3], ['sofa', 6, 4], ['beanbag', 1, 5], ['plant', 8, 5]] },
     caravanserai: { cols: 11, rows: 9, floor: 'flags', walls: 'sandstone', castAt: [[1.6, 2.0, 0], [5.0, 1.5, 0], [8.4, 2.0, 0], [3.6, 4.8, 0], [7.2, 4.8, 0]],
       furnish: [['haybale', 0, 0], ['haybale', 1, 0], ['trough', 4, 0], ['waterjar', 3, 0], ['waterjar', 6, 0], ['haybale', 9, 0], ['haybale', 10, 0], ['lotuscolumn', 0, 3], ['lotuscolumn', 10, 3], ['haybale', 0, 6], ['crate', 10, 6], ['barrel', 10, 7], ['datepalm', 0, 8], ['waterjar', 10, 8]] },
   },
 };
-const homeSize = (town, id) => { const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
+const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
 function homeFloor(kind) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
@@ -8314,22 +8316,37 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
   return f.c;
 }
 
-async function buildHome(figs, { time, town, home }) {
-  const h = HOMES[town.id]?.[home] || {};
-  shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
-  B.shotTop = 2.1;
+async function buildHome(figs, { time, town, home, gift }) {
+  const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
+  const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
+  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm }, home);
+  else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  B.shotTop = L ? 3.1 : 2.1;
   B.talks = new Set();
-  for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
+  if (!L) for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
   if (home === 'shop' && figs.trader) {
     B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9 });
     B.who.trader.group.traverse(o => { o.userData.spot = 0; });
     B.spots = [{ step: { x: 4, y: 3 } }];
     B.anchors[0] = new THREE.Vector3(tileX(3.5), 2.2, tileZ(1.2));
   }
+  if (h.kurtAt && figs.kurt) {   // a tap on Kurt is his Workshop's window, like the shop's keeper
+    B.who.kurt = await figure('kurt', figs.kurt, h.kurtAt);
+    B.who.kurt.group.traverse(o => { o.userData.spot = 0; });
+    B.spots = [{ step: { x: Math.round(h.kurtAt.x), y: Math.round(h.kurtAt.ty) + 1 } }];
+    B.anchors[0] = new THREE.Vector3(tileX(h.kurtAt.x), 2.4, tileZ(h.kurtAt.ty));
+  }
   const leader = town.homes[home]?.leader;
   if (leader && figs[leader]) {
-    B.who[leader] = await figure(leader, figs[leader], h.leaderAt ?? (home === 'john' ? { x: 4, ty: 1.4 } : { x: 3, ty: 2.4 }));
+    const at = h.leaderAt ?? { x: 3, ty: 2.4 };
+    B.who[leader] = await figure(leader, figs[leader], at);
     B.talks.add(leader);
+    if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot
+      const x = Math.round(at.x), y = Math.round(at.ty) + 1;   // the nearest free tile in front of them (John's kotatsu is right there)
+      const step = [[x, y], [x + 1, y], [x - 1, y], [x, y + 1], [x + 1, y + 1], [x - 1, y + 1]].find(([i, j]) => j < ROWS && !B.blocked.has(key(i, j))) ?? [x, y + 1];
+      B.spots = [{ step: { x: step[0], y: step[1] } }];
+      B.anchors[0] = new THREE.Vector3(tileX(at.x) + 0.9, 2.3, tileZ(at.ty));
+    }
   }
   if (h.castAt) {   // the bathers, up to their chins in the pools, bobbing now and then
     const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
@@ -8368,7 +8385,7 @@ async function buildHome(figs, { time, town, home }) {
       does(who[ids[turn++ % ids.length].slice(5)], 'hop');
     });
   }
-  B.env = INDOORS;
+  B.env = L ? leaderEnv(home, time) : INDOORS;
 }
 
 /** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up
@@ -8826,7 +8843,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -8835,7 +8852,7 @@ function room(kind, figs, at = {}) {
     B = { kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, gift: at.gift }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -8882,7 +8899,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended }));
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   await wakeGL(renderer);

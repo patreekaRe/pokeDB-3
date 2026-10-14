@@ -64,7 +64,7 @@ export const GYM_BIO = {
   lawrence: 'Married to Britt and very straight, he says, too fast. His three "Valorant teammates" are waiting in the lobby, so every battle is over in minutes.',
   britt: 'Teaches 26 seven-year-olds all day. All she wants is to get home to Linc and play Sage, which her friends will never let her live down.',
   nietos: 'Law and Britt, battling together with baby Linc in a Pikachu suit, because nobody could babysit. Law swears there\'s no Valorant tonight.',
-  john: 'An engineer who fixes real bridges. Carries a Steam Deck, a Switch 2 and an AYN Thor, and still can\'t pick which one to play Fire Emblem on.',
+  john: 'A mechanical engineer at Northrop. Carries a Steam Deck, a Switch 2 and an AYN Thor, and still can\'t pick which one to play Fire Emblem on.',
   jahmes: 'A PA by day who screams with hype at every Valorant round by night. In bed at 11 p.m. sharp, no exceptions, mid-battle or not.',
   clarence: 'Puts on a burlesque show for the boys on Discord every night at nine, for morale. The week he missed one they went 0 and 5.',
   shaun: 'Tech support by day, Valorant IGL by night. Smurfs on noobs, flames his hardstuck friends, and will send you VOD notes whether you asked or not.',

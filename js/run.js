@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE } from './data/workshop.js';
 import { gymTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -1862,10 +1863,36 @@ function homeRoom(b) {
             again();
           }));
   }
+  if (home.kurt) options.push(spotOption('Workshop', 'Kurt: Ah, a customer! What\'ll it be?', async () => {
+    if (run !== thisRun) return;
+    const { openWorkshop } = await import('./workshop.js');
+    await openWorkshop();
+    again();
+  }));
   const wins = home.leader ? gymWins(getSave(), home.leader) : 0;
   const notBack = home.leader === 'nietos' && wins > 0 && !nietosHome(wins);   // beaten, but the Nietos aren't moving in yet (NIETOS_LIVE)
   const away = !!home.leader && (wins === 0 || notBack);   // up at their Gym till you've beaten them once
   const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
+  // a gift from Kurt's Workshop for a Gym Leader at home and awake (js/data/workshop.js): their favourite earns their signature piece
+  const gifting = townsOpen() && !!home.leader && !away && !sleepy && Object.values(workshopOf(getSave()).gifts).some(n => n > 0);
+  if (gifting) options.push(spotOption('Gift', `Give ${GYM_BY_ID[home.leader].name} a gift from Kurt's Workshop.`, async () => {
+    if (run !== thisRun) return;
+    const { pickGift, handGift } = await import('./workshop.js');
+    const id = await pickGift(home.leader);
+    const got = id && handGift(id, home.leader);
+    if (run !== thisRun) return;
+    if (got) {
+      const leader = GYM_BY_ID[home.leader], G = GIFT_BY_ID;
+      playSound(got.favourite ? 'item-get' : 'confirm');
+      event3dMod?.eventRoom3d()?.does(home.leader, 'npc-nod');
+      const fav = FAVOURITE[home.leader];
+      const sig = got.first && (await import('./secret-base.js')).PIECES[fav.sig]?.name;
+      tell(got.first ? `${leader.name} loves the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
+        : got.favourite ? `${leader.name} loves the ${G[id].name}! Their favourite, again. ♥♥`
+          : `${leader.name} likes the ${G[id].name}. ♥`);
+    }
+    again();
+  }));
   showChoice({
     title: home.name.toUpperCase(),
     sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
@@ -1877,12 +1904,13 @@ function homeRoom(b) {
   });
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
+  if (home.kurt) figures.kurt = { npc: 'kurt' };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, away, onTalk: (stand) => {
+    extra: { town, home: b.home, away, gift: gifting, onTalk: (stand) => {
       if (run !== thisRun) return;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : town.leaders[stand]) : null);
       if (!lines) return;
