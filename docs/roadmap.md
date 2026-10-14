@@ -92,6 +92,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Done (2026-10-14): the Nietos' house a storybook cottage** (the user: "more aesthetic than a stupid bland house"):
    painted clapboard, scalloped shingles, porch, curtains, chimney smoke, picket garden, washing line, pram (`cottageArt()`,
    `NIETOS_YARD`, `mergeStatic()`; docs/reference/hub-base-mall.md). On `main`, waiting on the user's look.
+   **Done (2026-10-14): the Clearing's gate made grander** (the user: "cleaner, more extravagant and noticeable"): a bigger
+   shrine gate with a glowing leaf crest, lanterns, banners and runed stone feet, a shimmer and motes in its opening, a lamp
+   before it; the Pokéstop and route sign a step out to its sides, Halloween's hay there gone (`clearingGateArt()`,
+   `liveGateway()`). On `main`, waiting on the user's look.
    **Done (2026-10-14): Lantern Village cleaned up** (the user: "a lot of houses"; same treatment as the Clearing and
    Thornwood, with a shape of its own): a shrine's approach, one 4-wide stone avenue from the way in to the torii between
    pairs of stone lanterns, the Waystone's plaza halfway up, two cross lanes; only four houses (Delibird's, John's,
