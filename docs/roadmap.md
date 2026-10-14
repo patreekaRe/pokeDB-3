@@ -108,6 +108,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     **Done (2026-10-14): the west avenue reaches the street and Sealed Gate** (branch `towns`): extended the road across
     the west ring road to the Sealed Gate's approach tile, connecting the avenue, ring road and Depths teleporter.
     Next: the user's visual playtest of `?aerial`.
+    **Done (2026-10-14): square Sealed Gate street end** (branch `towns`): squared off the west avenue's end at the
+    teleporter instead of leaving a rounded cap. Next: the user's visual playtest of `?aerial`.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

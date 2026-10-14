@@ -112,7 +112,7 @@ const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
 const ROADS = [
   { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
   { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
-  { a: [12, SEALED_STEP.y], b: [SEALED_STEP.x, SEALED_STEP.y], w: AVE }, // west avenue, across the west street to the Sealed Gate
+  { a: [12, SEALED_STEP.y], b: [SEALED_STEP.x, SEALED_STEP.y], w: AVE, cap: 'square' }, // flat end at the Sealed Gate
   { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Nietos' house
   { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
@@ -216,6 +216,13 @@ function groundArt() {
     const dx = x2 - x1, dy = y2 - y1, k = Math.max(0, Math.min(1, ((u - x1) * dx + (v - y1) * dy) / (dx * dx + dy * dy)));
     return Math.hypot(u - x1 - dx * k, v - y1 - dy * k);
   };
+  const squareSeg = (u, v, [[x1, y1], [x2, y2]], w) => {
+    const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy);
+    const along = ((u - x1) * dx + (v - y1) * dy) / len;
+    const across = Math.abs(-(u - x1) * dy + (v - y1) * dx) / len;
+    const qx = Math.abs(along - len / 2) - len / 2, qy = across - w;
+    return Math.hypot(Math.max(qx, 0), Math.max(qy, 0)) + Math.min(Math.max(qx, qy), 0);
+  };
   const smooth = (x, y, s) => {   // value noise on an s-pixel lattice
     const gx = Math.floor(x / s), gy = Math.floor(y / s), fx = x / s - gx, fy = y / s - gy;
     const a0 = hash(gx, gy), a1 = hash(gx + 1, gy), b0 = hash(gx, gy + 1), b1 = hash(gx + 1, gy + 1);
@@ -226,7 +233,10 @@ function groundArt() {
   const snowy = (c, x, y) => (GROUND.snowy ? mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.6 : 0.2) : c);
   const roadsAt = (u, v, dirt) => {
     let d = Infinity;
-    for (const r of ROADS) if (!!r.dirt === dirt) d = Math.min(d, seg(u, v, [r.a, r.b]) - r.w);
+    for (const r of ROADS) if (!!r.dirt === dirt) {
+      const rd = r.cap === 'square' ? squareSeg(u, v, [r.a, r.b], r.w) : seg(u, v, [r.a, r.b]) - r.w;
+      d = Math.min(d, rd);
+    }
     if (!dirt) for (const r of RINGS) d = Math.min(d, Math.abs(Math.hypot(u - r.x, v - r.y) - r.r) - r.w);
     return d;
   };
