@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, unbend } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -1932,9 +1932,11 @@ function buildVista() {
   meadow.raycast = () => {};
   forest.add(meadow);
   const { x0, w } = vistaSpan(), h = VISTA.h, foot = tileZ(-M + 0.3);
-  vista = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
+  // its origin at its foot, where a bend (?curve=) drops it whole with the meadow it stands on
+  vista = new THREE.Mesh(new THREE.PlaneGeometry(w, h).translate(0, h / 2, 0), new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
+  vista.material.userData.upright = true;
   vista.rotation.x = -PITCH;
-  vista.position.set(x0 + w / 2, Math.cos(PITCH) * h / 2, foot - Math.sin(PITCH) * h / 2);
+  vista.position.set(x0 + w / 2, 0, foot);
   vista.raycast = () => {};
   forest.add(vista);
   paintVista();
@@ -2522,25 +2524,39 @@ function ndc(e) {
 function onTap(e) {
   if (dragged) { dragged = false; return; }
   if (held || arriving || leaving || outbound || returning) return;
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(ndc(e), camera);
-  const ghosts = spooks?.boards() || [];
-  const hit = ray.intersectObjects([mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])], true).find(h => !h.object.userData.who || onSprite(h));
+  const rays = tapRays(e), ghosts = spooks?.boards() || [], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
+  let hit;
+  for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
   if (spooks?.tap(hit, walker)) return;
   if (spooks?.hush()) return;
   if (hit?.object.userData.cauldron) { cauldron.tap(); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (hit?.object.userData.place) return goTo(hit.object.userData.place, true);
-  const to = groundTile(ray);
+  const to = groundTile(rays);
   if (!to) return;
   walkTo(to);
   if (!walker.path.length) arrived();
 }
 
-/** The grid tile under a ray, or null off the ground. */
-function groundTile(ray) {
-  const at = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return null;
+/** The screen's ray through a tap as straight pieces of the world: one, or under ?curve= many short ones, each put back
+    where it stands unbent, as the bend only moves what is drawn. */
+function tapRays(e) {
+  const ray = new THREE.Raycaster();
+  ray.setFromCamera(ndc(e), camera);
+  if (!CURVE) return [ray];
+  const o = ray.ray.origin, d = ray.ray.direction, out = [], STEP = 1.5;
+  for (let t = 0; t < 90; t += STEP) {
+    const a = unbend(o.clone().addScaledVector(d, t), BEND), b = unbend(o.clone().addScaledVector(d, t + STEP), BEND);
+    out.push(new THREE.Raycaster(a, b.clone().sub(a).normalize(), 0, a.distanceTo(b)));
+  }
+  return out;
+}
+
+/** The grid tile under a tap's rays, or null off the ground. */
+function groundTile(rays) {
+  const at = new THREE.Vector3(), plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const ray = rays.find(r => r.ray.intersectPlane(plane, at) && at.distanceTo(r.ray.origin) <= r.far);
+  if (!ray) return null;
   const to = { x: Math.floor(at.x + X0), y: Math.floor(at.z + Z0) };
   return inGrid(to) ? to : null;
 }
@@ -2573,9 +2589,7 @@ function onDrag(e) {
     view.setPointerCapture?.(e.pointerId);
   }
   if (held || arriving || leaving || outbound || returning) return;
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(ndc(e), camera);
-  const to = groundTile(ray);
+  const to = groundTile(tapRays(e));
   if (!to || key(to.x, to.y) === drag.last) return;
   drag.last = key(to.x, to.y);
   walkTo(to);
@@ -2796,6 +2810,20 @@ function fitCamera(w, h) {
 // ?aerial: the whole Clearing from high above, to see its layout at a glance
 const AERIAL = new URLSearchParams(location.search).has('aerial');
 
+// ?curve=N: the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), N its strength (1 when left out)
+const CURVE = (() => {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('curve') || AERIAL) return 0;
+  const n = parseFloat(q.get('curve'));
+  return Math.max(0, Number.isFinite(n) ? n : 1) * 0.01;
+})();
+const BEND = { k: { value: CURVE }, z: { value: 0 } };
+
+/** Every material in the Clearing bent once; anything added since (a place, a guest, the flyer) is caught next frame. */
+function bendAll() {
+  scene.traverse(o => { if (o.material) for (const m of [o.material].flat()) bend(m, BEND); });
+}
+
 function placeCamera(dt) {
   if (AERIAL) {
     const cx = tileX(-M - 0.5) + (COLS + 2 * M) / 2, cz = tileZ(-M - 0.5) + (ROWS + M + FRONT) / 2;
@@ -2881,7 +2909,7 @@ function frame(now) {
   liveSnow(now);
   if (!held) { liveFlyer(now, dt); sounds(now); }
   placeBar();
-  post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
+  if (CURVE) { BEND.z.value = camZ; bendAll(); }  post.draw(scene, camera, (v3().set(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
   if (fpsEl) fpsEl.textContent = `${Math.round(1000 / (fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length))} fps`;
   requestAnimationFrame(frame);
 }
@@ -2962,6 +2990,7 @@ async function build() {
   view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
+  if (CURVE) bendAll();
   await warmShaders(renderer, scene, camera);
 }
 

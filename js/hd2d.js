@@ -174,12 +174,13 @@ export async function gifFrames(src) {
     behind the feet can't cut it, anything in front of them still hides it. That depth is linear across the screen, so
     it is passed as (depth x w, w) to undo the perspective-correct interpolation. */
 function feetDepth(m) {
+  m.userData.upright = true;
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader
-      .replace('void main() {', 'varying float vUpZ;\nvarying float vUpW;\nvoid main() {')
+      .replace('void main() {', '#ifndef BEND_DROP\n#define BEND_DROP vec3(0.0)\n#endif\nvarying float vUpZ;\nvarying float vUpW;\nvoid main() {')
       .replace('#include <project_vertex>', `#include <project_vertex>
-  vec3 feetW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
-  vec3 pixW = (modelMatrix * vec4(transformed, 1.0)).xyz;
+  vec3 feetW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz + BEND_DROP;
+  vec3 pixW = (modelMatrix * vec4(transformed, 1.0)).xyz + BEND_DROP;
   vec3 look = vec3(feetW.x - cameraPosition.x, 0.0, feetW.z - cameraPosition.z);
   vec3 upW = pixW;
   if (length(look) > 0.001) {
@@ -196,6 +197,40 @@ function feetDepth(m) {
   };
   m.customProgramCacheKey = () => 'upright-depth';
 }
+
+/* ---------- the rolling-log bend (?curve=, the Clearing only for now) ----------
+   Animal Crossing's world: the ground rolls away round a log lying across the view, so the far side drops below the
+   horizon and the near side dips under the bar. Each vertex is lowered by k x (its distance from the view's focus along
+   the ground)², once it's already in view space, so shadows and lighting (worked out from the unbent world) still land
+   where they should. A billboard drops whole, by its feet's drop, so it stays a flat, upright sprite, and its upright
+   depth (feetDepth()) is worked out from where it is drawn. `u` is `{ k: { value }, z: { value } }`, shared by every
+   material so one change moves them all. */
+export function bend(m, u) {
+  if (m.userData.bent) return;
+  m.userData.bent = true;
+  const was = m.onBeforeCompile, key = m.customProgramCacheKey();
+  m.onBeforeCompile = (sh, r) => {
+    was.call(m, sh, r);
+    sh.uniforms.uBendK = u.k;
+    sh.uniforms.uBendZ = u.z;
+    sh.vertexShader = `${m.userData.upright ? '#define BEND_RIGID\n' : ''}#define BEND_DROP bendD\nuniform float uBendK;\nuniform float uBendZ;\n` + sh.vertexShader
+      .replace('#include <project_vertex>', `#include <project_vertex>
+  #ifdef BEND_RIGID
+  vec3 bendW = (modelMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+  #else
+  vec3 bendW = (mvPosition.xyz - viewMatrix[3].xyz) * mat3(viewMatrix);
+  #endif
+  float bendZ = bendW.z - uBendZ;
+  vec3 bendD = vec3(0.0, -uBendK * bendZ * bendZ, 0.0);
+  mvPosition.xyz += mat3(viewMatrix) * bendD;
+  gl_Position = projectionMatrix * mvPosition;`);
+  };
+  m.customProgramCacheKey = () => key + '|bend';
+  m.needsUpdate = true;
+}
+
+/** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
+export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
 /** A Pokémon on a billboard, feet at its group's origin: `mate` is `{ src, name, cry }` (the partner, a Safari guest);
     `back` loads its back GIF too, for walking away from the camera. Not yet in any scene. */
