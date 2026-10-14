@@ -15,9 +15,9 @@
    animates while the title is up.
    ============================================================ */
 
-import { $, el, setHpBar, infGlyph } from './ui.js';
+import { $, el, setHpBar, infGlyph, showScreen } from './ui.js';
 import { LOGO, EDGE, logoPixel, paintGlyph } from './logo.js';
-import { playSound, playCry, playMusic, closeSoundPops, setHomeTrack } from './audio.js';
+import { playSound, playCry, closeSoundPops, setHomeTrack } from './audio.js';
 import { timeOfDay } from './daytime.js';
 import { season } from './season.js';
 import { SEASON_FLYERS } from './hub-season.js';
@@ -207,7 +207,9 @@ export function showTitle() {
 /** Back to the menu from anywhere (Main menu, a run's end, Back): straight to the gems. */
 export function showHome() {
   pressed = true;
-  playMusic('title');   // the overlay doesn't go through showScreen(), so a run's map or battle track would play on
+  // the run's screen is hidden as on a fresh boot: the Center, Mart, ? rooms and arena put their 3D away only once it
+  // is, or they keep drawing (and holding the GPU) under the title; it also brings the title's music back
+  showScreen('start-screen');
   open();
   renderMenu();
   return openHub();

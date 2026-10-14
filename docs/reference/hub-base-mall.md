@@ -128,4 +128,4 @@ unbent (`unbend()`), against the places and the ground (`tapRays()`, `groundTile
 on purpose. A big box or plane (the ground, the meadow) is built again cut into tile-sized cells (`bendFine()`), as the bend
 moves only corners: the first playtest had the ground sink as one slab under everything (2026-10-14).
 
-- **Main menu from inside the Mall or Secret Base** (2026-10-14, the user found a black screen with the Clearing still talking): the Pokédex dock's Main menu leaves through that place's own door (its exported `leave()`, from `menu` in `initCollection()` in `js/main.js`), so its 3D layer is removed and dropped before home comes up.
+- **Main menu from inside the Mall or Secret Base** (2026-10-14, the user found a black screen with the Clearing still talking): the Pokédex dock's Main menu leaves through that place's own door (its exported `leave()`, from `menu` in `initCollection()` in `js/main.js`), so its 3D layer is removed and dropped before home comes up. The run rooms (Center, Mart, ? rooms, arena) put their 3D away only once their screen is hidden, so `showHome()` in `js/title.js` shows `start-screen` under the title, as a fresh boot does.
