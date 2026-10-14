@@ -5850,7 +5850,7 @@ function canopySupports(town) {
     }
   };
   for (const p of platformsOf(town)) {
-    if (p.b?.kind !== 'greattree') trunks.push([p.ax, 0, p.az, p.tiles.length > 14 ? 0.5 : 0.36]);
+    if (p.b?.kind !== 'greattree') trunks.push([p.ax, -0.06, p.az, p.tiles.length > 14 ? 0.5 : 0.36]);   // its top just under the planks: level with them it flickered through (the start deck, with no house over it)
     for (const [x, y] of p.tiles) for (const [dx, dy] of STEPS) {
       if (!air(x + dx, y + dy)) continue;
       edge(rims, x, y, dx, dy, null);
@@ -5864,7 +5864,7 @@ function canopySupports(town) {
   }));
   const rimMat = std({ color: CANOPY.rim, roughness: 0.9 }), leafMat = std({ color: '#ffffff', roughness: 0.9, flatShading: true });
   for (const len of new Set(rims.filter(a => !a.corner).map(a => a.len))) {
-    const rim = new THREE.BoxGeometry(len, 0.3, 0.08); rim.translate(0, -0.15, 0);
+    const rim = new THREE.BoxGeometry(len, 0.3, 0.08); rim.translate(0, -0.16, 0);
     instanced(rim, rimMat, rims.filter(a => !a.corner && a.len === len)).castShadow = false;
   }
   for (const len of new Set(leafRims.filter(a => !a.corner).map(a => a.len))) {
@@ -6621,43 +6621,91 @@ function plankArt(name) {
   return f.c;
 }
 
-/** The way out, the vine gate: two great log posts wound with vines and thorns, a log across them hung with leaves, the
-    town's name on a plank swinging on its ropes, a lantern each side. Its posts block their tiles; the way between them
-    is `R.exitAt`. */
+/** The way out, the Bough Gate (the user's ask, 2026-10-14: the exit "more grand", noticeable as the way out): two giant
+    trunks on flaring roots, wound with vines and thorns, growing together overhead into a living arch crowned with leaves
+    and lit with ghost-blooms; vines hanging off its shoulders, a ghost-lantern swaying either side under it, wisps of
+    ghost-fire drifting round it, the town's name on a wide plank swinging under the lintel, a lantern on each post. Its
+    posts block their tiles; the way between them is `R.exitAt`. */
 function vineGate(x, z, span, tall, name, L, lit) {
   const g = new THREE.Group(), rnd = seeded(47);
   g.position.set(x, 0, z);
   B.group.add(g);
-  const logGeo = (r, len) => { const geo = new THREE.CylinderGeometry(r * 0.9, r, len, 12); geo.translate(0, len / 2, 0); return geo; };
+  B.reach = 2;   // the camera may lean past the back row, so the whole arch shows when you walk up to it
+  const R = span / 2 + 0.12, up = new THREE.Vector3(0, 1, 0);
+  const logGeo = (r, len) => { const geo = new THREE.CylinderGeometry(r * 0.88, r, len, 14); geo.translate(0, len / 2, 0); return geo; };
   const vine = std({ color: '#3e7a2e', roughness: 0.9 }), thorn = std({ color: '#5a3a2a', roughness: 0.8 });
-  const wound = [];
+  const ghost = std({ color: '#b070ff', emissive: new THREE.Color('#c890ff'), emissiveIntensity: 0.9, roughness: 0.5 });
+  lit.push(ghost);
+  const wound = [], hang = [], blooms = [];
   for (const s of [-1, 1]) {
-    const px = s * (span / 2 + 0.1);
-    mesh(logGeo(0.3, tall + 0.3), bark(), px, 0, 0, g);
-    for (let i = 0; i < 18; i++) {   // a vine spiralling up it, thorns on it
-      const a0 = i * 0.9 + s, a1 = a0 + 0.9, y0 = i * tall / 18, y1 = y0 + tall / 18;
-      wound.push([x + px + Math.cos(a0) * 0.32, y0, z + Math.sin(a0) * 0.32, x + px + Math.cos(a1) * 0.32, y1, z + Math.sin(a1) * 0.32]);
-      if (i % 3 === 1) { const t = mesh(new THREE.ConeGeometry(0.035, 0.14, 4), thorn, px + Math.cos(a0) * 0.36, y0, Math.sin(a0) * 0.36, g); t.rotation.z = -Math.cos(a0) * 1.4; t.rotation.x = Math.sin(a0) * 1.4; t.castShadow = false; }
+    const px = s * R;
+    mesh(logGeo(0.36, tall + 0.1), bark(), px, 0, 0, g);
+    for (let i = 0; i < 5; i++) {   // roots flaring out over the deck, thick at the trunk
+      const a = i / 5 * Math.PI * 2 + s * 0.6, root = mesh(new THREE.ConeGeometry(0.12, 0.9, 6), bark(), px + Math.cos(a) * 0.4, 0.17, Math.sin(a) * 0.4, g);
+      root.quaternion.setFromUnitVectors(up, new THREE.Vector3(Math.cos(a), -0.2, Math.sin(a)).normalize());
+      root.castShadow = false;
     }
-    crown(g, px + s * 0.25, 0.25, 0.1, 0.38, rnd, { cols: ['#3a6a2a', '#2e5a24', '#4a7a30'] });   // brambles at its foot
+    for (let i = 0; i < 22; i++) {   // a vine spiralling up it, thorns on it
+      const a0 = i * 0.9 + s, a1 = a0 + 0.9, y0 = i * tall / 22, y1 = y0 + tall / 22;
+      wound.push([x + px + Math.cos(a0) * 0.37, y0, z + Math.sin(a0) * 0.37, x + px + Math.cos(a1) * 0.37, y1, z + Math.sin(a1) * 0.37]);
+      if (i % 3 === 1) { const t = mesh(new THREE.ConeGeometry(0.04, 0.16, 4), thorn, px + Math.cos(a0) * 0.41, y0, Math.sin(a0) * 0.41, g); t.rotation.z = -Math.cos(a0) * 1.4; t.rotation.x = Math.sin(a0) * 1.4; t.castShadow = false; }
+    }
+    crown(g, px + s * 0.4, 0.3, 0.15, 0.42, rnd, { cols: ['#3a6a2a', '#2e5a24', '#4a7a30'] });   // brambles at its foot
+    for (let i = 0; i < 5; i++) {   // vines hanging off the arch's shoulder, by the trunk, clear of the way through
+      const t = 0.12 + i * 0.09, vx = x + s * (Math.cos(t) * R + 0.06), vy = tall + Math.sin(t) * R;
+      hang.push([vx, vy, z + 0.22, vx + s * 0.04, vy - 0.7 - rnd() * 0.9, z + 0.26]);
+    }
   }
   beams(wound, 0.035, vine, { sides: 5, shadow: false });
-  const beam = mesh(new THREE.CylinderGeometry(0.24, 0.26, span + 1.4, 12), bark(), 0, tall + 0.12, 0, g);
+  beams(hang, 0.02, vine, { sides: 4, shadow: false });
+  // the arch: the two trunks' boughs grown together overhead, a thinner one twisted round it; the lintel under it
+  mesh(new THREE.TorusGeometry(R, 0.27, 10, 30, Math.PI), bark(), 0, tall, 0, g);
+  const twist = mesh(new THREE.TorusGeometry(R + 0.06, 0.11, 8, 30, Math.PI), bark(), 0, tall, 0.04, g);
+  twist.rotation.y = 0.28; twist.castShadow = false;
+  const beam = mesh(new THREE.CylinderGeometry(0.2, 0.22, span + 0.6, 12), bark(), 0, tall - 0.05, 0.05, g);
   beam.rotation.z = Math.PI / 2;
-  for (let i = 0; i < 11; i++) { const m = mesh(new THREE.IcosahedronGeometry(0.2 + rnd() * 0.08, 0), std({ color: CANOPY.leaf[i % 4], roughness: 0.9, flatShading: true }), -span / 2 - 0.55 + i * (span + 1.1) / 10, tall + 0.32 + rnd() * 0.08, 0.05, g); m.scale.y = 0.7; }
-  const hang = [];
-  for (const s of [-1, 1]) hang.push([x + s * 0.7, tall - 0.05, z + 0.2, x + s * 0.7, tall - 0.55, z + 0.2]);
-  beams(hang, 0.015, std({ color: '#c8b080', roughness: 0.9 }), { sides: 4, shadow: false });
-  const sign = panel(plankArt(name), 1.7, 0.4, x, tall - 0.72, z + 0.2);
+  crown(g, 0, tall + R + 0.25, 0, 0.62, rnd);
+  for (const s of [-1, 1]) crown(g, s * R * 0.78, tall + R * 0.62 + 0.1, 0.05, 0.46, rnd);
+  for (let i = 0; i < 14; i++) {   // ghost-blooms along the arch's face
+    const t = 0.15 + i / 13 * (Math.PI - 0.3);
+    blooms.push([x + Math.cos(t) * R, z + 0.26, 0.8 + rnd() * 0.6, rnd() * 6, null, tall + Math.sin(t) * R + (rnd() - 0.5) * 0.12]);
+  }
+  instanced(new THREE.IcosahedronGeometry(0.06, 0), ghost, blooms).castShadow = false;
+  // the name on a wide plank, swinging on its ropes from the lintel
+  const ropes = [];
+  for (const s of [-1, 1]) ropes.push([x + s * 0.8, tall - 0.2, z + 0.24, x + s * 0.8, tall - 0.5, z + 0.24]);
+  beams(ropes, 0.015, std({ color: '#c8b080', roughness: 0.9 }), { sides: 4, shadow: false });
+  const sign = panel(plankArt(name), 2.0, 0.46, x, tall - 0.72, z + 0.24);
   sign.userData.spot = 'exit';
+  // a ghost-lantern swaying either side under the arch, a warm lantern on each post
+  const swings = [];
+  for (const s of [-1, 1]) {
+    const t = Math.acos(0.62 / R), pivot = new THREE.Group();
+    pivot.position.set(s * 0.62, tall + Math.sin(t) * R - 0.05, 0.12);
+    g.add(pivot);
+    const cord = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.36, 4), std({ color: '#2a1e26', roughness: 0.9 }), 0, -0.18, 0, pivot); cord.castShadow = false;
+    const paper = mesh(new THREE.SphereGeometry(0.15, 14, 10), ghost, 0, -0.5, 0, pivot); paper.scale.y = 1.3; paper.castShadow = false;
+    for (const dy of [-0.2, 0.2]) mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 10), thorn, 0, -0.5 + dy, 0, pivot).castShadow = false;
+    swings.push([pivot, s]);
+  }
   const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.9, roughness: 0.6 });
   lit.push(glow);
   for (const s of [-1, 1]) {
-    mesh(new THREE.BoxGeometry(0.3, 0.04, 0.04), thorn, s * (span / 2 + 0.25), tall - 0.35, 0.3, g);
-    mesh(new THREE.CylinderGeometry(0.09, 0.11, 0.22, 8), glow, s * (span / 2 + 0.38), tall - 0.55, 0.3, g).castShadow = false;
+    mesh(new THREE.BoxGeometry(0.34, 0.05, 0.05), thorn, s * (R + 0.3), tall - 0.45, 0.3, g);
+    mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.24, 8), glow, s * (R + 0.45), tall - 0.66, 0.3, g).castShadow = false;
   }
-  B.ticks.push((now) => { sign.rotation.z = calm ? 0 : Math.sin(now / 1300) * 0.04; });
-  for (const s of [-1, 1]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + s * (span / 2 + 0.1) + COLS / 2 - 0.5), y));
+  // wisps of ghost-fire drifting up and over the arch, round and round
+  const wisps = Array.from({ length: 7 }, (_, i) => { const sp = sprite(emberArt(i % 2 ? '#c890ff' : '#90f0d0'), 0.2); sp.visible = true; return [sp, i / 7, 0.2 + rnd() * 0.25]; });
+  B.ticks.push((now) => {
+    sign.rotation.z = calm ? 0 : Math.sin(now / 1300) * 0.04;
+    for (const [pivot, s] of swings) pivot.rotation.z = calm ? 0 : Math.sin(now / 1100 + s) * 0.1;
+    for (const [sp, k, out] of wisps) {
+      const t = calm ? k : (k + now / 16000) % 1, a = t * Math.PI, rr = R + out + Math.sin(t * 19) * 0.08;
+      sp.position.set(x + Math.cos(a) * rr, tall + Math.sin(a) * rr + 0.1, z + 0.35 + Math.sin(t * 11 + k * 6) * 0.15);
+      sp.material.opacity = Math.min(1, t * 6, (1 - t) * 6);
+    }
+  });
+  for (const s of [-1, 1]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + s * R + COLS / 2 - 0.5), y));
   const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
   way.castShadow = way.receiveShadow = false;
   g.traverse(o => { o.userData.spot = 'exit'; });
@@ -6832,6 +6880,11 @@ function savannaGround(town) {
           g.fillStyle = ['#a07a50', '#8e6a42', '#b08a5e', '#7e5e3a'][Math.floor(r() * 4)]; g.fillRect(X, Y + i * 4 + 0.3, T, 3.4);
           g.fillStyle = 'rgba(60,30,10,0.4)'; g.fillRect(X + 2, Y + i * 4 + 1.6, 0.7, 0.7); g.fillRect(X + 13, Y + i * 4 + 1.6, 0.7, 0.7);
         }
+        const wet = (dx, dy) => kind(x + dx, y + dy) === 'water';   // a pale trim just inside the railing, as Driftwood Landing's
+        g.fillStyle = 'rgba(248,232,196,0.6)';
+        if (wet(-1, 0)) g.fillRect(X + 1.6, Y, 1.2, T);
+        if (wet(1, 0)) g.fillRect(X + T - 2.8, Y, 1.2, T);
+        if (wet(0, -1)) g.fillRect(X, Y + 1.6, T, 1.2);
       }
     });
     for (let i = 0; i < 500; i++) {   // fallen acacia pods and pebbles
@@ -6875,6 +6928,7 @@ function wateringHole(town) {
   B.group.add(surface);
   B.ticks.push((now) => { if (!calm) map.offset.set(now / 90000, Math.sin(now / 8000) * 0.03); });
   const wet = (x, y) => kind(x, y) === 'water', banks = [], reeds = [], heads = [], posts = [], fascia = [], corners = new Set();
+  const tops = [], ropes = [], railPosts = new Map(), rim = [];
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     const k = kind(x, y);
     if (k === 'water') { B.blocked.add(key(x, y)); return; }
@@ -6888,7 +6942,22 @@ function wateringHole(town) {
         posts.push([cx - COLS / 2 - dx * 0.07, cy - ROWS / 2 - dy * 0.07, 1, 0]);
       }
       for (const [dx, dy] of STEPS) if (wet(x + dx, y + dy)) fascia.push([tileX(x) + dx * 0.48, tileZ(y) + dy * 0.48, 1, dx ? Math.PI / 2 : 0]);
+      for (const [dx, dy] of STEPS) {   // a rope railing along the jetty over the water, as Driftwood Landing's (the handoff's checklist, 2026-10-14: where you can walk reads at a glance)
+        if (!wet(x + dx, y + dy)) continue;
+        const [ax, ay] = dx ? [0, 1] : [1, 0], ex = tileX(x) + dx * 0.44, ez = tileZ(y) + dy * 0.44;
+        const end = (s) => (wet(x + ax * s, y + ay * s) ? 0.44 : 0.5), a = [ex - ax * end(-1), ez - ay * end(-1)], b = [ex + ax * end(1), ez + ay * end(1)];
+        for (const [h, list] of [[0.5, tops], [0.28, ropes]]) list.push([a[0], h, a[1], b[0], h, b[1]]);
+        for (const [px, pz] of [a, b]) railPosts.set(`${px.toFixed(2)},${pz.toFixed(2)}`, [px, pz, 1, 0]);
+      }
       return;
+    }
+    // pale stones laid along the bank, so the water's edge reads at a glance
+    for (const [dx, dy] of STEPS) {
+      if (!wet(x + dx, y + dy)) continue;
+      for (let i = 0; i < 4; i++) {
+        const along = -0.375 + i * 0.25 + (r() - 0.5) * 0.06;
+        rim.push([tileX(x) + dx * 0.42 + (dy ? along : 0), tileZ(y) + dy * 0.42 + (dx ? along : 0), 0.85 + r() * 0.3, r() * 6, r() < 0.6 ? SAVANNA.rock[3] : SAVANNA.rock[0], 0]);
+      }
     }
     banks.push([tileX(x), tileZ(y), 1, Math.PI / 4, SAVANNA.mud[Math.floor(r() * 3)], -0.01]);
     if (k !== 'grass' || r() < 0.35) return;
@@ -6911,6 +6980,12 @@ function wateringHole(town) {
   instanced(post, std({ color: '#4a3020', roughness: 0.95 }), posts);
   const board = new THREE.BoxGeometry(1.0, 0.13, 0.05); board.translate(0, -0.075, 0);
   instanced(board, std({ color: '#5a3c24', roughness: 0.9 }), fascia).castShadow = false;
+  beams(tops, 0.028, std({ color: '#7a5434', roughness: 0.85 }), { shadow: false });
+  beams(ropes, 0.016, std({ color: '#d8c8a0', roughness: 0.95 }), { shadow: false });
+  const railPost = new THREE.CylinderGeometry(0.035, 0.042, 0.56, 6); railPost.translate(0, 0.28, 0);
+  instanced(railPost, std({ color: '#5a3c24', roughness: 0.9 }), [...railPosts.values()]).castShadow = false;
+  const stone = new THREE.DodecahedronGeometry(0.09, 0); stone.scale(1.3, 0.55, 1); stone.translate(0, 0.02, 0);
+  instanced(stone, std({ color: '#ffffff', roughness: 1, flatShading: true }), rim).castShadow = false;
 }
 
 /** The bush round the town, a tree a tile: flat-topped acacias, a baobab now and then, termite mounds, boulders, dry
@@ -6993,8 +7068,10 @@ function rondavelArt(col, circ) {
 }
 
 /** A round mud hut over its footprint, its door to you: a mud wall with a painted band, a conical thatched roof with a
-    knot of straw at its point and its rim trimmed in its colour, a crest over the door of a home you can visit, a lamp. */
+    knot of straw at its point and its rim trimmed in its colour, a lamp. A Gym Leader's home is a kasbah(). */
 function rondavel(b, f, L, lit) {
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  if (leader) return kasbah(b, f, L, lit, leader);
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
   B.group.add(g);
@@ -7009,17 +7086,188 @@ function rondavel(b, f, L, lit) {
   mesh(new THREE.TorusGeometry(rad + 0.38, 0.05, 6, 32), std({ color: b.roof, roughness: 0.8 }), 0, 0.16 + h - 0.06, 0, g).rotation.x = Math.PI / 2;
   mesh(new THREE.ConeGeometry(0.12, 0.35, 8), std({ color: '#a88a48', roughness: 1 }), 0, 0.16 + h + 1.35, 0, g);
   mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: b.roof, roughness: 0.6 }), 0, 0.16 + h + 1.52, 0, g);
-  if (b.home) {
-    const leader = B.town?.homes?.[b.home]?.leader, ink = leader && LEADER_INK[leader];
-    const up = 0.4, along = (rad + 0.42) * (1 - up / 1.35);   // lying on the thatch over the door
-    const crest = panel(ink ? houseCrest('ink', ink, (b.name || leader)[0]) : houseCrest('ball'), 0.42, 0.42, f.cx, 0.16 + h - 0.08 + up, f.cz + along + 0.04);
-    crest.rotation.x = -(Math.PI / 2 - Math.atan2(1.35, rad + 0.42));
-    g.attach(crest);   // a tap on it is the door too
-    if (b.name) g.attach(panel(nameArt(b.name), 0.9, 0.22, f.cx, 1.16, f.cz + rad + 0.03));
-  }
   const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
   lit.push(glow);
   mesh(new THREE.BoxGeometry(0.11, 0.16, 0.11), glow, rad * 0.55, 0.16 + 0.9, rad * 0.84 + 0.06, g).castShadow = false;
+  return g;
+}
+
+/** A pointed arch on a canvas, `w2` its half width, from its springing at `top` down to `bot`. */
+function pointedArch(ctx, cx, w2, top, bot) {
+  ctx.beginPath(); ctx.moveTo(cx - w2, bot); ctx.lineTo(cx - w2, top + w2 * 0.9);
+  ctx.quadraticCurveTo(cx - w2, top, cx, top - w2 * 0.45); ctx.quadraticCurveTo(cx + w2, top, cx + w2, top + w2 * 0.9);
+  ctx.lineTo(cx + w2, bot); ctx.closePath();
+}
+
+/** A kasbah's wall, `w` x `h`: hand-smoothed red mud, a band of zigzags in the leader's colour under the parapet, a tiled
+    dado in their colours along its foot, and arched windows at `wins` (fractions across), lit behind carved screens. */
+function kasbahWall(w, h, ink, wins) {
+  const W = Math.round(w * 24), Hp = Math.round(h * 24), f = fine(W, Hp, 6), { g, lin } = f, s = f.shine(), r = seeded(W + Hp);
+  g.fillStyle = lin(0, 0, 0, Hp, ['#d69a66', '#c27e4c']); g.fillRect(0, 0, W, Hp);
+  g.fillStyle = 'rgba(110,60,30,0.16)'; for (let i = 0; i < W * 1.5; i++) g.fillRect(r() * W, r() * Hp, 2 + r() * 3, 0.6);
+  g.fillStyle = ink[1]; g.fillRect(0, 1.6, W, 3.4);
+  g.strokeStyle = '#f8e8c8'; g.lineWidth = 0.7; g.beginPath(); for (let x = 0; x <= W; x += 4) g.lineTo(x, 3.3 + (x % 8 ? -1.1 : 1.1)); g.stroke();
+  g.fillStyle = '#e8b040'; g.fillRect(0, 5, W, 0.8);
+  if (Hp > 30) {
+    for (let x = 0; x < W; x += 3) for (const [y, c, k] of [[Hp - 6.4, ink[2], 0], [Hp - 3.4, ink[1], 1]]) { g.fillStyle = (x / 3 + k) % 2 ? c : '#f4e8d0'; g.fillRect(x, y, 3, 3); }
+    g.fillStyle = '#e8b040'; g.fillRect(0, Hp - 7.2, W, 0.8);
+  }
+  const top = Hp > 30 ? 12 : 9, bot = Hp > 30 ? Hp - 11 : Hp - 3;
+  for (const u of wins) {
+    const cx = u * W;
+    g.fillStyle = '#7a4424'; pointedArch(g, cx, 4.6, top, bot + 0.8); g.fill();
+    for (const ctx of [g, s]) { const gr = ctx.createLinearGradient(0, top, 0, bot); gr.addColorStop(0, '#fff2c0'); gr.addColorStop(1, '#f0a040'); ctx.fillStyle = gr; pointedArch(ctx, cx, 3.6, top + 0.8, bot); ctx.fill(); }
+    g.strokeStyle = ink[2]; g.lineWidth = 0.6; g.globalAlpha = 0.85;   // the mashrabiya: a lattice over the light
+    g.save(); pointedArch(g, cx, 3.6, top + 0.8, bot); g.clip();
+    for (let k = -12; k < 12; k += 2) { g.beginPath(); g.moveTo(cx + k, top - 2); g.lineTo(cx + k + 14, bot + 2); g.moveTo(cx + k + 14, top - 2); g.lineTo(cx + k, bot + 2); g.stroke(); }
+    g.restore(); g.globalAlpha = 1;
+    g.fillStyle = '#e8b040'; g.fillRect(cx - 5, bot + 0.8, 10, 1.2);
+  }
+  return f.c;
+}
+
+/** A kasbah's great portal (its pishtaq): a tall frame in the leader's deepest colour lined in gold, their crest at its
+    head, a band of diamonds in their colour, and a great pointed arch lit inside, its carved doors standing open. */
+function kasbahPortal(w, h, ink, letter) {
+  const W = Math.round(w * 24), Hp = Math.round(h * 24), f = fine(W, Hp, 6), { g, rr, lin } = f, s = f.shine(), mid = W / 2;
+  g.fillStyle = lin(0, 0, 0, Hp, ['#e4ac76', '#cc8a56']); g.fillRect(0, 0, W, Hp);
+  rr(1.6, 3, W - 3.2, Hp - 3, 1, ink[2]);
+  rr(2.8, 4.2, W - 5.6, Hp - 4.2, 0.8, '#e8b040');
+  rr(3.8, 5.2, W - 7.6, Hp - 5.2, 0.6, lin(0, 0, 0, Hp, ['#e4ac76', '#cc8a56']));
+  g.fillStyle = ink[1];
+  for (let x = 6; x < W - 5; x += 4.4) { g.beginPath(); g.moveTo(x, 7.2); g.lineTo(x + 2, 8.8); g.lineTo(x, 10.4); g.lineTo(x - 2, 8.8); g.fill(); }
+  const cy = 17;   // the crest
+  for (const ctx of [g, s]) { ctx.fillStyle = '#e8b040'; ctx.beginPath(); ctx.arc(mid, cy, 5.4, 0, Math.PI * 2); ctx.fill(); }
+  g.fillStyle = ink[1]; g.beginPath(); g.arc(mid, cy, 4.3, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = ink[0]; g.lineWidth = 0.5; g.beginPath(); g.arc(mid, cy, 3.5, 0, Math.PI * 2); g.stroke();
+  g.fillStyle = '#ffffff'; g.font = 'bold 6px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(letter, mid, cy + 0.4);
+  const top = 30, w2 = Math.min(9.5, W / 2 - 6);
+  g.fillStyle = ink[2]; pointedArch(g, mid, w2 + 1.6, top, Hp); g.fill();
+  g.fillStyle = '#e8b040'; pointedArch(g, mid, w2 + 0.7, top, Hp); g.fill();
+  for (const ctx of [g, s]) { const gr = ctx.createLinearGradient(0, top - 4, 0, Hp); gr.addColorStop(0, '#fff4c8'); gr.addColorStop(1, '#e8903a'); ctx.fillStyle = gr; pointedArch(ctx, mid, w2, top, Hp); ctx.fill(); }
+  g.fillStyle = 'rgba(90,40,20,0.35)'; g.fillRect(mid - w2, Hp - 5, w2 * 2, 5);
+  for (const sx of [-1, 1]) {   // the doors, folded back against the jambs, studded in gold
+    const x0 = sx < 0 ? mid - w2 : mid + w2 - 4.2;
+    g.fillStyle = lin(x0, 0, x0 + 4.2, 0, ['#5a2e18', '#7a4226']); g.fillRect(x0, top + 3, 4.2, Hp - top - 3);
+    g.fillStyle = '#e8b040'; for (let y = top + 6; y < Hp - 2; y += 3.2) for (const dx of [1.2, 3]) { g.beginPath(); g.arc(x0 + dx, y, 0.45, 0, Math.PI * 2); g.fill(); }
+  }
+  return f.c;
+}
+
+/** A Gym Leader's home in Sunwell Bazaar (the user's ask, 2026-10-14: every leader's house "more grand and extravagant and
+    aesthetic", each town in its own style; the village's are manor()s, the Landing's stiltManor()s): a kasbah of red mud
+    on a raised plinth up steps, Djenné's buttresses up its front with ostrich eggs and gold on their pinnacles, wooden
+    beams poking out of its sides, a great portal over its door with their crest at its head, striped awnings in their
+    colours over its windows, brass lanterns lit in their colour, an upper storey set back with a gilded dome, palms in
+    urns by the steps and two banners. Its lot is 5 x 4 tiles. A tap anywhere is its door. */
+function kasbah(b, f, L, lit, leader) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const ink = LEADER_INK[leader] || ['#fff0c0', '#e0a030', '#5a3010'], letter = (b.name || leader)[0].toUpperCase();
+  const W = f.w - 0.3, D = f.h - 0.25, P = 0.3;
+  const mud = std({ color: '#c98a58', roughness: 1 }), pale = std({ color: '#dcaa78', roughness: 1 }), wood = std({ color: '#6a4228', roughness: 0.9 });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const inked = std({ color: ink[1], roughness: 0.6 }), deep = std({ color: ink[2], roughness: 0.7 }), egg = std({ color: '#f4ecdc', roughness: 0.5 });
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.95 }); lit.push(m); return m; };
+  const small = (m) => { m.castShadow = false; return m; };
+  // the plinth: packed earth, a band in the leader's deepest colour and a gold line round it, steps up the front
+  mesh(rbox(W, P, D, 0.04), pale, 0, P / 2, 0, g);
+  small(mesh(new THREE.BoxGeometry(W + 0.03, 0.08, D + 0.03), deep, 0, P - 0.13, 0, g));
+  small(mesh(new THREE.BoxGeometry(W + 0.05, 0.025, D + 0.05), gold, 0, P - 0.07, 0, g));
+  for (let i = 0; i < 3; i++) mesh(rbox(1.4 - i * 0.08, P / 3, 0.22, 0.02), pale, 0, P / 6 + i * P / 3, D / 2 + 0.33 - i * 0.18, g);
+  // the hall: its front lit, windows either side of the portal, a parapet of rounded merlons round its roof
+  const hw = W - 0.7, hd = 2.0, hz = -0.5, H = 1.5, top = P + H, fz = hz + hd / 2;
+  mesh(new THREE.BoxGeometry(hw, H, hd), [mud, mud, pale, mud, lights(kasbahWall(hw, H, ink, [0.125, 0.875])), mud], 0, P + H / 2, hz, g);
+  mesh(new THREE.BoxGeometry(hw + 0.1, 0.08, hd + 0.1), wood, 0, top + 0.04, hz, g);
+  const merlon = new THREE.ConeGeometry(0.075, 0.26, 4, 1); merlon.rotateY(Math.PI / 4); merlon.translate(0, 0.13, 0);
+  const merlons = [];
+  for (let x = -hw / 2 + 0.14; x <= hw / 2 - 0.1; x += 0.28) for (const z of [fz, hz - hd / 2]) merlons.push([x, top + 0.08, z]);
+  for (let z = hz - hd / 2 + 0.28; z < fz - 0.1; z += 0.28) for (const x of [-hw / 2, hw / 2]) merlons.push([x, top + 0.08, z]);
+  instancedIn(g, merlon, mud, merlons);
+  // the toron: palm beams poking out of its side walls in rows
+  const toron = new THREE.CylinderGeometry(0.02, 0.02, hw + 0.36, 5); toron.rotateZ(Math.PI / 2);
+  const beamsAt = [];
+  for (const y of [P + 0.55, P + 1.05]) for (let z = hz - hd / 2 + 0.3; z < fz - 0.1; z += 0.36) beamsAt.push([0, y, z]);
+  instancedIn(g, toron, wood, beamsAt);
+  // Djenné's buttresses up the corners and either side of the portal, pinnacles with an ostrich egg and gold on each
+  const pillars = [[-hw / 2, fz], [hw / 2, fz], [-hw / 2, hz - hd / 2], [hw / 2, hz - hd / 2], [-0.95, fz + 0.06], [0.95, fz + 0.06]];
+  for (const [x, z] of pillars) {
+    const tall = H + (Math.abs(x) < 1.5 ? 0.75 : 0.55);
+    const p = new THREE.CylinderGeometry(0.15, 0.24, tall, 4); p.rotateY(Math.PI / 4);
+    mesh(p, mud, x, P + tall / 2, z, g);
+    mesh(new THREE.ConeGeometry(0.13, 0.3, 4).rotateY(Math.PI / 4), mud, x, P + tall + 0.15, z, g);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), egg, x, P + tall + 0.33, z, g)).scale.y = 1.35;
+    small(mesh(new THREE.ConeGeometry(0.025, 0.12, 6), gold, x, P + tall + 0.46, z, g));
+  }
+  // the portal, standing proud of the front and up past the parapet, crowned in merlons, lanterns either side of it
+  const pw = 1.5, ph = H + 0.8;
+  mesh(new THREE.BoxGeometry(pw, ph, 0.26), [mud, mud, pale, mud, lights(kasbahPortal(pw, ph, ink, letter)), mud], 0, P + ph / 2, fz + 0.13, g);
+  const crown = [];
+  for (let x = -pw / 2 + 0.12; x <= pw / 2 - 0.1; x += 0.25) crown.push([x, P + ph, fz + 0.2]);
+  instancedIn(g, merlon, pale, crown);
+  const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.3, transparent: true, opacity: 0.92 });
+  lit.push(glow);
+  const brass = std({ color: '#c8963a', metalness: 0.7, roughness: 0.3 });
+  const lantern = (x, y, z) => {
+    small(mesh(new THREE.CylinderGeometry(0.075, 0.06, 0.2, 6), glow, x, y, z, g));
+    small(mesh(new THREE.ConeGeometry(0.09, 0.14, 6), brass, x, y + 0.17, z, g));
+    small(mesh(new THREE.TorusGeometry(0.03, 0.008, 4, 10), brass, x, y + 0.27, z, g));
+    small(mesh(new THREE.ConeGeometry(0.05, 0.07, 6), brass, x, y - 0.13, z, g)).rotation.x = Math.PI;
+  };
+  for (const sx of [-1, 1]) {   // hung off the buttresses either side of the portal
+    small(mesh(new THREE.BoxGeometry(0.03, 0.03, 0.3), brass, sx * 0.95, P + 1.28, fz + 0.3, g));
+    lantern(sx * 0.95, P + 1.05, fz + 0.42);
+  }
+  // striped awnings in the leader's colours over the windows, on poles banded in gold
+  const awn = std({ map: stripeArt(ink[1], 4), roughness: 0.9, side: THREE.DoubleSide });
+  for (const sx of [-1, 1]) {
+    const x = sx * 1.5;
+    const a = mesh(new THREE.BoxGeometry(0.72, 0.03, 0.62), awn, x, P + 1.2, fz + 0.28, g);
+    a.rotation.x = 0.38;
+    for (const dx of [-0.32, 0.32]) {
+      mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.08, 6), inked, x + dx, P + 0.54, fz + 0.56, g);
+      small(mesh(new THREE.SphereGeometry(0.04, 8, 6), gold, x + dx, P + 1.1, fz + 0.56, g));
+    }
+  }
+  // the upper storey, set back, lit, its parapet of merlons, a gilded dome on a drum with a gold finial
+  const uw = 2.3, ud = 1.3, uh = 0.95, uz = hz - 0.2, ut = top + 0.08 + uh;
+  mesh(new THREE.BoxGeometry(uw, uh, ud), [mud, mud, pale, mud, lights(kasbahWall(uw, uh, ink, [0.2, 0.5, 0.8])), mud], 0, top + 0.08 + uh / 2, uz, g);
+  mesh(new THREE.BoxGeometry(uw + 0.08, 0.06, ud + 0.08), wood, 0, ut + 0.03, uz, g);
+  const upper = [];
+  for (let x = -uw / 2 + 0.13; x <= uw / 2 - 0.1; x += 0.26) for (const z of [uz + ud / 2, uz - ud / 2]) upper.push([x, ut + 0.06, z]);
+  instancedIn(g, merlon, mud, upper);
+  mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.22, 20), pale, 0, ut + 0.17, uz, g);
+  small(mesh(new THREE.TorusGeometry(0.42, 0.02, 4, 24), gold, 0, ut + 0.27, uz, g)).rotation.x = Math.PI / 2;
+  mesh(new THREE.SphereGeometry(0.42, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), gold, 0, ut + 0.28, uz, g).scale.y = 1.3;
+  mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.3, 6), gold, 0, ut + 0.95, uz, g);
+  small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, 0, ut + 1.05, uz, g));
+  small(mesh(new THREE.ConeGeometry(0.035, 0.16, 8), gold, 0, ut + 1.17, uz, g));
+  // date palms in clay urns by the steps
+  const fronds = [];
+  for (const sx of [-1, 1]) {
+    const x = sx * 0.9, z = D / 2 - 0.25;
+    mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.3, 12), std({ color: '#b0582e', roughness: 0.9 }), x, P + 0.15, z, g);
+    small(mesh(new THREE.TorusGeometry(0.15, 0.025, 6, 14), gold, x, P + 0.3, z, g)).rotation.x = Math.PI / 2;
+    mesh(new THREE.CylinderGeometry(0.03, 0.045, 0.7, 6), wood, x, P + 0.6, z, g);
+    for (let k = 0; k < 7; k++) fronds.push([x, P + 0.95, z, k / 7 * Math.PI * 2]);
+  }
+  const frond = new THREE.ConeGeometry(0.055, 0.45, 4); frond.scale(1, 1, 0.3); frond.translate(0, 0.22, 0); frond.rotateX(1.15);
+  instancedIn(g, frond, std({ color: '#5a8a34', roughness: 0.85, flatShading: true }), fronds);
+  // two banners at the plinth's front corners, swaying a little
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [-1, 1].map(s => {
+    const x = s * (W / 2 - 0.08), z = D / 2 - 0.12, tall = 2.6;
+    mesh(new THREE.CylinderGeometry(0.035, 0.045, tall, 8), wood, x, P + tall / 2, z, g);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), wood, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
+    g.add(hang);
+    small(mesh(new THREE.PlaneGeometry(0.4, 1.5), cloth, 0, -0.75, 0, hang));
+    return hang;
+  });
+  B.ticks.push((now) => { if (!calm) flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; }); });
   return g;
 }
 
@@ -7316,9 +7564,11 @@ function stall(x, z, rnd) {
   return g;
 }
 
-/** The savanna's own things from the map: the watering hole under it all, the market's stalls. */
+/** The savanna's own things from the map: the watering hole under it all, a name board by each leader's home (`s`), the
+    market's stalls. */
 function savannaExtras(town) {
   wateringHole(town);
+  nameBoards(town, 's');
   const rnd = seeded(41);
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === 'n') { stall(tileX(x), tileZ(y), rnd); B.blocked.add(key(x, y)); }
@@ -7362,10 +7612,10 @@ const TOWN_STYLES = {
     drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },
   canopy: { holes: true, neat: true, ground: canopyGround, trees: canopyRim, lamp: 'lantern', lampScale: 0.8,
     house: (b, f, L, lit) => (b.kind === 'greattree' ? greatTree(b, f, L, lit) : b.kind === 'nursery' ? nursery(b, f, L, lit) : treehouse(b, f, L, lit)),
-    gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.6, town.name, L, lit),
+    gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.8, town.name, L, lit),
     extras: canopyExtras,
     drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#c890ff' : '#90f0e0'), size: 0.13, rise: true }) },   // will-o'-wisps: it's a ghost town
-  bazaar: { holes: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
+  bazaar: { holes: true, fade: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
     house: (b, f, L, lit) => (b.kind === 'shop' ? bazaarTent(b, f, L, lit) : b.kind === 'caravanserai' ? caravanserai(b, f, L, lit) : b.kind === 'wagon' ? wagon(b, f, L, lit) : rondavel(b, f, L, lit)),
     gate: (town, lit, L) => sunGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.3, town.name, L, lit),
     extras: savannaExtras,

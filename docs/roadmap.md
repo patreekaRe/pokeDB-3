@@ -165,10 +165,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (the user: "move those benches somewhere else"): off the Waystone's island and the open ash (each painted a stray
    cobble), now on paved nooks off the roads, two looking onto the springs, two either side of the road to the forge.
    Waiting on the user's playtest.
-   **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
-   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
-   Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what
-   bothers me about it first, with an aerial link), Machew's and Jerome's homes grand in the Bazaar's own style."
+   **Done (2026-10-14): Sunwell Bazaar's clean-up** (the user: nothing specific, "go ahead with the checklist"): the
+   diagonal caravan road kept but three wide (two through the gate), the jetty two wide with a rope railing and a pale
+   trim, pale stones along the watering hole's bank, huts a and d gone (their knocks moved onto b, e, g and h), the rest
+   spread out, buildings fading while you're behind them (`fade`). Machew and Jerome in `kasbah()`s on 5 x 4 lots
+   (Jerome's at the top by the windpump, Machew's out on the east edge), with `s` name boards; their homes are now
+   "Machew's / Jerome's Kasbah". Tests pass, no console errors; the walk-in-and-out leak loop wasn't run (the pane draws no
+   frames hidden), so the user should walk in and out of a few houses on their phone. Every town's clean-up is done.
+   **Next: the Clearing's curve in every town** (below).
    **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
    crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
    can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it
@@ -240,7 +244,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    <biome>'s town the way the others were built, in its own new layout, then its Waystone."
 4. **Give every town Highbough's clean-up** (the user's ask, 2026-10-14, after Highbough's tidy: "much cleaner"). One
    town a pass, the user circling what's in the way on a playtest first if they like: the Lantern Village, Cinder Springs,
-   Driftwood Landing and Sunwell Bazaar (Lantern Village done 2026-10-14, step 2 above: the Waystone centred on its plaza on the avenue's axis, the bridge two wide and landing squarely, roofs fading over the paths behind them, `fadeBehind()`, rather than moved; `?town=<biome>&towns&aerial` now shows any town from above). The rules Highbough's tidy set: fewer locked houses (only enough to read as a
+   Driftwood Landing and Sunwell Bazaar (all four done 2026-10-14, see the Towns and Waystones entry; Lantern Village, step 2 above: the Waystone centred on its plaza on the avenue's axis, the bridge two wide and landing squarely, roofs fading over the paths behind them, `fadeBehind()`, rather than moved; `?town=<biome>&towns&aerial` now shows any town from above). The rules Highbough's tidy set: fewer locked houses (only enough to read as a
    town), every walkway a clean rectangle, every bridge / boardwalk / road two tiles wide and landing squarely (no notches
    or half-lanes), no tree, crown or roof hiding a path (`tree: false`), clutter that only fills gaps taken out, and the
    Waystone centred on its square or deck, on the axis of what it faces. Keep each town's own shape. `node --test
