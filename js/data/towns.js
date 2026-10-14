@@ -1118,6 +1118,38 @@ export const QUESTS = {
 /** A town's questline, or null. */
 export const questOf = (town) => QUESTS[town.id] || null;
 
+/* ---------- leaders coming home (session 4, 2026-10-14) ----------
+   Once a town's shard is back in, its Waystone reaches the Clearing's, and its Gym Leaders come through: one a UTC day
+   stands by the Clearing's Waystone (waystoneGuest(); the one who put the shard in, the first time home after), and they
+   drop by the Secret Base (js/secret-base.js's leaderVisitor()). This replaces LEADER_VISITS_LIVE being off. */
+export const HOME_LINES = {
+  john: ['Stepped out of the Waystone and my ears popped. Cabin pressure. I\'d know.', 'Nice Clearing. It needs a festival. I\'d need a week to pick which.'],
+  jahmes: ['YOOO, the Clearing! The Waystone just YEETED me here!', 'Gotta be back by eleven, though. Curfew\'s curfew.'],
+  clarence: ['A round plaza with a glowing centrepiece. It\'s practically a stage.', 'Tell everyone I\'m here. Discreetly. Loudly.'],
+  shaun: ['Waystone latency: zero. Better than your internet.', 'I ran diagnostics on yours. It\'s fine. I\'d still file a ticket.'],
+  pat: ['♪ Through the stone and straight to you... ♪ Oh. Hi.', 'Got any lemonade here? No? I\'ll wait.'],
+  kayl: ['Free travel and no rent! Do you know how rare that is for me?', 'Reya stayed home. She\'s in charge of the leases now. Heaven help us.'],
+  phil: ['Your Clearing isn\'t haunted. I checked. Twice.', 'Jona says it\'s boring. Jona says that about everywhere.'],
+  ricky: ['*yawns* Came through the Waystone. Filmed it. The boys still think it\'s fake.', 'If I nap on that bench, wake me in twenty. Or forty.'],
+  machew: ['...The Waystone carried me here in silence. As a shadow should travel.', 'My blade stays sheathed. It is real now. I am still nervous.'],
+  jerome: ['The Waystone\'s basically fast travel. GTA 6 has fast travel. Probably.', 'Baby\'s asleep. I\'ve got like forty minutes. Let\'s hang.'],
+};
+
+/** The leaders whose town's Waystone is mended: [{ id, town }], in RING order. */
+export const homeLeaders = (save) => (townsOpen() ? RING.filter(t => mended(townState(save, t.id))).flatMap(t => Object.keys(TOWNS[t.id].leaders).map(id => ({ id, town: t.id }))) : []);
+
+/** Who stands by the Clearing's Waystone today, or null: the first time home after a town's shard went in, the leader
+    who put it in (`welcome`: their town says thanks); else one of the home leaders, dealt by `rand` (the UTC day's). */
+export function waystoneGuest(save, rand) {
+  const fresh = RING.find(t => townState(save, t.id).quest?.lit && !townState(save, t.id).quest.welcomed);
+  if (fresh) return { id: QUESTS[fresh.id].steps.at(-1).by, town: fresh.id, welcome: true };
+  const pool = homeLeaders(save);
+  return pool.length ? pool[Math.floor(rand() * pool.length)] : null;
+}
+
+/** What a home leader says: their HOME_LINES, with a thank-you first when they've come to welcome you. */
+export const guestLines = (g) => [...(g.welcome ? [`The Waystone lit all the way to here! I came straight through. ${TOWNS[g.town].name} says thank you.`] : []), ...(HOME_LINES[g.id] || [])];
+
 /** The leader who greets you and opens the questline: the first of the town's leaders you've beaten, or null. */
 export const greeterOf = (town, save) => Object.keys(town.leaders).find(id => (save.gym?.[id] || 0) > 0) ?? null;
 

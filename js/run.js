@@ -70,9 +70,11 @@ import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
-  questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended } from './data/towns.js';
-import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine } from './data/satchel.js';
-import { gainMat } from './satchel.js';
+  questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING } from './data/towns.js';
+import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
+import { gainMat, gainKey } from './satchel.js';
+/** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
+const mendFlag = () => new URLSearchParams(location.search).has('mend');
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -338,14 +340,25 @@ function creditRoom(node) {
 const gleaning = () => townsOpen() && !peeking && !isSafari() && !isTower() && biomeMats(mainBiome()?.id).length > 0;
 const gleanKey = (node, what) => `${run.biome}:${node.id}:${what}`;
 const gleaned = (key) => (run.gleaned || []).includes(key);
+/** The Waystone Shard this biome's map floats over an Alpha, or null: its town's questline is up to the shard and you
+    haven't got it (a lost run's Alpha is marked again next time). `?shard` marks one on a playtest. */
+function shardHere() {
+  const town = TOWNS[mainBiome()?.id];
+  if (!town || isSafari() || isTower() || visiting) return null;
+  if (peeking) return shardFlag() ? `shard-${town.id}` : null;
+  if (!gleaning()) return null;
+  const step = questStep(town, townState(getSave(), town.id));
+  return step?.kind === 'shard' && !hasKey(satchelOf(getSave(), false), step.key) ? step.key : null;
+}
+
 /** A room's materials into the Satchel, once: written into the saved run straight away (creditRoom()'s way), so a refresh
     replaying the room can't give them twice. */
 function glean(key, drop) {
   if (!drop || gleaned(key)) return false;
   run.gleaned = [...(run.gleaned || []), key];
-  gainMat(drop.id, drop.n);
+  if (drop.key) { if (!peeking) gainKey(drop.key); } else gainMat(drop.id, drop.n);
   const saved = loadRunData();
-  if (saved) saveRunData({ ...saved, gleaned: run.gleaned });
+  if (saved && !peeking) saveRunData({ ...saved, gleaned: run.gleaned });
   return true;
 }
 
@@ -799,6 +812,8 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
   }
   if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
   if (gleaning()) markSparkles(nodes, mainBiome().id, random);   // a town's materials, sparkling in a room or two
+  const shard = shardHere();
+  if (shard) markShard(nodes, shard, random);   // the town's Waystone Shard, floating over one of its Alphas
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
@@ -1687,6 +1702,8 @@ function townRoom(covered = null, at = null) {
   const home = !!t.visit;   // walked in from home through the Clearing's Waystone: no run, its gate goes home
   const real = !peeking || home;
   // a playtest (?town=) keeps its questline on the run, never the save; ?satchel there makes every step ready
+  // &mend on a ?town= peek: its questline up to the shard, the shard in hand, to see the stone mended
+  if (!real && !t.peekSt && mendFlag() && questOf(town)) t.peekSt = { ...townState(getSave(), town.id), quest: { step: questOf(town).steps.length - 1, got: 0, picks: {} } };
   const st = (!real && t.peekSt) || townState(getSave(), town.id), r = currentRequest(town, st), lit = real ? isMended(town.id) : mended(st);
   if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
@@ -1705,7 +1722,7 @@ function townRoom(covered = null, at = null) {
     try { await gymTalk(GYM_BY_ID[id], lines, { lit: true, vars }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
   };
   const quest = questOf(town), step = questStep(town, st), sat = satchelOf(getSave());
-  const ready = step && (stepReady(step, st, sat) || (!real && satchelFlag()));
+  const ready = step && (stepReady(step, st, sat) || (!real && (satchelFlag() || mendFlag())));
   const greeter = !st.quest && quest ? greeterOf(town, getSave()) : null;
   const friends = st.quest ? `Quest ${questProgress(town, st).join('/')}.` : `Friendship ${st.done}${st.done < MEND_AT ? `/${MEND_AT}` : ''}.`;
   const later = home ? 'Play a run through here, then hand it in.' : 'Hand it in here on a later run.';
@@ -1716,15 +1733,19 @@ function townRoom(covered = null, at = null) {
     if (!real) t.peekSt = handInStep(town, st, pick?.id);
     playSound('stat-up');
     refreshCoins();
-    try { await leaderSay(step.by, step.thanks, { pick: pick?.label }); } finally { handing = false; }
+    try {
+      await leaderSay(step.by, step.thanks, { pick: pick?.label });
+      if (step.kind === 'shard' && run === thisRun) {   // the shard goes in: the stone mends before your eyes
+        event3dMod?.freezeEvent(true);
+        sayLines([]);
+        try { await event3dMod?.mendStone(RING.find(o => o.id === town.id)?.glow); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+      }
+    } finally { handing = false; }
     if (run !== thisRun) return;
     if (pick) tell(`${GYM_BY_ID[step.by].name} picked the ${pick.label}!`);
     if (step.gives) tell(`${KEY_BY_ID[step.gives].icon} ${KEY_BY_ID[step.gives].name} went into your Satchel.`);
     tell(coins ? `Quest step done! +${coins} PokéCoins.` : real ? 'Quest step done!' : 'Quest step done! (A playtest: nothing is saved.)');
-    if (step.kind === 'shard') {   // the shard back in: the stone whole (its scene is session 4's)
-      playSound('gate-hum');
-      tell(`The Waystone takes the shard... and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time.`);
-    }
+    if (step.kind === 'shard') tell(`The Waystone takes the shard and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time, and ${town.name}'s Gym Leaders can visit you.`);
     again();
   };
   const need = (s) => {
@@ -2036,6 +2057,8 @@ function afterFight(node, result) {
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
+  const shard = node.type === 'elite' && node.shard && !gleaned(gleanKey(node, 'shard')) ? KEY_BY_ID[node.shard] : null;
+  if (shard) dexNews.unshift(`${shard.icon} The Waystone Shard was floating over it! ${shard.name} went into your Satchel's Key Items.${peeking ? ' (A playtest: nothing is saved.)' : ` Take it back to ${TOWNS[shard.shard].name}'s board.`}`);
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
@@ -2060,6 +2083,7 @@ function afterFight(node, result) {
     if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
+    if (shard && glean(gleanKey(node, 'shard'), { key: shard.id })) playSound('crystal-2');
     run.money += prize;
     setMoney(run.money);
     updateSave(d => {

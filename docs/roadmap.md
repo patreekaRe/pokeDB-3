@@ -328,8 +328,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `js/satchel.js` (save side), `js/satcheldex.js` (the app: Key Items, Materials, Quests; "!" on new things), on the
      Collection only while the towns are on. `?satchel` lends every material and key item for a page load (and on a
      `?town=` peek makes every step ready, to walk a questline: `?town=shrine&gymwins=1&satchel`). Tests:
-     `tests/quests.test.mjs`. Materials can't be found yet (session 2), crafts can't be made (session 3), shards don't
-     drop (session 4); the shard's hand-in only tells the stone mending for now.
+     `tests/quests.test.mjs`. Materials and shards drop and crafts are made since sessions 2-4.
    - **Session 2 done (2026-10-14): materials drop.** In a town's biome while the towns are on (`?towns`): won fights drop
      one (`DROPS` in `js/data/satchel.js`: wild 40%, Alpha 1-2, boss 2-3; a line in the reward box) and 1-2 rooms a map
      sparkle (✧, `markSparkles()`, 2-3 of one material on walking in); Pat's bottles only sparkle. Refresh-safe
@@ -342,7 +341,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
      `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
      Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
-     **Next: session 4, the shard** (the marked Alpha node, the pickup, the mending scene, leaders coming home).
+   - **Session 4 done (2026-10-14): the shard.** At the shard step one Alpha on the biome's map has the town's shard over it
+     (a crystal in the town's colour); beat it and the shard goes into Key Items. At the board, after its leader's thanks,
+     the shard floats from your Pokémon into the crack and the stone mends before your eyes (`mendStone()`). Then the
+     town's leaders come home: one a day by the Clearing's Waystone (the one who put the shard in, first), the others
+     dropping by the Secret Base (`HOME_LINES`). Detail: `docs/reference/towns.md`. Playtest: `?town=shrine&mend` (the
+     scene), `?biome=shrine&shard` (the marked Alpha). Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+     **Next: session 5, the dialogue** (a town a session if it runs long; the leaders' `HOME_LINES` are one pair each so far).
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

@@ -30,6 +30,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { EVENTS_BY_ID } from './data/events.js';
 import { buildingSvg } from './buildings.js';
 import { random } from './rng.js';
+import { RING } from './data/towns.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
 // worker can share generateMap() without evaluating UI modules that need document/window.
@@ -803,6 +804,14 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (node.sparkle && !node.visited) {
       label = `${label}: something sparkles here!`;
       btn.append(el('span', 'map-rare map-sparkle', '✧'));
+    }
+    // a town's Waystone Shard (js/data/satchel.js's markShard()) floats over its Alpha, in the town's colour, till it's won
+    if (node.shard && !node.visited) {
+      label = `${label}: a Waystone Shard floats over this Alpha! Beat it to take the shard home.`;
+      const gem = el('span', 'map-rare map-shard');
+      gem.style.setProperty('--gem', RING.find(t => `shard-${t.id}` === node.shard)?.glow ?? '#8ae8ff');
+      gem.append(el('i', 'map-shard-gem'));
+      btn.append(gem);
     }
     btn.title = label;
     btn.setAttribute('aria-label', label);

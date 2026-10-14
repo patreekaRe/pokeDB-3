@@ -183,3 +183,25 @@ over the crib (days to 19 November 2026). Two point lights a room at most; the r
 now laid as its painting on the floor (`flatPiece()` in `js/event-3d.js`): the Nursery's web rugs and Persian's dune
 rug showed nothing before. `tests/leader-homes.test.mjs` checks every piece exists, nothing overlaps, and every free
 tile (and the leader) is reachable from the door. `?town=<biome>&home=<leader>&gymwins=1` walks straight in.
+
+**The shard, the mending and leaders coming home** (session 4 of Towns step 6, 2026-10-14). **The marked Alpha**: once a
+town's questline is up to its `shard` step and the shard isn't in the Satchel, `startBiome()` in `js/run.js` has
+`shardHere()` name the key item and `markShard()` (`js/data/satchel.js`) put `shard: <key>` on one of the biome map's
+Alphas (rolled through `js/rng.js`, saved with the map). The map draws a crystal in the town's `RING` colour bobbing and
+turning over it (`.map-shard` in `css/screens.css`, `js/map.js`). Winning that fight says so first in the reward box and
+gives the shard as the rewards end (`glean()` with `{ key }`, keyed `…:shard` in `run.gleaned`, so a refresh can't give it
+twice); a lost run's Alpha is marked again next pass. Same rules as materials: towns on, never a Safari, the Sky Pillar
+or a playtest (`?shard` marks one on a `?biome=` or `?town=` playtest, nothing saved). **The mending**: handing the shard in
+at the board, its leader's thanks, then `mendStone()` in `js/event-3d.js` (you're frozen meanwhile): the crystal rises off
+your Pokémon, floats over the broken stone and hangs, sinks into the crack as it blazes (`userData.boost` on the broken
+`waystone()`), a flash, the stone swapped in place for `wholeWaystone()` (built into the room's kit, bent, its door spot
+and fade kept), a ring of light rolling out and a beam going up; the room is re-keyed as the town's `:lit` one in `built`
+(each room carries its `id`), so the board's redraw needs no rebuild. Under reduced motion only the swap. `B.stone` keeps
+the stone's footprint and look. `?town=<biome>&mend` puts a peek's questline at its shard, ready, to see it.
+**Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
+`js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
+`standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →
+`waystoneGuest()`, the first time home after a mending the leader who put the shard in (`welcome`, a thank-you first;
+tapping them sets `quest.welcomed`, `welcomeHome()`), else dealt by the day. The others drop by the Secret Base
+(`leaderVisitor()` in `js/secret-base.js`, never today's Waystone guest), saying their `HOME_LINES` (no speaker names:
+the base strips them); the GYM_GOLD visits stay behind `LEADER_VISITS_LIVE`. Tests: `tests/shard.test.mjs`.
