@@ -215,7 +215,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   // a fight's reward steps put Skip by Home too, a key in the shell's colour (the user's call, 2026-10-08)
   if (roomy) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
-  $('room-bag').hidden = !roomy || inBar;
+  // the Mart has it too, to check or toss an item before buying (the user's ask, 2026-10-14)
+  $('room-bag').hidden = !roomy || (inBar && !/\bmart-window\b/.test(layout));
   skip.classList.toggle('room-leave', inBar);
   skip.classList.toggle('room-skip', roomy && !inBar);
   // the move picks spell it out under the key, pulsing gently: the icon alone was missed after a boss (the user's ask, 2026-10-13)

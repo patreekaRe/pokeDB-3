@@ -800,7 +800,7 @@ function arrived() {
 
 /* A drag walks (the user's ask, 2026-10-12; it used to look along the shelves, but the camera follows your partner). */
 const canWalk = (e) => inRoom() && !flying.length && !document.querySelector('dialog[open], .reward-focus')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .reward-focus');
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #bag, #collection-screen, .over, .reward-focus');
 
 /** The floor tile under a pointer, or null off the floor. */
 function floorTile(e) {

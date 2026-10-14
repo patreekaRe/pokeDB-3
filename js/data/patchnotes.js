@@ -49,7 +49,7 @@ export const NEXT = [
   ['battle', 'A Gym Leader\'s badge over the arch is shown in full colour before you win it, so you can see what you\'re fighting for.'],
   ['hub', 'The Nietos\' house and Gym Leaders\' visits to your Secret Base are switched off for now. They\'ll be back.'],
   ['fixes', 'A Gym win no longer counts twice after Continue, badges no longer cut iPhone sound, and Main menu in the Poké Mall or Secret Base no longer goes black.'],
-  ['runs', 'After a fight, a Bag key lets you check your items and deck before picking, and a found item shows what it does at once, no text to tap through.'],
+  ['runs', 'After a fight and in the Poké Mart, a Bag key lets you check your items and deck, and a found item shows what it does at once, no text to tap through.'],
   ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, picking a card to upgrade or forget keeps the 3D room behind it, and running from Team Rocket takes you straight to the map.'],
   ['hub', 'The Clearing\'s ground now rolls away into the distance, like a little round world.'],
   ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden and baby Linc\'s washing out.'],
