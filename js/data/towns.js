@@ -748,18 +748,20 @@ export const TOWNS = {
     // where it crosses the middle (the broken Waystone in it, stalls round it), the watering hole off to the top left with a
     // jetty and a windpump, round huts either side of the road, wagons drawn up bottom right, a kopje of boulders. Cleaned
     // up (2026-10-14, the handoff's checklist): the road three wide, a jetty two wide, fewer huts with room between them,
-    // and the Gym Leaders in grand kasbahs on 5 x 4 lots, Jerome's by the windpump, Machew's out on the east edge. T the
+    // and the Gym Leaders in grand kasbahs on 5 x 4 lots, Jerome's by the windpump, Machew's out on the east edge. Then
+    // (the user's ask, 2026-10-14: the stalls round the Waystone "so lame and dinky") a real bazaar square, long stalls on
+    // its four sides, and the hut by the sun gate gone. T the
     // bush round the town (acacias, baobabs, termite mounds), . dry grass, # the road and the market's packed earth, , tall
-    // grass, f flowers, ~ the watering hole, - the jetty, | a lone acacia, n a market stall, L a torch, b a bench, c a crate,
+    // grass, f flowers, ~ the watering hole, - the jetty, | a lone acacia, n a market stall (a run of them one long stall), L a torch, b a bench, c a crate,
     // k a barrel, R the request board, s a name board; a capital is a building.
     map: [
       'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT##TTTTT',
       'TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT##TTTTT',
       'TTTT..|.........JJJJJ....,,,..###.TTTT',
       'TTT.............JJJJJ.|..,,,.###...TTT',
-      'TT......~~~~~...JJJJJ.......###.GGG.TT',
-      'TT...~~~~~~~~~..JJJJJ......###..GGG.TT',
-      'TT..~~~~~~~~~~~L.....s....###.L.GGG.TT',
+      'TT......~~~~~...JJJJJ.......###.....TT',
+      'TT...~~~~~~~~~..JJJJJ......###..,,,.TT',
+      'TT..~~~~~~~~~~~L.....s....###.L..|..TT',
       'TT.~~~~~~~~~~~~..f........###.......TT',
       'TT.~~~~~~~~~~~~..........###........TT',
       'TT.~~~~~~--~~~~.PP......###......f..TT',
@@ -768,14 +770,14 @@ export const TOWNS = {
       'TT....~~~--~..........###.f..HHH,,,.TT',
       'TT|..f.....L..........###.......,,,.TT',
       'TT...................###L...........TT',
-      'TT.CCCCCC.L.........###..........L..TT',
-      'TT.CCCCCC.....L#n####n#L..SSSS......TT',
-      'TT.CCCCCC.....#R########..SSSS......TT',
-      'TT.CCCCCC.....####WW####..SSSS..f...TT',
-      'TT............n###WW###n............TT',
-      'TT......L.....##########....L.....|.TT',
-      'TT..........b.L#n####n#L,,,,........TT',
-      'TT...........###....................TT',
+      'TT.CCCCCC.L.Lnnn#k#####nn........L..TT',
+      'TT.CCCCCC...#############.SSSS......TT',
+      'TT.CCCCCC...n##R########n.SSSS......TT',
+      'TT.CCCCCC...n#####WW####n.SSSS..f...TT',
+      'TT..........n#####WW####n...........TT',
+      'TT......L...#############...L.....|.TT',
+      'TT..........L############,,,........TT',
+      'TT..........#####nnn#nnn#c..........TT',
       'TT......f...###..L...k.......MMMMM..TT',
       'TT.BBB.....###...VVV..XXX....MMMMM..TT',
       'TT.BBB...,###....VVV..XXX....MMMMM..TT',
@@ -802,7 +804,6 @@ export const TOWNS = {
       { at: 'J', id: 'jerome', name: 'JEROME', door: { x: 18, y: 6 }, home: 'jerome', roof: '#e85aa8' },
       { at: 'B', id: 'b', door: { x: 4, y: 27 }, roof: '#8a5a3a', knock: ['An old voice: "Rain comes once a year. The market comes every day. Guess which we count on."', 'Snoring. A Hippopotas is asleep across the doorway. You go round. There is no round.', 'A potter\'s wheel is spinning inside. It slows when you knock. Then speeds up again.'] },
       { at: 'E', id: 'e', door: { x: 15, y: 32 }, roof: '#5a8a4a', knock: ['A child: "Mum! Someone\'s at the hut! Is it the man with the sword?"', 'Drums inside. Somebody\'s practising. Somebody else is asking them to stop.', 'A voice: "If it\'s about the Doduo, it ran off on its own. Both heads agreed."'] },
-      { at: 'G', id: 'g', door: { x: 33, y: 7 }, roof: '#3a7ab8', knock: ['A note: "Gone to Sun Rock to watch the sunrise. Back when it\'s too hot."', 'No answer. A Trapinch has dug a pit right in front of the door. You step round it.', 'A bead curtain rattles in the doorway. Nobody comes through it.'] },
       { at: 'H', id: 'h', door: { x: 30, y: 13 }, roof: '#b84a3a', knock: ['A voice: "We\'re closed! The heat! Come back at dusk, everyone comes back at dusk."', 'Spices drift out under the door. Somebody inside sneezes. Then again.', 'A sign: "Water jars. Fired in the sun. Don\'t touch, still hot."'] },
       { at: 'V', id: 'v', kind: 'wagon', door: { x: 18, y: 26 }, roof: '#e8dcc0', knock: ['A caravan wagon, its canvas laced shut. "Gone to the next market," a tag says. "Back next season."', 'Something inside clanks. The Blitzle tied up by the wheel snorts at you.'] },
       { at: 'X', id: 'x', kind: 'wagon', door: { x: 23, y: 26 }, roof: '#d86a4a', knock: ['A voice from inside the wagon: "Fortunes told! Two coins!" A pause. "Ah. You\'re not buying. I knew that."', 'The wagon creaks. Somebody is asleep in a hammock in there. Somebody is always asleep in a hammock.'] },
@@ -854,7 +855,7 @@ export const TOWNS = {
       ],
     },
     stands: [[7, 13], [13, 13], [15, 8], [19, 8], [16, 17], [22, 17], [17, 20], [22, 20], [20, 16], [24, 22],
-      [25, 19], [20, 25], [27, 9], [30, 15], [6, 21], [10, 24], [27, 24], [31, 28], [12, 31], [20, 29], [33, 20], [23, 4]],
+      [25, 19], [14, 16], [23, 19], [20, 25], [27, 9], [30, 15], [6, 21], [10, 24], [27, 24], [31, 28], [12, 31], [20, 29], [33, 20], [23, 4]],
     folk: [
       { id: 'girafarig', name: 'Girafarig', move: 'walk', speed: 1.3, likes: ['stand'],
         quips: ['Rig!', 'Gira?', '*the tail looks at you*', 'Farig.'],

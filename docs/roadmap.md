@@ -211,6 +211,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    roof stuck on is now a sento (`bathhouse()` in `js/event-3d.js`): wide and low, timbered plaster and lit lattice windows
    under a kawara roof with a steam vent on its ridge, a curved karahafu porch (`karahafu()`) with the ♨ crest, sign and
    indigo noren, red lanterns, a tall round brick chimney smoking at the back, tubs and a woodpile. Waiting on their look.
+   **Done (2026-10-14): Sunwell's bazaar and every trade house's sign** (the user: the stalls round the Waystone "so lame
+   and dinky", Persian needs a better sign, every trade home a sign and a Poké Ball one, the leaders' signs in the town's
+   look): the market is a bazaar square now, long stalls on its four sides (a run of `n` is one stall, `bazaarStall()`:
+   striped awnings, valances, kilims, heaped wares, lanterns, bunting, flags) with kilims on its floor; the hut by the sun
+   gate (g) gone; Persian's tent wears a crimson marquee with a Poké Ball on top; every other town's trade house a
+   `tradePost()` (a turning Poké Ball on a post, a TRADE board swinging off it); Sunwell's `s` boards are
+   `bazaarBoards()` in each leader's colours. Waiting on the user's look.
    **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
    `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set

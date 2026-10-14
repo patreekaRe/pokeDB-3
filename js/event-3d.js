@@ -8042,6 +8042,88 @@ function tentFront(w, col) {
   return f.c;
 }
 
+/** A Poké Ball, `r` its radius, its button to the front and lit a little at night. */
+function pokeBall(r, lit) {
+  const g = new THREE.Group(), black = std({ color: '#201818', roughness: 0.5 });
+  const btn = std({ color: '#ffffff', emissive: new THREE.Color('#fff4d8'), emissiveIntensity: 0.5, roughness: 0.3 });
+  lit.push(btn);
+  mesh(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e03028', roughness: 0.35 }), 0, 0, 0, g);
+  mesh(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f6f2ea', roughness: 0.4 }), 0, 0, 0, g);
+  mesh(new THREE.CylinderGeometry(r * 1.015, r * 1.015, r * 0.15, 24), black, 0, 0, 0, g);
+  mesh(new THREE.CylinderGeometry(r * 0.36, r * 0.36, r * 0.2, 16), black, 0, 0, r * 0.93, g).rotation.x = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(r * 0.23, r * 0.23, r * 0.24, 16), btn, 0, 0, r * 0.97, g).rotation.x = Math.PI / 2;
+  return g;
+}
+
+/** A little Poké Ball painted on a canvas. */
+function ballIcon(g, cx, cy, r) {
+  g.fillStyle = '#201818'; g.beginPath(); g.arc(cx, cy, r + 0.7, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#e83828'; g.beginPath(); g.arc(cx, cy, r, Math.PI, 0); g.fill();
+  g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI); g.fill();
+  g.fillStyle = '#201818'; g.fillRect(cx - r, cy - r * 0.12, r * 2, r * 0.24);
+  g.beginPath(); g.arc(cx, cy, r * 0.38, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(cx, cy, r * 0.22, 0, Math.PI * 2); g.fill();
+}
+
+/** A trade house's hanging board: TRADE in big cream letters on a deep shade of its colour, a Poké Ball either side. */
+function tradeBoardArt(col) {
+  const f = fine(52, 22, 8), { g, rr, lin } = f, deep = shadeOf(col, -1);
+  rr(0, 0, 52, 22, 2.4, '#d8a838');
+  rr(1.4, 1.4, 49.2, 19.2, 1.6, lin(0, 0, 0, 22, [deep, shadeOf(deep, -1)]));
+  g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.roundRect(1.4, 1.4, 49.2, 19.2, 1.6); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillText('TRADE', 26.4, 9.4, 30);
+  g.fillStyle = '#fff6e0'; g.fillText('TRADE', 26, 9, 30);
+  g.font = 'bold 7px sans-serif'; g.fillStyle = '#ffe08a'; g.fillText('HOUSE', 26, 17, 30);
+  for (const cx of [7, 45]) ballIcon(g, cx, 11, 4.2);
+  return f.c;
+}
+
+/** Every town's trade house wears one (the user's ask, 2026-10-14: "all trade homes should have some kind of sign and a
+    pokeball sign too"): a post at its front corner away from the door, a Poké Ball turning slowly on top, and a TRADE
+    board swinging off an arm. */
+function tradePost(b, f, lit) {
+  const g = new THREE.Group(), side = b.door && tileX(b.door.x) > f.cx ? -1 : 1, H = 2.2;
+  g.position.set(f.cx + side * (f.w / 2 - 0.16), 0, f.cz + f.h / 2 - 0.16);
+  B.group.add(g);
+  const wood = std({ color: '#5a3a24', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+  mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.14, 12), std({ color: '#8a8478', roughness: 1 }), 0, 0.07, 0, g);
+  mesh(new THREE.CylinderGeometry(0.055, 0.07, H, 10), wood, 0, H / 2, 0, g);
+  mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 12), brass, 0, H + 0.03, 0, g);
+  const ball = pokeBall(0.3, lit);
+  ball.position.y = H + 0.34; g.add(ball);
+  mesh(new THREE.BoxGeometry(0.95, 0.06, 0.06), wood, side * 0.45, H - 0.3, 0, g);
+  mesh(new THREE.SphereGeometry(0.05, 10, 8), brass, side * 0.92, H - 0.3, 0, g);
+  const swing = new THREE.Group();
+  swing.position.set(side * 0.5, H - 0.33, 0.03); g.add(swing);
+  for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.14, 4), brass, sx * 0.4, -0.07, 0, swing).castShadow = false;
+  const board = panel(tradeBoardArt(b.roof || '#c83a3a'), 1.18, 0.5, 0, 0, 0);
+  board.removeFromParent(); board.position.set(0, -0.39, 0); swing.add(board);
+  B.ticks.push((now) => { if (!calm) { ball.rotation.y = Math.sin(now / 1400) * 0.5; swing.rotation.z = Math.sin(now / 900) * 0.04; } });
+  return g;
+}
+
+/** Persian's marquee: a crimson board with an arched top, gold-rimmed and studded, Persian's red charm in gold at its
+    head, the bazaar's name big in cream and TRADE HOUSE under it between two Poké Balls. */
+function marqueeArt(name, col) {
+  const W = 120, H = 36, f = fine(W, H, 8), { g, lin } = f;
+  const shape = (ctx, i) => { ctx.beginPath(); ctx.moveTo(i, H - i); ctx.lineTo(i, 12 + i * 0.5); ctx.quadraticCurveTo(W * 0.25, 7 + i, W / 2, i); ctx.quadraticCurveTo(W * 0.75, 7 + i, W - i, 12 + i * 0.5); ctx.lineTo(W - i, H - i); ctx.closePath(); };
+  g.fillStyle = '#5a2a16'; shape(g, 0); g.fill();
+  g.fillStyle = '#e8b040'; shape(g, 1.3); g.fill();
+  g.fillStyle = lin(0, 0, 0, H, [shadeOf(col, -1), '#4a0e1c']); shape(g, 2.6); g.fill();
+  g.fillStyle = '#e8b040';
+  for (let x = 8; x < W - 6; x += 7) { g.beginPath(); g.arc(x, H - 4.6, 0.8, 0, Math.PI * 2); g.fill(); }
+  g.beginPath(); g.ellipse(W / 2, 8.4, 4.6, 3.6, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#d81830'; g.beginPath(); g.ellipse(W / 2, 8.4, 3, 2.2, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.ellipse(W / 2 - 1, 7.6, 1, 0.6, 0, 0, Math.PI * 2); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 12px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(name, W / 2 + 0.5, 19.5, 100);
+  g.fillStyle = '#fff4d8'; g.fillText(name, W / 2, 19, 100);
+  g.font = 'bold 7px sans-serif'; g.fillStyle = '#f8d060'; g.fillText('TRADE HOUSE', W / 2, 27.6, 60);
+  for (const cx of [W / 2 - 34, W / 2 + 34]) ballIcon(g, cx, 27.6, 3.4);
+  return f.c;
+}
+
 /** Persian's bazaar, a great striped tent over its footprint: canvas walls, a peaked roof on a centre pole with a pennant,
     a scalloped valance, its doorway open and lit, brass lamps hung either side, its name over the door. */
 function bazaarTent(b, f, L, lit) {
@@ -8081,7 +8163,18 @@ function bazaarTent(b, f, L, lit) {
     mesh(new THREE.ConeGeometry(0.08, 0.1, 10), brass, sx * (w / 2 - 0.25), h - 0.28, d / 2 + 0.3, g);
   }
   mesh(new THREE.BoxGeometry(1.6, 0.03, 0.8), std({ color: '#a83a3a', roughness: 1 }), 0, 0.015, d / 2 + 0.45, g).castShadow = false;
-  if (b.name) g.attach(panel(signArt(b.name), 1.8, 0.38, f.cx, h + 0.22, f.cz + d / 2 + 0.33));
+  // (the user's ask, 2026-10-14: "Persian needs a better trade sign") a great marquee over the tent's front on two carved
+  // posts at its corners, a Poké Ball turning on top; it stands in for the town's tradePost()
+  const mw = w + 0.2, mz = f.h / 2 - 0.12, mh = (mw - 0.16) * 36 / 120, carved = std({ color: '#6a3a22', roughness: 0.8 });
+  for (const sx of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.07, 0.09, 2.55, 10), carved, sx * mw / 2, 1.275, mz, g);
+    mesh(new THREE.SphereGeometry(0.1, 12, 10), brass, sx * mw / 2, 2.6, mz, g);
+  }
+  g.attach(panel(marqueeArt(b.name || 'BAZAAR', b.roof), mw - 0.16, mh, f.cx, 1.55 + mh / 2, f.cz + mz + 0.02));
+  const ball = pokeBall(0.26, lit);
+  ball.position.set(0, 1.55 + mh + 0.3, mz); g.add(ball);
+  B.ticks.push((now) => { if (!calm) ball.rotation.y = Math.sin(now / 1400) * 0.5; });
+  g.userData.signed = true;
   return g;
 }
 
@@ -8287,37 +8380,192 @@ function sunGate(x, z, span, tall, name, L, lit) {
   return g;
 }
 
-/** A market stall on its tile: four poles, a striped awning sloping to the front, a table of wares (fruit, pots, cloth). */
-function stall(x, z, rnd) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  B.group.add(g);
-  const wood = std({ color: '#7a5434', roughness: 0.9 }), col = SAVANNA.stripe[Math.floor(rnd() * SAVANNA.stripe.length)];
-  for (const sx of [-1, 1]) for (const [sz, hh] of [[-1, 1.3], [1, 1.1]]) mesh(new THREE.CylinderGeometry(0.025, 0.025, hh, 6), wood, sx * 0.42, hh / 2, sz * 0.38, g);
-  const awn = mesh(new THREE.BoxGeometry(1.0, 0.03, 0.95), std({ map: stripeArt(col, 4), roughness: 0.9 }), 0, 1.22, 0, g);
-  awn.rotation.x = 0.21;
-  mesh(new THREE.BoxGeometry(0.9, 0.06, 0.55), wood, 0, 0.55, 0.05, g);
-  mesh(new THREE.BoxGeometry(0.9, 0.42, 0.04), std({ color: shadeOf(col, -1), roughness: 0.95 }), 0, 0.34, 0.33, g);
-  const wares = [['#e85a3a', 'ball'], ['#f8c040', 'ball'], ['#7ab040', 'ball'], ['#c8763a', 'pot'], ['#3a7ab8', 'cloth'], ['#d84a8a', 'cloth']];
-  for (let i = 0; i < 5; i++) {
-    const [c, kind] = wares[Math.floor(rnd() * wares.length)], wx = -0.32 + i * 0.16, wz = 0.05 + (rnd() - 0.5) * 0.2;
-    const m = std({ color: c, roughness: 0.7 });
-    if (kind === 'ball') for (let k = 0; k < 3; k++) mesh(new THREE.SphereGeometry(0.045, 8, 6), m, wx + (k - 1) * 0.04, 0.62 + (k === 1 ? 0.05 : 0), wz, g).castShadow = false;
-    else if (kind === 'pot') mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.14, 10), m, wx, 0.65, wz, g);
-    else mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.16, 8), m, wx, 0.63, wz, g).rotation.z = Math.PI / 2;
+/** A Sunwell Bazaar name board's face: gold-rimmed, the leader's deepest colour with zigzags in theirs along top and
+    foot, their crest on the left, the name in white and GYM LEADER in their light colour. */
+function bazaarBoardArt(lines, ink, letter) {
+  const f = fine(64, 28, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 28, 2.6, '#e8b040');
+  rr(1.5, 1.5, 61, 25, 1.8, lin(0, 0, 0, 28, [ink[2], shadeOf(ink[2], -1)]));
+  g.strokeStyle = ink[1]; g.lineWidth = 1.1;
+  for (const y of [4.4, 23.6]) { g.beginPath(); for (let x = 3; x <= 61; x += 3) g.lineTo(x, y + (x % 6 ? -1.2 : 1.2)); g.stroke(); }
+  if (letter) {
+    g.fillStyle = '#e8b040'; g.beginPath(); g.arc(11, 14, 6.4, 0, Math.PI * 2); g.fill();
+    g.fillStyle = ink[1]; g.beginPath(); g.arc(11, 14, 5.2, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff'; g.font = 'bold 8px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(letter, 11, 14.5);
   }
+  const cx = letter ? 37 : 32, mw = letter ? 44 : 56;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillText(lines[0], cx + 0.4, (lines[1] ? 11.5 : 14) + 0.5, mw);
+  g.fillStyle = '#ffffff'; g.fillText(lines[0], cx, lines[1] ? 11.5 : 14, mw);
+  if (lines[1]) { g.font = 'bold 7px sans-serif'; g.fillStyle = ink[0]; g.fillText(lines[1], cx, 19.5, mw); }
+  return f.c;
+}
+
+/** Sunwell Bazaar's name boards (`s`; the user's ask, 2026-10-14: the leaders' signs in the town's own look, as
+    Highbough's are): a painted board in the leader's colours on two carved posts, brass knobs on top, a little striped
+    awning over it and a lantern lit in their colour hung off each post. */
+function bazaarBoards(town, lit) {
+  const { map } = town;
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 's') return;
+    const near = (f) => Math.hypot(Math.max(f.x0 - x, 0, x - f.x1), Math.max(f.y0 - y, 0, y - f.y1));
+    const named = town.buildings.filter(b => b.name).map(b => ({ b, d: near(footprint(map, b.at)) })).sort((p, q) => p.d - q.d)[0]?.b;
+    if (!named) return;
+    const leader = town.homes?.[named.home]?.leader, ink = (leader && LEADER_INK[leader]) || ['#ffe08a', named.roof || '#c83a5a', '#4a1820'];
+    const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
+    const g = new THREE.Group(), W = 1.5, H = W * 28 / 64, top = 1.55;
+    g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    B.group.add(g);
+    const wood = std({ color: '#6a4228', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+    const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.4 });
+    lit.push(glow);
+    for (const sx of [-1, 1]) {
+      const px = sx * (W / 2 + 0.04);
+      mesh(new THREE.CylinderGeometry(0.055, 0.07, top + 0.3, 10), wood, px, (top + 0.3) / 2, 0, g);
+      mesh(new THREE.SphereGeometry(0.075, 12, 10), brass, px, top + 0.34, 0, g);
+      mesh(new THREE.BoxGeometry(0.2, 0.03, 0.03), wood, px + sx * 0.1, top - 0.2, 0, g);
+      mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.12, 4), brass, px + sx * 0.18, top - 0.27, 0, g).castShadow = false;
+      const lamp = mesh(new THREE.SphereGeometry(0.07, 12, 8), glow, px + sx * 0.18, top - 0.38, 0, g);
+      lamp.scale.y = 1.25; lamp.castShadow = false;
+      mesh(new THREE.ConeGeometry(0.06, 0.07, 10), brass, px + sx * 0.18, top - 0.29, 0, g).castShadow = false;
+    }
+    const awn = mesh(new THREE.BoxGeometry(W + 0.32, 0.03, 0.36), std({ map: stripeArt(ink[1], 5), roughness: 0.9 }), 0, top + 0.16, 0.12, g);
+    awn.rotation.x = 0.35;
+    g.attach(panel(bazaarBoardArt(lines, ink, leader ? (named.name || leader)[0].toUpperCase() : ''), W, H, tileX(x), top - H / 2 - 0.02, tileZ(y) + 0.36));
+    g.traverse(o => { o.raycast = () => {}; });
+    B.blocked.add(key(x, y));
+  }));
+}
+
+/** A kilim for a stall's back or the market floor: a border, a field and a stepped diamond, its colours from `cols`. */
+function kilimArt(cols, seed) {
+  const f = fine(40, 26, 6), { g } = f, r = seeded(seed);
+  g.fillStyle = cols[0]; g.fillRect(0, 0, 40, 26);
+  g.fillStyle = cols[1]; g.fillRect(2, 2, 36, 22);
+  g.fillStyle = cols[2]; g.fillRect(4, 4, 32, 18);
+  g.fillStyle = cols[3];
+  for (let x = 5; x < 36; x += 4) for (const y of [3, 23]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 2, y - 1.5); g.lineTo(x + 2, y + 1.5); g.fill(); }
+  for (const [s, c] of [[9, cols[1]], [6.5, cols[3]], [4, cols[0]], [1.8, cols[1]]]) { g.fillStyle = c; g.beginPath(); g.moveTo(20, 13 - s); g.lineTo(20 + s * 1.5, 13); g.lineTo(20, 13 + s); g.lineTo(20 - s * 1.5, 13); g.closePath(); g.fill(); }
+  for (const cx of [9, 31]) { g.fillStyle = cols[3]; g.beginPath(); g.moveTo(cx, 9 + r()); g.lineTo(cx + 2.5, 13); g.lineTo(cx, 17 - r()); g.lineTo(cx - 2.5, 13); g.fill(); }
+  g.fillStyle = 'rgba(255,255,255,0.08)'; for (let y = 0; y < 26; y += 1.5) g.fillRect(0, y, 40, 0.4);
+  return f.c;
+}
+
+/** A row of pennants on a string, for over a stall. */
+function buntingArt(n, rnd) {
+  const f = fine(n * 10, 10, 6), { g } = f;
+  g.strokeStyle = '#f4e8d0'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(0, 1.4); g.lineTo(n * 10, 1.4); g.stroke();
+  for (let i = 0; i < n; i++) { g.fillStyle = SAVANNA.stripe[Math.floor(rnd() * SAVANNA.stripe.length)]; g.beginPath(); g.moveTo(i * 10 + 1, 1.4); g.lineTo(i * 10 + 9, 1.4); g.lineTo(i * 10 + 5, 9.4); g.closePath(); g.fill(); }
+  return f.c;
+}
+
+/** A stall's scalloped valance in its colour, gold-edged, a tassel at each point. */
+function valanceArt(col, n) {
+  const f = fine(n * 8, 8, 6), { g } = f;
+  g.fillStyle = col; g.fillRect(0, 0, n * 8, 3);
+  for (let i = 0; i < n; i++) { g.beginPath(); g.arc(i * 8 + 4, 3, 4, 0, Math.PI); g.fill(); }
+  g.fillStyle = '#e8b040'; g.fillRect(0, 0, n * 8, 0.9);
+  for (let i = 0; i < n; i++) { g.beginPath(); g.arc(i * 8 + 4, 7.2, 0.8, 0, Math.PI * 2); g.fill(); }
+  return f.c;
+}
+
+/** A long market stall (the user's ask, 2026-10-14: the old one-tile stalls were "so lame and dinky"), `len` tiles along
+    its counter, turned by `turn`: carved posts with brass knobs, a striped awning sloping to the front under a scalloped
+    valance, a kilim hung across its back, a counter heaped with wares a tile at a time (spice cones in trays, glazed jars,
+    fruit in baskets, bolts of cloth, brass lamps), lanterns hung along its front, pennants strung over it and a flag at
+    each end. Its materials are its own, so it fades by itself when you walk behind it. */
+function bazaarStall(x, z, len, turn, col, rnd, lit, Gm) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z); g.rotation.y = turn;
+  B.group.add(g);
+  const W = len - 0.1, D = 0.84, wood = std({ color: '#6a4428', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+  const px = (i) => -W / 2 + i * W / len;
+  for (let i = 0; i <= len; i++) for (const [pz, ph] of [[-D / 2, 1.9], [D / 2, 1.58]]) {
+    const hh = (i === 0 || i === len) && pz < 0 ? 2.45 : ph;
+    mesh(Gm.post, wood, px(i), hh / 2, pz, g).scale.y = hh;
+    mesh(Gm.knob, brass, px(i), hh + 0.03, pz, g).castShadow = false;
+  }
+  const tex = stripeArt(col, 4); tex.repeat.set(len, 1);
+  const awn = mesh(new THREE.BoxGeometry(W + 0.26, 0.035, D + 0.3), std({ map: tex, roughness: 0.9 }), 0, 1.76, 0.02, g);
+  awn.rotation.x = Math.atan2(0.32, D);
+  const hang = (art, w, h, y, z) => { const p = panel(art, w, h, 0, 0, 0); p.removeFromParent(); p.position.set(0, y, z); p.castShadow = false; g.add(p); return p; };
+  hang(valanceArt(col, len * 4), W + 0.26, 0.26, 1.47, D / 2 + 0.17);
+  hang(kilimArt([shadeOf(col, -1), '#f4e2b8', col, '#2a1c18'], len * 7), W - 0.08, 1.0, 1.05, -D / 2 + 0.03);
+  hang(buntingArt(len * 5, rnd), W, 0.2, 2.18, -D / 2 + 0.02);
+  const flagM = std({ color: col, roughness: 0.8, side: THREE.DoubleSide }), flags = [];
+  for (const i of [0, len]) { const fl = mesh(Gm.flag, flagM, px(i) + 0.17, 2.34, -D / 2, g); fl.castShadow = false; flags.push(fl); }
+  const cloth = std({ color: shadeOf(col, -1), roughness: 0.95 }), top = std({ color: '#8a6040', roughness: 0.85 });
+  mesh(new THREE.BoxGeometry(W - 0.04, 0.52, 0.42), [wood, wood, top, wood, cloth, wood], 0, 0.26, D / 2 - 0.24, g);
+  mesh(new THREE.BoxGeometry(W - 0.02, 0.05, 0.03), brass, 0, 0.47, D / 2 - 0.02, g).castShadow = false;
+  mesh(new THREE.BoxGeometry(W - 0.1, 0.05, 0.26), wood, 0, 0.62, -D / 2 + 0.16, g);
+  const glow = std({ color: '#f8b040', emissive: new THREE.Color('#ffb860'), emissiveIntensity: 0.8, roughness: 0.4 });
+  lit.push(glow);
+  const pick = (a) => a[Math.floor(rnd() * a.length)], kinds = ['spice', 'jars', 'fruit', 'cloth', 'brass'], small = (o) => { o.castShadow = false; return o; };
+  let k = Math.floor(rnd() * kinds.length);
+  for (let i = 0; i < len; i++) {
+    const cx = -W / 2 + (i + 0.5) * W / len, wz = D / 2 - 0.24, y = 0.53, kind = kinds[k++ % kinds.length];
+    if (kind === 'spice') for (let j = 0; j < 3; j++) {
+      const sx = cx + (j - 1) * 0.27;
+      small(mesh(Gm.tray, top, sx, y, wz, g));
+      small(mesh(Gm.mound, std({ color: pick(['#e8702a', '#c8301e', '#f0c030', '#8a9a30', '#a0522d']), roughness: 1 }), sx, y + 0.07, wz, g));
+    } else if (kind === 'jars') for (let j = 0; j < 3; j++) {
+      const m = std({ color: pick(['#c8763a', '#3a6ab0', '#2e8a7a', '#b8502a', '#e0c890']), roughness: 0.35 }), s = 0.8 + rnd() * 0.5, jz = wz + (rnd() - 0.5) * 0.08;
+      small(mesh(Gm.jar, m, cx + (j - 1) * 0.26, y + 0.09 * s, jz, g)).scale.set(s, s * 1.25, s);
+      small(mesh(Gm.neck, m, cx + (j - 1) * 0.26, y + 0.2 * s, jz, g));
+    } else if (kind === 'fruit') for (let j = 0; j < 2; j++) {
+      const bx = cx + (j ? 0.18 : -0.18), fm = std({ color: pick(['#e85a3a', '#f8c040', '#7ab040', '#d83a6a']), roughness: 0.6 });
+      small(mesh(Gm.basket, std({ color: '#b8904a', roughness: 1, side: THREE.DoubleSide }), bx, y + 0.05, wz, g));
+      for (let q = 0; q < 4; q++) small(mesh(Gm.fruit, fm, bx + (q % 2 - 0.5) * 0.08, y + 0.08 + (q > 1 ? 0.05 : 0), wz + (q > 1 ? 0 : (q - 0.5) * 0.06), g));
+    } else if (kind === 'cloth') for (let j = 0; j < 4; j++) {
+      small(mesh(Gm.bolt, std({ color: pick([...SAVANNA.stripe, '#f4e8d0', '#2a1c18']), roughness: 0.95 }), cx + (j % 2 - 0.5) * 0.36, y + 0.05 + Math.floor(j / 2) * 0.09, wz, g));
+    } else for (let j = 0; j < 3; j++) {
+      const lx = cx + (j - 1) * 0.26;
+      small(mesh(Gm.lamp, brass, lx, y + 0.06, wz, g)).scale.set(1, 0.55, 0.75);
+      small(mesh(Gm.spout, brass, lx + 0.1, y + 0.08, wz, g)).rotation.z = -1.1;
+    }
+    for (let j = 0; j < 3; j++) small(mesh(Gm.jar, std({ color: pick(['#c8763a', '#e0c890', '#8a5a3a', '#3a6ab0']), roughness: 0.5 }), cx + (j - 1) * 0.24, 0.71, -D / 2 + 0.16, g));
+    small(mesh(Gm.cord, brass, cx, 1.42, D / 2 + 0.12, g));
+    small(mesh(Gm.lantern, glow, cx, 1.3, D / 2 + 0.12, g)).scale.y = 1.3;
+  }
+  if (rnd() < 0.7) small(mesh(Gm.roll, std({ color: pick(['#a83a3a', '#3a5a9a', '#c87a2a']), roughness: 0.95 }), W / 2 - 0.06, 0.55, D / 2 + 0.1, g)).rotation.z = 0.28;
+  B.ticks.push((now) => { if (!calm) flags.forEach((fl, i) => { fl.rotation.y = Math.sin(now / 650 + i * 2 + x) * 0.4; }); });
+  g.traverse(o => { o.raycast = () => {}; });
   return g;
 }
 
 /** The savanna's own things from the map: the watering hole under it all, a name board by each leader's home (`s`), the
-    market's stalls. */
-function savannaExtras(town) {
+    market's stalls (a run of `n` is one long stall; a column of them faces in across the square) and kilims laid out on
+    its floor in front of some. */
+function savannaExtras(town, L, lit) {
   wateringHole(town);
-  nameBoards(town, 's');
-  const rnd = seeded(41);
-  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === 'n') { stall(tileX(x), tileZ(y), rnd); B.blocked.add(key(x, y)); }
+  bazaarBoards(town, lit);
+  const { map } = town, rnd = seeded(41), n = (x, y) => map[y]?.[x] === 'n', seen = new Set(), runs = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'n' || seen.has(key(x, y))) return;
+    let len = 1; while (n(x + len, y)) len++;
+    if (len > 1) { for (let i = 0; i < len; i++) seen.add(key(x + i, y)); runs.push({ x: x + (len - 1) / 2, y, len }); return; }
+    let h = 1; while (n(x, y + h) && !n(x - 1, y + h) && !n(x + 1, y + h)) h++;
+    for (let i = 0; i < h; i++) seen.add(key(x, y + i));
+    runs.push({ x, y: y + (h - 1) / 2, len: h, v: h > 1 });
   }));
+  if (!runs.length) return;
+  const mid = runs.reduce((s, r) => s + r.x, 0) / runs.length;
+  const Gm = { post: new THREE.CylinderGeometry(0.035, 0.042, 1, 8), knob: new THREE.SphereGeometry(0.05, 10, 8), flag: new THREE.PlaneGeometry(0.32, 0.2),
+    tray: new THREE.CylinderGeometry(0.12, 0.1, 0.04, 14), mound: new THREE.ConeGeometry(0.1, 0.13, 14), jar: new THREE.SphereGeometry(0.075, 12, 10),
+    neck: new THREE.CylinderGeometry(0.03, 0.04, 0.06, 10), basket: new THREE.CylinderGeometry(0.13, 0.1, 0.1, 14, 1, true), fruit: new THREE.SphereGeometry(0.045, 8, 6),
+    bolt: new THREE.BoxGeometry(0.32, 0.08, 0.24), lamp: new THREE.SphereGeometry(0.07, 12, 8), spout: new THREE.ConeGeometry(0.02, 0.12, 8),
+    cord: new THREE.CylinderGeometry(0.006, 0.006, 0.16, 4), lantern: new THREE.SphereGeometry(0.06, 10, 8), roll: new THREE.CylinderGeometry(0.06, 0.06, 1.0, 10) };
+  runs.forEach((r, i) => {
+    for (let k = 0; k < r.len; k++) B.blocked.add(r.v ? key(r.x, r.y - (r.len - 1) / 2 + k) : key(r.x - (r.len - 1) / 2 + k, r.y));
+    const col = SAVANNA.stripe[i % SAVANNA.stripe.length];
+    fadeBehind(bazaarStall(tileX(r.x), tileZ(r.y), r.len, r.v ? (r.x < mid ? Math.PI / 2 : -Math.PI / 2) : 0, col, rnd, lit, Gm));
+    if (i % 2) return;
+    const fx = r.v ? r.x + (r.x < mid ? 1 : -1) : r.x, fy = r.v ? r.y : r.y + 1;
+    if (map[fy]?.[Math.round(fx)] !== '#') return;
+    const rc = SAVANNA.stripe[(i + 2) % SAVANNA.stripe.length];
+    const rug = panel(kilimArt([rc, '#f4e2b8', shadeOf(rc, -1), '#2a1c18'], i + 3), r.v ? 2.2 : Math.min(2.2, r.len - 0.4), 0.9, tileX(fx), 0.015, tileZ(fy));
+    rug.rotation.x = -Math.PI / 2; rug.rotation.z = r.v ? Math.PI / 2 : 0; rug.raycast = () => {}; rug.castShadow = false;
+  });
 }
 
 /** A mote of dust, gold, for the ones drifting up off the road. */
@@ -8424,6 +8672,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
     const g = LANDMARKS[b.kind]?.(b, f) ?? S.house(b, f, L, lit, smoke);
+    if (b.kind === 'shop' && !g.userData.signed) g.attach(tradePost(b, f, lit));
     if (S.fade) fadeBehind(g);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
