@@ -286,6 +286,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    crystals say the seal still holds. **The Sealed Gate's spot in the Clearing** (`SEALED_AT`, `js/hub-3d.js`) stays
    Mewtwo's door ("Go through" starts its run); with five shards and the gate broken it gains a second button into the
    Depths (a visit outside a run, the Depths camp if built). The Waystone stays the towns' stone (all 2026-10-14).
+   **Mewtwo waits at the broken gate** (the user's idea, 2026-10-14): once Mewtwo is freed, a won run's fall no longer
+   throws your Pokémon back by a nameless force (`kind: 'open'` in `descent()`); Mewtwo stands in the open gate and you
+   talk to it. It says what's down there (Eternatus) must be beaten to save the world, and that it needs the energy
+   of the five Waystones to do it. That is the story that ties the shards to the Depths, so it replaces the "only Mewtwo
+   goes down" hint. Its lines follow the shards placed (n/5); with all five, it opens the way and the fall drops you
+   into the Depths. Open: how this sits with Mewtwo's own runs reaching the Depths with no shards (keep them as they are,
+   or have Mewtwo say it can go alone but can't win alone?), and whether the talk uses the gym's slide-in dialogue.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
    in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
