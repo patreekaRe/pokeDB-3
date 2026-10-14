@@ -101,6 +101,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    shrine gate with a glowing leaf crest, lanterns, banners and runed stone feet, a shimmer and motes in its opening, a lamp
    before it; the Pokéstop and route sign a step out to its sides, Halloween's hay there gone (`clearingGateArt()`,
    `liveGateway()`). On `main`, waiting on the user's look.
+   **Done (2026-10-14): the Clearing's backdrop filled, east trees out, cracks at the Sealed Gate's spot** (the user's
+   phone shots): the painted vista runs across the whole back and 40 units on up as plain sky (`vistaSpan()`, `SKY_UP`), so
+   no grey shows from the house, the mall or the south side; `TREE_TILES` [30, 15], [29, 20], [30, 24] taken out; violet
+   cracks where the Sealed Gate will stand (`SEALED_AT`), growing with `gateStage()`, crystal shards, sparks, whispers when
+   near and a tap card (`js/hub-cracks.js`). Patch 1.19 cut. Headless-checked, no errors; waiting on the user's look.
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the

@@ -88,7 +88,7 @@ The first section began as the note on playtesting the live site and grew into t
   painted px, a gold-rayed leaf crest on a green-shingled roof, lanterns off its tips, teal banners, carved stone feet with
   glowing runes, `clearingGateArt()`; its opening shimmers and motes rise out of it, `gateVeilArt()` / `liveGateway()`, and
   a teal lamp lights the ground before it after dark; Halloween's hay there taken out as clutter), New game's Pokéstop
-  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`); setting out walks
+  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`; the stop moved a step nearer the avenue and the camera 2026-10-14, the orange tree that stood behind it taken out, the user's ask); setting out walks
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
@@ -120,6 +120,17 @@ The first section began as the note on playtesting the live site and grew into t
   isn't swallowed by the house's merged meshes and shows its card's line. It stands at the garden's front left, turned
   0.3 rad to the path; its posts sit at the board's ends behind it and stop under its roof (inside its width they poked
   through the face).
+
+- **Cracks where the Sealed Gate will stand** (2026-10-14, the user's ask: foreshadow the portal, with words vaguely
+  saying what's happening): while the gate isn't broken (`gateOpen()`), a place `cracks` on `SEALED_AT` (its tile blocked,
+  step the tile south) built by `makeCracks()` in `js/hub-cracks.js`: a flat painted decal (one canvas, drawn again
+  additive with a breathing opacity), violet crystal shards from stage 1, rising sparks, and whispers (`WHISPERS`) that
+  drift up over it in turn while your partner is within 4.5 units. All of it grows with `gateStage(gateHp())` (0 to 3, the
+  same seed so the cracks spread rather than move); its card's line is `CRACK_LINES[stage]`. `?gate=N` shows a stage.
+- **The backdrop** (2026-10-14, the user's phone shots: grey past the view's top and its east end): the vista spans the
+  whole back, `-M - 8` to `COLS + M + 8` (`vistaSpan()`), and its plane runs `SKY_UP` (40) units past the painting, the
+  UVs there sampling the painting's top row (plain sky; the texture is clamped, so the stars keep off that row). The
+  east-side `TREE_TILES` were taken out the same day.
 
 ### The rolling-log bend (on by default, 2026-10-14)
 
