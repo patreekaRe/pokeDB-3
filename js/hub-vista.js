@@ -10,14 +10,15 @@ import { GRADES, gradeHex } from './daytime.js';
 import { rgba, puff, glow, vgrad } from './smooth-paint.js';
 import { SKY, CLOUD } from './safari-lobby.js';
 
-export const VISTA = { x0: -22, w: 24, h: 14 };   // world x of its left edge, its size in world units
+export const VISTA = { h: 14 };                    // its height in world units (its width and place are the hub's)
 const K = 48;                                      // canvas pixels a world unit
 const HZ = 0.95;                                   // the horizon, units up from its foot
 const FADE = 0.3;                                  // its foot fading into the ground
 
-/** The painting for `time`; `roadX` is the world x where the road leaves the ground's back edge, `half` its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js). */
-export function vistaArt(time, roadX, half, look = null) {
-  const { w: W, h: H } = VISTA, c = new OffscreenCanvas(W * K, H * K), g = c.getContext('2d');
+/** The painting for `time`, `W` units wide; `roads` the roads leaving the ground's back edge into it, each its x from the
+    painting's left edge and its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js). */
+export function vistaArt(time, W, roads, look = null) {
+  const H = VISTA.h, c = new OffscreenCanvas(W * K, H * K), g = c.getContext('2d');
   c.fine = K;
   g.scale(K, K);
   const L = (hex) => time === 'day' ? hex : gradeHex(hex, GRADES[time].land);
@@ -43,7 +44,7 @@ export function vistaArt(time, roadX, half, look = null) {
     sg.addColorStop(0, '#fffef0'); sg.addColorStop(1, time === 'day' ? '#ffe878' : time === 'dawn' ? '#ffc070' : '#ff7838');
     g.fillStyle = sg; g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
   }
-  for (let i = 0; i < 9; i++) puff(g, hash(i * 5.3) * (W + 2) - 1, hy - 2.6 - hash(i * 2.7) * 4.5, 0.35 + hash(i * 9.1) * 0.4, CLOUD[time], night ? 0.8 : 0.92);
+  for (let i = 0; i < Math.round(W * 0.4); i++) puff(g, hash(i * 5.3) * (W + 2) - 1, hy - 2.6 - hash(i * 2.7) * 4.5, 0.35 + hash(i * 9.1) * 0.4, CLOUD[time], night ? 0.8 : 0.92);
 
   // two ranges of snowy mountains hazing into the distance
   const range = (n, lo, hi, seed, body, snow) => {
@@ -67,16 +68,15 @@ export function vistaArt(time, roadX, half, look = null) {
     g.fillStyle = vgrad(g, hy - hi * 0.6, hy, [rgba(L(s2), 0), rgba(L(s2), 0.55)]);
     g.fillRect(0, hy - hi * 0.6, W, hi * 0.6 + 0.05);
   };
-  range(5, 2.2, 3.8, 1, [L('#a8b8d8'), L('#8ca0c4')], L('#f4f6fa'));
-  range(8, 1, 2, 9, [L('#8098c0'), L('#6a82ac')], L('#e8eef6'));
+  range(Math.round(W / 4.8), 2.2, 3.8, 1, [L('#a8b8d8'), L('#8ca0c4')], L('#f4f6fa'));
+  range(Math.round(W / 3), 1, 2, 9, [L('#8098c0'), L('#6a82ac')], L('#e8eef6'));
 
   // the meadow, paler far off, a treeline along the horizon
   g.fillStyle = vgrad(g, hy, H, (look?.meadow || ['#b0dc88', '#8ccc62', '#76c052']).map(L));
   g.fillRect(0, hy, W, HZ);
-  const road = roadX - VISTA.x0;
   for (let i = 0; i < W * 3; i++) {
     const x = hash(i * 4.7) * W, r = 0.12 + hash(i * 2.3) * 0.2;
-    if (Math.abs(x - road) < 0.45) continue;   // a gap where the trail goes over the horizon, framed by the gate
+    if (roads.some(({ x: rx }) => Math.abs(x - rx) < 0.45)) continue;   // a gap where a trail goes over the horizon, framed by its gate
     const tg = g.createRadialGradient(x - r * 0.3, hy - r * 0.7, 0, x, hy - r * 0.3, r * 1.1);
     const [lit, dark] = look?.trees || ['#5eae4c', '#2e6a30'];
     tg.addColorStop(0, L(lit)); tg.addColorStop(1, L(dark));
@@ -90,23 +90,25 @@ export function vistaArt(time, roadX, half, look = null) {
     g.beginPath(); g.arc(x, y, 0.012 + k * 0.035, 0, Math.PI * 2); g.fill();
   }
 
-  // the trail, from the ground's back edge winding off over the horizon
-  const at = (y) => {
-    const t = (y - hy) / HZ;   // 0 at the horizon, 1 at the foot
-    return [road + Math.sin((1 - t) * 3.2) * (1 - t) * 0.9, Math.max(0.015, half * t ** 1.7)];
-  };
-  const left = [], right = [];
-  for (let y = hy; y <= H + 0.001; y += 0.02) { const [x, hw] = at(y); left.push([x - hw, y]); right.unshift([x + hw, y]); }
-  const trail = new Path2D();
-  [...left, ...right].forEach(([x, y], i) => (i ? trail.lineTo(x, y) : trail.moveTo(x, y)));
-  trail.closePath();
-  g.fillStyle = vgrad(g, hy, H, [L('#e8d4a0'), L('#e0c488'), L('#d6ba82')]); g.fill(trail);
-  g.strokeStyle = rgba(L('#8a6838'), 0.5); g.lineWidth = 0.025; g.stroke(trail);
-  for (let i = 0; i < 60; i++) {   // pebbles and ruts on it
-    const y = hy + 0.1 + hash(i * 1.3) * (HZ - 0.1), [x, hw] = at(y);
-    g.fillStyle = rgba(L('#a08048'), 0.5);
-    g.beginPath(); g.ellipse(x + (hash(i * 7.1) - 0.5) * hw * 1.4, y, 0.01 + hw * 0.06, 0.006 + hw * 0.03, 0, 0, Math.PI * 2); g.fill();
-  }
+  // the trails, from the ground's back edge winding off over the horizon
+  roads.forEach(({ x: road, half }, n) => {
+    const at = (y) => {
+      const t = (y - hy) / HZ;   // 0 at the horizon, 1 at the foot
+      return [road + Math.sin((1 - t) * 3.2 + n * 2) * (1 - t) * 0.9, Math.max(0.015, half * t ** 1.7)];
+    };
+    const left = [], right = [];
+    for (let y = hy; y <= H + 0.001; y += 0.02) { const [x, hw] = at(y); left.push([x - hw, y]); right.unshift([x + hw, y]); }
+    const trail = new Path2D();
+    [...left, ...right].forEach(([x, y], i) => (i ? trail.lineTo(x, y) : trail.moveTo(x, y)));
+    trail.closePath();
+    g.fillStyle = vgrad(g, hy, H, [L('#e8d4a0'), L('#e0c488'), L('#d6ba82')]); g.fill(trail);
+    g.strokeStyle = rgba(L('#8a6838'), 0.5); g.lineWidth = 0.025; g.stroke(trail);
+    for (let i = 0; i < 60; i++) {   // pebbles and ruts on it
+      const y = hy + 0.1 + hash(i * 1.3 + n) * (HZ - 0.1), [x, hw] = at(y);
+      g.fillStyle = rgba(L('#a08048'), 0.5);
+      g.beginPath(); g.ellipse(x + (hash(i * 7.1) - 0.5) * hw * 1.4, y, 0.01 + hw * 0.06, 0.006 + hw * 0.03, 0, 0, Math.PI * 2); g.fill();
+    }
+  });
 
   // the foot fades out, onto the real ground
   g.setTransform(1, 0, 0, 1, 0, 0);

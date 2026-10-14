@@ -35,25 +35,28 @@ import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
-const COLS = 20, ROWS = 16;   // the walkable grid, tile (0, 0) at the back left
-// grown 2026-10-14 (the user's ask: room for the Waystone ring, the Nietos' house and Kenmatta's dojo): seven columns on
-// the right and four rows between the back and the plaza; the world stays anchored where the 13 x 12 grid's middle
-// was, so everything at the back (the Safari gate's view, the cleared corners) stands where it did
-const X0 = 6.5, Z0 = 6;
-const M = 4, FRONT = 7;       // grass and forest round it (tiles): back and sides, and in front, down to the gate and past it
-// the Whispering Clearing's gate across the front (the user's ask, 2026-10-09): its fence closes the hub off, the trail
-// leaves under its arch, and setting out on a run walks your partner through it and away
-const GATE_AT = { tx: 6, ty: ROWS + 4 };
-// outside it (the user's ask, 2026-10-09): the gate is only scenery you walk under, New game's Pokéstop stands right of
-// the trail and a Pokémon route sign left of it
-const STOP_AT = { tx: 8, ty: GATE_AT.ty + 1 }, SIGN_AT = { tx: 4, ty: GATE_AT.ty + 1 };
+// the walkable grid, tile (0, 0) at the back left. Laid out anew 2026-10-14 (the user's ask: everything spread out, wide
+// roads that set off the plaza in the middle, the way out going north, Kenmatta's dojo away from the Nietos, the Secret
+// Base moved): a round paved plaza in the middle, four avenues off it, a ring road round them linking every place
+const COLS = 31, ROWS = 21;
+const X0 = 15.5, Z0 = 11.5;   // the world's origin, the plaza's middle
+const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind, the forest down the sides, a hedge in front
+// the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
+// the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
+// side of the avenue just inside it
+const GATE_AT = { tx: 15, ty: -2 };
+const STOP_AT = { tx: 17, ty: 0 }, SIGN_AT = { tx: 13, ty: 0 };
 const TP = 16;                // painted pixels a tile
-const START = { x: 6, y: 14 };   // the plaza's middle, the Waystone's tile
-const PC_AT = { tx: 11, ty: 14 };
+const START = { x: 15, y: 11 };  // the plaza's middle, the Waystone's tile
+const PLAZA_R = 3.6;             // the paved plaza's radius
+const PC_AT = { tx: 18, ty: 8 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
 const SEEN = 2.6;             // how near (tiles) a place's doorstep you walk before its keys are on the bar
+
+// the avenues' and plaza's paving: pale stones, the mortar between them and the kerb's two shades
+const STONE = ['#f2eadc', '#e4dac6', '#d4c8b0', '#c2b59a'], STONE_MORTAR = '#a8997e', STONE_KERB = ['#9c917c', '#857a66'];
 
 // the Clearing's day colours (BIOME_ART.clearing in js/scene.js); the light, not the paint, follows the clock
 const P = {
@@ -82,23 +85,42 @@ const LIGHT = {
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
 const AIRS = ['clearing-day', 'clearing-night'];
-const BUGS = 44;
+const BUGS = 90;
 
-// the paths, as centre lines between tile centres; the plaza round START
-// (the Safari road runs on up through its gate, SAFARI_AT, and off the ground's back edge into the view, js/hub-vista.js)
-const SAFARI_AT = { tx: 0, ty: -3 };
-// the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
-const PILLAR_AT = { tx: 13, ty: -3 };
-// on the grown right side, along the road east from the plaza's path: the Nietos' house and Kenmatta's dojo, each by its
-// top-left tile (the user's ask, 2026-10-14)
-const NIETOS_AT = { tx: 13, ty: 6 }, DOJO_AT = { tx: 17, ty: 5 };
+// the Safari gate and the Sky Pillar in the back corners, out on the meadow, each up a trail off the ring road
+const SAFARI_AT = { tx: 4, ty: -3 };
+const PILLAR_AT = { tx: 28, ty: -3 };
+// each by its top-left tile: the Nietos' house east, its door on the east avenue; Kenmatta's dojo north-west, across the
+// Clearing from it (the user's ask, 2026-10-14); the Ancient Tree, the Secret Base, north-east (TREE_AT its middle tile);
+// the Poké Mall west, its doors on the west avenue; the Sealed Gate south-west once broken
+const NIETOS_AT = { tx: 24, ty: 7 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 2, ty: 8 };
+const SEALED_AT = { tx: 7, ty: 16 };
+// the pond in the garden at the south avenue's end
+const POND = { x: 15, y: 17.2, r: 1.5 };
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
 // the plaza's Poké Ball, START's tile, five crystals orbiting its tip, one a town in its RING colour (js/data/towns.js);
-// your partner starts a step in front of it, and the worn ring path RING_R out stays round it
-const RING_R = 3;
+// your partner starts a step in front of it, a ring of dark stone RING_R out set into the plaza round it
+const RING_R = 2.7;
 const SPAWN = { x: START.x, y: START.y + 1 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 13.5], [-1, 14]], [[-1, 14], [6, 14]],
-  [[6, 10], [18, 10]], [[NIETOS_AT.tx + 1, NIETOS_AT.ty + 3], [NIETOS_AT.tx + 1, 10]], [[DOJO_AT.tx + 1, DOJO_AT.ty + 4], [DOJO_AT.tx + 1, 10]]];
+// the roads, as centre lines between tile centres, `w` their half-width: stone avenues and ring road, earth trails out to
+// the wild places (the Safari, the Pillar, the road on through the gate)
+const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
+const ROADS = [
+  { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
+  { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
+  { a: [12, 11], b: [MALL_TILE.tx, 11], w: AVE },                                    // west avenue, to the Poké Mall
+  { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Nietos' house
+  { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
+  { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
+  { a: [4, 17.2], b: [28, 17.2], w: LANE },
+  { a: [4, 5], b: [4, -M - 0.6], w: TRAIL, dirt: true },                 // trails to the Safari gate, on through it, and the Sky Pillar
+  { a: [28, 5], b: [28, PILLAR_AT.ty + 1], w: TRAIL, dirt: true },
+  { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
+  { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
+  { a: [PC_AT.tx, PC_AT.ty + 1], b: [PC_AT.tx - 0.8, PC_AT.ty + 2], w: 0.5 },
+];
+// round the pond, a ring of stone to walk
+const RINGS = [{ x: POND.x, y: POND.y, r: POND.r + 0.75, w: 0.42 }];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
@@ -195,41 +217,67 @@ function groundArt() {
     const a0 = hash(gx, gy), a1 = hash(gx + 1, gy), b0 = hash(gx, gy + 1), b1 = hash(gx + 1, gy + 1);
     return (a0 + (a1 - a0) * fx) * (1 - fy) + (b0 + (b1 - b0) * fx) * fy;
   };
-  // the plaza is a Poké Ball worn into the dirt, only just there: a reddish top half, a darker band, a pale button ring
   const mix = (c, t, k) => c.map((n, i) => Math.round(n + (t[i] - n) * k));
-  const pokePlaza = (c, du, dv, wob) => {
+  const stone = STONE.map(rgb), [mortar, kerb, kerbDark] = [STONE_MORTAR, ...STONE_KERB].map(rgb);
+  const snowy = (c, x, y) => (GROUND.snowy ? mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.6 : 0.2) : c);
+  const roadsAt = (u, v, dirt) => {
+    let d = Infinity;
+    for (const r of ROADS) if (!!r.dirt === dirt) d = Math.min(d, seg(u, v, [r.a, r.b]) - r.w);
+    if (!dirt) for (const r of RINGS) d = Math.min(d, Math.abs(Math.hypot(u - r.x, v - r.y) - r.r) - r.w);
+    return d;
+  };
+  // cobbles laid in courses, every other one shifted half a stone; a stone's shade from its own cell
+  const cobble = (x, y) => {
+    const row = Math.floor(y / 4), sx = x + (row % 2) * 3;
+    if (y % 4 === 0 || sx % 6 === 0) return mortar;
+    const n = hash(Math.floor(sx / 6), row) + hash(x, y) * 0.25;
+    return stone[n > 0.95 ? 0 : n > 0.62 ? 1 : n > 0.3 ? 2 : 3];
+  };
+  // the plaza: stones in rings round the Waystone, a Poké Ball laid in the middle, a dark ring of stone RING_R out
+  const plaza = (x, y, du, dv) => {
     const r = Math.hypot(du, dv);
-    if (r > 1.45 + wob) return c;
-    if (Math.abs(r - 0.4) < 0.07) return mix(c, dirt[3], 0.7);
-    if (r < 0.33) return mix(c, dirt[0], 0.5);
-    if (Math.abs(dv - wob * 0.3) < 0.08) return mix(c, dirt[3], 0.6);
-    return dv < 0 ? mix(c, [196, 84, 64], 0.38) : mix(c, dirt[0], 0.25);
+    if (r < 1.5) {
+      if (r > 1.38 || Math.abs(dv) < 0.11) return mix(stone[3], [40, 36, 44], 0.75);
+      if (r < 0.5) return r > 0.4 ? mix(stone[3], [40, 36, 44], 0.75) : stone[0];
+      const n = hash(Math.floor(x / 3), Math.floor(y / 3));
+      return dv < 0 ? mix([214, 64, 52], [150, 34, 30], n * 0.5) : mix(stone[0], stone[1], n);
+    }
+    if (Math.abs(r - RING_R) < 0.14) return mix(stone[3], [70, 74, 92], 0.55);
+    const ring = Math.floor(r * TP / 4), arc = Math.floor(Math.atan2(dv, du) * r * TP / 6 + (ring % 2) * 0.5);
+    if (Math.abs(r * TP / 4 - Math.round(r * TP / 4)) < 0.14 || Math.abs(((Math.atan2(dv, du) * r * TP / 6 + (ring % 2) * 0.5) % 1 + 1) % 1) < 0.12) return mortar;
+    const n = hash(ring, arc) + hash(x, y) * 0.2;
+    return stone[n > 0.92 ? 0 : n > 0.55 ? 1 : n > 0.25 ? 2 : 3];
   };
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const u = x / TP - M - 0.5, v = y / TP - M - 0.5;
     const wob = (smooth(x, y, 5) - 0.5) * 0.22;
-    let path = Math.min(...PATHS.map(s => seg(u, v, s))) - 0.42 - wob;
-    path = Math.min(path, Math.hypot(u - START.x, v - START.y) - 1.55 - wob * 2);
-    path = Math.min(path, Math.abs(Math.hypot(u - START.x, v - START.y) - RING_R) - 0.3 - wob);   // the worn ring round the Waystone
+    const pr = Math.hypot(u - START.x, v - START.y) - PLAZA_R;
+    const paved = Math.min(roadsAt(u, v, false), pr), dirtD = roadsAt(u, v, true) - wob;
+    const pond = Math.hypot(u - POND.x, v - POND.y) - POND.r;
     let c;
-    if (path < 0) {
+    if (pond < 0.2) {   // the pond's bed, deep in the middle, a ring of sand round its edge
+      c = pond > 0 ? mix([226, 206, 152], [190, 168, 120], hash(x, y)) : mix([70, 140, 170], [30, 74, 110], Math.min(1, -pond / POND.r * 1.6));
+    } else if (paved < 0) {
+      c = paved > -0.1 ? (paved > -0.05 ? kerbDark : kerb) : pr < 0 ? plaza(x, y, u - START.x, v - START.y) : cobble(x, y);
+      if (pr >= 0 && hash(x * 3, y * 7) > 0.992) c = mix(c, GROUND.meadow.map(rgb)[3], 0.6);   // a tuft between the stones
+      c = snowy(c, x, y);
+    } else if (dirtD < 0) {
       const n = smooth(x + 99, y, 3) + hash(x, y) * 0.35;
-      c = dirt[path > -0.06 ? 3 : n > 1.0 ? 0 : n > 0.62 ? 1 : 2];
+      c = dirt[dirtD > -0.06 ? 3 : n > 1.0 ? 0 : n > 0.62 ? 1 : 2];
       if (hash(x * 3, y * 7) > 0.985) c = dirt[3];
-      c = pokePlaza(c, u - START.x, v - START.y, wob);
-      if (GROUND.snowy) c = mix(c, [244, 248, 252], smooth(x + 40, y + 17, 4) > 0.6 ? 0.55 : 0.1);   // trodden snow
+      c = snowy(c, x, y);
     } else {
-      // darker away from the walkable ground, towards the trees
-      // (not down the left, cleared round the Safari gate and the Poké Mall)
-      const out = Math.max(-u - 0.5, u - (COLS - 0.5), -v - 0.5, v - GATE_AT.ty - 0.2, 0) * (u < 2.5 && v < GATE_AT.ty - 1 ? 0.2 : 1);
-      const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (path < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
+      // darker away from the walkable ground, towards the forest down the sides and the hedge in front (the meadow behind
+      // stays open)
+      const out = Math.max(-u - 0.5, u - (COLS - 0.5), v - (ROWS - 0.5), 0);
+      const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (Math.min(paved, dirtD) < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
       c = meadow[Math.min(5, Math.max(0, Math.floor(n)))];
     }
     const i = (y * W + x) * 4;
     d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
   }
   a.g.putImageData(img, 0, 0);
-  const onPath = (x, y) => { const u = x / TP - M - 0.5, v = y / TP - M - 0.5; return Math.min(...PATHS.map(s => seg(u, v, s))) < 0.7 || Math.hypot(u - START.x, v - START.y) < 1.9; };
+  const onPath = (x, y) => { const u = x / TP - M - 0.5, v = y / TP - M - 0.5; return Math.min(roadsAt(u, v, false), roadsAt(u, v, true), Math.hypot(u - START.x, v - START.y) - PLAZA_R, Math.hypot(u - POND.x, v - POND.y) - POND.r - 0.3) < 0.25; };
   const blade = GROUND.blade;
   if (blade) for (let i = 0; i < 900; i++) {   // blades
     const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H);
@@ -1045,7 +1093,7 @@ const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e848
 const MU = 20;   // the mall's paintings: units a tile
 // on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
 // its doors on row 9 over tile -1 where the road from the plaza comes up to them, facing the camera
-const MALL_AT = { x: tileX(-1), z: tileZ(12) + 0.25, turn: 0 };
+const MALL_AT = { x: tileX(MALL_TILE.tx), z: tileZ(MALL_TILE.ty) + 0.25, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1435,19 +1483,19 @@ function makePlaces() {
       build: (g) => g.add(board(routeSignArt(), tileX(SIGN_AT.tx), tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
     },
     {
-      id: 'base', name: 'Secret Base', step: { x: 6, y: 3 }, tiles: rect(3, 0, 9, 2), tag: [6, 3.2, 2], open: true,
+      id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty), tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
       line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
         : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
       buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
       build: (g) => {
-        const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(6), tileZ(2) + 0.2), open = ancientArt(true);
+        const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true);
         glowing(b.material, shut, null, '#ffd890');
         tree = { m: b.material, shut: b.material.map, open: texOf(open) };
         g.add(b);
         // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
         const art = homeSignArt(baseOwned()), plate = board(art, 0, 0), pivot = new THREE.Group();
         plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
-        pivot.position.set(tileX(6), 3.62, tileZ(2) + 0.32);
+        pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
         pivot.add(plate);
         g.add(pivot);
         sign = { pivot, m: plate.material, fixed: baseOwned() ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
@@ -1480,47 +1528,46 @@ function makePlaces() {
   // only the Pokéstops start or continue a run (the user's call, 2026-10-09): a tap on the gate or the Pillar itself just
   // walks up and says what it is
   list.push({
-    id: 'safari-gate', name: 'Safari Zone', step: { x: 0, y: -2 }, tiles: [], tag: [0, 4, -3], open: safari,
+    id: 'safari-gate', name: 'Safari Zone', step: { x: SAFARI_AT.tx, y: SAFARI_AT.ty + 1 }, tiles: [], tag: [SAFARI_AT.tx, 4, SAFARI_AT.ty], open: safari,
     line: safari ? 'Today\'s Safari Zone run, the same for everyone. Spin the Pokéstop to set out.'
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     reset: safari && 'daily',
     buttons: [],
-    // back in the left corner, just behind the Ancient Tree, its fence across the cleared meadow (the user's call, 2026-10-09)
+    // back in the left corner, out on the meadow, its fence across it
     build: (g) => {
       const s = safariArt(safari), S = 1.1, x = tileX(SAFARI_AT.tx), z = tileZ(SAFARI_AT.ty), b = board(s, x, z, { s: S });
       glowing(b.material, s, null, '#ffc890', 0.8);
       g.add(b);
       const half = s.width / s.fine / TP * S / 2, post = (px) => x - half + px / TP * S;
-      safariFence(g, VISTA.x0 + 8, post(7), z);
-      safariFence(g, post(57), tileX(3.6), z);
+      safariFence(g, tileX(-M + 0.5), post(7), z);
+      safariFence(g, post(57), tileX(SAFARI_AT.tx + 3.4), z);
     },
   });
   if (safari) list.push({
-    id: 'safari', name: 'Safari Pokéstop', step: { x: -1, y: -1 }, tiles: [[-1, -2]], tag: [-1, 2.6, -2], open: true,
+    id: 'safari', name: 'Safari Pokéstop', step: { x: SAFARI_AT.tx - 1, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 1, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 1, 2.6, SAFARI_AT.ty + 1], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
     reset: 'daily',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
-    build: (g) => pokestop(g, 'safari', tileX(-1), tileZ(-2), 0.5, !!safariRun, 'EXPLORE'),
+    build: (g) => pokestop(g, 'safari', tileX(SAFARI_AT.tx - 1), tileZ(SAFARI_AT.ty + 1), 0.5, !!safariRun, 'EXPLORE'),
   });
   // left of the gate, along its fence (the user's ask, 2026-10-09)
   list.push({
-    id: 'safari-board', name: 'Safari Ranks', step: { x: -3, y: -1 }, tiles: [[-3, -2]], tag: [-3, 2.6, -2], open: safari,
+    id: 'safari-board', name: 'Safari Ranks', step: { x: SAFARI_AT.tx - 3, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 3, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 3, 2.6, SAFARI_AT.ty + 1], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     reset: safari && 'daily',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => g.add(board(kioskArt(), tileX(-3), tileZ(-2.3))),
+    build: (g) => g.add(board(kioskArt(), tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 0.7))),
   });
-  // out on the left where the side forest stood, lined up under the Safari gate a step to its left (2026-10-09, the user's
-  // ask: in the grid it stood too near the middle), the road from the plaza running up the middle of its doors
+  // at the west avenue's end, the avenue running up to the middle of its doors
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 14 }, tiles: rect(-3, 11, 0, 13), tag: [-1, 3.4, 13], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: MALL_TILE.tx, y: MALL_TILE.ty + 2 }, tiles: rect(MALL_TILE.tx - 2, MALL_TILE.ty - 1, MALL_TILE.tx + 1, MALL_TILE.ty + 1), tag: [MALL_TILE.tx, 3.4, MALL_TILE.ty + 1], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
   });
   const tower = towerOpen(save) || !!runAt('pillar'), best = save.tower?.bestEver || 0, climb = runAt('pillar');
   list.push({
-    id: 'pillar-tower', name: 'Sky Pillar', step: { x: 13, y: -1 }, tiles: rect(12, -4, 14, -2), tag: [13, 4.2, -2], open: tower,
+    id: 'pillar-tower', name: 'Sky Pillar', step: { x: PILLAR_AT.tx, y: PILLAR_AT.ty + 2 }, tiles: rect(PILLAR_AT.tx - 1, PILLAR_AT.ty - 1, PILLAR_AT.tx + 1, PILLAR_AT.ty + 1), tag: [PILLAR_AT.tx, 4.2, PILLAR_AT.ty + 1], open: tower,
     line: tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''} Spin the Pokéstop to climb.` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
     reset: tower && 'weekly',
     buttons: [],
@@ -1535,18 +1582,18 @@ function makePlaces() {
     },
   });
   if (tower) list.push({
-    id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: 11, y: 0 }, tiles: [[11, -1]], tag: [11, 2.6, -1], open: true,
+    id: 'pillar', name: 'Sky Pillar Pokéstop', step: { x: PILLAR_AT.tx - 2, y: PILLAR_AT.ty + 3 }, tiles: [[PILLAR_AT.tx - 2, PILLAR_AT.ty + 2]], tag: [PILLAR_AT.tx - 2, 2.6, PILLAR_AT.ty + 2], open: true,
     line: climb ? waits(climb) : `This week's Sky Pillar climb.${best ? ` Your best: floor ${best}.` : ''}`,
     reset: 'weekly',
     buttons: climb ? [['Continue', () => acts.onContinue(climb)], ['New game', acts.onTower]] : [['Climb', acts.onTower]],
-    build: (g) => pokestop(g, 'pillar', tileX(11.3), tileZ(-0.9), 0.5, !!climb, 'CLIMB'),
+    build: (g) => pokestop(g, 'pillar', tileX(PILLAR_AT.tx - 1.7), tileZ(PILLAR_AT.ty + 2.1), 0.5, !!climb, 'CLIMB'),
   });
   list.push({
-    id: 'pillar-board', name: 'Pillar Ranks', step: { x: 15, y: 0 }, tiles: [[15, -1]], tag: [15, 2.6, -1], open: tower,
+    id: 'pillar-board', name: 'Pillar Ranks', step: { x: PILLAR_AT.tx + 2, y: PILLAR_AT.ty + 3 }, tiles: [[PILLAR_AT.tx + 2, PILLAR_AT.ty + 2]], tag: [PILLAR_AT.tx + 2, 2.6, PILLAR_AT.ty + 2], open: tower,
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
     reset: tower && 'weekly',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
-    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.8), tileZ(-1.2))),
+    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(PILLAR_AT.tx + 1.8), tileZ(PILLAR_AT.ty + 1.8))),
   });
   // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
   // mended one travelled to from there
@@ -1572,7 +1619,7 @@ function makePlaces() {
     build: (g) => dojo(g, tileX(DOJO_AT.tx + 1), tileZ(DOJO_AT.ty + 1.5)),
   });
   if (gateOpen()) list.push({
-    id: 'gate', name: 'Sealed Gate', step: { x: 10, y: 9 }, tiles: rect(9, 8, 11, 8), tag: [10, 4, 8], open: true,
+    id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
     line: 'The broken Sealed Gate. Something waits beyond it.',
     buttons: [['Go through', acts.onGate]],
     build: (g) => {
@@ -1581,7 +1628,7 @@ function makePlaces() {
       gateArt = { ...makeGate(48, 58), c, t: tex(c), at: 0 };
       const m = new THREE.MeshStandardMaterial({ map: gateArt.t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, emissive: '#ffffff', emissiveMap: gateArt.t, emissiveIntensity: 0.35 });
       const h = 58 / TP * 1.1, mesh = new THREE.Mesh(new THREE.PlaneGeometry(48 / TP * 1.1, h), m);
-      mesh.position.set(tileX(10), h / 2, tileZ(8));
+      mesh.position.set(tileX(SEALED_AT.tx), h / 2, tileZ(SEALED_AT.ty));
       mesh.castShadow = true;
       g.add(mesh);
       paintGateArt(0);
@@ -1615,7 +1662,7 @@ function buildPlaces() {
   saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
-  for (const k of yardTiles) blocked.add(k);
+  for (const k of [...yardTiles, ...dressTiles, ...FENCES]) blocked.add(k);
   for (const p of places) {
     const g = new THREE.Group();
     p.build(g);
@@ -1629,14 +1676,14 @@ function buildPlaces() {
   setTime(true);
 }
 
-/** The Whispering Clearing's gate and fence across the front, and the route sign outside it. */
+/** The Whispering Clearing's gate at the north avenue's end, a stretch of fence either side of it. */
 function buildGateway(g) {
   const s = clearingGateArt(), x = tileX(GATE_AT.tx), z = tileZ(GATE_AT.ty), b = board(s, x, z);
   glowing(b.material, s, null, '#c8f0ff', 0.9);
   g.add(b);
   const half = s.width / s.fine / TP / 2, post = (px) => x - half + px / TP;
-  safariFence(g, tileX(-M), post(7), z);
-  safariFence(g, post(53), tileX(COLS + M - 1), z);
+  safariFence(g, tileX(GATE_AT.tx - 4), post(7), z);
+  safariFence(g, post(53), tileX(GATE_AT.tx + 4), z);
 }
 
 /** A Pokémon route sign (the user's pick, 2026-10-09, after Scarlet / Violet's): a white pin, a red band over its round
@@ -1667,14 +1714,14 @@ function routeSignArt() {
   g.font = '800 1.45px "Trebuchet MS", sans-serif';
   g.fillStyle = '#3a3a3a'; g.fillText('CLEARING', cx, 9.3);
   g.font = '700 1.05px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#7a7a76'; g.fillText('↓ ROUTE OUT', cx, 11.1);
+  g.fillStyle = '#7a7a76'; g.fillText('↑ ROUTE OUT', cx, 11.1);
   return c;
 }
 
 /* ---------- the Clearing round them ---------- */
 
-// trees inside the walkable grid (they block)
-const TREE_TILES = [[19, 15], [16, 15]];
+// trees inside the walkable grid (they block): a few in the corners, kept off the roads and the ground in front of places
+const TREE_TILES = [[0, 14], [1, 19], [0, 20], [30, 14], [29, 19], [30, 20], [10, 20], [20, 20], [12, 2], [18, 2]];
 
 function buildClearing() {
   const W = COLS + 2 * M, D = ROWS + M + FRONT;
@@ -1691,25 +1738,22 @@ function buildClearing() {
   const rnd = seeded(21), kinds = [treeArt(1, crown(0)), treeArt(2, crown(1)), treeArt(3, far(0)), treeArt(4, far(1)), bushArt(5, crown(2)), bushArt(6, crown(0))]
     .map(c => SEASON === 'winter' ? snowCap(c) : c);
   const spots = kinds.map(() => []);
-  // none in the back-left corner, open meadow round the Safari gate with the view past it (buildVista()),
-  // and none where the Sky Pillar and its meadow stand in the back-right corner, the trees behind it kept
-  const cleared = (x, z) => (x < -3 && z < (x < -10.4 ? -3 : 0.3)) || (x > tileX(9.9) && x < tileX(17) && z > tileZ(Math.abs(x - tileX(PILLAR_AT.tx)) < 2 ? -4.6 : -2.6) && z < 0.3);
+  // the meadow behind is open, the view (buildVista()) over it, but for the woods behind the Sky Pillar
+  const cleared = (x, z) => z < tileZ(-0.6) && (x < tileX(PILLAR_AT.tx - 3) || (Math.abs(x - tileX(PILLAR_AT.tx)) < 3.4 && z > tileZ(PILLAR_AT.ty - 1.4)));
   const put = (k, x, z, s) => { if (!cleared(x, z)) spots[k].push({ x, z, s }); };
-  // the forest's wall: three ragged rows behind, three down each side, the far ones bigger and darker
   for (let r = 0; r < 3; r++) for (let x = -M + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
   }
-  for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = -1; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
+  // the forest down both sides, from the back meadow's edge to the hedge in front
+  for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = 0.5; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
     const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
-    // none down the left, open meadow round the Poké Mall (2026-10-09, the user's ask)
-    if (s < 0) { rnd(); rnd(); rnd(); rnd(); continue; }
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
-  for (const [x, y] of TREE_TILES) put(y >= 9 && rnd() < 0.4 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
-  // bushes along the gate's fence, outside it, the trail between
+  for (const [x, y] of TREE_TILES) put(rnd() < 0.3 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
+  // a hedge of bushes along the front edge, low so it never hides the garden
   // each a step nearer than the last: side by side on one plane, where they overlap they z-fought and flickered
   let b = 0;
-  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) if (Math.abs(x - GATE_AT.tx) > 2.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(GATE_AT.ty) + 0.45 + (b++ % 2) * 0.08, 0.9 + rnd() * 0.25);
+  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(ROWS) + 0.2 + (b++ % 2) * 0.08, 0.8 + rnd() * 0.2);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
@@ -1723,7 +1767,80 @@ function buildClearing() {
     forest.add(mesh);
   });
   buildVista();
+  dressClearing();
   dressSeason();
+}
+
+// the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues and
+// round the plaza, benches looking onto it, flower beds in the grass between the avenues
+const LAMPS = [[13, 9], [17, 9], [13, 13], [17, 13], [13, 6], [17, 6], [13, 3], [17, 3], [9, 9], [9, 13], [6, 13], [21, 9], [21, 13], [24, 13],
+  [3, 7], [3, 13], [27, 7], [27, 13], [10, 18], [20, 18], [13, 16], [17, 16]];
+const BENCHES = [[11, 13, Math.PI / 4], [19, 13, -Math.PI / 4], [12, 18, 0], [18, 18, 0]];
+const BEDS = [[10, 7, 0.9], [20, 14, 0.8], [10, 14, 0.8], [24, 15, 1.1], [7, 14, 0.75], [21, 7, 0.7]];
+const dressTiles = new Set();
+
+function dressClearing() {
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.8, ...o });
+  const iron = std({ color: '#3a3e48', roughness: 0.5, metalness: 0.3 }), cap = std({ color: '#2a2e36', roughness: 0.5, metalness: 0.3 });
+  const pane = std({ color: '#fff4d0', emissive: new THREE.Color('#ffd88a'), roughness: 0.3 });
+  pane.userData.glow = 1.6; pane.userData.glowMin = 0.08;
+  seasonMats.push(pane);
+  const add = (g, geo, m, x, y, z, shadow = true) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = shadow; o.receiveShadow = true; o.raycast = () => {}; g.add(o); return o; };
+  const pole = new THREE.CylinderGeometry(0.045, 0.06, 1.7, 8), foot = new THREE.CylinderGeometry(0.12, 0.15, 0.14, 8);
+  const head = new THREE.BoxGeometry(0.22, 0.26, 0.22), roof = new THREE.ConeGeometry(0.2, 0.16, 4), arm = new THREE.BoxGeometry(0.3, 0.04, 0.04);
+  for (const [tx, ty] of LAMPS) {
+    const g = new THREE.Group(), x = tileX(tx), z = tileZ(ty);
+    add(g, foot, iron, x, 0.07, z); add(g, pole, iron, x, 0.85, z);
+    add(g, arm, iron, x, 1.62, z).castShadow = false;
+    add(g, head, pane, x, 1.83, z, false);
+    add(g, roof, cap, x, 2.04, z).rotation.y = Math.PI / 4;
+    forest.add(g);
+    dressTiles.add(key(tx, ty));
+  }
+  const wood = std({ color: '#b07a44' });
+  for (const [tx, ty, turn] of BENCHES) {
+    const g = new THREE.Group();
+    g.position.set(tileX(tx), 0, tileZ(ty)); g.rotation.y = turn;
+    for (const dz of [-0.1, 0.02, 0.14]) add(g, new THREE.BoxGeometry(0.9, 0.05, 0.1), wood, 0, 0.36, dz);
+    for (const dy of [0.5, 0.62]) add(g, new THREE.BoxGeometry(0.9, 0.08, 0.04), wood, 0, dy, -0.2);
+    for (const dx of [-0.38, 0.38]) { add(g, new THREE.BoxGeometry(0.05, 0.36, 0.34), iron, dx, 0.18, 0); add(g, new THREE.BoxGeometry(0.05, 0.36, 0.05), iron, dx, 0.52, -0.2); }
+    forest.add(g);
+    dressTiles.add(key(tx, ty));
+  }
+  const kerbM = std({ color: STONE[2] }), soil = std({ color: '#6a4a2c', roughness: 1 });
+  const blooms = (SEASON === 'winter' ? ['#f4f6fa', '#d8e4f0', '#e84838'] : SEASON === 'halloween' ? ['#f08a24', '#8a3ac8', '#f8c840', '#c83a28'] : ['#f86878', '#f8d040', '#ffffff', '#b48af8', '#f8a0c8']).map(c => std({ color: c, roughness: 0.6 }));
+  const leafM = std({ color: SEASON === 'winter' ? '#7a9a88' : '#4e9a3c' });
+  const rnd = seeded(77), petal = new THREE.IcosahedronGeometry(0.07, 0), leafG = new THREE.IcosahedronGeometry(0.11, 0);
+  for (const [tx, ty, r] of BEDS) {
+    const g = new THREE.Group();
+    g.position.set(tileX(tx), 0, tileZ(ty));
+    add(g, new THREE.CylinderGeometry(r, r + 0.04, 0.16, 24), kerbM, 0, 0.08, 0);
+    add(g, new THREE.CylinderGeometry(r - 0.08, r - 0.08, 0.17, 24), soil, 0, 0.09, 0, false);
+    for (let i = 0; i < r * 30; i++) {
+      const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * (r - 0.18);
+      const leaf = add(g, leafG, leafM, Math.cos(a) * d, 0.22, Math.sin(a) * d, false);
+      leaf.scale.y = 0.7;
+      if (rnd() < 0.7) add(g, petal, blooms[Math.floor(rnd() * blooms.length)], Math.cos(a) * d + (rnd() - 0.5) * 0.06, 0.32, Math.sin(a) * d, false);
+    }
+    forest.add(g);
+    for (let dx = -Math.floor(r); dx <= Math.floor(r); dx++) for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) if (Math.hypot(dx, dy) <= r) dressTiles.add(key(tx + dx, ty + dy));
+  }
+  // the pond: still water over its painted bed, stones round its edge, lily pads, and nothing walks into it
+  const water = new THREE.Mesh(new THREE.CircleGeometry(POND.r + 0.05, 40), std({ color: '#5aaee0', roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62 }));
+  water.rotation.x = -Math.PI / 2; water.position.set(tileX(POND.x), 0.03, tileZ(POND.y)); water.raycast = () => {};
+  forest.add(water);
+  const pebble = new THREE.DodecahedronGeometry(0.13, 0), rock = std({ color: '#a8a294', flatShading: true });
+  for (let i = 0; i < 26; i++) {
+    const a = i / 26 * Math.PI * 2, o = add(forest, pebble, rock, tileX(POND.x) + Math.cos(a) * (POND.r + 0.12), 0.05, tileZ(POND.y) + Math.sin(a) * (POND.r + 0.12));
+    o.scale.set(1 + rnd() * 0.6, 0.6 + rnd() * 0.4, 1 + rnd() * 0.5); o.rotation.y = rnd() * 3;
+  }
+  const pad = std({ color: '#5aa848', side: THREE.DoubleSide });
+  for (const [dx, dz, r] of [[-0.6, 0.3, 0.2], [0.5, -0.4, 0.16], [0.2, 0.7, 0.14], [-0.2, -0.8, 0.12]]) {
+    const o = add(forest, new THREE.CircleGeometry(r, 16, 0.3, Math.PI * 1.8), pad, tileX(POND.x) + dx, 0.045, tileZ(POND.y) + dz, false);
+    o.rotation.x = -Math.PI / 2;
+    if (r > 0.15) add(forest, petal, blooms[0], o.position.x + 0.05, 0.09, o.position.z - 0.04, false);
+  }
+  for (let tx = Math.floor(POND.x - POND.r); tx <= POND.x + POND.r; tx++) for (let ty = Math.floor(POND.y - POND.r); ty <= POND.y + POND.r; ty++) if (Math.hypot(tx - POND.x, ty - POND.y) <= POND.r + 0.2) dressTiles.add(key(tx, ty));
 }
 
 /** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door and
@@ -1738,17 +1855,17 @@ function dressSeason() {
     // grouped into a few spots, mirrored across the trail where they frame it, the open ground left clear (the user's
     // call, 2026-10-11: scattered everywhere it read as clutter)
     const yard = [
-      [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.2, 0, 0.2],   // the Ancient Tree's door
-      [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0],   // lantern posts, a pair at the back
-      [lanternArt(2), 'white', 4, 18, 1.3, 0, 0], [lanternArt(3), 'white', 8, 18, 1.3, 0, 0],   // and a pair down the trail
-      [...P_(5), 3, 7, 4.4, 0, -0.1], [...P_(6), 2, 8, 2.2, 0, 0.1], [...P_(7, false), 4, 8, 1.9, 0, 0.15],   // the pumpkin patch
-      [scarecrowArt(), 'white', 2, 6, 1.5, 0, 0],
-      [deadTreeArt(0), 'white', 10, 6, 1.7, 0, -0.2],   // the graveyard, clear of the road along row 4: a row of stones under the dead tree, a candle at each end
-      [graveArt(0), null, 8, 7, 1.4, 0, 0], [graveArt(1), null, 9, 7, 1.5, 0, 0], [graveArt(2), null, 11, 7, 1.5, 0, 0], [graveArt(3), null, 12, 7, 1.4, 0, 0],
-      [candlesArt(0), 'white', 8, 8, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 8, 1.1, 0, -0.1],
-      [...P_(1), 7, 9, 1.4, 0.15, 0.1],   // a little one on the plaza
-      [capsArt(0), 'white', 1, 10, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
-      [hayArt(0), 'white', 2, 19, 1.6, 0, 0], [hayArt(1), 'white', 10, 19, 1.6, 0, 0],   // hay either side of the way out
+      [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0], [...P_(10), TREE_AT.tx + 1, TREE_AT.ty + 2, 2.2, 0, 0],   // the Ancient Tree's door
+      [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
+      [lanternArt(2), 'white', 12, 15, 1.3, 0, 0], [lanternArt(3), 'white', 18, 15, 1.3, 0, 0],   // and down the south one
+      [...P_(5), 22, 15, 4.4, 0, -0.1], [...P_(6), 21, 16, 2.2, 0, 0.1], [...P_(7, false), 23, 16, 1.9, 0, 0.15],   // the pumpkin patch
+      [scarecrowArt(), 'white', 26, 15, 1.5, 0, 0],
+      [deadTreeArt(0), 'white', 11, 8, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
+      [graveArt(0), null, 5, 8, 1.4, 0, 0], [graveArt(1), null, 6, 8, 1.5, 0, 0], [graveArt(2), null, 8, 8, 1.5, 0, 0], [graveArt(3), null, 9, 8, 1.4, 0, 0],
+      [candlesArt(0), 'white', 5, 9, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 9, 1.1, 0, -0.1],
+      [...P_(1), 16, 12, 1.4, 0.15, 0.1],   // a little one on the plaza
+      [capsArt(0), 'white', 10, 3, 1.2, 0, 0.2],   // the witch's corner by the dojo, beside the cauldron
+      [hayArt(0), 'white', GATE_AT.tx - 3, GATE_AT.ty + 1, 1.6, 0, 0], [hayArt(1), 'white', GATE_AT.tx + 3, GATE_AT.ty + 1, 1.6, 0, 0],   // hay either side of the way out
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
@@ -1758,7 +1875,7 @@ function dressSeason() {
       forest.add(b);
       yardTiles.add(key(tx, ty));
     }
-    // out under the gate's sides, where the old little ones stood: no tile, so the sign and the Pokéstop stay reachable
+    // at the gate's feet: no tile, so the road through it stays clear
     for (const [dx, i] of [[-1.6, 20], [1.6, 21]]) {
       const c = pumpkinArt(i), b = board(c, tileX(GATE_AT.tx) + dx, tileZ(GATE_AT.ty) + 0.7, { s: 1.7 });
       glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
@@ -1767,12 +1884,12 @@ function dressSeason() {
     }
     // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
     cauldron = makeCauldron(THREE);
-    cauldron.group.position.set(tileX(2), 0, tileZ(10));
+    cauldron.group.position.set(tileX(10), 0, tileZ(2));
     forest.add(cauldron.group);
-    yardTiles.add(key(2, 10));
+    yardTiles.add(key(10, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
+    for (const [colour, at, k] of [['#ff9030', [tileX(22), 1.2, tileZ(15) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;
@@ -1782,10 +1899,10 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 1, y: 6 }, { x: 8, y: 6 }, { x: 10, y: 17 }, { x: 16, y: 12 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      spawns: [{ x: 11, y: 7 }, { x: 20, y: 9 }, { x: 12, y: 15 }, { x: 26, y: 12 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
   }
   if (SEASON === 'winter') {
-    const b = board(snowmanArt(), tileX(9) + 0.3, tileZ(11) - 0.2, { s: 1.2 });
+    const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(15) - 0.2, { s: 1.2 });
     b.raycast = () => {};
     forest.add(b);
     makeSnow();
@@ -1801,7 +1918,7 @@ function buildVista() {
   meadow.receiveShadow = true;
   meadow.raycast = () => {};
   forest.add(meadow);
-  const { x0, w, h } = VISTA, foot = tileZ(-M + 0.3);
+  const { x0, w } = vistaSpan(), h = VISTA.h, foot = tileZ(-M + 0.3);
   vista = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
   vista.rotation.x = -PITCH;
   vista.position.set(x0 + w / 2, Math.cos(PITCH) * h / 2, foot - Math.sin(PITCH) * h / 2);
@@ -1810,22 +1927,27 @@ function buildVista() {
   paintVista();
 }
 
+// across the open meadow behind, from past the ground's left edge to the woods behind the Sky Pillar
+const vistaSpan = () => { const x0 = tileX(-M - 6); return { x0, w: Math.round(tileX(PILLAR_AT.tx - 1) - x0) }; };
+
 function paintVista() {
   const t = timeOfDay();
   if (!vista || vista.userData.time === t) return;
   vista.material.map?.dispose();
-  vista.material.map = texOf(vistaArt(t, tileX(SAFARI_AT.tx), 0.42, vistaLook(SEASON)));
+  const { x0, w } = vistaSpan();
+  vista.material.map = texOf(vistaArt(t, w, [{ x: tileX(SAFARI_AT.tx) - x0, half: TRAIL * 0.9 }, { x: tileX(GATE_AT.tx) - x0, half: TRAIL * 0.9 }], vistaLook(SEASON)));
   vista.material.needsUpdate = true;
   vista.userData.time = t;
 }
 
 /* ---------- walking ---------- */
 
-// the cleared meadow up to the Safari gate, outside the grid's back-left corner
-// and the rows down to the Whispering Clearing's gate in front, under its arch and out past it to the Pokéstop
-// and the open meadow down the left round the Poké Mall
-const MEADOW = new Set([...rect(-3, -2, 1, -1), ...rect(-3, 0, -1, GATE_AT.ty - 1),...rect(11, -2, 15, -1), ...rect(13, 0, 15, 0), ...rect(0, ROWS, COLS - 1, GATE_AT.ty - 1),
-  [GATE_AT.tx, GATE_AT.ty], ...rect(1, GATE_AT.ty + 1, COLS - 2, GATE_AT.ty + 2)].map(([x, y]) => key(x, y)));
+// the open meadow behind the grid, from the Safari gate's corner to the Sky Pillar's, and the road on out through the
+// Whispering Clearing's gate (walkOut())
+const MEADOW = new Set([...rect(-3, -4, PILLAR_AT.tx + 2, -1)].map(([x, y]) => key(x, y)));
+// the fences either side of the gates, out on the meadow
+const FENCES = [...rect(GATE_AT.tx - 4, GATE_AT.ty, GATE_AT.tx - 2, GATE_AT.ty), ...rect(GATE_AT.tx + 2, GATE_AT.ty, GATE_AT.tx + 4, GATE_AT.ty),
+  ...rect(-3, SAFARI_AT.ty, SAFARI_AT.tx - 2, SAFARI_AT.ty), ...rect(SAFARI_AT.tx + 2, SAFARI_AT.ty, SAFARI_AT.tx + 3, SAFARI_AT.ty)].map(([x, y]) => key(x, y));
 const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
@@ -1854,7 +1976,7 @@ function walk(dt) {
   const w = walker, step = w.path[0];
   if (!step) { w.hop = 0; return false; }
   const tx = tileX(step.x), tz = tileZ(step.y), dx = tx - w.x, dz = tz - w.z;
-  const d = Math.hypot(dx, dz), move = dt / 1000 * (arriving ? 4.6 : 3.4);
+  const d = Math.hypot(dx, dz), move = dt / 1000 * (arriving ? 5.2 : 4);
   if (Math.abs(dz) > Math.abs(dx)) w.facing = dz < 0 && mon.sheets.back ? 'back' : 'front';
   else { w.facing = 'front'; w.flip = dx > 0; }
   if (d <= move) { w.x = tx; w.z = tz; w.tile = step; w.path.shift(); }
@@ -1910,23 +2032,24 @@ function open(p, i = null) {
   setTimeout(() => { if (running) go(); }, calm ? 0 : stop ? SPIN * 0.8 : 260);
 }
 
-/** Setting out (the user's ask, 2026-10-09): from the Pokéstop outside the Whispering Clearing's arch your partner steps
-    onto the trail and walks away past the bottom of the screen, and the run opens once it's gone. */
+/** Setting out (the user's ask, 2026-10-09; north since 2026-10-14): from the Pokéstop by the Whispering Clearing's arch
+    your partner steps onto the avenue and walks away up it, under the arch and off into the distance, and the run opens
+    once it's gone. */
 function walkOut(go) {
   if (!running) return;
   const at = { x: GATE_AT.tx, y: STOP_AT.ty };
   walker.path = [...route(walker.tile, at)];
-  for (let y = at.y + 1; y <= GATE_AT.ty + 5; y++) walker.path.push({ x: at.x, y });
+  for (let y = at.y - 1; y >= GATE_AT.ty - 5; y--) walker.path.push({ x: at.x, y });
   outbound = go;
   aim = null; here = null;
 }
 
-/** Back from a run that walked out under the gate: in through it again, onto the trail, facing you. */
+/** Back from a run that walked out under the gate: in through it again, down the avenue, facing you. */
 function walkBackIn() {
-  walker.x = tileX(GATE_AT.tx); walker.z = tileZ(GATE_AT.ty + 3); walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty + 3 };
+  walker.x = tileX(GATE_AT.tx); walker.z = tileZ(GATE_AT.ty - 3); walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty - 3 };
   walker.path = [];
-  for (let y = GATE_AT.ty + 2; y >= GATE_AT.ty - 2; y--) walker.path.push({ x: GATE_AT.tx, y });
-  walker.facing = mon.sheets.back ? 'back' : 'front';
+  for (let y = GATE_AT.ty - 2; y <= GATE_AT.ty + 4; y++) walker.path.push({ x: GATE_AT.tx, y });
+  walker.facing = 'front';
   camX = walker.x; camZ = walker.z;
   returning = true;
 }
@@ -2462,7 +2585,8 @@ function setTime(force) {
   time = t;
   const L = LIGHT[t];
   hemi.color.set(L.sky); hemi.groundColor.set(L.ground); hemi.intensity = L.amb;
-  sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
+  sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at); sun.userData.at = L.at;
+  if (camera) followSun();
   scene.background = new THREE.Color(L.bg);
   scene.fog.color.set(L.bg);
   const T = tintOf(SEASON, t), c = new THREE.Color();
@@ -2492,7 +2616,7 @@ function dotTexture() {
 function makeBugs() {
   const rnd = seeded(33), pos = new Float32Array(BUGS * 3), col = new Float32Array(BUGS * 3), seeds = [];
   for (let i = 0; i < BUGS; i++) {
-    const s = [tileX(-1.5) + rnd() * (COLS + 2), 0.25 + rnd() * 1.6, tileZ(-1.5) + rnd() * (ROWS + 2), rnd() * 100, 0.6 + rnd() * 0.8];
+    const s = [tileX(-1.5) + rnd() * (COLS + 2), 0.25 + rnd() * 1.6, tileZ(-3.5) + rnd() * (ROWS + 4), rnd() * 100, 0.6 + rnd() * 0.8];
     seeds.push(s);
     pos.set(s.slice(0, 3), i * 3);
   }
@@ -2633,20 +2757,42 @@ function fitCamera(w, h) {
   scene.fog.near = d + 2; scene.fog.far = d + 22;
 }
 
+// ?aerial: the whole Clearing from high above, to see its layout at a glance
+const AERIAL = new URLSearchParams(location.search).has('aerial');
+
 function placeCamera(dt) {
+  if (AERIAL) {
+    const cx = tileX(-M - 0.5) + (COLS + 2 * M) / 2, cz = tileZ(-M - 0.5) + (ROWS + M + FRONT) / 2;
+    camera.position.set(cx, 62, cz + 22);
+    camera.lookAt(cx, 0, cz);
+    camera.updateMatrixWorld();
+    scene.fog.near = 400; scene.fog.far = 500;
+    camX = camZ = 0; followSun();
+    return;
+  }
   const { half, front } = camera.userData;
   // up the Safari road, or to the Sky Pillar's door, the view looks on ahead into the back corner
-  const ahead = !arriving && (walker.tile.x <= 1 || (walker.tile.x >= 11 && walker.tile.x <= 15)) && walker.tile.y <= 3 ? 2.5 : 0;
+  const ahead = !arriving && walker.tile.y <= 2 ? 2.5 : 0;
   const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(SPAWN.x) : walker.x, wz = arriving ? tileZ(SPAWN.y) : walker.z - ahead;
-  // a tile further on the left, so the Poké Mall out there is whole in the view
-  const loX = tileX(-0.5) - 3.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
+  const loX = tileX(-0.5) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
   const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
   aimCamera(camX, camZ);
+  followSun();
+}
+
+/** The sun's shadow box (26 units square) kept over the view, as the Clearing is wider than it; moved in whole shadow-map
+    texels, so the shadows don't shimmer as it goes. */
+function followSun() {
+  const step = 26 / 1024, x = Math.round(camX / step) * step, z = Math.round(camZ / step) * step, at = sun.userData.at;
+  if (!at) return;
+  sun.position.set(x + at[0], at[1], z + at[2]);
+  sun.target.position.set(x, 0, z);
+  sun.target.updateMatrixWorld();
 }
 
 function resize() {
@@ -2757,7 +2903,7 @@ async function build() {
   scene.add(hemi, sun);
   // the lantern by the base's door and the Sky Pillar's doorway light their ground from dusk; made once and only dimmed,
   // so the hour changing never recompiles a shader
-  for (const [colour, at, k] of [['#ffc070', [tileX(6) - 1.25, 2.4, tileZ(2) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7]]) {
+  for (const [colour, at, k] of [['#ffc070', [tileX(TREE_AT.tx) - 1.25, 2.4, tileZ(TREE_AT.ty) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7]]) {
     const l = new THREE.PointLight(colour, 0, 6, 1.6);
     l.position.set(...at);
     l.userData.k = k;
@@ -2768,7 +2914,8 @@ async function build() {
   ring.rotation.x = -Math.PI / 2;
   placeGroup = new THREE.Group();
   scene.add(ring, placeGroup);
-  post = createPost(renderer);
+  post = createPost(renderer, AERIAL ? { short: 1100 } : {});
+  if (AERIAL) { post.final.uniforms.uBlur.value = 0; Object.assign(sun.shadow.camera, { left: -26, right: 26, top: 26, bottom: -26, far: 80 }); sun.shadow.mapSize.set(2048, 2048); }
   buildClearing();
   makeBugs();
   await gateReady();
@@ -2815,12 +2962,18 @@ async function openHub(titleScreen, actions, hold) {
   held = hold;
   root.classList.toggle('held', held);
   mon.group.visible = !held;
-  if (!placed) { placed = true; walker.tile = SPAWN; walker.x = tileX(SPAWN.x); walker.z = tileZ(SPAWN.y); camX = walker.x; camZ = walker.z; }
+  if (!placed) {
+    placed = true;
+    // ?hubat=x,y starts your partner on that tile, to look round one corner of the Clearing
+    const at = new URLSearchParams(location.search).get('hubat')?.split(',').map(Number);
+    walker.tile = at?.length === 2 ? { x: at[0], y: at[1] } : SPAWN;
+    walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); camX = walker.x; camZ = walker.z;
+  }
   walker.path = []; aim = null; here = placeAt(walker.tile);
   outbound = null; returning = false;
   if (inside) leftPlace();
   else if (!inGrid(walker.tile) && !hold) walkBackIn();
-  else if (!inGrid(walker.tile)) { walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty - 2 }; walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); }
+  else if (!inGrid(walker.tile)) { walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty + 4 }; walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); }
   hideCard();
   root.querySelectorAll('.room-home.out').forEach(k => k.classList.remove('out'));
   dexNews();
@@ -2833,8 +2986,8 @@ async function openHub(titleScreen, actions, hold) {
   return true;
 }
 
-/** Out from behind the shut Pokédex: the corner keys come up and your partner walks in from the bottom of the screen, up
-    the trail onto the plaza, then turns to face you. */
+/** Out from behind the shut Pokédex: the corner keys come up and your partner walks in through the Whispering Clearing's
+    gate, down the north avenue onto the plaza, facing you. */
 export function enterHub() {
   if (!held || !mon) return;
   held = false;
@@ -2842,12 +2995,14 @@ export function enterHub() {
   screen.classList.add('hub-on');
   mon.group.visible = true;
   nextFly = performance.now() + 6000;
-  if (calm) return;
-  const from = ROWS + FRONT + 2;
+  if (calm || new URLSearchParams(location.search).has('hubat')) return;
+  const from = GATE_AT.ty - 1;
   walker.x = tileX(SPAWN.x); walker.z = tileZ(from); walker.tile = { x: SPAWN.x, y: from };
   walker.path = [];
-  for (let y = from - 1; y >= SPAWN.y; y--) walker.path.push({ x: SPAWN.x, y });
-  walker.facing = mon.sheets.back ? 'back' : 'front';
+  // round the Waystone, which stands on the avenue's line
+  for (let y = from + 1; y <= START.y - 1; y++) walker.path.push({ x: SPAWN.x, y });
+  walker.path.push({ x: SPAWN.x + 1, y: START.y - 1 }, { x: SPAWN.x + 1, y: START.y }, { x: SPAWN.x + 1, y: SPAWN.y }, { x: SPAWN.x, y: SPAWN.y });
+  walker.facing = 'front';
   here = null;
   arriving = true;
 }
