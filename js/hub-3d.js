@@ -1712,7 +1712,7 @@ function nietosSign(g, x, z) {
   s.position.set(x, 0, z); s.rotation.y = 0.3;
   g.add(s);
   // big white letters on a deep blue board: pale blue on sky blue couldn't be read (the user's ask, 2026-10-14)
-  const b = board(plankArt(36, 15, [['THE NIETOS', 5.2, '#ffffff'], ['LAW · BRITT · LINC', 3, '#ffe070']], ['#2c5a94', '#234a7e', '#183660']), 0, 0, { s: 0.66, shadow: false });
+  const b = board(plankArt(36, 15, [['THE NIETOS', 5.6, '#ffffff']], ['#2c5a94', '#234a7e', '#183660']), 0, 0, { s: 0.66, shadow: false });
   const { width: W, height: H } = b.geometry.parameters, Y = 0.8, RY = Y + H / 2 + 0.04;
   b.position.y = Y;
   s.add(b);
