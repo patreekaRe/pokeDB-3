@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -6345,6 +6345,7 @@ function room(kind, figs, at = {}) {
     try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
     finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
+    restGL(renderer);
     return b;
   });
   built[id].catch(() => { delete built[id]; });
@@ -6355,7 +6356,7 @@ function room(kind, figs, at = {}) {
 
 /** Only the last few rooms built are kept for a visit back: a long session's towns, homes and gyms would otherwise all
     stay in memory, which on an iPhone ends with Safari reloading the tab. */
-const KEEP_ROOMS = 4;
+const KEEP_ROOMS = 3;   // the next step's rooms (the map builds only those): a gym alone paints ~40MB of textures
 let entering = null;   // the room mountEvent() is walking into
 function forgetRooms() {
   const ids = Object.keys(built);
