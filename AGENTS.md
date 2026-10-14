@@ -25,6 +25,8 @@ three places:
   road to the gate's approach tile, joining the avenue, street and Depths teleporter. Waiting on the user's visual playtest.
 - 2026-10-14: **Squared off the Sealed Gate street end** (branch `towns`): the west avenue now ends flat at the teleporter
   instead of curving around it. Waiting on the user's visual playtest of `?aerial`.
+- 2026-10-14: **Street end reaches the Sealed Gate's left edge** (branch `towns`): extended the square cap flush to the
+  teleporter artwork's edge, sharing its width constant. Waiting on the user's visual playtest.
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
   PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in

@@ -96,6 +96,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 const NIETOS_AT = { tx: 23, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
 const SEALED_AT = { tx: 2, ty: 10 };
 const SEALED_STEP = { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 };
+const SEALED_WIDTH = 48 / TP * 1.1;
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
@@ -112,7 +113,7 @@ const AVE = 1.15, LANE = 0.72, TRAIL = 0.48;
 const ROADS = [
   { a: [15, 8], b: [15, GATE_AT.ty + 0.6], w: AVE },                       // north avenue, up to the gate
   { a: [15, GATE_AT.ty + 0.6], b: [15, -M - 0.6], w: TRAIL * 0.9, dirt: true },  // and on out of the Clearing
-  { a: [12, SEALED_STEP.y], b: [SEALED_STEP.x, SEALED_STEP.y], w: AVE, cap: 'square' }, // flat end at the Sealed Gate
+  { a: [12, SEALED_STEP.y], b: [SEALED_AT.tx - SEALED_WIDTH / 2, SEALED_STEP.y], w: AVE, cap: 'square' }, // square end flush with the Sealed Gate's left edge
   { a: [18, 11], b: [28, 11], w: AVE },                                   // east avenue, past the Nietos' house
   { a: [15, 14], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, 17.2], w: LANE }, { a: [28, 5], b: [28, 17.2], w: LANE },   // the ring road
@@ -1687,7 +1688,7 @@ function makePlaces() {
       c.width = 48; c.height = 58;
       gateArt = { ...makeGate(48, 58), c, t: tex(c), at: 0 };
       const m = new THREE.MeshStandardMaterial({ map: gateArt.t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, emissive: '#ffffff', emissiveMap: gateArt.t, emissiveIntensity: 0.35 });
-      const h = 58 / TP * 1.1, mesh = new THREE.Mesh(new THREE.PlaneGeometry(48 / TP * 1.1, h), m);
+      const h = 58 / TP * 1.1, mesh = new THREE.Mesh(new THREE.PlaneGeometry(SEALED_WIDTH, h), m);
       mesh.position.set(tileX(SEALED_AT.tx), h / 2, tileZ(SEALED_AT.ty));
       mesh.castShadow = true;
       g.add(mesh);

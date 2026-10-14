@@ -878,7 +878,8 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   named above. A 31 x 21 grid (`COLS` / `ROWS`, the plaza's middle the world's origin, `X0` / `Z0`): a round paved plaza
   (`PLAZA_R`, stones in rings, a Poké Ball laid in the middle under the Waystone, `plaza()` in `groundArt()`), four
   cobbled avenues off it and a stone ring road round them, the west avenue crossing the west ring road and reaching the
-  Sealed Gate's approach tile with a square end (`SEALED_STEP`, `cap: 'square'`), earth trails out to the wild places
+  Sealed Gate's approach tile with a square end flush to the teleporter's left edge (`SEALED_STEP`, `SEALED_WIDTH`,
+  `cap: 'square'`), earth trails out to the wild places
   (`ROADS` / `RINGS`, `dirt`; `STONE` the
   paving's colours); the Whispering Clearing's gate at the north avenue's end (`GATE_AT`, a stretch of fence
   either side, `FENCES`), New game's Pokéstop and the route sign just inside it (`STOP_AT` / `SIGN_AT`); setting out walks
