@@ -48,7 +48,7 @@ export const NEXT = [
   ['hub', 'The Clearing is tidied up, and a Pokéstop\'s CONTINUE or SET OUT floats over its disc.'],
   ['battle', 'A Gym Leader\'s badge over the arch is shown in full colour before you win it, so you can see what you\'re fighting for.'],
   ['hub', 'The Nietos\' house and Gym Leaders\' visits to your Secret Base are switched off for now. They\'ll be back.'],
-  ['fixes', 'Continuing after leaving during a Gym Leader\'s rewards no longer counts the win twice.'],
+  ['fixes', 'Continuing after leaving during a Gym Leader\'s rewards no longer counts the win twice, and taking a badge on an iPhone no longer can cut out the sound.'],
   ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, not just the door.'],
 ];
 

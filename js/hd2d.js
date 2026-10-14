@@ -142,12 +142,23 @@ export function dispose(group) {
 
 /* ---------- a Pokémon: GIF frames on a billboard ---------- */
 
+/** A copy of a picture on a canvas kept in memory, not on the GPU: iPhone Safari keeps an ImageBitmap (or a plain canvas)
+    in its GPU process, and when that ran out of memory at a gym badge (2026-10-14) every sprite frame came back blank,
+    so your partner walked the Clearing invisible. These also leave that memory to the 3D places. */
+function keep(pic, w = pic.width, h = pic.height) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  c.getContext('2d', { willReadFrequently: true }).drawImage(pic, 0, 0);
+  pic.close?.();
+  return c;
+}
+
 /** Every frame of a GIF with its delay: ImageDecoder where there is one, else js/gif-frames.js (iPhone Safari). */
 export async function gifFrames(src) {
   try {
     const res = await fetch(src);
     if (!res.ok) return null;
-    if (/\.png$/.test(src)) return [{ bmp: await createImageBitmap(await res.blob()), ms: 1e9 }];   // a still: a trainer
+    if (/\.png$/.test(src)) return [{ bmp: keep(await createImageBitmap(await res.blob())), ms: 1e9 }];   // a still: a trainer
     const data = await res.arrayBuffer();
     if (typeof ImageDecoder === 'function' && !new URLSearchParams(location.search).has('gifjs')) {
       const dec = new ImageDecoder({ data, type: 'image/gif' });
@@ -156,8 +167,7 @@ export async function gifFrames(src) {
       for (let i = 0; i < dec.tracks.selectedTrack.frameCount; i++) {
         const { image } = await dec.decode({ frameIndex: i });
         const ms = (image.duration ?? 0) / 1000;
-        frames.push({ bmp: await createImageBitmap(image), ms: ms < 20 ? 100 : ms });
-        image.close();
+        frames.push({ bmp: keep(image, image.displayWidth, image.displayHeight), ms: ms < 20 ? 100 : ms });
       }
       dec.close();
       if (frames.length) return frames;

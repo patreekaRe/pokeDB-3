@@ -5603,12 +5603,10 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-get.wait { background: rgba(3, 3, 10, 0.88); }
 .gym-get > :is(.gym-get-rays, .gym-get-badge, .gym-get-ring, .gym-get-sparks) { position: absolute; left: 50%; top: 40%; translate: -50% -50%; }
 .gym-get-rays {
-  width: 180vmax; height: 180vmax; opacity: 0; scale: 0.3;
-  background: repeating-conic-gradient(from 0deg, rgba(255, 216, 100, 0.34) 0 7deg, transparent 7deg 20deg);
-  -webkit-mask-image: radial-gradient(circle, #000 4%, transparent 38%); mask-image: radial-gradient(circle, #000 4%, transparent 38%);
-  transition: opacity 0.5s, scale 0.7s cubic-bezier(.2, .9, .3, 1.2); animation: gymRays 14s linear infinite;
+  width: 100vmax; height: 100vmax; opacity: 0; scale: 0.3;
+  transition: opacity 0.5s, scale 0.7s cubic-bezier(.2, .9, .3, 1.2);
 }
-.gym-get.land .gym-get-rays { opacity: 1; scale: 1; }
+.gym-get.land .gym-get-rays { opacity: 1; scale: 1; animation: gymRays 14s linear infinite; }
 @keyframes gymRays { to { rotate: 360deg; } }
 .gym-get-badge {
   width: min(46vw, 200px); aspect-ratio: 1; opacity: 0;
