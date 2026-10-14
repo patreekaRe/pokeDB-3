@@ -2313,7 +2313,7 @@ async function buildRocket(figs, { look: L, time }) {
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais before a round stone arch on
-   fluted columns, GYM LEADER and their name carved on its lintel, their badge turning in the lunette over it in a sunburst (gold once earned, a dark seal till then), fire on the lintel's ends, light pouring down on the dais; as they speak the great braziers flare with a gong and the shot
+   fluted columns, GYM LEADER and their name carved on its lintel, their badge turning in the lunette over it in a sunburst (in full colour, shining brighter once earned), fire on the lintel's ends, light pouring down on the dais; as they speak the great braziers flare with a gong and the shot
    draws in on them. ---------- */
 
 const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
@@ -2404,11 +2404,11 @@ function burstArt(col) {
   return c;
 }
 
-/** The leader's badge as a painting for the crest, `earned` gold or a dark seal until it's yours. */
-async function crestArt(id, earned) {
+/** The leader's badge as a painting for the crest, in full colour even before it's won, so you see what you're fighting for. */
+async function crestArt(id) {
   const { badgeArt } = await import('./trainercard.js');
   const img = new Image();
-  img.src = badgeArt(`gym-${id}`, earned);
+  img.src = badgeArt(`gym-${id}`, true);
   await img.decode().catch(() => {});
   const f = fine(36, 36, 8);
   try { f.g.drawImage(img, 0, 0, 36, 36); } catch {}
@@ -2418,7 +2418,7 @@ async function crestArt(id, earned) {
 /** The crest over the arch: the leader's badge, a thick cut-out turning slowly in a glow, a ring of motes round it. */
 async function gymCrest(leader, ink, y, z, back = z - 0.3) {
   const earned = !!leader && gymWins(getSave(), leader.id) > 0;
-  const art = await crestArt(leader?.id, earned), map = texOf(art), group = new THREE.Group(), size = 1.5;
+  const art = await crestArt(leader?.id), map = texOf(art), group = new THREE.Group(), size = 1.5;
   const face = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, metalness: earned ? 0.5 : 0.1, roughness: 0.35 });
   if (earned) { face.emissive = new THREE.Color('#ffffff'); face.emissiveMap = map; face.emissiveIntensity = 0.25; }
   const edge = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: earned ? '#8a6020' : '#3a3440', roughness: 0.6 });
