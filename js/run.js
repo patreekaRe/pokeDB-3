@@ -67,13 +67,15 @@ import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/bal
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
-import { trackTowns, handInRequest, metTown } from './towns.js';
-import { TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText } from './data/towns.js';
+import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk } from './towns.js';
+import { TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey } from './data/towns.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
 let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
 export const isPeeking = () => peeking;
+/** A town (or the Nietos' house) visited from home, outside any run (visitTown()). */
+export const isVisiting = () => !!visiting;
 
 export const isRunActive = () => run !== null && !run.over;
 
@@ -168,6 +170,7 @@ export function suspendRun() {
   abandonBattle();
   bootLater = null;
   run = null;
+  endVisit();
 }
 
 /** Victini's goal counts wins in a row on this Level or higher; a win below it neither counts nor breaks the streak. */
@@ -202,6 +205,15 @@ export function abandonRun() {
   if (run && !peeking) clearRunData();
   bootLater = null;
   run = null;
+  endVisit();
+}
+
+/** A visit from home is over however it ends (its own way out, or the Pokédex's Main menu): a real run is saved again. */
+function endVisit() {
+  if (!visiting) return;
+  visiting = null;
+  peeking = false;
+  document.body.classList.remove('town-visit');
 }
 
 /* ============================================================
@@ -593,6 +605,36 @@ export function peekBiome(starter, id, level = 0, slot = null) {
 }
 let peekAt = null, peekDepths = false, peekHouse = null;
 
+/** Visiting from home (docs/roadmap.md's Towns and Waystones, session 2): a lit stone in the Clearing's ring walks your
+    walking buddy into that town, outside any run (the Nietos' house in the Clearing the same way, `id` 'clearing' with
+    its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
+    but what's done there is real: requests handed in, furniture bought, townsfolk invited. Leaving (the far gate, Leave,
+    the Waystone, a house's doormat) calls `onHome(from)`: the hub, at that stone or doorstep. */
+export function visitTown(starter, id, onHome, house = null) {
+  const at = placeOf(id);
+  if (!at || !starter) return false;
+  peeking = true;
+  visiting = { onHome, id };
+  peekAt = BIOMES_BY_ID[at.biome];
+  peekHouse = house;
+  beginRun(starter, 0, ':visit');
+  return true;
+}
+let visiting = null;
+
+/** Back from a visit to the Clearing, the throwaway run gone and the playtest flag down again. */
+async function goHome(from) {
+  const back = visiting?.onHome;
+  if (!back) return;
+  visiting.onHome = null;   // once
+  const { curtain } = await import('./hd2d.js');
+  await curtain(true, 360);
+  abandonRun();
+  townVisit = null;
+  for (const k of Object.keys(homeVisits)) delete homeVisits[k];
+  back?.(from);
+}
+
 /** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
 function walkInto(at) {
   run.biome = at.slot;
@@ -609,6 +651,18 @@ function peekRoom(id) {
   if (id === ':biome') {
     walkInto(peekAt);
     return startBiome();
+  }
+  if (id === ':visit') {
+    walkInto(peekAt);
+    run.stage = 0;   // your walking buddy as it walks the Clearing, not evolved for the biome
+    dropNotes();   // no run-start lines on a visit
+    document.body.classList.add('town-visit');   // no run's HP or Pokédollars on the room bar
+    const place = placeOf(visiting.id);
+    run.town = { id: place.id, visit: true, trade: null };
+    const lift = () => import('./hd2d.js').then(m => m.curtain(false, 420));   // the hub's door or Waystone went dark
+    if (place.home) { homeRoom(place.buildings.find(b => b.id === peekHouse) ?? place.buildings[0]); return setTimeout(lift, 700); }
+    const stone = place.buildings.find(b => b.kind === 'waystone')?.door;
+    return townRoom(lift, stone ? { x: stone.x, y: stone.y + 2 } : null);   // set down just in front of the Waystone's ring
   }
   if (id === ':town') {
     walkInto(peekAt);
@@ -1604,11 +1658,13 @@ function gymRoom(node, leader, won = null, said = null) {
     (walkOn()), which then lifts; `at` puts you on a house's doorstep. The far gate (or Leave) walks on into the biome. */
 function townRoom(covered = null, at = null) {
   const town = TOWNS[run.town.id], thisRun = run, t = run.town;
-  const st = townState(getSave(), town.id), r = currentRequest(town, st);
+  const home = !!t.visit;   // walked in from home through the Clearing's Waystone ring: no run, its gate goes home
+  const st = townState(getSave(), town.id), r = currentRequest(town, st), lit = isMended(town.id);
   if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
   const leave = () => {
     if (run !== thisRun) return;
+    if (home) return goHome(`stone-${town.id}`);
     run.town = null;
     townVisit = null;
     startBiome();
@@ -1616,41 +1672,70 @@ function townRoom(covered = null, at = null) {
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const progress = st.ready ? 'Done!' : `${st.got}/${r.n}`;
   const friends = `Friendship ${st.done}${st.done < MEND_AT ? `/${MEND_AT}` : ''}.`;
+  const later = home ? 'Play a run through here, then hand it in.' : 'Hand it in here on a later run.';
   const board = st.ready && !t.handedIn
     ? spotOption('Hand in', `${requestText(r)}: done! Hand it in for ${coinsWithBonus(REQUEST_COINS)} PokéCoins.`, () => {
         if (run !== thisRun) return;
         t.handedIn = true;
-        const coins = peeking ? 0 : handInRequest(town.id);
+        const real = !peeking || home;
+        const coins = real ? handInRequest(town.id) : 0;
         playSound('stat-up');
         refreshCoins();
-        tell(peeking ? 'Request handed in! (A playtest: nothing is saved.)' : `Request handed in! +${coins} PokéCoins. ${town.name}'s friendship went up!`);
+        tell(real ? `Request handed in! +${coins} PokéCoins. ${town.name}'s friendship went up!` : 'Request handed in! (A playtest: nothing is saved.)');
+        if (real && !lit && isMended(town.id)) {   // the friendship that mends its Waystone
+          playSound('gate-hum');
+          tell(`The Waystone in the square shudders... and knits itself whole! Its stone in the Whispering Clearing's ring is lit: from home you can travel here any time.`);
+        }
         again();
       })
-    : { ...spotOption('Requests', `Up now: ${requestText(r)} (${progress}). Hand it in here on a later run. ${friends}`, again), info: true };
+    : { ...spotOption('Requests', `Up now: ${requestText(r)} (${progress}). ${later} ${friends}`, again), info: true };
   const first = !peeking && !st.met;
   if (first) metTown(town.id);
+  const travelHome = async () => {
+    playSound('gate-hum');
+    if (await confirmDialog('The Waystone hums. Travel home to the Whispering Clearing?', 'Travel') && run === thisRun) goHome(`stone-${town.id}`);
+  };
+  // on a visit, a townsperson you've chatted to can be asked home to the Secret Base, once a visit
+  const invite = async (who) => {
+    const f = town.folk.find(o => o.name === who);
+    if (!f || asked.has(f.id) || invitedFolk().includes(folkKey(town.id, f.id))) return;
+    asked.add(f.id);
+    await new Promise(r => setTimeout(r, 1200));
+    if (run !== thisRun || !(await confirmDialog(`Invite ${f.name} to come and live in your Secret Base?`, 'Invite')) || run !== thisRun) return;
+    const { residents, RESIDENTS } = await import('./pc.js');
+    inviteFolk(town.id, f.id, { shown: residents().shown, max: RESIDENTS });
+    const moved = residents().shown.includes(folkKey(town.id, f.id));
+    playCry(f.id);
+    said(moved ? `${f.name} is packing a bag! It'll be waiting in your Secret Base.` : `${f.name} would love to! Your base is full, so it's waiting in the PC's Base residents till there's room.`, f.name);
+  };
   playMusic(town.music);
   showChoice({
     title: town.name.toUpperCase(),
-    sub: first ? [town.first, town.sub] : townVisit ? [] : [town.sub],
+    sub: first ? [town.first, town.sub] : townVisit ? [] : home ? [`You step out of the Waystone's light into ${town.name}. Its shop, its board and its folk are all here. The Waystone or the far gate takes you home.`] : [town.sub],
     options: [board],
     skipLabel: 'Leave',
     onSkip: leave,
     layout: 'event-room town-room',
   });
   const visit = townVisit ??= { id: town.id };
-  const knocks = {};
+  const knocks = {}, asked = new Set();
   event3d(visit, 'town', {}, null, {
-    extra: { town, at, onDoor: (id) => {
+    extra: { town, at, mended: lit, onDoor: (id) => {
       if (run !== thisRun) return;
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }
       if (!b?.knock) return;
       const line = b.knock[knocks[id] = ((knocks[id] ?? -1) + 1) % b.knock.length];
+      if (b.kind === 'waystone' && home) return travelHome();
+      if (b.kind === 'waystone' && lit) { playSound('gate-hum'); return said('The Waystone stands whole, humming, its runes lit. From the ring of stones in the Whispering Clearing you can come back here any time.'); }
       if (b.kind === 'waystone') { playSound('gate-hum'); return said(`${line} (${friends} Hand in requests to mend it.)`); }
       playSound('stick');
       said(line);
-    }, onSay: (who, line) => { if (run === thisRun) said(line, who); } },
+    }, onSay: (who, line) => {
+      if (run !== thisRun) return;
+      said(line, who);
+      if (home) invite(who);
+    } },
     onIn: () => { covered?.(); covered = null; },
     onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) leave(); },
   });
@@ -1660,12 +1745,19 @@ function townRoom(covered = null, at = null) {
     The shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
     dancers, the bathhouse its bathers (a home's `cast`). */
 function homeRoom(b) {
-  const town = TOWNS[run.town.id], home = town.homes[b.home], thisRun = run, t = run.town;
-  const out = () => { if (run === thisRun) townRoom(null, b.door); };
+  const town = placeOf(run.town.id), home = town.homes[b.home], thisRun = run, t = run.town;
+  const out = () => { if (run === thisRun) (town.home ? goHome(b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
   const again = () => { if (run === thisRun) { checkpoint(); homeRoom(b); } };
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
-  if (b.home === 'shop') {
+  if (b.home === 'shop' && t.visit) {   // from home the trader sells the town's furniture instead (js/town-shop.js)
+    options.push(spotOption('Shop', `${town.trader.name}: Have a look! Furniture from round here, sold nowhere else.`, async () => {
+      if (run !== thisRun) return;
+      const { openTownShop } = await import('./town-shop.js');
+      await openTownShop(town.id, town.trader.name);
+      again();
+    }));
+  } else if (b.home === 'shop') {
     const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
     if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
     options.push(!t.trade

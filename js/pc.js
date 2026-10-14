@@ -9,6 +9,7 @@
    your things.
    ============================================================ */
 
+import { folkOf } from './data/towns.js';
 import { getSave, updateSave, coinsWithBonus } from './storage.js';
 import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
@@ -44,7 +45,16 @@ export const RESIDENTS = 6;
 export function residents(save = getSave(), lend = false) {
   const caught = new Set(save.safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
+  all.push(...(save.townsfolk || []).filter(k => folkOf(k)));   // townsfolk invited home from a town's Waystone visit
   return { all, shown: (save.secretBase?.mons ?? all.slice(0, RESIDENTS)).filter(id => all.includes(id)) };
+}
+
+/** Who a resident is: a Safari catch (an ENEMY_DEFS id) or an invited townsperson ("<town>:<pokemon>"). */
+export function resident(id) {
+  const f = folkOf(id);
+  if (f) return { image: `assets/pokemon/${f.id}-front.gif`, name: f.name, cry: f.id };
+  const def = ENEMY_DEFS[id];
+  return { image: def.image, name: def.name, cry: def.spriteId ?? id };
 }
 
 let root = null, glass = null, say = null, onClose = null, onFame = null, page = 'home', typing = 0, letter = null, hint = 0;
@@ -205,7 +215,7 @@ const PAGES = {
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
-      ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
+      ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches or invited townsfolk to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
@@ -387,12 +397,12 @@ const PAGES = {
     const save = getSave(), { all, shown } = residents(save);
     const grid = el('div', 'pc-box');
     const order = [...shown, ...all.filter(id => !shown.includes(id))];
-    grid.append(...order.map(id => monTile(ENEMY_DEFS[id].image, ENEMY_DEFS[id].name, shown.includes(id), () => {
-      const now = residents().shown, def = ENEMY_DEFS[id];
+    grid.append(...order.map(id => monTile(resident(id).image, resident(id).name, shown.includes(id), () => {
+      const now = residents().shown, def = resident(id);
       if (now.includes(id)) { setResidents(now.filter(x => x !== id)); playSound('cancel'); show('residents'); speak(`${def.name} went back into the box.`); return; }
       if (now.length >= RESIDENTS) { playSound('cancel'); speak(`${RESIDENTS} can live in the base at once. Send one back first.`); return; }
       setResidents([...now, id]);
-      playCry(def.spriteId ?? id);
+      playCry(def.cry);
       show('residents');
       speak(`${def.name} moved into your Secret Base.`);
     }, shown.includes(id) ? '✓' : '')));
@@ -400,7 +410,7 @@ const PAGES = {
     const h = head('BASE RESIDENTS');
     h.append(count);
     glass.replaceChildren(h, all.length ? grid : el('p', 'pc-empty', 'No catches yet.'));
-    speak(all.length ? 'Tap a Pokémon to move it in or send it back.' : 'Catch Pokémon in the Safari Zone and they can live in your Secret Base.');
+    speak(all.length ? 'Tap a Pokémon to move it in or send it back.' : 'Catch Pokémon in the Safari Zone, or invite townsfolk home, and they can live in your Secret Base.');
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [

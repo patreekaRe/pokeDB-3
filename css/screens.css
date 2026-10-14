@@ -5784,3 +5784,18 @@ body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, c
   content: attr(data-who); position: absolute; left: 14px; top: -16px; padding: 4px 12px; border-radius: 999px;
   background: #f0a0b0; color: #6a2a3a; font-size: 0.75rem; line-height: 1.4; rotate: -4deg; box-shadow: 0 2px 0 #c87888, 0 0 0 2px #303038;
 }
+
+/* a town visited from home through its Waystone (js/run.js's visitTown()): no run, so no HP or Pokédollars on the bar */
+body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
+
+/* a gateway town's furniture shop, visited from home (js/town-shop.js): the device's window, the day's pieces on its screen */
+.town-shop { width: min(460px, calc(100vw - 32px)); }
+.town-shop .tshop-say { margin: 0 0 10px; font-size: 0.8rem; line-height: 1.4; min-height: 2.8em; }
+.town-shop .tshop-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.town-shop .tshop-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 4px; border: 2px solid #5a7a3a; border-radius: 8px; background: #eef6dc; color: #1f3a14; font: inherit; font-size: 0.75rem; cursor: pointer; }
+.town-shop .tshop-tile.on { border-color: #e8b020; background: #fff6c8; box-shadow: 0 0 0 2px #e8b020; }
+.town-shop .tshop-pic { width: 64px; height: 64px; object-fit: contain; image-rendering: auto; }
+.town-shop .tshop-name { text-align: center; line-height: 1.2; }
+.town-shop .tshop-price { font-weight: bold; }
+.town-shop .tshop-empty { grid-column: 1 / -1; text-align: center; font-size: 0.8rem; }
+.town-shop .tshop-tile.sold { opacity: 0.55; }

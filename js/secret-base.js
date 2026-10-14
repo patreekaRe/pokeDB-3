@@ -13,6 +13,7 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_GOLD, posterKind } from './data/gym.js';
+import { TOWN_SHELVES } from './data/towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
@@ -339,7 +340,8 @@ export function furnitureStock(day = safariDay(), floor = 1) {
 /** A day's two floors, from the day's seed, leaving out every design `owned` holds (by its `own` kind). */
 export function dealDay(day, owned = {}) {
   const rand = streamOf('furniture', day), taken = new Set();
-  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !(owned[PIECES[id].own] > 0));
+  // a gateway town's shelf is sold only in its town's shop (js/town-shop.js), never here
+  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !(owned[PIECES[id].own] > 0));
   const deal = () => shuffled(SLOTS.map(slot => {
     const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
     const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));

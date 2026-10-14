@@ -55,10 +55,24 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-2. **The Waystone ring and visiting from home.** ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns
-   and Waystones entry. Add the Shrine town's Waystone (mended by its requests), the ring of standing stones by the Ancient
-   Tree in the Clearing (one stone a town, lit when mended), the teleport in and out, and the town's home-visit side: its
-   Japanese furniture shop, requests paying PokéCoins, inviting a townsperson to the Secret Base."
+2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
+   then). The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
+   the right and four rows between the back and the plaza, the world anchored where the old grid's middle was, `X0` / `Z0`,
+   so the back stays put), **the ring round the plaza's Poké Ball** (`STONES` from `RING` in `js/data/towns.js`, a stone a
+   town on a worn circle, `RING_R` 3, none on the paths; `standingStone()`: dark, or lit in its town's colour with a rune,
+   a turning crystal and a pool of light once mended), **the Nietos' house** (`NIETOS_AT`, `nietosHouse()`: walked in like a
+   town home, `CLEARING` in `js/data/towns.js` / `HOMES.clearing` in `js/event-3d.js`, Law, Britt, Linc and Kangaskhan, away
+   till beaten, whispering after seven) and **Kenmatta's dojo, COMING SOON** (`DOJO_AT`, `dojo()`, boarded up, a tap says so;
+   a later session opens it). A lit stone walks your buddy into its town (`warpTo()`: a column of its light, then
+   `visitTown()` in `js/run.js`, a throwaway run like a playtest, `isVisiting()`, the saved run untouched, the room bar's HP
+   hidden, `body.town-visit`), set down by the town's now whole Waystone (`wholeWaystone()`), which (or the far gate, or
+   Leave) takes you home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
+   Waystone with a line), the trader sells the town's furniture shelf instead of trading (`js/town-shop.js`: 6 a UTC day,
+   kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
+   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to
+   come and live in your Secret Base (`inviteFolk()`, `save.townsfolk` keys `town:pokemon`, read by the PC's Base residents
+   and the base's guests, `resident()` in `js/pc.js`). Branch `towns`, waiting on the user's playtest. **Next**: the user
+   playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),

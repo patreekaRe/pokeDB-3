@@ -13,7 +13,8 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
-import { RESIDENTS, openPC } from './pc.js';
+import { RESIDENTS, openPC, resident } from './pc.js';
+import { folkOf } from './data/towns.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
@@ -600,6 +601,7 @@ function onShow() {
   const lend = new URLSearchParams(location.search).has('guests');
   const caught = new Set(getSave().safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
+  all.push(...(getSave().townsfolk || []).filter(k => folkOf(k)));   // townsfolk invited home (js/towns.js)
   return { all, shown: (base.mons ?? all.slice(0, ON_SHOW)).filter(id => all.includes(id)) };
 }
 
@@ -634,9 +636,9 @@ function dropGuest(g) {
 }
 
 async function addGuest(id) {
-  const def = ENEMY_DEFS[id], g = { id, mon: null, w: null };
+  const def = resident(id), g = { id, mon: null, w: null };
   guests.push(g);
-  const m = await makeMon({ src: def.image, name: def.name, cry: def.spriteId ?? id }, false);
+  const m = await makeMon({ src: def.image, name: def.name, cry: def.cry }, false);
   if (!guests.includes(g)) { dispose(m.group); scene.remove(m.group); return; }
   const spots = freeTiles();
   const tile = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree(startTile());
@@ -1280,8 +1282,8 @@ function tray(which = tab) {
     const { all, shown } = onShow();
     // the ones on show first, then every other catch in Pokédex order
     for (const id of [...shown, ...all.filter(id => !shown.includes(id))]) {
-      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: ENEMY_DEFS[id].image, alt: '', draggable: false, className: 'pixel' });
-      add(ENEMY_DEFS[id].name, img, shown.includes(id), () => {
+      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
+      add(resident(id).name, img, shown.includes(id), () => {
         const now = onShow().shown;
         if (now.includes(id)) { base.mons = now.filter(x => x !== id); playSound('cancel'); }
         else if (now.length >= ON_SHOW) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }

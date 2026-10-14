@@ -27,13 +27,19 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
+import { RING, TOWNS, MEND_AT, townState } from './data/towns.js';
+import { gymWins } from './data/gym.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 
-const COLS = 13, ROWS = 12;   // the walkable grid, tile (0, 0) at the back left
+const COLS = 20, ROWS = 16;   // the walkable grid, tile (0, 0) at the back left
+// grown 2026-10-14 (the user's ask: room for the Waystone ring, the Nietos' house and Kenmatta's dojo): seven columns on
+// the right and four rows between the back and the plaza; the world stays anchored where the 13 x 12 grid's middle
+// was, so everything at the back (the Safari gate's view, the cleared corners) stands where it did
+const X0 = 6.5, Z0 = 6;
 const M = 4, FRONT = 7;       // grass and forest round it (tiles): back and sides, and in front, down to the gate and past it
 // the Whispering Clearing's gate across the front (the user's ask, 2026-10-09): its fence closes the hub off, the trail
 // leaves under its arch, and setting out on a run walks your partner through it and away
@@ -42,8 +48,8 @@ const GATE_AT = { tx: 6, ty: ROWS + 4 };
 // the trail and a Pokémon route sign left of it
 const STOP_AT = { tx: 8, ty: GATE_AT.ty + 1 }, SIGN_AT = { tx: 4, ty: GATE_AT.ty + 1 };
 const TP = 16;                // painted pixels a tile
-const START = { x: 6, y: 10 };
-const PC_AT = { tx: 9, ty: 10 };
+const START = { x: 6, y: 14 };
+const PC_AT = { tx: 11, ty: 14 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -83,7 +89,20 @@ const BUGS = 44;
 const SAFARI_AT = { tx: 0, ty: -3 };
 // the Sky Pillar back in the right corner the same way, its doorway onto a strip of meadow (the user's ask, 2026-10-09)
 const PILLAR_AT = { tx: 13, ty: -3 };
-const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 9.5], [-1, 10]], [[-1, 10], [6, 10]]];
+// on the grown right side, along the road east from the plaza's path: the Nietos' house and Kenmatta's dojo, each by its
+// top-left tile (the user's ask, 2026-10-14)
+const NIETOS_AT = { tx: 13, ty: 6 }, DOJO_AT = { tx: 17, ty: 5 };
+// the Waystone ring round the plaza's Poké Ball (docs/roadmap.md's Towns and Waystones): one standing stone a town (RING
+// in js/data/towns.js) on a circle RING_R tiles out, turned so none stands on the paths leaving it north, south and west
+const RING_R = 3;
+const STONES = RING.map((t, i) => {
+  const a = (i + 1) * 2 * Math.PI / RING.length, x = START.x + RING_R * Math.cos(a), y = START.y - RING_R * Math.sin(a);
+  const tx = Math.round(x), ty = Math.round(y), dx = START.x - tx, dy = START.y - ty;
+  const step = Math.abs(dx) >= Math.abs(dy) ? { x: tx + Math.sign(dx), y: ty } : { x: tx, y: ty + Math.sign(dy) };   // a tile in towards the plaza
+  return { ...t, x, y, tx, ty, step, a };
+});
+const PATHS = [[[6, 3], [6, ROWS + FRONT + 1]], [[1, 4], [11, 4]], [[1, 4], [1, 2]], [[1, 2], [0, 1]], [[0, 1], [0, -M - 0.6]], [[11, 4], [11, 2]], [[11, 2], [13, 0]], [[13, 0], [13, PILLAR_AT.ty + 1]], [[-1, 13.5], [-1, 14]], [[-1, 14], [6, 14]],
+  [[6, 10], [18, 10]], [[NIETOS_AT.tx + 1, NIETOS_AT.ty + 3], [NIETOS_AT.tx + 1, 10]], [[DOJO_AT.tx + 1, DOJO_AT.ty + 4], [DOJO_AT.tx + 1, 10]]];
 
 let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
@@ -103,8 +122,8 @@ let arriving = false;   // walking in from the bottom of the screen (enterHub())
 let showing = null; // a showHub() under way, so two calls at once never build two partners
 let outbound = null, returning = false;   // walking out under the gate to a run (walkOut()), and back in from one
 
-const tileX = (tx) => tx + 0.5 - COLS / 2;
-const tileZ = (ty) => ty + 0.5 - ROWS / 2;
+const tileX = (tx) => tx + 0.5 - X0;
+const tileZ = (ty) => ty + 0.5 - Z0;
 const key = (x, y) => `${x},${y}`;
 
 /* ---------- painting ---------- */
@@ -195,6 +214,7 @@ function groundArt() {
     const wob = (smooth(x, y, 5) - 0.5) * 0.22;
     let path = Math.min(...PATHS.map(s => seg(u, v, s))) - 0.42 - wob;
     path = Math.min(path, Math.hypot(u - START.x, v - START.y) - 1.55 - wob * 2);
+    path = Math.min(path, Math.abs(Math.hypot(u - START.x, v - START.y) - RING_R) - 0.3 - wob);   // the worn ring the Waystones stand on
     let c;
     if (path < 0) {
       const n = smooth(x + 99, y, 3) + hash(x, y) * 0.35;
@@ -1029,7 +1049,7 @@ const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e848
 const MU = 20;   // the mall's paintings: units a tile
 // on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
 // its doors on row 9 over tile -1 where the road from the plaza comes up to them, facing the camera
-const MALL_AT = { x: tileX(-1), z: tileZ(8) + 0.25, turn: 0 };
+const MALL_AT = { x: tileX(-1), z: tileZ(12) + 0.25, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1158,6 +1178,224 @@ function mallBuilding() {
   return g;
 }
 
+/* ---------- the Waystone ring, the Nietos' house and Kenmatta's dojo (2026-10-14) ---------- */
+
+let stoneLit = [];   // the lit stones' runes and crystals, pulsed each frame (liveStones())
+
+/** A standing stone of the ring: rough grey, a rune panel on its face and a crystal over its tip that light in its town's
+    colour once that town's Waystone is mended; dark, the panel is worn and the crystal a dull pebble. */
+function standingStone(g, t, lit) {
+  const x = tileX(t.x), z = tileZ(t.y), s = new THREE.Group();
+  s.position.set(x, 0, z);
+  s.rotation.y = Math.atan2(START.x - t.x, START.y - t.y) * 0.25;   // a little turned in towards the plaza
+  const rock = new THREE.MeshStandardMaterial({ color: '#a8a49a', roughness: 0.95, flatShading: true, emissive: new THREE.Color(lit ? t.glow : '#000000'), emissiveIntensity: lit ? 0.12 : 0 });
+  const base = new THREE.MeshStandardMaterial({ color: '#7a766c', roughness: 1, flatShading: true });
+  const geo = new THREE.CylinderGeometry(0.26, 0.4, 1.55, 5, 2);
+  const pos = geo.attributes.position, rnd = seeded(t.id.length * 7 + 3);
+  for (let i = 0; i < pos.count; i++) if (pos.getY(i) > -0.8) pos.setX(i, pos.getX(i) + (rnd() - 0.5) * 0.06), pos.setZ(i, pos.getZ(i) + (rnd() - 0.5) * 0.06);
+  geo.computeVertexNormals();
+  const body = new THREE.Mesh(geo, rock);
+  body.position.y = 0.78;
+  body.scale.z = 0.75;
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.48, 0.14, 7), base);
+  foot.position.y = 0.07;
+  const glow = new THREE.MeshStandardMaterial({ color: lit ? t.glow : '#56524a', emissive: new THREE.Color(lit ? t.glow : '#000000'), emissiveIntensity: lit ? 1.4 : 0, roughness: 0.5 });
+  const rune = new THREE.Mesh(new THREE.PlaneGeometry(0.26, 0.8), glow);
+  rune.position.set(0, 0.85, 0.262);
+  rune.rotation.x = -0.1;
+  rune.material.map = texOf(runeArt());
+  rune.material.transparent = true;
+  rune.material.alphaTest = 0.3;
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(lit ? 0.17 : 0.1, 0), lit ? glow : base);
+  gem.position.y = lit ? 1.95 : 1.6;
+  for (const m of [body, foot, gem]) { m.castShadow = true; m.receiveShadow = true; }
+  s.add(body, foot, rune, gem);
+  if (lit) {   // its light pooled on the ground round it
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(0.75, 32), new THREE.MeshBasicMaterial({ color: t.glow, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }));
+    pool.rotation.x = -Math.PI / 2; pool.position.y = 0.02; pool.raycast = () => {};
+    s.add(pool);
+  }
+  if (lit) stoneLit.push({ glow, gem, phase: t.a });   // no lamp of its own: a light per lit stone would recompile the scene's shaders
+  g.add(s);
+}
+
+/** A rune panel: carved marks down a stone's face (white on clear, tinted by its material). */
+function runeArt() {
+  const { c, g } = fine(5, 16, 10);
+  g.strokeStyle = '#ffffff'; g.lineWidth = 0.55;
+  const marks = [[[1, 2], [4, 2], [2.5, 4]], [[1.2, 6], [3.8, 8], [1.2, 10]], [[2.5, 11], [2.5, 14.5], [1, 13], [4, 13]]];
+  for (const m of marks) { g.beginPath(); g.moveTo(...m[0]); for (const p of m.slice(1)) g.lineTo(...p); g.stroke(); }
+  return c;
+}
+
+function liveStones(now) {
+  for (const s of stoneLit) {
+    s.glow.emissiveIntensity = calm ? 1.3 : 1.2 + 0.35 * Math.sin(now / 650 + s.phase);
+    if (!calm) { s.gem.rotation.y = now / 800 + s.phase; s.gem.position.y = 1.95 + Math.sin(now / 520 + s.phase) * 0.06; }
+  }
+}
+
+/** A sign painted on a plank: `lines` of [text, size, colour]. */
+function plankArt(w, h, lines, wood = ['#c89a60', '#a8763e', '#7a5226']) {
+  const { c, g, rr, lin } = fine(w, h, 10);
+  rr(0.2, 0.2, w - 0.4, h - 0.4, 1, lin(0, 0, 0, h, wood));
+  g.strokeStyle = 'rgba(60,30,10,0.5)'; g.lineWidth = 0.3; g.strokeRect(0.6, 0.6, w - 1.2, h - 1.2);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  lines.forEach(([text, size, col], i) => { g.font = `900 ${size}px "Trebuchet MS", "Arial Black", sans-serif`; g.fillStyle = col; g.fillText(text, w / 2, h * (i + 1) / (lines.length + 1)); });
+  return c;
+}
+
+/** The Nietos' house (the user's ask, 2026-10-14): a cream family cottage under a sky-blue gabled roof in their Gym
+    colours, a blue door, lit windows, a chimney, a name board, a sandbox with a bucket and a ball out front. */
+function nietosHouse(g, x, z) {
+  const W = 2.5, D = 2.1, H = 1.45;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const h = new THREE.Group();
+  h.position.set(x, 0, z);
+  g.add(h);
+  const add = (mesh, px, py, pz) => { mesh.position.set(px, py, pz); mesh.castShadow = mesh.receiveShadow = true; h.add(mesh); return mesh; };
+  const wall = std({ color: '#f6ecd8' }), trim = std({ color: '#ffffff' }), blue = std({ color: '#3a6ea8' }), roofM = std({ color: '#5a96d0', roughness: 0.7, flatShading: true });
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.16, D + 0.12), std({ color: '#b8b0a0' })), 0, 0.08, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), wall), 0, 0.16 + H / 2, 0);
+  // the gabled roof, its ridge across, eaves out over the walls
+  const tri = new THREE.Shape([new THREE.Vector2(-D / 2 - 0.25, 0), new THREE.Vector2(D / 2 + 0.25, 0), new THREE.Vector2(0, 0.95)]);
+  const roof = new THREE.ExtrudeGeometry(tri, { depth: W + 0.35, bevelEnabled: false });
+  roof.translate(0, 0, -(W + 0.35) / 2);
+  roof.rotateY(Math.PI / 2);
+  add(new THREE.Mesh(roof, roofM), 0, 0.16 + H, 0);
+  const gable = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-D / 2, 0), new THREE.Vector2(D / 2, 0), new THREE.Vector2(0, 0.78)]), { depth: W - 0.02, bevelEnabled: false });
+  gable.translate(0, 0, -(W - 0.02) / 2); gable.rotateY(Math.PI / 2);
+  add(new THREE.Mesh(gable, wall), 0, 0.16 + H, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.6, 0.28), std({ color: '#c87858' })), 0.7, 0.16 + H + 0.75, -0.25);
+  // the door, its step and a round window over it; two lit windows either side
+  const fz = D / 2 + 0.01;
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.86, 0.06), blue), 0, 0.16 + 0.43, fz);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), std({ color: '#f0c040', metalness: 0.6, roughness: 0.3 })), 0.16, 0.6, fz + 0.04);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.08, 0.3), std({ color: '#b8b0a0' })), 0, 0.12, fz + 0.15);
+  const pane = std({ color: '#fff0c0', emissive: new THREE.Color('#ffd890'), roughness: 0.3 });
+  pane.userData.glow = 1.2; pane.userData.glowMin = 0.15;
+  glowMats.push(pane);
+  for (const sx of [-1, 1]) {
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.46, 0.04), trim), sx * 0.82, 0.95, fz);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.38, 0.05), pane), sx * 0.82, 0.95, fz + 0.005);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.12), std({ color: '#6ab060' })), sx * 0.82, 0.67, fz + 0.06);   // a window box
+  }
+  const round = add(new THREE.Mesh(new THREE.CircleGeometry(0.17, 20), pane), 0, 0.16 + H + 0.32, D / 2 + 0.02);
+  round.castShadow = false;
+  // the name board on its post by the path, and the sandbox
+  const sign = plankArt(30, 12, [['THE NIETOS', 3.4, '#ffffff'], ['LAW · BRITT · LINC', 2, '#e8f4ff']], ['#88c4f0', '#5a96d0', '#3a6ea8']);
+  const b = board(sign, 0, 0, { s: 0.85 });
+  b.position.set(-1.25, 0.72, D / 2 + 0.8);
+  h.add(b);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 6), std({ color: '#7a5430' })), -1.25, 0.37, D / 2 + 0.75);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.1, 0.5), std({ color: '#c89a60' })), 1.0, 0.05, D / 2 + 0.6);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.04, 0.42), std({ color: '#f0dca0' })), 1.0, 0.1, D / 2 + 0.6);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' })), 0.9, 0.17, D / 2 + 0.55);
+  add(new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 8), std({ color: '#f8e048' })), 1.12, 0.21, D / 2 + 0.66);
+}
+
+/** Chad Master Kenmatta's dojo, not open yet (the user's ask, 2026-10-14): a raised timber hall, white walls between dark
+    posts, a two-tier slate roof, a DOJO board over the door, the door boarded up under a COMING SOON banner, red
+    banners either side and stone steps up. */
+function dojo(g, x, z) {
+  const W = 2.7, D = 3.0, H = 1.35, LIFT = 0.32;
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const d = new THREE.Group();
+  d.position.set(x, 0, z);
+  g.add(d);
+  const add = (mesh, px, py, pz, shadow = true) => { mesh.position.set(px, py, pz); mesh.castShadow = mesh.receiveShadow = shadow; d.add(mesh); return mesh; };
+  const wood = std({ color: '#5a3a22' }), plaster = std({ color: '#f2ece0' }), slate = std({ color: '#3e4250', roughness: 0.6, flatShading: true }), stone = std({ color: '#9a968c', roughness: 1 });
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.3, LIFT, D + 0.3), stone), 0, LIFT / 2, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), plaster), 0, LIFT + H / 2, 0);
+  for (const sx of [-1, -1 / 3, 1 / 3, 1]) add(new THREE.Mesh(new THREE.BoxGeometry(0.1, H, 0.1), wood), sx * W / 2, LIFT + H / 2, D / 2 + 0.01);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.1, 0.12, 0.12), wood), 0, LIFT + H - 0.06, D / 2 + 0.02);
+  // two tiers of hipped roof
+  const hip = (w, dd, hh, y) => {
+    const m = add(new THREE.Mesh(new THREE.ConeGeometry(Math.SQRT1_2, hh, 4, 1), slate), 0, y + hh / 2, 0);
+    m.rotation.y = Math.PI / 4;
+    m.scale.set(w, 1, dd);
+  };
+  hip(W + 0.7, D + 0.7, 0.75, LIFT + H);
+  add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.2), plaster), 0, LIFT + H + 0.72, 0);
+  hip(1.5, 1.7, 0.55, LIFT + H + 0.88);
+  // the door, boarded up, the banner across it and the DOJO board over it
+  const fz = D / 2 + 0.03;
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.04), std({ color: '#2a1c12' })), 0, LIFT + 0.5, fz);
+  for (const [a, y] of [[0.5, 0.35], [-0.45, 0.7]]) add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 0.05), std({ color: '#b08858' })), 0, LIFT + y, fz + 0.04).rotation.z = a;
+  const banner = board(plankArt(26, 8, [['COMING SOON', 3.6, '#ffe070']], ['#d83a30', '#b02820', '#801810']), 0, 0, { s: 0.8, shadow: false });
+  banner.position.set(0, LIFT + 0.55, fz + 0.09);
+  d.add(banner);
+  const sign = board(plankArt(22, 9, [['道場', 4.2, '#2a1a10'], ['KENMATTA', 2.2, '#5a2a10']]), 0, 0, { s: 0.75, shadow: false });
+  sign.position.set(0, LIFT + H + 0.12, fz + 0.12);
+  d.add(sign);
+  // steps up, and a red banner on a pole either side
+  for (let i = 0; i < 2; i++) add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.22), stone), 0, 0.06 + i * 0.12, D / 2 + 0.38 - i * 0.18);
+  const red = std({ color: '#c8302a', side: THREE.DoubleSide });
+  for (const sx of [-1, 1]) {
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.9, 6), wood), sx * (W / 2 + 0.35), 0.95, D / 2 + 0.3);
+    add(new THREE.Mesh(new THREE.PlaneGeometry(0.3, 1.1), red), sx * (W / 2 + 0.35) + sx * 0.17, 1.25, D / 2 + 0.3, false);
+  }
+}
+
+/** Into the Nietos' house: to its door, the curtain down, then the house walked in (js/run.js's visitTown()). */
+async function enterHouse(p) {
+  if (entering) return;
+  hideCard();
+  walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  playSound('door');
+  entering = { at: performance.now(), z: walker.z };
+  await curtain(true, calm ? 0 : 420);
+  entering = null;
+  inside = p.id;
+  await acts.onTown('clearing', p.id);
+}
+
+let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
+
+/** Off through a lit stone: a column of its light rises round your partner, which fades up into it, then the town. */
+async function warpTo(p) {
+  if (entering) return;
+  hideCard();
+  walker.path = []; aim = null; walker.facing = 'front';
+  entering = { at: performance.now(), z: walker.z, still: true };
+  playSound('gate-hum');
+  warp = { at: performance.now(), out: true, colour: p.stone.glow };
+  await new Promise(r => setTimeout(r, calm ? 0 : 1000));
+  await curtain(true, calm ? 0 : 300);
+  entering = null;
+  inside = p.id;
+  await acts.onTown(p.stone.id);
+}
+
+/** Back from a visit (js/run.js's visitTown()): onto that stone's step, the light setting your partner down, or on the
+    house's doorstep. */
+export function cameHome(from) {
+  inside = from;
+  const t = STONES.find(o => `stone-${o.id}` === from);
+  warp = t ? { at: performance.now() + 300, out: false, colour: t.glow } : null;
+}
+
+let beam = null;
+function liveWarp(now) {
+  if (!warp) { if (beam) beam.visible = false; mon.board.scale.y = 1; return; }
+  if (!beam) {
+    beam = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 6, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+    beam.raycast = () => {};
+    scene.add(beam);
+  }
+  const t = Math.max(0, Math.min(1, (now - warp.at) / (warp.out ? 900 : 1100)));
+  const k = warp.out ? t : 1 - t;   // how far into the light
+  beam.visible = true;
+  beam.material.color.set(warp.colour);
+  beam.position.set(walker.x, 3, walker.z);
+  beam.scale.set(0.4 + k * 0.6, 1, 0.4 + k * 0.6);
+  beam.material.opacity = calm ? 0 : Math.min(0.75, Math.sin(Math.min(1, warp.out ? t * 1.3 : t + 0.15) * Math.PI) * 0.8);
+  mon.board.scale.y = 1 - k * 0.6;
+  mon.board.scale.x *= 1 - k * 0.6;
+  mon.board.position.y += k * 1.4;
+  if (!warp.out && t >= 1) { warp = null; walker.hopUntil = now + 500; playCry(mon.id); }
+}
+
 /* ---------- the places ---------- */
 
 const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
@@ -1268,7 +1506,7 @@ function makePlaces() {
   // out on the left where the side forest stood, lined up under the Safari gate a step to its left (2026-10-09, the user's
   // ask: in the grid it stood too near the middle), the road from the plaza running up the middle of its doors
   list.push({
-    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 10 }, tiles: rect(-3, 7, 0, 9), tag: [-1, 3.4, 9], open: true,
+    id: 'mall', name: 'Poké Mall', step: { x: -1, y: 14 }, tiles: rect(-3, 11, 0, 13), tag: [-1, 3.4, 13], open: true,
     line: 'A shopping centre. The Game Corner is inside.',
     buttons: [['Go in', enterMall]],
     build: (g) => { const m = mallBuilding(); m.position.set(MALL_AT.x, 0, MALL_AT.z); m.rotation.y = MALL_AT.turn; g.add(m); },
@@ -1302,6 +1540,33 @@ function makePlaces() {
     reset: tower && 'weekly',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
     build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(14.8), tileZ(-1.2))),
+  });
+  // the Waystone ring round the plaza (docs/roadmap.md's Towns and Waystones, session 2): a stone a town, lit once its
+  // Waystone is mended; a lit one takes you there
+  for (const t of STONES) {
+    const town = TOWNS[t.id], st = townState(save, t.id), lit = st.done >= MEND_AT;
+    list.push({
+      id: `stone-${t.id}`, stone: t, name: lit || st.met ? `${town.name} Waystone` : 'Waystone', step: t.step, tiles: [[t.tx, t.ty]], tag: [t.tx, 2.6, t.ty], open: true,
+      line: lit ? `${town.name}'s Waystone, lit and humming. Step up to it to travel there.`
+        : st.met ? `A dark standing stone. Mend ${town.name}'s Waystone and it lights: ${st.done}/${MEND_AT} requests handed in at its board.`
+          : 'A dark standing stone, its runes worn smooth. Somewhere on the roads out of the Clearing is a town that can light it.',
+      buttons: lit ? [['Travel', () => {}]] : [],
+      build: (g) => standingStone(g, t, lit),
+    });
+  }
+  // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom())
+  const nietosHome = (gymWins(save, 'nietos') || 0) > 0;
+  list.push({
+    id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
+    line: nietosHome ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "At the Gym!"',
+    buttons: [['Go in', () => {}]],
+    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1)),
+  });
+  list.push({
+    id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
+    line: 'Chad Master Kenmatta\'s dojo. Planks over the door, and a banner: COMING SOON. From inside, faintly: "FORTIFY YOUR MIND."',
+    buttons: [],
+    build: (g) => dojo(g, tileX(DOJO_AT.tx + 1), tileZ(DOJO_AT.ty + 1.5)),
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: 10, y: 9 }, tiles: rect(9, 8, 11, 8), tag: [10, 4, 8], open: true,
@@ -1342,7 +1607,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = [];
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -1406,14 +1671,14 @@ function routeSignArt() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block)
-const TREE_TILES = [[12, 11]];
+const TREE_TILES = [[19, 15], [16, 15]];
 
 function buildClearing() {
   const W = COLS + 2 * M, D = ROWS + M + FRONT;
   const top = new THREE.MeshStandardMaterial({ map: tex(groundArt()), roughness: 1 });
   const earth = new THREE.MeshStandardMaterial({ color: '#7a5a34', roughness: 1 }), under = new THREE.MeshStandardMaterial({ color: '#3a2818' });
   ground = new THREE.Mesh(new THREE.BoxGeometry(W, 1, D), [earth, earth, top, under, earth, earth]);
-  ground.position.set(0, -0.5, (FRONT - M) / 2);
+  ground.position.set(tileX(-M - 0.5) + W / 2, -0.5, tileZ(-M - 0.5) + D / 2);
   ground.receiveShadow = true;
   scene.add(ground);
 
@@ -1472,15 +1737,15 @@ function dressSeason() {
     const yard = [
       [...P_(9), 5, 3, 2.2, 0, 0.2], [...P_(10), 7, 3, 2.2, 0, 0.2],   // the Ancient Tree's door
       [lanternArt(0), 'white', 2, 3, 1.3, 0, 0], [lanternArt(1), 'white', 10, 3, 1.3, 0, 0],   // lantern posts, a pair at the back
-      [lanternArt(2), 'white', 4, 12, 1.3, 0, 0], [lanternArt(3), 'white', 8, 12, 1.3, 0, 0],   // and a pair down the trail
+      [lanternArt(2), 'white', 4, 18, 1.3, 0, 0], [lanternArt(3), 'white', 8, 18, 1.3, 0, 0],   // and a pair down the trail
       [...P_(5), 3, 7, 4.4, 0, -0.1], [...P_(6), 2, 8, 2.2, 0, 0.1], [...P_(7, false), 4, 8, 1.9, 0, 0.15],   // the pumpkin patch
       [scarecrowArt(), 'white', 2, 6, 1.5, 0, 0],
       [deadTreeArt(0), 'white', 10, 6, 1.7, 0, -0.2],   // the graveyard, clear of the road along row 4: a row of stones under the dead tree, a candle at each end
       [graveArt(0), null, 8, 7, 1.4, 0, 0], [graveArt(1), null, 9, 7, 1.5, 0, 0], [graveArt(2), null, 11, 7, 1.5, 0, 0], [graveArt(3), null, 12, 7, 1.4, 0, 0],
       [candlesArt(0), 'white', 8, 8, 1.1, 0, -0.1], [candlesArt(1), 'white', 12, 8, 1.1, 0, -0.1],
       [...P_(1), 7, 9, 1.4, 0.15, 0.1],   // a little one on the plaza
-      [capsArt(0), 'white', 4, 11, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
-      [hayArt(0), 'white', 1, 13, 1.6, 0, 0], [hayArt(1), 'white', 11, 13, 1.6, 0, 0],   // hay either side of the way out
+      [capsArt(0), 'white', 1, 10, 1.2, 0, 0.2],   // the witch's corner, beside the cauldron
+      [hayArt(0), 'white', 2, 19, 1.6, 0, 0], [hayArt(1), 'white', 10, 19, 1.6, 0, 0],   // hay either side of the way out
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
@@ -1499,9 +1764,9 @@ function dressSeason() {
     }
     // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
     cauldron = makeCauldron(THREE);
-    cauldron.group.position.set(tileX(3), 0, tileZ(11));
+    cauldron.group.position.set(tileX(2), 0, tileZ(10));
     forest.add(cauldron.group);
-    yardTiles.add(key(3, 11));
+    yardTiles.add(key(2, 10));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
     for (const [colour, at, k] of [['#ff9030', [tileX(3), 1.2, tileZ(7) + 1.4], 0.8]]) {
@@ -1514,10 +1779,10 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 1, y: 6 }, { x: 8, y: 6 }, { x: 8, y: 13 }, { x: 4, y: 11 }], bats: { x: tileX(6), z: tileZ(0.5) } });
+      spawns: [{ x: 1, y: 6 }, { x: 8, y: 6 }, { x: 10, y: 17 }, { x: 16, y: 12 }], bats: { x: tileX(6), z: tileZ(0.5) } });
   }
   if (SEASON === 'winter') {
-    const b = board(snowmanArt(), tileX(START.x) - 1.7, tileZ(START.y) - 1.3, { s: 1.2 });
+    const b = board(snowmanArt(), tileX(9) + 0.3, tileZ(11) - 0.2, { s: 1.2 });
     b.raycast = () => {};
     forest.add(b);
     makeSnow();
@@ -1633,6 +1898,8 @@ function open(p, i = null) {
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
+  if (p.stone) return warpTo(p);
+  if (p.id === 'nietos') return enterHouse(p);
   walker.hopUntil = performance.now() + 400;
   hideCard();
   const [label, go] = p.buttons[i ?? 0];
@@ -2064,7 +2331,7 @@ function onTap(e) {
 function groundTile(ray) {
   const at = new THREE.Vector3();
   if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), at)) return null;
-  const to = { x: Math.floor(at.x + COLS / 2), y: Math.floor(at.z + ROWS / 2) };
+  const to = { x: Math.floor(at.x + X0), y: Math.floor(at.z + Z0) };
   return inGrid(to) ? to : null;
 }
 
@@ -2174,7 +2441,7 @@ function dotTexture() {
 function makeBugs() {
   const rnd = seeded(33), pos = new Float32Array(BUGS * 3), col = new Float32Array(BUGS * 3), seeds = [];
   for (let i = 0; i < BUGS; i++) {
-    const s = [(rnd() - 0.5) * (COLS + 2), 0.25 + rnd() * 1.6, -ROWS / 2 - 1 + rnd() * (ROWS + 2), rnd() * 100, 0.6 + rnd() * 0.8];
+    const s = [tileX(-1.5) + rnd() * (COLS + 2), 0.25 + rnd() * 1.6, tileZ(-1.5) + rnd() * (ROWS + 2), rnd() * 100, 0.6 + rnd() * 0.8];
     seeds.push(s);
     pos.set(s.slice(0, 3), i * 3);
   }
@@ -2305,11 +2572,11 @@ function fitCamera(w, h) {
   camera.userData = { dist: d, half: d * tanH };
   // the furthest forward the view may look: where the ground's front edge sits on the bar's top, not under it
   const edge = new THREE.Vector3(), low = -1 + 2 * Math.min(0.4, (bar?.offsetHeight || 0) / h);
-  let lo = -ROWS, hi = ROWS;
+  let lo = -2 * ROWS, hi = 2 * ROWS;
   for (let i = 0; i < 24; i++) {
     const mid = (lo + hi) / 2;
     aimCamera(0, mid);
-    if (edge.set(0, 0, ROWS / 2 + FRONT).project(camera).y < low) lo = mid; else hi = mid;
+    if (edge.set(0, 0, tileZ(ROWS - 0.5) + FRONT).project(camera).y < low) lo = mid; else hi = mid;
   }
   camera.userData.front = lo;
   scene.fog.near = d + 2; scene.fog.far = d + 22;
@@ -2318,12 +2585,13 @@ function fitCamera(w, h) {
 function placeCamera(dt) {
   const { half, front } = camera.userData;
   // up the Safari road, or to the Sky Pillar's door, the view looks on ahead into the back corner
-  const ahead = !arriving && (walker.tile.x <= 1 || walker.tile.x >= 11) && walker.tile.y <= 3 ? 2.5 : 0;
-  const reachX = COLS / 2 + 2.2 - half, frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
+  const ahead = !arriving && (walker.tile.x <= 1 || (walker.tile.x >= 11 && walker.tile.x <= 15)) && walker.tile.y <= 3 ? 2.5 : 0;
+  const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(START.x) : walker.x, wz = arriving ? tileZ(START.y) : walker.z - ahead;
   // a tile further on the left, so the Poké Mall out there is whole in the view
-  const wantX = reachX + ahead <= 0 ? 0 : Math.max(-reachX - 1 - ahead * 1.2,Math.min(Math.max(0, reachX) + ahead * 1.2, wx));
+  const loX = tileX(-0.5) - 3.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
+  const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
@@ -2360,6 +2628,8 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
+  liveWarp(now);
+  liveStones(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
@@ -2478,7 +2748,7 @@ async function openHub(titleScreen, actions, hold) {
   try {
     built ??= build();
     await built;
-  } catch { built = Promise.reject(); built.catch(() => {}); return false; }
+  } catch (err) { console.warn('Clearing unavailable', err); built = Promise.reject(); built.catch(() => {}); return false; }
   // held before it's on the page, or the bar shows over the shut Pokédex while the partner loads
   root.classList.toggle('held', hold);
   if (!root.isConnected) screen.prepend(root);

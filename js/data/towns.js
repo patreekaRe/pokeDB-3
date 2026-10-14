@@ -937,3 +937,65 @@ export const handIn = (st) => (st.ready ? { ...st, done: st.done + 1, got: 0, re
 
 /** Whether a town's Waystone is mended (friendship enough). */
 export const mended = (st) => st.done >= MEND_AT;
+
+/* ---------- the Waystone ring and visiting from home (session 2, 2026-10-14) ---------- */
+
+/** The ring of standing stones round the Clearing's plaza (js/hub-3d.js), one a town in this order round the circle, each
+    lit in its town's colour once its Waystone is mended. */
+export const RING = [
+  { id: 'shrine', glow: '#ff7a5a' },
+  { id: 'wastes', glow: '#ffa040' },
+  { id: 'ruins', glow: '#48d8e8' },
+  { id: 'thornwood', glow: '#78e878' },
+  { id: 'savanna', glow: '#ffd858' },
+];
+
+/** Each town's shop sells one shelf of the Secret Base's furniture (its `group`s), only there (the mall's store never
+    deals them), `SHOP_STOCK` of it a UTC day, a piece you own never dealt again. */
+export const SHOP_SHELVES = { shrine: ['Japanese'], wastes: ['Hot Spring'], ruins: ['Underwater'], thornwood: ['Greenhouse', 'Garden'], savanna: ['Desert'] };
+export const SHOP_STOCK = 6;
+export const TOWN_SHELVES = new Set(Object.values(SHOP_SHELVES).flat());
+
+/** The town a furniture shelf is sold in, or null. */
+export const shelfTown = (group) => Object.keys(SHOP_SHELVES).find(id => SHOP_SHELVES[id].includes(group)) ?? null;
+
+/** A townsperson living in the Secret Base keeps the town's id with it: "<town>:<pokemon>". */
+export const folkKey = (town, id) => `${town}:${id}`;
+export function folkOf(key) {
+  const [town, id] = String(key).split(':');
+  const f = TOWNS[town]?.folk.find(o => o.id === id);
+  return f ? { ...f, town } : null;
+}
+
+/** The Clearing's own houses (the user's ask, 2026-10-14): walked in from the hub like a town's homes (homeRoom() in
+    js/run.js), a pseudo-town with no map, crowd or requests. The Nietos live here, the Clearing's third Gym Leaders. */
+export const CLEARING = {
+  id: 'clearing', biome: 'clearing', name: 'Whispering Clearing', music: 'title', home: true,
+  buildings: [
+    { id: 'nietos', name: 'THE NIETOS', home: 'nietos' },
+  ],
+  homes: {
+    nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
+      away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',
+      // from seven at night (your clock) Linc is asleep, and the house whispers
+      nightAt: 19, nightSub: 'Linc is asleep in his crib. Law and Britt wave from the couch, whispering.',
+      cast: {
+        kangaskhan: ['Kangaskhan is rocking the crib with one foot and folding laundry. It nods at you.', 'Kangaskhan checks the baby monitor, then you. You seem fine. It goes back to folding.', 'Kangaskhan offers you a juice box from its pouch. It has a lot of juice boxes in there.'],
+      },
+      night: ['BRITT: *whispering* He JUST went down. If you wake him, you\'re babysitting.', 'LAW: *whispering* One ranked match. Quietly. Oh, umm... I mean, we\'re reading. Books.', 'BRITT: *whispering* Shh. That\'s the third time tonight. Tiptoe out, sweetie.'] },
+  },
+  leaders: {
+    nietos: [
+      'LAW: Welcome to the Nietos\' house! Shoes off. Oh, umm... I mean, mind the Lego.',
+      'BRITT: Twenty-six kids at school, one at home, and Law. I count Law as two.',
+      'LINC: Pika! Pika! *offers you a soggy cracker*',
+      'LAW: The boys want me on at nine. Britt says no. We\'re negotiating.',
+      'BRITT: Grade the homework, feed the baby, heal Law in ranked. A teacher\'s work is never done.',
+      'LINC: Dada! Ba! *points at the TV*',
+      'LAW: Kangaskhan babysits sometimes. It\'s a natural. Better than Lawrence, anyway.',
+    ],
+  },
+};
+
+/** A town by id for the houses walked in from home too (the Clearing's). */
+export const placeOf = (id) => TOWNS[id] || (id === 'clearing' ? CLEARING : null);

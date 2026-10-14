@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { TOWNS, MEND_AT, townState, currentRequest, countRequest, handIn, mended, requestText } from '../js/data/towns.js';
+import { TOWNS, MEND_AT, townState, currentRequest, countRequest, handIn, mended, requestText, RING, SHOP_SHELVES, CLEARING, placeOf, folkKey, folkOf, shelfTown } from '../js/data/towns.js';
 import { GYM_BY_ID, leadersOf } from '../js/data/gym.js';
 import { BIOMES_BY_ID } from '../js/data/enemies.js';
 
@@ -78,4 +78,36 @@ test("a town's map: square, its buildings' letters there, every door, stand and 
     const board = map.findIndex(row => row.includes('R'));
     reach({ x: map[board].indexOf('R'), y: board + 1 }, 'the board');
   }
+});
+
+test('the Waystone ring has one stone a town, each its own colour', () => {
+  assert.deepEqual(RING.map(t => t.id).sort(), Object.keys(TOWNS).sort());
+  assert.equal(new Set(RING.map(t => t.glow)).size, RING.length);
+});
+
+test('every town sells a shelf of the catalogue that no other town sells', () => {
+  const src = ['', '-kinds', '-rooms', '-rooms2', '-rooms3', '-rooms4', '-rooms5'].map(f => readFileSync(new URL(`../js/base-furniture${f}.js`, import.meta.url), 'utf8')).join('\n');
+  const groups = new Set([...src.matchAll(/add\('([^']+)'/g)].map(m => m[1]));
+  assert.deepEqual(Object.keys(SHOP_SHELVES).sort(), Object.keys(TOWNS).sort());
+  const seen = new Set();
+  for (const [town, shelves] of Object.entries(SHOP_SHELVES)) for (const g of shelves) {
+    assert.ok(groups.has(g), `${town}: no shelf ${g}`);
+    assert.ok(!seen.has(g), `${g} sold in two towns`);
+    seen.add(g);
+    assert.equal(shelfTown(g), town);
+  }
+});
+
+test('the Clearing\'s houses are the Clearing\'s own Gym Leaders\', and townsfolk keys find their town', () => {
+  assert.equal(placeOf('clearing'), CLEARING);
+  assert.equal(placeOf('shrine'), TOWNS.shrine);
+  const clearing = leadersOf('clearing').map(l => l.id);
+  for (const home of Object.values(CLEARING.homes)) {
+    assert.ok(clearing.includes(home.leader), `${home.leader} isn't a Clearing leader`);
+    assert.ok(CLEARING.leaders[home.leader]?.length >= 3);
+    for (const id of Object.keys(home.cast || {})) assert.ok(existsSync(new URL(`../assets/pokemon/${id}-front.gif`, import.meta.url)), `${id}: no front GIF`);
+  }
+  for (const b of CLEARING.buildings) assert.ok(CLEARING.homes[b.home]);
+  for (const town of Object.values(TOWNS)) for (const f of town.folk) assert.equal(folkOf(folkKey(town.id, f.id))?.id, f.id);
+  assert.equal(folkOf('nowhere:eevee'), null);
 });

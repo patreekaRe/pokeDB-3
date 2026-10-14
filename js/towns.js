@@ -3,7 +3,7 @@
    is handed in at the board on a later visit (townRoom() in js/run.js), paying PokéCoins and the town's friendship. */
 
 import { getSave, updateSave, awardCoins } from './storage.js';
-import { TOWNS, REQUEST_COINS, townState, countRequest, currentRequest, requestText, handIn } from './data/towns.js';
+import { TOWNS, REQUEST_COINS, townState, countRequest, currentRequest, requestText, handIn, mended, folkKey } from './data/towns.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
@@ -33,4 +33,22 @@ export function handInRequest(id) {
 export function metTown(id) {
   if (townState(getSave(), id).met) return;
   updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...townState(d, id), met: true } }; });
+}
+
+/** Whether `id`'s Waystone is mended, so its stone in the Clearing's ring is lit and you can travel there from home. */
+export const isMended = (id, save = getSave()) => mended(townState(save, id));
+
+/** The townsfolk you've invited to live in your Secret Base ("<town>:<pokemon>" keys, js/data/towns.js's folkKey()). */
+export const invitedFolk = (save = getSave()) => save.townsfolk || [];
+
+/** Invite a townsperson home: they join the Secret Base's residents (moving straight in while there's room, else waiting
+    in the PC's Base residents). */
+export function inviteFolk(town, id, room) {
+  const key = folkKey(town, id);
+  updateSave(d => {
+    d.townsfolk = [...new Set([...(d.townsfolk || []), key])];
+    if (!d.secretBase || !room) return;
+    const now = d.secretBase.mons ?? room.shown;
+    if (now.length < room.max && !now.includes(key)) d.secretBase.mons = [...now, key];
+  });
 }

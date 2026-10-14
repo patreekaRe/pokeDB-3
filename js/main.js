@@ -40,7 +40,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -51,11 +51,13 @@ import { initAudio, playMusic, setHomeTrack } from './audio.js';
 import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest, useHub } from './title.js';
+import { cameHome } from './hub-3d.js';
+import { curtain } from './hd2d.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
 import { hideDevice } from './device.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
-import { initPlayTime } from './trainercard.js';
+import { initPlayTime, buddy } from './trainercard.js';
 import { initTips } from './tips.js';
 import { initPixelIcons } from './icons.js';
 import { initPokedex, dexPerkLevel } from './pokedex.js';
@@ -133,7 +135,8 @@ function previewStarter(starter) {
 async function requestMenu(sure) {
   if (isRunActive()) {
     const onMap = document.body.dataset.screen === 'map-screen';
-    const line = isPeeking() ? 'Back to the menu? This test run won\'t be kept.'
+    const line = isVisiting() ? 'Head home to the Whispering Clearing?'
+      : isPeeking() ? 'Back to the menu? This test run won\'t be kept.'
       : onMap ? 'Back to the menu? Your run is saved, so you can carry on from Continue.'
       : 'Back to the menu? Your run is saved, but this room will start over when you continue.';
     if (sure !== true && !(await confirmDialog(line, 'Menu'))) return false;
@@ -293,6 +296,13 @@ function init() {
     onBase: () => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome })); },
     // the Poké Mall's doors in the Clearing (js/hub-3d.js); the Game Corner is a shop in its hall
     onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
+    // a lit stone in the Clearing's Waystone ring, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town
+    // (or house) outside any run (visitTown() in js/run.js), and comes home onto that stone or doorstep
+    onTown: (id, house = null) => {
+      const mate = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
+      leaveTitle();
+      visitTown(mate, id, async (from) => { cameHome(from); await showHome(); curtain(false, 420); }, house);
+    },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {

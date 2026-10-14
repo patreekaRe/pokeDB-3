@@ -184,6 +184,7 @@ function openHub(hold = false) {
     onTower: actions.onTower,
     onGate: () => { playCry(mewtwo.line[0].id); actions.onGate(mewtwo); },
     onBase: actions.onBase,
+    onTown: actions.onTown,
     onAbandon: () => actions.onAbandon(),
     dealFlyer,
   }, { hold }).then((ok) => {

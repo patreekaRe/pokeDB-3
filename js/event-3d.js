@@ -3264,7 +3264,8 @@ function torii(x, z, span, tall, name) {
 /** A town's broken Waystone (js/data/towns.js), the plaza's middle: a stepped stone plinth in a ring of runes, the stone
     split and its top fallen at its foot, a faint light flickering in the crack and the runes. Mended (the next session's)
     it will stand whole and blaze. */
-function waystone(f, L) {
+function waystone(f, L, mended = false) {
+  if (mended) return wholeWaystone(f, L);
   const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz);
   g.scale.setScalar(1.45);   // the plaza's centrepiece, over the lanterns
@@ -3302,6 +3303,44 @@ function waystone(f, L) {
   B.ticks.push((now) => {   // a weak, uneven flicker: something still alive in it
     const k = calm ? 0.5 : 0.5 + 0.25 * Math.sin(now / 900) * Math.sin(now / 370 + 1);
     glow.emissiveIntensity = k;
+  });
+  return g;
+}
+
+/** A mended Waystone (friendship MEND_AT, js/data/towns.js; session 2, 2026-10-14): the stone whole again on its plinth,
+    every rune round its ring lit, runes glowing up its faces, a crystal turning over its tip and a soft light on the
+    plaza. Its stone in the Clearing's ring is lit, and a tap here on a visit from home travels back. */
+function wholeWaystone(f, L) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  g.scale.setScalar(1.45);
+  B.group.add(g);
+  const stone = std({ color: L.stone[1], roughness: 0.9, flatShading: true }), dark = std({ color: L.stone[3], roughness: 1, flatShading: true });
+  const glow = std({ color: '#2a5070', emissive: new THREE.Color('#8ae8ff'), emissiveIntensity: 1.4, roughness: 0.4 });
+  const ring = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.22, 48), std({ color: '#205060', emissive: new THREE.Color('#70e0ff'), emissiveIntensity: 1, transparent: true, opacity: 0.85, roughness: 1 }));
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.03; ring.raycast = () => {};
+  g.add(ring);
+  for (let i = 0; i < 8; i++) {
+    const a = i / 8 * Math.PI * 2, m = mesh(new THREE.BoxGeometry(0.16, 0.05, 0.1), glow, Math.cos(a) * 1.14, 0.04, Math.sin(a) * 1.14, g);
+    m.rotation.y = -a; m.castShadow = false;
+  }
+  mesh(new THREE.CylinderGeometry(0.9, 0.98, 0.18, 8), dark, 0, 0.09, 0, g);
+  mesh(new THREE.CylinderGeometry(0.66, 0.74, 0.16, 8), stone, 0, 0.26, 0, g);
+  const geo = new THREE.CylinderGeometry(0.04, 0.27, 1.9, 4, 1); geo.translate(0, 0.95, 0); geo.rotateY(Math.PI / 4);
+  mesh(geo, stone, 0, 0.34, 0, g).scale.set(1, 1, 1.25);
+  for (const [y, w] of [[0.7, 0.16], [0.98, 0.13], [1.26, 0.1], [1.52, 0.07]]) {   // runes up its front and back
+    for (const z of [0.2, -0.2]) mesh(new THREE.BoxGeometry(w, 0.05, 0.02), glow, 0, y, z * (1.8 - y) / 1.4, g).castShadow = false;
+  }
+  const gem = mesh(new THREE.OctahedronGeometry(0.16, 0), glow, 0, 2.55, 0, g);
+  gem.castShadow = false;
+  const light = new THREE.PointLight('#8ae8ff', 2.2, 7, 1.6);
+  light.position.set(0, 2, 0.4);
+  g.add(light);
+  B.ticks.push((now) => {
+    const k = calm ? 1.3 : 1.3 + 0.3 * Math.sin(now / 700);
+    glow.emissiveIntensity = k;
+    gem.rotation.y = calm ? 0 : now / 900;
+    gem.position.y = 2.55 + (calm ? 0 : Math.sin(now / 600) * 0.06);
   });
   return g;
 }
@@ -5690,7 +5729,7 @@ const TOWN_STYLES = {
     drift: (i) => (i % 4 ? { art: dustArt(), size: 0.08, rise: true } : { art: leafletArt(SAVANNA.grass[i % 3]), size: 0.14 }) },
 };
 
-async function buildTown(figs, { look, time, town }) {
+async function buildTown(figs, { look, time, town, mended = false }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
   const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes });
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
@@ -5705,7 +5744,7 @@ async function buildTown(figs, { look, time, town }) {
   S.gate(town, lit, L);
   B.exitAt = { ...town.gate };
   B.doors = {};
-  const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L), minehead: (b, f) => minehead(f, L, lit), windpump: (b, f) => windpump(f, L), kopje: (b, f) => kopje(f) };
+  const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L, mended), minehead: (b, f) => minehead(f, L, lit), windpump: (b, f) => windpump(f, L), kopje: (b, f) => kopje(f) };
   for (const b of town.buildings) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
@@ -5758,6 +5797,11 @@ async function buildTown(figs, { look, time, town }) {
     what stands in it ([piece, x, y, options]), where its Gym Leader stands (`leaderAt`) and its cast (`castAt`: the
     bathers, each [x, ty, y] in a pool). */
 const HOMES = {
+  // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING): the Nietos' family home
+  clearing: {
+    nietos: { floor: 'planks', leaderAt: { x: 4, ty: 2.4 }, castAt: [[1.2, 3.2, 0]],
+      furnish: [['crib', 0, 0], ['tv', 3, 0], ['console', 3, 1], ['desk', 6, 0], ['computer', 6, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 7, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 6, 1], ['swivelchair', 7, 1], ['sofa', 5, 4], ['toybox', 0, 4], ['beanbag', 2, 5], ['bookstack', 8, 3], ['plant', 8, 5]] },
+  },
   shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
   john: { floor: 'tatami', furnish: [['tv', 3, 0], ['console', 5, 1], ['kotatsu', 3, 2], ['zabuton', 2, 2], ['zabuton', 5, 3], ['computer', 7, 0], ['shelf', 0, 0], ['bookstack', 8, 2], ['daruma', 0, 3], ['plant', 8, 4]] },
@@ -6252,7 +6296,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? at.town?.id : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
@@ -6260,7 +6304,7 @@ function room(kind, figs, at = {}) {
     B = { kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
     finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
     return b;
@@ -6284,7 +6328,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home });
+  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended });
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   useSize(next);
