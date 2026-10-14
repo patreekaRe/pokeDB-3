@@ -89,10 +89,20 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    layout). `?aerial` for the overview. Headless-checked: every place reachable, no errors, Halloween's dress re-placed.
    Follow-up (same day, the user's ask): the tree beside the cauldron (`TREE_TILES` [11, 2]) taken out, and the Nietos'
    name board made readable (bigger, white on deep blue, `nietosHouse()`).
-   **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md,
-   docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the
-   way the Clearing and Highbough were (ask me what bothers me about it first), and send an aerial view." Then Cinder
-   Springs, Driftwood Landing and Sunwell Bazaar the same way, one a session (the handoff has the order and the rules).
+   **Done (2026-10-14): Lantern Village cleaned up** (the user: "a lot of houses"; same treatment as the Clearing and
+   Thornwood, with a shape of its own): a shrine's approach, one 4-wide stone avenue from the way in to the torii between
+   pairs of stone lanterns, the Waystone's plaza halfway up, two cross lanes; only four houses (Delibird's, John's,
+   Jahmes's and locked `a`; the other seven locked houses gone, their ids saved nowhere), the Dance Theater and pagoda at
+   the back against the forest; a koi pond in the west garden (`~`, the village's `holes`, `villageExtras()`: koi, lily
+   pads, irises, a stone lip) with a vermilion bridge (`-`, railings arching on posts to the bed); lone maples (`|`) only
+   where nothing walks behind them; indigo name boards by the named doors (`n`); every building fades while your Pokémon
+   is behind it (`fadeBehind()`, the style's `fade`). `?town=shrine&towns&aerial` for the overview (the towns' `?aerial`,
+   added this session). Checked in a browser: map test logic passes for all five towns, every door reachable as Lugia,
+   fades and koi checked by hand, no errors; the live GPU in-and-out check couldn't run (the pane draws no frames hidden).
+   **Next: Cinder Springs' clean-up** (`?town=wastes`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
+   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Wastes' Cinder
+   Springs the way the Clearing, Highbough and Lantern Village were (ask me what bothers me about it first), and send an
+   aerial view." Then Driftwood Landing and Sunwell Bazaar the same way, one a session.
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),

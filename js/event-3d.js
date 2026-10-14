@@ -2883,6 +2883,33 @@ function townGround(L, map, S) {
         g.fillStyle = '#f8c838'; g.fillRect(fx - 0.35, fy - 0.35, 0.7, 0.7);
       }
     });
+    // the koi pond's bridge (`-`): vermilion-edged planks laid across its way; pebbles round the pond's edge
+    const wet = (x, y) => map[y]?.[x] === '~';
+    each((ch, x, y) => {
+      const X = x * T, Y = y * T;
+      if (ch === '-') {
+        const along = map[y - 1]?.[x] !== '-' && map[y + 1]?.[x] !== '-';   // a bridge running east-west: its planks the other way
+        g.fillStyle = '#3a2418'; g.fillRect(X, Y, T, T);
+        for (let i = 0; i < 4; i++) {
+          g.fillStyle = ['#a8784c', '#98683e', '#b88a5a', '#8a5e38'][Math.floor(r() * 4)];
+          if (along) g.fillRect(X + i * 4 + 0.3, Y, 3.4, T); else g.fillRect(X, Y + i * 4 + 0.3, T, 3.4);
+        }
+        g.fillStyle = VERMILION;
+        if (wet(x - 1, y)) g.fillRect(X, Y, 2, T);
+        if (wet(x + 1, y)) g.fillRect(X + T - 2, Y, 2, T);
+        return;
+      }
+      if (ch === '~' || !STEPS.some(([dx, dy]) => wet(x + dx, y + dy))) return;
+      for (const [dx, dy] of STEPS) {
+        if (!wet(x + dx, y + dy)) continue;
+        for (let i = 0; i < 6; i++) {
+          const along = 1 + r() * (T - 2), into = r() * 3.5;
+          const px = dx ? (dx > 0 ? X + T - into : X + into) : X + along, py = dy ? (dy > 0 ? Y + T - into : Y + into) : Y + along;
+          g.fillStyle = ['#b8b4a8', '#9a968c', '#d0ccc0'][Math.floor(r() * 3)];
+          g.beginPath(); g.ellipse(px, py, 1.2 + r() * 1.2, 0.9 + r() * 0.8, r() * 3, 0, Math.PI * 2); g.fill();
+        }
+      }
+    });
     for (let i = 0; i < 900; i++) {
       const x = r() * W, y = r() * H, road = ROADY.has(map[Math.floor(y / T)]?.[Math.floor(x / T)]);
       if (road && r() < 0.75) continue;
@@ -2890,6 +2917,19 @@ function townGround(L, map, S) {
       S.litter(g, r);
       g.restore();
     }
+    g.restore();
+    // the pond cut out of the ground (the style's `holes`), its land rounded off where water's on two sides
+    g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath();
+    each((ch, x, y) => { if (ch === '~') g.rect(x * T, y * T, T, T); });
+    each((ch, x, y) => {
+      if (ch === '~' || ch === '-') return;
+      for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        if (!wet(x + dx, y) || !wet(x, y + dy)) continue;
+        const cx = (x + (dx > 0 ? 1 : 0)) * T, cy = (y + (dy > 0 ? 1 : 0)) * T, k = 7;
+        g.moveTo(cx, cy); g.lineTo(cx - dx * k, cy); g.arcTo(cx, cy, cx, cy - dy * k, k); g.closePath();
+      }
+    });
+    g.fill();
     g.restore();
     return c;
   };
@@ -2941,12 +2981,13 @@ function instanced(geo, m, at) {
   return o;
 }
 
-/** The forest round the town, a tree a tile: cedars, a maple now and then. */
+/** The forest round the town, a tree a tile: cedars, a maple now and then; a lone maple (`|`) in a garden, bigger. */
 function forest(map, L, rnd) {
   const cedars = [], maples = [], bushes = [];
   map.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch !== 'T') return;
+    if (ch !== 'T' && ch !== '|') return;
     B.blocked.add(key(x, y));
+    if (ch === '|') { maples.push([tileX(x), tileZ(y), 1.3 + rnd() * 0.15, rnd() * 6]); return; }
     const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 1 + rnd() * 0.55, rnd() * 6];
     if (y >= ROWS - 2) bushes.push([at[0], at[1], 0.7 + rnd() * 0.4, at[3], L.leaf[1 + Math.floor(rnd() * 3)]]);   // the front edge low, so it never hides you
     else (rnd() < 0.16 ? maples : cedars).push(at);
@@ -3211,7 +3252,7 @@ function theater(b, f, L, lit) {
   const up = { length: w * 0.55 + 0.7, half: d * 0.3 + 0.45, rise: 0.8, t: 0.12, y: 0.22 + h + 1.5, z: 0.25 };
   kawaraRoof(g, { ...up, roof, fancy: true });
   for (const sx of [-1, 1]) gableWall(g, sx * (w * 0.275 + 0.005), { ...up, wide: d * 0.225 });
-  panel(signArt(b.name), 1.9, 0.4, f.cx, 0.22 + h + 0.15, f.cz - 0.1 + d / 2 + 1.25);
+  panel(signArt(b.name), 2.6, 0.54, f.cx, 0.22 + h + 0.22, f.cz - 0.1 + d / 2 + 1.27);   // big enough to read from the lane
   for (const sx of [-1, 1]) {   // paper lanterns hung from the eaves
     const glow = std({ color: '#f04a30', emissive: new THREE.Color('#ff9050'), emissiveIntensity: 0.8, roughness: 0.6 });
     lit.push(glow);
@@ -3368,6 +3409,186 @@ function pagoda(x, z, L) {
   for (let k = 0; k < 6; k++) mesh(new THREE.TorusGeometry(0.11 - k * 0.008, 0.02, 6, 16), gold, 0, y + 0.18 + k * 0.12, 0, g).rotation.x = Math.PI / 2;
   mesh(new THREE.SphereGeometry(0.07, 12, 10), gold, 0, y + 1.12, 0, g);
   return g;
+}
+
+/** A house's name board on its post (`n`, beside the door): big white letters on deep indigo, a gold second line, so
+    it reads from the path (the Clearing's lesson, 2026-10-14: pale small signs couldn't be read). */
+function nameBoardArt(lines) {
+  const f = fine(48, 24, 8), { g, rr, lin } = f;
+  rr(0, 0, 48, 24, 2.4, '#e8c060');
+  rr(1.4, 1.4, 45.2, 21.2, 1.6, lin(0, 0, 0, 24, ['#2c3a78', '#1a2456']));
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#ffffff'; g.font = 'bold 10px sans-serif'; g.fillText(lines[0], 24, lines[1] ? 9 : 12.5, 42);
+  if (lines[1]) { g.fillStyle = '#ffd860'; g.font = 'bold 7px sans-serif'; g.fillText(lines[1], 24, 18, 42); }
+  return f.c;
+}
+
+/** Lantern Village's own (the user's ask, 2026-10-14): the koi pond cut into the west garden (`~`, the ground's `holes`),
+    its bed and still jade water, a stone lip, irises and lily pads, koi circling under the surface; the vermilion bridge
+    over it (`-`), railings arching a little along it on posts down to the bed, gold caps on the posts; and a name board
+    by each named house (`n`). */
+const POND_Y = -0.16, POND_BED = -0.5;
+function villageExtras(town, L) {
+  const { map } = town, wet = (x, y) => map[y]?.[x] === '~', deck = (x, y) => map[y]?.[x] === '-';
+  const pond = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '~') { pond.push([x, y]); B.blocked.add(key(x, y)); } }));
+  for (const [x, y] of map.flatMap((row, y) => [...row].map((ch, x) => (ch === 'n' ? [x, y] : null)).filter(Boolean))) {
+    const named = town.buildings.filter(b => b.name).map(b => ({ b, f: footprint(map, b.at) }))
+      .sort((p, q) => Math.hypot(Math.max(p.f.x0 - x, 0, x - p.f.x1), Math.max(p.f.y0 - y, 0, y - p.f.y1)) - Math.hypot(Math.max(q.f.x0 - x, 0, x - q.f.x1), Math.max(q.f.y0 - y, 0, y - q.f.y1)))[0]?.b;
+    if (!named) continue;
+    const leader = town.homes?.[named.home]?.leader, words = named.name.split(' ');
+    const lines = leader ? [named.name, 'GYM LEADER'] : named.name.length > 9 ? [words[0], words.slice(1).join(' ')] : [named.name];
+    signboard(nameBoardArt(lines), tileX(x), tileZ(y) + 0.35, 1.4, 0.7, 0.62).raycast = () => {};
+    B.blocked.add(key(x, y));
+  }
+  if (!pond.length) return;
+  const r = seeded(43), T = 16, f = fine(COLS * T, ROWS * T, 2), { g } = f, W = COLS * T, H = ROWS * T;
+  g.fillStyle = '#3a4634'; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 600; i++) { g.fillStyle = ['#46543e', '#2e3a2a', '#56604a', '#6a6c5a'][i % 4]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 4, 1 + r() * 3, r() * 3, 0, Math.PI * 2); g.fill(); }
+  const bed = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), std({ map: texOf(f.c), roughness: 1 }));
+  bed.rotation.x = -Math.PI / 2; bed.position.y = POND_BED; bed.receiveShadow = true; bed.raycast = () => {};
+  B.group.add(bed);
+  const wc = document.createElement('canvas');
+  wc.width = wc.height = 128;
+  const wg = wc.getContext('2d'), wr = seeded(11);
+  wg.fillStyle = '#d8e8e0'; wg.fillRect(0, 0, 128, 128);
+  wg.strokeStyle = '#ffffff'; wg.lineWidth = 1.2;
+  for (let i = 0; i < 18; i++) {
+    const x = wr() * 128, y = wr() * 128, w = 8 + wr() * 16;
+    for (const ox of [0, -128, 128]) for (const oy of [0, -128, 128]) { wg.beginPath(); wg.moveTo(x + ox - w / 2, y + oy); wg.quadraticCurveTo(x + ox, y + oy - 2.5, x + ox + w / 2, y + oy); wg.stroke(); }
+  }
+  const ripple = new THREE.CanvasTexture(wc);
+  ripple.wrapS = ripple.wrapT = THREE.RepeatWrapping; ripple.colorSpace = THREE.SRGBColorSpace; ripple.repeat.set(COLS / 5, ROWS / 5);
+  const surface = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), std({ color: '#4a9a88', map: ripple, emissive: new THREE.Color('#184e46'), emissiveIntensity: 0.3, transparent: true, opacity: 0.66, roughness: 0.05, metalness: 0.25, depthWrite: false }));
+  surface.rotation.x = -Math.PI / 2; surface.position.y = POND_Y; surface.receiveShadow = true; surface.raycast = () => {};
+  surface.renderOrder = 1;
+  B.group.add(surface);
+  // the banks sloping down under the stone lip, stones along it, irises on some of it; lily pads out on the water
+  const banks = [], stones = [], blades = [], irises = [], pads = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '~') {
+      if (r() < 0.3 && !STEPS.some(([dx, dy]) => deck(x + dx, y + dy))) pads.push([tileX(x) + (r() - 0.5) * 0.6, tileZ(y) + (r() - 0.5) * 0.6, 0.7 + r() * 0.5, r() * 6, ['#5aa848', '#4a9a3e', '#6ab858'][Math.floor(r() * 3)], POND_Y + 0.005]);
+      return;
+    }
+    if (deck(x, y) || !STEPS.some(([dx, dy]) => wet(x + dx, y + dy))) return;
+    banks.push([tileX(x), tileZ(y), 1, Math.PI / 4, L.stone[3], -0.01]);
+    for (const [dx, dy] of STEPS) {
+      if (!wet(x + dx, y + dy)) continue;
+      for (let i = 0; i < 2; i++) {
+        const along = (r() - 0.5) * 0.8;
+        stones.push([tileX(x) + dx * 0.44 + (dy ? along : 0), tileZ(y) + dy * 0.44 + (dx ? along : 0), 0.14 + r() * 0.1, r() * 6, ['#a8a49a', '#8a867c', '#c0bcb0'][Math.floor(r() * 3)], 0.02]);
+      }
+      if (r() < 0.45) for (let i = 0; i < 7; i++) {
+        const along = (r() - 0.5) * 0.7, px = tileX(x) + dx * 0.3 + (dy ? along : 0), pz = tileZ(y) + dy * 0.3 + (dx ? along : 0);
+        blades.push([px, pz, 0.8 + r() * 0.4, r() * 6, ['#4e8a3a', '#3e7a32', '#5e9a46'][Math.floor(r() * 3)]]);
+        if (i % 3 === 0) irises.push([px, pz, 0.9 + r() * 0.3, r() * 6, r() < 0.7 ? '#7a5ad8' : '#f4f0ff', 0.5 + r() * 0.1]);
+      }
+    }
+  }));
+  const bank = new THREE.CylinderGeometry(0.707, 0.95, 0.6, 4, 1, true); bank.translate(0, -0.3, 0);
+  instanced(bank, std({ color: '#ffffff', roughness: 1 }), banks).castShadow = false;
+  const stone = new THREE.DodecahedronGeometry(1, 0); stone.scale(1, 0.55, 0.85);
+  instanced(stone, std({ color: '#ffffff', roughness: 0.95, flatShading: true }), stones).castShadow = false;
+  const blade = new THREE.ConeGeometry(0.022, 0.55, 4); blade.translate(0, 0.27, 0);
+  instanced(blade, std({ color: '#ffffff', roughness: 0.9, flatShading: true }), blades).castShadow = false;
+  instanced(new THREE.OctahedronGeometry(0.055, 0), std({ color: '#ffffff', roughness: 0.7, flatShading: true }), irises).castShadow = false;
+  const pad = new THREE.CylinderGeometry(0.16, 0.16, 0.01, 14, 1, false, 0.3, Math.PI * 2 - 0.6);
+  instanced(pad, std({ color: '#ffffff', roughness: 0.6 }), pads).castShadow = false;
+  // the bridge: posts down to the bed at each corner over the water, two rails between them arching a little along it,
+  // a vermilion board along each edge over the water, gold caps on the posts
+  const runOf = (x, y) => {
+    const vert = deck(x, y - 1) || deck(x, y + 1);
+    let a = vert ? y : x, b = a;
+    while (vert ? deck(x, a - 1) : deck(a - 1, y)) a--;
+    while (vert ? deck(x, b + 1) : deck(b + 1, y)) b++;
+    return { vert, a, n: b - a + 1 };
+  };
+  const arch = (t) => Math.sin(Math.PI * Math.min(1, Math.max(0, t)));
+  const posts = [], caps = [], rails = [], fascia = [], seen = new Set();
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== '-') return;
+    const run = runOf(x, y), t = (u) => (u - run.a) / run.n;
+    for (const [dx, dy] of STEPS) {
+      if (!wet(x + dx, y + dy)) continue;
+      const side = !!dx === run.vert;   // the edge runs along the bridge
+      fascia.push([tileX(x) + dx * 0.48, tileZ(y) + dy * 0.48, dx ? Math.PI / 2 : 0]);
+      if (!side) continue;
+      const ends = run.vert ? [[x + (dx > 0 ? 1 : 0), y], [x + (dx > 0 ? 1 : 0), y + 1]] : [[x, y + (dy > 0 ? 1 : 0)], [x + 1, y + (dy > 0 ? 1 : 0)]];
+      const [h0, h1] = ends.map(([cx, cy]) => arch(t(run.vert ? cy : cx)));
+      const [ax, ay] = ends[0], mx = run.vert ? ax - COLS / 2 - dx * 0.06 : ax + 0.5 - COLS / 2, mz = run.vert ? ay + 0.5 - ROWS / 2 : ay - ROWS / 2 - dy * 0.06;
+      for (const [hgt, k] of [[0.5, 0.12], [0.27, 0.06]]) rails.push([mx, hgt + (h0 + h1) / 2 * k, mz, run.vert ? -Math.PI / 2 : 0, Math.atan((h1 - h0) * k)]);
+      for (const [[cx, cy], h] of [[ends[0], h0], [ends[1], h1]]) {
+        const c = `${cx},${cy},${dx},${dy}`;
+        if (seen.has(c)) continue;
+        seen.add(c);
+        const px = cx - COLS / 2 - dx * 0.06, pz = cy - ROWS / 2 - dy * 0.06, top = 0.56 + h * 0.12;
+        posts.push([px, POND_BED, pz, 0, 0, top - POND_BED]);
+        caps.push([px, pz, 1, 0, null, top + 0.03]);
+      }
+    }
+  }));
+  const red = std({ color: VERMILION, roughness: 0.55 }), o = new THREE.Object3D();
+  const bars = (geo, items, set) => {
+    const m = new THREE.InstancedMesh(geo, red, items.length);
+    items.forEach((it, i) => { set(o, it); o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
+    m.castShadow = true; m.raycast = () => {};
+    B.group.add(m);
+  };
+  const post = new THREE.CylinderGeometry(0.045, 0.05, 1, 8); post.translate(0, 0.5, 0);
+  bars(post, posts, (d, [x, y, z, , , h]) => { d.position.set(x, y, z); d.rotation.set(0, 0, 0); d.scale.set(1, h, 1); });
+  bars(new THREE.BoxGeometry(1.02, 0.06, 0.06), rails, (d, [x, y, z, turn, tilt]) => { d.position.set(x, y, z); d.rotation.set(0, turn, tilt); d.scale.set(1, 1, 1); });
+  const board = new THREE.BoxGeometry(1.0, 0.14, 0.05); board.translate(0, -0.07, 0);
+  bars(board, fascia, (d, [x, z, turn]) => { d.position.set(x, 0, z); d.rotation.set(0, turn, 0); d.scale.set(1, 1, 1); });
+  instanced(new THREE.SphereGeometry(0.055, 10, 8), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }), caps).castShadow = false;
+  // koi circling under the surface, each on its own loop round the pond's middle
+  const xs = pond.map(p => p[0]), ys = pond.map(p => p[1]);
+  const cx = tileX((Math.min(...xs) + Math.max(...xs)) / 2), cz = tileZ((Math.min(...ys) + Math.max(...ys)) / 2);
+  const rx = (Math.max(...xs) - Math.min(...xs) + 1) / 2 - 1.1, rz = (Math.max(...ys) - Math.min(...ys) + 1) / 2 - 0.9;
+  const fish = Array.from({ length: 7 }, (_, i) => ({ k: 0.55 + r() * 0.45, a: r() * 6.3, speed: (0.12 + r() * 0.1) * (i % 3 ? 1 : -1), sway: r() * 6 }));
+  const body = new THREE.SphereGeometry(1, 12, 8); body.scale(0.19, 0.045, 0.07);
+  const tail = new THREE.ConeGeometry(0.06, 0.13, 6); tail.rotateZ(Math.PI / 2); tail.scale(1, 0.4, 1); tail.translate(-0.22, 0, 0);
+  const koi = [body, tail].map(geo => {
+    const m = new THREE.InstancedMesh(geo, std({ color: '#ffffff', roughness: 0.5 }), fish.length), col = new THREE.Color();
+    fish.forEach((_, i) => m.setColorAt(i, col.set(['#f87830', '#f8f4ec', '#e83a28', '#f8b040', '#fff4e0', '#f06030', '#2a2422'][i])));
+    m.castShadow = false; m.raycast = () => {}; m.renderOrder = 0;
+    B.group.add(m);
+    return m;
+  });
+  let drawn = false;
+  B.ticks.push((now) => {
+    if (calm && drawn) return;
+    drawn = true;
+    fish.forEach((p, i) => {
+      const a = p.a + now / 1000 * p.speed, dir = Math.sign(p.speed);
+      o.position.set(cx + Math.cos(a) * rx * p.k, POND_Y - 0.12, cz + Math.sin(a) * rz * p.k);
+      o.rotation.set(0, Math.atan2(-Math.cos(a) * rz * dir, -Math.sin(a) * rx * dir) + (calm ? 0 : Math.sin(now / 320 + p.sway) * 0.18), 0);
+      o.scale.setScalar(p.k * 1.2);
+      o.updateMatrix();
+      for (const m of koi) m.setMatrixAt(i, o.matrix);
+    });
+    for (const m of koi) m.instanceMatrix.needsUpdate = true;
+  });
+}
+
+/** Fades a building while your Pokémon is behind it (Highbough's crowns do the same, `B.crowns`), so a roof or the
+    pagoda never hides it: everything in `g`, back from its back wall as far as its height hides from the camera. */
+function fadeBehind(g) {
+  const mats = new Map();
+  g.traverse(o => { if (o.material) for (const m of [].concat(o.material)) if (!mats.has(m)) { mats.set(m, [m, m.opacity, m.depthWrite]); m.transparent = true; } });
+  const box = new THREE.Box3().setFromObject(g);
+  if (!B.fades) {
+    B.fades = [];
+    const list = B.fades;
+    B.ticks.push(() => {
+      for (const h of list) {
+        const to = walker.x > h.x0 && walker.x < h.x1 && walker.z < h.back + 0.5 && walker.z > h.back - h.reach ? 0.3 : 1;
+        if (h.op === to) continue;
+        h.op = calm || Math.abs(to - h.op) < 0.02 ? to : h.op + (to - h.op) * 0.15;
+        for (const [m, base, dw] of h.mats) { m.opacity = base * h.op; m.depthWrite = h.op > 0.95 && dw; }
+      }
+    });
+  }
+  B.fades.push({ x0: box.min.x - 0.2, x1: box.max.x + 0.2, back: box.min.z, reach: box.max.y / Math.tan(PITCH) + 0.4, mats: [...mats.values()], op: 1 });
 }
 
 /** The request board's face: planks, papers pinned up, one stamped. */
@@ -5741,6 +5962,7 @@ function fireflyArt(col) {
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
+    holes: true, fade: true, extras: villageExtras,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
@@ -5786,6 +6008,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
     const g = LANDMARKS[b.kind]?.(b, f) ?? S.house(b, f, L, lit, smoke);
+    if (S.fade) fadeBehind(g);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
     g.traverse(o => { o.userData.spot = `door:${b.id}`; });

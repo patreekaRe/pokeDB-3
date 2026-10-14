@@ -12,7 +12,7 @@ town). The other four need the same care, **one town a session**, in this order 
 
 | Town | Biome | `style` | Peek it | Walked-in homes (`&home=`) |
 |---|---|---|---|---|
-| Lantern Village | Shrine | `village` | `?town=shrine` | `shop`, `john`, `jahmes`, `theater` |
+| Lantern Village | Shrine | `village` | `?town=shrine` | done 2026-10-14 (the koi pond, `fadeBehind()`): a model too |
 | Cinder Springs | Wastes | `springs` | `?town=wastes` | `shop`, `shaun`, `clarence`, `bath` |
 | Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | `shop`, `kayl`, `pat`, `aquarium` |
 | Sunwell Bazaar | Savanna | `bazaar` | `?town=savanna` | `shop`, `machew`, `jerome`, `caravanserai` |
@@ -79,11 +79,9 @@ These are the fixes the user asked for in the Clearing and Highbough. Check each
 
 ## Making an aerial view (do this first)
 
-The Clearing has `?aerial` (`AERIAL` in `js/hub-3d.js`'s `placeCamera()`: the camera at height 62 looking straight down
-over the whole grid, fog pushed back). The towns don't have one yet. Add the same to `js/event-3d.js`'s `placeCamera()`,
-read from `?aerial` once at module load (never per frame), only when `R.kind === 'town'`: put the camera over the middle
-of the map, high enough to see all 38 x 36 tiles, push `scene.fog` far out, and return before the walking camera runs.
-Then `?town=shrine&aerial` shows the whole town. Add a line about it to CLAUDE.md's Gateway towns entry.
+Done (2026-10-14): `?town=<id>&towns&aerial` shows a whole town from above (`aerialShot()` in `js/event-3d.js`). Send
+the user that link first, pinned to the commit, so you're both looking at the same picture. (The browser pane draws no
+frames while it's hidden, so a headless walk there won't move your Pokémon: run the room's `B.ticks` by hand to test.)
 
 ## Don't cause lag or memory leaks (read this twice)
 
