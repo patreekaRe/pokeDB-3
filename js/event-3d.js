@@ -4324,50 +4324,205 @@ function cottage(b, f, L, lit, smoke) {
   return g;
 }
 
-/** The bathhouse: two storeys of adobe on a stone footing, timbered, its front to you: a tiled pent roof between its
-    storeys with its banner over it, a clay gable on top and a tall stack steaming, noren across the door and a red paper
-    lantern either side (the user's ask, 2026-10-14: better designs for the town's other houses). Leaders live in
-    lodge()s, the forge is forge() and the rest are cottage()s. A tap is its door. */
+/** Cinder Springs' houses, its front to you: leaders live in lodge()s, the forge is forge(), the bathhouse is
+    bathhouse() and the rest are cottage()s. A tap is its door. */
 function cabin(b, f, L, lit, smoke) {
   const leader = b.home && B.town?.homes?.[b.home]?.leader;
   if (leader) return lodge(b, f, L, lit, smoke, leader);
   if (b.kind === 'shop') return forge(b, f, L, lit, smoke);
-  if (b.kind !== 'bathhouse') return cottage(b, f, L, lit, smoke);
+  if (b.kind === 'bathhouse') return bathhouse(b, f, lit, smoke);
+  return cottage(b, f, L, lit, smoke);
+}
+
+/** The bathhouse hall's front: plaster over a wainscot of dark boards, timber posts, a band of lit lattice windows,
+    the lit sliding doors of the way in at its middle. */
+function bathFront(w, h) {
+  const W = Math.round(w * 20), H = Math.round(h * 20), f = fine(W, H, 6), { g, rr, lin } = f, s = f.shine(), mid = W / 2;
+  g.fillStyle = lin(0, 0, 0, H, ['#f2e8d2', '#e6d8bc']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#4a2e1c'; g.fillRect(0, H - 9, W, 9);
+  g.fillStyle = 'rgba(0,0,0,0.3)'; for (let x = 1; x < W; x += 3) g.fillRect(x, H - 9, 0.5, 9);
+  g.fillStyle = '#3a241a'; g.fillRect(0, 3.2, W, 2.2); g.fillRect(0, H - 10.2, W, 1.6);
+  const pane = (x, y, ww, hh) => {
+    rr(x - 0.8, y - 0.8, ww + 1.6, hh + 1.6, 0.4, '#3a241a');
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#ffd890' : lin(0, y, 0, y + hh, ['#fff4d0', '#f8c070']); ctx.fillRect(x, y, ww, hh); }
+    for (const ctx of [g, s]) {
+      ctx.fillStyle = ctx === s ? '#000' : '#3a241a';
+      for (let xx = x + 2.4; xx < x + ww - 0.5; xx += 2.4) ctx.fillRect(xx - 0.25, y, 0.5, hh);
+      for (let yy = y + 2.6; yy < y + hh - 0.5; yy += 2.6) ctx.fillRect(x, yy - 0.25, ww, 0.5);
+    }
+  };
+  const door = 12, spans = [[mid - door, mid + door]];
+  for (const side of [-1, 1]) for (let x = mid + side * (door + 3); side > 0 ? x < W - 6 : x > 6; x += side * 15) spans.push(side > 0 ? [x, x + 10] : [x - 10, x]);
+  for (const [x0, x1] of spans.slice(1)) pane(x0, 8, x1 - x0, 8);
+  for (const dx of [-door, 0]) pane(mid + dx + 0.8, 7.5, door - 1.6, H - 8.5);
+  // posts at its ends and in the gaps between the windows
+  spans.sort((p, q) => p[0] - q[0]);
+  g.fillStyle = '#3a241a';
+  for (const x of [1, W - 1, ...spans.slice(1).map((p, i) => (spans[i][1] + p[0]) / 2)]) g.fillRect(x - 1, 0, 2, H);
+  return f.c;
+}
+
+/** The bathhouse's crest for its gable: an indigo disc in a gold ring, the ♨ mark in white. */
+function onsenCrest() {
+  const f = fine(32, 32, 8), { g } = f;
+  g.fillStyle = '#e8b040'; g.beginPath(); g.arc(16, 16, 15.5, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#2a4a7a'; g.beginPath(); g.arc(16, 16, 13.2, 0, Math.PI * 2); g.fill();
+  onsenMark(g, 16, 17, 1.35, '#f8f0e0');
+  return f.c;
+}
+
+/** The noren across the bathhouse's way in: three indigo panels with slits between, a white ♨ across the middle one. */
+function norenArt() {
+  const f = fine(48, 28, 8), { g, rr } = f;
+  for (let i = 0; i < 3; i++) rr(i * 16 + 0.5, 2, 15, 26, 0.6, '#2a4a7a');
+  g.fillStyle = '#1a2e4e'; g.fillRect(0, 0, 48, 3.2);
+  g.fillStyle = 'rgba(255,255,255,0.08)'; for (let i = 0; i < 3; i++) g.fillRect(i * 16 + 2, 4, 1.2, 23);
+  onsenMark(g, 24, 15, 1.25, '#f8f0e0');
+  return f.c;
+}
+
+/** A karahafu: the curved gable of a bathhouse's porch, its ridge running to you, `len` deep from `z0`, `half` wide
+    each way and `rise` high on the parent at `y`. Its curve swells up to a round ridge and sweeps out at the eaves, all
+    ribbed kawara, round tile ends along both eaves, a dark bargeboard round its front with gold fittings, plaster in it. */
+function karahafu(parent, { half, rise, t, len, z0, y, roof, crest }) {
   const g = new THREE.Group();
-  g.position.set(f.cx, 0, f.cz + 0.05);
+  g.position.set(0, y, z0);
+  parent.add(g);
+  const curve = (u) => 0.06 + rise * ((1 + Math.cos(Math.PI * u)) / 2) + 0.12 * u ** 8;
+  const at = (u) => [u * half, curve(u)];
+  const eave = std({ color: roof[2], roughness: 0.7 }), wood = std({ color: '#3a241a', roughness: 0.75 });
+  const gold = std({ color: '#e8b040', metalness: 0.7, roughness: 0.3 });
+  const band = (lift, drop, n = 24) => {
+    const sh = new THREE.Shape();
+    for (let i = 0; i <= n; i++) { const [x, yy] = at(-1 + 2 * i / n); sh[i ? 'lineTo' : 'moveTo'](x, yy + lift); }
+    for (let i = n; i >= 0; i--) { const [x, yy] = at(-1 + 2 * i / n); sh.lineTo(x, yy - drop); }
+    sh.closePath();
+    return sh;
+  };
+  mesh(new THREE.ExtrudeGeometry(band(0, t), { depth: len, bevelEnabled: false }), eave, 0, 0, 0, g);
+  // the ribbed tiles over it: columns down each side of the curve, side by side along its depth
+  const COL = 0.24, cols = Math.max(3, Math.round(len / COL)), cw = len / cols, PER = 4, NT = 22, RIB = 0.035;
+  const pos = [], uv = [], idx = [];
+  let arc = 0, prev = at(-1);
+  for (let j = 0; j <= NT; j++) {
+    const u = -1 + 2 * j / NT, [px, py] = at(u), [qx, qy] = at(Math.min(1, u + 0.01)), [rx, ry] = at(Math.max(-1, u - 0.01));
+    if (j) arc += Math.hypot(px - prev[0], py - prev[1]);
+    prev = [px, py];
+    let tx = qx - rx, ty = qy - ry; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
+    for (let i = 0; i <= cols * PER; i++) {
+      const k = (i % PER) / PER, bump = 0.012 + RIB * Math.sin(Math.PI * k) ** 0.8;
+      pos.push(px - ty * bump, py + tx * bump, i * cw / PER);
+      uv.push(i / PER, arc / 0.62);
+    }
+  }
+  const row = cols * PER + 1;
+  for (let j = 0; j < NT; j++) for (let i = 0; i < row - 1; i++) { const a = j * row + i, b = a + 1, c = a + row, d = c + 1; idx.push(a, b, d, a, d, c); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  mesh(geo, std({ map: kawaraArt(roof), roughness: 0.5 }), 0, 0, 0, g).receiveShadow = true;
+  const disc = new THREE.CylinderGeometry(0.075, 0.075, 0.06, 12); disc.rotateZ(Math.PI / 2);
+  const caps = new THREE.InstancedMesh(disc, std({ color: shadeOf(roof[1], -1), roughness: 0.5 }), cols * 2), o = new THREE.Object3D();
+  for (let i = 0; i < cols; i++) for (const s of [-1, 1]) { o.position.set(s * (half + 0.02), curve(1) + 0.02, (i + 0.5) * cw); o.updateMatrix(); caps.setMatrixAt(i * 2 + (s > 0), o.matrix); }
+  caps.castShadow = false; caps.raycast = () => {};
+  g.add(caps);
+  const ridge = new THREE.CylinderGeometry(0.1, 0.1, len + 0.06, 14); ridge.rotateX(Math.PI / 2);
+  mesh(ridge, eave, 0, curve(0) + 0.05, len / 2, g);
+  const boss = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 14); boss.rotateX(Math.PI / 2);
+  mesh(boss, gold, 0, curve(0) + 0.05, len + 0.05, g);
+  // the bargeboard round its front, gold at its tips and a gold gegyo under its peak, plaster and the crest inside it
+  mesh(new THREE.ExtrudeGeometry(band(0.04, t + 0.12), { depth: 0.08, bevelEnabled: false }), wood, 0, 0, len - 0.02, g);
+  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.055, 10, 8), gold, s * half, curve(1) - 0.05, len + 0.06, g).castShadow = false;
+  const gegyo = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 6), gold, 0, curve(0) - t - 0.2, len + 0.07, g);
+  gegyo.rotation.x = Math.PI / 2; gegyo.castShadow = false;
+  const fill = new THREE.Shape(), n = 20;
+  fill.moveTo(-half + 0.1, 0);
+  for (let i = 0; i <= n; i++) { const u = -1 + 2 * i / n, [x, yy] = at(u); if (Math.abs(x) < half - 0.1) fill.lineTo(x, Math.max(0, yy - t - 0.12)); }
+  fill.lineTo(half - 0.1, 0); fill.closePath();
+  mesh(new THREE.ShapeGeometry(fill), std({ color: '#efe4cc', roughness: 0.95 }), 0, 0, len - 0.06, g).castShadow = false;
+  if (crest) {
+    const c = panel(crest, 0.46, 0.46, 0, 0, 0);
+    c.parent?.remove(c); g.add(c);
+    c.position.set(0, (curve(0) - t) * 0.42, len - 0.04);
+  }
+  return g;
+}
+
+/** The bathhouse (the user's ask, 2026-10-14: the old two-storey box was "so stupid looking"): a sento, wide and low on
+    a stone footing, timbered plaster with a band of lit lattice windows, under a deep kawara roof with a steam vent on
+    its ridge; a karahafu porch over the way in with the ♨ crest in its gable, the bathhouse's sign under it and indigo
+    noren between its posts, red paper lanterns either side; a tall round brick chimney smoking at its back, wooden tubs
+    stacked by the door and a woodpile for the boiler. A tap is its door. */
+function bathhouse(b, f, lit, smoke) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
   B.group.add(g);
-  const w = f.w - 0.35, d = f.h - 0.6, h = 2.3, P = 0.18, fz = d / 2;
-  const adobe = std({ color: '#dcc4a0', roughness: 1 }), dark = std({ color: '#4a2e1c', roughness: 0.8 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
-  const timber = std({ color: '#5a3a24', roughness: 0.85 });
-  const art = cabinFront(w), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 });
-  lit.push(front);
-  const small = (m) => { m.castShadow = false; return m; };
-  mesh(rbox(w + 0.25, P, d + 0.25, 0.04), stone, 0, P / 2, 0, g);
-  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, dark, dark, front, adobe], 0, P + h / 2, 0, g);
-  for (const x of [-w / 2, -w / 4 - 0.25, w / 4 + 0.25, w / 2]) small(mesh(new THREE.BoxGeometry(0.12, h, 0.08), timber, x, P + h / 2, fz + 0.02, g));
-  for (const y of [P + 0.06, P + h - 0.06]) small(mesh(new THREE.BoxGeometry(w + 0.12, 0.12, 0.08), timber, 0, y, fz + 0.02, g));
   const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
-  const roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
-  const pent = mesh(new THREE.BoxGeometry(w + 0.5, 0.06, 0.55), [eave, eave, roofMat, eave, eave, eave], 0, P + h * 0.55 + 0.02, fz + 0.24, g);
-  pent.rotation.x = 0.42;
-  const geo = new THREE.ExtrudeGeometry(gableShape(d / 2 + 0.3, 1.1, 0.1), { depth: w + 0.4, bevelEnabled: false });
-  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.4) / 2, 0, 0);
-  mesh(geo, [roofMat, eave], 0, P + h, 0, g);
-  small(mesh(new THREE.BoxGeometry(w + 0.5, 0.1, 0.12), eave, 0, P + h + 1.1, 0, g));
-  const chx = (w / 2 - 0.7) * (b.id.charCodeAt(0) % 2 ? 1 : -1);
-  mesh(new THREE.BoxGeometry(0.5, 1.9, 0.5), stone, chx, P + h + 0.95, -0.1, g);
-  mesh(new THREE.BoxGeometry(0.58, 0.08, 0.58), dark, chx, P + h + 1.9, -0.1, g);
-  smoke.push([f.cx + chx, 0.3 + h + 1.9, f.cz - 0.05, true]);
-  g.attach(panel(bathSign(b.name), 2.2, 0.5, f.cx, P + h * 0.55 + 0.62, f.cz + 0.05 + fz + 0.09));
-  const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
-  for (const dx of [-0.32, 0, 0.32]) small(mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, P + 0.95, fz + 0.06, g));
+  const W = f.w - 0.3, P = 0.3;
+  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 });
+  const stone = std({ color: '#7a6e64', roughness: 1, flatShading: true }), cope = std({ color: '#a89a8a', roughness: 1 });
+  const tub = std({ color: '#c89a60', roughness: 0.8 }), hoop = std({ color: '#5a4a3a', metalness: 0.4, roughness: 0.5 });
+  const small = (m) => { m.castShadow = false; m.raycast = () => {}; return m; };
+  // the footing: fieldstone under a pale coping, a step up to the porch
+  mesh(rbox(W, P - 0.06, 4.4, 0.05), stone, 0, (P - 0.06) / 2, 0.05, g);
+  mesh(rbox(W + 0.08, 0.07, 4.48, 0.03), cope, 0, P - 0.035, 0.05, g);
+  mesh(rbox(1.8, P / 2, 0.3, 0.03), cope, 0, P / 4, 2.38, g);
+  // the hall: wide and low, its front lit, dark posts at its corners, plaster in its gables under the roof
+  const hw = W - 0.8, hd = 3.0, hz = -0.5, H = 1.65, fz = hz + hd / 2;
+  const art = bathFront(hw, H), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  mesh(new THREE.BoxGeometry(hw, H, hd), [plaster, plaster, dark, dark, front, plaster], 0, P + H / 2, hz, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.13, H + 0.02, 0.13), dark, sx * (hw / 2 + 0.01), P + H / 2, hz + sz * (hd / 2 + 0.01), g);
+  const top = { length: hw + 0.6, half: hd / 2 + 0.5, rise: 1.25, t: 0.12, y: P + H, z: hz };
+  kawaraRoof(g, { ...top, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (hw / 2 + 0.005), { ...top, wide: hd / 2 });
+  // the steam vent on the ridge: a slatted box under its own little roof, steam pouring out of it
+  const ry = P + H + top.rise + 0.2;
+  mesh(new THREE.BoxGeometry(1.5, 0.42, 0.55), dark, 0, ry + 0.17, hz, g);
+  const slat = std({ color: '#ffd890', emissive: new THREE.Color('#ffc070'), emissiveIntensity: 0.5, roughness: 0.8 });
+  lit.push(slat);
+  for (let i = 0; i < 6; i++) small(mesh(new THREE.BoxGeometry(0.12, 0.26, 0.02), slat, -0.6 + i * 0.24, ry + 0.17, hz + 0.28, g));
+  kawaraRoof(g, { length: 1.8, half: 0.5, rise: 0.36, t: 0.07, y: ry + 0.38, z: hz, roof });
+  for (const x of [-0.45, 0.45]) smoke.push([f.cx + x, ry + 0.5, f.cz + hz, true]);
+  // the porch: two posts, a beam, the karahafu over it running back into the main roof
+  const pf = 2.2, ph = P + 1.5;
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(0.14, ph - P, 0.14), dark, s * 0.82, P + (ph - P) / 2, pf - 0.08, g);
+    small(mesh(rbox(0.24, 0.08, 0.24, 0.02), cope, s * 0.82, P + 0.04, pf - 0.08, g));
+  }
+  mesh(new THREE.BoxGeometry(1.95, 0.14, 0.16), dark, 0, ph + 0.02, pf - 0.08, g);
+  mesh(new THREE.BoxGeometry(1.95, 0.08, pf - fz), dark, 0, ph + 0.04, (pf + fz) / 2, g);
+  karahafu(g, { half: 1.0, rise: 0.85, t: 0.1, len: pf + 0.1 - (hz + 0.2), z0: hz + 0.2, y: ph + 0.1, roof, crest: onsenCrest() });   // its back end buried in the main roof
+  g.attach(panel(bathSign(b.name), 1.5, 0.34, f.cx, ph - 0.2, f.cz + pf + 0.01));
+  const noren = panel(norenArt(), 1.4, 0.82, f.cx, ph - 0.78, f.cz + pf - 0.1);
+  noren.material.side = THREE.DoubleSide;
+  g.attach(noren);
+  // red paper lanterns hung off the porch's corners
   const paper = std({ color: '#e84a3a', emissive: new THREE.Color('#ff5a3a'), emissiveIntensity: 0.8, roughness: 0.7 });
   lit.push(paper);
   const lantern = new THREE.SphereGeometry(0.15, 14, 10); lantern.scale(1, 1.3, 1);
   for (const s of [-1, 1]) {
-    small(mesh(lantern, paper, s * 0.75, P + 1.0, fz + 0.16, g));
-    for (const y of [0.2, -0.2]) small(mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 10), dark, s * 0.75, P + 1.0 + y, fz + 0.16, g));
+    small(mesh(lantern, paper, s * 1.08, ph - 0.32, pf + 0.02, g));
+    for (const y of [0.2, -0.2]) small(mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 10), dark, s * 1.08, ph - 0.32 + y, pf + 0.02, g));
+    small(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.22, 4), dark, s * 1.08, ph - 0.0, pf + 0.02, g));
   }
+  // the chimney: tall round brick, iron hoops, smoking over the roof at the back
+  const bricks = brickArt(); bricks.repeat.set(3, 9);
+  const cx = -hw / 2 + 0.45, cz = hz - hd / 2 + 0.05, ch = 4.1;
+  mesh(new THREE.CylinderGeometry(0.24, 0.34, ch, 16), std({ map: bricks, roughness: 1 }), cx, P + ch / 2, cz, g);
+  for (const y of [0.4, 0.62, 0.86]) small(mesh(new THREE.CylinderGeometry(0.26 + (1 - y) * 0.1, 0.26 + (1 - y) * 0.1, 0.05, 16), hoop, cx, P + ch * y, cz, g));
+  mesh(new THREE.CylinderGeometry(0.31, 0.26, 0.16, 16), dark, cx, P + ch + 0.05, cz, g);
+  smoke.push([f.cx + cx, P + ch + 0.25, f.cz + cz, false]);
+  // wooden tubs stacked by the door, a woodpile for the boiler on the other side
+  const pail = new THREE.CylinderGeometry(0.15, 0.12, 0.15, 14), band = new THREE.CylinderGeometry(0.152, 0.152, 0.025, 14);
+  for (const [x, y, z] of [[1.42, 0, 2.05], [1.74, 0, 2.05], [1.58, 0.15, 2.05], [1.58, 0, 1.75]]) {
+    small(mesh(pail, tub, x, P + 0.075 + y, z, g));
+    small(mesh(band, hoop, x, P + 0.1 + y, z, g));
+  }
+  const log = new THREE.CylinderGeometry(0.08, 0.08, 0.62, 8); log.rotateX(Math.PI / 2);
+  const bark = std({ color: '#6a4a32', roughness: 1 });
+  for (const [x, y] of [[-1.72, 0], [-1.54, 0], [-1.36, 0], [-1.63, 0.15], [-1.45, 0.15], [-1.54, 0.3]]) small(mesh(log, bark, x, P + 0.08 + y, 1.95, g));
   return g;
 }
 

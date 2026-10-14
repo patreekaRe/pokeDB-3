@@ -207,6 +207,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    are gone; each town stands the Clearing's vista painting (`vistaArt()`, in its own colours: `TOWN_VISTAS` in
    `js/event-3d.js`) on its back edge, and its sides are trees only. Then the Shrine/Ruins and Thornwood looks' green skies became
    blue (every outdoor room there). Details in `docs/reference/towns.md`.
+   **Done (2026-10-14): Cinder Springs' bathhouse** (the user: "so stupid looking"): the two-storey adobe box with a pent
+   roof stuck on is now a sento (`bathhouse()` in `js/event-3d.js`): wide and low, timbered plaster and lit lattice windows
+   under a kawara roof with a steam vent on its ridge, a curved karahafu porch (`karahafu()`) with the ♨ crest, sign and
+   indigo noren, red lanterns, a tall round brick chimney smoking at the back, tubs and a woodpile. Waiting on their look.
    **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
    `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set

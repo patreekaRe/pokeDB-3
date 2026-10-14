@@ -99,8 +99,10 @@ columns either side (their tiles blocked), coral, shells and kelp; it's taller, 
 needed better designs, the trade house most, and every road should reach a house): Shaun's lodge is east of the moat
 (x 30-34, rows 16-19) on a drive up from road D; a two-wide road runs straight down from the Waystone's south bridge to
 road A where it stood; every door has a road to it (the mine's beside its rails, Clarence's, house a's, the forge's, house
-e's; `tests/towns.test.mjs` checks each door is on or by a `#`, and nothing stands below the Waystone). `cabin()` now
-builds only the bathhouse (timbered, a tiled pent roof under its banner, red paper lanterns) and hands the rest on:
+e's; `tests/towns.test.mjs` checks each door is on or by a `#`, and nothing stands below the Waystone). `cabin()` hands
+each house on: `bathhouse()` for the bathhouse (2026-10-14, the user: the old adobe box was "so stupid looking": a sento,
+wide and low, timbered plaster under a kawara roof with a ridge steam vent, a curved `karahafu()` porch with the ♨ crest,
+its sign and noren, red lanterns, a tall round brick chimney at the back),
 `lodge()` for leaders, `forge()` for the shop (a fieldstone smithy, its arched mouth glowing, its FORGE sign under the
 eave, a tapered brick stack spitting embers, a lean-to over the anvil, hearth and quench tub), `cottage()` for locked
 houses (stepped adobe, beam ends and a parapet, an upper room under a gable, a ladder, a tiled porch, chillies, lilies).
