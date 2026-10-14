@@ -76,6 +76,25 @@ the hull and over the wheelhouse eave, the upper deck railed in his colours, a p
 banners on mast and flagstaff, fairy lights (three instanced meshes, `instancedIn()` for things inside a rocking group),
 a hammock and the rose in a bottle; its gangway runs to the door's side of the boat.
 
+**Driftwood Landing's homes, trade house and gate** (2026-10-14, the user: the other homes "more cool and aesthetic,
+especially the trade house, and the exit"): `stiltHut()` now only builds the aquarium and hands the rest on. The locked
+huts are `bungalow()`s: a raised plank deck up two steps, woven-bamboo walls (`wovenArt()`) between bamboo poles, a lit
+front with a round-topped door and porthole, shells strung over it, a shuttered window and a hibiscus box
+(`bungalowFront()`), a porch railed in bamboo, glass floats lit in the house's colour under the front eave, a surfboard,
+a potted palm, the net and floats; the roof two tiers of thatch with straw hanging off the lower (`fringeArt()`), or a
+house's `shape: 'saddle'` (a and p) a saddle roof swept up into horns at both ends, its gables painted in diamonds
+(`gableArt()`). Pelipper's is a `baitShop()`: sea-glass lap boards (`clapArt()`), white trim, a tin roof with its gable
+to you and the Poké Ball crest in it, a copper fish weathervane, a striped awning with a scalloped hem (`awningArt()`)
+and ship's lanterns over the door and two lit windows (`baitFront()`), a life ring, bait barrel and crates; an open fish
+stall beside it under a striped lean-to (fish on ice, rods racked, the fish-shaped BAIT sign standing on its edge,
+`baitSignArt()`), a stovepipe smoking (the lagoon's `house` now passes `smoke`), a mast with Pelipper's flag and
+bunting to the vane. Textures shared by a town's homes sit on `B.lagoonKit`, materials stay each house's own (`fade`).
+The exit is the drowned temple's great gate (`templeArch()`): pillars on stepped plinths banded with waves and runes,
+corbels at the opening's top corners, a three-tier crown with a carved frieze of waves and runes (`friezeArt()`), the
+name tablet, a wheel medallion whose runes turn (`wheelArt()`), braziers of blue spirit-fire on its shoulders, pale
+light hanging in the opening (`templeVeilArt()`), a glowing mosaic on the paving under it (`mosaicArt()`), broken
+columns either side (their tiles blocked), coral, shells and kelp; it's taller, so it sets `B.reach` 2 like Highbough's.
+
 **Cinder Springs' roads and houses** (2026-10-14, the user: Shaun's lodge stood in front of the Waystone, the other houses
 needed better designs, the trade house most, and every road should reach a house): Shaun's lodge is east of the moat
 (x 30-34, rows 16-19) on a drive up from road D; a two-wide road runs straight down from the Waystone's south bridge to

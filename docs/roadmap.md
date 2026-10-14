@@ -147,6 +147,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (6 x 3, paddlewheel, banners, fairy lights). Tests pass; no console errors headless; all doors reachable by the game's
    blocked tiles; fades checked by hand; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the
    user's playtest.
+   **Done (2026-10-14): Driftwood Landing's homes, trade house and gate made grand** (the user: "make the other homes
+   look more cool and aesthetic, especially the trade house, and the exit"): the four locked huts overwater
+   `bungalow()`s (woven bamboo, railed porches, lit glass floats; a and p `shape: 'saddle'` roofs swept into horns, x
+   and y two-tier thatch), Pelipper's a seaside `baitShop()` (striped awnings, fish stall, rods, BAIT sign, mast,
+   bunting, weathervane, smoking stovepipe), the exit the drowned temple's great gate (`templeArch()`: stepped crown,
+   frieze, turning wheel, blue spirit-fire braziers, light in the opening, a glowing mosaic under it, broken columns,
+   coral, kelp; `B.reach` 2). Tests pass; no console errors headless. Waiting on the user's playtest.
    **Done (2026-10-14): Highbough's leaders, huts and Nursery made grand** (the user: "make the gym leaders houses more
    grand... fix the aesthetic of the huts too and the green house, they're all lame"): Phil's and Ricky's lots 5 x 4,
    both `canopyManor()`s (Ricky's a den round a living tree, Phil's crooked and haunted); the treehouses round huts

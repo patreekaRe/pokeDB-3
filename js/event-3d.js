@@ -5036,41 +5036,32 @@ function hipRoof(parent, { w, d, rise, y, col, crest, thatch = thatchArt() }) {
   }
 }
 
-/** A hut on its platform over the water, its front to you: board walls, a coloured door and shutters, a thatched hip roof
-    with a coloured cap; a lantern by the door, a net and floats on its side. `aquarium`: the big hall, glass in its front
-    and a glass dome lit blue on top. A tap is its door. */
-function stiltHut(b, f, L, lit) {
+/** A home on its platform over the water: Kayl's stilt manor, Pelipper's bait shop, a locked bungalow, or the aquarium:
+    the big hall of weathered boards, glass in its front and a glass dome lit blue on top, its sign on the roof's edge, a
+    lantern by the door, a net and floats on its side. A tap is its door. */
+function stiltHut(b, f, L, lit, smoke) {
   const leader = b.home && B.town?.homes?.[b.home]?.leader;
   if (leader) return stiltManor(b, f, L, lit, leader);
-  const aqua = b.kind === 'aquarium', g = new THREE.Group();
+  if (b.kind === 'shop') return baitShop(b, f, L, lit, smoke);
+  if (b.kind !== 'aquarium') return bungalow(b, f, L, lit);
+  const g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz - 0.05);
   B.group.add(g);
-  const w = f.w - (aqua ? 0.5 : 0.45), d = f.h - (aqua ? 0.9 : 0.6), h = aqua ? 1.5 : 1.25;
+  const w = f.w - 0.5, d = f.h - 0.9, h = 1.5;
   const sides = boardsArt(); sides.repeat.set(d / 1.4, h / 0.9);
   const wall = std({ map: sides, roughness: 0.95 }), dark = std({ color: '#3a2414', roughness: 0.8 });
-  const art = hutFront(w, b.roof, { aqua }), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  const art = hutFront(w, b.roof, { aqua: true }), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
   lit.push(front);
   mesh(new THREE.BoxGeometry(w, h, d), [wall, wall, dark, dark, front, wall], 0, h / 2, 0, g);
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.1, h + 0.02, 0.1), dark, sx * (w / 2 + 0.01), h / 2, sz * (d / 2 + 0.01), g);
-  const ink = b.home && LEADER_INK[B.town?.homes?.[b.home]?.leader];
-  const crest = b.kind === 'shop' ? houseCrest('ball') : ink ? houseCrest('ink', ink, (b.name || '?')[0]) : null;
-  if (aqua) {
-    mesh(rbox(w + 0.3, 0.14, d + 0.3, 0.04), std({ color: '#e8eef0', roughness: 0.6 }), 0, h + 0.07, 0, g);
-    const glass = std({ color: '#90d8f0', emissive: new THREE.Color('#3aa8e0'), emissiveIntensity: 0.5, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.3 });
-    lit.push(glass);
-    const dome = mesh(new THREE.SphereGeometry(Math.min(w, d) * 0.42, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, h + 0.14, -0.1, g);
-    dome.scale.set(1.25, 0.8, 1);
-    const frame = std({ color: '#e8eef0', roughness: 0.5, metalness: 0.3 });
-    for (let k = 0; k < 6; k++) { const rib = mesh(new THREE.TorusGeometry(Math.min(w, d) * 0.42, 0.018, 4, 24, Math.PI), frame, 0, h + 0.14, -0.1, g); rib.rotation.y = k * Math.PI / 6; rib.scale.set(1.25, 0.8, 1); }
-    g.attach(panel(aquaSign(b.name), 1.9, 0.42, f.cx, h + 0.36, f.cz - 0.05 + d / 2 + 0.12));   // standing on the roof's front edge
-  } else hipRoof(g, { w: w + 0.75, d: d + 0.75, rise: 1.0 + d * 0.12, y: h, col: b.roof, crest });
-  if (b.kind === 'shop') {   // a fish on a bracket over the door, and a bait barrel
-    mesh(new THREE.BoxGeometry(0.05, 0.05, 0.45), dark, w / 2 - 0.3, h * 0.82, d / 2 + 0.22, g);
-    const fish = mesh(new THREE.SphereGeometry(0.16, 12, 8), std({ color: '#e8a030', roughness: 0.5 }), w / 2 - 0.3, h * 0.82 - 0.2, d / 2 + 0.42, g);
-    fish.scale.set(1.6, 0.8, 0.35);
-    const tail = mesh(new THREE.ConeGeometry(0.1, 0.18, 4), fish.material, w / 2 - 0.3 + 0.3, h * 0.82 - 0.2, d / 2 + 0.42, g);
-    tail.rotation.z = Math.PI / 2; tail.scale.z = 0.35;
-  }
+  mesh(rbox(w + 0.3, 0.14, d + 0.3, 0.04), std({ color: '#e8eef0', roughness: 0.6 }), 0, h + 0.07, 0, g);
+  const glass = std({ color: '#90d8f0', emissive: new THREE.Color('#3aa8e0'), emissiveIntensity: 0.5, transparent: true, opacity: 0.75, roughness: 0.1, metalness: 0.3 });
+  lit.push(glass);
+  const dome = mesh(new THREE.SphereGeometry(Math.min(w, d) * 0.42, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), glass, 0, h + 0.14, -0.1, g);
+  dome.scale.set(1.25, 0.8, 1);
+  const frame = std({ color: '#e8eef0', roughness: 0.5, metalness: 0.3 });
+  for (let k = 0; k < 6; k++) { const rib = mesh(new THREE.TorusGeometry(Math.min(w, d) * 0.42, 0.018, 4, 24, Math.PI), frame, 0, h + 0.14, -0.1, g); rib.rotation.y = k * Math.PI / 6; rib.scale.set(1.25, 0.8, 1); }
+  g.attach(panel(aquaSign(b.name), 1.9, 0.42, f.cx, h + 0.36, f.cz - 0.05 + d / 2 + 0.12));   // standing on the roof's front edge
   // a net and two floats on the side wall
   const side = (b.id.charCodeAt(0) % 2 ? 1 : -1);
   const net = mesh(new THREE.PlaneGeometry(d * 0.6, h * 0.55), std({ map: texOf(netArt()), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 1 }), side * (w / 2 + 0.02), h * 0.55, 0, g);
@@ -5078,8 +5069,383 @@ function stiltHut(b, f, L, lit) {
   for (const dz of [-0.2, 0.15]) mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: dz < 0 ? '#f05a30' : '#f8f0e0', roughness: 0.5 }), side * (w / 2 + 0.06), h * 0.35, dz, g).castShadow = false;
   const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
   lit.push(glow);
-  const lamp = mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, aqua ? 1.1 : 0.62, h * 0.72, d / 2 + 0.1, g);
+  const lamp = mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), glow, 1.1, h * 0.72, d / 2 + 0.1, g);
   lamp.castShadow = false;
+  return g;
+}
+
+/** Stretches a geometry's UVs, so one shared texture tiles across faces of any size. */
+function uvScale(geo, u, v) {
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * u, uv.getY(i) * v);
+  return geo;
+}
+
+/** A tiling texture from a small canvas painter. */
+function tiling(w, h, paint) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  paint(c.getContext('2d'));
+  const map = new THREE.CanvasTexture(c);
+  map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace;
+  return map;
+}
+
+/** Woven bamboo matting, for the bungalows' walls. */
+function wovenArt() {
+  return tiling(32, 32, (g) => {
+    g.fillStyle = '#7a5a2c'; g.fillRect(0, 0, 32, 32);
+    for (let y = 0; y < 32; y += 4) for (let x = 0; x < 32; x += 4) {
+      const across = ((x + y) / 4) % 2;
+      g.fillStyle = across ? '#dcc080' : '#c4a462'; g.fillRect(x + 0.3, y + 0.3, 3.4, 3.4);
+      g.fillStyle = 'rgba(90,60,24,0.4)';
+      if (across) g.fillRect(x + 0.3, y + 1.8, 3.4, 0.5); else g.fillRect(x + 1.8, y + 0.3, 0.5, 3.4);
+    }
+  });
+}
+
+/** Straw ends hanging off a thatch's eave, ragged. */
+function fringeArt() {
+  return tiling(64, 16, (g) => {
+    const r = seeded(37);
+    for (let x = 0; x < 64; x += 1.3) { g.fillStyle = ['#d8b870', '#b89850', '#e4c880', '#a88a48'][Math.floor(r() * 4)]; g.fillRect(x, 0, 1.2, 7 + r() * 9); }
+  });
+}
+
+/** A saddle roof's gable end, painted in the house's colour: diamonds in cream and a darker shade. */
+function gableArt(col) {
+  return tiling(32, 32, (g) => {
+    const dia = (x, y, r, c) => { g.fillStyle = c; g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.fill(); };
+    g.fillStyle = col; g.fillRect(0, 0, 32, 32);
+    dia(16, 16, 10, shadeOf(col, -1)); dia(16, 16, 6, '#f4ead0'); dia(16, 16, 2.6, col);
+    for (const [x, y] of [[0, 0], [32, 0], [0, 32], [32, 32]]) { dia(x, y, 6, '#f4ead0'); dia(x, y, 3, shadeOf(col, -1)); }
+  });
+}
+
+/** A bungalow's front: woven bamboo between a sill and a head, a round-topped door painted the house's colour with a
+    lit porthole and shells strung over it, a wide lit window between propped shutters, hibiscus in a box under it. */
+function bungalowFront(w, h, col, door) {
+  const W = Math.round(w * 20), Hh = Math.round(h * 20), f = fine(W, Hh, 6), { g, rr, lin } = f, s = f.shine();
+  for (let y = 0; y < Hh; y += 2) for (let x = 0; x < W; x += 2) { g.fillStyle = ((x + y) / 2) % 2 ? '#dcc080' : '#c4a462'; g.fillRect(x, y, 2, 2); }
+  g.fillStyle = 'rgba(90,60,24,0.28)'; for (let y = 0; y < Hh; y += 2) g.fillRect(0, y, W, 0.25);
+  rr(0, 0, W, 2.2, 0, '#8a6a38'); rr(0, Hh - 1.4, W, 1.4, 0, '#6a4a28');
+  const glow = (x, y, w, h, r) => {
+    for (const ctx of [g, s]) {
+      const rg = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, Math.max(w, h));
+      rg.addColorStop(0, '#fff4c8'); rg.addColorStop(1, '#f8a040');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill();
+    }
+  };
+  const dw = 9, dh = 17, x0 = door - dw / 2, dy = Hh - dh;
+  rr(x0 - 0.9, dy - 0.9, dw + 1.8, dh + 0.9, [5.4, 5.4, 0, 0], '#4a2e1c');
+  rr(x0, dy, dw, dh, [4.5, 4.5, 0, 0], lin(x0, 0, x0 + dw, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]));
+  g.fillStyle = 'rgba(0,0,0,0.22)'; for (let x = x0 + 2.2; x < x0 + dw - 1; x += 2.2) g.fillRect(x, dy + 2, 0.4, dh - 2);
+  g.fillStyle = '#4a2e1c'; g.beginPath(); g.arc(door, dy + 5, 2.5, 0, Math.PI * 2); g.fill();
+  glow(door - 1.7, dy + 3.3, 3.4, 3.4, 1.7);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(x0 + dw - 1.8, Hh - 8, 0.7, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 5; i++) { const a = Math.PI * (0.2 + i * 0.15); g.fillStyle = i % 2 ? '#f0b8a8' : '#f8ece0'; g.beginPath(); g.ellipse(door - Math.cos(a) * 6.4, dy + 4.6 - Math.sin(a) * 6.4 + 2, 1.1, 0.8, a, 0, Math.PI * 2); g.fill(); }
+  const wx = door + dw / 2 + 6, ww = Math.min(15, W - wx - 5), wy = 5, wh = 9;
+  for (const sx of [wx - 4, wx + ww + 1]) { rr(sx, wy - 0.5, 3, wh + 1, 0.4, col); g.fillStyle = 'rgba(0,0,0,0.25)'; for (let y = wy + 1; y < wy + wh; y += 1.6) g.fillRect(sx + 0.4, y, 2.2, 0.4); }
+  rr(wx - 1, wy - 1, ww + 2, wh + 2, 0.6, '#5a3a20');
+  glow(wx, wy, ww, wh, 0.4);
+  for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#5a3a20'; ctx.fillRect(wx + ww / 2 - 0.35, wy, 0.7, wh); ctx.fillRect(wx, wy + wh / 2 - 0.35, ww, 0.7); }
+  rr(wx - 1.6, wy + wh + 1.2, ww + 3.2, 2.6, 0.5, '#6a4a28');
+  for (let i = 0; i < 9; i++) { g.fillStyle = i % 2 ? '#3e8a30' : '#5aaa44'; g.beginPath(); g.ellipse(wx + i * ww / 8, wy + wh + 1.1, 1.3, 0.9, 0, 0, Math.PI * 2); g.fill(); }
+  for (let i = 0; i < 6; i++) { g.fillStyle = ['#e83a4a', '#f8c040', '#f06aa0'][i % 3]; g.beginPath(); g.arc(wx + 0.8 + i * (ww - 1.6) / 5, wy + wh + 0.7, 1.05, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fff4c8'; g.beginPath(); g.arc(wx + 0.8 + i * (ww - 1.6) / 5, wy + wh + 0.7, 0.3, 0, Math.PI * 2); g.fill(); }
+  return f.c;
+}
+
+/** A locked home in Driftwood Landing (the user's ask, 2026-10-14: the other homes "more cool and aesthetic"): an
+    overwater bungalow on a raised deck up two steps, walls of woven bamboo between bamboo poles, a porch railed in
+    bamboo, glass floats lit in the house's colour strung under the eaves, a lantern by the door; its roof a deep thatch
+    in two tiers with straw hanging off the lower, or (`shape: 'saddle'`) a saddle roof swept up into horns at both
+    ends, its gables painted in diamonds. A surfboard against one wall, a potted palm on the porch, a net and floats on
+    the other side. Its lot is 4 x 3; the door is over its step, half a tile left of the middle. A tap is its door. */
+function bungalow(b, f, L, lit) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const kit = B.lagoonKit ??= { weave: wovenArt(), fringe: fringeArt(), boards: boardsArt() };
+  const col = b.roof, saddle = b.shape === 'saddle', side = b.id.charCodeAt(0) % 2 ? 1 : -1;
+  const W = f.w - 0.25, D = f.h - 0.2, P = 0.26, dx = -0.5;
+  const dark = std({ color: '#3a2414', roughness: 0.8 }), cane = std({ color: '#c8a460', roughness: 0.65 }), node = std({ color: '#8a6a38', roughness: 0.8 });
+  const paint = std({ color: col, roughness: 0.6 }), wood = std({ color: '#8a6440', roughness: 0.85 });
+  const small = (m) => { m.castShadow = false; return m; };
+  mesh(uvScale(new THREE.BoxGeometry(W, P, D), W / 1.2, D / 1.2), [dark, dark, std({ map: kit.boards, roughness: 0.9 }), dark, dark, dark], 0, P / 2, 0, g);
+  small(mesh(new THREE.BoxGeometry(W + 0.04, 0.07, D + 0.04), paint, 0, P - 0.1, 0, g));
+  for (let i = 0; i < 2; i++) mesh(rbox(0.95 - i * 0.05, P / 2, 0.22, 0.02), wood, dx, P / 4 + i * P / 2, D / 2 + 0.2 - i * 0.16, g);
+  // the house: woven walls, the lit front, a bamboo pole at each corner
+  const hw = 2.5, hd = 1.6, H = 1.2, hz = -0.42, top = P + H, fz = hz + hd / 2, vz = D / 2 - 0.12;
+  const wall = std({ map: kit.weave, roughness: 0.9 });
+  const art = bungalowFront(hw, H, col, (dx + hw / 2) * 20), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  mesh(uvScale(new THREE.BoxGeometry(hw, H, hd), hd / 0.8, H / 0.8), [wall, wall, dark, dark, front, wall], 0, P + H / 2, hz, g);
+  const knots = [];
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const x = sx * (hw / 2 + 0.02), z = hz + sz * (hd / 2 + 0.02);
+    mesh(new THREE.CylinderGeometry(0.05, 0.055, H, 8), cane, x, P + H / 2, z, g);
+    for (let y = 0.3; y < H - 0.1; y += 0.42) knots.push([x, P + y, z]);
+  }
+  instancedIn(g, new THREE.CylinderGeometry(0.06, 0.06, 0.03, 8), node, knots);
+  // the roof: two tiers of thatch, or a saddle swept up at both ends
+  const back = hz - hd / 2 - 0.3, fore = vz + 0.3, rz = (back + fore) / 2, half = (fore - back) / 2;
+  let under, eave;
+  if (saddle) {
+    const Rw = W + 0.35, R = 1.25, K = 0.7, hr = Rw / 2;
+    const roofY = (x, z) => { const u = Math.min(1, Math.abs(x) / hr) ** 4, v = Math.min(1, Math.abs(z - rz) / half); const lo = top + 0.04 + 0.22 * u, hi = top + R + K * u; return lo + (hi - lo) * (1 - v) ** 1.2; };
+    const geo = new THREE.PlaneGeometry(Rw, half * 2, 28, 14), p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = rz - p.getY(i); p.setXYZ(i, x, roofY(x, z), z); }
+    geo.computeVertexNormals();
+    const thatch = thatchArt();
+    mesh(uvScale(geo, Rw / 1.2, half * 2 / 0.9), std({ map: thatch, roughness: 0.95, side: THREE.DoubleSide }), 0, 0, 0, g);
+    const pts = Array.from({ length: 11 }, (_, i) => { const x = -hr + i * Rw / 10; return new THREE.Vector3(x, roofY(x, rz) + 0.03, rz); });
+    mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 30, 0.065, 6), paint, 0, 0, 0, g);
+    for (const s of [-1, 1]) {
+      const horn = mesh(new THREE.ConeGeometry(0.07, 0.42, 8), dark, s * (hr + 0.08), roofY(hr, rz) + 0.2, rz, g);
+      horn.rotation.z = -s * 0.55;
+      small(mesh(new THREE.SphereGeometry(0.08, 12, 8), paint, s * (hr - 0.02), roofY(hr, rz) + 0.05, rz, g));
+      const sh = new THREE.Shape(), z0 = hz - hd / 2, z1 = fz, xg = s * hw / 2;
+      sh.moveTo(z0, 0);
+      for (let k = 0; k <= 10; k++) { const z = z0 + (z1 - z0) * k / 10; sh.lineTo(z, roofY(xg, z) - top - 0.05); }
+      sh.lineTo(z1, 0); sh.closePath();
+      const gg = new THREE.ShapeGeometry(sh); gg.rotateY(-Math.PI / 2);
+      small(mesh(uvScale(gg, 2, 2), std({ map: gableArt(col), roughness: 0.8, side: THREE.DoubleSide }), xg + s * 0.005, top, 0, g));
+    }
+    under = (x, z) => roofY(x, z) - 0.03;
+    eave = (x) => roofY(x, fore - 0.13) - 0.14;
+  } else {
+    const sw = W + 0.1, rs = 0.9, uw = hw + 0.6, ud = half * 2 - 0.8;
+    const lower = new THREE.Group(); lower.position.z = rz; g.add(lower);
+    hipRoof(lower, { w: sw, d: half * 2, rise: rs, y: top, col: shadeOf(col, -1) });
+    const upper = new THREE.Group(); upper.position.z = rz; g.add(upper);
+    hipRoof(upper, { w: uw, d: ud, rise: 1.5, y: top + 0.25, col });
+    const fringe = std({ map: kit.fringe, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 1 });
+    for (const [len, x, z, turn] of [[sw, 0, fore, 0], [sw, 0, back, 0], [half * 2, -sw / 2, rz, Math.PI / 2], [half * 2, sw / 2, rz, Math.PI / 2]]) {
+      const fr = small(mesh(uvScale(new THREE.PlaneGeometry(len, 0.2), len / 1.6, 1), fringe, x, top - 0.08, z, g));
+      fr.rotation.y = turn; fr.raycast = () => {};
+    }
+    const ft = top + 0.25 + 1.5;
+    mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.4, 6), dark, 0, ft + 0.15, rz, g);
+    for (let k = 0; k < 3; k++) small(mesh(new THREE.SphereGeometry(0.07 - k * 0.012, 12, 8), k % 2 ? std({ color: '#f4ead0', roughness: 0.5 }) : paint, 0, ft + 0.12 + k * 0.12, rz, g));
+    small(mesh(new THREE.ConeGeometry(0.04, 0.16, 8), dark, 0, ft + 0.5, rz, g));
+    under = (x, z) => top + rs * (1 - Math.max(Math.abs(x) / (sw / 2), Math.abs(z - rz) / half)) - 0.03;
+    eave = () => top - 0.2;
+  }
+  // the porch: bamboo posts up to the eaves, a bamboo rail either side of the steps and down its ends
+  const px = W / 2 - 0.14;
+  for (const x of [-px, px]) mesh(new THREE.CylinderGeometry(0.05, 0.055, under(x, vz) - P, 8), cane, x, (under(x, vz) + P) / 2, vz, g);
+  const rails = [[-px, dx - 0.5], [dx + 0.5, px]].filter(([a, c]) => c - a > 0.2);
+  for (const [a, c] of rails) for (const y of [P + 0.44, P + 0.22]) small(mesh(new THREE.CylinderGeometry(0.025, 0.025, c - a, 6), cane, (a + c) / 2, y, vz, g)).rotation.z = Math.PI / 2;
+  for (const x of [-px, px]) for (const y of [P + 0.44, P + 0.22]) small(mesh(new THREE.CylinderGeometry(0.025, 0.025, vz - fz, 6), cane, x, y, (vz + fz) / 2, g)).rotation.x = Math.PI / 2;
+  const sticks = [];
+  for (const [a, c] of rails) for (let x = a + 0.14; x < c - 0.05; x += 0.14) sticks.push([x, P, vz]);
+  for (const x of [-px, px]) for (let z = fz + 0.14; z < vz - 0.05; z += 0.14) sticks.push([x, P, z]);
+  instancedIn(g, (() => { const c = new THREE.CylinderGeometry(0.018, 0.018, 0.44, 5); c.translate(0, 0.22, 0); return c; })(), cane, sticks);
+  // glass floats lit in the house's colour, strung under the front eave
+  const glass = std({ color: col, emissive: new THREE.Color(shadeOf(col, 1)), emissiveIntensity: 0.8, roughness: 0.2, transparent: true, opacity: 0.88 });
+  lit.push(glass);
+  const floats = [-1.35, -0.75, 0.15, 0.75, 1.35].map((x, i) => [x, eave(x) - (i % 2) * 0.05, fore - 0.16]);
+  instancedIn(g, new THREE.SphereGeometry(0.075, 12, 8), glass, floats);
+  instancedIn(g, (() => { const c = new THREE.CylinderGeometry(0.006, 0.006, 0.2, 4); c.translate(0, 0.1, 0); return c; })(), dark, floats);
+  // a lantern by the door
+  const flame = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(flame);
+  small(mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.18, 8), flame, dx + 0.62, top - 0.36, fz + 0.12, g));
+  small(mesh(new THREE.ConeGeometry(0.1, 0.08, 8), dark, dx + 0.62, top - 0.23, fz + 0.12, g));
+  // a surfboard against one wall, a potted palm on the porch, the net and floats on the other wall
+  const tint = ['#f8f4ec', '#f06a4a', '#3ab0c8', '#f8c840'][b.id.charCodeAt(0) % 4];
+  const lean = new THREE.Group(); lean.position.set(side * (hw / 2 + 0.12), P, hz + 0.25); lean.rotation.z = side * 0.14; g.add(lean);
+  const surf = mesh(new THREE.CapsuleGeometry(0.15, 0.95, 4, 12), std({ color: tint, roughness: 0.4 }), 0, 0.64, 0, lean);
+  surf.rotation.y = Math.PI / 2; surf.scale.z = 0.16;
+  small(mesh(new THREE.BoxGeometry(0.05, 1.12, 0.34), paint, 0, 0, 0, surf));
+  const pot = new THREE.Group(); pot.position.set(-side * (W / 2 - 0.34), P, vz - 0.28); g.add(pot);
+  mesh(new THREE.CylinderGeometry(0.13, 0.1, 0.22, 10), std({ color: '#c86a40', roughness: 0.8 }), 0, 0.11, 0, pot);
+  mesh(new THREE.CylinderGeometry(0.025, 0.035, 0.5, 6), std({ color: '#8a6a48', roughness: 0.95 }), 0, 0.45, 0, pot);
+  const frond = new THREE.ConeGeometry(0.1, 0.48, 4); frond.translate(0, 0.24, 0); frond.scale(0.3, 1, 1); frond.rotateZ(-Math.PI / 2 - 0.45);
+  instancedIn(pot, frond, std({ color: '#4e9a3a', roughness: 0.85, flatShading: true }), Array.from({ length: 6 }, (_, k) => [0, 0.7, 0, k * Math.PI / 3]));
+  const net = small(mesh(new THREE.PlaneGeometry(hd * 0.6, H * 0.55), std({ map: texOf(netArt()), transparent: true, alphaTest: 0.3, side: THREE.DoubleSide, roughness: 1 }), -side * (hw / 2 + 0.03), P + H * 0.55, hz, g));
+  net.rotation.y = Math.PI / 2;
+  for (const dz of [-0.2, 0.15]) small(mesh(new THREE.SphereGeometry(0.07, 10, 8), std({ color: dz < 0 ? '#f05a30' : '#f8f0e0', roughness: 0.5 }), -side * (hw / 2 + 0.07), P + H * 0.35, hz + dz, g));
+  return g;
+}
+
+/** Lap boards, painted, for the bait shop's walls. */
+function clapArt(col) {
+  return tiling(32, 32, (g) => {
+    const r = seeded(13);
+    for (let y = 0; y < 32; y += 4) {
+      g.fillStyle = col; g.fillRect(0, y, 32, 4);
+      g.fillStyle = 'rgba(255,255,255,0.2)'; g.fillRect(0, y, 32, 0.8);
+      g.fillStyle = 'rgba(0,40,50,0.25)'; g.fillRect(0, y + 3.2, 32, 0.8);
+      for (let i = 0; i < 3; i++) { g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(r() * 32, y + 1 + r() * 2, 2 + r() * 5, 0.5); }
+    }
+  });
+}
+
+/** The bait shop's front: lap boards in sea-glass blue, a door in the shop's colour with a lit pane, a lit window either
+    side in white frames, jars of bait in one, rods and a fish hung up in the other. */
+function baitFront(w, h, col, door) {
+  const W = Math.round(w * 20), Hh = Math.round(h * 20), f = fine(W, Hh, 6), { g, rr, lin } = f, s = f.shine();
+  for (let y = 0; y < Hh; y += 2) { g.fillStyle = y % 4 ? '#62b8c2' : '#6cc2cc'; g.fillRect(0, y, W, 2); g.fillStyle = 'rgba(0,40,50,0.25)'; g.fillRect(0, y + 1.6, W, 0.4); }
+  const pane = (x, y, w, h) => {
+    rr(x - 1.2, y - 1.2, w + 2.4, h + 2.4, 0.6, '#f4f0e6');
+    for (const ctx of [g, s]) { const rg = ctx.createRadialGradient(x + w / 2, y + h / 2, 0, x + w / 2, y + h / 2, Math.max(w, h)); rg.addColorStop(0, '#fff6d0'); rg.addColorStop(1, '#f8b050'); ctx.fillStyle = rg; ctx.fillRect(x, y, w, h); }
+  };
+  const ink = (paint) => { for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : 'rgba(60,36,20,0.85)'; ctx.strokeStyle = ctx.fillStyle; paint(ctx); } };
+  const dw = 9, dh = 20, x0 = door - dw / 2;
+  rr(x0 - 1.2, Hh - dh - 1.2, dw + 2.4, dh + 1.2, 0.6, '#f4f0e6');
+  rr(x0, Hh - dh, dw, dh, 0.4, lin(x0, 0, x0 + dw, 0, [shadeOf(col, -1), col, shadeOf(col, -1)]));
+  pane(x0 + 1.6, Hh - dh + 2, dw - 3.2, 6);
+  for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#000' : '#f4f0e6'; ctx.fillRect(door - 0.3, Hh - dh + 2, 0.6, 6); }
+  g.fillStyle = 'rgba(0,0,0,0.2)'; g.fillRect(x0 + 1.6, Hh - dh + 10, dw - 3.2, 0.5); g.fillRect(x0 + 1.6, Hh - 5, dw - 3.2, 0.5);
+  g.fillStyle = '#e8c050'; g.beginPath(); g.arc(x0 + dw - 1.6, Hh - 9, 0.7, 0, Math.PI * 2); g.fill();
+  const lx = 8, lw = x0 - 3.5 - lx, rx = x0 + dw + 3.5, rw = W - 3.5 - rx, wy = 6, wh = 11;
+  pane(lx, wy, lw, wh);
+  ink((c) => { for (let i = 0; i < 2; i++) { const x = lx + 1 + i * (lw - 2) / 2; c.beginPath(); c.roundRect(x, wy + wh - 5.5, (lw - 2) / 2 - 0.8, 5.5, 1); c.fill(); c.fillRect(x + 0.4, wy + wh - 6.5, (lw - 2) / 2 - 1.6, 1); } c.fillRect(lx, wy + wh - 6.8 - 0.4, lw, 0.6); });
+  pane(rx, wy, rw, wh);
+  ink((c) => { c.lineWidth = 0.5; for (let i = 0; i < 4; i++) { c.beginPath(); c.moveTo(rx + 1 + i * 2.6, wy + wh); c.lineTo(rx + 3 + i * 2.6, wy); c.stroke(); } c.beginPath(); c.ellipse(rx + rw - 3.5, wy + 5, 1.6, 3.2, 0, 0, Math.PI * 2); c.fill(); c.beginPath(); c.moveTo(rx + rw - 3.5, wy + 7.6); c.lineTo(rx + rw - 5, wy + 10); c.lineTo(rx + rw - 2, wy + 10); c.fill(); });
+  for (const x of [lx, rx]) rr(x - 1.8, wy + wh + 1, (x === lx ? lw : rw) + 3.6, 1.4, 0.4, '#f4f0e6');
+  return f.c;
+}
+
+/** Striped awning canvas in the shop's colour and white; `valance`: its hem, scalloped. */
+function awningArt(col, valance = false) {
+  return tiling(64, valance ? 16 : 32, (g) => {
+    for (let x = 0; x < 64; x += 16) { g.fillStyle = col; g.fillRect(x, 0, 8, 32); g.fillStyle = '#f8f4ec'; g.fillRect(x + 8, 0, 8, 32); }
+    g.fillStyle = 'rgba(0,0,0,0.08)'; for (let x = 0; x < 64; x += 8) g.fillRect(x, 0, 0.6, 32);
+    if (!valance) return;
+    g.globalCompositeOperation = 'destination-out';
+    for (let x = 4; x < 64; x += 8) { g.beginPath(); g.arc(x + 4, 16, 4, 0, Math.PI * 2); g.fill(); }
+  });
+}
+
+/** The fish-shaped sign hung under the stall's awning: an orange fish with BAIT across it. */
+function baitSignArt(col) {
+  const f = fine(52, 24, 8), { g, lin } = f;
+  g.fillStyle = '#5a3418';
+  g.beginPath(); g.ellipse(22, 12, 20, 10.5, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(38, 12); g.lineTo(51.5, 2); g.lineTo(51.5, 22); g.fill();
+  g.fillStyle = lin(0, 2, 0, 22, [shadeOf(col, 1), col, shadeOf(col, -1)]);
+  g.beginPath(); g.ellipse(22, 12, 18.6, 9.1, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath(); g.moveTo(39, 12); g.lineTo(50, 4.2); g.lineTo(50, 19.8); g.fill();
+  g.fillStyle = '#2a1c18'; g.beginPath(); g.arc(8.5, 10, 1.4, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#ffffff'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 12px sans-serif'; g.fillText('BAIT', 24, 12.5, 26);
+  return f.c;
+}
+
+/** Pelipper's flag: sea blue over white, an orange beak across it. */
+function peliFlagArt(col) {
+  const f = fine(30, 20, 6), { g } = f;
+  g.fillStyle = '#3a8ac8'; g.fillRect(0, 0, 30, 10); g.fillStyle = '#f8f4ec'; g.fillRect(0, 10, 30, 10);
+  g.fillStyle = col; g.beginPath(); g.moveTo(6, 7); g.quadraticCurveTo(18, 4, 25, 10); g.quadraticCurveTo(18, 16, 6, 13); g.closePath(); g.fill();
+  g.fillStyle = '#2a1c18'; g.beginPath(); g.arc(7.5, 6.5, 1.1, 0, Math.PI * 2); g.fill();
+  return f.c;
+}
+
+/** Pelipper's Bait & Tackle, Driftwood Landing's trade house (the user's ask, 2026-10-14: the homes "more cool and
+    aesthetic, especially the trade house"): a seaside shack of sea-glass lap boards on a raised deck, white trim, a
+    tin roof with its gable to you and the Poké Ball crest in it, a fish weathervane; a striped awning over the door and
+    windows, a life ring on the wall, bait barrel and crates by the steps; beside it an open fish stall under its own
+    striped lean-to, fish on ice, rods racked against the wall, the BAIT sign standing on it; a stovepipe smoking the
+    catch, and Pelipper's flag on a mast with bunting strung to the roof. Its lot is 4 x 3. A tap anywhere is its door. */
+function baitShop(b, f, L, lit, smoke) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const kit = B.lagoonKit ??= { weave: wovenArt(), fringe: fringeArt(), boards: boardsArt() };
+  const col = b.roof, W = f.w - 0.25, D = f.h - 0.2, P = 0.24, dx = -0.5;
+  const dark = std({ color: '#3a2414', roughness: 0.8 }), wood = std({ color: '#8a6440', roughness: 0.85 }), white = std({ color: '#f4f0e6', roughness: 0.6 });
+  const sea = std({ color: '#3a9aa8', roughness: 0.6 }), paint = std({ color: col, roughness: 0.55 });
+  const iron = std({ color: '#3a3a3c', roughness: 0.45, metalness: 0.6 }), copper = std({ color: '#c87a40', roughness: 0.35, metalness: 0.7 });
+  const small = (m) => { m.castShadow = false; return m; };
+  mesh(uvScale(new THREE.BoxGeometry(W, P, D), W / 1.2, D / 1.2), [dark, dark, std({ map: kit.boards, roughness: 0.9 }), dark, dark, dark], 0, P / 2, 0, g);
+  small(mesh(new THREE.BoxGeometry(W + 0.04, 0.07, D + 0.04), sea, 0, P - 0.1, 0, g));
+  for (let i = 0; i < 2; i++) mesh(rbox(0.95 - i * 0.05, P / 2, 0.22, 0.02), wood, dx, P / 4 + i * P / 2, D / 2 + 0.2 - i * 0.16, g);
+  // the shack: lap boards, its lit front, white corner boards, a tin roof with its gable to you
+  const sw = 2.4, sd = 1.7, H = 1.4, sx = -0.45, sz = -0.45, fz = sz + sd / 2, top = P + H;
+  const clap = clapArt('#66bcc6'), wall = std({ map: clap, roughness: 0.8 });
+  const art = baitFront(sw, H, col, (dx - sx + sw / 2) * 20), face = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.8 });
+  lit.push(face);
+  mesh(uvScale(new THREE.BoxGeometry(sw, H, sd), sd, H), [wall, wall, dark, dark, face, wall], sx, P + H / 2, sz, g);
+  for (const cx of [-1, 1]) for (const cz of [-1, 1]) small(mesh(new THREE.BoxGeometry(0.08, H, 0.08), white, sx + cx * (sw / 2 + 0.01), P + H / 2, sz + cz * (sd / 2 + 0.01), g));
+  const half = sw / 2 + 0.3, rise = 0.9, deep = sd + 0.5;
+  const rg = new THREE.ExtrudeGeometry(gableShape(half, rise, 0.1), { depth: deep, bevelEnabled: false });
+  rg.translate(0, 0, -deep / 2);
+  mesh(rg, [white, std({ map: roofTiles(['#5ab0c0', '#2a7a8a', '#1a5a68'], 0.8, 0.8), roughness: 0.5, metalness: 0.2 })], sx, top, sz, g);
+  const gable = new THREE.Shape(); gable.moveTo(-sw / 2, 0); gable.lineTo(sw / 2, 0); gable.lineTo(0, 0.72); gable.closePath();
+  for (const z of [fz + 0.005, sz - sd / 2 - 0.005]) { const m = mesh(new THREE.ShapeGeometry(gable), std({ map: clap, roughness: 0.8, side: THREE.DoubleSide }), sx, top, z, g); m.castShadow = false; }
+  g.attach(panel(houseCrest('ball'), 0.38, 0.38, f.cx + sx, top + 0.3, f.cz + fz + 0.02));
+  const vane = new THREE.Group(); vane.position.set(sx, top + rise, sz); g.add(vane);
+  mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6), iron, 0, 0.25, 0, vane);
+  const fish = new THREE.Shape(); fish.moveTo(-0.22, 0); fish.quadraticCurveTo(-0.05, 0.11, 0.12, 0.02); fish.lineTo(0.24, 0.09); fish.lineTo(0.22, -0.08); fish.lineTo(0.12, -0.02); fish.quadraticCurveTo(-0.05, -0.11, -0.22, 0);
+  const fin = small(mesh(new THREE.ShapeGeometry(fish), std({ color: '#c87a40', roughness: 0.35, metalness: 0.7, side: THREE.DoubleSide }), 0, 0.42, 0, vane));
+  fin.rotation.y = Math.PI / 2;
+  // a stovepipe smoking the catch
+  mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.8, 10), iron, sx - 0.6, top + 0.62, sz - 0.4, g);
+  small(mesh(new THREE.ConeGeometry(0.14, 0.1, 10), iron, sx - 0.6, top + 1.07, sz - 0.4, g));
+  smoke?.push([f.cx + sx - 0.6, top + 1.15, f.cz + sz - 0.4, false]);
+  // the striped awning over the door and windows, a ship's lantern at each end
+  const stripes = awningArt(col), hem = awningArt(col, true);
+  const out = 0.55, drop = 0.3, aw = sw + 0.1, hi = top - 0.1, lo = hi - drop;
+  const slope = mesh(uvScale(new THREE.PlaneGeometry(aw, Math.hypot(out, drop)), aw / 0.5, 1), std({ map: stripes, roughness: 0.9, side: THREE.DoubleSide }), sx, (hi + lo) / 2, fz + out / 2, g);
+  slope.rotation.x = -Math.atan2(out, drop);
+  const val = small(mesh(uvScale(new THREE.PlaneGeometry(aw, 0.15), aw / 0.5, 1), std({ map: hem, transparent: true, alphaTest: 0.5, roughness: 0.9, side: THREE.DoubleSide }), sx, lo - 0.075, fz + out, g));
+  val.raycast = () => {};
+  const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });
+  lit.push(glow);
+  for (const s of [-1, 1]) {
+    const x = sx + s * (aw / 2 - 0.08), z = fz + out - 0.05;
+    small(mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.12, 4), iron, x, lo - 0.06, z, g));
+    small(mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.15, 8), glow, x, lo - 0.2, z, g));
+    for (const y of [lo - 0.12, lo - 0.28]) small(mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.025, 8), iron, x, y, z, g));
+  }
+  // a life ring on the wall, a bait barrel and crates by the steps
+  const ring = [white, std({ color: '#e83a2a', roughness: 0.5 })];
+  for (let k = 0; k < 4; k++) small(mesh(new THREE.TorusGeometry(0.13, 0.035, 8, 10, Math.PI / 2), ring[k % 2], sx - sw / 2 + 0.17, P + 0.82, fz + 0.04, g)).rotation.z = k * Math.PI / 2;
+  const tile = (x, z) => [f.cx + x + COLS / 2 - 0.5, f.cz + z + ROWS / 2 - 0.5];
+  for (const [id, x, z, k, y, turn] of [['barrel', 0.35, 1.0, 0.6, 0, 0], ['crate', -1.4, 0.95, 0.55, 0, 0], ['crate', -1.4, 0.95, 0.42, 0.3, 0.5]]) {
+    const at = tile(x, z), m = piece(id, at[0], at[1], { scale: k, y: P + y, free: true, turn });
+    if (m) g.attach(m);
+  }
+  // the fish stall beside it: posts, a striped lean-to, fish on ice, rods racked against the wall, the BAIT sign
+  const lx0 = sx + sw / 2, lx1 = W / 2 - 0.02, lz0 = sz - sd / 2 + 0.12, lz1 = fz + 0.35, lhi = top - 0.06, llo = P + 1.0, ly = (x) => lhi - (lhi - llo) * (x - lx0) / (lx1 - lx0);
+  mesh(new THREE.CylinderGeometry(0.04, 0.045, llo - P, 8), wood, lx1 - 0.08, (llo + P) / 2, lz1 - 0.06, g);
+  const lg = uvScale(new THREE.PlaneGeometry(lz1 - lz0, Math.hypot(lx1 - lx0, lhi - llo)), (lz1 - lz0) / 0.5, 1).rotateX(-Math.PI / 2).rotateY(Math.PI / 2);
+  mesh(lg, std({ map: stripes, roughness: 0.9, side: THREE.DoubleSide }), (lx0 + lx1) / 2, (lhi + llo) / 2, (lz0 + lz1) / 2, g).rotation.z = -Math.atan2(lhi - llo, lx1 - lx0);
+  const cx = (lx0 + lx1) / 2 + 0.04, cz = fz - 0.05;
+  mesh(new THREE.BoxGeometry(0.85, 0.48, 0.5), wood, cx, P + 0.24, cz, g);
+  small(mesh(new THREE.BoxGeometry(0.8, 0.05, 0.46), std({ color: '#e8f4f8', roughness: 0.3 }), cx, P + 0.5, cz, g));
+  const fishGeo = new THREE.SphereGeometry(0.07, 10, 6); fishGeo.scale(1.9, 0.55, 0.85);
+  const catchAt = [[-0.27, -0.1], [-0.05, 0.08], [0.18, -0.06], [0.28, 0.12], [-0.2, 0.14]].map(([x, z], i) => [cx + x, P + 0.55, cz + z, i * 0.7]);
+  const caught = instancedIn(g, fishGeo, std({ color: '#ffffff', roughness: 0.35, metalness: 0.25 }), catchAt), tone = new THREE.Color();
+  ['#f08a40', '#8ab0c8', '#f0c040', '#e8607a', '#7ac0a0'].forEach((c, i) => caught.setColorAt(i, tone.set(c)));
+  const rod = new THREE.CylinderGeometry(0.008, 0.016, 1.6, 5); rod.translate(0, 0.8, 0); rod.rotateX(-0.16);
+  const rods = [0.12, 0.3, 0.48, 0.66, 0.84].map(x => [lx0 + x, P, lz0 + 0.06]);
+  instancedIn(g, rod, std({ color: '#3a2a20', roughness: 0.5 }), rods);
+  const reel = new THREE.CylinderGeometry(0.035, 0.035, 0.03, 10); reel.rotateZ(Math.PI / 2); reel.translate(0, 0.42, -0.045);
+  instancedIn(g, reel, std({ color: '#d8d8d0', roughness: 0.3, metalness: 0.6 }), rods);
+  small(mesh(new THREE.BoxGeometry(0.95, 0.05, 0.05), wood, (lx0 + lx1) / 2, P + 0.85, lz0 + 0.05, g));
+  const sign = new THREE.Group(); sign.position.set(cx, ly(cx) - 0.02, lz1 - 0.04); g.add(sign);   // standing on the lean-to's front edge, so it never hides the catch
+  for (const s of [-1, 1]) small(mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.2, 5), iron, s * 0.22, 0.1, -0.01, sign));
+  const board = panel(baitSignArt(col), 0.7, 0.32, 0, 0, 0); board.removeFromParent(); sign.add(board); board.position.y = 0.22;
+  // the mast at the back corner, Pelipper's flag on it, bunting strung to the roof's peak
+  const mx = lx1 - 0.08, mz = lz0 + 0.06, mh = P + 2.75;
+  mesh(new THREE.CylinderGeometry(0.03, 0.04, mh, 8), wood, mx, mh / 2, mz, g);
+  small(mesh(new THREE.SphereGeometry(0.05, 10, 8), copper, mx, mh + 0.03, mz, g));
+  const flag = new THREE.Group(); flag.position.set(mx, mh - 0.2, mz); g.add(flag);
+  small(mesh(new THREE.PlaneGeometry(0.5, 0.33), std({ map: texOf(peliFlagArt(col)), side: THREE.DoubleSide, roughness: 0.9 }), -0.26, 0, 0, flag));
+  const a = new THREE.Vector3(mx, mh - 0.45, mz), c = new THREE.Vector3(sx, top + rise + 0.25, sz), tri = new THREE.Shape();
+  tri.moveTo(-0.07, 0); tri.lineTo(0.07, 0); tri.lineTo(0, -0.15); tri.closePath();
+  const pennants = Array.from({ length: 9 }, (_, i) => { const t = (i + 0.5) / 9; return [a.x + (c.x - a.x) * t, a.y + (c.y - a.y) * t - 0.2 * 4 * t * (1 - t), a.z + (c.z - a.z) * t, 0]; });
+  const bunting = instancedIn(g, new THREE.ShapeGeometry(tri), std({ color: '#ffffff', roughness: 0.9, side: THREE.DoubleSide }), pennants);
+  pennants.forEach((_, i) => bunting.setColorAt(i, tone.set([col, '#f8f4ec', '#3a8ac8', '#e83a4a'][i % 4])));
+  const cord = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(Array.from({ length: 9 }, (_, i) => { const t = i / 8; return new THREE.Vector3(a.x + (c.x - a.x) * t, a.y + (c.y - a.y) * t - 0.2 * 4 * t * (1 - t), a.z + (c.z - a.z) * t); })), 16, 0.006, 4);
+  small(mesh(cord, dark, 0, 0, 0, g)).raycast = () => {};
+  B.ticks.push((now) => {
+    if (calm) return;
+    vane.rotation.y = Math.sin(now / 3200) * 0.5;
+    flag.rotation.y = Math.sin(now / 800) * 0.18;
+  });
   return g;
 }
 
@@ -5416,46 +5782,194 @@ function tabletArt(name) {
   return f.c;
 }
 
-/** The way out, the drowned temple's arch on the far shore: two carved pillars, a lintel with a cracked stepped crown and a
-    rune wheel glowing in it, vines hanging, the town's name on a tablet. Its pillars block their tiles; the way between
-    them is `R.exitAt`. */
+/** The temple gate's frieze: carved waves curling along the lintel, a rune glowing between each. */
+function friezeArt(L) {
+  const f = fine(160, 20, 4), { g } = f, s = f.shine();
+  g.fillStyle = L.stone[0]; g.fillRect(0, 0, 160, 20);
+  g.fillStyle = 'rgba(0,0,0,0.25)'; g.fillRect(0, 0, 160, 1.4); g.fillRect(0, 18.6, 160, 1.4);
+  for (let x = 4; x < 160; x += 20) {
+    for (const [col, off] of [['rgba(0,0,0,0.35)', 0.6], ['rgba(255,255,255,0.22)', 0]]) {
+      g.strokeStyle = col; g.lineWidth = 1.4; g.beginPath();
+      g.moveTo(x + off, 15 + off); g.quadraticCurveTo(x + 6 + off, 3 + off, x + 12 + off, 9 + off);
+      g.arc(x + 9.5 + off, 9.5 + off, 2.6, 0, Math.PI * 1.5); g.stroke();
+    }
+  }
+  for (let x = 24; x < 160; x += 40) for (const ctx of [g, s]) {
+    ctx.fillStyle = ctx === s ? '#70e0f0' : '#a8f4ff';
+    ctx.beginPath(); ctx.moveTo(x - 2.4, 10); ctx.lineTo(x, 6); ctx.lineTo(x + 2.4, 10); ctx.lineTo(x, 14); ctx.closePath(); ctx.fill();
+  }
+  return f.c;
+}
+
+/** The great wheel in the gate's crown: a carved disc, a wave curling round its middle, eight runes glowing round its rim. */
+function wheelArt(L) {
+  const f = fine(48, 48, 6), { g } = f, s = f.shine();
+  g.fillStyle = L.stone[2]; g.beginPath(); g.arc(24, 24, 23.5, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = 'rgba(0,0,0,0.35)'; g.lineWidth = 1.2;
+  for (const r of [22, 15.5]) { g.beginPath(); g.arc(24, 24, r, 0, Math.PI * 2); g.stroke(); }
+  g.strokeStyle = 'rgba(255,255,255,0.25)'; g.lineWidth = 1.6; g.beginPath();
+  for (let k = 0; k <= 60; k++) { const a = k / 60 * Math.PI * 3.2, r = 2 + k / 60 * 11; g.lineTo(24 + Math.cos(a) * r, 24 + Math.sin(a) * r); }
+  g.stroke();
+  for (let k = 0; k < 8; k++) {
+    const a = k / 8 * Math.PI * 2, x = 24 + Math.cos(a) * 18.8, y = 24 + Math.sin(a) * 18.8;
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#70e0f0' : '#a8f4ff'; ctx.save(); ctx.translate(x, y); ctx.rotate(a); ctx.fillRect(-0.6, -2.2, 1.2, 4.4); ctx.fillRect(-1.8, -0.6, 2.4, 1.2); ctx.restore(); }
+  }
+  for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#70e0f0' : '#c8f8ff'; ctx.beginPath(); ctx.arc(24, 24, 2.4, 0, Math.PI * 2); ctx.fill(); }
+  return f.c;
+}
+
+/** The temple floor's old mosaic laid in front of the gate: rings of worn tiles, runes glowing round it, faint. */
+function mosaicArt(L) {
+  const f = fine(64, 64, 4), { g } = f, s = f.shine(), r = seeded(61);
+  for (let ring = 0; ring < 5; ring++) {
+    const r0 = 31 - ring * 6, n = 8 + (4 - ring) * 6;
+    for (let k = 0; k < n; k++) {
+      const a0 = k / n * Math.PI * 2 + ring * 0.2, a1 = (k + 1) / n * Math.PI * 2 + ring * 0.2 - 0.04;
+      g.fillStyle = [L.stone[0], L.stone[1], L.stone[2], '#5a9aa0'][Math.floor(r() * (ring === 2 ? 4 : 3))];
+      g.beginPath(); g.arc(32, 32, r0, a0, a1); g.arc(32, 32, r0 - 5.4, a1, a0, true); g.closePath(); g.fill();
+    }
+  }
+  for (let k = 0; k < 12; k++) {
+    const a = k / 12 * Math.PI * 2, x = 32 + Math.cos(a) * 22.3, y = 32 + Math.sin(a) * 22.3;
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#3a8a98' : '#90e8f4'; ctx.beginPath(); ctx.arc(x, y, 1.3, 0, Math.PI * 2); ctx.fill(); }
+  }
+  g.fillStyle = 'rgba(40,60,40,0.35)'; for (let i = 0; i < 40; i++) { g.beginPath(); g.ellipse(r() * 64, r() * 64, 1 + r() * 2.5, 0.8 + r() * 1.5, r() * 3, 0, Math.PI * 2); g.fill(); }
+  g.globalCompositeOperation = 'destination-in'; g.beginPath(); g.arc(32, 32, 31.5, 0, Math.PI * 2); g.fill();
+  return f.c;
+}
+
+/** The light hanging in the gate's opening: pale streaks rising, brightest at the threshold. */
+function templeVeilArt() {
+  const f = fine(32, 64, 2), { g } = f, r = seeded(17);
+  for (let i = 0; i < 26; i++) {
+    const x = r() * 32, w = 0.6 + r() * 2, h = 20 + r() * 44, l = g.createLinearGradient(0, 64, 0, 64 - h);
+    l.addColorStop(0, `rgba(150,240,255,${0.35 + r() * 0.4})`); l.addColorStop(1, 'rgba(150,240,255,0)');
+    g.fillStyle = l; g.fillRect(x, 64 - h, w, h);
+  }
+  return f.c;
+}
+
+/** The way out, the drowned temple's great gate on the far shore (the user's ask, 2026-10-14: the exit "more cool and
+    aesthetic"): an old mosaic glowing on the paving under it; two pillars on stepped plinths, banded with carved waves
+    and runes; a stepped crown, its frieze of waves and runes, the town's name on its tablet, a great wheel at its top
+    with its runes turning; braziers of blue spirit-fire on the crown's shoulders; pale light hanging in the opening;
+    corbels stepping in at its top corners; broken columns either side, coral and shells at their feet, kelp hanging off
+    the crown. Its pillars and columns block their tiles; the way between them is `R.exitAt`. */
 function templeArch(x, z, span, tall, name, L, lit) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
   B.group.add(g);
-  const stone = std({ color: L.stone[0], roughness: 0.95 }), carved = std({ color: L.stone[2], roughness: 1 });
+  B.reach = 2;   // the camera may lean past the back row, so the whole gate shows when you walk up to it
+  const stone = std({ color: L.stone[0], roughness: 0.95 }), carved = std({ color: L.stone[2], roughness: 1 }), worn = std({ color: L.stone[1], roughness: 1, flatShading: true });
   const rune = std({ color: '#20404a', emissive: new THREE.Color('#70e0f0'), emissiveIntensity: 0.8, roughness: 0.5 });
+  const moss = std({ color: '#4a7a3a', roughness: 1 });
   lit.push(rune);
+  const small = (m) => { m.castShadow = false; return m; };
+  const flat = (m) => { m.castShadow = false; m.raycast = () => {}; return m; };
+  // the mosaic on the paving in front
+  const mos = mosaicArt(L), floor = std({ map: texOf(mos), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(mos.glow), emissiveIntensity: 0.6, transparent: true, alphaTest: 0.3, roughness: 1 });
+  lit.push(floor);
+  flat(mesh(new THREE.CircleGeometry(1.05, 48), floor, 0, 0.012, 0.1, g)).rotation.x = -Math.PI / 2;
+  // the pillars: stepped plinths, shafts banded with carved waves, runes, flared capitals
+  const px = span / 2 + 0.1, inner = px - 0.31;
   for (const s of [-1, 1]) {
-    const px = s * (span / 2 + 0.1);
-    mesh(rbox(0.8, 0.3, 0.8, 0.04), carved, px, 0.15, 0, g);
-    mesh(rbox(0.6, tall, 0.6, 0.05), stone, px, tall / 2 + 0.3, 0, g);
-    for (const y of [0.9, 1.7, 2.5]) mesh(new THREE.BoxGeometry(0.64, 0.1, 0.64), carved, px, y, 0, g).castShadow = false;
-    for (const y of [1.3, 2.1]) mesh(new THREE.BoxGeometry(0.18, 0.18, 0.02), rune, px, y, 0.31, g).castShadow = false;
-    mesh(rbox(0.78, 0.22, 0.78, 0.04), carved, px, tall + 0.4, 0, g);
+    const cx = s * px;
+    mesh(rbox(0.95, 0.18, 0.95, 0.04), worn, cx, 0.09, 0, g);
+    mesh(rbox(0.8, 0.2, 0.8, 0.04), carved, cx, 0.28, 0, g);
+    mesh(rbox(0.62, tall, 0.62, 0.05), stone, cx, tall / 2 + 0.38, 0, g);
+    for (const y of [0.85, 1.75, 2.6]) {
+      small(mesh(new THREE.BoxGeometry(0.66, 0.12, 0.66), carved, cx, y, 0, g));
+      small(mesh(new THREE.BoxGeometry(0.67, 0.03, 0.67), rune, cx, y, 0, g));
+    }
+    for (const y of [1.3, 2.18]) {
+      small(mesh(new THREE.BoxGeometry(0.06, 0.24, 0.02), rune, cx, y, 0.315, g));
+      small(mesh(new THREE.BoxGeometry(0.2, 0.06, 0.02), rune, cx, y + 0.04, 0.315, g));
+    }
+    mesh(rbox(0.74, 0.14, 0.74, 0.03), carved, cx, tall + 0.3, 0, g);
+    mesh(rbox(0.86, 0.14, 0.86, 0.03), stone, cx, tall + 0.42, 0, g);
+    // corbels stepping in at the opening's top corners
+    small(mesh(new THREE.BoxGeometry(0.3, 0.2, 0.6), carved, s * (inner - 0.15), tall + 0.39, 0, g));
+    small(mesh(new THREE.BoxGeometry(0.18, 0.12, 0.56), carved, s * (inner - 0.39), tall + 0.43, 0, g));
   }
-  mesh(rbox(span + 1.5, 0.5, 0.82, 0.05), stone, 0, tall + 0.76, 0, g);
-  mesh(rbox(span + 0.6, 0.36, 0.7, 0.05), stone, 0, tall + 1.19, 0, g);
-  const wheel = mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.1, 24), carved, 0, tall + 1.25, 0.36, g);
-  wheel.rotation.x = Math.PI / 2;
-  const ring = mesh(new THREE.TorusGeometry(0.3, 0.035, 6, 24), rune, 0, tall + 1.25, 0.42, g);
-  ring.castShadow = false;
-  // the crack down the lintel, and its broken corner
-  mesh(new THREE.BoxGeometry(0.04, 0.5, 0.84), std({ color: '#3a3020', roughness: 1 }), 0.55, tall + 0.76, 0, g).castShadow = false;
-  const chip = mesh(new THREE.DodecahedronGeometry(0.22, 0), stone, span / 2 + 0.95, 0.15, 0.5, g);
+  // the crown: three tiers stepping up, the frieze along the first, the name on its tablet
+  const c0 = tall + 0.49, t1 = 0.52, t2 = 0.36, t3 = 0.3, w1 = span + 1.7;
+  const frieze = friezeArt(L), face = std({ map: texOf(frieze), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(frieze.glow), emissiveIntensity: 0.6, roughness: 0.95 });
+  lit.push(face);
+  mesh(new THREE.BoxGeometry(w1, t1, 0.92), [stone, stone, carved, stone, face, stone], 0, c0 + t1 / 2, 0, g);
+  small(mesh(new THREE.BoxGeometry(w1 + 0.08, 0.06, 0.98), carved, 0, c0 + t1, 0, g));
+  mesh(rbox(span + 0.4, t2, 0.78, 0.04), stone, 0, c0 + t1 + t2 / 2, -0.04, g);
+  mesh(rbox(1.5, t3, 0.66, 0.04), carved, 0, c0 + t1 + t2 + t3 / 2, -0.08, g);
+  // the crack down the crown, and a block fallen off its corner
+  small(mesh(new THREE.BoxGeometry(0.04, t1 + 0.02, 0.94), std({ color: '#3a3020', roughness: 1 }), 0.62, c0 + t1 / 2, 0, g));
+  const chip = mesh(new THREE.DodecahedronGeometry(0.24, 0), worn, px + 0.75, 0.16, 0.6, g);
   chip.rotation.set(0.5, 0.3, 0.2);
-  // vines down the front
-  const vine = std({ color: '#4a8a38', roughness: 0.9 }), rnd = seeded(41);
-  for (let i = 0; i < 9; i++) {
-    const vx = -span / 2 - 0.6 + rnd() * (span + 1.2), len = 0.4 + rnd() * 0.9;
-    mesh(new THREE.BoxGeometry(0.05, len, 0.03), vine, vx, tall + 0.52 - len / 2, 0.42, g).castShadow = false;
-    mesh(new THREE.SphereGeometry(0.07, 6, 5), vine, vx, tall + 0.52 - len, 0.43, g).castShadow = false;
+  // the wheel, its rune ring turning, a halo of glowing rune in a ring round it
+  const wy = c0 + t1 + t2 + 0.36;   // a medallion on the crown's face, in front of its upper tiers
+  const disc = mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.16, 32), carved, 0, wy, 0.37, g);
+  disc.rotation.x = Math.PI / 2;
+  const wart = wheelArt(L), wface = std({ map: texOf(wart), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(wart.glow), emissiveIntensity: 0.7, transparent: true, roughness: 0.9 });
+  lit.push(wface);
+  const wheel = small(mesh(new THREE.CircleGeometry(0.56, 40), wface, 0, wy, 0.455, g));
+  const halo = small(mesh(new THREE.TorusGeometry(0.62, 0.03, 6, 40), rune, 0, wy, 0.42, g));
+  // braziers of blue spirit-fire on the crown's shoulders
+  const fire = new THREE.MeshBasicMaterial({ color: '#58d8f0', transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false });
+  const core = new THREE.MeshBasicMaterial({ color: '#e8ffff', transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
+  const flames = [-1, 1].map(s => {
+    const bx = s * (w1 / 2 - 0.32), by = c0 + t1 + 0.04;
+    mesh(new THREE.CylinderGeometry(0.1, 0.16, 0.12, 12), carved, bx, by + 0.06, 0, g);
+    mesh(new THREE.CylinderGeometry(0.26, 0.12, 0.2, 14), stone, bx, by + 0.22, 0, g);
+    small(mesh(new THREE.TorusGeometry(0.26, 0.025, 6, 20), rune, bx, by + 0.32, 0, g)).rotation.x = Math.PI / 2;
+    const fl = new THREE.Group(); fl.position.set(bx, by + 0.3, 0); g.add(fl);
+    flat(mesh(new THREE.ConeGeometry(0.17, 0.52, 12), fire, 0, 0.26, 0, fl));
+    flat(mesh(new THREE.ConeGeometry(0.08, 0.3, 10), core, 0, 0.15, 0, fl));
+    return fl;
+  });
+  // the light hanging in the opening
+  const veilMap = texOf(templeVeilArt()); veilMap.wrapS = THREE.RepeatWrapping;
+  const veil = new THREE.MeshBasicMaterial({ map: veilMap, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+  flat(mesh(new THREE.PlaneGeometry(inner * 2 - 0.04, tall + 0.1), veil, 0, (tall + 0.1) / 2 + 0.02, 0, g));
+  // broken columns either side, coral and shells at their feet
+  const shaft = (cx, h, lean) => {
+    mesh(rbox(0.6, 0.16, 0.6, 0.03), worn, cx, 0.08, -0.3, g);
+    const geo = new THREE.CylinderGeometry(0.22, 0.25, h, 12, 1); geo.translate(0, h / 2, 0);
+    const p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) if (p.getY(i) > h - 0.01) p.setY(i, p.getY(i) - (Math.atan2(p.getZ(i), p.getX(i)) + Math.PI) / (Math.PI * 2) * 0.3);
+    geo.computeVertexNormals();
+    const col = mesh(geo, stone, cx, 0.16, -0.3, g); col.rotation.z = lean;
+    small(mesh(new THREE.TorusGeometry(0.245, 0.04, 6, 16), moss, cx, 0.28, -0.3, g)).rotation.x = Math.PI / 2;
+  };
+  shaft(-(w1 / 2 + 0.75), 1.55, 0.04); shaft(w1 / 2 + 0.75, 1.0, -0.06);
+  const twig = new THREE.CylinderGeometry(0.02, 0.035, 0.32, 5); twig.translate(0, 0.16, 0); twig.rotateZ(0.35);
+  const coralAt = [];
+  for (const s of [-1, 1]) for (let k = 0; k < 5; k++) coralAt.push([s * (px + 0.32) + (k - 2) * 0.05, 0.18, 0.42 + (k % 2) * 0.08, k * 1.3 + s]);
+  const reef = instancedIn(g, twig, std({ color: '#ffffff', roughness: 0.8 }), coralAt), tone = new THREE.Color();
+  coralAt.forEach((_, i) => reef.setColorAt(i, tone.set(['#f07888', '#f8a060', '#e85a8a'][i % 3])));
+  const shell = new THREE.SphereGeometry(0.06, 10, 6); shell.scale(1, 0.45, 1.2);
+  instancedIn(g, shell, std({ color: '#f8e4d8', roughness: 0.5 }), [[-px - 0.55, 0.03, 0.62, 0.4], [px + 0.62, 0.03, 0.4, 1.2], [1.7, 0.03, 0.75, 2], [-1.75, 0.03, 0.8, 0.8]]);
+  // kelp hanging off the crown's front, leaves along each strand
+  const r = seeded(41), strands = [], leaves = [];
+  for (let i = 0; i < 12; i++) {
+    const vx = -w1 / 2 + 0.1 + r() * (w1 - 0.2);
+    if (Math.abs(vx) < inner && r() < 0.6) continue;
+    const len = 0.4 + r() * 1.0;
+    strands.push([vx, c0 + t1 - 0.02, 0.47, len]);
+    for (let y = 0.15; y < len; y += 0.17) leaves.push([vx, c0 + t1 - 0.02 - y, 0.48, (y * 7) % 2 ? 0.5 : -0.5]);
   }
-  panel(tabletArt(name), 1.75, 0.4, x, tall + 0.76, z + 0.42).userData.spot = 'exit';
-  for (const s of [-1, 1]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + s * (span / 2 + 0.1) + COLS / 2 - 0.5), y));
+  for (const [vx, y0, vz, len] of strands) flat(mesh(new THREE.BoxGeometry(0.035, len, 0.02), moss, vx, y0 - len / 2, vz, g));
+  const leaf = new THREE.SphereGeometry(0.06, 6, 4); leaf.scale(1.4, 0.5, 0.4);
+  instancedIn(g, leaf, std({ color: '#5a9a42', roughness: 0.9 }), leaves);
+  panel(tabletArt(name), 1.75, 0.4, x, c0 + t1 / 2, z + 0.47).userData.spot = 'exit';
+  for (const cx of [-px, px, -(w1 / 2 + 0.75), w1 / 2 + 0.75]) for (const y of [0, 1]) B.blocked.add(key(Math.round(x + cx + COLS / 2 - 0.5), y));
   const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
   way.castShadow = way.receiveShadow = false;
-  B.ticks.push((now) => { ring.rotation.z = calm ? 0 : now / 4000; });
+  B.ticks.push((now) => {
+    if (calm) return;
+    wheel.rotation.z = now / 6000;
+    halo.rotation.z = -now / 4000;
+    flames.forEach((fl, i) => { fl.scale.set(1 + Math.sin(now / 130 + i * 2) * 0.06, 1 + Math.sin(now / 170 + i) * 0.14, 1); });
+    veilMap.offset.x = now / 9000;
+    veil.opacity = 0.38 + Math.sin(now / 1400) * 0.08;
+  });
   g.traverse(o => { o.userData.spot = 'exit'; });
   return g;
 }
@@ -7606,7 +8120,7 @@ const TOWN_STYLES = {
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
     drift: (i) => (i % 3 ? { art: ashArt(), size: 0.1 } : { art: emberArt(i % 2 ? '#f8a030' : '#f06020'), size: 0.12, rise: true }) },
   lagoon: { holes: true, fade: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
-    house: (b, f, L, lit) => (b.kind === 'houseboat' ? houseboat(b, f, L, lit) : b.kind === 'beacon' ? beacon(f, L, lit) : stiltHut(b, f, L, lit)),
+    house: (b, f, L, lit, smoke) => (b.kind === 'houseboat' ? houseboat(b, f, L, lit) : b.kind === 'beacon' ? beacon(f, L, lit) : stiltHut(b, f, L, lit, smoke)),
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
     drift: (i) => (i % 2 ? { art: emberArt(i % 4 === 1 ? '#d8ff70' : '#a0f0ff'), size: 0.09, rise: true } : { art: leafletArt(PALM[i % 4]), size: 0.17 }) },

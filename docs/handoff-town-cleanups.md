@@ -14,7 +14,7 @@ town). The other four need the same care, **one town a session**, in this order 
 |---|---|---|---|---|
 | Lantern Village | Shrine | `village` | `?town=shrine` | done 2026-10-14 (the koi pond, `fadeBehind()`): a model too |
 | Cinder Springs | Wastes | `springs` | `?town=wastes` | done 2026-10-14 (the leaders in `lodge()`s on 5 x 4 lots, `nameBoards()`, `fade`; then a lava field, `lavaField()`, two locked houses; then a road to every door, `forge()`, `cottage()`) |
-| Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | done 2026-10-14 (a square ring two wide, railings, four locked huts, Kayl's `stiltManor()`, Pat's two-deck `houseboat()`, `s` name boards, `fade`) |
+| Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | done 2026-10-14 (a square ring two wide, railings, four locked huts, Kayl's `stiltManor()`, Pat's two-deck `houseboat()`, `s` name boards, `fade`; then `bungalow()`s, the `baitShop()` and the temple gate) |
 | Sunwell Bazaar | Savanna | `bazaar` | `?town=savanna` | done 2026-10-14 (the road three wide, the jetty two wide and railed, a stone edge round the watering hole, huts a and d gone, Machew's and Jerome's `kasbah()`s on 5 x 4 lots, `s` name boards, `fade`) |
 | Highbough | Thornwood | `canopy` | `?town=thornwood` | already cleaned up: the model to copy (its leaders' `canopyManor()`s, round huts and conservatory 2026-10-14; lanterns in the platforms' corners, the Bough Gate) |
 
