@@ -265,6 +265,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    looking down (a throwaway `window.__top` hook in the town camera, never committed), sent with `SendUserFile`; a
    playtest link with it. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
    Towns step 4. Give <town> Highbough's clean-up, and send me an aerial screenshot before and after."
+**Done (2026-10-14): the Gym Leaders' homes, inside, made big** (the user: "so small and very bland"): 13 x 10 rooms, each
+   leader's own walls, floor, light and props (`js/leader-homes.js`, `docs/reference/towns.md`'s last section). On `main`,
+   waiting on the user's playtest (`?town=<biome>&home=<leader>&gymwins=1`); ask which house to push further next.
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
    home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
    (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;

@@ -162,3 +162,24 @@ pieces put back where they stand unbent (`unbend()`), reused, not made per move;
 nearest piece that hits. The floating signs (`placeSigns()`) and the folk's bubbles (`drawn` handed to `makeCrowd()`) are
 placed where things are drawn (`drawn()`). Far things drop below the horizon (12 tiles off sinks ~4 tiles), so a far
 door or the gate can't be tapped until you walk nearer, as in the Clearing.
+
+**The Gym Leaders' homes, inside** (2026-10-14, the user: "they're so small and very bland, we need to beef them up
+ALOT"). A town home with a `leader` is built by `js/leader-homes.js`, not `HOMES` in `js/event-3d.js` (`buildHome()`
+hands it the room's kit; the leaders' old `HOMES` lines are gone). Every one is 13 x 10 (`LEADER_SIZE`, `view: 8`, the
+shot sliding round it as you walk; it was 9 x 7) with `shotTop` 3.1 so the wall's decor shows. A `LEADER_HOMES` entry:
+`leaderAt` / `castAt` as before, `mood` (the room's hemi, sun and bloom; `leaderEnv()` dims it at dusk and night and
+lets its glows carry it), its own `floor` and wallpaper (`paint`, both painted per leader, glowing bits on `f.shine()`),
+`skirt`, `furnish` (Secret Base pieces, `mid` setting a two-wide piece on the middle of an odd-width room), `hang` (wall
+pieces: the back wall at x, or a side one, `side: 'l' | 'r'` and `row`), `blocks` (the tiles its own props stand on)
+and `props(K, P)` (P: the first of each piece laid, to set things on its top). Each house says who they are (the corners
+in `docs/reference/gym-leaders.md`): John's kotatsu with three handhelds charging and a truss bridge on his desk, Jahmes's
+bed side (a wall clock keeping your time, LIGHTS OUT at 11 in neon) against his RGB gaming side, Shaun's three monitors
+(VOD, tickets, the boys in voice) and a pile of laptops tagged FIXED, Clarence's stage (velvet, SHOWTIME neon, ring light,
+webcam, a turning disco ball, ON AIR lit at night, the boa on the sofa), Kayl's music corner, cat tree (Reya sits on top)
+and lease renewals, Pat's fairy lights strung across the cabin and a rose in a bottle, Phil's chair rocking on its own in
+a salt ring over glowing runes with seven candles floating, the tree up through Ricky's den and his sleep maths, Machew's
+spotlit (plastic, $14.99) katana under a blood moon, Jerome's Vice sunset, eleven r/GTA6 tabs and the countdown taped
+over the crib (days to 19 November 2026). Two point lights a room at most; the rest glows. A rug or mat with no model is
+now laid as its painting on the floor (`flatPiece()` in `js/event-3d.js`): the Nursery's web rugs and Persian's dune
+rug showed nothing before. `tests/leader-homes.test.mjs` checks every piece exists, nothing overlaps, and every free
+tile (and the leader) is reachable from the door. `?town=<biome>&home=<leader>&gymwins=1` walks straight in.

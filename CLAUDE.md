@@ -110,7 +110,7 @@ context small. Where two notes disagree, the later date wins.
   (the last section there) replaces the older positions in that file.
 - **Gym Leaders** (`gym-leaders.md`: who each friend is, and how the gym works).
 - **Gateway towns** (`towns.md`; switched off, `TOWNS_LIVE`): any town clean-up reads
-  `docs/handoff-town-cleanups.md` first.
+  `docs/handoff-town-cleanups.md` first. A Gym Leader's home inside is `js/leader-homes.js`.
 - **Seeded rolls** (Safari Zone phase 1, 2026-10-02): every gameplay roll goes through `random()` / `randIndex()` /
   `pickOne()` / `shuffled()` in `js/rng.js`, never `Math.random` (cosmetic rolls stay on it). A Safari run
   (`run.safari`, `js/data/safari.js`) seeds a stream per biome and per room (`reseed()` in `js/run.js`); every other run
