@@ -934,5 +934,19 @@
     <svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="5" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="32" cy="45" r="2.5" fill="currentColor"/><path d="M50 22a20 20 0 0 1 0 20" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><path d="m46 39 4 4 4-5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <p>Turn your phone upright to play</p>
   </div>
+  <script>
+    (() => {
+      const coarse = matchMedia("(pointer: coarse)");
+      const sideways = () => {
+        const type = screen.orientation?.type;
+        const turned = type ? type.startsWith("landscape") : Math.abs(window.orientation || 0) === 90;
+        document.documentElement.classList.toggle("sideways", coarse.matches && turned && Math.min(screen.width, screen.height) <= 500);
+      };
+      sideways();
+      screen.orientation?.addEventListener("change", sideways);
+      addEventListener("orientationchange", sideways);
+      addEventListener("resize", sideways);
+    })();
+  </script>
 </body>
 </html>
