@@ -2347,6 +2347,7 @@ function hideCard() { card.hidden = true; }
 function showWaystone(p) {
   here = p;
   const save = getSave();
+  if (!RING.some(t => townState(save, t.id).met)) return sealedWaystone(p);
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
   resetLine();
@@ -2384,6 +2385,24 @@ function showWaystone(p) {
   card.querySelector('.hub-card-acts').replaceChildren(head, list);
   card.classList.remove('locked', 'ask');
   card.classList.add('way');
+  card.hidden = false;
+}
+
+/** Before any town is reached the Waystone keeps its list to itself (the user's call, 2026-10-14): a riddle a tap, in
+    turn, hinting the way to the towns out on the roads. */
+const RIDDLES = [
+  'An old stone hums on the plaza. Five dull crystals circle its tip, and not one of them lights.',
+  'Words worn into its base: WHERE THE ROADS MEET, MEND WHAT WAS BROKEN.',
+  'It feels cold to the touch. Somewhere out past the gate, stones like it lie broken.',
+  'Five crystals, five roads. Perhaps someone out there knows how to wake them.',
+];
+let riddle = 0;
+function sealedWaystone(p) {
+  card.classList.remove('way', 'locked', 'ask');
+  card.querySelector('.hub-card-name').textContent = p.name;
+  card.querySelector('.hub-card-line').textContent = RIDDLES[riddle++ % RIDDLES.length];
+  resetLine();
+  card.querySelector('.hub-card-acts').replaceChildren();
   card.hidden = false;
 }
 
