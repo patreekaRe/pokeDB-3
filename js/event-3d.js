@@ -4289,7 +4289,7 @@ function lagoonExtras(town, L) {
    jungle floor far below in the mist; treehouses with leaf-shingle roofs, their trees going up through them into crowns;
    the Great Tree in the middle, its deck in rings of planks round it; lone giants standing in the drop; lifts on their
    ropes; the vine gate out. */
-const DROP = -3.6;   // the jungle floor, far below the decks
+const DROP = -7;   // the jungle floor, far below the decks: deep, so it reads as a long way down from the treetops
 const ROUND = 0.45;  // a platform's outside corners are rounded this far (in tiles), its rim curving round with them
 const CANOPY = { deck: ['#b07a4c', '#a06c40', '#c08a58', '#946238'], seam: '#4a2c18', rim: '#5a3a22', leaf: ['#4e9a3a', '#3a7e30', '#2a6226', '#6ab04a'], bark: '#6a4a32', barkDark: '#4a3222' };
 
@@ -4331,23 +4331,24 @@ function canopyGround(town) {
     g.clearRect(-1, -1, COLS * T + 2, ROWS * T + 2);
     const open = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && kind(x, y) === 'air';
     const each = (fn) => map.forEach((row, y) => [...row].forEach((ch, x) => fn(ch, x, y, kind(x, y))));
-    // the Great Tree's deck first, in one go: rings of planks round the trunk
-    g.save();
-    g.beginPath();
-    each((ch, x, y, k) => { if (k === 'plaza') g.rect(x * T, y * T, T, T); });
-    g.clip();
+    // the Great Tree's deck first: rings of planks round the trunk, painted apart and stamped tile by tile onto its deck (a
+    // clip over its tiles let the rings run over the whole town on the user's phone, hiding the drop)
+    const k = c.width / (COLS * T), rings = document.createElement('canvas');
+    rings.width = c.width; rings.height = c.height;
+    const rg = rings.getContext('2d');
+    rg.scale(k, k);
     const cx = (tree.x0 + tree.x1 + 1) / 2 * T, cy = (tree.y0 + tree.y1 + 1) / 2 * T;
-    g.fillStyle = CANOPY.seam; g.fillRect(0, 0, COLS * T, ROWS * T);
+    rg.fillStyle = CANOPY.seam; rg.fillRect(0, 0, COLS * T, ROWS * T);
     for (let rad = 6, n = 0; rad < 14 * T; rad += 4.2, n++) {
       const segs = Math.max(6, Math.round(rad / 9));
       for (let i = 0; i < segs; i++) {
         const a0 = (i + (n % 2) * 0.5) / segs * Math.PI * 2, a1 = a0 + Math.PI * 2 / segs - 0.7 / rad;
-        g.strokeStyle = CANOPY.deck[Math.floor(r() * 4)]; g.lineWidth = 3.5; g.lineCap = 'butt';
-        g.beginPath(); g.arc(cx, cy, rad, a0, a1); g.stroke();
+        rg.strokeStyle = CANOPY.deck[Math.floor(r() * 4)]; rg.lineWidth = 3.5; rg.lineCap = 'butt';
+        rg.beginPath(); rg.arc(cx, cy, rad, a0, a1); rg.stroke();
       }
-      g.strokeStyle = 'rgba(255,240,210,0.12)'; g.lineWidth = 0.6; g.beginPath(); g.arc(cx, cy, rad - 1.2, 0, Math.PI * 2); g.stroke();
+      rg.strokeStyle = 'rgba(255,240,210,0.12)'; rg.lineWidth = 0.6; rg.beginPath(); rg.arc(cx, cy, rad - 1.2, 0, Math.PI * 2); rg.stroke();
     }
-    g.restore();
+    each((ch, x, y, kd) => { if (kd === 'plaza') g.drawImage(rings, x * T * k, y * T * k, T * k, T * k, x * T, y * T, T, T); });
     each((ch, x, y, k) => {
       if (k === 'air' || k === 'plaza') return;
       const X = x * T, Y = y * T;
@@ -4418,6 +4419,20 @@ function canopyGround(town) {
       }
       g.restore();
     });
+    // the drop cut out last, whatever was painted: the open air clear, a platform's rounded corners clear outside the curve
+    g.save();
+    g.globalCompositeOperation = 'destination-out';
+    g.fillStyle = '#000';
+    each((ch, x, y, kd) => {
+      if (kd === 'air') { g.fillRect(x * T - 0.05, y * T - 0.05, T + 0.1, T + 0.1); return; }
+      if (kd !== 'deck' && kd !== 'plaza') return;
+      for (const [dx, dy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+        if (!open(x + dx, y) || !open(x, y + dy)) continue;
+        const ox = (x + (dx > 0)) * T, oy = (y + (dy > 0)) * T, R = ROUND * T;
+        g.beginPath(); g.moveTo(ox - dx * R, oy); g.arcTo(ox, oy, ox, oy - dy * R, R); g.lineTo(ox, oy); g.closePath(); g.fill();
+      }
+    });
+    g.restore();
     return c;
   };
 }
@@ -4569,7 +4584,7 @@ function canopyMist() {
     }
   }
   const tint = { night: '#2a3a4c', dusk: '#e8c8a8', dawn: '#f0d8d0' }[timeOfDay()] ?? '#dcece0';   // mist takes no light: it's tinted by the hour
-  const layers = [[-1.4, 0.12, 1], [-2.5, 0.18, -1.3]].map(([y, op, dir]) => {
+  const layers = [[DROP * 0.3, 0.12, 1], [DROP * 0.55, 0.18, -1.3], [DROP * 0.8, 0.26, 0.8]].map(([y, op, dir]) => {
     const map = new THREE.CanvasTexture(c);
     map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.repeat.set(COLS / 9, ROWS / 9);
     const o = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), new THREE.MeshBasicMaterial({ map, transparent: true, opacity: op, depthWrite: false, color: tint }));
@@ -4578,6 +4593,10 @@ function canopyMist() {
     return { map, dir };
   });
   B.ticks.push((now) => { if (!calm) for (const { map, dir } of layers) map.offset.set(now / 90000 * dir, now / 140000); });
+  // and a haze just over the floor, so it fades away below like the bottom of a deep gorge
+  const haze = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), new THREE.MeshBasicMaterial({ color: { night: '#0a1220', dusk: '#3a2a2a', dawn: '#5a5050' }[timeOfDay()] ?? '#6a8a78', transparent: true, opacity: 0.45, depthWrite: false }));
+  haze.rotation.x = -Math.PI / 2; haze.position.y = DROP + 0.9; haze.raycast = () => {}; haze.renderOrder = 1;
+  B.group.add(haze);
 }
 
 /** The connected platforms (decks and the Great Tree's, not the bridges): their tiles, and a trunk to stand each on. */

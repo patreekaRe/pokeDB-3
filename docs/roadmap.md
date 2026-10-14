@@ -109,7 +109,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    gate at the top left. The ground is cut away everywhere but the platforms, so you look down through the bridges' slats
    to the jungle floor in the mist (ferns, a stream, glow caps lit at night); treehouses of logs with leaf-shingle roofs,
    their trees going up through them into crowns that fade while you're behind them; lone giants in the drop, lifts going
-   up and down. Walked in: Kecleon's Canopy Goods (the trade), Phil's (candles, Misdreavus, JONA after 11 p.m.), Ricky's
+   up and down (2026-10-14, the user's ask: on their phone the Great Tree deck's rings covered the drop, so the air was cut
+   out last with `destination-out` and the rings stamped tile by tile, no clip; the drop is twice as deep, `DROP` -7, with
+   three mist layers and a haze over the floor). Walked in: Kecleon's Canopy Goods (the trade), Phil's (candles, Misdreavus, JONA after 11 p.m.), Ricky's
    (gaming with the boys after 10 p.m.), the glass Bloom Nursery (Bellossom, Sunflora, Cherrim, Oddish, Chikorita; Bellossom's
    cry added). 8 locked treehouses, 10 folk (Aipom, Hoothoot, Sentret, Hoppip, Seedot, Shroomish, Treecko, Teddiursa, Natu,
    Paras), its own requests (fights, ❓ rooms, an Alpha, a PP Up, the Gym) and broken Waystone. **Reworked 2026-10-14 after the
