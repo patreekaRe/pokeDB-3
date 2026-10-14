@@ -133,7 +133,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
   - **Badge**: a `LOOK` line in `js/trainercard.js`. (`badges-and-trainer-card.md`)
   - **Augment**: an `ICONS` line, plus a mirror in the sim for a new fight key. (`sky-pillar.md`)
   - **Biome**: a crossroads `ARMS` line, and a `LANDS` kit for a pool biome. (`biomes-and-journeys.md`)
-  - **Gym Leader**: a `leader()` line, a sprite, a `GYM_INK` line and a `GYM_LOOK` line. (`gym-leaders.md`)
+  - **Gym Leader**: a `leader()` line, a sprite, a `GYM_INK` line, a `GYM_LOOK` line and a `GYM_BIO` line. (`gym-leaders.md`)
   - **PC page**: a `NEWS` line in `js/pc-news.js`.
   - **Furniture reskin family**: a `set:`. An earned piece needs a source of its own. (`hub-base-mall.md`)
   - **Arcade game**: a `MARQUEE` line, and a `GAMES` line to play it at home. (`hub-base-mall.md`)

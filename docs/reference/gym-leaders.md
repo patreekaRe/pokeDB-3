@@ -117,3 +117,9 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
   `gymMilestone()` (`GYM_POSTER` / `GYM_GOLD`); from then on one of them a UTC day visits the Secret Base till tapped (switched off since 2026-10-14, the user's call: `LEADER_VISITS_LIVE` in `js/data/gym.js`; `?visit` still brings one)
   (`leaderVisitor()` in `js/secret-base.js`, `leaderVisit()` in `js/base-3d.js`, their `visit` / `posterSeen` lines;
   `?gymwins=5` sets every leader's wins for good, `?visit` brings one again).
+
+## The Gym Leaders app (2026-10-14)
+
+The Pokédex device's Gym Leaders app (`js/gymdex.js`): met (`save.seen.gym`, set as their fight begins), beaten
+(`save.gym`), lost to (`save.gymLost`), and researched at `GYM_GOLD` wins. Each leader's one-line Pokédex entry is
+`GYM_BIO` in `js/data/gym.js`, shown once beaten: a new leader needs a `GYM_BIO` line too, in the voice above.

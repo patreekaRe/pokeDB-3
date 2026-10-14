@@ -49,6 +49,7 @@ export const NEXT = [
   ['hub', 'The Nietos\' name board is bigger, white on deep blue, so it can be read from the path, and the tree by the cauldron is gone.'],
   ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
   ['base', 'Gym Leaders no longer drop by your Secret Base for now.'],
+  ['dex', 'A Gym Leaders app in the Pokédex: every leader you\'ve met, who they are once beaten, your wins and losses against them, and how far you are to their poster and Gold badge.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when

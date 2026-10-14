@@ -1568,6 +1568,7 @@ async function fight(node, { talked = false } = {}) {
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   encounter.leader = gymLeader(node);
+  if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
@@ -1871,6 +1872,7 @@ function afterFight(node, result) {
     });
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
+  if (winner && !peeking) updateSave(d => { d.gymLost = { ...(d.gymLost || {}), [winner.id]: (d.gymLost?.[winner.id] || 0) + 1 }; });
   if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it

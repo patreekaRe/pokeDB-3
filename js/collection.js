@@ -17,6 +17,8 @@ import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
 import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
+import { gymApp, gymMet } from './gymdex.js';
+import { GYM_LEADERS } from './data/gym.js';
 import { achievementsApp } from './records.js';
 import { howtoApp } from './howto.js';
 import { statsApp } from './statsdex.js';
@@ -134,6 +136,10 @@ function apps(save) {
     safari
       ? { ...safariApp(safari), name: 'Safari', art: vec('safari'), at: here.safari }
       : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
+    GYM_LEADERS.some(l => gymMet(save, l.id))
+      ? { id: 'gym', name: 'Gym Leaders', art: vec('gym'), count: `${GYM_LEADERS.filter(l => save.gym?.[l.id]).length}/${GYM_LEADERS.length}`,
+        cls: 'cdev-dex cdev-bag', app: gymApp(), news: newFinds('gym', save).length > 0 }
+      : { id: 'gym', locked: 'Reach the end of a biome to meet its Gym Leader.' },
     things('relics', 'Relics', vec('relics'), RELICS),
     things('items', 'Items', vec('items'), ITEMS),
     { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
