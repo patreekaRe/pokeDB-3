@@ -12,6 +12,8 @@ three places:
 
 ## Where we left off (2026-10-14)
 
+- 2026-10-14: **Violet Fissure moved onto grass** (branch `towns`): shifted it one tile north off the west avenue. Checked
+  in the browser at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
 - 2026-10-14: **Violet Fissure polish** (branch `towns`, not `main`): the Sealed Gate's ground cracks are smooth and
   tapered around a dim recessed core, with an outward-moving Three.js light pass, broken pulse rings and rising motes.
   The effect was tightened and moved clear of the approach. Browser-checked at `?hubat=2,12&time=night` and

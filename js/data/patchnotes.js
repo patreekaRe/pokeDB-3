@@ -50,6 +50,7 @@ export const NEXT = [
   ['hub', 'The Nietos\' name board is bigger, white on deep blue, so it can be read from the path, and the tree by the cauldron is gone.'],
   ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
   ['hub', 'The Sealed Gate\'s buried fissure now has smooth, tapered cracks, a slow pulse of light, and motes drifting up from its violet core.'],
+  ['hub', 'The Violet Fissure has moved off the west avenue and onto the grass.'],
   ['base', 'Gym Leaders no longer drop by your Secret Base for now.'],
 ];
 

@@ -1591,7 +1591,7 @@ function riftCracksArt() {
 }
 
 function buildBuriedRift(g) {
-  const art = riftCracksArt(), x = tileX(SEALED_AT.tx), z = tileZ(SEALED_AT.ty + 0.25), w = 3.3, d = 2.2;
+  const art = riftCracksArt(), x = tileX(SEALED_AT.tx), z = tileZ(SEALED_AT.ty - 0.75), w = 3.3, d = 2.2;
   const material = new THREE.MeshStandardMaterial({ map: texOf(art.surface), transparent: true, alphaTest: 0.01, depthWrite: false, side: THREE.DoubleSide, roughness: 0.92 });
   glowing(material, art.surface, null, '#b47be2', 0.72);
   const cracks = new THREE.Mesh(new THREE.PlaneGeometry(w, d), material);
