@@ -187,7 +187,17 @@ const ART = {
     <path d="M9.4 5.6l1.6.4M9.8 7.6h1.6M9.4 9.6l1.6-.4" stroke="#5a4a9e" stroke-width=".9" stroke-linecap="round"/>
     <ellipse cx="7.4" cy="7.8" rx=".9" ry="1.5" fill="#2e2448"/>`,
 
-  // Stats: a little screen with three rising bars
+  // Satchel: a leather shoulder bag, its flap buckled
+  satchel: `<path d="M9 9.5C9 4 23 4 23 9.5" fill="none" stroke="${INK}" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M9 9.5C9 4 23 4 23 9.5" fill="none" stroke="#a8683a" stroke-width="1.2" stroke-linecap="round"/>
+    <rect x="3.5" y="10" width="25" height="18.5" rx="4" fill="#9a5a2c" stroke="${INK}" stroke-width="2"/>
+    <path d="M5 24.5h22" stroke="#7a4420" stroke-width="1.4" stroke-dasharray="1.6 1.6"/>
+    <path d="M3.5 14c0-2.4 1.6-4 4-4h17c2.4 0 4 1.6 4 4v3.5c0 2-1.4 3-3 3H6.5c-1.6 0-3-1-3-3Z" fill="#c07a42" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M6 12.5h20" stroke="#dc9a62" stroke-width="1.2" stroke-linecap="round"/>
+    <rect x="13" y="17" width="6" height="6.5" rx="1.2" fill="#f8c830" stroke="${INK}" stroke-width="1.8"/>
+    <rect x="15.2" y="19" width="1.6" height="2.6" rx=".6" fill="${INK}"/>`,
+
+
   stats: `<rect x="3" y="4" width="26" height="23" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>
     <path d="M6.5 23.5h19" stroke="#c8ccd8" stroke-width="1.4" stroke-linecap="round"/>
     <rect x="7.5" y="16" width="4.6" height="7.5" rx="1" fill="#e23a2c" stroke="${INK}" stroke-width="1.4"/>

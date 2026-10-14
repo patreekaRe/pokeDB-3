@@ -18,6 +18,10 @@ import { safariDexApp, safariDexCount } from './safaridex.js';
 import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
 import { gymApp, gymMet } from './gymdex.js';
+import { satchelApp } from './satcheldex.js';
+import { satchelNews } from './satchel.js';
+import { satchelOf } from './data/satchel.js';
+import { townsOpen } from './data/towns.js';
 import { GYM_LEADERS } from './data/gym.js';
 import { achievementsApp } from './records.js';
 import { howtoApp } from './howto.js';
@@ -142,12 +146,19 @@ function apps(save) {
       : { id: 'gym', locked: 'Reach the end of a biome to meet its Gym Leader.' },
     things('relics', 'Relics', vec('relics'), RELICS),
     things('items', 'Items', vec('items'), ITEMS),
+    townsOpen() && satchelEntry(save),
     { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
     { id: 'achievements', name: 'Achievements', art: vec('trophy'),
       count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, cls: 'cdev-dex cdev-bag', app: achievementsApp },
     book('record', 'Record Book', 'win', 'Win a run to unlock it.'),
     book('fame', 'Hall of Fame', 'champion', 'Win a run on Trainer Level 5 to unlock it.'),
-  ];
+  ].filter(Boolean);
+}
+
+/** The Satchel (js/satcheldex.js), the towns' home stash: only while the towns are on. */
+function satchelEntry(save) {
+  const sat = satchelOf(save), n = sat.keys.length;
+  return { id: 'satchel', name: 'Satchel', art: vec('satchel'), count: `${n} key item${n === 1 ? '' : 's'}`, cls: 'cdev-dex cdev-bag', app: satchelApp(), news: satchelNews(save) };
 }
 
 /** The owner's ID strip at the top of the home screen: it opens the Trainer Card. */

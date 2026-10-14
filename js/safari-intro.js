@@ -855,6 +855,8 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
   const shafts = air.has('shafts') ? Array.from({ length: 4 }, (_, i) => ({ dx: (i - 1.5) * 0.45 + (rand() - 0.5) * 0.2, w: 2 + rand() * 4, phase: rand() * 6 })) : [];
   const mists = air.has('mist') ? Array.from({ length: 5 }, () => ({ img: cloudImage(Math.round(W * (0.6 + rand() * 0.5)), [land.mist[0], land.mist[0], land.mist[0]], rand), x: rand() * W * 1.4 - W * 0.4, y: hz - H * 0.1 + rand() * H * 0.35, drift: 1 + rand() * 2 })) : [];
   const glints = crown?.glints || [];
+  // the shimmer's rows come from a copy of the band: drawing the canvas onto itself makes the browser copy all of it, every row
+  const sy0 = Math.max(0, hz - Math.round(H * 0.18)), shimmerC = air.has('shimmer') ? document.createElement('canvas') : null;
   let gusted = false;
 
   function draw(bg, fg, ms, tick) {
@@ -892,9 +894,14 @@ function safariScene({ film, look, stage, mini, time, land, sky, cloud, W, H, ta
       bg.fillStyle = film.glow.glint[n % 2]; bg.fillRect(R(x), R(y), 2, 1);
     }
     if (air.has('shimmer')) {   // the heat over the sand
-      for (let y = Math.max(0, hz - Math.round(H * 0.18)); y < hz + 3; y++) {
+      const rows = hz + 3 - sy0;
+      if (shimmerC.width !== W * Q || shimmerC.height !== rows * Q) { shimmerC.width = W * Q; shimmerC.height = rows * Q; }
+      const sg = shimmerC.getContext('2d');
+      sg.clearRect(0, 0, W * Q, rows * Q);
+      sg.drawImage(bg.canvas, 0, sy0 * Q, W * Q, rows * Q, 0, 0, W * Q, rows * Q);
+      for (let y = sy0; y < hz + 3; y++) {
         const off = R(Math.sin(y * 0.9 + tick * 7) * 0.8);
-        if (off) bg.drawImage(bg.canvas, 0, y * Q, W * Q, Q, off, y, W, 1);
+        if (off) bg.drawImage(shimmerC, 0, (y - sy0) * Q, W * Q, Q, off, y, W, 1);
       }
     }
     for (const s of shafts) {   // light falling out of the glade

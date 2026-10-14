@@ -917,8 +917,9 @@ export const TOWNS = {
 /** The town at the gate of `biomeId`, or null (the Clearing is home; the Depths have none). */
 export const townOf = (biomeId) => TOWNS[biomeId] || null;
 
-/** A town's saved friendship: `done` requests handed in, `got` towards the one up now, `ready` once it's finished. */
-export const townState = (save, id) => ({ done: 0, got: 0, ready: false, ...(save.towns?.[id] || {}) });
+/** A town's saved friendship: `done` requests handed in, `got` towards the one up now, `ready` once it's finished, and
+    its questline's `quest` ({ step, got, picks, lit }, null till its leader greets you; QUESTS below). */
+export const townState = (save, id) => ({ done: 0, got: 0, ready: false, quest: null, ...(save.towns?.[id] || {}) });
 
 /** The request up on the board now: in order, round again once every one is done (a new batch, the same asks). */
 export const currentRequest = (town, st) => town.requests[st.done % town.requests.length];
@@ -937,8 +938,231 @@ export function countRequest(town, st, event, amount, ctx = {}) {
 /** Hand the finished request in: friendship up, the next request on the board. */
 export const handIn = (st) => (st.ready ? { ...st, done: st.done + 1, got: 0, ready: false } : st);
 
-/** Whether a town's Waystone is mended (friendship enough). */
-export const mended = (st) => st.done >= MEND_AT;
+/** Whether a town's Waystone is mended: its questline's shard put back (`quest.lit`), or, on a save from before the
+    questlines, friendship enough. */
+export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT;
+
+/* ---------- the questlines (docs/roadmap.md's Towns step 6, session 1, 2026-10-14; the user's idea and plan) ----------
+   A town is quiet till one of its Gym Leaders is beaten at the biome's end; the next time you pass through, that leader
+   slides in to greet you (greet: the gym's slide-in, js/gym.js's gymTalk()) and tells you what broke the Waystone, and
+   the board opens on the town's questline. Its steps, one at a time, in order:
+     track   Do: count a missions event (track() in js/missions.js) in the town's biome, `n` times
+     gather  Find: hand over `n` of a material from the Satchel (js/data/satchel.js; they drop from session 2)
+     craft   Make: bring a key item made at Kurt's Workshop (session 3)
+     shard   the town's Waystone Shard, from the marked Alpha on its map (session 4); handing it in lights the stone
+   A step finished is handed in at the board, to the leader `by` (their `thanks`, sliding in), paying QUEST_COINS; a step
+   may hand you a key item (`gives`) or ask you to pick (`pick`: John's festival). The last step is always the shard.
+   Then the board rotates the town's small coin requests (`requests`). Story under it all: the shards are Crystal Depths
+   crystal, cracked when the Sealed Gate was shut. Nothing in a questline gives power in a run. */
+
+/** What handing in a quest step pays, in PokéCoins (Coin Finder applies). */
+export const QUEST_COINS = 50;
+
+const track = (id, by, text, on, n, thanks, more) => ({ id, kind: 'track', by, text, on, n, thanks, ...more });
+const gather = (id, by, text, item, n, thanks, more) => ({ id, kind: 'gather', by, text, item, n, thanks, ...more });
+const craft = (id, by, text, key, thanks, more) => ({ id, kind: 'craft', by, text, key, n: 1, thanks, ...more });
+const shard = (biome, by, text, thanks) => ({ id: `${biome}-shard`, kind: 'shard', by, text, key: `shard-${biome}`, n: 1, thanks });
+
+export const QUESTS = {
+  shrine: {
+    story: 'The lanterns won\'t stay lit, spirits roam after dark, and John can\'t pick the festival.',
+    greet: {
+      john: [
+        'Hey! You\'re the one who beat me. Okay. Good. I need someone decisive.',
+        'See the Waystone in the plaza? Cracked straight through. It happened the night the Sealed Gate shut. I heard it go.',
+        'Since then the lanterns won\'t stay lit. Spirits wander the avenue after dark. Jahmes has started going to bed at TEN.',
+        'And the autumn festival is coming, and I have to pick which one we hold. I have been picking for three weeks.',
+        'Start with the lanterns? Bring me Lantern Wicks from the Shrine. I\'ll put the request on the board.',
+      ],
+      jahmes: [
+        'YOOO! The champ! Okay, okay, listen. LISTEN. The village is in TROUBLE.',
+        'The Waystone cracked the night the Sealed Gate shut. Since then? Lanterns go out. Spirits come out. I go to bed EARLIER.',
+        'It\'s not even eleven and I\'m in bed. Do you know what that does to a man?! Nothing good!',
+        'John\'s supposed to sort the festival. He can\'t pick one. Classic John.',
+        'Bring Lantern Wicks from the Shrine. Wicks! Light! Then we fix the rest. It\'s on the board!',
+      ],
+    },
+    steps: [
+      gather('sh-wicks', 'jahmes', 'Bring {n} Lantern Wicks from the Shrine', 'wick', 6,
+        ['LANTERN WICKS! Look at them! I\'m so hyped I could... I\'m going to bed. It\'s 10:58.',
+          'John\'s threading them in now. Next: the spirits. They come out after dark. Go calm them down for me.']),
+      track('sh-spirits', 'john', 'Calm the spirits: explore {n} ❓ rooms in the Shrine', 'event', 3,
+        ['The avenue was quiet last night. Quiet in a good way. Thank you.',
+          'So the festival\'s on. The {pick}. You picked it, I didn\'t have to. I\'d have picked that one too. Probably.',
+          'Now the lantern ring round the Waystone needs relighting, and plain lanterns won\'t hold. Kurt in the Clearing makes festival ones.'],
+        { pick: { ask: 'Pick John\'s festival', options: [
+          { id: 'lantern', label: 'Lantern Festival', text: 'A thousand paper lanterns down the avenue, set floating on the koi pond at midnight.' },
+          { id: 'moon', label: 'Moon Viewing', text: 'Dumplings, pampas grass and the harvest moon over the torii.' },
+          { id: 'fireworks', label: 'Fireworks Night', text: 'Fireworks off the Shrine\'s stair, food stalls and yukata till late.' },
+        ] } }),
+      craft('sh-lanterns', 'john', 'Bring Festival Lanterns from Kurt\'s Workshop to relight the ring', 'festival-lanterns',
+        ['They\'re perfect. Load-bearing, even. I checked.', 'The lantern ring round the Waystone is lit again. Look at that. Now, the stone itself...']),
+      shard('shrine', 'jahmes', 'Bring back Lantern Village\'s Waystone Shard from the Shrine', [
+        'THE SHARD! You found it! I\'m not even tired! ...I\'m a little tired.',
+        'Put it in. Go on. Together. One, two... YOOOO!']),
+    ],
+  },
+  wastes: {
+    story: 'The springs went cold, Shaun\'s comms tower is down, and Clarence wants a reopening show.',
+    greet: {
+      clarence: [
+        'Oh, it\'s you. The one who beat me. Fine. I don\'t hold grudges. I hold POSES.',
+        'You see that Waystone on the island? Cracked the night the Sealed Gate shut. The whole mountain shuddered.',
+        'And the springs went cold. COLD. Do you know what cold water does to a performer?',
+        'Shaun\'s tower went down too, so no stream, no show. The boys are lost without me.',
+        'Bring me Magma Ore from the Wastes. We\'ll heat the springs. Then we talk about a reopening.',
+      ],
+      shaun: [
+        'Oh. You. Your last fight against me was fine. Your positioning wasn\'t.',
+        'The Waystone cracked the night the Sealed Gate shut. My tower went down the same night. Not a coincidence.',
+        'No comms, no stream, no Clarence show. The boys went 0 and 5 last week. I\'ve filed a ticket.',
+        'First the springs, though. Clarence won\'t stop talking about the springs. Bring Magma Ore from the Wastes.',
+      ],
+    },
+    steps: [
+      gather('wa-ore', 'clarence', 'Bring {n} Magma Ore from the Wastes to warm the springs', 'magma-ore', 5,
+        ['Ohhh. Ohhh, that\'s the stuff. The springs are steaming again.', 'Skin: saved. Show: next. But Shaun needs his tower first.']),
+      craft('wa-relay', 'shaun', 'Bring a Comms Relay from Kurt\'s Workshop for Shaun\'s tower', 'comms-relay',
+        ['Hm. You wired this wrong. ...It works, though. Ticket closed.', 'Stream\'s back up. Clarence is already "warming up". You\'ve been warned.']),
+      craft('wa-costume', 'clarence', 'Bring a Sequin Costume from Kurt\'s Workshop for the reopening show', 'sequin-costume',
+        ['Sequins. A cape. You understand me.', 'Reopening show at nine. You\'re invited. The Waystone, though... it still won\'t hum.']),
+      shard('wastes', 'shaun', 'Bring back Cinder Springs\' Waystone Shard from the Wastes', [
+        'That\'s the shard. Hand it here. I\'ll seat it. Carefully. Unlike your plays.', 'And... there. Connection established.']),
+    ],
+  },
+  ruins: {
+    story: 'The stilt houses are sinking, and Pat\'s love letters are adrift across the lagoon.',
+    greet: {
+      pat: [
+        '♪ ...She was mine... ♪ Oh! You. The one who beat me. Hi.',
+        'See the Waystone on the island? Cracked the night the Sealed Gate shut. The tide\'s been wrong since.',
+        'Kayl\'s houses are sinking. And my letters... I may have put some letters in bottles. A few. Several.',
+        'They\'re out across the Sunken Ruins now. Could you fish them back? Don\'t read them.',
+      ],
+      kayl: [
+        'Oh! You\'re the one who beat Granbull. Hi! Sorry. Everything here is on fire. Metaphorically. It\'s very wet.',
+        'The Waystone cracked the night the Sealed Gate shut, and since then the lagoon\'s been rising. My stilt houses are sinking.',
+        'Every single one is technically my problem. Every. Single. One.',
+        'And Pat\'s been throwing love letters into the sea. In bottles. Can you fish them out of the Ruins? He\'s distracting the tenants.',
+      ],
+    },
+    steps: [
+      gather('ru-bottles', 'pat', 'Fish {n} of Pat\'s Message Bottles out of the Sunken Ruins', 'bottle', 3,
+        ['My letters! You didn\'t read them. ...You read them.', 'Okay. This one\'s the real one. Take it. You\'ll know who it\'s for when you get there.'],
+        { gives: 'pats-letter' }),
+      craft('ru-pier', 'kayl', 'Bring Pier Supports from Kurt\'s Workshop for Kayl\'s houses', 'pier-supports',
+        ['These are PERFECT. Tarred! Banded! Reya, look! ...She doesn\'t care.', 'The houses stopped sinking. Lease renewals can resume. Wonderful. Horrible.']),
+      track('ru-letter', 'pat', 'Carry Pat\'s letter through the Sunken Ruins: beat its boss', 'boss', 1,
+        ['You delivered it? To the end of the Ruins? And...?', '...They said they\'d think about it. THINK ABOUT IT! ♪ Like a tall glass of lemonade... ♪']),
+      shard('ruins', 'kayl', 'Bring back Driftwood Landing\'s Waystone Shard from the Sunken Ruins', [
+        'The shard! Oh, it\'s beautiful. It\'s the colour of the lagoon at night.', 'Let\'s put it back. Spooky, OFF the Waystone.']),
+    ],
+  },
+  thornwood: {
+    story: 'Something haunts the ruined conservatory. Phil hunts it; Ricky films it all night.',
+    greet: {
+      phil: [
+        'PHIL: You. You beat me. And JONA. She\'s still annoyed about it.',
+        'PHIL: The Waystone on the Great Tree cracked the night the Sealed Gate shut. Something came up out of the crack.',
+        'PHIL: It lives in the Withered Nursery now. I\'ve been hunting it. I need a Spirit Lantern to see it properly.',
+        'JONA: He needs a nightlight. Pathetic.',
+        'PHIL: Kurt in the Clearing makes them. Bring me one. Please.',
+      ],
+      ricky: [
+        '*yawns* Oh hey. You beat me. I was up till three, so it doesn\'t count. It counts.',
+        'The Waystone cracked when the Sealed Gate shut. Since then something lives in the old Nursery. Phil\'s hunting it.',
+        'I\'m filming it. All night. For content. The boys think it\'s fake. It is NOT fake.',
+        'Phil needs a Spirit Lantern from Kurt\'s Workshop to see it. I need sleep. One of us is getting what they need.',
+      ],
+    },
+    steps: [
+      craft('th-lantern', 'phil', 'Bring a Spirit Lantern from Kurt\'s Workshop for Phil', 'spirit-lantern',
+        ['PHIL: It\'s bright. It\'s so bright. I can see it now. It can see me too.', 'PHIL: It\'s out in Thornwood. Big. Angry. Go and beat it before JONA makes friends with it.']),
+      track('th-ghost', 'ricky', 'Hunt the Nursery\'s ghost: beat an Alpha in Thornwood', 'alpha', 1,
+        ['I got it ALL on camera. 4K. The boys can\'t say it\'s fake now.', '...They said it\'s fake. Anyway, the Nursery\'s safe. Phil wants to plant it again.']),
+      gather('th-seeds', 'phil', 'Bring {n} Thornwood Seeds to plant the Withered Nursery again', 'seeds', 6,
+        ['PHIL: Green. Something green, up here. I forgot what it looked like.', 'JONA: Disgusting. Alive things.', 'PHIL: Now, the Waystone.']),
+      shard('thornwood', 'ricky', 'Bring back Highbough\'s Waystone Shard from Thornwood', [
+        'The shard? Nice. I\'ll film it going in. For the VOD.', 'Three, two... it\'s glowing. It\'s actually glowing. I\'m awake now.']),
+    ],
+  },
+  savanna: {
+    story: 'The watering hole is drying, a caravan was robbed, and Machew\'s katana is broken.',
+    greet: {
+      machew: [
+        '...You. The one who bested me. The shadows remember.',
+        'The Waystone in the market cracked the night the Sealed Gate shut. The watering hole has been shrinking since.',
+        'Then bandits took a caravan\'s crates. I gave chase. My blade broke on the first strike.',
+        'It was plastic. That is not the point. Find the crates out in the Savanna. I will meditate on my failure.',
+      ],
+      jerome: [
+        'Oh hey, you beat me. Cool. Did you know GTA 6 has a heist mode? Unconfirmed.',
+        'The Waystone cracked the night the Sealed Gate shut. Somebody on Reddit said that. Also I was there.',
+        'A caravan got robbed. Crates, gone. Machew broke his sword chasing them. Plastic. I told him.',
+        'Find the crates out in the Savanna. Then we do a heist to get the rest back. I\'ve been planning one. For years. In my head.',
+      ],
+    },
+    steps: [
+      track('sv-crates', 'machew', 'Track the stolen crates: explore {n} ❓ rooms in the Savanna', 'event', 3,
+        ['The crates. You found their trail. The shadows guided you.', 'The rest are in the bandits\' camp. Jerome has... a plan.']),
+      track('sv-heist', 'jerome', 'Jerome\'s heist: win {n} fights in the Savanna in 4 turns or fewer', 'quick', 2,
+        ['IN AND OUT. That was a real heist. Fifty-fifty split. You get fifty, I get fifty.', 'Machew\'s still sad about his sword. Kurt can reforge it. With ore from Cinder Springs, he says.']),
+      craft('sv-katana', 'machew', 'Bring Machew\'s Katana, reforged at Kurt\'s Workshop with Cinder Springs ore', 'katana',
+        ['...It is real now. It is heavy. I am afraid of it.', 'I will carry it anyway. The path demands it. Now, the Waystone.']),
+      shard('savanna', 'jerome', 'Bring back Sunwell Bazaar\'s Waystone Shard from the Savanna', [
+        'The shard! That\'s worth like, at least two GTA 6s.', 'Okay, okay, it\'s going in. Not selling it. Fine.']),
+    ],
+  },
+};
+
+/** A town's questline, or null. */
+export const questOf = (town) => QUESTS[town.id] || null;
+
+/** The leader who greets you and opens the questline: the first of the town's leaders you've beaten, or null. */
+export const greeterOf = (town, save) => Object.keys(town.leaders).find(id => (save.gym?.[id] || 0) > 0) ?? null;
+
+/** The questline opened (their greeting heard). */
+export const openQuest = (st) => (st.quest ? st : { ...st, quest: { step: 0, got: 0, picks: {} } });
+
+/** The step up now, or null (not open, or every step done). */
+export const questStep = (town, st) => (st.quest ? questOf(town)?.steps[st.quest.step] ?? null : null);
+
+/** Every step handed in, the shard too. */
+export const questDone = (town, st) => !!st.quest && st.quest.step >= (questOf(town)?.steps.length ?? 0);
+
+/** Steps handed in and steps in all, for the Clearing's Waystone and the Satchel. */
+export const questProgress = (town, st) => [Math.min(st.quest?.step ?? 0, questOf(town)?.steps.length ?? 0), questOf(town)?.steps.length ?? 0];
+
+export const stepText = (step) => step.text.replace('{n}', step.n);
+
+/** How much of a step you have: a track step's count, a gather step's material, a craft or shard step's key item. */
+export function stepHave(step, st, sat) {
+  if (step.kind === 'track') return Math.min(step.n, st.quest?.got || 0);
+  if (step.kind === 'gather') return Math.min(step.n, sat.mats[step.item] || 0);
+  return sat.keys.includes(step.key) ? 1 : 0;
+}
+
+export const stepReady = (step, st, sat) => stepHave(step, st, sat) >= step.n;
+
+/** Count play into a town: its questline's track step while the questline runs, its coin requests once it's done,
+    nothing while the town is quiet. Returns the new state and whether something just finished. */
+export function countTown(town, st, event, amount, ctx = {}) {
+  if (!st.quest) return { st, finished: false };
+  if (questDone(town, st)) return countRequest(town, st, event, amount, ctx);
+  const step = questStep(town, st);
+  if (step.kind !== 'track' || step.on !== event || ctx.biome !== town.biome || !(amount > 0) || st.quest.got >= step.n) return { st, finished: false };
+  const got = Math.min(step.n, st.quest.got + amount);
+  return { st: { ...st, quest: { ...st.quest, got } }, finished: got >= step.n };
+}
+
+/** Hand the step up now in: the next one up, the shard lighting the stone, a pick remembered. The Satchel's side (the
+    materials taken, a key item given) is js/towns.js's. */
+export function handInStep(town, st, pick = null) {
+  const step = questStep(town, st);
+  if (!step) return st;
+  const picks = pick && step.pick ? { ...st.quest.picks, [step.id]: pick } : st.quest.picks;
+  return { ...st, quest: { ...st.quest, step: st.quest.step + 1, got: 0, picks, ...(step.kind === 'shard' ? { lit: true } : {}) } };
+}
 
 /* ---------- the Waystone ring and visiting from home (session 2, 2026-10-14) ---------- */
 

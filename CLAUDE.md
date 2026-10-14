@@ -154,7 +154,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
-  `?lockdepths`, `?gymwins=N`, `?onboard` (new-player setup), `?mail` (sample letters).
+  `?lockdepths`, `?gymwins=N`, `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?phone` (a phone frame on a wide screen), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
@@ -165,7 +165,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?mall=furniture|2f|corner`
   (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
-  `?town=<biome>` (`&home=`, `&aerial` the whole town from above), `?nietos`, `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's Animal Crossing bend at another strength; 3 by default, 0 flat).
+  `?town=<biome>` (`&home=`, `&aerial` the whole town from above), `?nietos`, `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
 
 ## Reference
 

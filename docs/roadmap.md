@@ -55,7 +55,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`, once every town has the Clearing's curve (below, the user's ask, 2026-10-14).
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -191,21 +191,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (Jerome's at the top by the windpump, Machew's out on the east edge), with `s` name boards; their homes are now
    "Machew's / Jerome's Kasbah". Tests pass, no console errors; the walk-in-and-out leak loop wasn't run (the pane draws no
    frames hidden), so the user should walk in and out of a few houses on their phone. Every town's clean-up is done.
-   **Next: the Clearing's curve in every town** (below).
-   **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
-   crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
-   can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it
-   (`js/hub-3d.js`, near `CURVE_AT`): `bend()` / `bendFine()` / `unbend()` from `js/hd2d.js`, one shared uniform
-   `{ k, z }` (k 0.03 = `CURVE_AT` 3, `?curve=N` to try another, off under `?aerial`), `z` set to the camera's focus
-   every frame, `bendAll()` each frame catching anything added since, billboards marked `userData.upright` so they drop
-   whole, and taps raycast along the bent view in pieces (`tapRays()`), since the bend only moves what's drawn. For the
-   towns: bend only `kind: 'town'` rooms (house insides stay flat, as in Animal Crossing), on `B.group` / `B.who`
-   materials so other rooms sharing `js/event-3d.js`'s renderer stay straight, and route its tap handler through the
-   same piecewise rays. Check every town (`?town=shrine|wastes|ruins|thornwood|savanna&towns`): doors, folk and the
-   Waystone still tap right, Highbough's drop and the lagoon's water bend with the decks, and no new per-frame
-   allocation (the handoff's GPU rules). Prompt: "Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's
-   Towns and Waystones entry. Give every gateway town the Clearing's Animal Crossing curve, as the roadmap's 'Clearing's
-   curve in every town' item describes."
+   **Done (2026-10-14): the Clearing's curve in every town** (the user's ask: "the animal crossing log style thing
+   applied to ALL towns"): all five towns roll away at the Clearing's strength (`CURVE`, `?curve=N`, flat under
+   `?aerial`), house insides flat; taps go through bent pieces of the ray (`tapRays()` in `js/event-3d.js`), long shapes
+   are cut so they bend (`fineTris()`). Archived in `docs/roadmap-done.md`, details in `docs/reference/towns.md`.
+   **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
+   `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
@@ -317,6 +308,20 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `shard`), the leader-beaten unlock and slide-in greeting, the Satchel, tests; (2) materials: drops, sparkling nodes;
      (3) Kurt's Workshop and its recipes; (4) the shard: the marked Alpha node, the pickup, the mending scene, leaders
      coming home; (5) the dialogue, a town a session if it runs long. Towns stay off (`TOWNS_LIVE`) till the user says.
+   - **Session 1 done (2026-10-14): the quest engine.** `QUESTS` in `js/data/towns.js` (a story, a `greet` per leader, 4
+     steps a town: `track` / `gather` / `craft` / `shard`, each with its leader `by` and their `thanks`; a step may
+     `gives` a key item, e.g. Pat's Letter, or `pick`, John's festival), pure helpers (`greeterOf`, `openQuest`,
+     `questStep`, `countTown`, `handInStep`, `questProgress`), saved as `save.towns[id].quest` (`{ step, got, picks, lit }`);
+     `mended()` is the shard put back (`quest.lit`) or an old save's 5 requests. In the town (`townRoom()` in `js/run.js`):
+     quiet till a leader is beaten, then on the next pass that leader slides in (`gymTalk()`) with the Waystone's story and
+     the board opens; a step handed in slides its leader in with their thanks, pays `QUEST_COINS` (50); once the shard is
+     in, the board rotates the old coin requests. The Clearing's Waystone menu shows quest steps (n/4). **The Satchel**:
+     `js/data/satchel.js` (`MATERIALS`, 12, 2-3 a biome; `KEY_ITEMS`, the 5 shards plus 7 quest items; `save.satchel`),
+     `js/satchel.js` (save side), `js/satcheldex.js` (the app: Key Items, Materials, Quests; "!" on new things), on the
+     Collection only while the towns are on. `?satchel` lends every material and key item for a page load (and on a
+     `?town=` peek makes every step ready, to walk a questline: `?town=shrine&gymwins=1&satchel`). Tests:
+     `tests/quests.test.mjs`. Materials can't be found yet (session 2), crafts can't be made (session 3), shards don't
+     drop (session 4); the shard's hand-in only tells the stone mending for now. **Next: session 2, materials.**
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
@@ -659,6 +664,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
+  2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
   `js/event-3d.js`: a dark stone wall with a colonnade in place of the woods, the leader's first boss as twin stone colossi
   on tall plinths flanking the arch (`stoneBoard()`, upright), the arch's lintel GYM LEADER over their name

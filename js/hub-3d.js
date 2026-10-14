@@ -29,7 +29,7 @@ import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, MEND_AT, townState, townsOpen, nietosHome } from './data/towns.js';
+import { RING, TOWNS, townState, townsOpen, nietosHome, mended, questProgress } from './data/towns.js';
 import { gymWins } from './data/gym.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
@@ -2019,7 +2019,7 @@ function makePlaces() {
   });
   // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
   // mended one travelled to from there
-  const lit = RING.map(t => townsOpen() && townState(save, t.id).done >= MEND_AT);
+  const lit = RING.map(t => townsOpen() && mended(townState(save, t.id)));
   list.push({
     id: 'waystone', waystone: true, name: 'Waystone', step: SPAWN, tiles: [[START.x, START.y]], tag: [START.x, 3, START.y], open: true,
     line: lit.some(Boolean) ? 'The Clearing\'s Waystone, humming. Its crystals light the way to every town you\'ve mended.' : 'The Clearing\'s Waystone. Five dull crystals circle its tip, waiting on the towns out on the roads.',
@@ -2871,7 +2871,7 @@ function showWaystone(p) {
   const list = document.createElement('div');
   list.className = 'way-list';
   for (const t of RING) {
-    const town = TOWNS[t.id], st = townState(save, t.id), lit = st.done >= MEND_AT, known = lit || st.met;
+    const town = TOWNS[t.id], st = townState(save, t.id), lit = mended(st), known = lit || st.met;
     const row = document.createElement('div');
     row.className = `way-row ${lit ? 'lit' : known ? 'dark' : 'unmet'}`;
     row.style.setProperty('--gem', t.glow);
@@ -2890,8 +2890,9 @@ function showWaystone(p) {
     } else {
       const n = document.createElement('span');
       n.className = 'way-count';
-      n.textContent = known ? `${Math.min(st.done, MEND_AT)}/${MEND_AT}` : '';
-      if (known) n.title = `${st.done} of ${MEND_AT} requests handed in at ${town.name}'s board mends its Waystone.`;
+      const [step, of] = questProgress(town, st);
+      n.textContent = st.quest ? `${step}/${of}` : '';
+      if (st.quest) n.title = `${step} of ${of} steps of ${town.name}'s quest done: the last puts back its Waystone's shard.`;
       row.append(n);
     }
     list.append(row);
@@ -3306,9 +3307,9 @@ function fitCamera(w, h) {
 const AERIAL = new URLSearchParams(location.search).has('aerial');
 
 // the ground rolls away like Animal Crossing's (bend() in js/hd2d.js), at the strength the user picked from 1 to 3
-// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat
+// (2026-10-14: the strongest); ?curve=N tries another, ?curve=0 lays it flat. Every town rolls the same (js/event-3d.js).
 const CURVE_AT = 3;
-const CURVE = (() => {
+export const CURVE = (() => {
   const q = new URLSearchParams(location.search);
   if (AERIAL) return 0;
   const n = parseFloat(q.get('curve'));

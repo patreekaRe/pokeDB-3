@@ -53,11 +53,12 @@ function kindOf(spot) {
     stage (where the bubble goes), say(fr, ms), partner() (your walker), keeper() (the shop's keeper, its mon), calm(),
     oneWalker (only one walks at a time, the rest at their games or standing, and none stops on or beside the doormat:
     the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts), or `walkers` (that many at most: the
-    towns' 2, the user's ask, 2026-10-14, the rest stationed). */
+    towns' 2, the user's ask, 2026-10-14, the rest stationed), `drawn(v)` (where a point is drawn, a rolling town's). */
 export function makeCrowd(H) {
   const { THREE } = H;
   const LIST = H.cast ?? PATRONS, LINES = H.shared ?? SHARED, TALKS = H.chats ?? CHATS, SIZE = H.size ?? CROWD;
   const CAP = H.walkers ?? (H.oneWalker ? 1 : 0);   // 0: any number walk at once
+  const shown = H.drawn ?? ((v) => v);
   const SEED = H.seed ?? 'crowd', SWAPS = H.swap ?? SWAP, WANTS = H.wants ?? ['slots', 'slots', 'arcade', 'cards'];
   const stations = H.stations ?? H.spots.map(s => ({ spot: s, kind: kindOf(s) })).filter(s => s.kind);
   const counter = H.spots.find(s => s.kind === 'keeper')?.step;
@@ -249,13 +250,13 @@ export function makeCrowd(H) {
   }
 
   function onScreen(s) {
-    const v = s.at().project(H.camera);
+    const v = shown(s.at()).project(H.camera);
     return v.z < 1 && Math.abs(v.x) < 0.85 && v.y < 0.85 && v.y > -0.55;
   }
 
   /** Pins the bubble over its speaker's head. */
   function place() {
-    const r = H.view.getBoundingClientRect(), o = H.stage.getBoundingClientRect(), v = bubble.at().project(H.camera);
+    const r = H.view.getBoundingClientRect(), o = H.stage.getBoundingClientRect(), v = shown(bubble.at()).project(H.camera);
     const x = r.left - o.left + (v.x + 1) / 2 * r.width, half = el.offsetWidth / 2 + 8;
     const kept = Math.max(half, Math.min(o.width - half, x));   // kept on the screen, its tail still pointing at the head
     el.style.left = `${kept}px`;

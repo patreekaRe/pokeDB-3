@@ -179,21 +179,28 @@ function fineCtx(g, Q, W, H) {
   g.imageSmoothingEnabled = false;
   const lo = layer(W, H).getContext('2d');
   const snap = (v) => Math.round(v * Q) / Q;
+  // only the path's box is copied up: a whole-canvas copy per glow cost a phone most of a frame (the Shrine's ~30 a frame)
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const grow = (x, y, rx = 0, ry = rx) => { x0 = Math.min(x0, x - rx); y0 = Math.min(y0, y - ry); x1 = Math.max(x1, x + rx); y1 = Math.max(y1, y + ry); };
   const own = {
     snap,
     drawImage: (img, ...a) => g.drawImage(img, ...(a.length === 8 ? [...a.slice(0, 4), ...a.slice(4).map(snap)] : a.map(snap))),
     fillRect: (x, y, w, h) => g.fillRect(snap(x), snap(y), snap(w), snap(h)),
-    beginPath: () => lo.beginPath(),
+    beginPath: () => { x0 = y0 = Infinity; x1 = y1 = -Infinity; lo.beginPath(); },
     closePath: () => lo.closePath(),
-    moveTo: (x, y) => lo.moveTo(x, y),
-    lineTo: (x, y) => lo.lineTo(x, y),
-    ellipse: (...a) => lo.ellipse(...a),
-    arc: (...a) => lo.arc(...a),
+    moveTo: (x, y) => { grow(x, y); lo.moveTo(x, y); },
+    lineTo: (x, y) => { grow(x, y); lo.lineTo(x, y); },
+    ellipse: (x, y, rx, ry, ...a) => { const r = Math.max(rx, ry); grow(x, y, r, r); lo.ellipse(x, y, rx, ry, ...a); },
+    arc: (x, y, r, ...a) => { grow(x, y, r); lo.arc(x, y, r, ...a); },
     fill: () => {
       lo.fillStyle = g.fillStyle;
       lo.fill();
-      g.drawImage(lo.canvas, 0, 0, W, H);
-      lo.clearRect(0, 0, W, H);
+      const bx = Math.max(0, Math.floor(x0) - 1), by = Math.max(0, Math.floor(y0) - 1);
+      const bw = Math.min(W, Math.ceil(x1) + 1) - bx, bh = Math.min(H, Math.ceil(y1) + 1) - by;
+      if (bw > 0 && bh > 0) {
+        g.drawImage(lo.canvas, bx, by, bw, bh, bx, by, bw, bh);
+        lo.clearRect(bx, by, bw, bh);
+      }
     },
   };
   return new Proxy(g, {

@@ -1647,3 +1647,11 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .tc-name-input { min-width: 0; width: 100%; max-width: 12em; padding: 4px 6px; border: 2px solid #1f3a14; border-radius: 4px; background: #c8e0a0; color: #1f3a14; font: inherit; text-transform: uppercase; }
 .tc-name-input:focus { outline: none; box-shadow: 0 0 0 2px var(--tc3); }
 .tc-name-ok { flex: none; padding: 4px 8px; border: 0; border-radius: 4px; font: inherit; font-size: 0.8em; color: #fff; background: var(--tc3); cursor: pointer; }
+
+/* the Satchel app (js/satcheldex.js): its key items and materials are glyphs, a silhouette until found */
+.sdx-glyph { line-height: 1; }
+.sdx-glyph.unseen, .bdx-screen.unseen .sdx-glyph:not(.pdx-ghost) { filter: brightness(0) opacity(0.5); }
+.sdx-shadow { filter: brightness(0) opacity(0.55); }
+.sdx-count { background: #2c5a1c; }
+.sdx-steps .sdx-done { color: #2c8a3a; }
+.sdx-steps .sdx-later { color: #8a8a8a; }

@@ -11,9 +11,9 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
-import { fine, texOf, words, hubThree } from './hub-3d.js';
+import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
@@ -8376,8 +8376,8 @@ async function buildHome(figs, { time, town, home }) {
 let folkLayer = null;
 function townCrowd(town) {
   return makeCrowd({
-    THREE, group: R.group, monBoard, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
-    route, free, tileX, tileZ, camera, view, stage: folkLayer,
+    THREE, group: R.group, monBoard: async (...a) => { const m = await monBoard(...a); bendAll(m.group); return m; }, drawMon, dispose, PITCH, spots: [], door: DOOR, cols: COLS, rows: ROWS,
+    route, free, tileX, tileZ, camera, view, stage: folkLayer, drawn,
     say: ({ line, who }) => opts?.onSay?.(who, line), partner: () => walker, keeper: () => null, calm: () => calm,
     cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
@@ -8462,11 +8462,41 @@ function arrived() {
 const canWalk = (e) => !busy && !acting && !frozen && !document.querySelector('.gym-scene') && inRoom() && !document.querySelector('dialog[open]')
   && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
 
+/** The screen's ray through a pointer as straight pieces of the world: one, or in a rolling town many short ones, each put
+    back where it stands unbent, as the bend only moves what is drawn (the Clearing's tapRays()). Made once and reused,
+    as a drag asks on every move. `rays.from` / `rays.n`: the pieces to try, nearest first. */
+let rays = null;
+function tapRays(e) {
+  const STEP = 1.5;
+  rays ??= Object.assign(Array.from({ length: 61 }, () => new THREE.Raycaster()), { at: new THREE.Vector2(), a: new THREE.Vector3(), b: new THREE.Vector3(), hit: new THREE.Vector3(), floor: new THREE.Plane(new THREE.Vector3(0, 1, 0), 0) });
+  const r = view.getBoundingClientRect(), aim = rays[0];
+  aim.setFromCamera(rays.at.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
+  if (!BEND.k.value) { rays.from = 0; rays.n = 1; return rays; }
+  const o = aim.ray.origin, d = aim.ray.direction;
+  for (let i = 1; i < rays.length; i++) {
+    const a = unbend(rays.a.copy(o).addScaledVector(d, (i - 1) * STEP), BEND), b = unbend(rays.b.copy(o).addScaledVector(d, i * STEP), BEND), p = rays[i];
+    p.ray.origin.copy(a); p.ray.direction.subVectors(b, a).normalize(); p.near = 0; p.far = a.distanceTo(b); p.camera = camera;
+  }
+  rays.from = 1; rays.n = rays.length;
+  return rays;
+}
+
+/** What the pointer's pieces hit first, nearest first ([] for nothing). */
+function hitsOf(rs, objects) {
+  for (let i = rs.from; i < rs.n; i++) { const hits = rs[i].intersectObjects(objects, true); if (hits.length) return hits; }
+  return [];
+}
+
+/** Where the pointer's pieces meet the floor (rays.hit), or null. */
+function floorHit(rs) {
+  for (let i = rs.from; i < rs.n; i++) if (rs[i].ray.intersectPlane(rs.floor, rs.hit) && rs.hit.distanceTo(rs[i].ray.origin) <= rs[i].far) return rs.hit;
+  return null;
+}
+
 /** The floor tile under a pointer, or null off the floor. */
 function floorTile(e) {
-  const r = view.getBoundingClientRect(), ray = new THREE.Raycaster(), hit = new THREE.Vector3();
-  ray.setFromCamera(new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1), camera);
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const hit = floorHit(tapRays(e));
+  if (!hit) return null;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
   return t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS ? null : t;
 }
@@ -8484,11 +8514,8 @@ function onTap(e) {
   if (!canWalk(e)) return;
   const sign = signAt(e.clientX, e.clientY);
   if (sign !== null) return tapTo(sign);
-  const r = view.getBoundingClientRect();
-  const v = new THREE.Vector2((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
-  const ray = new THREE.Raycaster();
-  ray.setFromCamera(v, camera);
-  const hits = ray.intersectObjects([R.group, mon.group, ...Object.values(R.who).map(w => w.group)], true);
+  const rs = tapRays(e);
+  const hits = hitsOf(rs, [R.group, mon.group, ...Object.values(R.who).map(w => w.group)]);
   const first = hits[0]?.object;
   if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
   if (R.crowd?.tap(first)) return;   // a townsperson stops to talk
@@ -8501,8 +8528,8 @@ function onTap(e) {
     if (who && R.talks?.has(o.userData.who)) { opts.onTalk?.(o.userData.who); if (!who.npc) playCry(who.id); does(who, who.npc ? 'npc-nod' : 'hop'); return; }   // a town's Gym Leaders and stall keeper chat
     if (who && !who.npc) { playCry(who.id); does(who, 'hop'); return; }
   }
-  const hit = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
+  const hit = floorHit(rs);
+  if (!hit) return;
   const t = { x: Math.round(hit.x + COLS / 2 - 0.5), y: Math.round(hit.z + ROWS / 2 - 0.5) };
   if (!R.exitAt && t.y >= ROWS && Math.abs(t.x - DOOR.x) <= 1) return tapTo('exit');   // the doorstep round the mat
   if (t.x < 0 || t.y < 0 || t.x >= COLS || t.y >= ROWS) return;
@@ -8554,6 +8581,83 @@ function fitShot() {
 
 // ?aerial: a whole town from high above, to see its layout at a glance (the Clearing's has the same)
 const AERIAL = new URLSearchParams(location.search).has('aerial');
+
+/* A town rolls away like the Clearing (the user's ask, 2026-10-14: "the animal crossing log style thing applied to ALL
+   towns"), at the Clearing's strength (CURVE, ?curve=N, flat under ?aerial); a house's inside stays flat, as in Animal
+   Crossing. A town's things are bent once as it's built, the crowd's as they come and your Pokémon's always; the strength
+   is one uniform, 0 in every other room, so your Pokémon and anything a town shares with another room draw straight
+   there. `z` follows the shot's focus every frame. */
+const BEND = { k: { value: 0 }, z: { value: 0 } };
+
+/** bendFine() cuts only boxes and planes. A rounded box's top, a gable or a pond's rim is still a few long triangles,
+    and the bend draws straight between their corners, so a manor's plinth sagged a fifth of a tile under its own walls.
+    So any other shape's triangles are halved along their longest side till none is two tiles long (a fifth of that
+    sag), once, every copy of the shape sharing the cut; one that would need too many is left as it is. */
+const cut = new WeakMap();
+function fineTris(o) {
+  const g = o.geometry;
+  if (o.material.userData?.upright || !g?.attributes.position || g.morphAttributes.position) return;
+  if (cut.has(g)) { o.geometry = cut.get(g); return; }
+  if (Object.values(g.attributes).some(a => a.isInterleavedBufferAttribute)) { cut.set(g, g); return; }
+  o.updateWorldMatrix(true, false);
+  const sc = o.getWorldScale(new THREE.Vector3());
+  let grow = Math.max(sc.x, sc.y, sc.z);
+  if (o.isInstancedMesh) {   // a railing's ropes are one shape stretched along each run: cut for the longest
+    const m = new THREE.Matrix4(), e = m.elements;
+    let most = 0;
+    for (let i = 0; i < o.count; i++) { o.getMatrixAt(i, m); most = Math.max(most, Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])); }
+    grow *= most || 1;
+  }
+  const lim = (2.2 / grow) ** 2, budget = o.isInstancedMesh ? Math.max(200, 60000 / Math.max(1, o.count)) : 20000;   // lim: past a fine box's cell, corner to corner
+  const p0 = g.attributes.position.array, ix = g.index?.array, corner = (t) => (ix ? ix[t] : t) * 3;
+  const d2 = (i, j) => (p0[i] - p0[j]) ** 2 + (p0[i + 1] - p0[j + 1]) ** 2 + (p0[i + 2] - p0[j + 2]) ** 2;
+  let long = false;
+  for (let t = 0, n = ix ? ix.length : p0.length / 3; t + 2 < n && !long; t += 3) { const a = corner(t), b = corner(t + 1), c = corner(t + 2); long = d2(a, b) > lim || d2(b, c) > lim || d2(c, a) > lim; }
+  if (!long) { cut.set(g, g); return; }
+  const src = g.index ? g.toNonIndexed() : g, names = Object.keys(src.attributes), attrs = names.map(n => src.attributes[n]);
+  const pos = src.attributes.position, len2 = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+  const vert = (i) => { const v = [pos.getX(i), pos.getY(i), pos.getZ(i)]; for (const a of attrs) for (let c = 0; c < a.itemSize; c++) v.push(a.array[i * a.itemSize + c]); return v; };
+  const nor = names.indexOf('normal'), off = []; let at = 3;
+  for (const a of attrs) { off.push(at); at += a.itemSize; }
+  const mid = (a, b) => { const m = a.map((x, i) => (x + b[i]) / 2); if (nor >= 0) { const p = off[nor], l = Math.hypot(m[p], m[p + 1], m[p + 2]) || 1; m[p] /= l; m[p + 1] /= l; m[p + 2] /= l; } return m; };
+  const out = attrs.map(() => []), groups = [], ranges = src.groups.length ? src.groups : [{ start: 0, count: pos.count, materialIndex: 0 }];
+  let tris = 0;
+  for (const r of ranges) {
+    const from = tris;
+    for (let i = r.start; i + 2 < Math.min(pos.count, r.start + r.count); i += 3) {
+      const stack = [[vert(i), vert(i + 1), vert(i + 2)]];
+      while (stack.length) {
+        let [a, b, c] = stack.pop();
+        const ab = len2(a, b), bc = len2(b, c), ca = len2(c, a);
+        if (Math.max(ab, bc, ca) > lim && tris < budget) {
+          if (bc >= ab && bc >= ca) [a, b, c] = [b, c, a]; else if (ca >= ab) [a, b, c] = [c, a, b];
+          const m = mid(a, b);
+          stack.push([a, m, c], [m, b, c]);
+          continue;
+        }
+        for (const v of [a, b, c]) attrs.forEach((x, k) => { for (let q = 0; q < x.itemSize; q++) out[k].push(v[off[k] + q]); });
+        tris++;
+      }
+    }
+    groups.push([from * 3, (tris - from) * 3, r.materialIndex ?? 0]);
+  }
+  if (tris >= budget) { cut.set(g, g); return; }
+  const made = new THREE.BufferGeometry();
+  attrs.forEach((x, k) => made.setAttribute(names[k], new THREE.BufferAttribute(new x.array.constructor(out[k]), x.itemSize, x.normalized)));
+  if (src.groups.length) for (const [s, n, m] of groups) made.addGroup(s, n, m);
+  made.computeBoundingBox(); made.computeBoundingSphere();
+  cut.set(g, made); cut.set(made, made);
+  o.geometry = made;
+}
+
+const bendOne = (o) => {
+  if (!o.material) return;
+  if (o.isMesh) { bendFine(o); fineTris(o); }
+  if (Array.isArray(o.material)) for (const m of o.material) bend(m, BEND); else bend(o.material, BEND);
+};
+const bendAll = (o) => { if (CURVE) o.traverse(bendOne); return o; };
+/** A point in the world where a town draws it, dropped with the ground round it. */
+const drawn = (v) => { v.y -= BEND.k.value * (v.z - BEND.z.value) ** 2; return v; };
 
 function aerialShot() {
   const d = Math.max(ROWS / 2 + 2, (COLS / 2 + 2) / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
@@ -8626,8 +8730,9 @@ function frame(now) {
   tickAct(now);
   if (!calm && mat) mat.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
+  if (Number.isFinite(camZ)) BEND.z.value = camZ;
   placeSigns();
-  post.draw(scene, camera, (new THREE.Vector3(walker.x, 0.6, walker.z).project(camera).y + 1) / 2);
+  post.draw(scene, camera, (drawn(new THREE.Vector3(walker.x, 0.6, walker.z)).project(camera).y + 1) / 2);
   raf = requestAnimationFrame(frame);
 }
 
@@ -8648,7 +8753,7 @@ function placeSigns() {
   R.spots.forEach((spot, i) => {
     const b = btns[i], at = R.anchors[i];
     if (!b || !at) return;
-    const p = at.clone().project(camera), x = Math.round(r.left + (p.x + 1) / 2 * r.width), y = Math.round(r.top + (1 - p.y) / 2 * r.height);
+    const p = drawn(at.clone()).project(camera), x = Math.round(r.left + (p.x + 1) / 2 * r.width), y = Math.round(r.top + (1 - p.y) / 2 * r.height);
     if (b.dataset.at === `${x},${y}`) return;
     b.dataset.at = `${x},${y}`;
     Object.assign(b.style, { left: `${x}px`, top: `${y}px`, width: '0px', height: '0px' });
@@ -8732,6 +8837,7 @@ function room(kind, figs, at = {}) {
     useSize(b);
     try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
     finally { B = null; if (R) useSize(R); }
+    if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
     restGL(renderer);
     return b;
@@ -8793,6 +8899,8 @@ export async function mountEvent(o) {
     post.final.uniforms.uBloom.value = R.env.bloom;
     mat = R.mat;
   }
+  BEND.k.value = R.kind === 'town' ? CURVE : 0;
+  if (R.kind === 'town') { bendAll(R.group); for (const who of Object.values(R.who)) bendAll(who.group); }   // anything it's grown since it was built
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
   R.who.npc?.setDark?.(!!o.dark);   // a Gym Leader you haven't beaten: their silhouette till they speak
   R.held = false;
@@ -8806,7 +8914,7 @@ export async function mountEvent(o) {
   if (mon?.src !== o.mate.src) {
     if (mon) scene.remove(mon.group);
     mon = await monBoard(o.mate);
-    scene.add(mon.group);
+    scene.add(bendAll(mon.group));
   }
   mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
   if (!showing() || opts !== o) return null;
