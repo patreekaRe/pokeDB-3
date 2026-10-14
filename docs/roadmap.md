@@ -91,7 +91,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    name board made readable (bigger, white on deep blue, `nietosHouse()`).
    Follow-up (same day, the user's drawing): the Clearing grown south to 31 x 26, the plaza and everything south of the
    north ring road a row lower (a longer north avenue), the pond moved down past the ring road onto a low road from the
-   ring road's sides (`POND`, `LOW`), its two lamps taken out. Headless-checked, no errors; waiting on the user's look.
+   ring road's sides (`POND`), its two lamps taken out. Then (the user: the old road was meant to move, not stay) the
+   road the mall and the Nietos' house faced taken out and both moved down three rows, their doorsteps on the low road
+   (`MALL_TILE` [8, 18], `NIETOS_AT` [24, 17]). Headless-checked, no errors; waiting on the user's look.
    **Done (2026-10-14): the Nietos' house a storybook cottage** (the user: "more aesthetic than a stupid bland house"):
    painted clapboard, scalloped shingles, porch, curtains, chimney smoke, picket garden, washing line, pram (`cottageArt()`,
    `NIETOS_YARD`, `mergeStatic()`; docs/reference/hub-base-mall.md). On `main`, waiting on the user's look.
@@ -135,10 +137,20 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    ember lamps), a moat making the Waystone's plaza an island (bridges in from the west and south), crust drifting,
    bubbles, smoke. Two locked houses (a, e; k and n gone), the bathhouse on its own road with its springs out beside it.
    Tests pass, no console errors headless; waiting on the user's playtest.
-   **Next: Driftwood Landing's clean-up** (`?town=ruins`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
-   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Sunken Ruins'
-   Driftwood Landing the way the Clearing, Highbough, Lantern Village and Cinder Springs were (ask me what bothers me
-   about it first, with an aerial link), Kayl's and Pat's homes grand in the Landing's own style." Then Sunwell Bazaar.
+   **Done (2026-10-14): Driftwood Landing's clean-up** (the user: "fix all of that", the map review against the
+   checklist): the ring a square of boardwalk two tiles wide round the temple's island with water between, a pier in on
+   each side, every spoke two wide, the top of the ring a promenade out to the beacon (top left, at the back) and Kayl's;
+   four locked huts not ten (a, p, x, y; g, e, j, m, n, d gone), the aquarium off the jungle, Pat's boat moored north of
+   its spoke (in front of it, it hid you), the rowboat out of the bottom walk, beach props on the front row; a railing
+   and a pale trim along every boardwalk edge over the water, `fade`, name boards (`s` here, `n` being a net;
+   `nameBoards(town, 's')`); Kayl in a `stiltManor()` (5 x 4, two tiers of thatch), Pat in a grand two-deck `houseboat()`
+   (6 x 3, paddlewheel, banners, fairy lights). Tests pass; no console errors headless; all doors reachable by the game's
+   blocked tiles; fades checked by hand; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the
+   user's playtest.
+   **Next: Sunwell Bazaar's clean-up** (`?town=savanna`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
+   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Savanna's
+   Sunwell Bazaar the way the Clearing, Highbough, Lantern Village, Cinder Springs and Driftwood Landing were (ask me what
+   bothers me about it first, with an aerial link), Machew's and Jerome's homes grand in the Bazaar's own style."
    **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
    crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
    can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it

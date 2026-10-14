@@ -92,16 +92,16 @@ const SAFARI_AT = { tx: 4, ty: -3 };
 const PILLAR_AT = { tx: 28, ty: -3 };
 // each by its top-left tile: Kenmatta's dojo north-west; the Ancient Tree, the Secret Base, north-east (TREE_AT its middle
 // tile); moved 2026-10-14 from the user's drawing: the Nietos' house south-east and the Poké Mall south-west, their doors
-// on the ring road's south side, and the Sealed Gate (once broken) where the mall stood, at the west avenue's end
+// on the low road to the pond (the old road they faced taken out), and the Sealed Gate (once broken) where the mall stood,
+// at the west avenue's end
 // the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
 // is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
-const NIETOS_AT = { tx: 24, ty: 14 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
+const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // the pond in the garden at the south avenue's end, down past the ring road (the user's drawing, 2026-10-14: by the ring
 // road it crowded the Waystone), the low road round the garden running into it from the ring road's sides
 const POND = { x: 15, y: 21.6, r: 1.5 };
-const LOW = 18.2;   // the ring road's south side
 // the Clearing's Waystone (docs/roadmap.md's Towns and Waystones; one, not five, the user's pick 2026-10-14): it stands on
 // the plaza's Poké Ball, START's tile, five crystals orbiting its tip, one a town in its RING colour (js/data/towns.js);
 // your partner starts a step in front of it, a ring of dark stone RING_R out set into the plaza round it
@@ -120,13 +120,13 @@ const ROADS = [
   { a: [18, START.y], b: [28, START.y], w: AVE },                                   // east avenue
   { a: [15, 15], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, POND.y], w: LANE }, { a: [28, 5], b: [28, POND.y], w: LANE },   // the ring road
-  { a: [4, LOW], b: [28, LOW], w: LANE }, { a: [4, POND.y], b: [28, POND.y], w: LANE },   // and the low road to the pond
+  { a: [4, POND.y], b: [28, POND.y], w: LANE },   // and the low road to the pond, its south side
   { a: [4, 5], b: [4, -M - 0.6], w: TRAIL, dirt: true },                 // trails to the Safari gate, on through it, and the Sky Pillar
   { a: [28, 5], b: [28, PILLAR_AT.ty + 1], w: TRAIL, dirt: true },
   { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
-  { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, LOW], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the ring road
-  { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, LOW], w: 0.6 },
+  { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, POND.y], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the low road
+  { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, POND.y], w: 0.6 },
 ];
 // round the pond, a ring of stone to walk
 const RINGS = [{ x: POND.x, y: POND.y, r: POND.r + 0.75, w: 0.42 }];
@@ -2353,7 +2353,7 @@ function dressSeason() {
     yardTiles.add(key(10, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(22), 1.2, tileZ(16) + 1.4], 0.8]]) {
+    for (const [colour, at, k] of [['#ff9030', [tileX(24), 1.2, tileZ(9) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;

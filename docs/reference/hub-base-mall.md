@@ -94,11 +94,12 @@ The first section began as the note on playtesting the live site and grew into t
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
   Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
   asked: like Gen 3's Secret Power bases), the Poké Mall south-west and the Nietos' house south-east, both
-  facing the camera, their doorsteps down to the ring road's south side (`MALL_TILE`, `NIETOS_AT`; moved 2026-10-14 from
-  the user's drawing, Halloween's pumpkin patch taking the house's old spot), the PC east of the plaza facing straight
+  facing the camera, their doorsteps down to the low road to the pond (`MALL_TILE`, `NIETOS_AT`; moved 2026-10-14 from
+  the user's drawing, Halloween's pumpkin patch taking the house's old spot; moved down again the same day onto the low road,
+  the road they used to face taken out: the user meant that road moved, not a second one), the PC east of the plaza facing straight
   at the camera (`PC_AT`, no longer turned), a pond garden at the south avenue's end, below the ring road (`POND`; moved down 2026-10-14 from the user's drawing, the
-  Clearing grown to 31 x 26 and the plaza a row lower for room round it, a low road from the ring road's sides, `LOW` its
-  south side, running into the pond), the Sealed Gate once broken at
+  Clearing grown to 31 x 26 and the plaza a row lower for room round it, a low road from the ring road's sides, its
+  south side, running into the pond at `POND.y`), the Sealed Gate once broken at
   the west avenue's end, where the mall stood (`SEALED_AT`); lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
   `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
