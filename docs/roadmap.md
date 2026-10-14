@@ -112,6 +112,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     teleporter instead of leaving a rounded cap. Next: the user's visual playtest of `?aerial`.
     **Done (2026-10-14): align the square street end with the teleporter** (branch `towns`): extended the flat end to the
     teleporter's left edge, using the same width as its art. Next: the user's visual playtest of `?aerial`.
+    **Done (2026-10-14): a buried rift at the Sealed Gate** (branch `towns`): while the teleporter is locked, violet cracks
+    glow on the ground and a tap gives a mysterious hint about something pressing up from below. The actual gate replaces
+    the rift when unlocked. Next: the user's visual playtest of `?aerial`.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

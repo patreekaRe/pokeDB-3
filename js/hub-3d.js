@@ -133,6 +133,7 @@ let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', f
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null;
+let buriedRift = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
@@ -1515,6 +1516,60 @@ function liveWarp(now) {
 
 const gateOpen = () => gateHp() <= 0 && isStarterUnlocked(STARTERS_BY_ID.mewtwo);
 
+/** A branching seam of violet light under the ground, foreshadowing the Sealed Gate before it breaks through. */
+function riftCracksArt() {
+  const a = art(128, 96), glow = art(128, 96);
+  const paths = [
+    [[0, 61], [17, 60], [27, 51], [41, 54], [52, 43], [66, 47], [78, 37], [94, 41], [108, 31], [127, 32]],
+    [[27, 51], [24, 40], [14, 32], [18, 22], [9, 15]],
+    [[52, 43], [47, 32], [55, 22], [50, 9]],
+    [[66, 47], [72, 59], [84, 64], [88, 76], [101, 86]],
+    [[78, 37], [88, 28], [84, 17], [96, 8]],
+    [[41, 54], [36, 66], [24, 72], [19, 86]],
+    [[94, 41], [105, 49], [118, 50], [127, 61]],
+  ];
+  const trace = (g, points, colour, width, alpha = 1) => {
+    g.globalAlpha = alpha;
+    g.strokeStyle = colour; g.lineWidth = width; g.lineCap = 'square'; g.lineJoin = 'miter';
+    g.beginPath(); g.moveTo(...points[0]);
+    for (const point of points.slice(1)) g.lineTo(...point);
+    g.stroke();
+    g.globalAlpha = 1;
+  };
+  for (const path of paths) {
+    trace(a.g, path, '#28123f', 12, 0.9);
+    trace(a.g, path, '#63218f', 7, 0.95);
+    trace(a.g, path, '#b04ce8', 3, 0.95);
+    trace(a.g, path, '#f0cbff', 1, 0.9);
+    trace(glow.g, path, '#ffffff', 12, 0.9);
+  }
+  a.c.glow = glow.c;
+  return a.c;
+}
+
+function buildBuriedRift(g) {
+  const art = riftCracksArt();
+  const material = new THREE.MeshStandardMaterial({ map: texOf(art), transparent: true, alphaTest: 0.01, depthWrite: false, side: THREE.DoubleSide, roughness: 1 });
+  glowing(material, art, null, '#a84cff', 1.25);
+  const x = tileX(SEALED_AT.tx), z = tileZ(SEALED_AT.ty + 0.75);
+  const cracks = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 3.2), material);
+  cracks.rotation.x = -Math.PI / 2;
+  cracks.position.set(x, 0.035, z);
+  cracks.castShadow = false;
+  g.add(cracks);
+  const light = new THREE.PointLight('#a84cff', 0.22, 3.6, 2);
+  light.position.set(x, 0.16, z);
+  g.add(light);
+  buriedRift = { material, light };
+}
+
+function liveBuriedRift(now) {
+  if (!buriedRift) return;
+  const pulse = calm ? 0.5 : 0.5 + 0.5 * Math.sin(now / 1250);
+  buriedRift.material.emissiveIntensity = Math.max(0.8, LIGHT[time]?.glow ?? 0.8) * buriedRift.material.userData.glow * (0.9 + pulse * 0.16);
+  buriedRift.light.intensity = 0.18 + pulse * 0.18;
+}
+
 /** Every place: where it stands (`tiles` it blocks), its doorstep (`step`), whether it's open, what its card says and
     what it opens, all from the title's own actions (`acts`) and today's save. */
 function makePlaces() {
@@ -1695,7 +1750,15 @@ function makePlaces() {
       paintGateArt(0);
     },
   });
-  else gateArt = null;
+  else {
+    gateArt = null;
+    list.push({
+      id: 'buried-rift', name: 'Violet Fissure', step: SEALED_STEP, tiles: [], tag: [SEALED_AT.tx, 2.8, SEALED_AT.ty], open: true,
+      line: 'The earth breathes violet light through the cracks. Something below presses against an old seal, waiting for its moment to rise.',
+      buttons: [],
+      build: buildBuriedRift,
+    });
+  }
   return list;
 }
 
@@ -1718,7 +1781,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null; buriedRift = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -2917,6 +2980,7 @@ function frame(now) {
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
   liveWarp(now);
+  liveBuriedRift(now);
   liveStones(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }

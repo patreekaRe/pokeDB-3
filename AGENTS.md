@@ -27,6 +27,8 @@ three places:
   instead of curving around it. Waiting on the user's visual playtest of `?aerial`.
 - 2026-10-14: **Street end reaches the Sealed Gate's left edge** (branch `towns`): extended the square cap flush to the
   teleporter artwork's edge, sharing its width constant. Waiting on the user's visual playtest.
+- 2026-10-14: **Buried rift at the Sealed Gate** (branch `towns`): before unlock, glowing violet ground cracks mark the
+  site and its approach card hints something is pressing up from below. The gate replaces them when unlocked.
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
   PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in

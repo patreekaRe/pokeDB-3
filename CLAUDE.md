@@ -891,7 +891,9 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   doors meet the south ring road (`MALL_AT`), the Nietos' house in the
   lower-right garden (`NIETOS_AT`; its front steps meet the south ring road), the PC in its marked place beside the plaza,
   facing the player head-on (`PC_AT`), a pond garden down the south avenue (`POND`), the Sealed Gate at the old Mall site
-  on the west side once unlocked (`SEALED_AT`); the moved garden beds and seasonal pumpkin patch keep clear of the buildings;
+  on the west side (`SEALED_AT`): while locked, glowing violet cracks mark it and its `Violet Fissure` card hints at
+  something pushing up from below (`buried-rift`, `buildBuriedRift`); the gate replaces the rift once unlocked. The moved
+  garden beds and seasonal pumpkin patch keep clear of the buildings;
   lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
   `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
