@@ -98,6 +98,17 @@ The first section began as the note on playtesting the live site and grew into t
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
 
+- **The Nietos' house, a storybook cottage** (2026-10-14, the user's ask: "more aesthetic than a stupid bland house"):
+  `nietosHouse(g, x, z, home)` in `js/hub-3d.js`. Its paintings are made once in `cottageArt()` (butter-cream clapboard,
+  scalloped baby-blue shingles drawn eave-up so each row laps the one below, a stone footing, bricks, a fanlit four-panel
+  door and pink-curtained windows whose glass glows through `shine()`, heart-cut shutters, baby Linc's washing, an OUT!
+  note). Roof slopes come from one `slope()` helper (shingles, barge boards, fascia; the porch's own gable reuses it turned
+  side-on, its shingles scaled down by the texture's `repeat`). The OUT! note is on the door while `home` (`nietosHome()`)
+  is false. Chimney smoke is five puffs moved in `liveSmoke()`. Pickets, flower tufts and blooms are `InstancedMesh`es,
+  and `mergeStatic()` bakes the rest that share a material into one mesh each (117 meshes down to 53: draw calls on a
+  phone). Outside its 3 x 3 it stands on `NIETOS_YARD` (the name board and washing line west, the fenced garden either
+  side of the doorstep, the pram and sandbox east), added to the place's tiles so nothing walks through it.
+
 ### The rolling-log bend (on by default, 2026-10-14)
 
 The user's ask: Animal Crossing's curved world, in the Clearing only. Tried behind `?curve=N` at 1, 2 and 3 on a branch,

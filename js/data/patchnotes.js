@@ -52,6 +52,8 @@ export const NEXT = [
   ['runs', 'Picking a move, relic or item after a fight now has a Bag key on the Pokédex bar, so you can check your items and deck first.'],
   ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, not just the door, and running from Team Rocket takes you straight to the map.'],
   ['hub', 'The Clearing\'s ground now rolls away into the distance, like a little round world.'],
+  ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden and baby Linc\'s washing out.'],
+  ['hub', 'The gate out to an adventure is grander: a glowing gold crest, lanterns and banners, and a shimmer you can spot from across the Clearing.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
