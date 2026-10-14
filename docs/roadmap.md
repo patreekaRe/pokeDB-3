@@ -131,6 +131,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    crest and a sacred rope, stone lanterns at the steps, paper lanterns and two swaying banners in the leader's `GYM_INK`
    (`noboriArt()`). John's and Jahmes's lots grew to 5 x 4 (John's moved down a row, his door now on the south road).
    **Every town clean-up does the same for its leaders** in its own style (the handoff's checklist, item 12).
+   Follow-up (same day, the user: "clean up any awkward lanterns and benches"): the plaza is a clean paved square now (its four
+   corner lanterns, the one at the east lane's mouth and its three flower patches gone), two benches along its top facing
+   the Waystone, and the entrance lawn's two benches moved to the roadside by the avenue facing the south road. A bench takes
+   two tiles (its x and x + 1), so mirror one at x with 36 - x. Map only (`js/data/towns.js`).
    **Done (2026-10-14): Cinder Springs' clean-up** (the user's call: fix what the map review found plus the checklist):
    four locked houses not eight, the crag stubs and stray pool out of the middle, the right road legs a tile left so
    nothing stands flush on the crags, the Waystone centred on its plaza, name boards (`n`, `nameBoards()`), `fade`, and
@@ -176,6 +180,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    house on it, its top level with the planks (now just under, and the deck rims too); `vineGate()` now the Bough Gate, a
    living arch of two trunks on flaring roots, crowned, lit with ghost-blooms, ghost-lanterns swaying under it, wisps
    circling, a wider name plank (`B.reach` 2 so it fits the shot). Tests pass, no console errors. Waiting on the user's playtest.
+   **Done (2026-10-14): Highbough's name boards** (the user: "legible aesthetic signs for gym leaders and trade house"):
+   `s` tiles by Phil's, Ricky's and the Curio Shop's doors, each a dark walnut plank on ropes from a log crossbar
+   (`boughBoards()`, `boughBoardArt()`): big cream letters, mossy top, GYM LEADER in the leader's ink on a gold rim, the
+   shop's TRADE HOUSE in ghost violet, a ghost lantern swinging off the bar; the small pale plates on the houses gone.
    **Done (2026-10-14): Cinder Springs' roads and houses** (the user: Shaun's gym "in front of the waystone", "better
    designs of the other houses... especially the trade house", "all roads need to connect"): Shaun's lodge east of the
    moat on its own drive, a road straight down from the Waystone's bridge where it stood; a two-wide road to every door
@@ -183,7 +191,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the locked houses stepped adobe `cottage()`s, the bathhouse timbered with a pent roof and lanterns. Then the benches
    (the user: "move those benches somewhere else"): off the Waystone's island and the open ash (each painted a stray
    cobble), now on paved nooks off the roads, two looking onto the springs, two either side of the road to the forge.
-   Waiting on the user's playtest.
+   Then (the user, again: "move any awkward brazier torches... and move those benches somewhere else"): one bench on a
+   paved terrace looking down over the lava moat (row 12, between Clarence's road and the gate road), one in a little
+   square before the forge where its road meets the main one (row 29); braziers in pairs at the mine's mouth, the way in
+   and the lava bridge, the strays (in the ash, behind the forge, squeezed by the bathhouse) gone. Waiting on the user's
+   playtest.
    **Done (2026-10-14): Sunwell Bazaar's clean-up** (the user: nothing specific, "go ahead with the checklist"): the
    diagonal caravan road kept but three wide (two through the gate), the jetty two wide with a rope railing and a pale
    trim, pale stones along the watering hole's bank, huts a and d gone (their knocks moved onto b, e, g and h), the rest
@@ -195,6 +207,21 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    applied to ALL towns"): all five towns roll away at the Clearing's strength (`CURVE`, `?curve=N`, flat under
    `?aerial`), house insides flat; taps go through bent pieces of the ray (`tapRays()` in `js/event-3d.js`), long shapes
    are cut so they bend (`fineTris()`). Archived in `docs/roadmap-done.md`, details in `docs/reference/towns.md`.
+   **Done (2026-10-14): a view past every town** (the user: "I don't like that wall of green"): the back wall and sky dome
+   are gone; each town stands the Clearing's vista painting (`vistaArt()`, in its own colours: `TOWN_VISTAS` in
+   `js/event-3d.js`) on its back edge, and its sides are trees only. Then the Shrine/Ruins and Thornwood looks' green skies became
+   blue (every outdoor room there). Details in `docs/reference/towns.md`.
+   **Done (2026-10-14): Cinder Springs' bathhouse** (the user: "so stupid looking"): the two-storey adobe box with a pent
+   roof stuck on is now a sento (`bathhouse()` in `js/event-3d.js`): wide and low, timbered plaster and lit lattice windows
+   under a kawara roof with a steam vent on its ridge, a curved karahafu porch (`karahafu()`) with the ♨ crest, sign and
+   indigo noren, red lanterns, a tall round brick chimney smoking at the back, tubs and a woodpile. Waiting on their look.
+   **Done (2026-10-14): Sunwell's bazaar and every trade house's sign** (the user: the stalls round the Waystone "so lame
+   and dinky", Persian needs a better sign, every trade home a sign and a Poké Ball one, the leaders' signs in the town's
+   look): the market is a bazaar square now, long stalls on its four sides (a run of `n` is one stall, `bazaarStall()`:
+   striped awnings, valances, kilims, heaped wares, lanterns, bunting, flags) with kilims on its floor; the hut by the sun
+   gate (g) gone; Persian's tent wears a crimson marquee with a Poké Ball on top; every other town's trade house a
+   `tradePost()` (a turning Poké Ball on a post, a TRADE board swinging off it); Sunwell's `s` boards are
+   `bazaarBoards()` in each leader's colours. Waiting on the user's look.
    **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
    `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
@@ -277,10 +304,25 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
-5. **The all-five reward: open.** Dropped (2026-10-14, the user's call): **the Crystal Depths stay Mewtwo's alone**, no
-   other starter ever goes down there. (Built and reverted the same day: Mewtwo talking at the broken gate and opening it
-   with five shards lit, commit 3dfe9ca, reverted in dcbbca6, if any of it is ever wanted back.) What lighting all five
-   Waystones gives is undecided: ask the user before building anything.
+5. **The all-five reward: Mewtwo's full strength.** **The Crystal Depths stay Mewtwo's alone** (the user's call,
+   2026-10-14: no other starter ever goes down there to fight; "the Depths open to every starter" was built that day and
+   reverted, commit 3dfe9ca / revert dcbbca6, along with Mewtwo talking at the gate and opening it at five shards).
+   **Settled (the user's design, 2026-10-14): Mewtwo's Sealed Weakness.** Freed from the gate, Mewtwo is still too weak
+   for what's below (its break-out talk already says so: `MEWTWO_LINES` in `js/gatescene.js`). It can always go down,
+   but in the Depths only it carries a **permanent damage debuff** (a "Sealed Weakness" nameplate badge), and each
+   Waystone Shard you give it lifts a fifth of it; all five, full strength. Its first three biomes are unchanged. Start
+   around 50% less damage, 10% back a shard, and check with the bot that 0 shards is hard but winnable (never a wasted
+   run). **The shards' progress is shown big**: a **pentagram of five shard slots**, slid in full screen like the gym's
+   dialogue, the placed shards glowing in their towns' `RING` colours, the missing ones dark; seen before a Mewtwo run
+   and when you meet Mewtwo after one. **The Depths camp**: once the seal is broken, the fall (or the Sealed Gate's
+   second button) takes you down to a camp in the Depths you can walk round, between runs too, Mewtwo standing by the
+   way in to the Depths proper; talking to it brings up the pentagram, and its lines change with the shards placed
+   (why it needs them, what Eternatus is, how much of its strength is back). Builds with step 6 (the shards must drop
+   first).
+   **A won run's ending with the camp** (the user's yes, 2026-10-14): last boss → the fall → the Depths camp (walk
+   round, talk to Mewtwo, the pentagram) → leaving it plays the win scene / Hall of Fame → unlock windows → result
+   window. The win is recorded before the camp opens, so closing the game there never loses it; leaving only plays
+   the celebration. A visit outside a run (the Sealed Gate's button) has no win: leaving goes back to the Clearing.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
@@ -354,8 +396,29 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change. Step 5 (the all-five reward) is open: ask the user. Open: what gift friendship (`liked`) is for, and
+     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for, and
      whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
+
+7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
+   Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
+   the hub the others link to, so you can't travel to a town from home until it works.
+   - **Opens when you beat the Nietos** (their Kangaskhan, the Clearing's boss): on getting home (`cameHome()` or the
+     Clearing after the run ends), Law and Britt **slide in** (`gymTalk()`, like a town leader's greet) with the story: the
+     Clearing's Waystone is cracked, which is why the towns' stones are dead too. `NIETOS_LIVE` goes on, so they're home
+     once beaten, and their house is where you hand in steps and hear their talk (`homeTalk()`).
+   - **Their own quests**, `QUESTS.clearing` on the same engine (`track` / `gather` / `craft` / `shard`), about 4 steps, a
+     leader `by` each (Law, Britt; Linc and Kangaskhan for flavour), with `thanks`, `nudge`, `talk`, `after` and `chats`
+     like the towns. Do steps count in the Clearing biome. It needs **2 new Clearing materials** in `MATERIALS` (dropping
+     in the Clearing biome, the `DROPS` / sparkle code), a Kurt `RECIPES` item for the craft step, and maybe gifts for the
+     Nietos (that open question from step 6).
+   - **The last step: an Alpha in the Clearing biome** carries the Clearing's shard (the marked Alpha from session 4).
+     Beat it, bring it home, the Nietos put it in and the **main stone lights** (`mendStone()` on the Clearing's Waystone,
+     `clearingWaystone()` in `js/hub-3d.js`: dull until then, its five town crystals still dull until their towns mend).
+   - **What it gates**: until the Clearing stone is lit, towns still show up in runs (trades, chat, their homes), but their
+     leaders don't greet you or open the board, and the Clearing's Waystone menu has no Travel (it says it's broken and
+     points to the Nietos). An old save that already started a town questline counts the Clearing stone as lit, so nobody
+     loses progress. Its menu and the Satchel's Quests list the Clearing first. Tests in `tests/quests.test.mjs`.
+   - One session (two if the dialogue runs long). Playtest: `?nietos&gymwins=1&satchel`, `?biome=clearing&shard`.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

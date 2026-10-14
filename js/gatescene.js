@@ -16,6 +16,7 @@ import { vibrate, calmFx } from './prefs.js';
 import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
+import { gymTalk } from './gym.js';
 import { makeGate, gateReady, gateBar, setGateBar, settleGateBar } from './gate.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER, gateStage } from './data/gate.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
@@ -127,6 +128,14 @@ export async function gateScene({ starter, stage = 0, shiny = false, before, aft
   await say(lines);
   await leave(scene);
 }
+
+// Mewtwo's first words once it's out, telepathic
+const MEWTWO_LINES = [
+  '...You. You are the one who broke the seal.',
+  'I was bound here a long time. Most of my strength is gone.',
+  'Something still stirs far below. I cannot face it like this.',
+  'Walk the road with me. Help me take back what I lost.',
+];
 
 // what each stage crossed says: past 75%, 50%, 25%
 const STAGE_LINES = [[], ['Cracks split the seal!'], ['A chain snapped!', '...Something is moving behind the gate!'], ['The last chain gave way!', 'The seal is failing...']];
@@ -689,6 +698,10 @@ async function breakFree(scene, music) {
   free.classList.remove('dark');
   aura();
   await Promise.race([playCry('mewtwo'), sleep(1500)]);
+  // it slides in and speaks in your head, like a Gym Leader's talk (the user's asks, 2026-10-14): why it's weak and needs
+  // you, so its run walking the road from the start makes sense
+  $('gate-log').hidden = true;
+  await gymTalk({ id: 'mewtwo', name: 'MEWTWO', talk: blaze }, MEWTWO_LINES, { lit: true, title: '', look: 'psychic', speed: 'in' });
   await say(['Mewtwo is free!', 'It will fight beside you now: choose it at New game.']);
   if (music) playMusic(music);
   await leave(scene);

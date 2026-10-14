@@ -14,6 +14,8 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
+import { vistaArt, VISTA } from './hub-vista.js';
+import { SKY } from './safari-lobby.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
@@ -227,7 +229,7 @@ function panel(c, w, h, x, y, z, { glow = null, live = false } = {}) {
 }
 
 /** The floor, the back wall and the side walls from their paintings, the plinth under them and the doormat out. */
-function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true, holes = false }) {
+function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '#2a1810', bg = '#22140c', open = false, mat = true, holes = false, walled = true }) {
   B.bg = bg;
   const e = std({ color: edge });
   const top = std({ map: texOf(floor), alphaTest: holes ? 0.5 : 0, roughness: 0.6, emissive: new THREE.Color('#ffffff'), emissiveMap: floor.glow ? texOf(floor.glow) : null, emissiveIntensity: floor.glow ? 0.9 : 0 });
@@ -239,11 +241,13 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
   plinth.position.set(0, -0.62 - 3.5, -0.2);
   B.group.add(plinth);
   const c = open ? new THREE.MeshBasicMaterial({ color: cap, transparent: true, opacity: 0 }) : std({ color: cap });   // open air: no tops, the sky shows through
-  const wm = std({ map: texOf(wall), alphaTest: open ? 0.5 : 0, roughness: 0.9, emissive: new THREE.Color('#fff4dc'), emissiveMap: wall.glow ? texOf(wall.glow) : null, emissiveIntensity: wall.glow ? 0.9 : 0 });
-  const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [c, c, c, c, wm, c]);
-  back.position.set(0, TOP / 2, BACK_Z - 0.2);
-  back.receiveShadow = true;
-  B.group.add(back);
+  if (walled) {   // a town's back is open, its vista standing there instead (townVista())
+    const wm = std({ map: texOf(wall), alphaTest: open ? 0.5 : 0, roughness: 0.9, emissive: new THREE.Color('#fff4dc'), emissiveMap: wall.glow ? texOf(wall.glow) : null, emissiveIntensity: wall.glow ? 0.9 : 0 });
+    const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [c, c, c, c, wm, c]);
+    back.position.set(0, TOP / 2, BACK_Z - 0.2);
+    back.receiveShadow = true;
+    B.group.add(back);
+  }
   for (const s of [-1, 1]) {
     const inside = std({ map: texOf(side(s < 0)), alphaTest: open ? 0.5 : 0, roughness: 0.9 });
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, ROWS), s < 0 ? [inside, c, c, c, c, c] : [c, inside, c, c, c, c]);
@@ -1011,7 +1015,7 @@ const GARDEN = {
   grass: ['#98d868', '#7ac050', '#5aa040'], dirt: ['#d8b888', '#b89868'],
 };
 const CEDAR = {
-  ...GARDEN, look: 'cedar', sky: ['#4e7e58', '#7aa088', '#b8d0c0'], far: ['#7a9a84', '#6a8a74'], leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36'],
+  ...GARDEN, look: 'cedar', sky: ['#6a8cb4', '#9cb8d0', '#dce6e8'], far: ['#7a9a84', '#6a8a74'], leaf: ['#6a9a70', '#4e7e58', '#3a6448', '#284a36'],
   trunk: ['#9a6a50', '#5a362a'], stone: ['#b8c0aa', '#a2ac94', '#909e86', '#7a8870'], gap: '#4e5a48', moss: '#7ab060',
   bamboo: ['#b0a070', '#8a7850', '#5e5034', '#2a2418'], rock: ['#d0d4c0', '#a8ae98', '#7c846e', '#4e5444'],
   water: ['#f0fff8', '#b0f0e0', '#70d0c0', '#3a9aa0', '#20687a'], edge: '#4a4a38', under: '#24241a',
@@ -1029,7 +1033,7 @@ const ROCK = {
 };
 const LOOKS = {
   clearing: GARDEN, shrine: CEDAR, wastes: ROCK,
-  thornwood: { ...GARDEN, sky: ['#4a8a58', '#7ab080', '#c0e0b8'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], drift: ['#c8f078', '#78c048'], grass: ['#5aa048', '#3e8a38', '#2a6a2c'], dirt: ['#8a6a48', '#6a5038'] },
+  thornwood: { ...GARDEN, sky: ['#4a8ed0', '#8cc0e4', '#d4ecf0'], far: ['#5a8a5a', '#4a7a4a'], leaf: ['#68b048', '#3e8a34', '#286a2a', '#164a1e'], drift: ['#c8f078', '#78c048'], grass: ['#5aa048', '#3e8a38', '#2a6a2c'], dirt: ['#8a6a48', '#6a5038'] },
   savanna: { ...GARDEN, sky: ['#f0a860', '#f8c888', '#fce8c0'], far: ['#d8b070', '#c89c5c'], leaf: ['#b8b850', '#8a9a3a', '#6a7a2c', '#4a5a20'], stone: ['#e8d0a8', '#dcc298', '#ceb488', '#bca070'], gap: '#9a7a50', moss: '#b8a858', drift: ['#fff0a0', '#f8a830'], grass: ['#e0c878', '#c8b060', '#a89048'], dirt: ['#e8d0a0', '#c8a878'] },
   ruins: { ...CEDAR, stone: ['#d8c8a0', '#c8b890', '#b8a880', '#a09068'], rock: ['#e0d0a8', '#c0b088', '#988860', '#6a5a40'], water: ['#f0fffc', '#a8e8f0', '#58c0d8', '#2888b0', '#145a88'], fence: ['#e8d8b0', '#c0a878', '#8a7450'], roof: ['#e0d0a8', '#b0a078', '#7a6a48'], grass: ['#8ab878', '#6a9a60', '#4a7a4c'], dirt: ['#d8c8a0', '#b8a880'] },
   depths: { ...ROCK, sky: ['#140c24', '#2a1a48', '#4a2a70'], stone: ['#4a4058', '#40384e', '#383046', '#30283c'], gap: '#140c1c', rock: ['#6a5a80', '#4e4064', '#382c4a', '#20182c'], vein: ['#e0a0ff', '#a050f0'], roof: ['#6a5a80', '#4e4064', '#382c4a'], drift: ['#f0d0ff', '#b070f0'], grass: ['#4a4060', '#3e3652', '#322a44'], dirt: ['#5a5070', '#4a4060'] },
@@ -1094,8 +1098,9 @@ function paintFence(f, W, kind, L) {
 }
 
 /** The scenery behind a fence, for an open-air room's back wall and sides: the biome's trees, cedars or cliff, then the
-    fence; the sky above them is left clear, for skyDome() behind. */
-function scenery(W, L, time, fence, { side = false } = {}) {
+    fence; the sky above them is left clear, for skyDome() behind. `bare`: a town's sides, trees only, with no flat band of
+    far hills or mist over them (the user's ask, 2026-10-14: "I don't like that wall of green"). */
+function scenery(W, L, time, fence, { side = false, bare = false } = {}) {
   const H = TOP * U, f = fine(W, H, side ? 4 : 5), { g, lin } = f, s = f.shine(), r = seeded(side ? 21 : 7);
   if (L.look === 'rock') {
     // a cliff of cut volcanic rock, facets and glowing veins
@@ -1117,9 +1122,11 @@ function scenery(W, L, time, fence, { side = false } = {}) {
     }
   } else {
     // far hills, then trees: round clumps in the garden, cedars in the mist
-    g.fillStyle = L.far[0]; g.beginPath(); g.moveTo(0, wy(4.6));
-    for (let x = 0; x <= W; x += 10) g.lineTo(x, wy(4.6 + Math.sin(x / 37) * 0.5 + Math.sin(x / 13) * 0.15));
-    g.lineTo(W, H); g.lineTo(0, H); g.fill();
+    if (!bare) {
+      g.fillStyle = L.far[0]; g.beginPath(); g.moveTo(0, wy(4.6));
+      for (let x = 0; x <= W; x += 10) g.lineTo(x, wy(4.6 + Math.sin(x / 37) * 0.5 + Math.sin(x / 13) * 0.15));
+      g.lineTo(W, H); g.lineTo(0, H); g.fill();
+    }
     if (L.look === 'cedar') {
       for (let i = 0; i < W / 14; i++) {
         const x = r() * W, foot = wy(1), tall = wy(6.6 + r() * 1.2);
@@ -1140,7 +1147,7 @@ function scenery(W, L, time, fence, { side = false } = {}) {
         g.beginPath(); g.moveTo(x - 11, wy(3.1)); g.quadraticCurveTo(x, wy(2.8), x + 11, wy(3.1)); g.stroke();
         for (const dx of [-6, 0, 6]) { g.fillStyle = '#ffffff'; g.fillRect(x + dx - 1, wy(2.95), 2, 4); g.fillRect(x + dx, wy(2.95) + 4, 2, 4); }
       }
-      for (let k = 0; k < 4; k++) { g.fillStyle = 'rgba(232,240,236,0.22)'; g.fillRect(0, wy(2.6 + k * 1.1) + r() * 4, W, 5 + r() * 4); }
+      if (!bare) for (let k = 0; k < 4; k++) { g.fillStyle = 'rgba(232,240,236,0.22)'; g.fillRect(0, wy(2.6 + k * 1.1) + r() * 4, W, 5 + r() * 4); }
     } else {
       for (let i = 0; i < W / 22; i++) {
         const x = i * 22 + r() * 12, y = wy(3.4 + r() * 1.1);
@@ -1947,10 +1954,10 @@ function tufts(L, n, rnd) {
 
 /** The outdoor rooms' shell: the biome's scenery all round with no fence (a hedge, or rocks, at its foot), wild ground,
     the sky and the light by the hour, a few of the look's trees standing about, tufts over the rest. */
-function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c, holes = false } = {}) {
+function wild(L, time, { to = 2, trees = [], exit = true, ground = (c) => c, holes = false, walled = true } = {}) {
   const sky = graded(L.sky[0], time);
-  shell({ floor: ground(wildFloor(L, { to })), wall: scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit, holes });
-  skyDome(L, time);
+  shell({ floor: ground(wildFloor(L, { to })), wall: walled && scenery((COLS + 0.8) * U, L, time, 'none'), side: () => scenery(ROWS * U, L, time, 'none', { side: true, bare: !walled }), edge: L.edge, cap: sky, under: L.under, bg: sky, open: true, mat: exit, holes, walled });
+  if (walled) skyDome(L, time);
   const light = SKY_LIGHT[L.look === 'rock' && time === 'day' ? 'dusk' : time];
   B.env = { hemi: light.hemi, sun: light.sun, bloom: 0.3 };
   const rnd = seeded(29);
@@ -4317,50 +4324,205 @@ function cottage(b, f, L, lit, smoke) {
   return g;
 }
 
-/** The bathhouse: two storeys of adobe on a stone footing, timbered, its front to you: a tiled pent roof between its
-    storeys with its banner over it, a clay gable on top and a tall stack steaming, noren across the door and a red paper
-    lantern either side (the user's ask, 2026-10-14: better designs for the town's other houses). Leaders live in
-    lodge()s, the forge is forge() and the rest are cottage()s. A tap is its door. */
+/** Cinder Springs' houses, its front to you: leaders live in lodge()s, the forge is forge(), the bathhouse is
+    bathhouse() and the rest are cottage()s. A tap is its door. */
 function cabin(b, f, L, lit, smoke) {
   const leader = b.home && B.town?.homes?.[b.home]?.leader;
   if (leader) return lodge(b, f, L, lit, smoke, leader);
   if (b.kind === 'shop') return forge(b, f, L, lit, smoke);
-  if (b.kind !== 'bathhouse') return cottage(b, f, L, lit, smoke);
+  if (b.kind === 'bathhouse') return bathhouse(b, f, lit, smoke);
+  return cottage(b, f, L, lit, smoke);
+}
+
+/** The bathhouse hall's front: plaster over a wainscot of dark boards, timber posts, a band of lit lattice windows,
+    the lit sliding doors of the way in at its middle. */
+function bathFront(w, h) {
+  const W = Math.round(w * 20), H = Math.round(h * 20), f = fine(W, H, 6), { g, rr, lin } = f, s = f.shine(), mid = W / 2;
+  g.fillStyle = lin(0, 0, 0, H, ['#f2e8d2', '#e6d8bc']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#4a2e1c'; g.fillRect(0, H - 9, W, 9);
+  g.fillStyle = 'rgba(0,0,0,0.3)'; for (let x = 1; x < W; x += 3) g.fillRect(x, H - 9, 0.5, 9);
+  g.fillStyle = '#3a241a'; g.fillRect(0, 3.2, W, 2.2); g.fillRect(0, H - 10.2, W, 1.6);
+  const pane = (x, y, ww, hh) => {
+    rr(x - 0.8, y - 0.8, ww + 1.6, hh + 1.6, 0.4, '#3a241a');
+    for (const ctx of [g, s]) { ctx.fillStyle = ctx === s ? '#ffd890' : lin(0, y, 0, y + hh, ['#fff4d0', '#f8c070']); ctx.fillRect(x, y, ww, hh); }
+    for (const ctx of [g, s]) {
+      ctx.fillStyle = ctx === s ? '#000' : '#3a241a';
+      for (let xx = x + 2.4; xx < x + ww - 0.5; xx += 2.4) ctx.fillRect(xx - 0.25, y, 0.5, hh);
+      for (let yy = y + 2.6; yy < y + hh - 0.5; yy += 2.6) ctx.fillRect(x, yy - 0.25, ww, 0.5);
+    }
+  };
+  const door = 12, spans = [[mid - door, mid + door]];
+  for (const side of [-1, 1]) for (let x = mid + side * (door + 3); side > 0 ? x < W - 6 : x > 6; x += side * 15) spans.push(side > 0 ? [x, x + 10] : [x - 10, x]);
+  for (const [x0, x1] of spans.slice(1)) pane(x0, 8, x1 - x0, 8);
+  for (const dx of [-door, 0]) pane(mid + dx + 0.8, 7.5, door - 1.6, H - 8.5);
+  // posts at its ends and in the gaps between the windows
+  spans.sort((p, q) => p[0] - q[0]);
+  g.fillStyle = '#3a241a';
+  for (const x of [1, W - 1, ...spans.slice(1).map((p, i) => (spans[i][1] + p[0]) / 2)]) g.fillRect(x - 1, 0, 2, H);
+  return f.c;
+}
+
+/** The bathhouse's crest for its gable: an indigo disc in a gold ring, the ♨ mark in white. */
+function onsenCrest() {
+  const f = fine(32, 32, 8), { g } = f;
+  g.fillStyle = '#e8b040'; g.beginPath(); g.arc(16, 16, 15.5, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#2a4a7a'; g.beginPath(); g.arc(16, 16, 13.2, 0, Math.PI * 2); g.fill();
+  onsenMark(g, 16, 17, 1.35, '#f8f0e0');
+  return f.c;
+}
+
+/** The noren across the bathhouse's way in: three indigo panels with slits between, a white ♨ across the middle one. */
+function norenArt() {
+  const f = fine(48, 28, 8), { g, rr } = f;
+  for (let i = 0; i < 3; i++) rr(i * 16 + 0.5, 2, 15, 26, 0.6, '#2a4a7a');
+  g.fillStyle = '#1a2e4e'; g.fillRect(0, 0, 48, 3.2);
+  g.fillStyle = 'rgba(255,255,255,0.08)'; for (let i = 0; i < 3; i++) g.fillRect(i * 16 + 2, 4, 1.2, 23);
+  onsenMark(g, 24, 15, 1.25, '#f8f0e0');
+  return f.c;
+}
+
+/** A karahafu: the curved gable of a bathhouse's porch, its ridge running to you, `len` deep from `z0`, `half` wide
+    each way and `rise` high on the parent at `y`. Its curve swells up to a round ridge and sweeps out at the eaves, all
+    ribbed kawara, round tile ends along both eaves, a dark bargeboard round its front with gold fittings, plaster in it. */
+function karahafu(parent, { half, rise, t, len, z0, y, roof, crest }) {
   const g = new THREE.Group();
-  g.position.set(f.cx, 0, f.cz + 0.05);
+  g.position.set(0, y, z0);
+  parent.add(g);
+  const curve = (u) => 0.06 + rise * ((1 + Math.cos(Math.PI * u)) / 2) + 0.12 * u ** 8;
+  const at = (u) => [u * half, curve(u)];
+  const eave = std({ color: roof[2], roughness: 0.7 }), wood = std({ color: '#3a241a', roughness: 0.75 });
+  const gold = std({ color: '#e8b040', metalness: 0.7, roughness: 0.3 });
+  const band = (lift, drop, n = 24) => {
+    const sh = new THREE.Shape();
+    for (let i = 0; i <= n; i++) { const [x, yy] = at(-1 + 2 * i / n); sh[i ? 'lineTo' : 'moveTo'](x, yy + lift); }
+    for (let i = n; i >= 0; i--) { const [x, yy] = at(-1 + 2 * i / n); sh.lineTo(x, yy - drop); }
+    sh.closePath();
+    return sh;
+  };
+  mesh(new THREE.ExtrudeGeometry(band(0, t), { depth: len, bevelEnabled: false }), eave, 0, 0, 0, g);
+  // the ribbed tiles over it: columns down each side of the curve, side by side along its depth
+  const COL = 0.24, cols = Math.max(3, Math.round(len / COL)), cw = len / cols, PER = 4, NT = 22, RIB = 0.035;
+  const pos = [], uv = [], idx = [];
+  let arc = 0, prev = at(-1);
+  for (let j = 0; j <= NT; j++) {
+    const u = -1 + 2 * j / NT, [px, py] = at(u), [qx, qy] = at(Math.min(1, u + 0.01)), [rx, ry] = at(Math.max(-1, u - 0.01));
+    if (j) arc += Math.hypot(px - prev[0], py - prev[1]);
+    prev = [px, py];
+    let tx = qx - rx, ty = qy - ry; const n = Math.hypot(tx, ty) || 1; tx /= n; ty /= n;
+    for (let i = 0; i <= cols * PER; i++) {
+      const k = (i % PER) / PER, bump = 0.012 + RIB * Math.sin(Math.PI * k) ** 0.8;
+      pos.push(px - ty * bump, py + tx * bump, i * cw / PER);
+      uv.push(i / PER, arc / 0.62);
+    }
+  }
+  const row = cols * PER + 1;
+  for (let j = 0; j < NT; j++) for (let i = 0; i < row - 1; i++) { const a = j * row + i, b = a + 1, c = a + row, d = c + 1; idx.push(a, b, d, a, d, c); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  mesh(geo, std({ map: kawaraArt(roof), roughness: 0.5 }), 0, 0, 0, g).receiveShadow = true;
+  const disc = new THREE.CylinderGeometry(0.075, 0.075, 0.06, 12); disc.rotateZ(Math.PI / 2);
+  const caps = new THREE.InstancedMesh(disc, std({ color: shadeOf(roof[1], -1), roughness: 0.5 }), cols * 2), o = new THREE.Object3D();
+  for (let i = 0; i < cols; i++) for (const s of [-1, 1]) { o.position.set(s * (half + 0.02), curve(1) + 0.02, (i + 0.5) * cw); o.updateMatrix(); caps.setMatrixAt(i * 2 + (s > 0), o.matrix); }
+  caps.castShadow = false; caps.raycast = () => {};
+  g.add(caps);
+  const ridge = new THREE.CylinderGeometry(0.1, 0.1, len + 0.06, 14); ridge.rotateX(Math.PI / 2);
+  mesh(ridge, eave, 0, curve(0) + 0.05, len / 2, g);
+  const boss = new THREE.CylinderGeometry(0.1, 0.1, 0.05, 14); boss.rotateX(Math.PI / 2);
+  mesh(boss, gold, 0, curve(0) + 0.05, len + 0.05, g);
+  // the bargeboard round its front, gold at its tips and a gold gegyo under its peak, plaster and the crest inside it
+  mesh(new THREE.ExtrudeGeometry(band(0.04, t + 0.12), { depth: 0.08, bevelEnabled: false }), wood, 0, 0, len - 0.02, g);
+  for (const s of [-1, 1]) mesh(new THREE.SphereGeometry(0.055, 10, 8), gold, s * half, curve(1) - 0.05, len + 0.06, g).castShadow = false;
+  const gegyo = mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 6), gold, 0, curve(0) - t - 0.2, len + 0.07, g);
+  gegyo.rotation.x = Math.PI / 2; gegyo.castShadow = false;
+  const fill = new THREE.Shape(), n = 20;
+  fill.moveTo(-half + 0.1, 0);
+  for (let i = 0; i <= n; i++) { const u = -1 + 2 * i / n, [x, yy] = at(u); if (Math.abs(x) < half - 0.1) fill.lineTo(x, Math.max(0, yy - t - 0.12)); }
+  fill.lineTo(half - 0.1, 0); fill.closePath();
+  mesh(new THREE.ShapeGeometry(fill), std({ color: '#efe4cc', roughness: 0.95 }), 0, 0, len - 0.06, g).castShadow = false;
+  if (crest) {
+    const c = panel(crest, 0.46, 0.46, 0, 0, 0);
+    c.parent?.remove(c); g.add(c);
+    c.position.set(0, (curve(0) - t) * 0.42, len - 0.04);
+  }
+  return g;
+}
+
+/** The bathhouse (the user's ask, 2026-10-14: the old two-storey box was "so stupid looking"): a sento, wide and low on
+    a stone footing, timbered plaster with a band of lit lattice windows, under a deep kawara roof with a steam vent on
+    its ridge; a karahafu porch over the way in with the ♨ crest in its gable, the bathhouse's sign under it and indigo
+    noren between its posts, red paper lanterns either side; a tall round brick chimney smoking at its back, wooden tubs
+    stacked by the door and a woodpile for the boiler. A tap is its door. */
+function bathhouse(b, f, lit, smoke) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
   B.group.add(g);
-  const w = f.w - 0.35, d = f.h - 0.6, h = 2.3, P = 0.18, fz = d / 2;
-  const adobe = std({ color: '#dcc4a0', roughness: 1 }), dark = std({ color: '#4a2e1c', roughness: 0.8 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
-  const timber = std({ color: '#5a3a24', roughness: 0.85 });
-  const art = cabinFront(w), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 });
-  lit.push(front);
-  const small = (m) => { m.castShadow = false; return m; };
-  mesh(rbox(w + 0.25, P, d + 0.25, 0.04), stone, 0, P / 2, 0, g);
-  mesh(new THREE.BoxGeometry(w, h, d), [adobe, adobe, dark, dark, front, adobe], 0, P + h / 2, 0, g);
-  for (const x of [-w / 2, -w / 4 - 0.25, w / 4 + 0.25, w / 2]) small(mesh(new THREE.BoxGeometry(0.12, h, 0.08), timber, x, P + h / 2, fz + 0.02, g));
-  for (const y of [P + 0.06, P + h - 0.06]) small(mesh(new THREE.BoxGeometry(w + 0.12, 0.12, 0.08), timber, 0, y, fz + 0.02, g));
   const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
-  const roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
-  const pent = mesh(new THREE.BoxGeometry(w + 0.5, 0.06, 0.55), [eave, eave, roofMat, eave, eave, eave], 0, P + h * 0.55 + 0.02, fz + 0.24, g);
-  pent.rotation.x = 0.42;
-  const geo = new THREE.ExtrudeGeometry(gableShape(d / 2 + 0.3, 1.1, 0.1), { depth: w + 0.4, bevelEnabled: false });
-  geo.rotateY(Math.PI / 2); geo.translate(-(w + 0.4) / 2, 0, 0);
-  mesh(geo, [roofMat, eave], 0, P + h, 0, g);
-  small(mesh(new THREE.BoxGeometry(w + 0.5, 0.1, 0.12), eave, 0, P + h + 1.1, 0, g));
-  const chx = (w / 2 - 0.7) * (b.id.charCodeAt(0) % 2 ? 1 : -1);
-  mesh(new THREE.BoxGeometry(0.5, 1.9, 0.5), stone, chx, P + h + 0.95, -0.1, g);
-  mesh(new THREE.BoxGeometry(0.58, 0.08, 0.58), dark, chx, P + h + 1.9, -0.1, g);
-  smoke.push([f.cx + chx, 0.3 + h + 1.9, f.cz - 0.05, true]);
-  g.attach(panel(bathSign(b.name), 2.2, 0.5, f.cx, P + h * 0.55 + 0.62, f.cz + 0.05 + fz + 0.09));
-  const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
-  for (const dx of [-0.32, 0, 0.32]) small(mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, P + 0.95, fz + 0.06, g));
+  const W = f.w - 0.3, P = 0.3;
+  const plaster = std({ color: '#efe4cc', roughness: 0.95 }), dark = std({ color: '#3a241a', roughness: 0.75 });
+  const stone = std({ color: '#7a6e64', roughness: 1, flatShading: true }), cope = std({ color: '#a89a8a', roughness: 1 });
+  const tub = std({ color: '#c89a60', roughness: 0.8 }), hoop = std({ color: '#5a4a3a', metalness: 0.4, roughness: 0.5 });
+  const small = (m) => { m.castShadow = false; m.raycast = () => {}; return m; };
+  // the footing: fieldstone under a pale coping, a step up to the porch
+  mesh(rbox(W, P - 0.06, 4.4, 0.05), stone, 0, (P - 0.06) / 2, 0.05, g);
+  mesh(rbox(W + 0.08, 0.07, 4.48, 0.03), cope, 0, P - 0.035, 0.05, g);
+  mesh(rbox(1.8, P / 2, 0.3, 0.03), cope, 0, P / 4, 2.38, g);
+  // the hall: wide and low, its front lit, dark posts at its corners, plaster in its gables under the roof
+  const hw = W - 0.8, hd = 3.0, hz = -0.5, H = 1.65, fz = hz + hd / 2;
+  const art = bathFront(hw, H), front = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.85 });
+  lit.push(front);
+  mesh(new THREE.BoxGeometry(hw, H, hd), [plaster, plaster, dark, dark, front, plaster], 0, P + H / 2, hz, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.BoxGeometry(0.13, H + 0.02, 0.13), dark, sx * (hw / 2 + 0.01), P + H / 2, hz + sz * (hd / 2 + 0.01), g);
+  const top = { length: hw + 0.6, half: hd / 2 + 0.5, rise: 1.25, t: 0.12, y: P + H, z: hz };
+  kawaraRoof(g, { ...top, roof, fancy: true });
+  for (const sx of [-1, 1]) gableWall(g, sx * (hw / 2 + 0.005), { ...top, wide: hd / 2 });
+  // the steam vent on the ridge: a slatted box under its own little roof, steam pouring out of it
+  const ry = P + H + top.rise + 0.2;
+  mesh(new THREE.BoxGeometry(1.5, 0.42, 0.55), dark, 0, ry + 0.17, hz, g);
+  const slat = std({ color: '#ffd890', emissive: new THREE.Color('#ffc070'), emissiveIntensity: 0.5, roughness: 0.8 });
+  lit.push(slat);
+  for (let i = 0; i < 6; i++) small(mesh(new THREE.BoxGeometry(0.12, 0.26, 0.02), slat, -0.6 + i * 0.24, ry + 0.17, hz + 0.28, g));
+  kawaraRoof(g, { length: 1.8, half: 0.5, rise: 0.36, t: 0.07, y: ry + 0.38, z: hz, roof });
+  for (const x of [-0.45, 0.45]) smoke.push([f.cx + x, ry + 0.5, f.cz + hz, true]);
+  // the porch: two posts, a beam, the karahafu over it running back into the main roof
+  const pf = 2.2, ph = P + 1.5;
+  for (const s of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(0.14, ph - P, 0.14), dark, s * 0.82, P + (ph - P) / 2, pf - 0.08, g);
+    small(mesh(rbox(0.24, 0.08, 0.24, 0.02), cope, s * 0.82, P + 0.04, pf - 0.08, g));
+  }
+  mesh(new THREE.BoxGeometry(1.95, 0.14, 0.16), dark, 0, ph + 0.02, pf - 0.08, g);
+  mesh(new THREE.BoxGeometry(1.95, 0.08, pf - fz), dark, 0, ph + 0.04, (pf + fz) / 2, g);
+  karahafu(g, { half: 1.0, rise: 0.85, t: 0.1, len: pf + 0.1 - (hz + 0.2), z0: hz + 0.2, y: ph + 0.1, roof, crest: onsenCrest() });   // its back end buried in the main roof
+  g.attach(panel(bathSign(b.name), 1.5, 0.34, f.cx, ph - 0.2, f.cz + pf + 0.01));
+  const noren = panel(norenArt(), 1.4, 0.82, f.cx, ph - 0.78, f.cz + pf - 0.1);
+  noren.material.side = THREE.DoubleSide;
+  g.attach(noren);
+  // red paper lanterns hung off the porch's corners
   const paper = std({ color: '#e84a3a', emissive: new THREE.Color('#ff5a3a'), emissiveIntensity: 0.8, roughness: 0.7 });
   lit.push(paper);
   const lantern = new THREE.SphereGeometry(0.15, 14, 10); lantern.scale(1, 1.3, 1);
   for (const s of [-1, 1]) {
-    small(mesh(lantern, paper, s * 0.75, P + 1.0, fz + 0.16, g));
-    for (const y of [0.2, -0.2]) small(mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 10), dark, s * 0.75, P + 1.0 + y, fz + 0.16, g));
+    small(mesh(lantern, paper, s * 1.08, ph - 0.32, pf + 0.02, g));
+    for (const y of [0.2, -0.2]) small(mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.04, 10), dark, s * 1.08, ph - 0.32 + y, pf + 0.02, g));
+    small(mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.22, 4), dark, s * 1.08, ph - 0.0, pf + 0.02, g));
   }
+  // the chimney: tall round brick, iron hoops, smoking over the roof at the back
+  const bricks = brickArt(); bricks.repeat.set(3, 9);
+  const cx = -hw / 2 + 0.45, cz = hz - hd / 2 + 0.05, ch = 4.1;
+  mesh(new THREE.CylinderGeometry(0.24, 0.34, ch, 16), std({ map: bricks, roughness: 1 }), cx, P + ch / 2, cz, g);
+  for (const y of [0.4, 0.62, 0.86]) small(mesh(new THREE.CylinderGeometry(0.26 + (1 - y) * 0.1, 0.26 + (1 - y) * 0.1, 0.05, 16), hoop, cx, P + ch * y, cz, g));
+  mesh(new THREE.CylinderGeometry(0.31, 0.26, 0.16, 16), dark, cx, P + ch + 0.05, cz, g);
+  smoke.push([f.cx + cx, P + ch + 0.25, f.cz + cz, false]);
+  // wooden tubs stacked by the door, a woodpile for the boiler on the other side
+  const pail = new THREE.CylinderGeometry(0.15, 0.12, 0.15, 14), band = new THREE.CylinderGeometry(0.152, 0.152, 0.025, 14);
+  for (const [x, y, z] of [[1.42, 0, 2.05], [1.74, 0, 2.05], [1.58, 0.15, 2.05], [1.58, 0, 1.75]]) {
+    small(mesh(pail, tub, x, P + 0.075 + y, z, g));
+    small(mesh(band, hoop, x, P + 0.1 + y, z, g));
+  }
+  const log = new THREE.CylinderGeometry(0.08, 0.08, 0.62, 8); log.rotateX(Math.PI / 2);
+  const bark = std({ color: '#6a4a32', roughness: 1 });
+  for (const [x, y] of [[-1.72, 0], [-1.54, 0], [-1.36, 0], [-1.63, 0.15], [-1.45, 0.15], [-1.54, 0.3]]) small(mesh(log, bark, x, P + 0.08 + y, 1.95, g));
   return g;
 }
 
@@ -6668,7 +6830,6 @@ function treehouse(b, f, L, lit) {
     moss.push([x, y, z, x + (rnd() - 0.5) * 0.04, y - 0.18 - rnd() * 0.3, z]);
   }
   beams(moss, 0.02, std({ color: '#3e6a2e', roughness: 1 }), { taper: 0.3, sides: 4, shadow: false });
-  if (b.name) panel(nameArt(b.name), 1.1, 0.28, wx(0), base + h + 0.02, wz(ez + 0.04));
   if (b.kind === 'shop') {   // a striped awning over the door, a basket of fruit by it
     const stripes = document.createElement('canvas'); stripes.width = 16; stripes.height = 2;
     const sg = stripes.getContext('2d'); for (let x = 0; x < 16; x += 4) { sg.fillStyle = x % 8 ? '#f8f0e0' : b.roof; sg.fillRect(x, 0, 4, 2); }
@@ -6819,7 +6980,6 @@ function canopyManor(b, f, L, lit, leader) {
   small(mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 24), gold, 0, gy + gr * 0.4, gz + 0.02, g)).rotation.x = Math.PI / 2;
   g.attach(panel(houseCrest('ink', ink, letter), 0.36, 0.36, wx(0), gy + gr * 0.4, wz(gz + 0.04)));
   small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, 0, gy + gr + 0.1, gz + 0.04, g));
-  if (b.name) g.attach(panel(nameArt(b.name), 1.1, 0.28, wx(0), vy - 0.12, wz(vz + 0.1)));
   // the hall's roof a terrace, railed in the leader's colour, gold knobs on its posts
   mesh(rbox(hw + 0.24, 0.12, hd + 0.24, 0.03), rim, 0, top + 0.06, hz0, g);
   const ty = top + 0.12, tf = fz + 0.06, tb = hz0 - hd / 2 - 0.06, trail = [];
@@ -7148,6 +7308,63 @@ function plankArt(name) {
   return f.c;
 }
 
+/** Highbough's name board (the user's ask, 2026-10-14: readable signs for the Gym Leaders and the trade house): a dark
+    walnut plank, mossy along the top, big cream letters, the second line in the leader's ink (the Curio Shop's in ghost
+    violet), a gold rim for a leader. */
+function boughBoardArt(lines, ink) {
+  const f = fine(64, 28, 8), { g, rr, lin } = f;
+  rr(0, 2, 64, 26, 3, ink ? '#d8b050' : '#2a1a10');
+  rr(1.4, 3.4, 61.2, 23.2, 2.2, lin(0, 0, 0, 28, ['#6a4428', '#3e2616']));
+  g.strokeStyle = 'rgba(20,10,4,0.4)'; g.lineWidth = 0.5;
+  for (let y = 8; y < 26; y += 4) { g.beginPath(); g.moveTo(3, y); g.bezierCurveTo(22, y - 1.2, 42, y + 1.2, 61, y); g.stroke(); }
+  g.fillStyle = '#c8a060';
+  for (const x of [4.5, 59.5]) { g.beginPath(); g.arc(x, 7, 1, 0, Math.PI * 2); g.fill(); }
+  const r = seeded(lines[0].length * 7 + 3);
+  for (let i = 0; i < 26; i++) { g.fillStyle = ['#4a7a30', '#3a6a2a', '#5a8a3a'][i % 3]; g.beginPath(); g.ellipse(2 + r() * 60, 3 + r() * 1.6, 1.4 + r() * 2, 0.9 + r() * 1.1, 0, 0, Math.PI * 2); g.fill(); }
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = 'bold 11px sans-serif'; g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(lines[0], 32.4, (lines[1] ? 12 : 15.5) + 0.5, 56);
+  g.fillStyle = '#fff4dc'; g.fillText(lines[0], 32, lines[1] ? 12 : 15.5, 56);
+  if (lines[1]) { g.font = 'bold 7px sans-serif'; g.fillStyle = ink || '#d0a0ff'; g.fillText(lines[1], 32, 21.5, 56); }
+  return f.c;
+}
+
+/** A name board by each of Highbough's named houses (`s`): the board hung on two ropes from a log crossbar, swaying a
+    little, a ghost lantern off one end. */
+function boughBoards(town, lit) {
+  const { map } = town, wood = bark(), rope = std({ color: '#b89a6a', roughness: 1 });
+  const ghost = std({ color: '#b070ff', emissive: new THREE.Color('#c890ff'), emissiveIntensity: 0.9, roughness: 0.5 });
+  lit.push(ghost);
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 's') return;
+    const near = (f) => Math.hypot(Math.max(f.x0 - x, 0, x - f.x1), Math.max(f.y0 - y, 0, y - f.y1));
+    const named = town.buildings.filter(b => b.name).map(b => ({ b, d: near(footprint(map, b.at)) })).sort((p, q) => p.d - q.d)[0]?.b;
+    if (!named) return;
+    const leader = town.homes?.[named.home]?.leader;
+    const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
+    const g = new THREE.Group(), W = 1.3, H = 0.57, top = 1.62;
+    g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    B.group.add(g);
+    for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.08, top + 0.08, 10), wood, sx * (W / 2 + 0.04), (top + 0.08) / 2, 0, g);
+    mesh(new THREE.CylinderGeometry(0.055, 0.055, W + 0.36, 10), wood, 0.06, top, 0, g).rotation.z = Math.PI / 2;
+    const swing = new THREE.Group();
+    swing.position.set(0, top - 0.02, 0.04);
+    g.add(swing);
+    for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 5), rope, sx * (W / 2 - 0.12), -0.15, 0, swing).castShadow = false;
+    const board = panel(boughBoardArt(lines, leader && LEADER_INK[leader]?.[0]), W, W * 28 / 64, 0, -0.3 - H / 2, 0);
+    board.removeFromParent(); swing.add(board); board.raycast = () => {};
+    const lamp = new THREE.Group();
+    lamp.position.set(W / 2 + 0.2, top - 0.04, 0.02);
+    g.add(lamp);
+    mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.16, 4), rope, 0, -0.08, 0, lamp).castShadow = false;
+    mesh(new THREE.CylinderGeometry(0.06, 0.075, 0.15, 8), ghost, 0, -0.24, 0, lamp).castShadow = false;
+    mesh(new THREE.ConeGeometry(0.08, 0.06, 8), wood, 0, -0.14, 0, lamp).castShadow = false;
+    const s = x * 0.7 + y;
+    B.ticks.push((now) => { swing.rotation.z = calm ? 0 : Math.sin(now / 1500 + s) * 0.035; lamp.rotation.z = calm ? 0 : Math.sin(now / 1100 + s) * 0.09; });
+    B.blocked.add(key(x, y));
+  }));
+}
+
+
 /** The way out, the Bough Gate (the user's ask, 2026-10-14: the exit "more grand", noticeable as the way out): two giant
     trunks on flaring roots, wound with vines and thorns, growing together overhead into a living arch crowned with leaves
     and lit with ghost-blooms; vines hanging off its shoulders, a ghost-lantern swaying either side under it, wisps of
@@ -7274,6 +7491,7 @@ function canopyExtras(town, L, lit) {
   canopyMist();
   canopySupports(town);
   planters(town);
+  boughBoards(town, lit);
   const rnd = seeded(71);
   town.map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === '|') loneGiant(tileX(x) + (rnd() - 0.5) * 0.2, tileZ(y) + (rnd() - 0.5) * 0.2, rnd, lit);
@@ -7824,6 +8042,88 @@ function tentFront(w, col) {
   return f.c;
 }
 
+/** A Poké Ball, `r` its radius, its button to the front and lit a little at night. */
+function pokeBall(r, lit) {
+  const g = new THREE.Group(), black = std({ color: '#201818', roughness: 0.5 });
+  const btn = std({ color: '#ffffff', emissive: new THREE.Color('#fff4d8'), emissiveIntensity: 0.5, roughness: 0.3 });
+  lit.push(btn);
+  mesh(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e03028', roughness: 0.35 }), 0, 0, 0, g);
+  mesh(new THREE.SphereGeometry(r, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f6f2ea', roughness: 0.4 }), 0, 0, 0, g);
+  mesh(new THREE.CylinderGeometry(r * 1.015, r * 1.015, r * 0.15, 24), black, 0, 0, 0, g);
+  mesh(new THREE.CylinderGeometry(r * 0.36, r * 0.36, r * 0.2, 16), black, 0, 0, r * 0.93, g).rotation.x = Math.PI / 2;
+  mesh(new THREE.CylinderGeometry(r * 0.23, r * 0.23, r * 0.24, 16), btn, 0, 0, r * 0.97, g).rotation.x = Math.PI / 2;
+  return g;
+}
+
+/** A little Poké Ball painted on a canvas. */
+function ballIcon(g, cx, cy, r) {
+  g.fillStyle = '#201818'; g.beginPath(); g.arc(cx, cy, r + 0.7, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#e83828'; g.beginPath(); g.arc(cx, cy, r, Math.PI, 0); g.fill();
+  g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI); g.fill();
+  g.fillStyle = '#201818'; g.fillRect(cx - r, cy - r * 0.12, r * 2, r * 0.24);
+  g.beginPath(); g.arc(cx, cy, r * 0.38, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f4ec'; g.beginPath(); g.arc(cx, cy, r * 0.22, 0, Math.PI * 2); g.fill();
+}
+
+/** A trade house's hanging board: TRADE in big cream letters on a deep shade of its colour, a Poké Ball either side. */
+function tradeBoardArt(col) {
+  const f = fine(52, 22, 8), { g, rr, lin } = f, deep = shadeOf(col, -1);
+  rr(0, 0, 52, 22, 2.4, '#d8a838');
+  rr(1.4, 1.4, 49.2, 19.2, 1.6, lin(0, 0, 0, 22, [deep, shadeOf(deep, -1)]));
+  g.fillStyle = 'rgba(0,0,0,0.22)'; g.beginPath(); g.roundRect(1.4, 1.4, 49.2, 19.2, 1.6); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillText('TRADE', 26.4, 9.4, 30);
+  g.fillStyle = '#fff6e0'; g.fillText('TRADE', 26, 9, 30);
+  g.font = 'bold 7px sans-serif'; g.fillStyle = '#ffe08a'; g.fillText('HOUSE', 26, 17, 30);
+  for (const cx of [7, 45]) ballIcon(g, cx, 11, 4.2);
+  return f.c;
+}
+
+/** Every town's trade house wears one (the user's ask, 2026-10-14: "all trade homes should have some kind of sign and a
+    pokeball sign too"): a post at its front corner away from the door, a Poké Ball turning slowly on top, and a TRADE
+    board swinging off an arm. */
+function tradePost(b, f, lit) {
+  const g = new THREE.Group(), side = b.door && tileX(b.door.x) > f.cx ? -1 : 1, H = 2.2;
+  g.position.set(f.cx + side * (f.w / 2 - 0.16), 0, f.cz + f.h / 2 - 0.16);
+  B.group.add(g);
+  const wood = std({ color: '#5a3a24', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+  mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.14, 12), std({ color: '#8a8478', roughness: 1 }), 0, 0.07, 0, g);
+  mesh(new THREE.CylinderGeometry(0.055, 0.07, H, 10), wood, 0, H / 2, 0, g);
+  mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 12), brass, 0, H + 0.03, 0, g);
+  const ball = pokeBall(0.3, lit);
+  ball.position.y = H + 0.34; g.add(ball);
+  mesh(new THREE.BoxGeometry(0.95, 0.06, 0.06), wood, side * 0.45, H - 0.3, 0, g);
+  mesh(new THREE.SphereGeometry(0.05, 10, 8), brass, side * 0.92, H - 0.3, 0, g);
+  const swing = new THREE.Group();
+  swing.position.set(side * 0.5, H - 0.33, 0.03); g.add(swing);
+  for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.14, 4), brass, sx * 0.4, -0.07, 0, swing).castShadow = false;
+  const board = panel(tradeBoardArt(b.roof || '#c83a3a'), 1.18, 0.5, 0, 0, 0);
+  board.removeFromParent(); board.position.set(0, -0.39, 0); swing.add(board);
+  B.ticks.push((now) => { if (!calm) { ball.rotation.y = Math.sin(now / 1400) * 0.5; swing.rotation.z = Math.sin(now / 900) * 0.04; } });
+  return g;
+}
+
+/** Persian's marquee: a crimson board with an arched top, gold-rimmed and studded, Persian's red charm in gold at its
+    head, the bazaar's name big in cream and TRADE HOUSE under it between two Poké Balls. */
+function marqueeArt(name, col) {
+  const W = 120, H = 36, f = fine(W, H, 8), { g, lin } = f;
+  const shape = (ctx, i) => { ctx.beginPath(); ctx.moveTo(i, H - i); ctx.lineTo(i, 12 + i * 0.5); ctx.quadraticCurveTo(W * 0.25, 7 + i, W / 2, i); ctx.quadraticCurveTo(W * 0.75, 7 + i, W - i, 12 + i * 0.5); ctx.lineTo(W - i, H - i); ctx.closePath(); };
+  g.fillStyle = '#5a2a16'; shape(g, 0); g.fill();
+  g.fillStyle = '#e8b040'; shape(g, 1.3); g.fill();
+  g.fillStyle = lin(0, 0, 0, H, [shadeOf(col, -1), '#4a0e1c']); shape(g, 2.6); g.fill();
+  g.fillStyle = '#e8b040';
+  for (let x = 8; x < W - 6; x += 7) { g.beginPath(); g.arc(x, H - 4.6, 0.8, 0, Math.PI * 2); g.fill(); }
+  g.beginPath(); g.ellipse(W / 2, 8.4, 4.6, 3.6, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#d81830'; g.beginPath(); g.ellipse(W / 2, 8.4, 3, 2.2, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = 'rgba(255,255,255,0.7)'; g.beginPath(); g.ellipse(W / 2 - 1, 7.6, 1, 0.6, 0, 0, Math.PI * 2); g.fill();
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 12px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillText(name, W / 2 + 0.5, 19.5, 100);
+  g.fillStyle = '#fff4d8'; g.fillText(name, W / 2, 19, 100);
+  g.font = 'bold 7px sans-serif'; g.fillStyle = '#f8d060'; g.fillText('TRADE HOUSE', W / 2, 27.6, 60);
+  for (const cx of [W / 2 - 34, W / 2 + 34]) ballIcon(g, cx, 27.6, 3.4);
+  return f.c;
+}
+
 /** Persian's bazaar, a great striped tent over its footprint: canvas walls, a peaked roof on a centre pole with a pennant,
     a scalloped valance, its doorway open and lit, brass lamps hung either side, its name over the door. */
 function bazaarTent(b, f, L, lit) {
@@ -7863,7 +8163,18 @@ function bazaarTent(b, f, L, lit) {
     mesh(new THREE.ConeGeometry(0.08, 0.1, 10), brass, sx * (w / 2 - 0.25), h - 0.28, d / 2 + 0.3, g);
   }
   mesh(new THREE.BoxGeometry(1.6, 0.03, 0.8), std({ color: '#a83a3a', roughness: 1 }), 0, 0.015, d / 2 + 0.45, g).castShadow = false;
-  if (b.name) g.attach(panel(signArt(b.name), 1.8, 0.38, f.cx, h + 0.22, f.cz + d / 2 + 0.33));
+  // (the user's ask, 2026-10-14: "Persian needs a better trade sign") a great marquee over the tent's front on two carved
+  // posts at its corners, a Poké Ball turning on top; it stands in for the town's tradePost()
+  const mw = w + 0.2, mz = f.h / 2 - 0.12, mh = (mw - 0.16) * 36 / 120, carved = std({ color: '#6a3a22', roughness: 0.8 });
+  for (const sx of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.07, 0.09, 2.55, 10), carved, sx * mw / 2, 1.275, mz, g);
+    mesh(new THREE.SphereGeometry(0.1, 12, 10), brass, sx * mw / 2, 2.6, mz, g);
+  }
+  g.attach(panel(marqueeArt(b.name || 'BAZAAR', b.roof), mw - 0.16, mh, f.cx, 1.55 + mh / 2, f.cz + mz + 0.02));
+  const ball = pokeBall(0.26, lit);
+  ball.position.set(0, 1.55 + mh + 0.3, mz); g.add(ball);
+  B.ticks.push((now) => { if (!calm) ball.rotation.y = Math.sin(now / 1400) * 0.5; });
+  g.userData.signed = true;
   return g;
 }
 
@@ -8069,37 +8380,192 @@ function sunGate(x, z, span, tall, name, L, lit) {
   return g;
 }
 
-/** A market stall on its tile: four poles, a striped awning sloping to the front, a table of wares (fruit, pots, cloth). */
-function stall(x, z, rnd) {
-  const g = new THREE.Group();
-  g.position.set(x, 0, z);
-  B.group.add(g);
-  const wood = std({ color: '#7a5434', roughness: 0.9 }), col = SAVANNA.stripe[Math.floor(rnd() * SAVANNA.stripe.length)];
-  for (const sx of [-1, 1]) for (const [sz, hh] of [[-1, 1.3], [1, 1.1]]) mesh(new THREE.CylinderGeometry(0.025, 0.025, hh, 6), wood, sx * 0.42, hh / 2, sz * 0.38, g);
-  const awn = mesh(new THREE.BoxGeometry(1.0, 0.03, 0.95), std({ map: stripeArt(col, 4), roughness: 0.9 }), 0, 1.22, 0, g);
-  awn.rotation.x = 0.21;
-  mesh(new THREE.BoxGeometry(0.9, 0.06, 0.55), wood, 0, 0.55, 0.05, g);
-  mesh(new THREE.BoxGeometry(0.9, 0.42, 0.04), std({ color: shadeOf(col, -1), roughness: 0.95 }), 0, 0.34, 0.33, g);
-  const wares = [['#e85a3a', 'ball'], ['#f8c040', 'ball'], ['#7ab040', 'ball'], ['#c8763a', 'pot'], ['#3a7ab8', 'cloth'], ['#d84a8a', 'cloth']];
-  for (let i = 0; i < 5; i++) {
-    const [c, kind] = wares[Math.floor(rnd() * wares.length)], wx = -0.32 + i * 0.16, wz = 0.05 + (rnd() - 0.5) * 0.2;
-    const m = std({ color: c, roughness: 0.7 });
-    if (kind === 'ball') for (let k = 0; k < 3; k++) mesh(new THREE.SphereGeometry(0.045, 8, 6), m, wx + (k - 1) * 0.04, 0.62 + (k === 1 ? 0.05 : 0), wz, g).castShadow = false;
-    else if (kind === 'pot') mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.14, 10), m, wx, 0.65, wz, g);
-    else mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.16, 8), m, wx, 0.63, wz, g).rotation.z = Math.PI / 2;
+/** A Sunwell Bazaar name board's face: gold-rimmed, the leader's deepest colour with zigzags in theirs along top and
+    foot, their crest on the left, the name in white and GYM LEADER in their light colour. */
+function bazaarBoardArt(lines, ink, letter) {
+  const f = fine(64, 28, 8), { g, rr, lin } = f;
+  rr(0, 0, 64, 28, 2.6, '#e8b040');
+  rr(1.5, 1.5, 61, 25, 1.8, lin(0, 0, 0, 28, [ink[2], shadeOf(ink[2], -1)]));
+  g.strokeStyle = ink[1]; g.lineWidth = 1.1;
+  for (const y of [4.4, 23.6]) { g.beginPath(); for (let x = 3; x <= 61; x += 3) g.lineTo(x, y + (x % 6 ? -1.2 : 1.2)); g.stroke(); }
+  if (letter) {
+    g.fillStyle = '#e8b040'; g.beginPath(); g.arc(11, 14, 6.4, 0, Math.PI * 2); g.fill();
+    g.fillStyle = ink[1]; g.beginPath(); g.arc(11, 14, 5.2, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff'; g.font = 'bold 8px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(letter, 11, 14.5);
   }
+  const cx = letter ? 37 : 32, mw = letter ? 44 : 56;
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'bold 11px sans-serif';
+  g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillText(lines[0], cx + 0.4, (lines[1] ? 11.5 : 14) + 0.5, mw);
+  g.fillStyle = '#ffffff'; g.fillText(lines[0], cx, lines[1] ? 11.5 : 14, mw);
+  if (lines[1]) { g.font = 'bold 7px sans-serif'; g.fillStyle = ink[0]; g.fillText(lines[1], cx, 19.5, mw); }
+  return f.c;
+}
+
+/** Sunwell Bazaar's name boards (`s`; the user's ask, 2026-10-14: the leaders' signs in the town's own look, as
+    Highbough's are): a painted board in the leader's colours on two carved posts, brass knobs on top, a little striped
+    awning over it and a lantern lit in their colour hung off each post. */
+function bazaarBoards(town, lit) {
+  const { map } = town;
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 's') return;
+    const near = (f) => Math.hypot(Math.max(f.x0 - x, 0, x - f.x1), Math.max(f.y0 - y, 0, y - f.y1));
+    const named = town.buildings.filter(b => b.name).map(b => ({ b, d: near(footprint(map, b.at)) })).sort((p, q) => p.d - q.d)[0]?.b;
+    if (!named) return;
+    const leader = town.homes?.[named.home]?.leader, ink = (leader && LEADER_INK[leader]) || ['#ffe08a', named.roof || '#c83a5a', '#4a1820'];
+    const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
+    const g = new THREE.Group(), W = 1.5, H = W * 28 / 64, top = 1.55;
+    g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    B.group.add(g);
+    const wood = std({ color: '#6a4228', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+    const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.4 });
+    lit.push(glow);
+    for (const sx of [-1, 1]) {
+      const px = sx * (W / 2 + 0.04);
+      mesh(new THREE.CylinderGeometry(0.055, 0.07, top + 0.3, 10), wood, px, (top + 0.3) / 2, 0, g);
+      mesh(new THREE.SphereGeometry(0.075, 12, 10), brass, px, top + 0.34, 0, g);
+      mesh(new THREE.BoxGeometry(0.2, 0.03, 0.03), wood, px + sx * 0.1, top - 0.2, 0, g);
+      mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.12, 4), brass, px + sx * 0.18, top - 0.27, 0, g).castShadow = false;
+      const lamp = mesh(new THREE.SphereGeometry(0.07, 12, 8), glow, px + sx * 0.18, top - 0.38, 0, g);
+      lamp.scale.y = 1.25; lamp.castShadow = false;
+      mesh(new THREE.ConeGeometry(0.06, 0.07, 10), brass, px + sx * 0.18, top - 0.29, 0, g).castShadow = false;
+    }
+    const awn = mesh(new THREE.BoxGeometry(W + 0.32, 0.03, 0.36), std({ map: stripeArt(ink[1], 5), roughness: 0.9 }), 0, top + 0.16, 0.12, g);
+    awn.rotation.x = 0.35;
+    g.attach(panel(bazaarBoardArt(lines, ink, leader ? (named.name || leader)[0].toUpperCase() : ''), W, H, tileX(x), top - H / 2 - 0.02, tileZ(y) + 0.36));
+    g.traverse(o => { o.raycast = () => {}; });
+    B.blocked.add(key(x, y));
+  }));
+}
+
+/** A kilim for a stall's back or the market floor: a border, a field and a stepped diamond, its colours from `cols`. */
+function kilimArt(cols, seed) {
+  const f = fine(40, 26, 6), { g } = f, r = seeded(seed);
+  g.fillStyle = cols[0]; g.fillRect(0, 0, 40, 26);
+  g.fillStyle = cols[1]; g.fillRect(2, 2, 36, 22);
+  g.fillStyle = cols[2]; g.fillRect(4, 4, 32, 18);
+  g.fillStyle = cols[3];
+  for (let x = 5; x < 36; x += 4) for (const y of [3, 23]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + 2, y - 1.5); g.lineTo(x + 2, y + 1.5); g.fill(); }
+  for (const [s, c] of [[9, cols[1]], [6.5, cols[3]], [4, cols[0]], [1.8, cols[1]]]) { g.fillStyle = c; g.beginPath(); g.moveTo(20, 13 - s); g.lineTo(20 + s * 1.5, 13); g.lineTo(20, 13 + s); g.lineTo(20 - s * 1.5, 13); g.closePath(); g.fill(); }
+  for (const cx of [9, 31]) { g.fillStyle = cols[3]; g.beginPath(); g.moveTo(cx, 9 + r()); g.lineTo(cx + 2.5, 13); g.lineTo(cx, 17 - r()); g.lineTo(cx - 2.5, 13); g.fill(); }
+  g.fillStyle = 'rgba(255,255,255,0.08)'; for (let y = 0; y < 26; y += 1.5) g.fillRect(0, y, 40, 0.4);
+  return f.c;
+}
+
+/** A row of pennants on a string, for over a stall. */
+function buntingArt(n, rnd) {
+  const f = fine(n * 10, 10, 6), { g } = f;
+  g.strokeStyle = '#f4e8d0'; g.lineWidth = 0.7; g.beginPath(); g.moveTo(0, 1.4); g.lineTo(n * 10, 1.4); g.stroke();
+  for (let i = 0; i < n; i++) { g.fillStyle = SAVANNA.stripe[Math.floor(rnd() * SAVANNA.stripe.length)]; g.beginPath(); g.moveTo(i * 10 + 1, 1.4); g.lineTo(i * 10 + 9, 1.4); g.lineTo(i * 10 + 5, 9.4); g.closePath(); g.fill(); }
+  return f.c;
+}
+
+/** A stall's scalloped valance in its colour, gold-edged, a tassel at each point. */
+function valanceArt(col, n) {
+  const f = fine(n * 8, 8, 6), { g } = f;
+  g.fillStyle = col; g.fillRect(0, 0, n * 8, 3);
+  for (let i = 0; i < n; i++) { g.beginPath(); g.arc(i * 8 + 4, 3, 4, 0, Math.PI); g.fill(); }
+  g.fillStyle = '#e8b040'; g.fillRect(0, 0, n * 8, 0.9);
+  for (let i = 0; i < n; i++) { g.beginPath(); g.arc(i * 8 + 4, 7.2, 0.8, 0, Math.PI * 2); g.fill(); }
+  return f.c;
+}
+
+/** A long market stall (the user's ask, 2026-10-14: the old one-tile stalls were "so lame and dinky"), `len` tiles along
+    its counter, turned by `turn`: carved posts with brass knobs, a striped awning sloping to the front under a scalloped
+    valance, a kilim hung across its back, a counter heaped with wares a tile at a time (spice cones in trays, glazed jars,
+    fruit in baskets, bolts of cloth, brass lamps), lanterns hung along its front, pennants strung over it and a flag at
+    each end. Its materials are its own, so it fades by itself when you walk behind it. */
+function bazaarStall(x, z, len, turn, col, rnd, lit, Gm) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z); g.rotation.y = turn;
+  B.group.add(g);
+  const W = len - 0.1, D = 0.84, wood = std({ color: '#6a4428', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
+  const px = (i) => -W / 2 + i * W / len;
+  for (let i = 0; i <= len; i++) for (const [pz, ph] of [[-D / 2, 1.9], [D / 2, 1.58]]) {
+    const hh = (i === 0 || i === len) && pz < 0 ? 2.45 : ph;
+    mesh(Gm.post, wood, px(i), hh / 2, pz, g).scale.y = hh;
+    mesh(Gm.knob, brass, px(i), hh + 0.03, pz, g).castShadow = false;
+  }
+  const tex = stripeArt(col, 4); tex.repeat.set(len, 1);
+  const awn = mesh(new THREE.BoxGeometry(W + 0.26, 0.035, D + 0.3), std({ map: tex, roughness: 0.9 }), 0, 1.76, 0.02, g);
+  awn.rotation.x = Math.atan2(0.32, D);
+  const hang = (art, w, h, y, z) => { const p = panel(art, w, h, 0, 0, 0); p.removeFromParent(); p.position.set(0, y, z); p.castShadow = false; g.add(p); return p; };
+  hang(valanceArt(col, len * 4), W + 0.26, 0.26, 1.47, D / 2 + 0.17);
+  hang(kilimArt([shadeOf(col, -1), '#f4e2b8', col, '#2a1c18'], len * 7), W - 0.08, 1.0, 1.05, -D / 2 + 0.03);
+  hang(buntingArt(len * 5, rnd), W, 0.2, 2.18, -D / 2 + 0.02);
+  const flagM = std({ color: col, roughness: 0.8, side: THREE.DoubleSide }), flags = [];
+  for (const i of [0, len]) { const fl = mesh(Gm.flag, flagM, px(i) + 0.17, 2.34, -D / 2, g); fl.castShadow = false; flags.push(fl); }
+  const cloth = std({ color: shadeOf(col, -1), roughness: 0.95 }), top = std({ color: '#8a6040', roughness: 0.85 });
+  mesh(new THREE.BoxGeometry(W - 0.04, 0.52, 0.42), [wood, wood, top, wood, cloth, wood], 0, 0.26, D / 2 - 0.24, g);
+  mesh(new THREE.BoxGeometry(W - 0.02, 0.05, 0.03), brass, 0, 0.47, D / 2 - 0.02, g).castShadow = false;
+  mesh(new THREE.BoxGeometry(W - 0.1, 0.05, 0.26), wood, 0, 0.62, -D / 2 + 0.16, g);
+  const glow = std({ color: '#f8b040', emissive: new THREE.Color('#ffb860'), emissiveIntensity: 0.8, roughness: 0.4 });
+  lit.push(glow);
+  const pick = (a) => a[Math.floor(rnd() * a.length)], kinds = ['spice', 'jars', 'fruit', 'cloth', 'brass'], small = (o) => { o.castShadow = false; return o; };
+  let k = Math.floor(rnd() * kinds.length);
+  for (let i = 0; i < len; i++) {
+    const cx = -W / 2 + (i + 0.5) * W / len, wz = D / 2 - 0.24, y = 0.53, kind = kinds[k++ % kinds.length];
+    if (kind === 'spice') for (let j = 0; j < 3; j++) {
+      const sx = cx + (j - 1) * 0.27;
+      small(mesh(Gm.tray, top, sx, y, wz, g));
+      small(mesh(Gm.mound, std({ color: pick(['#e8702a', '#c8301e', '#f0c030', '#8a9a30', '#a0522d']), roughness: 1 }), sx, y + 0.07, wz, g));
+    } else if (kind === 'jars') for (let j = 0; j < 3; j++) {
+      const m = std({ color: pick(['#c8763a', '#3a6ab0', '#2e8a7a', '#b8502a', '#e0c890']), roughness: 0.35 }), s = 0.8 + rnd() * 0.5, jz = wz + (rnd() - 0.5) * 0.08;
+      small(mesh(Gm.jar, m, cx + (j - 1) * 0.26, y + 0.09 * s, jz, g)).scale.set(s, s * 1.25, s);
+      small(mesh(Gm.neck, m, cx + (j - 1) * 0.26, y + 0.2 * s, jz, g));
+    } else if (kind === 'fruit') for (let j = 0; j < 2; j++) {
+      const bx = cx + (j ? 0.18 : -0.18), fm = std({ color: pick(['#e85a3a', '#f8c040', '#7ab040', '#d83a6a']), roughness: 0.6 });
+      small(mesh(Gm.basket, std({ color: '#b8904a', roughness: 1, side: THREE.DoubleSide }), bx, y + 0.05, wz, g));
+      for (let q = 0; q < 4; q++) small(mesh(Gm.fruit, fm, bx + (q % 2 - 0.5) * 0.08, y + 0.08 + (q > 1 ? 0.05 : 0), wz + (q > 1 ? 0 : (q - 0.5) * 0.06), g));
+    } else if (kind === 'cloth') for (let j = 0; j < 4; j++) {
+      small(mesh(Gm.bolt, std({ color: pick([...SAVANNA.stripe, '#f4e8d0', '#2a1c18']), roughness: 0.95 }), cx + (j % 2 - 0.5) * 0.36, y + 0.05 + Math.floor(j / 2) * 0.09, wz, g));
+    } else for (let j = 0; j < 3; j++) {
+      const lx = cx + (j - 1) * 0.26;
+      small(mesh(Gm.lamp, brass, lx, y + 0.06, wz, g)).scale.set(1, 0.55, 0.75);
+      small(mesh(Gm.spout, brass, lx + 0.1, y + 0.08, wz, g)).rotation.z = -1.1;
+    }
+    for (let j = 0; j < 3; j++) small(mesh(Gm.jar, std({ color: pick(['#c8763a', '#e0c890', '#8a5a3a', '#3a6ab0']), roughness: 0.5 }), cx + (j - 1) * 0.24, 0.71, -D / 2 + 0.16, g));
+    small(mesh(Gm.cord, brass, cx, 1.42, D / 2 + 0.12, g));
+    small(mesh(Gm.lantern, glow, cx, 1.3, D / 2 + 0.12, g)).scale.y = 1.3;
+  }
+  if (rnd() < 0.7) small(mesh(Gm.roll, std({ color: pick(['#a83a3a', '#3a5a9a', '#c87a2a']), roughness: 0.95 }), W / 2 - 0.06, 0.55, D / 2 + 0.1, g)).rotation.z = 0.28;
+  B.ticks.push((now) => { if (!calm) flags.forEach((fl, i) => { fl.rotation.y = Math.sin(now / 650 + i * 2 + x) * 0.4; }); });
+  g.traverse(o => { o.raycast = () => {}; });
   return g;
 }
 
 /** The savanna's own things from the map: the watering hole under it all, a name board by each leader's home (`s`), the
-    market's stalls. */
-function savannaExtras(town) {
+    market's stalls (a run of `n` is one long stall; a column of them faces in across the square) and kilims laid out on
+    its floor in front of some. */
+function savannaExtras(town, L, lit) {
   wateringHole(town);
-  nameBoards(town, 's');
-  const rnd = seeded(41);
-  town.map.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === 'n') { stall(tileX(x), tileZ(y), rnd); B.blocked.add(key(x, y)); }
+  bazaarBoards(town, lit);
+  const { map } = town, rnd = seeded(41), n = (x, y) => map[y]?.[x] === 'n', seen = new Set(), runs = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== 'n' || seen.has(key(x, y))) return;
+    let len = 1; while (n(x + len, y)) len++;
+    if (len > 1) { for (let i = 0; i < len; i++) seen.add(key(x + i, y)); runs.push({ x: x + (len - 1) / 2, y, len }); return; }
+    let h = 1; while (n(x, y + h) && !n(x - 1, y + h) && !n(x + 1, y + h)) h++;
+    for (let i = 0; i < h; i++) seen.add(key(x, y + i));
+    runs.push({ x, y: y + (h - 1) / 2, len: h, v: h > 1 });
   }));
+  if (!runs.length) return;
+  const mid = runs.reduce((s, r) => s + r.x, 0) / runs.length;
+  const Gm = { post: new THREE.CylinderGeometry(0.035, 0.042, 1, 8), knob: new THREE.SphereGeometry(0.05, 10, 8), flag: new THREE.PlaneGeometry(0.32, 0.2),
+    tray: new THREE.CylinderGeometry(0.12, 0.1, 0.04, 14), mound: new THREE.ConeGeometry(0.1, 0.13, 14), jar: new THREE.SphereGeometry(0.075, 12, 10),
+    neck: new THREE.CylinderGeometry(0.03, 0.04, 0.06, 10), basket: new THREE.CylinderGeometry(0.13, 0.1, 0.1, 14, 1, true), fruit: new THREE.SphereGeometry(0.045, 8, 6),
+    bolt: new THREE.BoxGeometry(0.32, 0.08, 0.24), lamp: new THREE.SphereGeometry(0.07, 12, 8), spout: new THREE.ConeGeometry(0.02, 0.12, 8),
+    cord: new THREE.CylinderGeometry(0.006, 0.006, 0.16, 4), lantern: new THREE.SphereGeometry(0.06, 10, 8), roll: new THREE.CylinderGeometry(0.06, 0.06, 1.0, 10) };
+  runs.forEach((r, i) => {
+    for (let k = 0; k < r.len; k++) B.blocked.add(r.v ? key(r.x, r.y - (r.len - 1) / 2 + k) : key(r.x - (r.len - 1) / 2 + k, r.y));
+    const col = SAVANNA.stripe[i % SAVANNA.stripe.length];
+    fadeBehind(bazaarStall(tileX(r.x), tileZ(r.y), r.len, r.v ? (r.x < mid ? Math.PI / 2 : -Math.PI / 2) : 0, col, rnd, lit, Gm));
+    if (i % 2) return;
+    const fx = r.v ? r.x + (r.x < mid ? 1 : -1) : r.x, fy = r.v ? r.y : r.y + 1;
+    if (map[fy]?.[Math.round(fx)] !== '#') return;
+    const rc = SAVANNA.stripe[(i + 2) % SAVANNA.stripe.length];
+    const rug = panel(kilimArt([rc, '#f4e2b8', shadeOf(rc, -1), '#2a1c18'], i + 3), r.v ? 2.2 : Math.min(2.2, r.len - 0.4), 0.9, tileX(fx), 0.015, tileZ(fy));
+    rug.rotation.x = -Math.PI / 2; rug.rotation.z = r.v ? Math.PI / 2 : 0; rug.raycast = () => {}; rug.castShadow = false;
+  });
 }
 
 /** A mote of dust, gold, for the ones drifting up off the road. */
@@ -8149,9 +8615,46 @@ const TOWN_STYLES = {
     drift: (i) => (i % 4 ? { art: dustArt(), size: 0.08, rise: true } : { art: leafletArt(SAVANNA.grass[i % 3]), size: 0.14 }) },
 };
 
+/** What each town sees past its back edge (vistaArt() in js/hub-vista.js, the Clearing's view out past its Safari gate):
+    the land it stands in, clear to the horizon, its far side blurred by the tilt-shift like the Clearing's. Ranges are
+    [[body, body], snow or null], far then near; `road`: a trail on from the gate. Cinder Springs's sky is a warm volcanic haze. */
+const TOWN_VISTAS = {
+  village: { meadow: ['#a8d888', '#88c468', '#70b052'], trees: ['#5a8a64', '#284a36'], flowers: ['#ffffff', '#f8b0c8', '#f8d040'], road: true },
+  springs: { meadow: ['#a89480', '#8e7a66', '#76624e'], trees: ['#6a5a50', '#3a2e2a'], flowers: [], road: true, smoky: true,
+    ranges: [[['#7a6060', '#604848'], null], [['#5a4444', '#463434'], null]] },
+  lagoon: { meadow: ['#88dce8', '#58c0d8', '#38a0c8'], trees: ['#58b048', '#2a6a30'], flowers: [],
+    ranges: [[['#90b8c8', '#78a0b8'], null], [['#5a9a78', '#3e7a5c'], null]] },
+  canopy: { meadow: ['#78b058', '#5a9a44', '#447e38'], trees: ['#4e9a3c', '#1e5a26'], flowers: ['#c890ff', '#90f0e0'],
+    ranges: [[['#88b0b0', '#6e9898'], null], [['#5e8e78', '#4a7860'], null]] },
+  bazaar: { meadow: ['#ecd498', '#dcc078', '#ccac60'], trees: ['#a0a848', '#5e6a2a'], flowers: [], road: true,
+    ranges: [[['#e4bc90', '#cca078'], null], [['#d09468', '#b07a52'], null]] },
+};
+const VISTA_PAST = 12, VISTA_K = 32, VISTA_SKY = 40;   // tiles past each side; canvas pixels a unit (blurred anyway); sky run on up over it
+
+/** The town's vista, stood square to the camera on its back edge, its foot fading into the forest there; it runs on up
+    past the painting as its plain top sky, so where the ground rolls away no flat colour shows over it, and the room's
+    background is that sky too. */
+function townVista(town, time) {
+  const V = TOWN_VISTAS[town.style || 'village'], dim = time === 'day' ? 'dusk' : time;
+  const sky = V.smoky ? ['#7a6070', '#c08878', '#f0b890'].map(h => graded(h, dim)) : SKY[time];
+  const look = { ...V, sky, clouds: V.smoky ? ['#9a8480', '#4a3a3e'].map(h => graded(h, dim)) : undefined };
+  const x0 = tileX(-0.5) - VISTA_PAST, w = COLS + VISTA_PAST * 2, h = VISTA.h, tall = h + VISTA_SKY;
+  const roads = V.road ? [{ x: tileX(town.gate.x) + 0.5 - x0, half: 0.9 }] : [];
+  const geo = new THREE.PlaneGeometry(w, tall).translate(0, tall / 2, 0), uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * tall / h);
+  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: texOf(vistaArt(time, w, roads, look, VISTA_K)), transparent: true, fog: false, toneMapped: false }));
+  m.material.userData.upright = true;
+  m.rotation.x = -PITCH;
+  m.position.set(x0 + w / 2, 0, BACK_Z - 0.2);
+  m.raycast = () => {};
+  B.group.add(m);
+  B.bg = sky[0];
+}
+
 async function buildTown(figs, { look, time, town, mended = false }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
-  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes });
+  const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes, walled: false });
+  townVista(town, time);
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
@@ -8169,6 +8672,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     const f = footprint(map, b.at);
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
     const g = LANDMARKS[b.kind]?.(b, f) ?? S.house(b, f, L, lit, smoke);
+    if (b.kind === 'shop' && !g.userData.signed) g.attach(tradePost(b, f, lit));
     if (S.fade) fadeBehind(g);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };

@@ -39,7 +39,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   capture, Android vibration), then the flash, shake, -N and the bar running down; each stage it passes jolts the gate a step more broken
   (`crackOpen()`: crack, flash, shake, the bar's rune shattering) and adds its lines (`STAGE_LINES`). The breaking blow: shudder, light rays,
   chains snap, white-out, the door blown apart in shards, Mewtwo's silhouette in the arch, then it steps out in colour with
-  its aura GIF and cry; the pedestal follows, then its unlock window. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
+  its aura GIF and cry, then slides in to speak, a Gym Leader's talk in violet (`MEWTWO_LINES` in `js/gatescene.js`, `gymTalk()`'s `title` / `look: 'psychic'`; 2026-10-14, the user's ask: it's weak after the seal and needs your help); the pedestal follows, then its unlock window. Sounds `gate-hum` / `gate-crack` / `gate-shatter` are synths in
   `js/audio.js`. **Until it breaks, the gate is only ever seen there** (the user's call, 2026-10-02: seeing its progress is a reason to
   win another run): not on the title (Mewtwo never flies by either, it has no flying sprite), and the locked "???" panel
   only hints. **Once broken** (and Mewtwo unlocked) it stands open on the title's ledge (`sizeGate()` / `paintGate()` in
