@@ -12,7 +12,6 @@ three places:
 
 ## Where we left off (2026-10-14)
 
-- 2026-10-14: **Cleared the Waystone plaza of streetlamps** (branch `towns`): removed the three lamps closest to the Waystone; avenue lighting remains. Added a patch-notes line. Browser-checked at `?aerial&time=day`, no console errors.
 - 2026-10-14: **Violet Fissure moved onto grass** (branch `towns`): shifted it one tile north off the west avenue. Checked
   in the browser at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
   Follow-up commit `1d3bd41`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/1d3bd4143a76e68078db958da2f4c768d7f52409/index.html?hubat=2,12&time=night>.

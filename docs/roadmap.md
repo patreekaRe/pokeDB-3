@@ -123,7 +123,6 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     **Follow-up (2026-10-14, user's ask):** moved the fissure one tile north onto the grass above the west avenue. Browser
     checked at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
     Follow-up commit `1d3bd41`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/1d3bd4143a76e68078db958da2f4c768d7f52409/index.html?hubat=2,12&time=night>.
-    **Follow-up (2026-10-14, user's ask):** removed the three streetlamps closest to the Clearing's Waystone, leaving the plaza clear around it while keeping the avenue lights. Browser-checked at `?aerial&time=day`, no console errors. Branch `towns`.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 

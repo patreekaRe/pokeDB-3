@@ -51,7 +51,6 @@ export const NEXT = [
   ['hub', 'A Pokéstop\'s CONTINUE (or SET OUT) now floats over its disc and spins with it, a little smaller.'],
   ['hub', 'The Sealed Gate\'s buried fissure now has smooth, tapered cracks, a slow pulse of light, and motes drifting up from its violet core.'],
   ['hub', 'The Violet Fissure has moved off the west avenue and onto the grass.'],
-  ['hub', 'The streetlamps around the Waystone are gone, leaving the plaza open around it.'],
   ['base', 'Gym Leaders no longer drop by your Secret Base for now.'],
 ];
 
