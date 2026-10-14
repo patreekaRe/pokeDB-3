@@ -43,20 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'Squirtle Bubble Shooter plays like Puzzle Bobble: 20 hand-made boards (a Poké Ball, a heart, a rainbow...), nothing is ever added to them, and every few shots the whole ceiling lowers with them, the bubbles shaking the shot before. After the 20th they come round in new colours, the ceiling quicker.'],
-  ['fixes', 'Main menu in the Pokédex now asks first on the map too, so a stray tap can\'t drop you out of your run.'],
-  ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
-  ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
-  ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
-  ['runs', 'Beat a Gym Leader 3 times and they hand you a signed poster of themselves for your Secret Base wall.'],
-  ['runs', 'Beat a Gym Leader 5 times for their Gold badge, a second badge in the Badge Case for each leader.'],
-  ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
-  ['mall', 'The Poké Mall has the Clearing\'s Pokédex bar along the bottom: Home and How to play, your PokéCoins, and the name of the shop you\'re in.'],
-  ['fixes', 'Closing the game in a Gym after beating its Leader now brings you back to the Gym on Continue, not to the map to fight them again.'],
-  ['hub', 'A Waystone stands on the plaza\'s Poké Ball, five dull crystals circling its tip. Tap it: nobody knows yet how to wake it.'],
-  ['hub', 'The Nietos have a house in the Clearing (Law, Britt, baby Linc and Kangaskhan are home once you\'ve beaten them), and Chad Master Kenmatta\'s dojo has gone up across the Clearing from it. Coming soon.'],
-  ['hub', 'The Whispering Clearing is laid out anew: a paved round plaza in the middle, wide lamp-lit avenues off it and a ring road round them, flower beds, benches and a pond garden. The way out is now north up the avenue through the Whispering Clearing\'s gate, the Ancient Tree and your Secret Base stand in the north-east, the Poké Mall at the west avenue\'s end and the Nietos\' house on the east one.'],
-  ['fixes', 'Phones no longer reload the game mid-run after a while (most often in the Safari Zone): only the 3D place you\'re in is kept in memory now, the rest let go until you walk back in.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
@@ -79,6 +65,27 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.18',
+    name: 'The New Clearing',
+    date: '2026-10-14',
+    notes: [
+  ['mall', 'Squirtle Bubble Shooter plays like Puzzle Bobble: 20 hand-made boards (a Poké Ball, a heart, a rainbow...), nothing is ever added to them, and every few shots the whole ceiling lowers with them, the bubbles shaking the shot before. After the 20th they come round in new colours, the ceiling quicker.'],
+  ['fixes', 'Main menu in the Pokédex now asks first on the map too, so a stray tap can\'t drop you out of your run.'],
+  ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
+  ['runs', 'On the map, a Gym Leader stands beside their Pokémon\'s silhouette above the boss room, both in front of the rocks and lava.'],
+  ['runs', 'Clarence wears his second outfit when he slides in to talk, and his first everywhere else.'],
+  ['runs', 'Beat a Gym Leader 3 times and they hand you a signed poster of themselves for your Secret Base wall.'],
+  ['runs', 'Beat a Gym Leader 5 times for their Gold badge, a second badge in the Badge Case for each leader.'],
+  ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
+  ['mall', 'The Poké Mall has the Clearing\'s Pokédex bar along the bottom: Home and How to play, your PokéCoins, and the name of the shop you\'re in.'],
+  ['fixes', 'Closing the game in a Gym after beating its Leader now brings you back to the Gym on Continue, not to the map to fight them again.'],
+  ['hub', 'A Waystone stands on the plaza\'s Poké Ball, five dull crystals circling its tip. Tap it: nobody knows yet how to wake it.'],
+  ['hub', 'The Nietos have a house in the Clearing (Law, Britt, baby Linc and Kangaskhan are home once you\'ve beaten them), and Chad Master Kenmatta\'s dojo has gone up across the Clearing from it. Coming soon.'],
+  ['hub', 'The Whispering Clearing is laid out anew: a paved round plaza in the middle, wide lamp-lit avenues off it and a ring road round them, flower beds, benches and a pond garden. The way out is now north up the avenue through the Whispering Clearing\'s gate, the Ancient Tree and your Secret Base stand in the north-east, the Poké Mall at the west avenue\'s end and the Nietos\' house on the east one.'],
+  ['fixes', 'Phones no longer reload the game mid-run after a while (most often in the Safari Zone): only the 3D place you\'re in is kept in memory now, the rest let go until you walk back in.'],
+    ],
+  },
   {
     version: '1.17',
     name: 'The Gym Badge',

@@ -55,6 +55,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`.
+
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
    the right and four rows between the back and the plaza, the world anchored where the old grid's middle was, `X0` / `Z0`,
