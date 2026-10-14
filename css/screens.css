@@ -5841,3 +5841,11 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .workshop .tshop-price { font-weight: normal; font-size: 0.75rem; text-align: center; }
 .workshop .tshop-price.short { color: #8a3a2a; }
 .workshop .tshop-grid { max-height: min(52vh, 420px); overflow-y: auto; }
+
+/* Mewtwo speaking in your head as it steps out of the broken gate (gymTalk()'s `look`, from js/gatescene.js) */
+.gym-scene.psychic { background: radial-gradient(ellipse at 70% 60%, rgba(200, 140, 255, 0.22), rgba(16, 6, 36, 0.78) 70%); }
+.gym-scene.psychic .gym-trainer { filter: drop-shadow(0 0 14px rgba(190, 120, 255, 0.85)); }
+.gym-scene.psychic .gym-say { color: #3a1a66; box-shadow: 0 3px 0 #b898e0, 0 0 0 3px #a060f0, 0 0 22px rgba(160, 90, 255, 0.6); }
+.gym-scene.psychic .gym-plate { background: #7a3ac8; box-shadow: 0 2px 0 #3a1470, 0 0 10px rgba(180, 110, 255, 0.7); }
+.gym-scene.psychic .gym-more { border-top-color: #a060f0; }
+.gym-scene.psychic .gym-speed { background: linear-gradient(90deg, transparent, rgba(40, 10, 80, 0.6) 25%, rgba(170, 90, 255, 0.4) 75%, transparent); }
