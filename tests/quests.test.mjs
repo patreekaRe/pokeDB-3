@@ -1,0 +1,122 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { TOWNS, QUESTS, townState, questOf, greeterOf, openQuest, questStep, questDone, questProgress, stepText, stepReady,
+  countTown, handInStep, mended, currentRequest } from '../js/data/towns.js';
+import { MATERIALS, MATERIALS_BY_ID, KEY_BY_ID, satchelOf, addMat, addKey, matCount, hasKey } from '../js/data/satchel.js';
+
+const run = readFileSync(new URL('../js/run.js', import.meta.url), 'utf8');
+const sent = new Set([...run.matchAll(/mission\((\[[^\]]*\]|'[^']*')/g)].flatMap(m => m[1].match(/'([^']*)'/g).map(s => s.slice(1, -1))));
+
+test('every town has a questline its own leaders open and run, ending on its Waystone Shard', () => {
+  for (const town of Object.values(TOWNS)) {
+    const q = questOf(town);
+    assert.ok(q, `${town.id}: no questline`);
+    assert.deepEqual(Object.keys(q.greet).sort(), Object.keys(town.leaders).sort(), `${town.id}: every leader can greet you`);
+    for (const lines of Object.values(q.greet)) assert.ok(lines.length >= 3);
+    assert.ok(q.steps.length >= 3 && q.steps.length <= 5, `${town.id}: about 4 steps`);
+    const last = q.steps.at(-1);
+    assert.equal(last.kind, 'shard');
+    assert.equal(last.key, `shard-${town.biome}`);
+    assert.equal(KEY_BY_ID[last.key].shard, town.biome);
+    assert.equal(q.steps.filter(s => s.kind === 'shard').length, 1);
+    const ids = new Set();
+    for (const s of q.steps) {
+      assert.ok(!ids.has(s.id), `${s.id} twice`);
+      ids.add(s.id);
+      assert.ok(town.leaders[s.by], `${s.id}: ${s.by} isn't one of ${town.name}'s leaders`);
+      assert.ok(s.thanks?.length, `${s.id}: no thanks`);
+      assert.ok(s.n >= 1 && !stepText(s).includes('{n}'));
+      if (s.kind === 'track') assert.ok(sent.has(s.on), `${s.id}: nothing sends '${s.on}'`);
+      if (s.kind === 'gather') assert.ok(MATERIALS_BY_ID[s.item], `${s.id}: no material ${s.item}`);
+      if (s.kind === 'craft' || s.kind === 'shard') assert.ok(KEY_BY_ID[s.key], `${s.id}: no key item ${s.key}`);
+      if (s.gives) assert.ok(KEY_BY_ID[s.gives], `${s.id}: gives no key item ${s.gives}`);
+      if (s.pick) assert.ok(s.pick.options.length >= 2 && s.pick.options.every(o => o.id && o.label && o.text));
+    }
+  }
+  assert.deepEqual(Object.keys(QUESTS).sort(), Object.keys(TOWNS).sort());
+});
+
+test('every biome with a town has two or three materials', () => {
+  for (const town of Object.values(TOWNS)) {
+    const n = MATERIALS.filter(m => m.biome === town.biome).length;
+    assert.ok(n >= 2 && n <= 3, `${town.biome}: ${n} materials`);
+  }
+  assert.equal(new Set(MATERIALS.map(m => m.id)).size, MATERIALS.length);
+});
+
+test('a town is quiet till one of its leaders is beaten, then that leader opens the questline', () => {
+  const town = TOWNS.shrine;
+  assert.equal(greeterOf(town, {}), null);
+  assert.equal(greeterOf(town, { gym: { jahmes: 1 } }), 'jahmes');
+  assert.equal(greeterOf(town, { gym: { john: 2, jahmes: 1 } }), 'john');
+  let st = townState({}, 'shrine');
+  assert.equal(countTown(town, st, 'event', 1, { biome: 'shrine' }).st, st, 'a quiet town counts nothing');
+  assert.equal(questStep(town, st), null);
+  st = openQuest(st);
+  assert.equal(openQuest(st), st);
+  assert.equal(questStep(town, st), QUESTS.shrine.steps[0]);
+  assert.deepEqual(questProgress(town, st), [0, QUESTS.shrine.steps.length]);
+});
+
+test('a questline walks its steps: gather from the Satchel, count a track step in its biome, a key item, the shard lights the stone', () => {
+  const town = TOWNS.ruins, steps = QUESTS.ruins.steps;
+  let st = openQuest(townState({}, 'ruins')), sat = satchelOf({}, false);
+  const gather = questStep(town, st);
+  assert.equal(gather.kind, 'gather');
+  assert.ok(!stepReady(gather, st, sat));
+  sat = addMat(sat, gather.item, gather.n);
+  assert.ok(stepReady(gather, st, sat));
+  st = handInStep(town, st);
+  const craft = questStep(town, st);
+  assert.equal(craft.kind, 'craft');
+  assert.ok(!stepReady(craft, st, sat));
+  assert.ok(stepReady(craft, st, addKey(sat, craft.key)));
+  st = handInStep(town, st);
+  const tr = questStep(town, st);
+  assert.equal(tr.kind, 'track');
+  assert.equal(countTown(town, st, tr.on, 1, { biome: 'shrine' }).st, st, 'another biome counts nothing');
+  assert.equal(countTown(town, st, 'nope', 1, { biome: 'ruins' }).st, st);
+  const r = countTown(town, st, tr.on, 5, { biome: 'ruins' });
+  assert.ok(r.finished);
+  st = r.st;
+  assert.equal(st.quest.got, tr.n);
+  assert.ok(stepReady(tr, st, sat));
+  assert.ok(!countTown(town, st, tr.on, 1, { biome: 'ruins' }).finished, 'a finished step waits to be handed in');
+  st = handInStep(town, st);
+  assert.equal(st.quest.got, 0);
+  assert.ok(!mended(st));
+  assert.equal(questStep(town, st).kind, 'shard');
+  st = handInStep(town, st);
+  assert.ok(mended(st) && questDone(town, st));
+  assert.deepEqual(questProgress(town, st), [steps.length, steps.length]);
+  assert.equal(handInStep(town, st), st);
+  // then the board's coin requests
+  const req = currentRequest(town, st);
+  assert.ok(countTown(town, st, req.on, req.n, { biome: 'ruins' }).finished);
+});
+
+test('a pick is remembered', () => {
+  const town = TOWNS.shrine;
+  let st = handInStep(town, openQuest(townState({}, 'shrine')));
+  const step = questStep(town, st);
+  assert.ok(step.pick);
+  st = handInStep(town, st, step.pick.options[1].id);
+  assert.equal(st.quest.picks[step.id], step.pick.options[1].id);
+});
+
+test('the Satchel keeps counts, key items once, and marks what is new', () => {
+  let sat = satchelOf({}, false);
+  sat = addMat(sat, 'wick', 3);
+  sat = addMat(sat, 'wick', 2);
+  assert.equal(matCount(sat, 'wick'), 5);
+  assert.deepEqual(sat.fresh, ['wick']);
+  sat = addMat(sat, 'wick', -9);
+  assert.equal(matCount(sat, 'wick'), 0);
+  assert.ok(sat.seen.includes('wick'));
+  sat = addKey(addKey(sat, 'katana'), 'katana');
+  assert.ok(hasKey(sat, 'katana'));
+  assert.equal(sat.keys.length, 1);
+  const lent = satchelOf({ satchel: sat }, true);
+  assert.ok(lent.keys.length > 1 && matCount(lent, 'seeds') > 0);
+});

@@ -104,3 +104,18 @@ builds only the bathhouse (timbered, a tiled pent roof under its banner, red pap
 `lodge()` for leaders, `forge()` for the shop (a fieldstone smithy, its arched mouth glowing, its FORGE sign under the
 eave, a tapered brick stack spitting embers, a lean-to over the anvil, hearth and quench tub), `cottage()` for locked
 houses (stepped adobe, beam ends and a parapet, an upper room under a gable, a ladder, a tiled porch, chillies, lilies).
+
+**Questlines and the Satchel** (session 1 of Towns step 6, 2026-10-14; `docs/roadmap.md` has the plan): each town's
+board runs a questline before its coin requests. `QUESTS` in `js/data/towns.js` (pure, `tests/quests.test.mjs`): a town
+is quiet (`st.quest` null, nothing counted) till one of its leaders has a Gym win (`greeterOf()`); the next pass through,
+`townRoom()` in `js/run.js` has that leader slide in (`gymTalk()`, the town frozen meanwhile) with their `greet` lines
+and opens it (`startQuest()` in `js/towns.js`). Steps in order: `track` (a missions event in the town's biome, counted by
+`countTown()` from `trackTowns()`), `gather` (materials from the Satchel, taken on hand-in), `craft` (a key item from Kurt's
+Workshop, kept), `shard` (the town's Waystone Shard; handing it in sets `quest.lit`, which `mended()` reads). Each is
+handed in at the board to its leader `by` (their `thanks`, sliding in; `{pick}` fills a `pick` step's choice), paying
+`QUEST_COINS`; `gives` puts a key item in the Satchel; a `pick` step's board offers one option per choice (`quest.picks`).
+After the shard the board's old `requests` rotate. A `?town=` peek keeps its questline on the run (`t.peekSt`), never the
+save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelOf()`; `js/satchel.js`: `gainMat()`,
+`gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
+`save.satchel = { keys, mats, seen, fresh }`, kept on a lost run, never the run's Bag; on the Collection and the device's
+"!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load.

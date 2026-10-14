@@ -317,6 +317,20 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `shard`), the leader-beaten unlock and slide-in greeting, the Satchel, tests; (2) materials: drops, sparkling nodes;
      (3) Kurt's Workshop and its recipes; (4) the shard: the marked Alpha node, the pickup, the mending scene, leaders
      coming home; (5) the dialogue, a town a session if it runs long. Towns stay off (`TOWNS_LIVE`) till the user says.
+   - **Session 1 done (2026-10-14): the quest engine.** `QUESTS` in `js/data/towns.js` (a story, a `greet` per leader, 4
+     steps a town: `track` / `gather` / `craft` / `shard`, each with its leader `by` and their `thanks`; a step may
+     `gives` a key item, e.g. Pat's Letter, or `pick`, John's festival), pure helpers (`greeterOf`, `openQuest`,
+     `questStep`, `countTown`, `handInStep`, `questProgress`), saved as `save.towns[id].quest` (`{ step, got, picks, lit }`);
+     `mended()` is the shard put back (`quest.lit`) or an old save's 5 requests. In the town (`townRoom()` in `js/run.js`):
+     quiet till a leader is beaten, then on the next pass that leader slides in (`gymTalk()`) with the Waystone's story and
+     the board opens; a step handed in slides its leader in with their thanks, pays `QUEST_COINS` (50); once the shard is
+     in, the board rotates the old coin requests. The Clearing's Waystone menu shows quest steps (n/4). **The Satchel**:
+     `js/data/satchel.js` (`MATERIALS`, 12, 2-3 a biome; `KEY_ITEMS`, the 5 shards plus 7 quest items; `save.satchel`),
+     `js/satchel.js` (save side), `js/satcheldex.js` (the app: Key Items, Materials, Quests; "!" on new things), on the
+     Collection only while the towns are on. `?satchel` lends every material and key item for a page load (and on a
+     `?town=` peek makes every step ready, to walk a questline: `?town=shrine&gymwins=1&satchel`). Tests:
+     `tests/quests.test.mjs`. Materials can't be found yet (session 2), crafts can't be made (session 3), shards don't
+     drop (session 4); the shard's hand-in only tells the stone mending for now. **Next: session 2, materials.**
      ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's Towns step 6. Build session <N> of the questlines."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
