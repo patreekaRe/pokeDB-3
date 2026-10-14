@@ -121,10 +121,15 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    crest and a sacred rope, stone lanterns at the steps, paper lanterns and two swaying banners in the leader's `GYM_INK`
    (`noboriArt()`). John's and Jahmes's lots grew to 5 x 4 (John's moved down a row, his door now on the south road).
    **Every town clean-up does the same for its leaders** in its own style (the handoff's checklist, item 12).
-   **Next: Cinder Springs' clean-up** (`?town=wastes`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
-   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Wastes' Cinder
-   Springs the way the Clearing, Highbough and Lantern Village were (ask me what bothers me about it first), and send an
-   aerial view." Then Driftwood Landing and Sunwell Bazaar the same way, one a session.
+   **Done (2026-10-14): Cinder Springs' clean-up** (the user's call: fix what the map review found plus the checklist):
+   four locked houses not eight, the crag stubs and stray pool out of the middle, the right road legs a tile left so
+   nothing stands flush on the crags, the Waystone centred on its plaza, name boards (`n`, `nameBoards()`), `fade`, and
+   Clarence's and Shaun's homes grand two-storey `lodge()`s on 5 x 4 lots (`docs/reference/towns.md`). Tests pass; no
+   console errors headless; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the user's playtest.
+   **Next: Driftwood Landing's clean-up** (`?town=ruins`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
+   CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Sunken Ruins'
+   Driftwood Landing the way the Clearing, Highbough, Lantern Village and Cinder Springs were (ask me what bothers me
+   about it first, with an aerial link), Kayl's and Pat's homes grand in the Landing's own style." Then Sunwell Bazaar.
    **To do before the towns go live: the Clearing's curve in every town** (the user's ask, 2026-10-14: "the animal
    crossing log style thing applied to ALL towns"). One session for all five at once, since `buildTown()` is shared; it
    can come before or after the clean-ups. ▶ Run in: CLOUD (or the Desktop app, to see it). How the Clearing does it

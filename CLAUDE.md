@@ -30,8 +30,8 @@ the look themselves, at no usage cost.
 
 ## Town clean-ups: read the handoff first
 
-**Any session cleaning up a gateway town** (Lantern Village, Cinder Springs, Driftwood Landing, Sunwell Bazaar; the
-Clearing and Highbough are done) **reads `docs/handoff-town-cleanups.md` before touching code**: what the user's
+**Any session cleaning up a gateway town** (Driftwood Landing, Sunwell Bazaar; the Clearing, Highbough, Lantern Village and
+Cinder Springs are done) **reads `docs/handoff-town-cleanups.md` before touching code**: what the user's
 clean-up meant (the checklist from the Clearing's and Highbough's), where each town's code lives, and the rules that keep
 a town from leaking GPU memory or lagging on a phone (the iPhone tab reloads fixed 2026-10-14). One town a session; ask
 the user what bothers them first.

@@ -34,3 +34,13 @@ leaders get a grand home in that town's style at its clean-up (the handoff's ite
 **Townsfolk mostly stand** (2026-10-14, the user's ask: "let only one or two move at a time"): `townCrowd()` passes
 `walkers: 2` to `makeCrowd()` (the cap that generalises the Game Corner's `oneWalker`); the rest wait at their `stands` or
 where they last stopped until a walker arrives.
+
+**Cinder Springs cleaned up** (2026-10-14, the user's ask: fix what the map review found plus the handoff's checklist):
+the switchback kept, its right legs a tile left (`gate.x` 28) so the right strip has room; four locked houses (a, k, n,
+e; j, d, g and p gone), the crag stubs and the stray two-tile pool in the middle taken out, the outcrops kept only
+against the back wall; the Waystone centred on its plaza (`W` x24-25). Clarence (top terrace) and Shaun (lower terrace)
+live in `lodge()`s on 5 x 4 lots, `cabin()` handing a home with a `leader` over: a two-storey adobe lodge on a basalt
+podium up steps, beam ends and a `GYM_INK` band, the flat roof a railed terrace, an upper storey with a gable to you
+and the crest, a steaming stack, braziers at the steps, an awning and `noboriArt()` banners. The springs style now has
+`fade: true` and `extras: nameBoards` (the `n` boards, split out of `villageExtras()`); `cabin()` no longer hangs its
+small name plate.

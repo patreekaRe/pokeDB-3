@@ -13,7 +13,7 @@ town). The other four need the same care, **one town a session**, in this order 
 | Town | Biome | `style` | Peek it | Walked-in homes (`&home=`) |
 |---|---|---|---|---|
 | Lantern Village | Shrine | `village` | `?town=shrine` | done 2026-10-14 (the koi pond, `fadeBehind()`): a model too |
-| Cinder Springs | Wastes | `springs` | `?town=wastes` | `shop`, `shaun`, `clarence`, `bath` |
+| Cinder Springs | Wastes | `springs` | `?town=wastes` | done 2026-10-14 (four locked houses, the leaders in `lodge()`s on 5 x 4 lots, `nameBoards()`, `fade`) |
 | Driftwood Landing | Sunken Ruins | `lagoon` | `?town=ruins` | `shop`, `kayl`, `pat`, `aquarium` |
 | Sunwell Bazaar | Savanna | `bazaar` | `?town=savanna` | `shop`, `machew`, `jerome`, `caravanserai` |
 | Highbough | Thornwood | `canopy` | `?town=thornwood` | already cleaned up: the model to copy |

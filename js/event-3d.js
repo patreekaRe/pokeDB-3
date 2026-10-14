@@ -3739,15 +3739,10 @@ function nameBoardArt(lines) {
   return f.c;
 }
 
-/** Lantern Village's own (the user's ask, 2026-10-14): the koi pond cut into the west garden (`~`, the ground's `holes`),
-    its bed and still jade water, a stone lip, irises and lily pads, koi circling under the surface; the vermilion bridge
-    over it (`-`), railings arching a little along it on posts down to the bed, gold caps on the posts; and a name board
-    by each named house (`n`). */
-const POND_Y = -0.16, POND_BED = -0.5;
-function villageExtras(town, L) {
-  const { map } = town, wet = (x, y) => map[y]?.[x] === '~', deck = (x, y) => map[y]?.[x] === '-';
-  const pond = [];
-  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '~') { pond.push([x, y]); B.blocked.add(key(x, y)); } }));
+/** A name board by each named house (`n`): the nearest named building's name, a leader's with GYM LEADER under it.
+    Lantern Village's and Cinder Springs' (the user's ask, 2026-10-14: every name readable from the path). */
+function nameBoards(town) {
+  const { map } = town;
   for (const [x, y] of map.flatMap((row, y) => [...row].map((ch, x) => (ch === 'n' ? [x, y] : null)).filter(Boolean))) {
     const named = town.buildings.filter(b => b.name).map(b => ({ b, f: footprint(map, b.at) }))
       .sort((p, q) => Math.hypot(Math.max(p.f.x0 - x, 0, x - p.f.x1), Math.max(p.f.y0 - y, 0, y - p.f.y1)) - Math.hypot(Math.max(q.f.x0 - x, 0, x - q.f.x1), Math.max(q.f.y0 - y, 0, y - q.f.y1)))[0]?.b;
@@ -3757,6 +3752,18 @@ function villageExtras(town, L) {
     signboard(nameBoardArt(lines), tileX(x), tileZ(y) + 0.35, 1.4, 0.7, 0.62).raycast = () => {};
     B.blocked.add(key(x, y));
   }
+}
+
+/** Lantern Village's own (the user's ask, 2026-10-14): the koi pond cut into the west garden (`~`, the ground's `holes`),
+    its bed and still jade water, a stone lip, irises and lily pads, koi circling under the surface; the vermilion bridge
+    over it (`-`), railings arching a little along it on posts down to the bed, gold caps on the posts; and a name board
+    by each named house (`n`). */
+const POND_Y = -0.16, POND_BED = -0.5;
+function villageExtras(town, L) {
+  const { map } = town, wet = (x, y) => map[y]?.[x] === '~', deck = (x, y) => map[y]?.[x] === '-';
+  const pond = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '~') { pond.push([x, y]); B.blocked.add(key(x, y)); } }));
+  nameBoards(town);
   if (!pond.length) return;
   const r = seeded(43), T = 16, f = fine(COLS * T, ROWS * T, 2), { g } = f, W = COLS * T, H = ROWS * T;
   g.fillStyle = '#3a4634'; g.fillRect(0, 0, W, H);
@@ -4062,6 +4069,8 @@ function bathSign(name) {
 /** An adobe house on a stone footing, its front to you: lit windows, a plank door, a clay roof in its Pokémon colour, a
     chimney smoking. `big`: the bathhouse, two storeys of it with a tall stack steaming and its banner. A tap is its door. */
 function cabin(b, f, L, lit, smoke) {
+  const leader = b.home && B.town?.homes?.[b.home]?.leader;
+  if (leader) return lodge(b, f, L, lit, smoke, leader);
   const big = b.kind === 'bathhouse', g = new THREE.Group();
   g.position.set(f.cx, 0, f.cz + 0.05);
   B.group.add(g);
@@ -4091,7 +4100,7 @@ function cabin(b, f, L, lit, smoke) {
     panel(bathSign(b.name), 2.2, 0.5, f.cx, 0.18 + h * 0.55 + 0.55, f.cz + 0.05 + d / 2 + 0.07);
     const noren = std({ color: '#2a4a7a', roughness: 0.95, side: THREE.DoubleSide });
     for (const dx of [-0.32, 0, 0.32]) mesh(new THREE.BoxGeometry(0.3, 0.45, 0.02), noren, dx, 0.18 + 0.95, d / 2 + 0.06, g).castShadow = false;
-  } else if (b.name) panel(nameArt(b.name), 1.1, 0.28, f.cx, 0.18 + h * 0.9, f.cz + 0.05 + d / 2 + 0.04);
+  }
   if (b.kind === 'shop') {   // the forge's anvil sign on a bracket
     mesh(new THREE.BoxGeometry(0.05, 0.05, 0.5), dark, w / 2 - 0.25, 0.18 + h * 0.8, d / 2 + 0.25, g);
     const sign = mesh(new THREE.BoxGeometry(0.42, 0.3, 0.04), std({ color: '#e0602a', roughness: 0.6 }), w / 2 - 0.25, 0.18 + h * 0.8 - 0.22, d / 2 + 0.45, g);
@@ -4100,6 +4109,89 @@ function cabin(b, f, L, lit, smoke) {
   const glow = std({ color: '#f8a040', emissive: new THREE.Color('#ffb060'), emissiveIntensity: 0.8, roughness: 0.6 });   // a lamp by the door
   lit.push(glow);
   mesh(new THREE.BoxGeometry(0.12, 0.17, 0.12), glow, (big ? 1.0 : 0.62), 0.18 + 0.95, d / 2 + 0.1, g).castShadow = false;
+  return g;
+}
+
+/** A Gym Leader's home in Cinder Springs (the user's ask, 2026-10-14: every leader's house "more grand and extravagant
+    and aesthetic", each town in its own style; Lantern Village's are manor()s): a two-storey adobe lodge on a basalt
+    podium up steps, beam ends along its top and a band in the leader's colour, its flat roof a terrace railed in that
+    colour, the upper storey under a clay roof with a gable to you and the leader's crest in it, a tall stack steaming,
+    braziers at the steps, an awning over the door and two banners. Its lot is 5 x 4 tiles. A tap anywhere is its door. */
+function lodge(b, f, L, lit, smoke, leader) {
+  const g = new THREE.Group();
+  g.position.set(f.cx, 0, f.cz);
+  B.group.add(g);
+  const ink = LEADER_INK[leader] || ['#ffe0c0', '#e0602a', '#5a1810'], letter = (b.name || leader)[0].toUpperCase();
+  const roof = [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)];
+  const W = f.w - 0.3, D = f.h - 0.3, P = 0.42;
+  const adobe = std({ color: '#e2cba6', roughness: 1 }), dark = std({ color: '#3a2418', roughness: 0.8 }), wood = std({ color: '#6a4a32', roughness: 0.9 });
+  const basalt = std({ color: '#4a3e3c', roughness: 1, flatShading: true }), cope = std({ color: '#9a8a7a', roughness: 1 }), stone = std({ color: '#8a7a6c', roughness: 1, flatShading: true });
+  const gold = std({ color: '#e8b040', metalness: 0.75, roughness: 0.28, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.35 });
+  const inked = std({ color: ink[1], roughness: 0.7 });
+  const roofMat = std({ map: roofTiles(roof, 1.4, 1.4), roughness: 0.7 }), eave = std({ color: roof[2], roughness: 0.8 });
+  const lights = (art) => { const m = std({ map: texOf(art), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(art.glow), emissiveIntensity: 0.6, roughness: 0.9 }); lit.push(m); return m; };
+  const small = (m) => { m.castShadow = false; return m; };
+  // the podium: basalt, a pale coping, steps up the front
+  mesh(rbox(W, P - 0.06, D, 0.05), basalt, 0, (P - 0.06) / 2, 0, g);
+  mesh(rbox(W + 0.1, 0.07, D + 0.1, 0.03), cope, 0, P - 0.035, 0, g);
+  for (let i = 0; i < 3; i++) mesh(rbox(1.4 - i * 0.06, P / 3, 0.2, 0.02), cope, 0, P / 6 + i * P / 3, D / 2 + 0.36 - i * 0.18, g);
+  // the hall: a lit front, stone quoins up its corners, beam ends along the top over a band in the leader's colour
+  const hw = W - 0.5, hd = 2.3, hz = -0.3, H = 1.5, top = P + H, fz = hz + hd / 2;
+  mesh(new THREE.BoxGeometry(hw, H, hd), [adobe, adobe, dark, dark, lights(cabinFront(hw)), adobe], 0, P + H / 2, hz, g);
+  for (const sx of [-1, 1]) for (let k = 0; k < 4; k++) small(mesh(new THREE.BoxGeometry(0.17, 0.22, 0.17), stone, sx * (hw / 2 + 0.01), P + 0.14 + k * 0.4, fz + 0.01, g));
+  small(mesh(new THREE.BoxGeometry(hw + 0.04, 0.1, 0.04), inked, 0, top - 0.38, fz + 0.02, g));
+  for (let i = 0; i < 8; i++) small(mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.34, 8), wood, -hw / 2 + 0.3 + i * (hw - 0.6) / 7, top - 0.18, fz + 0.1, g)).rotation.x = Math.PI / 2;
+  // its flat roof a terrace, railed in the leader's colour along the front, gold knobs on the bigger posts
+  mesh(rbox(hw + 0.24, 0.12, hd + 0.24, 0.03), cope, 0, top + 0.06, hz, g);
+  const rz = fz + 0.06;
+  for (const y of [top + 0.28, top + 0.5]) small(mesh(rbox(hw + 0.1, 0.05, 0.05, 0.015), inked, 0, y, rz, g));
+  for (let i = 0; i <= 10; i++) {
+    const x = -hw / 2 - 0.05 + i * (hw + 0.1) / 10, post = !(i % 5);
+    small(mesh(new THREE.BoxGeometry(post ? 0.07 : 0.035, 0.42, post ? 0.07 : 0.035), post ? inked : wood, x, top + 0.33, rz, g));
+    if (post) small(mesh(new THREE.SphereGeometry(0.05, 10, 8), gold, x, top + 0.58, rz, g));
+  }
+  // the upper storey, set back on the terrace, under a clay roof with a gable to you and the leader's crest in it
+  const uw = hw * 0.6, ud = 1.3, uh = 1.05, uy = top + 0.12, uz = hz - 0.25, uf = uz + ud / 2, ry = uy + uh;
+  mesh(new THREE.BoxGeometry(uw, uh, ud), [adobe, adobe, dark, dark, lights(cabinFront(uw)), adobe], 0, uy + uh / 2, uz, g);
+  for (const sx of [-1, 1]) for (let k = 0; k < 3; k++) small(mesh(new THREE.BoxGeometry(0.15, 0.2, 0.15), stone, sx * (uw / 2 + 0.01), uy + 0.14 + k * 0.36, uf + 0.01, g));
+  const geo = new THREE.ExtrudeGeometry(gableShape(ud / 2 + 0.32, 0.8, 0.1), { depth: uw + 0.4, bevelEnabled: false });
+  geo.rotateY(Math.PI / 2); geo.translate(-(uw + 0.4) / 2, 0, 0);
+  mesh(geo, [roofMat, eave], 0, ry, uz, g);
+  const cd = ud / 2 + 0.42;
+  mesh(new THREE.ExtrudeGeometry(gableShape(0.66, 0.62, 0.09), { depth: cd, bevelEnabled: false }), [roofMat, eave], 0, ry, uz, g);
+  const tri = new THREE.Shape();
+  tri.moveTo(-0.58, 0); tri.lineTo(0, 0.54); tri.lineTo(0.58, 0); tri.closePath();
+  small(mesh(new THREE.ShapeGeometry(tri), adobe, 0, ry, uz + cd - 0.1, g));
+  g.attach(panel(houseCrest('ink', ink, letter), 0.34, 0.34, f.cx, ry + 0.2, f.cz + uz + cd - 0.08));
+  // a tall stone stack on the terrace, steaming
+  const sx = hw / 2 - 0.45, sz = hz - hd / 2 + 0.4;
+  mesh(new THREE.BoxGeometry(0.42, 2.0, 0.42), stone, sx, top + 1.0, sz, g);
+  mesh(new THREE.BoxGeometry(0.5, 0.08, 0.5), dark, sx, top + 2.0, sz, g);
+  smoke.push([f.cx + sx, top + 2.1, f.cz + sz, true]);
+  // an awning over the door in the leader's colour, gold along its edge
+  small(mesh(new THREE.BoxGeometry(1.3, 0.05, 0.55), inked, 0, P + 1.2, fz + 0.24, g)).rotation.x = 0.35;
+  small(mesh(new THREE.BoxGeometry(1.32, 0.04, 0.04), gold, 0, P + 1.11, fz + 0.5, g));
+  // a brazier either side of the steps, lit
+  for (const s of [-1, 1]) {
+    const m = piece('brazier', f.cx + s * 1.15 + COLS / 2 - 0.5, f.cz + D / 2 - 0.25 + ROWS / 2 - 0.5, { scale: 0.62, y: P, free: true });
+    if (!m) continue;
+    m.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+    g.attach(m);
+  }
+  // two tall banners at the podium's front corners, swaying a little
+  const cloth = std({ map: texOf(noboriArt(ink, letter)), side: THREE.DoubleSide, roughness: 0.95 });
+  const flags = [-1, 1].map(s => {
+    const x = s * (W / 2 - 0.12), z = D / 2 - 0.12, tall = 2.7;
+    mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
+    small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
+    const hang = new THREE.Group();
+    hang.position.set(x - s * 0.22, P + tall - 0.12, z + 0.02);
+    g.add(hang);
+    small(mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang));
+    return hang;
+  });
+  B.ticks.push((now) => { if (!calm) flags.forEach((h, i) => { h.rotation.y = Math.sin(now / 900 + i * 2) * 0.12; h.rotation.x = Math.sin(now / 1300 + i) * 0.04; }); });
   return g;
 }
 
@@ -6304,6 +6396,7 @@ const TOWN_STYLES = {
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
+    fade: true, extras: nameBoards,
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
