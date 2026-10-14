@@ -26,7 +26,9 @@ top half pops off in a flash with the chest's rays, and the item rises out where
 (`floatingThing()`, tap it then Put in Bag, and `flyToBag()` shrinks it into the Bag); with a full Bag your items
 float in a row under it, and the one you tap to toss greys out under a red pixel ✕ before you Swap, with two little boxes above Swap saying what
 each does ("Toss: X" in red, "Take: Y" in green; `swapTip()`, `.swap-tips`; the user's QoL call, 2026-09-28) (the user's
-calls). Nothing heals through Big Root or boosts block through
+calls). Since 2026-10-14 (the user's call) the ball has no "Open" sign over it and the screen has no text box to tap
+through: once the item rises, a window under it (`.swap-found`) says what it does (and, with a full Bag, to tap one of
+yours), the same for Chansey's Gift. Nothing heals through Big Root or boosts block through
 Damp Rock: those are for cards.
 
 In battle, `battle.items` *is* `run.items`, so using one removes it from the

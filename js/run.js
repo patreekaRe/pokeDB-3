@@ -1033,15 +1033,9 @@ function relicCharm() {
 }
 
 /** Chansey's Gift (the Shrine page's Pokédex perk): its Potion or Super Potion is handed over like a found item, already
-    out of its ball, saying where it comes from. Saved as `gift` until taken, so a refresh shows it again. */
+    out of its ball, the title saying where it comes from. Saved as `gift` until taken, so a refresh shows it again. */
 function chanseyGift() {
-  const item = ITEMS_BY_ID[run.gift], lv2 = dexPerk('chansey-gift') > 1;
-  offerItem(item, () => { run.gift = null; showMap(); }, {
-    opened: true, skip: false, title: "Chansey's Gift",
-    say: [`Chansey sends you off with a gift: ${/^[AEIOU]/.test(item.name) ? 'an' : 'a'} ${item.name}!`,
-      `That's Chansey's Gift, your reward for researching the ${BIOMES_BY_ID.shrine.name}'s Pokédex page${lv2 ? ' (Lv 2)' : ''}. Every run starts with one.`,
-      item.text, 'Tap it to put it in your Bag.'],
-  });
+  offerItem(ITEMS_BY_ID[run.gift], () => { run.gift = null; showMap(); }, { opened: true, skip: false, title: "Chansey's Gift" });
 }
 
 /** Move Tutor Notes (a Game Corner perk, Neow's "upgrade a card"): before the first room, PP Up starting moves.
@@ -2309,17 +2303,15 @@ function gainRelic(relic, next) {
 }
 
 /** A found item first lies in a Poké Ball in the middle of the screen, like an item ball in the games: tapped, it
-    wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic: tap
-    it (then Put in Bag) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark
-    it for tossing (it greys out with a ✕), then Swap. */
-function offerItem(item, next, { opened = false, title = 'Item found', say = null, skip = true } = {}) {
+    wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic, with
+    what it does in a window under it (the user's call, 2026-10-14: no sign over the ball, no text box to tap through):
+    tap it (or Take) and it flies into the Bag. With a full Bag your items float in a row under it: tap one to mark it
+    for tossing (it greys out with a ✕), then Swap. */
+function offerItem(item, next, { opened = false, title = 'Item found', skip = true } = {}) {
   const thisRun = run, full = run.items.length >= itemSlots(), reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const found = [`You found ${/^[AEIOUX]/.test(item.name) ? 'an' : 'a'} ${item.name}!`, item.text, full ? `Your Bag is full (${itemSlots()} items). Tap one of yours to swap it out, or leave it.`
-    : `Put it in your Bag? It holds ${itemSlots()} items, used up in battle.`];
-  if (say && !full) found.splice(0, found.length, ...say);
   showChoice({
     title,
-    sub: opened ? found : ['There\'s a Poké Ball lying here!', 'Tap it to open it!'],
+    sub: [],
     options: [],
     skipLabel: full ? 'Leave it' : 'Skip',
     onSkip: skip ? next : null,
@@ -2328,7 +2320,8 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
   });
   const stage = el('div', `float-stage ${opened ? 'open' : 'sealed'}`), spot = el('div', 'ball-spot'), thing = floatingThing(item, 0, 96), row = el('div', 'float-row');
   const go = goButton(full ? 'Swap' : 'Put in Bag', () => take());
-  go.disabled = full || !opened;   // with room in the Bag, A is up as soon as the item is out: the text box has said what it does
+  go.disabled = full || !opened;   // with room in the Bag, A is up as soon as the item is out: its window says what it does
+  const tip = swapTip('found', item.name, full ? `${item.text} Your Bag is full: tap one of yours to swap it out.` : item.text);
   // picking one of yours to toss shows what each does, side by side, so you know what you're trading (the user's call)
   const tips = el('div', 'swap-tips');
   tips.hidden = true;
@@ -2344,9 +2337,9 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
     Object.assign(img, { src: art[name].url, alt: '', draggable: false });
     return img;
   };
-  ball.append(half('bottom'), half('top'), el('span', 'chest-glow'), centerLabel('Open', 'Open the Poké Ball'));
+  ball.append(half('bottom'), half('top'), el('span', 'chest-glow'));
   spot.append(el('span', 'chest-rays'), ...(opened ? [] : [ball]), thing);   // opened: it came out of an event's ball already
-  stage.append(spot);
+  stage.append(spot, tip);
   ball.addEventListener('click', async () => {
     if (ball.classList.contains('shaking') || ball.classList.contains('opened')) return;
     ball.classList.add('shaking');
@@ -2362,7 +2355,6 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
     ready = true;
     readyAt = performance.now();
     if (!full) go.disabled = false;
-    sayLines(found);
   });
 
   if (full) {
@@ -2376,7 +2368,7 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
         go.disabled = false;
         tips.replaceChildren(swapTip('out', `Toss: ${mine.name}`, mine.text), swapTip('in', `Take: ${item.name}`, item.text));
         tips.hidden = false;
-        sayLines([`Toss your ${mine.name} for the ${item.name}?`]);
+        tip.hidden = true;
       });
       row.append(btn);
     });
@@ -2384,7 +2376,7 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
   }
   thing.addEventListener('click', () => {
     if (!ready || performance.now() - readyAt < 400) return;
-    if (full && toss === null) return sayLines([`${item.name}: ${item.text}`, 'Tap one of your items to swap it out.']);
+    if (full && toss === null) return;
     take();
   });
   $('reward-options').append(stage);
@@ -2395,7 +2387,7 @@ function offerItem(item, next, { opened = false, title = 'Item found', say = nul
     playSound('item-get');
     $('reward-skip').disabled = true;   // stays in place, just inert, while it flies to the Bag (the user's call, 2026-10-08)
     pressConfirm(go);
-    tips.hidden = true;
+    tips.hidden = tip.hidden = true;
     if (toss !== null) row.children[toss].classList.add('gone');
     await flyToBag(thing);
     if (run !== thisRun) return;
