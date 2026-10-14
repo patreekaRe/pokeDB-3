@@ -249,6 +249,8 @@ const CRIES = new Set([
   'geodude', 'numel', 'machop', 'cubone', 'larvitar', 'drilbur', 'camerupt', 'magcargo', 'graveler', 'machoke', 'rhyhorn',
   'pelipper', 'wooper', 'buizel', 'wingull', 'lapras', 'mantine', 'corsola', 'chinchou', 'purrloin',
   'bellossom',
+  'gastly', 'haunter', 'gengar', 'mismagius', 'shuppet', 'banette', 'duskull', 'dusclops', 'shedinja', 'drifloon', 'spiritomb',
+  'yamask', 'cofagrigus', 'lampent', 'chandelure', 'golett',
   'girafarig', 'phanpy', 'hippopotas', 'sandile', 'blitzle', 'zebstrika', 'mankey', 'trapinch', 'doduo', 'sudowoodo',
 ]);
 const MUSIC_VOLUME = 0.375;   // 0-1

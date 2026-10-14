@@ -112,7 +112,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    up and down. Walked in: Kecleon's Canopy Goods (the trade), Phil's (candles, Misdreavus, JONA after 11 p.m.), Ricky's
    (gaming with the boys after 10 p.m.), the glass Bloom Nursery (Bellossom, Sunflora, Cherrim, Oddish, Chikorita; Bellossom's
    cry added). 8 locked treehouses, 10 folk (Aipom, Hoothoot, Sentret, Hoppip, Seedot, Shroomish, Treecko, Teddiursa, Natu,
-   Paras), its own requests (fights, ❓ rooms, an Alpha, a PP Up, the Gym) and broken Waystone. Branch `towns` (and
+   Paras), its own requests (fights, ❓ rooms, an Alpha, a PP Up, the Gym) and broken Waystone. **Reworked 2026-10-14 after the
+   user's playtest** ("hard to navigate for a bigger Pokémon, hard to tell where I can walk; only scary ghost Pokémon"):
+   every rope bridge two tiles wide (`bridgeAxes()` in `js/event-3d.js` paints and ropes a lane by its reach), a rope
+   railing round every deck edge over the drop and a pale trim inside it; a ghost town: 10 ghost folk (Gastly, Haunter,
+   Duskull, Shuppet, Banette, Drifloon, Yamask, Lampent, Shedinja, Golett), Mismagius's Curio Shop for Kecleon's, the
+   Withered Nursery's sleepers (Chandelure, Cofagrigus, Dusclops, Spiritomb, Gengar) on web rugs among graves, will-o'-wisps;
+   16 cries added. Its furniture shelf is still Greenhouse / Garden (Spooky is the mall's; ask the user before swapping). Branch `towns` (and
    `claude/next-town-biome-layout-t5p8t9`), waiting on the user's playtest. **Savanna done (2026-10-13): Sunwell Bazaar**, a
    caravan trading post (`style: 'bazaar'`), laid out unlike the other four (the user's ask): one dusty caravan road cutting
    straight across the map on the diagonal, in at the bottom left, out through a sandstone sun gate at the top right; the

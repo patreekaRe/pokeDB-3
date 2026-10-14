@@ -4309,16 +4309,27 @@ function canopyKinds(town) {
   };
 }
 
+/** Which way each rope bridge tile runs, from how far the bridge reaches through it each way (bridges are two tiles wide,
+    the user's ask: a big Pokémon looked to hang off a one-tile one): 'h' across, 'v' up and down, 'x' a landing. */
+function bridgeAxes(town) {
+  const at = (x, y) => town.map[y]?.[x] === '-';
+  const reach = (x, y, dx, dy) => { let n = 1; for (let a = x + dx, b = y + dy; at(a, b); a += dx, b += dy) n++; for (let a = x - dx, b = y - dy; at(a, b); a -= dx, b -= dy) n++; return n; };
+  return (x, y) => {
+    if (!at(x, y)) return null;
+    const h = reach(x, y, 1, 0), v = reach(x, y, 0, 1);
+    return h > v ? 'h' : v > h ? 'v' : 'x';
+  };
+}
+
 /** The ground of a canopy town: nothing over the drop, rope bridges of slats with gaps you see down through, platforms of
     planks with planters and moss, the Great Tree's deck in rings round its trunk, the canopy's leaves round the edge. */
 function canopyGround(town) {
-  const kind = canopyKinds(town), { map } = town;
+  const kind = canopyKinds(town), axis = bridgeAxes(town), { map } = town;
   const tree = footprint(map, town.buildings.find(b => b.kind === 'greattree')?.at ?? '?');
   return (c) => {
     const g = c.getContext('2d'), T = 16, r = seeded(83);
     g.clearRect(-1, -1, COLS * T + 2, ROWS * T + 2);
     const open = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && kind(x, y) === 'air';
-    const solid = (x, y) => !['air', 'canopy'].includes(kind(x, y)) && x >= 0 && y >= 0 && x < COLS && y < ROWS;
     const each = (fn) => map.forEach((row, y) => [...row].forEach((ch, x) => fn(ch, x, y, kind(x, y))));
     // the Great Tree's deck first, in one go: rings of planks round the trunk
     g.save();
@@ -4349,22 +4360,25 @@ function canopyGround(town) {
         g.fillStyle = '#20381a'; g.fillRect(X, Y, T, T);
         for (let i = 0; i < 16; i++) { g.fillStyle = CANOPY.leaf[Math.floor(r() * 4)]; g.beginPath(); g.ellipse(X + r() * T, Y + r() * T, 1.6 + r() * 2.4, 1 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
       } else if (k === 'bridge') {
-        // slats across the way you walk, a gap between each, carried on two ropes; a turn gets a square landing
-        const along = (dx, dy) => solid(x + dx, y + dy);
-        const h = along(-1, 0) || along(1, 0), v = along(0, -1) || along(0, 1);
-        const slat = (i, across) => {
-          g.fillStyle = CANOPY.deck[Math.floor(r() * 4)];
-          if (across) g.fillRect(X + i + 0.3, Y + 2.6, 2.6, T - 5.2); else g.fillRect(X + 2.6, Y + i + 0.3, T - 5.2, 2.6);
-          g.fillStyle = 'rgba(255,240,200,0.14)';
-          if (across) g.fillRect(X + i + 0.5, Y + 2.6, 0.5, T - 5.2); else g.fillRect(X + 2.6, Y + i + 0.5, T - 5.2, 0.5);
-        };
-        if (h && v) { g.fillStyle = CANOPY.seam; g.fillRect(X + 2, Y + 2, T - 4, T - 4); for (let i = 2; i < T - 3; i += 3.4) { g.fillStyle = CANOPY.deck[Math.floor(r() * 4)]; g.fillRect(X + 2, Y + i, T - 4, 2.8); } }
-        else for (let i = 0; i < T; i += 4) slat(i, !v);
-        g.strokeStyle = '#c8b080'; g.lineWidth = 0.9;
-        g.beginPath();
-        if (!v || h) { g.moveTo(X, Y + 3.1); g.lineTo(X + T, Y + 3.1); g.moveTo(X, Y + T - 3.1); g.lineTo(X + T, Y + T - 3.1); }
-        if (!h || v) { g.moveTo(X + 3.1, Y); g.lineTo(X + 3.1, Y + T); g.moveTo(X + T - 3.1, Y); g.lineTo(X + T - 3.1, Y + T); }
-        g.stroke();
+        // slats across the way you walk, a gap between each, edge to edge over both lanes, carried on a rope down each
+        // side over the drop; a landing is laid solid
+        const ax = axis(x, y), lane = (dx, dy) => map[y + dy]?.[x + dx] === '-';
+        if (ax === 'x') { g.fillStyle = CANOPY.seam; g.fillRect(X, Y, T, T); for (let i = 0.5; i < T; i += 3.4) { g.fillStyle = CANOPY.deck[Math.floor(r() * 4)]; g.fillRect(X, Y + i, T, 2.8); } }
+        else {
+          const across = ax === 'h';   // slats stand across a bridge running left to right
+          const a = (across ? lane(0, -1) : lane(-1, 0)) ? 0 : 2.2, b = (across ? lane(0, 1) : lane(1, 0)) ? 0 : 2.2;
+          for (let i = 0; i < T; i += 4) {
+            g.fillStyle = CANOPY.deck[Math.floor(r() * 4)];
+            if (across) g.fillRect(X + i + 0.3, Y + a, 3, T - a - b); else g.fillRect(X + a, Y + i + 0.3, T - a - b, 3);
+            g.fillStyle = 'rgba(255,240,200,0.16)';
+            if (across) g.fillRect(X + i + 0.5, Y + a, 0.5, T - a - b); else g.fillRect(X + a, Y + i + 0.5, T - a - b, 0.5);
+          }
+          g.strokeStyle = '#e8d098'; g.lineWidth = 1.1;
+          g.beginPath();
+          if (across) { if (a) { g.moveTo(X, Y + 2.6); g.lineTo(X + T, Y + 2.6); } if (b) { g.moveTo(X, Y + T - 2.6); g.lineTo(X + T, Y + T - 2.6); } }
+          else { if (a) { g.moveTo(X + 2.6, Y); g.lineTo(X + 2.6, Y + T); } if (b) { g.moveTo(X + T - 2.6, Y); g.lineTo(X + T - 2.6, Y + T); } }
+          g.stroke();
+        }
       } else {
         // a platform's planks, laid across; moss, planters of flowers
         g.fillStyle = CANOPY.seam; g.fillRect(X, Y, T, T);
@@ -4388,12 +4402,19 @@ function canopyGround(town) {
           }
         }
       }
-      if (k !== 'bridge') {   // a dark lip where it drops away
-        g.fillStyle = k === 'canopy' ? 'rgba(10,20,8,0.4)' : 'rgba(30,16,8,0.45)';
+      if (k !== 'bridge') {   // a dark lip where it drops away, and on a deck a pale trim inside it, so the edge reads
+        g.fillStyle = k === 'canopy' ? 'rgba(10,20,8,0.4)' : 'rgba(30,16,8,0.55)';
         if (open(x - 1, y)) g.fillRect(X, Y, 1.4, T);
         if (open(x + 1, y)) g.fillRect(X + T - 1.4, Y, 1.4, T);
         if (open(x, y - 1)) g.fillRect(X, Y, T, 1.4);
         if (open(x, y + 1)) g.fillRect(X, Y + T - 1.4, T, 1.4);
+        if (k !== 'canopy') {
+          g.fillStyle = 'rgba(255,232,170,0.55)';
+          if (open(x - 1, y)) g.fillRect(X + 1.4, Y, 1, T);
+          if (open(x + 1, y)) g.fillRect(X + T - 2.4, Y, 1, T);
+          if (open(x, y - 1)) g.fillRect(X, Y + 1.4, T, 1);
+          if (open(x, y + 1)) g.fillRect(X, Y + T - 2.4, T, 1);
+        }
       }
       g.restore();
     });
@@ -4587,7 +4608,6 @@ function platformsOf(town) {
     and the ropes under their slats. */
 function canopySupports(town) {
   const kind = canopyKinds(town), air = (x, y) => kind(x, y) === 'air';
-  const solid = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && !['air', 'canopy'].includes(kind(x, y));
   const rims = [], leafRims = [], struts = [], trunks = [];
   // one edge of a tile over the drop: its straight run, short of any rounded corner at either end, and that corner's arc
   // (a quarter turn: 1 south-east, 2 north-east, 3 north-west, 4 south-west, the arc's own start round the y axis)
@@ -4606,11 +4626,26 @@ function canopySupports(town) {
       out.push(c);
     }
   };
+  const rails = [], railPosts = new Map();   // a rope railing round every deck where it drops away, so where you can walk reads at a glance
+  const rail = (x, y, dx, dy) => {
+    const [ax, ay] = dx ? [0, 1] : [1, 0], round = (s) => air(x + ax * s, y + ay * s) && air(x + dx, y + dy);
+    const ex = tileX(x) + dx * 0.42, ez = tileZ(y) + dy * 0.42, lo = round(-1) ? ROUND : 0, hi = round(1) ? ROUND : 0;
+    const a = [ex - ax * (0.5 - lo), ez - ay * (0.5 - lo)], b = [ex + ax * (0.5 - hi), ez + ay * (0.5 - hi)];
+    for (const h of [0.46, 0.24]) rails.push([a[0], h, a[1], b[0], h, b[1]]);
+    for (const [px, pz] of [a, b]) railPosts.set(`${px.toFixed(2)},${pz.toFixed(2)}`, [px, pz]);
+    for (const s of [-1, 1]) {   // round a rounded corner in three bends, each corner once from its north or south edge
+      if (!round(s) || dx) continue;
+      const cx = tileX(x) + ax * s * (0.5 - ROUND), cz = tileZ(y) + dy * (0.5 - ROUND), r = ROUND - 0.08;
+      const pt = (t) => [cx + Math.cos(t) * r * s, cz + Math.sin(t) * r * dy];
+      for (let i = 0; i < 3; i++) { const p0 = pt(i / 3 * Math.PI / 2), p1 = pt((i + 1) / 3 * Math.PI / 2); for (const h of [0.46, 0.24]) rails.push([p0[0], h, p0[1], p1[0], h, p1[1]]); }
+    }
+  };
   for (const p of platformsOf(town)) {
     if (p.b?.kind !== 'greattree') trunks.push([p.ax, 0, p.az, p.tiles.length > 14 ? 0.5 : 0.36]);
     for (const [x, y] of p.tiles) for (const [dx, dy] of STEPS) {
       if (!air(x + dx, y + dy)) continue;
       edge(rims, x, y, dx, dy, null);
+      rail(x, y, dx, dy);
       if ((x * 3 + y * 5) % 3 === 0) struts.push([tileX(x) + dx * 0.4, -0.3, tileZ(y) + dy * 0.4, p.ax + (tileX(x) - p.ax) * 0.15, -1.7, p.az + (tileZ(y) - p.az) * 0.15]);
     }
   }
@@ -4641,17 +4676,16 @@ function canopySupports(town) {
   }
   // the rope bridges: along each run, a hand rope on each side where it isn't against a deck, posts, netting, ropes under
   const hands = [], under = [], posts = [], nets = [];
-  const runs = [];
+  const runs = [], axis = bridgeAxes(town);
   for (const horiz of [true, false]) {
-    const seen = new Set();
+    const seen = new Set(), goes = (a, b) => [horiz ? 'h' : 'v', 'x'].includes(axis(a, b));
     town.map.forEach((row, y) => [...row].forEach((ch, x) => {
-      if (ch !== '-' || seen.has(key(x, y))) return;
+      if (!goes(x, y) || seen.has(key(x, y))) return;
       const [dx, dy] = horiz ? [1, 0] : [0, 1];
-      if (!(solid(x - dx, y - dy) || solid(x + dx, y + dy))) return;   // it doesn't run this way
       const tiles = [];
       let a = x, b = y;
-      while (town.map[b]?.[a] === '-') { tiles.push([a, b]); seen.add(key(a, b)); a += dx; b += dy; }
-      if (tiles.length) runs.push({ tiles, horiz });
+      while (goes(a, b)) { tiles.push([a, b]); seen.add(key(a, b)); a += dx; b += dy; }
+      if (tiles.length > 1 || axis(x, y) !== 'x') runs.push({ tiles, horiz });
     }));
   }
   for (const { tiles, horiz } of runs) {
@@ -4682,6 +4716,9 @@ function canopySupports(town) {
     }
   }
   const rope = std({ color: '#c8b080', roughness: 0.9 });
+  beams(rails, 0.02, rope, { sides: 5, shadow: false });
+  const railPost = new THREE.CylinderGeometry(0.03, 0.04, 0.55, 6); railPost.translate(0, 0.24, 0);
+  instanced(railPost, std({ color: '#6a4a2c', roughness: 0.9 }), [...railPosts.values()].map(([x, z]) => [x, z, 1, 0]));
   beams(hands, 0.022, rope, { sides: 5, shadow: false });
   beams(under, 0.035, rope, { sides: 5 });
   const post = new THREE.CylinderGeometry(0.04, 0.05, 0.85, 6); post.translate(0, 0.32, 0);
@@ -5721,7 +5758,7 @@ const TOWN_STYLES = {
     house: (b, f, L, lit) => (b.kind === 'greattree' ? greatTree(b, f, L, lit) : b.kind === 'nursery' ? nursery(b, f, L, lit) : treehouse(b, f, L, lit)),
     gate: (town, lit, L) => vineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.6, town.name, L, lit),
     extras: canopyExtras,
-    drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#d8ff70' : '#f8e070'), size: 0.12, rise: true }) },
+    drift: (i) => (i % 3 ? { art: leafletArt(CANOPY.leaf[i % 4]), size: 0.16 } : { art: fireflyArt(i % 2 ? '#c890ff' : '#90f0e0'), size: 0.13, rise: true }) },   // will-o'-wisps: it's a ghost town
   bazaar: { holes: true, ground: savannaGround, trees: savannaBush, lamp: 'tikitorch', lampScale: 0.85,
     house: (b, f, L, lit) => (b.kind === 'shop' ? bazaarTent(b, f, L, lit) : b.kind === 'caravanserai' ? caravanserai(b, f, L, lit) : b.kind === 'wagon' ? wagon(b, f, L, lit) : rondavel(b, f, L, lit)),
     gate: (town, lit, L) => sunGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.3, town.name, L, lit),
@@ -5824,13 +5861,13 @@ const HOMES = {
       furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 7, 3], ['bubblecolumn', 0, 0], ['bubblecolumn', 10, 0], ['aquarium', 0, 7], ['aquarium', 9, 7], ['jellylamp', 0, 4], ['jellylamp', 10, 4], ['kelp', 0, 2], ['kelp', 10, 2], ['bench', 3, 7], ['bench', 6, 7]] },
   },
   thornwood: {
-    shop: { floor: 'planks', walls: 'boards', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['monstera', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['barrel', 0, 4], ['barrel', 8, 3], ['fern', 8, 4], ['lantern', 8, 1], ['umbrellas', 1, 1]] },
+    shop: { floor: 'planks', walls: 'dusk', furnish: [['witchshelf', 0, 0], ['witchshelf', 7, 0], ['candelabra', 2, 0], ['hauntmirror', 5, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crystalball', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['coffin', 0, 3], ['hatstand', 0, 4], ['pumpkins', 8, 3], ['deadtree', 8, 4], ['spookylamp', 8, 1], ['broom', 1, 1]] },
     phil: { floor: 'planks', walls: 'dusk', leaderAt: { x: 4, ty: 2.2 }, castAt: [[7, 1.8, 0.4]],
       furnish: [['witchshelf', 0, 0], ['bookstack', 1, 0], ['lectern', 3, 0], ['crystalball', 5, 0], ['candelabra', 6, 0], ['spookylamp', 8, 0], ['wingchair', 6, 4], ['candle', 0, 4], ['candle', 8, 4], ['candelabra', 1, 5]] },
     ricky: { floor: 'planks', walls: 'boards', leaderAt: { x: 4, ty: 2.2 },
       furnish: [['singlebed', 0, 0], ['desk', 3, 0], ['computer', 3, 0, { y: 0.62, scale: 0.72, free: true }], ['computer', 4, 0, { y: 0.62, scale: 0.72, free: true }], ['swivelchair', 4, 1], ['minifridge', 7, 0], ['speakerstack', 8, 0], ['beanbag', 7, 3], ['console', 1, 4], ['plant', 8, 5]] },
-    nursery: { cols: 11, rows: 9, floor: 'planks', walls: 'glass', castAt: [[1.5, 0.1, 0.12], [4.5, 0.1, 0.12], [7.5, 0.1, 0.12], [2.5, 3.1, 0.12], [6.5, 3.1, 0.12]],
-      furnish: [['daisybed', 1, 0], ['rosebed', 4, 0], ['violetbed', 7, 0], ['marigoldbed', 2, 3], ['bluebellbed', 6, 3], ['growlamp', 0, 0], ['growlamp', 10, 0], ['monstera', 0, 2], ['citrustree', 10, 2], ['lilytub', 0, 4], ['seedrack', 10, 4], ['orchidstand', 10, 6], ['plantstair', 0, 7], ['wateringcan', 2, 7], ['sprinkler', 8, 7], ['fern', 10, 8]] },
+    nursery: { cols: 11, rows: 9, floor: 'planks', walls: 'glass', castAt: [[1.5, 0.6, 0.3], [4.5, 0.6, 0.3], [7.5, 0.6, 0.3], [2.5, 3.6, 0.3], [6.5, 3.6, 0.3]],
+      furnish: [['webrug', 1, 0, { free: true }], ['webrug', 4, 0, { free: true }], ['webrug', 7, 0, { free: true }], ['webrug', 2, 3, { free: true }], ['webrug', 6, 3, { free: true }], ['spookylamp', 0, 0], ['spookylamp', 10, 0], ['deadtree', 0, 2], ['deadtree', 10, 2], ['roundgrave', 0, 4], ['squaregrave', 10, 4], ['obeliskgrave', 10, 6], ['jackolantern', 0, 7], ['pumpkins', 2, 7], ['candelabra', 8, 7], ['ghostsheet', 10, 8]] },
   },
   savanna: {
     shop: { floor: 'planks', walls: 'tent', furnish: [['canopicjars', 0, 0], ['goldurn', 1, 0], ['featherfan', 7, 0], ['scarablamp', 8, 0], ['dunerug', 3, 4, { free: true }], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['waterjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['waterjar', 0, 4], ['barrel', 8, 3], ['cobrastatue', 8, 4], ['datepalm', 8, 1], ['pharaohthrone', 6, 0]] },
