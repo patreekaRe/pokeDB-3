@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, unbend } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -2821,7 +2821,11 @@ const BEND = { k: { value: CURVE }, z: { value: 0 } };
 
 /** Every material in the Clearing bent once; anything added since (a place, a guest, the flyer) is caught next frame. */
 function bendAll() {
-  scene.traverse(o => { if (o.material) for (const m of [o.material].flat()) bend(m, BEND); });
+  scene.traverse(o => {
+    if (!o.material) return;
+    if (o.isMesh) bendFine(o);
+    for (const m of [o.material].flat()) bend(m, BEND);
+  });
 }
 
 function placeCamera(dt) {

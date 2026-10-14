@@ -107,4 +107,5 @@ through `feetDepth()`, and the painted vista, whose origin moved to its foot for
 so a sprite stays flat and upright, and `feetDepth()`'s upright depth is worked out from the bent feet and pixel
 (`BEND_DROP`). The bend only moves what's drawn, so a tap follows the screen's ray in 1.5-unit pieces, each put back
 unbent (`unbend()`), against the places and the ground (`tapRays()`, `groundTile()`). Shadow depth materials stay unbent
-on purpose.
+on purpose. A big box or plane (the ground, the meadow) is built again cut into tile-sized cells (`bendFine()`), as the bend
+moves only corners: the first playtest had the ground sink as one slab under everything (2026-10-14).

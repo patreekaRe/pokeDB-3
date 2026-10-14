@@ -229,6 +229,30 @@ export function bend(m, u) {
   m.needsUpdate = true;
 }
 
+/** The bend moves only a shape's corners and draws straight between them, so the Clearing's ground (one box, its corners
+    tiles away) sank as a slab while everything on it bent, and stood floating over it, Bulbasaur apart from its own
+    shadow (the user's playtest, 2026-10-14). So a big box or plane is built again cut into cells a tile or less across,
+    the same size, faces and materials, where it can bend with the rest; one made and then moved about in its own space
+    (its bounds differ) is left as it is. Shared shapes stay shared. */
+const fine = new WeakMap();
+export function bendFine(o) {
+  const g = o.geometry, p = g?.parameters;
+  if (!p || o.isInstancedMesh || o.material?.userData?.upright || !/^(Box|Plane)Geometry$/.test(g.type)) return;
+  if (fine.has(g)) { o.geometry = fine.get(g); return; }
+  o.updateWorldMatrix(true, false);
+  const s = o.getWorldScale(new THREE.Vector3()), k = Math.max(s.x, s.y, s.z), n = (len) => Math.max(1, Math.ceil(len * k));
+  const box = g.type === 'BoxGeometry';
+  if (Math.max(p.width, p.height, box ? p.depth : 0) * k <= 1.5) { fine.set(g, g); return; }
+  const made = box ? new THREE.BoxGeometry(p.width, p.height, p.depth, n(p.width), n(p.height), n(p.depth))
+    : new THREE.PlaneGeometry(p.width, p.height, n(p.width), n(p.height));
+  g.computeBoundingBox(); made.computeBoundingBox();
+  const same = g.boundingBox.min.distanceTo(made.boundingBox.min) < 1e-4 && g.boundingBox.max.distanceTo(made.boundingBox.max) < 1e-4;
+  if (!same) { made.dispose(); fine.set(g, g); return; }
+  fine.set(g, made);
+  fine.set(made, made);
+  o.geometry = made;
+}
+
 /** A point as the bend draws it, back to where it stands in the world (the inverse of bend() for a point). */
 export const unbend = (p, u) => { p.y += u.k.value * (p.z - u.z.value) ** 2; return p; };
 
