@@ -63,6 +63,19 @@ export function markSparkles(rooms, biome, rand) {
   return picked;
 }
 
+/** Mark the Alpha its town's Waystone Shard floats over (session 4, 2026-10-14), once the questline is up to its shard
+    step and the shard isn't held: one of the map's Alphas, picked by `rand`, gets `shard: <key item id>`. */
+export function markShard(rooms, key, rand) {
+  const alphas = rooms.filter(r => r.type === 'elite');
+  if (!alphas.length) return null;
+  const room = alphas[Math.floor(rand() * alphas.length)];
+  room.shard = key;
+  return room;
+}
+
+/** `?shard` marks a playtest's Alpha with its biome's shard (`?biome=shrine&shard`, or on into the biome from `?town=`). */
+export const shardFlag = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('shard');
+
 /** The line that says a material went into the Satchel. */
 export const matLine = ({ id, n }) => `${MATERIALS_BY_ID[id].icon} ${MATERIALS_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''} went into your Satchel.`;
 

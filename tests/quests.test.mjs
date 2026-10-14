@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TOWNS, QUESTS, townState, questOf, greeterOf, openQuest, questStep, questDone, questProgress, stepText, stepReady,
-  countTown, handInStep, mended, currentRequest } from '../js/data/towns.js';
+  countTown, handInStep, mended, currentRequest, homeTalk, stepNudge, folkChats, questLine } from '../js/data/towns.js';
 import { MATERIALS, MATERIALS_BY_ID, KEY_BY_ID, satchelOf, addMat, addKey, matCount, hasKey } from '../js/data/satchel.js';
 
 const run = readFileSync(new URL('../js/run.js', import.meta.url), 'utf8');
@@ -155,4 +155,43 @@ test('a gather step can be met in a run or two through its biome', async () => {
     const pass = fights + sparkles;
     assert.ok(s.n / pass <= 2.5, `${s.id}: ${s.n} ${m.id} at ~${pass.toFixed(1)} a pass`);
   }
+});
+
+test('every step has its leader\'s word on the board and something from each leader at home, and more once it\'s lit', () => {
+  for (const town of Object.values(TOWNS)) {
+    const q = questOf(town), leaders = Object.keys(town.leaders);
+    for (const s of q.steps) {
+      assert.ok(q.talk[s.id]?.nudge, `${s.id}: no word on the board`);
+      for (const id of leaders) assert.ok(q.talk[s.id][id]?.length >= 2, `${s.id}: ${id} says nothing about it at home`);
+    }
+    assert.deepEqual(Object.keys(q.talk).sort(), q.steps.map(s => s.id).sort(), `${town.id}: talk for a step that isn't one`);
+    for (const id of leaders) assert.ok(q.after[id]?.length >= 2, `${town.id}: ${id} says nothing once it's lit`);
+    assert.ok(q.chats.length >= 3 && q.chats.every(c => c.length >= 2), `${town.id}: the folk have little to say once it's lit`);
+  }
+});
+
+test('at home a leader talks about where the questline stands first, with John\'s festival filled in', () => {
+  const town = TOWNS.shrine, q = questOf(town);
+  const quiet = homeTalk(town, 'john', townState({}, 'shrine'));
+  assert.equal(quiet.topical, 0);
+  assert.deepEqual(quiet.lines, town.leaders.john);
+  let st = openQuest(townState({}, 'shrine'));
+  assert.deepEqual(homeTalk(town, 'jahmes', st).lines.slice(0, 2), q.talk['sh-wicks'].jahmes);
+  st = handInStep(town, handInStep(town, st), 'moon');
+  const lanterns = homeTalk(town, 'john', st);
+  assert.equal(lanterns.topical, q.talk['sh-lanterns'].john.length);
+  assert.ok(lanterns.lines.some(l => l.includes('Moon Viewing')) && !lanterns.lines.some(l => l.includes('{pick}')));
+  st = handInStep(town, handInStep(town, st));
+  assert.ok(mended(st));
+  assert.match(homeTalk(town, 'john', st).lines[0], /Moon Viewing was everything/);
+  assert.match(folkChats(town, st)[0].join(' '), /still lit/);
+  assert.ok(folkChats(town, st).flat().some(l => l.includes('Moon Viewing')));
+  assert.equal(folkChats(town, openQuest(townState({}, 'shrine'))), town.chats);
+  // a save mended by the old requests never picked: the fallback
+  assert.match(questLine(town, { done: 5 }, q.after.john[0]), /autumn festival/);
+});
+
+test('the board\'s word carries its leader\'s name once, Phil\'s JONA keeping hers', () => {
+  assert.match(stepNudge(TOWNS.shrine, QUESTS.shrine.steps[0], 'JAHMES'), /^JAHMES: WICKS/);
+  assert.match(stepNudge(TOWNS.thornwood, QUESTS.thornwood.steps[0], 'PHIL'), /^PHIL: A Spirit/);
 });

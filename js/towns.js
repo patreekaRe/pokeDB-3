@@ -5,8 +5,10 @@
 
 import { getSave, updateSave, awardCoins } from './storage.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended, folkKey,
-  openQuest, questStep, questDone, stepText, handInStep, stepReady } from './data/towns.js';
+  openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest } from './data/towns.js';
 import { satchelOf } from './data/satchel.js';
+import { streamOf } from './rng.js';
+import { safariDay } from './data/safari.js';
 import { gainMat, gainKey } from './satchel.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
@@ -79,3 +81,13 @@ export function inviteFolk(town, id, room) {
     if (now.length < room.max && !now.includes(key)) d.secretBase.mons = [...now, key];
   });
 }
+
+/** The leader who put a town's shard in has welcomed you home at the Clearing's Waystone: from now on its guests rotate. */
+export function welcomeHome(id) {
+  const st = townState(getSave(), id);
+  if (!st.quest?.lit || st.quest.welcomed) return;
+  updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...st, quest: { ...st.quest, welcomed: true } } }; });
+}
+
+/** Today's Gym Leader by the Clearing's Waystone (js/data/towns.js's waystoneGuest()), or null: dealt by the UTC day. */
+export const todaysGuest = (save = getSave()) => waystoneGuest(save, streamOf(safariDay(), 'waystone-guest'));

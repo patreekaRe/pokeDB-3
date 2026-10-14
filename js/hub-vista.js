@@ -16,16 +16,18 @@ const HZ = 0.95;                                   // the horizon, units up from
 const FADE = 0.3;                                  // its foot fading into the ground
 
 /** The painting for `time`, `W` units wide; `roads` the roads leaving the ground's back edge into it, each its x from the
-    painting's left edge and its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js). */
-export function vistaArt(time, W, roads, look = null) {
-  const H = VISTA.h, c = new OffscreenCanvas(W * K, H * K), g = c.getContext('2d');
-  c.fine = K;
-  g.scale(K, K);
+    painting's left edge and its half-width; `look` the season's meadow, treeline and flowers (js/hub-season.js), or a
+    town's (townVista() in js/event-3d.js), which may also bring its own `sky` and `clouds` for the hour and its `ranges`
+    ([[body, body], snow or null], far then near); `k` its canvas pixels a unit. */
+export function vistaArt(time, W, roads, look = null, k = K) {
+  const H = VISTA.h, c = new OffscreenCanvas(Math.round(W * k), H * k), g = c.getContext('2d');
+  c.fine = k;
+  g.scale(k, k);
   const L = (hex) => time === 'day' ? hex : gradeHex(hex, GRADES[time].land);
   const night = time === 'night', low = time === 'dawn' || time === 'dusk';
   const hy = H - HZ;   // the horizon's canvas y
 
-  const [s0, s1, s2] = SKY[time];
+  const [s0, s1, s2] = look?.sky || SKY[time];
   g.fillStyle = vgrad(g, H - 9, hy, [s0, s1, s2]); g.fillRect(0, 0, W, hy + 0.05);
   // the sun (the moon at night) over the left of the view, low at dawn and dusk
   const sx = 6, sy = hy - (low ? 1.4 : 4.6), sr = night ? 0.42 : low ? 0.62 : 0.5;
@@ -44,7 +46,7 @@ export function vistaArt(time, W, roads, look = null) {
     sg.addColorStop(0, '#fffef0'); sg.addColorStop(1, time === 'day' ? '#ffe878' : time === 'dawn' ? '#ffc070' : '#ff7838');
     g.fillStyle = sg; g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
   }
-  for (let i = 0; i < Math.round(W * 0.4); i++) puff(g, hash(i * 5.3) * (W + 2) - 1, hy - 2.6 - hash(i * 2.7) * 4.5, 0.35 + hash(i * 9.1) * 0.4, CLOUD[time], night ? 0.8 : 0.92);
+  for (let i = 0; i < Math.round(W * 0.4); i++) puff(g, hash(i * 5.3) * (W + 2) - 1, hy - 2.6 - hash(i * 2.7) * 4.5, 0.35 + hash(i * 9.1) * 0.4, look?.clouds || CLOUD[time], night ? 0.8 : 0.92);
 
   // two ranges of snowy mountains hazing into the distance
   const range = (n, lo, hi, seed, body, snow) => {
@@ -59,7 +61,7 @@ export function vistaArt(time, W, roads, look = null) {
       const rv = peaks[i + 1] ? dip(p, peaks[i + 1]) : { x: p.x + W / n / 2, h: 0 }, lv = peaks[i - 1] ? dip(peaks[i - 1], p) : { x: p.x - W / n / 2, h: 0 };
       g.fillStyle = 'rgba(20,30,60,0.16)';
       g.beginPath(); g.moveTo(p.x, hy - p.h); g.lineTo(rv.x, hy - rv.h); g.lineTo(rv.x, hy); g.lineTo(p.x + (rv.x - p.x) * 0.15, hy); g.closePath(); g.fill();
-      if (p.h < lo + (hi - lo) * 0.35) return;
+      if (!snow || p.h < lo + (hi - lo) * 0.35) return;
       const at = (v, k) => [p.x + (v.x - p.x) * k, hy - p.h + (p.h - v.h) * k];
       g.fillStyle = snow;
       g.beginPath(); g.moveTo(p.x, hy - p.h); g.lineTo(...at(rv, 0.32)); g.lineTo(...at(rv, 0.18).map((v, j) => j ? v + 0.1 : v - 0.06));
@@ -68,8 +70,9 @@ export function vistaArt(time, W, roads, look = null) {
     g.fillStyle = vgrad(g, hy - hi * 0.6, hy, [rgba(L(s2), 0), rgba(L(s2), 0.55)]);
     g.fillRect(0, hy - hi * 0.6, W, hi * 0.6 + 0.05);
   };
-  range(Math.round(W / 4.8), 2.2, 3.8, 1, [L('#a8b8d8'), L('#8ca0c4')], L('#f4f6fa'));
-  range(Math.round(W / 3), 1, 2, 9, [L('#8098c0'), L('#6a82ac')], L('#e8eef6'));
+  const [far, near] = look?.ranges || [[['#a8b8d8', '#8ca0c4'], '#f4f6fa'], [['#8098c0', '#6a82ac'], '#e8eef6']];
+  range(Math.round(W / 4.8), 2.2, 3.8, 1, far[0].map(L), far[1] && L(far[1]));
+  range(Math.round(W / 3), 1, 2, 9, near[0].map(L), near[1] && L(near[1]));
 
   // the meadow, paler far off, a treeline along the horizon
   g.fillStyle = vgrad(g, hy, H, (look?.meadow || ['#b0dc88', '#8ccc62', '#76c052']).map(L));
@@ -113,8 +116,8 @@ export function vistaArt(time, W, roads, look = null) {
   // the foot fades out, onto the real ground
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.globalCompositeOperation = 'destination-in';
-  const f = g.createLinearGradient(0, 0, 0, H * K);   // one fill: destination-in clears whatever a fill doesn't cover
+  const f = g.createLinearGradient(0, 0, 0, H * k);   // one fill: destination-in clears whatever a fill doesn't cover
   f.addColorStop(0, '#000'); f.addColorStop(1 - FADE / H, '#000'); f.addColorStop(1, 'rgba(0,0,0,0)');
-  g.fillStyle = f; g.fillRect(0, 0, W * K, H * K);
+  g.fillStyle = f; g.fillRect(0, 0, c.width, H * k);
   return c;
 }
