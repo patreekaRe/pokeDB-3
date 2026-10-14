@@ -2264,7 +2264,12 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     btn.addEventListener('click', () => (picked === relic ? take() : choose(relic, btn)));
     return btn;
   });
-  row.append(...buttons);
+  row.classList.add('tiers');
+  row.append(...relicTiers(buttons).map(tier => {
+    const line = el('div', 'float-tier');
+    line.append(...tier);
+    return line;
+  }));
   spot.append(el('span', 'chest-rays'), row);
   stage.append(el('div', 'treasure-flash'), spot);
   $('reward-options').append(stage);
@@ -2288,6 +2293,14 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     await flyToBag(buttons[relics.indexOf(picked)]);
     if (run === thisRun) gainRelic(picked, next);
   }
+}
+
+/** Three or more relics stand in a triangle (fewer on top) rather than one row, so their names have room and never
+    run into each other (the user's call, 2026-10-14). */
+function relicTiers(list) {
+  if (list.length < 3) return [list];
+  const top = Math.floor(list.length / 2);
+  return [list.slice(0, top), list.slice(top)];
 }
 
 /** Every relic you take (rewards, treasure, events) comes through here, and only then is it met in the Index (the user's
@@ -2549,7 +2562,7 @@ function treasureRoom(spent = false) {
   }
 }
 
-/** Stand the chest on the grotto's dais and float the relics in a row above it; the scene tells us whenever it repaints. */
+/** Stand the chest on the grotto's dais and float the relics above it (a triangle of three, relicTiers()); the scene tells us whenever it repaints. */
 function placeTreasure() {
   const stage = document.querySelector('.treasure-stage'), walkIn = $('reward-options').classList.contains('c3d');
   const spot = stage?.isConnected && (walkIn ? chest3dSpot(stage) : treasureSpots());
@@ -2561,12 +2574,16 @@ function placeTreasure() {
   stage.style.setProperty('--px', `${px}px`);
   stage.style.setProperty('--size', `${size}px`);
   if (!walkIn) Object.assign(stage.querySelector('.treasure-chest').style, { left: `${left}px`, top: `${foot}px` });   // the 3D grotto floats it over its chest
-  const relics = [...stage.querySelectorAll('.treasure-relic')], gap = Math.min(size * 1.5, (innerWidth - 24) / Math.max(1, relics.length));
-  relics.forEach((btn, i) => {
-    const off = i - (relics.length - 1) / 2, x = cx + off * gap, y = rowY + Math.abs(off) * 14;
-    Object.assign(btn.style, { left: `${x}px`, top: `${y}px` });
-    btn.style.setProperty('--from-x', `${cx - x}px`);
-    btn.style.setProperty('--from-y', `${chestTop + 8 * px - y}px`);
+  const tiers = relicTiers([...stage.querySelectorAll('.treasure-relic')]), tierH = size + 44;
+  const baseY = Math.max(rowY + (tiers.length - 1) * tierH, chestTop - 100 - size / 2);
+  tiers.forEach((tier, t) => {
+    const gap = Math.min(size * 2, (innerWidth - 24) / tier.length), y = baseY - (tiers.length - 1 - t) * tierH;
+    tier.forEach((btn, i) => {
+      const x = cx + (i - (tier.length - 1) / 2) * gap;
+      Object.assign(btn.style, { left: `${x}px`, top: `${y}px` });
+      btn.style.setProperty('--from-x', `${cx - x}px`);
+      btn.style.setProperty('--from-y', `${chestTop + 8 * px - y}px`);
+    });
   });
 }
 addEventListener('scenepaint', placeTreasure);
