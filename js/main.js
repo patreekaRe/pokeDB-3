@@ -315,7 +315,13 @@ function init() {
   initSelect({ onChoose: previewStarter, onBack: showHome });
   initCollection({
     onBack: showHome,
-    menu: async () => { if (await requestMenu()) hideDevice(); },
+    menu: async () => {
+      // the Mall and the Secret Base lie over the Clearing: going home through their own door puts their 3D away, or
+      // their canvas stays on top, black once the Clearing takes the GPU back
+      const place = document.querySelector('body > .base3d');
+      if (place) { hideDevice(); return (await import(place.classList.contains('mall3d') ? './mall-3d.js' : './base-3d.js')).leave(); }
+      if (await requestMenu()) hideDevice();
+    },
     abandonable: () => isRunActive() || hasSavedRun(),
   });
 

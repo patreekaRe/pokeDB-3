@@ -1615,7 +1615,7 @@ async function fallBack() {
 }
 
 /** Out through the door: dark, the room put away (kept, so going back in is quick), then wherever it was opened from. */
-async function leave() {
+export async function leave() {
   if (leave.busy) return;
   if (!leaveTo) { location.href = location.pathname; return; }
   leave.busy = true;

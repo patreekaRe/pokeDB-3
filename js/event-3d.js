@@ -3055,10 +3055,11 @@ function instanced(geo, m, at) {
 
 /** The forest round the town, a tree a tile: cedars, a maple now and then; a lone maple (`|`) in a garden, bigger. */
 function forest(map, L, rnd) {
-  const cedars = [], maples = [], bushes = [];
+  const cedars = [], maples = [], bushes = [], gate = B.town?.gate;
   map.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch !== 'T' && ch !== '|') return;
     B.blocked.add(key(x, y));
+    if (gate && ch === 'T' && y <= 2 && Math.abs(x - gate.x - 0.5) <= 2.5) return;   // a glade round the gate, so it's seen whole
     if (ch === '|') { maples.push([tileX(x), tileZ(y), 1.3 + rnd() * 0.15, rnd() * 6]); return; }
     const at = [tileX(x) + (rnd() - 0.5) * 0.5, tileZ(y) + (rnd() - 0.5) * 0.5, 1 + rnd() * 0.55, rnd() * 6];
     if (y >= ROWS - 2) bushes.push([at[0], at[1], 0.7 + rnd() * 0.4, at[3], L.leaf[1 + Math.floor(rnd() * 3)]]);   // the front edge low, so it never hides you
@@ -3346,27 +3347,127 @@ function plaqueArt(name) {
   return f.c;
 }
 
-/** The far gate, a vermilion torii: two pillars on black feet, the tie beam, the top beam swept up at the ends. Its
-    pillars block their tiles; the way between them is `R.exitAt`. */
-function torii(x, z, span, tall, name) {
-  const red = std({ color: VERMILION, roughness: 0.5 }), black = std({ color: '#241a18', roughness: 0.55 });
+/** One torii's frame into `g`: two pillars on black feet with gold bands, the tie beam, the top beam swept up at the
+    ends and capped in gold. */
+function toriiFrame(g, span, tall, z, red, black, gold) {
+  for (const s of [-1, 1]) {
+    mesh(new THREE.CylinderGeometry(0.15, 0.19, tall, 20), red, s * span / 2, tall / 2, z, g);
+    mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.3, 20), black, s * span / 2, 0.15, z, g);
+    mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 20), gold, s * span / 2, 0.32, z, g);
+    mesh(new THREE.CylinderGeometry(0.165, 0.165, 0.05, 20), gold, s * span / 2, tall - 0.75, z, g);
+  }
+  mesh(rbox(span + 0.85, 0.2, 0.24, 0.03), red, 0, tall - 0.55, z, g);
+  mesh(rbox(span + 1.05, 0.18, 0.3, 0.03), red, 0, tall + 0.02, z, g);
+  const half = span / 2 + 1.05, sh = new THREE.Shape();
+  sh.moveTo(-half, 0.38); sh.quadraticCurveTo(-half * 0.55, 0.02, 0, 0); sh.quadraticCurveTo(half * 0.55, 0.02, half, 0.38);
+  sh.lineTo(half + 0.05, 0.62); sh.quadraticCurveTo(half * 0.55, 0.26, 0, 0.24); sh.quadraticCurveTo(-half * 0.55, 0.26, -half - 0.05, 0.62); sh.closePath();
+  const beam = new THREE.ExtrudeGeometry(sh, { depth: 0.38, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1, curveSegments: 14 });
+  beam.translate(0, 0, -0.19);
+  mesh(beam, black, 0, tall + 0.11, z, g);
+  for (const s of [-1, 1]) mesh(rbox(0.16, 0.22, 0.42, 0.03), gold, s * (half - 0.02), tall + 0.11 + 0.5, z, g).rotation.z = -s * 0.22;
+  mesh(rbox(0.14, 0.55, 0.16, 0.02), red, 0, tall - 0.28, z, g);
+}
+
+/** The light in the gate's opening: bright at the foot, fading up and to the sides. */
+function veilArt() {
+  const f = fine(32, 64, 4), { g } = f;
+  const v = g.createLinearGradient(0, 64, 0, 0);
+  v.addColorStop(0, 'rgba(255,236,170,0.95)'); v.addColorStop(0.35, 'rgba(255,190,120,0.5)'); v.addColorStop(1, 'rgba(255,140,180,0)');
+  g.fillStyle = v; g.fillRect(0, 0, 32, 64);
+  g.globalCompositeOperation = 'destination-in';
+  const h = g.createLinearGradient(0, 0, 32, 0);
+  h.addColorStop(0, 'rgba(0,0,0,0)'); h.addColorStop(0.25, 'rgba(0,0,0,1)'); h.addColorStop(0.75, 'rgba(0,0,0,1)'); h.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = h; g.fillRect(0, 0, 32, 64);
+  return f.c;
+}
+
+/** A pool of light on the ground, a ring round a soft middle. */
+function poolArt() {
+  const f = fine(64, 64, 4), { g } = f, r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255,230,160,0.55)'); r.addColorStop(0.62, 'rgba(255,200,120,0.18)'); r.addColorStop(0.78, 'rgba(255,220,150,0.7)'); r.addColorStop(0.86, 'rgba(255,200,130,0.1)'); r.addColorStop(1, 'rgba(255,200,130,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64);
+  return f.c;
+}
+
+/** The far gate out to the Shrine, made to be seen from the far end of the village: a great vermilion torii trimmed in
+    gold with a second, smaller one behind it (the start of the Shrine's tunnel of gates), a sacred rope hung with paper
+    streamers between the pillars, red paper lanterns swinging from the beam's ends, and the way through glowing: a veil
+    of light in the opening, motes rising through it, a ring of light on the road and a warm lamp that brightens at
+    night. Its pillars block their tiles; the way between them is `R.exitAt`. */
+function torii(x, z, span, tall, name, lit = [], time = 'day') {
+  const red = std({ color: VERMILION, roughness: 0.45 }), black = std({ color: '#241a18', roughness: 0.55 });
+  const gold = std({ color: '#d8a838', metalness: 0.6, roughness: 0.35, emissive: new THREE.Color('#7a4a10'), emissiveIntensity: 0.4 });
   const g = new THREE.Group();
   g.position.set(x, 0, z);
   B.group.add(g);
-  for (const s of [-1, 1]) {
-    mesh(new THREE.CylinderGeometry(0.14, 0.17, tall, 18), red, s * span / 2, tall / 2, 0, g);
-    mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.24, 18), black, s * span / 2, 0.12, 0, g);
+  B.reach = 1.8;   // the camera may lean past the back row, so the whole gate shows when you walk up to it
+  toriiFrame(g, span, tall, 0, red, black, gold);
+  const at = B.town?.gate;   // two great stone lanterns in the glade either side (forest() leaves it clear)
+  if (at) for (const dx of [-2, 3]) piece('stonelantern', at.x + dx, 1, { scale: 1.4 })?.traverse(o => { if (o.material?.emissiveMap) { o.material.emissive = new THREE.Color('#ffc070'); lit.push(o.material); } });
+  const back = new THREE.Group();   // the next gate up the stair, smaller and in the trees' shade
+  back.position.set(0, 0, -1.15); back.scale.setScalar(0.8);
+  g.add(back);
+  toriiFrame(back, span, tall, 0, std({ color: '#b8341f', roughness: 0.5 }), black, gold);
+  const plaque = plaqueArt(name);
+  panel(plaque, 0.62, 0.84, x, tall - 0.27, z + 0.14, { glow: plaque }).userData.spot = 'exit';
+  // the sacred rope, thick twisted straw sagging between the pillars, its paper streamers swaying
+  const ropeY = tall - 0.85, sag = 0.22, w = span / 2 - 0.12;
+  const curve = new THREE.CatmullRomCurve3(Array.from({ length: 9 }, (_, i) => { const t = i / 8 * 2 - 1; return new THREE.Vector3(t * w, ropeY - sag * (1 - t * t), 0.12); }));
+  const straw = std({ color: '#d8c080', roughness: 0.95 });
+  mesh(new THREE.TubeGeometry(curve, 40, 0.075, 10), straw, 0, 0, 0, g);
+  for (const [r, off] of [[0.035, 0.05], [0.035, -0.05]]) {
+    const twist = new THREE.CatmullRomCurve3(Array.from({ length: 33 }, (_, i) => { const t = i / 32, p = curve.getPoint(t); return new THREE.Vector3(p.x, p.y + Math.sin(t * 40 + off * 60) * 0.05, p.z + Math.cos(t * 40 + off * 60) * 0.05); }));
+    mesh(new THREE.TubeGeometry(twist, 96, r, 6), std({ color: '#b89a58', roughness: 1 }), 0, 0, 0, g).castShadow = false;
   }
-  mesh(rbox(span + 0.75, 0.17, 0.22, 0.03), red, 0, tall - 0.55, 0, g);
-  mesh(rbox(span + 0.95, 0.16, 0.28, 0.03), red, 0, tall + 0.02, 0, g);
-  const half = span / 2 + 0.95, sh = new THREE.Shape();
-  sh.moveTo(-half, 0.34); sh.quadraticCurveTo(-half * 0.55, 0.02, 0, 0); sh.quadraticCurveTo(half * 0.55, 0.02, half, 0.34);
-  sh.lineTo(half + 0.04, 0.56); sh.quadraticCurveTo(half * 0.55, 0.24, 0, 0.22); sh.quadraticCurveTo(-half * 0.55, 0.24, -half - 0.04, 0.56); sh.closePath();
-  const beam = new THREE.ExtrudeGeometry(sh, { depth: 0.36, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1, curveSegments: 14 });
-  beam.translate(0, 0, -0.18);
-  mesh(beam, black, 0, tall + 0.1, 0, g);
-  mesh(rbox(0.12, 0.5, 0.14, 0.02), red, 0, tall - 0.28, 0, g);
-  panel(plaqueArt(name), 0.5, 0.67, x, tall - 0.27, z + 0.13).userData.spot = 'exit';
+  const paper = std({ map: texOf(shideArt()), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.9 });
+  const shide = [-0.62, -0.2, 0.2, 0.62].map((t, i) => {
+    const p = curve.getPoint((t * 0.9 + 1) / 2), pivot = new THREE.Group();
+    pivot.position.set(p.x, p.y - 0.04, 0.13); g.add(pivot);
+    const m = mesh(new THREE.PlaneGeometry(0.16, 0.42), paper, 0, -0.21, 0, pivot);
+    m.castShadow = false; m.userData.i = i;
+    return pivot;
+  });
+  // red paper lanterns hung from the top beam's ends, outside the pillars
+  const paperGlow = std({ color: '#e04a30', emissive: new THREE.Color('#ff7040'), emissiveIntensity: 1, roughness: 0.7 });
+  lit.push(paperGlow);
+  const lanterns = [-1, 1].map(s => {
+    const pivot = new THREE.Group();
+    pivot.position.set(s * (span / 2 + 0.62), tall - 0.06, 0.05); g.add(pivot);
+    mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.36, 4), black, 0, -0.18, 0, pivot).castShadow = false;
+    const body = mesh(new THREE.SphereGeometry(0.2, 18, 14), paperGlow, 0, -0.56, 0, pivot);
+    body.scale.y = 1.25; body.castShadow = false;
+    for (const dy of [-0.31, 0.31]) mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.06, 14), black, 0, -0.56 + dy * 0.8, 0, pivot);
+    return pivot;
+  });
+  // the way through, glowing: a veil of light, a ring on the road, motes rising, a lamp
+  const veil = new THREE.Mesh(new THREE.PlaneGeometry(span - 0.3, tall - 0.6), new THREE.MeshBasicMaterial({ map: texOf(veilArt()), transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, toneMapped: false }));
+  veil.position.set(0, (tall - 0.6) / 2, -0.02); veil.raycast = () => {}; g.add(veil);
+  const pool = new THREE.Mesh(new THREE.PlaneGeometry(span + 0.6, span + 0.6), new THREE.MeshBasicMaterial({ map: texOf(poolArt()), transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  pool.rotation.x = -Math.PI / 2; pool.position.set(0, 0.03, 0.25); pool.raycast = () => {}; g.add(pool);
+  const dark = time === 'night' ? 1.6 : time === 'dusk' ? 1.2 : time === 'dawn' ? 0.9 : 0.5;
+  const lamp = new THREE.PointLight('#ffb870', 2.2 * dark, 6, 1.5);
+  lamp.position.set(0, 1.3, 0.6); g.add(lamp);
+  const motes = Array.from({ length: 26 }, (_, i) => {
+    const sp = sprite(emberArt(['#ffe090', '#ffb070', '#ff90c0'][i % 3]), 0.1 + (i % 4) * 0.03);
+    sp.material.blending = THREE.AdditiveBlending;
+    sp.userData = { x: (Math.random() - 0.5) * (span - 0.4), at: Math.random(), speed: 0.12 + Math.random() * 0.1, sway: Math.random() * 6 };
+    return sp;
+  });
+  B.ticks.push((now) => {
+    const pulse = 0.5 + Math.sin(now / 900) * 0.5;
+    veil.material.opacity = calm ? 0.5 : 0.42 + pulse * 0.25;
+    pool.material.opacity = calm ? 0.7 : 0.55 + pulse * 0.35;
+    pool.scale.setScalar(calm ? 1 : 0.96 + pulse * 0.06);
+    lamp.intensity = 2.2 * dark * (calm ? 1 : 0.85 + pulse * 0.3);
+    for (const [i, p] of lanterns.entries()) p.rotation.z = calm ? 0 : Math.sin(now / 1100 + i * 1.7) * 0.07;
+    for (const p of shide) p.rotation.x = calm ? 0 : Math.sin(now / 650 + p.children[0].userData.i) * 0.22;
+    for (const sp of motes) {
+      const u = sp.userData, t = (u.at + now / 1000 * u.speed) % 1;
+      sp.visible = !calm;
+      sp.position.set(x + u.x + Math.sin(t * 7 + u.sway) * 0.15, 0.15 + t * (tall - 0.4), z + Math.cos(t * 5 + u.sway) * 0.15);
+      sp.material.opacity = Math.min(1, t * 6, (1 - t) * 3);
+    }
+  });
   // the way through, unseen: a tap in the opening (the scenery beyond shows there) is the gate too
   const way = mesh(new THREE.PlaneGeometry(span - 0.2, tall), new THREE.MeshBasicMaterial({ visible: false }), 0, tall / 2, 0.05, g);
   way.castShadow = way.receiveShadow = false;
@@ -6057,7 +6158,7 @@ const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
     holes: true, fade: true, soft: true, extras: villageExtras,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
-    gate: (town, lit) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.75, town.name),
+    gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
@@ -6093,7 +6194,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
   const lit = [], smoke = [], steam = [];
   S.trees(map, L, rnd);
   townGrass(map, L, rnd);
-  S.gate(town, lit, L);
+  S.gate(town, lit, L, time);
   B.exitAt = { ...town.gate };
   B.doors = {};
   const LANDMARKS = { pagoda: (b, f) => pagoda(f.cx, f.cz, L), theater: (b, f) => theater(b, f, L, lit), waystone: (b, f) => waystone(f, L, mended), minehead: (b, f) => minehead(f, L, lit), windpump: (b, f) => windpump(f, L), kopje: (b, f) => kopje(f) };
@@ -6518,7 +6619,7 @@ function placeCamera(dt) {
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   // a long room: the shot a little ahead of you, up to its back; drawn in on whoever you walked up to (R.focus)
-  const v = Math.min(ROWS, R.view ?? ROWS) / 2, far = BACK_Z + v, near = ROWS / 2 - v;
+  const v = Math.min(ROWS, R.view ?? ROWS) / 2, far = BACK_Z + v - (R.reach ?? 0), near = ROWS / 2 - v;   // `reach`: past the back, for a gate too tall for the shot
   let wantZ = Math.max(far, Math.min(near, walker.z - v * 0.25));
   if (push) wantZ += (R.focus.z - wantZ) * push;
   camZ = calm || !Number.isFinite(camZ) ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 3);
