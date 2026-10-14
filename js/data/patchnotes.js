@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['fixes', 'On a computer or a tablet held sideways, the Poké Mart no longer starts zoomed in on the door: the whole store, shelves and all, is in view.'],
   ['mall', 'Squirtle Bubble Shooter plays like Puzzle Bobble: 20 hand-made boards (a Poké Ball, a heart, a rainbow...), nothing is ever added to them, and every few shots the whole ceiling lowers with them, the bubbles shaking the shot before. After the 20th they come round in new colours, the ceiling quicker.'],
   ['fixes', 'Main menu in the Pokédex now asks first on the map too, so a stray tap can\'t drop you out of your run.'],
   ['runs', 'A POKéDEX button on the map, beside Home, opens the Pokédex straight on the biome you\'re in (or the Safari area), so you can see what\'s left to find.'],
