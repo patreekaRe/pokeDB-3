@@ -10,7 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -896,6 +896,7 @@ export async function mountCenter(o) {
   opts = o;
   calm = calmFx();
   await warmCenter();
+  await wakeGL(renderer);
   if (!alive()) return null;   // left while it loaded
   if (mon?.src !== o.mate.src) {
     if (mon) scene.remove(mon.group);

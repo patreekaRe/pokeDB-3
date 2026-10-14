@@ -53,6 +53,7 @@ export const NEXT = [
   ['base', 'Gym Leaders you\'ve beaten 5 times drop by your Secret Base now and then. Tap them for a chat, and they notice if their poster is up.'],
   ['mall', 'The Poké Mall has the Clearing\'s Pokédex bar along the bottom: Home and How to play, your PokéCoins, and the name of the shop you\'re in.'],
   ['fixes', 'Closing the game in a Gym after beating its Leader now brings you back to the Gym on Continue, not to the map to fight them again.'],
+  ['fixes', 'Phones no longer reload the game mid-run after a while (most often in the Safari Zone): only the 3D place you\'re in is kept in memory now, the rest let go until you walk back in.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL } from './hd2d.js';
 import { makeGate, gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -2343,7 +2343,7 @@ const v3 = () => new THREE.Vector3();
 
 function frame(now) {
   if (!running) return;
-  if (screen.hidden || !root.isConnected) { running = false; quiet(); return; }
+  if (screen.hidden || !root.isConnected) { running = false; quiet(); sleepGL(renderer); return; }
   // under the device (its corner button opened it over the hub) the Clearing holds still rather than drawing unseen
   if (root.querySelector('.room-home.out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
   if (!card.hidden && now - resetAt > 5000) { resetAt = now; resetLine(); }
@@ -2481,6 +2481,7 @@ async function openHub(titleScreen, actions, hold) {
   } catch { built = Promise.reject(); built.catch(() => {}); return false; }
   // held before it's on the page, or the bar shows over the shut Pokédex while the partner loads
   root.classList.toggle('held', hold);
+  await wakeGL(renderer);
   if (!root.isConnected) screen.prepend(root);
   buildPlaces();
   const mate = buddy(getSave());
@@ -2541,4 +2542,5 @@ export function hideHub() {
   quiet();
   screen?.classList.remove('hub-on');
   root?.remove();
+  sleepGL(renderer);
 }
