@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -2313,7 +2313,7 @@ async function buildRocket(figs, { look: L, time }) {
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais before a round stone arch on
-   fluted columns, GYM LEADER and their name carved on its lintel, their badge turning in the lunette over it in a sunburst (gold once earned, a dark seal till then), fire on the lintel's ends, light pouring down on the dais; as they speak the great braziers flare with a gong and the shot
+   fluted columns, GYM LEADER and their name carved on its lintel, their badge turning in the lunette over it in a sunburst (in full colour, shining brighter once earned), fire on the lintel's ends, light pouring down on the dais; as they speak the great braziers flare with a gong and the shot
    draws in on them. ---------- */
 
 const GYM_INK = { clearing: '#4aa04a', shrine: '#d84838', wastes: '#e0602a', ruins: '#2f94b8', thornwood: '#2e7a3a', savanna: '#e0a030' };
@@ -2404,11 +2404,11 @@ function burstArt(col) {
   return c;
 }
 
-/** The leader's badge as a painting for the crest, `earned` gold or a dark seal until it's yours. */
-async function crestArt(id, earned) {
+/** The leader's badge as a painting for the crest, in full colour even before it's won, so you see what you're fighting for. */
+async function crestArt(id) {
   const { badgeArt } = await import('./trainercard.js');
   const img = new Image();
-  img.src = badgeArt(`gym-${id}`, earned);
+  img.src = badgeArt(`gym-${id}`, true);
   await img.decode().catch(() => {});
   const f = fine(36, 36, 8);
   try { f.g.drawImage(img, 0, 0, 36, 36); } catch {}
@@ -2418,7 +2418,7 @@ async function crestArt(id, earned) {
 /** The crest over the arch: the leader's badge, a thick cut-out turning slowly in a glow, a ring of motes round it. */
 async function gymCrest(leader, ink, y, z, back = z - 0.3) {
   const earned = !!leader && gymWins(getSave(), leader.id) > 0;
-  const art = await crestArt(leader?.id, earned), map = texOf(art), group = new THREE.Group(), size = 1.5;
+  const art = await crestArt(leader?.id), map = texOf(art), group = new THREE.Group(), size = 1.5;
   const face = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, metalness: earned ? 0.5 : 0.1, roughness: 0.35 });
   if (earned) { face.emissive = new THREE.Color('#ffffff'); face.emissiveMap = map; face.emissiveIntensity = 0.25; }
   const edge = std({ map, transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, color: earned ? '#8a6020' : '#3a3440', roughness: 0.6 });
@@ -6201,8 +6201,24 @@ function fitShot() {
   shot = { dist: d, half: d * halfTan, shift: (1 - b) / 2 * h - (h - low - 2), low };
 }
 
+// ?aerial: a whole town from high above, to see its layout at a glance (the Clearing's has the same)
+const AERIAL = new URLSearchParams(location.search).has('aerial');
+
+function aerialShot() {
+  const d = Math.max(ROWS / 2 + 2, (COLS / 2 + 2) / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  camera.far = Math.max(140, d * 1.6);
+  camera.clearViewOffset();
+  camera.position.set(0, d * 0.94, d * 0.34);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  const k = Math.max(COLS, ROWS) / 2 + 2, c = sun.shadow.camera;
+  if (c.right !== k) { Object.assign(c, { left: -k, right: k, top: k, bottom: -k }); c.updateProjectionMatrix(); }
+  if (sun.target.position.x || sun.target.position.z) { sun.position.set(-4, 12, 7); sun.target.position.set(0, 0, 0); sun.target.updateMatrixWorld(); }
+}
+
 function placeCamera(dt) {
   if (!shot) return;
+  if (AERIAL && R.kind === 'town') return aerialShot();
   const room = COLS / 2 + 0.4, push = R.focus?.k || 0, half = shot.half * (1 - push * PUSH);
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
@@ -6355,6 +6371,7 @@ export function warmEvent() {
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
   const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}` : ''}` : kind;
+  if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
     await warmEvent();
@@ -6365,10 +6382,32 @@ function room(kind, figs, at = {}) {
     try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended }); }
     finally { B = null; if (R) useSize(R); }
     await warmShaders(renderer, b.group, camera, scene);
+    restGL(renderer);
     return b;
   });
   built[id].catch(() => { delete built[id]; });
-  return built[id];
+  const asked = built[id];
+  forgetRooms();
+  return asked;
+}
+
+/** Only the last few rooms built are kept for a visit back: a long session's towns, homes and gyms would otherwise all
+    stay in memory, which on an iPhone ends with Safari reloading the tab. */
+const KEEP_ROOMS = 3;   // the next step's rooms (the map builds only those): a gym alone paints ~40MB of textures
+let entering = null;   // the room mountEvent() is walking into
+function forgetRooms() {
+  const ids = Object.keys(built);
+  for (const id of ids.slice(0, Math.max(0, ids.length - KEEP_ROOMS))) {
+    const kept = built[id];
+    if (kept === entering) continue;
+    delete built[id];
+    kept.then(b => {
+      if (b === R || kept === entering) { built[id] ??= kept; return; }   // still standing in it, or about to be
+      b.crowd?.hide();
+      for (const who of Object.values(b.who)) { scene.remove(who.group); dispose(who.group); }
+      dispose(b.group);
+    }).catch(() => {});
+  }
 }
 
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
@@ -6386,8 +6425,10 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended });
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, mended: o.mended }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
+  if (!showing() || opts !== o) return null;
+  await wakeGL(renderer);
   if (!showing() || opts !== o) return null;
   useSize(next);
   if (R !== next) {

@@ -62,8 +62,8 @@ const freshSave = () => ({
     scopeUpgrade: 0,          // the Silph Scope reveals 1 more room a biome per level (0-2); needs a complete Pokédex
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
-  seen: { relics: [], items: [], cards: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
-  newFinds: { relics: [], items: [], cards: [] },   // seen ids the Collection hasn't shown yet: each wears a "!" there till looked at (js/collection.js)
+  seen: { relics: [], items: [], cards: [], gym: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
+  newFinds: { relics: [], items: [], cards: [], gym: [] },   // seen ids the Collection hasn't shown yet: each wears a "!" there till looked at (js/collection.js)
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
@@ -71,6 +71,8 @@ const freshSave = () => ({
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face
   kenWins: 0,                 // Kenmatta's defeats, one a run at most
+  gymAppNews: true,           // the Gym Leaders app's "!" was handed out (gymAppNews()); old saves get it once
+  gymLost: {},                // times each Gym Leader beat you, by id (the Gym Leaders app, js/gymdex.js); their wins over them are `gym`, and `seen.gym` the ones met
   badges: [],                 // BADGES ids earned (js/data/badges.js), oldest first: the Trainer Card's Badge Case
   badgesSeen: [],             // the badges the Trainer Card has shown: one not in here pops in with a shine (js/trainercard.js)
   partner: null,              // the Trainer Card's Pokémon, a key from partnerChoices() (js/trainercard.js); null picks the starter with the most wins
@@ -135,7 +137,7 @@ function load() {
           ...seedStats(saved.stats || {}),
         },
       };
-      return renameStarters(merged);
+      return renameStarters(saved.gymAppNews ? merged : gymAppNews(merged));
     }
   } catch (err) { /* blocked or corrupted: fall through to a fresh save */ }
   return freshSave();
@@ -146,6 +148,14 @@ function load() {
 function renameFurniture(raw) {
   for (const [from, to] of [['fishingcabinet', 'flapcabinet']]) raw = raw.replaceAll(`"${from}"`, `"${to}"`);
   return raw;
+}
+
+/** The Gym Leaders app reached every save on 2026-10-14: each Leader already met or beaten wears a "!" there once, as if
+    just met, so players who fought them before the app find it. */
+function gymAppNews(save) {
+  const fought = (rec) => Object.keys(rec || {}).filter(id => rec[id] > 0);
+  const met = [...new Set([...(save.seen.gym || []), ...fought(save.gym), ...fought(save.gymLost)])];
+  return { ...save, gymAppNews: true, seen: { ...save.seen, gym: met }, newFinds: { ...save.newFinds, gym: [...new Set([...(save.newFinds.gym || []), ...met])] } };
 }
 
 /** Saves from before the Index hid unmet moves: the starting decks you own and the run in progress count as met. */

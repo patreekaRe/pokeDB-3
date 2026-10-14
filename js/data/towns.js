@@ -9,6 +9,12 @@
    This file is pure (tests/towns.test.mjs). A new town is a TOWNS entry.
    ============================================================ */
 
+/** Whether the gateway towns are on (the user's call, 2026-10-14: the new Clearing went live first, the towns still being
+    built): off, runs walk straight from the journey film to the map, requests count nothing and the Clearing's Waystone
+    only reads its riddles. `?towns` turns them on for a page load; `?town=` peeks work either way. On for good: TOWNS_LIVE. */
+export const TOWNS_LIVE = false;
+export const townsOpen = () => TOWNS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('towns'));
+
 /** Friendship (requests handed in) that mends a town's Waystone (the next session's: the ring by the Ancient Tree). */
 export const MEND_AT = 5;
 /** What handing a request in pays, in PokéCoins (Coin Finder applies). */
@@ -967,6 +973,13 @@ export function folkOf(key) {
   return f ? { ...f, town } : null;
 }
 
+/** Whether the Nietos are at home in their house in the Clearing (the house itself always stands): only once you've beaten
+    THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins, and not at all for now (the user's call,
+    2026-10-14: they're working out how the Nietos turn up). `?nietos` turns it on for a page load (`&gymwins=1` to have
+    beaten them). On for good: NIETOS_LIVE. */
+export const NIETOS_LIVE = false;
+export const nietosHome = (wins) => (NIETOS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('nietos'))) && wins > 0;
+
 /** The Clearing's own houses (the user's ask, 2026-10-14): walked in from the hub like a town's homes (homeRoom() in
     js/run.js), a pseudo-town with no map, crowd or requests. The Nietos live here, the Clearing's third Gym Leaders. */
 export const CLEARING = {
@@ -977,6 +990,8 @@ export const CLEARING = {
   homes: {
     nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
       away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',
+      // beaten, but not home yet (NIETOS_LIVE off)
+      out: 'Nobody\'s home. The car\'s gone, Kangaskhan too. A note on the fridge: "Back soon! - Law & Britt"',
       // from seven at night (your clock) Linc is asleep, and the house whispers
       nightAt: 19, nightSub: 'Linc is asleep in his crib. Law and Britt wave from the couch, whispering.',
       cast: {

@@ -15,7 +15,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC, resident } from './pc.js';
 import { folkOf } from './data/towns.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, dropGL } from './hd2d.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -1625,6 +1625,7 @@ async function leave() {
   endVisit();
   untry();
   root.remove();
+  dropGL(renderer, scene);   // built afresh on the next visit
   await leaveTo();
   leave.busy = false;
   curtain(false);
@@ -1759,6 +1760,7 @@ export async function openBase3d({ onLeave = null } = {}) {
     THREE = await loadThree();
     renderer = new THREE.WebGLRenderer({ canvas: view, antialias: false, powerPreference: 'high-performance' });
   } catch { return fallBack(); }
+  wakeGL(renderer);
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
   scene = new THREE.Scene();

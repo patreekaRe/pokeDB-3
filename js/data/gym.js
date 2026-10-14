@@ -38,6 +38,9 @@ const leader = (id, name, biome, bosses, badge, extra = {}) => ({
    Secret Base (js/data/furniture.js's `gym` source), a fifth their Gold badge (js/data/badges.js), and from then on they
    drop by your base now and then (leaderVisitor() in js/secret-base.js). */
 export const GYM_POSTER = 3, GYM_GOLD = 5;
+/* Their visits are switched off for now (2026-10-14, the user's call): no leader turns up in the Secret Base, though
+   `?visit` still brings one for a page load. On for good: LEADER_VISITS_LIVE. */
+export const LEADER_VISITS_LIVE = false;
 /** What this win (the `wins`th) brings: 'poster', 'gold' or null. */
 export const gymMilestone = (wins) => (wins === GYM_POSTER ? 'poster' : wins === GYM_GOLD ? 'gold' : null);
 /** Each leader's colours, light to dark: their badge's (js/trainercard.js) and their poster's. */
@@ -55,6 +58,22 @@ export const GYM_INK = {
   ricky: ['#f4d8b0', '#a86c40', '#40220e'],
   machew: ['#ff8a8a', '#a01020', '#1a0408'],
   jerome: ['#ffd0f0', '#ff5aa8', '#6a2a9c'],
+};
+/** Each leader's Pokédex entry, in the Gym Leaders app (js/gymdex.js): who they are, shown once they're beaten. */
+export const GYM_BIO = {
+  lawrence: 'Married to Britt and very straight, he says, too fast. His three "Valorant teammates" are waiting in the lobby, so every battle is over in minutes.',
+  britt: 'Teaches 26 seven-year-olds all day. All she wants is to get home to Linc and play Sage, which her friends will never let her live down.',
+  nietos: 'Law and Britt, battling together with baby Linc in a Pikachu suit, because nobody could babysit. Law swears there\'s no Valorant tonight.',
+  john: 'An engineer who fixes real bridges. Carries a Steam Deck, a Switch 2 and an AYN Thor, and still can\'t pick which one to play Fire Emblem on.',
+  jahmes: 'A PA by day who screams with hype at every Valorant round by night. In bed at 11 p.m. sharp, no exceptions, mid-battle or not.',
+  clarence: 'Puts on a burlesque show for the boys on Discord every night at nine, for morale. The week he missed one they went 0 and 5.',
+  shaun: 'Tech support by day, Valorant IGL by night. Smurfs on noobs, flames his hardstuck friends, and will send you VOD notes whether you asked or not.',
+  pat: 'Keeps "accidentally" singing Lemonade or She Was Mine, then acting surprised anyone heard. He knew. He always knows.',
+  kayl: 'A property coordinator who\'d rather be playing bass. Loves lavender and Tame Impala, and loses her train of thought to her cats, Spooky and Reya.',
+  phil: 'A ghost hunter possessed by a demon named JONA. She does all the talking, and turns his Pokémon into her lifeless pawns.',
+  ricky: 'Only 32, but his friends in another time zone keep him up till 2 a.m. every night. Always has a meeting at nine. Always plays one more.',
+  machew: 'Sure he\'s a hero out of Tales of Berseria, nine years down the ninja path. The katana is plastic and he\'s on shift till six.',
+  jerome: 'Reads every r/GTA6 post the moment it\'s up. His baby was just born; he barely noticed. Every badge is two dollars toward GTA 6.',
 };
 /** A leader's poster, a Secret Base wall piece. */
 export const posterKind = (id) => `${id}poster`;

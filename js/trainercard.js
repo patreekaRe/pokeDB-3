@@ -192,7 +192,7 @@ const TYPE_LOOK = {
   fire: [LOOK.fire[1], 'flame'], water: [LOOK.water[1], 'drop'], grass: [LOOK.grass[1], 'leafy'],
   normal: [['#f4f0e4', '#b8b098', '#5c5644'], 'paw'], psychic: [['#ffc8f0', '#d058b0', '#701c58'], 'eye'],
 };
-const BIOME_INK = {
+export const BIOME_INK = {
   clearing: LOOK.clearing[1], shrine: LOOK.shrine[1], wastes: LOOK.ember[1],
   ruins: LOOK.tide[1], thornwood: LOOK.thorn[1], savanna: LOOK.sun[1], depths: LOOK['page-depths'][1],
 };
@@ -623,12 +623,12 @@ export function cardIcon() {
   return svg;
 }
 
-const FIND_LISTS = { relics: RELICS, items: ITEMS, cards: ALL_CARDS };
+const FIND_LISTS = { relics: RELICS, items: ITEMS, cards: ALL_CARDS, gym: GYM_LEADERS };
 
 /** A kind's new finds the Collection hasn't shown, only ones its apps list (a played Cinder or status card isn't one). */
 export const newFinds = (kind, save = getSave()) => (save.newFinds?.[kind] || []).filter(id => FIND_LISTS[kind].some(t => t.id === id));
 
-/** Anything new in the Collection device: a badge, or a relic, item or move found. */
+/** Anything new in the Collection device: a badge, or a relic, item, move or Gym Leader found. */
 export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length);
 
 /** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen; the

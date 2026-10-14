@@ -55,8 +55,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`.
+
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
-   then). The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
+   then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
    the right and four rows between the back and the plaza, the world anchored where the old grid's middle was, `X0` / `Z0`,
    so the back stays put), **the ring round the plaza's Poké Ball** (`STONES` from `RING` in `js/data/towns.js`, a stone a
    town on a worn circle, `RING_R` 3, none on the paths; `standingStone()`: dark, or lit in its town's colour with a rune,
@@ -80,6 +82,17 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `cameHome(from, town)`); the worn ring path stays. Player lines that said "ring of stones" now say the Waystone.
    Headless-tested (menu, Travel to Lantern Village, Leave home, no errors). Branch `towns`, waiting on the user's playtest.
    **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
+   **Done (2026-10-14): the Clearing laid out anew** (the user's ask, the start of a clean-up of the towns, the Clearing
+   first, then the Shrine's town): spread out over a 31 x 21 grid round a paved plaza, cobbled lamp-lit avenues and a ring
+   road, the way out north through the Whispering Clearing's gate, Kenmatta's dojo north-west away from the Nietos (east),
+   the Ancient Tree / Secret Base north-east (kept a tree), the Mall west, a pond garden south (CLAUDE.md's The Clearing's
+   layout). `?aerial` for the overview. Headless-checked: every place reachable, no errors, Halloween's dress re-placed.
+   Follow-up (same day, the user's ask): the tree beside the cauldron (`TREE_TILES` [11, 2]) taken out, and the Nietos'
+   name board made readable (bigger, white on deep blue, `nietosHouse()`).
+   **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md,
+   docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the
+   way the Clearing and Highbough were (ask me what bothers me about it first), and send an aerial view." Then Cinder
+   Springs, Driftwood Landing and Sunwell Bazaar the same way, one a session (the handoff has the order and the rules).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
@@ -148,6 +161,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    looking down (a throwaway `window.__top` hook in the town camera, never committed), sent with `SendUserFile`; a
    playtest link with it. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
    Towns step 4. Give <town> Highbough's clean-up, and send me an aerial screenshot before and after."
+**The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
+   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
+   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
+   only their house shows, and their Gym fight in runs is unchanged) while the user works out more of how
+   the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
+   **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
+   `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
 5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an

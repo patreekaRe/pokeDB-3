@@ -362,3 +362,40 @@ phase 1 run.
   3. Nothing else: no index, no new sign-in method. Sign in on the live site and play the day's first Safari try.
 - Headless tests route gstatic to stand-in modules (an in-memory Firestore), as the cloud save's did. A cheater with the
   console can still post a made-up (in-bounds) result for their own account: there's no server replay check.
+
+## From CLAUDE.md (moved 2026-10-14)
+
+The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
+
+- **Catching** (Safari Zone phase 2, 2026-10-02; detail in `docs/reference/safari.md`): only in a Safari run's wild rooms,
+  any turn a Throw button (`#throw-btn`) opens a ball picker (`#ball-picker`); a throw costs 1 PP and ends your turn, and its
+  odds are `catchChance()` in `js/data/balls.js` (pure, `tests/catch.test.mjs`), rolled on the seed. A catch pays half the ₽
+  and offers the Pokémon's signature card (`SIGNATURE_FOR` / `sig-*` cards, `safari: true`, never in `ALL_CARDS`); a new
+  Safari Pokémon needs one. `save.safariDex` and `save.balls` (the Game Corner's 4th row). Rare spawns (`markRares()`) run
+  off after 4 turns; Bait / Rock (`SAFARI_ONLY_CARDS`) are Safari-only rewards. The day's first try reads every perk
+  through `perk()` / `dexPerk()` in `js/run.js`, which are off for it (`fairTry()`): read any new perk through them.
+- **Safari Zone** (the daily run, `docs/reference/safari.md`): its **Safari Pokédex** (`js/safaridex.js`,
+  an app on `shelfApp()`) is a banner per area built from `SAFARI_AREAS` (`SAFARI_DEX_PAGES`), so a Pokémon added to an area
+  joins it; it opens from the Collection's Safari app, the prep window's Pokédex key and, in a Safari run, the top bar's Pokédex.
+  **Prep window** (2026-10-02): the title's Safari Zone gem opens `#safari-prep-dialog` (`js/safariprep.js`: today's run,
+  the rules, your balls, the Safari Pokédex / Leaderboard / Game Corner, then Start; its Pokédex / Ranks / Buy keys slide their apps over its own screen, `APPS` in `js/safariprep.js`); a 🏆 beside the gem
+  (`#title-board`) opens the leaderboard. Every ball but the Safari and Master Balls is a pack used up when thrown
+  (Great / Ultra 5, the special ones 3); `migrateBalls()` turned old one-time unlocks into 10 throws. Since 2026-10-07 every run
+  has 30 Safari Balls (`SAFARI_BALLS`), and replays after the free daily try need a 100-coin **Day Pass** for the day
+  (`safariTicket()` in `js/daypass.js`; `docs/reference/safari.md`).
+  **Completion rewards** (2026-10-02): a page with every Pokémon caught pays 1000 PokéCoins once and doubles its rare spawns
+  on replays (`rareOdds()`, never the first try); the whole Safari Pokédex unlocks Rayquaza. `creditSafari()` in
+  `js/run.js`; earned stays earned in `save.safariDex.done` / `complete`, however the roster grows.
+  **Its own Pokémon** (phase 4) are one line each in `js/data/safari-mons.js` (species, type, area, one of 10 role
+  `TEMPLATES`, move names, Pokédex line, signature card); `PLACE` grows them with the area's place in the run. A new one
+  also needs its front GIF and `SPRITE_FIT` line; `tests/safarimons.test.mjs` checks it all.
+  **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
+  the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
+  the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged. Its
+  window and the lobbies' Ranks apps (the Sky Pillar's board too) are the Pokédex look on `shelfApp()` (2026-10-07): a
+  banner per board, the handheld one trainer a screen; `shelfApp()`'s `empty(g)` keeps a board with no rows as a banner.
+  **Its scenery** (phase 5b): each area is a `BIOME_ART` entry built from `SAFARI_ART` in `js/scene.js` (Meadow, Forest,
+  Wetland, Marsh, Peak, Desert; painted by `SAFARI_PAINT`, with the Zone's own fence, sign, rest house and tall grass over
+  all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's
+  goal ahead growing nearer every floor, a different roadside landmark each floor. A Safari run asks for its area (`land()` in `js/run.js`)
+  for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.

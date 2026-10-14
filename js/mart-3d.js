@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -1018,6 +1018,7 @@ export function warmMart() {
     scene.add(wares.group);
     new ResizeObserver(() => { if (view.isConnected) resize(); }).observe(view);
     await warmShaders(renderer, scene, camera);
+    restGL(renderer);
   })();
   warming.catch(() => { warming = null; });
   return warming;
@@ -1034,6 +1035,7 @@ export async function mountMart(o) {
   opts = o;
   calm = calmFx();
   await warmMart();
+  await wakeGL(renderer);
   if (!alive()) return null;
   await ensureMon(o.mate);
   if (!alive()) return null;

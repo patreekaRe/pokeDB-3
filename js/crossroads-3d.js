@@ -11,7 +11,7 @@
 
 import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
-import { loadThree, tex, monBoard, drawMon, createPost, warmShaders } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, warmShaders, wakeGL, sleepGL } from './hd2d.js';
 import { sceneShot } from './scene.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -540,6 +540,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     post.final.uniforms.uBand.value = 0.2;
     post.final.uniforms.uBloom.value = 0.5;
   }
+  await wakeGL(renderer);
   const roads = [...ids];
   const W = await build(roads);
   const camera = new THREE.PerspectiveCamera(50, 1, 0.5, 260);
@@ -941,6 +942,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
           view.classList.remove('on');
           view.remove();
           panel.remove();
+          sleepGL(renderer);   // a crossroads a biome: nothing to keep it awake for
           W.scene.traverse(o => {
             o.geometry?.dispose();
             for (const m of [o.material].flat()) if (m) { m.map?.dispose(); m.dispose(); }

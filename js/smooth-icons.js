@@ -224,6 +224,14 @@ const ART = {
   settings: `<path d="M13.8 3h4.4l.7 3.4 2.3 1 2.9-1.9 3.1 3.1-1.9 2.9 1 2.3 3.4.7v4.4l-3.4.7-1 2.3 1.9 2.9-3.1 3.1-2.9-1.9-2.3 1-.7 3.4h-4.4l-.7-3.4-2.3-1-2.9 1.9-3.1-3.1 1.9-2.9-1-2.3L3 18.2v-4.4l3.4-.7 1-2.3-1.9-2.9 3.1-3.1 2.9 1.9 2.3-1Z" fill="#e4e8f0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <circle cx="16" cy="16" r="4.6" fill="#7a8498" stroke="${INK}" stroke-width="2"/>`,
 
+  // the Gym Leaders app (js/gymdex.js): a gym, red roof over white columns, a Poké Ball on its pediment
+  gym: `<path d="M2.5 13L16 4l13.5 9Z" fill="#e23a2c" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <rect x="4.5" y="13" width="23" height="14" fill="#f4f0e4" stroke="${INK}" stroke-width="2"/>
+    <path d="M8.5 15.5v9M12.5 15.5v9M19.5 15.5v9M23.5 15.5v9" stroke="#b8b0a0" stroke-width="2" stroke-linecap="round"/>
+    <path d="M14.2 27v-5.4a1.8 1.8 0 0 1 3.6 0V27Z" fill="#5a3a24" stroke="${INK}" stroke-width="1.6"/>
+    <path d="M2 28.5h28" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="16" cy="9.6" r="2.6" fill="#fff" stroke="${INK}" stroke-width="1.4"/><path d="M13.4 9.6h5.2" stroke="${INK}" stroke-width="1.2"/>`,
+
   // ---- the Pokédex's Rewards (js/pokedex.js) ----
   star: `<path d="M16 3l3.8 7.8 8.6 1.2-6.2 6 1.5 8.5L16 22.4l-7.7 4.1 1.5-8.5-6.2-6 8.6-1.2Z" fill="#f8c830" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M14.6 9.6l-1.4 2.8" stroke="#fff6c0" stroke-width="1.6" stroke-linecap="round"/>`,

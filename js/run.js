@@ -37,7 +37,7 @@ import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerT
 import { openDeviceApp } from './collection.js';
 import { smoothIcon } from './smooth-icons.js';
 import { ACHIEVEMENT_FOR, FEATS } from './data/achievements.js';
-import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf } from './map.js';
+import { generateMap, landingMap, renderMap, scopeable, readable, journey, stageOf, reachableNodes } from './map.js';
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
@@ -68,7 +68,7 @@ import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, 
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk } from './towns.js';
-import { TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey } from './data/towns.js';
+import { townsOpen, TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome } from './data/towns.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -1568,6 +1568,7 @@ async function fight(node, { talked = false } = {}) {
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
   encounter.leader = gymLeader(node);
+  if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
   const deferIntro = node.type === 'boss' || ken;
   const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
@@ -1588,7 +1589,7 @@ async function fight(node, { talked = false } = {}) {
 function gymRoom(node, leader, won = null, said = null) {
   const first = gymWins(getSave(), leader.id) === 0, boss = ENEMY_DEFS[node.enemyId]?.name, thisRun = run;
   const handOver = !!won;   // every win hands the badge over, a repeat counted on it (the user's call, 2026-10-13)
-  const again = peeking ? 0 : gymWins(getSave(), leader.id);
+  const again = peeking ? 0 : winsBefore(leader);
   let talking = false;
   const freeze = (on) => event3dMod?.freezeEvent(on);
   // the speech window steps aside while they talk over the room; `keep` holds you still after (the fight is coming)
@@ -1776,11 +1777,13 @@ function homeRoom(b) {
             again();
           }));
   }
-  const away = !!home.leader && gymWins(getSave(), home.leader) === 0;   // up at their Gym till you've beaten them once
+  const wins = home.leader ? gymWins(getSave(), home.leader) : 0;
+  const notBack = home.leader === 'nietos' && wins > 0 && !nietosHome(wins);   // beaten, but the Nietos aren't moving in yet (NIETOS_LIVE)
+  const away = !!home.leader && (wins === 0 || notBack);   // up at their Gym till you've beaten them once
   const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
     options,
     skipLabel: 'Leave',
     onSkip: out,
@@ -1790,7 +1793,7 @@ function homeRoom(b) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
-  for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
+  if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
@@ -1818,6 +1821,9 @@ function rollTrade() {
   const pool = itemsForType(run.starter.type).filter(i => i.rarity === rarity && !held.includes(i.id));
   return pool.length ? { give, get: pickOne(pool).id } : null;
 }
+/** A leader's wins before this one: back in the gym from Continue after its rewards began, this win is already in the
+    save (afterFight()'s `counted`), so the hand-over mustn't read it as one more (it said "beaten 2 times" after one). */
+const winsBefore = (leader) => Math.max(0, gymWins(getSave(), leader.id) - (run.gymWon?.counted ? 1 : 0));
 
 /** What a win's hand-over adds (`again`: the wins before this one, 0 on a playtest): on the third their signed poster, on
     the fifth the Gold badge (js/data/gym.js's gymMilestone()); `lines` follow their last words, `badge` is the one they
@@ -1861,11 +1867,12 @@ function afterFight(node, result) {
       checkpoint();
       if (gym3d()) return gymRoom(node, leader, result, said);
       const done = () => afterFight(node, { ...result, gymSaid: true });
-      const again = peeking ? 0 : gymWins(getSave(), leader.id), { lines, badge } = rematch(leader, again);
+      const again = peeking ? 0 : winsBefore(leader), { lines, badge } = rematch(leader, again);
       return gymTalk(leader, [...said.slice(-1), ...lines], { vars, badge, again, lit: true }).then(done);
     });
   }
   const winner = !result.won && !result.fled && !result.escaped && !result.gymSaid && gymLeader(node);   // they beat you: a word before the run ends
+  if (winner && !peeking) updateSave(d => { d.gymLost = { ...(d.gymLost || {}), [winner.id]: (d.gymLost?.[winner.id] || 0) + 1 }; });
   if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
   run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
@@ -1884,7 +1891,8 @@ function afterFight(node, result) {
   if (isTower()) augmentsAfterFight(result);
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
-  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
+  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
@@ -2052,7 +2060,7 @@ async function walkOn() {
   run.atFork = false;
   const covered = () => { close?.(); fork?.close(); };
   // the town at the gate of the biome ahead (js/data/towns.js): walked before its map, never on Mewtwo's or a Safari run
-  if (TOWNS[to] && !isSafari() && !isMewtwoRun(run.starter) && town3d()) {
+  if (townsOpen() && TOWNS[to] && !isSafari() && !isMewtwoRun(run.starter) && town3d()) {
     run.town = { id: to };
     checkpoint();
     return townRoom(covered);
@@ -2592,13 +2600,16 @@ function warmArena3d() {
   }).catch(() => {});
 }
 
-/** The map's 3D ? rooms built while it's up, so walking into one is quick. */
+/** The 3D ? rooms you can walk into next built while the map is up, so walking into one is quick. Only the next step's:
+    building every room on the map at once is what an iPhone ran out of memory on. */
 function warmEvent3d() {
-  if (warmEvent3d.map === run.map || new URLSearchParams(location.search).has('event2d')) return;
-  const kinds = [...new Set(Object.values(run.map?.byId ?? {}).map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
-  const leader = run.map?.boss && gymLeader(run.map.boss);
+  if (!run.map || (warmEvent3d.map === run.map && warmEvent3d.at === run.current) || new URLSearchParams(location.search).has('event2d')) return;
+  const next = reachableNodes(run.map, run.current);
+  const kinds = [...new Set(next.map(n => (n.type === 'treasure' ? 'grotto' : EVENT_SCENES[n.event?.id])).filter(k => EVENT_3D.includes(k)))];
+  const leader = next.some(n => n.type === 'boss') && gymLeader(run.map.boss);
   if (!kinds.length && !leader) return;
   warmEvent3d.map = run.map;
+  warmEvent3d.at = run.current;
   const at = { biome: land().id, type: run.starter.type };
   setTimeout(() => import('./event-3d.js').then(m => {
     event3dMod = m;
