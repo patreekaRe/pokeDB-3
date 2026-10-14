@@ -333,6 +333,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (why it needs them, what Eternatus is, how much of its strength is back). This answers the open question above:
    Mewtwo goes alone but weakened; all five shards also let every other starter down, as above. Builds with step 6
    (the shards must drop first).
+   **A won run's ending with the camp** (the user's yes, 2026-10-14): last boss → the fall → the Depths camp (walk
+   round, talk to Mewtwo, the pentagram) → leaving it plays the win scene / Hall of Fame → unlock windows → result
+   window. The win is recorded before the camp opens, so closing the game there never loses it; leaving only plays
+   the celebration. A visit outside a run (the Sealed Gate's button) has no win: leaving goes back to the Clearing.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
