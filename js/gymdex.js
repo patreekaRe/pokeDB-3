@@ -1,13 +1,14 @@
 /* ============================================================
    gymdex.js  -  the Gym Leaders app for the Collection device
    (js/device.js; the user's ask, 2026-10-14): a banner per biome,
-   each leader on the handheld. Unmet they're "???"; met (their
-   fight began: `save.seen.gym`) a shadow with a name; beaten, in
+   each leader on the handheld. Unmet they're their silhouette and
+   "???"; met (their fight began: `save.seen.gym`) the silhouette
+   with a name; beaten, in
    colour with their profile. Researched is their Gold badge
    (GYM_GOLD wins), as a Pokédex page's Pokémon are by defeats.
    ============================================================ */
 
-import { GYM_LEADERS, GYM_BIO, GYM_POSTER, GYM_GOLD, UNKNOWN_SPRITE, spriteOf, gymWins } from './data/gym.js';
+import { GYM_LEADERS, GYM_BIO, GYM_POSTER, GYM_GOLD, spriteOf, gymWins } from './data/gym.js';
 import { BIOMES_BY_ID, ENEMY_DEFS } from './data/enemies.js';
 import { getSave, clearFinds } from './storage.js';
 import { BIOME_INK, badgeArt, showBadgeNews } from './trainercard.js';
@@ -30,9 +31,9 @@ function quote(l) {
   return line.replace(/^[A-Z]+: /, '').replace(/\{(\w+)\}/g, (m, k) => ({ boss: ENEMY_DEFS[l.bosses[0]]?.name, badge: l.badge, trainer: 'you', name: l.name })[k] ?? m);
 }
 
-function sprite(l, met, cls) {
+function sprite(l, cls) {
   const img = el('img', `pixel ${cls}`);
-  img.src = met ? spriteOf(l) : UNKNOWN_SPRITE;
+  img.src = spriteOf(l);
   img.alt = '';
   img.draggable = false;
   return img;
@@ -64,7 +65,7 @@ function rewardTrack(l) {
       img.src = badgeArt(badge, got);
       img.alt = '';
       pic.append(img);
-    } else pic.append(sprite(l, true, 'gdx-poster'));
+    } else pic.append(sprite(l, 'gdx-poster'));
     step.append(pic, el('b', '', name), el('small', '', got ? 'Earned' : `${Math.min(wins, at)}/${at} wins`));
     row.append(step);
   }
@@ -106,11 +107,10 @@ export const gymApp = () => shelfApp({
   shown: (g, l) => { clearFinds('gym', [l.id]); showBadgeNews(); },
   no: (g, l) => noOf(l),
   label: (g, l) => (gymMet(getSave(), l.id) ? l.name : '???'),
-  art: (g, l, known, where) => sprite(l, gymMet(getSave(), l.id), where === 'banner' ? `bdx-banner-mon${known ? '' : ' unseen'}` : 'pdx-slot-mon'),
+  art: (g, l, known, where) => sprite(l, where === 'banner' ? `bdx-banner-mon${known ? '' : ' unseen'}` : 'pdx-slot-mon'),
   slotCls: (g, l) => (gymWins(getSave(), l.id) >= GYM_GOLD ? 'gdx-gold' : ''),
   screen(g, l, known) {
-    const met = gymMet(getSave(), l.id);
-    const nodes = [el('span', 'pdx-pad'), sprite(l, met, 'pdx-mon gdx-leader bdx-art'), el('span', 'pdx-role', 'Gym Leader')];
+    const nodes = [el('span', 'pdx-pad'), sprite(l, 'pdx-mon gdx-leader bdx-art'), el('span', 'pdx-role', 'Gym Leader')];
     if (known) nodes.push(badgeImg(l, 'gdx-badge'));
     return nodes;
   },
@@ -130,7 +130,7 @@ export const gymApp = () => shelfApp({
     top.style.setProperty('--b1', g.b1);
     top.style.setProperty('--b2', g.b2);
     const pic = el('span', 'gdx-top-pic');
-    pic.append(sprite(l, true, 'gdx-top-mon'));
+    pic.append(sprite(l, 'gdx-top-mon'));
     const plate = el('div', 'gdx-top-plate');
     plate.append(el('small', '', `${noOf(l)} · ${g.name}`), el('b', '', l.battleName || l.name), badgeImg(l, 'gdx-top-badge'));
     top.append(pic, plate);
