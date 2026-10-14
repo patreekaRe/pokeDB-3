@@ -120,3 +120,39 @@ test('the Satchel keeps counts, key items once, and marks what is new', () => {
   const lent = satchelOf({ satchel: sat }, true);
   assert.ok(lent.keys.length > 1 && matCount(lent, 'seeds') > 0);
 });
+
+test('materials drop only in their biome: fights never give a map-only one, sparkles put it first', async () => {
+  const { fightDrop, markSparkles, biomeMats, DROPS, SPARKLES, matLine } = await import('../js/data/satchel.js');
+  const { makeRng } = await import('../js/rng.js');
+  const rand = makeRng(7);
+  for (const biome of Object.values(TOWNS).map(t => t.biome)) {
+    assert.ok(biomeMats(biome).length >= 2, `${biome}: 2-3 materials`);
+    assert.ok(biomeMats(biome, true).length >= 1, `${biome}: a fight can drop something`);
+    for (let i = 0; i < 200; i++) {
+      const d = fightDrop(biome, 'elite', rand);
+      assert.ok(d && MATERIALS_BY_ID[d.id].biome === biome && MATERIALS_BY_ID[d.id].from !== 'map');
+      assert.ok(d.n >= DROPS.elite.n[0] && d.n <= DROPS.elite.n[1]);
+      assert.ok(!matLine(d).includes('undefined'));
+    }
+    assert.equal(fightDrop(biome, 'ken', rand), null);
+    const rooms = Array.from({ length: 12 }, (_, i) => ({ id: i, floor: i, type: ['fight', 'event', 'rest', 'shop', 'elite'][i % 5] }));
+    const lit = markSparkles(rooms, biome, rand);
+    assert.ok(lit.length >= SPARKLES.rooms[0] && lit.length <= SPARKLES.rooms[1]);
+    for (const r of lit) assert.ok(SPARKLES.kinds.includes(r.type) && r.floor > 0 && MATERIALS_BY_ID[r.sparkle.id].biome === biome);
+    if (biomeMats(biome).some(m => m.from === 'map')) assert.equal(MATERIALS_BY_ID[lit[0].sparkle.id].from, 'map');
+  }
+  assert.equal(fightDrop('forest', 'boss', rand), null, 'a biome without a town drops nothing');
+  assert.deepEqual(markSparkles([{ id: 1, floor: 2, type: 'fight' }], 'forest', rand), []);
+});
+
+test('a gather step can be met in a run or two through its biome', async () => {
+  const { DROPS, SPARKLES, biomeMats } = await import('../js/data/satchel.js');
+  const mid = ([lo, hi]) => (lo + hi) / 2;
+  for (const q of Object.values(QUESTS)) for (const s of q.steps.filter(x => x.kind === 'gather')) {
+    const m = MATERIALS_BY_ID[s.item], fightMats = biomeMats(m.biome, true).length;
+    const fights = m.from === 'map' ? 0 : (5 * DROPS.fight.odds * mid(DROPS.fight.n) + 2 * mid(DROPS.elite.n) + mid(DROPS.boss.n)) / fightMats;
+    const sparkles = m.from === 'map' ? mid(SPARKLES.n) : (mid(SPARKLES.rooms) - (biomeMats(m.biome).some(x => x.from === 'map') ? 1 : 0)) * mid(SPARKLES.n) / biomeMats(m.biome).length;
+    const pass = fights + sparkles;
+    assert.ok(s.n / pass <= 2.5, `${s.id}: ${s.n} ${m.id} at ~${pass.toFixed(1)} a pass`);
+  }
+});

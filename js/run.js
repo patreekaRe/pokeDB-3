@@ -70,7 +70,8 @@ import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended } from './data/towns.js';
-import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID } from './data/satchel.js';
+import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine } from './data/satchel.js';
+import { gainMat } from './satchel.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -308,6 +309,7 @@ function checkpoint() {
     dexComplete: run.dexComplete,
     unlocks: run.unlocks.map(s => s.id),
     credited: run.credited,
+    gleaned: run.gleaned,
     tally: run.tally,
     safari: run.safari,
     tower: run.tower,
@@ -327,6 +329,22 @@ function creditRoom(node) {
   run.credited.push(key);
   const saved = loadRunData();
   if (saved && !peeking) saveRunData({ ...saved, credited: run.credited });
+  return true;
+}
+
+/** Whether this biome drops materials for the Satchel (js/data/satchel.js): a town's biome while the towns are on, never
+    a Safari area, the Sky Pillar or a playtest. What drops is kept on a lost run. */
+const gleaning = () => townsOpen() && !peeking && !isSafari() && !isTower() && biomeMats(mainBiome()?.id).length > 0;
+const gleanKey = (node, what) => `${run.biome}:${node.id}:${what}`;
+const gleaned = (key) => (run.gleaned || []).includes(key);
+/** A room's materials into the Satchel, once: written into the saved run straight away (creditRoom()'s way), so a refresh
+    replaying the room can't give them twice. */
+function glean(key, drop) {
+  if (!drop || gleaned(key)) return false;
+  run.gleaned = [...(run.gleaned || []), key];
+  gainMat(drop.id, drop.n);
+  const saved = loadRunData();
+  if (saved) saveRunData({ ...saved, gleaned: run.gleaned });
   return true;
 }
 
@@ -779,6 +797,7 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
   if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
+  if (gleaning()) markSparkles(nodes, mainBiome().id, random);   // a town's materials, sparkling in a room or two
   for (const node of nodes) if (node.type === 'shop') node.stock = martStock();
   rollEvents();
   run.current = null;
@@ -1524,6 +1543,10 @@ function enterNode(node) {
   reseed(`room:${zone()}:${node.id}`);
   markHp(node);
   node.visited = true;
+  if (node.sparkle && gleaning() && glean(gleanKey(node, 'sparkle'), node.sparkle)) {   // told back on the map
+    playSound('item-get');
+    tell(`Something sparkled here! ${matLine(node.sparkle)}`);
+  }
   if (isTower()) {   // the tower's screen draws a statue of every foe beaten before the door it came through
     const row = node.type === 'boss' ? [node] : run.map.floors[node.floor], f = floorOf(run.tower.flight, node.floor);
     run.tower.trail = [...(run.tower.trail || []).filter(e => e.f !== f), { f, type: node.type, enemy: node.enemyId || null, n: row.length, k: row.indexOf(node) }];
@@ -1983,6 +2006,8 @@ function afterFight(node, result) {
   }
   if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
   if (!(node.type === 'boss' && run.biome === finalBiome(run.starter))) unlock();
+  const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
+  if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
@@ -2006,6 +2031,7 @@ function afterFight(node, result) {
     if (tough) mission('tough');
     if (result.caught) mission('catch');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
+    glean(gleanKey(node, 'drop'), drop);
     run.money += prize;
     setMoney(run.money);
     updateSave(d => {

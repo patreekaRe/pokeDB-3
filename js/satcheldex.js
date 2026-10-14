@@ -21,6 +21,12 @@ const QUEST_TOWNS = RING.map(t => TOWNS[t.id]).filter(t => questOf(t));
 const no = (list, t) => `No.${String(list.indexOf(t) + 1).padStart(2, '0')}`;
 const newsId = (g, t) => (g.id === 'quests' ? `q:${t.id}` : t.id);
 
+/** Where a material turns up (js/data/satchel.js's DROPS and SPARKLES). */
+const where = (m) => {
+  const biome = BIOMES_BY_ID[m.biome]?.name ?? 'wild';
+  return m.from === 'map' ? `Glints in sparkling rooms on the map, in the ${biome}.` : `Dropped by Pokémon in the ${biome}, and found in its sparkling rooms.`;
+};
+
 const GROUPS = [
   { id: 'keys', name: 'Key Items', sub: 'One of a kind', b1: '#e8b830', b2: '#6a4a08', list: () => KEY_ITEMS },
   { id: 'mats', name: 'Materials', sub: 'Kept between runs', b1: '#8ac060', b2: '#2c5a1c', list: () => MATERIALS },
@@ -91,8 +97,8 @@ export const satchelApp = () => shelfApp({
   },
   lines(g, t, k) {
     if (g.id === 'keys') return k ? [typed('', t.text), typed('muted', t.how)] : [typed('muted', 'Not found yet.'), typed('muted', t.how)];
-    if (g.id === 'mats') return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use)]
-      : [typed('muted', 'Not found yet.'), typed('muted', `Turns up in the ${BIOMES_BY_ID[t.biome]?.name ?? 'wild'}.`)];
+    if (g.id === 'mats') return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use), typed('muted', where(t))]
+      : [typed('muted', 'Not found yet.'), typed('muted', where(t))];
     if (!k) return [typed('muted', 'Quiet for now.'), typed('muted', `Beat one of ${t.name}'s Gym Leaders at the end of the ${BIOMES_BY_ID[t.biome]?.name}, then pass through.`)];
     const st = townState(getSave(), t.id);
     const now = questStep(t, st);

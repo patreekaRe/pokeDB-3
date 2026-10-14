@@ -799,6 +799,11 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
       btn.classList.add('rare');
       btn.append(el('span', 'map-rare', '✦'));
     }
+    // a town's material (js/data/satchel.js's markSparkles()) glints over its room till you walk in
+    if (node.sparkle && !node.visited) {
+      label = `${label}: something sparkles here!`;
+      btn.append(el('span', 'map-rare map-sparkle', '✧'));
+    }
     btn.title = label;
     btn.setAttribute('aria-label', label);
 

@@ -3,12 +3,13 @@
    outlives runs, where the towns' questlines keep what they need (js/data/towns.js's QUESTS). Named the Satchel since
    the Bag is the run's. Two kinds:
    - MATERIALS: counts, a few per biome, for the questlines and Kurt's Workshop. Kept on a lost run, never in the run's
-     Bag, so they give no power in a run. Where they drop is session 2's.
+     Bag, so they give no power in a run. They drop in their own biome (session 2, 2026-10-14): from fights (DROPS) and
+     the map's sparkling rooms (SPARKLES), rolled through js/rng.js.
    - KEY_ITEMS: one of a kind, never used up: the Waystone Shards, Pat's letter, what Kurt's Workshop makes.
    The save side is js/satchel.js, the app js/satcheldex.js. This file is pure (tests/quests.test.mjs).
    ============================================================ */
 
-const mat = (id, biome, name, icon, use) => ({ id, biome, name, icon, use });
+const mat = (id, biome, name, icon, use, more = {}) => ({ id, biome, name, icon, use, ...more });
 const key = (id, name, icon, text, how, more = {}) => ({ id, name, icon, text, how, ...more });
 
 export const MATERIALS = [
@@ -17,7 +18,7 @@ export const MATERIALS = [
   mat('magma-ore', 'wastes', 'Magma Ore', '🌋', 'Warms Cinder Springs back up. Kurt can forge with it, even a blade.'),
   mat('copper-wire', 'wastes', 'Copper Wire', '🧲', 'Radios and relays, at Kurt\'s Workshop.'),
   mat('ember-sequin', 'wastes', 'Ember Sequin', '✨', 'They glitter like hot coals. Someone in Cinder Springs would love a costume of them.'),
-  mat('bottle', 'ruins', 'Message Bottle', '🍾', 'Pat\'s love letters, adrift across the lagoon. Driftwood Landing wants them back.'),
+  mat('bottle', 'ruins', 'Message Bottle', '🍾', 'Pat\'s love letters, adrift across the lagoon. Driftwood Landing wants them back.', { from: 'map' }),
   mat('driftwood', 'ruins', 'Driftwood', '🪵', 'Pier supports and furniture, at Kurt\'s Workshop.'),
   mat('sea-glass', 'ruins', 'Sea Glass', '💎', 'Lanterns, charms and Apricorn ball skins, at Kurt\'s Workshop.'),
   mat('seeds', 'thornwood', 'Thornwood Seeds', '🌱', 'Highbough wants them to plant the Withered Nursery again.'),
@@ -26,6 +27,44 @@ export const MATERIALS = [
   mat('resin', 'savanna', 'Acacia Resin', '🍯', 'Glue for anything, and a blade\'s grip, at Kurt\'s Workshop.'),
 ];
 export const MATERIALS_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
+
+/* ---------- where they drop (session 2, 2026-10-14) ----------
+   Only in a town's biome, only while the towns are on (js/run.js's gleanFight() / gleanSparkle()). A won fight may drop
+   one of its biome's materials (DROPS: a wild Pokémon sometimes, an Alpha and the boss always); `from: 'map'` ones
+   (Pat's bottles, adrift) never drop from a fight, only from the map's sparkling rooms: SPARKLES of a biome's rooms
+   (not the boss's, an Alpha's or the Mart's) sparkle, each holding a few of one material, the `from: 'map'` one first.
+   About 10 a biome a pass, so a gather step (3-6) is a run or two through its biome. */
+export const DROPS = { fight: { odds: 0.4, n: [1, 1] }, elite: { odds: 1, n: [1, 2] }, boss: { odds: 1, n: [2, 3] } };
+export const SPARKLES = { rooms: [1, 2], n: [2, 3], kinds: ['fight', 'event', 'rest'] };
+
+/** A biome's materials (all of them, or only those a fight can drop). */
+export const biomeMats = (biome, fight = false) => MATERIALS.filter(m => m.biome === biome && !(fight && m.from === 'map'));
+
+const roll = ([lo, hi], rand) => lo + Math.floor(rand() * (hi - lo + 1));
+
+/** What a won fight of `kind` drops in `biome`: { id, n }, or null. */
+export function fightDrop(biome, kind, rand) {
+  const d = DROPS[kind], mats = biomeMats(biome, true);
+  if (!d || !mats.length || rand() >= d.odds) return null;
+  return { id: mats[Math.floor(rand() * mats.length)].id, n: roll(d.n, rand) };
+}
+
+/** Mark a biome map's sparkling rooms (`rooms`, in floor order): each gets `sparkle: { id, n }`. */
+export function markSparkles(rooms, biome, rand) {
+  const mats = biomeMats(biome), spots = rooms.filter(r => SPARKLES.kinds.includes(r.type) && r.floor > 0);
+  if (!mats.length || !spots.length) return [];
+  const map = mats.filter(m => m.from === 'map'), picked = [];
+  for (let i = roll(SPARKLES.rooms, rand); i > 0 && spots.length; i--) {
+    const room = spots.splice(Math.floor(rand() * spots.length), 1)[0];
+    const pool = map.length && !picked.length ? map : mats;
+    room.sparkle = { id: pool[Math.floor(rand() * pool.length)].id, n: roll(SPARKLES.n, rand) };
+    picked.push(room);
+  }
+  return picked;
+}
+
+/** The line that says a material went into the Satchel. */
+export const matLine = ({ id, n }) => `${MATERIALS_BY_ID[id].icon} ${MATERIALS_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''} went into your Satchel.`;
 
 const SHARD_TOWN = { shrine: 'Lantern Village', wastes: 'Cinder Springs', ruins: 'Driftwood Landing', thornwood: 'Highbough', savanna: 'Sunwell Bazaar' };
 const KURT = 'Made at Kurt\'s Workshop in the Whispering Clearing.';

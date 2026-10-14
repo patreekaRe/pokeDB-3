@@ -119,6 +119,14 @@ save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelO
 `gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
 `save.satchel = { keys, mats, seen, fresh }`, kept on a lost run, never the run's Bag; on the Collection and the device's
 "!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load.
+**Where materials drop** (session 2, 2026-10-14): only in a town's biome, while `townsOpen()`, never in a Safari area,
+the Sky Pillar or a playtest (`gleaning()` in `js/run.js`). A won fight rolls `fightDrop()` (`DROPS`: a wild Pokémon 40%,
+an Alpha 1-2, the boss 2-3), said first in the reward box and given as the rewards end (`collect()`); `markSparkles()`
+lights 1-2 of a biome map's fight / ❓ / Center rooms (not floor 0) with `sparkle: { id, n }` (2-3), a pale ✧ over the room
+(`.map-sparkle`), given on walking in and told back on the map. A `from: 'map'` material (Pat's Message Bottles) never
+drops from a fight and takes a biome's first sparkle. Each gift is keyed in `run.gleaned` and written into the saved run
+at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All rolls go through `js/rng.js`. About 10 a
+biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
 
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
 towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat
