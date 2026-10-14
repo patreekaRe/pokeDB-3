@@ -2418,3 +2418,9 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
 
 - **Townsfolk mostly stand** (2026-10-14, the user's ask): at most two walk at once in every town (`walkers: 2` in
   `townCrowd()`, a cap in `makeCrowd()` that generalises the Game Corner's `oneWalker`). Details in `docs/reference/towns.md`.
+
+- **The heaviest intro films made cheap** (2026-10-14, after a frame-rate check of every biome and Safari film at 375x812):
+  the Safari Desert's heat shimmer drew the canvas onto itself once a row (~30 a frame), now it copies the band once to a
+  scratch canvas (13→2-3 ms a frame); every film's glows, mist and light shafts (`fill()` in `fineCtx()`,
+  `js/biome-intro.js`) copied a whole art-size canvas up per shape, now only the shape's box (the Shrine 7-9→2.4 ms).
+  Frames checked pixel-identical before and after in every film.
