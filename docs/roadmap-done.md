@@ -2424,3 +2424,9 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   scratch canvas (13→2-3 ms a frame); every film's glows, mist and light shafts (`fill()` in `fineCtx()`,
   `js/biome-intro.js`) copied a whole art-size canvas up per shape, now only the shape's box (the Shrine 7-9→2.4 ms).
   Frames checked pixel-identical before and after in every film.
+- **The Gym Leaders' homes, inside** (2026-10-14, the user: "they're so small and very bland, we need to beef them up
+  ALOT"): every leader's home in a town is now a 13 x 10 room built by `js/leader-homes.js` (was 9 x 7 with ten pieces):
+  their own wallpaper, floor and light, 20-30 catalogue pieces in corners that say who they are, wall hangings, and props
+  of their own (John's three handhelds, Clarence's stage and disco ball, Phil's rocking chair in salt, the tree in
+  Ricky's den...). Rugs with no model now show (`flatPiece()`). Tested headless in the browser pane at 390 and 900 wide,
+  day and night, no console errors; `tests/leader-homes.test.mjs` for the layouts.
