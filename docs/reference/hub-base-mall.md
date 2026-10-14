@@ -97,7 +97,7 @@ The first section began as the note on playtesting the live site and grew into t
   facing the camera, their doorsteps down to the low road to the pond (`MALL_TILE`, `NIETOS_AT`; moved 2026-10-14 from
   the user's drawing, Halloween's pumpkin patch taking the house's old spot; moved down again the same day onto the low road,
   the road they used to face taken out: the user meant that road moved, not a second one), the PC east of the plaza facing straight
-  at the camera (`PC_AT`, no longer turned), a pond garden at the south avenue's end, below the ring road (`POND`; moved down 2026-10-14 from the user's drawing, the
+  at the camera (`PC_AT`, no longer turned), a pond garden at the south avenue's end (a duck paddling round it, `liveDuck()`, 2026-10-14), below the ring road (`POND`; moved down 2026-10-14 from the user's drawing, the
   Clearing grown to 31 x 26 and the plaza a row lower for room round it, a low road from the ring road's sides, its
   south side, running into the pond at `POND.y`), the Sealed Gate once broken at
   the west avenue's end, where the mall stood (`SEALED_AT`); lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,

@@ -1430,6 +1430,7 @@ function plankArt(w, h, lines, wood = ['#c89a60', '#a8763e', '#7a5226']) {
   return c;
 }
 
+let duck = null;      // the pond's duck (liveDuck())
 let smoke = null;     // the puffs rising from the Nietos' chimney (liveSmoke())
 let cottage = null;   // the Nietos' house's paintings, painted once
 const BLOOMS = ['#f890b8', '#f8d848', '#ffffff', '#b8a0f0', '#8cc8f8', '#f86880'];
@@ -2321,6 +2322,28 @@ function dressClearing() {
     if (r > 0.15) add(forest, petal, blooms[0], o.position.x + 0.05, 0.09, o.position.z - 0.04, false);
   }
   for (let tx = Math.floor(POND.x - POND.r); tx <= POND.x + POND.r; tx++) for (let ty = Math.floor(POND.y - POND.r); ty <= POND.y + POND.r; ty++) if (Math.hypot(tx - POND.x, ty - POND.y) <= POND.r + 0.2) dressTiles.add(key(tx, ty));
+  // a duck paddling round the pond, outside the lily pads (liveDuck())
+  const d = new THREE.Group(), white = std({ color: '#f4f1e8' }), bill = std({ color: '#f0a030' }), eye = std({ color: '#1a1a1a' });
+  const body = add(d, new THREE.SphereGeometry(0.13, 14, 10), white, 0, 0.05, 0);
+  body.scale.set(1, 0.7, 1.45);
+  add(d, new THREE.ConeGeometry(0.06, 0.12, 8), white, 0, 0.1, -0.2).rotation.x = -Math.PI / 2 - 0.6;   // the tail, tipped up
+  const neck = new THREE.Group(); neck.position.set(0, 0.1, 0.13); d.add(neck);
+  add(neck, new THREE.SphereGeometry(0.075, 12, 10), white, 0, 0.09, 0.02);
+  add(neck, new THREE.BoxGeometry(0.07, 0.022, 0.08), bill, 0, 0.08, 0.11, false);
+  for (const sx of [-1, 1]) add(neck, new THREE.SphereGeometry(0.013, 6, 5), eye, sx * 0.055, 0.115, 0.06, false);
+  d.position.set(tileX(POND.x) + 1.12, 0.03, tileZ(POND.y));
+  forest.add(d);
+  duck = { group: d, neck, x: tileX(POND.x), z: tileZ(POND.y) };
+}
+
+/** The pond's duck: a slow lap, wandering a little in and out, bobbing on the water and now and then dipping its head. */
+function liveDuck(now) {
+  if (!duck || calm) return;
+  const t = now / 1000, a = t * 0.16, r = 1.12 + Math.sin(t * 0.37) * 0.06;
+  duck.group.position.set(duck.x + Math.cos(a) * r, 0.03 + Math.sin(t * 2.2) * 0.008, duck.z + Math.sin(a) * r);
+  duck.group.rotation.set(0, -a, Math.sin(t * 1.7) * 0.05);   // heading along the lap, rocking side to side
+  const dip = (t % 9) / 9, k = dip > 0.9 ? Math.sin((dip - 0.9) / 0.1 * Math.PI) : 0;
+  duck.neck.rotation.x = k * 1.1;
 }
 
 /** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door and
@@ -3370,6 +3393,7 @@ function frame(now) {
   liveWarp(now);
   liveStones(now);
   liveSmoke(now);
+  liveDuck(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
