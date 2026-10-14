@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -6548,7 +6548,7 @@ function resize() {
 const inRoom = () => !!(R && document.querySelector(`#reward-options${ROOM_OF(R.kind)}`)) && !document.getElementById('reward-screen').hidden;
 /** Held behind a found item or relic the room just gave (hold()): the room keeps running under that screen. */
 const heldUnder = () => !!(R?.held && document.querySelector('#reward-options.item-found')) && !document.getElementById('reward-screen').hidden;
-const alive = () => inRoom() || heldUnder();
+const alive = () => inRoom() || heldUnder() || pickingOver();   // the Move Deleter's or the Day Care's deck picker stands over the room
 
 function frame(now) {
   raf = 0;
@@ -6715,7 +6715,7 @@ export function preloadEvent(kind, at = {}, figs = {}) {
     trainer's reaction once a picker is done), biome (the open-air rooms' look), type (the Shrine's glow), onPick(index): press that choice, onLeave(): press Leave }. Resolves the
     room's controls, or null if it was left while it loaded; throws if Three.js won't load (the pixel room stays). */
 export async function mountEvent(o) {
-  const back = visit && visit.node === o.node && visit.run === o.run && (o.spent || performance.now() - leftAt < 30000);   // a done room keeps its eaten berry, its picked-up ball
+  const back = visit && visit.node === o.node && visit.run === o.run && (o.spent || view?.isConnected || performance.now() - leftAt < 30000);   // a done room keeps its eaten berry, its picked-up ball
   visit = { node: o.node, run: o.run };
   opts = o;
   frozen = !!o.frozen;

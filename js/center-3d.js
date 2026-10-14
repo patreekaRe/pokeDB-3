@@ -10,7 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -617,7 +617,7 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
-const canWalk = (e) => !busy && alive() && !document.querySelector('dialog[open]')
+const canWalk = (e) => !busy && inRoom() && !document.querySelector('dialog[open]')
   && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over');
 
 /** The floor tile under a pointer, or null off the floor. */
@@ -713,8 +713,10 @@ function resize() {
 
 /* ---------- the frame ---------- */
 
-/** Still in the Center: its room is up and showing. Anything else (a deck picker, the map) puts the 3D room away. */
-const alive = () => !!document.querySelector('#reward-options.center-room') && !document.getElementById('reward-screen').hidden;
+/** Still in the Center: its room is up and showing, or Chansey's or the PC's deck picker stands over it. Anything else
+    (the map) puts the 3D room away. */
+const inRoom = () => !!document.querySelector('#reward-options.center-room') && !document.getElementById('reward-screen').hidden;
+const alive = () => inRoom() || pickingOver();
 
 function frame(now) {
   raf = 0;
@@ -892,7 +894,7 @@ export function warmCenter() {
     onPick(index): press that choice, onLeave(): press Leave }. Resolves the room's controls, or throws if Three.js won't
     load (the pixel room stays). */
 export async function mountCenter(o) {
-  const back = o.run === runId && performance.now() - leftAt < 20000;   // back from a deck picker, standing where it was
+  const back = o.run === runId && (view?.isConnected || performance.now() - leftAt < 20000);   // back from a deck picker, standing where it was
   runId = o.run;
   opts = o;
   calm = calmFx();

@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -799,7 +799,7 @@ function arrived() {
 /* ---------- taps ---------- */
 
 /* A drag walks (the user's ask, 2026-10-12; it used to look along the shelves, but the camera follows your partner). */
-const canWalk = (e) => alive() && !flying.length && !document.querySelector('dialog[open], .reward-focus')
+const canWalk = (e) => inRoom() && !flying.length && !document.querySelector('dialog[open], .reward-focus')
   && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .reward-focus');
 
 /** The floor tile under a pointer, or null off the floor. */
@@ -905,7 +905,8 @@ function resize() {
 
 /* ---------- the frame ---------- */
 
-const alive = () => !!document.querySelector('#reward-options.mart-window') && !document.getElementById('reward-screen').hidden;
+const inRoom = () => !!document.querySelector('#reward-options.mart-window') && !document.getElementById('reward-screen').hidden;
+const alive = () => inRoom() || pickingOver();   // the PC's Forget stands over the Mart
 
 function frame(now) {
   raf = 0;
@@ -1029,7 +1030,7 @@ export function warmMart() {
     onPick(index), onLeave(), onClerk(), onSoldOut() }. Resolves once it's showing (null if the shop was left meanwhile);
     throws if Three.js won't load (only the list of wares shows). */
 export async function mountMart(o) {
-  const back = o.run === runId && performance.now() - leftAt < 20000;
+  const back = o.run === runId && (view?.isConnected || performance.now() - leftAt < 20000);
   const again = o.run === runId && !!raf;   // re-shown after a purchase: the room is already up
   runId = o.run;
   opts = o;

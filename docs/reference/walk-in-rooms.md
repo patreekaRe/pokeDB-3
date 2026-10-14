@@ -28,3 +28,4 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   patch of the biome's own ground (`wild()`). Kenmatta's fight is the 3D arena's (`?arena=ken`, `dressKombat()` in `js/arena-3d.js`, 2026-10-11). `?event=day-care` (`&biome=shrine`, `&starter=id`;
   `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
   `docs/reference/events.md`.
+- **A deck picker over its room** (2026-10-14, the user's ask): wider than a phone, the PP Up / Forget pickers of the Center, the Mart's PC and the ? rooms (Move Deleter, Day Care) keep the 3D room up behind them, still and untappable, instead of the old pixel scene it was drawn over (`pickingOver()` in `js/hd2d.js`, in each room's `alive()`; walking checks `inRoom()`). On a phone the picker covers everything, so the room is put away as before.
