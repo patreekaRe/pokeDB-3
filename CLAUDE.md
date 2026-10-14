@@ -24,6 +24,14 @@ plainly whether to run it in the CLOUD or LOCAL**, as the first line (e.g. "▶ 
   (layout, art, animation). No Node/Python there, so no bot runs.
 Every session prompt in `docs/roadmap.md` starts with its "Run in:" line; keep adding one.
 
+## Town clean-ups: read the handoff first
+
+**Any session cleaning up a gateway town** (Lantern Village, Cinder Springs, Driftwood Landing, Sunwell Bazaar; the
+Clearing and Highbough are done) **reads `docs/handoff-town-cleanups.md` before touching code**: what the user's
+clean-up meant (the checklist from the Clearing's and Highbough's), where each town's code lives, and the rules that keep
+a town from leaking GPU memory or lagging on a phone (the iPhone tab reloads fixed 2026-10-14). One town a session; ask
+the user what bothers them first.
+
 ## Roadmap
 
 `docs/roadmap.md` is short: only what's still open (ready to build, ideas, parked, waiting on the user) and the rules

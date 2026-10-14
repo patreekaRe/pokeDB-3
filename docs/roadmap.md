@@ -89,9 +89,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    layout). `?aerial` for the overview. Headless-checked: every place reachable, no errors, Halloween's dress re-placed.
    Follow-up (same day, the user's ask): the tree beside the cauldron (`TREE_TILES` [11, 2]) taken out, and the Nietos'
    name board made readable (bigger, white on deep blue, `nietosHouse()`).
-   **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
-   docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
-   bothers me about it first), and send an aerial view." 
+   **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md,
+   docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the
+   way the Clearing and Highbough were (ask me what bothers me about it first), and send an aerial view." Then Cinder
+   Springs, Driftwood Landing and Sunwell Bazaar the same way, one a session (the handoff has the order and the rules).
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),

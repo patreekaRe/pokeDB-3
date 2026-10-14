@@ -10,6 +10,12 @@ three places:
    work (and "the roadmap's step N" in older notes) is in `docs/roadmap-done.md`; move an entry there when it lands.
 3. **This file**: the working notes that lived in Claude's private memory, plus how things differ outside Claude Code.
 
+## Next up: town clean-ups (2026-10-14)
+
+The next job is cleaning up the gateway towns one at a time, the way the Clearing and Highbough were. **Read
+`docs/handoff-town-cleanups.md` in full before you start**: the checklist, where the code is, and the memory and lag
+rules (a new WebGL renderer, a timer or an object made every frame brought back the iPhone tab reloads fixed that day).
+
 ## Where we left off (2026-10-03)
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
