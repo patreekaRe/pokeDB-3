@@ -27,7 +27,7 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, MEND_AT, townState } from './data/towns.js';
+import { RING, TOWNS, MEND_AT, townState, townsOpen } from './data/towns.js';
 import { gymWins } from './data/gym.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
@@ -1597,7 +1597,7 @@ function makePlaces() {
   });
   // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
   // mended one travelled to from there
-  const lit = RING.map(t => townState(save, t.id).done >= MEND_AT);
+  const lit = RING.map(t => townsOpen() && townState(save, t.id).done >= MEND_AT);
   list.push({
     id: 'waystone', waystone: true, name: 'Waystone', step: SPAWN, tiles: [[START.x, START.y]], tag: [START.x, 3, START.y], open: true,
     line: lit.some(Boolean) ? 'The Clearing\'s Waystone, humming. Its crystals light the way to every town you\'ve mended.' : 'The Clearing\'s Waystone. Five dull crystals circle its tip, waiting on the towns out on the roads.',
@@ -2347,7 +2347,7 @@ function hideCard() { card.hidden = true; }
 function showWaystone(p) {
   here = p;
   const save = getSave();
-  if (!RING.some(t => townState(save, t.id).met)) return sealedWaystone(p);
+  if (!townsOpen() || !RING.some(t => townState(save, t.id).met)) return sealedWaystone(p);
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
   resetLine();

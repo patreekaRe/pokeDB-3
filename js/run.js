@@ -68,7 +68,7 @@ import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, 
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk } from './towns.js';
-import { TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey } from './data/towns.js';
+import { townsOpen, TOWNS, REQUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey } from './data/towns.js';
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -2052,7 +2052,7 @@ async function walkOn() {
   run.atFork = false;
   const covered = () => { close?.(); fork?.close(); };
   // the town at the gate of the biome ahead (js/data/towns.js): walked before its map, never on Mewtwo's or a Safari run
-  if (TOWNS[to] && !isSafari() && !isMewtwoRun(run.starter) && town3d()) {
+  if (townsOpen() && TOWNS[to] && !isSafari() && !isMewtwoRun(run.starter) && town3d()) {
     run.town = { id: to };
     checkpoint();
     return townRoom(covered);

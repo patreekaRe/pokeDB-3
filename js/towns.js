@@ -3,12 +3,12 @@
    is handed in at the board on a later visit (townRoom() in js/run.js), paying PokéCoins and the town's friendship. */
 
 import { getSave, updateSave, awardCoins } from './storage.js';
-import { TOWNS, REQUEST_COINS, townState, countRequest, currentRequest, requestText, handIn, mended, folkKey } from './data/towns.js';
+import { townsOpen, TOWNS, REQUEST_COINS, townState, countRequest, currentRequest, requestText, handIn, mended, folkKey } from './data/towns.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
   const town = TOWNS[ctx.biome];
-  if (!town) return [];
+  if (!town || !townsOpen()) return [];
   let st = townState(getSave(), town.id), done = false;
   const before = st;
   for (const ev of [].concat(events)) {
