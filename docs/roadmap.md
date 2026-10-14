@@ -141,8 +141,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    town), every walkway a clean rectangle, every bridge / boardwalk / road two tiles wide and landing squarely (no notches
    or half-lanes), no tree, crown or roof hiding a path (`tree: false`), clutter that only fills gaps taken out, and the
    Waystone centred on its square or deck, on the axis of what it faces. Keep each town's own shape. `node --test
-   tests/*.test.mjs` checks every door stays reachable. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
-   Towns step 4. Give <town> Highbough's clean-up."
+   tests/*.test.mjs` checks every door stays reachable. **Send the user an aerial screenshot** of the town before and
+   after (the user's ask, 2026-10-14: the one of Highbough from above showed them the whole layout at once): headless
+   Chromium (Playwright, `--use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader`, Three.js routed to a local
+   copy if its CDN is blocked) on `?town=<biome>`, a 900 x 900 window, the camera lifted high over the town's middle
+   looking down (a throwaway `window.__top` hook in the town camera, never committed), sent with `SendUserFile`; a
+   playtest link with it. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
+   Towns step 4. Give <town> Highbough's clean-up, and send me an aerial screenshot before and after."
 5. **The all-five reward** (ask the user what it is) and a Depths camp if wanted.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
