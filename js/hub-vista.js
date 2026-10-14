@@ -33,7 +33,7 @@ export function vistaArt(time, W, roads, look = null) {
     glow(g, sx, sy, sr * 4, '#c8d4ff', 0.18);
     g.fillStyle = '#eceadc'; g.beginPath(); g.arc(sx, sy, sr, 0, Math.PI * 2); g.fill();
     for (let i = 0; i < 140; i++) {
-      const x = hash(i * 3.1) * W, y = hash(i * 7.7 + 1) * (hy - 0.6), r = 0.02 + hash(i * 1.3) * 0.035;
+      const x = hash(i * 3.1) * W, y = 0.3 + hash(i * 7.7 + 1) * (hy - 0.9), r = 0.02 + hash(i * 1.3) * 0.035;   // off its top row, which the hub runs on up as plain sky
       if (Math.hypot(x - sx, y - sy) < sr + 0.3) continue;
       g.fillStyle = `rgba(255,255,255,${0.4 + hash(i + 0.5) * 0.6})`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     }

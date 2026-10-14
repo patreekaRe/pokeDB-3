@@ -43,17 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Typing your name on a phone no longer brings up the "turn your phone upright" screen: the keyboard made the screen look sideways.'],
-  ['dex', 'A Gym Leaders app in the Pokédex: every leader, a silhouette till beaten, who they are, your record against them and their rematch rewards.'],
-  ['hub', 'The Clearing is tidied up: the Poké Mall and the Nietos\' house now stand south of the plaza, the PC faces you, the Waystone stands clear of lamp posts, the pond garden sits further south, and a Pokéstop\'s CONTINUE or SET OUT floats over its disc.'],
-  ['battle', 'A Gym Leader\'s badge over the arch is shown in full colour before you win it, so you can see what you\'re fighting for.'],
-  ['hub', 'The Nietos\' house and Gym Leaders\' visits to your Secret Base are switched off for now. They\'ll be back.'],
-  ['fixes', 'A Gym win no longer counts twice after Continue, badges no longer cut iPhone sound, and Main menu leaves the Poké Mall, Secret Base and run rooms cleanly. Three relics on offer float in a triangle, so their names never overlap.'],
-  ['runs', 'After a fight and in the Poké Mart, a Bag key lets you check your items and deck, and a found item shows what it does at once, no text to tap through.'],
-  ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, picking a card to upgrade or forget keeps the 3D room behind it, running from Team Rocket takes you straight to the map, and the Mart\'s PC no longer hides the cards.'],
-  ['hub', 'The Clearing\'s ground now rolls away into the distance, like a little round world.'],
-  ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden, baby Linc\'s washing out and a name board you can read.'],
-  ['hub', 'The gate out to an adventure is grander: a glowing gold crest, lanterns and banners, and a shimmer you can spot from across the Clearing.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
@@ -76,6 +65,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.19',
+    name: 'Something Stirs',
+    date: '2026-10-14',
+    notes: [
+      ['fixes', 'Typing your name on a phone no longer brings up the "turn your phone upright" screen: the keyboard made the screen look sideways.'],
+      ['dex', 'A Gym Leaders app in the Pokédex: every leader, a silhouette till beaten, who they are, your record against them and their rematch rewards.'],
+      ['hub', 'The Clearing is tidied up: the Poké Mall and the Nietos\' house now stand south of the plaza, the PC faces you, the Waystone stands clear of lamp posts, the pond garden sits further south, and a Pokéstop\'s CONTINUE or SET OUT floats over its disc.'],
+      ['battle', 'A Gym Leader\'s badge over the arch is shown in full colour before you win it, so you can see what you\'re fighting for.'],
+      ['hub', 'The Nietos\' house and Gym Leaders\' visits to your Secret Base are switched off for now. They\'ll be back.'],
+      ['fixes', 'A Gym win no longer counts twice after Continue, badges no longer cut iPhone sound, and Main menu leaves the Poké Mall, Secret Base and run rooms cleanly. Three relics on offer float in a triangle, so their names never overlap.'],
+      ['runs', 'After a fight and in the Poké Mart, a Bag key lets you check your items and deck, and a found item shows what it does at once, no text to tap through.'],
+      ['fixes', 'On a computer or a tablet held sideways, the Poké Mart shows the whole store, picking a card to upgrade or forget keeps the 3D room behind it, running from Team Rocket takes you straight to the map, and the Mart\'s PC no longer hides the cards.'],
+      ['hub', 'The Clearing\'s ground now rolls away into the distance, like a little round world, with sky all the way round it.'],
+      ['hub', 'The Nietos\' house is now a storybook cottage: a scalloped blue roof, a porch, flower boxes, a picket-fenced garden, baby Linc\'s washing out and a name board you can read.'],
+      ['hub', 'The gate out to an adventure is grander: a glowing gold crest, lanterns and banners, and a shimmer you can spot from across the Clearing.'],
+      ['hub', 'Strange violet cracks glow in the ground west of the plaza, spreading as the Sealed Gate weakens. Walk close and listen.'],
+    ],
+  },
   {
     version: '1.18',
     name: 'The New Clearing',

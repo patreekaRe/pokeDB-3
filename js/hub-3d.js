@@ -25,6 +25,8 @@ import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
+import { makeCracks, CRACK_LINES } from './hub-cracks.js';
+import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { RING, TOWNS, MEND_AT, townState, townsOpen, nietosHome } from './data/towns.js';
@@ -139,7 +141,7 @@ let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null, gateFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
-let yardTiles = new Set(), spooks = null, cauldron = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
+let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -2060,7 +2062,20 @@ function makePlaces() {
       paintGateArt(0);
     },
   });
-  else gateArt = null;
+  else {
+    gateArt = null;
+    // until then, violet cracks in the ground where it will stand, spreading as the seal gives (js/hub-cracks.js)
+    const stage = Math.min(3, gateStage(gateHp()));
+    list.push({
+      id: 'cracks', name: 'Cracked Ground', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: [[SEALED_AT.tx, SEALED_AT.ty]], tag: [SEALED_AT.tx, 1.6, SEALED_AT.ty], open: true,
+      line: CRACK_LINES[stage],
+      buttons: [],
+      build: (g) => {
+        cracks = makeCracks(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), stage, pitch: PITCH, dot: dotTexture() });
+        g.add(cracks.group);
+      },
+    });
+  }
   return list;
 }
 
@@ -2083,7 +2098,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null; smoke = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null; smoke = null; cracks = null;
   places = makePlaces();
   saved = acts.savedRun();
   barKey = null;
@@ -2181,7 +2196,7 @@ function routeSignArt() {
 /* ---------- the Clearing round them ---------- */
 
 // trees inside the walkable grid (they block): a few in the corners, kept off the roads and the ground in front of places
-const TREE_TILES = [[0, 15], [1, 20], [0, 24], [30, 15], [29, 20], [30, 24], [9, 24], [21, 24], [18, 2]];
+const TREE_TILES = [[0, 15], [1, 20], [0, 24], [9, 24], [21, 24], [18, 2]];
 
 // a copse behind the fence between the Safari gate and the Whispering Clearing's (the user's ask, 2026-10-14: the open
 // meadow there read as a hole in the Clearing's edge), on the meadow `cleared` keeps the forest off; [x, y, kind, size]
@@ -2382,9 +2397,13 @@ function buildVista() {
   meadow.receiveShadow = true;
   meadow.raycast = () => {};
   forest.add(meadow);
-  const { x0, w } = vistaSpan(), h = VISTA.h, foot = tileZ(-M + 0.3);
-  // its origin at its foot, where a bend (?curve=) drops it whole with the meadow it stands on
-  vista = new THREE.Mesh(new THREE.PlaneGeometry(w, h).translate(0, h / 2, 0), new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
+  const { x0, w } = vistaSpan(), h = VISTA.h, foot = tileZ(-M + 0.3), tall = h + SKY_UP;
+  // its origin at its foot, where a bend (?curve=) drops it whole with the meadow it stands on; it runs SKY_UP on up
+  // past the painting, there sampling the painting's top row (its plain sky, the texture clamped), so from the
+  // Clearing's front, where the bend drops it furthest, no grey shows over it (the user's ask, 2026-10-14)
+  const geo = new THREE.PlaneGeometry(w, tall).translate(0, tall / 2, 0), uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * tall / h);
+  vista = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ transparent: true, fog: false }));
   vista.material.userData.upright = true;
   vista.rotation.x = -PITCH;
   vista.position.set(x0 + w / 2, 0, foot);
@@ -2393,8 +2412,10 @@ function buildVista() {
   paintVista();
 }
 
-// across the open meadow behind, from past the ground's left edge to the woods behind the Sky Pillar
-const vistaSpan = () => { const x0 = tileX(-M - 6); return { x0, w: Math.round(tileX(PILLAR_AT.tx - 1) - x0) }; };
+// across the whole back, well past the ground's edges, the woods behind the Sky Pillar standing in front of it (the
+// user's ask, 2026-10-14: from the east side, grey showed past its old end at the Pillar)
+const vistaSpan = () => { const x0 = tileX(-M - 8); return { x0, w: Math.round(tileX(COLS + M + 8) - x0) }; };
+const SKY_UP = 40;
 
 function paintVista() {
   const t = timeOfDay();
@@ -3353,6 +3374,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) paintGateArt(now);
   liveGateway(now);
+  cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
   for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
