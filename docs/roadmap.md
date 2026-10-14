@@ -157,6 +157,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Tree's left (13, 14); benches only as lookouts on south edges over the drop; the painted planters now 3D boxes
    (`planters()`), a pair either side of each plain house's door and the Waystone; the moss tufts gone; crates square
    (the style's `neat`). Tests pass, no console errors. Waiting on the user's playtest.
+   **Done (2026-10-14): Highbough's lanterns, planters, start-deck flicker and gate** (the user: lantern posts "in the way of
+   walkways", "the constant flower crates everywhere", "a weird flicker at the beginning platform", the exit "more grand"):
+   13 lanterns, each in a platform's outer corner clear of every bridge mouth and door path; planters only the Nursery's
+   pair at the back; the start deck's crate and barrel off the way in; the flicker was the trunk under the only deck with no
+   house on it, its top level with the planks (now just under, and the deck rims too); `vineGate()` now the Bough Gate, a
+   living arch of two trunks on flaring roots, crowned, lit with ghost-blooms, ghost-lanterns swaying under it, wisps
+   circling, a wider name plank (`B.reach` 2 so it fits the shot). Tests pass, no console errors. Waiting on the user's playtest.
    **Done (2026-10-14): Cinder Springs' roads and houses** (the user: Shaun's gym "in front of the waystone", "better
    designs of the other houses... especially the trade house", "all roads need to connect"): Shaun's lodge east of the
    moat on its own drive, a road straight down from the Waystone's bridge where it stood; a two-wide road to every door
