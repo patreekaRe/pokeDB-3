@@ -413,6 +413,27 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      and says what to change; then step 5 (the Depths for every starter). Open: what gift friendship (`liked`) is for, and
      whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
 
+7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
+   Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
+   the hub the others link to, so you can't travel to a town from home until it works.
+   - **Opens when you beat the Nietos** (their Kangaskhan, the Clearing's boss): on getting home (`cameHome()` or the
+     Clearing after the run ends), Law and Britt **slide in** (`gymTalk()`, like a town leader's greet) with the story: the
+     Clearing's Waystone is cracked, which is why the towns' stones are dead too. `NIETOS_LIVE` goes on, so they're home
+     once beaten, and their house is where you hand in steps and hear their talk (`homeTalk()`).
+   - **Their own quests**, `QUESTS.clearing` on the same engine (`track` / `gather` / `craft` / `shard`), about 4 steps, a
+     leader `by` each (Law, Britt; Linc and Kangaskhan for flavour), with `thanks`, `nudge`, `talk`, `after` and `chats`
+     like the towns. Do steps count in the Clearing biome. It needs **2 new Clearing materials** in `MATERIALS` (dropping
+     in the Clearing biome, the `DROPS` / sparkle code), a Kurt `RECIPES` item for the craft step, and maybe gifts for the
+     Nietos (that open question from step 6).
+   - **The last step: an Alpha in the Clearing biome** carries the Clearing's shard (the marked Alpha from session 4).
+     Beat it, bring it home, the Nietos put it in and the **main stone lights** (`mendStone()` on the Clearing's Waystone,
+     `clearingWaystone()` in `js/hub-3d.js`: dull until then, its five town crystals still dull until their towns mend).
+   - **What it gates**: until the Clearing stone is lit, towns still show up in runs (trades, chat, their homes), but their
+     leaders don't greet you or open the board, and the Clearing's Waystone menu has no Travel (it says it's broken and
+     points to the Nietos). An old save that already started a town questline counts the Clearing stone as lit, so nobody
+     loses progress. Its menu and the Satchel's Quests list the Clearing first. Tests in `tests/quests.test.mjs`.
+   - One session (two if the dialogue runs long). Playtest: `?nietos&gymwins=1&satchel`, `?biome=clearing&shard`.
+
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
 (Cinder / Seedling / Droplet), the status cards and the Safari's Bait / Rock, ~300 pictures drawn as SVG: `ART` in
