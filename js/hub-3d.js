@@ -93,7 +93,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // each by its top-left tile: the Nietos' house in the lower-right garden (steps stopping short of the south street);
 // Kenmatta's dojo north-west, the Ancient Tree / Secret Base north-east; the Poké Mall in the lower-left garden; the
 // Sealed Gate on the old Mall site, once broken
-const NIETOS_AT = { tx: 23, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 13 };
+const NIETOS_AT = { tx: 23, ty: 13 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 15 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // the pond in the garden at the south avenue's end
 const POND = { x: 15, y: 17.2, r: 1.5 };
@@ -1094,10 +1094,9 @@ export function cornerStall(glows = glowMats) {
 // its colours: cream stone, the Poké Mart's red, a blue-white glass that shows the warm shops behind it
 const MALL = { cream: '#fbf3e4', stone: '#e6d8bf', shade: '#c8b896', red: '#e84838', redDark: '#a82820', glass: ['#cfe8f8', '#8fbce0', '#5a86b8'], warm: ['#fff2c8', '#ffd890', '#e8a860'], frame: '#4a4458' };
 const MU = 20;   // the mall's paintings: units a tile
-// on the left, under the Safari gate and a step left of its road, far enough forward that its roof never hides the gate,
-// its doors on row 9 over tile -1 where the road from the plaza comes up to them, facing the camera
-// set back off the ring road (x 4) a little left of its tiles' middle (the user's ask, 2026-10-14: its side stood on it)
-const MALL_AT = { x: tileX(MALL_TILE.tx) - 0.7, z: tileZ(MALL_TILE.ty) + 0.25, turn: 0 };
+// on the left, under the Safari gate, set back from the west ring road; moved south so its front doors meet the north edge
+// of the south ring road (y 17.2, width LANE), facing the camera
+const MALL_AT = { x: tileX(MALL_TILE.tx) - 0.7, z: tileZ(MALL_TILE.ty) + 0.23, turn: 0 };
 
 /** A Poké Ball, `r` round, at (x, y). */
 function ball(g, x, y, r, ink = '#2a2238') {
@@ -1607,7 +1606,7 @@ function makePlaces() {
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
     build: (g) => g.add(board(kioskArt(), tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 0.7))),
   });
-  // at the west avenue's end, the avenue running up to the middle of its doors
+  // in the lower-left garden, its entrance flush with the south ring road
   list.push({
     id: 'mall', name: 'Poké Mall', step: { x: MALL_TILE.tx - 1, y: MALL_TILE.ty + 2 }, tiles: rect(MALL_TILE.tx - 3, MALL_TILE.ty - 1, MALL_TILE.tx + 1, MALL_TILE.ty + 1), tag: [MALL_TILE.tx - 1, 3.4, MALL_TILE.ty + 1], open: true,
     line: 'A shopping centre. The Game Corner is inside.',

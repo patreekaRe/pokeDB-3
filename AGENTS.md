@@ -17,6 +17,8 @@ three places:
   plaza-side box facing the player straight on, and the unlocked Sealed Gate at the purple west-side site. The obstructing
   garden beds were removed and Halloween's pumpkin patch moved clear. `towns` was synced with `main` before this pass;
   preview `?aerial` and `?hubat=25,12`, waiting on the user's visual playtest. Gym Leader visits remain switched off.
+- 2026-10-14: **Poké Mall moved down to the street** (branch `towns`): moved it two tiles south and aligned the front doors
+  flush with the south ring road, so the entrance meets the street. Waiting on the user's visual playtest of `?aerial`.
 
 - 2026-10-10: **Patch notes on the Clearing's PC** (v1.2 "Home Sweet Home"): the hub's corner tag moved into the PC's
   PATCH NOTES; a "!" floats over the PC until the newest patch is read. Every task now adds a line to `NEXT` in
