@@ -6180,8 +6180,24 @@ function fitShot() {
   shot = { dist: d, half: d * halfTan, shift: (1 - b) / 2 * h - (h - low - 2), low };
 }
 
+// ?aerial: a whole town from high above, to see its layout at a glance (the Clearing's has the same)
+const AERIAL = new URLSearchParams(location.search).has('aerial');
+
+function aerialShot() {
+  const d = Math.max(ROWS / 2 + 2, (COLS / 2 + 2) / camera.aspect) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  camera.far = Math.max(140, d * 1.6);
+  camera.clearViewOffset();
+  camera.position.set(0, d * 0.94, d * 0.34);
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld();
+  const k = Math.max(COLS, ROWS) / 2 + 2, c = sun.shadow.camera;
+  if (c.right !== k) { Object.assign(c, { left: -k, right: k, top: k, bottom: -k }); c.updateProjectionMatrix(); }
+  if (sun.target.position.x || sun.target.position.z) { sun.position.set(-4, 12, 7); sun.target.position.set(0, 0, 0); sun.target.updateMatrixWorld(); }
+}
+
 function placeCamera(dt) {
   if (!shot) return;
+  if (AERIAL && R.kind === 'town') return aerialShot();
   const room = COLS / 2 + 0.4, push = R.focus?.k || 0, half = shot.half * (1 - push * PUSH);
   const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
