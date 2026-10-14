@@ -280,7 +280,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    into the Crystal Depths as a 4th biome and fights Eternatus. Mewtwo needs no shards and keeps the Champion of the
    Depths ending, its feat and its shiny; other starters get their own Depths win (a Hall of Fame mark). The Depths need
    their own numbers per Trainer Level for non-Mewtwo starters (sim check). Builds after step 6 (shards must drop).
-   Open: what the lit Waystone ring does at the moment it completes (asked 2026-10-14). A Depths camp is still a maybe.
+   **It needs the Sealed Gate broken too** (the fall goes past the gate): five shards with the gate still whole, the lit
+   crystals say the seal still holds. **The Sealed Gate's spot in the Clearing** (`SEALED_AT`, `js/hub-3d.js`) stays
+   Mewtwo's door ("Go through" starts its run); with five shards and the gate broken it gains a second button into the
+   Depths (a visit outside a run, the Depths camp if built). The Waystone stays the towns' stone (all 2026-10-14).
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; ready to build, five sessions
    in order). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
