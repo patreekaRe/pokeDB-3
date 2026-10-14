@@ -15,7 +15,8 @@ three places:
 - 2026-10-14: **Violet Fissure polish** (branch `towns`, not `main`): the Sealed Gate's ground cracks are smooth and
   tapered around a dim recessed core, with an outward-moving Three.js light pass, broken pulse rings and rising motes.
   The effect was tightened and moved clear of the approach. Browser-checked at `?hubat=2,12&time=night` and
-  `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
+  `?aerial&time=night`, no console errors; waiting on the user's visual playtest. Feature commit `e7f4b99`; pinned
+  playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/e7f4b99b41bd999e4272aeb51ff08a8b1582ec6d/index.html?hubat=2,12&time=night>.
 - 2026-10-14: **The Clearing's marked layout, pass 3** (branch `towns`, not `main`): the user's boxes mean the Nietos in
   the red lower-right garden (steps clear of the street), Poké Mall in the yellow lower-left garden, PC in the small blue
   plaza-side box facing the player straight on, and the unlocked Sealed Gate at the purple west-side site. The obstructing

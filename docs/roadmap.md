@@ -119,6 +119,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     tapered cracks around a recessed violet core; Three.js shader flow, broken pulse rings and a few rising motes add
     motion, while reduced-motion mode holds it still. The glow is quieter and the rift sits clear of its approach. Browser
     checked at `?hubat=2,12&time=night` and `?aerial&time=night`, no console errors; waiting on the user's visual playtest.
+    Feature commit `e7f4b99`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/e7f4b99b41bd999e4272aeb51ff08a8b1582ec6d/index.html?hubat=2,12&time=night>.
    **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
    docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
    bothers me about it first), and send an aerial view." 
