@@ -21,7 +21,7 @@ const BUBBLE_MS = 3600;
 const QUIET = [9000, 17000];     // the pause between lines over heads
 const GREET_AFTER = [25000, 55000];
 const PLAY = [25000, 70000], PONDER = [1800, 4500], COUNTER = [5000, 8000];
-const GAP = [1500, 3500];        // with oneWalker, the quiet between one walk ending and the next starting
+const GAP = [1500, 3500];        // with walkers capped, the quiet between one walk ending and the next starting
 
 const between = ([a, b]) => a + Math.random() * (b - a);
 const pickOne = (a) => a[Math.floor(Math.random() * a.length)];
@@ -52,10 +52,12 @@ function kindOf(spot) {
     THREE, group, monBoard, drawMon, dispose, PITCH, spots, door, cols, rows, route, free, tileX, tileZ, camera, view,
     stage (where the bubble goes), say(fr, ms), partner() (your walker), keeper() (the shop's keeper, its mon), calm(),
     oneWalker (only one walks at a time, the rest at their games or standing, and none stops on or beside the doormat:
-    the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts). */
+    the Game Corner's, the user's ask, 2026-10-13, as the Clearing's ghosts), or `walkers` (that many at most: the
+    towns' 2, the user's ask, 2026-10-14, the rest stationed). */
 export function makeCrowd(H) {
   const { THREE } = H;
   const LIST = H.cast ?? PATRONS, LINES = H.shared ?? SHARED, TALKS = H.chats ?? CHATS, SIZE = H.size ?? CROWD;
+  const CAP = H.walkers ?? (H.oneWalker ? 1 : 0);   // 0: any number walk at once
   const SEED = H.seed ?? 'crowd', SWAPS = H.swap ?? SWAP, WANTS = H.wants ?? ['slots', 'slots', 'arcade', 'cards'];
   const stations = H.stations ?? H.spots.map(s => ({ spot: s, kind: kindOf(s) })).filter(s => s.kind);
   const counter = H.spots.find(s => s.kind === 'keeper')?.step;
@@ -77,10 +79,10 @@ export function makeCrowd(H) {
   const taken = (t, but) => held.has(key(t)) || here.some(p => p !== but && !p.leaving && ((p.goal && key(p.goal) === key(t)) || (!p.w.path.length && key(p.w.tile) === key(t))));
   const yours = (t) => { const me = H.partner(); return key(me.tile) === key(t) || (me.path.length && key(me.path.at(-1)) === key(t)); };
   const open = (t) => H.free(t) && !taken(t) && !yours(t);
-  const byDoor = (t) => H.oneWalker && Math.abs(t.x - H.door.x) <= 1 && Math.abs(t.y - H.door.y) <= 1;
-  const walking = (but) => here.some(o => o !== but && ((o.state === 'walk' && o.w.path.length) || o.resume?.state === 'walk'));
-  /** Whether `p` may set off now: always, unless only one walks at a time and someone is (or just was). */
-  const mayWalk = (p, now) => !H.oneWalker || (!walking(p) && now >= walkAfter);
+  const byDoor = (t) => CAP && Math.abs(t.x - H.door.x) <= 1 && Math.abs(t.y - H.door.y) <= 1;
+  const walking = (but) => here.filter(o => o !== but && ((o.state === 'walk' && o.w.path.length) || o.resume?.state === 'walk')).length;
+  /** Whether `p` may set off now: always, unless walkers are capped and that many are walking (or one just was). */
+  const mayWalk = (p, now) => !CAP || (walking(p) < CAP && now >= walkAfter);
 
   /* ---------- coming and going ---------- */
 
@@ -187,7 +189,7 @@ export function makeCrowd(H) {
 
   function reach(p) {
     const now = performance.now();
-    if (H.oneWalker && p.state === 'walk' && (p.then === 'gone' || !byDoor(p.w.tile))) walkAfter = now + between(GAP);
+    if (CAP && p.state === 'walk' && (p.then === 'gone' || !byDoor(p.w.tile))) walkAfter = now + between(GAP);
     if (p.then === 'gone') { p.state = 'out'; p.shrink = now; return; }
     if (p.then === 'play' && p.station) { p.state = 'play'; p.until = now + between(PLAY); faceStation(p); return; }
     if (p.then === 'counter') { p.state = 'counter'; p.until = now + between(COUNTER); p.w.flip = H.keeper().x > p.w.x; atCounter(p); return; }
@@ -365,8 +367,8 @@ export function makeCrowd(H) {
         incoming = null;
         const away = cast.filter(d => !here.some(p => p.def === d));
         if (here.filter(p => !p.leaving).length < SIZE && away.length) {
-          if (H.oneWalker) walkAfter = Infinity;   // held while it loads, so nobody sets off before it walks in
-          arrive(pickOne(away)).then(p => { if (H.oneWalker && walkAfter === Infinity) walkAfter = 0; if (p) p.roam = !!H.stations && Math.random() < 0.5; });
+          if (CAP) walkAfter = Infinity;   // held while it loads, so nobody sets off before it walks in
+          arrive(pickOne(away)).then(p => { if (CAP && walkAfter === Infinity) walkAfter = 0; if (p) p.roam = !!H.stations && Math.random() < 0.5; });
         }
       }
 

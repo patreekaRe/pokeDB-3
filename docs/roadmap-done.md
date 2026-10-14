@@ -2410,3 +2410,6 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
 - **Found items say what they do at once** (2026-10-14, the user's ask): no "Open" sign over the item ball and no text box
   to tap through; once the item rises, a window under it (`.swap-found` in `offerItem()`) says what it does. Relic drops
   still say theirs in the text box. Details in `docs/reference/items.md`.
+
+- **Townsfolk mostly stand** (2026-10-14, the user's ask): at most two walk at once in every town (`walkers: 2` in
+  `townCrowd()`, a cap in `makeCrowd()` that generalises the Game Corner's `oneWalker`). Details in `docs/reference/towns.md`.

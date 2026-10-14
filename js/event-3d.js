@@ -6571,6 +6571,7 @@ function townCrowd(town) {
     cast: town.folk, shared: town.shared, chats: town.chats, seed: `town-${town.id}`, size: 7, castSize: 10, castHours: 6,
     stations: town.stands.map(([x, y]) => ({ spot: { id: `stand-${x},${y}`, step: { x, y } }, kind: 'stand' })),
     wants: ['stand', 'stand', 'stand', 'stand', null, null, null], swap: [30000, 60000],
+    walkers: 2,   // most stand at their spots, one or two about at a time (the user's ask, 2026-10-14)
   });
 }
 
