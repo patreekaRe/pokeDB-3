@@ -125,15 +125,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
     Follow-up commit `1d3bd41`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/1d3bd4143a76e68078db958da2f4c768d7f52409/index.html?hubat=2,12&time=night>.
     **Follow-up (2026-10-14, user's ask):** removed the three streetlamps closest to the Clearing's Waystone, leaving the plaza clear around it while keeping the avenue lights. Browser-checked at `?aerial&time=day`, no console errors. Branch `towns`, commit `059ddfc`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/059ddfcf35a646ec85b5e0ee5c11438c3264de4d/index.html?aerial&time=day>.
     **Follow-up (2026-10-14, user's ask):** moved all 24 lamps to grassy corners on both sides of the ring road and avenue junctions; none sit on paving, trails, the plaza or pond walk. Browser loaded `?aerial&time=night&season=none`, no console errors. Branch `towns`, commit `f5f6516`; pinned playtest: <https://rawcdn.githack.com/patreekare/pokeDB-3/f5f6516c959c34f940ca0e9662e0e82ca20809c9/index.html?aerial&time=night&season=none>.
-    **Done (2026-10-14): the Shrine's Lantern Village clean-up** (the user's feedback: spacing, the Waystone/plaza and a more
-    unique setup): recut the 38 x 36 town around an offset amber-lit Waystone court, with a winding stone stair from the south
-    entrance up through maple terraces to the north torii. Homes now sit apart on side paths; `s` tiles paint the treads, the
-    court has carved rings, and a second non-exit torii marks the climb. `?town=shrine&aerial` gives a clean overhead preview.
-    Browser-checked at `?town=shrine`, `?town=shrine&home=shop`, `?town=shrine&aerial`, and the 360 x 676 phone frame; no
-    console errors, the request board shows its current ask. `node --test` passes (162 tests); `tests/towns.test.mjs` checks
-    every door, stand, board and the gate is reachable. Branch `towns`, feature commit `314aef3`; pinned playtest:
-    <https://rawcdn.githack.com/patreekare/pokeDB-3/314aef33cc45ee778afe39f69b2191828eb1837d/index.html?town=shrine&aerial&time=day>.
-    Waiting on Patrick's visual playtest; towns remain switched off on `main`.
+   **Next: the Shrine town's clean-up** (Lantern Village, `?town=shrine`). ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and
+   docs/roadmap.md's Towns and Waystones entry. Clean up the Shrine's Lantern Village the way the Clearing was (ask me what
+   bothers me about it first), and send an aerial view." 
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
