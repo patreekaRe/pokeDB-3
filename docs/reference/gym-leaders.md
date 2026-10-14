@@ -123,3 +123,5 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
 The Pokédex device's Gym Leaders app (`js/gymdex.js`): met (`save.seen.gym`, set as their fight begins), beaten
 (`save.gym`), lost to (`save.gymLost`), and researched at `GYM_GOLD` wins. Each leader's one-line Pokédex entry is
 `GYM_BIO` in `js/data/gym.js`, shown once beaten: a new leader needs a `GYM_BIO` line too, in the voice above.
+Saves from before the app get every Leader they had met, beaten or lost to marked met and new once on load
+(`gymAppNews()` in `js/storage.js`, flagged by `save.gymAppNews`), so the "!" reaches them too.
