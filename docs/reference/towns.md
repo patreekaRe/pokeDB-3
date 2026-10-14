@@ -44,3 +44,16 @@ podium up steps, beam ends and a `GYM_INK` band, the flat roof a railed terrace,
 and the crest, a steaming stack, braziers at the steps, an awning and `noboriArt()` banners. The springs style now has
 `fade: true` and `extras: nameBoards` (the `n` boards, split out of `villageExtras()`); `cabin()` no longer hangs its
 small name plate.
+
+**Cinder Springs a lava field** (2026-10-14, the user: "bland", "a lot of homes", "something cool how you did the
+thornwood one", and no road to the bathhouse): the springs style has `holes: true` and `extras: lavaField`, so `~` is
+lava there: one plane at `LAVA_Y` under the ground's holes (`lavaArt()` glowing, `crustArt()` plates drifting over it,
+both repeating textures moved by `.offset` in a tick), basalt banks and rocks along its edges, bubbles (one instanced
+mesh), smoke `puffs()`, and the lavafall where the lava's top row meets the crags (a curved sheet sharing the lava's
+texture, a basalt cliff behind; `crags()` leaves the tiles in front of it bare). `-` is a basalt bridge: the style's
+`bridge` colours paint it (`townGround()` falls back to the village's planks and vermilion), a slab under each tile,
+iron rails on posts along its sides over the lava, ember lamps on the end posts (in `lit`). The map: lavafall top
+centre, the river crossing the top leg on a bridge, a moat round the Waystone's island (bridges in from road E's side
+and road D), on out at its far corner under roads D and B; the mine top left, Clarence's lodge top middle, house a top
+right; the bathhouse mid-left on its own road (rows 20-21) with its springs (`o`) below it; the forge and Shaun's lodge
+bottom middle, house e bottom right. Houses k and n are gone.

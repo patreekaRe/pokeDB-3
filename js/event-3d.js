@@ -2894,10 +2894,10 @@ function townGround(L, map, S) {
         const along = map[y - 1]?.[x] !== '-' && map[y + 1]?.[x] !== '-';   // a bridge running east-west: its planks the other way
         g.fillStyle = '#3a2418'; g.fillRect(X, Y, T, T);
         for (let i = 0; i < 4; i++) {
-          g.fillStyle = ['#a8784c', '#98683e', '#b88a5a', '#8a5e38'][Math.floor(r() * 4)];
+          g.fillStyle = (S.bridge?.planks ?? ['#a8784c', '#98683e', '#b88a5a', '#8a5e38'])[Math.floor(r() * 4)];
           if (along) g.fillRect(X + i * 4 + 0.3, Y, 3.4, T); else g.fillRect(X, Y + i * 4 + 0.3, T, 3.4);
         }
-        g.fillStyle = VERMILION;
+        g.fillStyle = S.bridge?.trim ?? VERMILION;
         if (wet(x - 1, y)) g.fillRect(X, Y, 2, T);
         if (wet(x + 1, y)) g.fillRect(X + T - 2, Y, 2, T);
         return;
@@ -3972,6 +3972,7 @@ function crags(map, L, rnd) {
     B.blocked.add(key(x, y));
     const cx = tileX(x) + (rnd() - 0.5) * 0.4, cz = tileZ(y) + (rnd() - 0.5) * 0.4;
     if (y >= ROWS - 2) { rocks.push([cx, cz, 0.45 + rnd() * 0.3, rnd() * 6, L.rock[1 + Math.floor(rnd() * 2)]]); return; }   // low, so it never hides you
+    if (map[y + 1]?.[x] === '~') return;   // clear in front of the lavafall (lavaField()), so it's seen whole
     const k = rnd();
     if (k < 0.4) spires.push([cx, cz, 0.7 + rnd() * 0.8, rnd() * 6, L.rock[Math.floor(rnd() * 3)]]);
     else if (k < 0.48) dead.push([cx, cz, 0.8 + rnd() * 0.5, rnd() * 6]);
@@ -4305,6 +4306,157 @@ function springs(map, L, steam) {
   const rock = new THREE.DodecahedronGeometry(0.5, 0); rock.scale(1, 0.6, 1); rock.translate(0, 0.12, 0);
   instanced(rock, std({ color: '#ffffff', roughness: 1, flatShading: true }), rim);
   B.ticks.push((now) => { water.emissiveIntensity = calm ? 0.25 : 0.25 + Math.sin(now / 900) * 0.06; });
+}
+
+/** Molten lava, a tile of it that repeats: deep orange, hotter swirls, bright yellow veins. */
+function lavaArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), r = seeded(29), wrap = (fn) => { for (const ox of [0, -128, 128]) for (const oy of [0, -128, 128]) fn(ox, oy); };
+  g.fillStyle = '#c8380c'; g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 40; i++) {
+    const x = r() * 128, y = r() * 128, rad = 6 + r() * 16, col = ['#e85a14', '#f07a1c', '#d8460e', '#f8962a'][i % 4];
+    wrap((ox, oy) => { const rg = g.createRadialGradient(x + ox, y + oy, 0, x + ox, y + oy, rad); rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(200,56,12,0)'); g.fillStyle = rg; g.fillRect(x + ox - rad, y + oy - rad, rad * 2, rad * 2); });
+  }
+  g.lineCap = 'round';
+  for (let i = 0; i < 14; i++) {
+    const x = r() * 128, y = r() * 128, a = r() * 6.3, len = 14 + r() * 26, bend = (r() - 0.5) * 20;
+    g.strokeStyle = i % 3 ? '#ffc040' : '#fff0a0'; g.lineWidth = 1 + r() * 2;
+    wrap((ox, oy) => { g.beginPath(); g.moveTo(x + ox, y + oy); g.quadraticCurveTo(x + ox + Math.cos(a) * len / 2 - Math.sin(a) * bend, y + oy + Math.sin(a) * len / 2 + Math.cos(a) * bend, x + ox + Math.cos(a) * len, y + oy + Math.sin(a) * len); g.stroke(); });
+  }
+  return c;
+}
+
+/** The crust riding on the lava, a tile of it that repeats: dark cooled plates with the glow showing in the cracks. */
+function crustArt() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), r = seeded(37);
+  for (let i = 0; i < 16; i++) {
+    const x = r() * 128, y = r() * 128, rad = 7 + r() * 13, n = 6 + Math.floor(r() * 3), k = Array.from({ length: n }, () => 0.7 + r() * 0.35);
+    g.fillStyle = ['#2a1610', '#3a2016', '#22120e'][i % 3];
+    for (const ox of [0, -128, 128]) for (const oy of [0, -128, 128]) {
+      g.beginPath();
+      k.forEach((s, j) => { const a = j / n * Math.PI * 2; g[j ? 'lineTo' : 'moveTo'](x + ox + Math.cos(a) * rad * s, y + oy + Math.sin(a) * rad * s * 0.8); });
+      g.closePath(); g.fill();
+    }
+  }
+  return c;
+}
+
+/** Cinder Springs' lava field (the user's ask, 2026-10-14: "make it look something cool how you did the thornwood one"):
+    lava under the ground's holes (`~`), glowing, its crust drifting and bubbles swelling and bursting on it; dark basalt
+    banks down into it; the lavafall pouring off the crags into its pool, steam and smoke rising; basalt bridges (`-`)
+    with iron railings along their sides and an ember lamp on each post; and a name board by each named house (`n`). */
+const LAVA_Y = -0.34;
+function lavaField(town, L, lit) {
+  const { map } = town, hot = (x, y) => map[y]?.[x] === '~', deck = (x, y) => map[y]?.[x] === '-';
+  nameBoards(town);
+  const pool = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === '~') { pool.push([x, y]); B.blocked.add(key(x, y)); } }));
+  if (!pool.length) return;
+  const r = seeded(53), molten = lavaArt();
+  const tile = (c, rx, ry) => { const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.repeat.set(rx, ry); return t; };
+  const glow = tile(molten, COLS / 6, ROWS / 6), crust = tile(crustArt(), COLS / 7, ROWS / 7), fall = glow.clone();   // a clone shares its picture on the GPU
+  fall.repeat.set(1, 2);
+  const hotMat = std({ map: glow, emissive: new THREE.Color('#ffffff'), emissiveMap: glow, emissiveIntensity: 0.95, roughness: 0.6 });
+  const lava = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), hotMat);
+  lava.rotation.x = -Math.PI / 2; lava.position.y = LAVA_Y; lava.raycast = () => {};
+  B.group.add(lava);
+  const skin = new THREE.Mesh(new THREE.PlaneGeometry(COLS, ROWS), std({ map: crust, transparent: true, depthWrite: false, roughness: 1 }));
+  skin.rotation.x = -Math.PI / 2; skin.position.y = LAVA_Y + 0.01; skin.raycast = () => {}; skin.renderOrder = 1;
+  B.group.add(skin);
+  // the banks: basalt sloping down into the lava under every edge of land, rocks along the lip
+  const banks = [], rocks = [];
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch === '~' || deck(x, y) || !STEPS.some(([dx, dy]) => hot(x + dx, y + dy))) return;
+    banks.push([tileX(x), tileZ(y), 1, Math.PI / 4, ['#2c2422', '#342a26', '#262020'][Math.floor(r() * 3)], -0.01]);
+    if (ROADY.has(ch) || ch === 'T') return;
+    for (const [dx, dy] of STEPS) {
+      if (!hot(x + dx, y + dy) || r() < 0.4) continue;
+      const along = (r() - 0.5) * 0.8;
+      rocks.push([tileX(x) + dx * 0.42 + (dy ? along : 0), tileZ(y) + dy * 0.42 + (dx ? along : 0), 0.13 + r() * 0.1, r() * 6, ['#3a302c', '#4a3c36', '#2a2220'][Math.floor(r() * 3)], 0.02]);
+    }
+  }));
+  const bank = new THREE.CylinderGeometry(0.707, 0.95, 0.6, 4, 1, true); bank.translate(0, -0.3, 0);
+  instanced(bank, std({ color: '#ffffff', roughness: 1 }), banks).castShadow = false;
+  const stone = new THREE.DodecahedronGeometry(1, 0); stone.scale(1, 0.55, 0.85);
+  instanced(stone, std({ color: '#ffffff', roughness: 0.95, flatShading: true }), rocks).castShadow = false;
+  // the bridges: a basalt slab under each tile; along each side over the lava an iron railing on posts, ember lamps on them
+  const slabs = [], posts = [], rails = [], embers = [], seen = new Set();
+  map.forEach((row, y) => [...row].forEach((ch, x) => {
+    if (ch !== '-') return;
+    slabs.push([tileX(x), tileZ(y), 1, 0, ['#3a302c', '#342a28'][(x + y) % 2], -0.145]);
+    for (const [dx, dy] of STEPS) {
+      if (!hot(x + dx, y + dy)) continue;
+      const ex = tileX(x) + dx * 0.44, ez = tileZ(y) + dy * 0.44;
+      for (const h of [0.5, 0.26]) rails.push([ex, h, ez, dx ? Math.PI / 2 : 0]);
+      for (const s of [-0.5, 0.5]) {
+        const px = dy ? tileX(x) + s : ex, pz = dx ? tileZ(y) + s : ez, k = `${px.toFixed(2)},${pz.toFixed(2)}`;
+        if (seen.has(k)) continue;
+        seen.add(k);
+        posts.push([px, pz]);
+        if (!deck(x + (dy ? Math.sign(s) : 0), y + (dx ? Math.sign(s) : 0))) embers.push([px, pz, 1, 0, null, 0.66]);   // the bridge's ends
+      }
+    }
+  }));
+  const slab = new THREE.BoxGeometry(1.0, 0.26, 1.0);
+  instanced(slab, std({ color: '#ffffff', roughness: 1 }), slabs).castShadow = false;
+  const iron = std({ color: '#2e2826', roughness: 0.55, metalness: 0.45 }), o = new THREE.Object3D();
+  const bars = (geo, items, set) => {
+    const m = new THREE.InstancedMesh(geo, iron, items.length);
+    items.forEach((it, i) => { set(o, it); o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
+    m.castShadow = true; m.raycast = () => {};
+    B.group.add(m);
+  };
+  const post = new THREE.CylinderGeometry(0.045, 0.06, 0.6, 8); post.translate(0, 0.3, 0);
+  bars(post, posts, (d, [x, z]) => { d.position.set(x, 0, z); d.rotation.set(0, 0, 0); });
+  bars(new THREE.BoxGeometry(1.0, 0.05, 0.05), rails, (d, [x, y, z, turn]) => { d.position.set(x, y, z); d.rotation.set(0, turn, 0); });
+  const emberMat = std({ color: '#ffb040', emissive: new THREE.Color('#ff7a20'), emissiveIntensity: 1, roughness: 0.4 });
+  lit.push(emberMat);
+  instanced(new THREE.IcosahedronGeometry(0.08, 0), emberMat, embers).castShadow = false;
+  // the lavafall: off the crags into the pool at the top, a cliff of basalt behind it, steam where it lands
+  const top = Math.min(...pool.map(p => p[1])), xs = pool.filter(p => p[1] === top).map(p => p[0]);
+  const fx = tileX((Math.min(...xs) + Math.max(...xs)) / 2), fz = tileZ(top) - 0.42, fw = Math.min(3.4, xs.length - 2.6);
+  const cliff = [];
+  for (let i = 0; i < 6; i++) cliff.push([fx + (i - 2.5) * 0.95 + (r() - 0.5) * 0.2, fz - 0.65 - r() * 0.3, 1.4 + r() * 0.4, r() * 6, ['#3a302c', '#2c2422', '#463a34'][i % 3]]);
+  const crag = new THREE.DodecahedronGeometry(0.7, 0); crag.scale(1, 2.0, 0.8); crag.translate(0, 0.9, 0);
+  instanced(crag, std({ color: '#ffffff', roughness: 1, flatShading: true }), cliff);
+  const sheet = new THREE.Mesh(new THREE.PlaneGeometry(fw, 2.6 - LAVA_Y, 1, 6), std({ map: fall, emissive: new THREE.Color('#ffffff'), emissiveMap: fall, emissiveIntensity: 1.05, roughness: 0.5 }));
+  sheet.geometry.translate(0, (2.6 - LAVA_Y) / 2, 0);
+  const pos = sheet.geometry.attributes.position;   // the sheet pours out over the lip and falls in a curve, as a stream does
+  for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sqrt(Math.max(0, 1 - pos.getY(i) / (2.6 - LAVA_Y))) * 0.55 - 0.1);
+  pos.needsUpdate = true; sheet.geometry.computeVertexNormals();
+  sheet.position.set(fx, LAVA_Y, fz + 0.3); sheet.raycast = () => {};
+  B.group.add(sheet);
+  const splash = Array.from({ length: 4 }, (_, i) => [fx + (i - 1.5) * fw / 4, LAVA_Y + 0.1, fz + 0.4]);
+  puffs(splash, { col: 'rgba(250,236,220,0.8)', n: 3, size: 0.7, rise: 2.2, speed: 0.22 });
+  // smoke curling off the lava here and there
+  const smoke = pool.filter(() => r() < 0.12).slice(0, 10).map(([x, y]) => [tileX(x), LAVA_Y + 0.1, tileZ(y)]);
+  puffs(smoke, { col: 'rgba(110,92,84,0.55)', n: 2, size: 0.55, rise: 1.6, speed: 0.12 });
+  // bubbles swelling and bursting on the lava
+  const spots = pool.filter(([x, y]) => !STEPS.some(([dx, dy]) => deck(x + dx, y + dy)) && r() < 0.35).slice(0, 16)
+    .map(([x, y]) => ({ x: tileX(x) + (r() - 0.5) * 0.5, z: tileZ(y) + (r() - 0.5) * 0.5, at: r(), speed: 0.25 + r() * 0.3, k: 0.7 + r() * 0.6 }));
+  const blob = new THREE.SphereGeometry(0.13, 10, 6, 0, Math.PI * 2, 0, Math.PI / 2);
+  const bubbles = new THREE.InstancedMesh(blob, std({ color: '#ffa030', emissive: new THREE.Color('#ff6a10'), emissiveIntensity: 1.1, roughness: 0.4 }), spots.length);
+  bubbles.raycast = () => {}; bubbles.castShadow = false;
+  B.group.add(bubbles);
+  let drawn = false;
+  B.ticks.push((now) => {
+    if (calm && drawn) return;
+    drawn = true;
+    const s = calm ? 0 : now / 1000;
+    glow.offset.set(s * 0.012, s * 0.02);
+    crust.offset.set(s * 0.02, s * 0.032);
+    fall.offset.set(0, s * 0.45);
+    hotMat.emissiveIntensity = 0.95 + (calm ? 0 : Math.sin(now / 1300) * 0.1);
+    spots.forEach((p, i) => {
+      const t = calm ? 0.5 : (p.at + s * p.speed) % 1, grow = t < 0.8 ? t / 0.8 : 0;
+      o.position.set(p.x, LAVA_Y, p.z); o.rotation.set(0, 0, 0); o.scale.setScalar(grow * p.k);
+      o.updateMatrix(); bubbles.setMatrixAt(i, o.matrix);
+    });
+    bubbles.instanceMatrix.needsUpdate = true;
+  });
 }
 
 /** An ember, for the ones rising off the town. */
@@ -6396,7 +6548,7 @@ const TOWN_STYLES = {
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
   springs: { under: 'rgba(40,26,22,0.5)', scrub: 'rgba(110,84,44,0.4)', flowers: ['#f86030', '#f8a030', '#f8d050', '#e83a3a'], litter: ashLitter,
-    fade: true, extras: nameBoards,
+    holes: true, fade: true, extras: lavaField, bridge: { planks: ['#4a3e38', '#3e3430', '#564840', '#362c28'], trim: '#1e1816' },
     look: { stone: ['#b4a08c', '#a08c78', '#8c7864', '#5a4a40'], gap: '#3a2c26', moss: '#6a5a48', grass: ['#b09a60', '#94804a', '#78663a'] },
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),

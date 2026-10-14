@@ -126,6 +126,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    nothing stands flush on the crags, the Waystone centred on its plaza, name boards (`n`, `nameBoards()`), `fade`, and
    Clarence's and Shaun's homes grand two-storey `lodge()`s on 5 x 4 lots (`docs/reference/towns.md`). Tests pass; no
    console errors headless; the in-and-out GPU check wasn't run (no door taps headless). Waiting on the user's playtest.
+   **Done (2026-10-14): Cinder Springs a lava field** (the user: "still pretty bland... a lot of homes... make it look
+   something cool how you did the thornwood one", and the bathhouse had no road): `~` is lava there (`lavaField()`):
+   a lavafall off the crags at the top, a river the switchback crosses on two-tile basalt bridges (`-`, iron rails,
+   ember lamps), a moat making the Waystone's plaza an island (bridges in from the west and south), crust drifting,
+   bubbles, smoke. Two locked houses (a, e; k and n gone), the bathhouse on its own road with its springs out beside it.
+   Tests pass, no console errors headless; waiting on the user's playtest.
    **Next: Driftwood Landing's clean-up** (`?town=ruins`). ▶ Run in: CLOUD (or the Desktop app, to see it). Prompt: "Read
    CLAUDE.md, docs/handoff-town-cleanups.md and docs/roadmap.md's Towns and Waystones entry. Clean up the Sunken Ruins'
    Driftwood Landing the way the Clearing, Highbough, Lantern Village and Cinder Springs were (ask me what bothers me
