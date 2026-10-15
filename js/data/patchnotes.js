@@ -42,7 +42,9 @@ export const RELEASE_AT = 12;
 export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
-export const NEXT = [];
+export const NEXT = [
+  ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
+];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
 export function sectionsOf(p) {
