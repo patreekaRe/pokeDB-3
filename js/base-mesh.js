@@ -38,6 +38,8 @@ import { MAKES as MAKES_W5 } from './base-models-w5.js';
 import { MAKES as MAKES_W6 } from './base-models-w6.js';
 import { MAKES as MAKES_W7 } from './base-models-w7.js';
 import { MAKES as MAKES_T, ITEMS } from './base-models-t.js';
+import { MAKES as MAKES_Y } from './base-models-y.js';
+import { MAKES as MAKES_FR } from './base-models-friends.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -244,9 +246,16 @@ function kit(id, paint) {
     to.get(m).push(geo);
     return geo;
   };
-  const put = into(bins), doors = [];
+  const put = into(bins), doors = [], parts = [];
   return {
-    p, pal, M, pic, put, bins, doors, r: rng(id),
+    p, pal, M, pic, put, bins, doors, parts, r: rng(id),
+    /** A part of its own that moves (a swing on its chains): `K.part(name, [x, y, z])` returns a put for its parts, built
+        in the model's frame; it's turned about that point, found as `model.userData.parts[name]`. */
+    part: (name, at) => {
+      const d = { name, at, bins: new Map() }, put = into(d.bins);
+      parts.push(d);
+      return (geo, m, x = 0, y = 0, z = 0, ...turn) => put(geo, m, x - at[0], y - at[1], z - at[2], ...turn);
+    },
     /** A door of its own for js/base-play.js to swing (a fridge's, a wardrobe's): `K.door([x, z], side)` returns a put
         for its parts, built shut in the model's frame, hinged at x, z (side 1 its left edge, -1 its right); `K.inside`
         `{ x, y, w, h, z }` is where the picture of what's inside goes, behind it (`bare: true` for none, when the inside is
@@ -1768,7 +1777,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }
@@ -1791,6 +1800,12 @@ export function furnitureModel(three, id, paint) {
       g.userData.inside = K.inside;
       g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });
     }
+    if (K.parts.length) g.userData.parts = Object.fromEntries(K.parts.map(d => {
+      const part = assemble(K, d.bins);
+      part.position.set(...d.at);
+      g.add(part);
+      return [d.name, part];
+    }));
     // a part that turns on its own (the globe's Earth) is moved to turn about its middle, tipped on its axis
     for (const mesh of g.children) {
       const pv = mesh.material?.userData.pivot;

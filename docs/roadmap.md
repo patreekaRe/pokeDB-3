@@ -24,18 +24,13 @@ plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_
 roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
-  b) **Outdoor furniture** (next; ▶ Run in: LOCAL): the yard is already a room to the code (`base.here === 'yard'`, its
-     things packed on `house.yard`), so this is: show the Decorate key outdoors again (`.base3d.outdoors .b3-decor` in
-     `css/secret-base.css` hides it), bend the pieces with the lawn (`bend()` / `bendFine()` on `pieceGroup` while
-     `BEND.k` is set, as `buildYard()` does `roomGroup`), and the `outdoor` flag in the tray and store. Then placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
-     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
-     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
-  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
-     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
-  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
-     harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
-     ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
-  e) Later: the yard grows (the blueprint's bigger yard buy).
+  b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
+  c) Done 2026-10-14, on `main`: the 6 on show let out from the yard's Pokémon tab; swim, swing, sit (docs/roadmap-done.md).
+     Not yet seen in a browser: playtest `?yard&guests` with a swing set and pond out (`?base&yard` opens the main
+     room: `?base` is read first).
+  d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket
+     for each berry's first picking (docs/roadmap-done.md). A real tap on a plot not yet tried (the hidden pane ran no frames).
+  e) **Next** (▶ Run in: LOCAL): the yard grows (the blueprint's bigger yard buy).
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
@@ -534,39 +529,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
      the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
-8. **Friendship: what gifts are for** (the user's picks, 2026-10-14; this answers step 6's open question on `liked`). Gifts
-   already count up per leader (`liked` in `workshopOf()`, `js/data/workshop.js`: +1 a gift, +2 their favourite) and the
-   favourite's first earns their signature piece (`fond`). That count becomes **hearts, 5 a leader** (10 town leaders and
-   the Nietos), and they unlock:
-   - **At home**: (1) a row of 5 hearts in each leader's home (on their name sign or the chat) and on the PC (a Friends
-     page); (2) new lines at each heart, more personal: chats, jokes and stories about the other friends (`HEART_LINES`
-     beside `HOME_LINES` in `js/data/towns.js`, 5 a leader); (3) Secret Base visits: from 3 hearts they drop by
-     (`secret-base.js`'s home guests, mended town or not), at 5 they come often and sit on your furniture.
-   - (8) **Their own requests**: a leader at 3+ hearts posts a small request on their town's board (the coin requests'
-     code), paying PokéCoins.
-   - **Rewards**: (9) a second and third signature piece in their style at more hearts (3 and 5; the first stays their
-     favourite gift's); (10) a friendship badge each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`),
-     a gold one for all of them; (11) now and then a liked leader mails you through the PC: coins, a material, or a
-     recipe; (12) each leader teaches Kurt one secret recipe at a set heart count (a `RECIPES` line each, made only once
-     taught).
-   - Nothing here gives power in a run, so no bot check. Hearts can't pass 5; gifts past that still please them (a line).
-   - **Sessions** (each ▶ Run in: CLOUD, then playtest on a githack link with `?towns&satchel&gymwins=10`):
-     (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
-     all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
-     maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
-   - **Session (a) done (2026-10-14): hearts.** `heartsOf()` / `HEARTS` / `FRIENDS` in `js/data/workshop.js` (test in
-     `tests/workshop.test.mjs`), the hearts on a home's room-bar LCD beside its name, a gift saying the new count (and
-     "already the best of friends" past 5), and the PC's FRIENDS page (towns on, a leader beaten). Detail:
-     `docs/reference/towns.md`. On `main`.
-   - **Session (b) done (2026-10-14): heart lines.** `HEART_LINES` in `js/data/towns.js`, 5 for each of the 11 friends,
-     said first at home as each heart fills (`homeTalk()`, heard ones tracked in `save.workshop.heard`), a gift's toast
-     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`.
-   - **Session (c) done (2026-10-15): Secret Base visits.** From 3 hearts a friend joins the day's base visit (mended town
-     or not) with `BASE_LINES` of their own (`js/data/towns.js`); at 5 they walk in and sit on a chair, sofa or cushion
-     (never the bed), and once the day's visit is over a best friend still drops in half the times you come in.
-     `baseFriends()` in `js/data/workshop.js`, test in `tests/workshop.test.mjs`; detail in `docs/reference/towns.md`.
-     Peek: `?base&hearts=5&visit` (a seat in the room). On `main`, waiting on the user's look. Next: session (d),
-     signature pieces 2 and 3.
+8. **Done (2026-10-15): Friendship, what gifts are for**, all six sessions (a-f): hearts, heart lines, Secret Base visits,
+   signature pieces 2 and 3, badges / letters / secret recipes, and (f) each friend's own requests on the Quests board.
+   Every session's notes are in `docs/roadmap-done.md`; how it all works in `docs/reference/towns.md`. On `main`, waiting
+   on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). Next: nothing planned; the user's call.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

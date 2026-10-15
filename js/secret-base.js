@@ -14,7 +14,7 @@ import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furnit
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
-import { workshopOf, heartsOf, baseFriends, HEARTS } from './data/workshop.js';
+import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE } from './data/house.js';
 
@@ -188,7 +188,7 @@ export function takeDown(b, id) {
   return true;
 }
 /* The backyard (docs/roadmap.md, part a): bought once on the blueprint, a lawn out a back door of the main room. Its
-   things are kept on `house.yard` like a room's; outdoor furniture is for a later part. */
+   things are kept on `house.yard` like a room's, and only outdoor furniture stands there (fitsHere()). */
 const freshYard = () => ({ size: 1, items: [], wall: 'cream', floor: 'grass' });
 /** `?yard`: a backyard lent for the page load, to playtest it; never kept (loadBase() takes a lent one back). */
 const lendYard = () => new URLSearchParams(location.search).has('yard');
@@ -276,8 +276,15 @@ export const lendAll = () => new URLSearchParams(location.search).has('allfurnit
 
 /** How many of a kind you own: bought, plus one of an earned kind once its badge, achievement, feat or page is
     (js/data/furniture.js; worked out from the save each time, never stored in `owned`). */
-const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], getSave()) ? 1 : 0)
+const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], earnSave()) ? 1 : 0)
   + (kind === FREE_PC ? 1 : 0);
+
+/** The save earned kinds are read from: `?hearts=N` lends every friend N hearts' pieces for the page load, as it
+    lends their visits (heartsPeek() below). */
+const earnSave = (save = getSave()) => {
+  const n = heartsPeek();
+  return n === null ? save : { ...save, workshop: { ...workshopOf(save), liked: Object.fromEntries(FRIENDS.map(id => [id, n])) } };
+};
 
 /** Every base has one Storage PC, like Gen 3's: tapped in the room it opens the PC on its Decorations (js/pc.js). */
 export const FREE_PC = 'pc';
@@ -304,8 +311,8 @@ export function putAway(b, id) {
 }
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
-export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !(p.towns && !townsOpen()) && !isEarned(p, getSave()) && PIECES[p.kind])
-  .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
+export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !(p.towns && !townsOpen()) && !isEarned(p, earnSave()) && PIECES[p.kind])
+  .map(p => ({ id: p.kind, how: howToEarn(p, earnSave()) }));
 
 /** How many of a piece's kind (or set) are in storage, in any colour or style: owned, less those standing in the room. */
 export function spare(b, id) {
@@ -326,7 +333,7 @@ export function openGift(b) {
 // store's daily stock, a piece of each (furnitureStock())
 export const KINDS_OF = {
   All: () => true,
-  Seats: (p) => !!p.seat || ['Seats', 'Beds', 'Cushions'].includes(p.group),
+  Seats: (p) => !!p.seat || ['Seats', 'Beds', 'Cushions'].includes(p.group) || (!!p.outdoor && seatHeight(p.fam, p) > 0),
   Tables: (p) => p.group === 'Tables' || /table|desk|counter/i.test(p.name),
   Storage: (p) => /shelf|shelves|cabinet|chest|drawer|wardrobe|dresser|locker|bookcase|cupboard/i.test(p.name),
   Plants: (p) => ['Plants', 'Garden', 'Greenhouse'].includes(p.group) || /plant|tree|flower|bush|cactus|fern|bonsai|pot/i.test(p.name),
@@ -364,7 +371,8 @@ export function furnitureStock(day = safariDay(), floor = 1) {
 export function dealDay(day, owned = {}) {
   const rand = streamOf('furniture', day), taken = new Set();
   // a gateway town's shelf is sold only in its town's shop (js/town-shop.js), never here
-  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !(owned[PIECES[id].own] > 0));
+  // nor the backyard's pieces, sold in Smeargle's garden catalogue (js/garden-shop.js)
+  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !PIECES[id].outdoor && !(owned[PIECES[id].own] > 0));
   const deal = () => shuffled(SLOTS.map(slot => {
     const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
     const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));
@@ -599,11 +607,15 @@ function outline(it, colour) {
   g.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
 }
 
+/** Whether a piece belongs in the room `b` is in: an outdoor one (the Yard shelf) only out in the backyard, and nothing
+    from indoors out there (docs/roadmap.md's backyard, part b). */
+export const fitsHere = (id, b) => !!PIECES[id].outdoor === ((b.here || 'main') === 'yard');
 const cells = (it) => { const [fw, fh] = footprint(it), out = []; for (let i = 0; i < fw; i++) for (let j = 0; j < fh; j++) out.push(`${it.x + i},${it.y + j}`); return out; };
 
 /** Whether a piece fits the room `b` (the 2D room's own by default), leaving out item `skip` (the one being moved). */
 function fits(it, skip = -1, b = base) {
   const p = PIECES[it.id], [fw, fh] = footprint(it);
+  if (!fitsHere(it.id, b)) return false;
   if (it.x < 0 || it.x + fw > COLS) return false;
   if (it.up) {
     // on a table: a small piece, a table under it, and nothing else up on that tile

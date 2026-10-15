@@ -527,6 +527,8 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .pc-sheet-text { margin: 0; font-size: 0.75rem; line-height: 1.8; }
 .pc-prize { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; }
 .pc-prize-coin { width: 30px; height: 30px; }
+.pc-prize-mat { font-size: 1.6rem; line-height: 1; }
+.pc-prize-ball { width: 36px; height: 36px; image-rendering: pixelated; }
 .pc-prize-n { font-weight: 400; font-size: 0.95rem; color: #8e5c06; }
 .pc-letter.paid .pc-prize { animation: pcPaid 0.5s ease-out; }
 .pc-claimed {

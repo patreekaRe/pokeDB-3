@@ -24,10 +24,11 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
+import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere } from './secret-base.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -40,8 +41,17 @@ const ON_SHOW = RESIDENTS;   // Safari catches living in the base at once, also 
 const RIDER = 0.72;        // a piece up on a table, at this size
 // kinds of piece a Pokémon climbs onto, and what it does there; any piece with a seat height (js/base-shapes.js) too
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
+// out in the yard Water types swim in the pond or pool and the rest take the swings and benches (docs/roadmap.md's
+// backyard, part c); where on the piece each goes, in its own frame unturned: [x across, y up, z out front, swing part]
+const YARD_SEATS = { swingset: { rest: [7000, 13000], swing: true }, paddlingpool: { rest: [8000, 15000], swim: true }, rockpond: { rest: [8000, 15000], swim: true } };
+const YARD_SPOTS = {
+  swingset: [[-0.42, 0.46, 0, 'swing0'], [0.42, 0.46, 0, 'swing1']],
+  picnicbench: [[-0.45, 0.44, -0.72], [0.45, 0.44, -0.72], [-0.45, 0.44, 0.72], [0.45, 0.44, 0.72]],
+  paddlingpool: [[0.28, 0.22, 0.3], [-0.3, 0.22, -0.28]],
+  rockpond: [[-0.3, -0.12, 0.08], [0.3, -0.12, 0.22]],
+};
 
-const seatOf = (id) => { const p = PIECES[id]; return SEATS[p.seat || p.fam] || (seatHeight(p.fam, p) ? { rest: [6000, 12000] } : null); };
+const seatOf = (id) => { const p = PIECES[id]; return YARD_SEATS[p.fam] || SEATS[p.seat || p.fam] || (seatHeight(p.fam, p) ? { rest: [6000, 12000] } : null); };
 
 const LIGHT = {
   dawn: { sky: '#ffd0b8', ground: '#5a4058', amb: 1.4, sun: '#ffb48a', sunI: 2.2, at: [-9, 5, 6], lamp: 0.8, win: 0.9, shaft: 0.3, motes: 0.7, bg: '#2a2036' },
@@ -438,8 +448,14 @@ function yardLight(t) {
 
 const setSky = (b) => { if (scene.background?.isTexture) scene.background.dispose(); scene.background = b; };
 
+/** Out in the yard, a piece rolls away with the lawn under it (BEND), as the trees and fence do. */
+function bendOut(o) {
+  if (BEND.k.value) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+}
+
 function buildPieces() {
   pieceGroup.traverse(o => { if (o.userData.play) stopPlay(o.userData.play); });
+  forgetPlots();
   dispose(pieceGroup);
   blocked = new Set(); winMats = []; shafts = []; motes = [];
   giftBoard = null;
@@ -455,6 +471,7 @@ function buildPieces() {
     const [fw, fh] = footprint(it);
     for (let x = 0; x < fw; x++) for (let y = 0; y < fh; y++) blocked.add(`${it.x + x},${it.y + y}`);
   });
+  bendOut(pieceGroup);
   lampLights.forEach((l, i) => { l.visible = i < lamps.length; if (lamps[i]) l.position.copy(lamps[i]); });
   if (mon && blocked.has(key(walker.tile.x, walker.tile.y))) {
     walker.tile = nearestFree(walker.tile);
@@ -542,6 +559,7 @@ function makePiece(it, ghostly = false, lift = null) {
   model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
   group.add(model);
   group.userData.model = model;
+  if (isPlot(p) && !ghostly) tendPlot(THREE, group, it, cx, cz);
   if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.position.y + model.userData.top * k - 0.35, cz + 0.3);
   return group;
 }
@@ -617,6 +635,7 @@ function makeGhost() {
   const wall = PIECES[holding.id].layer === 'wall';
   ghost = makePiece(wall ? { id: holding.id, x: 0 } : { id: holding.id, x: 0, y: 0, dir: holding.dir }, true);
   for (const r of holding.riders) ghost.add(makePiece({ id: r.id, x: r.dx, y: r.dy, dir: r.dir, up: 1 }, true, surfaceOf(holding.id)));
+  bendOut(ghost);
   scene.add(ghost);
   const [fw, fh] = wall ? [PIECES[holding.id].w, WALL_H] : footprint({ id: holding.id, dir: holding.dir });
   foot.scale.set(fw, fh, 1);
@@ -627,9 +646,12 @@ function makeGhost() {
 function aimFrom(nx, ny) {
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(nx, ny), camera);
-  const hit = new THREE.Vector3(), p = PIECES[holding.id];
-  const plane = p.layer === 'wall' ? new THREE.Plane(new THREE.Vector3(0, 0, 1), ROWS / 2) : new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  if (!ray.ray.intersectPlane(plane, hit) && !ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
+  let hit = new THREE.Vector3();
+  const p = PIECES[holding.id];
+  // out on the lawn, the tile under the finger is where the rolling lawn is drawn (groundHit())
+  if (p.layer !== 'wall') hit = groundHit(ray.ray);
+  else if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), ROWS / 2), hit)) hit = groundHit(ray.ray);
+  if (!hit) return;
   aimAt = aimTile(holding.id, holding.dir, hit.x + COLS / 2, hit.z + ROWS / 2);
 }
 
@@ -670,6 +692,7 @@ function showGhost() {
 function place() {
   if (!holding || !aimAt) return;
   const it = held();
+  if (holding.back?.crop) it.crop = holding.back.crop;
   if (!fits(it, -1, base)) {
     playSound('cancel');
     // a piece dragged straight off the floor goes back where it was, rather than staying in your hand
@@ -809,10 +832,16 @@ function onShow() {
   return { all, shown: (base.mons ?? all.slice(0, ON_SHOW)).filter(id => all.includes(id)) };
 }
 
+/** Whether a resident lives out in the yard (let out on the yard's Pokémon tab) rather than indoors. */
+const livesOut = (id) => !!roomById(base.house, 'yard') && !!base.out?.includes(id);
+/** The guests in the room you're in: out in the yard the ones let out, indoors the rest. */
+const homeHere = (g) => livesOut(g.id) === outdoors();
+const present = () => guests.filter(g => g.w && homeHere(g));
+
 /** Tiles someone stands on or is heading for, so two never pick the same one. */
 function taken(skip) {
   const out = new Set();
-  for (const w of [walker, ...guests.map(g => g.w), visit?.w]) {
+  for (const w of [walker, ...present().map(g => g.w), visit?.w]) {
     if (!w || w === skip || !w.tile) continue;
     out.add(key(w.tile.x, w.tile.y));
     const end = w.path.at(-1);
@@ -849,13 +878,37 @@ async function addGuest(id) {
   g.w = { tile, x: tileX(tile.x), z: tileZ(tile.y), y: 0, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0, think: performance.now() + rand(800, 3000) };
   m.board.userData.who = g;
   g.mon = m;
-  if (!outdoors()) cheer(g, 2);
+  m.group.visible = homeHere(g);
+  if (homeHere(g)) cheer(g, 2);
+}
+
+/** Out to the yard or back in, from the yard's Pokémon tab: let out, it hops in on a free patch of lawn with hearts;
+    called in, it's off its seat and gone in a twinkle. */
+function letOut(id) {
+  const g = guests.find(x => x.id === id), w = g?.w;
+  if (!w) return;
+  if (!homeHere(g)) {
+    for (let i = 0; i < 4; i++) setTimeout(() => puff('star', { x: w.x + rand(-0.3, 0.3), y: w.y, z: w.z }, { top: rand(0.1, 0.5) }), i * 60);
+    Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0 });
+    return;
+  }
+  const spots = freeTiles(w), t = spots.length ? spots[Math.floor(Math.random() * spots.length)] : nearestFree(walker.tile);
+  Object.assign(w, { seat: null, goal: null, jump: null, sleeping: false, path: [], y: 0, tile: t, x: tileX(t.x), z: tileZ(t.y), think: performance.now() + rand(1500, 3500) });
+  cheer(g, 3);
 }
 
 /** The places on a piece a Pokémon can sit: a bed or a cushion its middle; a chair, sofa or bench one a tile, a
-    little towards its front, at its seat's height (js/base-shapes.js). */
+    little towards its front, at its seat's height (js/base-shapes.js); a yard piece where YARD_SPOTS says. */
 function seatSpots(it) {
   const p = PIECES[it.id], [fw, fh] = footprint(it), y = seatHeight(p.fam, p) || p.high || 0;
+  if (YARD_SPOTS[p.fam]) {
+    const a = -(it.dir ?? 0) * Math.PI / 2, c = Math.cos(a), s = Math.sin(a), cx = it.x - COLS / 2 + fw / 2, cz = it.y - ROWS / 2 + fh / 2;
+    const { swim, swing } = YARD_SEATS[p.fam] || {}, clamp = (v, lo, n) => Math.min(lo + n - 1, Math.max(lo, v));
+    return YARD_SPOTS[p.fam].map(([lx, sy, lz, part]) => {
+      const x = cx + lx * c + lz * s, z = cz - lx * s + lz * c;
+      return { x, y: sy, z, part, swim, swing, tile: { x: clamp(Math.floor(x + COLS / 2), it.x, fw), y: clamp(Math.floor(z + ROWS / 2), it.y, fh) } };
+    });
+  }
   if (p.seat) return [{ x: it.x - COLS / 2 + fw / 2, z: it.y - ROWS / 2 + fh / 2, y, tile: { x: it.x + Math.floor((fw - 1) / 2), y: it.y + Math.floor((fh - 1) / 2) } }];
   const a = -(it.dir ?? 0) * Math.PI / 2, fx = Math.sin(a) * 0.1, fz = Math.cos(a) * 0.1, out = [];
   for (let i = 0; i < fw; i++) for (let j = 0; j < fh; j++) out.push({ x: it.x + i + 0.5 - COLS / 2 + fx, z: it.y + j + 0.5 - ROWS / 2 + fz, y, tile: { x: it.x + i, y: it.y + j } });
@@ -864,7 +917,7 @@ function seatSpots(it) {
 
 /** Every free place to sit in the room: { it, k } for spot k of piece it, none someone's on or heading for. */
 function seats() {
-  const used = new Set([walker, ...guests.map(g => g.w), visit?.w].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
+  const used = new Set([walker, ...present().map(g => g.w), visit?.w].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
   return base.items.flatMap((it, i) => seatOf(it.id) ? seatSpots(it).map((_, k) => ({ it, k })).filter(s => !used.has(`${i}:${s.k}`)) : []);
 }
 
@@ -894,6 +947,15 @@ function hopping(w, now) {
 
 /* Your partner sits where you tap (the user's ask, 2026-10-09): a tap on a chair, sofa, bench, bed or cushion walks it
    there and up it hops; a tap on the floor gets it down and walking. */
+
+const swimmer = (g) => ENEMY_DEFS[g.id]?.type === 'water';
+
+/** The free seats a guest would take: a Water type the water (where there's a pond or pool), the rest anything but. */
+function seatsFor(g) {
+  const free = seats(), wet = (s) => !!seatOf(s.it.id).swim;
+  if (!swimmer(g)) return free.filter(s => !wet(s));
+  return base.items.some(it => seatOf(it.id)?.swim) ? free.filter(wet) : free;
+}
 
 /** Walk your partner to a seat on `it` (the free spot nearest it) and sit; false if there's none or no way there. */
 function sitPartner(it) {
@@ -938,12 +1000,13 @@ function think(g, now) {
   if (w.seat) {
     w.sleeping = false;
     const down = w.from && !blocked.has(key(w.from.x, w.from.y)) && !taken(w).has(key(w.from.x, w.from.y)) ? w.from : nearestFree(w.seat.tile);
+    if (w.seat.swim) splash(w);
     w.seat = null;
     leap(w, { x: tileX(down.x), y: 0, z: tileZ(down.y) }, 420, () => { w.tile = down; w.think = now + rand(1500, 4000); });
     return;
   }
-  const free = seats();
-  if (free.length && Math.random() < 0.35) {
+  const free = seatsFor(g);
+  if (free.length && Math.random() < (outdoors() ? 0.5 : 0.35)) {
     const { it, k } = free[Math.floor(Math.random() * free.length)], spot = seatSpots(it)[k];
     const path = route(w.tile, spot.tile), end = path.at(-1) ?? w.tile;
     if (nextTo(end, it)) { w.path = path; w.goal = it; w.seat = { it, k, ...spot }; if (!path.length) climb(w, now); return; }
@@ -964,7 +1027,34 @@ function climb(w, now) {
     const at = performance.now();
     if (!base.items.includes(it)) { w.think = at; return; }   // moved from under it mid-hop: straight back down
     w.sleeping = !!s.sleep; w.think = at + rand(...s.rest); w.nextZ = at + 600;
+    if (s.swim) splash(w);
   });
+}
+
+/** Droplets off the water as a swimmer dives in or climbs out. */
+function splash(w) {
+  if (calm) return;
+  for (let i = 0; i < 5; i++) setTimeout(() => puff('drop', { x: w.x + rand(-0.25, 0.25), y: w.y, z: w.z }, { top: rand(0.05, 0.3) }), i * 50);
+}
+
+/** The swings: one with a Pokémon on swings higher and carries it, an empty one comes to rest. */
+function liveSwings(dt, now) {
+  const on = new Map();
+  for (const w of [walker, ...present().map(g => g.w)]) if (w?.seat?.part && !w.jump) on.set(`${base.items.indexOf(w.seat.it)}:${w.seat.part}`, w);
+  for (const pg of pieceGroup.children) {
+    const parts = pg.userData.model?.userData.parts;
+    if (!parts) continue;
+    for (const [name, part] of Object.entries(parts)) {
+      const w = on.get(`${pg.userData.index}:${name}`), u = part.userData;
+      u.amp = Math.max(0, Math.min(0.42, (u.amp ?? 0) + (w ? 0.18 : -0.12) * dt / 1000));
+      u.phase = (u.phase ?? 0) + dt / 1000 * Math.PI * 2 / 1.7;
+      part.rotation.x = calm ? 0 : Math.sin(u.phase) * u.amp;
+      if (!w) continue;
+      part.updateMatrixWorld(true);
+      const at = part.localToWorld(new THREE.Vector3(0, w.seat.y - part.position.y, 0));
+      w.x = at.x; w.y = at.y; w.z = at.z;
+    }
+  }
 }
 
 /** After the furniture changes: anyone on a seat that went comes down, walks are forgotten, and no one stands in a piece. */
@@ -981,8 +1071,8 @@ function settleGuests() {
     const down = nearestFree(vw.seat.tile);
     Object.assign(vw, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
   }
-  for (const { w } of guests) {
-    if (!w || w.jump) continue;
+  for (const { w } of present()) {
+    if (w.jump) continue;
     if (w.goal) { w.goal = null; w.seat = null; }
     w.path = [];
     if (w.seat && !base.items.includes(w.seat.it)) {
@@ -1003,6 +1093,8 @@ function liveGuest(g, dt, now) {
   } else if (w.path.length) {
     if (walk(w, m, dt, 2.2) && w.goal) climb(w, now);
   } else if (now > w.think) think(g, now);
+  // a swimmer bobs where it floats
+  if (w.seat?.swim && !w.jump && !calm) w.y = w.seat.y + Math.sin(now / 520 + g.id.length) * 0.03;
   if (w.sleeping && now > w.nextZ) { w.nextZ = now + 1400; puff('z', w, m); }
   const happy = w.hopUntil > now;
   const bob = calm ? 0 : w.path.length ? Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06 : happy ? Math.abs(Math.sin((w.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
@@ -1286,9 +1378,10 @@ function puffTexture(kind) {
   const rows = kind === 'heart'
     ? ['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...']
     : kind === 'star' ? ['...#...', '..###..', '#######', '.#####.', '.##.##.', '#.....#']
+    : kind === 'drop' ? ['..#..', '.###.', '#####', '#####', '.###.']
     : ['#####', '...#.', '..#..', '.#...', '#####'];
   const c = new OffscreenCanvas(rows[0].length + 2, rows.length + 2), x = c.getContext('2d');
-  const ink = { heart: '#ff5a8a', star: '#ffe060' }[kind] || '#e8f0ff', edge = { heart: '#8a1a3a', star: '#8a5a00' }[kind] || '#2a3a6a';
+  const ink = { heart: '#ff5a8a', star: '#ffe060', drop: '#9ad8ff' }[kind] || '#e8f0ff', edge = { heart: '#8a1a3a', star: '#8a5a00', drop: '#1a4a8a' }[kind] || '#2a3a6a';
   rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = edge; x.fillRect(i, y, 3, 3); } }));
   rows.forEach((r, y) => [...r].forEach((ch, i) => { if (ch === '#') { x.fillStyle = ink; x.fillRect(i + 1, y + 1, 1, 1); } }));
   return (puffTex[kind] = tex(c));
@@ -1296,11 +1389,11 @@ function puffTexture(kind) {
 
 function puff(kind, w, m) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: puffTexture(kind), transparent: true, depthWrite: false }));
-  const size = kind === 'z' ? 0.2 : 0.26;
+  const size = kind === 'z' ? 0.2 : kind === 'drop' ? 0.14 : 0.26;
   s.scale.set(size, size * (kind === 'z' ? 1 : 8 / 9), 1);
   s.raycast = () => {};
   scene.add(s);
-  puffs.push({ s, t0: performance.now(), life: kind === 'heart' ? 1100 : 2200, x: w.x + rand(-0.2, 0.2), y: w.y + m.top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
+  puffs.push({ s, t0: performance.now(), life: kind === 'heart' ? 1100 : kind === 'drop' ? 600 : 2200, x: w.x + rand(-0.2, 0.2), y: w.y + m.top, z: w.z + 0.05, sway: rand(0, 6), drift: kind === 'z' ? 0.25 : 0 });
 }
 
 function livePuffs(now) {
@@ -1400,7 +1493,7 @@ function pieceUnder(at) {
 /** What's under a point on the view: a Pokémon's billboard (where its sprite is), a piece's mesh, or nothing. */
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
-  const boards = [mon.board, ...(outdoors() ? [] : guests.filter(g => g.mon).map(g => g.mon.board)), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
+  const boards = [mon.board, ...present().filter(g => g.mon).map(g => g.mon.board), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
   return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
@@ -1460,15 +1553,17 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
+    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openPlot(base, it, save); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
       const r = tapPlay(play), now = performance.now();
       if (r.cheer) walker.hopUntil = now + 500;
-      if (r.cheer === 'heal') for (const gu of guests) if (gu.mon) cheer(gu, 4);
-      if (!seatOf(it.id)) return;
+      if (r.cheer === 'heal') for (const gu of present()) if (gu.mon) cheer(gu, 4);
+      if (!seatOf(it.id) || seatOf(it.id).swim) return;
     }
-    if (seatOf(it.id) && sitPartner(it)) return;
+    // your partner takes a seat or a swing; the water is for the Water types living here
+    if (seatOf(it.id) && !seatOf(it.id).swim && sitPartner(it)) return;
   }
   if (mode === 'edit' && g && g.parent === pieceGroup) {
     // a second tap on the picked piece turns it
@@ -1536,7 +1631,7 @@ function tray(which = tab) {
     // a set's other styles in this colour first, then this style's other colours
     for (const c of [...styles(id), ...colours(id).filter(c => c !== id)]) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
   }
-  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
@@ -1550,18 +1645,28 @@ function tray(which = tab) {
     .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
   if (tab === 'wall') swatch(WALLPAPERS, 'wall');
   if (tab === 'floor') swatch(FLOORS, 'floor');
-  if (tab === 'mons') {
+  if (tab === 'mons' && outdoors()) {
+    // out in the yard: the ones on show, a tap letting one out onto the lawn or calling it back in
+    for (const id of onShow().shown) {
+      const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
+      add(resident(id).name, img, livesOut(id), () => {
+        base.out = livesOut(id) ? base.out.filter(x => x !== id) : [...(base.out || []), id];
+        playSound(livesOut(id) ? 'confirm' : 'cancel');
+        save(); letOut(id); tray(); refresh();
+      }, livesOut(id) ? '✓' : '');
+    }
+  } else if (tab === 'mons') {
     const { all, shown } = onShow();
     // the ones on show first, then every other catch in Pokédex order
     for (const id of [...shown, ...all.filter(id => !shown.includes(id))]) {
       const img = Object.assign(document.createElement('img'), { loading: 'lazy', src: resident(id).image, alt: '', draggable: false, className: 'pixel' });
       add(resident(id).name, img, shown.includes(id), () => {
         const now = onShow().shown;
-        if (now.includes(id)) { base.mons = now.filter(x => x !== id); playSound('cancel'); }
+        if (now.includes(id)) { base.mons = now.filter(x => x !== id); base.out = base.out?.filter(x => x !== id); playSound('cancel'); }
         else if (now.length >= ON_SHOW) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
         else { base.mons = [...now, id]; playSound('confirm'); }
         save(); syncGuests(); tray(); refresh();
-      }, shown.includes(id) ? '✓' : '');
+      }, shown.includes(id) ? (livesOut(id) ? 'Yard' : '✓') : '');
     }
   }
 }
@@ -1573,7 +1678,7 @@ function filters() {
   const row = root.querySelector('.b3-filters');
   row.hidden = tab !== 'furniture';
   if (row.hidden) return;
-  const have = DESIGNS.filter(id => spare(base, id) > 0).map(id => PIECES[id]);
+  const have = DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0).map(id => PIECES[id]);
   const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || have.some(KINDS_OF[k]));
   if (!kinds.includes(kindPick)) kindPick = 'All';
   row.replaceChildren(...kinds.map(k => {
@@ -1648,7 +1753,9 @@ function refresh() {
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
-    : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
+    : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
+    : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
+    : tab === 'mons' && outdoors() && mons.shown.length ? 'Tap one to let it out in the yard, or call it back in.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
   hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
@@ -1832,13 +1939,16 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
-  // the Pokémon living here stay indoors while you're out in the yard (docs/roadmap.md's backyard, part c lets them out)
-  for (const g of guests) if (g.mon) { g.mon.group.visible = !outdoors(); if (!outdoors()) liveGuest(g, dt, now); }
-  if (BEND.k.value) for (const o of [mon.group, ring]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+  // the Pokémon living here are about whichever room you're in, or out in the yard if they were let out
+  liveSwings(dt, now);
+  for (const g of guests) if (g.mon && g.w) { g.mon.group.visible = homeHere(g); if (homeHere(g)) liveGuest(g, dt, now); }
+  if (walker.seat?.part && !walker.jump) mon.group.position.set(walker.x, walker.y, walker.z);
+  if (BEND.k.value) for (const o of [mon.group, ring, ...present().map(g => g.mon?.group).filter(Boolean)]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
   if (snow) liveSnow(now);
   liveVisit(dt, now);
   livePuffs(now);
   liveGift(now);
+  for (const grown of liveGarden(now, BEND.k.value, BEND.z.value, calm)) bendOut(grown);
   for (const pg of pieceGroup.children) { const pl = pg.userData.model?.userData.play; if (pl) tickPlay(pl, now, dt); }
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) {
@@ -1932,6 +2042,8 @@ async function travel(d) {
 /** Build the room `base.here` is and stand your partner at `spot(doors)` (a tile), or at the front; the guests about it. */
 function showRoom(spot = () => null) {
   useRoom(base);
+  // outdoors there's no wallpaper or floor to pick, only furniture and who's let out
+  if (outdoors() && tab !== 'furniture' && tab !== 'mons') tab = 'furniture';
   const lv = here().lv;
   root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
   buildRoom();
@@ -2062,6 +2174,8 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   foot.visible = false; foot.renderOrder = 10;   // seen through whatever stands on the tiles
   selBox = new THREE.Box3Helper(new THREE.Box3(), '#ffe060');
   selBox.visible = false;
+  // both follow the lawn's roll out in the yard (a no-op indoors, where BEND.k is 0)
+  bend(foot.material, BEND); bend(selBox.material, BEND);
   roomGroup = new THREE.Group(); pieceGroup = new THREE.Group();
   scene.add(ring, foot, selBox, roomGroup, pieceGroup);
 

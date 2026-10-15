@@ -8,7 +8,8 @@
    ============================================================ */
 
 import { MATERIALS_BY_ID, satchelOf, satchelFlag } from './data/satchel.js';
-import { RECIPES_BY_ID } from './data/workshop.js';
+import { RECIPES_BY_ID, FRIENDS, workshopOf, heartsOf, gifteeOf, HEARTS } from './data/workshop.js';
+import { FRIEND_TOWN, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { TOWNS, RING, CLEARING, clearingLit, townState, currentRequest, requestText, requestBy, questOf, questStep, questDone, questProgress, greeterOf, stepText, stepHave, mended } from './data/towns.js';
 import { GYM_BY_ID, spriteOf } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
@@ -105,6 +106,27 @@ function requestCard(town, st) {
   return box;
 }
 
+/** `?hearts=N` on a playtest: every friend at N hearts. */
+const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : Math.max(0, Math.min(HEARTS, +n || 0)); };
+
+/** The requests friends at 3+ hearts have pinned up (js/data/favours.js), each handed in to them at home. */
+function friendCards(save) {
+  const ws = workshopOf(save), peek = heartsPeek();
+  return FRIENDS.filter(id => asking(id, peek ?? heartsOf(ws, id))).map(id => {
+    const fs = favourOf(save, id), f = currentFavour(id, fs), ready = fs.ready || (peek !== null && satchelFlag());
+    const place = FRIEND_TOWN[id] === 'clearing' ? CLEARING : TOWNS[FRIEND_TOWN[id]], who = gifteeOf(id, GYM_BY_ID[id].name);
+    const card = el('article', 'qlog-ask');
+    card.style.setProperty('--glow', GLOW[place.id] ?? '#ffd858');
+    const head = el('div', 'qlog-who');
+    head.append(sprite(GYM_BY_ID[id], 'qlog-mon'), el('span', '', `${who} ${id === 'nietos' ? 'ask' : 'asks'}:`));
+    const box = el('div', `qlog-do${ready ? ' ready' : ''}`);
+    box.append(el('p', 'qlog-step', `${favourText(f)}.`), bar(ready ? f.n : Math.min(fs.got, f.n), f.n),
+      row(ready ? 'READY! HAND IT IN' : 'THEN HAND IN', place.home ? 'Law and Britt, at the Nietos\' house in the Clearing.' : `${who}, at their house in ${place.name}.`));
+    card.append(head, el('p', 'qlog-note', `"${f.note}"`), box);
+    return card;
+  });
+}
+
 /** Every step of a quest: done ones ticked, the one up now marked, later ones hidden. */
 function stepList(town, st) {
   const list = el('ol', 'qlog-steps');
@@ -176,7 +198,14 @@ export const questLogApp = {
     top.append(gems, el('small', 'qlog-sub', `${done.length} of ${LINES.length} quests done`));
     const list = el('div', 'qlog-list');
     list.append(...LINES.map(t => questRow(t, save, sat)));
-    panel.append(top, nextNote(save, sat), el('h3', 'qlog-label', 'All quests'), list);
+    panel.append(top, nextNote(save, sat));
+    const asks = friendCards(save);
+    if (asks.length) {
+      const pinned = el('div', 'qlog-list');
+      pinned.append(...asks);
+      panel.append(el('h3', 'qlog-label', 'Friends\' requests'), pinned);
+    }
+    panel.append(el('h3', 'qlog-label', 'All quests'), list);
     if (at === 'board' || at?.board) panel.append(el('p', 'qlog-tip', 'Check this any time: Pokédex → Quests.'));
     clearSatchelNews(LINES.map(t => `q:${t.id}`));
     showBadgeNews();

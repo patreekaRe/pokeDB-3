@@ -12,7 +12,8 @@
    ============================================================ */
 
 import { STARTERS } from './starters.js';
-import { GYM_LEADERS, GYM_GOLD } from './gym.js';
+import { GYM_LEADERS, GYM_GOLD, GYM_BY_ID } from './gym.js';
+import { FRIENDS, HEARTS } from './workshop.js';
 import { MAX_LEVEL } from './difficulty.js';
 import { BIOMES, ALT_BIOMES, BIOMES_BY_ID, FORKS, ENEMY_DEFS } from './enemies.js';
 import { PASSIVE_SHOP_ITEMS } from './shop.js';
@@ -104,6 +105,10 @@ const SAFARI_TYPE_BADGES = SAFARI_DEX_PAGES.flatMap(p => TYPE_ORDER
     icon: `sx-${p.area}-${type}`, emoji: TYPE_EMOJI[type], text: `Catch every ${TYPE_NAME[type]} Pokémon in the Safari's ${p.name}`,
     test: (s, save) => caughtAll(save, ids) })));
 
+/** A friend as their badge says them: John, Nietos; and whose hearts: John's, the Nietos'. */
+const friendName = (id) => { const n = GYM_BY_ID[id].name.replace(/^THE /, ''); return n[0] + n.slice(1).toLowerCase(); };
+const friendsOf = (id) => (GYM_BY_ID[id].name.startsWith('THE ') ? `the ${friendName(id)}'` : `${friendName(id)}'s`);
+
 const GUARDIAN_FLOORS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
 const GUARDIAN_COUNTS = [1, 5, 10, 15, 20, 30, 40, 50];
 const RARE_COUNTS = [5, 10, 15, 20];
@@ -111,6 +116,7 @@ const RARE_COUNTS = [5, 10, 15, 20];
 export const BADGE_GROUPS = [
   { id: 'journey', name: 'Journey' },
   { id: 'gym', name: 'Gym Badges' },
+  { id: 'friends', name: 'Friendship' },
   { id: 'levels', name: 'Trainer Levels' },
   { id: 'challenges', name: 'Challenges' },
   { id: 'collector', name: 'Collector' },
@@ -319,6 +325,13 @@ export const BADGES = [
     { id: `gym-${l.id}-gold`, group: 'gym', name: `Gold ${l.badge}`, icon: `gym-${l.id}-gold`, emoji: '🥇',
       text: `Beat Gym Leader ${l.name} ${GYM_GOLD} times`, test: (s, save) => (save.gym?.[l.id] || 0) >= GYM_GOLD },
   ]),
+
+  // Friendship (docs/roadmap.md step 8, session e): a friend at full hearts (`workshop.liked`, js/data/workshop.js), and
+  // the gold one for every friend at once
+  ...FRIENDS.map(id => ({ id: `friend-${id}`, group: 'friends', name: `${friendName(id)} Friendship Badge`, icon: `friend-${id}`, emoji: '💗',
+    text: `Fill all ${HEARTS} of ${friendsOf(id)} hearts with gifts from Kurt's Workshop`, test: (s, save) => (save.workshop?.liked?.[id] || 0) >= HEARTS })),
+  { id: 'best-friends', group: 'friends', name: 'Best Friends Badge', icon: 'best-friends', emoji: '💛',
+    text: `Fill every friend's ${HEARTS} hearts`, test: (s, save) => FRIENDS.every(id => (save.workshop?.liked?.[id] || 0) >= HEARTS) },
 ];
 
 export const BADGES_BY_ID = Object.fromEntries(BADGES.map(b => [b.id, b]));

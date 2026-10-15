@@ -75,9 +75,41 @@ The first section began as the note on playtesting the live site and grew into t
   exported from `js/hub-3d.js` with `CLEARING_LOOK` / `CLEARING_LIGHT`) in their season's leaves, stepping stones, and
   in winter snow on all of it and falling (`liveSnow()`); `yardLight()` is the Clearing's light and tint under a sky
   gradient. The lawn rolls away like the Clearing (`BEND`, `CURVE` outdoors and 0 indoors; taps find the drawn ground with
-  `groundHit()`, the doormat included). Outdoors the Decorate key is hidden (`.base3d.outdoors`) and the residents stay
-  indoors, unseen and untappable, till parts b and c. `?yard` opens straight out there, a yard lent for the page load if
-  none is bought (`lent`, taken back by `loadBase()` on any load without it). The PC's `NEWS` has `yard` (in House upgrades).
+  `groundHit()`, the doormat included). Residents are out there only when let out (part c, below). `?yard` opens
+  straight out there, a yard lent for the page load if none is bought (`lent`, taken back by `loadBase()` on any load
+  without it). The PC's `NEWS` has `yard` (in House upgrades).
+- **The backyard's furniture** (2026-10-14, part b): the Yard shelf, 16 kinds flagged `outdoor` (`p.outdoor`), painted
+  in `js/base-furniture-yard.js` (the tray's and store's pictures only) and modelled from parts in `js/base-models-y.js`.
+  `fitsHere(id, b)` in `js/secret-base.js` is the rule (the user's): an outdoor piece only in the yard, nothing from
+  indoors out there; `fits()`, the tray and its chips all ask it. A new outdoor kind is a line there with `outdoor` (its
+  `add()` sets it) and a builder in the -y batch. Sold only in **Smeargle's garden catalogue** (`js/garden-shop.js`): a tap
+  on Smeargle in the store, once there's a yard (`KEEPERS[1].special` in `js/mall-furniture.js`; without one Smeargle
+  chats, a line hinting at it), the whole shelf always in stock, owned ones marked; `dealDay()` leaves outdoor pieces out,
+  so the daily stands deal as before. Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
+  ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
+  and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
+  a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
+- **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
+  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
+  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
+  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
+  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
+  picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
+  (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
+  and swings but never swims. Each swing is its own part (`K.part(name, pivot)` in `js/base-mesh.js`, found at
+  `model.userData.parts`), swung by `liveSwings()` higher while someone's on it, carrying them, and a swimmer bobs with
+  droplets (`splash()`, puff kind `drop`) as it dives in and climbs out.
+- **The berry garden** (2026-10-14, part d): the rules are `js/data/berries.js` (no DOM; `tests/berries.test.mjs`), the
+  3D side and window `js/berry-garden.js`. A `berryplot` (Yard shelf, flat, modelled in `js/base-models-y.js`) holds its
+  crop on its item, `it.crop` `{ id, at, ready }` (`sow()`: ripe on the UTC midnight `days` after planting; `stageOf()`
+  sprout for the first half, bloom, fruit). Moving a plot keeps it (`place()` copies `holding.back.crop`); storing it
+  loses it. In Walk a tap on a plot opens `openPlot()` (the town shop's `.dev-window` look): plant, Dig up, or Pick.
+  `harvest()` books it on `secretBase.garden` `{ picked, day, coins }`: the first of a berry earns its basket (the
+  `berry` source in `js/data/furniture.js`, indoor kinds `<berry>basket`, `solo`), later ones `coins`, at most `DAY_CAP`
+  (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
+  sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
+  plant whose stage turned over (at once after the window changes one).
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
@@ -87,6 +119,11 @@ The first section began as the note on playtesting the live site and grew into t
   must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
   user's calls, 2026-10-09). **Live since 2026-10-09** (the user's call): `secret-base` was
   merged into `main`, the Clearing, Secret Base and Poké Mall with it; work goes to `main` again like everything else.
+  **Friends' pieces** (2026-10-15, docs/roadmap.md step 8 session d): source `heart` (`'john:3'`), owned while that friend's
+  hearts reach the number, so an old save already there has them on load; `?hearts=N` lends them for the page load
+  (`earnSave()` in `js/secret-base.js`). Their catalogue is `js/base-furniture-friends.js` (`FRIEND_KINDS`, group
+  Friends, `solo`: one colour each, the friend's own), their models `js/base-models-friends.js` (each modelled, none
+  carved from its painting; the chair nobody sits in has no `seat` on purpose).
 
 - **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; live on `main` since
   that day): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots
