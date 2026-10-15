@@ -61,7 +61,7 @@ function disc(b, cx, cy, r, c, m = 1) {
   }
 }
 /** A soft glow: dithered rings of `c` round a point, thinning out. */
-function glow(b, cx, cy, r, c, k = 0.5) {
+export function glow(b, cx, cy, r, c, k = 0.5) {
   for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
     const d = Math.sqrt(x * x + y * y) / r;
     if (d < 1 && bay(cx + x, cy + y) < (1 - d) * k) put(b, cx + x, cy + y, c);
@@ -508,7 +508,7 @@ function raySeal(b, cx, cy, r, S, lit, t) {
 }
 
 /** A jade crystal, long above and short below (the summit's, turning). */
-function crystal(b, cx, cy, S, lit, t) {
+export function crystal(b, cx, cy, S, lit, t) {
   const up = 8, down = 4, turn = Math.sin(t / 14);
   for (let yy = -up; yy <= down; yy++) {
     const hw = Math.round(3.4 * (yy < 0 ? 1 + yy / (up + 0.5) : 1 - yy / (down + 0.5)));
