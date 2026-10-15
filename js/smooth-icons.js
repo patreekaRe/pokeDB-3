@@ -197,6 +197,18 @@ const ART = {
     <rect x="13" y="17" width="6" height="6.5" rx="1.2" fill="#f8c830" stroke="${INK}" stroke-width="1.8"/>
     <rect x="15.2" y="19" width="1.6" height="2.6" rx=".6" fill="${INK}"/>`,
 
+  // Quests: the Clearing's quest board, a cork face with notes pinned on it
+  quests: `<rect x="3" y="5" width="26" height="22" rx="3" fill="#8a5a30" stroke="${INK}" stroke-width="2"/>
+    <rect x="5.5" y="7.5" width="21" height="17" rx="1.5" fill="#d8a86a"/>
+    <path d="M7 9.5l9-.8.6 8.4-9 .8Z" fill="#fff8e8" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M9 12.4l5.4-.4M9.2 14.6l4.2-.3" stroke="#8a7a6a" stroke-width="1" stroke-linecap="round"/>
+    <path d="M17.6 11.2l7.4.6-.5 6.8-7.4-.6Z" fill="#fff2a8" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <path d="M19.4 14l3.8.3" stroke="#8a7a6a" stroke-width="1" stroke-linecap="round"/>
+    <path d="M10.6 18.6l7 .2-.2 4.4-7-.2Z" fill="#e8f4ff" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>
+    <circle cx="11.6" cy="9.4" r="1.4" fill="#e8403a" stroke="${INK}" stroke-width=".9"/>
+    <circle cx="21.2" cy="11.6" r="1.4" fill="#3a7ae0" stroke="${INK}" stroke-width=".9"/>
+    <circle cx="14" cy="18.8" r="1.4" fill="#3aa84a" stroke="${INK}" stroke-width=".9"/>`,
+
 
   stats: `<rect x="3" y="4" width="26" height="23" rx="3" fill="#fff" stroke="${INK}" stroke-width="2"/>
     <path d="M6.5 23.5h19" stroke="#c8ccd8" stroke-width="1.4" stroke-linecap="round"/>

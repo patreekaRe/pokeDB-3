@@ -30,7 +30,7 @@ export function trackTowns(events, amount, ctx) {
     : [`📜 ${town.name}'s quest: ${stepText(questStep(town, st))}, done! ${town.home ? 'Tell the Nietos at home.' : 'Tell them at its board next time you pass.'}`];
 }
 
-/** A leader has greeted you: the town's questline opens on its board (and a "!" in the Satchel's Quests). */
+/** A leader has greeted you: the town's questline opens on its board (and a "!" on the Pokédex's Quests app, js/questlog.js). */
 export function startQuest(id) {
   if (townState(getSave(), id).quest) return;
   updateSave(d => {

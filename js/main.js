@@ -300,7 +300,7 @@ function init() {
     onCollection: () => { showCollection(); leaveTitle(); },
     onPokedex: (from, onClose) => openPokedex({}, { from, onClose }),   // the hub's corner handheld grows into it, over the Clearing
     onHelp: openHowto,
-    onApp: (id) => openDeviceApp(id),   // the PC's Hall of Fame, straight into the device's app
+    onApp: (id, at) => openDeviceApp(id, at),   // the PC's Hall of Fame, straight into the device's app
     hello: splash,
     // How to play comes up once, the very first time (not under a playtest film's URL)
     firstLaunch: () => {
