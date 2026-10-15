@@ -49,6 +49,7 @@ export const NEXT = [
   ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
   ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
   ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
+  ['hub', 'The broken Sealed Gate in the Clearing is built in 3D now: an obsidian arch, crystal spires, snapped chains and a swirling portal to the Depths.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when

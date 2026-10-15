@@ -106,6 +106,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    no grey shows from the house, the mall or the south side; `TREE_TILES` [30, 15], [29, 20], [30, 24] taken out; violet
    cracks where the Sealed Gate will stand (`SEALED_AT`), growing with `gateStage()`, crystal shards, sparks, whispers when
    near and a tap card (`js/hub-cracks.js`). Patch 1.19 cut. Headless-checked, no errors; waiting on the user's look.
+   **Done (2026-10-15): the broken Sealed Gate in the Clearing built in 3D** (the user: "not the paper thin pixel
+   version"): obsidian arch, gold, runes, crystal spires, a swirling Depths portal, floating door shards, snapped chains
+   (`js/hub-sealed.js`). Headless-checked, no errors; waiting on the user's look (`?mewtwo&gate=0&hubat=2,12`).
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the
