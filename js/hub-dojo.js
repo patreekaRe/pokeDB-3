@@ -2,22 +2,12 @@
    it extravagant"; it was a small boarded-up hall under a COMING SOON banner). A temple hall on a two-tier granite
    podium: vermilion columns round a veranda, white walls of glowing shoji, a navy noren over the door, a curved gable
    (karahafu) over the entrance, two tiers of sweeping glazed roofs with gold eaves and hips, gold shachihoko on the
-   ridge, a lacquered 道場 plaque, red paper lanterns, stone lanterns and victory banners at its foot, and two cherry
-   trees behind it dropping petals. js/hub-3d.js builds it as the 'dojo' place; its door walks you into the hall
+   ridge, a lacquered 道場 plaque, red paper lanterns, stone lanterns and victory banners at its foot (its two cherry
+   trees taken out 2026-10-15, the user's call). js/hub-3d.js builds it as the 'dojo' place; its door walks you into the hall
    (js/event-3d.js's buildDojoHall()). Only emissive paint glows at night (no light of its own: a new light in the
    Clearing would recompile every material in it). */
 
 const LIFT = 0.42;   // the podium's top
-const PETALS = 22;
-
-function seeded(seed) {
-  return () => {
-    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
-    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
 
 /** Glazed roof tiles: round channels running down the slope, a course line every row. */
 function tileArt(fine) {
@@ -117,14 +107,6 @@ function bannerArt(fine, red) {
   return c;
 }
 
-/** A petal, soft pink. */
-function petalArt(fine) {
-  const { c, g } = fine(4, 4, 8);
-  g.fillStyle = '#ffc8dc'; g.beginPath(); g.ellipse(2, 2, 1.8, 1, 0.5, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#ff9cc0'; g.beginPath(); g.ellipse(2.4, 2.2, 0.6, 0.35, 0.5, 0, Math.PI * 2); g.fill();
-  return c;
-}
-
 /** A hipped temple roof, ridge along x, its slopes sagging (steep at the ridge, flat at the eaves) and its corners
     sweeping up: the top surface, its soffit, and the curves of its eave and four hips for gold trim. */
 function templeRoof(THREE, w, d, h, sweep) {
@@ -173,7 +155,7 @@ function shachi(THREE, m, s) {
 }
 
 /** The dojo at (x, z): its group, the materials that glow at night (for the hub's glowMats) and a tick (lanterns
-    swaying, banners stirring, petals falling). `fine` / `texOf` are js/hub-3d.js's; `merge` its mergeStatic(). */
+    swaying, banners stirring). `fine` / `texOf` are js/hub-3d.js's; `merge` its mergeStatic(). */
 export function makeDojo(THREE, { x, z, fine, texOf, merge }) {
   const root = new THREE.Group();
   root.position.set(x, 0, z);
@@ -370,46 +352,14 @@ export function makeDojo(THREE, { x, z, fine, texOf, merge }) {
     flags.push({ fg, at: sx });
   }
 
-  // two cherry trees behind the hall, in full bloom, dropping petals over it; tucked in behind its roofs (2026-10-15, the
-  // user's ask: out at its corners they crowded the Safari gate)
-  const bark = std({ color: '#4a2c20', roughness: 1 }), bloom = std({ color: '#f8b8d0', roughness: 0.95 }), bloom2 = std({ color: '#f498bc', roughness: 0.95 });
-  const rnd = seeded(23), trees = [[-1.6, -2.5], [1.65, -2.55]];
-  for (const [tx, tz] of trees) {
-    const trunk = add(new THREE.CylinderGeometry(0.07, 0.12, 2.2, 8), bark, tx, 1.1, tz);
-    trunk.rotation.z = -Math.sign(tx) * 0.12;
-    for (let i = 0; i < 9; i++) {
-      const r = 0.42 + rnd() * 0.3, a = rnd() * Math.PI * 2, d = rnd() * 0.65;
-      add(new THREE.IcosahedronGeometry(r, 1), i % 3 ? bloom : bloom2, tx + Math.cos(a) * d + Math.sign(tx) * 0.1, 2.2 + rnd() * 0.65, tz + Math.sin(a) * d * 0.7);
-    }
-  }
-  const pm2 = new THREE.MeshBasicMaterial({ map: texOf(petalArt(fine)), transparent: true, depthWrite: false, side: THREE.DoubleSide });
-  const fall = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.07, 0.07), pm2, PETALS);   // one draw for them all
-  fall.raycast = () => {};
-  fall.frustumCulled = false;
-  live.add(fall);
-  const petals = Array.from({ length: PETALS }, (_, i) => {
-    const [tx, tz] = trees[i % 2];
-    return { x: tx + (rnd() - 0.5) * 1.4, z: tz + rnd() * 1.6, at: rnd(), speed: 0.05 + rnd() * 0.05, spin: rnd() * 6 };
-  });
-  const one = new THREE.Object3D();
 
   merge(still);
 
-  /** Lanterns sway, banners stir, petals drift down out of the trees and round again. */
+  /** Lanterns sway, banners stir. */
   function tick(now, calm) {
     const t = now / 1000;
     for (const s of swing) s.p.rotation.z = calm ? 0 : Math.sin(t * 1.3 + s.at) * 0.05;
     for (const f of flags) f.fg.rotation.y = calm ? 0 : Math.sin(t * 1.1 + f.at) * 0.18;
-    fall.visible = !calm;
-    if (calm) return;
-    petals.forEach((p, i) => {
-      const k = (p.at + t * p.speed) % 1;
-      one.position.set(p.x + Math.sin(k * 9 + p.spin) * 0.25 + k * 0.5, 3.1 - k * 3.05, p.z + k * 1.8);
-      one.rotation.set(k * 7 + p.spin, k * 5, 0);
-      one.updateMatrix();
-      fall.setMatrixAt(i, one.matrix);
-    });
-    fall.instanceMatrix.needsUpdate = true;
   }
   return { group: root, glows, tick };
 }
