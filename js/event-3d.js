@@ -13,7 +13,7 @@ import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
-import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
+import { fine, texOf, words, hubThree, CURVE, newsArt } from './hub-3d.js';
 import { townBackdrop } from './town-backdrop.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -22,6 +22,7 @@ import { PIECES, pieceArt } from './secret-base.js';
 import { LEADER_HOMES, LEADER_SIZE, buildLeaderHome, leaderEnv } from './leader-homes.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
+import { RING, shardsLit } from './data/towns.js';
 import { gymWins, GYM_INK as LEADER_INK } from './data/gym.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
 import { ENEMY_DEFS } from './data/enemies.js';
@@ -1686,15 +1687,17 @@ function caveWall(W, C, side) {
   return f.c;
 }
 
-function caveFloor(C) {
+/** `pools`: [tx, ty, colour, radius] of light on it (the grotto's: the shaft's round the dais). */
+function caveFloor(C, pools = [[5.5, 2.2, 'rgba(255,248,220,0.35)', 3.4]]) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f, r = seeded(52), s = C.vein ? f.shine() : null;
   g.fillStyle = C.ground[1]; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 420; i++) { g.fillStyle = C.ground[Math.floor(r() * 4)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 4, 0.8 + r() * 2.6, r() * 3, 0, Math.PI * 2); g.fill(); }
   for (let i = 0; i < 160; i++) { g.fillStyle = C.stone[2 + Math.floor(r() * 2)]; g.beginPath(); g.arc(r() * W, r() * H, 0.4 + r() * 0.9, 0, Math.PI * 2); g.fill(); }
-  // the shaft's pool of light round the dais
-  const x = 5.5 * T, y = 2.2 * T, l = g.createRadialGradient(x, y, 4, x, y, 3.4 * T);
-  l.addColorStop(0, 'rgba(255,248,220,0.35)'); l.addColorStop(1, 'rgba(255,248,220,0)');
-  g.fillStyle = l; g.fillRect(0, 0, W, H);
+  for (const [tx, ty, col, rad] of pools) {
+    const x = tx * T, y = ty * T, l = g.createRadialGradient(x, y, 4, x, y, rad * T);
+    l.addColorStop(0, col); l.addColorStop(1, col.replace(/[\d.]+\)$/, '0)'));
+    g.fillStyle = l; g.fillRect(0, 0, W, H);
+  }
   if (C.moss) for (let i = 0; i < 26; i++) { g.fillStyle = C.moss[i % 3]; g.globalAlpha = 0.7; g.beginPath(); g.ellipse(r() * W, r() * H, 2 + r() * 6, 1.4 + r() * 3, r() * 3, 0, Math.PI * 2); g.fill(); }
   g.globalAlpha = 1;
   if (s) for (let i = 0; i < 10; i++) {
@@ -3770,6 +3773,7 @@ function nameBoards(town, at = 'n') {
     const leader = town.homes?.[named.home]?.leader, words = named.name.split(' ');
     const lines = leader ? [named.name, 'GYM LEADER'] : named.name.length > 9 ? [words[0], words.slice(1).join(' ')] : [named.name];
     signboard(nameBoardArt(lines), tileX(x), tileZ(y) + 0.35, 1.4, 0.7, 0.62).raycast = () => {};
+    (B.signs ??= {})[named.id] = [tileX(x), 0.97, tileZ(y) + 0.4];   // a quest's "!" floats over it (markQuests())
     B.blocked.add(key(x, y));
   }
 }
@@ -7342,6 +7346,7 @@ function boughBoards(town, lit) {
     const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
     const g = new THREE.Group(), W = 1.3, H = 0.57, top = 1.62;
     g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    (B.signs ??= {})[named.id] = [tileX(x), top + 0.1, tileZ(y) + 0.3];
     B.group.add(g);
     for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.08, top + 0.08, 10), wood, sx * (W / 2 + 0.04), (top + 0.08) / 2, 0, g);
     mesh(new THREE.CylinderGeometry(0.055, 0.055, W + 0.36, 10), wood, 0.06, top, 0, g).rotation.z = Math.PI / 2;
@@ -8414,6 +8419,7 @@ function bazaarBoards(town, lit) {
     const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
     const g = new THREE.Group(), W = 1.5, H = W * 28 / 64, top = 1.55;
     g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    (B.signs ??= {})[named.id] = [tileX(x), top + 0.4, tileZ(y) + 0.3];
     B.group.add(g);
     const wood = std({ color: '#6a4228', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
     const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.4 });
@@ -8643,7 +8649,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     if (b.kind === 'shop' && !g.userData.signed) g.attach(tradePost(b, f, lit));
     if (S.fade) fadeBehind(g);
     if (!b.door) continue;
-    B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
+    B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door }, g };
     g.traverse(o => { o.userData.spot = `door:${b.id}`; });
   }
   let board = null;
@@ -8656,6 +8662,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     if (ch === 'R') { noticeBoard(tileX(x), tileZ(y) - 0.1, 0, L); B.blocked.add(key(x, y)); board = { x, y }; }
   }));
   B.spots = [{ step: { x: board.x, y: board.y + 1 } }];
+  B.boardAt = board;
   B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
   const cart = map.findLastIndex(row => row.includes('='));   // a mine cart at the rails' far end, away from the mine's door
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
@@ -8723,12 +8730,9 @@ const HOMES = {
       furnish: [['haybale', 0, 0], ['haybale', 1, 0], ['trough', 4, 0], ['waterjar', 3, 0], ['waterjar', 6, 0], ['haybale', 9, 0], ['haybale', 10, 0], ['lotuscolumn', 0, 3], ['lotuscolumn', 10, 3], ['haybale', 0, 6], ['crate', 10, 6], ['barrel', 10, 7], ['datepalm', 0, 8], ['waterjar', 10, 8]] },
   },
 };
-// the Depths camp (js/data/camp.js): no clock, a cave like the Depths' grotto, a fire, a tent, Mewtwo by the arch in to
-// the Depths proper (buildCamp())
+// the Depths camp (js/data/camp.js): no clock, a crystal miners' camp in the Depths' cave (buildCamp())
 HOMES.depths = {
-  camp: { cols: 11, rows: 9, camp: true, mewtwoAt: { x: 5, ty: 1.15, scale: 1.1 },
-    furnish: [['tent', 0, 2], ['sleepingbag', 2, 2, { free: true }], ['sleepingbag', 9, 2], ['brazier', 5, 4], ['stump', 3, 4], ['stump', 7, 4], ['logpile', 8, 5],
-      ['crate', 0, 6], ['crate', 1, 6], ['barrel', 0, 7], ['coalcart', 10, 6], ['stonelantern', 3, 1], ['stonelantern', 7, 1]] },
+  camp: { cols: 13, rows: 9, camp: true, mewtwoAt: { x: 7.8, ty: 1.1, scale: 1.1 } },
 };
 const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
@@ -8820,6 +8824,10 @@ async function buildHome(figs, { time, town, home, gift }) {
     const at = h.leaderAt ?? { x: 3, ty: 2.4 };
     B.who[leader] = await figure(leader, figs[leader], at);
     B.talks.add(leader);
+    if (L?.with) {   // someone who lives with them (Phil's JONA), stood like them, lit a little by their own light
+      const w = B.who[L.with.id] = await figure(L.with.id, { npc: L.with.src }, L.with.at);
+      if (L.with.glow) { w.board.material.emissive.set('#ffffff'); w.board.material.emissiveMap = w.t; w.board.material.emissiveIntensity = L.with.glow; }
+    }
     if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot
       const x = Math.round(at.x), y = Math.round(at.ty) + 1;   // the nearest free tile in front of them (John's kotatsu is right there)
       const step = [[x, y], [x + 1, y], [x - 1, y], [x, y + 1], [x + 1, y + 1], [x - 1, y + 1]].find(([i, j]) => j < ROWS && !B.blocked.has(key(i, j))) ?? [x, y + 1];
@@ -8867,62 +8875,236 @@ async function buildHome(figs, { time, town, home, gift }) {
   B.env = L ? leaderEnv(home, time) : INDOORS;
 }
 
-/** The Depths camp: the Depths' cave (its grotto's walls and floor), crystals along the walls, a camp round a fire, and
-    at the back an arch of crystal, the way in to the Depths proper, its violet light breathing, Mewtwo in front of it
-    (a tap on it is its talk and the shard pentagram, homeRoom() in js/run.js). */
+/* ---------- the Depths camp (docs/roadmap.md's Towns step 5) ---------- */
+
+/** A miners' A-frame tent, its flap open on the front (+z before `turn`). */
+function tent(x, z, turn, cloth) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = turn;
+  B.group.add(g);
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-0.78, 0), new THREE.Vector2(0.78, 0), new THREE.Vector2(0, 1.1)]), { depth: 1.5, bevelEnabled: false });
+  geo.translate(0, 0, -0.75);
+  mesh(geo, std({ color: cloth[0], roughness: 1, flatShading: true }), 0, 0, 0, g);
+  const door = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.4, 0), new THREE.Vector2(0.4, 0), new THREE.Vector2(0, 0.74)])), new THREE.MeshBasicMaterial({ color: '#140a1e' }), 0, 0.002, 0.755, g);
+  door.castShadow = false;
+  const flap = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.42, 0), new THREE.Vector2(0, 0.76)])), std({ color: cloth[1], roughness: 1, side: THREE.DoubleSide }), 0.02, 0.002, 0.77, g);
+  flap.rotation.y = -0.5;
+  const pole = std({ color: '#5a3a24', roughness: 0.9 });
+  for (const zz of [-0.82, 0.82]) mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.24, 6), pole, 0, 0.62, zz, g);
+  return g;
+}
+
+/** A rusty mine cart on its wheels, heaped with crystal. */
+function crystalCart(x, z, C, rnd) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const rust = std({ color: '#7a4a3a', roughness: 0.7, metalness: 0.35 }), iron = std({ color: '#3a3440', metalness: 0.6, roughness: 0.5 });
+  mesh(rbox(0.66, 0.42, 0.92, 0.05), rust, 0, 0.44, 0, g);
+  mesh(new THREE.BoxGeometry(0.7, 0.05, 0.96), iron, 0, 0.66, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const w = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), iron, sx * 0.34, 0.15, sz * 0.27, g);
+    w.rotation.z = Math.PI / 2;
+  }
+  crystals(x, z, 0.42, C, rnd, { n: 4, y: 0.6 });
+}
+
+/** The rails from the way in, out into the camp. */
+function mineRails(x, z0, z1) {
+  const iron = std({ color: '#5a5260', metalness: 0.7, roughness: 0.4 }), wood = std({ color: '#4a3020', roughness: 0.95 });
+  for (const dx of [-0.28, 0.28]) mesh(new THREE.BoxGeometry(0.05, 0.05, z1 - z0), iron, x + dx, 0.05, (z0 + z1) / 2).raycast = () => {};
+  for (let z = z0 + 0.15; z < z1; z += 0.42) mesh(new THREE.BoxGeometry(0.8, 0.04, 0.14), wood, x, 0.02, z).raycast = () => {};
+}
+
+/** A miner's lamp on a post, its glass lit (a halo, no light of its own: the fire and the way in light the camp). */
+function minerLamp(tx, ty) {
+  const x = tileX(tx), z = tileZ(ty), wood = std({ color: '#4a3020', roughness: 0.95 }), iron = std({ color: '#2e2a34', metalness: 0.5, roughness: 0.5 });
+  mesh(new THREE.BoxGeometry(0.1, 1.5, 0.1), wood, x, 0.75, z);
+  mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06), wood, x + 0.16, 1.45, z);
+  mesh(new THREE.BoxGeometry(0.18, 0.04, 0.18), iron, x + 0.32, 1.38, z);
+  mesh(new THREE.BoxGeometry(0.14, 0.2, 0.14), std({ color: '#ffe0a0', emissive: new THREE.Color('#ffc860'), emissiveIntensity: 1.6 }), x + 0.32, 1.26, z);
+  const halo = sprite(haloArt('#ffc870'), 0.9);
+  halo.visible = true;
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.5;
+  halo.position.set(x + 0.32, 1.26, z + 0.05);
+  B.blocked.add(key(tx, ty));
+}
+
+/** The way into the Depths proper: an old mine mouth shored up with timber in the back wall, violet light far down it. */
+function wayIn(x, C) {
+  const z = BACK_Z, f = fine(40, 48, 4), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, 48, ['#05020a', '#120626', '#3a1468']); g.fillRect(0, 0, 40, 48);
+  const glow = g.createRadialGradient(20, 44, 1, 20, 44, 26);
+  glow.addColorStop(0, 'rgba(240,200,255,0.95)'); glow.addColorStop(0.35, 'rgba(176,96,240,0.55)'); glow.addColorStop(1, 'rgba(176,96,240,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, 40, 48);
+  g.fillStyle = 'rgba(0,0,0,0.5)'; for (let i = 0; i < 6; i++) g.fillRect(0, 10 + i * 6, 40, 1);
+  const mouth = mesh(new THREE.PlaneGeometry(1.7, 2.1), new THREE.MeshBasicMaterial({ map: texOf(f.c), toneMapped: false }), x, 1.05, z + 0.02);
+  mouth.castShadow = mouth.receiveShadow = false;
+  const wood = std({ color: '#5a3a24', roughness: 0.95 }), dark = std({ color: '#3a2416', roughness: 0.95 });
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.22, 2.3, 0.22), wood, x + s * 0.95, 1.15, z + 0.12);
+  mesh(new THREE.BoxGeometry(2.3, 0.26, 0.26), wood, x, 2.36, z + 0.12);
+  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x - 0.6, 2.36, z + 0.12).rotation.z = 0.9;
+  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x + 0.6, 2.36, z + 0.12).rotation.z = -0.9;
+  // a board over it, its letters scratched in
+  const sign = fine(48, 12, 4);
+  sign.g.fillStyle = '#7a5434'; sign.g.fillRect(0, 0, 48, 12);
+  sign.g.fillStyle = '#2a1608'; sign.g.font = '7px "PokeDB Pixel", monospace'; sign.g.textAlign = 'center'; sign.g.textBaseline = 'middle'; sign.g.fillText('DEPTHS', 24, 6.5);
+  mesh(new THREE.PlaneGeometry(1.2, 0.3), std({ map: texOf(sign.c), roughness: 1 }), x, 2.7, z + 0.27);
+  const light = new THREE.PointLight('#c070ff', 3, 6, 1.6);
+  light.position.set(x, 1.1, z + 0.8);
+  B.group.add(light);
+  const halo = sprite(haloArt('#c890ff'), 2.4);
+  halo.visible = true;
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.35;
+  halo.position.set(x, 0.9, z + 0.3);
+  return { light, halo, mouth };
+}
+
+/** The pentagram of Mewtwo's seal on a stone dais: a star carved in its top, a shard socket at each point, the towns'
+    shards back glowing in their ring colours (`lit`: [colour or null] in the ring's order). */
+function sealDais(x, z, C, lit) {
+  const top = std({ color: C.stone[0], roughness: 0.9 }), side = std({ color: C.stone[2], roughness: 0.95 });
+  mesh(new THREE.CylinderGeometry(1.25, 1.35, 0.22, 40), [side, top, side], x, 0.11, z);
+  mesh(new THREE.CylinderGeometry(1.0, 1.08, 0.2, 40), [side, top, side], x, 0.32, z);
+  const f = fine(64, 64, 4), s = f.shine(), at = (k, r) => { const a = (-90 + k * 72) * Math.PI / 180; return [32 + Math.cos(a) * r, 32 + Math.sin(a) * r]; };
+  const power = lit.filter(Boolean).length / lit.length;
+  for (const ctx of [f.g, s]) {
+    ctx.strokeStyle = C.crystal[2]; ctx.lineWidth = 1.6; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.arc(32, 32, 29, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = ctx === s ? 0.35 + power * 0.65 : 1;
+    ctx.beginPath();
+    for (const [i, k] of [0, 2, 4, 1, 3, 0].entries()) { const [px, py] = at(k, 26); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  const star = mesh(new THREE.PlaneGeometry(2.0, 2.0), std({ map: texOf(f.c), transparent: true, alphaTest: 0.3, roughness: 0.9, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 1.1 }), x, 0.425, z);
+  star.rotation.x = -Math.PI / 2;
+  star.castShadow = false;
+  const gems = [];
+  lit.forEach((col, k) => {
+    const [u, v] = at(k, 26), gx = x + (u - 32) / 32, gz = z + (v - 32) / 32;
+    mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.06, 12), side, gx, 0.45, gz);
+    const gem = mesh(new THREE.OctahedronGeometry(0.12, 0), col
+      ? std({ color: col, emissive: new THREE.Color(col), emissiveIntensity: 1.4, roughness: 0.2, flatShading: true })
+      : std({ color: '#2a2238', roughness: 0.6, flatShading: true }), gx, 0.62, gz);
+    gem.scale.y = 1.7;
+    gems.push({ gem, col, k });
+    if (col) {
+      const halo = sprite(haloArt(col), 0.7);
+      halo.visible = true;
+      halo.material.blending = THREE.AdditiveBlending;
+      halo.material.opacity = 0.55;
+      halo.position.set(gx, 0.66, gz);
+    }
+  });
+  return gems;
+}
+
+
+/** The Depths camp (js/data/camp.js), a crystal miners' camp: where every won run lands once the gate is broken, and
+    Mewtwo's own runs before the Depths proper (their "Go down" is the way in at the back). The seal's pentagram on a
+    stone dais holds the shards placed, lit in their towns' colours (shardsLit(), so the room is built anew as one comes
+    back: room()'s id). Mewtwo stands by the way in (`figs.mewtwo`; a tap on it is its talk and the pentagram window,
+    homeRoom() in js/run.js). */
 async function buildCamp(figs, h) {
   const C = caveOf('depths');
   B.glowing = [];
-  shell({ floor: caveFloor(C), wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
-  B.env = { hemi: [C.crystal[1], C.rock[4], 0.85], sun: [C.beam, 0.5], bloom: 0.75 };
+  shell({ floor: caveFloor(C, [[9, 4.2, 'rgba(255,170,90,0.35)', 3.2], [3.5, 3.5, 'rgba(200,150,255,0.3)', 2.6], [6.5, 0.6, 'rgba(190,110,255,0.4)', 3]]),
+    wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
+  B.env = { hemi: ['#c8b0f0', C.rock[4], 0.85], sun: ['#e8d8ff', 0.6], bloom: 0.8 };
   B.shotTop = 3.2;
   B.talks = new Set();
-  const rnd = seeded(404);
-  for (const [id, x, y, o] of h.furnish) piece(id, x, y, o);
-  for (const [tx, ty, s] of [[0, 0, 1.3], [2, 0, 0.9], [8, 0, 1.0], [10, 0, 1.4], [10, 3.6, 0.9], [0, 4.6, 0.8], [10, 8, 0.7], [0, 8, 0.6]]) {
-    crystals(tileX(tx) + (tx === 0 ? -0.2 : tx === 10 ? 0.2 : 0), tileZ(ty) - (ty === 0 ? 0.2 : 0), s, C, rnd, { n: s > 0.8 ? 6 : 4 });
-    B.blocked.add(key(Math.round(tx), Math.round(ty)));
+  const rnd = seeded(91), mid = 6;
+  // the way in at the back, the rails out of it and a cart left on them; only Mewtwo goes past it (its "Go down")
+  const mouth = wayIn(tileX(mid), C);
+  mineRails(tileX(mid), BACK_Z + 0.2, tileZ(5.4));
+  crystalCart(tileX(mid), tileZ(4.6), C, rnd);
+  for (const k of [key(mid - 1, 0), key(mid + 1, 0), key(mid, 4), key(mid, 5)]) B.blocked.add(k);
+  // Mewtwo's own run (no second Mewtwo here) fell in and goes on down: its way out is the mine, and there's no doormat
+  // back up. Everyone else's is the doormat, to their win; the mine is Mewtwo's alone
+  if (!figs.mewtwo) {
+    for (const part of B.exitParts) B.group.remove(part);
+    B.exitParts = [];
+    B.exitAt = { x: mid, y: 0 };
+    mouth.mouth.userData.spot = 'exit';
+  } else B.blocked.add(key(mid, 0));
+  // the seal's pentagram on its dais, the camp's two tents, the fire between them, crates and lamps
+  const dx = tileX(3), dz = tileZ(3);
+  const lit = shardsLit(getSave());
+  const gems = sealDais(dx, dz, C, RING.map((t, i) => (lit[i] ? t.glow : null)));
+  for (let x = 2; x <= 4; x++) for (let y = 2; y <= 4; y++) B.blocked.add(key(x, y));
+  tent(tileX(10.5), tileZ(1.6), -0.25, ['#c8a878', '#b08e60']);
+  tent(tileX(10.9), tileZ(5.6), -Math.PI / 2 - 0.15, ['#9aa070', '#80885a']);
+  for (const [x, y] of [[10, 1], [11, 1], [10, 2], [11, 2], [10, 5], [11, 5], [10, 6], [11, 6]]) B.blocked.add(key(x, y));
+  // the fire, with a log either side to sit on
+  const fx = tileX(8.5), fz = tileZ(4.1), stone = std({ color: C.stone[2], roughness: 0.95 }), log = std({ color: '#5a3a24', roughness: 0.95 });
+  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; mesh(new THREE.DodecahedronGeometry(0.1, 0), stone, fx + Math.cos(a) * 0.38, 0.06, fz + Math.sin(a) * 0.32); }
+  for (const a of [0.5, -0.6, 1.8]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.6, 7), log, fx, 0.08, fz).rotation.set(Math.PI / 2, 0, a);
+  for (const sx of [-1.15, 1.15]) mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.9, 10), log, fx + sx, 0.16, fz + 0.1).rotation.set(Math.PI / 2, 0, 0);
+  const ember = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.02, 14), new THREE.MeshBasicMaterial({ color: '#ff7030', toneMapped: false }), fx, 0.14, fz);
+  ember.raycast = () => {};
+  const flame = sprite(flameArt('#ff8030'), 0.5);
+  flame.visible = true;
+  flame.center.set(0.5, 0);
+  flame.position.set(fx, 0.12, fz);
+  const glowHalo = sprite(haloArt('#ff9040'), 1.8);
+  glowHalo.material.blending = THREE.AdditiveBlending;
+  glowHalo.position.set(fx, 0.5, fz);
+  const light = new THREE.PointLight('#ffb060', 2.4, 6, 1.5);
+  light.position.set(fx, 0.9, fz);
+  B.group.add(light);
+  const fire = { flame, halo: glowHalo, light, ember, w: 1.1, seed: 17, lit: true, at: 0 };
+  for (const k of [key(7, 4), key(8, 4), key(9, 4), key(10, 4)]) B.blocked.add(k);
+  const crate = std({ color: '#8a6440', roughness: 0.9 });
+  for (const [x, y, h, r] of [[0.9, 5.4, 0, 0.1], [1.0, 5.4, 0.5, -0.2], [1.9, 6.2, 0, 0.4]]) mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), crate, tileX(x), 0.25 + h, tileZ(y)).rotation.y = r;
+  for (const k of [key(0, 5), key(1, 5), key(1, 6), key(2, 6)]) B.blocked.add(k);
+  mesh(rbox(0.5, 0.08, 1.1, 0.04), std({ color: '#7a3a3a', roughness: 1 }), tileX(9.6), 0.04, tileZ(5.6)).raycast = () => {};   // a bedroll by the fire
+  const pick = new THREE.Group();
+  pick.position.set(tileX(4.7), 0, tileZ(0.5));
+  pick.rotation.z = 0.35;
+  B.group.add(pick);
+  mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.1, 6), log, 0, 0.55, 0, pick);
+  mesh(new THREE.BoxGeometry(0.6, 0.07, 0.07), std({ color: '#4a4652', metalness: 0.6, roughness: 0.4 }), 0, 1.08, 0, pick);
+  for (const [tx, ty] of [[1, 1], [4, 7], [11, 8]]) minerLamp(tx, ty);
+  for (const [tx, ty, sz] of [[0, 0, 1.3], [12, 0, 1.4], [2, 0, 0.8], [9, 0, 0.9], [0, 3, 1], [12, 4, 1.1], [0, 7, 0.8], [12, 7, 0.9]]) {
+    crystals(tileX(tx) + (tx === 0 ? -0.2 : tx === 12 ? 0.2 : 0), tileZ(ty) - (ty === 0 ? 0.2 : 0), sz, C, rnd, { n: sz > 0.8 ? 6 : 4 });
+    B.blocked.add(key(tx, ty));
   }
-  // the arch: crystal clusters for its feet, a ring of crystal over them, the Depths' light filling it
-  const ax = tileX(5), az = BACK_Z + 0.35;
-  for (const dx of [-1.35, 1.35]) crystals(ax + dx, az + 0.1, 1.2, C, rnd, { n: 6 });
-  const arc = std({ color: C.crystal[2], emissive: new THREE.Color(C.crystal[3]), emissiveIntensity: 0.6, roughness: 0.2, flatShading: true });
-  B.glowing.push(arc);
-  const ring = mesh(new THREE.TorusGeometry(1.35, 0.16, 6, 20, Math.PI), arc, ax, 1.25, az);
-  ring.raycast = () => {};
-  const { c, g } = fine(64, 96, 2);
-  const glow = g.createRadialGradient(32, 70, 4, 32, 60, 56);
-  glow.addColorStop(0, '#ffffff'); glow.addColorStop(0.25, C.crystal[1]); glow.addColorStop(0.7, C.crystal[3]); glow.addColorStop(1, 'rgba(0,0,0,0)');
-  g.fillStyle = glow; g.beginPath(); g.moveTo(0, 96); g.lineTo(0, 32); g.arc(32, 32, 32, Math.PI, 0); g.lineTo(64, 96); g.fill();
-  const door = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.6), new THREE.MeshBasicMaterial({ map: texOf(c), transparent: true, opacity: 0.75, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
-  door.position.set(ax, 1.3, az - 0.05);
-  door.raycast = () => {};
-  B.group.add(door);
-  for (let x = 4; x <= 6; x++) B.blocked.add(key(x, 0));
-  // the fire's light, flickering, and its embers rising
-  const fire = new THREE.PointLight('#ffa050', 6, 7, 1.6);
-  fire.position.set(tileX(5.5), 1.1, tileZ(4.5));
-  B.group.add(fire);
-  const embers = Array.from({ length: 10 }, (_, i) => ({ s: sprite(sparkArt(i % 2 ? '#ffb060' : C.ember), 0.12), phase: i / 10, a: i * 2.1 }));
+  // Mewtwo by the way in, watching it (not when you are Mewtwo)
   if (figs.mewtwo) {
     B.who.mewtwo = await figure('mewtwo', figs.mewtwo, h.mewtwoAt);
     B.talks.add('mewtwo');
+    for (const k of [key(7, 1), key(8, 1)]) B.blocked.add(k);
   }
-  const who = B.who, glowing = B.glowing;
+  const glowing = B.glowing;
+  const motes = Array.from({ length: 10 }, (_, i) => ({ s: sprite(sparkArt(C.ember), 0.12), x: tileX(mid) + (rnd() - 0.5) * 1.4, phase: i / 10 }));
+  const sparks = Array.from({ length: 6 }, (_, i) => ({ s: sprite(sparkArt('#ffb060'), 0.08), a: rnd() * 6, phase: i / 6 }));
   B.ticks.push((now) => {
-    door.material.opacity = calm ? 0.7 : 0.62 + Math.sin(now / 1100) * 0.14;
-    fire.intensity = calm ? 6 : 5.4 + Math.sin(now / 90) * 0.5 + Math.sin(now / 37) * 0.4;
-    if (!calm) for (const m of glowing) m.emissiveIntensity = 0.5 + Math.sin(now / 900 + m.id) * 0.12;
-    for (const e of embers) {
-      const t = calm ? e.phase : (now / 2600 + e.phase) % 1;
-      e.s.visible = !calm;
-      e.s.position.set(tileX(5.5) + Math.sin(e.a + t * 5) * 0.25, 0.9 + t * 2.2, tileZ(4.5) + Math.cos(e.a + t * 4) * 0.15);
-      e.s.material.opacity = Math.sin(t * Math.PI);
+    tickFire(fire, now);
+    if (!calm) {
+      for (const m of glowing) m.emissiveIntensity = 0.5 + Math.sin(now / 900 + m.id) * 0.12;
+      mouth.light.intensity = 3 + Math.sin(now / 700) * 0.6;
+      mouth.halo.material.opacity = 0.3 + Math.sin(now / 700) * 0.08;
+      for (const { gem, col, k } of gems) { gem.rotation.y = now / 1400 + k; if (col) gem.material.emissiveIntensity = 1.3 + Math.sin(now / 500 + k) * 0.3; }
     }
-    const m = who.mewtwo;
-    if (m && !calm) m.group.position.y = m.base.y + 0.12 + Math.sin(now / 800) * 0.08;   // it floats, a little, as it waits
+    for (const m of motes) {   // the Depths' light drifting up out of the way in
+      const t = calm ? m.phase : (now / 6000 + m.phase) % 1;
+      m.s.visible = true;
+      m.s.position.set(m.x + Math.sin(t * 5 + m.phase * 9) * 0.2, 0.2 + t * 2.6, BACK_Z + 0.4 + t * 0.8);
+      m.s.material.opacity = Math.sin(t * Math.PI) * 0.85;
+    }
+    for (const p of sparks) {   // the fire's sparks
+      const t = calm ? p.phase : (now / 1600 + p.phase) % 1;
+      p.s.visible = !calm;
+      p.s.position.set(fx + Math.sin(p.a + t * 4) * 0.18, 0.4 + t * 1.4, fz + Math.cos(p.a + t * 3) * 0.12);
+      p.s.material.opacity = (1 - t) * 0.9;
+    }
   });
 }
+
 
 /** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up
     the road from the door. Their lines go in the room's speech window. */
@@ -9275,6 +9457,7 @@ function frame(now) {
   mon.group.position.set(walker.x + (walker.ox || 0), walker.oy || 0, walker.z - (walker.lunge || 0) + (walker.oz || 0));
   mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
+  if (warp) liveWarp(now);
   drawMon(mon, walker, dt);
   tickFigures(now, dt);
   for (const p of R.plays) tickPlay(p, now, dt);
@@ -9342,6 +9525,7 @@ function unmount() {
   leftAt = performance.now();
   busy = false; aim = null; frozen = false;
   if (acting) { const done = acting.done; acting = null; done(); }
+  endWarp();
 }
 
 /* ---------- in ---------- */
@@ -9380,7 +9564,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -9453,6 +9637,7 @@ export async function mountEvent(o) {
     post.final.uniforms.uBloom.value = R.env.bloom;
     mat = R.mat;
   }
+  markQuests(o.marks);
   BEND.k.value = R.kind === 'town' ? CURVE : 0;
   if (R.kind === 'town') { bendAll(R.group); for (const who of Object.values(R.who)) bendAll(who.group); }   // anything it's grown since it was built
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
@@ -9504,6 +9689,44 @@ export async function mountEvent(o) {
   return controls;
 }
 
+/** A bobbing "!" (the user's ask, 2026-10-14): `door:<id>` over a town house's name sign (the user's call: the sign,
+    not the roof; the roof if it has none) while a step's ready to hand its Gym Leader, `who:<id>` over someone in the
+    room (that leader at home), `board` over a town's quest board till you've read it. Made once a room, shown on the
+    visits that ask. */
+function markQuests(ids = []) {
+  R.marks ??= {};
+  for (const m of Object.values(R.marks)) if (m) m.visible = false;
+  for (const id of ids) {
+    if (!(id in R.marks)) R.marks[id] = questMark(id);
+    if (R.marks[id]) R.marks[id].visible = true;
+  }
+}
+
+function questMark(id) {
+  const [kind, name] = id.split(':'), door = kind === 'door' && R.doors?.[id], who = kind === 'who' && R.who[name];
+  const at = kind === 'board' ? R.boardAt && [tileX(R.boardAt.x), 2.9, tileZ(R.boardAt.y)] : door && R.signs?.[name] && [...R.signs[name]];
+  if (!door && !who && !at) return null;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
+  s.raycast = () => {};
+  let y;
+  if (at) {
+    s.scale.set(0.5, 0.65, 1);
+    s.position.set(at[0], (y = at[1] + 0.5), at[2]);
+    R.group.add(s);
+  } else if (door) {
+    const box = new THREE.Box3().setFromObject(door.g);
+    s.scale.set(0.62, 0.8, 1);
+    s.position.set(tileX(door.step.x), (y = box.max.y + 0.75), (box.min.z + box.max.z) / 2);
+    R.group.add(s);
+  } else {
+    s.scale.set(0.42, 0.55, 1);
+    s.position.set(0, (y = (who.top ?? 1.4) + 0.45), 0);
+    who.group.add(s);
+  }
+  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08); });
+  return s;
+}
+
 const SHORT = { 'Forget a move': 'Forget one', 'Trade a move': 'Trade', 'Accept their gift': 'Gift', 'Soak: full HP': 'Soak' };
 /** A word or two a sign this close in, the price kept (the hint says the rest). */
 const oneWord = (text) => SHORT[text] ?? text.replace(/^(Plant) \+\d+ max HP$/, '$1');
@@ -9551,6 +9774,63 @@ export const figure3d = (stand, move) => controls.does(stand, move);
 export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }
+}
+
+let warp = null, warpBeam = null;   // a Waystone's light setting your Pokémon down in a town it's visiting (in) or carrying it home (out)
+
+/** A visit from home (visitTown() in js/run.js) arriving and leaving the way the Clearing's Waystone sends it off and
+    takes it back (liveWarp() in js/hub-3d.js): a column of the town's light (its RING colour) round your Pokémon, which
+    comes down out of it (`out` false, after `delay` ms, with a hop and its cry) or fades up into it. You can't walk
+    meanwhile. Resolves once it's done (at once under reduced motion). */
+export function townWarp(town, out, delay = 0) {
+  endWarp();
+  if (!alive() || calm) return Promise.resolve();
+  walker.path = []; aim = null; walker.facing = 'front'; walker.flip = false;
+  if (out) playSound('gate-hum');
+  const colour = RING.find(o => o.id === town)?.glow ?? '#d8f0ff', was = frozen, ms = out ? 900 : 1100;
+  frozen = true;
+  // ended by a timer, not the frames, as the hub's warpTo() is: a tab that stops drawing never strands you in the light
+  return new Promise(done => {
+    const w = warp = { at: performance.now() + delay, ms, out, colour, was, done };
+    w.timer = setTimeout(() => {
+      if (warp !== w) return;
+      w.ended = true;
+      if (out) return done();   // held up in the light till the curtain falls and the room goes
+      frozen = was;
+      walker.hopUntil = performance.now() + 500;
+      playCry(mon.id);
+      endWarp();
+      done();
+    }, delay + ms);
+  });
+}
+
+function liveWarp(now) {
+  if (!warpBeam) {
+    warpBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 6, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+    warpBeam.raycast = () => {};
+    scene.add(bendAll(warpBeam));
+  }
+  const t = Math.max(0, Math.min(1, (now - warp.at) / warp.ms));
+  const k = warp.out ? t : 1 - t;   // how far into the light
+  warpBeam.visible = true;
+  warpBeam.material.color.set(warp.colour);
+  warpBeam.position.set(walker.x, 3, walker.z);
+  warpBeam.scale.set(0.4 + k * 0.6, 1, 0.4 + k * 0.6);
+  warpBeam.material.opacity = Math.min(0.75, Math.sin(Math.min(1, warp.out ? t * 1.3 : t + 0.15) * Math.PI) * 0.8);
+  mon.board.scale.x *= 1 - k * 0.6;
+  mon.board.scale.y = 1 - k * 0.6;
+  mon.board.position.y += k * 1.4;
+}
+
+/** The light gone, your Pokémon whole again (a room left, or a new warp). */
+function endWarp() {
+  if (!warp) return;
+  const w = warp;
+  warp = null;
+  clearTimeout(w.timer);
+  if (warpBeam) warpBeam.visible = false;
+  if (!w.ended) { frozen = w.was; w.done(); }
 }
 
 /** The gym's badge on its arch: where it is on the screen (null without the 3D gym), and taking it down as it's grabbed
@@ -9800,3 +10080,4 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
     room.ticks.push(tick);
   });
 }
+
