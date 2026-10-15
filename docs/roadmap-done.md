@@ -2437,4 +2437,15 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   song fragments already in the file.
 - **John's job and JONA's sprite** (2026-10-14/15, the user's asks): John is a mechanical engineer who designs and tests
   parts for aircraft and spacecraft (his bio, a speech line and his desk's model jet; no company named). JONA in Phil's
-  house is the user's sprite (Acerola's), facing the room with a violet glow behind her (no turning round, the user's call). A tap on her possesses Phil, every time.
+  house is the user's sprite (Acerola's), facing the room with a violet glow behind her (no turning round, the user's call). A tap on her possesses Phil, every time, her violet glow flying with her into him and back (2026-10-15).
+- **Only the Waystone goes home, and a visit walks into your run** (2026-10-14, the user's ask: "the only way back should
+  be through a waystone... if we're in the middle of a run and we travel to the biome that we left off from, we should be
+  able to seamlessly continue"): on a visit from the Clearing's Waystone a town's far gate is barred (a line says so) and
+  its room-bar Leave is gone; only its Waystone beams you home. If the saved run stands in that town's biome (on its map,
+  or in the town itself; `runWaitingIn()` in `js/run.js`), the far gate and Leave walk out into the run instead
+  (`walkIntoRun()`: the throwaway visit gone, the saved run picked up on its map), and the Clearing's Waystone menu tags
+  that town "Run". Tested headless in the browser pane (both cases, and a barred town), 223 tests pass.
+- **The Nietos send you to the board** (2026-10-14, the user's ask: "shouldn't they guide you to the quest board to start
+  the questline? THEN they become the quest givers"): coming home after beating them, Law and Britt only point you to their
+  notice (`QUESTS.clearing.call`, once) and your partner walks to the quest board; reading it tells the Waystone's story and
+  starts the questline, whose steps then go to them at home. Tapped at home before that, they send you to the board.

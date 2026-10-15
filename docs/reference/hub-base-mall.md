@@ -101,10 +101,17 @@ The first section began as the note on playtesting the live site and grew into t
   Clearing grown to 31 x 26 and the plaza a row lower for room round it, a low road from the ring road's sides, its
   south side, running into the pond at `POND.y`), the Sealed Gate once broken at
   the west avenue's end, where the mall stood (`SEALED_AT`); lamps, benches and flower beds (`LAMPS` / `BENCHES` / `BEDS`,
-  `dressClearing()`, their tiles `dressTiles`); a hedge along the front. Tall things stand at the back, so nothing hides
+  `dressClearing()`, their tiles `dressTiles`; laid out in mirrored pairs across the north avenue 2026-10-15, the user's
+  ask, each bench turned to what it's by); a hedge along the front. Tall things stand at the back, so nothing hides
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
 
+- **The professors** (2026-10-15, the user's ask, with two reference sprites): the place `prof` on `PROF_AT` (the plaza,
+  two right of the Waystone, the Gym Leader guest's mirror). Professor Oak stands there except at night, Professor Sonia
+  at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
+  (features a player might miss) and ends on that professor's reminder to refresh the page for updates. Sprites
+  `assets/trainers/oak.png` / `sonia.png` (44 x 72, drawn in Kurt's style; Showdown's site is blocked from the cloud).
+  A new feature worth a hint gets a `HINTS` line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue; Halloween's pumpkin patch sits either side of that path now. Detail: `docs/reference/towns.md`.
 

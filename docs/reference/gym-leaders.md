@@ -79,7 +79,7 @@ fills them with dark energy and makes them lifeless pawns. When she lets go Phil
 back. At home: candles, salt on the sills, a ghost-hunting kit and a chair nobody sits in; Phil looks tired.
 JONA stands in his corner at home (2026-10-15, the user's ask). Every tap on her possesses him (the user's ask the same
 day, in place of her lines and the duets): Phil's plea (`JONA_HOME.plea`), she flies into him and he lifts off the floor,
-shuddering in violet light (`possess()` in `js/event-3d.js`), one of her 56 lines through him (`JONA_HOME.lines`, her
+shuddering in violet light (`possess()` in `js/event-3d.js`; her violet aura and shadow travel with her, `B.auras` from `jona()` in `js/leader-homes.js`), one of her 56 lines through him (`JONA_HOME.lines`, her
 demon window), she lets go and drifts back, and Phil comes round (`JONA_HOME.after`); `jonaTalk()` in `homeRoom()`,
 `js/run.js`. `JONA_HOME.duets` is unused since.
 

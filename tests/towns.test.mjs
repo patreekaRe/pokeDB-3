@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
-import { TOWNS, MEND_AT, townState, currentRequest, countRequest, handIn, mended, requestText, RING, SHOP_SHELVES, CLEARING, placeOf, folkKey, folkOf, shelfTown } from '../js/data/towns.js';
+import { TOWNS, MEND_AT, townState, currentRequest, countRequest, handIn, mended, requestText, RING, SHOP_SHELVES, CLEARING, placeOf, shelfTown } from '../js/data/towns.js';
 import { GYM_BY_ID, leadersOf } from '../js/data/gym.js';
 import { BIOMES_BY_ID } from '../js/data/enemies.js';
 
@@ -108,8 +108,6 @@ test('the Clearing\'s houses are its own Gym Leaders\' (and Kurt\'s Workshop), a
     for (const id of Object.keys(home.cast || {})) assert.ok(existsSync(new URL(`../assets/pokemon/${id}-front.gif`, import.meta.url)), `${id}: no front GIF`);
   }
   for (const b of CLEARING.buildings) assert.ok(CLEARING.homes[b.home]);
-  for (const town of Object.values(TOWNS)) for (const f of town.folk) assert.equal(folkOf(folkKey(town.id, f.id))?.id, f.id);
-  assert.equal(folkOf('nowhere:eevee'), null);
 });
 
 test('Cinder Springs: a road runs to every door, and nothing stands between the Waystone and the road up to it', () => {

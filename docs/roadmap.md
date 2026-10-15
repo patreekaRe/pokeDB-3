@@ -55,7 +55,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live).
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live). Since 2026-10-14 a visit goes home only by the Waystone, and walks into your saved run when it stands in that town's biome (`docs/roadmap-done.md`).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -71,9 +71,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `js/event-3d.js`), which (or the far gate, or Leave) lifts you up in it and home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
    Waystone with a line), the trader sells the town's furniture shelf instead of trading (`js/town-shop.js`: 6 a UTC day,
    kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
-   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to
-   come and live in your Secret Base (`inviteFolk()`, `save.townsfolk` keys `town:pokemon`, read by the PC's Base residents
-   and the base's guests, `resident()` in `js/pc.js`).
+   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`). (Inviting townsfolk to live in the Secret Base was cut
+   2026-10-15, the user's call: it overlapped Safari catches, which stay the only way to fill the base.)
    **Done (2026-10-14): one Waystone, not five** (the user's pick). The ring's five stones are gone: one big Waystone stands on
    the plaza's Poké Ball (`clearingWaystone()` in `js/hub-3d.js`, `START`'s tile; the towns' whole Waystone on a plinth,
    silver runes), five crystals orbiting its tip in their `RING` colours, dull until that town is mended. A tap opens its menu
@@ -109,6 +108,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Done (2026-10-15): the broken Sealed Gate in the Clearing built in 3D** (the user: "not the paper thin pixel
    version"): obsidian arch, gold, runes, crystal spires, a swirling Depths portal, floating door shards, snapped chains
    (`js/hub-sealed.js`). Headless-checked, no errors; waiting on the user's look (`?mewtwo&gate=0&hubat=2,12`).
+   **Done (2026-10-15): the Clearing's lamps and benches in mirrored pairs, and the professors** (the user's ask): 14
+   lamps, 6 benches, 4 flower beds (`LAMPS` / `BENCHES` / `BEDS`); Professor Oak by day and Professor Sonia at night on
+   the plaza right of the Waystone, tapping through `HINTS` and always saying to refresh for updates. Headless-checked,
+   no errors; waiting on the user's look.
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the
@@ -487,6 +490,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      wearing the "!" hands it in (no floating Hand in / Quests signs, which homes had no prop for), a small picker for
      John's festival, and the "!" drops with the curved ground so it stays on its sign or board. The quest board's button opens it ("Quest log"), and
      says it's in the Pokédex too; new-quest messages point there. On `main`, waiting on the user's look.
+   - **John's festival happens in the town (2026-10-14, the user's ask: does the pick "actually happen"?).** Once Lantern
+     Village's Waystone is mended, at dusk and night, the town wears the festival picked: Lantern Festival floats paper
+     lanterns on the koi pond and strings red and white ones across the avenue; Moon Viewing hangs a harvest moon over the
+     torii, pampas vases by the plaza and DANGO / TEA stalls; Fireworks Night bursts fireworks over the Shrine's stair, with
+     TAKOYAKI / YAKISOBA stalls and a taiko. Mended in front of you, it appears as the stone blazes. Peek:
+     `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
+     the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

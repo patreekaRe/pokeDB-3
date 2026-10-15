@@ -3918,6 +3918,276 @@ function villageExtras(town, L) {
   });
 }
 
+/* ---------- John's festival in Lantern Village (the `sh-spirits` pick, js/data/towns.js; the user's ask, 2026-10-14: the
+   pick should "actually happen" in the town), once its Waystone is mended, at dusk and night only (buildTown()) ---------- */
+
+/** Many of one shape in `parent`, each placed by `set(o, item)`: one instanced mesh, untappable, no shadow. */
+function manyIn(parent, geo, m, items, set) {
+  const o = new THREE.InstancedMesh(geo, m, items.length), d = new THREE.Object3D();
+  items.forEach((it, i) => { d.position.set(0, 0, 0); d.rotation.set(0, 0, 0); d.scale.set(1, 1, 1); set(d, it); d.updateMatrix(); o.setMatrixAt(i, d.matrix); });
+  o.castShadow = false; o.raycast = () => {};
+  parent.add(o);
+  return o;
+}
+
+/** Lit paper, brightening with the town's lanterns as it gets dark. */
+function festPaper(col, glow, lit, o = {}) {
+  const m = std({ color: col, emissive: new THREE.Color(glow), emissiveIntensity: 1, roughness: 0.8, ...o });
+  lit.push(m);
+  return m;
+}
+
+/** A floating lantern's paper sides: a dark frame round each face, so only the paper glows. */
+function floatLanternArt() {
+  const f = fine(16, 16, 4), { g } = f;
+  g.fillStyle = '#fff4e0'; g.fillRect(0, 0, 16, 16);
+  g.strokeStyle = '#3a2418'; g.lineWidth = 1.6; g.strokeRect(0.8, 0.8, 14.4, 14.4);
+  g.lineWidth = 0.6; g.beginPath(); g.moveTo(8, 1); g.lineTo(8, 15); g.stroke();
+  return f.c;
+}
+
+/** A stall's cloth roof in stripes. */
+function stallRoofArt(col) {
+  const f = fine(32, 24, 4), { g } = f;
+  for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#fbf3e4' : col; g.fillRect(i * 4, 0, 4, 24); }
+  return f.c;
+}
+
+/** A stall's noren: its cloth split in four strips across the front, the stall's word big on it so it reads from the path. */
+function stallNorenArt(col, ink, word) {
+  const f = fine(60, 20, 8), { g, rr } = f;
+  for (let i = 0; i < 4; i++) rr(i * 15 + 0.4, 0, 14.2, 20, 0.8, col);
+  g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, 0, 60, 2.2);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = ink; g.font = 'bold 10px sans-serif'; g.fillText(word, 30, 11, 56);
+  return f.c;
+}
+
+/** A festival food stall (yatai) on tile `tx`, `ty`, its front turned by `turn`: a wooden cart on two wheels, a counter,
+    a striped cloth roof on four posts, a noren with its word and a red paper lantern off the corner; `wares(group)` puts
+    what it sells on the counter. */
+function festStall(parent, tx, ty, turn, { cloth, ink = '#ffffff', word, wares }, lit) {
+  const s = new THREE.Group();
+  s.position.set(tileX(tx), 0, tileZ(ty)); s.rotation.y = turn;
+  parent.add(s);
+  B.blocked.add(key(tx, ty));
+  const wood = std({ color: '#8a5a34', roughness: 0.9 }), pale = std({ color: '#c89a68', roughness: 0.85 }), dark = std({ color: '#3a2618', roughness: 1 });
+  mesh(rbox(0.94, 0.5, 0.56, 0.03), wood, 0, 0.39, 0, s);
+  mesh(new THREE.BoxGeometry(1.04, 0.05, 0.66), pale, 0, 0.665, 0.02, s);
+  for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.05, 16), dark, sx * 0.5, 0.17, -0.02, s).rotation.z = Math.PI / 2;
+  for (const [px, pz] of [[-0.47, -0.25], [0.47, -0.25], [-0.47, 0.27], [0.47, 0.27]]) mesh(new THREE.BoxGeometry(0.045, 0.95, 0.045), wood, px, 1.165, pz, s).castShadow = false;
+  mesh(new THREE.BoxGeometry(1.16, 0.04, 0.78), std({ map: texOf(stallRoofArt(cloth)), roughness: 0.9 }), 0, 1.66, 0.04, s).rotation.x = 0.16;
+  mesh(new THREE.PlaneGeometry(0.98, 0.32), std({ map: texOf(stallNorenArt(cloth, ink, word)), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.95 }), 0, 1.45, 0.3, s).castShadow = false;
+  const lamp = mesh(new THREE.SphereGeometry(0.11, 14, 10), festPaper('#e04a30', '#ff6a3a', lit), 0.56, 1.2, 0.32, s);
+  lamp.scale.y = 1.25; lamp.castShadow = false;
+  for (const dy of [-0.15, 0.15]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.035, 10), dark, 0.56, 1.2 + dy, 0.32, s).castShadow = false;
+  wares(s);
+  s.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
+  return s;
+}
+
+/** Dumplings piled in a pyramid on a little wooden stand (the moon-viewing offering), on a stall's counter. */
+function dangoPile(s, x, z) {
+  mesh(new THREE.BoxGeometry(0.26, 0.08, 0.26), std({ color: '#d8b080', roughness: 0.8 }), x, 0.73, z, s).castShadow = false;
+  const at = [];
+  for (const [n, y] of [[3, 0.81], [2, 0.88], [1, 0.95]]) for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) at.push([x + (i - (n - 1) / 2) * 0.075, y, z + (j - (n - 1) / 2) * 0.075]);
+  instancedIn(s, new THREE.SphereGeometry(0.04, 10, 8), std({ color: '#fbf7ee', roughness: 0.6 }), at);
+}
+
+/** Round, glowing paper lanterns floating on the koi pond, drifting a little; and strings of paper lanterns, red and white,
+    across the avenue between its stone lanterns on bamboo poles. */
+function lanternFestival(town, L, lit) {
+  const g = new THREE.Group(), { map } = town, r = seeded(61), o = new THREE.Object3D();
+  B.group.add(g);
+  const deck = (x, y) => map[y]?.[x] === '-';
+  const water = map.flatMap((row, y) => [...row].map((ch, x) => (ch === '~' && !STEPS.some(([dx, dy]) => deck(x + dx, y + dy)) ? [x, y] : null)).filter(Boolean));
+  const floats = water.map(p => [p, r()]).sort((a, b) => a[1] - b[1]).slice(0, 13).map(([[x, y]]) => ({ x: tileX(x) + (r() - 0.5) * 0.3, z: tileZ(y) + (r() - 0.5) * 0.3, a: r() * 6.3, sp: 0.00012 + r() * 0.00012, k: 0.9 + r() * 0.25 }));
+  const side = texOf(floatLanternArt());
+  const base = new THREE.InstancedMesh(new THREE.BoxGeometry(0.24, 0.04, 0.24), std({ color: '#3a2418', roughness: 0.9 }), floats.length);
+  const shade = new THREE.InstancedMesh(new THREE.BoxGeometry(0.17, 0.18, 0.17).translate(0, 0.11, 0), festPaper('#ffffff', '#ffffff', lit, { map: side, emissiveMap: side }), floats.length);
+  const pool = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: texOf(haloArt('rgba(255,190,110,0.9)')), transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), floats.length);
+  const tint = new THREE.Color();
+  floats.forEach((_, i) => shade.setColorAt(i, tint.set(['#fff0d8', '#ffd8e0', '#fff4b8'][i % 3])));
+  pool.renderOrder = 2;
+  for (const m of [base, shade, pool]) { m.castShadow = false; m.raycast = () => {}; g.add(m); }
+  // the strings across the avenue: a rope sagging between two poles at each pair of stone lanterns, lanterns hung along it
+  const ropeMat = std({ color: '#3a2a20', roughness: 1 }), poles = [], hang = [];
+  for (const y of [6, 12, 23, 29]) {
+    const x0 = tileX(16) - 0.34, x1 = tileX(21) + 0.34, z = tileZ(y) - 0.32, top = 2.8;
+    poles.push([x0, z, top], [x1, z, top]);
+    const rope = new THREE.CatmullRomCurve3(Array.from({ length: 9 }, (_, i) => { const t = i / 8; return new THREE.Vector3(x0 + (x1 - x0) * t, top - 0.06 - 1.6 * t * (1 - t), z); }));
+    mesh(new THREE.TubeGeometry(rope, 32, 0.014, 5), ropeMat, 0, 0, 0, g).castShadow = false;
+    for (let i = 0; i < 9; i++) { const p = rope.getPoint((i + 0.5) / 9); hang.push({ x: p.x, y: p.y, z, red: i % 2 === 0, s: r() * 6 }); }
+  }
+  manyIn(g, new THREE.CylinderGeometry(0.04, 0.05, 1, 8).translate(0, 0.5, 0), std({ color: '#b0a060', roughness: 0.7 }), poles, (d, [x, z, h]) => { d.position.set(x, 0, z); d.scale.set(1, h, 1); }).castShadow = true;
+  manyIn(g, new THREE.SphereGeometry(0.05, 10, 8), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }), poles, (d, [x, z, h]) => d.position.set(x, h, z));
+  const reds = hang.filter(h => h.red), whites = hang.filter(h => !h.red);
+  const body = new THREE.SphereGeometry(0.13, 14, 10).scale(1, 1.25, 1);
+  const bodies = [[reds, festPaper('#e04a30', '#ff6a3a', lit)], [whites, festPaper('#fff2dc', '#ffc880', lit)]].map(([list, m]) => { const im = new THREE.InstancedMesh(body, m, list.length); im.castShadow = false; im.raycast = () => {}; g.add(im); return [list, im]; });
+  const caps = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.075, 0.075, 0.04, 10), std({ color: '#241a18', roughness: 0.6 }), hang.length * 2);
+  caps.castShadow = false; caps.raycast = () => {}; g.add(caps);
+  let drawn = false;
+  B.ticks.push((now) => {
+    if (calm && drawn) return;
+    drawn = true;
+    floats.forEach((p, i) => {
+      const a = p.a + (calm ? 0 : now * p.sp), x = p.x + Math.cos(a) * 0.16, z = p.z + Math.sin(a) * 0.12, y = POND_Y + 0.02 + (calm ? 0 : Math.sin(now / 800 + p.a) * 0.012);
+      o.position.set(x, y, z); o.rotation.set(0, a * 0.6, 0); o.scale.setScalar(p.k); o.updateMatrix();
+      base.setMatrixAt(i, o.matrix); shade.setMatrixAt(i, o.matrix);
+      o.position.set(x, POND_Y + 0.006, z); o.rotation.set(0, 0, 0); o.scale.setScalar(p.k * (calm ? 0.8 : 0.78 + Math.sin(now / 600 + p.a) * 0.05)); o.updateMatrix();
+      pool.setMatrixAt(i, o.matrix);
+    });
+    let c = 0;
+    for (const [list, im] of bodies) list.forEach((h, i) => {
+      const t = calm ? 0 : Math.sin(now / 1300 + h.s) * 0.12, sx = Math.sin(t), sy = -Math.cos(t);
+      o.rotation.set(0, 0, t); o.scale.setScalar(1);
+      o.position.set(h.x + sx * 0.24, h.y + sy * 0.24, h.z); o.updateMatrix(); im.setMatrixAt(i, o.matrix);
+      for (const k of [0.085, 0.395]) { o.position.set(h.x + sx * k, h.y + sy * k, h.z); o.updateMatrix(); caps.setMatrixAt(c++, o.matrix); }
+    });
+    for (const m of [base, shade, pool, caps, ...bodies.map(b => b[1])]) m.instanceMatrix.needsUpdate = true;
+  });
+  return g;
+}
+
+/** The harvest moon over the torii, in the backdrop (`fx` rides with its landmark): low, big and orange at dusk, risen
+    and gold at night, a soft halo round it breathing, behind the land and under the drifting clouds. */
+function moonArt(time) {
+  const f = fine(64, 64, 4), { g } = f, dusk = time === 'dusk', d = g.createRadialGradient(26, 24, 2, 32, 32, 30);
+  d.addColorStop(0, dusk ? '#ffe6b0' : '#fffbe8'); d.addColorStop(1, dusk ? '#f0903c' : '#f4cc78');
+  g.fillStyle = d; g.beginPath(); g.arc(32, 32, 30, 0, Math.PI * 2); g.fill();
+  g.fillStyle = dusk ? 'rgba(170,80,30,0.28)' : 'rgba(180,140,80,0.3)';   // its seas: the rabbit pounding rice cakes
+  for (const [x, y, rx, ry, t] of [[24, 22, 7, 5, 0.4], [36, 30, 9, 6, -0.3], [28, 38, 6, 4, 0.2], [42, 42, 5, 4, 0], [20, 34, 4, 3, 0.6]]) { g.beginPath(); g.ellipse(x, y, rx, ry, t, 0, Math.PI * 2); g.fill(); }
+  return f.c;
+}
+function harvestMoon(fx, time) {
+  const dusk = time === 'dusk', rad = dusk ? 0.2 : 0.17, x = dusk ? -0.5 : -0.45, y = dusk ? 0.52 : 0.72;
+  const flat = (c, w, o) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(w, w), new THREE.MeshBasicMaterial({ map: texOf(c), transparent: true, depthWrite: false, fog: false, toneMapped: false, ...o }));
+    m.position.set(x, y, 0); m.frustumCulled = false; m.userData.noBend = true; m.raycast = () => {};
+    fx.add(m);
+    return m;
+  };
+  const halo = flat(haloArt(dusk ? 'rgba(255,150,80,0.8)' : 'rgba(255,226,160,0.75)'), rad * 7, { blending: THREE.AdditiveBlending, opacity: 0.5 });
+  halo.renderOrder = -39.6;
+  flat(moonArt(time), rad * 2, {}).renderOrder = -39.5;
+  B.ticks.push((now) => { halo.material.opacity = calm ? 0.5 : 0.44 + Math.sin(now / 2200) * 0.08; });
+}
+
+/** Moon Viewing: the harvest moon, vases of pampas grass either side of the plaza and two stalls on its east side, one
+    piling moon dumplings, one pouring tea. */
+function moonViewing(town, L, lit, time) {
+  const g = new THREE.Group(), r = seeded(67);
+  B.group.add(g);
+  if (B.sky?.fx) harvestMoon(B.sky.fx, time);
+  const vases = [[11, 17], [11, 20], [26, 16], [26, 21]], stems = [], plumes = [], blades = [];
+  for (const [tx, ty] of vases) {
+    B.blocked.add(key(tx, ty));
+    const x = tileX(tx), z = tileZ(ty);
+    for (let i = 0; i < 9; i++) {
+      const a = i / 9 * Math.PI * 2 + r(), lean = 0.12 + r() * 0.3, len = 0.85 + r() * 0.35;
+      stems.push([x, z, a, lean, len]);
+      plumes.push([x + Math.sin(lean) * Math.cos(a) * len, z + Math.sin(lean) * Math.sin(a) * len, a, lean + 0.35, 0.44 + Math.cos(lean) * len]);
+    }
+    for (let i = 0; i < 6; i++) blades.push([x, z, r() * 6.3, 0.35 + r() * 0.4, 0.5 + r() * 0.2]);
+  }
+  const lean = (d, [x, z, a, tilt, len], y) => { d.position.set(x, y, z); d.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt, 'XZY'); d.scale.set(1, len, 1); };
+  const vase = new THREE.LatheGeometry([[0, 0], [0.1, 0], [0.13, 0.08], [0.125, 0.22], [0.07, 0.36], [0.055, 0.42], [0.08, 0.46]].map(([x, y]) => new THREE.Vector2(x, y)), 18);
+  manyIn(g, vase, std({ color: '#2c3a6a', roughness: 0.3, metalness: 0.1 }), vases, (d, [tx, ty]) => d.position.set(tileX(tx), 0, tileZ(ty))).castShadow = true;
+  manyIn(g, new THREE.CylinderGeometry(0.006, 0.008, 1, 4).translate(0, 0.5, 0), std({ color: '#a89868', roughness: 1 }), stems, (d, s) => lean(d, s, 0.44));
+  manyIn(g, new THREE.ConeGeometry(0.018, 1, 3).translate(0, 0.5, 0), std({ color: '#6a7a3e', roughness: 1, flatShading: true }), blades, (d, s) => lean(d, s, 0.44));
+  manyIn(g, new THREE.SphereGeometry(1, 8, 6).scale(0.045, 0.2, 0.045), festPaper('#ece0bc', '#3a3020', lit, { roughness: 1 }), plumes, (d, [x, z, a, tilt, y]) => { d.position.set(x, y, z); d.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt, 'XZY'); });
+  const turn = -Math.PI / 2 + 0.45;   // facing the plaza, turned a little toward you
+  festStall(g, 27, 17, turn, { cloth: '#2c3a78', word: 'DANGO', wares: (s) => { dangoPile(s, -0.2, 0.08); dangoPile(s, 0.22, 0.12); } }, lit);
+  festStall(g, 27, 19, turn, { cloth: '#3e6a4a', word: 'TEA', wares: (s) => {
+    const pot = std({ color: '#5a4030', roughness: 0.5 }), cup = std({ color: '#f4eee0', roughness: 0.4 });
+    mesh(new THREE.SphereGeometry(0.1, 14, 10).scale(1, 0.8, 1), pot, -0.18, 0.77, 0.08, s).castShadow = false;
+    mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.12, 6), pot, -0.06, 0.8, 0.08, s).rotation.z = -1;
+    instancedIn(s, new THREE.CylinderGeometry(0.04, 0.032, 0.06, 12), cup, [[0.1, 0.72, 0.16], [0.22, 0.72, 0.06], [0.3, 0.72, 0.18]]);
+  } }, lit);
+  return g;
+}
+
+/** Fireworks over the Shrine's stair, in the backdrop: shells rising off the mountain and bursting into chrysanthemums
+    and drooping willows, a soft glow at each burst, all on one draw of points. Under reduced motion there are none. */
+function dotArt() {
+  const f = fine(8, 8, 4), { g } = f, r = g.createRadialGradient(4, 4, 0, 4, 4, 4);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.4, 'rgba(255,255,255,0.7)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 8, 8);
+  return f.c;
+}
+function fireworksSky(fx) {
+  const SH = 4, N = 60, n = SH * (N + 1), RISE = 950, LIFE = 2100, rnd = seeded(71);
+  const pos = new Float32Array(n * 3), col = new Float32Array(n * 3), dirs = new Float32Array(N * 2);
+  for (let j = 0; j < N; j++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, s = Math.sqrt(1 - u * u); dirs[j * 2] = s * Math.cos(a); dirs[j * 2 + 1] = s * Math.sin(a); }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 6, sizeAttenuation: false, map: texOf(dotArt()), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }));
+  pts.renderOrder = -20; pts.frustumCulled = false; pts.userData.noBend = true; pts.raycast = () => {};
+  fx.add(pts);
+  const PAL = [[1, 0.36, 0.36], [1, 0.82, 0.36], [0.42, 0.85, 1], [0.8, 0.56, 1], [0.5, 1, 0.6], [1, 1, 1], [1, 0.6, 0.25]];
+  const halos = Array.from({ length: SH }, () => {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(haloArt('#ffffff')), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, fog: false }));
+    s.scale.setScalar(0.42); s.renderOrder = -21; s.frustumCulled = false; s.userData.noBend = true; s.raycast = () => {}; s.visible = false;
+    fx.add(s);
+    return s;
+  });
+  const launch = (s, now) => {
+    s.at = now + 200 + Math.random() * 1500;
+    s.x0 = (Math.random() - 0.5) * 0.5; s.x = s.x0 + (Math.random() - 0.5) * 0.2; s.y = 0.62 + Math.random() * 0.3;
+    s.size = 0.15 + Math.random() * 0.1; s.a = Math.floor(Math.random() * PAL.length); s.b = Math.floor(Math.random() * PAL.length); s.willow = Math.random() < 0.3;
+  };
+  const shells = Array.from({ length: SH }, () => ({}));
+  B.ticks.push((now) => {
+    pts.visible = !calm;
+    if (calm) { for (const h of halos) h.visible = false; return; }
+    shells.forEach((s, k) => {
+      if (s.at === undefined) { launch(s, now); s.at += k * 900; }
+      let t = now - s.at;
+      if (t > RISE + LIFE) { launch(s, now); t = now - s.at; }
+      const r0 = k * (N + 1) * 3, up = t >= 0 && t < RISE, e = up ? 1 - (1 - t / RISE) ** 2 : 0;
+      pos[r0] = s.x0 + (s.x - s.x0) * e; pos[r0 + 1] = 0.3 + (s.y - 0.3) * e; pos[r0 + 2] = 0;
+      col[r0] = up ? 1 : 0; col[r0 + 1] = up ? 0.8 : 0; col[r0 + 2] = up ? 0.5 : 0;
+      const tau = (t - RISE) / 1000, life = tau / (LIFE / 1000), fade = tau < 0 ? 0 : (1 - life) ** 2;
+      const spread = tau < 0 ? 0 : s.size * (1 - Math.exp(-3.2 * tau)), drop = (s.willow ? 0.1 : 0.045) * Math.max(0, tau) ** 2;
+      for (let j = 0; j < N; j++) {
+        const i = r0 + (j + 1) * 3, c = PAL[j % 2 ? s.a : s.b], tw = s.willow && life > 0.4 ? 0.55 + 0.45 * Math.sin(now / 45 + j * 2.3) : 1;
+        pos[i] = s.x + dirs[j * 2] * spread; pos[i + 1] = s.y + dirs[j * 2 + 1] * spread - drop; pos[i + 2] = 0;
+        col[i] = c[0] * fade * tw; col[i + 1] = c[1] * fade * tw; col[i + 2] = c[2] * fade * tw;
+      }
+      const h = halos[k], glow = tau >= 0 && tau < 0.45;
+      h.visible = glow;
+      if (glow) { const c = PAL[s.a]; h.position.set(s.x, s.y, 0); h.material.color.setRGB(c[0], c[1], c[2]); h.material.opacity = 0.5 * (1 - tau / 0.45); }
+    });
+    geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+  });
+}
+
+/** Fireworks Night: fireworks over the Shrine's stair, two food stalls on the plaza's east side and a taiko drum on its
+    west. */
+function fireworksNight(town, L, lit) {
+  const g = new THREE.Group();
+  B.group.add(g);
+  if (B.sky?.fx) fireworksSky(B.sky.fx);
+  const turn = -Math.PI / 2 + 0.45, iron = std({ color: '#2a2624', roughness: 0.5, metalness: 0.4 });
+  festStall(g, 27, 17, turn, { cloth: '#c8302a', word: 'TAKOYAKI', wares: (s) => {
+    mesh(new THREE.BoxGeometry(0.5, 0.05, 0.3), iron, -0.12, 0.715, 0.08, s).castShadow = false;
+    const at = [];
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) at.push([-0.3 + i * 0.12, 0.75, -0.01 + j * 0.09]);
+    instancedIn(s, new THREE.SphereGeometry(0.045, 10, 8), std({ color: '#b87838', roughness: 0.7 }), at);
+  } }, lit);
+  festStall(g, 27, 19, turn, { cloth: '#e89a28', ink: '#3a1e10', word: 'YAKISOBA', wares: (s) => {
+    mesh(new THREE.BoxGeometry(0.62, 0.04, 0.36), iron, 0, 0.71, 0.08, s).castShadow = false;
+    mesh(new THREE.SphereGeometry(1, 14, 8).scale(0.2, 0.05, 0.12), std({ color: '#b07838', roughness: 0.8 }), -0.02, 0.74, 0.08, s).castShadow = false;
+    instancedIn(s, new THREE.BoxGeometry(0.03, 0.012, 0.03), std({ color: '#5a9a3a', roughness: 0.8 }), [[-0.1, 0.78, 0.06], [0.05, 0.785, 0.12], [0.12, 0.775, 0.04], [-0.04, 0.79, 0.1]]);
+    instancedIn(s, new THREE.BoxGeometry(0.025, 0.012, 0.025), std({ color: '#e8486a', roughness: 0.8 }), [[0.0, 0.79, 0.04], [-0.14, 0.775, 0.12]]);
+  } }, lit);
+  const drum = piece('taiko', 11, 18);
+  if (drum) g.attach(drum);
+  return g;
+}
+
+const FESTIVALS = { lantern: lanternFestival, moon: moonViewing, fireworks: fireworksNight };
+
 /** Fades a building while your Pokémon is behind it (Highbough's crowns do the same, `B.crowns`), so a roof or the
     pagoda never hides it: everything in `g`, back from its back wall as far as its height hides from the camera. */
 function fadeBehind(g) {
@@ -8594,7 +8864,7 @@ function fireflyArt(col) {
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
-    holes: true, fade: true, soft: true, extras: villageExtras,
+    holes: true, fade: true, soft: true, extras: villageExtras, festival: true,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },
@@ -8621,14 +8891,15 @@ const TOWN_STYLES = {
     drift: (i) => (i % 4 ? { art: dustArt(), size: 0.08, rise: true } : { art: leafletArt(SAVANNA.grass[i % 3]), size: 0.14 }) },
 };
 
-async function buildTown(figs, { look, time, town, mended = false }) {
+async function buildTown(figs, { look, time, town, mended = false, fest = null }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
   const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes, walled: false });
-  const sky = townBackdrop(THREE, texOf, town.style || 'village', time);   // what lies past the town, its landmark behind the gate
+  const dressed = (time === 'dusk' || time === 'night') && S.festival && FESTIVALS[fest];   // John's festival: dusk and night only
+  const sky = townBackdrop(THREE, texOf, town.style || 'village', time, { moon: !(dressed && fest === 'moon') });   // what lies past the town, its landmark behind the gate
   sky.rig.visible = !AERIAL;
   B.group.add(sky.rig);
   B.ticks.push((now, dt) => { if (!calm) sky.tick(now, dt); });
-  B.sky = { place: sky.place, gateX: tileX(town.gate.x) + 0.5 };
+  B.sky = { place: sky.place, gateX: tileX(town.gate.x) + 0.5, fx: sky.fx };
   B.bg = sky.top;
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
@@ -8669,6 +8940,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
   springs(map, L, steam);
   S.extras?.(town, L, lit);
+  if (dressed) { const dress = () => FESTIVALS[fest](town, L, lit, time); if (mended) dress(); else B.festival = dress; }   // else mendStone() dresses it as the stone blazes
   if (smoke.length) puffs(smoke.map(([x, y, z]) => [x, y, z]), { col: 'rgba(150,140,136,0.7)', n: 3, size: 0.5, rise: 1.8, speed: 0.14 });
   const stacks = smoke.filter(s => s[3]);
   if (stacks.length || steam.length) puffs([...steam, ...stacks.map(([x, y, z]) => [x, y, z])], { col: 'rgba(250,250,248,0.8)', n: 2, size: 0.7, rise: 1.4, speed: 0.2 });
@@ -9819,7 +10091,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.fest ? `:${at.fest}` : ''}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -9828,7 +10100,7 @@ function room(kind, figs, at = {}) {
     B = { id, kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, gift: at.gift }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, fest: at.fest, gift: at.gift }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -9875,7 +10147,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended }));
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended, fest: o.fest }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   await wakeGL(renderer);
@@ -10044,6 +10316,7 @@ export function possess(from, into, on) {
     const mb = b.board.material, va = new THREE.Vector3(), vb = new THREE.Vector3();
     mb.emissive.set('#b060ff'); mb.emissiveMap = b.t; mb.emissiveIntensity = 0; mb.needsUpdate = true;
     a.board.material.transparent = true;
+    const aura = R.auras?.[from], at = aura && { aura: aura.aura.position.clone(), dark: aura.dark.position.clone(), sx: aura.aura.scale.x, sy: aura.aura.scale.y, op: aura.dark.material.opacity };
     let last = performance.now();
     R.ticks.push((now) => {   // after tickFigures(), so it has the last word on where they stand
       const dt = Math.min(0.1, (now - last) / 1000); last = now;
@@ -10056,6 +10329,12 @@ export function possess(from, into, on) {
       a.group.scale.setScalar(1 - e * 0.75);
       a.board.material.opacity = 1 - held;
       a.group.visible = st.f < 0.98;
+      if (aura) {   // her glow goes with her and wraps him while she's in him; her shadow slides along and fades
+        aura.aura.position.copy(at.aura).add(a.group.position).sub(va);
+        aura.aura.scale.set(at.sx * (1 - e * 0.3), at.sy * (1 - e * 0.3), 1);
+        aura.dark.position.set(at.dark.x + a.group.position.x - va.x, at.dark.y, at.dark.z + a.group.position.z - va.z);
+        aura.dark.material.opacity = at.op * (1 - held);
+      }
       if (!st.f) return;
       const sway = calm ? 0 : 1;
       b.group.position.y = b.base.y + held * 0.35 + Math.sin(now / 320) * 0.06 * held * sway;
@@ -10232,9 +10511,11 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
   const swap = () => {
     st.g.position.copy(stoneAt);
     B = room;
-    let g;
+    let g, dressed;
     try {
       g = wholeWaystone(f, st.L);
+      dressed = room.festival?.();   // John's festival, if picked, lit with the stone
+      room.festival = null;
       if (st.fade) {
         const old = new Set();
         st.g.traverse(o => { for (const m of [].concat(o.material || [])) old.add(m); });
@@ -10244,6 +10525,7 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
     } finally { B = null; }
     if (st.spot) g.traverse(o => { o.userData.spot = st.spot; });
     bendAll(g);
+    if (dressed) bendAll(dressed);
     room.group.remove(st.g);
     dispose(st.g);
     st.g = g;

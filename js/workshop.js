@@ -6,6 +6,7 @@
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el } from './ui.js';
+import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
 import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine } from './data/workshop.js';
 import { RING, townState } from './data/towns.js';
@@ -75,66 +76,114 @@ const EMPTY = {
 const ABOUT = {
   key: 'For the towns\' Waystones. Bring me materials from the roads and I\'ll make what they need.',
   piece: 'Furniture you can\'t buy anywhere. Made here, sent to your Secret Base.',
-  gift: 'Every Gym Leader has a favourite. Give it to them at home and they won\'t forget it.',
+  gift: 'Every Gym Leader has a favourite. Give it to them at home and they\'ll give you something of theirs for your Secret Base.',
   skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better.',
 };
 
-/** Open the Workshop's window. Resolves once it's closed. */
+/** Where a made thing goes, in a line on its card. */
+function goesTo(r, ws) {
+  if (r.kind === 'key') return 'Quest item · goes to your Satchel';
+  if (r.kind === 'piece') return 'Furniture · sent to your Secret Base';
+  if (r.kind === 'skin') return 'Safari Ball look · throws the same';
+  const who = gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'them');
+  return ws.fond.includes(r.leader) ? `Gift · ${who}'s favourite · given ✓` : `Gift · ${who}'s favourite · give it at their home`;
+}
+
+/** A recipe's state, for its row and its button: 'made', 'carried', 'ready' or 'short'. */
+function stateOf(r, ws, sat) {
+  if (r.kind === 'skin' && ws.skin === r.makes) return 'carried';
+  if (isMade(r, ws, sat)) return 'made';
+  return shortOf(r, sat).length ? 'short' : 'ready';
+}
+const missing = (r, sat) => shortOf(r, sat).reduce((n, m) => n + m.need - m.have, 0);
+const ORDER = { ready: 0, short: 1, carried: 2, made: 3 };
+
+/** Open the Workshop's window: Kurt's bench (2026-10-15, the user's ask: a crafting window that's easy to read and track).
+    The picked recipe on a card with every material's have / need, the shelf below it sorted ready first, a tab per
+    shelf counting what's ready and made, and a short forge when something's made. Resolves once it's closed. */
 export function openWorkshop() {
-  const d = el('dialog', 'dialog dev-window town-shop workshop');
-  const head = el('h2', '', 'KURT\'S WORKSHOP');
-  const tabs = el('div', 'wshop-tabs');
-  const say = el('p', 'tshop-say');
-  const grid = el('div', 'tshop-grid');
-  const screen = el('div', 'dev-screen');
-  screen.append(tabs, say, grid);
-  const close = el('button', 'btn secondary', 'Close'), make = el('button', 'btn danger', 'Make');
-  const acts = el('div', 'dialog-actions');
-  acts.append(close, make);
-  d.append(head, screen, acts);
+  const d = el('dialog', 'dialog craft');
+  const head = el('div', 'craft-head');
+  head.append(el('h2', '', 'KURT\'S WORKSHOP'), el('span', 'craft-sub', 'Apricorn balls · since forever'));
+  const talk = el('div', 'craft-talk'), say = el('p', 'craft-say');
+  talk.append(el('span', 'craft-tag', KURT), say);
+  const tabs = el('div', 'craft-tabs'), card = el('div', 'craft-card'), list = el('div', 'craft-list');
+  const close = el('button', 'btn secondary craft-close', 'Close');
+  close.type = 'button';
+  d.append(head, talk, tabs, card, list, close);
   document.body.append(d);
-  let tab = 'key', picked = null;
-  const line = (t) => { say.textContent = `${KURT}: ${t}`; };
+  let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, busy = false;
+  const line = (t) => { say.textContent = t; };
   const draw = () => {
-    const save = getSave(), sat = satchelOf(save), ws = workshopOf(save), list = shelf(tab, save);
+    const save = getSave(), sat = satchelOf(save), ws = workshopOf(save);
     tabs.replaceChildren(...TABS.map(t => {
-      const b = el('button', `wshop-tab${t.id === tab ? ' on' : ''}`, t.name);
+      const all = shelf(t.id, save), ready = all.filter(r => stateOf(r, ws, sat) === 'ready').length;
+      const made = all.filter(r => ['made', 'carried'].includes(stateOf(r, ws, sat))).length;
+      const b = el('button', `craft-tab${t.id === tab ? ' on' : ''}`);
       b.type = 'button';
-      b.addEventListener('click', () => { if (tab === t.id) return; playSound('select'); tab = t.id; picked = null; line(ABOUT[tab]); draw(); });
+      b.append(el('span', 'craft-tab-name', t.name), el('span', 'craft-tab-count', t.id === 'gift' ? `${all.length} known` : `${made}/${all.length} made`));
+      if (ready) b.append(el('span', 'craft-dot', String(ready)));
+      b.addEventListener('click', () => { if (tab === t.id || busy) return; playSound('select'); tab = t.id; picked = null; line(ABOUT[tab]); draw(); });
       return b;
     }));
-    grid.replaceChildren(...(list.length ? list.map(r => {
-      const done = isMade(r, ws, sat), short = shortOf(r, sat).length > 0, carried = r.kind === 'skin' && ws.skin === r.makes;
-      const tile = el('button', `tshop-tile${picked === r.id ? ' on' : ''}${done && r.kind !== 'skin' ? ' sold' : ''}`);
-      tile.type = 'button';
-      const note = carried ? 'CARRIED' : done ? 'MADE' : r.kind === 'gift' && ws.gifts[r.makes] ? `HELD ×${ws.gifts[r.makes]}` : needsLine(r, sat);
-      tile.append(art(r), el('span', 'tshop-name', nameOf(r)), el('span', `tshop-price${short && !done ? ' short' : ''}`, note));
-      tile.addEventListener('click', () => {
-        playSound('confirm');
-        picked = r.id;
-        line(about(r, ws, sat));
-        draw();
-      });
-      return tile;
-    }) : [el('p', 'tshop-empty', EMPTY[tab])]));
-    const r = list.find(o => o.id === picked);
-    const madeSkin = r?.kind === 'skin' && isMade(r, ws, sat);
-    make.textContent = madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry') : 'Make';
-    make.disabled = !r || (!madeSkin && (isMade(r, ws, sat) || shortOf(r, sat).length > 0));
+    const shown = shelf(tab, save).map(r => ({ r, st: stateOf(r, ws, sat) }))
+      .sort((a, b) => ORDER[a.st] - ORDER[b.st] || (a.st === 'short' ? missing(a.r, sat) - missing(b.r, sat) : 0));
+    if (!shown.some(o => o.r.id === picked)) picked = shown[0]?.r.id ?? null;
+    list.replaceChildren(...(shown.length ? shown.map(({ r, st }) => {
+      const row = el('button', `craft-row ${st}${picked === r.id ? ' on' : ''}`);
+      row.type = 'button';
+      const pill = st === 'ready' ? 'READY' : st === 'made' ? 'MADE ✓' : st === 'carried' ? 'CARRIED' : `NEED ${missing(r, sat)}`;
+      const icon = el('span', 'craft-row-pic');
+      icon.append(art(r));
+      row.append(icon, el('span', 'craft-row-name', nameOf(r)));
+      if (r.kind === 'gift' && ws.gifts[r.makes]) row.append(el('span', 'craft-held', `×${ws.gifts[r.makes]}`));
+      row.append(el('span', `craft-pill ${st}`, pill));
+      row.addEventListener('click', () => { if (busy) return; playSound('confirm'); picked = r.id; line(about(r, ws, sat)); draw(); });
+      return row;
+    }) : [el('p', 'craft-empty', EMPTY[tab] || 'Nothing here yet.')]));
+    drawCard(shown.find(o => o.r.id === picked), ws, sat);
+  };
+  const drawCard = (o, ws, sat) => {
+    card.hidden = !o;
+    if (!o) return card.replaceChildren();
+    const { r, st } = o;
+    const pic = el('div', `craft-pic ${st}`);
+    pic.append(art(r));
+    const text = r.kind === 'key' ? KEY_BY_ID[r.makes].text : r.kind === 'piece' ? 'Made by hand, one of a kind.' : r.text;
+    const info = el('div', 'craft-info');
+    info.append(el('h3', 'craft-name', nameOf(r)), el('p', 'craft-goes', goesTo(r, ws)), el('p', 'craft-text', text));
+    if (r.kind === 'gift' && r.sig && PIECES[r.sig]) info.append(el('p', 'craft-earns', ws.fond.includes(r.leader) ? `You earned their ${PIECES[r.sig].name}.` : `Their favourite earns: ${PIECES[r.sig].name}`));
+    const top = el('div', 'craft-top');
+    top.append(pic, info);
+    const mats = el('div', 'craft-mats');
+    for (const [id, need] of Object.entries(r.needs)) {
+      const m = MATERIALS_BY_ID[id], have = sat.mats[id] || 0, ok = have >= need;
+      const slot = el('div', `craft-mat${ok ? ' ok' : ''}`);
+      const bar = el('span', 'craft-bar'), fill = el('i');
+      fill.style.width = `${Math.min(100, have / need * 100)}%`;
+      bar.append(fill);
+      slot.append(el('span', 'craft-mat-ico', m?.icon ?? '?'), el('span', 'craft-mat-name', m?.name ?? id), el('span', 'craft-mat-n', `${Math.min(have, 99)}/${need}`), bar);
+      mats.append(slot);
+    }
+    const madeSkin = r.kind === 'skin' && ws.made.includes(r.id);
+    const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (r.kind === 'gift' && ws.gifts[r.makes] ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);
+    go.type = 'button';
+    go.disabled = !madeSkin && st !== 'ready';
+    go.addEventListener('click', () => make(r));
+    card.replaceChildren(top, el('p', 'craft-label', st === 'made' || madeSkin ? 'Made from' : 'Materials'), mats, go);
   };
   const about = (r, ws, sat) => {
     if (r.kind === 'skin' && isMade(r, ws, sat)) return `${r.name}. ${ws.skin === r.makes ? 'Your Safari Balls look like this now.' : 'Carry it and your Safari Balls will look like this.'}`;
     if (isMade(r, ws, sat)) return r.kind === 'key' ? `The ${nameOf(r)}'s in your Satchel already.` : `The ${nameOf(r)}'s made. It's in your Secret Base.`;
     const short = shortOf(r, sat);
     const need = short.length ? ` I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : ' I can make it now.';
-    if (r.kind === 'gift') return `${r.name}, ${gifteeOf(r.leader, GYM_BY_ID[r.leader].name)}'s favourite. ${r.text}${need}`;
+    if (r.kind === 'gift') return `${r.name}, ${gifteeOf(r.leader, GYM_BY_ID[r.leader].name)}'s favourite. Give it at their home and they'll give you something of theirs for your Secret Base.${need}`;
     if (r.kind === 'skin') return `${r.name}. ${r.text}${need}`;
     if (r.kind === 'key') return `${nameOf(r)}. ${KEY_BY_ID[r.makes].text}${need}`;
     return `A ${nameOf(r)}, made by hand.${need}`;
   };
-  make.addEventListener('click', () => {
-    const r = RECIPES.find(o => o.id === picked);
-    if (!r) return;
+  const make = async (r) => {
+    if (busy) return;
     const ws = workshopOf(getSave());
     if (r.kind === 'skin' && ws.made.includes(r.id)) {
       const on = ws.skin !== r.makes;
@@ -144,21 +193,72 @@ export function openWorkshop() {
       return draw();
     }
     if (!craft(r)) { playSound('cancel'); return draw(); }
-    playSound('item-get');
+    busy = true;
+    d.classList.add('busy');
+    try { await forge(card, r); } catch (e) { console.error(e); }
+    busy = false;
+    d.classList.remove('busy');
     line(r.kind === 'key' ? `Done! The ${nameOf(r)}'s in your Satchel. Take it to them.`
       : r.kind === 'piece' ? `Done! The ${nameOf(r)}'s gone to your Secret Base.`
         : r.kind === 'gift' ? `Done! Take the ${r.name} to ${r.leader === 'nietos' ? 'the Nietos\' house' : `${GYM_BY_ID[r.leader].name}'s home`}. Or anyone's.`
-          : `Done! A ${r.name}. Tap it again to carry it.`);
+          : `Done! A ${r.name}. Tap Carry it to use it.`);
     draw();
-  });
+  };
   line('Ah, a customer! I make Apricorn balls, mostly. These days the towns keep me busy too. What\'ll it be?');
   draw();
   return new Promise(res => {
     d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
-    close.addEventListener('click', () => d.close());
+    d.addEventListener('cancel', (e) => { if (busy) e.preventDefault(); });
+    close.addEventListener('click', () => { if (!busy) d.close(); });
     d.showModal();
   });
 }
+
+/** The forge (2026-10-15, the user's ask: a simple crafting animation): each material flies off its slot into the
+    anvil's glow in turn, the glow swells and bursts in sparks, and the thing made pops out with a MADE! stamp. A tap
+    or a beat moves on; reduced motion just shows the thing made. */
+async function forge(card, r) {
+  const calm = calmFx(), box = card.getBoundingClientRect();
+  const stage = el('div', 'craft-forge'), pot = el('div', 'craft-pot');
+  stage.append(pot);
+  card.append(stage);
+  const cx = box.width / 2, cy = box.height * 0.42;
+  pot.style.left = `${cx}px`; pot.style.top = `${cy}px`;
+  if (!calm) {
+    await wait(30);
+    stage.classList.add('on');
+    const icons = [...card.querySelectorAll('.craft-mat .craft-mat-ico')];
+    for (const [i, ico] of icons.entries()) {
+      const at = ico.getBoundingClientRect(), fly = el('span', 'craft-fly', ico.textContent);
+      fly.style.left = `${at.left - box.left + at.width / 2}px`; fly.style.top = `${at.top - box.top + at.height / 2}px`;
+      stage.append(fly);
+      const dx = cx - (at.left - box.left + at.width / 2), dy = cy - (at.top - box.top + at.height / 2);
+      fly.animate([{ translate: '-50% -50%', scale: 1 }, { translate: `calc(-50% + ${dx * 0.5}px) calc(-50% + ${dy * 0.5 - 40}px)`, scale: 1.3, offset: 0.5 }, { translate: `calc(-50% + ${dx}px) calc(-50% + ${dy}px)`, scale: 0.3, opacity: 0.2 }], { duration: 520, easing: 'ease-in', fill: 'forwards' });
+      setTimeout(() => { playSound('fx-pop'); pot.classList.remove('gulp'); void pot.offsetWidth; pot.classList.add('gulp'); }, 480);
+      await wait(i < icons.length - 1 ? 220 : 560);
+    }
+    playSound('fx-whirr');
+    pot.classList.add('hot');
+    await wait(700);
+    playSound('fx-ding');
+    for (let i = 0; i < 16; i++) {
+      const sp = el('i', 'craft-spark'), a = i / 16 * Math.PI * 2, dist = 70 + Math.random() * 50;
+      sp.style.left = `${cx}px`; sp.style.top = `${cy}px`;
+      stage.append(sp);
+      sp.animate([{ translate: '-50% -50%', opacity: 1 }, { translate: `calc(-50% + ${Math.cos(a) * dist}px) calc(-50% + ${Math.sin(a) * dist}px)`, opacity: 0 }], { duration: 650, easing: 'cubic-bezier(.2,.8,.4,1)', fill: 'forwards' });
+    }
+  }
+  const out = el('div', 'craft-result');
+  out.style.left = `${cx}px`; out.style.top = `${cy}px`;
+  out.append(art(r), el('span', 'craft-stamp', 'MADE!'));
+  stage.append(out);
+  playSound('item-get');
+  await Promise.race([wait(calm ? 900 : 1500), new Promise(res => stage.addEventListener('click', res, { once: true }))]);
+  stage.classList.add('out');
+  await wait(calm ? 0 : 250);
+  stage.remove();
+}
+const wait = (ms) => new Promise(res => setTimeout(res, ms));
 
 /** Pick a gift to hand `leader` (their home's Gift option): resolves the gift's id, or null. */
 export function pickGift(leader) {
