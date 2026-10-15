@@ -17,6 +17,8 @@ const key = (id, town, needs, more = {}) => ({ id, kind: 'key', town, makes: id,
 const piece = (id, name, town, needs, more = {}) => ({ id: `piece-${id}`, kind: 'piece', name, town, makes: id, needs, ...more });
 const gift = (id, name, icon, leader, needs, text, sig) => ({ id: `gift-${id}`, kind: 'gift', name, icon, leader, makes: id, needs, text, sig });
 const skin = (id, name, needs, text) => ({ id: `skin-${id}`, kind: 'skin', name, makes: id, sprite: `${id}-ball`, needs, text });
+// a friend's secret recipe (step 8, session e): their own Safari Ball look, taught to Kurt at SECRET_AT hearts
+const secret = (id, name, leader, needs, text) => ({ ...skin(id, name, needs, text), leader, secret: true });
 
 export const RECIPES = [
   // the questlines' Make steps: each from its own biome, but Machew's katana wants Cinder Springs' ore, and the Spirit
@@ -62,6 +64,18 @@ export const RECIPES = [
   skin('love', 'Love Ball', { 'ember-sequin': 3 }, 'A pink Apricorn, sequinned. Clarence asked for one first.'),
   skin('heavy', 'Heavy Ball', { 'copper-wire': 3 }, 'A black Apricorn, banded in copper. It still flies like a Safari Ball.'),
   skin('fast', 'Fast Ball', { resin: 3 }, 'A white Apricorn, varnished in Acacia Resin.'),
+  // each friend's secret recipe, from their own town's materials
+  secret('nest', 'Nest Ball', 'nietos', { acorn: 3, glowmoss: 2 }, 'Law and Britt\'s secret: a green Apricorn lined with Glowmoss, a nest for Linc. They swear he naps in it.'),
+  secret('repeat', 'Repeat Ball', 'john', { wick: 2, washi: 3 }, 'John\'s secret: he painted it, scrubbed it off and painted it again. He still can\'t pick.'),
+  secret('dream', 'Dream Ball', 'jahmes', { washi: 3, wick: 2 }, 'Jahmes\'s secret: pink as a sleep mask. He finishes one by 10:59, every time.'),
+  secret('cherish', 'Cherish Ball', 'clarence', { 'ember-sequin': 3, 'magma-ore': 2 }, 'Clarence\'s secret: sequinned red, for a Pokémon that deserves an entrance.'),
+  secret('sport', 'Sport Ball', 'shaun', { 'copper-wire': 3, 'ember-sequin': 2 }, 'Shaun\'s secret: team colours. He calls the throw before you make it.'),
+  secret('heal', 'Heal Ball', 'pat', { 'sea-glass': 3, driftwood: 2 }, 'Pat\'s secret: soft pink, like a tall glass of lemonade. He sang to it while it dried.'),
+  secret('park', 'Park Ball', 'kayl', { driftwood: 3, 'sea-glass': 2 }, 'Kayl\'s secret: for walking Spooky and Reya, who refuse to be walked.'),
+  secret('premier', 'Premier Ball', 'phil', { ghostcap: 3, seeds: 2 }, 'Phil\'s secret: white as a sheet. He says JONA picked it.'),
+  secret('jet', 'Jet Ball', 'ricky', { seeds: 3, ghostcap: 2 }, 'Ricky\'s secret: it flies like a 2 a.m. espresso. He has never thrown one before noon.'),
+  secret('beast', 'Beast Ball', 'machew', { resin: 3, spice: 2 }, 'Machew\'s secret: he says it\'s for beasts. It\'s for the cover of his journal.'),
+  secret('poke', 'Poké Ball', 'jerome', { spice: 3, resin: 2 }, 'Jerome\'s secret: the very first Poké Ball, lifted from a museum case. He swears it was a replica.'),
 ];
 export const RECIPES_BY_ID = Object.fromEntries(RECIPES.map(r => [r.id, r]));
 
@@ -102,8 +116,8 @@ export function isMade(recipe, ws, sat) {
 }
 
 /** Whether the Workshop shows a recipe (see the top of this file). `towns` is the save's per-town states
-    (js/data/towns.js's townState() of each), `wins` a Gym Leader's wins. */
-export function shows(recipe, { towns, wins }) {
+    (js/data/towns.js's townState() of each), `wins` a Gym Leader's wins, `hearts` a friend's hearts. */
+export function shows(recipe, { towns, wins, hearts = () => 0 }) {
   if (recipe.kind === 'key') return !!towns[recipe.town]?.quest;
   if (recipe.kind === 'piece') {
     const st = towns[recipe.town];
@@ -111,6 +125,7 @@ export function shows(recipe, { towns, wins }) {
     return !recipe.pick || st.quest?.picks?.[recipe.pick[0]] === recipe.pick[1];
   }
   if (recipe.kind === 'gift') return wins(recipe.leader) > 0;
+  if (recipe.secret) return taught(hearts, recipe.leader);
   return true;
 }
 
@@ -185,3 +200,84 @@ export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
 
 /** The Safari Ball's sprite: its own, or the Apricorn skin carried. */
 export const safariSprite = (ws) => (ws.skin && SKIN_BY_ID[ws.skin] ? SKIN_BY_ID[ws.skin].sprite : 'safari-ball');
+
+/** Each friend teaches Kurt their secret recipe (SECRETS, their own Safari Ball look) at SECRET_AT hearts, between their
+    second and third signature pieces; nothing saved, so an old save that far along knows them on load. */
+export const SECRET_AT = 4;
+export const SECRETS = Object.fromEntries(SKINS.filter(s => s.secret).map(s => [s.leader, s]));
+export const taught = (hearts, leader) => hearts(leader) >= SECRET_AT;
+
+/** Friends' letters (step 8, session e): once a UTC day, on coming home, a friend at MAIL_HEARTS or more may write
+    (MAIL_ODDS), the closer the likelier to be the one, with PokéCoins (MAIL_COINS a heart, well under the Game
+    Corner's ~380 a day) or a material from their own town. `at(id)` is a friend's hearts, `rand` a 0-1 roll (cosmetic:
+    nothing about a run). Returns { from, title, text, coins } or { from, title, text, mat: { id, n } }, or null. */
+export const MAIL_HEARTS = 2, MAIL_ODDS = 0.4, MAIL_COINS = 15;
+export function friendLetter(at, rand, biomeOf, mats) {
+  const who = FRIENDS.filter(id => at(id) >= MAIL_HEARTS);
+  if (!who.length || rand() >= MAIL_ODDS) return null;
+  let r = rand() * who.reduce((n, id) => n + at(id), 0), from = who[0];
+  for (const id of who) { r -= at(id); if (r < 0) { from = id; break; } }
+  const lines = FRIEND_MAIL[from], [title, text] = lines[Math.floor(rand() * lines.length)], hearts = at(from);
+  const own = mats(biomeOf(from));
+  if (!own.length || rand() < 0.5) return { from, title, text, coins: MAIL_COINS * hearts };
+  return { from, title, text, mat: { id: own[Math.floor(rand() * own.length)].id, n: hearts >= SECRET_AT ? 2 : 1 } };
+}
+
+/** What each friend writes, [title, letter] (the Nietos sign as Law and Britt). Something's always tucked inside. */
+export const FRIEND_MAIL = {
+  nietos: [
+    ['Linc slept!', 'Four whole hours. We don\'t know what to do with ourselves. Here\'s a little something. Love, Law and Britt.'],
+    ['From the couch', 'Britt graded forty papers and Law fell asleep on the remote. Come by the house soon. Love, Law and Britt.'],
+    ['Kangaskhan says hi', 'She tucked this into the pouch for you, next to Linc\'s rattle. Love, Law and Britt.'],
+  ],
+  john: [
+    ['Help me pick', 'Which handheld should I bring to the festival? Don\'t answer, I\'ll change my mind. This is for you. - John'],
+    ['Thank you (I think)', 'I wrote this letter three times and sent the first one. Here, for being a good friend. - John'],
+    ['Festival leftovers', 'We had too much of this after the festival. Or not enough. Anyway, it\'s yours. - John'],
+  ],
+  jahmes: [
+    ['Before 11', 'Writing this at 10:52. Lights out soon. Something for you, sent early. - Jahmes'],
+    ['Up early', 'I was up at five, like a normal person. Found this and thought of you. - Jahmes'],
+    ['Curfew notice', 'Reminder: bed by eleven. Enclosed, a reward for listening to me. - Jahmes'],
+  ],
+  clarence: [
+    ['A standing ovation', 'Last night\'s show sold out, darling. You get a cut. Don\'t spend it all on sequins. - Clarence'],
+    ['Backstage pass', 'The boys loved the new routine. Here\'s a little something from the tip jar. - Clarence'],
+    ['Encore', 'They wanted one more number, so I wrote you one more letter. Kisses. - Clarence'],
+  ],
+  shaun: [
+    ['Ticket closed', 'Fixed the Springs\' router again. Turning it off and on works, everyone. Here, your share. - Shaun'],
+    ['GG', 'We won scrims. I called every play. Enclosed: your support bonus. - Shaun'],
+    ['Comms check', 'Testing, testing. If this reached you, the relay works. Keep what\'s inside. - Shaun'],
+  ],
+  pat: [
+    ['A song for you', 'I wrote you a song, but it was about lemonade again. So here\'s this instead. - Pat'],
+    ['Message in a bottle', 'This one\'s not a love letter, I promise. Mostly. Something from the lagoon. - Pat'],
+    ['Thinking of you', 'The tide came in and I thought of my friends. Then I cried a bit. Here! - Pat'],
+  ],
+  kayl: [
+    ['Rent\'s in', 'The tenants paid on time for once. The cats did not. Your share. - Kayl'],
+    ['From Spooky and Reya', 'They knocked this off the shelf, so it\'s yours now. - Kayl'],
+    ['Property update', 'All the piers are standing. I checked twice. Thanks for the help. - Kayl'],
+  ],
+  phil: [
+    ['Do not open at night', 'JONA moved my candles again. Found this where they used to be. Keep it. - Phil'],
+    ['Evidence', 'Enclosed: proof of the paranormal. Or a gift. Hard to say. - Phil'],
+    ['Salt line holds', 'Nothing got in last night. I think. Here\'s something for the road. - Phil'],
+  ],
+  ricky: [
+    ['2:47 a.m.', 'One more game, then bed. Found this while not going to bed. - Ricky'],
+    ['Meeting at 9', 'I will be at my 9 a.m. meeting. I will not be awake. Here, for you. - Ricky'],
+    ['Stream highlights', 'Chat says hi. Chat also sent you this. - Ricky'],
+  ],
+  machew: [
+    ['On failure', 'I meditated on failure for six hours. Then I found this. Take it. - Machew'],
+    ['The blade', 'Yes, the price tag is still on the katana. No, I won\'t take it off. Here. - Machew'],
+    ['From the dunes', 'The wind told me you needed this. The wind is usually wrong. - Machew'],
+  ],
+  jerome: [
+    ['Totally legit', 'This fell off a caravan. Don\'t ask which one. - Jerome'],
+    ['The plan', 'Step one: send you this. Step two: there is no step two. - Jerome'],
+    ['GTA VI update', 'Still not out. Here\'s something to make the wait easier. - Jerome'],
+  ],
+};

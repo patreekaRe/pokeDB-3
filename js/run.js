@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -2011,6 +2011,14 @@ function homeRoom(b, onward = null) {
       const drop = got.hearts === HEARTS ? ' They\'ll drop by your Secret Base often now.' : got.was < VISIT_HEARTS && got.hearts >= VISIT_HEARTS ? ` ${both ? 'They' : GYM_BY_ID[home.leader].name} might drop by your Secret Base now.` : '';
       tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${drop}${news}` : `Friendship ${got.hearts}/${HEARTS}!${drop}${news}`)
         : `You're already the best of friends. ${both ? 'They' : GYM_BY_ID[home.leader].name} still ${both ? 'love' : 'loves'} it.`);
+      // their secret recipe for Kurt, and its letter in the PC (step 8, session e)
+      const secret = got.was < SECRET_AT && got.hearts >= SECRET_AT && SECRETS[home.leader];
+      if (secret) {
+        tell(`${who} taught Kurt a secret recipe: the ${secret.name}! Make it at his Workshop.`);
+        if (mailOn()) post(home.leader, 'My secret recipe', `I showed Kurt how I make my ${secret.name}. Go see him at the Workshop! - ${both ? 'Law and Britt' : GYM_BY_ID[home.leader].name[0] + GYM_BY_ID[home.leader].name.slice(1).toLowerCase()}`, 0, { recipe: secret.id });
+      }
+      for (const b of checkBadges()) tell(badgeLine(b));
+      showBadgeNews();
     }
     again();
   }));

@@ -35,7 +35,7 @@ import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
-import { unclaimed } from './mail.js';
+import { unclaimed, friendMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
@@ -3962,6 +3962,7 @@ async function openHub(titleScreen, actions, hold) {
   resize();
   if (!held) screen.classList.add('hub-on');
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
+  if (friendMail()) pcMarks();   // a friend's letter, once a UTC day at most
   homeNews();
   return true;
 }

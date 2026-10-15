@@ -20,7 +20,7 @@ import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el, heartRow } from './ui.js';
-import { SENDERS, unclaimed, claim } from './mail.js';
+import { senderOf, unclaimed, claim } from './mail.js';
 import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
 import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -36,7 +36,8 @@ import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 import { pcNew, markPcSeen, pcLookedAt, friendsOpen } from './pc-news.js';
 import { GYM_BY_ID, GYM_INK, gymWins, spriteOf } from './data/gym.js';
-import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf } from './data/workshop.js';
+import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf, RECIPES_BY_ID, SECRETS, SECRET_AT } from './data/workshop.js';
+import { MATERIALS_BY_ID } from './data/satchel.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -212,7 +213,7 @@ const PAGES = {
     const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
     // grouped the way a player looks (2026-10-11, the user's ask): rewards, your Pokémon and things, the game's records, the account
     const rows = [
-      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
+      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with something inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here, and letters from friends.', () => show('mailbox'), waiting > 0],
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
@@ -294,10 +295,11 @@ const PAGES = {
       const line = !met ? 'Someone you haven\'t met yet. Beat their Gym, and they\'ll take a gift at home.'
         : n >= HEARTS ? `${who} and you are the best of friends.`
           : `${who}: ${n} of ${HEARTS} hearts. Every gift fills one${fond ? `, and the ${FAVOURITE[id].name} two.` : '; their favourite fills two.'}`;
-      const tell = () => { if (!hush) speak(line); };
+      const secret = met && n >= SECRET_AT && SECRETS[id] ? ` They taught Kurt their secret recipe, the ${SECRETS[id].name}.` : '';
+      const tell = () => { if (!hush) speak(line + secret); };
       b.addEventListener('pointerenter', tell);
       b.addEventListener('focus', tell);
-      b.addEventListener('click', () => { playSound('confirm'); speak(line); });
+      b.addEventListener('click', () => { playSound('confirm'); speak(line + secret); });
       return b;
     });
     const list = el('div', 'pc-friends');
@@ -311,7 +313,7 @@ const PAGES = {
     h.append(el('span', 'pc-count', waiting ? `${waiting} new` : ''));
     const list = el('div', 'pc-mail');
     list.append(...mail.map(m => {
-      const from = SENDERS[m.from] || SENDERS.lab;
+      const from = senderOf(m.from);
       const b = el('button', `pc-env${m.claimed ? ' read' : ''}`);
       b.type = 'button';
       b.style.setProperty('--ink', from.ink);
@@ -328,29 +330,36 @@ const PAGES = {
   letter() {
     const m = (getSave().mail || []).find(x => x.id === letter);
     if (!m) return show('mailbox');
-    const from = SENDERS[m.from] || SENDERS.lab, fresh = !m.claimed;
+    const from = senderOf(m.from), fresh = !m.claimed, mat = m.mat && MATERIALS_BY_ID[m.mat.id], recipe = m.recipe && RECIPES_BY_ID[m.recipe];
     const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
     wrap.style.setProperty('--ink', from.ink);
     wrap.style.setProperty('--paper', from.paper);
     const sheet = el('div', 'pc-sheet');
     const prize = el('div', 'pc-prize');
-    prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${m.coins.toLocaleString()}`));
+    // a friend's letter holds a material or shows the secret recipe they taught Kurt (step 8, session e)
+    if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
+    else if (recipe) {
+      const img = el('img', 'pc-prize-ball pixel');
+      Object.assign(img, { src: `assets/items/${recipe.sprite}.png`, alt: '', draggable: false });
+      prize.append(img, el('b', 'pc-prize-n', recipe.name));
+    } else prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${(m.coins || 0).toLocaleString()}`));
     sheet.append(el('span', 'pc-sheet-from', `From: ${from.name}`), el('b', 'pc-sheet-title', m.title), el('p', 'pc-sheet-text', m.text), prize);
-    if (!fresh) sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+    if (!fresh) sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
     wrap.append(el('div', 'pc-env-back'), sheet, el('div', 'pc-env-front'), el('div', 'pc-env-flap'));
     const kids = [head(m.title.toUpperCase()), wrap];
     if (fresh) {
-      const ok = el('button', 'room-ok pc-claim', 'Claim');
+      const ok = el('button', 'room-ok pc-claim', recipe ? 'Read' : 'Claim');
       ok.type = 'button';
       ok.addEventListener('click', () => {
         if (ok.classList.contains('pressed')) return;
         ok.classList.add('pressed');   // pushed in and lit, like every room's confirm (pressConfirm() in js/rewards.js)
         const paid = claim(m.id);
         playSound('item-get');
-        countUp(prize.querySelector('.pc-prize-n'), paid);
-        sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+        if (!mat && !recipe) countUp(prize.querySelector('.pc-prize-n'), paid);
+        sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
         wrap.classList.add('paid');
-        speak(`${trainerName().toUpperCase()} received ${paid.toLocaleString()} PokéCoins!`);
+        const me = trainerName().toUpperCase();
+        speak(mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
       });
       kids.push(ok);
     }

@@ -43,11 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'Kenmatta\'s dojo is open: a grand temple hall with a ring to climb into, eight puzzle trials (one star each), belts from white to black and seven dojo pieces for your Secret Base.'],
-  ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
-  ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades, furnish it from Smeargle\'s garden catalogue, and let your Pokémon out to swing, sit and swim.'],
-  ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
-  ['base', 'Each friend gives you a second piece of their own furniture at 3 hearts and a third at 5: 22 new pieces, from Linc\'s Pikachu crib to Jerome\'s heist safe.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -59,6 +54,19 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.21',
+    name: 'Hearts and Home',
+    date: '2026-10-15',
+    notes: [
+      ['hub', 'Kenmatta\'s dojo is open: a grand temple hall with a ring to climb into, eight puzzle trials (one star each), belts from white to black and seven dojo pieces for your Secret Base.'],
+      ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
+      ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades, furnish it from Smeargle\'s garden catalogue, and let your Pokémon out to swing, sit and swim.'],
+      ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
+      ['base', 'Each friend gives you a second piece of their own furniture at 3 hearts and a third at 5: 22 new pieces, from Linc\'s Pikachu crib to Jerome\'s heist safe.'],
+      ['hub', 'Friends now mail your PC with PokéCoins or materials, teach Kurt a secret Safari Ball look at 4 hearts, and give a Friendship badge at 5.'],
+    ],
+  },
   {
     version: '1.20',
     name: 'The Waystones',
@@ -439,9 +447,9 @@ export const IN_THE_GAME = [
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '164 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '176 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
-  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],

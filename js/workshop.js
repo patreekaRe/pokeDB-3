@@ -13,8 +13,10 @@ import { RING, townState } from './data/towns.js';
 import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
 
-/** What the Workshop can see of the save, for shows(). */
-const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => gymWins(save, id) || 0 });
+/** What the Workshop can see of the save, for shows(); `?hearts=N` puts every friend at N, so their secret recipes show. */
+const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : +n || 0; };
+const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => gymWins(save, id) || 0,
+  hearts: (id) => heartsPeek() ?? heartsOf(workshopOf(save), id) });
 
 /** The recipes on a shelf now. */
 export const shelf = (tab, save = getSave()) => RECIPES.filter(r => r.kind === tab && shows(r, seen(save)));
@@ -78,13 +80,14 @@ const ABOUT = {
   key: 'For the towns\' Waystones. Bring me materials from the roads and I\'ll make what they need.',
   piece: 'Furniture you can\'t buy anywhere. Made here, sent to your Secret Base.',
   gift: 'Every Gym Leader has a favourite. Give it to them at home and they\'ll give you something of theirs for your Secret Base.',
-  skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better.',
+  skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better. Good friends teach me their secret ones.',
 };
 
 /** Where a made thing goes, in a line on its card. */
 function goesTo(r, ws) {
   if (r.kind === 'key') return 'Quest item · goes to your Satchel';
   if (r.kind === 'piece') return 'Furniture · sent to your Secret Base';
+  if (r.secret) return `Safari Ball look · ${gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'a friend')}'s secret recipe`;
   if (r.kind === 'skin') return 'Safari Ball look · throws the same';
   const who = gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'them');
   return ws.fond.includes(r.leader) ? `Gift · ${who}'s favourite · given ✓` : `Gift · ${who}'s favourite · give it at their home`;

@@ -170,6 +170,24 @@ all-nighter moon lamp, Machew a katana stand (price tag still on) and a brooding
 safe. Owned through js/data/furniture.js's `heart` source (nothing saved; an old save at 3 or 5 has them on load). A gift
 that crosses 3 or 5 says so (`heartGifts()`, in `homeRoom()`'s Gift option, js/run.js). Test in `tests/workshop.test.mjs`.
 
+**Friendship badges, friends' letters and secret recipes** (2026-10-15, docs/roadmap.md step 8 session e). **Badges**: a
+`friends` group in `BADGE_GROUPS` (js/data/badges.js), a `friend-<id>` badge a friend at `HEARTS` in `workshop.liked`
+(named "John Friendship Badge", "Nietos Friendship Badge") and `best-friends` for all of `FRIENDS` at once; their `LOOK`
+(js/trainercard.js) is a heart in the friend's `GYM_INK` with their Gym Badge's glyph (Pat's, a heart already, wears a
+heart), Best Friends a gold crown. A gift runs `checkBadges()` (homeRoom()'s Gift in js/run.js), so the badge lands at once.
+**Secret recipes**: each friend's own Safari Ball look (`secret()` lines among the skins in `RECIPES`, `SECRETS` by
+friend), taught at `SECRET_AT` (4) hearts, between their second and third pieces; nothing saved (`shows()` reads their
+hearts; `?hearts=N` in the Workshop too). From their own town's materials, made once like any Apricorn: Nest (Nietos),
+Repeat (John), Dream (Jahmes), Cherish (Clarence), Sport (Shaun), Heal (Pat), Park (Kayl), Premier (Phil), Jet (Ricky),
+Beast (Machew), Poké Ball (Jerome); sprites from PokéAPI's items in `assets/items/`. None is a ball in `BALLS`. The gift
+that reaches 4 says so and posts a letter with the recipe's picture (`recipe` on the letter; Read, nothing to claim).
+**Letters**: once a UTC day, coming home to the Clearing (`openHub()` → `friendMail()` in js/mail.js, `save.friendMail`
+the day rolled), `friendLetter()` in js/data/workshop.js: `MAIL_ODDS` (0.4) that a friend at `MAIL_HEARTS` (2) or more
+writes, the pick weighted by hearts, one of their `FRIEND_MAIL` letters with `MAIL_COINS` (15) a heart in PokéCoins (75 at
+most) or half the time a material of their own town (`biomeMats(b, true)`, 2 at 4 hearts), claimed into the Satchel. A
+cosmetic roll (Math.random). `senderOf()` stamps a friend's envelope in their ink. Only with the PC title (`mailOn()`).
+`?mail` adds a sample friend letter and a recipe letter.
+
 **Friends visit the Secret Base** (2026-10-15, docs/roadmap.md step 8 session c): `baseFriends(at)` in
 `js/data/workshop.js` gives every friend at `VISIT_HEARTS` (3) or more (`all`) and those at 5 (`best`); test in
 `tests/workshop.test.mjs`. `leaderVisitor()` in `js/secret-base.js` puts them in the day's one visit (mended town or not,

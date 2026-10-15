@@ -2517,3 +2517,7 @@ the ropes) and `decks` (a tap on the deck finds its tile, not the floor's under 
 is in front of him); the scroll (tile 4) and sandbag (tile 12) sit near enough the middle that all three signs show on a
 phone from the door. Tested headless at 420x860 and 1280x800: the walk up into the ring, a tap on the canvas, all three
 signs, Ken's line in the Clearing, no console errors; still parts baked with `mergeStatic()`.
+
+- **Friendship session (e), 2026-10-15** (step 8): Friendship badges (one a friend at 5 hearts, Best Friends for all),
+  friends' letters through the PC (coins or a material, once a UTC day at most), each friend's secret Safari Ball look
+  taught to Kurt at 4 hearts. Patch 1.21, Hearts and Home. Detail: docs/reference/towns.md.

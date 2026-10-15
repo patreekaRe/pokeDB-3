@@ -26,6 +26,7 @@ import { playSound } from './audio.js';
 import { $, el, openDialog } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
 import { townsOpen } from './data/towns.js';
+import { FRIENDS } from './data/workshop.js';
 
 // shapes as polygons in a 16x16 box, scaled onto a 36x36 SVG
 const circle = (r = 7.6, cx = 8, cy = 8) => Array.from({ length: 32 }, (_, i) => [cx + r * Math.cos(i * Math.PI / 16), cy + r * Math.sin(i * Math.PI / 16)]);
@@ -229,6 +230,10 @@ const GYM_LOOK = {
 for (const l of GYM_LEADERS) LOOK[`gym-${l.id}`] = GYM_LOOK[l.id] ? [GYM_LOOK[l.id][0], GYM_INK[l.id], GYM_LOOK[l.id][1]] : ['circle', BIOME_INK[l.biome]];
 // a Gold badge is its badge's shape and glyph in gold
 for (const l of GYM_LEADERS) LOOK[`gym-${l.id}-gold`] = [LOOK[`gym-${l.id}`][0], ['#fff6b8', '#f0bc30', '#7a4c08'], LOOK[`gym-${l.id}`][2]];
+// a Friendship badge is a heart in its friend's colours, their Gym Badge's glyph on it (Pat's Gym Badge is a heart already,
+// so his friendship one wears a heart); the Best Friends badge a gold crown
+for (const id of FRIENDS) LOOK[`friend-${id}`] = ['heart', GYM_INK[id], GYM_LOOK[id][0] === 'heart' ? 'heart' : GYM_LOOK[id][1]];
+LOOK['best-friends'] = ['crown', ['#fff6b8', '#f0bc30', '#7a4c08'], 'heart'];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 

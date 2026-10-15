@@ -58,7 +58,7 @@ test('a recipe shows once it can matter', () => {
   assert.ok(shows(taiko, sees({ shrine: { met: true, quest: { picks: { 'sh-spirits': 'fireworks' } } } })));
   assert.ok(!shows(fan, sees()));
   assert.ok(shows(fan, sees({}, ['john'])));
-  for (const s of SKINS) assert.ok(shows(s, sees()));
+  for (const s of SKINS.filter(s => !s.secret)) assert.ok(shows(s, sees()));
 });
 
 test('making takes the materials and keeps what was made', () => {
@@ -170,4 +170,51 @@ test('every heart piece is in the base\'s catalogue, one colour, with a 3D model
     const shape = shapeOf(kind, PIECES[kind]);
     assert.ok(shape && typeof MAKES[shape.make] === 'function', `${kind} is modelled, not carved from its painting`);
   }
+});
+
+test('each friend teaches Kurt one secret Safari Ball look at four hearts, with its sprite, from their own town', async () => {
+  const { SECRETS, SECRET_AT, FRIENDS, HEART_AT } = await import('../js/data/workshop.js');
+  const { GYM_BY_ID } = await import('../js/data/gym.js');
+  assert.deepEqual(Object.keys(SECRETS).sort(), [...FRIENDS].sort(), 'one a friend');
+  assert.ok(SECRET_AT > HEART_AT[0] && SECRET_AT < HEART_AT[1], 'between their second and third pieces');
+  const sprites = new Set(SKINS.map(s => s.sprite));
+  assert.equal(sprites.size, SKINS.length, 'no two looks alike');
+  assert.ok(!sprites.has('safari-ball'));
+  for (const [id, r] of Object.entries(SECRETS)) {
+    assert.ok(existsSync(new URL(`../assets/items/${r.sprite}.png`, import.meta.url)), r.sprite);
+    for (const m of Object.keys(r.needs)) assert.equal(MATERIALS_BY_ID[m].biome, GYM_BY_ID[id].biome, `${r.id}: ${m}`);
+    const at = (n) => ({ ...sees({}, [id]), hearts: (who) => (who === id ? n : 0) });
+    assert.ok(!shows(r, at(SECRET_AT - 1)));
+    assert.ok(shows(r, at(SECRET_AT)), 'taught at four');
+    assert.ok(!shows(r, { ...at(0), hearts: () => SECRET_AT - 1 }));
+    assert.ok(!isMade(r, workshopOf({}), satchelOf({})));
+    const ws = madeInto(r, workshopOf({}));
+    assert.ok(isMade(r, ws, satchelOf({})), 'made only once');
+    assert.equal(safariSprite({ ...ws, skin: r.makes }), r.sprite);
+  }
+});
+
+test('a friend writes now and then: only friends at two hearts, coins or their own town\'s material', async () => {
+  const { friendLetter, FRIEND_MAIL, FRIENDS, MAIL_HEARTS, MAIL_COINS, MAIL_ODDS } = await import('../js/data/workshop.js');
+  const { GYM_BY_ID } = await import('../js/data/gym.js');
+  const { biomeMats } = await import('../js/data/satchel.js');
+  const biomeOf = (id) => GYM_BY_ID[id].biome, mats = (b) => biomeMats(b, true);
+  for (const id of FRIENDS) assert.ok(FRIEND_MAIL[id]?.length >= 2, `${id} has letters`);
+  const seq = (...xs) => { let i = 0; return () => xs[i++ % xs.length]; };
+  assert.equal(friendLetter(() => MAIL_HEARTS - 1, seq(0)), null, 'nobody close enough');
+  assert.equal(friendLetter((id) => (id === 'pat' ? 5 : 0), seq(MAIL_ODDS + 0.01), biomeOf, mats), null, 'not every day');
+  const coins = friendLetter((id) => (id === 'pat' ? 3 : 0), seq(0, 0.5, 0, 0), biomeOf, mats);
+  assert.equal(coins.from, 'pat');
+  assert.equal(coins.coins, 3 * MAIL_COINS);
+  assert.ok(FRIEND_MAIL.pat.some(([t]) => t === coins.title));
+  const mat = friendLetter((id) => (id === 'pat' ? 5 : 0), seq(0, 0.5, 0, 0.9, 0), biomeOf, mats);
+  assert.equal(MATERIALS_BY_ID[mat.mat.id].biome, 'ruins');
+  assert.notEqual(mat.mat.id, 'bottle', 'never a quest\'s map find');
+  assert.equal(mat.mat.n, 2);
+  // the closer friend is likelier: hearts weight the pick
+  const at = (id) => ({ john: 2, jahmes: 4 }[id] || 0);
+  assert.equal(friendLetter(at, seq(0, 0.3, 0, 0), biomeOf, mats).from, 'john');
+  assert.equal(friendLetter(at, seq(0, 0.4, 0, 0), biomeOf, mats).from, 'jahmes');
+  // the most coins a day is well under the Game Corner's ~380
+  assert.ok(MAIL_COINS * 5 < 100);
 });

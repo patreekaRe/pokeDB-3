@@ -44,3 +44,6 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   two flipped slots): Game Modes ▸ slides the stack sideways to a sub-menu with a Back sign, the Pokédex opens the device (since 2026-10-05; it was a Collection ▸ sub-menu) (`renderMenu()` / `goTo()` in
   `js/title.js`; Game Modes holds the Safari Zone and Sky Pillar), so new modes never lengthen the title
   (`docs/reference/title-screen.md`).
+
+- **Friendship badges** (2026-10-15): the `friends` group, a badge a friend at 5 hearts and Best Friends for all 11
+  (`docs/reference/towns.md`'s Friendship badges paragraph). 176 badges in all.

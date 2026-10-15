@@ -566,12 +566,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `js/data/workshop.js` (at 3 and 5 hearts), the `heart` source in `js/data/furniture.js` (old saves have them on
      load), paintings in `js/base-furniture-friends.js`, 3D models in `js/base-models-friends.js`, the gift toast naming
      the piece; tests in `tests/workshop.test.mjs`. Detail: `docs/reference/towns.md`. Peek: `?base&hearts=5&allfurniture`.
-     On `main`, waiting on the user's look at the models. **Next: session (e)**, badges, mail and Kurt's secret recipes:
-     "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md step 8. Do session (e): a friendship badge
-     each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`) and a gold one for all of them; now and then
-     a liked friend mails you through the PC (coins, a material or a recipe); each friend teaches Kurt one secret recipe
-     at a set heart count (a `RECIPES` line each, made only once taught). Tests, patch-notes line, docs, push to main,
-     githack link with `?towns&satchel&gymwins=10&hearts=5`."
+     On `main`, waiting on the user's look at the models.
+   - **Session (e) done (2026-10-15): badges, letters and secret recipes.** A Friendship badge a friend at 5 hearts and
+     Best Friends for all 11 (a `friends` group); a friend at 2+ hearts may write once a UTC day you come home (PokéCoins or
+     a material of their town, `friendLetter()`); each friend's own Safari Ball look taught to Kurt at 4 hearts (`SECRETS`,
+     with a letter). Patch 1.21 cut. Detail: `docs/reference/towns.md`. On `main`. **Next: session (f)**, their board
+     requests: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md step 8. Do session (f): a leader at
+     3+ hearts posts a small request of their own on their town's board (the coin requests' code), paying PokéCoins.
+     Tests, patch-notes line, docs, push to main, githack link with `?towns&satchel&gymwins=10&hearts=5`."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
