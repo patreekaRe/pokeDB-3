@@ -2604,4 +2604,16 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
   it after playtesting, "New sky pillar rooms are good", and it was merged to `main`): `dressTower()` in `js/arena-3d.js`,
   sage stone, jade runes, windows on the pixel sky; `&arena2d` keeps the old pixel room. Next is part 2, the climb's
   painted tower (`docs/roadmap.md`, Waiting on the user).
+
+### The Sky Pillar's 3D rooms warmed on its map (2026-10-15)
+
+The user still saw the old pixel tower room on their phone: `warmArena3d()` in `js/run.js` skipped the tower, so a climb's
+first fight built three.js cold while the pixel room showed. It now warms there too (`f12cbc8`, on `main`).
+
+### The climb's painted tower repainted to match, live (2026-10-15)
+
+The user's yes ("MERGE") on `acdc58f`: the climb's tower in `js/tower-art.js` in the 3D tower's sage stone and jade
+(rune bands, Rayquaza's ring over guardian doors, the summit's jade crystal), merged to `main`. Next: the opening film's
+first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.md`).
+
 - **Done (2026-10-15): a picket fence round the Ancient Tree** (the user's ask): back and both sides, meeting the garden arch on the right (`treeFence()` in `js/hub-3d.js`).

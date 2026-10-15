@@ -3105,9 +3105,10 @@ function warmCenter3d() {
     in shows the room at once (the user saw a blank blue screen while it loaded). */
 /** The 3D arena's renderer readied while the map is up, in a biome whose fights are laid in it (js/arena-3d.js). */
 function warmArena3d() {
-  if (warmArena3d.done || isTower() || isSafari() || new URLSearchParams(location.search).has('arena2d')) return;
+  if (warmArena3d.done || isSafari() || new URLSearchParams(location.search).has('arena2d')) return;
   import('./arena-3d.js').then(m => {
-    if (!m.arenaFor(mainBiome().id, 'fight') || warmArena3d.done) return;
+    // every Sky Pillar fight stands in a 3D room of the tower: cold, a phone showed the pixel room for its first seconds
+    if (!(isTower() || m.arenaFor(mainBiome().id, 'fight')) || warmArena3d.done) return;
     warmArena3d.done = true;
     setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 2000);
   }).catch(() => {});
