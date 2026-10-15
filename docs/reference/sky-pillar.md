@@ -132,6 +132,8 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
 
 - `run.tower = { week, seed, first, practice, flight, floor, augments, spent, rerolls, pick, ... }`, saved with the run. `flight` is the guardians beaten;
   `run.biome` follows `towerBiome(flight)` for scenery, numbers, events and music.
+- The climb's song (`map4`) starts with the opening film's pan down the tower, from `climbIntro()` (the user's call,
+  2026-10-15), not when the map comes up; `showMap()` finds it already playing and carries on.
 - Each flight is a map from `landingMap()` in `js/map.js`: a row of doors per landing, every door linked to every door
   above, the guardian on top. The map screen draws it as the tower (`drawMap()` hands it to `renderTower()`), `F<n>` in
   the top bar is the last floor cleared, and the run card's chip says Counts / Replay / Practice. The Bag's map peek still

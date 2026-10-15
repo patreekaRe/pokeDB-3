@@ -52,7 +52,7 @@ export const NEXT = [
   ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
   ['music', 'Highbough has a song of its own now, the Crystal Depths\' theme.'],
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge, out on its own in a wider west Clearing, its Pokéstop and ranks board either side.'],
-  ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
+  ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song, and a climb\'s song starts with its opening film down the tower.'],
   ['music', 'Lantern Village, Cinder Springs, Driftwood Landing and Sunwell Bazaar each have a song of their own.'],
   ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, going back into it, its backyard or the Poké Mall no longer leaves a black screen, and Kenmatta\'s dojo stands clear of the Safari gate, its cherry trees gone, and holding a finger down no longer brings up the iPhone\'s magnifying glass.'],
 ];
