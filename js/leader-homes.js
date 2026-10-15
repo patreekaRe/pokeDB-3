@@ -286,21 +286,19 @@ function note(K, x, y, z, w, h, draw, { ry = 0, tilt = 0, paper = '#fffaf0' } = 
 const NIGHT = (t) => t === 'night';
 
 /** JONA, Phil's demon, in his back right corner (the user's sprite, 2026-10-15), facing the room, a violet glow behind
-    her. Her board is built with the room and the sprite painted onto it once it loads: added after the build, she never
-    showed on the user's screen. */
+    her. Her board is built with the room and shown once the sprite loads. */
 function jona(K) {
-  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.55), H = 2.05, CW = 38, CH = 67;   // CW x CH: the sprite's opaque box
+  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.55), H = 2.05, CW = 38, CH = 67;   // the sprite's opaque box, at 26, 12 in jona.png
   block(K, 12, 0);
   const dark = part(K, new T.CircleGeometry(0.55, 24), lit(K, '#000000', { transparent: true, opacity: 0.45, depthWrite: false }), x, 0.01, z);
   dark.rotation.x = -Math.PI / 2;
   quiet(dark);
   motes(K, () => K.fireflyArt('#9040e0'), 4, [x - 0.5, x + 0.3], [0.4, 2.1], [z - 0.3, z + 0.5], 0.1);
   const board = () => { const g = new T.PlaneGeometry(1, 1); g.translate(0, 0.5, 0); return g; };
-  const c = document.createElement('canvas'); c.width = CW; c.height = CH;
-  const map = K.texOf(c), w = H * CW / CH;
-  const m = new T.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.5, toneMapped: false, fog: false, side: T.DoubleSide });
+  const w = H * CW / CH;
+  const m = new T.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, toneMapped: false, fog: false, side: T.DoubleSide });
   m.color.setRGB(1.75, 1.7, 1.8);   // lit as if by her own glow, or the dark corner turns her to a silhouette
-  const her = part(K, board(), m, x, 0.02, z); her.scale.set(w, H, 1);
+  const her = part(K, board(), m, x, 0.02, z); her.scale.set(w, H, 1); her.visible = false;
   const halo = document.createElement('canvas'); halo.width = halo.height = 64;
   const hg = halo.getContext('2d'), rg = hg.createRadialGradient(32, 32, 0, 32, 32, 32);
   rg.addColorStop(0, 'rgba(176,96,255,0.75)'); rg.addColorStop(0.5, 'rgba(120,48,220,0.3)'); rg.addColorStop(1, 'rgba(60,0,120,0)');
@@ -310,15 +308,10 @@ function jona(K) {
   her.castShadow = aura.castShadow = aura.receiveShadow = false;   // a board's shadow is its whole rectangle
   quiet(her); quiet(aura);
   const img = new Image();
-  img.onload = () => {
-    const g = c.getContext('2d', { willReadFrequently: true }), t = document.createElement('canvas');
-    t.width = img.width; t.height = img.height;
-    const tg = t.getContext('2d', { willReadFrequently: true }); tg.drawImage(img, 0, 0);
-    const d = tg.getImageData(0, 0, t.width, t.height).data;
-    let x0 = t.width, y0 = t.height;
-    for (let i = 3; i < d.length; i += 4) if (d[i] > 8) { x0 = Math.min(x0, (i >> 2) % t.width); y0 = Math.min(y0, (i >> 2) / t.width | 0); }
-    g.drawImage(t, x0, y0, CW, CH, 0, 0, CW, CH);
-    map.needsUpdate = true;
+  img.onload = () => {   // her own texture once she's loaded, not a blank one painted over: that never showed for the user
+    const c = document.createElement('canvas'); c.width = CW; c.height = CH;
+    c.getContext('2d').drawImage(img, 26, 12, CW, CH, 0, 0, CW, CH);
+    m.map = K.texOf(c); m.needsUpdate = true; her.visible = true;
   };
   img.src = 'assets/trainers/gym/jona.png';
   K.B.ticks.push((now) => { if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2; });
