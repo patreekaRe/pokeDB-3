@@ -2518,7 +2518,42 @@ const BENCHES = [[12, 15, Math.PI * 0.75], [18, 15, -Math.PI * 0.75], [12, 20, 1
 const BEDS = [[10, 8, 0.9], [20, 8, 0.9], [10, 16, 0.8], [20, 16, 0.8]];
 const dressTiles = new Set();
 
+/** A white picket fence round the Ancient Tree's back and sides (2026-10-15, the user's ask), painted like the garden
+    arch's gate: along the back a row behind the tree, down its left side to its foot, and down its right side to the
+    arch's right post, so the arch is the fenced garden's way in. */
+const FENCE_BACK = 1, FENCE_LEFT = 18;
+function treeFence() {
+  const paint = new THREE.MeshStandardMaterial({ color: SEASON === 'winter' ? '#e8e2d8' : '#f0e6d2', roughness: 0.7 });
+  const g = new THREE.Group();
+  const add = (geo, x, y, z, turn = 0) => { const o = new THREE.Mesh(geo, paint); o.position.set(x, y, z); o.rotation.y = turn; o.castShadow = o.receiveShadow = true; g.add(o); return o; };
+  const post = new THREE.BoxGeometry(0.11, 0.95, 0.11), cap = new THREE.ConeGeometry(0.09, 0.1, 4);
+  const picket = new THREE.BoxGeometry(0.07, 0.72, 0.03), tip = new THREE.ConeGeometry(0.05, 0.08, 4);
+  const run = ([x0, z0], [x1, z1]) => {
+    const len = Math.hypot(x1 - x0, z1 - z0), turn = Math.atan2(-(z1 - z0), x1 - x0), at = (k) => [x0 + (x1 - x0) * k, z0 + (z1 - z0) * k];
+    const posts = Math.max(1, Math.round(len / 1.1));
+    for (let i = 0; i <= posts; i++) { const [x, z] = at(i / posts); add(post, x, 0.475, z); add(cap, x, 1, z).rotation.y = Math.PI / 4; }
+    for (const y of [0.3, 0.65]) { const [x, z] = at(0.5); add(new THREE.BoxGeometry(len, 0.06, 0.035), x, y, z, turn); }
+    const n = Math.floor(len / 0.17);
+    for (let i = 1; i < n; i++) {
+      const [x, z] = at(i / n);
+      add(picket, x, 0.41, z, turn);
+      add(tip, x, 0.81, z, turn).rotation.y = turn + Math.PI / 4;
+    }
+  };
+  const back = tileZ(FENCE_BACK), left = tileX(FENCE_LEFT), right = tileX(ARCH_AT.tx) + ARCH_X + 0.67, front = tileZ(TREE_AT.ty) + 0.45;
+  run([left, front], [left, back]);
+  run([left, back], [right, back]);
+  run([right, back], [right, tileZ(ARCH_AT.ty) - 0.17]);
+  mergeStatic(g, () => false);
+  g.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
+  forest.add(g);
+  for (let x = FENCE_LEFT; x <= ARCH_AT.tx; x++) dressTiles.add(key(x, FENCE_BACK));
+  for (let y = FENCE_BACK; y <= TREE_AT.ty; y++) dressTiles.add(key(FENCE_LEFT, y));
+  for (let y = FENCE_BACK; y < ARCH_AT.ty; y++) dressTiles.add(key(ARCH_AT.tx, y));
+}
+
 function dressClearing() {
+  treeFence();
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.8, ...o });
   const iron = std({ color: '#3a3e48', roughness: 0.5, metalness: 0.3 }), cap = std({ color: '#2a2e36', roughness: 0.5, metalness: 0.3 });
   const pane = std({ color: '#fff4d0', emissive: new THREE.Color('#ffd88a'), roughness: 0.3 });
