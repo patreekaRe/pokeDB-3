@@ -139,7 +139,11 @@ Clearing's north-east (`WORKSHOP_AT` 23,6 in `js/hub-3d.js`, `kurtWorkshop()`, i
 true` road; Halloween's pumpkin patch moved either side of it), walked into like the Nietos' house: `CLEARING.buildings` /
 `homes.workshop` (`kurt: true`, a Slowpoke cast) in `js/data/towns.js`, `HOMES.clearing.workshop` in `js/event-3d.js`
 (`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). His window is
-`openWorkshop()` in `js/workshop.js` (tabs Quest / Furniture / Gifts / Apricorns, tap a recipe, Make); recipes are
+`openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
+Kurt's line on a tag, a tab per shelf counting made / total and a green dot for how many are ready, the picked recipe on a
+parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, one big Make button), the
+shelf below sorted ready / short / made; making plays `forge()`: the materials fly into a glow, sparks, the thing pops out
+stamped MADE!; reduced motion skips to the result); recipes are
 `RECIPES` in `js/data/workshop.js` (pure, `tests/workshop.test.mjs`), each `needs` materials from the Satchel, and
 `shows()` gates them: a quest item once its town's questline is open, a town's two pieces once you've been there (`met`;
 John's festival piece only for the festival picked), a gift once its leader is beaten, the seven Apricorns always. Made:
