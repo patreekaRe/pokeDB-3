@@ -1022,6 +1022,9 @@ const DOLLS = [
     ['.b......b.', '.bbbbbbbb.', 'bbwwwwwwbb', 'bwkkwwkkwb', 'bwwwwwwwwb', 'bbwwwwwwbb', 'bwwwwwwwwb', 'bbwwwwwwbb', '.ww....ww.']],
   ['pachirisu', 'Pachirisu', { w: '#f8f8f8', b: '#68b0e8', e: '#202028' },
     ['.b.....b..', '.wwwbwww..', 'wwewbweww.', 'wwwwwwwwb.', '.wwwwwwwbb', '.wwwwwwbbb', '..wwwww.bb', '..w...w...']],
+  // the Nietos' (their favourite gift earns the big one): a joey in the pouch, like Linc
+  ['kangaskhan', 'Kangaskhan', { b: '#a8845a', w: '#ecdcae', e: '#202028' },
+    ['.b......b.', '.bbbbbbbb.', 'bbebbbbebb', 'bbbwwwwbbb', '.bbbbbbbb.', 'bbwbbbbwbb', 'bbwbebbwbb', 'bbwwwwwwbb', '.bwwwwwwb.', '.bb....bb.']],
 ];
 /** A doll: a real plush sewn from its PLUSH pattern (js/base-dolls.js); its bitmap is only the fallback. */
 function doll(id, x, b, vw, rows, colours, s) {
