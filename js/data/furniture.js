@@ -19,6 +19,7 @@ import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
 import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, FRIENDS, gifteeOf, heartPieces, heartsOf, workshopOf } from './workshop.js';
 import { DOJO_REWARDS, DOJO_REWARD, dojoEarned, dojoHow } from './dojo.js';
+import { BERRIES, BERRY, picked } from './berries.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -35,6 +36,8 @@ const SOURCES = {
   heart: { owned: (save, id) => heartsOf(workshopOf(save), id.split(':')[0]) >= +id.split(':')[1], item: (id) => GYM_BY_ID[id.split(':')[0]] },
   // Kenmatta's dojo (js/data/dojo.js): a belt, or a number of stars from his trials
   dojo: { owned: (save, id) => dojoEarned(save, id), item: (id) => DOJO_REWARD[id] },
+  // the backyard's berry garden (js/data/berries.js): a berry's basket, from the first of it picked
+  berry: { owned: (save, id) => picked(save).includes(id), item: (id) => BERRY[id] },
 };
 
 export const FURNITURE = [
@@ -95,6 +98,8 @@ export const FURNITURE = [
   ...FRIENDS.flatMap(id => heartPieces(id).map(p => ({ kind: p.kind, from: ['heart', `${id}:${p.at}`], towns: true }))),
   // Kenmatta's dojo set
   ...DOJO_REWARDS.map(r => ({ kind: r.kind, from: ['dojo', r.kind] })),
+  // the berry garden's baskets
+  ...BERRIES.map(b => ({ kind: `${b.id}basket`, from: ['berry', b.id] })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -126,6 +131,7 @@ export function howToEarn(piece, save) {
     return `Reach ${n} hearts with ${gifteeOf(src.id, src.name)}: give them gifts made at Kurt's Workshop (${Math.min(has, n)}/${n})`;
   }
   if (kind === 'dojo') return dojoHow(piece.kind, save);
+  if (kind === 'berry') return `Pick your first ${src.name} in your backyard's berry garden`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

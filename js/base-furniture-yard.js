@@ -6,6 +6,7 @@
    from above, the rest from the front. */
 
 import { k, sh, R, panel, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle, floorShadow, ctx } from './base-paint.js';
+import { BERRIES } from './data/berries.js';
 
 export const YARD_KINDS = [];
 const add = (list) => list.forEach(f => YARD_KINDS.push({ group: 'Yard', outdoor: true, ...f }));
@@ -202,3 +203,27 @@ add([
     line(30, 44, 42, 40, k.a, 2); R(41, 37, 5, 5, k.a);
   } },
 ]);
+
+// the berry garden (docs/roadmap.md's backyard, part d; js/data/berries.js): a soil plot to plant in, and a basket of
+// each berry, earned by picking the first of it (js/data/furniture.js), indoor decor, so not `outdoor`
+add([
+  { id: 'berryplot', name: 'Berry plot', w: 1, h: 1, price: 300, high: 0.14, side: 'w', flat(w, h) {
+    wood(1, 1, w - 2, 4, k.w); wood(1, h - 5, w - 2, 4, k.w);
+    wood(1, 5, 4, h - 10, k.w, 'y'); wood(w - 5, 5, 4, h - 10, k.w, 'y');
+    R(5, 5, w - 10, h - 10, SOIL); speckle(5, 5, w - 10, h - 10, sh(SOIL, 1), 1, 0.14);
+    for (let i = 0; i < 3; i++) R(7, 8 + i * 6, w - 14, 2, sh(SOIL, -1));
+    leaf(w / 2 - 3, h / 2, 2, 4, '#58a840', -0.6); leaf(w / 2 + 3, h / 2, 2, 4, '#58a840', 0.6);
+  } },
+]);
+for (const berry of BERRIES) YARD_KINDS.push({ id: `${berry.id}basket`, name: `${berry.name.split(' ')[0]} basket`, group: 'Berries', solo: true, w: 1, h: 1, price: 300,
+  draw(x, b) {
+    floorShadow(x + 2, b, 28);
+    const weave = '#c8924a', dark = sh(weave, -1);
+    for (let i = 0; i < 6; i++) disc(x + 7 + i * 3.6, b - 20 + (i % 2) * 1.5, 4.4, berry.fruit);
+    for (let i = 0; i < 5; i++) { disc(x + 9 + i * 3.6, b - 23 - (i % 2) * 1.5, 4.2, sh(berry.fruit, 1)); disc(x + 8 + i * 3.6, b - 24 - (i % 2) * 1.5, 1.2, '#ffffff'); }
+    leaf(x + 22, b - 28, 2, 4, '#58a840', 0.5);
+    panel(x + 3, b - 18, 26, 18, weave);
+    for (let y = b - 16; y < b - 1; y += 4) R(x + 4, y, 24, 1, dark);
+    for (let px = x + 6; px < x + 28; px += 5) R(px, b - 18, 1, 18, dark);
+    R(x + 2, b - 19, 28, 3, sh(weave, 1));
+  } });

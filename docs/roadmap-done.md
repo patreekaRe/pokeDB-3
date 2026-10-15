@@ -2491,6 +2491,16 @@ them), the park bench, picnic bench and lounger; taps give their cry and hearts.
 stays out of the water. Not checked in a browser: the preview server was stopped mid-test, so only Node tests ran.
 Part d (berry garden) is next.
 
+### The Secret Base's backyard, part d: the berry garden (2026-10-14)
+
+A Berry plot (1x1, outdoor, 95 in Smeargle's catalogue; more through the PC's Duplicate) is placed like any yard piece.
+A tap in Walk opens its window: plant one of five berries (Cheri, Oran, Pecha 1 day, Sitrus 2, Lum 3), see it sprout and
+bloom, then pick it once it ripens on the UTC midnight its days end; a bobbing "!" hangs over a ripe plot. The first of
+each berry picked earns its basket (indoor decor, can stand on a table); after that a picking sells for 8 / 20 / 35
+PokéCoins, at most 100 a UTC day (`DAY_CAP`; the Game Corner gives ~380), since plots can be copied without end. Tested
+with `node --test` and in the browser by calling the window and the frame step directly (the hidden pane ran no frames);
+a real tap on a plot wasn't tried. Part e (the bigger yard) is next.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
