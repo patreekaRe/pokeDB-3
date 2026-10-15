@@ -960,7 +960,8 @@ export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT;
    may hand you a key item (`gives`) or ask you to pick (`pick`: John's festival). The last step is always the shard.
    Then the board rotates the town's small coin requests (`requests`). The dialogue (session 5): each step's `talk`, its
    `nudge` (its leader's word on the board while it isn't done) and what each leader says about it at home; `after`, what
-   they say at home once the stone is lit, and `chats`, the folk's talk then. `{pick}` is the pick made (homeTalk()).
+   they say at home once the stone is lit, and `chats`, the folk's talk then; `awaken` (2026-10-15), each leader's word as
+   they slide in, glowing, the moment the shard wakes the stone (awakenTalk() in js/gym.js). `{pick}` is the pick made (homeTalk()).
    Story under it all: the shards are Crystal Depths
    crystal, cracked when the Sealed Gate was shut. Nothing in a questline gives power in a run. */
 
@@ -1055,6 +1056,16 @@ export const QUESTS = {
           'I set a fourth alarm. It says "SHARD". It goes off at 10:30. In case you forget. I won\'t be awake to check.',
         ],
       },
+    },
+    awaken: {
+      jahmes: [
+        'YOOOOO! DID YOU SEE THAT?! A PILLAR! OF LIGHT! INTO THE SKY!',
+        'I\'m not tired. I\'m NEVER going to be tired again. ...I\'ll be tired at eleven. But TONIGHT? Lantern Village is AWAKE!',
+      ],
+      john: [
+        'Did you feel that? The ground hummed. The whole avenue. Every lantern lit at once.',
+        'That isn\'t a crack any more. It\'s a circuit, closed. The Shrine and your Clearing, wired together. ...And I didn\'t have to decide a thing.',
+      ],
     },
     after: {
       john: [
@@ -1152,6 +1163,16 @@ export const QUESTS = {
           'Don\'t overpeek the Alpha. I\'ll know. I always know.',
         ],
       },
+    },
+    awaken: {
+      shaun: [
+        'Signal\'s up. Full bars. The stone\'s pinging your Clearing at zero latency. I\'ve never seen a connection that clean.',
+        'That light was a handshake. Cinder Springs is back on the network. ...Okay. That was cool. Don\'t tell anyone I said that.',
+      ],
+      clarence: [
+        'Now THAT. Is. An. ENTRANCE. A pillar of light? A shockwave? I\'ve been trying that with smoke machines for YEARS.',
+        'The springs are steaming, the stage is lit, and the whole mountain just took a bow. Cinder Springs is back, darling. And so am I.',
+      ],
     },
     after: {
       clarence: [
@@ -1260,6 +1281,16 @@ export const QUESTS = {
         ],
       },
     },
+    awaken: {
+      kayl: [
+        'Oh. Oh wow. Did you see the lagoon? It went still. Every wave at once. The tide just... remembered.',
+        'I can hear the stilts creaking UP. The houses are rising. Reya\'s staring at the stone. She knows. She always knows.',
+      ],
+      pat: [
+        '♪ ...and the light came up from the water, and the old stone learned to sing... ♪',
+        'That\'s the verse I\'ve been missing. Driftwood Landing is awake, and it sounds like a love song. Thank you, traveller.',
+      ],
+    },
     after: {
       pat: [
         'They wrote back! In a bottle! It says "maybe"! ♪ MAYBE ♪',
@@ -1352,6 +1383,17 @@ export const QUESTS = {
           'If the stone lights up at 3 a.m., that\'s the best content I\'ll ever make.',
         ],
       },
+    },
+    awaken: {
+      ricky: [
+        'Tell me I got that. Tell me I got that on camera. A PILLAR. OF LIGHT. Straight through the canopy.',
+        'The boys can\'t call this one fake. The whole forest lit up. I\'m so awake right now. Highbough is LIVE.',
+      ],
+      phil: [
+        'PHIL: The mist is lifting off the drop. I can see the jungle floor. I haven\'t seen it since the night it cracked.',
+        'JONA: Ugh. Light. Everywhere. ...The stone is singing. I hate that it\'s beautiful.',
+        'PHIL: She means thank you. Highbough is awake.',
+      ],
     },
     after: {
       phil: [
@@ -1449,6 +1491,16 @@ export const QUESTS = {
         ],
       },
     },
+    awaken: {
+      jerome: [
+        'Bro. BRO. That was a full cinematic. Pillar of light, shockwave, the works. That\'s a GTA 6 trailer moment.',
+        'Watering hole\'s rising, the stalls are lit, the whole market\'s back online. Sunwell Bazaar just got a day-one patch.',
+      ],
+      machew: [
+        '...The shadows fled. Every one. For a moment there was only light, and I was not afraid of it.',
+        'The sun-well wakes. The caravans will find their way by its beam. ...And so will you, traveller. The path is open.',
+      ],
+    },
     after: {
       machew: [
         '...The watering hole is full. The Waystone sings. And my blade is real. I sharpen it every evening. It sharpens now.',
@@ -1538,6 +1590,14 @@ export const QUESTS = {
           'LAW: Kangaskhan wanted to go and get it itself. We said no. It\'s on babysitting duty. It sulked. Into the laundry.',
         ],
       },
+    },
+    awaken: {
+      nietos: [
+        'LINC: Pika! PIKA! *pointing up at the light with both hands*',
+        'BRITT: Oh... look at it. It\'s humming in tune. Sweetie, it\'s HUMMING IN TUNE.',
+        'LAW: Hub\'s back up! Full server restored! Every town out on the roads can connect through us again. Oh, umm... I mean, the Waystone works.',
+        'BRITT: Their stones are still dark out there. But ours can reach them now. Go and wake them up.',
+      ],
     },
     after: {
       nietos: [

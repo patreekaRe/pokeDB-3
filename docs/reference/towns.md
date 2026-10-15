@@ -223,9 +223,18 @@ or a playtest (`?shard` marks one on a `?biome=` or `?town=` playtest, nothing s
 at the board, its leader's thanks, then `mendStone()` in `js/event-3d.js` (you're frozen meanwhile): the crystal rises off
 your Pokémon, floats over the broken stone and hangs, sinks into the crack as it blazes (`userData.boost` on the broken
 `waystone()`), a flash, the stone swapped in place for `wholeWaystone()` (built into the room's kit, bent, its door spot
-and fade kept), a ring of light rolling out and a beam going up; the room is re-keyed as the town's `:lit` one in `built`
+and fade kept), a ring of light rolling out and a beam going up (made far grander 2026-10-15, the user's ask, below); the room is re-keyed as the town's `:lit` one in `built`
 (each room carries its `id`), so the board's redraw needs no rebuild. Under reduced motion only the swap. `B.stone` keeps
 the stone's footprint and look. `?town=<biome>&mend` puts a peek's questline at its shard, ready, to see it.
+**The waking, made epic** (2026-10-15, the user's ask: "a slide in dialogue for the gym leaders when we activate the
+waystones... and a way more epic animation"). `mendStone(glow, onFlash)` now runs ~8 s: the crystal arcs over and hangs
+spinning while a rune circle (`runeCircleArt()`) burns into the ground and 44 motes spiral in, the stone shudders as it
+sinks in, then the flash (`onFlash` → `wayFlash()` in `js/gym.js`: a full-screen white-out in the town's colour and a
+shake), two shockwaves, 40 sparks, a 40-tall pillar with a white core and the motes riding it up, the circle flaring out.
+Then `wayCard()` (THE WAYSTONE OF / town / AWAKENS, a band sweeping open, a tap or ~3 s) and `awakenTalk()`: each
+leader in `QUESTS[id].awaken` slides in in turn, glowing in the town's colour (`.gym-scene.awaken`, `--glow`, plate
+WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller beam, a shockwave (`wave` in
+`liveWarp()`), the flash, the card and the Nietos' `awaken` lines. Calm effects: no flash or shake, the card still.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →

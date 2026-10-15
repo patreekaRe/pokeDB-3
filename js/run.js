@@ -16,7 +16,7 @@
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE } from './data/workshop.js';
-import { gymTalk } from './gym.js';
+import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -1739,10 +1739,15 @@ function townRoom(covered = null, at = null) {
     refreshCoins();
     try {
       await leaderSay(step.by, step.thanks, { pick: pick?.label });
-      if (step.kind === 'shard' && run === thisRun) {   // the shard goes in: the stone mends before your eyes
+      if (step.kind === 'shard' && run === thisRun) {   // the shard goes in: the stone wakes before your eyes, and its leaders have their say
+        const glow = RING.find(o => o.id === town.id)?.glow;
         event3dMod?.freezeEvent(true);
         sayLines([]);
-        try { await event3dMod?.mendStone(RING.find(o => o.id === town.id)?.glow); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+        try {
+          await event3dMod?.mendStone(glow, () => wayFlash(glow));
+          if (run === thisRun) await wayCard(town.name, glow);
+          if (run === thisRun) await awakenTalk(Object.entries(quest.awaken || {}).map(([id, lines]) => [GYM_BY_ID[id], lines]), glow);
+        } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
       }
     } finally { handing = false; }
     if (run !== thisRun) return;

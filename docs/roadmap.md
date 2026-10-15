@@ -294,6 +294,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    looking down (a throwaway `window.__top` hook in the town camera, never committed), sent with `SendUserFile`; a
    playtest link with it. ▶ Run in: CLOUD. Prompt: "Read CLAUDE.md and docs/roadmap.md's
    Towns step 4. Give <town> Highbough's clean-up, and send me an aerial screenshot before and after."
+**Done (2026-10-15): the Waystone's waking made epic** (the user's ask): a ~8 s light show as the shard goes in (rune
+   circle, motes, shudder, screen flash and shake, shockwaves, sparks, a pillar of light), a WAYSTONE AWAKENS card, then
+   the town's Gym Leaders slide in glowing with new `awaken` lines (`docs/reference/towns.md`, "The waking, made epic").
+   Branch `claude/next-town-oahwio` and `main`. Waiting on the user's playtest: `?town=<biome>&mend` (hand the
+   shard in at the board). Next: whatever they want tuned in it.
 **Done (2026-10-14): the Gym Leaders' homes, inside, made big** (the user: "so small and very bland"): 13 x 10 rooms, each
    leader's own walls, floor, light and props (`js/leader-homes.js`, `docs/reference/towns.md`'s last section). On `main`,
    waiting on the user's playtest (`?town=<biome>&home=<leader>&gymwins=1`); ask which house to push further next.

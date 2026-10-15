@@ -1976,10 +1976,20 @@ async function homeNews() {
       return;
     }
     welcomeHome('clearing');
-    warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 2400 };
-    await new Promise(r => setTimeout(r, calm ? 0 : 1100));   // the light at its brightest: the stone swapped for the whole one
+    const glow = '#9fe0ff';
+    warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
+    if (!calm) setTimeout(() => playSound('charge'), 300);
+    await new Promise(r => setTimeout(r, calm ? 0 : 1300));   // the light at its brightest: the stone swapped for the whole one
     if (!running) return;
     buildPlaces();
+    const { wayFlash, wayCard, awakenTalk } = await import('./gym.js');
+    playSound('core-surge');
+    if (!calm) setTimeout(() => playSound('thunder'), 250);
+    wayFlash(glow);
+    await new Promise(r => setTimeout(r, calm ? 0 : 1600));
+    if (!running) return;
+    await wayCard(CLEARING.name, glow);
+    await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
   } finally { homeNewsBusy = false; questMarks(); }
 }
@@ -2066,9 +2076,9 @@ function questBoardArt() {
   return c;
 }
 
-let beam = null;
+let beam = null, wave = null;
 function liveWarp(now) {
-  if (!warp) { if (beam) beam.visible = false; mon.board.scale.y = 1; return; }
+  if (!warp) { if (beam) beam.visible = false; if (wave) wave.visible = false; mon.board.scale.y = 1; return; }
   if (!beam) {
     beam = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 6, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
     beam.raycast = () => {};
@@ -2078,12 +2088,25 @@ function liveWarp(now) {
   const k = warp.out ? t : 1 - t;   // how far into the light
   beam.visible = true;
   beam.material.color.set(warp.colour);
-  if (warp.stone) {   // the Clearing's Waystone mended (step 7): a column of light up from it, swelling and fading
-    beam.position.set(tileX(START.x), 3, tileZ(START.y));
-    const w = 0.6 + Math.sin(t * Math.PI) * 0.9;
-    beam.scale.set(w, 1, w);
-    beam.material.opacity = calm ? 0 : Math.sin(t * Math.PI) * 0.7;
-    if (t >= 1) warp = null;
+  if (warp.stone) {   // the Clearing's Waystone mended (step 7): a pillar of light up into the sky, a shockwave rolling out at its peak
+    if (!wave) {
+      wave = new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 64), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }));
+      wave.rotation.x = -Math.PI / 2;
+      wave.raycast = () => {};
+      scene.add(wave);
+    }
+    beam.position.set(tileX(START.x), 15, tileZ(START.y));
+    const rise = Math.min(1, t / 0.3), peak = 1300 / warp.dur, fall = t < peak ? 1 : 1 - (t - peak) / (1 - peak);
+    const w = (0.4 + rise * 0.6) * (t < peak ? 1 : 1 + Math.max(0, 1 - (t - peak) * 8) * 1.6) + Math.sin(now / 70) * 0.05;
+    beam.scale.set(w, 5, w);
+    beam.material.opacity = calm ? 0 : rise * fall * 0.75;
+    const wk = Math.max(0, (t - peak) / 0.4);
+    wave.visible = !calm && wk > 0 && wk < 1;
+    wave.material.color.set(warp.colour);
+    wave.position.set(tileX(START.x), 0.08, tileZ(START.y));
+    wave.scale.setScalar(1 + wk * 12);
+    wave.material.opacity = (1 - wk) * 0.9;
+    if (t >= 1) { warp = null; wave.visible = false; }
     return;
   }
   beam.position.set(walker.x, 3, walker.z);
