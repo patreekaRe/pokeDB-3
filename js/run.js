@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -1982,8 +1982,10 @@ function homeRoom(b, onward = null) {
       const sig = got.first && (await import('./secret-base.js')).PIECES[fav.sig]?.name;
       const loves = both ? 'love' : 'loves', likes = both ? 'like' : 'likes';
       tell(got.first ? `${who} ${loves} the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
-        : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again. ♥♥`
-          : `${who} ${likes} the ${G[id].name}. ♥`);
+        : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again.`
+          : `${who} ${likes} the ${G[id].name}.`);
+      tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.` : `Friendship ${got.hearts}/${HEARTS}!`)
+        : `You're already the best of friends. ${both ? 'They' : GYM_BY_ID[home.leader].name} still ${both ? 'love' : 'loves'} it.`);
     }
     again();
   }));
@@ -2051,6 +2053,7 @@ function homeRoom(b, onward = null) {
     onSkip: out,
     layout: 'event-room home-room',
     ask: false,   // only a door back into the town
+    hearts: townsOpen() && FAVOURITE[home.leader] && !away ? heartsOf(workshopOf(getSave()), home.leader) : null,
   });
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };

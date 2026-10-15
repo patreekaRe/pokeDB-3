@@ -141,6 +141,14 @@ export function giveGift(ws, giftId, leader) {
   };
 }
 
+/** A friend's hearts (the user's picks, 2026-10-14; docs/roadmap.md's step 8): `liked` shown as up to HEARTS, so a gift
+    fills one and their favourite two. Gifts past the last still count in `liked`, so the cap can move later. */
+export const HEARTS = 5;
+export const heartsOf = (ws, leader) => Math.min(HEARTS, ws.liked?.[leader] || 0);
+
+/** Everyone who takes a gift, the Nietos (home) first. */
+export const FRIENDS = ['nietos', ...GIFTS.map(g => g.leader).filter(id => id !== 'nietos')];
+
 /** A recipe's needs as a line ("🕯️ 2/3 · 📜 3/3"). */
 export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
   .map(([id, n]) => `${MATERIALS_BY_ID[id].icon} ${Math.min(sat.mats[id] || 0, n)}/${n}`).join(' · ');

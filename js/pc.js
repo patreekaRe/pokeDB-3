@@ -19,7 +19,7 @@ import { bookEntries } from './halloffame.js';
 import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
-import { el } from './ui.js';
+import { el, heartRow } from './ui.js';
 import { SENDERS, unclaimed, claim } from './mail.js';
 import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
 import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
@@ -34,7 +34,9 @@ import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buy
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
-import { pcNew, markPcSeen, pcLookedAt } from './pc-news.js';
+import { pcNew, markPcSeen, pcLookedAt, friendsOpen } from './pc-news.js';
+import { GYM_BY_ID, GYM_INK, gymWins, spriteOf } from './data/gym.js';
+import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf } from './data/workshop.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -115,7 +117,7 @@ function onKey(e) {
   back();
 }
 
-const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', buddy: 'home', residents: 'home', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home' };
+const UP = { home: null, prof: 'home', mailbox: 'home', missions: 'home', letter: 'mailbox', buddy: 'home', residents: 'home', mine: 'home', rename: 'mine', decor: 'mine', patches: 'home', patch: 'patches', game: 'patches', house: 'home', friends: 'home' };
 
 function back() {
   const up = UP[page];
@@ -214,6 +216,7 @@ const PAGES = {
       ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
+      ...(friendsOpen(save) ? [['FRIENDS', 'How close you are to each Gym Leader. Gifts from Kurt\'s Workshop, given at their home, fill their hearts.', () => show('friends'), pcNew('friends', save)]] : []),
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
       ...(fame && onFame ? [[fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]] : []),
       patches,
@@ -271,6 +274,34 @@ const PAGES = {
 
     glass.replaceChildren(head('PROF. OAK\'S PC'), rate, card, list);
     speak(`PROF. OAK: ${rating(nBeaten, main.length, save.dex.complete)}`);
+  },
+  friends() {
+    const save = getSave(), ws = workshopOf(save);
+    const cards = FRIENDS.filter(id => GYM_BY_ID[id]).map(id => {
+      const l = GYM_BY_ID[id], met = gymWins(save, id) > 0 || heartsOf(ws, id) > 0, n = heartsOf(ws, id), fond = ws.fond.includes(id);
+      const who = met ? gifteeOf(id, l.name.replace(/^THE /, '')) : '???';
+      const b = el('button', `pc-friend${met ? '' : ' unmet'}${n >= HEARTS ? ' best' : ''}`);
+      b.type = 'button';
+      b.style.setProperty('--ink', GYM_INK[id]?.[1] ?? '#3a78b8');
+      const img = el('img', 'pixel');
+      Object.assign(img, { src: spriteOf(l), alt: '', draggable: false });
+      const name = el('span', 'pc-friend-name');
+      name.append(el('b', '', met ? l.name : '???'), heartRow(n, HEARTS));
+      const sub = !met ? 'Not met yet. Beat them at their Gym.' : n >= HEARTS ? 'Best friends!' : fond ? `Loves the ${FAVOURITE[id].name}.` : 'Their favourite gift: ???';
+      b.append(img, name, el('span', 'pc-friend-sub', sub));
+      const line = !met ? 'Someone you haven\'t met yet. Beat their Gym, and they\'ll take a gift at home.'
+        : n >= HEARTS ? `${who} and you are the best of friends.`
+          : `${who}: ${n} of ${HEARTS} hearts. Every gift fills one${fond ? `, and the ${FAVOURITE[id].name} two.` : '; their favourite fills two.'}`;
+      const tell = () => { if (!hush) speak(line); };
+      b.addEventListener('pointerenter', tell);
+      b.addEventListener('focus', tell);
+      b.addEventListener('click', () => { playSound('confirm'); speak(line); });
+      return b;
+    });
+    const list = el('div', 'pc-friends');
+    list.append(...cards);
+    glass.replaceChildren(head('FRIENDS'), list);
+    speak('Give Gym Leaders gifts from Kurt\'s Workshop at their home to fill their hearts. Their favourite fills two.');
   },
   mailbox() {
     const mail = [...(getSave().mail || [])].reverse(), waiting = unclaimed().length;

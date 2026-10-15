@@ -527,6 +527,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
      all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
      maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
+   - **Session (a) done (2026-10-14): hearts.** `heartsOf()` / `HEARTS` / `FRIENDS` in `js/data/workshop.js` (test in
+     `tests/workshop.test.mjs`), the hearts on a home's room-bar LCD beside its name, a gift saying the new count (and
+     "already the best of friends" past 5), and the PC's FRIENDS page (towns on, a leader beaten). Detail:
+     `docs/reference/towns.md`. On `main`. Next: session (b), the heart lines.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

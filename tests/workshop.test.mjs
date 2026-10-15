@@ -99,3 +99,19 @@ test('an Apricorn skin only changes the Safari Ball\'s sprite, and every sprite 
   for (const s of SKINS) assert.ok(existsSync(new URL(`../assets/items/${s.sprite}.png`, import.meta.url)), s.sprite);
   assert.ok(existsSync(new URL('../assets/trainers/kurt.png', import.meta.url)) && existsSync(new URL('../assets/trainers/kurt-blink.png', import.meta.url)));
 });
+
+test('a friend\'s hearts: a gift fills one, their favourite two, and they stop at five', async () => {
+  const { heartsOf, HEARTS, FRIENDS } = await import('../js/data/workshop.js');
+  assert.equal(FRIENDS[0], 'nietos');
+  assert.equal(new Set(FRIENDS).size, GIFTS.length, 'everyone with a favourite gift, once');
+  const fav = FAVOURITE.john.makes, other = GIFTS.find(g => g.leader !== 'john').makes;
+  let ws = { ...workshopOf({}), gifts: { [fav]: 9, [other]: 9 } };
+  assert.equal(heartsOf(ws, 'john'), 0);
+  ws = giveGift(ws, other, 'john').ws;
+  assert.equal(heartsOf(ws, 'john'), 1);
+  ws = giveGift(ws, fav, 'john').ws;
+  assert.equal(heartsOf(ws, 'john'), 3);
+  for (let i = 0; i < 4; i++) ws = giveGift(ws, fav, 'john').ws;
+  assert.equal(heartsOf(ws, 'john'), HEARTS);
+  assert.equal(heartsOf(ws, 'jahmes'), 0);
+});

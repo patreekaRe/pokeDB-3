@@ -24,6 +24,17 @@ export function el(tag, className = '', text = '') {
   return node;
 }
 
+const HEART = '<svg viewBox="0 0 10 9" aria-hidden="true"><path d="M5 8.6C1.2 5.8 0 4.2 0 2.6 0 1.1 1.1 0 2.5 0 3.5 0 4.4.6 5 1.5 5.6.6 6.5 0 7.5 0 8.9 0 10 1.1 10 2.6 10 4.2 8.8 5.8 5 8.6Z"/></svg>';
+
+/** A friend's row of hearts, `n` of `of` filled (js/data/workshop.js's heartsOf()). */
+export function heartRow(n, of = 5, className = '') {
+  const row = el('span', `hearts${className ? ` ${className}` : ''}${n >= of ? ' full' : ''}`);
+  row.setAttribute('role', 'img');
+  row.setAttribute('aria-label', `${n} of ${of} hearts`);
+  row.innerHTML = Array.from({ length: of }, (_, i) => `<i class="${i < n ? 'on' : ''}">${HEART}</i>`).join('');
+  return row;
+}
+
 /** Keep a line of text on one line, shrinking it only as far as it must to fit: the one exception to the 12px floor,
     since cut-off or wrapped text reads worse than small text. Measured a frame later, once the node is laid out. */
 export function fitText(node, min = 7) {
