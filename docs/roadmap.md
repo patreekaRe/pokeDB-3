@@ -569,8 +569,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `docs/reference/towns.md`. On `main`.
    - **Session (b) done (2026-10-14): heart lines.** `HEART_LINES` in `js/data/towns.js`, 5 for each of the 11 friends,
      said first at home as each heart fills (`homeTalk()`, heard ones tracked in `save.workshop.heard`), a gift's toast
-     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`. Next:
-     session (c), Secret Base visits and sitting on furniture.
+     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`.
+   - **Session (c) done (2026-10-15): Secret Base visits.** From 3 hearts a friend joins the day's base visit (mended town
+     or not) with `BASE_LINES` of their own (`js/data/towns.js`); at 5 they walk in and sit on a chair, sofa or cushion
+     (never the bed), and once the day's visit is over a best friend still drops in half the times you come in.
+     `baseFriends()` in `js/data/workshop.js`, test in `tests/workshop.test.mjs`; detail in `docs/reference/towns.md`.
+     Peek: `?base&hearts=5&visit` (a seat in the room). On `main`, waiting on the user's look. Next: session (d),
+     signature pieces 2 and 3.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

@@ -45,6 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
   ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades (1,000 PokéCoins), then walk out the main room\'s new back door onto your lawn.'],
+  ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -115,3 +115,18 @@ test('a friend\'s hearts: a gift fills one, their favourite two, and they stop a
   assert.equal(heartsOf(ws, 'john'), HEARTS);
   assert.equal(heartsOf(ws, 'jahmes'), 0);
 });
+
+test('friends drop by the Secret Base from three hearts, and best friends at five sit and say their lines', async () => {
+  const { baseFriends, FRIENDS, HEARTS, VISIT_HEARTS } = await import('../js/data/workshop.js');
+  const { BASE_LINES } = await import('../js/data/towns.js');
+  const hearts = { john: VISIT_HEARTS - 1, pat: VISIT_HEARTS, kayl: HEARTS };
+  const { all, best } = baseFriends((id) => hearts[id] || 0);
+  assert.deepEqual(all, ['pat', 'kayl']);
+  assert.deepEqual(best, ['kayl']);
+  assert.deepEqual(baseFriends(() => 0), { all: [], best: [] });
+  for (const id of FRIENDS) for (const kind of ['drop', 'sit']) {
+    const speeches = BASE_LINES[id]?.[kind];
+    assert.ok(speeches?.length, `${id}: a ${kind} speech`);
+    for (const s of speeches) for (const l of s) assert.ok(typeof l === 'string' && l.length && l.length <= 160, `${id} ${kind}: "${l}"`);
+  }
+});

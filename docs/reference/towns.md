@@ -159,6 +159,17 @@ leader]`). **Hearts** (2026-10-14, docs/roadmap.md step 8 session a): `heartsOf(
 `js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
 
+**Friends visit the Secret Base** (2026-10-15, docs/roadmap.md step 8 session c): `baseFriends(at)` in
+`js/data/workshop.js` gives every friend at `VISIT_HEARTS` (3) or more (`all`) and those at 5 (`best`); test in
+`tests/workshop.test.mjs`. `leaderVisitor()` in `js/secret-base.js` puts them in the day's one visit (mended town or not,
+ahead of the same leader's gold or home-leader speech), saying a `BASE_LINES` speech (`js/data/towns.js`: `drop` from 3,
+`sit` at 5, LAW: / BRITT: / LINC: tags naming the speaker over the speech window). Once the day's visit is over, a best
+friend still drops in on `BEST_DROP_IN` (half) of the times you come in (a cosmetic roll). A best friend (`sit`) walks in
+over the doormat to a free chair, sofa, bench or cushion, never your bed (`visitSeat()` in `js/base-3d.js`), hops up,
+is tapped there to talk, and gets down to walk out; with no seat they stand as before. The visitor counts in `seats()` and
+`taken()`, so your partner and the Safari Pokémon leave their seat alone. The gift toast says they'll drop by at 3 and
+often at 5. `?hearts=N` works in the base too: `?base&hearts=5&visit`.
+
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
 towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat
 under `?aerial`). In `js/event-3d.js` (by `AERIAL`): one uniform `BEND` `{ k, z }`, `k` set to `CURVE` when a `kind:
