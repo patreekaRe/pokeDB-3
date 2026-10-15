@@ -72,7 +72,7 @@ import { trackTowns, handInRequest, readBoard, metTown, isMended, inviteFolk, in
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
   homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
-import { campLines, landLine, selfLines } from './data/camp.js';
+import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
 /** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
@@ -645,12 +645,13 @@ let peekAt = null, peekDepths = false, peekHouse = null;
     walking buddy into that town, outside any run (the Nietos' house in the Clearing the same way, `id` 'clearing' with
     its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
     but what's done there is real: requests handed in, furniture bought, townsfolk invited. Leaving (the far gate, Leave,
-    the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. */
-export function visitTown(starter, id, onHome, house = null, { stage = 0 } = {}) {
+    the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. The
+    Depths camp's `onMewtwo` is the way out when you set out with Mewtwo (campTalk()). */
+export function visitTown(starter, id, onHome, house = null, { stage = 0, onMewtwo = null } = {}) {
   const at = placeOf(id);
   if (!at || !starter) return false;
   peeking = true;
-  visiting = { onHome, id, stage };
+  visiting = { onHome, id, stage, onMewtwo };
   peekAt = BIOMES_BY_ID[at.biome];
   peekHouse = house;
   beginRun(starter, 0, ':visit');
@@ -659,8 +660,8 @@ export function visitTown(starter, id, onHome, house = null, { stage = 0 } = {})
 let visiting = null;
 
 /** Back from a visit to the Clearing, the throwaway run gone and the playtest flag down again. */
-async function goHome(from, town = null) {
-  const back = visiting?.onHome;
+async function goHome(from, town = null, to = null) {
+  const back = visiting?.onHome && (to ?? visiting.onHome);
   if (!back) return;
   visiting.onHome = null;   // once
   const { curtain } = await import('./hd2d.js');
@@ -669,6 +670,37 @@ async function goHome(from, town = null) {
   townVisit = null;
   for (const k of Object.keys(homeVisits)) delete homeVisits[k];
   back?.(from, town);
+}
+
+/** The saved run whose road stands in town `id`'s biome (on its map, or in the town itself), or null: a visit to that
+    town opens its far gate onto the run (the user's ask, 2026-10-14). Never one at the crossroads, in a gym's hand-over,
+    or Mewtwo's, a Safari or a climb, which have no town. */
+export function runWaitingIn(id) {
+  const saved = loadSavedRun();
+  if (!saved || saved.safari || saved.tower || saved.atFork || saved.gymWon || isMewtwoRun(saved.starter)) return null;
+  return (saved.town ? saved.town.id : biomeAt(saved.route, saved.biome)?.id) === id ? saved : null;
+}
+
+/** Out of a visited town's far gate into the saved run waiting in its biome: the throwaway run gone, the real one picked
+    up where it stood, as its own town's gate would (the map, or the biome's map built afresh if it stood in the town). */
+async function walkIntoRun(saved) {
+  if (!visiting?.onHome) return;
+  visiting.onHome = null;
+  const { curtain } = await import('./hd2d.js');
+  await curtain(true, 360);
+  abandonRun();
+  townVisit = null;
+  for (const k of Object.keys(homeVisits)) delete homeVisits[k];
+  run = saved;
+  mapFilm = null;
+  if (run.town) {
+    run.town = null;
+    startBiome();
+  } else {
+    reseed(`map:${zone()}:${run.current}`);
+    showMap();
+  }
+  curtain(false, 420);
 }
 
 /** A peeked run set down in `at` (a biome, walked at its slot): its route, the other fork's road, the stage and HP for there. */
@@ -1701,8 +1733,10 @@ let handing = false;   // a quest step being handed in, its leader still talking
     (walkOn()), which then lifts; `at` puts you on a house's doorstep. The far gate (or Leave) walks on into the biome. */
 function townRoom(covered = null, at = null) {
   const town = TOWNS[run.town.id], thisRun = run, t = run.town;
-  const home = !!t.visit;   // walked in from home through the Clearing's Waystone: no run, its gate goes home
+  const home = !!t.visit;   // walked in from home through the Clearing's Waystone: no run, only the Waystone goes home
   const real = !peeking || home;
+  // the user's ask, 2026-10-14: a visit's far gate is barred, unless your saved run waits in this biome: then it walks on into it
+  const ahead = home ? runWaitingIn(town.id) : null, barred = home && !ahead;
   // a playtest (?town=) keeps its questline on the run, never the save; ?satchel there makes every step ready
   // &mend on a ?town= peek: its questline up to the shard, the shard in hand, to see the stone mended
   if (!real && !t.peekSt && mendFlag() && questOf(town)) t.peekSt = { ...townState(getSave(), town.id), quest: { step: questOf(town).steps.length - 1, got: 0, picks: {} } };
@@ -1711,7 +1745,8 @@ function townRoom(covered = null, at = null) {
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
   const leave = () => {
     if (run !== thisRun) return;
-    if (home) return beamHome();
+    if (ahead) return walkIntoRun(ahead);
+    if (home) { playSound('stick'); return said('The far gate won\'t open from this side. Only the Waystone\'s light takes you home.'); }
     run.town = null;
     townVisit = null;
     startBiome();
@@ -1801,16 +1836,17 @@ function townRoom(covered = null, at = null) {
   playMusic(town.music);
   showChoice({
     title: town.name.toUpperCase(),
-    sub: first ? [town.first, town.sub] : townVisit ? [] : home ? [`You step out of the Waystone's light into ${town.name}. Its shop, its board and its folk are all here. The Waystone or the far gate takes you home.`] : [town.sub],
+    sub: first ? [town.first, town.sub] : townVisit ? [] : ahead ? [`You step out of the Waystone's light into ${town.name}. Your run waits past the far gate; the Waystone takes you home.`]
+      : home ? [`You step out of the Waystone's light into ${town.name}. Its shop, its board and its folk are all here. Only the Waystone takes you home.`] : [town.sub],
     options,
     skipLabel: 'Leave',
-    onSkip: leave,
+    onSkip: barred ? null : leave,
     layout: 'event-room town-room',
   });
   const visit = townVisit ??= { id: town.id };
   const knocks = {}, asked = new Set();
   event3d(visit, 'town', {}, null, {
-    extra: { town, at, mended: lit && !mendNow, chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : [])], onDoor: (id) => {
+    extra: { town, at, mended: lit && !mendNow, ...(barred ? { onLeave: leave } : {}), chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : [])], onDoor: (id) => {
       if (run !== thisRun) return;
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }
@@ -1837,7 +1873,7 @@ function townRoom(covered = null, at = null) {
       if (mendNow) mendScene();
       else if (greeter && !t.greeted) greet();
     },
-    onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) leave(); },
+    onFail: () => { town3d.failed = true; covered?.(); covered = null; if (run === thisRun) (barred ? beamHome() : leave()); },
   });
 }
 
@@ -2007,7 +2043,7 @@ function homeRoom(b, onward = null) {
   });
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : home.sub],
+    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : visiting?.onMewtwo ? home.subGo ?? home.sub : home.sub],
     options,
     skipLabel: onward ? 'Go down' : 'Leave',
     onSkip: out,
@@ -2080,16 +2116,28 @@ function campStop(onDown) {
   setTimeout(() => { if (run === thisRun && run.town?.fall) campTalk(); }, 2200);
 }
 
-/** Mewtwo in the Depths camp: what it says follows the Waystone Shards placed, said over the shard pentagram. */
+/** Mewtwo in the Depths camp: what it says follows the Waystone Shards placed, said over the shard pentagram. Come down
+    through the broken gate (`visiting.onMewtwo`), it then says why its run starts up in the three lands and asks you along:
+    yes is its Prepare step (the user's ask, 2026-10-15: the gate no longer drops you straight into the Whispering Clearing). */
 let campTalking = false;
 export async function campTalk() {
   if (campTalking) return;
   campTalking = true;
   try {
-    const { showPentagram } = await import('./pentagram.js');
     const self = isMewtwoRun(run?.starter);   // Mewtwo's own run: it feels its strength itself
-    await showPentagram(self ? selfLines(shardsPlaced(getSave())) : campLines(shardsPlaced(getSave())), { fresh: campFresh() });
-    sawCamp();
+    if (sealOn()) {
+      const { showPentagram } = await import('./pentagram.js');
+      await showPentagram(self ? selfLines(shardsPlaced(getSave())) : campLines(shardsPlaced(getSave())), { fresh: campFresh() });
+      sawCamp();
+    }
+    const go = !self && visiting?.onMewtwo, thisRun = run;
+    if (!go) return;
+    event3dMod?.freezeEvent(true);
+    sayLines([]);
+    try { await gymTalk(mewtwoTalker(), whyLines(getSave().campWhy), { lit: true, title: '', look: 'psychic' }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+    if (run !== thisRun) return;
+    updateSave(d => { d.campWhy = true; });
+    if (await confirmDialog('Set out with Mewtwo? Its run starts up in the Whispering Clearing.', 'Set out') && run === thisRun) goHome('gate', null, go);
   } finally { campTalking = false; }
 }
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
@@ -3341,7 +3389,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
       kind, run: thisRun, node, figures, after, spent, biome: land().id, type: run.starter.type, ...extra,
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
       onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
-      onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
+      onLeave: extra.onLeave ?? (() => document.querySelector('#room-bar .room-leave, #reward-skip')?.click()),   // a visit's barred gate says so
     });
   }).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
     .catch(err => {

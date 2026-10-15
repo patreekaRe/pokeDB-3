@@ -1916,7 +1916,8 @@ async function enterHouse(p) {
   await acts.onTown('clearing', p.id);
 }
 
-/** Down through the broken Sealed Gate to the Depths camp (js/data/camp.js), outside any run: back in front of the gate. */
+/** Down through the broken Sealed Gate to the Depths camp (js/data/camp.js), outside any run: back in front of the gate,
+    and Mewtwo's runs set out from its talk there. */
 async function enterCamp() {
   if (entering) return;
   hideCard();
@@ -2355,8 +2356,9 @@ function makePlaces() {
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
-    line: sealOn() ? 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.' : 'The broken Sealed Gate. Something waits beyond it.',
-    buttons: sealOn() ? [['Go through', acts.onGate], ['Down to the camp', enterCamp]] : [['Go through', acts.onGate]],
+    // the way down to the Depths camp, and back up to here: Mewtwo's run starts from its talk there (the user's ask, 2026-10-15)
+    line: 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.',
+    buttons: [['Go through', enterCamp]],
     build: (g) => {   // built in the round (js/hub-sealed.js; 2026-10-15, the user's ask: no longer a flat pixel painting)
       sealed = makeSealedGate(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), dot: dotTexture(), merge: mergeStatic });
       g.add(sealed.group);
@@ -3240,6 +3242,15 @@ function showWaystone(p) {
       go.textContent = 'Travel';
       go.addEventListener('click', () => warpTo(p, t));
       row.append(go);
+      // your saved run waits in this town's biome: its far gate walks on into it (js/run.js's runWaitingIn())
+      import('./run.js').then(m => {
+        if (!m.runWaitingIn(t.id) || !row.isConnected) return;
+        const tag = document.createElement('span');
+        tag.className = 'way-count way-run';
+        tag.textContent = 'Run';
+        tag.title = `Your run waits in ${town.name}: walk out its far gate to carry on.`;
+        go.before(tag);
+      });
     } else {
       const n = document.createElement('span');
       n.className = 'way-count';

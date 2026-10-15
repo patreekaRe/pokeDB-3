@@ -149,8 +149,16 @@ floating by the way in, a tap its talk). Two ways down: **a won run's fall** (`s
 `kind: 'camp'` once the gate is broken; `descent()` plays the fall with its own lines, then `campAfterWin()` walks the
 run's Pokémon, at its stage, round the camp as a visit (`visitTown(..., { stage })`), the ended run put back on leaving
 for the result window; the win is recorded before, so leaving only plays the win scene and the rest), and **the Sealed
-Gate's second button** in the Clearing, "Down to the camp" (`enterCamp()` in `js/hub-3d.js`: your buddy, or a free
-starter if your buddy is Mewtwo, back in front of the gate on leaving). **Kept short** (the user's call, 2026-10-15): a
+Gate's portal** in the Clearing, its one button "Go through" (`enterCamp()` in `js/hub-3d.js`: your buddy, or a free
+starter if your buddy is Mewtwo, back in front of the gate on leaving; since 2026-10-15 always, towns or not, and no longer
+straight to Mewtwo's Prepare step: the user found a portal opening onto the Whispering Clearing made no sense). **Mewtwo's
+run starts from the camp** (2026-10-15): come down through the gate (`visitTown(..., { onMewtwo })` from `onTown` in
+`js/main.js`), a tap on Mewtwo is the pentagram (with the towns on) and then `whyLines()` in `js/data/camp.js`, why its
+run goes up first (an age behind the gate put its power to sleep and only battle wakes it, so up through the Clearing,
+Shrine and Wastes, each guardian waking more of it, Prepare's Awakened / Ascendant; the Wastes' crater drops it back to
+the camp, then the mine), one line once heard (`save.campWhy`), then "Set out with Mewtwo?": yes leaves the camp
+(`goHome(..., onMewtwo)`) for its Prepare step, the hub set to put you back in front of the gate. A won run's landing has
+no Set out. **Kept short** (the user's call, 2026-10-15): a
 won run's landing is the walk only when something new waits (`campNews()` in `js/towns.js`: the camp never walked, or a
 shard lit since Mewtwo last saw the pentagram, `save.campLit`, set by `sawCamp()` after its talk; under `?shards=N` that
 memory lasts the page load), and then Mewtwo's talk comes to you by itself, the new slot lit last with a flash

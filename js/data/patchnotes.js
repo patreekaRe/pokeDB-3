@@ -49,7 +49,7 @@ export const NEXT = [
   ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
   ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
   ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
-  ['hub', 'The broken Sealed Gate in the Clearing is built in 3D now: an obsidian arch, crystal spires, snapped chains and a swirling portal to the Depths.'],
+  ['hub', 'The broken Sealed Gate is built in 3D now, its portal leading down to Mewtwo\'s camp in the Depths: talk to Mewtwo there to set out on its run.'],
   ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits on the plaza with tips.'],
 ];
 
@@ -64,9 +64,9 @@ export const TOWN_NOTES = [
   ['runs', 'Every town has a questline: beat one of its Gym Leaders and they ask your help mending its Waystone over a few runs, ending on a shard won from a marked Alpha. Mend it in a blaze of light, its leaders sliding in to mark it, and they visit you at home. The new Satchel app keeps your key items, materials and quests.'],
   ['runs', 'Every town\'s ground now rolls away over the horizon like the Clearing\'s, and past each town\'s exit stands a grand, living view: a lantern-lit mountain, a smoking volcano, a drowned temple, the Great Tree, a giant sun.'],
   ['runs', 'Every Gym Leader\'s home is now a big room that\'s all them: their own walls, lights and corners, from Clarence\'s stage to the tree through Ricky\'s den. JONA waits in the corner of Phil\'s: tap her to talk, and now and then she and Phil have it out.'],
-  ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home in a column of its light, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base.'],
+  ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home in a column of its light, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base. Only its Waystone takes you home, but if your run is in that town\'s biome, walk out its far gate to carry on.'],
   ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and they ask you home to mend it, the hub every town links through, so it comes before any town\'s quest. A quest board by the plaza, and the Pokédex\'s new Quests app, show every quest\'s progress; every turn-in goes to a Gym Leader at home: tap them when a "!" is over their name sign.'],
-  ['hub', 'Kurt\'s Workshop opens in the Clearing: turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders (the Nietos too) and Apricorn looks for your Safari Balls.'],
+  ['hub', 'Kurt\'s Workshop opens in the Clearing: at his crafting bench, turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders (the Nietos too) and Apricorn looks for your Safari Balls.'],
   ['modes', 'Mewtwo is weakened in the Crystal Depths until you mend the five Waystones. Each shard gives back strength, and a camp in the Depths shows its seal\'s pentagram.'],
 ];
 

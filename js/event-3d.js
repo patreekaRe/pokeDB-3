@@ -9790,6 +9790,7 @@ export function possess(from, into, on) {
     const mb = b.board.material, va = new THREE.Vector3(), vb = new THREE.Vector3();
     mb.emissive.set('#b060ff'); mb.emissiveMap = b.t; mb.emissiveIntensity = 0; mb.needsUpdate = true;
     a.board.material.transparent = true;
+    const aura = R.auras?.[from], at = aura && { aura: aura.aura.position.clone(), dark: aura.dark.position.clone(), sx: aura.aura.scale.x, sy: aura.aura.scale.y, op: aura.dark.material.opacity };
     let last = performance.now();
     R.ticks.push((now) => {   // after tickFigures(), so it has the last word on where they stand
       const dt = Math.min(0.1, (now - last) / 1000); last = now;
@@ -9802,6 +9803,12 @@ export function possess(from, into, on) {
       a.group.scale.setScalar(1 - e * 0.75);
       a.board.material.opacity = 1 - held;
       a.group.visible = st.f < 0.98;
+      if (aura) {   // her glow goes with her and wraps him while she's in him; her shadow slides along and fades
+        aura.aura.position.copy(at.aura).add(a.group.position).sub(va);
+        aura.aura.scale.set(at.sx * (1 - e * 0.3), at.sy * (1 - e * 0.3), 1);
+        aura.dark.position.set(at.dark.x + a.group.position.x - va.x, at.dark.y, at.dark.z + a.group.position.z - va.z);
+        aura.dark.material.opacity = at.op * (1 - held);
+      }
       if (!st.f) return;
       const sway = calm ? 0 : 1;
       b.group.position.y = b.base.y + held * 0.35 + Math.sin(now / 320) * 0.06 * held * sway;

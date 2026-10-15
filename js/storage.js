@@ -68,6 +68,7 @@ const freshSave = () => ({
   gateHp: GATE_HP,            // the Sealed Gate's HP (js/data/gate.js); 0 = broken, Mewtwo free. Old saves: seedGate()
   gateSeen: false,            // the gate's scene has played once, so its story is told (js/gatescene.js)
   campLit: null,              // the shards Mewtwo has seen lit in the Depths camp (RING order); null till the camp is first walked (js/towns.js's sawCamp())
+  campWhy: false,             // Mewtwo has said in the camp why its run starts up in the Whispering Clearing (js/run.js's campTalk())
   cornerOpen: false,          // Meowth met at a crossroads (js/meowth.js): the Poké Mall's Game Corner opens; every save meets it, old ones too
   travelSeen: {},             // the journey films played once, by trip ('shrine>wastes': true), so their lines have been read (js/travel.js)
   kenBeaten: false,           // Kenmatta beaten KEN_WINS times (js/run.js): every map shows his dojo's ❓ room with his face

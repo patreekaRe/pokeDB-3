@@ -55,7 +55,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live).
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live). Since 2026-10-14 a visit goes home only by the Waystone, and walks into your saved run when it stands in that town's biome (`docs/roadmap-done.md`).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -328,7 +328,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    run). **The shards' progress is shown big**: a **pentagram of five shard slots**, slid in full screen like the gym's
    dialogue, the placed shards glowing in their towns' `RING` colours, the missing ones dark; seen before a Mewtwo run
    and when you meet Mewtwo after one. **The Depths camp**: once the seal is broken, the fall (or the Sealed Gate's
-   second button) takes you down to a camp in the Depths you can walk round, between runs too, Mewtwo standing by the
+   portal) takes you down to a camp in the Depths you can walk round, between runs too, Mewtwo standing by the
    way in to the Depths proper; talking to it brings up the pentagram, and its lines change with the shards placed
    (why it needs them, what Eternatus is, how much of its strength is back). Builds with step 6 (the shards must drop
    first).
@@ -358,6 +358,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `docs/reference/mewtwo-and-depths.md`. Playtest `?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into the camp),
    `?towns&shards=1&mewtwo&descent=mewtwo` (Mewtwo's stop). **Step 5 is built; next**: the user playtests it (with
    `?towns`), and it goes live with the towns. Branch `claude/next-town-oahwio`, pushed to `main` too.
+   **Done (2026-10-15): the Sealed Gate's portal leads to the camp, and Mewtwo's run starts there** (the user: the
+   portal going straight to the Whispering Clearing made no sense). "Go through" is the camp (towns on or off); a tap on
+   Mewtwo says why its run goes up through the three lands first (`whyLines()`), then "Set out with Mewtwo?" opens its
+   Prepare step. Headless-checked both ways. Playtest `?mewtwo&gate=0&hubat=2,11` (Enter or tap the gate), `&towns&shards=2`
+   for the pentagram first. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
