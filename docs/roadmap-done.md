@@ -2648,3 +2648,9 @@ shows as held), today's top catchers chalked on a board (`safariTop()`, a tap op
 counter. A ball buys through `buyCorner()` like the Game Corner app; two taps and the buy window, as in every shop. A tap
 through your partner standing at a stand now reaches the stand (its sprite covers the ball). Checked headless: every
 buy, the pass, the board, the keeper, the ribbon and the closed front. `?mall=outfitter`.
+
+### The Furniture store rebuilt as a grand showroom (2026-10-15, the user's ask: "much BIGGER ... AESTHETIC ... ORGANIZED")
+Both floors are 21 x 13 now (the Game Corner's size, the camera following you), the day's 8 pieces sorted into eight
+departments, four a wing, each with a plaque and price card in its colour; a marble nave, carpet runner, velvet rotunda,
+crystal chandeliers, crest and Smeargle's painting, his easel downstairs and a grand piano upstairs (`js/mall-furniture.js`;
+`docs/reference/hub-base-mall.md`). Stock stays 8 a floor.

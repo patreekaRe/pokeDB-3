@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['mall', 'Smeargle\'s Furniture store is a grand showroom now, three times bigger: eight departments in two wings, marble, chandeliers, a velvet rotunda, and a grand piano upstairs.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -470,7 +471,7 @@ export const IN_THE_GAME = [
   ['🏆', '176 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
-  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s Furniture store, with new stock every day, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
+  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s two-floor furniture showroom, with new stock in eight departments every day, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],

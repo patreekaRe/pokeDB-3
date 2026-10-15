@@ -1497,7 +1497,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   if (!store) await warm();
   requestAnimationFrame(frame);
   curtain(false);
-  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : DOOR);
+  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : null);
   if (store === 'corner') goPlace('gc', null);
   if (store === 'outfitter') goPlace('so', null);
 }
