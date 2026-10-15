@@ -14,7 +14,10 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, dropGL } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, dropGL, bend, bendFine } from './hd2d.js';
+import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
+import { season } from './season.js';
+import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RES, HD, sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -76,6 +79,13 @@ let leaveTo = null;   // where the doormat walks back to (the hub's door); witho
 const tileX = (tx) => tx + 0.5 - COLS / 2;
 const tileZ = (ty) => ty + 0.5 - ROWS / 2;
 
+// the backyard rolls away like the Clearing (bend() in js/hd2d.js): one strength for everything, 0 in every room and
+// CURVE out on the lawn, so your partner and anything shared draw straight indoors; `z` follows the camera's focus
+const BEND = { k: { value: 0 }, z: { value: 0 } };
+const SEASON = season();
+let snow = null;   // winter's snowfall over the yard
+const outdoors = () => (base.here || 'main') === 'yard';
+
 
 /** Only the pixels in (or shaded near) these colours, for an emissive map: a window's sky, a lamp's shade. The pieces
     are painted smooth, so a glow colour comes graded: a pixel glows the more the nearer it is to one of its shades. */
@@ -108,7 +118,9 @@ const here = () => roomById(base.house, base.here || 'main');
    before its wings) is cut down low, so it doesn't hide that floor. */
 function buildRoom() {
   dispose(roomGroup);
-  doorMats = []; exitMat = null;
+  doorMats = []; exitMat = null; snow = null;
+  BEND.k.value = outdoors() ? CURVE : 0;
+  if (outdoors()) return buildYard();
   const art = roomArt(base), shape = here().shape;
   const edge = solid('#2a1e16'), trimC = wallTrim(art), under = solid('#3a2a1e');
   const cap = solid(shade(trimC, 1.15)), outer = solid(shade(trimC, 0.6));
@@ -148,8 +160,9 @@ function buildRoom() {
 
 const throughTex = {};
 /** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor; `down`, the top of a flight
-    of stairs going down into it instead, its treads fading into the dark. */
+    of stairs going down into it instead, its treads fading into the dark; 'yard', the back door's daylight instead. */
 function throughMat(down = false) {
+  if (down === 'yard') return new THREE.MeshBasicMaterial({ map: yardDoorTex(), transparent: true });
   if (!throughTex[down]) {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 128;
@@ -180,7 +193,7 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.stairs === 'down'));
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.to === 'yard' ? 'yard' : d.stairs === 'down'));
   dark.position.set(0, 1.05, 0.03);
   const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
@@ -231,6 +244,199 @@ function wallTrim(art) {
   const [r, g, b] = art.getContext('2d').getImageData(4, WALL - 3, 1, 1).data;
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
 }
+
+
+/* ---------- the backyard (docs/roadmap.md's backyard, part a) ---------- */
+
+/* A lawn behind the house, walked like a room (`house.yard`, js/data/house.js): mown in stripes, the Clearing's meadow
+   round it (its colours, js/hub-3d.js, snowed over in winter), a wooden picket fence on three sides, the front left open
+   like the rooms', the Clearing's trees behind it and down its sides, its sky and light (yardLight()), and the ground
+   rolling away like the Clearing's (BEND). Its doormat on the front edge leads back in through the main room's back door.
+   Nothing new on the GPU: it is the base's own renderer and scene, built like any room. */
+const YTP = 16;   // painted pixels a tile, as the Clearing's
+const LOOK = CLEARING_LOOK, GROUND = groundLook(SEASON, LOOK);
+
+function seeded(seed) {
+  return () => {
+    seed = seed + 0x6D2B79F5 | 0;
+    let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+/** Grass `w` x `h` tiles, pixel by pixel like the Clearing's ground: a mown lawn in stripes two tiles wide, or the wild
+    meadow round it, a shade darker, with longer blades and a few flowers. */
+function grassArt(w, h, lawn, seed) {
+  const rnd = seeded(seed), W = w * YTP, H = h * YTP, c = new OffscreenCanvas(W, H), g = c.getContext('2d', { willReadFrequently: true });
+  const img = g.createImageData(W, H), d = img.data, pal = GROUND.meadow.map(hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const from = lawn ? Math.floor(x / (YTP * 2)) % 2 : 2, i = Math.min(pal.length - 1, from + Math.floor(rnd() * (lawn ? 1.7 : 2.6)));
+    d.set([...pal[i], 255], (y * W + x) * 4);
+  }
+  g.putImageData(img, 0, 0);
+  if (GROUND.blade) for (let n = W * H / (lawn ? 45 : 16); n > 0; n--) {
+    g.fillStyle = GROUND.blade[Math.floor(rnd() * GROUND.blade.length)];
+    g.fillRect(Math.floor(rnd() * W), Math.floor(rnd() * H), 1, lawn ? 1 : 2);
+  }
+  if (!lawn) for (let n = W * H / 700; n > 0 && GROUND.flowers.length; n--) {
+    const [petal, heart] = GROUND.flowers[Math.floor(rnd() * GROUND.flowers.length)], x = 1 + Math.floor(rnd() * (W - 3)), y = 1 + Math.floor(rnd() * (H - 3));
+    g.fillStyle = petal; g.fillRect(x - 1, y, 3, 1); g.fillRect(x, y - 1, 1, 3);
+    g.fillStyle = heart; g.fillRect(x, y, 1, 1);
+  }
+  return c;
+}
+
+/** What the main room's back door shows: daylight, the yard's trees and its lawn, dimmed with the hour. */
+function yardDoorTex() {
+  const t = timeOfDay(), k = { dawn: 0.85, day: 1, dusk: 0.7, night: 0.4 }[t];
+  const c = document.createElement('canvas');
+  c.width = 64; c.height = 128;
+  const g = c.getContext('2d');
+  g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.clip();
+  const sky = g.createLinearGradient(0, 0, 0, 72);
+  sky.addColorStop(0, shade(CLEARING_LIGHT[t].bg, 0.8)); sky.addColorStop(1, CLEARING_LIGHT[t].bg);
+  g.fillStyle = sky; g.fillRect(0, 0, 64, 72);
+  g.fillStyle = shade(LOOK.trees[2], k);
+  for (let x = -6; x < 70; x += 14) { g.beginPath(); g.arc(x, 66, 12 + (x % 3) * 2, 0, Math.PI * 2); g.fill(); }
+  g.fillRect(0, 64, 64, 14);
+  for (let i = 0; i < 4; i++) { g.fillStyle = shade(GROUND.meadow[i % 2 ? 2 : 0], k); g.fillRect(i * 16, 76, 16, 52); }
+  const tx = new THREE.CanvasTexture(c);
+  tx.colorSpace = THREE.SRGBColorSpace;
+  return tx;
+}
+
+function buildYard() {
+  const rnd = seeded(31), side = COLS / 2, back = -ROWS / 2;
+  const add = (mesh, x, y, z) => { mesh.position.set(x, y, z); mesh.receiveShadow = true; mesh.raycast = () => {}; roomGroup.add(mesh); return mesh; };
+  const earth = solid('#7a5a34'), under = solid('#3a2818');
+  const lawn = new THREE.MeshStandardMaterial({ map: tex(grassArt(COLS, ROWS, true, 3)), roughness: 1 });
+  add(new THREE.Mesh(new THREE.BoxGeometry(COLS, 0.6, ROWS), [earth, earth, lawn, under, earth, earth]), 0, -0.3, 0);
+  // the meadow round it, a touch lower so the lawn reads as kept, running on under the view in front as the Clearing's
+  // ground does (the house is behind you), so no sky shows under the lawn's front edge
+  const MW = 44, AHEAD = 9, MD = 22 + ROWS / 2 + AHEAD, wild = tex(grassArt(4, 4, false, 5));
+  wild.wrapS = wild.wrapT = THREE.RepeatWrapping;
+  wild.repeat.set(MW / 4, MD / 4);
+  const meadow = new THREE.MeshStandardMaterial({ map: wild, roughness: 1 });
+  add(new THREE.Mesh(new THREE.BoxGeometry(MW, 0.6, MD), [earth, earth, meadow, under, earth, earth]), 0, -0.33, ROWS / 2 + AHEAD - MD / 2);
+
+  // the Clearing's trees: three rows behind, two down each side (short of the front, which stays open), bushes along
+  // the back fence; billboards like the Clearing's, in its season's leaves
+  const L = leavesOf(SEASON), crown = (i) => L ? L.trees[i % L.trees.length] : LOOK.trees, far = (i) => L ? L.deep[i % L.deep.length] : LOOK.deep;
+  const kinds = [treeArt(1, crown(0)), treeArt(2, crown(1)), treeArt(3, far(0)), treeArt(4, far(1)), bushArt(5, crown(2)), bushArt(6, crown(0))]
+    .map(c => SEASON === 'winter' ? snowCap(c) : c);
+  const spots = kinds.map(() => []), near = () => rnd() < 0.5 ? 0 : 1, deep = () => 2 + (rnd() < 0.5 ? 1 : 0);
+  for (let r = 0; r < 3; r++) for (let x = -side - 7; x < side + 7; x += 1.4 + rnd() * 0.6) {
+    spots[r ? deep() : near()].push({ x: x + (rnd() - 0.5) * 0.5, z: back - 1.7 - r * 1.3 - rnd() * 0.4, s: 1 + r * 0.2 + rnd() * 0.2 });
+  }
+  for (const s of [-1, 1]) for (let r = 0; r < 2; r++) for (let z = back - 0.4; z < 1.2; z += 1.4 + rnd() * 0.4) {
+    spots[r ? deep() : near()].push({ x: s * (side + 1.6 + r * 1.3) + (rnd() - 0.5) * 0.4, z, s: 0.95 + r * 0.2 + rnd() * 0.2 });
+  }
+  for (const s of [-1, 1]) for (let z = 1.6; z < ROWS / 2; z += 1.1) spots[4 + (rnd() < 0.5 ? 1 : 0)].push({ x: s * (side + 1 + rnd() * 0.4), z, s: 0.8 + rnd() * 0.15 });
+  let b = 0;
+  for (let x = -side + 0.4; x < side; x += 1 + rnd() * 0.3) spots[4 + (rnd() < 0.5 ? 1 : 0)].push({ x, z: back - 0.7 - (b++ % 2) * 0.06, s: 0.7 + rnd() * 0.15 });
+  const m4 = new THREE.Matrix4();
+  kinds.forEach((c, k) => {
+    const list = spots[k];
+    if (!list.length) return;
+    const geo = new THREE.PlaneGeometry(c.width / YTP, c.height / YTP);
+    geo.translate(0, c.height / YTP / 2, 0);
+    const mesh = new THREE.InstancedMesh(geo, new THREE.MeshStandardMaterial({ map: tex(c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), list.length);
+    list.forEach((s, i) => mesh.setMatrixAt(i, m4.makeScale(s.s, s.s, s.s).setPosition(s.x, 0, s.z)));
+    mesh.castShadow = true;
+    mesh.raycast = () => {};
+    roomGroup.add(mesh);
+  });
+
+  // a picket fence along the back and down both sides: pointed pickets on two rails, a post every two tiles
+  const runs = [[-side - 0.12, back - 0.12, side + 0.12, back - 0.12], [-side - 0.12, back - 0.12, -side - 0.12, ROWS / 2 - 0.08], [side + 0.12, back - 0.12, side + 0.12, ROWS / 2 - 0.08]];
+  const pick = new THREE.ExtrudeGeometry(new THREE.Shape([[-0.05, 0], [0.05, 0], [0.05, 0.6], [0, 0.7], [-0.05, 0.6]].map(([x, y]) => new THREE.Vector2(x, y))), { depth: 0.035, bevelEnabled: false });
+  pick.translate(0, 0, -0.0175);
+  const pickets = [], posts = [];
+  for (const [x0, z0, x1, z1] of runs) {
+    const len = Math.hypot(x1 - x0, z1 - z0), turn = x0 === x1 ? Math.PI / 2 : 0, out = x0 === x1 ? [Math.sign(x0) * 0.05, 0] : [0, -0.05];
+    for (let s = 0.11; s < len; s += 0.24) pickets.push([x0 + (x1 - x0) * s / len, z0 + (z1 - z0) * s / len, turn]);
+    for (let s = 0; s <= len + 0.01; s += len / Math.max(1, Math.round(len / 2))) posts.push([x0 + (x1 - x0) * s / len + out[0], z0 + (z1 - z0) * s / len + out[1]]);
+    for (const y of [0.2, 0.48]) {
+      const rail = add(new THREE.Mesh(new THREE.BoxGeometry(turn ? 0.04 : len, 0.07, turn ? len : 0.04), solid(LOOK.wood[1])), (x0 + x1) / 2 + out[0], y, (z0 + z1) / 2 + out[1]);
+      rail.castShadow = true;
+    }
+  }
+  const fence = (geo, mat, list, at) => {
+    const mesh = new THREE.InstancedMesh(geo, mat, list.length);
+    list.forEach((p, i) => mesh.setMatrixAt(i, at(p)));
+    mesh.castShadow = mesh.receiveShadow = true;
+    mesh.raycast = () => {};
+    roomGroup.add(mesh);
+  };
+  fence(pick, solid(SEASON === 'winter' ? '#f4f0e8' : LOOK.wood[0]), pickets, ([x, z, turn]) => m4.makeRotationY(turn).setPosition(x, 0, z));
+  fence(new THREE.BoxGeometry(0.13, 0.82, 0.13), solid(LOOK.wood[2]), posts, ([x, z]) => m4.makeTranslation(x, 0.41, z));
+
+  doors = doorsOf(base.house, 'yard').map(d => ({ ...d, tile: pipTile(here().shape, [d.side, d.at]) }));
+  const stone = solid(LOOK.stone[1]), stoneTop = solid(LOOK.stone[0]);
+  for (const d of doors) {
+    addDoor(d, [stone, stone, stoneTop, stone, stone, stone]);
+    // stepping stones from the doormat up onto the lawn
+    for (let i = 0; i < 3; i++) {
+      const o = add(new THREE.Mesh(new THREE.CylinderGeometry(0.27, 0.3, 0.05, 14), stoneTop), tileX(d.tile.x) + (i % 2 ? 0.12 : -0.1), 0.012, tileZ(d.tile.y - i) + 0.1);
+      o.scale.z = 0.85;
+    }
+  }
+
+  if (SEASON === 'winter') {
+    const N = 260, pos = new Float32Array(N * 3), seeds = [];
+    for (let i = 0; i < N; i++) {
+      const s = [(rnd() - 0.5) * 20, rnd() * 7, (rnd() - 0.5) * 14 - 1, rnd() * 100, 0.5 + rnd() * 0.6];
+      seeds.push(s);
+      pos.set(s.slice(0, 3), i * 3);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const c = document.createElement('canvas');
+    c.width = c.height = 16;
+    const g = c.getContext('2d'), r = g.createRadialGradient(8, 8, 0, 8, 8, 8);
+    r.addColorStop(0, '#fff'); r.addColorStop(0.35, 'rgba(255,255,255,0.8)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = r; g.fillRect(0, 0, 16, 16);
+    const map = new THREE.CanvasTexture(c);
+    map.colorSpace = THREE.SRGBColorSpace;
+    snow = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.1, map, transparent: true, opacity: 0.95, depthWrite: false }));
+    snow.userData.seeds = seeds;
+    snow.raycast = () => {};
+    roomGroup.add(snow);
+  }
+  roomGroup.traverse(o => { if (o.isMesh) { bendFine(o); for (const m of [o.material].flat()) bend(m, BEND); } });
+}
+
+/** Winter's flakes drifting down over the yard, wrapping back to the top, following the view across. */
+function liveSnow(now) {
+  snow.position.x = camX;
+  if (calm) return;
+  const t = now / 1000, p = snow.geometry.attributes.position;
+  snow.userData.seeds.forEach(([x, y, z, ph, sp], i) => p.setXYZ(i, x + Math.sin(t * 0.6 * sp + ph) * 0.5, ((y - t * sp) % 7 + 7) % 7, z + Math.cos(t * 0.4 * sp + ph) * 0.3));
+  p.needsUpdate = true;
+}
+
+/** Out in the yard, the Clearing's light for the hour (its season's tint too) under a sky fading down to the treetops. */
+function yardLight(t) {
+  const L = CLEARING_LIGHT[t], T = tintOf(SEASON, t), c = new THREE.Color(), bg = new THREE.Color(L.bg);
+  hemi.color.set(L.sky); hemi.groundColor.set(L.ground); hemi.intensity = L.amb;
+  sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
+  if (T?.bg) bg.lerp(c.set(T.bg[0]), T.bg[1]);
+  if (T?.sky) hemi.color.lerp(c.set(T.sky[0]), T.sky[1]);
+  if (T?.ground) hemi.groundColor.lerp(c.set(T.ground[0]), T.ground[1]);
+  if (T?.sun) sun.color.lerp(c.set(T.sun[0]), T.sun[1]);
+  const sky = document.createElement('canvas');
+  sky.width = 2; sky.height = 256;
+  const g = sky.getContext('2d'), v = g.createLinearGradient(0, 0, 0, 256);
+  v.addColorStop(0, '#' + bg.clone().multiplyScalar(t === 'night' ? 0.55 : 0.75).getHexString());
+  v.addColorStop(1, '#' + bg.clone().lerp(c.set('#ffffff'), t === 'night' ? 0.06 : 0.3).getHexString());
+  g.fillStyle = v; g.fillRect(0, 0, 2, 256);
+  const map = new THREE.CanvasTexture(sky);
+  map.colorSpace = THREE.SRGBColorSpace;
+  setSky(map);
+}
+
+const setSky = (b) => { if (scene.background?.isTexture) scene.background.dispose(); scene.background = b; };
 
 function buildPieces() {
   pieceGroup.traverse(o => { if (o.userData.play) stopPlay(o.userData.play); });
@@ -643,7 +849,7 @@ async function addGuest(id) {
   g.w = { tile, x: tileX(tile.x), z: tileZ(tile.y), y: 0, path: [], facing: 'front', flip: Math.random() < 0.5, hop: 0, think: performance.now() + rand(800, 3000) };
   m.board.userData.who = g;
   g.mon = m;
-  cheer(g, 2);
+  if (!outdoors()) cheer(g, 2);
 }
 
 /** The places on a piece a Pokémon can sit: a bed or a cushion its middle; a chair, sofa or bench one a tile, a
@@ -1141,7 +1347,7 @@ function pieceUnder(at) {
 /** What's under a point on the view: a Pokémon's billboard (where its sprite is), a piece's mesh, or nothing. */
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
-  const boards = [mon.board, ...guests.filter(g => g.mon).map(g => g.mon.board), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
+  const boards = [mon.board, ...(outdoors() ? [] : guests.filter(g => g.mon).map(g => g.mon.board)), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
   return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
 }
 
@@ -1158,11 +1364,23 @@ function walkFloor(to, drag = false) {
   if (walker.seat) getUp(go); else if (!walker.jump) go();
 }
 
+/** Where a ray meets the floor: in the yard, where it meets the lawn as drawn, rolling away from the focus (BEND). */
+function groundHit(ray) {
+  const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit = new THREE.Vector3();
+  if (!ray.intersectPlane(plane, hit)) return null;
+  for (let i = 0; BEND.k.value && i < 4; i++) {
+    plane.constant = BEND.k.value * (hit.z - BEND.z.value) ** 2;
+    if (!ray.intersectPlane(plane, hit)) return null;
+  }
+  return hit;
+}
+
 /** The floor tile under a pointer in walk mode, or null. */
 function floorTile(e) {
-  const ray = new THREE.Raycaster(), hit = new THREE.Vector3();
+  const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(...ndc(e)), camera);
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return null;
+  const hit = groundHit(ray.ray);
+  if (!hit) return null;
   const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
   return inRoom(to) ? to : null;
 }
@@ -1207,8 +1425,11 @@ function onTap(e) {
     return refresh();
   }
   if (sel >= 0) { sel = -1; refresh(); }
-  const hit = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
+  const hit = groundHit(ray.ray);
+  if (!hit) return;
+  // the yard's doormat, drawn lower where the lawn rolls away than the ray finds it, is found on the ground instead
+  const mat = mode === 'walk' && doors.find(d => d.side === 's' && Math.abs(hit.x - tileX(d.tile.x)) < 0.9 && hit.z > ROWS / 2 && hit.z < ROWS / 2 + 0.95);
+  if (mat) return goThrough(mat);
   const to = { x: Math.floor(hit.x + COLS / 2), y: Math.floor(hit.z + ROWS / 2) };
   if (!inRoom(to)) return;
   walkFloor(to);
@@ -1355,6 +1576,7 @@ function refresh() {
   // a piece in hand or picked tucks the sheet down to its hinge and keys, so the room has the screen
   root.classList.toggle('tucked', mode === 'edit' && !!busy);
   root.classList.toggle('painting', tab === 'colour');
+  root.classList.toggle('outdoors', outdoors());
   const bar = root.querySelector('.b3-acts');
   bar.hidden = !busy;
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
@@ -1398,6 +1620,7 @@ function setTime(force) {
   const t = timeOfDay();
   if (t === time && !force) return;
   time = t;
+  if (outdoors()) return yardLight(t);
   const L = LIGHT[t];
   hemi.color.set(L.sky); hemi.groundColor.set(L.ground); hemi.intensity = L.amb;
   sun.color.set(L.sun); sun.intensity = L.sunI; sun.position.set(...L.at);
@@ -1405,7 +1628,7 @@ function setTime(force) {
   for (const m of winMats) { m.userData.was = m.userData.lamp ? Math.min(1, L.lamp / 2) : L.win; m.emissiveIntensity = m.userData.off ? 0 : m.userData.was; }
   for (const s of shafts) s.material.opacity = L.shaft;
   for (const d of motes) d.material.opacity = L.motes;
-  scene.background = new THREE.Color(L.bg);
+  setSky(new THREE.Color(L.bg));
 }
 
 
@@ -1485,6 +1708,7 @@ function placeCamera(dt, now) {
   camera.setViewOffset(viewW, viewH, 0, mix('shift'), viewW, viewH);
   const pitch = mix('pitch');
   aimCamera(camX, mix('dist') / zoomK, pitch, camZ);
+  BEND.z.value = camZ;
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
   for (const m of [mon, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
@@ -1555,7 +1779,10 @@ function frame(now) {
   mon.board.position.y = bob;
   mon.board.scale.x = walker.flip ? -1 : 1;
   drawMon(mon, walker, dt);
-  for (const g of guests) if (g.mon) liveGuest(g, dt, now);
+  // the Pokémon living here stay indoors while you're out in the yard (docs/roadmap.md's backyard, part c lets them out)
+  for (const g of guests) if (g.mon) { g.mon.group.visible = !outdoors(); if (!outdoors()) liveGuest(g, dt, now); }
+  if (BEND.k.value) for (const o of [mon.group, ring]) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+  if (snow) liveSnow(now);
   liveVisit(dt, now);
   livePuffs(now);
   liveGift(now);
@@ -1691,10 +1918,10 @@ function logOn() {
 }
 
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
-async function reopen() {
+async function reopen(start) {
   playMusic('secret-base');
   calm = calmFx();
-  base = goRoom(loadBase(), 'main');   // the mall's Furniture store may have bought into it since; in at the front door
+  base = goRoom(loadBase(), start);   // the mall's Furniture store may have bought into it since; in at the front door
   document.body.append(root);
   const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
@@ -1708,11 +1935,12 @@ async function reopen() {
   curtain(false);
 }
 
-/** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing). */
-export async function openBase3d({ onLeave = null } = {}) {
+/** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing);
+    `start` 'yard' opens out in the backyard (?yard), if there is one. */
+export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   leaveTo = onLeave;
   playMusic('secret-base');
-  if (root && renderer) return reopen();
+  if (root && renderer) return reopen(start);
   calm = calmFx();
   root = document.createElement('section');
   root.className = 'base3d';
@@ -1786,8 +2014,9 @@ export async function openBase3d({ onLeave = null } = {}) {
 
   // the furniture is smooth 3D: a sharper scene, scaled up smoothly, not in whole pixels
   post = createPost(renderer, { short: 820, crisp: false });
-  base = goRoom(loadBase(), 'main');
+  base = goRoom(loadBase(), start);
   useRoom(base);
+  if (outdoors()) root.querySelector('.b3-top h2').textContent = roomName(base.house, 'yard');
   buildRoom();
   buildPieces();
   mon = await makeMon();

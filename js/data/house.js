@@ -10,6 +10,7 @@
 export const BIG_PRICE = 500;    // PokéCoins: the main room made bigger, the first upgrade
 export const ROOM_PRICE = 500;   // PokéCoins for each room added (the user's call, 2026-10-10)
 export const DOOR_PRICE = 100;   // PokéCoins for a doorway between two rooms that already stand side by side
+export const YARD_PRICE = 1000;  // PokéCoins for the backyard (docs/roadmap.md's backyard, the user's picks 2026-10-14)
 
 // rects are [x, y, w, h] in tiles; pips [side, along]: n / s at that column, w / e at that row. The authored pips come
 // first (saved links name pips by their place in the list), then one on every other tile of every edge, so a doorway
@@ -31,11 +32,14 @@ export const ROOM_KINDS = {
     w: 11, h: 11, rects: [[3, 0, 5, 11], [0, 3, 3, 5], [8, 3, 3, 5]], pips: [['s', 5], ['n', 5], ['w', 5], ['e', 5]] },
   great: { name: 'Great hall', blurb: 'As big as the main room made bigger. Room for everything.',
     w: 14, h: 10, rects: [[0, 0, 14, 10]], pips: [['s', 7], ['n', 7], ['w', 5], ['e', 5]] },
+  // the backyard: a lawn behind the house, out the main room's back door, walked like a room; never built onto
+  yard: { name: 'Backyard', blurb: 'A lawn of your own behind the house, out a back door of the main room.',
+    w: 12, h: 8, rects: [[0, 0, 12, 8]], pips: [], outdoor: true },
 };
 export const BUILDABLE = ['closet', 'hall', 'bedroom', 'den', 'lroom', 'cross', 'great'];
 
 for (const [id, k] of Object.entries(ROOM_KINDS)) {
-  if (id === 'main') continue;
+  if (id === 'main' || k.outdoor) continue;
   const have = new Set(k.pips.map(p => p.join()));
   for (const [side, n] of [['n', k.w], ['s', k.w], ['w', k.h], ['e', k.h]]) {
     for (let i = 1; i < n - 1; i++) if (!have.has(`${side},${i}`)) k.pips.push([side, i]);
@@ -84,7 +88,11 @@ export function houseRooms(house) {
   return [{ id: 'main', kind: h.big ? 'bigmain' : 'main', rot: 0, gx: 0, gy: 0 }, ...h.rooms]
     .map(r => ({ ...r, lv: r.lv || 0, shape: shapeOf(r.kind, r.rot) }));
 }
-export const roomById = (house, id) => houseRooms(house).find(r => r.id === id);
+/* The backyard is the save's `house.yard` once bought ({ size, items, wall, floor }: its things packed there like any
+   room's while you're elsewhere). It isn't one of houseRooms(), so nothing is ever built onto it or counted against its
+   tiles; it is reached by id. `size` is for the bigger yard to come (one plot that grows, the user's pick). */
+export const yardOf = (house) => house?.yard ? { id: 'yard', kind: 'yard', rot: 0, gx: 0, gy: 0, lv: 0, shape: shapeOf('yard') } : null;
+export const roomById = (house, id) => id === 'yard' ? yardOf(house) : houseRooms(house).find(r => r.id === id);
 export const roomName = (house, id) => ROOM_KINDS[roomById(house, id)?.kind]?.name ?? 'Room';
 /** A floor's name: 1F for the ground, 2F up the stairs... */
 export const floorName = (lv) => `${(lv || 0) + 1}F`;
@@ -109,10 +117,28 @@ export function takenOn(house, lv) {
 
 export const linkOf = (house, id, pip) => plan(house).links.find(([a, pa, b, pb]) => (a === id && pa === pip) || (b === id && pb === pip));
 
+/** The main room's back door out to the yard: a tile of its back wall that no doorway or staircase uses, from three in
+    from the right corner (the first room's bed and lamp stand on the left). `pip` is that tile's pip in the big room's
+    list (-1 in the small room, which has none), which nothing may be built onto once the yard is there. */
+export function backDoorOf(house) {
+  const { shape } = roomById(house, 'main'), w = shape.w, cols = [];
+  for (let at = w - 3; at >= 1; at--) cols.push(at);
+  cols.push(w - 2);
+  for (const at of cols) {
+    const pip = shape.pips.findIndex(([s, a]) => s === 'n' && a === at);
+    if (pip < 0 || !linkOf(house, 'main', pip)) return { side: 'n', at, pip };
+  }
+  return { side: 'n', at: w - 3, pip: -1 };
+}
+
+/** Whether a room's pip is in use: a doorway or staircase, or the back door out to the yard. */
+export const pipUsed = (house, id, pip) => !!linkOf(house, id, pip) || (!!plan(house).yard && id === 'main' && pip === backDoorOf(house).pip);
+
 /** A room's doorways: each joined pip, with the room and pip it leads to (`stairs` 'up' or 'down' for a staircase), and
-    for the main room its front door (`exit`). */
+    for the main room its front door (`exit`) and, once there's a yard, its back door (`pip` 'yard' at both ends). */
 export function doorsOf(house, id) {
   const r = roomById(house, id), out = [];
+  if (id === 'yard') return [{ side: 's', at: Math.floor(r.shape.w / 2), pip: 'yard', to: 'main', toPip: 'yard' }];
   r.shape.pips.forEach(([side, at], i) => {
     const l = linkOf(house, id, i);
     if (!l) return;
@@ -120,13 +146,14 @@ export function doorsOf(house, id) {
     out.push({ side, at, pip: i, to: mine ? b : a, toPip: mine ? pb : pa, ...(up ? { stairs: mine ? 'up' : 'down' } : {}) });
   });
   if (id === 'main') out.push({ ...entryOf(house), exit: true });
+  if (id === 'main' && plan(house).yard) out.push({ side: 'n', at: backDoorOf(house).at, pip: 'yard', to: 'yard', toPip: 'yard' });
   return out;
 }
 
 /** The pips a room could be built onto: not yet joined, on rooms that can have doors (the main room once it's big). */
 export function openPips(house) {
   return houseRooms(house).flatMap(r => r.shape.pips.map((p, i) => ({ room: r.id, pip: i, side: p[0], at: p[1], lv: r.lv })))
-    .filter(p => !linkOf(house, p.room, p.pip));
+    .filter(p => !pipUsed(house, p.room, p.pip));
 }
 
 /** Where a room of `kind` would stand if built onto pip `pip` of room `id`, turned `rot` (or the first turn that fits
@@ -181,7 +208,7 @@ export function addRoom(house, id, pip, kind, rot = null, up = false) {
 export function joinPips(house, lv = 0) {
   const rooms = houseRooms(house).filter(r => r.lv === lv), at = new Map();
   for (const r of rooms) r.shape.pips.forEach((p, i) => {
-    if (linkOf(house, r.id, i)) return;
+    if (pipUsed(house, r.id, i)) return;
     const t = pipTile(r.shape, p);
     at.set(`${p[0]},${r.gx + t.x},${r.gy + t.y}`, { room: r.id, pip: i });
   });

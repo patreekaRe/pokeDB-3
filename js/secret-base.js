@@ -15,7 +15,7 @@ import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES } from './data/towns.js';
 import { todaysGuest } from './towns.js';
-import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE } from './data/house.js';
+import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
 // the room being shown (useRoom()): its size in tiles, the canvas it's painted on (wide enough for its longest wall),
@@ -87,14 +87,14 @@ const CONTENTS = ['items', 'wall', 'floor'];
 /** Where a room's things are kept right now: the base itself for the room you're in. */
 export function roomContents(b, id) {
   if ((b.here || 'main') === id) return b;
-  return id === 'main' ? b.house.main : b.house.rooms.find(r => r.id === id);
+  return id === 'main' ? b.house.main : id === 'yard' ? b.house.yard : b.house.rooms.find(r => r.id === id);
 }
 
 /** Walk into room `id`: the room you're in packs its things onto its record, and `id`'s come out onto the base. */
 export function goRoom(b, id) {
   const here = b.here || 'main';
   if (here === id || !roomById(b.house, id)) return b;
-  const away = here === 'main' ? (b.house.main = {}) : b.house.rooms.find(r => r.id === here);
+  const away = here === 'main' ? (b.house.main = {}) : here === 'yard' ? b.house.yard : b.house.rooms.find(r => r.id === here);
   for (const k of CONTENTS) away[k] = b[k];
   const next = roomContents(b, id);
   for (const k of CONTENTS) { b[k] = next[k]; delete next[k]; }
@@ -107,6 +107,7 @@ export function eachRoom(b, fn) {
   fn(b);
   if (b.house?.main) fn(b.house.main);
   for (const r of b.house?.rooms || []) if (r.items) fn(r);
+  if (b.house?.yard?.items) fn(b.house.yard);
 }
 export const allItems = (b) => { const out = []; eachRoom(b, r => out.push(...r.items)); return out; };
 
@@ -134,6 +135,7 @@ export function buyBigRoom(b) {
   b.house ||= freshHouse();
   b.house.big = true;
   for (const it of roomContents(b, 'main').items) it.x += 1;
+  if (b.house.yard) clearRoom(b, 'main');   // the back door moves along the bigger back wall
   updateSave(d => { d.coins -= BIG_PRICE; d.secretBase = b; });
   return true;
 }
@@ -141,16 +143,16 @@ export function buyBigRoom(b) {
 /** Every room that got a new doorway since `was` (the links' keys before): furniture standing in its way goes into
     storage, each room shown for the while so the rules read its shape. Returns the names of what was moved. */
 function clearDoors(b, was) {
-  const moved = [], keep = { COLS, ROWS, W, H, FLOOR, TOPS, DOORS };
-  for (const rid of new Set(b.house.links.filter(l => !was.has(l.join())).flatMap(([a, , c]) => [a, c]))) {
-    const box = roomContents(b, rid);
-    useRoom({ house: b.house, here: rid });
-    const gone = new Set(box.items.filter(it => !it.up && blocksDoor(it)).flatMap(it => [it, ...ridersOf(it, box)]));
-    moved.push(...[...gone].map(it => PIECES[it.id].name));
-    box.items = box.items.filter(it => !gone.has(it));
-  }
+  return [...new Set(b.house.links.filter(l => !was.has(l.join())).flatMap(([a, , c]) => [a, c]))].flatMap(rid => clearRoom(b, rid));
+}
+/** Furniture standing in any of room `rid`'s doorways goes into storage. Returns the names of what was moved. */
+function clearRoom(b, rid) {
+  const keep = { COLS, ROWS, W, H, FLOOR, TOPS, DOORS }, box = roomContents(b, rid);
+  useRoom({ house: b.house, here: rid });
+  const gone = new Set(box.items.filter(it => !it.up && blocksDoor(it)).flatMap(it => [it, ...ridersOf(it, box)]));
+  box.items = box.items.filter(it => !gone.has(it));
   ({ COLS, ROWS, W, H, FLOOR, TOPS, DOORS } = keep);
-  return moved;
+  return [...gone].map(it => PIECES[it.id].name);
 }
 
 /** Build a room onto pip `pip` of room `id`, turned `rot`, or up a staircase from it with `up`. Furniture standing
@@ -184,7 +186,23 @@ export function takeDown(b, id) {
   saveBase(b);
   return true;
 }
-export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE };
+/* The backyard (docs/roadmap.md, part a): bought once on the blueprint, a lawn out a back door of the main room. Its
+   things are kept on `house.yard` like a room's; outdoor furniture is for a later part. */
+const freshYard = () => ({ size: 1, items: [], wall: 'cream', floor: 'grass' });
+/** `?yard`: a backyard lent for the page load, to playtest it; never kept (loadBase() takes a lent one back). */
+const lendYard = () => new URLSearchParams(location.search).has('yard');
+
+/** Buy the backyard. Furniture standing where the back door goes moves into storage (named in `moved`). Null if the
+    coins aren't there or it's already bought. */
+export function buyYard(b) {
+  if ((getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return null;
+  b.house ||= freshHouse();
+  b.house.yard = freshYard();
+  const moved = clearRoom(b, 'main');
+  updateSave(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
+  return { moved };
+}
+export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE };
 
 /* Duplicating (the PC's Duplicate, 2026-10-10, the user's ask): one more of any piece you own, into storage. The first
    costs 50 PokéCoins, each after it 5 more, up to 100, where it stays (`secretBase.dupes` counts them). */
@@ -237,8 +255,11 @@ export const standing = (it, b) => small(it.id) && surfaceUnder(it, b) >= 0 ? { 
     over as the first room, keeping its Pokémon: only playtests of the unreleased branch made those. `?basefresh` does
     the same on purpose. */
 export function loadBase() {
-  const b = getSave().secretBase;
-  if (!b || !(b.v >= 2) || new URLSearchParams(location.search).has('basefresh')) return freshBase(b?.mons);
+  const saved = getSave().secretBase;
+  const b = !saved || !(saved.v >= 2) || new URLSearchParams(location.search).has('basefresh') ? freshBase(saved?.mons) : saved;
+  if (b.house?.yard?.lent && !lendYard()) { goRoom(b, 'main'); delete b.house.yard; }
+  if (lendYard() && !b.house?.yard) { b.house ||= freshHouse(); b.house.yard = { ...freshYard(), lent: 1 }; }
+  if (b !== saved) return b;
   b.owned ||= {};
   // furniture was once owned colour by colour (`bed-fire`), then kind by kind; now a kind or a whole set (`own`) is owned, every colour and style with it
   for (const id of Object.keys(b.owned)) {

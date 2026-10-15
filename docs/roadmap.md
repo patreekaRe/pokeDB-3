@@ -32,11 +32,11 @@ the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js
 plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
 roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
-  a) **The yard itself**: the blueprint plot and its purchase, a `save.base` field for it (follows the cloud save), the
-     back door in the main room, an outdoor 3D lot built like the base's rooms (grass, fence, the Clearing's trees behind,
-     sky lit by `timeOfDay()`, snow with `?season=winter`, the Clearing's curve), your partner walking out and back,
-     `wakeGL` / `sleepGL` per CLAUDE.md, a `?yard` playtest flag, a `NEWS` line if the PC page changes, a patch note.
-  b) **Outdoor furniture**: placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
+  a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
+  b) **Outdoor furniture** (next; ▶ Run in: LOCAL): the yard is already a room to the code (`base.here === 'yard'`, its
+     things packed on `house.yard`), so this is: show the Decorate key outdoors again (`.base3d.outdoors .b3-decor` in
+     `css/secret-base.css` hides it), bend the pieces with the lawn (`bend()` / `bendFine()` on `pieceGroup` while
+     `BEND.k` is set, as `buildYard()` does `roomGroup`), and the `outdoor` flag in the tray and store. Then placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
      Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
      `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
   c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
