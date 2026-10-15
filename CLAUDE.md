@@ -165,7 +165,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?mall=furniture|2f|corner`
   (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
-  `?town=<biome>` (`&home=`, `&aerial` the whole town from above, `&fest=lantern|moon|fireworks` John's festival in Lantern Village, mended; with `&mend` it appears as you mend the stone), `?nietos`, `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
+  `?mended` / `?mended=shrine,ruins` (towns mended for a page load, to test Waystone travel), `?town=<biome>` (`&home=`, `&aerial` the whole town from above, `&fest=lantern|moon|fireworks` John's festival in Lantern Village, mended; with `&mend` it appears as you mend the stone), `?nietos`, `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
 
 ## Reference
 

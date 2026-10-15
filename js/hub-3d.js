@@ -3252,7 +3252,7 @@ function showWaystone(p) {
   here = p;
   const save = getSave();
   if (townsOpen() && !clearingLit(save)) return brokenWaystone(p, save);
-  if (!townsOpen() || !RING.some(t => townState(save, t.id).met)) return sealedWaystone(p);
+  if (!townsOpen() || !RING.some(t => { const st = townState(save, t.id); return st.met || mended(st); })) return sealedWaystone(p);
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
   resetLine();

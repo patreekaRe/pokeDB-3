@@ -369,3 +369,8 @@ Measured headless (2026-10-14): 120k to 150k triangles and at most two point lig
 errors, canvases steady over ten hall visits in a page. `tests/town-halls.test.mjs` checks every piece exists, nothing
 overlaps, every free tile is reachable from the door, and each hall has a spot for each of its cast.
 `?town=<biome>&towns&home=<theater|bath|aquarium|nursery|caravanserai>` walks straight in.
+
+**`?mended`** (2026-10-14, the user asked for a Waystone travel playtest): `?towns&mended` shows every town mended for a
+page load, `?mended=shrine,ruins` only those, so the Clearing's Waystone offers Travel without a questline walked first.
+`mended()` reads it through the state's `id`, which `townState()` sets non-enumerable so no spread of it is ever saved.
+The Clearing's Waystone counts a mended town as met (`showWaystone()`), so it isn't shown sealed.

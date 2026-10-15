@@ -925,7 +925,7 @@ export const townOf = (biomeId) => TOWNS[biomeId] || null;
 
 /** A town's saved friendship: `done` requests handed in, `got` towards the one up now, `ready` once it's finished, and
     its questline's `quest` ({ step, got, picks, lit }, null till its leader greets you; QUESTS below). */
-export const townState = (save, id) => ({ done: 0, got: 0, ready: false, quest: null, ...(save.towns?.[id] || {}) });
+export const townState = (save, id) => Object.defineProperty({ done: 0, got: 0, ready: false, quest: null, ...(save.towns?.[id] || {}) }, 'id', { value: id });
 
 /** The request up on the board now: in order, round again once every one is done (a new batch, the same asks). */
 export const currentRequest = (town, st) => town.requests[st.done % town.requests.length];
@@ -949,8 +949,11 @@ export function countRequest(town, st, event, amount, ctx = {}) {
 export const handIn = (st) => (st.ready ? { ...st, done: st.done + 1, got: 0, ready: false } : st);
 
 /** Whether a town's Waystone is mended: its questline's shard put back (`quest.lit`), or, on a save from before the
-    questlines, friendship enough. */
-export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT;
+    questlines, friendship enough. `?mended` (every town) or `?mended=shrine,ruins` shows towns mended for a page load,
+    to playtest Waystone travel without walking a questline; it reads the state's `id`, which townState() keeps out of
+    the save (not enumerable, so no copy of it is ever written back). */
+const mendedFlag = (id) => { if (!id || typeof location === 'undefined') return false; const v = new URLSearchParams(location.search).get('mended'); return v !== null && (v === '' || v.split(',').includes(id)); };
+export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT || mendedFlag(st.id);
 
 /* ---------- the questlines (docs/roadmap.md's Towns step 6, session 1, 2026-10-14; the user's idea and plan) ----------
    A town is quiet till one of its Gym Leaders is beaten at the biome's end; the next time you pass through, that leader
