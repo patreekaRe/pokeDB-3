@@ -8820,6 +8820,10 @@ async function buildHome(figs, { time, town, home, gift }) {
     const at = h.leaderAt ?? { x: 3, ty: 2.4 };
     B.who[leader] = await figure(leader, figs[leader], at);
     B.talks.add(leader);
+    if (L?.with) {   // someone who lives with them (Phil's JONA), stood like them, lit a little by their own light
+      const w = B.who[L.with.id] = await figure(L.with.id, { npc: L.with.src }, L.with.at);
+      if (L.with.glow) { w.board.material.emissive.set('#ffffff'); w.board.material.emissiveMap = w.t; w.board.material.emissiveIntensity = L.with.glow; }
+    }
     if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot
       const x = Math.round(at.x), y = Math.round(at.ty) + 1;   // the nearest free tile in front of them (John's kotatsu is right there)
       const step = [[x, y], [x + 1, y], [x - 1, y], [x, y + 1], [x + 1, y + 1], [x - 1, y + 1]].find(([i, j]) => j < ROWS && !B.blocked.has(key(i, j))) ?? [x, y + 1];

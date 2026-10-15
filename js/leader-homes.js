@@ -285,35 +285,25 @@ function note(K, x, y, z, w, h, draw, { ry = 0, tilt = 0, paper = '#fffaf0' } = 
 
 const NIGHT = (t) => t === 'night';
 
-/** JONA, Phil's demon, in his back right corner (the user's sprite, 2026-10-15), facing the room, a violet glow behind
-    her. Her board is built with the room and shown once the sprite loads. */
+/** JONA, Phil's demon, in his back right corner (the user's sprite, 2026-10-15), a violet glow behind her. She herself
+    is a figure like Phil (`with` below, built by js/event-3d.js's npcBoard): three boards of her own drawn here never
+    showed on the user's phone. This is her corner: the tile kept clear, her shadow, the glow and the motes. */
 function jona(K) {
-  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.55), H = 2.05, CW = 38, CH = 67;   // the sprite's opaque box, at 26, 12 in jona.png
+  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.95), H = 2.05;
   block(K, 12, 0);
   const dark = part(K, new T.CircleGeometry(0.55, 24), lit(K, '#000000', { transparent: true, opacity: 0.45, depthWrite: false }), x, 0.01, z);
   dark.rotation.x = -Math.PI / 2;
   quiet(dark);
-  motes(K, () => K.fireflyArt('#9040e0'), 4, [x - 0.5, x + 0.3], [0.4, 2.1], [z - 0.3, z + 0.5], 0.1);
-  const board = () => { const g = new T.PlaneGeometry(1, 1); g.translate(0, 0.5, 0); return g; };
-  const w = H * CW / CH;
-  const m = new T.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, toneMapped: false, fog: false, side: T.DoubleSide });
-  m.color.setRGB(1.75, 1.7, 1.8);   // lit as if by her own glow, or the dark corner turns her to a silhouette
-  const her = part(K, board(), m, x, 0.02, z); her.scale.set(w, H, 1); her.visible = false;
+  motes(K, () => K.fireflyArt('#9040e0'), 4, [x - 0.5, x + 0.3], [0.4, 2.1], [z - 0.6, z + 0.3], 0.1);
   const halo = document.createElement('canvas'); halo.width = halo.height = 64;
   const hg = halo.getContext('2d'), rg = hg.createRadialGradient(32, 32, 0, 32, 32, 32);
   rg.addColorStop(0, 'rgba(176,96,255,0.75)'); rg.addColorStop(0.5, 'rgba(120,48,220,0.3)'); rg.addColorStop(1, 'rgba(60,0,120,0)');
   hg.fillStyle = rg; hg.fillRect(0, 0, 64, 64); halo.hd = 2;
-  const aura = part(K, board(), new T.MeshBasicMaterial({ map: K.texOf(halo), transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }), x, -0.4, z - 0.08);
-  aura.scale.set(w * 2.4, H * 1.35, 1);
-  her.castShadow = aura.castShadow = aura.receiveShadow = false;   // a board's shadow is its whole rectangle
-  quiet(her); quiet(aura);
-  const img = new Image();
-  img.onload = () => {   // her own texture once she's loaded, not a blank one painted over: that never showed for the user
-    const c = document.createElement('canvas'); c.width = CW; c.height = CH;
-    c.getContext('2d').drawImage(img, 26, 12, CW, CH, 0, 0, CW, CH);
-    m.map = K.texOf(c); m.needsUpdate = true; her.visible = true;
-  };
-  img.src = 'assets/trainers/gym/jona.png';
+  const g = new T.PlaneGeometry(1, 1); g.translate(0, 0.5, 0);
+  const aura = part(K, g, new T.MeshBasicMaterial({ map: K.texOf(halo), transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }), x, -0.4, ez(K, 0.08));
+  aura.scale.set(2.8, H * 1.35, 1);
+  aura.castShadow = aura.receiveShadow = false;
+  quiet(aura);
   K.B.ticks.push((now) => { if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2; });
 }
 
@@ -774,6 +764,8 @@ export const LEADER_HOMES = {
      facing the wall (the user's ask, 2026-10-15): her head turns round to watch you when you come near. */
   phil: {
     leaderAt: { x: 5, ty: 3.4 },
+    // JONA, while Phil's home: far enough off the wall that her board, leaning back to face the camera, clears it
+    with: { id: 'jona', src: 'assets/trainers/gym/jona.png', at: { x: 11.95, ty: 0.6 }, glow: 0.7 },
     blocks: [[8, 3, 3, 1], [8, 4, 1, 1], [10, 4, 1, 1], [8, 5, 3, 1]],
     castAt: [[3, 4.5, 0.5]],
     mood: { hemi: ['#d0c4f0', '#4a3a5a', 1.7], sun: ['#c8b8f0', 1.35], bloom: 1.1 },
