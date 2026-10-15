@@ -294,9 +294,18 @@ export const PLUSH = {
   spheal: { shape: 'ball', body: '#78a8e8', belly: '#f0e8c0', top: ['flippers'], noarms: true, mouth: 'smile', cheeks: '#e89898' },
   wailmer: { shape: 'fish', body: '#4a78c8', top: ['spout'], tail: 'fin', mouth: 'smile', eyes: 'dot', noarms: false },
   munchlax: { body: '#2a5a6a', belly: '#f0e0c0', ears: 'nub', top: ['face'], facec: '#f0e0c0', eyes: 'shut', mouth: 'open' },
+  kangaskhan: { body: '#a8845a', belly: '#ecdcae', ears: 'round', earin: '#7a5a38', top: ['muzzle'], muz: '#ecdcae', mid: ['joey'], tail: 'stub', feet: '#8a6a44', mouth: 'none' },
   pachirisu: { body: '#f8f8f8', ears: 'cat', earin: '#68b0e8', top: ['bluestripe'], stripe: '#68b0e8', tail: 'fluffy', tailc: '#68b0e8', tailtip: '#f8f8f8', cheeks: '#f8d030', mouth: 'w' },
 };
 // the few that need a part drawn behind or below the body
 PLUSH.squirtle.under = ['shellrim'];
 PLUSH.togepi.top = ['crown', 'eggshell'];
+// a joey peeking out of the pouch: its head, then the pouch's lip sewn over its chin
+EXTRAS.joey = (d, L) => {
+  const [x, y, rx, ry] = L.belly;
+  puff(x, y + 1, 8, 7, d.body);
+  for (const s of [-1, 1]) dot(x + s * 3, y + 3, 1.4, '#202028');
+  puff(x, y - 8, rx, ry * 0.6, d.belly);
+  line([[x - rx * 0.8, y - 1.5], [x + rx * 0.8, y - 1.5]], sh(d.belly, -1), 1.2);
+};
 EXTRAS.tummy = (d, L) => { const [x, y, rx, ry] = L.head; puff(x, y - ry * 0.45, rx * 0.6, ry * 0.42, d.belly); };

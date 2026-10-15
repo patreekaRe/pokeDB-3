@@ -7,7 +7,7 @@ import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
-import { RECIPES, TABS, GIFTS, GIFT_BY_ID, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine } from './data/workshop.js';
+import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine } from './data/workshop.js';
 import { RING, townState } from './data/towns.js';
 import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
@@ -127,7 +127,7 @@ export function openWorkshop() {
     if (isMade(r, ws, sat)) return r.kind === 'key' ? `The ${nameOf(r)}'s in your Satchel already.` : `The ${nameOf(r)}'s made. It's in your Secret Base.`;
     const short = shortOf(r, sat);
     const need = short.length ? ` I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : ' I can make it now.';
-    if (r.kind === 'gift') return `${r.name}, ${GYM_BY_ID[r.leader].name}'s favourite. ${r.text}${need}`;
+    if (r.kind === 'gift') return `${r.name}, ${gifteeOf(r.leader, GYM_BY_ID[r.leader].name)}'s favourite. ${r.text}${need}`;
     if (r.kind === 'skin') return `${r.name}. ${r.text}${need}`;
     if (r.kind === 'key') return `${nameOf(r)}. ${KEY_BY_ID[r.makes].text}${need}`;
     return `A ${nameOf(r)}, made by hand.${need}`;
@@ -147,7 +147,7 @@ export function openWorkshop() {
     playSound('item-get');
     line(r.kind === 'key' ? `Done! The ${nameOf(r)}'s in your Satchel. Take it to them.`
       : r.kind === 'piece' ? `Done! The ${nameOf(r)}'s gone to your Secret Base.`
-        : r.kind === 'gift' ? `Done! Take the ${r.name} to ${GYM_BY_ID[r.leader].name}'s home. Or anyone's.`
+        : r.kind === 'gift' ? `Done! Take the ${r.name} to ${r.leader === 'nietos' ? 'the Nietos\' house' : `${GYM_BY_ID[r.leader].name}'s home`}. Or anyone's.`
           : `Done! A ${r.name}. Tap it again to carry it.`);
     draw();
   });
@@ -163,7 +163,7 @@ export function openWorkshop() {
 /** Pick a gift to hand `leader` (their home's Gift option): resolves the gift's id, or null. */
 export function pickGift(leader) {
   const d = el('dialog', 'dialog dev-window town-shop workshop');
-  const grid = el('div', 'tshop-grid'), say = el('p', 'tshop-say', `Give ${GYM_BY_ID[leader]?.name ?? 'them'} which gift?`);
+  const grid = el('div', 'tshop-grid'), say = el('p', 'tshop-say', `Give ${gifteeOf(leader, GYM_BY_ID[leader]?.name ?? 'them')} which gift?`);
   const screen = el('div', 'dev-screen');
   screen.append(say, grid);
   const close = el('button', 'btn secondary', 'Not now'), acts = el('div', 'dialog-actions');

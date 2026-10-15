@@ -149,7 +149,7 @@ is counted (`save.workshop.gifts`); a skin is kept (`made`) and carried (`skin`)
 fond, skin }` (`workshopOf()`). **Gifts**: one favourite a town Gym Leader (`FAVOURITE`); at their home, awake and in,
 holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:gift`; `pickGift()` / `handGift()`): any
 gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
-leader]`). Liking does nothing else yet. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
+leader]`). Liking does nothing else yet. **The Nietos too** (2026-10-15, the user's call: they "should definitely get gifts and provide furniture"): their gift is the Acorn Rattle (3 Whisper Acorns, 1 Glowmoss, from the Clearing biome), given in their house even after seven (only Linc sleeps; the other leaders take none asleep), and it earns the **Big Kangaskhan doll** (`bigkangaskhandoll`, a new `DOLLS` / `PLUSH` line with a joey in the pouch, `EXTRAS.joey` in `js/base-dolls.js`; its small doll sells in the mall like the rest). `gifteeOf()` in `js/data/workshop.js` names them Law and Britt. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
 `js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
 

@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -1759,7 +1759,7 @@ function townRoom(covered = null, at = null) {
     options = [{ ...spotOption('Quests', `${town.name}'s quest board: every quest, how far along it is and who takes it.`, () => {
       if (run !== thisRun) return;
       if (real) readBoard(town.id); else t.boardRead = true;
-      openDeviceApp('quests', 'board', false, again);
+      openDeviceApp('quests', real ? 'board' : { board: true, peek: { [town.id]: st } }, false, again);
     }), peek: null }];
   }
   const first = !peeking && !st.met;
@@ -1896,22 +1896,24 @@ function homeRoom(b, onward = null) {
   const reqMine = !!tst?.quest && !tstep && !!town.requests && tst.ready && !t.handedIn && requestBy(town, tst) === home.leader;
   const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   // a gift from Kurt's Workshop for a Gym Leader at home and awake (js/data/workshop.js): their favourite earns their signature piece
-  const gifting = townsOpen() && !!home.leader && !away && !sleepy && Object.values(workshopOf(getSave()).gifts).some(n => n > 0);
-  if (gifting) options.push(spotOption('Gift', `Give ${GYM_BY_ID[home.leader].name} a gift from Kurt's Workshop.`, async () => {
+  // at night only Linc is asleep: Law and Britt still take a gift on the couch
+  const gifting = townsOpen() && !!home.leader && !away && (!sleepy || home.leader === 'nietos') && Object.values(workshopOf(getSave()).gifts).some(n => n > 0);
+  if (gifting) options.push(spotOption('Gift', `Give ${gifteeOf(home.leader, GYM_BY_ID[home.leader].name)} a gift from Kurt's Workshop.`, async () => {
     if (run !== thisRun) return;
     const { pickGift, handGift } = await import('./workshop.js');
     const id = await pickGift(home.leader);
     const got = id && handGift(id, home.leader);
     if (run !== thisRun) return;
     if (got) {
-      const leader = GYM_BY_ID[home.leader], G = GIFT_BY_ID;
+      const who = gifteeOf(home.leader, GYM_BY_ID[home.leader].name), both = who !== GYM_BY_ID[home.leader].name, G = GIFT_BY_ID;
       playSound(got.favourite ? 'item-get' : 'confirm');
       event3dMod?.eventRoom3d()?.does(home.leader, 'npc-nod');
       const fav = FAVOURITE[home.leader];
       const sig = got.first && (await import('./secret-base.js')).PIECES[fav.sig]?.name;
-      tell(got.first ? `${leader.name} loves the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
-        : got.favourite ? `${leader.name} loves the ${G[id].name}! Their favourite, again. ♥♥`
-          : `${leader.name} likes the ${G[id].name}. ♥`);
+      const loves = both ? 'love' : 'loves', likes = both ? 'like' : 'likes';
+      tell(got.first ? `${who} ${loves} the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
+        : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again. ♥♥`
+          : `${who} ${likes} the ${G[id].name}. ♥`);
     }
     again();
   }));

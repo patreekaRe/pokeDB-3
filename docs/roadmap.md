@@ -409,7 +409,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
-     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for, and whether the Nietos get gifts.
+     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for. (The Nietos got gifts 2026-10-15: the
+     Acorn Rattle earns a Big Kangaskhan doll.)
      Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
    - **Session 4 done (2026-10-14): the shard.** At the shard step one Alpha on the biome's map has the town's shard over it
      (a crystal in the town's colour); beat it and the shard goes into Key Items. At the board, after its leader's thanks,
@@ -424,8 +425,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for, and
-     whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
+     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for. Towns stay off (`TOWNS_LIVE`) till the user says.
 
 7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
    Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
