@@ -2630,6 +2630,14 @@ the turning crystal); the week line is "Oct 12 week · 3d 2h left"; the plaque p
 ### The Poké Mall's outside made grand (2026-10-15, the user's ask)
 A gold-ribbed glass dome with a turning Poké Ball, corner towers with gold cupolas, a columned porch with a Poké Ball pediment and chasing bulbs, gold lamps and a red carpet (`mallBuilding()` in `js/hub-3d.js`; `docs/reference/hub-base-mall.md`).
 
+### The Sky Pillar's opening film shows the new tower (2026-10-15)
+
+Half done by step 2 (the film borrows `stone()`'s sage colours); the rest in `js/climb-intro.js`: the pan opens on the
+crown (cornice slab, broken columns, the turning jade crystal from `crystal()` in `js/tower-art.js`), with a jade rune band
+every 10 floors and jade lit windows; the walk ends at the porch (gold-capped pilasters, jade banners, a rune band, stone
+doors), Rayquaza's ring lighting where the scowling eyes were, the doors opening on jade light (`.climb-light`). Checked
+headless: no errors, the colours at each beat. The Sky Pillar revamp's last part.
+
 ### The Safari Outfitter (2026-10-15, the user's ask: "the Safari store, let's work on that")
 The Poké Mall's east front, its "Coming soon" shutter gone: a jungle-green SAFARI OUTFITTER front with a khaki awning and
 crates of Poké Balls, open once the Safari Zone is (`safariOpen()`), taped shut with Kangaskhan's note before that, and a
