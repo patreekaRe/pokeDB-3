@@ -1817,13 +1817,14 @@ function kurtWorkshop(g, x, z) {
 }
 
 /** `root`'s still meshes that share a material (and shadow) baked into one mesh each: the Nietos' house is ~110 small
-    pieces, and every draw call counts on a phone's GPU (2026-10-14). Animated ones (their own raycast) are left be. */
-function mergeStatic(root) {
+    pieces, and every draw call counts on a phone's GPU (2026-10-14). Animated ones (their own raycast) are left be, or
+    those `live(mesh)` names (js/event-3d.js's Depths camp, where the untappable still pieces merge too and stay untappable). */
+export function mergeStatic(root, live = null) {
   root.updateMatrixWorld(true);
   const inv = root.matrixWorld.clone().invert(), sets = new Map();
   root.traverse(o => {
-    if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || o.raycast !== THREE.Mesh.prototype.raycast) return;
-    const k = o.material.uuid + (o.castShadow ? '+' : '-');
+    if (!o.isMesh || o.isInstancedMesh || Array.isArray(o.material) || (live ? live(o) : o.raycast !== THREE.Mesh.prototype.raycast)) return;
+    const k = o.material.uuid + (o.castShadow ? '+' : '-') + (o.raycast === THREE.Mesh.prototype.raycast ? '' : 'x');
     if (sets.has(k)) sets.get(k).push(o); else sets.set(k, [o]);
   });
   for (const list of sets.values()) {
@@ -1843,6 +1844,7 @@ function mergeStatic(root) {
     parts.forEach(p => p.dispose());
     const m = new THREE.Mesh(merged, list[0].material);
     m.castShadow = list[0].castShadow; m.receiveShadow = true;
+    if (list[0].raycast !== THREE.Mesh.prototype.raycast) m.raycast = list[0].raycast;
     root.add(m);
     for (const o of list) { o.removeFromParent(); o.geometry.dispose(); }
   }
