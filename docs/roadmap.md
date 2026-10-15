@@ -32,7 +32,8 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
      look: `?hubat=27,4&coins=2000` with a Secret Base owned, Unlock, walk in and back out.
   g) Done 2026-10-15, on `main` (the user's ask; it lifts "decoration only" for the garden): Smeargle's slide-in yard
      intro (and a free plot), watering, picked berries into the Satchel (sell spares), the Garden window, and Kurt's
-     two repeatable shelves, held berries and a run kit, one packed on the Prepare screen per normal run
+     two repeatable shelves, held berries and a run kit; the Prepare screen packs a Berry Pouch of 3 (one held, another
+     put on from the Bag once a biome after one is eaten) and one kit item
      (docs/roadmap-done.md). Not yet seen on a phone: `?yard` (intro, Garden button) and `?satchel` at Kurt's. Ideas
      left: a Pokédex Garden app with timers, Pokémon in the yard tending plots.
 

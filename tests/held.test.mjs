@@ -63,3 +63,35 @@ test('the status cards the berries answer are ones enemies really put in your de
   }
   assert.ok(added.has('poison'));
 });
+
+test('the Berry Pouch: the first berry held at the start, a swap while it\'s uneaten, one held berry a biome', async () => {
+  const { POUCH, setOut, canHold, holdFromPouch } = await import('../js/data/held.js');
+  assert.equal(POUCH, 3);
+  assert.deepEqual(setOut(['oran', 'lum', 'oran']), { held: { id: 'oran', used: false }, pouch: ['lum', 'oran'] });
+  assert.deepEqual(setOut(['sitrus']), { held: { id: 'sitrus', used: false }, pouch: [] }, 'one berry plays like before');
+  assert.deepEqual(setOut([]), { held: null, pouch: [] });
+  let run = { biome: 0, heldAte: null, ...setOut(['oran', 'lum', 'cheri']) };
+  assert.ok(canHold(run));
+  const swap = holdFromPouch(run, 1);
+  assert.deepEqual(swap, { held: { id: 'cheri', used: false }, pouch: ['lum', 'oran'] }, 'the uneaten one goes back in its place');
+  run = { ...run, ...swap, held: { id: 'cheri', used: true }, heldAte: 0 };
+  assert.ok(!canHold(run), 'eaten this biome: none till the next');
+  assert.equal(holdFromPouch(run, 0), null);
+  run = { ...run, biome: 1 };
+  assert.ok(canHold(run));
+  run = { ...run, ...holdFromPouch(run, 0) };
+  assert.deepEqual([run.held, run.pouch], [{ id: 'lum', used: false }, ['oran']], 'an eaten one is gone, not put back');
+  assert.equal(holdFromPouch(run, 5), null);
+  assert.ok(canHold({ held: { id: 'oran', used: true } }), 'a run saved before the pouch: no heldAte');
+  assert.ok(canHold({ biome: 0, held: null, pouch: ['oran'] }));
+});
+
+test('packing the Berry Pouch takes each berry from what Kurt kept, repeats only while enough are kept, three at most', async () => {
+  const { packPouch, workshopOf } = await import('../js/data/workshop.js');
+  const ws = { ...workshopOf({}), kit: { 'held-oran': 2, 'held-lum': 1, 'kit-revive': 1 } };
+  const out = packPouch(ws, ['held-oran', 'held-oran', 'held-oran', 'held-lum']);
+  assert.deepEqual(out.berries, ['oran', 'oran'], 'only two Oran kept; the fourth pick is past the pouch');
+  assert.deepEqual(out.ws.kit, { 'held-oran': 0, 'held-lum': 1, 'kit-revive': 1 });
+  assert.deepEqual(packPouch(ws, ['held-lum', 'kit-revive', 'held-oran']).berries, ['lum', 'oran'], 'a run kit item is no berry');
+  assert.deepEqual(packPouch(ws, []).berries, []);
+});

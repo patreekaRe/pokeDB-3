@@ -1,8 +1,11 @@
 /* ============================================================
    held.js  -  held berries (2026-10-15, the user's ask): like the games' held items, your Pokémon holds at most one
    for a run (`run.held = { id, used }`), made at Kurt's Workshop from backyard berries (js/data/workshop.js's `held`
-   shelf) and packed before a run starts (js/select.js's Pack). It goes off by itself ONCE a run, in battle, and is then
+   shelf) and packed before a run starts (js/select.js's Pack). It goes off by itself once, in battle, and is then
    eaten. js/battle.js's heldGoes() runs it, pokeDB-sim's engine.js mirrors it. Pure: tests/held.test.mjs.
+   The Berry Pouch (2026-10-15, the user's ask): up to POUCH berries packed, the first held as the run sets out, the rest
+   in `run.pouch`; one goes on from the Bag on the map (holdFromPouch()), a swap while the held one's uneaten, but once one
+   is eaten (`run.heldAte`, its biome) the next only from the next biome on: one held berry a biome.
 
    When one goes off (`on`):
      hurt    after you lose HP (a hit, Poison in hand, your own cards), still standing: below half your max HP, or
@@ -19,20 +22,38 @@
 
 export const HELD = [
   { id: 'oran',   name: 'Oran Berry',   icon: '🫐', sprite: 'oran-berry',   berry: 'oran',   on: 'hurt', heal: 10,
-    text: 'Held. The first time your HP drops below half, it\'s eaten: heal 10 HP. Once a run.' },
+    text: 'Held. The first time your HP drops below half, it\'s eaten: heal 10 HP.' },
   { id: 'sitrus', name: 'Sitrus Berry', icon: '🍋', sprite: 'sitrus-berry', berry: 'sitrus', on: 'hurt', healShare: 0.25,
-    text: 'Held. The first time your HP drops below half, it\'s eaten: heal 25% of your max HP. Once a run.' },
+    text: 'Held. The first time your HP drops below half, it\'s eaten: heal 25% of your max HP.' },
   { id: 'cheri',  name: 'Cheri Berry',  icon: '🍒', sprite: 'cheri-berry',  berry: 'cheri',  on: 'hurt', hit: 10, strength: 2,
-    text: 'Held. The first time one hit takes 10 or more of your HP, it\'s eaten: gain 2 strength for the fight. Once a run.' },
+    text: 'Held. The first time one hit takes 10 or more of your HP, it\'s eaten: gain 2 strength for the fight.' },
   { id: 'pecha',  name: 'Pecha Berry',  icon: '🍑', sprite: 'pecha-berry',  berry: 'pecha',  on: 'status', cures: 'poison', clears: 'poison', shuts: 'poison',
-    text: 'Held. The first time an enemy puts Poison in your deck, it\'s eaten: all your Poison is thrown out, and no more lands that fight. Once a run.' },
+    text: 'Held. The first time an enemy puts Poison in your deck, it\'s eaten: all your Poison is thrown out, and no more lands that fight.' },
   { id: 'lum',    name: 'Lum Berry',    icon: '🍏', sprite: 'lum-berry',    berry: 'lum',    on: 'status', clears: 'all',
-    text: 'Held. The first time an enemy puts a status card in your deck, it\'s eaten: every status card in your hand and piles is thrown out. Once a run.' },
+    text: 'Held. The first time an enemy puts a status card in your deck, it\'s eaten: every status card in your hand and piles is thrown out.' },
 ];
 export const HELD_BY_ID = Object.fromEntries(HELD.map(h => [h.id, h]));
 
 /** A held berry for a run: { id, used }. */
 export const holding = (id) => (HELD_BY_ID[id] ? { id, used: false } : null);
+
+/** How many held berries the Berry Pouch carries into a run, the first one held at the start. */
+export const POUCH = 3;
+
+/** A fresh run's held berry and pouch from the berries packed (held berry ids, in order): the first one held. */
+export const setOut = (berries = []) => ({ held: holding(berries[0]), pouch: berries.slice(1).filter(id => HELD_BY_ID[id]) });
+
+/** Whether a pouch berry can go on now (the run's `held`, `heldAte` and `biome`): any time while none is held or the held
+    one's uneaten (a swap), but once one's been eaten only in a later biome than the one it was eaten in. */
+export const canHold = (run) => !run.held?.used || run.heldAte == null || run.biome > run.heldAte;
+
+/** The run once pouch berry `i` goes on: { held, pouch } (an uneaten held berry goes back in its place), or null. */
+export function holdFromPouch(run, i) {
+  const pouch = run.pouch || [], id = pouch[i];
+  if (!HELD_BY_ID[id] || !canHold(run)) return null;
+  const back = run.held && !run.held.used ? run.held.id : null;
+  return { held: holding(id), pouch: back ? pouch.map((p, j) => (j === i ? back : p)) : pouch.filter((_, j) => j !== i) };
+}
 
 /** The berry `held` holds if it goes off on `event` ('hurt': { hp, maxHp, lost }, 'status': { card }), else null. */
 export function heldFires(held, event, at) {

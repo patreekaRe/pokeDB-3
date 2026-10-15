@@ -8,7 +8,8 @@
    - skin   an Apricorn ball's look for the Safari Ball (looks only: the odds stay the Safari Ball's)
    - held   a held berry (js/data/held.js) and
    - kit    a Bag item (js/data/items.js), both from backyard berries and the towns' finds (2026-10-15, the user's ask):
-            made again and again, counted in `save.workshop.kit`, and one of them packed before a run (packOne())
+            made again and again, counted in `save.workshop.kit`; a Berry Pouch of up to POUCH held berries (packPouch())
+            and one kit item (packOne()) are packed before a run
    A recipe shows once it can matter: a quest item while its town's questline is open, a town's pieces once you've been
    there, a gift once you've beaten whoever loves it, a held berry once the backyard's bought or that berry's been in the
    Satchel, the Apricorns and the run kit always. Pure: tests/workshop.test.mjs.
@@ -16,7 +17,7 @@
    ============================================================ */
 
 import { MATERIALS_BY_ID } from './satchel.js';
-import { HELD_BY_ID } from './held.js';
+import { HELD_BY_ID, POUCH } from './held.js';
 import { ITEMS_BY_ID } from './items.js';
 
 const key = (id, town, needs, more = {}) => ({ id, kind: 'key', town, makes: id, needs, ...more });
@@ -181,6 +182,19 @@ export function packOne(ws, id) {
   const r = RECIPES_BY_ID[id];
   if (!r || !repeats(r) || !(ws.kit?.[id] > 0)) return null;
   return { ws: { ...ws, kit: { ...ws.kit, [id]: ws.kit[id] - 1 } }, ...(r.kind === 'held' ? { held: r.makes } : { item: r.makes }) };
+}
+
+/** A Berry Pouch packed for a run from held berry recipe ids (up to POUCH, repeats while enough are kept): { ws (those
+    taken out), berries: held berry ids, in order }. Any not kept are skipped. */
+export function packPouch(ws, ids) {
+  const kit = { ...ws.kit }, berries = [];
+  for (const id of ids.slice(0, POUCH)) {
+    const r = RECIPES_BY_ID[id];
+    if (r?.kind !== 'held' || !(kit[id] > 0)) continue;
+    kit[id] -= 1;
+    berries.push(r.makes);
+  }
+  return { ws: { ...ws, kit }, berries };
 }
 
 /** A gift handed to `leader`: one fewer held, their liking up (two for their favourite), and their favourite the first

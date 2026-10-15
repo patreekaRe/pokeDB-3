@@ -79,10 +79,10 @@ runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 
 ## Held berries (2026-10-15, the user's ask)
 
-Like the games' held items: your Pokémon holds at most one a run, `run.held = { id, used }`, packed from Kurt's Workshop
-before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Pack); a Run kit item packed the
-same way is just an item in `run.items` from the start. `HELD` in `js/data/held.js` (pure, `tests/held.test.mjs`): each
-goes off by itself ONCE a run, in battle, and is then eaten (`heldFires()` says when, `heldGoes()` in `js/battle.js` does it):
+Like the games' held items: your Pokémon holds at most one at a time, `run.held = { id, used }`, packed from Kurt's
+Workshop before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Pack); a Run kit item packed
+the same way is just an item in `run.items` from the start. `HELD` in `js/data/held.js` (pure, `tests/held.test.mjs`): each
+goes off by itself once, in battle, and is then eaten (`heldFires()` says when, `heldGoes()` in `js/battle.js` does it):
 - **Oran Berry**: the first time your HP is below half after losing some, heal 10.
 - **Sitrus Berry**: the same moment, heal 25% of max HP.
 - **Cheri Berry**: the first time one loss takes 10 or more HP (after Block), +2 strength for the fight.
@@ -97,7 +97,13 @@ goes off by itself ONCE a run, in battle, and is then eaten (`heldFires()` says 
 is added to the line shown (`logMore()`). `battle.held` *is* `run.held`, so it stays eaten, and a refresh replays the fight
 from the map's checkpoint with it uneaten, like items. Saved with the run (`held`); a run saved before has none, and an
 unknown id is dropped rather than discarding the save (no version bump). The Bag's Items pocket opens on a "Held:" line
-(`heldRow()` in `js/run.js`), "(eaten)" once it's gone. The sim mirrors it (`cfg.held`, `heldGoes()` in `sim/engine.js`);
+(`heldRow()` in `js/run.js`), "(eaten)" once it's gone. **The Berry Pouch** (2026-10-15, the user's approved design: one held berry a biome):
+up to `POUCH` (3) packed, the first held as the run sets out (`setOut()`, so a one-berry pouch plays as before), the rest in
+`run.pouch` (ids). The Bag lists them under the Held line, each with Hold (`holdBerry()` -> `holdFromPouch()`), on the map
+only, never in battle or on a reward screen: while the held one is uneaten, Hold swaps them (it goes back in that berry's
+place); once one's eaten, `heldGoes()` sets `run.heldAte` to `run.biome` (through `battle.ate()`), and `canHold()` keeps the
+next off till `run.biome` is past it, the buttons greyed under "Your next berry can go on in the next biome". A Hold is
+saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. The sim mirrors it (`cfg.held`, a list for a pouch refilled at each biome's start, `heldGoes()` in `sim/engine.js`);
 no bot numbers (the user's call: none needed). Cheri and Pecha's sprites are PokéSprite's, like the rest.
 
 ## In the Index

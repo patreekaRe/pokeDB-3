@@ -168,9 +168,13 @@ Oran (3 Oran, 1 Whisper Acorn), Sitrus (3 Sitrus, 1 Sea Glass), Cheri (3 Cheri, 
 Paper), Lum (3 Lum, 1 Ghostcap); **Run kit** (`kit-<item id>`, a real js/data/items.js item, always shown) Potion (2 Oran, 1
 Glowmoss), Super Potion (2 Sitrus, 1 Oran, 1 Acacia Resin), X Attack (2 Cheri, 1 Magma Ore), X Defend (2 Pecha, 1
 Driftwood), Revive (2 Lum, 1 Sitrus, 1 Sea Glass, 1 Ember Sequin). **Packing**: the run's Prepare screen (js/select.js's
-`renderPack()`, `#prep-pack` under the Trainer Level, only when something's kept) steps through Nothing and each kept thing
-(◀ ▶) with what it does; Begin hands the pick to `beginRun(..., pack)` in js/run.js, whose `packKit()` takes one from the
-count (`packOne()`) as the run starts: a held berry becomes `run.held`, a kit item goes into `run.items`. Never a playtest
+`renderPack()`, `#prep-pack` under the Trainer Level, only when something's kept) packs two things since 2026-10-15 (the
+user's approved design): a **Berry Pouch** of up to `POUCH` (3) held berries, any mix, repeats while enough are kept (three
+slots, `#pouch-slots`, the first ringed as the one held; tap a kept berry's chip, `#pouch-kept`, to add it, a slot to take
+it out), and one **Run kit** item (◀ ▶, `#pack-kit`). Begin hands `{ berries, item }` to `beginRun(..., pack)` in
+js/run.js, whose `packKit()` takes them from the counts (`packPouch()`, `packOne()`) as the run starts: the first berry
+becomes `run.held`, the rest `run.pouch` (`setOut()`; docs/reference/items.md says how they go on), the kit item goes into
+`run.items`. Never a playtest
 peek, a Safari run or a Sky Pillar climb (beginRun() skips it); Mewtwo's own run may pack (it has no leaderboard and the
 perks apply there too). An abandoned run doesn't refund. `packable()` lists what's kept; tests/workshop.test.mjs.
 

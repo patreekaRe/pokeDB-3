@@ -85,7 +85,7 @@ const ABOUT = {
   piece: 'Furniture you can\'t buy anywhere. Made here, sent to your Secret Base.',
   gift: 'Every Gym Leader has a favourite. Give it to them at home and they\'ll give you something of theirs for your Secret Base.',
   skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better. Good friends teach me their secret ones.',
-  held: 'Berries for your Pokémon to hold. Pack one as you set out: it eats it by itself, once a run, when it needs it.',
+  held: 'Berries for your Pokémon to hold. Pack up to three in a Berry Pouch: it eats one by itself when it needs it, and another can go on each biome.',
   kit: 'Supplies for the road, from your berries and the towns\' finds. Pack one as you set out and it starts in your Bag.',
 };
 
@@ -95,7 +95,7 @@ function goesTo(r, ws) {
   if (r.kind === 'piece') return 'Furniture · sent to your Secret Base';
   if (r.secret) return `Safari Ball look · ${gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'a friend')}'s secret recipe`;
   if (r.kind === 'skin') return 'Safari Ball look · throws the same';
-  if (r.kind === 'held') return 'Held berry · pack one before a run';
+  if (r.kind === 'held') return 'Held berry · up to 3 in a run\'s Berry Pouch';
   if (r.kind === 'kit') return 'Run kit · pack one before a run, into your Bag';
   const who = gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'them');
   return ws.fond.includes(r.leader) ? `Gift · ${who}'s favourite · given ✓` : `Gift · ${who}'s favourite · give it at their home`;

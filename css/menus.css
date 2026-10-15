@@ -1753,3 +1753,13 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .pack-ico .item-sprite { width: 24px; height: 24px; image-rendering: pixelated; }
 .pack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pack-none { padding: 4px 0; }
+/* the Berry Pouch (2026-10-15): three slots, the first one held as the run sets out, and the kept berries to tap in */
+.pack-pouch[hidden], .pack-kit[hidden] { display: none; }
+.pack-kit { margin-top: 6px; }
+.pouch-slots { display: flex; gap: 6px; }
+.pouch-slot { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 2px dashed rgba(31, 58, 20, 0.45); border-radius: 8px; background: rgba(31, 58, 20, 0.08); cursor: default; }
+.pouch-slot.full { border-style: solid; border-color: #1f3a14; background: #1f3a14; cursor: pointer; }
+.pouch-slot.first.full { box-shadow: 0 0 0 2px #b6d68e, 0 0 0 4px #1f3a14; }
+.pouch-kept { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 6px; }
+.pouch-chip { display: flex; align-items: center; gap: 2px; min-height: 36px; padding: 2px 8px 2px 4px; border: 2px solid #1f3a14; border-radius: 999px; background: #1f3a14; color: #b6d68e; font: 0.75rem var(--pixel-font); cursor: pointer; }
+.pouch-chip:disabled { opacity: 0.4; cursor: default; }

@@ -23,7 +23,7 @@ import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
-import { workshopOf, packable } from './data/workshop.js';
+import { workshopOf, packable, RECIPES_BY_ID } from './data/workshop.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { aimCorner } from './shop.js';
 import { openDeviceApp } from './collection.js';
@@ -32,7 +32,7 @@ import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
-import { HELD_BY_ID } from './data/held.js';
+import { HELD_BY_ID, POUCH } from './data/held.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 const PSYCHIC = { label: '???', icon: '' };
@@ -43,7 +43,8 @@ let tab = 'starters';
 let handlers = null;      // { onChoose(starter), onBack() }
 let preparing = null;     // after Choose: { onBegin(level), onBack() }, else null
 let level = 0;            // the Trainer Level picked for the run
-let pack = null;          // the held berry or run kit item to set out with (a js/data/workshop.js recipe id), or none
+let pouch = [];           // the Berry Pouch to set out with: held berry recipe ids (js/data/workshop.js), the first held
+let pack = null;          // the run kit item to set out with (a recipe id), or none
 
 /** Called once at startup. */
 export function initSelect(on) {
@@ -52,7 +53,7 @@ export function initSelect(on) {
   $('sel-back').addEventListener('click', () => (preparing ? preparing.onBack() : handlers.onBack()));
   $('sel-go').addEventListener('click', () => {
     if (!picked || !usable(picked)) return;
-    if (preparing) preparing.onBegin(level, packable(workshopOf(getSave())).some(o => o.recipe.id === pack) ? pack : null);
+    if (preparing) preparing.onBegin(level, packed());
     else handlers.onChoose(picked);
   });
   $('level-down').addEventListener('click', () => setLevel(level - 1));
@@ -222,35 +223,75 @@ export function prepare(starter, on) {
   level = isMewtwoRun(starter) ? 0 : getSave().maxLevel;   // start on your highest unlocked level
   renderLevel();
   pack = null;
+  pouch = [];
   renderPack();
   setPreparing(on);
 }
 
-/* Pack (2026-10-15, the user's ask): what Kurt's Workshop has made you to keep (held berries and run kit, `save.workshop.kit`),
-   one of it taken on the run, or nothing. Shown only when something's kept; the pick is taken from the count as the run
-   begins (js/run.js's beginRun()). */
-const packList = () => [null, ...packable(workshopOf(getSave())).map(o => o.recipe.id)];
+/* Pack (2026-10-15, the user's asks): what Kurt's Workshop has made you to keep (`save.workshop.kit`), shown only when
+   something's kept: a Berry Pouch of up to POUCH held berries (tap a kept one to add it, a slot to take it out; the first is
+   held as you set out, the rest go on one a biome from the Bag) and one run kit item for the Bag (◀ ▶). They're taken
+   from the counts as the run begins (js/run.js's beginRun()). */
+const keptOf = (kind) => packable(workshopOf(getSave())).filter(o => o.recipe.kind === kind);
+const leftOf = (o) => o.n - pouch.filter(id => id === o.recipe.id).length;
+const packed = () => ({ berries: [...pouch], item: keptOf('kit').some(o => o.recipe.id === pack) ? pack : null });
 function stepPack(step) {
-  const list = packList();
+  const list = [null, ...keptOf('kit').map(o => o.recipe.id)];
   pack = list[(list.indexOf(pack) + step + list.length) % list.length];
   playSound('stick', 'confirm');
   renderPack();
 }
+function pouchAdd(id) {
+  if (pouch.length >= POUCH) return;
+  pouch.push(id);
+  playSound('stick', 'confirm');
+  renderPack();
+}
+function pouchTake(i) {
+  pouch.splice(i, 1);
+  playSound('cancel');
+  renderPack();
+}
 function renderPack() {
-  const kept = packable(workshopOf(getSave()));
-  $('prep-pack').hidden = !kept.length;
-  if (!kept.some(o => o.recipe.id === pack)) pack = null;
-  const o = kept.find(k => k.recipe.id === pack);
-  const pick = $('pack-pick');
+  const berries = keptOf('held'), kits = keptOf('kit');
+  $('prep-pack').hidden = !berries.length && !kits.length;
+  $('pack-pouch').hidden = !berries.length;
+  $('pack-kit').hidden = !kits.length;
+  const room = Object.fromEntries(berries.map(o => [o.recipe.id, o.n]));
+  pouch = pouch.filter(id => room[id]-- > 0);
+  $('pouch-slots').replaceChildren(...Array.from({ length: POUCH }, (_, i) => {
+    const h = HELD_BY_ID[RECIPES_BY_ID[pouch[i]]?.makes];
+    const slot = el('button', `pouch-slot${h ? ' full' : ''}${i === 0 ? ' first' : ''}`);
+    slot.type = 'button';
+    slot.disabled = !h;
+    slot.setAttribute('aria-label', h ? `Take the ${h.name} out` : 'Empty');
+    if (h) { slot.append(itemSprite(h, 'pack-ico')); slot.addEventListener('click', () => pouchTake(i)); }
+    return slot;
+  }));
+  $('pouch-kept').replaceChildren(...berries.map(o => {
+    const h = HELD_BY_ID[o.recipe.makes], left = leftOf(o);
+    const chip = el('button', 'pouch-chip');
+    chip.type = 'button';
+    chip.disabled = !left || pouch.length >= POUCH;
+    chip.setAttribute('aria-label', `Pack ${h.name} (${left} left)`);
+    chip.append(itemSprite(h, 'pack-ico'), el('span', '', `×${left}`));
+    chip.addEventListener('click', () => pouchAdd(o.recipe.id));
+    return chip;
+  }));
+  const first = HELD_BY_ID[RECIPES_BY_ID[pouch[0]]?.makes];
+  $('pouch-rule').textContent = !first ? `Tap a berry to pack it, up to ${POUCH}. The first is held as you set out; the rest go on one a biome, from the Bag.`
+    : `Held first: ${first.name}. ${first.text.replace(/^Held\. /, '')}${pouch.length > 1 ? ` ${pouch.length - 1} more for the biomes after. Tap a slot to take one out.` : ' Tap it to take it out.'}`;
+
+  if (!kits.some(o => o.recipe.id === pack)) pack = null;
+  const o = kits.find(k => k.recipe.id === pack), pick = $('pack-pick');
   if (!o) {
     pick.replaceChildren(el('span', 'pack-none', 'Nothing'));
-    const n = kept.reduce((t, k) => t + k.n, 0);
-    $('pack-rule').textContent = `Kurt's Workshop has made you ${n} thing${n > 1 ? 's' : ''} to take. Pick one: a held berry, or an item for your Bag.`;
+    $('pack-rule').textContent = 'Pick one item from Kurt\'s Workshop to start the run in your Bag.';
     return;
   }
-  const r = o.recipe, look = r.kind === 'held' ? HELD_BY_ID[r.makes] : { id: r.sprite, icon: '' };
-  pick.replaceChildren(itemSprite(look, 'pack-ico'), el('span', 'pack-name', `${r.name} ×${o.n}`));
-  $('pack-rule').textContent = r.kind === 'held' ? `Held: ${r.text.replace(/^Held\. /, '')}` : `Starts in your Bag: ${r.text}`;
+  const r = o.recipe;
+  pick.replaceChildren(itemSprite({ id: r.sprite, icon: '' }, 'pack-ico'), el('span', 'pack-name', `${r.name} ×${o.n}`));
+  $('pack-rule').textContent = `Starts in your Bag: ${r.text}`;
 }
 
 function setPreparing(on) {

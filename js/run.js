@@ -16,8 +16,8 @@
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne } from './data/workshop.js';
-import { HELD_BY_ID, holding } from './data/held.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch } from './data/workshop.js';
+import { HELD_BY_ID, setOut, canHold, holdFromPouch } from './data/held.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -313,6 +313,8 @@ function checkpoint() {
     relics: run.relics,
     items: run.items,
     held: run.held,           // the held berry packed for the run (js/data/held.js); a save from before has none
+    pouch: run.pouch,         // the Berry Pouch's berries not yet held, and the biome the last held one was eaten in
+    heldAte: run.heldAte,
     itemChance: run.itemChance,
     map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
     current: run.current,
@@ -412,6 +414,8 @@ function restoreRun(saved) {
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
     held: HELD_BY_ID[saved.held?.id] ? { id: saved.held.id, used: !!saved.held.used } : null,
+    pouch: (saved.pouch || []).filter(id => HELD_BY_ID[id]),
+    heldAte: Number.isInteger(saved.heldAte) ? saved.heldAte : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -455,9 +459,9 @@ export function continueRun(saved) {
   return mapFilm;
 }
 
-/** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). `pack`: a held berry or run kit item
-    kept from Kurt's Workshop (a js/data/workshop.js recipe id), taken out of the save now, never on a playtest, a Safari
-    run or a climb. */
+/** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). `pack`: what's packed from Kurt's
+    Workshop, { berries: held berry recipe ids (the Berry Pouch), item: a run kit recipe id }, taken out of the save now,
+    never on a playtest, a Safari run or a climb. */
 export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
@@ -478,6 +482,8 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
     held: null,            // the held berry packed for the run: { id, used } (js/data/held.js, packKit())
+    pouch: [],             // the Berry Pouch's other berries (ids), one held a biome from the Bag (holdBerry())
+    heldAte: null,         // the biome (run.biome) the last held berry was eaten in (battle.js's heldGoes())
     itemChance: ITEM_DROP.base,   // chance of an item after the next won fight
     map: null,
     current: null,        // id of the map node you are standing on
@@ -519,15 +525,19 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
   startBiome();
 }
 
-/** What the run sets out with from Kurt's Workshop (packOne()): a held berry held, or an item in the Bag. */
-function packKit(id) {
-  const out = packOne(workshopOf(getSave()), id);
-  if (!out) return;
-  updateSave(d => { d.workshop = packOne(workshopOf(d), id)?.ws ?? d.workshop; });
-  if (out.held) {
-    run.held = holding(out.held);
-    tell(`${starterName()} is holding ${an(HELD_BY_ID[out.held].name)}. It eats it by itself, once, when it needs it.`);
-  } else if (ITEMS_BY_ID[out.item] && run.items.length < itemSlots()) {
+/** What the run sets out with from Kurt's Workshop: the Berry Pouch (packPouch()), its first berry held, and a run kit
+    item in the Bag (packOne()). */
+function packKit({ berries = [], item = null } = {}) {
+  const pouched = packPouch(workshopOf(getSave()), berries);
+  if (pouched.berries.length) {
+    updateSave(d => { d.workshop = packPouch(workshopOf(d), berries).ws; });
+    Object.assign(run, setOut(pouched.berries));
+    const more = run.pouch.length ? ` ${run.pouch.length} more wait${run.pouch.length > 1 ? '' : 's'} in the Berry Pouch: one can go on a biome, from the Bag.` : '';
+    tell(`${starterName()} is holding ${an(HELD_BY_ID[run.held.id].name)}. It eats it by itself, once, when it needs it.${more}`);
+  }
+  const out = item && packOne(workshopOf(getSave()), item);
+  if (out?.item && ITEMS_BY_ID[out.item] && run.items.length < itemSlots()) {
+    updateSave(d => { d.workshop = packOne(workshopOf(d), item)?.ws ?? d.workshop; });
     run.items.push(out.item);
     tell(`You packed ${an(ITEMS_BY_ID[out.item].name)} from Kurt's Workshop. It's in your Bag.`);
   }
@@ -1487,20 +1497,50 @@ function renderItemList() {
     row.append(itemSprite(item, 'howto-node'), text, actions);
     return row;
   });
-  $('items-list').replaceChildren(...heldRow(), ...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
+  $('items-list').replaceChildren(...heldRow(onMap), ...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
   $('run-item-count').textContent = $('dock-item-count').textContent = `${run.items.length}/${itemSlots()}`;
   $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
     : `Holds ${itemSlots()} items. Use them in battle; potions and HP Up work on the map too.`;
 }
 
-/** The Items pocket's first line: the berry your Pokémon holds (js/data/held.js), eaten or not. */
-function heldRow() {
-  const h = HELD_BY_ID[run.held?.id];
-  if (!h) return [];
-  const row = el('div', `howto-li item-row held-row${run.held.used ? ' used' : ''}`), text = el('span', 'howto-li-text');
-  text.append(el('b', '', `Held: ${h.name}${run.held.used ? ' (eaten)' : ''}`), el('small', '', run.held.used ? `${starterName()} ate it. A held berry goes off once a run.` : h.text));
-  row.append(itemSprite(h, 'howto-node'), text);
-  return [row];
+/** The Items pocket's first lines: the berry your Pokémon holds (js/data/held.js), eaten or not, then the Berry Pouch's,
+    each with Hold: on the map only (never in battle or the rewards, which a checkpoint would split), a swap while the held
+    one's uneaten, and once one's eaten only from the next biome on (canHold()). */
+function heldRow(onMap) {
+  const h = HELD_BY_ID[run.held?.id], pouch = run.pouch || [];
+  if (!h && !pouch.length) return [];
+  const rows = [];
+  if (h) {
+    const row = el('div', `howto-li item-row held-row${run.held.used ? ' used' : ''}`), text = el('span', 'howto-li-text');
+    text.append(el('b', '', `Held: ${h.name}${run.held.used ? ' (eaten)' : ''}`), el('small', '', run.held.used ? `${starterName()} ate it. A held berry goes off once.` : h.text));
+    row.append(itemSprite(h, 'howto-node'), text);
+    rows.push(row);
+  }
+  const ok = canHold(run);
+  pouch.forEach((id, i) => {
+    const b = HELD_BY_ID[id], row = el('div', 'howto-li item-row pouch-row'), text = el('span', 'howto-li-text');
+    text.append(el('b', '', `Berry Pouch: ${b.name}`), el('small', '', b.text));
+    const acts = el('span', 'item-actions'), hold = el('button', 'btn item-use', 'Hold');
+    hold.type = 'button';
+    hold.disabled = !onMap || !ok;
+    hold.addEventListener('click', () => holdBerry(i));
+    acts.append(hold);
+    row.append(itemSprite(b, 'howto-node'), text, acts);
+    rows.push(row);
+  });
+  if (pouch.length) rows.push(el('p', 'drop-note pouch-note', !ok ? 'Your next berry can go on in the next biome.'
+    : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.' : 'One held berry a biome.'));
+  return rows;
+}
+
+/** Pouch berry `i` goes on (an uneaten held one back in the pouch), saved at once like a toss on the map. */
+function holdBerry(i) {
+  const out = holdFromPouch(run, i);
+  if (!out) return;
+  Object.assign(run, out);
+  playSound('confirm');
+  tell(`${starterName()} is holding ${an(HELD_BY_ID[run.held.id].name)} now.`);
+  afterBagChange();
 }
 
 function useItemOnMap(index) {

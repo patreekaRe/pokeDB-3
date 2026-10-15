@@ -301,15 +301,25 @@
           </div>
           <!-- a held berry or run kit item from Kurt's Workshop to set out with (renderPack() in js/select.js) -->
           <div class="prep-pack" id="prep-pack" hidden>
-            <div class="prep-level">
-              <h4>Pack</h4>
-              <div class="prep-pick">
-                <button type="button" class="prep-step" id="pack-down" aria-label="Previous thing to pack">◀</button>
-                <span class="pack-pick" id="pack-pick"></span>
-                <button type="button" class="prep-step" id="pack-up" aria-label="Next thing to pack">▶</button>
+            <div class="pack-pouch" id="pack-pouch">
+              <div class="prep-level">
+                <h4>Berry Pouch</h4>
+                <div class="pouch-slots" id="pouch-slots"></div>
               </div>
+              <div class="pouch-kept" id="pouch-kept"></div>
+              <p class="prep-rule" id="pouch-rule"></p>
             </div>
-            <p class="prep-rule" id="pack-rule"></p>
+            <div class="pack-kit" id="pack-kit">
+              <div class="prep-level">
+                <h4>Run kit</h4>
+                <div class="prep-pick">
+                  <button type="button" class="prep-step" id="pack-down" aria-label="Previous run kit item">◀</button>
+                  <span class="pack-pick" id="pack-pick"></span>
+                  <button type="button" class="prep-step" id="pack-up" aria-label="Next run kit item">▶</button>
+                </div>
+              </div>
+              <p class="prep-rule" id="pack-rule"></p>
+            </div>
           </div>
         </div>
       </div></div>

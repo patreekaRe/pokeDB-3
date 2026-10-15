@@ -188,7 +188,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     recycled: [],      // Recycler: the deck's moves exhausted this fight (each PP Upped after it)
     abyss: 0,          // PP a turn Abyss has given this fight
     items: run.items,   // the run's own list: using an item takes it out of the Bag
-    held: run.held ?? null,   // the run's held berry ({ id, used }, js/data/held.js): eaten once a run, by heldGoes()
+    held: run.held ?? null,   // the run's held berry ({ id, used }, js/data/held.js): eaten once, by heldGoes()
+    ate: () => { run.heldAte = run.biome; },   // and the biome it was eaten in: the Berry Pouch's next goes on from the next
     shut: null,        // a status card no more of lands this fight (the Pecha Berry's)
     onEnd,
     trial,             // a dojo trial's goal: lost the moment it can't be met (trialBroken())
@@ -637,12 +638,13 @@ function loseHp(n) {
   if (heldGoes('hurt', { hp: b.hp, maxHp: b.maxHp, lost })) logMore();
 }
 
-/** The run's held berry (js/data/held.js), if `event` sets it off: eaten (once a run), it does its thing with a pop and
+/** The run's held berry (js/data/held.js), if `event` sets it off: eaten (once), it does its thing with a pop and
     the games' stat glow, and its line waits in `b.revived` for the next line told (withRevive(), or logMore()). */
 function heldGoes(event, at) {
   const b = battle, h = heldFires(b.held, event, at);
   if (!h) return false;
   b.held.used = true;
+  b.ate();
   const said = [];
   if (h.heal || h.healShare) { const n = healPlayer(heldHeal(h, b.maxHp)); said.push(n ? `Healed ${n}.` : 'HP was full.'); }
   if (h.strength) { b.strength += h.strength; pop('player-zone', `💪 +${h.strength}`, 'note good', 260); said.push(`+${h.strength} strength.`); }
