@@ -10,6 +10,10 @@ import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { BELTS, TRIALS, DOJO_REWARDS, dojoOf, beltOf, nextBelt, starsOf, kenWinsOf, trialOpen, dojoEarned, dojoHow } from './data/dojo.js';
 import { PIECES } from './secret-base.js';
 
+/** `?trials` opens every trial for the page load, to playtest a late one on an empty save (stars won still count). */
+const ALL_OPEN = new URLSearchParams(location.search).has('trials');
+const isOpen = (save, i) => ALL_OPEN || trialOpen(save, i);
+
 const ribbon = (b) => {
   const r = el('span', 'dojo-belt');
   r.style.setProperty('--belt', b.colour);
@@ -55,12 +59,12 @@ export function openDojo() {
   close.type = 'button';
   d.append(head, rank, card, list, gifts, close);
   document.body.append(d);
-  let picked = TRIALS.findIndex((t, i) => trialOpen(save, i) && !ds.stars.includes(t.id));
+  let picked = TRIALS.findIndex((t, i) => isOpen(save, i) && !ds.stars.includes(t.id));
   if (picked < 0) picked = 0;
   let chosen = null;
   const draw = () => {
     list.replaceChildren(...TRIALS.map((t, i) => {
-      const open = trialOpen(save, i), won = ds.stars.includes(t.id);
+      const open = isOpen(save, i), won = ds.stars.includes(t.id);
       const row = el('button', `craft-row dojo-row${i === picked ? ' on' : ''}${open ? '' : ' locked'}`);
       row.type = 'button';
       row.append(el('span', 'dojo-no', String(i + 1)), el('span', 'craft-row-name', open ? t.name : '???'),
@@ -68,7 +72,7 @@ export function openDojo() {
       row.addEventListener('click', () => { playSound(open ? 'confirm' : 'cancel'); picked = i; draw(); });
       return row;
     }));
-    const t = TRIALS[picked], open = trialOpen(save, picked), won = ds.stars.includes(t.id), mon = STARTERS_BY_ID[t.starter];
+    const t = TRIALS[picked], open = isOpen(save, picked), won = ds.stars.includes(t.id), mon = STARTERS_BY_ID[t.starter];
     const pics = el('div', 'dojo-vs');
     const me = el('img', 'pixel'); me.src = spriteUrl(mon, 'front', 0); me.alt = '';
     const foe = el('img', 'pixel'); foe.src = t.foe.image; foe.alt = '';

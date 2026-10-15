@@ -2525,6 +2525,11 @@ and walks you in; the yard's doormat leads back out under the arch. Tested with 
 - **Kenmatta's trials 9-14** (2026-10-15): six harder combo trials (Mienfoo, Hitmontop, Breloom, Machamp, Hariyama and
   Kenmatta again), each solved by brute force (`tools/dojo-solve.mjs`: only its intended idea wins) and played on the
   real battle screen headless (`tools/dojo-play.cjs`), with a tempting wrong line failing. Detail in `docs/reference/events.md`.
+- **Kenmatta's trials 15-20, the ladder done** (2026-10-15): Scrafty (Last Resort after drawing the deck dry), Conkeldurr
+  (Quick Guard its charged Superpower, Tsunami counting spent Tide), Toxicroak (Chlorophyll turning heals into block, no
+  damage), Lucario (Burning Jealousy on a big hand with Swords Dance and Blaze), Medicham (Aqua Veil, Shell Smash, Wave
+  Crash) and Kenmatta's final test with Bulbasaur (Trailblaze, Spicy Extract, Growth Spurt, Frenzy Plant). Solved and
+  played the same way; the solver learned the new rules. 20 stars is the black belt.
 
 ### Kenmatta's dojo made extravagant: the temple hall and the ring (2026-10-15)
 

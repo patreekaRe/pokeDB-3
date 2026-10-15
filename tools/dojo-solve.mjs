@@ -9,26 +9,27 @@ import { CARDS_BY_ID } from '../js/data/cards.js';
 import { STARTERS_BY_ID } from '../js/data/starters.js';
 
 const ABIL = { fire: 'blaze', grass: 'overgrow', water: 'torrent' };
-const KNOWN = new Set(['damage','hits','block','heal','draw','tide','perTide','perTideHeld','tideMult','blockPerTide','seed','sap','weaken','vulnerable','burn','burnTimes','burnMult','bonusPerBurn','strength','flex','doubleStrength','strengthMult','focus','endure','nextEnergy','ifSeeded','ifEnemyAttacks','ifBurned','ifHurt','bonusIfLow','selfDamage','energy','healPerStrength','healPerSeed','blockNext','blur','seedKeep','guard','needsWounded','riptide','cardBlock','blockEachTurn','blockDamage','blockMult']);
+const KNOWN = new Set(['damage','hits','block','heal','draw','tide','perTide','perTideHeld','tideMult','blockPerTide','seed','sap','weaken','vulnerable','burn','burnTimes','burnMult','bonusPerBurn','strength','flex','doubleStrength','strengthMult','focus','endure','nextEnergy','ifSeeded','ifEnemyAttacks','ifBurned','ifHurt','bonusIfLow','selfDamage','energy','healPerStrength','healPerSeed','blockNext','blur','seedKeep','guard','needsWounded','riptide','cardBlock','blockEachTurn','blockDamage','blockMult','needsEmptyDraw','perTideGained','exhaustHand','hitsPerExhausted','perExhausted','hitsPerAttack','overheal']);
+const isAttack = (c) => !!(c.effects.damage || c.effects.blockDamage);
 
 export function solve(trial, { maxLines = 50 } = {}) {
   const ab = ABIL[STARTERS_BY_ID[trial.starter].type];
   for (const id of trial.deck) for (const k of Object.keys(CARDS_BY_ID[id].effects)) if (!KNOWN.has(k)) throw new Error(`${id}: ${k}`);
   const maxHp = trial.maxHp ?? trial.hp;
-  const s0 = { hp: trial.hp, maxHp, block: 0, energy: 0, nextEnergy: 0, str: 0, flex: 0, focus: 0, tide: ab === 'torrent' ? 2 : 0,
-    endure: false, hurt: false, healed: false, guard: false, blockNext: 0, blur: 0, turn: 0, taken: 0, seedKeep: 0, riptide: 0, cardBlock: 0, blockEachTurn: 0,
+  const s0 = { hp: trial.hp, maxHp, block: 0, energy: 0, nextEnergy: 0, str: 0, flex: 0, focus: 0, tide: ab === 'torrent' ? 2 : 0, tideGained: ab === 'torrent' ? 2 : 0, attacks: 0,
+    endure: false, hurt: false, healed: false, guard: false, blockNext: 0, blur: 0, turn: 0, taken: 0, seedKeep: 0, riptide: 0, overheal: 0, cardBlock: 0, blockEachTurn: 0,
     hand: [], draw: [...trial.deck], discard: [], en: { hp: trial.foe.hp, block: 0, burn: 0, seed: 0, sap: 0, weak: 0, vuln: 0, str: 0, mi: 0 }, log: [], turnLog: [] };
   const wins = [], seen = new Set();
   let reshuffles = 0, nodes = 0;
   const g = trial.goal, moves = trial.foe.moves;
   const clone = (s) => ({ ...s, hand: [...s.hand], draw: [...s.draw], discard: [...s.discard], en: { ...s.en }, log: [...s.log], turnLog: [...s.turnLog] });
   const low = (s) => s.hp < s.maxHp / 2;
-  const heal = (s, n) => { const h = Math.min(n, s.maxHp - s.hp); s.hp += h; if (h > 0) s.healed = true; };
+  const heal = (s, n) => { const h = Math.min(n, s.maxHp - s.hp); s.hp += h; if (h > 0) s.healed = true; if (n > h && s.overheal) gainBlock(s, n - h); };
   const drawN = (s, n) => { for (let i = 0; i < n; i++) { if (s.hand.length >= 10) return true; if (!s.draw.length) { if (!s.discard.length) return true; return false; } s.hand.push(s.draw.shift()); } return true; };
   const move = (s) => moves[s.en.mi % moves.length];
   const finish = (s, by) => {
     if (ab === 'overgrow') heal(s, 3);
-    const miss = g.turns && s.turn > g.turns ? 'turns' : g.noDamage && s.taken ? 'hit' : g.burn && by !== 'burn' ? 'burn' : g.full && s.hp < s.maxHp ? 'full' : null;
+    const miss = g.turns && s.turn > g.turns ? 'turns' : g.noDamage && s.taken ? 'hit' : g.burn && by !== 'burn' ? 'burn' : g.seed && by !== 'seed' ? 'seed' : g.full && s.hp < s.maxHp ? 'full' : null;
     if (!miss) wins.push([...s.turnLog, s.log.join(', ')].map((t, i) => `T${i + 1}: ${t}`).join(' | ') + ` [${by}]`);
   };
   const hurtEn = (s, d) => { const a = Math.min(s.en.block, d); s.en.block -= a; s.en.hp -= d - a; };
@@ -60,7 +61,7 @@ export function solve(trial, { maxLines = 50 } = {}) {
     const fresh = s.blockNext + s.blockEachTurn;
     s.block = (s.blur ? s.block : 0) + fresh; if (s.blur) s.blur -= 1; s.blockNext = 0;
     if (fresh && s.riptide) { hurtEn(s, s.riptide); if (s.en.hp <= 0) return finish(s, 'hit'); }
-    s.energy = 3 + s.nextEnergy; s.nextEnergy = 0; s.hurt = false; s.healed = false; s.endure = false;
+    s.energy = 3 + s.nextEnergy; s.nextEnergy = 0; s.attacks = 0; s.hurt = false; s.healed = false; s.endure = false;
     if (s.turn > 1) { s.turnLog.push(s.log.join(', ') || '-'); s.log = []; }
     if (!drawN(s, 5)) { reshuffles++; return; }
     explore(s);
@@ -75,6 +76,8 @@ export function solve(trial, { maxLines = 50 } = {}) {
     if (e.ifSeeded && en.seed > 0) add(e.ifSeeded);
     if (e.ifEnemyAttacks && move(s).kind === 'attack') add(e.ifEnemyAttacks);
     if (e.selfDamage) { const l = Math.min(e.selfDamage, s.hp - 1); if (l > 0) { s.hp -= l; s.taken += l; s.hurt = true; } }
+    if (isAttack(c)) s.attacks += 1;
+    if (e.exhaustHand) { const going = s.hand.filter(h => e.exhaustHand === 'all' || !isAttack(CARDS_BY_ID[h])); s.hand = s.hand.filter(h => !going.includes(h)); e.exhausted = going.length; }
     if (e.blockDamage && e.block) { gainBlock(s, e.block); e.block = 0; }
     if (e.damage || e.blockDamage) {
       let amt = e.blockDamage ? Math.floor(s.block * (e.blockDamage === true ? 1 : e.blockDamage)) : e.damage;
@@ -82,10 +85,13 @@ export function solve(trial, { maxLines = 50 } = {}) {
       if (e.bonusPerBurn) amt += e.bonusPerBurn * en.burn;
       if (e.perTide) amt += e.perTide * s.tide;
       if (e.perTideHeld) amt += e.perTideHeld * s.tide;
+      if (e.perTideGained) amt += e.perTideGained * s.tideGained;
+      if (e.perExhausted) amt += e.perExhausted * (e.exhausted || 0);
       amt += s.str * (e.strengthMult || 1);
       if (ab === 'blaze' && low(s)) amt += 3;
       const v = en.vuln > 0 ? 1.5 : 1;
-      for (let h = 0; h < (e.hits || 1); h++) {
+      const count = e.hitsPerAttack ? s.attacks : e.hitsPerExhausted ? e.exhausted || 0 : e.hits || 1;
+      for (let h = 0; h < count; h++) {
         const d = Math.floor((amt + (h === 0 ? s.focus : 0)) * v);
         const a = Math.min(en.block, d); en.block -= a; en.hp -= d - a;
         if (en.hp <= 0) break;
@@ -109,15 +115,15 @@ export function solve(trial, { maxLines = 50 } = {}) {
     if (e.strength) s.str += e.strength;
     if (e.flex) { s.str += e.flex; s.flex += e.flex; }
     if (e.doubleStrength && s.str > 0) s.str *= 2;
-    if (e.tide) s.tide += e.tide;
-    if (e.tideMult && s.tide) s.tide *= e.tideMult;
+    if (e.tide) { s.tide += e.tide; s.tideGained += e.tide; }
+    if (e.tideMult && s.tide) { s.tideGained += s.tide * (e.tideMult - 1); s.tide *= e.tideMult; }
     if (e.nextEnergy) s.nextEnergy += e.nextEnergy;
     if (e.endure) s.endure = true;
     if (e.energy) s.energy += e.energy;
     if (e.heal) heal(s, e.heal);
     if (e.healPerStrength && s.str > 0) heal(s, e.healPerStrength * s.str);
     if (e.healPerSeed && en.seed > 0) heal(s, e.healPerSeed * en.seed);
-    if (c.power) for (const k of ['seedKeep', 'riptide', 'cardBlock', 'blockEachTurn']) if (e[k]) s[k] += e[k];
+    if (c.power) for (const k of ['seedKeep', 'riptide', 'overheal', 'cardBlock', 'blockEachTurn']) if (e[k]) s[k] += e[k];
     if (s.cardBlock) gainBlock(s, s.cardBlock);
     if (!c.exhaust && !c.power) s.discard.push(id);
     if (e.draw && !drawN(s, e.draw)) { reshuffles++; return false; }
@@ -126,13 +132,14 @@ export function solve(trial, { maxLines = 50 } = {}) {
   }
   function explore(s) {
     if (++nodes > 3e6 || wins.length >= maxLines) return;
-    const key = JSON.stringify([s.turn, s.hp, s.block, s.energy, s.nextEnergy, s.str, s.flex, s.focus, s.tide, s.endure, s.hurt, s.healed, s.guard, s.blockNext, s.blur, s.taken, s.seedKeep, s.riptide, s.cardBlock, s.blockEachTurn, [...s.hand].sort(), s.draw, [...s.discard].sort(), s.en]);
+    const key = JSON.stringify([s.turn, s.hp, s.block, s.energy, s.nextEnergy, s.attacks, s.tideGained, s.str, s.flex, s.focus, s.tide, s.endure, s.hurt, s.healed, s.guard, s.blockNext, s.blur, s.taken, s.seedKeep, s.riptide, s.overheal, s.cardBlock, s.blockEachTurn, [...s.hand].sort(), s.draw, [...s.discard].sort(), s.en]);
     if (seen.has(key)) return; seen.add(key);
     const tried = new Set();
     s.hand.forEach((id, i) => {
       const c = CARDS_BY_ID[id];
       if (tried.has(id) || c.unplayable || c.cost === 'X' || c.cost > s.energy) return; tried.add(id);
       if (c.effects.needsWounded && s.hp >= s.maxHp) return;
+      if (c.effects.needsEmptyDraw && s.draw.length) return;
       const t = clone(s);
       if (play(t, i)) explore(t);
     });
