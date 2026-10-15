@@ -96,11 +96,13 @@ export function badgePop(l) {
 }
 
 /** Their lines, one a tap (`bubble`: no slide-in, no dim, only their speech window popping up, for talking to them in
-    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line (`'gold'` its Gold one). */
+    their gym after the fight; a line may be `{ text, plate: true }`, said as is under their own name). `badge` shows the badge they hand over with the last line (`'gold'` its Gold one).
+    `pair` (`{ src, who }`): a second speaker slides in on the left facing them (JONA at Phil's), whoever isn't talking
+    dimmed. */
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '', glow = '' } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '', glow = '', pair = null } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}${look ? ` ${look}` : ''}`);
   if (glow) layer.style.setProperty('--glow', glow);
@@ -114,6 +116,8 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   const text = el('p', 'gym-text');
   box.append(plate, text, el('i', 'gym-more'));
   if (bubble) layer.append(box); else layer.append(who, box);
+  const other = pair && el('img', 'gym-trainer pair pixel');
+  if (other) { other.src = pair.src; other.alt = ''; layer.prepend(other); layer.classList.add('paired'); }
   document.body.append(layer);
   if (!calm) { await sleep(20); layer.classList.add('in'); if (speed === 'in') speedLines(layer); await sleep(bubble ? 300 : 600); } else layer.classList.add('in');
 
@@ -123,6 +127,7 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
     const line = said[i];
     if (line.plate) plate.replaceChildren(el('small', '', title), l.name);   // a narrated line after a family's talk
     if (line.who) plate.replaceChildren(line.who);   // a family's lines: whoever is talking (js/data/gym.js `voices`)
+    if (other && line.who) { const theirs = line.who === pair.who; other.classList.toggle('quiet', !theirs); who.classList.toggle('quiet', theirs); }
     if (line.who) {
       if (line.demon && !layer.classList.contains('demon')) demonSwap();
       layer.classList.toggle('demon', !!line.demon);

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { RECIPES, GIFTS, FAVOURITE, SKINS, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, safariSprite } from '../js/data/workshop.js';
 import { MATERIALS_BY_ID, KEY_BY_ID, satchelOf, addMat } from '../js/data/satchel.js';
-import { TOWNS, QUESTS } from '../js/data/towns.js';
+import { TOWNS, QUESTS, CLEARING } from '../js/data/towns.js';
 import { FURNITURE, isEarned, howToEarn } from '../js/data/furniture.js';
 
 const sees = (towns = {}, beaten = []) => ({ towns, wins: (id) => (beaten.includes(id) ? 1 : 0) });
@@ -27,8 +27,8 @@ test('every questline Make step has one recipe, for a key item the Workshop make
   assert.ok(RECIPES.find(r => r.makes === 'katana').needs['magma-ore'], 'Machew\'s katana is forged from Cinder Springs\' ore');
 });
 
-test('every Gym Leader of a town has a favourite gift, and its signature piece is earned by it', () => {
-  const leaders = Object.values(TOWNS).flatMap(t => Object.keys(t.leaders));
+test('every Gym Leader of a town, and the Nietos at home, has a favourite gift, and its signature piece is earned by it', () => {
+  const leaders = [...Object.values(TOWNS), CLEARING].flatMap(t => Object.keys(t.leaders));
   assert.deepEqual(Object.keys(FAVOURITE).sort(), [...leaders].sort());
   for (const g of GIFTS) {
     const p = FURNITURE.find(f => f.kind === g.sig);

@@ -52,6 +52,8 @@ export const RECIPES = [
   gift('cocoa', 'Ember Cocoa', '☕', 'ricky', { spice: 1, 'ember-sequin': 1 }, 'Hot cocoa that fizzes. For the third hour of a stream at 3 a.m.', 'hammock'),
   gift('incense', 'Shadow Incense', '🪔', 'machew', { resin: 2, wick: 1 }, 'Acacia smoke for meditating on failure. Machew has a lot to meditate on.', 'sphinx'),
   gift('heistmap', 'Heist Map', '🗺️', 'jerome', { washi: 2, resin: 1 }, 'A map of the bandits\' camp. Every route is labelled IN AND OUT.', 'goldurn'),
+  // the Clearing's own: the Nietos, given at their house by the plaza
+  gift('rattle', 'Acorn Rattle', '🪇', 'nietos', { acorn: 3, glowmoss: 1 }, 'Whisper Acorns in a glowing rattle. It hums Linc to sleep, so Law and Britt finally get a night off.', 'bigkangaskhandoll'),
   // Kurt's own trade: an Apricorn's look for the Safari Ball
   skin('level', 'Level Ball', { 'magma-ore': 3 }, 'A red Apricorn, cured over Cinder Springs\' ore.'),
   skin('lure', 'Lure Ball', { driftwood: 3 }, 'A blue Apricorn, carved for the fishermen of Driftwood Landing.'),
@@ -77,6 +79,9 @@ export const GIFT_BY_ID = Object.fromEntries(GIFTS.map(g => [g.makes, g]));
 export const FAVOURITE = Object.fromEntries(GIFTS.map(g => [g.leader, g]));
 export const SKINS = RECIPES.filter(r => r.kind === 'skin');
 export const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.makes, s]));
+
+/** Who a gift is handed to, by name: the Nietos are Law and Britt at home. */
+export const gifteeOf = (leader, name) => (leader === 'nietos' ? 'Law and Britt' : name);
 
 /** The save's Workshop: furniture and skins `made`, `gifts` held (counts), each leader's `liked` (gifts given), those
     `fond` of you (their favourite given, their signature piece earned) and the Safari Ball's `skin` (null: its own). */

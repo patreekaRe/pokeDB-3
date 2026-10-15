@@ -17,7 +17,7 @@ import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
 import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
-import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE } from './workshop.js';
+import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, gifteeOf } from './workshop.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -112,7 +112,7 @@ export function howToEarn(piece, save) {
   if (kind === 'achievement' || kind === 'feat') return src.text;
   if (kind === 'gym') return `Beat Gym Leader ${src.name} ${GYM_POSTER} times (${Math.min(save.gym?.[src.id] || 0, GYM_POSTER)}/${GYM_POSTER})`;
   if (kind === 'craft') return `Make it at Kurt's Workshop in the Whispering Clearing`;
-  if (kind === 'gift') return `Give ${src.name} their favourite gift, made at Kurt's Workshop (${FAVOURITE[src.id].name})`;
+  if (kind === 'gift') return `Give ${gifteeOf(src.id, src.name)} their favourite gift, made at Kurt's Workshop (${FAVOURITE[src.id].name})`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

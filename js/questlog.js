@@ -9,7 +9,7 @@
 
 import { MATERIALS_BY_ID, satchelOf, satchelFlag } from './data/satchel.js';
 import { RECIPES_BY_ID } from './data/workshop.js';
-import { TOWNS, RING, CLEARING, clearingLit, townState, questOf, questStep, questDone, questProgress, greeterOf, stepText, stepHave, mended } from './data/towns.js';
+import { TOWNS, RING, CLEARING, clearingLit, townState, currentRequest, requestText, requestBy, questOf, questStep, questDone, questProgress, greeterOf, stepText, stepHave, mended } from './data/towns.js';
 import { GYM_BY_ID, spriteOf } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { getSave } from './storage.js';
@@ -96,6 +96,15 @@ function stepCard(town, save, sat) {
   return box;
 }
 
+/** A done town's coin request up now (its board's old jobs), taken by its leaders by turns at home. */
+function requestCard(town, st) {
+  const r = currentRequest(town, st), by = GYM_BY_ID[requestBy(town, st)];
+  const box = el('div', `qlog-do${st.ready ? ' ready' : ''}`);
+  box.append(el('p', 'qlog-step', `Odd job: ${requestText(r)}.`), bar(st.ready ? r.n : Math.min(st.got || 0, r.n), r.n),
+    row(st.ready ? 'READY! HAND IT IN' : 'THEN HAND IN', `${by?.name ?? 'Its Gym Leader'}, at their house in ${town.name}.`));
+  return box;
+}
+
 /** Every step of a quest: done ones ticked, the one up now marked, later ones hidden. */
 function stepList(town, st) {
   const list = el('ol', 'qlog-steps');
@@ -142,6 +151,7 @@ function questRow(town, save, sat) {
   if (state === 'quiet') body.append(row('HOW TO START', unlock(town, save)));
   else {
     if (state !== 'lit') body.append(stepCard(town, save, sat));
+    else if (town.requests && st.quest) body.append(requestCard(town, st));
     body.append(el('p', 'qlog-story', questOf(town).story), stepList(town, st));
   }
   head.addEventListener('click', () => head.setAttribute('aria-expanded', String(item.classList.toggle('open'))));
@@ -149,10 +159,11 @@ function questRow(town, save, sat) {
   return item;
 }
 
-/** The Quests app: `at` is 'board' when the Clearing's quest board opened it, which says where else it's kept. */
+/** The Quests app: `at` is 'board' when a quest board opened it, which says where else it's kept; a `?town=` playtest's
+    board passes `{ board: true, peek: { <town>: state } }`, its questline kept on the run, never the save. */
 export const questLogApp = {
   mount(panel, at) {
-    const save = getSave(), sat = satchelOf(save);
+    const real = getSave(), save = at?.peek ? { ...real, towns: { ...(real.towns || {}), ...at.peek } } : real, sat = satchelOf(save);
     panel.classList.add('qlog');
     const done = LINES.filter(t => stateOf(t, save) === 'lit');
     const gems = el('div', 'qlog-gems');
@@ -166,7 +177,7 @@ export const questLogApp = {
     const list = el('div', 'qlog-list');
     list.append(...LINES.map(t => questRow(t, save, sat)));
     panel.append(top, nextNote(save, sat), el('h3', 'qlog-label', 'All quests'), list);
-    if (at === 'board') panel.append(el('p', 'qlog-tip', 'Check this any time: Pokédex → Quests.'));
+    if (at === 'board' || at?.board) panel.append(el('p', 'qlog-tip', 'Check this any time: Pokédex → Quests.'));
     clearSatchelNews(LINES.map(t => `q:${t.id}`));
     showBadgeNews();
   },
