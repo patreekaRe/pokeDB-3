@@ -21,6 +21,7 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
 import { PIECES, pieceArt } from './secret-base.js';
 import { LEADER_HOMES, LEADER_SIZE, buildLeaderHome, leaderEnv } from './leader-homes.js';
+import { HALLS, HALL_SIZE, buildHall, hallEnv } from './town-halls.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
 import { RING, shardsLit } from './data/towns.js';
@@ -8966,10 +8967,10 @@ async function buildTown(figs, { look, time, town, mended = false, fest = null }
 
 /* ---------- inside a town's houses ---------- */
 
-/** A town's homes (by town, then its `homes` key): the room's size (the theater and bathhouse are bigger), the floor,
-    what stands in it ([piece, x, y, options]), where its Gym Leader stands (`leaderAt`) and its cast (`castAt`: the
-    bathers, each [x, ty, y] in a pool). A Gym Leader's home in a town (and the Nietos' in the Clearing) is
-    js/leader-homes.js's instead. */
+/** A town's homes (by town, then its `homes` key): the room's size, the floor, what stands in it ([piece, x, y,
+    options]) and its cast (`castAt`, each [x, ty, y]). A Gym Leader's home in a town (and the Nietos' in the Clearing)
+    is js/leader-homes.js's instead, and a town's great hall (the theater, bathhouse, aquarium, Nursery, caravanserai)
+    js/town-halls.js's. */
 const HOMES = {
   // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING); the Nietos' is js/leader-homes.js's
   clearing: {
@@ -8980,34 +8981,25 @@ const HOMES = {
   },
   shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
-  theater: { cols: 11, rows: 9, floor: 'stage', stage: true, furnish: [['taiko', 0, 2], ['taiko', 10, 2], ['kimonostand', 0, 0], ['kimonostand', 10, 0], ['zabuton', 3, 5], ['zabuton', 5, 5], ['zabuton', 7, 5], ['zabuton', 4, 6], ['zabuton', 6, 6], ['andon', 1, 6], ['andon', 9, 6]] },
   },
   wastes: {
     shop: { floor: 'flags', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['brazier', 2, 0], ['anvil', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['barrel', 8, 4], ['steamrocks', 1, 1], ['plant', 8, 1]] },
-    bath: { cols: 11, rows: 9, floor: 'tiles', castAt: [[1.5, 0.5, -0.3], [4.5, 0.5, -0.3], [7.5, 0.5, -0.3], [2.5, 3.5, -0.3], [6.5, 3.5, -0.3]],
-      furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 6, 3], ['steamrocks', 0, 0], ['steamrocks', 10, 0], ['okebucket', 0, 2], ['okebucket', 10, 2], ['milkfridge', 0, 6], ['massagechair', 10, 6], ['yukatarack', 10, 4], ['washbasin', 0, 4], ['shishiodoshi', 9, 3]] },
   },
   ruins: {
     shop: { floor: 'planks', walls: 'boards', furnish: [['barrel', 0, 0], ['crate', 1, 0], ['surfboard', 7, 0], ['surfboard', 8, 0], ['aquarium', 3, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['fishbowl', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['barrel', 0, 3], ['barrel', 0, 4], ['crate', 8, 3], ['milkcrate', 8, 4], ['seashells', 8, 1], ['tikitorch', 0, 2]] },
-    aquarium: { cols: 11, rows: 9, floor: 'tiles', walls: 'aqua', cold: true, castAt: [[1.5, 0.5, -0.18], [4.5, 0.5, -0.18], [7.5, 0.5, -0.18], [2.5, 3.5, -0.18], [7.5, 3.5, -0.18]],
-      furnish: [['onsenpool', 1, 0], ['onsenpool', 4, 0], ['onsenpool', 7, 0], ['onsenpool', 2, 3], ['onsenpool', 7, 3], ['bubblecolumn', 0, 0], ['bubblecolumn', 10, 0], ['aquarium', 0, 7], ['aquarium', 9, 7], ['jellylamp', 0, 4], ['jellylamp', 10, 4], ['kelp', 0, 2], ['kelp', 10, 2], ['bench', 3, 7], ['bench', 6, 7]] },
   },
   thornwood: {
     shop: { floor: 'planks', walls: 'dusk', furnish: [['witchshelf', 0, 0], ['witchshelf', 7, 0], ['candelabra', 2, 0], ['hauntmirror', 5, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['crystalball', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['coffin', 0, 3], ['hatstand', 0, 4], ['pumpkins', 8, 3], ['deadtree', 8, 4], ['spookylamp', 8, 1], ['broom', 1, 1]] },
-    nursery: { cols: 11, rows: 9, floor: 'planks', walls: 'glass', castAt: [[1.5, 0.6, 0.3], [4.5, 0.6, 0.3], [7.5, 0.6, 0.3], [2.5, 3.6, 0.3], [6.5, 3.6, 0.3]],
-      furnish: [['webrug', 1, 0, { free: true }], ['webrug', 4, 0, { free: true }], ['webrug', 7, 0, { free: true }], ['webrug', 2, 3, { free: true }], ['webrug', 6, 3, { free: true }], ['spookylamp', 0, 0], ['spookylamp', 10, 0], ['deadtree', 0, 2], ['deadtree', 10, 2], ['roundgrave', 0, 4], ['squaregrave', 10, 4], ['obeliskgrave', 10, 6], ['jackolantern', 0, 7], ['pumpkins', 2, 7], ['candelabra', 8, 7], ['ghostsheet', 10, 8]] },
   },
   savanna: {
     shop: { floor: 'planks', walls: 'tent', furnish: [['canopicjars', 0, 0], ['goldurn', 1, 0], ['featherfan', 7, 0], ['scarablamp', 8, 0], ['dunerug', 3, 4, { free: true }], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['waterjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['waterjar', 0, 4], ['barrel', 8, 3], ['cobrastatue', 8, 4], ['datepalm', 8, 1], ['pharaohthrone', 6, 0]] },
-    caravanserai: { cols: 11, rows: 9, floor: 'flags', walls: 'sandstone', castAt: [[1.6, 2.0, 0], [5.0, 1.5, 0], [8.4, 2.0, 0], [3.6, 4.8, 0], [7.2, 4.8, 0]],
-      furnish: [['haybale', 0, 0], ['haybale', 1, 0], ['trough', 4, 0], ['waterjar', 3, 0], ['waterjar', 6, 0], ['haybale', 9, 0], ['haybale', 10, 0], ['lotuscolumn', 0, 3], ['lotuscolumn', 10, 3], ['haybale', 0, 6], ['crate', 10, 6], ['barrel', 10, 7], ['datepalm', 0, 8], ['waterjar', 10, 8]] },
   },
 };
 // the Depths camp (js/data/camp.js): no clock, a crystal miners' camp in the Depths' cave (buildCamp())
 HOMES.depths = {
   camp: { cols: 13, rows: 9, camp: true, mewtwoAt: { x: 7.8, ty: 1.1, scale: 1.1 } },
 };
-const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
+const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; if (HALLS[id]) return HALL_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
 function homeFloor(kind) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
@@ -9021,27 +9013,16 @@ function homeFloor(kind) {
     g.fillStyle = '#3a302c'; g.fillRect(0, 0, W, H);
     const r = seeded(17);
     for (let y = 0; y < H; y += 8) for (let x = -(y / 8 % 2) * 5; x < W; x += 10) rr(x + 0.4, y + 0.4, 9.2, 7.2, 1.2, ['#8a7a6e', '#7a6a60', '#968678'][Math.floor(r() * 3)]);
-  } else if (kind === 'tiles') {   // the bathhouse's blue and white tiles
-    for (let y = 0; y < H; y += 4) for (let x = 0; x < W; x += 4) { g.fillStyle = (x + y) % 8 ? '#e8f0f4' : '#b8d4e4'; g.fillRect(x, y, 4, 4); }
-    g.fillStyle = 'rgba(80,110,130,0.35)'; for (let x = 0; x < W; x += 4) g.fillRect(x, 0, 0.3, H); for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 0.3);
-  } else planks(f, W, H, T, kind === 'stage' ? ['#a87048', '#8a5a38'] : ['#c89a68', '#b0845a']);
-  if (kind === 'stage') { g.fillStyle = 'rgba(160,30,40,0.85)'; g.fillRect(W / 2 - T, 4 * T, 2 * T, H - 4 * T); }
+  } else planks(f, W, H, T, ['#c89a68', '#b0845a']);
   return f.c;
 }
 
-function homeWall(width, time, { window: win = true, curtain = false, walls = 'plaster' } = {}) {
+function homeWall(width, time, { window: win = true, walls = 'plaster' } = {}) {
   const f = fine(width, TOP * U, 5), { g, lin } = f, s = f.shine();
   g.fillStyle = lin(0, wy(TOP), 0, wy(1), ['#e8dcc0', '#f4ead4']); g.fillRect(0, 0, width, TOP * U);
   if (walls === 'boards' || walls === 'dusk') {   // a lagoon home's: weathered boards, laid across (Phil's, dark and cold)
     const r = seeded(width);
     for (let y = 0; y < wy(1); y += 6) { g.fillStyle = (walls === 'dusk' ? ['#4a3e52', '#3e3446', '#54485c', '#362c3e'] : ['#c8a87c', '#bc9a6c', '#d4b688', '#b08e62'])[Math.floor(r() * 4)]; g.fillRect(0, y, width, 6); g.fillStyle = 'rgba(60,36,16,0.45)'; g.fillRect(0, y + 5.4, width, 0.6); }
-  } else if (walls === 'glass') {   // the Nursery's: panes in white frames, the canopy's green through them
-    g.fillStyle = lin(0, 0, 0, wy(1), ['#a8e0b0', '#d8f4d0']); g.fillRect(0, 0, width, wy(1));
-    const r = seeded(width);
-    for (let i = 0; i < width / 4; i++) { g.fillStyle = ['rgba(80,160,70,0.5)', 'rgba(50,120,50,0.45)', 'rgba(110,180,80,0.4)'][i % 3]; g.beginPath(); g.ellipse(r() * width, wy(2.2) + r() * (wy(1) - wy(2.2)), 3 + r() * 6, 2 + r() * 3, r() * 3, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = '#f4f4ec';
-    for (let x = 0; x <= width; x += U) g.fillRect(x - 1, 0, 2, wy(1));
-    for (let y = wy(TOP); y < wy(1); y += U) g.fillRect(0, y - 1, width, 2);
   } else if (walls === 'tent') {   // Persian's: the tent's canvas, striped, seen from inside, lamplight on it
     for (let x = 0; x < width; x += 8) { g.fillStyle = (x / 8) % 2 ? '#f4e2c0' : '#c8486a'; g.fillRect(x, 0, 8, wy(1)); }
     g.fillStyle = lin(0, 0, 0, wy(1), ['rgba(60,20,10,0.35)', 'rgba(255,200,120,0.1)']); g.fillRect(0, 0, width, wy(1));
@@ -9049,37 +9030,27 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
     g.fillStyle = lin(0, 0, 0, wy(1), ['#d8b88c', '#e4c69c']); g.fillRect(0, 0, width, wy(1));
     g.fillStyle = '#c86a3a'; g.fillRect(0, wy(2.5), width, 5);
     g.strokeStyle = '#f8ecd0'; g.lineWidth = 1; g.beginPath(); for (let x = 0; x <= width; x += 6) g.lineTo(x, wy(2.5) + (x % 12 ? 1 : 4)); g.stroke();
-  } else if (walls === 'sandstone') {   // the caravanserai's: blocks of sandstone, a carved band
-    const r = seeded(width);
-    for (let y = 0; y < wy(1); y += 6) for (let x = -(y / 6 % 2) * 6; x < width; x += 12) { g.fillStyle = ['#e0be90', '#d4b080', '#caa676'][Math.floor(r() * 3)]; g.fillRect(x + 0.4, y + 0.4, 11.2, 5.2); }
-    g.fillStyle = '#b07a4a'; g.fillRect(0, wy(2.4), width, 3);
-  } else if (walls === 'aqua') {   // the aquarium's: deep water blue, bubbles rising
-    g.fillStyle = lin(0, 0, 0, wy(1), ['#1a4a78', '#3a8ab8']); g.fillRect(0, 0, width, wy(1));
-    const r = seeded(width);
-    for (let i = 0; i < width / 6; i++) { g.strokeStyle = 'rgba(200,240,255,0.5)'; g.lineWidth = 0.6; g.beginPath(); g.arc(r() * width, r() * wy(1), 0.8 + r() * 2, 0, Math.PI * 2); g.stroke(); }
   }
   g.fillStyle = lin(0, wy(1), 0, wy(0), ['#8a5a34', '#6a4024']); g.fillRect(0, wy(1), width, U);
   g.fillStyle = '#3a241a';
   if (walls === 'plaster') for (let x = 0; x <= width; x += 2 * U) g.fillRect(x - 1.5, 0, 3, TOP * U);
   g.fillRect(0, wy(2.7), width, 3); g.fillRect(0, wy(1) - 1.5, width, 3);
   if (win) skyWindow(f, s, width * 0.25, width * 0.25 + 1.6 * U, wy(2.4), wy(1.3), { frame: '#5a3a22', curtain: null, night: time === 'night', sky: time === 'night' ? ['#101830', '#1a2850', '#283868'] : time === 'dusk' ? ['#f08850', '#f8b070', '#fcd8a0'] : ['#68b0f0', '#a8d8f8', '#e0f4ff'] });
-  if (curtain) {   // the theater's stage curtains, red, swagged
-    for (const [a, b] of [[0, width * 0.32], [width * 0.68, width]]) { g.fillStyle = lin(a, 0, b, 0, ['#a01828', '#d83040', '#a01828']); g.fillRect(a, wy(3.4), b - a, wy(0) - wy(3.4)); }
-    g.fillStyle = lin(0, wy(3.6), 0, wy(2.9), ['#d83040', '#a01828']); g.fillRect(0, wy(3.6), width, wy(2.9) - wy(3.6));
-    g.fillStyle = '#e8c050'; g.fillRect(0, wy(2.9) - 1, width, 1.5);
-  }
   return f.c;
 }
 
 async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
-  const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
+  const H = !L && HALLS[home];   // a town's great hall (js/town-halls.js)
+  const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : H ? { castAt: H.castAt, beat: H.beat, flip: H.flip } : HOMES[town.id]?.[home] || {};
   if (h.camp) return buildCamp(figs, h);
-  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, buddy: () => walker, away: !figs[town.homes[home].leader] }, home);
-  else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
-  B.shotTop = L ? 3.1 : 2.1;
+  const K = { THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, haloArt, puffs, shell, PIECES, calm: () => calm, buddy: () => walker };
+  if (L) buildLeaderHome({ ...K, away: !figs[town.homes[home].leader] }, home);
+  else if (H) buildHall(K, home);
+  else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: h.walls !== 'tent', walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
+  B.shotTop = L ? 3.1 : H ? H.shotTop : 2.1;
   B.talks = new Set();
-  if (!L) for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
+  if (!L && !H) for (const [id, x, y, o] of h.furnish || []) piece(id, x, y, o);
   if (home === 'shop' && figs.trader) {
     B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9 });
     B.who.trader.group.traverse(o => { o.userData.spot = 0; });
@@ -9109,44 +9080,22 @@ async function buildHome(figs, { time, town, home, gift }) {
       B.anchors[0] = new THREE.Vector3(tileX(at.x) + 0.9, 2.3, tileZ(at.ty));
     }
   }
-  if (h.castAt) {   // the bathers, up to their chins in the pools, bobbing now and then
+  if (h.castAt) {   // a hall's Pokemon (bathers to their chins, dancers on the stage...), one after another hopping
     const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
     for (const [i, k] of ids.entries()) {
-      const [x, ty, y] = h.castAt[i % h.castAt.length], id = k.slice(5);
-      B.who[id] = await figure(id, { ...figs[k], flip: i % 2 === 1 }, { x, ty, y, scale: 0.85 });
-      B.talks.add(id);
-    }
-    const steam = h.cold ? [] : h.furnish.filter(([id]) => id === 'onsenpool').map(([, x, y]) => [tileX(x + 0.5), 0.3, tileZ(y + 0.5)]);
-    puffs(steam, { col: 'rgba(255,255,255,0.7)', n: 3, size: 0.8, rise: 1.6, speed: 0.15 });
-    let next = 0, turn = 0;
-    const who = B.who;
-    B.ticks.push((now) => {
-      if (calm || now < next || !ids.length) return;
-      next = now + 2600;
-      does(who[ids[turn++ % ids.length].slice(5)], 'hop');
-    });
-  }
-  if (h.stage) {
-    // the stage across the back, the five dancers on it, one after another stepping out in a hop
-    const stage = std({ color: '#7a4a2a', roughness: 0.7 });
-    mesh(rbox(COLS - 2.2, 0.4, 3.2, 0.05), stage, 0, 0.2, tileZ(1));
-    mesh(new THREE.BoxGeometry(COLS - 2.1, 0.04, 0.12), std({ color: '#e8c050', metalness: 0.6, roughness: 0.3 }), 0, 0.41, tileZ(1) + 1.58);
-    for (let x = 1; x < COLS - 1; x++) for (let y = 0; y < 3; y++) B.blocked.add(key(x, y));
-    const ids = Object.keys(figs).filter(k => k.startsWith('cast:'));
-    for (const [i, k] of ids.entries()) {
-      const id = k.slice(5);
-      B.who[id] = await figure(id, { ...figs[k], flip: i < ids.length / 2 }, { x: 2.3 + i * 1.6, ty: 1 + (i % 2) * 0.6, y: 0.4 });
+      const [x, ty, y, scale = 0.85] = h.castAt[i % h.castAt.length], id = k.slice(5);
+      B.who[id] = await figure(id, { ...figs[k], flip: h.flip ? h.flip(i, ids.length) : i % 2 === 1 }, { x, ty, y, scale });
       B.talks.add(id);
     }
     let next = 0, turn = 0;
-    const who = B.who;
+    const who = B.who, beat = h.beat || 2600;
     B.ticks.push((now) => {
       if (calm || now < next || !ids.length) return;
-      next = now + 900;
+      next = now + beat;
       does(who[ids[turn++ % ids.length].slice(5)], 'hop');
     });
   }
-  B.env = L ? leaderEnv(home, time) : INDOORS;
+  B.env = L ? leaderEnv(home, time) : H ? hallEnv(home, time) : INDOORS;
 }
 
 /* ---------- the Depths camp (docs/roadmap.md's Towns step 5) ---------- */

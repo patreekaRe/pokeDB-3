@@ -1275,3 +1275,6 @@ export function buildLeaderHome(K, id) {
   block(K, Math.floor(at.x), Math.floor(at.ty));
   return L;
 }
+
+// shared with js/town-halls.js, the towns' great halls, built the same way
+export { U, TOP, wy, BOLD, HAND, part, lit, mat, block, ex, ez, lamp, group, quiet, sheet, text, put, hang, motes, topOf };
