@@ -32,7 +32,11 @@
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
-import { MAX_LEVEL } from './data/difficulty.js';
+import { MAX_LEVEL, isMewtwoRun } from './data/difficulty.js';
+import { sealOn, shardsPlaced } from './data/towns.js';
+import { runLines, landLine } from './data/camp.js';
+import { campNews } from './towns.js';
+import { gymTalk } from './gym.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
@@ -40,7 +44,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace, campTalk } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -124,6 +128,10 @@ function previewStarter(starter) {
   prepare(starter, {
     onBegin: async (level) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
+      if (isMewtwoRun(starter) && sealOn()) {   // the Sealed Weakness it carries into the Depths, shown big first
+        const { showPentagram } = await import('./pentagram.js');
+        await showPentagram(runLines(shardsPlaced(getSave())), { cry: true });
+      }
       beginRun(starter, level);
     },
     onBack: () => showSelect(starter),
@@ -200,6 +208,10 @@ function init() {
     updateSave(d => {
       d.gym = { ...(d.gym || {}), ...Object.fromEntries(ids.map(id => [id, 0])) };
       d.badges = (d.badges || []).filter(b => !ids.some(id => b === `gym-${id}` || b === `gym-${id}-gold`));
+      // unmet in the Gym Leaders app too (the app's first-load migration counted the fake wins as meetings), unless they've beaten you
+      const unmet = (list) => (list || []).filter(id => !ids.includes(id) || (d.gymLost?.[id] || 0) > 0);
+      d.seen = { ...d.seen, gym: unmet(d.seen?.gym) };
+      if (d.newFinds) d.newFinds = { ...d.newFinds, gym: unmet(d.newFinds.gym) };
       if (ids.includes('nietos') && d.towns?.clearing) { const { clearing, ...rest } = d.towns; d.towns = rest; }
     });
   }
@@ -309,7 +321,8 @@ function init() {
     // the Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
     // any run (visitTown() in js/run.js), and comes home in front of the Waystone or on the doorstep
     onTown: (id, house = null) => {
-      const mate = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
+      const pal = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
+      const mate = id === 'depths' && isMewtwoRun(pal) ? STARTERS.find(s => s.free) : pal;   // Mewtwo is waiting down there
       leaveTitle();
       visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house);
     },
@@ -442,9 +455,21 @@ function peekStrike(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
-  const kind = params.get('kind') || (before === 0 ? 'open' : after === 0 ? 'ultimate' : 'win');
+  const kind = params.get('kind') || (before === 0 ? (sealOn() ? 'camp' : 'open') : after === 0 ? 'ultimate' : 'win');
   playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
-    .then((close) => { close?.(); playMusic('title'); });   // back to the title's song after the seal's
+    .then((close) => {
+      if (kind === 'camp' && !campNews()) {   // nothing new down there: Mewtwo's one line, one tap
+        return gymTalk({ id: 'mewtwo', name: 'MEWTWO', talk: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, false) }, [landLine(shardsPlaced(getSave()))], { lit: true, title: '', look: 'psychic' })
+          .then(() => { close?.(); playMusic('title'); });
+      }
+      if (kind === 'camp') {   // `?gate=0&strike=0&shards=N`: down to the Depths camp, then home
+        leaveTitle();
+        visitTown(starter, 'depths', async () => { cameHome('gate'); await showHome(); curtain(false, 420); }, 'camp', { stage });
+        setTimeout(campTalk, 2200);   // as a won run's landing does: Mewtwo has news, so its talk comes to you
+        return setTimeout(() => close?.(), 1000);
+      }
+      close?.(); playMusic('title');   // back to the title's song after the seal's
+    });
 }
 
 /** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`

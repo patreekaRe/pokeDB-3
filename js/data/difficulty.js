@@ -59,9 +59,18 @@ export const MEWTWO_MODE = {
 
 export const isMewtwoRun = (starter) => starter?.id === 'mewtwo';
 
-/** The rules a run plays in a biome: its Trainer Level's, or Mewtwo's fixed ones. */
-export function runMods(starter, level, biome) {
-  return isMewtwoRun(starter) ? { ...BASE_MODS, ...MEWTWO_MODE.mods[biome] } : modsFor(level);
+/* Mewtwo's Sealed Weakness (the user's design, 2026-10-14): freed from the gate it is still too weak for what's below, so
+   in the Crystal Depths only its attacks deal `base` of their damage, each Waystone Shard placed giving `perShard` back;
+   all five, full strength. Its first three biomes are unchanged. */
+export const SEALED_WEAKNESS = { base: 0.5, perShard: 0.1, shards: 5 };
+export const sealedMult = (shards) => Math.min(1, Math.round((SEALED_WEAKNESS.base + SEALED_WEAKNESS.perShard * Math.max(0, shards || 0)) * 100) / 100);
+
+/** The rules a run plays in a biome: its Trainer Level's, or Mewtwo's fixed ones (`shards`: the Waystone Shards placed,
+    for the Depths' Sealed Weakness). */
+export function runMods(starter, level, biome, shards = 0) {
+  if (!isMewtwoRun(starter)) return modsFor(level);
+  const mods = { ...BASE_MODS, ...MEWTWO_MODE.mods[biome] };
+  return biome === 3 ? { ...mods, playerDmg: sealedMult(shards) } : mods;
 }
 
 /** How many floors a biome's map has in this run (undefined: the map's own 10). */

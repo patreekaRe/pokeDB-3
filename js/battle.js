@@ -2340,6 +2340,7 @@ function renderStatus() {
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
   if (b.dmgMult > 1) playerBadges.push(['🧬', '', `Unleashed: your attacks deal ${Math.round((b.dmgMult - 1) * 100)}% more damage in this biome`, 'good']);
+  if (b.dmgMult < 1) playerBadges.push(['🔒', '', `Sealed Weakness: in the Depths Mewtwo's attacks deal ${Math.round(b.dmgMult * 100)}% of their damage. Each Waystone mended gives 10% back`, 'bad']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, b.nextEnergy > 0 ? `+${b.nextEnergy} energy next turn` : `${-b.nextEnergy} less energy next turn`, b.nextEnergy > 0 ? 'good' : 'bad']);

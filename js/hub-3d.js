@@ -29,7 +29,7 @@ import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, guestLines, clearingLit } from './data/towns.js';
+import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, guestLines, clearingLit, sealOn } from './data/towns.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest } from './towns.js';
 import { unclaimed } from './mail.js';
@@ -1912,6 +1912,19 @@ async function enterHouse(p) {
   await acts.onTown('clearing', p.id);
 }
 
+/** Down through the broken Sealed Gate to the Depths camp (js/data/camp.js), outside any run: back in front of the gate. */
+async function enterCamp() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  playSound('gate-hum');
+  entering = { at: performance.now(), z: walker.z };
+  await curtain(true, calm ? 0 : 600);
+  entering = null;
+  inside = 'gate';
+  await acts.onTown('depths', 'camp');
+}
+
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
 
 /** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
@@ -2192,8 +2205,8 @@ function makePlaces() {
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
-    line: 'The broken Sealed Gate. Something waits beyond it.',
-    buttons: [['Go through', acts.onGate]],
+    line: sealOn() ? 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.' : 'The broken Sealed Gate. Something waits beyond it.',
+    buttons: sealOn() ? [['Go through', acts.onGate], ['Down to the camp', enterCamp]] : [['Go through', acts.onGate]],
     build: (g) => {
       const c = document.createElement('canvas');
       c.width = 48; c.height = 58;

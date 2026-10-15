@@ -5849,3 +5849,38 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .gym-scene.psychic .gym-plate { background: #7a3ac8; box-shadow: 0 2px 0 #3a1470, 0 0 10px rgba(180, 110, 255, 0.7); }
 .gym-scene.psychic .gym-more { border-top-color: #a060f0; }
 .gym-scene.psychic .gym-speed { background: linear-gradient(90deg, transparent, rgba(40, 10, 80, 0.6) 25%, rgba(170, 90, 255, 0.4) 75%, transparent); }
+/* the shard pentagram (js/pentagram.js): Mewtwo's talk in violet with the star of five shard slots over it, each placed
+   shard glowing in its town's colour (--glow) and lit one after another, the missing ones dark */
+.penta-scene .penta-top {
+  position: absolute; left: 50%; top: max(14px, env(safe-area-inset-top)); translate: -50% -30px; opacity: 0;
+  width: min(92vw, 400px, calc((100dvh - 230px) * 1.2)); text-align: center;
+  transition: translate 0.5s cubic-bezier(.2, .9, .3, 1.1), opacity 0.4s;
+}
+.penta-scene.in .penta-top { translate: -50% 0; opacity: 1; }
+.penta-scene.out .penta-top { translate: -50% -30px; opacity: 0; transition: translate 0.28s ease-in, opacity 0.28s; }
+.penta-wrap { position: relative; }
+.penta-star { display: block; width: 100%; height: auto; overflow: visible; }
+.penta-ring { fill: none; stroke: rgba(190, 140, 255, 0.55); stroke-width: 2; }
+.penta-ring.thin { stroke: rgba(190, 140, 255, 0.3); stroke-width: 1; stroke-dasharray: 3 4; }
+.penta-lines { fill: none; stroke: rgba(200, 160, 255, 0.6); stroke-width: 2; stroke-linejoin: round; }
+.penta-gem { fill: #2a1c40; stroke: #5a4878; stroke-width: 1.5; }
+.penta-facet { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; }
+.penta-name { font-size: 12px; fill: #8a78a8; paint-order: stroke; stroke: #160a2a; stroke-width: 3px; }
+.penta-slot.lit .penta-gem { fill: var(--glow); stroke: #fff; animation: pentaLight 0.6s calc(0.5s + var(--i) * 0.22s) backwards; }
+.penta-slot.lit .penta-facet { stroke: rgba(255, 255, 255, 0.7); }
+.penta-slot.lit .penta-name { fill: #fff; }
+.penta-halo { fill: var(--glow); opacity: 0.8; animation: pentaPulse 2.4s ease-in-out infinite; }
+.penta-slot.fresh .penta-gem { animation: pentaFresh 0.9s 1.8s backwards; }
+.penta-slot.fresh .penta-halo { animation: pentaFreshHalo 1.2s 1.8s backwards, pentaPulse 2.4s 3s ease-in-out infinite; }
+@keyframes pentaFresh { 0% { fill: #2a1c40; stroke: #5a4878; } 40% { fill: #fff; stroke: #fff; } }
+@keyframes pentaFreshHalo { 0% { opacity: 0; transform: scale(0.4); } 40% { opacity: 1; transform: scale(2.4); } }
+@keyframes pentaLight { from { fill: #2a1c40; stroke: #5a4878; } }
+@keyframes pentaPulse { 50% { opacity: 0.35; } }
+.penta-mon {
+  position: absolute; left: 50%; top: 47.2%; translate: -50% -50%; width: 26%; height: auto;
+  filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.85));
+}
+.penta-meter { margin: 4px 0 0; display: flex; flex-direction: column; gap: 2px; color: #e8dcff; font-size: 14px; text-shadow: 0 2px 0 #1a0a30; }
+.penta-meter b { font-size: 16px; color: #fff; }
+.penta-scene.calm .penta-gem, .penta-scene.calm .penta-halo { animation: none; }
+@media (prefers-reduced-motion: reduce) { .penta-scene .penta-top { transition: none; } .penta-scene .penta-slot :is(.penta-gem, .penta-halo) { animation: none; } }

@@ -6,6 +6,7 @@
 import { getSave, updateSave, awardCoins } from './storage.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended, folkKey,
   openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest, placeOf } from './data/towns.js';
+import { shardsLit } from './data/towns.js';
 import { satchelOf } from './data/satchel.js';
 import { streamOf } from './rng.js';
 import { safariDay } from './data/safari.js';
@@ -91,3 +92,21 @@ export function welcomeHome(id) {
 
 /** Today's Gym Leader by the Clearing's Waystone (js/data/towns.js's waystoneGuest()), or null: dealt by the UTC day. */
 export const todaysGuest = (save = getSave()) => waystoneGuest(save, streamOf(safariDay(), 'waystone-guest'));
+
+/* The Depths camp's memory (docs/roadmap.md's step 5, the user's call 2026-10-15): a won run's landing there is a walk
+   only when something new waits (the camp never walked, or a shard Mewtwo hasn't seen lit), else one tap through. Under
+   `?shards=N` it lasts the page load, never saved. */
+const shardsFlag = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('shards');
+let peekSeen = null;
+const campSeen = (save) => (shardsFlag() ? peekSeen : save.campLit) ?? null;
+
+/** The shards lit since Mewtwo last saw the pentagram in the camp (RING order). */
+export const campFresh = (save = getSave()) => { const seen = campSeen(save); return shardsLit(save).map((on, i) => on && !seen?.[i]); };
+/** Whether the camp has something new: never walked, or a shard to hand over. */
+export const campNews = (save = getSave()) => !campSeen(save) || campFresh(save).some(Boolean);
+/** Mewtwo has seen the pentagram as it stands. */
+export function sawCamp() {
+  const lit = shardsLit(getSave());
+  if (shardsFlag()) peekSeen = lit;
+  else updateSave(d => { d.campLit = lit; });
+}

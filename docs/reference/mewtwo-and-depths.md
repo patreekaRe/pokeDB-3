@@ -119,3 +119,37 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
   window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
   Pokédex or `bossesDefeated`.
+
+**Mewtwo's Sealed Weakness, the shard pentagram and the Depths camp** (roadmap step 5's first part, the user's design,
+2026-10-14; built 2026-10-15). All three come with the towns (`sealOn()` in `js/data/towns.js`: `TOWNS_LIVE`, `?towns` or
+`?shards=N`), since only the towns' questlines drop shards; until then the game plays as before (Mewtwo at full strength,
+the open gate's thrown-back hint). **The weakness**: in the Depths only, Mewtwo's attacks deal `sealedMult(shards)` of
+their damage (`SEALED_WEAKNESS` in `js/data/difficulty.js`: 50%, +10% a shard, 100% at five), through `runMods(starter,
+level, biome, shards)` as `playerDmg` (the sprint's +25% is the same key), the shards from `weaknessShards()` (a town
+whose Waystone is mended counts one, `shardsLit()` in RING order). A 🔒 "Sealed Weakness" badge sits on the player's
+nameplate (`b.dmgMult < 1`, `js/battle.js`). The sim mirrors it (`cfg.shards`, default 0). Bot, psychic, 150 runs a
+cell, human / strong: 0 shards 58.7 / 62.7 (300 runs: 64.0 / 63.7), 2 shards 78.7 / 77.3, 5 (the old numbers) 82.0 / 92.0; every loss is in the
+Depths, mostly Eternatus. **The pentagram** (`showPentagram(lines)` in `js/pentagram.js`, `.penta-*` in
+`css/screens.css`): Mewtwo's violet `.gym-scene` with one small SVG star over the speech window, a crystal at each
+point lit in its town's `RING` glow (one after another, a chime each) or dark, the town's name by it, Mewtwo in the
+middle, "n / 5 shards" and its Depths strength under it. Shown before every Mewtwo run (`runLines()`, `previewStarter()`
+in `js/main.js`) and when you talk to Mewtwo in the camp (`campLines()`: why it needs the stones, what Eternatus is, how
+much of its strength is back). **The camp** (`DEPTHS_CAMP` in `js/data/camp.js`, `placeOf('depths')`): walked like a
+town's house (`homeRoom()` in `js/run.js`, its room `HOMES.depths.camp` / `buildCamp()` in `js/event-3d.js`: the Depths
+grotto's cave walls and floor, crystals, a tent, sleeping bags, stumps round a brazier fire with embers and a flickering
+light, crates, a coal wagon; at the back a crystal arch filled with breathing violet light, the way in to the Depths
+proper, Mewtwo floating in front of it, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives
+`kind: 'camp'` once the gate is broken; `descent()` plays the fall with its own lines, then `campAfterWin()` walks the
+run's Pokémon, at its stage, round the camp as a visit (`visitTown(..., { stage })`), the ended run put back on leaving
+for the result window; the win is recorded before, so leaving only plays the win scene and the rest), and **the Sealed
+Gate's second button** in the Clearing, "Down to the camp" (`enterCamp()` in `js/hub-3d.js`: your buddy, or a free
+starter if your buddy is Mewtwo, back in front of the gate on leaving). **Kept short** (the user's call, 2026-10-15): a
+won run's landing is the walk only when something new waits (`campNews()` in `js/towns.js`: the camp never walked, or a
+shard lit since Mewtwo last saw the pentagram, `save.campLit`, set by `sawCamp()` after its talk; under `?shards=N` that
+memory lasts the page load), and then Mewtwo's talk comes to you by itself, the new slot lit last with a flash
+(`fresh`); else it's Mewtwo's one line (`landLine()`, `gymTalk()`) and a tap on to the win scene. **Mewtwo's own runs**
+stop there too, after their third boss (`fallIn()` → `campStop()`: the camp walked as Mewtwo, no second Mewtwo in it,
+its own lines over the pentagram, `selfLines()`, then "Go down" is the way on into the Depths' map and film). The Depths
+stay Mewtwo's alone (the user's call, 2026-10-14). Playtest: `?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into
+the camp, then home), `?towns&mewtwo&gate=0` (walk to the gate), `?towns&shards=1&mewtwo&descent=mewtwo` (Mewtwo's stop),
+`?shards=1&mewtwo&bossfight=depths` (the badge).

@@ -68,10 +68,11 @@ import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/bal
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
-import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
+import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
-  homeTalk, stepNudge, folkChats, clearingLit } from './data/towns.js';
+  homeTalk, stepNudge, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced } from './data/towns.js';
+import { campLines, landLine, selfLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
 /** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
@@ -392,7 +393,7 @@ function restoreRun(saved) {
     starter,
     route: saved.route ?? BIOMES.slice(0, saved.biome + 1).map(b => b.id),   // saved before the crossroads: the default road
     tower: saved.tower && { ...freshAugments(null), ...saved.tower },   // a climb saved before augments has none, and owes none
-    mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome),
+    mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome, weaknessShards(getSave())),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
     map: { floors, boss: byId.boss, byId },
@@ -645,11 +646,11 @@ let peekAt = null, peekDepths = false, peekHouse = null;
     its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
     but what's done there is real: requests handed in, furniture bought, townsfolk invited. Leaving (the far gate, Leave,
     the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. */
-export function visitTown(starter, id, onHome, house = null) {
+export function visitTown(starter, id, onHome, house = null, { stage = 0 } = {}) {
   const at = placeOf(id);
   if (!at || !starter) return false;
   peeking = true;
-  visiting = { onHome, id };
+  visiting = { onHome, id, stage };
   peekAt = BIOMES_BY_ID[at.biome];
   peekHouse = house;
   beginRun(starter, 0, ':visit');
@@ -689,7 +690,7 @@ function peekRoom(id) {
   }
   if (id === ':visit') {
     walkInto(peekAt);
-    run.stage = 0;   // your walking buddy as it walks the Clearing, not evolved for the biome
+    run.stage = visiting.stage;   // your walking buddy as it walks the Clearing, not evolved for the biome (a won run's, as it won)
     dropNotes();   // no run-start lines on a visit
     document.body.classList.add('town-visit');   // no run's HP or Pokédollars on the room bar
     const place = placeOf(visiting.id);
@@ -803,7 +804,7 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     d.stats.deepestBiome = Math.max(d.stats.deepestBiome, run.biome + 1);
     if (!d.stats.biomesSeen.includes(mainBiome().id)) d.stats.biomesSeen.push(mainBiome().id);   // for the Explorer Badge, once every road exists
   });
-  run.mods = runMods(run.starter, run.level, run.biome);
+  run.mods = runMods(run.starter, run.level, run.biome, weaknessShards(getSave()));
   run.map = generateMap({ floors: runFloors(run.starter, run.biome) });
   // Decide now who waits in every fight room: the map scouts elites and bosses, and a refresh can't reroll a fight.
   const nodes = Object.values(run.map.byId).sort((a, b) => a.floor - b.floor || (a.col ?? 0) - (b.col ?? 0));
@@ -1857,9 +1858,9 @@ function townRoom(covered = null, at = null) {
 /** A town house you walk into (js/data/towns.js's `homes`): its own small room, its doormat back out onto its doorstep.
     The shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
     dancers, the bathhouse its bathers (a home's `cast`). */
-function homeRoom(b) {
+function homeRoom(b, onward = null) {
   const town = placeOf(run.town.id), home = town.homes[b.home], thisRun = run, t = run.town;
-  const out = () => { if (run === thisRun) (town.home ? goHome(b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
+  const out = () => { if (run === thisRun) (onward ? onward() : town.home ? goHome(b.back ?? b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
   const again = () => { if (run === thisRun) { checkpoint(); homeRoom(b); } };
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
@@ -1945,9 +1946,9 @@ function homeRoom(b) {
   }
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
+    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : home.sub],
     options,
-    skipLabel: 'Leave',
+    skipLabel: onward ? 'Go down' : 'Leave',
     onSkip: out,
     layout: 'event-room home-room',
     ask: false,   // only a door back into the town
@@ -1955,6 +1956,7 @@ function homeRoom(b) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.kurt) figures.kurt = { npc: 'kurt' };
+  if (home.mewtwo && !isMewtwoRun(run.starter)) figures.mewtwo = { src: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
@@ -1963,6 +1965,7 @@ function homeRoom(b) {
   event3d(homeVisits[b.id], 'home', figures, null, {
     extra: { town, home: b.home, away, gift: gifting, onTalk: (stand) => {
       if (run !== thisRun) return;
+      if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
       const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt()) : null;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);
@@ -1975,6 +1978,36 @@ function homeRoom(b) {
 }
 const homeVisits = {};
 let townVisit = null;
+
+/** Mewtwo as gymTalk() slides it in (shiny if yours is). */
+const mewtwoTalker = () => ({ id: 'mewtwo', name: 'MEWTWO', talk: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) });
+
+/** Mewtwo's own run lands in the Depths camp after its third boss (the user's call, 2026-10-15): it walks the camp as
+    itself, feels how much of its strength the shards have given back (the pentagram), and goes on down; leaving is the
+    way in to the Depths. Only once the shards count (sealOn()): before, it falls straight in, as it always did. */
+function campStop(onDown) {
+  const place = placeOf('depths'), b = place.buildings[0], thisRun = run;
+  run.town = { id: place.id, fall: true, trade: null };
+  homeRoom(b, () => {
+    if (run !== thisRun) return;
+    run.town = null;
+    onDown();
+  });
+  setTimeout(() => { if (run === thisRun && run.town?.fall) campTalk(); }, 2200);
+}
+
+/** Mewtwo in the Depths camp: what it says follows the Waystone Shards placed, said over the shard pentagram. */
+let campTalking = false;
+export async function campTalk() {
+  if (campTalking) return;
+  campTalking = true;
+  try {
+    const { showPentagram } = await import('./pentagram.js');
+    const self = isMewtwoRun(run?.starter);   // Mewtwo's own run: it feels its strength itself
+    await showPentagram(self ? selfLines(shardsPlaced(getSave())) : campLines(shardsPlaced(getSave())), { fresh: campFresh() });
+    sawCamp();
+  } finally { campTalking = false; }
+}
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
 const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
 
@@ -2284,6 +2317,15 @@ async function fallIn() {
   if (healed) playSound('heal-hp');
   setHpBar('run', run.hp, run.maxHp);
   run.biome += 1;
+  if (sealOn() && town3d()) {   // down to the camp first, then on through the arch
+    campStop(async () => {
+      const { curtain } = await import('./hd2d.js');
+      await curtain(true, 360);
+      startBiome();
+      setTimeout(() => curtain(false, 420), 300);
+    });
+    return setTimeout(close, 1000);
+  }
   startBiome();   // the map, and the Depths' intro film over it, before the dark lifts
   close();
 }
@@ -3880,9 +3922,13 @@ function announceUnlocks() {
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
   if (peeking || isMewtwoRun(run.starter) || isSafari() || !(won || atLastBoss)) return null;
-  // broken already: until a Mewtwo run has reached the Depths, a win is thrown back from the open gate (a hint, no strike)
-  if (before <= 0) return won && getSave().stats.deepestBiome < 4 ? { scene: { starter: run.starter, stage: run.stage,
-    shiny: getSave().shiny.on.includes(run.starter.id), kind: 'open', land: gateLand() } } : null;
+  // broken already: a win drops through the open gate to the Depths camp (once the shards count, sealOn()); before that,
+  // until a Mewtwo run has reached the Depths, it is thrown back from the open gate (a hint, no strike)
+  if (before <= 0) {
+    const scene = won && { starter: run.starter, stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), land: gateLand() };
+    if (scene && sealOn()) return { scene: { ...scene, kind: 'camp' } };
+    return scene && getSave().stats.deepestBiome < 4 ? { scene: { ...scene, kind: 'open' } } : null;
+  }
   const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
@@ -4070,7 +4116,13 @@ function endRun(won, atLastBoss = false, loss = null) {
   // the last boss falls, the floor splits and your Pokémon drops down to the Sealed Gate and strikes it (a run lost at the
   // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
   // a lost run's recap (who beat it, its numbers, its HP over the run, its deck) comes after the gate, before the rest
-  playGate(gate?.scene).then((close) => {
+  // since the shards count, a won run's fall lands in the Depths camp first; the win is already recorded, leaving it
+  // only plays the celebration (the user's order, 2026-10-14)
+  playGate(gate?.scene).then(async (close) => {
+    if (gate?.scene?.kind === 'camp') {   // a walk only when something new waits there, else Mewtwo's one line (2026-10-15)
+      if (campNews()) { await campAfterWin(close); close = null; }
+      else await gymTalk(mewtwoTalker(), [landLine(shardsPlaced(getSave()))], { lit: true, title: '', look: 'psychic' });
+    }
     const next = record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null;
     if (close) setTimeout(close, 800);   // the open gate's dark scene stays under the next one until it covers the screen
     return next;
@@ -4088,12 +4140,31 @@ function badgeItem(badge) {
   return li;
 }
 
+/** A won run down in the Depths camp (js/data/camp.js), walked as a visit from home is (visitTown()): the run that ended
+    is put back once you leave it, for the result window's New run. The fall's dark (`close`) stays over the camp until
+    it's built; leaving it goes dark again, lifted once the win scene covers the screen. */
+function campAfterWin(close) {
+  const ended = run;
+  return new Promise(done => {
+    const went = visitTown(ended.starter, 'depths', async () => {
+      run = ended;
+      showScreen('battle-screen');
+      const { curtain } = await import('./hd2d.js');
+      setTimeout(() => curtain(false, 420), 900);
+      done();
+    }, 'camp', { stage: ended.stage });
+    setTimeout(close, went ? 1000 : 0);
+    if (went) setTimeout(() => { if (visiting) campTalk(); }, 2200);   // Mewtwo has news for you: its talk comes to you
+    if (!went) { run = ended; done(); }
+  });
+}
+
 /** The descent and the gate's scene, one over the other so the page never shows between them. With the gate already open
     there's no strike: it resolves with the descent's close(), for the caller to call once the next scene covers it. */
 export async function playGate(scene) {
   if (!scene) return;
   const close = await descent(scene);
-  if (scene.kind === 'open') return close;   // no strike: the caller closes it under whatever comes next
+  if (scene.kind === 'open' || scene.kind === 'camp') return close;   // no strike: the caller closes it under whatever comes next
   await gateScene({ ...scene, onShow: close });
   if (scene.kind === 'loss') playMusic(null);   // the seal's song fades: a lost run's recap and result are quiet, as before
 }

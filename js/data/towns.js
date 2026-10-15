@@ -9,6 +9,8 @@
    This file is pure (tests/towns.test.mjs). A new town is a TOWNS entry.
    ============================================================ */
 
+import { DEPTHS_CAMP } from './camp.js';
+
 /** Whether the gateway towns are on (the user's call, 2026-10-14: the new Clearing went live first, the towns still being
     built): off, runs walk straight from the journey film to the map, requests count nothing and the Clearing's Waystone
     only reads its riddles. `?towns` turns them on for a page load; `?town=` peeks work either way. On for good: TOWNS_LIVE. */
@@ -1832,6 +1834,22 @@ export const RING = [
   { id: 'savanna', glow: '#ffd858' },
 ];
 
+/** The Waystone Shards placed, in RING order (true: that town's stone is mended), as the Clearing's Waystone lights them:
+    the shard pentagram (js/pentagram.js) and Mewtwo's Sealed Weakness in the Depths (sealedMult() in difficulty.js).
+    `?shards=N` lights the first N for a page load. */
+export function shardsLit(save) {
+  const flag = typeof location !== 'undefined' && new URLSearchParams(location.search).get('shards');
+  if (flag) return RING.map((t, i) => i < Number(flag));
+  return RING.map(t => townsOpen() && mended(townState(save, t.id)));
+}
+export const shardsPlaced = (save) => shardsLit(save).filter(Boolean).length;
+/** Whether the shards count yet: the Sealed Weakness, the pentagram and the Depths camp come with the towns (TOWNS_LIVE,
+    or `?towns` / `?shards=N` for a page load), since only the towns' questlines drop shards. Until then Mewtwo goes down
+    at full strength, as before. */
+export const sealOn = () => townsOpen() || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('shards'));
+/** The shards Mewtwo's Sealed Weakness counts (runMods() in difficulty.js): all five while it's off. */
+export const weaknessShards = (save) => (sealOn() ? shardsPlaced(save) : RING.length);
+
 /** Each town's shop sells one shelf of the Secret Base's furniture (its `group`s), only there (the mall's store never
     deals them), `SHOP_STOCK` of it a UTC day, a piece you own never dealt again. */
 export const SHOP_SHELVES = { shrine: ['Japanese'], wastes: ['Hot Spring'], ruins: ['Underwater'], thornwood: ['Greenhouse', 'Garden'], savanna: ['Desert'] };
@@ -1896,4 +1914,4 @@ export const CLEARING = {
 };
 
 /** A town by id for the houses walked in from home too (the Clearing's). */
-export const placeOf = (id) => TOWNS[id] || (id === 'clearing' ? CLEARING : null);
+export const placeOf = (id) => TOWNS[id] || (id === 'clearing' ? CLEARING : id === 'depths' ? DEPTHS_CAMP : null);
