@@ -13,7 +13,8 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
-import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES } from './data/towns.js';
+import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
+import { workshopOf, heartsOf, baseFriends, HEARTS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE } from './data/house.js';
 
@@ -398,14 +399,26 @@ export const shopOpen = (b) => new URLSearchParams(location.search).has('shopope
    room until you talk to them (`b.leaderVisit`, the day they last did). Who: the leaders of every town whose Waystone
    you've mended (docs/roadmap.md's Towns step 6, session 4; their HOME_LINES), not today's guest at the Clearing's
    Waystone; and, once LEADER_VISITS_LIVE is on, those beaten GYM_GOLD times (their `visit` speeches). `?visit` brings one
-   for the page load. */
+   for the page load.
+   Friends (step 8, session c): from 3 hearts a friend is one of them too, mended town or not, with their BASE_LINES; at 5
+   (`sit`) they take a seat of yours, and once the day's visit is over one of them may still drop in, BEST_DROP_IN of
+   the times you come in. `?hearts=N` puts every friend at N for the page load, as at home. */
+const BEST_DROP_IN = 0.5;
+const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : Math.max(0, Math.min(HEARTS, +n || 0)); };
+const friendVisit = (id, hearts) => ({ ...GYM_BY_ID[id], visit: BASE_LINES[id][hearts >= HEARTS ? 'sit' : 'drop'], sit: hearts >= HEARTS });
+
 export function leaderVisitor(b, save = getSave()) {
   const day = safariDay(), again = new URLSearchParams(location.search).has('visit');
-  if (b.leaderVisit === day && !again) return null;
+  const ws = workshopOf(save), at = (id) => heartsPeek() ?? heartsOf(ws, id);
+  const friends = baseFriends(at), out = todaysGuest(save)?.id;
+  if (b.leaderVisit === day && !again) {
+    const best = friends.best.filter(id => id !== out);
+    return best.length && Math.random() < BEST_DROP_IN ? friendVisit(best[Math.random() * best.length | 0], HEARTS) : null;
+  }
   const gold = LEADER_VISITS_LIVE || again ? GYM_LEADERS.filter(l => (save.gym?.[l.id] || 0) >= GYM_GOLD && (l.id !== 'nietos' || nietosHome(save.gym[l.id]))) : [];   // the Nietos stay away while NIETOS_LIVE is off
-  const out = todaysGuest(save)?.id;
+  const pal = friends.all.filter(id => id !== out).map(id => friendVisit(id, at(id)));
   const home = homeLeaders(save).filter(h => h.id !== out && !gold.some(l => l.id === h.id)).map(h => ({ ...GYM_BY_ID[h.id], visit: HOME_LINES[h.id] }));
-  const pool = [...gold, ...home];
+  const pool = [...pal, ...[...gold, ...home].filter(l => !pal.some(p => p.id === l.id))];
   if (!pool.length) return null;
   return pool[streamOf(day, 'leader-visit')() * pool.length | 0];
 }

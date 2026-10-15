@@ -149,6 +149,14 @@ export const heartsOf = (ws, leader) => Math.min(HEARTS, ws.liked?.[leader] || 0
 /** Everyone who takes a gift, the Nietos (home) first. */
 export const FRIENDS = ['nietos', ...GIFTS.map(g => g.leader).filter(id => id !== 'nietos')];
 
+/** Friends who drop by your Secret Base (step 8, session c): everyone at VISIT_HEARTS or more, their town mended or
+    not; `best` (at HEARTS) also come again after the day's visit and sit on your furniture. `at(id)` is their hearts. */
+export const VISIT_HEARTS = 3;
+export function baseFriends(at) {
+  const all = FRIENDS.filter(id => at(id) >= VISIT_HEARTS);
+  return { all, best: all.filter(id => at(id) >= HEARTS) };
+}
+
 /** A recipe's needs as a line ("🕯️ 2/3 · 📜 3/3"). */
 export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
   .map(([id, n]) => `${MATERIALS_BY_ID[id].icon} ${Math.min(sat.mats[id] || 0, n)}/${n}`).join(' · ');

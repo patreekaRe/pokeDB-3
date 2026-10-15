@@ -2481,3 +2481,30 @@ never on the daily stands, so the stands' deal is unchanged. Outdoors the Decora
 shows; pieces, the ghost, its footprint and the pick box roll with the lawn (`bendOut()`), aimed on the drawn lawn
 (`groundHit()`). The lamp post and string lights switch, the barbecue burns. Tested headless: all 16 built and placed,
 the tray in and out, the catalogue; `tests/furniture-store.test.mjs` checks the rule. Part c is next.
+
+- **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
+  a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
+  star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
+
+### Kenmatta's dojo made extravagant: the temple hall and the ring (2026-10-15)
+
+The user's ask: "update Kens dojo to be super aesthetic... make it extravagant, even the inside make it big, give it a
+fighting ring in the middle you could walk into and around". **Outside** (`makeDojo()` in `js/hub-dojo.js`, the 'dojo'
+place, `DOJO_AT` now 5,0 and five tiles wide, its step 7,5 on the ring road): a two-tier granite podium with gold-capped
+stairs and a red balustrade, vermilion columns round a veranda, a shoji front lit at night with a navy noren, a curved
+karahafu gable, two sweeping glazed roofs (`templeRoof()`: sagging slopes, upturned corners, gold eaves and hips), gold
+shachihoko, a 道場 plaque, swaying red lanterns, stone lanterns, two victory banners (only at the front: Halloween's
+cauldron stands at 10,2) and two cherry trees dropping petals (one instanced mesh). No light of its own; its glow is
+emissive, in `glowMats`. **Inside** (`buildDojoHall()` in `js/event-3d.js`, `SIZES.tutor` 17 x 15, view 10 rows): the run's
+Move Tutor room and the Clearing's dojo (`HOMES.clearing.dojo`, `CLEARING.homes.dojo` with his students' lines in
+`js/data/towns.js`; built alongside the session that added the trials and belts, merged after: their trial board hangs
+where the run's scroll does, the sandbag is the second spot, your belt rides on your partner, two lines about the hall joined
+the white belt's `talk`). Gold-leaf walls painted with ink mountains, a pine and a red sun, 拳 / 魂 banners, TEST YOUR
+MIGHT over the Dragonite medallion on a lacquered dais, red columns, tatami down the sides, indoor koi ponds by the door, a
+red carpet to the ring. The ring (`dojoRing()`, deck tiles 5-11 x 4-10, 0.55 high): a red canvas with 拳 in gold, a black
+apron, gold posts with red / blue / white pads, three ropes a side parted at the front steps. The engine gained three
+room keys for it: `rise(x, z)` (your Pokémon's height, up the steps onto the deck), `walls` (edges a route can't cross:
+the ropes) and `decks` (a tap on the deck finds its tile, not the floor's under it). Ken sits in the ring (Challenge's step
+is in front of him); the scroll (tile 4) and sandbag (tile 12) sit near enough the middle that all three signs show on a
+phone from the door. Tested headless at 420x860 and 1280x800: the walk up into the ring, a tap on the canvas, all three
+signs, Ken's line in the Clearing, no console errors; still parts baked with `mergeStatic()`.

@@ -822,7 +822,7 @@ function onShow() {
 /** Tiles someone stands on or is heading for, so two never pick the same one. */
 function taken(skip) {
   const out = new Set();
-  for (const w of [walker, ...guests.map(g => g.w)]) {
+  for (const w of [walker, ...guests.map(g => g.w), visit?.w]) {
     if (!w || w === skip || !w.tile) continue;
     out.add(key(w.tile.x, w.tile.y));
     const end = w.path.at(-1);
@@ -874,7 +874,7 @@ function seatSpots(it) {
 
 /** Every free place to sit in the room: { it, k } for spot k of piece it, none someone's on or heading for. */
 function seats() {
-  const used = new Set([walker, ...guests.map(g => g.w)].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
+  const used = new Set([walker, ...guests.map(g => g.w), visit?.w].map(w => w?.seat ?? w?.seatTo).filter(Boolean).map(s => `${base.items.indexOf(s.it)}:${s.k}`));
   return base.items.flatMap((it, i) => seatOf(it.id) ? seatSpots(it).map((_, k) => ({ it, k })).filter(s => !used.has(`${i}:${s.k}`)) : []);
 }
 
@@ -985,6 +985,12 @@ function settleGuests() {
     Object.assign(walker, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
   }
   if (walker.goal) { walker.goal = null; walker.seatTo = null; walker.path = []; }
+  // a visiting friend off a seat that went or moved, standing where they land
+  const vw = visit?.w;
+  if (vw?.seat && !base.items.includes(vw.seat.it)) {
+    const down = nearestFree(vw.seat.tile);
+    Object.assign(vw, { seat: null, y: 0, tile: down, x: tileX(down.x), z: tileZ(down.y) });
+  }
   for (const { w } of guests) {
     if (!w || w.jump) continue;
     if (w.goal) { w.goal = null; w.seat = null; }
@@ -1075,7 +1081,6 @@ const SMEARGLE = { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smearg
 const DABS = ['#e84838', '#f8c830', '#3a8ad8', '#58b858', '#c868d8', '#f88838'];
 const SAVED_AT = 4;
 let visit = null;   // { mon, w, easel, tiles, lines, i, phase: paint / stand / talk / leave, t, dab, leader }
-
 const visitLines = () => [
   'Oh! Hello there! You must be the one who lives here. Welcome home!',
   'I\'m Smeargle. I was passing by and couldn\'t help giving the walls a fresh coat. Hope you don\'t mind!',
@@ -1111,29 +1116,52 @@ async function startVisit() {
     w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: true, hop: 0 } });
 }
 
-/* A Gym Leader beaten five times, dropping by (leaderVisitor() in js/secret-base.js): they stand about in the room until
-   you tap them, say their piece in the same speech window, and walk out over the doormat. */
+/* A Gym Leader or a friend dropping by (leaderVisitor() in js/secret-base.js): they stand about in the room until you
+   tap them, say their piece in the same speech window, and walk out over the doormat. A best friend (`sit`, 5 hearts)
+   walks in over it and sits on one of your seats instead, and gets down to leave. */
 const TRAINER_PX = 1 / 34;   // a trainer's sprite pixel, as in the walk-in rooms (js/event-3d.js)
 
 async function leaderVisit() {
-  const l = leaderVisitor(base), spot = l && visitSpot();
-  if (!spot) return;
-  visit = { leader: l, phase: 'load', tiles: [key(spot.x, spot.y)] };
+  const l = leaderVisitor(base);
+  if (!l) return;
+  const seat = l.sit && visitSeat(), spot = !seat && visitSpot();
+  if (!seat && !spot) return;
+  visit = { leader: l, phase: 'load', tiles: spot ? [key(spot.x, spot.y)] : [] };
   const v = visit;
-  blocked.add(v.tiles[0]);
+  for (const t of v.tiles) blocked.add(t);
   const m = await makeMon({ src: spriteOf(l), name: l.name, cry: '', px: TRAINER_PX }, false);
   if (visit !== v) { dispose(m.group); scene.remove(m.group); return; }
   m.board.userData.who = { mon: m };
-  Object.assign(v, { mon: m, phase: 'stand', w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: false, hop: 0 } });
+  if (!seat) Object.assign(v, { mon: m, phase: 'stand', w: { tile: spot, x: tileX(spot.x), z: tileZ(spot.y), y: 0, path: [], facing: 'front', flip: false, hop: 0 } });
+  else {
+    // a best friend lets themselves in over the doormat and makes for the seat
+    const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+    Object.assign(v, { mon: m, phase: 'walkin', goal: seat.it,
+      w: { tile: door, x: tileX(door.x), z: tileZ(ROWS + 0.6), y: 0, path: [door, ...seat.path], facing: 'back', flip: false, hop: 0, seatTo: seat.spot } });
+    playSound('door');
+  }
   refresh();
 }
 
-/** Their lines for this visit: one of their `visit` speeches, a word on their poster if it's up. */
+/** A best friend's seat: a free chair, sofa, bench or cushion they can walk to from the door (never your bed), with the
+    way there; null if there's none. */
+function visitSeat() {
+  const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
+  const free = seats().filter(s => !seatOf(s.it.id).sleep).sort(() => Math.random() - 0.5);
+  for (const { it, k } of free) {
+    const spot = seatSpots(it)[k], path = route(door, spot.tile), end = path.at(-1) ?? door;
+    if (nextTo(end, it) && !taken().has(key(end.x, end.y))) return { it, path, spot: { it, k, ...spot } };
+  }
+  return null;
+}
+
+/** Their lines for this visit: one of their `visit` speeches, a word on their poster if it's up. A line's LAW: / JONA:
+    tag is who says it (the name over the speech window); untagged, the visitor. */
 function leaderLines(l) {
   const said = l.visit[Math.floor(Math.random() * l.visit.length)];
   const lines = postersUp(base, l.id) && l.posterSeen ? [said[0], l.posterSeen, ...said.slice(1)] : said;
   const vars = { name: l.name, badge: l.badge, trainer: trainerName().toUpperCase() };
-  return lines.map(line => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m).replace(/^[A-Z]+: /, ''));
+  return lines.map(line => line.replace(/\{(\w+)\}/g, (m, k) => vars[k] ?? m));
 }
 
 function leaderTalk() {
@@ -1151,7 +1179,12 @@ function liveVisit(dt, now) {
   if (!visit?.mon) return;
   const { w, mon: m } = visit;
   let bob = 0;
-  if (visit.phase === 'paint') {
+  if (hopping(w, now)) {
+    // onto the seat, or down off it on the way out
+  } else if (visit.phase === 'walkin') {
+    if (walk(w, m, dt, 2.4)) sitVisitor();
+    bob = calm ? 0 : Math.abs(Math.sin(w.hop / 1000 * Math.PI * 4)) * 0.06;
+  } else if (visit.phase === 'paint') {
     if (now > visit.dab) { visit.dab = now + rand(320, 600); dab(); }
     bob = calm ? 0 : Math.abs(Math.sin(now / 160)) * 0.06;
     if (now > visit.t) startTalk(now);
@@ -1163,6 +1196,17 @@ function liveVisit(dt, now) {
   m.board.position.y = bob;
   m.board.scale.x = w.flip ? -1 : 1;
   drawMon(m, w, dt);
+}
+
+/** At the seat they walked to: up they hop and sit, ready to talk; if it went or someone took it, they stand there. */
+function sitVisitor() {
+  const v = visit, { w } = v, it = v.goal, to = w.seatTo;
+  v.goal = null; w.seatTo = null;
+  if (!to || !base.items.includes(it) || !nextTo(w.tile, it)) { v.phase = 'stand'; refresh(); return; }
+  w.from = w.tile;
+  leap(w, { x: to.x, y: to.y, z: to.z }, 450, () => { if (visit === v) { w.seat = to; w.flip = walker.x > w.x; } });
+  v.phase = 'stand';
+  refresh();
 }
 
 /** A dab of paint flicked off Smeargle's tail onto the easel's canvas. */
@@ -1199,7 +1243,9 @@ function sayNext() {
   if (visit.i === SAVED_AT && !visit.leader) meetSmeargle(base);
   const box = root.querySelector('.b3-talk');
   if (visit.i >= visit.lines.length) return leaveVisit();
-  box.querySelector('span').textContent = visit.lines[visit.i];
+  const line = visit.lines[visit.i], tag = visit.leader && line.match(/^([A-Z]+): /);
+  if (visit.leader) box.querySelector('b').textContent = tag ? tag[1] : visit.leader.name;
+  box.querySelector('span').textContent = tag ? line.slice(tag[0].length) : line;
   box.hidden = false;
   box.classList.remove('b3-say'); void box.offsetWidth; box.classList.add('b3-say');
 }
@@ -1217,6 +1263,13 @@ function leaveVisit() {
     dispose(visit.easel); scene.remove(visit.easel); visit.easel = null;
   }
   if (!visit.leader) playSound('item-get');
+  if (w.seat || w.jump) {
+    // a sitting friend gets down first, where they climbed up from
+    const down = w.from && !blocked.has(key(w.from.x, w.from.y)) ? w.from : nearestFree(w.seat?.tile ?? w.tile);
+    w.seat = null; w.jump = null;
+    leap(w, { x: tileX(down.x), y: 0, z: tileZ(down.y) }, 380);
+    w.tile = down;
+  }
   const door = { x: Math.floor(COLS / 2), y: ROWS - 1 };
   w.path = route(w.tile, door);
   w.path.push({ x: door.x, y: ROWS + 0.6 });

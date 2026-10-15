@@ -9,22 +9,13 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
-`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
-for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
-run stronger, so no bot check. Three parts:
-- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
-  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
-  unlocks a line from him and a piece of the furniture set.
-- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
-  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
-  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
-  the battle screen with no rewards beyond the star (never a run).
-- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
-  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
-  trophy.
-▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
-Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
+the belts and the furniture set are in, in the grand hall with the ring (`buildDojoHall()`, the same day; the user
+playtests its look). Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
+Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
+star counts (to 20) already allow for them.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
+docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
@@ -564,8 +555,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `docs/reference/towns.md`. On `main`.
    - **Session (b) done (2026-10-14): heart lines.** `HEART_LINES` in `js/data/towns.js`, 5 for each of the 11 friends,
      said first at home as each heart fills (`homeTalk()`, heard ones tracked in `save.workshop.heard`), a gift's toast
-     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`. Next:
-     session (c), Secret Base visits and sitting on furniture.
+     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`.
+   - **Session (c) done (2026-10-15): Secret Base visits.** From 3 hearts a friend joins the day's base visit (mended town
+     or not) with `BASE_LINES` of their own (`js/data/towns.js`); at 5 they walk in and sit on a chair, sofa or cushion
+     (never the bed), and once the day's visit is over a best friend still drops in half the times you come in.
+     `baseFriends()` in `js/data/workshop.js`, test in `tests/workshop.test.mjs`; detail in `docs/reference/towns.md`.
+     Peek: `?base&hearts=5&visit` (a seat in the room). On `main`, waiting on the user's look. Next: session (d),
+     signature pieces 2 and 3.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

@@ -30,6 +30,7 @@ import { makeSealedGate } from './hub-sealed.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
+import { makeDojo } from './hub-dojo.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
@@ -105,7 +106,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
 // is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
-const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
+const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 5, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
 // step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
@@ -148,7 +149,7 @@ let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
-let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null;
+let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
@@ -1865,49 +1866,6 @@ function liveSmoke(now) {
   });
 }
 
-/** Chad Master Kenmatta's dojo, not open yet (the user's ask, 2026-10-14): a raised timber hall, white walls between dark
-    posts, a two-tier slate roof, a DOJO board over the door, the door boarded up under a COMING SOON banner, red
-    banners either side and stone steps up. */
-function dojo(g, x, z) {
-  const W = 2.7, D = 3.0, H = 1.35, LIFT = 0.32;
-  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
-  const d = new THREE.Group();
-  d.position.set(x, 0, z);
-  g.add(d);
-  const add = (mesh, px, py, pz, shadow = true) => { mesh.position.set(px, py, pz); mesh.castShadow = mesh.receiveShadow = shadow; d.add(mesh); return mesh; };
-  const wood = std({ color: '#5a3a22' }), plaster = std({ color: '#f2ece0' }), slate = std({ color: '#3e4250', roughness: 0.6, flatShading: true }), stone = std({ color: '#9a968c', roughness: 1 });
-  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.3, LIFT, D + 0.3), stone), 0, LIFT / 2, 0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), plaster), 0, LIFT + H / 2, 0);
-  for (const sx of [-1, -1 / 3, 1 / 3, 1]) add(new THREE.Mesh(new THREE.BoxGeometry(0.1, H, 0.1), wood), sx * W / 2, LIFT + H / 2, D / 2 + 0.01);
-  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.1, 0.12, 0.12), wood), 0, LIFT + H - 0.06, D / 2 + 0.02);
-  // two tiers of hipped roof
-  const hip = (w, dd, hh, y) => {
-    const m = add(new THREE.Mesh(new THREE.ConeGeometry(Math.SQRT1_2, hh, 4, 1), slate), 0, y + hh / 2, 0);
-    m.rotation.y = Math.PI / 4;
-    m.scale.set(w, 1, dd);
-  };
-  hip(W + 0.7, D + 0.7, 0.75, LIFT + H);
-  add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.2), plaster), 0, LIFT + H + 0.72, 0);
-  hip(1.5, 1.7, 0.55, LIFT + H + 0.88);
-  // the door, boarded up, the banner across it and the DOJO board over it
-  const fz = D / 2 + 0.03;
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.04), std({ color: '#2a1c12' })), 0, LIFT + 0.5, fz);
-  for (const [a, y] of [[0.5, 0.35], [-0.45, 0.7]]) add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 0.05), std({ color: '#b08858' })), 0, LIFT + y, fz + 0.04).rotation.z = a;
-  const banner = board(plankArt(26, 8, [['COMING SOON', 3.6, '#ffe070']], ['#d83a30', '#b02820', '#801810']), 0, 0, { s: 0.8, shadow: false });
-  banner.position.set(0, LIFT + 0.55, fz + 0.09);
-  d.add(banner);
-  const sign = board(plankArt(22, 9, [['道場', 4.2, '#2a1a10'], ['KENMATTA', 2.2, '#5a2a10']]), 0, 0, { s: 0.75, shadow: false });
-  sign.position.set(0, LIFT + H + 0.12, fz + 0.12);
-  d.add(sign);
-  // steps up, and a red banner on a pole either side
-  for (let i = 0; i < 2; i++) add(new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.12, 0.22), stone), 0, 0.06 + i * 0.12, D / 2 + 0.38 - i * 0.18);
-  const red = std({ color: '#c8302a', side: THREE.DoubleSide });
-  for (const sx of [-1, 1]) {
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 1.9, 6), wood), sx * (W / 2 + 0.35), 0.95, D / 2 + 0.3);
-    add(new THREE.Mesh(new THREE.PlaneGeometry(0.3, 1.1), red), sx * (W / 2 + 0.35) + sx * 0.17, 1.25, D / 2 + 0.3, false);
-  }
-}
-
 /** Into the Nietos' house: to its door, the curtain down, then the house walked in (js/run.js's visitTown()). */
 async function enterHouse(p) {
   if (entering) return;
@@ -2369,10 +2327,16 @@ function makePlaces() {
     build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
   list.push({
-    id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
-    line: 'Chad Master Kenmatta\'s dojo. Planks over the door, and a banner: COMING SOON. From inside, faintly: "FORTIFY YOUR MIND."',
-    buttons: [],
-    build: (g) => dojo(g, tileX(DOJO_AT.tx + 1), tileZ(DOJO_AT.ty + 1.5)),
+    // open since 2026-10-15 (the user's ask: "make it extravagant, even the inside"): a temple hall five tiles wide
+    // (js/hub-dojo.js), its door into the hall with the ring (js/event-3d.js's buildDojoHall())
+    id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 2, y: DOJO_AT.ty + 5 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 4, DOJO_AT.ty + 4), tag: [DOJO_AT.tx + 2, 4.9, DOJO_AT.ty + 3], open: true,
+    line: 'Chad Master Kenmatta\'s dojo. From inside: the thud of a sandbag, and "FORTIFY YOUR MIND!" His trials and belts wait in there.',
+    buttons: [['Go in', () => {}]],
+    build: (g) => {
+      dojoFx = makeDojo(THREE, { x: tileX(DOJO_AT.tx + 2), z: tileZ(DOJO_AT.ty + 2), fine, texOf, merge: mergeStatic });
+      glowMats.push(...dojoFx.glows);
+      g.add(dojoFx.group);
+    },
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
@@ -2501,7 +2465,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null;
+  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2942,7 +2906,7 @@ function open(p, i = null) {
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
-  if (p.id === 'nietos' || p.id === 'workshop') return enterHouse(p);
+  if (p.id === 'nietos' || p.id === 'workshop' || p.id === 'dojo') return enterHouse(p);
   walker.hopUntil = performance.now() + 400;
   hideCard();
   const [label, go] = p.buttons[i ?? 0];
@@ -3840,6 +3804,7 @@ function frame(now) {
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
+  dojoFx?.tick(now, calm);
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);

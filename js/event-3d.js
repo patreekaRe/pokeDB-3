@@ -24,6 +24,7 @@ import { LEADER_HOMES, LEADER_SIZE, buildLeaderHome, leaderEnv } from './leader-
 import { HALLS, HALL_SIZE, buildHall, hallEnv } from './town-halls.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
+import { BELTS, TRIALS, dojoOf, starsOf } from './data/dojo.js';
 import { RING, shardsLit } from './data/towns.js';
 import { gymWins, GYM_INK as LEADER_INK } from './data/gym.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
@@ -56,7 +57,7 @@ const ease = (k) => k * k * (3 - 2 * k);
 let BACK_Z = -ROWS / 2;
 let FOLLOW = false;          // a big room (a town): the sun's shadow box goes with the camera, not the room's middle
 /** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
-const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
+const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 }, tutor: { cols: 17, rows: 15, view: 10, across: 9, shadow: 12 } };
 /** A town's size is its map's, a home's its HOMES entry's. */
 function sizeOf(kind, at) {
   if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 12, across: 12, shadow: 16, pitch: 0.7, follow: true };
@@ -419,21 +420,182 @@ function tickFigures(now, dt) {
 
 /* ---------- the Move Tutor's dojo ---------- */
 
-const DOJO = { wood: ['#7a4a26', '#5a3418', '#3a2010'], paper: ['#fbf4e2', '#f2e6c8'], plaster: ['#e8d4ac', '#dcc498'], tatami: ['#d8d08c', '#c8bc74'] };
+/* Chad Master Kenmatta's hall (the user's ask, 2026-10-15: "super aesthetic... extravagant, even the inside make it big,
+   give it a fighting ring in the middle you could walk into and around"): the run's Move Tutor room and the Clearing's
+   dojo (HOMES.clearing.dojo) are this one hall, 17 x 15. A raised ring fills its middle, ropes round it and steps up its
+   front, Ken meditating in it; gold leaf painted with ink mountains on the walls, red columns, his medallion over a
+   lacquered dais at the back, the lesson's scroll on the left, the sandbag on the right, koi ponds by the door. */
+const DOJO = { wood: ['#7a4a26', '#5a3418', '#3a2010'], lacquer: ['#2a120a', '#1a0a06'], red: ['#c42a1e', '#8a1a12'], gold: ['#f8dc80', '#e0b048', '#b8862a'] };
+const DECK = { x0: 5, x1: 11, y0: 4, y1: 10, h: 0.55, stair: 8 };   // the ring's deck in tiles, its height, its steps' column
 
-/** Shoji between dark timber posts over a wooden wainscot, a heavy beam, plaster above. */
-function dojoBands(f, W, posts = 2) {
-  const { g, rr, lin } = f;
-  g.fillStyle = lin(0, 0, 0, wy(3.7), DOJO.plaster); g.fillRect(0, 0, W, wy(3.7));
-  g.fillStyle = lin(0, wy(3.4), 0, wy(0.6), DOJO.paper); g.fillRect(0, wy(3.4), W, wy(0.6) - wy(3.4));
-  g.strokeStyle = 'rgba(90,52,24,0.85)'; g.lineWidth = 0.7;
-  for (let x = 0; x < W; x += U / 3) { g.beginPath(); g.moveTo(x, wy(3.4)); g.lineTo(x, wy(0.6)); g.stroke(); }
-  for (let y = 0.6; y < 3.4; y += 0.45) { g.beginPath(); g.moveTo(0, wy(y)); g.lineTo(W, wy(y)); g.stroke(); }
-  for (let x = 0; x < W + 1; x += U * posts) rr(x - 2, wy(3.7), 4, wy(0) - wy(3.7), 0.6, lin(x - 2, 0, x + 2, 0, DOJO.wood));
-  g.fillStyle = lin(0, wy(3.75), 0, wy(3.35), DOJO.wood); g.fillRect(0, wy(3.75), W, wy(3.35) - wy(3.75));
-  g.fillStyle = lin(0, wy(0.6), 0, wy(0), [DOJO.wood[0], DOJO.wood[1]]); g.fillRect(0, wy(0.6), W, wy(0) - wy(0.6));
-  g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(0, wy(0.6), W, 0.6);
-  g.fillStyle = DOJO.wood[2]; g.fillRect(0, wy(TOP), W, 4);
+/** The hall's walls, back and sides alike: a lacquered wainscot, then (`field`) gold leaf or shoji, a red frieze of
+    gold lattice and the dark beam over it. */
+function hallBands(f, W, field) {
+  const { g, rr, lin } = f, s = f.shine(), r = seeded(W);
+  g.fillStyle = DOJO.lacquer[1]; g.fillRect(0, 0, W, TOP * U);
+  if (field === 'gold') {   // leaf laid in squares, each a touch different, a sheen sweeping across
+    for (let y = wy(6.3); y < wy(0.9); y += 10) for (let x = 0; x < W; x += 10) {
+      const k = r();
+      g.fillStyle = k < 0.33 ? '#e8c260' : k < 0.66 ? '#f0cc6c' : '#dcb452'; g.fillRect(x, y, 10.2, 10.2);
+      g.fillStyle = 'rgba(120,80,20,0.18)'; g.fillRect(x, y, 10.2, 0.25); g.fillRect(x, y, 0.25, 10.2);
+    }
+    g.fillStyle = lin(0, 0, W, 0, ['rgba(255,250,220,0)', 'rgba(255,250,220,0.25)', 'rgba(255,250,220,0)', 'rgba(255,250,220,0.18)', 'rgba(255,250,220,0)']);
+    g.fillRect(0, wy(6.3), W, wy(0.9) - wy(6.3));
+    s.fillStyle = 'rgba(120,90,30,0.5)'; s.fillRect(0, wy(6.3), W, wy(0.9) - wy(6.3));
+  } else {   // shoji windows between dark posts, the day behind them
+    g.fillStyle = lin(0, wy(5.6), 0, wy(1.2), ['#fffbea', '#f6e8c4']); g.fillRect(0, wy(5.6), W, wy(1.2) - wy(5.6));
+    g.strokeStyle = 'rgba(58,32,16,0.8)'; g.lineWidth = 0.6;
+    for (let x = 0; x < W; x += U / 3) { g.beginPath(); g.moveTo(x, wy(5.6)); g.lineTo(x, wy(1.2)); g.stroke(); }
+    for (let y = 1.2; y < 5.6; y += 0.55) { g.beginPath(); g.moveTo(0, wy(y)); g.lineTo(W, wy(y)); g.stroke(); }
+    g.fillStyle = lin(0, wy(6.3), 0, wy(5.6), DOJO.gold); g.fillRect(0, wy(6.3), W, wy(5.6) - wy(6.3));
+    g.fillStyle = DOJO.lacquer[0]; g.fillRect(0, wy(1.2), W, wy(0.9) - wy(1.2)); g.fillRect(0, wy(5.65), W, 2);
+    for (let x = 0; x < W + 1; x += 2 * U) rr(x - 3, wy(6.3), 6, wy(0.9) - wy(6.3), 0.8, lin(x - 3, 0, x + 3, 0, [DOJO.red[1], DOJO.red[0], DOJO.red[1]]));
+  }
+  // the wainscot's lacquered panels and its gold rail
+  for (let x = 2; x < W; x += U) rr(x, wy(0.8), U - 4, wy(0.12) - wy(0.8), 0.6, lin(0, wy(0.8), 0, wy(0.12), [DOJO.lacquer[0], '#3a1a0e']));
+  g.fillStyle = lin(0, wy(0.98), 0, wy(0.86), DOJO.gold); g.fillRect(0, wy(0.98), W, wy(0.86) - wy(0.98));
+  // the frieze: red lacquer, a gold asanoha lattice, gold rails; the beam over it with gold studs
+  g.fillStyle = lin(0, wy(7.5), 0, wy(6.3), [DOJO.red[1], DOJO.red[0]]); g.fillRect(0, wy(7.5), W, wy(6.3) - wy(7.5));
+  g.strokeStyle = '#e8b848'; g.lineWidth = 0.5;
+  const fy0 = wy(7.4), fy1 = wy(6.4), fh = fy1 - fy0;
+  for (let x = 0; x < W; x += fh) {
+    g.beginPath(); g.moveTo(x, fy0 + fh / 2); g.lineTo(x + fh / 2, fy0); g.lineTo(x + fh, fy0 + fh / 2); g.lineTo(x + fh / 2, fy1); g.closePath();
+    g.moveTo(x, fy0 + fh / 2); g.lineTo(x + fh, fy0 + fh / 2); g.moveTo(x + fh / 2, fy0); g.lineTo(x + fh / 2, fy1); g.stroke();
+  }
+  s.strokeStyle = '#806020'; s.lineWidth = 0.5;
+  for (let x = 0; x < W; x += fh) { s.beginPath(); s.moveTo(x, fy0 + fh / 2); s.lineTo(x + fh / 2, fy0); s.lineTo(x + fh, fy0 + fh / 2); s.lineTo(x + fh / 2, fy1); s.closePath(); s.stroke(); }
+  for (const y of [7.5, 6.3]) { g.fillStyle = lin(0, wy(y) - 1, 0, wy(y) + 1, DOJO.gold); g.fillRect(0, wy(y) - 1, W, 2); }
+  g.fillStyle = lin(0, wy(TOP), 0, wy(7.5), [DOJO.lacquer[1], '#3a1e10']); g.fillRect(0, wy(TOP), W, wy(7.5) - wy(TOP));
+  g.fillStyle = '#e8b848';
+  for (let x = U / 2; x < W; x += U) { g.beginPath(); g.arc(x, wy(7.75), 1.3, 0, Math.PI * 2); g.fill(); }
+}
+
+/** Ink mountains washed over the gold, a pine leaning in from the left, clouds drifting, a red sun on the right. */
+function inkScene(f, W) {
+  const { g } = f, r = seeded(41);
+  for (const [base, peak, col] of [[2.4, 4.8, 'rgba(70,60,50,0.28)'], [1.6, 3.9, 'rgba(50,40,34,0.42)'], [1.0, 2.8, 'rgba(34,26,22,0.55)']]) {
+    g.fillStyle = col;
+    g.beginPath(); g.moveTo(0, wy(0.9));
+    for (let x = 0; x <= W; x += 6) {
+      const h = base + (peak - base) * (0.5 + 0.5 * Math.sin(x / 31 + base * 3)) * (0.6 + 0.4 * Math.sin(x / 13 + peak)) + r() * 0.08;
+      g.lineTo(x, wy(h));
+    }
+    g.lineTo(W, wy(0.9)); g.closePath(); g.fill();
+  }
+  // clouds of gold over the peaks, outlined
+  g.fillStyle = 'rgba(255,240,190,0.75)'; g.strokeStyle = 'rgba(160,110,40,0.5)'; g.lineWidth = 0.5;
+  for (const [cx, cy, w] of [[wx(3), 4.4, 34], [wx(13.5), 3.6, 40], [wx(9.5), 1.6, 30]]) {
+    g.beginPath(); g.roundRect(cx - w / 2, wy(cy) - 3, w, 6, 3); g.fill(); g.stroke();
+    g.beginPath(); g.roundRect(cx - w / 3, wy(cy) - 7, w * 0.55, 6, 3); g.fill(); g.stroke();
+  }
+  // the sun
+  g.fillStyle = '#d83024'; g.beginPath(); g.arc(wx(14.3), wy(5.2), 9, 0, Math.PI * 2); g.fill();
+  f.shine().fillStyle = '#a02010'; f.shine().beginPath(); f.shine().arc(wx(14.3), wy(5.2), 9, 0, Math.PI * 2); f.shine().fill();
+  // the pine: a crooked trunk reaching right, flat clouds of needles
+  g.strokeStyle = '#2a1a12'; g.lineCap = 'round';
+  g.lineWidth = 5; g.beginPath(); g.moveTo(wx(0.2), wy(0.9)); g.bezierCurveTo(wx(1.2), wy(3), wx(0.4), wy(4.2), wx(2.6), wy(5.1)); g.stroke();
+  g.lineWidth = 2.4; g.beginPath(); g.moveTo(wx(1.1), wy(3.6)); g.quadraticCurveTo(wx(2.4), wy(3.3), wx(3.6), wy(3.7)); g.stroke();
+  for (const [cx, cy, w] of [[wx(2.8), 5.2, 30], [wx(3.7), 3.85, 24], [wx(1.3), 4.6, 20]]) {
+    g.fillStyle = '#20402a'; g.beginPath(); g.ellipse(cx, wy(cy), w / 2, 5, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#3a6040'; g.beginPath(); g.ellipse(cx - 2, wy(cy) - 1.6, w / 2.6, 2.6, 0, 0, Math.PI * 2); g.fill();
+  }
+}
+
+/** A long banner hung on the wall: red silk, a gold border, a gold kanji, tassels. */
+function wallBanner(f, cx, word) {
+  const { g, rr, lin } = f, s = f.shine(), w = 26, y0 = wy(6.2), y1 = wy(2.3);
+  rr(cx - w / 2 - 2, y0 - 2, w + 4, 4, 2, lin(0, y0 - 2, 0, y0 + 2, DOJO.gold));
+  g.fillStyle = lin(cx - w / 2, 0, cx + w / 2, 0, [DOJO.red[1], DOJO.red[0], '#e04030', DOJO.red[0], DOJO.red[1]]);
+  g.beginPath(); g.moveTo(cx - w / 2, y0); g.lineTo(cx + w / 2, y0); g.lineTo(cx + w / 2, y1); g.lineTo(cx, y1 + 6); g.lineTo(cx - w / 2, y1); g.closePath(); g.fill();
+  g.strokeStyle = '#e8b848'; g.lineWidth = 1; g.beginPath(); g.moveTo(cx - w / 2 + 2, y0 + 3); g.lineTo(cx + w / 2 - 2, y0 + 3); g.lineTo(cx + w / 2 - 2, y1 - 1); g.lineTo(cx, y1 + 4); g.lineTo(cx - w / 2 + 2, y1 - 1); g.closePath(); g.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 20px "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif';
+  g.fillStyle = '#ffd860'; g.fillText(word, cx, wy(4.4));
+  s.textAlign = 'center'; s.textBaseline = 'middle'; s.font = g.font; s.fillStyle = '#a07820'; s.fillText(word, cx, wy(4.4));
+  g.fillStyle = '#e8b848'; g.beginPath(); g.arc(cx, wy(5.6), 4, 0, Math.PI * 2); g.fill();
+  g.fillStyle = DOJO.red[1]; g.beginPath(); g.arc(cx, wy(5.6), 2.4, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#e8b848'; g.lineWidth = 1.2;
+  for (const dx of [-w / 2, w / 2]) { g.beginPath(); g.moveTo(cx + dx, y1); g.lineTo(cx + dx, y1 + 9); g.stroke(); g.fillStyle = '#e8b848'; g.beginPath(); g.ellipse(cx + dx, y1 + 11, 1.6, 3, 0, 0, Math.PI * 2); g.fill(); }
+}
+
+function hallWall() {
+  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin } = f, s = f.shine();
+  hallBands(f, W, 'gold');
+  inkScene(f, W);
+  // the screen's folds: a dark seam every two tiles, gold hinges on it
+  for (let t = 0.5; t < COLS; t += 2) {
+    const x = wx(t);
+    g.fillStyle = 'rgba(90,50,10,0.45)'; g.fillRect(x - 0.4, wy(6.3), 0.8, wy(0.9) - wy(6.3));
+    for (const y of [5.6, 1.6]) rr(x - 1.4, wy(y) - 2, 2.8, 4, 0.6, '#b8862a');
+  }
+  wallBanner(f, wx(5.9), '拳');
+  wallBanner(f, wx(11.1), '魂');
+  // TEST YOUR MIGHT over the medallion: gold on black lacquer in a gold frame
+  const pw = 4.2 * U, ph = 13, px = W / 2 - pw / 2, py = wy(6.15);
+  rr(px - 2, py - 2, pw + 4, ph + 4, 2, lin(px, 0, px + pw, 0, [DOJO.gold[2], DOJO.gold[0], DOJO.gold[2]]));
+  rr(px, py, pw, ph, 1.4, lin(0, py, 0, py + ph, ['#2a120a', '#120604']));
+  words(g, 'TEST YOUR MIGHT', W / 2, py + ph / 2 + 0.4, 8.5, '#ffd858');
+  words(s, 'TEST YOUR MIGHT', W / 2, py + ph / 2 + 0.4, 8.5, '#a07820');
+  // a soft halo on the gold behind the medallion
+  const halo = g.createRadialGradient(W / 2, wy(3.8), 4, W / 2, wy(3.8), 2.3 * U);
+  halo.addColorStop(0, 'rgba(255,250,220,0.65)'); halo.addColorStop(1, 'rgba(255,250,220,0)');
+  g.fillStyle = halo; g.fillRect(W / 2 - 2.4 * U, wy(6.2), 4.8 * U, wy(1.4) - wy(6.2));
+  return f.c;
+}
+
+function hallSide() {
+  const W = ROWS * U, H = TOP * U, f = fine(W, H, 4);
+  hallBands(f, W, 'shoji');
+  return f.c;
+}
+
+/** Polished dark boards, a sheen down them, the ring's shadow round its foot and a red carpet from the door to its steps. */
+function hallFloor() {
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
+  planks(f, W, H, T, ['#6e3e20', '#5e341a']);
+  g.fillStyle = lin(0, 0, W, H, ['rgba(255,230,190,0)', 'rgba(255,230,190,0.08)', 'rgba(255,230,190,0)', 'rgba(255,230,190,0.07)', 'rgba(255,230,190,0)']); g.fillRect(0, 0, W, H);
+  // tatami down both sides, where the students train
+  for (const [x0, x1] of [[0, 4], [12, 16]]) for (let y = 3; y < 11; y++) {
+    rr(x0 * T + 0.6, y * T + 0.6, (x1 - x0 + 1) * T - 1.2, T - 1.2, 0.8, lin(0, y * T, 0, (y + 1) * T, ['#dcd494', '#c8bc78']));
+    g.fillStyle = '#2c2a26'; g.fillRect(x0 * T + 0.6, y * T + 0.6, (x1 - x0 + 1) * T - 1.2, 1.2); g.fillRect(x0 * T + 0.6, (y + 1) * T - 1.8, (x1 - x0 + 1) * T - 1.2, 1.2);
+  }
+  g.fillStyle = 'rgba(10,4,0,0.45)'; g.fillRect((DECK.x0 - 0.15) * T, (DECK.y0 - 0.15) * T, (DECK.x1 - DECK.x0 + 1.3) * T, (DECK.y1 - DECK.y0 + 1.3) * T);
+  // the carpet: red, gold-edged, from the ring's steps down to the door
+  const cx0 = (DECK.stair - 0.25) * T, cx1 = (DECK.stair + 1.25) * T, cy0 = (DECK.y1 + 1) * T;
+  g.fillStyle = lin(cx0, 0, cx1, 0, ['#8a1a12', '#c42a1e', '#8a1a12']); g.fillRect(cx0, cy0, cx1 - cx0, H - cy0);
+  g.fillStyle = '#e0b048'; g.fillRect(cx0 + 1, cy0, 1.2, H - cy0); g.fillRect(cx1 - 2.2, cy0, 1.2, H - cy0);
+  g.fillStyle = 'rgba(232,184,72,0.5)';
+  for (let y = cy0 + 6; y < H; y += 10) { g.beginPath(); g.moveTo((cx0 + cx1) / 2, y - 3); g.lineTo((cx0 + cx1) / 2 + 3, y); g.lineTo((cx0 + cx1) / 2, y + 3); g.lineTo((cx0 + cx1) / 2 - 3, y); g.closePath(); g.fill(); }
+  return f.c;
+}
+
+/** The ring's canvas: deep red, white lines inset, the master's 拳 in gold in a gold ring in the middle, his name along
+    both ends. */
+function canvasArt() {
+  const S = 140, f = fine(S, S, 6), { g, lin } = f, s = f.shine();
+  const r = g.createRadialGradient(S / 2, S / 2, 6, S / 2, S / 2, S * 0.75);
+  r.addColorStop(0, '#d23424'); r.addColorStop(1, '#8e1810');
+  g.fillStyle = r; g.fillRect(0, 0, S, S);
+  g.strokeStyle = '#fff4e4'; g.lineWidth = 1.2; g.strokeRect(7, 7, S - 14, S - 14);
+  g.lineWidth = 0.5; g.strokeRect(9.5, 9.5, S - 19, S - 19);
+  g.strokeStyle = '#e8b848'; g.lineWidth = 3.4; g.beginPath(); g.arc(S / 2, S / 2, 30, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 0.8; g.beginPath(); g.arc(S / 2, S / 2, 34.5, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(S / 2, S / 2, 25.5, 0, Math.PI * 2); g.stroke();
+  s.strokeStyle = '#5a4010'; s.lineWidth = 3.4; s.beginPath(); s.arc(S / 2, S / 2, 30, 0, Math.PI * 2); s.stroke();
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = '900 34px "Hiragino Mincho ProN", "Yu Mincho", "MS Mincho", serif';
+  g.fillStyle = lin(0, S / 2 - 16, 0, S / 2 + 16, DOJO.gold); g.fillText('拳', S / 2, S / 2 + 1);
+  for (const [t, y] of [['CHAD MASTER KENMATTA', S - 15], ['FORTIFY YOUR MIND', 15]]) words(g, t, S / 2, y, 6, '#fff4e4');
+  return f.c;
+}
+
+/** The ring's apron: black, gold edges, his name and his creed in gold. */
+function apronArt() {
+  const W = 140, H = 11, f = fine(W, H, 6), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#1a0c08', '#0c0604']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#e0b048'; g.fillRect(0, 0.6, W, 0.8); g.fillRect(0, H - 1.4, W, 0.8);
+  g.fillStyle = '#c42a1e'; g.fillRect(0, 2, W, 0.6); g.fillRect(0, H - 2.6, W, 0.6);
+  words(g, 'KENMATTA  ·  FORTIFY YOUR MIND  ·  KENMATTA', W / 2, H / 2 + 0.2, 4.4, '#ffd860');
+  return f.c;
 }
 
 /* Kenmatta's arena medallion (js/arena-3d.js's, the relief baked into assets/arena/), hung in the alcove over his head: the
@@ -457,74 +619,6 @@ function medallion3d(x, y, z, r) {
   mesh(new THREE.CircleGeometry(r, 64), face, x, y, z + 0.06).castShadow = false;
   const rim = mesh(new THREE.CylinderGeometry(r * 1.01, r * 1.01, 0.12, 64, 1, true), std({ color: '#a86a18', metalness: 0.5, roughness: 0.4 }), x, y, z);
   rim.rotation.x = Math.PI / 2;
-}
-
-function dojoWall() {
-  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, rr, lin, shine } = f, s = shine();
-  dojoBands(f, W);
-  // the alcove behind Ken: a dark wood recess, its shimenawa rope with paper zigzags (the medallion hangs over it, medallion3d())
-  const a0 = wx(4.65), a1 = wx(6.35);   // centred on Ken's tile, 5 (wx() is a tile's left edge)
-  rr(a0 - 3, wy(3.9), a1 - a0 + 6, wy(0) - wy(3.9), 1, lin(a0, 0, a1, 0, DOJO.wood));
-  rr(a0, wy(3.7), a1 - a0, wy(0.3) - wy(3.7), 0.6, lin(0, wy(3.7), 0, wy(0.3), ['#9a6236', '#7a4a26']));
-  {   // planked in warm wood, the medallion's backboard
-    const n = 6, w = (a1 - a0) / n, r = seeded(17);
-    for (let i = 0; i < n; i++) {
-      const x = a0 + i * w;
-      g.fillStyle = `rgba(${r() < 0.5 ? '255,220,170' : '60,30,10'},${0.06 + r() * 0.08})`; g.fillRect(x, wy(3.7), w, wy(0.3) - wy(3.7));
-      g.strokeStyle = 'rgba(90,50,20,0.35)'; g.lineWidth = 0.3;
-      for (let k = 0; k < 3; k++) { const gx = x + w * (0.25 + r() * 0.5); g.beginPath(); g.moveTo(gx, wy(3.7)); g.bezierCurveTo(gx + 0.8, wy(2.6), gx - 0.8, wy(1.4), gx + 0.3, wy(0.3)); g.stroke(); }
-      g.fillStyle = '#4a2a14'; g.fillRect(x - 0.3, wy(3.7), 0.6, wy(0.3) - wy(3.7));
-    }
-  }
-  g.strokeStyle = '#d8c078'; g.lineWidth = 3.4;
-  g.beginPath(); g.moveTo(a0 - 2, wy(3.8)); g.quadraticCurveTo((a0 + a1) / 2, wy(3.6), a1 + 2, wy(3.8)); g.stroke();
-  g.strokeStyle = '#a88a48'; g.lineWidth = 0.6;
-  for (let t = 0; t < 1; t += 0.05) { const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)); g.beginPath(); g.moveTo(x - 1.4, y - 1.4); g.lineTo(x + 1.4, y + 1.4); g.stroke(); }
-  for (const t of [0.14, 0.86]) {
-    const x = a0 + (a1 - a0) * t, y = wy(3.8) + Math.sin(t * Math.PI) * (wy(3.6) - wy(3.8)) + 1.6;
-    g.fillStyle = '#ffffff';
-    g.beginPath(); g.moveTo(x - 1.5, y); g.lineTo(x + 1.5, y); g.lineTo(x + 0.4, y + 3); g.lineTo(x + 1.6, y + 3); g.lineTo(x + 0.2, y + 6.5); g.lineTo(x - 1.5, y + 3.5); g.lineTo(x - 0.3, y + 3.5); g.closePath(); g.fill();
-  }
-  // TEST YOUR MIGHT, gold on a red plaque, right of the alcove
-  const px = wx(8.1), py = wy(3.25);
-  rr(px - 1.5, py - 1.5, 2.5 * U + 3, 22 + 3, 2, '#2a1408');
-  rr(px, py, 2.5 * U, 22, 1.5, lin(0, py, 0, py + 22, ['#c82818', '#8a1408']));
-  for (const [t, y] of [['TEST YOUR', py + 7.5], ['MIGHT', py + 15.5]]) { words(g, t, px + 1.25 * U, y, 6.5, '#ffd858'); words(s, t, px + 1.25 * U, y, 6.5, '#806020'); }
-  // paper lanterns hung from the beam, lit
-  for (const t of [0.6, 10.4]) {
-    const x = wx(t), y = wy(4.4);
-    g.strokeStyle = DOJO.wood[2]; g.lineWidth = 0.6; g.beginPath(); g.moveTo(x, wy(TOP)); g.lineTo(x, y - 7); g.stroke();
-    rr(x - 5, y - 7, 10, 14, 5, lin(x - 5, 0, x + 5, 0, ['#e85838', '#ffa060', '#e85838']));
-    g.fillStyle = '#2a1408'; g.fillRect(x - 3, y - 8, 6, 1.6); g.fillRect(x - 3, y + 6.4, 6, 1.6);
-    s.fillStyle = '#c06030'; s.beginPath(); s.roundRect(x - 5, y - 7, 10, 14, 5); s.fill();
-  }
-  return f.c;
-}
-
-function dojoSide() {
-  const W = ROWS * U, H = TOP * U, f = fine(W, H, 4);
-  dojoBands(f, W);
-  return f.c;
-}
-
-/** Tatami mats, two tiles long, laid in the usual pinwheel, each with its black cloth border. */
-function dojoFloor() {
-  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, lin } = f;
-  g.fillStyle = '#2a2014'; g.fillRect(0, 0, W, H);
-  const mat = (x, y, w, h) => {
-    g.fillStyle = lin(x, y, x + w, y + h, DOJO.tatami); g.fillRect(x + 0.4, y + 0.4, w - 0.8, h - 0.8);
-    g.strokeStyle = 'rgba(120,110,50,0.35)'; g.lineWidth = 0.25;
-    if (w > h) for (let i = x + 1; i < x + w; i += 1.1) { g.beginPath(); g.moveTo(i, y + 1); g.lineTo(i, y + h - 1); g.stroke(); }
-    else for (let i = y + 1; i < y + h; i += 1.1) { g.beginPath(); g.moveTo(x + 1, i); g.lineTo(x + w - 1, i); g.stroke(); }
-    g.fillStyle = '#2c2a26';
-    if (w > h) { g.fillRect(x + 0.4, y + 0.4, w - 0.8, 1.4); g.fillRect(x + 0.4, y + h - 1.8, w - 0.8, 1.4); }
-    else { g.fillRect(x + 0.4, y + 0.4, 1.4, h - 0.8); g.fillRect(x + w - 1.8, y + 0.4, 1.4, h - 0.8); }
-  };
-  for (let y = 0; y < ROWS; y += 2) for (let x = 0; x < COLS; x++) {
-    if ((x + y / 2) % 3 === 0 && x + 1 < COLS) { mat(x * T, y * T, 2 * T, T); mat(x * T, (y + 1) * T, 2 * T, T); x++; }
-    else mat(x * T, y * T, T, 2 * T);
-  }
-  return f.c;
 }
 
 /** The hanging scroll beside the alcove: blank paper on a brocade mount, its ink brushed down it during a lesson. */
@@ -572,24 +666,195 @@ function sandbag(tx, ty) {
   return pivot;
 }
 
-async function buildTutor(figs) {
-  shell({ floor: dojoFloor(), wall: dojoWall(), side: dojoSide, edge: '#3a2414', cap: '#5a3418', under: '#24140a', bg: '#1a0e08' });
-  // Kenmatta on his red cushion before the alcove (his challenge), the scroll (a lesson) and the sandbag (training)
-  piece('zabuton', 5, 1, { scale: 1.1 });
-  medallion3d(tileX(5), 2.5, BACK_Z, 0.84);
-  B.blocked.add(key(5, 1));
-  const scroll = panel(scrollArt(0.12), 0.9, 2.2, tileX(3), 2.15, BACK_Z + 0.03, { live: true });
-  scroll.userData.spot = 0;
-  B.anchors[0] = new THREE.Vector3(tileX(3), 3.45, BACK_Z + 0.1);
-  B.bag = sandbag(7, 2);
-  B.anchors[2] = new THREE.Vector3(tileX(5), 0.5, tileZ(1) + 0.55);   // at his cushion, the medallion over his head
-  B.spots = [{ step: { x: 3, y: 1 } }, { step: { x: 7, y: 3 } }, { step: { x: 5, y: 2 } }];
-  piece('scrollrack', 0, 0); piece('bonsai', 1, 0); piece('swordrack', 10, 0); piece('stonelantern', 8, 0, { scale: 0.85 });
-  piece('dummy', 10, 2); piece('drum', 0, 3); piece('dumbbells', 10, 5); piece('getarack', 0, 6);
-  B.scroll = { mesh: scroll, ink: 0.12 };
-  B.who.npc = await figure('npc', figs.npc ?? { npc: 'alder' }, { x: 5, ty: 1, y: 0.1, dz: 0.05 });
+/** The ring in the middle of the hall: a red canvas deck on a black apron, gold posts with their pads, three ropes a
+    side, the front's parted at the steps up. You walk up the steps and about on it (`B.rise`, `B.walls`, `B.decks`). */
+function dojoRing() {
+  const { x0, x1, y0, y1, h, stair } = DECK;
+  const L = tileX(x0) - 0.5, Rt = tileX(x1) + 0.5, N = tileZ(y0) - 0.5, S = tileZ(y1) + 0.5, cx = (L + Rt) / 2, cz = (N + S) / 2;
+  const ca = canvasArt(), apron = std({ map: texOf(apronArt()), roughness: 0.6 });
+  const top = std({ map: texOf(ca), roughness: 0.75, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(ca.glow), emissiveIntensity: 0.5 });
+  const under = std({ color: '#0c0604' });
+  const deck = box(Rt - L, h, S - N, [apron, apron, top, under, apron, apron], cx, h / 2, cz);
+  B.decks = [deck];
+  // the rest of it stands still: built apart and baked into a few meshes (every draw call counts on a phone)
+  const room = B.group, still = new THREE.Group();
+  room.add(still);
+  B.group = still;
+  // the steps up the front, steel with red treads
+  const steel = std({ color: '#9a9aa6', metalness: 0.7, roughness: 0.3 }), tread = std({ color: '#b02418', roughness: 0.6 });
+  const sx = tileX(stair);
+  for (let i = 0; i < 3; i++) {
+    const sh = h * (3 - i) / 4, z = S + 0.085 + i * 0.17;
+    box(1.1, sh, 0.17, steel, sx, sh / 2, z);
+    box(1.1, 0.02, 0.15, tread, sx, sh + 0.01, z).castShadow = false;
+  }
+  // posts: gold, padded, Ken's corner red and the challenger's blue across from it
+  const gold = std({ color: '#e8c058', metalness: 0.8, roughness: 0.25 }), inset = 0.24, postH = 1.2;
+  const pads = { red: std({ color: '#d02a1e', roughness: 0.45 }), blue: std({ color: '#2a52c8', roughness: 0.45 }), white: std({ color: '#f4f0e8', roughness: 0.5 }) };
+  const corners = [[L + inset, N + inset, 'red'], [Rt - inset, N + inset, 'white'], [L + inset, S - inset, 'white'], [Rt - inset, S - inset, 'blue']];
+  for (const [px, pz, pad] of corners) {
+    const p = mesh(new THREE.CylinderGeometry(0.06, 0.07, postH, 12), gold, px, h + postH / 2, pz);
+    p.raycast = () => {};
+    mesh(new THREE.SphereGeometry(0.08, 12, 10), gold, px, h + postH + 0.02, pz).raycast = () => {};
+    for (const k of [0.38, 0.68, 0.98]) mesh(rbox(0.2, 0.2, 0.2, 0.06), pads[pad], px, h + k, pz).raycast = () => {};
+  }
+  const gate = 0.62;
+  for (const gx of [sx - gate, sx + gate]) {
+    const p = mesh(new THREE.CylinderGeometry(0.04, 0.05, postH, 10), gold, gx, h + postH / 2, S - inset);
+    p.raycast = () => {};
+    mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, gx, h + postH + 0.02, S - inset).raycast = () => {};
+  }
+  const ropeM = [std({ color: '#d42c20', roughness: 0.5 }), std({ color: '#f8f4ea', roughness: 0.5 }), std({ color: '#d42c20', roughness: 0.5 })];
+  const V = (x, y, z) => new THREE.Vector3(x, y, z);
+  [0.38, 0.68, 0.98].forEach((k, i) => {
+    const y = h + k, a = L + inset, b = Rt - inset, n = N + inset, s = S - inset;
+    for (const [p, q] of [[V(a, y, n), V(b, y, n)], [V(a, y, n), V(a, y, s)], [V(b, y, n), V(b, y, s)], [V(a, y, s), V(sx - gate, y, s)], [V(sx + gate, y, s), V(b, y, s)]]) rod(p, q, 0.028, ropeM[i]);
+  });
+  // where you can walk: up on the deck, the steps up its front, never through its ropes
+  B.rise = (x, z) => {
+    if (x >= L && x <= Rt && z >= N && z <= S) return h;
+    if (Math.abs(x - sx) <= 0.6 && z > S && z < S + 0.5) return h * (S + 0.5 - z) / 0.5;
+    return 0;
+  };
+  B.walls = new Set();
+  const wall = (a, b) => { B.walls.add(`${a}|${b}`); B.walls.add(`${b}|${a}`); };
+  for (let y = y0; y <= y1; y++) { wall(key(x0 - 1, y), key(x0, y)); wall(key(x1, y), key(x1 + 1, y)); }
+  for (let x = x0; x <= x1; x++) { wall(key(x, y0 - 1), key(x, y0)); if (x !== stair) wall(key(x, y1), key(x, y1 + 1)); }
+  for (const [x, y] of [[x0, y0], [x1, y0], [x0, y1], [x1, y1]]) B.blocked.add(key(x, y));   // the corner posts
+  B.group = room;
+  mergeStatic(still, () => false);
+}
+
+/** A red paper lantern hung on a cord from above the shot, lit; returns its group, to sway. */
+function hangLantern(x, y, z, size) {
+  const g = new THREE.Group();
+  g.position.set(x, TOP + 0.5, z);
+  B.group.add(g);
+  const body = std({ color: '#e04a2c', roughness: 0.55, emissive: new THREE.Color('#ff7040'), emissiveIntensity: 1.1 }), cap = std({ color: '#1a1008' });
+  rod(new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, y - TOP - 0.5 + size * 1.3, 0), 0.008, cap, g);
+  const b = mesh(new THREE.SphereGeometry(size, 18, 14), body, 0, y - TOP - 0.5, 0, g);
+  b.scale.y = 1.3; b.castShadow = false;
+  for (const dy of [size * 1.25, -size * 1.25]) mesh(new THREE.CylinderGeometry(size * 0.6, size * 0.6, size * 0.25, 14), cap, 0, y - TOP - 0.5 + dy, 0, g).castShadow = false;
+  g.traverse(o => { o.raycast = () => {}; });
+  return g;
+}
+
+/** Chad Master Kenmatta's hall, for the run's Move Tutor room or (`home`) his dojo in the Clearing. */
+async function buildDojoHall(figs, { home = false, belt = null } = {}) {
+  shell({ floor: hallFloor(), wall: hallWall(), side: hallSide, edge: '#2a140a', cap: '#3a1a0e', under: '#140804', bg: '#100806' });
+  B.shotTop = 6.4;
+  dojoRing();
+  // the dais at the back under his medallion, lacquered, gold along its edge, drums and stone lanterns on it
+  const dz = (tileZ(0) + tileZ(1)) / 2;
+  mesh(rbox(5.0, 0.32, 1.9, 0.05), std({ color: DOJO.lacquer[0], roughness: 0.35 }), 0, 0.16, dz);
+  mesh(new THREE.BoxGeometry(5.04, 0.035, 0.04), std({ color: '#e8c058', metalness: 0.8, roughness: 0.25 }), 0, 0.3, dz + 0.95);
+  for (let x = 6; x <= 10; x++) for (let y = 0; y <= 1; y++) B.blocked.add(key(x, y));
+  piece('taiko', 6, 1, { y: 0.32, free: true }); piece('taiko', 10, 1, { y: 0.32, free: true });
+  piece('stonelantern', 6, 0, { y: 0.32, scale: 0.9, free: true }); piece('stonelantern', 10, 0, { y: 0.32, scale: 0.9, free: true });
+  medallion3d(0, 3.8, BACK_Z, 1.3);
+  // red columns round the ring, gold-banded on black stone, baked like the ring
+  const room = B.group, still = new THREE.Group();
+  room.add(still);
+  B.group = still;
+  const red = std({ color: DOJO.red[0], roughness: 0.4 }), gold = std({ color: '#e8c058', metalness: 0.8, roughness: 0.25 }), stone = std({ color: '#2a2622', roughness: 0.9 });
+  for (const [tx, ty] of [[2, 3], [14, 3], [3, 12], [13, 12]]) {
+    const x = tileX(tx), z = tileZ(ty);
+    mesh(rbox(0.72, 0.26, 0.72, 0.04), stone, x, 0.13, z);
+    mesh(new THREE.CylinderGeometry(0.25, 0.27, TOP, 20), red, x, TOP / 2, z);
+    for (const y of [0.45, 0.6, 6.0, 6.15]) mesh(new THREE.CylinderGeometry(0.275, 0.275, 0.07, 20), gold, x, y, z).castShadow = false;
+    B.blocked.add(key(tx, ty));
+  }
+  B.group = room;
+  mergeStatic(still, () => false);
+  // the lesson's scroll on the left (in the Clearing, the trial board), a kadomatsu beside it; the sandbag on the right;
+  // both near enough the middle that their signs are in a phone's shot from the door
+  if (home) {
+    const save = getSave(), board = panel(trialBoardArt(belt ?? dojoOf(save).belt, starsOf(save), TRIALS.length), 1.6, 2.13, tileX(4), 2.35, BACK_Z + 0.04);
+    board.userData.spot = 0;
+    B.anchors[0] = new THREE.Vector3(tileX(4), 3.75, BACK_Z + 0.1);
+  } else {
+    const scroll = panel(scrollArt(0.12), 1.1, 2.7, tileX(4), 2.45, BACK_Z + 0.03, { live: true });
+    scroll.userData.spot = 0;
+    B.anchors[0] = new THREE.Vector3(tileX(4), 4.05, BACK_Z + 0.1);
+    B.scroll = { mesh: scroll, ink: 0.12 };
+  }
+  piece('kadomatsu', 3, 0); piece('bonsai', 1, 0);
+  B.bag = sandbag(12, 2);
+  // round the walls: what a dojo keeps, and an indoor koi pond either side of the door
+  piece('scrollrack', 0, 0); piece('swordrack', 0, 3); piece('gong', 0, 5); piece('kimonostand', 0, 7); piece('bonsai', 0, 9);
+  piece('trophyshelf', 15, 0); piece('dummy', 14, 1); piece('dummy', 16, 2); piece('dumbbells', 16, 5); piece('weightbench', 15, 8); piece('stonelantern', 16, 10);
+  piece('koipond', 0, 12); piece('koipond', 15, 12); piece('bamboo', 0, 14); piece('bamboo', 16, 14);
+  for (const x of [0, 1, 15, 16]) for (const y of [12, 13]) B.blocked.add(key(x, y));   // the ponds are paintings on the floor: round them, not through
+  piece('getarack', 6, 13); piece('taiko', 10, 13);
+  // lanterns hung over the ring, a warm light on it, shafts of it pouring down, motes drifting in them
+  const lamps = [[-2.2, 4.6, -2.2, 0.26], [2.2, 4.6, -2.2, 0.26], [-2.2, 4.2, 2.2, 0.24], [2.2, 4.2, 2.2, 0.24]].map(([x, y, z, s]) => hangLantern(x, y, z, s));
+  const light = new THREE.PointLight('#ffd49a', 3.2, 11, 1.4);
+  light.position.set(0, 4.8, 0);
+  B.group.add(light);
+  const shafts = [[-1.3, 0.1, 1.1], [0.1, -0.04, 1.4], [1.4, -0.12, 1.0]].map(([x, tilt, w]) => {
+    const m = new THREE.MeshBasicMaterial({ map: texOf(shaftArt('#fff0c8')), transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
+    const o = new THREE.Mesh(new THREE.PlaneGeometry(w, 7.2), m);
+    o.geometry.translate(0, -3.6, 0);
+    o.position.set(x, TOP, -0.6);
+    o.rotation.z = tilt;
+    o.raycast = () => {};
+    B.group.add(o);
+    return o;
+  });
+  const motes = Array.from({ length: 18 }, (_, i) => {
+    const s = sprite(sparkArt('#ffe8b0'), 0.06 + (i % 3) * 0.025);
+    s.material.blending = THREE.AdditiveBlending;
+    s.userData = { x: (Math.random() - 0.5) * 6, z: (Math.random() - 0.5) * 6, at: Math.random(), speed: 0.03 + Math.random() * 0.04, sway: Math.random() * 6 };
+    return s;
+  });
+  B.ticks.push((now) => {
+    const t = now / 1000;
+    lamps.forEach((g, i) => { g.rotation.z = calm ? 0 : Math.sin(t * 0.9 + i * 1.7) * 0.03; });
+    shafts.forEach((o, i) => { o.material.opacity = calm ? 0.12 : 0.1 + Math.sin(t * 0.7 + i * 2) * 0.03; });
+    for (const s of motes) {
+      const u = s.userData, k = (u.at + t * u.speed) % 1;
+      s.visible = !calm;
+      s.position.set(u.x + Math.sin(k * 6 + u.sway) * 0.3, 0.8 + k * 3.8, u.z);
+      s.material.opacity = Math.sin(k * Math.PI) * 0.8;
+    }
+  });
+  // his students training round the ring, one after another hopping
+  const students = [['hitmonlee', 2, 6, true], ['hitmonchan', 14, 6, false], ['machop', 14, 9, false]];
+  for (const [id, x, ty, flip] of students) {
+    B.who[id] = await figure(id, { src: `assets/pokemon/${id}-front.gif`, flip }, { x, ty, scale: 0.95 });
+    B.blocked.add(key(x, ty));
+  }
+  let next = 0, turn = 0;
+  const who = B.who;
+  B.ticks.push((now) => {
+    if (calm || now < next) return;
+    next = now + 2300;
+    does(who[students[turn++ % students.length][0]], 'hop');
+  });
+  // Ken, meditating on his cushion in the middle of the ring
+  const at = { x: DECK.stair, ty: DECK.y0 + 2, y: DECK.h + 0.1, dz: 0.05 };
+  piece('zabuton', at.x, at.ty, { y: DECK.h, scale: 1.1, free: true });
+  B.blocked.add(key(at.x, at.ty));
+  B.env = { hemi: ['#fff4e0', '#7a5038', 1.55], sun: ['#ffe8c8', 1.9], bloom: 0.85 };
+  const train = { ms: 2500, tick(k) {
+    const hits = [0.1, 0.34, 0.58], since = Math.min(...hits.map(h => (k >= h ? k - h : 9)));
+    R.bag.rotation.x = -Math.sin(Math.min(1, since / 0.3) * Math.PI) * 0.35 * Math.exp(-since * 3) - (k > 0.6 ? Math.sin((k - 0.6) * 18) * 0.12 * (1 - k) : 0);
+    walker.lunge = since < 0.12 ? Math.sin(since / 0.12 * Math.PI) * 0.35 : 0;
+  }, cues: [[0.1, 'hit'], [0.34, 'hit'], [0.58, 'hit']] };
+  B.spots = [{ step: { x: 4, y: 1 } }, { step: { x: 12, y: 3 } }];
+  if (home) {   // the trial board and the sandbag; your partner wears your belt (mountEvent())
+    B.who.ken = await figure('ken', figs.ken ?? { npc: 'alder' }, at);
+    B.talks = new Set(['ken', ...students.map(s => s[0])]);
+    B.dojo = true;
+    B.acts = { train };
+    return;
+  }
+  B.who.npc = await figure('npc', figs.npc ?? { npc: 'alder' }, at);
   B.who.npc.group.traverse(o => { o.userData.spot = 2; });
+  B.anchors[2] = overHead(B.who.npc);
+  B.spots.push({ step: { x: DECK.stair, y: at.ty + 1 } });
   B.acts = {
+    train,
     lesson: { ms: 1500, tick(k) {
       const ink = 0.12 + ease(k) * 0.88;
       if (Math.abs(ink - R.scroll.ink) < 0.04 && k < 1) return;
@@ -597,12 +862,53 @@ async function buildTutor(figs) {
       const m = R.scroll.mesh.material;
       m.map.dispose(); m.map = texOf(scrollArt(ink)); m.needsUpdate = true;
     }, cues: [[0, 'stick'], [0.45, 'stick'], [0.85, 'stamp']] },
-    train: { ms: 2500, tick(k) {
-      const hits = [0.1, 0.34, 0.58], since = Math.min(...hits.map(h => (k >= h ? k - h : 9)));
-      R.bag.rotation.x = -Math.sin(Math.min(1, since / 0.3) * Math.PI) * 0.35 * Math.exp(-since * 3) - (k > 0.6 ? Math.sin((k - 0.6) * 18) * 0.12 * (1 - k) : 0);
-      walker.lunge = since < 0.12 ? Math.sin(since / 0.12 * Math.PI) * 0.35 : 0;
-    }, cues: [[0.1, 'hit'], [0.34, 'hit'], [0.58, 'hit']] },
   };
+}
+
+const buildTutor = (figs) => buildDojoHall(figs);
+
+/* ---------- Kenmatta's dojo in the Clearing (js/data/dojo.js): the hall above, its board and belts ---------- */
+
+/** The trial board by the alcove: the stars won, the six belts with yours ringed, its name under them. */
+function trialBoardArt(belt, stars, of) {
+  const f = fine(30, 40, 10), { g, rr, lin } = f;
+  rr(0, 0, 30, 40, 1.5, lin(0, 0, 30, 0, DOJO.wood));
+  rr(1.6, 1.6, 26.8, 36.8, 1, lin(0, 1.6, 0, 38, ['#fbf4e2', '#efe2c0']));
+  words(g, 'TRIALS', 15, 6.4, 5, '#3a2010');
+  g.fillStyle = '#c82818'; g.fillRect(5, 9.4, 20, 0.6);
+  words(g, `★ ${stars}/${of}`, 15, 15, 6, '#c88a10');
+  BELTS.forEach((b, i) => {
+    const x = 3.4 + (i % 3) * 8, y = 21 + Math.floor(i / 3) * 6.4;
+    if (i === belt) rr(x - 1, y - 1.2, 9, 5.4, 1, '#ffd858');
+    rr(x, y, 7, 3, 0.6, b.colour);
+    g.fillStyle = b.knot; g.fillRect(x + 3, y - 0.2, 1.2, 3.4);
+    if (i > belt) { g.fillStyle = 'rgba(250,244,226,0.6)'; g.fillRect(x - 0.2, y - 0.4, 7.4, 3.8); }
+  });
+  words(g, BELTS[belt].name.toUpperCase(), 15, 35.4, 3.4, '#3a2010');
+  return f.c;
+}
+
+/** A belt round your partner's middle in the dojo, in the colour of the belt you hold: the band and its knot's tails. */
+function beltArt(i) {
+  const { colour, knot } = BELTS[i], f = fine(40, 14, 8), { g, rr } = f;
+  rr(0, 2, 40, 4.4, 1.4, colour);
+  g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, 5.4, 40, 1);
+  rr(16.5, 0.8, 7, 6.6, 1.6, knot);
+  g.fillStyle = colour;
+  g.beginPath(); g.moveTo(18, 6); g.lineTo(14, 13.4); g.lineTo(17.6, 13.4); g.lineTo(20, 7); g.fill();
+  g.beginPath(); g.moveTo(22, 6); g.lineTo(26, 13); g.lineTo(22.6, 13.4); g.lineTo(20.4, 7); g.fill();
+  return f.c;
+}
+
+function beltOn(m, i) {
+  m.beltMesh?.removeFromParent();
+  m.beltMesh = null;
+  if (i == null) return;
+  const w = Math.min(0.9, Math.max(0.42, m.top * 0.62)), belt = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.35), std({ map: texOf(beltArt(i)), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.9 }));
+  belt.position.set(0, m.top * 0.4, 0.015);
+  belt.raycast = () => {};
+  m.board.add(belt);
+  m.beltMesh = belt;
 }
 
 /* ---------- the Move Deleter's study ---------- */
@@ -8974,6 +9280,8 @@ async function buildTown(figs, { look, time, town, mended = false, fest = null }
 const HOMES = {
   // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING); the Nietos' is js/leader-homes.js's
   clearing: {
+    // Kenmatta's dojo: his hall with the ring, the run's Move Tutor room's, the trial board for the scroll (buildDojoHall())
+    dojo: { dojo: true },
     // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, logs for it
     workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
       furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
@@ -8999,7 +9307,7 @@ const HOMES = {
 HOMES.depths = {
   camp: { cols: 13, rows: 9, camp: true, mewtwoAt: { x: 7.8, ty: 1.1, scale: 1.1 } },
 };
-const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; if (HALLS[id]) return HALL_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
+const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; if (HALLS[id]) return HALL_SIZE; const h = HOMES[town]?.[id]; if (h?.dojo) return SIZES.tutor; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
 function homeFloor(kind) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g, rr, lin } = f;
@@ -9046,11 +9354,12 @@ function overHead(who, dx = 0, gap = 0.12) {
   return new THREE.Vector3(who.base.x + dx, who.base.y + top * Math.cos(lean) + gap, who.base.z - top * Math.sin(lean));
 }
 
-async function buildHome(figs, { time, town, home, gift }) {
+async function buildHome(figs, { time, town, home, gift, belt }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const H = !L && HALLS[home];   // a town's great hall (js/town-halls.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : H ? { castAt: H.castAt, beat: H.beat, flip: H.flip } : HOMES[town.id]?.[home] || {};
   if (h.camp) return buildCamp(figs, h);
+  if (h.dojo) return buildDojoHall(figs, { home: true, belt });
   const K = { THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, haloArt, puffs, shell, PIECES, calm: () => calm, buddy: () => walker };
   if (L) buildLeaderHome({ ...K, away: !figs[town.homes[home].leader] }, home);
   else if (H) buildHall(K, home);
@@ -9620,7 +9929,7 @@ function route(from, to) {
     if (!d) break;
     for (const [dx, dy] of STEPS) {
       const n = { x: c.x + dx, y: c.y + dy }, k = key(n.x, n.y);
-      if (!free(n) || prev.has(k)) continue;
+      if (!free(n) || prev.has(k) || R.walls?.has(`${key(c.x, c.y)}|${k}`)) continue;   // a ring's ropes
       prev.set(k, c); queue.push(n);
     }
   }
@@ -9700,6 +10009,7 @@ function hitsOf(rs, objects) {
 
 /** Where the pointer's pieces meet the floor (rays.hit), or null. */
 function floorHit(rs) {
+  if (R.decks) for (let i = rs.from; i < rs.n; i++) { const h = rs[i].intersectObjects(R.decks, false)[0]; if (h) return rs.hit.copy(h.point); }   // a raised floor you walk on (a ring's deck)
   for (let i = rs.from; i < rs.n; i++) if (rs[i].ray.intersectPlane(rs.floor, rs.hit) && rs.hit.distanceTo(rs[i].ray.origin) <= rs[i].far) return rs.hit;
   return null;
 }
@@ -9930,7 +10240,7 @@ function frame(now) {
   if (walk(dt)) arrived();
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
-  mon.group.position.set(walker.x + (walker.ox || 0), walker.oy || 0, walker.z - (walker.lunge || 0) + (walker.oz || 0));
+  mon.group.position.set(walker.x + (walker.ox || 0), (R.rise?.(walker.x, walker.z) || 0) + (walker.oy || 0), walker.z - (walker.lunge || 0) + (walker.oz || 0));   // up on a ring's deck (`rise`)
   mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
   if (warp) liveWarp(now);
@@ -10040,7 +10350,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.fest ? `:${at.fest}` : ''}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.fest ? `:${at.fest}` : ''}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.belt != null ? `:belt${at.belt}:${starsOf(getSave())}` : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -10049,7 +10359,7 @@ function room(kind, figs, at = {}) {
     B = { id, kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, fest: at.fest, gift: at.gift }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, fest: at.fest, gift: at.gift, belt: at.belt }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -10131,6 +10441,7 @@ export async function mountEvent(o) {
     mon = await monBoard(o.mate);
     scene.add(bendAll(mon.group));
   }
+  beltOn(mon, R.dojo ? o.belt ?? 0 : null);   // in Kenmatta's dojo your partner wears your belt
   mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
   if (!showing() || opts !== o) return null;
   if (!back || o.at) {   // `at`: back out of a town's house, on its doorstep
@@ -10211,6 +10522,13 @@ const oneWord = (text) => SHORT[text] ?? text.replace(/^(Plant) \+\d+ max HP$/, 
 
 /** What eventRoom()'s choices ask of the room. */
 const controls = {
+  /** A new belt tied on in the dojo: on your partner, and ringed on the trial board. */
+  dressBelt(i) {
+    if (!R?.dojo || !mon) return;
+    beltOn(mon, i);
+    const save = getSave();
+    R.group.traverse(o => { if (o.userData.spot === 0 && o.material?.map && o.geometry?.type === 'PlaneGeometry') { o.material.map.dispose(); o.material.map = texOf(trialBoardArt(i, starsOf(save), TRIALS.length)); o.material.needsUpdate = true; } });
+  },
   /** Keep the room running under the found item or relic screen it is about to show (the Item Ball, the Wishing Well). */
   hold() { if (R && inRoom()) R.held = true; },
   /** Play a choice out on the props (`opts` how it goes: a big toss, a win, a Voltorb); resolves once it has (at once under

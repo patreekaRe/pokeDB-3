@@ -18,6 +18,7 @@ import { ROOM_KINDS_3 } from './base-furniture-rooms3.js';
 import { ROOM_KINDS_4 } from './base-furniture-rooms4.js';
 import { ROOM_KINDS_5 } from './base-furniture-rooms5.js';
 import { GYM_KINDS } from './base-furniture-gym.js';
+import { DOJO_KINDS } from './base-furniture-dojo.js';
 import { YARD_KINDS } from './base-furniture-yard.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
@@ -338,7 +339,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...YARD_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...YARD_KINDS);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 /* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by
