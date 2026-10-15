@@ -9739,12 +9739,46 @@ export async function swapMate(mate) {
 
 export const eventRoom3d = () => (R && alive() ? controls : null);
 
-/** The shard put back (docs/roadmap.md's Towns step 6, session 4): a crystal in the town's colour (`glowCol`) rises off
-    your Pokémon, floats over to the town's broken Waystone and sinks into its crack; the crack blazes, a flash, and the
-    stone stands whole (wholeWaystone()), a ring of light rolling out over the plaza and a beam going up. Under reduced
-    motion it's only the swap. The room is kept as the town's mended one (its `:lit` id), so the board's redraw after needs
-    no rebuild. Resolves once it's done. */
-export function mendStone(glowCol = '#8ae8ff') {
+/** A Waystone's rune circle, white (the material tints it): two rings, a band of runes between them, a star. */
+function runeCircleArt() {
+  const n = 256, r = n / 2, c = document.createElement('canvas');
+  c.width = c.height = n;
+  const g = c.getContext('2d');
+  if (!g) return c;
+  g.translate(r, r);
+  g.strokeStyle = '#fff'; g.fillStyle = '#fff'; g.lineCap = 'round';
+  const ring = (rad, w) => { g.lineWidth = w; g.beginPath(); g.arc(0, 0, rad, 0, Math.PI * 2); g.stroke(); };
+  ring(122, 4); ring(112, 2); ring(84, 3); ring(40, 2);
+  g.lineWidth = 3;
+  for (let i = 0; i < 24; i++) {   // the runes: a few strokes each, from a little stroke alphabet
+    g.save(); g.rotate(i / 24 * Math.PI * 2); g.translate(0, -98);
+    const k = (i * 7) % 5;
+    g.beginPath();
+    g.moveTo(0, -8); g.lineTo(0, 8);
+    if (k === 0) { g.moveTo(-5, -8); g.lineTo(5, 0); }
+    if (k === 1) { g.moveTo(-5, 0); g.lineTo(5, -6); g.moveTo(-5, 6); g.lineTo(5, 0); }
+    if (k === 2) { g.moveTo(0, -2); g.lineTo(6, -8); g.moveTo(0, -2); g.lineTo(-6, -8); }
+    if (k === 3) { g.moveTo(-6, 8); g.lineTo(6, -8); }
+    if (k === 4) { g.moveTo(-5, -4); g.lineTo(5, -4); g.moveTo(-5, 4); g.lineTo(5, 4); }
+    g.stroke(); g.restore();
+  }
+  g.lineWidth = 2.5;
+  g.beginPath();
+  for (let i = 0; i <= 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 4 / 5; g[i ? 'lineTo' : 'moveTo'](Math.cos(a) * 84, Math.sin(a) * 84); }
+  g.stroke();
+  for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 2 / 5; g.beginPath(); g.arc(Math.cos(a) * 84, Math.sin(a) * 84, 6, 0, Math.PI * 2); g.fill(); }
+  return c;
+}
+
+/** The shard put back (docs/roadmap.md's Towns step 6, session 4; made far grander 2026-10-15, the user's ask): a crystal
+    in the town's colour (`glowCol`) rises off your Pokémon and arcs over to the town's broken Waystone, where it hangs and
+    spins as a rune circle burns into the ground round the stone and motes of light spiral in from all over the plaza; it
+    sinks into the crack, the stone shudders and blazes, and with a flash (`onFlash`, the screen's own white-out and shake,
+    js/gym.js's wayFlash()) the stone stands whole (wholeWaystone()): two shockwaves roll out, sparks burst, a pillar of
+    light goes up into the sky with motes riding it, and the circle flares out and fades. Under reduced motion it's only
+    the swap. The room is kept as the town's mended one (its `:lit` id), so the board's redraw after needs no rebuild.
+    Resolves once it's done. */
+export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
   const room = R, st = room?.stone;
   if (!alive() || room.kind !== 'town' || !st || st.whole) return Promise.resolve();
   st.whole = true;
@@ -9752,23 +9786,47 @@ export function mendStone(glowCol = '#8ae8ff') {
   const { f } = st, S = 1.45, top = new THREE.Vector3(f.cx, 2.75 * S / 1.45 + 0.5, f.cz), crack = new THREE.Vector3(f.cx, 0.95 * S, f.cz + 0.05);
   const from = new THREE.Vector3(walker.x, 0.9, walker.z), col = new THREE.Color(glowCol);
   const made = [], add = (o) => { scene.add(o); made.push(o); return o; };
+  const glowMat = (c = col) => new THREE.SpriteMaterial({ map: texOf(haloArt('#ffffff')), color: c, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+  const flat = (o) => new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false, ...o });
   const gem = add(new THREE.Mesh(new THREE.OctahedronGeometry(0.14, 0), new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 1.8, roughness: 0.3, flatShading: true })));
   gem.scale.y = 1.6;
-  const halo = add(new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(haloArt('#ffffff')), color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })));
+  const halo = add(new THREE.Sprite(glowMat()));
   halo.scale.setScalar(0.9);
-  const flare = add(new THREE.Sprite(halo.material.clone()));
-  flare.material.color = new THREE.Color('#ffffff');
+  const flare = add(new THREE.Sprite(glowMat(new THREE.Color('#ffffff'))));
   flare.visible = false;
-  const ring = add(new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 64), new THREE.MeshBasicMaterial({ color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false })));
-  ring.rotation.x = -Math.PI / 2;
-  ring.visible = false;
-  const beamGeo = new THREE.CylinderGeometry(0.28, 0.5, 9, 24, 1, true); beamGeo.translate(0, 4.5, 0);
-  const beam = add(new THREE.Mesh(beamGeo, new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false })));
-  beam.visible = false;
+  // the rune circle burning into the ground round the stone
+  const circle = add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), flat({ map: texOf(runeCircleArt()), opacity: 0 })));
+  circle.rotation.x = -Math.PI / 2;
+  const rings = [0, 1].map(() => {
+    const o = add(new THREE.Mesh(new THREE.RingGeometry(0.8, 1, 64), flat()));
+    o.rotation.x = -Math.PI / 2;
+    o.visible = false;
+    return o;
+  });
+  const beamGeo = new THREE.CylinderGeometry(0.28, 0.5, 40, 24, 1, true); beamGeo.translate(0, 20, 0);
+  const beam = add(new THREE.Mesh(beamGeo, flat({ opacity: 0 })));
+  const coreGeo = new THREE.CylinderGeometry(0.1, 0.16, 40, 12, 1, true); coreGeo.translate(0, 20, 0);
+  const core = add(new THREE.Mesh(coreGeo, flat({ color: '#ffffff', opacity: 0 })));
+  beam.visible = core.visible = false;
+  // motes of light: spiralling in to the gem as it hangs, then riding the pillar up; sparks: bursting off the flash
+  const moteMat = glowMat(col.clone().lerp(new THREE.Color('#ffffff'), 0.35)), sparkMat = glowMat(col.clone().lerp(new THREE.Color('#ffffff'), 0.6));
+  const motes = Array.from({ length: 44 }, (_, i) => {
+    const s = add(new THREE.Sprite(moteMat));
+    s.visible = false;
+    return { s, a: i / 44 * Math.PI * 2 * 3 + Math.random(), r: 3 + Math.random() * 3.5, y: 0.2 + Math.random() * 2.5, at: Math.random() * 0.45, size: 0.1 + Math.random() * 0.14 };
+  });
+  const sparks = Array.from({ length: 40 }, () => {
+    const s = add(new THREE.Sprite(sparkMat));
+    s.visible = false;
+    const a = Math.random() * Math.PI * 2, v = 2.5 + Math.random() * 4.5;
+    return { s, vx: Math.cos(a) * v, vz: Math.sin(a) * v, vy: 2 + Math.random() * 5, size: 0.08 + Math.random() * 0.12 };
+  });
   for (const o of made) o.raycast = () => {};
   const place = (o, v) => o.position.copy(drawn(v.clone()));   // with the town's bend, where the ground under it is drawn
+  const stoneAt = st.g.position.clone();
   // the stone made whole, in place of the broken one: built in the room's kit as buildTown() would have
   const swap = () => {
+    st.g.position.copy(stoneAt);
     B = room;
     let g;
     try {
@@ -9792,7 +9850,9 @@ export function mendStone(glowCol = '#8ae8ff') {
   const done = () => {
     room.ticks.splice(room.ticks.indexOf(tick) >>> 0, 1);
     room.focus = null;
-    for (const o of made) { scene.remove(o); o.geometry?.dispose(); o.material.map?.dispose(); o.material.dispose(); }
+    const mats = new Set();
+    for (const o of made) { scene.remove(o); o.geometry?.dispose(); mats.add(o.material); }
+    for (const m of mats) { m.map?.dispose(); m.dispose(); }
   };
   if (calm) {
     playSound('core-surge');
@@ -9800,16 +9860,18 @@ export function mendStone(glowCol = '#8ae8ff') {
     done();
     return Promise.resolve();
   }
-  // its beats, in ms: up off your Pokémon, over to the stone, hanging over its tip, sinking into the crack, the flash
-  const UP = 700, OVER = 1500, HANG = 2100, SINK = 2700, FLASH = 2800, END = 4400;
-  const t0 = performance.now(), cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [HANG, 'gate-hum'], [FLASH, 'core-surge'], [FLASH + 250, 'crystal-2']];
+  // its beats, in ms: up off your Pokémon, over to the stone, hanging over its tip as the circle burns in and the motes
+  // gather, sinking into the crack (the stone shuddering), the flash, and the pillar of light fading
+  const UP = 800, OVER = 1900, HANG = 3500, SINK = 4300, FLASH = 4500, END = 8200;
+  const t0 = performance.now(), cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [OVER + 100, 'gate-hum'], [OVER + 700, 'charge'], [HANG - 300, 'rumble-far'], [HANG, 'crystal-2'],
+    [FLASH, 'core-surge'], [FLASH + 60, 'sunburst'], [FLASH + 300, 'thunder'], [FLASH + 1400, 'crystal-2']];
   room.focus = { z: f.cz, k: 0 };
   let swapped = false, over = false, tick;
   return new Promise(resolve => {
     const finish = () => {
       if (over) return;
       over = true;
-      if (!swapped) { swapped = true; swap(); }
+      if (!swapped) { swapped = true; swap(); onFlash?.(); }
       done();
       resolve();
     };
@@ -9817,37 +9879,88 @@ export function mendStone(glowCol = '#8ae8ff') {
     tick = (now) => {
       const t = now - t0, v = new THREE.Vector3();
       while (cues.length && t >= cues[0][0]) playSound(cues.shift()[1]);
-      room.focus.k = Math.min(1, t / 900) * (t > FLASH + 900 ? Math.max(0, 1 - (t - FLASH - 900) / 700) : 1) * 0.55;
+      const gather = Math.max(0, Math.min(1, (t - OVER) / (HANG - OVER))), sinking = Math.max(0, Math.min(1, (t - HANG) / (SINK - HANG)));
+      // drawn in on the stone, closer as it gathers, easing back once the light is up
+      room.focus.k = (Math.min(1, t / 900) * 0.55 + gather * 0.3) * (t > FLASH + 1800 ? Math.max(0, 1 - (t - FLASH - 1800) / 1400) : 1);
       if (t < UP) v.lerpVectors(from, from.clone().setY(1.9), ease(t / UP));
       else if (t < OVER) {
         const k = ease((t - UP) / (OVER - UP));
         v.lerpVectors(from.clone().setY(1.9), top, k);
-        v.y += Math.sin(k * Math.PI) * 0.9;
-      } else if (t < HANG) v.copy(top).setY(top.y + Math.sin((t - OVER) / 140) * 0.05);
-      else v.lerpVectors(top, crack, ease(Math.min(1, (t - HANG) / (SINK - HANG))));
+        v.y += Math.sin(k * Math.PI) * 1.1;
+      } else if (t < HANG) v.copy(top).setY(top.y + gather * 0.35 + Math.sin((t - OVER) / 140) * 0.05);
+      else v.lerpVectors(top.clone().setY(top.y + 0.35), crack, ease(sinking));
       place(gem, v);
       place(halo, v);
-      gem.rotation.y = t / (t < HANG ? 220 : 90);
-      const sinking = Math.max(0, Math.min(1, (t - HANG) / (SINK - HANG)));
+      gem.rotation.y = t / (t < OVER ? 220 : 90 - gather * 50);
       gem.visible = halo.visible = t < FLASH;
-      halo.scale.setScalar(0.9 + sinking * 1.2 + Math.sin(t / 120) * 0.08);
-      if (!swapped) st.g.userData.boost = sinking * 3 + Math.max(0, (t - SINK) / (FLASH - SINK)) * 3;
-      if (t >= FLASH && !swapped) { swapped = true; swap(); }
+      halo.scale.setScalar(0.9 + gather * 0.8 + sinking * 1.4 + Math.sin(t / (120 - gather * 60)) * (0.08 + gather * 0.2));
+      if (!swapped) {
+        st.g.userData.boost = gather * 1.5 + sinking * 3 + Math.max(0, (t - SINK) / (FLASH - SINK)) * 3;
+        const quake = gather * 0.015 + sinking * 0.05;   // the stone shudders as it takes the shard
+        st.g.position.set(stoneAt.x + (Math.random() - 0.5) * quake, stoneAt.y, stoneAt.z + (Math.random() - 0.5) * quake);
+      }
+      if (t >= FLASH && !swapped) { swapped = true; swap(); onFlash?.(); }
+      // the circle: burning in as the motes gather, spinning, then flaring out wide after the flash and fading
       const after = t - FLASH;
+      const cIn = after < 0 ? Math.max(0, (t - OVER + 300) / (HANG - OVER)) : 1;
+      circle.visible = cIn > 0 && after < 2600;
+      if (circle.visible) {
+        place(circle, new THREE.Vector3(f.cx, 0.07, f.cz));
+        circle.rotation.z = t / 1600;
+        const flareOut = after < 0 ? 0 : ease(Math.min(1, after / 2600));
+        circle.scale.setScalar(3.6 + Math.min(1, cIn) * 0.6 + sinking * 0.4 + flareOut * 7);
+        circle.material.opacity = Math.min(1, cIn) * (0.75 + (after < 0 ? Math.sin(t / 90) * 0.15 * sinking : 0.25)) * (1 - flareOut);
+      }
+      for (const m of motes) {   // spiralling in: each starts on its own beat, closing in fast
+        const k = (gather - m.at) / (1 - m.at + 0.15);
+        m.s.visible = after < 0 && k > 0 && k < 1;
+        if (m.s.visible) {
+          const e = k * k, r = m.r * (1 - e), a = m.a + e * 5;
+          place(m.s, new THREE.Vector3(v.x + Math.cos(a) * r, m.y + (v.y - m.y) * e, v.z + Math.sin(a) * r));
+          m.s.scale.setScalar(m.size * (0.4 + Math.sin(k * Math.PI)));
+        }
+      }
       if (after >= 0) {
         const k = Math.min(1, after / 1500);
-        flare.visible = after < 900;
+        flare.visible = after < 1100;
         place(flare, new THREE.Vector3(f.cx, crack.y, f.cz + 0.4));
-        flare.scale.setScalar(2 + Math.min(1, after / 250) * 7);
-        flare.material.opacity = Math.max(0, 1 - after / 900);
-        ring.visible = k < 1;
-        place(ring, new THREE.Vector3(f.cx, 0.06, f.cz));
-        ring.scale.setScalar(1 + k * 9);
-        ring.material.opacity = (1 - k) * 0.9;
-        beam.visible = after < 1600;
+        flare.scale.setScalar(2 + Math.min(1, after / 220) * 11);
+        flare.material.opacity = Math.max(0, 1 - after / 1100);
+        rings.forEach((ring, i) => {   // two shockwaves, the second a beat behind and wider
+          const rk = Math.min(1, Math.max(0, after - i * 260) / (1400 + i * 400));
+          ring.visible = rk > 0 && rk < 1;
+          place(ring, new THREE.Vector3(f.cx, 0.08 + i * 0.02, f.cz));
+          ring.scale.setScalar(1 + ease(rk) * (10 + i * 5));
+          ring.material.opacity = (1 - rk) * (0.95 - i * 0.25);
+        });
+        const PILLAR = END - FLASH - 300, pk = Math.min(1, after / PILLAR);
+        beam.visible = core.visible = pk < 1;
         place(beam, new THREE.Vector3(f.cx, 0, f.cz));
-        beam.material.opacity = Math.min(1, after / 150) * Math.max(0, 1 - after / 1600) * 0.55;
-        beam.scale.set(1 + k * 0.6, 1, 1 + k * 0.6);
+        place(core, new THREE.Vector3(f.cx, 0, f.cz));
+        const swell = Math.min(1, after / 160), fade = 1 - ease(Math.max(0, (pk - 0.45) / 0.55));
+        beam.material.opacity = swell * fade * 0.6;
+        core.material.opacity = swell * fade * 0.9;
+        const w = 1.8 - Math.min(1, after / 500) * 0.8 + Math.sin(after / 70) * 0.06;   // bursts wide, then settles to a steady column
+        beam.scale.set(w * (1 + k * 0.4), 1, w * (1 + k * 0.4));
+        core.scale.set(w, 1, w);
+        for (const m of motes) {   // riding the pillar up into the sky
+          const mk = (after / 2600 - m.at * 0.8);
+          m.s.visible = mk > 0 && mk < 1 && pk < 1;
+          if (m.s.visible) {
+            const a = m.a + after / 400, r = 0.35 + m.size * 2;
+            place(m.s, new THREE.Vector3(f.cx + Math.cos(a) * r, 0.4 + mk * 9, f.cz + Math.sin(a) * r));
+            m.s.scale.setScalar(m.size * 1.4 * (1 - mk));
+          }
+        }
+        const sk = after / 1000;   // sparks off the flash, falling back to the ground
+        for (const p of sparks) {
+          p.s.visible = sk < 1.6;
+          if (!p.s.visible) continue;
+          const y = crack.y + p.vy * sk - 4.9 * sk * sk;
+          p.s.visible = y > 0.02;
+          place(p.s, new THREE.Vector3(f.cx + p.vx * sk, Math.max(0.02, y), f.cz + p.vz * sk));
+          p.s.scale.setScalar(p.size * (1 - sk / 1.6));
+        }
       }
       if (t >= END) finish();
     };

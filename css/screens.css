@@ -5849,6 +5849,63 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .gym-scene.psychic .gym-plate { background: #7a3ac8; box-shadow: 0 2px 0 #3a1470, 0 0 10px rgba(180, 110, 255, 0.7); }
 .gym-scene.psychic .gym-more { border-top-color: #a060f0; }
 .gym-scene.psychic .gym-speed { background: linear-gradient(90deg, transparent, rgba(40, 10, 80, 0.6) 25%, rgba(170, 90, 255, 0.4) 75%, transparent); }
+/* a Waystone waking (wayFlash() / wayCard() / awakenTalk() in js/gym.js, 2026-10-15): the screen whites out in the
+   town's colour and shakes, WAYSTONE AWAKENED sweeps in, and its Gym Leaders slide in glowing in that colour */
+.way-flash {
+  position: fixed; inset: 0; z-index: 985; pointer-events: none;
+  background: radial-gradient(circle at 50% 45%, #fff 0%, var(--glow) 40%, transparent 85%);
+  animation: wayFlash 1.4s ease-out both;
+}
+@keyframes wayFlash { 0% { opacity: 0; } 6% { opacity: 1; } 22% { opacity: 0.85; } 100% { opacity: 0; } }
+body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
+@keyframes wayShake {
+  0% { translate: 0 0; } 6% { translate: -9px 5px; } 12% { translate: 8px -6px; } 18% { translate: -7px -3px; } 26% { translate: 6px 4px; }
+  34% { translate: -5px 3px; } 44% { translate: 4px -3px; } 56% { translate: -3px 2px; } 70% { translate: 2px -1px; } 85% { translate: -1px 1px; } 100% { translate: 0 0; }
+}
+.way-card {
+  position: fixed; inset: 0; z-index: 988; display: grid; place-items: center; cursor: pointer;
+  background: radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--glow) 28%, transparent), rgba(4, 6, 18, 0.55) 70%);
+  opacity: 0; transition: opacity 0.35s;
+}
+.way-card.in { opacity: 1; }
+.way-card.out { opacity: 0; transition: opacity 0.45s; }
+.way-card-band {
+  position: relative; width: 100%; padding: 22px 16px; box-sizing: border-box; text-align: center; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; color: #fff;
+  background: linear-gradient(90deg, transparent, rgba(6, 8, 24, 0.82) 18%, rgba(6, 8, 24, 0.82) 82%, transparent);
+  border-block: 2px solid var(--glow); box-shadow: 0 0 28px var(--glow), inset 0 0 22px color-mix(in srgb, var(--glow) 45%, transparent);
+  clip-path: inset(0 50% 0 50%); transition: clip-path 0.55s cubic-bezier(.2, .9, .3, 1);
+}
+.way-card.in .way-card-band { clip-path: inset(0 0 0 0); }
+.way-card-band::after {   /* a shine sweeping across once it's open */
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  translate: -100% 0; animation: wayShine 1.1s ease-in-out 0.55s both;
+}
+@keyframes wayShine { to { translate: 100% 0; } }
+.way-card-band small { font-size: 13px; letter-spacing: 0.3em; opacity: 0.85; }
+.way-card-band b {
+  font-size: clamp(22px, 7vw, 40px); letter-spacing: 0.08em; line-height: 1.1;
+  color: #fff; text-shadow: 0 0 10px var(--glow), 0 0 26px var(--glow), 0 3px 0 rgba(0, 0, 0, 0.5);
+}
+.way-card-band strong { font-size: clamp(16px, 4.6vw, 24px); letter-spacing: 0.5em; padding-left: 0.5em; color: var(--glow); text-shadow: 0 0 12px var(--glow); }
+.way-card-band > * { opacity: 0; translate: 0 10px; transition: opacity 0.4s, translate 0.4s; }
+.way-card.in .way-card-band > * { opacity: 1; translate: 0 0; }
+.way-card.in .way-card-band small { transition-delay: 0.35s; }
+.way-card.in .way-card-band b { transition-delay: 0.5s; }
+.way-card.in .way-card-band strong { transition-delay: 0.8s; }
+.way-card.calm .way-card-band, .way-card.calm .way-card-band > * { clip-path: none; transition: none; opacity: 1; translate: 0 0; }
+.way-card.calm .way-card-band::after { display: none; }
+.gym-scene.awaken { background: radial-gradient(ellipse at 70% 60%, color-mix(in srgb, var(--glow) 34%, transparent), rgba(6, 8, 22, 0.78) 70%); }
+.gym-scene.awaken .gym-trainer { filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 18px var(--glow)); animation: wayAura 2.4s ease-in-out infinite; }
+@keyframes wayAura { 50% { filter: drop-shadow(0 0 8px #fff) drop-shadow(0 0 30px var(--glow)); } }
+.gym-scene.awaken .gym-say { box-shadow: 0 3px 0 #d8c8a4, 0 0 0 3px var(--glow), 0 0 26px var(--glow); }
+.gym-scene.awaken .gym-plate { background: color-mix(in srgb, var(--glow) 55%, #1a1630); box-shadow: 0 2px 0 #0006, 0 0 12px var(--glow); text-shadow: 0 1px 0 #0008; }
+.gym-scene.awaken .gym-more { border-top-color: color-mix(in srgb, var(--glow) 70%, #000); }
+.gym-scene.awaken .gym-speed { background: linear-gradient(90deg, transparent, rgba(6, 8, 30, 0.6) 25%, color-mix(in srgb, var(--glow) 50%, transparent) 75%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .way-flash, body.way-shake :is(.event3d-view, canvas), .gym-scene.awaken .gym-trainer, .way-card-band::after { animation: none; }
+}
 /* Mewtwo's pentagram (js/pentagram.js): the five Waystone Shards' slots on a star, slid in from the right like a Gym
    Leader; a lit slot glows in its town's ring colour (--glow), a dark one is an empty socket. Mewtwo at the middle
    brightens with its strength (--power). */

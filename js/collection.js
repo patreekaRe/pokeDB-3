@@ -19,7 +19,8 @@ import { movesApp } from './cardindex.js';
 import { bagApp } from './bagdex.js';
 import { gymApp, gymMet } from './gymdex.js';
 import { satchelApp } from './satcheldex.js';
-import { satchelNews } from './satchel.js';
+import { satchelNews, questNews } from './satchel.js';
+import { questLogApp, questCount } from './questlog.js';
 import { satchelOf } from './data/satchel.js';
 import { townsOpen } from './data/towns.js';
 import { GYM_LEADERS } from './data/gym.js';
@@ -147,6 +148,7 @@ function apps(save) {
     things('relics', 'Relics', vec('relics'), RELICS),
     things('items', 'Items', vec('items'), ITEMS),
     townsOpen() && satchelEntry(save),
+    townsOpen() && { id: 'quests', name: 'Quests', art: vec('quests'), count: questCount(save), cls: 'cdev-win cdev-quests', app: questLogApp, news: questNews(save) },
     { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
     { id: 'achievements', name: 'Achievements', art: vec('trophy'),
       count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, cls: 'cdev-dex cdev-bag', app: achievementsApp },

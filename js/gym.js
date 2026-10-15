@@ -32,6 +32,56 @@ export function demonSwap(infuse = false) {
   setTimeout(() => fx.remove(), 1300);
 }
 
+/** A Waystone waking (mendStone() in js/event-3d.js, the Clearing's in js/hub-3d.js): the screen whites out in the
+    town's colour and shakes as the stone takes the shard. Calm effects: nothing (the stone still swaps). */
+export function wayFlash(glow = '#8ae8ff') {
+  if (calmFx()) return;
+  const fx = el('div', 'way-flash');
+  fx.setAttribute('aria-hidden', 'true');
+  fx.style.setProperty('--glow', glow);
+  document.body.append(fx);
+  document.body.classList.remove('way-shake');
+  void document.body.offsetWidth;
+  document.body.classList.add('way-shake');
+  setTimeout(() => { document.body.classList.remove('way-shake'); fx.remove(); }, 1500);
+}
+
+/** WAYSTONE AWAKENED over the town's name, in its colour, sweeping in once the light is up; a tap (or a few seconds)
+    goes on. */
+export async function wayCard(name, glow = '#8ae8ff') {
+  const calm = calmFx();
+  const card = el('div', `way-card${calm ? ' calm' : ''}`);
+  card.style.setProperty('--glow', glow);
+  const band = el('div', 'way-card-band');
+  band.append(el('small', '', 'THE WAYSTONE OF'), el('b', '', name.toUpperCase()), el('strong', '', 'AWAKENS'));
+  card.append(band);
+  document.body.append(card);
+  playSound('achievement');
+  await sleep(20);
+  card.classList.add('in');
+  await new Promise(done => {
+    let over = false;
+    const end = (e) => {
+      if (over) return;
+      if (e?.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+      over = true;
+      card.removeEventListener('pointerup', end); document.removeEventListener('keydown', end);
+      done();
+    };
+    setTimeout(() => { if (!over) { card.addEventListener('pointerup', end); document.addEventListener('keydown', end); } }, 600);
+    setTimeout(end, calm ? 1600 : 3400);
+  });
+  card.classList.add('out');
+  await sleep(calm ? 0 : 450);
+  card.remove();
+}
+
+/** The town's Gym Leaders slide in one after another, glowing in its colour, to mark the stone waking (QUESTS' `awaken`
+    in js/data/towns.js). `leaders` is [[leader, lines], ...]. */
+export async function awakenTalk(leaders, glow = '#8ae8ff', vars = {}) {
+  for (const [l, lines] of leaders) await gymTalk(l, lines, { lit: true, look: 'awaken', glow, speed: 'in', title: 'WAYSTONE KEEPER ', vars });
+}
+
 /** Their badge spinning in over the 3D gym as they hand it over. */
 export function badgePop(l) {
   import('./trainercard.js').then(({ badgeArt }) => {
@@ -50,9 +100,10 @@ export function badgePop(l) {
 /* `possess` (Phil's, js/data/gym.js): on his second line the dark takes him (a shadow aura over his sprite, the layer
    thins so the boss shows behind), and after his last he pours it into his Pokémon on the battle screen (`infuse()`):
    `possess` is `{ img, box, spriteId, ignite }`, its sprite, its portrait box, its cry, and what lights its aura. */
-export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '' } = {}) {
+export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, possess = null, lit = false, speed = null, bubble = false, title = 'GYM LEADER ', look = '', glow = '' } = {}) {
   const calm = !battleFx();
   const layer = el('div', `gym-scene${possess ? ' possess' : ''}${bubble ? ' bubble' : ''}${look ? ` ${look}` : ''}`);
+  if (glow) layer.style.setProperty('--glow', glow);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
   who.src = l.talk || spriteOf(l);

@@ -120,7 +120,8 @@ After the shard the board's old `requests` rotate. A `?town=` peek keeps its que
 save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelOf()`; `js/satchel.js`: `gainMat()`,
 `gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
 `save.satchel = { keys, mats, seen, fresh }`, kept on a lost run, never the run's Bag; on the Collection and the device's
-"!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load.
+"!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load. Its shelves are Key Items,
+Materials and Gifts: the questlines moved to their own app (below).
 **Where materials drop** (session 2, 2026-10-14): only in a town's biome, while `townsOpen()`, never in a Safari area,
 the Sky Pillar or a playtest (`gleaning()` in `js/run.js`). A won fight rolls `fightDrop()` (`DROPS`: a wild Pokémon 40%,
 an Alpha 1-2, the boss 2-3), said first in the reward box and given as the rewards end (`collect()`); `markSparkles()`
@@ -146,7 +147,7 @@ fond, skin }` (`workshopOf()`). **Gifts**: one favourite a town Gym Leader (`FAV
 holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:gift`; `pickGift()` / `handGift()`): any
 gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
 leader]`). Liking does nothing else yet. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
-`js/battle.js`: the picker and the throw), never its odds. The Satchel app has a fourth shelf, Gifts. The `?satchel` loan
+`js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
 
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
@@ -223,9 +224,18 @@ or a playtest (`?shard` marks one on a `?biome=` or `?town=` playtest, nothing s
 at the board, its leader's thanks, then `mendStone()` in `js/event-3d.js` (you're frozen meanwhile): the crystal rises off
 your Pokémon, floats over the broken stone and hangs, sinks into the crack as it blazes (`userData.boost` on the broken
 `waystone()`), a flash, the stone swapped in place for `wholeWaystone()` (built into the room's kit, bent, its door spot
-and fade kept), a ring of light rolling out and a beam going up; the room is re-keyed as the town's `:lit` one in `built`
+and fade kept), a ring of light rolling out and a beam going up (made far grander 2026-10-15, the user's ask, below); the room is re-keyed as the town's `:lit` one in `built`
 (each room carries its `id`), so the board's redraw needs no rebuild. Under reduced motion only the swap. `B.stone` keeps
 the stone's footprint and look. `?town=<biome>&mend` puts a peek's questline at its shard, ready, to see it.
+**The waking, made epic** (2026-10-15, the user's ask: "a slide in dialogue for the gym leaders when we activate the
+waystones... and a way more epic animation"). `mendStone(glow, onFlash)` now runs ~8 s: the crystal arcs over and hangs
+spinning while a rune circle (`runeCircleArt()`) burns into the ground and 44 motes spiral in, the stone shudders as it
+sinks in, then the flash (`onFlash` → `wayFlash()` in `js/gym.js`: a full-screen white-out in the town's colour and a
+shake), two shockwaves, 40 sparks, a 40-tall pillar with a white core and the motes riding it up, the circle flaring out.
+Then `wayCard()` (THE WAYSTONE OF / town / AWAKENS, a band sweeping open, a tap or ~3 s) and `awakenTalk()`: each
+leader in `QUESTS[id].awaken` slides in in turn, glowing in the town's colour (`.gym-scene.awaken`, `--glow`, plate
+WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller beam, a shockwave (`wave` in
+`liveWarp()`), the flash, the card and the Nietos' `awaken` lines. Calm effects: no flash or shake, the card still.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →
@@ -281,5 +291,15 @@ The plaza's **quest board** (2026-10-14, the user's ask: nowhere said where the 
 `QUEST_AT` [11, 10], the PC's mirror, only while the towns are on. `boardNow(save)` is its state: `locked` (Nietos not
 beaten), `new` (its one button, Read, is `takeQuest()`: the greeting, then `startQuest('clearing')`), `on` (the step,
 its count and "hand it in at their house"; `ready` under `?satchel` or once had), then `towns` (every town's questline
-under way, n/of). Its `line` and `buttons` are getters. The "!" over it (`questMark`, `questMarks()`) shows for `new` or
+under way, n/of). Its `line` and `buttons` are getters. Past `new` its button is Quest log (`questLog()`), and reading the notice opens it too. The "!" over it (`questMark`, `questMarks()`) shows for `new` or
 `ready`. The Nietos' house has a Quest spot that starts the questline too, when it hasn't started and the Clearing isn't lit.
+**The Quests app** (`js/questlog.js`, 2026-10-14, the user's ask: "an aesthetic window" for the board, and the quest
+progress findable from anywhere): the Pokédex's own app, beside the Satchel, towns on only (icon `quests`, a cork board, in
+`js/smooth-icons.js`; count `questCount()`, questlines done of 6). Kept simple (the user's ask, same day: "even more
+simple to understand"): a cork board with the Waystones as crystals and "n of 6 quests done", then one big note, DO THIS
+NEXT (`nextNote()`: a step ready to hand in first, else the first under way, in `LINES` order, the Clearing first): the
+step, a bar of `stepHave()`, WHERE (`source()`, a few words) and THEN HAND IN (`handIn()`), or READY! HAND IT IN. Under
+it, ALL QUESTS: one row a questline (leader, name, n of m steps, a chip: Under way / Ready! / Done / Locked); a tap
+opens the same step card, its story and every step (later ones `???`), or HOW TO START for a locked one. The board opens it as
+`openDeviceApp('quests', 'board')` (through the hub's `acts.onApp(id, at)`), and then it says it's in the Pokédex too.
+A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests icon's "!", not the Satchel's.
