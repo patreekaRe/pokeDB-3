@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, JONA_HOME } from './data/gym.js';
+import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
@@ -2032,7 +2032,7 @@ function homeRoom(b, onward = null) {
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);
       if (!lines) return;
       const n = talks[stand] = ((talks[stand] ?? (talk?.topical ? -1 : Math.floor(Math.random() * lines.length))) + 1) % lines.length;
-      said(lines[n], home.cast?.[stand] ? home.names?.[stand] ?? '' : GYM_BY_ID[stand]?.name);   // Kayl's cats have names
+      said(GYM_BY_ID[stand] ? voiced(GYM_BY_ID[stand], lines[n]) : lines[n], home.cast?.[stand] ? home.names?.[stand] ?? '' : GYM_BY_ID[stand]?.name);   // Kayl's cats have names; "PHIL: " a voice's tag
     } },
     onFail: out,
   });

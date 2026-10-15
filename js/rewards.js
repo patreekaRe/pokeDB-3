@@ -432,7 +432,7 @@ function showLine(i) {
       box.classList.toggle('demon', !!line.demon);
     }
     line = line.text;
-  }
+  } else if (say.box === 'reward-log') box.classList.remove('demon');   // JONA's look goes with her (Phil at home after her)
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   const pace = textPace();
