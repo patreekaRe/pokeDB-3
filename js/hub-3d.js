@@ -885,6 +885,15 @@ function stopPostArt() {
   return c;
 }
 
+/** Only the Ancient Tree's door (with its frame) takes a tap, not the whole tree (the user's ask, 2026-10-15): a tap on
+    the crown or trunk walks there instead. In ancientArt()'s 128 x 160 painting the door's frame spans x 49-79, y 110-158. */
+const DOOR_UV = { u0: 48 / 128, u1: 80 / 128, v1: 1 - 108 / 160 };
+function doorOnly(ray, hits) {
+  const mine = [];
+  THREE.Mesh.prototype.raycast.call(this, ray, mine);
+  for (const h of mine) if (h.uv && h.uv.x >= DOOR_UV.u0 && h.uv.x <= DOOR_UV.u1 && h.uv.y <= DOOR_UV.v1) hits.push(h);
+}
+
 /** A billboard: the painting standing upright, feet at (x, z), `s` units a painted tile. */
 function board(canvas, x, z, { s = 1, shadow = true } = {}) {
   const k = canvas.fine ? s / canvas.fine : s, w = canvas.width / TP * k, h = canvas.height / TP * k;
@@ -1986,12 +1995,14 @@ function makePlaces() {
       build: (g) => {
         const shut = ancientArt(false, !baseOwned()), b = board(shut, tileX(TREE_AT.tx), tileZ(TREE_AT.ty) + 0.2), open = ancientArt(true);
         glowing(b.material, shut, null, '#ffd890');
+        b.raycast = doorOnly;
         tree = { m: b.material, shut: b.material.map, open: texOf(open) };
         g.add(b);
         // the sign hangs off its nail on the bark over the door, pivoting there (liveSign())
         const art = homeSignArt(baseOwned()), plate = board(art, 0, 0), pivot = new THREE.Group();
         plate.position.set((art.width / art.fine / 2 - SIGN_NAIL[0]) / TP, (SIGN_NAIL[1] - art.height / art.fine / 2) / TP, 0);
         pivot.position.set(tileX(TREE_AT.tx), 3.62, tileZ(TREE_AT.ty) + 0.32);
+        plate.raycast = () => {};
         pivot.add(plate);
         g.add(pivot);
         sign = { pivot, m: plate.material, fixed: baseOwned() ? null : texOf(homeSignArt(true)), fixAt: 0, from: 0, swapped: false };
