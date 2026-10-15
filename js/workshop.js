@@ -8,7 +8,7 @@ import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
-import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine } from './data/workshop.js';
+import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf } from './data/workshop.js';
 import { RING, townState } from './data/towns.js';
 import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
@@ -33,12 +33,13 @@ export function craft(recipe) {
   return true;
 }
 
-/** Hand `leader` a gift held: { favourite, first } (first: their signature piece just earned), or null. */
+/** Hand `leader` a gift held: { favourite, first, was, hearts } (first: their signature piece just earned; their hearts
+    before and after), or null. */
 export function handGift(giftId, leader) {
-  const out = giveGift(workshopOf(getSave()), giftId, leader);
-  if (out.ws === workshopOf(getSave())) return null;
+  const before = workshopOf(getSave()), out = giveGift(before, giftId, leader);
+  if (out.ws === before) return null;
   updateSave(d => { d.workshop = giveGift(workshopOf(d), giftId, leader).ws; });
-  return { favourite: out.favourite, first: out.first };
+  return { favourite: out.favourite, first: out.first, was: heartsOf(before, leader), hearts: heartsOf(out.ws, leader) };
 }
 
 /** Carry an Apricorn skin made (or none: `id` null) as the Safari Ball's look. */

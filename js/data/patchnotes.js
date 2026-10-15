@@ -65,7 +65,7 @@ export const PATCHES = [
       ['runs', 'Pick John\'s festival, and once Lantern Village\'s Waystone is mended its evenings fill with floating lanterns, a harvest moon or fireworks.'],
       ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and their notice on the new quest board starts the quest to mend it, before any town\'s.'],
       ['hub', 'Mend a town\'s Waystone and its crystal lights on the Clearing\'s: travel there from home, buy its own furniture, and its leaders come to visit.'],
-      ['hub', 'Kurt\'s Workshop opens in the Clearing: craft materials from the roads into quest items, unique furniture, gifts for Gym Leaders and Apricorn looks for Safari Balls.'],
+      ['hub', 'Kurt\'s Workshop opens in the Clearing: craft materials from the roads into quest items, unique furniture, gifts that fill a Gym Leader\'s five friendship hearts (see them on the PC\'s Friends page) and Apricorn looks for Safari Balls.'],
       ['dex', 'New Satchel and Quests apps in the Pokédex: your key items, materials you keep even on a lost run, and every quest\'s next step.'],
       ['modes', 'Mewtwo is weakened in the Crystal Depths until the five Waystones are mended; each shard gives back strength, shown on a pentagram in its new camp.'],
       ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
