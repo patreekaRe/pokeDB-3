@@ -110,6 +110,7 @@ function mistBand(g, y, th, hex, a, seed, w = W, wrap = false) {
 function sunMoon(g, t, x, h, r = 0.075) {
   const low = t.time === 'dawn' || t.time === 'dusk', y = -(low ? h * 0.35 : h);
   if (t.time === 'night') {
+    if (t.moon === false) return;   // John's Moon Viewing hangs its own harvest moon (js/event-3d.js)
     glow(g, x, y, r * 6, '#c8d4ff', 0.22);
     g.fillStyle = '#f0eedc'; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
     g.fillStyle = 'rgba(160,160,180,0.35)';
@@ -597,9 +598,9 @@ const TOWNS = { village, springs, lagoon, canopy, bazaar };
 /** The backdrop for a town of `style` at `time`: `rig` to add to the room, `top` its sky's top colour (the room's
     background), `tick(now, dt)` to drift and breathe it, and `place(camera, k, bendZ, gateX, backZ)` every frame once
     the camera has moved, which hangs it on the rolled ground's crest and lines its landmark up behind the gate. */
-export function townBackdrop(THREE, texOf, style, time) {
+export function townBackdrop(THREE, texOf, style, time, { moon = true } = {}) {
   const sky = (SKIES[style] || SKIES.village)[time], grade = time === 'day' ? null : GRADES[time].land;
-  const t = { time, sky, lit: LIT[time], L: (h) => (grade ? gradeHex(h, grade) : h) };
+  const t = { time, sky, moon, lit: LIT[time], L: (h) => (grade ? gradeHex(h, grade) : h) };
   const layers = [skyArt(t), cloudArt(t, style), ...(TOWNS[style] || village)(t)];
   const rig = new THREE.Group(), v = new THREE.Vector3(), shift = { sky: 0, far: 0, near: 0 };
   rig.userData.noBend = true;
@@ -616,8 +617,12 @@ export function townBackdrop(THREE, texOf, style, time) {
     rig.add(m);
     Object.assign(l, { m, ox: 0, oy: 0 });
   });
+  const fx = new THREE.Group();   // things a room hangs in its sky, kept over the landmark (a festival's moon, its fireworks)
+  fx.userData.noBend = true;
+  rig.add(fx);
   return {
     rig,
+    fx,
     top: sky[0],
     tick(now, dt) {
       for (const l of layers) {
@@ -642,6 +647,7 @@ export function townBackdrop(THREE, texOf, style, time) {
       v.set(gateX, 0, backZ).project(camera);
       const room = Math.max(0, W / 2 - a / sc), want = v.x * a / sc;
       shift.far = clamp(want * FAR, room); shift.near = clamp(want, room);
+      fx.position.x = shift.far;
       for (const l of layers) {
         if (l.wrap) l.m.material.map.offset.x = l.ox - shift[l.on] * l.par / l.w;
         else l.m.position.x = shift[l.on] + (l.x || 0);

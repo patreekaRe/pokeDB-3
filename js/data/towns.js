@@ -1539,15 +1539,28 @@ export const QUESTS = {
   // their house (js/run.js's homeRoom()), the stone lighting on the plaza when you step out (js/hub-3d.js).
   clearing: {
     story: 'The Clearing\'s Waystone cracked the night the Sealed Gate shut, and every town\'s stone went dark with it. It hums off-key all night, and Linc can\'t sleep.',
-    greet: {
+    // as you come home after beating them (js/hub-3d.js's homeNews()): only a pointer to their notice on the quest board,
+    // which tells the story (`greet`) and opens the questline (the user's ask, 2026-10-14)
+    call: {
       nietos: [
         'LAW: Hey! You beat us! Fair and square. Mostly. Linc bit Kangaskhan.',
-        'BRITT: Sweetie, have you looked at the Waystone on the plaza? Really looked?',
+        'BRITT: Sweetie, we need your help with something. I pinned a notice on the quest board, by the Waystone.',
+        'LAW: Go read it. Then come find us at the house. We\'ll be the ones not sleeping.',
+      ],
+      // tapped at home before you've read it (js/run.js's homeRoom())
+      board: [
+        'BRITT: Did you read the notice yet? It\'s on the quest board, out by the Waystone. In my best handwriting.',
+        'LAW: She made three drafts. Oh, umm... go read it.',
+      ],
+    },
+    greet: {
+      nietos: [
+        'BRITT: Found it? Good. Sweetie, have you looked at the Waystone on the plaza? Really looked?',
         'BRITT: It cracked the night the Sealed Gate shut. Straight through. And every town\'s stone out on the roads went dark with it.',
         'LAW: The towns all link through ours. It\'s the hub. Hub\'s down, whole server\'s down. Oh, umm... I mean, it\'s like a... hub.',
         'BRITT: And it hums. All night. Off-key. Linc hasn\'t slept through since. Neither have I. Law has, somehow.',
         'LINC: Ba! *points out of the window, at the stone*',
-        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there. It\'s on the board by the Waystone. And the fridge. And your Pokédex.',
+        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there, then come tell us at the house. It\'s in your Pokédex too. And on the fridge.',
       ],
     },
     steps: [
@@ -1628,6 +1641,11 @@ export function questLine(town, st, line) {
   if (!s || !line.includes('{pick}')) return line;
   return line.replaceAll('{pick}', s.pick.options.find(o => o.id === st.quest?.picks?.[s.id])?.label ?? s.pick.fallback);
 }
+
+/** The step of the town's questline that asks for a pick (the Shrine's `sh-spirits`: John's festival), or null. */
+export const pickStepOf = (town) => questOf(town)?.steps.find(o => o.pick) || null;
+/** The pick made there (`lantern`, `moon` or `fireworks`), or null: buildTown() dresses the town for it once mended. */
+export const townPick = (town, st) => { const s = pickStepOf(town); return (s && st.quest?.picks?.[s.id]) || null; };
 
 /** What a Gym Leader says in their home: a word on the questline where it stands (the step up now's `talk`, or `after`
     once the stone is lit), said first (`topical` lines of them), then their usual lines. */
@@ -1922,14 +1940,6 @@ export const TOWN_SHELVES = new Set(Object.values(SHOP_SHELVES).flat());
 
 /** The town a furniture shelf is sold in, or null. */
 export const shelfTown = (group) => Object.keys(SHOP_SHELVES).find(id => SHOP_SHELVES[id].includes(group)) ?? null;
-
-/** A townsperson living in the Secret Base keeps the town's id with it: "<town>:<pokemon>". */
-export const folkKey = (town, id) => `${town}:${id}`;
-export function folkOf(key) {
-  const [town, id] = String(key).split(':');
-  const f = TOWNS[town]?.folk.find(o => o.id === id);
-  return f ? { ...f, town } : null;
-}
 
 /** Whether the Nietos are at home in their house in the Clearing (the house itself always stands): only once you've beaten
     THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins. Since step 7 (2026-10-14) that's how they

@@ -2445,3 +2445,7 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   or in the town itself; `runWaitingIn()` in `js/run.js`), the far gate and Leave walk out into the run instead
   (`walkIntoRun()`: the throwaway visit gone, the saved run picked up on its map), and the Clearing's Waystone menu tags
   that town "Run". Tested headless in the browser pane (both cases, and a barred town), 223 tests pass.
+- **The Nietos send you to the board** (2026-10-14, the user's ask: "shouldn't they guide you to the quest board to start
+  the questline? THEN they become the quest givers"): coming home after beating them, Law and Britt only point you to their
+  notice (`QUESTS.clearing.call`, once) and your partner walks to the quest board; reading it tells the Waystone's story and
+  starts the questline, whose steps then go to them at home. Tapped at home before that, they send you to the board.
