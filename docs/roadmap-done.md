@@ -2599,3 +2599,8 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
   `sleepGL()` on leaving and `await wakeGL()` on reopening, like the Clearing.
 
 - **Done (2026-10-15): only the Ancient Tree's door enters the Secret Base** (the user's ask): `doorOnly()` in `js/hub-3d.js`; the rest of the tree and its sign walk there. Next, the user may want the backyard's entrance changed (asked what they have in mind).
+
+- **Done (2026-10-15): Sky Pillar fights in 3D rooms of the new tower's stone** (the revamp's part 1; the user approved
+  it after playtesting, "New sky pillar rooms are good", and it was merged to `main`): `dressTower()` in `js/arena-3d.js`,
+  sage stone, jade runes, windows on the pixel sky; `&arena2d` keeps the old pixel room. Next is part 2, the climb's
+  painted tower (`docs/roadmap.md`, Waiting on the user).
