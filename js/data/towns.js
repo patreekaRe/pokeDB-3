@@ -1005,9 +1005,9 @@ export const QUESTS = {
           'So the festival\'s on. The {pick}. You picked it, I didn\'t have to. I\'d have picked that one too. Probably.',
           'Now the lantern ring round the Waystone needs relighting, and plain lanterns won\'t hold. Kurt in the Clearing makes festival ones.'],
         { pick: { ask: 'Pick John\'s festival', fallback: 'autumn festival', options: [
-          { id: 'lantern', label: 'Lantern Festival', text: 'A thousand paper lanterns down the avenue, set floating on the koi pond at midnight.' },
-          { id: 'moon', label: 'Moon Viewing', text: 'Dumplings, pampas grass and the harvest moon over the torii.' },
-          { id: 'fireworks', label: 'Fireworks Night', text: 'Fireworks off the Shrine\'s stair, food stalls and yukata till late.' },
+          { id: 'lantern', label: 'Lantern Festival', icon: '🏮', text: 'Lanterns floating on the koi pond at midnight.' },
+          { id: 'moon', label: 'Moon Viewing', icon: '🎑', text: 'Dumplings and the harvest moon over the torii.' },
+          { id: 'fireworks', label: 'Fireworks Night', icon: '🎆', text: 'Fireworks off the Shrine\'s stair, and food stalls.' },
         ] } }),
       craft('sh-lanterns', 'john', 'Bring Festival Lanterns from Kurt\'s Workshop to relight the ring', 'festival-lanterns',
         ['They\'re perfect. Load-bearing, even. I checked.', 'The lantern ring round the Waystone is lit again. Look at that. Now, the stone itself...']),

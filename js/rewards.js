@@ -174,6 +174,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     btn.append(option.node);
     btn.disabled = !!option.disabled;
     if (option.info) btn.classList.add('info');   // only says something: Leave needn't ask about it
+    if (option.bare) btn.classList.add('bare');   // no floating sign in a 3D room: a tap on its prop is enough (a town's quest board)
     const take = once(option.ask ? () => { playSound(option.confirmSound || 'confirm'); option.onPick(); } : option.onPick);
     if (option.peek) {
       // a disabled one still answers a tap, so you can read why it's greyed out
@@ -432,7 +433,7 @@ function showLine(i) {
       box.classList.toggle('demon', !!line.demon);
     }
     line = line.text;
-  }
+  } else if (say.box === 'reward-log') box.classList.remove('demon');   // JONA's look goes with her (Phil at home after her)
   $(`${say.box}-live`).textContent = line;
   box.classList.remove('more');
   const pace = textPace();

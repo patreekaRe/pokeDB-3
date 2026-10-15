@@ -9709,6 +9709,7 @@ function questMark(id) {
   if (!door && !who && !at) return null;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
   s.raycast = () => {};
+  s.userData.noBend = true;   // a sprite's shader isn't bent: it drops with the ground below on the CPU instead (drawn())
   let y;
   if (at) {
     s.scale.set(0.5, 0.65, 1);
@@ -9724,7 +9725,8 @@ function questMark(id) {
     s.position.set(0, (y = (who.top ?? 1.4) + 0.45), 0);
     who.group.add(s);
   }
-  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08); });
+  // a town's ground rolls away over the horizon (CURVE, the user's call, 2026-10-14: the "!" stays on what it's over)
+  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08) - (who ? 0 : BEND.k.value * (s.position.z - BEND.z.value) ** 2); });
   return s;
 }
 
@@ -9775,6 +9777,40 @@ export const figure3d = (stand, move) => controls.does(stand, move);
 export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }
+}
+
+/** JONA possessing Phil (a tap on her in his home, the user's ask, 2026-10-15): `on`, she flies into `into` and he lifts
+    off the floor, shuddering in her violet light; off, she leaves him and drifts back to her corner. Resolves once there. */
+export function possess(from, into, on) {
+  const a = R?.who[from], b = R?.who[into];
+  if (!a || !b) return Promise.resolve();
+  let st = R.possession;
+  if (!st) {
+    st = R.possession = { f: 0, to: 0, done: null };
+    const mb = b.board.material, va = new THREE.Vector3(), vb = new THREE.Vector3();
+    mb.emissive.set('#b060ff'); mb.emissiveMap = b.t; mb.emissiveIntensity = 0; mb.needsUpdate = true;
+    a.board.material.transparent = true;
+    let last = performance.now();
+    R.ticks.push((now) => {   // after tickFigures(), so it has the last word on where they stand
+      const dt = Math.min(0.1, (now - last) / 1000); last = now;
+      st.f = st.to > st.f ? Math.min(st.to, st.f + dt / (calm ? 0.01 : 0.9)) : Math.max(st.to, st.f - dt / (calm ? 0.01 : 1.2));
+      if (st.f === st.to && st.done) { const d = st.done; st.done = null; d(); }
+      const e = st.f * st.f * (3 - 2 * st.f), held = Math.max(0, st.f * 2 - 1);   // she's in him for the second half
+      va.set(a.base.x, a.base.y, a.base.z);
+      vb.set(b.base.x, b.base.y + 0.6, b.base.z + 0.05);
+      a.group.position.lerpVectors(va, vb, e);
+      a.group.scale.setScalar(1 - e * 0.75);
+      a.board.material.opacity = 1 - held;
+      a.group.visible = st.f < 0.98;
+      if (!st.f) return;
+      const sway = calm ? 0 : 1;
+      b.group.position.y = b.base.y + held * 0.35 + Math.sin(now / 320) * 0.06 * held * sway;
+      b.group.position.x = b.base.x + Math.sin(now / 31) * 0.025 * held * sway;   // a shudder
+      mb.emissiveIntensity = held * (1 + Math.sin(now / 160) * 0.3 * sway);
+    });
+  }
+  st.to = on ? 1 : 0;
+  return new Promise((done) => { if (st.f === st.to) done(); else st.done = done; });
 }
 
 let warp = null, warpBeam = null;   // a Waystone's light setting your Pokémon down in a town it's visiting (in) or carrying it home (out)
@@ -10081,4 +10117,5 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
     room.ticks.push(tick);
   });
 }
+
 

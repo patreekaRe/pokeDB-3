@@ -5419,6 +5419,8 @@ body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #back
   background: #fbf4df; clip-path: polygon(100% 0, 100% 100%, 0 100%); border: inherit; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0;
 }
 #reward-options.c3d .reward-option:is(:disabled, .locked) .center-label { color: #9a8c78; border-color: #b8ae9c; }
+/* a town's quest board: no sign over it, the board (and its "!" till read) is enough (the user's call, 2026-10-14) */
+#reward-options.c3d .reward-option.bare .center-label { display: none; }
 /* the 3D grotto (js/event-3d.js): its chest is modelled, so the pixel chest's button stays only for its sign, floated over
    the lid, and its logic; a tap goes through to the room, which walks your Pokémon up first */
 #reward-options.c3d-wait .treasure-chest, #reward-options.c3d .treasure-chest :is(.chest-part, .chest-rays, .chest-glow) { visibility: hidden; }

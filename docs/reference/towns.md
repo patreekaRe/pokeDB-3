@@ -309,7 +309,7 @@ A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests 
 **The quest "!"** (2026-10-14, the user's ask): a step ready to hand in puts a bobbing "!" over its leader's name sign in
 the town (the user's call: the sign, not the roof; `marks: ['door:<id>']` handed to `mountEvent()`, drawn by `markQuests()`
 in `js/event-3d.js` at `B.signs[id]`, which `nameBoards()` / `boughBoards()` / `bazaarBoards()` record, the roof if a house
-has none) and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their house (`nietosMark`) and inside. The
+has none) and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their name sign (`nietosMark`) and inside. The
 quest board's "!" is only for a notice to read now (`questMarks()`).
 **Every turn-in goes to a leader, the board is for reading** (2026-10-14, the user's ask: "to push the player to explore
 their homes"). A town's board opens the Quests app (`openDeviceApp('quests', 'board', false, again)`) once its questline
@@ -317,3 +317,9 @@ is posted, a "!" over it (`board` mark, at `B.boardAt`) till it's read once (`re
 a `?town=` peek keeps `t.boardRead`). After the questline the coin requests go to the town's leaders by turns
 (`requestBy()`: `st.done` round `town.leaders`), handed in at home (`reqMine` in `homeRoom()`), a "!" over that leader's
 sign; the Quests app shows a done town's request (`requestCard()`). While a questline has started its leaders are home.
+**Turn-ins are a tap on the leader** (2026-10-14, the user's ask: a home's Hand in sign had no prop to float over, so it
+couldn't be reached): `homeRoom()` adds no quest options; `handOver()` runs on the first tap on the leader wearing the "!"
+(`onTalk`, before any chat): the Nietos' greeting if their questline isn't picked up, then a Nietos step, a town step
+(`askPick()` asks a `pick` step's choice in a small dialog, Not now backs out) or a coin request. The town board's option
+is `bare` (`js/rewards.js`: no floating sign over it in 3D, a tap on the board itself). The "!" sprites drop with the
+ground on the CPU each frame (`BEND.k * (z - camZ)^2`, the ground shader's sum), since a sprite's shader isn't bent.
