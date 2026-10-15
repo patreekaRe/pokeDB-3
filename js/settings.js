@@ -36,6 +36,7 @@ const OPTIONS = {
   // the title as the walkable Clearing (js/hub-3d.js) or its menu signs; js/title.js swaps them at once
   titleHub: { values: [[true, 'Walk'], [false, 'Signs']], apply: (v, changed) => { if (changed) dispatchEvent(new Event('title-hub')); } },
   calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },
+  batterySaver: { values: [[false, 'Off'], [true, 'On']] },
   battleSpeed: { values: [[1, '1x'], [2, '2x']], apply: v => document.documentElement.classList.toggle('fast-battle', v > 1) },
   battleFx: { values: [[true, 'On'], [false, 'Off']], apply: v => document.documentElement.classList.toggle('no-battle-fx', !v) },
   endTurnWarn: { values: [[true, 'On'], [false, 'Off']] },

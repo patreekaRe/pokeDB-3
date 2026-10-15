@@ -17,7 +17,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, slowFrameMs } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -1372,7 +1372,7 @@ try { lowered = +localStorage.getItem('pokedb.mall3d.low') || 0; } catch {}
 function keepUp(now) {
   if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
   const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
-  if (avg < 25) { slowSince = 0; return; }
+  if (avg < slowFrameMs()) { slowSince = 0; return; }
   if (!slowSince) { slowSince = now; return; }
   if (now - slowSince < 3000) return;
   slowSince = 0;

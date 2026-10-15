@@ -6,12 +6,15 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid', titleHub: true };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, batterySaver: false, shell: 'red', scenery: 'hybrid', titleHub: true };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
     and slow intros. */
 export const battleFx = () => pref('battleFx') && !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+/** Battery Saver (Settings): 3D places draw at 30 fps, the drifting backdrops at 15, for a cooler phone that lasts longer. */
+export const batterySaver = () => pref('batterySaver');
 
 /** Reduce flashing / screen shake (Settings, or reduced motion): nothing shakes, and white-outs become a soft brightening. */
 /** The scenery's look: Hybrid (pixels under smooth light, the default since 2026-10-08) or plain Pixel (Settings, ?pixel). */

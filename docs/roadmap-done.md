@@ -2680,3 +2680,5 @@ one thing each (the map over a jeep, the savanna and carved sign over the counte
 stumps down two wings under big lit price signs; the Master Ball on a roped dais in the middle; a thatched Day Pass booth;
 torches and palms. Checked headless: every buy, the pass, the board, the keeper, no errors at 420 wide.
 
+
+- **Done (2026-10-15): Battery Saver in Settings** (the user's yes after the audit): off by default; 3D at 30 fps, the drifting backdrops at 15 (`batterySaver()` in `js/prefs.js`, `tooSoon()` / `slowFrameMs()` in `js/hd2d.js`).

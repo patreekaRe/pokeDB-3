@@ -8,7 +8,7 @@
    white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
    the sky in its windows is the pixel scene's. */
 
-import { loadThree, tex, createPost, dispose, wakeGL, restGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, wakeGL, restGL, tooSoon, slowFrameMs } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1545,7 +1545,7 @@ let fpsLog = [], slowSince = 0, lowered = 0;
 function keepUp(now) {
   if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
   const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
-  if (avg < 25) { slowSince = 0; return; }
+  if (avg < slowFrameMs()) { slowSince = 0; return; }
   if (!slowSince) { slowSince = now; return; }
   if (now - slowSince < 3000) return;
   slowSince = 0;

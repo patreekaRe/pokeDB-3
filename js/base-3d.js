@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon, slowFrameMs } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -2020,7 +2020,7 @@ let slowSince = 0, lowered = 0;
 function keepUp(now) {
   if (fpsLog.length < 60 || document.hidden) { slowSince = 0; return; }
   const avg = fpsLog.reduce((a, b) => a + b, 0) / fpsLog.length;
-  if (avg < 25) { slowSince = 0; return; }
+  if (avg < slowFrameMs()) { slowSince = 0; return; }
   if (!slowSince) { slowSince = now; return; }
   if (now - slowSince < 3000) return;
   slowSince = 0;
