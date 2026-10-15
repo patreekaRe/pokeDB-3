@@ -54,6 +54,9 @@ import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
 const COLS = 31, ROWS = 26;
 const X0 = 15.5, Z0 = 12.5;   // the world's origin, the plaza's middle
 const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind, the forest down the sides, a hedge in front
+// the west side runs WEST tiles further (2026-10-15, the user's ask: room for the Safari gate out on its own), walkable
+// grass to the forest's edge; MW is its margin, M the other sides'
+const WEST = 4, MW = M + WEST;
 // the Whispering Clearing's gate at the far end of the north avenue (the user's ask, 2026-10-14: the way out goes north);
 // the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
 // side of the avenue just inside it
@@ -106,7 +109,7 @@ const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 90;
 
 // the Safari gate and the Sky Pillar in the back corners, out on the meadow, each up a trail off the ring road
-const SAFARI_AT = { tx: 4, ty: -3 };
+const SAFARI_AT = { tx: 1, ty: -3 };
 const PILLAR_AT = { tx: 28, ty: -3 };
 // each by its top-left tile: Kenmatta's dojo north-west; the Ancient Tree, the Secret Base, north-east (TREE_AT its middle
 // tile); moved 2026-10-14 from the user's drawing: the Nietos' house south-east and the Poké Mall south-west, their doors
@@ -145,9 +148,10 @@ const ROADS = [
   { a: [15, 15], b: [15, POND.y - 1.6], w: AVE * 0.85 },                  // south avenue, to the pond garden
   { a: [4, 5], b: [28, 5], w: LANE }, { a: [4, 5], b: [4, POND.y], w: LANE }, { a: [28, 5], b: [28, POND.y], w: LANE },   // the ring road
   { a: [4, POND.y], b: [28, POND.y], w: LANE },   // and the low road to the pond, its south side
-  { a: [4, 5], b: [4, -M - 0.6], w: TRAIL, dirt: true },                 // trails to the Safari gate, on through it, and the Sky Pillar
+  { a: [4, 5], b: [4, SAFARI_AT.ty + 1.6], w: TRAIL, dirt: true },        // trails to the Safari gate (west under its board, then on through it) and the Sky Pillar
+  { a: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, -M - 0.6], w: TRAIL, dirt: true },
   { a: [28, 5], b: [28, PILLAR_AT.ty + 1], w: TRAIL, dirt: true },
-  { a: [SAFARI_AT.tx - 5, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
+  { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [4, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, POND.y], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the low road
   { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, POND.y], w: 0.6 },
@@ -241,7 +245,7 @@ function bushArt(seed, pal = P.trees) {
 
 /** The ground: meadow grass, blades and flowers, the dirt paths and the plaza, and a soft dark rim under the forest. */
 function groundArt() {
-  const W = (COLS + 2 * M) * TP, H = (ROWS + M + FRONT) * TP, a = art(W, H), rnd = seeded(7);
+  const W = (COLS + M + MW) * TP, H = (ROWS + M + FRONT) * TP, a = art(W, H), rnd = seeded(7);
   const img = a.g.createImageData(W, H), d = img.data;
   const rgb = (hex) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
   const meadow = GROUND.meadow.map(rgb), dirt = GROUND.path.map(rgb);
@@ -286,7 +290,7 @@ function groundArt() {
     return stone[n > 0.92 ? 0 : n > 0.55 ? 1 : n > 0.25 ? 2 : 3];
   };
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const u = x / TP - M - 0.5, v = y / TP - M - 0.5;
+    const u = x / TP - MW - 0.5, v = y / TP - M - 0.5;
     const wob = (smooth(x, y, 5) - 0.5) * 0.22;
     const pr = Math.hypot(u - START.x, v - START.y) - PLAZA_R;
     const paved = Math.min(roadsAt(u, v, false), pr), dirtD = roadsAt(u, v, true) - wob;
@@ -306,7 +310,7 @@ function groundArt() {
     } else {
       // darker away from the walkable ground, towards the forest down the sides and the hedge in front (the meadow behind
       // stays open)
-      const out = Math.max(-u - 0.5, u - (COLS - 0.5), v - (ROWS - 0.5), 0);
+      const out = Math.max(-u - 0.5 - WEST, u - (COLS - 0.5), v - (ROWS - 0.5), 0);
       const n = smooth(x, y, 6) * 3.2 + hash(x, y) * 1.4 + (Math.min(paved, dirtD) < 0.12 ? 1 : 0) + Math.min(2, out * 0.6);
       c = meadow[Math.min(5, Math.max(0, Math.floor(n)))];
     }
@@ -314,7 +318,7 @@ function groundArt() {
     d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255;
   }
   a.g.putImageData(img, 0, 0);
-  const onPath = (x, y) => { const u = x / TP - M - 0.5, v = y / TP - M - 0.5; return Math.min(roadsAt(u, v, false), roadsAt(u, v, true), Math.hypot(u - START.x, v - START.y) - PLAZA_R, Math.hypot(u - POND.x, v - POND.y) - POND.r - 0.3) < 0.25; };
+  const onPath = (x, y) => { const u = x / TP - MW - 0.5, v = y / TP - M - 0.5; return Math.min(roadsAt(u, v, false), roadsAt(u, v, true), Math.hypot(u - START.x, v - START.y) - PLAZA_R, Math.hypot(u - POND.x, v - POND.y) - POND.r - 0.3) < 0.25; };
   const blade = GROUND.blade;
   if (blade) for (let i = 0; i < 900; i++) {   // blades
     const x = Math.floor(rnd() * W), y = Math.floor(rnd() * H);
@@ -2207,25 +2211,26 @@ function makePlaces() {
       safariFx.group.position.set(x, 0, z);
       for (const l of lamps) if (l.userData.id === 'safari') l.userData.k = safari ? 0.8 : 0;   // its torches, unlit while it's shut
       g.add(safariFx.group);
-      safariFence(g, tileX(-M + 0.5), x - WING_X, z);
-      safariFence(g, x + WING_X, tileX(SAFARI_AT.tx + 3.4), z);
+      safariFence(g, tileX(-MW + 0.5), x - WING_X, z);
+      safariFence(g, x + WING_X, tileX(SAFARI_AT.tx + 4.6), z);   // past the ranks board, to the main gate's fence
     },
   });
   if (safari) list.push({
-    // three tiles out on the meadow, like the main gate's: one tile off, it stood in the 3D gate's mouth, in front of its tower
+    // three tiles left of the gate, like the main gate's three right of it: one tile off, it stood in the 3D gate's mouth
     id: 'safari', name: 'Safari Pokéstop', step: { x: SAFARI_AT.tx - 3, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 3, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 3, 2.6, SAFARI_AT.ty + 1], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
     reset: 'daily',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
     build: (g) => pokestop(g, 'safari', tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 1), 0.5, !!safariRun, 'EXPLORE'),
   });
-  // left of the gate, along its fence (the user's ask, 2026-10-09), past the Pokéstop
+  // three tiles right of the gate, the Pokéstop's mirror, where the trail from the ring road turns west to it (the user's
+  // ask, 2026-10-15)
   list.push({
-    id: 'safari-board', name: 'Safari Ranks', step: { x: SAFARI_AT.tx - 5, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 5, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 5, 2.6, SAFARI_AT.ty + 1], open: safari,
+    id: 'safari-board', name: 'Safari Ranks', step: { x: SAFARI_AT.tx + 3, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx + 3, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx + 3, 2.6, SAFARI_AT.ty + 1], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     reset: safari && 'daily',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => beckon(g, board(kioskArt(), tileX(SAFARI_AT.tx - 5), tileZ(SAFARI_AT.ty + 0.7))),
+    build: (g) => beckon(g, board(kioskArt(), tileX(SAFARI_AT.tx + 3), tileZ(SAFARI_AT.ty + 0.7))),
   });
   // south-west, its doors onto the ring road
   list.push({
@@ -2548,7 +2553,7 @@ function buildGateway(g) {
   safariFence(g, tileX(GATE_AT.tx - 4), post(GATE_FEET[0]), z);
   safariFence(g, post(GATE_FEET[1]), tileX(GATE_AT.tx + 4), z);
   // on left to the Safari gate's fence, closing the gap between them (GAP_TREES behind it)
-  safariFence(g, tileX(SAFARI_AT.tx + 3.4), tileX(GATE_AT.tx - 4), z);
+  safariFence(g, tileX(SAFARI_AT.tx + 4.6), tileX(GATE_AT.tx - 4), z);
 }
 
 /** The gate's shimmer breathing, brighter after dark, and its motes rising through the opening and drifting out towards
@@ -2608,11 +2613,11 @@ const TREE_TILES = [[0, 15], [1, 20], [0, 24], [9, 24], [21, 24]];
 const GAP_TREES = [[8.2, -2.9, 0, 1.15], [9.6, -3.4, 1, 1.25], [7.4, -3.7, 2, 1.3], [10.4, -2.7, 4, 0.9], [8.9, -4.1, 3, 1.35], [6.6, -2.8, 5, 0.85]];
 
 function buildClearing() {
-  const W = COLS + 2 * M, D = ROWS + M + FRONT;
+  const W = COLS + M + MW, D = ROWS + M + FRONT;
   const top = new THREE.MeshStandardMaterial({ map: tex(groundArt()), roughness: 1 });
   const earth = new THREE.MeshStandardMaterial({ color: '#7a5a34', roughness: 1 }), under = new THREE.MeshStandardMaterial({ color: '#3a2818' });
   ground = new THREE.Mesh(new THREE.BoxGeometry(W, 1, D), [earth, earth, top, under, earth, earth]);
-  ground.position.set(tileX(-M - 0.5) + W / 2, -0.5, tileZ(-M - 0.5) + D / 2);
+  ground.position.set(tileX(-MW - 0.5) + W / 2, -0.5, tileZ(-M - 0.5) + D / 2);
   ground.receiveShadow = true;
   scene.add(ground);
 
@@ -2625,12 +2630,12 @@ function buildClearing() {
   // the meadow behind is open, the view (buildVista()) over it, but for the woods behind the Sky Pillar
   const cleared = (x, z) => z < tileZ(-0.6) && (x < tileX(PILLAR_AT.tx - 3) || (Math.abs(x - tileX(PILLAR_AT.tx)) < 3.4 && z > tileZ(PILLAR_AT.ty - 1.4)));
   const put = (k, x, z, s) => { if (!cleared(x, z)) spots[k].push({ x, z, s }); };
-  for (let r = 0; r < 3; r++) for (let x = -M + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
+  for (let r = 0; r < 3; r++) for (let x = -MW + 0.5; x < COLS + M; x += 1.25 + rnd() * 0.4) {
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x - 0.5) + (rnd() - 0.5) * 0.5, tileZ(-1 - r * 1.2 - rnd() * 0.4), 1.25 + r * 0.25 + rnd() * 0.2);
   }
   // the forest down both sides, from the back meadow's edge to the hedge in front
   for (const s of [-1, 1]) for (let r = 0; r < 3; r++) for (let y = 0.5; y < ROWS + FRONT; y += 1.3 + rnd() * 0.4) {
-    const x = s < 0 ? -2 - r * 1.2 : COLS + 1 + r * 1.2;
+    const x = s < 0 ? -2 - WEST - r * 1.2 : COLS + 1 + r * 1.2;
     put(r ? 2 + (rnd() < 0.5 ? 1 : 0) : rnd() < 0.5 ? 0 : 1, tileX(x) + (rnd() - 0.5) * 0.4, tileZ(y) + (rnd() - 0.5) * 0.3, 1.1 + r * 0.25 + rnd() * 0.2);
   }
   for (const [x, y] of TREE_TILES) put(rnd() < 0.3 ? 4 : rnd() < 0.5 ? 0 : 1, tileX(x), tileZ(y), 1);
@@ -2638,7 +2643,7 @@ function buildClearing() {
   // a hedge of bushes along the front edge, low so it never hides the garden
   // each a step nearer than the last: side by side on one plane, where they overlap they z-fought and flickered
   let b = 0;
-  for (let x = -M + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(ROWS) + 0.2 + (b++ % 2) * 0.08, 0.8 + rnd() * 0.2);
+  for (let x = -MW + 0.6; x < COLS + M - 1; x += 1.1 + rnd() * 0.3) put(4 + (rnd() < 0.5 ? 1 : 0), tileX(x), tileZ(ROWS) + 0.2 + (b++ % 2) * 0.08, 0.8 + rnd() * 0.2);
   const m4 = new THREE.Matrix4();
   kinds.forEach((c, k) => {
     const list = spots[k];
@@ -2879,7 +2884,7 @@ function buildVista() {
 
 // across the whole back, well past the ground's edges, the woods behind the Sky Pillar standing in front of it (the
 // user's ask, 2026-10-14: from the east side, grey showed past its old end at the Pillar)
-const vistaSpan = () => { const x0 = tileX(-M - 8); return { x0, w: Math.round(tileX(COLS + M + 8) - x0) }; };
+const vistaSpan = () => { const x0 = tileX(-MW - 8); return { x0, w: Math.round(tileX(COLS + M + 8) - x0) }; };
 const SKY_UP = 40;
 
 function paintVista() {
@@ -2896,12 +2901,12 @@ function paintVista() {
 
 // the open meadow behind the grid, from the Safari gate's corner to the Sky Pillar's, and the road on out through the
 // Whispering Clearing's gate (walkOut())
-const MEADOW = new Set([...rect(-3, -4, PILLAR_AT.tx + 2, -1)].map(([x, y]) => key(x, y)));
+const MEADOW = new Set([...rect(-3 - WEST, -4, PILLAR_AT.tx + 2, -1)].map(([x, y]) => key(x, y)));
 // the fences either side of the gates, out on the meadow, and the trees in the gap between them (GAP_TREES)
-const FENCES = [...rect(SAFARI_AT.tx + 4, GATE_AT.ty, GATE_AT.tx - 2, GATE_AT.ty), ...rect(GATE_AT.tx + 2, GATE_AT.ty, GATE_AT.tx + 4, GATE_AT.ty),
-  ...rect(SAFARI_AT.tx + 4, GATE_AT.ty - 2, GATE_AT.tx - 5, GATE_AT.ty - 1),
-  ...rect(-3, SAFARI_AT.ty, SAFARI_AT.tx - 2, SAFARI_AT.ty), ...rect(SAFARI_AT.tx + 2, SAFARI_AT.ty, SAFARI_AT.tx + 3, SAFARI_AT.ty)].map(([x, y]) => key(x, y));
-const inGrid = (c) => (c.x >= 0 && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
+const FENCES = [...rect(SAFARI_AT.tx + 5, GATE_AT.ty, GATE_AT.tx - 2, GATE_AT.ty), ...rect(GATE_AT.tx + 2, GATE_AT.ty, GATE_AT.tx + 4, GATE_AT.ty),
+  ...rect(SAFARI_AT.tx + 5, GATE_AT.ty - 2, GATE_AT.tx - 5, GATE_AT.ty - 1),
+  ...rect(-3 - WEST, SAFARI_AT.ty, SAFARI_AT.tx - 2, SAFARI_AT.ty), ...rect(SAFARI_AT.tx + 2, SAFARI_AT.ty, SAFARI_AT.tx + 4, SAFARI_AT.ty)].map(([x, y]) => key(x, y));
+const inGrid = (c) => (c.x >= -WEST && c.y >= 0 && c.x < COLS && c.y < ROWS) || MEADOW.has(key(c.x, c.y));
 const free = (c) => inGrid(c) && !blocked.has(key(c.x, c.y));
 const STEPS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
@@ -3929,7 +3934,7 @@ function bendAll() {
 
 function placeCamera(dt) {
   if (AERIAL) {
-    const cx = tileX(-M - 0.5) + (COLS + 2 * M) / 2, cz = tileZ(-M - 0.5) + (ROWS + M + FRONT) / 2;
+    const cx = tileX(-MW - 0.5) + (COLS + M + MW) / 2, cz = tileZ(-M - 0.5) + (ROWS + M + FRONT) / 2;
     camera.position.set(cx, 62, cz + 22);
     camera.lookAt(cx, 0, cz);
     camera.updateMatrixWorld();
@@ -3943,7 +3948,7 @@ function placeCamera(dt) {
   const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
   const wx = arriving ? tileX(ARRIVE.x) : walker.x, wz = arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
-  const loX = tileX(-0.5) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
+  const loX = tileX(-0.5 - WEST) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
   const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
   const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
