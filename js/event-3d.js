@@ -24,6 +24,7 @@ import { LEADER_HOMES, LEADER_SIZE, buildLeaderHome, leaderEnv } from './leader-
 import { HALLS, HALL_SIZE, buildHall, hallEnv } from './town-halls.js';
 import { paintMedallion } from './medallion-art.js';
 import { getSave } from './storage.js';
+import { BELTS, TRIALS, dojoOf, starsOf } from './data/dojo.js';
 import { RING, shardsLit } from './data/towns.js';
 import { gymWins, GYM_INK as LEADER_INK } from './data/gym.js';
 import { GRADES, gradeHex, timeOfDay } from './daytime.js';
@@ -603,6 +604,77 @@ async function buildTutor(figs) {
       walker.lunge = since < 0.12 ? Math.sin(since / 0.12 * Math.PI) * 0.35 : 0;
     }, cues: [[0.1, 'hit'], [0.34, 'hit'], [0.58, 'hit']] },
   };
+}
+
+/* ---------- Kenmatta's dojo in the Clearing (js/data/dojo.js) ---------- */
+
+/** The trial board by the alcove: the stars won, the six belts with yours ringed, its name under them. */
+function trialBoardArt(belt, stars, of) {
+  const f = fine(30, 40, 10), { g, rr, lin } = f;
+  rr(0, 0, 30, 40, 1.5, lin(0, 0, 30, 0, DOJO.wood));
+  rr(1.6, 1.6, 26.8, 36.8, 1, lin(0, 1.6, 0, 38, ['#fbf4e2', '#efe2c0']));
+  words(g, 'TRIALS', 15, 6.4, 5, '#3a2010');
+  g.fillStyle = '#c82818'; g.fillRect(5, 9.4, 20, 0.6);
+  words(g, `★ ${stars}/${of}`, 15, 15, 6, '#c88a10');
+  BELTS.forEach((b, i) => {
+    const x = 3.4 + (i % 3) * 8, y = 21 + Math.floor(i / 3) * 6.4;
+    if (i === belt) rr(x - 1, y - 1.2, 9, 5.4, 1, '#ffd858');
+    rr(x, y, 7, 3, 0.6, b.colour);
+    g.fillStyle = b.knot; g.fillRect(x + 3, y - 0.2, 1.2, 3.4);
+    if (i > belt) { g.fillStyle = 'rgba(250,244,226,0.6)'; g.fillRect(x - 0.2, y - 0.4, 7.4, 3.8); }
+  });
+  words(g, BELTS[belt].name.toUpperCase(), 15, 35.4, 3.4, '#3a2010');
+  return f.c;
+}
+
+/** A belt round your partner's middle in the dojo, in the colour of the belt you hold: the band and its knot's tails. */
+function beltArt(i) {
+  const { colour, knot } = BELTS[i], f = fine(40, 14, 8), { g, rr } = f;
+  rr(0, 2, 40, 4.4, 1.4, colour);
+  g.fillStyle = 'rgba(0,0,0,0.18)'; g.fillRect(0, 5.4, 40, 1);
+  rr(16.5, 0.8, 7, 6.6, 1.6, knot);
+  g.fillStyle = colour;
+  g.beginPath(); g.moveTo(18, 6); g.lineTo(14, 13.4); g.lineTo(17.6, 13.4); g.lineTo(20, 7); g.fill();
+  g.beginPath(); g.moveTo(22, 6); g.lineTo(26, 13); g.lineTo(22.6, 13.4); g.lineTo(20.4, 7); g.fill();
+  return f.c;
+}
+
+function beltOn(m, i) {
+  m.beltMesh?.removeFromParent();
+  m.beltMesh = null;
+  if (i == null) return;
+  const w = Math.min(0.9, Math.max(0.42, m.top * 0.62)), belt = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.35), std({ map: texOf(beltArt(i)), transparent: true, alphaTest: 0.4, side: THREE.DoubleSide, roughness: 0.9 }));
+  belt.position.set(0, m.top * 0.4, 0.015);
+  belt.raycast = () => {};
+  m.board.add(belt);
+  m.beltMesh = belt;
+}
+
+async function buildDojo(figs, at) {
+  const save = getSave(), belt = at.belt ?? dojoOf(save).belt;
+  shell({ floor: dojoFloor(), wall: dojoWall(), side: dojoSide, edge: '#3a2414', cap: '#5a3418', under: '#24140a', bg: '#1a0e08' });
+  B.shotTop = 2.1;
+  B.talks = new Set(['ken']);
+  piece('zabuton', 5, 1, { scale: 1.1 });
+  medallion3d(tileX(5), 2.5, BACK_Z, 0.84);
+  B.blocked.add(key(5, 1));
+  const board = panel(trialBoardArt(belt, starsOf(save), TRIALS.length), 1.3, 1.74, tileX(3), 1.85, BACK_Z + 0.04);
+  board.userData.spot = 0;
+  B.anchors[0] = new THREE.Vector3(tileX(3), 3.0, BACK_Z + 0.1);
+  B.bag = sandbag(7, 2);
+  B.spots = [{ step: { x: 3, y: 1 } }, { step: { x: 7, y: 3 } }];
+  piece('scrollrack', 0, 0); piece('bonsai', 1, 0); piece('swordrack', 10, 0); piece('stonelantern', 8, 0, { scale: 0.85 });
+  piece('dummy', 10, 2); piece('drum', 0, 3); piece('dumbbells', 10, 5); piece('getarack', 0, 6);
+  B.who.ken = await figure('ken', figs.ken ?? { npc: 'alder' }, { x: 5, ty: 1, y: 0.1, dz: 0.05 });
+  B.dojo = true;
+  B.acts = {
+    train: { ms: 2500, tick(k) {
+      const hits = [0.1, 0.34, 0.58], since = Math.min(...hits.map(h => (k >= h ? k - h : 9)));
+      R.bag.rotation.x = -Math.sin(Math.min(1, since / 0.3) * Math.PI) * 0.35 * Math.exp(-since * 3) - (k > 0.6 ? Math.sin((k - 0.6) * 18) * 0.12 * (1 - k) : 0);
+      walker.lunge = since < 0.12 ? Math.sin(since / 0.12 * Math.PI) * 0.35 : 0;
+    }, cues: [[0.1, 'hit'], [0.34, 'hit'], [0.58, 'hit']] },
+  };
+  B.env = INDOORS;
 }
 
 /* ---------- the Move Deleter's study ---------- */
@@ -8974,6 +9046,8 @@ async function buildTown(figs, { look, time, town, mended = false, fest = null }
 const HOMES = {
   // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING); the Nietos' is js/leader-homes.js's
   clearing: {
+    // Kenmatta's dojo: the Move Tutor's room (buildTutor()) with the trial board for the scroll (buildDojo())
+    dojo: { cols: 11, rows: 8, dojo: true },
     // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, logs for it
     workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
       furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
@@ -9046,11 +9120,12 @@ function overHead(who, dx = 0, gap = 0.12) {
   return new THREE.Vector3(who.base.x + dx, who.base.y + top * Math.cos(lean) + gap, who.base.z - top * Math.sin(lean));
 }
 
-async function buildHome(figs, { time, town, home, gift }) {
+async function buildHome(figs, { time, town, home, gift, belt }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const H = !L && HALLS[home];   // a town's great hall (js/town-halls.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : H ? { castAt: H.castAt, beat: H.beat, flip: H.flip } : HOMES[town.id]?.[home] || {};
   if (h.camp) return buildCamp(figs, h);
+  if (h.dojo) return buildDojo(figs, { belt });
   const K = { THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, haloArt, puffs, shell, PIECES, calm: () => calm, buddy: () => walker };
   if (L) buildLeaderHome({ ...K, away: !figs[town.homes[home].leader] }, home);
   else if (H) buildHall(K, home);
@@ -10040,7 +10115,7 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.fest ? `:${at.fest}` : ''}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.fest ? `:${at.fest}` : ''}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}${at.belt != null ? `:belt${at.belt}:${starsOf(getSave())}` : ''}${at.town?.id === 'depths' ? `:${shardsLit(getSave()).map(Number).join('')}${figs.mewtwo ? '' : ':self'}` : ''}` : ''}` : kind;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -10049,7 +10124,7 @@ function room(kind, figs, at = {}) {
     B = { id, kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, fest: at.fest, gift: at.gift }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, fest: at.fest, gift: at.gift, belt: at.belt }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -10131,6 +10206,7 @@ export async function mountEvent(o) {
     mon = await monBoard(o.mate);
     scene.add(bendAll(mon.group));
   }
+  beltOn(mon, R.dojo ? o.belt ?? 0 : null);   // in Kenmatta's dojo your partner wears your belt
   mon.board.rotation.x = -PITCH;   // leaning back to the camera, whose tilt is this room's
   if (!showing() || opts !== o) return null;
   if (!back || o.at) {   // `at`: back out of a town's house, on its doorstep
@@ -10211,6 +10287,13 @@ const oneWord = (text) => SHORT[text] ?? text.replace(/^(Plant) \+\d+ max HP$/, 
 
 /** What eventRoom()'s choices ask of the room. */
 const controls = {
+  /** A new belt tied on in the dojo: on your partner, and ringed on the trial board. */
+  dressBelt(i) {
+    if (!R?.dojo || !mon) return;
+    beltOn(mon, i);
+    const save = getSave();
+    R.group.traverse(o => { if (o.userData.spot === 0 && o.material?.map && o.geometry?.type === 'PlaneGeometry') { o.material.map.dispose(); o.material.map = texOf(trialBoardArt(i, starsOf(save), TRIALS.length)); o.material.needsUpdate = true; } });
+  },
   /** Keep the room running under the found item or relic screen it is about to show (the Item Ball, the Wishing Well). */
   hold() { if (R && inRoom()) R.held = true; },
   /** Play a choice out on the props (`opts` how it goes: a big toss, a win, a Voltorb); resolves once it has (at once under

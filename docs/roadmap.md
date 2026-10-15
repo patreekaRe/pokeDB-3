@@ -9,23 +9,12 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
-`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
-for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
-run stronger, so no bot check. Three parts:
-- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
-  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
-  unlocks a line from him and a piece of the furniture set.
-- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
-  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
-  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
-  the battle screen with no rewards beyond the star (never a run).
-- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
-  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
-  trophy.
-▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
-Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
-
+**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
+the belts and the furniture set are in. Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
+Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
+star counts (to 20) already allow for them.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
+docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome

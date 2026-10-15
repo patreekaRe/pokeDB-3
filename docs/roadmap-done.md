@@ -2460,3 +2460,7 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   offers in inventory squares under each side; Trade puts READY on you, then them, the two items cross and TRADE
   COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
   `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.
+
+- **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
+  a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
+  star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.

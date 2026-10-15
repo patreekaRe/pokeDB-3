@@ -2000,8 +2000,11 @@ export const CLEARING = {
   buildings: [
     { id: 'nietos', name: 'THE NIETOS', home: 'nietos' },
     { id: 'workshop', name: 'KURT\'S WORKSHOP', home: 'workshop' },
+    { id: 'dojo', name: 'KENMATTA\'S DOJO', home: 'dojo' },
   ],
   homes: {
+    // Kenmatta's dojo (js/data/dojo.js): the trial board by his alcove, the sandbag, and him
+    dojo: { name: 'Kenmatta\'s Dojo', dojo: true, sub: 'Tatami, the Dragonite medallion, a sandbag and Chad Master Kenmatta. The trial board hangs by the alcove.' },
     // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): Kurt at his workbench (a tap opens js/workshop.js's
     // window), a cauldron, Apricorn trees, and a Slowpoke from Azalea Town asleep by the door
     workshop: { name: 'Kurt\'s Workshop', kurt: true, sub: 'Sawdust, Apricorns drying on every shelf, a cauldron bubbling, and Kurt at his workbench.',

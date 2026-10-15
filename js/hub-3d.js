@@ -1863,9 +1863,9 @@ function liveSmoke(now) {
   });
 }
 
-/** Chad Master Kenmatta's dojo, not open yet (the user's ask, 2026-10-14): a raised timber hall, white walls between dark
-    posts, a two-tier slate roof, a DOJO board over the door, the door boarded up under a COMING SOON banner, red
-    banners either side and stone steps up. */
+/** Chad Master Kenmatta's dojo (the user's ask, 2026-10-14; open since 2026-10-15, walked into like the Nietos' house,
+    js/data/dojo.js): a raised timber hall, white walls between dark posts, a two-tier slate roof, a DOJO board over the
+    door, its noren half drawn and lamplight inside, red banners either side and stone steps up. */
 function dojo(g, x, z) {
   const W = 2.7, D = 3.0, H = 1.35, LIFT = 0.32;
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
@@ -1887,13 +1887,10 @@ function dojo(g, x, z) {
   hip(W + 0.7, D + 0.7, 0.75, LIFT + H);
   add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.35, 1.2), plaster), 0, LIFT + H + 0.72, 0);
   hip(1.5, 1.7, 0.55, LIFT + H + 0.88);
-  // the door, boarded up, the banner across it and the DOJO board over it
+  // the open door, lit inside, a red noren with its crest over it, and the DOJO board above
   const fz = D / 2 + 0.03;
-  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.04), std({ color: '#2a1c12' })), 0, LIFT + 0.5, fz);
-  for (const [a, y] of [[0.5, 0.35], [-0.45, 0.7]]) add(new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 0.05), std({ color: '#b08858' })), 0, LIFT + y, fz + 0.04).rotation.z = a;
-  const banner = board(plankArt(26, 8, [['COMING SOON', 3.6, '#ffe070']], ['#d83a30', '#b02820', '#801810']), 0, 0, { s: 0.8, shadow: false });
-  banner.position.set(0, LIFT + 0.55, fz + 0.09);
-  d.add(banner);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.04), std({ color: '#ffcf80', emissive: '#ffb050', emissiveIntensity: 0.9 })), 0, LIFT + 0.5, fz, false);
+  for (const sx of [-1, 1]) add(new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.42, 0.02), std({ color: '#c8302a', side: THREE.DoubleSide })), sx * 0.2, LIFT + 0.78, fz + 0.05, false);
   const sign = board(plankArt(22, 9, [['道場', 4.2, '#2a1a10'], ['KENMATTA', 2.2, '#5a2a10']]), 0, 0, { s: 0.75, shadow: false });
   sign.position.set(0, LIFT + H + 0.12, fz + 0.12);
   d.add(sign);
@@ -2368,8 +2365,8 @@ function makePlaces() {
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
-    line: 'Chad Master Kenmatta\'s dojo. Planks over the door, and a banner: COMING SOON. From inside, faintly: "FORTIFY YOUR MIND."',
-    buttons: [],
+    line: 'Chad Master Kenmatta\'s dojo. From inside: the thud of a sandbag, and "FORTIFY YOUR MIND!" His trials and belts wait in there.',
+    buttons: [['Go in', () => {}]],
     build: (g) => dojo(g, tileX(DOJO_AT.tx + 1), tileZ(DOJO_AT.ty + 1.5)),
   });
   if (gateOpen()) list.push({
@@ -2940,7 +2937,7 @@ function open(p, i = null) {
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
-  if (p.id === 'nietos' || p.id === 'workshop') return enterHouse(p);
+  if (p.id === 'nietos' || p.id === 'workshop' || p.id === 'dojo') return enterHouse(p);
   walker.hopUntil = performance.now() + 400;
   hideCard();
   const [label, go] = p.buttons[i ?? 0];

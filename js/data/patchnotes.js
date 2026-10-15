@@ -43,14 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
-  ['look', 'The Shrine, Sunken Ruins and Thornwood\'s outdoor rooms have a blue sky now, not a green one.'],
-  ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
-  ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
-  ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
-  ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
-  ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
-  ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
@@ -82,6 +74,22 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.20',
+    name: 'Test Your Might',
+    date: '2026-10-15',
+    notes: [
+  ['hub', 'Kenmatta\'s dojo is open: walk in for eight puzzle trials with set hands, one star each, and earn belts from white to black and seven dojo pieces for your Secret Base.'],
+      ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
+      ['look', 'The Shrine, Sunken Ruins and Thornwood\'s outdoor rooms have a blue sky now, not a green one.'],
+      ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
+      ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
+      ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
+      ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
+      ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
+      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
+    ],
+  },
   {
     version: '1.19',
     name: 'Something Stirs',
@@ -441,5 +449,6 @@ export const IN_THE_GAME = [
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

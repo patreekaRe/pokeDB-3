@@ -6091,3 +6091,30 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 .town-trade .tw-done { position: absolute; left: 50%; top: 38%; padding: 8px 16px; border: 3px solid #1f3a14; border-radius: 10px; background: #f8d048; color: #1f3a14; font-size: 0.9rem; letter-spacing: 0.08em; white-space: nowrap; box-shadow: 0 4px 0 #1f3a14, 0 8px 20px rgba(0, 0, 0, 0.35); transform: translate(-50%, -50%) scale(0); pointer-events: none; transition: transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1); }
 .town-trade .tw-done.on { transform: translate(-50%, -50%) scale(1); }
 @media (prefers-reduced-motion: reduce) { .town-trade .tw-arrow { animation: none !important; } }
+
+/* Kenmatta's trial board (js/dojo.js, 2026-10-15): Kurt's bench's look (.dialog.craft) in his dojo's red and dark wood,
+   your belt and the six above the ladder, the picked trial's two Pokémon facing off on its card, his rewards below */
+.dialog.craft.dojo-win { background: repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0 2px, transparent 2px 38px), linear-gradient(180deg, #6a3a20, #3e2212); box-shadow: 0 0 0 3px #c8302a, 0 0 0 6px #2a170c, 0 24px 60px rgba(0, 0, 0, 0.6); }
+.dojo-rank { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 12px; padding: 10px 12px; border-radius: 14px; background: #fbf4df; box-shadow: 0 3px 0 #c8b088; }
+.dojo-rank-text { display: flex; flex-direction: column; gap: 2px; font-size: 0.75rem; color: #5a3e28; }
+.dojo-rank-text b { font-size: 0.95rem; color: #3a2414; }
+.dojo-belt { position: relative; display: inline-block; width: 46px; height: 12px; border-radius: 3px; background: var(--belt); box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.35); }
+.dojo-belt::after { content: ''; position: absolute; left: 50%; top: -3px; width: 10px; height: 18px; translate: -50% 0; border-radius: 3px; background: var(--knot); }
+.dojo-belt.dim { opacity: 0.3; }
+.dojo-belts { grid-column: 1 / 3; display: flex; justify-content: space-between; gap: 4px; padding-top: 6px; }
+.dojo-belts .dojo-belt { width: 13%; }
+.dojo-card { display: flex; flex-direction: column; gap: 6px; }
+.dojo-vs { display: flex; align-items: center; justify-content: center; gap: 14px; }
+.dojo-vs img { width: 72px; height: 72px; object-fit: contain; }
+.dojo-vs-word { font-size: 1.1rem; font-weight: 900; color: #c8302a; letter-spacing: 0.08em; }
+.dialog.craft .dojo-goal { color: #b02818; font-weight: bold; }
+.dojo-no { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #3a2414; color: #ffe6a8; font-size: 0.75rem; }
+.dojo-row.locked { opacity: 0.6; }
+.dojo-row .craft-pill.made { background: #f0c040; color: #3a2414; }
+.dialog.craft .dojo-gifts .craft-label { color: #ffe6a8; margin: 0 0 4px; }
+.dojo-gifts { display: flex; flex-wrap: wrap; gap: 6px; }
+.dojo-gifts .craft-label { width: 100%; }
+.dojo-gift { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; opacity: 0.45; filter: grayscale(0.8); }
+.dojo-gift.got { opacity: 1; filter: none; }
+.dojo-gift-name { font-size: 0.75rem; line-height: 1.1; text-align: center; color: #fbe8c0; }
+.dialog.craft.dojo-win .craft-list { min-height: 90px; max-height: 26dvh; }
