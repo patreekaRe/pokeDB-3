@@ -200,6 +200,10 @@ function init() {
     updateSave(d => {
       d.gym = { ...(d.gym || {}), ...Object.fromEntries(ids.map(id => [id, 0])) };
       d.badges = (d.badges || []).filter(b => !ids.some(id => b === `gym-${id}` || b === `gym-${id}-gold`));
+      // unmet in the Gym Leaders app too (the app's first-load migration counted the fake wins as meetings), unless they've beaten you
+      const unmet = (list) => (list || []).filter(id => !ids.includes(id) || (d.gymLost?.[id] || 0) > 0);
+      d.seen = { ...d.seen, gym: unmet(d.seen?.gym) };
+      if (d.newFinds) d.newFinds = { ...d.newFinds, gym: unmet(d.newFinds.gym) };
       if (ids.includes('nietos') && d.towns?.clearing) { const { clearing, ...rest } = d.towns; d.towns = rest; }
     });
   }
