@@ -880,11 +880,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.
   **The revamp's next parts, in the order I recommended (2026-10-15; the user said yes):** 1. the arena is **done and
-  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Built, waiting on the user's look** (2026-10-15,
-  branch `claude/dojo-lock-ken-defeat-95bk39`, not on `main` yet): the climb's painted tower repainted in sage stone with
-  jade rune bands, Rayquaza's ring over guardian doors and the lobby door, a jade crystal at the summit, floating stones on
-  wide screens (`js/tower-art.js`; sky-pillar.md). Playtest `?tower=10` (a guardian), `?tower=25`, `?tower=100`; on a yes,
-  merge to `main`. The opening film's outside view takes the new stone too (it reads `stone()`). 3. Next: the opening
+  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 3. Next: the opening
   film's first shot shows the new tower (`js/climb-intro.js`). 4. The lobby's window onto the tower. Run in: CLOUD.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.

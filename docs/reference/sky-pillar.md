@@ -193,8 +193,7 @@ is the screen and the overlay that use them.
 - **The battle arena** (`showTowerScene()` in `js/scene.js`, `paintArena()`): every Sky Pillar fight is in one of the
   tower's rooms, its tall windows on the sky at that floor's height, torches (braziers, banners and a red runner for a
   guardian, banners for an Alpha); Rayquaza's is the open summit. **In 3D since 2026-10-15** (the user's pick for the
-  Sky Pillar revamp, after the Clearing's tower: on branch `claude/dojo-lock-ken-defeat-95bk39` until they say it goes
-  live): `dressTower()` in `js/arena-3d.js` builds the room whole, as the Clearing's tower is built (`js/hub-pillar.js`'s
+  Sky Pillar revamp, after the Clearing's tower; live since the user's yes the same day): `dressTower()` in `js/arena-3d.js` builds the room whole, as the Clearing's tower is built (`js/hub-pillar.js`'s
   `STONES`, `runeArt()`, `bannerArt()`): flagstones to a wall of sage stone (`ashlarArt()`, an extruded slab) whose arched
   windows are cut through it, pale jambs and arches with a gold keystone, a band of jade runes under a cornice, wall
   torches between (`sconce()`, two lights at most); a guardian's hall hangs banners in its colours (`BANNER`, now exported
