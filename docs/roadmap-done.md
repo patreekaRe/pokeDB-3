@@ -2664,3 +2664,12 @@ berries and Run kit shelves (`js/data/workshop.js`, repeatable into `save.worksh
 `js/data/held.js` (`run.held`, once a run, mirrored in the sim's `engine.js`), packed on the Prepare screen
 (`renderPack()` in `js/select.js`; not Safari, the Sky Pillar or peeks; allowed for Mewtwo).
 
+
+### Performance and heat audit (2026-10-15, the user's ask: smooth everywhere, no leaks, phones not hot)
+Measured headless (Playwright, phone viewport) across the title, hub, Secret Base, mall, Center, Mart, ? rooms, arena,
+gym and all five towns (21 town/house visits, 33 place visits in one page). Towns, rooms and battles held flat; one GL
+context awake at a time everywhere. Fixed: every context restore left three.js's old dispose listeners on, keeping each
+earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js/hd2d.js` now takes them off on sleep);
+the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
+(`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
+the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
