@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -1841,15 +1841,19 @@ function townRoom(covered = null, at = null) {
   });
 }
 
-/** A quest step's choice (John's festival), asked as it's handed in: resolves the option picked, or null for Not now. */
-function askPick(pick) {
+/** A quest step's choice (John's festival), asked as it's handed in: resolves the option picked, or null for Not now.
+    Each option says the piece it lets Kurt make, so the pick isn't only a name. */
+function askPick(step) {
+  const pick = step.pick;
   const d = el('dialog', 'dialog dev-window quest-pick');
-  const list = el('div', 'quest-pick-list'), acts = el('div', 'dialog-actions'), no = el('button', 'btn secondary', 'Not now');
+  const list = el('div', 'dev-screen quest-pick-list'), acts = el('div', 'dialog-actions'), no = el('button', 'btn secondary', 'Not now');
   let chosen = null;
   list.append(...pick.options.map(o => {
-    const b = el('button', 'btn quest-pick-opt');
+    const b = el('button', 'quest-pick-opt');
     b.type = 'button';
-    b.append(el('strong', '', o.label), el('span', '', o.text));
+    const piece = RECIPES.find(r => r.pick?.[0] === step.id && r.pick[1] === o.id);
+    b.append(el('span', 'quest-pick-icon', o.icon || '★'), el('strong', '', o.label), el('span', 'quest-pick-text', o.text));
+    if (piece) b.append(el('small', '', `Unlocks: ${piece.name}`));
     b.addEventListener('click', () => { chosen = o; d.close(); });
     return b;
   }));
@@ -1969,7 +1973,7 @@ function homeRoom(b, onward = null) {
     if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
     again();
   } : mineReady ? async () => {
-    const pick = mine.pick ? await askPick(mine.pick) : null;
+    const pick = mine.pick ? await askPick(mine) : null;
     if (run !== thisRun || (mine.pick && !pick)) return;
     const coins = real ? handInQuest(town.id, pick?.id) : 0;
     if (!real) t.peekSt = handInStep(town, tst, pick?.id);
