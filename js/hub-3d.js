@@ -2286,11 +2286,12 @@ function makePlaces() {
   });
   // a professor just right of the PC (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
   // a hint about something easy to miss, and every fifth tap a reminder to refresh for updates (the user's ask,
-  // 2026-10-15); both are built and setTime() shows the one for the hour
+  // 2026-10-15); both are built and setTime() shows the one for the hour. Talked to in a Gym Leader's slide-in
+  // (profTalk())
   list.push({
     id: 'prof', step: { x: PROF_AT.x, y: PROF_AT.y + 1 }, tiles: [[PROF_AT.x, PROF_AT.y]], tag: [PROF_AT.x, 2.6, PROF_AT.y], open: true,
     get name() { return profNow().name; },
-    get line() { const hint = HINTS[hintAt++ % HINTS.length]; return ++hintsHeard % 5 ? hint : `${hint} ${profNow().refresh}`; },
+    line: '',
     buttons: [],
     build: (g) => { for (const who of PROFS) standProf(g, who); },
   });
@@ -2382,8 +2383,10 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
-  { id: 'sonia', name: 'Professor Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.',
+    hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!',
+    hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [
   'Spin the Pokéstop by the gate to set out. A run you left waits there: Continue it, or give it up with an Escape Rope.',
@@ -2442,8 +2445,25 @@ const HINTS = [
   'Legendaries never evolve. They power up instead, and it\'s quite a sight.',
   'Amulet Coin doubles the ₽ you win after fights. More ₽, more Mart.',
 ];
-let hintAt = Math.floor(Math.random() * HINTS.length), hintsHeard = 0, profBoards = {};
+let hintAt = Math.floor(Math.random() * HINTS.length), hintsHeard = 0, profBoards = {}, profGreeted = false, profBusy = false;
 const profNow = () => PROFS.find(p => p.night === (time === 'night'));
+
+/** A tap on the professor (option 2, the user's pick, 2026-10-15): the first of a visit to the Clearing they slide in
+    like a Gym Leader with a hello and a hint; after that, a hint a tap in the speech window alone, so browsing them stays quick. */
+async function profTalk() {
+  hideCard();
+  if (profBusy) return;
+  profBusy = true;
+  try {
+    const who = profNow(), first = !profGreeted;
+    const lines = [HINTS[hintAt++ % HINTS.length]];
+    if (++hintsHeard % 5 === 0) lines.push(who.refresh);
+    if (first) lines.unshift(who.hello);
+    profGreeted = true;
+    const { gymTalk } = await import('./gym.js');
+    await gymTalk({ id: who.id, name: who.short, sprite: `assets/trainers/${who.id}.png` }, lines, { lit: true, bubble: !first, title: 'PROFESSOR ' });
+  } finally { profBusy = false; }
+}
 async function standProf(g, who) {
   const m = await monBoard({ src: `assets/trainers/${who.id}.png`, name: who.name, cry: '', px: TRAINER_PX }, false);
   if (!g.parent) { dispose(m.group); return; }
@@ -3206,6 +3226,7 @@ function liveLeaving(now) {
 function showCard(p) {
   here = p;
   if (p.waystone) return showWaystone(p);
+  if (p.id === 'prof') return profTalk();
   if (p.guest?.welcome) welcomeHome(p.guest.town);
   card.classList.remove('way');
   // the Pokéstop with a saved run asks which (the user's call, 2026-10-08): its card's two buttons
@@ -3951,7 +3972,7 @@ async function openHub(titleScreen, actions, hold) {
     walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); camX = walker.x; camZ = walker.z;
   }
   walker.path = []; aim = null; here = placeAt(walker.tile);
-  outbound = null; returning = false;
+  outbound = null; returning = false; profGreeted = false;
   if (inside) leftPlace();
   else if (!inGrid(walker.tile) && !hold) walkBackIn();
   else if (!inGrid(walker.tile)) { walker.tile = { x: GATE_AT.tx, y: GATE_AT.ty + 4 }; walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); }

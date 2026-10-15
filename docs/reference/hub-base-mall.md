@@ -168,7 +168,11 @@ The first section began as the note on playtesting the live site and grew into t
   (features a player might miss); every fifth tap ends on that professor's reminder to refresh the page for updates
   (`hintsHeard`; every tap until 2026-10-15, the user's ask). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
-  A new feature worth a hint gets a `HINTS` line.
+  A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
+  of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
+  `{ id, name: short, sprite }`, `lit`, `title: 'PROFESSOR '`. The first tap of a visit (`profGreeted`, reset in
+  `showHub()`) slides them in over the dim with their `hello` and a hint; later taps are `bubble: true`, the speech
+  window alone, so browsing hints stays quick. The refresh reminder is its own line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue. Halloween's pumpkin patch and scarecrow sit on the south-east lawn by the Nietos' house since 2026-10-15 (the user's ask: they crowded the Secret Base's door). Detail: `docs/reference/towns.md`.
 
