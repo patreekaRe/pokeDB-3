@@ -2460,3 +2460,9 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   offers in inventory squares under each side; Trade puts READY on you, then them, the two items cross and TRADE
   COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
   `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.
+
+### The Safari gate in 3D (2026-10-15, the user's ask: "so bland and needs a big 3D aesthetic update")
+- The Clearing's painted Safari Zone board is now a real model, `safariGate()` in `js/hub-safari.js` (`safariArt()` gone):
+  thatched log towers with pennants, a thatched roof over the SAFARI ZONE board, a swaying Safari Ball crest, lanterns,
+  bunting, tiki torches with a warm lamp, palms, ferns, a bamboo palisade and a plank threshold; shut, a CLOSED rope and
+  nothing lit. Not changed: the Safari lobby's painted window onto the gate (`js/safari-lobby.js`), which could follow it.

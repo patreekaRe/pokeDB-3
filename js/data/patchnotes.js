@@ -42,7 +42,9 @@ export const RELEASE_AT = 12;
 export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
-export const NEXT = [];
+export const NEXT = [
+  ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
+];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
 export function sectionsOf(p) {
