@@ -2401,7 +2401,7 @@ async function standGuest(g, l) {
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
   { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
-  { id: 'sonia', name: 'Professor Sonia', night: true, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
+  { id: 'sonia', name: 'Professor Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
 ];
 const HINTS = [
   'Spin the Pokéstop by the gate to set out. A run you left waits there: Continue it, or give it up with an Escape Rope.',
@@ -2466,7 +2466,7 @@ async function standProf(g, who) {
   const m = await monBoard({ src: `assets/trainers/${who.id}.png`, name: who.name, cry: '', px: TRAINER_PX }, false);
   if (!g.parent) { dispose(m.group); return; }
   m.board.rotation.x = -PITCH;
-  m.group.position.set(tileX(PROF_AT.x), 0, tileZ(PROF_AT.y));
+  m.group.position.set(tileX(PROF_AT.x) + (who.dx || 0), 0, tileZ(PROF_AT.y));
   const p = places.find(q => q.id === 'prof');
   m.group.traverse(o => { o.userData.place = p; });
   drawMon(m, { facing: 'front' }, 0);
