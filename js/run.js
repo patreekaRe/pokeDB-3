@@ -1820,7 +1820,7 @@ function townRoom(covered = null, at = null) {
     await leaderSay(greeter, quest.greet[greeter]);
     if (run !== thisRun) return;
     if (real) startQuest(town.id); else t.peekSt = openQuest(st);
-    tell(`📜 ${town.name}'s quest is up on its board: ${stepText(questStep(town, openQuest(st)))}. Your Satchel keeps track (the Pokédex's Satchel app).`);
+    tell(`📜 ${town.name}'s quest is up on its board: ${stepText(questStep(town, openQuest(st)))}. Track it in your Pokédex's Quests app.`);
     again();
   };
   playMusic(town.music);
@@ -1937,7 +1937,7 @@ function homeRoom(b, onward = null) {
     try { await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
     if (run !== thisRun) return;
     startQuest('clearing');
-    tell('New quest: the Nietos\' questline is in your Satchel.');
+    tell('New quest! Track it in your Pokédex\'s Quests app, or on the quest board by the Waystone.');
     again();
   }));
   if (cstep) {

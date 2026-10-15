@@ -1543,7 +1543,7 @@ export const QUESTS = {
         'LAW: The towns all link through ours. It\'s the hub. Hub\'s down, whole server\'s down. Oh, umm... I mean, it\'s like a... hub.',
         'BRITT: And it hums. All night. Off-key. Linc hasn\'t slept through since. Neither have I. Law has, somehow.',
         'LINC: Ba! *points out of the window, at the stone*',
-        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there. It\'s on the board by the Waystone. And the fridge. And your Satchel.',
+        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there. It\'s on the board by the Waystone. And the fridge. And your Pokédex.',
       ],
     },
     steps: [

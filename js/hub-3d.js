@@ -2034,6 +2034,12 @@ async function takeQuest() {
     startQuest('clearing');
     dexNews();
   } finally { homeNewsBusy = false; questMarks(); }
+  questLog();
+}
+
+/** The board's window: the Pokédex's Quests app (js/questlog.js), which then says it's kept there too. */
+function questLog() {
+  if (running && !entering) acts.onApp?.('quests', 'board');
 }
 
 /** The quest board: a cork face on two posts under a little shingled roof, notes pinned all over it. */
@@ -2279,7 +2285,7 @@ function makePlaces() {
   if (townsOpen()) list.push({
     id: 'quests', name: 'Quest Board', step: { x: QUEST_AT.tx, y: QUEST_AT.ty + 1 }, tiles: [[QUEST_AT.tx, QUEST_AT.ty]], tag: [QUEST_AT.tx, 2.6, QUEST_AT.ty], open: true,
     get line() { return boardNow(getSave()).line; },
-    get buttons() { return boardNow(getSave()).kind === 'new' ? [['Read', takeQuest]] : []; },
+    get buttons() { return boardNow(getSave()).kind === 'new' ? [['Read', takeQuest]] : [['Quest log', questLog]]; },
     build: (g) => {
       g.add(questBoard(tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty)));
       questMark = board(newsArt(), tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty) + 0.1, { shadow: false });

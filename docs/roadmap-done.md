@@ -2437,4 +2437,4 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   song fragments already in the file.
 - **John's job and JONA's sprite** (2026-10-14/15, the user's asks): John is a mechanical engineer who designs and tests
   parts for aircraft and spacecraft (his bio, a speech line and his desk's model jet; no company named). JONA in Phil's
-  house is the user's sprite (Acerola's), her back made from it (`jona-back.png`), turning to face you when you come near.
+  house is the user's sprite (Acerola's), facing the room with a violet glow behind her (no turning round, the user's call).

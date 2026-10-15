@@ -456,6 +456,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      the Nietos' questline if the greeting didn't (`takeQuest()`), then it says the step up and where to hand it in, then
      every town's questline under way (`boardNow()`); a "!" floats over it with a notice to read or a step ready. The
      Nietos' house got a Quest spot that starts it too. Hand-ins stay at their house. On `main`, waiting on the user's look.
+   - **Quests app (2026-10-14, the user's ask: an aesthetic window for the board, and quest progress from anywhere).**
+     `js/questlog.js`: the Pokédex's own Quests app (out of the Satchel, which keeps Key Items, Materials, Gifts), a cork
+     board of pinned notes, one per questline: the step up now with a progress bar, where its things come from, where to
+     hand it in, every step on a tap, and how to start a locked one. The quest board's button opens it ("Quest log"), and
+     says it's in the Pokédex too; new-quest messages point there. On `main`, waiting on the user's look.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
