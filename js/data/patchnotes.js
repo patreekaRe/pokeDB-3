@@ -80,7 +80,7 @@ export const PATCHES = [
       ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
       ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
       ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
-      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
+      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips (a refresh reminder every fifth one).'],
     ],
   },
   {
