@@ -1711,7 +1711,7 @@ function townRoom(covered = null, at = null) {
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
   const leave = () => {
     if (run !== thisRun) return;
-    if (home) return goHome('waystone', town.id);
+    if (home) return beamHome();
     run.town = null;
     townVisit = null;
     startBiome();
@@ -1783,9 +1783,14 @@ function townRoom(covered = null, at = null) {
   }
   const first = !peeking && !st.met;
   if (first) metTown(town.id);
+  // a visit goes home the way it came, up in the Waystone's light, whichever way you leave (the Clearing's lands you in it)
+  const beamHome = async () => {
+    await event3dMod?.townWarp(town.id, true);
+    if (run === thisRun) goHome('waystone', town.id);
+  };
   const travelHome = async () => {
     playSound('gate-hum');
-    if (await confirmDialog('The Waystone hums. Travel home to the Whispering Clearing?', 'Travel') && run === thisRun) goHome('waystone', town.id);
+    if (await confirmDialog('The Waystone hums. Travel home to the Whispering Clearing?', 'Travel') && run === thisRun) beamHome();
   };
   // on a visit, a townsperson you've chatted to can be asked home to the Secret Base, once a visit
   const invite = async (who) => {
@@ -1840,9 +1845,14 @@ function townRoom(covered = null, at = null) {
       said(line, who);
       if (home) invite(who);
     } },
-    onIn: () => {
+    onIn: async () => {
       covered?.();
       covered = null;
+      if (home && !t.landed) {   // set down by the Waystone's light as the curtain lifts, as the Clearing's takes you back
+        t.landed = true;
+        await event3dMod?.townWarp(town.id, false, 250);
+        if (run !== thisRun) return;
+      }
       if (mendNow) mendScene();
       else if (greeter && !t.greeted) greet();
     },

@@ -67,8 +67,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    till beaten, whispering after seven) and **Kenmatta's dojo, COMING SOON** (`DOJO_AT`, `dojo()`, boarded up, a tap says so;
    a later session opens it). A lit stone walks your buddy into its town (`warpTo()`: a column of its light, then
    `visitTown()` in `js/run.js`, a throwaway run like a playtest, `isVisiting()`, the saved run untouched, the room bar's HP
-   hidden, `body.town-visit`), set down by the town's now whole Waystone (`wholeWaystone()`), which (or the far gate, or
-   Leave) takes you home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
+   hidden, `body.town-visit`), set down by the town's now whole Waystone (`wholeWaystone()`) in the same column of light (`townWarp()` in
+   `js/event-3d.js`), which (or the far gate, or Leave) lifts you up in it and home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
    Waystone with a line), the trader sells the town's furniture shelf instead of trading (`js/town-shop.js`: 6 a UTC day,
    kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
    Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to

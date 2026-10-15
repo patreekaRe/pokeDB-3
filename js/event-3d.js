@@ -9449,6 +9449,7 @@ function frame(now) {
   mon.group.position.set(walker.x + (walker.ox || 0), walker.oy || 0, walker.z - (walker.lunge || 0) + (walker.oz || 0));
   mon.board.scale.set(walker.flip ? -1 : 1, 1, 1);
   mon.board.position.y = bob;
+  if (warp) liveWarp(now);
   drawMon(mon, walker, dt);
   tickFigures(now, dt);
   for (const p of R.plays) tickPlay(p, now, dt);
@@ -9516,6 +9517,7 @@ function unmount() {
   leftAt = performance.now();
   busy = false; aim = null; frozen = false;
   if (acting) { const done = acting.done; acting = null; done(); }
+  endWarp();
 }
 
 /* ---------- in ---------- */
@@ -9757,6 +9759,63 @@ export const figure3d = (stand, move) => controls.does(stand, move);
 export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }
+}
+
+let warp = null, warpBeam = null;   // a Waystone's light setting your Pokémon down in a town it's visiting (in) or carrying it home (out)
+
+/** A visit from home (visitTown() in js/run.js) arriving and leaving the way the Clearing's Waystone sends it off and
+    takes it back (liveWarp() in js/hub-3d.js): a column of the town's light (its RING colour) round your Pokémon, which
+    comes down out of it (`out` false, after `delay` ms, with a hop and its cry) or fades up into it. You can't walk
+    meanwhile. Resolves once it's done (at once under reduced motion). */
+export function townWarp(town, out, delay = 0) {
+  endWarp();
+  if (!alive() || calm) return Promise.resolve();
+  walker.path = []; aim = null; walker.facing = 'front'; walker.flip = false;
+  if (out) playSound('gate-hum');
+  const colour = RING.find(o => o.id === town)?.glow ?? '#d8f0ff', was = frozen, ms = out ? 900 : 1100;
+  frozen = true;
+  // ended by a timer, not the frames, as the hub's warpTo() is: a tab that stops drawing never strands you in the light
+  return new Promise(done => {
+    const w = warp = { at: performance.now() + delay, ms, out, colour, was, done };
+    w.timer = setTimeout(() => {
+      if (warp !== w) return;
+      w.ended = true;
+      if (out) return done();   // held up in the light till the curtain falls and the room goes
+      frozen = was;
+      walker.hopUntil = performance.now() + 500;
+      playCry(mon.id);
+      endWarp();
+      done();
+    }, delay + ms);
+  });
+}
+
+function liveWarp(now) {
+  if (!warpBeam) {
+    warpBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.6, 6, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, toneMapped: false }));
+    warpBeam.raycast = () => {};
+    scene.add(bendAll(warpBeam));
+  }
+  const t = Math.max(0, Math.min(1, (now - warp.at) / warp.ms));
+  const k = warp.out ? t : 1 - t;   // how far into the light
+  warpBeam.visible = true;
+  warpBeam.material.color.set(warp.colour);
+  warpBeam.position.set(walker.x, 3, walker.z);
+  warpBeam.scale.set(0.4 + k * 0.6, 1, 0.4 + k * 0.6);
+  warpBeam.material.opacity = Math.min(0.75, Math.sin(Math.min(1, warp.out ? t * 1.3 : t + 0.15) * Math.PI) * 0.8);
+  mon.board.scale.x *= 1 - k * 0.6;
+  mon.board.scale.y = 1 - k * 0.6;
+  mon.board.position.y += k * 1.4;
+}
+
+/** The light gone, your Pokémon whole again (a room left, or a new warp). */
+function endWarp() {
+  if (!warp) return;
+  const w = warp;
+  warp = null;
+  clearTimeout(w.timer);
+  if (warpBeam) warpBeam.visible = false;
+  if (!w.ended) { frozen = w.was; w.done(); }
 }
 
 /** The gym's badge on its arch: where it is on the screen (null without the 3D gym), and taking it down as it's grabbed
