@@ -54,7 +54,9 @@ const M = 4, FRONT = 2;       // grass round it (tiles): the open meadow behind,
 // the road runs on through it into the painted distance (js/hub-vista.js), New game's Pokéstop and the route sign either
 // side of the avenue just inside it
 const GATE_AT = { tx: 15, ty: -2 };
-const STOP_AT = { tx: 17, ty: 1 }, SIGN_AT = { tx: 12, ty: 0 };   // a step out from the gate's sides (2026-10-14), so neither hides its face; the stop a step nearer the avenue (the user's ask, same day)
+// either side of the gate, just outside its feet so neither hides their runes (the user's ask, 2026-10-15: they stood
+// a row or two forward of it, the sign further out than the stop); each nudged in towards the opening (STAND_IN)
+const STOP_AT = { tx: 18, ty: -1 }, SIGN_AT = { tx: 12, ty: -1 }, STAND_IN = 0.3;
 const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
@@ -157,6 +159,7 @@ let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
@@ -1750,6 +1753,7 @@ function nietosSign(g, x, z) {
   const wood = std({ color: '#8a6038' });
   for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.035, 0.035, RY, 6), wood, sx * (W / 2 - 0.08), RY / 2, -0.05);
   add(new THREE.BoxGeometry(W + 0.14, 0.05, 0.18), std({ color: '#2e5e98' }), 0, RY + 0.025, -0.03);
+  return [s, W + 0.14, RY + 0.05];
 }
 
 /** Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): a timber workshop on a stone footing under a mossy
@@ -2126,7 +2130,7 @@ function makePlaces() {
       line: run ? waits(run) : 'The trail out of the Whispering Clearing: a new adventure.',
       buttons: run ? [['Continue', () => acts.onContinue(run)], ['New game', acts.onNewGame], ['Escape Rope', acts.onAbandon]] : [['New game', acts.onNewGame]],
       // outside the gate on its right, the route sign across the trail from it (the user's ask, 2026-10-09)
-      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx), tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
+      build: (g) => pokestop(g, 'trail', tileX(STOP_AT.tx) - STAND_IN, tileZ(STOP_AT.ty) - 0.2, 0.7, !!run, 'SET OUT'),
     },
     {
       // the route sign says what the old gate's card did (the user's ask, 2026-10-09); like the Safari gate, no buttons
@@ -2134,7 +2138,7 @@ function makePlaces() {
       open: true,
       line: 'The way out of the Whispering Clearing. Spin the Pokéstop to set out on an adventure.',
       buttons: [],
-      build: (g) => g.add(board(routeSignArt(), tileX(SIGN_AT.tx), tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
+      build: (g) => beckon(g, board(routeSignArt(), tileX(SIGN_AT.tx) + STAND_IN, tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
     },
     {
       id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty), tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
@@ -2209,7 +2213,7 @@ function makePlaces() {
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     reset: safari && 'daily',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => g.add(board(kioskArt(), tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 0.7))),
+    build: (g) => beckon(g, board(kioskArt(), tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 0.7))),
   });
   // south-west, its doors onto the ring road
   list.push({
@@ -2246,7 +2250,7 @@ function makePlaces() {
     line: tower ? 'The Sky Pillar\'s notice board: this week\'s and last week\'s highest climbers.' : 'Notices for the Sky Pillar, once it opens.',
     reset: tower && 'weekly',
     buttons: tower ? [['Read', () => acts.onBoard('tower')]] : [],
-    build: (g) => g.add(board(kioskArt(SKY_KIT), tileX(PILLAR_AT.tx + 1.8), tileZ(PILLAR_AT.ty + 1.8))),
+    build: (g) => beckon(g, board(kioskArt(SKY_KIT), tileX(PILLAR_AT.tx + 1.8), tileZ(PILLAR_AT.ty + 1.8))),
   });
   // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
   // mended one travelled to from there
@@ -2317,7 +2321,7 @@ function makePlaces() {
     id: 'nietos-sign', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx - 1, y: NIETOS_AT.ty + 3 }, tiles: [[NIETOS_AT.tx - 1, NIETOS_AT.ty + 2]], tag: [NIETOS_AT.tx - 1, 1.6, NIETOS_AT.ty + 2], open: true,
     line: 'THE NIETOS. Law, Britt and baby Linc. Underneath, in crayon: "LINC LIVS HEAR TOO."',
     buttons: [],
-    build: (g) => nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3),
+    build: (g) => beckon(g, ...nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3)),
   });
   // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): walked into like the Nietos' house, only while the towns
   // are on, and shut till the Nietos send you for a Waystone Chime (workshopOpen())
@@ -2471,7 +2475,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
+  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2720,9 +2724,9 @@ function liveDuck(now) {
   duck.neck.rotation.x = k * 1.1;
 }
 
-/** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door and
-    the gate, a pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
-    bubbling cauldron with toadstools, pumpkins at the gate's feet and two pairs of lantern posts (lit with the clock, setTime()), ghost
+/** The season's decorations, built once with the forest. Halloween: jack-o'-lanterns at the Ancient Tree's door, a
+    pumpkin patch with a giant one and a scarecrow, a row of graves lit by candles under a dead tree, a
+    bubbling cauldron with toadstools and two pairs of lantern posts (lit with the clock, setTime()), ghost
     Pokémon wandering among them (js/hub-spooky.js) and bats round the Ancient Tree. Each stands on its own tile, kept off
     every path and place (yardTiles), so nothing walks through them. In winter a snowman by the plaza. */
 function dressSeason() {
@@ -2752,13 +2756,6 @@ function dressSeason() {
       b.raycast = () => {};
       forest.add(b);
       yardTiles.add(key(tx, ty));
-    }
-    // at the gate's feet: no tile, so the road through it stays clear
-    for (const [dx, i] of [[-2.5, 20], [2.5, 21]]) {   // beside its stone feet, clear of their runes
-      const c = pumpkinArt(i), b = board(c, tileX(GATE_AT.tx) + dx, tileZ(GATE_AT.ty) + 0.7, { s: 1.7 });
-      glowing(b.material, c, null, '#ff8a20', 1.3, seasonMats);
-      b.raycast = () => {};
-      forest.add(b);
     }
     // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
     cauldron = makeCauldron(THREE);
@@ -3056,6 +3053,74 @@ function liveStop(stop, now) {
   const violet = t < 1 ? t : Math.max(0, 1 - (t - 1) * SPIN / 3000);
   stop.m.color.setRGB(1 - violet * 0.15, 1 - violet * 0.55, 1);
   stop.m.emissive.setRGB(0.61 + violet * 0.3, 0.92 - violet * 0.5, 1);
+}
+
+/* ---------- the signs that beckon ---------- */
+
+let glintArt = null;
+
+/** A sign that is a place of its own (the Safari's and the Sky Pillar's boards, the Nietos' name board, the route sign by
+    the gate) hops and wiggles every few seconds, a glint twinkling at its top corner (the user's ask, 2026-10-15: they
+    read as scenery, nothing said they could be tapped; liveBeckons()). `obj` is a board(), standing on its middle, or a
+    group standing on its origin `w` wide and `h` tall. */
+function beckon(g, obj, w, h) {
+  let pivot = obj;
+  if (!obj.isGroup) {
+    ({ width: w, height: h } = obj.geometry.parameters);
+    pivot = new THREE.Group();
+    pivot.position.set(obj.position.x, 0, obj.position.z);
+    obj.position.x = obj.position.z = 0;
+    pivot.add(obj);
+  }
+  g.add(pivot);
+  glintArt ||= starGlint();
+  const spark = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.42), new THREE.MeshBasicMaterial({ map: texOf(glintArt), transparent: true, depthWrite: false, fog: false }));
+  spark.position.set(w / 2 - 0.04, h - 0.02, 0.06);
+  spark.rotation.x = -PITCH;
+  spark.raycast = () => {};
+  pivot.add(spark);
+  beckons.push({ pivot, spark, phase: beckons.length * 1.3 });
+}
+
+/** A four-pointed twinkle, white at its heart, gold at its tips, in a soft halo. */
+function starGlint() {
+  const { c, g, fill } = fine(16, 16, 8), o = 8;
+  const halo = g.createRadialGradient(o, o, 0, o, o, 7);
+  halo.addColorStop(0, 'rgba(255, 246, 200, 0.75)'); halo.addColorStop(1, 'rgba(255, 220, 120, 0)');
+  fill(halo, () => g.arc(o, o, 7, 0, Math.PI * 2));
+  const star = (r, k, colour) => fill(colour, () => {
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4 - Math.PI / 2, d = i % 2 ? r * k : r;
+      g[i ? 'lineTo' : 'moveTo'](o + Math.cos(a) * d, o + Math.sin(a) * d);
+    }
+  });
+  star(7.6, 0.2, '#ffd23a');
+  star(5.4, 0.22, '#ffffff');
+  return c;
+}
+
+const HOP = 3.8;   // seconds between a sign's hops
+
+/** Each sign's hop: up and a little bounce, stretched in the air and squashed landing, wiggling as it settles, its glint
+    flaring with it and twinkling faintly between. Held still when calm, the glint lit. */
+function liveBeckons(now) {
+  for (const { pivot, spark, phase } of beckons) {
+    if (calm) {
+      pivot.position.y = 0; pivot.scale.set(1, 1, 1); pivot.rotation.z = 0;
+      spark.scale.setScalar(0.9); spark.rotation.z = 0; spark.material.opacity = 0.85;
+      continue;
+    }
+    const c = (now / 1000 + phase) % HOP;
+    const air = c < 0.45 ? Math.sin(Math.PI * c / 0.45) : c < 0.72 ? 0.35 * Math.sin(Math.PI * (c - 0.45) / 0.27) : 0;
+    const land = Math.exp(-(((c - 0.45) / 0.05) ** 2)) + 0.6 * Math.exp(-(((c - 0.72) / 0.05) ** 2));
+    pivot.position.y = air * 0.26;
+    pivot.scale.set(1 - air * 0.05 + land * 0.08, 1 + air * 0.08 - land * 0.12, 1);
+    pivot.rotation.z = c < 1.4 ? 0.1 * Math.sin(c * 16) * Math.exp(-c * 2.6) : 0;
+    const flare = c < 1.1 ? Math.sin(Math.PI * c / 1.1) : 0, idle = 0.3 + 0.15 * Math.sin(now / 260 + phase * 3);
+    spark.scale.setScalar(0.45 + Math.max(flare, idle) * 0.95);
+    spark.rotation.z = now / 700;
+    spark.material.opacity = Math.min(1, 0.4 + Math.max(flare, idle));
+  }
 }
 
 // the Secret Base is bought once (the user's call, 2026-10-08), saved as `baseOwned`
@@ -3822,6 +3887,7 @@ function frame(now) {
     s.cue.userData.tick(calm ? 0 : now);
   }
   liveSign(now);
+  liveBeckons(now);
   if (now - (frame.checked || 0) > 30000) { frame.checked = now; setTime(); }
   liveBugs(now);
   placeCamera(dt);
