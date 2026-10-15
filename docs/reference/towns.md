@@ -140,7 +140,7 @@ biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks i
 Clearing's north-east (`WORKSHOP_AT` 23,8 in `js/hub-3d.js` since 2026-10-15, the user's ask: its door right on the east avenue, a short `towns:
 true` road joining them; Halloween's pumpkin patch moved off to the south-east lawn the same day, away from the Secret Base's door), walked into like the Nietos' house: `CLEARING.buildings` /
 `homes.workshop` (`kurt: true`, a Slowpoke cast) in `js/data/towns.js`, `HOMES.clearing.workshop` in `js/event-3d.js`
-(`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). His window is
+(`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). **Shut till the story sends you** (2026-10-15, the user's call: he "just showed up"): `workshopOpen()` in `js/data/towns.js` opens it at the Nietos' Waystone Chime step (`WORKSHOP_STEP`, Law's line now points you there), or on a lit stone, a town questline, anything already made, or `?satchel`; before, it's boarded, its windows dark, a note on the door, no Go in (`kurtWorkshop(..., open)` in `js/hub-3d.js`). The first time in, Kurt slides in (`gymTalk()`, plate APRICORN SMITH) with `homes.workshop.meet` (plus `meetChime` while the chime is your step), then `save.workshop.met`. His window is
 `openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
 Kurt's line on a tag, a tab per shelf counting made / total and a green dot for how many are ready, the picked recipe on a
 parchment card (where it goes, a gift's reward piece, each material's have / need with a bar, one big Make button), the
@@ -245,6 +245,14 @@ Then `wayCard()` (THE WAYSTONE OF / town / AWAKENS, a band sweeping open, a tap 
 leader in `QUESTS[id].awaken` slides in in turn, glowing in the town's colour (`.gym-scene.awaken`, `--glow`, plate
 WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller beam, a shockwave (`wave` in
 `liveWarp()`), the flash, the card and the Nietos' `awaken` lines. Calm effects: no flash or shake, the card still.
+**Your partner walks up to the stone first** (2026-10-14, the user's ask: out of the Nietos' house the stone was off the
+screen; they picked this over a camera pan): in the Clearing `homeNews()` routes it to the Waystone's doorstep (`SPAWN`)
+under `cutscene` (taps, drags and `arrived()` wait), faces it to the stone, then the light; in a town `mendStone()` routes
+it to the stone's door step (`R.doors[st.spot]`) and starts the show (`t0`) once it's there, the crystal rising off it
+beside the stone. Both give up waiting after 9 s. Out of the leader's house first (the user's ask, same day: "it
+happens so fast"): `outSlow()` in `homeRoom()` walks your partner to the doormat (`walkToDoor()` in `js/event-3d.js`,
+`doorWalk` keeping `arrived()` from leaving), then a 650 ms fade to black with the door sound; the town's room lifts it
+once it's in (`townRoom()`'s `covered`), the Clearing's hub through `goHome()` as any door.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →

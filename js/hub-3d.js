@@ -30,7 +30,7 @@ import { makeSealedGate } from './hub-sealed.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn } from './data/towns.js';
+import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
@@ -1749,8 +1749,8 @@ function nietosSign(g, x, z) {
 /** Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): a timber workshop on a stone footing under a mossy
     shingle roof, wide double doors, a lit window either side, its signboard (KURT'S WORKSHOP over an Apricorn) on the
     gable, logs stacked by one wall and an Apricorn tree, its fruit in the five colours, by the other. Shown only while
-    the towns are on. */
-function kurtWorkshop(g, x, z) {
+    the towns are on. Shut (`open` false, till the Nietos send you): its windows dark and two planks across the doors. */
+function kurtWorkshop(g, x, z, open = true) {
   const W = 2.5, D = 2, H = 1.3, FY = 0.18, E = FY + H, R = 0.9, fz = D / 2;
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const h = new THREE.Group();
@@ -1760,9 +1760,8 @@ function kurtWorkshop(g, x, z) {
   const box = (w, hh, d, m, px, py, pz, shadow) => add(new THREE.BoxGeometry(w, hh, d), m, px, py, pz, shadow);
   const beam = std({ color: '#4a2e18' }), wall = std({ color: '#c8925a' }), stone = std({ color: '#9a948a', roughness: 1 });
   const roof = std({ color: '#5a6a3a', roughness: 0.9 }), door = std({ color: '#7a4a24' });
-  const pane = std({ color: '#fff0c0', emissive: new THREE.Color('#ffc870'), roughness: 0.3 });
-  pane.userData.glow = 1.2; pane.userData.glowMin = 0.15;
-  glowMats.push(pane);
+  const pane = open ? std({ color: '#fff0c0', emissive: new THREE.Color('#ffc870'), roughness: 0.3 }) : std({ color: '#2a3038', roughness: 0.3 });
+  if (open) { pane.userData.glow = 1.2; pane.userData.glowMin = 0.15; glowMats.push(pane); }
 
   // the footing, the planked walls framed in dark beams, a gable at each end
   box(W + 0.12, FY, D + 0.12, stone, 0, FY / 2, 0);
@@ -1789,6 +1788,7 @@ function kurtWorkshop(g, x, z) {
   for (const sx of [-1, 1]) box(0.06, 0.06, 0.08, std({ color: '#d8b040', metalness: 0.6, roughness: 0.3 }), sx * 0.09, FY + 0.5, fz + 0.08);
   box(1.06, 0.1, 0.12, beam, 0, FY + 1.03, fz + 0.05);
   box(1, 0.1, 0.3, stone, 0, 0.05, fz + 0.2);
+  if (!open) for (const [py, rz] of [[0.62, 0.32], [0.38, -0.28]]) box(1.08, 0.1, 0.04, std({ color: '#9a6a3a' }), 0, FY + py, fz + 0.1).rotation.z = rz;
   for (const sx of [-1, 1]) {
     box(0.5, 0.42, 0.04, pane, sx * 0.85, FY + 0.72, fz + 0.02, false);
     box(0.58, 0.06, 0.08, beam, sx * 0.85, FY + 0.48, fz + 0.04);
@@ -1934,6 +1934,7 @@ async function enterCamp() {
 }
 
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
+let cutscene = false;   // your partner walked by the scene (up to the Waystone as it mends, homeNews()): taps wait
 
 /** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
     fades up into it, then the town. */
@@ -1984,6 +1985,16 @@ async function homeNews() {
     }
     welcomeHome('clearing');
     const glow = '#9fe0ff';
+    // out of the Nietos' house the stone was off the screen (the user's ask, 2026-10-14): your partner walks up to it
+    // first, the view following, and faces it as it wakes
+    cutscene = true;
+    hideCard();
+    walker.path = route(walker.tile, SPAWN); aim = null;
+    for (const t0 = performance.now(); running && walker.path.length && performance.now() - t0 < 9000;) await new Promise(r => setTimeout(r, 50));
+    if (!running) return;
+    walker.path = [];
+    walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
+    await new Promise(r => setTimeout(r, calm ? 0 : 350));
     warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
     if (!calm) setTimeout(() => playSound('charge'), 300);
     await new Promise(r => setTimeout(r, calm ? 0 : 1300));   // the light at its brightest: the stone swapped for the whole one
@@ -1998,7 +2009,7 @@ async function homeNews() {
     await wayCard(CLEARING.name, glow);
     await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
-  } finally { homeNewsBusy = false; questMarks(); }
+  } finally { homeNewsBusy = false; cutscene = false; questMarks(); }
 }
 
 /** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
@@ -2345,12 +2356,15 @@ function makePlaces() {
     buttons: [],
     build: (g) => nietosSign(g, tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3),
   });
-  // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): walked into like the Nietos' house, only while the towns are on
+  // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): walked into like the Nietos' house, only while the towns
+  // are on, and shut till the Nietos send you for a Waystone Chime (workshopOpen())
+  const kurtIn = workshopOpen(save);
   if (townsOpen()) list.push({
     id: 'workshop', name: 'Kurt\'s Workshop', step: { x: WORKSHOP_AT.tx + 1, y: WORKSHOP_AT.ty + 3 }, tiles: rect(WORKSHOP_AT.tx, WORKSHOP_AT.ty, WORKSHOP_AT.tx + 2, WORKSHOP_AT.ty + 2), tag: [WORKSHOP_AT.tx + 1, 3.2, WORKSHOP_AT.ty + 2], open: true,
-    line: 'Kurt\'s Workshop. Hammering inside, and the smell of Apricorns. Materials from the towns\' roads become things here.',
-    buttons: [['Go in', () => {}]],
-    build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1)),
+    line: kurtIn ? 'Kurt\'s Workshop. Hammering inside, and the smell of Apricorns. Materials from the towns\' roads become things here.'
+      : 'Kurt\'s Workshop. Boarded shut, the windows dark. A note on the door: "Out picking Apricorns. Back when I\'m needed. - K."',
+    buttons: kurtIn ? [['Go in', () => {}]] : [],
+    build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
   list.push({
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 1, y: DOJO_AT.ty + 4 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 2, DOJO_AT.ty + 3), tag: [DOJO_AT.tx + 1, 3.8, DOJO_AT.ty + 3], open: true,
@@ -2401,7 +2415,7 @@ async function standGuest(g, l) {
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
   { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
-  { id: 'sonia', name: 'Professor Sonia', night: true, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
+  { id: 'sonia', name: 'Professor Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
 ];
 const HINTS = [
   'Spin the Pokéstop by the gate to set out. A run you left waits there: Continue it, or give it up with an Escape Rope.',
@@ -2466,7 +2480,7 @@ async function standProf(g, who) {
   const m = await monBoard({ src: `assets/trainers/${who.id}.png`, name: who.name, cry: '', px: TRAINER_PX }, false);
   if (!g.parent) { dispose(m.group); return; }
   m.board.rotation.x = -PITCH;
-  m.group.position.set(tileX(PROF_AT.x), 0, tileZ(PROF_AT.y));
+  m.group.position.set(tileX(PROF_AT.x) + (who.dx || 0), 0, tileZ(PROF_AT.y));
   const p = places.find(q => q.id === 'prof');
   m.group.traverse(o => { o.userData.place = p; });
   drawMon(m, { facing: 'front' }, 0);
@@ -2900,6 +2914,7 @@ function goTo(p, enter, i = null) {
 }
 
 function arrived() {
+  if (cutscene) return;
   if (outbound) { const go = outbound; outbound = null; if (running) go(); return; }
   if (returning) { returning = false; here = null; walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500; return; }
   here = placeAt(walker.tile);
@@ -3443,7 +3458,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (dragged) { dragged = false; return; }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const rays = tapRays(e), ghosts = spooks?.boards() || [], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
   let hit;
   for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
@@ -3497,7 +3512,7 @@ function walkTo(to) {
 let drag = null, dragged = false;
 
 function onDown(e) {
-  if (held || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
+  if (held || cutscene || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
   drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, last: '' };
 }
 
@@ -3508,7 +3523,7 @@ function onDrag(e) {
     drag.moved = true;
     view.setPointerCapture?.(e.pointerId);
   }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const to = groundTile(tapRays(e));
   if (!to || key(to.x, to.y) === drag.last) return;
   drag.last = key(to.x, to.y);

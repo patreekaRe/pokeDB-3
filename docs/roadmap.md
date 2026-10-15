@@ -305,6 +305,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the town's Gym Leaders slide in glowing with new `awaken` lines (`docs/reference/towns.md`, "The waking, made epic").
    Branch `claude/next-town-oahwio` and `main`. Waiting on the user's playtest: `?town=<biome>&mend` (hand the
    shard in at the board). Next: whatever they want tuned in it.
+   **Walk-up (2026-10-14, the user's ask: out of the Nietos' house the stone was off the screen):** your partner now walks
+   up to the stone's doorstep first, the camera following, then the light show plays (a camera pan was tried first; the
+   user picked the walk-up). The Clearing: `cutscene` in `js/hub-3d.js`. Towns: `t0` waits on the walk in `mendStone()`.
+   Leaving the house after the shard is no longer a cut: a walk to the doormat and a fade (`outSlow()` in `js/run.js`).
+   On `main`; waiting on the user's playtest.
 **Done (2026-10-14): the towns' great halls, inside, made huge** (the user: "they SUCK the insides need to be HUGE and be
    super aesthetic and make sense"): the theater, bathhouse, aquarium, Nursery and caravanserai are 17 x 12 halls built
    as what they are (`js/town-halls.js`, `docs/reference/towns.md`'s last section). On `main`; the user playtested
@@ -431,7 +436,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
      `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for. (The Nietos got gifts 2026-10-15: the
-     Acorn Rattle earns a Big Kangaskhan doll.)
+     Acorn Rattle earns a Big Kangaskhan doll.) (2026-10-15: the workshop is boarded shut till Law sends you for the Waystone Chime, and Kurt introduces himself on your first visit. Branch `claude/magical-hamilton-ve8726`, pushed to `main` too.)
      Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
    - **Session 4 done (2026-10-14): the shard.** At the shard step one Alpha on the biome's map has the town's shard over it
      (a crystal in the town's colour); beat it and the shard goes into Key Items. At the board, after its leader's thanks,

@@ -9646,6 +9646,7 @@ function goTo(kind) {
 }
 
 function arrived() {
+  if (doorWalk) return;
   let kind = aim;
   aim = null;
   if ((kind === null || kind === undefined) && R.exitAt && walker.tile.x === R.exitAt.x && walker.tile.y === R.exitAt.y) kind = 'exit';   // walked into a town's far gate
@@ -10241,6 +10242,24 @@ export const figure3d = (stand, move) => controls.does(stand, move);
 /** The room's controls while one is up, for figureDoes() and playOut() in js/run.js. */
 /** Hold your Pokémon where it stands, or let it walk again: a Gym Leader's talks, from the first beat of their slide-in
     to their last line (the user's ask, 2026-10-13: you only click through, then you're free). */
+/** Your partner walked to the room's way out without leaving through it (the caller leaves, under its own fade; the
+    shard handed in at a leader's house, js/run.js's homeRoom()): resolves on the doormat, or after `ms` regardless. */
+export function walkToDoor(ms = 4000) {
+  if (!alive() || calm) return Promise.resolve();
+  aim = null; doorWalk = true;
+  walker.path = route(walker.tile, R.exitAt ?? DOOR);
+  const t0 = performance.now();
+  return new Promise(resolve => {
+    const wait = () => {
+      if (alive() && walker.path.length && performance.now() - t0 < ms) return setTimeout(wait, 50);
+      doorWalk = false;
+      resolve();
+    };
+    wait();
+  });
+}
+let doorWalk = false;
+
 export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }
@@ -10416,6 +10435,7 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
   gem.scale.y = 1.6;
   const halo = add(new THREE.Sprite(glowMat()));
   halo.scale.setScalar(0.9);
+  gem.visible = halo.visible = false;   // till your partner is at the stone (tick())
   const flare = add(new THREE.Sprite(glowMat(new THREE.Color('#ffffff'))));
   flare.visible = false;
   // the rune circle burning into the ground round the stone
@@ -10489,8 +10509,13 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
   }
   // its beats, in ms: up off your Pokémon, over to the stone, hanging over its tip as the circle burns in and the motes
   // gather, sinking into the crack (the stone shuddering), the flash, and the pillar of light fading
-  const UP = 800, OVER = 1900, HANG = 3500, SINK = 4300, FLASH = 4500, END = 8200;
-  const t0 = performance.now(), cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [OVER + 100, 'gate-hum'], [OVER + 700, 'charge'], [HANG - 300, 'rumble-far'], [HANG, 'crystal-2'],
+  const UP = 800, OVER = 1900, HANG = 3500, SINK = 4300, FLASH = 4500, END = 8200, WALK = 9000;
+  // first your partner walks up to the stone's doorstep, as the leader's door can be across the town from it (the user's
+  // ask, 2026-10-14: out of the house the mending was off the screen); the show starts once it's there (t0)
+  const start = performance.now(), at = (st.spot && room.doors?.[st.spot]?.step) || { x: Math.round(f.cx + COLS / 2 - 0.5), y: Math.round(f.cz + ROWS / 2 - 0.5) + 2 };
+  walker.path = route(walker.tile, at);
+  let t0 = null;
+  const cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [OVER + 100, 'gate-hum'], [OVER + 700, 'charge'], [HANG - 300, 'rumble-far'], [HANG, 'crystal-2'],
     [FLASH, 'core-surge'], [FLASH + 60, 'sunburst'], [FLASH + 300, 'thunder'], [FLASH + 1400, 'crystal-2']];
   room.focus = { z: f.cz, k: 0 };
   let swapped = false, over = false, tick;
@@ -10502,9 +10527,17 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
       done();
       resolve();
     };
-    setTimeout(finish, END + 2000);   // the room stopped drawing (left, or the tab hidden): mended all the same
+    setTimeout(finish, WALK + END + 2000);   // the room stopped drawing (left, or the tab hidden): mended all the same
     tick = (now) => {
+      if (t0 === null) {
+        if (walker.path.length && now - start < WALK) return;
+        walker.path = [];
+        walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
+        from.set(walker.x, 0.9, walker.z);
+        t0 = now + 300;
+      }
       const t = now - t0, v = new THREE.Vector3();
+      if (t < 0) return;
       while (cues.length && t >= cues[0][0]) playSound(cues.shift()[1]);
       const gather = Math.max(0, Math.min(1, (t - OVER) / (HANG - OVER))), sinking = Math.max(0, Math.min(1, (t - HANG) / (SINK - HANG)));
       // drawn in on the stone, closer as it gathers, easing back once the light is up
