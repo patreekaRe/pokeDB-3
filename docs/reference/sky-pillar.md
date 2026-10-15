@@ -150,13 +150,17 @@ is the screen and the overlay that use them.
   with the sun setting over it, the aurora's two ribbons about 47 and 55, stars from 36, a nebula and a moon about 90, and
   the planet's curve with dawn breaking along it at the summit's horizon (`LIMB`). Windows are holes: `paintTower()` keeps a
   copy of the sky (`b.sky`) and every window, and the lobby's open door, shows it.
-- **The tower** (`paintTower()`, `towerLayout()`): outer walls cut away (moss and ivy outside), each floor a back wall of
-  stone courses whose stone changes every few flights (`TIERS`: mossy grey, sandstone, cloud grey, moonstone, jade at the
-  top), its number on a gold-on-black iron plaque by the wall (`floorPlaque()`, dim on floors not yet climbed; it was carved in the stone until 2026-10-08, too hard to see), its slab open over the stair of the floor below. A floor is lit once climbed or where
+- **The tower** (`paintTower()`, `towerLayout()`; repainted 2026-10-15 to match the Clearing's 3D tower, `js/hub-pillar.js`):
+  outer walls cut away (ivy only near the foot, a cornice lip at every floor, a deeper one with jade runes every ten; stones
+  floating round floors 5-27 when the screen is wide, `floaters()`), each floor a back wall of sage stone courses that cool
+  with height (`TIERS`: mossy sage, pale sage, cool sage, moon-washed, jade-veined at the top) under a band of jade runes
+  (`runeBand()`, a shimmer running along it on lit floors), its number on a gold-on-black iron plaque by the wall (`floorPlaque()`, dim on floors not yet climbed; it was carved in the stone until 2026-10-08, too hard to see), its slab open over the stair of the floor below. A floor is lit once climbed or where
   you stand, dim above (`stone(f, lit)`). Plain floors: their 2-3 doors (`door()`: an arched frame, planks, iron bands, a
   gem in the keystone in the room's colour, `DOOR_GEM`) with windows and torches between; every 10th a guardian's hall
-  (banners in the guardian's biome colours, `BANNER`, braziers, one great gold-trimmed door); floor 0 the lobby (the way in,
-  a bronze plaque, torches); floor 100 the summit, open to the sky (broken pillars, an altar where Rayquaza comes down). The
+  (swallow-tailed, gold-edged banners in the guardian's biome colours, `BANNER`, braziers, one great door with Rayquaza's
+  ring over it, `raySeal()`: the 3D tower's `sealArt()` in pixels); floor 0 the lobby (the way in under a small ring, a
+  bronze plaque, torches); floor 100 the summit, open to the sky (broken pillars, an altar with a jade crystal turning over
+  it, `crystal()`, where Rayquaza comes down). The pixel battle room (`paintArena()`) has the band, and a guardian's the ring. The
   spiral stair (`stairWell()`, `stairSteps()`) winds round a newel at the right of every floor but the top.
 - **The climb screen** (`renderTower()`): `#tower-view` fills the map screen behind the run card (the sign and the map box
   are hidden, `#map-screen.tower`). Since 2026-10-07 (the user's call: you climb up, so the top is for the tower) the run card

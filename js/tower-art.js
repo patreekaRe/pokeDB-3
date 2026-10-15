@@ -342,13 +342,14 @@ function ground(b, camY, ox) {
 
 /* ---------- the tower ---------- */
 
-// the stone climbs from mossy grey through sandstone, cloud-grey and moonstone to the summit's jade
+// the Clearing's tower's sage stone (js/hub-pillar.js's STONES) all the way up, mossy at the foot, cooler as the sky
+// darkens, veined with jade at the summit (the user's ask, 2026-10-15: the climb to match the new 3D tower)
 const TIERS = [
-  { at: 0, wall: ['#7a8670', '#6c7864', '#5e6a56', '#44503e'], cut: ['#a8b098', '#8a9480', '#5a6452'], moss: '#5a8a3a' },
-  { at: 10, wall: ['#a89a7a', '#968868', '#82765a', '#5e5440'], cut: ['#d0c4a0', '#b0a484', '#7a6e54'], moss: '#7a8a3a' },
-  { at: 30, wall: ['#8c96a8', '#7c8698', '#687286', '#4a5266'], cut: ['#c4ccd8', '#a0aabc', '#687286'], moss: '#5a7a8a' },
-  { at: 60, wall: ['#9aa6b8', '#8894aa', '#727e96', '#525c74'], cut: ['#dce4f0', '#b8c2d4', '#7a849a'], moss: '#6a8ab0' },
-  { at: 90, wall: ['#88a890', '#76967e', '#62826a', '#44604c'], cut: ['#c8e0c8', '#a0c0a8', '#64846c'], moss: '#4a9a5a' },
+  { at: 0, wall: ['#b4baa4', '#a4aa94', '#949a84', '#6c7262'], cut: ['#dadecb', '#c3c8b6', '#8e947e'], moss: '#5a8a3e' },
+  { at: 10, wall: ['#bcc2ae', '#acb29e', '#9ca28e', '#727866'], cut: ['#e2e6d4', '#cbd0be', '#949a84'], moss: '#76a84c' },
+  { at: 30, wall: ['#b0b8aa', '#a0a89a', '#90988a', '#666e62'], cut: ['#d8dece', '#bec6b6', '#868e80'], moss: '#5a8a6a' },
+  { at: 60, wall: ['#b2bab4', '#a0a8a4', '#8e9894', '#626c6a'], cut: ['#dce4dc', '#c2cac4', '#88928c'], moss: '#4a9a7a' },
+  { at: 90, wall: ['#a8c0b0', '#96b0a0', '#84a090', '#5a7666'], cut: ['#d4ecdc', '#b4d4c0', '#7a9a86'], moss: '#40b880' },
 ];
 const tierOf = (f) => TIERS.reduce((t, x) => (f >= x.at ? x : t), TIERS[0]);
 const LIT_CACHE = new Map();
@@ -358,7 +359,8 @@ export function stone(f, lit) {
   if (!LIT_CACHE.has(key)) {
     const d = (list) => list.map(h => K(lit ? h : dim(h)));
     LIT_CACHE.set(key, { wall: d(tier.wall), cut: d(tier.cut), moss: K(lit ? tier.moss : dim(tier.moss)),
-      slab: d(['#b4aa94', '#8a8070', '#6a6254', '#3e3830']), wood: d(['#9a6838', '#7a4e28', '#5a3418', '#3a200c']),
+      slab: d(['#dadecf', '#b4baa6', '#8a907c', '#585e50']), wood: d(['#9a6838', '#7a4e28', '#5a3418', '#3a200c']),
+      rune: d(['#5a6254', '#3e4438', '#2e3428']), glyph: K(lit ? '#7ae0b8' : dim('#7ae0b8')), jade: d(['#9af0c4', '#3aae7c', '#16603e']),
       iron: d(['#6a6a78', '#3a3a46']), gold: d(['#fff0a0', '#f8c830', '#b07818']), dark: K(lit ? '#140e18' : '#080610'),
       glow: K(mix(tier.wall[0], '#f8b050', 0.45)) });
   }
@@ -395,6 +397,7 @@ export function paintTower(b, camY, lay, floors, t, { crack = 0, hole = null } =
   for (let f = f0; f <= f1; f++) paintFloor(b, camY, lay, f, floors(f) || {}, t);
   // the outer walls' cut faces, then the summit's broken crown
   for (let f = f0; f <= f1; f++) outerWalls(b, camY, lay, f, floors(f)?.lit ?? false);
+  if (camY < 30 * FH && camY + H > 4 * FH) floaters(b, camY, lay, floors, t);
   if (camY + H > (TOP + 1) * FH - 30) crown(b, camY, lay);
   if (crack > 0 && hole) floorCrack(b, camY, lay, hole, crack, t);
 }
@@ -416,6 +419,7 @@ function paintFloor(b, camY, lay, f, info, t) {
       put(b, x, s, c);
     }
   }
+  if (!top) runeBand(b, lay.iL, lay.iR, wallTop, S, lit || f === 0, t, f);
   if (f === 0) lobby(b, lay, surf, S, t);
   else if (top) summitHall(b, lay, surf, S, t, info);
   else if (info.guardian) guardianHall(b, lay, surf, S, t, info, lit);
@@ -463,6 +467,57 @@ function torch(b, x, y, S, lit, t) {
   put(b, x, y - 2, K(f > -0.5 ? '#f8c830' : '#f87818'));
   put(b, x + (f > 0.8 ? 1 : 0), y - 3, K('#fff4a0'));
   if (f > 0) put(b, x, y - 4, K('#f8c830'));
+}
+
+// the runes carved in the band under every cornice (js/hub-pillar.js's runeArt): a diamond, a ring and a bar
+const GLYPHS = ['010111010', '010101010', '111010111'];
+
+/** The band under a floor's ceiling: a pale lip, dark stone carved with jade runes, a shadow under. Lit, a shimmer runs
+    along it. Five rows from `y`. */
+function runeBand(b, x0, x1, y, S, lit, t, seed = 0) {
+  const w = x1 - x0;
+  rect(b, x0, y, w, 1, S.cut[0]);
+  rect(b, x0, y + 1, w, 1, S.rune[0]);
+  rect(b, x0, y + 2, w, 2, S.rune[1]);
+  rect(b, x0, y + 4, w, 1, S.rune[2]);
+  const hot = K('#d8fff0');
+  for (let gx = x0 + 2 - ((x0 + 2) % 6) + 6; gx + 3 <= x1; gx += 6) {
+    const g = GLYPHS[Math.floor(hash(gx * 0.37 + seed * 5.1) * 3)];
+    const c = lit && Math.sin(gx / 11 - t / 16 + seed) > 0.86 ? hot : S.glyph;
+    for (let i = 0; i < 9; i++) if (g[i] === '1') put(b, gx + (i % 3), y + 1 + Math.floor(i / 3), c);
+  }
+}
+
+/** Rayquaza's ring (js/hub-pillar.js's sealArt): a pale stone rim round a jade disc, a gold serpent coiling across it. */
+function raySeal(b, cx, cy, r, S, lit, t) {
+  if (lit) glow(b, cx, cy, r + 7, K('#6af0c0'), 0.24 + 0.08 * Math.sin(t / 10));
+  disc(b, cx, cy, r, S.cut[2]);
+  disc(b, cx, cy, r - 0.8, S.cut[0]);
+  const j = r * 0.74;
+  disc(b, cx, cy, j, S.jade[2]);
+  disc(b, cx, cy, j - 0.8, S.jade[1]);
+  disc(b, cx - j * 0.3, cy - j * 0.3, j * 0.45, S.jade[0], 0.5);
+  const gold = K(lit ? '#f8e488' : dim('#f8e488')), shade = K(lit ? '#8a5a10' : dim('#8a5a10'));
+  const k = j / 6.4, P = [[-4, -3.8], [5.5, -4.4], [-5.5, 4.4], [4, 3.8]].map(([x, y]) => [cx + x * k, cy + y * k]);
+  const n = Math.max(8, Math.round(j * 4));
+  for (const [c, dy] of [[shade, 1], [gold, 0]]) for (let i = 0; i <= n; i++) {
+    const u = i / n, v = 1 - u, a = v * v * v, bb = 3 * v * v * u, cc = 3 * v * u * u, d = u * u * u;
+    put(b, Math.round(a * P[0][0] + bb * P[1][0] + cc * P[2][0] + d * P[3][0]), Math.round(a * P[0][1] + bb * P[1][1] + cc * P[2][1] + d * P[3][1]) + dy, c);
+  }
+  disc(b, Math.round(P[0][0]), Math.round(P[0][1]), Math.max(0.8, k), gold);   // its head
+}
+
+/** A jade crystal, long above and short below (the summit's, turning). */
+function crystal(b, cx, cy, S, lit, t) {
+  const up = 8, down = 4, turn = Math.sin(t / 14);
+  for (let yy = -up; yy <= down; yy++) {
+    const hw = Math.round(3.4 * (yy < 0 ? 1 + yy / (up + 0.5) : 1 - yy / (down + 0.5)));
+    const mid = Math.round(turn * hw * 0.6);
+    for (let x = -hw; x <= hw; x++) {
+      const c = Math.abs(x) === hw ? S.jade[2] : x === mid ? K(lit ? '#e8fff4' : dim('#e8fff4')) : x < mid ? S.jade[0] : S.jade[1];
+      put(b, cx + x, cy + yy, c);
+    }
+  }
 }
 
 /** A door: an arched stone frame round a plank door with iron bands, a gem in its keystone for what's behind it. */
@@ -516,22 +571,23 @@ function guardianHall(b, lay, surf, S, t, info, lit) {
   const cx = Math.round((lay.doorL + lay.doorR) / 2), ban = (BANNER[info.banner] || BANNER[0]).map(h => K(lit ? h : dim(h)));
   for (const side of [-1, 1]) {
     const bx = cx + side * 24;
-    windowHole(b, cx + side * 36 - 3, surf - 46, 7, 18, S);
-    rect(b, bx - 4, surf - 46, 9, 1, S.gold[2]);   // a banner on its rod
-    for (let yy = 0; yy < 22; yy++) {
-      const w = yy > 18 ? 9 - (yy - 18) * 2 : 9;
-      rect(b, bx - Math.floor(w / 2), surf - 45 + yy, w, 1, yy % 9 === 4 ? ban[2] : bay(bx, yy) < 0.2 ? ban[1] : ban[0]);
+    windowHole(b, cx + side * 36 - 3, surf - 44, 7, 16, S);
+    rect(b, bx - 5, surf - 45, 11, 1, S.gold[1]);   // a banner on its rod, hung from the cornice
+    for (let yy = 0; yy < 22; yy++) {   // swallow-tailed, gold-edged, Rayquaza's ring at its head
+      const tail = yy > 18 ? yy - 18 : 0, w = 9;
+      for (let x = 0; x < w; x++) {
+        if (tail && Math.abs(x - 4) < tail) continue;
+        put(b, bx - 4 + x, surf - 44 + yy, x === 0 || x === w - 1 ? S.gold[2] : yy > 8 && yy < 18 && (yy - 9) % 3 === 0 && x === 4 ? S.gold[1] : bay(bx + x, yy) < 0.2 ? ban[1] : ban[0]);
+      }
     }
-    disc(b, bx, surf - 36, 2, ban[2]);
+    disc(b, bx, surf - 39, 2.2, S.gold[1]);
+    disc(b, bx, surf - 39, 1, ban[1]);
     brazier(b, cx + side * 17, surf, S, lit, t);
   }
-  // the great door, gold-trimmed, an emblem over it
-  const w = 23, h = 32;
+  // the great door, Rayquaza's ring over it as over the Clearing's tower's
+  const w = 23, h = 30;
   door(b, cx, surf, 'boss', { open: info.doors?.[0]?.open || 0, lit, S, w, h });
-  rect(b, cx - Math.floor(w / 2) - 2, surf - h - 6, w + 4, 2, S.gold[2]);
-  disc(b, cx, surf - h - 8, 3.5, S.gold[1]);
-  disc(b, cx, surf - h - 8, 2, K(lit ? DOOR_GEM.boss : dim(DOOR_GEM.boss)));
-  if (lit) glow(b, cx, surf - h - 8, 7, S.gold[0], 0.3);
+  raySeal(b, cx, surf - h - 9, 6, S, lit, t);
 }
 
 function brazier(b, x, surf, S, lit, t) {
@@ -551,13 +607,14 @@ function brazier(b, x, surf, S, lit, t) {
 function lobby(b, lay, surf, S, t) {
   const cx = Math.round((lay.doorL + lay.doorR) / 2);
   door(b, lay.doorL + 9, surf, 'out', { open: 1, lit: true, S, w: 13, h: 24 });   // the way in, daylight beyond
+  raySeal(b, lay.doorL + 9, surf - 34, 4, S, true, t);
   rect(b, cx - 9, surf - 34, 22, 15, S.cut[2]);
   rect(b, cx - 8, surf - 33, 20, 13, K('#c8a050'));
   rect(b, cx - 7, surf - 32, 18, 11, K('#a87830'));
   for (let i = 0; i < 4; i++) rect(b, cx - 5, surf - 30 + i * 2.5, 14 - (i % 2) * 4, 1, K('#5a3a18'));
   torch(b, cx - 13, surf - 28, S, true, t);
   torch(b, cx + 17, surf - 28, S, true, t);
-  windowHole(b, lay.doorR - 8, surf - 40, 7, 13, S);
+  windowHole(b, lay.doorR - 8, surf - 42, 7, 15, S);
 }
 
 /** Floor 100: the summit, open to the sky. Broken pillars and an altar where Rayquaza comes down. */
@@ -579,10 +636,9 @@ function summitHall(b, lay, surf, S, t, info) {
   rect(b, cx - 7, surf - 9, 15, 3, S.cut[0]);
   rect(b, cx - 3, surf - 21, 7, 12, S.cut[1]);
   rect(b, cx - 4, surf - 22, 9, 2, S.gold[1]);
-  const pulse = 0.5 + 0.5 * Math.sin(t / 8);
-  glow(b, cx, surf - 26, 12 + Math.round(open * 10), K('#80f8b0'), 0.25 + pulse * 0.2 + open * 0.4);
-  disc(b, cx, surf - 26, 3, K(lit ? '#40d880' : '#2a6a48'));
-  disc(b, cx, surf - 27, 1.5, K('#e0ffe8'));
+  const pulse = 0.5 + 0.5 * Math.sin(t / 8), bob = Math.round(Math.sin(t / 20) * 1.5);
+  glow(b, cx, surf - 28, 13 + Math.round(open * 10), K('#80f8b0'), 0.25 + pulse * 0.2 + open * 0.4);
+  crystal(b, cx, surf - 28 + bob, S, lit, t);   // the jade crystal turning over it, the Clearing's tower's crown
 }
 
 /** The spiral stair up to the floor above: a stone newel with steps winding round it. */
@@ -628,7 +684,31 @@ function outerWalls(b, camY, lay, f, lit) {
         put(b, x, s, c);
       }
     }
-    if (hash(Math.floor(r / 3) + f * 9) > 0.7) { put(b, lay.L - 1, s, S.moss); put(b, lay.R, s, S.moss); }   // ivy on the outside
+    if (hash(Math.floor(r / 3) + f * 9) > 0.7 + Math.min(0.3, f * 0.012)) { put(b, lay.L - 1, s, S.moss); put(b, lay.R, s, S.moss); }   // ivy, thinning out above the foot
+    const big = f % 10 === 0 && f > 0;
+    if (r < (big ? 4 : 2) && f < TOP) {   // a cornice at every floor, a deeper one every ten with its runes
+      const c = r === (big ? 3 : 1) ? S.cut[0] : S.cut[2];
+      for (let k = 1; k <= (big ? 2 : 1); k++) { put(b, lay.L - k, s, c); put(b, lay.R - 1 + k, s, c); }
+      if (big && (r === 1 || r === 2)) for (const x of [lay.L + 2, lay.R - 3]) put(b, x, s, S.glyph);
+    }
+  }
+}
+
+/** Stones floating round the tower's middle, a few with a jade shard in them (the Clearing's tower's), where there's room. */
+function floaters(b, camY, lay, floors, t) {
+  const room = lay.L - 3;
+  if (room < 12) return;
+  for (let i = 0; i < 16; i++) {
+    const alt = (5 + hash(i * 3.7) * 22) * FH, f = Math.floor(alt / FH);
+    const s = Math.round(sy(b, camY, alt + Math.sin(t / 45 + i * 1.7) * 2.5));
+    if (s < -8 || s > b.H + 8) continue;
+    const S = stone(f, floors(f)?.lit ?? false), r = 1.4 + hash(i * 2.9) * 2.6, d = 4 + hash(i * 5.1) * (room - 9);
+    const x = Math.round(i % 2 ? lay.R + d : lay.L - 1 - d);
+    disc(b, x, s, r + 0.7, S.cut[2]);
+    disc(b, x - 0.5, s - 0.5, r, S.cut[1]);
+    disc(b, x - 1, s - 1, r * 0.45, S.cut[0]);
+    put(b, x, s + Math.ceil(r) + 1, S.cut[2]);
+    if (hash(i * 7.3) > 0.55) { put(b, x, s - Math.ceil(r) - 1, S.jade[0]); put(b, x, s - Math.ceil(r), S.jade[1]); }
   }
 }
 
@@ -689,6 +769,8 @@ export function paintArena(b, horizon, { alt = 1, kind = 'wild', banner = 0 }, t
       put(b, x, y, c);
     }
   }
+  const bandY = summit ? -1 : horizon - 14 - winH - 7;
+  if (bandY >= 0) runeBand(b, 0, W, bandY, S, true, t);
   for (const wx of wins) {   // each window's frame and sill
     const top = horizon - 14 - winH;
     rect(b, wx - 1, top + winW / 2, 1, winH - winW / 2, S.cut[1]);
@@ -713,11 +795,16 @@ export function paintArena(b, horizon, { alt = 1, kind = 'wild', banner = 0 }, t
     }
     if (kind === 'boss' || kind === 'elite') {
       const ban = (BANNER[banner] || BANNER[0]).map(K);
+      const rod = bandY >= 0 ? bandY + 5 : 2;
       for (const p of W > 140 ? [0.41, 0.59] : [0.32, 0.68]) {
         const bx = Math.round(W * p);
-        rect(b, bx - 5, 2, 11, 1, S.gold[2]);
-        for (let yy = 0; yy < horizon * 0.5; yy++) rect(b, bx - 4, 3 + yy, 9, 1, yy % 11 === 6 ? ban[2] : ban[kind === 'elite' ? 1 : 0]);
+        rect(b, bx - 5, rod, 11, 1, S.gold[1]);
+        for (let yy = 0; yy < horizon * 0.5; yy++) {
+          rect(b, bx - 4, rod + 1 + yy, 9, 1, yy % 11 === 6 ? ban[2] : ban[kind === 'elite' ? 1 : 0]);
+          put(b, bx - 4, rod + 1 + yy, S.gold[2]); put(b, bx + 4, rod + 1 + yy, S.gold[2]);
+        }
       }
+      if (kind === 'boss') raySeal(b, Math.round(W / 2), Math.round(horizon * 0.4), Math.max(5, Math.min(9, Math.round(horizon * 0.11))), S, true, t);
     }
   }
   // the floor: flagstones in perspective, a runner up the middle for a guardian
