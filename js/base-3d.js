@@ -394,9 +394,10 @@ function buildYard() {
   }
 
   if (SEASON === 'winter') {
-    const N = 260, pos = new Float32Array(N * 3), seeds = [];
+    // as thick over the bigger yard (part e): the flakes spread over its size, more of them
+    const N = Math.round(260 * (COLS + 8) * (ROWS + 6) / 280), pos = new Float32Array(N * 3), seeds = [];
     for (let i = 0; i < N; i++) {
-      const s = [(rnd() - 0.5) * 20, rnd() * 7, (rnd() - 0.5) * 14 - 1, rnd() * 100, 0.5 + rnd() * 0.6];
+      const s = [(rnd() - 0.5) * (COLS + 8), rnd() * 7, (rnd() - 0.5) * (ROWS + 6) - 1, rnd() * 100, 0.5 + rnd() * 0.6];
       seeds.push(s);
       pos.set(s.slice(0, 3), i * 3);
     }

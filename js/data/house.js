@@ -11,6 +11,7 @@ export const BIG_PRICE = 500;    // PokéCoins: the main room made bigger, the f
 export const ROOM_PRICE = 500;   // PokéCoins for each room added (the user's call, 2026-10-10)
 export const DOOR_PRICE = 100;   // PokéCoins for a doorway between two rooms that already stand side by side
 export const YARD_PRICE = 1000;  // PokéCoins for the backyard (docs/roadmap.md's backyard, the user's picks 2026-10-14)
+export const BIG_YARD_PRICE = 1000;   // PokéCoins: the backyard made bigger (part e), the yard's own BIG_PRICE
 
 // rects are [x, y, w, h] in tiles; pips [side, along]: n / s at that column, w / e at that row. The authored pips come
 // first (saved links name pips by their place in the list), then one on every other tile of every edge, so a doorway
@@ -35,6 +36,9 @@ export const ROOM_KINDS = {
   // the backyard: a lawn behind the house, out the main room's back door, walked like a room; never built onto
   yard: { name: 'Backyard', blurb: 'A lawn of your own behind the house, out a back door of the main room.',
     w: 12, h: 8, rects: [[0, 0, 12, 8]], pips: [], outdoor: true },
+  // the same lawn made bigger on the blueprint (`house.yard.size` 2): wider both ways and deeper back from the door
+  bigyard: { name: 'Backyard', blurb: 'A lawn of your own behind the house, out a back door of the main room.',
+    w: 16, h: 11, rects: [[0, 0, 16, 11]], pips: [], outdoor: true },
 };
 export const BUILDABLE = ['closet', 'hall', 'bedroom', 'den', 'lroom', 'cross', 'great'];
 
@@ -90,8 +94,9 @@ export function houseRooms(house) {
 }
 /* The backyard is the save's `house.yard` once bought ({ size, items, wall, floor }: its things packed there like any
    room's while you're elsewhere). It isn't one of houseRooms(), so nothing is ever built onto it or counted against its
-   tiles; it is reached by id. `size` is for the bigger yard to come (one plot that grows, the user's pick). */
-export const yardOf = (house) => house?.yard ? { id: 'yard', kind: 'yard', rot: 0, gx: 0, gy: 0, lv: 0, shape: shapeOf('yard') } : null;
+   tiles; it is reached by id. `size` 2 is the bigger yard (one plot that grows, the user's pick), kind `bigyard`. */
+export const yardKind = (house) => house?.yard?.size > 1 ? 'bigyard' : 'yard';
+export const yardOf = (house) => house?.yard ? { id: 'yard', kind: yardKind(house), rot: 0, gx: 0, gy: 0, lv: 0, shape: shapeOf(yardKind(house)) } : null;
 export const roomById = (house, id) => id === 'yard' ? yardOf(house) : houseRooms(house).find(r => r.id === id);
 export const roomName = (house, id) => ROOM_KINDS[roomById(house, id)?.kind]?.name ?? 'Room';
 /** A floor's name: 1F for the ground, 2F up the stairs... */
