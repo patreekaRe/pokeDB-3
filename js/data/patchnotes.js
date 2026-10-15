@@ -53,7 +53,7 @@ export const NEXT = [
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge, out on its own in a wider west Clearing, its Pokéstop and ranks board either side.'],
   ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
   ['music', 'Lantern Village, Cinder Springs, Driftwood Landing and Sunwell Bazaar each have a song of their own.'],
-  ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, going back into it, its backyard or the Poké Mall no longer leaves a black screen, and Kenmatta\'s dojo stands clear of the Safari gate, its cherry trees gone.'],
+  ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, going back into it, its backyard or the Poké Mall no longer leaves a black screen, Kenmatta\'s dojo stands clear of the Safari gate, its cherry trees gone, and the Sky Pillar\'s opening film no longer flashes the Clearing at its end.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

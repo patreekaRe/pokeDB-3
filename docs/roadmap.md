@@ -883,6 +883,8 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 3. **Done, waiting on
   the user's look** (the opening film's fall is the new tower, `js/climb-intro.js`; branch
   `claude/sky-pillar-climb-intro-wxa0t4`, not on `main` till the user's yes; playtest `?climb`, or Climb in the Sky Pillar).
+  The user's first look: the Clearing flashed after the door opened (the title fading over the map); fixed on the branch,
+  `leaveTitle({ now: true })`.
   4. Next: the lobby's window onto the tower (`build()` / `paint()` in `js/towerprep.js`). Run in: CLOUD.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.

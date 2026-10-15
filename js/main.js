@@ -287,7 +287,7 @@ function init() {
       if (hasSavedRun() && !(await confirmDialog('Start a Sky Pillar climb? Your saved run will be lost.', 'Climb'))) return openTowerPrep();
       const climber = practice ?? towerWeekly().starter;
       const close = await climbIntro({ starter: climber, shiny: getSave().shiny.on.includes(climber.id) });
-      leaveTitle();
+      leaveTitle({ now: true });
       beginTower(practice);
       close();
     },
@@ -509,7 +509,7 @@ async function peekCrossroads(params) {
 async function peekClimb(params) {
   const starter = STARTERS_BY_ID[params.get('starter')] ?? towerWeekly().starter;
   const close = await climbIntro({ starter, shiny: getSave().shiny.on.includes(starter.id) });
-  leaveTitle();
+  leaveTitle({ now: true });
   peekTower(1);
   close();
 }

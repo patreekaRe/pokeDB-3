@@ -233,7 +233,8 @@ reference (a hero from behind before a temple door): your climber's back sprite 
 pillars to the great arched door at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
 two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
 light floods out, your Pokémon walks in (`door-light`, a warm swell) and it goes dark. Like `travel()` it resolves dark with a `close()` called once
-the climb's map is up. A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
+the climb's map is up; the title (the Clearing lives in it) leaves at once there, `leaveTitle({ now: true })`, since its
+0.38 s fade over the map showed the Clearing for a moment after the door (the user saw it, 2026-10-15). A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
 
 ## The leaderboard
 

@@ -215,21 +215,24 @@ export function showHome() {
   return openHub();
 }
 
-/** Leave the title for another screen: it fades while that screen comes in under it. */
-export function leaveTitle() {
+/** Leave the title for another screen: it fades while that screen comes in under it. `now`: gone at once, for a film
+    that hands over in black (the Sky Pillar's: the fading Clearing showed for a moment after its door, 2026-10-15). */
+export function leaveTitle({ now = false } = {}) {
   const screen = $('title-screen');
   if (screen.hidden) return;
-  screen.classList.add('away');
   closeSoundPops();
   clearTimeout(leaving);
-  leaving = setTimeout(() => {
+  const gone = () => {
     screen.hidden = true;
     screen.classList.remove('away');
     document.body.classList.remove('titling');
     clearInterval(timer);
     timer = 0;
     runTitleLight(false);
-  }, still() ? 0 : 380);
+  };
+  if (now) return gone();
+  screen.classList.add('away');
+  leaving = setTimeout(gone, still() ? 0 : 380);
 }
 
 // a fade still under way when the title comes back (a quick Back from the select) would hide it once it has reopened
