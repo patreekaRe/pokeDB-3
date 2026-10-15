@@ -109,7 +109,7 @@ context small. Where two notes disagree, the later date wins.
   `js/mall-furniture.js`, `js/mall-corner.js`) and its arcade (`js/arcade-*.js`). The Clearing's layout of 2026-10-14
   (the last section there) replaces the older positions in that file.
 - **Gym Leaders** (`gym-leaders.md`: who each friend is, and how the gym works).
-- **Gateway towns** (`towns.md`; switched off, `TOWNS_LIVE`): any town clean-up reads
+- **Gateway towns** (`towns.md`; live since 2026-10-15, `TOWNS_LIVE`): any town clean-up reads
   `docs/handoff-town-cleanups.md` first. A Gym Leader's home inside is `js/leader-homes.js`.
 - **Seeded rolls** (Safari Zone phase 1, 2026-10-02): every gameplay roll goes through `random()` / `randIndex()` /
   `pickOne()` / `shuffled()` in `js/rng.js`, never `Math.random` (cosmetic rolls stay on it). A Safari run

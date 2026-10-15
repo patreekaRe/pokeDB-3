@@ -14,7 +14,7 @@ import { DEPTHS_CAMP } from './camp.js';
 /** Whether the gateway towns are on (the user's call, 2026-10-14: the new Clearing went live first, the towns still being
     built): off, runs walk straight from the journey film to the map, requests count nothing and the Clearing's Waystone
     only reads its riddles. `?towns` turns them on for a page load; `?town=` peeks work either way. On for good: TOWNS_LIVE. */
-export const TOWNS_LIVE = false;
+export const TOWNS_LIVE = true;
 export const townsOpen = () => TOWNS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('towns'));
 
 /** Friendship (requests handed in) that mends a town's Waystone (the next session's: the ring by the Ancient Tree). */

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { runMods, sealedMult, SEALED_WEAKNESS } from '../js/data/difficulty.js';
 import { STARTERS_BY_ID } from '../js/data/starters.js';
-import { weaknessShards, shardsPlaced, placeOf, RING } from '../js/data/towns.js';
+import { weaknessShards, shardsPlaced, placeOf } from '../js/data/towns.js';
 import { campLines, runLines, strengthOf } from '../js/data/camp.js';
 
 test('the Sealed Weakness starts at half and gives a tenth back a shard', () => {
@@ -21,9 +21,9 @@ test('only Mewtwo, and only in the Depths, carries it', () => {
   assert.equal(runMods(fire, 0, 3, 0).playerDmg ?? 1, 1);
 });
 
-test('with the towns off the shards don\'t count yet: full strength', () => {
+test('with the towns on, a fresh save has no shards placed: the weakness counts in full', () => {
   assert.equal(shardsPlaced({}), 0);
-  assert.equal(weaknessShards({}), RING.length);
+  assert.equal(weaknessShards({}), 0);
 });
 
 test('the camp is a place of its own, and Mewtwo\'s lines follow the shards', () => {

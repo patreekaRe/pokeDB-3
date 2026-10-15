@@ -2,7 +2,7 @@
 
 Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is unchanged. Dates are when each call was made: where two notes disagree, the later one wins.
 
-- **Gateway towns** (2026-10-13; the code is on `main` since 2026-10-14 with the new Clearing, but **switched off** till the user says: `TOWNS_LIVE` / `townsOpen()` in `js/data/towns.js` (off: no town after the journey film, no requests counted, the Clearing's Waystone only reading `RIDDLES`), `?towns` on for a page load, `?town=` peeks either way; their patch lines wait in `TOWN_NOTES` in `js/data/patchnotes.js`, back into `NEXT` when they go live; `docs/roadmap.md`'s Towns and Waystones): the
+- **Gateway towns** (2026-10-13; on `main` since 2026-10-14, **live since 2026-10-15** (patch 1.20, the user's call; before that switched off): `TOWNS_LIVE` / `townsOpen()` in `js/data/towns.js` (off: no town after the journey film, no requests counted, the Clearing's Waystone only reading `RIDDLES`), `?towns` on for a page load, `?town=` peeks either way; their patch lines went out in patch 1.20; `docs/roadmap.md`'s Towns and Waystones): the
   biome ahead's town is walked after the journey film (`walkOn()` → `townRoom()` in `js/run.js`, saved as `run.town`),
   never on Mewtwo's or a Safari run. Its data and request rules are `TOWNS` in `js/data/towns.js`, the save side
   `js/towns.js` (`save.towns[id]`: `done` friendship, `got`, `ready`, `met`), the room `buildTown()` in `js/event-3d.js`

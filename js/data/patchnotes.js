@@ -42,36 +42,7 @@ export const RELEASE_AT = 12;
 export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
-export const NEXT = [
-  ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
-  ['look', 'The Shrine, Sunken Ruins and Thornwood\'s outdoor rooms have a blue sky now, not a green one.'],
-  ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
-  ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
-  ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
-  ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
-  ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
-  ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
-];
-
-/** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
-    they go live. */
-export const TOWN_NOTES = [
-  ['runs', 'Lantern Village: on the road into the Shrine you now walk through a whole village laid out like a shrine\'s approach: one wide stone avenue lined with lanterns from the forest up to the torii, a koi pond under a red bridge, autumn maples, a pagoda and a few houses with their names on boards by the door (a house fades while you\'re behind it). Walk into Delibird\'s shop (one item swap), the Dance Theater, and John\'s and Jahmes\'s homes. The request board asks favours across runs that raise the village\'s friendship, and the broken Waystone stands in the plaza at its heart. Its houses wear tiled roofs, the ones you can walk into with gold on the ridge and a crest over the door; John and Jahmes live in grand two-storey manors with gold-leafed upper floors and banners in their colours, home only once you\'ve beaten them. The way out to the Shrine is a great gold-trimmed torii in a lantern-lit glade, a sacred rope and red paper lanterns swaying on it and light glowing up through it.'],
-  ['runs', 'Cinder Springs: on the road into the Wastes you now walk through a mining town on a lava field, lava pouring off the crags into a glowing river your road crosses on stone bridges, the broken Waystone on an island in a lava moat, an old mine head and a timber mine gate out. Soak with the Pokémon in the timbered Bathhouse under its curved porch roof and tall chimney, swap an item at Heatmor\'s stone Forge by its glowing furnace, visit Clarence and Shaun in their grand two-storey lodges (Clarence is busy after nine), and help with the town\'s requests to mend its cracked Waystone.'],
-  ['runs', 'Driftwood Landing: on the road into the Sunken Ruins you now walk through a fishing village of overwater bungalows on stilts over the lagoon, its wide railed boardwalks ringing a drowned temple\'s island with the broken Waystone at its middle, and out through the drowned temple\'s great glowing gate. Swap an item at Pelipper\'s seaside Bait & Tackle, see the lagoon\'s Pokémon in the Aquarium, visit Kayl (and her cats) in her grand two-tiered stilt house and Pat on his two-deck paddle houseboat (he serenades the moon after ten), and take on the town\'s requests.'],
-  ['runs', 'Highbough: on the road into Thornwood you now walk through a village up in the treetops, round platforms on the giant trunks joined by wide rope bridges with railings round every deck, the jungle floor far below in the mist. Its builders are long gone and only ghost Pokémon live there now. Ride up on the lift, swap an item at Mismagius\'s Curio Shop, tiptoe past the ghosts asleep in the Withered Nursery, call on Phil in his crooked, haunted manor (not after eleven) and Ricky in his treehouse den (up gaming with the boys after ten), and help with the requests to mend the broken Waystone on the Great Tree\'s deck. The way out is a living arch of boughs hung with ghost-lanterns.'],
-  ['runs', 'Sunwell Bazaar: on the road into the Savanna you now walk through a caravan trading post, one wide dusty road straight across it past round thatched huts, a bazaar square of long striped stalls heaped with spices, jars and rugs round the broken Waystone, wagons drawn up in a ring and a watering hole with a railed jetty and a windpump. Trade at Persian\'s Bazaar, meet the caravans\' Pokémon in the Caravanserai, and visit Machew and Jerome in their grand mud-brick kasbahs once you\'ve beaten them.'],
-  ['runs', 'Every town has a questline: beat one of its Gym Leaders and they ask your help mending its Waystone over a few runs, ending on a shard won from a marked Alpha. Hand in the shard and your partner heads out and up to its Waystone, which mends in a blaze of light, its leaders sliding in to mark it, and they visit you at home. The new Satchel app keeps your key items, materials and quests.'],
-  ['runs', 'Every town\'s ground now rolls away over the horizon like the Clearing\'s, and past each town\'s exit stands a grand, living view: a lantern-lit mountain, a smoking volcano, a drowned temple, the Great Tree, a giant sun.'],
-  ['runs', 'Every Gym Leader\'s home is now a big room that\'s all them: their own walls, lights and corners, from Clarence\'s stage to the tree through Ricky\'s den. JONA waits in the corner of Phil\'s: tap her to talk, and now and then she and Phil have it out.'],
-  ['runs', 'Every town\'s great hall is now huge inside: a Noh stage, a sento under a volcano mural, a wall-wide fish tank, a dead glasshouse and an arcaded caravan courtyard.'],
-  ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home in a column of its light, buy furniture you can\'t get anywhere else, and hand in requests. Only its Waystone takes you home, but if your run is in that town\'s biome, walk out its far gate to carry on.'],
-  ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and they send you to their notice on the quest board, which starts the quest to mend it, the hub every town links through, so it comes before any town\'s quest. A quest board by the plaza, and the Pokédex\'s new Quests app, show every quest\'s progress; every turn-in goes to a Gym Leader at home: tap them when a "!" is over their name sign.'],
-  ['hub', 'Kurt\'s Workshop opens in the Clearing: at his crafting bench, turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders (the Nietos too) and Apricorn looks for your Safari Balls.'],
-  ['runs', 'The festival you pick for John really happens: once Lantern Village\'s Waystone is mended, its evenings fill with floating lanterns, a harvest moon or fireworks, with stalls to match.'],
-  ['runs', 'A town\'s trader now opens a trade window like an MMO\'s: your offer and theirs side by side, both ready up, and the items swap across.'],
-  ['modes', 'Mewtwo is weakened in the Crystal Depths until you mend the five Waystones. Each shard gives back strength, and a camp in the Depths shows its seal\'s pentagram.'],
-];
+export const NEXT = [];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
 export function sectionsOf(p) {
@@ -82,6 +53,31 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.20',
+    name: 'The Waystones',
+    date: '2026-10-15',
+    notes: [
+      ['runs', 'Five gateway towns now stand on the roads into each biome: Lantern Village, Cinder Springs, Driftwood Landing, Highbough and Sunwell Bazaar, each with shops, folk and its Gym Leaders\' homes.'],
+      ['runs', 'Every town has a trader: pick one of their offers in a trade window, both sides ready up, and the items swap.'],
+      ['runs', 'Beat a town\'s Gym Leader and they ask your help mending its broken Waystone: a questline over a few runs, ending on a shard won from a marked Alpha.'],
+      ['runs', 'Gym Leaders\' homes are big rooms all their own, each town\'s great hall is huge inside, and every town looks out on a grand view past its gate.'],
+      ['runs', 'Pick John\'s festival, and once Lantern Village\'s Waystone is mended its evenings fill with floating lanterns, a harvest moon or fireworks.'],
+      ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and their notice on the new quest board starts the quest to mend it, before any town\'s.'],
+      ['hub', 'Mend a town\'s Waystone and its crystal lights on the Clearing\'s: travel there from home, buy its own furniture, and its leaders come to visit.'],
+      ['hub', 'Kurt\'s Workshop opens in the Clearing: craft materials from the roads into quest items, unique furniture, gifts for Gym Leaders and Apricorn looks for Safari Balls.'],
+      ['dex', 'New Satchel and Quests apps in the Pokédex: your key items, materials you keep even on a lost run, and every quest\'s next step.'],
+      ['modes', 'Mewtwo is weakened in the Crystal Depths until the five Waystones are mended; each shard gives back strength, shown on a pentagram in its new camp.'],
+      ['runs', 'Every Gym Leader has about fifty new lines: more to say before and after a battle, and their own words for posters, Gold badges and visits.'],
+      ['look', 'The Shrine, Sunken Ruins and Thornwood\'s outdoor rooms have a blue sky now, not a green one.'],
+      ['hub', 'A duck now paddles round the Clearing\'s pond, dipping its head now and then.'],
+      ['hub', 'The Nietos\' house is bigger inside and all theirs: Linc\'s nursery, two gaming desks, one very tired couch and Lego everywhere.'],
+      ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
+      ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
+      ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
+      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
+    ],
+  },
   {
     version: '1.19',
     name: 'Something Stirs',
@@ -432,11 +428,12 @@ export const IN_THE_GAME = [
   ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag.'],
   ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
+  ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],
   ['🏅', '13 Gym Leaders', 'Two or three in every biome, standing in front of its boss, each with their own gym, speeches and badge.'],
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '151 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '164 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
