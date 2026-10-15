@@ -630,8 +630,6 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .pc-bp-room.yard.plot .pc-bp-fill { fill: rgba(88, 216, 88, 0.12); }
 .pc-bp-room.yard.plot.picked .pc-bp-fill { fill: rgba(88, 216, 88, 0.3); }
 .pc-bp-room.yard.picked .pc-bp-edge { stroke: #f0b030; }
-.pc-bp-room.path { pointer-events: none; }
-.pc-bp-room.path .pc-bp-edge, .pc-bp-room.path .pc-bp-fill { fill: #8a7450; stroke: none; }
 .pc-build-row { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
 .pc-build-row .pc-build { margin: 0; }
 .pc-build.pc-turn { min-width: 90px; }

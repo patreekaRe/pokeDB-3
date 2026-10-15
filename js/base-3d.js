@@ -170,9 +170,8 @@ function buildRoom() {
 
 const throughTex = {};
 /** The dark of a doorway: the next room unlit beyond it, a little warm light on its floor; `down`, the top of a flight
-    of stairs going down into it instead, its treads fading into the dark; 'yard', the back door's daylight instead. */
+    of stairs going down into it instead, its treads fading into the dark. */
 function throughMat(down = false) {
-  if (down === 'yard') return new THREE.MeshBasicMaterial({ map: yardDoorTex(), transparent: true });
   if (!throughTex[down]) {
     const c = document.createElement('canvas');
     c.width = 64; c.height = 128;
@@ -203,7 +202,7 @@ function addDoor(d, stepMat) {
     return;
   }
   const g = new THREE.Group(), wood = solid('#7a5434');
-  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.to === 'yard' ? 'yard' : d.stairs === 'down'));
+  const dark = new THREE.Mesh(new THREE.PlaneGeometry(1.08, 2.1), throughMat(d.stairs === 'down'));
   dark.position.set(0, 1.05, 0.03);
   const post = (x) => { const m = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.24, 0.14), wood); m.position.set(x, 1.12, 0.07); m.castShadow = true; return m; };
   const lintel = new THREE.Mesh(new THREE.BoxGeometry(1.44, 0.18, 0.16), wood);
@@ -255,13 +254,12 @@ function wallTrim(art) {
   return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
 }
 
-
 /* ---------- the backyard (docs/roadmap.md's backyard, part a) ---------- */
 
 /* A lawn behind the house, walked like a room (`house.yard`, js/data/house.js): mown in stripes, the Clearing's meadow
    round it (its colours, js/hub-3d.js, snowed over in winter), a wooden picket fence on three sides, the front left open
    like the rooms', the Clearing's trees behind it and down its sides, its sky and light (yardLight()), and the ground
-   rolling away like the Clearing's (BEND). Its doormat on the front edge leads back in through the main room's back door.
+   rolling away like the Clearing's (BEND). Its doormat on the front edge leads back out through the Clearing's garden arch.
    Nothing new on the GPU: it is the base's own renderer and scene, built like any room. */
 const YTP = 16;   // painted pixels a tile, as the Clearing's
 const LOOK = CLEARING_LOOK, GROUND = groundLook(SEASON, LOOK);
@@ -295,25 +293,6 @@ function grassArt(w, h, lawn, seed) {
     g.fillStyle = heart; g.fillRect(x, y, 1, 1);
   }
   return c;
-}
-
-/** What the main room's back door shows: daylight, the yard's trees and its lawn, dimmed with the hour. */
-function yardDoorTex() {
-  const t = timeOfDay(), k = { dawn: 0.85, day: 1, dusk: 0.7, night: 0.4 }[t];
-  const c = document.createElement('canvas');
-  c.width = 64; c.height = 128;
-  const g = c.getContext('2d');
-  g.beginPath(); g.roundRect(0, 0, 64, 128, [28, 28, 0, 0]); g.clip();
-  const sky = g.createLinearGradient(0, 0, 0, 72);
-  sky.addColorStop(0, shade(CLEARING_LIGHT[t].bg, 0.8)); sky.addColorStop(1, CLEARING_LIGHT[t].bg);
-  g.fillStyle = sky; g.fillRect(0, 0, 64, 72);
-  g.fillStyle = shade(LOOK.trees[2], k);
-  for (let x = -6; x < 70; x += 14) { g.beginPath(); g.arc(x, 66, 12 + (x % 3) * 2, 0, Math.PI * 2); g.fill(); }
-  g.fillRect(0, 64, 64, 14);
-  for (let i = 0; i < 4; i++) { g.fillStyle = shade(GROUND.meadow[i % 2 ? 2 : 0], k); g.fillRect(i * 16, 76, 16, 52); }
-  const tx = new THREE.CanvasTexture(c);
-  tx.colorSpace = THREE.SRGBColorSpace;
-  return tx;
 }
 
 function buildYard() {

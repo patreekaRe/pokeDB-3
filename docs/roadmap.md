@@ -30,8 +30,11 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
      room: `?base` is read first).
   d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket
      for each berry's first picking (docs/roadmap-done.md). A real tap on a plot not yet tried (the hidden pane ran no frames).
-  e) Done 2026-10-15, on `main`: the bigger yard, 16x11 for 1,000 on the blueprint (docs/roadmap-done.md). The backyard
-     plan is finished; playtest `?yard=big` (or buy it: tap the owned yard on HOUSE UPGRADES).
+  e) Done 2026-10-15, on `main`: the bigger yard, 16x11 for 1,000 on the blueprint (docs/roadmap-done.md). Playtest
+     `?yard=big` (or buy it: tap the owned yard on HOUSE UPGRADES).
+  f) Done 2026-10-15, on `main` (the user's ask): the way in is a garden arch in the Clearing beside the Ancient Tree,
+     brambled and padlocked till the yard is bought; no back door any more (docs/roadmap-done.md). Waiting on the user's
+     look: `?hubat=27,4&coins=2000` with a Secret Base owned, Unlock, walk in and back out.
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome

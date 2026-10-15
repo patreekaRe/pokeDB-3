@@ -27,9 +27,12 @@ import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { makeSealedGate } from './hub-sealed.js';
+import { makeGardenArch } from './hub-arch.js';
+import { YARD_PRICE } from './data/house.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
+import { safariGate, WING_X } from './hub-safari.js';
 import { makeDojo } from './hub-dojo.js';
 import { kenWinsOf } from './data/dojo.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
@@ -113,6 +116,9 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
 const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 5, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
+// the garden arch into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
+// beside the Ancient Tree, short of the Sky Pillar's trail; it stands a little left of this tile, over this one and the next
+const ARCH_AT = { tx: 27, ty: 3 }, ARCH_X = -0.3;
 // Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
 // step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
 const WORKSHOP_AT = { tx: 23, ty: 8 };
@@ -153,7 +159,8 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
+let safariFx = null;   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
+let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
@@ -356,101 +363,6 @@ function tuft(g, x, y, n, rnd) {
 function blossom(g, x, y, r, petal, heart) {
   for (let i = 0; i < 5; i++) { const a = i / 5 * Math.PI * 2; g.fillStyle = petal; g.beginPath(); g.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, r * 0.75, 0, Math.PI * 2); g.fill(); }
   g.fillStyle = heart; g.beginPath(); g.arc(x, y, r * 0.6, 0, Math.PI * 2); g.fill();
-}
-
-/** The Safari Zone's gate, smooth, the lobby's own (js/safari-lobby.js; the user's call, 2026-10-09): two peeled log posts
-    on stone feet, a green board with a Safari Ball and SAFARI ZONE, a thatched roof over it with a bound ridge, paper
-    lanterns under the board lit at dusk; the opening between the posts is clear, so the road shows going on through it.
-    Shut, a rope across it with a CLOSED tag. */
-function safariArt(open) {
-  const W = 64, H = 62, { c, g, fill, rr, lin, shine } = fine(W, H, 10), rnd = seeded(7), glow = shine();
-  const WD = ['#e4b070', '#b87c48', '#8a5a30', '#5a3418'];
-  for (const x of [7, 49]) {   // the posts: peeled logs, their grain, a knot, a rope lashing, a stone foot
-    rr(x, 18, 8, 42, 2, lin(x, 0, x + 8, 0, [WD[0], WD[1], WD[1], WD[2], WD[3]]));
-    for (let y = 24; y < 57; y += 5.5) strokeOn(g, 'rgba(74,40,16,0.35)', 0.32, () => { g.moveTo(x + 1, y); g.quadraticCurveTo(x + 4, y + 1.4, x + 7, y); });
-    fill('rgba(70,40,16,0.55)', () => g.ellipse(x + 3 + rnd() * 2, 40 + rnd() * 10, 0.8, 1.2, 0, 0, Math.PI * 2));
-    for (let i = 0; i < 3; i++) rr(x - 0.4, 33 + i * 1.1, 8.8, 0.95, 0.45, lin(0, 33 + i * 1.1, 0, 34 + i * 1.1, ['#f4e2aa', '#b8965a']));
-    rr(x - 2, 57, 12, 5, 2, lin(0, 57, 0, 62, [P.stone[0], P.stone[1], P.stone[2]]));
-    rr(x - 1.2, 57.4, 10.4, 0.7, 0.35, 'rgba(255,255,255,0.5)');
-  }
-  const ivy = [];   // ivy up the left post
-  for (let y = 58; y > 38; y -= 2) ivy.push([8.6 + Math.sin(y * 0.5) * 1.6, y]);
-  strokeOn(g, '#3a7a30', 0.4, () => { g.moveTo(...ivy[0]); ivy.forEach(p => g.lineTo(...p)); });
-  ivy.forEach(([x, y], i) => leaf(g, x, y, i % 2 ? -0.5 : Math.PI + 0.5, 1.7 + rnd() * 0.6, P.moss[i % 2]));
-
-  // the board, its frame, the Safari Ball, SAFARI ZONE
-  rr(3.4, 17.6, 58, 15, 3, 'rgba(0,0,0,0.25)');
-  rr(2.4, 16.6, 59.2, 15, 3, lin(0, 16.6, 0, 31.6, [WD[1], WD[3]]));
-  rr(3.6, 17.8, 56.8, 12.6, 2.2, lin(0, 17.8, 0, 30.4, ['#7ad868', '#34963a', '#1e6a26']));
-  rr(5, 18.6, 54, 1, 0.5, 'rgba(255,255,255,0.35)');
-  const bx = 11.4, by = 24.1, br = 4.3;
-  g.save(); g.beginPath(); g.arc(bx, by, br, 0, Math.PI * 2); g.clip();
-  g.fillStyle = '#f4eed4'; g.fillRect(bx - br, by, br * 2, br);
-  g.fillStyle = lin(0, by - br, 0, by, ['#a8d858', '#5a9a30']); g.fillRect(bx - br, by - br, br * 2, br);
-  for (const [dx, dy, r] of [[-0.45, -0.5, 0.2], [0.35, -0.6, 0.16], [0.05, -0.28, 0.13]]) fill('#3a7a28', () => g.arc(bx + dx * br, by + dy * br, r * br, 0, Math.PI * 2));
-  g.fillStyle = '#202018'; g.fillRect(bx - br, by - 0.4, br * 2, 0.8);
-  g.restore();
-  strokeOn(g, '#202018', 0.55, () => g.arc(bx, by, br, 0, Math.PI * 2));
-  fill('#ffffff', () => g.arc(bx, by, br * 0.3, 0, Math.PI * 2));
-  strokeOn(g, '#202018', 0.45, () => g.arc(bx, by, br * 0.3, 0, Math.PI * 2));
-  fill('rgba(255,255,255,0.55)', () => g.ellipse(bx - 1.6, by - 2.2, 1, 0.6, -0.5, 0, Math.PI * 2));
-  g.textAlign = 'center'; g.textBaseline = 'middle';
-  g.font = '900 7.6px "Trebuchet MS", "Arial Black", sans-serif';
-  g.fillStyle = 'rgba(16,60,24,0.7)'; g.fillText('SAFARI', 36.4, 22.9);
-  g.fillStyle = '#fbf8e4'; g.fillText('SAFARI', 36, 22.5);
-  g.font = '800 3.2px "Trebuchet MS", sans-serif';
-  g.fillStyle = '#f8d848'; g.fillText('Z O N E', 36, 28);
-  for (const x of [27, 45]) {   // pawprints either side of ZONE
-    fill('rgba(248,216,72,0.85)', () => g.ellipse(x, 28.4, 0.8, 0.65, 0, 0, Math.PI * 2));
-    for (const dx of [-0.8, 0, 0.8]) fill('rgba(248,216,72,0.85)', () => g.arc(x + dx, 27.2 - (dx ? 0 : 0.3), 0.34, 0, Math.PI * 2));
-  }
-  fill('#c8e8a8', () => g.arc(57.4, 24.1, 0.8, 0, Math.PI * 2));
-
-  // the thatch, a bound ridge along its top and a ragged eave
-  const roof = () => {
-    g.moveTo(-0.2, 17.4); g.quadraticCurveTo(6, 9, 20, 3.4); g.lineTo(44, 3.4); g.quadraticCurveTo(58, 9, 64.2, 17.4);
-    for (let x = 64; x > 0; x -= 2) g.lineTo(x - 1, 17.4 + (x % 4 ? 1.4 : 0.4) + Math.sin(x) * 0.3);
-    g.closePath();
-  };
-  fill('rgba(0,0,0,0.25)', () => g.rect(3, 16.6, 58, 1.6));
-  fill(lin(0, 0, W, 0, ['#f4cc78', '#e2b260', '#d09848', '#8a5a28']), roof);
-  g.save(); g.beginPath(); roof(); g.clip();
-  for (let x = -6; x < 70; x += 1.1) {   // straw
-    const top = 3 + Math.abs(x - 32) * 0.12;
-    strokeOn(g, `rgba(${rnd() < 0.5 ? '122,74,32' : '255,236,170'},${0.25 + rnd() * 0.3})`, 0.22, () => { g.moveTo(32 + (x - 32) * 0.55, top); g.quadraticCurveTo(32 + (x - 32) * 0.8, 12, 32 + (x - 32) * 1.02, 19); });
-  }
-  for (const y of [8.5, 13]) strokeOn(g, 'rgba(110,64,24,0.45)', 0.4, () => { g.moveTo(0, y + 4); g.quadraticCurveTo(32, y - 2.6, 64, y + 4); });
-  g.fillStyle = lin(0, 12, 0, 19, ['rgba(60,30,10,0)', 'rgba(60,30,10,0.35)']); g.fillRect(0, 12, W, 8);
-  g.restore();
-  strokeOn(g, 'rgba(90,56,24,0.85)', 0.45, roof);
-  rr(17, 1.4, 30, 3.6, 1.8, lin(0, 1.4, 0, 5, ['#e8bc6c', '#b07a38', '#7a4c1e']));   // the ridge bundle, tied
-  for (const x of [21, 27, 32, 37, 43]) rr(x - 0.45, 1.2, 0.9, 4, 0.4, '#6a4018');
-
-  for (const x of [20, 44]) {   // paper lanterns hanging under the board, lit at dusk
-    strokeOn(g, '#3a2410', 0.3, () => { g.moveTo(x, 31.4); g.lineTo(x, 33.4); });
-    rr(x - 1.3, 33.2, 2.6, 0.8, 0.35, '#3a2410');
-    const body = (gg) => { gg.beginPath(); gg.ellipse(x, 36.6, 2.1, 2.9, 0, 0, Math.PI * 2); };
-    g.fillStyle = lin(x - 2, 0, x + 2, 0, ['#ffd890', '#f8a048', '#c86020']); body(g); g.fill();
-    glow.fillStyle = '#ffb060'; body(glow); glow.fill();
-    for (const rx of [0.7, 1.5]) strokeOn(g, 'rgba(120,50,10,0.45)', 0.2, () => g.ellipse(x, 36.6, rx, 2.9, 0, 0, Math.PI * 2));
-    fill('rgba(255,245,210,0.6)', () => g.ellipse(x - 0.8, 35.6, 0.5, 1, 0, 0, Math.PI * 2));
-    rr(x - 1.1, 39.3, 2.2, 0.7, 0.3, '#3a2410');
-    strokeOn(g, '#f8d048', 0.35, () => { g.moveTo(x, 40); g.lineTo(x, 41.6); });
-  }
-
-  for (const x of [5, 16, 48, 59]) tuft(g, x, 61.6, 9, rnd);
-  for (const [x, y, p] of [[3, 60.6, '#ffffff'], [17.5, 60.8, '#f8e048'], [47, 60.6, '#f8a0c8'], [60.5, 60.9, '#ffffff']]) blossom(g, x, y, 0.5, p, '#f89830');
-
-  if (!open) {   // a rope across, a CLOSED tag hanging off it
-    const rope = () => { g.moveTo(15, 44); g.quadraticCurveTo(32, 51, 49, 44); };
-    strokeOn(g, '#f4ecd8', 1, rope);
-    g.setLineDash([1.1, 1.1]); strokeOn(g, '#e04030', 1, rope); g.setLineDash([]);
-    for (const x of [15, 49]) fill('#9a9aa6', () => g.arc(x, 44, 0.65, 0, Math.PI * 2));
-    strokeOn(g, '#5a3a1c', 0.22, () => { g.moveTo(28.6, 48.6); g.lineTo(32, 47.6); g.lineTo(35.4, 48.6); });
-    rr(27.6, 48.4, 8.8, 4, 0.7, lin(0, 48.4, 0, 52.4, [WD[0], WD[1]]));
-    g.font = '900 2.1px "Trebuchet MS", sans-serif'; g.fillStyle = '#a02818'; g.fillText('CLOSED', 32, 50.5);
-  }
-  return c;
 }
 
 /** The fence either side of the gate, the lobby's: round log posts and two rails, from `x0` to `x1` along `z`. */
@@ -2160,6 +2072,19 @@ function makePlaces() {
       },
     },
     {
+      // the backyard's garden arch: brambles and a padlock till it's bought, here or on the PC's blueprint (js/hub-arch.js)
+      id: 'backyard', name: yardOwned() ? 'Backyard' : 'Garden Arch', step: { x: ARCH_AT.tx, y: ARCH_AT.ty + 1 }, tiles: [[ARCH_AT.tx - 1, ARCH_AT.ty], [ARCH_AT.tx, ARCH_AT.ty]], tag: [ARCH_AT.tx + ARCH_X, 2.9, ARCH_AT.ty], open: true,
+      line: yardOwned() ? 'Through the garden arch beside the Ancient Tree: your backyard.'
+        : `An old garden arch beside the Ancient Tree, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : 'Make the Ancient Tree your Secret Base first.'}`,
+      buttons: yardOwned() ? [['Go in', enterYard]] : baseOwned() ? [['Unlock', buyYardArch]] : [],
+      build: (g) => {
+        const L = leavesOf(SEASON), owned = yardOwned();
+        gardenArch = { ...makeGardenArch(THREE, { x: tileX(ARCH_AT.tx) + ARCH_X, z: tileZ(ARCH_AT.ty), owned, leaf: L ? L.trees[0] : P.trees, winter: SEASON === 'winter', merge: mergeStatic }), owned };
+        glowMats.push(...gardenArch.glows);
+        g.add(gardenArch.group);
+      },
+    },
+    {
       // right of the plaza, where your partner starts (2026-10-09): who walks with you, who lives in the base, your name
       id: 'pc', name: 'PC', step: { x: PC_AT.tx, y: PC_AT.ty + 1 }, tiles: [[PC_AT.tx, PC_AT.ty]], tag: [PC_AT.tx, 2.6, PC_AT.ty], open: true,
       get line() { return `${unclaimed().length ? 'You\'ve got mail! ' : claimable() ? 'A mission reward is waiting! ' : pcBeckons(getSave()) ? (patchUnseen() ? 'New patch notes! ' : 'Something new on the PC! ') : ''}A PC. Your mail, your missions, the patch notes, who walks with you, who lives in your Secret Base, and your name.`; },
@@ -2190,14 +2115,15 @@ function makePlaces() {
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     reset: safari && 'daily',
     buttons: [],
-    // back in the left corner, out on the meadow, its fence across it
+    // back in the left corner, out on the meadow, its fence across it; a real model since 2026-10-15 (js/hub-safari.js)
     build: (g) => {
-      const s = safariArt(safari), S = 1.1, x = tileX(SAFARI_AT.tx), z = tileZ(SAFARI_AT.ty), b = board(s, x, z, { s: S });
-      glowing(b.material, s, null, '#ffc890', 0.8);
-      g.add(b);
-      const half = s.width / s.fine / TP * S / 2, post = (px) => x - half + px / TP * S;
-      safariFence(g, tileX(-M + 0.5), post(7), z);
-      safariFence(g, post(57), tileX(SAFARI_AT.tx + 3.4), z);
+      const x = tileX(SAFARI_AT.tx), z = tileZ(SAFARI_AT.ty);
+      safariFx = safariGate(THREE, { open: safari, glows: glowMats });
+      safariFx.group.position.set(x, 0, z);
+      for (const l of lamps) if (l.userData.id === 'safari') l.userData.k = safari ? 0.8 : 0;   // its torches, unlit while it's shut
+      g.add(safariFx.group);
+      safariFence(g, tileX(-M + 0.5), x - WING_X, z);
+      safariFence(g, x + WING_X, tileX(SAFARI_AT.tx + 3.4), z);
     },
   });
   if (safari) list.push({
@@ -2495,7 +2421,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2927,6 +2853,7 @@ function open(p, i = null) {
     spinStop(stop);
   }
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
+  if (p.id === 'backyard') return yardOwned() ? enterYard() : buyYardArch();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
   if (p.id === 'nietos' || p.id === 'workshop' || p.id === 'dojo') return enterHouse(p);
@@ -3146,6 +3073,7 @@ function liveBeckons(now) {
 // the Secret Base is bought once (the user's call, 2026-10-08), saved as `baseOwned`
 const BASE_PRICE = 1500;
 const baseOwned = () => !!getSave().baseOwned;
+const yardOwned = () => { const y = getSave().secretBase?.house?.yard; return !!y && !y.lent; };
 
 const FIX = 1100;
 
@@ -3200,6 +3128,49 @@ async function enterBase() {
   await acts.onBase();
 }
 
+/** The garden arch's price: too few coins says how many more; else a yes pays, the brambles wither and the padlock
+    drops, and in through the gate. */
+async function buyYardArch() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; aim = null;
+  const coins = getSave().coins ?? 0;
+  if (coins < YARD_PRICE) {
+    playSound('cancel');
+    await confirmDialog(`The backyard costs ${YARD_PRICE.toLocaleString()} PokéCoins, and you have ${coins.toLocaleString()}.`, 'OK');
+    return;
+  }
+  if (!(await confirmDialog(`Clear the garden arch and make a backyard behind the Ancient Tree for ${YARD_PRICE.toLocaleString()} PokéCoins?`, `Buy (${YARD_PRICE.toLocaleString()})`))) return;
+  const { buyYard, loadBase } = await import('./secret-base.js');
+  if (!buyYard(loadBase())) { playSound('cancel'); return; }
+  refreshCoins();
+  playSound('buy');
+  if (gardenArch && !calm) {
+    entering = { at: performance.now(), z: walker.z, still: true };
+    await new Promise(r => setTimeout(r, gardenArch.clear() + 250));
+    entering = null;
+  }
+  buildPlaces();
+  here = places.find(q => q.id === 'backyard');
+  await enterYard();
+}
+
+/** Through the garden arch: the gate swings in, your partner walks through into the light, and the Secret Base comes
+    up out in its backyard; its doormat brings it back out here, under the arch (leftPlace()). */
+async function enterYard() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; walker.facing = mon.sheets.back ? 'back' : 'front';
+  gardenArch?.swing(true);
+  playSound('door');
+  entering = { at: performance.now(), z: walker.z, x0: walker.x, x1: tileX(ARCH_AT.tx) + ARCH_X };
+  await curtain(true, calm ? 0 : 420);
+  entering = null;
+  gardenArch?.swing(false);
+  inside = 'backyard';
+  await acts.onBase('yard');
+}
+
 /** Through the Poké Mall's sliding doors into its hall (js/mall-3d.js), whose ✕ brings you back out here. */
 async function enterMall() {
   if (entering) return;
@@ -3226,7 +3197,7 @@ async function openPc() {
   hideCard();
   walker.path = []; aim = null;
   const { openPC } = await import('./pc.js');
-  openPC({ onClose: () => { pcMarks(); swapBuddy(); }, onFame: (app) => acts.onApp?.(app) });
+  openPC({ onClose: () => { pcMarks(); swapBuddy(); if (gardenArch && gardenArch.owned !== yardOwned()) buildPlaces(); }, onFame: (app) => acts.onApp?.(app) });
 }
 
 /** The walking buddy again from the save: its billboard swapped where it stands, with a hop and its cry. */
@@ -3268,6 +3239,14 @@ function leftPlace() {
   walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500;
   camX = walker.x; camZ = walker.z;
   here = p;
+  if (p.id === 'backyard' && gardenArch) {   // back out under the arch, the gate swinging shut behind
+    gardenArch.swing(true);
+    if (calm) { gardenArch.swing(false); return; }
+    leaving = { at: performance.now() + LEAVE_WAIT, z: walker.z, x0: tileX(ARCH_AT.tx) + ARCH_X, x1: walker.x };
+    walker.z -= 0.7; walker.x = leaving.x0;
+    walker.hopUntil = 0;
+    return;
+  }
   if (!tree || p.id !== 'base') return;
   tree.m.map = tree.open;
   if (calm) { tree.m.map = tree.shut; return; }
@@ -3284,10 +3263,11 @@ function liveLeaving(now) {
   if (!leaving) return;
   const t = Math.max(0, Math.min(1, (now - leaving.at) / LEAVE));
   walker.z = leaving.z - (1 - t) * 0.7;
+  if (leaving.x0 != null) walker.x = leaving.x0 + (leaving.x1 - leaving.x0) * t;
   if (t < 1) return;
   leaving = null;
   walker.hopUntil = now + 500;
-  setTimeout(() => { if (tree) tree.m.map = tree.shut; playSound('door'); }, 250);
+  setTimeout(() => { if (tree) tree.m.map = tree.shut; gardenArch?.swing(false); playSound('door'); }, 250);
 }
 
 /* ---------- the card under a place ---------- */
@@ -3881,7 +3861,11 @@ function frame(now) {
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
 
   if (walker.path.length) { here = null; if (walk(dt)) arrived(); }
-  if (entering && !entering.still) walker.z = entering.z - Math.min(1, (now - entering.at) / 420) * 0.7;   // into the hollow
+  if (entering && !entering.still) {   // into the hollow, or through the arch
+    const k = Math.min(1, (now - entering.at) / 420);
+    walker.z = entering.z - k * 0.7;
+    if (entering.x0 != null) walker.x = entering.x0 + (entering.x1 - entering.x0) * k;
+  }
   liveLeaving(now);
   const hopping = walker.hopUntil > now;
   const bob = calm ? 0 : walker.path.length ? Math.abs(Math.sin(walker.hop / 1000 * Math.PI * 4)) * 0.08 : hopping ? Math.abs(Math.sin((walker.hopUntil - now) / 500 * Math.PI * 2)) * 0.35 : 0;
@@ -3896,11 +3880,13 @@ function frame(now) {
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
+  gardenArch?.tick(now, calm, (LIGHT[time] || LIGHT.day).glow);
   dojoFx?.tick(now, calm);
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
+  safariFx?.tick(now, calm);
   for (const m of [pcMail, pcNews, questMark, nietosMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
@@ -3971,12 +3957,12 @@ async function build() {
   sun.shadow.bias = -0.0015;
   sun.shadow.normalBias = 0.02;
   scene.add(hemi, sun);
-  // the lantern by the base's door and the Sky Pillar's doorway light their ground from dusk; made once and only dimmed,
+  // the lantern by the base's door, the Sky Pillar's doorway and the Safari gate's torches light their ground from dusk; made once and only dimmed,
   // so the hour changing never recompiles a shader
-  for (const [colour, at, k] of [['#ffc070', [tileX(TREE_AT.tx) - 1.25, 2.4, tileZ(TREE_AT.ty) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7], ['#a8f8d8', [tileX(GATE_AT.tx), 1.6, tileZ(GATE_AT.ty) + 1], 0.9]]) {
+  for (const [colour, at, k, id] of [['#ffc070', [tileX(TREE_AT.tx) - 1.25, 2.4, tileZ(TREE_AT.ty) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7], ['#a8f8d8', [tileX(GATE_AT.tx), 1.6, tileZ(GATE_AT.ty) + 1], 0.9], ['#ffb060', [tileX(SAFARI_AT.tx), 1.5, tileZ(SAFARI_AT.ty) + 0.9], 0, 'safari']]) {
     const l = new THREE.PointLight(colour, 0, 6, 1.6);
     l.position.set(...at);
-    l.userData.k = k;
+    l.userData.k = k; l.userData.id = id;
     lamps.push(l);
     scene.add(l);
   }
