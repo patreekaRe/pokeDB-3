@@ -71,9 +71,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `js/event-3d.js`), which (or the far gate, or Leave) lifts you up in it and home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
    Waystone with a line), the trader sells the town's furniture shelf instead of trading (`js/town-shop.js`: 6 a UTC day,
    kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
-   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to
-   come and live in your Secret Base (`inviteFolk()`, `save.townsfolk` keys `town:pokemon`, read by the PC's Base residents
-   and the base's guests, `resident()` in `js/pc.js`).
+   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`). (Inviting townsfolk to live in the Secret Base was cut
+   2026-10-15, the user's call: it overlapped Safari catches, which stay the only way to fill the base.)
    **Done (2026-10-14): one Waystone, not five** (the user's pick). The ring's five stones are gone: one big Waystone stands on
    the plaza's Poké Ball (`clearingWaystone()` in `js/hub-3d.js`, `START`'s tile; the towns' whole Waystone on a plinth,
    silver runes), five crystals orbiting its tip in their `RING` colours, dull until that town is mended. A tap opens its menu
@@ -417,7 +416,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      (`run.gleaned`), kept on a lost run; the Satchel says where each turns up. Detail: `docs/reference/towns.md`. Branch
      `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
    - **Session 3 done (2026-10-14): Kurt's Workshop.** A timber workshop in the Clearing's north-east (towns on only), walked
-     into like the Nietos' house: Kurt (a sprite drawn for him) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
+     into like the Nietos' house: Kurt (the user's sprite since 2026-10-15, with a blink made from it) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
      His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
@@ -485,6 +484,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      wearing the "!" hands it in (no floating Hand in / Quests signs, which homes had no prop for), a small picker for
      John's festival, and the "!" drops with the curved ground so it stays on its sign or board. The quest board's button opens it ("Quest log"), and
      says it's in the Pokédex too; new-quest messages point there. On `main`, waiting on the user's look.
+   - **John's festival happens in the town (2026-10-14, the user's ask: does the pick "actually happen"?).** Once Lantern
+     Village's Waystone is mended, at dusk and night, the town wears the festival picked: Lantern Festival floats paper
+     lanterns on the koi pond and strings red and white ones across the avenue; Moon Viewing hangs a harvest moon over the
+     torii, pampas vases by the plaza and DANGO / TEA stalls; Fireworks Night bursts fireworks over the Shrine's stair, with
+     TAKOYAKI / YAKISOBA stalls and a taiko. Mended in front of you, it appears as the stone blazes. Peek:
+     `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
+     the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
