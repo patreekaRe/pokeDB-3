@@ -163,7 +163,7 @@ function piece(id, tx, ty, { turn = 0, scale = 1, y = 0, dx = 0, dz = 0, free = 
   });
   if (!model) return p.flat ? flatPiece(id, p, tx, ty, turn, dx, dz) : null;
   const play = dressPlay(THREE, model, p);
-  if (play) B.plays.push(play);
+  if (play) { if (play.how.does === 'fire' && !play.how.burners) play.on = true; B.plays.push(play); }   // a room's fires burn without a tap
   model.traverse(o => { if (o.isMesh) { o.castShadow = o.castShadow !== false; o.receiveShadow = true; } });
   model.scale.setScalar(scale);
   const turned = Math.round(turn / (Math.PI / 2)) % 2 !== 0, w = turned ? p.h : p.w, h = turned ? p.w : p.h;
@@ -8973,10 +8973,10 @@ async function buildTown(figs, { look, time, town, mended = false, fest = null }
 const HOMES = {
   // the Clearing's own houses, walked in from the hub (js/data/towns.js's CLEARING); the Nietos' is js/leader-homes.js's
   clearing: {
-    // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, Apricorn trees
+    // Kurt's Workshop: his workbench across the back with Kurt before it, the cauldron and its fire, logs for it
     workshop: { floor: 'planks', walls: 'boards', kurtAt: { x: 4, ty: 1.5 }, castAt: [[6.6, 2.2, 0]],
       furnish: [['shelf', 0, 0], ['balldisplay', 2, 0], ['pottingbench', 3, 0], ['anvil', 5, 0], ['cauldron', 6, 0], ['brazier', 7, 0], ['balldisplay', 8, 0],
-        ['appletree', 0, 3], ['appletree', 8, 3], ['crate', 0, 5], ['crate', 1, 5], ['barrel', 8, 5], ['barrel', 7, 5]] },
+        ['logpile', 0, 3], ['shelf', 8, 3], ['crate', 0, 5], ['crate', 1, 5], ['barrel', 8, 5], ['barrel', 7, 5]] },
   },
   shrine: {
   shop: { floor: 'planks', furnish: [['shelf', 0, 0], ['shelf', 7, 0], ['cupboard', 2, 0], ['cupboard', 6, 0], ['counter', 2, 2], ['counter', 4, 2], ['register', 5, 2, { y: 0.62, scale: 0.72, free: true }], ['candyjar', 2, 2, { y: 0.62, scale: 0.72, free: true }], ['crate', 0, 3], ['crate', 0, 4], ['barrel', 8, 3], ['umbrellas', 8, 4], ['plant', 8, 1], ['balldisplay', 1, 1]] },
