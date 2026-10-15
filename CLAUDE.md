@@ -213,7 +213,7 @@ gets at most a line.
 - **Every 3D place shares the GPU** (2026-10-14: iPhone Safari reloaded the tab mid-run when every place kept its WebGL
   context): a new place with its own `THREE.WebGLRenderer` calls `wakeGL(renderer)` from `js/hd2d.js` each time it is
   shown (it puts every other place to sleep), and on leaving either `sleepGL(renderer)` (kept, restored on its next wake)
-  or `dropGL(renderer, scene)` (built afresh next visit). A place warmed ahead (built while the map is up) calls
+  or `dropGL(renderer, scene)` (only if it then builds a new renderer next visit; a kept one reopened after it draws black, 2026-10-15). A place warmed ahead (built while the map is up) calls
   `restGL(renderer)` once warm: only the last one warmed stays awake beside the one on screen (2026-10-14: four warmed
   contexts awake on the map still reloaded an iPhone after Clarence's badge). A place that builds rooms on demand keeps
   only the last few (`forgetRooms()` in `js/event-3d.js`, `KEEP_ROOMS` 3), and the map builds only the ? rooms you can

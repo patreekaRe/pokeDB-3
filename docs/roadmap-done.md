@@ -2585,3 +2585,8 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
 
 - **Done (2026-10-15): the Crystal Depths play the Sky Pillar song** (the user's ask): `music: 'map4'` on the Depths biome (`js/data/enemies.js`) and Mewtwo's camp (`js/data/camp.js`); `seal` keeps the fall and the gate.
 - **Done (2026-10-15): four towns' own songs** (the user's files): `town-lantern`, `town-cinder`, `town-driftwood`, `town-sunwell` in `js/audio.js`, looped and levelled (`docs/reference/music.md`). Highbough still plays `seal`.
+
+**Black screen on a second visit to the Secret Base or Poké Mall** (fixed 2026-10-15, the user's playtest of the backyard).
+Leaving either one disposed its renderer and lost its context (`dropGL()`), but the next visit reopened the kept root and
+renderer without waking them, so every frame threw and the view stayed black until a reload. Both now `sleepGL()` on
+leaving and `await wakeGL()` on reopening, like the Clearing.
