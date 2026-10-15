@@ -1,6 +1,6 @@
 /* workshop.js  -  Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3; its recipes: js/data/workshop.js). The save's
    side (making a thing, handing a Gym Leader a gift, carrying an Apricorn skin) and its window: the device's
-   (.dev-window), a shelf a tab (Quest, Furniture, Gifts, Apricorns), a tap picks a recipe and Make makes it. Kurt is
+   (.dev-window), a shelf a tab (Quest, Furniture, Gifts, Apricorns, Held berries, Run kit), a tap picks a recipe and Make makes it. Kurt is
    walked to in his house in the Clearing (js/run.js's homeRoom(), js/data/towns.js's CLEARING). */
 
 import { getSave, updateSave } from './storage.js';
@@ -8,7 +8,7 @@ import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
-import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf } from './data/workshop.js';
+import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT } from './data/workshop.js';
 import { RING, townState } from './data/towns.js';
 import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
@@ -16,7 +16,7 @@ import { PIECES } from './secret-base.js';
 /** What the Workshop can see of the save, for shows(); `?hearts=N` puts every friend at N, so their secret recipes show. */
 const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : +n || 0; };
 const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => gymWins(save, id) || 0,
-  hearts: (id) => heartsPeek() ?? heartsOf(workshopOf(save), id) });
+  hearts: (id) => heartsPeek() ?? heartsOf(workshopOf(save), id), yard: !!save.secretBase?.house?.yard, mats: satchelOf(save).seen });
 
 /** The recipes on a shelf now. */
 export const shelf = (tab, save = getSave()) => RECIPES.filter(r => r.kind === tab && shows(r, seen(save)));
@@ -52,6 +52,8 @@ export const giftsHeld = (save = getSave()) => GIFTS.map(g => ({ gift: g, n: wor
 
 const KURT = 'KURT';
 const nameOf = (r) => (r.kind === 'key' ? KEY_BY_ID[r.makes].name : r.name);
+const an = (name) => `${/^[AEIOUX]/.test(name) ? 'an' : 'a'} ${name}`;
+const keptOf = (r, ws) => (repeats(r) ? ws.kit[r.id] || 0 : r.kind === 'gift' ? ws.gifts[r.makes] || 0 : 0);
 
 function art(r) {
   if (r.kind === 'piece' && PIECES[r.makes]) {
@@ -61,7 +63,7 @@ function art(r) {
     c.className = 'tshop-pic';
     return c;
   }
-  if (r.kind === 'skin') {
+  if (r.kind === 'skin' || repeats(r)) {
     const img = el('img', 'tshop-pic pixel');
     img.src = `assets/items/${r.sprite}.png`;
     img.alt = '';
@@ -75,12 +77,16 @@ const EMPTY = {
   piece: 'Visit a town out on the roads and I\'ll learn its furniture. They make lovely things out there.',
   gift: 'Beaten a Gym Leader? Come back and I\'ll tell you what they\'d love.',
   skin: '',
+  held: 'Grow berries in a backyard of your own and bring them here. I\'ll make them into something your Pokémon can hold.',
+  kit: '',
 };
 const ABOUT = {
   key: 'For the towns\' Waystones. Bring me materials from the roads and I\'ll make what they need.',
   piece: 'Furniture you can\'t buy anywhere. Made here, sent to your Secret Base.',
   gift: 'Every Gym Leader has a favourite. Give it to them at home and they\'ll give you something of theirs for your Secret Base.',
   skin: 'Apricorns! A Safari Ball made from one throws just the same. It only looks better. Good friends teach me their secret ones.',
+  held: 'Berries for your Pokémon to hold. Pack one as you set out: it eats it by itself, once a run, when it needs it.',
+  kit: 'Supplies for the road, from your berries and the towns\' finds. Pack one as you set out and it starts in your Bag.',
 };
 
 /** Where a made thing goes, in a line on its card. */
@@ -89,6 +95,8 @@ function goesTo(r, ws) {
   if (r.kind === 'piece') return 'Furniture · sent to your Secret Base';
   if (r.secret) return `Safari Ball look · ${gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'a friend')}'s secret recipe`;
   if (r.kind === 'skin') return 'Safari Ball look · throws the same';
+  if (r.kind === 'held') return 'Held berry · pack one before a run';
+  if (r.kind === 'kit') return 'Run kit · pack one before a run, into your Bag';
   const who = gifteeOf(r.leader, GYM_BY_ID[r.leader]?.name ?? 'them');
   return ws.fond.includes(r.leader) ? `Gift · ${who}'s favourite · given ✓` : `Gift · ${who}'s favourite · give it at their home`;
 }
@@ -125,7 +133,8 @@ export function openWorkshop() {
       const made = all.filter(r => ['made', 'carried'].includes(stateOf(r, ws, sat))).length;
       const b = el('button', `craft-tab${t.id === tab ? ' on' : ''}`);
       b.type = 'button';
-      b.append(el('span', 'craft-tab-name', t.name), el('span', 'craft-tab-count', t.id === 'gift' ? `${all.length} known` : `${made}/${all.length} made`));
+      const kept = REPEAT.includes(t.id) ? all.reduce((n, r) => n + keptOf(r, ws), 0) : 0;
+      b.append(el('span', 'craft-tab-name', t.name), el('span', 'craft-tab-count', t.id === 'gift' ? `${all.length} known` : REPEAT.includes(t.id) ? `have ${kept}` : `${made}/${all.length} made`));
       if (ready) b.append(el('span', 'craft-dot', String(ready)));
       b.addEventListener('click', () => { if (tab === t.id || busy) return; playSound('select'); tab = t.id; picked = null; line(ABOUT[tab]); draw(); });
       return b;
@@ -140,7 +149,7 @@ export function openWorkshop() {
       const icon = el('span', 'craft-row-pic');
       icon.append(art(r));
       row.append(icon, el('span', 'craft-row-name', nameOf(r)));
-      if (r.kind === 'gift' && ws.gifts[r.makes]) row.append(el('span', 'craft-held', `×${ws.gifts[r.makes]}`));
+      if (keptOf(r, ws)) row.append(el('span', 'craft-held', `×${keptOf(r, ws)}`));
       row.append(el('span', `craft-pill ${st}`, pill));
       row.addEventListener('click', () => { if (busy) return; playSound('confirm'); picked = r.id; line(about(r, ws, sat)); draw(); });
       return row;
@@ -156,6 +165,7 @@ export function openWorkshop() {
     const text = r.kind === 'key' ? KEY_BY_ID[r.makes].text : r.kind === 'piece' ? 'Made by hand, one of a kind.' : r.text;
     const info = el('div', 'craft-info');
     info.append(el('h3', 'craft-name', nameOf(r)), el('p', 'craft-goes', goesTo(r, ws)), el('p', 'craft-text', text));
+    if (repeats(r)) info.append(el('p', 'craft-earns', keptOf(r, ws) ? `You have ${keptOf(r, ws)}. Pack one when you start a run.` : 'You have none yet.'));
     if (r.kind === 'gift' && r.sig && PIECES[r.sig]) info.append(el('p', 'craft-earns', ws.fond.includes(r.leader) ? `You earned their ${PIECES[r.sig].name}.` : `Their favourite earns: ${PIECES[r.sig].name}`));
     const top = el('div', 'craft-top');
     top.append(pic, info);
@@ -170,7 +180,7 @@ export function openWorkshop() {
       mats.append(slot);
     }
     const madeSkin = r.kind === 'skin' && ws.made.includes(r.id);
-    const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (r.kind === 'gift' && ws.gifts[r.makes] ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);
+    const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (keptOf(r, ws) ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);
     go.type = 'button';
     go.disabled = !madeSkin && st !== 'ready';
     go.addEventListener('click', () => make(r));
@@ -183,6 +193,8 @@ export function openWorkshop() {
     const need = short.length ? ` I still need ${short.map(m => `${m.need - m.have} ${MATERIALS_BY_ID[m.id].name}`).join(' and ')}.` : ' I can make it now.';
     if (r.kind === 'gift') return `${r.name}, ${gifteeOf(r.leader, GYM_BY_ID[r.leader].name)}'s favourite. Give it at their home and they'll give you something of theirs for your Secret Base.${need}`;
     if (r.kind === 'skin') return `${r.name}. ${r.text}${need}`;
+    if (r.kind === 'held') return `${an(r.name).replace(/^a/, 'A')} for your Pokémon to hold. ${r.text.replace(/^Held\. /, '')}${need}`;
+    if (r.kind === 'kit') return `${an(r.name).replace(/^a/, 'A')}, for your Bag. ${r.text}${need}`;
     if (r.kind === 'key') return `${nameOf(r)}. ${KEY_BY_ID[r.makes].text}${need}`;
     return `A ${nameOf(r)}, made by hand.${need}`;
   };
@@ -205,7 +217,8 @@ export function openWorkshop() {
     line(r.kind === 'key' ? `Done! The ${nameOf(r)}'s in your Satchel. Take it to them.`
       : r.kind === 'piece' ? `Done! The ${nameOf(r)}'s gone to your Secret Base.`
         : r.kind === 'gift' ? `Done! Take the ${r.name} to ${r.leader === 'nietos' ? 'the Nietos\' house' : `${GYM_BY_ID[r.leader].name}'s home`}. Or anyone's.`
-          : `Done! A ${r.name}. Tap Carry it to use it.`);
+          : repeats(r) ? `Done! ${an(r.name).replace(/^a/, 'A')}, kept for you: you have ${keptOf(r, workshopOf(getSave()))} now. Pack one when you set out on a run.`
+            : `Done! A ${r.name}. Tap Carry it to use it.`);
     draw();
   };
   line('Ah, a customer! I make Apricorn balls, mostly. These days the towns keep me busy too. What\'ll it be?');

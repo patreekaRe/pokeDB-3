@@ -2622,3 +2622,13 @@ first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.m
 
 ### The Poké Mall's outside made grand (2026-10-15, the user's ask)
 A gold-ribbed glass dome with a turning Poké Ball, corner towers with gold cupolas, a columned porch with a Poké Ball pediment and chasing bulbs, gold lamps and a red carpet (`mallBuilding()` in `js/hub-3d.js`; `docs/reference/hub-base-mall.md`).
+
+**The backyard, part g: the garden feeds runs** (2026-10-15, the user's ask: Smeargle should explain the yard, a
+planting UI, and farming plus found materials crafting one thing per run; no bot check). Smeargle slides in the first
+time in a bought yard (`yardIntro()` in `js/base-3d.js`, `house.yard.met`, a gifted plot `house.yard.plot`). Watering
+(`water()` in `js/data/berries.js`) adds a berry per watered day; picking puts berries in the Satchel (five `grown`
+materials); `sell()` keeps the 100-a-day cap; `openGarden()` in `js/berry-garden.js` tends every plot. Kurt's Held
+berries and Run kit shelves (`js/data/workshop.js`, repeatable into `save.workshop.kit`), held berries in
+`js/data/held.js` (`run.held`, once a run, mirrored in the sim's `engine.js`), packed on the Prepare screen
+(`renderPack()` in `js/select.js`; not Safari, the Sky Pillar or peeks; allowed for Mewtwo). Patch 1.22.
+

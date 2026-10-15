@@ -24,6 +24,7 @@ import { talkOf } from './data/gym.js';
 import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
+import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
 import { vibrate, battleFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
@@ -187,6 +188,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     recycled: [],      // Recycler: the deck's moves exhausted this fight (each PP Upped after it)
     abyss: 0,          // PP a turn Abyss has given this fight
     items: run.items,   // the run's own list: using an item takes it out of the Bag
+    held: run.held ?? null,   // the run's held berry ({ id, used }, js/data/held.js): eaten once a run, by heldGoes()
+    shut: null,        // a status card no more of lands this fight (the Pecha Berry's)
     onEnd,
     trial,             // a dojo trial's goal: lost the moment it can't be met (trialBroken())
     felledBy: null,    // what landed the last blow: 'burn' or 'seed' at the start of its turn, else a hit
@@ -631,6 +634,37 @@ function loseHp(n) {
     playSound('stat-up');
     statFx('player');
   }
+  if (heldGoes('hurt', { hp: b.hp, maxHp: b.maxHp, lost })) logMore();
+}
+
+/** The run's held berry (js/data/held.js), if `event` sets it off: eaten (once a run), it does its thing with a pop and
+    the games' stat glow, and its line waits in `b.revived` for the next line told (withRevive(), or logMore()). */
+function heldGoes(event, at) {
+  const b = battle, h = heldFires(b.held, event, at);
+  if (!h) return false;
+  b.held.used = true;
+  const said = [];
+  if (h.heal || h.healShare) { const n = healPlayer(heldHeal(h, b.maxHp)); said.push(n ? `Healed ${n}.` : 'HP was full.'); }
+  if (h.strength) { b.strength += h.strength; pop('player-zone', `💪 +${h.strength}`, 'note good', 260); said.push(`+${h.strength} strength.`); }
+  if (h.clears) {
+    const out = (c) => clearsCard(h, c);
+    const n = b.hand.filter(e => out(e.card)).length + b.drawPile.filter(out).length + b.discard.filter(out).length;
+    b.hand = b.hand.filter(e => !out(e.card));
+    b.drawPile = b.drawPile.filter(c => !out(c));
+    b.discard = b.discard.filter(c => !out(c));
+    said.push(n ? `${n} status card${n > 1 ? 's' : ''} thrown out.` : 'Nothing to throw out.');
+  }
+  if (h.shuts) { b.shut = h.shuts; said.push(`No more ${CARDS_BY_ID[h.shuts].name} this fight.`); }
+  pop('player-zone', `${h.icon} ${h.name}!`, 'note good', 120);
+  playSound('heal-hp');
+  statFx('player');
+  b.revived = [b.revived, `${h.name}! ${said.join(' ')}`].filter(Boolean).join(' ');
+  return true;
+}
+
+/** Tell what's waiting in `b.revived` (a held berry's line) after the line already shown. */
+function logMore() {
+  if (battle?.revived) log(withRevive($('battle-log-live').textContent));
 }
 
 /** Any HP loss, from the enemy too, counts for "lost HP this turn" and Mind Blown's discount. */
@@ -1602,6 +1636,7 @@ function hurtPlayer(amount, source = null) {
   if (b.hp <= 0) { b.blow = source; revive(); }
   if (b.hp <= 0) lifeline();
   if (half && b.hp > 0 && b.hp < b.maxHp / 2 && b.aug.bodyguard && !b.guarded) { b.guarded = true; gainBlock(b.aug.bodyguard); pop('player-zone', '💂 Bodyguard!', 'note good', 350); }
+  heldGoes('hurt', { hp: b.hp, maxHp: b.maxHp, lost: through });
   return through;
 }
 
@@ -1852,9 +1887,16 @@ async function enemyTurn() {
   if (move.adds) {
     // junk for your deck (a `kind: 'status'` move does only this; an attack can do it too)
     const { card, n = 1, to = 'discard' } = move.adds;
-    addCards({ id: card, n, to });
-    playSound('stat-down');
-    if (move.kind === 'status') log(`${b.def.name} used ${move.name}! ${n > 1 ? `${n} ${CARDS_BY_ID[card].name} cards` : CARDS_BY_ID[card].name} went into your deck.`);
+    if (b.shut === card) {
+      pop('player-zone', `🛡️ No ${CARDS_BY_ID[card].name}!`, 'note good', 120);
+      if (move.kind === 'status') log(`${b.def.name} used ${move.name}! The ${CARDS_BY_ID[card].name} didn't take.`);
+      else { b.revived = [b.revived, `The ${CARDS_BY_ID[card].name} didn't take.`].filter(Boolean).join(' '); logMore(); }
+    } else {
+      addCards({ id: card, n, to });
+      playSound('stat-down');
+      if (move.kind === 'status') log(`${b.def.name} used ${move.name}! ${n > 1 ? `${n} ${CARDS_BY_ID[card].name} cards` : CARDS_BY_ID[card].name} went into your deck.`);
+      if (heldGoes('status', { card })) logMore();
+    }
   }
 
   if (en.weak > 0) en.weak -= 1;                  // like StS, Weak and Vulnerable wear off at the end of the enemy's turn

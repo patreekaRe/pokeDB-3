@@ -21,6 +21,7 @@ const no = (list, t) => `No.${String(list.indexOf(t) + 1).padStart(2, '0')}`;
 
 /** Where a material turns up (js/data/satchel.js's DROPS and SPARKLES). */
 const where = (m) => {
+  if (m.grown) return 'Grown in your backyard\'s berry plots.';
   const biome = BIOMES_BY_ID[m.biome]?.name ?? 'wild';
   return m.from === 'map' ? `Glints in sparkling rooms on the map, in the ${biome}.` : `Dropped by Pokémon in the ${biome}, and found in its sparkling rooms.`;
 };
@@ -49,7 +50,7 @@ export const satchelApp = () => shelfApp({
   known,
   fresh: (g, t) => sat().fresh.includes(t.id),
   shown: (g, t) => { clearSatchelNews([t.id]); showBadgeNews(); },
-  no: (g, t) => (g.id === 'mats' ? BIOMES_BY_ID[t.biome]?.name ?? '' : no(g.list(), t)),
+  no: (g, t) => (g.id === 'mats' ? (t.grown ? 'Backyard' : BIOMES_BY_ID[t.biome]?.name ?? '') : no(g.list(), t)),
   label: (g, t, k) => (k ? t.name : '???'),
   art: (g, t, k, where) => glyph(t, where === 'banner' ? 'bdx-banner-thing' : 'bdx-slot-thing', k),
   screen(g, t, k) {

@@ -23,6 +23,7 @@ import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { getSave, updateSave, isShiny } from './storage.js';
+import { workshopOf, packable } from './data/workshop.js';
 import { isStarterUnlocked, isShopUnlock } from './progress.js';
 import { aimCorner } from './shop.js';
 import { openDeviceApp } from './collection.js';
@@ -31,6 +32,7 @@ import { showMenuScene } from './scene.js';
 import { selectSky } from './select-sky.js';
 import { smoothIcon } from './smooth-icons.js';
 import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomable, groupDeck } from './ui.js';
+import { HELD_BY_ID } from './data/held.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
 const PSYCHIC = { label: '???', icon: '' };
@@ -41,6 +43,7 @@ let tab = 'starters';
 let handlers = null;      // { onChoose(starter), onBack() }
 let preparing = null;     // after Choose: { onBegin(level), onBack() }, else null
 let level = 0;            // the Trainer Level picked for the run
+let pack = null;          // the held berry or run kit item to set out with (a js/data/workshop.js recipe id), or none
 
 /** Called once at startup. */
 export function initSelect(on) {
@@ -49,11 +52,13 @@ export function initSelect(on) {
   $('sel-back').addEventListener('click', () => (preparing ? preparing.onBack() : handlers.onBack()));
   $('sel-go').addEventListener('click', () => {
     if (!picked || !usable(picked)) return;
-    if (preparing) preparing.onBegin(level);
+    if (preparing) preparing.onBegin(level, packable(workshopOf(getSave())).some(o => o.recipe.id === pack) ? pack : null);
     else handlers.onChoose(picked);
   });
   $('level-down').addEventListener('click', () => setLevel(level - 1));
   $('level-up').addEventListener('click', () => setLevel(level + 1));
+  $('pack-down').addEventListener('click', () => stepPack(-1));
+  $('pack-up').addEventListener('click', () => stepPack(1));
   $('sel-shiny').addEventListener('click', () => {
     const id = picked.id;
     updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
@@ -216,7 +221,36 @@ export function prepare(starter, on) {
   renderDeck(starter);
   level = isMewtwoRun(starter) ? 0 : getSave().maxLevel;   // start on your highest unlocked level
   renderLevel();
+  pack = null;
+  renderPack();
   setPreparing(on);
+}
+
+/* Pack (2026-10-15, the user's ask): what Kurt's Workshop has made you to keep (held berries and run kit, `save.workshop.kit`),
+   one of it taken on the run, or nothing. Shown only when something's kept; the pick is taken from the count as the run
+   begins (js/run.js's beginRun()). */
+const packList = () => [null, ...packable(workshopOf(getSave())).map(o => o.recipe.id)];
+function stepPack(step) {
+  const list = packList();
+  pack = list[(list.indexOf(pack) + step + list.length) % list.length];
+  playSound('stick', 'confirm');
+  renderPack();
+}
+function renderPack() {
+  const kept = packable(workshopOf(getSave()));
+  $('prep-pack').hidden = !kept.length;
+  if (!kept.some(o => o.recipe.id === pack)) pack = null;
+  const o = kept.find(k => k.recipe.id === pack);
+  const pick = $('pack-pick');
+  if (!o) {
+    pick.replaceChildren(el('span', 'pack-none', 'Nothing'));
+    const n = kept.reduce((t, k) => t + k.n, 0);
+    $('pack-rule').textContent = `Kurt's Workshop has made you ${n} thing${n > 1 ? 's' : ''} to take. Pick one: a held berry, or an item for your Bag.`;
+    return;
+  }
+  const r = o.recipe, look = r.kind === 'held' ? HELD_BY_ID[r.makes] : { id: r.sprite, icon: '' };
+  pick.replaceChildren(itemSprite(look, 'pack-ico'), el('span', 'pack-name', `${r.name} ×${o.n}`));
+  $('pack-rule').textContent = r.kind === 'held' ? `Held: ${r.text.replace(/^Held\. /, '')}` : `Starts in your Bag: ${r.text}`;
 }
 
 function setPreparing(on) {

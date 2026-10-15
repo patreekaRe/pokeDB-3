@@ -1744,3 +1744,12 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .quest-pick-opt small::before { content: '✦ '; }
 .qlog-tip { margin: 14px 8px 0; padding: 8px 10px; border-radius: 4px; text-align: center; color: #fff8e8; background: rgba(60, 30, 10, 0.55); }
 @media (prefers-reduced-motion: reduce) { .qlog-caret { transition: none; } }
+
+/* ---------- Pack: a held berry or run kit item from Kurt's Workshop to set out with (renderPack() in js/select.js, 2026-10-15) ---------- */
+.prep-pack { margin-top: 8px; }
+.prep-pack[hidden] { display: none; }
+.pack-pick { display: flex; align-items: center; justify-content: center; gap: 4px; min-width: 8ch; max-width: 46vw; padding: 2px 6px; border-radius: 4px; background: #1f3a14; color: #b6d68e; font-size: 0.75rem; text-align: center; }
+.pack-ico { flex: none; display: grid; place-items: center; width: 24px; height: 24px; }
+.pack-ico .item-sprite { width: 24px; height: 24px; image-rendering: pixelated; }
+.pack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pack-none { padding: 4px 0; }

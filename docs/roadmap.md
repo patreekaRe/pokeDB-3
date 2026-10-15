@@ -16,7 +16,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
 the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js` / `js/pc.js`'s `blueprint()`), **one
 plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
-roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
+roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule), except the garden since part g. Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
   b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
@@ -30,6 +30,11 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
   f) Done 2026-10-15, on `main` (the user's ask): the way in is a garden arch in the Clearing beside the Ancient Tree,
      brambled and padlocked till the yard is bought; no back door any more (docs/roadmap-done.md). Waiting on the user's
      look: `?hubat=27,4&coins=2000` with a Secret Base owned, Unlock, walk in and back out.
+  g) Done 2026-10-15, on `main` (the user's ask; it lifts "decoration only" for the garden): Smeargle's slide-in yard
+     intro (and a free plot), watering, picked berries into the Satchel (sell spares), the Garden window, and Kurt's
+     two repeatable shelves, held berries and a run kit, one packed on the Prepare screen per normal run
+     (docs/roadmap-done.md). Not yet seen on a phone: `?yard` (intro, Garden button) and `?satchel` at Kurt's. Ideas
+     left: a Pokédex Garden app with timers, Pokémon in the yard tending plots.
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome

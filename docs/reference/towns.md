@@ -157,7 +157,22 @@ holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:
 gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
 leader]`). **Hearts** (2026-10-14, docs/roadmap.md step 8 session a): `heartsOf(ws, leader)` in `js/data/workshop.js` caps `liked` at `HEARTS` (5); `liked` itself keeps counting. A home shows them on the room bar's LCD beside its name (`showChoice({ hearts })`, `#room-hearts`, `heartRow()` in `js/ui.js`), a gift says the new count, and the PC's FRIENDS page (`friendsOpen()` in `js/pc-news.js`: towns on and a gift-taking leader beaten) lists `FRIENDS` (the Nietos first), a leader not beaten a silhouette, their favourite named once given. **Heart lines** (2026-10-14, session b): `HEART_LINES` in `js/data/towns.js`, 5 a friend (the Nietos' tagged LAW: / BRITT: / LINC:), the Nth unlocked at N hearts, warmer as they rise and full of the other friends. `homeTalk(town, id, st, hearts, heard)` says the unlocked ones not yet heard first (after any questline word), then the usual lines with the heard ones behind them; `save.workshop.heard[id]` counts those said (set as each is tapped through, in `homeRoom()`'s `onTalk`), and a gift that fills a heart says there's something new to hear. Playtest `?hearts=N` (every friend at N hearts, unheard, nothing saved). **The Nietos too** (2026-10-15, the user's call: they "should definitely get gifts and provide furniture"): their gift is the Acorn Rattle (3 Whisper Acorns, 1 Glowmoss, from the Clearing biome), given in their house even after seven (only Linc sleeps; the other leaders take none asleep), and it earns the **Big Kangaskhan doll** (`bigkangaskhandoll`, a new `DOLLS` / `PLUSH` line with a joey in the pouch, `EXTRAS.joey` in `js/base-dolls.js`; its small doll sells in the mall like the rest). `gifteeOf()` in `js/data/workshop.js` names them Law and Britt. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
 `js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
-counts toward a recipe's needs, and what's made is saved (a playtest save only).
+counts toward a recipe's needs, and what's made is saved (a playtest save only). **Held berries and Run kit** (2026-10-15, the user's ask: farm
+berries plus the world's materials to craft something for a run, one a run): two more shelves (`TABS`, six now, two rows of
+three), the first ones made again and again (`REPEAT`, `repeats()`): each Make takes the materials and adds one to
+`save.workshop.kit[recipe id]` (`madeInto()`; `isMade()` is never true for them), the tab says `have N`, a row `×N`, the card
+"You have N" and Make another. Each needs 2-3 backyard berries (js/data/satchel.js's `grown` materials) and a town's find or
+two, spread over five towns so the backyard pulls you round the roads: **Held berries** (`held-<berry>`, one a berry kind,
+js/data/held.js; shown once the backyard's bought, `save.secretBase.house.yard`, or that berry's ever been in the Satchel)
+Oran (3 Oran, 1 Whisper Acorn), Sitrus (3 Sitrus, 1 Sea Glass), Cheri (3 Cheri, 1 Savanna Spice), Pecha (3 Pecha, 1 Washi
+Paper), Lum (3 Lum, 1 Ghostcap); **Run kit** (`kit-<item id>`, a real js/data/items.js item, always shown) Potion (2 Oran, 1
+Glowmoss), Super Potion (2 Sitrus, 1 Oran, 1 Acacia Resin), X Attack (2 Cheri, 1 Magma Ore), X Defend (2 Pecha, 1
+Driftwood), Revive (2 Lum, 1 Sitrus, 1 Sea Glass, 1 Ember Sequin). **Packing**: the run's Prepare screen (js/select.js's
+`renderPack()`, `#prep-pack` under the Trainer Level, only when something's kept) steps through Nothing and each kept thing
+(◀ ▶) with what it does; Begin hands the pick to `beginRun(..., pack)` in js/run.js, whose `packKit()` takes one from the
+count (`packOne()`) as the run starts: a held berry becomes `run.held`, a kit item goes into `run.items`. Never a playtest
+peek, a Safari run or a Sky Pillar climb (beginRun() skips it); Mewtwo's own run may pack (it has no leaderboard and the
+perks apply there too). An abandoned run doesn't refund. `packable()` lists what's kept; tests/workshop.test.mjs.
 
 **Signature pieces 2 and 3** (2026-10-15, docs/roadmap.md step 8 session d): each friend gives a second piece at 3
 hearts and a third at 5 (`HEART_PIECES` / `HEART_AT` / `heartPieces()` in `js/data/workshop.js`), in the style of their

@@ -77,6 +77,29 @@ runs/cell: L0 70 / 77 / 76, L3 56 / 57 / 61, L5 34 / 34 / 33 (before, 400
 runs: L0 69 / 78 / 71, L3 60 / 62 / 64, L5 37 / 32 / 38).
 
 
+## Held berries (2026-10-15, the user's ask)
+
+Like the games' held items: your Pokémon holds at most one a run, `run.held = { id, used }`, packed from Kurt's Workshop
+before the run (docs/reference/towns.md's Kurt's Workshop: the Held berries shelf and Pack); a Run kit item packed the
+same way is just an item in `run.items` from the start. `HELD` in `js/data/held.js` (pure, `tests/held.test.mjs`): each
+goes off by itself ONCE a run, in battle, and is then eaten (`heldFires()` says when, `heldGoes()` in `js/battle.js` does it):
+- **Oran Berry**: the first time your HP is below half after losing some, heal 10.
+- **Sitrus Berry**: the same moment, heal 25% of max HP.
+- **Cheri Berry**: the first time one loss takes 10 or more HP (after Block), +2 strength for the fight.
+- **Pecha Berry**: the first time an enemy puts Poison in your deck, every Poison card (hand and piles) is thrown out and
+  no more lands that fight (`battle.shut`; the move's pop says "No Poison!", its line "The Poison didn't take").
+- **Lum Berry**: the first time an enemy puts any status card in your deck (Confusion, Paralysis, Poison, Sludge: the only
+  debuffs the player gets), every status card in your hand and piles is thrown out. (Not the Lum Berry relic, which makes
+  status cards playable.)
+"Hurt" is checked in `hurtPlayer()` (after Revive and the lifelines, so a revived Pokémon below half eats an Oran) and in
+`loseHp()`; "status" after `move.adds` in `enemyTurn()`. Heals go through `healPlayer()`. On going off: a pop with its name,
+`statFx()` (so `battleFx()` off skips the glow) and `heal-hp`; its line rides on the hit's (`b.revived`, `withRevive()`) or
+is added to the line shown (`logMore()`). `battle.held` *is* `run.held`, so it stays eaten, and a refresh replays the fight
+from the map's checkpoint with it uneaten, like items. Saved with the run (`held`); a run saved before has none, and an
+unknown id is dropped rather than discarding the save (no version bump). The Bag's Items pocket opens on a "Held:" line
+(`heldRow()` in `js/run.js`), "(eaten)" once it's gone. The sim mirrors it (`cfg.held`, `heldGoes()` in `sim/engine.js`);
+no bot numbers (the user's call: none needed). Cheri and Pecha's sprites are PokéSprite's, like the rest.
+
 ## In the Index
 
 An item counts as found (`save.seen.items`, the Collection's Items app) once it is in the Bag, used or not (the user's call, 2026-10-06: a Revive carried twice and never used stayed ???). `checkpoint()` in `js/run.js` marks the Bag at every map, `endRun()` marks whatever the last rewards added, and using one in battle or on the map still marks it.

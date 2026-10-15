@@ -1,17 +1,23 @@
 /* ============================================================
    workshop.js  -  Kurt's Workshop in the Whispering Clearing (docs/roadmap.md's Towns step 6, session 3, 2026-10-14):
-   Johto's Apricorn ball maker turns the Satchel's materials (js/data/satchel.js) into four kinds of thing, none of them
-   any power in a run:
+   Johto's Apricorn ball maker turns the Satchel's materials (js/data/satchel.js) into six kinds of thing, the first four
+   no power in a run:
    - key    the questlines' Make steps (js/data/towns.js's QUESTS `craft`), into the Satchel's Key Items
    - piece  craft-only furniture from each town's shelf, into the Secret Base (js/data/furniture.js's 'craft' source)
    - gift   a present for a Gym Leader, handed over in their home; their favourite earns their signature piece
    - skin   an Apricorn ball's look for the Safari Ball (looks only: the odds stay the Safari Ball's)
+   - held   a held berry (js/data/held.js) and
+   - kit    a Bag item (js/data/items.js), both from backyard berries and the towns' finds (2026-10-15, the user's ask):
+            made again and again, counted in `save.workshop.kit`, and one of them packed before a run (packOne())
    A recipe shows once it can matter: a quest item while its town's questline is open, a town's pieces once you've been
-   there, a gift once you've beaten whoever loves it, the Apricorns always. Pure: tests/workshop.test.mjs.
+   there, a gift once you've beaten whoever loves it, a held berry once the backyard's bought or that berry's been in the
+   Satchel, the Apricorns and the run kit always. Pure: tests/workshop.test.mjs.
    The save's side and the window are js/workshop.js; the save is `save.workshop` (workshopOf()).
    ============================================================ */
 
 import { MATERIALS_BY_ID } from './satchel.js';
+import { HELD_BY_ID } from './held.js';
+import { ITEMS_BY_ID } from './items.js';
 
 const key = (id, town, needs, more = {}) => ({ id, kind: 'key', town, makes: id, needs, ...more });
 const piece = (id, name, town, needs, more = {}) => ({ id: `piece-${id}`, kind: 'piece', name, town, makes: id, needs, ...more });
@@ -19,6 +25,8 @@ const gift = (id, name, icon, leader, needs, text, sig) => ({ id: `gift-${id}`, 
 const skin = (id, name, needs, text) => ({ id: `skin-${id}`, kind: 'skin', name, makes: id, sprite: `${id}-ball`, needs, text });
 // a friend's secret recipe (step 8, session e): their own Safari Ball look, taught to Kurt at SECRET_AT hearts
 const secret = (id, name, leader, needs, text) => ({ ...skin(id, name, needs, text), leader, secret: true });
+const held = (id, needs) => { const h = HELD_BY_ID[id]; return { id: `held-${id}`, kind: 'held', name: h.name, makes: id, berry: h.berry, sprite: h.sprite, needs, text: h.text }; };
+const kit = (id, needs) => { const i = ITEMS_BY_ID[id]; return { id: `kit-${id}`, kind: 'kit', name: i.name, makes: id, sprite: id, needs, text: i.text }; };
 
 export const RECIPES = [
   // the questlines' Make steps: each from its own biome, but Machew's katana wants Cinder Springs' ore, and the Spirit
@@ -76,6 +84,18 @@ export const RECIPES = [
   secret('jet', 'Jet Ball', 'ricky', { seeds: 3, ghostcap: 2 }, 'Ricky\'s secret: it flies like a 2 a.m. espresso. He has never thrown one before noon.'),
   secret('beast', 'Beast Ball', 'machew', { resin: 3, spice: 2 }, 'Machew\'s secret: he says it\'s for beasts. It\'s for the cover of his journal.'),
   secret('poke', 'Poké Ball', 'jerome', { spice: 3, resin: 2 }, 'Jerome\'s secret: the very first Poké Ball, lifted from a museum case. He swears it was a replica.'),
+  // held berries, a town's find in each so the backyard pulls you round the roads
+  held('oran', { oran: 3, acorn: 1 }),
+  held('sitrus', { sitrus: 3, 'sea-glass': 1 }),
+  held('cheri', { cheri: 3, spice: 1 }),
+  held('pecha', { pecha: 3, washi: 1 }),
+  held('lum', { lum: 3, ghostcap: 1 }),
+  // the run kit: a Bag item to start a run with
+  kit('potion', { oran: 2, glowmoss: 1 }),
+  kit('super-potion', { sitrus: 2, oran: 1, resin: 1 }),
+  kit('x-attack', { cheri: 2, 'magma-ore': 1 }),
+  kit('x-defend', { pecha: 2, driftwood: 1 }),
+  kit('revive', { lum: 2, sitrus: 1, 'sea-glass': 1, 'ember-sequin': 1 }),
 ];
 export const RECIPES_BY_ID = Object.fromEntries(RECIPES.map(r => [r.id, r]));
 
@@ -85,7 +105,12 @@ export const TABS = [
   { id: 'piece', name: 'Furniture' },
   { id: 'gift', name: 'Gifts' },
   { id: 'skin', name: 'Apricorns' },
+  { id: 'held', name: 'Held berries' },
+  { id: 'kit', name: 'Run kit' },
 ];
+/** The shelves made again and again, each make one more kept to pack for a run (`ws.kit`, by recipe id). */
+export const REPEAT = ['held', 'kit'];
+export const repeats = (recipe) => REPEAT.includes(recipe.kind);
 
 /** The gifts, by the Gym Leader who loves each. */
 export const GIFTS = RECIPES.filter(r => r.kind === 'gift');
@@ -97,10 +122,10 @@ export const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.makes, s]));
 /** Who a gift is handed to, by name: the Nietos are Law and Britt at home. */
 export const gifteeOf = (leader, name) => (leader === 'nietos' ? 'Law and Britt' : name);
 
-/** The save's Workshop: furniture and skins `made`, `gifts` held (counts), each leader's `liked` (gifts given) and `heard` (heart lines said, js/data/towns.js's HEART_LINES), those
+/** The save's Workshop: furniture and skins `made`, `gifts` held (counts), held berries and run kit kept (`kit`, counts by recipe id), each leader's `liked` (gifts given) and `heard` (heart lines said, js/data/towns.js's HEART_LINES), those
     `fond` of you (their favourite given, their signature piece earned) and the Safari Ball's `skin` (null: its own). */
 export function workshopOf(save) {
-  return { made: [], gifts: {}, liked: {}, heard: {}, fond: [], skin: null, ...(save.workshop || {}) };
+  return { made: [], gifts: {}, kit: {}, liked: {}, heard: {}, fond: [], skin: null, ...(save.workshop || {}) };
 }
 
 /** What a recipe needs that the Satchel lacks: [{ id, need, have }] (empty when it can be made). */
@@ -108,16 +133,19 @@ export function shortOf(recipe, sat) {
   return Object.entries(recipe.needs).map(([id, need]) => ({ id, need, have: sat.mats[id] || 0 })).filter(m => m.have < m.need);
 }
 
-/** Made already, for good: a key item held, a piece or skin made (a gift can always be made again). */
+/** Made already, for good: a key item held, a piece or skin made (a gift, a held berry or run kit can always be made again). */
 export function isMade(recipe, ws, sat) {
   if (recipe.kind === 'key') return sat.keys.includes(recipe.makes);
-  if (recipe.kind === 'gift') return false;
+  if (recipe.kind === 'gift' || repeats(recipe)) return false;
   return ws.made.includes(recipe.id);
 }
 
 /** Whether the Workshop shows a recipe (see the top of this file). `towns` is the save's per-town states
-    (js/data/towns.js's townState() of each), `wins` a Gym Leader's wins, `hearts` a friend's hearts. */
-export function shows(recipe, { towns, wins, hearts = () => 0 }) {
+    (js/data/towns.js's townState() of each), `wins` a Gym Leader's wins, `hearts` a friend's hearts, `yard` the backyard
+    bought, `mats` the materials ever held (the Satchel's `seen`). */
+export function shows(recipe, { towns, wins, hearts = () => 0, yard = false, mats = [] }) {
+  if (recipe.kind === 'held') return yard || mats.includes(recipe.berry);
+  if (recipe.kind === 'kit') return true;
   if (recipe.kind === 'key') return !!towns[recipe.town]?.quest;
   if (recipe.kind === 'piece') {
     const st = towns[recipe.town];
@@ -139,8 +167,20 @@ export function spend(recipe, sat) {
 /** The Workshop once a recipe's made (the Satchel's side, a key item, is js/workshop.js's). */
 export function madeInto(recipe, ws) {
   if (recipe.kind === 'gift') return { ...ws, gifts: { ...ws.gifts, [recipe.makes]: (ws.gifts[recipe.makes] || 0) + 1 } };
+  if (repeats(recipe)) return { ...ws, kit: { ...ws.kit, [recipe.id]: (ws.kit?.[recipe.id] || 0) + 1 } };
   if (recipe.kind === 'key' || ws.made.includes(recipe.id)) return ws;
   return { ...ws, made: [...ws.made, recipe.id] };
+}
+
+/** The held berries and run kit kept to pack for a run, [{ recipe, n }], in the Workshop's order. */
+export const packable = (ws) => RECIPES.filter(r => repeats(r) && ws.kit?.[r.id] > 0).map(r => ({ recipe: r, n: ws.kit[r.id] }));
+
+/** One kept thing packed for a run: { ws (one fewer kept), held: a held berry's id } or { ws, item: an item's id }; null
+    if none is kept. */
+export function packOne(ws, id) {
+  const r = RECIPES_BY_ID[id];
+  if (!r || !repeats(r) || !(ws.kit?.[id] > 0)) return null;
+  return { ws: { ...ws, kit: { ...ws.kit, [id]: ws.kit[id] - 1 } }, ...(r.kind === 'held' ? { held: r.makes } : { item: r.makes }) };
 }
 
 /** A gift handed to `leader`: one fewer held, their liking up (two for their favourite), and their favourite the first

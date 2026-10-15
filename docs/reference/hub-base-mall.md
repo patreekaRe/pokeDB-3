@@ -102,10 +102,35 @@ The first section began as the note on playtesting the live site and grew into t
   sprout for the first half, bloom, fruit). Moving a plot keeps it (`place()` copies `holding.back.crop`); storing it
   loses it. In Walk a tap on a plot opens `openPlot()` (the town shop's `.dev-window` look): plant, Dig up, or Pick.
   `harvest()` books it on `secretBase.garden` `{ picked, day, coins }`: the first of a berry earns its basket (the
-  `berry` source in `js/data/furniture.js`, indoor kinds `<berry>basket`, `solo`), later ones `coins`, at most `DAY_CAP`
-  (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
+  `berry` source in `js/data/furniture.js`, indoor kinds `<berry>basket`, `solo`). `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
   sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
   plant whose stage turned over (at once after the window changes one).
+  **Berries to the Satchel, watering and selling** (2026-10-15, the user's ask, for Kurt's Workshop): picking no longer
+  pays coins; `harvest()` returns `{ berry, n, basket }` and the caller puts the `n` in the Satchel (`gainMat()`; the five
+  are `MATERIALS` with `biome: 'garden'`, `grown: true`, never dropped in a run; the Satchel app files them under
+  "Backyard", "Grown in your backyard's berry plots."). A growing crop takes water once a UTC day (`water()` /
+  `canWater()` / `wetToday()`, the days on `it.crop.wet`), and `yieldOf()` is 1 berry plus 1 a watered day. The plot
+  window offers Water (greyed "Watered today" once done) beside Dig up; a watered plot's soil is darker today in 3D (one
+  shared see-through sheet over the furrows, `wetSoil()`, laid and dried by `dress()`, so `liveGarden()` dries it when
+  the day turns) and wears a blue drop on its window tile. Spares sell for their `coins` through `sell(b, id, k)`:
+  whole berries only, the stand's `DAY_CAP` (100) a UTC day still on `secretBase.garden`; the caller takes them out with
+  `gainMat(id, -n)`.
+- **The Garden window** (2026-10-15, the user's ask): out in the yard with a plot placed, a green Garden key stands
+  right of Decorate (`.b3-garden`, `.has-garden` moves Decorate over; `tendGarden()` / `plotsHere()` in
+  `js/base-3d.js`). `openGarden(b, plots, save)` in `js/berry-garden.js`, the plot window's `.dev-window town-shop`
+  look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
+  `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
+  berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
+  so the 3D plants change at once.
+- **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard, once the housewarming
+  indoors is over (`metSmeargle()`; so the two never meet), `yardIntro()` in `js/base-3d.js` (from `startVisit()`) has
+  Smeargle slide in on `gymTalk()` (lit, plate PAINTER & GARDENER, its cry) and say what the yard is for: furnishing it
+  from the garden catalogue, storage and Furniture, the Pokémon tab, the Berry plot it leaves in storage, the berries'
+  days and UTC midnight, watering, the Satchel and the Garden key's selling, and Kurt's Workshop by name only once
+  `workshopOpen()` (else someone handy in the Clearing, someday). Taps and walking wait meanwhile (`yardTalk`). The gift
+  is `house.yard.plot` (1), counted by `owns()` in `js/secret-base.js` (`YARD_GIFT`), and heard is `house.yard.met`
+  (`metInYard()` / `meetInYard()`); a lent `?yard` hears it once a page load, any time, and its plot goes with the lent
+  yard, so neither reaches a real save.
 - **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
   in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
   (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;

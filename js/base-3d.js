@@ -24,11 +24,11 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
-import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot } from './berry-garden.js';
+import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot, openGarden } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard } from './secret-base.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -1161,7 +1161,9 @@ function visitSpot() {
 }
 
 async function startVisit() {
-  if (visit || base.here) return;
+  if (visit || yardTalk) return;
+  if (outdoors()) return yardIntro();
+  if (base.here) return;
   if (metSmeargle(base)) return leaderVisit();
   const spot = visitSpot();
   if (!spot) return;
@@ -1351,6 +1353,48 @@ function endVisit() {
   refresh();
 }
 
+/* ---------- Smeargle in the yard ---------- */
+
+/* The first time out in the yard (2026-10-15, the user's ask), once the housewarming indoors is over (a lent ?yard yard
+   any time): Smeargle slides in on the talk window Kurt's hello uses (gymTalk() in js/gym.js) and says what the yard is
+   for, leaving a Berry plot in storage (meetInYard() in js/secret-base.js). Your partner stands still while it talks. */
+const YARD_SMEARGLE = { id: 'smeargle', name: 'SMEARGLE', talk: SMEARGLE.src };
+let yardTalk = false;
+
+async function yardLines() {
+  const { workshopOpen } = await import('./data/towns.js');
+  return [
+    `${metSmeargle(base) ? 'Hello again!' : 'Hello there! I\'m Smeargle.'} So this is your backyard. What a lovely patch of lawn!`,
+    'It\'s yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall: just tap me at the shop.',
+    'Whatever you buy waits in storage. Set it out with Furniture, the same as indoors.',
+    `And the Pokémon tab lets the ${ON_SHOW} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
+    'Oh! I left you a Berry plot in storage, too. Set it down, then tap it while walking to plant a berry.',
+    'Cheri, Oran and Pecha Berries take a day, Sitrus two and Lum three. They ripen at midnight, UTC.',
+    'Water a growing plot once a day, and it gives one more berry for every day it was watered.',
+    'Picked berries go in your Satchel. Sell the spares with the Garden button, out here.',
+    workshopOpen(getSave()) ? 'Kurt at his Workshop in the Clearing turns berries and town materials into a held berry or an item to take on a run. One a run, mind!'
+      : 'And someone handy in the Clearing may craft with them someday. Keep a few!',
+    'Happy gardening! See you at the shop.',
+  ];
+}
+
+async function yardIntro() {
+  if (metInYard(base) || (!base.house.yard.lent && !metSmeargle(base))) return;
+  yardTalk = true;
+  try {
+    const lines = await yardLines();
+    await new Promise(r => setTimeout(r, calm ? 200 : 900));
+    if (!root.isConnected || !outdoors()) return;
+    Object.assign(walker, { path: [], goal: null, through: null });
+    refresh();
+    playCry('smeargle');
+    const { gymTalk } = await import('./gym.js');
+    await gymTalk(YARD_SMEARGLE, lines, { lit: true, title: 'PAINTER & GARDENER ' });
+    meetInYard(base);
+    playSound('item-get');
+  } finally { yardTalk = false; refresh(); }
+}
+
 /* ---------- hearts and Zs ---------- */
 
 function puffTexture(kind) {
@@ -1512,8 +1556,20 @@ function floorTile(e) {
 }
 let drags = null;
 
+/** The yard's placed berry plots. */
+const plotsHere = () => outdoors() ? base.items.filter(it => isPlot(PIECES[it.id])) : [];
+
+/** The Garden key: every plot in one window (openGarden() in js/berry-garden.js). */
+function tendGarden() {
+  const list = plotsHere();
+  if (!list.length || mode !== 'walk' || yardTalk) return;
+  playSound('select');
+  walker.hopUntil = performance.now() + 500;
+  openGarden(base, list, save);
+}
+
 function onTap(e) {
-  if (drags?.swallowed()) return;
+  if (drags?.swallowed() || yardTalk) return;
   if (swallowClick || holding) { swallowClick = false; return; }
   if (performance.now() < quietUntil) return;   // the end of a pinch or a pan, not a tap
   const ray = new THREE.Raycaster();
@@ -1578,6 +1634,7 @@ const GLYPHS = {
   cart: '<path d="M3 4.5h2.4l2.2 10.2h10.2l1.9-7.2H6.6" stroke-width="2.2"/><circle cx="9" cy="18.6" r="1.5" stroke-width="2"/><circle cx="16.2" cy="18.6" r="1.5" stroke-width="2"/>',
   paint: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.4-1.9-.5-1.2.3-2.4 1.6-2.4h1.6a3.9 3.9 0 0 0 3.9-3.9C20.5 7.6 16.7 3.5 12 3.5Z" stroke-width="2.2"/><circle cx="7.8" cy="11" r="1.2" stroke-width="2"/><circle cx="10.5" cy="7.4" r="1.2" stroke-width="2"/><circle cx="14.8" cy="7.6" r="1.2" stroke-width="2"/>',
   ball: '<circle cx="12" cy="12" r="8" stroke-width="2.2"/><path d="M4 12h5.3M14.7 12H20" stroke-width="2.2"/><circle cx="12" cy="12" r="2.6" stroke-width="2.2"/>',
+  sprout: '<path d="M12 20.5v-9" stroke-width="2.4"/><path d="M12 12.5C12 8 9 5.5 4.5 5.5 4.5 10 7.5 12.5 12 12.5Z" stroke-width="2.2"/><path d="M12 11c0-3.6 2.6-6 7-6 0 4-2.8 6-7 6Z" stroke-width="2.2"/><path d="M7 20.5h10" stroke-width="2.4"/>',
 };
 const glyph = (name) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${GLYPHS[name]}</svg>`;
 
@@ -1715,6 +1772,9 @@ function refresh() {
   root.classList.toggle('tucked', mode === 'edit' && !!busy);
   root.classList.toggle('painting', tab === 'colour');
   root.classList.toggle('outdoors', outdoors());
+  const garden = root.querySelector('.b3-garden');
+  garden.hidden = !(outdoors() && mode === 'walk' && !yardTalk && plotsHere().length);
+  root.classList.toggle('has-garden', !garden.hidden);
   const bar = root.querySelector('.b3-acts');
   bar.hidden = !busy;
   const wall = PIECES[holding?.id ?? base.items[sel]?.id]?.layer === 'wall';
@@ -2098,6 +2158,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
       <p class="b3-talk" hidden aria-live="polite"><b>Smeargle</b><span></span><i aria-hidden="true"></i></p>
       <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
+      <button type="button" class="b3-garden" aria-label="Garden" hidden>${glyph('sprout')}<span>Garden</span></button>
     </div>
     <div class="b3-sheet">
       <button type="button" class="b3-grip" aria-label="Fold the sheet"></button>
@@ -2178,7 +2239,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   for (let i = 0; i < lowered; i++) if (!stepDown()) break;
   new ResizeObserver(resize).observe(view);
   view.addEventListener('click', onTap);
-  drags = dragWalk({ target: view, can: (e) => mode === 'walk' && !holding && visit?.phase !== 'talk' && e.target === view, tile: floorTile, go: (t) => walkFloor(t, true) });
+  drags = dragWalk({ target: view, can: (e) => mode === 'walk' && !holding && visit?.phase !== 'talk' && !yardTalk && e.target === view, tile: floorTile, go: (t) => walkFloor(t, true) });
   view.addEventListener('pointerdown', onDown);
   view.addEventListener('pointermove', onMove);
   view.addEventListener('pointerup', onUp);
@@ -2196,6 +2257,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   root.querySelectorAll('.b3-tab').forEach(b => b.addEventListener('click', () => { folded = false; playSound('select'); shopMsg = ''; untry(); tray(b.dataset.tab); refresh(); }));
   root.querySelector('.b3-gift .b3-done').addEventListener('click', () => { root.querySelector('.b3-gift').hidden = true; tray('furniture'); setMode('edit'); refresh(); });
   root.querySelector('.b3-decor').addEventListener('click', () => setMode('edit'));
+  root.querySelector('.b3-garden').addEventListener('click', tendGarden);
   // with a piece in hand the gold pill puts it down; with one picked it lets go of it; else it ends decorating
   root.querySelector('.b3-ok').addEventListener('click', () => holding ? place() : sel >= 0 ? act('done') : setMode('walk'));
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));

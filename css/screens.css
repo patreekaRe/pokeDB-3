@@ -6127,3 +6127,7 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 .dojo-gift.got { opacity: 1; filter: none; }
 .dojo-gift-name { font-size: 0.75rem; line-height: 1.1; text-align: center; color: #fbe8c0; }
 .dialog.craft.dojo-win .craft-list { min-height: 90px; max-height: 26dvh; }
+
+/* ---------- Kurt's Workshop's two repeatable shelves, Held berries and Run kit (2026-10-15): six tabs, two rows of three ---------- */
+.craft-tabs { grid-template-columns: repeat(3, 1fr); row-gap: 12px; }
+.held-row.used { opacity: 0.6; }

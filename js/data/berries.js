@@ -1,8 +1,9 @@
 /* berries.js  -  the backyard's berry garden (docs/roadmap.md's backyard, part d): a soil plot is placed like furniture
    (`berryplot` in js/base-furniture-yard.js), a berry planted in it grows over real UTC days, sprout to bloom to fruit,
-   ripe on the UTC midnight its days end, like the store's restock. Picking one gives a few PokéCoins, never run items
-   (the base's rule: decoration only), and the first of each kind its berry basket instead, an earned piece
-   (js/data/furniture.js's `berry` source). Coins from the garden stop at DAY_CAP a UTC day, well under the Game
+   ripe on the UTC midnight its days end, like the store's restock. Picking one puts its berries in the Satchel (since
+   2026-10-15, the user's ask: Kurt's Workshop crafts with them), one and one more for each UTC day it was watered while
+   growing, and the first of each kind earns its berry basket too, an earned piece (js/data/furniture.js's `berry`
+   source). Spares sell for their `coins`, the garden's sales stopping at DAY_CAP a UTC day, well under the Game
    Corner's ~380, since plots can be duplicated without end. A plot's crop is saved on its item (`it.crop`); everything
    else in `secretBase.garden`. Kept free of the DOM so node tests can read it. */
 
@@ -38,17 +39,44 @@ export const picked = (save) => save?.secretBase?.garden?.picked || [];
 /** Coins the garden can still give today. */
 export const coinsLeft = (garden, now = Date.now()) => DAY_CAP - (garden?.day === dayOf(now) ? garden.coins : 0);
 
-/** Pick a ripe plot `it` on base `b`: empties it and books the reward on `b.garden`. Returns { berry, coins, basket }
-    (the coins are the caller's to add to the save), or null if nothing is ripe. The first of a kind is its basket. */
+/** Whether a crop was watered on today's UTC day. */
+export const wetToday = (crop, now = Date.now()) => !!crop?.wet?.includes(dayOf(now));
+
+/** Whether a crop can be watered: growing, not ripe, and not yet watered today. */
+export const canWater = (crop, now = Date.now()) => ['sprout', 'bloom'].includes(stageOf(crop, now)) && !wetToday(crop, now);
+
+/** Water a growing crop (`crop.wet`, the UTC days it was watered). False if it can't be today. */
+export function water(crop, now = Date.now()) {
+  if (!canWater(crop, now)) return false;
+  crop.wet = [...(crop.wet || []), dayOf(now)];
+  return true;
+}
+
+/** How many berries a crop gives when picked: one, and one more a watered day. */
+export const yieldOf = (crop) => 1 + (crop?.wet?.length || 0);
+
+/** Pick a ripe plot `it` on base `b`: empties it and books the kind as picked on `b.garden`. Returns { berry, n,
+    basket }, the berries the caller's to put in the Satchel, or null if nothing is ripe. The first of a kind earns its
+    basket as well. */
 export function harvest(b, it, now = Date.now()) {
   if (stageOf(it.crop, now) !== 'fruit') return null;
-  const berry = BERRY[it.crop.id];
+  const berry = BERRY[it.crop.id], n = yieldOf(it.crop);
   delete it.crop;
   const g = (b.garden ||= {});
   g.picked ||= [];
-  if (!g.picked.includes(berry.id)) { g.picked.push(berry.id); return { berry, coins: 0, basket: true }; }
+  const basket = !g.picked.includes(berry.id);
+  if (basket) g.picked.push(berry.id);
+  return { berry, n, basket };
+}
+
+/** Sell up to `k` berries of `id` at its price, as many as today's DAY_CAP still pays for in full, booked on
+    `b.garden`. Returns { n, coins }: the caller takes the `n` out of the Satchel and adds the coins. */
+export function sell(b, id, k, now = Date.now()) {
+  const berry = BERRY[id], g = (b.garden ||= {});
+  if (!berry || !(k > 0)) return { n: 0, coins: 0 };
   if (g.day !== dayOf(now)) { g.day = dayOf(now); g.coins = 0; }
-  const coins = Math.max(0, Math.min(berry.coins, DAY_CAP - g.coins));
-  g.coins += coins;
-  return { berry, coins, basket: false };
+  const n = Math.min(Math.floor(k), Math.floor((DAY_CAP - g.coins) / berry.coins));
+  if (n <= 0) return { n: 0, coins: 0 };
+  g.coins += n * berry.coins;
+  return { n, coins: n * berry.coins };
 }

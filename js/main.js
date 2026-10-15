@@ -127,13 +127,13 @@ function continueGame(saved) {
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
   prepare(starter, {
-    onBegin: async (level) => {
+    onBegin: async (level, pack) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
       if (isMewtwoRun(starter) && sealOn()) {   // the Sealed Weakness it carries into the Depths, shown big first
         const { showPentagram } = await import('./pentagram.js');
         await showPentagram(runLines(shardsPlaced(getSave())), { cry: true });
       }
-      beginRun(starter, level);
+      beginRun(starter, level, null, null, null, pack);
     },
     onBack: () => showSelect(starter),
   });
