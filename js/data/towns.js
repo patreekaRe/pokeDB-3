@@ -593,7 +593,7 @@ export const TOWNS = {
     ],
   },
   thornwood: {
-    id: 'thornwood', biome: 'thornwood', name: 'Highbough', music: 'event-outdoor', style: 'canopy',
+    id: 'thornwood', biome: 'thornwood', name: 'Highbough', music: 'seal', style: 'canopy',
     sub: 'Rope bridges creak between dark treehouses. Something is always watching. Walk out through the vine gate when you dare.',
     first: 'A village up in the canopy, treehouses round the giant trunks and rope bridges between them. The people who built it left long ago. Ghost Pokémon live here now, and they\'ve been waiting for a visitor.',
     // Highbough is a ghost town (the user's call, 2026-10-14: "filled with only scary ghost Pokémon"): every townsperson,
