@@ -2307,6 +2307,16 @@ function makePlaces() {
     buttons: [],
     build: (g) => standGuest(g, leader),
   });
+  // a professor on the plaza, right of the Waystone (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
+  // a hint about something easy to miss, and always a reminder to refresh for updates; both are built and setTime()
+  // shows the one for the hour
+  list.push({
+    id: 'prof', step: { x: PROF_AT.x, y: PROF_AT.y + 1 }, tiles: [[PROF_AT.x, PROF_AT.y]], tag: [PROF_AT.x, 2.6, PROF_AT.y], open: true,
+    get name() { return profNow().name; },
+    get line() { return `${HINTS[hintAt++ % HINTS.length]} ${profNow().refresh}`; },
+    buttons: [],
+    build: (g) => { for (const who of PROFS) standProf(g, who); },
+  });
   // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom());
   // they're home only once THE NIETOS are beaten at their Gym, and not at all while NIETOS_LIVE is off
   const nietosIn = nietosHome(gymWins(save, 'nietos') || 0);
@@ -2384,6 +2394,40 @@ async function standGuest(g, l) {
   g.add(m.group);
 }
 
+const PROF_AT = { x: START.x + 2, y: START.y };
+const PROFS = [
+  { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
+  { id: 'sonia', name: 'Professor Sonia', night: true, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
+];
+const HINTS = [
+  'Spin the Pokéstop by the gate to set out. A run you left waits there: Continue it, or give it up with an Escape Rope.',
+  'Fire beats Grass, Grass beats Water, Water beats Fire. Elites and bosses shrug the chart off, though.',
+  'Beat every Pokémon in all three biomes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
+  'Win a run and the Sky Pillar opens: 100 floors, with a new leaderboard every week.',
+  '1,500 PokéCoins opens the boarded door in the Ancient Tree\'s roots. That\'s your Secret Base, to furnish however you like.',
+  'The PC holds your mail, your missions and the patch notes. It also picks who walks beside you here.',
+  'The Poké Mall sells furniture for your Secret Base, and the Game Corner\'s arcade is inside.',
+  'See those cracks in the ground to the west? Every run you win strikes the seal below. Something wants out.',
+  'Your Pokédex keeps every card and Pokémon you\'ve met. Open it whenever you\'re curious.',
+  'Pokédollars from battles are spent at the Poké Mart during a run. PokéCoins are for here at home.',
+  'Look closely at the map before you pick a path. A ? room can be a treat, or trouble.',
+  'The Clearing follows your clock. Come back at another hour and someone else may be standing here.',
+];
+let hintAt = Math.floor(Math.random() * HINTS.length), profBoards = {};
+const profNow = () => PROFS.find(p => p.night === (time === 'night'));
+async function standProf(g, who) {
+  const m = await monBoard({ src: `assets/trainers/${who.id}.png`, name: who.name, cry: '', px: TRAINER_PX }, false);
+  if (!g.parent) { dispose(m.group); return; }
+  m.board.rotation.x = -PITCH;
+  m.group.position.set(tileX(PROF_AT.x), 0, tileZ(PROF_AT.y));
+  const p = places.find(q => q.id === 'prof');
+  m.group.traverse(o => { o.userData.place = p; });
+  drawMon(m, { facing: 'front' }, 0);
+  m.group.visible = who === profNow();
+  profBoards[who.id] = m.group;
+  g.add(m.group);
+}
+
 function rect(x0, y0, x1, y1) {
   const out = [];
   for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) out.push([x, y]);
@@ -2394,7 +2438,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null;
+  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -2546,12 +2590,15 @@ function buildClearing() {
   dressSeason();
 }
 
-// the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it: lamps along the avenues and
-// round the plaza, benches looking onto it, flower beds in the grass between the avenues
-const LAMPS = [[13, 6], [17, 6], [13, 3], [17, 3], [9, 10], [21, 10], [21, 14],
-  [3, 8], [3, 14], [27, 8], [27, 14], [10, 19], [20, 19]];
-const BENCHES = [[11, 14, Math.PI / 4], [19, 14, -Math.PI / 4], [12, 19, 0], [18, 19, 0]];
-const BEDS = [[10, 8, 0.9], [20, 15, 0.8], [10, 15, 0.8], [11, 16, 0.75], [21, 8, 0.7]];
+// the street's furniture, each on a tile of its own (dressTiles) so nothing walks through it, flower beds in the grass
+// between the avenues;
+// laid out in mirrored pairs across the north-south avenue (the user's ask, 2026-10-15: they stood scattered): lamps up
+// the north avenue, at the east and west avenues' mouths, round the ring road and down to the pond; a bench either side
+// of the plaza's front, either side of the pond, and along the east and west avenues, each turned to face what it's by
+const LAMPS = [[13, 3], [17, 3], [13, 7], [17, 7], [9, 10], [21, 10], [9, 14], [21, 14],
+  [3, 8], [27, 8], [3, 16], [27, 16], [13, 18], [17, 18]];
+const BENCHES = [[12, 15, Math.PI * 0.75], [18, 15, -Math.PI * 0.75], [12, 20, 1.08], [18, 20, -1.08], [6, 14, Math.PI], [24, 14, Math.PI]];
+const BEDS = [[10, 8, 0.9], [20, 8, 0.9], [10, 16, 0.8], [20, 16, 0.8]];
 const dressTiles = new Set();
 
 function dressClearing() {
@@ -3195,6 +3242,15 @@ function showWaystone(p) {
       go.textContent = 'Travel';
       go.addEventListener('click', () => warpTo(p, t));
       row.append(go);
+      // your saved run waits in this town's biome: its far gate walks on into it (js/run.js's runWaitingIn())
+      import('./run.js').then(m => {
+        if (!m.runWaitingIn(t.id) || !row.isConnected) return;
+        const tag = document.createElement('span');
+        tag.className = 'way-count way-run';
+        tag.textContent = 'Run';
+        tag.title = `Your run waits in ${town.name}: walk out its far gate to carry on.`;
+        go.before(tag);
+      });
     } else {
       const n = document.createElement('span');
       n.className = 'way-count';
@@ -3463,6 +3519,7 @@ function setTime(force) {
   for (const m of [...glowMats, ...seasonMats]) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, L.glow) * m.userData.glow;
   for (const l of lamps) l.intensity = L.lamp * l.userData.k;
   if (bugs) bugs.userData.kind = L.bugs;
+  for (const who of PROFS) if (profBoards[who.id]) profBoards[who.id].visible = who === profNow();
   paintVista();
 }
 

@@ -146,6 +146,7 @@
 .way-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 400; }
 .way-row.unmet .way-name { opacity: 0.55; letter-spacing: 0.1em; }
 .way-count { flex: none; font-variant-numeric: tabular-nums; }
+.way-run { padding: 2px 5px 1px; border: 1px solid currentColor; border-radius: 3px; }
 .hub-card.way .way-go { flex: none; min-width: 0; height: auto; padding: 7px 12px 6px; font-size: 0.75rem; }
 @media (prefers-reduced-motion: reduce) { .way-row.lit .way-gem { animation: none; } }
 

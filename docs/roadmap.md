@@ -55,7 +55,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live).
+**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live). Since 2026-10-14 a visit goes home only by the Waystone, and walks into your saved run when it stands in that town's biome (`docs/roadmap-done.md`).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -108,6 +108,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Done (2026-10-15): the broken Sealed Gate in the Clearing built in 3D** (the user: "not the paper thin pixel
    version"): obsidian arch, gold, runes, crystal spires, a swirling Depths portal, floating door shards, snapped chains
    (`js/hub-sealed.js`). Headless-checked, no errors; waiting on the user's look (`?mewtwo&gate=0&hubat=2,12`).
+   **Done (2026-10-15): the Clearing's lamps and benches in mirrored pairs, and the professors** (the user's ask): 14
+   lamps, 6 benches, 4 flower beds (`LAMPS` / `BENCHES` / `BEDS`); Professor Oak by day and Professor Sonia at night on
+   the plaza right of the Waystone, tapping through `HINTS` and always saying to refresh for updates. Headless-checked,
+   no errors; waiting on the user's look.
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the
