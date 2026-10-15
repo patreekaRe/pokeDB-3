@@ -1656,7 +1656,7 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .sdx-steps .sdx-done { color: #2c8a3a; }
 .sdx-steps .sdx-later { color: #8a8a8a; }
 
-/* the Quests app (js/questlog.js): the Clearing's quest board, cork with a note pinned up for each questline */
+/* the Quests app (js/questlog.js): the Clearing's quest board, cork, with one big note on what to do next over a list */
 .cdev-win.cdev-quests {
   padding: 12px 10px 18px; color: #2a1c10; font-size: 0.75rem; line-height: 1.6;
   background:
@@ -1665,68 +1665,60 @@ body[data-screen="start-screen"] .topbar { display: none; }
     linear-gradient(160deg, #d8a86a, #c08a50 60%, #b07a44);
   box-shadow: inset 0 0 0 6px #7a4a24, inset 0 0 0 8px #5a341a, inset 0 8px 18px rgba(60, 30, 10, 0.35);
 }
-.qlog-top {
-  display: grid; justify-items: center; gap: 6px; margin: 4px 6px 12px; padding: 10px 10px 8px;
-  background: #fff8e8; border-radius: 3px; box-shadow: 0 2px 0 rgba(60, 30, 10, 0.35), 0 6px 12px rgba(60, 30, 10, 0.2);
-  rotate: -0.4deg;
-}
-.qlog-title { font-size: 1rem; letter-spacing: 0.08em; text-transform: uppercase; color: #5a341a; }
-.qlog-sub { font-size: 0.75rem; color: #7a5a3a; text-align: center; }
+.qlog p { margin: 0; }
+.qlog-top { display: grid; justify-items: center; gap: 4px; margin: 2px 0 12px; }
+.qlog-sub { font-size: 0.75rem; color: #fff8e8; text-shadow: 0 1px 0 rgba(60, 30, 10, 0.6); }
 .qlog-gems { display: flex; gap: 8px; }
 .qlog-gems > span {
   width: 14px; height: 20px; clip-path: polygon(50% 0, 100% 35%, 80% 100%, 20% 100%, 0 35%);
   background: linear-gradient(160deg, #b8b0a8, #6a625a);
 }
 .qlog-gems > span.lit { background: linear-gradient(160deg, #fff, var(--glow) 45%, color-mix(in srgb, var(--glow) 60%, #000)); filter: drop-shadow(0 0 4px var(--glow)); }
-.qlog-notes { display: grid; gap: 12px; padding: 0 4px; }
-.qlog-note {
-  position: relative; padding: 0 0 8px; border-radius: 3px; background: #fff8e8; rotate: var(--tilt);
-  border-top: 5px solid var(--glow);
-  box-shadow: 0 2px 0 rgba(60, 30, 10, 0.3), 0 6px 14px rgba(60, 30, 10, 0.25);
+.qlog-pin { position: absolute; top: -8px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9a8a, #d8302a 60%, #8a1a14); box-shadow: 0 2px 2px rgba(0, 0, 0, 0.35); }
+.qlog-next {
+  position: relative; display: grid; gap: 8px; margin: 0 4px; padding: 14px 12px 12px; border-radius: 3px; rotate: -0.5deg;
+  background: #fff8e8; border-top: 6px solid var(--glow);
+  box-shadow: 0 2px 0 rgba(60, 30, 10, 0.3), 0 8px 16px rgba(60, 30, 10, 0.3);
 }
-.qlog-note.quiet { background: #e8dcc8; border-top-color: #9a8a78; }
-.qlog-note.lit { background: #f2f8e8; }
-.qlog-note.ready { box-shadow: 0 0 0 2px #f8c830, 0 2px 0 rgba(60, 30, 10, 0.3), 0 6px 16px rgba(248, 200, 48, 0.45); }
-.qlog-pin { position: absolute; top: -9px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff9a8a, #d8302a 60%, #8a1a14); box-shadow: 0 2px 2px rgba(0, 0, 0, 0.35); }
+.qlog-kicker { font-size: 0.875rem; letter-spacing: 0.06em; text-transform: uppercase; color: #3a6ad0; text-align: center; }
+.qlog-next:has(.qlog-do.ready) .qlog-kicker { color: #c07a00; }
+.qlog-who { display: flex; align-items: center; gap: 8px; color: #7a5a3a; }
+.qlog-mon { flex: none; width: 40px; height: 40px; object-fit: contain; image-rendering: pixelated; }
+.qlog-mon.unseen { filter: brightness(0) opacity(0.45); }
+.qlog-do { display: grid; gap: 8px; }
+.qlog-step { font-size: 0.875rem; line-height: 1.7; color: #2a1c10; }
+.qlog-bar { position: relative; height: 20px; border-radius: 10px; background: #e8dcc8; box-shadow: inset 0 1px 2px rgba(60, 30, 10, 0.35); overflow: hidden; }
+.qlog-fill { position: absolute; inset: 0 auto 0 0; border-radius: 10px; background: linear-gradient(180deg, color-mix(in srgb, var(--glow) 55%, #fff), var(--glow)); }
+.qlog-bar-n { position: relative; display: block; line-height: 20px; text-align: center; font-size: 0.75rem; color: #2a1c10; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7); }
+.qlog-row { display: grid; gap: 2px; padding: 6px 8px; border-radius: 4px; background: rgba(216, 168, 106, 0.18); }
+.qlog-row small { font-size: 0.75rem; letter-spacing: 0.06em; color: #9a6a3a; }
+.qlog-do.ready .qlog-row:last-child { background: #fff0b0; box-shadow: inset 0 0 0 2px #f8c830; }
+.qlog-do.ready .qlog-row:last-child small { color: #c07a00; }
+.qlog-label { margin: 16px 6px 6px; font-size: 0.75rem; font-weight: normal; letter-spacing: 0.08em; text-transform: uppercase; color: #fff8e8; text-shadow: 0 1px 0 rgba(60, 30, 10, 0.6); }
+.qlog-list { display: grid; gap: 6px; padding: 0 4px; }
+.qlog-item { border-radius: 3px; background: #fff8e8; border-left: 5px solid var(--glow); box-shadow: 0 2px 0 rgba(60, 30, 10, 0.25); }
+.qlog-item.quiet { background: #ece2d0; border-left-color: #9a8a78; }
 .qlog-head {
-  display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; width: 100%; padding: 8px 10px 4px;
+  display: grid; grid-template-columns: 40px 1fr auto auto; align-items: center; gap: 8px; width: 100%; padding: 4px 8px;
   border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
 }
-.qlog-head:disabled { cursor: default; }
-.qlog-head:focus-visible { outline: 2px solid #5a8ef0; outline-offset: -2px; }
-.qlog-mon { width: 44px; height: 44px; object-fit: contain; image-rendering: pixelated; }
-.qlog-mon.unseen { filter: brightness(0) opacity(0.45); }
-.qlog-name { display: grid; gap: 2px; min-width: 0; }
-.qlog-name strong { font-size: 0.8125rem; color: #3a2414; overflow-wrap: anywhere; }
+.qlog-head:focus-visible { outline: 2px solid #3a6ad0; outline-offset: -2px; }
+.qlog-name { display: grid; min-width: 0; }
+.qlog-name strong { font-size: 0.75rem; color: #3a2414; overflow-wrap: anywhere; }
 .qlog-name small { font-size: 0.75rem; color: #8a6a4a; }
-.qlog-chip { padding: 3px 7px 2px; border-radius: 999px; font-size: 0.75rem; white-space: nowrap; color: #fff; background: #5a8ef0; }
-.qlog-note.ready .qlog-chip { background: #e89a10; }
-.qlog-note.lit .qlog-chip { background: #3a9a4a; }
-.qlog-note.quiet .qlog-chip { background: #9a8a78; }
-.qlog-pips { display: flex; gap: 4px; padding: 0 10px 0 62px; }
-.qlog-pips > span { flex: 1; height: 5px; border-radius: 3px; background: rgba(90, 60, 30, 0.18); }
-.qlog-pips > span.on { background: var(--glow); box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.2); }
-.qlog-note.quiet .qlog-pips { display: none; }
-.qlog-body { padding: 6px 10px 0; }
-.qlog-body p { margin: 0; }
-.qlog-hint { color: #6a4a2a; }
-.qlog-now { display: grid; gap: 6px; padding: 8px 9px; border-radius: 4px; background: #fff; border: 2px dashed rgba(90, 60, 30, 0.3); }
-.qlog-now.ready { border: 2px solid #f8c830; background: #fffbe0; }
-.qlog-kicker { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #5a8ef0; }
-.qlog-now.ready .qlog-kicker { color: #c07a00; }
-.qlog-step { color: #2a1c10; }
-.qlog-bar { position: relative; height: 18px; border-radius: 9px; background: #e8dcc8; box-shadow: inset 0 1px 2px rgba(60, 30, 10, 0.35); overflow: hidden; }
-.qlog-fill { position: absolute; inset: 0 auto 0 0; border-radius: 9px; background: linear-gradient(180deg, color-mix(in srgb, var(--glow) 60%, #fff), var(--glow)); }
-.qlog-bar-n { position: relative; display: block; line-height: 18px; text-align: center; font-size: 0.75rem; color: #2a1c10; text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7); }
-.qlog-where { color: #3a2414; }
-.qlog-more { display: none; gap: 6px; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(90, 60, 30, 0.3); }
-.qlog-note.open .qlog-more { display: grid; }
-.qlog-toggle { display: block; margin: 6px 0 0 auto; padding: 3px 8px 2px; border: 1px solid rgba(90, 60, 30, 0.35); border-radius: 999px; background: #fff; font: inherit; font-size: 0.75rem; color: #5a341a; cursor: pointer; }
-.qlog-toggle:hover, .qlog-toggle:focus-visible { background: #fff2c8; }
+.qlog-chip { padding: 3px 7px 2px; border-radius: 999px; font-size: 0.75rem; white-space: nowrap; color: #fff; background: #3a6ad0; }
+.qlog-item.ready .qlog-chip { background: #e89a10; }
+.qlog-item.lit .qlog-chip { background: #3a9a4a; }
+.qlog-item.quiet .qlog-chip { background: #9a8a78; }
+.qlog-caret { color: #9a6a3a; transition: rotate 0.15s; }
+.qlog-item.open .qlog-caret { rotate: 180deg; }
+.qlog-more { display: none; gap: 8px; padding: 2px 10px 10px; }
+.qlog-item.open .qlog-more { display: grid; }
 .qlog-story { color: #7a5a3a; }
 .qlog-steps { display: grid; gap: 3px; margin: 0; padding: 0; list-style: none; }
 .qlog-steps li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; }
+.qlog-steps li b { font-weight: normal; }
 .qlog-steps li.done { color: #3a7a44; }
 .qlog-steps li.later { color: #9a8a78; }
-.qlog-tick { font-weight: normal; }
 .qlog-tip { margin: 14px 8px 0; padding: 8px 10px; border-radius: 4px; text-align: center; color: #fff8e8; background: rgba(60, 30, 10, 0.55); }
+@media (prefers-reduced-motion: reduce) { .qlog-caret { transition: none; } }

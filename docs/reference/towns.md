@@ -295,10 +295,11 @@ under way, n/of). Its `line` and `buttons` are getters. Past `new` its button is
 `ready`. The Nietos' house has a Quest spot that starts the questline too, when it hasn't started and the Clearing isn't lit.
 **The Quests app** (`js/questlog.js`, 2026-10-14, the user's ask: "an aesthetic window" for the board, and the quest
 progress findable from anywhere): the Pokédex's own app, beside the Satchel, towns on only (icon `quests`, a cork board, in
-`js/smooth-icons.js`; count `questCount()`, Waystones lit of 6). A cork board in the device's screen: the Waystones as
-crystals in each town's `RING` glow, then a pinned note per questline in `LINES` order (the Clearing first): its leader,
-n/of pips, a chip (Under way / Ready! / Lit / Locked), the step up now with a bar of `stepHave()`, where its thing comes
-from (a material's biome, Kurt's recipe with the Satchel's counts, the shard's Alpha) and where it's handed in;
-"Every step" opens its story and steps (later ones `???`). A locked note says how to start it. The board opens it as
+`js/smooth-icons.js`; count `questCount()`, questlines done of 6). Kept simple (the user's ask, same day: "even more
+simple to understand"): a cork board with the Waystones as crystals and "n of 6 quests done", then one big note, DO THIS
+NEXT (`nextNote()`: a step ready to hand in first, else the first under way, in `LINES` order, the Clearing first): the
+step, a bar of `stepHave()`, WHERE (`source()`, a few words) and THEN HAND IN (`handIn()`), or READY! HAND IT IN. Under
+it, ALL QUESTS: one row a questline (leader, name, n of m steps, a chip: Under way / Ready! / Done / Locked); a tap
+opens the same step card, its story and every step (later ones `???`), or HOW TO START for a locked one. The board opens it as
 `openDeviceApp('quests', 'board')` (through the hub's `acts.onApp(id, at)`), and then it says it's in the Pokédex too.
 A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests icon's "!", not the Satchel's.
