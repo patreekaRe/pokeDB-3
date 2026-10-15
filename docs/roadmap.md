@@ -324,6 +324,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    round, talk to Mewtwo, the pentagram) → leaving it plays the win scene / Hall of Fame → unlock windows → result
    window. The win is recorded before the camp opens, so closing the game there never loses it; leaving only plays
    the celebration. A visit outside a run (the Sealed Gate's button) has no win: leaving goes back to the Clearing.
+   **Who lands in the camp** (the user's yes, 2026-10-15): once the gate is broken, **every starter's won run** falls into
+   the camp (it replaces the nameless throw-back, `kind: 'open'` in `descent()`), but **only Mewtwo goes past it** into the
+   Depths proper, Mewtwo standing by that way in. The other starters' runs are where the shards are won (Mewtwo's never
+   stop at a town), so ending them there hands a new shard straight to Mewtwo and lights its pentagram slot. **Kept short**:
+   unless something new waits (a shard to hand over, a new line from Mewtwo), a won run's landing is one tap through to
+   the win scene, not a walk round. **Mewtwo's own runs** land in the camp after their third boss (seeing how much of its
+   strength is back) and go on down from there. Before the gate breaks, won runs strike it as now.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
