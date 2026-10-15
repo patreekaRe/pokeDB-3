@@ -209,7 +209,7 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
 
 The Clearing's boarded-up dojo (`DOJO_AT`; since the same day a temple hall, `makeDojo()` in `js/hub-dojo.js`) is open: a tap walks in like the
 Nietos' house (`enterHouse()` → `visitTown(…, 'clearing', …, 'dojo')`; `CLEARING.homes.dojo` in `js/data/towns.js`,
-`HOMES.clearing.dojo` in `js/event-3d.js`). Always open, towns or not. `?dojo` walks straight in (its stars and belts are
+`HOMES.clearing.dojo` in `js/event-3d.js`). Open towns or not, but only once Kenmatta is beaten in a run (`kenWinsOf(save) >= 1`; the user's ask, 2026-10-15): till then the hub's `dojo` place is `open: false` with a note from Ken on the door. `?dojo` walks straight in (its stars and belts are
 real, like walking in). The data is `js/data/dojo.js`; nothing in it makes a run stronger, so no bot check.
 - **The room** (`buildDojoHall(figs, { home: true, belt })` in `js/event-3d.js`): the Move Tutor's hall (gold leaf, the
   medallion, the ring, the sandbag) with Kenmatta on his cushion in the ring (a tap: his lines, `kenTalk(belt)`, more with each belt), the
