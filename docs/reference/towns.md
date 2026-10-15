@@ -207,7 +207,7 @@ webcam, a turning disco ball, ON AIR lit at night, the boa on the sofa), Kayl's 
 and lease renewals, Pat's fairy lights strung across the cabin and a rose in a bottle, Phil's chair rocking on its own in
 a salt ring over glowing runes with seven candles floating, the tree up through Ricky's den and his sleep maths, Machew's
 spotlit (plastic, $14.99) katana under a blood moon, Jerome's Vice sunset, eleven r/GTA6 tabs and the countdown taped
-over the crib (days to 19 November 2026). Two point lights a room at most; the rest glows. A rug or mat with no model is
+over the crib (days to 19 November 2026). While Phil is home, JONA stands in his back right corner facing the wall (`jona()`, 2026-10-15, a 3D stand-in until the user's sprite): her head turns all the way round to watch your buddy within ~3 tiles (`K.buddy`, the room's `walker`), and now and then snaps round and back; the crooked lamp moved to the front right corner for her. Two point lights a room at most; the rest glows. A rug or mat with no model is
 now laid as its painting on the floor (`flatPiece()` in `js/event-3d.js`): the Nursery's web rugs and Persian's dune
 rug showed nothing before. `tests/leader-homes.test.mjs` checks every piece exists, nothing overlaps, and every free
 tile (and the leader) is reachable from the door. `?town=<biome>&home=<leader>&gymwins=1` walks straight in.

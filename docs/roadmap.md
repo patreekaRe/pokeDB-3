@@ -762,6 +762,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **JONA's sprite** (2026-10-15): JONA stands in Phil's back right corner, facing the wall, while he's home (`jona()` in
+  `js/leader-homes.js`; her head turns round to watch you within ~3 tiles, and now and then snaps round). She's a 3D
+  placeholder until the user sends her sprite (ideally a back view and a front view: her back to the room, the front
+  swapped in when you come near). Check: `?town=thornwood&home=phil&gymwins=1`.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in

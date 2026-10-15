@@ -8790,7 +8790,7 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
 async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
-  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, away: !figs[town.homes[home].leader] }, home);
+  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, buddy: () => walker, away: !figs[town.homes[home].leader] }, home);
   else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = L ? 3.1 : 2.1;
   B.talks = new Set();
