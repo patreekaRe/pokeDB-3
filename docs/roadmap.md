@@ -26,6 +26,25 @@ run stronger, so no bot check. Three parts:
 ▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
 Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
 
+**The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
+back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
+the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js` / `js/pc.js`'s `blueprint()`), **one
+plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
+roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
+`docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
+  a) **The yard itself**: the blueprint plot and its purchase, a `save.base` field for it (follows the cloud save), the
+     back door in the main room, an outdoor 3D lot built like the base's rooms (grass, fence, the Clearing's trees behind,
+     sky lit by `timeOfDay()`, snow with `?season=winter`, the Clearing's curve), your partner walking out and back,
+     `wakeGL` / `sleepGL` per CLAUDE.md, a `?yard` playtest flag, a `NEWS` line if the PC page changes, a patch note.
+  b) **Outdoor furniture**: placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
+     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
+     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
+  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
+     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
+  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
+     harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
+     ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
+  e) Later: the yard grows (the blueprint's bigger yard buy).
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
