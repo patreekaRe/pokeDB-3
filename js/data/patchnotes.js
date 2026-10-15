@@ -45,7 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['hub', 'Kenmatta\'s dojo is open: a grand temple hall with a ring to climb into, eight puzzle trials (one star each), belts from white to black and seven dojo pieces for your Secret Base.'],
   ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
-  ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades, walk out the new back door, and furnish it from Smeargle\'s garden catalogue.'],
+  ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades, furnish it from Smeargle\'s garden catalogue, and let your Pokémon out to swing, sit and swim.'],
   ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
 ];
 

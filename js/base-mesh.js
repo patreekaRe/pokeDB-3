@@ -245,9 +245,16 @@ function kit(id, paint) {
     to.get(m).push(geo);
     return geo;
   };
-  const put = into(bins), doors = [];
+  const put = into(bins), doors = [], parts = [];
   return {
-    p, pal, M, pic, put, bins, doors, r: rng(id),
+    p, pal, M, pic, put, bins, doors, parts, r: rng(id),
+    /** A part of its own that moves (a swing on its chains): `K.part(name, [x, y, z])` returns a put for its parts, built
+        in the model's frame; it's turned about that point, found as `model.userData.parts[name]`. */
+    part: (name, at) => {
+      const d = { name, at, bins: new Map() }, put = into(d.bins);
+      parts.push(d);
+      return (geo, m, x = 0, y = 0, z = 0, ...turn) => put(geo, m, x - at[0], y - at[1], z - at[2], ...turn);
+    },
     /** A door of its own for js/base-play.js to swing (a fridge's, a wardrobe's): `K.door([x, z], side)` returns a put
         for its parts, built shut in the model's frame, hinged at x, z (side 1 its left edge, -1 its right); `K.inside`
         `{ x, y, w, h, z }` is where the picture of what's inside goes, behind it (`bare: true` for none, when the inside is
@@ -1792,6 +1799,12 @@ export function furnitureModel(three, id, paint) {
       g.userData.inside = K.inside;
       g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });
     }
+    if (K.parts.length) g.userData.parts = Object.fromEntries(K.parts.map(d => {
+      const part = assemble(K, d.bins);
+      part.position.set(...d.at);
+      g.add(part);
+      return [d.name, part];
+    }));
     // a part that turns on its own (the globe's Earth) is moved to turn about its middle, tipped on its axis
     for (const mesh of g.children) {
       const pv = mesh.material?.userData.pivot;

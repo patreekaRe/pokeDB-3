@@ -75,7 +75,7 @@ The first section began as the note on playtesting the live site and grew into t
   exported from `js/hub-3d.js` with `CLEARING_LOOK` / `CLEARING_LIGHT`) in their season's leaves, stepping stones, and
   in winter snow on all of it and falling (`liveSnow()`); `yardLight()` is the Clearing's light and tint under a sky
   gradient. The lawn rolls away like the Clearing (`BEND`, `CURVE` outdoors and 0 indoors; taps find the drawn ground with
-  `groundHit()`, the doormat included). The residents stay indoors, unseen and untappable, till part c. `?yard` opens
+  `groundHit()`, the doormat included). Residents are out there only when let out (part c, below). `?yard` opens
   straight out there, a yard lent for the page load if none is bought (`lent`, taken back by `loadBase()` on any load
   without it). The PC's `NEWS` has `yard` (in House upgrades).
 - **The backyard's furniture** (2026-10-14, part b): the Yard shelf, 16 kinds flagged `outdoor` (`p.outdoor`), painted
@@ -89,6 +89,17 @@ The first section began as the note on playtesting the live site and grew into t
   ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
+- **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
+  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
+  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
+  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
+  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
+  picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
+  (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
+  and swings but never swims. Each swing is its own part (`K.part(name, pivot)` in `js/base-mesh.js`, found at
+  `model.userData.parts`), swung by `liveSwings()` higher while someone's on it, carrying them, and a swimmer bobs with
+  droplets (`splash()`, puff kind `drop`) as it dives in and climbs out.
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never

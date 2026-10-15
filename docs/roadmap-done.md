@@ -2482,6 +2482,15 @@ shows; pieces, the ghost, its footprint and the pick box roll with the lawn (`be
 (`groundHit()`). The lamp post and string lights switch, the barbecue burns. Tested headless: all 16 built and placed,
 the tray in and out, the catalogue; `tests/furniture-store.test.mjs` checks the rule. Part c is next.
 
+### The Secret Base's backyard, part c: Pokémon out in the yard (2026-10-14)
+
+The yard's Decorate sheet has the Pokémon tab too: a tap lets one of the 6 on show out onto the lawn (`secretBase.out`,
+✓ in the yard, a "Yard" tag on the indoor tab) or calls it back in. Out there they wander, Water types swim in the
+rock pond or inflatable pool (bobbing, droplets as they dive in and out), the rest take the swings (which swing with
+them), the park bench, picnic bench and lounger; taps give their cry and hearts. Your partner can sit and swing too, but
+stays out of the water. Not checked in a browser: the preview server was stopped mid-test, so only Node tests ran.
+Part d (berry garden) is next.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.

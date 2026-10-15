@@ -25,9 +25,9 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
   b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
-  c) **Pokémon roaming outside** (next; ▶ Run in: LOCAL): the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
-     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
-  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
+  c) Done 2026-10-14, on `main`: the 6 on show let out from the yard's Pokémon tab; swim, swing, sit (docs/roadmap-done.md).
+     Not yet seen in a browser: playtest `?base&yard&guests` with a swing set and pond out.
+  d) **Berry garden** (next; ▶ Run in: LOCAL): soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
      harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
      ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
   e) Later: the yard grows (the blueprint's bigger yard buy).

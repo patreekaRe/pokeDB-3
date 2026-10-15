@@ -107,13 +107,15 @@ export const MAKES = {
       for (const z of [-0.42, 0.42]) K.put(L.cyl(0.05, 0.03, 0.055, 12), K.gloss(INK), x, 0.015, z);
     }
     rod(K, L, frame, [-end, top, 0], [end, top, 0], 0.04);
-    for (const sx of [-0.42, 0.42]) {
+    // each swing a part of its own, hung from the bar, so it swings with a Pokémon on it (js/base-3d.js)
+    [-0.42, 0.42].forEach((sx, i) => {
+      const put = K.part ? K.part(`swing${i}`, [sx, top, 0]) : K.put, S = { ...K, put };
       for (const dx of [-0.14, 0.14]) {
-        rod(K, L, chain, [sx + dx, top - 0.02, 0], [sx + dx, 0.46, 0], 0.008);
-        K.put(L.torus(0.02, 0.008, TAU, 10), chain, sx + dx, top - 0.03, 0, Math.PI / 2);
+        rod(S, L, chain, [sx + dx, top - 0.02, 0], [sx + dx, 0.46, 0], 0.008);
+        put(L.torus(0.02, 0.008, TAU, 10), chain, sx + dx, top - 0.03, 0, Math.PI / 2);
       }
-      K.put(L.rbox(0.36, 0.035, 0.15, 0.015), K.gloss(K.pal.a), sx, 0.44, 0);
-    }
+      put(L.rbox(0.36, 0.035, 0.15, 0.015), K.gloss(K.pal.a), sx, 0.44, 0);
+    });
   },
 
   /** A picnic table with its benches: planks on crossed legs, a checked runner down the middle. */
