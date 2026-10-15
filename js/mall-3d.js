@@ -17,7 +17,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, dropGL } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -1348,7 +1348,7 @@ export async function leave() {
   await curtain(true);
   root.remove();
   drags?.off(); drags = null;
-  dropGL(renderer, scene);   // built afresh on the next visit
+  sleepGL(renderer);   // its GPU memory let go; woken as openMall() reopens it
   if (leaveTo) await leaveTo(); else location.href = location.pathname;
   curtain(false);
 }
@@ -1360,6 +1360,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   calm = calmFx();
   if (root && renderer) {
     document.body.append(root);
+    await wakeGL(renderer);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
     syncShop();

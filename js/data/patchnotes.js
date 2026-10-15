@@ -53,7 +53,7 @@ export const NEXT = [
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
   ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
   ['music', 'Lantern Village, Cinder Springs, Driftwood Landing and Sunwell Bazaar each have a song of their own.'],
-  ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now; tapping the rest of the tree just walks there.'],
+  ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, and going back into it, its backyard or the Poké Mall no longer leaves a black screen.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

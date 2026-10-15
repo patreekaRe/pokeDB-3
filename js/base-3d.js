@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, dropGL, bend, bendFine } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -1982,7 +1982,7 @@ async function fallBack() {
   curtain(false);
 }
 
-/** Out through the door: dark, the room put away (kept, so going back in is quick), then wherever it was opened from. */
+/** Out through the door: dark, the room put away (kept asleep, so going back in is quick), then wherever it was opened from. */
 export async function leave() {
   if (leave.busy) return;
   if (!leaveTo) { location.href = location.pathname; return; }
@@ -1993,7 +1993,7 @@ export async function leave() {
   endVisit();
   untry();
   root.remove();
-  dropGL(renderer, scene);   // built afresh on the next visit
+  sleepGL(renderer);   // its GPU memory let go; reopen() wakes it
   await leaveTo();
   leave.busy = false;
   curtain(false);
@@ -2068,6 +2068,7 @@ async function reopen(start) {
   calm = calmFx();
   base = goRoom(loadBase(), start);   // the mall's Furniture store may have bought into it since; in at the front door
   document.body.append(root);
+  await wakeGL(renderer);
   const mate = buddy(getSave());
   if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await makeMon(mate); mon.board.userData.who = { mon, w: walker }; }
   mode = 'walk'; blend = 0; sel = -1;

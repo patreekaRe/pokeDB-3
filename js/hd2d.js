@@ -82,7 +82,9 @@ export function restGL(renderer) {
   spare = renderer;
 }
 
-/** A place built afresh on every visit (the Secret Base, the mall), let go for good as it's left. */
+/** A place let go for good as it's left: its renderer is disposed, so the next visit must make a new one. Reopening a
+    kept root and renderer after this draws black (the Secret Base and the mall did, 2026-10-15); a place kept for its
+    next visit sleeps instead (sleepGL()), and wakes on it. */
 export function dropGL(renderer, scene) {
   if (!renderer) return;
   places.delete(renderer);
