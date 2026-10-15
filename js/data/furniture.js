@@ -19,6 +19,7 @@ import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
 import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, gifteeOf } from './workshop.js';
 import { DOJO_REWARDS, DOJO_REWARD, dojoEarned, dojoHow } from './dojo.js';
+import { BERRIES, BERRY, picked } from './berries.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -33,6 +34,8 @@ const SOURCES = {
   gift: { owned: (save, id) => (save.workshop?.fond || []).includes(id), item: (id) => GYM_BY_ID[id] },
   // Kenmatta's dojo (js/data/dojo.js): a belt, or a number of stars from his trials
   dojo: { owned: (save, id) => dojoEarned(save, id), item: (id) => DOJO_REWARD[id] },
+  // the backyard's berry garden (js/data/berries.js): a berry's basket, from the first of it picked
+  berry: { owned: (save, id) => picked(save).includes(id), item: (id) => BERRY[id] },
 };
 
 export const FURNITURE = [
@@ -92,6 +95,8 @@ export const FURNITURE = [
   ...GIFTS.map(g => ({ kind: g.sig, from: ['gift', g.leader], towns: true })),
   // Kenmatta's dojo set
   ...DOJO_REWARDS.map(r => ({ kind: r.kind, from: ['dojo', r.kind] })),
+  // the berry garden's baskets
+  ...BERRIES.map(b => ({ kind: `${b.id}basket`, from: ['berry', b.id] })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -119,6 +124,7 @@ export function howToEarn(piece, save) {
   if (kind === 'craft') return `Make it at Kurt's Workshop in the Whispering Clearing`;
   if (kind === 'gift') return `Give ${gifteeOf(src.id, src.name)} their favourite gift, made at Kurt's Workshop (${FAVOURITE[src.id].name})`;
   if (kind === 'dojo') return dojoHow(piece.kind, save);
+  if (kind === 'berry') return `Pick your first ${src.name} in your backyard's berry garden`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

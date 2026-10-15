@@ -5,6 +5,7 @@
    half a tile, as indoors. */
 
 import { tube, rod } from './base-models-kit.js';
+import { BERRIES } from './data/berries.js';
 
 const TAU = Math.PI * 2;
 const STONES = ['#a8a49a', '#8e8a82', '#bab4a8', '#9a9488'];
@@ -75,6 +76,8 @@ export const SHAPES = {
   sunlounger: { make: 'sunlounger', seat: 0.36 },
   parasol: { make: 'parasol' },
   sandpit: { make: 'sandpit' },
+  berryplot: { make: 'berryplot' },
+  ...Object.fromEntries(BERRIES.map(b => [`${b.id}basket`, { make: 'berrybasket', fruit: b.fruit, round: b.round }])),
 };
 
 export const MAKES = {
@@ -366,5 +369,31 @@ export const MAKES = {
     K.put(L.torus(0.07, 0.005, Math.PI, 12), K.gloss(K.pal.c), -0.38, 0.3, 0.3);
     K.put(cyl(0.012, 0.3, 0.012, 8), K.gloss(K.pal.a), 0.05, 0.2, 0.32, 0, 0, 1.2);
     K.put(rbox(0.1, 0.012, 0.12, 0.006), K.gloss(K.pal.a), 0.2, 0.17, 0.32, 0.2);
+  },
+
+  /** A berry plot: a plank frame round a tilled bed, three furrows ridged across it. What grows in it is the base's
+      (js/berry-garden.js), on top at PLOT_TOP. */
+  berryplot(K, s, W, D, L) {
+    const { rbox, blob } = L, wood = K.wood(), h = 0.14, t = 0.07, w = W - 0.06, d = D - 0.06;
+    for (const z of [-d / 2 + t / 2, d / 2 - t / 2]) K.put(rbox(w, h, t, 0.012), wood, 0, h / 2, z);
+    for (const x of [-w / 2 + t / 2, w / 2 - t / 2]) K.put(rbox(t, h, d - t * 2, 0.012), wood, x, h / 2, 0);
+    K.put(rbox(w - t * 2, 0.08, d - t * 2, 0.01), K.plain(SOIL), 0, 0.06, 0);
+    for (let i = 0; i < 3; i++) K.put(blob(w - t * 2 - 0.04, 0.05, 0.14, 0.4, 0.6), K.plain(L.tone(SOIL, 1.12)), 0, 0.105, -0.26 + i * 0.26);
+  },
+
+  /** A wicker basket heaped with one berry, a leaf or two tucked in, a handle arching over. */
+  berrybasket(K, s, W, D, L) {
+    const { lathe, ball, torus, cyl } = L, weave = K.cloth('#c8924a'), rim = K.wood('#b07a38'), fruit = K.gloss(s.fruit);
+    K.put(lathe([[0, 0], [0.16, 0], [0.2, 0.04], [0.26, 0.2], [0.27, 0.22], [0.25, 0.22], [0.2, 0.05], [0, 0.04]], 24), weave, 0, 0, 0);
+    K.put(torus(0.26, 0.018, Math.PI * 2, 24), rim, 0, 0.215, 0, 0, Math.PI / 2);
+    K.put(torus(0.24, 0.014, Math.PI, 20), rim, 0, 0.215, 0, Math.PI / 2);
+    const r = 0.055 * s.round;
+    for (let i = 0; i < 14; i++) {
+      const ring = i < 9 ? 0 : 1, a = (i / (ring ? 5 : 9)) * TAU + ring * 0.4, at = ring ? 0.09 : 0.17;
+      K.put(ball(r, 12, 10), fruit, Math.cos(a) * at, 0.22 + ring * 0.06 + K.r() * 0.01, Math.sin(a) * at);
+    }
+    K.put(ball(r, 12, 10), fruit, 0, 0.32, 0);
+    K.put(cyl(0.006, 0.04, 0.006, 6), K.plain(STEM), 0, 0.37, 0);
+    for (const sx of [-1, 1]) K.put(ball(0.05, 8, 6).scale(1.5, 0.25, 0.7), K.plain('#58a840'), sx * 0.16, 0.27, 0.1, sx * 0.8, 0, sx * 0.4);
   },
 };

@@ -100,6 +100,16 @@ The first section began as the note on playtesting the live site and grew into t
   and swings but never swims. Each swing is its own part (`K.part(name, pivot)` in `js/base-mesh.js`, found at
   `model.userData.parts`), swung by `liveSwings()` higher while someone's on it, carrying them, and a swimmer bobs with
   droplets (`splash()`, puff kind `drop`) as it dives in and climbs out.
+- **The berry garden** (2026-10-14, part d): the rules are `js/data/berries.js` (no DOM; `tests/berries.test.mjs`), the
+  3D side and window `js/berry-garden.js`. A `berryplot` (Yard shelf, flat, modelled in `js/base-models-y.js`) holds its
+  crop on its item, `it.crop` `{ id, at, ready }` (`sow()`: ripe on the UTC midnight `days` after planting; `stageOf()`
+  sprout for the first half, bloom, fruit). Moving a plot keeps it (`place()` copies `holding.back.crop`); storing it
+  loses it. In Walk a tap on a plot opens `openPlot()` (the town shop's `.dev-window` look): plant, Dig up, or Pick.
+  `harvest()` books it on `secretBase.garden` `{ picked, day, coins }`: the first of a berry earns its basket (the
+  `berry` source in `js/data/furniture.js`, indoor kinds `<berry>basket`, `solo`), later ones `coins`, at most `DAY_CAP`
+  (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
+  sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
+  plant whose stage turned over (at once after the window changes one).
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never

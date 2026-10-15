@@ -24,6 +24,7 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
+import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
@@ -454,6 +455,7 @@ function bendOut(o) {
 
 function buildPieces() {
   pieceGroup.traverse(o => { if (o.userData.play) stopPlay(o.userData.play); });
+  forgetPlots();
   dispose(pieceGroup);
   blocked = new Set(); winMats = []; shafts = []; motes = [];
   giftBoard = null;
@@ -557,6 +559,7 @@ function makePiece(it, ghostly = false, lift = null) {
   model.rotation.y = -(it.dir ?? 0) * Math.PI / 2;
   group.add(model);
   group.userData.model = model;
+  if (isPlot(p) && !ghostly) tendPlot(THREE, group, it, cx, cz);
   if (p.glow) group.userData.lamp = new THREE.Vector3(cx, model.position.y + model.userData.top * k - 0.35, cz + 0.3);
   return group;
 }
@@ -689,6 +692,7 @@ function showGhost() {
 function place() {
   if (!holding || !aimAt) return;
   const it = held();
+  if (holding.back?.crop) it.crop = holding.back.crop;
   if (!fits(it, -1, base)) {
     playSound('cancel');
     // a piece dragged straight off the floor goes back where it was, rather than staying in your hand
@@ -1549,6 +1553,7 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
+    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openPlot(base, it, save); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
@@ -1943,6 +1948,7 @@ function frame(now) {
   liveVisit(dt, now);
   livePuffs(now);
   liveGift(now);
+  for (const grown of liveGarden(now, BEND.k.value, BEND.z.value, calm)) bendOut(grown);
   for (const pg of pieceGroup.children) { const pl = pg.userData.model?.userData.play; if (pl) tickPlay(pl, now, dt); }
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   if (!calm) {
