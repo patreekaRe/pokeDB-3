@@ -4064,7 +4064,7 @@ body.scene-peek #backdrop { display: none; }
 .climb-title small { display: block; margin-top: 0.7rem; font-size: 0.75rem; letter-spacing: 1px; color: #a0ffc8; }
 .climb-scene.titled .climb-title { opacity: 1; }
 .climb-light { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.8s ease-in;
-  background: radial-gradient(circle at 50% var(--door, 50%), #fffbe0 0, #f8d070 30%, rgba(240, 160, 64, 0) 75%); }
+  background: radial-gradient(circle at 50% var(--door, 50%), #f0fff8 0, #9af0c8 30%, rgba(60, 200, 150, 0) 75%); }
 .climb-scene.flood .climb-light { opacity: 1; }
 
 /* "New!": a card or relic you've never had (not in the Index yet), on rewards and the Mart's shelves */
@@ -4242,6 +4242,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-plaque-row.mine .tower-plaque-name { color: #1a5a28; }
 .tower-plaque-rank { text-align: right; }
 .tower-plaque-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tower-plaque-row.empty { opacity: 0.35; }
 .tower-plaque-note { text-align: center; font-size: 0.85rem; opacity: 0.85; }
 @media (max-width: 480px) { .tower-plaque { padding: 10px 14px 12px; } .tower-plaque-list { font-size: 0.85rem; gap: 6px; } .tower-plaque-row { grid-template-columns: 20px 34px 1fr auto; gap: 6px; } .tower-plaque-row img { width: 34px; height: 34px; } }
 

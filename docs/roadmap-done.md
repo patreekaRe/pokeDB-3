@@ -2620,8 +2620,40 @@ first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.m
 - **Done (2026-10-15): the garden gate moved beside the trunk and restyled** (the user's drawing): `ARCH_AT` 25,4 in a front fence row, the arch white with no ivy (`js/hub-arch.js`).
 - **Done (2026-10-15): the tree garden's left front fenced off** (the user's ask), mirroring the right up to the trunk.
 
+
+### The Sky Pillar lobby's window repainted to match (2026-10-15)
+
+The user's screenshot of the lobby (the Pokéstop's window) still showed the old cream pagoda, and its week line ran off
+the lid's LCD. Done before the film (the user's "just choose"): `build()` / `paint()` in `js/towerprep.js` paint the
+Clearing's tower face on (tiers, jade windows and runes, porch and ring, banners, cloud collars, floating stones, wind,
+the turning crystal); the week line is "Oct 12 week · 3d 2h left"; the plaque pads to five rows with dim "---" rows.
 ### The Poké Mall's outside made grand (2026-10-15, the user's ask)
 A gold-ribbed glass dome with a turning Poké Ball, corner towers with gold cupolas, a columned porch with a Poké Ball pediment and chasing bulbs, gold lamps and a red carpet (`mallBuilding()` in `js/hub-3d.js`; `docs/reference/hub-base-mall.md`).
+
+### The Sky Pillar's opening film shows the new tower (2026-10-15)
+
+Half done by step 2 (the film borrows `stone()`'s sage colours); the rest in `js/climb-intro.js`: the pan opens on the
+crown (cornice slab, broken columns, the turning jade crystal from `crystal()` in `js/tower-art.js`), with a jade rune band
+every 10 floors and jade lit windows; the walk ends at the porch (gold-capped pilasters, jade banners, a rune band, stone
+doors), Rayquaza's ring lighting where the scowling eyes were, the doors opening on jade light (`.climb-light`). Checked
+headless: no errors, the colours at each beat. The Sky Pillar revamp's last part.
+
+### The Safari Outfitter (2026-10-15, the user's ask: "the Safari store, let's work on that")
+The Poké Mall's east front, its "Coming soon" shutter gone: a jungle-green SAFARI OUTFITTER front with a khaki awning and
+crates of Poké Balls, open once the Safari Zone is (`safariOpen()`), taped shut with Kangaskhan's note before that, and a
+grand-opening ribbon the first time (`outfitterRibbon`). Inside (`js/mall-outfitter.js`, walked by `js/mall-3d.js` as
+place `so`): a rattan lodge, the Safari Zone's map on the wall, the seven ball packs as real 3D balls on cushions along two
+tables, the Master Ball turning in a glass case, a Day Pass machine (`passState()`: a pass bought before the free try
+shows as held), today's top catchers chalked on a board (`safariTop()`, a tap opens the leaderboard) and Kangaskhan at the
+counter. A ball buys through `buyCorner()` like the Game Corner app; two taps and the buy window, as in every shop. A tap
+through your partner standing at a stand now reaches the stand (its sprite covers the ball). Checked headless: every
+buy, the pass, the board, the keeper, the ribbon and the closed front. `?mall=outfitter`.
+
+### The Furniture store rebuilt as a grand showroom (2026-10-15, the user's ask: "much BIGGER ... AESTHETIC ... ORGANIZED")
+Both floors are 21 x 13 now (the Game Corner's size, the camera following you), the day's 8 pieces sorted into eight
+departments, four a wing, each with a plaque and price card in its colour; a marble nave, carpet runner, velvet rotunda,
+crystal chandeliers, crest and Smeargle's painting, his easel downstairs and a grand piano upstairs (`js/mall-furniture.js`;
+`docs/reference/hub-base-mall.md`). Stock stays 8 a floor.
 
 **The backyard, part g: the garden feeds runs** (2026-10-15, the user's ask: Smeargle should explain the yard, a
 planting UI, and farming plus found materials crafting one thing per run; no bot check). Smeargle slides in the first
@@ -2630,5 +2662,5 @@ time in a bought yard (`yardIntro()` in `js/base-3d.js`, `house.yard.met`, a gif
 materials); `sell()` keeps the 100-a-day cap; `openGarden()` in `js/berry-garden.js` tends every plot. Kurt's Held
 berries and Run kit shelves (`js/data/workshop.js`, repeatable into `save.workshop.kit`), held berries in
 `js/data/held.js` (`run.held`, once a run, mirrored in the sim's `engine.js`), packed on the Prepare screen
-(`renderPack()` in `js/select.js`; not Safari, the Sky Pillar or peeks; allowed for Mewtwo). Patch 1.22.
+(`renderPack()` in `js/select.js`; not Safari, the Sky Pillar or peeks; allowed for Mewtwo).
 
