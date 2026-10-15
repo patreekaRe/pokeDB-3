@@ -50,6 +50,7 @@ export const NEXT = [
   ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones.'],
   ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
   ['hub', 'The broken Sealed Gate in the Clearing is built in 3D now: an obsidian arch, crystal spires, snapped chains and a swirling portal to the Depths.'],
+  ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits on the plaza with tips.'],
 ];
 
 /** The gateway towns' lines, held back while the towns are off (TOWNS_LIVE in js/data/towns.js): back into NEXT when
