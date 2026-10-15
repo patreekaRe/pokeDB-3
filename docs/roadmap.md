@@ -9,6 +9,43 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
+`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
+for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
+run stronger, so no bot check. Three parts:
+- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
+  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
+  unlocks a line from him and a piece of the furniture set.
+- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
+  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
+  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
+  the battle screen with no rewards beyond the star (never a run).
+- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
+  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
+  trophy.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
+Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+
+**The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
+back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
+the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js` / `js/pc.js`'s `blueprint()`), **one
+plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
+roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
+`docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
+  a) **The yard itself**: the blueprint plot and its purchase, a `save.base` field for it (follows the cloud save), the
+     back door in the main room, an outdoor 3D lot built like the base's rooms (grass, fence, the Clearing's trees behind,
+     sky lit by `timeOfDay()`, snow with `?season=winter`, the Clearing's curve), your partner walking out and back,
+     `wakeGL` / `sleepGL` per CLAUDE.md, a `?yard` playtest flag, a `NEWS` line if the PC page changes, a patch note.
+  b) **Outdoor furniture**: placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
+     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
+     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
+  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
+     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
+  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
+     harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
+     ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
+  e) Later: the yard grows (the blueprint's bigger yard buy).
+
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
 ahead** → biome 2 → boss → crossroads → film → town → biome 3 → boss → Sealed Gate. In `walkOn()` (`js/run.js`) the town
@@ -80,7 +117,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    ???); your buddy starts a step in front of it (`SPAWN`) and comes home there (`goHome('waystone', town)` →
    `cameHome(from, town)`); the worn ring path stays. Player lines that said "ring of stones" now say the Waystone.
    Headless-tested (menu, Travel to Lantern Village, Leave home, no errors). Branch `towns`, waiting on the user's playtest.
-   **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
+   **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (settled below).
    **Done (2026-10-14): the Clearing laid out anew** (the user's ask, the start of a clean-up of the towns, the Clearing
    first, then the Shrine's town): spread out over a 31 x 21 grid round a paved plaza, cobbled lamp-lit avenues and a ring
    road, the way out north through the Whispering Clearing's gate, Kenmatta's dojo north-west away from the Nietos (east),
@@ -250,7 +287,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `lagoonKinds()` in `js/event-3d.js`); jungle banks of palms (`lagoonJungle()`), moored rowboats (`y`), drowned columns
    (`|`), nets drying (`n`), the beacon on its rock (Wingull nesting), the Aquarium's glass dome (walked in: Lapras, Mantine,
    Corsola, Chinchou, Lanturn in its pools), Pat's houseboat (fairy lights, a rose in a bottle; he serenades the moon after
-   10 p.m.), Kayl's house (Spooky the Purrloin and Reya the Glameow, a home's `names`), Pelipper's Bait & Tackle (the trade);
+   10 p.m.), Kayl's house (Spooky the black cat, a recoloured Glameow, and Reya the purple Purrloin, 15 lines each; a home's `names`), Pelipper's Bait & Tackle (the trade);
    10 locked huts, 10 folk (Wooper, Psyduck, Slowpoke, Corphish, Marill, Poliwag, Buizel, Krabby, Wingull, Staryu; 9 cries
    added), its own requests (fights, the Mart, ❓ rooms, a flawless fight, the Gym). Homes' walls can be `boards` / `aqua`.
    The towns test now knows a bench takes two tiles. Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's

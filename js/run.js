@@ -1934,7 +1934,7 @@ function homeRoom(b, onward = null) {
         : spotOption('Trade', `${town.trader.name}: Got something to swap? Show me your Bag.`, async () => {
             if (run !== thisRun) return;
             const { pickTrade } = await import('./town-trade.js');
-            const deal = await pickTrade(town.trader, held, t.trade.offers);
+            const deal = await pickTrade(town.trader, held, t.trade.offers, { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage) });
             if (run !== thisRun) return;
             const at = deal ? run.items.indexOf(deal.give) : -1;
             if (at < 0) return again();

@@ -9039,6 +9039,13 @@ function homeWall(width, time, { window: win = true, walls = 'plaster' } = {}) {
   return f.c;
 }
 
+/** Where a sign sits over someone's head (the user's ask, 2026-10-15: the trader's TRADE floated far over a short
+    Pokémon): the top of their sprite, leaned back with its board, scaled with them. */
+function overHead(who, dx = 0, gap = 0.12) {
+  const top = (who.top ?? 1.4) * who.group.scale.y, lean = -who.board.rotation.x;
+  return new THREE.Vector3(who.base.x + dx, who.base.y + top * Math.cos(lean) + gap, who.base.z - top * Math.sin(lean));
+}
+
 async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const H = !L && HALLS[home];   // a town's great hall (js/town-halls.js)
@@ -9055,13 +9062,13 @@ async function buildHome(figs, { time, town, home, gift }) {
     B.who.trader = await figure('trader', figs.trader, { x: 3.5, ty: 1.2, scale: 0.9 });
     B.who.trader.group.traverse(o => { o.userData.spot = 0; });
     B.spots = [{ step: { x: 4, y: 3 } }];
-    B.anchors[0] = new THREE.Vector3(tileX(3.5), 2.2, tileZ(1.2));
+    B.anchors[0] = overHead(B.who.trader);
   }
   if (h.kurtAt && figs.kurt) {   // a tap on Kurt is his Workshop's window, like the shop's keeper
     B.who.kurt = await figure('kurt', figs.kurt, h.kurtAt);
     B.who.kurt.group.traverse(o => { o.userData.spot = 0; });
     B.spots = [{ step: { x: Math.round(h.kurtAt.x), y: Math.round(h.kurtAt.ty) + 1 } }];
-    B.anchors[0] = new THREE.Vector3(tileX(h.kurtAt.x), 2.4, tileZ(h.kurtAt.ty));
+    B.anchors[0] = overHead(B.who.kurt);
   }
   const leader = town.homes[home]?.leader;
   if (leader && figs[leader]) {

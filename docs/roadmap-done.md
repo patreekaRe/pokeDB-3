@@ -2454,3 +2454,9 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   then one of three of its rarity from your type's (a rolled order per rarity, `rollTrade()`, kept through a refresh), then
   Trade. Still once per town per run, a sidegrade, so no bot check. The `?town=` peek's Potion was why playtests only
   showed potion swaps. Tested headless (Lantern Village, Sunwell Bazaar), 243 tests pass.
+- **The trade window as an MMO's** (2026-10-15, the user's ask: "clearer, and visual"; the TRADE sign "lower closer to
+  their heads, depending on the pokemon"): you (your partner's sprite) and the trader across a table, an offer slot each
+  (dashed till filled, rimmed in the item's rarity), arrows between that wake once both are set, your Bag and their three
+  offers in inventory squares under each side; Trade puts READY on you, then them, the two items cross and TRADE
+  COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
+  `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.
