@@ -1476,7 +1476,81 @@ export const QUESTS = {
       ],
     ],
   },
+  // the Clearing's own (docs/roadmap.md's Towns step 7, 2026-10-14): the Nietos mend the Clearing's Waystone, the hub the
+  // towns' stones link to, so it comes before every town's. Opened when you come home after beating them; handed in at
+  // their house (js/run.js's homeRoom()), the stone lighting on the plaza when you step out (js/hub-3d.js).
+  clearing: {
+    story: 'The Clearing\'s Waystone cracked the night the Sealed Gate shut, and every town\'s stone went dark with it. It hums off-key all night, and Linc can\'t sleep.',
+    greet: {
+      nietos: [
+        'LAW: Hey! You beat us! Fair and square. Mostly. Linc bit Kangaskhan.',
+        'BRITT: Sweetie, have you looked at the Waystone on the plaza? Really looked?',
+        'BRITT: It cracked the night the Sealed Gate shut. Straight through. And every town\'s stone out on the roads went dark with it.',
+        'LAW: The towns all link through ours. It\'s the hub. Hub\'s down, whole server\'s down. Oh, umm... I mean, it\'s like a... hub.',
+        'BRITT: And it hums. All night. Off-key. Linc hasn\'t slept through since. Neither have I. Law has, somehow.',
+        'LINC: Ba! *points out of the window, at the stone*',
+        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there. It\'s on the fridge. And in your Satchel.',
+      ],
+    },
+    steps: [
+      track('cl-quiet', 'nietos', 'Settle the Clearing: win {n} fights in the Whispering Clearing', 'fight', 5,
+        ['LAW: The Clearing\'s gone quiet! Like a lobby after everyone queues.',
+          'BRITT: Gold star. Now the crack: Glowmoss from the Clearing packs it. I did a whole science unit on it. Twenty-six kids. One said "moss".']),
+      gather('cl-moss', 'nietos', 'Bring {n} Glowmoss from the Whispering Clearing to pack the crack', 'glowmoss', 5,
+        ['BRITT: Perfect moss. Law, come and look at the moss.',
+          'LAW: That\'s... some moss. Great moss. Oh, umm... it still hums wrong, though. Kurt makes chimes. Ask him for a Waystone Chime.']),
+      craft('cl-chime', 'nietos', 'Bring a Waystone Chime from Kurt\'s Workshop to tune the stone', 'waystone-chime',
+        ['BRITT: Listen. *ting* ...It hummed back in tune. Linc fell asleep on the spot.',
+          'LAW: Last bit\'s the shard. It\'s out in the Clearing, over some big Alpha. Kangaskhan sniffed it out.']),
+      shard('clearing', 'nietos', 'Bring back the Clearing\'s Waystone Shard from the Whispering Clearing', [
+        'LAW: THE SHARD! Okay, everyone outside. Britt, get Linc. Kangaskhan, get... Kangaskhan.',
+        'BRITT: We\'ll put it in together, out on the plaza. Gently. Like putting a baby down. You\'d think Law would know how.',
+        'LINC: Pika! Pika!']),
+    ],
+    talk: {
+      'cl-quiet': {
+        nudge: 'LAW: The Clearing\'s all riled up since the crack. Win a few fights out there. Carry me. Oh, umm... I mean, help.',
+        nietos: [
+          'LAW: Five fights in the Clearing. That\'s like one ranked night. Britt says that\'s not a unit of measurement.',
+          'BRITT: The wild Pokémon have been jumpy since the stone cracked. So has Linc. So has Law, but that\'s the energy drinks.',
+        ],
+      },
+      'cl-moss': {
+        nudge: 'BRITT: Glowmoss grows in the Clearing. Five clumps should pack the crack. I\'ve done the maths. I teach the maths.',
+        nietos: [
+          'BRITT: Glowmoss glows a bit after dark. Linc thinks it\'s a night light. We\'re not telling him otherwise.',
+          'LAW: Britt made a worksheet for the moss. There\'s a quiz at the end. I failed it.',
+        ],
+      },
+      'cl-chime': {
+        nudge: 'LAW: Kurt carves chimes from Whisper Acorns. One should tune the stone. Like a... tuning thing.',
+        nietos: [
+          'LAW: The stone\'s packed, but it still hums wrong. Like a mic with no noise gate. Kurt\'s chime should fix it.',
+          'BRITT: Kurt says a chime of Whisper Acorn sings the right note. Linc says "ba". We\'re going with Kurt.',
+        ],
+      },
+      'clearing-shard': {
+        nudge: 'LAW: The shard\'s floating over an Alpha in the Clearing. It glows. You can\'t miss it. I would, but you won\'t.',
+        nietos: [
+          'BRITT: The shard\'s out in the Clearing, over a big Alpha. Bring it home and we\'ll put it in together.',
+          'LAW: Kangaskhan wanted to go and get it itself. We said no. It\'s on babysitting duty. It sulked. Into the laundry.',
+        ],
+      },
+    },
+    after: {
+      nietos: [
+        'BRITT: The Waystone hums in tune now. Linc sleeps right through. I slept FOUR HOURS. In a row.',
+        'LAW: The hub\'s back up! Now the towns. Their stones are still dark, but ours can reach them once they\'re fixed.',
+        'LINC: Pika! *points at the plaza, at the stone, glowing*',
+      ],
+    },
+  },
 };
+
+/** Whether the Clearing's Waystone is lit (step 7): the Nietos' questline's shard put back, or a save that already started
+    (or mended) a town's before the Clearing came first, so nobody loses progress. Until then, no town's leader greets
+    you or opens its board, and the Clearing's Waystone travels nowhere. */
+export const clearingLit = (save) => mended(townState(save, 'clearing')) || RING.some(t => { const st = townState(save, t.id); return !!st.quest || mended(st); });
 
 /** A town's questline, or null. */
 export const questOf = (town) => QUESTS[town.id] || null;
@@ -1730,7 +1804,7 @@ export const stepReady = (step, st, sat) => stepHave(step, st, sat) >= step.n;
     nothing while the town is quiet. Returns the new state and whether something just finished. */
 export function countTown(town, st, event, amount, ctx = {}) {
   if (!st.quest) return { st, finished: false };
-  if (questDone(town, st)) return countRequest(town, st, event, amount, ctx);
+  if (questDone(town, st)) return town.requests ? countRequest(town, st, event, amount, ctx) : { st, finished: false };   // the Clearing has no board
   const step = questStep(town, st);
   if (step.kind !== 'track' || step.on !== event || ctx.biome !== town.biome || !(amount > 0) || st.quest.got >= step.n) return { st, finished: false };
   const got = Math.min(step.n, st.quest.got + amount);
@@ -1776,11 +1850,11 @@ export function folkOf(key) {
 }
 
 /** Whether the Nietos are at home in their house in the Clearing (the house itself always stands): only once you've beaten
-    THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins, and not at all for now (the user's call,
-    2026-10-14: they're working out how the Nietos turn up). `?nietos` turns it on for a page load (`&gymwins=1` to have
-    beaten them). On for good: NIETOS_LIVE. */
-export const NIETOS_LIVE = false;
-export const nietosHome = (wins) => (NIETOS_LIVE || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('nietos'))) && wins > 0;
+    THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins. Since step 7 (2026-10-14) that's how they
+    turn up: beaten, they greet you at home and their questline mends the Clearing's Waystone, so they're home with the
+    towns (townsOpen()). `?nietos` brings them home for a page load (`&gymwins=1` to have beaten them). */
+export const NIETOS_LIVE = true;
+export const nietosHome = (wins) => ((NIETOS_LIVE && townsOpen()) || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('nietos'))) && wins > 0;
 
 /** The Clearing's own houses (the user's ask, 2026-10-14): walked in from the hub like a town's homes (homeRoom() in
     js/run.js), a pseudo-town with no map, crowd or requests. The Nietos live here, the Clearing's third Gym Leaders. */

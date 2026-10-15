@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { TOWNS, QUESTS, townState, questOf, greeterOf, openQuest, questStep, questDone, questProgress, stepText, stepReady,
-  countTown, handInStep, mended, currentRequest, homeTalk, stepNudge, folkChats, questLine } from '../js/data/towns.js';
+  countTown, handInStep, mended, currentRequest, homeTalk, stepNudge, folkChats, questLine, CLEARING, clearingLit } from '../js/data/towns.js';
 import { MATERIALS, MATERIALS_BY_ID, KEY_BY_ID, satchelOf, addMat, addKey, matCount, hasKey } from '../js/data/satchel.js';
 
 const run = readFileSync(new URL('../js/run.js', import.meta.url), 'utf8');
 const sent = new Set([...run.matchAll(/mission\((\[[^\]]*\]|'[^']*')/g)].flatMap(m => m[1].match(/'([^']*)'/g).map(s => s.slice(1, -1))));
 
 test('every town has a questline its own leaders open and run, ending on its Waystone Shard', () => {
-  for (const town of Object.values(TOWNS)) {
+  for (const town of [CLEARING, ...Object.values(TOWNS)]) {
     const q = questOf(town);
     assert.ok(q, `${town.id}: no questline`);
     assert.deepEqual(Object.keys(q.greet).sort(), Object.keys(town.leaders).sort(), `${town.id}: every leader can greet you`);
@@ -34,11 +34,11 @@ test('every town has a questline its own leaders open and run, ending on its Way
       if (s.pick) assert.ok(s.pick.options.length >= 2 && s.pick.options.every(o => o.id && o.label && o.text));
     }
   }
-  assert.deepEqual(Object.keys(QUESTS).sort(), Object.keys(TOWNS).sort());
+  assert.deepEqual(Object.keys(QUESTS).sort(), ['clearing', ...Object.keys(TOWNS)].sort());
 });
 
 test('every biome with a town has two or three materials', () => {
-  for (const town of Object.values(TOWNS)) {
+  for (const town of [CLEARING, ...Object.values(TOWNS)]) {
     const n = MATERIALS.filter(m => m.biome === town.biome).length;
     assert.ok(n >= 2 && n <= 3, `${town.biome}: ${n} materials`);
   }
@@ -194,4 +194,25 @@ test('at home a leader talks about where the questline stands first, with John\'
 test('the board\'s word carries its leader\'s name once, Phil\'s JONA keeping hers', () => {
   assert.match(stepNudge(TOWNS.shrine, QUESTS.shrine.steps[0], 'JAHMES'), /^JAHMES: WICKS/);
   assert.match(stepNudge(TOWNS.thornwood, QUESTS.thornwood.steps[0], 'PHIL'), /^PHIL: A Spirit/);
+});
+
+test('the Clearing\'s Waystone comes first: the Nietos\' questline lights it, and an old town questline counts as lit', () => {
+  assert.equal(clearingLit({}), false);
+  assert.equal(greeterOf(CLEARING, { gym: { nietos: 1 } }), 'nietos');
+  let st = openQuest(townState({}, 'clearing'));
+  assert.equal(questStep(CLEARING, st), QUESTS.clearing.steps[0]);
+  // its Do step counts in the Clearing biome only
+  assert.equal(countTown(CLEARING, st, 'fight', 1, { biome: 'shrine' }).st, st);
+  st = countTown(CLEARING, st, 'fight', 9, { biome: 'clearing' }).st;
+  assert.equal(st.quest.got, QUESTS.clearing.steps[0].n);
+  for (const _ of QUESTS.clearing.steps) st = handInStep(CLEARING, st);
+  assert.ok(mended(st) && questDone(CLEARING, st));
+  assert.equal(clearingLit({ towns: { clearing: st } }), true);
+  // done, the Clearing has no board: play counts into nothing, and nothing breaks
+  assert.equal(countTown(CLEARING, st, 'fight', 1, { biome: 'clearing' }).st, st);
+  assert.match(homeTalk(CLEARING, 'nietos', st).lines[0], /^BRITT: /);
+  // a save that already opened (or mended) a town's questline keeps it
+  assert.equal(clearingLit({ towns: { shrine: openQuest(townState({}, 'shrine')) } }), true);
+  assert.equal(clearingLit({ towns: { wastes: { done: 5 } } }), true);
+  assert.equal(clearingLit({ towns: { shrine: { met: true } } }), false);
 });

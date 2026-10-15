@@ -13,6 +13,9 @@ const mat = (id, biome, name, icon, use, more = {}) => ({ id, biome, name, icon,
 const key = (id, name, icon, text, how, more = {}) => ({ id, name, icon, text, how, ...more });
 
 export const MATERIALS = [
+  // the Clearing's own (step 7, 2026-10-14), for the Nietos' questline and Kurt's Waystone Chime
+  mat('glowmoss', 'clearing', 'Glowmoss', '🌿', 'It glows a little after dark. The Nietos want it to pack the crack in the Clearing\'s Waystone.'),
+  mat('acorn', 'clearing', 'Whisper Acorn', '🌰', 'It hums when you hold it to your ear. Kurt carves chimes from them.'),
   mat('wick', 'shrine', 'Lantern Wick', '🕯️', 'Lantern Village wants these to keep its lanterns lit. Kurt twists them into lanterns too.'),
   mat('washi', 'shrine', 'Washi Paper', '📜', 'Lantern shades and charms, at Kurt\'s Workshop.'),
   mat('magma-ore', 'wastes', 'Magma Ore', '🌋', 'Warms Cinder Springs back up. Kurt can forge with it, even a blade.'),
@@ -79,13 +82,15 @@ export const shardFlag = () => typeof location !== 'undefined' && new URLSearchP
 /** The line that says a material went into the Satchel. */
 export const matLine = ({ id, n }) => `${MATERIALS_BY_ID[id].icon} ${MATERIALS_BY_ID[id].name}${n > 1 ? ` ×${n}` : ''} went into your Satchel.`;
 
-const SHARD_TOWN = { shrine: 'Lantern Village', wastes: 'Cinder Springs', ruins: 'Driftwood Landing', thornwood: 'Highbough', savanna: 'Sunwell Bazaar' };
+const SHARD_TOWN = { clearing: 'The Clearing', shrine: 'Lantern Village', wastes: 'Cinder Springs', ruins: 'Driftwood Landing', thornwood: 'Highbough', savanna: 'Sunwell Bazaar' };
 const KURT = 'Made at Kurt\'s Workshop in the Whispering Clearing.';
 
 export const KEY_ITEMS = [
   ...Object.entries(SHARD_TOWN).map(([biome, town]) => key(`shard-${biome}`, `${town}'s Shard`, '🔷',
-    `A shard of Crystal Depths crystal, cracked off when the Sealed Gate was shut. It belongs in ${town}'s Waystone.`,
-    'Floats over an Alpha on its biome\'s map, once the town\'s questline gets that far.', { shard: biome })),
+    `A shard of Crystal Depths crystal, cracked off when the Sealed Gate was shut. It belongs in ${biome === 'clearing' ? 'the Whispering Clearing' : town}'s Waystone.`,
+    biome === 'clearing' ? 'Floats over an Alpha on the Whispering Clearing\'s map, once the Nietos\' questline gets that far.'
+      : 'Floats over an Alpha on its biome\'s map, once the town\'s questline gets that far.', { shard: biome })),
+  key('waystone-chime', 'Waystone Chime', '🎐', 'Whisper Acorn wood, carved thin. Struck, it sings the note the Clearing\'s Waystone should hum.', KURT),
   key('festival-lanterns', 'Festival Lanterns', '🏮', 'A string of lanterns for John\'s festival, wicks that won\'t go out.', KURT),
   key('comms-relay', 'Comms Relay', '📡', 'A relay for Shaun\'s comms tower. He says it\'s wired wrong. It isn\'t.', KURT),
   key('sequin-costume', 'Sequin Costume', '🩱', 'Clarence\'s costume for the springs\' reopening show. There\'s a cape.', KURT),

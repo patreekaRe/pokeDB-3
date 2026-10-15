@@ -5,7 +5,7 @@
 
 import { getSave, updateSave, awardCoins } from './storage.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended, folkKey,
-  openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest } from './data/towns.js';
+  openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest, placeOf } from './data/towns.js';
 import { satchelOf } from './data/satchel.js';
 import { streamOf } from './rng.js';
 import { safariDay } from './data/safari.js';
@@ -13,7 +13,7 @@ import { gainMat, gainKey } from './satchel.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
-  const town = TOWNS[ctx.biome];
+  const town = placeOf(ctx.biome);   // the Clearing's too: the Nietos' questline (step 7)
   if (!town || !townsOpen()) return [];
   let st = townState(getSave(), town.id), done = false;
   const before = st;
@@ -26,7 +26,7 @@ export function trackTowns(events, amount, ctx) {
   updateSave(d => { d.towns = { ...(d.towns || {}), [town.id]: st }; });
   if (!done) return [];
   return questDone(town, st) ? [`📜 ${town.name}'s request done: ${requestText(currentRequest(town, st))}! Hand it in at its board next time you pass.`]
-    : [`📜 ${town.name}'s quest: ${stepText(questStep(town, st))}, done! Tell them at its board next time you pass.`];
+    : [`📜 ${town.name}'s quest: ${stepText(questStep(town, st))}, done! ${town.home ? 'Tell the Nietos at home.' : 'Tell them at its board next time you pass.'}`];
 }
 
 /** A leader has greeted you: the town's questline opens on its board (and a "!" in the Satchel's Quests). */
@@ -40,10 +40,10 @@ export function startQuest(id) {
 }
 
 /** Hand in the questline's step up now (`pick` for a step that asks you to choose): its materials taken from the Satchel,
-    its key item given, PokéCoins paid. Returns the coins, or null if it wasn't ready. */
-export function handInQuest(id, pick = null) {
-  const town = TOWNS[id], st = townState(getSave(), id), step = questStep(town, st);
-  if (!step || !stepReady(step, st, satchelOf(getSave()))) return null;
+    its key item given, PokéCoins paid. Returns the coins, or null if it wasn't ready (`force`: a `?satchel` playtest). */
+export function handInQuest(id, pick = null, force = false) {
+  const town = placeOf(id), st = townState(getSave(), id), step = questStep(town, st);
+  if (!step || !(force || stepReady(step, st, satchelOf(getSave())))) return null;
   if (step.kind === 'gather') gainMat(step.item, -step.n);
   if (step.gives) gainKey(step.gives);
   updateSave(d => { d.towns = { ...(d.towns || {}), [id]: handInStep(town, townState(d, id), pick) }; });

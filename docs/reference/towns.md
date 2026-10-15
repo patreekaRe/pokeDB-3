@@ -262,3 +262,18 @@ mended by the old requests). `HOME_LINES[id]` is a list of speeches (4 each, sev
 Phil's, Ricky's and the Curio Shop's doors; `boughBoards()` (from `canopyExtras()`) hangs a walnut plank (`boughBoardArt()`: cream
 letters, GYM LEADER in the leader's ink on a gold rim, the shop's TRADE HOUSE in violet) from a log bar with a ghost lantern;
 `treehouse()` and `canopyManor()` no longer hang the small `nameArt()` plate.
+
+**The Nietos' questline: the Clearing's Waystone first** (step 7, 2026-10-14). `QUESTS.clearing` runs on the towns' engine
+with `CLEARING` (`placeOf('clearing')`) as its town, saved as `save.towns.clearing.quest`; every step is `by: 'nietos'` (LAW: /
+BRITT: / LINC: lines, the gym's `voices`). `clearingLit(save)` is its shard put in, or any town's questline opened or
+mended (an old save loses nothing). Till then `townRoom()` has no greeter (its board points home; a `?town=` peek ignores
+it), the Clearing's Waystone is cracked (`clearingWaystone(g, lit, whole)`: a darker stone, a zigzag crack, its runes
+flickering dim) and its card is `brokenWaystone()` (no Travel, the quest's n/4); once lit, the menu lists the Clearing
+first. `homeNews()` in `js/hub-3d.js` runs as the Clearing opens (`openHub()`, `enterHub()`): beaten Nietos and no quest,
+Law and Britt slide in (`gymTalk()`) and `startQuest('clearing')`; the shard in and not `welcomed`, a beam rises off the
+stone (`warp.stone` in `liveWarp()`), the places rebuilt whole at its peak, and `welcomeHome('clearing')`. Steps are handed in
+in the Nietos' house (`homeRoom()`: Quest / Hand in, `handInQuest('clearing', null, force)`, `force` under `?satchel`);
+the shard's hand-in walks you out onto the plaza. Its Do step counts in the Clearing biome (`trackTowns()` reads
+`placeOf()`; `countTown()` counts nothing once a board-less questline is done). Materials Glowmoss and Whisper Acorn drop in
+the Clearing biome; Kurt's `waystone-chime` (4 acorns, 1 moss); `shard-clearing` floats over a Clearing Alpha
+(`shardHere()`). `nietosHome()` is on with the towns (`NIETOS_LIVE` true and `townsOpen()`), `?nietos` for a page load.

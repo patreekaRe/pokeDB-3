@@ -421,6 +421,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      points to the Nietos). An old save that already started a town questline counts the Clearing stone as lit, so nobody
      loses progress. Its menu and the Satchel's Quests list the Clearing first. Tests in `tests/quests.test.mjs`.
    - One session (two if the dialogue runs long). Playtest: `?nietos&gymwins=1&satchel`, `?biome=clearing&shard`.
+   - **Built (2026-10-14), waiting on the user's playtest.** `QUESTS.clearing` in `js/data/towns.js` (Law and Britt's greet,
+     4 steps all `by: 'nietos'`: win 5 fights in the Clearing, 5 Glowmoss, Kurt's Waystone Chime, the Clearing's shard), the
+     Clearing's materials Glowmoss and Whisper Acorn, `clearingLit()` gating the towns' greetings and the Waystone's
+     Travel. The greeting plays as the Clearing opens (`homeNews()` in `js/hub-3d.js`), steps are handed in at the Nietos'
+     house (`homeRoom()`), and stepping out after the shard plays the stone's light-up (a beam, the cracked stone swapped
+     for the whole one). `NIETOS_LIVE` is on, but the Nietos are home only while the towns are on. Playtest on the live site:
+     `?towns&gymwins=1` (the greeting), then `&satchel` (every step ready, in their house). Next: the user walks it; then
+     step 5. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

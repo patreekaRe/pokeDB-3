@@ -21,6 +21,7 @@ const skin = (id, name, needs, text) => ({ id: `skin-${id}`, kind: 'skin', name,
 export const RECIPES = [
   // the questlines' Make steps: each from its own biome, but Machew's katana wants Cinder Springs' ore, and the Spirit
   // Lantern a Shrine wick, so the other roads matter (the user's plan)
+  key('waystone-chime', 'clearing', { acorn: 4, glowmoss: 1 }),   // the Nietos' (step 7), from the Clearing's own
   key('festival-lanterns', 'shrine', { wick: 3, washi: 3 }),
   key('comms-relay', 'wastes', { 'copper-wire': 4, 'magma-ore': 1 }),
   key('sequin-costume', 'wastes', { 'ember-sequin': 5, 'copper-wire': 1 }),
