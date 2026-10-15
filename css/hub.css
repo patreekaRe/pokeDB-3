@@ -527,6 +527,8 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .pc-sheet-text { margin: 0; font-size: 0.75rem; line-height: 1.8; }
 .pc-prize { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 2px; }
 .pc-prize-coin { width: 30px; height: 30px; }
+.pc-prize-mat { font-size: 1.6rem; line-height: 1; }
+.pc-prize-ball { width: 36px; height: 36px; image-rendering: pixelated; }
 .pc-prize-n { font-weight: 400; font-size: 0.95rem; color: #8e5c06; }
 .pc-letter.paid .pc-prize { animation: pcPaid 0.5s ease-out; }
 .pc-claimed {
@@ -621,6 +623,15 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .pc-bp-pip.join { cursor: pointer; }
 .pc-bp-pip.join circle:last-child { fill: #f0b030; }
 .pc-bp-pip.join.on circle:last-child { fill: #fff; stroke: #f0b030; stroke-width: 0.3; }
+/* the backyard: a lawn once bought, a dashed green plot till then; the path to it from the back door */
+.pc-bp-room.yard .pc-bp-edge { fill: #3e6e3a; stroke: #8ad878; }
+.pc-bp-room.yard .pc-bp-fill, .pc-bp-room.yard.picked .pc-bp-fill { fill: #3e6e3a; }
+.pc-bp-room.yard.plot .pc-bp-edge { fill: rgba(88, 216, 88, 0.12); stroke: #58d858; stroke-dasharray: 0.5 0.35; }
+.pc-bp-room.yard.plot .pc-bp-fill { fill: rgba(88, 216, 88, 0.12); }
+.pc-bp-room.yard.plot.picked .pc-bp-fill { fill: rgba(88, 216, 88, 0.3); }
+.pc-bp-room.yard.picked .pc-bp-edge { stroke: #f0b030; }
+.pc-bp-room.path { pointer-events: none; }
+.pc-bp-room.path .pc-bp-edge, .pc-bp-room.path .pc-bp-fill { fill: #8a7450; stroke: none; }
 .pc-build-row { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
 .pc-build-row .pc-build { margin: 0; }
 .pc-build.pc-turn { min-width: 90px; }

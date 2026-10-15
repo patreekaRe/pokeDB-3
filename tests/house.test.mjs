@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ROOM_KINDS, BUILDABLE, shapeOf, pipTile, freshHouse, fitRoom, fitsOf, addRoom, doorsOf, openPips, houseRooms, joinPips, joinRooms, removeRoom } from '../js/data/house.js';
+import { ROOM_KINDS, BUILDABLE, shapeOf, pipTile, freshHouse, fitRoom, fitsOf, addRoom, doorsOf, openPips, houseRooms, joinPips, joinRooms, removeRoom, roomById, backDoorOf, linkOf } from '../js/data/house.js';
 
 const overlaps = (h) => {
   const seen = new Set();
@@ -109,4 +109,48 @@ test('rooms side by side can be joined, and a room is only taken down when nothi
     assert.equal(joinRooms(h, j.room, j.pip, j.to, j.toPip), false);
     break;
   }
+});
+
+test('the backyard: no yard, no back door; bought, a back door each way that lead to each other', () => {
+  const h = freshHouse();
+  assert.equal(roomById(h, 'yard'), null);
+  assert.ok(!doorsOf(h, 'main').some(d => d.to === 'yard'));
+  h.yard = { size: 1, items: [] };
+  const out = doorsOf(h, 'main').find(d => d.to === 'yard'), back = doorsOf(h, 'yard');
+  assert.equal(out.side, 'n');
+  assert.equal(out.at, backDoorOf(h).at);
+  assert.equal(back.length, 1);
+  assert.deepEqual([back[0].side, back[0].to, back[0].toPip], ['s', 'main', out.pip]);
+  assert.ok(pipTile(roomById(h, 'yard').shape, [back[0].side, back[0].at]));
+  assert.ok(!houseRooms(h).some(r => r.id === 'yard'), 'nothing is built onto the yard or counted on the grid');
+});
+
+test('nothing is built through the back door, and a doorway already there moves it along the wall', () => {
+  const h = freshHouse();
+  h.big = true;
+  const at = backDoorOf(h);
+  assert.ok(at.pip >= 0 && openPips(h).some(p => p.room === 'main' && p.pip === at.pip));
+  h.yard = { size: 1, items: [] };
+  assert.ok(!openPips(h).some(p => p.room === 'main' && p.pip === at.pip));
+  const g = freshHouse();
+  g.big = true;
+  assert.ok(addRoom(g, 'main', backDoorOf(g).pip, 'closet'));
+  g.yard = { size: 1, items: [] };
+  const moved = backDoorOf(g);
+  assert.notEqual(moved.at, at.at);
+  assert.ok(!linkOf(g, 'main', moved.pip));
+});
+
+test('the bigger backyard: size 2 is the bigger lawn, its doormat still in the middle of its front edge', () => {
+  const h = freshHouse();
+  h.yard = { size: 1, items: [] };
+  const small = roomById(h, 'yard').shape;
+  h.yard.size = 2;
+  const y = roomById(h, 'yard'), back = doorsOf(h, 'yard')[0];
+  assert.equal(y.kind, 'bigyard');
+  assert.ok(y.shape.w > small.w && y.shape.h > small.h);
+  assert.equal((y.shape.w - small.w) % 2, 0, 'it grows evenly either side, so its things keep their places by the door');
+  assert.equal(back.at, y.shape.w / 2);
+  assert.ok(pipTile(y.shape, [back.side, back.at]));
+  assert.ok(!houseRooms(h).some(r => r.id === 'yard'));
 });

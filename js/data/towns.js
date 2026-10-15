@@ -1692,12 +1692,186 @@ export const pickStepOf = (town) => questOf(town)?.steps.find(o => o.pick) || nu
 /** The pick made there (`lantern`, `moon` or `fireworks`), or null: buildTown() dresses the town for it once mended. */
 export const townPick = (town, st) => { const s = pickStepOf(town); return (s && st.quest?.picks?.[s.id]) || null; };
 
+/* ---------- heart lines (docs/roadmap.md's step 8, session b; the user's picks, 2026-10-14) ----------
+   A friend's line for each heart their gifts have filled (js/data/workshop.js's heartsOf()), the Nth said at N hearts:
+   more personal as they rise, chats, jokes and stories about the other friends. The Nietos' carry their LAW: / BRITT: /
+   LINC: tags, one voice a line. */
+export const HEART_LINES = {
+  nietos: [
+    'LINC: Pika! *holds out a block for you, takes it back, then holds it out again*',
+    'LAW: Jahmes tried to teach Linc "LET\'S GO". Linc said "GO" and screamed. So, close. Very Jahmes.',
+    'BRITT: I gave Law a hall pass for one game with the boys. He came back four hours later. "It was a long game." Name on the board.',
+    'LAW: Real talk, sweetie? I thought I was too busy to be a dad. Now I\'m too busy AND a dad. Best thing I ever queued for.',
+    'BRITT: You\'re family now. That means you babysit. Gold star. ...Kidding. Mostly. Have a juice box.',
+  ],
+  john: [
+    'You came back! I picked a handheld for your visit. Then I unpicked it. It\'s the thought that counts.',
+    'Jahmes and I tried a Fire Emblem run together. He named every unit LET\'S GO. Classic mode. They were all gone by 10:59.',
+    'Ricky asked me to design a chair he can sleep in during meetings. I ran the load calcs. Rated for one standup.',
+    'At work I sign off parts that fly. Here I can\'t pick a handheld. It\'s easier to be sure about a wing than about fun.',
+    'An S-support. That\'s where we are. I didn\'t even have to think about it, and I think about everything.',
+  ],
+  jahmes: [
+    'YOU\'RE BACK! I\'m SCREAMING! Inside! It\'s after nine, I\'m winding down. This is me wound down.',
+    'Shaun sent me VOD notes. FORTY minutes. I watched four. It was 10:56! I\'m not made of time!',
+    'Clarence begged me to stay up for his show ONCE. I made it to the boa. Then it was eleven. I left. Mid-spin.',
+    'Real talk? Some days with patients are heavy. Then you show up and it\'s LET\'S GO again. Thanks for that.',
+    'You\'re my best friend now. OFFICIAL. You can call me after eleven. ...I won\'t answer. But you CAN. That\'s HUGE for me.',
+  ],
+  clarence: [
+    'A returning audience member! The front row\'s yours. Not for the show. For general admiring.',
+    'Shaun says my show adds forty milliseconds of lag to the boys. I say it adds four hundred percent morale. Science.',
+    'Jahmes walked out of my show at eleven sharp, mid-spin. I finished the spin to an empty chair. A professional finishes the spin.',
+    'Between us: some nights I\'m nervous before nine. The ring light\'s hot, the boa sheds. Then the boys type "GO CJ" and I\'m fine.',
+    'You\'ve earned my highest honour: the name of my new routine. "The Second Act". Tell no one. Tell the boys.',
+  ],
+  shaun: [
+    'You\'re back. Your last visit had good comms. I gave it a seven. That\'s high. Clarence is a four.',
+    'Kayl\'s ticket this week: "the printer\'s making a noise". The noise was Reya. Reya was inside the printer.',
+    'Ricky plays at 3 a.m. His aim\'s fine. His callouts are "uh" and "there". I coach him anyway. Nobody else will.',
+    'I flame the boys because I want them out of Silver. If I didn\'t care, I\'d just smurf. ...Don\'t tell them I said that.',
+    'Ticket closed: best friend. Resolution: you. No further action needed. Best ticket I\'ve ever written.',
+  ],
+  pat: [
+    '♪ Like a tall glass of lemonade... ♪ Oh, you\'re back. I wasn\'t singing. I was humming. Loudly. On purpose.',
+    'Law asked me to stop singing in voice chat. Then he asked me to sing "She Was Mine" for his friend. He said "friend" twice.',
+    'Kayl played bass under my song last night. Spooky fell asleep on her pedal. It turned into a lullaby. Best take yet.',
+    'Every song I sing is about someone. Maybe one day I\'ll tell them. Today I\'ll just sing it at the water. ♪ She was mine... ♪',
+    'I wrote you a line. ♪ A friend who keeps coming back... ♪ That\'s it. Oh, you liked it? I didn\'t know anyone was listening.',
+  ],
+  kayl: [
+    'Oh! It\'s you! I was about to... no, it\'s gone. Hi! Spooky, look who\'s here. She\'s asleep. She says hi.',
+    'Pat stayed over to jam and Reya screamed through the whole chorus. Pat said she had perfect pitch. She was hungry.',
+    'Shaun fixed my router again. Spooky\'s tail, again. He wrote "cat" on the ticket and drew a tiny lavender sprig. He says he didn\'t.',
+    'Some days my brain has forty tabs open and none is the one I need. You coming by is a nice tab. The one with music on.',
+    'I made you a lavender sachet. A week ago. Then I lost it. It was in the freezer? Anyway. Best friends! It smells fine.',
+  ],
+  phil: [
+    'Oh, it\'s you. Good. I thought it was a knock from the other side. It\'s never a good knock from the other side.',
+    'Ricky\'s video of me has a million views. Every comment says "fake". JONA reads them at night. She\'s offended.',
+    'Jerome asked if JONA could get him a GTA 6 leak. She said yes, for his soul. He thought about it way too long.',
+    'Most people stop visiting once the candles move by themselves. You didn\'t. That means more than you know.',
+    'Last night JONA said "THAT ONE MAY STAY". About you. She\'s never said that about anyone. Not even me.',
+  ],
+  ricky: [
+    'Hey. You came at a sane hour. Respect. I haven\'t seen one of those since college.',
+    'Jahmes logs off at 10:59 his time. That\'s 1:59 mine. I call him "the early bird" now. He\'s furious.',
+    'John made a spreadsheet of my sleep: "hours lost to one more game". He sent it as a pie chart. It\'s all one colour.',
+    'My manager asked why I always look tired. I said time zones. Truth is, I\'d rather be tired with the boys than rested without them.',
+    'You\'re the only friend who visits in daylight. I set an alarm for it. Best thing my alarm\'s ever done.',
+  ],
+  machew: [
+    '...You return. The shadow remembers those who return. I wrote your name in my notebook. The cool notebook.',
+    'Jerome called Tales of Berseria "basically GTA with swords". I have not spoken to him in three days. He hasn\'t noticed.',
+    'Kurt saw me practise in the square. He said my form was "very enthusiastic". I have chosen to take that as a blessing.',
+    '...I took the ninja path at twelve because I had no party. Now I have one. The arc changes.',
+    'Velvet had Laphicet. Every hero needs one companion to the last arc. ...This time, kid, it\'s personnel.',
+  ],
+  jerome: [
+    'Oh, hey. Somebody zoomed in on a mailbox in the trailer. It\'s a mailbox. Huge. Anyway, hi.',
+    'Machew asked if GTA 6 has swords. I said "probably" so he\'d stop asking. He has not stopped asking.',
+    'The baby smiled at me yesterday. My wife said "first smile!" I almost had my phone out. ...Almost. I put it down. Write that down.',
+    'Real talk: I\'m scared I\'ll be bad at the dad thing. GTA\'s easy, you know the map. This doesn\'t come with a map.',
+    'When GTA 6 drops, you\'re on my heist crew. First pick. Before the boys. Before Machew. That\'s a lot, coming from me.',
+  ],
+};
+
+/* A friend dropping by your Secret Base (step 8, session c; js/secret-base.js's leaderVisitor()): `drop` from 3 hearts,
+   standing about till you tap them; `sit` at 5, on a seat of yours, at home. One speech of each said a visit, picked at
+   random; a LAW: / BRITT: / LINC: tag names who says the line. */
+export const BASE_LINES = {
+  nietos: {
+    drop: [['BRITT: Surprise! We were on a walk and Linc pointed at your door. So now we\'re here.', 'LAW: Cute place, sweetie. Childproof? ...It is now. I moved a lamp.', 'LINC: Bah! *waves at your partner*', 'BRITT: Okay, nap o\'clock. Bye bye!']],
+    sit: [
+      ['LAW: Don\'t mind us. We needed a sit-down that isn\'t on a toy.', 'BRITT: Linc fell asleep in the stroller. Twenty minutes of silence. Your couch, our spa.', 'LINC: *snores, tiny*', 'LAW: ...Okay, he\'s awake. We were never here. Love you, bye!'],
+      ['BRITT: We brought juice boxes. One\'s yours. One is technically Linc\'s, so ask him.', 'LINC: No.', 'LAW: Ha! First full word this week! In YOUR house! Gold star for the house.'],
+    ],
+  },
+  john: {
+    drop: [['Hey! I was passing and thought I\'d see the base in person. Your floor plan, I mean. I like a floor plan.', 'Load-bearing walls look good. Furniture looks... fun. I can\'t rate fun. Yet.', 'Okay, I\'ll stop inspecting. See you soon!']],
+    sit: [
+      ['Mind if I sit? Long week. Three parts signed, two handhelds returned.', 'This seat\'s comfortable. I checked the joints before I sat down. Habit.', 'Right. Back to the hangar. Thanks for the sit.'],
+      ['I brought a handheld for us both. Then I thought: what if you don\'t want that one. So I brought none.', 'We can just sit. Sitting is a game. It\'s co-op.', 'That was a good run. See you!'],
+    ],
+  },
+  jahmes: {
+    drop: [['KNOCK KNOCK! It\'s me! You weren\'t expecting me! LET\'S GO!', 'Your base is so CLEAN. Is it always this clean? Mine\'s a disaster. I have a VERY clean disaster.', 'Okay, I gotta go, it\'s almost ten. Love the place!']],
+    sit: [
+      ['I\'m just gonna... sit. On your seat. Is that okay? It\'s okay. It\'s ON.', 'This is the calmest I\'ve been all day. A patient called me "the loud nurse" today. Fair.', 'Okay, 10:40. Leaving at 10:50. Bed at 10:59. LET\'S GO.'],
+      ['Best friends get the comfy seat. That\'s the rule. I made it up just now. It\'s a GREAT rule.', 'Did you know you can fit me and like four plushies on here? I tested it. Mentally.', 'Alright! Night night! It\'s 9:30 but I\'m starting early!'],
+    ],
+  },
+  clarence: {
+    drop: [['Ta-da! An entrance! Your doormat could use a spotlight, but I\'ll allow it.', 'Oh, this space has good acoustics. Imagine a show in here. A small one. An intimate show.', 'Exit, stage left! Your stage left. Bye!']],
+    sit: [
+      ['Don\'t mind me. Rehearsing my sitting. A big part of my show is sitting fabulously.', 'Rate my posture. ...A ten? I agree. Thank you. You have taste.', 'Encore later! For now, I\'m off.'],
+      ['Saved myself the best seat in the house. Your house. Thank you for having a best seat.', 'Shaun says sitting still for ten minutes is "unprecedented" for me. Watch me do eight.', 'That was seven. Close enough! Bye!'],
+    ],
+  },
+  shaun: {
+    drop: [['Yo. Came by to check your setup. Router\'s fine. Comms are fine. Base is... fine. That\'s a compliment.', 'You keep things tidy. Kayl should take notes. Kayl won\'t take notes.', 'Ticket closed. Later.']],
+    sit: [
+      ['I\'m sitting. Don\'t make it weird. I\'m allowed to sit.', 'Your seat\'s got better ergonomics than my gaming chair. That\'s a problem for me, not you.', 'Okay. Back to work. Clarence opened a ticket called "help me pick a boa". Pray for me.'],
+      ['I\'m not here to coach you. I\'m here to sit. That\'s a first. Write it down.', '...Your partner just sat with me. Good positioning. It gets a nine.', 'Later. Keep the place like this.'],
+    ],
+  },
+  pat: {
+    drop: [['♪ Knock knock, it\'s just me... ♪ Oh. Hi. I didn\'t think you\'d actually be home.', 'Nice place. Good light. I could write in here. I won\'t. But I could.', 'See you by the water. ♪']],
+    sit: [
+      ['Mind if I sit and hum a bit? Your place has a nice echo. Very lemonade.', '♪ Sitting in a friend\'s chair, nothing much to say... ♪ That\'s a new one. Don\'t tell anyone.', 'Okay, okay. I\'ll head off. Thanks for the seat.'],
+      ['I came to tell you something. Then I sat down and forgot what. It was probably a song.', '♪ She was mine... ♪ ...No, it\'s gone. Another day.', 'Bye for now. I\'ll come back when I remember.'],
+    ],
+  },
+  kayl: {
+    drop: [['Hi! I came to see your base. Or to return something. I don\'t have anything. So I came to see your base!', 'It\'s so cosy. Spooky would love it. Reya would knock everything over. Love you, Reya.', 'Okay, I\'m going before I forget where I parked. Bye!']],
+    sit: [
+      ['Is this seat taken? No? Yay. Okay, I\'m staying for like... a bit. Unclear.', 'I left my bass at Pat\'s. Again. Pat says that\'s how she knows I\'m coming back.', 'Oh! I have to go feed the cats. I think. One of them. Bye!'],
+      ['This seat is perfect for a cat. I\'m not a cat. But I could nap here like one.', '...Did I nap? I think I napped. Sorry! It\'s a compliment. Your seat is nap-tier.', 'Okay, bye! I took nothing! Probably!'],
+    ],
+  },
+  phil: {
+    drop: [['Hello. Don\'t worry, JONA stayed home. She says your house is "quiet". She means it nicely.', 'No knocks from the other side here. Nothing behind the walls. It\'s lovely.', 'I\'ll go before she wonders where I am. See you.']],
+    sit: [
+      ['Mind if I sit? It\'s nice to sit somewhere the chair doesn\'t move by itself.', 'JONA asked me to tell you she likes your seat. She\'s never sat in it. She knows anyway.', 'Thank you. I\'ll go before the candles at home light themselves again.'],
+      ['I sleep better after I visit you. Nobody here whispers. I checked, under everything.', 'JONA wants a seat like this. I said she\'s a ghost. She said "AND?"', 'Bye for now. I mean it, it\'s lovely here.'],
+    ],
+  },
+  ricky: {
+    drop: [['Hey. It\'s daytime and I\'m outside. Mark it down. I came to see your base.', 'Nice. Lots of light. Weird. Good weird.', 'Okay. Heading home for a "nap". It\'s my third. Later.']],
+    sit: [
+      ['I\'m gonna sit here. Might close my eyes for a minute. I\'m listening. I\'m always listening.', '...Was I out? I was out. This seat\'s dangerous. Ten out of ten.', 'Okay. I\'ll be on at 3 a.m. Won\'t see you then. That\'s the point. Later.'],
+      ['Best seat I\'ve sat in all week. Beats my office chair. Beats my bed, honestly.', 'John would want to run load calcs on it. I just want to live here.', 'Fine. I\'ll go. Under protest. Later.'],
+    ],
+  },
+  machew: {
+    drop: [['...The shadow visits. You did not hear me enter. ...You heard me enter. The doormat squeaks.', 'Your hideout is... acceptable. A ninja could rest here. Briefly.', 'I vanish. ...Through the door. Normally.']],
+    sit: [
+      ['I take a seat. A ninja must rest, so that the next arc may begin.', 'This chair is worthy. I will write it in the cool notebook.', '...Our party rests well here. I vanish. Through the door. As before.'],
+      ['Velvet would sit here. Before the final arc. Brooding. I am brooding. It is going well.', 'You may sit with me. Party members may brood together. That is allowed.', 'The arc continues. Farewell, companion.'],
+    ],
+  },
+  jerome: {
+    drop: [['Hey. Saw your door and thought, that door\'s in the trailer. It isn\'t. Anyway, hi.', 'Cool base. It\'s got that GTA safehouse energy. That\'s a big compliment from me.', 'Gotta go, baby\'s up. See ya.']],
+    sit: [
+      ['I\'m sitting. The baby\'s asleep and my wife said "go see a friend". So. You.', 'This is the first time I\'ve sat down since the trailer. And the trailer was ages ago.', 'Okay, she texted. Gotta go. Thanks for the safehouse.'],
+      ['I didn\'t even watch the trailer today. I just sat with you. Write THAT down.', '...Okay, I watched it once. In the car. Twice. But I put the phone down here.', 'See ya. Heist crew, first pick. Still you.'],
+    ],
+  },
+};
+
 /** What a Gym Leader says in their home: a word on the questline where it stands (the step up now's `talk`, or `after`
-    once the stone is lit), said first (`topical` lines of them), then their usual lines. */
-export function homeTalk(town, id, st) {
+    once the stone is lit), then the heart lines their `hearts` have filled that they haven't said yet (past `heard`;
+    `fresh` holds each one's heart from `freshAt`), all said first (`topical` lines of them), then their usual lines with
+    the heart lines heard among them. */
+export function homeTalk(town, id, st, hearts = 0, heard = 0) {
   const q = questOf(town), step = questStep(town, st);
   const now = !q ? [] : step ? q.talk?.[step.id]?.[id] ?? [] : mended(st) ? q.after?.[id] ?? [] : [];
-  return { lines: [...now, ...(town.leaders[id] || [])].map(l => questLine(town, st, l)), topical: now.length };
+  const mine = (HEART_LINES[id] || []).slice(0, hearts), told = Math.min(heard, mine.length);
+  const fresh = mine.slice(told);
+  return {
+    lines: [...now, ...fresh, ...(town.leaders[id] || []), ...mine.slice(0, told)].map(l => questLine(town, st, l)),
+    topical: now.length + fresh.length, freshAt: now.length, fresh: fresh.map((_, i) => told + i + 1),
+  };
 }
 
 /** The step's leader's word on the board while it isn't done, their name first unless the line has one (Phil's JONA). */
@@ -2000,6 +2174,7 @@ export const CLEARING = {
   buildings: [
     { id: 'nietos', name: 'THE NIETOS', home: 'nietos' },
     { id: 'workshop', name: 'KURT\'S WORKSHOP', home: 'workshop' },
+    { id: 'dojo', name: 'KENMATTA\'S DOJO', home: 'dojo' },
   ],
   homes: {
     // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): Kurt at his workbench (a tap opens js/workshop.js's
@@ -2016,6 +2191,15 @@ export const CLEARING = {
       meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',
       cast: {
         slowpoke: ['Slowpoke is asleep against the cauldron. Kurt says it came with him from Azalea Town.', 'Slowpoke yawns. Several seconds later, it notices you.', 'Slowpoke\'s tail is in a bucket of water. Nobody knows why. Slowpoke doesn\'t either.'],
+      } },
+    // Kenmatta's dojo (js/data/dojo.js; the user's ask, 2026-10-15: open, big inside, a ring in the middle to walk into):
+    // the hall with the ring js/event-3d.js builds (buildDojoHall()), the trial board left of his medallion, the sandbag
+    // right, Ken meditating in the ring and his three students training round it
+    dojo: { name: 'Kenmatta\'s Dojo', dojo: true, sub: 'Gold leaf, red lacquer and a ring in the middle, Chad Master Kenmatta meditating in it. The trial board hangs left of his medallion.',
+      cast: {
+        hitmonlee: ['Hitmonlee kicks the training dummy\'s head clean off, then puts it back on, politely.', 'Hitmonlee stretches its legs. They keep going. And going.', 'Hitmonlee bows to you, then to the ring, then to Ken. In that order.'],
+        hitmonchan: ['Hitmonchan shadowboxes at its reflection in the gold leaf. The reflection is losing.', 'Hitmonchan taps its gloves together. It wants a sparring partner. It looks at you.', 'Hitmonchan is counting punches. It\'s past nine thousand.'],
+        machop: ['Machop is lifting a barbell that\'s bigger than it is. It insists it\'s fine.', 'Machop flexes for you. Then again. You get the idea.', 'Machop is doing push-ups on one finger. Ken says it\'s a warm-up.'],
       } },
     nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
       away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',

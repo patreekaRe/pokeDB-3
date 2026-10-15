@@ -43,6 +43,11 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'The backyard can grow: tap it on the PC\'s House Upgrades to make it bigger, everything out there keeping its place.'],
+  ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
+  ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],
+  ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
+  ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
 ];
 
@@ -55,6 +60,19 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.21',
+    name: 'Hearts and Home',
+    date: '2026-10-15',
+    notes: [
+      ['hub', 'Kenmatta\'s dojo is open: a grand temple hall with a ring to climb into, eight puzzle trials (one star each), belts from white to black and seven dojo pieces for your Secret Base.'],
+      ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
+      ['base', 'A backyard: buy it on the PC\'s House Upgrades, furnish it from Smeargle\'s garden catalogue, let your Pokémon out to play, and grow berries in plots.'],
+      ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
+      ['base', 'Each friend gives you a second piece of their own furniture at 3 hearts and a third at 5: 22 new pieces, from Linc\'s Pikachu crib to Jerome\'s heist safe.'],
+      ['hub', 'Friends now mail your PC with PokéCoins or materials, teach Kurt a secret Safari Ball look at 4 hearts, and give a Friendship badge at 5.'],
+    ],
+  },
   {
     version: '1.20',
     name: 'The Waystones',
@@ -77,7 +95,7 @@ export const PATCHES = [
       ['fixes', 'The Overgrown Shrine and Safari Desert intro films no longer stutter on phones, and Kurt\'s Workshop has its fire lit and no trees indoors.'],
       ['runs', 'Mewtwo now speaks when it breaks out of the Sealed Gate, sliding in to tell you it\'s weak and needs your help.'],
       ['hub', 'The broken Sealed Gate is 3D now, leading down to Mewtwo\'s camp, where the gate lies smashed open into the Depths: talk to Mewtwo there to set out.'],
-      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips.'],
+      ['hub', 'The Clearing\'s lamps and benches stand in tidy pairs now, and Professor Oak (Professor Sonia after dark) waits by the PC with tips (a refresh reminder every fifth one).'],
     ],
   },
   {
@@ -435,10 +453,11 @@ export const IN_THE_GAME = [
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '164 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '176 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
-  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

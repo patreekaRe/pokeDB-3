@@ -222,3 +222,27 @@ test("Kurt's Workshop opens at the Nietos' Waystone Chime step", async () => {
   assert.equal(QUESTS.clearing.steps[WORKSHOP_STEP].id, 'cl-chime');
   assert.ok(CLEARING.homes.workshop.meet.length >= 2 && CLEARING.homes.workshop.meetChime);
 });
+
+test('a friend\'s heart lines: one a heart, the unheard said first, then behind their usual lines', async () => {
+  const { HEART_LINES } = await import('../js/data/towns.js');
+  const { FRIENDS, HEARTS } = await import('../js/data/workshop.js');
+  const { GYM_BY_ID } = await import('../js/data/gym.js');
+  for (const id of FRIENDS) {
+    assert.equal(HEART_LINES[id]?.length, HEARTS, `${id}: a line a heart`);
+    for (const l of HEART_LINES[id]) {
+      assert.ok(l.length <= 140, `${id}: short enough for the bubble: ${l}`);
+      const tag = /^([A-Z]+): /.exec(l)?.[1];
+      if (id === 'nietos') assert.ok(GYM_BY_ID[id].voices.includes(tag), `${id}: a voice's tag: ${l}`);
+    }
+  }
+  const town = TOWNS.shrine, st = townState({}, 'shrine'), usual = town.leaders.john, H = HEART_LINES.john;
+  assert.deepEqual(homeTalk(town, 'john', st, 0, 0).lines, usual);
+  const two = homeTalk(town, 'john', st, 2, 0);
+  assert.deepEqual(two.lines, [H[0], H[1], ...usual]);
+  assert.equal(two.topical, 2);
+  assert.deepEqual(two.fresh, [1, 2]);
+  const heard = homeTalk(town, 'john', st, 3, 2);
+  assert.deepEqual(heard.lines, [H[2], ...usual, H[0], H[1]]);
+  assert.deepEqual([heard.topical, heard.freshAt, heard.fresh], [1, 0, [3]]);
+  assert.deepEqual(homeTalk(town, 'john', st, 5, 5).lines, [...usual, ...H]);
+});

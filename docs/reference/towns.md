@@ -155,9 +155,61 @@ is counted (`save.workshop.gifts`); a skin is kept (`made`) and carried (`skin`)
 fond, skin }` (`workshopOf()`). **Gifts**: one favourite a town Gym Leader (`FAVOURITE`); at their home, awake and in,
 holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:gift`; `pickGift()` / `handGift()`): any
 gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
-leader]`). **Hearts** (2026-10-14, docs/roadmap.md step 8 session a): `heartsOf(ws, leader)` in `js/data/workshop.js` caps `liked` at `HEARTS` (5); `liked` itself keeps counting. A home shows them on the room bar's LCD beside its name (`showChoice({ hearts })`, `#room-hearts`, `heartRow()` in `js/ui.js`), a gift says the new count, and the PC's FRIENDS page (`friendsOpen()` in `js/pc-news.js`: towns on and a gift-taking leader beaten) lists `FRIENDS` (the Nietos first), a leader not beaten a silhouette, their favourite named once given. **The Nietos too** (2026-10-15, the user's call: they "should definitely get gifts and provide furniture"): their gift is the Acorn Rattle (3 Whisper Acorns, 1 Glowmoss, from the Clearing biome), given in their house even after seven (only Linc sleeps; the other leaders take none asleep), and it earns the **Big Kangaskhan doll** (`bigkangaskhandoll`, a new `DOLLS` / `PLUSH` line with a joey in the pouch, `EXTRAS.joey` in `js/base-dolls.js`; its small doll sells in the mall like the rest). `gifteeOf()` in `js/data/workshop.js` names them Law and Britt. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
+leader]`). **Hearts** (2026-10-14, docs/roadmap.md step 8 session a): `heartsOf(ws, leader)` in `js/data/workshop.js` caps `liked` at `HEARTS` (5); `liked` itself keeps counting. A home shows them on the room bar's LCD beside its name (`showChoice({ hearts })`, `#room-hearts`, `heartRow()` in `js/ui.js`), a gift says the new count, and the PC's FRIENDS page (`friendsOpen()` in `js/pc-news.js`: towns on and a gift-taking leader beaten) lists `FRIENDS` (the Nietos first), a leader not beaten a silhouette, their favourite named once given. **Heart lines** (2026-10-14, session b): `HEART_LINES` in `js/data/towns.js`, 5 a friend (the Nietos' tagged LAW: / BRITT: / LINC:), the Nth unlocked at N hearts, warmer as they rise and full of the other friends. `homeTalk(town, id, st, hearts, heard)` says the unlocked ones not yet heard first (after any questline word), then the usual lines with the heard ones behind them; `save.workshop.heard[id]` counts those said (set as each is tapped through, in `homeRoom()`'s `onTalk`), and a gift that fills a heart says there's something new to hear. Playtest `?hearts=N` (every friend at N hearts, unheard, nothing saved). **The Nietos too** (2026-10-15, the user's call: they "should definitely get gifts and provide furniture"): their gift is the Acorn Rattle (3 Whisper Acorns, 1 Glowmoss, from the Clearing biome), given in their house even after seven (only Linc sleeps; the other leaders take none asleep), and it earns the **Big Kangaskhan doll** (`bigkangaskhandoll`, a new `DOLLS` / `PLUSH` line with a joey in the pouch, `EXTRAS.joey` in `js/base-dolls.js`; its small doll sells in the mall like the rest). `gifteeOf()` in `js/data/workshop.js` names them Law and Britt. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
 `js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
+
+**Signature pieces 2 and 3** (2026-10-15, docs/roadmap.md step 8 session d): each friend gives a second piece at 3
+hearts and a third at 5 (`HEART_PIECES` / `HEART_AT` / `heartPieces()` in `js/data/workshop.js`), in the style of their
+first: the Nietos a Pikachu crib and the very tired couch (a seat), John an omikuji stand and a handheld tansu (his three
+handhelds charging on it), Jahmes a curfew clock stopped at eleven and a curfew futon with his three alarms, Clarence a
+ring light under his boa and a showtime vanity, Shaun a help desk rack and a three-monitor desk, Pat a serenade guitar
+and a lemonade stand, Kayl a bass amp with Reya on it and a record console with Spooky asleep on it, Phil a salt-ring
+candelabra and the chair nobody sits in (nobody does, your Pokémon included), Ricky a 2 a.m. coffee cart and an
+all-nighter moon lamp, Machew a katana stand (price tag still on) and a brooding pillar, Jerome a neon palm and a heist
+safe. Owned through js/data/furniture.js's `heart` source (nothing saved; an old save at 3 or 5 has them on load). A gift
+that crosses 3 or 5 says so (`heartGifts()`, in `homeRoom()`'s Gift option, js/run.js). Test in `tests/workshop.test.mjs`.
+
+**Friendship badges, friends' letters and secret recipes** (2026-10-15, docs/roadmap.md step 8 session e). **Badges**: a
+`friends` group in `BADGE_GROUPS` (js/data/badges.js), a `friend-<id>` badge a friend at `HEARTS` in `workshop.liked`
+(named "John Friendship Badge", "Nietos Friendship Badge") and `best-friends` for all of `FRIENDS` at once; their `LOOK`
+(js/trainercard.js) is a heart in the friend's `GYM_INK` with their Gym Badge's glyph (Pat's, a heart already, wears a
+heart), Best Friends a gold crown. A gift runs `checkBadges()` (homeRoom()'s Gift in js/run.js), so the badge lands at once.
+**Secret recipes**: each friend's own Safari Ball look (`secret()` lines among the skins in `RECIPES`, `SECRETS` by
+friend), taught at `SECRET_AT` (4) hearts, between their second and third pieces; nothing saved (`shows()` reads their
+hearts; `?hearts=N` in the Workshop too). From their own town's materials, made once like any Apricorn: Nest (Nietos),
+Repeat (John), Dream (Jahmes), Cherish (Clarence), Sport (Shaun), Heal (Pat), Park (Kayl), Premier (Phil), Jet (Ricky),
+Beast (Machew), Poké Ball (Jerome); sprites from PokéAPI's items in `assets/items/`. None is a ball in `BALLS`. The gift
+that reaches 4 says so and posts a letter with the recipe's picture (`recipe` on the letter; Read, nothing to claim).
+**Letters**: once a UTC day, coming home to the Clearing (`openHub()` → `friendMail()` in js/mail.js, `save.friendMail`
+the day rolled), `friendLetter()` in js/data/workshop.js: `MAIL_ODDS` (0.4) that a friend at `MAIL_HEARTS` (2) or more
+writes, the pick weighted by hearts, one of their `FRIEND_MAIL` letters with `MAIL_COINS` (15) a heart in PokéCoins (75 at
+most) or half the time a material of their own town (`biomeMats(b, true)`, 2 at 4 hearts), claimed into the Satchel. A
+cosmetic roll (Math.random). `senderOf()` stamps a friend's envelope in their ink. Only with the PC title (`mailOn()`).
+`?mail` adds a sample friend letter and a recipe letter.
+
+**Friends visit the Secret Base** (2026-10-15, docs/roadmap.md step 8 session c): `baseFriends(at)` in
+`js/data/workshop.js` gives every friend at `VISIT_HEARTS` (3) or more (`all`) and those at 5 (`best`); test in
+`tests/workshop.test.mjs`. `leaderVisitor()` in `js/secret-base.js` puts them in the day's one visit (mended town or not,
+ahead of the same leader's gold or home-leader speech), saying a `BASE_LINES` speech (`js/data/towns.js`: `drop` from 3,
+`sit` at 5, LAW: / BRITT: / LINC: tags naming the speaker over the speech window). Once the day's visit is over, a best
+friend still drops in on `BEST_DROP_IN` (half) of the times you come in (a cosmetic roll). A best friend (`sit`) walks in
+over the doormat to a free chair, sofa, bench or cushion, never your bed (`visitSeat()` in `js/base-3d.js`), hops up,
+is tapped there to talk, and gets down to walk out; with no seat they stand as before. The visitor counts in `seats()` and
+`taken()`, so your partner and the Safari Pokémon leave their seat alone. The gift toast says they'll drop by at 3 and
+often at 5. `?hearts=N` works in the base too: `?base&hearts=5&visit`.
+
+**Friends' own requests** (2026-10-15, docs/roadmap.md step 8 session f): a friend at `FAVOUR_HEARTS` (3) or more has a
+request of their own up (`FAVOURS` in `js/data/favours.js`, three a friend, each `text` / `note` (their pinned words) /
+`thanks`, in order and round again; `FRIEND_TOWN` their town, the Nietos' the Clearing). `trackFavours()` in `js/towns.js`
+counts the missions' events into `save.favours[id]` (`{ done, got, ready }`, `favourOf()`), in their own biome unless the
+event is placeless (`ANYWHERE`: tough, power, forget, healthy-boss, whose text names no place); Burn, Tide, Leech Seed and
+gym events are never asked. A finished one is told (💌) and handed in with a tap on them at home (`favMine` in
+`homeRoom()`, after the questline step and the town's own request; `handInFriend()` pays `FAVOUR_COINS`, 60), a "!" over
+their door in town (`favourReady()` in `js/run.js`) and over the Nietos' house in the Clearing (`questMarks()` in
+`js/hub-3d.js`). The Quests app shows them under FRIENDS' REQUESTS (`friendCards()` in `js/questlog.js`): their sprite,
+their note, the job's bar and where to hand it in. Peek: `?town=shrine&towns&satchel&gymwins=10&hearts=5` (every friend
+asking and ready, once a page load, nothing saved). Test: `tests/favours.test.mjs`.
 
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
 towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat

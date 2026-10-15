@@ -60,6 +60,62 @@ The first section began as the note on playtesting the live site and grew into t
   its furniture into storage (`clearDoors()`). **Duplicate** (the same day): the PC's DUPLICATE copies any owned piece into
   storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
   read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
+- **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
+  the HOUSE UPGRADES blueprint, dashed till bought, its door's column lined up with the back door and a path drawn to it; a
+  tap shows its card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
+  `secretBase.house.yard` `{ size, items, wall, floor }` (`size` 2 the bigger yard, part e), its things packed there
+  like a room's (`roomContents()` / `goRoom()` / `eachRoom()`). It is not one of `houseRooms()`, so nothing is built onto
+  it or counted on the grid; `roomById(house, 'yard')` (`yardOf()`) reaches it, kind `yard` (12 x 8, `outdoor`) in
+  `ROOM_KINDS`. The main room's back door (`backDoorOf()` in `js/data/house.js`): the first back-wall tile from three in
+  from the right that no doorway or staircase uses; `pipUsed()` keeps rooms and stairs off it, and buying (or growing the
+  main room) clears furniture from it (`clearRoom()`). Both doors carry `pip: 'yard'`; the yard's is a doormat on its
+  front edge, the main room's a doorway showing daylight (`yardDoorTex()`). Walked in `js/base-3d.js` like any room
+  (`travel()`), on the base's own renderer (no new GL context): `buildYard()` lays a mown lawn and the Clearing's meadow
+  running on under the view, a picket fence on three sides, the Clearing's trees and bushes (`treeArt()` / `bushArt()`,
+  exported from `js/hub-3d.js` with `CLEARING_LOOK` / `CLEARING_LIGHT`) in their season's leaves, stepping stones, and
+  in winter snow on all of it and falling (`liveSnow()`); `yardLight()` is the Clearing's light and tint under a sky
+  gradient. The lawn rolls away like the Clearing (`BEND`, `CURVE` outdoors and 0 indoors; taps find the drawn ground with
+  `groundHit()`, the doormat included). Residents are out there only when let out (part c, below). `?yard` opens
+  straight out there, a yard lent for the page load if none is bought (`lent`, taken back by `loadBase()` on any load
+  without it). The PC's `NEWS` has `yard` (in House upgrades).
+- **The backyard's furniture** (2026-10-14, part b): the Yard shelf, 16 kinds flagged `outdoor` (`p.outdoor`), painted
+  in `js/base-furniture-yard.js` (the tray's and store's pictures only) and modelled from parts in `js/base-models-y.js`.
+  `fitsHere(id, b)` in `js/secret-base.js` is the rule (the user's): an outdoor piece only in the yard, nothing from
+  indoors out there; `fits()`, the tray and its chips all ask it. A new outdoor kind is a line there with `outdoor` (its
+  `add()` sets it) and a builder in the -y batch. Sold only in **Smeargle's garden catalogue** (`js/garden-shop.js`): a tap
+  on Smeargle in the store, once there's a yard (`KEEPERS[1].special` in `js/mall-furniture.js`; without one Smeargle
+  chats, a line hinting at it), the whole shelf always in stock, owned ones marked; `dealDay()` leaves outdoor pieces out,
+  so the daily stands deal as before. Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
+  ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
+  and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
+  a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
+- **Pokémon out in the yard** (2026-10-14, part c): outdoors the sheet shows the Pokémon tab as well as Furniture
+  (`.base3d.outdoors .b3-tab`); there it lists the residents on show, a tap letting one out or calling it in
+  (`secretBase.out`, `letOut()` in `js/base-3d.js`; the indoor tab tags those out "Yard", and taking one off show drops
+  it from `out`). `livesOut()` / `homeHere()` / `present()`: a guest is drawn, lives, blocks tiles and takes taps only
+  in its own place (the yard, or whichever room indoors). `YARD_SEATS` / `YARD_SPOTS` say what each yard piece is for and
+  where on it a Pokémon goes (in the piece's frame, turned with it by `seatSpots()`): the swing set's two swings, the
+  picnic bench's four places on its benches, two in the rock pond and the inflatable pool. `seatsFor()`: a Water type
+  (`ENEMY_DEFS[id].type`) takes only the water where there is a pond or pool, the rest anything but; your partner sits
+  and swings but never swims. Each swing is its own part (`K.part(name, pivot)` in `js/base-mesh.js`, found at
+  `model.userData.parts`), swung by `liveSwings()` higher while someone's on it, carrying them, and a swimmer bobs with
+  droplets (`splash()`, puff kind `drop`) as it dives in and climbs out.
+- **The berry garden** (2026-10-14, part d): the rules are `js/data/berries.js` (no DOM; `tests/berries.test.mjs`), the
+  3D side and window `js/berry-garden.js`. A `berryplot` (Yard shelf, flat, modelled in `js/base-models-y.js`) holds its
+  crop on its item, `it.crop` `{ id, at, ready }` (`sow()`: ripe on the UTC midnight `days` after planting; `stageOf()`
+  sprout for the first half, bloom, fruit). Moving a plot keeps it (`place()` copies `holding.back.crop`); storing it
+  loses it. In Walk a tap on a plot opens `openPlot()` (the town shop's `.dev-window` look): plant, Dig up, or Pick.
+  `harvest()` books it on `secretBase.garden` `{ picked, day, coins }`: the first of a berry earns its basket (the
+  `berry` source in `js/data/furniture.js`, indoor kinds `<berry>basket`, `solo`), later ones `coins`, at most `DAY_CAP`
+  (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
+  sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
+  plant whose stage turned over (at once after the window changes one).
+- **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
+  in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
+  (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;
+  `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
+  (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
+  `?yard=big` lends the bigger one.
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
@@ -69,6 +125,11 @@ The first section began as the note on playtesting the live site and grew into t
   must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
   user's calls, 2026-10-09). **Live since 2026-10-09** (the user's call): `secret-base` was
   merged into `main`, the Clearing, Secret Base and Poké Mall with it; work goes to `main` again like everything else.
+  **Friends' pieces** (2026-10-15, docs/roadmap.md step 8 session d): source `heart` (`'john:3'`), owned while that friend's
+  hearts reach the number, so an old save already there has them on load; `?hearts=N` lends them for the page load
+  (`earnSave()` in `js/secret-base.js`). Their catalogue is `js/base-furniture-friends.js` (`FRIEND_KINDS`, group
+  Friends, `solo`: one colour each, the friend's own), their models `js/base-models-friends.js` (each modelled, none
+  carved from its painting; the chair nobody sits in has no `seat` on purpose).
 
 - **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; live on `main` since
   that day): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots
@@ -88,11 +149,11 @@ The first section began as the note on playtesting the live site and grew into t
   painted px, a gold-rayed leaf crest on a green-shingled roof, lanterns off its tips, teal banners, carved stone feet with
   glowing runes, `clearingGateArt()`; its opening shimmers and motes rise out of it, `gateVeilArt()` / `liveGateway()`, and
   a teal lamp lights the ground before it after dark; Halloween's hay there taken out as clutter), New game's Pokéstop
-  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`; the stop moved a step nearer the avenue and the camera 2026-10-14, the orange tree that stood behind it taken out, the user's ask); setting out walks
+  and the route sign just inside it, since 2026-10-15 right beside the gate's posts, one each side, just outside its feet so neither hides their runes (`STOP_AT` / `SIGN_AT`, nudged in by `STAND_IN`; the user's ask; on 2026-10-14 they stood a row or two forward, the orange tree behind the stop taken out). The signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the Nietos' name board) hop and wiggle every few seconds, a gold glint twinkling at their corner, so they read as something to tap (`beckon()` / `liveBeckons()`, 2026-10-15, the user's ask; still when calm). The jack-o'-lanterns at the gate's feet were taken out the same day; setting out walks
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate (a real 3D model since 2026-10-15, the user's ask "so bland": `safariGate()` in `js/hub-safari.js`, lashed log towers on river-stone feet under thatched cones and waving pennants, a thatched roof between them over the SAFARI ZONE board, a swaying Safari Ball crest fanned with fronds, lanterns and bunting, tiki torches and a warm lamp (`lamps`' `safari`, off while shut), palms, ferns and a bamboo palisade out to the log fence at `WING_X`; shut, a red rope and CLOSED plank, nothing lit) and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
-  Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
+  Kenmatta's dojo north-west (`DOJO_AT`; since 2026-10-15 at 5,0, five tiles wide and open: `js/hub-dojo.js` outside, its door into `buildDojoHall()` like the Nietos' house), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
   asked: like Gen 3's Secret Power bases), the Poké Mall south-west and the Nietos' house south-east, both
   facing the camera, their doorsteps down to the low road to the pond (`MALL_TILE`, `NIETOS_AT`; moved 2026-10-14 from
   the user's drawing, Halloween's pumpkin patch taking the house's old spot; moved down again the same day onto the low road,
@@ -110,9 +171,14 @@ The first section began as the note on playtesting the live site and grew into t
   just right of the PC, the user's ask the same day; it first stood two right of the Waystone, and Halloween's ghost
   that spawned there moved to that old spot). Professor Oak stands there except at night, Professor Sonia
   at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
-  (features a player might miss) and ends on that professor's reminder to refresh the page for updates. Sprites
+  (features a player might miss); every fifth tap ends on that professor's reminder to refresh the page for updates
+  (`hintsHeard`; every tap until 2026-10-15, the user's ask). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
-  A new feature worth a hint gets a `HINTS` line.
+  A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
+  of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
+  `{ id, name: short, sprite }`, `lit`, `title: 'PROFESSOR '`. The first tap of a visit (`profGreeted`, reset in
+  `showHub()`) slides them in over the dim with their `hello` and a hint; later taps are `bubble: true`, the speech
+  window alone, so browsing hints stays quick. The refresh reminder is its own line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue. Halloween's pumpkin patch and scarecrow sit on the south-east lawn by the Nietos' house since 2026-10-15 (the user's ask: they crowded the Secret Base's door). Detail: `docs/reference/towns.md`.
 

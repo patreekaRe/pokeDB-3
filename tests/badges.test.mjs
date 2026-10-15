@@ -246,3 +246,18 @@ test('a Gym Leader\'s Gold badge comes with the fifth win against them', () => {
   assert.deepEqual(ids({ pat: 4 }), ['gym-pat']);
   assert.deepEqual(ids({ pat: 5 }), ['gym-pat', 'gym-pat-gold']);
 });
+
+test('a Friendship badge at a friend\'s five hearts, and Best Friends with all of them', async () => {
+  const { FRIENDS, HEARTS } = await import('../js/data/workshop.js');
+  const ids = (liked) => newBadges({ badges: [], stats: {}, workshop: { liked } }).map(b => b.id).filter(id => id.startsWith('friend') || id === 'best-friends');
+  assert.equal(BADGES.filter(b => b.group === 'friends').length, FRIENDS.length + 1);
+  assert.deepEqual(ids({}), []);
+  assert.deepEqual(ids({ john: HEARTS - 1 }), []);
+  assert.deepEqual(ids({ john: HEARTS + 3 }), ['friend-john']);
+  const all = Object.fromEntries(FRIENDS.map(id => [id, HEARTS]));
+  assert.equal(ids(all).length, FRIENDS.length + 1);
+  assert.ok(ids(all).includes('best-friends'));
+  assert.equal(BADGES_BY_ID['friend-nietos'].name, 'Nietos Friendship Badge');
+  assert.match(BADGES_BY_ID['friend-nietos'].text, /the Nietos' hearts/);
+  assert.match(BADGES_BY_ID['friend-john'].text, /John's hearts/);
+});

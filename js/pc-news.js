@@ -22,6 +22,7 @@ const NEWS = {
   prof: { in: 'home', ready: () => true },
   missions: { in: 'home', ready: () => true },
   house: { in: 'home', ready: hasBase },
+  yard: { in: 'house', ready: hasBase },   // the backyard's plot on House Upgrades' blueprint (2026-10-14)
   decor: { in: 'mine', ready: hasBase },
   dupe: { in: 'mine', ready: hasBase },
   friends: { in: 'home', ready: friendsOpen },

@@ -2461,6 +2461,108 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
   `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.
 
+### The Secret Base's backyard, part a: the yard itself (2026-10-14)
+
+A green plot on the PC's House Upgrades blueprint, 1,000 PokéCoins (`YARD_PRICE`, `buyYard()`), bought at any main-room
+size; saved as `secretBase.house.yard` (so it rides the cloud save). A back door in the main room's back wall (`backDoorOf()`,
+nothing built through it), walked out onto a 12 x 8 lawn: mown stripes, the Clearing's meadow, trees, light and curve,
+a picket fence, snow in winter (`buildYard()` in `js/base-3d.js`, the base's own renderer, so no new GL context).
+`?yard` lends one for a page load. Tested headless at 390x844: both doors, taps on the curved lawn, winter dusk, the
+purchase; 61 draw calls, ~0.6 ms a frame on the PC (the pane was hidden, so no live fps read). Part b is next.
+
+### The Secret Base's backyard, part b: outdoor furniture (2026-10-14)
+
+Sixteen `outdoor` kinds on a new Yard shelf (`js/base-furniture-yard.js`, modelled from parts in `js/base-models-y.js`):
+park bench, swing set, picnic bench, lamp post, string lights, dome tent, inflatable pool, rock pond, flower bed, garden
+fence, box hedge, garden mailbox, barbecue, garden lounger, garden parasol, sandpit, each in the 20 colours. `fitsHere()`
+in `js/secret-base.js` keeps them out on the lawn and everything else indoors (fits(), the tray, its chips). Sold only in
+Smeargle's garden catalogue (`js/garden-shop.js`, a tap on Smeargle once you own a yard, the whole shelf always in stock),
+never on the daily stands, so the stands' deal is unchanged. Outdoors the Decorate key is back and only the Furniture tab
+shows; pieces, the ghost, its footprint and the pick box roll with the lawn (`bendOut()`), aimed on the drawn lawn
+(`groundHit()`). The lamp post and string lights switch, the barbecue burns. Tested headless: all 16 built and placed,
+the tray in and out, the catalogue; `tests/furniture-store.test.mjs` checks the rule. Part c is next.
+
+### The Secret Base's backyard, part c: Pokémon out in the yard (2026-10-14)
+
+The yard's Decorate sheet has the Pokémon tab too: a tap lets one of the 6 on show out onto the lawn (`secretBase.out`,
+✓ in the yard, a "Yard" tag on the indoor tab) or calls it back in. Out there they wander, Water types swim in the
+rock pond or inflatable pool (bobbing, droplets as they dive in and out), the rest take the swings (which swing with
+them), the park bench, picnic bench and lounger; taps give their cry and hearts. Your partner can sit and swing too, but
+stays out of the water. Not checked in a browser: the preview server was stopped mid-test, so only Node tests ran.
+Part d (berry garden) is next.
+
+### The Secret Base's backyard, part d: the berry garden (2026-10-14)
+
+A Berry plot (1x1, outdoor, 95 in Smeargle's catalogue; more through the PC's Duplicate) is placed like any yard piece.
+A tap in Walk opens its window: plant one of five berries (Cheri, Oran, Pecha 1 day, Sitrus 2, Lum 3), see it sprout and
+bloom, then pick it once it ripens on the UTC midnight its days end; a bobbing "!" hangs over a ripe plot. The first of
+each berry picked earns its basket (indoor decor, can stand on a table); after that a picking sells for 8 / 20 / 35
+PokéCoins, at most 100 a UTC day (`DAY_CAP`; the Game Corner gives ~380), since plots can be copied without end. Tested
+with `node --test` and in the browser by calling the window and the frame step directly (the hidden pane ran no frames);
+a real tap on a plot wasn't tried. Part e (the bigger yard) is next.
+
+### The Secret Base's backyard, part e: the bigger yard (2026-10-15)
+
+Tapping a bought yard on the PC's HOUSE UPGRADES offers BIGGER BACKYARD, 12x8 to 16x11 tiles for `BIG_YARD_PRICE`
+(1,000, like the yard itself), the bigger lot dashed round it while picked. `house.yard.size` 2 is the `bigyard` kind;
+its things move 2 across and 3 back so they keep their places by the doormat, and the new lawn is at the sides and
+behind. Winter's snowfall spreads with the lawn. `?yard=big` lends the bigger one. Tested with `node --test` and
+headless Chromium (the buy on the PC, the item moved, `?yard` / `?yard=big` open outdoors with no errors). The backyard
+plan (parts a to e) is done.
+
+- **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
+  a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
+  star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
+
+### Kenmatta's dojo made extravagant: the temple hall and the ring (2026-10-15)
+
+The user's ask: "update Kens dojo to be super aesthetic... make it extravagant, even the inside make it big, give it a
+fighting ring in the middle you could walk into and around". **Outside** (`makeDojo()` in `js/hub-dojo.js`, the 'dojo'
+place, `DOJO_AT` now 5,0 and five tiles wide, its step 7,5 on the ring road): a two-tier granite podium with gold-capped
+stairs and a red balustrade, vermilion columns round a veranda, a shoji front lit at night with a navy noren, a curved
+karahafu gable, two sweeping glazed roofs (`templeRoof()`: sagging slopes, upturned corners, gold eaves and hips), gold
+shachihoko, a 道場 plaque, swaying red lanterns, stone lanterns, two victory banners (only at the front: Halloween's
+cauldron stands at 10,2) and two cherry trees dropping petals (one instanced mesh). No light of its own; its glow is
+emissive, in `glowMats`. **Inside** (`buildDojoHall()` in `js/event-3d.js`, `SIZES.tutor` 17 x 15, view 10 rows): the run's
+Move Tutor room and the Clearing's dojo (`HOMES.clearing.dojo`, `CLEARING.homes.dojo` with his students' lines in
+`js/data/towns.js`; built alongside the session that added the trials and belts, merged after: their trial board hangs
+where the run's scroll does, the sandbag is the second spot, your belt rides on your partner, two lines about the hall joined
+the white belt's `talk`). Gold-leaf walls painted with ink mountains, a pine and a red sun, 拳 / 魂 banners, TEST YOUR
+MIGHT over the Dragonite medallion on a lacquered dais, red columns, tatami down the sides, indoor koi ponds by the door, a
+red carpet to the ring. The ring (`dojoRing()`, deck tiles 5-11 x 4-10, 0.55 high): a red canvas with 拳 in gold, a black
+apron, gold posts with red / blue / white pads, three ropes a side parted at the front steps. The engine gained three
+room keys for it: `rise(x, z)` (your Pokémon's height, up the steps onto the deck), `walls` (edges a route can't cross:
+the ropes) and `decks` (a tap on the deck finds its tile, not the floor's under it). Ken sits in the ring (Challenge's step
+is in front of him); the scroll (tile 4) and sandbag (tile 12) sit near enough the middle that all three signs show on a
+phone from the door. Tested headless at 420x860 and 1280x800: the walk up into the ring, a tap on the canvas, all three
+signs, Ken's line in the Clearing, no console errors; still parts baked with `mergeStatic()`.
+
+- **Friendship sessions (a)-(d), 2026-10-14/15** (step 8): (a) hearts, `heartsOf()` / `HEARTS` / `FRIENDS` in
+  `js/data/workshop.js`, shown on a home's room-bar LCD and the PC's FRIENDS page; (b) `HEART_LINES`, 5 a friend, said at
+  home as each heart fills; (c) Secret Base visits from 3 hearts (`baseFriends()`), sitting on your furniture at 5;
+  (d) 22 signature pieces at 3 and 5 hearts (`HEART_PIECES`, models in `js/base-models-friends.js`). Detail:
+  docs/reference/towns.md.
+- **Friendship session (e), 2026-10-15** (step 8): Friendship badges (one a friend at 5 hearts, Best Friends for all),
+  friends' letters through the PC (coins or a material, once a UTC day at most), each friend's secret Safari Ball look
+  taught to Kurt at 4 hearts. Patch 1.21, Hearts and Home. Detail: docs/reference/towns.md.
+- **Friendship session (f), 2026-10-15** (step 8, its last): a friend at 3+ hearts pins a request of their own on the
+  Quests board (`FAVOURS` in `js/data/favours.js`, three each in their own voice, round again), counted in their own
+  biome (four placeless ones anywhere) and handed in to them at home for 60 PokéCoins. Detail: docs/reference/towns.md.
+  Step 8's plan, kept: hearts (5 a friend, from gifts) unlock heart lines, base visits from 3 and sitting at 5, signature
+  pieces at 3 and 5, secret recipes at 4, letters from 2, a Friendship badge at 5 and the friends' own requests from 3.
+
+### Kenmatta's dojo locked till he's beaten once (2026-10-15)
+
+The user's ask: "Lock the dojo until you beat Ken 1 time". The Clearing's `dojo` place (`js/hub-3d.js`) is `open: false`
+with no Go in until `kenWinsOf(save) >= 1` (a run win, `save.kenWins`, or an old `kenBeaten`); its card reads Ken's note
+on the door. `?dojo` still walks straight in for playtests.
+
+### The Clearing's gate tidied, its signs beckoning (2026-10-15)
+
+The user's ask, from a phone screenshot: the two jack-o'-lanterns at the gate's feet are gone; the route sign and New
+game's Pokéstop moved up beside the gate's posts, one each side (`SIGN_AT` 12,-1 / `STOP_AT` 18,-1, nudged in by
+`STAND_IN`); and the signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the
+Nietos' name board) hop every few seconds with a gold glint at their corner (`beckon()` / `liveBeckons()`), still when calm.
 ### The Safari gate in 3D (2026-10-15, the user's ask: "so bland and needs a big 3D aesthetic update")
 - The Clearing's painted Safari Zone board is now a real model, `safariGate()` in `js/hub-safari.js` (`safariArt()` gone):
   thatched log towers with pennants, a thatched roof over the SAFARI ZONE board, a swaying Safari Ball crest, lanterns,

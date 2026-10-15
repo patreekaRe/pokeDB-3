@@ -1696,6 +1696,8 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .qlog-do.ready .qlog-row:last-child small { color: #c07a00; }
 .qlog-label { margin: 16px 6px 6px; font-size: 0.75rem; font-weight: normal; letter-spacing: 0.08em; text-transform: uppercase; color: #fff8e8; text-shadow: 0 1px 0 rgba(60, 30, 10, 0.6); }
 .qlog-list { display: grid; gap: 6px; padding: 0 4px; }
+.qlog-ask { display: grid; gap: 6px; padding: 8px 10px 10px; border-radius: 3px; background: #fff8e8; border-left: 5px solid var(--glow); box-shadow: 0 2px 0 rgba(60, 30, 10, 0.25); }
+.qlog-note { font-size: 0.75rem; line-height: 1.6; font-style: italic; color: #7a5a3a; }
 .qlog-item { border-radius: 3px; background: #fff8e8; border-left: 5px solid var(--glow); box-shadow: 0 2px 0 rgba(60, 30, 10, 0.25); }
 .qlog-item.quiet { background: #ece2d0; border-left-color: #9a8a78; }
 .qlog-head {

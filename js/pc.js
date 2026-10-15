@@ -20,7 +20,7 @@ import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el, heartRow } from './ui.js';
-import { SENDERS, unclaimed, claim } from './mail.js';
+import { senderOf, unclaimed, claim } from './mail.js';
 import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
 import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -30,13 +30,14 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE } from './secret-base.js';
-import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, entryOf, shapeOf } from './data/house.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
+import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, backDoorOf, yardKind } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 import { pcNew, markPcSeen, pcLookedAt, friendsOpen } from './pc-news.js';
 import { GYM_BY_ID, GYM_INK, gymWins, spriteOf } from './data/gym.js';
-import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf } from './data/workshop.js';
+import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf, RECIPES_BY_ID, SECRETS, SECRET_AT } from './data/workshop.js';
+import { MATERIALS_BY_ID } from './data/satchel.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
@@ -61,10 +62,18 @@ let dupes = false;   // Decorations picking a piece to duplicate, not to put awa
 // House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
 // room kind tried there and which of its turns, the floor looked at, and a built room picked (to take down, `sure` once asked)
 let spot = null, plan = null, turn = 0, floor = 0, picked = null, sure = false;
+let yardPick = false;   // the backyard's plot tapped on the blueprint
 // the blueprint's zoom and the point it's centred on, in tiles; kept across the redraw every tap makes
 let view = { z: 1, cx: null, cy: null };
 const resetView = () => { view = { z: 1, cx: null, cy: null }; };
-const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; };
+const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; yardPick = false; };
+const ownsYard = (house) => !!house?.yard && !house.yard.lent;   // ?yard lends one for a playtest
+const canGrowYard = (house) => ownsYard(house) && !(house.yard.size > 1);
+const yardHint = (house) => !ownsYard(house) ? ' The green plot behind is a backyard.' : canGrowYard(house) ? ' Tap the backyard to make it bigger.' : '';
+/** What the PC says with the yard picked: the plot to buy, or the bought one to make bigger. */
+const yardSay = (house) => canGrowYard(house)
+  ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the back door.`
+  : `A backyard behind the house, out a back door of the main room. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -210,7 +219,7 @@ const PAGES = {
     const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
     // grouped the way a player looks (2026-10-11, the user's ask): rewards, your Pokémon and things, the game's records, the account
     const rows = [
-      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with PokéCoins inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here.', () => show('mailbox'), waiting > 0],
+      [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with something inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here, and letters from friends.', () => show('mailbox'), waiting > 0],
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
@@ -292,10 +301,11 @@ const PAGES = {
       const line = !met ? 'Someone you haven\'t met yet. Beat their Gym, and they\'ll take a gift at home.'
         : n >= HEARTS ? `${who} and you are the best of friends.`
           : `${who}: ${n} of ${HEARTS} hearts. Every gift fills one${fond ? `, and the ${FAVOURITE[id].name} two.` : '; their favourite fills two.'}`;
-      const tell = () => { if (!hush) speak(line); };
+      const secret = met && n >= SECRET_AT && SECRETS[id] ? ` They taught Kurt their secret recipe, the ${SECRETS[id].name}.` : '';
+      const tell = () => { if (!hush) speak(line + secret); };
       b.addEventListener('pointerenter', tell);
       b.addEventListener('focus', tell);
-      b.addEventListener('click', () => { playSound('confirm'); speak(line); });
+      b.addEventListener('click', () => { playSound('confirm'); speak(line + secret); });
       return b;
     });
     const list = el('div', 'pc-friends');
@@ -309,7 +319,7 @@ const PAGES = {
     h.append(el('span', 'pc-count', waiting ? `${waiting} new` : ''));
     const list = el('div', 'pc-mail');
     list.append(...mail.map(m => {
-      const from = SENDERS[m.from] || SENDERS.lab;
+      const from = senderOf(m.from);
       const b = el('button', `pc-env${m.claimed ? ' read' : ''}`);
       b.type = 'button';
       b.style.setProperty('--ink', from.ink);
@@ -326,29 +336,36 @@ const PAGES = {
   letter() {
     const m = (getSave().mail || []).find(x => x.id === letter);
     if (!m) return show('mailbox');
-    const from = SENDERS[m.from] || SENDERS.lab, fresh = !m.claimed;
+    const from = senderOf(m.from), fresh = !m.claimed, mat = m.mat && MATERIALS_BY_ID[m.mat.id], recipe = m.recipe && RECIPES_BY_ID[m.recipe];
     const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
     wrap.style.setProperty('--ink', from.ink);
     wrap.style.setProperty('--paper', from.paper);
     const sheet = el('div', 'pc-sheet');
     const prize = el('div', 'pc-prize');
-    prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${m.coins.toLocaleString()}`));
+    // a friend's letter holds a material or shows the secret recipe they taught Kurt (step 8, session e)
+    if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
+    else if (recipe) {
+      const img = el('img', 'pc-prize-ball pixel');
+      Object.assign(img, { src: `assets/items/${recipe.sprite}.png`, alt: '', draggable: false });
+      prize.append(img, el('b', 'pc-prize-n', recipe.name));
+    } else prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${(m.coins || 0).toLocaleString()}`));
     sheet.append(el('span', 'pc-sheet-from', `From: ${from.name}`), el('b', 'pc-sheet-title', m.title), el('p', 'pc-sheet-text', m.text), prize);
-    if (!fresh) sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+    if (!fresh) sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
     wrap.append(el('div', 'pc-env-back'), sheet, el('div', 'pc-env-front'), el('div', 'pc-env-flap'));
     const kids = [head(m.title.toUpperCase()), wrap];
     if (fresh) {
-      const ok = el('button', 'room-ok pc-claim', 'Claim');
+      const ok = el('button', 'room-ok pc-claim', recipe ? 'Read' : 'Claim');
       ok.type = 'button';
       ok.addEventListener('click', () => {
         if (ok.classList.contains('pressed')) return;
         ok.classList.add('pressed');   // pushed in and lit, like every room's confirm (pressConfirm() in js/rewards.js)
         const paid = claim(m.id);
         playSound('item-get');
-        countUp(prize.querySelector('.pc-prize-n'), paid);
-        sheet.append(el('span', 'pc-claimed', 'CLAIMED'));
+        if (!mat && !recipe) countUp(prize.querySelector('.pc-prize-n'), paid);
+        sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
         wrap.classList.add('paid');
-        speak(`${trainerName().toUpperCase()} received ${paid.toLocaleString()} PokéCoins!`);
+        const me = trainerName().toUpperCase();
+        speak(mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
       });
       kids.push(ok);
     }
@@ -526,6 +543,7 @@ const PAGES = {
       glass.replaceChildren(head('HOUSE UPGRADES'), el('p', 'pc-empty', 'No Secret Base yet.'));
       return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its blueprint is kept here.');
     }
+    markPcSeen('yard');
     const h = head('HOUSE UPGRADES');
     h.append(el('span', 'pc-count', `${(save.coins ?? 0).toLocaleString()} coins`));
     const fits = spot?.room && plan ? fitsOf(house, spot.room, spot.pip, plan, spot.up) : [];
@@ -533,6 +551,32 @@ const PAGES = {
     const kids = [h];
     const buy = (label, go, cls = '') => { const ok = el('button', `room-ok pc-build${cls}`, label); ok.type = 'button'; ok.addEventListener('click', go); return ok; };
     const short = (price) => speak(`You need ${price - (getSave().coins ?? 0)} more PokéCoins.`);
+    // the backyard's plot behind the house, bought on its own whatever size the main room is, then made bigger
+    const yardCard = () => {
+      const card = el('div', 'pc-plan'), { w, h } = shapeOf('yard');
+      if (canGrowYard(house)) {
+        const big = shapeOf('bigyard');
+        card.append(el('b', 'pc-plan-name', 'BIGGER BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} → ${big.w} × ${big.h} tiles of lawn, more at the sides and behind.`),
+          buy(`Build · ${BIG_YARD_PRICE.toLocaleString()}`, () => {
+            if (!buyBigYard(loadBase())) { playSound('cancel'); return short(BIG_YARD_PRICE); }
+            unpick();
+            playSound('item-get');
+            show('house');
+            speak('Your backyard is bigger! Everything out there kept its place by the back door, with new lawn round it.');
+          }));
+        return card;
+      }
+      card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind the house, out a new back door in your main room.`),
+        buy(`Build · ${YARD_PRICE.toLocaleString()}`, () => {
+          const done = buyYard(loadBase());
+          if (!done) { playSound('cancel'); return short(YARD_PRICE); }
+          unpick();
+          playSound('item-get');
+          show('house');
+          speak(`Your backyard is ready! Walk out the main room's back door to see it.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the way.` : ''}`);
+        }));
+      return card;
+    };
     if (!big) {
       const card = el('div', 'pc-plan');
       card.append(el('b', 'pc-plan-name', 'BIGGER MAIN ROOM'), el('small', 'pc-plan-note', '11 × 8 → 14 × 10 tiles. Then build rooms onto any wall you like, or upstairs.'),
@@ -542,8 +586,9 @@ const PAGES = {
           show('house');
           speak('Your main room is bigger! Tap a green spot on a wall to build a room there, or go to 2F to build upstairs.');
         }));
-      glass.replaceChildren(h, blueprint(house, null), card);
-      return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it.`);
+      glass.replaceChildren(h, blueprint(house, null), yardPick ? yardCard() : card);
+      if (yardPick) return speak(yardSay(house));
+      return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it.${yardHint(house)}`);
     }
     // a tab per floor, and one more over the top to build up into
     const tabs = el('div', 'pc-chips pc-floors');
@@ -554,7 +599,8 @@ const PAGES = {
       tabs.append(t);
     }
     kids.push(tabs, blueprint(house, fit));
-    if (spot?.join) {
+    if (yardPick) kids.push(yardCard());
+    else if (spot?.join) {
       kids.push(buy(`Doorway · ${DOOR_PRICE}`, () => {
         const { room, pip, to, toPip } = spot.join, done = buyDoor(loadBase(), room, pip, to, toPip);
         if (!done) { playSound('cancel'); return short(DOOR_PRICE); }
@@ -606,10 +652,11 @@ const PAGES = {
       }, ' pc-down'));
     }
     glass.replaceChildren(...kids);
-    if (spot?.join) speak(`Open a doorway between these two rooms for ${DOOR_PRICE} PokéCoins?`);
+    if (yardPick) speak(yardSay(house));
+    else if (spot?.join) speak(`Open a doorway between these two rooms for ${DOOR_PRICE} PokéCoins?`);
     else if (spot && !plan) speak(spot.up ? 'Pick a room to build upstairs. Stairs will climb to it from that back wall.' : 'Pick a room to build there. Rooms that won\'t fit are greyed out.');
     else if (!spot && !picked) speak(floor ? `Tap a green spot on a back wall of the floor below to build a room up a staircase from it, ${ROOM_PRICE} PokéCoins.`
-      : `Tap a green spot on any wall to build a room there, ${ROOM_PRICE} PokéCoins. Gold spots join two rooms side by side. Tap a room to take it down.`);
+      : `Tap a green spot on any wall to build a room there, ${ROOM_PRICE} PokéCoins. Gold spots join two rooms side by side. Tap a room to take it down.${yardHint(house)}`);
   },
   rename() {
     const form = el('form', 'pc-name');
@@ -646,7 +693,15 @@ function blueprint(house, fit) {
   const place = (r) => r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]);
   const ghost = fit ? shapeOf(fit.kind, fit.rot).rects.map(([x, y, w, h]) => [x + fit.gx, y + fit.gy, w, h]) : [];
   const door = floor ? [] : [[entry.at - 1, main.shape.h, 3, 1.5]];
-  const every = [...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door];
+  // the backyard behind the house, its door's column lined up with the main room's back door, a path's width clear of
+  // the rooms; bought or a plot to buy (a tap picks it)
+  const back = backDoorOf(house), yard = shapeOf(yardKind(house)), owned = ownsYard(house);
+  const yx = main.gx + back.at - Math.floor(yard.w / 2), yy = Math.min(...rooms.map(r => r.gy)) - yard.h - 1;
+  const lot = floor ? [] : [[yx, yy, yard.w, yard.h]];
+  // the bigger yard it would grow into, dashed round it while it's picked to buy
+  const big = shapeOf('bigyard'), grow = lot.length && yardPick && canGrowYard(house)
+    ? [[main.gx + back.at - Math.floor(big.w / 2), yy + yard.h - big.h, big.w, big.h]] : [];
+  const every = [...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door, ...lot, ...grow];
   const x0 = Math.min(...every.map(r => r[0])) - 2, y0 = Math.min(...every.map(r => r[1])) - 2;
   const x1 = Math.max(...every.map(r => r[0] + r[2])) + 2, y1 = Math.max(...every.map(r => r[1] + r[3])) + 2;
   const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': `House blueprint, ${floorName(floor)}` });
@@ -672,6 +727,18 @@ function blueprint(house, fit) {
   };
   for (const r of below) room(place(r), 'pc-bp-room below');
   if (door.length) room(door, 'pc-bp-room entry', 'Entry');
+  if (lot.length) {
+    if (owned) room([[main.gx + back.at + 0.3, yy + yard.h, 0.4, main.gy - yy - yard.h]], 'pc-bp-room path');
+    if (grow.length) room(grow, 'pc-bp-room yard plot picked');
+    room(lot, `pc-bp-room yard${owned ? '' : ' plot'}${yardPick ? ' picked' : ''}`, 'Backyard', () => {
+      playSound('select');
+      const was = yardPick;
+      unpick();
+      yardPick = (!owned || canGrowYard(house)) && !was;
+      show('house');
+      if (owned && !yardPick) speak(canGrowYard(house) ? 'Your backyard, out the main room\'s back door.' : 'Your backyard, made bigger, out the main room\'s back door.');
+    });
+  }
   for (const r of rooms) {
     const name = ROOM_KINDS[r.kind].name;
     room(place(r), `pc-bp-room${picked === r.id ? ' picked' : ''}`, name, () => {
@@ -703,19 +770,21 @@ function blueprint(house, fit) {
     if (spot && line) speak(line);
   };
   if (!floor) pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
+  if (!floor && owned) pip(main.gx + back.at + 0.5, main.gy, 'shut');
   if (!house?.big) return wrap(s, [x0, y0, x1 - x0, y1 - y0]);
   const taken = takenOn(house, floor);
   // this floor's doorways and staircases, and the green spots a room fits onto
   for (const r of rooms) r.shape.pips.forEach((p, i) => {
     const l = linkOf(house, r.id, i), [cx, cy] = at(r, p);
     if (l) return pip(cx, cy, l[4] ? 'shut stairs' : 'shut');
+    if (pipUsed(house, r.id, i)) return;
     if (!BUILDABLE.some(k => fitRoom(house, r.id, i, k, null, false, taken))) return;
     const on = spot?.room === r.id && spot.pip === i && !spot.up;
     pip(cx, cy, `open${on ? ' on' : ''}`, pick({ room: r.id, pip: i, up: false }));
   });
   // upstairs: the back walls of the floor below, where a staircase could climb to a new room
   for (const r of below) r.shape.pips.forEach((p, i) => {
-    if (p[0] !== 'n' || linkOf(house, r.id, i)) return;
+    if (p[0] !== 'n' || pipUsed(house, r.id, i)) return;
     if (!BUILDABLE.some(k => fitRoom(house, r.id, i, k, null, true, taken))) return;
     const [cx, cy] = at(r, p), on = spot?.room === r.id && spot.pip === i && spot.up;
     pip(cx, cy, `open up${on ? ' on' : ''}`, pick({ room: r.id, pip: i, up: true }));

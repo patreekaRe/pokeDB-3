@@ -129,6 +129,12 @@ a row under the title), and `showHpChange()` runs its bar to the new HP before t
 price is still only paid once something is picked.
 
 
+**The Move Tutor's room is Kenmatta's hall** (2026-10-15, the user's ask: extravagant, big, a ring in the middle to walk
+into): `buildDojoHall()` in `js/event-3d.js`, 17 x 15 (`SIZES.tutor`), shared with the Clearing's dojo. Ken sits in the
+ring (Challenge walks you up its steps to him), the scroll on the back wall left of the dais, the sandbag right; the
+room keys `rise`, `walls` and `decks` let you walk on the ring. Its Clearing visit (`home: true`) hangs the trial board
+where the scroll is; his students (Hitmonlee, Hitmonchan, Machop) say their `cast` lines in `CLEARING.homes.dojo`.
+
 **The walk-in 3D rooms** (2026-10-11, the user's ask after the 3D Center and Mart): the four indoor rooms, the Move
 Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club (`EVENT_3D` in `js/run.js`), are walked in 3D,
 `js/event-3d.js`, one engine (the Center's walking, camera and floating signs) and a `build*()` per room in `BUILD`. Like
@@ -198,3 +204,35 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
   FORTIFY YOUR MIND shouts Wong's line (a move's `sound`, played as the enemy uses it). His first defeat is an achievement
   window (the relic), his third another, and from then on every map shows his dojo's ❓ room with his face (`save.kenWins`,
   `save.kenBeaten`). See `docs/reference/events.md`.
+
+## Kenmatta's dojo in the Clearing (2026-10-15, the user's picks)
+
+The Clearing's boarded-up dojo (`DOJO_AT`; since the same day a temple hall, `makeDojo()` in `js/hub-dojo.js`) is open: a tap walks in like the
+Nietos' house (`enterHouse()` → `visitTown(…, 'clearing', …, 'dojo')`; `CLEARING.homes.dojo` in `js/data/towns.js`,
+`HOMES.clearing.dojo` in `js/event-3d.js`). Open towns or not, but only once Kenmatta is beaten in a run (`kenWinsOf(save) >= 1`; the user's ask, 2026-10-15): till then the hub's `dojo` place is `open: false` with a note from Ken on the door. `?dojo` walks straight in (its stars and belts are
+real, like walking in). The data is `js/data/dojo.js`; nothing in it makes a run stronger, so no bot check.
+- **The room** (`buildDojoHall(figs, { home: true, belt })` in `js/event-3d.js`): the Move Tutor's hall (gold leaf, the
+  medallion, the ring, the sandbag) with Kenmatta on his cushion in the ring (a tap: his lines, `kenTalk(belt)`, more with each belt), the
+  **trial board** where the scroll hung (`trialBoardArt()`: stars, the six belts with yours ringed; its sign **Trials**
+  opens `js/dojo.js`'s window) and the **Sandbag** sign (the tutor's `train` act). Your partner wears your belt there
+  (`beltOn()`, a band and knot on its sprite at 40% of its height; `dressBelt()` swaps it as a belt is tied on). Music
+  `event-room`. The room's cache key carries the belt and stars.
+- **Belts** (`BELTS`): white, yellow (2 stars), green (4 + 1 win against him in a run), blue (8 + 2), brown (14 + 3),
+  black (20 + 5): set for the full ladder of about 20, so later trials never take anything back. `beltOf(save)` works
+  it out from `save.dojo.stars` and `kenWinsOf()` (`save.kenWins`, `kenBeaten` counting 3); `save.dojo.belt` is only
+  the last one he has tied on. `dojoTalk()` in `js/run.js`: his hello the first time (`save.dojo.met`), his word on a
+  trial just fought, and each new belt's `line` once, with a 🥋 line naming the furniture it sent.
+- **The trial ladder** (`TRIALS`, 8 so far): each a set starter (Charmander / Bulbasaur / Squirtle at its first stage,
+  its Ability on), HP, a deck drawn in order (`deck[0]` first, five a turn), a foe (his students: Machop, Mankey,
+  Tyrogue, Poliwrath, Hitmonchan, Primeape, Makuhita, then Kenmatta himself), typeless, its moves in order from the
+  first, and a goal (`turns`, `noDamage`, `burn` last blow, `full` HP). One star a clear (`save.dojo.stars`), each opening
+  the next, replayable. Played by `trialFight()` / `afterTrial()` in `js/run.js` on a copy of the visit's run (no relics,
+  items or deck of yours), `kind: 'fight'`, the kombat arena and song. In `js/battle.js` `encounter.trial` keeps the
+  deck's order and the foe's first move, and `trialBroken()` ends it at the start of a turn it can no longer be won in
+  (`failTrial()`); the fight's result now carries `turns` and `felledBy` ('burn' / 'seed'). `trialMissed()` reads it.
+  Trial-only, so `sim/engine.js` needs nothing. Every trial was played through headless with its intended line
+  (2026-10-15); a new one needs the same.
+- **The dojo set** (`DOJO_REWARDS`, `js/base-furniture-dojo.js`, the `dojo` source in `js/data/furniture.js`; one
+  colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
+  stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till
+  earned. The older Training dummy and Punching bag stay the Dojo and Black Belt badges'.

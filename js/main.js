@@ -365,6 +365,8 @@ function init() {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
     return import('./base-3d.js').then(m => m.openBase3d());
   }
+  // ?yard: out in the Secret Base's backyard, lent for the page load if it isn't bought (js/secret-base.js's loadBase())
+  if (params.has('yard')) return import('./base-3d.js').then(m => m.openBase3d({ start: 'yard' }));
   // ?mall: the Poké Mall's hall; ?mall=furniture straight into the Furniture store, ?mall=2f its second floor
   if (params.has('mall')) return import('./mall-3d.js').then(m => m.openMall({ store: params.get('mall') }));
   if (place) {
@@ -386,6 +388,8 @@ function init() {
   // ?arena=elite / boss / wild / ken: a throwaway run straight into an Alpha's, boss's, wild Pokémon's or Kenmatta's fight, in the 3D arena (&biome=, &stage=0-2, &starter=id)
   // ?gym=phil: straight into that Gym Leader's gym, then their boss fight (&n=2 their second boss, &starter=id, &hp=0.1)
   // ?town=shrine: a throwaway run straight into that biome's gateway town (&starter=id), then on into the biome
+  // ?dojo: straight into Kenmatta's dojo, as if walked in from the Clearing (its stars and belts are real)
+  if (params.has('dojo')) return visitTown(STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free), 'clearing', async (from) => { cameHome(from); await showHome(); curtain(false, 420); }, 'dojo');
   if (params.get('town') && peekTown(STARTERS_BY_ID[params.get('starter') ?? ''] ?? STARTERS.find(s => s.free), params.get('town'), params.get('home'))) return;
   if (params.get('gym')) return peekGym(STARTERS_BY_ID[params.get('starter') ?? ''] ?? STARTERS.find(s => s.free), params.get('gym'), Number(params.get('n') ?? 1), Number(params.get('hp') ?? 1));
   if (params.get('arena')) return peekArena(STARTERS_BY_ID[params.get('starter') ?? (params.get('biome') === 'depths' ? 'mewtwo' : '')] ?? STARTERS.find(s => s.free), params.get('arena'), params.get('biome'), params.has('slot') ? Number(params.get('slot')) : null);

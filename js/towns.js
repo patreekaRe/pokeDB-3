@@ -11,6 +11,9 @@ import { satchelOf } from './data/satchel.js';
 import { streamOf } from './rng.js';
 import { safariDay } from './data/safari.js';
 import { gainMat, gainKey } from './satchel.js';
+import { FAVOURS, FAVOUR_COINS, FRIEND_TOWN, favourOf, asking, countFavour, currentFavour, favourText, handInFavour } from './data/favours.js';
+import { workshopOf, heartsOf, gifteeOf } from './data/workshop.js';
+import { GYM_BY_ID } from './data/gym.js';
 
 /** Count play into the request of the town whose biome `ctx.biome` is; lines saying one just finished. */
 export function trackTowns(events, amount, ctx) {
@@ -28,6 +31,38 @@ export function trackTowns(events, amount, ctx) {
   if (!done) return [];
   return questDone(town, st) ? [`📜 ${town.name}'s request done: ${requestText(currentRequest(town, st))}! Hand it in at its board next time you pass.`]
     : [`📜 ${town.name}'s quest: ${stepText(questStep(town, st))}, done! ${town.home ? 'Tell the Nietos at home.' : 'Tell them at its board next time you pass.'}`];
+}
+
+/** Count play into every friend's own request (js/data/favours.js) while they're asking; lines saying one just finished. */
+export function trackFavours(events, amount, ctx) {
+  if (!townsOpen()) return [];
+  const save = getSave(), ws = workshopOf(save), out = {}, lines = [];
+  for (const id of Object.keys(FAVOURS)) {
+    if (!asking(id, heartsOf(ws, id))) continue;
+    let fs = favourOf(save, id), done = false;
+    const before = fs;
+    for (const ev of [].concat(events)) {
+      const r = countFavour(id, fs, ev, amount, ctx.biome);
+      fs = r.fs;
+      done ||= r.finished;
+    }
+    if (fs === before) continue;
+    out[id] = fs;
+    if (done) {
+      const town = placeOf(FRIEND_TOWN[id]);
+      lines.push(`💌 ${gifteeOf(id, GYM_BY_ID[id].name)}'s request done: ${favourText(currentFavour(id, fs))}! Hand it in at their home in ${town.name} next time you're there.`);
+    }
+  }
+  if (Object.keys(out).length) updateSave(d => { d.favours = { ...(d.favours || {}), ...out }; });
+  return lines;
+}
+
+/** Hand a friend's finished request in: the next one up, PokéCoins paid. Returns the coins (0 if it wasn't ready). */
+export function handInFriend(id) {
+  const fs = favourOf(getSave(), id);
+  if (!fs.ready) return 0;
+  updateSave(d => { d.favours = { ...(d.favours || {}), [id]: handInFavour(fs) }; });
+  return awardCoins(FAVOUR_COINS);
 }
 
 /** A leader has greeted you: the town's questline opens on its board (and a "!" on the Pokédex's Quests app, js/questlog.js). */

@@ -9,22 +9,13 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
-`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
-for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
-run stronger, so no bot check. Three parts:
-- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
-  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
-  unlocks a line from him and a piece of the furniture set.
-- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
-  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
-  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
-  the battle screen with no rewards beyond the star (never a run).
-- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
-  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
-  trophy.
-▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
-Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
+the belts and the furniture set are in, in the grand hall with the ring (`buildDojoHall()`, the same day; the user
+playtests its look). Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
+Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
+star counts (to 20) already allow for them.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
+docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
@@ -32,19 +23,15 @@ the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js
 plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
 roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
-  a) **The yard itself**: the blueprint plot and its purchase, a `save.base` field for it (follows the cloud save), the
-     back door in the main room, an outdoor 3D lot built like the base's rooms (grass, fence, the Clearing's trees behind,
-     sky lit by `timeOfDay()`, snow with `?season=winter`, the Clearing's curve), your partner walking out and back,
-     `wakeGL` / `sleepGL` per CLAUDE.md, a `?yard` playtest flag, a `NEWS` line if the PC page changes, a patch note.
-  b) **Outdoor furniture**: placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
-     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
-     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
-  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
-     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
-  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
-     harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
-     ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
-  e) Later: the yard grows (the blueprint's bigger yard buy).
+  a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
+  b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
+  c) Done 2026-10-14, on `main`: the 6 on show let out from the yard's Pokémon tab; swim, swing, sit (docs/roadmap-done.md).
+     Not yet seen in a browser: playtest `?yard&guests` with a swing set and pond out (`?base&yard` opens the main
+     room: `?base` is read first).
+  d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket
+     for each berry's first picking (docs/roadmap-done.md). A real tap on a plot not yet tried (the hidden pane ran no frames).
+  e) Done 2026-10-15, on `main`: the bigger yard, 16x11 for 1,000 on the blueprint (docs/roadmap-done.md). The backyard
+     plan is finished; playtest `?yard=big` (or buy it: tap the owned yard on HOUSE UPGRADES).
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
@@ -147,8 +134,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (`js/hub-sealed.js`). Headless-checked, no errors; waiting on the user's look (`?mewtwo&gate=0&hubat=2,12`).
    **Done (2026-10-15): the Clearing's lamps and benches in mirrored pairs, and the professors** (the user's ask): 14
    lamps, 6 benches, 4 flower beds (`LAMPS` / `BENCHES` / `BEDS`); Professor Oak by day and Professor Sonia at night on
-   the plaza right of the Waystone, tapping through `HINTS` and always saying to refresh for updates. Headless-checked,
+   the plaza right of the Waystone, tapping through `HINTS`, saying to refresh for updates every fifth tap. Headless-checked,
    no errors; waiting on the user's look. Their sprites are the user's own since 2026-10-14 (80 x 80, like Kurt's).
+   **Done (2026-10-15): the professors talk in the Gym Leaders' slide-in** (the user's pick, option 2): the first tap of
+   a visit slides Oak / Sonia in with a hello and a hint, later taps just the speech window (`profTalk()` in
+   `js/hub-3d.js`). Headless-checked, no errors; waiting on the user's look (`?hubat=20,11`, `&time=night` for Sonia).
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the
@@ -543,30 +533,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
      the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
-8. **Friendship: what gifts are for** (the user's picks, 2026-10-14; this answers step 6's open question on `liked`). Gifts
-   already count up per leader (`liked` in `workshopOf()`, `js/data/workshop.js`: +1 a gift, +2 their favourite) and the
-   favourite's first earns their signature piece (`fond`). That count becomes **hearts, 5 a leader** (10 town leaders and
-   the Nietos), and they unlock:
-   - **At home**: (1) a row of 5 hearts in each leader's home (on their name sign or the chat) and on the PC (a Friends
-     page); (2) new lines at each heart, more personal: chats, jokes and stories about the other friends (`HEART_LINES`
-     beside `HOME_LINES` in `js/data/towns.js`, 5 a leader); (3) Secret Base visits: from 3 hearts they drop by
-     (`secret-base.js`'s home guests, mended town or not), at 5 they come often and sit on your furniture.
-   - (8) **Their own requests**: a leader at 3+ hearts posts a small request on their town's board (the coin requests'
-     code), paying PokéCoins.
-   - **Rewards**: (9) a second and third signature piece in their style at more hearts (3 and 5; the first stays their
-     favourite gift's); (10) a friendship badge each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`),
-     a gold one for all of them; (11) now and then a liked leader mails you through the PC: coins, a material, or a
-     recipe; (12) each leader teaches Kurt one secret recipe at a set heart count (a `RECIPES` line each, made only once
-     taught).
-   - Nothing here gives power in a run, so no bot check. Hearts can't pass 5; gifts past that still please them (a line).
-   - **Sessions** (each ▶ Run in: CLOUD, then playtest on a githack link with `?towns&satchel&gymwins=10`):
-     (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
-     all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
-     maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
-   - **Session (a) done (2026-10-14): hearts.** `heartsOf()` / `HEARTS` / `FRIENDS` in `js/data/workshop.js` (test in
-     `tests/workshop.test.mjs`), the hearts on a home's room-bar LCD beside its name, a gift saying the new count (and
-     "already the best of friends" past 5), and the PC's FRIENDS page (towns on, a leader beaten). Detail:
-     `docs/reference/towns.md`. On `main`. Next: session (b), the heart lines.
+8. **Done (2026-10-15): Friendship, what gifts are for**, all six sessions (a-f): hearts, heart lines, Secret Base visits,
+   signature pieces 2 and 3, badges / letters / secret recipes, and (f) each friend's own requests on the Quests board.
+   Every session's notes are in `docs/roadmap-done.md`; how it all works in `docs/reference/towns.md`. On `main`, waiting
+   on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). Next: nothing planned; the user's call.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
