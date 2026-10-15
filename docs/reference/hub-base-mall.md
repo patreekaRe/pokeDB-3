@@ -283,26 +283,29 @@ moves only corners: the first playtest had the ground sink as one slab under eve
 
 The mall's east front (`FRONTS` id `outfitter`, place `so`), so each shop is one thing coins buy: home, runs, the Safari.
 `js/mall-outfitter.js` paints its hall front (`outfitterFront()`, `outfitterSign()`, `outfitterAwning()`; the 3D awning and
-ball crates are `dressFronts()`'s last branch in `js/mall-hall.js`) and builds its room (`buildOutfitter()`); `js/mall-3d.js`
+ball crates are `dressFronts()`'s last branch in `js/mall-hall.js`) and builds its lodge (`buildOutfitter()`); `js/mall-3d.js`
 walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
 - **Open** once the Safari Zone is (`safariOpen()`; `?ribbon` opens it for a page load), taped shut before that with
   Kangaskhan's note; its first opening has a ribbon to cut (`RIBBONS.outfitter`, saved as `outfitterRibbon`).
-- **The room**: a rattan lodge over dark wood (`L`), the Safari Zone's map over the back table, the board and the shop's
-  sign over the middle, a gear shelf behind Kangaskhan's counter (`OUTFITTER_KEEPER`, its lines), crates of Bait, Balls
-  and Rocks in the back right, plants by the front corners. Tiles: back table `BACK` (4 packs), front table `FRONT` (3),
-  the Master Ball's case `CASE`, the Day Pass machine `KIOSK`, the board `BOARD`, the counter `COUNTER`.
-- **The balls** are real spheres, each skinned by `SKINS` (x runs round the ball, 16 the front where its button is),
-  turning slowly (still under `calmFx()`); a pack's spares sit small round its cushion. Each has a price card
-  (`tagArt()`, repainted after a buy by `refresh()`: LOCKED, OWNED, "Have N"). They sell through `cornerEntries('balls')` /
-  `buyCorner()` in `js/shop.js`, the same as the Pokédex's Game Corner app and the Safari prep window's Buy, which still
-  sell them too.
-- **The Day Pass machine** shows `passState()`: `pass` once one is held today (even before the free try, which
-  `safariAccess()` alone would still call `first`), `first`, or `locked`; a second tap buys one (`DAY_PASS`, `safari.pass`).
-- **The board** chalks `safariTop(5)` (fetched every 90 s while shown); a second tap opens `openLeaderboard(0, 'safari')`.
-- **Tapping through your partner**: standing at a stand, your partner's sprite covers its ball, so `onTap()` takes a tap on
-  the partner as one on the stand it stands at when that stand is behind it in the same ray (2026-10-15).
+- **The lodge** (made grand the same day, the user's ask: "way bigger", price cards they couldn't read, "more of a safari
+  aesthetic", the wall's things overlapping): its own 21 x 13 (`COLS` / `ROWS`, door at the aisle's foot), the camera
+  following you like the Game Corner and the Furniture store. Bamboo walls over wainscoting, log posts and a beam under a
+  thatched eave. The back wall is three bays between posts (`BAYS`), each with one thing and nothing in front of it that
+  reaches it: the Safari Zone's map over a jeep (`JEEP`) at the left, the savanna mural and the carved sign over
+  Kangaskhan's counter (`COUNTER`, gear shelves behind) in the middle, the leaderboard (`BOARD`) at the right. Keep it that
+  way: a new thing goes in a wing or on the floor, not on the wall.
+- **The packs** stand on tree stumps down two wings (`STANDS`, sisal mats under each wing), the rest of the pack at the
+  stump's foot, each under a big lit price sign on bamboo poles (`priceArt()`: the name, the price, the pack and how many
+  you carry; LOCKED / OWNED), high enough to read over your partner. The balls are real spheres skinned by `SKINS` (x
+  runs round the ball, 16 the front where its button is), turning (still under `calmFx()`).
+- **The Master Ball** floats in a glass case on a roped two-tier dais in the middle (`DAIS`, its plaque at the front, the
+  step two tiles out). **The Day Pass** is a thatched bamboo booth (`KIOSK`) showing `passState()`: `pass` once one is
+  held today (even before the free try, which `safariAccess()` alone would still call `first`), `first`, or `locked`; a
+  second tap buys one (`DAY_PASS`, `safari.pass`). **The board** chalks `safariTop(5)` (every 90 s while shown); a second
+  tap opens `openLeaderboard(0, 'safari')`. Torches flank the door and the counter, palms (`hallKit()`) the corners.
+- All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Pokédex's Game Corner app
+  and the Safari prep window's Buy, which still sell them too.
+- **Tapping through your partner**: standing at a stand, `onTap()` takes a tap on your partner as one on the stand it
+  stands at when that stand is behind it in the same ray (2026-10-15).
 - **Headless**: under software GL, `ImageDecoder` crawls while the mall draws, so Kangaskhan's 135-frame GIF takes a minute
   to load; add `&gifjs` to a headless check (real devices are fine; `?mall=corner&ribbon` does the same with Meowth).
-
-
-- **The Furniture store rebuilt as a grand showroom** (2026-10-15, the user's ask: "much BIGGER and way more AESTHETIC, extravagant, AWESOME and ORGANIZED"): each floor is its own 21 x 13 room like the Game Corner (`COLS` / `ROWS` / `DOOR` returned by `buildFloor()` in `js/mall-furniture.js`; the camera slides with your partner), replacing the 13 x 7 Nook's-Cranny room and its older positions above. The day's stock is unchanged (8 a floor), sorted into `DEPTS` by `sortIn()` (a matching over `KINDS_OF`, a piece that fits nowhere filling a gap under its own kind's name): Storage, Lighting, Seating, Tables in the left wing (FURNISHINGS), Wall Art, Plants, Rugs, Curios in the right (DÉCOR & ART), the tall kinds in each wing's back row. Each stand is a velvet-topped marble plinth with its department's plaque in the floor and a price card in its colour. The nave: diagonal marble between gold strips, a carpet runner from the door to the counter (back middle, the keeper behind it under the crest and Smeargle's painting), a velvet rotunda with a bouquet (kept under ~1.7 tall so it never hides the counter), lamps by the door, palms in the corners, topiary by the counter. Two crystal chandeliers hang over the aisles either side of the crest, so their chains never cross the signs' lettering; they sway and twinkle unless `calmFx()`. Back-left corner: Smeargle's easel downstairs, a grand piano upstairs. The lift moved to the back right (`LIFT.x` 18). Floor 1 emerald and ivory, floor 2 (the Rose Salon) rose. The hall's palms, topiary and lamps come from `hallKit()` in `js/mall-hall.js`.

@@ -2673,3 +2673,10 @@ earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js
 the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
 (`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
 the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
+
+### The Safari Outfitter made a grand lodge (2026-10-15, the user's ask: "way bigger", couldn't read the price cards, "more of a safari aesthetic", the wall's things overlapping, "I want it grand")
+Its own 21 x 13 like the Furniture store's showroom: bamboo, log posts and a thatched eave; the back wall three bays with
+one thing each (the map over a jeep, the savanna and carved sign over the counter, the leaderboard); the packs on tree
+stumps down two wings under big lit price signs; the Master Ball on a roped dais in the middle; a thatched Day Pass booth;
+torches and palms. Checked headless: every buy, the pass, the board, the keeper, no errors at 420 wide.
+

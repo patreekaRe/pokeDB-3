@@ -857,10 +857,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           the stamp card "complete", a ✓ on finished ones (`puzzlesPlayed()`).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
-     d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15 (`docs/roadmap-done.md`). **Next**: the user playtests it
-        (`?mall=outfitter&safari&coins=3000`, or the live site once the Safari Zone is open) and says what to change. Poké
-        Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say if they should
-        move to the Outfitter only. ▶ Run in: CLOUD.
+     d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15, made a grand safari lodge the same day
+        (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
+        change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
+        if they should move to the Outfitter only. ▶ Run in: CLOUD.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
