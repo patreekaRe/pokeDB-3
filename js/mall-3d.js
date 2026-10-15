@@ -17,7 +17,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -55,7 +55,7 @@ let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = nul
 let places = {}, P = null, picked = null, riding = null;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
-let dressed = [], env = null;   // the hall's models' ticks (js/mall-hall.js) and its reflections
+let dressed = [], env = null, envTarget = null;   // the hall's models' ticks (js/mall-hall.js) and its reflections
 let calm = false, last = 0, camX = 0, camZ = 0, shot = null, viewW = 0, viewH = 0, leaveTo = null;
 
 // the place you're in can be bigger than the hall (the Game Corner): its tiles, set by setPlace()
@@ -675,9 +675,11 @@ function hallEnv() {
   panel(18, 6, 0, 5.9, 0, Math.PI / 2, 0, new THREE.Color(3.2, 3.1, 2.8));
   for (const x of [-9, -3, 3, 9]) panel(4, 2, x, 2, -14.9, 0, 0, new THREE.Color(2.4, 1.9, 1.2));
   panel(26, 1.2, 0, 0.2, 14.9, 0, 0, new THREE.Color(0.9, 0.8, 0.7));
-  const t = pm.fromScene(s, 0.035).texture;
+  envTarget?.dispose();
+  envTarget = pm.fromScene(s, 0.035);
   pm.dispose();
-  return t;
+  dispose(s);
+  return envTarget.texture;
 }
 
 const DOOR = { x: 6, y: ROWS - 1 };   // the tile in from the doormat, where every place is walked into
@@ -1266,6 +1268,7 @@ function resize() {
 function frame(now) {
   if (!root?.isConnected) return;
   if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
+  if (tooSoon(now, last)) { requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
@@ -1363,6 +1366,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     await wakeGL(renderer);
     const mate = buddy(getSave());
     if (mon.src !== mate.src) { dispose(mon.group); scene.remove(mon.group); mon = await monBoard(mate); mon.board.rotation.x = -PITCH; scene.add(mon.group); }
+    env = hallEnv();   // drawn into a render target, which a context lost while asleep doesn't keep
     syncShop();
     atDoors();
     resize();

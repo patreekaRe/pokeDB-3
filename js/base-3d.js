@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { RESIDENTS, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -1902,6 +1902,7 @@ function resize() {
 function frame(now) {
   if (!root.isConnected) return;
   if (cabinetUp()) { last = now; return requestAnimationFrame(frame); }
+  if (tooSoon(now, last)) { requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();

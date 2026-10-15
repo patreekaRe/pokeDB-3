@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon } from './hd2d.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -3983,6 +3983,7 @@ function frame(now) {
   if (screen.hidden || !root.isConnected) { running = false; quiet(); sleepGL(renderer); return; }
   // under the device (its corner button opened it over the hub) the Clearing holds still rather than drawing unseen
   if (root.querySelector('.room-home.out') && document.getElementById('collection-screen')?.hidden === false) { last = 0; requestAnimationFrame(frame); return; }
+  if (tooSoon(now, last)) { requestAnimationFrame(frame); return; }
   if (!card.hidden && now - resetAt > 5000) { resetAt = now; resetLine(); }
   const dt = Math.min(100, now - (last || now));
   last = now;

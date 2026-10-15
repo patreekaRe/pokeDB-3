@@ -1781,7 +1781,7 @@ body.battle-intro { pointer-events: none; }
   filter: drop-shadow(0 0 1px #fff) drop-shadow(0 0 1px #fff) drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.5));
   animation: trainerHop 1s ease-in-out infinite;
 }
-@keyframes trainerHop { 50% { margin-top: -2px; } }
+@keyframes trainerHop { 50% { translate: 0 -2px; } }   /* translate, not a margin: no layout on every frame of the map */
 .map-trainer.at-start { transform: translate(-50%, -62%); }   /* at the foot of the start road, so the road shows above it */
 .map-trainer.walking { animation: none; will-change: translate; }   /* walkTo() in js/map.js glides it along the route */
 

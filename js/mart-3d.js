@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -886,6 +886,7 @@ const alive = () => inRoom() || pickingOver();   // the PC's Forget stands over 
 function frame(now) {
   raf = 0;
   if (!alive()) return unmount();
+  if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }
   const dt = Math.min(100, now - (last || now));
   last = now;
   if (walk(dt)) arrived();

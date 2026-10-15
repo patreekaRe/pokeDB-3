@@ -9,10 +9,11 @@ import { decodeGif } from './gif-frames.js';
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 export const MON_PX = 1 / 32;   // Pokémon GIFs are drawn at twice the furniture's detail
 
-let THREE = null;
+let THREE = null, loading = null;
 /** Three.js, loaded once; throws offline (the callers fall back to their 2D version). */
 export async function loadThree() {
-  THREE ??= await import(THREE_URL);
+  loading ??= import(THREE_URL).then(m => { noteDisposeHooks(m); return m; }, e => { loading = null; throw e; });
+  THREE ??= await loading;
   return THREE;
 }
 
@@ -32,6 +33,10 @@ export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
     return Promise.race([done, new Promise(r => setTimeout(r, ms))]).catch(() => {});
   } catch { return Promise.resolve(); }
 }
+
+/** True for a frame to skip: a 90 or 120 Hz phone screen calls a frame loop up to twice as often as 60 Hz, and drawing
+    a 3D place that often only heats the phone and drains it. So no place draws more than about 60 times a second. */
+export const tooSoon = (now, last) => last > 0 && now - last < 1000 / 60 - 3;
 
 /* ---------- one 3D place awake at a time ----------
    Every 3D place keeps its renderer, and a WebGL context holds every texture, shadow map and render target it ever
@@ -53,7 +58,48 @@ export const pickingOver = () => !!document.querySelector('#reward-options.deck-
 export function sleepGL(renderer) {
   if (!renderer || asleep.has(renderer)) return;
   asleep.add(renderer);
+  unhook(renderer);
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
+}
+
+/* three.js (r160) builds its GPU bookkeeping afresh on every context restore, and each build hooks a 'dispose' listener
+   onto every geometry, texture, instanced mesh, render target and shadow-casting material it uploads. The old build's listeners were never taken off, so every
+   wake kept all the last one's buffers, textures and programs alive (the mall held ~2 MB more on each visit, 2026-10-15),
+   and they fired at the new context on a dispose ("object does not belong to this context"). So each dispose listener is
+   noted where it's added, and a place going to sleep takes its own build's off everything first. */
+const hooked = new Map();   // a dispose listener -> WeakRefs to what it's on
+function noteDisposeHooks({ EventDispatcher }) {
+  const add = EventDispatcher.prototype.addEventListener;
+  EventDispatcher.prototype.addEventListener = function (type, fn) {
+    if (type === 'dispose') { let on = hooked.get(fn); if (!on) hooked.set(fn, on = new Set()); on.add(new WeakRef(this)); }
+    return add.call(this, type, fn);
+  };
+}
+/** Takes `renderer`'s current listeners off everything, found by uploading a tiny probe (its context must be alive). */
+function unhook(renderer) {
+  if (!THREE) return;
+  let fns;
+  try {
+    const geo = new THREE.BufferGeometry().setAttribute('position', new THREE.BufferAttribute(new Float32Array(9), 3));
+    const tex = new THREE.DataTexture(new Uint8Array(4), 1, 1);
+    tex.needsUpdate = true;
+    // alpha-tested, so the shadow pass makes it a depth material of its own (and hooks that too)
+    const mat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5 }), mesh = new THREE.InstancedMesh(geo, mat, 1);
+    const target = new THREE.WebGLRenderTarget(1, 1), sun = new THREE.DirectionalLight();
+    mesh.frustumCulled = false;
+    mesh.castShadow = sun.castShadow = true;
+    sun.shadow.mapSize.set(1, 1);
+    const was = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    renderer.render(new THREE.Scene().add(mesh, sun), new THREE.Camera());
+    renderer.setRenderTarget(was);
+    fns = new Set([geo, tex, mat, mesh, target].flatMap(o => o._listeners?.dispose ?? []));
+    mesh.dispose(); geo.dispose(); tex.dispose(); mat.dispose(); target.dispose(); sun.shadow.dispose();
+  } catch { return; }
+  for (const fn of fns) {
+    for (const ref of hooked.get(fn) ?? []) ref.deref()?.removeEventListener('dispose', fn);
+    hooked.delete(fn);
+  }
 }
 
 /** The place about to be shown: every other one sleeps, and this one's context is back once this resolves. */
@@ -91,8 +137,11 @@ export function dropGL(renderer, scene) {
   if (shown === renderer) shown = null;
   if (spare === renderer) spare = null;
   if (scene) dispose(scene);
+  if (asleep.has(renderer)) return renderer.dispose();
+  unhook(renderer);   // before dispose(), while it can still draw the probe
   renderer.dispose();
-  sleepGL(renderer);
+  asleep.add(renderer);
+  try { renderer.forceContextLoss(); } catch { /* already gone */ }
 }
 
 let veil = null;

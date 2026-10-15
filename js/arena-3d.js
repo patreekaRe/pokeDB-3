@@ -8,7 +8,7 @@
    white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
    the sky in its windows is the pixel scene's. */
 
-import { loadThree, tex, createPost, dispose, wakeGL, restGL } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, wakeGL, restGL, tooSoon } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1519,6 +1519,7 @@ function frame(now) {
   raf = 0;
   if (!A) return;
   if (!onBattle()) { unmountArena(); return; }
+  if (tooSoon(now, last)) { if (!document.hidden) raf = requestAnimationFrame(frame); return; }
   const dt = Math.min(0.1, (now - (last || now)) / 1000);
   last = now;
   const t = now / 1000;

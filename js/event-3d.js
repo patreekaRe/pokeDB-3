@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -10234,6 +10234,7 @@ const alive = () => inRoom() || heldUnder() || pickingOver();   // the Move Dele
 function frame(now) {
   raf = 0;
   if (!alive()) return unmount();
+  if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }
   document.body.classList.toggle('ev3d-held', heldUnder());
   const dt = Math.min(100, now - (last || now));
   last = now;

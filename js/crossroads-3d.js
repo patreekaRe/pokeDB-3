@@ -11,7 +11,7 @@
 
 import { $, el, sleep, confirmDialog } from './ui.js';
 import { playSound, preloadSounds, playCry } from './audio.js';
-import { loadThree, tex, monBoard, drawMon, createPost, warmShaders, wakeGL, sleepGL } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, warmShaders, wakeGL, sleepGL, tooSoon } from './hd2d.js';
 import { sceneShot } from './scene.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { spriteUrl, stageName } from './data/starters.js';
@@ -723,6 +723,7 @@ export async function crossroads3d({ ids, swap = null, starter, stage = 0, shiny
     const face = (to) => { if (to === 'back') walker.flip = false; if (walker.facing !== to && (to === 'front' || mon.sheets.back)) { walker.facing = to; mon.frame = 0; } };
 
     const loop = (now) => {
+      if (tooSoon(now, last)) { raf = requestAnimationFrame(loop); return; }
       const dt = Math.min(0.05, last ? (now - last) / 1000 : 0);
       last = now;
       const speed = (walking ? 3.6 : 3) * dt;
