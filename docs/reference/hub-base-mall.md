@@ -111,7 +111,7 @@ The first section began as the note on playtesting the live site and grew into t
   that spawned there moved to that old spot). Professor Oak stands there except at night, Professor Sonia
   at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
   (features a player might miss) and ends on that professor's reminder to refresh the page for updates. Sprites
-  `assets/trainers/oak.png` / `sonia.png` (44 x 72, drawn in Kurt's style; Showdown's site is blocked from the cloud).
+  `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue; Halloween's pumpkin patch sits either side of that path now. Detail: `docs/reference/towns.md`.
