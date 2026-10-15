@@ -1,5 +1,5 @@
 /* camp.js  -  the Depths camp (docs/roadmap.md's step 5, the user's design, 2026-10-14): once the Sealed Gate is broken, a
-   won run's fall (or the Sealed Gate's second button in the Clearing) drops you to a camp in the Crystal Depths, walked
+   won run's fall (or the Sealed Gate's portal in the Clearing) drops you to a camp in the Crystal Depths, walked
    like a town's house (homeRoom() in js/run.js, its room HOMES.depths.camp in js/event-3d.js). Mewtwo stands by the
    way in to the Depths proper; talking to it brings up the shard pentagram (js/pentagram.js), and what it says follows
    the Waystone Shards placed. A pseudo-town like the Clearing's houses: placeOf('depths') in js/data/towns.js. */
@@ -13,6 +13,7 @@ export const DEPTHS_CAMP = {
   homes: {
     camp: { name: 'Depths Camp', mewtwo: true,
       sub: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. Mewtwo waits by the mine marked DEPTHS.',
+      subGo: 'A miners\' camp in the crystal dark, under the broken gate. Mewtwo waits by the mine marked DEPTHS: talk to it to set out together.',
       subSelf: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. The mine marked DEPTHS goes on down to the Well.',
       cast: {} },
   },
@@ -42,6 +43,19 @@ export function campLines(n) {
     'All five. The star is whole, and my strength is mine again.',
     'Eternatus has felt it too. It is waiting for us, at the bottom of the Well.',
     'When you are ready, I go down at full power.',
+  ];
+}
+
+/** Why Mewtwo's run starts up in the Whispering Clearing, not down the mine (the user's ask, 2026-10-15: the gate leads
+    to the camp, and Mewtwo sets out from there): said before it asks you along. Once heard, `short` is its one line. */
+export function whyLines(short) {
+  if (short) return ['Up through the three lands, then the Wastes\' crater drops us back down here. Ready?'];
+  return [
+    'The mine goes down to the Energy Well. I cannot take it yet.',
+    'An age behind the gate has put my power to sleep, and only battle wakes it.',
+    'So we go up, back through the gate, and fight across the three lands over these caves: the Whispering Clearing, the Overgrown Shrine, the Ember Wastes.',
+    'Every guardian we beat wakes more of me. And under the Wastes, the Well runs nearest the surface.',
+    'When the Wastes\' guardian falls, the crater gives way, and we fall straight back down here, awake. Then the mine.',
   ];
 }
 

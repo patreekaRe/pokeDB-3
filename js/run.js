@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
@@ -72,7 +72,7 @@ import { trackTowns, handInRequest, readBoard, metTown, isMended, inviteFolk, in
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
   homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
-import { campLines, landLine, selfLines } from './data/camp.js';
+import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
 /** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
@@ -645,12 +645,13 @@ let peekAt = null, peekDepths = false, peekHouse = null;
     walking buddy into that town, outside any run (the Nietos' house in the Clearing the same way, `id` 'clearing' with
     its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
     but what's done there is real: requests handed in, furniture bought, townsfolk invited. Leaving (the far gate, Leave,
-    the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. */
-export function visitTown(starter, id, onHome, house = null, { stage = 0 } = {}) {
+    the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. The
+    Depths camp's `onMewtwo` is the way out when you set out with Mewtwo (campTalk()). */
+export function visitTown(starter, id, onHome, house = null, { stage = 0, onMewtwo = null } = {}) {
   const at = placeOf(id);
   if (!at || !starter) return false;
   peeking = true;
-  visiting = { onHome, id, stage };
+  visiting = { onHome, id, stage, onMewtwo };
   peekAt = BIOMES_BY_ID[at.biome];
   peekHouse = house;
   beginRun(starter, 0, ':visit');
@@ -659,8 +660,8 @@ export function visitTown(starter, id, onHome, house = null, { stage = 0 } = {})
 let visiting = null;
 
 /** Back from a visit to the Clearing, the throwaway run gone and the playtest flag down again. */
-async function goHome(from, town = null) {
-  const back = visiting?.onHome;
+async function goHome(from, town = null, to = null) {
+  const back = visiting?.onHome && (to ?? visiting.onHome);
   if (!back) return;
   visiting.onHome = null;   // once
   const { curtain } = await import('./hd2d.js');
@@ -1841,15 +1842,19 @@ function townRoom(covered = null, at = null) {
   });
 }
 
-/** A quest step's choice (John's festival), asked as it's handed in: resolves the option picked, or null for Not now. */
-function askPick(pick) {
+/** A quest step's choice (John's festival), asked as it's handed in: resolves the option picked, or null for Not now.
+    Each option says the piece it lets Kurt make, so the pick isn't only a name. */
+function askPick(step) {
+  const pick = step.pick;
   const d = el('dialog', 'dialog dev-window quest-pick');
-  const list = el('div', 'quest-pick-list'), acts = el('div', 'dialog-actions'), no = el('button', 'btn secondary', 'Not now');
+  const list = el('div', 'dev-screen quest-pick-list'), acts = el('div', 'dialog-actions'), no = el('button', 'btn secondary', 'Not now');
   let chosen = null;
   list.append(...pick.options.map(o => {
-    const b = el('button', 'btn quest-pick-opt');
+    const b = el('button', 'quest-pick-opt');
     b.type = 'button';
-    b.append(el('strong', '', o.label), el('span', '', o.text));
+    const piece = RECIPES.find(r => r.pick?.[0] === step.id && r.pick[1] === o.id);
+    b.append(el('span', 'quest-pick-icon', o.icon || '★'), el('strong', '', o.label), el('span', 'quest-pick-text', o.text));
+    if (piece) b.append(el('small', '', `Unlocks: ${piece.name}`));
     b.addEventListener('click', () => { chosen = o; d.close(); });
     return b;
   }));
@@ -1969,7 +1974,7 @@ function homeRoom(b, onward = null) {
     if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
     again();
   } : mineReady ? async () => {
-    const pick = mine.pick ? await askPick(mine.pick) : null;
+    const pick = mine.pick ? await askPick(mine) : null;
     if (run !== thisRun || (mine.pick && !pick)) return;
     const coins = real ? handInQuest(town.id, pick?.id) : 0;
     if (!real) t.peekSt = handInStep(town, tst, pick?.id);
@@ -2003,7 +2008,7 @@ function homeRoom(b, onward = null) {
   });
   showChoice({
     title: home.name.toUpperCase(),
-    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : home.sub],
+    sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : visiting?.onMewtwo ? home.subGo ?? home.sub : home.sub],
     options,
     skipLabel: onward ? 'Go down' : 'Leave',
     onSkip: out,
@@ -2076,16 +2081,28 @@ function campStop(onDown) {
   setTimeout(() => { if (run === thisRun && run.town?.fall) campTalk(); }, 2200);
 }
 
-/** Mewtwo in the Depths camp: what it says follows the Waystone Shards placed, said over the shard pentagram. */
+/** Mewtwo in the Depths camp: what it says follows the Waystone Shards placed, said over the shard pentagram. Come down
+    through the broken gate (`visiting.onMewtwo`), it then says why its run starts up in the three lands and asks you along:
+    yes is its Prepare step (the user's ask, 2026-10-15: the gate no longer drops you straight into the Whispering Clearing). */
 let campTalking = false;
 export async function campTalk() {
   if (campTalking) return;
   campTalking = true;
   try {
-    const { showPentagram } = await import('./pentagram.js');
     const self = isMewtwoRun(run?.starter);   // Mewtwo's own run: it feels its strength itself
-    await showPentagram(self ? selfLines(shardsPlaced(getSave())) : campLines(shardsPlaced(getSave())), { fresh: campFresh() });
-    sawCamp();
+    if (sealOn()) {
+      const { showPentagram } = await import('./pentagram.js');
+      await showPentagram(self ? selfLines(shardsPlaced(getSave())) : campLines(shardsPlaced(getSave())), { fresh: campFresh() });
+      sawCamp();
+    }
+    const go = !self && visiting?.onMewtwo, thisRun = run;
+    if (!go) return;
+    event3dMod?.freezeEvent(true);
+    sayLines([]);
+    try { await gymTalk(mewtwoTalker(), whyLines(getSave().campWhy), { lit: true, title: '', look: 'psychic' }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+    if (run !== thisRun) return;
+    updateSave(d => { d.campWhy = true; });
+    if (await confirmDialog('Set out with Mewtwo? Its run starts up in the Whispering Clearing.', 'Set out') && run === thisRun) goHome('gate', null, go);
   } finally { campTalking = false; }
 }
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */

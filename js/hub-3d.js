@@ -1916,7 +1916,8 @@ async function enterHouse(p) {
   await acts.onTown('clearing', p.id);
 }
 
-/** Down through the broken Sealed Gate to the Depths camp (js/data/camp.js), outside any run: back in front of the gate. */
+/** Down through the broken Sealed Gate to the Depths camp (js/data/camp.js), outside any run: back in front of the gate,
+    and Mewtwo's runs set out from its talk there. */
 async function enterCamp() {
   if (entering) return;
   hideCard();
@@ -2316,9 +2317,10 @@ function makePlaces() {
     build: (g) => {
       nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn);
       if (!townsOpen()) return;
-      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), { shadow: false });
+      // over their name sign, like every town's leaders (the user's call, 2026-10-14: the sign, not the roof)
+      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3, { shadow: false });
       nietosMark.rotation.x = -PITCH;
-      nietosMark.userData.y = 3.05;   // just over the roof's ridge, under its name tag
+      nietosMark.userData.y = 1.75;
       g.add(nietosMark);
       questMarks();
     },
@@ -2344,8 +2346,9 @@ function makePlaces() {
   });
   if (gateOpen()) list.push({
     id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
-    line: sealOn() ? 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.' : 'The broken Sealed Gate. Something waits beyond it.',
-    buttons: sealOn() ? [['Go through', acts.onGate], ['Down to the camp', enterCamp]] : [['Go through', acts.onGate]],
+    // the way down to the Depths camp, and back up to here: Mewtwo's run starts from its talk there (the user's ask, 2026-10-15)
+    line: 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.',
+    buttons: [['Go through', enterCamp]],
     build: (g) => {   // built in the round (js/hub-sealed.js; 2026-10-15, the user's ask: no longer a flat pixel painting)
       sealed = makeSealedGate(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), dot: dotTexture(), merge: mergeStatic });
       g.add(sealed.group);
