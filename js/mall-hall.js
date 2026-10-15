@@ -5,10 +5,11 @@
    machines and a directory against the back wall, banners swaying off the mezzanine. dressFronts() builds every shop's
    entrance out from the wall: pilasters, a lit sign box over the doors, then the shop's own: the Furniture store a green
    striped awning and flower troughs, the Game Corner a marquee of chasing bulbs, gold star posts and velvet ropes along
-   its carpet, the shuttered shop a barrier and cones. mall-3d.js lays the hall out and calls dressHall() / dressFronts();
+   its carpet, the Safari Outfitter a khaki-and-green awning and crates of Poké Balls by its door. mall-3d.js lays the hall out and calls dressHall() / dressFronts();
    each returns its tick(now, dt), and `block(x, y)` is told every tile a thing stands on. */
 
 import { fine, texOf, words, star, GC } from './hub-3d.js';
+import { outfitterSign, outfitterAwning } from './mall-outfitter.js';
 
 let THREE;
 const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.6, ...o });
@@ -514,6 +515,12 @@ export function dressHall(three, { group, at, cols, rows, deck, deckD, block, ca
   return { tick: (now, dt) => { for (const t of ticks) t(now, dt); }, glows };
 }
 
+/** The hall's palms, topiary, lamps and materials, for the Furniture store's showroom (js/mall-furniture.js). */
+export function hallKit(three) {
+  THREE = three;
+  return { palm, topiary, lamp, M: mats() };
+}
+
 /* ---------- the shop entrances ---------- */
 
 function signArt(kind) {
@@ -541,15 +548,7 @@ function signArt(kind) {
     s.fillStyle = '#301850'; s.fillRect(0, 0, 66, 13);
     words(s, 'GAME CORNER', 33, 7, 7.4, '#ffe890');
     s.fillStyle = '#ffe890'; star(s, 6, 6.5, 3); star(s, 60, 6.5, 3);
-  } else {
-    rr(0, 0, 66, 13, 2, '#8a4410');
-    rr(1, 1, 64, 11, 1.6, lin(0, 0, 0, 13, ['#ffa040', '#e87a20', '#c85e10']));
-    g.lineWidth = 1.1; g.strokeStyle = '#7a3a08';
-    g.font = '900 7px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-    g.strokeText('COMING SOON', 33, 7); words(g, 'COMING SOON', 33, 7, 7, '#fff8ec');
-    s.fillStyle = '#402008'; s.fillRect(1, 1, 64, 11);
-    words(s, 'COMING SOON', 33, 7, 7, '#ffe0b0');
-  }
+  } else outfitterSign(f);
   return f.c;
 }
 
@@ -560,33 +559,14 @@ function awningArt() {
   return f.c;
 }
 
-function valanceArt() {
+function valanceArt(a = '#fbf3e0', b = '#4aa860', edge = '#3a8a4c') {
   const f = fine(64, 8, 8), { g } = f;
   g.clearRect(0, 0, 64, 8);
   for (let x = 0; x < 64; x += 8) {
-    g.fillStyle = (x / 8) % 2 ? '#fbf3e0' : '#4aa860';
+    g.fillStyle = (x / 8) % 2 ? a : b;
     g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 8, 0); g.lineTo(x + 8, 4); g.arc(x + 4, 4, 4, 0, Math.PI); g.closePath(); g.fill();
   }
-  g.fillStyle = '#3a8a4c'; g.fillRect(0, 0, 64, 1);
-  return f.c;
-}
-
-function stripeArt() {
-  const f = fine(32, 4, 6), { g } = f;
-  for (let x = -4; x < 36; x += 6) { g.fillStyle = '#e84838'; g.beginPath(); g.moveTo(x, 0); g.lineTo(x + 3, 0); g.lineTo(x + 7, 4); g.lineTo(x + 4, 4); g.closePath(); g.fill(); }
-  g.globalCompositeOperation = 'destination-over'; g.fillStyle = '#ffffff'; g.fillRect(0, 0, 32, 4);
-  return f.c;
-}
-
-function hoardArt() {
-  const f = fine(40, 20, 8), { g, rr, lin } = f;
-  rr(0, 0, 40, 20, 1, lin(0, 0, 0, 20, ['#f8d070', '#f0b848']));
-  rr(1.2, 1.2, 37.6, 17.6, 0.8, '#fff8e8');
-  words(g, 'SOMETHING NEW', 20, 6.6, 3.8, '#c86a18');
-  words(g, 'IS COMING!', 20, 11, 3.8, '#c86a18');
-  g.fillStyle = '#e8a830';
-  for (const x of [5, 35]) star(g, x, 8.6, 2.2);
-  words(g, '? ? ?', 20, 15.6, 3, '#8a7a68');
+  g.fillStyle = edge; g.fillRect(0, 0, 64, 1);
   return f.c;
 }
 
@@ -601,14 +581,14 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
     const g = new THREE.Group(), [cx] = at(fr.x, 0);
     g.position.set(cx, 0, wallZ);
     group.add(g);
-    const pil = fr.id === 'corner' ? std({ color: GC.violetDark, roughness: 0.4 }) : fr.id === 'furniture' ? M.wood : M.stone;
+    const pil = fr.id === 'corner' ? std({ color: GC.violetDark, roughness: 0.4 }) : M.wood;
     for (const s of [-1, 1]) {
       put(g, new THREE.BoxGeometry(0.2, 2.5, 0.16), pil, s * 1.52, 1.25, 0.08);
-      put(g, new THREE.BoxGeometry(0.26, 0.08, 0.2), fr.id === 'east' ? M.stoneDark : M.gold, s * 1.52, 0.04, 0.1);
+      put(g, new THREE.BoxGeometry(0.26, 0.08, 0.2), M.gold, s * 1.52, 0.04, 0.1);
     }
     const art = signArt(fr.id), face = std({ map: texOf(art), emissive: '#ffffff', emissiveMap: texOf(art.glow), emissiveIntensity: 0.9, roughness: 0.35 });
     glows.push(face);
-    const trim = fr.id === 'corner' ? M.gold : fr.id === 'furniture' ? std({ color: '#6a4020' }) : std({ color: '#c86a18' });
+    const trim = fr.id === 'corner' ? M.gold : fr.id === 'furniture' ? std({ color: '#6a4020' }) : std({ color: '#3a2a18' });
     put(g, new THREE.BoxGeometry(3.3, 0.66, 0.24), [trim, trim, trim, trim, face, trim], 0, 2.25, 0.12);
     if (fr.id === 'furniture') {
       const roof = new THREE.PlaneGeometry(3.24, 0.66, 1, 1);
@@ -655,23 +635,23 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
         block(fr.x + s, 1);
       }
     } else {
-      // the shuttered shop: a striped barrier on trestles, cones, a board
-      const stripe = texOf(stripeArt());
-      stripe.wrapS = THREE.RepeatWrapping; stripe.repeat.set(2.5, 1);
-      put(g, new THREE.BoxGeometry(2.2, 0.16, 0.05), std({ map: stripe, roughness: 0.5 }), 0, 0.62, 0.95);
-      for (const s of [-1, 1]) for (const d of [-1, 1]) {
-        const leg = put(g, new THREE.BoxGeometry(0.05, 0.72, 0.05), std({ color: '#e8e8ec' }), s * 0.9, 0.34, 0.95 + d * 0.1);
-        leg.rotation.x = d * 0.22;
+      // the Safari Outfitter: a khaki-and-green awning, and a crate of Poké Balls either side of its door
+      const aw = put(g, new THREE.PlaneGeometry(3.24, 0.66, 1, 1), std({ map: texOf(outfitterAwning()), side: THREE.DoubleSide, roughness: 0.85 }), 0, 1.78, 0.3);
+      aw.rotation.x = -Math.PI / 2 + 0.5;
+      const val = put(g, new THREE.PlaneGeometry(3.24, 0.18), std({ map: texOf(valanceArt('#d8c08a', '#4a7a3a', '#2e5426')), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 }), 0, 1.55, 0.6);
+      val.castShadow = true;
+      put(g, new THREE.CylinderGeometry(0.012, 0.012, 3.24, 6), M.iron, 0, 1.64, 0.6).rotation.z = Math.PI / 2;
+      const tops = ['#e84838', '#3a74e0', '#f8d040', '#2c2c34', '#58a848'];
+      for (const s of [-1, 1]) {
+        const crate = put(g, new THREE.BoxGeometry(0.62, 0.42, 0.5), M.wood, s * 1.2, 0.21, 0.5);
+        crate.rotation.y = s * 0.12;
+        for (let i = 0; i < 5; i++) {
+          const bx = s * 1.2 - 0.18 + (i % 3) * 0.18, bz = 0.42 + Math.floor(i / 3) * 0.17;
+          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: tops[(i + (s > 0 ? 2 : 0)) % tops.length], roughness: 0.3 }), bx, 0.42, bz);
+          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f4f4f4', roughness: 0.3 }), bx, 0.42, bz);
+        }
+        block(fr.x + s, 0);
       }
-      const cone = std({ color: '#ff7a20', roughness: 0.5 }), band = std({ color: '#ffffff', roughness: 0.4 });
-      for (const s of [-1.35, 1.35]) {
-        put(g, new THREE.BoxGeometry(0.3, 0.03, 0.3), cone, s, 0.015, 1.1);
-        put(g, new THREE.ConeGeometry(0.11, 0.42, 20), cone, s, 0.24, 1.1);
-        put(g, new THREE.CylinderGeometry(0.068, 0.082, 0.07, 20), band, s, 0.26, 1.1);
-      }
-      const board = put(g, new THREE.BoxGeometry(1.4, 0.7, 0.04), [M.wood, M.wood, M.wood, M.wood, std({ map: texOf(hoardArt()), roughness: 0.6 }), M.wood], 0, 1.18, 0.5);
-      board.rotation.x = -0.05;
-      for (let x = fr.x - 1; x <= fr.x + 1; x++) block(x, 0);
     }
     g.traverse(o => { o.userData.front = fr; });
   }

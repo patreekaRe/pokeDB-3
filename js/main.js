@@ -69,6 +69,7 @@ import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
 import { $, el, confirmDialog } from './ui.js';
+import './no-loupe.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
 import { SAFARI_AREAS, SAFARI_AREAS_BY_ID } from './data/safari.js';
 import { stageOf } from './map.js';
@@ -126,13 +127,13 @@ function continueGame(saved) {
 /** Look at a starter's deck, and start a run from there. */
 function previewStarter(starter) {
   prepare(starter, {
-    onBegin: async (level) => {
+    onBegin: async (level, pack) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
       if (isMewtwoRun(starter) && sealOn()) {   // the Sealed Weakness it carries into the Depths, shown big first
         const { showPentagram } = await import('./pentagram.js');
         await showPentagram(runLines(shardsPlaced(getSave())), { cry: true });
       }
-      beginRun(starter, level);
+      beginRun(starter, level, null, null, null, pack);
     },
     onBack: () => showSelect(starter),
   });

@@ -28,6 +28,12 @@ export const MATERIALS = [
   mat('ghostcap', 'thornwood', 'Ghostcap', '🍄', 'It glows in the dark. Kurt can light a Spirit Lantern with it.'),
   mat('spice', 'savanna', 'Savanna Spice', '🌶️', 'Dishes for visiting leaders, at Kurt\'s Workshop.'),
   mat('resin', 'savanna', 'Acacia Resin', '🍯', 'Glue for anything, and a blade\'s grip, at Kurt\'s Workshop.'),
+  // grown, not found (the backyard's berry garden, js/data/berries.js): `biome: 'garden'` is no biome, so none drops in a run
+  mat('cheri', 'garden', 'Cheri Berry', '🍒', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),
+  mat('oran', 'garden', 'Oran Berry', '🫐', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),
+  mat('pecha', 'garden', 'Pecha Berry', '🍑', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),
+  mat('sitrus', 'garden', 'Sitrus Berry', '🍋', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),
+  mat('lum', 'garden', 'Lum Berry', '🍏', 'Grown in your backyard. Kurt makes held berries and run items from them; sell the spares.', { grown: true }),
 ];
 export const MATERIALS_BY_ID = Object.fromEntries(MATERIALS.map(m => [m.id, m]));
 

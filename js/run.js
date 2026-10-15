@@ -16,7 +16,8 @@
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne } from './data/workshop.js';
+import { HELD_BY_ID, holding } from './data/held.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -311,6 +312,7 @@ function checkpoint() {
     deck: run.deck,
     relics: run.relics,
     items: run.items,
+    held: run.held,           // the held berry packed for the run (js/data/held.js); a save from before has none
     itemChance: run.itemChance,
     map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
     current: run.current,
@@ -409,6 +411,7 @@ function restoreRun(saved) {
     mods: saved.tower ? towerMods(starter, saved.tower.flight) : runMods(starter, saved.level, saved.biome, weaknessShards(getSave())),
     charm: RELICS_BY_ID[saved.charm] ? saved.charm : null,
     gift: ITEMS_BY_ID[saved.gift] ? saved.gift : null,
+    held: HELD_BY_ID[saved.held?.id] ? { id: saved.held.id, used: !!saved.held.used } : null,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -452,8 +455,10 @@ export function continueRun(saved) {
   return mapFilm;
 }
 
-/** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). */
-export function beginRun(starter, level = 0, peek = null, safari = null, tower = null) {
+/** Start a brand new run with a starter, at a Trainer Level (0 = the normal game). `pack`: a held berry or run kit item
+    kept from Kurt's Workshop (a js/data/workshop.js recipe id), taken out of the save now, never on a playtest, a Safari
+    run or a climb. */
+export function beginRun(starter, level = 0, peek = null, safari = null, tower = null, pack = null) {
   dropNotes();
   const perks = !safari?.first && !tower;   // the Safari's first try of the day and every climb go without perks (fairTry())
   const startHp = BASE_HP + (perks ? getSave().passives.hpBoost * 5 : 0);   // shop passive: Max HP Boost
@@ -472,6 +477,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     deck: [...starter.deck],
     relics: [],
     items: [],             // one-use items in the Bag (ids), at most ITEM_SLOTS
+    held: null,            // the held berry packed for the run: { id, used } (js/data/held.js, packKit())
     itemChance: ITEM_DROP.base,   // chance of an item after the next won fight
     map: null,
     current: null,        // id of the map node you are standing on
@@ -508,9 +514,26 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
   if (gift) run.gift = gift.id;   // handed over on the map by chanseyGift()
 
   if (peek) return peekRoom(peek);
+  if (pack && !safari && !tower) packKit(pack);
   if (!tower) updateSave(d => { d.stats.runsStarted += 1; });   // a climb always ends in a faint: not a run for the win rate
   startBiome();
 }
+
+/** What the run sets out with from Kurt's Workshop (packOne()): a held berry held, or an item in the Bag. */
+function packKit(id) {
+  const out = packOne(workshopOf(getSave()), id);
+  if (!out) return;
+  updateSave(d => { d.workshop = packOne(workshopOf(d), id)?.ws ?? d.workshop; });
+  if (out.held) {
+    run.held = holding(out.held);
+    tell(`${starterName()} is holding ${an(HELD_BY_ID[out.held].name)}. It eats it by itself, once, when it needs it.`);
+  } else if (ITEMS_BY_ID[out.item] && run.items.length < itemSlots()) {
+    run.items.push(out.item);
+    tell(`You packed ${an(ITEMS_BY_ID[out.item].name)} from Kurt's Workshop. It's in your Bag.`);
+  }
+}
+const starterName = () => stageName(run.starter, run.stage);
+const an = (name) => `${/^[AEIOUX]/.test(name) ? 'an' : 'a'} ${name}`;
 
 /** Today's Safari Zone run: the date's starter and areas at Level 0's rules. Only the day's first try counts for the
     leaderboard; after it the same seed replays as often as you like. */
@@ -1464,10 +1487,20 @@ function renderItemList() {
     row.append(itemSprite(item, 'howto-node'), text, actions);
     return row;
   });
-  $('items-list').replaceChildren(...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
+  $('items-list').replaceChildren(...heldRow(), ...(rows.length ? rows : [el('p', 'drop-empty', 'No items yet. Win fights or visit a Poké Mart to find some.')]));
   $('run-item-count').textContent = $('dock-item-count').textContent = `${run.items.length}/${itemSlots()}`;
   $('items-note').textContent = inBattle ? 'Using an item costs no PP.'
     : `Holds ${itemSlots()} items. Use them in battle; potions and HP Up work on the map too.`;
+}
+
+/** The Items pocket's first line: the berry your Pokémon holds (js/data/held.js), eaten or not. */
+function heldRow() {
+  const h = HELD_BY_ID[run.held?.id];
+  if (!h) return [];
+  const row = el('div', `howto-li item-row held-row${run.held.used ? ' used' : ''}`), text = el('span', 'howto-li-text');
+  text.append(el('b', '', `Held: ${h.name}${run.held.used ? ' (eaten)' : ''}`), el('small', '', run.held.used ? `${starterName()} ate it. A held berry goes off once a run.` : h.text));
+  row.append(itemSprite(h, 'howto-node'), text);
+  return [row];
 }
 
 function useItemOnMap(index) {

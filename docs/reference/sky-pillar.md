@@ -17,7 +17,10 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   and the week); a window onto the tower (`.tower-window`, `#tower-top`, powering on like the Pokédex's screen), painted
   smooth by `build()` / `paint()` in `js/towerprep.js` at the window's resolution (`devicePixelRatio` up to 2, ~30 fps):
   the sky by height from `skyHex()` squeezed from the grass (floor 0) to the summit, the cloud sea, stars, drifting clouds,
-  the pillar with a ledge every 10 floors, Rayquaza's glow over its roof, the week's climber at its door (`--ground`) on a
+  the pillar (since 2026-10-15 the Clearing's tower, `js/hub-pillar.js`, painted face on in its own units: four octagonal
+  tiers of sage stone with jade windows, rune bands and cornices, the porch with Rayquaza's ring and banners, cloud
+  collars, floating stones and two jade wind streams, and the crown's broken columns round the turning jade crystal and
+  its glow), the week's climber at its door (`--ground`) on a
   glowing pad; the grey bezel (`.tdev-glass`) round a green LCD (`.tower-base`, it scrolls inside so the hardware stays on
   screen): the climber's name, two seven-segment readouts (this week, best ever; `segInto()` from `js/statsdex.js`), three
   rules (`RULES`), the note on whether this climb counts, Practice's starter picks, and the week's top climbers; then the
@@ -129,6 +132,8 @@ full list are `docs/augments.md`; the data is `js/data/augments.js` (pure, share
 
 - `run.tower = { week, seed, first, practice, flight, floor, augments, spent, rerolls, pick, ... }`, saved with the run. `flight` is the guardians beaten;
   `run.biome` follows `towerBiome(flight)` for scenery, numbers, events and music.
+- The climb's song (`map4`) starts with the opening film's pan down the tower, from `climbIntro()` (the user's call,
+  2026-10-15), not when the map comes up; `showMap()` finds it already playing and carries on.
 - Each flight is a map from `landingMap()` in `js/map.js`: a row of doors per landing, every door linked to every door
   above, the guardian on top. The map screen draws it as the tower (`drawMap()` hands it to `renderTower()`), `F<n>` in
   the top bar is the last floor cleared, and the run card's chip says Counts / Replay / Practice. The Bag's map peek still
@@ -219,12 +224,14 @@ is the screen and the overlay that use them.
 
 Pressing Climb (or Climb again, or a Practice pick) plays `climbIntro()` from `js/climb-intro.js` before the climb starts
 (`onStart` in `js/main.js`), on its own `#climb-scene` (the journey films' frame: `.travel-scene`, bars, skip, dark). The
-camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height (a slow drift that speeds up, the user's ask, then brakes to settle at the foot: hitting it at full speed felt abrupt) through
+camera starts at the summit (since 2026-10-15 the Clearing's tower's crown: a cornice slab, broken columns round an
+altar, the jade crystal turning in Rayquaza's glow; a jade rune band every 10 floors, lit windows jade), "SKY PILLAR" over it, and falls the whole height (a slow drift that speeds up, the user's ask, then brakes to settle at the foot: hitting it at full speed felt abrupt) through
 `paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a slow dip to black (`fadeTo()`, inline on `.travel-dark`; FADE_OUT / CUT / FADE_IN, ~2.6 s in all) and a fade up on the user's
 reference (a hero from behind before a temple door): your climber's back sprite walks a flagstone path between four stone
-pillars to the great arched door at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
-two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
-light floods out, your Pokémon walks in (`door-light`, a warm swell) and it goes dark. Like `travel()` it resolves dark with a `close()` called once
+pillars to the great arched door (since 2026-10-15 the Clearing's tower's porch: gold-capped pilasters and keystone, jade
+banners, a rune band under a cornice, stone doors with jade rune lines) at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
+Rayquaza's ring over the arch lights up (`gate-hum`; it was two scowling eyes), the door grinds open on jade light with a shake (`rumble-far`), the
+light floods out, your Pokémon walks in (`door-light`, a jade swell, `.climb-light`) and it goes dark. Like `travel()` it resolves dark with a `close()` called once
 the climb's map is up. A tap or Enter skips it; reduced motion holds one still of the door. About 12 s in all.
 
 ## The leaderboard

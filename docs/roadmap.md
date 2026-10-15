@@ -16,7 +16,7 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
 the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js` / `js/pc.js`'s `blueprint()`), **one
 plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
-roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
+roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule), except the garden since part g. Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
   b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
@@ -30,6 +30,11 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
   f) Done 2026-10-15, on `main` (the user's ask): the way in is a garden arch in the Clearing beside the Ancient Tree,
      brambled and padlocked till the yard is bought; no back door any more (docs/roadmap-done.md). Waiting on the user's
      look: `?hubat=27,4&coins=2000` with a Secret Base owned, Unlock, walk in and back out.
+  g) Done 2026-10-15, on `main` (the user's ask; it lifts "decoration only" for the garden): Smeargle's slide-in yard
+     intro (and a free plot), watering, picked berries into the Satchel (sell spares), the Garden window, and Kurt's
+     two repeatable shelves, held berries and a run kit, one packed on the Prepare screen per normal run
+     (docs/roadmap-done.md). Not yet seen on a phone: `?yard` (intro, Garden button) and `?satchel` at Kurt's. Ideas
+     left: a Pokédex Garden app with timers, Pokémon in the yard tending plots.
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
@@ -852,11 +857,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
           the stamp card "complete", a ✓ on finished ones (`puzzlesPlayed()`).
         **Asked, open:** the Pokémon screen sells only the 6 Game Corner skins (31 starters in all); offered to list the earned ones too, greyed with how to earn them, awaiting the user's word.
         **Next:** the user playtests on the live site and gives room/game feedback; work goes to `main` now. ▶ Run in: CLOUD (playtest links: `rawcdn.githack.com/patreekaRe/pokeDB-3/<full hash>/index.html?mall=corner&coins=3000`).
-     d) **The east front**: a **Safari Outfitter** (Poké Balls, the Day Pass, the Safari leaderboard on its wall), picked
-        with the revamp (2026-10-10), so each shop is one thing coins buy: home, runs, the Safari. The user wants it right
-        after the Game Corner. Poké Balls are off the Game Corner's wall screens since 2026-10-12 (still in the Pokédex's
-        Game Corner app and the Safari prep window) until it's built. ▶ Run in: CLOUD (a 3D shop like
-        `js/mall-furniture.js`; the user has no local access, so check it headless and send screenshots).
+     d) ~~**The east front**: the Safari Outfitter~~ done 2026-10-15 (`docs/roadmap-done.md`). **Next**: the user playtests it
+        (`?mall=outfitter&safari&coins=3000`, or the live site once the Safari Zone is open) and says what to change. Poké
+        Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say if they should
+        move to the Outfitter only. ▶ Run in: CLOUD.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.
@@ -880,8 +884,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.
   **The revamp's next parts, in the order I recommended (2026-10-15; the user said yes):** 1. the arena is **done and
-  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 3. Next: the opening
-  film's first shot shows the new tower (`js/climb-intro.js`). 4. The lobby's window onto the tower. Run in: CLOUD.
+  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 4. The lobby's window onto
+  the tower, taken before 3 (the user's "just choose", 2026-10-15): **on `main`**, the user looks at it on their phone
+  (Sky Pillar Pokéstop in the Clearing; also the shorter week line and the plaque's empty rows; archive). 3. The opening
+  film (`js/climb-intro.js`): the first shot is the new crown, the door scene the new porch with Rayquaza's ring and jade
+  light: **on `main`**, the user watches it on their phone (archive). That was the revamp's last part.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in

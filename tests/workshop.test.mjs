@@ -218,3 +218,59 @@ test('a friend writes now and then: only friends at two hearts, coins or their o
   // the most coins a day is well under the Game Corner's ~380
   assert.ok(MAIL_COINS * 5 < 100);
 });
+
+test('held berries and run kit: made again and again, each a berry or two and a town\'s find, kept to pack one for a run', async () => {
+  const { REPEAT, repeats, packable, packOne, TABS } = await import('../js/data/workshop.js');
+  const { HELD, HELD_BY_ID } = await import('../js/data/held.js');
+  const { ITEMS_BY_ID } = await import('../js/data/items.js');
+  for (const kind of REPEAT) assert.ok(TABS.some(t => t.id === kind), kind);
+  const held = RECIPES.filter(r => r.kind === 'held'), kit = RECIPES.filter(r => r.kind === 'kit');
+  assert.deepEqual(held.map(r => r.makes).sort(), HELD.map(h => h.id).sort(), 'one held berry recipe a berry kind');
+  assert.ok(kit.length >= 5);
+  const towns = new Set();
+  for (const r of [...held, ...kit]) {
+    assert.ok(r.kind === 'held' ? HELD_BY_ID[r.makes] : ITEMS_BY_ID[r.makes], r.id);
+    assert.equal(r.name, (r.kind === 'held' ? HELD_BY_ID[r.makes] : ITEMS_BY_ID[r.makes]).name);
+    const mats = Object.keys(r.needs).map(id => MATERIALS_BY_ID[id]);
+    assert.ok(mats.every(Boolean), r.id);
+    assert.ok(mats.some(m => m.grown) && mats.some(m => !m.grown), `${r.id}: berries and a town's find`);
+    for (const m of mats.filter(m => !m.grown)) towns.add(m.biome);
+    const berries = mats.filter(m => m.grown).reduce((n, m) => n + r.needs[m.id], 0);
+    assert.ok(berries >= 2 && berries <= 4, `${r.id}: ${berries} berries`);
+    assert.ok(existsSync(new URL(`../assets/items/${r.sprite}.png`, import.meta.url)), r.sprite);
+  }
+  assert.ok(towns.size >= 4, 'they pull you round the towns');
+  for (const r of held) assert.equal(r.berry, r.makes);
+
+  const oran = RECIPES.find(r => r.id === 'held-oran'), potion = RECIPES.find(r => r.id === 'kit-potion');
+  assert.ok(repeats(oran) && repeats(potion));
+  assert.ok(!shows(oran, sees()), 'no backyard, no Oran Berry ever held');
+  assert.ok(shows(oran, { ...sees(), yard: true }));
+  assert.ok(shows(oran, { ...sees(), mats: ['oran'] }));
+  assert.ok(!shows(RECIPES.find(r => r.id === 'held-lum'), { ...sees(), mats: ['oran'] }));
+  assert.ok(shows(potion, sees()), 'the run kit always');
+
+  let sat = satchelOf({}, false);
+  for (const [id, n] of Object.entries(potion.needs)) sat = addMat(sat, id, n * 2);
+  let ws = workshopOf({});
+  for (let i = 0; i < 2; i++) {
+    assert.deepEqual(shortOf(potion, sat), []);
+    assert.ok(!isMade(potion, ws, sat), 'never made for good');
+    sat = spend(potion, sat);
+    ws = madeInto(potion, ws);
+  }
+  assert.equal(ws.kit[potion.id], 2);
+  assert.ok(shortOf(potion, sat).length, 'the materials are spent');
+  ws = madeInto(oran, ws);
+  assert.deepEqual(packable(ws).map(o => [o.recipe.id, o.n]), [['held-oran', 1], ['kit-potion', 2]]);
+  const a = packOne(ws, 'kit-potion');
+  assert.equal(a.item, 'potion');
+  assert.equal(a.ws.kit['kit-potion'], 1);
+  const b = packOne(a.ws, 'held-oran');
+  assert.equal(b.held, 'oran');
+  assert.equal(b.ws.kit['held-oran'], 0);
+  assert.equal(packOne(b.ws, 'held-oran'), null, 'none kept, none packed');
+  assert.equal(packOne(ws, 'piece-daruma'), null);
+  assert.deepEqual(packable(b.ws).map(o => o.recipe.id), ['kit-potion']);
+  assert.deepEqual(workshopOf({}).kit, {}, 'an old save keeps none');
+});

@@ -289,7 +289,7 @@ export const lendAll = () => new URLSearchParams(location.search).has('allfurnit
 /** How many of a kind you own: bought, plus one of an earned kind once its badge, achievement, feat or page is
     (js/data/furniture.js; worked out from the save each time, never stored in `owned`). */
 const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], earnSave()) ? 1 : 0)
-  + (kind === FREE_PC ? 1 : 0);
+  + (kind === FREE_PC ? 1 : 0) + (kind === YARD_GIFT && b.house?.yard?.plot ? 1 : 0);
 
 /** The save earned kinds are read from: `?hearts=N` lends every friend N hearts' pieces for the page load, as it
     lends their visits (heartsPeek() below). */
@@ -411,6 +411,20 @@ export function buyUpstairs(b) {
 export const metSmeargle = (b) => !!b.shopOpens;
 export function meetSmeargle(b) {
   b.shopOpens ||= safariDay(new Date(Date.now() + 864e5));
+  saveBase(b);
+}
+/* Smeargle out in the yard (2026-10-15, the user's ask): the first time in a bought yard, once the housewarming indoors is
+   over, it slides in to say what the yard is for (js/base-3d.js's yardIntro()) and leaves a Berry plot in storage,
+   `house.yard.plot`, counted by owns() so a lent yard's goes with it. Heard once (`house.yard.met`); a lent yard (?yard)
+   hears it once a page load, never saved. */
+const YARD_GIFT = 'berryplot';
+let lentMet = false;
+export const metInYard = (b) => { const y = b.house?.yard; return !y || (y.lent ? lentMet : !!y.met); };
+export function meetInYard(b) {
+  const y = b.house?.yard;
+  if (!y) return;
+  y.plot = 1;
+  if (y.lent) lentMet = true; else y.met = 1;
   saveBase(b);
 }
 export const shopOpen = (b) => new URLSearchParams(location.search).has('shopopen') || (!!b.shopOpens && safariDay() >= b.shopOpens);
