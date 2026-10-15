@@ -56,6 +56,10 @@ const TRACKS = {
   'secret-base': 'assets/audio/secret-base.mp3',   // the user's (2026-10-09): inside the Secret Base, from its door till the doormat
   'clearing-hub': 'assets/audio/clearing-hub.mp3',   // the user's (2026-10-09): the walkable Clearing's song, in place of 'title' wherever the hub is the title (setHomeTrack())
   'event-room': 'assets/audio/event-room.mp3',
+  'town-lantern': 'assets/audio/town-lantern.mp3',   // the user's (2026-10-15): the towns' own songs, each its towns.js `music`
+  'town-cinder': 'assets/audio/town-cinder.mp3',
+  'town-driftwood': 'assets/audio/town-driftwood.mp3',
+  'town-sunwell': 'assets/audio/town-sunwell.mp3',
   'event-outdoor': 'assets/audio/event-outdoor.mp3',   // the user's (2026-10-11): the Hot Spring, Berry Tree, Wishing Well and Item Ball
   treasure: 'assets/audio/treasure.mp3',
   'shrine-room': 'assets/audio/shrine-room.mp3',   // the user's (2026-10-11): the Shrine ? room (its events.js `music`), till the map   // the user's (2026-10-11): the treasure grotto (treasureRoom()), till the map   // the user's (2026-10-11): the indoor ? rooms (their events.js `music`), till the map
@@ -87,6 +91,10 @@ const LOOP_POINTS = {
   'secret-base': [40.4, 84.2515],   // a 43.85 s repeat (0.997 sample correlation at the join); the file fades out after
   'clearing-hub': [22.3, 75.85327],   // a 53.55 s repeat (0.983 sample correlation at the join); the file is 84.5 s
   'event-room': [33.02, 95.98612, 0.2],
+  'town-lantern': [13.05, 76.0324, 0.3],   // a 62.98 s repeat (0.646 melody match, the best of a song with no clean repeat; 0.893 at the join); the file is 83.2 s, ending ~79 s
+  'town-cinder': [20.5, 80.74839],   // a 60.25 s repeat (0.959 melody match, 0.969 at the join); the file is 95.5 s
+  'town-driftwood': [1.2, 42.35701],   // a 41.16 s repeat (0.77 melody match, 0.985 at the join; the top pick, 13.7 s, skipped most of it); the file is 52.2 s, fading from ~44 s
+  'town-sunwell': [5.1, 95.18095, 0.3],   // a 90.08 s repeat (0.854 melody match, 0.945 at the join); the file is 103.1 s
   'event-outdoor': [7.94, 45.18184, 0.3],   // a 37.24 s repeat (0.996 melody match, 0.79 at the join, so a longer cross-fade); the file is 86 s, its second pass fading from ~74 s
   treasure: [33.02, 125.48009, 0.2],
   'shrine-room': [10.96, 68.51116, 0.2],   // a 57.55 s repeat (0.995 melody match, 0.965 at the join); the file is 97.6 s, fading from ~88 s   // a 92.46 s repeat (0.997 melody match, 0.935 at the join); the file is 158.7 s, fading from ~140 s   // a 62.97 s repeat (0.998 melody match, 0.961 sample correlation at the join); the file is 145.6 s, fading from ~137 s
@@ -737,7 +745,7 @@ function rampTo(gain, value) {
 }
 
 // a track mastered a touch quieter than the rest gets a little lift (the user found the boss theme slightly quiet)
-const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2, 'gym-room': 0.52, 'gym-leader-battle': 0.13, 'gym-victory': 0.47 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS); the gym's three set level with event-room, boss and trainer-victory (gym-room -21.5, gym-leader-battle -8.6, gym-victory -21.4 LUFS)
+const TRACK_GAIN = { boss: 1.15, savanna: 0.12, ruins: 0.26, thornwood: 0.15, 'clearing-hub': 0.29, mart: 0.27, 'trainer-victory': 0.35, kombat: 0.25, seal: 0.22, map4: 0.18, 'team-rocket': 0.24, 'event-room': 0.36, 'event-outdoor': 0.16, treasure: 0.29, 'shrine-room': 0.2, 'gym-room': 0.52, 'gym-leader-battle': 0.13, 'gym-victory': 0.47, 'town-lantern': 0.45, 'town-cinder': 0.19, 'town-driftwood': 0.26, 'town-sunwell': 0.4 };   // trainer-victory comes mastered ~11 dB louder than victory, kombat ~13 dB louder than boss, seal ~13 dB louder than run-win (-16 vs -29 LUFS), map4 ~15 dB louder than map3 (-14.4 vs -29.1), mart ~11.5 dB louder than center (RMS -20.1 vs -31.6), team-rocket ~12.9 dB louder (-18.7), clearing-hub ~10.7 dB louder than title (RMS -17.3 vs -28.0), savanna ~18.2 dB louder than map2 (RMS -13.4 vs -31.6), ruins ~11.8 dB louder (-19.8), thornwood ~16.6 dB louder (-15.0), event-room ~9 dB louder than center (-19.2 vs -28.4 LUFS), set level with team-rocket, event-outdoor ~16 dB louder (-12.1 LUFS), treasure ~11 dB louder (-17.2 LUFS), shrine-room ~14 dB louder (-13.9 LUFS); the gym's three set level with event-room, boss and trainer-victory (gym-room -21.5, gym-leader-battle -8.6, gym-victory -21.4 LUFS); the towns' four set level with event-room at about -28 LUFS played (lantern -21.0, cinder -13.5, driftwood -16.2, sunwell -20.0)
 
 function fadeIn(name, instant = false) {
   const { el, gain } = player(name);

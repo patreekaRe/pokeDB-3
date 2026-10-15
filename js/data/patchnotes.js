@@ -52,6 +52,7 @@ export const NEXT = [
   ['music', 'Highbough has a song of its own now, the Crystal Depths\' theme.'],
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
   ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
+  ['music', 'Lantern Village, Cinder Springs, Driftwood Landing and Sunwell Bazaar each have a song of their own.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

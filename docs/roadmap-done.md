@@ -2584,3 +2584,4 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
   floating stones, cloud collars, a jade crystal and wind spiralling up it once open. Detail: docs/reference/hub-base-mall.md.
 
 - **Done (2026-10-15): the Crystal Depths play the Sky Pillar song** (the user's ask): `music: 'map4'` on the Depths biome (`js/data/enemies.js`) and Mewtwo's camp (`js/data/camp.js`); `seal` keeps the fall and the gate.
+- **Done (2026-10-15): four towns' own songs** (the user's files): `town-lantern`, `town-cinder`, `town-driftwood`, `town-sunwell` in `js/audio.js`, looped and levelled (`docs/reference/music.md`). Highbough still plays `seal`.

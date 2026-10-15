@@ -26,7 +26,7 @@ const req = (id, text, n, on) => ({ id, text, n, on });
 
 export const TOWNS = {
   shrine: {
-    id: 'shrine', biome: 'shrine', name: 'Lantern Village', music: 'shrine-room',
+    id: 'shrine', biome: 'shrine', name: 'Lantern Village', music: 'town-lantern',
     sub: 'Lanterns light the stone road up to the Shrine. Walk out through the far gate when you\'re ready.',
     first: 'A village of lanterns and old cedars, at the foot of the Shrine\'s stair. Its people seem to know who you are.',
     // the stall's keeper and their one trade: an item from your Bag for another of the same rarity
@@ -207,7 +207,7 @@ export const TOWNS = {
     ],
   },
   wastes: {
-    id: 'wastes', biome: 'wastes', name: 'Cinder Springs', music: 'event-outdoor', style: 'springs',
+    id: 'wastes', biome: 'wastes', name: 'Cinder Springs', music: 'town-cinder', style: 'springs',
     sub: 'Lava pours off the volcano and round the Waystone\'s island. Walk out through the mine gate when you\'re ready.',
     first: 'A mining town on a lava field in the volcano\'s shadow, its stone bridges warm underfoot and its springs steaming in the ash. The miners nod as you pass, as if they expected you.',
     trader: { id: 'heatmor', name: 'Heatmor',
@@ -383,7 +383,7 @@ export const TOWNS = {
     ],
   },
   ruins: {
-    id: 'ruins', biome: 'ruins', name: 'Driftwood Landing', music: 'event-outdoor', style: 'lagoon',
+    id: 'ruins', biome: 'ruins', name: 'Driftwood Landing', music: 'town-driftwood', style: 'lagoon',
     sub: 'Boardwalks ring the drowned temple. Walk out through the old stone arch when you\'re ready.',
     first: 'A fishing village on stilts over the lagoon, built on the bones of a sunken temple. Lines are out, nets are drying, and everyone waves.',
     trader: { id: 'pelipper', name: 'Pelipper',
@@ -775,7 +775,7 @@ export const TOWNS = {
     ],
   },
   savanna: {
-    id: 'savanna', biome: 'savanna', name: 'Sunwell Bazaar', music: 'event-outdoor', style: 'bazaar',
+    id: 'savanna', biome: 'savanna', name: 'Sunwell Bazaar', music: 'town-sunwell', style: 'bazaar',
     sub: 'Caravans trade under the acacias round the watering hole. Walk out through the sun gate when you\'re ready.',
     first: 'A caravan trading post by the Savanna\'s watering hole: round huts, striped stalls, wagons drawn up in a ring. The road runs straight through the market and on towards Sun Rock. Everyone here is selling something.',
     trader: { id: 'persian', name: 'Persian',
