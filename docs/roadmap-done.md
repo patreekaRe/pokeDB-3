@@ -2622,3 +2622,14 @@ first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.m
 
 ### The Poké Mall's outside made grand (2026-10-15, the user's ask)
 A gold-ribbed glass dome with a turning Poké Ball, corner towers with gold cupolas, a columned porch with a Poké Ball pediment and chasing bulbs, gold lamps and a red carpet (`mallBuilding()` in `js/hub-3d.js`; `docs/reference/hub-base-mall.md`).
+
+### The Safari Outfitter (2026-10-15, the user's ask: "the Safari store, let's work on that")
+The Poké Mall's east front, its "Coming soon" shutter gone: a jungle-green SAFARI OUTFITTER front with a khaki awning and
+crates of Poké Balls, open once the Safari Zone is (`safariOpen()`), taped shut with Kangaskhan's note before that, and a
+grand-opening ribbon the first time (`outfitterRibbon`). Inside (`js/mall-outfitter.js`, walked by `js/mall-3d.js` as
+place `so`): a rattan lodge, the Safari Zone's map on the wall, the seven ball packs as real 3D balls on cushions along two
+tables, the Master Ball turning in a glass case, a Day Pass machine (`passState()`: a pass bought before the free try
+shows as held), today's top catchers chalked on a board (`safariTop()`, a tap opens the leaderboard) and Kangaskhan at the
+counter. A ball buys through `buyCorner()` like the Game Corner app; two taps and the buy window, as in every shop. A tap
+through your partner standing at a stand now reaches the stand (its sprite covers the ball). Checked headless: every
+buy, the pass, the board, the keeper, the ribbon and the closed front. `?mall=outfitter`.

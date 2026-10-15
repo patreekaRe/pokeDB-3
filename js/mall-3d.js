@@ -3,8 +3,8 @@
    HD-2D look as the Secret Base: a marble floor with a red runner, shop fronts along the back wall, a mezzanine with a
    glass rail and the upper floor's lit shops over them, tall windows above. The Game Corner is the middle front, its
    front flat on the wall (cornerFront()), walked into as its own arcade (js/mall-corner.js); the west front is the Furniture store,
-   its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is shuttered for a shop
-   to come (a new one is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it and in (no pill at
+   its own place too (js/mall-furniture.js builds its two floors; this file walks every place); the east one is the Safari
+   Outfitter (js/mall-outfitter.js), open with the Safari Zone (a new shop is a FRONTS line and its painting on the wall). Tap the floor to walk, a front to go to it and in (no pill at
    the bottom since 2026-10-09, the user's call); the doormat on each place's doorstep walks back out (doormat() in
    js/hd2d.js), but the store's second floor has none, its way out is the lift. A buy is two taps: the first says the
    price, the second asks in a window with the thing's picture (ask()). */
@@ -25,6 +25,10 @@ import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
+import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, passLine } from './mall-outfitter.js';
+import { safariOpen } from './data/pokedex.js';
+import { safariDaily } from './data/safari.js';
+import { DAY_PASS } from './data/balls.js';
 import { cabinetUp } from './home-arcade.js';
 import { dressHall, dressFronts, FOUNTAINS, FOUNTAIN_SCALE } from './mall-hall.js';
 
@@ -41,10 +45,11 @@ const C = { cream: '#f8f0e0', stone: '#e4d6bc', shade: '#c4b290', red: '#e84838'
 // the shop fronts along the back wall: x the room's tile at their middle, `step` where you stand to go in
 const FRONTS = [
   // the Furniture store opens the UTC day after Smeargle's housewarming in the Secret Base, the Game Corner once Meowth
-  // has been met at a crossroads (js/meowth.js); syncShop() opens both; ?mall= goes in either way
+  // has been met at a crossroads (js/meowth.js), the Safari Outfitter with the Safari Zone; syncShop() opens them; ?mall= goes in
+  // either way
   { id: 'furniture', name: 'Furniture', line: '', x: 4, step: { x: 4, y: 1 } },
   { id: 'corner', name: 'Game Corner', line: 'Closed. A note on the tape says: "Grand openin\' soon! Win a run and find me at a crossroads. Meowth"', x: 10, step: { x: 10, y: 1 } },
-  { id: 'east', name: 'Coming soon', line: 'Shutters down: a new shop is moving in.', x: 16, step: { x: 16, y: 1 }, colour: '#e88a30' },
+  { id: 'outfitter', name: 'Safari Outfitter', line: 'Closed. A note on the door says: "Opening with the Safari Zone! Beat every Pokémon in all three biomes. Kangaskhan"', x: 16, step: { x: 16, y: 1 } },
 ];
 
 let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, hemi, sun;
@@ -78,23 +83,6 @@ function ball(g, x, y, r, ink = C.ink) {
   g.strokeStyle = ink; g.lineWidth = r * 0.16;
   g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.moveTo(x - r, y); g.lineTo(x + r, y); g.stroke();
   g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y, r * 0.32, 0, Math.PI * 2); g.fill(); g.stroke();
-}
-
-/** A shuttered front: its colour's fascia saying COMING SOON over a rolled-down steel shutter between two pilasters. */
-function shutter(f, s, x0, x1, colour) {
-  const { g, rr, lin } = f, top = wy(2.5), foot = wy(0);
-  rr(x0, top, x1 - x0, foot - top, 0, '#5a5668');
-  rr(x0, top, x1 - x0, 12, 1, lin(0, top, 0, top + 12, [colour, colour, '#00000040']));
-  rr(x0 + 2, top + 2, x1 - x0 - 4, 8, 1, '#ffffff');
-  words(g, 'COMING SOON', (x0 + x1) / 2, top + 6.2, 5, colour);
-  s.fillStyle = '#b0b0b0'; s.beginPath(); s.roundRect(x0 + 2, top + 2, x1 - x0 - 4, 8, 1); s.fill();
-  words(s, 'COMING SOON', (x0 + x1) / 2, top + 6.2, 5, '#606060');
-  const st = top + 13;
-  g.fillStyle = lin(0, st, 0, foot, ['#c8ccd6', '#a8acb8', '#8a8e9a']); g.fillRect(x0 + 2, st, x1 - x0 - 4, foot - st);
-  g.fillStyle = 'rgba(40,40,60,0.25)';
-  for (let y = st + 2; y < foot; y += 2.6) g.fillRect(x0 + 2, y, x1 - x0 - 4, 0.5);
-  rr((x0 + x1) / 2 - 4, foot - 4, 8, 1.4, 0.7, '#5a5e6a');   // its handle
-  g.fillStyle = 'rgba(255,255,255,0.25)'; g.fillRect(x0 + 2, st, x1 - x0 - 4, 1.2);
 }
 
 /** The Game Corner's front, flat on the wall like the others: a violet fascia trimmed in gold saying GAME CORNER between
@@ -190,7 +178,7 @@ function wallArt() {
     const x0 = wx(fr.x - 1) + 2, x1 = wx(fr.x + 2) - 2;
     if (fr.id === 'corner') cornerFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
     else if (fr.id === 'furniture') frontArt(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
-    else shutter(f, s, x0, x1, fr.colour);
+    else outfitterFront(f, s, x0, x1, wy(2.5), wy(0), !fr.open);
   }
   g.fillStyle = '#6a5a48'; g.fillRect(0, wy(0.12), W, wy(0) - wy(0.12));
   return f.c;
@@ -304,7 +292,8 @@ function tapeOver(fr, tape) {
 // the halves drop, the bow falls, confetti, and Smeargle leads you in. Saved as `ribbonCut`; a save that has already been
 // inside (`shopGreeted`) never sees it. `?ribbon` puts it up for the page load, never saved. The Game Corner gets its own
 // (2026-10-11, the user's ask) once Meowth has opened it at a crossroads (js/meowth.js): Meowth waits by it, saved as the
-// save's `cornerRibbon`. A shop's ribbon is a RIBBONS line.
+// save's `cornerRibbon`; the Safari Outfitter's (2026-10-15) once the Safari Zone is open, Kangaskhan by it, `outfitterRibbon`.
+// A shop's ribbon is a RIBBONS line.
 const RIBBON_PEEK = new URLSearchParams(location.search).has('ribbon');
 const RIBBON_Y = 0.82, RIBBON_Z = -HR / 2 + 0.72;
 let ribbons = [], confetti = [];
@@ -316,6 +305,13 @@ const RIBBONS = {
     cut: () => { const b = loadBase(); b.ribbonCut = true; saveBase(b); },
     ask: 'It\'s the grand opening! Will you do the honours and cut the ribbon? Tap it again!',
     done: 'Snip! The Furniture store is open! Thank you, thank you! Come in, come in!',
+  },
+  outfitter: {
+    keeper: OUTFITTER_KEEPER, into: 'so',
+    up: () => RIBBON_PEEK || !getSave().outfitterRibbon,
+    cut: () => updateSave(d => { d.outfitterRibbon = true; }),
+    ask: 'You opened the Safari Zone, so we\'re open too! Will you cut the ribbon for the Safari Outfitter? Tap it again!',
+    done: 'Snip! The Safari Outfitter is open! Come in and kit yourself out, ranger!',
   },
   corner: {
     keeper: KEEPER, into: 'gc',
@@ -547,12 +543,13 @@ function tickOne(ribbon, dt, now) {
 }
 
 /** The shops' doors by the save: the Furniture store taped up until Smeargle has said it opens, then until that UTC day;
-    the Game Corner until Meowth has been met. */
+    the Game Corner until Meowth has been met; the Safari Outfitter until the Safari Zone is open. */
 function syncShop() {
-  const [fr, gc] = FRONTS;
+  const [fr, gc, so] = FRONTS;
   fr.open = shopOpen(loadBase()) || RIBBON_PEEK;
   gc.open = cornerOpen() || RIBBON_PEEK;
-  for (const f of [fr, gc]) for (const m of tapes[f.id] || []) m.visible = !f.open;
+  so.open = safariOpen(getSave()) || RIBBON_PEEK;
+  for (const f of FRONTS) for (const m of tapes[f.id] || []) m.visible = !f.open;
   syncRibbon();
   if (!wallMat || painted === wallKey()) return;
   const wall = wallArt();
@@ -560,7 +557,7 @@ function syncShop() {
   wallMat.needsUpdate = true;
   painted = wallKey();
 }
-const wallKey = () => `${FRONTS[0].open}|${FRONTS[1].open}`;
+const wallKey = () => FRONTS.map(f => !!f.open).join('|');
 
 /** What the store's taped door says: a note from Smeargle, and once it has visited, how long until it opens. */
 function shopLine() {
@@ -642,8 +639,8 @@ function buildHall() {
   show.traverse(o => { o.userData.front = shop; });
   hall.add(show);
   const tape = tapeArt();
-  for (const fr of FRONTS) if (fr.id !== 'east') tapeOver(fr, tape);
-  ribbons = [buildRibbon(shop), buildRibbon(FRONTS.find(f => f.id === 'corner'))];
+  for (const fr of FRONTS) tapeOver(fr, tape);
+  ribbons = FRONTS.map(buildRibbon);
 
   // everything modelled: the fountain, planters, benches, lamps, escalators, the shops' entrances (js/mall-hall.js)
   const at = (x, y) => [hx(x), hz(y)], block = (x, y) => blocked.add(key(x, y));
@@ -760,6 +757,7 @@ const SHOPS = {
   f1: { front: 'furniture', build: () => buildFloor(THREE, 1, SIZE, !!loadBase().upstairs) },
   f2: { front: 'furniture', build: () => buildFloor(THREE, 2, SIZE, !!loadBase().upstairs) },
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
+  so: { front: 'outfitter', build: () => buildOutfitter(THREE, SIZE) },
 };
 
 /** A place's shaders compiled (in parallel where the GPU can), its pictures uploaded and its first frame drawn while the
@@ -886,8 +884,8 @@ function fromKey(open, key) {
 function pick(spot) {
   picked = spot;
   if (P?.ring) {
-    P.ring.visible = !!spot && spot.kind === 'bay';
-    if (P.ring.visible) P.ring.position.set(spot.at.x, spot.at.y ?? 0.02, spot.at.z);
+    P.ring.visible = !!spot && (spot.kind === 'bay' || !!spot.ring);
+    if (P.ring.visible) { P.ring.position.set(spot.at.x, spot.at.y ?? 0.02, spot.at.z); P.ring.scale.setScalar(spot.ring || 1); }
   }
   if (P?.frame) {   // the Game Corner's gold frame, over a case's thing or a machine
     const f = spot?.frame;
@@ -951,6 +949,52 @@ async function prizeTap(spot) {
   P.refresh();
   showCoins();
   talk(`Ka-ching! ${news.join(' ')}`, 4600);
+}
+
+const wareOf = (spot) => cornerEntries('balls').find(e => e.id === spot.ball);
+
+/** A ball pack at the Safari Outfitter: the first tap picks it and Kangaskhan says what it does and costs, the next buys
+    it (js/shop.js's buyCorner(), the same as the Game Corner app's Buy). */
+async function wareTap(spot) {
+  const e = wareOf(spot), coins = getSave().coins ?? 0;
+  const short = () => { playSound('cancel'); talk(`Hmm, you're ${(e.cost - coins).toLocaleString()} PokéCoins short for that one.`, 3600); };
+  if (picked !== spot) {
+    pick(spot);
+    if (e.blocked) return talk(e.text, 4600);
+    if (e.done) return talk(`${e.name}: that one's yours already! ${e.text}`, 4600);
+    const carrying = e.level ? ` You're carrying ${getSave().balls[spot.ball] || 0}.` : '';
+    return talk(`${e.name}! ${e.text} ${e.cost.toLocaleString()} PokéCoins.${carrying} Tap again and ${e.level ? 'they\'re' : 'it\'s'} yours.`, 5600);
+  }
+  if (e.done || e.blocked) { pick(null); return wareTap(spot); }
+  if (coins < e.cost) return short();
+  if (!await ask(`Buy ${e.name} for ${e.cost.toLocaleString()} PokéCoins?`)) return pick(null);
+  const news = buyCorner(e);
+  if (!news) return short();
+  thanks(`Thank you, ranger! ${news.join(' ')}`);
+}
+
+/** The Day Pass machine: the first tap says where today stands, the next buys a pass (if one is still worth buying). */
+async function passTap(spot) {
+  const state = passState(), coins = getSave().coins ?? 0;
+  if (picked !== spot || state === 'pass') { pick(spot); return talk(passLine(state), 5600); }
+  const short = () => { playSound('cancel'); talk(`A Day Pass is ${DAY_PASS} PokéCoins, and you have ${coins.toLocaleString()}.`, 3600); };
+  if (coins < DAY_PASS) return short();
+  if (!await ask(`Buy a Day Pass for ${DAY_PASS} PokéCoins? Replay today's Safari as often as you like until the day ends.`)) return pick(null);
+  if ((getSave().coins ?? 0) < DAY_PASS) return short();
+  const { day } = safariDaily();
+  updateSave(d => { d.coins -= DAY_PASS; d.safari.pass = day; });
+  thanks('Here\'s your Day Pass! Replay the Safari as much as you like today.');
+}
+
+/** After a buy: the till, two happy hops, the tags repainted and the keeper's thanks. */
+function thanks(line) {
+  playSound('buy');
+  walker.hopUntil = performance.now() + 500;
+  P.keeper.hopUntil = performance.now() + 600;
+  pick(null);
+  P.refresh?.();
+  showCoins();
+  talk(line, 4600);
 }
 
 /** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. One of each
@@ -1119,9 +1163,12 @@ async function rideOn() {
 function say(fr, ms = 2600) {
   lineEl.lastChild.textContent = fr.kind === 'bay' ? `The ${fr.name.toLowerCase()}: ${PIECES[fr.piece].price.toLocaleString()} PokéCoins.`
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
+    : fr.kind === 'ware' ? prizeLine(wareOf(fr))
+    : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
     : fr.kind === 'lift' ? (floorOf() === 2 ? 'The lift down to the ground floor.' : loadBase().upstairs ? 'The lift up to the second floor.' : 'The lift upstairs is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
+    : FRONTS.includes(fr) && fr.open ? fr.name
     : fr.line;
   lineEl.firstChild.textContent = fr.who ?? P.keeper?.name ?? '';
   lineEl.classList.toggle('talk', !!(fr.who || P.keeper));
@@ -1142,11 +1189,14 @@ function enterFront(fr) {
   if (fr.kind === 'lift') return liftTap(fr);
   if (fr.kind === 'keeper') return keeperTap();
   if (fr.kind === 'game') return gameTap(fr);
+  if (fr.kind === 'ware') return wareTap(fr);
+  if (fr.kind === 'pass') return passTap(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   const r = ribbons.find(r => r.shop === fr && r.group.visible);
   if (r) return ribbonTap(r);
   if (fr.id === 'furniture') return walkIn('f1');
   if (fr.id === 'corner') return walkIn('gc');
+  if (fr.id === 'outfitter') return walkIn('so');
 }
 
 /* ---------- taps ---------- */
@@ -1177,7 +1227,13 @@ function onTap(e) {
   walker.exit = false;
   if (first?.userData.patron && P.crowd?.tap(first)) return;
   if (first?.userData.exit) return headOut();
-  if (first && first === mon.board) { playCry(mon.id); walker.hopUntil = performance.now() + 500; return; }
+  if (first && first === mon.board) {
+    // standing at a stand, your partner covers what's on it (the Outfitter's balls): a tap through it is for the stand
+    const at = !walker.path.length && frontAt(walker.tile);
+    const behind = at && hits.find(h => { for (let o = h.object; o; o = o.parent) if (o.userData.front) return o.userData.front === at; return false; });
+    if (behind) return goTo(at, true);
+    playCry(mon.id); walker.hopUntil = performance.now() + 500; return;
+  }
   let o = first;
   while (o && !o.userData.front) o = o.parent;
   if (o?.userData.front) return goTo(o.userData.front, true);
@@ -1443,4 +1499,5 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   curtain(false);
   if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : DOOR);
   if (store === 'corner') goPlace('gc', null);
+  if (store === 'outfitter') goPlace('so', null);
 }
