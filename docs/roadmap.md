@@ -937,9 +937,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `js/data/sprite-fit.js`, `tools/body-centre.py`). Ask: does Charmeleon look centred now, and do any windows still
   stretch? ▶ Playtest on the live site.
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
-- Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
-  Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
-  `docs/reference/cloud-save.md`.
 - Playtests on the live site: a real Mewtwo run (Eternatus's numbers, the fall into the Depths), Ken's difficulty, the
   boss intros' and biome films' sound levels; the Sky Pillar's walk and climb pacing and its guardian intros on a phone.
 
