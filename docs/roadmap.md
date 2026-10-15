@@ -431,7 +431,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
      `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for. (The Nietos got gifts 2026-10-15: the
-     Acorn Rattle earns a Big Kangaskhan doll.)
+     Acorn Rattle earns a Big Kangaskhan doll.) (2026-10-15: the workshop is boarded shut till Law sends you for the Waystone Chime, and Kurt introduces himself on your first visit. Branch `claude/magical-hamilton-ve8726`, pushed to `main` too.)
      Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
    - **Session 4 done (2026-10-14): the shard.** At the shard step one Alpha on the biome's map has the town's shard over it
      (a crystal in the town's colour); beat it and the shard goes into Key Items. At the board, after its leader's thanks,

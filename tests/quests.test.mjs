@@ -216,3 +216,9 @@ test('the Clearing\'s Waystone comes first: the Nietos\' questline lights it, an
   assert.equal(clearingLit({ towns: { wastes: { done: 5 } } }), true);
   assert.equal(clearingLit({ towns: { shrine: { met: true } } }), false);
 });
+
+test("Kurt's Workshop opens at the Nietos' Waystone Chime step", async () => {
+  const { WORKSHOP_STEP } = await import('../js/data/towns.js');
+  assert.equal(QUESTS.clearing.steps[WORKSHOP_STEP].id, 'cl-chime');
+  assert.ok(CLEARING.homes.workshop.meet.length >= 2 && CLEARING.homes.workshop.meetChime);
+});

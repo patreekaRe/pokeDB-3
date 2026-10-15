@@ -2079,7 +2079,22 @@ function homeRoom(b, onward = null) {
     } },
     onFail: out,
   });
+  if (home.meet && townsOpen() && !workshopOf(getSave()).met && !kurtMeeting) {
+    kurtMeeting = true;
+    setTimeout(async () => {
+      try {
+        if (run !== thisRun || run.town !== t) return;   // walked straight back out
+        event3dMod?.freezeEvent(true);
+        sayLines([]);
+        const chime = questStep(town, townState(getSave(), 'clearing'))?.id === 'cl-chime';
+        const lines = chime ? [...home.meet.slice(0, 2), home.meetChime, ...home.meet.slice(2)] : home.meet;
+        await gymTalk({ id: 'kurt', name: 'KURT', talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
+        updateSave(d => { d.workshop = { ...workshopOf(d), met: true }; });
+      } finally { kurtMeeting = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
+    }, 900);
+  }
 }
+let kurtMeeting = false;   // Kurt's first hello (home.meet) under way
 const homeVisits = {};
 let townVisit = null;
 

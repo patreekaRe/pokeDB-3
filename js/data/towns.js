@@ -1572,7 +1572,7 @@ export const QUESTS = {
           'BRITT: Gold star. Now the crack: Glowmoss from the Clearing packs it. I did a whole science unit on it. Twenty-six kids. One said "moss".']),
       gather('cl-moss', 'nietos', 'Bring {n} Glowmoss from the Whispering Clearing to pack the crack', 'glowmoss', 5,
         ['BRITT: Perfect moss. Law, come and look at the moss.',
-          'LAW: That\'s... some moss. Great moss. Oh, umm... it still hums wrong, though. Kurt makes chimes. Ask him for a Waystone Chime.']),
+          'LAW: That\'s... some moss. Great moss. Oh, umm... it still hums wrong, though. Kurt\'s back! The workshop on the east avenue? He makes chimes. Ask him for a Waystone Chime.']),
       craft('cl-chime', 'nietos', 'Bring a Waystone Chime from Kurt\'s Workshop to tune the stone', 'waystone-chime',
         ['BRITT: Listen. *ting* ...It hummed back in tune. Linc fell asleep on the spot.',
           'LAW: Last bit\'s the shard. It\'s out in the Clearing, over some big Alpha. Kangaskhan sniffed it out.']),
@@ -1633,6 +1633,14 @@ export const QUESTS = {
     (or mended) a town's before the Clearing came first, so nobody loses progress. Until then, no town's leader greets
     you or opens its board, and the Clearing's Waystone travels nowhere. */
 export const clearingLit = (save) => mended(townState(save, 'clearing')) || RING.some(t => { const st = townState(save, t.id); return !!st.quest || mended(st); });
+
+/** Kurt's Workshop opens when Law sends you to it, the Nietos' Waystone Chime step (the user's call, 2026-10-15: it stood
+    open before the story gave a reason to go in). A lit stone, a town's questline or anything already made there opens it
+    too, so no save loses it; `?satchel` opens it for a playtest. */
+export const WORKSHOP_STEP = 2;
+export const workshopOpen = (save) => townsOpen() && (clearingLit(save) || (townState(save, 'clearing').quest?.step ?? 0) >= WORKSHOP_STEP
+  || !!save.workshop?.made?.length || Object.keys(save.workshop?.gifts || {}).length > 0
+  || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('satchel')));
 
 /** A town's questline, or null. */
 export const questOf = (town) => QUESTS[town.id] || null;
@@ -1963,6 +1971,15 @@ export const CLEARING = {
     // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): Kurt at his workbench (a tap opens js/workshop.js's
     // window), a cauldron, Apricorn trees, and a Slowpoke from Azalea Town asleep by the door
     workshop: { name: 'Kurt\'s Workshop', kurt: true, sub: 'Sawdust, Apricorns drying on every shelf, a cauldron bubbling, and Kurt at his workbench.',
+      // the first time you walk in (js/run.js's homeRoom()): Kurt slides in and says who he is (the user's call, 2026-10-15)
+      meet: [
+        'Hm? A customer! Come in, come in. Mind Slowpoke, he\'s been asleep there since Tuesday.',
+        'I\'m Kurt. Fifty years I made Poké Balls out of Apricorns in Azalea Town. Then the Waystones went dark, and I came where I\'m needed.',
+        'That\'s how it works here. You bring what you find out on the roads, I make things from it. What the towns need, furniture, gifts for your friends...',
+        '...and Apricorn skins for your Safari Ball. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
+      ],
+      // after the second line, while the Nietos' Waystone Chime is the step you're on
+      meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',
       cast: {
         slowpoke: ['Slowpoke is asleep against the cauldron. Kurt says it came with him from Azalea Town.', 'Slowpoke yawns. Several seconds later, it notices you.', 'Slowpoke\'s tail is in a bucket of water. Nobody knows why. Slowpoke doesn\'t either.'],
       } },
