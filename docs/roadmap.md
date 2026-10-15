@@ -320,6 +320,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    way in to the Depths proper; talking to it brings up the pentagram, and its lines change with the shards placed
    (why it needs them, what Eternatus is, how much of its strength is back). Builds with step 6 (the shards must drop
    first).
+   **Built** (2026-10-14/15; two builds were made in parallel and the user picked, 2026-10-15: `main`'s behaviour with the
+   other build's dressed camp, a miners' camp with tents, a fire, a crystal cart out of a mine mouth marked DEPTHS and the
+   pentagram carved in a stone dais, and its pentagram window with the town list; the Prepare screen says the weakness).
+   Waiting on the user's playtest: `?gate=0&strike=0&towns&shards=3` (a won run's landing), Mewtwo's Prepare with `&shards=`.
    **A won run's ending with the camp** (the user's yes, 2026-10-14): last boss → the fall → the Depths camp (walk
    round, talk to Mewtwo, the pentagram) → leaving it plays the win scene / Hall of Fame → unlock windows → result
    window. The win is recorded before the camp opens, so closing the game there never loses it; leaving only plays

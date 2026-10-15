@@ -130,15 +130,21 @@ whose Waystone is mended counts one, `shardsLit()` in RING order). A 🔒 "Seale
 nameplate (`b.dmgMult < 1`, `js/battle.js`). The sim mirrors it (`cfg.shards`, default 0). Bot, psychic, 150 runs a
 cell, human / strong: 0 shards 58.7 / 62.7 (300 runs: 64.0 / 63.7), 2 shards 78.7 / 77.3, 5 (the old numbers) 82.0 / 92.0; every loss is in the
 Depths, mostly Eternatus. **The pentagram** (`showPentagram(lines)` in `js/pentagram.js`, `.penta-*` in
-`css/screens.css`): Mewtwo's violet `.gym-scene` with one small SVG star over the speech window, a crystal at each
-point lit in its town's `RING` glow (one after another, a chime each) or dark, the town's name by it, Mewtwo in the
-middle, "n / 5 shards" and its Depths strength under it. Shown before every Mewtwo run (`runLines()`, `previewStarter()`
+`css/screens.css`; the user's pick of two builds, 2026-10-15): a violet window slid in from the right like a Gym
+Leader, "THE SEAL ON MEWTWO" on its tab, one small SVG star with a crystal socket at each point (lit in its town's `RING`
+glow, or dark), Mewtwo at the middle brightening with its strength (`--power`), "N% of its strength in the Depths", the
+five towns listed lit or dark, and Mewtwo's lines under them, a tap a line. Shards lit since Mewtwo last saw it (`fresh`)
+flare in one after another, the strength climbing. Shown before every Mewtwo run (`runLines()`, `previewStarter()`
 in `js/main.js`) and when you talk to Mewtwo in the camp (`campLines()`: why it needs the stones, what Eternatus is, how
 much of its strength is back). **The camp** (`DEPTHS_CAMP` in `js/data/camp.js`, `placeOf('depths')`): walked like a
 town's house (`homeRoom()` in `js/run.js`, its room `HOMES.depths.camp` / `buildCamp()` in `js/event-3d.js`: the Depths
-grotto's cave walls and floor, crystals, a tent, sleeping bags, stumps round a brazier fire with embers and a flickering
-light, crates, a coal wagon; at the back a crystal arch filled with breathing violet light, the way in to the Depths
-proper, Mewtwo floating in front of it, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives
+Depths' cave walls and floor, 13 x 9, the user's pick of two builds, 2026-10-15: a crystal miners' camp, two A-frame tents
+(`tent()`), a stone-ringed fire with logs to sit on and a bedroll (`tickFire()`), crates, a pick, miner's lamps on posts
+(`minerLamp()`), crystals along the walls; at the back a timbered mine mouth marked DEPTHS with violet light far down it
+(`wayIn()`), the way in to the Depths proper, rails out of it and a cart heaped with crystal (`mineRails()`,
+`crystalCart()`); the seal's pentagram carved in a stone dais, the shards placed glowing in their sockets
+(`sealDais()`, from `shardsLit()`, so `room()`'s id carries them and the room is built anew as one comes back); Mewtwo
+floating by the way in, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives
 `kind: 'camp'` once the gate is broken; `descent()` plays the fall with its own lines, then `campAfterWin()` walks the
 run's Pokémon, at its stage, round the camp as a visit (`visitTown(..., { stage })`), the ended run put back on leaving
 for the result window; the win is recorded before, so leaving only plays the win scene and the rest), and **the Sealed
