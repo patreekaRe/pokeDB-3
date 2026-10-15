@@ -2501,6 +2501,24 @@ PokéCoins, at most 100 a UTC day (`DAY_CAP`; the Game Corner gives ~380), since
 with `node --test` and in the browser by calling the window and the frame step directly (the hidden pane ran no frames);
 a real tap on a plot wasn't tried. Part e (the bigger yard) is next.
 
+### The Secret Base's backyard, part e: the bigger yard (2026-10-15)
+
+Tapping a bought yard on the PC's HOUSE UPGRADES offers BIGGER BACKYARD, 12x8 to 16x11 tiles for `BIG_YARD_PRICE`
+(1,000, like the yard itself), the bigger lot dashed round it while picked. `house.yard.size` 2 is the `bigyard` kind;
+its things move 2 across and 3 back so they keep their places by the doormat, and the new lawn is at the sides and
+behind. Winter's snowfall spreads with the lawn. `?yard=big` lends the bigger one. Tested with `node --test` and
+headless Chromium (the buy on the PC, the item moved, `?yard` / `?yard=big` open outdoors with no errors). The backyard
+plan (parts a to e) is done.
+
+### The Secret Base's backyard, part f: the garden arch (2026-10-15)
+
+The user's ask: the backyard's way in from outside, an archway you unlock. The main room's back door is gone; a 3D garden
+arch (`js/hub-arch.js`) stands in the Clearing between the Ancient Tree and the Sky Pillar's trail, brambled and
+padlocked until the yard is bought (there for 1,000, or on the PC's blueprint as before). Unlocking withers the brambles
+and walks you in; the yard's doormat leads back out under the arch. Tested with `node --test` and headless Chromium
+(locked card, buy at the arch, into the yard, out under the arch, in again; winter at night; no new errors). Detail in
+`docs/reference/hub-base-mall.md`.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
@@ -2541,6 +2559,26 @@ signs, Ken's line in the Clearing, no console errors; still parts baked with `me
   biome (four placeless ones anywhere) and handed in to them at home for 60 PokéCoins. Detail: docs/reference/towns.md.
   Step 8's plan, kept: hearts (5 a friend, from gifts) unlock heart lines, base visits from 3 and sitting at 5, signature
   pieces at 3 and 5, secret recipes at 4, letters from 2, a Friendship badge at 5 and the friends' own requests from 3.
-- **The Clearing's Sky Pillar, rebuilt** (2026-10-15, the user's ask: "a big change aesthetically"): the 12-tall stone box
+
+### Kenmatta's dojo locked till he's beaten once (2026-10-15)
+
+The user's ask: "Lock the dojo until you beat Ken 1 time". The Clearing's `dojo` place (`js/hub-3d.js`) is `open: false`
+with no Go in until `kenWinsOf(save) >= 1` (a run win, `save.kenWins`, or an old `kenBeaten`); its card reads Ken's note
+on the door. `?dojo` still walks straight in for playtests.
+
+### The Clearing's gate tidied, its signs beckoning (2026-10-15)
+
+The user's ask, from a phone screenshot: the two jack-o'-lanterns at the gate's feet are gone; the route sign and New
+game's Pokéstop moved up beside the gate's posts, one each side (`SIGN_AT` 12,-1 / `STOP_AT` 18,-1, nudged in by
+`STAND_IN`); and the signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the
+Nietos' name board) hop every few seconds with a gold glint at their corner (`beckon()` / `liveBeckons()`), still when calm.
+### The Safari gate in 3D (2026-10-15, the user's ask: "so bland and needs a big 3D aesthetic update")
+- The Clearing's painted Safari Zone board is now a real model, `safariGate()` in `js/hub-safari.js` (`safariArt()` gone):
+  thatched log towers with pennants, a thatched roof over the SAFARI ZONE board, a swaying Safari Ball crest, lanterns,
+  bunting, tiki torches with a warm lamp, palms, ferns, a bamboo palisade and a plank threshold; shut, a CLOSED rope and
+  nothing lit. Not changed: the Safari lobby's painted window onto the gate (`js/safari-lobby.js`), which could follow it.
+
+### The Clearing's Sky Pillar rebuilt (2026-10-15, the user's ask: "a big change aesthetically")
+- The 12-tall stone box
   became Hoenn's tower in 3D (`js/hub-pillar.js`, like the dojo's `js/hub-dojo.js`): four tiers, runes, porch, banners,
   floating stones, cloud collars, a jade crystal and wind spiralling up it once open. Detail: docs/reference/hub-base-mall.md.

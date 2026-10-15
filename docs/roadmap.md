@@ -30,7 +30,11 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
      room: `?base` is read first).
   d) Done 2026-10-14, on `main`: berry plots in Smeargle's catalogue, five berries, coins capped at 100 a day, a basket
      for each berry's first picking (docs/roadmap-done.md). A real tap on a plot not yet tried (the hidden pane ran no frames).
-  e) **Next** (▶ Run in: LOCAL): the yard grows (the blueprint's bigger yard buy).
+  e) Done 2026-10-15, on `main`: the bigger yard, 16x11 for 1,000 on the blueprint (docs/roadmap-done.md). Playtest
+     `?yard=big` (or buy it: tap the owned yard on HOUSE UPGRADES).
+  f) Done 2026-10-15, on `main` (the user's ask): the way in is a garden arch in the Clearing beside the Ancient Tree,
+     brambled and padlocked till the yard is bought; no back door any more (docs/roadmap-done.md). Waiting on the user's
+     look: `?hubat=27,4&coins=2000` with a Secret Base owned, Unlock, walk in and back out.
 
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
@@ -135,6 +139,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    lamps, 6 benches, 4 flower beds (`LAMPS` / `BENCHES` / `BEDS`); Professor Oak by day and Professor Sonia at night on
    the plaza right of the Waystone, tapping through `HINTS`, saying to refresh for updates every fifth tap. Headless-checked,
    no errors; waiting on the user's look. Their sprites are the user's own since 2026-10-14 (80 x 80, like Kurt's).
+   **Done (2026-10-15): the professors talk in the Gym Leaders' slide-in** (the user's pick, option 2): the first tap of
+   a visit slides Oak / Sonia in with a hello and a hint, later taps just the speech window (`profTalk()` in
+   `js/hub-3d.js`). Headless-checked, no errors; waiting on the user's look (`?hubat=20,11`, `&time=night` for Sonia).
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
    swaying shide, red paper lanterns off the beam's ends, a glowing veil, rising motes, a ring of light and a lamp on the

@@ -44,7 +44,12 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', 'The Sky Pillar in the Clearing is rebuilt as an ancient tower: tiers of mossy stone, jade runes, floating rocks, a collar of cloud and a crystal on top.'],
+  ['base', 'The backyard\'s way in is a garden arch beside the Ancient Tree: unlock it there or on the PC, then grow the yard bigger on House Upgrades.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
+  ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],
+  ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
+  ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
+  ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
