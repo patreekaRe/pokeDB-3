@@ -110,7 +110,7 @@ The first section began as the note on playtesting the live site and grew into t
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
-  Kenmatta's dojo north-west (`DOJO_AT`), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
+  Kenmatta's dojo north-west (`DOJO_AT`; since 2026-10-15 at 5,0, five tiles wide and open: `js/hub-dojo.js` outside, its door into `buildDojoHall()` like the Nietos' house), a fence and copse (`GAP_TREES`) closing the meadow between the Safari gate and the Clearing's (2026-10-14, the user's ask), the Pokéstops' words (CONTINUE / SET OUT...) over their discs, turning with them (`stopCue()`, 2026-10-14; they lay on the ground before),, the Ancient Tree / Secret Base north-east (`TREE_AT`; kept a tree, the user
   asked: like Gen 3's Secret Power bases), the Poké Mall south-west and the Nietos' house south-east, both
   facing the camera, their doorsteps down to the low road to the pond (`MALL_TILE`, `NIETOS_AT`; moved 2026-10-14 from
   the user's drawing, Halloween's pumpkin patch taking the house's old spot; moved down again the same day onto the low road,

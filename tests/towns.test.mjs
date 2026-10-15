@@ -98,12 +98,13 @@ test('every town sells a shelf of the catalogue that no other town sells', () =>
   }
 });
 
-test('the Clearing\'s houses are its own Gym Leaders\' (and Kurt\'s Workshop), and townsfolk keys find their town', () => {
+test('the Clearing\'s houses are its own Gym Leaders\' (and Kurt\'s Workshop, Kenmatta\'s dojo), and townsfolk keys find their town', () => {
   assert.equal(placeOf('clearing'), CLEARING);
   assert.equal(placeOf('shrine'), TOWNS.shrine);
   const clearing = leadersOf('clearing').map(l => l.id);
   for (const home of Object.values(CLEARING.homes)) {
-    assert.ok(home.kurt || clearing.includes(home.leader), `${home.leader} isn't a Clearing leader`);   // or Kurt's Workshop
+    assert.ok(home.kurt || home.ken || clearing.includes(home.leader), `${home.leader} isn't a Clearing leader`);   // or Kurt's Workshop, Ken's dojo
+    if (home.ken) assert.ok(home.ken.length >= 3);
     if (home.leader) assert.ok(CLEARING.leaders[home.leader]?.length >= 3);
     for (const id of Object.keys(home.cast || {})) assert.ok(existsSync(new URL(`../assets/pokemon/${id}-front.gif`, import.meta.url)), `${id}: no front GIF`);
   }

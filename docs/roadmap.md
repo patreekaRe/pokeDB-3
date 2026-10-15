@@ -23,8 +23,14 @@ run stronger, so no bot check. Three parts:
 - **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
   sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
   trophy.
+**Done (2026-10-15): the walk-in room**, made grand on the user's ask ("super aesthetic... extravagant, even the inside
+make it big, give it a fighting ring in the middle you could walk into and around"): the outside is a temple hall five
+tiles wide (`js/hub-dojo.js`), its door open into a 17 x 15 hall with a raised ring you climb into (`buildDojoHall()` in
+`js/event-3d.js`), which is also the run's Move Tutor room now. Ken meditates in the ring and says a line a tap
+(`CLEARING.homes.dojo.ken`); Hitmonlee, Hitmonchan and Machop train round it. Detail in `docs/roadmap-done.md`.
+**Next**: the user playtests the look; then belts (the board can hang on the hall's wall), the trial ladder and the set.
 ▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
-Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+The walk-in room is built: add belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind

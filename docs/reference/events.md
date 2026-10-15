@@ -129,6 +129,12 @@ a row under the title), and `showHpChange()` runs its bar to the new HP before t
 price is still only paid once something is picked.
 
 
+**The Move Tutor's room is Kenmatta's hall** (2026-10-15, the user's ask: extravagant, big, a ring in the middle to walk
+into): `buildDojoHall()` in `js/event-3d.js`, 17 x 15 (`SIZES.tutor`), shared with the Clearing's dojo. Ken sits in the
+ring (Challenge walks you up its steps to him), the scroll on the back wall left of the dais, the sandbag right; the
+room keys `rise`, `walls` and `decks` let you walk on the ring. Its Clearing visit is a home (`CLEARING.homes.dojo`): a
+tap on Ken says the next of its `ken` lines, his students (Hitmonlee, Hitmonchan, Machop) their `cast` lines.
+
 **The walk-in 3D rooms** (2026-10-11, the user's ask after the 3D Center and Mart): the four indoor rooms, the Move
 Tutor's dojo, the Move Deleter's study, the Day Care and the Fan Club (`EVENT_3D` in `js/run.js`), are walked in 3D,
 `js/event-3d.js`, one engine (the Center's walking, camera and floating signs) and a `build*()` per room in `BUILD`. Like

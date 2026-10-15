@@ -2065,6 +2065,7 @@ function homeRoom(b, onward = null) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.kurt) figures.kurt = { npc: 'kurt' };
+  if (home.ken) figures.ken = { npc: 'alder' };
   if (home.mewtwo && !isMewtwoRun(run.starter)) figures.mewtwo = { src: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
@@ -2097,6 +2098,7 @@ function homeRoom(b, onward = null) {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       if (stand === 'jona') return jonaTalk();
+      if (stand === 'ken' && home.ken) { talks.ken = ((talks.ken ?? -1) + 1) % home.ken.length; return said(home.ken[talks.ken], 'KENMATTA'); }
       if (stand === home.leader && handOver) return handOver();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
       const friend = townsOpen() && !!FAVOURITE[stand];

@@ -2091,6 +2091,7 @@ export const CLEARING = {
   buildings: [
     { id: 'nietos', name: 'THE NIETOS', home: 'nietos' },
     { id: 'workshop', name: 'KURT\'S WORKSHOP', home: 'workshop' },
+    { id: 'dojo', name: 'KENMATTA\'S DOJO', home: 'dojo' },
   ],
   homes: {
     // Kurt's Workshop (docs/roadmap.md's Towns step 6, session 3): Kurt at his workbench (a tap opens js/workshop.js's
@@ -2107,6 +2108,23 @@ export const CLEARING = {
       meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',
       cast: {
         slowpoke: ['Slowpoke is asleep against the cauldron. Kurt says it came with him from Azalea Town.', 'Slowpoke yawns. Several seconds later, it notices you.', 'Slowpoke\'s tail is in a bucket of water. Nobody knows why. Slowpoke doesn\'t either.'],
+      } },
+    // Chad Master Kenmatta's dojo (the user's ask, 2026-10-15: open, big inside, a ring in the middle to walk into): the
+    // hall with the ring js/event-3d.js builds (buildDojoHall()), Ken meditating in it, his three students training
+    dojo: { name: 'Kenmatta\'s Dojo', sub: 'Gold leaf, red lacquer, drums, and a ring in the middle. Chad Master Kenmatta meditates in it.',
+      ken: [
+        '"Yo. Welcome to my dojo. Yeah, I built it myself. With my hands. And my mind."',
+        '"See the ring? Every great fighter has stood in it. Mostly me. I am every great fighter."',
+        '"Rest days? Never heard of them. My Pokémon haven\'t either. I tell them it\'s a holiday."',
+        '"FORTIFY YOUR MIND. Then fortify it again. Then do a set of push-ups. That\'s the Mata-Mindset."',
+        '"I teach out on the roads, in the dojos you find there. This one\'s home. No refunds here either."',
+        '"Gold leaf on the walls. Did I need it? No. Do I deserve it? Every day, bro."',
+        '"Wanna fight me? Find me on a run. In here we only meditate. And flex. Mostly flex."',
+      ],
+      cast: {
+        hitmonlee: ['Hitmonlee kicks the training dummy\'s head clean off, then puts it back on, politely.', 'Hitmonlee stretches its legs. They keep going. And going.', 'Hitmonlee bows to you, then to the ring, then to Ken. In that order.'],
+        hitmonchan: ['Hitmonchan shadowboxes at its reflection in the gold leaf. The reflection is losing.', 'Hitmonchan taps its gloves together. It wants a sparring partner. It looks at you.', 'Hitmonchan is counting punches. It\'s past nine thousand.'],
+        machop: ['Machop is lifting a barbell that\'s bigger than it is. It insists it\'s fine.', 'Machop flexes for you. Then again. You get the idea.', 'Machop is doing push-ups on one finger. Ken says it\'s a warm-up.'],
       } },
     nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
       away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',
