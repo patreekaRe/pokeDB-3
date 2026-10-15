@@ -9878,12 +9878,14 @@ function placeCamera(dt) {
   if (!shot) return;
   if (AERIAL && R.kind === 'town') return aerialShot();
   const room = COLS / 2 + 0.4, push = R.focus?.k || 0, half = shot.half * (1 - push * PUSH);
-  const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, walker.x));
+  // `pan`: the shot carried over to R.focus, apart from how far it's drawn in (mendStone())
+  const pan = R.focus?.pan ?? push, fx = R.focus?.x == null ? walker.x : walker.x + (R.focus.x - walker.x) * pan;
+  const want = half >= room ? 0 : Math.max(-room + half, Math.min(room - half, fx));
   camX = calm ? want : camX + (want - camX) * Math.min(1, dt / 1000 * 4);
   // a long room: the shot a little ahead of you, up to its back; drawn in on whoever you walked up to (R.focus)
   const v = Math.min(ROWS, R.view ?? ROWS) / 2, far = BACK_Z + v - (R.reach ?? 0), near = ROWS / 2 - v;   // `reach`: past the back, for a gate too tall for the shot
   let wantZ = Math.max(far, Math.min(near, walker.z - v * 0.25));
-  if (push) wantZ += (R.focus.z - wantZ) * push;
+  if (pan) wantZ += (R.focus.z - wantZ) * pan;
   camZ = calm || !Number.isFinite(camZ) ? wantZ : camZ + (wantZ - camZ) * Math.min(1, dt / 1000 * 3);
   camera.setViewOffset(viewW, viewH, 0, shot.shift, viewW, viewH);
   aimCamera(camX, shot.dist * (1 - push * PUSH), camZ);
@@ -10489,10 +10491,11 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
   }
   // its beats, in ms: up off your Pokémon, over to the stone, hanging over its tip as the circle burns in and the motes
   // gather, sinking into the crack (the stone shuddering), the flash, and the pillar of light fading
-  const UP = 800, OVER = 1900, HANG = 3500, SINK = 4300, FLASH = 4500, END = 8200;
-  const t0 = performance.now(), cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [OVER + 100, 'gate-hum'], [OVER + 700, 'charge'], [HANG - 300, 'rumble-far'], [HANG, 'crystal-2'],
+  // LEAD: the shot pans over to the stone first, as the leader's door can be across the town from it (the user's ask, 2026-10-14)
+  const UP = 800, OVER = 1900, HANG = 3500, SINK = 4300, FLASH = 4500, END = 8200, LEAD = 1300;
+  const t0 = performance.now() + LEAD, cues = [[0, 'crystal-0'], [OVER, 'crystal-1'], [OVER + 100, 'gate-hum'], [OVER + 700, 'charge'], [HANG - 300, 'rumble-far'], [HANG, 'crystal-2'],
     [FLASH, 'core-surge'], [FLASH + 60, 'sunburst'], [FLASH + 300, 'thunder'], [FLASH + 1400, 'crystal-2']];
-  room.focus = { z: f.cz, k: 0 };
+  room.focus = { x: f.cx, z: f.cz, k: 0, pan: 0 };
   let swapped = false, over = false, tick;
   return new Promise(resolve => {
     const finish = () => {
@@ -10502,13 +10505,16 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
       done();
       resolve();
     };
-    setTimeout(finish, END + 2000);   // the room stopped drawing (left, or the tab hidden): mended all the same
+    setTimeout(finish, LEAD + END + 2000);   // the room stopped drawing (left, or the tab hidden): mended all the same
     tick = (now) => {
       const t = now - t0, v = new THREE.Vector3();
       while (cues.length && t >= cues[0][0]) playSound(cues.shift()[1]);
       const gather = Math.max(0, Math.min(1, (t - OVER) / (HANG - OVER))), sinking = Math.max(0, Math.min(1, (t - HANG) / (SINK - HANG)));
       // drawn in on the stone, closer as it gathers, easing back once the light is up
-      room.focus.k = (Math.min(1, t / 900) * 0.55 + gather * 0.3) * (t > FLASH + 1800 ? Math.max(0, 1 - (t - FLASH - 1800) / 1400) : 1);
+      const back = t > FLASH + 1800 ? Math.max(0, 1 - (t - FLASH - 1800) / 1400) : 1;
+      room.focus.k = (Math.min(1, Math.max(0, t / 900)) * 0.55 + gather * 0.3) * back;
+      room.focus.pan = ease(Math.min(1, (t + LEAD) / LEAD)) * back;
+      if (t < 0) { gem.visible = halo.visible = false; return; }
       if (t < UP) v.lerpVectors(from, from.clone().setY(1.9), ease(t / UP));
       else if (t < OVER) {
         const k = ease((t - UP) / (OVER - UP));

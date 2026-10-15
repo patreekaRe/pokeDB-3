@@ -1934,6 +1934,7 @@ async function enterCamp() {
 }
 
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
+let lookAt = null;   // { x, z }: the view panned over to it rather than following you (the Waystone mending, homeNews())
 
 /** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
     fades up into it, then the town. */
@@ -1984,7 +1985,11 @@ async function homeNews() {
     }
     welcomeHome('clearing');
     const glow = '#9fe0ff';
-    warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
+    // stepping out of the Nietos' house the stone is off the screen (the user's ask, 2026-10-14): the view goes over first
+    lookAt = { x: tileX(START.x), z: tileZ(START.y) };
+    await new Promise(r => setTimeout(r, calm ? 0 : 1400));
+    if (!running) return;
+    warp ={ at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
     if (!calm) setTimeout(() => playSound('charge'), 300);
     await new Promise(r => setTimeout(r, calm ? 0 : 1300));   // the light at its brightest: the stone swapped for the whole one
     if (!running) return;
@@ -1998,7 +2003,7 @@ async function homeNews() {
     await wayCard(CLEARING.name, glow);
     await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
-  } finally { homeNewsBusy = false; questMarks(); }
+  } finally { homeNewsBusy = false; lookAt = null; questMarks(); }
 }
 
 /** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
@@ -3769,11 +3774,11 @@ function placeCamera(dt) {
   const ahead = !arriving && walker.tile.y <= 2 ? 2.5 : 0;
   const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
-  const wx = arriving ? tileX(ARRIVE.x) : walker.x, wz = arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
+  const wx = lookAt ? lookAt.x : arriving ? tileX(ARRIVE.x) : walker.x, wz = lookAt ? lookAt.z : arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
   const loX = tileX(-0.5) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
   const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
-  const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
+  const k = calm ? 1 : Math.min(1, dt / 1000 * (lookAt ? 2.6 : 4));   // a slower, steadier pan over to the stone
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
   aimCamera(camX, camZ);
   followSun();

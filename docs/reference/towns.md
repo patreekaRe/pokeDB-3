@@ -243,6 +243,10 @@ Then `wayCard()` (THE WAYSTONE OF / town / AWAKENS, a band sweeping open, a tap 
 leader in `QUESTS[id].awaken` slides in in turn, glowing in the town's colour (`.gym-scene.awaken`, `--glow`, plate
 WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller beam, a shockwave (`wave` in
 `liveWarp()`), the flash, the card and the Nietos' `awaken` lines. Calm effects: no flash or shake, the card still.
+**The view goes to the stone first** (2026-10-14, the user's ask: out of the Nietos' house the stone was off the screen):
+in the Clearing `lookAt` pans the camera onto the Waystone (~1.4 s, a slower follow) before the light, and holds it there
+till the Nietos have spoken; in a town `mendStone()` waits `LEAD` 1300 ms while `focus.pan` carries the shot over on both
+axes (`focus.x`, `placeCamera()`; `focus.k` still only zooms), the crystal hidden till it's there, easing back after.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →

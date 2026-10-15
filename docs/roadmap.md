@@ -305,6 +305,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the town's Gym Leaders slide in glowing with new `awaken` lines (`docs/reference/towns.md`, "The waking, made epic").
    Branch `claude/next-town-oahwio` and `main`. Waiting on the user's playtest: `?town=<biome>&mend` (hand the
    shard in at the board). Next: whatever they want tuned in it.
+   **Camera pan (2026-10-14, the user's ask: out of the Nietos' house the stone was off the screen):** the view now pans
+   over to the stone first, then the light show plays. The Clearing: `lookAt` in `js/hub-3d.js` (~1.4 s, held through the
+   Nietos' talk). Towns: `LEAD` 1300 ms in `mendStone()`, `focus.x` and `focus.pan` in `placeCamera()`. On `main`;
+   waiting on the user's playtest.
 **Done (2026-10-14): the towns' great halls, inside, made huge** (the user: "they SUCK the insides need to be HUGE and be
    super aesthetic and make sense"): the theater, bathhouse, aquarium, Nursery and caravanserai are 17 x 12 halls built
    as what they are (`js/town-halls.js`, `docs/reference/towns.md`'s last section). On `main`; the user playtested
