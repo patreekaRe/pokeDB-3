@@ -135,8 +135,8 @@ at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All
 biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
 
 **Kurt's Workshop** (session 3 of Towns step 6, 2026-10-14; only while `townsOpen()`). A timber workshop in the
-Clearing's north-east (`WORKSHOP_AT` 23,6 in `js/hub-3d.js`, `kurtWorkshop()`, its path down to the east avenue a `towns:
-true` road; Halloween's pumpkin patch moved either side of it), walked into like the Nietos' house: `CLEARING.buildings` /
+Clearing's north-east (`WORKSHOP_AT` 23,8 in `js/hub-3d.js` since 2026-10-15, the user's ask: its door right on the east avenue, a short `towns:
+true` road joining them; Halloween's pumpkin patch moved up behind it, either side), walked into like the Nietos' house: `CLEARING.buildings` /
 `homes.workshop` (`kurt: true`, a Slowpoke cast) in `js/data/towns.js`, `HOMES.clearing.workshop` in `js/event-3d.js`
 (`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). His window is
 `openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
