@@ -2616,6 +2616,14 @@ The user's yes ("MERGE") on `acdc58f`: the climb's tower in `js/tower-art.js` in
 (rune bands, Rayquaza's ring over guardian doors, the summit's jade crystal), merged to `main`. Next: the opening film's
 first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.md`).
 
+### The climb's opening film falls past the new tower (2026-10-15)
+
+The revamp's step 3: `paintPan()` in `js/climb-intro.js` repainted as the Clearing's tower (octagonal sage shaft in four
+tiers, rune-banded cornices, jade windows, floating stones, cloud collars, Rayquaza's wind, the crystal's crown, the porch
+with its ring and banners); the walk to the door after it is unchanged. Headless-checked: every feature seen in the fall,
+no errors, paint cost unchanged (~0.3 ms a frame). On branch `claude/sky-pillar-climb-intro-wxa0t4`, waiting on the
+user's look before `main`. Next: the lobby's window (`docs/roadmap.md`).
+
 - **Done (2026-10-15): a picket fence round the Ancient Tree** (the user's ask): back and both sides, meeting the garden arch on the right (`treeFence()` in `js/hub-3d.js`).
 - **Done (2026-10-15): the garden gate moved beside the trunk and restyled** (the user's drawing): `ARCH_AT` 25,4 in a front fence row, the arch white with no ivy (`js/hub-arch.js`).
 - **Done (2026-10-15): the tree garden's left front fenced off** (the user's ask), mirroring the right up to the trunk.

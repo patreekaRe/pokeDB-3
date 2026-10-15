@@ -55,13 +55,13 @@ export function rect(b, x, y, w, h, c) {
   const x0 = Math.max(0, x | 0), y0 = Math.max(0, y | 0), x1 = Math.min(b.W, (x + w) | 0), y1 = Math.min(b.H, (y + h) | 0);
   for (let yy = y0; yy < y1; yy++) b.px.fill(c, yy * b.W + x0, yy * b.W + Math.max(x0, x1));
 }
-function disc(b, cx, cy, r, c, m = 1) {
+export function disc(b, cx, cy, r, c, m = 1) {
   for (let y = Math.floor(-r); y <= r; y++) for (let x = Math.floor(-r); x <= r; x++) {
     if (x * x + y * y <= r * r + r * 0.6 && (m >= 1 || bay(cx + x, cy + y) < m)) put(b, cx + x, cy + y, c);
   }
 }
 /** A soft glow: dithered rings of `c` round a point, thinning out. */
-function glow(b, cx, cy, r, c, k = 0.5) {
+export function glow(b, cx, cy, r, c, k = 0.5) {
   for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) {
     const d = Math.sqrt(x * x + y * y) / r;
     if (d < 1 && bay(cx + x, cy + y) < (1 - d) * k) put(b, cx + x, cy + y, c);
@@ -474,7 +474,7 @@ const GLYPHS = ['010111010', '010101010', '111010111'];
 
 /** The band under a floor's ceiling: a pale lip, dark stone carved with jade runes, a shadow under. Lit, a shimmer runs
     along it. Five rows from `y`. */
-function runeBand(b, x0, x1, y, S, lit, t, seed = 0) {
+export function runeBand(b, x0, x1, y, S, lit, t, seed = 0) {
   const w = x1 - x0;
   rect(b, x0, y, w, 1, S.cut[0]);
   rect(b, x0, y + 1, w, 1, S.rune[0]);
@@ -489,7 +489,7 @@ function runeBand(b, x0, x1, y, S, lit, t, seed = 0) {
 }
 
 /** Rayquaza's ring (js/hub-pillar.js's sealArt): a pale stone rim round a jade disc, a gold serpent coiling across it. */
-function raySeal(b, cx, cy, r, S, lit, t) {
+export function raySeal(b, cx, cy, r, S, lit, t) {
   if (lit) glow(b, cx, cy, r + 7, K('#6af0c0'), 0.24 + 0.08 * Math.sin(t / 10));
   disc(b, cx, cy, r, S.cut[2]);
   disc(b, cx, cy, r - 0.8, S.cut[0]);

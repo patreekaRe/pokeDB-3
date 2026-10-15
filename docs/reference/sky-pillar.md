@@ -219,8 +219,16 @@ is the screen and the overlay that use them.
 
 Pressing Climb (or Climb again, or a Practice pick) plays `climbIntro()` from `js/climb-intro.js` before the climb starts
 (`onStart` in `js/main.js`), on its own `#climb-scene` (the journey films' frame: `.travel-scene`, bars, skip, dark). The
-camera starts at the summit (jade roof, Rayquaza's glow), "SKY PILLAR" over it, and falls the whole height (a slow drift that speeds up, the user's ask, then brakes to settle at the foot: hitting it at full speed felt abrupt) through
-`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). Then a slow dip to black (`fadeTo()`, inline on `.travel-dark`; FADE_OUT / CUT / FADE_IN, ~2.6 s in all) and a fade up on the user's
+camera starts at the summit, "SKY PILLAR" over it, and falls the whole height (a slow drift that speeds up, the user's ask, then brakes to settle at the foot: hitting it at full speed felt abrupt) through
+`paintSky()`'s bands with the stone by `stone(floor)` (exported from `js/tower-art.js`). **The tower in that fall is the
+Clearing's** (the revamp's step 3, 2026-10-15; `paintPan()` and its painters in `js/climb-intro.js`, sized in the 3D tower's
+units, `u`): an octagonal shaft lit from the left in four tiers (`SHAFT`, floors 0 / 30 / 60 / 90, each narrower and
+leaning in, stepping where `stone()`'s colour does), a thin lip at every floor and every ten a cornice over a band of jade
+runes and a gold ring (`cornice()`, `runeBand()`), an arched jade-lit window on each face (`windows()`), the 1st tier's
+corner columns, ivy and moss at the foot, stones floating round floors 33-58 in front of and behind it (`floating()`), a
+collar of sunset cloud at the cloud sea and a moonlit one about floor 89 (`collar()`), Rayquaza's wind in two jade streams
+above floor 30 (`wind()`), the broken crown with its jade crystal turning in Rayquaza's glow (`crown()`), and at the foot
+the plinth, the doorway onto the lit stair, the pale arch, Rayquaza's ring and the jade banners (`porch()`). Then a slow dip to black (`fadeTo()`, inline on `.travel-dark`; FADE_OUT / CUT / FADE_IN, ~2.6 s in all) and a fade up on the user's
 reference (a hero from behind before a temple door): your climber's back sprite walks a flagstone path between four stone
 pillars to the great arched door at a brisk pace with a `footstep` each step (`paintPov()`, a small perspective painter: camera `cz` up the path, door plane `ZD`),
 two scowling eyes over the arch light up (`gate-hum`), the door grinds open on warm light with a shake (`rumble-far`), the
