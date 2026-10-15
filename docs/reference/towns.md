@@ -306,7 +306,14 @@ it, ALL QUESTS: one row a questline (leader, name, n of m steps, a chip: Under w
 opens the same step card, its story and every step (later ones `???`), or HOW TO START for a locked one. The board opens it as
 `openDeviceApp('quests', 'board')` (through the hub's `acts.onApp(id, at)`), and then it says it's in the Pokédex too.
 A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests icon's "!", not the Satchel's.
-**The quest "!"** (2026-10-14, the user's ask): a step ready to hand in puts a bobbing "!" over its leader's house in the
-town (`marks: ['door:<id>']` handed to `mountEvent()`, drawn by `markQuests()` in `js/event-3d.js` over the house's roof)
-and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their house (`nietosMark`) and inside. The
+**The quest "!"** (2026-10-14, the user's ask): a step ready to hand in puts a bobbing "!" over its leader's name sign in
+the town (the user's call: the sign, not the roof; `marks: ['door:<id>']` handed to `mountEvent()`, drawn by `markQuests()`
+in `js/event-3d.js` at `B.signs[id]`, which `nameBoards()` / `boughBoards()` / `bazaarBoards()` record, the roof if a house
+has none) and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their house (`nietosMark`) and inside. The
 quest board's "!" is only for a notice to read now (`questMarks()`).
+**Every turn-in goes to a leader, the board is for reading** (2026-10-14, the user's ask: "to push the player to explore
+their homes"). A town's board opens the Quests app (`openDeviceApp('quests', 'board', false, again)`) once its questline
+is posted, a "!" over it (`board` mark, at `B.boardAt`) till it's read once (`readBoard()` in `js/towns.js`: `st.board`;
+a `?town=` peek keeps `t.boardRead`). After the questline the coin requests go to the town's leaders by turns
+(`requestBy()`: `st.done` round `town.leaders`), handed in at home (`reqMine` in `homeRoom()`), a "!" over that leader's
+sign; the Quests app shows a done town's request (`requestCard()`). While a questline has started its leaders are home.

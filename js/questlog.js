@@ -9,7 +9,7 @@
 
 import { MATERIALS_BY_ID, satchelOf, satchelFlag } from './data/satchel.js';
 import { RECIPES_BY_ID } from './data/workshop.js';
-import { TOWNS, RING, CLEARING, clearingLit, townState, questOf, questStep, questDone, questProgress, greeterOf, stepText, stepHave, mended } from './data/towns.js';
+import { TOWNS, RING, CLEARING, clearingLit, townState, currentRequest, requestText, requestBy, questOf, questStep, questDone, questProgress, greeterOf, stepText, stepHave, mended } from './data/towns.js';
 import { GYM_BY_ID, spriteOf } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { getSave } from './storage.js';
@@ -96,6 +96,15 @@ function stepCard(town, save, sat) {
   return box;
 }
 
+/** A done town's coin request up now (its board's old jobs), taken by its leaders by turns at home. */
+function requestCard(town, st) {
+  const r = currentRequest(town, st), by = GYM_BY_ID[requestBy(town, st)];
+  const box = el('div', `qlog-do${st.ready ? ' ready' : ''}`);
+  box.append(el('p', 'qlog-step', `Odd job: ${requestText(r)}.`), bar(st.ready ? r.n : Math.min(st.got || 0, r.n), r.n),
+    row(st.ready ? 'READY! HAND IT IN' : 'THEN HAND IN', `${by?.name ?? 'Its Gym Leader'}, at their house in ${town.name}.`));
+  return box;
+}
+
 /** Every step of a quest: done ones ticked, the one up now marked, later ones hidden. */
 function stepList(town, st) {
   const list = el('ol', 'qlog-steps');
@@ -142,6 +151,7 @@ function questRow(town, save, sat) {
   if (state === 'quiet') body.append(row('HOW TO START', unlock(town, save)));
   else {
     if (state !== 'lit') body.append(stepCard(town, save, sat));
+    else if (town.requests && st.quest) body.append(requestCard(town, st));
     body.append(el('p', 'qlog-story', questOf(town).story), stepList(town, st));
   }
   head.addEventListener('click', () => head.setAttribute('aria-expanded', String(item.classList.toggle('open'))));

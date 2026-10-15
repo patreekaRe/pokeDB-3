@@ -3773,6 +3773,7 @@ function nameBoards(town, at = 'n') {
     const leader = town.homes?.[named.home]?.leader, words = named.name.split(' ');
     const lines = leader ? [named.name, 'GYM LEADER'] : named.name.length > 9 ? [words[0], words.slice(1).join(' ')] : [named.name];
     signboard(nameBoardArt(lines), tileX(x), tileZ(y) + 0.35, 1.4, 0.7, 0.62).raycast = () => {};
+    (B.signs ??= {})[named.id] = [tileX(x), 0.97, tileZ(y) + 0.4];   // a quest's "!" floats over it (markQuests())
     B.blocked.add(key(x, y));
   }
 }
@@ -7345,6 +7346,7 @@ function boughBoards(town, lit) {
     const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
     const g = new THREE.Group(), W = 1.3, H = 0.57, top = 1.62;
     g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    (B.signs ??= {})[named.id] = [tileX(x), top + 0.1, tileZ(y) + 0.3];
     B.group.add(g);
     for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.06, 0.08, top + 0.08, 10), wood, sx * (W / 2 + 0.04), (top + 0.08) / 2, 0, g);
     mesh(new THREE.CylinderGeometry(0.055, 0.055, W + 0.36, 10), wood, 0.06, top, 0, g).rotation.z = Math.PI / 2;
@@ -8417,6 +8419,7 @@ function bazaarBoards(town, lit) {
     const lines = leader ? [named.name, 'GYM LEADER'] : named.kind === 'shop' ? [named.name, 'TRADE HOUSE'] : [named.name];
     const g = new THREE.Group(), W = 1.5, H = W * 28 / 64, top = 1.55;
     g.position.set(tileX(x), 0, tileZ(y) + 0.3);
+    (B.signs ??= {})[named.id] = [tileX(x), top + 0.4, tileZ(y) + 0.3];
     B.group.add(g);
     const wood = std({ color: '#6a4228', roughness: 0.85 }), brass = std({ color: '#d8a838', metalness: 0.7, roughness: 0.3 });
     const glow = std({ color: ink[1], emissive: new THREE.Color(ink[0]), emissiveIntensity: 0.8, roughness: 0.4 });
@@ -8659,6 +8662,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     if (ch === 'R') { noticeBoard(tileX(x), tileZ(y) - 0.1, 0, L); B.blocked.add(key(x, y)); board = { x, y }; }
   }));
   B.spots = [{ step: { x: board.x, y: board.y + 1 } }];
+  B.boardAt = board;
   B.anchors[0] = new THREE.Vector3(tileX(board.x), 2.25, tileZ(board.y));
   const cart = map.findLastIndex(row => row.includes('='));   // a mine cart at the rails' far end, away from the mine's door
   if (cart >= 0) { const x = map[cart].lastIndexOf('='); mineCart(tileX(x), tileZ(cart)); B.blocked.add(key(x, cart)); }
@@ -9681,8 +9685,10 @@ export async function mountEvent(o) {
   return controls;
 }
 
-/** A bobbing "!" over whoever has a quest step to hand in (the user's ask, 2026-10-14): `door:<id>` over a town house's
-    roof, `who:<id>` over someone in the room (a Gym Leader at home). Made once a room, shown on the visits that ask. */
+/** A bobbing "!" (the user's ask, 2026-10-14): `door:<id>` over a town house's name sign (the user's call: the sign,
+    not the roof; the roof if it has none) while a step's ready to hand its Gym Leader, `who:<id>` over someone in the
+    room (that leader at home), `board` over a town's quest board till you've read it. Made once a room, shown on the
+    visits that ask. */
 function markQuests(ids = []) {
   R.marks ??= {};
   for (const m of Object.values(R.marks)) if (m) m.visible = false;
@@ -9694,11 +9700,16 @@ function markQuests(ids = []) {
 
 function questMark(id) {
   const [kind, name] = id.split(':'), door = kind === 'door' && R.doors?.[id], who = kind === 'who' && R.who[name];
-  if (!door && !who) return null;
+  const at = kind === 'board' ? R.boardAt && [tileX(R.boardAt.x), 2.9, tileZ(R.boardAt.y)] : door && R.signs?.[name] && [...R.signs[name]];
+  if (!door && !who && !at) return null;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
   s.raycast = () => {};
   let y;
-  if (door) {
+  if (at) {
+    s.scale.set(0.5, 0.65, 1);
+    s.position.set(at[0], (y = at[1] + 0.5), at[2]);
+    R.group.add(s);
+  } else if (door) {
     const box = new THREE.Box3().setFromObject(door.g);
     s.scale.set(0.62, 0.8, 1);
     s.position.set(tileX(door.step.x), (y = box.max.y + 0.75), (box.min.z + box.max.z) / 2);
@@ -10065,3 +10076,4 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
     room.ticks.push(tick);
   });
 }
+

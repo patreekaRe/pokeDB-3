@@ -932,6 +932,10 @@ export const currentRequest = (town, st) => town.requests[st.done % town.request
 
 export const requestText = (r) => r.text.replace('{n}', r.n);
 
+/** Who takes the request up now, at home (the user's ask, 2026-10-14: every turn-in goes to a leader, to send you into
+    their homes): the town's Gym Leaders by turns. */
+export const requestBy = (town, st) => { const ids = Object.keys(town.leaders); return ids[st.done % ids.length]; };
+
 /** Count play into a town's request: `ctx.biome` must be the town's biome (the Shrine's fights count for the Shrine's
     village). Returns the new state and whether the request just finished. */
 export function countRequest(town, st, event, amount, ctx = {}) {
