@@ -29,7 +29,8 @@ import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, guestLines, clearingLit, sealOn } from './data/towns.js';
+import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn } from './data/towns.js';
+import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest } from './towns.js';
 import { unclaimed } from './mail.js';
@@ -53,6 +54,7 @@ const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
+const QUEST_AT = { tx: 11, ty: 10 };   // the quest board, the PC's mirror across the plaza (towns on only)
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -147,6 +149,7 @@ let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
+let questMark = null;   // the "!" over the quest board: a quest to take, or a step to hand in (boardNow())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
@@ -1978,7 +1981,89 @@ async function homeNews() {
     if (!running) return;
     buildPlaces();
     playSound('stat-up');
-  } finally { homeNewsBusy = false; }
+  } finally { homeNewsBusy = false; questMarks(); }
+}
+
+/** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
+    hand in) through their questline, then `towns`, every town's questline under way. */
+function boardNow(save) {
+  const st = townState(save, 'clearing');
+  if (!st.quest && !clearingLit(save)) {
+    return nietosHome(gymWins(save, 'nietos') || 0)
+      ? { kind: 'new', line: 'A fresh notice in Britt\'s writing, pinned over the rest: "ABOUT THE WAYSTONE. Come and read this, sweetie. - Law & Britt"' }
+      : { kind: 'locked', line: 'The Clearing\'s quest board. One notice, in Britt\'s writing: "Something\'s wrong with the Waystone. Beat us at the Gym and we\'ll explain. - Law & Britt"' };
+  }
+  const step = questStep(CLEARING, st);
+  if (step) {
+    const [n, of] = questProgress(CLEARING, st), have = stepHave(step, st, satchelOf(save)), ready = satchelFlag() || have >= step.n;
+    const need = step.kind === 'gather' ? ` ${MATERIALS_BY_ID[step.item].icon} ${have}/${step.n} in your Satchel.` : step.kind === 'track' ? ` ${have}/${step.n}.`
+      : have ? ' In your Satchel.' : '';
+    return { kind: 'on', ready, line: `THE NIETOS' QUEST, ${n}/${of} done. Up now: ${stepText(step)}.${need} ${ready ? 'Done! Hand it in at their house.' : 'Hand it in at their house, south-east.'}` };
+  }
+  const on = RING.map(t => [TOWNS[t.id], townState(save, t.id)]).filter(([, s]) => s.quest && !mended(s));
+  return { kind: 'towns', line: on.length
+    ? `Pinned up: ${on.map(([town, s]) => { const [n, of] = questProgress(town, s); return `${town.name} ${n}/${of}`; }).join(', ')}. Each town's own board takes its steps.`
+    : 'Law and Britt\'s notice, stamped THANK YOU. The towns out on the roads post their own quests on their own boards.' };
+}
+
+function questMarks() {
+  if (!questMark) return;
+  const b = boardNow(getSave());
+  questMark.visible = b.kind === 'new' || !!b.ready;
+}
+
+/** The Nietos' notice read off the board: their story, and their questline opens (the greeting homeNews() plays, if it
+    didn't as you came home). */
+async function takeQuest() {
+  if (homeNewsBusy || townState(getSave(), 'clearing').quest) return;
+  homeNewsBusy = true;
+  try {
+    playSound('gate-hum');
+    const { gymTalk } = await import('./gym.js');
+    await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true });
+    startQuest('clearing');
+    dexNews();
+  } finally { homeNewsBusy = false; questMarks(); }
+}
+
+/** The quest board: a cork face on two posts under a little shingled roof, notes pinned all over it. */
+function questBoard(x, z) {
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const s = new THREE.Group();
+  s.position.set(x, 0, z); s.rotation.y = 0.35;
+  const face = board(questBoardArt(), 0, 0, { s: 0.62, shadow: false });
+  const { width: W, height: H } = face.geometry.parameters, Y = 0.55, RY = Y + H + 0.04;
+  face.position.y = Y + H / 2;
+  s.add(face);
+  const add = (geo, m, px, py, pz) => { const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = o.receiveShadow = true; s.add(o); return o; };
+  const wood = std({ color: '#7a5230' }), roof = std({ color: '#b8483a' });
+  for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.045, 0.05, RY, 6), wood, sx * (W / 2 + 0.02), RY / 2, -0.05);
+  add(new THREE.BoxGeometry(W + 0.1, 0.07, 0.1), wood, 0, Y - 0.02, -0.02);
+  for (const sx of [-1, 1]) add(new THREE.BoxGeometry(W / 2 + 0.2, 0.05, 0.34), roof, sx * (W / 4 + 0.04), RY + 0.13, -0.03).rotation.z = -sx * 0.32;
+  return s;
+}
+
+function questBoardArt() {
+  const { c, g, rr, lin } = fine(30, 21, 10);
+  rr(0, 0, 30, 21, 1.2, lin(0, 0, 0, 21, ['#8a5a30', '#6a4220']));
+  rr(1.2, 1.2, 27.6, 18.6, 0.6, lin(0, 0, 30, 21, ['#d8a86a', '#c8945a', '#b8824a']));
+  g.fillStyle = 'rgba(90,50,20,0.25)';
+  for (let i = 0; i < 70; i++) g.fillRect(1.5 + (i * 7.3) % 27, 1.5 + (i * 4.1) % 18, 0.3, 0.3);
+  const note = (x, y, w, h, turn, paper, pin, lines) => {
+    g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(turn);
+    g.fillStyle = 'rgba(60,30,10,0.3)'; g.fillRect(-w / 2 + 0.4, -h / 2 + 0.4, w, h);
+    g.fillStyle = paper; g.fillRect(-w / 2, -h / 2, w, h);
+    g.fillStyle = 'rgba(70,60,50,0.55)';
+    for (let i = 0; i < lines; i++) g.fillRect(-w / 2 + 0.8, -h / 2 + 2 + i * 1.4, w - (i === lines - 1 ? 3 : 1.6), 0.45);
+    g.fillStyle = pin; g.beginPath(); g.arc(0, -h / 2 + 0.7, 0.55, 0, Math.PI * 2); g.fill();
+    g.restore();
+  };
+  note(2.6, 3, 9, 8, -0.08, '#fff8e8', '#e8403a', 4);
+  note(13, 2.4, 7, 6, 0.06, '#fff2a8', '#3a7ae0', 3);
+  note(21.2, 3.4, 6.2, 7, -0.05, '#e8f4ff', '#3aa84a', 4);
+  note(5, 12.2, 7.4, 6, 0.07, '#ffe0e8', '#f8b830', 3);
+  note(14, 10.6, 10, 7.6, -0.04, '#fff8e8', '#e8403a', 4);
+  return c;
 }
 
 let beam = null;
@@ -2166,6 +2251,21 @@ function makePlaces() {
     buttons: [],
     build: (g) => clearingWaystone(g, lit, whole),
   });
+  // the quest board across the plaza from the PC (the user's ask, 2026-10-14: nowhere said where the Nietos' questline
+  // was picked up): its notice starts it, then it says where every questline stands; steps are still handed in at home
+  if (townsOpen()) list.push({
+    id: 'quests', name: 'Quest Board', step: { x: QUEST_AT.tx, y: QUEST_AT.ty + 1 }, tiles: [[QUEST_AT.tx, QUEST_AT.ty]], tag: [QUEST_AT.tx, 2.6, QUEST_AT.ty], open: true,
+    get line() { return boardNow(getSave()).line; },
+    get buttons() { return boardNow(getSave()).kind === 'new' ? [['Read', takeQuest]] : []; },
+    build: (g) => {
+      g.add(questBoard(tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty)));
+      questMark = board(newsArt(), tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty) + 0.1, { shadow: false });
+      questMark.rotation.x = -PITCH;
+      questMark.userData.y = 2.35;
+      g.add(questMark);
+      questMarks();
+    },
+  });
   // a mended town's Gym Leader come through the Waystone (docs/roadmap.md's Towns step 6, session 4): one a day stands
   // beside it, the one who put a shard in the first time you're home after
   const guest = todaysGuest(save), leader = guest && GYM_BY_ID[guest.id];
@@ -2269,9 +2369,8 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; stoneLit = null; smoke = null; cracks = null;
-  places = makePlaces();
-  saved = acts.savedRun();
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; stoneLit = null; smoke = null; cracks = null;
+  places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
   for (const k of [...yardTiles, ...dressTiles, ...FENCES]) blocked.add(k);
@@ -3598,7 +3697,7 @@ function frame(now) {
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
-  for (const m of [pcMail, pcNews]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, questMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));

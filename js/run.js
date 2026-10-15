@@ -71,7 +71,7 @@ import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
-  homeTalk, stepNudge, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced } from './data/towns.js';
+  homeTalk, stepNudge, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
 import { campLines, landLine, selfLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -1923,6 +1923,18 @@ function homeRoom(b, onward = null) {
   // the Nietos' questline (step 7) is handed in here, at home: the shard's goes on out to the plaza, where the stone lights
   const cst = home.leader === 'nietos' && !away && townsOpen() ? townState(getSave(), 'clearing') : null;
   const cstep = cst && questStep(town, cst);
+  // not picked up yet (the greeting or the plaza's quest board starts it): asked about here too
+  if (cst && !cst.quest && !clearingLit(getSave())) options.push(spotOption('Quest', 'Ask Law and Britt about the cracked Waystone.', async () => {
+    if (run !== thisRun || handing) return;
+    handing = true;
+    event3dMod?.freezeEvent(true);
+    sayLines([]);
+    try { await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
+    if (run !== thisRun) return;
+    startQuest('clearing');
+    tell('New quest: the Nietos\' questline is in your Satchel.');
+    again();
+  }));
   if (cstep) {
     const lent = satchelFlag(), ready = lent || stepReady(cstep, cst, satchelOf(getSave()));
     const have = stepHave(cstep, cst, satchelOf(getSave()));

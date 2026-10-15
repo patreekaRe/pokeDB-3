@@ -446,6 +446,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      for the whole one). `NIETOS_LIVE` is on, but the Nietos are home only while the towns are on. Playtest on the live site:
      `?towns&gymwins=1` (the greeting), then `&satchel` (every step ready, in their house). Next: the user walks it; then
      step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp), if the user still wants it. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
+   - **Quest board (2026-10-14, the user's ask after walking it: "we don't have a place to pick up quests").** A roofed
+     cork board on the plaza's north-west corner (`QUEST_AT` [11, 10], the PC's mirror; towns on only): its notice starts
+     the Nietos' questline if the greeting didn't (`takeQuest()`), then it says the step up and where to hand it in, then
+     every town's questline under way (`boardNow()`); a "!" floats over it with a notice to read or a step ready. The
+     Nietos' house got a Quest spot that starts it too. Hand-ins stay at their house. On `main`, waiting on the user's look.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

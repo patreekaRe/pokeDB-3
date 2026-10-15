@@ -277,3 +277,9 @@ the shard's hand-in walks you out onto the plaza. Its Do step counts in the Clea
 `placeOf()`; `countTown()` counts nothing once a board-less questline is done). Materials Glowmoss and Whisper Acorn drop in
 the Clearing biome; Kurt's `waystone-chime` (4 acorns, 1 moss); `shard-clearing` floats over a Clearing Alpha
 (`shardHere()`). `nietosHome()` is on with the towns (`NIETOS_LIVE` true and `townsOpen()`), `?nietos` for a page load.
+The plaza's **quest board** (2026-10-14, the user's ask: nowhere said where the questline was picked up) stands on
+`QUEST_AT` [11, 10], the PC's mirror, only while the towns are on. `boardNow(save)` is its state: `locked` (Nietos not
+beaten), `new` (its one button, Read, is `takeQuest()`: the greeting, then `startQuest('clearing')`), `on` (the step,
+its count and "hand it in at their house"; `ready` under `?satchel` or once had), then `towns` (every town's questline
+under way, n/of). Its `line` and `buttons` are getters. The "!" over it (`questMark`, `questMarks()`) shows for `new` or
+`ready`. The Nietos' house has a Quest spot that starts the questline too, when it hasn't started and the Clearing isn't lit.
