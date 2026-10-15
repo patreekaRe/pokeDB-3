@@ -2308,7 +2308,7 @@ function makePlaces() {
     buttons: [],
     build: (g) => standGuest(g, leader),
   });
-  // a professor on the plaza, right of the Waystone (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
+  // a professor just right of the PC (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
   // a hint about something easy to miss, and always a reminder to refresh for updates; both are built and setTime()
   // shows the one for the hour
   list.push({
@@ -2395,7 +2395,7 @@ async function standGuest(g, l) {
   g.add(m.group);
 }
 
-const PROF_AT = { x: START.x + 2, y: START.y };
+const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
   { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
   { id: 'sonia', name: 'Professor Sonia', night: true, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
@@ -2787,7 +2787,7 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 11, y: 8 }, { x: 20, y: 10 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
+      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(16) - 0.2, { s: 1.2 });
