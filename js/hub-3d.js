@@ -2525,8 +2525,9 @@ const BEDS = [[10, 8, 0.9], [20, 8, 0.9], [10, 16, 0.8], [20, 16, 0.8]];
 const dressTiles = new Set();
 
 /** A white picket fence round the Ancient Tree's garden (2026-10-15, the user's ask), painted like the garden gate: a row
-    behind the tree, down its left side to its foot, down the right side to the front, and along the front from the
-    trunk to that corner, the gate (ARCH_AT) in it just right of the trunk (the user's drawing, the same day). */
+    behind the tree, down both sides to the front, and along the front from either side of the trunk to those corners
+    (the left's closed off on the user's ask, the same day), the gate (ARCH_AT) in it just right of the trunk (their
+    drawing). */
 const FENCE_BACK = 1, FENCE_LEFT = 18, FENCE_RIGHT = 27;
 function treeFence() {
   const paint = new THREE.MeshStandardMaterial({ color: SEASON === 'winter' ? '#e8e2d8' : '#f0e6d2', roughness: 0.7 });
@@ -2548,7 +2549,8 @@ function treeFence() {
   };
   const back = tileZ(FENCE_BACK), left = tileX(FENCE_LEFT), right = tileX(FENCE_RIGHT) + 0.3, front = tileZ(ARCH_AT.ty);
   const gate = tileX(ARCH_AT.tx) + ARCH_X, trunk = tileX(TREE_AT.tx + 2) + 0.1;
-  run([left, tileZ(TREE_AT.ty) + 0.45], [left, back]);
+  run([trunk - 2 * (trunk - tileX(TREE_AT.tx)), front], [left, front]);   // the left's front, mirroring the right's up to the trunk
+  run([left, front], [left, back]);
   run([left, back], [right, back]);
   run([right, back], [right, front]);
   run([right, front], [gate + 0.75, front]);

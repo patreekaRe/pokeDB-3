@@ -115,7 +115,7 @@ The first section began as the note on playtesting the live site and grew into t
 - **The Ancient Tree's picket fence and garden gate** (2026-10-15, the user's ask, then their drawing the same day):
   `treeFence()` in `js/hub-3d.js`, painted like the gate, merged with `mergeStatic()`: a row behind the tree
   (`FENCE_BACK`, row 1), down its left side on column `FENCE_LEFT` (18) to its foot, down the right on `FENCE_RIGHT` (27),
-  and along the front (row 4) from the trunk to that corner, the gate (`ARCH_AT` 25,4, moved from 27,3) in it just right
+  and along the front (row 4) from either side of the trunk to those corners (the left's front added the same day, the user's ask), the gate (`ARCH_AT` 25,4, moved from 27,3) in it just right
   of the trunk; the tree's own tiles stop short of the gate's. The gate (`js/hub-arch.js`) was restyled white to match:
   square posts, a latticed arch with a finial, the picket gate and lantern; no ivy or flowers (the user found the
   overgrown arch a clump). Its tiles go in `dressTiles`.
