@@ -370,9 +370,10 @@ export function makeDojo(THREE, { x, z, fine, texOf, merge }) {
     flags.push({ fg, at: sx });
   }
 
-  // two cherry trees behind the hall, in full bloom, dropping petals over it
+  // two cherry trees behind the hall, in full bloom, dropping petals over it; tucked in behind its roofs (2026-10-15, the
+  // user's ask: out at its corners they crowded the Safari gate)
   const bark = std({ color: '#4a2c20', roughness: 1 }), bloom = std({ color: '#f8b8d0', roughness: 0.95 }), bloom2 = std({ color: '#f498bc', roughness: 0.95 });
-  const rnd = seeded(23), trees = [[-2.05, -2.15], [2.15, -2.2]];
+  const rnd = seeded(23), trees = [[-1.6, -2.5], [1.65, -2.55]];
   for (const [tx, tz] of trees) {
     const trunk = add(new THREE.CylinderGeometry(0.07, 0.12, 2.2, 8), bark, tx, 1.1, tz);
     trunk.rotation.z = -Math.sign(tx) * 0.12;

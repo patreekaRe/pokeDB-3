@@ -115,7 +115,7 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 // the Nietos' yard round their house's 3 x 3 (off NIETOS_AT): the washing line left (the name board's own tile, [-1, 2],
 // is its place's), the garden either side of the doorstep, the pram and sandbox right; nothing walks through them
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
-const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 5, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
+const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
 // the garden arch into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
 // beside the Ancient Tree, short of the Sky Pillar's trail; it stands a little left of this tile, over this one and the next
@@ -2627,7 +2627,7 @@ function dressSeason() {
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
       [...P_(1), 16, 13, 1.4, 0.15, 0.1],   // a little one on the plaza
-      [capsArt(0), 'white', 10, 3, 1.2, 0, 0.2],   // the witch's corner by the dojo, beside the cauldron
+      [capsArt(0), 'white', 11, 3, 1.2, 0, 0.2],   // the witch's corner by the dojo, beside the cauldron
     ];
     for (const [c, glow, tx, ty, s, nx, nz] of yard) {
       const b = board(c, tileX(tx) + nx, tileZ(ty) + nz, { s });
@@ -2639,9 +2639,9 @@ function dressSeason() {
     }
     // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
     cauldron = makeCauldron(THREE);
-    cauldron.group.position.set(tileX(10), 0, tileZ(2));
+    cauldron.group.position.set(tileX(11), 0, tileZ(2));
     forest.add(cauldron.group);
-    yardTiles.add(key(10, 2));
+    yardTiles.add(key(11, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
     for (const [colour, at, k] of [['#ff9030', [tileX(21), 1.2, tileZ(17) + 1.4], 0.8]]) {
