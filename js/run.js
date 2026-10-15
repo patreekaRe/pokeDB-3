@@ -17,6 +17,7 @@
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
+import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -1952,6 +1953,19 @@ function homeRoom(b, onward = null) {
             again();
           }));
   }
+  if (home.dojo) {   // Kenmatta's dojo (js/data/dojo.js): his trial board, and the sandbag to hit
+    options.push(spotOption('Trials', 'Kenmatta: The trial ladder, bro. Pick one. TEST YOUR MIGHT.', async () => {
+      if (run !== thisRun) return;
+      const { openDojo } = await import('./dojo.js');
+      const id = await openDojo();
+      if (run !== thisRun) return;
+      if (id) trialFight(TRIALS_BY_ID[id], b); else again();
+    }));
+    options.push(spotOption('Sandbag', 'Hit the sandbag. It never hits back. Kenmatta says that\'s its weakness.', async () => {
+      if (run !== thisRun || !await playOut('train')) return;
+      again();
+    }));
+  }
   if (home.kurt) options.push(spotOption('Workshop', 'Kurt: Ah, a customer! What\'ll it be?', async () => {
     if (run !== thisRun) return;
     const { openWorkshop } = await import('./workshop.js');
@@ -2065,7 +2079,7 @@ function homeRoom(b, onward = null) {
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.kurt) figures.kurt = { npc: 'kurt' };
-  if (home.ken) figures.ken = { npc: 'alder' };
+  if (home.dojo) figures.ken = { npc: 'alder' };
   if (home.mewtwo && !isMewtwoRun(run.starter)) figures.mewtwo = { src: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) };
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
@@ -2094,11 +2108,15 @@ function homeRoom(b, onward = null) {
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, away, gift: gifting, marks: handOver && !nietosNew ? [`who:${home.leader}`] : [], onTalk: (stand) => {
+    extra: { town, home: b.home, away, gift: gifting, belt: home.dojo ? dojoOf(getSave()).belt : null, marks: handOver && !nietosNew ? [`who:${home.leader}`] : [], onTalk: (stand) => {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       if (stand === 'jona') return jonaTalk();
-      if (stand === 'ken' && home.ken) { talks.ken = ((talks.ken ?? -1) + 1) % home.ken.length; return said(home.ken[talks.ken], 'KENMATTA'); }
+      if (stand === 'ken' && home.dojo) {
+        const lines = kenTalk(dojoOf(getSave()).belt);
+        talks.ken = ((talks.ken ?? Math.floor(Math.random() * lines.length)) + 1) % lines.length;
+        return said(lines[talks.ken], 'KENMATTA');
+      }
       if (stand === home.leader && handOver) return handOver();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
       const friend = townsOpen() && !!FAVOURITE[stand];
@@ -2117,6 +2135,13 @@ function homeRoom(b, onward = null) {
     } },
     onFail: out,
   });
+  if (home.dojo) {
+    playMusic('event-room');
+    const word = t.trialSaid;   // back from a trial: his word on it, then any new belt
+    t.trialSaid = null;
+    const ds = dojoOf(getSave()), due = beltOf(getSave()) > ds.belt;
+    if (word || !ds.met || due) setTimeout(() => { if (run === thisRun && run.town === t) dojoTalk(word); }, 900);
+  }
   if (home.meet && townsOpen() && !workshopOf(getSave()).met && !kurtMeeting) {
     kurtMeeting = true;
     setTimeout(async () => {
@@ -2133,6 +2158,70 @@ function homeRoom(b, onward = null) {
   }
 }
 let kurtMeeting = false;   // Kurt's first hello (home.meet) under way
+
+const KENMATTA = { id: 'ken', name: 'KENMATTA', talk: 'assets/trainers/alder.png' };
+let dojoTalking = false;
+
+/** Kenmatta slides in over his dojo: his hello the first time, his word on a trial just fought (`word`), and a new belt
+    tied on once it's earned (each belt once, `save.dojo.belt`), with the furniture it brings. */
+async function dojoTalk(word = null) {
+  if (dojoTalking) return;
+  dojoTalking = true;
+  const thisRun = run;
+  event3dMod?.freezeEvent(true);
+  sayLines([]);
+  try {
+    const save = getSave(), ds = dojoOf(save), now = beltOf(save);
+    const lines = [];
+    if (!ds.met) lines.push('Yo! Welcome to my dojo, bro. I\'m Chad Master Kenmatta. You might know me from beating you up in the ? rooms.',
+      'Out there I teach moves. In here I teach MINDSET. The trial board\'s by the alcove: puzzle fights, one star each.',
+      'Stars and wins against me earn belts. White to black. Every belt, I hook you up with something for your Secret Base. Let\'s get it.');
+    if (word) lines.push(word);
+    const fresh = BELTS.slice(ds.belt + 1, now + 1);
+    for (const b of fresh) lines.push(`${b.name}! ${b.line}`);
+    if (lines.length) await gymTalk(KENMATTA, lines, { lit: true, title: 'CHAD MASTER ' });
+    if (run !== thisRun) return;
+    if (!ds.met || fresh.length) updateSave(d => { d.dojo = { ...dojoOf(d), met: true, belt: Math.max(dojoOf(d).belt, now) }; });
+    if (fresh.length) {
+      playSound('item-get');
+      event3dMod?.eventRoom3d()?.dressBelt?.(now);
+      const { PIECES } = await import('./secret-base.js');
+      const { dojoEarned } = await import('./data/dojo.js');
+      const got = DOJO_REWARDS.filter(r => r.belt && fresh.some(b => b.id === r.belt) && dojoEarned(getSave(), r.kind)).map(r => PIECES[r.kind]?.name).filter(Boolean);
+      tell(`🥋 You earned the ${BELTS[now].name}!${got.length ? ` Kenmatta sent the ${got.join(' and the ')} to your Secret Base.` : ''}`);
+    }
+  } finally { dojoTalking = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
+}
+
+/** A dojo trial (js/data/dojo.js): Kenmatta's word before it, then the fight on the battle screen with its set Pokémon,
+    deck and foe, nothing of the run's own, and back into the dojo after. Never part of a run. */
+async function trialFight(trial, b) {
+  const thisRun = run;
+  event3dMod?.freezeEvent(true);
+  sayLines([]);
+  try { await gymTalk(KENMATTA, trial.before, { lit: true, title: 'CHAD MASTER ' }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+  if (run !== thisRun) return;
+  const starter = STARTERS_BY_ID[trial.starter];
+  const enter = await battleWipe('fight', 'kombat');
+  if (run !== thisRun) return;
+  const maxHp = trial.maxHp ?? trial.hp;
+  const mat = { ...run, starter, stage: 0, deck: [...trial.deck], relics: [], items: [], hp: trial.hp, maxHp, mods: { ...run.mods, playerDmg: 1 }, tower: null, safari: null };
+  const encounter = { def: trial.foe, kind: 'fight', maxHp: trial.foe.hp, strength: 0, dmgMult: 1, trial: trial.goal };
+  startBattle({ run: mat, encounter, onEnd: (result) => afterTrial(trial, result, b) });
+  enter();
+}
+
+/** A trial fought: a star if its goal was met (saved), his word on it, and back into the dojo. */
+function afterTrial(trial, result, b) {
+  if (!run?.town) return;
+  const missed = trialMissed(trial, result);
+  const first = !missed && !dojoOf(getSave()).stars.includes(trial.id);
+  if (first) updateSave(d => { const ds = dojoOf(d); d.dojo = { ...ds, stars: [...ds.stars, trial.id] }; });
+  const reason = { fainted: 'You fainted.', turns: 'Out of turns.', hit: 'You took damage.', burn: 'The last blow wasn\'t Burn.', full: 'You weren\'t at full HP.' }[missed];
+  run.town.trialSaid = missed ? `${reason} ${trial.fail}` : `${trial.after}${first ? ' That\'s a star, bro. ⭐' : ' Still got it.'}`;
+  if (first) playSound('item-get');
+  homeRoom(b);
+}
 const homeVisits = {};
 let townVisit = null;
 

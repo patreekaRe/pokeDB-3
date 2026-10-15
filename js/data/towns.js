@@ -2109,18 +2109,10 @@ export const CLEARING = {
       cast: {
         slowpoke: ['Slowpoke is asleep against the cauldron. Kurt says it came with him from Azalea Town.', 'Slowpoke yawns. Several seconds later, it notices you.', 'Slowpoke\'s tail is in a bucket of water. Nobody knows why. Slowpoke doesn\'t either.'],
       } },
-    // Chad Master Kenmatta's dojo (the user's ask, 2026-10-15: open, big inside, a ring in the middle to walk into): the
-    // hall with the ring js/event-3d.js builds (buildDojoHall()), Ken meditating in it, his three students training
-    dojo: { name: 'Kenmatta\'s Dojo', sub: 'Gold leaf, red lacquer, drums, and a ring in the middle. Chad Master Kenmatta meditates in it.',
-      ken: [
-        '"Yo. Welcome to my dojo. Yeah, I built it myself. With my hands. And my mind."',
-        '"See the ring? Every great fighter has stood in it. Mostly me. I am every great fighter."',
-        '"Rest days? Never heard of them. My Pokémon haven\'t either. I tell them it\'s a holiday."',
-        '"FORTIFY YOUR MIND. Then fortify it again. Then do a set of push-ups. That\'s the Mata-Mindset."',
-        '"I teach out on the roads, in the dojos you find there. This one\'s home. No refunds here either."',
-        '"Gold leaf on the walls. Did I need it? No. Do I deserve it? Every day, bro."',
-        '"Wanna fight me? Find me on a run. In here we only meditate. And flex. Mostly flex."',
-      ],
+    // Kenmatta's dojo (js/data/dojo.js; the user's ask, 2026-10-15: open, big inside, a ring in the middle to walk into):
+    // the hall with the ring js/event-3d.js builds (buildDojoHall()), the trial board left of his medallion, the sandbag
+    // right, Ken meditating in the ring and his three students training round it
+    dojo: { name: 'Kenmatta\'s Dojo', dojo: true, sub: 'Gold leaf, red lacquer and a ring in the middle, Chad Master Kenmatta meditating in it. The trial board hangs left of his medallion.',
       cast: {
         hitmonlee: ['Hitmonlee kicks the training dummy\'s head clean off, then puts it back on, politely.', 'Hitmonlee stretches its legs. They keep going. And going.', 'Hitmonlee bows to you, then to the ring, then to Ken. In that order.'],
         hitmonchan: ['Hitmonchan shadowboxes at its reflection in the gold leaf. The reflection is losing.', 'Hitmonchan taps its gloves together. It wants a sparring partner. It looks at you.', 'Hitmonchan is counting punches. It\'s past nine thousand.'],

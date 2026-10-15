@@ -2330,7 +2330,7 @@ function makePlaces() {
     // open since 2026-10-15 (the user's ask: "make it extravagant, even the inside"): a temple hall five tiles wide
     // (js/hub-dojo.js), its door into the hall with the ring (js/event-3d.js's buildDojoHall())
     id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 2, y: DOJO_AT.ty + 5 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 4, DOJO_AT.ty + 4), tag: [DOJO_AT.tx + 2, 4.9, DOJO_AT.ty + 3], open: true,
-    line: 'Chad Master Kenmatta\'s dojo. Drums inside, and a voice: "FORTIFY YOUR MIND!"',
+    line: 'Chad Master Kenmatta\'s dojo. From inside: the thud of a sandbag, and "FORTIFY YOUR MIND!" His trials and belts wait in there.',
     buttons: [['Go in', () => {}]],
     build: (g) => {
       dojoFx = makeDojo(THREE, { x: tileX(DOJO_AT.tx + 2), z: tileZ(DOJO_AT.ty + 2), fine, texOf, merge: mergeStatic });

@@ -9,28 +9,13 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
-`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
-for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
-run stronger, so no bot check. Three parts:
-- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
-  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
-  unlocks a line from him and a piece of the furniture set.
-- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
-  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
-  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
-  the battle screen with no rewards beyond the star (never a run).
-- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
-  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
-  trophy.
-**Done (2026-10-15): the walk-in room**, made grand on the user's ask ("super aesthetic... extravagant, even the inside
-make it big, give it a fighting ring in the middle you could walk into and around"): the outside is a temple hall five
-tiles wide (`js/hub-dojo.js`), its door open into a 17 x 15 hall with a raised ring you climb into (`buildDojoHall()` in
-`js/event-3d.js`), which is also the run's Move Tutor room now. Ken meditates in the ring and says a line a tap
-(`CLEARING.homes.dojo.ken`); Hitmonlee, Hitmonchan and Machop train round it. Detail in `docs/roadmap-done.md`.
-**Next**: the user playtests the look; then belts (the board can hang on the hall's wall), the trial ladder and the set.
-▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
-The walk-in room is built: add belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
+the belts and the furniture set are in, in the grand hall with the ring (`buildDojoHall()`, the same day; the user
+playtests its look). Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
+Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
+star counts (to 20) already allow for them.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
+docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind

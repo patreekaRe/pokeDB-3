@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'Kenmatta\'s dojo is open: a grand temple hall in the Clearing, gold leaf inside and a fighting ring to climb into. The Move Tutor\'s room is that hall now.'],
+  ['hub', 'Kenmatta\'s dojo is open: a grand temple hall with a ring to climb into, eight puzzle trials (one star each), belts from white to black and seven dojo pieces for your Secret Base.'],
   ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
   ['base', 'A backyard: buy the green plot on the PC\'s House Upgrades (1,000 PokéCoins), then walk out the main room\'s new back door onto your lawn.'],
 ];
@@ -442,5 +442,6 @@ export const IN_THE_GAME = [
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, and Smeargle\'s Furniture store, with new stock every day.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

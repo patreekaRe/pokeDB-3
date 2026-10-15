@@ -161,7 +161,9 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   const ability = base && (aug.abilityAdd || aug.abilityMult) ? { ...base, amount: (base.amount + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
   const gamble = aug.gambler ? aug.gambler[random() < 0.5 ? 0 : 1] : 1;
   const junk = run.relics.includes('griseous-orb') ? [CARDS_BY_ID.sludge, CARDS_BY_ID.sludge] : [];   // StS's Mark of Pain
-  const deck = shuffle([...run.deck.map(id => CARDS_BY_ID[id]), ...junk]);
+  // a dojo trial (js/data/dojo.js) draws its set deck in order, `deck[0]` first
+  const trial = encounter.trial ?? null;
+  const deck = trial ? run.deck.map(id => CARDS_BY_ID[id]).reverse() : shuffle([...run.deck.map(id => CARDS_BY_ID[id]), ...junk]);
   choosing = null;
 
   battle = {
@@ -186,6 +188,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     abyss: 0,          // PP a turn Abyss has given this fight
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     onEnd,
+    trial,             // a dojo trial's goal: lost the moment it can't be met (trialBroken())
+    felledBy: null,    // what landed the last blow: 'burn' or 'seed' at the start of its turn, else a hit
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
@@ -225,7 +229,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     discarded: 0,      // cards discarded from your hand by a card this turn
 
     // the piles of cards
-    drawPile: [...deck.filter(c => !c.innate), ...deck.filter(c => c.innate)],   // innate cards on top: always in the first hand
+    drawPile: trial ? deck : [...deck.filter(c => !c.innate), ...deck.filter(c => c.innate)],   // innate cards on top: always in the first hand
     hand: [],
     discard: [],
     exhaust: [],       // exhausted and power cards: gone for the rest of THIS fight only
@@ -245,7 +249,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       vulnerable: aug.startVuln || 0, // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
       rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
-      moveIndex: randIndex(def.moves.length),
+      moveIndex: trial ? 0 : randIndex(def.moves.length),
       grown: {},                      // what each `grow` move has gained so far, by name (Eternamax's Dynamax Cannon)
     },
 
@@ -270,7 +274,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
   setupBattleScreen();
 
-  log(encounter.kind === 'boss'
+  log(trial ? def.intro ?? `${def.name} steps onto the mat!` : encounter.kind === 'boss'
     ? def.prelude ?? (run.safari ? SAFARI_PRELUDE_LINES[run.safari.areas[run.biome]] : BOSS_PRELUDE_LINES[land]) ?? 'A powerful presence stirs...'
     : `A wild ${def.name} appeared!`);
   if (deferIntro) {
@@ -459,6 +463,7 @@ async function leaderThrow(still) {
 
 function beginPlayerTurn() {
   const b = battle;
+  if (trialBroken(b)) return failTrial(b);
   b.turn += 1;
   b.struck = false;   // the next hit hasn't landed yet: the held shield shows again (shieldPreview())
   if (b.turn === 1 && (hasAbility('torrent') || hasAbility('pressure'))) abilityBanner();
@@ -1070,7 +1075,7 @@ function gainTide(n) {
   b.tide += add;
   b.tideGained += add;
   if (b.aug.abyss) b.abyss = Math.floor(b.tideGained / b.aug.abyss);   // Abyss: +1 PP a turn per n Tide gained
-  if (!b.safari && b.tide > getSave().stats.maxTide) updateSave(d => { d.stats.maxTide = b.tide; });   // Manaphy's goal
+  if (!b.safari && !b.trial && b.tide > getSave().stats.maxTide) updateSave(d => { d.stats.maxTide = b.tide; });   // Manaphy's goal
   pop('player-zone', `🌊 Tide +${add}`, 'note good');
 }
 
@@ -1747,7 +1752,7 @@ async function enemyTurn() {
     renderAll();
     await pause(600);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) return finish(true);
+    if (b.enemy.hp <= 0) { b.felledBy = 'burn'; return finish(true); }
   }
 
   // 1b. Leech Seed drains it and heals you (Grassy Surge keeps it from dropping).
@@ -1764,7 +1769,7 @@ async function enemyTurn() {
     renderAll();
     await pause(600);
     if (battle !== b) return;
-    if (b.enemy.hp <= 0) return finish(true);
+    if (b.enemy.hp <= 0) { b.felledBy = 'seed'; return finish(true); }
   }
 
   // 2. Then it uses its move (with its own sound, if it has one: Kenmatta's FORTIFY YOUR MIND), yelling its `say` first.
@@ -1902,6 +1907,24 @@ function attackDamage(move) {
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
+/** A dojo trial that can no longer be won, as your next turn would start: past its last turn, or hit when it
+    mustn't be. */
+const trialBroken = (b) => !!b.trial && b.turn > 0 && ((b.trial.turns && b.turn >= b.trial.turns) || (b.trial.noDamage && b.damageTaken > 0));
+
+/** The trial lost: said in the text box, and it ends there, back to the dojo. */
+async function failTrial(b) {
+  b.busy = true;
+  b.over = true;
+  renderAll();
+  playSound('no-pp');
+  log(b.trial.noDamage && b.damageTaken > 0 ? 'You took damage! The trial is over.' : 'Out of turns! The trial is over.');
+  await sleep(1600);
+  if (battle !== b) return;
+  stopAura();
+  closeDialog('piles-dialog');
+  b.onEnd({ won: false, trialFailed: b.trial.noDamage && b.damageTaken > 0 ? 'hit' : 'turns', hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, turns: b.turn, tally: tallyOf(b) });
+}
+
 /** The fanfare after a win: the wild one, or Red/Blue's trainer victory after an Alpha (Team Rocket's too) or a boss. */
 const winTrack = (kind, leader) => (leader ? 'gym-victory' : kind === 'elite' || kind === 'boss' ? 'trainer-victory' : 'victory');
 
@@ -1936,7 +1959,7 @@ async function finish(won) {
 
   stopAura();
   closeDialog('piles-dialog');
-  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent, exhausted: [...new Set(b.recycled)] });
+  b.onEnd({ won, foe: b.def.name, move: won ? null : b.blow ?? null, hp: b.hp, maxHp: b.maxHp, damageTaken: b.damageTaken, tally: tallyOf(b), spent: b.spent, exhausted: [...new Set(b.recycled)], turns: b.turn, felledBy: b.felledBy });
 }
 
 /**
