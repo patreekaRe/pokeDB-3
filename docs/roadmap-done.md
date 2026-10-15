@@ -2572,3 +2572,8 @@ The user's ask, from a phone screenshot: the two jack-o'-lanterns at the gate's 
 game's Pokéstop moved up beside the gate's posts, one each side (`SIGN_AT` 12,-1 / `STOP_AT` 18,-1, nudged in by
 `STAND_IN`); and the signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the
 Nietos' name board) hop every few seconds with a gold glint at their corner (`beckon()` / `liveBeckons()`), still when calm.
+### The Safari gate in 3D (2026-10-15, the user's ask: "so bland and needs a big 3D aesthetic update")
+- The Clearing's painted Safari Zone board is now a real model, `safariGate()` in `js/hub-safari.js` (`safariArt()` gone):
+  thatched log towers with pennants, a thatched roof over the SAFARI ZONE board, a swaying Safari Ball crest, lanterns,
+  bunting, tiki torches with a warm lamp, palms, ferns, a bamboo palisade and a plank threshold; shut, a CLOSED rope and
+  nothing lit. Not changed: the Safari lobby's painted window onto the gate (`js/safari-lobby.js`), which could follow it.
