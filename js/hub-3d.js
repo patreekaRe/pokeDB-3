@@ -31,6 +31,7 @@ import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { makeDojo } from './hub-dojo.js';
+import { kenWinsOf } from './data/dojo.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
@@ -2328,12 +2329,15 @@ function makePlaces() {
     buttons: kurtIn ? [['Go in', () => {}]] : [],
     build: (g) => kurtWorkshop(g, tileX(WORKSHOP_AT.tx + 1), tileZ(WORKSHOP_AT.ty + 1), kurtIn),
   });
+  // shut till you've beaten Kenmatta once in a run (the user's ask, 2026-10-15)
+  const dojoIn = kenWinsOf(save) >= 1;
   list.push({
     // open since 2026-10-15 (the user's ask: "make it extravagant, even the inside"): a temple hall five tiles wide
     // (js/hub-dojo.js), its door into the hall with the ring (js/event-3d.js's buildDojoHall())
-    id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 2, y: DOJO_AT.ty + 5 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 4, DOJO_AT.ty + 4), tag: [DOJO_AT.tx + 2, 4.9, DOJO_AT.ty + 3], open: true,
-    line: 'Chad Master Kenmatta\'s dojo. From inside: the thud of a sandbag, and "FORTIFY YOUR MIND!" His trials and belts wait in there.',
-    buttons: [['Go in', () => {}]],
+    id: 'dojo', name: 'Kenmatta\'s Dojo', step: { x: DOJO_AT.tx + 2, y: DOJO_AT.ty + 5 }, tiles: rect(DOJO_AT.tx, DOJO_AT.ty, DOJO_AT.tx + 4, DOJO_AT.ty + 4), tag: [DOJO_AT.tx + 2, 4.9, DOJO_AT.ty + 3], open: dojoIn,
+    line: dojoIn ? 'Chad Master Kenmatta\'s dojo. From inside: the thud of a sandbag, and "FORTIFY YOUR MIND!" His trials and belts wait in there.'
+      : 'Chad Master Kenmatta\'s dojo. The door won\'t budge. A note on it: "Beat me in a ? room first, bro. Then we train. - Ken."',
+    buttons: dojoIn ? [['Go in', () => {}]] : [],
     build: (g) => {
       dojoFx = makeDojo(THREE, { x: tileX(DOJO_AT.tx + 2), z: tileZ(DOJO_AT.ty + 2), fine, texOf, merge: mergeStatic });
       glowMats.push(...dojoFx.glows);

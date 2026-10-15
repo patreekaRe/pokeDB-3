@@ -2541,3 +2541,9 @@ signs, Ken's line in the Clearing, no console errors; still parts baked with `me
   biome (four placeless ones anywhere) and handed in to them at home for 60 PokéCoins. Detail: docs/reference/towns.md.
   Step 8's plan, kept: hearts (5 a friend, from gifts) unlock heart lines, base visits from 3 and sitting at 5, signature
   pieces at 3 and 5, secret recipes at 4, letters from 2, a Friendship badge at 5 and the friends' own requests from 3.
+
+### Kenmatta's dojo locked till he's beaten once (2026-10-15)
+
+The user's ask: "Lock the dojo until you beat Ken 1 time". The Clearing's `dojo` place (`js/hub-3d.js`) is `open: false`
+with no Go in until `kenWinsOf(save) >= 1` (a run win, `save.kenWins`, or an old `kenBeaten`); its card reads Ken's note
+on the door. `?dojo` still walks straight in for playtests.

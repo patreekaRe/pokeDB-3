@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
+  ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
