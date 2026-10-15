@@ -2604,3 +2604,4 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
   it after playtesting, "New sky pillar rooms are good", and it was merged to `main`): `dressTower()` in `js/arena-3d.js`,
   sage stone, jade runes, windows on the pixel sky; `&arena2d` keeps the old pixel room. Next is part 2, the climb's
   painted tower (`docs/roadmap.md`, Waiting on the user).
+- **Done (2026-10-15): a picket fence round the Ancient Tree** (the user's ask): back and both sides, meeting the garden arch on the right (`treeFence()` in `js/hub-3d.js`).

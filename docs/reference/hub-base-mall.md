@@ -112,6 +112,10 @@ The first section began as the note on playtesting the live site and grew into t
   `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
   (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
   `?yard=big` lends the bigger one.
+- **The Ancient Tree's picket fence** (2026-10-15, the user's ask: a fence round the back and sides of the tree, the arch
+  its way in on the right): `treeFence()` in `js/hub-3d.js`, painted like the arch's gate, merged with `mergeStatic()`.
+  It runs a row behind the tree (`FENCE_BACK`, row 1), down its left side on column `FENCE_LEFT` (18) to its foot, and down
+  its right side to the arch's right post (column `ARCH_AT.tx`); its tiles go in `dressTiles`.
 - **The garden arch, the backyard's way in** (2026-10-15, the user's ask: "the entrance to the backyard from outside,
   an archway you unlock"; it was a back door of the main room, `backDoorOf()`, now gone, so every main-room wall can be
   built onto again): the Clearing's place `backyard` on `ARCH_AT` (27, 3; drawn `ARCH_X` 0.3 left, blocking it and the
