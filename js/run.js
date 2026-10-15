@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS, VISIT_HEARTS } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -2005,7 +2005,8 @@ function homeRoom(b, onward = null) {
         : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again.`
           : `${who} ${likes} the ${G[id].name}.`);
       const news = HEART_LINES[home.leader] ? ` Talk to ${both ? 'them' : GYM_BY_ID[home.leader].name}: there's something new to hear.` : '';
-      tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${news}` : `Friendship ${got.hearts}/${HEARTS}!${news}`)
+      const drop = got.hearts === HEARTS ? ' They\'ll drop by your Secret Base often now.' : got.was < VISIT_HEARTS && got.hearts >= VISIT_HEARTS ? ` ${both ? 'They' : GYM_BY_ID[home.leader].name} might drop by your Secret Base now.` : '';
+      tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${drop}${news}` : `Friendship ${got.hearts}/${HEARTS}!${drop}${news}`)
         : `You're already the best of friends. ${both ? 'They' : GYM_BY_ID[home.leader].name} still ${both ? 'love' : 'loves'} it.`);
     }
     again();
