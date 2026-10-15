@@ -1899,6 +1899,21 @@ function askPick(step) {
 function homeRoom(b, onward = null) {
   const town = placeOf(run.town.id), home = town.homes[b.home], thisRun = run, t = run.town;
   const out = () => { if (run === thisRun) (onward ? onward() : town.home ? goHome(b.back ?? b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
+  // the shard handed in: out of the door under a slow fade rather than a cut (the user's ask, 2026-10-14: "it happens so
+  // fast"), your partner walking to the doormat first; the town's room lifts it once it's in (goHome()'s hub does its own)
+  const outSlow = async () => {
+    if (run !== thisRun) return;
+    event3dMod?.freezeEvent(true);
+    await event3dMod?.walkToDoor();
+    if (run !== thisRun) return;
+    const { curtain } = await import('./hd2d.js');
+    playSound('door');
+    await curtain(true, 650);
+    if (run !== thisRun) return curtain(false, 0);
+    if (onward) { onward(); curtain(false, 500); }
+    else if (town.home) goHome(b.back ?? b.id);
+    else townRoom(() => setTimeout(() => curtain(false, 700), 200), b.door);
+  };
   const again = () => { if (run === thisRun) { checkpoint(); homeRoom(b); } };
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
@@ -1990,7 +2005,7 @@ function homeRoom(b, onward = null) {
     await talkOut(cstep.thanks);
     if (run !== thisRun) return;
     tell(coins ? `Quest step done! +${coins} PokéCoins.` : 'Quest step done!');
-    if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
+    if (cstep.kind === 'shard') return outSlow();   // out to the plaza: js/hub-3d.js lights the stone as you step out
     again();
   } : mineReady ? async () => {
     const pick = mine.pick ? await askPick(mine) : null;
@@ -2004,7 +2019,7 @@ function homeRoom(b, onward = null) {
     if (pick) tell(`${leader.name} picked the ${pick.label}!`);
     if (mine.gives) tell(`${KEY_BY_ID[mine.gives].icon} ${KEY_BY_ID[mine.gives].name} went into your Satchel.`);
     tell(coins ? `Quest step done! +${coins} PokéCoins.` : real ? 'Quest step done!' : 'Quest step done! (A playtest: nothing is saved.)');
-    if (mine.kind === 'shard') { t.mendNext = true; return out(); }   // out into the town, where the stone mends (townRoom())
+    if (mine.kind === 'shard') { t.mendNext = true; return outSlow(); }   // out into the town, where the stone mends (townRoom())
     again();
   } : reqMine ? async () => {
     const was = real ? isMended(town.id) : mended(tst);

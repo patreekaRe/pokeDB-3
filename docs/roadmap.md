@@ -308,6 +308,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Walk-up (2026-10-14, the user's ask: out of the Nietos' house the stone was off the screen):** your partner now walks
    up to the stone's doorstep first, the camera following, then the light show plays (a camera pan was tried first; the
    user picked the walk-up). The Clearing: `cutscene` in `js/hub-3d.js`. Towns: `t0` waits on the walk in `mendStone()`.
+   Leaving the house after the shard is no longer a cut: a walk to the doormat and a fade (`outSlow()` in `js/run.js`).
    On `main`; waiting on the user's playtest.
 **Done (2026-10-14): the towns' great halls, inside, made huge** (the user: "they SUCK the insides need to be HUGE and be
    super aesthetic and make sense"): the theater, bathhouse, aquarium, Nursery and caravanserai are 17 x 12 halls built

@@ -9646,6 +9646,7 @@ function goTo(kind) {
 }
 
 function arrived() {
+  if (doorWalk) return;
   let kind = aim;
   aim = null;
   if ((kind === null || kind === undefined) && R.exitAt && walker.tile.x === R.exitAt.x && walker.tile.y === R.exitAt.y) kind = 'exit';   // walked into a town's far gate
@@ -10241,6 +10242,24 @@ export const figure3d = (stand, move) => controls.does(stand, move);
 /** The room's controls while one is up, for figureDoes() and playOut() in js/run.js. */
 /** Hold your Pokémon where it stands, or let it walk again: a Gym Leader's talks, from the first beat of their slide-in
     to their last line (the user's ask, 2026-10-13: you only click through, then you're free). */
+/** Your partner walked to the room's way out without leaving through it (the caller leaves, under its own fade; the
+    shard handed in at a leader's house, js/run.js's homeRoom()): resolves on the doormat, or after `ms` regardless. */
+export function walkToDoor(ms = 4000) {
+  if (!alive() || calm) return Promise.resolve();
+  aim = null; doorWalk = true;
+  walker.path = route(walker.tile, R.exitAt ?? DOOR);
+  const t0 = performance.now();
+  return new Promise(resolve => {
+    const wait = () => {
+      if (alive() && walker.path.length && performance.now() - t0 < ms) return setTimeout(wait, 50);
+      doorWalk = false;
+      resolve();
+    };
+    wait();
+  });
+}
+let doorWalk = false;
+
 export function freezeEvent(on) {
   frozen = !!on;
   if (on) { walker.path = []; aim = null; }

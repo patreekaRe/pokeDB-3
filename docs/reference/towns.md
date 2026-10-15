@@ -247,7 +247,10 @@ WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller 
 screen; they picked this over a camera pan): in the Clearing `homeNews()` routes it to the Waystone's doorstep (`SPAWN`)
 under `cutscene` (taps, drags and `arrived()` wait), faces it to the stone, then the light; in a town `mendStone()` routes
 it to the stone's door step (`R.doors[st.spot]`) and starts the show (`t0`) once it's there, the crystal rising off it
-beside the stone. Both give up waiting after 9 s.
+beside the stone. Both give up waiting after 9 s. Out of the leader's house first (the user's ask, same day: "it
+happens so fast"): `outSlow()` in `homeRoom()` walks your partner to the doormat (`walkToDoor()` in `js/event-3d.js`,
+`doorWalk` keeping `arrived()` from leaving), then a 650 ms fade to black with the door sound; the town's room lifts it
+once it's in (`townRoom()`'s `covered`), the Clearing's hub through `goHome()` as any door.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →
