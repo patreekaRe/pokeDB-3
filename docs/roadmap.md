@@ -307,8 +307,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    shard in at the board). Next: whatever they want tuned in it.
 **Done (2026-10-14): the towns' great halls, inside, made huge** (the user: "they SUCK the insides need to be HUGE and be
    super aesthetic and make sense"): the theater, bathhouse, aquarium, Nursery and caravanserai are 17 x 12 halls built
-   as what they are (`js/town-halls.js`, `docs/reference/towns.md`'s last section). On `main`, waiting on the user's
-   playtest (`?town=<biome>&towns&home=<hall>`); ask which hall to push further. Not looked at by eye in this session.
+   as what they are (`js/town-halls.js`, `docs/reference/towns.md`'s last section). On `main`; the user playtested
+   them the same day and they look good. Nothing open; any later tweak is the user's ask.
 **Done (2026-10-14): the Gym Leaders' homes, inside, made big** (the user: "so small and very bland"): 13 x 10 rooms, each
    leader's own walls, floor, light and props (`js/leader-homes.js`, `docs/reference/towns.md`'s last section). On `main`,
    waiting on the user's playtest (`?town=<biome>&home=<leader>&gymwins=1`); ask which house to push further next.
