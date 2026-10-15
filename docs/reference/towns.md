@@ -277,3 +277,5 @@ the shard's hand-in walks you out onto the plaza. Its Do step counts in the Clea
 `placeOf()`; `countTown()` counts nothing once a board-less questline is done). Materials Glowmoss and Whisper Acorn drop in
 the Clearing biome; Kurt's `waystone-chime` (4 acorns, 1 moss); `shard-clearing` floats over a Clearing Alpha
 (`shardHere()`). `nietosHome()` is on with the towns (`NIETOS_LIVE` true and `townsOpen()`), `?nietos` for a page load.
+- **Mewtwo's Sealed Weakness, its pentagram and the Depths camp** (step 5, 2026-10-15): each mended town gives Mewtwo a
+  tenth of its damage back in the Depths; detail in `docs/reference/mewtwo-and-depths.md`'s last section.

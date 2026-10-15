@@ -26,9 +26,10 @@ import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
-import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { MAX_LEVEL, LEVELS, runMods as baseMods, runFloors, isMewtwoRun } from './data/difficulty.js';
+import { sealedShards, newShards, campLines, campOpen, shardsBack } from './data/sealed.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
-import { gateBar, setGateBar } from './gate.js';
+import { gateBar, setGateBar, gateHp } from './gate.js';
 import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
@@ -90,6 +91,9 @@ export const isRunActive = () => run !== null && !run.over;
 export const runBiome = () => (isRunActive() ? (run.safari || run.tower ? run.biome : pageIndexOf(mainBiome().id)) : undefined);
 /** The Safari area the run is in, for the top bar's Pokédex; undefined outside a Safari run. */
 export const runSafariArea = () => (isRunActive() && run.safari ? run.safari.areas[run.biome] : undefined);
+
+/** A biome's rules, Mewtwo's Sealed Weakness in the Depths counted from the Waystones mended (`?shards=N` plays it at N). */
+const runMods = (starter, level, biome) => baseMods(starter, level, biome, sealedShards(getSave()));
 
 /** A Safari Zone daily run (js/data/safari.js): the date's seed drives every roll, through js/rng.js. */
 const isSafari = () => Boolean(run?.safari);
@@ -294,6 +298,7 @@ function checkpoint() {
     atFork: run.atFork,       // saved at the crossroads, so Continue comes back to it (walkOn())
     gymWon: run.gymWon,       // saved in the gym after its leader's beaten, so Continue comes back to it (afterFight())
     town: run.town,           // saved in a gateway town, so Continue comes back to it (walkOn())
+    camp: run.camp,           // Mewtwo's, saved in the Depths camp, so Continue comes back to it (fallIn())
     deck: run.deck,
     relics: run.relics,
     items: run.items,
@@ -418,6 +423,11 @@ export function continueRun(saved) {
   mapFilm = null;
   if (run.town && TOWNS[run.town.id]) {   // left in a gateway town: back to it, the biome's map after its far gate
     townRoom();
+    return null;
+  }
+  if (run.camp) {   // Mewtwo left in the Depths camp: back to it, the Depths down the mine at its back
+    playMusic('seal');
+    campRoom('mewtwo');
     return null;
   }
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
@@ -620,6 +630,24 @@ export function peekTown(starter, id, house = null) {
   return true;
 }
 
+/** Playtest shortcut: ?camp walks your walking buddy (or &starter=id) round the Depths camp, as from the Clearing's
+    Sealed Gate (with ?towns, the gate broken; &shards=N for N Waystones lit). Nothing is saved. */
+export function peekCamp(starter) {
+  if (!starter) return false;
+  peeking = true;
+  beginRun(starter, 0, ':camp');
+  return true;
+}
+
+/** The ?strike playtest's landing (`?gate=0&strike=0&towns`): a won run's fall into the Depths camp, `close` the descent's;
+    nothing is saved, and Onward goes to the menu instead of a win scene. */
+export function peekLanding(starter, stage, close) {
+  peeking = true;
+  landing = { stage, close };
+  beginRun(starter, 0, ':landing');
+}
+let landing = null;
+
 /** Playtest shortcut: ?descent=mewtwo plays Mewtwo's fall into the Crystal Depths as if its biome 3 boss had just
     fallen (hurt to half HP, so the heal shows), then the Depths' intro film and map. Nothing about the run is saved. */
 export function peekDescent(starter) {
@@ -713,6 +741,19 @@ function peekRoom(id) {
     startBiome(true);
     if (at > 0) run.current = run.map.floors[at - 1][0].id;
     return showMap();
+  }
+  if (id === ':camp') {   // from the Clearing's Sealed Gate (visitCamp()), or a ?camp playtest
+    run.stage = 0;
+    dropNotes();
+    document.body.classList.add('town-visit');
+    campRoom('visit');
+    return setTimeout(() => import('./hd2d.js').then(m => m.curtain(false, 420)), 700);
+  }
+  if (id === ':landing') {
+    run.stage = Math.min(landing.stage, run.starter.line.length - 1);
+    dropNotes();
+    campRoom('win', () => $('brand-btn').click());
+    return setTimeout(landing.close, 900);
   }
   if (id === ':descent') {
     run.biome = finalBiome(run.starter) - 1;
@@ -1974,6 +2015,92 @@ function homeRoom(b) {
   });
 }
 const homeVisits = {};
+
+/* The Depths camp (docs/roadmap.md's Towns step 5): a crystal miners' old camp under the broken gate, walked in 3D
+   (js/event-3d.js's buildCamp()). `mode`: 'win', a won run fallen through the gate (`done` then plays its celebration;
+   the win was recorded before the fall), 'visit', from the Clearing's Sealed Gate (Leave goes home), or 'mewtwo',
+   Mewtwo's own run after its third boss (the way in at the back takes it on into the Depths). Mewtwo stands by the way
+   in (not when you are Mewtwo): talking to it says where the shards stand and brings up the pentagram (js/pentagram.js),
+   as does the seal's dais. Something new (a shard back since it last saw, or the first meeting) plays as you land;
+   with nothing new a won run's landing is one tap through. Mewtwo's own runs see the pentagram as they land. */
+const campVisit = { id: 'camp' };
+let campBusy = false;
+function campRoom(mode, done = null, again = false) {
+  const thisRun = run, mewtwo = isMewtwoRun(run.starter), down = mode === 'mewtwo';
+  const shiny = getSave().shiny.on.includes('mewtwo');
+  const real = !peeking || !!visiting;   // a visit from home is real like a town's; a ?camp playtest saves nothing
+  const talks = async (auto = false) => {
+    if (run !== thisRun || campBusy) return;
+    campBusy = true;
+    event3dMod?.freezeEvent(true);
+    sayLines([]);
+    try {
+      const save = getSave(), first = !mewtwo && !save.campMet;
+      if (!mewtwo) {
+        event3dMod?.eventRoom3d()?.does('mewtwo', 'hop');
+        playCry('mewtwo');
+        await gymTalk({ id: 'mewtwo', name: 'MEWTWO', talk: `assets/pokemon/mewtwo${shiny ? '-shiny' : ''}-front.gif` },
+          campLines(save, { first, fresh: newShards(save).length, short: auto }), { lit: true, title: '', look: 'psychic' });
+        if (first && real) updateSave(d => { d.campMet = true; });
+      }
+      if (run !== thisRun) return;
+      const { showPentagram } = await import('./pentagram.js');
+      await showPentagram({ record: real });
+    } finally {
+      campBusy = false;
+      if (run === thisRun) event3dMod?.freezeEvent(false);
+    }
+  };
+  const back = () => { if (run === thisRun) campRoom(mode, done, true); };
+  const leave = async () => {
+    if (run !== thisRun) return;
+    if (campBusy) return back();   // Mewtwo still talking: the key stays (showChoice's are once each)
+    if (mode === 'visit') return visiting ? goHome('gate') : $('brand-btn').click();   // a ?camp playtest: to the menu
+    const { curtain } = await import('./hd2d.js');
+    await curtain(true, 360);
+    if (mode === 'mewtwo') {   // on down into the Depths proper: their map, and their intro film over it
+      run.camp = false;
+      run.biome += 1;
+      startBiome();
+      return curtain(false, 420);
+    }
+    $('reward-options').className = 'reward-options';   // the room puts itself away
+    showScreen('battle-screen');
+    const next = done?.();
+    setTimeout(() => curtain(false, 420), 300);
+    return next;
+  };
+  const options = [{ ...spotOption('Seal', 'The seal\'s pentagram, carved in the dais. A socket at each point for a Waystone\'s shard.', async () => { await talks(false).catch(() => {}); back(); }) }];
+  if (!mewtwo) options.push(spotOption('Mewtwo', 'Mewtwo keeps watch by the way in.', async () => { await talks(false).catch(() => {}); back(); }));
+  showChoice({
+    title: 'DEPTHS CAMP',
+    sub: [down ? 'The miners\' old camp, deep under the gate. The way into the Depths proper is the mine at the back.'
+      : mode === 'win' ? 'Your fall ends softly on crystal dust: an old miners\' camp, deep under the gate. Mewtwo keeps watch by the way in.'
+        : 'An old miners\' camp, deep under the gate. Mewtwo keeps watch by the way in.'],
+    options,
+    skipLabel: down ? 'Go down' : mode === 'win' ? 'Onward' : 'Leave',
+    onSkip: () => { leave(); },
+    layout: 'event-room camp-room',
+    ask: false,
+  });
+  const figures = mewtwo ? {} : { mewtwo: { src: `assets/pokemon/mewtwo${shiny ? '-shiny' : ''}-front.gif` } };
+  const save = getSave(), lit = shardsBack(save), gems = RING.map(t => (lit.includes(t.id) ? t.glow : null));
+  const news = !again && (down || newShards(save).length > 0 || (!mewtwo && !save.campMet));
+  event3d(campVisit, 'camp', figures, null, {
+    extra: { biome: 'depths', camp: { gems, down }, onTalk: (stand) => { if (stand === 'mewtwo') talks(false).then(back, () => {}); } },
+    onIn: () => { if (news) talks(true).then(back, () => {}); },
+    onFail: () => { if (news && run === thisRun) talks(true).then(leave, leave); else leave(); },
+  });
+}
+
+/** The Clearing's Sealed Gate's second button: your walking buddy goes down to the Depths camp outside any run. */
+export function visitCamp(starter, onHome) {
+  if (!starter || !campOpen(gateHp())) return false;
+  peeking = true;
+  visiting = { onHome, id: 'camp' };
+  beginRun(starter, 0, ':camp');
+  return true;
+}
 let townVisit = null;
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
 const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
@@ -2283,6 +2410,12 @@ async function fallIn() {
   run.hp = run.maxHp;
   if (healed) playSound('heal-hp');
   setHpBar('run', run.hp, run.maxHp);
+  if (campOpen(gateHp())) {   // the Depths camp first (Towns step 5): the pentagram, then down the mine at its back
+    run.camp = true;
+    if (run.map) checkpoint();
+    campRoom('mewtwo');
+    return setTimeout(close, 900);
+  }
   run.biome += 1;
   startBiome();   // the map, and the Depths' intro film over it, before the dark lifts
   close();
@@ -3197,7 +3330,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home', 'camp'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
@@ -3880,9 +4013,11 @@ function announceUnlocks() {
 function strikeGate(won, atLastBoss) {
   const before = getSave().gateHp;
   if (peeking || isMewtwoRun(run.starter) || isSafari() || !(won || atLastBoss)) return null;
-  // broken already: until a Mewtwo run has reached the Depths, a win is thrown back from the open gate (a hint, no strike)
-  if (before <= 0) return won && getSave().stats.deepestBiome < 4 ? { scene: { starter: run.starter, stage: run.stage,
-    shiny: getSave().shiny.on.includes(run.starter.id), kind: 'open', land: gateLand() } } : null;
+  // broken already: a win falls through it into the Depths camp (Towns step 5), or with the towns off, until a Mewtwo run
+  // has reached the Depths, is thrown back from the open gate (a hint, no strike)
+  const camp = won && campOpen(before);
+  if (before <= 0) return camp || (won && getSave().stats.deepestBiome < 4) ? { scene: { starter: run.starter, stage: run.stage,
+    shiny: getSave().shiny.on.includes(run.starter.id), kind: camp ? 'camp' : 'open', land: gateLand() } } : null;
   const hp = won ? Math.max(run.level === MAX_LEVEL ? 0 : GATE_SLIVER, before - GATE_HIT[run.level]) : before;
   const first = !getSave().gateSeen;
   updateSave(d => { d.gateHp = hp; d.gateSeen = true; });
@@ -4070,8 +4205,11 @@ function endRun(won, atLastBoss = false, loss = null) {
   // the last boss falls, the floor splits and your Pokémon drops down to the Sealed Gate and strikes it (a run lost at the
   // last boss is dragged down too, and fails); then the win scene, the unlocks and the result (the user's order, 2026-10-02)
   // a lost run's recap (who beat it, its numbers, its HP over the run, its deck) comes after the gate, before the rest
+  const celebrate = () => (record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null);
   playGate(gate?.scene).then((close) => {
-    const next = record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null;
+    // fallen into the Depths camp: walked round under the dark, then leaving it plays the celebration
+    if (gate?.scene?.kind === 'camp') return new Promise(done => { campRoom('win', () => Promise.resolve(celebrate()).then(done, done)); setTimeout(close, 900); });
+    const next = celebrate();
     if (close) setTimeout(close, 800);   // the open gate's dark scene stays under the next one until it covers the screen
     return next;
   }).then(result);
@@ -4093,7 +4231,7 @@ function badgeItem(badge) {
 export async function playGate(scene) {
   if (!scene) return;
   const close = await descent(scene);
-  if (scene.kind === 'open') return close;   // no strike: the caller closes it under whatever comes next
+  if (scene.kind === 'open' || scene.kind === 'camp') return close;   // no strike: the caller closes it under whatever comes next
   await gateScene({ ...scene, onShow: close });
   if (scene.kind === 'loss') playMusic(null);   // the seal's song fades: a lost run's recap and result are quiet, as before
 }

@@ -34,7 +34,7 @@ const ACROSS = 6.4, LOOK_Y = 0.8;
 let PITCH = 0.42;   // the camera's tilt: a town's is higher, to show its layout (useSize())
 let DOOR = { x: 5, y: ROWS - 1 };
 const NPC_PX = 1 / 34;        // a trainer's sprite pixel, a touch under a Pokémon's, so they stand about a head taller
-export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
+export const ROOMS_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home', 'camp'];
 
 let THREE, renderer, scene, camera, post, view, hemi, sun;
 let built = {}, R = null, mon = null, mat = null;
@@ -53,7 +53,7 @@ const ease = (k) => k * k * (3 - 2 * k);
 let BACK_Z = -ROWS / 2;
 let FOLLOW = false;          // a big room (a town): the sun's shadow box goes with the camera, not the room's middle
 /** A kind's size, its doorway at the front's middle; `view` rows of it in the shot at once, which slides with you. */
-const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 } };
+const SIZES = { gym: { cols: 13, rows: 16, view: 8, across: 5.2, shadow: 12 }, camp: { cols: 13, rows: 9, shadow: 10 } };
 /** A town's size is its map's, a home's its HOMES entry's. */
 function sizeOf(kind, at) {
   if (kind === 'town' && at.town) return { cols: at.town.map[0].length, rows: at.town.map.length, door: at.town.door.x, view: 12, across: 12, shadow: 16, pitch: 0.7, follow: true };
@@ -1686,15 +1686,17 @@ function caveWall(W, C, side) {
   return f.c;
 }
 
-function caveFloor(C) {
+/** `pools`: [tx, ty, colour, radius] of light on it (the grotto's: the shaft's round the dais). */
+function caveFloor(C, pools = [[5.5, 2.2, 'rgba(255,248,220,0.35)', 3.4]]) {
   const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f, r = seeded(52), s = C.vein ? f.shine() : null;
   g.fillStyle = C.ground[1]; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 420; i++) { g.fillStyle = C.ground[Math.floor(r() * 4)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 4, 0.8 + r() * 2.6, r() * 3, 0, Math.PI * 2); g.fill(); }
   for (let i = 0; i < 160; i++) { g.fillStyle = C.stone[2 + Math.floor(r() * 2)]; g.beginPath(); g.arc(r() * W, r() * H, 0.4 + r() * 0.9, 0, Math.PI * 2); g.fill(); }
-  // the shaft's pool of light round the dais
-  const x = 5.5 * T, y = 2.2 * T, l = g.createRadialGradient(x, y, 4, x, y, 3.4 * T);
-  l.addColorStop(0, 'rgba(255,248,220,0.35)'); l.addColorStop(1, 'rgba(255,248,220,0)');
-  g.fillStyle = l; g.fillRect(0, 0, W, H);
+  for (const [tx, ty, col, rad] of pools) {
+    const x = tx * T, y = ty * T, l = g.createRadialGradient(x, y, 4, x, y, rad * T);
+    l.addColorStop(0, col); l.addColorStop(1, col.replace(/[\d.]+\)$/, '0)'));
+    g.fillStyle = l; g.fillRect(0, 0, W, H);
+  }
   if (C.moss) for (let i = 0; i < 26; i++) { g.fillStyle = C.moss[i % 3]; g.globalAlpha = 0.7; g.beginPath(); g.ellipse(r() * W, r() * H, 2 + r() * 6, 1.4 + r() * 3, r() * 3, 0, Math.PI * 2); g.fill(); }
   g.globalAlpha = 1;
   if (s) for (let i = 0; i < 10; i++) {
@@ -1893,6 +1895,236 @@ async function buildGrotto(figs, { biome }) {
       ray.children[0].material.opacity = 0.15;
       if (fly && !calm) { fly(Math.min(1, k / 1.4)); if (k > 1.4) fly = null; }
     } else { c.hinge.rotation.x = 0; c.inside.intensity = 0; c.pour.material.opacity = 0; ray.children[0].material.opacity = 0.09; }
+  });
+}
+
+/* ---------- the Depths camp (docs/roadmap.md's Towns step 5) ---------- */
+
+/** A miners' A-frame tent, its flap open on the front (+z before `turn`). */
+function tent(x, z, turn, cloth) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  g.rotation.y = turn;
+  B.group.add(g);
+  const geo = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-0.78, 0), new THREE.Vector2(0.78, 0), new THREE.Vector2(0, 1.1)]), { depth: 1.5, bevelEnabled: false });
+  geo.translate(0, 0, -0.75);
+  mesh(geo, std({ color: cloth[0], roughness: 1, flatShading: true }), 0, 0, 0, g);
+  const door = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.4, 0), new THREE.Vector2(0.4, 0), new THREE.Vector2(0, 0.74)])), new THREE.MeshBasicMaterial({ color: '#140a1e' }), 0, 0.002, 0.755, g);
+  door.castShadow = false;
+  const flap = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.42, 0), new THREE.Vector2(0, 0.76)])), std({ color: cloth[1], roughness: 1, side: THREE.DoubleSide }), 0.02, 0.002, 0.77, g);
+  flap.rotation.y = -0.5;
+  const pole = std({ color: '#5a3a24', roughness: 0.9 });
+  for (const zz of [-0.82, 0.82]) mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.24, 6), pole, 0, 0.62, zz, g);
+  return g;
+}
+
+/** A rusty mine cart on its wheels, heaped with crystal. */
+function crystalCart(x, z, C, rnd) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const rust = std({ color: '#7a4a3a', roughness: 0.7, metalness: 0.35 }), iron = std({ color: '#3a3440', metalness: 0.6, roughness: 0.5 });
+  mesh(rbox(0.66, 0.42, 0.92, 0.05), rust, 0, 0.44, 0, g);
+  mesh(new THREE.BoxGeometry(0.7, 0.05, 0.96), iron, 0, 0.66, 0, g);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
+    const w = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), iron, sx * 0.34, 0.15, sz * 0.27, g);
+    w.rotation.z = Math.PI / 2;
+  }
+  crystals(x, z, 0.42, C, rnd, { n: 4, y: 0.6 });
+}
+
+/** The rails from the way in, out into the camp. */
+function mineRails(x, z0, z1) {
+  const iron = std({ color: '#5a5260', metalness: 0.7, roughness: 0.4 }), wood = std({ color: '#4a3020', roughness: 0.95 });
+  for (const dx of [-0.28, 0.28]) mesh(new THREE.BoxGeometry(0.05, 0.05, z1 - z0), iron, x + dx, 0.05, (z0 + z1) / 2).raycast = () => {};
+  for (let z = z0 + 0.15; z < z1; z += 0.42) mesh(new THREE.BoxGeometry(0.8, 0.04, 0.14), wood, x, 0.02, z).raycast = () => {};
+}
+
+/** A miner's lamp on a post, its glass lit (a halo, no light of its own: the fire and the way in light the camp). */
+function minerLamp(tx, ty) {
+  const x = tileX(tx), z = tileZ(ty), wood = std({ color: '#4a3020', roughness: 0.95 }), iron = std({ color: '#2e2a34', metalness: 0.5, roughness: 0.5 });
+  mesh(new THREE.BoxGeometry(0.1, 1.5, 0.1), wood, x, 0.75, z);
+  mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06), wood, x + 0.16, 1.45, z);
+  mesh(new THREE.BoxGeometry(0.18, 0.04, 0.18), iron, x + 0.32, 1.38, z);
+  mesh(new THREE.BoxGeometry(0.14, 0.2, 0.14), std({ color: '#ffe0a0', emissive: new THREE.Color('#ffc860'), emissiveIntensity: 1.6 }), x + 0.32, 1.26, z);
+  const halo = sprite(haloArt('#ffc870'), 0.9);
+  halo.visible = true;
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.5;
+  halo.position.set(x + 0.32, 1.26, z + 0.05);
+  B.blocked.add(key(tx, ty));
+}
+
+/** The way into the Depths proper: an old mine mouth shored up with timber in the back wall, violet light far down it. */
+function wayIn(x, C) {
+  const z = BACK_Z, f = fine(40, 48, 4), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, 48, ['#05020a', '#120626', '#3a1468']); g.fillRect(0, 0, 40, 48);
+  const glow = g.createRadialGradient(20, 44, 1, 20, 44, 26);
+  glow.addColorStop(0, 'rgba(240,200,255,0.95)'); glow.addColorStop(0.35, 'rgba(176,96,240,0.55)'); glow.addColorStop(1, 'rgba(176,96,240,0)');
+  g.fillStyle = glow; g.fillRect(0, 0, 40, 48);
+  g.fillStyle = 'rgba(0,0,0,0.5)'; for (let i = 0; i < 6; i++) g.fillRect(0, 10 + i * 6, 40, 1);
+  const mouth = mesh(new THREE.PlaneGeometry(1.7, 2.1), new THREE.MeshBasicMaterial({ map: texOf(f.c), toneMapped: false }), x, 1.05, z + 0.02);
+  mouth.castShadow = mouth.receiveShadow = false;
+  const wood = std({ color: '#5a3a24', roughness: 0.95 }), dark = std({ color: '#3a2416', roughness: 0.95 });
+  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.22, 2.3, 0.22), wood, x + s * 0.95, 1.15, z + 0.12);
+  mesh(new THREE.BoxGeometry(2.3, 0.26, 0.26), wood, x, 2.36, z + 0.12);
+  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x - 0.6, 2.36, z + 0.12).rotation.z = 0.9;
+  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x + 0.6, 2.36, z + 0.12).rotation.z = -0.9;
+  // a board over it, its letters scratched in
+  const sign = fine(48, 12, 4);
+  sign.g.fillStyle = '#7a5434'; sign.g.fillRect(0, 0, 48, 12);
+  sign.g.fillStyle = '#2a1608'; sign.g.font = '7px "PokeDB Pixel", monospace'; sign.g.textAlign = 'center'; sign.g.textBaseline = 'middle'; sign.g.fillText('DEPTHS', 24, 6.5);
+  mesh(new THREE.PlaneGeometry(1.2, 0.3), std({ map: texOf(sign.c), roughness: 1 }), x, 2.7, z + 0.27);
+  const light = new THREE.PointLight('#c070ff', 3, 6, 1.6);
+  light.position.set(x, 1.1, z + 0.8);
+  B.group.add(light);
+  const halo = sprite(haloArt('#c890ff'), 2.4);
+  halo.visible = true;
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.35;
+  halo.position.set(x, 0.9, z + 0.3);
+  return { light, halo };
+}
+
+/** The pentagram of Mewtwo's seal on a stone dais: a star carved in its top, a shard socket at each point, the towns'
+    shards back glowing in their ring colours (`lit`: [colour or null] in the ring's order). */
+function sealDais(x, z, C, lit) {
+  const top = std({ color: C.stone[0], roughness: 0.9 }), side = std({ color: C.stone[2], roughness: 0.95 });
+  mesh(new THREE.CylinderGeometry(1.25, 1.35, 0.22, 40), [side, top, side], x, 0.11, z);
+  mesh(new THREE.CylinderGeometry(1.0, 1.08, 0.2, 40), [side, top, side], x, 0.32, z);
+  const f = fine(64, 64, 4), s = f.shine(), at = (k, r) => { const a = (-90 + k * 72) * Math.PI / 180; return [32 + Math.cos(a) * r, 32 + Math.sin(a) * r]; };
+  const power = lit.filter(Boolean).length / lit.length;
+  for (const ctx of [f.g, s]) {
+    ctx.strokeStyle = C.crystal[2]; ctx.lineWidth = 1.6; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.arc(32, 32, 29, 0, Math.PI * 2); ctx.stroke();
+    ctx.globalAlpha = ctx === s ? 0.35 + power * 0.65 : 1;
+    ctx.beginPath();
+    for (const [i, k] of [0, 2, 4, 1, 3, 0].entries()) { const [px, py] = at(k, 26); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+  const star = mesh(new THREE.PlaneGeometry(2.0, 2.0), std({ map: texOf(f.c), transparent: true, alphaTest: 0.3, roughness: 0.9, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 1.1 }), x, 0.425, z);
+  star.rotation.x = -Math.PI / 2;
+  star.castShadow = false;
+  const gems = [];
+  lit.forEach((col, k) => {
+    const [u, v] = at(k, 26), gx = x + (u - 32) / 32, gz = z + (v - 32) / 32;
+    mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.06, 12), side, gx, 0.45, gz);
+    const gem = mesh(new THREE.OctahedronGeometry(0.12, 0), col
+      ? std({ color: col, emissive: new THREE.Color(col), emissiveIntensity: 1.4, roughness: 0.2, flatShading: true })
+      : std({ color: '#2a2238', roughness: 0.6, flatShading: true }), gx, 0.62, gz);
+    gem.scale.y = 1.7;
+    gems.push({ gem, col, k });
+    if (col) {
+      const halo = sprite(haloArt(col), 0.7);
+      halo.visible = true;
+      halo.material.blending = THREE.AdditiveBlending;
+      halo.material.opacity = 0.55;
+      halo.position.set(gx, 0.66, gz);
+    }
+  });
+  return gems;
+}
+
+/** The crystal miners' camp in the Depths (docs/roadmap.md's Towns step 5): where every won run lands once the gate is
+    broken, and Mewtwo's own runs before the Depths proper. `camp`: { gems (the pentagram's five, a colour each or null),
+    down (a Mewtwo run: the way in at the back is the way on) }. Mewtwo stands by the way in (`figs.mewtwo`). */
+async function buildCamp(figs, { camp = {} }) {
+  const C = caveOf('depths'), down = !!camp.down;
+  B.glowing = [];
+  shell({ floor: caveFloor(C, [[9, 4.2, 'rgba(255,170,90,0.35)', 3.2], [3.5, 3.5, 'rgba(200,150,255,0.3)', 2.6], [6.5, 0.6, 'rgba(190,110,255,0.4)', 3]]),
+    wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
+  B.env = { hemi: ['#c8b0f0', C.rock[4], 0.85], sun: ['#e8d8ff', 0.6], bloom: 0.8 };
+  B.shotTop = 3.2;
+  B.talks = new Set();
+  const rnd = seeded(91), mid = 6;
+  // the way in at the back, the rails out of it and a cart left on them; only Mewtwo goes past it (`down`)
+  const mouth = wayIn(tileX(mid), C);
+  mineRails(tileX(mid), BACK_Z + 0.2, tileZ(5.4));
+  crystalCart(tileX(mid), tileZ(4.6), C, rnd);
+  for (const k of [key(mid - 1, 0), key(mid + 1, 0), key(mid, 4), key(mid, 5)]) B.blocked.add(k);
+  if (down) {   // a Mewtwo run's way on is down the mine, not back up past the doormat
+    for (const part of B.exitParts) B.group.remove(part);
+    B.exitParts = [];
+    B.exitAt = { x: mid, y: 0 };
+  } else B.blocked.add(key(mid, 0));
+  // the seal's pentagram on its dais, the camp's two tents, the fire between them, crates and lamps
+  const dx = tileX(3), dz = tileZ(3);
+  const before = B.group.children.length;
+  const gems = sealDais(dx, dz, C, camp.gems || [null, null, null, null, null]);
+  for (const o of B.group.children.slice(before)) if (o.isMesh) o.userData.spot = 0;   // a tap on the dais walks up to it
+  for (let x = 2; x <= 4; x++) for (let y = 2; y <= 4; y++) B.blocked.add(key(x, y));
+  B.spots.push({ step: { x: 3, y: 5 } });
+  B.anchors[0] = new THREE.Vector3(dx, 1.6, dz);
+  tent(tileX(10.5), tileZ(1.6), -0.25, ['#c8a878', '#b08e60']);
+  tent(tileX(10.9), tileZ(5.6), -Math.PI / 2 - 0.15, ['#9aa070', '#80885a']);
+  for (const [x, y] of [[10, 1], [11, 1], [10, 2], [11, 2], [10, 5], [11, 5], [10, 6], [11, 6]]) B.blocked.add(key(x, y));
+  // the fire, with a log either side to sit on
+  const fx = tileX(8.5), fz = tileZ(4.1), stone = std({ color: C.stone[2], roughness: 0.95 }), log = std({ color: '#5a3a24', roughness: 0.95 });
+  for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; mesh(new THREE.DodecahedronGeometry(0.1, 0), stone, fx + Math.cos(a) * 0.38, 0.06, fz + Math.sin(a) * 0.32); }
+  for (const a of [0.5, -0.6, 1.8]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.6, 7), log, fx, 0.08, fz).rotation.set(Math.PI / 2, 0, a);
+  for (const sx of [-1.15, 1.15]) mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.9, 10), log, fx + sx, 0.16, fz + 0.1).rotation.set(Math.PI / 2, 0, 0);
+  const ember = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.02, 14), new THREE.MeshBasicMaterial({ color: '#ff7030', toneMapped: false }), fx, 0.14, fz);
+  ember.raycast = () => {};
+  const flame = sprite(flameArt('#ff8030'), 0.5);
+  flame.visible = true;
+  flame.center.set(0.5, 0);
+  flame.position.set(fx, 0.12, fz);
+  const glowHalo = sprite(haloArt('#ff9040'), 1.8);
+  glowHalo.material.blending = THREE.AdditiveBlending;
+  glowHalo.position.set(fx, 0.5, fz);
+  const light = new THREE.PointLight('#ffb060', 2.4, 6, 1.5);
+  light.position.set(fx, 0.9, fz);
+  B.group.add(light);
+  const fire = { flame, halo: glowHalo, light, ember, w: 1.1, seed: 17, lit: true, at: 0 };
+  for (const k of [key(7, 4), key(8, 4), key(9, 4), key(10, 4)]) B.blocked.add(k);
+  const crate = std({ color: '#8a6440', roughness: 0.9 });
+  for (const [x, y, h, r] of [[0.9, 5.4, 0, 0.1], [1.0, 5.4, 0.5, -0.2], [1.9, 6.2, 0, 0.4]]) mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), crate, tileX(x), 0.25 + h, tileZ(y)).rotation.y = r;
+  for (const k of [key(0, 5), key(1, 5), key(1, 6), key(2, 6)]) B.blocked.add(k);
+  mesh(rbox(0.5, 0.08, 1.1, 0.04), std({ color: '#7a3a3a', roughness: 1 }), tileX(9.6), 0.04, tileZ(5.6)).raycast = () => {};   // a bedroll by the fire
+  const pick = new THREE.Group();
+  pick.position.set(tileX(4.7), 0, tileZ(0.5));
+  pick.rotation.z = 0.35;
+  B.group.add(pick);
+  mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.1, 6), log, 0, 0.55, 0, pick);
+  mesh(new THREE.BoxGeometry(0.6, 0.07, 0.07), std({ color: '#4a4652', metalness: 0.6, roughness: 0.4 }), 0, 1.08, 0, pick);
+  for (const [tx, ty] of [[1, 1], [4, 7], [11, 8]]) minerLamp(tx, ty);
+  for (const [tx, ty, sz] of [[0, 0, 1.3], [12, 0, 1.4], [2, 0, 0.8], [9, 0, 0.9], [0, 3, 1], [12, 4, 1.1], [0, 7, 0.8], [12, 7, 0.9]]) {
+    crystals(tileX(tx) + (tx === 0 ? -0.2 : tx === 12 ? 0.2 : 0), tileZ(ty) - (ty === 0 ? 0.2 : 0), sz, C, rnd, { n: sz > 0.8 ? 6 : 4 });
+    B.blocked.add(key(tx, ty));
+  }
+  // Mewtwo by the way in, watching it (not when you are Mewtwo)
+  if (figs.mewtwo) {
+    B.who.mewtwo = await figure('mewtwo', figs.mewtwo, { x: 7.8, ty: 1.1 });
+    B.talks.add('mewtwo');
+    B.who.mewtwo.group.traverse(o => { o.userData.spot = 1; });
+    for (const k of [key(7, 1), key(8, 1)]) B.blocked.add(k);
+    B.spots.push({ step: { x: 8, y: 2 } });
+    B.anchors[1] = new THREE.Vector3(tileX(7.8), 2.6, tileZ(1.1));
+  }
+  const glowing = B.glowing;
+  const motes = Array.from({ length: 10 }, (_, i) => ({ s: sprite(sparkArt(C.ember), 0.12), x: tileX(mid) + (rnd() - 0.5) * 1.4, phase: i / 10 }));
+  const sparks = Array.from({ length: 6 }, (_, i) => ({ s: sprite(sparkArt('#ffb060'), 0.08), a: rnd() * 6, phase: i / 6 }));
+  B.ticks.push((now) => {
+    tickFire(fire, now);
+    if (!calm) {
+      for (const m of glowing) m.emissiveIntensity = 0.5 + Math.sin(now / 900 + m.id) * 0.12;
+      mouth.light.intensity = 3 + Math.sin(now / 700) * 0.6;
+      mouth.halo.material.opacity = 0.3 + Math.sin(now / 700) * 0.08;
+      for (const { gem, col, k } of gems) { gem.rotation.y = now / 1400 + k; if (col) gem.material.emissiveIntensity = 1.3 + Math.sin(now / 500 + k) * 0.3; }
+    }
+    for (const m of motes) {   // the Depths' light drifting up out of the way in
+      const t = calm ? m.phase : (now / 6000 + m.phase) % 1;
+      m.s.visible = true;
+      m.s.position.set(m.x + Math.sin(t * 5 + m.phase * 9) * 0.2, 0.2 + t * 2.6, BACK_Z + 0.4 + t * 0.8);
+      m.s.material.opacity = Math.sin(t * Math.PI) * 0.85;
+    }
+    for (const p of sparks) {   // the fire's sparks
+      const t = calm ? p.phase : (now / 1600 + p.phase) % 1;
+      p.s.visible = !calm;
+      p.s.position.set(fx + Math.sin(p.a + t * 4) * 0.18, 0.4 + t * 1.4, fz + Math.cos(p.a + t * 3) * 0.12);
+      p.s.material.opacity = (1 - t) * 0.9;
+    }
   });
 }
 
@@ -8875,7 +9107,7 @@ function townCrowd(town, chats) {
 }
 
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown, home: buildHome };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown, home: buildHome, camp: buildCamp };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
 const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
@@ -9315,7 +9547,9 @@ export function warmEvent() {
     look, hour and (the Shrine's glow) type. `at`: { biome, type }. */
 let building = Promise.resolve();
 function room(kind, figs, at = {}) {
-  const time = timeOfDay(), look = lookOf(at.biome), id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}` : ''}` : kind;
+  const time = timeOfDay(), look = lookOf(at.biome);
+  let id = PER_BIOME.has(kind) ? `${kind}/${look === GARDEN && kind !== 'grotto' && kind !== 'gym' && kind !== 'town' && kind !== 'home' ? 'garden' : at.biome}/${time}/${kind === 'altar' ? at.type : kind === 'gym' ? at.leader?.id : kind === 'town' ? `${at.town?.id}${at.mended ? ':lit' : ''}` : kind === 'home' ? `${at.town?.id}:${at.home}${at.away ? ':away' : ''}${at.gift ? ':gift' : ''}` : ''}` : kind;
+  if (kind === 'camp') id += `:${(at.camp?.gems || []).map(g => (g ? 1 : 0)).join('')}${at.camp?.down ? ':down' : ''}${figs.mewtwo ? ':mewtwo' : ''}`;
   if (built[id]) { const kept = built[id]; delete built[id]; built[id] = kept; }   // the newest last, for forgetRooms()
   // one at a time: a build fills the shared B
   built[id] ??= building = building.catch(() => {}).then(async () => {
@@ -9324,7 +9558,7 @@ function room(kind, figs, at = {}) {
     B = { id, kind, size, group: new THREE.Group(), blocked: new Set(), anchors: {}, spots: [], who: {}, plays: [], ticks: [], acts: {}, mat: null, env: INDOORS, view: size?.view, across: size?.across };
     const b = B;
     useSize(b);
-    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, gift: at.gift }); }
+    try { await BUILD[kind](figs, { look, time, type: at.type, biome: at.biome, leader: at.leader, town: at.town, home: at.home, mended: at.mended, gift: at.gift, camp: at.camp }); }
     finally { B = null; if (R) useSize(R); }
     if (kind === 'town') { bendAll(b.group); for (const who of Object.values(b.who)) bendAll(who.group); }   // before its first draw, so the finer ground is the only one sent to the GPU
     await warmShaders(renderer, b.group, camera, scene);
@@ -9371,7 +9605,7 @@ export async function mountEvent(o) {
   opts = o;
   frozen = !!o.frozen;
   calm = calmFx();
-  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended }));
+  const next = await (entering = room(o.kind, o.figures || {}, { biome: o.biome, type: o.type, leader: o.leader, town: o.town, home: o.home, away: o.away, gift: o.gift, mended: o.mended, camp: o.camp }));
   const showing = () => document.querySelector(`#reward-options${ROOM_OF(o.kind)}`) && !document.getElementById('reward-screen').hidden;
   if (!showing() || opts !== o) return null;
   await wakeGL(renderer);

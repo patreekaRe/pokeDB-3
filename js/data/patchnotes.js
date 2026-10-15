@@ -65,6 +65,7 @@ export const TOWN_NOTES = [
   ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base.'],
   ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and they ask you home to mend it, the hub every town links through, so it comes before any town\'s quest.'],
   ['hub', 'Kurt\'s Workshop opens in the Clearing: turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders and Apricorn looks for your Safari Balls.'],
+  ['modes', 'Mewtwo starts the Crystal Depths at half strength: each town Waystone you mend gives some back. Won runs now fall into a miners\' camp in the Depths where Mewtwo keeps watch.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

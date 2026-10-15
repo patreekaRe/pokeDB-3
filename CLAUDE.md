@@ -159,7 +159,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   `?pixelcards`, `?phone` (a phone frame on a wide screen), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
   (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
-  `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
+  `?bossfight=<area>|depths` (`&hp=`; `&towns&shards=N` Mewtwo's Sealed Weakness), `?camp&towns` (the Depths camp, `&shards=N`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
   `?arena=ken`.
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).

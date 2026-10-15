@@ -119,3 +119,33 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `js/title.js`). `?bossfight=depths` plays the whole ending without saving anything (`draftWin()`, a preview of the feat's
   window) and lends Eternatus to the title sky for that page load (`eternatusGuest()`); peeked runs no longer count for the
   Pokédex or `bossesDefeated`.
+
+## Mewtwo's Sealed Weakness, its pentagram and the Depths camp (Towns step 5, 2026-10-15)
+
+All of it follows the towns (`sealedOn()` = `townsOpen()` in `js/data/sealed.js`), since the shards come from them; with
+the towns off nothing here shows and the game plays as before.
+- **The weakness**: in the Depths only, Mewtwo's attacks deal `sealedMult(n)` of their damage (`SEALED` in
+  `js/data/difficulty.js`: 50%, +10% a shard, full at 5). `n` is the towns whose Waystone is mended (`shardsBack()`: a
+  shard put back, or an old save's 5 requests), counted by `runMods(starter, level, biome, shards)` (run.js's wrapper
+  passes `sealedShards(getSave())`; null is no weakness). It rides `run.mods.playerDmg` and `run.mods.sealed`, so the sim
+  mirrors it with `cfg.shards`. A 🔒 nameplate badge (`b.sealed`, "n/5") says how much less. Bot check (human bot, 300 runs
+  a cell): 0 shards 62.7% won, full strength 81.0% (40% damage: 49.3% at 150), every loss in the Depths.
+- **The pentagram** (`js/pentagram.js`, `.penta-*` in `css/screens.css`): the five towns of the Waystone `RING` on a star,
+  a lit slot in its ring colour, Mewtwo at the middle brightening with its strength, a list of the towns lit / dark and
+  the % under it. Slid in like a gym talk, one tap away. Slots lit since Mewtwo last saw it (`newShards()`, against
+  `save.pentagram`) flare in one by one. Shown before a Mewtwo run (`onBegin` in `js/main.js`) and in the camp.
+- **The Depths camp** (`campRoom(mode)` in `js/run.js`, `buildCamp()` in `js/event-3d.js`, 13 x 9): a crystal miners'
+  old camp, tents, a fire with logs, a crystal cart on rails out of the timbered mine mouth at the back ("DEPTHS"), lamps,
+  crates, the seal's pentagram carved in a stone dais with the lit shards glowing in their sockets (the Seal sign), and
+  Mewtwo by the way in (the Mewtwo sign; a tap talks too, `CAMP_LINES` by shards back, `MEET` the first time,
+  `save.campMet`, `THANKS` for a new shard). Open once the gate is broken (`campOpen(gateHp())`):
+  - **a won run** (any starter but Mewtwo) falls through the broken gate into it (`kind: 'camp'` in `strikeGate()` /
+    `descent()`, replacing the throw-back) after its win is recorded; something new (a new shard, the first meeting) plays
+    as it lands, else it is one tap (Onward) to the win scene. Leaving shows the battle screen under the celebration.
+  - **Mewtwo's run** lands there after its third boss (`fallIn()`, `run.camp` saved so Continue comes back), sees the
+    pentagram, and goes on down the mine at the back (`R.exitAt`, Go down) into the Depths' map and film.
+  - **from home**: the Clearing's Sealed Gate's second button, Go down (`enterCamp()` in `js/hub-3d.js`, `visitCamp()`):
+    your walking buddy walks it, Leave goes back to the gate.
+- Playtests: `?camp&towns` (`&shards=N` the first N of the ring lit, every one new each time, nothing saved;
+  `&starter=`), `?descent=mewtwo&towns&gate=0` (Mewtwo's landing), `?gate=0&strike=0&towns` (a won run's fall and
+  landing, `peekLanding()`), `?bossfight=depths&towns&shards=N` (the badge).

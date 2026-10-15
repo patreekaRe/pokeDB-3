@@ -189,7 +189,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     safari: Boolean(run.safari),   // a Safari Zone daily run: its starter may not be yours, so it earns no achievement goals
     catchable: Boolean(run.safari) && encounter.kind === 'fight',   // a Safari wild Pokémon: a ball can be thrown any turn
     rare: Boolean(encounter.rare),   // a Safari rare spawn: it runs off after RARE.turns of your turns (fewer with Rock)
-    dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3
+    dmgMult: run.mods?.playerDmg ?? 1,   // Mewtwo's sprint: its attacks hit harder in biomes 1-3, weaker in the Depths
+    sealed: run.mods?.sealed ?? null,   // Mewtwo's Sealed Weakness in the Depths: the Waystones mended
     hpScale: encounter.maxHp / def.hp,   // the Level's and mode's HP: a second form (def.phase2) is scaled the same
     phased: false,     // the boss has already risen in its second form
     enemyActing: false,   // the enemy's turn is under way (a second form rising then ends it)
@@ -2340,6 +2341,7 @@ function renderStatus() {
   if (b.block)      playerBadges.push(['🛡️', b.block, `Block ${b.block}: absorbs damage ${b.powers.keepBlock ? 'and stays between turns' : 'until your next turn'}`, 'block']);
   if (b.strength)   playerBadges.push(['💪', b.strength, `Strength ${b.strength}: +${b.strength} damage on every hit${b.flex ? ` (${b.flex} of it wears off at the end of this turn)` : ''}`, 'good']);
   if (b.dmgMult > 1) playerBadges.push(['🧬', '', `Unleashed: your attacks deal ${Math.round((b.dmgMult - 1) * 100)}% more damage in this biome`, 'good']);
+  if (b.sealed !== null && b.dmgMult < 1) playerBadges.push(['🔒', `${b.sealed}/5`, `Sealed Weakness: your attacks deal ${Math.round((1 - b.dmgMult) * 100)}% less damage in the Crystal Depths. Each town's Waystone you mend gives some back (${b.sealed} of 5 lit)`, 'bad']);
   if (b.focus)      playerBadges.push(['🎯', b.focus, `Focus: your next attack deals +${b.focus} damage`, 'good']);
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, b.nextEnergy > 0 ? `+${b.nextEnergy} energy next turn` : `${-b.nextEnergy} less energy next turn`, b.nextEnergy > 0 ? 'good' : 'bad']);

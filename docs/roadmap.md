@@ -331,6 +331,16 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    unless something new waits (a shard to hand over, a new line from Mewtwo), a won run's landing is one tap through to
    the win scene, not a walk round. **Mewtwo's own runs** land in the camp after their third boss (seeing how much of its
    strength is back) and go on down from there. Before the gate breaks, won runs strike it as now.
+   **A second, parallel build (2026-10-15), on branch `claude/sharp-ramanujan-nh2503` only**: another session built step 5
+   on `main` at the same time (f4a4acb, 7bb1e81); this branch's version is kept for the user to compare, never merged
+   without their say. Off with the towns (`sealedOn()` = `townsOpen()`). The weakness
+   (`SEALED` in `js/data/difficulty.js`: 50%, +10% a mended town, a 🔒 n/5 badge), the pentagram (`js/pentagram.js`:
+   before a Mewtwo run and in the camp, new slots flaring in) and the camp (`buildCamp()` / `campRoom()`: tents, a fire, a
+   crystal cart on rails out of the mine mouth, the seal's dais, Mewtwo by the way in; won runs land there, Mewtwo's own
+   runs stop there and go down the mine, the Clearing's Sealed Gate has Go down). Bot check (human bot, 300 a cell): 0
+   shards 62.7% won, full strength 81.0% (40% would be 49.3%), so kept at 50%. Detail: `docs/reference/mewtwo-and-depths.md`'s
+   last section. Playtest: `?camp&towns&shards=2`, `?descent=mewtwo&towns&gate=0&shards=1`, `?bossfight=depths&towns&shards=0`.
+   Open: whether the camp wants folk (miners' ghosts? a Hiker?) or more to do; the user's look at it.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader
@@ -404,7 +414,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for, and
+     and says what to change. Step 5 is built too (2026-10-15). Open: what gift friendship (`liked`) is for, and
      whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
 
 7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
@@ -434,7 +444,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      house (`homeRoom()`), and stepping out after the shard plays the stone's light-up (a beam, the cracked stone swapped
      for the whole one). `NIETOS_LIVE` is on, but the Nietos are home only while the towns are on. Playtest on the live site:
      `?towns&gymwins=1` (the greeting), then `&satchel` (every step ready, in their house). Next: the user walks it; then
-     step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp), if the user still wants it. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
+     step 5 (built 2026-10-15, above). Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

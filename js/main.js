@@ -32,7 +32,8 @@
 import { STARTERS, STARTERS_BY_ID, spriteUrl, stageName, useShinies } from './data/starters.js';
 import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
-import { MAX_LEVEL } from './data/difficulty.js';
+import { MAX_LEVEL, isMewtwoRun } from './data/difficulty.js';
+import { sealedOn, campOpen } from './data/sealed.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
@@ -40,7 +41,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, visitCamp, peekCamp, peekLanding, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -124,6 +125,8 @@ function previewStarter(starter) {
   prepare(starter, {
     onBegin: async (level) => {
       if (hasSavedRun() && !(await confirmDialog('Start a new run? Your saved run will be lost.', 'Start new'))) return;
+      // Mewtwo's pentagram first (docs/roadmap.md's Towns step 5): how much of its strength the Waystones have given back
+      if (isMewtwoRun(starter) && sealedOn()) await (await import('./pentagram.js')).showPentagram();
       beginRun(starter, level);
     },
     onBack: () => showSelect(starter),
@@ -303,6 +306,12 @@ function init() {
       leaveTitle();
       visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house);
     },
+    // the broken Sealed Gate's Go down (Towns step 5): your walking buddy walks the Depths camp, and comes home by the gate
+    onCamp: () => {
+      const mate = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
+      leaveTitle();
+      visitCamp(mate, async (from) => { cameHome(from); await showHome(); curtain(false, 420); });
+    },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {
@@ -368,6 +377,7 @@ function init() {
   if (params.get('bossfight') === 'depths') return peekFinalBoss(STARTERS_BY_ID[params.get('starter') ?? 'mewtwo'], Number(params.get('hp') ?? 1));
   // ?descent=mewtwo: Mewtwo's fall into the Crystal Depths after its biome 3 boss, then the Depths' film and map
   if (params.get('descent') === 'mewtwo') return peekDescent(STARTERS_BY_ID.mewtwo);
+  if (params.has('camp')) return peekCamp(STARTERS_BY_ID[params.get('starter')] ?? STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free));
   // ?biome=ruins (any biome; &starter=id, &level=0-5; &slot=1 or 2 walks a pool biome at that fork): a throwaway run
   // starting in that biome, on the road through it
   if (params.get('biome') && peekBiome(STARTERS_BY_ID[params.get('starter')] ?? STARTERS.find(s => s.free), params.get('biome'), Number(params.get('level') ?? 0), Number(params.get('slot')) || null)) return;
@@ -432,9 +442,12 @@ function peekStrike(params) {
   const stage = Math.min(starter.line.length - 1, Number(params.get('stage')) || 0);
   const before = gateHp(), hit = Math.max(0, Number(params.get('strike')) || 0);
   const after = Math.max(0, before - hit);
-  const kind = params.get('kind') || (before === 0 ? 'open' : after === 0 ? 'ultimate' : 'win');
+  const kind = params.get('kind') || (before === 0 ? (campOpen(gateHp()) ? 'camp' : 'open') : after === 0 ? 'ultimate' : 'win');
   playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
-    .then((close) => { close?.(); playMusic('title'); });   // back to the title's song after the seal's
+    .then((close) => {
+      if (kind === 'camp') return peekLanding(starter, stage, close);   // into the Depths camp, as a won run lands there
+      close?.(); playMusic('title');   // back to the title's song after the seal's
+    });
 }
 
 /** The ?travel= playtest: a journey film on its own, nothing saved. `?travel=ruins` comes from the Clearing; `&from=ruins`

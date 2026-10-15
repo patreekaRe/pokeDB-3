@@ -17,6 +17,7 @@ import { STARTERS, BASE_HP, HP_PER_STAGE, spriteUrl } from './data/starters.js';
 import { ACHIEVEMENT_FOR } from './data/achievements.js';
 import { TYPES, CARDS_BY_ID, STAGE_POWER } from './data/cards.js';
 import { LEVELS, MAX_LEVEL, MEWTWO_MODE, isMewtwoRun } from './data/difficulty.js';
+import { sealedOn, strengthBack, shardsBack } from './data/sealed.js';
 import { COIN_LEVEL_BONUS } from './data/shop.js';
 import { ABILITIES } from './data/relics.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -278,7 +279,7 @@ function renderLevel() {
   document.querySelector('.prep-level').hidden = own;
   if (own) {
     $('level-name').textContent = 'Mewtwo\'s own run';
-    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a speedrun, one road each (${MEWTWO_MODE.floors[0].length} rooms and a boss) where its attacks hit 25% harder and nothing counts for Pokédex research, then a fourth biome only Mewtwo can enter.`;
+    $('level-rule').textContent = `No Trainer Level. Biomes 1-3 are a speedrun, one road each (${MEWTWO_MODE.floors[0].length} rooms and a boss) where its attacks hit 25% harder and nothing counts for Pokédex research, then a fourth biome only Mewtwo can enter.${!sealedOn() ? '' : strengthBack(shardsBack(getSave()).length) < 100 ? ` There its Sealed Weakness holds it to ${strengthBack(shardsBack(getSave()).length)}% of its damage: every town Waystone mended gives some back.` : ' Every town Waystone is lit: it goes down at full strength.'}`;
     $('level-coins').hidden = true;
     $('level-rules').closest('details').hidden = true;
     return;

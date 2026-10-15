@@ -56,6 +56,10 @@ export function descentLines({ name, kind = 'win', first = false, land = 'wastes
     held: [`${name} steps towards the light...`, '...and a wave of psychic force throws it back!',
       'Whatever waits down there answers only to a mind as strong as its own.', 'Only Mewtwo could follow that call down.'],
   };
+  if (kind === 'camp') return {   // the gate broken and the towns on: every won run falls through it into the Depths camp
+    arena: ['The ground shakes beneath the arena!', 'Far below, the Sealed Gate stands open... and violet light pours up through the cracks.'],
+    fall: [`${name} falls through the broken gate!`, 'Crystals slow the fall... and far below, lamps are lit.'],
+  };
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
