@@ -473,6 +473,27 @@ export const JONA_HOME = {
     '*she smiles with far too many teeth, and every candle in the room leans towards you*',
     '*the rocking chair stops dead. She is looking at it, not at you. It starts again.*',
   ],
+  // a tap on her possesses him (homeRoom()'s jonaTalk() in js/run.js): his plea first, then after she lets him go
+  plea: [
+    'Don\'t tap her. Please don\'t tap h-',
+    'JONA, no, we have a guest-',
+    'Not in front of company, not again...',
+    'I can feel her looking at me. Oh no. Oh no no no.',
+    'Why would you poke the demon?! Why does everyone poke the demon?!',
+    'The temperature just dropped ten degrees. That\'s her. That\'s always her.',
+    'If I start floating, please hold my ankles.',
+    'Okay. Okay. Deep breaths. She just wants to say hello. Through me. Again.',
+  ],
+  after: [
+    '*gasps* ...What did she say? Don\'t tell me. I don\'t want to know.',
+    'Ow. My everything. She always lands on my spine.',
+    'Was I floating? I was floating. Great. Fantastic.',
+    'Sorry about that. She gets like this when we have visitors.',
+    'I have GOT to get the salt thicker on that corner.',
+    'My teeth are cold. Why are my teeth cold.',
+    'Every time. Every single time. Could you maybe not tap her again?',
+    'Okay. I\'m me again. Mostly me. I\'ll check later.',
+  ],
   duets: [
     ['PHIL: JONA, please. We have a guest.', 'JONA: I can see that. I can see all of them. Their bones are lovely.', 'PHIL: You can\'t say things like that to people!', 'JONA: I just did. Look, it is still standing. Brave little thing.', 'PHIL: ...Sorry about her. Tea? It\'s just tea. I checked.', 'JONA: He checked. He checks everything. It is the most charming thing about him.'],
     ['PHIL: Did you move the salt again?', 'JONA: I would never touch the salt.', 'PHIL: It\'s in a smiley face on the windowsill, JONA.', 'JONA: Then someone must have touched it. Someone with taste.', 'PHIL: *sighs* At least it\'s still on the sill.', 'JONA: For you, Phil. Always for you.'],

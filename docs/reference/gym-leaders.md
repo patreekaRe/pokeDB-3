@@ -77,10 +77,11 @@ Possessed by a demon named **JONA** (she). She always takes him and always talks
 in ("Run. Please."), then JONA speaks, cold and grand, in capitals when she rises. She links his soul with his Pokémon,
 fills them with dark energy and makes them lifeless pawns. When she lets go Phil is dazed, grateful and sure she'll be
 back. At home: candles, salt on the sills, a ghost-hunting kit and a chair nobody sits in; Phil looks tired.
-JONA stands in his corner at home (2026-10-15, the user's ask): a tap on her says one of her 56 lines (`JONA_HOME.lines`
-in `js/data/gym.js`, in her demon speech window), and the first tap and every fifth after it is a talk with Phil
-(`JONA_HOME.duets`), both sliding in: `gymTalk()`'s `pair` puts her on the left facing him, whoever isn't talking
-dimmed (`jonaTalk()` in `homeRoom()`, `js/run.js`).
+JONA stands in his corner at home (2026-10-15, the user's ask). Every tap on her possesses him (the user's ask the same
+day, in place of her lines and the duets): Phil's plea (`JONA_HOME.plea`), she flies into him and he lifts off the floor,
+shuddering in violet light (`possess()` in `js/event-3d.js`), one of her 56 lines through him (`JONA_HOME.lines`, her
+demon window), she lets go and drifts back, and Phil comes round (`JONA_HOME.after`); `jonaTalk()` in `homeRoom()`,
+`js/run.js`. `JONA_HOME.duets` is unused since.
 
 **RICKY: EAST COAST RICKY** (`ricky`; Thornwood, Porygon2; All-Nighter Badge, a mug under the moon; brown). In his
 thirties (32), he only looks old because his friends in another time zone keep him up playing Valorant and ARAM. It's

@@ -2017,16 +2017,26 @@ function homeRoom(b, onward = null) {
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
-  /* JONA in Phil's corner: a line of hers a tap, and every fifth tap (the first too) a talk with Phil, both sliding in */
-  let jonaTaps = 0, jonaLine = Math.floor(Math.random() * JONA_HOME.lines.length), jonaDuet = 0;
+  /* JONA in Phil's corner: a tap and she possesses him (the user's ask, 2026-10-15): his plea, she flies into him and
+     says a line of hers through him, lets go, and he comes back to himself */
+  let possessing = false, jonaLine = Math.floor(Math.random() * JONA_HOME.lines.length), jonaPlea = Math.floor(Math.random() * JONA_HOME.plea.length);
   const jonaTalk = async () => {
-    if (jonaTaps++ % 5) {
-      jonaLine = (jonaLine + 1) % JONA_HOME.lines.length;
-      return sayLines([{ who: 'JONA', text: JONA_HOME.lines[jonaLine], demon: true }], 'reward-log', null, 'JONA');
-    }
+    if (possessing) return;
+    possessing = true;
+    const say = (lines) => new Promise(done => sayLines(lines, 'reward-log', done));
+    const phil = (text) => ({ who: 'PHIL', text });
     event3dMod?.freezeEvent(true);
-    sayLines([]);
-    try { await gymTalk(GYM_BY_ID.phil, JONA_HOME.duets[jonaDuet++ % JONA_HOME.duets.length], { lit: true, pair: { src: 'assets/trainers/gym/jona.png', who: 'JONA' } }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+    try {
+      const n = jonaPlea++ % JONA_HOME.plea.length;
+      await say([phil(JONA_HOME.plea[n])]);
+      if (run !== thisRun) return;
+      await event3dMod?.possess('jona', 'phil', true);
+      jonaLine = (jonaLine + 1) % JONA_HOME.lines.length;
+      await say([{ who: 'JONA', text: JONA_HOME.lines[jonaLine], demon: true }]);
+      if (run !== thisRun) return;
+      await event3dMod?.possess('jona', 'phil', false);
+      sayLines([phil(JONA_HOME.after[n % JONA_HOME.after.length])], 'reward-log', null);
+    } finally { possessing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
   };
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
