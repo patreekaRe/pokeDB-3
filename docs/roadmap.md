@@ -9,6 +9,24 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Kenmatta's dojo opens** (the user's picks, 2026-10-15). The boarded-up dojo in the Clearing (`DOJO_AT`, `dojo()` in
+`js/hub-3d.js`, COMING SOON) becomes a place you walk into, with Chad Master Kenmatta inside (`docs/reference/events.md`
+for who he is: the Move Tutor's boss, the Mortal Kombat arena, FORTIFY YOUR MIND, `save.kenWins`). Nothing in it makes a
+run stronger, so no bot check. Three parts:
+- **Belt ranks, the backbone**: white, yellow, green, blue, brown, black, earned from beating him in runs (`kenWins`)
+  and stars from the trials; the belt shows on a board in the dojo and on your buddy's gi there, and each new belt
+  unlocks a line from him and a piece of the furniture set.
+- **The combo trial ladder, the thing to do**: about 20 hand-made puzzle fights, Mortal Kombat's Challenge Tower with
+  cards: each a set hand / deck and a set enemy with a goal ("win in 3 turns", "never take damage", "finish with a
+  Burn"), getting harder; one star a clear, saved, replayable, Kenmatta saying a line before and after each. Played on
+  the battle screen with no rewards beyond the star (never a run).
+- **The dojo furniture set, the reward**: never sold, earned by belts and trial milestones (`js/data/furniture.js`'s
+  sources): punching bag, training dummy, tatami mat, the Dragonite medallion, a gong, his signed poster, a black-belt
+  trophy.
+▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and docs/roadmap.md's Kenmatta's dojo entry.
+Open the dojo: walk-in room, belts, the combo trial ladder (start with the first 8 trials), and the furniture set."
+
+
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
 ahead** → biome 2 → boss → crossroads → film → town → biome 3 → boss → Sealed Gate. In `walkOn()` (`js/run.js`) the town
@@ -80,7 +98,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    ???); your buddy starts a step in front of it (`SPAWN`) and comes home there (`goHome('waystone', town)` →
    `cameHome(from, town)`); the worn ring path stays. Player lines that said "ring of stones" now say the Waystone.
    Headless-tested (menu, Travel to Lantern Village, Leave home, no errors). Branch `towns`, waiting on the user's playtest.
-   **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (ask what it holds).
+   **Next**: the user playtests; then session 4 (the all-five reward) and opening Kenmatta's dojo (settled below).
    **Done (2026-10-14): the Clearing laid out anew** (the user's ask, the start of a clean-up of the towns, the Clearing
    first, then the Shrine's town): spread out over a 31 x 21 grid round a paved plaza, cobbled lamp-lit avenues and a ring
    road, the way out north through the Whispering Clearing's gate, Kenmatta's dojo north-west away from the Nietos (east),
