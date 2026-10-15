@@ -69,9 +69,9 @@ import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, 
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, readBoard, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
-import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
-  questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
-  homeTalk, stepNudge, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
+import { townsOpen, TOWNS, MEND_AT, townState, placeOf, folkKey, nietosHome,
+  questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
+  homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
 import { campLines, landLine, selfLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -1754,13 +1754,13 @@ function townRoom(covered = null, at = null) {
   if (quest && !st.quest) {
     options = [{ ...spotOption('Board', !hubLit
       ? `The board is bare. ${town.name}'s Waystone went dark when the one at home cracked: the Whispering Clearing's comes first. The Nietos there know more.`
-      : `The board is bare. ${town.name} is quiet${greeter ? '' : ': beat one of its Gym Leaders at the end of the biome, and they\'ll want a word next time you pass'}.`, again), info: true }];
+      : `The board is bare. ${town.name} is quiet${greeter ? '' : ': beat one of its Gym Leaders at the end of the biome, and they\'ll want a word next time you pass'}.`, again), info: true, bare: true }];
   } else {
     options = [{ ...spotOption('Quests', `${town.name}'s quest board: every quest, how far along it is and who takes it.`, () => {
       if (run !== thisRun) return;
       if (real) readBoard(town.id); else t.boardRead = true;
       openDeviceApp('quests', real ? 'board' : { board: true, peek: { [town.id]: st } }, false, again);
-    }), peek: null }];
+    }), peek: null, bare: true }];
   }
   const first = !peeking && !st.met;
   if (first) metTown(town.id);
@@ -1841,6 +1841,29 @@ function townRoom(covered = null, at = null) {
   });
 }
 
+/** A quest step's choice (John's festival), asked as it's handed in: resolves the option picked, or null for Not now. */
+function askPick(pick) {
+  const d = el('dialog', 'dialog dev-window quest-pick');
+  const list = el('div', 'quest-pick-list'), acts = el('div', 'dialog-actions'), no = el('button', 'btn secondary', 'Not now');
+  let chosen = null;
+  list.append(...pick.options.map(o => {
+    const b = el('button', 'btn quest-pick-opt');
+    b.type = 'button';
+    b.append(el('strong', '', o.label), el('span', '', o.text));
+    b.addEventListener('click', () => { chosen = o; d.close(); });
+    return b;
+  }));
+  no.type = 'button';
+  acts.append(no);
+  d.append(el('h2', '', pick.ask.toUpperCase()), list, acts);
+  document.body.append(d);
+  return new Promise(res => {
+    d.addEventListener('close', () => { d.remove(); res(chosen); }, { once: true });
+    no.addEventListener('click', () => d.close());
+    d.showModal();
+  });
+}
+
 /** A town house you walk into (js/data/towns.js's `homes`): its own small room, its doormat back out onto its doorstep.
     The shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
     dancers, the bathhouse its bathers (a home's `cast`). */
@@ -1917,82 +1940,67 @@ function homeRoom(b, onward = null) {
     }
     again();
   }));
-  if (mineReady) {
-    const leader = GYM_BY_ID[home.leader];
-    const give = async (pick = null) => {
-      if (run !== thisRun || handing) return;
-      handing = true;
-      const coins = real ? handInQuest(town.id, pick?.id) : 0;
-      if (!real) t.peekSt = handInStep(town, tst, pick?.id);
-      playSound('stat-up');
-      refreshCoins();
-      event3dMod?.freezeEvent(true);
-      sayLines([]);
-      try { await gymTalk(leader, mine.thanks, { lit: true, vars: { pick: pick?.label } }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
-      if (run !== thisRun) return;
-      if (pick) tell(`${leader.name} picked the ${pick.label}!`);
-      if (mine.gives) tell(`${KEY_BY_ID[mine.gives].icon} ${KEY_BY_ID[mine.gives].name} went into your Satchel.`);
-      tell(coins ? `Quest step done! +${coins} PokéCoins.` : real ? 'Quest step done!' : 'Quest step done! (A playtest: nothing is saved.)');
-      if (mine.kind === 'shard') { t.mendNext = true; return out(); }   // out into the town, where the stone mends (townRoom())
-      again();
-    };
-    if (mine.pick) options.push(...mine.pick.options.map(o => spotOption(o.label, `${mine.pick.ask}: ${o.text}`, () => give(o))));
-    else options.push(spotOption('Hand in', `${stepText(mine)}: done! Hand it in to ${leader.name} for ${coinsWithBonus(QUEST_COINS)} PokéCoins.`, () => give()));
-  }
-  if (reqMine) {
-    const r = currentRequest(town, tst), was = real ? isMended(town.id) : mended(tst);
-    options.push(spotOption('Hand in', `${requestText(r)}: done! Hand it in to ${GYM_BY_ID[home.leader].name} for ${coinsWithBonus(REQUEST_COINS)} PokéCoins.`, () => {
-      if (run !== thisRun) return;
-      t.handedIn = true;
-      const coins = real ? handInRequest(town.id) : 0;
-      playSound('stat-up');
-      refreshCoins();
-      event3dMod?.eventRoom3d()?.does(home.leader, 'npc-nod');
-      tell(real ? `Request handed in! +${coins} PokéCoins. ${town.name}'s friendship went up!` : 'Request handed in! (A playtest: nothing is saved.)');
-      if (real && !was && isMended(town.id)) {   // an old save's friendship that mends its Waystone
-        playSound('gate-hum');
-        tell(`The Waystone in the square shudders... and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time.`);
-      }
-      again();
-    }));
-  }
-  // the Nietos' questline (step 7) is handed in here, at home: the shard's goes on out to the plaza, where the stone lights
+  // the Nietos' questline (step 7) is handed in here too: the shard's goes on out to the plaza, where the stone lights
   const cst = home.leader === 'nietos' && !away && townsOpen() ? townState(getSave(), 'clearing') : null;
   const cstep = cst && questStep(town, cst);
-  // not picked up yet (the greeting or the plaza's quest board starts it): asked about here too
-  if (cst && !cst.quest && !clearingLit(getSave())) options.push(spotOption('Quest', 'Ask Law and Britt about the cracked Waystone.', async () => {
-    if (run !== thisRun || handing) return;
-    handing = true;
+  const nietosNew = !!cst && !cst.quest && !clearingLit(getSave());   // not picked up yet (the greeting or the plaza's board starts it)
+  const lent = satchelFlag(), cready = !!cstep && (lent || stepReady(cstep, cst, satchelOf(getSave())));
+  // every turn-in is a tap on the Gym Leader wearing the "!" (the user's ask, 2026-10-14: no floating signs for it); the
+  // first tap on them hands it in, before any chat
+  const leader = home.leader && GYM_BY_ID[home.leader];
+  const talkOut = async (lines, vars) => {
     event3dMod?.freezeEvent(true);
     sayLines([]);
-    try { await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
+    try { await gymTalk(leader, lines, { lit: true, vars }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+  };
+  const turnIn = !leader ? null : nietosNew ? async () => {
+    await talkOut(QUESTS.clearing.greet.nietos);
     if (run !== thisRun) return;
     startQuest('clearing');
     tell('New quest! Track it in your Pokédex\'s Quests app, or on the quest board by the Waystone.');
     again();
-  }));
-  const lent = satchelFlag(), cready = !!cstep && (lent || stepReady(cstep, cst, satchelOf(getSave())));
-  if (cstep) {
-    const ready = cready;
-    const have = stepHave(cstep, cst, satchelOf(getSave()));
-    const need = cstep.kind === 'gather' ? `${MATERIALS_BY_ID[cstep.item].icon} ${have}/${cstep.n} in your Satchel.` : cstep.kind === 'track' ? `${have}/${cstep.n}.`
-      : have ? 'In your Satchel.' : cstep.kind === 'shard' ? 'Not found yet.' : 'Not made yet.';
-    const [n, of] = questProgress(town, cst);
-    options.push(ready ? spotOption('Hand in', `${stepText(cstep)}: done! Hand it in to Law and Britt for ${coinsWithBonus(QUEST_COINS)} PokéCoins.`, async () => {
-      if (run !== thisRun || handing) return;
-      handing = true;
-      const coins = handInQuest('clearing', null, lent);
-      playSound('stat-up');
-      refreshCoins();
-      event3dMod?.freezeEvent(true);
-      sayLines([]);
-      try { await gymTalk(GYM_BY_ID.nietos, cstep.thanks, { lit: true }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
-      if (run !== thisRun) return;
-      tell(coins ? `Quest step done! +${coins} PokéCoins.` : 'Quest step done!');
-      if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
-      again();
-    }) : { ...spotOption('Quest', `${stepText(cstep)}. ${need} Quest ${n}/${of}. ${stepNudge(town, cstep, GYM_BY_ID.nietos.name)}`.trim(), again), info: true });
-  }
+  } : cready ? async () => {
+    const coins = handInQuest('clearing', null, lent);
+    playSound('stat-up');
+    refreshCoins();
+    await talkOut(cstep.thanks);
+    if (run !== thisRun) return;
+    tell(coins ? `Quest step done! +${coins} PokéCoins.` : 'Quest step done!');
+    if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
+    again();
+  } : mineReady ? async () => {
+    const pick = mine.pick ? await askPick(mine.pick) : null;
+    if (run !== thisRun || (mine.pick && !pick)) return;
+    const coins = real ? handInQuest(town.id, pick?.id) : 0;
+    if (!real) t.peekSt = handInStep(town, tst, pick?.id);
+    playSound('stat-up');
+    refreshCoins();
+    await talkOut(mine.thanks, { pick: pick?.label });
+    if (run !== thisRun) return;
+    if (pick) tell(`${leader.name} picked the ${pick.label}!`);
+    if (mine.gives) tell(`${KEY_BY_ID[mine.gives].icon} ${KEY_BY_ID[mine.gives].name} went into your Satchel.`);
+    tell(coins ? `Quest step done! +${coins} PokéCoins.` : real ? 'Quest step done!' : 'Quest step done! (A playtest: nothing is saved.)');
+    if (mine.kind === 'shard') { t.mendNext = true; return out(); }   // out into the town, where the stone mends (townRoom())
+    again();
+  } : reqMine ? async () => {
+    const was = real ? isMended(town.id) : mended(tst);
+    t.handedIn = true;
+    const coins = real ? handInRequest(town.id) : 0;
+    playSound('stat-up');
+    refreshCoins();
+    event3dMod?.eventRoom3d()?.does(home.leader, 'npc-nod');
+    tell(real ? `Request handed in to ${leader.name}! +${coins} PokéCoins. ${town.name}'s friendship went up!` : 'Request handed in! (A playtest: nothing is saved.)');
+    if (real && !was && isMended(town.id)) {   // an old save's friendship that mends its Waystone
+      playSound('gate-hum');
+      tell(`The Waystone in the square shudders... and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time.`);
+    }
+    again();
+  } : null;
+  const handOver = turnIn && (async () => {
+    if (run !== thisRun || handing) return;
+    handing = true;
+    try { await turnIn(); } finally { handing = false; }
+  });
   showChoice({
     title: home.name.toUpperCase(),
     sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : onward ? home.subSelf ?? home.sub : home.sub],
@@ -2023,10 +2031,11 @@ function homeRoom(b, onward = null) {
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, away, gift: gifting, marks: mineReady || reqMine || cready ? [`who:${home.leader}`] : [], onTalk: (stand) => {
+    extra: { town, home: b.home, away, gift: gifting, marks: handOver ? [`who:${home.leader}`] : [], onTalk: (stand) => {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       if (stand === 'jona') return jonaTalk();
+      if (stand === home.leader && handOver) return handOver();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
       const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt()) : null;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);

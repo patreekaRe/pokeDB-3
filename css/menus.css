@@ -1720,5 +1720,10 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .qlog-steps li b { font-weight: normal; }
 .qlog-steps li.done { color: #3a7a44; }
 .qlog-steps li.later { color: #9a8a78; }
+/* a quest step's choice as it's handed in (askPick() in js/run.js): John's festival */
+.quest-pick { width: min(92vw, 380px); }
+.quest-pick-list { display: grid; gap: 8px; margin: 10px 0 4px; }
+.quest-pick-opt { display: grid; gap: 4px; padding: 10px 12px; text-align: left; font-size: 0.75rem; line-height: 1.5; }
+.quest-pick-opt strong { font-size: 0.875rem; }
 .qlog-tip { margin: 14px 8px 0; padding: 8px 10px; border-radius: 4px; text-align: center; color: #fff8e8; background: rgba(60, 30, 10, 0.55); }
 @media (prefers-reduced-motion: reduce) { .qlog-caret { transition: none; } }

@@ -9709,6 +9709,7 @@ function questMark(id) {
   if (!door && !who && !at) return null;
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
   s.raycast = () => {};
+  s.userData.noBend = true;   // a sprite's shader isn't bent: it drops with the ground below on the CPU instead (drawn())
   let y;
   if (at) {
     s.scale.set(0.5, 0.65, 1);
@@ -9724,7 +9725,8 @@ function questMark(id) {
     s.position.set(0, (y = (who.top ?? 1.4) + 0.45), 0);
     who.group.add(s);
   }
-  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08); });
+  // a town's ground rolls away over the horizon (CURVE, the user's call, 2026-10-14: the "!" stays on what it's over)
+  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08) - (who ? 0 : BEND.k.value * (s.position.z - BEND.z.value) ** 2); });
   return s;
 }
 
@@ -10081,4 +10083,5 @@ export function mendStone(glowCol = '#8ae8ff', onFlash = null) {
     room.ticks.push(tick);
   });
 }
+
 

@@ -472,7 +472,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      Leader at home now, not the board (like the Nietos'); a "!" floats over that leader's house and over them inside while
      a step is ready; the shard's hand-in walks you out to watch the stone mend. On `main`, waiting on the user's look.
      Same day: the "!" moved onto the leaders' name signs (the user's call), the board wears a "!" till read once and then
-     opens the Quests app, and the coin requests after a questline go to the leaders by turns too. The quest board's button opens it ("Quest log"), and
+     opens the Quests app, and the coin requests after a questline go to the leaders by turns too. Then: a tap on the leader
+     wearing the "!" hands it in (no floating Hand in / Quests signs, which homes had no prop for), a small picker for
+     John's festival, and the "!" drops with the curved ground so it stays on its sign or board. The quest board's button opens it ("Quest log"), and
      says it's in the Pokédex too; new-quest messages point there. On `main`, waiting on the user's look.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
