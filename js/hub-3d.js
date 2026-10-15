@@ -2286,12 +2286,12 @@ function makePlaces() {
     build: (g) => standGuest(g, leader),
   });
   // a professor just right of the PC (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
-  // a hint about something easy to miss, and always a reminder to refresh for updates; both are built and setTime()
-  // shows the one for the hour
+  // a hint about something easy to miss, and every fifth tap a reminder to refresh for updates (the user's ask,
+  // 2026-10-15); both are built and setTime() shows the one for the hour
   list.push({
     id: 'prof', step: { x: PROF_AT.x, y: PROF_AT.y + 1 }, tiles: [[PROF_AT.x, PROF_AT.y]], tag: [PROF_AT.x, 2.6, PROF_AT.y], open: true,
     get name() { return profNow().name; },
-    get line() { return `${HINTS[hintAt++ % HINTS.length]} ${profNow().refresh}`; },
+    get line() { const hint = HINTS[hintAt++ % HINTS.length]; return ++hintsHeard % 5 ? hint : `${hint} ${profNow().refresh}`; },
     buttons: [],
     build: (g) => { for (const who of PROFS) standProf(g, who); },
   });
@@ -2446,7 +2446,7 @@ const HINTS = [
   'Legendaries never evolve. They power up instead, and it\'s quite a sight.',
   'Amulet Coin doubles the ₽ you win after fights. More ₽, more Mart.',
 ];
-let hintAt = Math.floor(Math.random() * HINTS.length), profBoards = {};
+let hintAt = Math.floor(Math.random() * HINTS.length), hintsHeard = 0, profBoards = {};
 const profNow = () => PROFS.find(p => p.night === (time === 'night'));
 async function standProf(g, who) {
   const m = await monBoard({ src: `assets/trainers/${who.id}.png`, name: who.name, cry: '', px: TRAINER_PX }, false);

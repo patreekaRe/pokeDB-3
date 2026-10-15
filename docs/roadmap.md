@@ -133,7 +133,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (`js/hub-sealed.js`). Headless-checked, no errors; waiting on the user's look (`?mewtwo&gate=0&hubat=2,12`).
    **Done (2026-10-15): the Clearing's lamps and benches in mirrored pairs, and the professors** (the user's ask): 14
    lamps, 6 benches, 4 flower beds (`LAMPS` / `BENCHES` / `BEDS`); Professor Oak by day and Professor Sonia at night on
-   the plaza right of the Waystone, tapping through `HINTS` and always saying to refresh for updates. Headless-checked,
+   the plaza right of the Waystone, tapping through `HINTS`, saying to refresh for updates every fifth tap. Headless-checked,
    no errors; waiting on the user's look. Their sprites are the user's own since 2026-10-14 (80 x 80, like Kurt's).
    **Done (2026-10-14): Lantern Village's gate out made grand** (the user: "more aesthetic, extravagant, noticeable"):
    `torii()` in `js/event-3d.js` is a gold-trimmed torii with a smaller one behind (`toriiFrame()`), a straw rope with
