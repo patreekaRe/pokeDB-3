@@ -75,9 +75,20 @@ The first section began as the note on playtesting the live site and grew into t
   exported from `js/hub-3d.js` with `CLEARING_LOOK` / `CLEARING_LIGHT`) in their season's leaves, stepping stones, and
   in winter snow on all of it and falling (`liveSnow()`); `yardLight()` is the Clearing's light and tint under a sky
   gradient. The lawn rolls away like the Clearing (`BEND`, `CURVE` outdoors and 0 indoors; taps find the drawn ground with
-  `groundHit()`, the doormat included). Outdoors the Decorate key is hidden (`.base3d.outdoors`) and the residents stay
-  indoors, unseen and untappable, till parts b and c. `?yard` opens straight out there, a yard lent for the page load if
-  none is bought (`lent`, taken back by `loadBase()` on any load without it). The PC's `NEWS` has `yard` (in House upgrades).
+  `groundHit()`, the doormat included). The residents stay indoors, unseen and untappable, till part c. `?yard` opens
+  straight out there, a yard lent for the page load if none is bought (`lent`, taken back by `loadBase()` on any load
+  without it). The PC's `NEWS` has `yard` (in House upgrades).
+- **The backyard's furniture** (2026-10-14, part b): the Yard shelf, 16 kinds flagged `outdoor` (`p.outdoor`), painted
+  in `js/base-furniture-yard.js` (the tray's and store's pictures only) and modelled from parts in `js/base-models-y.js`.
+  `fitsHere(id, b)` in `js/secret-base.js` is the rule (the user's): an outdoor piece only in the yard, nothing from
+  indoors out there; `fits()`, the tray and its chips all ask it. A new outdoor kind is a line there with `outdoor` (its
+  `add()` sets it) and a builder in the -y batch. Sold only in **Smeargle's garden catalogue** (`js/garden-shop.js`): a tap
+  on Smeargle in the store, once there's a yard (`KEEPERS[1].special` in `js/mall-furniture.js`; without one Smeargle
+  chats, a line hinting at it), the whole shelf always in stock, owned ones marked; `dealDay()` leaves outdoor pieces out,
+  so the daily stands deal as before. Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
+  ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
+  and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
+  a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never

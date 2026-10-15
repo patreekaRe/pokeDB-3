@@ -36,12 +36,12 @@ set('ticketmachine tokenmachine', { does: 'screen', show: ['ticket'], gives: 'co
 set('mixingdesk', { does: 'screen', show: ['eq'], music: 'bass' });
 
 // lights: a tap switches them
-set('lamp floorlamp lavalamp moonlamp balllamp ufolamp jellylamp scarablamp featherlamp andon gardenlamp spookylamp stationlamp bankerslamp stonelantern icelantern lantern growlamp crystalball incubator serverrack', { does: 'light' });
+set('lamp floorlamp lavalamp moonlamp balllamp ufolamp jellylamp scarablamp featherlamp andon gardenlamp spookylamp stationlamp bankerslamp stonelantern icelantern lantern growlamp crystalball incubator serverrack lamppost stringlights', { does: 'light' });
 set('starprojector', { does: 'light', stars: true });
 set('candle candelabra tikitorch litwick', { does: 'light', flicker: true });
 
 // fires: a tap lights or puts them out
-set('fireplace woodstove brazier heater', { does: 'fire' });
+set('fireplace woodstove brazier heater barbecue', { does: 'fire' });
 set('stove', { does: 'fire', burners: true });
 set('breadoven', { does: 'door', inside: 'oven' });
 set('cauldron poisonvat', { does: 'brew' });

@@ -27,7 +27,7 @@ import { shapeOf, seatHeight } from './base-shapes.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere } from './secret-base.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -438,6 +438,11 @@ function yardLight(t) {
 
 const setSky = (b) => { if (scene.background?.isTexture) scene.background.dispose(); scene.background = b; };
 
+/** Out in the yard, a piece rolls away with the lawn under it (BEND), as the trees and fence do. */
+function bendOut(o) {
+  if (BEND.k.value) o.traverse(c => { if (c.isMesh) for (const m of [c.material].flat()) bend(m, BEND); });
+}
+
 function buildPieces() {
   pieceGroup.traverse(o => { if (o.userData.play) stopPlay(o.userData.play); });
   dispose(pieceGroup);
@@ -455,6 +460,7 @@ function buildPieces() {
     const [fw, fh] = footprint(it);
     for (let x = 0; x < fw; x++) for (let y = 0; y < fh; y++) blocked.add(`${it.x + x},${it.y + y}`);
   });
+  bendOut(pieceGroup);
   lampLights.forEach((l, i) => { l.visible = i < lamps.length; if (lamps[i]) l.position.copy(lamps[i]); });
   if (mon && blocked.has(key(walker.tile.x, walker.tile.y))) {
     walker.tile = nearestFree(walker.tile);
@@ -617,6 +623,7 @@ function makeGhost() {
   const wall = PIECES[holding.id].layer === 'wall';
   ghost = makePiece(wall ? { id: holding.id, x: 0 } : { id: holding.id, x: 0, y: 0, dir: holding.dir }, true);
   for (const r of holding.riders) ghost.add(makePiece({ id: r.id, x: r.dx, y: r.dy, dir: r.dir, up: 1 }, true, surfaceOf(holding.id)));
+  bendOut(ghost);
   scene.add(ghost);
   const [fw, fh] = wall ? [PIECES[holding.id].w, WALL_H] : footprint({ id: holding.id, dir: holding.dir });
   foot.scale.set(fw, fh, 1);
@@ -627,9 +634,12 @@ function makeGhost() {
 function aimFrom(nx, ny) {
   const ray = new THREE.Raycaster();
   ray.setFromCamera(new THREE.Vector2(nx, ny), camera);
-  const hit = new THREE.Vector3(), p = PIECES[holding.id];
-  const plane = p.layer === 'wall' ? new THREE.Plane(new THREE.Vector3(0, 0, 1), ROWS / 2) : new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-  if (!ray.ray.intersectPlane(plane, hit) && !ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit)) return;
+  let hit = new THREE.Vector3();
+  const p = PIECES[holding.id];
+  // out on the lawn, the tile under the finger is where the rolling lawn is drawn (groundHit())
+  if (p.layer !== 'wall') hit = groundHit(ray.ray);
+  else if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), ROWS / 2), hit)) hit = groundHit(ray.ray);
+  if (!hit) return;
   aimAt = aimTile(holding.id, holding.dir, hit.x + COLS / 2, hit.z + ROWS / 2);
 }
 
@@ -1483,7 +1493,7 @@ function tray(which = tab) {
     // a set's other styles in this colour first, then this style's other colours
     for (const c of [...styles(id), ...colours(id).filter(c => c !== id)]) add(PIECES[c].name, () => icon(c), c === id, () => recolour(c));
   }
-  if (tab === 'furniture') for (const id of DESIGNS.filter(id => spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
+  if (tab === 'furniture') for (const id of DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
@@ -1520,7 +1530,7 @@ function filters() {
   const row = root.querySelector('.b3-filters');
   row.hidden = tab !== 'furniture';
   if (row.hidden) return;
-  const have = DESIGNS.filter(id => spare(base, id) > 0).map(id => PIECES[id]);
+  const have = DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0).map(id => PIECES[id]);
   const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || have.some(KINDS_OF[k]));
   if (!kinds.includes(kindPick)) kindPick = 'All';
   row.replaceChildren(...kinds.map(k => {
@@ -1595,7 +1605,8 @@ function refresh() {
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
     : tab === 'wall' || tab === 'floor' ? 'Tap one to put it up. Ones with a price go up on approval first.'
-    : tab === 'furniture' && !DESIGNS.some(id => spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
+    : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
+    : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
   hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
@@ -1879,6 +1890,8 @@ async function travel(d) {
 /** Build the room `base.here` is and stand your partner at `spot(doors)` (a tile), or at the front; the guests about it. */
 function showRoom(spot = () => null) {
   useRoom(base);
+  // outdoors there's no wallpaper or floor to pick, and the residents stay in (part c will let them out)
+  if (outdoors() && tab !== 'furniture') tab = 'furniture';
   const lv = here().lv;
   root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
   buildRoom();
@@ -2009,6 +2022,8 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   foot.visible = false; foot.renderOrder = 10;   // seen through whatever stands on the tiles
   selBox = new THREE.Box3Helper(new THREE.Box3(), '#ffe060');
   selBox.visible = false;
+  // both follow the lawn's roll out in the yard (a no-op indoors, where BEND.k is 0)
+  bend(foot.material, BEND); bend(selBox.material, BEND);
   roomGroup = new THREE.Group(); pieceGroup = new THREE.Group();
   scene.add(ring, foot, selBox, roomGroup, pieceGroup);
 

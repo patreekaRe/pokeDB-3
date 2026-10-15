@@ -5849,6 +5849,7 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .town-shop .tshop-price { font-weight: bold; }
 .town-shop .tshop-empty { grid-column: 1 / -1; text-align: center; font-size: 0.8rem; }
 .town-shop .tshop-tile.sold { opacity: 0.55; }
+.garden-shop .tshop-grid { max-height: min(52vh, 420px); overflow-y: auto; }
 /* Kurt's Workshop (js/workshop.js): the town shop's window, a row of tabs over its shelf */
 .workshop .wshop-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 0 0 8px; }
 .workshop .wshop-tab { padding: 6px 2px; border: 2px solid #5a7a3a; border-radius: 6px; background: #dfe9c8; color: #1f3a14; font: inherit; font-size: 0.75rem; cursor: pointer; }

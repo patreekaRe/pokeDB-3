@@ -43,7 +43,10 @@ export const STORE_COLOUR = LOOK[1].trim;
 export const KEEPERS = {
   1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif',
     hello: ['Welcome in! I painted every piece in here myself.', 'Fresh pieces on the stands today, still wet! Kidding.', 'Have a look round. Tap a piece and I\'ll tell you about it.'],
-    chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!'] },
+    chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!',
+      'Build a backyard on your PC\'s House Upgrades, and tap me: I keep a garden catalogue too!'],
+    // with a backyard, a tap opens the garden catalogue (js/garden-shop.js), the Yard shelf, always in stock
+    special: (done) => import('./garden-shop.js').then(m => m.gardenTap(done)) },
   2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
     hello: ['Welcome upstairs! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that stand. There.'],
     chat: ['I dust every stand twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.'] },

@@ -35,3 +35,14 @@ test('a piece you own is never dealt again', () => {
   for (const id of [...a, ...b]) assert.ok(!owned[PIECES[id].own], `${id} is owned, so never offered`);
   assert.deepEqual(dealDay(day, owned), [a, b]);
 });
+
+test('the backyard\'s pieces are never on the stands, and stand only out in the yard', async () => {
+  const { fitsHere, DESIGNS } = await import('../js/secret-base.js');
+  const yard = DESIGNS.filter(id => PIECES[id].outdoor);
+  assert.ok(yard.length >= 12);
+  for (const day of ['2026-10-14', '2026-12-25']) for (const id of [...furnitureStock(day), ...furnitureStock(day, 2)]) assert.ok(!PIECES[id].outdoor, `${id} is the garden catalogue's`);
+  assert.ok(fitsHere(yard[0], { here: 'yard' }));
+  assert.ok(!fitsHere(yard[0], {}));
+  assert.ok(!fitsHere('bed', { here: 'yard' }));
+  assert.ok(fitsHere('bed', { here: 'r1' }));
+});

@@ -2469,3 +2469,15 @@ nothing built through it), walked out onto a 12 x 8 lawn: mown stripes, the Clea
 a picket fence, snow in winter (`buildYard()` in `js/base-3d.js`, the base's own renderer, so no new GL context).
 `?yard` lends one for a page load. Tested headless at 390x844: both doors, taps on the curved lawn, winter dusk, the
 purchase; 61 draw calls, ~0.6 ms a frame on the PC (the pane was hidden, so no live fps read). Part b is next.
+
+### The Secret Base's backyard, part b: outdoor furniture (2026-10-14)
+
+Sixteen `outdoor` kinds on a new Yard shelf (`js/base-furniture-yard.js`, modelled from parts in `js/base-models-y.js`):
+park bench, swing set, picnic bench, lamp post, string lights, dome tent, inflatable pool, rock pond, flower bed, garden
+fence, box hedge, garden mailbox, barbecue, garden lounger, garden parasol, sandpit, each in the 20 colours. `fitsHere()`
+in `js/secret-base.js` keeps them out on the lawn and everything else indoors (fits(), the tray, its chips). Sold only in
+Smeargle's garden catalogue (`js/garden-shop.js`, a tap on Smeargle once you own a yard, the whole shelf always in stock),
+never on the daily stands, so the stands' deal is unchanged. Outdoors the Decorate key is back and only the Furniture tab
+shows; pieces, the ghost, its footprint and the pick box roll with the lawn (`bendOut()`), aimed on the drawn lawn
+(`groundHit()`). The lamp post and string lights switch, the barbecue burns. Tested headless: all 16 built and placed,
+the tray in and out, the catalogue; `tests/furniture-store.test.mjs` checks the rule. Part c is next.

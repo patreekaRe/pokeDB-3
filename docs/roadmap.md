@@ -33,13 +33,8 @@ plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_
 roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
 `docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
   a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
-  b) **Outdoor furniture** (next; ▶ Run in: LOCAL): the yard is already a room to the code (`base.here === 'yard'`, its
-     things packed on `house.yard`), so this is: show the Decorate key outdoors again (`.base3d.outdoors .b3-decor` in
-     `css/secret-base.css` hides it), bend the pieces with the lawn (`bend()` / `bendFine()` on `pieceGroup` while
-     `BEND.k` is set, as `buildYard()` does `roomGroup`), and the `outdoor` flag in the tray and store. Then placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
-     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
-     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
-  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
+  b) Done 2026-10-14, on `main`: 16 outdoor kinds, Smeargle's garden catalogue (docs/roadmap-done.md).
+  c) **Pokémon roaming outside** (next; ▶ Run in: LOCAL): the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
      types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
   d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
      harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
