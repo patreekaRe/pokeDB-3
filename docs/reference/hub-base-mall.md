@@ -112,10 +112,13 @@ The first section began as the note on playtesting the live site and grew into t
   `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
   (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
   `?yard=big` lends the bigger one.
-- **The Ancient Tree's picket fence** (2026-10-15, the user's ask: a fence round the back and sides of the tree, the arch
-  its way in on the right): `treeFence()` in `js/hub-3d.js`, painted like the arch's gate, merged with `mergeStatic()`.
-  It runs a row behind the tree (`FENCE_BACK`, row 1), down its left side on column `FENCE_LEFT` (18) to its foot, and down
-  its right side to the arch's right post (column `ARCH_AT.tx`); its tiles go in `dressTiles`.
+- **The Ancient Tree's picket fence and garden gate** (2026-10-15, the user's ask, then their drawing the same day):
+  `treeFence()` in `js/hub-3d.js`, painted like the gate, merged with `mergeStatic()`: a row behind the tree
+  (`FENCE_BACK`, row 1), down its left side on column `FENCE_LEFT` (18) to its foot, down the right on `FENCE_RIGHT` (27),
+  and along the front (row 4) from the trunk to that corner, the gate (`ARCH_AT` 25,4, moved from 27,3) in it just right
+  of the trunk; the tree's own tiles stop short of the gate's. The gate (`js/hub-arch.js`) was restyled white to match:
+  square posts, a latticed arch with a finial, the picket gate and lantern; no ivy or flowers (the user found the
+  overgrown arch a clump). Its tiles go in `dressTiles`.
 - **The garden arch, the backyard's way in** (2026-10-15, the user's ask: "the entrance to the backyard from outside,
   an archway you unlock"; it was a back door of the main room, `backDoorOf()`, now gone, so every main-room wall can be
   built onto again): the Clearing's place `backyard` on `ARCH_AT` (27, 3; drawn `ARCH_X` 0.3 left, blocking it and the

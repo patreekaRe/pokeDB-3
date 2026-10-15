@@ -2617,3 +2617,4 @@ The user's yes ("MERGE") on `acdc58f`: the climb's tower in `js/tower-art.js` in
 first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.md`).
 
 - **Done (2026-10-15): a picket fence round the Ancient Tree** (the user's ask): back and both sides, meeting the garden arch on the right (`treeFence()` in `js/hub-3d.js`).
+- **Done (2026-10-15): the garden gate moved beside the trunk and restyled** (the user's drawing): `ARCH_AT` 25,4 in a front fence row, the arch white with no ivy (`js/hub-arch.js`).

@@ -117,9 +117,9 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
 const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 0 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
-// the garden arch into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
-// beside the Ancient Tree, short of the Sky Pillar's trail; it stands a little left of this tile, over this one and the next
-const ARCH_AT = { tx: 27, ty: 3 }, ARCH_X = -0.3;
+// the garden gate into the Secret Base's backyard (2026-10-15, the user's ask: its way in from outside, not a back door),
+// in the front of the Ancient Tree's fenced garden, just right of its trunk (moved from 27,3 the same day, the user's drawing)
+const ARCH_AT = { tx: 25, ty: 4 }, ARCH_X = 0;
 // Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
 // step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
 const WORKSHOP_AT = { tx: 23, ty: 8 };
@@ -1988,7 +1988,7 @@ function makePlaces() {
       build: (g) => beckon(g, board(routeSignArt(), tileX(SIGN_AT.tx) + STAND_IN, tileZ(SIGN_AT.ty) - 0.2, { s: 0.85 })),
     },
     {
-      id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty), tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
+      id: 'base', name: 'Secret Base', step: { x: TREE_AT.tx, y: TREE_AT.ty + 1 }, tiles: [...rect(TREE_AT.tx - 3, TREE_AT.ty - 2, TREE_AT.tx + 3, TREE_AT.ty - 1), ...rect(TREE_AT.tx - 3, TREE_AT.ty, ARCH_AT.tx - 1, TREE_AT.ty)], tag: [TREE_AT.tx, 3.2, TREE_AT.ty], open: true,
       line: baseOwned() ? 'A door in the Ancient Tree\'s roots: your Secret Base.'
         : `A boarded-up door in the Ancient Tree's roots. ${BASE_PRICE.toLocaleString()} PokéCoins makes it your Secret Base.`,
       buttons: [[baseOwned() ? 'Go in' : 'Unlock', baseOwned() ? enterBase : buyBase]],
@@ -2010,7 +2010,7 @@ function makePlaces() {
     },
     {
       // the backyard's garden arch: brambles and a padlock till it's bought, here or on the PC's blueprint (js/hub-arch.js)
-      id: 'backyard', name: yardOwned() ? 'Backyard' : 'Garden Arch', step: { x: ARCH_AT.tx, y: ARCH_AT.ty + 1 }, tiles: [[ARCH_AT.tx - 1, ARCH_AT.ty], [ARCH_AT.tx, ARCH_AT.ty]], tag: [ARCH_AT.tx + ARCH_X, 2.9, ARCH_AT.ty], open: true,
+      id: 'backyard', name: yardOwned() ? 'Backyard' : 'Garden Arch', step: { x: ARCH_AT.tx, y: ARCH_AT.ty + 1 }, tiles: [[ARCH_AT.tx, ARCH_AT.ty]], tag: [ARCH_AT.tx + ARCH_X, 2.9, ARCH_AT.ty], open: true,
       line: yardOwned() ? 'Through the garden arch beside the Ancient Tree: your backyard.'
         : `An old garden arch beside the Ancient Tree, choked with brambles, its gate padlocked. ${baseOwned() ? `${YARD_PRICE.toLocaleString()} PokéCoins clears it into a backyard of your own.` : 'Make the Ancient Tree your Secret Base first.'}`,
       buttons: yardOwned() ? [['Go in', enterYard]] : baseOwned() ? [['Unlock', buyYardArch]] : [],
@@ -2518,10 +2518,10 @@ const BENCHES = [[12, 15, Math.PI * 0.75], [18, 15, -Math.PI * 0.75], [12, 20, 1
 const BEDS = [[10, 8, 0.9], [20, 8, 0.9], [10, 16, 0.8], [20, 16, 0.8]];
 const dressTiles = new Set();
 
-/** A white picket fence round the Ancient Tree's back and sides (2026-10-15, the user's ask), painted like the garden
-    arch's gate: along the back a row behind the tree, down its left side to its foot, and down its right side to the
-    arch's right post, so the arch is the fenced garden's way in. */
-const FENCE_BACK = 1, FENCE_LEFT = 18;
+/** A white picket fence round the Ancient Tree's garden (2026-10-15, the user's ask), painted like the garden gate: a row
+    behind the tree, down its left side to its foot, down the right side to the front, and along the front from the
+    trunk to that corner, the gate (ARCH_AT) in it just right of the trunk (the user's drawing, the same day). */
+const FENCE_BACK = 1, FENCE_LEFT = 18, FENCE_RIGHT = 27;
 function treeFence() {
   const paint = new THREE.MeshStandardMaterial({ color: SEASON === 'winter' ? '#e8e2d8' : '#f0e6d2', roughness: 0.7 });
   const g = new THREE.Group();
@@ -2533,23 +2533,26 @@ function treeFence() {
     const posts = Math.max(1, Math.round(len / 1.1));
     for (let i = 0; i <= posts; i++) { const [x, z] = at(i / posts); add(post, x, 0.475, z); add(cap, x, 1, z).rotation.y = Math.PI / 4; }
     for (const y of [0.3, 0.65]) { const [x, z] = at(0.5); add(new THREE.BoxGeometry(len, 0.06, 0.035), x, y, z, turn); }
-    const n = Math.floor(len / 0.17);
+    const n = Math.max(2, Math.floor(len / 0.17));
     for (let i = 1; i < n; i++) {
       const [x, z] = at(i / n);
       add(picket, x, 0.41, z, turn);
       add(tip, x, 0.81, z, turn).rotation.y = turn + Math.PI / 4;
     }
   };
-  const back = tileZ(FENCE_BACK), left = tileX(FENCE_LEFT), right = tileX(ARCH_AT.tx) + ARCH_X + 0.67, front = tileZ(TREE_AT.ty) + 0.45;
-  run([left, front], [left, back]);
+  const back = tileZ(FENCE_BACK), left = tileX(FENCE_LEFT), right = tileX(FENCE_RIGHT) + 0.3, front = tileZ(ARCH_AT.ty);
+  const gate = tileX(ARCH_AT.tx) + ARCH_X, trunk = tileX(TREE_AT.tx + 2) + 0.1;
+  run([left, tileZ(TREE_AT.ty) + 0.45], [left, back]);
   run([left, back], [right, back]);
-  run([right, back], [right, tileZ(ARCH_AT.ty) - 0.17]);
+  run([right, back], [right, front]);
+  run([right, front], [gate + 0.75, front]);
+  run([gate - 0.75, front], [trunk, front]);
   mergeStatic(g, () => false);
   g.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
   forest.add(g);
-  for (let x = FENCE_LEFT; x <= ARCH_AT.tx; x++) dressTiles.add(key(x, FENCE_BACK));
-  for (let y = FENCE_BACK; y <= TREE_AT.ty; y++) dressTiles.add(key(FENCE_LEFT, y));
-  for (let y = FENCE_BACK; y < ARCH_AT.ty; y++) dressTiles.add(key(ARCH_AT.tx, y));
+  for (let x = FENCE_LEFT; x <= FENCE_RIGHT; x++) dressTiles.add(key(x, FENCE_BACK));
+  for (let y = FENCE_BACK; y <= TREE_AT.ty; y++) { dressTiles.add(key(FENCE_LEFT, y)); dressTiles.add(key(FENCE_RIGHT, y)); }
+  for (let x = ARCH_AT.tx + 1; x < FENCE_RIGHT; x++) dressTiles.add(key(x, ARCH_AT.ty));
 }
 
 function dressClearing() {

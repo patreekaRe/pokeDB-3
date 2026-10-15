@@ -1,6 +1,8 @@
 /* hub-arch.js  -  the garden arch beside the Ancient Tree, the way into the Secret Base's backyard (the user's ask,
    2026-10-15: "the entrance to the backyard from outside, an archway you unlock"; it was a back door of the main room).
-   A wooden trellis arch grown over with ivy and flowers, a picket gate in it and a lantern hung under its crown. Until
+   A white garden gate in the picket fence round the tree (restyled 2026-10-15, the user's ask: the ivy-grown trellis
+   arch read as a clump): square posts with ball finials, an arched trellis over them, a picket gate and a lantern hung
+   under its crown, all painted like the fence. Until
    the backyard is bought brambles choke the opening and a padlock holds the gate, the dark of a thicket behind; bought,
    the lawn shows through, and the gate swings open to walk in. js/hub-3d.js builds it as the 'backyard' place
    (makePlaces()) and ticks it each frame. */
@@ -66,9 +68,8 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
   const add = (geo, m, px, py, pz, parent = still, shadow = true) => {
     const o = new THREE.Mesh(geo, m); o.position.set(px, py, pz); o.castShadow = shadow; o.receiveShadow = true; parent.add(o); return o;
   };
-  const wood = std({ color: '#a8784a' }), dark = std({ color: '#6e4a2a' }), paint = std({ color: winter ? '#e8e2d8' : '#f0e6d2', roughness: 0.7 });
+  const paint = std({ color: winter ? '#e8e2d8' : '#f0e6d2', roughness: 0.7 }), shade = std({ color: winter ? '#cfc8bc' : '#d6c9ae', roughness: 0.7 });
   const stone = std({ color: '#b8b4a8', flatShading: true });
-  const leaves = [0, 1, 2].map(i => std({ color: leaf[i] || leaf[0], flatShading: true, roughness: 0.9 }));
   const PX = HW + 0.07;   // the posts' middle, either side of the opening
 
   // the lawn (or thicket) seen through it: an arch-shaped plane a little behind the gate
@@ -81,63 +82,32 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
   const through = new THREE.MeshBasicMaterial({ map });
   add(holeGeo, through, 0, 0.01, -DEEP - 0.02, group, false);
 
-  // stone footings, two posts a side (front and back) with slats between, and the arch over them, front and back
+  // stone footings, a square post a side with a ball finial, trellis panels down their sides, and the arch over them,
+  // front and back, latticed between
+  const ballGeo = new THREE.SphereGeometry(0.075, 10, 8);
   for (const s of [-1, 1]) {
-    add(new THREE.BoxGeometry(0.3, 0.14, 2 * DEEP + 0.16), stone, s * PX, 0.07, 0);
-    for (const dz of [-DEEP, DEEP]) add(new THREE.BoxGeometry(0.11, POST_H, 0.11), wood, s * PX, POST_H / 2 + 0.1, dz);
-    for (let y = 0.4; y < POST_H; y += 0.28) add(new THREE.BoxGeometry(0.05, 0.035, 2 * DEEP), dark, s * PX, y, 0, still, false);
+    add(new THREE.BoxGeometry(0.3, 0.12, 2 * DEEP + 0.16), stone, s * PX, 0.06, 0);
+    add(new THREE.BoxGeometry(0.16, POST_H + 0.05, 2 * DEEP + 0.06), paint, s * PX, (POST_H + 0.05) / 2 + 0.1, 0);
+    add(new THREE.BoxGeometry(0.2, 0.05, 2 * DEEP + 0.1), paint, s * PX, POST_H + 0.17, 0);
+    for (let y = 0.35; y < POST_H; y += 0.26) add(new THREE.BoxGeometry(0.17, 0.03, 0.02), shade, s * PX, y, DEEP + 0.035, still, false);
   }
   for (const dz of [-DEEP, DEEP]) {
-    const ring = add(new THREE.TorusGeometry(PX, 0.055, 6, 22, Math.PI), wood, 0, POST_H + 0.1, dz);
-    ring.scale.z = 1.6;
+    const ring = add(new THREE.TorusGeometry(PX, 0.05, 6, 24, Math.PI), paint, 0, POST_H + 0.1, dz);
+    ring.scale.z = 1.4;
   }
-  for (let i = 1; i < 8; i++) {   // slats over the top, front to back
-    const a = Math.PI * i / 8;
-    add(new THREE.BoxGeometry(0.05, 0.035, 2 * DEEP + 0.06), dark, Math.cos(a) * PX, POST_H + 0.1 + Math.sin(a) * PX, 0, still, false).rotation.z = a;
+  for (let i = 1; i < 10; i++) {   // the lattice over the top, front to back
+    const a = Math.PI * i / 10;
+    add(new THREE.BoxGeometry(0.045, 0.03, 2 * DEEP + 0.04), paint, Math.cos(a) * PX, POST_H + 0.1 + Math.sin(a) * PX, 0, still, false).rotation.z = a;
   }
+  add(ballGeo, paint, 0, POST_H + 0.1 + PX + 0.08, 0);   // a finial on the crown
 
-  // ivy climbing both posts and over the top, flowers in it (none in winter, snow on the crown instead)
-  const blob = [new THREE.IcosahedronGeometry(0.1, 0), new THREE.IcosahedronGeometry(0.14, 0)];
-  const ivy = (px, py, pz, big) => {
-    const o = add(blob[big ? 1 : 0], leaves[Math.floor(rnd() * 3)], px, py, pz);
-    o.rotation.set(rnd() * 3, rnd() * 3, rnd() * 3);
-    o.scale.setScalar(0.8 + rnd() * 0.5);
-  };
-  for (const s of [-1, 1]) for (let y = 0.15; y < POST_H; y += 0.09) {
-    const a = y * 5 + s;
-    ivy(s * PX + Math.cos(a) * 0.1, y + 0.1, DEEP * Math.sin(a) * 1.3, rnd() < 0.3);
-  }
-  for (let i = 0; i <= 26; i++) {
-    const a = Math.PI * i / 26, r = PX + (rnd() - 0.3) * 0.1;
-    for (const dz of [-DEEP, 0, DEEP]) if (rnd() < 0.85) ivy(Math.cos(a) * r, POST_H + 0.1 + Math.sin(a) * r, dz + (rnd() - 0.5) * 0.1, rnd() < 0.5);
-  }
-  // trailing strands hanging off the arch's front
-  for (const [ax, n] of [[-0.42, 4], [0.36, 3], [0.05, 2]]) for (let k = 0; k < n; k++) {
-    const a = Math.acos(Math.max(-1, Math.min(1, ax / PX)));
-    ivy(ax + (rnd() - 0.5) * 0.05, POST_H + 0.1 + Math.sin(a) * PX - 0.12 - k * 0.11, DEEP + 0.06, false);
-  }
-  if (winter) {
-    const snow = std({ color: '#f8fbff', roughness: 1, flatShading: true });
+  if (winter) {   // snow along the crown
+    const snow = std({ color: '#f8fbff', roughness: 1, flatShading: true }), blob = new THREE.IcosahedronGeometry(0.14, 0);
     for (let i = 0; i <= 14; i++) {
-      const a = Math.PI * (0.12 + 0.76 * i / 14), r = PX + 0.1;
-      add(blob[1], snow, Math.cos(a) * r, POST_H + 0.12 + Math.sin(a) * r, (rnd() - 0.5) * DEEP, still, false).scale.set(1.1, 0.55, 1.4);
-    }
-  } else {
-    const petals = ['#f890b8', '#fff4f8', '#f8d050', '#c8a0f8'].map(color => std({ color, roughness: 0.6 }));
-    const bud = new THREE.SphereGeometry(0.045, 6, 4);
-    for (let i = 0; i < 26; i++) {
-      const up = rnd() < 0.6;
-      if (up) {
-        const a = Math.PI * (0.05 + rnd() * 0.9), r = PX + 0.08;
-        add(bud, petals[i % 4], Math.cos(a) * r, POST_H + 0.1 + Math.sin(a) * r, DEEP + 0.04 - rnd() * 0.1, still, false);
-      } else {
-        const s = rnd() < 0.5 ? -1 : 1;
-        add(bud, petals[i % 4], s * PX + (rnd() - 0.5) * 0.18, 0.3 + rnd() * (POST_H - 0.3), DEEP + 0.08, still, false);
-      }
+      const a = Math.PI * (0.12 + 0.76 * i / 14), r = PX + 0.08;
+      add(blob, snow, Math.cos(a) * r, POST_H + 0.12 + Math.sin(a) * r, (rnd() - 0.5) * DEEP, still, false).scale.set(1.1, 0.5, 1.3);
     }
   }
-  // a shrub at each foot
-  for (const s of [-1, 1]) for (let i = 0; i < 6; i++) ivy(s * (PX + 0.22 + rnd() * 0.12), 0.12 + rnd() * 0.18, DEEP * 0.5 + (rnd() - 0.3) * 0.25, true);
 
   // the lantern hung under the crown, its glass lit with the hour
   const glass = std({ color: '#fff4d0', emissive: new THREE.Color('#ffd070'), roughness: 0.3 });
@@ -169,7 +139,7 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
   if (!owned) {
     bramble = new THREE.Group();
     const vine = std({ color: '#3e3a22', roughness: 0.95 }), thorn = std({ color: '#7a5a3a' }), gloom = std({ color: '#2a4a24', flatShading: true });
-    const thornGeo = new THREE.ConeGeometry(0.02, 0.07, 4);
+    const thornGeo = new THREE.ConeGeometry(0.02, 0.07, 4), leafGeo = new THREE.IcosahedronGeometry(0.1, 0);
     for (let i = 0; i < 7; i++) {
       const y0 = 0.15 + rnd() * 1.4, y1 = 0.15 + rnd() * 1.4, pts = [];
       for (let k = 0; k <= 6; k++) {
@@ -181,7 +151,7 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
       for (let k = 1; k < 10; k++) {
         const p = curve.getPoint(k / 10), o = add(thornGeo, thorn, p.x, p.y, p.z, bramble, false);
         o.rotation.z = (k % 2 ? 1 : -1) * 1.2; o.rotation.x = rnd();
-        if (k % 3 === 0) add(blob[0], gloom, p.x, p.y + 0.04, p.z + 0.02, bramble).scale.setScalar(0.7);
+        if (k % 3 === 0) add(leafGeo, gloom, p.x, p.y + 0.04, p.z + 0.02, bramble).scale.setScalar(0.7);
       }
     }
     group.add(bramble);
