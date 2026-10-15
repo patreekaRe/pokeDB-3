@@ -16,6 +16,26 @@ star counts (to 20) already allow for them.
 ▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
 docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
 
+**The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
+back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
+the main room, ~1,000 PokéCoins, like `ROOM_PRICE`'s rooms in `js/data/house.js` / `js/pc.js`'s `blueprint()`), **one
+plot that grows** (starts ~12x8, a bigger yard a later blueprint buy, like `BIG_PRICE`), and it holds **outdoor furniture,
+roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no run perks (the base's rule). Read
+`docs/reference/hub-base-mall.md` first. Sessions, in order, all ▶ Run in: LOCAL (Desktop app, visual):
+  a) Done 2026-10-14, on `main` (docs/roadmap-done.md; how it works in docs/reference/hub-base-mall.md's Backyard).
+  b) **Outdoor furniture** (next; ▶ Run in: LOCAL): the yard is already a room to the code (`base.here === 'yard'`, its
+     things packed on `house.yard`), so this is: show the Decorate key outdoors again (`.base3d.outdoors .b3-decor` in
+     `css/secret-base.css` hides it), bend the pieces with the lawn (`bend()` / `bendFine()` on `pieceGroup` while
+     `BEND.k` is set, as `buildYard()` does `roomGroup`), and the `outdoor` flag in the tray and store. Then placing on the grass grid (same Rotate / Move / Store as indoors), an outdoor family in the
+     Furniture store (benches, swing, picnic table, lamps, tent, paddling pool, pond, flower beds, fences, a mailbox), with an
+     `outdoor` flag so indoor pieces stay in and yard pieces stay out; smooth and lifelike, never pixel.
+  c) **Pokémon roaming outside**: the 6 on show can be put in the yard instead, wander the grass, and use pieces (Water
+     types the pond or pool, others the bench / swing), with taps giving their cry and hearts like indoors.
+  d) **Berry garden**: soil plots placed like furniture; plant a berry, it grows over real UTC days (sprout, bloom, fruit),
+     harvested for a few PokéCoins or berry decor, never run items. Keep the coin rate well under the Game Corner's
+     ~380 a day; a "!" over a plot that's ready. Its rolls are cosmetic, so plain `Math.random` is fine.
+  e) Later: the yard grows (the blueprint's bigger yard buy).
+
 **Towns and Waystones** (the user's idea and yes, 2026-10-13). Each biome after the Clearing has a **gateway town**, walked
 in 3D between the journey film and the biome's map: Clearing → boss → crossroads → journey film → **the town of the biome
 ahead** → biome 2 → boss → crossroads → film → town → biome 3 → boss → Sealed Gate. In `walkOn()` (`js/run.js`) the town
@@ -62,7 +82,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    homes (the leaders live there now; Jahmes asleep after 11 p.m. your time) and the Dance Theater (the Kimono Girls'
    five Eeveelutions dancing). The rest knock. Headless it runs about half the frame rate of the Hot Spring room (SwiftShader,
    no phone GPU): watch it on a phone. Next: the user's playtest, then session 2.
-**Live state (2026-10-14, the user's call):** the new Clearing went live on `main` as patch 1.18 with the towns **switched off** (`TOWNS_LIVE` false in `js/data/towns.js`; `?towns` turns them on to playtest; their patch lines in `TOWN_NOTES`). To ship the towns: set `TOWNS_LIVE` true and move `TOWN_NOTES` into `NEXT`. Every town has the Clearing's curve since 2026-10-14 (the user's ask: that was the last thing before they go live). Since 2026-10-14 a visit goes home only by the Waystone, and walks into your saved run when it stands in that town's biome (`docs/roadmap-done.md`).
+**Live state (2026-10-15, the user's call): the towns are LIVE** (`TOWNS_LIVE` true in `js/data/towns.js`), shipped as patch 1.20, The Waystones, with the questlines, the Satchel and Quests apps, Kurt's Workshop, the Nietos' questline and Mewtwo's Sealed Weakness and Depths camp (`TOWN_NOTES` condensed into it; `IN_THE_GAME` has a towns line and 164 badges). `tests/camp.test.mjs` now checks the live weakness. Open: the user's own playtests below still stand as feedback rounds, not blockers. Every town has the Clearing's curve since 2026-10-14. Since 2026-10-14 a visit goes home only by the Waystone, and walks into your saved run when it stands in that town's biome (`docs/roadmap-done.md`).
 
 2. **Done (2026-10-14): the Waystone ring and visiting from home**, for all five towns at once (they were all built by
    then). **The Waystone keeps its list hidden till a town is reached** (the user's call, 2026-10-14): before any town is `met`, a tap only reads one of four `RIDDLES` in turn (`sealedWaystone()` in `js/hub-3d.js`), the town list showing from the first town visited. The user's asks the same session: **the Clearing grown** (`COLS` 20 x `ROWS` 16 in `js/hub-3d.js`, seven columns on
@@ -237,8 +257,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    gate (g) gone; Persian's tent wears a crimson marquee with a Poké Ball on top; every other town's trade house a
    `tradePost()` (a turning Poké Ball on a post, a TRADE board swinging off it); Sunwell's `s` boards are
    `bazaarBoards()` in each leader's colours. Waiting on the user's look.
-   **Next: the user's playtest of the towns with the curve**, then their call to switch the towns on (`TOWNS_LIVE` true,
-   `TOWN_NOTES` into `NEXT`). ▶ Run in: PLAYTEST ON THE LIVE SITE (`?town=<biome>&towns`).
+   **Switched on 2026-10-15** (patch 1.20). ▶ Playtest on the live site, no flag needed now.
 3. **The other four towns**, one a session (Wastes, Ruins, Thornwood, Savanna): the same code, new art, lines, shop set
    and Waystone. **Wastes done (2026-10-13): Cinder Springs**, Lavaridge's, as big as the village (38 x 36) but laid out unlike it (the user's ask: a switchback road up the slope, in bottom left, out top right, houses on the terraces between its bends, a big spring in the middle with the Waystone on its ledge; each town should get its own shape): crags and
    dead trees for a forest, adobe houses with smoking chimneys, a bathhouse (walked in: five Pokémon soaking, `castAt`),
@@ -363,7 +382,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the win scene, not a walk round. **Mewtwo's own runs** land in the camp after their third boss (seeing how much of its
    strength is back) and go on down from there. Before the gate breaks, won runs strike it as now.
    **Built (2026-10-15): the Sealed Weakness, the pentagram and the Depths camp**, all behind the towns' switch
-   (`sealOn()`: `TOWNS_LIVE`, `?towns` or `?shards=N`; till then the live game is unchanged, Mewtwo at full strength).
+   (`sealOn()`: `TOWNS_LIVE`, `?towns` or `?shards=N`; live with the towns since 2026-10-15).
    50% in the Depths, +10% a shard (`SEALED_WEAKNESS`); bot, psychic, human / strong: 0 shards 64.0 / 63.7 (300 runs),
    2 shards 78.7 / 77.3, 5 82.0 / 92.0 (150): hard but winnable, kept.
    Every won run lands in the camp once the gate is broken; it's a walk (Mewtwo's talk coming to you) only when
@@ -418,7 +437,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    - Sessions: (1) the quest engine: `QUESTS` per town in `js/data/towns.js` (step kinds `track` / `gather` / `craft` /
      `shard`), the leader-beaten unlock and slide-in greeting, the Satchel, tests; (2) materials: drops, sparkling nodes;
      (3) Kurt's Workshop and its recipes; (4) the shard: the marked Alpha node, the pickup, the mending scene, leaders
-     coming home; (5) the dialogue, a town a session if it runs long. Towns stay off (`TOWNS_LIVE`) till the user says.
+     coming home; (5) the dialogue, a town a session if it runs long. Towns live since 2026-10-15 (patch 1.20).
    - **Session 1 done (2026-10-14): the quest engine.** `QUESTS` in `js/data/towns.js` (a story, a `greet` per leader, 4
      steps a town: `track` / `gather` / `craft` / `shard`, each with its leader `by` and their `thanks`; a step may
      `gives` a key item, e.g. Pat's Letter, or `pick`, John's festival), pure helpers (`greeterOf`, `openQuest`,
@@ -458,7 +477,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Gift friendship (`liked`): step 8. Towns stay off (`TOWNS_LIVE`) till the user says.
+     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Gift friendship (`liked`): step 8. Towns live since 2026-10-15 (patch 1.20).
 
 7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
    Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
@@ -534,6 +553,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
      all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
      maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
+   - **Session (a) done (2026-10-14): hearts.** `heartsOf()` / `HEARTS` / `FRIENDS` in `js/data/workshop.js` (test in
+     `tests/workshop.test.mjs`), the hearts on a home's room-bar LCD beside its name, a gift saying the new count (and
+     "already the best of friends" past 5), and the PC's FRIENDS page (towns on, a leader beaten). Detail:
+     `docs/reference/towns.md`. On `main`.
+   - **Session (b) done (2026-10-14): heart lines.** `HEART_LINES` in `js/data/towns.js`, 5 for each of the 11 friends,
+     said first at home as each heart fills (`homeTalk()`, heard ones tracked in `save.workshop.heard`), a gift's toast
+     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`. Next:
+     session (c), Secret Base visits and sitting on furniture.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

@@ -2461,6 +2461,15 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
   `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.
 
+### The Secret Base's backyard, part a: the yard itself (2026-10-14)
+
+A green plot on the PC's House Upgrades blueprint, 1,000 PokéCoins (`YARD_PRICE`, `buyYard()`), bought at any main-room
+size; saved as `secretBase.house.yard` (so it rides the cloud save). A back door in the main room's back wall (`backDoorOf()`,
+nothing built through it), walked out onto a 12 x 8 lawn: mown stripes, the Clearing's meadow, trees, light and curve,
+a picket fence, snow in winter (`buildYard()` in `js/base-3d.js`, the base's own renderer, so no new GL context).
+`?yard` lends one for a page load. Tested headless at 390x844: both doors, taps on the curved lawn, winter dusk, the
+purchase; 61 draw calls, ~0.6 ms a frame on the PC (the pane was hidden, so no live fps read). Part b is next.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.

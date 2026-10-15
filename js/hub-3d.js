@@ -90,6 +90,8 @@ const LIGHT = {
   dusk: { sky: '#f8a878', ground: '#4a3040', amb: 1.1, sun: '#ff9050', sunI: 2.4, at: [10, 7, 6], bg: '#d88868', glow: 1, lamp: 1.2, bugs: 'fireflies', bugsI: 0.6, air: 'clearing-night' },
   night: { sky: '#6878c0', ground: '#141830', amb: 0.8, sun: '#a0b4f8', sunI: 0.8, at: [4, 14, 6], bg: '#101830', glow: 1.6, lamp: 3, bugs: 'fireflies', bugsI: 1, air: 'clearing-night' },
 };
+// the Secret Base's backyard (js/base-3d.js) grows the same trees under the same sky
+export { P as CLEARING_LOOK, LIGHT as CLEARING_LIGHT, treeArt, bushArt };
 const AIRS = ['clearing-day', 'clearing-night'];
 const BUGS = 90;
 

@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -72,7 +72,7 @@ import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
-  homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
+  homeTalk, HEART_LINES, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
 import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -80,6 +80,12 @@ import { gainMat, gainKey } from './satchel.js';
 const mendFlag = () => new URLSearchParams(location.search).has('mend');
 /** `&fest=lantern|moon|fireworks` on a `?town=shrine` peek: John's festival picked (with `&mend`, the stone still to mend; alone, mended). */
 const festFlag = () => new URLSearchParams(location.search).get('fest');
+/** `?hearts=N`: every friend at N hearts at home for a page load, their heart lines unheard till said (nothing saved). */
+const heartsFlag = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : Math.max(0, Math.min(HEARTS, +n || 0)); };
+const heardPeek = {};
+/** A friend's hearts at home, and how many of their heart lines they've said (js/data/towns.js's HEART_LINES). */
+const homeHearts = (id) => heartsFlag() ?? heartsOf(workshopOf(getSave()), id);
+const heardOf = (id) => (heartsFlag() !== null ? heardPeek[id] || 0 : workshopOf(getSave()).heard?.[id] || 0);
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -1996,8 +2002,11 @@ function homeRoom(b, onward = null) {
       const sig = got.first && (await import('./secret-base.js')).PIECES[fav.sig]?.name;
       const loves = both ? 'love' : 'loves', likes = both ? 'like' : 'likes';
       tell(got.first ? `${who} ${loves} the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
-        : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again. ♥♥`
-          : `${who} ${likes} the ${G[id].name}. ♥`);
+        : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again.`
+          : `${who} ${likes} the ${G[id].name}.`);
+      const news = HEART_LINES[home.leader] ? ` Talk to ${both ? 'them' : GYM_BY_ID[home.leader].name}: there's something new to hear.` : '';
+      tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${news}` : `Friendship ${got.hearts}/${HEARTS}!${news}`)
+        : `You're already the best of friends. ${both ? 'They' : GYM_BY_ID[home.leader].name} still ${both ? 'love' : 'loves'} it.`);
     }
     again();
   }));
@@ -2065,6 +2074,7 @@ function homeRoom(b, onward = null) {
     onSkip: out,
     layout: 'event-room home-room',
     ask: false,   // only a door back into the town
+    hearts: townsOpen() && FAVOURITE[home.leader] && !away ? homeHearts(home.leader) : null,
   });
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
@@ -2109,11 +2119,19 @@ function homeRoom(b, onward = null) {
       }
       if (stand === home.leader && handOver) return handOver();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
-      const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt()) : null;
+      const friend = townsOpen() && !!FAVOURITE[stand];
+      const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt(), friend ? homeHearts(stand) : 0, friend ? heardOf(stand) : 0) : null;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);
       if (!lines) return;
       const n = talks[stand] = ((talks[stand] ?? (talk?.topical ? -1 : Math.floor(Math.random() * lines.length))) + 1) % lines.length;
       said(GYM_BY_ID[stand] ? voiced(GYM_BY_ID[stand], lines[n]) : lines[n], home.cast?.[stand] ? home.names?.[stand] ?? '' : GYM_BY_ID[stand]?.name);   // Kayl's cats have names; "PHIL: " a voice's tag
+      // a heart line said the first time moves behind their usual lines, so the next tap carries on from the one after it
+      const told = talk?.fresh[n - talk.freshAt];
+      if (told) {
+        talks[stand] = n - 1;
+        if (heartsFlag() !== null) heardPeek[stand] = told;
+        else updateSave(d => { const ws = workshopOf(d); d.workshop = { ...ws, heard: { ...ws.heard, [stand]: Math.max(ws.heard?.[stand] || 0, told) } }; });
+      }
     } },
     onFail: out,
   });

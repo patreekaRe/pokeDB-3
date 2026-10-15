@@ -109,7 +109,7 @@ context small. Where two notes disagree, the later date wins.
   `js/mall-furniture.js`, `js/mall-corner.js`) and its arcade (`js/arcade-*.js`). The Clearing's layout of 2026-10-14
   (the last section there) replaces the older positions in that file.
 - **Gym Leaders** (`gym-leaders.md`: who each friend is, and how the gym works).
-- **Gateway towns** (`towns.md`; switched off, `TOWNS_LIVE`): any town clean-up reads
+- **Gateway towns** (`towns.md`; live since 2026-10-15, `TOWNS_LIVE`): any town clean-up reads
   `docs/handoff-town-cleanups.md` first. A Gym Leader's home inside is `js/leader-homes.js`.
 - **Seeded rolls** (Safari Zone phase 1, 2026-10-02): every gameplay roll goes through `random()` / `randIndex()` /
   `pickOne()` / `shuffled()` in `js/rng.js`, never `Math.random` (cosmetic rolls stay on it). A Safari run
@@ -154,7 +154,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
-  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp).
+  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?hearts=N` (every friend at N hearts at home, their heart lines unheard; nothing saved).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?phone` (a phone frame on a wide screen), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
@@ -163,7 +163,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   `?arena=ken`.
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
-- **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?mall=furniture|2f|corner`
+- **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?yard` (out in the Secret Base's backyard, lent for the page load), `?mall=furniture|2f|corner`
   (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
   `?mended` / `?mended=shrine,ruins` (towns mended for a page load, to test Waystone travel), `?town=<biome>` (`&home=`, `&aerial` the whole town from above, `&fest=lantern|moon|fireworks` John's festival in Lantern Village, mended; with `&mend` it appears as you mend the stone), `?nietos`, `?dojo` (straight into Kenmatta's dojo; its stars are real), `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
 

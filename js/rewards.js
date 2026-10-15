@@ -13,7 +13,7 @@ import { textPace } from './prefs.js';
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
 const UI = typeof document === 'undefined' ? {} : await import('./ui.js');
-const { $, el, makeCard, makeRelic, showScreen, withTips, setHpBar, upgradeBurst, confirmDialog } = UI;
+const { $, el, heartRow, makeCard, makeRelic, showScreen, withTips, setHpBar, upgradeBurst, confirmDialog } = UI;
 
 /* ---------- what you get offered ---------- */
 
@@ -135,7 +135,7 @@ export function speaker(name = null) {
   if (name) $('reward-log').dataset.who = name; else { delete $('reward-log').dataset.who; $('reward-log').classList.remove('demon'); }
 }
 
-export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false, ask = true }) {
+export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, coins = null, layout = '', reroll = null, over = false, ask = true, hearts = null }) {
   speaker();
   $('reward-title').textContent = title;
   $('reward-coins').textContent = coins ? `💰 +${coins.coins}   💴 +₽${coins.money}` : '';
@@ -209,6 +209,9 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
+  // a Gym Leader's home: your friendship's hearts beside its name (docs/roadmap.md's step 8)
+  $('room-hearts').replaceChildren(...(hearts == null ? [] : [heartRow(hearts)]));
+  $('room-hearts').hidden = hearts == null;
   // a screen whose picks blow up for a confirm keeps its gold key up, greyed, until one is picked (the user's call,
   // 2026-10-08: a key that came and went didn't read as a button)
   const asked = roomy && options.find(o => o.ask);

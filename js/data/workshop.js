@@ -83,10 +83,10 @@ export const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.makes, s]));
 /** Who a gift is handed to, by name: the Nietos are Law and Britt at home. */
 export const gifteeOf = (leader, name) => (leader === 'nietos' ? 'Law and Britt' : name);
 
-/** The save's Workshop: furniture and skins `made`, `gifts` held (counts), each leader's `liked` (gifts given), those
+/** The save's Workshop: furniture and skins `made`, `gifts` held (counts), each leader's `liked` (gifts given) and `heard` (heart lines said, js/data/towns.js's HEART_LINES), those
     `fond` of you (their favourite given, their signature piece earned) and the Safari Ball's `skin` (null: its own). */
 export function workshopOf(save) {
-  return { made: [], gifts: {}, liked: {}, fond: [], skin: null, ...(save.workshop || {}) };
+  return { made: [], gifts: {}, liked: {}, heard: {}, fond: [], skin: null, ...(save.workshop || {}) };
 }
 
 /** What a recipe needs that the Satchel lacks: [{ id, need, have }] (empty when it can be made). */
@@ -140,6 +140,14 @@ export function giveGift(ws, giftId, leader) {
       fond: first ? [...ws.fond, leader] : ws.fond },
   };
 }
+
+/** A friend's hearts (the user's picks, 2026-10-14; docs/roadmap.md's step 8): `liked` shown as up to HEARTS, so a gift
+    fills one and their favourite two. Gifts past the last still count in `liked`, so the cap can move later. */
+export const HEARTS = 5;
+export const heartsOf = (ws, leader) => Math.min(HEARTS, ws.liked?.[leader] || 0);
+
+/** Everyone who takes a gift, the Nietos (home) first. */
+export const FRIENDS = ['nietos', ...GIFTS.map(g => g.leader).filter(id => id !== 'nietos')];
 
 /** A recipe's needs as a line ("🕯️ 2/3 · 📜 3/3"). */
 export const needsLine = (recipe, sat) => Object.entries(recipe.needs)
