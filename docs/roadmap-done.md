@@ -2469,3 +2469,7 @@ nothing built through it), walked out onto a 12 x 8 lawn: mown stripes, the Clea
 a picket fence, snow in winter (`buildYard()` in `js/base-3d.js`, the base's own renderer, so no new GL context).
 `?yard` lends one for a page load. Tested headless at 390x844: both doors, taps on the curved lawn, winter dusk, the
 purchase; 61 draw calls, ~0.6 ms a frame on the PC (the pane was hidden, so no live fps read). Part b is next.
+
+- **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
+  a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
+  star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
