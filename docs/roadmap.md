@@ -300,10 +300,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Same day, the user's ask: the Nietos' house in the Clearing got the same revamp (`LEADER_HOMES.nietos`; walk in from
    the hub with `?nietos&gymwins=1`, or without `?nietos` to see it "out"). On `main`, waiting on their playtest.
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
-   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
-   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
-   only their house shows, and their Gym fight in runs is unchanged) while the user works out more of how
-   the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
+   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym. How they show up is settled by step 7
+   (their questline): `NIETOS_LIVE` is on, so they're home with the towns (`townsOpen()`); they still never visit the
+   Secret Base. `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
 5. **The all-five reward: Mewtwo's full strength.** **The Crystal Depths stay Mewtwo's alone** (the user's call,
@@ -428,7 +427,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      house (`homeRoom()`), and stepping out after the shard plays the stone's light-up (a beam, the cracked stone swapped
      for the whole one). `NIETOS_LIVE` is on, but the Nietos are home only while the towns are on. Playtest on the live site:
      `?towns&gymwins=1` (the greeting), then `&satchel` (every step ready, in their house). Next: the user walks it; then
-     step 5. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
+     step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp), if the user still wants it. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
