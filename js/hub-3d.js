@@ -105,8 +105,9 @@ const PILLAR_AT = { tx: 28, ty: -3 };
 const NIETOS_YARD = [[-1, 1], [-2, 2], [0, 3], [2, 3], [3, 1], [3, 2]];
 const NIETOS_AT = { tx: 24, ty: 17 }, DOJO_AT = { tx: 6, ty: 1 }, TREE_AT = { tx: 22, ty: 4 }, MALL_TILE = { tx: 8, ty: 18 };
 const SEALED_AT = { tx: 2, ty: 10 };
-// Kurt's Workshop (its top-left tile) in the plaza's north-east, its door on a path down to the east avenue
-const WORKSHOP_AT = { tx: 23, ty: 6 };
+// Kurt's Workshop (its top-left tile) in the plaza's north-east, its door straight onto the east avenue (moved down a
+// step from 23,6 on 2026-10-15, the user's ask: up the grass it stood apart from the street)
+const WORKSHOP_AT = { tx: 23, ty: 8 };
 // the pond in the garden at the south avenue's end, down past the ring road (the user's drawing, 2026-10-14: by the ring
 // road it crowded the Waystone), the low road round the garden running into it from the ring road's sides
 const POND = { x: 15, y: 21.6, r: 1.5 };
@@ -2746,9 +2747,9 @@ function dressSeason() {
       [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0],   // by the Ancient Tree's door
       [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
       [lanternArt(2), 'white', 12, 16, 1.3, 0, 0], [lanternArt(3), 'white', 18, 16, 1.3, 0, 0],   // and down the south one
-      // the pumpkin patch, where the Nietos' house stood, either side of Kurt's path (his Workshop above it)
-      [...P_(5), 26, 10, 4.4, 0, -0.1], [...P_(6), 22, 10, 2.2, 0, 0.1], [...P_(7, false), 23, 10, 1.9, 0, 0.15],
-      [scarecrowArt(), 'white', 22, 9, 1.5, 0, 0],
+      // the pumpkin patch up behind Kurt's Workshop, either side of it
+      [...P_(5), 26, 7, 4.4, 0, -0.1], [...P_(6), 22, 7, 2.2, 0, 0.1], [...P_(7, false), 23, 7, 1.9, 0, -0.2],
+      [scarecrowArt(), 'white', 22, 6, 1.5, 0, 0],
       [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
