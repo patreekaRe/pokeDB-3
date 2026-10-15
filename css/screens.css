@@ -4242,6 +4242,7 @@ body.scene-peek #backdrop { display: none; }
 .tower-plaque-row.mine .tower-plaque-name { color: #1a5a28; }
 .tower-plaque-rank { text-align: right; }
 .tower-plaque-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tower-plaque-row.empty { opacity: 0.35; }
 .tower-plaque-note { text-align: center; font-size: 0.85rem; opacity: 0.85; }
 @media (max-width: 480px) { .tower-plaque { padding: 10px 14px 12px; } .tower-plaque-list { font-size: 0.85rem; gap: 6px; } .tower-plaque-row { grid-template-columns: 20px 34px 1fr auto; gap: 6px; } .tower-plaque-row img { width: 34px; height: 34px; } }
 

@@ -17,7 +17,10 @@ All in `js/data/tower.js`, shared by the game (`js/run.js`) and the bot (pokeDB-
   and the week); a window onto the tower (`.tower-window`, `#tower-top`, powering on like the Pokédex's screen), painted
   smooth by `build()` / `paint()` in `js/towerprep.js` at the window's resolution (`devicePixelRatio` up to 2, ~30 fps):
   the sky by height from `skyHex()` squeezed from the grass (floor 0) to the summit, the cloud sea, stars, drifting clouds,
-  the pillar with a ledge every 10 floors, Rayquaza's glow over its roof, the week's climber at its door (`--ground`) on a
+  the pillar (since 2026-10-15 the Clearing's tower, `js/hub-pillar.js`, painted face on in its own units: four octagonal
+  tiers of sage stone with jade windows, rune bands and cornices, the porch with Rayquaza's ring and banners, cloud
+  collars, floating stones and two jade wind streams, and the crown's broken columns round the turning jade crystal and
+  its glow), the week's climber at its door (`--ground`) on a
   glowing pad; the grey bezel (`.tdev-glass`) round a green LCD (`.tower-base`, it scrolls inside so the hardware stays on
   screen): the climber's name, two seven-segment readouts (this week, best ever; `segInto()` from `js/statsdex.js`), three
   rules (`RULES`), the note on whether this climb counts, Practice's starter picks, and the week's top climbers; then the

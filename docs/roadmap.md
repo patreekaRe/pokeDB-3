@@ -880,8 +880,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.
   **The revamp's next parts, in the order I recommended (2026-10-15; the user said yes):** 1. the arena is **done and
-  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 3. Next: the opening
-  film's first shot shows the new tower (`js/climb-intro.js`). 4. The lobby's window onto the tower. Run in: CLOUD.
+  live** (the user approved it 2026-10-15, merged to `main`; archive). 2. **Done and live** (the climb's painted tower repainted in sage stone and jade, the user's yes 2026-10-15, merged to `main`; archive). 4. The lobby's window onto
+  the tower, taken before 3 (the user's "just choose", 2026-10-15): **on `main`**, the user looks at it on their phone
+  (Sky Pillar Pokéstop in the Clearing; also the shorter week line and the plaque's empty rows; archive). 3. Next: the
+  opening film's first shot shows the new tower (`js/climb-intro.js`). Run in: CLOUD.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
