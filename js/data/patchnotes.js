@@ -67,6 +67,7 @@ export const TOWN_NOTES = [
   ['hub', 'The Whispering Clearing is bigger, with a Waystone on the plaza\'s Poké Ball, five crystals circling its tip, one for each town. Finish a town\'s quest so its Waystone mends and its crystal lights up: tap the Waystone and pick a lit town to travel there from home in a column of its light, buy furniture you can\'t get anywhere else, hand in requests, and invite the townsfolk you chat to home to your Secret Base. Only its Waystone takes you home, but if your run is in that town\'s biome, walk out its far gate to carry on.'],
   ['hub', 'The Clearing\'s Waystone is cracked: beat the Nietos and they ask you home to mend it, the hub every town links through, so it comes before any town\'s quest. A quest board by the plaza, and the Pokédex\'s new Quests app, show every quest\'s progress; every turn-in goes to a Gym Leader at home: tap them when a "!" is over their name sign.'],
   ['hub', 'Kurt\'s Workshop opens in the Clearing: at his crafting bench, turn materials from the roads into quest items, one-of-a-kind furniture, gifts for Gym Leaders (the Nietos too) and Apricorn looks for your Safari Balls.'],
+  ['runs', 'The festival you pick for John really happens: once Lantern Village\'s Waystone is mended, its evenings fill with floating lanterns, a harvest moon or fireworks, with stalls to match.'],
   ['modes', 'Mewtwo is weakened in the Crystal Depths until you mend the five Waystones. Each shard gives back strength, and a camp in the Depths shows its seal\'s pentagram.'],
 ];
 

@@ -1629,6 +1629,11 @@ export function questLine(town, st, line) {
   return line.replaceAll('{pick}', s.pick.options.find(o => o.id === st.quest?.picks?.[s.id])?.label ?? s.pick.fallback);
 }
 
+/** The step of the town's questline that asks for a pick (the Shrine's `sh-spirits`: John's festival), or null. */
+export const pickStepOf = (town) => questOf(town)?.steps.find(o => o.pick) || null;
+/** The pick made there (`lantern`, `moon` or `fireworks`), or null: buildTown() dresses the town for it once mended. */
+export const townPick = (town, st) => { const s = pickStepOf(town); return (s && st.quest?.picks?.[s.id]) || null; };
+
 /** What a Gym Leader says in their home: a word on the questline where it stands (the step up now's `talk`, or `after`
     once the stone is lit), said first (`topical` lines of them), then their usual lines. */
 export function homeTalk(town, id, st) {
