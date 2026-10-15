@@ -5567,6 +5567,12 @@ body.arena3d-wait :is(#scene-bg, #scene-light) { visibility: hidden; }
 .gym-scene.in .gym-trainer { translate: 0 0; }
 .gym-scene.out .gym-trainer { translate: 100vw 0; transition: translate 0.32s cubic-bezier(.6, 0, .9, .5), filter 0.6s; }
 .gym-trainer.shadow { filter: brightness(0) drop-shadow(0 0 2px rgba(255, 240, 200, 0.9)); }
+/* a second speaker on the left, facing them (gymTalk()'s `pair`: JONA at Phil's); whoever isn't talking steps back into the dim */
+.gym-trainer.pair { right: auto; left: max(6%, calc(50% - 260px)); scale: -1 1; translate: -100vw 0; }
+.gym-scene.in .gym-trainer.pair { translate: 0 0; }
+.gym-scene.out .gym-trainer.pair { translate: -100vw 0; }
+.gym-scene.paired .gym-trainer { height: min(40vh, 260px); transition: translate 0.6s cubic-bezier(.2, .9, .3, 1.08), filter 0.3s, opacity 0.3s; }
+.gym-scene.paired .gym-trainer.quiet { filter: brightness(0.45) drop-shadow(0 8px 0 rgba(0, 0, 0, 0.35)); opacity: 0.8; animation: none; }
 .gym-say {
   position: absolute; left: 50%; bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px)); translate: -50% 0;
   width: min(480px, calc(100% - 32px)); min-height: 110px; margin: 0; padding: 26px 22px 22px; box-sizing: border-box;
@@ -5790,7 +5796,7 @@ body.jona-shake :is(#battle-screen, #reward-screen, .gym-scene, .event3d-view, c
 }
 .gym-scene.demon .gym-plate,
 #reward-screen .reward-log.demon[data-who]::before { background: #b01030; color: #fff; box-shadow: 0 2px 0 #50040e, 0 0 10px rgba(255, 40, 80, 0.7); }
-.gym-scene.demon .gym-trainer { animation: jonaFlicker 3s steps(1) infinite; }
+.gym-scene.demon .gym-trainer:not(.quiet) { animation: jonaFlicker 3s steps(1) infinite; }
 @keyframes jonaBox { 50% { box-shadow: 0 3px 0 #4a1a7a, 0 0 36px rgba(170, 70, 255, 0.85); } }
 @keyframes jonaFlicker { 0%, 46%, 50%, 100% { filter: drop-shadow(0 0 10px #a050e8) brightness(0.8) saturate(0.6); } 47%, 49% { filter: invert(1) hue-rotate(250deg) drop-shadow(0 0 14px #ff3060); } }
 /* JONA poured into his Pokémon (infuse() in js/gym.js): the speech window and the dim go so the battle shows, a stream of

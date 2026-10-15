@@ -8826,6 +8826,7 @@ async function buildHome(figs, { time, town, home, gift }) {
     B.talks.add(leader);
     if (L?.with) {   // someone who lives with them (Phil's JONA), stood like them, lit a little by their own light
       const w = B.who[L.with.id] = await figure(L.with.id, { npc: L.with.src }, L.with.at);
+      B.talks.add(L.with.id);
       if (L.with.glow) { w.board.material.emissive.set('#ffffff'); w.board.material.emissiveMap = w.t; w.board.material.emissiveIntensity = L.with.glow; }
     }
     if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot

@@ -14,7 +14,7 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
-import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf } from './data/gym.js';
+import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, JONA_HOME } from './data/gym.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { battleFx } from './prefs.js';
@@ -2007,12 +2007,24 @@ function homeRoom(b, onward = null) {
   if (home.leader && !away) figures[home.leader] = { npc: spriteOf(GYM_BY_ID[home.leader]) };
   if (!(away && home.leader === 'nietos')) for (const id of Object.keys(home.cast || {})) figures[`cast:${id}`] = { src: `assets/pokemon/${id}-front.gif` };
   const talks = {};
+  /* JONA in Phil's corner: a line of hers a tap, and every fifth tap (the first too) a talk with Phil, both sliding in */
+  let jonaTaps = 0, jonaLine = Math.floor(Math.random() * JONA_HOME.lines.length), jonaDuet = 0;
+  const jonaTalk = async () => {
+    if (jonaTaps++ % 5) {
+      jonaLine = (jonaLine + 1) % JONA_HOME.lines.length;
+      return sayLines([{ who: 'JONA', text: JONA_HOME.lines[jonaLine], demon: true }], 'reward-log', null, 'JONA');
+    }
+    event3dMod?.freezeEvent(true);
+    sayLines([]);
+    try { await gymTalk(GYM_BY_ID.phil, JONA_HOME.duets[jonaDuet++ % JONA_HOME.duets.length], { lit: true, pair: { src: 'assets/trainers/gym/jona.png', who: 'JONA' } }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
+  };
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
     extra: { town, home: b.home, away, gift: gifting, marks: mineReady || reqMine || cready ? [`who:${home.leader}`] : [], onTalk: (stand) => {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
+      if (stand === 'jona') return jonaTalk();
       // awake at home, a leader says where the town's questline stands first (js/data/towns.js's homeTalk())
       const talk = !home.cast?.[stand] && stand === home.leader && !sleepy ? homeTalk(town, stand, homeSt()) : null;
       const lines = home.cast?.[stand] ?? (stand === home.leader ? (sleepy ? home.night : talk.lines) : null);
