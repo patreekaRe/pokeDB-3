@@ -10,7 +10,7 @@
  * whole every frame with js/tower-art.js's sky and stone, so it matches the tower and the lobby.
  */
 import { $, sleep } from './ui.js';
-import { playSound, preloadSounds } from './audio.js';
+import { playMusic, playSound, preloadSounds } from './audio.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { makeBuffer, flush, put, K, bay, hash, paintSky, stone, FH, TOP } from './tower-art.js';
@@ -39,6 +39,7 @@ export async function climbIntro({ starter, stage = 0, shiny = false }) {
   mon.src = spriteUrl(starter, 'back', stage, shiny);
   mon.alt = stageName(starter, stage);
   preloadSounds('gust', 'gate-hum', 'rumble-far', 'footstep', 'door-light');
+  playMusic('map4', { restart: true });   // the climb's song starts with the pan down the tower (the user's call, 2026-10-15); the map's showMap() then carries on with it
   const layout = () => {
     P = innerWidth <= 720 ? 4 : 5;
     b = makeBuffer(canvas, Math.ceil(innerWidth / P), Math.ceil(innerHeight / P) + 1);   // a spare row for the pan's glide
