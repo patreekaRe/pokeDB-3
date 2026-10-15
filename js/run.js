@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
+import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
@@ -69,7 +70,7 @@ import { CATCH_PRIZE, LUXURY_COINS, BALLS_BY_ID, SAFARI_BALLS } from './data/bal
 import { DEX_START_MONEY, DEX_START_ITEM, DEX_REROLLS, DEX_RUBBINGS, DEX_PERKS, DEX_COMPLETE_COINS, SCOPE, SCOPE_REVEALS, pageIndexOf } from './data/pokedex.js';
 import { random, randIndex, pickOne, shuffled, useStream } from './rng.js';
 import { track, claimable } from './missions.js';
-import { trackTowns, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
+import { trackTowns, trackFavours, handInFriend, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
   homeTalk, HEART_LINES, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
@@ -85,6 +86,9 @@ const heartsFlag = () => { const n = new URLSearchParams(location.search).get('h
 const heardPeek = {};
 /** A friend's hearts at home, and how many of their heart lines they've said (js/data/towns.js's HEART_LINES). */
 const homeHearts = (id) => heartsFlag() ?? heartsOf(workshopOf(getSave()), id);
+/** A friend's own request ready to hand in at home (js/data/favours.js); on a playtest `?satchel` makes it ready, once a page load. */
+const favourPeek = {};
+const favourReady = (id, real) => townsOpen() && asking(id, homeHearts(id)) && (real ? favourOf(getSave(), id).ready : satchelFlag() && !favourPeek[id]);
 const heardOf = (id) => (heartsFlag() !== null ? heardPeek[id] || 0 : workshopOf(getSave()).heard?.[id] || 0);
 import { buildingSvg } from './buildings.js';
 
@@ -269,7 +273,7 @@ function mission(events, amount = 1) {
   const road = !run.safari && !run.tower && (run.route || []).some((id, slot) => id && id !== BIOMES[slot]?.id);
   const biome = !run.safari && !run.tower ? mainBiome()?.id : null;   // a town's requests count only in its own biome
   const ctx = { type: run.starter.type, level: run.level, safari: !!run.safari, special: !run.starter.free, rests: run.restCount, road, day: run.safari?.day, biome };
-  for (const line of [...track(events, amount, ctx), ...trackTowns(events, amount, ctx)]) tell(line);
+  for (const line of [...track(events, amount, ctx), ...trackTowns(events, amount, ctx), ...trackFavours(events, amount, ctx)]) tell(line);
 }
 
 /** A fight's moves played, damage dealt and items used, for the missions. */
@@ -1843,7 +1847,7 @@ function townRoom(covered = null, at = null) {
   const visit = townVisit ??= { id: town.id };
   const knocks = {};
   event3d(visit, 'town', {}, null, {
-    extra: { town, at, mended: lit && !mendNow, fest: townPick(town, st), ...(barred ? { onLeave: leave } : {}), chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : [])], onDoor: (id) => {
+    extra: { town, at, mended: lit && !mendNow, fest: townPick(town, st), ...(barred ? { onLeave: leave } : {}), chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : []), ...Object.keys(town.leaders).filter(id => favourReady(id, real)).map(id => `door:${id}`)], onDoor: (id) => {
       if (run !== thisRun) return;
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }
@@ -1984,6 +1988,8 @@ function homeRoom(b, onward = null) {
   const mineReady = !!mine && (stepReady(mine, tst, satchelOf(getSave())) || (!real && (satchelFlag() || mendFlag())));
   // once the questline's done, the town's coin requests go to its leaders by turns (requestBy()), one a pass
   const reqMine = !!tst?.quest && !tstep && !!town.requests && tst.ready && !t.handedIn && requestBy(town, tst) === home.leader;
+  // a friend at 3+ hearts has a request of their own (js/data/favours.js), handed in to them here too
+  const favMine = !!home.leader && !away && favourReady(home.leader, real) ? currentFavour(home.leader, favourOf(getSave(), home.leader)) : null;
   const hour = new Date().getHours(), sleepy = !away && home.night && (hour >= (home.nightAt ?? 23) || hour < 6);   // your clock: Jahmes asleep, Clarence live
   // a gift from Kurt's Workshop for a Gym Leader at home and awake (js/data/workshop.js): their favourite earns their signature piece
   // at night only Linc is asleep: Law and Britt still take a gift on the couch
@@ -2071,6 +2077,16 @@ function homeRoom(b, onward = null) {
       playSound('gate-hum');
       tell(`The Waystone in the square shudders... and knits itself whole! Back home, a crystal on the Whispering Clearing's Waystone lights: you can travel here any time.`);
     }
+    again();
+  } : favMine ? async () => {
+    const coins = real ? handInFriend(home.leader) : 0;
+    if (!real) favourPeek[home.leader] = true;
+    playSound('stat-up');
+    refreshCoins();
+    await talkOut(favMine.thanks);
+    if (run !== thisRun) return;
+    const who = gifteeOf(home.leader, leader.name);
+    tell(real ? `${who}'s request done: ${favourText(favMine)}! +${coins} PokéCoins.` : `${who}'s request done! (A playtest: nothing is saved, it would pay ${FAVOUR_COINS} PokéCoins.)`);
     again();
   } : null;
   const handOver = turnIn && (async () => {

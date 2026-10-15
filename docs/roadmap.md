@@ -529,51 +529,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
      the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
-8. **Friendship: what gifts are for** (the user's picks, 2026-10-14; this answers step 6's open question on `liked`). Gifts
-   already count up per leader (`liked` in `workshopOf()`, `js/data/workshop.js`: +1 a gift, +2 their favourite) and the
-   favourite's first earns their signature piece (`fond`). That count becomes **hearts, 5 a leader** (10 town leaders and
-   the Nietos), and they unlock:
-   - **At home**: (1) a row of 5 hearts in each leader's home (on their name sign or the chat) and on the PC (a Friends
-     page); (2) new lines at each heart, more personal: chats, jokes and stories about the other friends (`HEART_LINES`
-     beside `HOME_LINES` in `js/data/towns.js`, 5 a leader); (3) Secret Base visits: from 3 hearts they drop by
-     (`secret-base.js`'s home guests, mended town or not), at 5 they come often and sit on your furniture.
-   - (8) **Their own requests**: a leader at 3+ hearts posts a small request on their town's board (the coin requests'
-     code), paying PokéCoins.
-   - **Rewards**: (9) a second and third signature piece in their style at more hearts (3 and 5; the first stays their
-     favourite gift's); (10) a friendship badge each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`),
-     a gold one for all of them; (11) now and then a liked leader mails you through the PC: coins, a material, or a
-     recipe; (12) each leader teaches Kurt one secret recipe at a set heart count (a `RECIPES` line each, made only once
-     taught).
-   - Nothing here gives power in a run, so no bot check. Hearts can't pass 5; gifts past that still please them (a line).
-   - **Sessions** (each ▶ Run in: CLOUD, then playtest on a githack link with `?towns&satchel&gymwins=10`):
-     (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
-     all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
-     maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
-   - **Session (a) done (2026-10-14): hearts.** `heartsOf()` / `HEARTS` / `FRIENDS` in `js/data/workshop.js` (test in
-     `tests/workshop.test.mjs`), the hearts on a home's room-bar LCD beside its name, a gift saying the new count (and
-     "already the best of friends" past 5), and the PC's FRIENDS page (towns on, a leader beaten). Detail:
-     `docs/reference/towns.md`. On `main`.
-   - **Session (b) done (2026-10-14): heart lines.** `HEART_LINES` in `js/data/towns.js`, 5 for each of the 11 friends,
-     said first at home as each heart fills (`homeTalk()`, heard ones tracked in `save.workshop.heard`), a gift's toast
-     saying there's something new to hear; test in `tests/quests.test.mjs`, `?hearts=N` to peek. On `main`.
-   - **Session (c) done (2026-10-15): Secret Base visits.** From 3 hearts a friend joins the day's base visit (mended town
-     or not) with `BASE_LINES` of their own (`js/data/towns.js`); at 5 they walk in and sit on a chair, sofa or cushion
-     (never the bed), and once the day's visit is over a best friend still drops in half the times you come in.
-     `baseFriends()` in `js/data/workshop.js`, test in `tests/workshop.test.mjs`; detail in `docs/reference/towns.md`.
-     Peek: `?base&hearts=5&visit` (a seat in the room). On `main`, waiting on the user's look. Next: session (d),
-     signature pieces 2 and 3.
-   - **Session (d) done (2026-10-15): signature pieces 2 and 3, all 11 friends (22 pieces).** `HEART_PIECES` in
-     `js/data/workshop.js` (at 3 and 5 hearts), the `heart` source in `js/data/furniture.js` (old saves have them on
-     load), paintings in `js/base-furniture-friends.js`, 3D models in `js/base-models-friends.js`, the gift toast naming
-     the piece; tests in `tests/workshop.test.mjs`. Detail: `docs/reference/towns.md`. Peek: `?base&hearts=5&allfurniture`.
-     On `main`, waiting on the user's look at the models.
-   - **Session (e) done (2026-10-15): badges, letters and secret recipes.** A Friendship badge a friend at 5 hearts and
-     Best Friends for all 11 (a `friends` group); a friend at 2+ hearts may write once a UTC day you come home (PokéCoins or
-     a material of their town, `friendLetter()`); each friend's own Safari Ball look taught to Kurt at 4 hearts (`SECRETS`,
-     with a letter). Patch 1.21 cut. Detail: `docs/reference/towns.md`. On `main`. **Next: session (f)**, their board
-     requests: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md step 8. Do session (f): a leader at
-     3+ hearts posts a small request of their own on their town's board (the coin requests' code), paying PokéCoins.
-     Tests, patch-notes line, docs, push to main, githack link with `?towns&satchel&gymwins=10&hearts=5`."
+8. **Done (2026-10-15): Friendship, what gifts are for**, all six sessions (a-f): hearts, heart lines, Secret Base visits,
+   signature pieces 2 and 3, badges / letters / secret recipes, and (f) each friend's own requests on the Quests board.
+   Every session's notes are in `docs/roadmap-done.md`; how it all works in `docs/reference/towns.md`. On `main`, waiting
+   on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). Next: nothing planned; the user's call.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

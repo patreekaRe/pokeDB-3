@@ -199,6 +199,18 @@ is tapped there to talk, and gets down to walk out; with no seat they stand as b
 `taken()`, so your partner and the Safari Pokémon leave their seat alone. The gift toast says they'll drop by at 3 and
 often at 5. `?hearts=N` works in the base too: `?base&hearts=5&visit`.
 
+**Friends' own requests** (2026-10-15, docs/roadmap.md step 8 session f): a friend at `FAVOUR_HEARTS` (3) or more has a
+request of their own up (`FAVOURS` in `js/data/favours.js`, three a friend, each `text` / `note` (their pinned words) /
+`thanks`, in order and round again; `FRIEND_TOWN` their town, the Nietos' the Clearing). `trackFavours()` in `js/towns.js`
+counts the missions' events into `save.favours[id]` (`{ done, got, ready }`, `favourOf()`), in their own biome unless the
+event is placeless (`ANYWHERE`: tough, power, forget, healthy-boss, whose text names no place); Burn, Tide, Leech Seed and
+gym events are never asked. A finished one is told (💌) and handed in with a tap on them at home (`favMine` in
+`homeRoom()`, after the questline step and the town's own request; `handInFriend()` pays `FAVOUR_COINS`, 60), a "!" over
+their door in town (`favourReady()` in `js/run.js`) and over the Nietos' house in the Clearing (`questMarks()` in
+`js/hub-3d.js`). The Quests app shows them under FRIENDS' REQUESTS (`friendCards()` in `js/questlog.js`): their sprite,
+their note, the job's bar and where to hand it in. Peek: `?town=shrine&towns&satchel&gymwins=10&hearts=5` (every friend
+asking and ready, once a page load, nothing saved). Test: `tests/favours.test.mjs`.
+
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
 towns"). A town rolls away like the Clearing, at its strength (`CURVE`, exported from `js/hub-3d.js`; `?curve=N`, flat
 under `?aerial`). In `js/event-3d.js` (by `AERIAL`): one uniform `BEND` `{ k, z }`, `k` set to `CURVE` when a `kind:

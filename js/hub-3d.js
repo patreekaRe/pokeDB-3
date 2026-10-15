@@ -35,6 +35,8 @@ import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
+import { asking, favourOf } from './data/favours.js';
+import { workshopOf, heartsOf } from './data/workshop.js';
 import { unclaimed, friendMail } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -1998,7 +2000,7 @@ function questMarks() {
   if (!questMark && !nietosMark) return;
   const b = boardNow(getSave());
   if (questMark) questMark.visible = b.kind === 'new';
-  if (nietosMark) nietosMark.visible = !!b.ready;
+  if (nietosMark) nietosMark.visible = !!b.ready || (asking('nietos', heartsOf(workshopOf(getSave()), 'nietos')) && favourOf(getSave(), 'nietos').ready);   // their own request too (js/data/favours.js)
 }
 
 /** The Nietos' notice read off the board: their story, and their questline opens, its steps then handed in at their house. */

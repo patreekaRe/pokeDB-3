@@ -2528,6 +2528,16 @@ is in front of him); the scroll (tile 4) and sandbag (tile 12) sit near enough t
 phone from the door. Tested headless at 420x860 and 1280x800: the walk up into the ring, a tap on the canvas, all three
 signs, Ken's line in the Clearing, no console errors; still parts baked with `mergeStatic()`.
 
+- **Friendship sessions (a)-(d), 2026-10-14/15** (step 8): (a) hearts, `heartsOf()` / `HEARTS` / `FRIENDS` in
+  `js/data/workshop.js`, shown on a home's room-bar LCD and the PC's FRIENDS page; (b) `HEART_LINES`, 5 a friend, said at
+  home as each heart fills; (c) Secret Base visits from 3 hearts (`baseFriends()`), sitting on your furniture at 5;
+  (d) 22 signature pieces at 3 and 5 hearts (`HEART_PIECES`, models in `js/base-models-friends.js`). Detail:
+  docs/reference/towns.md.
 - **Friendship session (e), 2026-10-15** (step 8): Friendship badges (one a friend at 5 hearts, Best Friends for all),
   friends' letters through the PC (coins or a material, once a UTC day at most), each friend's secret Safari Ball look
   taught to Kurt at 4 hearts. Patch 1.21, Hearts and Home. Detail: docs/reference/towns.md.
+- **Friendship session (f), 2026-10-15** (step 8, its last): a friend at 3+ hearts pins a request of their own on the
+  Quests board (`FAVOURS` in `js/data/favours.js`, three each in their own voice, round again), counted in their own
+  biome (four placeless ones anywhere) and handed in to them at home for 60 PokéCoins. Detail: docs/reference/towns.md.
+  Step 8's plan, kept: hearts (5 a friend, from gifts) unlock heart lines, base visits from 3 and sitting at 5, signature
+  pieces at 3 and 5, secret recipes at 4, letters from 2, a Friendship badge at 5 and the friends' own requests from 3.
