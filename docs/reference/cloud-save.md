@@ -22,7 +22,9 @@ the cloud's if this device has no progress (`isBlank()`). Sign out keeps the loc
 erased save too (the reload finds it dirty), so every signed-in device takes it. Email links come back to the page with `?mode=signIn&oobCode=...`; the address is kept in
 `pokedb.cloud.email` (asked again if the link opens in another browser) and the URL is cleaned. Firestore rules, and the
 Firebase console steps, are in the roadmap's step 4; since the Safari leaderboard, `firestore.rules` in the repo is the
-whole rules file (this rule plus `safariBoard`, docs/reference/safari.md). `cloudSession()` / `onCloudSignIn()` /
+whole rules file (this rule plus `safariBoard`, docs/reference/safari.md). Live: the rules are published and the
+boards readable (checked 2026-10-15: `towerBoard` and `arcadeBoard` hold real entries); a new board needs its rule
+added to `firestore.rules` and the file published again. `cloudSession()` / `onCloudSignIn()` /
 `openCloud()` are exported for `js/leaderboard.js`. Headless tests route gstatic to stand-in modules (the real SDK
 can't be reached from a cloud session).
 

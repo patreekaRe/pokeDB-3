@@ -9,13 +9,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
-the belts and the furniture set are in, in the grand hall with the ring (`buildDojoHall()`, the same day; the user
-playtests its look). Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
-Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
-star counts (to 20) already allow for them.
-▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
-docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
+**Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
+`claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind
@@ -943,9 +938,6 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   `js/data/sprite-fit.js`, `tools/body-centre.py`). Ask: does Charmeleon look centred now, and do any windows still
   stretch? ▶ Playtest on the live site.
 - Music: `assets/audio/eternatus.mp3` and `eternamax.mp3` (they borrow `boss` until then).
-- Firebase: the first real cloud-save sign-in, and publishing `firestore.rules` (Firestore > Rules) to switch on the
-  Safari leaderboard and the Sky Pillar's (its board and the lobby's plaque refuse reads until then). The console steps are in `docs/roadmap-done.md` (Next sessions, step 4) and
-  `docs/reference/cloud-save.md`.
 - Playtests on the live site: a real Mewtwo run (Eternatus's numbers, the fall into the Depths), Ken's difficulty, the
   boss intros' and biome films' sound levels; the Sky Pillar's walk and climb pacing and its guardian intros on a phone.
 
