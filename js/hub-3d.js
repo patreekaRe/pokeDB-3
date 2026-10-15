@@ -31,6 +31,7 @@ import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
 import { makeDojo } from './hub-dojo.js';
+import { makePillar } from './hub-pillar.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
@@ -151,7 +152,7 @@ let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
-let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null;
+let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null, pillarFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
@@ -655,81 +656,6 @@ function gateVeilArt() {
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
-}
-
-/** The Sky Pillar's stone, smooth (2026-10-08): weathered blocks, a carved band of runes every few storeys, arched windows
-    lit at night, ivy and moss up from the foot; the front face has its great arched door under Rayquaza's jade ring. */
-function pillarArt(front) {
-  const W = 42, H = 192, { c, g, fill, rr, lin, shine } = fine(W, H, 8), rnd = seeded(front ? 3 : 4), glow = shine();
-  const door = { x: 9, w: 24, top: H - 36 };
-  g.fillStyle = '#8e887a'; g.fillRect(0, 0, W, H);
-  for (let row = 0; row * 5 < H; row++) {   // the blocks, each its own shade, lit on top, a crack or pits here and there
-    const y = row * 5, off = row % 2 ? 4.5 : 0;
-    for (let x = -off; x < W; x += 9) {
-      const n = rnd();
-      rr(x + 0.3, y + 0.3, 8.4, 4.4, 0.8, n > 0.82 ? '#ddd8ca' : n > 0.3 ? '#c4beb0' : '#aaa496');
-      rr(x + 0.6, y + 0.45, 7.8, 0.7, 0.35, 'rgba(255,255,255,0.3)');
-      rr(x + 0.6, y + 3.8, 7.8, 0.7, 0.35, 'rgba(60,56,48,0.2)');
-      if (rnd() < 0.16) {
-        const cx = x + 2 + rnd() * 5;
-        strokeOn(g, 'rgba(60,56,48,0.55)', 0.22, () => { g.moveTo(cx, y + 0.5); g.lineTo(cx + 0.8, y + 2); g.lineTo(cx + 0.3, y + 4.4); });
-      }
-      for (let i = rnd() < 0.3 ? 3 : 0; i > 0; i--) fill('rgba(70,66,58,0.4)', () => g.arc(x + 1 + rnd() * 7, y + 1 + rnd() * 3, 0.25, 0, Math.PI * 2));
-    }
-  }
-  g.fillStyle = lin(0, 0, W, 0, ['rgba(255,250,235,0.2)', 'rgba(0,0,0,0)', 'rgba(20,24,40,0.24)']); g.fillRect(0, 0, W, H);
-  g.fillStyle = lin(0, H - 60, 0, H, ['rgba(40,70,30,0)', 'rgba(40,70,30,0.3)']); g.fillRect(0, H - 60, W, 60);
-  for (const y of [0, 40, 90, 140]) {   // the carved bands, runes in them
-    rr(-1, y, W + 2, 5, 0.6, lin(0, y, 0, y + 5, ['#ece8dc', '#c8c2b4', '#958f80']));
-    g.fillStyle = 'rgba(30,30,40,0.3)'; g.fillRect(0, y + 5, W, 0.8);
-    for (let i = 0; i < 7; i++) {
-      const x = 3 + i * 6, m = y + 2.5;
-      if (i % 2) strokeOn(g, '#7a7468', 0.4, () => g.arc(x, m, 1.1, 0, Math.PI * 2));
-      else fill('#7a7468', () => { g.moveTo(x, m - 1.4); g.lineTo(x + 1.2, m); g.lineTo(x, m + 1.4); g.lineTo(x - 1.2, m); g.closePath(); });
-    }
-  }
-  for (const y of [18, 62, 112, 160]) {   // arched windows, a cold light in them after dark
-    if (front && y > door.top - 12) continue;
-    g.fillStyle = lin(0, y, 0, y + 14, ['#ece8dc', '#a8a294']); arch(g, 17.2, 7.6, y - 1.4, y + 14); g.fill();
-    g.fillStyle = lin(0, y, 0, y + 13, ['#3a4a7a', '#1c2440', '#141a30']); arch(g, 18.6, 4.8, y, y + 13); g.fill();
-    glow.fillStyle = lin(0, y, 0, y + 13, ['#5a70c0', '#2a3868']); arch(glow, 18.6, 4.8, y, y + 13); glow.fill();
-    rr(16.6, y + 13, 8.8, 1.5, 0.5, lin(0, y + 13, 0, y + 14.5, ['#ece8dc', '#958f80']));
-  }
-  for (let v = 0; v < 4; v++) {   // ivy climbing from the foot, clear of the door
-    let x = front ? (v % 2 ? 2 + rnd() * 4 : 36 + rnd() * 4) : 2 + rnd() * 38, y = H;
-    const top = H - 30 - rnd() * 80, pts = [[x, y]];
-    while (y > top) { x = Math.max(1, Math.min(W - 1, x + (rnd() - 0.5) * 2.6)); y -= 2.4; pts.push([x, y]); }
-    strokeOn(g, '#3a6a2a', 0.45, () => { g.moveTo(...pts[0]); pts.forEach(p => g.lineTo(...p)); });
-    pts.forEach(([px, py], i) => leaf(g, px, py, i % 2 ? -0.5 - rnd() * 0.4 : Math.PI + 0.5 + rnd() * 0.4, 1.5 + rnd() * 0.8, i % 3 ? P.moss[1] : P.moss[0]));
-  }
-  for (let i = 0; i < 14; i++) fill(`rgba(${rnd() < 0.5 ? '90,154,64' : '138,200,88'},0.45)`, () => g.ellipse(rnd() * W, H - rnd() * 10, 1.5 + rnd() * 2.5, 0.8 + rnd(), 0, 0, Math.PI * 2));
-  if (front) {
-    const { x, w, top } = door, mid = x + w / 2, ry = top + w / 2;
-    g.fillStyle = lin(0, top - 4, 0, H, ['#f0ece0', '#c8c2b4']); arch(g, x - 3.4, w + 6.8, top - 3.4, H); g.fill();
-    for (let i = 0; i <= 10; i++) {   // the arch's voussoirs and its jambs' blocks
-      const a = Math.PI + i / 10 * Math.PI;
-      strokeOn(g, '#8e887a', 0.32, () => { g.moveTo(mid + Math.cos(a) * w / 2, ry + Math.sin(a) * w / 2); g.lineTo(mid + Math.cos(a) * (w / 2 + 3.4), ry + Math.sin(a) * (w / 2 + 3.4)); });
-    }
-    for (let y = ry + 4; y < H; y += 5) for (const jx of [x - 3.4, x + w]) strokeOn(g, '#8e887a', 0.32, () => { g.moveTo(jx, y); g.lineTo(jx + 3.4, y); });
-    rr(mid - 2, top - 4, 4, 4.6, 0.6, lin(0, top - 4, 0, top + 0.6, ['#fffaf0', '#b8b2a4']));   // the keystone
-    g.fillStyle = lin(0, top, 0, H, ['#0a0e1c', '#141a30', '#26346a']); arch(g, x, w, top, H); g.fill();
-    glow.fillStyle = lin(0, top, 0, H, ['#121a34', '#24305e', '#4a68c8']); arch(glow, x, w, top, H); glow.fill();
-    for (let i = 0; i < 8; i++) {   // the stair inside, lit from above
-      const y = H - 5 - i * 3.6, inset = i * 1.15, a = 0.95 - i * 0.1;
-      rr(x + 3 + inset, y, w - 6 - inset * 2, 1.1, 0.4, `rgba(120,150,236,${a})`);
-      glow.fillStyle = `rgba(150,180,255,${a})`; glow.beginPath(); glow.roundRect(x + 3 + inset, y, w - 6 - inset * 2, 1.1, 0.4); glow.fill();
-    }
-    rr(x - 5, H - 2.4, w + 10, 2.4, 0.6, lin(0, H - 2.4, 0, H, ['#e4e0d4', '#a8a294']));   // the threshold steps
-    rr(x - 2.5, H - 4.4, w + 5, 2.2, 0.6, lin(0, H - 4.4, 0, H - 2.2, ['#f0ece0', '#b8b2a4']));
-    const ey = top - 9.2;   // Rayquaza's ring over the door, set into the band
-    fill(lin(0, ey - 4, 0, ey + 4, ['#f0ece0', '#958f80']), () => g.arc(mid, ey, 4.4, 0, Math.PI * 2));
-    fill(lin(mid - 3, ey - 3, mid + 3, ey + 3, ['#8ae8b8', '#3aa878', '#1a6a48']), () => g.arc(mid, ey, 3.5, 0, Math.PI * 2));
-    glow.fillStyle = '#3ac088'; glow.beginPath(); glow.arc(mid, ey, 3.5, 0, Math.PI * 2); glow.fill();
-    const coil = (gg, col, wd) => strokeOn(gg, col, wd, () => { gg.moveTo(mid - 2, ey - 2.2); gg.bezierCurveTo(mid + 3, ey - 2.4, mid - 3, ey + 2.4, mid + 2, ey + 2.2); });
-    coil(g, '#f8f0c0', 0.65); coil(glow, '#fff8d0', 0.65);
-    fill('#f8f0c0', () => g.arc(mid - 2, ey - 2.2, 0.55, 0, Math.PI * 2));
-  }
-  return c;
 }
 
 /** The Ancient Tree, smooth (2026-10-08): a crown of hundreds of leaf clumps lit from the top left with blossoms in it and
@@ -2223,14 +2149,11 @@ function makePlaces() {
     line: tower ? `A 100-floor climb with a weekly leaderboard.${best ? ` Your best: floor ${best}.` : ''} Spin the Pokéstop to climb.` : 'Win a run to open the Sky Pillar, a 100-floor tower climb with a weekly leaderboard.',
     reset: tower && 'weekly',
     buttons: [],
+    // Hoenn's tower since 2026-10-15 (js/hub-pillar.js; the user's ask, "a big change"): asleep till a won run opens it
     build: (g) => {
-      const side = new THREE.MeshStandardMaterial({ map: texOf(pillarArt(false)), roughness: 1 });
-      const door = pillarArt(true), face = glowing(new THREE.MeshStandardMaterial({ map: texOf(door), roughness: 1 }), door, null, '#a8c4ff', 0.9);
-      const top = new THREE.MeshStandardMaterial({ color: P.stone[1], roughness: 1 });
-      const box = new THREE.Mesh(new THREE.BoxGeometry(2.6, 12, 2.6), [side, side, top, top, face, side]);
-      box.position.set(tileX(PILLAR_AT.tx), 6, tileZ(PILLAR_AT.ty));
-      box.castShadow = box.receiveShadow = true;
-      g.add(box);
+      pillarFx = makePillar(THREE, { x: tileX(PILLAR_AT.tx), z: tileZ(PILLAR_AT.ty), open: tower, fine, texOf, merge: mergeStatic });
+      glowMats.push(...pillarFx.glows);
+      g.add(pillarFx.group);
     },
   });
   if (tower) list.push({
@@ -2467,7 +2390,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null;
+  glowMats = []; profBoards = {}; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3807,6 +3730,7 @@ function frame(now) {
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
   sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
   dojoFx?.tick(now, calm);
+  pillarFx?.tick(now, calm);
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
@@ -3882,7 +3806,7 @@ async function build() {
   scene.add(hemi, sun);
   // the lantern by the base's door and the Sky Pillar's doorway light their ground from dusk; made once and only dimmed,
   // so the hour changing never recompiles a shader
-  for (const [colour, at, k] of [['#ffc070', [tileX(TREE_AT.tx) - 1.25, 2.4, tileZ(TREE_AT.ty) + 0.6], 1], ['#8ab0ff', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.6], 0.7], ['#a8f8d8', [tileX(GATE_AT.tx), 1.6, tileZ(GATE_AT.ty) + 1], 0.9]]) {
+  for (const [colour, at, k] of [['#ffc070', [tileX(TREE_AT.tx) - 1.25, 2.4, tileZ(TREE_AT.ty) + 0.6], 1], ['#8af0d0', [tileX(PILLAR_AT.tx), 1.1, tileZ(PILLAR_AT.ty) + 1.8], 0.7], ['#a8f8d8', [tileX(GATE_AT.tx), 1.6, tileZ(GATE_AT.ty) + 1], 0.9]]) {
     const l = new THREE.PointLight(colour, 0, 6, 1.6);
     l.position.set(...at);
     l.userData.k = k;

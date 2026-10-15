@@ -2541,3 +2541,6 @@ signs, Ken's line in the Clearing, no console errors; still parts baked with `me
   biome (four placeless ones anywhere) and handed in to them at home for 60 PokéCoins. Detail: docs/reference/towns.md.
   Step 8's plan, kept: hearts (5 a friend, from gifts) unlock heart lines, base visits from 3 and sitting at 5, signature
   pieces at 3 and 5, secret recipes at 4, letters from 2, a Friendship badge at 5 and the friends' own requests from 3.
+- **The Clearing's Sky Pillar, rebuilt** (2026-10-15, the user's ask: "a big change aesthetically"): the 12-tall stone box
+  became Hoenn's tower in 3D (`js/hub-pillar.js`, like the dojo's `js/hub-dojo.js`): four tiers, runes, porch, banners,
+  floating stones, cloud collars, a jade crystal and wind spiralling up it once open. Detail: docs/reference/hub-base-mall.md.

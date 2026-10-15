@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['hub', 'The Sky Pillar in the Clearing is rebuilt as an ancient tower: tiers of mossy stone, jade runes, floating rocks, a collar of cloud and a crystal on top.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
 ];
 
