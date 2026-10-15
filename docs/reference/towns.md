@@ -120,7 +120,8 @@ After the shard the board's old `requests` rotate. A `?town=` peek keeps its que
 save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelOf()`; `js/satchel.js`: `gainMat()`,
 `gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
 `save.satchel = { keys, mats, seen, fresh }`, kept on a lost run, never the run's Bag; on the Collection and the device's
-"!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load.
+"!" only while `townsOpen()`. `?satchel` lends every material and key item for a page load. Its shelves are Key Items,
+Materials and Gifts: the questlines moved to their own app (below).
 **Where materials drop** (session 2, 2026-10-14): only in a town's biome, while `townsOpen()`, never in a Safari area,
 the Sky Pillar or a playtest (`gleaning()` in `js/run.js`). A won fight rolls `fightDrop()` (`DROPS`: a wild Pokémon 40%,
 an Alpha 1-2, the boss 2-3), said first in the reward box and given as the rewards end (`collect()`); `markSparkles()`
@@ -146,7 +147,7 @@ fond, skin }` (`workshopOf()`). **Gifts**: one favourite a town Gym Leader (`FAV
 holding any gift, a Gift sign stands beside them (`gift` on the room, its key `:gift`; `pickGift()` / `handGift()`): any
 gift +1 `liked`, their favourite +2, and the first time `fond`, earning their signature piece (`sig`, `from: ['gift',
 leader]`). Liking does nothing else yet. **Apricorn skins** change only the Safari Ball's sprite (`looks()` in
-`js/battle.js`: the picker and the throw), never its odds. The Satchel app has a fourth shelf, Gifts. The `?satchel` loan
+`js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
 
 **The Clearing's curve in every town** (2026-10-14, the user's ask: "the animal crossing log style thing applied to ALL
@@ -281,5 +282,14 @@ The plaza's **quest board** (2026-10-14, the user's ask: nowhere said where the 
 `QUEST_AT` [11, 10], the PC's mirror, only while the towns are on. `boardNow(save)` is its state: `locked` (Nietos not
 beaten), `new` (its one button, Read, is `takeQuest()`: the greeting, then `startQuest('clearing')`), `on` (the step,
 its count and "hand it in at their house"; `ready` under `?satchel` or once had), then `towns` (every town's questline
-under way, n/of). Its `line` and `buttons` are getters. The "!" over it (`questMark`, `questMarks()`) shows for `new` or
+under way, n/of). Its `line` and `buttons` are getters. Past `new` its button is Quest log (`questLog()`), and reading the notice opens it too. The "!" over it (`questMark`, `questMarks()`) shows for `new` or
 `ready`. The Nietos' house has a Quest spot that starts the questline too, when it hasn't started and the Clearing isn't lit.
+**The Quests app** (`js/questlog.js`, 2026-10-14, the user's ask: "an aesthetic window" for the board, and the quest
+progress findable from anywhere): the Pokédex's own app, beside the Satchel, towns on only (icon `quests`, a cork board, in
+`js/smooth-icons.js`; count `questCount()`, Waystones lit of 6). A cork board in the device's screen: the Waystones as
+crystals in each town's `RING` glow, then a pinned note per questline in `LINES` order (the Clearing first): its leader,
+n/of pips, a chip (Under way / Ready! / Lit / Locked), the step up now with a bar of `stepHave()`, where its thing comes
+from (a material's biome, Kurt's recipe with the Satchel's counts, the shard's Alpha) and where it's handed in;
+"Every step" opens its story and steps (later ones `???`). A locked note says how to start it. The board opens it as
+`openDeviceApp('quests', 'board')` (through the hub's `acts.onApp(id, at)`), and then it says it's in the Pokédex too.
+A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests icon's "!", not the Satchel's.

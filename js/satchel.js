@@ -20,5 +20,6 @@ export function clearSatchelNews(ids) {
   updateSave(d => { d.satchel = { ...saved(d), fresh: saved(d).fresh.filter(id => !gone.has(id)) }; });
 }
 
-/** Whether anything in the Satchel is new (the device's "!"). */
-export const satchelNews = (save = getSave()) => saved(save).fresh.length > 0;
+/** Whether anything in the Satchel is new (the device's "!"); a questline just opened (`q:<town>`) is the Quests app's. */
+export const satchelNews = (save = getSave()) => saved(save).fresh.some(id => !id.startsWith('q:'));
+export const questNews = (save = getSave()) => saved(save).fresh.some(id => id.startsWith('q:'));
