@@ -305,6 +305,7 @@ function jona(K) {
   aura.castShadow = aura.receiveShadow = false;
   quiet(aura);
   K.B.ticks.push((now) => { if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2; });
+  K.B.auras = { jona: { aura, dark } };   // they travel with her when she possesses Phil (possess() in js/event-3d.js)
 }
 
 export const LEADER_HOMES = {
