@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['base', 'The backyard can grow: tap it on the PC\'s House Upgrades to make it bigger, everything out there keeping its place.'],
+  ['base', 'The backyard\'s way in is a garden arch beside the Ancient Tree: unlock it there or on the PC, then grow the yard bigger on House Upgrades.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
   ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
 ];

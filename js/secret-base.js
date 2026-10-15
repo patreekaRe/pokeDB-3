@@ -136,7 +136,6 @@ export function buyBigRoom(b) {
   b.house ||= freshHouse();
   b.house.big = true;
   for (const it of roomContents(b, 'main').items) it.x += 1;
-  if (b.house.yard) clearRoom(b, 'main');   // the back door moves along the bigger back wall
   updateSave(d => { d.coins -= BIG_PRICE; d.secretBase = b; });
   return true;
 }
@@ -187,23 +186,22 @@ export function takeDown(b, id) {
   saveBase(b);
   return true;
 }
-/* The backyard (docs/roadmap.md, part a): bought once on the blueprint, a lawn out a back door of the main room. Its
-   things are kept on `house.yard` like a room's, and only outdoor furniture stands there (fitsHere()). */
+/* The backyard (docs/roadmap.md, part a): bought once, on the blueprint or at its garden arch in the Clearing, a lawn
+   behind the Ancient Tree walked in through that arch. Its things are kept on `house.yard` like a room's, and only
+   outdoor furniture stands there (fitsHere()). */
 const freshYard = () => ({ size: 1, items: [], wall: 'cream', floor: 'grass' });
 /** `?yard`: a backyard lent for the page load, to playtest it; never kept (loadBase() takes a lent one back). `?yard=big`
     lends the bigger one. */
 const lendYard = () => new URLSearchParams(location.search).has('yard');
 const lendSize = () => new URLSearchParams(location.search).get('yard') === 'big' ? 2 : 1;
 
-/** Buy the backyard. Furniture standing where the back door goes moves into storage (named in `moved`). Null if the
-    coins aren't there or it's already bought. */
+/** Buy the backyard. False if the coins aren't there or it's already bought. */
 export function buyYard(b) {
-  if ((getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return null;
+  if ((getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return false;
   b.house ||= freshHouse();
   b.house.yard = freshYard();
-  const moved = clearRoom(b, 'main');
   updateSave(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
-  return { moved };
+  return true;
 }
 /** The backyard made bigger (part e): the lawn grows round its things, which keep their places from the doormat (across
     by half the width it gains, back by all the depth), so the new lawn is at the sides and behind. False if the coins

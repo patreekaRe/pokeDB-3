@@ -31,7 +31,7 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
-import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, backDoorOf, yardKind } from './data/house.js';
+import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 import { pcNew, markPcSeen, pcLookedAt, friendsOpen } from './pc-news.js';
@@ -72,8 +72,8 @@ const canGrowYard = (house) => ownsYard(house) && !(house.yard.size > 1);
 const yardHint = (house) => !ownsYard(house) ? ' The green plot behind is a backyard.' : canGrowYard(house) ? ' Tap the backyard to make it bigger.' : '';
 /** What the PC says with the yard picked: the plot to buy, or the bought one to make bigger. */
 const yardSay = (house) => canGrowYard(house)
-  ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the back door.`
-  : `A backyard behind the house, out a back door of the main room. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
+  ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the gate.`
+  : `A backyard behind the Ancient Tree, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
     Hall of Fame or Record Book over the Clearing. `start: 'decor'` boots onto the Decorations, as the Secret Base's
@@ -562,18 +562,17 @@ const PAGES = {
             unpick();
             playSound('item-get');
             show('house');
-            speak('Your backyard is bigger! Everything out there kept its place by the back door, with new lawn round it.');
+            speak('Your backyard is bigger! Everything out there kept its place by the gate, with new lawn round it.');
           }));
         return card;
       }
-      card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind the house, out a new back door in your main room.`),
+      card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind the Ancient Tree, through the garden arch beside it.`),
         buy(`Build · ${YARD_PRICE.toLocaleString()}`, () => {
-          const done = buyYard(loadBase());
-          if (!done) { playSound('cancel'); return short(YARD_PRICE); }
+          if (!buyYard(loadBase())) { playSound('cancel'); return short(YARD_PRICE); }
           unpick();
           playSound('item-get');
           show('house');
-          speak(`Your backyard is ready! Walk out the main room's back door to see it.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the way.` : ''}`);
+          speak('Your backyard is ready! The garden arch beside the Ancient Tree is open now: walk through it to see.');
         }));
       return card;
     };
@@ -693,14 +692,14 @@ function blueprint(house, fit) {
   const place = (r) => r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]);
   const ghost = fit ? shapeOf(fit.kind, fit.rot).rects.map(([x, y, w, h]) => [x + fit.gx, y + fit.gy, w, h]) : [];
   const door = floor ? [] : [[entry.at - 1, main.shape.h, 3, 1.5]];
-  // the backyard behind the house, its door's column lined up with the main room's back door, a path's width clear of
-  // the rooms; bought or a plot to buy (a tap picks it)
-  const back = backDoorOf(house), yard = shapeOf(yardKind(house)), owned = ownsYard(house);
-  const yx = main.gx + back.at - Math.floor(yard.w / 2), yy = Math.min(...rooms.map(r => r.gy)) - yard.h - 1;
+  // the backyard behind the house, a path's width clear of the rooms, centred on the main room (its way in is the
+  // Clearing's garden arch, not a door of the house); bought or a plot to buy (a tap picks it)
+  const mid = Math.floor(main.shape.w / 2), yard = shapeOf(yardKind(house)), owned = ownsYard(house);
+  const yx = main.gx + mid - Math.floor(yard.w / 2), yy = Math.min(...rooms.map(r => r.gy)) - yard.h - 1;
   const lot = floor ? [] : [[yx, yy, yard.w, yard.h]];
   // the bigger yard it would grow into, dashed round it while it's picked to buy
   const big = shapeOf('bigyard'), grow = lot.length && yardPick && canGrowYard(house)
-    ? [[main.gx + back.at - Math.floor(big.w / 2), yy + yard.h - big.h, big.w, big.h]] : [];
+    ? [[main.gx + mid - Math.floor(big.w / 2), yy + yard.h - big.h, big.w, big.h]] : [];
   const every = [...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door, ...lot, ...grow];
   const x0 = Math.min(...every.map(r => r[0])) - 2, y0 = Math.min(...every.map(r => r[1])) - 2;
   const x1 = Math.max(...every.map(r => r[0] + r[2])) + 2, y1 = Math.max(...every.map(r => r[1] + r[3])) + 2;
@@ -728,7 +727,6 @@ function blueprint(house, fit) {
   for (const r of below) room(place(r), 'pc-bp-room below');
   if (door.length) room(door, 'pc-bp-room entry', 'Entry');
   if (lot.length) {
-    if (owned) room([[main.gx + back.at + 0.3, yy + yard.h, 0.4, main.gy - yy - yard.h]], 'pc-bp-room path');
     if (grow.length) room(grow, 'pc-bp-room yard plot picked');
     room(lot, `pc-bp-room yard${owned ? '' : ' plot'}${yardPick ? ' picked' : ''}`, 'Backyard', () => {
       playSound('select');
@@ -736,7 +734,7 @@ function blueprint(house, fit) {
       unpick();
       yardPick = (!owned || canGrowYard(house)) && !was;
       show('house');
-      if (owned && !yardPick) speak(canGrowYard(house) ? 'Your backyard, out the main room\'s back door.' : 'Your backyard, made bigger, out the main room\'s back door.');
+      if (owned && !yardPick) speak(canGrowYard(house) ? 'Your backyard, through the garden arch beside the Ancient Tree.' : 'Your backyard, made bigger, through the garden arch beside the Ancient Tree.');
     });
   }
   for (const r of rooms) {

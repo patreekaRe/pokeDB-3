@@ -2510,6 +2510,15 @@ behind. Winter's snowfall spreads with the lawn. `?yard=big` lends the bigger on
 headless Chromium (the buy on the PC, the item moved, `?yard` / `?yard=big` open outdoors with no errors). The backyard
 plan (parts a to e) is done.
 
+### The Secret Base's backyard, part f: the garden arch (2026-10-15)
+
+The user's ask: the backyard's way in from outside, an archway you unlock. The main room's back door is gone; a 3D garden
+arch (`js/hub-arch.js`) stands in the Clearing between the Ancient Tree and the Sky Pillar's trail, brambled and
+padlocked until the yard is bought (there for 1,000, or on the PC's blueprint as before). Unlocking withers the brambles
+and walks you in; the yard's doormat leads back out under the arch. Tested with `node --test` and headless Chromium
+(locked card, buy at the arch, into the yard, out under the arch, in again; winter at night; no new errors). Detail in
+`docs/reference/hub-base-mall.md`.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.

@@ -315,7 +315,7 @@ function init() {
     onGate: (mewtwo) => { newGame(mewtwo); previewStarter(mewtwo); },   // the broken gate: straight to Mewtwo's Prepare step
     onAbandon: requestAbandon,
     // the hub's door in the Ancient Tree (js/hub-3d.js); the base's ✕ walks back out of it
-    onBase: () => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome })); },
+    onBase: (start) => { leaveTitle(); return import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome, start })); },
     // the Poké Mall's doors in the Clearing (js/hub-3d.js); the Game Corner is a shop in its hall
     onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
     // the Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
