@@ -2585,3 +2585,4 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
 
 - **Done (2026-10-15): the Crystal Depths play the Sky Pillar song** (the user's ask): `music: 'map4'` on the Depths biome (`js/data/enemies.js`) and Mewtwo's camp (`js/data/camp.js`); `seal` keeps the fall and the gate.
 - **Done (2026-10-15): four towns' own songs** (the user's files): `town-lantern`, `town-cinder`, `town-driftwood`, `town-sunwell` in `js/audio.js`, looped and levelled (`docs/reference/music.md`). Highbough still plays `seal`.
+- **Done (2026-10-15): only the Ancient Tree's door enters the Secret Base** (the user's ask): `doorOnly()` in `js/hub-3d.js`; the rest of the tree and its sign walk there. Next, the user may want the backyard's entrance changed (asked what they have in mind).
