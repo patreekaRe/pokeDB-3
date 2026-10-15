@@ -9218,20 +9218,12 @@ function doorSlab(x, z, w, l, turn, tilt, lift, M, r) {
   return g;
 }
 
-/** A soft dot, the motes' texture. */
-function dotArt() {
-  const { c, g } = fine(16, 16, 4), l = g.createRadialGradient(8, 8, 0, 8, 8, 8);
-  l.addColorStop(0, '#ffffff'); l.addColorStop(0.35, 'rgba(255,255,255,0.8)'); l.addColorStop(1, 'rgba(255,255,255,0)');
-  g.fillStyle = l; g.fillRect(0, 0, 16, 16);
-  return texOf(c);
-}
-
 /** The way down to the Depths proper: the Sealed Gate itself (js/hub-sealed.js, the Clearing's in the round), smashed
     through, its door's slabs strewn over the floor where they fell, a horn snapped off its crown, the rock round it split
     and lit by the vortex where the door stood. `rope`: a rope across it, kept for Mewtwo (everyone's but Mewtwo's own run).
     A tap on it is the way on, where it is one. */
 function brokenGate(x, z, C, r, rope) {
-  const gate = makeSealedGate(THREE, { x, z, dot: dotArt(), merge: mergeStatic, smashed: true });
+  const gate = makeSealedGate(THREE, { x, z, dot: texOf(dotArt()), merge: mergeStatic, smashed: true });
   B.group.add(gate.group);
   const M = {
     obsidian: std({ color: '#2a2042', roughness: 0.32, metalness: 0.25 }),
@@ -9579,7 +9571,7 @@ async function buildCamp(figs, h) {
   const dg = new THREE.BufferGeometry();
   dg.setAttribute('position', new THREE.BufferAttribute(dp, 3));
   dg.setAttribute('color', new THREE.BufferAttribute(dc, 3));
-  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.07, map: dotArt(), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.07, map: texOf(dotArt()), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
   dust.raycast = () => {};
   B.group.add(dust);
   const sparks = Array.from({ length: 6 }, (_, i) => ({ s: sprite(sparkArt('#ffb060'), 0.08), a: rnd() * 6, phase: i / 6 }));
