@@ -12,7 +12,7 @@
    ============================================================ */
 
 /** The belts, white to black: the stars and the run wins against him each needs. Set for the full ladder of about 20
-    trials (the first 8 so far), so a later trial never takes a belt or a piece of furniture back. `line` is what he
+    trials (the first 14 so far), so a later trial never takes a belt or a piece of furniture back. `line` is what he
     says as he ties it on; `talk` joins his idle lines from that belt on. */
 export const BELTS = [
   { id: 'white', name: 'White Belt', colour: '#f4f2ea', knot: '#c8c4b8', stars: 0, wins: 0,
@@ -93,6 +93,45 @@ export const TRIALS = [
       taunts: { half: '"Bro, that was a warm-up."', low: '"Okay, okay, you got some moves..."', win: '"Skill issue."' },
       moves: [{ kind: 'attack', name: 'Mata Chop', amount: 9 }, { kind: 'buff', name: 'Mata-Manspread', amount: 2 }, { kind: 'attack', name: 'Kraber Crush', amount: 12 }] },
     deck: ['will-o-wisp', 'fire-spin', 'ember', 'scorch', 'flame-wall', 'inferno', 'fire-punch', 'fan-the-flames', 'heat-up', 'ember', 'flare-up', 'fire-punch', 'flame-wall', 'ember', 'flare', 'ember', 'flame-wall'] },
+  { id: 't9', name: 'Hold the Wave', starter: 'squirtle', hp: 30, goal: { turns: 2 }, goalText: 'Win in 2 turns.',
+    tip: 'Tide lasts all fight, and Water Pulse stays in your hand when your turn ends.',
+    before: ['Trial nine, bro. Mienfoo has 50 HP and you get two turns. The wave you hold hits harder than the wave you throw.'],
+    after: 'You held it. You held it! That\'s discipline, bro. That\'s a whole tsunami of discipline.', fail: 'You threw the wave too early, bro. Hold Water Pulse, build the Tide, THEN send it.',
+    foe: foe('mienfoo', 'Mienfoo', 50, [{ kind: 'attack', name: 'Fake Out', amount: 6 }, { kind: 'attack', name: 'Drain Punch', amount: 8 }]),
+    deck: ['water-pulse', 'water-gun', 'rain-dance', 'water-sport', 'withdraw', 'sparkling-aria', 'swift-swim', 'dive', 'splash', 'withdraw', 'splash', 'withdraw', 'splash', 'water-gun', 'withdraw'] },
+  { id: 't10', name: 'Through the Guard', starter: 'charmander', hp: 40, goal: { turns: 3 }, goalText: 'Win within 3 turns.',
+    tip: 'Hitmontop\'s Detect soaks up your hits on turn 3, but Burn goes right through it. Inferno Charge pays you back next turn.',
+    before: ['Hitmontop has 130 HP, bro, and on turn three it Detects everything you throw. Everything with fists, anyway.'],
+    after: 'It blocked your fists and burned anyway. Fire doesn\'t knock, bro. It just comes in.', fail: 'Detect ate your hits, bro. Stack the Burn early, spend the PP you banked.',
+    foe: foe('hitmontop', 'Hitmontop', 130, [{ kind: 'attack', name: 'Rolling Kick', amount: 7 }, { kind: 'defend', name: 'Detect', amount: 40 }, { kind: 'attack', name: 'Triple Kick', amount: 9 }]),
+    deck: ['will-o-wisp', 'inferno-charge', 'fire-spin', 'ember', 'flame-wall', 'flame-burst', 'flame-burst', 'fire-lash', 'ember', 'flame-wall', 'fan-the-flames', 'fan-the-flames', 'ember', 'flare', 'flame-wall'] },
+  { id: 't11', name: 'Tide and Seed', starter: 'squirtle', hp: 21, maxHp: 30, goal: { full: true, turns: 3 }, goalText: 'Win within 3 turns at full HP.',
+    tip: 'Leech Seed heals you as it drains, and Energy Ball heals once it\'s seeded. Spend your Tide on Tidal Wall first and Hydro Pump last.',
+    before: ['I lent you some Grass moves, bro. Breloom has 56 HP, you\'re on 21 of 30. Walk out at full. Water and seeds, together.'],
+    after: 'Tide for the shield, seeds for the heal, then the pump. That\'s a whole ecosystem, bro.', fail: 'Not full, bro. Let the seeds heal you, block every punch, and finish last.',
+    foe: foe('breloom', 'Breloom', 56, [{ kind: 'attack', name: 'Mach Punch', amount: 10 }, { kind: 'attack', name: 'Sky Uppercut', amount: 12 }, { kind: 'attack', name: 'Focus Punch', amount: 14 }]),
+    deck: ['worry-seed', 'tidal-wall', 'water-sport', 'water-gun', 'withdraw', 'snap-trap', 'rain-dance', 'withdraw', 'hydro-pump', 'splash', 'energy-ball', 'swift-swim', 'hydro-pump', 'water-gun', 'aqua-ring'] },
+  { id: 't12', name: 'Patience', starter: 'bulbasaur', hp: 40, goal: { turns: 3 }, goalText: 'Win within 3 turns.',
+    tip: 'Solar Blade stays in your hand and counts your Strength four times. Grow for two turns, then swing once.',
+    before: ['Machamp has 116 HP, bro. Four arms. You have one blade. Make it count.'],
+    after: 'Two turns of pumping, one swing. That\'s the chad way: patience, then violence.', fail: 'You swung too early, bro. Solar Blade waits. Let it.',
+    foe: foe('machamp', 'Machamp', 116, [{ kind: 'attack', name: 'Karate Chop', amount: 8 }, { kind: 'attack', name: 'Revenge', amount: 10 }, { kind: 'attack', name: 'Cross Chop', amount: 12 }]),
+    deck: ['solar-blade', 'swords-dance', 'growth', 'cotton-guard', 'vine-whip', 'leaf-blade', 'growth', 'trailblaze', 'leaf-guard', 'vine-whip', 'growth-spurt', 'rototiller', 'vine-whip', 'power-whip', 'leaf-guard'] },
+  { id: 't13', name: 'Take the Hit', starter: 'charmander', hp: 32, goal: { turns: 2 }, goalText: 'Win in 2 turns.',
+    tip: 'Heavy Slam hits for 60, more than you have. Endure keeps you on 1 HP, and Blaze loves 1 HP.',
+    before: ['Hariyama hits for 60, bro. You have 32. Block it and you\'re slow. Take it, and you\'re dangerous.'],
+    after: 'One HP and a full send. That\'s the most chad thing I\'ve ever seen. Again.', fail: 'Blocking won\'t save you here, bro. Endure it, then hit back with everything.',
+    foe: foe('hariyama', 'Hariyama', 50, [{ kind: 'attack', name: 'Heavy Slam', amount: 60 }, { kind: 'attack', name: 'Arm Thrust', amount: 12 }]),
+    deck: ['endure', 'heat-up', 'ember', 'flame-wall', 'flame-wall', 'flare-up', 'fire-punch', 'ember', 'ember', 'flame-wall', 'ember', 'flame-wall', 'ember', 'flame-wall', 'ember'] },
+  { id: 't14', name: 'Kenmatta\'s Second Test', starter: 'squirtle', hp: 30, goal: { noDamage: true, turns: 3 }, goalText: 'Beat Kenmatta within 3 turns without losing any HP.',
+    tip: 'He FORTIFIES first: a free turn. With Riptide and Hydration up, every card you play blocks, and every block hits him.',
+    before: ['Trial fourteen. Me again, bro. 115 HP, three turns, and you don\'t get to touch me. I mean, I don\'t get to touch YOU. FORTIFY YOUR MIND!'],
+    after: 'Your shield hit harder than my fists. In MY dojo. That\'s the Mata-Mindset, bro. You get it now. You really get it.', fail: 'Skill issue, bro. Set up while I fortify, then let your shield do the punching.',
+    foe: { id: 'ken', name: 'Chad Master Kenmatta', type: 'normal', hp: 115, image: 'assets/trainers/alder.png', art: false, arena: 'kombat', music: 'kombat', aura: true,
+      intro: 'Chad Master Kenmatta steps onto the mat! Again!',
+      taunts: { half: '"Bro, your SHIELD is hitting me?"', low: '"This is... this is the Mata-Mindset..."', win: '"Skill issue."' },
+      moves: [{ kind: 'defend', name: 'FORTIFY YOUR MIND', amount: 20, sound: 'fortify' }, { kind: 'attack', name: 'Kraber Crush', amount: 14 }, { kind: 'attack', name: 'TEST YOUR MIGHT', amount: 24, say: 'TEST YOUR MIGHT!' }] },
+    deck: ['riptide', 'hydration', 'withdraw', 'water-gun', 'splash', 'shelter', 'withdraw', 'splash', 'aqua-veil', 'water-gun', 'splash', 'razor-shell', 'bubble-shield', 'withdraw', 'water-gun', 'withdraw', 'water-gun', 'splash', 'withdraw', 'water-gun'] },
 ];
 export const TRIALS_BY_ID = Object.fromEntries(TRIALS.map(t => [t.id, t]));
 

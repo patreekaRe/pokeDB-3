@@ -9,13 +9,14 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). The first 8 trials,
-the belts and the furniture set are in, in the grand hall with the ring (`buildDojoHall()`, the same day; the user
-playtests its look). Next: trials 9-20 (harder: combos across turns, Tide and Leech Seed together,
-Mewtwo-free psychic puzzles stay out), each played through headless with its intended line before it ships; the belts'
-star counts (to 20) already allow for them.
+**Kenmatta's dojo, more trials** (open since 2026-10-15; `docs/reference/events.md`'s dojo section). Trials 1-14, the
+belts and the furniture set are in, in the grand hall with the ring (trials 9-14 the same day, on branch
+`claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`; the user playtests them). Next: trials 15-20, the last six (the
+black belt's 20 stars; Mewtwo-free psychic puzzles stay out), each checked with `tools/dojo-solve.mjs` (only its
+intended idea wins) and played with `tools/dojo-play.cjs` before it ships.
 ▶ Run in: CLOUD (attach pokeDB-3 and pokeDB-sim). Prompt: "Read CLAUDE.md and the dojo section of
-docs/reference/events.md. Add Kenmatta's trials 9-14 to js/data/dojo.js and play each through headless."
+docs/reference/events.md. Add Kenmatta's trials 15-20 to js/data/dojo.js, check each with tools/dojo-solve.mjs and play
+each through headless with tools/dojo-play.cjs."
 
 **The Secret Base's backyard** (the user's idea and picks, 2026-10-14). An outdoor lot behind the Ancient Tree, through a
 back door of the base. The settled calls: **bought on the PC's HOUSE UPGRADES blueprint** (a green outdoor plot behind

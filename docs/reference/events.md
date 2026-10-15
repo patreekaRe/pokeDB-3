@@ -222,16 +222,23 @@ real, like walking in). The data is `js/data/dojo.js`; nothing in it makes a run
   it out from `save.dojo.stars` and `kenWinsOf()` (`save.kenWins`, `kenBeaten` counting 3); `save.dojo.belt` is only
   the last one he has tied on. `dojoTalk()` in `js/run.js`: his hello the first time (`save.dojo.met`), his word on a
   trial just fought, and each new belt's `line` once, with a 🥋 line naming the furniture it sent.
-- **The trial ladder** (`TRIALS`, 8 so far): each a set starter (Charmander / Bulbasaur / Squirtle at its first stage,
+- **The trial ladder** (`TRIALS`, 14 so far): each a set starter (Charmander / Bulbasaur / Squirtle at its first stage,
   its Ability on), HP, a deck drawn in order (`deck[0]` first, five a turn), a foe (his students: Machop, Mankey,
   Tyrogue, Poliwrath, Hitmonchan, Primeape, Makuhita, then Kenmatta himself), typeless, its moves in order from the
-  first, and a goal (`turns`, `noDamage`, `burn` last blow, `full` HP). One star a clear (`save.dojo.stars`), each opening
+  first, and a goal (`turns`, `noDamage`, `burn` last blow, `full` HP). **Trials 9-14** (2026-10-15) are harder, each a
+  combo across turns: Mienfoo (hold Water Pulse while the Tide builds, Sparkling Aria before Swift Swim), Hitmontop
+  (Detect soaks turn 3's hits, so Burn it, with Inferno Charge's banked PP), Breloom (Squirtle with lent Grass moves:
+  Tidal Wall, Leech Seed healing to full, then Hydro Pump), Machamp (Solar Blade held two turns, Rototiller before
+  Growth Spurt), Hariyama (Endure its 60 hit, then Blaze at 1 HP) and Kenmatta again (Riptide and Hydration on his
+  FORTIFY turn, Aqua Veil keeping the block, Razor Shell, no damage). A trial's deck can hold another type's cards (t11). One star a clear (`save.dojo.stars`), each opening
   the next, replayable. Played by `trialFight()` / `afterTrial()` in `js/run.js` on a copy of the visit's run (no relics,
   items or deck of yours), `kind: 'fight'`, the kombat arena and song. In `js/battle.js` `encounter.trial` keeps the
   deck's order and the foe's first move, and `trialBroken()` ends it at the start of a turn it can no longer be won in
   (`failTrial()`); the fight's result now carries `turns` and `felledBy` ('burn' / 'seed'). `trialMissed()` reads it.
   Trial-only, so `sim/engine.js` needs nothing. Every trial was played through headless with its intended line
-  (2026-10-15); a new one needs the same.
+  (2026-10-15); a new one needs the same: `tools/dojo-solve.mjs` lists every line that clears a trial (a light copy of
+  the battle rules; each of 9-14 has only its intended idea, and every card of it is needed), and `tools/dojo-play.cjs`
+  plays a line on the real battle screen in headless Chromium and says if it earns the star.
 - **The dojo set** (`DOJO_REWARDS`, `js/base-furniture-dojo.js`, the `dojo` source in `js/data/furniture.js`; one
   colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
   stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till

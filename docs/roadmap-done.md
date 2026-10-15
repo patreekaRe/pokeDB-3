@@ -2522,6 +2522,9 @@ and walks you in; the yard's doormat leads back out under the arch. Tested with 
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.
+- **Kenmatta's trials 9-14** (2026-10-15): six harder combo trials (Mienfoo, Hitmontop, Breloom, Machamp, Hariyama and
+  Kenmatta again), each solved by brute force (`tools/dojo-solve.mjs`: only its intended idea wins) and played on the
+  real battle screen headless (`tools/dojo-play.cjs`), with a tempting wrong line failing. Detail in `docs/reference/events.md`.
 
 ### Kenmatta's dojo made extravagant: the temple hall and the ring (2026-10-15)
 
