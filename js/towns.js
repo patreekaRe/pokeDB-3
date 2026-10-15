@@ -4,7 +4,7 @@
    PokéCoins. A questline's step may take materials from the Satchel or put a key item in it (js/satchel.js). */
 
 import { getSave, updateSave, awardCoins } from './storage.js';
-import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended, folkKey,
+import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, townState, countTown, currentRequest, requestText, handIn, mended,
   openQuest, questStep, questDone, stepText, handInStep, stepReady, waystoneGuest, placeOf } from './data/towns.js';
 import { shardsLit } from './data/towns.js';
 import { satchelOf } from './data/satchel.js';
@@ -73,21 +73,6 @@ export function metTown(id) {
 
 /** Whether `id`'s Waystone is mended, so its crystal on the Clearing's Waystone is lit and you can travel there from home. */
 export const isMended = (id, save = getSave()) => mended(townState(save, id));
-
-/** The townsfolk you've invited to live in your Secret Base ("<town>:<pokemon>" keys, js/data/towns.js's folkKey()). */
-export const invitedFolk = (save = getSave()) => save.townsfolk || [];
-
-/** Invite a townsperson home: they join the Secret Base's residents (moving straight in while there's room, else waiting
-    in the PC's Base residents). */
-export function inviteFolk(town, id, room) {
-  const key = folkKey(town, id);
-  updateSave(d => {
-    d.townsfolk = [...new Set([...(d.townsfolk || []), key])];
-    if (!d.secretBase || !room) return;
-    const now = d.secretBase.mons ?? room.shown;
-    if (now.length < room.max && !now.includes(key)) d.secretBase.mons = [...now, key];
-  });
-}
 
 /** The leader who put a town's shard in has welcomed you home at the Clearing's Waystone: from now on its guests rotate. */
 export function welcomeHome(id) {

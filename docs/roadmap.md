@@ -71,9 +71,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `js/event-3d.js`), which (or the far gate, or Leave) lifts you up in it and home onto that stone (`goHome()` → `cameHome()`). On a visit: requests hand in for real (the 5th mends the
    Waystone with a line), the trader sells the town's furniture shelf instead of trading (`js/town-shop.js`: 6 a UTC day,
    kept in `save.townShop`, sold out once owned; `SHOP_SHELVES`: Japanese, Hot Spring, Underwater, Greenhouse + Garden,
-   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`), and a townsperson you tap asks once a visit to
-   come and live in your Secret Base (`inviteFolk()`, `save.townsfolk` keys `town:pokemon`, read by the PC's Base residents
-   and the base's guests, `resident()` in `js/pc.js`).
+   Desert, taken out of the mall's stock, `TOWN_SHELVES` in `dealDay()`). (Inviting townsfolk to live in the Secret Base was cut
+   2026-10-15, the user's call: it overlapped Safari catches, which stay the only way to fill the base.)
    **Done (2026-10-14): one Waystone, not five** (the user's pick). The ring's five stones are gone: one big Waystone stands on
    the plaza's Poké Ball (`clearingWaystone()` in `js/hub-3d.js`, `START`'s tile; the towns' whole Waystone on a plinth,
    silver runes), five crystals orbiting its tip in their `RING` colours, dull until that town is mended. A tap opens its menu

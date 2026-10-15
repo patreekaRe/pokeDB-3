@@ -1923,14 +1923,6 @@ export const TOWN_SHELVES = new Set(Object.values(SHOP_SHELVES).flat());
 /** The town a furniture shelf is sold in, or null. */
 export const shelfTown = (group) => Object.keys(SHOP_SHELVES).find(id => SHOP_SHELVES[id].includes(group)) ?? null;
 
-/** A townsperson living in the Secret Base keeps the town's id with it: "<town>:<pokemon>". */
-export const folkKey = (town, id) => `${town}:${id}`;
-export function folkOf(key) {
-  const [town, id] = String(key).split(':');
-  const f = TOWNS[town]?.folk.find(o => o.id === id);
-  return f ? { ...f, town } : null;
-}
-
 /** Whether the Nietos are at home in their house in the Clearing (the house itself always stands): only once you've beaten
     THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins. Since step 7 (2026-10-14) that's how they
     turn up: beaten, they greet you at home and their questline mends the Clearing's Waystone, so they're home with the
