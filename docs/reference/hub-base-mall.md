@@ -106,8 +106,9 @@ The first section began as the note on playtesting the live site and grew into t
   your partner. The sun's shadow box follows the view (`followSun()`). `?aerial` shows it all from high above, `?hubat=x,y`
   starts your partner on that tile.
 
-- **The professors** (2026-10-15, the user's ask, with two reference sprites): the place `prof` on `PROF_AT` (the plaza,
-  two right of the Waystone, the Gym Leader guest's mirror). Professor Oak stands there except at night, Professor Sonia
+- **The professors** (2026-10-15, the user's ask, with two reference sprites): the place `prof` on `PROF_AT` (the tile
+  just right of the PC, the user's ask the same day; it first stood two right of the Waystone, and Halloween's ghost
+  that spawned there moved to that old spot). Professor Oak stands there except at night, Professor Sonia
   at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
   (features a player might miss) and ends on that professor's reminder to refresh the page for updates. Sprites
   `assets/trainers/oak.png` / `sonia.png` (44 x 72, drawn in Kurt's style; Showdown's site is blocked from the cloud).

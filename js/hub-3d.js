@@ -2310,7 +2310,7 @@ function makePlaces() {
     buttons: [],
     build: (g) => standGuest(g, leader),
   });
-  // a professor on the plaza, right of the Waystone (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
+  // a professor just right of the PC (the user's ask, 2026-10-15): Oak by day, Sonia after dark, each tap
   // a hint about something easy to miss, and always a reminder to refresh for updates; both are built and setTime()
   // shows the one for the hour
   list.push({
@@ -2397,7 +2397,7 @@ async function standGuest(g, l) {
   g.add(m.group);
 }
 
-const PROF_AT = { x: START.x + 2, y: START.y };
+const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
   { id: 'oak', name: 'Professor Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.' },
   { id: 'sonia', name: 'Professor Sonia', night: true, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!' },
@@ -2405,7 +2405,7 @@ const PROFS = [
 const HINTS = [
   'Spin the Pokéstop by the gate to set out. A run you left waits there: Continue it, or give it up with an Escape Rope.',
   'Fire beats Grass, Grass beats Water, Water beats Fire. Elites and bosses shrug the chart off, though.',
-  'Beat every Pokémon in all three biomes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
+  'Beat every Pokémon in the Whispering Clearing, the Overgrown Shrine and the Ember Wastes and the Safari Zone opens: one run a day, the same for everyone, and only your first try counts.',
   'Win a run and the Sky Pillar opens: 100 floors, with a new leaderboard every week.',
   '1,500 PokéCoins opens the boarded door in the Ancient Tree\'s roots. That\'s your Secret Base, to furnish however you like.',
   'The PC holds your mail, your missions and the patch notes. It also picks who walks beside you here.',
@@ -2415,6 +2415,49 @@ const HINTS = [
   'Pokédollars from battles are spent at the Poké Mart during a run. PokéCoins are for here at home.',
   'Look closely at the map before you pick a path. A ? room can be a treat, or trouble.',
   'The Clearing follows your clock. Come back at another hour and someone else may be standing here.',
+  'Finish the Whispering Clearing\'s Pokédex page and every run starts with ₽50. Mom\'s Savings, they call it.',
+  'Finish the Overgrown Shrine\'s Pokédex page and Chansey slips a Potion into your Bag at the start of every run.',
+  'Finish the Ember Wastes\' Pokédex page and I\'ll lend you my advice: reroll one card reward each biome.',
+  'Stuck on what to unlock next? My PC rates your Pokédex and points you at the next goal.',
+  'A wild Pokémon whose type beats yours is a tough match-up, but it pays like an elite. Fortune favours the brave!',
+  'Every Trainer Level you play on pays 10% more PokéCoins from fights and wins.',
+  'A Pokémon Center lets you Rest or PP Up a move. Healing now isn\'t always better than a stronger card later.',
+  'Forgetting moves at a Center\'s PC needs the Mental Herb. Without it, the Poké Mart will forget one, for a price.',
+  'A thinner deck draws your best cards more often. Just know you can\'t go below 7.',
+  'Pick up a Cleanse Tag and you forget a move on the spot. A neat way to drop a weak card.',
+  'Boss relics give an extra PP every turn, but each one has a catch. Read it twice before you take it!',
+  'Choice Band can\'t Rest at Pokémon Centers. Grab it only if you trust your deck to keep you healthy.',
+  'Leftovers and Shell Bell heal a little each turn. Over a whole run that adds up to a lot!',
+  'Potions, Super Potions and HP Up work on the map too. No need to wait for a fight.',
+  'A Revive in your Bag works by itself: faint, and you\'re back with 30% of your HP.',
+  'In over your head? A Poké Doll escapes any fight but a boss. You give up the rewards, though.',
+  'Vulnerable makes the enemy take 50% more from your attacks. Weak makes it deal 25% less. Both are worth a card.',
+  'Watch the enemy\'s intent before you play. Some turns call for an attack, others for a wall of block.',
+  'Fire Pokémon have Blaze: below half HP, their attacks hit 3 harder. Living dangerously has its perks.',
+  'Grass Pokémon have Overgrow and heal 3 HP after every fight they win.',
+  'Water Pokémon have Torrent and start every fight with 2 Tide. Hold 20 Tide at once and something special happens.',
+  'A Burn Drive doubles the enemy\'s Burn. Stack it high first, then double it!',
+  'Every starter but the first three is a skin: a new look, the same deck as its type.',
+  'Win a run without ever resting at a Pokémon Center. Someone may want to join you after that.',
+  'Win a run with 3 different Water starters and see who turns up.',
+  'In the dojo, Chad Master Kenmatta teaches moves for ₽. Challenge him if you dare: his Mata-Mindset is something else.',
+  'Beat Kenmatta three times and his dojo will show up on every map.',
+  'Beat Team Rocket in a ? room and they pay out like an elite. Running away works too, if you must.',
+  'The Day Care trades a card for one of the next rarity up. A fair deal, usually!',
+  'The Fan Club never costs a thing. Always say hello.',
+  'Short on ₽ at the Wishing Well? Fish in it instead. Free money is still money.',
+  'Gym Leaders guard the bosses in each biome. Beat them for their badges, and to hear what they have to say.',
+  'The Trainer Card holds over a hundred badges. Some are secret, so try everything.',
+  'Daily and weekly missions wait on the PC. Claim all of them for a bonus.',
+  'The Game Corner sells perks that last forever: more HP, a bigger Bag, a Mart discount and more.',
+  'Shiny starters are sold in the Game Corner once a starter is yours. Purely for looks, but what looks!',
+  'At the crossroads the road can turn to the Sunken Ruins, Thornwood Jungle or Sunscorch Savanna. Each has its own Pokédex page.',
+  'Finish the Sunken Ruins\' page and once a biome you can read a ? room before you walk in.',
+  'Finish Thornwood Jungle\'s page and the map marks the wild fights whose type beats yours.',
+  'Safari Pokémon can be caught at any HP, but every throw costs 1 PP and ends your turn. Alphas and bosses can\'t be caught.',
+  'Only a win on Trainer Level 5 can break the Sealed Gate for good. What sleeps behind it is very strong.',
+  'Legendaries never evolve. They power up instead, and it\'s quite a sight.',
+  'Amulet Coin doubles the ₽ you win after fights. More ₽, more Mart.',
 ];
 let hintAt = Math.floor(Math.random() * HINTS.length), profBoards = {};
 const profNow = () => PROFS.find(p => p.night === (time === 'night'));
@@ -2746,7 +2789,7 @@ function dressSeason() {
     spooks = makeSpooks({ THREE, scene, camera, root, view, tex: texOf, dispose, monBoard, drawMon, route, free, tileX, tileZ, PITCH,
       // never on or beside a doorstep (the user's ask, 2026-10-13: a ghost stood in front of the Poké Mall's doors)
       byDoor: (c) => places.some(p => Math.abs(p.step.x - c.x) <= 1 && Math.abs(p.step.y - c.y) <= 1),
-      spawns: [{ x: 11, y: 8 }, { x: 20, y: 10 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
+      spawns: [{ x: 11, y: 8 }, { x: 17, y: 12 }, { x: 12, y: 16 }, { x: 26, y: 13 }], bats: { x: tileX(TREE_AT.tx), z: tileZ(TREE_AT.ty - 1.5) } });
   }
   if (SEASON === 'winter') {
     const b = board(snowmanArt(), tileX(12) + 0.3, tileZ(16) - 0.2, { s: 1.2 });
