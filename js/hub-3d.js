@@ -1934,7 +1934,7 @@ async function enterCamp() {
 }
 
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
-let lookAt = null;   // { x, z }: the view panned over to it rather than following you (the Waystone mending, homeNews())
+let cutscene = false;   // your partner walked by the scene (up to the Waystone as it mends, homeNews()): taps wait
 
 /** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
     fades up into it, then the town. */
@@ -1985,11 +1985,17 @@ async function homeNews() {
     }
     welcomeHome('clearing');
     const glow = '#9fe0ff';
-    // stepping out of the Nietos' house the stone is off the screen (the user's ask, 2026-10-14): the view goes over first
-    lookAt = { x: tileX(START.x), z: tileZ(START.y) };
-    await new Promise(r => setTimeout(r, calm ? 0 : 1400));
+    // out of the Nietos' house the stone was off the screen (the user's ask, 2026-10-14): your partner walks up to it
+    // first, the view following, and faces it as it wakes
+    cutscene = true;
+    hideCard();
+    walker.path = route(walker.tile, SPAWN); aim = null;
+    for (const t0 = performance.now(); running && walker.path.length && performance.now() - t0 < 9000;) await new Promise(r => setTimeout(r, 50));
     if (!running) return;
-    warp ={ at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
+    walker.path = [];
+    walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
+    await new Promise(r => setTimeout(r, calm ? 0 : 350));
+    warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
     if (!calm) setTimeout(() => playSound('charge'), 300);
     await new Promise(r => setTimeout(r, calm ? 0 : 1300));   // the light at its brightest: the stone swapped for the whole one
     if (!running) return;
@@ -2003,7 +2009,7 @@ async function homeNews() {
     await wayCard(CLEARING.name, glow);
     await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
-  } finally { homeNewsBusy = false; lookAt = null; questMarks(); }
+  } finally { homeNewsBusy = false; cutscene = false; questMarks(); }
 }
 
 /** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
@@ -2908,6 +2914,7 @@ function goTo(p, enter, i = null) {
 }
 
 function arrived() {
+  if (cutscene) return;
   if (outbound) { const go = outbound; outbound = null; if (running) go(); return; }
   if (returning) { returning = false; here = null; walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500; return; }
   here = placeAt(walker.tile);
@@ -3451,7 +3458,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (dragged) { dragged = false; return; }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const rays = tapRays(e), ghosts = spooks?.boards() || [], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
   let hit;
   for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
@@ -3505,7 +3512,7 @@ function walkTo(to) {
 let drag = null, dragged = false;
 
 function onDown(e) {
-  if (held || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
+  if (held || cutscene || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
   drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, last: '' };
 }
 
@@ -3516,7 +3523,7 @@ function onDrag(e) {
     drag.moved = true;
     view.setPointerCapture?.(e.pointerId);
   }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const to = groundTile(tapRays(e));
   if (!to || key(to.x, to.y) === drag.last) return;
   drag.last = key(to.x, to.y);
@@ -3774,11 +3781,11 @@ function placeCamera(dt) {
   const ahead = !arriving && walker.tile.y <= 2 ? 2.5 : 0;
   const frontZ = front, backZ = ahead ? tileZ(-2.5) : tileZ(2);
   // walking in, the view waits on the plaza for it rather than dipping to meet it
-  const wx = lookAt ? lookAt.x : arriving ? tileX(ARRIVE.x) : walker.x, wz = lookAt ? lookAt.z : arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
+  const wx = arriving ? tileX(ARRIVE.x) : walker.x, wz = arriving ? tileZ(ARRIVE.y) : walker.z - ahead;
   const loX = tileX(-0.5) - 2.2 + half - ahead * 1.2, hiX = tileX(COLS - 0.5) + 2.2 - half + ahead * 1.2;
   const wantX = loX >= hiX ? (loX + hiX) / 2 : Math.max(loX, Math.min(hiX, wx));
   const wantZ = backZ >= frontZ ? (backZ + frontZ) / 2 : Math.max(backZ, Math.min(frontZ, wz));
-  const k = calm ? 1 : Math.min(1, dt / 1000 * (lookAt ? 2.6 : 4));   // a slower, steadier pan over to the stone
+  const k = calm ? 1 : Math.min(1, dt / 1000 * 4);
   camX += (wantX - camX) * k; camZ += (wantZ - camZ) * k;
   aimCamera(camX, camZ);
   followSun();
