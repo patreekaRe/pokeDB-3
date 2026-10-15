@@ -309,7 +309,7 @@ A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests 
 **The quest "!"** (2026-10-14, the user's ask): a step ready to hand in puts a bobbing "!" over its leader's name sign in
 the town (the user's call: the sign, not the roof; `marks: ['door:<id>']` handed to `mountEvent()`, drawn by `markQuests()`
 in `js/event-3d.js` at `B.signs[id]`, which `nameBoards()` / `boughBoards()` / `bazaarBoards()` record, the roof if a house
-has none) and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their house (`nietosMark`) and inside. The
+has none) and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their name sign (`nietosMark`) and inside. The
 quest board's "!" is only for a notice to read now (`questMarks()`).
 **Every turn-in goes to a leader, the board is for reading** (2026-10-14, the user's ask: "to push the player to explore
 their homes"). A town's board opens the Quests app (`openDeviceApp('quests', 'board', false, again)`) once its questline

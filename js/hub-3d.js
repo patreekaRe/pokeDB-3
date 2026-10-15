@@ -2316,9 +2316,10 @@ function makePlaces() {
     build: (g) => {
       nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn);
       if (!townsOpen()) return;
-      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), { shadow: false });
+      // over their name sign, like every town's leaders (the user's call, 2026-10-14: the sign, not the roof)
+      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1) - 2.15, tileZ(NIETOS_AT.ty + 1) + 1.3, { shadow: false });
       nietosMark.rotation.x = -PITCH;
-      nietosMark.userData.y = 3.05;   // just over the roof's ridge, under its name tag
+      nietosMark.userData.y = 1.75;
       g.add(nietosMark);
       questMarks();
     },
