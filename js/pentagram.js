@@ -24,7 +24,7 @@ function svg(tag, attrs = {}, parent = null) {
 }
 
 /** The star: its circle and lines, a crystal at each point (lit in its town's colour, or dark), the town's name by it. */
-function star(lit) {
+function star(lit, fresh = []) {
   const s = svg('svg', { viewBox: '-150 -118 300 250', class: 'penta-star', 'aria-hidden': 'true' });
   const defs = svg('defs', {}, s);
   const blur = svg('filter', { id: 'penta-glow', x: '-1', y: '-1', width: '3', height: '3' }, defs);
@@ -35,7 +35,7 @@ function star(lit) {
   svg('path', { d, class: 'penta-lines' }, s);
   RING.forEach((t, i) => {
     const [x, y] = point(i), on = lit[i];
-    const g = svg('g', { class: `penta-slot${on ? ' lit' : ''}`, transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})`, style: `--glow: ${t.glow}; --i: ${i}` }, s);
+    const g = svg('g', { class: `penta-slot${on ? ' lit' : ''}${on && fresh[i] ? ' fresh' : ''}`, transform: `translate(${x.toFixed(1)} ${y.toFixed(1)})`, style: `--glow: ${t.glow}; --i: ${i}` }, s);
     const gem = 'M0 -15 L9 -4 L6 12 L-6 12 L-9 -4 Z';
     if (on) svg('path', { d: gem, class: 'penta-halo', filter: 'url(#penta-glow)' }, g);
     svg('path', { d: gem, class: 'penta-gem' }, g);
@@ -61,8 +61,8 @@ function tap(layer) {
 }
 
 /** Slide the pentagram in with Mewtwo's `lines` under it, a tap a line; resolves once it has gone. `lit` (RING order)
-    defaults to the save's shards placed. */
-export async function showPentagram(lines, { lit = shardsLit(getSave()), cry = false } = {}) {
+    defaults to the save's shards placed; `fresh` marks the ones lit since Mewtwo last saw them, lit last with a flash. */
+export async function showPentagram(lines, { lit = shardsLit(getSave()), fresh = [], cry = false } = {}) {
   const calm = !battleFx();
   const n = lit.filter(Boolean).length;
   const layer = el('div', 'gym-scene psychic penta-scene');
@@ -71,7 +71,7 @@ export async function showPentagram(lines, { lit = shardsLit(getSave()), cry = f
   const mon = el('img', 'penta-mon pixel');
   mon.src = spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo'));
   mon.alt = '';
-  ring.append(star(lit), mon);
+  ring.append(star(lit, fresh), mon);
   const meter = el('p', 'penta-meter');
   meter.append(el('b', '', `${n} / ${RING.length} shards`), el('span', '', n >= RING.length ? 'Full strength in the Depths' : `Strength in the Depths: ${strengthOf(n)}%`));
   top.append(ring, meter);
@@ -84,7 +84,8 @@ export async function showPentagram(lines, { lit = shardsLit(getSave()), cry = f
   if (!calm) { await sleep(20); layer.classList.add('in'); } else layer.classList.add('in', 'calm');
   if (cry) playCry('mewtwo');
   playSound('gate-hum');
-  if (!calm) lit.forEach((on, i) => on && setTimeout(() => playSound(`crystal-${i % 3}`), 500 + i * 220));
+  if (!calm) lit.forEach((on, i) => on && !fresh[i] && setTimeout(() => playSound(`crystal-${i % 3}`), 500 + i * 220));
+  if (!calm && fresh.some(Boolean)) setTimeout(() => playSound('item-get'), 1900);   // a new shard's light reaching Mewtwo, last
   try {
     for (const line of lines) {
       text.textContent = line;

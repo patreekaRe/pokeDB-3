@@ -13,6 +13,7 @@ export const DEPTHS_CAMP = {
   homes: {
     camp: { name: 'Depths Camp', mewtwo: true,
       sub: 'A camp in the crystal dark: a fire, a tent, crates from the last who came down. Mewtwo waits by the way in.',
+      subSelf: 'A camp in the crystal dark: a fire, a tent, crates from the last who came down. Behind the arch, the Well.',
       cast: {} },
   },
   leaders: {},
@@ -51,4 +52,19 @@ export function runLines(n) {
     ? ['The five stones burn. In the Depths, I fight at full strength.']
     : [`The seal still weighs on me. In the Crystal Depths, my attacks deal ${pct}% of their damage.`,
       'Each Waystone mended gives 10% back.'];
+}
+
+/** A won run's landing with nothing new in the camp: one line from Mewtwo, one tap, then the win. */
+export function landLine(n) {
+  return n >= SEALED_WEAKNESS.shards ? 'You came down again. The star is whole: I am ready when you are.'
+    : `You came down again. ${n} of the five burn, ${strengthOf(n)}% of my strength. Bring me more of their light.`;
+}
+
+/** Mewtwo's own run, landing in the camp after its third boss: what it feels of its strength, before it goes on down. */
+export function selfLines(n) {
+  const pct = strengthOf(n);
+  if (n <= 0) return ['The camp. A fire, and the arch to the Well.', 'No Waystone burns yet. Down there, the seal still holds half my power.', 'So be it. I go down as I am.'];
+  return n >= SEALED_WEAKNESS.shards
+    ? ['The camp. The five stones\' light has reached even here.', 'My strength is whole. Eternatus, I am coming.']
+    : ['The camp. The stones\' light reaches even here.', `${n} of the five burn: ${pct}% of my strength is back.`, 'The arch to the Well waits. I go down.'];
 }

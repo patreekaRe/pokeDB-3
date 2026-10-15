@@ -335,10 +335,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    (`sealOn()`: `TOWNS_LIVE`, `?towns` or `?shards=N`; till then the live game is unchanged, Mewtwo at full strength).
    50% in the Depths, +10% a shard (`SEALED_WEAKNESS`); bot, psychic, human / strong: 0 shards 64.0 / 63.7 (300 runs),
    2 shards 78.7 / 77.3, 5 82.0 / 92.0 (150): hard but winnable, kept.
-   Detail: `docs/reference/mewtwo-and-depths.md`. Playtest `?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into the
-   camp). **Next**: the user playtests the camp and pentagram; then the rest of step 5 (all five shards open the Depths to
-   every starter: `kind: 'open'` drops them in, their own Depths numbers per Trainer Level, a sim check). Branch
-   `claude/next-town-oahwio`, pushed to `main` too.
+   Every won run lands in the camp once the gate is broken; it's a walk (Mewtwo's talk coming to you) only when
+   something new waits (the camp never walked, or a shard lit since Mewtwo last saw the pentagram, `save.campLit`, lit
+   last with a flash), else Mewtwo's one line and a tap. Mewtwo's own runs stop there after their third boss (it feels
+   its strength, the pentagram, then "Go down" is the way on into the Depths). Detail:
+   `docs/reference/mewtwo-and-depths.md`. Playtest `?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into the camp),
+   `?towns&shards=1&mewtwo&descent=mewtwo` (Mewtwo's stop). **Step 5 is built; next**: the user playtests it (with
+   `?towns`), and it goes live with the towns. Branch `claude/next-town-oahwio`, pushed to `main` too.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader

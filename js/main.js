@@ -34,7 +34,9 @@ import { gateHp } from './gate.js';
 import { BIOMES, BIOMES_BY_ID, biomeAt, canWalk, FORKS, forkRoads, LEGACY_ROADS, POOL } from './data/enemies.js';
 import { MAX_LEVEL, isMewtwoRun } from './data/difficulty.js';
 import { sealOn, shardsPlaced } from './data/towns.js';
-import { runLines } from './data/camp.js';
+import { runLines, landLine } from './data/camp.js';
+import { campNews } from './towns.js';
+import { gymTalk } from './gym.js';
 import { getSave, updateSave, clearRunData, loadRunData, isShiny } from './storage.js';
 import { meowthDue } from './meowth.js';
 import { sampleMail } from './mail.js';
@@ -42,7 +44,7 @@ import { checkBadges } from './progress.js';
 import { seedGate } from './data/gate.js';
 import { DEPTHS_PAGE, BONUS_PAGES } from './data/pokedex.js';
 import { safariTicket } from './daypass.js';
-import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace } from './run.js';
+import { initRun, beginRun, beginSafari, abandonRun, forfeitRun,suspendRun, isRunActive, loadSavedRun, hasSavedRun, continueRun, runBiome, runSafariArea, peekEvent, peekCenter, peekMart, peekSafariBoss, peekFinalBoss, peekArena, peekGym, peekTown, visitTown, isVisiting, peekDescent, peekBiome, isPeeking, playGate, beginTower, peekTower, towerPlace, campTalk } from './run.js';
 import { initTowerPrep, openTowerPrep } from './towerprep.js';
 import { bootDevice } from './device-boot.js';
 import { floorOf, towerWeekly } from './data/tower.js';
@@ -442,9 +444,14 @@ function peekStrike(params) {
   const kind = params.get('kind') || (before === 0 ? (sealOn() ? 'camp' : 'open') : after === 0 ? 'ultimate' : 'win');
   playGate({ starter, stage, before, after: kind === 'loss' ? before : after, kind, level: Number(params.get('level')) || 0, first: params.has('first'), land: params.get('land') || 'wastes', music: 'title' })
     .then((close) => {
+      if (kind === 'camp' && !campNews()) {   // nothing new down there: Mewtwo's one line, one tap
+        return gymTalk({ id: 'mewtwo', name: 'MEWTWO', talk: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, false) }, [landLine(shardsPlaced(getSave()))], { lit: true, title: '', look: 'psychic' })
+          .then(() => { close?.(); playMusic('title'); });
+      }
       if (kind === 'camp') {   // `?gate=0&strike=0&shards=N`: down to the Depths camp, then home
         leaveTitle();
         visitTown(starter, 'depths', async () => { cameHome('gate'); await showHome(); curtain(false, 420); }, 'camp', { stage });
+        setTimeout(campTalk, 2200);   // as a won run's landing does: Mewtwo has news, so its talk comes to you
         return setTimeout(() => close?.(), 1000);
       }
       close?.(); playMusic('title');   // back to the title's song after the seal's

@@ -5870,6 +5870,10 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .penta-slot.lit .penta-facet { stroke: rgba(255, 255, 255, 0.7); }
 .penta-slot.lit .penta-name { fill: #fff; }
 .penta-halo { fill: var(--glow); opacity: 0.8; animation: pentaPulse 2.4s ease-in-out infinite; }
+.penta-slot.fresh .penta-gem { animation: pentaFresh 0.9s 1.8s backwards; }
+.penta-slot.fresh .penta-halo { animation: pentaFreshHalo 1.2s 1.8s backwards, pentaPulse 2.4s 3s ease-in-out infinite; }
+@keyframes pentaFresh { 0% { fill: #2a1c40; stroke: #5a4878; } 40% { fill: #fff; stroke: #fff; } }
+@keyframes pentaFreshHalo { 0% { opacity: 0; transform: scale(0.4); } 40% { opacity: 1; transform: scale(2.4); } }
 @keyframes pentaLight { from { fill: #2a1c40; stroke: #5a4878; } }
 @keyframes pentaPulse { 50% { opacity: 0.35; } }
 .penta-mon {
@@ -5879,4 +5883,4 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .penta-meter { margin: 4px 0 0; display: flex; flex-direction: column; gap: 2px; color: #e8dcff; font-size: 14px; text-shadow: 0 2px 0 #1a0a30; }
 .penta-meter b { font-size: 16px; color: #fff; }
 .penta-scene.calm .penta-gem, .penta-scene.calm .penta-halo { animation: none; }
-@media (prefers-reduced-motion: reduce) { .penta-scene .penta-top { transition: none; } .penta-gem, .penta-halo { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .penta-scene .penta-top { transition: none; } .penta-scene .penta-slot :is(.penta-gem, .penta-halo) { animation: none; } }

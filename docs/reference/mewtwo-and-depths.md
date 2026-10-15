@@ -143,7 +143,13 @@ proper, Mewtwo floating in front of it, a tap its talk). Two ways down: **a won 
 run's Pokémon, at its stage, round the camp as a visit (`visitTown(..., { stage })`), the ended run put back on leaving
 for the result window; the win is recorded before, so leaving only plays the win scene and the rest), and **the Sealed
 Gate's second button** in the Clearing, "Down to the camp" (`enterCamp()` in `js/hub-3d.js`: your buddy, or a free
-starter if your buddy is Mewtwo, back in front of the gate on leaving). Mewtwo's own runs keep their ending. Playtest:
-`?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into the camp, then home), `?towns&mewtwo&gate=0` (walk to the gate),
-`?shards=1&mewtwo&bossfight=depths` (the badge). Still to build: all five shards opening the Depths to every starter
-(step 5 proper, `docs/roadmap.md`).
+starter if your buddy is Mewtwo, back in front of the gate on leaving). **Kept short** (the user's call, 2026-10-15): a
+won run's landing is the walk only when something new waits (`campNews()` in `js/towns.js`: the camp never walked, or a
+shard lit since Mewtwo last saw the pentagram, `save.campLit`, set by `sawCamp()` after its talk; under `?shards=N` that
+memory lasts the page load), and then Mewtwo's talk comes to you by itself, the new slot lit last with a flash
+(`fresh`); else it's Mewtwo's one line (`landLine()`, `gymTalk()`) and a tap on to the win scene. **Mewtwo's own runs**
+stop there too, after their third boss (`fallIn()` → `campStop()`: the camp walked as Mewtwo, no second Mewtwo in it,
+its own lines over the pentagram, `selfLines()`, then "Go down" is the way on into the Depths' map and film). The Depths
+stay Mewtwo's alone (the user's call, 2026-10-14). Playtest: `?towns&shards=2&mewtwo&gate=0&strike=0` (the fall into
+the camp, then home), `?towns&mewtwo&gate=0` (walk to the gate), `?towns&shards=1&mewtwo&descent=mewtwo` (Mewtwo's stop),
+`?shards=1&mewtwo&bossfight=depths` (the badge).
