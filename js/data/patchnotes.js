@@ -45,7 +45,9 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['base', 'The backyard\'s way in is a garden arch beside the Ancient Tree: unlock it there or on the PC, then grow the yard bigger on House Upgrades.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
+  ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],
   ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
+  ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

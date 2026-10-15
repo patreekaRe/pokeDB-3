@@ -2565,3 +2565,10 @@ signs, Ken's line in the Clearing, no console errors; still parts baked with `me
 The user's ask: "Lock the dojo until you beat Ken 1 time". The Clearing's `dojo` place (`js/hub-3d.js`) is `open: false`
 with no Go in until `kenWinsOf(save) >= 1` (a run win, `save.kenWins`, or an old `kenBeaten`); its card reads Ken's note
 on the door. `?dojo` still walks straight in for playtests.
+
+### The Clearing's gate tidied, its signs beckoning (2026-10-15)
+
+The user's ask, from a phone screenshot: the two jack-o'-lanterns at the gate's feet are gone; the route sign and New
+game's Pokéstop moved up beside the gate's posts, one each side (`SIGN_AT` 12,-1 / `STOP_AT` 18,-1, nudged in by
+`STAND_IN`); and the signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the
+Nietos' name board) hop every few seconds with a gold glint at their corner (`beckon()` / `liveBeckons()`), still when calm.

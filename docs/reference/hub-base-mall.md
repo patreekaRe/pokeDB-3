@@ -159,7 +159,7 @@ The first section began as the note on playtesting the live site and grew into t
   painted px, a gold-rayed leaf crest on a green-shingled roof, lanterns off its tips, teal banners, carved stone feet with
   glowing runes, `clearingGateArt()`; its opening shimmers and motes rise out of it, `gateVeilArt()` / `liveGateway()`, and
   a teal lamp lights the ground before it after dark; Halloween's hay there taken out as clutter), New game's Pokéstop
-  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`; the stop moved a step nearer the avenue and the camera 2026-10-14, the orange tree that stood behind it taken out, the user's ask); setting out walks
+  and the route sign just inside it, since 2026-10-15 right beside the gate's posts, one each side, just outside its feet so neither hides their runes (`STOP_AT` / `SIGN_AT`, nudged in by `STAND_IN`; the user's ask; on 2026-10-14 they stood a row or two forward, the orange tree behind the stop taken out). The signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the Nietos' name board) hop and wiggle every few seconds, a gold glint twinkling at their corner, so they read as something to tap (`beckon()` / `liveBeckons()`, 2026-10-15, the user's ask; still when calm). The jack-o'-lanterns at the gate's feet were taken out the same day; setting out walks
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);
@@ -184,7 +184,11 @@ The first section began as the note on playtesting the live site and grew into t
   (features a player might miss); every fifth tap ends on that professor's reminder to refresh the page for updates
   (`hintsHeard`; every tap until 2026-10-15, the user's ask). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
-  A new feature worth a hint gets a `HINTS` line.
+  A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick
+  of two): `showCard()` hands the place to `profTalk()`, which calls `gymTalk()` (`js/gym.js`) with a leader-shaped
+  `{ id, name: short, sprite }`, `lit`, `title: 'PROFESSOR '`. The first tap of a visit (`profGreeted`, reset in
+  `showHub()`) slides them in over the dim with their `hello` and a hint; later taps are `bubble: true`, the speech
+  window alone, so browsing hints stays quick. The refresh reminder is its own line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
   east avenue. Halloween's pumpkin patch and scarecrow sit on the south-east lawn by the Nietos' house since 2026-10-15 (the user's ask: they crowded the Secret Base's door). Detail: `docs/reference/towns.md`.
 
