@@ -188,7 +188,18 @@ is the screen and the overlay that use them.
   dark. The overlay stays dark behind the result window until it closes.
 - **The battle arena** (`showTowerScene()` in `js/scene.js`, `paintArena()`): every Sky Pillar fight is in one of the
   tower's rooms, its tall windows on the sky at that floor's height, torches (braziers, banners and a red runner for a
-  guardian, banners for an Alpha); Rayquaza's is the open summit.
+  guardian, banners for an Alpha); Rayquaza's is the open summit. **In 3D since 2026-10-15** (the user's pick for the
+  Sky Pillar revamp, after the Clearing's tower: on branch `claude/dojo-lock-ken-defeat-95bk39` until they say it goes
+  live): `dressTower()` in `js/arena-3d.js` builds the room whole, as the Clearing's tower is built (`js/hub-pillar.js`'s
+  `STONES`, `runeArt()`, `bannerArt()`): flagstones to a wall of sage stone (`ashlarArt()`, an extruded slab) whose arched
+  windows are cut through it, pale jambs and arches with a gold keystone, a band of jade runes under a cornice, wall
+  torches between (`sconce()`, two lights at most); a guardian's hall hangs banners in its colours (`BANNER`, now exported
+  from `js/tower-art.js`) and an Alpha's too, a guardian's adds braziers and a runner in the banners' deep colour; pads
+  are pale flags on a band of glowing runes (`towerPad()`). The summit has no wall: a broken parapet, columns, moss and
+  floating stones with jade shards, rain in the storm. The light follows the windows' sky by height (`TOWER_LIGHT`: day,
+  the storm with lightning, the sunset, the night with jade motes, the summit's dawn). Only the sky stays pixel: once the
+  3D is solid, `sceneBare({ sky: true })` has `paintArena()` paint the sky alone (its `bare`), seen through the windows.
+  `?arena2d` keeps the pixel room. Headless in the cloud, three.js comes from npm (jsDelivr is blocked there).
 - **The summit's win scene** (`.hof-scene.summit`): its backdrop is `paintSummit()`, floor 100 as the climb and the fight
   show it, its horizon behind the pedestal.
 - **The lobby's plaque** (`engrave()` in `js/towerprep.js`, `towerTop()` in `js/leaderboard.js`): the Sky Pillar window

@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['hub', 'The Sky Pillar in the Clearing is rebuilt as an ancient tower: tiers of mossy stone, jade runes, floating rocks, a collar of cloud and a crystal on top.'],
+  ['hub', 'The Sky Pillar is rebuilt as an ancient tower of mossy stone and jade runes, in the Clearing and inside: its fights stand in 3D rooms open on the sky.'],
   ['base', 'The backyard\'s way in is a garden arch beside the Ancient Tree: unlock it there or on the PC, then grow the yard bigger on House Upgrades.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
   ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],

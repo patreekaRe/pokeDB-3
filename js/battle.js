@@ -261,14 +261,16 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   showScreen('battle-screen');
   const land = run.safari?.areas[run.biome] ?? biomeAt(run.route, run.biome)?.id;
   document.body.dataset.biome = land || '';   // the piles' colour
+  let room = null;
   if (def.arena) showPlaceScene(def.arena);
   else if (run.tower) {   // a Sky Pillar fight: one of the tower's rooms, its windows on the sky at that height (js/tower-art.js)
     const { flight } = run.tower, here = run.map?.byId[run.current];
-    showTowerScene({ alt: flight * 10 + (here ? here.floor + 1 : 1), kind: encounter.kind, banner: flight >= 9 ? 'top' : flight % 3 });
+    room = { alt: flight * 10 + (here ? here.floor + 1 : 1), kind: encounter.kind, banner: flight >= 9 ? 'top' : flight % 3 };
+    showTowerScene(room);
   }
   else showScene(land, encounter.kind === 'boss' || encounter.kind === 'elite' ? encounter.kind : 'wild',
     journey(run.map, run.map?.byId[run.current]));
-  arena3d(land, encounter.kind, def, run);
+  arena3d(land, encounter.kind, def, run, room);
   playMusic(def.music ?? (encounter.leader ? 'gym-leader-battle' : encounter.kind === 'boss' ? 'boss' : encounter.kind === 'elite' ? 'elite' : 'wild'), { restart: true });
   preloadMusic(winTrack(encounter.kind, encounter.leader));
   if (encounter.kind === 'boss' && run.biome >= 2 && !run.safari) preloadMusic('seal');   // the descent follows the last boss (Mewtwo's fall, its third)
@@ -286,13 +288,13 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
   playIntro();
 }
 
-/* A main biome's fight in a 3D place (js/arena-3d.js, a test on its own branch): loaded only when one is, and laid
-   under the battle screen; a boss's stays hidden until its pixel prelude is over (playIntro()). */
+/* A main biome's fight in a 3D place (js/arena-3d.js): loaded only when one is, and laid under the battle screen; a
+   boss's stays hidden until its pixel prelude is over (playIntro()). A Sky Pillar fight's is the tower's room (`room`). */
 let arenaMod = null, arenaUp = false;
-function arena3d(land, kind, def, run) {
+function arena3d(land, kind, def, run, room = null) {
   arenaMod?.unmountArena();
   arenaUp = false;
-  if (run.tower || run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
+  if (run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
   // Kenmatta's painted courtyard is never shown while his 3D one loads (the user saw it flash up first); it has no
   // prelude, so the 3D one comes up as soon as it's built. Without WebGL the pixels come back.
   const ken = def.arena === 'kombat';
@@ -302,9 +304,10 @@ function arena3d(land, kind, def, run) {
   import('./arena-3d.js').then(async m => {
     arenaMod = m;
     if (!m.wantsArena({ land, kind, def, run })) return fallBack();
-    const where = journey(run.map, run.map?.byId[run.current]);
     // Kenmatta's courtyard is his own place (`def.arena`), whatever biome his dojo stood in
-    if (!await m.mountArena({ biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : where.stage ?? 0 }, { reveal: kind !== 'boss' || arenaUp || ken })) fallBack();
+    const o = room ? { biome: 'tower', kind, stage: 0, tower: room }
+      : { biome: def.arena ?? land, kind, stage: kind === 'boss' ? 3 : journey(run.map, run.map?.byId[run.current]).stage ?? 0 };
+    if (!await m.mountArena(o, { reveal: kind !== 'boss' || arenaUp || ken })) fallBack();
   }).catch(fallBack);
 }
 

@@ -5409,10 +5409,11 @@ function kombatLayout() {
 }
 
 /* The 3D arena (js/arena-3d.js) builds Kenmatta's dais, its steps and the medallion itself, so the painted ones step
-   aside while it's up. */
-let bareKombat = { dais: false, medal: false };
+   aside while it's up; a Sky Pillar room (`sky`) builds its own walls and floor, so only the sky is painted. */
+let bareKombat = { dais: false, medal: false, sky: false };
 export function sceneBare(o) {
-  if (bareKombat.dais === o.dais && bareKombat.medal === o.medal) return;
+  o = { dais: !!o.dais, medal: !!o.medal, sky: !!o.sky };
+  if (bareKombat.dais === o.dais && bareKombat.medal === o.medal && bareKombat.sky === o.sky) return;
   bareKombat = o;
   if (S?.raw.backdrop === 'kombat') resize();
 }
@@ -5962,7 +5963,7 @@ function draw() {
   if (has('ruins')) drawRuins(t);
   if (has('thornwood')) drawThorn(t);
   if (has('savanna')) drawSavanna(t);
-  if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t);
+  if (has('tower')) paintArena({ W, H, px }, horizon, S.raw.tower, t, bareKombat.sky);
 
   if (L.lanterns && S.raw.lanternsLit && !shrinePrelude()) {
     const [hot, warm, glow] = S.lanternGlow;

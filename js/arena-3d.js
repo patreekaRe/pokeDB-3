@@ -5,12 +5,16 @@
    (`layout()`), and followed every few frames (`follow()`), so it fits any screen and a sprite that resizes keeps its pad.
    The Clearing and the Wastes also lay their own 3D ground up to the pixel horizon (`GROUNDS`). The camera is fixed, high
    and behind your Pokémon like the games' battle view. A boss keeps its pixel prelude; the 3D fades in out of its last
-   white flash (`revealArena()`). */
+   white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
+   the sky in its windows is the pixel scene's. */
 
 import { loadThree, tex, createPost, dispose, wakeGL, restGL } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
+import { fine } from './hub-3d.js';
+import { runeArt, bannerArt, STONES } from './hub-pillar.js';
+import { BANNER } from './tower-art.js';
 
 /* Every main biome's fights, boss, Alphas (Team Rocket's too) and wilds, stand on 3D pads in front of their own live pixel
    backdrop (the Ancient Tree's pulse, the lava, the Well: the user's calls, 2026-10-11); the Clearing, whose 3D place this
@@ -31,7 +35,8 @@ const hd = (c) => { c.hd = 2; return c; };   // smooth sampling, mipmaps (hd2d.j
 /** Whether this fight is laid in 3D: any main biome's fight in a biome that has its arena (`?arena2d` keeps the pixels).
     Kenmatta's fight (`def.arena` 'kombat') stands on 3D pads before his own Mortal Kombat courtyard (the user's call, 2026-10-11). */
 export function wantsArena({ land, kind, def, run }) {
-  if (new URLSearchParams(location.search).has('arena2d') || run.tower || run.safari) return false;
+  if (new URLSearchParams(location.search).has('arena2d') || run.safari) return false;
+  if (run.tower) return true;
   if (def.arena) return def.arena === 'kombat';
   return arenaFor(land, kind);
 }
@@ -512,6 +517,10 @@ function build(o) {
   if (clearing) {
     hemi.color.set(look.hemi[0]); hemi.groundColor.set(look.hemi[1]); hemi.intensity = look.hemi[2];
     sun.color.set(look.sun[0]); sun.intensity = look.sun[1];
+  } else if (o.biome === 'tower') {   // lit as the sky in its windows goes, by height
+    const l = towerLight(o.tower.alt);
+    hemi.color.set(l.hemi[0]); hemi.groundColor.set(l.hemi[1]); hemi.intensity = l.hemi[2];
+    sun.color.set(l.sun[0]); sun.intensity = l.sun[1];
   } else if (o.biome === 'kombat') {   // always night: a blood-red sky, the braziers' fire doing the rest
     hemi.color.set('#d8b0c0'); hemi.groundColor.set('#40181a'); hemi.intensity = 1.6;
     sun.color.set('#ffb8a0'); sun.intensity = 1.4;
@@ -532,7 +541,7 @@ function build(o) {
   const span = far ? camera.position.distanceTo(far) : 40;
   scene.fog = dress ? new THREE.Fog(hexOf(fogC), span * 0.55, span * 1.15) : null;
 
-  const kitOf = (zone, pseudo) => clearing ? null : padKit(cssPad(document.getElementById(zone), pseudo), o.biome);
+  const kitOf = (zone, pseudo) => clearing ? null : o.biome === 'tower' ? towerPad(o.tower.alt) : padKit(cssPad(document.getElementById(zone), pseudo), o.biome);
   B.pads = [pad(at.foe, kitOf('enemy-zone', '::after')), pad(at.you, kitOf('player-zone', '::before'))];
   B.at = at;
   if (!dress) { const b = B; B = null; return b; }
@@ -1230,7 +1239,7 @@ function medallion3d(at, zW) {
 
 /** A brazier on a red lacquer column, gold-banded, its gold bowl burning: flickering flames and a light that throws the
     fire's colour over the flags. Returns its flicker. */
-function brazier(x, z, { stoneM, goldM, lacquer }) {
+function brazier(x, z, { stoneM, goldM, lacquer, power = 6 }) {
   const h = 1.5;
   mesh(new THREE.CylinderGeometry(0.34, 0.38, 0.16, 16), stoneM, x, 0.08, z);
   mesh(new THREE.CylinderGeometry(0.17, 0.19, h, 16), lacquer, x, 0.16 + h / 2, z);
@@ -1246,7 +1255,7 @@ function brazier(x, z, { stoneM, goldM, lacquer }) {
     add(f);
     flames.push([f, s, y]);
   }
-  const light = add(new THREE.PointLight('#ff8a3a', 6, 9, 1.6));
+  const light = add(new THREE.PointLight('#ff8a3a', power, 9, 1.6));
   light.position.set(x, h + 0.9, z);
   return (t) => {
     const k = 0.85 + Math.sin(t * 9.1) * 0.08 + Math.sin(t * 5.3) * 0.07;
@@ -1255,11 +1264,251 @@ function brazier(x, z, { stoneM, goldM, lacquer }) {
       f.scale.set(s * (0.9 + wob), s * 1.5 * k, 1);
       f.position.y = h + 0.08 + y + (k - 0.85) * 0.5;
     });
-    light.intensity = 6 * k;
+    light.intensity = power * k;
   };
 }
 
-const GROUNDS = { clearing: dressClearing, wastes: dressWastes, kombat: dressKombat };
+/* ---------- the Sky Pillar ---------- */
+
+/* A climb's fights stand in the tower's rooms, built as the Clearing's tower is (js/hub-pillar.js): sage stone, jade
+   runes, pale arches. The light follows the sky its windows look out on (js/tower-art.js's SKY_STOPS): day, the storm,
+   the sunset over the cloud sea, the aurora's night, then the summit's dawn over the planet. */
+const TOWER_LIGHT = [
+  [0, { hemi: ['#f4f8ff', '#7a8270', 2.1], sun: ['#fff2d8', 2.6], motes: '#fff4c8', runes: 0.45 }],
+  [15, { hemi: ['#c0c8e0', '#4a5058', 2.0], sun: ['#c8d4f0', 1.2], motes: '#d8e4ff', runes: 0.7, storm: true }],
+  [27, { hemi: ['#ffe8e0', '#706068', 1.9], sun: ['#ffb890', 2.4], motes: '#ffd8a8', runes: 0.7 }],
+  [36, { hemi: ['#94a0dc', '#20283a', 1.5], sun: ['#a8c0ff', 1.0], motes: '#8af8c8', runes: 1.2, night: true }],
+  [100, { hemi: ['#c0c8f4', '#40405a', 2.1], sun: ['#ffd8b0', 2.9], motes: '#8af8c8', runes: 1.2, night: true }],
+];
+const towerLight = (alt) => TOWER_LIGHT.reduce((l, [at, v]) => (alt >= at ? v : l), TOWER_LIGHT[0][1]);
+const JADE = '#6af0c0';
+
+/** A smooth painting from js/hub-3d.js's fine(), sampled smooth (tex()). */
+const smooth = (c) => { c.hd = 2; if (c.glow) c.glow.hd = 2; return c; };
+
+/** Courses of sage stone, the tower's own (js/hub-pillar.js's STONES), a tile that repeats every 2.4 units each way. */
+function ashlarArt() {
+  return once('ashlar', () => {
+    const N = 512, c = hd(canvas(N, N)), g = c.getContext('2d'), r = seeded(17), rows = 6, rh = N / rows, bw = N / 3;
+    g.fillStyle = '#7c8274'; g.fillRect(0, 0, N, N);
+    for (let row = 0; row < rows; row++) {
+      const y = row * rh, off = row % 2 ? bw / 2 : 0;
+      for (let k = 0; k < 3; k++) {
+        const n = r(), col = STONES[n > 0.85 ? 0 : n > 0.45 ? 1 : n > 0.15 ? 2 : 3];
+        wrapped(N, k * bw + off + bw / 2, y + rh / 2, bw / 2, (X, Y) => {
+          const x0 = X - bw / 2 + 3, y0 = Y - rh / 2 + 3, w = bw - 6, h = rh - 6;
+          g.fillStyle = col; g.beginPath(); g.roundRect(x0, y0, w, h, 6); g.fill();
+          g.fillStyle = 'rgba(255,255,240,0.3)'; g.fillRect(x0 + 4, y0 + 2, w - 8, 5);
+          g.fillStyle = 'rgba(50,56,44,0.25)'; g.fillRect(x0 + 4, y0 + h - 7, w - 8, 5);
+        });
+      }
+    }
+    for (let i = 0; i < 1600; i++) {   // weathering
+      const x = r() * N, y = r() * N, s = 1 + r() * 3;
+      g.fillStyle = r() < 0.5 ? 'rgba(255,255,240,0.18)' : 'rgba(54,60,48,0.2)';
+      g.beginPath(); g.ellipse(x, y, s, s * 0.7, 0, 0, Math.PI * 2); g.fill();
+    }
+    g.strokeStyle = 'rgba(54,58,48,0.55)'; g.lineWidth = 1.5;
+    for (let i = 0; i < 10; i++) {   // hairline cracks
+      let x = r() * N, y = r() * N, a = Math.PI / 2 + (r() - 0.5);
+      g.beginPath(); g.moveTo(x, y);
+      for (let k = 0; k < 4; k++) { a += (r() - 0.5) * 1.2; x += Math.cos(a) * 9; y += Math.sin(a) * 9; g.lineTo(x, y); }
+      g.stroke();
+    }
+    return c;
+  });
+}
+
+/** A wall torch: an iron bracket, a cup and its fire (one light at most, `light`). Returns its flicker. */
+function sconce(x, y, z, iron, { light = false, colour = '#ff8a3a' } = {}) {
+  mesh(new THREE.BoxGeometry(0.14, 0.42, 0.06), iron, x, y - 0.12, z + 0.03);
+  mesh(new THREE.BoxGeometry(0.05, 0.05, 0.24), iron, x, y - 0.16, z + 0.14);
+  mesh(new THREE.CylinderGeometry(0.11, 0.05, 0.14, 10), iron, x, y, z + 0.24);
+  const glow = tex(glowArt()), flames = [];
+  for (const [col, s, dy] of [['#e84818', 0.62, 0.2], ['#f8a030', 0.44, 0.22], ['#fff080', 0.24, 0.18]]) {
+    const f = new THREE.Sprite(new THREE.SpriteMaterial({ map: glow, color: col, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    f.position.set(x, y + dy, z + 0.24);
+    add(f);
+    flames.push([f, s, dy]);
+  }
+  const lamp = light ? add(new THREE.PointLight(colour, 3, 6, 1.6)) : null;
+  lamp?.position.set(x, y + 0.4, z + 0.6);
+  return (t) => {
+    const k = 0.85 + Math.sin(t * 9.1) * 0.08 + Math.sin(t * 5.3) * 0.07;
+    flames.forEach(([f, s, dy], i) => {
+      f.scale.set(s * (0.9 + Math.sin(t * (7 + i * 2.3)) * 0.06), s * 1.5 * k, 1);
+      f.position.y = y + dy + (k - 0.85) * 0.2;
+    });
+    if (lamp) lamp.intensity = 3 * k;
+  };
+}
+
+/** A pad in the tower: a pale flagstone top on a band of jade runes. */
+function towerPad(alt) {
+  const runes = smooth(runeArt(fine)), map = tex(runes), glow = tex(runes.glow);
+  for (const t of [map, glow]) { t.wrapS = THREE.RepeatWrapping; t.repeat.set(5, 1); }
+  return {
+    top: std({ map: tex(stoneArt()), color: '#d6dac8', roughness: 1 }),
+    side: std({ map, emissive: JADE, emissiveMap: glow, emissiveIntensity: towerLight(alt).runes, roughness: 0.7 }),
+    blade: null, grass: false,
+  };
+}
+
+/** A Sky Pillar room: flagstones to a wall of sage stone, its arched windows open on the pixel sky at that height, a
+    band of jade runes along it and torches between; a guardian's hall adds banners in its colours, braziers and a runner. The summit has no walls: a broken parapet and columns open on the planet's dawn, moss in the flags, stones
+    floating. */
+function dressTower({ o, r, at, hz, zNear }) {
+  scene.fog = null;
+  const { alt, kind, banner } = o.tower, summit = alt >= 100, guardian = kind === 'boss' || kind === 'elite';
+  const L = towerLight(alt);
+  B.sky = true;
+  sun.position.set(-7, 15, 12);   // in over your shoulder, so the wall facing you is lit
+  const foot = onGround(innerWidth / 2, innerHeight * hz, 0);
+  const zW = (foot ? foot.z : -8) - 0.6, len = zNear - zW;
+  const onWall = (px, py, z = zW) => {
+    const rc = ray(), hit = new THREE.Vector3();
+    rc.setFromCamera(new THREE.Vector2(px / innerWidth * 2 - 1, -(py / innerHeight * 2 - 1)), camera);
+    return rc.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -z), hit) ? hit : null;
+  };
+  const wallX = (frac) => onWall(innerWidth * frac, innerHeight * hz)?.x ?? (frac - 0.5) * 10;
+  const topY = onWall(innerWidth / 2, 0)?.y ?? 6;
+  const half = Math.max(Math.abs(onWall(0, 0)?.x ?? 8), Math.abs(onWall(0, innerHeight * hz)?.x ?? 8)) * 1.25 + 2;
+
+  const pale = std({ color: '#dadecf', flatShading: true }), dark = std({ color: '#8a907c', roughness: 1, flatShading: true });
+  const gold = std({ color: '#e8c058', metalness: 0.6, roughness: 0.35, emissive: '#3a2a08', emissiveIntensity: 0.5 });
+  const iron = std({ color: '#3a3e3a', metalness: 0.5, roughness: 0.5 });
+  const runeSrc = smooth(runeArt(fine)), runeMap = tex(runeSrc), runeGlow = tex(runeSrc.glow);
+  const runeM = std({ map: runeMap, emissive: JADE, emissiveMap: runeGlow, emissiveIntensity: L.runes, roughness: 0.6 });
+
+  // the floor: big flags in the tower's pale stone, from your feet to the wall
+  const flags = tex(flagsArt());
+  flags.wrapS = flags.wrapT = THREE.RepeatWrapping;
+  flags.repeat.set(80 / 3.2, len / 2.2);
+  const ground = mesh(new THREE.PlaneGeometry(80, len), std({ map: flags, color: summit ? '#c4cab2' : '#cdd2bf', roughness: 0.95 }), 0, 0, (zNear + zW) / 2, { shadow: false });
+  ground.rotation.x = -Math.PI / 2;
+  ground.renderOrder = -1;
+
+  const ticks = [];
+  if (summit) {
+    // the parapet, broken, and old columns standing at either side
+    const blocks = [];
+    for (let x = -half; x < half; x += 0.9) {
+      if (r() < 0.22) continue;
+      blocks.push([x + 0.45, 0.28 + r() * 0.5, r() < 0.15 ? 0.25 : 0]);
+    }
+    const im = new THREE.InstancedMesh(new THREE.BoxGeometry(0.86, 1, 0.5), pale, blocks.length), d = new THREE.Object3D();
+    blocks.forEach(([x, h, tilt], i) => { d.position.set(x, h / 2, zW - 0.1); d.scale.set(1, h, 1); d.rotation.set(0, 0, tilt * (r() - 0.5)); d.updateMatrix(); im.setMatrixAt(i, d.matrix); });
+    im.castShadow = im.receiveShadow = true;
+    add(im);
+    for (const f of innerWidth > 560 ? [0.06, 0.24, 0.76, 0.94] : [0.08, 0.92]) {
+      const x = wallX(f), h = topY * (0.45 + r() * 0.35);
+      mesh(new THREE.CylinderGeometry(0.26, 0.3, h, 12), pale, x, h / 2, zW - 0.2);
+      mesh(new THREE.CylinderGeometry(0.36, 0.38, 0.18, 12), dark, x, 0.09, zW - 0.2);
+      if (r() < 0.5) mesh(new THREE.BoxGeometry(0.8, 0.16, 0.8), pale, x, h + 0.08, zW - 0.2);
+      else mesh(new THREE.DodecahedronGeometry(0.22, 0), pale, x + 0.5, 0.15, zW + 0.4);   // its top fallen at its foot
+    }
+    // moss in the old flags
+    const moss = [std({ color: '#5a8a3e', roughness: 1, flatShading: true }), std({ color: '#76a84c', roughness: 1, flatShading: true })];
+    for (let i = 0; i < 60; i++) {
+      const x = (r() - 0.5) * half * 2, z = zW + 0.4 + r() * (len - 6);
+      if (![at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + 0.4)) continue;
+      const s = 0.12 + r() * 0.22;
+      mesh(new THREE.IcosahedronGeometry(s, 1), moss[i % 2], x, s * 0.2, z).scale.y = 0.35;
+    }
+    // stones floating up past the parapet, some with a jade shard in them
+    const rockM = std({ color: '#a8ae9a', flatShading: true }), shardM = std({ color: '#6ae8b8', emissive: JADE, emissiveIntensity: 1.2, flatShading: true, roughness: 0.3 });
+    for (let i = 0; i < 7; i++) {
+      const s = 0.12 + r() * 0.2, side = i % 2 ? 1 : -1, x = side * (Math.abs(wallX(0.5 + side * 0.32)) + r() * 3), y = 0.8 + r() * topY * 0.7, z = zW - 0.8 - r() * 3;
+      const g = new THREE.Group(), rock = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), rockM);
+      rock.scale.y = 0.7 + r() * 0.4; rock.castShadow = true;
+      g.add(rock);
+      if (i % 2 === 0) { const sh = new THREE.Mesh(new THREE.OctahedronGeometry(s * 0.55, 0), shardM); sh.position.y = s * 0.75; sh.scale.y = 1.8; g.add(sh); }
+      add(g);
+      const bob = r() * 6, spin = r() - 0.5;
+      ticks.push((t) => { g.position.set(x, y + Math.sin(t * 0.7 + bob) * 0.25, z); g.rotation.set(t * spin * 0.4, t * spin, 0); });
+    }
+    rain('#c8d8f0');
+  } else {
+    // the wall: one slab with arched windows cut through it (their reveals show its thickness), a plinth at its foot
+    const winW = Math.min(1.7, Math.max(0.8, Math.abs(wallX(0.62) - wallX(0.5)))), sill = 0.75;
+    const spring = Math.max(sill + 1, Math.min(sill + 4.2, topY * 0.66 - winW / 2)), archTop = spring + winW / 2;
+    const wins = (innerWidth > 560 ? [0.12, 0.32, 0.68, 0.88] : [0.16, 0.84]).map(wallX);
+    const shape = new THREE.Shape();
+    const H = topY + 1.5;
+    shape.moveTo(-half, 0); shape.lineTo(half, 0); shape.lineTo(half, H); shape.lineTo(-half, H); shape.closePath();
+    for (const cx of wins) {
+      const hole = new THREE.Path(), w = winW / 2;
+      hole.moveTo(cx - w, sill); hole.lineTo(cx + w, sill); hole.lineTo(cx + w, spring);
+      hole.absarc(cx, spring, w, 0, Math.PI, false);
+      hole.lineTo(cx - w, sill);
+      shape.holes.push(hole);
+    }
+    const D = 0.5, stone = tex(ashlarArt());
+    stone.wrapS = stone.wrapT = THREE.RepeatWrapping;
+    stone.repeat.set(1 / 2.4, 1 / 2.4);
+    const wallM = std({ map: stone, color: '#f2f4ea', flatShading: true });
+    const wall = mesh(new THREE.ExtrudeGeometry(shape, { depth: D, bevelEnabled: false }), wallM, 0, 0, zW - D, { shadow: false });
+    wall.renderOrder = -1;
+    mesh(new THREE.BoxGeometry(half * 2, 0.34, 0.16), dark, 0, 0.17, zW + 0.08, { shadow: false });
+    // each window's frame: pale jambs, an arch with a gold keystone, a sill
+    for (const cx of wins) {
+      const w = winW / 2;
+      for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.16, spring - sill, 0.12), pale, cx + s * (w + 0.08), (sill + spring) / 2, zW + 0.06, { shadow: false });
+      mesh(new THREE.TorusGeometry(w + 0.08, 0.08, 6, 20, Math.PI), pale, cx, spring, zW + 0.06, { shadow: false });
+      mesh(new THREE.BoxGeometry(0.16, 0.22, 0.16), gold, cx, archTop + 0.1, zW + 0.08, { shadow: false });
+      mesh(new THREE.BoxGeometry(winW + 0.5, 0.1, 0.3), pale, cx, sill - 0.05, zW + 0.1, { shadow: false });
+    }
+    // a band of jade runes along the wall over the windows, under a pale cornice
+    const bandY = Math.min(H - 0.6, archTop + 0.45);
+    runeMap.wrapS = runeGlow.wrapS = THREE.RepeatWrapping;
+    runeMap.repeat.x = runeGlow.repeat.x = half * 2 / 1.5;
+    const band = mesh(new THREE.BoxGeometry(half * 2, 0.26, 0.06), runeM, 0, bandY, zW + 0.03, { shadow: false });
+    for (const dy of [-0.18, 0.18]) mesh(new THREE.BoxGeometry(half * 2, 0.08, 0.14), pale, 0, bandY + dy, zW + 0.07, { shadow: false });
+    ticks.push((t) => { band.material.emissiveIntensity = L.runes * (0.85 + Math.sin(t * 1.3) * 0.15); });
+
+    // torches between the windows (on a plain floor; a guardian's hall burns braziers instead)
+    if (!guardian) {
+      const spots = (innerWidth > 560 ? [0.22, 0.5, 0.78] : [0.5]).map(wallX);
+      spots.forEach((x, i) => ticks.push(sconce(x, sill + (spring - sill) * 0.6, zW, iron, { light: i !== 1 || spots.length === 1 })));
+    } else {
+      // banners in the guardian's colours (js/tower-art.js's BANNER) hung from the cornice, braziers at the wall's foot
+      const [main, deep] = BANNER[banner] || BANNER[0];
+      const art = smooth(bannerArt(fine, [main, deep])), bm = std({ map: tex(art), side: THREE.DoubleSide, alphaTest: 0.5, transparent: true, roughness: 0.95 });
+      const bh = Math.min(bandY - 0.3, 2.6), bw = bh * 8 / 34;
+      for (const f of innerWidth > 560 ? [0.41, 0.59] : [0.3, 0.7]) {
+        const x = wallX(f), pivot = new THREE.Group(), cloth = new THREE.Mesh(new THREE.PlaneGeometry(bw, bh, 1, 6), bm);
+        pivot.position.set(x, bandY - 0.22, zW + 0.12);
+        cloth.position.y = -bh / 2; cloth.castShadow = true;
+        pivot.add(cloth);
+        add(pivot);
+        mesh(new THREE.CylinderGeometry(0.025, 0.025, bw + 0.2, 6).rotateZ(Math.PI / 2), gold, x, bandY - 0.22, zW + 0.14, { shadow: false });
+        ticks.push((t) => { cloth.rotation.x = Math.sin(t * 1.1 + x) * 0.05 - 0.02; });
+      }
+      if (kind === 'boss') {
+        const stoneM = std({ map: tex(stoneArt()), color: '#c8cdb8', roughness: 0.9 }), lacquer = std({ color: '#5a6a58', roughness: 0.6 });
+        for (const f of [0.06, 0.94]) {
+          const c = onGround(innerWidth * f, innerHeight * (hz + 0.03), 0);
+          if (c && [at.foe, at.you].every(p => Math.hypot(c.x - p.x, c.z - p.z) > p.r + 0.9)) ticks.push(brazier(c.x, Math.max(c.z, zW + 0.7), { stoneM, goldM: gold, lacquer, power: 1.6 }));
+        }
+      }
+    }
+  }
+
+  // a guardian's runner up the middle, in its banners' deep colour edged in gold
+  if (kind === 'boss' && !summit) {
+    const w = 1.2, zl = zNear - zW;
+    mesh(new THREE.BoxGeometry(w, 0.02, zl), std({ color: (BANNER[banner] || BANNER[0])[1], roughness: 1 }), 0, 0.012, (zNear + zW) / 2, { shadow: false });
+    for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.08, 0.025, zl), gold, s * (w / 2 + 0.04), 0.014, (zNear + zW) / 2, { shadow: false });
+  }
+
+  // dust in the light from the windows; jade sparks once the night comes
+  motes(L.night ? 40 : 28, L.motes, [-half * 0.7, half * 0.7, zW + 0.5, zNear - 6, 4], { size: L.night ? 0.16 : 0.1, rise: 0.04 });
+  // lightning through the windows in the storm's floors
+  if (L.storm && !summit) ticks.push((t, dt) => { if (Math.random() < dt * 0.12) flashK = 0.8; });
+  B.ticks.push((t, dt) => ticks.forEach(f => f(t, dt)));
+}
+
+const GROUNDS = { clearing: dressClearing, wastes: dressWastes, kombat: dressKombat, tower: dressTower };
 const LIFTS = { kombat: kombatLift };
 
 /* ---------- the frame ---------- */
@@ -1442,7 +1691,11 @@ function show(fade) {
   void view.offsetWidth;
   view.classList.add('on');
   // the pixel scene stays under the fade, then is put away
-  const solid = () => { if (A) document.body.classList.add('arena3d-solid'); };
+  const solid = () => {
+    if (!A) return;
+    document.body.classList.add('arena3d-solid');
+    if (A.sky) sceneBare({ dais: !!A.dais, medal: !!A.medal, sky: true });   // its windows look out on the bare sky
+  };
   if (view.classList.contains('fade')) view.addEventListener('animationend', solid, { once: true });
   else solid();
 }

@@ -367,7 +367,7 @@ export function stone(f, lit) {
 
 export const DOOR_GEM = { fight: '#f87830', elite: '#e83848', event: '#a868f0', shop: '#40a0f8', rest: '#f86890', boss: '#f8d040' };
 const SPILL = { fight: '#f8b070', elite: '#f85858', event: '#c898ff', shop: '#a0d8ff', rest: '#fff0f4', boss: '#fff0a0' };
-const BANNER = { 0: ['#3e9a48', '#2a6a34', '#f8e070'], 1: ['#c83830', '#8a2020', '#f8f0d0'], 2: ['#e87020', '#a04010', '#2a1810'],
+export const BANNER = { 0: ['#3e9a48', '#2a6a34', '#f8e070'], 1: ['#c83830', '#8a2020', '#f8f0d0'], 2: ['#e87020', '#a04010', '#2a1810'],
   top: ['#2a9a5a', '#186838', '#f8d040'] };
 
 /** The tower's layout on a buffer: its outer edges, the stair's well and the doors' room. */
@@ -663,11 +663,12 @@ function floorCrack(b, camY, lay, hole, k, t) {
  * One of the tower's rooms filling a battle's background: the back wall down to `horizon` with tall windows on the sky at
  * `alt`, a flagged floor below. `kind` 'boss' hangs banners and lights braziers; `summit` is Rayquaza's: open to the sky.
  */
-export function paintArena(b, horizon, { alt = 1, kind = 'wild', banner = 0 }, t) {
+export function paintArena(b, horizon, { alt = 1, kind = 'wild', banner = 0 }, t, bare = false) {
   const { W, H } = b, summit = alt >= TOP;
   // the summit's open sky: the planet's curve just over its parapet; indoors the windows look out at the room's height
   const camY = summit ? LIMB * FH + 1 - H + horizon - 26 : alt * FH + 26 - (H - horizon);
   paintSky(b, camY, t, { ox: 40 });
+  if (bare) return;   // the 3D room (js/arena-3d.js) stands in front: only its windows' sky is seen
   const S = stone(Math.floor(alt), true);
   const wallTop = summit ? horizon - 18 : 0;
   const winW = Math.max(9, Math.round(W * 0.11)), winH = Math.round(horizon * 0.62);

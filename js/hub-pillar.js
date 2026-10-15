@@ -18,7 +18,7 @@ function seeded(seed) {
   };
 }
 
-const STONES = ['#d2d6c4', '#c3c8b6', '#b2b8a5', '#a2a894'];
+export const STONES = ['#d2d6c4', '#c3c8b6', '#b2b8a5', '#a2a894'];
 
 /** One face of the shaft (the texture repeats eight times round): weathered courses of sage stone, an arched window lit
     jade inside, a slit under it; `mossy` greens its foot and runs ivy up it. Its shine() is the windows. */
@@ -76,7 +76,7 @@ function faceArt(fine, mossy, seed) {
 }
 
 /** The band under each cornice: dark stone carved with runes that shine jade (shine()). */
-function runeArt(fine) {
+export function runeArt(fine) {
   const W = 24, H = 4, { c, g, lin, shine } = fine(W, H, 10), s = shine();
   g.fillStyle = lin(0, 0, 0, H, ['#5a6254', '#3e4438', '#2e3428']); g.fillRect(0, 0, W, H);
   const glyph = (gg, i, x) => {
@@ -109,7 +109,7 @@ function doorArt(fine) {
 }
 
 /** Rayquaza's ring over the door: a jade disc, a gold serpent coiling across it. Its shine() is the jade and the coil. */
-function sealArt(fine) {
+export function sealArt(fine) {
   const { c, g, lin, shine } = fine(16, 16, 12), s = shine(), o = 8;
   g.fillStyle = lin(0, 0, 0, 16, ['#f0f2e4', '#9aa08a']); g.beginPath(); g.arc(o, o, 8, 0, Math.PI * 2); g.fill();
   g.fillStyle = lin(2, 2, 14, 14, ['#9af0c4', '#3aae7c', '#16603e']); g.beginPath(); g.arc(o, o, 6.4, 0, Math.PI * 2); g.fill();
@@ -123,12 +123,12 @@ function sealArt(fine) {
   return c;
 }
 
-/** A banner: jade cloth, gold edges, Rayquaza's ring at its head and a swallow-tailed foot. */
-function bannerArt(fine) {
+/** A banner: jade cloth (`cloth`, its middle and edge), gold edges, Rayquaza's ring at its head and a swallow-tailed foot. */
+export function bannerArt(fine, cloth = ['#22885a', '#14583c']) {
   const W = 8, H = 34, { c, g, lin } = fine(W, H, 12);
-  const cloth = () => { g.beginPath(); g.moveTo(0, 0); g.lineTo(W, 0); g.lineTo(W, H); g.lineTo(W / 2, H - 4); g.lineTo(0, H); g.closePath(); };
-  g.fillStyle = lin(0, 0, W, 0, ['#14583c', '#22885a', '#14583c']); cloth(); g.fill();
-  g.strokeStyle = '#e8c050'; g.lineWidth = 0.7; cloth(); g.stroke();
+  const shape = () => { g.beginPath(); g.moveTo(0, 0); g.lineTo(W, 0); g.lineTo(W, H); g.lineTo(W / 2, H - 4); g.lineTo(0, H); g.closePath(); };
+  g.fillStyle = lin(0, 0, W, 0, [cloth[1], cloth[0], cloth[1]]); shape(); g.fill();
+  g.strokeStyle = '#e8c050'; g.lineWidth = 0.7; shape(); g.stroke();
   g.strokeStyle = '#f8e090'; g.lineWidth = 0.9; g.beginPath(); g.arc(W / 2, 7, 2.6, 0, Math.PI * 2); g.stroke();
   g.lineWidth = 0.7; g.beginPath(); g.moveTo(W / 2 - 1.6, 5.4); g.bezierCurveTo(W / 2 + 2.4, 5.2, W / 2 - 2.4, 8.8, W / 2 + 1.6, 8.6); g.stroke();
   g.fillStyle = '#e8c050';

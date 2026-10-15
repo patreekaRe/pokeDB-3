@@ -884,7 +884,13 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.
-  Not touched: the climb, the lobby, the arena and the films (the user picked all four, then asked what I'd choose).
+  **The revamp's next parts, in the order I recommended (2026-10-15; the user said yes, on a branch first):** 1. the arena,
+  **done** on branch `claude/dojo-lock-ken-defeat-95bk39` (not `main` until the user says): every Sky Pillar fight stands
+  in a 3D room of the new tower's sage stone and jade runes, windows on the pixel sky (`dressTower()` in
+  `js/arena-3d.js`; docs/reference/sky-pillar.md). The user playtests it (`?tower=25`, a guardian `?tower=30`, the summit
+  `?tower=100`, `&arena2d` the old pixel room) and says if it goes live. 2. Next: the climb's painted tower repainted to
+  match (sage and jade, rune bands, Rayquaza's ring over guardian doors; `js/tower-art.js`, not 3D). 3. The opening film's
+  first shot shows the new tower. 4. The lobby's window onto the tower. Run in: CLOUD.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in
