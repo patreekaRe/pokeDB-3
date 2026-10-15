@@ -3,9 +3,10 @@
  * starts at the summit, Rayquaza's green glow breathing round the jade crystal over its broken crown, and falls the tower's
  * whole height through every band of its sky (space, the aurora, the sunset over the cloud sea, the storm, the clouds) to
  * the grass. Since 2026-10-15 the tower is the Clearing's (js/hub-pillar.js): sage stone, jade runes, Rayquaza's wind. Then a cut
- * to just behind your Pokémon (its back sprite) walking a flagstone path between stone pillars to the tower's great arched
- * door (the user's reference: a hero from behind before a temple door, two glowing eyes over its arch). The eyes light,
- * the door grinds open on warm light, your Pokémon walks in and it goes dark.
+ * to just behind your Pokémon (its back sprite) walking a flagstone path between stone pillars to the same tower's foot:
+ * its octagon, the plinth's stair, the arched door under Rayquaza's ring, the jade banners (the user's reference: a hero
+ * from behind before a temple door, two glowing eyes over its arch). The eyes light, the stone door grinds open on the
+ * jade-lit stair inside, your Pokémon climbs in and it goes dark.
  *
  * Like travel() it resolves dark with a close(): call that once the climb's map is up beneath. One low-res canvas painted
  * whole every frame with js/tower-art.js's sky and stone, so it matches the tower and the lobby.
@@ -492,23 +493,26 @@ function crown(cx, u, ms) {
 
 /* ---------- the walk up: a view from behind your Pokémon ---------- */
 
-const ZD = 60, EYE = 6, WALL = 24, DW = 6, DS = 10, GO = ZD - 29;
+// The same tower's foot close up, in the walk's own units (the 3D tower's u is about 21 of them): the octagon's front face
+// FACE each side of the middle, its side faces out to WALL, the plinth P0 tall, the doorway DW each side, straight for DS
+// and then round, the arch's stones out to RING, Rayquaza's ring over the keystone at SEAL
+const ZD = 60, EYE = 6, WALL = 24, FACE = 10, P0 = 2.5, DW = 7, DS = 11, SPRING = P0 + DS, RING = DW + 3.6, SEAL = 30;
+const GO = ZD - 31;
 const SKYC = ['#4a8ad8', '#6aa8e8', '#8cc4f0', '#b4dcf4'].map(K);
 const HILL = ['#6a9ab0', '#5a889c'].map(K);
 const GRASS = ['#78c858', '#5ab048', '#3e9040', '#2e7434'].map(K);
 const PATH = ['#c4baa4', '#aca28c', '#8a8274', '#5e584e'].map(K);
-const PIL = ['#d8d0c0', '#b8b0a0', '#968e80', '#6a6458', '#4a463e'].map(K);
 const LEAF = ['#5aa048', '#3e8040', '#2a6034', '#1a4026'].map(K);
-const LIGHT = ['#fffbe0', '#f8e098', '#f0b858', '#c07838', '#5a3420'].map(K);
+const LIGHT = ['#f4fff8', '#b8f8dc', '#5ad8b0', '#2a8870'].map(K);   // the jade light up the stair inside, brightest first
 const EYEC = ['#fffbd0', '#f4f070', '#c8e868', '#90c050'].map(K);
 const PILLARS = [-10, 10].flatMap(X => [{ X, Z: ZD - 26 }, { X, Z: ZD - 12 }]).sort((a, c) => c.Z - a.Z);
 
 /** Paint the approach with the camera `walk` (0-1) of the way up the path, the eyes `eyes` lit, the door `open`.
-    Returns the door's foot, in canvas rows. */
+    Returns the doorway's threshold, in canvas rows. */
 function paintPov(walk, eyes, open, ms) {
   const { W, H, px } = b;
   const cz = GO * walk;
-  const F = Math.min(W, H * 0.72) * 1.05, cx = W / 2, hz = Math.round(H * 0.46);
+  const F = Math.min(W, H * 0.52) * 1.05, cx = W / 2, hz = Math.round(H * 0.46);
   const S = stone(0, true);
   // the sky and the far hills at the horizon
   for (let y = 0; y <= hz; y++) {
@@ -519,12 +523,12 @@ function paintPov(walk, eyes, open, ms) {
     const top = hz - Math.round(4 + 3 * Math.sin(x * 0.09 + 1) + 2 * Math.sin(x * 0.23));
     for (let y = top; y <= hz; y++) put(b, x, y, HILL[y - top < 1 ? 0 : 1]);
   }
-  // the ground: grass, and the flagstone path widening into a plaza at the door, warm where its light spills out
+  // the ground: grass, and the flagstone path widening into a plaza at the stair, jade where the door's light spills out
   for (let y = hz + 1; y < H; y++) {
     const d = EYE * F / (y - hz + 0.5), Z = cz + d, step = d * d / (EYE * F), xs = d / F;
     for (let x = 0; x < W; x++) {
       const X = (x - cx) * d / F;
-      const half = Z > ZD - 9 ? 9.5 : 4.5;
+      const half = Z > ZD - 9 ? 13 : 4.5;
       let c;
       if (Z < ZD && Math.abs(X) < half) {
         const row = Math.floor(Z / 3), col = Math.floor((X + (row % 2) * 1.5) / 3);
@@ -532,7 +536,7 @@ function paintPov(walk, eyes, open, ms) {
         if (frac(Z / 3) * 3 < Math.max(0.1, step) || frac((X + (row % 2) * 1.5) / 3) * 3 < xs) c = PATH[2];
         if (Math.abs(X) > half - Math.max(0.5, xs)) c = PATH[3];
         if (open > 0) {
-          const m = open * clamp01(1 - (ZD - Z) / 16) * clamp01(1 - Math.abs(X) / (DW + 3));
+          const m = open * clamp01(1 - (ZD - Z) / 16) * clamp01(1 - Math.abs(X) / (DW + 4));
           if (m > bay(x, y)) c = LIGHT[m > 0.6 ? 1 : 2];
         }
       } else {
@@ -543,76 +547,135 @@ function paintPov(walk, eyes, open, ms) {
       px[y * W + x] = c;
     }
   }
-  // the tower's foot, the arched door and the eyes over it
-  const s = F / (ZD - cz), yb = Math.round(hz + EYE * s);
+  // the tower's foot: its three faces, the porch round the door, the eyes either side of Rayquaza's ring, the banners
+  const s = F / (ZD - cz), yb = Math.round(hz + EYE * s), sill = Math.round(yb - P0 * s), one = 1 / s;
   const x0 = Math.max(0, Math.floor(cx - WALL * s)), x1 = Math.min(W - 1, Math.ceil(cx + WALL * s));
-  const one = 1 / s;
-  for (let y = Math.max(0, Math.floor(yb - 150 * s)); y <= yb && y < H; y++) {
+  for (let y = Math.max(0, Math.floor(yb - 150 * s)); y < sill && y < H; y++) {
     const v = (yb - y) / s;
     for (let x = x0; x <= x1; x++) {
       const u = (x - cx) / s, au = Math.abs(u);
-      if (au > WALL) continue;
-      px[y * W + x] = towerPixel(u, au, v, one, x, y, S, eyes, open, ms);
+      if (au <= WALL) px[y * W + x] = towerPixel(u, au, v, one, x, y, S, eyes, open, ms);
     }
   }
-  // ivy and bushes banked against the wall either side
+  raySeal(b, cx, Math.round(yb - SEAL * s), 4 * s, S, true, ms / 33);
+  for (const sx of [-1, 1]) banner(cx + sx * 17 * s, yb - 33 * s, s, sx, ms);
+  plinth(cx, yb, s, one, S, open);
+  // fallen blocks and bushes on the grass either side
+  for (const [X, w, h] of [[-30, 4, 2.8], [-34.6, 2.4, 1.6], [31.5, 3.2, 2.2]]) block(cx, yb, s, X, w, h, S);
   for (const side of [-1, 1]) {
-    for (let i = 0; i < 6; i++) {
-      const X = side * (13.5 + i * 2.1), h = 4 + i * 1.6 + hash(i * 3 + side) * 3, r = 2.2 + hash(i + side * 9) * 0.8;
-      blob(cx + X * s, yb, r * s, h * s, i);
-    }
+    for (let i = 0; i < 3; i++) blob(cx + side * (37 + i * 4.5) * s, yb, (1.8 + hash(i + side * 9) * 0.8) * s, (2.6 + i * 1.4) * s, i);
   }
   // the stone pillars along the path, far ones first
-  for (const pl of PILLARS) pillar(cx, hz, F, cz, pl);
-  return yb;
+  for (const pl of PILLARS) pillar(cx, hz, F, cz, pl, S);
+  return sill;
 }
 
 function towerPixel(u, au, v, one, x, y, S, eyes, open, ms) {
-  const r = v > DS ? Math.hypot(u, v - DS) : au;
-  const inDoor = v <= DS ? au <= DW : r <= DW;
-  if (inDoor) {
-    const gap = open * DW;
-    if (au < gap) {   // the light inside, brightest at the middle and the floor
-      const m = clamp01(1 - au / (DW + 0.01)) * 0.7 + open * 0.4 + 0.05 * Math.sin(ms / 90 + v);
-      return LIGHT[m > 0.95 ? 0 : m > 0.7 ? 1 : m > 0.45 ? 2 : m > bay(x, y) * 0.5 ? 3 : 4];
+  const r = v > SPRING ? Math.hypot(u, v - SPRING) : au;
+  if (r <= DW) return doorway(u, au, v, r, one, x, y, S, eyes, open, ms);
+  // the keystone, the arch's dressed stones and the pilasters under it up to their gold capitals
+  if (au < 1.8 && v < SPRING + RING + 1.6) return v > SPRING + RING + 1 ? S.gold[1] : au > 1.8 - one ? S.cut[2] : S.cut[0];
+  if (r <= RING) {
+    if (v <= SPRING) {
+      if (v > SPRING - 0.7) return S.gold[v > SPRING - 0.25 ? 0 : 1];
+      if (v < P0 + 0.8 || au > RING - one) return S.cut[2];
+      return S.cut[u < 0 ? 0 : 1];
     }
-    const w = au - gap;
-    if (au > DW - one || (v > DS && r > DW - one)) return S.wood[3];
-    if (w < one) return open > 0 ? S.wood[3] : S.dark;
-    if (Math.abs(v - 3) < 0.5 || Math.abs(v - 8) < 0.5) return S.iron[Math.abs(v - 3) < 0.5 && v < 3 ? 0 : 1];
-    if (frac(w / 2) * 2 < one) return S.wood[2];
-    return S.wood[u < 0 ? 0 : 1];
-  }
-  const ring = DW + 2.4;
-  if ((v <= DS && au <= ring) || (v > DS && r <= ring)) {   // the arch's dressed stones and its keystone
-    if (v > DS + DW && au < 1.3) return S.cut[0];
-    const seam = v <= DS ? frac(v / 2.5) * 2.5 < one : frac(Math.atan2(v - DS, u) / (Math.PI / 9)) * (Math.PI / 9) * r < one;
-    if (seam || (v <= DS ? au : r) > ring - one) return S.cut[2];
+    const seam = frac(Math.atan2(v - SPRING, u) / (Math.PI / 9)) * (Math.PI / 9) * r < one;
+    if (seam || r > RING - one) return S.cut[2];
     return S.cut[u < 0 ? 0 : 1];
   }
-  // the eyes: two slits carved over the arch, slanting down to the middle like a scowl, glowing once they wake
-  const a = (au - 1.6) / 7;
+  // the eyes: two slits carved either side of the ring, slanting down to the middle like a scowl, glowing once they wake
+  const a = (au - 5.2) / 5.4;
   if (a > 0 && a < 1) {
-    const top = 23.4 + a * 2.8, bot = 21.8 + a * 0.9, mid = (top + bot) / 2, half = (top - bot) / 2 * Math.sqrt(Math.sin(Math.PI * a));
+    const top = 30.6 + a * 2.6, bot = 29 + a * 0.8, mid = (top + bot) / 2, half = (top - bot) / 2 * Math.sqrt(Math.sin(Math.PI * a));
     const dv = Math.abs(v - mid);
     if (dv <= half) {
       if (eyes <= 0) return S.dark;
-      const core = dv < half * 0.55;
-      return eyes > bay(x, y) ? EYEC[core ? 0 : 1] : S.dark;
+      return eyes > bay(x, y) ? EYEC[dv < half * 0.55 ? 0 : 1] : S.dark;
     }
   }
-  // the round tower's stone, lit from the left, its courses and joints
-  const n = u / WALL, g = (n + 1) * 1.75, i = Math.min(3, Math.floor(g));
-  let c = frac(g) > bay(x, y) && i < 3 ? S.wall[i + 1] : S.wall[i];
-  const course = Math.floor(v / 2.2);
-  if (frac(v / 2.2) * 2.2 < one || frac((u + (course % 2) * 2.2 + 100) / 4.4) * 4.4 < one) c = n > 0.5 ? S.wall[3] : S.cut[2];
-  if (v < 2.5 && hash(Math.floor(u * 2) * 3.7 + Math.floor(v * 2)) < 0.3) c = S.moss;
+  // the octagon's three faces lit from the left, the front square on: courses of blocks, sharp corners, moss and ivy low
+  const face = u < -FACE ? 0 : u <= FACE ? 1 : 2;
+  const g = face === 1 ? (u + FACE) / (2 * FACE) : face === 0 ? (u + WALL) / (WALL - FACE) : (u - FACE) / (WALL - FACE);
+  let c = g * 0.75 > bay(x, y) ? S.wall[face + 1] : S.wall[face];
+  const course = Math.floor(v / 2.2), long = face === 1 ? 4.4 : 2.9;
+  if (frac(v / 2.2) * 2.2 < one || frac((u + (course % 2) * long / 2 + 100) / long) * long < one) c = [S.wall[2], S.wall[3], S.rune[0]][face];
+  if (Math.abs(au - FACE) < one) c = u < 0 ? S.cut[0] : S.wall[3];
+  else if (au > WALL - 1.2) c = u < 0 ? S.cut[1] : S.rune[0];
+  const foot = clamp01(1 - (v - P0) / 3);
+  if (hash(Math.floor(u * 2) * 3.7 + Math.floor(v * 2)) < foot * 0.55) c = MOSS[hash(Math.floor(u * 2) * 1.7 + Math.floor(v * 2) * 0.3) < 0.5 ? 0 : 1];
+  if (face !== 1) {
+    for (let i = 0; i < 4; i++) {
+      const at = FACE + 2 + i * 3.3 + hash(i * 4.3 + face) * 1.5, tall = P0 + 5 + hash(i * 2.9 + face) * 9;
+      if (v < tall && Math.abs(au - at - Math.sin(v / 2 + i * 2) * 0.6) < Math.max(0.35, one * 0.6)) c = IVY[hash(Math.floor(v * 1.5) + i) < 0.6 ? 0 : 1];
+    }
+  }
   // the eyes' glow on the stone round them
   if (eyes > 0) {
-    const d = Math.hypot((au - 5.2) / 1.8, v - 23.6) / 5;
+    const d = Math.hypot((au - 7.9) / 1.8, v - 31) / 5;
     if (d < 1 && eyes * (1 - d) * 0.6 > bay(x, y)) c = EYEC[d < 0.4 ? 2 : 3];
   }
   return c;
+}
+
+/** The doorway (`r` from its head's middle): two slabs of sage stone carved in jade lines that wake with the eyes and
+    grind apart into the jambs, on the stair inside climbing away into jade light. */
+function doorway(u, au, v, r, one, x, y, S, eyes, open, ms) {
+  const gap = open * DW;
+  if (au < gap) {
+    const m = clamp01(1 - au / (DW + 0.01)) * 0.6 + open * 0.45 + 0.04 * Math.sin(ms / 90 + v);
+    const tread = frac((v - P0) / 1.8) < 0.3;
+    if (m > 0.98) return LIGHT[0];
+    if (m > 0.78) return tread ? LIGHT[0] : LIGHT[1];
+    return tread ? LIGHT[m > 0.55 ? 1 : 2] : m > bay(x, y) * 0.6 + 0.2 ? LIGHT[2] : LIGHT[3];
+  }
+  if (r > DW - one) return S.dark;
+  const w = au - gap, vv = v - P0, thin = Math.max(0.3, one * 0.6);
+  if (w < one) return open > 0 ? S.cut[2] : S.dark;
+  const line = Math.abs(w - 1.3) < thin || Math.abs(vv - 2.5) < 0.3 || Math.abs(vv - 9) < 0.3
+    || Math.abs(Math.abs(w - 3.8) + Math.abs(vv - 5.8) * 0.8 - 1.4) < thin;
+  if (line) return eyes > bay(x, y) ? S.glyph : S.rune[1];
+  if (frac(vv / 3.2) * 3.2 < one) return S.wall[2];
+  return S.wall[u < 0 ? 0 : 1];
+}
+
+/** The plinth's two steps either side of the stair up to the door, lit from the left, the door's light spilling down it. */
+function plinth(cx, yb, s, one, S, open) {
+  for (let y = Math.max(0, Math.round(yb - P0 * s)); y <= yb && y < b.H; y++) {
+    const v = (yb - y) / s, upper = v > 1.3, top = upper ? P0 : 1.3, half = upper ? 25.5 : 27;
+    for (let x = Math.max(0, Math.floor(cx - half * s)); x <= Math.min(b.W - 1, cx + half * s); x++) {
+      const u = (x - cx) / s, au = Math.abs(u);
+      let c;
+      if (au < 12.5) c = frac(v / 0.83) * 0.83 > 0.83 - Math.max(0.22, one) ? S.cut[0] : u < 0 ? S.cut[1] : S.cut[2];
+      else if (top - v < Math.max(0.3, one)) c = S.cut[0];
+      else c = u < -FACE ? S.cut[1] : u > FACE ? S.wall[2] : S.cut[2];
+      if (open > 0 && au < DW + 3 && open * (1 - au / (DW + 3)) > bay(x, y)) c = LIGHT[c === S.cut[0] ? 1 : 2];
+      b.px[y * b.W + x] = c;
+    }
+  }
+}
+
+/** A jade banner hanging from canvas row `top` at `x0`: gold-edged and swallow-tailed, Rayquaza's ring at its head. */
+function banner(x0, top, s, sx, ms) {
+  const half = Math.max(2, Math.round(2.6 * s)), len = 19 * s, tail = 2.6 * s;
+  for (let y = Math.round(top); y <= top + len; y++) {
+    const down = y - top, x = Math.round(x0 + Math.sin(ms / 500 + sx) * down / len * 0.8 * s);
+    for (let dx = -half; dx <= half; dx++) {
+      if (down > len - tail && down - (len - tail) > (tail * Math.abs(dx)) / half) continue;   // the swallow tail
+      const ring = Math.abs(Math.hypot(dx, down - 3 * s) - 1.3 * s) < 0.6;
+      put(b, x + dx, y, Math.abs(dx) === half ? CLOTH[2] : ring ? CLOTH[3] : CLOTH[Math.abs(dx) > half / 2 ? 1 : 0]);
+    }
+  }
+  rect(b, Math.round(x0) - half - 1, Math.round(top) - 1, 2 * half + 3, Math.max(1, Math.round(0.4 * s)), CLOTH[3]);
+}
+
+/** A fallen block on the grass at `X`, `w` units wide and `h` tall, lit from the left. */
+function block(cx, yb, s, X, w, h, S) {
+  const xl = Math.round(cx + (X - w / 2) * s), xr = Math.round(cx + (X + w / 2) * s), yt = Math.round(yb - h * s);
+  for (let y = yt; y <= yb; y++) {
+    for (let x = xl; x <= xr; x++) put(b, x, y, y - yt < Math.max(1, 0.5 * s) ? S.cut[0] : x === xr ? S.wall[3] : x - xl < (xr - xl) * 0.3 ? S.cut[1] : S.wall[1]);
+  }
 }
 
 /** A clump of leaves standing on row `yb`, `rw` wide each side and `hh` tall, in canvas pixels. */
@@ -628,17 +691,20 @@ function blob(bx, yb, rw, hh, seed) {
   }
 }
 
-function pillar(cx, hz, F, cz, { X, Z }) {
+/** A sage stone pillar by the path, a jade band under its cap and moss at its foot. */
+function pillar(cx, hz, F, cz, { X, Z }, S) {
   const dz = Z - cz;
   if (dz < 2.5) return;
-  const s = F / dz, px = cx + X * s, gy = hz + EYE * s;
+  const s = F / dz, px = cx + X * s, gy = hz + EYE * s, C = [S.cut[0], S.cut[1], S.wall[1], S.wall[2], S.wall[3]];
   for (let y = Math.floor(gy - 9 * s); y <= gy; y++) {
     const v = (gy - y) / s;
     const r = v < 0.9 ? 1.6 : v > 8.2 ? 1.75 : v > 7.6 ? 1.45 : 1.15;
     for (let x = Math.floor(px - r * s); x <= px + r * s; x++) {
       const n = (x - px) / (r * s), g = (n + 1) * 2, i = Math.min(4, Math.floor(g));
-      let c = frac(g) > bay(x, y) && i < 4 ? PIL[i + 1] : PIL[i];
-      if (Math.abs(v - 0.9) < 0.6 / s * 2 || Math.abs(v - 7.6) < 0.6 / s * 2) c = PIL[Math.min(4, i + 1)];
+      let c = frac(g) > bay(x, y) && i < 4 ? C[i + 1] : C[i];
+      if (Math.abs(v - 0.9) < 0.6 / s * 2) c = C[Math.min(4, i + 1)];
+      else if (Math.abs(v - 7.6) < 0.3) c = S.jade[i < 2 ? 0 : i < 4 ? 1 : 2];
+      else if (v < 1.6 && hash(Math.floor(n * 4) * 3.1 + Math.floor(v * 3)) < 0.4) c = MOSS[i < 3 ? 0 : 2];
       put(b, x, y, c);
     }
   }
