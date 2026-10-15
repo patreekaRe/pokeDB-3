@@ -17,7 +17,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend } from './hd2d.js';
-import { makeGate, gateHp, gateReady } from './gate.js';
+import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
@@ -26,6 +26,7 @@ import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { makeCracks, CRACK_LINES } from './hub-cracks.js';
+import { makeSealedGate } from './hub-sealed.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
@@ -144,7 +145,7 @@ let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base' or 'mall'
-let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, gateArt = null, gateFx = null;
+let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
@@ -2345,20 +2346,12 @@ function makePlaces() {
     id: 'gate', name: 'Sealed Gate', step: { x: SEALED_AT.tx, y: SEALED_AT.ty + 1 }, tiles: rect(SEALED_AT.tx - 1, SEALED_AT.ty, SEALED_AT.tx + 1, SEALED_AT.ty), tag: [SEALED_AT.tx, 4, SEALED_AT.ty], open: true,
     line: sealOn() ? 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.' : 'The broken Sealed Gate. Something waits beyond it.',
     buttons: sealOn() ? [['Go through', acts.onGate], ['Down to the camp', enterCamp]] : [['Go through', acts.onGate]],
-    build: (g) => {
-      const c = document.createElement('canvas');
-      c.width = 48; c.height = 58;
-      gateArt = { ...makeGate(48, 58), c, t: tex(c), at: 0 };
-      const m = new THREE.MeshStandardMaterial({ map: gateArt.t, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1, emissive: '#ffffff', emissiveMap: gateArt.t, emissiveIntensity: 0.35 });
-      const h = 58 / TP * 1.1, mesh = new THREE.Mesh(new THREE.PlaneGeometry(48 / TP * 1.1, h), m);
-      mesh.position.set(tileX(SEALED_AT.tx), h / 2, tileZ(SEALED_AT.ty));
-      mesh.castShadow = true;
-      g.add(mesh);
-      paintGateArt(0);
+    build: (g) => {   // built in the round (js/hub-sealed.js; 2026-10-15, the user's ask: no longer a flat pixel painting)
+      sealed = makeSealedGate(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), dot: dotTexture(), merge: mergeStatic });
+      g.add(sealed.group);
     },
   });
   else {
-    gateArt = null;
     // until then, violet cracks in the ground where it will stand, spreading as the seal gives (js/hub-cracks.js)
     const stage = Math.min(3, gateStage(gateHp()));
     list.push({
@@ -2394,20 +2387,11 @@ function rect(x0, y0, x1, y1) {
   return out;
 }
 
-function paintGateArt(now) {
-  if (!gateArt || now - gateArt.at < 90) return;
-  gateArt.at = now;
-  const g = gateArt.c.getContext('2d');
-  g.clearRect(0, 0, 48, 58);
-  gateArt.paint(g, { hp: 0, open: true, t: now / 1000 });
-  gateArt.t.needsUpdate = true;
-}
-
 function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null; sealed = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3730,7 +3714,7 @@ function frame(now) {
   liveDuck(now);
   spooks?.tick(now, dt, { calm, quiet: held || arriving || !!inside || !!entering || !!outbound, partner: walker });
   if (ring.material.opacity > 0) { ring.material.opacity = Math.max(0, ring.material.opacity - dt / 700); ring.scale.setScalar(1.25 - ring.material.opacity * 0.3); }
-  if (!calm) paintGateArt(now);
+  sealed?.tick(now, (LIGHT[time] || LIGHT.day).glow, calm);
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);

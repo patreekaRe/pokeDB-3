@@ -130,6 +130,15 @@ The first section began as the note on playtesting the live site and grew into t
   additive with a breathing opacity), violet crystal shards from stage 1, rising sparks, and whispers (`WHISPERS`) that
   drift up over it in turn while your partner is within 4.5 units. All of it grows with `gateStage(gateHp())` (0 to 3, the
   same seed so the cracks spread rather than move); its card's line is `CRACK_LINES[stage]`. `?gate=N` shows a stage.
+- **The broken Sealed Gate, in 3D** (2026-10-15, the user's ask: "the HD 3D update, not the paper thin pixel version"; it
+  was js/gate.js's open-arch painting on a plane): `makeSealedGate()` in `js/hub-sealed.js`, the place `gate` on
+  `SEALED_AT` once `gateOpen()`. The painting's design in the round: a bevelled obsidian arch (an extruded U) on a
+  three-step dais, gold piping and impost bands, violet runes along its band (three dark) and glowing cracks, a magenta
+  crown gem between two gold horns, an ice-crystal spire and shards either side. The opening is the Depths: a violet well
+  (`wellArt()`) under two additive vortex layers (`swirlArt()`, turned by their texture's rotation, UVs square round the
+  heart so they turn round), light pooled on the dais and the ground. The door's shards float round it, the snapped
+  chains sway, motes rise; `tick(now, glow, calm)` brightens it after dark and holds still when calm. Its still meshes go
+  through `mergeStatic()` (117 meshes to 25). No lamp of its own (a light recompiles the scene's shaders).
 - **The backdrop** (2026-10-14, the user's phone shots: grey past the view's top and its east end): the vista spans the
   whole back, `-M - 8` to `COLS + M + 8` (`vistaSpan()`), and its plane runs `SKY_UP` (40) units past the painting, the
   UVs there sampling the painting's top row (plain sky; the texture is clamped, so the stars keep off that row). The
