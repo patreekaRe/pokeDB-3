@@ -130,3 +130,44 @@ test('friends drop by the Secret Base from three hearts, and best friends at fiv
     for (const s of speeches) for (const l of s) assert.ok(typeof l === 'string' && l.length && l.length <= 160, `${id} ${kind}: "${l}"`);
   }
 });
+
+test('each friend gives a second piece at three hearts and a third at five, owned for good once there', async () => {
+  const { heartPieces, heartGifts, heartsOf, HEART_AT, FRIENDS, HEARTS } = await import('../js/data/workshop.js');
+  assert.deepEqual(HEART_AT, [3, 5]);
+  const kinds = FRIENDS.flatMap(id => heartPieces(id).map(p => p.kind));
+  assert.equal(kinds.length, FRIENDS.length * 2, 'two a friend');
+  assert.equal(new Set([...kinds, ...GIFTS.map(g => g.sig)]).size, kinds.length + GIFTS.length, 'none shared, none their first piece');
+  for (const id of FRIENDS) {
+    const [two, three] = heartPieces(id), save = (liked) => ({ workshop: { liked: { [id]: liked } } });
+    for (const p of [two, three]) {
+      const f = FURNITURE.find(o => o.kind === p.kind);
+      assert.deepEqual(f?.from, ['heart', `${id}:${p.at}`], p.kind);
+      assert.ok(f.towns, `${p.kind} waits for the towns`);
+      assert.match(howToEarn(f, save(1)), new RegExp(`${p.at} hearts.*\\(1/${p.at}\\)`));
+    }
+    assert.ok(!isEarned(FURNITURE.find(o => o.kind === two.kind), save(2)));
+    assert.ok(isEarned(FURNITURE.find(o => o.kind === two.kind), save(3)), 'an old save at 3 has it on load');
+    assert.ok(!isEarned(FURNITURE.find(o => o.kind === three.kind), save(4)));
+    assert.ok(isEarned(FURNITURE.find(o => o.kind === three.kind), save(9)), 'liked past 5 still counts');
+    assert.ok(heartsOf(save(9).workshop, id) === HEARTS);
+  }
+  // the gift toast: only the piece whose heart a gift just crossed
+  assert.deepEqual(heartGifts('john', 1, 3), [heartPieces('john')[0].kind]);
+  assert.deepEqual(heartGifts('john', 3, 5), [heartPieces('john')[1].kind]);
+  assert.deepEqual(heartGifts('john', 3, 4), []);
+  assert.deepEqual(heartGifts('john', 5, 5), []);
+});
+
+test('every heart piece is in the base\'s catalogue, one colour, with a 3D model of its own', async () => {
+  globalThis.location ??= { search: '', pathname: '/', hostname: 'localhost' };
+  const { heartPieces, FRIENDS } = await import('../js/data/workshop.js');
+  const { PIECES } = await import('../js/base-furniture.js');
+  const { shapeOf } = await import('../js/base-shapes.js');
+  const { MAKES } = await import('../js/base-models-friends.js');
+  for (const { kind } of FRIENDS.flatMap(heartPieces)) {
+    assert.ok(PIECES[kind], `${kind} is in the catalogue`);
+    assert.equal(Object.keys(PIECES).filter(id => PIECES[id].fam === kind).length, 1, `${kind} comes in their colours only`);
+    const shape = shapeOf(kind, PIECES[kind]);
+    assert.ok(shape && typeof MAKES[shape.make] === 'function', `${kind} is modelled, not carved from its painting`);
+  }
+});

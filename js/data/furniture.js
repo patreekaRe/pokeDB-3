@@ -17,7 +17,7 @@ import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
 import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
-import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, gifteeOf } from './workshop.js';
+import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, FRIENDS, gifteeOf, heartPieces, heartsOf, workshopOf } from './workshop.js';
 import { DOJO_REWARDS, DOJO_REWARD, dojoEarned, dojoHow } from './dojo.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
@@ -31,6 +31,8 @@ const SOURCES = {
   // Kurt's Workshop (js/data/workshop.js): a piece made there, and a Gym Leader's signature piece once given their favourite
   craft: { owned: (save, id) => (save.workshop?.made || []).includes(id), item: (id) => RECIPES_BY_ID[id] },
   gift: { owned: (save, id) => (save.workshop?.fond || []).includes(id), item: (id) => GYM_BY_ID[id] },
+  // their second and third, at 3 and 5 hearts ('john:3'); `liked` only counts up, so it's owned for good
+  heart: { owned: (save, id) => heartsOf(workshopOf(save), id.split(':')[0]) >= +id.split(':')[1], item: (id) => GYM_BY_ID[id.split(':')[0]] },
   // Kenmatta's dojo (js/data/dojo.js): a belt, or a number of stars from his trials
   dojo: { owned: (save, id) => dojoEarned(save, id), item: (id) => DOJO_REWARD[id] },
 };
@@ -90,6 +92,7 @@ export const FURNITURE = [
   // Kurt's Workshop: its craft-only pieces, and each Gym Leader's signature piece for their favourite gift
   ...RECIPES.filter(r => r.kind === 'piece').map(r => ({ kind: r.makes, from: ['craft', r.id], towns: true })),
   ...GIFTS.map(g => ({ kind: g.sig, from: ['gift', g.leader], towns: true })),
+  ...FRIENDS.flatMap(id => heartPieces(id).map(p => ({ kind: p.kind, from: ['heart', `${id}:${p.at}`], towns: true }))),
   // Kenmatta's dojo set
   ...DOJO_REWARDS.map(r => ({ kind: r.kind, from: ['dojo', r.kind] })),
 ];
@@ -118,6 +121,10 @@ export function howToEarn(piece, save) {
   if (kind === 'gym') return `Beat Gym Leader ${src.name} ${GYM_POSTER} times (${Math.min(save.gym?.[src.id] || 0, GYM_POSTER)}/${GYM_POSTER})`;
   if (kind === 'craft') return `Make it at Kurt's Workshop in the Whispering Clearing`;
   if (kind === 'gift') return `Give ${gifteeOf(src.id, src.name)} their favourite gift, made at Kurt's Workshop (${FAVOURITE[src.id].name})`;
+  if (kind === 'heart') {
+    const n = +piece.from[1].split(':')[1], has = heartsOf(workshopOf(save), src.id);
+    return `Reach ${n} hearts with ${gifteeOf(src.id, src.name)}: give them gifts made at Kurt's Workshop (${Math.min(has, n)}/${n})`;
+  }
   if (kind === 'dojo') return dojoHow(piece.kind, save);
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;

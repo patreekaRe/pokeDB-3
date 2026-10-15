@@ -149,6 +149,28 @@ export const heartsOf = (ws, leader) => Math.min(HEARTS, ws.liked?.[leader] || 0
 /** Everyone who takes a gift, the Nietos (home) first. */
 export const FRIENDS = ['nietos', ...GIFTS.map(g => g.leader).filter(id => id !== 'nietos')];
 
+/** Each friend's second and third signature pieces (step 8, session d), in their first one's style: given at
+    HEART_AT[0] and HEART_AT[1] hearts. js/data/furniture.js's `heart` source owns them while `liked` is that high, so an
+    old save already there has them on load. */
+export const HEART_AT = [3, 5];
+export const HEART_PIECES = {
+  nietos: ['linccrib', 'tiredcouch'],
+  john: ['omikuji', 'handheldtansu'],
+  jahmes: ['curfewclock', 'curfewfuton'],
+  clarence: ['ringlight', 'showvanity'],
+  shaun: ['helpdeskrack', 'tripledesk'],
+  pat: ['serenadeguitar', 'lemonadestand'],
+  kayl: ['bassamp', 'vinylconsole'],
+  phil: ['saltcandelabra', 'nobodychair'],
+  ricky: ['coffeecart', 'allnightmoon'],
+  machew: ['katanastand', 'broodpillar'],
+  jerome: ['neonpalm', 'heistsafe'],
+};
+/** A friend's heart pieces, [{ kind, at }]. */
+export const heartPieces = (leader) => (HEART_PIECES[leader] || []).map((kind, i) => ({ kind, at: HEART_AT[i] }));
+/** The heart pieces a friend gives as their hearts go from `was` to `now`. */
+export const heartGifts = (leader, was, now) => heartPieces(leader).filter(p => was < p.at && now >= p.at).map(p => p.kind);
+
 /** Friends who drop by your Secret Base (step 8, session c): everyone at VISIT_HEARTS or more, their town mended or
     not; `best` (at HEARTS) also come again after the day's visit and sit on your furniture. `at(id)` is their hearts. */
 export const VISIT_HEARTS = 3;
