@@ -140,12 +140,22 @@ much of its strength is back). **The camp** (`DEPTHS_CAMP` in `js/data/camp.js`,
 town's house (`homeRoom()` in `js/run.js`, its room `HOMES.depths.camp` / `buildCamp()` in `js/event-3d.js`: the Depths
 Depths' cave walls and floor, 13 x 9, the user's pick of two builds, 2026-10-15: a crystal miners' camp, two A-frame tents
 (`tent()`), a stone-ringed fire with logs to sit on and a bedroll (`tickFire()`), crates, a pick, miner's lamps on posts
-(`minerLamp()`), crystals along the walls; at the back a timbered mine mouth marked DEPTHS with violet light far down it
-(`wayIn()`), the way in to the Depths proper (on Mewtwo's own run its exit, `exitAt`, walked into or tapped, with no doormat
-back up; for everyone else it's blocked and the doormat leads to their win), rails out of it and a cart heaped with crystal (`mineRails()`,
-`crystalCart()`); the seal's pentagram carved in a stone dais, the shards placed glowing in their sockets
-(`sealDais()`, from `shardsLit()`, so `room()`'s id carries them and the room is built anew as one comes back); Mewtwo
-floating by the way in, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives
+(`minerLamp()`), crystals along the walls; at the back **the broken Sealed Gate itself, the way in to the Depths proper**
+(the user's ask, 2026-10-15, replacing a timbered mine mouth: "look like we actually broke through"; `brokenGate()`:
+`makeSealedGate()` from `js/hub-sealed.js` with `smashed`, more runes dead, more cracks, its left horn snapped off and
+lying on the floor, the door's shards flung wide; the door's obsidian slabs strewn where they fell, `doorSlab()`, one
+stuck upright; rubble; a miners' DEPTHS sign; a rope across it with red rags while Mewtwo waits there; the back wall and
+the floor split from it with violet light, `riftWall()`, `riftCracks()`). On Mewtwo's own run it is the exit (`exitAt`,
+walked into or tapped, no doormat back up); for everyone else it's blocked and the doormat leads to their win. Rails run
+out of it (a couple of sleepers knocked loose) to a cart heaped with crystal (`mineRails()`, `crystalCart()`). **The
+seal's star** (`sealStar()`, from `shardsLit()`, so `room()`'s id carries them and the room is built anew as one comes
+back): a three-tier dais (rough rock, a five-sided step on the star's points, the carved top in a gold lip), the star's
+lines glowing in their two points' colours (full once both are lit), a crystal spire in each mended town's socket with
+its shard floating over it and a beam of its light into a crystal core turning in two rings over the star, brighter with
+each shard (a dead stub in a dark socket), and a ring of runes turning on the floor round it. Tents guyed out with a lamp
+lit inside and a string of little lamps between them, a pot on a tripod over the fire, banded crates with a lantern, a
+barrel, the pick and a shovel; the Depths' motes drifting through. Its still pieces are merged (`mergeStatic(root, live)`
+from `js/hub-3d.js`): 251 draw calls, down from the old camp's 282. Mewtwo floats by the gate, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives
 `kind: 'camp'` once the gate is broken; `descent()` plays the fall with its own lines, then `campAfterWin()` walks the
 run's Pokémon, at its stage, round the camp as a visit (`visitTown(..., { stage })`), the ended run put back on leaving
 for the result window; the win is recorded before, so leaving only plays the win scene and the rest), and **the Sealed

@@ -362,6 +362,12 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Mewtwo says why its run goes up through the three lands first (`whyLines()`), then "Set out with Mewtwo?" opens its
    Prepare step. Headless-checked both ways. Playtest `?mewtwo&gate=0&hubat=2,11` (Enter or tap the gate), `&towns&shards=2`
    for the pentagram first. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
+   **Done (2026-10-15): the camp's big look pass** (the user's ask: the broken Sealed Gate as the way into the Depths,
+   looking broken through, and everything else cooler). The mine mouth is now the Sealed Gate itself, smashed open (door
+   slabs strewn, a horn snapped off, the wall and floor split with violet light); the shard dais is a three-tier seal with a
+   crystal spire per mended Waystone beaming into a floating core; tents, fire, crates and lamps dressed up. Draw calls
+   down from 282 to 251 (merged). Waiting on the user's look: `?towns&shards=2&mewtwo&gate=0&hubat=2,11` (Go through).
+   Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
 6. **Questlines, the Satchel and Kurt's Workshop** (the user's idea and plan, 2026-10-14; all five sessions built,
    waiting on the user's playtest). Each town's 5 generic requests become a **questline with a story**, and the leaders open it:
    - **The loop**: a town is quiet till one of its leaders is beaten at the biome's boss; the next visit, that leader

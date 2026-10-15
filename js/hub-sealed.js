@@ -67,8 +67,11 @@ function archPath(THREE, w, y0 = 0) {
 
 /** The gate standing at (x, z), its front to the camera; `merge` bakes its still meshes into one per material (js/hub-3d.js's
     mergeStatic()), `dot` is the motes' texture. tick(now, glow, calm) turns the vortex, floats the shards, sways the
-    chains and lifts the motes; `glow` is the hour's (LIGHT[time].glow): the light reads stronger after dark. */
-export function makeSealedGate(THREE, { x, z, dot, merge }) {
+    chains and lifts the motes; `glow` is the hour's (LIGHT[time].glow): the light reads stronger after dark. `smashed`:
+    the Depths camp's (js/event-3d.js's buildCamp()), the door burst through, so more of its runes are dead, the band
+    cracked all over, its left horn snapped off (the camp lays it on the floor) and the door's shards flung out wide.
+    `hole` is the opening's meshes, for a tap on it. */
+export function makeSealedGate(THREE, { x, z, dot, merge, smashed = false }) {
   const group = new THREE.Group(), still = new THREE.Group(), live = new THREE.Group();
   group.position.set(x, 0, z);
   group.add(still, live);
@@ -119,18 +122,18 @@ export function makeSealedGate(THREE, { x, z, dot, merge }) {
   path.forEach((p, i) => {
     if (i === 11) return;   // the crown's gem sits there
     const next = path[Math.min(path.length - 1, i + 1)], prev = path[Math.max(0, i - 1)];
-    const o = add(new THREE.BoxGeometry(0.1, 0.055, 0.02), [4, 15, 18].includes(i) ? dead : rune, p.x, p.y + LIFT, fz + 0.005, still, false);
+    const o = add(new THREE.BoxGeometry(0.1, 0.055, 0.02), (smashed ? [2, 4, 7, 9, 13, 15, 16, 18, 20] : [4, 15, 18]).includes(i) ? dead : rune, p.x, p.y + LIFT, fz + 0.005, still, false);
     o.rotation.z = Math.atan2(next.y - prev.y, next.x - prev.x);
     const tick = add(new THREE.BoxGeometry(0.022, 0.1, 0.02), o.material, p.x, p.y + LIFT, fz + 0.006, still, false);
     tick.rotation.z = o.rotation.z + (i % 2 ? 0.5 : -0.5);
   });
   // cracks where the seal broke it: glowing seams across the band
-  for (const [a, len] of [[2.35, 0.3], [0.62, 0.26], [0.95, 0.18]]) {
+  for (const [a, len] of [[2.35, 0.3], [0.62, 0.26], [0.95, 0.18], ...(smashed ? [[2.75, 0.34], [1.85, 0.22], [1.3, 0.28], [0.3, 0.3]] : [])]) {
     const cx = Math.cos(a) * mid, cy = Math.sin(a) * mid + SPRING + LIFT;
     const o = add(new THREE.BoxGeometry(len, 0.018, 0.02), rune, cx, cy, fz + 0.01, still, false);
     o.rotation.z = a + Math.PI / 2 + (rnd() - 0.5) * 0.6;
   }
-  for (const [px, py, a] of [[-mid, 1.15, 1.2], [mid, 0.75, -1.3]]) add(new THREE.BoxGeometry(0.24, 0.018, 0.02), rune, px, py, fz + 0.01, still, false).rotation.z = a;
+  for (const [px, py, a] of [[-mid, 1.15, 1.2], [mid, 0.75, -1.3], ...(smashed ? [[-mid, 0.55, -1.1], [mid, 1.5, 1.4], [-mid - 0.04, 1.65, 1.9]] : [])]) add(new THREE.BoxGeometry(0.24, 0.018, 0.02), rune, px, py, fz + 0.01, still, false).rotation.z = a;
 
   // the crown: a gem set in gold at the top, a spike above it and a horn curling out either side
   const top = LIFT + SPRING + OW;
@@ -140,7 +143,7 @@ export function makeSealedGate(THREE, { x, z, dot, merge }) {
   add(new THREE.ConeGeometry(0.06, 0.42, 6), gold, 0, top + 0.17, 0);
   // each horn an arc from beside the gem up and over, curling down outwards (turned, not mirrored: mergeStatic() keeps
   // a mesh's winding, so a negative scale would turn it inside out)
-  for (const sx of [-1, 1]) add(new THREE.TorusGeometry(0.26, 0.035, 6, 18, 2.2), gold, sx * 0.3, top - 0.06, 0).rotation.z = sx < 0 ? 0 : Math.PI - 2.2;
+  for (const sx of smashed ? [1] : [-1, 1]) add(new THREE.TorusGeometry(0.26, 0.035, 6, 18, 2.2), gold, sx * 0.3, top - 0.06, 0).rotation.z = sx < 0 ? 0 : Math.PI - 2.2;
 
   // the crystal spires: a tall one either side and a small shard leaning out of its foot, on a heap of rock
   for (const sx of [-1, 1]) {
@@ -212,7 +215,8 @@ export function makeSealedGate(THREE, { x, z, dot, merge }) {
   // the door's shards, floating round the opening and out over the spires, turning slowly
   const bits = [];
   const floatAt = [[-0.95, 2.55, 0.35, 0.16, 0], [0.98, 2.35, 0.4, 0.13, 0], [-0.55, 0.95, 0.45, 0.1, 0], [0.62, 1.25, 0.5, 0.12, 0],
-    [-1.45, 2.6, 0.15, 0.09, 1], [1.5, 2.35, 0.1, 0.1, 1], [-0.8, 3.1, 0.3, 0.08, 1], [0.85, 3.2, 0.2, 0.07, 0]];
+    [-1.45, 2.6, 0.15, 0.09, 1], [1.5, 2.35, 0.1, 0.1, 1], [-0.8, 3.1, 0.3, 0.08, 1], [0.85, 3.2, 0.2, 0.07, 0],
+    ...(smashed ? [[-0.3, 1.9, 0.9, 0.15, 0], [0.35, 2.3, 1.1, 0.12, 0], [-1.15, 1.6, 0.95, 0.13, 0], [1.2, 1.35, 1.0, 0.14, 0], [0.05, 2.95, 0.7, 0.1, 0], [-0.55, 2.7, 1.3, 0.08, 0], [0.7, 0.75, 1.25, 0.09, 0]] : [])];
   for (const [px, py, pz, s, iceOne] of floatAt) {
     const o = add(new THREE.OctahedronGeometry(s, 0), iceOne ? ice : shard, px, LIFT + py, pz, live);
     o.scale.set(1, 1.6 + rnd(), 0.7);
@@ -256,5 +260,5 @@ export function makeSealedGate(THREE, { x, z, dot, merge }) {
   }
   tick(0, 1, true);
 
-  return { group, tick };
+  return { group, tick, hole: [back, ...swirls.map(s => s.m)] };
 }

@@ -13,7 +13,8 @@ import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
-import { fine, texOf, words, hubThree, CURVE, newsArt } from './hub-3d.js';
+import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
+import { makeSealedGate } from './hub-sealed.js';
 import { townBackdrop } from './town-backdrop.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -9150,7 +9151,234 @@ async function buildHome(figs, { time, town, home, gift }) {
 
 /* ---------- the Depths camp (docs/roadmap.md's Towns step 5) ---------- */
 
-/** A miners' A-frame tent, its flap open on the front (+z before `turn`). */
+/** An additive glow at a point (a lamp's, a crystal's), no light of its own. */
+function glowAt(col, size, x, y, z, opacity) {
+  const s = sprite(haloArt(col), size);
+  s.visible = true;
+  s.material.blending = THREE.AdditiveBlending;
+  s.material.opacity = opacity;
+  s.position.set(x, y, z);
+  return s;
+}
+
+/** A thin rod from `a` to `b` (a guy rope, a tripod's leg). */
+function rod(a, b, r, m, parent = B.group) {
+  const d = b.clone().sub(a), o = mesh(new THREE.CylinderGeometry(r, r, d.length(), 5), m, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2, parent);
+  o.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  o.castShadow = false;
+  o.raycast = () => {};
+  return o;
+}
+
+/** Cracks split from (`x0`, `y0`) on a painting, `arms` of them `len` long, each forking, a wide dim seam under a thin
+    bright one, on its colours and its glow alike. `aim`: [from, to] angles they spread between. */
+function riftCracks(ctxs, x0, y0, arms, len, r, [wide, thin], w, aim = [0, Math.PI * 2]) {
+  const seams = [];
+  const grow = (x, y, a, l, w, depth) => {
+    const pts = [[x, y]];
+    for (let i = 1; i <= 6; i++) {
+      a += (r() - 0.5) * 0.8; x += Math.cos(a) * l / 6; y += Math.sin(a) * l / 6; pts.push([x, y]);
+      if (depth && i === 3 && r() < 0.75) grow(x, y, a + (r() < 0.5 ? -1 : 1) * (0.5 + r() * 0.5), l * 0.45, w * 0.6, depth - 1);
+    }
+    seams.push({ pts, w });
+  };
+  for (let i = 0; i < arms; i++) grow(x0, y0, aim[0] + (i + r() * 0.6) / arms * (aim[1] - aim[0]), len * (0.6 + r() * 0.6), w, 2);
+  for (const ctx of ctxs) for (const [col, k] of [[wide, 2.8], [thin, 1]]) {
+    ctx.strokeStyle = col;
+    for (const { pts, w } of seams) { ctx.lineWidth = w * k; ctx.beginPath(); pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke(); }
+  }
+}
+
+/** The camp's back wall: the cave's rock, split open round the broken gate at `cx` and lit violet by what pours through it. */
+function riftWall(W, C, cx) {
+  const c = caveWall(W, C, false), g = c.getContext('2d'), s = c.glow.getContext('2d'), cy = wy(1.6);
+  for (const [ctx, a] of [[g, 0.45], [s, 0.6]]) {
+    const l = ctx.createRadialGradient(cx, cy, 4, cx, cy, 3.6 * U);
+    l.addColorStop(0, `rgba(190,120,255,${a})`); l.addColorStop(1, 'rgba(190,120,255,0)');
+    ctx.fillStyle = l; ctx.fillRect(0, 0, W, TOP * U);
+  }
+  riftCracks([g, s], cx, cy, 13, 3.4 * U, seeded(61), ['rgba(176,96,240,0.55)', '#f4dcff'], 1.1, [-Math.PI * 1.05, Math.PI * 0.05]);
+  return c;
+}
+
+/** A slab of the gate's door where it fell: obsidian broken off jagged, the gold band that ran round the door along its
+    straight edge and a few of its runes, one still lit. Lies flat (`tilt` 0) or stands up out of the floor. */
+function doorSlab(x, z, w, l, turn, tilt, lift, M, r) {
+  const g = new THREE.Group();
+  g.position.set(x, lift, z);
+  g.rotation.order = 'YXZ';
+  g.rotation.set(-Math.PI / 2 + tilt, turn, 0);
+  B.group.add(g);
+  const pts = [[-w / 2, -l / 2], [w / 2, -l / 2], [w / 2, l * (0.05 + r() * 0.3)]];
+  for (let i = 1; i < 5; i++) pts.push([w / 2 - w * i / 5, l / 2 * (0.3 + r() * 0.7) * (i % 2 ? 1 : 0.55)]);
+  pts.push([-w / 2, l * (r() * 0.3 - 0.1)]);
+  mesh(new THREE.ExtrudeGeometry(new THREE.Shape(pts.map(([a, b]) => new THREE.Vector2(a, b))), { depth: 0.09, bevelEnabled: false }), M.obsidian, 0, 0, 0, g);
+  mesh(new THREE.BoxGeometry(w, 0.05, 0.11), M.gold, 0, -l / 2 + 0.025, 0.045, g);
+  for (let i = 0; i < 3; i++) mesh(new THREE.BoxGeometry(0.1, 0.045, 0.02), i === 1 ? M.rune : M.dead, -w / 2 + w * (i + 1) / 4, -l / 2 + 0.15, 0.095, g).castShadow = false;
+  return g;
+}
+
+/** The way down to the Depths proper: the Sealed Gate itself (js/hub-sealed.js, the Clearing's in the round), smashed
+    through, its door's slabs strewn over the floor where they fell, a horn snapped off its crown, the rock round it split
+    and lit by the vortex where the door stood. `rope`: a rope across it, kept for Mewtwo (everyone's but Mewtwo's own run).
+    A tap on it is the way on, where it is one. */
+function brokenGate(x, z, C, r, rope) {
+  const gate = makeSealedGate(THREE, { x, z, dot: texOf(dotArt()), merge: mergeStatic, smashed: true });
+  B.group.add(gate.group);
+  const M = {
+    obsidian: std({ color: '#2a2042', roughness: 0.32, metalness: 0.25 }),
+    gold: std({ color: '#e8c460', metalness: 0.85, roughness: 0.3, emissive: new THREE.Color('#5a3c14'), emissiveIntensity: 0.4 }),
+    rune: std({ color: '#f4d8ff', emissive: new THREE.Color('#c27aff'), emissiveIntensity: 1.6, roughness: 0.4 }),
+    dead: std({ color: '#1a1428', roughness: 0.9 }),
+  };
+  // the door, burst out over the floor: [x, z, width, length, turn, tilt, lift]; one stands up where it stuck in the floor,
+  // one leans on the dais
+  for (const [sx, sz, w, l, turn, tilt, lift] of [[-1.25, 2.25, 0.9, 0.75, 0.5, 0.08, 0.04], [2.3, 1.75, 0.8, 1.1, -0.4, 1.2, 0.42],
+    [-1.25, 0.55, 0.45, 0.45, -0.3, -0.4, 0.16], [3.3, 2.9, 0.5, 0.45, 1.1, 0.05, 0.02], [-4.2, 0.6, 0.45, 0.5, 2.2, 0.1, 0.03]]) {
+    doorSlab(x + sx, z + sz, w, l, turn, tilt, lift, M, r);
+  }
+  // its left horn, snapped off the crown, lying where it landed
+  const horn = mesh(new THREE.TorusGeometry(0.26, 0.035, 6, 18, 2.2), M.gold, x - 1.0, 0.04, z + 1.45);
+  horn.rotation.set(-Math.PI / 2 + 0.12, 0, 0.8);
+  // rubble of obsidian and rock, thickest at its foot
+  const rock = std({ color: C.stone[2], roughness: 0.95, flatShading: true });
+  for (let i = 0; i < 18; i++) {
+    const a = r() * Math.PI, d = 1.1 + r() * 1.4, s = 0.04 + r() * (Math.abs(Math.cos(a)) > 0.35 ? 0.09 : 0.03);
+    const o = mesh(new THREE.DodecahedronGeometry(s, 0), i % 3 ? rock : M.obsidian, x + Math.cos(a) * d * 1.2, s * 0.6, z + 0.3 + Math.sin(a) * d * 0.8);
+    o.rotation.set(r() * 3, r() * 3, r() * 3);
+    o.scale.y = 0.7;
+    o.raycast = () => {};
+  }
+  // the miners' sign by it, its letters scratched in, pointing in
+  const wood = std({ color: '#5a3a24', roughness: 0.95 }), sx = x - 3.0, sz = z + 0.05;
+  mesh(new THREE.BoxGeometry(0.09, 1.25, 0.09), wood, sx, 0.62, sz).rotation.z = 0.06;
+  const sign = fine(48, 14, 6);
+  sign.g.fillStyle = '#7a5434'; sign.g.beginPath(); sign.g.moveTo(0, 0); sign.g.lineTo(41, 0); sign.g.lineTo(48, 7); sign.g.lineTo(41, 14); sign.g.lineTo(0, 14); sign.g.fill();
+  sign.g.fillStyle = 'rgba(0,0,0,0.18)'; for (const v of [4.5, 9.5]) sign.g.fillRect(0, v, 44, 0.6);
+  sign.g.fillStyle = '#2a1608'; sign.g.font = '8px "PokeDB Pixel", monospace'; sign.g.textAlign = 'center'; sign.g.textBaseline = 'middle'; sign.g.fillText('DEPTHS', 21, 7.5);
+  const board = mesh(new THREE.PlaneGeometry(1.0, 0.29), std({ map: texOf(sign.c), transparent: true, alphaTest: 0.4, roughness: 1, side: THREE.DoubleSide }), sx + 0.32, 1.05, sz + 0.06);
+  board.rotation.set(0, -0.35, -0.08);
+  board.castShadow = false;
+  if (rope) {   // a rope across the threshold, red rags tied on it
+    const post = std({ color: '#4a3020', roughness: 0.95 }), red = std({ color: '#c83a2a', roughness: 1, side: THREE.DoubleSide }), rz = z + 0.95;
+    for (const s of [-1, 1]) mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.62, 6), post, x + s * 0.62, 0.31, rz);
+    const pts = Array.from({ length: 9 }, (_, i) => { const t = i / 8; return new THREE.Vector3(x - 0.62 + t * 1.24, 0.56 - Math.sin(t * Math.PI) * 0.13, rz); });
+    const line = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 24, 0.014, 5), std({ color: '#c8b088', roughness: 1 }), 0, 0, 0);
+    line.castShadow = false;
+    for (const t of [0.25, 0.5, 0.75]) mesh(new THREE.PlaneGeometry(0.07, 0.13), red, x - 0.62 + t * 1.24, 0.5 - Math.sin(t * Math.PI) * 0.13, rz + 0.01).rotation.z = (t - 0.5) * 0.6;
+  }
+  const light = new THREE.PointLight('#c070ff', 3, 7, 1.6);
+  light.position.set(x, 1.3, z + 1);
+  B.group.add(light);
+  return { ...gate, light };
+}
+
+/** The seal's star on its dais (js/pentagram.js's in the round): five shard sockets round a star carved in the stone. A
+    socket whose town's Waystone is mended (`lit`: [colour or null] in RING's order) has a crystal spire grown in it in
+    that town's colour, its shard floating over it and a beam of its light running in to the seal's core, a crystal turning
+    in two rings over the star's heart that burns brighter with each one; the star's lines light between two lit points.
+    A dark socket holds a dead stub. */
+function sealStar(x, z, C, lit) {
+  const power = lit.filter(Boolean).length / lit.length;
+  const top = std({ color: C.stone[0], roughness: 0.9 }), side = std({ color: C.stone[2], roughness: 0.95 }), deep = std({ color: C.stone[3], roughness: 0.95, flatShading: true });
+  const gold = std({ color: '#e8c460', metalness: 0.85, roughness: 0.3, emissive: new THREE.Color('#5a3c14'), emissiveIntensity: 0.4 });
+  // three tiers: rough rock, a five-sided step with its corners on the star's points, the carved top in a gold lip
+  mesh(new THREE.CylinderGeometry(1.42, 1.55, 0.14, 12), deep, x, 0.07, z);
+  mesh(new THREE.CylinderGeometry(1.3, 1.36, 0.16, 5), [deep, top, deep], x, 0.22, z).rotation.y = Math.PI;
+  mesh(new THREE.CylinderGeometry(1.06, 1.1, 0.14, 40), [side, top, side], x, 0.37, z);
+  const TOPY = 0.44, SIZE = 1.05;
+  mesh(new THREE.TorusGeometry(1.075, 0.025, 6, 48), gold, x, TOPY, z).rotation.x = Math.PI / 2;
+  const f = fine(64, 64, 8), { g } = f, s = f.shine(), at = (k, rr) => { const a = (-90 + k * 72) * Math.PI / 180; return [32 + Math.cos(a) * rr, 32 + Math.sin(a) * rr]; };
+  for (const ctx of [g, s]) {   // the ring and its runes, brighter as the seal fills
+    ctx.strokeStyle = ctx.fillStyle = ctx === s ? `rgba(200,150,255,${0.3 + power * 0.7})` : C.crystal[3];
+    ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(32, 32, 30.5, 0, Math.PI * 2); ctx.stroke();
+    ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(32, 32, 27.6, 0, Math.PI * 2); ctx.stroke();
+    for (let i = 0; i < 30; i++) {
+      const a = i / 30 * Math.PI * 2;
+      ctx.save(); ctx.translate(32 + Math.cos(a) * 29, 32 + Math.sin(a) * 29); ctx.rotate(a + Math.PI / 2);
+      ctx.fillRect(-0.8, -0.55, 1.6, 0.35); ctx.fillRect(-0.15 + (i % 3 - 1) * 0.5, -0.55, 0.3, 1.1);
+      ctx.restore();
+    }
+  }
+  for (let k = 0; k < 5; k++) {   // the star: a line glows in its two points' colours, full only once both are lit
+    const j = (k + 2) % 5, [ax, ay] = at(k, 26), [bx, by] = at(j, 26), both = lit[k] && lit[j];
+    g.strokeStyle = C.crystal[3]; g.lineWidth = 1.7; g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke();
+    const l = s.createLinearGradient(ax, ay, bx, by);
+    l.addColorStop(0, lit[k] || '#3a2a58'); l.addColorStop(1, lit[j] || '#3a2a58');
+    s.strokeStyle = l; s.globalAlpha = both ? 1 : lit[k] || lit[j] ? 0.55 : 0.3; s.lineWidth = both ? 1.9 : 1.3;
+    s.beginPath(); s.moveTo(ax, ay); s.lineTo(bx, by); s.stroke(); s.globalAlpha = 1;
+  }
+  const star = mesh(new THREE.PlaneGeometry(SIZE * 2, SIZE * 2), std({ map: texOf(f.c), transparent: true, alphaTest: 0.3, roughness: 0.9, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 1.2 }), x, TOPY + 0.006, z);
+  star.rotation.x = -Math.PI / 2;
+  star.castShadow = false;
+  const core = new THREE.Vector3(x, 1.65, z), shards = [], beams = [];
+  const dull = std({ color: '#2a2238', roughness: 0.6, flatShading: true });
+  lit.forEach((col, k) => {
+    const [u, v] = at(k, 26), gx = x + (u - 32) / 32 * SIZE, gz = z + (v - 32) / 32 * SIZE;
+    mesh(new THREE.CylinderGeometry(0.13, 0.16, 0.12, 6), deep, gx, TOPY + 0.06, gz);
+    mesh(new THREE.TorusGeometry(0.13, 0.018, 5, 16), gold, gx, TOPY + 0.12, gz).rotation.x = Math.PI / 2;
+    if (!col) {
+      mesh(new THREE.CylinderGeometry(0.03, 0.055, 0.16, 6), dull, gx, TOPY + 0.19, gz).rotation.z = 0.3;
+      return;
+    }
+    const m = std({ color: col, emissive: new THREE.Color(col), emissiveIntensity: 1.2, roughness: 0.15, flatShading: true, transparent: true, opacity: 0.92 });
+    for (const [rr, h, lean, a] of [[0.06, 0.5, 0, 0], [0.035, 0.26, 0.45, k], [0.03, 0.2, 0.5, k + 2.5]]) {   // a spire, two smaller leaning out of its foot
+      const c = new THREE.Group();
+      c.position.set(gx, TOPY + 0.1, gz);
+      c.rotation.set(Math.cos(a) * lean, k, Math.sin(a) * lean);
+      B.group.add(c);
+      mesh(new THREE.CylinderGeometry(rr, rr * 1.1, h, 6), m, 0, h / 2, 0, c);
+      mesh(new THREE.ConeGeometry(rr, rr * 2.4, 6), m, 0, h + rr * 1.2, 0, c);
+    }
+    const y = 1.3, shard = mesh(new THREE.OctahedronGeometry(0.09, 0), m, gx, y, gz);
+    shard.scale.y = 1.7;
+    shard.castShadow = false;
+    const halo = glowAt(col, 0.8, gx, y, gz, 0.6);
+    const from = new THREE.Vector3(gx, y, gz), d = core.clone().sub(from);
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, d.length(), 6, 1, true), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    beam.position.copy(from).addScaledVector(d, 0.5);
+    beam.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+    beam.raycast = () => {};
+    B.group.add(beam);
+    shard.userData.live = true;
+    shards.push({ shard, halo, m, k, y });
+    beams.push(beam);
+  });
+  // the seal's core over the star's heart, in its two rings, dim till the shards come back
+  const coreM = std({ color: '#e8d0ff', emissive: new THREE.Color('#a050f0'), emissiveIntensity: 0.25 + power * 1.5, roughness: 0.15, flatShading: true, transparent: true, opacity: 0.95 });
+  const gem = mesh(new THREE.OctahedronGeometry(0.16, 0), coreM, core.x, core.y, core.z);
+  gem.scale.y = 1.6;
+  gem.castShadow = false;
+  const rings = ['#d8b0ff', '#e8c460'].map((col, i) => {
+    const o = new THREE.Mesh(new THREE.TorusGeometry(0.3 + i * 0.08, 0.012, 5, 48), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.25 + power * 0.55, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+    o.position.copy(core);
+    o.raycast = () => {};
+    B.group.add(o);
+    return o;
+  });
+  const halo = glowAt('#c890ff', 0.8 + power * 1.4, core.x, core.y, core.z, 0.25 + power * 0.45);
+  const light = new THREE.PointLight('#c890ff', 0.4 + power * 2.2, 4.5, 1.6);
+  light.position.copy(core);
+  B.group.add(light);
+  // a ring of runes on the floor round the dais, turning slowly
+  const rf = fine(64, 64, 6);
+  rf.g.strokeStyle = rf.g.fillStyle = '#ffffff';
+  rf.g.lineWidth = 0.5; for (const rr of [31, 27.5]) { rf.g.beginPath(); rf.g.arc(32, 32, rr, 0, Math.PI * 2); rf.g.stroke(); }
+  for (let i = 0; i < 40; i++) {
+    const a = i / 40 * Math.PI * 2;
+    rf.g.save(); rf.g.translate(32 + Math.cos(a) * 29.25, 32 + Math.sin(a) * 29.25); rf.g.rotate(a);
+    rf.g.fillRect(-0.9, -0.2, 1.8, 0.4); if (i % 2) rf.g.fillRect(-0.2, -0.9, 0.4, 1.8); else rf.g.fillRect(0.3, -0.7, 0.4, 1.4);
+    rf.g.restore();
+  }
+  const runes = new THREE.Mesh(new THREE.PlaneGeometry(3.7, 3.7), new THREE.MeshBasicMaterial({ map: texOf(rf.c), color: '#b080ff', transparent: true, opacity: 0.15 + power * 0.45, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+  runes.rotation.x = -Math.PI / 2;
+  runes.position.set(x, 0.015, z);
+  runes.raycast = () => {};
+  B.group.add(runes);
+  return { shards, beams, gem, rings, halo, light, runes, power, coreY: core.y };
+}
+
+/** A miners' A-frame tent, its flap open on the front (+z before `turn`), guyed out, a lamp lit inside. */
 function tent(x, z, turn, cloth) {
   const g = new THREE.Group();
   g.position.set(x, 0, z);
@@ -9159,12 +9387,24 @@ function tent(x, z, turn, cloth) {
   const geo = new THREE.ExtrudeGeometry(new THREE.Shape([new THREE.Vector2(-0.78, 0), new THREE.Vector2(0.78, 0), new THREE.Vector2(0, 1.1)]), { depth: 1.5, bevelEnabled: false });
   geo.translate(0, 0, -0.75);
   mesh(geo, std({ color: cloth[0], roughness: 1, flatShading: true }), 0, 0, 0, g);
-  const door = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.4, 0), new THREE.Vector2(0.4, 0), new THREE.Vector2(0, 0.74)])), new THREE.MeshBasicMaterial({ color: '#140a1e' }), 0, 0.002, 0.755, g);
+  const door = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-0.4, 0), new THREE.Vector2(0.4, 0), new THREE.Vector2(0, 0.74)])), new THREE.MeshBasicMaterial({ color: '#3a1c10' }), 0, 0.002, 0.755, g);
   door.castShadow = false;
   const flap = mesh(new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.42, 0), new THREE.Vector2(0, 0.76)])), std({ color: cloth[1], roughness: 1, side: THREE.DoubleSide }), 0.02, 0.002, 0.77, g);
   flap.rotation.y = -0.5;
-  const pole = std({ color: '#5a3a24', roughness: 0.9 });
+  const pole = std({ color: '#5a3a24', roughness: 0.9 }), rope = std({ color: '#c8b088', roughness: 1 });
   for (const zz of [-0.82, 0.82]) mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.24, 6), pole, 0, 0.62, zz, g);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.8, 6), pole, 0, 1.13, 0, g).rotation.x = Math.PI / 2;
+  for (const s of [-1, 1]) {
+    rod(new THREE.Vector3(0, 1.13, s * 0.88), new THREE.Vector3(0, 0, s * 1.4), 0.01, rope, g);
+    mesh(new THREE.CylinderGeometry(0.025, 0.012, 0.16, 5), pole, 0, 0.05, s * 1.4, g).rotation.x = s * 0.4;
+  }
+  // a patch sewn on its side
+  const patch = mesh(new THREE.PlaneGeometry(0.28, 0.24), std({ color: cloth[1], roughness: 1 }), 0.47, 0.456, 0.2, g);
+  patch.rotation.order = 'ZYX';
+  patch.rotation.set(0, Math.PI / 2, Math.atan2(0.78, 1.1));
+  patch.castShadow = false;
+  const inside = glowAt('#ffb060', 0.75, 0, 0.28, 0.8, 0.5);
+  g.add(inside);
   return g;
 }
 
@@ -9176,147 +9416,102 @@ function crystalCart(x, z, C, rnd) {
   const rust = std({ color: '#7a4a3a', roughness: 0.7, metalness: 0.35 }), iron = std({ color: '#3a3440', metalness: 0.6, roughness: 0.5 });
   mesh(rbox(0.66, 0.42, 0.92, 0.05), rust, 0, 0.44, 0, g);
   mesh(new THREE.BoxGeometry(0.7, 0.05, 0.96), iron, 0, 0.66, 0, g);
-  for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
-    const w = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), iron, sx * 0.34, 0.15, sz * 0.27, g);
-    w.rotation.z = Math.PI / 2;
+  for (const sx of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(0.03, 0.36, 0.06), iron, sx * 0.34, 0.44, -0.2, g);
+    mesh(new THREE.BoxGeometry(0.03, 0.36, 0.06), iron, sx * 0.34, 0.44, 0.2, g);
+    for (const sz of [-1, 1]) {
+      const w = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 14), iron, sx * 0.34, 0.15, sz * 0.27, g);
+      w.rotation.z = Math.PI / 2;
+    }
   }
-  crystals(x, z, 0.42, C, rnd, { n: 4, y: 0.6 });
+  crystals(x, z, 0.42, C, rnd, { n: 5, y: 0.6 });
+  glowAt(C.crystal[2], 1.1, x, 0.95, z, 0.3);
 }
 
-/** The rails from the way in, out into the camp. */
+/** The rails from the way in, out into the camp; nearest the gate a couple of sleepers knocked loose where the door came down. */
 function mineRails(x, z0, z1) {
   const iron = std({ color: '#5a5260', metalness: 0.7, roughness: 0.4 }), wood = std({ color: '#4a3020', roughness: 0.95 });
   for (const dx of [-0.28, 0.28]) mesh(new THREE.BoxGeometry(0.05, 0.05, z1 - z0), iron, x + dx, 0.05, (z0 + z1) / 2).raycast = () => {};
   for (let z = z0 + 0.15; z < z1; z += 0.42) mesh(new THREE.BoxGeometry(0.8, 0.04, 0.14), wood, x, 0.02, z).raycast = () => {};
+  for (const [dx, dz, a] of [[-0.35, -0.3, 0.7], [0.5, -0.55, -0.4]]) { const o = mesh(new THREE.BoxGeometry(0.8, 0.04, 0.14), wood, x + dx, 0.03, z0 + dz); o.rotation.y = a; o.raycast = () => {}; }
 }
 
-/** A miner's lamp on a post, its glass lit (a halo, no light of its own: the fire and the way in light the camp). */
+/** A miner's lamp on a post, its glass lit (a halo, no light of its own: the fire, the gate and the seal light the camp). */
 function minerLamp(tx, ty) {
   const x = tileX(tx), z = tileZ(ty), wood = std({ color: '#4a3020', roughness: 0.95 }), iron = std({ color: '#2e2a34', metalness: 0.5, roughness: 0.5 });
   mesh(new THREE.BoxGeometry(0.1, 1.5, 0.1), wood, x, 0.75, z);
   mesh(new THREE.BoxGeometry(0.42, 0.06, 0.06), wood, x + 0.16, 1.45, z);
+  mesh(new THREE.BoxGeometry(0.06, 0.3, 0.06), wood, x + 0.1, 1.28, z).rotation.z = -0.8;
   mesh(new THREE.BoxGeometry(0.18, 0.04, 0.18), iron, x + 0.32, 1.38, z);
+  mesh(new THREE.BoxGeometry(0.18, 0.03, 0.18), iron, x + 0.32, 1.15, z);
   mesh(new THREE.BoxGeometry(0.14, 0.2, 0.14), std({ color: '#ffe0a0', emissive: new THREE.Color('#ffc860'), emissiveIntensity: 1.6 }), x + 0.32, 1.26, z);
-  const halo = sprite(haloArt('#ffc870'), 0.9);
-  halo.visible = true;
-  halo.material.blending = THREE.AdditiveBlending;
-  halo.material.opacity = 0.5;
-  halo.position.set(x + 0.32, 1.26, z + 0.05);
   B.blocked.add(key(tx, ty));
+  return glowAt('#ffc870', 0.9, x + 0.32, 1.26, z + 0.05, 0.5);
 }
 
-/** The way into the Depths proper: an old mine mouth shored up with timber in the back wall, violet light far down it. */
-function wayIn(x, C) {
-  const z = BACK_Z, f = fine(40, 48, 4), { g, lin } = f;
-  g.fillStyle = lin(0, 0, 0, 48, ['#05020a', '#120626', '#3a1468']); g.fillRect(0, 0, 40, 48);
-  const glow = g.createRadialGradient(20, 44, 1, 20, 44, 26);
-  glow.addColorStop(0, 'rgba(240,200,255,0.95)'); glow.addColorStop(0.35, 'rgba(176,96,240,0.55)'); glow.addColorStop(1, 'rgba(176,96,240,0)');
-  g.fillStyle = glow; g.fillRect(0, 0, 40, 48);
-  g.fillStyle = 'rgba(0,0,0,0.5)'; for (let i = 0; i < 6; i++) g.fillRect(0, 10 + i * 6, 40, 1);
-  const mouth = mesh(new THREE.PlaneGeometry(1.7, 2.1), new THREE.MeshBasicMaterial({ map: texOf(f.c), toneMapped: false }), x, 1.05, z + 0.02);
-  mouth.castShadow = mouth.receiveShadow = false;
-  const wood = std({ color: '#5a3a24', roughness: 0.95 }), dark = std({ color: '#3a2416', roughness: 0.95 });
-  for (const s of [-1, 1]) mesh(new THREE.BoxGeometry(0.22, 2.3, 0.22), wood, x + s * 0.95, 1.15, z + 0.12);
-  mesh(new THREE.BoxGeometry(2.3, 0.26, 0.26), wood, x, 2.36, z + 0.12);
-  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x - 0.6, 2.36, z + 0.12).rotation.z = 0.9;
-  mesh(new THREE.BoxGeometry(0.16, 0.6, 0.16), dark, x + 0.6, 2.36, z + 0.12).rotation.z = -0.9;
-  // a board over it, its letters scratched in
-  const sign = fine(48, 12, 4);
-  sign.g.fillStyle = '#7a5434'; sign.g.fillRect(0, 0, 48, 12);
-  sign.g.fillStyle = '#2a1608'; sign.g.font = '7px "PokeDB Pixel", monospace'; sign.g.textAlign = 'center'; sign.g.textBaseline = 'middle'; sign.g.fillText('DEPTHS', 24, 6.5);
-  mesh(new THREE.PlaneGeometry(1.2, 0.3), std({ map: texOf(sign.c), roughness: 1 }), x, 2.7, z + 0.27);
-  const light = new THREE.PointLight('#c070ff', 3, 6, 1.6);
-  light.position.set(x, 1.1, z + 0.8);
-  B.group.add(light);
-  const halo = sprite(haloArt('#c890ff'), 2.4);
-  halo.visible = true;
-  halo.material.blending = THREE.AdditiveBlending;
-  halo.material.opacity = 0.35;
-  halo.position.set(x, 0.9, z + 0.3);
-  return { light, halo, mouth };
-}
-
-/** The pentagram of Mewtwo's seal on a stone dais: a star carved in its top, a shard socket at each point, the towns'
-    shards back glowing in their ring colours (`lit`: [colour or null] in the ring's order). */
-function sealDais(x, z, C, lit) {
-  const top = std({ color: C.stone[0], roughness: 0.9 }), side = std({ color: C.stone[2], roughness: 0.95 });
-  mesh(new THREE.CylinderGeometry(1.25, 1.35, 0.22, 40), [side, top, side], x, 0.11, z);
-  mesh(new THREE.CylinderGeometry(1.0, 1.08, 0.2, 40), [side, top, side], x, 0.32, z);
-  const f = fine(64, 64, 4), s = f.shine(), at = (k, r) => { const a = (-90 + k * 72) * Math.PI / 180; return [32 + Math.cos(a) * r, 32 + Math.sin(a) * r]; };
-  const power = lit.filter(Boolean).length / lit.length;
-  for (const ctx of [f.g, s]) {
-    ctx.strokeStyle = C.crystal[2]; ctx.lineWidth = 1.6; ctx.lineJoin = 'round';
-    ctx.beginPath(); ctx.arc(32, 32, 29, 0, Math.PI * 2); ctx.stroke();
-    ctx.globalAlpha = ctx === s ? 0.35 + power * 0.65 : 1;
-    ctx.beginPath();
-    for (const [i, k] of [0, 2, 4, 1, 3, 0].entries()) { const [px, py] = at(k, 26); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-  const star = mesh(new THREE.PlaneGeometry(2.0, 2.0), std({ map: texOf(f.c), transparent: true, alphaTest: 0.3, roughness: 0.9, emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(f.c.glow), emissiveIntensity: 1.1 }), x, 0.425, z);
-  star.rotation.x = -Math.PI / 2;
-  star.castShadow = false;
-  const gems = [];
-  lit.forEach((col, k) => {
-    const [u, v] = at(k, 26), gx = x + (u - 32) / 32, gz = z + (v - 32) / 32;
-    mesh(new THREE.CylinderGeometry(0.13, 0.15, 0.06, 12), side, gx, 0.45, gz);
-    const gem = mesh(new THREE.OctahedronGeometry(0.12, 0), col
-      ? std({ color: col, emissive: new THREE.Color(col), emissiveIntensity: 1.4, roughness: 0.2, flatShading: true })
-      : std({ color: '#2a2238', roughness: 0.6, flatShading: true }), gx, 0.62, gz);
-    gem.scale.y = 1.7;
-    gems.push({ gem, col, k });
-    if (col) {
-      const halo = sprite(haloArt(col), 0.7);
-      halo.visible = true;
-      halo.material.blending = THREE.AdditiveBlending;
-      halo.material.opacity = 0.55;
-      halo.position.set(gx, 0.66, gz);
-    }
+/** A string of little lamps hung from `a` to `b`, sagging; returns the bulbs' glows, to twinkle. */
+function lampString(a, b, sag) {
+  const at = (t) => a.clone().lerp(b, t).add(new THREE.Vector3(0, -Math.sin(t * Math.PI) * sag, 0));
+  const line = mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(Array.from({ length: 9 }, (_, i) => at(i / 8))), 24, 0.007, 4), std({ color: '#3a3040', roughness: 1 }), 0, 0, 0);
+  line.castShadow = false;
+  line.raycast = () => {};
+  return [0.12, 0.26, 0.4, 0.54, 0.68, 0.82].map((t, i) => {
+    const p = at(t), col = i % 2 ? '#d8a8ff' : '#ffd080';
+    mesh(new THREE.SphereGeometry(0.03, 8, 6), new THREE.MeshBasicMaterial({ color: col, toneMapped: false }), p.x, p.y - 0.04, p.z).castShadow = false;
+    return glowAt(col, 0.32, p.x, p.y - 0.04, p.z, 0.65);
   });
-  return gems;
 }
-
 
 /** The Depths camp (js/data/camp.js), a crystal miners' camp: where every won run lands once the gate is broken, and
-    Mewtwo's own runs before the Depths proper (their "Go down" is the way in at the back). The seal's pentagram on a
-    stone dais holds the shards placed, lit in their towns' colours (shardsLit(), so the room is built anew as one comes
-    back: room()'s id). Mewtwo stands by the way in (`figs.mewtwo`; a tap on it is its talk and the pentagram window,
+    Mewtwo's own runs before the Depths proper (their "Go down" is the broken Sealed Gate at the back). The seal's star on
+    its dais holds the shards placed, lit in their towns' colours (shardsLit(), so the room is built anew as one comes
+    back: room()'s id). Mewtwo stands by the gate (`figs.mewtwo`; a tap on it is its talk and the pentagram window,
     homeRoom() in js/run.js). */
 async function buildCamp(figs, h) {
   const C = caveOf('depths');
   B.glowing = [];
-  shell({ floor: caveFloor(C, [[9, 4.2, 'rgba(255,170,90,0.35)', 3.2], [3.5, 3.5, 'rgba(200,150,255,0.3)', 2.6], [6.5, 0.6, 'rgba(190,110,255,0.4)', 3]]),
-    wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
+  const mid = 6, gx = tileX(mid), gz = BACK_Z + 0.55;
+  // the floor split from the gate's foot, the same light in its cracks
+  const floor = caveFloor(C, [[9, 4.2, 'rgba(255,170,90,0.35)', 3.2], [3.5, 3.5, 'rgba(200,150,255,0.35)', 2.6], [6.5, 1.0, 'rgba(190,110,255,0.5)', 3.4]]);
+  riftCracks([floor.getContext('2d'), floor.glow.getContext('2d')], (mid + 0.5) * 16, 16, 9, 3.6 * 16, seeded(62), ['rgba(176,96,240,0.5)', '#f0d4ff'], 0.7, [0.15, Math.PI - 0.15]);
+  shell({ floor,
+    wall: riftWall((COLS + 0.8) * U, C, wx(mid + 0.5)), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
   B.env = { hemi: ['#c8b0f0', C.rock[4], 0.85], sun: ['#e8d8ff', 0.6], bloom: 0.8 };
-  B.shotTop = 3.2;
+  B.shotTop = 3.7;
   B.talks = new Set();
-  const rnd = seeded(91), mid = 6;
-  // the way in at the back, the rails out of it and a cart left on them; only Mewtwo goes past it (its "Go down")
-  const mouth = wayIn(tileX(mid), C);
-  mineRails(tileX(mid), BACK_Z + 0.2, tileZ(5.4));
-  crystalCart(tileX(mid), tileZ(4.6), C, rnd);
-  for (const k of [key(mid - 1, 0), key(mid + 1, 0), key(mid, 4), key(mid, 5)]) B.blocked.add(k);
-  // Mewtwo's own run (no second Mewtwo here) fell in and goes on down: its way out is the mine, and there's no doormat
-  // back up. Everyone else's is the doormat, to their win; the mine is Mewtwo's alone
+  const rnd = seeded(91);
+  // the broken Sealed Gate at the back, the rails out of it and a cart left on them; only Mewtwo goes through (its "Go down")
+  const gate = brokenGate(gx, gz, C, rnd, !!figs.mewtwo);
+  mineRails(gx, tileZ(1.15), tileZ(5.4));
+  crystalCart(gx, tileZ(4.6), C, rnd);
+  for (const k of [key(mid - 1, 0), key(mid + 1, 0), key(mid - 1, 2), key(mid, 4), key(mid, 5), key(3, 0), key(8, 2)]) B.blocked.add(k);   // the gate, two slabs, the sign, the cart
+  // Mewtwo's own run (no second Mewtwo here) fell in and goes on down: its way out is the gate, and there's no doormat
+  // back up. Everyone else's is the doormat, to their win; the gate is Mewtwo's alone
   if (!figs.mewtwo) {
     for (const part of B.exitParts) B.group.remove(part);
     B.exitParts = [];
     B.exitAt = { x: mid, y: 0 };
-    mouth.mouth.userData.spot = 'exit';
+    gate.group.traverse(o => { if (o.isMesh) o.userData.spot = 'exit'; });
   } else B.blocked.add(key(mid, 0));
-  // the seal's pentagram on its dais, the camp's two tents, the fire between them, crates and lamps
-  const dx = tileX(3), dz = tileZ(3);
+  // the seal's star on its dais, the camp's two tents, the fire between them, crates and lamps
   const lit = shardsLit(getSave());
-  const gems = sealDais(dx, dz, C, RING.map((t, i) => (lit[i] ? t.glow : null)));
+  const seal = sealStar(tileX(3), tileZ(3), C, RING.map((t, i) => (lit[i] ? t.glow : null)));
   for (let x = 2; x <= 4; x++) for (let y = 2; y <= 4; y++) B.blocked.add(key(x, y));
-  tent(tileX(10.5), tileZ(1.6), -0.25, ['#c8a878', '#b08e60']);
-  tent(tileX(10.9), tileZ(5.6), -Math.PI / 2 - 0.15, ['#9aa070', '#80885a']);
+  const t1 = tent(tileX(10.5), tileZ(1.6), -0.25, ['#c8a878', '#b08e60']);
+  const t2 = tent(tileX(10.9), tileZ(5.6), -Math.PI / 2 - 0.15, ['#9aa070', '#80885a']);
   for (const [x, y] of [[10, 1], [11, 1], [10, 2], [11, 2], [10, 5], [11, 5], [10, 6], [11, 6]]) B.blocked.add(key(x, y));
-  // the fire, with a log either side to sit on
+  const poleTop = (t) => new THREE.Vector3(0, 1.22, 0.82).applyAxisAngle(new THREE.Vector3(0, 1, 0), t.rotation.y).add(t.position);
+  const bulbs = lampString(poleTop(t1), poleTop(t2), 0.28);
+  // the fire, with a log either side to sit on and a pot hung over it
   const fx = tileX(8.5), fz = tileZ(4.1), stone = std({ color: C.stone[2], roughness: 0.95 }), log = std({ color: '#5a3a24', roughness: 0.95 });
   for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; mesh(new THREE.DodecahedronGeometry(0.1, 0), stone, fx + Math.cos(a) * 0.38, 0.06, fz + Math.sin(a) * 0.32); }
   for (const a of [0.5, -0.6, 1.8]) mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.6, 7), log, fx, 0.08, fz).rotation.set(Math.PI / 2, 0, a);
   for (const sx of [-1.15, 1.15]) mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.9, 10), log, fx + sx, 0.16, fz + 0.1).rotation.set(Math.PI / 2, 0, 0);
+  const iron = std({ color: '#2e2a34', metalness: 0.5, roughness: 0.5 }), apex = new THREE.Vector3(fx, 1.12, fz);
+  for (let i = 0; i < 3; i++) { const a = i / 3 * Math.PI * 2 + 0.4; rod(new THREE.Vector3(fx + Math.cos(a) * 0.5, 0, fz + Math.sin(a) * 0.42), apex, 0.022, log); }
+  rod(apex, new THREE.Vector3(fx, 0.88, fz), 0.008, iron);
+  mesh(new THREE.CylinderGeometry(0.15, 0.11, 0.17, 12), iron, fx, 0.8, fz).castShadow = false;
+  mesh(new THREE.TorusGeometry(0.15, 0.012, 5, 16), iron, fx, 0.885, fz).rotation.x = Math.PI / 2;
   const ember = mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.02, 14), new THREE.MeshBasicMaterial({ color: '#ff7030', toneMapped: false }), fx, 0.14, fz);
   ember.raycast = () => {};
   const flame = sprite(flameArt('#ff8030'), 0.5);
@@ -9330,51 +9525,102 @@ async function buildCamp(figs, h) {
   light.position.set(fx, 0.9, fz);
   B.group.add(light);
   const fire = { flame, halo: glowHalo, light, ember, w: 1.1, seed: 17, lit: true, at: 0 };
+  const steam = Array.from({ length: 3 }, (_, i) => ({ s: sprite(haloArt('rgba(230,220,255,0.7)'), 0.3), phase: i / 3 }));
   for (const k of [key(7, 4), key(8, 4), key(9, 4), key(10, 4)]) B.blocked.add(k);
-  const crate = std({ color: '#8a6440', roughness: 0.9 });
-  for (const [x, y, h, r] of [[0.9, 5.4, 0, 0.1], [1.0, 5.4, 0.5, -0.2], [1.9, 6.2, 0, 0.4]]) mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), crate, tileX(x), 0.25 + h, tileZ(y)).rotation.y = r;
-  for (const k of [key(0, 5), key(1, 5), key(1, 6), key(2, 6)]) B.blocked.add(k);
-  mesh(rbox(0.5, 0.08, 1.1, 0.04), std({ color: '#7a3a3a', roughness: 1 }), tileX(9.6), 0.04, tileZ(5.6)).raycast = () => {};   // a bedroll by the fire
+  // crates, a barrel and a lantern on the stack; the pick and a shovel leant against them
+  const crate = std({ color: '#8a6440', roughness: 0.9 }), band = std({ color: '#5a4030', roughness: 0.9 });
+  for (const [x, y, hh, r] of [[0.9, 5.4, 0, 0.1], [1.0, 5.4, 0.5, -0.2], [1.9, 6.2, 0, 0.4]]) {
+    const c = mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), crate, tileX(x), 0.25 + hh, tileZ(y));
+    c.rotation.y = r;
+    for (const dy of [-0.16, 0.16]) mesh(new THREE.BoxGeometry(0.52, 0.05, 0.52), band, 0, dy, 0, c);
+  }
+  mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.62, 12), std({ color: '#7a5434', roughness: 0.9 }), tileX(0.25), 0.31, tileZ(6.5));
+  for (const dy of [0.12, 0.5]) mesh(new THREE.TorusGeometry(0.215, 0.015, 5, 20), iron, tileX(0.25), dy, tileZ(6.5)).rotation.x = Math.PI / 2;
+  mesh(new THREE.BoxGeometry(0.14, 0.03, 0.14), iron, tileX(1.0), 1.015, tileZ(5.4));
+  mesh(new THREE.BoxGeometry(0.1, 0.16, 0.1), std({ color: '#ffe0a0', emissive: new THREE.Color('#ffc860'), emissiveIntensity: 1.6 }), tileX(1.0), 1.11, tileZ(5.4));
+  mesh(new THREE.BoxGeometry(0.14, 0.03, 0.14), iron, tileX(1.0), 1.2, tileZ(5.4));
+  const lanterns = [glowAt('#ffc870', 0.8, tileX(1.0), 1.11, tileZ(5.4) + 0.05, 0.5)];
+  for (const k of [key(0, 5), key(1, 5), key(1, 6), key(2, 6), key(0, 6)]) B.blocked.add(k);
   const pick = new THREE.Group();
-  pick.position.set(tileX(4.7), 0, tileZ(0.5));
-  pick.rotation.z = 0.35;
+  pick.position.set(tileX(2.45), 0, tileZ(6.0));
+  pick.rotation.set(0, 0.3, -0.3);
   B.group.add(pick);
   mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.1, 6), log, 0, 0.55, 0, pick);
   mesh(new THREE.BoxGeometry(0.6, 0.07, 0.07), std({ color: '#4a4652', metalness: 0.6, roughness: 0.4 }), 0, 1.08, 0, pick);
-  for (const [tx, ty] of [[1, 1], [4, 7], [11, 8]]) minerLamp(tx, ty);
-  for (const [tx, ty, sz] of [[0, 0, 1.3], [12, 0, 1.4], [2, 0, 0.8], [9, 0, 0.9], [0, 3, 1], [12, 4, 1.1], [0, 7, 0.8], [12, 7, 0.9]]) {
+  const shovel = new THREE.Group();
+  shovel.position.set(tileX(2.3), 0, tileZ(6.55));
+  shovel.rotation.set(0, -0.2, -0.25);
+  B.group.add(shovel);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 6), log, 0, 0.62, 0, shovel);
+  mesh(new THREE.BoxGeometry(0.22, 0.28, 0.03), std({ color: '#6a6672', metalness: 0.6, roughness: 0.45 }), 0, 0.14, 0, shovel);
+  mesh(new THREE.BoxGeometry(0.2, 0.04, 0.04), log, 0, 1.12, 0, shovel);
+  lanterns.push(...[[1, 1], [4, 7], [11, 8]].map(([tx, ty]) => minerLamp(tx, ty)));
+  for (const [tx, ty, sz] of [[0, 0, 1.3], [12, 0, 1.4], [2, 0, 0.8], [9, 0, 0.9], [0, 3, 1], [12, 4, 1.1], [0, 7, 0.8], [12, 7, 0.9], [4, 0, 1.0], [8, 0, 0.95], [12, 1, 0.8]]) {
     crystals(tileX(tx) + (tx === 0 ? -0.2 : tx === 12 ? 0.2 : 0), tileZ(ty) - (ty === 0 ? 0.2 : 0), sz, C, rnd, { n: sz > 0.8 ? 6 : 4 });
     B.blocked.add(key(tx, ty));
   }
-  // Mewtwo by the way in, watching it (not when you are Mewtwo)
+  // Mewtwo by the gate, watching it (not when you are Mewtwo)
   if (figs.mewtwo) {
     B.who.mewtwo = await figure('mewtwo', figs.mewtwo, h.mewtwoAt);
     B.talks.add('mewtwo');
     for (const k of [key(7, 1), key(8, 1)]) B.blocked.add(k);
   }
   const glowing = B.glowing;
-  const motes = Array.from({ length: 10 }, (_, i) => ({ s: sprite(sparkArt(C.ember), 0.12), x: tileX(mid) + (rnd() - 0.5) * 1.4, phase: i / 10 }));
+  // the Depths' light drifting through the cave
+  const N = 30, dp = new Float32Array(N * 3), dc = new Float32Array(N * 3), seeds = Array.from({ length: N }, (_, i) => [(rnd() - 0.5) * (COLS - 1), rnd(), (rnd() - 0.5) * (ROWS - 1), 0.4 + rnd() * 0.6, i % 3 ? [0.8, 0.6, 1] : [1, 0.85, 1]]);
+  const dg = new THREE.BufferGeometry();
+  dg.setAttribute('position', new THREE.BufferAttribute(dp, 3));
+  dg.setAttribute('color', new THREE.BufferAttribute(dc, 3));
+  const dust = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.07, map: texOf(dotArt()), vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  dust.raycast = () => {};
+  B.group.add(dust);
   const sparks = Array.from({ length: 6 }, (_, i) => ({ s: sprite(sparkArt('#ffb060'), 0.08), a: rnd() * 6, phase: i / 6 }));
+  // the camp's still pieces baked into a mesh a material: ~500 draw calls a frame otherwise, too many for a phone
+  const own = new Set();
+  gate.group.traverse(o => own.add(o));
+  mergeStatic(B.group, (o) => own.has(o) || o.userData.live || o.userData.spot != null || o.userData.who);
   B.ticks.push((now) => {
     tickFire(fire, now);
+    gate.tick(now, 1, calm);
+    const t = calm ? 0 : now / 1000;
     if (!calm) {
       for (const m of glowing) m.emissiveIntensity = 0.5 + Math.sin(now / 900 + m.id) * 0.12;
-      mouth.light.intensity = 3 + Math.sin(now / 700) * 0.6;
-      mouth.halo.material.opacity = 0.3 + Math.sin(now / 700) * 0.08;
-      for (const { gem, col, k } of gems) { gem.rotation.y = now / 1400 + k; if (col) gem.material.emissiveIntensity = 1.3 + Math.sin(now / 500 + k) * 0.3; }
+      gate.light.intensity = 3 + Math.sin(now / 700) * 0.6;
+      bulbs.forEach((b, i) => { b.material.opacity = 0.5 + Math.sin(t * 2.2 + i * 1.7) * 0.2; });
+      lanterns.forEach((b, i) => { b.material.opacity = 0.45 + Math.sin(t * 7 + i * 3) * 0.04 + Math.sin(t * 13 + i) * 0.03; });
     }
-    for (const m of motes) {   // the Depths' light drifting up out of the way in
-      const t = calm ? m.phase : (now / 6000 + m.phase) % 1;
-      m.s.visible = true;
-      m.s.position.set(m.x + Math.sin(t * 5 + m.phase * 9) * 0.2, 0.2 + t * 2.6, BACK_Z + 0.4 + t * 0.8);
-      m.s.material.opacity = Math.sin(t * Math.PI) * 0.85;
+    seal.gem.rotation.y = t * 0.9;
+    seal.gem.position.y = seal.coreY + Math.sin(t * 1.3) * 0.05;
+    seal.halo.position.y = seal.gem.position.y;
+    seal.rings[0].rotation.set(1.2 + t * 0.7, t * 0.4, 0);
+    seal.rings[1].rotation.set(0.4 - t * 0.5, 0, t * 0.6);
+    seal.runes.rotation.z = t * 0.08;
+    seal.light.intensity = (0.4 + seal.power * 2.2) * (calm ? 1 : 0.9 + Math.sin(t * 1.8) * 0.1);
+    for (const s of seal.shards) {
+      s.shard.rotation.y = t * 1.2 + s.k;
+      s.shard.position.y = s.halo.position.y = s.y + Math.sin(t * 1.6 + s.k) * 0.04;
+      if (!calm) s.m.emissiveIntensity = 1.1 + Math.sin(t * 2 + s.k) * 0.25;
     }
+    seal.beams.forEach((b, i) => { b.material.opacity = calm ? 0.45 : 0.35 + Math.sin(t * 3 + i * 1.3) * 0.15; });
     for (const p of sparks) {   // the fire's sparks
-      const t = calm ? p.phase : (now / 1600 + p.phase) % 1;
+      const k = calm ? p.phase : (now / 1600 + p.phase) % 1;
       p.s.visible = !calm;
-      p.s.position.set(fx + Math.sin(p.a + t * 4) * 0.18, 0.4 + t * 1.4, fz + Math.cos(p.a + t * 3) * 0.12);
-      p.s.material.opacity = (1 - t) * 0.9;
+      p.s.position.set(fx + Math.sin(p.a + k * 4) * 0.18, 0.4 + k * 1.4, fz + Math.cos(p.a + k * 3) * 0.12);
+      p.s.material.opacity = (1 - k) * 0.9;
     }
+    for (const p of steam) {   // the pot's steam
+      const k = calm ? p.phase : (now / 2600 + p.phase) % 1;
+      p.s.visible = !calm;
+      p.s.position.set(fx + Math.sin(k * 5 + p.phase * 6) * 0.06, 0.95 + k * 0.8, fz);
+      p.s.scale.setScalar(0.2 + k * 0.35);
+      p.s.material.opacity = Math.sin(k * Math.PI) * 0.35;
+    }
+    seeds.forEach(([x, y0, z, sp, tint], i) => {
+      const k = (y0 + t * sp * 0.04) % 1, fade = Math.sin(k * Math.PI);
+      dp[i * 3] = x + Math.sin(t * 0.5 * sp + i) * 0.25; dp[i * 3 + 1] = 0.2 + k * 3.2; dp[i * 3 + 2] = z + Math.cos(t * 0.4 * sp + i) * 0.2;
+      dc[i * 3] = tint[0] * fade; dc[i * 3 + 1] = tint[1] * fade; dc[i * 3 + 2] = tint[2] * fade;
+    });
+    dg.attributes.position.needsUpdate = dg.attributes.color.needsUpdate = true;
   });
 }
 

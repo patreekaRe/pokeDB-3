@@ -1,7 +1,7 @@
 /* camp.js  -  the Depths camp (docs/roadmap.md's step 5, the user's design, 2026-10-14): once the Sealed Gate is broken, a
    won run's fall (or the Sealed Gate's portal in the Clearing) drops you to a camp in the Crystal Depths, walked
    like a town's house (homeRoom() in js/run.js, its room HOMES.depths.camp in js/event-3d.js). Mewtwo stands by the
-   way in to the Depths proper; talking to it brings up the shard pentagram (js/pentagram.js), and what it says follows
+   broken Sealed Gate, the way down to the Depths proper; talking to it brings up the shard pentagram (js/pentagram.js), and what it says follows
    the Waystone Shards placed. A pseudo-town like the Clearing's houses: placeOf('depths') in js/data/towns.js. */
 
 import { SEALED_WEAKNESS, sealedMult } from './difficulty.js';
@@ -12,9 +12,9 @@ export const DEPTHS_CAMP = {
   buildings: [{ id: 'camp', name: 'DEPTHS CAMP', home: 'camp', back: 'gate' }],
   homes: {
     camp: { name: 'Depths Camp', mewtwo: true,
-      sub: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. Mewtwo waits by the mine marked DEPTHS.',
-      subGo: 'A miners\' camp in the crystal dark, under the broken gate. Mewtwo waits by the mine marked DEPTHS: talk to it to set out together.',
-      subSelf: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. The mine marked DEPTHS goes on down to the Well.',
+      sub: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. Mewtwo waits by the broken Sealed Gate, the way down.',
+      subGo: 'A miners\' camp in the crystal dark, before the broken Sealed Gate. Mewtwo waits by it: talk to it to set out together.',
+      subSelf: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. The broken Sealed Gate goes on down to the Well.',
       cast: {} },
   },
   leaders: {},
@@ -28,7 +28,7 @@ export const strengthOf = (n) => Math.round(sealedMult(n) * 100);
 export function campLines(n) {
   const pct = strengthOf(n), left = SEALED_WEAKNESS.shards - n;
   if (n <= 0) return [
-    'This is as far down as the light reaches. Down that mine lies the Energy Well... and Eternatus.',
+    'This is as far down as the light reaches. Through that gate lies the Energy Well... and Eternatus.',
     'The seal held it for an age. When the gate was shut, the crystal that bound it cracked, and the shards flew far.',
     'Five of them became your Waystones. And with them went my strength.',
     `Down there I fight at ${pct}% of my power. I can still go, but I cannot promise to come back.`,
@@ -46,16 +46,16 @@ export function campLines(n) {
   ];
 }
 
-/** Why Mewtwo's run starts up in the Whispering Clearing, not down the mine (the user's ask, 2026-10-15: the gate leads
+/** Why Mewtwo's run starts up in the Whispering Clearing, not through the gate (the user's ask, 2026-10-15: the gate leads
     to the camp, and Mewtwo sets out from there): said before it asks you along. Once heard, `short` is its one line. */
 export function whyLines(short) {
   if (short) return ['Up through the three lands, then the Wastes\' crater drops us back down here. Ready?'];
   return [
-    'The mine goes down to the Energy Well. I cannot take it yet.',
+    'That gate goes down to the Energy Well. I cannot take it yet.',
     'An age behind the gate has put my power to sleep, and only battle wakes it.',
-    'So we go up, back through the gate, and fight across the three lands over these caves: the Whispering Clearing, the Overgrown Shrine, the Ember Wastes.',
+    'So we go up, the way you fell, and fight across the three lands over these caves: the Whispering Clearing, the Overgrown Shrine, the Ember Wastes.',
     'Every guardian we beat wakes more of me. And under the Wastes, the Well runs nearest the surface.',
-    'When the Wastes\' guardian falls, the crater gives way, and we fall straight back down here, awake. Then the mine.',
+    'When the Wastes\' guardian falls, the crater gives way, and we fall straight back down here, awake. Then through the gate.',
   ];
 }
 
@@ -77,8 +77,8 @@ export function landLine(n) {
 /** Mewtwo's own run, landing in the camp after its third boss: what it feels of its strength, before it goes on down. */
 export function selfLines(n) {
   const pct = strengthOf(n);
-  if (n <= 0) return ['The camp. A fire, and the mine down to the Well.', 'No Waystone burns yet. Down there, the seal still holds half my power.', 'So be it. I go down as I am.'];
+  if (n <= 0) return ['The camp. A fire, and the broken gate down to the Well.', 'No Waystone burns yet. Down there, the seal still holds half my power.', 'So be it. I go down as I am.'];
   return n >= SEALED_WEAKNESS.shards
     ? ['The camp. The five stones\' light has reached even here.', 'My strength is whole. Eternatus, I am coming.']
-    : ['The camp. The stones\' light reaches even here.', `${n} of the five burn: ${pct}% of my strength is back.`, 'The mine to the Well waits. I go down.'];
+    : ['The camp. The stones\' light reaches even here.', `${n} of the five burn: ${pct}% of my strength is back.`, 'The gate to the Well waits. I go down.'];
 }
