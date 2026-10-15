@@ -2501,6 +2501,15 @@ PokéCoins, at most 100 a UTC day (`DAY_CAP`; the Game Corner gives ~380), since
 with `node --test` and in the browser by calling the window and the frame step directly (the hidden pane ran no frames);
 a real tap on a plot wasn't tried. Part e (the bigger yard) is next.
 
+### The Secret Base's backyard, part e: the bigger yard (2026-10-15)
+
+Tapping a bought yard on the PC's HOUSE UPGRADES offers BIGGER BACKYARD, 12x8 to 16x11 tiles for `BIG_YARD_PRICE`
+(1,000, like the yard itself), the bigger lot dashed round it while picked. `house.yard.size` 2 is the `bigyard` kind;
+its things move 2 across and 3 back so they keep their places by the doormat, and the new lawn is at the sides and
+behind. Winter's snowfall spreads with the lawn. `?yard=big` lends the bigger one. Tested with `node --test` and
+headless Chromium (the buy on the PC, the item moved, `?yard` / `?yard=big` open outdoors with no errors). The backyard
+plan (parts a to e) is done.
+
 - **Kenmatta's dojo opens** (2026-10-15, the user's picks): the Clearing's dojo walked in (the Move Tutor's room with
   a trial board), six belts from his trials' stars and run wins, the first 8 combo trials (set deck and foe, a goal, a
   star each, Kenmatta before and after) and a 7-piece dojo furniture set. Detail in `docs/reference/events.md`.

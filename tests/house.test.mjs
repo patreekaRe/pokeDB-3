@@ -140,3 +140,17 @@ test('nothing is built through the back door, and a doorway already there moves 
   assert.notEqual(moved.at, at.at);
   assert.ok(!linkOf(g, 'main', moved.pip));
 });
+
+test('the bigger backyard: size 2 is the bigger lawn, its doormat still in the middle of its front edge', () => {
+  const h = freshHouse();
+  h.yard = { size: 1, items: [] };
+  const small = roomById(h, 'yard').shape;
+  h.yard.size = 2;
+  const y = roomById(h, 'yard'), back = doorsOf(h, 'yard')[0];
+  assert.equal(y.kind, 'bigyard');
+  assert.ok(y.shape.w > small.w && y.shape.h > small.h);
+  assert.equal((y.shape.w - small.w) % 2, 0, 'it grows evenly either side, so its things keep their places by the door');
+  assert.equal(back.at, y.shape.w / 2);
+  assert.ok(pipTile(y.shape, [back.side, back.at]));
+  assert.ok(!houseRooms(h).some(r => r.id === 'yard'));
+});

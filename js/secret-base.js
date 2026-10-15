@@ -16,7 +16,7 @@ import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
-import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE } from './data/house.js';
+import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, shapeOf, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './data/house.js';
 
 const T = 16, WALL = 48;
 // the room being shown (useRoom()): its size in tiles, the canvas it's painted on (wide enough for its longest wall),
@@ -190,8 +190,10 @@ export function takeDown(b, id) {
 /* The backyard (docs/roadmap.md, part a): bought once on the blueprint, a lawn out a back door of the main room. Its
    things are kept on `house.yard` like a room's, and only outdoor furniture stands there (fitsHere()). */
 const freshYard = () => ({ size: 1, items: [], wall: 'cream', floor: 'grass' });
-/** `?yard`: a backyard lent for the page load, to playtest it; never kept (loadBase() takes a lent one back). */
+/** `?yard`: a backyard lent for the page load, to playtest it; never kept (loadBase() takes a lent one back). `?yard=big`
+    lends the bigger one. */
 const lendYard = () => new URLSearchParams(location.search).has('yard');
+const lendSize = () => new URLSearchParams(location.search).get('yard') === 'big' ? 2 : 1;
 
 /** Buy the backyard. Furniture standing where the back door goes moves into storage (named in `moved`). Null if the
     coins aren't there or it's already bought. */
@@ -203,7 +205,19 @@ export function buyYard(b) {
   updateSave(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
   return { moved };
 }
-export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE };
+/** The backyard made bigger (part e): the lawn grows round its things, which keep their places from the doormat (across
+    by half the width it gains, back by all the depth), so the new lawn is at the sides and behind. False if the coins
+    aren't there, or there's no bought yard still its first size. */
+export function buyBigYard(b) {
+  const yard = b.house?.yard;
+  if ((getSave().coins ?? 0) < BIG_YARD_PRICE || !yard || yard.lent || yard.size > 1) return false;
+  const was = shapeOf('yard'), to = shapeOf('bigyard');
+  for (const it of roomContents(b, 'yard').items) { it.x += (to.w - was.w) / 2; it.y += to.h - was.h; }
+  yard.size = 2;
+  updateSave(d => { d.coins -= BIG_YARD_PRICE; d.secretBase = b; });
+  return true;
+}
+export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE };
 
 /* Duplicating (the PC's Duplicate, 2026-10-10, the user's ask): one more of any piece you own, into storage. The first
    costs 50 PokéCoins, each after it 5 more, up to 100, where it stays (`secretBase.dupes` counts them). */
@@ -259,7 +273,7 @@ export function loadBase() {
   const saved = getSave().secretBase;
   const b = !saved || !(saved.v >= 2) || new URLSearchParams(location.search).has('basefresh') ? freshBase(saved?.mons) : saved;
   if (b.house?.yard?.lent && !lendYard()) { goRoom(b, 'main'); delete b.house.yard; }
-  if (lendYard() && !b.house?.yard) { b.house ||= freshHouse(); b.house.yard = { ...freshYard(), lent: 1 }; }
+  if (lendYard() && !b.house?.yard) { b.house ||= freshHouse(); b.house.yard = { ...freshYard(), size: lendSize(), lent: 1 }; }
   if (b !== saved) return b;
   b.owned ||= {};
   // furniture was once owned colour by colour (`bed-fire`), then kind by kind; now a kind or a whole set (`own`) is owned, every colour and style with it

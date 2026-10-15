@@ -63,7 +63,7 @@ The first section began as the note on playtesting the live site and grew into t
 - **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
   the HOUSE UPGRADES blueprint, dashed till bought, its door's column lined up with the back door and a path drawn to it; a
   tap shows its card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
-  `secretBase.house.yard` `{ size, items, wall, floor }` (`size` for the bigger yard to come), its things packed there
+  `secretBase.house.yard` `{ size, items, wall, floor }` (`size` 2 the bigger yard, part e), its things packed there
   like a room's (`roomContents()` / `goRoom()` / `eachRoom()`). It is not one of `houseRooms()`, so nothing is built onto
   it or counted on the grid; `roomById(house, 'yard')` (`yardOf()`) reaches it, kind `yard` (12 x 8, `outdoor`) in
   `ROOM_KINDS`. The main room's back door (`backDoorOf()` in `js/data/house.js`): the first back-wall tile from three in
@@ -110,6 +110,12 @@ The first section began as the note on playtesting the live site and grew into t
   (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
   sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
   plant whose stage turned over (at once after the window changes one).
+- **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
+  in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
+  (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;
+  `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
+  (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
+  `?yard=big` lends the bigger one.
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
