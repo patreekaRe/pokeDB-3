@@ -413,7 +413,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      (`run.gleaned`), kept on a lost run; the Satchel says where each turns up. Detail: `docs/reference/towns.md`. Branch
      `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
    - **Session 3 done (2026-10-14): Kurt's Workshop.** A timber workshop in the Clearing's north-east (towns on only), walked
-     into like the Nietos' house: Kurt (a sprite drawn for him) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
+     into like the Nietos' house: Kurt (the user's sprite since 2026-10-15, with a blink made from it) at his workbench, a cauldron, Apricorn trees, a Slowpoke.
      His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
