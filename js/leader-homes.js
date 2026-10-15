@@ -310,10 +310,17 @@ function jona(K) {
     };
     const faces = [crop(back), crop(front)].map(c => K.texOf(c));
     const w = H * faces[0].image.width / faces[0].image.height;
-    const m = new T.SpriteMaterial({ map: faces[0], alphaTest: 0.5, toneMapped: false, color: '#c8b8d8' });
+    const m = new T.SpriteMaterial({ map: faces[0], alphaTest: 0.5, toneMapped: false, fog: false });
+    m.color.setRGB(1.75, 1.7, 1.8);   // lit as if by her own glow, or the dark corner turns her to a silhouette
     const her = new T.Sprite(m);
     her.center.set(0.5, 0); her.scale.set(w, H, 1); her.position.set(x, 0.02, z); her.raycast = () => {};
-    K.B.group.add(her);
+    const halo = document.createElement('canvas'); halo.width = halo.height = 64;
+    const hg = halo.getContext('2d'), rg = hg.createRadialGradient(32, 32, 0, 32, 32, 32);
+    rg.addColorStop(0, 'rgba(176,96,255,0.75)'); rg.addColorStop(0.5, 'rgba(120,48,220,0.3)'); rg.addColorStop(1, 'rgba(60,0,120,0)');
+    hg.fillStyle = rg; hg.fillRect(0, 0, 64, 64); halo.hd = 2;
+    const aura = new T.Sprite(new T.SpriteMaterial({ map: K.texOf(halo), blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+    aura.center.set(0.5, 0.3); aura.scale.set(w * 2.4, H * 1.35, 1); aura.position.set(x + 0.12, 0.02, z - 0.12); aura.raycast = () => {};
+    K.B.group.add(aura, her);
     let facing = 0, turnAt = 0, snapped = false, snapAt = performance.now() + 20000, snapTill = 0;
     const show = (f) => { facing = f; m.map = faces[f]; };
     K.B.ticks.push((now) => {
@@ -330,6 +337,7 @@ function jona(K) {
         if (k >= 1) turnAt = 0;
       }
       her.scale.x = w * Math.max(0.04, sx);
+      if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2;
     });
   });
 }
