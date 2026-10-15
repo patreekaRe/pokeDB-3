@@ -147,7 +147,7 @@ const ROADS = [
   { a: [4, POND.y], b: [28, POND.y], w: LANE },   // and the low road to the pond, its south side
   { a: [4, 5], b: [4, -M - 0.6], w: TRAIL, dirt: true },                 // trails to the Safari gate, on through it, and the Sky Pillar
   { a: [28, 5], b: [28, PILLAR_AT.ty + 1], w: TRAIL, dirt: true },
-  { a: [SAFARI_AT.tx - 3, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
+  { a: [SAFARI_AT.tx - 5, SAFARI_AT.ty + 1.6], b: [SAFARI_AT.tx, SAFARI_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [PILLAR_AT.tx - 2, PILLAR_AT.ty + 1.6], b: [PILLAR_AT.tx + 2, PILLAR_AT.ty + 1.6], w: TRAIL * 0.8, dirt: true },
   { a: [MALL_TILE.tx - 0.7, MALL_TILE.ty + 1.6], b: [MALL_TILE.tx - 0.7, POND.y], w: 0.6 },              // the mall's and the Nietos' doorsteps down to the low road
   { a: [NIETOS_AT.tx + 1, NIETOS_AT.ty + 2.6], b: [NIETOS_AT.tx + 1, POND.y], w: 0.6 },
@@ -2064,19 +2064,20 @@ function makePlaces() {
     },
   });
   if (safari) list.push({
-    id: 'safari', name: 'Safari Pokéstop', step: { x: SAFARI_AT.tx - 1, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 1, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 1, 2.6, SAFARI_AT.ty + 1], open: true,
+    // three tiles out on the meadow, like the main gate's: one tile off, it stood in the 3D gate's mouth, in front of its tower
+    id: 'safari', name: 'Safari Pokéstop', step: { x: SAFARI_AT.tx - 3, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 3, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 3, 2.6, SAFARI_AT.ty + 1], open: true,
     line: safariRun ? waits(safariRun) : 'Today\'s Safari Zone run, the same for everyone. Only the first try counts.',
     reset: 'daily',
     buttons: safariRun ? [['Continue', () => acts.onContinue(safariRun)], ['New game', acts.onSafari]] : [['Enter', acts.onSafari]],
-    build: (g) => pokestop(g, 'safari', tileX(SAFARI_AT.tx - 1), tileZ(SAFARI_AT.ty + 1), 0.5, !!safariRun, 'EXPLORE'),
+    build: (g) => pokestop(g, 'safari', tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 1), 0.5, !!safariRun, 'EXPLORE'),
   });
-  // left of the gate, along its fence (the user's ask, 2026-10-09)
+  // left of the gate, along its fence (the user's ask, 2026-10-09), past the Pokéstop
   list.push({
-    id: 'safari-board', name: 'Safari Ranks', step: { x: SAFARI_AT.tx - 3, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 3, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 3, 2.6, SAFARI_AT.ty + 1], open: safari,
+    id: 'safari-board', name: 'Safari Ranks', step: { x: SAFARI_AT.tx - 5, y: SAFARI_AT.ty + 2 }, tiles: [[SAFARI_AT.tx - 5, SAFARI_AT.ty + 1]], tag: [SAFARI_AT.tx - 5, 2.6, SAFARI_AT.ty + 1], open: safari,
     line: safari ? 'The Safari Zone\'s notice board: today\'s and yesterday\'s best catches.' : 'Notices for the Safari Zone, once it opens.',
     reset: safari && 'daily',
     buttons: safari ? [['Read', () => acts.onBoard('safari')]] : [],
-    build: (g) => beckon(g, board(kioskArt(), tileX(SAFARI_AT.tx - 3), tileZ(SAFARI_AT.ty + 0.7))),
+    build: (g) => beckon(g, board(kioskArt(), tileX(SAFARI_AT.tx - 5), tileZ(SAFARI_AT.ty + 0.7))),
   });
   // south-west, its doors onto the ring road
   list.push({
