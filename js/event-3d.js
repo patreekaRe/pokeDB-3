@@ -8755,6 +8755,13 @@ const HOMES = {
       furnish: [['haybale', 0, 0], ['haybale', 1, 0], ['trough', 4, 0], ['waterjar', 3, 0], ['waterjar', 6, 0], ['haybale', 9, 0], ['haybale', 10, 0], ['lotuscolumn', 0, 3], ['lotuscolumn', 10, 3], ['haybale', 0, 6], ['crate', 10, 6], ['barrel', 10, 7], ['datepalm', 0, 8], ['waterjar', 10, 8]] },
   },
 };
+// the Depths camp (js/data/camp.js): no clock, a cave like the Depths' grotto, a fire, a tent, Mewtwo by the arch in to
+// the Depths proper (buildCamp())
+HOMES.depths = {
+  camp: { cols: 11, rows: 9, camp: true, mewtwoAt: { x: 5, ty: 1.15, scale: 1.1 },
+    furnish: [['tent', 0, 2], ['sleepingbag', 2, 2, { free: true }], ['sleepingbag', 9, 2], ['brazier', 5, 4], ['stump', 3, 4], ['stump', 7, 4], ['logpile', 8, 5],
+      ['crate', 0, 6], ['crate', 1, 6], ['barrel', 0, 7], ['coalcart', 10, 6], ['stonelantern', 3, 1], ['stonelantern', 7, 1]] },
+};
 const homeSize = (town, id) => { if (LEADER_HOMES[id]) return LEADER_SIZE; const h = HOMES[town]?.[id]; return { cols: h?.cols || 9, rows: h?.rows || 7, across: h?.cols ? 7.5 : 6.2 }; };
 
 function homeFloor(kind) {
@@ -8822,6 +8829,7 @@ function homeWall(width, time, { window: win = true, curtain = false, walls = 'p
 async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
+  if (h.camp) return buildCamp(figs, h);
   if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, away: !figs[town.homes[home].leader] }, home);
   else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = L ? 3.1 : 2.1;
@@ -8889,6 +8897,63 @@ async function buildHome(figs, { time, town, home, gift }) {
     });
   }
   B.env = L ? leaderEnv(home, time) : INDOORS;
+}
+
+/** The Depths camp: the Depths' cave (its grotto's walls and floor), crystals along the walls, a camp round a fire, and
+    at the back an arch of crystal, the way in to the Depths proper, its violet light breathing, Mewtwo in front of it
+    (a tap on it is its talk and the shard pentagram, homeRoom() in js/run.js). */
+async function buildCamp(figs, h) {
+  const C = caveOf('depths');
+  B.glowing = [];
+  shell({ floor: caveFloor(C), wall: caveWall((COLS + 0.8) * U, C, false), side: (left) => caveWall(ROWS * U, C, left), edge: C.rock[3], cap: C.rock[4], under: C.rock[4], bg: '#06040c' });
+  B.env = { hemi: [C.crystal[1], C.rock[4], 0.85], sun: [C.beam, 0.5], bloom: 0.75 };
+  B.shotTop = 3.2;
+  B.talks = new Set();
+  const rnd = seeded(404);
+  for (const [id, x, y, o] of h.furnish) piece(id, x, y, o);
+  for (const [tx, ty, s] of [[0, 0, 1.3], [2, 0, 0.9], [8, 0, 1.0], [10, 0, 1.4], [10, 3.6, 0.9], [0, 4.6, 0.8], [10, 8, 0.7], [0, 8, 0.6]]) {
+    crystals(tileX(tx) + (tx === 0 ? -0.2 : tx === 10 ? 0.2 : 0), tileZ(ty) - (ty === 0 ? 0.2 : 0), s, C, rnd, { n: s > 0.8 ? 6 : 4 });
+    B.blocked.add(key(Math.round(tx), Math.round(ty)));
+  }
+  // the arch: crystal clusters for its feet, a ring of crystal over them, the Depths' light filling it
+  const ax = tileX(5), az = BACK_Z + 0.35;
+  for (const dx of [-1.35, 1.35]) crystals(ax + dx, az + 0.1, 1.2, C, rnd, { n: 6 });
+  const arc = std({ color: C.crystal[2], emissive: new THREE.Color(C.crystal[3]), emissiveIntensity: 0.6, roughness: 0.2, flatShading: true });
+  B.glowing.push(arc);
+  const ring = mesh(new THREE.TorusGeometry(1.35, 0.16, 6, 20, Math.PI), arc, ax, 1.25, az);
+  ring.raycast = () => {};
+  const { c, g } = fine(64, 96, 2);
+  const glow = g.createRadialGradient(32, 70, 4, 32, 60, 56);
+  glow.addColorStop(0, '#ffffff'); glow.addColorStop(0.25, C.crystal[1]); glow.addColorStop(0.7, C.crystal[3]); glow.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = glow; g.beginPath(); g.moveTo(0, 96); g.lineTo(0, 32); g.arc(32, 32, 32, Math.PI, 0); g.lineTo(64, 96); g.fill();
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.6), new THREE.MeshBasicMaterial({ map: texOf(c), transparent: true, opacity: 0.75, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+  door.position.set(ax, 1.3, az - 0.05);
+  door.raycast = () => {};
+  B.group.add(door);
+  for (let x = 4; x <= 6; x++) B.blocked.add(key(x, 0));
+  // the fire's light, flickering, and its embers rising
+  const fire = new THREE.PointLight('#ffa050', 6, 7, 1.6);
+  fire.position.set(tileX(5.5), 1.1, tileZ(4.5));
+  B.group.add(fire);
+  const embers = Array.from({ length: 10 }, (_, i) => ({ s: sprite(sparkArt(i % 2 ? '#ffb060' : C.ember), 0.12), phase: i / 10, a: i * 2.1 }));
+  if (figs.mewtwo) {
+    B.who.mewtwo = await figure('mewtwo', figs.mewtwo, h.mewtwoAt);
+    B.talks.add('mewtwo');
+  }
+  const who = B.who, glowing = B.glowing;
+  B.ticks.push((now) => {
+    door.material.opacity = calm ? 0.7 : 0.62 + Math.sin(now / 1100) * 0.14;
+    fire.intensity = calm ? 6 : 5.4 + Math.sin(now / 90) * 0.5 + Math.sin(now / 37) * 0.4;
+    if (!calm) for (const m of glowing) m.emissiveIntensity = 0.5 + Math.sin(now / 900 + m.id) * 0.12;
+    for (const e of embers) {
+      const t = calm ? e.phase : (now / 2600 + e.phase) % 1;
+      e.s.visible = !calm;
+      e.s.position.set(tileX(5.5) + Math.sin(e.a + t * 5) * 0.25, 0.9 + t * 2.2, tileZ(4.5) + Math.cos(e.a + t * 4) * 0.15);
+      e.s.material.opacity = Math.sin(t * Math.PI);
+    }
+    const m = who.mewtwo;
+    if (m && !calm) m.group.position.y = m.base.y + 0.12 + Math.sin(now / 800) * 0.08;   // it floats, a little, as it waits
+  });
 }
 
 /** The town's folk (js/data/towns.js's `folk`): the Game Corner's crowd code, a few about at once, coming and going up

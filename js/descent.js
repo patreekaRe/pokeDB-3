@@ -56,6 +56,10 @@ export function descentLines({ name, kind = 'win', first = false, land = 'wastes
     held: [`${name} steps towards the light...`, '...and a wave of psychic force throws it back!',
       'Whatever waits down there answers only to a mind as strong as its own.', 'Only Mewtwo could follow that call down.'],
   };
+  if (kind === 'camp') return {   // the shards count (sealOn()): the open gate lets you down, to the Depths camp
+    arena: ['The ground shakes beneath the arena!', 'Far below, the Sealed Gate stands open... and violet light pours up through the cracks.'],
+    fall: [`${name} drops through the open gate!`, 'Down past the broken seal, a fire flickers in the crystal dark...'],
+  };
   if (kind === 'loss') return {
     arena: [`${name} fainted...`, 'The ground gives way beneath it!'],
     fall: ['Something drags it down into the dark...', ...lore],
