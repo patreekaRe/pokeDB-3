@@ -324,7 +324,9 @@ function init() {
       const pal = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
       const mate = id === 'depths' && isMewtwoRun(pal) ? STARTERS.find(s => s.free) : pal;   // Mewtwo is waiting down there
       leaveTitle();
-      visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house);
+      // the camp's Mewtwo asks you along: its Prepare step, as the gate itself once opened (campTalk() in js/run.js)
+      const onMewtwo = id === 'depths' ? () => { const m = STARTERS_BY_ID.mewtwo; cameHome('gate'); newGame(m); previewStarter(m); curtain(false, 420); } : null;
+      visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house, { onMewtwo });
     },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
