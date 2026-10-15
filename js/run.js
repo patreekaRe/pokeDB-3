@@ -71,12 +71,14 @@ import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
-  homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS } from './data/towns.js';
+  homeTalk, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
 import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
 /** `&mend` on a `?town=` peek: the questline at its shard step, the shard in hand (townRoom()). */
 const mendFlag = () => new URLSearchParams(location.search).has('mend');
+/** `&fest=lantern|moon|fireworks` on a `?town=shrine` peek: John's festival picked (with `&mend`, the stone still to mend; alone, mended). */
+const festFlag = () => new URLSearchParams(location.search).get('fest');
 import { buildingSvg } from './buildings.js';
 
 let run = null;
@@ -1739,7 +1741,8 @@ function townRoom(covered = null, at = null) {
   const ahead = home ? runWaitingIn(town.id) : null, barred = home && !ahead;
   // a playtest (?town=) keeps its questline on the run, never the save; ?satchel there makes every step ready
   // &mend on a ?town= peek: its questline up to the shard, the shard in hand, to see the stone mended
-  if (!real && !t.peekSt && mendFlag() && questOf(town)) t.peekSt = { ...townState(getSave(), town.id), quest: { step: questOf(town).steps.length - 1, got: 0, picks: {} } };
+  const fest = !real && festFlag() && pickStepOf(town) ? { [pickStepOf(town).id]: festFlag() } : null;
+  if (!real && !t.peekSt && (mendFlag() || fest) && questOf(town)) t.peekSt = { ...townState(getSave(), town.id), quest: { step: questOf(town).steps.length - (mendFlag() ? 1 : 0), got: 0, picks: fest || {}, ...(mendFlag() ? {} : { lit: true }) } };
   const st = (!real && t.peekSt) || townState(getSave(), town.id), lit = real ? isMended(town.id) : mended(st);
   if (t.trade === undefined) { t.trade = rollTrade(); checkpoint(); }   // rolled once, kept through a refresh
   const again = () => { if (run === thisRun) { checkpoint(); townRoom(null, null); } };
@@ -1833,7 +1836,7 @@ function townRoom(covered = null, at = null) {
   const visit = townVisit ??= { id: town.id };
   const knocks = {};
   event3d(visit, 'town', {}, null, {
-    extra: { town, at, mended: lit && !mendNow, ...(barred ? { onLeave: leave } : {}), chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : [])], onDoor: (id) => {
+    extra: { town, at, mended: lit && !mendNow, fest: townPick(town, st), ...(barred ? { onLeave: leave } : {}), chats: folkChats(town, st), marks: mendNow ? [] : [...(st.quest && !boardRead ? ['board'] : []), ...(step && ready ? [`door:${step.by}`] : []), ...(reqBy ? [`door:${reqBy}`] : [])], onDoor: (id) => {
       if (run !== thisRun) return;
       const b = town.buildings.find(o => o.id === id);
       if (b?.home) { playSound('door'); return homeRoom(b); }

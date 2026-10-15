@@ -484,6 +484,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      wearing the "!" hands it in (no floating Hand in / Quests signs, which homes had no prop for), a small picker for
      John's festival, and the "!" drops with the curved ground so it stays on its sign or board. The quest board's button opens it ("Quest log"), and
      says it's in the Pokédex too; new-quest messages point there. On `main`, waiting on the user's look.
+   - **John's festival happens in the town (2026-10-14, the user's ask: does the pick "actually happen"?).** Once Lantern
+     Village's Waystone is mended, at dusk and night, the town wears the festival picked: Lantern Festival floats paper
+     lanterns on the koi pond and strings red and white ones across the avenue; Moon Viewing hangs a harvest moon over the
+     torii, pampas vases by the plaza and DANGO / TEA stalls; Fireworks Night bursts fireworks over the Shrine's stair, with
+     TAKOYAKI / YAKISOBA stalls and a taiko. Mended in front of you, it appears as the stone blazes. Peek:
+     `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
+     the user's look. Next: none planned; the user's call whether other towns' picks get the same.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
