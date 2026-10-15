@@ -6046,3 +6046,9 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 @keyframes craftPop { from { scale: 0; rotate: -20deg; } }
 @keyframes craftStamp { from { scale: 2.4; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .craft-dot, .craft-make.ready, .craft-result, .craft-stamp, .craft-pot { animation: none; } }
+/* a town's trade in a run (js/town-trade.js): the town shop's window, your Bag over the trader's offers */
+.town-trade .ttrade-head { margin: 8px 0 6px; font-size: 0.75rem; letter-spacing: 0.06em; color: #1f3a14; }
+.town-trade .ttrade-head[hidden], .town-trade .tshop-grid[hidden] { display: none; }
+.town-trade .ttrade-pic { width: 48px; height: 48px; display: grid; place-items: center; font-size: 2rem; }
+.town-trade .ttrade-pic .item-sprite { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.town-trade .ttrade-info { margin: 10px 0 0; font-size: 0.75rem; line-height: 1.4; min-height: 2.8em; }

@@ -1910,21 +1910,24 @@ function homeRoom(b, onward = null) {
       again();
     }));
   } else if (b.home === 'shop') {
-    const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
-    if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
-    options.push(!t.trade
-      ? spotOption('Trade', town.trader.none, null, true)
-      : t.traded
-        ? spotOption('Trade', town.trader.done, null, true)
-        : spotOption('Trade', town.trader.offer.replace('{give}', give.name).replace('{get}', get.name), () => {
+    if (!t.traded && !t.trade?.offers) t.trade = rollTrade();   // a run saved before the trade window (one fixed offer)
+    const held = run.items.filter(id => ITEMS_BY_ID[id]);
+    options.push(t.traded
+      ? spotOption('Trade', town.trader.done, null, true)
+      : !held.length
+        ? spotOption('Trade', town.trader.none, null, true)
+        : spotOption('Trade', `${town.trader.name}: Got something to swap? Show me your Bag.`, async () => {
             if (run !== thisRun) return;
-            const at = run.items.indexOf(give.id);
+            const { pickTrade } = await import('./town-trade.js');
+            const deal = await pickTrade(town.trader, held, t.trade.offers);
+            if (run !== thisRun) return;
+            const at = deal ? run.items.indexOf(deal.give) : -1;
             if (at < 0) return again();
-            run.items[at] = get.id;
+            run.items[at] = deal.get;
             t.traded = true;
             playSound('item-get');
             event3dMod?.eventRoom3d()?.does('trader', 'hop');
-            tell(`Traded your ${give.name} for ${get.name}!`);
+            tell(`Traded your ${ITEMS_BY_ID[deal.give].name} for ${ITEMS_BY_ID[deal.get].name}!`);
             again();
           }));
   }
@@ -2127,14 +2130,12 @@ export async function campTalk() {
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
 const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
 
-/** The stall's one trade: one of your items for another of the same rarity from your type's (a sidegrade, never more);
-    null with an empty Bag. */
+/** The trader's offers (js/town-trade.js): every item of your type's, in a rolled order per rarity, so whichever Bag
+    item you pick to give, the window offers the first few of its rarity you don't hold (a sidegrade, never more). */
 function rollTrade() {
-  const held = run.items.filter(id => ITEMS_BY_ID[id]);
-  if (!held.length) return null;
-  const give = pickOne(held), rarity = ITEMS_BY_ID[give].rarity;
-  const pool = itemsForType(run.starter.type).filter(i => i.rarity === rarity && !held.includes(i.id));
-  return pool.length ? { give, get: pickOne(pool).id } : null;
+  const pool = itemsForType(run.starter.type), offers = {};
+  for (const rarity of new Set(pool.map(i => i.rarity))) offers[rarity] = shuffled(pool.filter(i => i.rarity === rarity)).map(i => i.id);
+  return { offers };
 }
 /** A leader's wins before this one: back in the gym from Continue after its rewards began, this win is already in the
     save (afterFight()'s `counted`), so the hand-over mustn't read it as one more (it said "beaten 2 times" after one). */

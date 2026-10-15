@@ -42,7 +42,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    without Three.js), and `buildTown()` / `townCrowd()` in `js/event-3d.js` (kind `town`, 13 x 18: a stone road to a
    vermilion torii, the far gate, `R.exitAt`; machiya, a pagoda, stone lanterns, cedars and maples dropping leaves; the
    request board and Delibird's stall in the square; John and Jahmes off duty, a tap chatting, `R.talks`; 4 of 10 Eevee-
-   family and Ecruteak folk on the crowd code, cries added). The trade is one Bag item for another of the same rarity; the
+   family and Ecruteak folk on the crowd code, cries added). The trade is one Bag item for another of the same rarity (since 2026-10-15 picked in a window, `js/town-trade.js`; archive); the
    board shows one request at a time (5, in order, counted only in the Shrine) and hands a finished one in on a later
    visit for `REQUEST_COINS` 40 and +1 friendship (`MEND_AT` 5 mends the Waystone, session 2). Leave asks first only while
    a real pick is left (`askFirst()` skips `.locked` and info-only options now). Patch-notes line in `NEXT` (cut the patch

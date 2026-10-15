@@ -2449,3 +2449,8 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   the questline? THEN they become the quest givers"): coming home after beating them, Law and Britt only point you to their
   notice (`QUESTS.clearing.call`, once) and your partner walks to the quest board; reading it tells the Waystone's story and
   starts the questline, whose steps then go to them at home. Tapped at home before that, they send you to the board.
+- **A town's trade is a window** (2026-10-15, the user's ask: the trader offered one random swap, "is it just potions?",
+  no menu to choose): `js/town-trade.js`'s `pickTrade()`, the town shop's window: your Bag on top, tap the item to give,
+  then one of three of its rarity from your type's (a rolled order per rarity, `rollTrade()`, kept through a refresh), then
+  Trade. Still once per town per run, a sidegrade, so no bot check. The `?town=` peek's Potion was why playtests only
+  showed potion swaps. Tested headless (Lantern Village, Sunwell Bazaar), 243 tests pass.
