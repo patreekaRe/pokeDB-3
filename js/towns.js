@@ -59,6 +59,12 @@ export function handInRequest(id) {
   return awardCoins(REQUEST_COINS);
 }
 
+/** The town's quest board read once: its "!" goes (it showed from the questline's posting till then). */
+export function readBoard(id) {
+  if (townState(getSave(), id).board) return;
+  updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...townState(d, id), board: true } }; });
+}
+
 /** Note that you've walked into a town once (its first-visit line). */
 export function metTown(id) {
   if (townState(getSave(), id).met) return;

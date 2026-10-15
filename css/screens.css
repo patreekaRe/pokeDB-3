@@ -5906,38 +5906,50 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 @media (prefers-reduced-motion: reduce) {
   .way-flash, body.way-shake :is(.event3d-view, canvas), .gym-scene.awaken .gym-trainer, .way-card-band::after { animation: none; }
 }
-/* the shard pentagram (js/pentagram.js): Mewtwo's talk in violet with the star of five shard slots over it, each placed
-   shard glowing in its town's colour (--glow) and lit one after another, the missing ones dark */
-.penta-scene .penta-top {
-  position: absolute; left: 50%; top: max(14px, env(safe-area-inset-top)); translate: -50% -30px; opacity: 0;
-  width: min(92vw, 400px, calc((100dvh - 230px) * 1.2)); text-align: center;
-  transition: translate 0.5s cubic-bezier(.2, .9, .3, 1.1), opacity 0.4s;
+/* Mewtwo's pentagram (js/pentagram.js): the five Waystone Shards' slots on a star, slid in from the right like a Gym
+   Leader; a lit slot glows in its town's ring colour (--glow), a dark one is an empty socket. Mewtwo at the middle
+   brightens with its strength (--power). */
+.penta-scene { display: grid; place-items: center; padding: 16px; box-sizing: border-box; }
+.penta-card {
+  position: relative; width: min(400px, 100%); max-height: calc(100% - 8px); overflow-y: auto; box-sizing: border-box;
+  padding: 26px 20px 26px; border-radius: 26px / 22px; background: rgba(22, 10, 46, 0.92); color: #efe4ff; text-align: center;
+  box-shadow: 0 0 0 3px #a060f0, 0 0 26px rgba(160, 90, 255, 0.55);
+  translate: 100vw 0; transition: translate 0.6s cubic-bezier(.2, .9, .3, 1.08);
 }
-.penta-scene.in .penta-top { translate: -50% 0; opacity: 1; }
-.penta-scene.out .penta-top { translate: -50% -30px; opacity: 0; transition: translate 0.28s ease-in, opacity 0.28s; }
-.penta-wrap { position: relative; }
-.penta-star { display: block; width: 100%; height: auto; overflow: visible; }
-.penta-ring { fill: none; stroke: rgba(190, 140, 255, 0.55); stroke-width: 2; }
-.penta-ring.thin { stroke: rgba(190, 140, 255, 0.3); stroke-width: 1; stroke-dasharray: 3 4; }
-.penta-lines { fill: none; stroke: rgba(200, 160, 255, 0.6); stroke-width: 2; stroke-linejoin: round; }
-.penta-gem { fill: #2a1c40; stroke: #5a4878; stroke-width: 1.5; }
-.penta-facet { fill: none; stroke: rgba(255, 255, 255, 0.12); stroke-width: 1; }
-.penta-name { font-size: 12px; fill: #8a78a8; paint-order: stroke; stroke: #160a2a; stroke-width: 3px; }
-.penta-slot.lit .penta-gem { fill: var(--glow); stroke: #fff; animation: pentaLight 0.6s calc(0.5s + var(--i) * 0.22s) backwards; }
-.penta-slot.lit .penta-facet { stroke: rgba(255, 255, 255, 0.7); }
-.penta-slot.lit .penta-name { fill: #fff; }
-.penta-halo { fill: var(--glow); opacity: 0.8; animation: pentaPulse 2.4s ease-in-out infinite; }
-.penta-slot.fresh .penta-gem { animation: pentaFresh 0.9s 1.8s backwards; }
-.penta-slot.fresh .penta-halo { animation: pentaFreshHalo 1.2s 1.8s backwards, pentaPulse 2.4s 3s ease-in-out infinite; }
-@keyframes pentaFresh { 0% { fill: #2a1c40; stroke: #5a4878; } 40% { fill: #fff; stroke: #fff; } }
-@keyframes pentaFreshHalo { 0% { opacity: 0; transform: scale(0.4); } 40% { opacity: 1; transform: scale(2.4); } }
-@keyframes pentaLight { from { fill: #2a1c40; stroke: #5a4878; } }
-@keyframes pentaPulse { 50% { opacity: 0.35; } }
-.penta-mon {
-  position: absolute; left: 50%; top: 47.2%; translate: -50% -50%; width: 26%; height: auto;
-  filter: drop-shadow(0 0 10px rgba(190, 120, 255, 0.85));
+.penta-scene.in .penta-card { translate: 0 0; }
+.penta-scene.out .penta-card { translate: 100vw 0; transition: translate 0.32s cubic-bezier(.6, 0, .9, .5); }
+.penta-head {
+  position: absolute; left: 18px; top: 10px; padding: 7px 14px; border-radius: 999px; font-size: 13px; rotate: -3deg;
+  background: #7a3ac8; color: #fff; box-shadow: 0 2px 0 #3a1470, 0 0 10px rgba(180, 110, 255, 0.7);
 }
-.penta-meter { margin: 4px 0 0; display: flex; flex-direction: column; gap: 2px; color: #e8dcff; font-size: 14px; text-shadow: 0 2px 0 #1a0a30; }
-.penta-meter b { font-size: 16px; color: #fff; }
-.penta-scene.calm .penta-gem, .penta-scene.calm .penta-halo { animation: none; }
-@media (prefers-reduced-motion: reduce) { .penta-scene .penta-top { transition: none; } .penta-scene .penta-slot :is(.penta-gem, .penta-halo) { animation: none; } }
+.penta-head small { font-size: 12px; opacity: 0.8; margin-right: 6px; }
+.penta-star { display: block; width: min(300px, 76vw); margin: 24px auto 4px; overflow: visible; --power: 0.5; }
+.penta-ring { fill: rgba(60, 20, 110, 0.35); stroke: #a060f0; stroke-width: 2; filter: drop-shadow(0 0 4px #a060f0); }
+.penta-lines { fill: none; stroke: #c890ff; stroke-width: 2.2; stroke-linejoin: round; opacity: calc(0.35 + var(--power) * 0.65); filter: drop-shadow(0 0 3px #b070ff); }
+.penta-inner { fill: rgba(20, 6, 40, 0.85); stroke: #7a3ac8; stroke-width: 1.5; }
+.penta-mon { image-rendering: pixelated; opacity: calc(0.3 + var(--power) * 0.7); filter: brightness(calc(0.35 + var(--power) * 0.65)) drop-shadow(0 0 calc(var(--power) * 6px) #c890ff); }
+.penta-slot .penta-halo { fill: var(--glow); opacity: 0; }
+.penta-slot .penta-socket { fill: #140828; stroke: #4a2a78; stroke-width: 2; }
+.penta-slot .penta-gem { fill: #2a1e3c; stroke: #4e3e66; stroke-width: 1.2; stroke-linejoin: round; }
+.penta-slot .penta-shine { fill: #ffffff; opacity: 0; }
+.penta-slot.lit .penta-halo { opacity: 0.35; animation: pentaGlow 2.4s ease-in-out infinite; }
+.penta-slot.lit .penta-socket { stroke: var(--glow); }
+.penta-slot.lit .penta-gem { fill: var(--glow); stroke: #ffffff; filter: drop-shadow(0 0 5px var(--glow)); }
+.penta-slot.lit .penta-shine { opacity: 0.55; }
+.penta-slot.flare { animation: pentaFlare 0.7s cubic-bezier(.3, 1.6, .5, 1); transform-box: fill-box; transform-origin: center; }
+@keyframes pentaGlow { 50% { opacity: 0.6; } }
+@keyframes pentaFlare { 0% { scale: 0.4; filter: brightness(4); } 60% { scale: 1.35; filter: brightness(2); } 100% { scale: 1; filter: none; } }
+.penta-pct { margin: 2px 0 10px; font-size: 14px; color: #d8c4f8; }
+.penta-pct b { font-size: 24px; color: #fff; font-weight: normal; text-shadow: 0 0 8px #b070ff; }
+.penta-list { list-style: none; margin: 0 auto 10px; padding: 0; display: grid; gap: 4px; width: fit-content; text-align: left; font-size: 13px; }
+.penta-town { display: grid; grid-template-columns: 14px auto auto; gap: 8px; align-items: center; color: #8a7aa8; }
+.penta-town em { font-style: normal; font-size: 12px; opacity: 0.8; }
+.penta-dot { width: 10px; height: 14px; clip-path: polygon(50% 0, 100% 30%, 100% 70%, 50% 100%, 0 70%, 0 30%); background: #3a2e4c; }
+.penta-town.lit { color: #fff; }
+.penta-town.lit .penta-dot { background: var(--glow); box-shadow: 0 0 6px var(--glow); }
+.penta-town.lit em { color: var(--glow); }
+.penta-line { margin: 0; font-size: 13px; line-height: 1.6; color: #e8dcff; }
+.penta-card .gym-more { border-top-color: #a060f0; }
+.penta-scene.calm .penta-card { transition: none; }
+.penta-scene.calm .penta-slot :is(.penta-halo), .penta-scene.calm .penta-slot.flare { animation: none; }
+@media (prefers-reduced-motion: reduce) { .penta-card { transition: none; } .penta-slot.lit .penta-halo, .penta-slot.flare { animation: none; } }
