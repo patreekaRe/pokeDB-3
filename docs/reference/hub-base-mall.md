@@ -63,7 +63,7 @@ The first section began as the note on playtesting the live site and grew into t
 - **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
   the HOUSE UPGRADES blueprint, dashed till bought, its door's column lined up with the back door and a path drawn to it; a
   tap shows its card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
-  `secretBase.house.yard` `{ size, items, wall, floor }` (`size` for the bigger yard to come), its things packed there
+  `secretBase.house.yard` `{ size, items, wall, floor }` (`size` 2 the bigger yard, part e), its things packed there
   like a room's (`roomContents()` / `goRoom()` / `eachRoom()`). It is not one of `houseRooms()`, so nothing is built onto
   it or counted on the grid; `roomById(house, 'yard')` (`yardOf()`) reaches it, kind `yard` (12 x 8, `outdoor`) in
   `ROOM_KINDS`. The main room's back door (`backDoorOf()` in `js/data/house.js`): the first back-wall tile from three in
@@ -110,6 +110,12 @@ The first section began as the note on playtesting the live site and grew into t
   (100) a UTC day. `tendPlot()` (from `makePiece()`) lays the plant, merged meshes cached per berry and stage, and a "!"
   sprite on a ripe plot; `liveGarden()` (each frame) bobs the "!" where the lawn's bend draws it and every 5 s swaps a
   plant whose stage turned over (at once after the window changes one).
+- **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
+  in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
+  (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;
+  `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
+  (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
+  `?yard=big` lends the bigger one.
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
@@ -143,7 +149,7 @@ The first section began as the note on playtesting the live site and grew into t
   painted px, a gold-rayed leaf crest on a green-shingled roof, lanterns off its tips, teal banners, carved stone feet with
   glowing runes, `clearingGateArt()`; its opening shimmers and motes rise out of it, `gateVeilArt()` / `liveGateway()`, and
   a teal lamp lights the ground before it after dark; Halloween's hay there taken out as clutter), New game's Pokéstop
-  and the route sign just inside it, a step out from the gate's sides so neither hides its face (`STOP_AT` / `SIGN_AT`; the stop moved a step nearer the avenue and the camera 2026-10-14, the orange tree that stood behind it taken out, the user's ask); setting out walks
+  and the route sign just inside it, since 2026-10-15 right beside the gate's posts, one each side, just outside its feet so neither hides their runes (`STOP_AT` / `SIGN_AT`, nudged in by `STAND_IN`; the user's ask; on 2026-10-14 they stood a row or two forward, the orange tree behind the stop taken out). The signs that are places of their own (the route sign, the Safari's and the Sky Pillar's boards, the Nietos' name board) hop and wiggle every few seconds, a gold glint twinkling at their corner, so they read as something to tap (`beckon()` / `liveBeckons()`, 2026-10-15, the user's ask; still when calm). The jack-o'-lanterns at the gate's feet were taken out the same day; setting out walks
   your partner north under it and off into the painted view (`walkOut()`), and it walks in that way (`enterHub()`,
   `walkBackIn()`); the Safari gate and the Sky Pillar in the back corners up trails off the ring road, the open meadow
   behind (`MEADOW`) and the view across the whole back with both roads in it (`vistaSpan()`, `vistaArt(time, w, roads)`);

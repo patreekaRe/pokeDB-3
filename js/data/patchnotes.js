@@ -43,8 +43,11 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['base', 'The backyard can grow: tap it on the PC\'s House Upgrades to make it bigger, everything out there keeping its place.'],
   ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
   ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],
+  ['hub', 'Kenmatta\'s dojo in the Clearing stays shut until you\'ve beaten him once in a run\'s ? room.'],
+  ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
