@@ -815,6 +815,7 @@ export const SPRITE_FIT = {
   'luxray-front': [1, 0, 3, 4],
   'buneary-front': [13, 1, 5, 3],
   'glameow-front': [11, 0, 0, 17],
+  'glameow-black-front': [11, 0, 0, 17],
   'chingling-front': [15, 8, 1, 5],
   'bronzor-front': [11, 10, 8, 8],
   'happiny-front': [8, 0, 0, 0],

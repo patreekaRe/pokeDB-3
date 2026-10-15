@@ -250,7 +250,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    `lagoonKinds()` in `js/event-3d.js`); jungle banks of palms (`lagoonJungle()`), moored rowboats (`y`), drowned columns
    (`|`), nets drying (`n`), the beacon on its rock (Wingull nesting), the Aquarium's glass dome (walked in: Lapras, Mantine,
    Corsola, Chinchou, Lanturn in its pools), Pat's houseboat (fairy lights, a rose in a bottle; he serenades the moon after
-   10 p.m.), Kayl's house (Spooky the Purrloin and Reya the Glameow, a home's `names`), Pelipper's Bait & Tackle (the trade);
+   10 p.m.), Kayl's house (Spooky the black cat, a recoloured Glameow, and Reya the purple Purrloin, 15 lines each; a home's `names`), Pelipper's Bait & Tackle (the trade);
    10 locked huts, 10 folk (Wooper, Psyduck, Slowpoke, Corphish, Marill, Poliwag, Buizel, Krabby, Wingull, Staryu; 9 cries
    added), its own requests (fights, the Mart, ❓ rooms, a flawless fight, the Gym). Homes' walls can be `boards` / `aqua`.
    The towns test now knows a bench takes two tiles. Branch `towns` (and `claude/next-town-oahwio`), waiting on the user's
