@@ -285,64 +285,43 @@ function note(K, x, y, z, w, h, draw, { ry = 0, tilt = 0, paper = '#fffaf0' } = 
 
 const NIGHT = (t) => t === 'night';
 
-/** JONA, Phil's demon, in his back right corner (the user's sprite, 2026-10-15; her back made from it, jona-back.png): her
-    back to the room. Come within a few steps and she turns round to watch you, and back to the wall once you go; now and
-    then, with nobody near, she's just facing you, and then she isn't. */
+/** JONA, Phil's demon, in his back right corner (the user's sprite, 2026-10-15), facing the room, a violet glow behind
+    her. Her board is built with the room and the sprite painted onto it once it loads: added after the build, she never
+    showed on the user's screen. */
 function jona(K) {
-  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.55), H = 2.05;
+  const T = K.THREE, x = ex(K, 12.45), z = ez(K, 0.55), H = 2.05, CW = 38, CH = 67;   // CW x CH: the sprite's opaque box
   block(K, 12, 0);
-  const load = (src) => new Promise((ok) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ok(null); i.src = src; });
   const dark = part(K, new T.CircleGeometry(0.55, 24), lit(K, '#000000', { transparent: true, opacity: 0.45, depthWrite: false }), x, 0.01, z);
   dark.rotation.x = -Math.PI / 2;
   quiet(dark);
   motes(K, () => K.fireflyArt('#9040e0'), 4, [x - 0.5, x + 0.3], [0.4, 2.1], [z - 0.3, z + 0.5], 0.1);
-  Promise.all([load('assets/trainers/gym/jona.png'), load('assets/trainers/gym/jona-back.png')]).then(([front, back]) => {
-    if (!front || !back) return;
-    const crop = (img) => {   // to the opaque pixels, so her feet are the board's bottom
-      const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(img, 0, 0);
-      const d = g.getImageData(0, 0, c.width, c.height).data;
-      let x0 = c.width, x1 = 0, y0 = c.height, y1 = 0;
-      for (let i = 3; i < d.length; i += 4) if (d[i] > 8) { const px = (i >> 2) % c.width, py = (i >> 2) / c.width | 0; x0 = Math.min(x0, px); x1 = Math.max(x1, px); y0 = Math.min(y0, py); y1 = Math.max(y1, py); }
-      const o = document.createElement('canvas'); o.width = x1 - x0 + 1; o.height = y1 - y0 + 1;
-      o.getContext('2d').drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
-      return o;
-    };
-    const faces = [crop(back), crop(front)].map(c => K.texOf(c));
-    const w = H * faces[0].image.width / faces[0].image.height;
-    // upright boards, not THREE.Sprites: a sprite leans back to face the looking-down camera, and this near the corner her
-    // head went into the wall
-    const board = () => { const g = new T.PlaneGeometry(1, 1); g.translate(0, 0.5, 0); return g; };
-    const m = new T.MeshBasicMaterial({ map: faces[0], alphaTest: 0.5, toneMapped: false, fog: false, side: T.DoubleSide });
-    m.color.setRGB(1.75, 1.7, 1.8);   // lit as if by her own glow, or the dark corner turns her to a silhouette
-    const her = new T.Mesh(board(), m);
-    her.scale.set(w, H, 1); her.position.set(x, 0.02, z); her.raycast = () => {};
-    const halo = document.createElement('canvas'); halo.width = halo.height = 64;
-    const hg = halo.getContext('2d'), rg = hg.createRadialGradient(32, 32, 0, 32, 32, 32);
-    rg.addColorStop(0, 'rgba(176,96,255,0.75)'); rg.addColorStop(0.5, 'rgba(120,48,220,0.3)'); rg.addColorStop(1, 'rgba(60,0,120,0)');
-    hg.fillStyle = rg; hg.fillRect(0, 0, 64, 64); halo.hd = 2;
-    const aura = new T.Mesh(board(), new T.MeshBasicMaterial({ map: K.texOf(halo), transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
-    aura.scale.set(w * 2.4, H * 1.35, 1); aura.position.set(x, -0.4, z - 0.08); aura.raycast = () => {};
-    K.B.group.add(aura, her);
-    let facing = 0, turnAt = 0, snapped = false, snapAt = performance.now() + 20000, snapTill = 0;
-    const show = (f) => { facing = f; m.map = faces[f]; };
-    K.B.ticks.push((now) => {
-      const b = K.buddy?.(), near = !!b && Math.hypot((b.x ?? 0) - x, (b.z ?? 0) - z) < 3.2;
-      if (!near && !K.calm() && now > snapAt) { snapTill = now + 1300; snapAt = now + 25000 + Math.random() * 30000; }
-      const snap = !near && now < snapTill, want = near || snap ? 1 : 0;
-      if (snap !== snapped) { snapped = snap; if (!turnAt) show(want); }   // the snap: no turning, she's just facing you, then not
-      else if (want !== facing && !turnAt) turnAt = now;
-      let sx = 1;
-      if (turnAt) {   // a slow turn: narrowing to nothing, the other side, widening again
-        const k = Math.min(1, (now - turnAt) / (K.calm() ? 1 : 900));
-        if (k >= 0.5 && facing !== want) show(want);
-        sx = Math.abs(Math.cos(k * Math.PI));
-        if (k >= 1) turnAt = 0;
-      }
-      her.scale.x = w * Math.max(0.04, sx);
-      if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2;
-    });
-  });
+  const board = () => { const g = new T.PlaneGeometry(1, 1); g.translate(0, 0.5, 0); return g; };
+  const c = document.createElement('canvas'); c.width = CW; c.height = CH;
+  const map = K.texOf(c), w = H * CW / CH;
+  const m = new T.MeshBasicMaterial({ map, transparent: true, alphaTest: 0.5, toneMapped: false, fog: false, side: T.DoubleSide });
+  m.color.setRGB(1.75, 1.7, 1.8);   // lit as if by her own glow, or the dark corner turns her to a silhouette
+  const her = part(K, board(), m, x, 0.02, z); her.scale.set(w, H, 1);
+  const halo = document.createElement('canvas'); halo.width = halo.height = 64;
+  const hg = halo.getContext('2d'), rg = hg.createRadialGradient(32, 32, 0, 32, 32, 32);
+  rg.addColorStop(0, 'rgba(176,96,255,0.75)'); rg.addColorStop(0.5, 'rgba(120,48,220,0.3)'); rg.addColorStop(1, 'rgba(60,0,120,0)');
+  hg.fillStyle = rg; hg.fillRect(0, 0, 64, 64); halo.hd = 2;
+  const aura = part(K, board(), new T.MeshBasicMaterial({ map: K.texOf(halo), transparent: true, blending: T.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }), x, -0.4, z - 0.08);
+  aura.scale.set(w * 2.4, H * 1.35, 1);
+  her.castShadow = aura.castShadow = aura.receiveShadow = false;   // a board's shadow is its whole rectangle
+  quiet(her); quiet(aura);
+  const img = new Image();
+  img.onload = () => {
+    const g = c.getContext('2d', { willReadFrequently: true }), t = document.createElement('canvas');
+    t.width = img.width; t.height = img.height;
+    const tg = t.getContext('2d', { willReadFrequently: true }); tg.drawImage(img, 0, 0);
+    const d = tg.getImageData(0, 0, t.width, t.height).data;
+    let x0 = t.width, y0 = t.height;
+    for (let i = 3; i < d.length; i += 4) if (d[i] > 8) { x0 = Math.min(x0, (i >> 2) % t.width); y0 = Math.min(y0, (i >> 2) / t.width | 0); }
+    g.drawImage(t, x0, y0, CW, CH, 0, 0, CW, CH);
+    map.needsUpdate = true;
+  };
+  img.src = 'assets/trainers/gym/jona.png';
+  K.B.ticks.push((now) => { if (!K.calm()) aura.material.opacity = 0.8 + Math.sin(now / 900) * 0.2; });
 }
 
 export const LEADER_HOMES = {
