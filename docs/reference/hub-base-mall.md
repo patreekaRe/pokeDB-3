@@ -114,7 +114,7 @@ The first section began as the note on playtesting the live site and grew into t
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line.
 - **Kurt's Workshop** (2026-10-14, towns on only): tiles 23-25 x 6-8 in the plaza's north-east, its door on a path to the
-  east avenue; Halloween's pumpkin patch sits either side of that path now. Detail: `docs/reference/towns.md`.
+  east avenue. Halloween's pumpkin patch and scarecrow sit on the south-east lawn by the Nietos' house since 2026-10-15 (the user's ask: they crowded the Secret Base's door). Detail: `docs/reference/towns.md`.
 
 - **The Nietos' house, a storybook cottage** (2026-10-14, the user's ask: "more aesthetic than a stupid bland house"):
   `nietosHouse(g, x, z, home)` in `js/hub-3d.js`. Its paintings are made once in `cottageArt()` (butter-cream clapboard,

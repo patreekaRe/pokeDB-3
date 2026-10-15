@@ -2749,9 +2749,10 @@ function dressSeason() {
       [...P_(9), TREE_AT.tx - 1, TREE_AT.ty + 2, 2.2, 0, 0],   // by the Ancient Tree's door
       [lanternArt(0), 'white', 12, 4, 1.3, 0, 0], [lanternArt(1), 'white', 18, 4, 1.3, 0, 0],   // lantern posts up the north avenue
       [lanternArt(2), 'white', 12, 16, 1.3, 0, 0], [lanternArt(3), 'white', 18, 16, 1.3, 0, 0],   // and down the south one
-      // the pumpkin patch up behind Kurt's Workshop, either side of it
-      [...P_(5), 26, 7, 4.4, 0, -0.1], [...P_(6), 22, 7, 2.2, 0, 0.1], [...P_(7, false), 23, 7, 1.9, 0, -0.2],
-      [scarecrowArt(), 'white', 22, 6, 1.5, 0, 0],
+      // the pumpkin patch on the south-east lawn, short of the Nietos' house (moved 2026-10-15, the user's ask: up by
+      // the Ancient Tree the scarecrow stood at the Secret Base's door)
+      [...P_(5), 21, 17, 4.4, 0, -0.1], [...P_(6), 20, 18, 2.2, 0, 0.1], [...P_(7, false), 19, 18, 1.9, 0, -0.2],
+      [scarecrowArt(), 'white', 19, 17, 1.5, 0, 0],
       [deadTreeArt(0), 'white', 11, 9, 1.7, 0, -0.2],   // the graveyard before the dojo: a row of stones by the dead tree, a candle at each end
       [graveArt(0), null, 5, 9, 1.4, 0, 0], [graveArt(1), null, 6, 9, 1.5, 0, 0], [graveArt(2), null, 8, 9, 1.5, 0, 0], [graveArt(3), null, 9, 9, 1.4, 0, 0],
       [candlesArt(0), 'white', 5, 10, 1.1, 0, -0.1], [candlesArt(1), 'white', 8, 10, 1.1, 0, -0.1],
@@ -2780,7 +2781,7 @@ function dressSeason() {
     yardTiles.add(key(10, 2));
     for (const l of cauldron.lights) lamps.push(l);
     // the giant pumpkin lights the ground round it after dark
-    for (const [colour, at, k] of [['#ff9030', [tileX(24), 1.2, tileZ(9) + 1.4], 0.8]]) {
+    for (const [colour, at, k] of [['#ff9030', [tileX(21), 1.2, tileZ(17) + 1.4], 0.8]]) {
       const l = new THREE.PointLight(colour, 0, 4, 1.6);
       l.position.set(...at);
       l.userData.k = k;

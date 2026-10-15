@@ -136,7 +136,7 @@ biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks i
 
 **Kurt's Workshop** (session 3 of Towns step 6, 2026-10-14; only while `townsOpen()`). A timber workshop in the
 Clearing's north-east (`WORKSHOP_AT` 23,8 in `js/hub-3d.js` since 2026-10-15, the user's ask: its door right on the east avenue, a short `towns:
-true` road joining them; Halloween's pumpkin patch moved up behind it, either side), walked into like the Nietos' house: `CLEARING.buildings` /
+true` road joining them; Halloween's pumpkin patch moved off to the south-east lawn the same day, away from the Secret Base's door), walked into like the Nietos' house: `CLEARING.buildings` /
 `homes.workshop` (`kurt: true`, a Slowpoke cast) in `js/data/towns.js`, `HOMES.clearing.workshop` in `js/event-3d.js`
 (`kurtAt`: Kurt, `assets/trainers/kurt.png` drawn for it, is the room's spot 0 like a shop's keeper). His window is
 `openWorkshop()` in `js/workshop.js` (since 2026-10-15, the user's ask, a crafting bench, `.dialog.craft`: a wooden window,
