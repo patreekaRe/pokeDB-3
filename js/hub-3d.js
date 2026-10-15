@@ -1934,6 +1934,7 @@ async function enterCamp() {
 }
 
 let warp = null;   // a Waystone's light carrying your partner away (out) or setting it down (in)
+let cutscene = false;   // your partner walked by the scene (up to the Waystone as it mends, homeNews()): taps wait
 
 /** Off through the Waystone to a mended town (`t`, a RING entry): a column of its light rises round your partner, which
     fades up into it, then the town. */
@@ -1984,6 +1985,16 @@ async function homeNews() {
     }
     welcomeHome('clearing');
     const glow = '#9fe0ff';
+    // out of the Nietos' house the stone was off the screen (the user's ask, 2026-10-14): your partner walks up to it
+    // first, the view following, and faces it as it wakes
+    cutscene = true;
+    hideCard();
+    walker.path = route(walker.tile, SPAWN); aim = null;
+    for (const t0 = performance.now(); running && walker.path.length && performance.now() - t0 < 9000;) await new Promise(r => setTimeout(r, 50));
+    if (!running) return;
+    walker.path = [];
+    walker.facing = mon.sheets.back ? 'back' : 'front'; walker.flip = false;
+    await new Promise(r => setTimeout(r, calm ? 0 : 350));
     warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 4200 };
     if (!calm) setTimeout(() => playSound('charge'), 300);
     await new Promise(r => setTimeout(r, calm ? 0 : 1300));   // the light at its brightest: the stone swapped for the whole one
@@ -1998,7 +2009,7 @@ async function homeNews() {
     await wayCard(CLEARING.name, glow);
     await awakenTalk([[GYM_BY_ID.nietos, QUESTS.clearing.awaken.nietos]], glow);
     playSound('stat-up');
-  } finally { homeNewsBusy = false; questMarks(); }
+  } finally { homeNewsBusy = false; cutscene = false; questMarks(); }
 }
 
 /** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
@@ -2903,6 +2914,7 @@ function goTo(p, enter, i = null) {
 }
 
 function arrived() {
+  if (cutscene) return;
   if (outbound) { const go = outbound; outbound = null; if (running) go(); return; }
   if (returning) { returning = false; here = null; walker.facing = 'front'; walker.flip = false; walker.hopUntil = performance.now() + 500; return; }
   here = placeAt(walker.tile);
@@ -3446,7 +3458,7 @@ function ndc(e) {
 
 function onTap(e) {
   if (dragged) { dragged = false; return; }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const rays = tapRays(e), ghosts = spooks?.boards() || [], under = [mon.board, ...ghosts, placeGroup, ...(cauldron ? [cauldron.hit] : [])];
   let hit;
   for (const ray of rays) if ((hit = ray.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h)))) break;
@@ -3500,7 +3512,7 @@ function walkTo(to) {
 let drag = null, dragged = false;
 
 function onDown(e) {
-  if (held || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
+  if (held || cutscene || arriving || leaving || outbound || returning || (e.button ?? 0) > 0) return;
   drag = { id: e.pointerId, x: e.clientX, y: e.clientY, moved: false, last: '' };
 }
 
@@ -3511,7 +3523,7 @@ function onDrag(e) {
     drag.moved = true;
     view.setPointerCapture?.(e.pointerId);
   }
-  if (held || arriving || leaving || outbound || returning) return;
+  if (held || cutscene || arriving || leaving || outbound || returning) return;
   const to = groundTile(tapRays(e));
   if (!to || key(to.x, to.y) === drag.last) return;
   drag.last = key(to.x, to.y);

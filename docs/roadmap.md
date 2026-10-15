@@ -42,7 +42,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    without Three.js), and `buildTown()` / `townCrowd()` in `js/event-3d.js` (kind `town`, 13 x 18: a stone road to a
    vermilion torii, the far gate, `R.exitAt`; machiya, a pagoda, stone lanterns, cedars and maples dropping leaves; the
    request board and Delibird's stall in the square; John and Jahmes off duty, a tap chatting, `R.talks`; 4 of 10 Eevee-
-   family and Ecruteak folk on the crowd code, cries added). The trade is one Bag item for another of the same rarity; the
+   family and Ecruteak folk on the crowd code, cries added). The trade is one Bag item for another of the same rarity (since 2026-10-15 picked in a window, `js/town-trade.js`; archive); the
    board shows one request at a time (5, in order, counted only in the Shrine) and hands a finished one in on a later
    visit for `REQUEST_COINS` 40 and +1 friendship (`MEND_AT` 5 mends the Waystone, session 2). Leave asks first only while
    a real pick is left (`askFirst()` skips `.locked` and info-only options now). Patch-notes line in `NEXT` (cut the patch
@@ -305,6 +305,11 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    the town's Gym Leaders slide in glowing with new `awaken` lines (`docs/reference/towns.md`, "The waking, made epic").
    Branch `claude/next-town-oahwio` and `main`. Waiting on the user's playtest: `?town=<biome>&mend` (hand the
    shard in at the board). Next: whatever they want tuned in it.
+   **Walk-up (2026-10-14, the user's ask: out of the Nietos' house the stone was off the screen):** your partner now walks
+   up to the stone's doorstep first, the camera following, then the light show plays (a camera pan was tried first; the
+   user picked the walk-up). The Clearing: `cutscene` in `js/hub-3d.js`. Towns: `t0` waits on the walk in `mendStone()`.
+   Leaving the house after the shard is no longer a cut: a walk to the doormat and a fade (`outSlow()` in `js/run.js`).
+   On `main`; waiting on the user's playtest.
 **Done (2026-10-14): the towns' great halls, inside, made huge** (the user: "they SUCK the insides need to be HUGE and be
    super aesthetic and make sense"): the theater, bathhouse, aquarium, Nursery and caravanserai are 17 x 12 halls built
    as what they are (`js/town-halls.js`, `docs/reference/towns.md`'s last section). On `main`; the user playtested
@@ -430,7 +435,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      His window makes, from Satchel materials (`RECIPES` in `js/data/workshop.js`): the 6 quest items (the katana from Cinder
      Springs' ore), 2 craft-only pieces a town plus John's festival piece, a gift for each of the 10 town leaders (given in
      their home: their favourite earns a signature piece) and 7 Apricorn looks for the Safari Ball. Detail:
-     `docs/reference/towns.md`. Open for later: what `liked` (gift friendship) is for. (The Nietos got gifts 2026-10-15: the
+     `docs/reference/towns.md`. What `liked` (gift friendship) is for: step 8. (The Nietos got gifts 2026-10-15: the
      Acorn Rattle earns a Big Kangaskhan doll.) (2026-10-15: the workshop is boarded shut till Law sends you for the Waystone Chime, and Kurt introduces himself on your first visit. Branch `claude/magical-hamilton-ve8726`, pushed to `main` too.)
      Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too (1094195).
    - **Session 4 done (2026-10-14): the shard.** At the shard step one Alpha on the biome's map has the town's shard over it
@@ -446,7 +451,7 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for. Towns stay off (`TOWNS_LIVE`) till the user says.
+     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Gift friendship (`liked`): step 8. Towns stay off (`TOWNS_LIVE`) till the user says.
 
 7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
    Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
@@ -501,6 +506,27 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      TAKOYAKI / YAKISOBA stalls and a taiko. Mended in front of you, it appears as the stone blazes. Peek:
      `?town=shrine&towns&time=night&fest=lantern|moon|fireworks` (`&mend` too to watch it appear). On `main`, waiting on
      the user's look. Next: none planned; the user's call whether other towns' picks get the same.
+
+8. **Friendship: what gifts are for** (the user's picks, 2026-10-14; this answers step 6's open question on `liked`). Gifts
+   already count up per leader (`liked` in `workshopOf()`, `js/data/workshop.js`: +1 a gift, +2 their favourite) and the
+   favourite's first earns their signature piece (`fond`). That count becomes **hearts, 5 a leader** (10 town leaders and
+   the Nietos), and they unlock:
+   - **At home**: (1) a row of 5 hearts in each leader's home (on their name sign or the chat) and on the PC (a Friends
+     page); (2) new lines at each heart, more personal: chats, jokes and stories about the other friends (`HEART_LINES`
+     beside `HOME_LINES` in `js/data/towns.js`, 5 a leader); (3) Secret Base visits: from 3 hearts they drop by
+     (`secret-base.js`'s home guests, mended town or not), at 5 they come often and sit on your furniture.
+   - (8) **Their own requests**: a leader at 3+ hearts posts a small request on their town's board (the coin requests'
+     code), paying PokéCoins.
+   - **Rewards**: (9) a second and third signature piece in their style at more hearts (3 and 5; the first stays their
+     favourite gift's); (10) a friendship badge each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`),
+     a gold one for all of them; (11) now and then a liked leader mails you through the PC: coins, a material, or a
+     recipe; (12) each leader teaches Kurt one secret recipe at a set heart count (a `RECIPES` line each, made only once
+     taught).
+   - Nothing here gives power in a run, so no bot check. Hearts can't pass 5; gifts past that still please them (a line).
+   - **Sessions** (each ▶ Run in: CLOUD, then playtest on a githack link with `?towns&satchel&gymwins=10`):
+     (a) hearts: the pure helper (`heartsOf()`), the row at home and the PC's Friends page, tests; (b) the heart lines,
+     all 11 leaders; (c) base visits and sitting on furniture; (d) signature pieces 2 and 3 (22 new furniture models,
+     maybe two sessions); (e) badges, mail and Kurt's secret recipes; (f) their board requests (towns on only).
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

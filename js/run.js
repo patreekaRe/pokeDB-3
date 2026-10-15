@@ -1899,6 +1899,21 @@ function askPick(step) {
 function homeRoom(b, onward = null) {
   const town = placeOf(run.town.id), home = town.homes[b.home], thisRun = run, t = run.town;
   const out = () => { if (run === thisRun) (onward ? onward() : town.home ? goHome(b.back ?? b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
+  // the shard handed in: out of the door under a slow fade rather than a cut (the user's ask, 2026-10-14: "it happens so
+  // fast"), your partner walking to the doormat first; the town's room lifts it once it's in (goHome()'s hub does its own)
+  const outSlow = async () => {
+    if (run !== thisRun) return;
+    event3dMod?.freezeEvent(true);
+    await event3dMod?.walkToDoor();
+    if (run !== thisRun) return;
+    const { curtain } = await import('./hd2d.js');
+    playSound('door');
+    await curtain(true, 650);
+    if (run !== thisRun) return curtain(false, 0);
+    if (onward) { onward(); curtain(false, 500); }
+    else if (town.home) goHome(b.back ?? b.id);
+    else townRoom(() => setTimeout(() => curtain(false, 700), 200), b.door);
+  };
   const again = () => { if (run === thisRun) { checkpoint(); homeRoom(b); } };
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
   const options = [];
@@ -1910,21 +1925,24 @@ function homeRoom(b, onward = null) {
       again();
     }));
   } else if (b.home === 'shop') {
-    const give = t.trade && ITEMS_BY_ID[t.trade.give], get = t.trade && ITEMS_BY_ID[t.trade.get];
-    if (t.trade && !t.traded && !(give && get && run.items.includes(give.id))) t.trade = null;   // an item since retired, or no longer held
-    options.push(!t.trade
-      ? spotOption('Trade', town.trader.none, null, true)
-      : t.traded
-        ? spotOption('Trade', town.trader.done, null, true)
-        : spotOption('Trade', town.trader.offer.replace('{give}', give.name).replace('{get}', get.name), () => {
+    if (!t.traded && !t.trade?.offers) t.trade = rollTrade();   // a run saved before the trade window (one fixed offer)
+    const held = run.items.filter(id => ITEMS_BY_ID[id]);
+    options.push(t.traded
+      ? spotOption('Trade', town.trader.done, null, true)
+      : !held.length
+        ? spotOption('Trade', town.trader.none, null, true)
+        : spotOption('Trade', `${town.trader.name}: Got something to swap? Show me your Bag.`, async () => {
             if (run !== thisRun) return;
-            const at = run.items.indexOf(give.id);
+            const { pickTrade } = await import('./town-trade.js');
+            const deal = await pickTrade(town.trader, held, t.trade.offers, { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage) });
+            if (run !== thisRun) return;
+            const at = deal ? run.items.indexOf(deal.give) : -1;
             if (at < 0) return again();
-            run.items[at] = get.id;
+            run.items[at] = deal.get;
             t.traded = true;
             playSound('item-get');
             event3dMod?.eventRoom3d()?.does('trader', 'hop');
-            tell(`Traded your ${give.name} for ${get.name}!`);
+            tell(`Traded your ${ITEMS_BY_ID[deal.give].name} for ${ITEMS_BY_ID[deal.get].name}!`);
             again();
           }));
   }
@@ -1990,7 +2008,7 @@ function homeRoom(b, onward = null) {
     await talkOut(cstep.thanks);
     if (run !== thisRun) return;
     tell(coins ? `Quest step done! +${coins} PokéCoins.` : 'Quest step done!');
-    if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
+    if (cstep.kind === 'shard') return outSlow();   // out to the plaza: js/hub-3d.js lights the stone as you step out
     again();
   } : mineReady ? async () => {
     const pick = mine.pick ? await askPick(mine) : null;
@@ -2004,7 +2022,7 @@ function homeRoom(b, onward = null) {
     if (pick) tell(`${leader.name} picked the ${pick.label}!`);
     if (mine.gives) tell(`${KEY_BY_ID[mine.gives].icon} ${KEY_BY_ID[mine.gives].name} went into your Satchel.`);
     tell(coins ? `Quest step done! +${coins} PokéCoins.` : real ? 'Quest step done!' : 'Quest step done! (A playtest: nothing is saved.)');
-    if (mine.kind === 'shard') { t.mendNext = true; return out(); }   // out into the town, where the stone mends (townRoom())
+    if (mine.kind === 'shard') { t.mendNext = true; return outSlow(); }   // out into the town, where the stone mends (townRoom())
     again();
   } : reqMine ? async () => {
     const was = real ? isMended(town.id) : mended(tst);
@@ -2142,14 +2160,12 @@ export async function campTalk() {
 /** A town is walked in 3D only: without Three.js (or under `?event2d`) the run goes straight on into the biome. */
 const town3d = () => !town3d.failed && !new URLSearchParams(location.search).has('event2d');
 
-/** The stall's one trade: one of your items for another of the same rarity from your type's (a sidegrade, never more);
-    null with an empty Bag. */
+/** The trader's offers (js/town-trade.js): every item of your type's, in a rolled order per rarity, so whichever Bag
+    item you pick to give, the window offers the first few of its rarity you don't hold (a sidegrade, never more). */
 function rollTrade() {
-  const held = run.items.filter(id => ITEMS_BY_ID[id]);
-  if (!held.length) return null;
-  const give = pickOne(held), rarity = ITEMS_BY_ID[give].rarity;
-  const pool = itemsForType(run.starter.type).filter(i => i.rarity === rarity && !held.includes(i.id));
-  return pool.length ? { give, get: pickOne(pool).id } : null;
+  const pool = itemsForType(run.starter.type), offers = {};
+  for (const rarity of new Set(pool.map(i => i.rarity))) offers[rarity] = shuffled(pool.filter(i => i.rarity === rarity)).map(i => i.id);
+  return { offers };
 }
 /** A leader's wins before this one: back in the gym from Continue after its rewards began, this win is already in the
     save (afterFight()'s `counted`), so the hand-over mustn't read it as one more (it said "beaten 2 times" after one). */

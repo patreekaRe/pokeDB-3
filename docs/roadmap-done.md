@@ -2449,3 +2449,14 @@ or greets on or beside the doormat (`byDoor()`). Walking up to a regular's game 
   the questline? THEN they become the quest givers"): coming home after beating them, Law and Britt only point you to their
   notice (`QUESTS.clearing.call`, once) and your partner walks to the quest board; reading it tells the Waystone's story and
   starts the questline, whose steps then go to them at home. Tapped at home before that, they send you to the board.
+- **A town's trade is a window** (2026-10-15, the user's ask: the trader offered one random swap, "is it just potions?",
+  no menu to choose): `js/town-trade.js`'s `pickTrade()`, the town shop's window: your Bag on top, tap the item to give,
+  then one of three of its rarity from your type's (a rolled order per rarity, `rollTrade()`, kept through a refresh), then
+  Trade. Still once per town per run, a sidegrade, so no bot check. The `?town=` peek's Potion was why playtests only
+  showed potion swaps. Tested headless (Lantern Village, Sunwell Bazaar), 243 tests pass.
+- **The trade window as an MMO's** (2026-10-15, the user's ask: "clearer, and visual"; the TRADE sign "lower closer to
+  their heads, depending on the pokemon"): you (your partner's sprite) and the trader across a table, an offer slot each
+  (dashed till filled, rimmed in the item's rarity), arrows between that wake once both are set, your Bag and their three
+  offers in inventory squares under each side; Trade puts READY on you, then them, the two items cross and TRADE
+  COMPLETE! shows before the window shuts. The trader's sign (and Kurt's) sits on their sprite's measured top,
+  `overHead()` in `js/event-3d.js`, not a fixed 2.2 (Delibird's 31px lower on a phone). Tested headless in all five towns.

@@ -10,7 +10,9 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   is `R.exitAt`, its houses' doors `R.doors`, its folk `townCrowd()` on `makeCrowd()`, its camera higher, `pitch`). Houses
   with a `home` are walked into (`homeRoom()` in `js/run.js`, kind `home`, `HOMES` in `js/event-3d.js`: Delibird's shop
   holds the trade, the Gym Leaders are at home, `R.talks`), the rest knock. A town makes no run stronger: one sidegrade
-  trade, requests paying PokéCoins. `?town=shrine`. Since session 3 (2026-10-13) the Wastes' **Cinder Springs** too (`?town=wastes`):
+  trade (since 2026-10-15 a window, `pickTrade()` in `js/town-trade.js`, laid out the same day like an MMO's trade window: you and the trader across a table, an offer slot each with a rarity rim, your Bag and their offers under them, both READY then the items cross over; the trader's sign sits on their head, `overHead()` in `js/event-3d.js`, from the sprite's top: tap a Bag item to give, pick one of `TRADE_OFFERS`
+  3 of its rarity from your type's you don't hold; `rollTrade()` rolls one order per rarity into `run.town.trade.offers`, a
+  run saved with the old one fixed offer re-rolls), requests paying PokéCoins. `?town=shrine`. Since session 3 (2026-10-13) the Wastes' **Cinder Springs** too (`?town=wastes`):
   a town's `style` picks its dress (`TOWN_STYLES` in `js/event-3d.js`: ground tints, flowers, litter, forest, houses, gate,
   lamps, what drifts; the Shrine's is `village`, the Wastes' `springs`: `crags()`, adobe `cabin()`s with smoking chimneys,
   `mineGate()`, `minehead()`, `springs()` on `o` tiles, `puffs()` of smoke and steam), its map tiles `= c k o` (rails,
@@ -243,6 +245,14 @@ Then `wayCard()` (THE WAYSTONE OF / town / AWAKENS, a band sweeping open, a tap 
 leader in `QUESTS[id].awaken` slides in in turn, glowing in the town's colour (`.gym-scene.awaken`, `--glow`, plate
 WAYSTONE KEEPER). The Clearing's (`homeNews()` in `js/hub-3d.js`) gets a taller beam, a shockwave (`wave` in
 `liveWarp()`), the flash, the card and the Nietos' `awaken` lines. Calm effects: no flash or shake, the card still.
+**Your partner walks up to the stone first** (2026-10-14, the user's ask: out of the Nietos' house the stone was off the
+screen; they picked this over a camera pan): in the Clearing `homeNews()` routes it to the Waystone's doorstep (`SPAWN`)
+under `cutscene` (taps, drags and `arrived()` wait), faces it to the stone, then the light; in a town `mendStone()` routes
+it to the stone's door step (`R.doors[st.spot]`) and starts the show (`t0`) once it's there, the crystal rising off it
+beside the stone. Both give up waiting after 9 s. Out of the leader's house first (the user's ask, same day: "it
+happens so fast"): `outSlow()` in `homeRoom()` walks your partner to the doormat (`walkToDoor()` in `js/event-3d.js`,
+`doorWalk` keeping `arrived()` from leaving), then a 650 ms fade to black with the door sound; the town's room lifts it
+once it's in (`townRoom()`'s `covered`), the Clearing's hub through `goHome()` as any door.
 **Leaders coming home** (this replaces `LEADER_VISITS_LIVE` being off): once a town is mended, `homeLeaders()` in
 `js/data/towns.js` lists its Gym Leaders. One a UTC day stands by the Clearing's Waystone, left of it (`GUEST_AT`,
 `standGuest()` in `js/hub-3d.js`, a place `guest`; its card says their lines): `todaysGuest()` in `js/towns.js` →
