@@ -13,7 +13,7 @@ import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
 
 /** What the Workshop can see of the save, for shows(). */
-const seen = (save) => ({ towns: Object.fromEntries(RING.map(t => [t.id, townState(save, t.id)])), wins: (id) => gymWins(save, id) || 0 });
+const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => gymWins(save, id) || 0 });
 
 /** The recipes on a shelf now. */
 export const shelf = (tab, save = getSave()) => RECIPES.filter(r => r.kind === tab && shows(r, seen(save)));

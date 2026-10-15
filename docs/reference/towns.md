@@ -165,20 +165,31 @@ nearest piece that hits. The floating signs (`placeSigns()`) and the folk's bubb
 placed where things are drawn (`drawn()`). Far things drop below the horizon (12 tiles off sinks ~4 tiles), so a far
 door or the gate can't be tapped until you walk nearer, as in the Clearing.
 
-**A view past every town, not a wall** (2026-10-14, the user: "can it just be like the clearing where you can see
-everything? but its just blurry? i dont like that wall of green"). Once the ground rolls away, what showed over it was the
-room's flat sky colour (green in the Shrine, Ruins and Thornwood looks), the old sky dome and the back wall's band of far
-hills and mist. Now `buildTown()` calls `wild(..., { walled: false })`: no back wall, no `skyDome()`, and the side walls
-painted `bare` (`scenery()`: trees only, no far-hills band or mist). `townVista()` stands the Clearing's painting
-(`vistaArt()` in `js/hub-vista.js`, which now takes a town's `sky`, `clouds`, `ranges` and a pixels-per-unit `k`) on the
-back edge, square to the camera, 12 tiles past each side, `upright` so the bend drops it whole, run on 40 units up as its
-plain top sky; the room's background is that sky's top colour, so nothing flat shows over it. Each town's colours are a
-`TOWN_VISTAS` line by style (a trail on from the gate where there's a road; the lagoon's ground is sea; Cinder Springs a
-warm volcanic haze). Painted at 32 px a unit (about 2000 x 450), not the Clearing's 48: the tilt-shift blurs it anyway.
+**What lies past each town: `js/town-backdrop.js`** (2026-10-14, the user: "refix the backgrounds of each town,
+mostly the exits, and make them all grand and aesthetic and animated... i understand the green choice but make it work...
+some clouds need to be higher too or cover much more vertically"). `buildTown()` still calls `wild(..., { walled: false })`
+(no back wall, no `skyDome()`, side walls `bare`: trees only). The first fix that day stood the Clearing's vista painting on
+the back edge, but the bend sank it out of sight from most of the town, leaving a flat colour for a sky. Now
+`townBackdrop()` builds a rig that hangs 128 units off (inside the camera's far plane of 140), square to the camera, and
+`place()` (called from `frame()` once the camera has moved, as `R.sky.place`) sets its horizon on the crest of the rolled
+ground every frame (the highest point on screen of the bent ground from the bend's focus to the back edge) and scales it to
+the band of sky above (`sc`, clamped 0.42 to 0.85 of the screen's half-height). It and its meshes carry
+`userData.noBend`, which `bendOne()` skips. Layers back to front: the sky (gradient, stars), towering cumulus that climb
+from just over the horizon right up the sky plus high cirrus (`CLOUDS` per town, drifting), the land with its landmark at
+the painting's middle, lined up behind the exit gate (`FAR` 0.85 of the gate's screen x; the treeline follows it fully,
+with a gap where the road goes on), what moves (additive glows that breathe, smoke and embers scrolling up through an
+`alphaMap` mask, mist and birds drifting), then the treeline. Each town: Lantern Village a misty mountain with a pagoda and a
+lantern stair, a waterfall, cedars and maples, a jade-pale horizon (the green kept, as haze); Cinder Springs a volcano with
+lava flows, a smoke plume and embers under an ashen sky; Driftwood Landing open sea, karst islands and the drowned stepped
+temple, a rainbow by day, gulls and glints; Highbough colossal trees in a green-gold haze, the Great Tree with decks and
+ghost-lanterns, light shafts and wisps; Sunwell Bazaar a great sun (the moon at night) over the road between mesas, a snowy
+peak, a caravan, acacias, birds and dust. On a phone it fills the top 35-40% of the screen, on a desktop about the top
+fifth. About 5-6 MB of textures a town, painted once per visit; `dispose()` in `js/hd2d.js` now frees `alphaMap`s too.
+Animation is one `B.ticks` entry, held still in calm mode. `?aerial` hides it.
 
 **No green skies** (2026-10-14, the user: "maybe its the green sky i dont like"). The cedar look's sky (the Shrine, and the
 Ruins, which inherit it) and Thornwood's were greens; both are blues now (`CEDAR` and `LOOKS.thornwood` in
-`js/event-3d.js`), so every outdoor ? room, event and the towns' room colour under them read as sky.
+`js/event-3d.js`), so every outdoor ? room and event under them reads as sky.
 
 **The Gym Leaders' homes, inside** (2026-10-14, the user: "they're so small and very bland, we need to beef them up
 ALOT"). A town home with a `leader` is built by `js/leader-homes.js`, not `HOMES` in `js/event-3d.js` (`buildHome()`
@@ -196,7 +207,7 @@ webcam, a turning disco ball, ON AIR lit at night, the boa on the sofa), Kayl's 
 and lease renewals, Pat's fairy lights strung across the cabin and a rose in a bottle, Phil's chair rocking on its own in
 a salt ring over glowing runes with seven candles floating, the tree up through Ricky's den and his sleep maths, Machew's
 spotlit (plastic, $14.99) katana under a blood moon, Jerome's Vice sunset, eleven r/GTA6 tabs and the countdown taped
-over the crib (days to 19 November 2026). Two point lights a room at most; the rest glows. A rug or mat with no model is
+over the crib (days to 19 November 2026). While Phil is home, JONA stands in his back right corner facing the wall (`jona()`, 2026-10-15, a 3D stand-in until the user's sprite): her head turns all the way round to watch your buddy within ~3 tiles (`K.buddy`, the room's `walker`), and now and then snaps round and back; the crooked lamp moved to the front right corner for her. Two point lights a room at most; the rest glows. A rug or mat with no model is
 now laid as its painting on the floor (`flatPiece()` in `js/event-3d.js`): the Nursery's web rugs and Persian's dune
 rug showed nothing before. `tests/leader-homes.test.mjs` checks every piece exists, nothing overlaps, and every free
 tile (and the leader) is reachable from the door. `?town=<biome>&home=<leader>&gymwins=1` walks straight in.
@@ -251,3 +262,18 @@ mended by the old requests). `HOME_LINES[id]` is a list of speeches (4 each, sev
 Phil's, Ricky's and the Curio Shop's doors; `boughBoards()` (from `canopyExtras()`) hangs a walnut plank (`boughBoardArt()`: cream
 letters, GYM LEADER in the leader's ink on a gold rim, the shop's TRADE HOUSE in violet) from a log bar with a ghost lantern;
 `treehouse()` and `canopyManor()` no longer hang the small `nameArt()` plate.
+
+**The Nietos' questline: the Clearing's Waystone first** (step 7, 2026-10-14). `QUESTS.clearing` runs on the towns' engine
+with `CLEARING` (`placeOf('clearing')`) as its town, saved as `save.towns.clearing.quest`; every step is `by: 'nietos'` (LAW: /
+BRITT: / LINC: lines, the gym's `voices`). `clearingLit(save)` is its shard put in, or any town's questline opened or
+mended (an old save loses nothing). Till then `townRoom()` has no greeter (its board points home; a `?town=` peek ignores
+it), the Clearing's Waystone is cracked (`clearingWaystone(g, lit, whole)`: a darker stone, a zigzag crack, its runes
+flickering dim) and its card is `brokenWaystone()` (no Travel, the quest's n/4); once lit, the menu lists the Clearing
+first. `homeNews()` in `js/hub-3d.js` runs as the Clearing opens (`openHub()`, `enterHub()`): beaten Nietos and no quest,
+Law and Britt slide in (`gymTalk()`) and `startQuest('clearing')`; the shard in and not `welcomed`, a beam rises off the
+stone (`warp.stone` in `liveWarp()`), the places rebuilt whole at its peak, and `welcomeHome('clearing')`. Steps are handed in
+in the Nietos' house (`homeRoom()`: Quest / Hand in, `handInQuest('clearing', null, force)`, `force` under `?satchel`);
+the shard's hand-in walks you out onto the plaza. Its Do step counts in the Clearing biome (`trackTowns()` reads
+`placeOf()`; `countTown()` counts nothing once a board-less questline is done). Materials Glowmoss and Whisper Acorn drop in
+the Clearing biome; Kurt's `waystone-chime` (4 acorns, 1 moss); `shard-clearing` floats over a Clearing Alpha
+(`shardHere()`). `nietosHome()` is on with the towns (`NIETOS_LIVE` true and `townsOpen()`), `?nietos` for a page load.

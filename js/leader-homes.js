@@ -285,6 +285,50 @@ function note(K, x, y, z, w, h, draw, { ry = 0, tilt = 0, paper = '#fffaf0' } = 
 
 const NIGHT = (t) => t === 'night';
 
+/** JONA, Phil's demon, in his back right corner: tall and gaunt, a tattered black dress, black hair to her waist, arms
+    too long, her back to the room. Come within a few steps and her head turns round (all the way round) to watch you
+    with violet eyes, and back to the wall once you go; now and then, with nobody near, it snaps round and back. */
+function jona(K) {
+  const T = K.THREE, r = K.seeded(13);
+  const cloth = mat(K, '#0c0810', { roughness: 1, side: T.DoubleSide }), hair = mat(K, '#060408', { roughness: 0.9, side: T.DoubleSide });
+  const skin = mat(K, '#c4bccc', { roughness: 0.8 }), eye = lit(K, '#d890ff', { transparent: true });
+  const x = ex(K, 12.62), z = ez(K, 0.38), body = group(K, x, 0, z, Math.PI * 0.75);
+  block(K, 12, 0);
+  const dress = new T.CylinderGeometry(0.12, 0.34, 1.3, 14, 3, true), pos = dress.attributes.position;
+  for (let i = 0; i < pos.count; i++) if (pos.getY(i) < -0.6) pos.setY(i, pos.getY(i) + r() * 0.18);   // a ragged hem
+  dress.computeVertexNormals();
+  part(K, dress, cloth, 0, 0.74, 0, body);
+  part(K, new T.CylinderGeometry(0.1, 0.12, 0.42, 12), cloth, 0, 1.58, 0, body);
+  for (const s of [-1, 1]) {   // arms hanging past her knees, the fingers longer still
+    const arm = part(K, new T.CylinderGeometry(0.026, 0.02, 0.86, 8), skin, s * 0.14, 1.32, 0.01, body); arm.rotation.z = s * 0.06;
+    for (let f = 0; f < 3; f++) part(K, new T.CylinderGeometry(0.008, 0.005, 0.16, 5), skin, s * (0.165 + f * 0.012), 0.82, 0.02 - f * 0.014, body).rotation.z = s * 0.1;
+  }
+  part(K, new T.CylinderGeometry(0.035, 0.04, 0.16, 8), skin, 0, 1.86, 0, body);
+  const head = new T.Group(); head.position.y = 1.96; body.add(head);
+  const tilt = new T.Group(); tilt.rotation.z = 0.28; head.add(tilt);   // cocked to one side
+  part(K, new T.SphereGeometry(0.115, 14, 10), skin, 0, 0.04, 0, tilt).scale.set(0.9, 1.15, 0.95);
+  part(K, new T.CylinderGeometry(0.13, 0.19, 0.95, 14, 1, true, Math.PI * 0.6, Math.PI * 1.8), hair, 0, -0.34, -0.005, tilt);   // down her back to the waist
+  part(K, new T.SphereGeometry(0.128, 14, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), hair, 0, 0.05, -0.005, tilt);
+  for (const [sx, len] of [[-0.075, 0.5], [-0.035, 0.62], [0.01, 0.42], [0.06, 0.58], [0.09, 0.46]]) part(K, new T.BoxGeometry(0.026, len, 0.012), hair, sx, 0.13 - len / 2, 0.112, tilt);   // strands over her face
+  const eyes = [-0.032, 0.042].map(ex2 => part(K, new T.SphereGeometry(0.014, 8, 6), eye, ex2, 0.05, 0.103, tilt));
+  const dark = part(K, new T.CircleGeometry(0.55, 24), lit(K, '#000000', { transparent: true, opacity: 0.45, depthWrite: false }), x, 0.01, z);
+  dark.rotation.x = -Math.PI / 2;
+  quiet(body); quiet(dark);
+  motes(K, () => K.fireflyArt('#9040e0'), 4, [x - 0.5, x + 0.3], [0.4, 2.1], [z - 0.3, z + 0.5], 0.1);
+  let look = 0, snapAt = performance.now() + 20000, snapTill = 0;
+  const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
+  K.B.ticks.push((now) => {
+    const b = K.buddy?.(), dx = (b?.x ?? 0) - x, dz = (b?.z ?? 0) - z, near = !!b && Math.hypot(dx, dz) < 3.2;
+    if (!near && !K.calm() && now > snapAt) { snapTill = now + 1300; snapAt = now + 25000 + Math.random() * 30000; }
+    const watching = near || now < snapTill, want = watching ? wrap(Math.atan2(dx, dz) - body.rotation.y) : 0;
+    if (now < snapTill && !near) look = want;   // the snap: no turning, she's just looking
+    else look += wrap(want - look) * (watching ? 0.05 : 0.025);
+    head.rotation.y = look;
+    const k = Math.min(1, Math.abs(look) / 1.2);
+    for (const e of eyes) e.material.opacity = (0.35 + k * 0.65) * (K.calm() ? 1 : 0.85 + Math.sin(now / 140) * 0.15);
+  });
+}
+
 export const LEADER_HOMES = {
   /* JOHN: a tatami room in Lantern Village. The engineer's desk with a model jet on it, a Fire Emblem shrine of a TV
      corner, and the kotatsu with three handhelds charging on it, none picked. */
@@ -738,7 +782,8 @@ export const LEADER_HOMES = {
 
   /* PHIL: a haunted treehouse, and JONA's. Candles everywhere and seven of them floating, salt on the sills and in a
      ring round the rocking chair nobody sits in (it rocks anyway) over a circle of runes glowing violet; the ghost-
-     hunting kit on the desk, its meter spiking; an organ; wisps. */
+     hunting kit on the desk, its meter spiking; an organ; wisps. While Phil is home, JONA stands in the back corner
+     facing the wall (the user's ask, 2026-10-15): her head turns round to watch you when you come near. */
   phil: {
     leaderAt: { x: 5, ty: 3.4 },
     blocks: [[8, 3, 3, 1], [8, 4, 1, 1], [10, 4, 1, 1], [8, 5, 3, 1]],
@@ -763,7 +808,7 @@ export const LEADER_HOMES = {
       g.fillStyle = '#f4f4ee'; g.fillRect(x(7.3) - 2, wy(1.5), 1.4 * U + 4, 1.4);   // salt along the sill
       for (let i = 0; i < 18; i++) g.fillRect(x(7.3) + r() * 1.4 * U, wy(1.5) - 0.6 - r() * 0.6, 0.6, 0.6);
     },
-    furnish: [['witchshelf', 0, 0], ['organ', 1, 0], ['bookstack', 3, 0], ['lectern', 4, 0], ['candelabra', 6, 0], ['librarydesk', 10, 0], ['spookylamp', 12, 0],
+    furnish: [['witchshelf', 0, 0], ['organ', 1, 0], ['bookstack', 3, 0], ['lectern', 4, 0], ['candelabra', 6, 0], ['librarydesk', 10, 0], ['spookylamp', 12, 9],
       ['wingchair', 1, 5], ['raggeddoll', 0, 3], ['crystalball', 2, 3], ['candlestand', 0, 7], ['candlestand', 12, 7], ['candle', 4, 7], ['candle', 8, 8],
       ['ghostsheet', 12, 4], ['litwick', 12, 2], ['jackolantern', 0, 8], ['candelabra', 7, 0], ['rocker', 9, 4]],
     hang: [['cobweb', 0], ['hauntmirror', 5], ['hauntportrait', 9], ['cobweb', 12], ['chandelier', 4], ['hauntportrait', 0, { side: 'l', row: 3 }], ['batgarland', 0, { side: 'r', row: 5 }]],
@@ -806,6 +851,7 @@ export const LEADER_HOMES = {
       const v = lamp(K, '#b060ff', 2.0, 5, ex(K, 9.5), 1.4, ez(K, 4.5));
       K.B.ticks.push((now) => { if (!K.calm()) v.intensity = 1.6 + Math.sin(now / 900) * 0.8; });
       lamp(K, '#ffb060', 1.0, 4, ex(K, 2.5), 1.4, ez(K, 3));
+      if (!K.away) jona(K);
     },
   },
 

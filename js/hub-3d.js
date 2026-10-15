@@ -29,9 +29,9 @@ import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { gateStage } from './data/gate.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { makeCauldron } from './hub-cauldron.js';
-import { RING, TOWNS, townState, townsOpen, nietosHome, mended, questProgress, guestLines, sealOn } from './data/towns.js';
+import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, guestLines, clearingLit, sealOn } from './data/towns.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
-import { todaysGuest, welcomeHome } from './towns.js';
+import { todaysGuest, welcomeHome, startQuest } from './towns.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -1364,14 +1364,14 @@ let stoneLit = null;   // the Waystone's runes and crystals, pulsed and turned e
 /** The Clearing's Waystone (one, not five, 2026-10-14): the towns' whole Waystone (js/event-3d.js's wholeWaystone()) on a
     plinth over the plaza's Poké Ball, its runes a pale silver light, and round its tip five small crystals orbiting, one a
     town in its RING colour, lit once that town's Waystone is mended, else a dull pebble. */
-function clearingWaystone(g, lit) {
+function clearingWaystone(g, lit, whole = true) {
   const s = new THREE.Group(), S = 1.7;
   s.position.set(tileX(START.x), 0, tileZ(START.y));
   s.scale.setScalar(S);
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true, ...o });
-  const stone = std({ color: '#b4b0a4' }), dark = std({ color: '#6e6a60', roughness: 1 });
-  const any = lit.some(Boolean);
-  const glow = std({ color: '#3a4a60', emissive: new THREE.Color(any ? '#d8f0ff' : '#90a8c0'), emissiveIntensity: any ? 1.2 : 0.45, roughness: 0.4, flatShading: false });
+  const stone = std({ color: whole ? '#b4b0a4' : '#8e8a80' }), dark = std({ color: '#6e6a60', roughness: 1 });
+  const any = whole && lit.some(Boolean);
+  const glow = std({ color: '#3a4a60', emissive: new THREE.Color(any ? '#d8f0ff' : '#90a8c0'), emissiveIntensity: any ? 1.2 : whole ? 0.45 : 0.12, roughness: 0.4, flatShading: false });
   const add = (geo, m, x, y, z) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = o.receiveShadow = true; s.add(o); return o; };
   add(new THREE.CylinderGeometry(0.4, 0.45, 0.12, 8), dark, 0, 0.06, 0);
   add(new THREE.CylinderGeometry(0.3, 0.35, 0.12, 8), stone, 0, 0.18, 0);
@@ -1383,6 +1383,15 @@ function clearingWaystone(g, lit) {
   for (let i = 0; i < 8; i++) {   // rune stones round its foot
     const a = i / 8 * Math.PI * 2, m = add(new THREE.BoxGeometry(0.09, 0.035, 0.06), glow, Math.cos(a) * 0.52, 0.03, Math.sin(a) * 0.52);
     m.rotation.y = -a; m.castShadow = false;
+  }
+  if (!whole) {   // cracked straight through till the Nietos' questline mends it (step 7): a dark zigzag up both faces
+    const crack = std({ color: '#1c1a18', roughness: 1 });
+    for (const z of [1, -1]) {
+      for (const [y, x, r] of [[0.36, 0.02, 0.5], [0.58, -0.02, -0.6], [0.8, 0.015, 0.45], [1.0, -0.01, -0.5]]) {
+        const m = add(new THREE.BoxGeometry(0.016, 0.24, 0.012), crack, x, y, z * (0.18 * (1.69 - y) / 1.45 + 0.012));
+        m.rotation.z = r; m.castShadow = false;
+      }
+    }
   }
   const orbit = new THREE.Group();
   orbit.position.y = 1.6;
@@ -1406,14 +1415,15 @@ function clearingWaystone(g, lit) {
     pool.rotation.x = -Math.PI / 2; pool.position.y = 0.02; pool.raycast = () => {};
     s.add(pool);
   }
-  stoneLit = { glow, orbit, gems, any };   // no lamp of its own: a light here would recompile the scene's shaders
+  stoneLit = { glow, orbit, gems, any, whole };   // no lamp of its own: a light here would recompile the scene's shaders
   g.add(s);
 }
 
 function liveStones(now) {
   if (!stoneLit) return;
-  const { glow, orbit, gems, any } = stoneLit;
-  glow.emissiveIntensity = calm ? (any ? 1.2 : 0.45) : any ? 1.1 + 0.3 * Math.sin(now / 700) : 0.35 + 0.15 * Math.sin(now / 1100);
+  const { glow, orbit, gems, any, whole } = stoneLit;
+  glow.emissiveIntensity = !whole ? (calm ? 0.12 : 0.1 + 0.08 * Math.max(0, Math.sin(now / 170) * Math.sin(now / 530)))   // a weak, uneven flicker
+    : calm ? (any ? 1.2 : 0.45) : any ? 1.1 + 0.3 * Math.sin(now / 700) : 0.35 + 0.15 * Math.sin(now / 1100);
   if (calm) return;
   orbit.rotation.y = now / 2400;
   orbit.position.y = 1.6 + Math.sin(now / 900) * 0.04;
@@ -1941,6 +1951,36 @@ export function cameHome(from, town) {
   warp = t ? { at: performance.now() + 300, out: false, colour: t.glow } : null;
 }
 
+/** What the Clearing has to tell you as you come home (step 7, the Nietos' questline): beaten at their Gym, Law and Britt
+    slide in with the cracked Waystone's story and their questline opens; once they've put its shard in, the stone lights. */
+let homeNewsBusy = false;
+async function homeNews() {
+  if (homeNewsBusy || held || !townsOpen()) return;
+  const save = getSave(), st = townState(save, 'clearing');
+  const greet = !st.quest && nietosHome(gymWins(save, 'nietos') || 0) && !clearingLit(save);
+  const mend = !!st.quest?.lit && !st.quest.welcomed;
+  if (!greet && !mend) return;
+  homeNewsBusy = true;
+  try {
+    await new Promise(r => setTimeout(r, calm ? 200 : 900));
+    if (!running || held) return;
+    playSound('gate-hum');
+    if (greet) {
+      const { gymTalk } = await import('./gym.js');
+      await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true });
+      startQuest('clearing');
+      dexNews();
+      return;
+    }
+    welcomeHome('clearing');
+    warp = { at: performance.now(), stone: true, colour: '#d8f0ff', dur: 2400 };
+    await new Promise(r => setTimeout(r, calm ? 0 : 1100));   // the light at its brightest: the stone swapped for the whole one
+    if (!running) return;
+    buildPlaces();
+    playSound('stat-up');
+  } finally { homeNewsBusy = false; }
+}
+
 let beam = null;
 function liveWarp(now) {
   if (!warp) { if (beam) beam.visible = false; mon.board.scale.y = 1; return; }
@@ -1949,10 +1989,18 @@ function liveWarp(now) {
     beam.raycast = () => {};
     scene.add(beam);
   }
-  const t = Math.max(0, Math.min(1, (now - warp.at) / (warp.out ? 900 : 1100)));
+  const t = Math.max(0, Math.min(1, (now - warp.at) / (warp.dur ?? (warp.out ? 900 : 1100))));
   const k = warp.out ? t : 1 - t;   // how far into the light
   beam.visible = true;
   beam.material.color.set(warp.colour);
+  if (warp.stone) {   // the Clearing's Waystone mended (step 7): a column of light up from it, swelling and fading
+    beam.position.set(tileX(START.x), 3, tileZ(START.y));
+    const w = 0.6 + Math.sin(t * Math.PI) * 0.9;
+    beam.scale.set(w, 1, w);
+    beam.material.opacity = calm ? 0 : Math.sin(t * Math.PI) * 0.7;
+    if (t >= 1) warp = null;
+    return;
+  }
   beam.position.set(walker.x, 3, walker.z);
   beam.scale.set(0.4 + k * 0.6, 1, 0.4 + k * 0.6);
   beam.material.opacity = calm ? 0 : Math.min(0.75, Math.sin(Math.min(1, warp.out ? t * 1.3 : t + 0.15) * Math.PI) * 0.8);
@@ -2108,11 +2156,15 @@ function makePlaces() {
   // the Clearing's Waystone on the plaza (docs/roadmap.md's Towns and Waystones): a tap opens its menu of the towns, a
   // mended one travelled to from there
   const lit = RING.map(t => townsOpen() && mended(townState(save, t.id)));
+  // cracked till the Nietos' questline mends it (step 7), and still as you step out after they put the shard in (homeNews())
+  const fresh = townState(save, 'clearing').quest;
+  const whole = !townsOpen() || (clearingLit(save) && !(fresh?.lit && !fresh.welcomed));
   list.push({
     id: 'waystone', waystone: true, name: 'Waystone', step: SPAWN, tiles: [[START.x, START.y]], tag: [START.x, 3, START.y], open: true,
-    line: lit.some(Boolean) ? 'The Clearing\'s Waystone, humming. Its crystals light the way to every town you\'ve mended.' : 'The Clearing\'s Waystone. Five dull crystals circle its tip, waiting on the towns out on the roads.',
+    line: !whole ? 'The Clearing\'s Waystone, cracked straight through. It hums off-key, and its five crystals are dark.'
+      : lit.some(Boolean) ? 'The Clearing\'s Waystone, humming. Its crystals light the way to every town you\'ve mended.' : 'The Clearing\'s Waystone. Five dull crystals circle its tip, waiting on the towns out on the roads.',
     buttons: [],
-    build: (g) => clearingWaystone(g, lit),
+    build: (g) => clearingWaystone(g, lit, whole),
   });
   // a mended town's Gym Leader come through the Waystone (docs/roadmap.md's Towns step 6, session 4): one a day stands
   // beside it, the one who put a shard in the first time you're home after
@@ -2981,6 +3033,7 @@ function hideCard() { card.hidden = true; }
 function showWaystone(p) {
   here = p;
   const save = getSave();
+  if (townsOpen() && !clearingLit(save)) return brokenWaystone(p, save);
   if (!townsOpen() || !RING.some(t => townState(save, t.id).met)) return sealedWaystone(p);
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = p.line;
@@ -2990,6 +3043,17 @@ function showWaystone(p) {
   head.innerHTML = '<b>WAYSTONE</b>';
   const list = document.createElement('div');
   list.className = 'way-list';
+  const homeRow = document.createElement('div');   // the Clearing's own first: the hub every town links through (step 7)
+  homeRow.className = 'way-row lit';
+  homeRow.style.setProperty('--gem', '#d8f0ff');
+  const homeGem = document.createElement('i'), homeName = document.createElement('b'), homeTag = document.createElement('span');
+  homeGem.className = 'way-gem';
+  homeName.className = 'way-name';
+  homeName.textContent = CLEARING.name;
+  homeTag.className = 'way-count';
+  homeTag.textContent = 'Here';
+  homeRow.append(homeGem, homeName, homeTag);
+  list.append(homeRow);
   for (const t of RING) {
     const town = TOWNS[t.id], st = townState(save, t.id), lit = mended(st), known = lit || st.met;
     const row = document.createElement('div');
@@ -3032,6 +3096,18 @@ const RIDDLES = [
   'Five crystals, five roads. Perhaps someone out there knows how to wake them.',
 ];
 let riddle = 0;
+/** The Clearing's Waystone before the Nietos' questline mends it (step 7): no Travel, a word on why, pointing to them. */
+function brokenWaystone(p, save) {
+  const st = townState(save, 'clearing'), step = questStep(CLEARING, st), [n, of] = questProgress(CLEARING, st);
+  card.classList.remove('way', 'locked', 'ask');
+  card.querySelector('.hub-card-name').textContent = p.name;
+  card.querySelector('.hub-card-line').textContent = st.quest
+    ? `Cracked straight through, and every town's stone went dark with it. The Nietos are mending it: quest ${n}/${of}.${step ? ` Up now: ${stepText(step)}.` : ''}`
+    : 'Cracked straight through, humming off-key. It travels nowhere like this. The Nietos by the plaza seem to know about it: beat them at the Clearing\'s Gym, and they\'ll tell you.';
+  resetLine();
+  card.querySelector('.hub-card-acts').replaceChildren();
+  card.hidden = false;
+}
 function sealedWaystone(p) {
   card.classList.remove('way', 'locked', 'ask');
   card.querySelector('.hub-card-name').textContent = p.name;
@@ -3675,6 +3751,7 @@ async function openHub(titleScreen, actions, hold) {
   resize();
   if (!held) screen.classList.add('hub-on');
   if (!running) { running = true; last = 0; requestAnimationFrame(frame); }
+  homeNews();
   return true;
 }
 
@@ -3687,6 +3764,7 @@ export function enterHub() {
   screen.classList.add('hub-on');
   mon.group.visible = true;
   nextFly = performance.now() + 6000;
+  homeNews();
   if (calm || new URLSearchParams(location.search).has('hubat')) return;
   const from = GATE_AT.ty - 1;
   walker.x = tileX(ARRIVE.x); walker.z = tileZ(from); walker.tile = { x: ARRIVE.x, y: from };

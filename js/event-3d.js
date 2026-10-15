@@ -14,8 +14,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
-import { vistaArt, VISTA } from './hub-vista.js';
-import { SKY } from './safari-lobby.js';
+import { townBackdrop } from './town-backdrop.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tickPlay } from './base-play.js';
@@ -241,7 +240,7 @@ function shell({ floor, wall, side, edge = '#4a2a18', cap = '#6a4428', under = '
   plinth.position.set(0, -0.62 - 3.5, -0.2);
   B.group.add(plinth);
   const c = open ? new THREE.MeshBasicMaterial({ color: cap, transparent: true, opacity: 0 }) : std({ color: cap });   // open air: no tops, the sky shows through
-  if (walled) {   // a town's back is open, its vista standing there instead (townVista())
+  if (walled) {   // a town's back is open, its backdrop hangs out past it instead (js/town-backdrop.js)
     const wm = std({ map: texOf(wall), alphaTest: open ? 0.5 : 0, roughness: 0.9, emissive: new THREE.Color('#fff4dc'), emissiveMap: wall.glow ? texOf(wall.glow) : null, emissiveIntensity: wall.glow ? 0.9 : 0 });
     const back = new THREE.Mesh(new THREE.BoxGeometry(COLS + 0.8, TOP, 0.4), [c, c, c, c, wm, c]);
     back.position.set(0, TOP / 2, BACK_Z - 0.2);
@@ -8615,46 +8614,15 @@ const TOWN_STYLES = {
     drift: (i) => (i % 4 ? { art: dustArt(), size: 0.08, rise: true } : { art: leafletArt(SAVANNA.grass[i % 3]), size: 0.14 }) },
 };
 
-/** What each town sees past its back edge (vistaArt() in js/hub-vista.js, the Clearing's view out past its Safari gate):
-    the land it stands in, clear to the horizon, its far side blurred by the tilt-shift like the Clearing's. Ranges are
-    [[body, body], snow or null], far then near; `road`: a trail on from the gate. Cinder Springs's sky is a warm volcanic haze. */
-const TOWN_VISTAS = {
-  village: { meadow: ['#a8d888', '#88c468', '#70b052'], trees: ['#5a8a64', '#284a36'], flowers: ['#ffffff', '#f8b0c8', '#f8d040'], road: true },
-  springs: { meadow: ['#a89480', '#8e7a66', '#76624e'], trees: ['#6a5a50', '#3a2e2a'], flowers: [], road: true, smoky: true,
-    ranges: [[['#7a6060', '#604848'], null], [['#5a4444', '#463434'], null]] },
-  lagoon: { meadow: ['#88dce8', '#58c0d8', '#38a0c8'], trees: ['#58b048', '#2a6a30'], flowers: [],
-    ranges: [[['#90b8c8', '#78a0b8'], null], [['#5a9a78', '#3e7a5c'], null]] },
-  canopy: { meadow: ['#78b058', '#5a9a44', '#447e38'], trees: ['#4e9a3c', '#1e5a26'], flowers: ['#c890ff', '#90f0e0'],
-    ranges: [[['#88b0b0', '#6e9898'], null], [['#5e8e78', '#4a7860'], null]] },
-  bazaar: { meadow: ['#ecd498', '#dcc078', '#ccac60'], trees: ['#a0a848', '#5e6a2a'], flowers: [], road: true,
-    ranges: [[['#e4bc90', '#cca078'], null], [['#d09468', '#b07a52'], null]] },
-};
-const VISTA_PAST = 12, VISTA_K = 32, VISTA_SKY = 40;   // tiles past each side; canvas pixels a unit (blurred anyway); sky run on up over it
-
-/** The town's vista, stood square to the camera on its back edge, its foot fading into the forest there; it runs on up
-    past the painting as its plain top sky, so where the ground rolls away no flat colour shows over it, and the room's
-    background is that sky too. */
-function townVista(town, time) {
-  const V = TOWN_VISTAS[town.style || 'village'], dim = time === 'day' ? 'dusk' : time;
-  const sky = V.smoky ? ['#7a6070', '#c08878', '#f0b890'].map(h => graded(h, dim)) : SKY[time];
-  const look = { ...V, sky, clouds: V.smoky ? ['#9a8480', '#4a3a3e'].map(h => graded(h, dim)) : undefined };
-  const x0 = tileX(-0.5) - VISTA_PAST, w = COLS + VISTA_PAST * 2, h = VISTA.h, tall = h + VISTA_SKY;
-  const roads = V.road ? [{ x: tileX(town.gate.x) + 0.5 - x0, half: 0.9 }] : [];
-  const geo = new THREE.PlaneGeometry(w, tall).translate(0, tall / 2, 0), uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * tall / h);
-  const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: texOf(vistaArt(time, w, roads, look, VISTA_K)), transparent: true, fog: false, toneMapped: false }));
-  m.material.userData.upright = true;
-  m.rotation.x = -PITCH;
-  m.position.set(x0 + w / 2, 0, BACK_Z - 0.2);
-  m.raycast = () => {};
-  B.group.add(m);
-  B.bg = sky[0];
-}
-
 async function buildTown(figs, { look, time, town, mended = false }) {
   const S = TOWN_STYLES[town.style || 'village'], L = { ...look, ...S.look };
   const map = town.map, rnd = wild(L, time, { to: ROWS + 1, ground: S.ground ? S.ground(town) : townGround(L, map, S), holes: S.holes, walled: false });
-  townVista(town, time);
+  const sky = townBackdrop(THREE, texOf, town.style || 'village', time);   // what lies past the town, its landmark behind the gate
+  sky.rig.visible = !AERIAL;
+  B.group.add(sky.rig);
+  B.ticks.push((now, dt) => { if (!calm) sky.tick(now, dt); });
+  B.sky = { place: sky.place, gateX: tileX(town.gate.x) + 0.5 };
+  B.bg = sky.top;
   for (const part of B.exitParts) B.group.remove(part);   // you came in off the road: the way on is the gate
   B.exitParts = [];
   B.town = town;
@@ -8830,7 +8798,7 @@ async function buildHome(figs, { time, town, home, gift }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const h = L ? { leaderAt: L.leaderAt, castAt: L.castAt, furnish: [] } : HOMES[town.id]?.[home] || {};
   if (h.camp) return buildCamp(figs, h);
-  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, away: !figs[town.homes[home].leader] }, home);
+  if (L) buildLeaderHome({ THREE, B, time, cols: COLS, rows: ROWS, piece, std, rbox, fine, texOf, tileX, tileZ, skyWindow, planks, seeded, sprite, sparkArt, emberArt, fireflyArt, shell, PIECES, calm: () => calm, buddy: () => walker, away: !figs[town.homes[home].leader] }, home);
   else shell({ floor: homeFloor(h.floor), wall: homeWall((COLS + 0.8) * U, time, { window: !h.stage && h.walls !== 'glass' && h.walls !== 'tent', curtain: !!h.stage, walls: h.walls }), side: () => homeWall(ROWS * U, time, { window: false, walls: h.walls }), edge: '#3a2418', cap: '#4a3020', under: '#20140c', bg: '#1a120c' });
   B.shotTop = L ? 3.1 : 2.1;
   B.talks = new Set();
@@ -9236,7 +9204,7 @@ function fineTris(o) {
 }
 
 const bendOne = (o) => {
-  if (!o.material) return;
+  if (!o.material || o.userData.noBend) return;   // the towns' backdrop hangs on the crest itself (js/town-backdrop.js)
   if (o.isMesh) { bendFine(o); fineTris(o); }
   if (Array.isArray(o.material)) for (const m of o.material) bend(m, BEND); else bend(o.material, BEND);
 };
@@ -9316,6 +9284,7 @@ function frame(now) {
   if (!calm && mat) mat.emissiveIntensity = 0.12 + Math.sin(now / 420) * 0.1;
   placeCamera(dt);
   if (Number.isFinite(camZ)) BEND.z.value = camZ;
+  if (R.sky && !AERIAL) R.sky.place(camera, BEND.k.value, BEND.z.value, R.sky.gateX, BACK_Z);
   placeSigns();
   post.draw(scene, camera, (drawn(new THREE.Vector3(walker.x, 0.6, walker.z)).project(camera).y + 1) / 2);
   raf = requestAnimationFrame(frame);

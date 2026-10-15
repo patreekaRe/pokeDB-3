@@ -210,7 +210,9 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    **Done (2026-10-14): a view past every town** (the user: "I don't like that wall of green"): the back wall and sky dome
    are gone; each town stands the Clearing's vista painting (`vistaArt()`, in its own colours: `TOWN_VISTAS` in
    `js/event-3d.js`) on its back edge, and its sides are trees only. Then the Shrine/Ruins and Thornwood looks' green skies became
-   blue (every outdoor room there). Details in `docs/reference/towns.md`.
+   blue (every outdoor room there). **Then (2026-10-14) every town's backdrop rebuilt** (the user: "make them all grand
+   and aesthetic and animated"): `js/town-backdrop.js`, layered and moving, hung on the rolled ground's crest, each town's
+   landmark behind its exit gate. Details in `docs/reference/towns.md`.
    **Done (2026-10-14): Cinder Springs' bathhouse** (the user: "so stupid looking"): the two-storey adobe box with a pent
    roof stuck on is now a sento (`bathhouse()` in `js/event-3d.js`): wide and low, timbered plaster and lit lattice windows
    under a kawara roof with a steam vent on its ridge, a curved karahafu porch (`karahafu()`) with the ♨ crest, sign and
@@ -298,28 +300,14 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    Same day, the user's ask: the Nietos' house in the Clearing got the same revamp (`LEADER_HOMES.nietos`; walk in from
    the hub with `?nietos&gymwins=1`, or without `?nietos` to see it "out"). On `main`, waiting on their playtest.
 **The Nietos at home** (2026-10-14, the user's ask): their house in the Clearing stays; the Nietos (and Kangaskhan) are
-   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym, and that is switched off for now
-   (`NIETOS_LIVE` false in `js/data/towns.js`: beaten saves find a "Back soon!" note, and they never visit the Secret Base;
-   only their house shows, and their Gym fight in runs is unchanged) while the user works out more of how
-   the Nietos show up. Waiting on their idea; `?nietos&gymwins=1` previews it.
+   home in it only once THE NIETOS' Kangaskhan is beaten at the Clearing's Gym. How they show up is settled by step 7
+   (their questline): `NIETOS_LIVE` is on, so they're home with the towns (`townsOpen()`); they still never visit the
+   Secret Base. `?nietos&gymwins=1` previews it.
    **No Gym Leader visits the Secret Base** for now either (2026-10-14, the user's ask): `LEADER_VISITS_LIVE` false in
    `js/data/gym.js` (`leaderVisitor()` returns none); `?visit` still brings one for a page load.
-5. **The all-five reward: the Depths open to every starter** (the user's pick, 2026-10-14). With all five Waystone
-   Shards placed, a won run's fall at the last boss no longer holds (`kind: 'open'` in `descent()`): any starter drops
-   into the Crystal Depths as a 4th biome and fights Eternatus. Mewtwo needs no shards and keeps the Champion of the
-   Depths ending, its feat and its shiny; other starters get their own Depths win (a Hall of Fame mark). The Depths need
-   their own numbers per Trainer Level for non-Mewtwo starters (sim check). Builds after step 6 (shards must drop).
-   **It needs the Sealed Gate broken too** (the fall goes past the gate): five shards with the gate still whole, the lit
-   crystals say the seal still holds. **The Sealed Gate's spot in the Clearing** (`SEALED_AT`, `js/hub-3d.js`) stays
-   Mewtwo's door ("Go through" starts its run); with five shards and the gate broken it gains a second button into the
-   Depths (a visit outside a run, the Depths camp if built). The Waystone stays the towns' stone (all 2026-10-14).
-   **Mewtwo waits at the broken gate** (the user's idea, 2026-10-14): once Mewtwo is freed, a won run's fall no longer
-   throws your Pokémon back by a nameless force (`kind: 'open'` in `descent()`); Mewtwo stands in the open gate and you
-   talk to it. It says what's down there (Eternatus) must be beaten to save the world, and that it needs the energy
-   of the five Waystones to do it. That is the story that ties the shards to the Depths, so it replaces the "only Mewtwo
-   goes down" hint. Its lines follow the shards placed (n/5); with all five, it opens the way and the fall drops you
-   into the Depths. Open: how this sits with Mewtwo's own runs reaching the Depths with no shards (keep them as they are,
-   or have Mewtwo say it can go alone but can't win alone?), and whether the talk uses the gym's slide-in dialogue.
+5. **The all-five reward: Mewtwo's full strength.** **The Crystal Depths stay Mewtwo's alone** (the user's call,
+   2026-10-14: no other starter ever goes down there to fight; "the Depths open to every starter" was built that day and
+   reverted, commit 3dfe9ca / revert dcbbca6, along with Mewtwo talking at the gate and opening it at five shards).
    **Settled (the user's design, 2026-10-14): Mewtwo's Sealed Weakness.** Freed from the gate, Mewtwo is still too weak
    for what's below (its break-out talk already says so: `MEWTWO_LINES` in `js/gatescene.js`). It can always go down,
    but in the Depths only it carries a **permanent damage debuff** (a "Sealed Weakness" nameplate badge), and each
@@ -330,13 +318,19 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    and when you meet Mewtwo after one. **The Depths camp**: once the seal is broken, the fall (or the Sealed Gate's
    second button) takes you down to a camp in the Depths you can walk round, between runs too, Mewtwo standing by the
    way in to the Depths proper; talking to it brings up the pentagram, and its lines change with the shards placed
-   (why it needs them, what Eternatus is, how much of its strength is back). This answers the open question above:
-   Mewtwo goes alone but weakened; all five shards also let every other starter down, as above. Builds with step 6
-   (the shards must drop first).
+   (why it needs them, what Eternatus is, how much of its strength is back). Builds with step 6 (the shards must drop
+   first).
    **A won run's ending with the camp** (the user's yes, 2026-10-14): last boss → the fall → the Depths camp (walk
    round, talk to Mewtwo, the pentagram) → leaving it plays the win scene / Hall of Fame → unlock windows → result
    window. The win is recorded before the camp opens, so closing the game there never loses it; leaving only plays
    the celebration. A visit outside a run (the Sealed Gate's button) has no win: leaving goes back to the Clearing.
+   **Who lands in the camp** (the user's yes, 2026-10-15): once the gate is broken, **every starter's won run** falls into
+   the camp (it replaces the nameless throw-back, `kind: 'open'` in `descent()`), but **only Mewtwo goes past it** into the
+   Depths proper, Mewtwo standing by that way in. The other starters' runs are where the shards are won (Mewtwo's never
+   stop at a town), so ending them there hands a new shard straight to Mewtwo and lights its pentagram slot. **Kept short**:
+   unless something new waits (a shard to hand over, a new line from Mewtwo), a won run's landing is one tap through to
+   the win scene, not a walk round. **Mewtwo's own runs** land in the camp after their third boss (seeing how much of its
+   strength is back) and go on down from there. Before the gate breaks, won runs strike it as now.
    **Built (2026-10-15): the Sealed Weakness, the pentagram and the Depths camp**, all behind the towns' switch
    (`sealOn()`: `TOWNS_LIVE`, `?towns` or `?shards=N`; till then the live game is unchanged, Mewtwo at full strength).
    50% in the Depths, +10% a shard (`SEALED_WEAKNESS`); bot, psychic, human / strong: 0 shards 64.0 / 63.7 (300 runs),
@@ -418,8 +412,37 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `HOME_LINES` are 4 speeches a leader now, a lot of them about each other (the Clearing deals one a day, the base one a
      visit). Tests in `tests/quests.test.mjs`. Branch `claude/sharp-ramanujan-nh2503`, pushed to `main` too.
      **Step 6 is built.** Next: the user walks a questline (`?town=shrine&gymwins=1&satchel`, `&home=john` for his house)
-     and says what to change; then step 5 (the Depths for every starter). Open: what gift friendship (`liked`) is for, and
+     and says what to change. Then step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp). Open: what gift friendship (`liked`) is for, and
      whether the Nietos get gifts. Towns stay off (`TOWNS_LIVE`) till the user says.
+
+7. **The Nietos' questline: mending the Clearing's Waystone first** (the user's idea, 2026-10-14). The Clearing's own
+   Waystone starts broken, and the Nietos' questline mends it. Every town's questline comes after it: the Clearing stone is
+   the hub the others link to, so you can't travel to a town from home until it works.
+   - **Opens when you beat the Nietos** (their Kangaskhan, the Clearing's boss): on getting home (`cameHome()` or the
+     Clearing after the run ends), Law and Britt **slide in** (`gymTalk()`, like a town leader's greet) with the story: the
+     Clearing's Waystone is cracked, which is why the towns' stones are dead too. `NIETOS_LIVE` goes on, so they're home
+     once beaten, and their house is where you hand in steps and hear their talk (`homeTalk()`).
+   - **Their own quests**, `QUESTS.clearing` on the same engine (`track` / `gather` / `craft` / `shard`), about 4 steps, a
+     leader `by` each (Law, Britt; Linc and Kangaskhan for flavour), with `thanks`, `nudge`, `talk`, `after` and `chats`
+     like the towns. Do steps count in the Clearing biome. It needs **2 new Clearing materials** in `MATERIALS` (dropping
+     in the Clearing biome, the `DROPS` / sparkle code), a Kurt `RECIPES` item for the craft step, and maybe gifts for the
+     Nietos (that open question from step 6).
+   - **The last step: an Alpha in the Clearing biome** carries the Clearing's shard (the marked Alpha from session 4).
+     Beat it, bring it home, the Nietos put it in and the **main stone lights** (`mendStone()` on the Clearing's Waystone,
+     `clearingWaystone()` in `js/hub-3d.js`: dull until then, its five town crystals still dull until their towns mend).
+   - **What it gates**: until the Clearing stone is lit, towns still show up in runs (trades, chat, their homes), but their
+     leaders don't greet you or open the board, and the Clearing's Waystone menu has no Travel (it says it's broken and
+     points to the Nietos). An old save that already started a town questline counts the Clearing stone as lit, so nobody
+     loses progress. Its menu and the Satchel's Quests list the Clearing first. Tests in `tests/quests.test.mjs`.
+   - One session (two if the dialogue runs long). Playtest: `?nietos&gymwins=1&satchel`, `?biome=clearing&shard`.
+   - **Built (2026-10-14), waiting on the user's playtest.** `QUESTS.clearing` in `js/data/towns.js` (Law and Britt's greet,
+     4 steps all `by: 'nietos'`: win 5 fights in the Clearing, 5 Glowmoss, Kurt's Waystone Chime, the Clearing's shard), the
+     Clearing's materials Glowmoss and Whisper Acorn, `clearingLit()` gating the towns' greetings and the Waystone's
+     Travel. The greeting plays as the Clearing opens (`homeNews()` in `js/hub-3d.js`), steps are handed in at the Nietos'
+     house (`homeRoom()`), and stepping out after the shard plays the stone's light-up (a beam, the cracked stone swapped
+     for the whole one). `NIETOS_LIVE` is on, but the Nietos are home only while the towns are on. Playtest on the live site:
+     `?towns&gymwins=1` (the greeting), then `&satchel` (every step ready, in their house). Next: the user walks it; then
+     step 5 (Mewtwo's Sealed Weakness, the pentagram, the Depths camp), if the user still wants it. Open: the Nietos' gift (step 6's open question); whether the mending wants a bigger scene than the beam.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
@@ -761,6 +784,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **JONA's sprite** (2026-10-15): JONA stands in Phil's back right corner, facing the wall, while he's home (`jona()` in
+  `js/leader-homes.js`; her head turns round to watch you within ~3 tiles, and now and then snaps round). She's a 3D
+  placeholder until the user sends her sprite (ideally a back view and a front view: her back to the room, the front
+  swapped in when you come near). Check: `?town=thornwood&home=phil&gymwins=1`.
 - **Intro films on the phone** (2026-10-14): the Safari Desert and Overgrown Shrine films were cut from 9-18 ms a frame to
   2-3 (archive); the user watches both on their iPhone and says if they still stutter.
 - **The gym's arch and back** (2026-10-13, the user's asks; on `main` and the branch): `buildGym()` / `gymBack()` in

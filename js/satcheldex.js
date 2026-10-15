@@ -8,7 +8,7 @@
 
 import { MATERIALS, MATERIALS_BY_ID, KEY_ITEMS, satchelOf } from './data/satchel.js';
 import { GIFTS, workshopOf } from './data/workshop.js';
-import { TOWNS, RING, townState, questOf, questStep, questDone, greeterOf, stepText, stepHave, mended } from './data/towns.js';
+import { TOWNS, RING, CLEARING, clearingLit, townState, questOf, questStep, questDone, greeterOf, stepText, stepHave, mended } from './data/towns.js';
 import { GYM_BY_ID, spriteOf } from './data/gym.js';
 import { BIOMES_BY_ID } from './data/enemies.js';
 import { getSave } from './storage.js';
@@ -18,7 +18,7 @@ import { shelfApp, typed } from './bagdex.js';
 import { el } from './ui.js';
 
 const sat = () => satchelOf(getSave());
-const QUEST_TOWNS = RING.map(t => TOWNS[t.id]).filter(t => questOf(t));
+const QUEST_TOWNS = [CLEARING, ...RING.map(t => TOWNS[t.id])].filter(t => questOf(t));   // the Clearing's first (step 7)
 const no = (list, t) => `No.${String(list.indexOf(t) + 1).padStart(2, '0')}`;
 const newsId = (g, t) => (g.id === 'quests' ? `q:${t.id}` : t.id);
 
@@ -85,7 +85,7 @@ export const satchelApp = () => shelfApp({
   fresh: (g, t) => sat().fresh.includes(newsId(g, t)),
   shown: (g, t) => { clearSatchelNews([newsId(g, t)]); showBadgeNews(); },
   no: (g, t) => (g.id === 'mats' ? BIOMES_BY_ID[t.biome]?.name ?? '' : no(g.list(), t)),
-  label: (g, t, k) => (g.id === 'quests' ? (k || townState(getSave(), t.id).met ? t.name : '???') : k ? t.name : '???'),
+  label: (g, t, k) => (g.id === 'quests' ? (k || t.home || townState(getSave(), t.id).met ? t.name : '???') : k ? t.name : '???'),
   art: (g, t, k, where) => (g.id === 'quests'
     ? leaderImg(t, where === 'banner' ? `bdx-banner-mon${k ? '' : ' unseen'}` : 'pdx-slot-mon')
     : glyph(t, where === 'banner' ? 'bdx-banner-thing' : 'bdx-slot-thing', k)),
@@ -109,7 +109,8 @@ export const satchelApp = () => shelfApp({
     }
     if (g.id === 'mats') return k ? [typed('', `Held: ${sat().mats[t.id] || 0}`), typed('', t.use), typed('muted', where(t))]
       : [typed('muted', 'Not found yet.'), typed('muted', where(t))];
-    if (!k) return [typed('muted', 'Quiet for now.'), typed('muted', `Beat one of ${t.name}'s Gym Leaders at the end of the ${BIOMES_BY_ID[t.biome]?.name}, then pass through.`)];
+    if (!k && t.home) return [typed('muted', 'Quiet for now.'), typed('muted', 'Beat the Nietos at the Whispering Clearing\'s Gym, then come home.')];
+    if (!k) return [typed('muted', 'Quiet for now.'), typed('muted', clearingLit(getSave()) ? `Beat one of ${t.name}'s Gym Leaders at the end of the ${BIOMES_BY_ID[t.biome]?.name}, then pass through.` : 'The Whispering Clearing\'s Waystone comes first: the Nietos\' quest mends it.')];
     const st = townState(getSave(), t.id);
     const now = questStep(t, st);
     return [typed('', questOf(t).story),

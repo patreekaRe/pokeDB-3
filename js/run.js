@@ -71,7 +71,7 @@ import { track, claimable } from './missions.js';
 import { trackTowns, handInRequest, metTown, isMended, inviteFolk, invitedFolk, startQuest, handInQuest } from './towns.js';
 import { townsOpen, TOWNS, REQUEST_COINS, QUEST_COINS, MEND_AT, townState, currentRequest, requestText, placeOf, folkKey, nietosHome,
   questOf, greeterOf, openQuest, questStep, questProgress, stepText, stepHave, stepReady, handInStep, mended, RING,
-  homeTalk, stepNudge, folkChats, weaknessShards, sealOn, shardsPlaced } from './data/towns.js';
+  homeTalk, stepNudge, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced } from './data/towns.js';
 import { campLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -345,7 +345,7 @@ const gleaned = (key) => (run.gleaned || []).includes(key);
 /** The Waystone Shard this biome's map floats over an Alpha, or null: its town's questline is up to the shard and you
     haven't got it (a lost run's Alpha is marked again next time). `?shard` marks one on a playtest. */
 function shardHere() {
-  const town = TOWNS[mainBiome()?.id];
+  const town = placeOf(mainBiome()?.id);   // the Clearing's too (the Nietos' questline)
   if (!town || isSafari() || isTower() || visiting) return null;
   if (peeking) return shardFlag() ? `shard-${town.id}` : null;
   if (!gleaning()) return null;
@@ -1725,7 +1725,9 @@ function townRoom(covered = null, at = null) {
   };
   const quest = questOf(town), step = questStep(town, st), sat = satchelOf(getSave());
   const ready = step && (stepReady(step, st, sat) || (!real && (satchelFlag() || mendFlag())));
-  const greeter = !st.quest && quest ? greeterOf(town, getSave()) : null;
+  // the Clearing's Waystone comes first (step 7): till the Nietos' questline lights it, no town opens its board (a peek does)
+  const hubLit = !real || clearingLit(getSave());
+  const greeter = !st.quest && quest && hubLit ? greeterOf(town, getSave()) : null;
   const friends = st.quest ? `Quest ${questProgress(town, st).join('/')}.` : `Friendship ${st.done}${st.done < MEND_AT ? `/${MEND_AT}` : ''}.`;
   const later = home ? 'Play a run through here, then hand it in.' : 'Hand it in here on a later run.';
   const handStep = async (pick = null) => {
@@ -1758,7 +1760,9 @@ function townRoom(covered = null, at = null) {
   };
   let options;
   if (quest && !st.quest) {
-    options = [{ ...spotOption('Board', `The board is bare. ${town.name} is quiet${greeter ? '' : ': beat one of its Gym Leaders at the end of the biome, and they\'ll want a word next time you pass'}.`, again), info: true }];
+    options = [{ ...spotOption('Board', !hubLit
+      ? `The board is bare. ${town.name}'s Waystone went dark when the one at home cracked: the Whispering Clearing's comes first. The Nietos there know more.`
+      : `The board is bare. ${town.name} is quiet${greeter ? '' : ': beat one of its Gym Leaders at the end of the biome, and they\'ll want a word next time you pass'}.`, again), info: true }];
   } else if (step && ready && step.pick) {
     options = step.pick.options.map(o => spotOption(o.label, `${step.pick.ask}: ${o.text}`, () => handStep(o)));
   } else if (step && ready) {
@@ -1916,6 +1920,30 @@ function homeRoom(b) {
     }
     again();
   }));
+  // the Nietos' questline (step 7) is handed in here, at home: the shard's goes on out to the plaza, where the stone lights
+  const cst = home.leader === 'nietos' && !away && townsOpen() ? townState(getSave(), 'clearing') : null;
+  const cstep = cst && questStep(town, cst);
+  if (cstep) {
+    const lent = satchelFlag(), ready = lent || stepReady(cstep, cst, satchelOf(getSave()));
+    const have = stepHave(cstep, cst, satchelOf(getSave()));
+    const need = cstep.kind === 'gather' ? `${MATERIALS_BY_ID[cstep.item].icon} ${have}/${cstep.n} in your Satchel.` : cstep.kind === 'track' ? `${have}/${cstep.n}.`
+      : have ? 'In your Satchel.' : cstep.kind === 'shard' ? 'Not found yet.' : 'Not made yet.';
+    const [n, of] = questProgress(town, cst);
+    options.push(ready ? spotOption('Hand in', `${stepText(cstep)}: done! Hand it in to Law and Britt for ${coinsWithBonus(QUEST_COINS)} PokéCoins.`, async () => {
+      if (run !== thisRun || handing) return;
+      handing = true;
+      const coins = handInQuest('clearing', null, lent);
+      playSound('stat-up');
+      refreshCoins();
+      event3dMod?.freezeEvent(true);
+      sayLines([]);
+      try { await gymTalk(GYM_BY_ID.nietos, cstep.thanks, { lit: true }); } finally { handing = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
+      if (run !== thisRun) return;
+      tell(coins ? `Quest step done! +${coins} PokéCoins.` : 'Quest step done!');
+      if (cstep.kind === 'shard') return out();   // out to the plaza: js/hub-3d.js lights the stone as you step out
+      again();
+    }) : { ...spotOption('Quest', `${stepText(cstep)}. ${need} Quest ${n}/${of}. ${stepNudge(town, cstep, GYM_BY_ID.nietos.name)}`.trim(), again), info: true });
+  }
   showChoice({
     title: home.name.toUpperCase(),
     sub: [notBack ? home.out : away ? home.away : sleepy ? home.nightSub ?? `${GYM_BY_ID[home.leader]?.name || 'They'} is fast asleep. It's past eleven.` : home.sub],
@@ -2076,7 +2104,7 @@ function afterFight(node, result) {
   const drop = gleaning() && !gleaned(gleanKey(node, 'drop')) ? fightDrop(mainBiome().id, node.type, random) : null;   // a material for the Satchel
   if (drop) dexNews.unshift(matLine(drop));   // first: the final boss's window drops a finished Pokédex page's last line
   const shard = node.type === 'elite' && node.shard && !gleaned(gleanKey(node, 'shard')) ? KEY_BY_ID[node.shard] : null;
-  if (shard) dexNews.unshift(`${shard.icon} The Waystone Shard was floating over it! ${shard.name} went into your Satchel's Key Items.${peeking ? ' (A playtest: nothing is saved.)' : ` Take it back to ${TOWNS[shard.shard].name}'s board.`}`);
+  if (shard) dexNews.unshift(`${shard.icon} The Waystone Shard was floating over it! ${shard.name} went into your Satchel's Key Items.${peeking ? ' (A playtest: nothing is saved.)' : shard.shard === 'clearing' ? ' Take it home to the Nietos.' : ` Take it back to ${TOWNS[shard.shard].name}'s board.`}`);
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
