@@ -2577,3 +2577,8 @@ Nietos' name board) hop every few seconds with a gold glint at their corner (`be
   thatched log towers with pennants, a thatched roof over the SAFARI ZONE board, a swaying Safari Ball crest, lanterns,
   bunting, tiki torches with a warm lamp, palms, ferns, a bamboo palisade and a plank threshold; shut, a CLOSED rope and
   nothing lit. Not changed: the Safari lobby's painted window onto the gate (`js/safari-lobby.js`), which could follow it.
+
+### The Clearing's Sky Pillar rebuilt (2026-10-15, the user's ask: "a big change aesthetically")
+- The 12-tall stone box
+  became Hoenn's tower in 3D (`js/hub-pillar.js`, like the dojo's `js/hub-dojo.js`): four tiers, runes, porch, banners,
+  floating stones, cloud collars, a jade crystal and wind spiralling up it once open. Detail: docs/reference/hub-base-mall.md.
