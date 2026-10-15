@@ -287,7 +287,10 @@ mended (an old save loses nothing). Till then `townRoom()` has no greeter (its b
 it), the Clearing's Waystone is cracked (`clearingWaystone(g, lit, whole)`: a darker stone, a zigzag crack, its runes
 flickering dim) and its card is `brokenWaystone()` (no Travel, the quest's n/4); once lit, the menu lists the Clearing
 first. `homeNews()` in `js/hub-3d.js` runs as the Clearing opens (`openHub()`, `enterHub()`): beaten Nietos and no quest,
-Law and Britt slide in (`gymTalk()`) and `startQuest('clearing')`; the shard in and not `welcomed`, a beam rises off the
+Law and Britt slide in (`gymTalk()`) and, since 2026-10-14 (the user's ask: they guide you to the board, which starts the
+questline, and only then give its steps), say only `call.nietos` (`heardCall('clearing')`, `called`, so once) and your
+partner walks to the quest board (`goTo()`, its card's Read: `takeQuest()` plays `greet.nietos`, the story, and
+`startQuest('clearing')`); tapped at home before that, they say `call.board` with no "!"; the shard in and not `welcomed`, a beam rises off the
 stone (`warp.stone` in `liveWarp()`), the places rebuilt whole at its peak, and `welcomeHome('clearing')`. Steps are handed in
 in the Nietos' house (`homeRoom()`: Quest / Hand in, `handInQuest('clearing', null, force)`, `force` under `?satchel`);
 the shard's hand-in walks you out onto the plaza. Its Do step counts in the Clearing biome (`trackTowns()` reads

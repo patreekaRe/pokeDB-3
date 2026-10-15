@@ -65,6 +65,12 @@ export function readBoard(id) {
   updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...townState(d, id), board: true } }; });
 }
 
+/** Note that a questline's leaders have sent you to its board (the Nietos' call home, js/hub-3d.js's homeNews()), so it plays once. */
+export function heardCall(id) {
+  if (townState(getSave(), id).called) return;
+  updateSave(d => { d.towns = { ...(d.towns || {}), [id]: { ...townState(d, id), called: true } }; });
+}
+
 /** Note that you've walked into a town once (its first-visit line). */
 export function metTown(id) {
   if (townState(getSave(), id).met) return;

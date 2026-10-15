@@ -1972,7 +1972,7 @@ function homeRoom(b, onward = null) {
   // the Nietos' questline (step 7) is handed in here too: the shard's goes on out to the plaza, where the stone lights
   const cst = home.leader === 'nietos' && !away && townsOpen() ? townState(getSave(), 'clearing') : null;
   const cstep = cst && questStep(town, cst);
-  const nietosNew = !!cst && !cst.quest && !clearingLit(getSave());   // not picked up yet (the greeting or the plaza's board starts it)
+  const nietosNew = !!cst && !cst.quest && !clearingLit(getSave());   // not picked up yet: only the plaza's board starts it
   const lent = satchelFlag(), cready = !!cstep && (lent || stepReady(cstep, cst, satchelOf(getSave())));
   // every turn-in is a tap on the Gym Leader wearing the "!" (the user's ask, 2026-10-14: no floating signs for it); the
   // first tap on them hands it in, before any chat
@@ -1982,13 +1982,8 @@ function homeRoom(b, onward = null) {
     sayLines([]);
     try { await gymTalk(leader, lines, { lit: true, vars }); } finally { if (run === thisRun) event3dMod?.freezeEvent(false); }
   };
-  const turnIn = !leader ? null : nietosNew ? async () => {
-    await talkOut(QUESTS.clearing.greet.nietos);
-    if (run !== thisRun) return;
-    startQuest('clearing');
-    tell('New quest! Track it in your Pokédex\'s Quests app, or on the quest board by the Waystone.');
-    again();
-  } : cready ? async () => {
+  // the user's ask, 2026-10-14: the questline starts at the board, and only then do they give its steps
+  const turnIn = !leader ? null : nietosNew ? () => talkOut(QUESTS.clearing.call.board) : cready ? async () => {
     const coins = handInQuest('clearing', null, lent);
     playSound('stat-up');
     refreshCoins();
@@ -2070,7 +2065,7 @@ function homeRoom(b, onward = null) {
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, away, gift: gifting, marks: handOver ? [`who:${home.leader}`] : [], onTalk: (stand) => {
+    extra: { town, home: b.home, away, gift: gifting, marks: handOver && !nietosNew ? [`who:${home.leader}`] : [], onTalk: (stand) => {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       if (stand === 'jona') return jonaTalk();

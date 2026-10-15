@@ -33,7 +33,7 @@ import { makeCauldron } from './hub-cauldron.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
 import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
-import { todaysGuest, welcomeHome, startQuest } from './towns.js';
+import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { unclaimed } from './mail.js';
 import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
@@ -1957,12 +1957,13 @@ export function cameHome(from, town) {
 }
 
 /** What the Clearing has to tell you as you come home (step 7, the Nietos' questline): beaten at their Gym, Law and Britt
-    slide in with the cracked Waystone's story and their questline opens; once they've put its shard in, the stone lights. */
+    slide in once to send you to their notice on the quest board (takeQuest() opens the questline); once they've put its
+    shard in, the stone lights. */
 let homeNewsBusy = false;
 async function homeNews() {
   if (homeNewsBusy || held || !townsOpen()) return;
   const save = getSave(), st = townState(save, 'clearing');
-  const greet = !st.quest && nietosHome(gymWins(save, 'nietos') || 0) && !clearingLit(save);
+  const greet = !st.quest && !st.called && nietosHome(gymWins(save, 'nietos') || 0) && !clearingLit(save);
   const mend = !!st.quest?.lit && !st.quest.welcomed;
   if (!greet && !mend) return;
   homeNewsBusy = true;
@@ -1970,11 +1971,12 @@ async function homeNews() {
     await new Promise(r => setTimeout(r, calm ? 200 : 900));
     if (!running || held) return;
     playSound('gate-hum');
-    if (greet) {
+    if (greet) {   // only a pointer to their notice (the user's ask, 2026-10-14): the board starts the questline
       const { gymTalk } = await import('./gym.js');
-      await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.greet.nietos, { lit: true });
-      startQuest('clearing');
-      dexNews();
+      await gymTalk(GYM_BY_ID.nietos, QUESTS.clearing.call.nietos, { lit: true });
+      heardCall('clearing');
+      const p = running && !held && !entering && places.find(q => q.id === 'quests');
+      if (p) { arriving = false; goTo(p); }   // your partner walks you over to it (cutting short its walk in, so its card shows there)
       return;
     }
     welcomeHome('clearing');
@@ -2025,8 +2027,7 @@ function questMarks() {
   if (nietosMark) nietosMark.visible = !!b.ready;
 }
 
-/** The Nietos' notice read off the board: their story, and their questline opens (the greeting homeNews() plays, if it
-    didn't as you came home). */
+/** The Nietos' notice read off the board: their story, and their questline opens, its steps then handed in at their house. */
 async function takeQuest() {
   if (homeNewsBusy || townState(getSave(), 'clearing').quest) return;
   homeNewsBusy = true;

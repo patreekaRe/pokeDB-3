@@ -1539,15 +1539,28 @@ export const QUESTS = {
   // their house (js/run.js's homeRoom()), the stone lighting on the plaza when you step out (js/hub-3d.js).
   clearing: {
     story: 'The Clearing\'s Waystone cracked the night the Sealed Gate shut, and every town\'s stone went dark with it. It hums off-key all night, and Linc can\'t sleep.',
-    greet: {
+    // as you come home after beating them (js/hub-3d.js's homeNews()): only a pointer to their notice on the quest board,
+    // which tells the story (`greet`) and opens the questline (the user's ask, 2026-10-14)
+    call: {
       nietos: [
         'LAW: Hey! You beat us! Fair and square. Mostly. Linc bit Kangaskhan.',
-        'BRITT: Sweetie, have you looked at the Waystone on the plaza? Really looked?',
+        'BRITT: Sweetie, we need your help with something. I pinned a notice on the quest board, by the Waystone.',
+        'LAW: Go read it. Then come find us at the house. We\'ll be the ones not sleeping.',
+      ],
+      // tapped at home before you've read it (js/run.js's homeRoom())
+      board: [
+        'BRITT: Did you read the notice yet? It\'s on the quest board, out by the Waystone. In my best handwriting.',
+        'LAW: She made three drafts. Oh, umm... go read it.',
+      ],
+    },
+    greet: {
+      nietos: [
+        'BRITT: Found it? Good. Sweetie, have you looked at the Waystone on the plaza? Really looked?',
         'BRITT: It cracked the night the Sealed Gate shut. Straight through. And every town\'s stone out on the roads went dark with it.',
         'LAW: The towns all link through ours. It\'s the hub. Hub\'s down, whole server\'s down. Oh, umm... I mean, it\'s like a... hub.',
         'BRITT: And it hums. All night. Off-key. Linc hasn\'t slept through since. Neither have I. Law has, somehow.',
         'LINC: Ba! *points out of the window, at the stone*',
-        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there. It\'s on the board by the Waystone. And the fridge. And your Pokédex.',
+        'LAW: Something\'s stirred up the Clearing too. Thin it out for us? Win some fights out there, then come tell us at the house. It\'s in your Pokédex too. And on the fridge.',
       ],
     },
     steps: [
