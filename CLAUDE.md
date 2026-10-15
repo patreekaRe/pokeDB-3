@@ -154,7 +154,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
-  `?lockdepths`, `?gymwins=N`, `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp).
+  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?phone` (a phone frame on a wide screen), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`

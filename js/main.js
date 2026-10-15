@@ -201,6 +201,20 @@ function init() {
   // ?gymwins=5 counts that many wins against every Gym Leader for good (never fewer than the save has): their badges,
   // posters (3) and Gold badges and visits (5), without the climbs
   if (query.has('gymwins')) updateSave(d => { const n = parseInt(query.get('gymwins'), 10) || 0; d.gym = Object.fromEntries(GYM_LEADERS.map(l => [l.id, Math.max(d.gym?.[l.id] || 0, n)])); });
+  // ?ungym=john,phil undoes ?gymwins on a real save (2026-10-14: the user opened a playtest link on theirs): those leaders
+  // back to never beaten, their Gym Badges out of the Badge Case, and a Nietos' questline that a fake win opened gone
+  if (query.has('ungym')) {
+    const ids = query.get('ungym').split(',').filter(id => GYM_LEADERS.some(l => l.id === id));
+    updateSave(d => {
+      d.gym = { ...(d.gym || {}), ...Object.fromEntries(ids.map(id => [id, 0])) };
+      d.badges = (d.badges || []).filter(b => !ids.some(id => b === `gym-${id}` || b === `gym-${id}-gold`));
+      // unmet in the Gym Leaders app too (the app's first-load migration counted the fake wins as meetings), unless they've beaten you
+      const unmet = (list) => (list || []).filter(id => !ids.includes(id) || (d.gymLost?.[id] || 0) > 0);
+      d.seen = { ...d.seen, gym: unmet(d.seen?.gym) };
+      if (d.newFinds) d.newFinds = { ...d.newFinds, gym: unmet(d.newFinds.gym) };
+      if (ids.includes('nietos') && d.towns?.clearing) { const { clearing, ...rest } = d.towns; d.towns = rest; }
+    });
+  }
   if (query.has('mewtwo')) updateSave(d => { if (!d.unlocked.includes('mewtwo')) d.unlocked.push('mewtwo'); });
   // ?lockmewtwo undoes it: Mewtwo locked again, its shiny dropped, a saved Mewtwo run gone, and the Sealed Gate back where
   // the Record Book's wins leave it. Only while Mewtwo is unlocked, so a bookmarked link can't reset the gate's progress.
