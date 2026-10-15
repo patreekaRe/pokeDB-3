@@ -51,6 +51,7 @@ export const NEXT = [
   ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
   ['music', 'Highbough has a song of its own now, the Crystal Depths\' theme.'],
   ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge: thatched log towers, a Safari Ball crest, lanterns, tiki torches and palms.'],
+  ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

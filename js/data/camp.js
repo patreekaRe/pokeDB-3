@@ -7,7 +7,7 @@
 import { SEALED_WEAKNESS, sealedMult } from './difficulty.js';
 
 export const DEPTHS_CAMP = {
-  id: 'depths', biome: 'depths', name: 'Crystal Depths', music: 'seal', home: true,
+  id: 'depths', biome: 'depths', name: 'Crystal Depths', music: 'map4', home: true,
   // `back`: where leaving puts you in the Clearing, in front of the Sealed Gate
   buildings: [{ id: 'camp', name: 'DEPTHS CAMP', home: 'camp', back: 'gate' }],
   homes: {
