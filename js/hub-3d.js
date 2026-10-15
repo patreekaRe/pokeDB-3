@@ -1113,108 +1113,256 @@ function shopGlass(f, x, y, w, h, s) {
   if (s) { s.fillStyle = '#9a7848'; s.fillRect(x, y, w, h); }
 }
 
-/** The mall's front: a cream two-storey block, POKé MALL on a white panel under the red cornice, a row of upper windows,
-    then a ground floor of shop-lit glass round sliding doors, the Game Corner's violet sign hung in the glass. */
+/** The mall's front: a cream two-storey block, POKé MALL in a gold-framed red panel ringed with marquee bulbs under the
+    red cornice, a row of upper windows between gold pilasters, then a ground floor of shop-lit glass round sliding doors,
+    the Game Corner's violet sign hung in the glass. Its corners stay plain: the corner towers stand on them. */
 function mallFrontArt(W, H) {
-  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine(), M = 8, gold = lin(0, 0, 0, 3, [GC.gold, GC.goldDark]);
   g.fillStyle = lin(0, 0, 0, H, [MALL.cream, MALL.stone]); g.fillRect(0, 0, W, H);
   rr(0, 0, W, 3.2, 0, lin(0, 0, 0, 3.2, [MALL.red, MALL.redDark]));
-  g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(0, 3.2, W, 0.5);
-  // the sign
-  rr(W * 0.12, 5, W * 0.76, 12, 2, MALL.red);
-  rr(W * 0.12 + 0.9, 5.9, W * 0.76 - 1.8, 10.2, 1.4, '#ffffff');
-  ball(g, W * 0.12 + 6.5, 11, 3.6);
-  words(g, 'POKé MALL', W * 0.55 + 0.25, 11.35, 7, 'rgba(0,0,0,0.25)');
-  words(g, 'POKé MALL', W * 0.55, 11, 7, MALL.red);
-  s.fillStyle = '#d8d0c0'; s.beginPath(); s.roundRect(W * 0.12 + 0.9, 5.9, W * 0.76 - 1.8, 10.2, 1.4); s.fill();
-  ball(s, W * 0.12 + 6.5, 11, 3.6, '#000');
-  words(s, 'POKé MALL', W * 0.55, 11, 7, '#ff9080');
-  // the upper floor's windows
-  const n = 5, gap = 1.6, ww = (W - 4 - gap * (n - 1)) / n;
-  for (let i = 0; i < n; i++) {
-    const x = 2 + i * (ww + gap);
-    rr(x - 0.5, 18.5, ww + 1, 9, 0.6, MALL.shade);
-    shopGlass(f, x, 19, ww, 8, s);
+  rr(0, 3.2, W, 0.7, 0, GC.gold);
+  // the sign: a gold frame, a red panel, a white face, bulbs all round
+  const sx = W * 0.12, sw = W * 0.76;
+  rr(sx - 1, 4.8, sw + 2, 13, 2.4, lin(0, 4.8, 0, 17.8, [GC.gold, GC.goldDark, GC.gold]));
+  rr(sx, 5.6, sw, 11.4, 2, MALL.red);
+  rr(sx + 1.6, 7, sw - 3.2, 8.6, 1.2, '#ffffff');
+  ball(g, sx + 6.5, 11.3, 3.2);
+  ball(g, sx + sw - 6.5, 11.3, 3.2);
+  words(g, 'POKé MALL', W * 0.5 + 0.25, 11.65, 6.4, 'rgba(0,0,0,0.25)');
+  words(g, 'POKé MALL', W * 0.5, 11.3, 6.4, MALL.red);
+  s.fillStyle = '#d8d0c0'; s.beginPath(); s.roundRect(sx + 1.6, 7, sw - 3.2, 8.6, 1.2); s.fill();
+  ball(s, sx + 6.5, 11.3, 3.2, '#000'); ball(s, sx + sw - 6.5, 11.3, 3.2, '#000');
+  words(s, 'POKé MALL', W * 0.5, 11.3, 6.4, '#ff9080');
+  const bulbs = [];
+  for (let x = sx + 1.5; x <= sx + sw - 1.4; x += 2.6) bulbs.push([x, 6.3], [x, 16.3]);
+  for (const y of [8.9, 11.3, 13.7]) bulbs.push([sx + 0.8, y], [sx + sw - 0.8, y]);
+  for (const [x, y] of bulbs) {
+    g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 0.5, 0, Math.PI * 2); g.fill();
+    s.fillStyle = '#fff0a0'; s.beginPath(); s.arc(x, y, 0.6, 0, Math.PI * 2); s.fill();
   }
-  rr(0, 29, W, 2.4, 0, lin(0, 29, 0, 31.4, [MALL.red, MALL.redDark]));
+  // the upper floor's windows, arched, a gold pilaster between each
+  const n = 5, gap = 2.2, ww = (W - 2 * M - gap * (n - 1)) / n;
+  for (let i = 0; i < n; i++) {
+    const x = M + i * (ww + gap);
+    rr(x - 0.5, 18.8, ww + 1, 9.2, [ww / 2 + 0.5, ww / 2 + 0.5, 0.6, 0.6], MALL.shade);
+    g.save(); g.beginPath(); g.roundRect(x, 19.3, ww, 8.2, [ww / 2, ww / 2, 0.3, 0.3]); g.clip();
+    shopGlass(f, x, 19.3, ww, 8.2, null);
+    g.restore();
+    s.fillStyle = '#9a7848'; s.beginPath(); s.roundRect(x, 19.3, ww, 8.2, [ww / 2, ww / 2, 0.3, 0.3]); s.fill();
+    rr(x + ww / 2 - 0.4, 18.4, 0.8, 1.2, 0.3, GC.gold);
+    if (i < n - 1) rr(x + ww + gap / 2 - 0.45, 19, 0.9, 9.6, 0.3, gold);
+  }
+  rr(0, 28.6, W, 0.6, 0, GC.gold);
+  rr(0, 29.2, W, 2.4, 0, lin(0, 29.2, 0, 31.6, [MALL.red, MALL.redDark]));
+  rr(0, 31.6, W, 0.5, 0, GC.gold);
   // the ground floor: glass between dark mullions, the doors in the middle
   const top = 32.5;
-  rr(0.8, top, W - 1.6, H - top, 0, MALL.frame);
+  rr(M - 0.8, top, W - 2 * M + 1.6, H - top, 0, MALL.frame);
   const doorW = W * 0.24, dx = (W - doorW) / 2;
-  for (const [x0, x1] of [[1.6, dx - 0.8], [dx + doorW + 0.8, W - 1.6]]) {
+  for (const [x0, x1] of [[M, dx - 0.8], [dx + doorW + 0.8, W - M]]) {
     const panes = 2, pw = (x1 - x0 - 0.8 * (panes - 1)) / panes;
     for (let i = 0; i < panes; i++) shopGlass(f, x0 + i * (pw + 0.8), top + 0.8, pw, H - top - 1.6, s);
   }
   for (const x of [dx, dx + doorW / 2 + 0.2]) shopGlass(f, x, top + 0.8, doorW / 2 - 0.2, H - top - 0.8, s);
-  rr(dx + doorW / 2 - 1.6, top + 9, 0.6, 3, 0.3, '#d8d8e0'); rr(dx + doorW / 2 + 1, top + 9, 0.6, 3, 0.3, '#d8d8e0');
-  // the Game Corner's sign, hung inside the glass on the right
-  const gx = dx + doorW + 3, gw = W - 1.6 - gx - 1.6;
+  rr(dx + doorW / 2 - 1.6, top + 9, 0.6, 3, 0.3, '#f0d070'); rr(dx + doorW / 2 + 1, top + 9, 0.6, 3, 0.3, '#f0d070');
+  // the Game Corner's sign, hung inside the glass on the right, clear of the porch's columns
+  const gx = dx + doorW + 5, gw = W - M - gx - 0.6;
   rr(gx, top + 3, gw, 5, 1, lin(0, top + 3, 0, top + 8, [GC.gold, GC.goldDark]));
   rr(gx + 0.5, top + 3.5, gw - 1, 4, 0.7, lin(0, top + 3.5, 0, top + 7.5, [GC.violet, GC.violetDark]));
-  g.fillStyle = GC.gold; star(g, gx + 2, top + 5.5, 1.2);
-  words(g, 'GAME CORNER', gx + gw / 2 + 1, top + 5.6, 2.3, '#ffe36b');
-  s.fillStyle = '#ffe890'; star(s, gx + 2, top + 5.5, 1.2);
-  words(s, 'GAME CORNER', gx + gw / 2 + 1, top + 5.6, 2.3, '#ffe890');
+  g.fillStyle = GC.gold; star(g, gx + 1.8, top + 5.5, 1.1);
+  words(g, 'GAME CORNER', gx + gw / 2 + 0.9, top + 5.6, 2, '#ffe36b');
+  s.fillStyle = '#ffe890'; star(s, gx + 1.8, top + 5.5, 1.1);
+  words(s, 'GAME CORNER', gx + gw / 2 + 0.9, top + 5.6, 2, '#ffe890');
   return f.c;
 }
 
-/** Its sides: the same cream, red cornice and band, two rows of windows. */
+/** Its sides: the same cream, red cornice and gold-edged band, two rows of windows. */
 function mallSideArt(W, H) {
   const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
   g.fillStyle = lin(0, 0, 0, H, [MALL.stone, MALL.shade]); g.fillRect(0, 0, W, H);
   rr(0, 0, W, 3.2, 0, lin(0, 0, 0, 3.2, [MALL.red, MALL.redDark]));
-  rr(0, 29, W, 2.4, 0, lin(0, 29, 0, 31.4, [MALL.red, MALL.redDark]));
+  rr(0, 3.2, W, 0.7, 0, GC.gold);
+  rr(0, 28.6, W, 0.6, 0, GC.gold);
+  rr(0, 29.2, W, 2.4, 0, lin(0, 29.2, 0, 31.6, [MALL.red, MALL.redDark]));
+  rr(0, 31.6, W, 0.5, 0, GC.gold);
   for (const [y, h] of [[8, 16], [35, H - 40]]) for (let x = 3; x + 9 <= W - 2; x += 13) shopGlass(f, x, y, 9, h, y > 30 ? s : null);
   return f.c;
 }
 
+/** A corner tower's walls: cream, a red crown edged in gold, two tall arched windows, lit at night. */
+function mallTowerArt(W, H) {
+  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  g.fillStyle = lin(0, 0, 0, H, [MALL.cream, MALL.stone]); g.fillRect(0, 0, W, H);
+  rr(0, 0, W, 4, 0, lin(0, 0, 0, 4, [MALL.red, MALL.redDark]));
+  rr(0, 4, W, 0.7, 0, GC.gold);
+  rr(0, H - 2.2, W, 2.2, 0, MALL.shade);
+  const ww = W * 0.5, x = (W - ww) / 2;
+  for (const [y, h] of [[8, 14], [26, 16], [46, H - 52]]) {
+    if (h < 6) continue;
+    const arch = [ww / 2, ww / 2, 0.3, 0.3];
+    rr(x - 0.6, y - 0.6, ww + 1.2, h + 1.2, arch, GC.goldDark);
+    g.save(); g.beginPath(); g.roundRect(x, y, ww, h, arch); g.clip(); shopGlass(f, x, y, ww, h, null); g.restore();
+    s.fillStyle = '#b08850'; s.beginPath(); s.roundRect(x, y, ww, h, arch); s.fill();
+  }
+  return f.c;
+}
+
+/** The dome's drum: cream between gold bands, a ring of small lit arches. */
+function mallDrumArt(W, H) {
+  const f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  g.fillStyle = lin(0, 0, 0, H, [MALL.cream, MALL.shade]); g.fillRect(0, 0, W, H);
+  rr(0, 0, W, 0.8, 0, GC.gold); rr(0, H - 0.8, W, 0.8, 0, GC.gold);
+  const n = 12, step = W / n, ww = step * 0.45;
+  for (let i = 0; i < n; i++) {
+    const x = i * step + (step - ww) / 2, arch = [ww / 2, ww / 2, 0, 0];
+    rr(x, 1.4, ww, H - 2.8, arch, MALL.warm[1]);
+    s.fillStyle = '#c09858'; s.beginPath(); s.roundRect(x, 1.4, ww, H - 2.8, arch); s.fill();
+  }
+  return f.c;
+}
+
+/** A Poké Ball on a disc, for the porch's pediment. */
+function mallMedalArt() {
+  const f = fine(10, 10, 12), { g } = f;
+  g.fillStyle = GC.gold; g.beginPath(); g.arc(5, 5, 4.9, 0, Math.PI * 2); g.fill();
+  g.fillStyle = GC.goldDark; g.beginPath(); g.arc(5, 5, 4.2, 0, Math.PI * 2); g.fill();
+  ball(g, 5, 5, 3.6);
+  return f.c;
+}
+
+let mallFx = null;   // the mall's marquee bulbs chasing and the Poké Ball turning on its spire (mallFx.tick())
+
 /** The Poké Mall (the user's call, 2026-10-08: the Game Corner's stall grew into a shopping centre, the Game Corner inside
-    it): a two-storey block facing you, a glass pyramid on its roof, flags at its corners, a red canopy with bulbs over the
-    doors and two potted trees beside them. */
+    it; made grand 2026-10-15, the user's ask, "more grand and extravagant on the outside"): a two-storey block facing you,
+    a gold-ribbed glass dome on a lit drum crowned by a turning Poké Ball, a tower with a gold cupola and a flag at each
+    front corner, and a white-columned porch with a Poké Ball pediment and chasing bulbs over the doors, gold lamps beside
+    it and a red carpet down the steps. */
 function mallBuilding() {
-  const W = 3.5, D = 2.5, H = 2.75;
+  const W = 3.5, D = 2.5, H = 2.75, F = D / 2;
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const g = new THREE.Group();
-  const add = (mesh, x, y, z, shadow = true) => { mesh.position.set(x, y, z); mesh.castShadow = mesh.receiveShadow = shadow; g.add(mesh); return mesh; };
+  const add = (mesh, x, y, z, shadow = true, to = g) => { mesh.position.set(x, y, z); mesh.castShadow = mesh.receiveShadow = shadow; to.add(mesh); return mesh; };
   const front = mallFrontArt(W * MU, H * MU), side = mallSideArt(D * MU, H * MU);
   const fm = glowing(std({ map: texOf(front), roughness: 0.6 }), front, null, '#fff0d0', 1);
   fm.userData.glowMin = 0.2;
   const sm = glowing(std({ map: texOf(side) }), side, null, '#fff0d0', 0.8);
   const roof = std({ color: '#b8ac98' }), back = std({ color: MALL.shade });
+  const gold = std({ color: '#f2c444', metalness: 0.35, roughness: 0.35, emissive: new THREE.Color('#5a3800'), emissiveIntensity: 0.35 });
+  const marble = std({ color: '#fbf8f2', roughness: 0.45 }), red = std({ color: MALL.red }), redDark = std({ color: MALL.redDark });
   add(new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [sm, sm, roof, roof, fm, back]), 0, H / 2, 0);
-  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.14, D + 0.12), std({ color: MALL.redDark })), 0, H + 0.07, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.12, 0.14, D + 0.12), redDark), 0, H + 0.07, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.16, 0.04, D + 0.16), gold), 0, H + 0.16, 0);
+  add(new THREE.Mesh(new THREE.BoxGeometry(W + 0.06, 0.035, D + 0.06), gold), 0, H - 1.6, 0);
+  // a balustrade round the roof, gold posts on a white rail
+  const rail = H + 0.18, postGeo = new THREE.BoxGeometry(0.04, 0.16, 0.04);
+  for (const [w, d, x, z] of [[W, 0.04, 0, F - 0.02], [W, 0.04, 0, -F + 0.02], [0.04, D, W / 2 - 0.02, 0], [0.04, D, -W / 2 + 0.02, 0]]) {
+    add(new THREE.Mesh(new THREE.BoxGeometry(w, 0.04, d), marble), x, rail + 0.16, z);
+    const n = Math.round(Math.max(w, d) / 0.22);
+    for (let i = 0; i <= n; i++) {
+      const k = -0.5 + i / n;
+      add(new THREE.Mesh(postGeo, gold), w > d ? k * w : x, rail + 0.08, w > d ? z : k * d, false);
+    }
+  }
+  // the dome: a drum of lit arches, gold-ribbed glass, a lantern, a spire and a Poké Ball that turns
+  const R = 0.62, dz = -0.1, drumH = 0.26, base = H + 0.18;
+  const drumArt = mallDrumArt(Math.round(2 * Math.PI * R * MU), Math.round(drumH * MU));
+  const drum = glowing(std({ map: texOf(drumArt) }), drumArt, null, '#ffe0a0', 1.2);
+  drum.userData.glowMin = 0.15;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(R + 0.04, R + 0.06, drumH, 32), drum), 0, base + drumH / 2, dz);
   const glass = std({ color: '#bfe4ff', emissive: new THREE.Color('#9fd0ff'), metalness: 0.3, roughness: 0.15, transparent: true, opacity: 0.85 });
   glass.userData.glow = 0.5; glass.userData.glowMin = 0.15;
   glowMats.push(glass);
-  const dome = add(new THREE.Mesh(new THREE.ConeGeometry(1.05, 0.75, 4), glass), 0, H + 0.14 + 0.375, -0.1);
-  dome.rotation.y = Math.PI / 4;
+  const domeY = base + drumH;
+  add(new THREE.Mesh(new THREE.SphereGeometry(R, 32, 14, 0, Math.PI * 2, 0, Math.PI / 2), glass), 0, domeY, dz);
+  add(new THREE.Mesh(new THREE.TorusGeometry(R + 0.02, 0.03, 6, 40), gold), 0, domeY, dz).rotation.x = Math.PI / 2;
+  const ribGeo = new THREE.TorusGeometry(R + 0.005, 0.014, 4, 20, Math.PI);
+  for (let i = 0; i < 4; i++) add(new THREE.Mesh(ribGeo, gold), 0, domeY, dz, false).rotation.y = i * Math.PI / 4;
+  const lit = std({ color: '#fff2c8', emissive: new THREE.Color('#ffd890'), roughness: 0.4 });
+  lit.userData.glow = 1.2; lit.userData.glowMin = 0.35;
+  glowMats.push(lit);
+  const topY = domeY + R;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.16, 12), lit), 0, topY + 0.06, dz);
+  add(new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.12, 12), gold), 0, topY + 0.2, dz);
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.02, 0.2, 8), gold), 0, topY + 0.34, dz);
+  const finial = new THREE.Group();
+  finial.position.set(0, topY + 0.53, dz);
+  finial.userData.live = true;
+  g.add(finial);
+  const fr = 0.11, white = std({ color: '#ffffff', roughness: 0.4 }), ink = std({ color: '#2a2238' });
+  add(new THREE.Mesh(new THREE.SphereGeometry(fr, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: MALL.red, roughness: 0.35 })), 0, 0, 0, true, finial);
+  add(new THREE.Mesh(new THREE.SphereGeometry(fr, 20, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), white), 0, 0, 0, true, finial);
+  add(new THREE.Mesh(new THREE.TorusGeometry(fr, 0.012, 6, 24), ink), 0, 0, 0, false, finial).rotation.x = Math.PI / 2;
+  add(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.03, 14), white), 0, 0, fr, false, finial).rotation.x = Math.PI / 2;
+  // a tower at each front corner, a lit cupola and a flag on top
+  const TW = 0.44, TH = H + 0.62, tx = W / 2 - 0.16, tz = F - 0.2;
+  const towerArt = mallTowerArt(Math.round(TW * MU), Math.round(TH * MU));
+  const tm = glowing(std({ map: texOf(towerArt) }), towerArt, null, '#fff0d0', 1);
+  tm.userData.glowMin = 0.15;
   const pole = std({ color: '#d8d8e0', metalness: 0.5, roughness: 0.3 }), flag = std({ color: MALL.red, side: THREE.DoubleSide });
   for (const sx of [-1, 1]) {
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 8), pole), sx * (W / 2 - 0.15), H + 0.14 + 0.45, D / 2 - 0.15);
-    add(new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.24), flag), sx * (W / 2 - 0.15) + 0.2, H + 0.14 + 0.75, D / 2 - 0.15, false);
+    const x = sx * tx;
+    add(new THREE.Mesh(new THREE.BoxGeometry(TW, TH, TW), [tm, tm, roof, roof, tm, tm]), x, TH / 2, tz);
+    add(new THREE.Mesh(new THREE.BoxGeometry(TW + 0.08, 0.07, TW + 0.08), gold), x, TH + 0.035, tz);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.2, 8), lit), x, TH + 0.17, tz);
+    for (let i = 0; i < 4; i++) {
+      const a = Math.PI / 4 + i * Math.PI / 2;
+      add(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.22, 0.03), gold), x + Math.cos(a) * 0.15, TH + 0.18, tz + Math.sin(a) * 0.15, false);
+    }
+    add(new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.34, 8), gold), x, TH + 0.45, tz);
+    add(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 8), gold), x, TH + 0.64, tz, false);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 8), pole), x, TH + 0.88, tz);
+    add(new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.22), flag), x + 0.18, TH + 1.0, tz, false);
   }
-  // the canopy over the doors, bulbs along its edge
-  const cw = W * 0.34, cy = 1.18;
-  add(new THREE.Mesh(new THREE.BoxGeometry(cw, 0.06, 0.5), [flag, flag, flag, std({ color: '#7a2018' }), flag, flag]), 0, cy, D / 2 + 0.25);
-  const bulb = std({ color: '#fff2b0', emissive: new THREE.Color('#fff2b0'), roughness: 0.4 });
-  bulb.userData.glow = 1.4; bulb.userData.glowMin = 0.6;
-  glowMats.push(bulb);
-  const bulbGeo = new THREE.SphereGeometry(0.03, 8, 6);
-  for (let i = 0; i <= 6; i++) add(new THREE.Mesh(bulbGeo, bulb), -cw / 2 + (i / 6) * cw, cy - 0.05, D / 2 + 0.5, false);
-  // potted trees by the doors
-  const pot = std({ color: '#f4f0e8' }), potBand = std({ color: MALL.red }), leaves = std({ color: P.trees[1], roughness: 1 });
+  // the porch: a white plinth, twin columns either side of the doors, a red entablature, a pediment with a Poké Ball
+  const PZ = F + 0.3, PW = 1.9;
+  add(new THREE.Mesh(new THREE.BoxGeometry(PW + 0.5, 0.05, 0.46), marble), 0, 0.025, F + 0.23);
+  add(new THREE.Mesh(new THREE.BoxGeometry(PW + 0.3, 0.05, 0.4), marble), 0, 0.075, F + 0.2);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.006, 0.4), red), 0, 0.103, F + 0.2, false);
+  add(new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.006, 0.06), red), 0, 0.053, F + 0.43, false);
+  const colH = 1.06, colY = 0.1, colGeo = new THREE.CylinderGeometry(0.055, 0.065, colH, 14), capGeo = new THREE.BoxGeometry(0.17, 0.05, 0.17);
+  for (const x of [-0.68, -0.5, 0.5, 0.68]) {
+    add(new THREE.Mesh(colGeo, marble), x, colY + colH / 2, PZ);
+    add(new THREE.Mesh(capGeo, gold), x, colY + 0.025, PZ);
+    add(new THREE.Mesh(capGeo, gold), x, colY + colH - 0.025, PZ);
+  }
+  const entY = colY + colH;
+  add(new THREE.Mesh(new THREE.BoxGeometry(PW, 0.13, 0.42), red), 0, entY + 0.065, F + 0.21);
+  add(new THREE.Mesh(new THREE.BoxGeometry(PW + 0.04, 0.03, 0.44), gold), 0, entY + 0.145, F + 0.22);
+  const tri = (w, h) => { const sh = new THREE.Shape(); sh.moveTo(-w / 2, 0); sh.lineTo(w / 2, 0); sh.lineTo(0, h); sh.closePath(); return sh; };
+  add(new THREE.Mesh(new THREE.ExtrudeGeometry(tri(PW + 0.08, 0.44), { depth: 0.08, bevelEnabled: false }), gold), 0, entY + 0.16, F + 0.32);
+  add(new THREE.Mesh(new THREE.ExtrudeGeometry(tri(PW - 0.14, 0.34), { depth: 0.06, bevelEnabled: false }), marble), 0, entY + 0.2, F + 0.36, false);
+  const medal = std({ map: texOf(mallMedalArt()), transparent: true, roughness: 0.5 });
+  add(new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.22), medal), 0, entY + 0.32, F + 0.425, false);
+  // bulbs along the porch's edge, every other one lit in turn
+  const bulbs = [0, 1].map(() => std({ color: '#fff2b0', emissive: new THREE.Color('#fff2b0'), roughness: 0.4 }));
+  const bulbGeo = new THREE.SphereGeometry(0.028, 8, 6);
+  for (let i = 0; i <= 12; i++) add(new THREE.Mesh(bulbGeo, bulbs[i % 2]), -PW / 2 + 0.06 + (i / 12) * (PW - 0.12), entY - 0.02, F + 0.43, false);
+  // gold lamps either side of the steps, three globes each
+  const globe = std({ color: '#fff6d8', emissive: new THREE.Color('#ffe8a8'), roughness: 0.3 });
+  globe.userData.glow = 1.4; globe.userData.glowMin = 0.3;
+  glowMats.push(globe);
+  const globeGeo = new THREE.SphereGeometry(0.06, 12, 8);
   for (const sx of [-1, 1]) {
-    const x = sx * (cw / 2 + 0.3), z = D / 2 + 0.28;
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.13, 0.3, 14), pot), x, 0.15, z);
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.175, 0.06, 14), potBand), x, 0.24, z);
-    add(new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.4, 8), std({ color: P.trunk[1] })), x, 0.5, z);
-    add(new THREE.Mesh(new THREE.SphereGeometry(0.26, 14, 10), leaves), x, 0.82, z).scale.y = 1.15;
+    const x = sx * 1.3, z = F + 0.3;
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 0.08, 10), gold), x, 0.04, z);
+    add(new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.03, 0.9, 8), gold), x, 0.5, z);
+    add(new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.02, 0.02), gold), x, 0.92, z, false);
+    for (const [ox, oy] of [[-0.15, 0.98], [0.15, 0.98], [0, 1.03]]) add(new THREE.Mesh(globeGeo, globe), x + ox, oy, z, false);
   }
   // only its doors take a tap (the user's ask, 2026-10-09: a tap meant for the road to the Safari went in); the rest
   // lets it through to the ground
   g.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
+  mergeStatic(g, (o) => o.parent.userData.live);
   const doorH = H - 32.5 / MU;
   add(new THREE.Mesh(new THREE.BoxGeometry(W * 0.24 + 0.06, doorH + 0.08, 0.5), new THREE.MeshBasicMaterial({ visible: false })), 0, (doorH + 0.08) / 2, D / 2 + 0.25, false);
+  mallFx = {
+    tick(now, still, glow) {
+      const on = Math.max(0.6, glow) * 1.4, k = still ? 0.5 : (Math.floor(now / 380) % 2);
+      bulbs[0].emissiveIntensity = on * (still ? 1 : 0.35 + 0.65 * k);
+      bulbs[1].emissiveIntensity = on * (still ? 1 : 1 - 0.65 * k);
+      if (!still) finial.rotation.y = now / 1400;
+    },
+  };
   return g;
 }
 
@@ -2356,7 +2504,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3858,6 +4006,7 @@ function frame(now) {
   gardenArch?.tick(now, calm, (LIGHT[time] || LIGHT.day).glow);
   dojoFx?.tick(now, calm);
   pillarFx?.tick(now, calm);
+  mallFx?.tick(now, calm, (LIGHT[time] || LIGHT.day).glow);
   liveGateway(now);
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);

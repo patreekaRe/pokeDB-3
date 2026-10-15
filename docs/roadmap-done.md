@@ -2619,3 +2619,6 @@ first shot shows the new tower, then the lobby's window onto it (`docs/roadmap.m
 - **Done (2026-10-15): a picket fence round the Ancient Tree** (the user's ask): back and both sides, meeting the garden arch on the right (`treeFence()` in `js/hub-3d.js`).
 - **Done (2026-10-15): the garden gate moved beside the trunk and restyled** (the user's drawing): `ARCH_AT` 25,4 in a front fence row, the arch white with no ivy (`js/hub-arch.js`).
 - **Done (2026-10-15): the tree garden's left front fenced off** (the user's ask), mirroring the right up to the trunk.
+
+### The Poké Mall's outside made grand (2026-10-15, the user's ask)
+A gold-ribbed glass dome with a turning Poké Ball, corner towers with gold cupolas, a columned porch with a Poké Ball pediment and chasing bulbs, gold lamps and a red carpet (`mallBuilding()` in `js/hub-3d.js`; `docs/reference/hub-base-mall.md`).
