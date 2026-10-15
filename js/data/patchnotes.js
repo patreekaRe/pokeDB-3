@@ -61,7 +61,7 @@ export const PATCHES = [
     notes: [
     ['mall', 'The Safari Outfitter is open in the Poké Mall: Kangaskhan sells Poké Ball packs, the Master Ball and Day Passes under a board of today\'s top catchers.'],
     ['mall', 'The Poké Mall\'s outside is grand now: a gold-ribbed glass dome, corner towers, a columned porch with chasing lights, gold lamps and a red carpet.'],
-    ['hub', 'The Sky Pillar is rebuilt as an ancient tower of mossy stone and jade runes, in the Clearing, on the climb and inside: its fights stand in 3D rooms open on the sky.'],
+    ['hub', 'The Sky Pillar is rebuilt as an ancient tower of mossy stone and jade runes, in the Clearing, on the climb, inside and in its lobby: its fights stand in 3D rooms open on the sky.'],
     ['base', 'The backyard\'s way in is a white garden gate in a picket fence round the Ancient Tree: unlock it there or on the PC, then grow the yard bigger on House Upgrades.'],
     ['hub', 'Friends at 3 hearts pin requests of their own on the Quests board, three each in their own words, paying PokéCoins when you hand them in at home.'],
     ['hub', 'Professor Oak and Professor Sonia now slide in to say hello the first time you talk to them each visit, like a Gym Leader.'],
@@ -69,9 +69,9 @@ export const PATCHES = [
     ['hub', 'The Clearing\'s signs hop and sparkle now and then so you know you can read them, and the route sign and Pokéstop flank the gate.'],
     ['music', 'Highbough has a song of its own now, the Crystal Depths\' theme.'],
     ['hub', 'The Safari Zone\'s gate is a real 3D jungle lodge, out on its own in a wider west Clearing, its Pokéstop and ranks board either side.'],
-    ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song.'],
+    ['music', 'The Crystal Depths and Mewtwo\'s camp now play the Sky Pillar\'s song, and a climb\'s song starts with its opening film down the tower.'],
     ['music', 'Lantern Village, Cinder Springs, Driftwood Landing and Sunwell Bazaar each have a song of their own.'],
-    ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, going back into it, its backyard or the Poké Mall no longer leaves a black screen, and Kenmatta\'s dojo stands clear of the Safari gate, its cherry trees gone.'],
+    ['fixes', 'Only the Ancient Tree\'s door takes you into the Secret Base now, going back into it, its backyard or the Poké Mall no longer leaves a black screen, and Kenmatta\'s dojo stands clear of the Safari gate, its cherry trees gone, and holding a finger down no longer brings up the iPhone\'s magnifying glass.'],
     ],
   },
   {
