@@ -8952,7 +8952,7 @@ function wayIn(x, C) {
   halo.material.blending = THREE.AdditiveBlending;
   halo.material.opacity = 0.35;
   halo.position.set(x, 0.9, z + 0.3);
-  return { light, halo };
+  return { light, halo, mouth };
 }
 
 /** The pentagram of Mewtwo's seal on a stone dais: a star carved in its top, a shard socket at each point, the towns'
@@ -9015,7 +9015,14 @@ async function buildCamp(figs, h) {
   mineRails(tileX(mid), BACK_Z + 0.2, tileZ(5.4));
   crystalCart(tileX(mid), tileZ(4.6), C, rnd);
   for (const k of [key(mid - 1, 0), key(mid + 1, 0), key(mid, 4), key(mid, 5)]) B.blocked.add(k);
-  B.blocked.add(key(mid, 0));
+  // Mewtwo's own run (no second Mewtwo here) fell in and goes on down: its way out is the mine, and there's no doormat
+  // back up. Everyone else's is the doormat, to their win; the mine is Mewtwo's alone
+  if (!figs.mewtwo) {
+    for (const part of B.exitParts) B.group.remove(part);
+    B.exitParts = [];
+    B.exitAt = { x: mid, y: 0 };
+    mouth.mouth.userData.spot = 'exit';
+  } else B.blocked.add(key(mid, 0));
   // the seal's pentagram on its dais, the camp's two tents, the fire between them, crates and lamps
   const dx = tileX(3), dz = tileZ(3);
   const lit = shardsLit(getSave());

@@ -141,7 +141,8 @@ town's house (`homeRoom()` in `js/run.js`, its room `HOMES.depths.camp` / `build
 Depths' cave walls and floor, 13 x 9, the user's pick of two builds, 2026-10-15: a crystal miners' camp, two A-frame tents
 (`tent()`), a stone-ringed fire with logs to sit on and a bedroll (`tickFire()`), crates, a pick, miner's lamps on posts
 (`minerLamp()`), crystals along the walls; at the back a timbered mine mouth marked DEPTHS with violet light far down it
-(`wayIn()`), the way in to the Depths proper, rails out of it and a cart heaped with crystal (`mineRails()`,
+(`wayIn()`), the way in to the Depths proper (on Mewtwo's own run its exit, `exitAt`, walked into or tapped, with no doormat
+back up; for everyone else it's blocked and the doormat leads to their win), rails out of it and a cart heaped with crystal (`mineRails()`,
 `crystalCart()`); the seal's pentagram carved in a stone dais, the shards placed glowing in their sockets
 (`sealDais()`, from `shardsLit()`, so `room()`'s id carries them and the room is built anew as one comes back); Mewtwo
 floating by the way in, a tap its talk). Two ways down: **a won run's fall** (`strikeGate()` gives

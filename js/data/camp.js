@@ -12,8 +12,8 @@ export const DEPTHS_CAMP = {
   buildings: [{ id: 'camp', name: 'DEPTHS CAMP', home: 'camp', back: 'gate' }],
   homes: {
     camp: { name: 'Depths Camp', mewtwo: true,
-      sub: 'A camp in the crystal dark: a fire, a tent, crates from the last who came down. Mewtwo waits by the way in.',
-      subSelf: 'A camp in the crystal dark: a fire, a tent, crates from the last who came down. Behind the arch, the Well.',
+      sub: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. Mewtwo waits by the mine marked DEPTHS.',
+      subSelf: 'A miners\' camp in the crystal dark: tents, a fire, a cart of crystal on the rails. The mine marked DEPTHS goes on down to the Well.',
       cast: {} },
   },
   leaders: {},
@@ -27,7 +27,7 @@ export const strengthOf = (n) => Math.round(sealedMult(n) * 100);
 export function campLines(n) {
   const pct = strengthOf(n), left = SEALED_WEAKNESS.shards - n;
   if (n <= 0) return [
-    'This is as far down as the light reaches. Past that arch lies the Energy Well... and Eternatus.',
+    'This is as far down as the light reaches. Down that mine lies the Energy Well... and Eternatus.',
     'The seal held it for an age. When the gate was shut, the crystal that bound it cracked, and the shards flew far.',
     'Five of them became your Waystones. And with them went my strength.',
     `Down there I fight at ${pct}% of my power. I can still go, but I cannot promise to come back.`,
@@ -63,8 +63,8 @@ export function landLine(n) {
 /** Mewtwo's own run, landing in the camp after its third boss: what it feels of its strength, before it goes on down. */
 export function selfLines(n) {
   const pct = strengthOf(n);
-  if (n <= 0) return ['The camp. A fire, and the arch to the Well.', 'No Waystone burns yet. Down there, the seal still holds half my power.', 'So be it. I go down as I am.'];
+  if (n <= 0) return ['The camp. A fire, and the mine down to the Well.', 'No Waystone burns yet. Down there, the seal still holds half my power.', 'So be it. I go down as I am.'];
   return n >= SEALED_WEAKNESS.shards
     ? ['The camp. The five stones\' light has reached even here.', 'My strength is whole. Eternatus, I am coming.']
-    : ['The camp. The stones\' light reaches even here.', `${n} of the five burn: ${pct}% of my strength is back.`, 'The arch to the Well waits. I go down.'];
+    : ['The camp. The stones\' light reaches even here.', `${n} of the five burn: ${pct}% of my strength is back.`, 'The mine to the Well waits. I go down.'];
 }
