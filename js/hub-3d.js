@@ -3195,6 +3195,15 @@ function showWaystone(p) {
       go.textContent = 'Travel';
       go.addEventListener('click', () => warpTo(p, t));
       row.append(go);
+      // your saved run waits in this town's biome: its far gate walks on into it (js/run.js's runWaitingIn())
+      import('./run.js').then(m => {
+        if (!m.runWaitingIn(t.id) || !row.isConnected) return;
+        const tag = document.createElement('span');
+        tag.className = 'way-count way-run';
+        tag.textContent = 'Run';
+        tag.title = `Your run waits in ${town.name}: walk out its far gate to carry on.`;
+        go.before(tag);
+      });
     } else {
       const n = document.createElement('span');
       n.className = 'way-count';
