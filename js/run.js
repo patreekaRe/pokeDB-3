@@ -1759,7 +1759,7 @@ function townRoom(covered = null, at = null) {
     options = [{ ...spotOption('Quests', `${town.name}'s quest board: every quest, how far along it is and who takes it.`, () => {
       if (run !== thisRun) return;
       if (real) readBoard(town.id); else t.boardRead = true;
-      openDeviceApp('quests', 'board', false, again);
+      openDeviceApp('quests', real ? 'board' : { board: true, peek: { [town.id]: st } }, false, again);
     }), peek: null }];
   }
   const first = !peeking && !st.met;

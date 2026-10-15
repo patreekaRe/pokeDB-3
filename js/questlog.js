@@ -159,10 +159,11 @@ function questRow(town, save, sat) {
   return item;
 }
 
-/** The Quests app: `at` is 'board' when the Clearing's quest board opened it, which says where else it's kept. */
+/** The Quests app: `at` is 'board' when a quest board opened it, which says where else it's kept; a `?town=` playtest's
+    board passes `{ board: true, peek: { <town>: state } }`, its questline kept on the run, never the save. */
 export const questLogApp = {
   mount(panel, at) {
-    const save = getSave(), sat = satchelOf(save);
+    const real = getSave(), save = at?.peek ? { ...real, towns: { ...(real.towns || {}), ...at.peek } } : real, sat = satchelOf(save);
     panel.classList.add('qlog');
     const done = LINES.filter(t => stateOf(t, save) === 'lit');
     const gems = el('div', 'qlog-gems');
@@ -176,7 +177,7 @@ export const questLogApp = {
     const list = el('div', 'qlog-list');
     list.append(...LINES.map(t => questRow(t, save, sat)));
     panel.append(top, nextNote(save, sat), el('h3', 'qlog-label', 'All quests'), list);
-    if (at === 'board') panel.append(el('p', 'qlog-tip', 'Check this any time: Pokédex → Quests.'));
+    if (at === 'board' || at?.board) panel.append(el('p', 'qlog-tip', 'Check this any time: Pokédex → Quests.'));
     clearSatchelNews(LINES.map(t => `q:${t.id}`));
     showBadgeNews();
   },
