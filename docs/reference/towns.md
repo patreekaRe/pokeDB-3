@@ -114,8 +114,11 @@ is quiet (`st.quest` null, nothing counted) till one of its leaders has a Gym wi
 and opens it (`startQuest()` in `js/towns.js`). Steps in order: `track` (a missions event in the town's biome, counted by
 `countTown()` from `trackTowns()`), `gather` (materials from the Satchel, taken on hand-in), `craft` (a key item from Kurt's
 Workshop, kept), `shard` (the town's Waystone Shard; handing it in sets `quest.lit`, which `mended()` reads). Each is
-handed in at the board to its leader `by` (their `thanks`, sliding in; `{pick}` fills a `pick` step's choice), paying
-`QUEST_COINS`; `gives` puts a key item in the Satchel; a `pick` step's board offers one option per choice (`quest.picks`).
+handed in to its leader `by` at their house (since 2026-10-14, the user's ask; it was the board: `homeRoom()`'s Hand in, their
+`thanks`; `{pick}` fills a `pick` step's choice), paying `QUEST_COINS`; `gives` puts a key item in the Satchel; a `pick`
+step offers one option per choice there (`quest.picks`). While a questline runs its leaders are home, beaten or not. The
+board says whose house to take it to. A shard handed in sets `t.mendNext` and walks you out: `townRoom()` shows the unlit
+town and plays `mendScene()` (the stone waking, its card, its leaders' say), then the lit one.
 After the shard the board's old `requests` rotate. A `?town=` peek keeps its questline on the run (`t.peekSt`), never the
 save. **The Satchel** (`js/data/satchel.js`: `MATERIALS`, `KEY_ITEMS`, `satchelOf()`; `js/satchel.js`: `gainMat()`,
 `gainKey()`, `satchelNews()`; the app `js/satcheldex.js` on `shelfApp()`, icon `satchel` in `js/smooth-icons.js`):
@@ -303,3 +306,7 @@ it, ALL QUESTS: one row a questline (leader, name, n of m steps, a chip: Under w
 opens the same step card, its story and every step (later ones `???`), or HOW TO START for a locked one. The board opens it as
 `openDeviceApp('quests', 'board')` (through the hub's `acts.onApp(id, at)`), and then it says it's in the Pokédex too.
 A questline opened (`q:<town>` in `satchel.fresh`) is `questNews()`, the Quests icon's "!", not the Satchel's.
+**The quest "!"** (2026-10-14, the user's ask): a step ready to hand in puts a bobbing "!" over its leader's house in the
+town (`marks: ['door:<id>']` handed to `mountEvent()`, drawn by `markQuests()` in `js/event-3d.js` over the house's roof)
+and over them inside (`who:<id>`); the Nietos' the same, in the Clearing over their house (`nietosMark`) and inside. The
+quest board's "!" is only for a notice to read now (`questMarks()`).

@@ -39,9 +39,9 @@ const leaderOf = (town, st, save) => GYM_BY_ID[questStep(town, st)?.by ?? greete
 const biomeName = (town) => (town.home ? 'Whispering Clearing' : BIOMES_BY_ID[town.biome]?.name ?? town.name);
 const named = (town, save) => (town.home || townState(save, town.id).quest || townState(save, town.id).met ? town.name : '???');
 
-/** Where to hand a step in, in a few words. */
-const handIn = (town, step) => (town.home ? 'The Nietos\' house, in the Clearing.'
-  : `${town.name}'s quest board${GYM_BY_ID[step.by] ? ` (${GYM_BY_ID[step.by].name})` : ''}.`);
+/** Where to hand a step in, in a few words: to its Gym Leader, at home (a "!" over their roof once it's ready). */
+const handIn = (town, step) => (town.home ? 'Law and Britt, at the Nietos\' house in the Clearing.'
+  : `${GYM_BY_ID[step.by]?.name ?? 'Its Gym Leader'}, at their house in ${town.name}.`);
 
 /** Where a step's thing comes from, in a few words. */
 function source(step, town, sat) {

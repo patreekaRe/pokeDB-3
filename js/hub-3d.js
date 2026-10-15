@@ -149,7 +149,7 @@ let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
-let questMark = null;   // the "!" over the quest board: a quest to take, or a step to hand in (boardNow())
+let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
 let pcNews = null;  // else a yellow "!" while this device hasn't read the newest patch notes (js/patchnotes.js)
 let placed = false; // the partner has been put on the plaza once
 let greets = false; // listening for the logo's fade to end
@@ -2008,18 +2008,19 @@ function boardNow(save) {
     const [n, of] = questProgress(CLEARING, st), have = stepHave(step, st, satchelOf(save)), ready = satchelFlag() || have >= step.n;
     const need = step.kind === 'gather' ? ` ${MATERIALS_BY_ID[step.item].icon} ${have}/${step.n} in your Satchel.` : step.kind === 'track' ? ` ${have}/${step.n}.`
       : have ? ' In your Satchel.' : '';
-    return { kind: 'on', ready, line: `THE NIETOS' QUEST, ${n}/${of} done. Up now: ${stepText(step)}.${need} ${ready ? 'Done! Hand it in at their house.' : 'Hand it in at their house, south-east.'}` };
+    return { kind: 'on', ready, line: `THE NIETOS' QUEST, ${n}/${of} done. Up now: ${stepText(step)}.${need} ${ready ? 'Done! Take it to their house, the one with the "!".' : 'Hand it in at their house, south-east.'}` };
   }
   const on = RING.map(t => [TOWNS[t.id], townState(save, t.id)]).filter(([, s]) => s.quest && !mended(s));
   return { kind: 'towns', line: on.length
-    ? `Pinned up: ${on.map(([town, s]) => { const [n, of] = questProgress(town, s); return `${town.name} ${n}/${of}`; }).join(', ')}. Each town's own board takes its steps.`
+    ? `Pinned up: ${on.map(([town, s]) => { const [n, of] = questProgress(town, s); return `${town.name} ${n}/${of}`; }).join(', ')}. Each step goes to its Gym Leader, at their house.`
     : 'Law and Britt\'s notice, stamped THANK YOU. The towns out on the roads post their own quests on their own boards.' };
 }
 
 function questMarks() {
-  if (!questMark) return;
+  if (!questMark && !nietosMark) return;
   const b = boardNow(getSave());
-  questMark.visible = b.kind === 'new' || !!b.ready;
+  if (questMark) questMark.visible = b.kind === 'new';
+  if (nietosMark) nietosMark.visible = !!b.ready;
 }
 
 /** The Nietos' notice read off the board: their story, and their questline opens (the greeting homeNews() plays, if it
@@ -2311,7 +2312,15 @@ function makePlaces() {
     id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: [...rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), ...NIETOS_YARD.map(([dx, dy]) => [NIETOS_AT.tx + dx, NIETOS_AT.ty + dy])], tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
     line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
     buttons: [['Go in', () => {}]],
-    build: (g) => nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn),
+    build: (g) => {
+      nietosHouse(g, tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), nietosIn);
+      if (!townsOpen()) return;
+      nietosMark = board(newsArt(), tileX(NIETOS_AT.tx + 1), tileZ(NIETOS_AT.ty + 1), { shadow: false });
+      nietosMark.rotation.x = -PITCH;
+      nietosMark.userData.y = 3.05;   // just over the roof's ridge, under its name tag
+      g.add(nietosMark);
+      questMarks();
+    },
   });
   list.push({
     id: 'nietos-sign', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx - 1, y: NIETOS_AT.ty + 3 }, tiles: [[NIETOS_AT.tx - 1, NIETOS_AT.ty + 2]], tag: [NIETOS_AT.tx - 1, 1.6, NIETOS_AT.ty + 2], open: true,
@@ -2398,7 +2407,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; stoneLit = null; smoke = null; cracks = null;
+  glowMats = []; tree = null; sign = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; stoneLit = null; smoke = null; cracks = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -3726,7 +3735,7 @@ function frame(now) {
   cracks?.tick(now, Math.hypot(walker.x - cracks.x, walker.z - cracks.z) < 4.5, calm);
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
-  for (const m of [pcMail, pcNews, questMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, questMark, nietosMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));

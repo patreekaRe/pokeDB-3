@@ -956,7 +956,7 @@ export const mended = (st) => !!st.quest?.lit || st.done >= MEND_AT;
      gather  Find: hand over `n` of a material from the Satchel (js/data/satchel.js; they drop from session 2)
      craft   Make: bring a key item made at Kurt's Workshop (session 3)
      shard   the town's Waystone Shard, from the marked Alpha on its map (session 4); handing it in lights the stone
-   A step finished is handed in at the board, to the leader `by` (their `thanks`, sliding in), paying QUEST_COINS; a step
+   A step finished is handed in to the leader `by` at their house (homeRoom() in js/run.js; the board till 2026-10-14) (their `thanks`, sliding in), paying QUEST_COINS; a step
    may hand you a key item (`gives`) or ask you to pick (`pick`: John's festival). The last step is always the shard.
    Then the board rotates the town's small coin requests (`requests`). The dialogue (session 5): each step's `talk`, its
    `nudge` (its leader's word on the board while it isn't done) and what each leader says about it at home; `after`, what

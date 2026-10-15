@@ -13,7 +13,7 @@ import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
-import { fine, texOf, words, hubThree, CURVE } from './hub-3d.js';
+import { fine, texOf, words, hubThree, CURVE, newsArt } from './hub-3d.js';
 import { townBackdrop } from './town-backdrop.js';
 import { sh as shadeOf, HD } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -8646,7 +8646,7 @@ async function buildTown(figs, { look, time, town, mended = false }) {
     if (b.kind === 'shop' && !g.userData.signed) g.attach(tradePost(b, f, lit));
     if (S.fade) fadeBehind(g);
     if (!b.door) continue;
-    B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door } };
+    B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door }, g };
     g.traverse(o => { o.userData.spot = `door:${b.id}`; });
   }
   let board = null;
@@ -9627,6 +9627,7 @@ export async function mountEvent(o) {
     post.final.uniforms.uBloom.value = R.env.bloom;
     mat = R.mat;
   }
+  markQuests(o.marks);
   BEND.k.value = R.kind === 'town' ? CURVE : 0;
   if (R.kind === 'town') { bendAll(R.group); for (const who of Object.values(R.who)) bendAll(who.group); }   // anything it's grown since it was built
   for (const who of Object.values(R.who)) { who.turned = false; who.move = null; }   // a room shown again faces you, like the pixel one
@@ -9676,6 +9677,37 @@ export async function mountEvent(o) {
   for (const [stand, move, at] of queued.splice(0)) if (performance.now() - at < 3000) does(R.who[stand], move);
   if (o.after) does(R.who.npc, o.after);
   return controls;
+}
+
+/** A bobbing "!" over whoever has a quest step to hand in (the user's ask, 2026-10-14): `door:<id>` over a town house's
+    roof, `who:<id>` over someone in the room (a Gym Leader at home). Made once a room, shown on the visits that ask. */
+function markQuests(ids = []) {
+  R.marks ??= {};
+  for (const m of Object.values(R.marks)) if (m) m.visible = false;
+  for (const id of ids) {
+    if (!(id in R.marks)) R.marks[id] = questMark(id);
+    if (R.marks[id]) R.marks[id].visible = true;
+  }
+}
+
+function questMark(id) {
+  const [kind, name] = id.split(':'), door = kind === 'door' && R.doors?.[id], who = kind === 'who' && R.who[name];
+  if (!door && !who) return null;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
+  s.raycast = () => {};
+  let y;
+  if (door) {
+    const box = new THREE.Box3().setFromObject(door.g);
+    s.scale.set(0.62, 0.8, 1);
+    s.position.set(tileX(door.step.x), (y = box.max.y + 0.75), (box.min.z + box.max.z) / 2);
+    R.group.add(s);
+  } else {
+    s.scale.set(0.42, 0.55, 1);
+    s.position.set(0, (y = (who.top ?? 1.4) + 0.45), 0);
+    who.group.add(s);
+  }
+  R.ticks.push((now) => { if (s.visible) s.position.y = y + (calm ? 0 : Math.sin(now / 380) * 0.08); });
+  return s;
 }
 
 const SHORT = { 'Forget a move': 'Forget one', 'Trade a move': 'Trade', 'Accept their gift': 'Gift', 'Soak: full HP': 'Soak' };
