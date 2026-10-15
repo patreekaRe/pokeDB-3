@@ -13,6 +13,7 @@ import { battleFx } from './prefs.js';
 import { RING, TOWNS, shardsLit } from './data/towns.js';
 import { strengthOf } from './data/camp.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
+import { spriteFit, bodyX } from './data/sprite-fit.js';
 
 const NS = 'http://www.w3.org/2000/svg';
 const svg = (tag, attrs = {}) => {
@@ -35,6 +36,19 @@ function slot(k, glow) {
   return g;
 }
 
+/** Mewtwo's front GIF leaves room for its swinging tail on one side, so the frame's middle isn't its body's: shift the
+    60-unit image by its resting pose (SPRITE_FIT) and BODY_X, as the battle sprites are, to stand it in the circle. */
+function centreMon(mon) {
+  const src = mon.getAttribute('href'), probe = new Image();
+  probe.onload = () => {
+    const W = probe.naturalWidth, H = probe.naturalHeight, k = 60 / Math.max(W, H);
+    const [top, bottom, left, right] = spriteFit(src);
+    mon.setAttribute('x', (-30 + ((right - left) / 2 - bodyX(src)) * k).toFixed(1));
+    mon.setAttribute('y', (-30 + (bottom - top) / 2 * k).toFixed(1));
+  };
+  probe.src = src;
+}
+
 /** Slide the pentagram in with Mewtwo's `lines` under it, a tap a line; resolves once it has gone. `lit` (RING order)
     defaults to the save's shards placed; `fresh` marks the ones lit since Mewtwo last saw them, which flare in last. */
 export async function showPentagram(lines, { lit = shardsLit(getSave()), fresh = [], cry = false } = {}) {
@@ -46,6 +60,7 @@ export async function showPentagram(lines, { lit = shardsLit(getSave()), fresh =
   head.append(el('small', '', 'THE SEAL ON'), 'MEWTWO');
   const star = svg('svg', { class: 'penta-star', viewBox: '-100 -100 200 200', 'aria-hidden': 'true' });
   const mon = svg('image', { class: 'penta-mon', href: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')), x: -30, y: -32, width: 60, height: 60 });
+  centreMon(mon);
   const slots = RING.map((t, k) => slot(k, t.glow));
   star.append(
     svg('circle', { class: 'penta-ring', r: 92 }),
