@@ -14,7 +14,7 @@ import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furnit
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
-import { workshopOf, heartsOf, baseFriends, HEARTS } from './data/workshop.js';
+import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
 import { roomById, doorTiles, freshHouse, addRoom, joinRooms, removeRoom, ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE } from './data/house.js';
 
@@ -276,8 +276,15 @@ export const lendAll = () => new URLSearchParams(location.search).has('allfurnit
 
 /** How many of a kind you own: bought, plus one of an earned kind once its badge, achievement, feat or page is
     (js/data/furniture.js; worked out from the save each time, never stored in `owned`). */
-const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], getSave()) ? 1 : 0)
+const owns = (b, kind) => (b.owned[kind] || 0) + (FURNITURE_BY_KIND[kind] && isEarned(FURNITURE_BY_KIND[kind], earnSave()) ? 1 : 0)
   + (kind === FREE_PC ? 1 : 0);
+
+/** The save earned kinds are read from: `?hearts=N` lends every friend N hearts' pieces for the page load, as it
+    lends their visits (heartsPeek() below). */
+const earnSave = (save = getSave()) => {
+  const n = heartsPeek();
+  return n === null ? save : { ...save, workshop: { ...workshopOf(save), liked: Object.fromEntries(FRIENDS.map(id => [id, n])) } };
+};
 
 /** Every base has one Storage PC, like Gen 3's: tapped in the room it opens the PC on its Decorations (js/pc.js). */
 export const FREE_PC = 'pc';
@@ -304,8 +311,8 @@ export function putAway(b, id) {
 }
 
 /** The earned kinds not yet earned, for the Shop's locked shelf, with how to get each. */
-export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !(p.towns && !townsOpen()) && !isEarned(p, getSave()) && PIECES[p.kind])
-  .map(p => ({ id: p.kind, how: howToEarn(p, getSave()) }));
+export const lockedEarned = () => FURNITURE.filter(p => !p.retired && !(p.towns && !townsOpen()) && !isEarned(p, earnSave()) && PIECES[p.kind])
+  .map(p => ({ id: p.kind, how: howToEarn(p, earnSave()) }));
 
 /** How many of a piece's kind (or set) are in storage, in any colour or style: owned, less those standing in the room. */
 export function spare(b, id) {

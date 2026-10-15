@@ -159,6 +159,17 @@ leader]`). **Hearts** (2026-10-14, docs/roadmap.md step 8 session a): `heartsOf(
 `js/battle.js`: the picker and the throw), never its odds. The Satchel app has a shelf for them, Gifts. The `?satchel` loan
 counts toward a recipe's needs, and what's made is saved (a playtest save only).
 
+**Signature pieces 2 and 3** (2026-10-15, docs/roadmap.md step 8 session d): each friend gives a second piece at 3
+hearts and a third at 5 (`HEART_PIECES` / `HEART_AT` / `heartPieces()` in `js/data/workshop.js`), in the style of their
+first: the Nietos a Pikachu crib and the very tired couch (a seat), John an omikuji stand and a handheld tansu (his three
+handhelds charging on it), Jahmes a curfew clock stopped at eleven and a curfew futon with his three alarms, Clarence a
+ring light under his boa and a showtime vanity, Shaun a help desk rack and a three-monitor desk, Pat a serenade guitar
+and a lemonade stand, Kayl a bass amp with Reya on it and a record console with Spooky asleep on it, Phil a salt-ring
+candelabra and the chair nobody sits in (nobody does, your Pokémon included), Ricky a 2 a.m. coffee cart and an
+all-nighter moon lamp, Machew a katana stand (price tag still on) and a brooding pillar, Jerome a neon palm and a heist
+safe. Owned through js/data/furniture.js's `heart` source (nothing saved; an old save at 3 or 5 has them on load). A gift
+that crosses 3 or 5 says so (`heartGifts()`, in `homeRoom()`'s Gift option, js/run.js). Test in `tests/workshop.test.mjs`.
+
 **Friends visit the Secret Base** (2026-10-15, docs/roadmap.md step 8 session c): `baseFriends(at)` in
 `js/data/workshop.js` gives every friend at `VISIT_HEARTS` (3) or more (`all`) and those at 5 (`best`); test in
 `tests/workshop.test.mjs`. `leaderVisitor()` in `js/secret-base.js` puts them in the day's one visit (mended town or not,

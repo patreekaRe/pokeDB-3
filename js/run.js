@@ -15,7 +15,7 @@
    ============================================================ */
 
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, HEARTS, VISIT_HEARTS } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS } from './data/workshop.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
 import { battleFx } from './prefs.js';
@@ -1999,11 +1999,14 @@ function homeRoom(b, onward = null) {
       playSound(got.favourite ? 'item-get' : 'confirm');
       event3dMod?.eventRoom3d()?.does(home.leader, 'npc-nod');
       const fav = FAVOURITE[home.leader];
-      const sig = got.first && (await import('./secret-base.js')).PIECES[fav.sig]?.name;
+      const { PIECES } = await import('./secret-base.js'), sig = got.first && PIECES[fav.sig]?.name;
       const loves = both ? 'love' : 'loves', likes = both ? 'like' : 'likes';
       tell(got.first ? `${who} ${loves} the ${G[id].name}! They gave you their ${sig ?? 'favourite piece'}. It's in your Secret Base.`
         : got.favourite ? `${who} ${loves} the ${G[id].name}! Their favourite, again.`
           : `${who} ${likes} the ${G[id].name}.`);
+      // a heart that brings their second or third signature piece (step 8, session d)
+      const more = heartGifts(home.leader, got.was, got.hearts).map(kind => PIECES[kind]?.name).filter(Boolean);
+      if (more.length) tell(`For the friendship, ${who} gave you the ${more.join(' and the ')}${got.first ? ' too' : ''}. ${more.length > 1 ? 'They\'re' : 'It\'s'} in your Secret Base.`);
       const news = HEART_LINES[home.leader] ? ` Talk to ${both ? 'them' : GYM_BY_ID[home.leader].name}: there's something new to hear.` : '';
       const drop = got.hearts === HEARTS ? ' They\'ll drop by your Secret Base often now.' : got.was < VISIT_HEARTS && got.hearts >= VISIT_HEARTS ? ` ${both ? 'They' : GYM_BY_ID[home.leader].name} might drop by your Secret Base now.` : '';
       tell(got.hearts > got.was ? (got.hearts === HEARTS ? `Friendship ${got.hearts}/${HEARTS}! You're the best of friends now.${drop}${news}` : `Friendship ${got.hearts}/${HEARTS}!${drop}${news}`)

@@ -562,6 +562,16 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
      `baseFriends()` in `js/data/workshop.js`, test in `tests/workshop.test.mjs`; detail in `docs/reference/towns.md`.
      Peek: `?base&hearts=5&visit` (a seat in the room). On `main`, waiting on the user's look. Next: session (d),
      signature pieces 2 and 3.
+   - **Session (d) done (2026-10-15): signature pieces 2 and 3, all 11 friends (22 pieces).** `HEART_PIECES` in
+     `js/data/workshop.js` (at 3 and 5 hearts), the `heart` source in `js/data/furniture.js` (old saves have them on
+     load), paintings in `js/base-furniture-friends.js`, 3D models in `js/base-models-friends.js`, the gift toast naming
+     the piece; tests in `tests/workshop.test.mjs`. Detail: `docs/reference/towns.md`. Peek: `?base&hearts=5&allfurniture`.
+     On `main`, waiting on the user's look at the models. **Next: session (e)**, badges, mail and Kurt's secret recipes:
+     "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/roadmap.md step 8. Do session (e): a friendship badge
+     each in the Badge Case at 5 hearts (`LOOK` lines in `js/trainercard.js`) and a gold one for all of them; now and then
+     a liked friend mails you through the PC (coins, a material or a recipe); each friend teaches Kurt one secret recipe
+     at a set heart count (a `RECIPES` line each, made only once taught). Tests, patch-notes line, docs, push to main,
+     githack link with `?towns&satchel&gymwins=10&hearts=5`."
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

@@ -119,6 +119,11 @@ The first section began as the note on playtesting the live site and grew into t
   must be unique (`tests/furniture.test.mjs`). The base is decoration only, one room that grows, 6 Pokémon on show (the
   user's calls, 2026-10-09). **Live since 2026-10-09** (the user's call): `secret-base` was
   merged into `main`, the Clearing, Secret Base and Poké Mall with it; work goes to `main` again like everything else.
+  **Friends' pieces** (2026-10-15, docs/roadmap.md step 8 session d): source `heart` (`'john:3'`), owned while that friend's
+  hearts reach the number, so an old save already there has them on load; `?hearts=N` lends them for the page load
+  (`earnSave()` in `js/secret-base.js`). Their catalogue is `js/base-furniture-friends.js` (`FRIEND_KINDS`, group
+  Friends, `solo`: one colour each, the friend's own), their models `js/base-models-friends.js` (each modelled, none
+  carved from its painting; the chair nobody sits in has no `seat` on purpose).
 
 - **Meowth opens the Poké Mall's Game Corner** (2026-10-11, the user's asks; live on `main` since
   that day): the crossroads open after one won run (`ROADS_WINS` 1), and at the first one a save reaches Meowth trots

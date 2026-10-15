@@ -47,6 +47,7 @@ export const NEXT = [
   ['runs', 'Every friend has a new line for each friendship heart you fill: warmer at each one, with stories about the other Gym Leaders.'],
   ['base', 'A backyard: buy it on the PC\'s House Upgrades, furnish it from Smeargle\'s garden catalogue, let your Pokémon out to play, and grow berries in plots.'],
   ['base', 'Friends at 3 hearts drop by your Secret Base, and best friends at 5 come often and sit on your chairs and sofas.'],
+  ['base', 'Each friend gives you a second piece of their own furniture at 3 hearts and a third at 5: 22 new pieces, from Linc\'s Pikachu crib to Jerome\'s heist safe.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
