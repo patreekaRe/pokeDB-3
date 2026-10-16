@@ -43,9 +43,10 @@ const RIDER = 0.72;        // a piece up on a table, at this size
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 // out in the yard Water types swim in the pond or pool and the rest take the swings and benches (docs/roadmap.md's
 // backyard, part c); where on the piece each goes, in its own frame unturned: [x across, y up, z out front, swing part]
-const YARD_SEATS = { swingset: { rest: [7000, 13000], swing: true }, paddlingpool: { rest: [8000, 15000], swim: true }, rockpond: { rest: [8000, 15000], swim: true } };
+const YARD_SEATS = { swingset: { rest: [7000, 13000], swing: true }, tyreswing: { rest: [7000, 13000], swing: true }, paddlingpool: { rest: [8000, 15000], swim: true }, rockpond: { rest: [8000, 15000], swim: true } };
 const YARD_SPOTS = {
   swingset: [[-0.42, 0.46, 0, 'swing0'], [0.42, 0.46, 0, 'swing1']],
+  tyreswing: [[0, 0.56, 0, 'swing0']],
   picnicbench: [[-0.45, 0.44, -0.72], [0.45, 0.44, -0.72], [-0.45, 0.44, 0.72], [0.45, 0.44, 0.72]],
   paddlingpool: [[0.28, 0.22, 0.3], [-0.3, 0.22, -0.28]],
   rockpond: [[-0.3, -0.12, 0.08], [0.3, -0.12, 0.22]],
