@@ -196,3 +196,12 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
   (only Sweet Heart gives it).
 - Playtest any of it on a throwaway run: `?arena=elite&starter=squirtle&relics=wide-lens,sticky-barb&cards=blazing-torque,ignite+&items=iron`
   (`playtestKit()` in `js/run.js`, any `peek` run).
+- **Bot check** (human bot, `humanCfg`, fire / grass / water, L0 / L3 / L5): the branch's start (dbdfb4a, 200 runs a cell)
+  78 / 84 / 78, 62 / 68 / 61, 44 / 35 / 38; the pass before any retune (200) 76 / 59 / 54, 54 / 32 / 30, 38 / 14 / 17 (Grass lost
+  ~15 at L3 to the seed fix; Water ~13 to new cards the bot over-picks, ~6 to Quick Guard's Exhaust; at L3 putting the three
+  boss relics back changed nothing). Screens at L3 (150): Worry Seed 4 etc. brought Grass back but the lab's seed decks too
+  (95% against Level 5's last bosses), so **Grass got defence instead: Block 7 (its starting Defends) and Cotton Guard 11**
+  (68); **Withdraw 8** like Flame Wall (Water 60); **Flame Body 11** (Fire 62; Flame Wall 9 was 69). Confirmed, 300 a cell:
+  **81 / 84 / 78, 62 / 64 / 60, 40 / 38 / 38**, the types within ~4 points of each other at every Level. The weak new cards
+  (one extra copy at L3: Hydro Steam -12, Gulp Missile -7, Overgrowth -4) were raised; the sim's `cardScore` no longer
+  rates draw-to cards past 3 cards (Downpour was its favourite card, at -11).

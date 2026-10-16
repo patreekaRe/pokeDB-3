@@ -144,7 +144,7 @@ export const TYPES = {
    uncommons/rares give ~20%/~50% more than a common. Enemies are tuned around the cards. */
 const NEUTRAL_CARDS = [
   { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', sprite: 'hit-spark', effects: { damage: 6, draw: 1 }, upgrade: { effects: { damage: 9 } } },   // Pommel Strike: a plain 7 was each type's own Strike (Ember...)
-  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 6 }, noOffer: true },   // Defend: Grass's starting deck only; offered, it doubled Water's Withdraw
+  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 7 }, noOffer: true },   // Defend: Grass's starting deck only; offered, it doubled Water's Withdraw. 7 since the 2026-10-16 balance pass (Leech Seed lost its stage bonus)
   { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 22 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { block: 30 } } },   // Impervious
   { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true }, exhaust: true },   // Exhaust since 2026-10-16: a whole enemy turn for 2 PP, every time, topped the bot's card picks for every type
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },      // Bandage Up
@@ -192,7 +192,7 @@ const FIRE_CARDS = [
   { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 4, weaken: 2 }, upgrade: { effects: { burn: 6 } } },                  // Deadly Poison + Weak, like the move's halved Attack
   { id: 'mystical-fire',   name: 'Mystical Fire',   type: 'fire', cost: 1, art: '✨', sprite: 'wise-glasses', effects: { damage: 6, weaken: 1 }, upgrade: { effects: { damage: 8, weaken: 2 } } },             // Sucker Punch
   { id: 'fire-punch',      name: 'Fire Punch',      type: 'fire', cost: 1, art: '🥊', sprite: 'expert-belt', effects: { damage: 10, draw: 1 }, upgrade: { effects: { damage: 12, draw: 2 } } },               // Pommel Strike
-  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 10, burn: 2 }, upgrade: { effects: { block: 12, burn: 3 } } },                 // Iron Wave
+  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 11, burn: 2 }, upgrade: { effects: { block: 13, burn: 3 } } },                 // Iron Wave (11 since the 2026-10-16 balance pass)
   { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', sprite: 'red-shard', effects: { damage: 6, burn: 3 }, upgrade: { effects: { damage: 8, burn: 4 } } },                  // Poisoned Stab
   { id: 'flame-burst',     name: 'Flame Burst',     type: 'fire', cost: 2, art: '💥', sprite: 'flame-mail', effects: { burn: 3, burnTimes: 3 }, upgrade: { effects: { burn: 4 } } },          // Bouncing Flask
   { id: 'scorching-sands', name: 'Scorching Sands', type: 'fire', cost: 1, art: '🌪️', sprite: 'soft-sand', effects: { damage: 8, ifBurned: { vulnerable: 1 } }, upgrade: { effects: { damage: 10, ifBurned: { vulnerable: 2 } } } },   // Bane, with Vulnerable
@@ -265,7 +265,7 @@ const FIRE_CARDS = [
 const GRASS_CARDS = [
   // Common: 20
   { id: 'vine-whip',      name: 'Vine Whip',      type: 'grass', cost: 1, art: '🌿', sprite: 'galarica-twig', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
-  { id: 'cotton-guard',   name: 'Cotton Guard',   type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 9 }, retain: true, upgrade: { effects: { block: 12 } } },   // Defend (Retain)
+  { id: 'cotton-guard',   name: 'Cotton Guard',   type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 11 }, retain: true, upgrade: { effects: { block: 14 } } },   // Defend (Retain); 11 since the 2026-10-16 balance pass
   { id: 'seed-bomb',      name: 'Seed Bomb',      type: 'grass', cost: 2, art: '🌰', sprite: 'rindo-berry', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash
   { id: 'petal-dance',    name: 'Petal Dance',    type: 'grass', cost: 1, art: '🌸', sprite: 'petal-pink', effects: { damage: 6, block: 6 }, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
   { id: 'razor-leaf',     name: 'Razor Leaf',     type: 'grass', cost: 2, art: '🍃', sprite: 'silver-leaf', effects: { damage: 16 }, upgrade: { effects: { damage: 21 } } },   // Carnage, without Ethereal
@@ -343,7 +343,7 @@ const GRASS_CARDS = [
 const WATER_CARDS = [
   // Common: 20
   { id: 'water-gun',      name: 'Water Gun',      type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
-  { id: 'withdraw',       name: 'Withdraw',       type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 }, upgrade: { effects: { block: 9 } } },                          // Defend
+  { id: 'withdraw',       name: 'Withdraw',       type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },                         // Defend, 8 like Fire's Flame Wall since the 2026-10-16 balance pass
   { id: 'bubble',         name: 'Bubble',         type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 5, weaken: 2, tide: 1 }, upgrade: { effects: { damage: 7 } } },   // Sucker Punch
   { id: 'dive',           name: 'Dive',           type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 9, draw: 1, tide: 1 }, upgrade: { effects: { block: 12 } } },   // Shrug It Off
   { id: 'water-pulse',    name: 'Water Pulse',    type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 5, perTide: 2 }, retain: true, upgrade: { effects: { perTide: 3 } } },   // Windmill Strike: hold it until the Tide is high
