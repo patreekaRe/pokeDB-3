@@ -888,6 +888,15 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **A movestick to walk with** (2026-10-16, the user's ask: "test out adding a movestick, just for walking around"): an
+  on-screen stick, bottom left, on touch screens (`?stick` shows it on a PC, `?nostick` hides it): held, your partner
+  walks tile by tile the way it leans (one step queued, so it never stops between tiles), letting go stops it on the next
+  tile, a slant slides along walls. `js/move-stick.js` (`moveStick()`, `stickOn()`), styled at the end of `css/hub.css`;
+  wired into the Clearing (`stickStep()` / `canStep()` in `js/hub-3d.js`, the stick rising above the place's card via
+  `--hub-card-h`), the towns, ? rooms and gyms (`js/event-3d.js`), the Center and the Mart. Not yet in the Secret Base or
+  the Poké Mall. Tapping and dragging still walk too. **On branch `claude/movestick`** (checked headless: walks, stops,
+  blocked tiles, no errors); the user tries it on their phone and says keep (merge to `main`, add it to the base and
+  mall), change (size, place, look) or drop.
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.

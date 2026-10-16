@@ -8,6 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
+import { moveStick, stickOn } from './move-stick.js';
 import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
@@ -774,8 +775,19 @@ function arrived() {
 /* ---------- taps ---------- */
 
 /* A drag walks (the user's ask, 2026-10-12; it used to look along the shelves, but the camera follows your partner). */
-const canWalk = (e) => inRoom() && !flying.length && !document.querySelector('dialog[open], .reward-focus')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #bag, #collection-screen, .over, .reward-focus');
+const canStep = () => inRoom() && !flying.length && !document.querySelector('dialog[open], .reward-focus');
+const canWalk = (e) => canStep() && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #bag, #collection-screen, .over, .reward-focus, .move-stick');
+
+/** The stick, held (js/move-stick.js): one tile on from the step under way, a tapped route giving way. */
+let stick = null;
+function stickStep(dx, dy) {
+  if (walker.path.length > 1) walker.path.length = 1;
+  const from = walker.path[0] ?? walker.tile, n = { x: from.x + dx, y: from.y + dy };
+  if (!free(n)) return false;
+  walker.path.push(n);
+  aim = null; look = 0;
+  return true;
+}
 
 /** The floor tile under a pointer, or null off the floor. */
 function floorTile(e) {
@@ -950,6 +962,7 @@ function unmount() {
   signEl?.remove();
   removeEventListener('click', onTap, true);
   drags?.off(); drags = null;
+  stick?.hide();
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('m3d');
   leftAt = performance.now();
@@ -1043,6 +1056,7 @@ export async function mountMart(o) {
   addEventListener('click', onTap, true);
   drags?.off();
   drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; look = 0; walker.path = reroute(walker, route, t); } });
+  if (stickOn()) { stick ??= moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; }, above: '#room-bar' }); stick.show(); }
   addEventListener('resize', resize);
   resize();
   last = 0;

@@ -10,6 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
+import { moveStick, stickOn } from './move-stick.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
@@ -617,8 +618,19 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
-const canWalk = (e) => !busy && inRoom() && !document.querySelector('dialog[open]')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over');
+const canStep = () => !busy && inRoom() && !document.querySelector('dialog[open]');
+const canWalk = (e) => canStep() && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .move-stick');
+
+/** The stick, held (js/move-stick.js): one tile on from the step under way, a tapped route giving way. */
+let stick = null;
+function stickStep(dx, dy) {
+  if (walker.path.length > 1) walker.path.length = 1;
+  const from = walker.path[0] ?? walker.tile, n = { x: from.x + dx, y: from.y + dy };
+  if (!free(n)) return false;
+  walker.path.push(n);
+  aim = null;
+  return true;
+}
 
 /** The floor tile under a pointer, or null off the floor. */
 function floorTile(e) {
@@ -840,6 +852,7 @@ function unmount() {
   view?.remove();
   removeEventListener('click', onTap, true);
   drags?.off(); drags = null;
+  stick?.hide();
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   leftAt = performance.now();
@@ -925,6 +938,7 @@ export async function mountCenter(o) {
   addEventListener('click', onTap, true);
   drags?.off();
   drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
+  if (stickOn()) { stick ??= moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; }, above: '#room-bar' }); stick.show(); }
   addEventListener('resize', resize);
   resize();
   last = 0;

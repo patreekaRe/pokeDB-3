@@ -29,3 +29,13 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
   `docs/reference/events.md`.
 - **A deck picker over its room** (2026-10-14, the user's ask): wider than a phone, the PP Up / Forget pickers of the Center, the Mart's PC and the ? rooms (Move Deleter, Day Care) keep the 3D room up behind them, still and untappable, instead of the old pixel scene it was drawn over (`pickingOver()` in `js/hd2d.js`, in each room's `alive()`; walking checks `inRoom()`). On a phone the picker covers everything, so the room is put away as before.
+
+## The movestick (2026-10-16, a test on branch `claude/movestick`)
+
+`js/move-stick.js`: `moveStick({ can, nudge, stop })` makes the stick (`.move-stick`, `css/hub.css`); while held it calls
+`nudge(dx, dy)` every frame with the way it leans (4-way; on a slant a blocked step tries the other axis). Each place's
+`stickStep()` keeps the path at the step under way plus one tile on, so the walk never empties between tiles and
+`arrived()` only fires where it stops; `stop` trims the path to the step under way. `stickOn()`: touch screens, or
+`?stick`; `?nostick` hides it. Wired into the Clearing (`js/hub-3d.js`, inside `.hub`, above the card), `js/event-3d.js`
+(towns, ? rooms, gyms), `js/center-3d.js` and `js/mart-3d.js` (on `document.body`, added in mount, removed in unmount).
+Each place's `canWalk` skips `.move-stick` so a press on it never taps or drags the floor.

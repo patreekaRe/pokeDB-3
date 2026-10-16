@@ -11,6 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
+import { moveStick, stickOn } from './move-stick.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
@@ -9979,8 +9980,19 @@ function arrived() {
 
 /* ---------- taps ---------- */
 
-const canWalk = (e) => !busy && !acting && !frozen && !document.querySelector('.gym-scene') && inRoom() && !document.querySelector('dialog[open]')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
+const canStep = () => !busy && !acting && !frozen && !doorWalk && !document.querySelector('.gym-scene') && inRoom() && !document.querySelector('dialog[open]');
+const canWalk = (e) => canStep() && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic, .move-stick');
+
+/** The stick, held (js/move-stick.js): one tile on from the step under way, a tapped route giving way. */
+let stick = null;
+function stickStep(dx, dy) {
+  if (walker.path.length > 1) walker.path.length = 1;
+  const from = walker.path[0] ?? walker.tile, n = { x: from.x + dx, y: from.y + dy };
+  if (!free(n) || R.walls?.has(`${key(from.x, from.y)}|${key(n.x, n.y)}`)) return false;
+  walker.path.push(n);
+  aim = null;
+  return true;
+}
 
 /** The screen's ray through a pointer as straight pieces of the world: one, or in a rolling town many short ones, each put
     back where it stands unbent, as the bend only moves what is drawn (the Clearing's tapRays()). Made once and reused,
@@ -10303,6 +10315,7 @@ function unmount() {
   view?.remove();
   removeEventListener('click', onTap, true);
   drags?.off(); drags = null;
+  stick?.hide();
   removeEventListener('resize', resize);
   document.getElementById('reward-options')?.classList.remove('c3d');
   document.body.classList.remove('ev3d-held');
@@ -10467,6 +10480,7 @@ export async function mountEvent(o) {
   addEventListener('click', onTap, true);
   drags?.off();
   drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
+  if (stickOn()) { stick ??= moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; }, above: '#room-bar' }); stick.show(); }
   addEventListener('resize', resize);
   resize();
   last = 0;

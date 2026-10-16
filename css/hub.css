@@ -852,3 +852,23 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .ranger-board.journal .rb-tab { background: linear-gradient(#7a3a24, #5a2a1a); color: #f4e0c8; box-shadow: inset 0 2px 0 #9a5a3a; }
 .ranger-board.journal .rb-tab.on { background: linear-gradient(#e8c890, #d4aa6a); color: #3a1a10; }
 .ranger-board.journal .rb-stamp { color: #2a5a9a; }
+
+/* the stick to walk with (js/move-stick.js; a test, 2026-10-16): bottom left, over the Clearing's bar and the card above
+   it, or in a room's corner */
+.move-stick {
+  position: fixed; left: max(18px, env(safe-area-inset-left)); bottom: max(24px, calc(env(safe-area-inset-bottom) + 14px)); z-index: 3;
+  width: 116px; height: 116px; border-radius: 50%; box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; display: grid; place-items: center;
+  background: radial-gradient(circle, rgba(20, 24, 40, 0.18) 0 45%, rgba(20, 24, 40, 0.34) 70%);
+  border: 3px solid rgba(255, 248, 232, 0.6); box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  opacity: 0.75; transition: opacity 0.15s, bottom 0.2s ease-out;
+}
+.move-stick.held { opacity: 1; }
+.move-knob {
+  width: 50px; height: 50px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 38% 32%, #fff 0 18%, #fff8e8 40%, #e6dcc4); border: 3px solid #2a2a3a;
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+.move-stick.leaning .move-knob { box-shadow: 0 1px 0 rgba(0, 0, 0, 0.35); }
+.hub .move-stick { position: absolute; bottom: calc(var(--hub-bar-h, 110px) + var(--hub-card-h, 0px) + 12px); }
+.hub.held .move-stick { display: none; }

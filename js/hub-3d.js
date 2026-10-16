@@ -48,6 +48,7 @@ import { patchUnseen } from './patchnotes.js';
 import { pcBeckons } from './pc-news.js';
 import { claimable, timeLeft } from './missions.js';
 import { setHpBar, confirmDialog, refreshCoins } from './ui.js';
+import { moveStick, stickOn } from './move-stick.js';
 
 // the walkable grid, tile (0, 0) at the back left. Laid out anew 2026-10-14 (the user's ask: everything spread out, wide
 // roads that set off the plaza in the middle, the way out going north, Kenmatta's dojo away from the Nietos, the Secret
@@ -3755,6 +3756,20 @@ function onUp(e) {
   drag = null;
 }
 
+/** Free to walk by the keys or the stick: nothing walking your partner for you, no window up. */
+const canStep = () => running && !held && !cutscene && !warp && !entering && !arriving && !leaving && !outbound && !returning
+  && !document.querySelector('dialog:modal, #shop-dialog[open]') && document.getElementById('collection-screen')?.hidden !== false;
+
+/** One tile on from the step under way, a tapped route giving way (the stick, held, asks every frame). */
+function stickStep(dx, dy) {
+  if (walker.path.length > 1) walker.path.length = 1;
+  const from = walker.path[0] ?? walker.tile, n = { x: from.x + dx, y: from.y + dy };
+  if (!free(n)) return false;
+  walker.path.push(n);
+  if (aim || !card.hidden) { aim = null; hideCard(); }
+  return true;
+}
+
 function onKey(e) {
   if (!running || held || arriving || leaving || outbound || returning || document.querySelector('dialog:modal, #shop-dialog[open]') || document.activeElement?.matches?.('input')
     || document.getElementById('collection-screen')?.hidden === false) return;
@@ -4139,6 +4154,10 @@ async function build() {
   bar = root.querySelector('.hub-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
   new ResizeObserver(() => { root.style.setProperty('--hub-bar-h', `${bar.offsetHeight}px`); if (camera) resize(); }).observe(bar);
+  if (stickOn()) {
+    root.append(moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; } }).el);
+    new ResizeObserver(() => root.style.setProperty('--hub-card-h', card.hidden ? '0px' : `${card.offsetHeight + 10}px`)).observe(card);
+  }
   bar.querySelector('.hbar-sprite').addEventListener('load', (e) => fitMon(e.target));
   bar.querySelector('.hbar-flee').append(smoothIcon('run'));
   bar.querySelector('.hbar-flee').addEventListener('click', () => { playSound('confirm'); hideCard(); acts.onAbandon(); });
