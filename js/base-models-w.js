@@ -31,6 +31,15 @@ export function cut(K, L, [x0, y0, x1, y1]) {
   return got.get(key);
 }
 
+/** The material of the piece's whole HD painting for a geometry whose uvs run 0..1 over painted box `box`, its uvs moved
+    to where that box lies in the painting: a piece's crops then share one texture and one draw (2026-10-16: a jigsaw of
+    14 crops was 16 draws), read half a texel in so a neighbour never bleeds in. */
+export function whole(K, L, g, [x0, y0, x1, y1], art = K.p.art(0, L.HD, true)) {
+  const W = art.width / L.HD, H = art.height / L.HD, e = 0.5 / L.HD, uv = g.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (x0 + e + uv.getX(i) * (x1 - x0 - 2 * e)) / W, 1 - (y1 - e - uv.getY(i) * (y1 - y0 - 2 * e)) / H);
+  return K.pic(art);
+}
+
 /** A box over painted units [x0, y0, x1, y1], `d` deep from z0 out. */
 export function bar(K, L, m, [x0, y0, x1, y1], d, z0 = 0, r = 0.012) {
   const W = K.p.w, w = u(x1 - x0), h = u(y1 - y0);
@@ -40,7 +49,8 @@ export function bar(K, L, m, [x0, y0, x1, y1], d, z0 = 0, r = 0.012) {
 /** A crop of the painting laid flat over painted units `box` at depth z. */
 export function pic(K, L, box, z) {
   const [x0, y0, x1, y1] = box, W = K.p.w;
-  return K.put(new L.THREE.PlaneGeometry(u(x1 - x0), u(y1 - y0)), K.pic(cut(K, L, box)), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), z);
+  const g = new L.THREE.PlaneGeometry(u(x1 - x0), u(y1 - y0));
+  return K.put(g, whole(K, L, g, box), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), z);
 }
 
 /** A sheet of paper over `box`: the painting on it, its bottom corners curling off the wall, pinned at `pins`. */
@@ -53,7 +63,7 @@ export function paper(K, L, box, pins = []) {
     pos.setZ(i, 0.006 + low * low * side * side * 0.05 + Math.sin(fx * Math.PI) * 0.004);
   }
   g.computeVertexNormals();
-  K.put(g, K.pic(cut(K, L, box)), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), 0);
+  K.put(g, whole(K, L, g, box), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), 0);
   K.put(new L.THREE.PlaneGeometry(w, h).rotateY(Math.PI), K.plain(L.tone(K.pal.p, 0.92)), X((x0 + x1) / 2, W), Y((y0 + y1) / 2), 0.004);
   for (const [i, j, c] of pins) {
     K.put(L.ball(0.022, 12, 8), K.gloss(c || K.pal.m), X(i, W), Y(j), 0.022);

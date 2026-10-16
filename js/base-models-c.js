@@ -392,7 +392,7 @@ export const MAKES = {
     for (let n = 0; n < 3; n++) {
       const y = n * 0.281;
       K.put(ring.clone(), rubber, 0, y, 0, n * 0.7);
-      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2 + n; K.put(L.rbox(0.02, 0.18, 0.04, 0.005), tread, Math.cos(a) * 0.412, y + 0.14, Math.sin(a) * 0.412, -a); }
+      for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2 + n; K.put(L.rbox(0.02, 0.18, 0.04, 0.0025), tread, Math.cos(a) * 0.412, y + 0.14, Math.sin(a) * 0.412, -a); }
     }
     K.put(cyl(0.415, 0.03, 0.415, 40, true), K.gloss(K.pal.c), 0, u(18) - 0.04, 0);
     K.put(cyl(0.2, 0.02, 0.2, 30), K.plain('#101018'), 0, 0.03, 0);

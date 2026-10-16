@@ -6,7 +6,7 @@
    folds, ripples and curls are real. Its edge is the painting's own (alphaTest), so a swallowtail or a ragged map keeps
    its outline; rods, rings, poles, cords and pins are modelled around it. */
 
-import { X, Y, u, cut, bar, pic, paper, ring } from './base-models-w.js';
+import { X, Y, u, cut, whole, bar, pic, paper, ring } from './base-models-w.js';
 import { MOTIFS } from './base-furniture-kinds.js';
 
 /** A sheet of the painting over painted box `box`, its depth `z(fx, fy)` (0..1 across and down), turned `rz` about its middle. */
@@ -15,11 +15,18 @@ export function drape(K, L, box, z, rz = 0, seg = [14, 20], keep = null) {
   const g = new L.THREE.PlaneGeometry(w, h, seg[0], seg[1]), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) pos.setZ(i, z(pos.getX(i) / w + 0.5, 0.5 - pos.getY(i) / h));
   g.computeVertexNormals();
-  const m = K.pic(keep ? clipped(cut(K, L, box), box, keep) : cut(K, L, box));
+  // a plain one shares the whole painting with the piece's other sheets (a copy of it: its material is cut out by alpha)
+  const m = keep ? K.pic(clipped(cut(K, L, box), box, keep)) : whole(K, L, g, box, twin(K.p.art(0, L.HD, true)));
   m.alphaTest = 0.5;
   m.side = L.THREE.DoubleSide;
   return K.put(g, m, X((x0 + x1) / 2, K.p.w), Y((y0 + y1) / 2), 0, 0, 0, rz);
 }
+
+const twins = new WeakMap();
+const twin = (art) => {
+  if (!twins.has(art)) { const c = new OffscreenCanvas(art.width, art.height); c.getContext('2d').drawImage(art, 0, 0); c.hd = art.hd; twins.set(art, c); }
+  return twins.get(art);
+};
 
 const clips = new WeakMap();
 /** A crop with every pixel outside `keep(i, j)` (painted units) cleared: a cut the painting filled with its shadow. */

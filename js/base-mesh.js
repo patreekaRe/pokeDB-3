@@ -116,7 +116,7 @@ function rbox(w, h, d, r = 0.03, seg = 2) {
   // picture on a face still covers the same share of it
   const was = seg, n0 = was * 2 + 1;
   seg = Math.min(seg, r < 0.05 ? 1 : r < 0.2 ? 2 : seg);
-  if (r < 0.006) {
+  if (r < 0.003) {
     const g = new THREE.BoxGeometry(w, h, d).toNonIndexed(), uv = g.attributes.uv;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, (was + uv.getX(i)) / n0, (was + uv.getY(i)) / n0);
     return g;
@@ -302,15 +302,17 @@ function kit(id, paint) {
   };
 }
 
-// wood and cloth share one grain or weave texture, so their colours ride along as vertex colours and the piece draws
-// each once (2026-10-16: a doll sewn in seven cloths was seven draws); plain colours are baked later by bakeColours().
-// Lamps' glows the same, their glow tinted by the vertex colour too (a lamp's material is still switched as one).
-const TINTABLE = new Set(['wood', 'cloth', 'glow']);
-const tintKey = (m) => {
+// parts of one kind differing only in colour are drawn as one, their colours riding along as vertex colours
+// (2026-10-16: a doll sewn in seven cloths was seven draws, a fridge's plain parts were never baked as it has doors):
+// wood and cloth share one grain or weave texture; a lamp's glows are tinted by the vertex colour too, and still
+// switched as one. Not glass (sorted by its mesh), nor the lamps of what blinks: js/base-play.js sets every lamp of a
+// crossing, a signal or a beacon red.
+const TINTABLE = new Set(['wood', 'cloth', 'glow', 'plain', 'gloss', 'metal']), BLINKS = new Set(['crossing', 'railsignal', 'beacon']);
+const tintKey = (m, fam) => {
   const glow = m.userData.kind === 'glow';
-  if (!TINTABLE.has(m.userData.kind) || m.vertexColors || Object.keys(m.userData).length !== (glow ? 2 : 1) || (glow && !m.userData.lamp)) return m;
-  return [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite,
-    glow ? m.emissiveIntensity : m.emissive.getHex(), m.flatShading].join('|');
+  if (!TINTABLE.has(m.userData.kind) || m.vertexColors || Object.keys(m.userData).length !== (glow ? 2 : 1) || (glow && (!m.userData.lamp || BLINKS.has(fam)))) return m;
+  return [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite, m.depthTest,
+    m.polygonOffset, m.polygonOffsetFactor, m.polygonOffsetUnits, m.blending, m.envMapIntensity, glow ? m.emissiveIntensity : m.emissive.getHex(), m.flatShading].join('|');
 };
 const glowTint = (m) => {
   m.emissive.set('#ffffff');
@@ -321,7 +323,7 @@ const glowTint = (m) => {
 function assemble(K, bins = K.bins) {
   const g = new THREE.Group(), sets = new Map();
   for (const [m, geos] of bins) {
-    const k = tintKey(m);
+    const k = tintKey(m, K.p.fam);
     if (!sets.has(k)) sets.set(k, []);
     sets.get(k).push([m, geos]);
   }
