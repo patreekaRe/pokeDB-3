@@ -206,3 +206,6 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
   **81 / 84 / 78, 62 / 64 / 60, 40 / 38 / 38**, the types within ~4 points of each other at every Level. The weak new cards
   (one extra copy at L3: Hydro Steam -12, Gulp Missile -7, Overgrowth -4) were raised; the sim's `cardScore` no longer
   rates draw-to cards past 3 cards (Downpour was its favourite card, at -11).
+- **Mewtwo** (human bot, `humanCfg('psychic', 0)`, shards 0): 63% at the branch's start (200 runs), 53.5% after the pass
+  (400; all of it in the Depths), 45.5% while Safeguard exhausted too. Eternatus's own numbers barely moved it; the
+  Depths' `MEWTWO_MODE.mods[3]` is now bossDmg 4 / bossHp 1.2 / enemyDmg -3 (was 8 / 1.3 / 0): 66.7% (300).
