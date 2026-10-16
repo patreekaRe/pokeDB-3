@@ -30,6 +30,7 @@ import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, 
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard } from './secret-base.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
+import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -1923,7 +1924,8 @@ function placeCamera(dt, now) {
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
   for (const m of [mon, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
-  for (const s of standees) { if (!s.parent) standees.delete(s); else s.rotation.x = -pitch; }
+  // (turned back against their piece's own turn, so a statue's figure faces you whichever way its plinth does)
+  for (const s of standees) { if (!s.parent) standees.delete(s); else { s.rotation.order = 'YXZ'; s.rotation.y = -s.parent.rotation.y; s.rotation.x = -pitch; } }
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
 }
 
@@ -2224,7 +2226,8 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   leaveTo = onLeave;
   playMusic('secret-base');
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
-  await loadStatues(new URLSearchParams(location.search).has('allfurniture') ? undefined : statuesIn(Object.keys(loadBase().owned || {})));
+  const every = new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(loadBase().owned || {});
+  await Promise.all([loadStatues(every ? undefined : statuesIn(owned)), loadFigures(every ? undefined : owned)]);
   if (root && renderer) return reopen(start);
   calm = calmFx();
   root = document.createElement('section');

@@ -53,6 +53,7 @@ import { MAKES as MAKES_V } from './base-models-v.js';
 import { MAKES as MAKES_X } from './base-models-x.js';
 import { MAKES as MAKES_Z } from './base-models-z.js';
 import { MAKES as MAKES_Y2 } from './base-models-y2.js';
+import { MAKES as MAKES_GOLD } from './base-models-gold.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1866,9 +1867,22 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
+}
+
+/** A statue's figure (js/base-figures.js, the gold statues): its picture as a cut-out standing at x, y, z, w x h tiles,
+    its pivot at its feet, so js/base-3d.js can lean it back and turn it to the camera as it does the Pokémon. */
+function figure(g, { c, w, h, x = 0, y = 0, z = 0 }, paint) {
+  const geo = new THREE.PlaneGeometry(w, h).translate(0, h / 2, 0), m = paint(c);
+  m.alphaTest = 0.5; m.side = THREE.DoubleSide; m.userData.kind = 'pic';
+  const mesh = new THREE.Mesh(geo, m);
+  mesh.position.set(x, y, z);
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData.standee = true;
+  g.add(mesh);
+  return mesh;
 }
 
 /** Any piece as a 3D group (see the file's head); null for a flat piece with no shape (the caller lays it as a slab).
@@ -1885,6 +1899,7 @@ export function furnitureModel(three, id, paint) {
     const K = kit(id, paint);
     B[shape.make](K, shape, W, D, L);
     g = assemble(K);
+    if (K.figure) g.userData.standee = figure(g, K.figure, paint);
     if (K.doors.length && K.inside) {
       g.userData.inside = K.inside;
       g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });

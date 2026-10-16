@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['base', 'Every furniture piece is a clean 3D model now, the Dojo, Safari and Trainer sets and Gym Leader posters included, and furnished rooms run lighter.'],
+  ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
   ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
 ];
 

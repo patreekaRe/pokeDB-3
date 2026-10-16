@@ -39,6 +39,7 @@ import { SHAPES as SHAPES_V } from './base-models-v.js';
 import { SHAPES as SHAPES_X } from './base-models-x.js';
 import { SHAPES as SHAPES_Z } from './base-models-z.js';
 import { SHAPES as SHAPES_Y2 } from './base-models-y2.js';
+import { SHAPES as SHAPES_GOLD } from './base-models-gold.js';
 
 const S = {};
 const set = (ids, shape) => ids.split(' ').forEach(id => { S[id] = { ...shape }; });
@@ -169,7 +170,7 @@ set('plinkoboard', { make: 'plinko' });
 set('pokepinball', { make: 'pinball' });
 
 /* the batches modelled after the arcade cabinets (js/base-models-*.js): `'id id2': shape` each */
-for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K, SHAPES_W, SHAPES_W2, SHAPES_W3, SHAPES_W4, SHAPES_W5, SHAPES_W6, SHAPES_W7, SHAPES_T, SHAPES_Y, SHAPES_FR, SHAPES_L, SHAPES_M, SHAPES_N, SHAPES_O, SHAPES_P, SHAPES_Q, SHAPES_R, SHAPES_S, SHAPES_U, SHAPES_V, SHAPES_X, SHAPES_Z, SHAPES_Y2]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
+for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K, SHAPES_W, SHAPES_W2, SHAPES_W3, SHAPES_W4, SHAPES_W5, SHAPES_W6, SHAPES_W7, SHAPES_T, SHAPES_Y, SHAPES_FR, SHAPES_L, SHAPES_M, SHAPES_N, SHAPES_O, SHAPES_P, SHAPES_Q, SHAPES_R, SHAPES_S, SHAPES_U, SHAPES_V, SHAPES_X, SHAPES_Z, SHAPES_Y2, SHAPES_GOLD]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);
 
 export const SHAPES = S;
 

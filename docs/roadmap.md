@@ -13,9 +13,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done, in `NEXT`
 for the next patch (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
 types, about 4 to 6 sets of 25 a session, one helper each, every kind painted and hand-built within the budget and
-checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). Left over: the Grand Catalogue's 31 gold starter statues (another session's,
-`js/base-furniture-statues.js`) are still puffed from their sprites, about 19.6k triangles each; ask the user before
-rebuilding them (a hand-built marble pedestal and a lighter figure). Waiting on the user's playtest of the
+checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). The gold starter statues and the yard's Pokémon statues stand as their sprites
+since the same day (the user's ask), ~450 triangles each; waiting on the user's look (`?yard&allfurniture`, `?mall=3f`). Waiting on the user's playtest of the
 seasonal sets (`?holiday=valentine` etc. on the Furniture store) and the yard sets (`?yard&allfurniture`, Smeargle's
 catalogue). Session prompt:
 > Run in: CLOUD. Read CLAUDE.md, docs/furniture-expansion.md and docs/reference/hub-base-mall.md's last section, then

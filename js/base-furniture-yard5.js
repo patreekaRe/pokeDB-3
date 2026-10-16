@@ -1,12 +1,13 @@
 /* base-furniture-yard5.js  -  the backyard's statues and lights (the user's ask, 2026-10-16: a catalogue as big as Animal
    Crossing's, every piece a "3D detailed CLEAN" model): the Statues and Lights tabs of Smeargle's garden catalogue
    (js/garden-shop.js), every kind `outdoor`, on the Yard shelf, in the 20 themes. Modelled from parts in
-   js/base-models-y2.js; a statue's painting reads the same parts (SCULPT there), drawn back to front, so the tray's
-   picture and the model agree. The lights' lamps are their `glow`, and a tap switches them (js/base-play.js's `light`). */
+   js/base-models-y2.js; a Pokémon statue is its own sprite in stone on its plinth (js/base-figures.js, read by both, so
+   the tray's picture and the model agree). The lights' lamps are their `glow`, and a tap switches them (js/base-play.js's `light`). */
 
 import { k, sh, R, panel, wood, disc, oval, ovalShade, cyl, leaf, foliage, glass, tri, floorShadow, ctx } from './base-paint.js';
-import { SCULPT, EYE, INK, SOIL, GOLD, WICKER, FLAMES, LANTURN, CHINCHOU, MORELULL, FIREFLY, slabPoint, DIGITS, PODIUM, digitScale,
+import { EYE, INK, SOIL, GOLD, WICKER, FLAMES, LANTURN, CHINCHOU, MORELULL, FIREFLY, DIGITS, PODIUM, digitScale,
   OBELISK, UNOWN, unownStone, NEON, CROWN, BULBS, ARCH, SHROOMS, SPOTS } from './base-models-y2.js';
+import { FIGURES, figureOf, figureAt } from './base-figures.js';
 
 export const YARD_KINDS_5 = [];
 const add = (yard, list) => list.forEach(f => YARD_KINDS_5.push({ group: 'Yard', outdoor: true, yard, ...f }));
@@ -22,9 +23,7 @@ const facing = (w, draw) => function (x, b, vw) {
   const g = ctx(); g.save(); g.translate(x, 0); g.scale(vw / (w * 32), 1); draw(0, b, w * 32); g.restore();
 };
 
-/* ---------- the sculptures ---------- */
-const tint = (st, c) => c == null ? st : c === 'd' ? EYE : c === 'l' ? sh(st, 1) : c === 'x' ? sh(st, -1) : c === 'leafd' ? sh(k.leaf, -1) : c[0] === '#' ? c : k[c];
-
+/* ---------- the statues: the plinth, then the figure (js/base-figures.js) ---------- */
 function plinthArt(x, b, [x0, x1, h]) {
   const w = x1 - x0, cx = x + (x0 + x1) / 2;
   panel(x + x0 - 1, b - 3, w + 2, 3, sh(k.p, -1));
@@ -37,46 +36,21 @@ function bedArt(x, b, [x0, x1, h]) {
   wood(x + x0, b - h, x1 - x0, h, k.w);
   R(x + x0 + 2.5, b - h, x1 - x0 - 5, 1.5, SOIL);
 }
-const zOf = (p) => p[0] === 'r' ? Math.min(p[3], p[6]) : p[0] === 'w' ? p[2] : p[3];
-function partArt(x, b, st, p, leafy) {
-  const g = ctx(), c = tint(st, p[0] === 'w' ? p[4] : p[0] === 'r' ? p[9] : p[0] === 'v' ? p[6] : p[7]);
-  if (p[0] === 'e') {
-    const [, px, py, , rx, ry, , col, turn] = p;
-    g.save(); g.translate(x + px, b - py); g.rotate(-(turn || 0));
-    if (col === 'd') oval(0, 0, rx, ry, c); else ovalShade(0, 0, rx, ry, c);
-    if (leafy && Math.min(rx, ry) > 3) for (let i = 0; i < 7; i++) {
-      const a = i * 2.4, f = 0.25 + (i % 3) * 0.22;
-      leaf(Math.cos(a) * rx * f, Math.sin(a) * ry * f, 1.6, 1.1, sh(c, i % 2 ? 1 : -1), Math.cos(a));
-    }
-    g.restore();
-  } else if (p[0] === 'r') {
-    const [, x0, y0, , x1, y1, , r0, r1] = p, dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy);
-    if (len < Math.max(r0, r1) * 0.8) { disc(x + (x0 + x1) / 2, b - (y0 + y1) / 2, Math.max(r0, r1), c); return; }
-    const nx = -dy / len, ny = dx / len, P = (px, py) => [x + px, b - py];
-    const l = g.createLinearGradient(...P(x0 + nx * r0, y0 + ny * r0), ...P(x0 - nx * r0, y0 - ny * r0));
-    l.addColorStop(0, sh(c, 1)); l.addColorStop(0.45, c); l.addColorStop(1, sh(c, -1));
-    poly([P(x0 + nx * r0, y0 + ny * r0), P(x1 + nx * r1, y1 + ny * r1), P(x1 - nx * r1, y1 - ny * r1), P(x0 - nx * r0, y0 - ny * r0)], l);
-  } else if (p[0] === 'v') {
-    const [, px, y0, , r, h] = p;
-    cyl(x + px - r, b - y0 - h, r * 2, h, c);
-  } else {
-    const pts = p[1].map(q => slabPoint(p, q)).map(([px, py]) => [x + px, b - py]), ys = pts.map(q => q[1]);
-    poly(pts, grad(Math.min(...ys), Math.max(...ys), c));
-    if (p[1].length > 10) {
-      const [ax, ay] = slabPoint(p, (p[5] || {}).at || p[1][0]);
-      g.save(); g.globalAlpha = 0.5;
-      pts.forEach(([px, py], i) => { if (i % 2) line(x + ax + (px - x - ax) * 0.35, b - ay + (py - b + ay) * 0.35, x + ax + (px - x - ax) * 0.8, b - ay + (py - b + ay) * 0.8, sh(c, -1), 0.5); });
-      g.restore();
-    }
-  }
+function moundArt(x, b, [x0, x1, h]) {
+  oval(x + (x0 + x1) / 2, b - h / 2, (x1 - x0) / 2, h / 2 + 1, SOIL);
+  oval(x + (x0 + x1) / 2, b - h, (x1 - x0) / 2 - 3, 2.5, '#7a5a3e');
+  for (const [dx, r] of [[-10, 2.6], [10, 2.8]]) disc(x + (x0 + x1) / 2 + dx, b - h * 0.6, r, '#9a948a');
 }
-const sculpture = (id) => (x, b, vw) => {
-  const S = SCULPT[id];
+const figureArt = (id) => (x, b, vw) => {
+  const F = FIGURES[id], f = figureOf(id), at = figureAt(id);
   floorShadow(x, b, vw);
-  if (S.plinth) (S.bed ? bedArt : plinthArt)(x, b, S.plinth);
-  [...S.parts].sort((a, c) => zOf(a) - zOf(c)).forEach(p => partArt(x, b, S.stone, p, S.leafy));
+  (F.mound ? moundArt : F.bed ? bedArt : plinthArt)(x, b, F.plinth);
+  if (!f) return;
+  const g = ctx(), w = f.w * at.k, h = f.h * at.k;
+  g.imageSmoothingEnabled = false;
+  g.drawImage(f.c, x + at.cx - w / 2, b - at.y - h, w, h);
 };
-const statue = (id, name, w, h, price) => ({ id, name, w, h, price, draw: facing(w, sculpture(id)) });
+const statue = (id, name, w, h, price) => ({ id, name, w, h, price, live: () => (figureOf(id) ? 'figure' : ''), draw: facing(w, figureArt(id)) });
 
 /** A Poké Ball, its top in `top`, its band and button facing you. */
 function ballArt(cx, cy, r, top) {

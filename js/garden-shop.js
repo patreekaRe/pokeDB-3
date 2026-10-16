@@ -7,6 +7,7 @@ import { getSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el, refreshCoins, confirmDialog } from './ui.js';
 import { PIECES, DESIGNS, loadBase, buyPiece } from './secret-base.js';
+import { loadFigures } from './base-figures.js';
 
 /** The catalogue's tabs (2026-10-16: the yard sets took it from 17 pieces to over a hundred), by each kind's `yard`
     shelf; the first Yard shelf's kinds carry none. */
@@ -80,6 +81,8 @@ export function openGardenShop() {
   });
   line('Things for your backyard! They only go outside, and they\'re always in stock.');
   draw();
+  // the statues are their Pokémon's sprites: their pictures repaint once those are in
+  loadFigures().then(() => { if (d.isConnected) draw(); });
   return new Promise(res => {
     d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
     close.addEventListener('click', () => d.close());

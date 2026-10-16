@@ -1,13 +1,14 @@
 /* base-models-y2.js  -  the backyard's statues and lights (the Statues and Lights tabs of Smeargle's garden catalogue,
    js/garden-shop.js), painted in js/base-furniture-yard5.js; js/base-models-f.js's head says how a batch works. The user's
    ask of 2026-10-16: "3D detailed CLEAN models ... optimise them", a catalogue as big as Animal Crossing's.
-   - A statue is a stylised low-poly sculpture in stone on a plinth in the theme's colours: ellipsoids, tapered rods and
-     cut slabs (wings, crests, tails), listed in SCULPT, which its painting reads too, so the two always agree. Sizes are
-     painted pixels (32 a tile): x from the painting's left, y up from the floor, z out of the front.
+   - A Pokémon statue is its own sprite in stone (the topiary in hedge greens) on a plinth in the theme's colours, like
+     the gyms' statues (js/base-figures.js; the user's ask, 2026-10-16: the sculpted ones read oddly). Sizes are painted
+     pixels (32 a tile): x from the painting's left, y up from the floor, z out of the front.
    - The rest (the Poké Ball monument, the stone circle, the obelisk, the podium) and the lights are built part by part,
      every lamp lit (`K.glow`) for js/base-play.js's `light`. */
 
 import { tube, rod, pokeBall, ballTop } from './base-models-kit.js';
+import { FIGURES, figureOf, figureAt } from './base-figures.js';
 
 const u = (n) => n / 32;
 const X = (n, W = 1) => n / 32 - W / 2;
@@ -18,132 +19,6 @@ export const LANTURN = { body: '#4a78c8', belly: '#f0d878', lure: '#fff070', lit
 export const CHINCHOU = { body: '#4a80d8', eye: '#f8e070', orb: '#f8e860', lit: '#fff8c0' };
 export const MORELULL = { cap: '#c8a0f0', spot: '#f4ecff', stem: '#f0e8d8' };
 export const FIREFLY = ['#d8f860', '#f8ffc0'];
-
-/* ---------- the sculptures ---------- */
-/* Parts: ['e', x, y, z, rx, ry, rz, colour, turn] an ellipsoid (turned in the front's plane); ['r', x0, y0, z0, x1, y1,
-   z1, r0, r1, colour] a rod tapering from r0 to r1; ['w', [[x, y]...], z, thickness, colour, { at, sweep, tilt }] a slab
-   cut to an outline in the front's plane, tipped about its pivot `at` (its first point) back by `tilt` and swept round by
-   `sweep`; ['v', x, y0, z, r, h, colour] an upright cylinder. A colour is the stone (none), 'd' an eye, 'l' / 'x' the
-   stone lighter / darker, a palette key or a hex. */
-const E = (x, y, z, rx, ry, rz, c, turn) => ['e', x, y, z, rx, ry, rz, c, turn];
-const Rd = (x0, y0, z0, x1, y1, z1, r0, r1, c) => ['r', x0, y0, z0, x1, y1, z1, r0, r1, c];
-const Wg = (pts, z, t, c, o) => ['w', pts, z, t, c, o];
-const V = (x, y0, z, r, h, c) => ['v', x, y0, z, r, h, c];
-function mir(p, w) {
-  const f = (x) => w - x;
-  if (p[0] === 'e') return ['e', f(p[1]), ...p.slice(2, 8), -(p[8] || 0)];
-  if (p[0] === 'r') return ['r', f(p[1]), p[2], p[3], f(p[4]), ...p.slice(5)];
-  if (p[0] === 'v') return ['v', f(p[1]), ...p.slice(2)];
-  const o = p[5] || {};
-  return ['w', p[1].map(([x, y]) => [f(x), y]), p[2], p[3], p[4], { ...o, at: o.at && [f(o.at[0]), o.at[1]], sweep: -(o.sweep || 0) }];
-}
-const pair = (w, ...ps) => ps.flatMap(p => [p, mir(p, w)]);
-
-/** Where a slab's outline point lands in the front view, [x, y], tipped and swept as its model is. */
-export function slabPoint(p, [x, y]) {
-  const o = p[5] || {}, [px, py] = o.at || p[1][0], dx = x - px, dy = y - py, t = o.tilt || 0, s = o.sweep || 0;
-  return [px + dx * Math.cos(s) + dy * Math.sin(t) * Math.sin(s), py + dy * Math.cos(t)];
-}
-
-// a bird of legend standing on its plinth, wings raised: legs and feet, then what each bird has
-const birdLegs = (w, x, top, r = 1.3) => pair(w, Rd(x, 28, 0, x - 1, top + 1, 2, r, r * 0.85), E(x - 1, top + 1.4, 3, 3, 1.6, 3));
-
-// Onix: a chain of boulders coiling up round the plinth, smaller as it climbs, ending at the front
-const onixCoil = () => {
-  const out = [];
-  for (let i = 0; i < 13; i++) {
-    const t = i / 12, a = 2.737 + i * 0.95, R = 17 - 7 * t, r = 9 - 3.5 * t;
-    out.push(E(32 + Math.cos(a) * R, 20 + 66 * t, Math.sin(a) * R, r, r * 0.86, r, i % 2 ? 'x' : null, a));
-  }
-  return out;
-};
-
-export const SCULPT = {
-  articunostatue: { w: 64, stone: '#a8b0bc', plinth: [12, 52, 14, 24], parts: [
-    ...birdLegs(64, 29, 14),
-    E(32, 36, 0, 7, 11, 6.5), Rd(32, 44, 1, 32, 56, 2, 4, 3), E(32, 60, 2, 4.5, 4.5, 5),
-    Rd(32, 59, 6, 32, 57.5, 10, 1.6, 0.2, 'l'), ...pair(64, E(30.2, 61, 5.6, 0.9, 1, 0.6, 'd')),
-    Wg([[30, 62], [26, 75], [30.5, 67], [32, 78], [33.5, 67], [38, 75], [34, 62]], 0, 2),
-    ...pair(64, Wg([[27, 44], [23, 48], [15, 54], [8, 62], [3, 74], [2, 84], [7, 78], [8, 82], [11, 74], [13, 77], [15, 69], [18, 71], [20, 63], [24, 58], [28, 52]], -2, 2.5, null, { at: [27, 48], sweep: -0.4 })),
-    Wg([[28, 30], [36, 30], [38, 20], [40, 13], [34, 15], [32, 12], [30, 15], [24, 13], [26, 20]], -5, 2.5, 'x', { at: [32, 30], tilt: 0.6 }),
-  ] },
-  zapdosstatue: { w: 64, stone: '#b4ae98', plinth: [12, 52, 14, 24], parts: [
-    ...birdLegs(64, 29, 14, 1.6),
-    E(32, 36, 0, 8, 10, 7), Rd(32, 44, 1, 32, 52, 2, 4, 3), E(32, 55, 2, 5, 4.5, 5),
-    Rd(32, 54, 6, 32, 52, 13, 2, 0.3, 'l'), ...pair(64, E(29.8, 56.5, 6, 1, 0.9, 0.6, 'd')),
-    Wg([[28, 57], [24, 66], [29, 61], [30, 70], [32, 62], [34, 70], [35, 61], [40, 66], [36, 57]], 0, 2),
-    ...pair(64, Wg([[27, 44], [22, 47], [16, 48], [10, 52], [4, 52], [8, 56], [2, 60], [8, 62], [3, 68], [10, 68], [6, 76], [14, 72], [13, 80], [19, 70], [22, 74], [24, 62], [28, 52]], -2, 2.5, null, { at: [27, 48], sweep: -0.35 })),
-    Wg([[28, 30], [36, 30], [42, 20], [38, 22], [36, 13], [33, 20], [32, 12], [30, 20], [27, 13], [26, 22], [22, 20]], -5, 2.5, 'x', { at: [32, 30], tilt: 0.6 }),
-  ] },
-  moltresstatue: { w: 64, stone: '#b8a294', plinth: [12, 52, 14, 24], parts: [
-    ...birdLegs(64, 29, 14),
-    E(32, 36, 0, 7, 10, 6.5), Rd(32, 44, 1, 32, 55, 2, 3.5, 2.6), E(32, 58, 2, 4.2, 4, 4.8),
-    Rd(32, 57, 5.5, 32, 55, 10, 1.6, 0.2, 'l'), ...pair(64, E(30.2, 59, 5.4, 0.9, 1, 0.6, 'd')),
-    Wg([[29, 60], [26, 68], [29, 66], [28, 76], [32, 70], [34, 80], [35, 70], [39, 74], [36, 63], [35, 60]], -0.5, 2),
-    ...pair(64, Wg([[27, 44], [21, 50], [14, 52], [8, 58], [2, 56], [5, 64], [1, 70], [7, 70], [4, 80], [11, 74], [12, 84], [16, 74], [20, 78], [21, 66], [25, 62], [28, 52]], -2, 2.5, null, { at: [27, 48], sweep: -0.4 })),
-    Wg([[29, 30], [35, 30], [40, 22], [44, 24], [42, 15], [38, 18], [34, 12], [32, 18], [28, 13], [27, 20], [22, 20]], -5, 2.5, 'x', { at: [32, 30], tilt: 0.6 }),
-  ] },
-  lugiastatue: { w: 64, stone: '#bcbcc6', plinth: [14, 50, 16, 52], parts: [
-    ...pair(64, Rd(27, 34, 2, 26, 17, 4, 3.2, 2.6), E(26, 17.5, 6, 3.5, 2, 4.5)),
-    E(32, 44, 0, 10, 14, 9), E(32, 42, 4.5, 7, 10, 5, 'l'),
-    Rd(32, 52, -7, 32, 58, -12, 2.5, 0.3), Rd(32, 60, -5, 32, 66, -10, 2.2, 0.3),
-    Rd(32, 56, 1, 32, 78, 4, 5, 3.6), E(32, 84, 5, 5.5, 4.5, 6), E(32, 82.5, 10, 3.8, 3, 4),
-    ...pair(64, E(29.5, 85, 9.5, 1.6, 1.2, 0.8, 'd')), Rd(32, 86, 1, 32, 90, -4, 1.6, 0.2),
-    ...pair(64, Wg([[25, 60], [20, 66], [14, 72], [8, 80], [3, 90], [2, 104], [6, 96], [6, 110], [10, 100], [12, 112], [15, 100], [18, 108], [19, 94], [22, 84], [26, 72]], -2, 3, null, { at: [25, 66], sweep: -0.35 })),
-    Wg([[28, 36], [36, 36], [40, 26], [46, 20], [40, 22], [38, 16], [34, 22], [32, 14], [30, 22], [26, 16], [24, 22], [18, 20], [24, 26]], -8, 3, 'x', { at: [32, 36], tilt: 0.7 }),
-  ] },
-  hoohstatue: { w: 64, stone: '#c0b29c', plinth: [14, 50, 16, 52], parts: [
-    ...pair(64, Rd(29, 34, 1, 28, 17, 3, 1.6, 1.3), E(28, 17.4, 4, 3, 1.6, 3.5)),
-    E(32, 44, 0, 8, 13, 8), E(32, 52, 5, 5.5, 5, 3.5, 'l'),
-    Rd(32, 54, 1, 32, 68, 3, 4, 3), E(32, 72, 3, 4.5, 4.5, 5), Rd(32, 71, 7.5, 32, 68, 12, 1.8, 0.2, 'l'),
-    ...pair(64, E(30, 73, 6.8, 0.9, 1, 0.6, 'd')),
-    Rd(32, 76, 2, 33, 84, -3, 1.6, 1.2), Rd(33, 84, -3, 34, 88, -9, 1.2, 0.4),
-    Wg([[30, 75], [28, 82], [31, 80], [32, 86], [33, 80], [36, 82], [34, 75]], 0.5, 2),
-    ...pair(64, Wg([[26, 56], [20, 60], [12, 62], [6, 68], [2, 80], [1, 94], [5, 86], [4, 100], [9, 90], [10, 106], [14, 92], [17, 104], [19, 86], [22, 76], [24, 68], [27, 62]], -2, 3, null, { at: [26, 60], sweep: -0.3 })),
-    Wg([[28, 34], [36, 34], [44, 22], [52, 18], [44, 18], [40, 14], [36, 20], [32, 12], [28, 20], [24, 14], [20, 18], [12, 18], [20, 22]], -6, 3, 'x', { at: [32, 34], tilt: 0.5 }),
-  ] },
-  suicunestatue: { w: 64, stone: '#a0aab4', plinth: [6, 58, 12, 24], parts: [
-    E(34, 32, 0, 14, 7.5, 6), E(23, 36, 0, 6.5, 8, 5.5),
-    ...[[22, 21, 3.5, 2.2], [25, 25, -3.5, 2.2], [44, 45, 3.5, 2.6], [41, 41, -3.5, 2.6]].flatMap(([x0, x1, z, r]) => [Rd(x0, 30, z, x1, 13, z, r, 1.6), E(x1 - 1, 13.5, z + 1, 2.4, 1.5, 3)]),
-    Rd(22, 40, 0, 18, 48, 0, 4, 3.5), E(17, 51, 0, 5.5, 4.5, 4.5), E(11.5, 49.5, 0, 3.5, 2.5, 3),
-    E(15, 52.5, 4.1, 1, 0.9, 0.6, 'd'), E(15, 52.5, -4.1, 1, 0.9, 0.6, 'd'),
-    Wg([[16, 55], [20, 68], [24, 72], [22, 62], [19, 55]], 0, 2),
-    E(27, 42, 0, 6, 4, 5, 'l'), E(34, 40, 0, 6, 3.5, 5, 'l'), E(41, 38.5, 0, 5, 3, 4.5, 'l'),
-    Wg([[46, 36], [52, 40], [58, 40], [62, 34], [59, 36], [54, 35], [50, 32]], 2, 1.5, 'l'),
-    Wg([[46, 33], [52, 32], [58, 28], [60, 20], [56, 24], [52, 27], [47, 29]], -2, 1.5, 'l'),
-  ] },
-  pikachustatue: { w: 32, stone: '#b4b0a0', plinth: [4, 28, 12, 24], parts: [
-    ...pair(32, E(11, 13.5, 4, 3.2, 1.8, 3.5), E(10.5, 26, 5, 2.4, 3, 2.4), Rd(11.5, 45, 0, 8, 55, -1, 2.6, 2), Rd(8, 55, -1, 6, 62, -1.5, 2, 0.3, 'x'),
-      E(12.3, 41.5, 6.3, 1.4, 1.6, 0.8, 'd'), E(9.5, 37.5, 5.5, 2.2, 2, 1.2, 'l')),
-    E(16, 24, 0, 8, 9.5, 7), E(16, 40, 0.5, 9, 7.5, 7.5), E(16, 39, 7.4, 0.6, 0.4, 0.4, 'd'),
-    Wg([[20, 18], [25, 22], [23, 26], [28, 32], [25, 34], [29, 42], [21, 32], [23, 29], [19, 24]], -6, 2.5),
-  ] },
-  snorlaxstatue: { w: 64, stone: '#9ea4a8', plinth: [4, 60, 8, 24], parts: [
-    E(36, 22, 0, 20, 13, 11), E(37, 24, 5, 15, 10, 7, 'l'),
-    E(13, 20, 0, 9, 9, 9), Rd(8, 26, 0, 5, 31, 0, 2.5, 0.5), Rd(12, 28, -2, 11, 33, -2, 2.5, 0.5),
-    Rd(8.5, 22, 8.2, 11.5, 22.6, 8.4, 0.5, 0.5, 'd'), Rd(14, 23, 8.4, 17, 22.6, 7.6, 0.5, 0.5, 'd'), Rd(10, 16.5, 8.2, 15, 16.5, 8, 0.5, 0.5, 'd'),
-    E(55, 28, 4, 3.5, 6, 3, 'l'), E(55, 28, -4, 3.5, 6, 3, 'l'),
-    E(34, 34, 3, 8, 2.5, 3, null, -0.15), E(24, 12, 7, 6, 2.5, 3),
-  ] },
-  onixstatue: { w: 64, stone: '#9a9a9a', plinth: [8, 56, 10, 52], parts: [
-    ...onixCoil(),
-    E(32, 96, 12, 9, 7, 10), Rd(32, 101, 8, 32, 112, 0, 2.6, 0.3),
-    ...pair(64, E(28.5, 98, 21, 1.4, 1.2, 0.8, 'd')),
-  ] },
-  bulbatopiary: { w: 64, stone: '#4f9a42', plinth: [4, 60, 8, 24], bed: true, leafy: true, parts: [
-    ...[[20, 5], [20, -5], [44, 5], [44, -5]].map(([x, z]) => E(x, 12, z, 3.5, 4, 3.5, 'leaf')),
-    E(33, 20, 0, 14, 8, 9, 'leaf'), E(15, 26, 0, 8.5, 7.5, 8, 'leaf'),
-    Rd(12, 32, 3, 10, 38, 3.5, 2.5, 0.5, 'leaf'), Rd(12, 32, -3, 10, 38, -3.5, 2.5, 0.5, 'leaf'),
-    E(36, 34, 0, 10, 10, 9, 'leafd'), Rd(36, 43, 0, 37, 48, 0, 3, 0.5, 'leafd'),
-    E(10, 27, 5.5, 1.3, 1.5, 1, '#c83a3a'), E(10, 27, -5.5, 1.3, 1.5, 1, '#c83a3a'),
-  ] },
-  dugtriorocks: { w: 32, stone: '#a88468', parts: [
-    V(16, 0, 0, 14, 4, 'p'), E(16, 5, 0, 13, 5, 11, '#8a7a6a'), E(5, 5, 6, 3, 2, 2.5, '#9a948a'), E(27, 5, 5, 3.2, 2.2, 2.6, '#8e8a82'),
-    ...[[16, -4, 26, 5.5], [8.5, 3, 17, 5], [23.5, 3, 19, 5]].flatMap(([x, z, h, r]) => [
-      Rd(x, 4, z, x, h, z, r, r), E(x, h, z, r, r, r), E(x - 1.8, h + 1.5, z + r * 0.92, 0.8, 1.4, 0.5, 'd'), E(x + 1.8, h + 1.5, z + r * 0.92, 0.8, 1.4, 0.5, 'd'),
-      E(x, h - 1.5, z + r, 2.4, 1.6, 1.4, 'c')]),
-  ] },
-};
 
 /* ---------- the parts built by hand (their paintings read these too) ---------- */
 /** The podium's numbers, bars [x, y, w, h] in a 7 x 11 box. */
@@ -195,7 +70,7 @@ export const SHROOMS = [[16, -2, 20, 2.8, 10, 9], [7, 3, 12, 1.9, 6, 5.5], [25.5
 export const SPOTS = [[0.2, 0.35], [1.4, 0.55], [2.6, 0.3], [3.8, 0.6], [5, 0.4], [-0.9, 0.7], [0.9, 0.85]];
 
 export const SHAPES = {
-  'articunostatue zapdosstatue moltresstatue lugiastatue hoohstatue suicunestatue pikachustatue snorlaxstatue onixstatue bulbatopiary dugtriorocks': { make: 'sculptY2' },
+  [Object.keys(FIGURES).join(' ')]: { make: 'figureY2' },
   ballmonument: { make: 'ballmonument' },
   unowncircle: { make: 'unowncircle' },
   badgeobelisk: { make: 'badgeobelisk' },
@@ -234,11 +109,6 @@ function cut(L, pts, t) {
 /** Flat-shaded, for a faceted part (a square shaft). */
 const facets = (g) => { const n = g.toNonIndexed(); n.computeVertexNormals(); return n; };
 
-function stuff(K, L, st) {
-  return (c) => c == null ? K.plain(st) : c === 'd' ? K.gloss(EYE) : c === 'l' ? K.plain(L.tone(st, 1.18)) : c === 'x' ? K.plain(L.tone(st, 0.84))
-    : c === 'leafd' ? K.plain(L.tone(K.pal.leaf, 0.78)) : c === 'leaf' ? K.plain(K.pal.leaf) : c[0] === '#' ? K.plain(c) : K.gloss(K.pal[c]);
-}
-
 /** A plinth: a base course, the block with a band under its cap and a plaque on its front; or a planter of soil. */
 function plinth(K, L, W, [x0, x1, h, d], bed) {
   const { rbox } = L, w = u(x1 - x0), cx = X((x0 + x1) / 2, W), dd = u(d), lip = u(1), p = K.pal.p, rim = K.gloss(L.tone(p, 0.86));
@@ -256,38 +126,18 @@ function plinth(K, L, W, [x0, x1, h, d], bed) {
   if (h >= 12) K.put(rbox(u((x1 - x0) * 0.4), u((h - 6) * 0.5), u(0.8), 0.004), K.gloss(K.pal.a), cx, u(3 + (h - 6) / 2 - 0.3), dd / 2 + u(0.3));
 }
 
-const LEAFY = [[0.3, 0.6], [2.1, 0.2], [3.9, 0.5], [5.2, -0.2]];
-function part(K, L, W, mat, p, leafy) {
-  const { ball } = L;
-  if (p[0] === 'e') {
-    const [, x, y, z, rx, ry, rz, c, turn] = p, big = Math.max(rx, ry, rz) > 3;
-    K.put(ball(1, big ? 12 : 8, big ? 8 : 6).scale(u(rx), u(ry), u(rz)), mat(c), X(x, W), u(y), u(z), 0, 0, turn || 0);
-    // a clipped hedge: tufts standing out of the clump
-    if (leafy && Math.min(rx, ry) > 6) for (const [a, v] of LEAFY) {
-      const cv = Math.sqrt(1 - v * v);
-      K.put(ball(u(Math.min(rx, ry) * 0.36), 8, 6), mat(c === 'leafd' ? 'leaf' : 'leafd'), X(x + Math.cos(a) * rx * cv * 0.9, W), u(y + v * ry * 0.9), u(z + Math.sin(a) * rz * cv * 0.9));
-    }
-  } else if (p[0] === 'r') {
-    const [, x0, y0, z0, x1, y1, z1, r0, r1, c] = p;
-    cone(K, L, mat(c), [X(x0, W), u(y0), u(z0)], [X(x1, W), u(y1), u(z1)], u(r0), u(r1), Math.max(r0, r1) < 1.5 ? 6 : 10);
-  } else if (p[0] === 'v') {
-    const [, x, y0, z, r, h, c] = p;
-    K.put(L.cyl(u(r), u(h), u(r), 20), mat(c), X(x, W), u(y0 + h / 2), u(z));
-  } else {
-    const [, pts, z, t, c, o = {}] = p, [px, py] = o.at || pts[0];
-    const g = cut(L, pts.map(([x, y]) => [u(x - px), u(y - py)]), u(t));
-    if (o.tilt) g.rotateX(o.tilt);
-    if (o.sweep) g.rotateY(o.sweep);
-    K.put(g, mat(c), X(px, W), u(py), u(z));
-  }
-}
-
 export const MAKES = {
-  /** A sculpture from SCULPT on its plinth (or planter). */
-  sculptY2(K, s, W, D, L) {
-    const S = SCULPT[K.p.fam], mat = stuff(K, L, S.stone);
-    if (S.plinth) plinth(K, L, W, S.plinth, S.bed);
-    for (const p of S.parts) part(K, L, W, mat, p, S.leafy);
+  /** A statue (js/base-figures.js): its plinth, planter or mound built here, its Pokémon's sprite standing on it. */
+  figureY2(K, s, W, D, L) {
+    const F = FIGURES[K.p.fam], [x0, x1, h, d] = F.plinth;
+    if (F.mound) {
+      const { cyl, ball } = L, cx = X((x0 + x1) / 2, W);
+      K.put(cyl(u((x1 - x0) / 2 - 1), u(h), u((x1 - x0) / 2), 20), K.plain(SOIL), cx, u(h / 2), 0);
+      K.put(ball(1, 12, 8).scale(u(10), u(3), u(9)), K.plain('#7a5a3e'), cx, u(h), 0);
+      for (const [x, z, r] of [[-10, 8, 2.6], [10, 7, 2.8], [-6, -9, 2.2], [9, -8, 2.4]]) K.put(ball(u(r), 8, 6), K.plain('#9a948a'), cx + u(x), u(h * 0.6), u(z));
+    } else plinth(K, L, W, F.plinth, F.bed);
+    const f = figureOf(K.p.fam), at = figureAt(K.p.fam);
+    if (f) K.figure = { c: f.c, w: u(f.w * at.k), h: u(f.h * at.k), x: X(at.cx, W), y: u(at.y), z: F.bed || F.mound ? 0 : u(Math.min(4, d / 4)) };
   },
 
   /** A Poké Ball on a column: two stone steps, the column in the theme's pale, a collar, the ball in the theme. */

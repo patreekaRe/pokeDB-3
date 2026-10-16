@@ -42,6 +42,20 @@ export function loadStatues(ids = STARTERS.map(s => s.id)) {
     .catch(() => { PICS[id] = null; })));
 }
 
+/** A statue's gilded figure cropped to what is painted, { c, w, h }, once its sprite is in (its 3D model's cut-out,
+    js/base-models-gold.js). */
+const FIGS = {};
+export function statueFigure(id) {
+  const pic = PICS[id];
+  if (!pic) return null;
+  if (!FIGS[id]) {
+    const c = new OffscreenCanvas(pic.w, pic.h);
+    c.getContext('2d').drawImage(pic.c, pic.x, pic.y, pic.w, pic.h, 0, 0, pic.w, pic.h);
+    FIGS[id] = { c, w: pic.w, h: pic.h };
+  }
+  return FIGS[id];
+}
+
 /** True once a starter's statue has its sprite (or never will: it failed, or this browser can't paint it). */
 export const statueReady = (id) => id in PICS || typeof createImageBitmap !== 'function';
 

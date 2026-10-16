@@ -507,6 +507,15 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   Playground, Sports, Buildings, Water, Camping, Statues, Lights, each kind's `yard` naming its tab in the garden
   catalogue (`GARDEN_TABS` in `js/garden-shop.js`; the first shelf is Yard). The tyre swing swings a Pokémon, and
   Water types swim in the Lotad pond, Psyduck pond and cedar hot tub (`YARD_SEATS` / `YARD_SPOTS`).
+- **Statues stand as their sprites** (the same day, the user's ask: "like how you made the gym leader statues"; the
+  sculpted yard statues and the Bulbasaur topiary read oddly, the gold ones were 20k-triangle hulls): `js/base-figures.js`
+  recolours a Pokémon's first frame down a ramp (stone, hedge greens) for the yard's 11 (`FIGURES`, their plinths too,
+  shared by the paintings in `js/base-furniture-yard5.js` and `figureY2` in `js/base-models-y2.js`), and the gold
+  statues' gilded sprites stand on a hand-built marble pedestal (`js/base-models-gold.js`). A builder sets `K.figure`
+  and `figure()` in `js/base-mesh.js` stands it as a cut-out; js/base-3d.js leans every standee back and turns it
+  against its piece's turn, so it faces the camera however the plinth is turned. Fetched lazily like the gold statues'
+  (`loadFigures()`, awaited by `openBase3d()`; until then the plinth is bare and `live()` repaints it). ~450 triangles
+  each. Articuno's and Zapdos's front GIFs were added for them (PokeAPI black-white animated).
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

@@ -3,7 +3,10 @@ import { loadThree, tex, bakeColours } from '../js/hd2d.js';
 import { PIECES, FAMILIES } from '../js/base-furniture.js';
 import { furnitureModel } from '../js/base-mesh.js';
 import { shapeOf } from '../js/base-shapes.js';
+import { loadStatues } from '../js/base-furniture-statues.js';
+import { loadFigures } from '../js/base-figures.js';
 const THREE = await loadThree();
+await Promise.all([loadStatues(), loadFigures()]);   // the statues stand as their sprites
 const q = new URLSearchParams(location.search);
 const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
