@@ -363,6 +363,44 @@ function mapArt(g, x, y, w, h) {
   words(g, 'SAFARI ZONE', x + w * 0.5, y + 5, 4.4, '#5a3a20');
 }
 
+/** A ticket's outline, its ends notched like a stub: for the Day Pass signs. */
+function ticket(g, x, y, w, h, fill, edge) {
+  const n = h * 0.18;
+  g.beginPath();
+  g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w, y + h / 2 - n); g.arc(x + w, y + h / 2, n, -Math.PI / 2, Math.PI / 2, true);
+  g.lineTo(x + w, y + h); g.lineTo(x, y + h); g.lineTo(x, y + h / 2 + n); g.arc(x, y + h / 2, n, Math.PI / 2, -Math.PI / 2, true); g.closePath();
+  g.fillStyle = fill; g.fill();
+  g.strokeStyle = edge; g.lineWidth = 1.2; g.stroke();
+}
+
+/** The booth's header, so it reads as the Day Pass from across the lodge: a big gold ticket saying DAY PASS. */
+function passHeaderArt() {
+  const f = fine(64, 18, 8), { g } = f;
+  g.clearRect(0, 0, 64, 18);
+  ticket(g, 1.5, 1.5, 61, 15, '#f8d048', '#a8381e');
+  g.strokeStyle = 'rgba(168,56,30,0.5)'; g.setLineDash([1, 1]); g.lineWidth = 0.5;
+  for (const x of [12, 52]) { g.beginPath(); g.moveTo(x, 3); g.lineTo(x, 15); g.stroke(); }
+  g.setLineDash([]);
+  g.fillStyle = '#a8381e'; for (const x of [7, 57]) star(g, x, 9, 2.6);
+  words(g, 'DAY PASS', 32, 9.6, 10, '#8a2a14');
+  return f.c;
+}
+
+/** The sandwich board beside the booth: DAY PASS, what it does and its price. */
+function passBoardArt() {
+  const f = fine(40, 50, 8), { g, rr } = f;
+  rr(0, 0, 40, 50, 2, L.dark);
+  rr(2, 2, 36, 46, 1.4, '#203628');
+  ticket(g, 5, 5, 30, 12, '#f8d048', '#a8381e');
+  words(g, 'DAY PASS', 20, 11.4, 6, '#8a2a14');
+  words(g, 'REPLAY THE', 20, 23, 4.6, '#f4f0e0');
+  words(g, 'SAFARI ALL DAY', 20, 28.6, 4.6, '#f4f0e0');
+  g.fillStyle = '#f0c048'; g.beginPath(); g.arc(12, 39, 4, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#c89418'; star(g, 12, 39, 2.3);
+  words(g, String(DAY_PASS), 25, 39.6, 9, '#ffe890');
+  return f.c;
+}
+
 /** The Day Pass machine's screen: a ticket, DAY PASS, and today's state. */
 function passArt(state) {
   const f = fine(40, 30, 8), { g, rr, lin } = f;
@@ -638,6 +676,22 @@ export function buildOutfitter(THREE, size) {
     put(cell, new THREE.BoxGeometry(0.22, 0.01, 0.14), std({ color: '#f8e8b8', roughness: 0.8 }), -0.2, 0.79, 0.44);
     cell.traverse(o => { o.userData.front = spot; });
     group.add(cell);
+    // a big gold DAY PASS ticket across the booth's front under its roof, and a sandwich board beside it (the user's
+    // ask, 2026-10-16: make it obvious); both kept low, so they hide nothing behind
+    const header = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.42), new THREE.MeshBasicMaterial({ map: texOf(passHeaderArt()), transparent: true, alphaTest: 0.3, toneMapped: false }));
+    header.position.set(0, 1.62, 0.5);
+    cell.add(header);
+    const sandwich = new THREE.Group();
+    sandwich.position.set(1, 0, 0.15);
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.82), new THREE.MeshBasicMaterial({ map: texOf(passBoardArt()), toneMapped: false }));
+    face.position.set(0, 0.44, 0.13);
+    face.rotation.x = -0.28;
+    sandwich.add(face);
+    put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, 0.11).rotation.x = -0.28;
+    put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, -0.11).rotation.x = 0.28;
+    cell.add(sandwich);
+    cell.traverse(o => { o.userData.front = spot; });
+    block(x + 1, y);
     redraws.push(() => { passMap.image = passArt(passState()); passMap.needsUpdate = true; });
   }
 

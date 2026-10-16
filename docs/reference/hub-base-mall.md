@@ -303,7 +303,7 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   headless check projects every stand from nine camera spots and flags any nearer one covering a farther one. The balls are real spheres skinned by `SKINS` (x
   runs round the ball, 16 the front where its button is), turning (still under `calmFx()`).
 - **The Master Ball** floats in a glass case on a roped two-tier dais in the middle (`DAIS`, its plaque at the front, the
-  step two tiles out). **The Day Pass** is a thatched bamboo booth (`KIOSK`) showing `passState()`: `pass` once one is
+  step two tiles out). **The Day Pass** is a thatched bamboo booth (`KIOSK`) under a big gold DAY PASS ticket, a sandwich board beside it (2026-10-16, the user's ask: make it obvious; `passHeaderArt()`, `passBoardArt()`), showing `passState()`: `pass` once one is
   held today (even before the free try, which `safariAccess()` alone would still call `first`), `first`, or `locked`; a
   second tap buys one (`DAY_PASS`, `safari.pass`). **The board** chalks `safariTop(5)` (every 90 s while shown); a second
   tap opens `openLeaderboard(0, 'safari')`. Torches flank the door and the counter, palms (`hallKit()`) the corners.
