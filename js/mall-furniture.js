@@ -857,7 +857,8 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const brass = std({ color: '#e0b040', metalness: 0.7, roughness: 0.3 }), champagne = std({ color: '#e4d0a0', metalness: 0.5, roughness: 0.35 });
   const PW = (LIFT_W - DOORWAY) / 2;   // each side's width
   for (const sgn of [-1, 1]) {
-    lp(new THREE.BoxGeometry(PW, LIFT_H, LIFT_D), lacquer, sgn * (DOORWAY / 2 + PW / 2), LIFT_H / 2, LIFT_D / 2);
+    // only up to the header: running on up behind it, their fronts shared its plane and the two flickered (2026-10-16)
+    lp(new THREE.BoxGeometry(PW, LIFT_DOOR, LIFT_D), lacquer, sgn * (DOORWAY / 2 + PW / 2), LIFT_DOOR / 2, LIFT_D / 2);
     lp(new THREE.BoxGeometry(0.08, LIFT_DOOR + 0.04, 0.06), goldM, sgn * (DOORWAY / 2 + 0.04), (LIFT_DOOR + 0.04) / 2, LIFT_D + 0.03);
     lp(new THREE.BoxGeometry(PW + 0.06, 0.12, LIFT_D + 0.06), goldM, sgn * (DOORWAY / 2 + PW / 2), 0.06, LIFT_D / 2);
   }
@@ -870,12 +871,12 @@ export function buildFloor(THREE, floor, size, upstairs) {
   lp(new THREE.BoxGeometry(LIFT_W, shaftH, LIFT_D - 0.1), [lacquer, lacquer, lacquer, lacquer, lit(liftShaftArt(L, shaftH, floor), '#ffe8b0', 0.8), lacquer],
     0, LIFT_H + 0.1 + shaftH / 2, (LIFT_D - 0.1) / 2);
   // the car: a warm-lit back panel, a wood floor, a brass handrail
-  lp(new THREE.PlaneGeometry(DOORWAY, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.01, false);
+  lp(new THREE.PlaneGeometry(DOORWAY, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.03, false);
   lp(new THREE.BoxGeometry(DOORWAY, 0.02, LIFT_D), M.wood, 0, 0.01, LIFT_D / 2, false);
   lp(new THREE.CylinderGeometry(0.02, 0.02, DOORWAY - 0.1, 10), brass, 0, 0.85, 0.1, false).rotation.z = Math.PI / 2;
   // the dial's needle, turning about its foot (rotation.z: 1F left, 2F right)
   const needle = new THREE.Group();
-  needle.position.set(0, LIFT_H - 10.6 / 14 * (LIFT_H - LIFT_DOOR), LIFT_D + 0.006);
+  needle.position.set(0, LIFT_H - 10.6 / 14 * (LIFT_H - LIFT_DOOR), LIFT_D + 0.015);
   const hand = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.25, 0.008), std({ color: '#3a2418' }));
   hand.position.y = 0.11;
   needle.add(hand, new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.012, 14), brass).rotateX(Math.PI / 2));
@@ -890,7 +891,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
     d.userData.home = sgn * DOORWAY / 4; d.userData.side = sgn; d.userData.slide = DOORWAY / 2;
     return d;
   });
-  lp(new THREE.PlaneGeometry(0.15, 0.26), lit(liftCallArt(), '#ffd870', 0.6), DOORWAY / 2 + PW / 2, 1.1, LIFT_D + 0.004, false);
+  lp(new THREE.PlaneGeometry(0.15, 0.26), lit(liftCallArt(), '#ffd870', 0.6), DOORWAY / 2 + PW / 2, 1.1, LIFT_D + 0.012, false);
   let rope = null;
   if (floor === 1 && !upstairs) {
     rope = new THREE.Group();
