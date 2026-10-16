@@ -23,6 +23,13 @@ import { SAFARI_KINDS } from './base-furniture-safari.js';
 import { TRAINER_KINDS } from './base-furniture-trainer.js';
 import { YARD_KINDS } from './base-furniture-yard.js';
 import { FRIEND_KINDS } from './base-furniture-friends.js';
+import { SEASON_KINDS_1 } from './base-furniture-season1.js';
+import { SEASON_KINDS_2 } from './base-furniture-season2.js';
+import { SEASON_KINDS_3 } from './base-furniture-season3.js';
+import { YARD_KINDS_2 } from './base-furniture-yard2.js';
+import { YARD_KINDS_3 } from './base-furniture-yard3.js';
+import { YARD_KINDS_4 } from './base-furniture-yard4.js';
+import { YARD_KINDS_5 } from './base-furniture-yard5.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -342,7 +349,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 /* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by

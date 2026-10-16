@@ -430,7 +430,7 @@ function insidePicture(kind, w, h) {
     taps then go to tapPlay(), its frames to tickPlay(). */
 export function dressPlay(three, model, p) {
   THREE = three;
-  const how = PLAY[p.fam] || (p.doll ? { does: 'doll' } : { does: 'wiggle' });
+  const how = PLAY[p.fam] || shapeOf(p.fam, p)?.play || (p.doll ? { does: 'doll' } : { does: 'wiggle' });
   model.rotation.order = 'YXZ';
   model.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(model), art = p.art(0, 1, true);

@@ -8,8 +8,12 @@ import { playSound } from './audio.js';
 import { el, refreshCoins, confirmDialog } from './ui.js';
 import { PIECES, DESIGNS, loadBase, buyPiece } from './secret-base.js';
 
-/** Every outdoor design, cheapest first. */
-export const gardenStock = () => DESIGNS.filter(id => PIECES[id].outdoor).sort((a, b) => PIECES[a].price - PIECES[b].price);
+/** The catalogue's tabs (2026-10-16: the yard sets took it from 17 pieces to over a hundred), by each kind's `yard`
+    shelf; the first Yard shelf's kinds carry none. */
+export const GARDEN_TABS = ['Yard', 'Fences', 'Playground', 'Sports', 'Buildings', 'Water', 'Camping', 'Statues', 'Lights'];
+const tabOf = (p) => p.yard || 'Yard';
+/** Every outdoor design (on a tab, if given), cheapest first. */
+export const gardenStock = (tab) => DESIGNS.filter(id => PIECES[id].outdoor && (!tab || tabOf(PIECES[id]) === tab)).sort((a, b) => PIECES[a].price - PIECES[b].price);
 const owned = (id, b) => (b.owned[PIECES[id].own] || 0) > 0;
 
 function art(id) {
@@ -30,18 +34,24 @@ export function gardenTap(done) {
 export function openGardenShop() {
   const d = el('dialog', 'dialog dev-window town-shop garden-shop');
   const head = el('h2', '', 'GARDEN CATALOGUE');
-  const say = el('p', 'tshop-say'), grid = el('div', 'tshop-grid'), screen = el('div', 'dev-screen');
-  screen.append(say, grid);
+  const say = el('p', 'tshop-say'), tabs = el('div', 'wshop-tabs'), grid = el('div', 'tshop-grid'), screen = el('div', 'dev-screen');
+  screen.append(say, tabs, grid);
   const close = el('button', 'btn secondary', 'Close'), buy = el('button', 'btn danger', 'Buy');
   const acts = el('div', 'dialog-actions');
   acts.append(close, buy);
   d.append(head, screen, acts);
   document.body.append(d);
-  let picked = null;
+  let picked = null, tab = GARDEN_TABS[0];
   const line = (t) => { say.textContent = `Smeargle: ${t}`; };
   const draw = () => {
     const b = loadBase();
-    grid.replaceChildren(...gardenStock().map(id => {
+    tabs.replaceChildren(...GARDEN_TABS.filter(t => gardenStock(t).length).map(t => {
+      const btn = el('button', `wshop-tab${t === tab ? ' on' : ''}`, t);
+      btn.type = 'button';
+      btn.addEventListener('click', () => { playSound('confirm'); tab = t; draw(); grid.scrollTop = 0; });
+      return btn;
+    }));
+    grid.replaceChildren(...gardenStock(tab).map(id => {
       const p = PIECES[id], have = owned(id, b), tile = el('button', `tshop-tile${picked === id ? ' on' : ''}${have ? ' sold' : ''}`);
       tile.type = 'button';
       tile.append(art(id), el('span', 'tshop-name', p.name), el('span', 'tshop-price', have ? 'OWNED' : p.price.toLocaleString()));

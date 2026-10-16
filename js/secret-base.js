@@ -9,6 +9,7 @@ import { playSound } from './audio.js';
 import { PIECES, CATALOGUE, KINDS, DESIGNS, colours, styles, shopPrice } from './base-furniture.js';
 import { RES } from './base-paint.js';
 import { safariDay } from './data/safari.js';
+import { holidaysOn } from './data/holidays.js';
 import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
@@ -385,10 +386,14 @@ export function dealDay(day, owned = {}) {
   const rand = streamOf('furniture', day), taken = new Set();
   // a gateway town's shelf is sold only in its town's shop (js/town-shop.js), never here
   // nor the backyard's pieces, sold in Smeargle's garden catalogue (js/garden-shop.js)
-  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !PIECES[id].outdoor && !(owned[PIECES[id].own] > 0));
+  // a seasonal set only while its holiday is on (js/data/holidays.js), its own stand a floor
+  const on = holidaysOn(day), festive = (p) => p.holiday && on.includes(p.holiday);
+  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !PIECES[id].outdoor && !(owned[PIECES[id].own] > 0)
+    && (!PIECES[id].holiday || festive(PIECES[id])));
+  const season = pool.some(id => festive(PIECES[id]));
   const deal = () => shuffled(SLOTS.map(slot => {
-    const kind = slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
-    const can = pool.filter(id => !taken.has(id) && KINDS_OF[kind](PIECES[id]));
+    const kind = slot === 'Other' && season ? 'Holiday' : slot === 'Other' && rand() < DOLL_ODDS ? 'Dolls' : slot;
+    const can = pool.filter(id => !taken.has(id) && (kind === 'Holiday' ? festive(PIECES[id]) : !PIECES[id].holiday && KINDS_OF[kind](PIECES[id])));
     const id = can.length ? can[Math.floor(rand() * can.length)] : pool.find(id => !taken.has(id));
     if (id) taken.add(id);
     return id;

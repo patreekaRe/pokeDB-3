@@ -240,20 +240,33 @@ export const MAKES = {
   },
 
   acacia(K, s, W, D, L) {
-    const { lathe, cyl, ball } = L, bark = K.plain('#6a4a28');
-    // a wooden tub, two hoops round it, soil on top
-    K.put(lathe([[0, 0], [8.2, 0], [8.8, 0.8], [9, 16], [8.4, 17], [7.6, 17], [7.6, 15.6], [0, 15.6]].map(([r, y]) => [u(r), u(y)]), 14), K.wood('#a8743e'), X(16), 0, 0);
-    for (const y of [2.5, 13]) K.put(cyl(u(9.1), u(1.2), u(9.1), 14, true), K.plain(L.tone('#a8743e', 0.6)), X(16), u(y), 0);
-    K.put(cyl(u(7.6), u(0.6), u(7.6), 12), K.plain('#4a3020'), X(16), u(15.6), 0);
-    // the trunk, forking into two boughs that spread under the crown
-    K.put(tube(L, [[16.5, 14], [16, 26], [15.6, 38]].map(([x, y]) => [X(x), u(y), 0]), u(2), 8), bark, 0, 0, 0);
-    K.put(tube(L, [[15.6, 37], [14.4, 46], [12, 54], [9, 60]].map(([x, y], i) => [X(x), u(y), -i * 0.03]), u(1.4), 10), bark, 0, 0, 0);
-    K.put(tube(L, [[15.8, 38], [18.6, 47], [21.2, 54], [23.5, 60]].map(([x, y], i) => [X(x), u(y), i * 0.03]), u(1.2), 10), bark, 0, 0, 0);
-    // the wide flat crown: dark puffs underneath, lighter ones on top
-    const dark = K.plain('#4a7a30'), lit = K.plain('#5e9440');
-    for (const [x, z, rx, rz] of [[7, -0.1, 7, 0.22], [24.5, -0.08, 7, 0.24], [16, 0.12, 9, 0.3], [11, 0.24, 6, 0.2], [21, 0.24, 6, 0.2], [16, -0.26, 8, 0.2]]) K.put(ball(1, 12, 8).scale(u(rx), u(4.2), rz), dark, X(x), u(63), z);
-    for (const [x, z, rx, rz] of [[9, 0, 6.5, 0.24], [23, 0, 6.5, 0.24], [16, 0.08, 8, 0.28], [16, -0.2, 6, 0.18]]) K.put(ball(1, 12, 8).scale(u(rx), u(3.4), rz), lit, X(x), u(66), z);
-    for (let i = 0; i < 6; i++) K.put(ball(u(1.4), 8, 6), K.plain('#7ab050'), X(5 + i * 4.4), u(68.6 + (i % 3) * 0.5), -0.12 + (i % 3) * 0.12);
+    const { lathe, THREE } = L, bark = K.plain('#6a4a28'), barkDark = K.plain('#54381e');
+    // its planter, as painted: tapered, a lip round its top, a dark foot; sandy soil in it, the roots flaring over it
+    K.put(lathe([[0, 0], [8, 0], [8.2, 2], [9, 14.6], [9.6, 15], [9.6, 17], [8.4, 17], [8.2, 15.6], [0, 15.6]].map(([r, y]) => [u(r), u(y)]), 14), K.plain('#a8743e'), X(16), 0, 0);
+    K.put(L.cyl(u(8.1), u(2), u(8.1), 14, true), K.plain(L.tone('#a8743e', 0.6)), X(16), u(1), 0);
+    K.put(lathe([[0, 15.6], [8.3, 15.6], [6, 16.8], [0, 17.4]].map(([r, y]) => [u(r), u(y)]), 14), K.plain('#c8a070'), X(16), 0, 0);
+    for (let i = 0; i < 5; i++) {
+      const a = i / 5 * TAU + 0.4;
+      K.put(tube(L, [[0, 21, 0], [2.6, 18.4, 0], [6, 16.6, 0]].map(([r, y]) => [X(16) + Math.cos(a) * u(r), u(y), Math.sin(a) * u(r)]), u(1.1), 6), barkDark, 0, 0, 0);
+    }
+    // the trunk, twisting as it climbs, thick at its foot
+    const trunk = [[16.5, 16, 0], [17.4, 22, 0.02], [15.4, 28, -0.03], [16.8, 33, 0.02], [15.8, 37, 0]];
+    K.put(tube(L, trunk.map(([x, y, z]) => [X(x), u(y), z]), u(2.3), 12), bark, 0, 0, 0);
+    K.put(tube(L, trunk.slice(0, 3).map(([x, y, z]) => [X(x), u(y), z]), u(3.1), 6), bark, 0, 0, 0);
+    // four limbs spreading from the fork, low and wide, up under the crown
+    const limbs = [[[15.6, 36, 0], [13, 44, -0.06], [10, 52, -0.12], [8, 59, -0.16]], [[15.6, 36, 0], [14.6, 46, 0.1], [13, 53, 0.2], [12, 59.5, 0.26]],
+      [[15.8, 36, 0], [18, 45, -0.1], [20, 52, -0.18], [21, 59.5, -0.24]], [[15.8, 36, 0], [19, 44, 0.06], [22, 51, 0.12], [24, 59, 0.16]]];
+    for (const pts of limbs) K.put(tube(L, pts.map(([x, y, z]) => [X(x), u(y), z]), u(1.4), 10), bark, 0, 0, 0);
+    for (const [x, y, z, x1, z1] of [[13, 53, 0.2, 5, 0.1], [20, 52, -0.18, 27, -0.06], [10, 52, -0.12, 15.6, -0.32]]) K.put(tube(L, [[X(x), u(y), z], [X((x + x1) / 2), u(y + 3), (z + z1) / 2], [X(x1), u(y + 6.5), z1]], u(0.8), 6), bark, 0, 0, 0);
+    // the umbrella crown: flat-bottomed clumps of leaves, wider than tall, layered at a few heights
+    const dome = (m, under, x, y, z, rx, ry, rz) => {
+      K.put(new THREE.SphereGeometry(1, 12, 4, 0, TAU, 0, Math.PI / 2).scale(u(rx), u(ry), rz), m, X(x), u(y), z);
+      K.put(new THREE.CircleGeometry(1, 12).rotateX(Math.PI / 2).scale(u(rx), 1, rz), under, X(x), u(y), z);
+    };
+    const under = K.plain('#3c6428'), low = K.plain('#4a7a30'), mid = K.plain('#548a38'), top = K.plain('#5e9440');
+    for (const [x, y, z, rx, ry, rz] of [[7, 58.4, -0.04, 6.6, 4, 0.26], [25, 58, 0.06, 6.6, 4, 0.26], [16, 58.6, 0.2, 8.5, 4, 0.24], [15.5, 58.2, -0.24, 8, 4, 0.2]]) dome(low, under, x, y, z, rx, ry, rz);
+    for (const [x, y, z, rx, ry, rz] of [[9.5, 61, 0.02, 8, 4, 0.3], [22.5, 61.4, -0.04, 8, 4, 0.3], [16, 62, -0.16, 7, 3.6, 0.22]]) dome(mid, under, x, y, z, rx, ry, rz);
+    for (const [x, y, z, rx, ry, rz] of [[12.5, 64.6, 0.04, 7, 3.6, 0.24], [21, 65, -0.06, 6.5, 3.4, 0.22], [16.5, 66.8, 0, 6, 3, 0.18]]) dome(top, under, x, y, z, rx, ry, rz);
   },
 
   ballrack(K, s, W, D, L) {
@@ -299,24 +312,67 @@ export const MAKES = {
   },
 
   rangertent(K, s, W, D, L) {
-    const { THREE, rbox, cyl } = L, bev = 0.012, deep = 0.84, z0 = deep / 2 + bev;
-    const tri = (pts) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
-    // the canvas: a ridge tent, solid, on a ground sheet
-    K.put(rbox(1.96, 0.012, 0.96, 0.004, 1), K.plain(L.tone(KHAKI, 0.62)), 0, 0.006, 0);
-    const body = new THREE.ExtrudeGeometry(tri([[-u(31) + bev, bev * 1.8], [u(31) - bev, bev * 1.8], [0, u(62) - bev * 1.6]]), { depth: deep, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 1 });
-    K.put(body.translate(0, 0, -deep / 2), K.cloth(KHAKI), 0, 0, 0);
-    // the doorway, its left flap tied back in a roll
-    K.put(new THREE.ShapeGeometry(tri([[0, u(46)], [-u(12), 0.004], [u(12), 0.004]])), K.plain('#3a2a18'), 0, 0, z0 + 0.002);
-    const flap = new THREE.ExtrudeGeometry(tri([[0, u(46)], [-u(12), 0.004], [-u(18), 0.004], [-u(4), u(42)]]), { depth: 0.012, bevelEnabled: false });
-    K.put(flap, K.cloth('#e6d4a6'), 0, 0, z0);
-    K.put(tube(L, [[-u(4.6), u(41.4), z0 + 0.02], [-u(10), u(22), z0 + 0.03], [-u(16.4), u(1.6), z0 + 0.02]], u(1.5), 12), K.cloth('#e6d4a6'), 0, 0, 0);
-    K.put(rbox(u(5), u(1.4), u(4), 0.003, 1).rotateZ(-1.2), K.plain(DARK), -u(10.2), u(22), z0 + 0.03);
-    // the ridge pole along its top, the front pole up through it with a pennant, pegs at its corners
-    const pole = K.wood(DARK);
-    K.put(cyl(u(1), deep + 0.08, u(1), 8).rotateX(Math.PI / 2), pole, 0, u(62) - 0.01, 0);
-    K.put(cyl(u(0.8), u(14), u(0.8), 8), pole, 0, u(67), z0 - 0.02);
-    K.put(new THREE.ExtrudeGeometry(tri([[u(1), u(74)], [u(11), u(71)], [u(1), u(68)]]), { depth: 0.01, bevelEnabled: false }), K.plain(GREEN), 0, 0, z0 - 0.025);
-    for (const sx of [-1, 1]) for (const z of [-1, 1]) K.put(rbox(u(2), u(2.6), u(2), 0.004, 1), pole, sx * u(30), u(1.6), z * (z0 - 0.02), 0, 0, -sx * 0.25);
+    const { THREE, rbox, cyl } = L, H = u(62), B = u(29), Z = 0.36, sag = 0.035;
+    const tri = (pts) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(u(x), u(y))));
+    const canvas = K.cloth(KHAKI), seam = K.plain(L.tone(KHAKI, 0.78)), shade = K.plain('#2e2216'), pole = K.wood(DARK), rope = K.plain('#b8a070');
+    // a roof side's point: s from the ridge (0) to the eave (1), t along it (-1 back to 1 front); the canvas sags
+    // in between the poles, `off` in from its outside
+    const roof = (side, s, t, off = 0) => {
+      const n = Math.hypot(H, B), dip = sag * (1 - t * t) * Math.sin(Math.PI * s) + off;
+      return [side * (s * B - dip * H / n), H * (1 - s) - dip * B / n, t * Z];
+    };
+    const sheet = (side, off, inward) => {
+      const ns = 6, nt = 8, pos = [], idx = [];
+      for (let i = 0; i <= ns; i++) for (let j = 0; j <= nt; j++) pos.push(...roof(side, i / ns, j / nt * 2 - 1, off));
+      for (let i = 0; i < ns; i++) for (let j = 0; j < nt; j++) {
+        const a = i * (nt + 1) + j, b = a + nt + 1;
+        (side > 0) !== inward ? idx.push(a, a + 1, b, b, a + 1, b + 1) : idx.push(a, b, a + 1, b, b + 1, a + 1);
+      }
+      const g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx);
+      g.computeVertexNormals();
+      return g;
+    };
+    // the groundsheet, its edge showing all round
+    K.put(rbox(2 * B + 0.1, 0.012, 2 * Z + 0.1, 0.004, 1), K.plain(L.tone(KHAKI, 0.55)), 0, 0.006, 0);
+    // the canvas: two sagging sides, dark inside, seams down them and a hem along the eaves
+    for (const side of [-1, 1]) {
+      K.put(sheet(side, 0, false), canvas, 0, 0, 0);
+      K.put(sheet(side, 0.008, true), shade, 0, 0, 0);
+      for (const t of [-0.5, 0, 0.5]) K.put(tube(L, [0, 0.25, 0.5, 0.75, 1].map(s => roof(side, s, t, -0.003)), u(0.35), 8), seam, 0, 0, 0);
+      K.put(tube(L, [-1, -0.5, 0, 0.5, 1].map(t => roof(side, 0.985, t, -0.003)), u(0.6), 10), seam, 0, 0, 0);
+    }
+    // the back wall, and the front either side of the door
+    K.put(new THREE.ShapeGeometry(tri([[-29, 0], [0, 62], [29, 0]])), canvas, 0, 0.012, -Z);
+    K.put(new THREE.ShapeGeometry(tri([[-29, 0], [29, 0], [0, 62]])), shade, 0, 0.012, -Z + 0.006);
+    K.put(new THREE.ShapeGeometry(tri([[-29, 0], [-12, 0], [0, 46], [0, 62]])), canvas, 0, 0.012, Z);
+    K.put(new THREE.ShapeGeometry(tri([[12, 0], [29, 0], [0, 62], [0, 46]])), canvas, 0, 0.012, Z);
+    // through the door: a bedroll on the groundsheet, strapped
+    K.put(cyl(u(3.2), 0.5, u(3.2), 12).rotateZ(Math.PI / 2), K.plain('#8a3a2a'), u(4), 0.012 + u(3.2), 0.02);
+    for (const dx of [-0.14, 0.14]) K.put(cyl(u(3.4), u(1.2), u(3.4), 12, true).rotateZ(Math.PI / 2), K.plain(DARK), u(4) + dx, 0.012 + u(3.2), 0.02);
+    K.put(rbox(0.3, u(2), 0.22, 0.01, 1), K.plain('#5a6a3a'), -u(5), 0.012 + u(1), -0.2);
+    // the left flap tied back in a roll
+    const flap = new THREE.ExtrudeGeometry(tri([[0, 46], [-12, 0], [-18, 0], [-4, 42]]), { depth: 0.012, bevelEnabled: false });
+    K.put(flap, K.cloth('#e6d4a6'), 0, 0.012, Z);
+    K.put(tube(L, [[-u(4.6), u(41.4), Z + 0.02], [-u(10), u(22), Z + 0.03], [-u(16.4), u(1.6), Z + 0.02]], u(1.5), 12), K.cloth('#e6d4a6'), 0, 0.012, 0);
+    K.put(rbox(u(5), u(1.4), u(4), 0.003, 1).rotateZ(-1.2), K.plain(DARK), -u(10.2), u(22), Z + 0.03);
+    // the poles: one upright at each end under the ridge pole, the front one up through it with the green pennant
+    K.put(cyl(u(1), 2 * Z + 0.08, u(1), 8).rotateX(Math.PI / 2), pole, 0, H + u(0.6), 0);
+    K.put(cyl(u(0.9), H + u(12), u(0.9), 8), pole, 0, (H + u(12)) / 2, Z - 0.02);
+    K.put(cyl(u(0.9), H + u(2), u(0.9), 8), pole, 0, (H + u(2)) / 2, -Z + 0.02);
+    for (const z of [Z - 0.02, -Z + 0.02]) K.put(L.ball(u(1.3), 8, 6), K.metal('#e0b040'), 0, z > 0 ? H + u(12) : H + u(2), z);
+    K.put(new THREE.ExtrudeGeometry(tri([[1, 73], [11, 70], [1, 67]]), { depth: 0.01, bevelEnabled: false }), K.plain(GREEN), 0, 0, Z - 0.025);
+    // guy ropes: from each pole's top out to corner pegs, and from the sides down to pegs by the eaves
+    const peg = (x, z, lean) => K.put(rbox(u(1.6), u(3), u(1.6), 0.003, 1), pole, x, u(1.7), z, 0, lean[0], lean[1]);
+    for (const zs of [-1, 1]) for (const xs of [-1, 1]) {
+      const top = [0, H + u(zs > 0 ? 8 : 1), zs * (Z - 0.02)], at = [xs * 0.52, u(2), zs * 0.45];
+      K.put(tube(L, [top, [(top[0] + at[0]) / 2, (top[1] + at[1]) / 2 - 0.02, (top[2] + at[2]) / 2], at], u(0.3), 8), rope, 0, 0, 0);
+      peg(at[0], at[2], [-zs * 0.3, xs * 0.3]);
+      const from = roof(xs, 0.55, zs * 0.6), to = [xs * 0.95, u(2), zs * 0.3];
+      K.put(tube(L, [from, [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2 - 0.02, (from[2] + to[2]) / 2], to], u(0.3), 8), rope, 0, 0, 0);
+      peg(to[0] - xs * 0.01, to[2], [0, xs * 0.3]);
+    }
   },
 
   safarijeep(K, s, W, D, L) {

@@ -548,15 +548,20 @@ export const MAKES = {
 
   blocktower(K, s, W, D, L) {
     const { rbox, THREE } = L, letters = ['A', 'B', 'F', 'I', 'L', 'R'], R = K.r;
-    // six letter blocks stacked a little crooked, smaller going up
+    // six letter blocks stacked a little crooked, smaller going up, their 24 faces read off one sheet: one draw
+    const cols = [0, 1, 2, 3, 4, 5].map(n => (n % 2 ? K.pal.c : RAINBOW[n]));
+    const faces = once('blocks' + cols.join(), () => sheet(256, 384, (g) => {
+      cols.forEach((col, n) => { for (let f = 0; f < 4; f++) g.drawImage(blockFace(col, letters[(n + f) % 6]), f * 64, n * 64); });
+    }));
     let y = 0;
     for (let n = 0; n < 6; n++) {
       const col = n % 2 ? K.pal.c : RAINBOW[n], sz = u(14 - Math.floor(n / 2)), hh = u(13), cx = u(Math.round(Math.sin(n * 1.7) * 2));
       const put = turned(K, cx, (R() - 0.5) * 0.04, (R() - 0.5) * 0.5);
       put(rbox(sz, hh, sz, 0.015), K.gloss(col), 0, y + hh / 2, 0);
       for (let f = 0; f < 4; f++) {
-        const g = new THREE.PlaneGeometry(sz - 0.012, hh - 0.012).translate(0, 0, sz / 2 + 0.001).rotateY(f * Math.PI / 2);
-        put(g, K.pic(blockFace(col, letters[(n + f) % 6])), 0, y + hh / 2, 0);
+        const g = new THREE.PlaneGeometry(sz - 0.012, hh - 0.012).translate(0, 0, sz / 2 + 0.001).rotateY(f * Math.PI / 2), uv = g.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, (f * 64 + 0.02 + uv.getX(i) * 63.96) / 256, 1 - (n * 64 + 0.02 + (1 - uv.getY(i)) * 63.96) / 384);
+        put(g, K.pic(faces), 0, y + hh / 2, 0);
       }
       y += hh;
     }

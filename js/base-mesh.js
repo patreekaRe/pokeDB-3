@@ -46,6 +46,13 @@ import { MAKES as MAKES_N } from './base-models-n.js';
 import { MAKES as MAKES_O } from './base-models-o.js';
 import { MAKES as MAKES_P } from './base-models-p.js';
 import { MAKES as MAKES_Q } from './base-models-q.js';
+import { MAKES as MAKES_R } from './base-models-r.js';
+import { MAKES as MAKES_S } from './base-models-s.js';
+import { MAKES as MAKES_U } from './base-models-u.js';
+import { MAKES as MAKES_V } from './base-models-v.js';
+import { MAKES as MAKES_X } from './base-models-x.js';
+import { MAKES as MAKES_Z } from './base-models-z.js';
+import { MAKES as MAKES_Y2 } from './base-models-y2.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1357,10 +1364,21 @@ B.cardtable = (K, s) => {
     for (const [x, z] of [[-0.7, -0.3], [0.7, -0.3], [-0.5, 0.25], [0.5, 0.25]]) { K.put(cyl(0.025, H - 0.12, 0.03, 12), chrome, x, (H - 0.12) / 2, z); K.put(cyl(0.05, 0.03, 0.05, 14), chrome, x, 0.015, z); }
     K.put(rbox(1.3, 0.03, 0.04, 0.01), chrome, 0, 0.18, -0.3);
   }
-  // cards: face up for the hands, a shoe or a deck for the dealer
+  // cards: face up for the hands, a shoe or a deck for the dealer, every face read off one sheet so they draw as one
+  // (2026-10-16: nine faces were nine draws), half a pixel in from each so a neighbour never bleeds in
+  const deal = bj ? ['As', 'Kh', '9d', '7c', 'Qs', ''] : ['3h', '7s', '9d', ''], faces = remember(`cards|${s.game}`, () => {
+    const c = new OffscreenCanvas(128 * deal.length, 176), g = c.getContext('2d');
+    deal.forEach((f, i) => g.drawImage(f ? cardFace(f[0], f[1]) : cardBack(), i * 128, 0));
+    return c;
+  });
+  const face = (f) => {
+    const geo = new THREE.PlaneGeometry(0.12, 0.165), uv = geo.attributes.uv, i = deal.indexOf(f);
+    for (let v = 0; v < uv.count; v++) uv.setX(v, (i * 128 + 0.5 + uv.getX(v) * 127) / faces.width);
+    return geo;
+  };
   const card = (rank, suit, x, z, turn = 0) => {
     K.put(rbox(0.13, 0.004, 0.18, 0.002), K.plain('#fffaf0'), x, H + 0.003, z, turn);
-    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(rank ? cardFace(rank, suit) : cardBack(), 0.12), x, H + 0.0065, z, turn, -Math.PI / 2);
+    K.put(face(rank ? rank + suit : ''), litPic(faces, 0.12), x, H + 0.0065, z, turn, -Math.PI / 2);
   };
   if (bj) {
     card('A', 's', -0.06, -0.18, 0.08); card('K', 'h', 0.06, -0.18, -0.06);
@@ -1375,7 +1393,7 @@ B.cardtable = (K, s) => {
   } else {
     card('3', 'h', -0.22, -0.02); card('7', 's', 0, -0.02); card('9', 'd', 0.22, -0.02);
     for (let i = 0; i < 8; i++) K.put(rbox(0.13, 0.006, 0.18, 0.002), K.plain(i % 2 ? '#f0e8d8' : '#fffaf0'), 0.02, H + 0.004 + i * 0.006, -0.3);
-    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(cardBack(), 0.12), 0.02, H + 0.053, -0.3, 0, -Math.PI / 2);
+    K.put(face(''), litPic(faces, 0.12), 0.02, H + 0.053, -0.3, 0, -Math.PI / 2);
     // the HIGH and LOW buttons on the rail
     for (const [x, c] of [[-0.55, '#58d858'], [0.55, '#f05050']]) {
       K.put(cyl(0.07, 0.03, 0.075, 22), chrome, x, H + 0.02, 0.36);
@@ -1848,7 +1866,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }
