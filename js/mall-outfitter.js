@@ -11,7 +11,7 @@ import { BALLS, DAY_PASS, safariAccess } from './data/balls.js';
 import { safariDaily } from './data/safari.js';
 import { getSave } from './storage.js';
 import { cornerEntries } from './shop.js';
-import { fine, texOf, words, star } from './hub-3d.js';
+import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
 
@@ -234,14 +234,18 @@ function skinArt(id) {
   return f.c;
 }
 
+/** One kind of ball's materials, shared by every ball of it: each ball painted and uploaded its own skin, five of the
+    same on a pack's stand, and couldn't be merged with the others at its foot. */
+const ballLooks = new Map();
 /** A ball: the skinned sphere and its button at the front, on a group that turns. */
 function ballMesh(THREE, std, id, r) {
-  const g = new THREE.Group();
-  const shell = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), std({ map: texOf(skinArt(id)), roughness: 0.3, metalness: 0.05 }));
+  if (!ballLooks.has(id)) ballLooks.set(id, { skin: std({ map: texOf(skinArt(id)), roughness: 0.3, metalness: 0.05 }), ring: std({ color: '#26262c', roughness: 0.4 }), button: std({ color: '#fafafa', roughness: 0.25 }) });
+  const look = ballLooks.get(id), g = new THREE.Group();
+  const shell = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), look.skin);
   shell.castShadow = true;
-  const ring = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.1, 20), std({ color: '#26262c', roughness: 0.4 }));
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.1, 20), look.ring);
   ring.rotation.x = Math.PI / 2; ring.position.z = r * 0.95;
-  const button = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.1, 20), std({ color: '#fafafa', roughness: 0.25 }));
+  const button = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.1, 20), look.button);
   button.rotation.x = Math.PI / 2; button.position.z = r * 1.0;
   g.add(shell, ring, button);
   return g;
@@ -438,7 +442,7 @@ function mapArt(g, x, y, w, h) {
 function ticket(g, x, y, w, h, fill, edge) {
   const n = h * 0.18;
   g.beginPath();
-  g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w, y + h / 2 - n); g.arc(x + w, y + h / 2, n, -Math.PI / 2, Math.PI / 2, true);
+  g.moveTo(x, y); g.lineTo(x + w, y); g.lineTo(x + w, y + h / 2 - n); g.arc(x + w, y + h / 2, n, -Math.PI / 2, Math.PI / 2);
   g.lineTo(x + w, y + h); g.lineTo(x, y + h); g.lineTo(x, y + h / 2 + n); g.arc(x, y + h / 2, n, Math.PI / 2, -Math.PI / 2, true); g.closePath();
   g.fillStyle = fill; g.fill();
   g.strokeStyle = edge; g.lineWidth = 1.2; g.stroke();
@@ -685,6 +689,8 @@ export function buildOutfitter(THREE, size) {
     board.rotation.x = -0.55;
     cell.add(board);
     for (const sx of [-0.5, 0.5]) put(cell, new THREE.BoxGeometry(0.05, 0.5, 0.05), cane, sx, 0.25, 0.5).rotation.x = -0.3;
+    // the little balls at its foot and the easel's legs baked together; the big ball turns, so it stays apart
+    mergeStatic(cell, (o) => { for (let p = o; p; p = p.parent) if (p === ball) return true; return false; }, true);
     cell.traverse(o => { o.userData.front = spot; });
     group.add(cell);
   }
@@ -733,6 +739,7 @@ export function buildOutfitter(THREE, size) {
     put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, 0.11).rotation.x = -0.28;
     put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, -0.11).rotation.x = 0.28;
     cell.add(sandwich);
+    mergeStatic(base, () => false, true);
     base.traverse(o => { o.userData.front = spot; });
     redraws.push(() => { passMap.image = passArt(passState()); passMap.needsUpdate = true; });
   }
@@ -793,6 +800,7 @@ export function buildOutfitter(THREE, size) {
     put(jeep, new THREE.BoxGeometry(1.7, 0.08, 1.42), canvasTop, -0.47, 1.64, 0);
     const decal = put(jeep, new THREE.PlaneGeometry(1.2, 0.4), std({ map: texOf(decalArt()), transparent: true, alphaTest: 0.2, roughness: 0.7 }), -0.25, 0.62, 0.68, false);
     decal.position.z = 0.677;
+    mergeStatic(jeep, () => false, true);
     group.add(jeep);
     block(1, 0, 5, 1);
   }

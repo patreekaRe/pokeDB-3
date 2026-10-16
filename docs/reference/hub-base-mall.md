@@ -336,5 +336,10 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   parts in one mesh, colours on the vertices; only for models whose parts never move or change on their own). Every room
   drops shadows from pieces under 0.1 across (`smallNoShadow()`). Taps (a screen-wide ray grid) and colours (rendered pixels,
   hall / Game Corner / Outfitter / 2F) checked identical to before. The arcade games (`frame()` in `js/arcade-kit.js`) and
-  Plinko cap at 60 fps like the 3D places; their draws were already cheap (~1 ms, no blurred draws in play). Left: benches,
-  lamps, the fountain and escalators (12-19 meshes each) and the Outfitter's wares could merge the same way.
+  Plinko cap at 60 fps like the 3D places; their draws were already cheap (~1 ms, no blurred draws in play). Second pass
+  (same day, the user's yes): the fountain (all but its spreading rings), benches, lamps, columns and escalators (the steps
+  stay one instanced mesh) in `js/mall-hall.js`, and in the Outfitter each ware's little balls and easel (the big ball
+  turns, so it stays apart), the jeep and the Day Pass booth. Every ball of a kind now shares one set of materials
+  (`ballLooks` in `js/mall-outfitter.js`: each had painted and uploaded its own skin). `mergeStatic()`'s `keepReceive`
+  keeps a piece's own shadow-receiving (the balls take none; off by default, so the Clearing's merges are unchanged).
+  Now hall 345, 1F 360, 2F 351, Game Corner 463, Outfitter 233 draws a frame; taps and colours checked as before.

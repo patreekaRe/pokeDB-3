@@ -154,6 +154,7 @@ function fountain(parent, x, z, calm, scale = 1) {
     r.rotation.x = -Math.PI / 2; r.raycast = () => {}; r.userData.at = i / 3;
     return r;
   });
+  mergeStatic(g, (o) => rings.includes(o));   // the rings spread one by one; the water's ripple is its shared map's
 
   return (now, dt) => {
     if (calm) return;
@@ -306,6 +307,7 @@ function bench(parent, x, z, ry, len = 1.4) {
     arm.rotation.y = Math.PI / 2;
     for (const fz of [0.16, -0.24]) put(g, new THREE.BoxGeometry(0.08, 0.02, 0.08), M.iron, ex, 0.01, fz);
   }
+  mergeStatic(g, () => false);
   return g;
 }
 
@@ -325,6 +327,7 @@ function lamp(parent, x, z, glows) {
     put(g, new THREE.CylinderGeometry(0.05, 0.07, 0.04, 12), M.iron, gx, gy - 0.11, 0);
   }
   put(g, new THREE.ConeGeometry(0.04, 0.1, 8), M.gold, 0, 2.48, 0);
+  mergeStatic(g, () => false);   // the globes glow by their shared material, so they still follow the hour
 }
 
 function fluteArt() {
@@ -343,6 +346,7 @@ function column(parent, x, z, h) {
   put(g, lathe([[0, 0], [0.28, 0], [0.28, 0.1], [0.22, 0.14], [0.22, 0.22], [0.19, 0.26], [0, 0.26]], 32), M.stone);
   put(g, new THREE.TorusGeometry(0.2, 0.025, 8, 32), M.gold, 0, 0.27, 0).rotation.x = Math.PI / 2;
   put(g, lathe([[0, h - 0.26], [0.18, h - 0.26], [0.22, h - 0.2], [0.3, h - 0.1], [0.32, h], [0, h]], 32), M.gold);
+  mergeStatic(g, () => false);
 }
 
 /* ---------- escalators ---------- */
@@ -383,6 +387,7 @@ function escalator(parent, x, z0, z1, rise, calm) {
     steps.instanceMatrix.needsUpdate = true;
   };
   place(0);
+  mergeStatic(g, () => false);
   return (now) => { if (!calm) place((now / 700) % N); };
 }
 
