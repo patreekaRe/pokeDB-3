@@ -112,7 +112,7 @@ export const SHAPES = {
   chapelbell: { make: 'chapelbell', play: { does: 'beat', hits: ['fx-ding'], swing: true } },
   guestbook: { make: 'guestbook' },
   weddingcandles: { make: 'weddingcandles', play: { does: 'light', flicker: true } },
-  heartballoons: { make: 'heartballoons', play: { does: 'give', gives: 'balloon' } },
+  weddingballoons: { make: 'weddingballoons', play: { does: 'give', gives: 'balloon' } },
   champagnetable: { make: 'champagnetable' },
   petalgarland: { make: 'petalgarland' },
   photobackdrop: { make: 'photobackdrop', play: { does: 'light' } },
@@ -303,7 +303,7 @@ export const MAKES = {
     }
   },
 
-  heartballoons(K, s, W, D, L) {
+  weddingballoons(K, s, W, D, L) {
     const { rbox, cyl } = L, white = K.gloss(WHITE), rose_ = K.gloss(ROSE);
     // two gift-box weights, their ribbons, strings up to the arch
     for (const px of [6.5, 57.5]) {

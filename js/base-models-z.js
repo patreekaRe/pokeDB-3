@@ -191,8 +191,8 @@ export const MAKES = {
     K.put(rbox(W, 0.03, 0.52, 0.006), K.gloss(WATER), 0, 0.03, 0);
     for (let x = 0; x < W * 32; x += 16) for (const [dx, y, w] of [[3, 13, 7], [10, 19, 6]]) K.put(rbox(u(w), 0.004, u(1), 0.001), K.gloss(L.tone(WATER, 1.25)), X(x + dx + w / 2, W), 0.047, z0 + u(y));
     for (let x = 0; x < W * 32; x += 8) {
-      rock(K, L, X(x + 3, W), 0.06, z0 + u(8.5), u(2.6), 0.04, u(1.8), x / 8);
-      rock(K, L, X(x + 7, W), 0.06, z0 + u(23.5), u(2.4), 0.04, u(1.6), x / 8 + 1);
+      rock(K, L, Math.max(-W / 2 + u(2.6), X(x + 3, W)), 0.06, z0 + u(8.5), u(2.6), 0.04, u(1.8), x / 8);
+      rock(K, L, Math.min(W / 2 - u(2.4), X(x + 7, W)), 0.06, z0 + u(23.5), u(2.4), 0.04, u(1.6), x / 8 + 1);
     }
     if (s.stones) {
       for (const [x, y, r] of [[W * 16 - 2, 12, 4.4], [W * 16 + 3, 17, 4.6], [W * 16 - 2, 22, 4.2]]) rock(K, L, X(x, W), 0.045, z0 + u(y), u(r), 0.035, u(r * 0.8), x + y);
@@ -232,7 +232,7 @@ export const MAKES = {
     const sh = new THREE.Shape();
     sh.moveTo(X(2, W), 0); sh.lineTo(-0.5, 0); sh.absellipse(0, 0, 0.5, u(15), Math.PI, 0, true); sh.lineTo(X(62, W), 0); sh.lineTo(X(62, W), deck); sh.lineTo(X(2, W), deck); sh.closePath();
     K.put(new THREE.ExtrudeGeometry(sh, { depth: 0.78, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1, curveSegments: 14 }).translate(0, 0, -0.39), stone, 0, 0, 0);
-    for (let i = 0; i <= 8; i++) {
+    for (let i = 1; i < 8; i++) {
       const a = Math.PI + i / 8 * Math.PI, x = Math.cos(a) * u(17.5), y = -Math.sin(a) * u(16.5);
       for (const z of [-0.405, 0.405]) K.put(rbox(u(5), u(4.4), 0.04, 0.002), K.plain(i % 2 ? '#bab4a8' : STONE2), x, y, z, 0, 0, a + Math.PI / 2);
     }
@@ -243,7 +243,7 @@ export const MAKES = {
     }
     for (const sx of [-1, 1]) {
       K.put(rbox(u(6), u(39), 0.88, 0.015), K.plain(L.tone(STONE, 1.08)), sx * (W / 2 - u(3)), u(19.5), 0);
-      K.put(rbox(u(7), u(2), 0.92, 0.008), pale, sx * (W / 2 - u(3)), u(40), 0);
+      K.put(rbox(u(6), u(2), 0.92, 0.008), pale, sx * (W / 2 - u(3)), u(40), 0);
       for (const z of [-0.3, 0.3]) K.put(ball(u(3), 12, 8), K.gloss(K.pal.a), sx * (W / 2 - u(3)), u(43), z);
     }
   },
@@ -368,6 +368,7 @@ export const MAKES = {
     K.put(cyl(u(2), 0.01, u(2), 10).rotateX(Math.PI / 2), ink, hx, u(38), hz2 + 0.172);
     const run = u(10), rise = u(11), len = Math.hypot(run, rise), tilt = Math.atan2(rise, run);
     for (const sx of [-1, 1]) K.put(rbox(len + 0.02, 0.035, 0.42, 0.008), roof, hx + sx * run / 2, u(43) + rise / 2, hz2, 0, 0, -sx * tilt);
+    K.put(slabXY(L, [[-u(7), 0], [u(7), 0], [0, u(7.7)]], 0.34, 0.004), K.wood(), hx, u(44), hz2);
     for (let i = 0; i < 4; i++) reed(K, L, X(5.5 + i * 2.5, W), u(6), -0.42 + (i % 2) * 0.06, u(i % 2 ? 20 : 24), i === 0 || i === 2, (i - 1.5) * 0.05);
   },
 
@@ -428,7 +429,7 @@ export const MAKES = {
   campfire(K, s, W, D, L) {
     const { lathe, cyl, ball } = L;
     K.put(cyl(0.3, 0.012, 0.3, 16), K.plain('#3a3430'), 0, 0.006, 0);
-    for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + 0.2; rock(K, L, Math.sin(a) * 0.36, u(3.2), Math.cos(a) * 0.36, u(3.8), u(3.4), u(3.2), i); }
+    for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + 0.2; rock(K, L, Math.sin(a) * 0.36, u(3.4), Math.cos(a) * 0.36, u(3.8), u(3.4), u(3.2), i); }
     // the flames: a tall orange one, an amber one in front of it, a pale core, tongues either side
     const flame = (h, r) => lathe([[0, 0], [r * 0.8, h * 0.1], [r, h * 0.3], [r * 0.7, h * 0.6], [r * 0.25, h * 0.88], [0, h]], 12);
     K.put(flame(u(23), u(7)), K.glow(FLAME), 0, u(6), -0.02);
@@ -499,8 +500,8 @@ export const MAKES = {
   campkitchen(K, s, W, D, L) {
     const { rbox, cyl, ball, lathe, torus } = L, steel = K.metal(K.pal.m), wood = K.wood(), ty = u(25);
     K.put(rbox(u(60), u(3), 0.62, 0.01), wood, 0, u(23.5), 0);
-    for (const z of [-0.26, 0.26]) for (const [a, c] of [[6, 26], [38, 58]]) { rod(K, L, steel, [X(a, W), 0, z], [X(c, W), u(22), z], u(0.9)); rod(K, L, steel, [X(c, W), 0, z], [X(a, W), u(22), z], u(0.9)); }
-    for (const px of [6, 26, 38, 58]) rod(K, L, steel, [X(px, W), 0.015, -0.26], [X(px, W), 0.015, 0.26], u(0.8));
+    for (const z of [-0.26, 0.26]) for (const [a, c] of [[6, 26], [38, 58]]) { rod(K, L, steel, [X(a, W), u(0.9), z], [X(c, W), u(22), z], u(0.9)); rod(K, L, steel, [X(c, W), u(0.9), z], [X(a, W), u(22), z], u(0.9)); }
+    for (const px of [6, 26, 38, 58]) rod(K, L, steel, [X(px, W), u(0.8), -0.26], [X(px, W), u(0.8), 0.26], u(0.8));
     K.put(rbox(u(52), u(2), 0.5, 0.008), K.wood(L.tone(K.pal.w, 0.74)), 0, u(10), 0);
     K.put(rbox(u(10), u(9), 0.22, 0.02), K.gloss(K.pal.a), X(45, W), u(15.5), 0.05);
     K.put(cyl(u(1), u(3), u(1), 8).rotateX(Math.PI / 2), steel, X(44.5, W), u(14), 0.17);
@@ -550,7 +551,7 @@ export const MAKES = {
       cup holder. */
   campchair(K, s, W, D, L) {
     const { rbox, torus } = L, steel = K.metal(K.pal.m), cloth = K.cloth(K.pal.c), trim = K.cloth(K.pal.a), y = u(14), xs = u(10.5);
-    for (const z of [-0.18, 0.18]) { rod(K, L, steel, [-xs, 0, z], [xs, y, z], u(0.8)); rod(K, L, steel, [xs, 0, z], [-xs, y, z], u(0.8)); }
+    for (const z of [-0.18, 0.18]) { rod(K, L, steel, [-xs, u(0.8), z], [xs, y, z], u(0.8)); rod(K, L, steel, [xs, u(0.8), z], [-xs, y, z], u(0.8)); }
     for (const sx of [-1, 1]) {
       rod(K, L, steel, [sx * xs, y, -0.2], [sx * xs, y, 0.2], u(0.8));
       rod(K, L, steel, [sx * xs, y, -0.18], [sx * u(10.5), u(36), -0.26], u(0.9));
@@ -596,13 +597,13 @@ export const MAKES = {
     for (const y of [2.5, 51]) for (const z of [-0.3, 0.3]) K.put(rbox(u(58), u(y > 10 ? 2 : 3), u(2.4), 0.006), iron, 0, u(y), z);
     for (let row = 0; row < 5; row++) for (let i = 0; i < 6 - (row % 2); i++) {
       const x = X(11.5 + i * 8.2 + (row % 2) * 4.1, W), y = u(8.5 + row * 8.4), a = (i * 3 + row) * 0.7;
-      K.put(cyl(u(4.4), d, u(4.4), 8, true).rotateY(a).rotateX(Math.PI / 2), bark, x, y, 0);
+      K.put(cyl(u(4.4), d, u(4.4), 8).rotateY(a).rotateX(Math.PI / 2), bark, x, y, 0);
       for (const sz of [-1, 1]) {
         K.put(new THREE.CircleGeometry(u(3.4), 8).rotateY(sz < 0 ? Math.PI : 0), face, x, y, sz * d / 2);
         K.put(new THREE.CircleGeometry(u(1.4), 6).rotateY(sz < 0 ? Math.PI : 0), heart, x, y, sz * (d / 2 + 0.002));
       }
     }
-    const run = W / 2, rise = u(11), len = Math.hypot(run, rise) + 0.02, tilt = Math.atan2(rise, run);
+    const run = W / 2, rise = u(11), len = Math.hypot(run, rise) - 0.02, tilt = Math.atan2(rise, run);
     for (const sx of [-1, 1]) K.put(rbox(len, u(2), 0.84, 0.008), K.wood(K.pal.c), sx * run / 2, u(51) + rise / 2, 0, 0, 0, -sx * tilt);
     K.put(cyl(u(1.4), 0.86, u(1.4), 8).rotateX(Math.PI / 2), K.wood(L.tone(K.pal.c, 0.74)), 0, u(62), 0);
   },
@@ -612,7 +613,7 @@ export const MAKES = {
     const { rbox } = L, dark = K.wood(L.tone(K.pal.w, 0.74)), wood = K.wood();
     for (const px of [12, 52]) {
       const x = X(px, W);
-      for (const z of [-0.26, 0.26]) for (const sx of [-1, 1]) rod(K, L, dark, [x + sx * u(6), 0, z * 1.15], [x, u(15), z], u(1.2));
+      for (const z of [-0.26, 0.26]) for (const sx of [-1, 1]) rod(K, L, dark, [x + sx * u(6), u(1.2), z * 1.15], [x, u(15), z], u(1.2));
       K.put(rbox(u(4), u(3), 0.72, 0.01), dark, x, u(16.5), 0);
     }
     // the hull: a grid bent through the canoe's sheer and keel, inside and out
@@ -639,8 +640,8 @@ export const MAKES = {
     // the bedroll on top, the mat in front, each strapped
     K.put(cyl(u(4.5), u(26), u(4.5), 14).rotateZ(Math.PI / 2), K.cloth(K.pal.p), 0, u(42.5), -0.04);
     for (const px of [8.8, 22.8]) K.put(torus(u(4.6), u(0.7), TAU, 14).rotateY(Math.PI / 2), strap, X(px, W), u(42.5), -0.04);
-    K.put(cyl(u(4), u(28), u(4), 14).rotateZ(Math.PI / 2), K.cloth(K.pal.a), 0, u(4), 0.27);
-    for (const px of [9.7, 21.7]) K.put(torus(u(4.1), u(0.6), TAU, 14).rotateY(Math.PI / 2), K.plain(L.tone(K.pal.a, 0.74)), X(px, W), u(4), 0.27);
+    K.put(cyl(u(4), u(28), u(4), 14).rotateZ(Math.PI / 2), K.cloth(K.pal.a), 0, u(4.7), 0.27);
+    for (const px of [9.7, 21.7]) K.put(torus(u(4.1), u(0.6), TAU, 14).rotateY(Math.PI / 2), K.plain(L.tone(K.pal.a, 0.74)), X(px, W), u(4.7), 0.27);
   },
 
   /** A rod rack: a wooden stand holding three fishing rods up, cork handles and reels at their feet, a tackle box in
@@ -680,7 +681,7 @@ export const MAKES = {
       for (let k = 0; k < uv.count; k++) uv.setY(k, 1 - (i + 1 - uv.getY(k)) / 3);
       K.put(plane, words, dir > 0 ? a + w / 2 : b - w / 2, mid, z + 0.021);
     });
-    for (const [px, rx, z] of [[9, 4, 0.08], [16, 4.4, -0.1], [23, 4, 0.06]]) rock(K, L, X(px, W), u(1.2), z, u(rx), u(3), u(3.4), px);
+    for (const [px, rx, z] of [[9, 4, 0.08], [16, 4.4, -0.1], [23, 4, 0.06]]) rock(K, L, X(px, W), u(3), z, u(rx), u(3), u(3.4), px);
   },
 
   /** An outdoor movie screen: two poles with braces behind, a black-bordered screen, a scalloped valance on top. */

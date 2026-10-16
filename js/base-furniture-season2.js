@@ -205,7 +205,7 @@ const WEDDING = [
     line(x + 15, b - 40, x + 13, b - 30, BLUSH, 1.2); line(x + 17, b - 40, x + 19, b - 31, BLUSH, 1.2);
   } },
   // an arch of heart balloons over two weighted gift boxes
-  { id: 'heartballoons', name: 'Heart balloon arch', w: 2, h: 1, price: 800, draw(x, b, vw) {
+  { id: 'weddingballoons', name: 'Wedding balloon arch', w: 2, h: 1, price: 800, draw(x, b, vw) {
     floorShadow(x, b, vw);
     for (const px of [2, 53]) { panel(x + px, b - 9, 9, 9, WHITE); R(x + px + 3.5, b - 9, 2, 9, ROSE); R(x + px, b - 5.5, 9, 2, ROSE); }
     for (const [i, j, c] of HEARTS) heart(x + i, b - j, 9, c);

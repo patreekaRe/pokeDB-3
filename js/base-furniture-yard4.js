@@ -210,7 +210,6 @@ add('Water', [
     cyl(x + 8, b - 80, 2, 70, k.m);
     R(x + 6, b - 81, 17, 2, k.m); R(x + 21, b - 81, 2, 4, k.m);
     oval(x + 22, b - 76, 6, 2.4, sh(k.m, 1)); R(x + 16, b - 76, 12, 1, sh(k.m, -1));
-    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) disc(x + 18.5 + i * 2.4, b - 70 + j * 7 + (i % 2) * 3, 0.7, SPRAY);
     disc(x + 11, b - 44, 3, k.c); R(x + 10, b - 45, 2, 2, sh(k.c, -1));
     R(x + 8, b - 58, 4, 1.5, k.m); cushion(x + 9, b - 58, 7, 18, k.a, 1.5); for (const y of [b - 52, b - 46]) R(x + 9, y, 7, 1.2, k.p);
     panel(x + 8, b - 33, 6, 2, k.p);

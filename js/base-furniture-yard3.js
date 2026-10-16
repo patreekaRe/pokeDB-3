@@ -223,7 +223,7 @@ add('Buildings', [
     for (const px of [x + 6.5, x + 57.5]) for (let i = 0; i < 6; i++) leaf(px + (i % 2 ? 2.5 : -2.5), b - 12 - i * 10, 2.2, 3, k.leaf, i % 2 ? 0.5 : -0.5);
     for (let i = 0; i < 8; i++) R(x + 2 + i * 8.2, b - 81, 4, 5, sh(k.w, 1));
     wood(x, b - 76, 64, 6, k.w);
-    for (let i = 0; i < 9; i++) foliage(x + 4 + i * 7, b - 78 + (i % 2) * 3, 5, k.leaf, i + 2);
+    for (let i = 0; i < 9; i++) foliage(x + 5 + i * 6.75, b - 78 + (i % 2) * 3, 5, k.leaf, i + 2);
     for (let i = 0; i < 7; i++) for (let j = 0; j < 3; j++) disc(x + 8 + i * 8, b - 68 + j * 3, 2.2 - j * 0.5, j % 2 ? k.p : k.c);
   } },
   { id: 'pottingshed', name: 'Potting shed', w: 2, h: 2, price: 1300, draw(x, b, vw) {
@@ -396,9 +396,9 @@ add('Buildings', [
     g.fillStyle = k.c; g.beginPath(); g.ellipse(x + 16, b - 48, 7, 7, 0, Math.PI, TAU); g.fill(); R(x + 8.5, b - 49, 15, 2, sh(k.c, -1));
     for (let i = 0; i < 4; i++) {
       g.save(); g.translate(x + 16, b - 46); g.rotate(Math.PI / 4 + i * Math.PI / 2);
-      R(-0.7, 0, 1.4, 17, k.w); R(0.8, 3, 4.5, 14, k.p);
+      R(-0.7, 0, 1.4, 16, k.w); R(0.8, 3, 4.5, 13, k.p);
       for (let j = 0; j < 4; j++) R(0.8, 3.5 + j * 3.5, 4.5, 0.6, k.w);
-      R(5.3, 3, 0.6, 14, k.w);
+      R(5.3, 3, 0.6, 13, k.w);
       g.restore();
     }
     disc(x + 16, b - 46, 2, k.m);

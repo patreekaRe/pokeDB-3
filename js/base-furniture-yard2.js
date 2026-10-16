@@ -121,7 +121,7 @@ add('Fences', [
     for (const y of [b - 9, b - 23]) R(x + 4, y + 0.5, 8, 1.5, INK);
     ring(x + 24, b - 15, 1.6, INK, 0.9);
     // a climbing rose over the arch
-    for (const [a, c] of [[0.5, k.c], [1.3, k.a], [2.2, k.c], [2.8, k.a]]) {
+    for (const [a, c] of [[0.6, k.c], [1.3, k.a], [2.1, k.c], [2.65, k.a]]) {
       const lx = x + 16 - Math.cos(a) * 14, ly = b - 40 - Math.sin(a) * 14;
       leaf(lx - 2, ly + 1, 2, 1.3, k.leaf, -0.4); leaf(lx + 2, ly - 1, 2, 1.3, k.leaf, 0.4); flower(lx, ly, c, 1.8);
     }

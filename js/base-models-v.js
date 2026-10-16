@@ -178,7 +178,7 @@ export const MAKES = {
     for (let i = 0; i <= 12; i++) { const a = Math.PI - i / 12 * Math.PI; arch.push([Math.cos(a) * u(16), Math.sin(a) * u(16)]); }
     for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI; arch.push([Math.cos(a) * u(12), Math.sin(a) * u(12)]); }
     K.put(face(L, arch, u(4)), dark, 0, u(40), 0);
-    for (const [a, c] of [[0.5, K.pal.c], [1.3, K.pal.a], [2.2, K.pal.c], [2.8, K.pal.a]]) {
+    for (const [a, c] of [[0.6, K.pal.c], [1.3, K.pal.a], [2.1, K.pal.c], [2.65, K.pal.a]]) {
       const x = -Math.cos(a) * u(14), y = u(40) + Math.sin(a) * u(14), z = u(2) + 0.012;
       K.put(leafGeo(L, u(1.8), -0.4), K.plain(K.pal.leaf), x - u(2), y - u(1), z - 0.004);
       K.put(leafGeo(L, u(1.8), 0.4), K.plain(K.pal.leaf), x + u(2), y + u(1), z - 0.004);

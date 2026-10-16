@@ -192,8 +192,8 @@ const NEWYEAR = [
     inside(g => g.ellipse(cx, cy, 13, 14, 0, Math.PI, TAU), () => ovalShade(cx, cy, 13, 14, NY.red));
     R(cx - 13, cy - 1.2, 26, 2.4, NY.ink); disc(cx, cy, 3.5, NY.ink); disc(cx, cy, 2.2, NY.white);
     oval(cx, cy - 7.5, 8, 4.8, '#f8ecd8');
-    disc(cx - 3.5, cy - 7.5, 2.2, NY.ink); disc(cx - 3.5, cy - 7.5, 1.2, '#ffffff');
-    disc(cx + 3.5, cy - 7.5, 2.2, NY.ink); disc(cx + 3.5, cy - 7.5, 1.6, '#ffffff');
+    disc(cx - 3.5, cy - 7.5, 2.2, NY.ink); disc(cx - 3.5, cy - 7.5, 1.7, '#ffffff');
+    disc(cx + 3.5, cy - 7.5, 2.2, NY.ink); disc(cx + 2.9, cy - 8.1, 0.6, '#ffffff');
     for (const s of [-1, 1]) line([[cx + s * 1.5, cy - 11], [cx + s * 3.5, cy - 12.2], [cx + s * 5.6, cy - 11]], NY.gold, 1.1);
     line([[cx - 2.5, cy - 4], [cx, cy - 3.2], [cx + 2.5, cy - 4]], NY.gold, 0.9);
     P(cx - 8, cy - 9, sh(NY.red, 2));

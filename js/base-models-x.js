@@ -126,8 +126,8 @@ export const MAKES = {
     K.put(rbox(0.1, 0.04, 0.05, 0.008), orange, 0, u(85), f + 0.025);
     K.put(torus(u(6.5), 0.012, TAU, 16).rotateX(Math.PI / 2), orange, 0, u(85), rz);
     K.put(netted(cyl(u(6.5), u(11), u(5), 12, true), TAU * u(6), u(11)), netMat(L, '#f0f2f6'), 0, u(78.5), rz);
-    K.put(ball(u(5), 16, 12), orange, X(26), u(5), 0.6);
-    for (const t of [0, Math.PI / 2]) K.put(torus(u(5) + 0.002, 0.004, TAU, 16), K.plain(INK), X(26), u(5), 0.6, t);
+    K.put(ball(u(5), 16, 12), orange, X(26), u(5) + 0.008, 0.6);
+    for (const t of [0, Math.PI / 2]) K.put(torus(u(5) + 0.002, 0.004, TAU, 16), K.plain(INK), X(26), u(5) + 0.008, 0.6, t);
   },
 
   /** A football goal: white posts banded at the foot, the crossbar, stays and a ground frame back to the net. */
@@ -160,8 +160,8 @@ export const MAKES = {
       K.put(ball(u(2), 12, 8), K.gloss(L.tone(K.pal.c, 1.2)), x, u(35), 0);
       K.put(rbox(u(6), u(2), u(6), 0.01), K.gloss(L.tone(K.pal.c, 0.75)), x, u(1), 0);
     }
-    K.put(cyl(0.012, 0.07, 0.012, 8).rotateZ(Math.PI / 2), metal, -px - u(2) - 0.03, u(24), 0);
-    K.put(rbox(0.02, u(4), 0.02, 0.005), metal, -px - u(2) - 0.065, u(25), 0);
+    K.put(cyl(0.012, 0.05, 0.012, 8).rotateZ(Math.PI / 2), metal, -px - u(2) - 0.02, u(24), 0);
+    K.put(rbox(0.02, u(4), 0.02, 0.005), metal, -px - u(2) - 0.045, u(25), 0);
     K.put(netted(plane(L, u(52), u(27)), u(52), u(27)), netMat(L, INK), 0, u(16.5), 0);
     K.put(rbox(u(52), u(3), 0.03, 0.008), white, 0, u(30.5), 0);
     K.put(slat(L, u(2), u(27), 0.026), white, 0, u(16.5), 0);
@@ -220,7 +220,6 @@ export const MAKES = {
       K.put(cyl(u(1.5), u(62), u(1.5), 12), post, x, u(31), 0);
       K.put(ball(u(1.8), 12, 8), K.gloss(K.pal.c), x, u(62), 0);
       K.put(rbox(u(8), u(2.5), 0.32, 0.008), foot, x, u(1.25), 0);
-      K.put(rbox(u(2.5), u(2.5), 0.32, 0.008), foot, x, u(1.25), 0, Math.PI / 2);
     }
     K.put(netted(plane(L, u(54), u(16)), u(54), u(16)), netMat(L, INK), 0, u(50), 0);
     K.put(rbox(u(54), u(2.5), 0.025, 0.008), K.gloss(WHITE), 0, u(58.75), 0);
@@ -304,7 +303,7 @@ export const MAKES = {
     K.put(cyl(u(1.6), 0.02, u(1.6), 12).rotateX(Math.PI / 2), K.metal('#c8ccd4'), 0, u(38), 0.232);
     K.put(rbox(u(6), u(2.5), 0.12, 0.008), K.gloss(K.pal.a), 0, u(29.75), 0.18);
     K.put(lathe([[u(4), 0], [u(7), u(12)], [u(6.4), u(12)], [u(3.6), u(0.8)], [0, u(0.8)]], 16), white, 0, u(46), 0);
-    for (let i = 0; i < 4; i++) K.put(ball(u(1.8), 8, 6), white, X(11 + i * 3.3), u(57.7), i % 2 ? -0.05 : 0.05);
+    for (let i = 0; i < 4; i++) K.put(ball(u(1.8), 8, 6), white, X(11 + i * 3.3), u(59.5), i % 2 ? -0.05 : 0.05);
   },
 
   /** A sports rack: four posts, two shelves of balls, a sign along the top and a bat leant on its end. */
@@ -378,9 +377,9 @@ export const MAKES = {
   /** An archery butt on an easel, its face a Poké Ball, two arrows in it. */
   balltarget(K, s, W, D, L) {
     const { THREE, cyl, rbox, torus } = L, leg = K.wood(), straw = K.plain(STRAW), white = K.gloss(WHITE), ink = K.gloss(INK);
-    rod(K, L, leg, [X(13), u(50), 0.0], [X(8), 0.02, 0.12], u(1.3));
-    rod(K, L, leg, [X(19), u(50), 0.0], [X(24), 0.02, 0.12], u(1.3));
-    rod(K, L, K.wood(L.tone(K.pal.w, 0.8)), [0, u(40), -0.03], [0, 0.02, -0.32], u(1.1));
+    rod(K, L, leg, [X(13), u(50), 0.0], [X(8), 0.01, 0.12], u(1.3));
+    rod(K, L, leg, [X(19), u(50), 0.0], [X(24), 0.01, 0.12], u(1.3));
+    rod(K, L, K.wood(L.tone(K.pal.w, 0.8)), [0, u(40), -0.03], [0, 0.01, -0.32], u(1.1));
     K.put(rbox(u(18), u(2.5), 0.1, 0.008), K.wood(L.tone(K.pal.w, 0.8)), 0, u(24.75), 0.1);
     const y = u(40), f = 0.152;
     K.put(cyl(u(14), 0.12, u(14), 24).rotateX(Math.PI / 2), straw, 0, y, 0.09);
@@ -441,7 +440,7 @@ export const MAKES = {
     }
     for (const z of [-pz, pz]) K.put(rbox(W, u(6), 0.09, 0.012), wood, 0, u(73), z);
     for (let i = 0; i < 8; i++) K.put(slat(L, u(4), u(5), D - 0.04), K.wood(L.tone(K.pal.w, 1.12)), X(4 + i * 8.2, W), u(78.5), 0);
-    for (const z of [-pz, pz]) for (let i = 0; i < 9; i++) K.put(ball(u(4.4), 8, 6).scale(1, 0.8, 1.2), leaf(i % 2 ? 1 : 0.85), X(4 + i * 7, W), u(78 - (i % 2) * 3), z + (i % 3 - 1) * 0.05);
+    for (const z of [-pz, pz]) for (let i = 0; i < 9; i++) K.put(ball(u(4.4), 8, 6).scale(1, 0.8, 1.2), leaf(i % 2 ? 1 : 0.85), X(5 + i * 6.75, W), u(78 - (i % 2) * 3), z + (i % 3 - 1) * 0.05);
     for (const x of [-px, px]) for (let i = 0; i < 6; i++) K.put(ball(u(2.5), 8, 6).scale(1, 1.3, 0.6), leaf(1.1), x + (i % 2 ? u(2.5) : -u(2.5)), u(12 + i * 10), pz + u(2.5), 0, 0, i % 2 ? -0.5 : 0.5);
     const bunch = lathe([[0.001, -u(9)], [u(1.4), -u(6)], [u(2.3), -u(2)], [u(1.8), 0], [0, 0]], 8);
     for (const z of [-pz, pz]) for (let i = 0; i < 7; i++) {
@@ -570,7 +569,7 @@ export const MAKES = {
     K.put(prism(L, [[-hw, 0], [hw, 0], [hw, u(52)], [-hw, u(58)]], d), K.wood(), 0, 0, z0);
     for (let i = 1; i < 9; i++) { const x = -hw + i * u(6), h = u(58) - (x + hw) / (2 * hw) * u(6) - 0.05; K.put(slat(L, u(0.8), h, 0.01), K.wood(L.tone(K.pal.w, 0.74)), x, h / 2, front + 0.004); }
     const tilt = -Math.atan2(u(7.5), u(62));
-    K.put(rbox(u(62) / Math.cos(tilt), 0.1, 0.98, 0.012), K.metal(K.pal.m), 0, u(56), -0.02, 0, 0, tilt);
+    K.put(rbox(u(62) / Math.cos(tilt), 0.1, 0.98, 0.012), K.metal(K.pal.m), 0, u(56), 0, 0, 0, tilt);
     for (let i = 0; i < 9; i++) K.put(cyl(0.012, u(62) / Math.cos(tilt), 0.012, 6).rotateZ(Math.PI / 2), K.metal(L.tone(K.pal.m, 1.2)), 0, u(56) + 0.05, -0.47 + i * 0.112, 0, 0, tilt);
     // the doors, their Z braces, hinges and the padlock
     for (const a of [24, 40]) {
@@ -797,10 +796,10 @@ export const MAKES = {
     const part = (r, d) => { const [a, c, w, h] = r; return slat(L, u(w), u(h), d).translate(u(a + w / 2), -u(c + h / 2), 0); };
     for (let i = 0; i < 4; i++) {
       const turn = -(Math.PI / 4 + i * Math.PI / 2);
-      K.put(part([-0.7, 0, 1.4, 17], 0.024), timber, 0, hy, zs, 0, 0, turn);
-      K.put(part([0.8, 3, 4.5, 14], 0.006), sail, 0, hy, zs, 0, 0, turn);
+      K.put(part([-0.7, 0, 1.4, 16], 0.024), timber, 0, hy, zs, 0, 0, turn);
+      K.put(part([0.8, 3, 4.5, 13], 0.006), sail, 0, hy, zs, 0, 0, turn);
       for (let j = 0; j < 4; j++) K.put(part([0.8, 3.5 + j * 3.5, 4.5, 0.6], 0.014), timber, 0, hy, zs, 0, 0, turn);
-      K.put(part([5.3, 3, 0.6, 14], 0.014), timber, 0, hy, zs, 0, 0, turn);
+      K.put(part([5.3, 3, 0.6, 13], 0.014), timber, 0, hy, zs, 0, 0, turn);
     }
   },
 };
