@@ -2781,3 +2781,12 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   still pieces' colours: a 40-piece room 522 -> 325 draw calls a frame.
 - 237 new kinds (1,227 -> 1,464): eight holiday sets dealt only in their window plus a Birthday party set, and eight
   yard shelves (120 kinds) in tabs in Smeargle's garden catalogue. Detail: `docs/reference/hub-base-mall.md`.
+
+## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
+- The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
+  (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall
+  and Choice Scarf (a no-catch +1 PP rare). Shell Smash and Quick Guard exhaust, `STAGE_STATUS.seed` is 0, Choice Scarf
+  (catch: no PP Up), Max Mushrooms and Slowpoke Tail are boss relics.
+- 34 relics (59 -> 93), 14 items (20 -> 34) and 32 cards (310 -> 342), each on a StS one; Block 7 / Cotton Guard 11 /
+  Withdraw 8 / Flame Body 11 and Mewtwo's Depths (bossDmg 4, bossHp 1.2, enemyDmg -3) bring the human bot back: L0 81 / 84 /
+  78, L3 62 / 64 / 60, L5 40 / 38 / 38, Mewtwo 67%. Detail: `docs/reference/cards.md`'s "The balance pass", relics.md, items.md.

@@ -21,9 +21,9 @@
 
 import { gymTalk } from './gym.js';
 import { talkOf } from './data/gym.js';
-import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
+import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, upgradeId, canUpgrade, typePool, SUPER_EFFECTIVE, NOT_VERY_EFFECTIVE, WEAK_MULT, VULNERABLE_MULT } from './data/cards.js';
 import { spriteUrl, stageName } from './data/starters.js';
-import { ITEMS_BY_ID } from './data/items.js';
+import { ITEMS_BY_ID, ITEM_SLOTS, itemsForType } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
@@ -155,12 +155,14 @@ const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
  *   onEnd      called when the fight is over with
  *              { won, hp, damageTaken, tally }, plus fled: true after a Poké Doll
  */
-export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
+export function startBattle({ run, encounter, onEnd, deferIntro = false, slots = ITEM_SLOTS }) {
   const def = encounter.def;
   // the Sky Pillar's augments (js/data/augments.js), summed: they act like relics for the rest of the climb
   const aug = run.tower ? augEffects(run.tower.augments, run.tower.spent) : {};
   const base = ABILITIES[run.starter.type] ?? null;
-  const ability = base && (aug.abilityAdd || aug.abilityMult) ? { ...base, amount: (base.amount + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
+  // the boss relics that raise an Ability (StS's Black Blood): Water Stone's Torrent 4, Leaf Stone's Overgrow 10
+  const stone = base?.id === 'torrent' && run.relics.includes('water-stone') ? 2 : base?.id === 'overgrow' && run.relics.includes('leaf-stone') ? 7 : 0;
+  const ability = base && (aug.abilityAdd || aug.abilityMult || stone) ? { ...base, amount: (base.amount + stone + (aug.abilityAdd || 0)) * (aug.abilityMult || 1) } : base;
   const gamble = aug.gambler ? aug.gambler[random() < 0.5 ? 0 : 1] : 1;
   const junk = run.relics.includes('griseous-orb') ? [CARDS_BY_ID.sludge, CARDS_BY_ID.sludge] : [];   // StS's Mark of Pain
   // a dojo trial (js/data/dojo.js) draws its set deck in order, `deck[0]` first
@@ -189,9 +191,16 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     recycled: [],      // Recycler: the deck's moves exhausted this fight (each PP Upped after it)
     abyss: 0,          // PP a turn Abyss has given this fight
     items: run.items,   // the run's own list: using an item takes it out of the Bag
+    slots,             // how many items the Bag holds (Wishing Piece fills it)
     held: run.held ?? null,   // the run's held berry ({ id, used }, js/data/held.js): eaten once, by heldGoes()
     ate: () => { run.heldAte = run.biome; },   // and the biome it was eaten in: the Berry Pouch's next goes on from the next
     pouched: () => (run.pouch || []).length > 0,
+    ashReady: run.relics.includes('sacred-ash') && !run.ashUsed,   // Sacred Ash (StS's Lizard Tail): once a run
+    ashed: () => { run.ashUsed = true; },
+    helixReady: run.relics.includes('helix-fossil'),   // Helix Fossil (StS's Fossilized Helix): the fight's first HP loss doesn't happen
+    hurtOnce: false,   // HP lost once already this fight (Adrenaline Orb)
+    fightAttacks: 0,   // attacks played this fight (Razor Fang's every 10th)
+    drawNext: 0,       // extra cards next turn (Lagging Tail)
     shut: null,        // a status card no more of lands this fight (the Pecha Berry's)
     onEnd,
     trial,             // a dojo trial's goal: lost the moment it can't be met (trialBroken())
@@ -218,7 +227,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     surgeTurns: 0,     // turns Primal Reversion has already paid out: it pays 1 more each turn
     blockNext: 0,      // block waiting for your next turn (Shelter)
     blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
-    strength: (run.relics.includes('black-belt') ? 1 : 0) + (run.relics.includes('exp-share') ? 1 : 0) + (aug.startStrength || 0) + (run.tower?.bloodStr || 0),   // extra damage on every hit, for the rest of this fight
+    strength: (run.relics.includes('black-belt') ? 1 : 0) + (run.relics.includes('exp-share') ? 1 : 0) + (aug.startStrength || 0) + (run.tower?.bloodStr || 0)
+      + (run.relics.includes('macho-brace') && (encounter.kind === 'elite' || encounter.kind === 'boss') ? 3 : 0),   // Macho Brace: Alphas and bosses   // extra damage on every hit, for the rest of this fight
     firstAttack: run.relics.includes('dragon-fang') || !!aug.firstAttack || !!aug.onePunch,   // Dragon Fang's (First Strike's, One Punch's) bonus is still waiting for your first attack
     flex: 0,           // the part of `strength` that goes away at the end of this turn (Rototiller, StS's Flex)
     healedThisTurn: false,   // healed on this turn of yours (Grassy Glide)
@@ -251,8 +261,8 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
       burn: run.relics.includes('flame-orb') ? 3 : 0,
       seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
-      weak: aug.startWeak || 0,       // turns left dealing WEAK_MULT damage
-      vulnerable: aug.startVuln || 0, // turns left taking VULNERABLE_MULT damage from your attacks
+      weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
+      vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
       rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
       moveIndex: trial ? 0 : randIndex(def.moves.length),
@@ -488,7 +498,7 @@ function beginPlayerTurn() {
   if (b.block) statFx('player');
   const bossEnergy = ENERGY_RELICS.filter(hasRelic).length;
   const leftover = hasRelic('casteliacone') ? b.energy : 0;   // Casteliacone (StS's Ice Cream): unspent PP carries over
-  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('choice-scarf') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover
+  b.energy = ENERGY_PER_TURN + b.nextEnergy + (hasRelic('exp-share') ? 1 : 0) + bossEnergy + leftover + (hasRelic('soothe-bell') && b.turn % 3 === 0 ? 1 : 0)
     + (b.turn === 1 && hasRelic('lemonade') ? 1 : 0) + (b.turn === 1 ? a.turn1Energy || 0 : 0) + (a.energyEachTurn || 0) + b.abyss
     + (a.lowEnergy && b.hp < b.maxHp / 4 ? a.lowEnergy : 0);
   b.turnEnergy = b.energy;
@@ -499,21 +509,30 @@ function beginPlayerTurn() {
   b.endure = false;
   b.pledged = false;
   b.sludged = false;   // Black Sludge's HP is paid on the turn's first attack
+  b.skills = 0;        // cards played this turn that aren't attacks (Spell Tag)
+  b.echoNext = 0;      // Inferno Overdrive / Gold Bottle Cap: only this turn's next card
+  b.sooted = false;    // Soot Sack has given its PP this turn
+  b.splashed = false;  // Splash Plate has drawn this turn
+  if (b.turn % 6 === 0 && hasRelic('bright-powder')) { b.guard = true; pop('player-zone', '✨ Bright Powder', 'block', 100); }   // StS's Incense Burner
 
   if (hasRelic('toxic-orb') && b.hp > 1) { b.hp -= 1; b.damageTaken += 1; markHurt(); pop('player-zone', '-1 ☠️', 'dmg'); }
   if (p.brutality) loseHp(p.brutality);
   if (hasRelic('leftovers')) healPlayer(2);
+  if (b.turn === 1 && hasRelic('lava-cookie')) healPlayer(3);   // StS's Blood Vial
   if (p.healEachTurn && healPlayer(p.healEachTurn + healBonus())) playSound('heal-hp');
+  if (p.regen && healPlayer(p.regen)) playSound('heal-hp');   // Sweet Heart
   if (hasRelic('grassy-seed') && b.turn % 3 === 0) gainStrength(1, '🍀 +1 strength');
   if (a.strengthEvery && b.turn % a.strengthEvery === 0) gainStrength(1, '📈 +1 strength');
   if (a.healEachTurn && healPlayer(a.healEachTurn)) playSound('heal-hp');
   if (p.burnEachTurn) burnEnemy(p.burnEachTurn);
   if (p.strengthEachTurn) gainStrength(p.strengthEachTurn);
+  if (p.focusEachTurn) { b.focus += p.focusEachTurn; pop('player-zone', `🧘 +${p.focusEachTurn} next attack`, 'note good', 120); }   // Meditate
   if (p.weakEachTurn) applyDebuff('weaken', p.weakEachTurn);
   if (p.tideEachTurn) gainTide(p.tideEachTurn);
   if (p.tideSurge) gainTide(p.tideSurge + b.surgeTurns++);
   if (hasRelic('blue-flute')) gainTide(1);
   if (fresh && p.riptide) riptide();
+  if (hasRelic('sticky-barb')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🌵` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120); }   // StS's Mercury Hourglass
   if (hasRelic('spelon-berry') && b.enemy.burn >= 2) {
     const dealt = hurtEnemy(Math.floor(b.enemy.burn / 2));
     hitEffect('enemy-portrait-box');
@@ -524,7 +543,9 @@ function beginPlayerTurn() {
   if (a.infiniteLoop && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; }   // Infinite Loop
   draw(HAND_SIZE + (hasRelic('scope-lens') ? 1 : 0) + (hasRelic('exp-share') ? 1 : 0) + (p.drawEachTurn || 0) + (p.brutality || 0)
     + (b.turn === 1 && hasRelic('quick-claw') ? 2 : 0) - (hasRelic('choice-specs') ? 1 : 0) + (hasRelic('max-mushrooms') ? 2 : 0)
-    + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0));
+    + (b.turn === 1 ? a.turn1Draw || 0 : 0) + (a.drawEachTurn || 0) + (a.lowDraw && b.hp < b.maxHp / 2 ? a.lowDraw : 0)
+    + (hasRelic('water-stone') ? 1 : 0) + b.drawNext);
+  b.drawNext = 0;
   if (b.turn === 1 && hasRelic('strange-souvenir')) addRandomCards(1);
   if (a.randomCard) addRandomCards(a.randomCard);
   if (a.copycat) copycat();
@@ -576,6 +597,7 @@ function healPlayer(amount) {
     pop('player-zone', `+${healed} HP`, 'heal');
     b.healedThisTurn = true;
     if (b.powers.healStrength && !b.pledged) { b.pledged = true; gainStrength(b.powers.healStrength); }
+    if (hasRelic('luminous-moss')) gainBlock(2);
     if (hasRelic('enigma-berry')) { const dealt = hurtEnemy(healed); pop('enemy-zone', dealt > 0 ? `-${dealt} 🫐` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }
   }
   if (amount > healed && b.powers.overheal) gainBlock(amount - healed);
@@ -693,6 +715,11 @@ function markHurt() {
   battle.hurtThisTurn = true;
   battle.timesHurt += 1;
   if (hasRelic('salac-berry')) draw(1);   // Salac Berry (StS's Runic Cube): a card for every HP loss, the enemy's hits too
+  if (hasRelic('kee-berry')) battle.blockNext += 3;   // StS's Self-Forming Clay
+  if (!battle.hurtOnce) {
+    battle.hurtOnce = true;
+    if (hasRelic('adrenaline-orb')) { draw(3); pop('player-zone', '🟢 +3 cards', 'note good', 150); }   // StS's Centennial Puzzle
+  }
 }
 
 /** Lum Berry (StS's Medical Kit): status cards can be played for 0 PP, and exhaust. */
@@ -747,6 +774,10 @@ function draw(count) {
     const card = (hasRelic('max-mushrooms') || b.aug.chaos) && typeof top.cost === 'number' && !top.unplayable
       ? { ...top, cost: randIndex(4), orig: top } : top;
     b.hand.push({ uid: nextUid++, card, fresh: true });
+    if (top.status && b.powers.statusDamage && b.enemy.hp > 0) {   // Burning Spirit (StS's Fire Breathing)
+      const dealt = hurtEnemy(b.powers.statusDamage);
+      pop('enemy-zone', dealt > 0 ? `-${dealt} 👹` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 120);
+    }
   }
 }
 
@@ -809,7 +840,7 @@ function damageFor(card, e) {
   if (baseId(card.id) === 'cinder') amount += b.powers.cinderDamage || 0;
   amount += b.strength * (e.strengthMult || 1);
   if (b.powers.blaze && low) amount += b.powers.blaze;
-  if (hasAbility('blaze') && (low || b.aug.blazeAlways)) amount += b.ability.amount;
+  if (hasAbility('blaze') && (low || b.aug.blazeAlways || hasRelic('magmarizer'))) amount += b.ability.amount;
 
   // relics
   if (hasRelic('muscle-band')) amount += 2;
@@ -819,13 +850,15 @@ function damageFor(card, e) {
   amount += b.aug.attackBonus || 0;
 
   const multiplier = typeless() ? 1 : typeMultiplier(card.type, b.def.type);
-  const boost = augDamage();
+  const boost = augDamage() * (hasRelic('fire-memory') && b.enemy.burn > 0 ? 1.25 : 1)   // Fire Memory (StS's Paper Phrog, for Burn)
+    * (hasRelic('razor-fang') && (b.fightAttacks + 1) % 10 === 0 ? 2 : 1);              // Razor Fang (StS's Pen Nib)
 
   const vulnerable = b.enemy.vulnerable > 0 ? VULNERABLE_MULT : 1;
   const count = e.hitsPerAttack ? b.attacks : e.hitsPerExhausted ? e.exhausted || 0
     : e.perX?.hits ? e.hits : e.hits || 1;   // an X card played with X = 0 doesn't hit
   const more = count > 1 ? b.aug.flurry || 0 : 0;   // Flurry
-  const hits = Array.from({ length: count + more }, (_, i) => Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier * b.dmgMult * boost) * vulnerable));
+  const floor = hasRelic('lucky-punch') ? 5 : 0;   // Lucky Punch (StS's The Boot)
+  const hits = Array.from({ length: count + more }, (_, i) => Math.max(floor, Math.floor(Math.round((amount + (i === 0 ? b.focus : 0)) * multiplier * b.dmgMult * boost) * vulnerable)));
   return { hits, multiplier };
 }
 
@@ -840,7 +873,7 @@ function augDamage() {
 }
 
 /** Your cards' block: Damp Rock and Steady Hands add to it, Fortress and Pacifist multiply it, Berserker takes 1 off. */
-const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.max(0, Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (battle.aug.blockBonus || 0)) * (battle.aug.blockMult || 1))));
+const cardBlock = (n) => (battle.aug.noCardBlock ? 0 : Math.max(0, Math.floor((n + (hasRelic('damp-rock') ? 2 : 0) + (hasRelic('metal-coat') ? 1 : 0) + (battle.aug.blockBonus || 0) + (battle.blockBonus || 0)) * (battle.aug.blockMult || 1))));
 
 async function playCard(uid) {
   const b = battle;
@@ -863,10 +896,19 @@ async function playCard(uid) {
   if (!card.power && (card.exhaust || corrupts(card) || lumCures(card))) burnOut(uid);   // it burns away as it's played
   else flyCard(uid, card);
   b.hand.splice(index, 1);
+  const echoes = b.echoNext || 0;                // Inferno Overdrive / Gold Bottle Cap, waiting for this card (not set by it)
+  b.echoNext = 0;
   if (!await resolveCard(card, x)) return;       // the player left the battle
   b.cardsThisFight += 1;
   // Echo (the fight's first card) and Double Down (every n-th): the card does its thing again, free
   const a = b.aug, n = b.cardsThisFight;
+  for (let i = 0; i < echoes && b.enemy.hp > 0; i++) {
+    pop('player-zone', `♾️ ${card.name} again!`, 'note good');
+    renderAll();
+    await pause(300);
+    if (battle !== b) return;
+    if (!await resolveCard(card, x, { echo: true })) return;
+  }
   if (b.enemy.hp > 0 && ((a.echoFirst && n === 1) || (a.doubleEvery && n % a.doubleEvery === 0))) {
     pop('player-zone', `🔁 ${card.name} again!`, 'note good');
     renderAll();
@@ -932,8 +974,9 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
 
   // --- damage ---
   const { hits, multiplier } = damageFor(card, e);
+  if (hits.length) b.fightAttacks += 1;
   if (hits.length) {
-    b.focus = 0;                                  // focus is used up by the attack
+    if (!b.powers.focusKeep) b.focus = 0;         // focus is used up by the attack (not under Psychic Terrain)
     let through = 0;
     for (const [i, amount] of hits.entries()) {
       lunge('player-sprite');
@@ -976,6 +1019,7 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
     if (e.healDealt && healPlayer(through)) playSound('heal-hp');
     if (through > 0 && b.powers.attackHeal && healPlayer(b.powers.attackHeal)) playSound('heal-hp');
     if (e.perTide) e.tideSpent = spendTide();   // Brine: its blockPerTide counts the same Tide
+    if (e.payDay && b.enemy.hp <= 0) { b.tally.payDay = (b.tally.payDay || 0) + e.payDay; pop('player-zone', `🪙 +₽${e.payDay}`, 'note good', 200); }   // Pay Day (StS's Hand of Greed)
     if (e.feed && b.enemy.hp <= 0) {
       b.maxHp += e.feed;
       b.hp += e.feed;
@@ -1002,15 +1046,22 @@ async function resolveCard(card, x, { exhaust = false, echo = false } = {}) {
   if (e.exhaustPick) await pickFromHand(e.exhaustPick, 'exhaust', (entry) => { b.hand.splice(b.hand.indexOf(entry), 1); exhaustCard(entry.card); });
   if (e.copyPick) await pickFromHand(1, 'copy', (entry) => addCopies(entry.card, e.copyPick), (h) => !h.card.status && !h.card.unplayable);
   if (e.exhume) await takeFromExhaust();
+  if (e.sketch) await sketchCard();
+  if (e.returnCard) await returnCard();
   if (battle !== b) return false;
 
   // the card goes to its pile once it has done its thing (so its own draw can't shuffle it straight back in)
   if (echo) { /* played again by an augment: it's already on its way to its pile */ }
   else if (card.power) b.exhaust.push(settled(card));  // powers leave the fight, but aren't "exhausted" (no triggers)
   else if (card.exhaust || exhaust || corrupts(card) || lumCures(card)) exhaustCard(card);
-  else b.discard.push(settled(card));
+  else b.discard.push(card.growOnPlay ? grownCopy(settled(card)) : settled(card));
   if (lumCures(card)) draw(1);
   if (card.power && hasRelic('power-herb')) draw(1);
+  if (card.power && hasRelic('shiny-stone') && healPlayer(4)) playSound('heal-hp');   // StS's Bird-Faced Urn
+  if (!isAttack(card) && !card.status && (b.skills = (b.skills || 0) + 1) % 3 === 0 && hasRelic('spell-tag') && b.enemy.hp > 0) {   // StS's Letter Opener
+    const dealt = hurtEnemy(5);
+    pop('enemy-zone', dealt > 0 ? `-${dealt} 🏷️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150);
+  }
   if (b.powers.cardDamage) { hurtEnemy(b.powers.cardDamage); pop('enemy-zone', `-${b.powers.cardDamage} ✨`, 'dmg', 150); }
   if (b.powers.cardBlock) gainBlock(b.powers.cardBlock);
   if (b.aug.skillDamage && !isAttack(card) && !card.power && !card.status && b.enemy.hp > 0) {   // Monk: every Skill hits
@@ -1061,6 +1112,12 @@ function applyEffects(e) {
   const b = battle;
   for (let i = 0; i < (e.burn ? e.burnTimes || 1 : 0); i++) burnEnemy(e.burn, i * 150);
   if (e.burnMult && b.enemy.burn) { b.enemy.burn *= e.burnMult; pop('enemy-zone', `🔥 Burn ×${e.burnMult}`, 'note', 150); }
+  if (e.seedMult && b.enemy.seed) { b.enemy.seed *= e.seedMult; pop('enemy-zone', `🌱 Leech Seed ×${e.seedMult}`, 'note', 150); }   // Bloom Doom
+  if (e.tempSap)    { b.enemy.tempSap = (b.enemy.tempSap || 0) + e.tempSap; pop('enemy-zone', `💕 -${e.tempSap} this turn`, 'note', 150); statFx('enemy', 'down'); }   // Charm
+  if (e.skipEnemy)  { b.skipEnemy = true; pop('enemy-zone', '🌀 Skips its turn', 'note good', 150); }   // Eye of the Storm (StS's Vault)
+  if (e.echo)       { b.echoNext = (b.echoNext || 0) + e.echo; pop('player-zone', '♾️ Next card twice', 'note good', 150); }
+  if (e.reshuffle && b.discard.length) { b.drawPile = shuffle([...b.drawPile, ...b.discard]); b.discard = []; pop('player-zone', '♻️ Reshuffled', 'note', 150); }
+  if (e.upgradeAll) upgradeAll();
   if (e.weaken)     applyDebuff('weaken', e.weaken);
   if (e.vulnerable) applyDebuff('vulnerable', e.vulnerable);
   if (e.seed)       applyDebuff('seed', e.seed);
@@ -1145,6 +1202,7 @@ function spendTide() {
   b.tide = b.aug.tideKeep ? spent : hasRelic('lustrous-orb') || b.aug.tideHalf ? Math.floor(spent / 2) : 0;
   pop('player-zone', `🌊 ${spent} Tide spent`, 'note', 200);
   if (b.powers.tideSpendBlock) gainBlock(spent * b.powers.tideSpendBlock);
+  if (hasRelic('splash-plate') && !b.splashed) { b.splashed = true; draw(2); }
   return spent;
 }
 
@@ -1210,9 +1268,10 @@ function mulligan() {
 
 /** TM (StS's Attack Potion): choose one of `n` different random cards of your type; it's free this turn, then an
     ordinary card for the rest of the fight. */
-async function discoverCard(n) {
+async function discoverCard(n, kind = null) {
   const b = battle;
-  const pool = [...typePool(b.starter.type).filter(c => !c.evoOnly)];
+  const fits = (c) => !kind || (kind === 'power' ? c.power : !c.power && !isAttack(c));   // TR: powers, HM: the rest
+  const pool = [...typePool(b.starter.type).filter(c => !c.evoOnly && fits(c))];
   const options = [];
   while (options.length < n && pool.length) options.push(pool.splice(randIndex(pool.length), 1)[0]);
   if (!options.length) return;
@@ -1225,6 +1284,45 @@ async function discoverCard(n) {
 }
 
 const settled = (card) => card.orig || card;
+
+/** Blazing Torque (StS's Rampage): the copy it goes to the discard pile as hits harder, for the rest of the fight. */
+function grownCopy(card) {
+  const effects = { ...card.effects };
+  for (const [key, n] of Object.entries(card.growOnPlay)) effects[key] = (effects[key] || 0) + n;
+  return { ...card, effects };
+}
+
+/** Mega Evolution (StS's Apotheosis): every card in your hand and piles becomes its PP Upped copy for this fight. */
+function upgradeAll() {
+  const b = battle;
+  const up = (c) => (canUpgrade(c) && !c.orig && CARDS_BY_ID[upgradeId(baseId(c.id))] ? CARDS_BY_ID[upgradeId(baseId(c.id))] : c);
+  for (const h of b.hand) h.card = up(h.card);
+  b.drawPile = b.drawPile.map(up);
+  b.discard = b.discard.map(up);
+  pop('player-zone', '🧬 Mega Evolution!', 'note good', 150);
+  playSound('stat-up');
+  statFx('player');
+}
+
+/** Sketch (StS's Secret Technique): a card of your choice from the draw pile into your hand. */
+async function sketchCard() {
+  const b = battle;
+  if (!b.drawPile.length || b.hand.length >= MAX_HAND) return;
+  const card = await pickFromPile([...new Set(b.drawPile)], 'Choose a move to sketch.', 'Take');
+  if (battle !== b || !card) return;
+  b.drawPile.splice(b.drawPile.lastIndexOf(card), 1);
+  b.hand.push({ uid: nextUid++, card, fresh: true });
+}
+
+/** Return (StS's Headbutt): a card of your choice from the discard pile goes on top of your draw pile. */
+async function returnCard() {
+  const b = battle;
+  if (!b.discard.length) return;
+  const card = await pickFromPile([...new Set(b.discard)], 'Choose a move to put on top of your draw pile.', 'Put on top');
+  if (battle !== b || !card) return;
+  b.discard.splice(b.discard.lastIndexOf(card), 1);
+  b.drawPile.push(card);
+}
 
 /** A card leaves the fight: its own `onExhaust`, the exhaust powers and Eject Pack all trigger. */
 function exhaustCard(card) {
@@ -1240,6 +1338,7 @@ function exhaustCard(card) {
   if (hasRelic('eject-pack')) draw(1);
   if (hasRelic('smoke-poke-tail')) { const dealt = hurtEnemy(4); pop('enemy-zone', dealt > 0 ? `-${dealt} 💨` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 200); }
   if (hasRelic('dawn-stone')) addTypeCard();
+  if (hasRelic('soot-sack') && !b.sooted && !b.enemyActing) { b.sooted = true; b.energy += 1; b.turnEnergy += 1; pop('player-zone', '👝 +1 PP', 'note good', 200); }
   if (b.aug.exhaustDamage) { const dealt = hurtEnemy(b.aug.exhaustDamage); pop('enemy-zone', dealt > 0 ? `-${dealt} ☄️` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 250); }
 }
 
@@ -1321,6 +1420,7 @@ function discardFromHand(entry) {
   if (b.aug.discardTide) gainTide(b.aug.discardTide);
   if (b.powers.discardBlock) gainBlock(b.powers.discardBlock);
   if (hasRelic('heart-scale')) gainBlock(3);
+  if (hasRelic('tidal-bell')) { const dealt = hurtEnemy(3); pop('enemy-zone', dealt > 0 ? `-${dealt} 🔔` : 'Blocked', dealt > 0 ? 'dmg' : 'note', 150); }   // StS's Tingsha
 }
 
 /**
@@ -1352,6 +1452,8 @@ function whyNotUsable(item) {
   if (item.effects.revive) return `${item.name} works on its own when you would faint.`;
   if (item.effects.burnMult && !b.enemy.burn) return 'The enemy isn\'t burned.';
   if (item.effects.heal && !Object.keys(item.effects).some(k => k !== 'heal') && b.hp >= b.maxHp) return 'Your HP is already full.';
+  if (item.effects.recall && !b.discard.length) return 'Your discard pile is empty.';
+  if (item.effects.fill && b.relics.includes('dusk-stone')) return 'Your Dusk Stone won\'t let you get any more items.';
   return null;
 }
 
@@ -1407,8 +1509,47 @@ async function itemEffects(e) {
   if (e.strength) { b.strength += e.strength; pop('player-zone', `💪 +${e.strength}`, 'note good'); playSound('stat-up'); statFx('player'); }
   if (e.energy)   { b.energy += e.energy; b.turnEnergy += e.energy; pop('player-zone', `⚡ +${e.energy}`, 'note good'); }
   if (e.heal)     healPlayer(e.heal);
+  if (e.cleanse)  cleanse();
   if (e.draw)     draw(e.draw);
-  if (e.discover && battle === b) await discoverCard(e.discover);
+  if (e.blockBonus) { b.blockBonus = (b.blockBonus || 0) + e.blockBonus; pop('player-zone', `🔰 Block +${e.blockBonus}`, 'block'); statFx('player'); }
+  if (e.power)    { for (const [k, n] of Object.entries(e.power)) b.powers[k] = (b.powers[k] || 0) + n; playSound('power'); statFx('player'); }
+  if (e.hit)      { const dealt = hurtEnemy(e.hit); hitEffect('enemy-portrait-box'); bigHit(dealt, b.enemy.maxHp, 'enemy-img'); pop('enemy-zone', dealt > 0 ? `-${dealt}` : 'Blocked', dealt > 0 ? 'dmg' : 'note'); playSound(dealt > 0 ? 'hit' : 'block'); }
+  if (e.echo)     { b.echoNext = (b.echoNext || 0) + e.echo; pop('player-zone', '🧢 Next card twice', 'note good'); }
+  if (e.fill)     fillBag();
+  if (e.recall && battle === b) await recallCard();
+  if (e.discover && battle === b) await discoverCard(e.discover, e.kind);
+}
+
+/** Full Heal: every status card in your hand and piles is exhausted. */
+function cleanse() {
+  const b = battle;
+  const going = b.hand.filter(h => h.card.status);
+  going.forEach(h => burnOut(h.uid));
+  b.hand = b.hand.filter(h => !h.card.status);
+  const junk = [...going.map(h => h.card), ...b.drawPile.filter(c => c.status), ...b.discard.filter(c => c.status)];
+  b.drawPile = b.drawPile.filter(c => !c.status);
+  b.discard = b.discard.filter(c => !c.status);
+  junk.forEach(exhaustCard);
+  pop('player-zone', junk.length ? `✨ ${junk.length} cleared` : '✨ Nothing to clear', 'note good');
+}
+
+/** Wishing Piece: random items into every empty Bag slot (b.items is the run's own Bag). */
+function fillBag() {
+  const b = battle;
+  const pool = itemsForType(b.starter.type).filter(i => !i.effects.fill);
+  while (b.items.length < b.slots) b.items.push(pickOne(pool).id);
+  pop('player-zone', '🌠 Bag filled!', 'note good');
+}
+
+/** Revival Herb (StS's Liquid Memories): a card from the discard pile into your hand, free this turn. */
+async function recallCard() {
+  const b = battle;
+  const card = await pickFromPile([...new Set(b.discard)], 'Choose a move to take back.', 'Take back');
+  if (battle !== b || !card) return;
+  b.discard.splice(b.discard.indexOf(card), 1);
+  const free = { ...card, discount: typeof card.cost === 'number' ? card.cost : 0, orig: card };
+  if (b.hand.length < MAX_HAND) b.hand.push({ uid: nextUid++, card: free, fresh: true });
+  else b.discard.push(card);
 }
 
 /* ---------- catching: the Safari Zone's Throw Ball (js/data/balls.js, docs/reference/safari.md) ---------- */
@@ -1639,6 +1780,9 @@ function hurtPlayer(amount, source = null) {
   const absorbed = Math.min(b.block, amount);
   b.block -= absorbed;
   let through = amount - absorbed;
+  if (through > 0 && b.helixReady) { b.helixReady = false; through = 0; pop('player-zone', '🐚 Helix Fossil!', 'block', 250); }   // StS's Fossilized Helix
+  if (through > 0 && through <= 5 && hasRelic('protective-pads')) through = 1;   // StS's Torii
+  if (through > 0 && hasRelic('assault-vest')) through -= 1;                     // StS's Tungsten Rod
 
   // Focus Sash: survive one fatal hit per battle.
   if (b.hp - through <= 0 && b.sashReady) {
@@ -1655,6 +1799,14 @@ function hurtPlayer(amount, source = null) {
   b.damageTaken += through;
   if (through > 0) markHurt();
   if (b.hp <= 0) { b.blow = source; revive(); }
+  if (b.hp <= 0 && b.ashReady) {   // Sacred Ash (StS's Lizard Tail): once a run
+    b.ashReady = false;
+    b.ashed();
+    b.hp = Math.max(1, Math.floor(b.maxHp / 2));
+    pop('player-zone', `🕯️ Sacred Ash! +${b.hp} HP`, 'heal', 350);
+    b.revived = `The Sacred Ash brought ${stageName(b.starter, b.stage)} back!`;
+    playSound('heal-hp');
+  }
   if (b.hp <= 0) lifeline();
   if (half && b.hp > 0 && b.hp < b.maxHp / 2 && b.aug.bodyguard && !b.guarded) { b.guarded = true; gainBlock(b.aug.bodyguard); pop('player-zone', '💂 Bodyguard!', 'note good', 350); }
   heldGoes('hurt', { hp: b.hp, maxHp: b.maxHp, lost: through });
@@ -1744,6 +1896,8 @@ async function endTurn() {
     if (b.hp <= 0) return finish(false);
   }
   if (b.flex) { b.strength -= b.flex; b.flex = 0; }
+  if (hasRelic('lagging-tail') && b.played <= 3) b.drawNext += 3;   // StS's Pocketwatch
+  if (b.powers.strengthBlock && b.strength > 0) gainBlock(b.strength * b.powers.strengthBlock);   // Overgrowth
   if (b.aug.patience && b.energy > 0) gainBlock(b.aug.patience * b.energy);   // Patience
   if (b.aug.tideBlock && b.tide > 0) gainBlock(b.aug.tideBlock * b.tide);       // Tidal Armor
   if (b.aug.handHurt && b.hand.length) loseHp(b.aug.handHurt * b.hand.length);  // Pandemonium
@@ -1771,16 +1925,22 @@ async function endTurn() {
     const cheaper = b.powers.retainDiscount && typeof h.card.cost === 'number' && costOf(h.card) > 0;
     if (!grow && !cheaper) continue;
     const effects = { ...h.card.effects };
-    for (const [key, n] of Object.entries(grow || {})) effects[key] = (effects[key] || 0) + n;
-    h.card = { ...h.card, effects, discount: (h.card.discount || 0) + (cheaper ? b.powers.retainDiscount : 0) };
+    let discount = (h.card.discount || 0) + (cheaper ? b.powers.retainDiscount : 0);
+    for (const [key, n] of Object.entries(grow || {})) {
+      if (key === 'discount') discount += n;   // Steam Eruption (StS's Sands of Time)
+      else effects[key] = (effects[key] || 0) + n;
+    }
+    h.card = { ...h.card, effects, discount };
   }
   renderAll();
 
   await pause(500);
   if (battle !== b) return;                      // the player left the battle
-  if (b.aug.timeWarp && b.turn % b.aug.timeWarp === 0) {   // Time Warp: the enemy skips this turn
-    pop('enemy-zone', '⌛ Time Warp!', 'note good');
-    log(`Time warps around ${b.def.name}! It can't move this turn.`);
+  if ((b.aug.timeWarp && b.turn % b.aug.timeWarp === 0) || b.skipEnemy) {   // Time Warp, Eye of the Storm: the enemy skips this turn
+    const storm = b.skipEnemy;
+    b.skipEnemy = false;
+    pop('enemy-zone', storm ? '🌀 Eye of the Storm!' : '⌛ Time Warp!', 'note good');
+    log(storm ? `${b.def.name} is caught in the eye of the storm! It can't move this turn.` : `Time warps around ${b.def.name}! It can't move this turn.`);
     await pause(700);
     if (battle !== b) return;
     return beginPlayerTurn();
@@ -1799,7 +1959,7 @@ async function enemyTurn() {
   // 1. Burn hurts the enemy first.
   if (en.burn > 0) {
     const burnDamage = en.burn * (b.aug.burnTickMult || 1);
-    if (!b.aug.burnKeep) en.burn -= 1;            // Wildfire: it never goes down
+    if (!b.aug.burnKeep && !b.powers.burnKeep) en.burn -= 1;   // Wildfire, Desolate Land: it never goes down
     enemyLoses(burnDamage);
     checkStorm();
     hitEffect('enemy-portrait-box');
@@ -1867,6 +2027,7 @@ async function enemyTurn() {
         hurtEnemy(3);
         pop('enemy-zone', '-3 ⛑️', 'dmg', 250);
       }
+      if (hasRelic('big-pearl') && through === 0 && damage > 0) gainTide(2);
       if (hasRelic('wave-incense') && through === 0 && damage > 0) {
         hurtEnemy(5);
         pop('enemy-zone', '-5 🌊', 'dmg', 320);
@@ -1931,6 +2092,7 @@ async function enemyTurn() {
     statFx('enemy');
   }
 
+  en.tempSap = 0;                                 // Charm lasts one enemy turn
   en.moveIndex += 1;                              // pick the next move
   renderAll();
   await pause(700);
@@ -1969,7 +2131,7 @@ function enemyTypeMultiplier(move) {
 /** Damage an enemy attack will deal right now (includes strength, type and weaken). */
 function attackDamage(move) {
   const en = battle.enemy;
-  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap) * en.dmgMult * enemyTypeMultiplier(move));
+  const raw = Math.round(Math.max(0, move.amount + (en.grown[move.name] || 0) + en.dmgBonus + en.strength + en.bait * BAIT.damage - en.sap - (en.tempSap || 0)) * en.dmgMult * enemyTypeMultiplier(move));
   return en.weak > 0 ? Math.floor(raw * WEAK_MULT) : raw;
 }
 
@@ -2418,6 +2580,8 @@ function renderStatus() {
   if (en.vulnerable) enemyBadges.push(['💔', en.vulnerable, `Vulnerable ${en.vulnerable}: takes 50% more damage from your attacks for ${en.vulnerable} more turn${en.vulnerable > 1 ? 's' : ''}`]);
   if (en.seed)     enemyBadges.push(['🌱', en.seed, `Leech Seed ${en.seed}: at the start of its turn it loses ${en.seed} HP and you heal ${en.seed}${b.powers.seedKeep ? '' : ', then it drops by 1'}`]);
   if (en.sap)      enemyBadges.push(['🍂', en.sap, `Sap ${en.sap}: its attacks deal ${en.sap} less damage, all fight`]);
+  if (en.tempSap)  enemyBadges.push(['💕', en.tempSap, `Charmed: its attacks deal ${en.tempSap} less damage this turn`]);
+  if (b.skipEnemy) enemyBadges.push(['🌀', '', 'Eye of the Storm: it skips its next turn']);
   if (en.strength) enemyBadges.push(['💪', en.strength, `Strength ${en.strength}: +${en.strength} damage on every attack`, 'bad']);
   if (en.bait)     enemyBadges.push(['🍓', en.bait, `Bait ${en.bait}: easier to catch, but its attacks deal ${en.bait * BAIT.damage} more`, 'bad']);
   if (en.rock)     enemyBadges.push(['🪨', en.rock, b.rare ? `Rock ${en.rock}: it runs off ${en.rock} turn${en.rock > 1 ? 's' : ''} sooner` : `Rock ${en.rock}: ${Math.round(ROCK_FLEE * en.rock * 100)}% chance it runs off on its turn`]);
@@ -2434,7 +2598,9 @@ function renderStatus() {
   if (b.guard)      playerBadges.push(['✋', '', 'Guard: blocks the next enemy attack completely', 'block']);
   if (b.nextEnergy) playerBadges.push(['⚡', b.nextEnergy, b.nextEnergy > 0 ? `+${b.nextEnergy} energy next turn` : `${-b.nextEnergy} less energy next turn`, b.nextEnergy > 0 ? 'good' : 'bad']);
   if (b.endure)     playerBadges.push(['🎗️', '', 'Endure: you can\'t drop below 1 HP until your next turn', 'good']);
-  if (hasAbility('blaze') && b.hp < b.maxHp / 2) playerBadges.push(['🔥', '', `Blaze: your attacks deal +${b.ability.amount} while your HP is below half`, 'good']);
+  if (b.blockBonus) playerBadges.push(['🔰', `+${b.blockBonus}`, `Iron: your cards give ${b.blockBonus} more block this fight`, 'block']);
+  if (b.echoNext)   playerBadges.push(['♾️', b.echoNext > 1 ? b.echoNext + 1 : '', 'Your next card this turn is played twice', 'good']);
+  if (hasAbility('blaze') && (b.hp < b.maxHp / 2 || hasRelic('magmarizer'))) playerBadges.push(['🔥', '', `Blaze: your attacks deal +${b.ability.amount} while your HP is below half`, 'good']);
   if (b.tide)       playerBadges.push(['🌊', b.tide, `Tide ${b.tide}: lasts all fight; a move that says "per Tide" spends it all for a bigger hit`, 'good']);
   if (b.blockNext)  playerBadges.push(['🛡️', `+${b.blockNext}`, `+${b.blockNext} block at the start of your next turn`, 'block']);
   if (b.blur)       playerBadges.push(['🔰', '', 'Your block stays at the start of your next turn', 'block']);

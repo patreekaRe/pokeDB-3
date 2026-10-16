@@ -38,3 +38,17 @@ balance knob: adding 30 middling relics first cost Fire 18 points at Level 3 (fe
 offers). After the retune (see roadmap 6c.11a), human bot fire / grass / water: L0 71 / 79 / 73, L3 52 / 56 / 51, L5
 27 / 29 / 26. Recalibrate `sim/ranks.json` after any relic change (`calibrateJobs(n, [ids])` measures just those).
 
+
+**The balance pass (2026-10-16, branch `balance-pass`)**: 93 relics (34 new, each on a StS relic named in its comment;
+art from PokéSprite). Shared: commons Wide Lens, Lava Cookie, Soothe Bell, Metal Coat, Rare Candy (`pickedUp()` in
+`js/run.js`, with Cleanse Tag), Lucky Punch, Adrenaline Orb, Moomoo Milk; uncommons Sticky Barb, Lucky Egg, Power Bracer /
+Power Belt (`learnedId()`: every card add goes through it), Razor Fang (`battle.fightAttacks`), Spell Tag (`battle.skills`);
+rares Helix Fossil, Bright Powder, Sacred Ash (`run.ashUsed`, saved), Assault Vest, Protective Pads (both in
+`hurtPlayer()`, after Helix), Lagging Tail (`battle.drawNext`), Shiny Stone. One more per archetype for each type: Fire Kee
+Berry / Fire Memory / Soot Sack, Grass Macho Brace / Luminous Moss / Sachet, Water Splash Plate / Big Pearl / Tidal Bell.
+**Boss relics** (13): **Choice Scarf is one now** (it was a rare with no catch and the bot's best relic for every type;
+its catch is StS's Fusion Hammer: no PP Up at Centers, and it's in `ENERGY_RELICS`), **Max Mushrooms and Slowpoke Tail
+too** (StS's Snecko Eye and Runic Pyramid are boss relics), plus Ability upgrades like StS's Black Blood / Ring of the
+Serpent (Magmarizer: Blaze always on; Leaf Stone: Overgrow 10; Water Stone: +1 draw and Torrent 4, both raised in
+`startBattle()`'s `stone`) and Shiny Charm (Black Star: a second Alpha relic). The boss pick's text says "some come with
+a catch". ranks.json recalibrated (150 runs a relic a type).

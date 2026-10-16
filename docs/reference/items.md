@@ -120,3 +120,10 @@ no bot numbers (the user's call: none needed). Cheri and Pecha's sprites are Pok
 ## In the Index
 
 An item counts as found (`save.seen.items`, the Collection's Items app) once it is in the Bag, used or not (the user's call, 2026-10-06: a Revive carried twice and never used stayed ???). `checkpoint()` in `js/run.js` marks the Bag at every map, `endRun()` marks whatever the last rewards added, and using one in battle or on the map still marks it.
+
+**The balance pass (2026-10-16, branch `balance-pass`)**: 34 items (14 new, each on a StS potion): Hyper Potion (heal
+40, map), Full Heal (`cleanse`: every status card, then draw 1), Iron (`blockBonus`: `battle.blockBonus` in `cardBlock()`),
+Zinc / Carbos / Rage Candy Bar / Sweet Heart (`power`: a POWERS key for the fight, badge and all; Sweet Heart's `regen`
+skips Big Root), Elixir, Iron Ball (`hit` 12), Gold Bottle Cap (`echo`), TR / HM (`discover` with `kind` 'power' /
+'skill'), Revival Herb (`recall`, from the discard pile) and Wishing Piece (`fill`, on the map too; `startBattle()` gets the
+Bag's size as `slots`; none under Dusk Stone). The sim's `ITEM_VALUE` has a number for each.

@@ -144,9 +144,9 @@ export const TYPES = {
    uncommons/rares give ~20%/~50% more than a common. Enemies are tuned around the cards. */
 const NEUTRAL_CARDS = [
   { id: 'tackle',       name: 'Tackle',       type: 'normal', cost: 1, art: '💥', sprite: 'hit-spark', effects: { damage: 6, draw: 1 }, upgrade: { effects: { damage: 9 } } },   // Pommel Strike: a plain 7 was each type's own Strike (Ember...)
-  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 6 }, noOffer: true },   // Defend: Grass's starting deck only; offered, it doubled Water's Withdraw
+  { id: 'block',        name: 'Block',        type: 'normal', cost: 1, art: '🛡️', sprite: 'shield', effects: { block: 7 }, noOffer: true },   // Defend: Grass's starting deck only; offered, it doubled Water's Withdraw. 7 since the 2026-10-16 balance pass (Leech Seed lost its stage bonus)
   { id: 'iron-defense', name: 'Iron Defense', type: 'normal', cost: 2, art: '🏰', sprite: 'metal-coat', effects: { block: 22 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { block: 30 } } },   // Impervious
-  { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true } },
+  { id: 'quick-guard',  name: 'Quick Guard',  type: 'normal', cost: 2, art: '✋', sprite: 'protective-pads', effects: { guard: true }, exhaust: true },   // Exhaust since 2026-10-16: a whole enemy turn for 2 PP, every time, topped the bot's card picks for every type
   { id: 'potion',       name: 'Potion',       type: 'normal', cost: 1, art: '🧪', sprite: 'potion', effects: { heal: 10 }, exhaust: true },      // Bandage Up
   { id: 'smokescreen',  name: 'Smokescreen',  type: 'normal', cost: 0, art: '💨', sprite: 'smoke-ball', effects: { weaken: 2 }, exhaust: true },   // Intimidate
   { id: 'tailwind',     name: 'Tailwind',     type: 'normal', cost: 0, art: '🌬️', sprite: 'air-balloon', effects: { nextEnergy: 1 } },
@@ -163,6 +163,15 @@ const NEUTRAL_CARDS = [
   { id: 'endure',       name: 'Endure',       type: 'normal', cost: 1, art: '🎗️', sprite: 'focus-band', effects: { endure: true, block: 4 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // (Pokémon's Endure; StS has no card for it)
   { id: 'metronome',    name: 'Metronome',    type: 'normal', cost: 1, art: '❓', sprite: 'metronome', effects: { randomCard: 1 }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Discovery / Jack of All Trades
   { id: 'hyper-beam',   name: 'Hyper Beam',   type: 'normal', cost: 2, art: '💥', sprite: 'tm-normal', effects: { damage: 38, nextEnergy: -1 }, rarity: 'rare', upgrade: { effects: { damage: 50 } } },   // Bludgeon, 1 PP now and 1 next turn
+  // The 2026-10-16 balance pass: more of StS's colorless cards
+  { id: 'harden',       name: 'Harden',       type: 'normal', cost: 0, art: '🪨', sprite: 'hard-stone', effects: { block: 5 }, upgrade: { effects: { block: 8 } } },   // Good Instincts
+  { id: 'return',       name: 'Return',       type: 'normal', cost: 1, art: '🔁', sprite: 'soothe-bell', effects: { damage: 9, returnCard: 1 }, upgrade: { effects: { damage: 13 } } },   // Headbutt
+  { id: 'fake-out',     name: 'Fake Out',     type: 'normal', cost: 0, art: '👏', sprite: 'hit-spark', effects: { damage: 8, weaken: 1 }, innate: true, exhaust: true, rarity: 'uncommon', upgrade: { effects: { damage: 12, weaken: 2 } } },   // Dramatic Entrance
+  { id: 'recycle',      name: 'Recycle',      type: 'normal', cost: 0, art: '♻️', sprite: 'max-ether', effects: { reshuffle: true, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { draw: 2 } } },   // Deep Breath
+  { id: 'charm',        name: 'Charm',        type: 'normal', cost: 0, art: '💕', sprite: 'pink-nectar', effects: { tempSap: 10 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { tempSap: 14 } } },   // Dark Shackles
+  { id: 'pay-day',      name: 'Pay Day',      type: 'normal', cost: 2, art: '🪙', sprite: 'amulet-coin', effects: { damage: 24, payDay: 20 }, rarity: 'rare', upgrade: { effects: { damage: 30, payDay: 25 } } },   // Hand of Greed
+  { id: 'sketch',       name: 'Sketch',       type: 'normal', cost: 0, art: '🖌️', sprite: 'silk-scarf', effects: { sketch: 1 }, exhaust: true, rarity: 'rare', upgrade: { exhaust: false } },   // Secret Technique / Secret Weapon
+  { id: 'mega-evolution', name: 'Mega Evolution', type: 'normal', cost: 2, art: '🧬', sprite: 'dna-splicers', effects: { upgradeAll: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 1 } },   // Apotheosis
   { id: 'last-resort',  name: 'Last Resort',  type: 'normal', cost: 0, art: '⭐', sprite: 'normal-gem', effects: { damage: 60, needsEmptyDraw: true }, rarity: 'rare', upgrade: { effects: { damage: 72 } } },   // Grand Finale
 ];
 
@@ -183,7 +192,7 @@ const FIRE_CARDS = [
   { id: 'will-o-wisp',     name: 'Will-O-Wisp',     type: 'fire', cost: 1, art: '👻', sprite: 'spell-tag', effects: { burn: 4, weaken: 2 }, upgrade: { effects: { burn: 6 } } },                  // Deadly Poison + Weak, like the move's halved Attack
   { id: 'mystical-fire',   name: 'Mystical Fire',   type: 'fire', cost: 1, art: '✨', sprite: 'wise-glasses', effects: { damage: 6, weaken: 1 }, upgrade: { effects: { damage: 8, weaken: 2 } } },             // Sucker Punch
   { id: 'fire-punch',      name: 'Fire Punch',      type: 'fire', cost: 1, art: '🥊', sprite: 'expert-belt', effects: { damage: 10, draw: 1 }, upgrade: { effects: { damage: 12, draw: 2 } } },               // Pommel Strike
-  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 10, burn: 2 }, upgrade: { effects: { block: 12, burn: 3 } } },                 // Iron Wave
+  { id: 'flame-body',      name: 'Flame Body',      type: 'fire', cost: 1, art: '🛡️', sprite: 'magma-stone', effects: { block: 11, burn: 2 }, upgrade: { effects: { block: 13, burn: 3 } } },                 // Iron Wave (11 since the 2026-10-16 balance pass)
   { id: 'fire-spin',       name: 'Fire Spin',       type: 'fire', cost: 1, art: '🌀', sprite: 'red-shard', effects: { damage: 6, burn: 3 }, upgrade: { effects: { damage: 8, burn: 4 } } },                  // Poisoned Stab
   { id: 'flame-burst',     name: 'Flame Burst',     type: 'fire', cost: 2, art: '💥', sprite: 'flame-mail', effects: { burn: 3, burnTimes: 3 }, upgrade: { effects: { burn: 4 } } },          // Bouncing Flask
   { id: 'scorching-sands', name: 'Scorching Sands', type: 'fire', cost: 1, art: '🌪️', sprite: 'soft-sand', effects: { damage: 8, ifBurned: { vulnerable: 1 } }, upgrade: { effects: { damage: 10, ifBurned: { vulnerable: 2 } } } },   // Bane, with Vulnerable
@@ -229,6 +238,10 @@ const FIRE_CARDS = [
   { id: 'hot-coals',       name: 'Hot Coals',       type: 'fire', cost: 1, art: '🔥', sprite: 'ruby', effects: { cinderDamage: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { cinderDamage: 6 } } },   // Accuracy
   { id: 'wildfire',        name: 'Wildfire',        type: 'fire', cost: 1, art: '🌪️', sprite: 'blunder-policy', effects: { playTop: 1 }, rarity: 'uncommon', upgrade: { cost: 0 } },   // Havoc
   { id: 'armor-cannon',    name: 'Armor Cannon',    type: 'fire', cost: 2, art: '💥', sprite: 'armorite-ore', effects: { damage: 24 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { damage: 30 } } },   // Carnage: Ethereal feeds the exhaust payoffs
+  { id: 'blazing-torque',  name: 'Blazing Torque',  type: 'fire', cost: 1, art: '⚙️', sprite: 'machine-part', effects: { damage: 9 }, growOnPlay: { damage: 5 }, rarity: 'uncommon', upgrade: { effects: { damage: 9 }, growOnPlay: { damage: 8 } } },   // Rampage
+  { id: 'ignite',          name: 'Ignite',          type: 'fire', cost: 1, art: '⚡', sprite: 'fire-stone', effects: { energy: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },   // Seeing Red
+  { id: 'burning-spirit',  name: 'Burning Spirit',  type: 'fire', cost: 1, art: '👹', sprite: 'red-chain', effects: { statusDamage: 7 }, power: true, rarity: 'uncommon', upgrade: { effects: { statusDamage: 10 } } },   // Fire Breathing: Kindling's junk and Reckless's
+  { id: 'flame-rush',      name: 'Flame Rush',      type: 'fire', cost: 0, art: '💨', sprite: 'flame-mail', effects: { damage: 9, addCard: { id: 'confusion', to: 'draw' } }, rarity: 'uncommon', upgrade: { effects: { damage: 12 } } },   // Reckless Charge
   { id: 'heatproof',       name: 'Heatproof',       type: 'fire', cost: 1, art: '🛡️', sprite: 'assault-vest', effects: { block: 12 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { block: 16 } } },   // Ghostly Armor
   // Rare: 14
   { id: 'firestorm',       name: 'Firestorm',       type: 'fire', cost: 3, art: '🌪️', sprite: 'charizardite-y', effects: { damage: 36 }, rarity: 'rare', upgrade: { effects: { damage: 46 } } },    // Bludgeon
@@ -244,13 +257,15 @@ const FIRE_CARDS = [
   { id: 'blue-flare',      name: 'Blue Flare',      type: 'fire', cost: 3, art: '🔵', sprite: 'light-stone', effects: { corruption: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // Corruption
   { id: 'torch-song',      name: 'Torch Song',      type: 'fire', cost: 2, art: '📣', sprite: 'throat-spray', effects: { cardDamage: 2 }, power: true, rarity: 'rare', upgrade: { effects: { cardDamage: 3 } } },   // A Thousand Cuts
   { id: 'pyro-ball',       name: 'Pyro Ball',       type: 'fire', cost: 'X', art: '⚫', sprite: 'fast-ball', effects: { damage: 7, perX: { hits: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 10 } } },   // Whirlwind
+  { id: 'inferno-overdrive', name: 'Inferno Overdrive', type: 'fire', cost: 1, art: '♾️', sprite: 'firium-z', effects: { echo: 1 }, rarity: 'rare', upgrade: { cost: 0 } },   // Double Tap + Burst
+  { id: 'desolate-land',   name: 'Desolate Land',   type: 'fire', cost: 3, art: '🏜️', sprite: 'red-orb', effects: { burnKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } },   // (Burn's own Catalyst, made permanent: Grassy Surge's twin)
   { id: 'fusion-flare',    name: 'Fusion Flare',    type: 'fire', cost: 1, art: '🧬', sprite: 'dna-splicers', effects: { exhume: 1 }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // Exhume
 ];
 
 const GRASS_CARDS = [
   // Common: 20
   { id: 'vine-whip',      name: 'Vine Whip',      type: 'grass', cost: 1, art: '🌿', sprite: 'galarica-twig', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
-  { id: 'cotton-guard',   name: 'Cotton Guard',   type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 9 }, retain: true, upgrade: { effects: { block: 12 } } },   // Defend (Retain)
+  { id: 'cotton-guard',   name: 'Cotton Guard',   type: 'grass', cost: 1, art: '🛡️', sprite: 'fluffy-tail', effects: { block: 11 }, retain: true, upgrade: { effects: { block: 14 } } },   // Defend (Retain); 11 since the 2026-10-16 balance pass
   { id: 'seed-bomb',      name: 'Seed Bomb',      type: 'grass', cost: 2, art: '🌰', sprite: 'rindo-berry', effects: { damage: 10, vulnerable: 2 }, upgrade: { effects: { damage: 12, vulnerable: 3 } } },   // Bash
   { id: 'petal-dance',    name: 'Petal Dance',    type: 'grass', cost: 1, art: '🌸', sprite: 'petal-pink', effects: { damage: 6, block: 6 }, upgrade: { effects: { damage: 8, block: 8 } } },   // Iron Wave
   { id: 'razor-leaf',     name: 'Razor Leaf',     type: 'grass', cost: 2, art: '🍃', sprite: 'silver-leaf', effects: { damage: 16 }, upgrade: { effects: { damage: 21 } } },   // Carnage, without Ethereal
@@ -301,6 +316,10 @@ const GRASS_CARDS = [
   { id: 'sappy-seed',     name: 'Sappy Seed',     type: 'grass', cost: 1, art: '🌱', sprite: 'electric-seed', effects: { seed: 2, sap: 1 }, rarity: 'uncommon', upgrade: { effects: { seed: 3, sap: 2 } } },   // bridge Drain/Spores: Deadly Poison + Disarm (lite)
   { id: 'cotton-spore',   name: 'Cotton Spore',   type: 'grass', cost: 1, art: '💨', sprite: 'fresh-cream', effects: { weaken: 2, seed: 1 }, rarity: 'uncommon', upgrade: { effects: { weaken: 3, seed: 2 } } },   // bridge Drain/Spores: Blind + poison
   { id: 'energy-ball',    name: 'Energy Ball',    type: 'grass', cost: 1, art: '🌀', sprite: 'grass-memory', effects: { damage: 9, ifSeeded: { heal: 4 } }, rarity: 'uncommon', upgrade: { effects: { damage: 12, ifSeeded: { heal: 5 } } } },   // bridge Drain/Spores: Bane, as a heal
+  { id: 'ivy-cudgel',     name: 'Ivy Cudgel',     type: 'grass', cost: 2, art: '🪓', sprite: 'large-leek', effects: { damage: 6, hits: 2, strengthMult: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 8, strengthMult: 3 } } },   // Sword Boomerang + Heavy Blade (Growth)
+  { id: 'flower-trick',   name: 'Flower Trick',   type: 'grass', cost: 1, art: '💐', sprite: 'small-bouquet', effects: { damage: 8, ifVulnerable: { bonus: 8 } }, rarity: 'uncommon', upgrade: { effects: { damage: 10, ifVulnerable: { bonus: 10 } } } },   // Bane, on Vulnerable (Spores)
+  { id: 'grass-whistle',  name: 'Grass Whistle',  type: 'grass', cost: 1, art: '🎶', sprite: 'grass-memory', effects: { weaken: 1, draw: 2 }, rarity: 'uncommon', upgrade: { effects: { weaken: 2 } } },   // Blind + draw (Spores)
+  { id: 'leafage',        name: 'Leafage',        type: 'grass', cost: 0, art: '🍂', sprite: 'gold-leaf', effects: { damage: 5, ifHealed: { draw: 1, heal: 2 } }, rarity: 'uncommon', upgrade: { effects: { damage: 8 } } },   // Flash of Steel, for Drain
   { id: 'aromatic-mist',  name: 'Aromatic Mist',  type: 'grass', cost: 1, art: '🌸', sprite: 'pink-nectar', effects: { heal: 3, weaken: 1, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { heal: 5, weaken: 2 } } },   // bridge Drain/Spores: Blind + a heal
   // Rare: 14
   { id: 'solar-beam',     name: 'Solar Beam',     type: 'grass', cost: 3, art: '🌞', sprite: 'tm-grass', effects: { damage: 36 }, rarity: 'rare', upgrade: { effects: { damage: 46 } } },   // Bludgeon
@@ -316,13 +335,15 @@ const GRASS_CARDS = [
   { id: 'natures-madness', name: 'Nature\'s Madness', type: 'grass', cost: 'X', art: '🌀', sprite: 'tapunium-z', effects: { perX: { sap: 1, weaken: 1 } }, exhaust: true, rarity: 'rare', upgrade: { effects: { xPlus: 1 } } },   // Malaise
   { id: 'pollen-puff',    name: 'Pollen Puff',    type: 'grass', cost: 1, art: '🌸', sprite: 'honey', effects: { drawPerDebuff: 1 }, rarity: 'rare', upgrade: { cost: 0 } },   // Expertise, by debuffs
   { id: 'sap-sipper',     name: 'Sap Sipper',     type: 'grass', cost: 1, art: '💚', sprite: 'yellow-nectar', effects: { weakBlock: 4 }, power: true, rarity: 'rare', upgrade: { effects: { weakBlock: 6 } } },   // Sadistic Nature, as block
+  { id: 'bloom-doom',     name: 'Bloom Doom',     type: 'grass', cost: 2, art: '🌺', sprite: 'grassium-z', effects: { seedMult: 3 }, exhaust: true, rarity: 'rare', upgrade: { cost: 1 } },   // Catalyst, for Leech Seed
+  { id: 'overgrowth',     name: 'Overgrowth',     type: 'grass', cost: 1, art: '🌳', sprite: 'rich-mulch', effects: { strengthBlock: 1 }, power: true, rarity: 'rare', upgrade: { effects: { strengthBlock: 2 } } },   // (Growth's defence: Metallicize by strength)
   { id: 'petal-storm',    name: 'Petal Storm',    type: 'grass', cost: 2, art: '🌸', sprite: 'petal-purple', effects: { damage: 4, hits: 5, vulnerable: 1 }, rarity: 'rare', upgrade: { effects: { damage: 5, vulnerable: 2 } } },   // Glass Knife
 ];
 
 const WATER_CARDS = [
   // Common: 20
   { id: 'water-gun',      name: 'Water Gun',      type: 'water', cost: 1, art: '💧', sprite: 'water-stone', effects: { damage: 7 }, upgrade: { effects: { damage: 10 } } },                        // Strike
-  { id: 'withdraw',       name: 'Withdraw',       type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 6 }, upgrade: { effects: { block: 9 } } },                          // Defend
+  { id: 'withdraw',       name: 'Withdraw',       type: 'water', cost: 1, art: '🐚', sprite: 'shoal-shell', effects: { block: 8 }, upgrade: { effects: { block: 11 } } },                         // Defend, 8 like Fire's Flame Wall since the 2026-10-16 balance pass
   { id: 'bubble',         name: 'Bubble',         type: 'water', cost: 1, art: '🫧', sprite: 'bubble-mail', effects: { damage: 5, weaken: 2, tide: 1 }, upgrade: { effects: { damage: 7 } } },   // Sucker Punch
   { id: 'dive',           name: 'Dive',           type: 'water', cost: 1, art: '🌊', sprite: 'dive-ball', effects: { block: 9, draw: 1, tide: 1 }, upgrade: { effects: { block: 12 } } },   // Shrug It Off
   { id: 'water-pulse',    name: 'Water Pulse',    type: 'water', cost: 1, art: '💧', sprite: 'splash-plate', effects: { damage: 5, perTide: 2 }, retain: true, upgrade: { effects: { perTide: 3 } } },   // Windmill Strike: hold it until the Tide is high
@@ -352,7 +373,7 @@ const WATER_CARDS = [
   { id: 'mirror-coat',    name: 'Mirror Coat',    type: 'water', cost: 1, art: '🔮', sprite: 'reveal-glass', effects: { thorns: 4 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 6 } } },   // Caltrops
   { id: 'water-veil',     name: 'Water Veil',     type: 'water', cost: 1, art: '🌧️', sprite: 'prism-scale', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } },   // Metallicize
   { id: 'tidal-wall',     name: 'Tidal Wall',     type: 'water', cost: 1, art: '🌊', sprite: 'swampertite', effects: { blockPerTide: 4 }, rarity: 'uncommon', upgrade: { effects: { blockPerTide: 5 } } },   // Shell's way to cash in Tide
-  { id: 'shell-smash',    name: 'Shell Smash',    type: 'water', cost: 2, art: '🐚', sprite: 'slowbronite', effects: { blockMult: 2 }, rarity: 'uncommon', upgrade: { cost: 1 } },   // Entrench
+  { id: 'shell-smash',    name: 'Shell Smash',    type: 'water', cost: 2, art: '🐚', sprite: 'slowbronite', effects: { blockMult: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 1 } },   // Entrench; Exhaust since 2026-10-16: with Shell Armor it doubled every turn, to millions of block
   { id: 'aqua-tail',      name: 'Aqua Tail',      type: 'water', cost: 1, art: '🌊', sprite: 'lagging-tail', effects: { block: 7, blockDamage: 0.5 }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } },   // Iron Wave + Body Slam
   { id: 'bubble-shield',  name: 'Bubble Shield',  type: 'water', cost: 1, art: '🫧', sprite: 'soda-pop', effects: { block: 12 }, ethereal: true, rarity: 'uncommon', upgrade: { effects: { block: 16 } } },   // Ghostly Armor
   { id: 'surging-strikes', name: 'Surging Strikes', type: 'water', cost: 2, art: '🌊', sprite: 'tr-water', effects: { damage: 5, hits: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 7 } } },   // Riddle with Holes
@@ -373,6 +394,10 @@ const WATER_CARDS = [
   { id: 'rain-dish',      name: 'Rain Dish',      type: 'water', cost: 1, art: '⛲', sprite: 'pearl', effects: { tideSpendBlock: 2 }, power: true, rarity: 'uncommon', upgrade: { effects: { tideSpendBlock: 3 } } },   // bridge Tsunami/Shell: Mental Fortress (a cash-in also defends)
   { id: 'bouncy-bubble',  name: 'Bouncy Bubble',  type: 'water', cost: 1, art: '🫧', sprite: 'bead-mail', effects: { damage: 4, hits: 2, tide: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 6 } } },   // bridge Tsunami: Twin Strike + Tide
   { id: 'water-absorb',   name: 'Water Absorb',   type: 'water', cost: 2, art: '💧', sprite: 'fresh-water', effects: { block: 16 }, retain: true, rarity: 'uncommon', upgrade: { effects: { block: 20 } } },   // bridge Shell/Flow: Protect
+  { id: 'hydro-steam',    name: 'Hydro Steam',    type: 'water', cost: 1, art: '♨️', sprite: 'douse-drive', effects: { damage: 9, tideMult: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 13 } } },   // Strike + Catalyst (Tsunami); 1 PP since the bot's check (2 PP for 14 tested -12)
+  { id: 'gulp-missile',   name: 'Gulp Missile',   type: 'water', cost: 1, art: '🐟', sprite: 'deep-sea-tooth', effects: { blockDamage: 0.75, hits: 2 }, rarity: 'uncommon', upgrade: { cost: 0 } },   // Body Slam, twice at three quarters (Shell; half tested -7)
+  { id: 'undercurrent',   name: 'Undercurrent',   type: 'water', cost: 0, art: '🌀', sprite: 'wave-mail', effects: { discard: 3, energy: 2 }, rarity: 'uncommon', upgrade: { effects: { discard: 2 } } },   // Concentrate (Flow)
+  { id: 'steam-eruption', name: 'Steam Eruption', type: 'water', cost: 4, art: '🌋', sprite: 'water-memory', effects: { damage: 24 }, retain: true, growOnRetain: { discount: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 31 } } },   // Sands of Time (Flow's retain)
   { id: 'ebb-tide',       name: 'Ebb Tide',       type: 'water', cost: 0, art: '🌊', sprite: 'moon-stone', effects: { draw: 1, discard: 1, tide: 1 }, rarity: 'uncommon', upgrade: { effects: { draw: 2 } } },   // bridge Flow/Tsunami: Prepared + Tide
   // Rare: 13
   { id: 'hydro-pump',     name: 'Hydro Pump',     type: 'water', cost: 2, art: '🚿', sprite: 'tm-water', effects: { damage: 10, perTide: 5 }, rarity: 'rare', upgrade: { effects: { damage: 14, perTide: 6 } } },   // Ragnarok, as the big cash-in
@@ -387,6 +412,8 @@ const WATER_CARDS = [
   { id: 'life-dew',       name: 'Life Dew',       type: 'water', cost: 1, art: '💚', sprite: 'oran-berry', effects: { heal: 6 }, retain: true, growOnRetain: { heal: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { heal: 8 }, growOnRetain: { heal: 3 } } },   // Windmill Strike, for healing
   { id: 'ebb-and-flow',   name: 'Ebb and Flow',   type: 'water', cost: 1, art: '🏷️', sprite: 'soul-dew', effects: { retainDiscount: 1 }, power: true, rarity: 'rare', upgrade: { innate: true } },   // Establishment
   { id: 'aqua-wall',      name: 'Aqua Wall',      type: 'water', cost: 2, art: '🏰', sprite: 'icy-rock', effects: { blockPerCard: 4 }, rarity: 'rare', upgrade: { effects: { blockPerCard: 5 } } },   // Spirit Shield
+  { id: 'downpour',       name: 'Downpour',       type: 'water', cost: 1, art: '🌧️', sprite: 'sprinklotad', effects: { drawTo: 10 }, exhaust: true, rarity: 'rare', upgrade: { cost: 0 } },   // Scrawl
+  { id: 'eye-of-the-storm', name: 'Eye of the Storm', type: 'water', cost: 3, art: '🌀', sprite: 'tidal-bell', effects: { skipEnemy: true }, exhaust: true, rarity: 'rare', upgrade: { cost: 2 } },   // Vault
   { id: 'primal-reversion', name: 'Primal Reversion', type: 'water', cost: 3, art: '🧿', sprite: 'sapphire', effects: { tideSurge: 1 }, power: true, ethereal: true, rarity: 'rare', upgrade: { ethereal: false } },   // Deva Form
 ];
 
@@ -419,7 +446,7 @@ const PSYCHIC_CARDS = [
   { id: 'telekinetic-toss',    name: 'Telekinetic Toss',    type: 'psychic', cost: 1, art: '🪨', effects: { damage: 7, perPlayed: 3 }, rarity: 'uncommon', upgrade: { effects: { damage: 9, perPlayed: 4 } } }, // Dagger Spray payoff
   { id: 'focus-punch',         name: 'Focus Punch',         type: 'psychic', cost: 1, art: '👊', effects: { damage: 9, focus: 5 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, focus: 7 } } }, // Strike + setup
   { id: 'aura-sphere',         name: 'Aura Sphere',         type: 'psychic', cost: 2, art: '🔵', effects: { damage: 12, strengthMult: 2 }, rarity: 'uncommon', upgrade: { effects: { damage: 16, strengthMult: 3 } } }, // Heavy Blade
-  { id: 'power-within',        name: 'Power Within',        type: 'psychic', cost: 1, art: '💪', effects: { strength: 2 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { strength: 3 } } }, // Inflame
+  { id: 'power-within',        name: 'Power Within',        type: 'psychic', cost: 1, art: '💪', effects: { strength: 2, focus: 4 }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { strength: 3 } } }, // Inflame (+4 Focus since 2026-10-16: it read just like Swords Dance)
   { id: 'psychic-crush',       name: 'Psychic Crush',       type: 'psychic', cost: 2, art: '💥', effects: { damage: 18, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 23, vulnerable: 2 } } }, // Uppercut
   { id: 'kinesis',             name: 'Kinesis',             type: 'psychic', cost: 1, art: '🧲', effects: { focus: 6, draw: 1 }, rarity: 'uncommon', upgrade: { effects: { focus: 8 } } },         // Setup + draw
   { id: 'light-screen',        name: 'Light Screen',        type: 'psychic', cost: 1, art: '✨', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } }, // Metallicize
@@ -438,13 +465,17 @@ const PSYCHIC_CARDS = [
   { id: 'disable-plus',        name: 'Disable+',            type: 'psychic', cost: 1, art: '🚫', effects: { weaken: 3 }, exhaust: true, rarity: 'uncommon', upgrade: { cost: 0 } },            // Disarm+
   { id: 'future-shock',       name: 'Future Shock',        type: 'psychic', cost: 1, art: '🔮', effects: { damage: 9, focus: 6 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, focus: 8 } } }, // Strike + setup
   { id: 'telepathy',           name: 'Telepathy',           type: 'psychic', cost: 1, art: '🧠', effects: { drawEachTurn: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 0 } },        // Tools of the Trade, without discard
+  { id: 'expanding-force',     name: 'Expanding Force',     type: 'psychic', cost: 2, art: '🌐', effects: { damage: 9, hits: 2, vulnerable: 1 }, rarity: 'uncommon', upgrade: { effects: { damage: 12, vulnerable: 2 } } }, // Twin Strike + Trip (Force)
+  { id: 'magic-room',          name: 'Magic Room',          type: 'psychic', cost: 1, art: '🎪', effects: { weaken: 1, vulnerable: 1, draw: 1 }, retain: true, rarity: 'uncommon', upgrade: { effects: { weaken: 2, vulnerable: 2 } } }, // Blind + Trip, kept (Mind Games)
+  { id: 'cosmic-power',        name: 'Cosmic Power',        type: 'psychic', cost: 1, art: '🌠', effects: { blockEachTurn: 2, thorns: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 3, thorns: 4 } } }, // Metallicize + Caltrops, lite (Barrier)
+  { id: 'meditate',            name: 'Meditate',            type: 'psychic', cost: 1, art: '🧘', effects: { focusEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { focusEachTurn: 5 } } }, // (Force: Focus every turn)
   { id: 'synchro-strike',      name: 'Synchro Strike',      type: 'psychic', cost: 1, art: '💫', effects: { damage: 8, ifVulnerable: { energy: 1, draw: 1 } }, rarity: 'uncommon', upgrade: { effects: { damage: 11 } } }, // Dropkick
   // Rare: 14
   { id: 'psycho-boost',        name: 'Psycho Boost',        type: 'psychic', cost: 2, art: '🌠', effects: { damage: 30, nextEnergy: -1 }, rarity: 'rare', upgrade: { effects: { damage: 38 } } },  // Bludgeon, with recharge
   { id: 'psyshock-wave',       name: 'Psyshock Wave',       type: 'psychic', cost: 2, art: '🌌', effects: { damage: 8, hits: 3 }, rarity: 'rare', upgrade: { effects: { damage: 10 } } },    // Riddle with Holes+
   { id: 'unleashed-power',    name: 'Unleashed Power',    type: 'psychic', cost: 1, art: '💥', effects: { damage: 12, strengthMult: 4 }, retain: true, rarity: 'rare', upgrade: { effects: { damage: 16, strengthMult: 5 } } }, // Heavy Blade+
   { id: 'psychic-mastery',     name: 'Psychic Mastery',     type: 'psychic', cost: 2, art: '🧠', effects: { strengthEachTurn: 2 }, power: true, rarity: 'rare', upgrade: { effects: { strengthEachTurn: 3 } } }, // Demon Form+
-  { id: 'amnesia',             name: 'Amnesia',             type: 'psychic', cost: 2, art: '🌫️', effects: { keepBlock: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },             // Barricade+
+  { id: 'amnesia',             name: 'Amnesia',             type: 'psychic', cost: 2, art: '🌫️', effects: { keepBlock: 1, block: 12 }, power: true, rarity: 'rare', upgrade: { cost: 1 } },   // Barricade+ (block 12 since 2026-10-16: it read just like Barrier Field)
   { id: 'mirror-armor',        name: 'Mirror Armor',        type: 'psychic', cost: 2, art: '🪞', effects: { thorns: 8 }, power: true, rarity: 'rare', upgrade: { effects: { thorns: 11 } } }, // Caltrops+
   { id: 'psychic-fortress',    name: 'Psychic Fortress',    type: 'psychic', cost: 2, art: '🏰', effects: { blockEachTurn: 5, drawEachTurn: 1 }, power: true, rarity: 'rare', upgrade: { cost: 1 } }, // Barricade + Tools
   { id: 'precognition',        name: 'Precognition',        type: 'psychic', cost: 1, art: '🔮', effects: { focus: 10, draw: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { focus: 14 } } }, // Adrenaline, Focus
@@ -453,6 +484,8 @@ const PSYCHIC_CARDS = [
   { id: 'psychic-dominance',   name: 'Psychic Dominance',   type: 'psychic', cost: 2, art: '👁️', effects: { cardDamage: 2 }, power: true, rarity: 'rare', upgrade: { effects: { cardDamage: 3 } } }, // A Thousand Cuts
   { id: 'mind-storm',          name: 'Mind Storm',          type: 'psychic', cost: 'X', art: '🌪️', effects: { damage: 7, perX: { hits: 1 } }, rarity: 'rare', upgrade: { effects: { damage: 10 } } }, // Whirlwind
   { id: 'psychic-overload',    name: 'Psychic Overload',    type: 'psychic', cost: 0, art: '⚡', effects: { focus: 8, energy: 1, draw: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { focus: 11 } } }, // Adrenaline
+  { id: 'psychic-terrain',     name: 'Psychic Terrain',     type: 'psychic', cost: 3, art: '🌈', effects: { focusKeep: 1 }, power: true, rarity: 'rare', upgrade: { cost: 2 } }, // (Force's rule-changer: Focus stays)
+  { id: 'lunar-blessing',      name: 'Lunar Blessing',      type: 'psychic', cost: 2, art: '🌙', effects: { heal: 10, block: 12 }, exhaust: true, rarity: 'rare', upgrade: { effects: { heal: 14, block: 16 } } }, // Bandage Up + Impervious, lite (Barrier)
   { id: 'mind-control',        name: 'Mind Control',        type: 'psychic', cost: 2, art: '🎭', effects: { vulnerable: 3, weaken: 3, sap: 2 }, exhaust: true, rarity: 'rare', upgrade: { effects: { vulnerable: 4, weaken: 4, sap: 3 } } }, // Malaise, fixed cost
 ];
 
@@ -685,15 +718,18 @@ export const MAX_COPIES = 3;
 /** Each evolution stage makes damage, block, healing and focus this much stronger. */
 export const STAGE_POWER = 0.15;
 
+/** Each evolution stage adds this much to every Burn and Leech Seed a card applies (flat, since they're small numbers). */
+export const STAGE_STATUS = { burn: 1, seed: 0 };   // seed 0 since 2026-10-16: +2 Leech Seed a card at stage 2 (Worry Seed 3 -> 5) took a plain deck from 0% to 97% against Level 5's last bosses
+
 /** A card's effects after applying the evolution bonus (stage 0 = unchanged). */
 export function scaledEffects(card, stage = 0) {
   const e = { ...card.effects };
   const k = 1 + STAGE_POWER * stage;
-  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust', 'blockPerTide', 'blockPerCard', 'blockNext', 'riptide', 'weakBlock', 'debuffDamage']) {
+  for (const key of ['damage', 'bonusIfLow', 'block', 'heal', 'focus', 'focusEachTurn', 'blockEachTurn', 'healEachTurn', 'thorns', 'blaze', 'exhaustBlock', 'discardBlock', 'cardBlock', 'perExhausted', 'blockPerExhausted', 'combust', 'blockPerTide', 'blockPerCard', 'blockNext', 'riptide', 'weakBlock', 'debuffDamage']) {
     if (e[key]) e[key] = Math.round(e[key] * k);
   }
-  if (e.burn) e.burn += stage;
-  if (e.seed) e.seed += stage;
+  if (e.burn) e.burn += Math.floor(STAGE_STATUS.burn * stage);
+  if (e.seed) e.seed += Math.floor(STAGE_STATUS.seed * stage);
   return e;
 }
 
@@ -742,6 +778,12 @@ export const POWERS = {
   weakEachTurn:     { icon: '💨', text: (n) => `At the start of each turn, apply ${n} Weak.` },
   weakBlock:        { icon: '🍃', text: (n) => `Whenever you apply Weak, gain ${n} block.` },
   strengthHeal:     { icon: '🌰', text: (n) => `Whenever you gain strength, heal ${n} HP.` },
+  statusDamage:     { icon: '👹', text: (n) => `Whenever you draw a status card, deal ${n} damage.` },
+  burnKeep:         { icon: '🏜️', flag: true, text: () => 'Burn on the enemy no longer drops.' },
+  strengthBlock:    { icon: '🌳', text: (n) => `At the end of your turn, gain block equal to your strength${n > 1 ? ` x${n}` : ''}.` },
+  focusEachTurn:    { icon: '🧘', text: (n) => `At the start of each turn, your next attack deals +${n} damage.` },
+  focusKeep:        { icon: '🌈', flag: true, text: () => 'Focus is no longer used up: every attack adds it.' },
+  regen:            { icon: '🍫', text: (n) => `At the start of each turn, heal ${n} HP.` },   // only an item gives it (Sweet Heart)
 };
 
 const xLabel = (e) => (e.xPlus ? `X+${e.xPlus}` : 'X');
@@ -759,8 +801,8 @@ function sentences(e) {
     : e.hitsPerExhausted ? ' for each card exhausted' : e.hits > 1 ? ` ${e.hits} times` : '';
   if (e.damage)       parts.push(`Deal ${e.damage} damage${times}.`);
   if (e.blockDamage) {
-    const times = e.blockDamage === true ? 'your block' : e.blockDamage === 0.5 ? 'half your block' : `${e.blockDamage} times your block`;
-    parts.push(e.block ? `Gain ${e.block} block, then deal damage equal to ${times}.` : `Deal damage equal to ${times}.`);
+    const share = e.blockDamage === true ? 'your block' : e.blockDamage === 0.5 ? 'half your block' : e.blockDamage === 0.75 ? 'three quarters of your block' : `${e.blockDamage} times your block`;
+    parts.push(e.block ? `Gain ${e.block} block, then deal damage equal to ${share}${times}.` : `Deal damage equal to ${share}${times}.`);
   }
   if (e.bonus)        parts.push(`+${e.bonus} damage.`);
   if (e.perExhausted) parts.push(`+${e.perExhausted} for each card exhausted.`);
@@ -775,10 +817,13 @@ function sentences(e) {
   if (e.strengthMult) parts.push(`Strength counts ${e.strengthMult} times.`);
   if (e.burn)         parts.push(e.burnTimes > 1 ? `Burn ${e.burn}, ${TIMES[e.burnTimes] ?? `${e.burnTimes} times`}.` : `Burn ${e.burn}.`);
   if (e.burnMult)     parts.push(`${MULT[e.burnMult] ?? `Multiply by ${e.burnMult}`} the enemy's Burn.`);
+  if (e.seedMult)     parts.push(`${MULT[e.seedMult] ?? `Multiply by ${e.seedMult}`} the enemy's Leech Seed.`);
   if (e.weaken)       parts.push(`Apply ${e.weaken} Weak.`);
   if (e.vulnerable)   parts.push(`Apply ${e.vulnerable} Vulnerable.`);
   if (e.seed)         parts.push(`Leech Seed ${e.seed}.`);
   if (e.sap)          parts.push(`Apply ${e.sap} Sap.`);
+  if (e.tempSap)      parts.push(`The enemy's attacks deal ${e.tempSap} less this turn.`);
+  if (e.skipEnemy)    parts.push('The enemy skips its next turn.');
   if (e.guard)        parts.push('Block the enemy\'s next attack completely.');
   if (e.block && !e.blockDamage) parts.push(`Gain ${e.block} block.`);
   if (e.blockMult)    parts.push(`${MULT[e.blockMult] ?? `Multiply by ${e.blockMult}`} your block.`);
@@ -803,6 +848,7 @@ function sentences(e) {
     if (each.draw) parts.push(`Draw ${plural(each.draw, 'card')} for each.`);
     if (each.addCard) parts.push(`Add a ${CARDS_BY_ID[each.addCard.id]?.name ?? each.addCard.id} to your hand for each.`);
   }
+  if (e.reshuffle)    parts.push('Shuffle your discard pile into your draw pile.');
   if (e.draw)         parts.push(`Draw ${plural(e.draw, 'card')}.`);
   if (e.drawTo)       parts.push(`Draw until you have ${e.drawTo} cards.`);
   if (e.drawPerDebuff) parts.push(`Draw ${plural(e.drawPerDebuff, 'card')} for each kind of debuff on the enemy.`);
@@ -810,6 +856,11 @@ function sentences(e) {
   if (e.exhaustPick)  parts.push(`Exhaust ${plural(e.exhaustPick, 'card')} from your hand.`);
   if (e.playTop)      parts.push(e.playTop > 1 ? `Play the top ${e.playTop} cards of your draw pile and exhaust them.` : 'Play the top card of your draw pile and exhaust it.');
   if (e.exhume)       parts.push('Put a card from your exhaust pile into your hand.');
+  if (e.sketch)       parts.push('Choose a card in your draw pile and put it into your hand.');
+  if (e.returnCard)   parts.push('Put a card from your discard pile on top of your draw pile.');
+  if (e.upgradeAll)   parts.push('PP Up every card in your deck for the rest of this fight.');
+  if (e.echo)         parts.push(e.echo > 1 ? `Your next card this turn is played ${e.echo + 1} times.` : 'Your next card this turn is played twice.');
+  if (e.payDay)       parts.push(`If this knocks the enemy out, gain ${e.payDay} ₽.`);
   if (e.tide)         parts.push(`Gain ${e.tide} Tide.`);
   if (e.tideMult)     parts.push(`${MULT[e.tideMult] ?? `Multiply by ${e.tideMult}`} your Tide.`);
   if (e.nextEnergy)   parts.push(e.nextEnergy > 0 ? `+${e.nextEnergy} energy next turn.` : `${-e.nextEnergy} less energy next turn.`);
@@ -854,8 +905,11 @@ export function describe(card, stage = 0) {
   if (card.onDiscard) parts.push(`When discarded: ${sentences(card.onDiscard).join(' ')}`);
   if (card.growOnRetain) {
     const g = card.growOnRetain;
-    parts.push(`Grows ${[g.damage && `+${g.damage} damage`, g.block && `+${g.block} block`, g.heal && `+${g.heal} heal`].filter(Boolean).join(' and ')} each turn it stays.`);
+    const grows = [g.damage && `+${g.damage} damage`, g.block && `+${g.block} block`, g.heal && `+${g.heal} heal`].filter(Boolean);
+    if (grows.length) parts.push(`Grows ${grows.join(' and ')} each turn it stays.`);
+    if (g.discount) parts.push(`Costs ${g.discount} less each turn it stays.`);
   }
+  if (card.growOnPlay) parts.push(`Each time you play it, it deals ${card.growOnPlay.damage} more this fight.`);
   if (!parts.length && card.status) parts.push(card.exhaust ? 'Does nothing.' : 'Clogs your hand.');
   return parts.join(' ');
 }
@@ -930,7 +984,11 @@ export function cardTerms(card) {
     uses(/weak/i) && term('Weak'),
     uses(/vulnerable/i) && term('Vulnerable'),
     uses(/strength|^flex$/i) && term('Strength'),
-    uses(/^focus$/i) && term('Focus'),
+    uses(/^focus/i) && term('Focus'),
+    uses(/^tempSap$/) && ['Charmed', 'Its attacks this turn deal less. Gone after it acts.'],
+    uses(/^statusDamage$/) && ['Status cards', 'Junk enemies (and some of your moves) put in your deck, for this fight only.'],
+    uses(/^upgradeAll$/) && ['PP Up', 'A card\'s upgraded form (its name gets a +).'],
+    card.growOnPlay && ['Grows', 'Stronger each time it\'s played, until the fight ends.'],
     uses(/^bait$/) && term('Bait'),
     uses(/^rock$/) && term('Rock'),
     uses(/debuff/i) && ['Debuffs', 'Weak, Vulnerable, Leech Seed, Sap, Burn.'],

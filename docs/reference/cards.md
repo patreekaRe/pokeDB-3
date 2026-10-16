@@ -168,3 +168,46 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (the nameplate chip, `setupBattleScreen()` in `js/battle.js`; the map shows no type badge at all), since
   their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
+
+## The balance pass (2026-10-16, the user's ask: "match Slay the Spire's numbers... find broken builds")
+
+On branch `balance-pass` (both repos) until the user's playtest. **How broken builds are found now**: the whole-run bot
+can't see combos, so pokeDB-sim has `sim/combo-lab.mjs` (fixed decks and relics against a training dummy that hits 12
++3 a turn, 3000 HP, and against real bosses: `vs: 'boss', level: 5`) and `sim/combo-fuzz.mjs` (thousands of random
+late-run decks, ranked by how long they last and how hard they hit, with per-card and per-pair lift). Its README says how.
+- **Fixed** (each measured in the lab): **Shell Smash exhausts** (with Shell Armor it doubled block every turn: 396 million
+  in the fuzz; peak block ~1,500 -> ~85 in the lab, Level 5 boss wins 53 -> 30%); **Leech Seed no longer grows with
+  evolution** (`STAGE_STATUS.seed` 0; Burn keeps +1 a stage): at stage 2 it was +2 a card (Worry Seed 3 -> 5) and 3 Worry
+  Seeds took a plain Grass deck from 0% to 97% against Level 5's last bosses, losing ~5 HP a fight; now seed decks win
+  5-50% there, like Fire's Burn decks (5-17%); halving the heal instead barely helped (90%). **Quick Guard
+  exhausts** (a whole enemy turn negated every time: top-3 card in every type's fuzz, stall loops of 20+ turns; Mewtwo's
+  Safeguard was made to as well, but it cost Mewtwo's mode 63 -> 45% and three of them stall without winning, so it stays).
+  **Amnesia** blocks 12 and **Power Within** gives 4 Focus too (each read exactly like Barrier Field / Swords Dance:
+  `tests/cards.test.mjs` now checks that rule for every type).
+- **New cards** (32, each on a StS card, named in its comment; art in `js/card-art-new.js`): Fire and Grass at StS's
+  20/36/16, Water 20/36/15, Psychic 20/30/16, Neutral 28. New mechanics, in `js/battle.js` with `describe()` and
+  `cardTerms()` lines and mirrored in the sim: `growOnPlay` (Blazing Torque = Rampage: its pile copy grows),
+  `growOnRetain: { discount }` (Steam Eruption = Sands of Time), `echo` (Inferno Overdrive: the next card this turn twice,
+  `battle.echoNext`, counted before a card resolves so it never replays itself), `seedMult` (Bloom Doom), `tempSap`
+  (Charm = Dark Shackles: `enemy.tempSap`, gone after its turn), `skipEnemy` (Eye of the Storm = Vault, Time Warp's path),
+  `reshuffle` (Recycle), `returnCard` (Return = Headbutt), `sketch` (Sketch = Secret Technique, `pickFromPile()` on the draw
+  pile), `upgradeAll` (Mega Evolution = Apotheosis, fight-only copies), `payDay` (Pay Day = Hand of Greed: `tally.payDay`,
+  added to the prize in `afterFight()`), powers `statusDamage` (Burning Spirit = Fire Breathing, in `draw()`), `burnKeep`
+  (Desolate Land), `strengthBlock` (Overgrowth), `focusEachTurn` (Meditate), `focusKeep` (Psychic Terrain) and `regen`
+  (only Sweet Heart gives it).
+- Playtest any of it on a throwaway run: `?arena=elite&starter=squirtle&relics=wide-lens,sticky-barb&cards=blazing-torque,ignite+&items=iron`
+  (`playtestKit()` in `js/run.js`, any `peek` run).
+- **Bot check** (human bot, `humanCfg`, fire / grass / water, L0 / L3 / L5): the branch's start (dbdfb4a, 200 runs a cell)
+  78 / 84 / 78, 62 / 68 / 61, 44 / 35 / 38; the pass before any retune (200) 76 / 59 / 54, 54 / 32 / 30, 38 / 14 / 17 (Grass lost
+  ~15 at L3 to the seed fix; Water ~13 to new cards the bot over-picks, ~6 to Quick Guard's Exhaust; at L3 putting the three
+  boss relics back changed nothing). Screens at L3 (150): Worry Seed 4 etc. brought Grass back but the lab's seed decks too
+  (95% against Level 5's last bosses), so **Grass got defence instead: Block 7 (its starting Defends) and Cotton Guard 11**
+  (68); **Withdraw 8** like Flame Wall (Water 60); **Flame Body 11** (Fire 62; Flame Wall 9 was 69). Confirmed, 300 a cell:
+  **81 / 84 / 78, 62 / 64 / 60, 40 / 38 / 38**, the types within ~4 points of each other at every Level. The weak new cards
+  (one extra copy at L3: Hydro Steam -12, Gulp Missile -7, Overgrowth -4) were raised; the sim's `cardScore` no longer
+  rates draw-to cards past 3 cards (Downpour was its favourite card, at -11).
+- **Mewtwo** (human bot, `humanCfg('psychic', 0)`, shards 0): 63% at the branch's start (200 runs), 53.5% after the pass
+  (400; all of it in the Depths), 45.5% while Safeguard exhausted too. Eternatus's own numbers barely moved it; the
+  Depths' `MEWTWO_MODE.mods[3]` is now bossDmg 4 / bossHp 1.2 / enemyDmg -3 (was 8 / 1.3 / 0): 66.7% (300).
+- **Sky Pillar** (`towerCfg`, 60 climbs of 4 flights a type), reaching floor 40 before -> after: fire 68 -> 70%, grass
+  80 -> 78%, water 53 -> 58%: unchanged within noise. Its augments weren't retuned (stacking them is the mode's point).

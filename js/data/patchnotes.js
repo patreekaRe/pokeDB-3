@@ -45,6 +45,8 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
   ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
+  ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
+  ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -477,10 +479,10 @@ export const PATCHES = [
 /** What's in the game, as of the newest patch. */
 export const IN_THE_GAME = [
   ['🔥', '31 starters', 'Charmander, Bulbasaur and Squirtle, 12 more from later generations, 15 legendaries to earn, and Mewtwo behind the Sealed Gate.'],
-  ['🃏', '310 moves', 'About 74 each for Fire, Grass and Water, 68 Psychic moves for Mewtwo, and 21 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
+  ['🃏', '342 moves', 'About 80 each for Fire, Grass and Water, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
-  ['💎', '59 relics', 'Starter Abilities, relics for each type and boss relics that give extra PP with a catch.'],
-  ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
+  ['💎', '93 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
+  ['🧴', '34 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
   ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],

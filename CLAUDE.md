@@ -162,7 +162,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
   (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
   `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),
-  `?arena=ken`.
+  `?arena=ken`. Any of these takes `&relics=a,b`, `&cards=a,b+` and `&items=a` (`playtestKit()` in `js/run.js`).
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
 - **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?yard` (out in the Secret Base's backyard, lent for the page load; `?yard=big` the bigger one), `?mall=furniture|2f|3f|corner|outfitter` (3f the Grand Ballroom, lent open)
