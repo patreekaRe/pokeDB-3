@@ -100,3 +100,17 @@ test('a week\'s expeditions: three tiers in different groups, the same all week,
   const other = { ...save, ranger: { ...save.ranger, week: { ...tally, key: '2026-10-05' } } };
   assert.ok(tasks.slice(0, 3).every(t => t.count(other) === 0));
 });
+
+test('a catch that finishes a task is told once, before it\'s logged; the ranks earn their badges', async () => {
+  const { finishedBy } = await import('../js/data/ranger.js');
+  const { BADGES } = await import('../js/data/badges.js');
+  const now = new Date('2026-10-14T12:00:00Z');
+  const save = { safariDex: { caught: [] }, ranger: { claimed: [], log: { balls: { net: 0 } } }, safari: {} };
+  const ids = finishedBy(save, { id: 'poliwag', ball: 'net', night: false, turn: 2, flawless: false, inRun: 1 }, now).map(t => t.id);
+  assert.ok(ids.includes('ball-net-1'));
+  const done = { ...save, ranger: { claimed: [], log: { balls: { net: 1 } } } };
+  assert.ok(!finishedBy(done, { id: 'poliwag', ball: 'great', inRun: 1 }, now).some(t => t.id === 'ball-net-1'));
+  const scout = BADGES.find(b => b.id === 'ranger-2');
+  assert.ok(scout && !scout.test({}, save));
+  assert.ok(scout.test({}, { ...save, ranger: { claimed: ['species-5', 'species-10', 'species-25', 'rare-1', 'ball-great-1'] } }));
+});

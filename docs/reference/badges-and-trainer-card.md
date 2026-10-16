@@ -47,3 +47,4 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
 
 - **Friendship badges** (2026-10-15): the `friends` group, a badge a friend at 5 hearts and Best Friends for all 11
   (`docs/reference/towns.md`'s Friendship badges paragraph). 176 badges in all.
+- **Ranger badges** (2026-10-16): one per Ranger Rank past Rookie, `ranger-2` (Scout) to `ranger-7` (Master Ranger), in the Safari group, tested by `rankOf()` from `js/data/ranger.js`; the card's RANGER line shows the rank. Detail: `docs/reference/hub-base-mall.md`, the Ranger Task Board.

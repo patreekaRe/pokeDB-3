@@ -2730,4 +2730,8 @@ errors. Detail: `docs/reference/hub-base-mall.md`.
   medium, hard; 200 / 350 / 600 coins) plus a bonus of 5 Ultra Balls for all three, the board's first tab with a
   countdown to Monday; a "!" over the Clearing's Safari gate while a task waits. Checked headless: a week's catches,
   boss and days counted, a claim paid, the gate's mark shown, no errors.
+- **Done (2026-10-16): tasks told as they finish, ranks on the Trainer Card** (the user: "you tell me"): a catch that
+  finishes a Ranger task says so in the fight's reward box; the card has a RANGER line and six Ranger badges, one per rank
+  past Rookie (182 badges now). Checked headless: a claim to Scout paid the Scout Badge and said so, the card read
+  RANGER SCOUT, no errors.
 

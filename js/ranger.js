@@ -9,6 +9,8 @@ import { getSave, updateSave, awardCoins } from './storage.js';
 import { playSound } from './audio.js';
 import { calmFx } from './prefs.js';
 import { refreshCoins } from './ui.js';
+import { checkBadges } from './progress.js';
+import { showBadgeNews } from './trainercard.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { BALLS } from './data/balls.js';
 import { TABS, progressOf, readyTasks, rankOf, rewardText, logCatch, logDay, logWeekCatch, logWeekTick, logWeekDay, expeditionWeek, tasksOn, taskById } from './data/ranger.js';
@@ -141,7 +143,9 @@ async function claimNote(task, n) {
   n.append(stamp);
   const before = rankOf({ ranger: { claimed: (getSave().ranger.claimed || []).slice(0, -1) } }).rank.name, after = rankOf(getSave()).rank.name;
   const toast = dlg.querySelector('.rb-toast');
-  toast.replaceChildren(rewardIcon(r), el('span', null, `${r.coins ? `+${r.paid.toLocaleString()} PokéCoins` : rewardText(r)}${after !== before ? `  ·  Rank up: ${after}!` : ''}`));
+  const badges = checkBadges();   // a rank up earns its Ranger badge, shown on the Trainer Card
+  if (badges.length) showBadgeNews();
+  toast.replaceChildren(rewardIcon(r), el('span', null, `${r.coins ? `+${r.paid.toLocaleString()} PokéCoins` : rewardText(r)}${after !== before ? `  ·  Rank up: ${after}!` : ''}${badges.length ? `  ·  ${badges.map(b => b.name).join(', ')}!` : ''}`));
   toast.hidden = false;
   toast.classList.remove('in'); void toast.offsetWidth; toast.classList.add('in');
   if (after !== before) playSound('achievement');

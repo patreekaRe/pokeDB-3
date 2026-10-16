@@ -7,6 +7,7 @@
    Also keeps `stats.playMs`, the play time, counted from its release.
    ============================================================ */
 
+import { rankOf } from './data/ranger.js';
 import { GYM_LEADERS, GYM_INK } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
@@ -235,6 +236,11 @@ for (const l of GYM_LEADERS) LOOK[`gym-${l.id}-gold`] = [LOOK[`gym-${l.id}`][0],
 for (const id of FRIENDS) LOOK[`friend-${id}`] = ['heart', GYM_INK[id], GYM_LOOK[id][0] === 'heart' ? 'heart' : GYM_LOOK[id][1]];
 LOOK['best-friends'] = ['crown', ['#fff6b8', '#f0bc30', '#7a4c08'], 'heart'];
 LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
+// the Ranger ranks, Scout to Master Ranger: jungle green climbing to gold, the shape growing grander
+[['circle', ['#b8e090', '#5a9a48', '#2e5426'], 'paw'], ['shield', ['#b8e090', '#4a8a3a', '#24481c'], 'compass'],
+  ['hex', ['#d8e8a0', '#7aa848', '#3a5a20'], 'leafy'], ['gem', ['#f0e0a0', '#b8a048', '#5a4a18'], 'compass'],
+  ['crown', ['#fff0a0', '#e0b840', '#8a6a10'], 'paw'], ['star', ['#fff6c0', '#f0c838', '#9a7010'], 'sparkle']]
+  .forEach((look, i) => { LOOK[`ranger-${i + 2}`] = look; });
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 
 const INK = '#181820';
@@ -520,6 +526,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
     ['POKéDEX', `${dex}/${dexTotal}`, 'Pokémon researched in the main Pokédex.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
+    ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
     ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
   ];
