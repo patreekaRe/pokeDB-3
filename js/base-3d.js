@@ -29,6 +29,7 @@ import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard } from './secret-base.js';
+import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -2222,6 +2223,8 @@ async function reopen(start) {
 export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   leaveTo = onLeave;
   playMusic('secret-base');
+  // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
+  await loadStatues(new URLSearchParams(location.search).has('allfurniture') ? undefined : statuesIn(Object.keys(loadBase().owned || {})));
   if (root && renderer) return reopen(start);
   calm = calmFx();
   root = document.createElement('section');

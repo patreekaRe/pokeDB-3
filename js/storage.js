@@ -62,6 +62,7 @@ const freshSave = () => ({
     scopeUpgrade: 0,          // the Silph Scope reveals 1 more room a biome per level (0-2); needs a complete Pokédex
   },
   shiny: { owned: [], on: [] },   // starters whose shiny colours were bought, and those switched on
+  shells: [],                 // Pokédex shells bought in the Grand Catalogue (js/data/catalogue.js), worn from Settings
   seen: { relics: [], items: [], cards: [], gym: [] },   // ids met in a run (offered, found, drawn), unlocked in the Index; others show as silhouettes
   newFinds: { relics: [], items: [], cards: [], gym: [] },   // seen ids the Collection hasn't shown yet: each wears a "!" there till looked at (js/collection.js)
   dex: { seen: [], defeated: [], done: [], count: {}, complete: false },

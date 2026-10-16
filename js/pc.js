@@ -33,6 +33,7 @@ import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
 import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
+import { loadStatues, statuesIn, statueReady } from './base-furniture-statues.js';
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind } from './data/house.js';
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
@@ -476,7 +477,9 @@ const PAGES = {
       glass.replaceChildren(head('DECORATIONS'), el('p', 'pc-empty', 'No Secret Base yet.'));
       return speak('The Ancient Tree\'s door leads to a Secret Base. Make it yours, and its furniture is kept here.');
     }
-    const b = loadBase(), all = decorations(b);
+    const b = loadBase(), all = decorations(b).filter(d => !(dupes && PIECES[d.id].luxury));   // a statue's copies are the Grand Catalogue's
+    const unlit = statuesIn(all.map(d => d.id)).filter(id => !statueReady(id));
+    if (unlit.length) loadStatues(unlit).then(() => { if (page === 'decor') show('decor'); });
     const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || all.some(d => KINDS_OF[k](PIECES[d.id])));
     if (!kinds.includes(decoKind)) decoKind = 'All';
     const list = all.filter(d => KINDS_OF[decoKind](PIECES[d.id]));

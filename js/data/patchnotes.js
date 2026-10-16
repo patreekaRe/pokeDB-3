@@ -42,7 +42,10 @@ export const RELEASE_AT = 12;
 export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
-export const NEXT = [];
+export const NEXT = [
+  ['base', 'Every furniture piece is a clean 3D model now, the Dojo, Safari and Trainer sets and Gym Leader posters included, and furnished rooms run lighter.'],
+  ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
+];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
 export function sectionsOf(p) {
@@ -55,7 +58,7 @@ export function sectionsOf(p) {
 export const PATCHES = [
   {
     version: '1.23',
-    name: 'Home for the Holidays',
+    name: 'Collectors',
     date: '2026-10-16',
     notes: [
     ['pc', 'The Trainer\'s Journal on the Clearing\'s PC: 99 goals for the whole game, paying PokéCoins and a Trainer furniture set that fills in as you play (and sparkles when you come home to something new), with ranks and a gold shell.'],
@@ -67,9 +70,9 @@ export const PATCHES = [
     ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],
     ['runs', 'Mewtwo has left the character select: start its run from the open Sealed Gate or the Depths camp.'],
     ['base', 'House Upgrades has its own Backyard tab, and the Build key stays in sight under any blueprint.'],
+    ['mall', 'Prices rose to match the Trainer\'s Journal, and collectors can open the Furniture store\'s Grand Ballroom (3F): gold starter statues and new Pokédex shells.'],
+    ['runs', 'A won run pays 200 PokéCoins on top, double before, and the Game Corner pays up to 250 a day, so runs are the best way to earn.'],
     ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Mall draws far less, the Clearing no longer stutters, and the Home Screen app plays as smoothly as the browser.'],
-    ['base', 'Every furniture piece is a clean 3D model now, the Dojo, Safari and Trainer sets and Gym Leader posters included, and furnished rooms run lighter.'],
-    ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
     ],
   },
   {
@@ -487,9 +490,9 @@ export const IN_THE_GAME = [
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
   ['🏆', '188 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
-  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,400 kinds of furniture (seasonal sets in their season, and a garden catalogue for the yard), and home to six of your Safari catches.'],
-  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s two-floor furniture showroom, with new stock in eight departments every day, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 500 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
+  ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

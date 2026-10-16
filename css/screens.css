@@ -5866,6 +5866,12 @@ body.town-visit #room-bar .room-lcd > * { visibility: hidden; }
 .workshop .tshop-price { font-weight: normal; font-size: 0.75rem; text-align: center; }
 .workshop .tshop-price.short { color: #8a3a2a; }
 .workshop .tshop-grid { max-height: min(52vh, 420px); overflow-y: auto; }
+/* the PC's Grand Catalogue (js/grand-shop.js): the Workshop's window with two tabs; a shell is a little Pokédex in its colour */
+.grand-shop .gshop-tabs { grid-template-columns: repeat(2, 1fr); }
+.grand-shop .gshop-shell { display: block; width: 44px; height: 58px; margin: 3px 0; border-radius: 6px 6px 6px 14px; background: var(--sw);
+  box-shadow: inset -4px -4px 0 rgba(0, 0, 0, 0.18), inset 3px 3px 0 rgba(255, 255, 255, 0.3), 0 0 0 2px #303038; position: relative; }
+.grand-shop .gshop-shell::after { content: ''; position: absolute; left: 7px; top: 8px; width: 12px; height: 12px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #c8ecff 0 20%, #3d8ae0 55%, #1d4fa0); box-shadow: 0 0 0 2px #f8f8f0; }
 
 /* Mewtwo speaking in your head as it steps out of the broken gate (gymTalk()'s `look`, from js/gatescene.js) */
 .gym-scene.psychic { background: radial-gradient(ellipse at 70% 60%, rgba(200, 140, 255, 0.22), rgba(16, 6, 36, 0.78) 70%); }

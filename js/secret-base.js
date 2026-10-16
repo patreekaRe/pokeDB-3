@@ -14,6 +14,7 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
+import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
@@ -225,7 +226,7 @@ export const dupePrice = (b) => Math.min(100, 50 + 5 * (b.dupes || 0));
 /** Copy a piece into storage. False if the coins aren't there. */
 export function duplicate(b, id) {
   const price = dupePrice(b);
-  if ((getSave().coins ?? 0) < price || PIECES[id].gift) return false;
+  if ((getSave().coins ?? 0) < price || PIECES[id].gift || PIECES[id].luxury) return false;
   const kind = PIECES[id].own;
   b.owned[kind] = (b.owned[kind] || 0) + 1;
   b.dupes = (b.dupes || 0) + 1;
@@ -386,9 +387,10 @@ export function dealDay(day, owned = {}) {
   const rand = streamOf('furniture', day), taken = new Set();
   // a gateway town's shelf is sold only in its town's shop (js/town-shop.js), never here
   // nor the backyard's pieces, sold in Smeargle's garden catalogue (js/garden-shop.js)
+  // nor the Grand Catalogue's (js/grand-shop.js)
   // a seasonal set only while its holiday is on (js/data/holidays.js), its own stand a floor
   const on = holidaysOn(day), festive = (p) => p.holiday && on.includes(p.holiday);
-  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !PIECES[id].outdoor && !(owned[PIECES[id].own] > 0)
+  const pool = DESIGNS.filter(id => !FURNITURE_BY_KIND[id] && !TOWN_SHELVES.has(PIECES[id].group) && !PIECES[id].outdoor && !PIECES[id].luxury && !(owned[PIECES[id].own] > 0)
     && (!PIECES[id].holiday || festive(PIECES[id])));
   const season = pool.some(id => festive(PIECES[id]));
   const deal = () => shuffled(SLOTS.map(slot => {
@@ -408,6 +410,18 @@ export function buyUpstairs(b) {
   if ((getSave().coins ?? 0) < UPSTAIRS_PRICE) return false;
   b.upstairs = true;
   updateSave(d => { d.coins -= UPSTAIRS_PRICE; d.secretBase = b; });
+  return true;
+}
+
+/** How many kinds of furniture you own, bought or earned, for the Grand Ballroom's door: the statues aren't counted. */
+export const kindsOwned = (b) => DESIGNS.filter(id => !PIECES[id].luxury && owns(b, id) > 0).length;
+/** The Grand Ballroom is open: bought, or lent for the page load by `?mall=3f`. */
+export const ballroomOpen = (b) => !!b.ballroom || new URLSearchParams(location.search).get('mall') === '3f';
+/** Open the store's third floor for good (`b.ballroom`): needs BALLROOM_KINDS kinds owned and BALLROOM_PRICE. */
+export function buyBallroom(b) {
+  if ((getSave().coins ?? 0) < BALLROOM_PRICE || kindsOwned(b) < BALLROOM_KINDS) return false;
+  b.ballroom = true;
+  updateSave(d => { d.coins -= BALLROOM_PRICE; d.secretBase = b; });
   return true;
 }
 
@@ -743,7 +757,7 @@ function cancelHold() {
 const icons = new Map();
 /** A piece's tray picture: painted once, then copied, since a tray can list hundreds. */
 function icon(id) {
-  const made = icons.get(id);
+  const key = id + (PIECES[id].live?.() ?? ''), made = icons.get(key);
   if (made) { const c = document.createElement('canvas'); c.width = made.width; c.height = made.height; c.getContext('2d').drawImage(made, 0, 0); return c; }
   // the piece's own picture, cropped to what's painted
   const art = PIECES[id].art(0, 2), d = art.getContext('2d').getImageData(0, 0, art.width, art.height).data;
@@ -752,7 +766,7 @@ function icon(id) {
   const c = document.createElement('canvas');
   c.width = Math.max(1, x1 - x0 + 1); c.height = Math.max(1, y1 - y0 + 1);
   c.getContext('2d').drawImage(art, -x0, -y0);
-  icons.set(id, c);
+  icons.set(key, c);
   return icon(id);
 }
 

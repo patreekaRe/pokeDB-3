@@ -10,8 +10,8 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 ## Open, ready to build
 
 **Furniture expansion, the next sets** (the user's ask, 2026-10-16: a catalogue as big as Animal Crossing's). The plan
-and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done and
-in patch 1.23 (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
+and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done, in `NEXT`
+for the next patch (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
 types, about 4 to 6 sets of 25 a session, one helper each, every kind painted and hand-built within the budget and
 checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). Waiting on the user's playtest of the
 seasonal sets (`?holiday=valentine` etc. on the Furniture store) and the yard sets (`?yard&allfurniture`, Smeargle's
@@ -896,6 +896,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   friend's Lost & Found. Maybe an Assist (a friend's partner for one fight), bot-checked. Needs sign-in.
 
 ## Waiting on the user
+
+- **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
+  shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the
+  shells, and says what to change. (Coins were rebalanced the same day: a won run pays 200, the Game Corner 250 a day.)
 
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate

@@ -229,6 +229,8 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mall-ask-yes { background: linear-gradient(#ffe070, #f0b020); color: #5a3a08; box-shadow: 0 4px 0 #b07c10, 0 6px 12px #0004; }
 .mall-ask-no { background: #e8dcc0; color: #6a5440; box-shadow: 0 4px 0 #c4b290; }
 .mall-ask-keys button:active { translate: 0 3px; box-shadow: none; }
+.mall-ask-keys.many { flex-wrap: wrap; gap: 10px; }   /* the lift's floors (js/mall-3d.js's choose()) */
+.mall-ask-keys.many button { min-width: 0; padding: 0 16px; }
 @media (prefers-reduced-motion: reduce) { .mall-ask.b3-say, .mall-shop.b3-say { animation: none; } }
 
 /* the Furniture store's and the Safari Outfitter's buy window (js/mall-3d.js's merchant(); 2026-10-16, the user's ask): a merchant's card in a

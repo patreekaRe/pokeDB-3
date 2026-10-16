@@ -4,8 +4,8 @@
 
    Every game is free (2026-10-12, the user's call: no betting). Each has PLAYS a UTC day that pay; past them, or past
    GAME_CAP from one game or DAILY_CAP from them all (`save.corner.pot`), it's played for fun. The table games stake
-   STAKE of Meowth's house chips a play, never your coins, and pay what the chips win. Average play pays about 250 a
-   day all told (tests/corner.test.mjs works it out), under a winning run, so runs stay the way to earn.
+   STAKE of Meowth's house chips a play, never your coins, and pay what the chips win. A day's average play would pay
+   about 380 (tests/corner.test.mjs works it out), so DAILY_CAP's 250 is what a regular earns, under a won run (~350+).
    Voltorb Flip  HeartGold / SoulSilver's: a 5x5 board of 1s, 2s, 3s and Voltorbs, each row and column's sum and
                  Voltorbs told at its edge. Flip a tile to multiply the round's score; flip every 2 and 3 to win it.
                  A won (or quit) round pays coins from its score. Levels 1-8 as in HGSS. Each board comes from the day's seed and
@@ -17,7 +17,7 @@ import { streamOf, randIndex, shuffled } from '../rng.js';
 
 /* ---------- Voltorb Flip ---------- */
 
-export const DAILY_CAP = 500;   // PokéCoins a UTC day from every game together
+export const DAILY_CAP = 250;   // PokéCoins a UTC day from every game together (500 until 2026-10-16, the user's call: a won run should pay more)
 export const GAME_CAP = 150;    // from any one game, so the cap takes several
 export const STAKE = 10;        // house chips a table play stakes
 /** Plays a UTC day that pay, by game (raised 2026-10-12, the user's pick). Who's That is one round a day. */
@@ -87,34 +87,34 @@ export const freshVoltorb = (day, level = 1) => ({ day, level, round: 0, won: 0,
    could be spammed for them). Game Corner furniture and Gen 1's Game Corner dolls, never sold in the store, bought here
    for PokéCoins. A save's old tickets are cashed in at TICKET_COINS each the first time it opens (js/prizes.js). */
 
-/** What one old prize ticket is worth in PokéCoins: the prizes' coin prices are their ticket prices times this. */
+/** What one old prize ticket is worth in PokéCoins. */
 export const TICKET_COINS = 3;
 
-export const PRIZES = [   // only the games (the user's call, 2026-10-12), each playable at home (js/home-arcade.js): the Game Corner's, then the arcade machines
-  { kind: 'slotmachine', coins: 450 },
-  { kind: 'voltorbflip', coins: 450 },
-  { kind: 'plinkoboard', coins: 450 },
-  { kind: 'blackjacktable', coins: 450 },
-  { kind: 'highlowtable', coins: 450 },
-  { kind: 'quizmachine', coins: 450 },
-  { kind: 'whackmachine', coins: 450 },
-  { kind: 'flapcabinet', coins: 450 },
-  { kind: 'pongcabinet', coins: 450 },
-  { kind: 'gastlymaze', coins: 450 },
-  { kind: 'stackercabinet', coins: 450 },
-  { kind: 'dashcabinet', coins: 450 },
-  { kind: 'memorycabinet', coins: 450 },
-  { kind: 'pokepinball', coins: 450 },
-  { kind: 'volleycabinet', coins: 450 },
-  { kind: 'bubblecabinet', coins: 450 },
-  { kind: 'crossingcabinet', coins: 450 },
-  { kind: 'ekanscabinet', coins: 450 },
-  { kind: 'invaderscabinet', coins: 450 },
-  { kind: 'breakoutcabinet', coins: 450 },
-  { kind: 'berrycabinet', coins: 450 },
-  { kind: 'dittocabinet', coins: 450 },
-  { kind: 'bowlingcabinet', coins: 450 },
-  { kind: 'pokepuzzle', coins: 450 },
+export const PRIZES = [   // only the games (the user's call, 2026-10-12), each playable at home (js/home-arcade.js): the Game Corner's, then the arcade machines; 450 -> 750 on 2026-10-16 with the shop's prices (the user's call)
+  { kind: 'slotmachine', coins: 750 },
+  { kind: 'voltorbflip', coins: 750 },
+  { kind: 'plinkoboard', coins: 750 },
+  { kind: 'blackjacktable', coins: 750 },
+  { kind: 'highlowtable', coins: 750 },
+  { kind: 'quizmachine', coins: 750 },
+  { kind: 'whackmachine', coins: 750 },
+  { kind: 'flapcabinet', coins: 750 },
+  { kind: 'pongcabinet', coins: 750 },
+  { kind: 'gastlymaze', coins: 750 },
+  { kind: 'stackercabinet', coins: 750 },
+  { kind: 'dashcabinet', coins: 750 },
+  { kind: 'memorycabinet', coins: 750 },
+  { kind: 'pokepinball', coins: 750 },
+  { kind: 'volleycabinet', coins: 750 },
+  { kind: 'bubblecabinet', coins: 750 },
+  { kind: 'crossingcabinet', coins: 750 },
+  { kind: 'ekanscabinet', coins: 750 },
+  { kind: 'invaderscabinet', coins: 750 },
+  { kind: 'breakoutcabinet', coins: 750 },
+  { kind: 'berrycabinet', coins: 750 },
+  { kind: 'dittocabinet', coins: 750 },
+  { kind: 'bowlingcabinet', coins: 750 },
+  { kind: 'pokepuzzle', coins: 750 },
 ];
 /* Prizes the counter sold until it kept to the games (2026-10-12): whoever bought one keeps it, nobody else can get it
    (js/data/furniture.js lists them `retired`, so the base's Shop never offers them). */

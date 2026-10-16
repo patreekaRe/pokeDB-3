@@ -10,6 +10,7 @@
 import { $, el, confirmDialog } from './ui.js';
 import { getSave, updateSave, resetSave, clearRunData } from './storage.js';
 import { goldShell } from './data/journal-ranks.js';
+import { LUXURY_SHELLS, LUXURY_SHELL_IDS } from './data/catalogue.js';
 import { cloudRemembered } from './cloud.js';
 import { setClock } from './daytime.js';
 import { refreshScenery } from './scene.js';
@@ -23,7 +24,8 @@ import { playSound } from './audio.js';
 const OPTIONS = {
   shell: {
     values: [['red', 'Red', '#c41f2a'], ['blue', 'Blue', '#245cc4'], ['yellow', 'Yellow', '#ecb818'], ['green', 'Green', '#229a3e'],
-      ['pink', 'Pink', '#dc4c8c'], ['black', 'Black', '#383840'], ['gold', 'Gold', '#d8a830']],
+      ['pink', 'Pink', '#dc4c8c'], ['black', 'Black', '#383840'], ['gold', 'Gold', '#d8a830'],
+      ...LUXURY_SHELLS.map(l => [l.id, l.name, l.swatch])],
     apply: v => { if (v === 'red') delete document.documentElement.dataset.shell; else document.documentElement.dataset.shell = v; },
   },
   textSpeed: { values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
@@ -47,10 +49,16 @@ function render() {
   for (const row of document.querySelectorAll('#dev-settings .set-opt[data-opt]')) {
     const now = valueOf(row.dataset.opt);
     for (const b of row.querySelectorAll('.set-chip')) b.setAttribute('aria-checked', String(b.value === String(now)));
-    // the gold shell is Grand Champion's, the Trainer's Journal's top rank (js/data/journal-ranks.js)
-    const gold = row.querySelector('.set-chip[value="gold"]');
-    if (gold) gold.hidden = !goldShell(getSave()) && now !== 'gold';
-    if (gold) gold.parentElement.style.setProperty('--n', [...gold.parentElement.children].filter(c => !c.hidden).length);
+    // the gold shell is Grand Champion's, the Trainer's Journal's top rank (js/data/journal-ranks.js); the Grand
+    // Catalogue's are bought at the PC (js/grand-shop.js)
+    if (row.dataset.opt === 'shell') {
+      const save = getSave(), chips = [...row.querySelectorAll('.set-chip')];
+      for (const b of chips) {
+        const locked = b.value === 'gold' ? !goldShell(save) : LUXURY_SHELL_IDS.has(b.value) && !(save.shells || []).includes(b.value);
+        b.hidden = locked && now !== b.value;
+      }
+      chips[0]?.parentElement.style.setProperty('--n', Math.min(7, chips.filter(c => !c.hidden).length));   // a second row past seven
+    }
     const named = row.querySelector('.set-picked');
     if (named) named.textContent = OPTIONS[row.dataset.opt].values.find(([v]) => String(v) === String(now))?.[1] ?? '';
   }
@@ -62,6 +70,9 @@ function choose(key, value) {
   OPTIONS[key].apply?.(value, true);
   render();
 }
+
+/** Put on a Pokédex shell just bought (js/grand-shop.js): worn at once, its chip shown in Settings. */
+export const wearShell = (id) => { choose('shell', id); render(); };
 
 const NAME_HINT = 'On your Trainer Card and the leaderboards';
 

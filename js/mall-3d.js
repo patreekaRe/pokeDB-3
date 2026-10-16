@@ -22,8 +22,10 @@ import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
-import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
-import { frontArt, frontWindow, buildFloor, LIFT, KEEPERS, piecePreview } from './mall-furniture.js';
+import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight, kindsOwned, ballroomOpen, buyBallroom } from './secret-base.js';
+import { frontArt, frontWindow, buildFloor, LIFT, KEEPERS, piecePreview, dialTurn, statueStands } from './mall-furniture.js';
+import { loadStatues } from './base-furniture-statues.js';
+import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
@@ -58,7 +60,7 @@ let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back'
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
 // each its own group, tiles and spots
-let places = {}, P = null, picked = null, riding = null;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
+let places = {}, P = null, picked = null, riding = null, rideTo = 1;   // riding: the lift, 'in' stepping into its car, 'out' stepping out
 let mats = [];   // every place's doormat, breathing
 let wallMat = null, painted = null, tapes = {};   // the back wall's painting (its OPEN / CLOSED plaque) and each front's tape
 let dressed = [], env = null, envTarget = null;   // the hall's models' ticks (js/mall-hall.js) and its reflections
@@ -755,11 +757,12 @@ function arrived() {
 /* ---------- the shops ---------- */
 
 const SIZE = { cols: COLS, rows: ROWS, top: TOP, u: U };
-const floorOf = () => (P.id === 'f2' ? 2 : P.id === 'f1' ? 1 : 0);
+const floorOf = () => ({ f1: 1, f2: 2, f3: 3 })[P.id] ?? 0;
 // each place inside a shop: how it's built and which of the hall's fronts its doormat walks back out to
 const SHOPS = {
   f1: { front: 'furniture', build: () => buildFloor(THREE, 1, SIZE, !!loadBase().upstairs) },
   f2: { front: 'furniture', build: () => buildFloor(THREE, 2, SIZE, !!loadBase().upstairs) },
+  f3: { front: 'furniture', build: () => buildFloor(THREE, 3, SIZE, true) },
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
   so: { front: 'outfitter', build: () => buildOutfitter(THREE, SIZE) },
 };
@@ -783,6 +786,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
   await curtain(true);
   if (!root?.isConnected) return;
   if (!places[id]) {
+    if (id === 'f3') await loadStatues(statueStands().map(k => PIECES[k].statueOf));   // its statues are carved from their sprites, so those come first
     const built = SHOPS[id].build();
     const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
     k.mon = await monBoard(k, false);
@@ -791,7 +795,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     k.mon.group.traverse(o => { o.userData.front = spot; });
     built.group.add(k.mon.group);
     places[id] = { id, front: SHOPS[id].front, ...built };
-    if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
+    if (id !== 'f2' && id !== 'f3') addDoor(places[id]);   // upstairs the way out is the lift down
     smallNoShadow(built.group);
     scene.add(built.group);
     if (id === 'gc') places.gc.crowd = makeCrowd({   // the Game Corner's regulars (js/corner-crowd.js)
@@ -802,6 +806,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     });
   }
   setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
+  if ((id === 'f1' || id === 'f2') && ballroomOpen(loadBase())) loadStatues(statueStands().map(k => PIECES[k].statueOf));   // 3F's, fetched ahead
   if (id === 'hall') syncRibbon();
   await warm();
   if (sound) playSound(sound);
@@ -994,6 +999,14 @@ function thanks(line) {
     user's call, 2026-10-12): once it's owned the plinth is sold out, and copies are the PC's. */
 async function bayTap(spot) {
   const p = PIECES[spot.piece], n = styles(spot.piece).length;
+  if (spot.locked) {
+    pick(null);
+    return talk(`The ${p.name.toLowerCase()} is only for its own Trainer. Unlock the Pokémon first, and it's yours to buy.`, 4600);
+  }
+  if (spot.sold && p.luxury) {
+    pick(null);
+    return talk(`You have the ${p.name.toLowerCase()} already! Tap me if you'd like another: my catalogue has every statue.`, 4600);
+  }
   if (spot.sold) {
     pick(null);
     return talk(`Sorry, the ${p.name.toLowerCase()} is sold out: you have one already! Your PC's Duplicate can make you more copies.`, 4600);
@@ -1194,7 +1207,8 @@ function keeperTap() {
   P.keeper.special(() => { showCoins(); place?.refresh?.(); }).then(r => { if (r === true || P !== place) return; if (typeof r === 'string') talk(r, 5200); else chat(); });
 }
 
-/** The lift: roped off until the second floor is bought (a tap opens the buy window), then ridden up, or down again. */
+/** The lift: roped off until the second floor is bought (a tap opens the buy window), then it asks which floor. The
+    Grand Ballroom (3F) is listed once the second floor is open, locked till it's bought (`ballroomTap()`). */
 async function liftTap(spot) {
   if (floorOf() === 1 && !loadBase().upstairs) {
     pick(spot);
@@ -1208,9 +1222,48 @@ async function liftTap(spot) {
     walker.hopUntil = performance.now() + 500;
     return talk('The second floor is open! Hop in the lift.', 3600);
   }
+  pick(spot);
+  const here = floorOf(), open = ballroomOpen(loadBase());
+  const floors = [1, 2, 3].filter(n => n !== here);
+  const names = { 1: 'Ground floor', 2: '2F Rose Salon', 3: open ? '3F Ballroom' : '3F 🔒' };
+  const i = await choose('Which floor?', floors.map(n => names[n]));
+  if (i === null) return pick(null);
+  if (floors[i] === 3 && !open) return ballroomTap();
   pick(null);
+  rideTo = floors[i];
   riding = 'to';
   walker.path = [{ ...LIFT.door }];   // a step over to the middle of its doors
+}
+
+/** The Grand Ballroom's button while it's shut: for collectors, BALLROOM_KINDS kinds of furniture owned, then
+    BALLROOM_PRICE to open it for good. */
+async function ballroomTap() {
+  const b = loadBase(), have = kindsOwned(b), coins = getSave().coins ?? 0;
+  if (have < BALLROOM_KINDS) {
+    pick(null);
+    return talk(`The Grand Ballroom is for collectors: own ${BALLROOM_KINDS} kinds of furniture first. You have ${have}, so ${BALLROOM_KINDS - have} to go!`, 5200);
+  }
+  if (coins >= BALLROOM_PRICE && !await ask(`You're a real collector! Gold statues of your starters are sold up there. Open the Grand Ballroom for ${BALLROOM_PRICE.toLocaleString()} PokéCoins?`)) return pick(null);
+  if (!buyBallroom(b)) { playSound('cancel'); pick(null); return talk(`You'd need ${(BALLROOM_PRICE - coins).toLocaleString()} more PokéCoins to open the Grand Ballroom.`, 4200); }
+  playSound('buy');
+  pick(null);
+  showCoins();
+  walker.hopUntil = performance.now() + 500;
+  return talk('The Grand Ballroom is open! Tap the lift and go up to 3F.', 4200);
+}
+
+/** The ask window with a key for each of `labels` (and a tap outside for none): the index picked, or null. */
+function choose(text, labels) {
+  const keys = askEl.querySelector('.mall-ask-keys'), was = [...keys.children];
+  const res = ask(text);
+  keys.classList.add('many');
+  keys.replaceChildren(...labels.map((label, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'mall-ask-yes'; b.textContent = label;
+    b.addEventListener('click', () => { playSound('select'); closeAsk(i); });
+    return b;
+  }));
+  return res.then(r => { keys.classList.remove('many'); keys.replaceChildren(...was); return typeof r === 'number' ? r : null; });
 }
 
 const later = (ms) => new Promise(r => setTimeout(r, calm ? Math.min(ms, 150) : ms));
@@ -1231,12 +1284,12 @@ async function rideOn() {
     riding = 'ride';
     walker.facing = 'front'; walker.flip = false;
     L.want = 0;
-    const to = floorOf() === 1 ? 2 : 1;
+    const to = rideTo;
     await later(450);
     L.dial = to;
     await later(750);
     if (P !== place) return;
-    await goPlace(to === 2 ? 'f2' : 'f1', LIFT.inside, 'front', null);
+    await goPlace(`f${to}`, LIFT.inside, 'front', null);
     if (!root?.isConnected) return;
     riding = 'out';
     P.lift.open = 0; P.lift.want = 1;
@@ -1255,7 +1308,7 @@ function say(fr, ms = 2600) {
     : fr.kind === 'prize' ? prizeLine(cornerEntries(fr.row)[fr.i])
     : fr.kind === 'ware' ? prizeLine(wareOf(fr))
     : fr.kind === 'pass' ? `The Day Pass machine: ${passState() === 'pass' ? 'yours for today.' : `${DAY_PASS} PokéCoins.`}`
-    : fr.kind === 'lift' ? (floorOf() === 2 ? 'The lift down to the ground floor.' : loadBase().upstairs ? 'The lift up to the second floor.' : 'The lift upstairs is roped off.')
+    : fr.kind === 'lift' ? (floorOf() > 1 || loadBase().upstairs ? 'The lift. Tap it to pick a floor.' : 'The lift upstairs is roped off.')
     : fr.kind === 'keeper' ? 'Tap me if you need anything!'
     : fr.id === 'furniture' && !fr.open ? shopLine()
     : FRONTS.includes(fr) && fr.open ? fr.name
@@ -1427,7 +1480,7 @@ function frame(now) {
     lift.open = calm ? lift.want : lift.open + Math.sign(gap) * Math.min(Math.abs(gap), dt / 420);
     const e = lift.open * lift.open * (3 - 2 * lift.open);
     for (const d of lift.doors) d.position.x = d.userData.home + d.userData.side * (d.userData.slide ?? 0.5) * e;
-    const turn = lift.dial === 1 ? Math.PI / 4 : -Math.PI / 4;
+    const turn = dialTurn(lift.dial);
     lift.needle.rotation.z += (turn - lift.needle.rotation.z) * (calm ? 1 : Math.min(1, dt / 1000 * 2.5));
   }
   mon.board.position.y = bob;
@@ -1598,7 +1651,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   if (!store) await warm();
   requestAnimationFrame(frame);
   curtain(false);
-  if (store === 'furniture' || store === '2f') goPlace(store === '2f' ? 'f2' : 'f1', store === '2f' ? LIFT.foot : null);
+  if (store === 'furniture' || store === '2f' || store === '3f') goPlace({ '2f': 'f2', '3f': 'f3' }[store] ?? 'f1', store === 'furniture' ? null : LIFT.foot);
   if (store === 'corner') goPlace('gc', null);
   if (store === 'outfitter') goPlace('so', null);
 }

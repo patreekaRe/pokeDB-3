@@ -2761,7 +2761,20 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - The yard moved off 1F onto its own BACKYARD tab, its buy / grow card always shown; every Build key is sticky at the
   page's foot. Checked headless at phone size: the key in view on 1F, the yard tab and a room build; no errors.
 
-### The furniture model pass and the seasonal and yard sets (2026-10-16, patch 1.23)
+- **Prices raised to match the Trainer's Journal** (2026-10-16, the user's call: "fix those prices" after the Journal's
+  coins outgrew what they could buy): perks, starters, shinies, Meowth's machines and the furniture curve, the numbers
+  in `docs/reference/economy-and-hall-of-fame.md`'s last entry. Not done, offered: a big new thing to save for (a third
+  Secret Base floor, a statue), and the Game Corner's 500 a day (`DAILY_CAP`), which pays more than runs do.
+- **The Grand Catalogue** (2026-10-16, the user's follow-up: "add something big to save up for"): gold starter statues
+  (~127,000 in all) and six Pokédex shells (15,000) at the PC; `docs/reference/hub-base-mall.md`'s last section. Checked
+  headless: the catalogue lists 30 statues and buys a statue and a shell, Settings shows the shell, the 3D base builds
+  placed statues, no errors. Still open: the Game Corner's daily cap.
+- **The Grand Ballroom** (2026-10-16, the user's idea: a floor of the Furniture store you unlock, with the high-ticket
+  items): 3F, opened by owning 40 kinds of furniture and paying 5,000; the Grand Catalogue moved there from the PC.
+  `docs/reference/hub-base-mall.md`'s Grand Catalogue section.
+- **Coins rebalanced towards runs** (2026-10-16, the user's yes): a won run's bonus 100 -> 200, the Game Corner's daily cap
+  500 -> 250. `docs/reference/economy-and-hall-of-fame.md`'s last entry.
+### The furniture model pass and the seasonal and yard sets (2026-10-16, after patch 1.23)
 - Every kind but the Present is a hand-built model (batches `-l` to `-q`: the Dojo, Safari and Trainer sets, the 14
   posters, the old lathed and puffed pieces, the 64 frontboxes); the user saw sheets of all 115 and asked for the
   Ranger tent and Acacia redone (done). The catalogue was slimmed from 6.6M to 3.6M triangles, and the Secret Base bakes

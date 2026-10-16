@@ -443,6 +443,42 @@ LOGGED ✓. A new task is a line in `build()` there.
   under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
   Leader case!"). A piece placed for the first time only records what it shows.
 
+### The Grand Catalogue (2026-10-16)
+
+The user's ask after the price rise ("add something big to save up for ... add more things to save up for"), then the
+same day their idea of a floor of its own: the catalogue is sold in the Furniture store's **Grand Ballroom (3F)**.
+It was a row on the Clearing's PC for an hour; the row and its `NEWS` line are gone. `openGrandShop()` in
+`js/grand-shop.js` (the town shop's window with Kurt's Workshop's tabs, `.grand-shop` in `css/screens.css`) is opened by
+the Ballroom's keeper, Gardevoir (`KEEPERS[3].special` in `js/mall-furniture.js`). Always in stock. Prices, the shell list
+and the Ballroom's door are `js/data/catalogue.js` (`tests/catalogue.test.mjs`). A third Secret Base floor wasn't added:
+floors already have no limit.
+- **The Grand Ballroom**: `buildFloor(THREE, 3, …)`, the same room as 1F / 2F in midnight blue and gold (`LOOK[3]`, the
+  crest GRAND BALLROOM, the wings' signs STARTERS / LEGENDS), its eight stands the gold statues (`statueStands()`: each
+  wing's four, a starter you own whose statue you don't first, then ones you have (sold out; another copy is
+  Gardevoir's catalogue), then locked ones, which say so), its plaques `HALLS`, the piano in the corner. No door: its
+  way out is the lift. **The door**: own `BALLROOM_KINDS` (40) kinds of furniture (`kindsOwned()` in js/secret-base.js,
+  bought or earned, statues not counted), then pay `BALLROOM_PRICE` (5,000), both (the user left it to me; a collector's
+  floor); saved as `secretBase.ballroom` (`buyBallroom()`); `?mall=3f` lends it open and goes straight in. **The lift**
+  asks which floor once 2F is open (`choose()` in js/mall-3d.js: a key a floor in the ask window, `.mall-ask-keys.many`),
+  3F shown with a lock till it's bought (`ballroomTap()` says how many kinds to go, or asks to pay); `rideTo` is the floor
+  picked; the dial reads 1, 2, 3 (`dialTurn()`: 1F left, 2F up, 3F right). Its statues' sprites load before 3F is built
+  (`goPlace()`, only the eight on the stands) and are fetched ahead on 1F / 2F once it's open. Headless under software GL
+  the GIFs decode very slowly while the mall draws (a minute); on a plain page eight load in ~1 s, and 3F builds in ~2 s
+  (each statue's carved model ~250 ms).
+- **Statues**: a gold statue of every starter (`js/base-furniture-statues.js`, `STATUE_KINDS`, group Statues, 2 x 2,
+  `solo`): its final form's front sprite (a legendary as itself) gilded by luminance into seven golds, on a marble
+  pedestal with its name on a gold plate; 3D comes from its painting (`autoModel()`: the pedestal turned on a lathe, the
+  Pokémon a round hull), about three tiles tall. 2,000 the free three, 3,000 skins, 5,000 legendaries, 10,000 Mewtwo
+  (listed only once Mewtwo is unlocked; another starter you don't own shows dark, LOCKED). Owned ones can be bought again
+  at full price; the PC's Duplicate leaves them out (`duplicate()` refuses a `luxury` piece). `luxury` keeps a family's
+  own `price` off `shopPrice()`'s curve (`makePiece()`) and out of the store's daily deal (`dealDay()`).
+  **The sprites load on demand**, not at boot (30 GIFs, 2 MB): `loadStatues(ids)` fetches and gilds them; the catalogue
+  shows "Unpacking" till they're in, `openBase3d()` awaits the owned ones before building a room (a model built without
+  them would be carved bare and cached), and the PC's Decorations repaints once they arrive. A statue's `live()` changes
+  once its sprite is in, so its 2D pictures repaint; `icon()` in `js/secret-base.js` now keys its cache on `live()` too.
+- **Shells**: six Pokédex shells (Silver, Crystal, Teal, Orange, Purple, White) at 2,500 each, saved in `save.shells`;
+  buying one wears it at once (`wearShell()` in `js/settings.js`). Their colours are `data-shell` blocks in
+  `css/base.css`; Settings > Device colour shows a bought one's chip (like Grand Champion's gold), seven chips a row.
 
 ### The furniture model pass, seasonal sets and yard sets (2026-10-16)
 
