@@ -100,7 +100,7 @@ function crescent(THREE, R, r, dx, dy, n = 72) {
 }
 /** A ribbed ball (a pumpkin): `ribs` grooves `deep` into it, squashed to rx x ry x rz, a dimple at the top. */
 function ribbed(L, rx, ry, rz, ribs = 8, deep = 0.08) {
-  const g = new L.THREE.SphereGeometry(1, 48, 24), p = g.attributes.position;
+  const g = new L.THREE.SphereGeometry(1, ribs * 4, 16), p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i), a = Math.atan2(z, x), k = 1 - deep * (0.5 - 0.5 * Math.cos(ribs * a)) * (1 - y * y);
     const dip = y > 0.75 ? (y - 0.75) * 0.7 : y < -0.8 ? (y + 0.8) * 0.5 : 0;

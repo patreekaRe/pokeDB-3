@@ -89,7 +89,7 @@ export function ring(K, L, m, cx, cy, ro, ri, d, sy = 1) {
   sh.absellipse(0, 0, u(ro), u(ro) * sy, 0, Math.PI * 2, false);
   hole.absellipse(0, 0, u(ri), u(ri) * sy, 0, Math.PI * 2, true);
   sh.holes.push(hole);
-  const bev = Math.min(0.012, d / 3), g = new THREE.ExtrudeGeometry(sh, { depth: d - bev * 2, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 2, curveSegments: Math.max(6, L.sides(u(ro), 40) / 2) });
+  const bev = Math.min(0.012, d / 3), g = new THREE.ExtrudeGeometry(sh, { depth: d - bev * 2, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 2, curveSegments: L.sides(u(ro), 40) });
   g.translate(0, 0, bev);
   return K.put(g, m, X(cx, K.p.w), Y(cy), 0);
 }

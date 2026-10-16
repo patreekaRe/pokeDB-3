@@ -303,10 +303,20 @@ function kit(id, paint) {
 }
 
 // wood and cloth share one grain or weave texture, so their colours ride along as vertex colours and the piece draws
-// each once (2026-10-16: a doll sewn in seven cloths was seven draws); plain colours are baked later by bakeColours()
-const TINTABLE = new Set(['wood', 'cloth']);
-const tintKey = (m) => TINTABLE.has(m.userData.kind) && Object.keys(m.userData).length === 1 && !m.vertexColors
-  ? [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite, m.emissive.getHex(), m.flatShading].join('|') : m;
+// each once (2026-10-16: a doll sewn in seven cloths was seven draws); plain colours are baked later by bakeColours().
+// Lamps' glows the same, their glow tinted by the vertex colour too (a lamp's material is still switched as one).
+const TINTABLE = new Set(['wood', 'cloth', 'glow']);
+const tintKey = (m) => {
+  const glow = m.userData.kind === 'glow';
+  if (!TINTABLE.has(m.userData.kind) || m.vertexColors || Object.keys(m.userData).length !== (glow ? 2 : 1) || (glow && !m.userData.lamp)) return m;
+  return [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite,
+    glow ? m.emissiveIntensity : m.emissive.getHex(), m.flatShading].join('|');
+};
+const glowTint = (m) => {
+  m.emissive.set('#ffffff');
+  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;'); };
+  m.customProgramCacheKey = () => 'glow-tint';
+};
 
 function assemble(K, bins = K.bins) {
   const g = new THREE.Group(), sets = new Map();
@@ -326,6 +336,7 @@ function assemble(K, bins = K.bins) {
       }));
       m = m.clone();
       m.color.set('#ffffff'); m.vertexColors = true;
+      if (m.userData.kind === 'glow') glowTint(m);
     }
     const mesh = new THREE.Mesh(merge(geos), m);
     mesh.castShadow = m.userData.kind !== 'glass';

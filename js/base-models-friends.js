@@ -463,7 +463,7 @@ export const MAKES = {
     // on the top: a feather fan spread, his lipstick, a perfume bottle
     for (let n = 0; n < 7; n++) {
       const fan = posed(K, -u(20), u(28.6), u(4), 0.3, -1.25, (n - 3) * 0.28);
-      fan(blob(u(2.6), u(12), u(0.6), 0.6, 0.6), K.cloth(n % 2 ? BOA : '#fbe0e8'), 0, u(6), 0);
+      fan(blob(u(2.6), u(12), u(0.6), 0.6, 0.6, 12), K.cloth(n % 2 ? BOA : '#fbe0e8'), 0, u(6), 0);
     }
     K.put(ball(u(1.2), 10, 8), gold, -u(20), u(28.8), u(4));
     K.put(cyl(u(1), u(3), u(1), 14), gold, u(17), u(29.7), u(4));

@@ -308,7 +308,7 @@ export const MAKES = {
     [3, 6, 2, 5, 4].forEach((cnt, r) => {
       const y = u(36 - r * 6) - u(0.5);
       K.put(cyl(0.008, u(22), 0.008, 8).rotateZ(Math.PI / 2), K.metal(), 0, y, 0);
-      for (let n = 0; n < 6; n++) K.put(ball(1, 14, 10).scale(0.034, 0.05, 0.05), K.gloss(cs[r]), X(n < cnt ? 8.5 + n * 3 : 24.5 - (5 - n) * 3), y, 0);
+      for (let n = 0; n < 6; n++) K.put(ball(1, 8, 6).scale(0.034, 0.05, 0.05), K.gloss(cs[r]), X(n < cnt ? 8.5 + n * 3 : 24.5 - (5 - n) * 3), y, 0);
     });
   },
 

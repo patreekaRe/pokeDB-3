@@ -250,7 +250,7 @@ export const MAKES = {
     const tip = K.gloss(L.tone(K.pal.c, 1.1));
     for (const [n, r, len, up, y] of [[9, 0.06, 0.28, 0.4, 0.02], [7, 0.04, 0.22, 0.75, 0.06], [5, 0.015, 0.15, 1.05, 0.1]]) {
       for (let i = 0; i < n; i++) {
-        const a = i / n * Math.PI * 2 + n, g = L.ball(1, 14, 10).scale(0.07, 0.035, len / 2);
+        const a = i / n * Math.PI * 2 + n, g = L.ball(1, 12, 6).scale(0.07, 0.035, len / 2);
         g.translate(0, 0, len / 2 + r); g.rotateX(-up); g.rotateY(a);
         K.put(g, K.gloss(L.tone(K.pal.leaf, 1.15)), 0, t + y, 0);
         K.put(L.ball(0.02, 8, 6), tip, Math.sin(a) * (r + len * Math.cos(up)), t + y + len * Math.sin(up), Math.cos(a) * (r + len * Math.cos(up)));
