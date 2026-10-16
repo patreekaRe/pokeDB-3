@@ -12,7 +12,8 @@ import { el } from './ui.js';
 import { openShowcase, showcaseSource } from './showcase.js';
 import { buyPrize, cashTickets } from './corner-pot.js';
 import { homeGame } from './home-arcade.js';
-import { loadThree, tex } from './hd2d.js';
+import { tex } from './hd2d.js';
+import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
 
 const owned = (kind) => (getSave().corner?.prizes || []).includes(kind) || (getSave().secretBase?.owned?.[kind] || 0) > 0;
 
@@ -37,23 +38,14 @@ export async function openPrizes(onClose, stamps = '') {
   openShowcase('prizes', start, { close: onClose, say: say || null });
 }
 
-/* ---------- the turntable: one small renderer, the prize on the screen turning ---------- */
+/* ---------- the turntable (js/turntable.js's shared renderer): the prize on the screen turning ---------- */
 
-const SIZE = 360;
+const SIZE = TURN_SIZE;
 let stage = null;
 async function stageOf() {
   if (stage) return stage;
-  const THREE = await loadThree();
+  const base = await turntableStage(), { THREE } = base;
   const { furnitureModel } = await import('./base-mesh.js');
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setPixelRatio(1);
-  renderer.setSize(SIZE, SIZE, false);
-  const scene = new THREE.Scene();
-  scene.add(new THREE.HemisphereLight('#ffffff', '#6a5a7a', 1.7));
-  const sun = new THREE.DirectionalLight('#fff2dc', 2.4);
-  sun.position.set(-4, 9, 7);
-  scene.add(sun);
-  const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 60);
   const models = new Map();
   const model = (kind) => {
     if (!models.has(kind)) {
@@ -67,15 +59,15 @@ async function stageOf() {
     }
     return models.get(kind);
   };
-  return (stage = { THREE, renderer, scene, camera, model });
+  return (stage = { ...base, model });
 }
 
 /** A canvas for the prize's screen: its painting at once, then its 3D model turning while the canvas is on screen. */
 function turntable(kind) {
   const c = el('canvas', 'sc-art sc-piece sc-model');
   c.width = c.height = SIZE;
-  stageOf().then(({ renderer, scene, camera, model }) => {
-    const { pivot, r, low } = model(kind), g = c.getContext('2d'), t0 = performance.now();
+  stageOf().then((st) => {
+    const { camera, model } = st, { pivot, r, low } = model(kind), t0 = performance.now();
     const d = r / Math.tan(camera.fov * Math.PI / 360) * 0.8;
     camera.position.set(0, d * (low ? 0.75 : 0.32), d);   // a table seen from higher up, so its felt shows
     camera.lookAt(0, 0, 0);
@@ -86,11 +78,7 @@ function turntable(kind) {
       if (now - last < 33) return;
       last = now;
       pivot.rotation.y = -0.6 + Math.sin((now - t0) / 2600) * 0.75;
-      scene.add(pivot);
-      renderer.render(scene, camera);
-      scene.remove(pivot);
-      g.clearRect(0, 0, SIZE, SIZE);
-      g.drawImage(renderer.domElement, 0, 0);
+      drawTurn(st, pivot, c);
     };
     requestAnimationFrame(frame);
   }).catch(() => {});

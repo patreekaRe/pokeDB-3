@@ -2691,3 +2691,10 @@ Kurt slides in after your first held berry (`heldTalk` in `js/data/towns.js`), a
 - **Done (2026-10-16): the price signs moved low** (the user's phone shot: the front row's signs on poles hid the stands
   behind): each on an easel in front of its stump, the rows four apart, the Day Pass booth moved clear; checked headless
   from nine camera spots, no stand covering another (the old layout covered 40-57%).
+
+
+
+### The Furniture store's buy window and readable prices (2026-10-16, the user's ask)
+A tap on a plinth opens a merchant window with the piece turning on a velvet turntable you can drag to spin, and Buy /
+Not now (no more "tap again"); prices are crisp on-screen tags at each plinth (`merchant()` in `js/mall-3d.js`,
+`priceTags()` / `piecePreview()` in `js/mall-furniture.js`, the shared `js/turntable.js`; `docs/reference/hub-base-mall.md`).

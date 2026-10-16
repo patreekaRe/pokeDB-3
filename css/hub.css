@@ -229,7 +229,55 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mall-ask-yes { background: linear-gradient(#ffe070, #f0b020); color: #5a3a08; box-shadow: 0 4px 0 #b07c10, 0 6px 12px #0004; }
 .mall-ask-no { background: #e8dcc0; color: #6a5440; box-shadow: 0 4px 0 #c4b290; }
 .mall-ask-keys button:active { translate: 0 3px; box-shadow: none; }
-@media (prefers-reduced-motion: reduce) { .mall-ask.b3-say { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .mall-ask.b3-say, .mall-shop.b3-say { animation: none; } }
+
+/* the Furniture store's buy window (js/mall-3d.js's merchant(); 2026-10-16, the user's ask): a merchant's card in a
+   gold frame, the department on a ribbon in its colour, the piece turning on a velvet turntable in a spotlit box you
+   drag to turn it, the price big with a coin */
+.mall-shop {
+  --ink: #4fa45e;
+  position: absolute; left: 50%; bottom: calc(var(--hub-bar-h, 60px) + 12px); translate: -50% 0;
+  width: min(360px, calc(100% - 32px)); box-sizing: border-box; padding: 24px 18px 18px;
+  border: 3px solid #e2b648; border-radius: 28px; outline: 2px solid #fff6dc; outline-offset: -9px;
+  background: linear-gradient(#fffaf0, #f4e8cc); color: #6a5440; text-align: center;
+  box-shadow: 0 4px 0 #b88a2a, 0 12px 30px #0007;
+}
+.mall-shop[hidden] { display: none; }
+.mall-shop.b3-say { animation: b3Pop 0.25s cubic-bezier(.3, 1.5, .5, 1); }
+.mshop-dept {
+  display: inline-block; margin: 0 0 8px; padding: 6px 16px 5px; border-radius: 999px; background: var(--ink);
+  color: #fff; font: 12px/1 var(--pixel-font); letter-spacing: 0.08em; box-shadow: 0 2px 0 #0003;
+}
+.mshop-name { margin: 0 0 10px; font: 17px/1.3 var(--pixel-font); color: #4a3424; }
+.mshop-stage {
+  position: relative; width: min(100%, 240px, 30vh); aspect-ratio: 1; margin: 0 auto 8px; border-radius: 20px;
+  overflow: hidden; cursor: grab; touch-action: none; -webkit-user-select: none; user-select: none;
+  background: radial-gradient(circle at 50% 36%, #fffbea 0%, color-mix(in srgb, var(--ink) 28%, #fbf0d8) 46%, color-mix(in srgb, var(--ink) 60%, #2a1e24) 100%);
+  box-shadow: inset 0 0 0 2px #e2b648, inset 0 8px 20px #0004;
+}
+.mshop-stage.held { cursor: grabbing; }
+.mshop-turn { display: block; width: 100%; height: 100%; }
+.mshop-hint {
+  position: absolute; left: 50%; bottom: 8px; translate: -50% 0; padding: 4px 10px; border-radius: 999px;
+  background: #0007; color: #fff; font-size: 12px; white-space: nowrap; pointer-events: none;
+}
+.mshop-note { margin: 0 0 8px; font-size: 13px; }
+.mshop-price { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; margin: 0 0 14px; }
+.mshop-coin { width: 24px; height: 24px; margin-right: 6px; }
+.mshop-price b { font: 24px/1 var(--pixel-font); color: #5a3a10; }
+.mshop-price small { flex-basis: 100%; margin-top: 6px; font-size: 13px; color: #8a7458; }
+.mall-shop.short .mshop-price b, .mall-shop.short .mshop-price small { color: #c83828; }
+
+/* each stand's price, on screen at its plinth's front (js/mall-furniture.js's priceTags()), hidden under the buy window */
+.mall-tags { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.mall3d:has(.mall-shop:not([hidden])) .mall-tags { visibility: hidden; }
+.mall-tag {
+  position: absolute; left: 0; top: 0; display: flex; align-items: center; gap: 5px; padding: 5px 10px 5px 6px;
+  transform: translate(-50%, -50%); border: 2px solid var(--ink); border-radius: 999px; background: #fffaf0;
+  color: #4a3424; font: 13px/1 var(--pixel-font); white-space: nowrap; box-shadow: 0 2px 0 #0004;
+}
+.mall-tag[hidden] { display: none; }
+.mall-tag-coin { width: 15px; height: 15px; flex: none; }
 
 /* ---------- the Clearing's PC (js/pc.js): full screen, the PC by the plaza grown big ---------- */
 .pc-screen {

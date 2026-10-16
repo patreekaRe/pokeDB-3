@@ -18,6 +18,7 @@ import { fine, texOf, words, star } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
+import { smoothIcon } from './smooth-icons.js';
 
 const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
 /* The room: `x` a thing's first tile, y 0 the back wall. The nave runs up the middle from the door to the counter, the
@@ -545,20 +546,6 @@ function daisSide(L) {
   return f.c;
 }
 
-/** A price card standing at a plinth's front: cream in a gold line, the department's band and name, the price big under it. */
-function tagArt(text, d) {
-  const f = fine(40, 26, 6), { g, rr } = f;
-  rr(0.6, 1.2, 39, 24.6, 3, 'rgba(60,30,10,0.25)');
-  rr(0, 0, 39, 24.6, 3, '#fbf3e0');
-  rr(0, 0, 39, 8, [3, 3, 0, 0], d.ink);
-  words(g, d.name, 19.5, 4.2, 4, '#ffffff');
-  g.strokeStyle = GOLD[1]; g.lineWidth = 0.8; g.beginPath(); g.roundRect(0.5, 0.5, 38, 23.6, 2.6); g.stroke();
-  g.fillStyle = '#f0c048'; g.beginPath(); g.arc(8, 16.4, 4, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#c89418'; star(g, 8, 16.4, 2.2);
-  words(g, text, 24, 16.8, 11, '#5a3a20');
-  return f.c;
-}
-
 /** The board that stands on a plinth once its piece is bought: a red SOLD OUT on cream, a leaf in the corner. */
 function soldArt(L) {
   const f = fine(44, 22, 6), { g, rr } = f;
@@ -755,7 +742,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
     if (!id) return;
     const p = PIECES[id], d = depts[i], cx = tileX(b.x) + 0.5, cz = tileZ(b.y) + 0.5, H = DAIS_H;
     // one of each piece a player (the user's call, 2026-10-12): once owned it's sold out here, and copies are the PC's Duplicate
-    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz }, sold: (owned[p.own] || 0) > 0 };
+    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz }, sold: (owned[p.own] || 0) > 0, dept: { name: d.name, ink: d.ink } };
     spots.push(spot);
     const bay = new THREE.Group();
     bay.position.set(cx, 0, cz);
@@ -763,41 +750,9 @@ export function buildFloor(THREE, floor, size, upstairs) {
     const slab = new THREE.Mesh(new THREE.BoxGeometry(DAIS, H, DAIS), [side, side, top, side, side, side]);
     slab.position.y = H / 2;
     slab.castShadow = slab.receiveShadow = true;
-    const ware = new THREE.Group();   // the piece and its price card, which a buy poofs away (js/mall-3d.js's poof())
+    const ware = new THREE.Group();   // the piece, which a buy poofs away (js/mall-3d.js's poof())
     bay.add(slab, ware);
-    const fit = Math.min(1.35, 1.8 / Math.max(p.w, p.h));   // small pieces a little larger than life, so they read on a plinth
-    const model = p.wall && !shapeOf(p.fam, p) ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
-    if (model && p.wall) {
-      // a modelled wall piece hangs on its little display board as on the room's wall, its back flat to the board
-      const box = new THREE.Box3().setFromObject(model), mw = box.max.x - box.min.x, mh = box.max.y - box.min.y;
-      const k = Math.min(1.35, 1.6 / mw, (b.tall - 0.3) / mh), cy = H + 0.18 + mh * k / 2 + 0.1;
-      model.scale.setScalar(k);
-      model.position.set(-(box.min.x + box.max.x) / 2 * k, cy - (box.min.y + box.max.y) / 2 * k, -0.52);
-      model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
-      ware.add(model);
-      put(ware, new THREE.BoxGeometry(mw * k + 0.2, mh * k + 0.2, 0.06), std({ color: '#fbf3e0' }), 0, cy, -0.55);
-      put(ware, new THREE.BoxGeometry(mw * k + 0.3, mh * k + 0.3, 0.04), goldM, 0, cy, -0.59);
-    } else if (model) {
-      // its 3D model (js/base-mesh.js), turned a little so its depth shows
-      const k = Math.min(fit, b.tall / model.userData.top);
-      model.scale.setScalar(k);
-      model.position.y = H;
-      model.rotation.y = -0.3;
-      model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
-      ware.add(model);
-    } else if (p.flat) {
-      const k = Math.min(1, fit), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
-      const box = put(ware, new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.9 }), s, s, s], 0, H + h / 2, 0, h > 0.1);
-      box.receiveShadow = true;
-    } else {
-      const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1.35, 1.6 / w, b.tall / h);
-      put(ware, new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), 0, H + h * k / 2 + (p.wall ? 0.08 : 0), p.wall ? -0.5 : 0);
-      if (p.wall) put(ware, new THREE.BoxGeometry(w * k + 0.2, h * k + 0.2, 0.06), std({ color: '#fbf3e0' }), 0, H + h * k / 2 + 0.08, -0.55);
-    }
-    // the price card on a little gold easel at the plinth's front
-    const tag = put(ware, new THREE.PlaneGeometry(0.62, 0.4), std({ map: texOf(tagArt(price(p.price), d)), alphaTest: 0.3, roughness: 0.7 }), 0.5, H + 0.24, DAIS / 2 - 0.08);
-    tag.rotation.x = -0.3;
-    put(ware, new THREE.BoxGeometry(0.04, 0.24, 0.04), goldM, 0.5, H + 0.1, DAIS / 2 - 0.16);
+    pieceInto(THREE, ware, id, b.tall, H, std, goldM);
     // the SOLD OUT board on its own easel in the plinth's middle, shown once the piece is gone
     const sold = new THREE.Group();
     put(sold, new THREE.PlaneGeometry(1.3, 0.65), soldMat, 0, 0.7, 0).rotation.x = -0.12;
@@ -952,11 +907,114 @@ export function buildFloor(THREE, floor, size, upstairs) {
   ring.raycast = () => {};
   group.add(ring);
 
+  const tags = priceTags(THREE, spots);
   return {
     group, blocked, spots, ring, rope, lift, cols, rows, door: DOOR, top: 4.85, title: floor === 1 ? 'Furniture' : 'Furniture 2F',
     keeper: { ...KEEPERS[floor], x: tileX(NAVE), z: tileZ(COUNTER.y - 1) },
-    tick: (now, dt) => { for (const t of ticks) t(now, dt); },
+    tick: (now, dt, hud) => { for (const t of ticks) t(now, dt); if (hud) tags.place(hud); },
+    leave: () => tags.drop(),
   };
+}
+
+/** Each stand's price on screen, a cream tag with a coin pinned at its plinth's front edge (2026-10-16, the user's ask:
+    the painted price cards were too small to read on a phone): crisp at any size, hidden once sold and while the buy
+    window is up (css/hub.css). */
+function priceTags(THREE, spots) {
+  const at = new THREE.Vector3();
+  let box = null;
+  return {
+    place(hud) {
+      if (!box?.isConnected) {
+        box = document.createElement('div');
+        box.className = 'mall-tags';
+        for (const s of spots) {
+          if (s.kind !== 'bay') continue;
+          const t = document.createElement('span');
+          t.className = 'mall-tag';
+          t.style.setProperty('--ink', s.dept.ink);
+          t.append(smoothIcon('coin', 'mall-tag-coin'), price(PIECES[s.piece].price));
+          s.tag = t;
+          box.append(t);
+        }
+        hud.view.after(box);   // under the speech window, the buy window and the bar
+      }
+      const r = hud.view.getBoundingClientRect(), o = hud.stage.getBoundingClientRect();
+      for (const s of spots) {
+        if (!s.tag) continue;
+        at.set(s.at.x, DAIS_H, s.at.z + DAIS / 2).project(hud.camera);
+        const on = !s.soldSign.visible && s.ware.visible && Math.abs(at.x) < 1.1 && Math.abs(at.y) < 1.1;
+        s.tag.hidden = !on;
+        if (on) s.tag.style.translate = `${(r.left - o.left + (at.x + 1) / 2 * r.width).toFixed(1)}px ${(r.top - o.top + (1 - at.y) / 2 * r.height).toFixed(1)}px`;
+      }
+    },
+    drop() { box?.remove(); box = null; },
+  };
+}
+
+/** A piece as it stands on its plinth into `ware`, the plinth's top at height H, standing at most `tall`: its 3D model
+    (js/base-mesh.js), a modelled wall piece on a little display board, a rug or mat as a slab, or else its painting
+    upright. Shared by the stands and the buy window's turntable. */
+function pieceInto(THREE, ware, id, tall, H, std, goldM) {
+  const p = PIECES[id];
+  const put = (geo, m, x, y, z, shadow = true) => {
+    const o = new THREE.Mesh(geo, m);
+    o.position.set(x, y, z); o.castShadow = shadow; o.receiveShadow = true;
+    ware.add(o);
+    return o;
+  };
+  const fit = Math.min(1.35, 1.8 / Math.max(p.w, p.h));   // small pieces a little larger than life, so they read on a plinth
+  const model = p.wall && !shapeOf(p.fam, p) ? null : furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+  if (model && p.wall) {
+    // a modelled wall piece hangs on its little display board as on the room's wall, its back flat to the board
+    const box = new THREE.Box3().setFromObject(model), mw = box.max.x - box.min.x, mh = box.max.y - box.min.y;
+    const k = Math.min(1.35, 1.6 / mw, (tall - 0.3) / mh), cy = H + 0.18 + mh * k / 2 + 0.1;
+    model.scale.setScalar(k);
+    model.position.set(-(box.min.x + box.max.x) / 2 * k, cy - (box.min.y + box.max.y) / 2 * k, -0.52);
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    ware.add(model);
+    put(new THREE.BoxGeometry(mw * k + 0.2, mh * k + 0.2, 0.06), std({ color: '#fbf3e0' }), 0, cy, -0.55);
+    put(new THREE.BoxGeometry(mw * k + 0.3, mh * k + 0.3, 0.04), goldM, 0, cy, -0.59);
+  } else if (model) {
+    // its 3D model (js/base-mesh.js), turned a little so its depth shows
+    const k = Math.min(fit, tall / model.userData.top);
+    model.scale.setScalar(k);
+    model.position.y = H;
+    model.rotation.y = -0.3;
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    ware.add(model);
+  } else if (p.flat) {
+    const k = Math.min(1, fit), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
+    const box = put(new THREE.BoxGeometry(p.w * k, h, p.h * k), [s, s, std({ map: tex(pieceArt(id, 0, HD)), alphaTest: 0.5, roughness: 0.9 }), s, s, s], 0, H + h / 2, 0, h > 0.1);
+    box.receiveShadow = true;
+  } else {
+    const cut = trim(pieceArt(id, 0, HD)), w = cut.w * PX, h = cut.h * PX, k = Math.min(1.35, 1.6 / w, tall / h);
+    put(new THREE.PlaneGeometry(w * k, h * k), std({ map: tex(cut.c), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 1 }), 0, H + h * k / 2 + (p.wall ? 0.08 : 0), p.wall ? -0.5 : 0);
+    if (p.wall) put(new THREE.BoxGeometry(w * k + 0.2, h * k + 0.2, 0.06), std({ color: '#fbf3e0' }), 0, H + h * k / 2 + 0.08, -0.55);
+  }
+}
+
+const previews = new Map();
+/** The piece alone for the buy window (js/turntable.js), on a round velvet turntable in its department's colour, rimmed
+    in gold, its middle over the turntable's. Kept per piece, as the shared renderer keeps it. */
+export function piecePreview(THREE, id, ink) {
+  if (previews.has(id)) return previews.get(id);
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const goldM = std({ color: '#e8b848', metalness: 0.85, roughness: 0.22 });
+  const pivot = new THREE.Group(), ware = new THREE.Group();
+  pieceInto(THREE, ware, id, 2.3, 0, std, goldM);
+  const box = new THREE.Box3().setFromObject(ware), mid = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3());
+  const r = Math.max(0.6, Math.hypot(size.x, size.z) / 2 + 0.12), DISC = 0.1;
+  ware.position.set(-mid.x, DISC - box.min.y, -mid.z);
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.02, DISC, 64), std({ color: ink, roughness: 0.95 }));
+  disc.position.y = DISC / 2;
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.025, 8, 64), goldM);
+  rim.rotation.x = Math.PI / 2; rim.position.y = DISC;
+  const foot = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.06, r * 1.08, 0.05, 64), std({ color: '#2a2030', roughness: 0.3 }));
+  foot.position.y = -0.025;
+  pivot.add(ware, disc, rim, foot);
+  const out = { pivot, h: size.y + DISC, r: Math.hypot(r, (size.y + DISC) / 2) };
+  previews.set(id, out);
+  return out;
 }
 
 /** A round bouquet: blooms in the floor's colours heaped in a dome, a few leaves among them, `k` its size. */

@@ -23,7 +23,8 @@ import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
-import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS } from './mall-furniture.js';
+import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS, piecePreview } from './mall-furniture.js';
+import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, passLine } from './mall-outfitter.js';
 import { safariOpen } from './data/pokedex.js';
@@ -52,7 +53,7 @@ const FRONTS = [
   { id: 'outfitter', name: 'Safari Outfitter', line: 'Closed. A note on the door says: "Opening with the Safari Zone! Beat every Pokémon in all three biomes. Kangaskhan"', x: 16, step: { x: 16, y: 1 } },
 ];
 
-let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, hemi, sun;
+let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, shopEl, hemi, sun;
 let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
@@ -914,17 +915,11 @@ function ask(text, art = null) {
 
 function closeAsk(yes) {
   if (askEl) askEl.hidden = true;
+  if (shopEl) shopEl.hidden = true;
+  spin = null;
   const res = answer;
   answer = null;
   res?.(yes);
-}
-
-/** A piece's painting, front on, for the buy window. */
-function pieceArt(id) {
-  const a = PIECES[id].art(0, 4), c = document.createElement('canvas');
-  c.width = a.width; c.height = a.height;
-  c.getContext('2d').drawImage(a, 0, 0);
-  return c;
 }
 
 /** A Game Corner prize (a skin, a ball pack, a shiny, a perk): the first tap picks it and Meowth says what it is and
@@ -999,22 +994,23 @@ function thanks(line) {
   talk(line, 4600);
 }
 
-/** A plinth: the first tap picks it and says its price, the next buys it into the Secret Base's storage. One of each
-    piece a player (the user's call, 2026-10-12): once it's owned the platform is sold out, and copies are the PC's. */
+/** A plinth: a tap opens Smeargle's buy window over it (2026-10-16, the user's ask: a merchant window, not "tap again"),
+    the piece turning on its turntable; Buy takes it into the Secret Base's storage. One of each piece a player (the
+    user's call, 2026-10-12): once it's owned the plinth is sold out, and copies are the PC's. */
 async function bayTap(spot) {
-  const p = PIECES[spot.piece], n = styles(spot.piece).length, all = n > 1 ? ` (all ${n} styles)` : '';
+  const p = PIECES[spot.piece], n = styles(spot.piece).length;
   if (spot.sold) {
     pick(null);
     return talk(`Sorry, the ${p.name.toLowerCase()} is sold out: you have one already! Your PC's Duplicate can make you more copies.`, 4600);
   }
-  if (picked !== spot) {
-    pick(spot);
-    return talk(`Ooh, the ${p.name.toLowerCase()}${all}! That's ${p.price.toLocaleString()} PokéCoins. Tap again and it's yours.`, 4600);
+  pick(spot);
+  if (!await merchant(spot)) return pick(null);
+  const coins = getSave().coins ?? 0;
+  if (coins < p.price || !buyPiece(loadBase(), spot.piece)) {
+    playSound('cancel');
+    pick(null);
+    return talk(`Oh dear, you're ${(p.price - coins).toLocaleString()} PokéCoins short for the ${p.name.toLowerCase()}.`, 3600);
   }
-  const coins = getSave().coins ?? 0, short = () => { playSound('cancel'); talk(`Oh dear, you're ${(p.price - coins).toLocaleString()} PokéCoins short for the ${p.name.toLowerCase()}.`, 3600); };
-  if (coins < p.price) return short();
-  if (!await ask(`Buy the ${p.name.toLowerCase()}${all} for ${p.price.toLocaleString()} PokéCoins?`, pieceArt(spot.piece))) return pick(null);
-  if (!buyPiece(loadBase(), spot.piece)) return short();
   playSound('buy');
   walker.hopUntil = performance.now() + 500;
   P.keeper.hopUntil = performance.now() + 600;
@@ -1022,6 +1018,90 @@ async function bayTap(spot) {
   showCoins();
   poof(spot);
   talk(n > 1 ? `Thank you! All ${n} styles of the ${p.name.toLowerCase()} are off to your Secret Base.` : `Thank you! The ${p.name.toLowerCase()} is off to your Secret Base.`, 3600);
+}
+
+/** The buy window: the shopkeeper's tag, the piece's department on a ribbon in its colour, its name, the piece turning on
+    a velvet turntable (drag it to turn it yourself), how many styles come with it, the price and your coins, Buy / Not
+    now. Resolves true on Buy; a tap anywhere outside it is a no, like every window. */
+function merchant(spot) {
+  const p = PIECES[spot.piece], n = styles(spot.piece).length, coins = getSave().coins ?? 0, short = coins < p.price;
+  closeAsk(false);
+  clearTimeout(say.t);
+  lineEl.classList.remove('on');
+  shopEl.style.setProperty('--ink', spot.dept?.ink ?? '#4fa45e');
+  shopEl.querySelector('.mall-ask-who').textContent = P.keeper?.name ?? '';
+  shopEl.querySelector('.mshop-dept').textContent = spot.dept?.name ?? 'FURNITURE';
+  shopEl.querySelector('.mshop-name').textContent = p.name;
+  shopEl.querySelector('.mshop-note').textContent = n > 1 ? `All ${n} styles included` : 'Delivered to your Secret Base';
+  shopEl.querySelector('.mshop-price b').textContent = p.price.toLocaleString();
+  shopEl.querySelector('.mshop-price small').textContent = short ? `You have ${coins.toLocaleString()}: ${(p.price - coins).toLocaleString()} short` : `You have ${coins.toLocaleString()}`;
+  shopEl.classList.toggle('short', short);
+  shopEl.hidden = false;
+  shopEl.classList.remove('b3-say'); void shopEl.offsetWidth; shopEl.classList.add('b3-say');
+  spinPiece(spot);
+  return new Promise(res => { answer = res; });
+}
+
+/* The buy window's turntable: the piece drawn by js/turntable.js's shared renderer, turning slowly on its own; a drag
+   turns it (and tips it a little up or down), and a flick keeps it spinning a moment before it slows to its own pace. */
+let spin = null;
+const SPIN = 0.55;   // its own pace, a turn every ~11 s
+
+async function spinPiece(spot) {
+  const s = spin = { yaw: -0.6, vel: 0, tilt: 0.38, drag: null, last: 0 };
+  const c = shopEl.querySelector('.mshop-turn');
+  c.width = c.height = TURN_SIZE;
+  c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  const st = await turntableStage().catch(() => null);
+  if (!st || spin !== s) return;
+  const { pivot, h, r } = piecePreview(st.THREE, spot.piece, spot.dept?.ink ?? '#4fa45e');
+  const d = r / Math.sin(st.camera.fov * Math.PI / 360) * 1.02, mid = new THREE.Vector3(0, h * 0.45, 0);
+  const step = (now) => {
+    if (spin !== s || !root?.isConnected) return;
+    requestAnimationFrame(step);
+    if (now - s.last < 30) return;
+    const dt = s.last ? Math.min(100, now - s.last) / 1000 : 0;
+    s.last = now;
+    if (!s.drag) {
+      s.vel *= Math.exp(-dt * 2.5);
+      s.yaw += (SPIN + s.vel) * dt;
+    }
+    pivot.rotation.y = s.yaw;
+    st.camera.position.set(0, mid.y + Math.sin(s.tilt) * d, Math.cos(s.tilt) * d);
+    st.camera.lookAt(mid);
+    drawTurn(st, pivot, c);
+  };
+  requestAnimationFrame(step);
+}
+
+/** Drags on the turntable's stage turn the piece; they never reach the room under the window. */
+function spinBy(stage) {
+  stage.addEventListener('pointerdown', (e) => {
+    if (!spin) return;
+    e.preventDefault();
+    stage.setPointerCapture(e.pointerId);
+    spin.drag = { x: e.clientX, y: e.clientY, t: performance.now() };
+    spin.vel = 0;
+    stage.classList.add('held');
+  });
+  stage.addEventListener('pointermove', (e) => {
+    const g = spin?.drag;
+    if (!g) return;
+    const now = performance.now(), dx = e.clientX - g.x, dy = e.clientY - g.y, k = 6 / stage.clientWidth;
+    spin.yaw += dx * k;
+    spin.tilt = Math.max(0.05, Math.min(0.9, spin.tilt + dy * k * 0.5));
+    if (now > g.t) spin.vel = spin.vel * 0.5 + (dx * k / ((now - g.t) / 1000)) * 0.5;
+    Object.assign(g, { x: e.clientX, y: e.clientY, t: now });
+  });
+  const up = () => {
+    if (!spin?.drag) return;
+    if (performance.now() - spin.drag.t > 80) spin.vel = 0;
+    spin.vel = Math.max(-12, Math.min(12, spin.vel - SPIN));
+    spin.drag = null;
+    stage.classList.remove('held');
+  };
+  stage.addEventListener('pointerup', up);
+  stage.addEventListener('pointercancel', up);
 }
 
 /* The poof as a piece is bought: it swells and shrinks away into a cloud of soft puffs and a few gold sparkles, then the
@@ -1437,6 +1517,10 @@ export async function openMall({ onLeave = null, store = null } = {}) {
       <canvas class="b3-view"></canvas>
       <header class="b3-top"><h2>Poké Mall</h2></header>
       <div class="mall-foot"><p class="mall-line" aria-live="polite"><b class="mall-who"></b><span></span></p><div class="mall-ask" hidden><b class="mall-ask-who"></b><div class="mall-ask-pic"></div><p class="mall-ask-q"></p><div class="mall-ask-keys"><button type="button" class="mall-ask-yes">Buy</button><button type="button" class="mall-ask-no">No</button></div></div></div>
+      <div class="mall-shop" role="dialog" aria-label="Buy" hidden><b class="mall-ask-who"></b><p class="mshop-dept"></p><h3 class="mshop-name"></h3>
+        <div class="mshop-stage"><canvas class="mshop-turn"></canvas><span class="mshop-hint">Drag to turn</span></div>
+        <p class="mshop-note"></p><p class="mshop-price"><b></b><small></small></p>
+        <div class="mall-ask-keys"><button type="button" class="mall-ask-yes">Buy</button><button type="button" class="mall-ask-no">Not now</button></div></div>
       <div class="hub-bar mall-bar">
         <div class="room-hinge"><span class="pdx-lens" aria-hidden="true"></span><span class="mdex-lights" aria-hidden="true"><span class="pdx-light red"></span><span class="pdx-light yellow"></span><span class="pdx-light green"></span></span>
           <div class="room-keys"><button type="button" class="room-home hub-dex mall-dex" aria-label="Pokédex"></button><button type="button" class="room-home hub-help mall-help" title="How to play" aria-label="How to play"></button></div>
@@ -1449,6 +1533,11 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   askEl = root.querySelector('.mall-ask');
   askEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
   askEl.querySelector('.mall-ask-no').addEventListener('click', () => { playSound('cancel'); closeAsk(false); });
+  shopEl = root.querySelector('.mall-shop');
+  shopEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
+  shopEl.querySelector('.mall-ask-no').addEventListener('click', () => { playSound('cancel'); closeAsk(false); });
+  shopEl.querySelector('.mshop-price b').before(smoothIcon('coin', 'mshop-coin'));
+  spinBy(shopEl.querySelector('.mshop-stage'));
   lineEl = root.querySelector('.mall-line');
   const bar = root.querySelector('.mall-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));
