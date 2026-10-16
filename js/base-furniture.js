@@ -366,9 +366,10 @@ const GIFT = { id: 'gift', name: 'Present', w: 1, h: 1, price: 0, draw(x, b) {
   R(x + 14, b - 38, 4, 5, '#e0a818'); R(x + 15, b - 37, 2, 1, '#fff4a0');
 } };
 
-/** What a piece costs at the store, from its authored price (80 to 1,600): 50 to 150 PokéCoins on a log curve, so the
-    order holds (a crate cheapest, a grand piano dearest) but furniture is cheap (the user's call, 2026-10-09). */
-export const shopPrice = (p) => (p ? Math.min(150, Math.max(50, Math.round((50 + 100 * Math.log(p / 80) / Math.log(20)) / 5) * 5)) : 0);
+/** What a piece costs at the store, from its authored price (80 to 1,600): 50 to 300 PokéCoins on a log curve, so the
+    order holds (a crate cheapest, a grand piano dearest). A crate still costs 50 (cheap furniture, the user's call,
+    2026-10-09); the top went 150 -> 300 on 2026-10-16 (the user's call: the Trainer's Journal paid more than coins could buy). */
+export const shopPrice = (p) => (p ? Math.min(300, Math.max(50, Math.round((50 + 250 * Math.log(p / 80) / Math.log(20)) / 5) * 5)) : 0);
 
 // HD pictures, the least recently used dropped past FINE_KEEP (each is a few hundred kilobytes)
 const FINE = new Map(), FINE_KEEP = 64;

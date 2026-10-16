@@ -2760,3 +2760,8 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 ### House Upgrades' Backyard tab (2026-10-16, the user's ask: "backyard needs its own tab ... couldn't find the upgrade button")
 - The yard moved off 1F onto its own BACKYARD tab, its buy / grow card always shown; every Build key is sticky at the
   page's foot. Checked headless at phone size: the key in view on 1F, the yard tab and a room build; no errors.
+
+- **Prices raised to match the Trainer's Journal** (2026-10-16, the user's call: "fix those prices" after the Journal's
+  coins outgrew what they could buy): perks, starters, shinies, Meowth's machines and the furniture curve, the numbers
+  in `docs/reference/economy-and-hall-of-fame.md`'s last entry. Not done, offered: a big new thing to save for (a third
+  Secret Base floor, a statue), and the Game Corner's 500 a day (`DAILY_CAP`), which pays more than runs do.
