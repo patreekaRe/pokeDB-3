@@ -20,6 +20,7 @@ import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
 import { RECIPES, RECIPES_BY_ID, GIFTS, FAVOURITE, FRIENDS, gifteeOf, heartPieces, heartsOf, workshopOf } from './workshop.js';
 import { DOJO_REWARDS, DOJO_REWARD, dojoEarned, dojoHow } from './dojo.js';
 import { BERRIES, BERRY, picked } from './berries.js';
+import { RANGER_FURNITURE, TASKS_BY_ID } from './ranger.js';
 
 /** Where a kind comes from: a source and an id in that source's list. */
 const SOURCES = {
@@ -38,6 +39,8 @@ const SOURCES = {
   dojo: { owned: (save, id) => dojoEarned(save, id), item: (id) => DOJO_REWARD[id] },
   // the backyard's berry garden (js/data/berries.js): a berry's basket, from the first of it picked
   berry: { owned: (save, id) => picked(save).includes(id), item: (id) => BERRY[id] },
+  // the Safari Outfitter's Ranger Task Board (js/data/ranger.js): a task's reward, once it's claimed
+  ranger: { owned: (save, id) => (save.ranger?.claimed || []).includes(id), item: (id) => TASKS_BY_ID[id] },
 };
 
 export const FURNITURE = [
@@ -100,6 +103,8 @@ export const FURNITURE = [
   ...DOJO_REWARDS.map(r => ({ kind: r.kind, from: ['dojo', r.kind] })),
   // the berry garden's baskets
   ...BERRIES.map(b => ({ kind: `${b.id}basket`, from: ['berry', b.id] })),
+  // the Safari set, from the Ranger Task Board
+  ...RANGER_FURNITURE.map(f => ({ kind: f.kind, from: ['ranger', f.task] })),
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -132,6 +137,7 @@ export function howToEarn(piece, save) {
   }
   if (kind === 'dojo') return dojoHow(piece.kind, save);
   if (kind === 'berry') return `Pick your first ${src.name} in your backyard's berry garden`;
+  if (kind === 'ranger') return `Ranger Task Board at the Safari Outfitter: ${src.title} (${src.text.replace(/\.$/, '')})`;
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }

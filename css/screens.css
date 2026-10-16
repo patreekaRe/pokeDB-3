@@ -3837,7 +3837,13 @@ body.scene-peek #backdrop { display: none; }
 .sp-sky { position: absolute; left: 0; top: 0; pointer-events: none; }
 .sp-gate-mon { position: absolute; z-index: 1; left: 50%; top: var(--ground, 80%); width: 84px; height: 84px; object-fit: contain; object-position: 50% 100%;
   translate: -50% calc(4px - 100%); pointer-events: none; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.3)); animation: pdxIdle 1.4s ease-in-out infinite; }
-.tdev-keys.sp-keys { grid-template-columns: repeat(3, 1fr); max-width: 270px; }
+.tdev-keys.sp-keys { grid-template-columns: repeat(4, 1fr); max-width: 340px; }
+.sp-keys .mdex-btn { position: relative; }
+.sp-tasks-n {   /* Ranger tasks ready to claim (js/safariprep.js's taskCount()) */
+  position: absolute; top: -6px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;
+  display: grid; place-items: center; background: #d84838; color: #fff; font: 12px/1 var(--pixel-font); font-style: normal; box-shadow: 0 2px 0 #0005;
+}
+.sp-tasks-n[hidden] { display: none; }
 /* its keys' apps (the Safari Dex, Ranks, the Game Corner) slide over the LCD as the Collection's do, and the window folds
    away to give them the room */
 .sp-glass, .tower-lobby .tdev-glass { position: relative; }

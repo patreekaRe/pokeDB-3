@@ -11,7 +11,7 @@ import { BALLS, DAY_PASS, safariAccess } from './data/balls.js';
 import { safariDaily } from './data/safari.js';
 import { getSave } from './storage.js';
 import { cornerEntries } from './shop.js';
-import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
+import { fine, texOf, words, star, mergeStatic, newsArt } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
 
@@ -37,7 +37,7 @@ export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
   src: 'assets/pokemon/kangaskhan-front.gif',
   hello: ['Welcome to the Safari Outfitter! Kit up before you head into the Zone.', 'Ah, a ranger in the making! Have a look round.', 'Fresh balls on every cushion. My little one polished them all.'],
   chat: ['Great and Ultra Balls are the safe bet. The others shine at the right moment: read their tags!', 'Your first try each day is free. After that, a Day Pass from the machine buys replays till midnight.',
-    'The board on the wall shows today\'s best catchers. Think you can top it?', 'My little one wants to come along on a run. Not until it\'s bigger!',
+    'The board on the wall shows today\'s best catchers. Think you can top it?', 'Check the Ranger Task Board by my jeep: catch enough and there\'s furniture, coins and room for more Pokémon at home.', 'My little one wants to come along on a run. Not until it\'s bigger!',
     'Packs are used up as you throw them. The Safari Balls you get every run are always free.'] };
 
 /** The Day Pass machine's state today: 'pass' (held, even before the free try), 'first' (today's try is free) or
@@ -317,7 +317,6 @@ function wallArt({ top: TOP, u: U }) {
   const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
   const wx = (t) => (t + 0.4) * U, wy = (y) => (TOP - y) * U;
   bamboo(f, W, H, wy);
-  mapArt(g, wx(0.7), wy(4.45), wx(6.3) - wx(0.7), wy(2.15) - wy(4.45));
   savannaArt(g, wx(7.7), wy(4.0), wx(13.3) - wx(7.7), wy(2.55) - wy(4.0));
   // the carved sign over the counter, on the beam: a wood board, a green inset, a Safari Ball and the name, lit
   const sx = wx(10.5), sw = 5.4 * U, sy = wy(4.75), sh = wy(4.12) - sy;
@@ -410,6 +409,35 @@ function priceArt(e, b) {
   } else words(g, big, 36, 21, 10, '#4a2c14');
   const note = b.weekly ? 'ONE THROW A WEEK' : `PACK OF ${b.pack} · HAVE ${getSave().balls?.[b.id] || 0}`;
   words(g, note, 36, 30.4, 5, L.trimDark);
+  return f.c;
+}
+
+/** The Ranger Task Board on the wall over the jeep (2026-10-16; js/ranger.js opens it): a cork board in a bamboo frame
+    under a green plaque, paper notes pinned in rows with a Polaroid and a few lines each, the Safari Zone's map pinned
+    at the right. */
+function taskBoardArt() {
+  const W = 120, H = 66, f = fine(W, H, 6), { g, rr, lin } = f;
+  rr(0, 0, W, H, 3, L.cane[2]);
+  g.fillStyle = 'rgba(90,60,20,0.35)'; for (let x = 5; x < W; x += 5) g.fillRect(x, 0, 0.4, H);
+  rr(3, 3, W - 6, H - 6, 2, lin(0, 0, 0, H, ['#c8955a', '#b8844a']));
+  g.fillStyle = 'rgba(0,0,0,0.08)'; for (let i = 0; i < 400; i++) g.fillRect((i * 37) % (W - 8) + 4, (i * 53) % (H - 8) + 4, 0.6, 0.6);
+  mapArt(g, W - 36, 16, 29, 42);
+  const pins = ['#d84838', '#3a74e0', '#f8c838', '#58a848'];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
+    const x = 7 + c * 19.5, y = 16 + r * 22, tilt = (((r * 4 + c) * 37) % 7 - 3) * 0.02;
+    g.save(); g.translate(x + 8, y + 9); g.rotate(tilt); g.translate(-x - 8, -y - 9);
+    rr(x + 0.5, y + 0.8, 17, 19, 0.6, 'rgba(0,0,0,0.25)');
+    rr(x, y, 17, 19, 0.6, '#fbf5e4');
+    rr(x + 1.5, y + 2, 6.5, 7, 0.3, '#ffffff'); rr(x + 2.2, y + 2.6, 5.1, 5, 0.2, (r + c) % 3 ? '#cfe8f4' : '#e8f0d8');
+    g.fillStyle = 'rgba(80,60,40,0.55)'; for (const ly of [3.5, 6, 8.5]) g.fillRect(x + 9, y + ly, 6.5 - (ly === 8.5 ? 2 : 0), 0.8);
+    for (let k = 0; k < 6; k++) { g.fillStyle = k < (r * 4 + c) % 7 ? '#58a848' : 'rgba(80,60,40,0.25)'; g.beginPath(); g.arc(x + 2.5 + k * 2.4, y + 13.5, 0.8, 0, Math.PI * 2); g.fill(); }
+    rr(x + 1.5, y + 15.6, 14, 2, 0.4, 'rgba(46,84,38,0.2)');
+    g.fillStyle = pins[(r * 4 + c) % 4]; g.beginPath(); g.arc(x + 8.5, y + 0.6, 1.3, 0, Math.PI * 2); g.fill();
+    g.restore();
+  }
+  rr(W / 2 - 30, -1, 60, 12, 2.4, L.dark);
+  rr(W / 2 - 28.8, 0.2, 57.6, 9.6, 1.8, lin(0, 0, 0, 10, ['#6a8a3e', '#3e6228']));
+  words(g, 'RANGER TASK BOARD', W / 2, 5.4, 5, '#fbf3dc');
   return f.c;
 }
 
@@ -768,7 +796,29 @@ export function buildOutfitter(THREE, size) {
     });
   }
 
-  // the jeep in the left bay, under the map, turned a little to show its side and its door's SAFARI ZONE
+  // the Ranger Task Board in the left bay, over the jeep (js/ranger.js opens it), a "!" bobbing over it while a task
+  // waits to be claimed
+  {
+    const BW = 5.2, BH = BW * 66 / 120, y0 = 1.95;
+    const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map: texOf(taskBoardArt()), toneMapped: false }));
+    board.position.set(tileX(3), y0 + BH / 2, wallZ + 0.05);
+    const pip = new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.55), new THREE.MeshBasicMaterial({ map: texOf(newsArt()), transparent: true, depthWrite: false, toneMapped: false }));
+    pip.position.set(tileX(3) + BW / 2 - 0.3, y0 + BH + 0.15, wallZ + 0.12);
+    pip.raycast = () => {};
+    const spot = { id: 'ranger-board', kind: 'game', name: 'Ranger Task Board', open: true, step: { x: 3, y: 2 } };
+    spot.line = spot.name;
+    spot.game = { name: spot.name, line: 'The Ranger Task Board: tasks for the Safari Zone, and rewards to claim.', direct: true,
+      open: (done) => import('./ranger.js').then(m => m.openRangerBoard(done)) };
+    spots.push(spot);
+    board.userData.front = spot;
+    group.add(board, pip);
+    const syncPip = () => import('./ranger.js').then(m => { pip.visible = m.rangerReady() > 0; });
+    syncPip();
+    redraws.push(syncPip);
+    ticks.push((now) => { pip.position.y = y0 + BH + 0.15 + (calm ? 0 : Math.abs(Math.sin(now / 320)) * 0.12); });
+  }
+
+  // the jeep in the left bay, under the board, turned a little to show its side and its door's SAFARI ZONE
   {
     const jeep = new THREE.Group();
     jeep.position.set(tileX(JEEP.x), 0, tileZ(JEEP.y) - 0.45);
