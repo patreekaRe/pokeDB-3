@@ -887,6 +887,11 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
+- **Coins: the Game Corner's daily cap, and the Grand Catalogue's look** (2026-10-16): prices were raised and the PC's Grand
+  Catalogue added (gold starter statues, six Pokédex shells; `docs/roadmap-done.md`). The Game Corner still pays up to 500
+  a day (`DAILY_CAP` in `js/data/corner.js`), more than a run: lower it? The user also looks at a statue in the base (buy
+  one at the PC with `?coins=20000`) and the shells, and says what to change.
+
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate
   unchanged); the user looks at it on their phone (`?hubat=28,-1`, `&time=night` for its glow) and says what to change.

@@ -28,6 +28,7 @@ const NEWS = {
   decor: { in: 'mine', ready: hasBase },
   dupe: { in: 'mine', ready: hasBase },
   friends: { in: 'home', ready: friendsOpen },
+  catalogue: { in: 'home', ready: () => true },   // the Grand Catalogue (js/grand-shop.js, 2026-10-16)
 };
 
 function seen() {

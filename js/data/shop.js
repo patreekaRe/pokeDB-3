@@ -23,6 +23,8 @@
    user's call). Everything here costs ~34600: skins 2400, perks 11800
    (the Scope Upgrade's 4000 of it), shinies 20400 (cosmetic, the long
    tail; a Level 5 win gives its starter's for free).
+   The biggest things to save for are the PC's Grand Catalogue's
+   (js/data/catalogue.js): starter statues ~127000, shells 15000.
    ============================================================ */
 
 /** Skins bought outright - a cheap, no-grind way to unlock a new look. */

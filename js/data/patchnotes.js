@@ -52,7 +52,7 @@ export const NEXT = [
   ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],
   ['runs', 'Mewtwo has left the character select: start its run from the open Sealed Gate or the Depths camp.'],
   ['base', 'House Upgrades has its own Backyard tab, and the Build key stays in sight under any blueprint.'],
-  ['mall', 'Prices rose to match the Trainer\'s Journal: Game Corner perks, starters, shinies and machines cost more, and the grandest furniture up to 300 PokéCoins.'],
+  ['pc', 'Prices rose to match the Trainer\'s Journal, and the PC\'s new Grand Catalogue sells gold statues of your starters and six Pokédex shells to save up for.'],
   ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Mall draws far less, the Clearing no longer stutters, and the Home Screen app plays as smoothly as the browser.'],
 ];
 

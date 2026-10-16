@@ -2765,3 +2765,7 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   coins outgrew what they could buy): perks, starters, shinies, Meowth's machines and the furniture curve, the numbers
   in `docs/reference/economy-and-hall-of-fame.md`'s last entry. Not done, offered: a big new thing to save for (a third
   Secret Base floor, a statue), and the Game Corner's 500 a day (`DAILY_CAP`), which pays more than runs do.
+- **The Grand Catalogue** (2026-10-16, the user's follow-up: "add something big to save up for"): gold starter statues
+  (~127,000 in all) and six Pokédex shells (15,000) at the PC; `docs/reference/hub-base-mall.md`'s last section. Checked
+  headless: the catalogue lists 30 statues and buys a statue and a shell, Settings shows the shell, the 3D base builds
+  placed statues, no errors. Still open: the Game Corner's daily cap.

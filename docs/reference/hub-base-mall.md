@@ -443,3 +443,24 @@ LOGGED ✓. A new task is a line in `build()` there.
   under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
   Leader case!"). A piece placed for the first time only records what it shows.
 
+### The Grand Catalogue (2026-10-16)
+
+The user's ask after the price rise ("add something big to save up for ... add more things to save up for"): a GRAND
+CATALOGUE row on the Clearing's PC home (a `NEWS` line, `catalogue`), opening `openGrandShop()` in `js/grand-shop.js`, the
+town shop's window with Kurt's Workshop's tabs (`.grand-shop` in `css/screens.css`). Always in stock. Prices and the shell
+list are `js/data/catalogue.js` (`tests/catalogue.test.mjs`). A third Secret Base floor wasn't added: floors already
+have no limit.
+- **Statues**: a gold statue of every starter (`js/base-furniture-statues.js`, `STATUE_KINDS`, group Statues, 2 x 2,
+  `solo`): its final form's front sprite (a legendary as itself) gilded by luminance into seven golds, on a marble
+  pedestal with its name on a gold plate; 3D comes from its painting (`autoModel()`: the pedestal turned on a lathe, the
+  Pokémon a round hull), about three tiles tall. 2,000 the free three, 3,000 skins, 5,000 legendaries, 10,000 Mewtwo
+  (listed only once Mewtwo is unlocked; another starter you don't own shows dark, LOCKED). Owned ones can be bought again
+  at full price; the PC's Duplicate leaves them out (`duplicate()` refuses a `luxury` piece). `luxury` keeps a family's
+  own `price` off `shopPrice()`'s curve (`makePiece()`) and out of the store's daily deal (`dealDay()`).
+  **The sprites load on demand**, not at boot (30 GIFs, 2 MB): `loadStatues(ids)` fetches and gilds them; the catalogue
+  shows "Unpacking" till they're in, `openBase3d()` awaits the owned ones before building a room (a model built without
+  them would be carved bare and cached), and the PC's Decorations repaints once they arrive. A statue's `live()` changes
+  once its sprite is in, so its 2D pictures repaint; `icon()` in `js/secret-base.js` now keys its cache on `live()` too.
+- **Shells**: six Pokédex shells (Silver, Crystal, Teal, Orange, Purple, White) at 2,500 each, saved in `save.shells`;
+  buying one wears it at once (`wearShell()` in `js/settings.js`). Their colours are `data-shell` blocks in
+  `css/base.css`; Settings > Device colour shows a bought one's chip (like Grand Champion's gold), seven chips a row.
