@@ -116,7 +116,7 @@ export function pokeBall(K, L, x, y, z, r, top = ballTop(K)) {
 }
 
 /** A tube along points [[x, y, z]...], radius r. */
-export const tube = (L, pts, r, seg = 40) => new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3(pts.map(p => new L.THREE.Vector3(...p))), seg, r, r < 0.03 ? 6 : r < 0.06 ? 8 : 10, false);
+export const tube = (L, pts, r, seg = 40) => new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3(pts.map(p => new L.THREE.Vector3(...p))), seg, r, r < 0.06 ? 8 : 10, false);
 
 /** A rod from a to b ([x, y, z] each), radius r. */
 export function rod(K, L, m, a, b, r) {
