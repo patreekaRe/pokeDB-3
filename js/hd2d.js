@@ -449,6 +449,14 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(posit
     being where the sharp band sits (0 the bottom of the view, 1 the top). */
 /** `short`: the scene's size on its short side before scaling up; `crisp` scales up in whole pixels, else smoothly with
     4x multisampling (the Secret Base's smooth furniture, 2026-10-09). */
+/* Played from the Home Screen, the game fills the whole screen: on a tall phone a third more pixels than the same view in
+   the browser, under its bars, and it played that much worse (the user's report, 2026-10-16). There, no scene is drawn
+   taller than SCREEN_ASPECT times its width in pixels: a little softer, the browser's cost. In the browser it never applies.
+   `?standalone` tries it in a tab. */
+const SCREEN_ASPECT = 1.75;
+export const fullScreenApp = () => new URLSearchParams(location.search).has('standalone')
+  || navigator.standalone === true || (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+
 export function createPost(renderer, { short = 420, crisp = true } = {}) {
   const bright = new THREE.ShaderMaterial({
     uniforms: { tScene: { value: null }, uCut: { value: 0.9 } },
@@ -500,11 +508,17 @@ export function createPost(renderer, { short = 420, crisp = true } = {}) {
   let rt, bloomA, bloomB, texel = [1, 1];
   const pass = (material, target) => { quad.material = material; renderer.setRenderTarget(target); renderer.render(quadScene, quadCam); };
 
-  const scale = (w, h) => Math.min(1, short / Math.min(w, h));
+  /** 1 in the browser; on a Home Screen app's tall screen, how much smaller its scene is drawn (see SCREEN_ASPECT). */
+  const fit = (w, h) => {
+    const tall = Math.max(w, h) / Math.min(w, h);
+    return fullScreenApp() && tall > SCREEN_ASPECT ? Math.sqrt(SCREEN_ASPECT / tall) : 1;
+  };
+  const scale = (w, h) => Math.min(1, short / Math.min(w, h)) * fit(w, h);
   return {
     final,
     /** The scene's size over the view's, for a canvas drawn at the scene's own size (more pixels than it would add nothing). */
     scale,
+    fit,
     /** A step down in resolution for a device that can't keep up; false once there's no lower step. Call size() after. */
     lower(w, h) { const now = Math.min(short, w, h); if (now <= 280) return false; short = Math.max(280, Math.round(now * 0.8)); return true; },
     size(w, h) {

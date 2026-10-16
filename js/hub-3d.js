@@ -4029,8 +4029,16 @@ function followSun() {
 function resize() {
   const w = view.clientWidth, h = view.clientHeight;
   if (!w || !h) return;
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setSize(w, h, false);
+  if (post.fit(w, h) < 1) {
+    // a Home Screen app's tall screen draws a smaller scene (createPost() in js/hd2d.js): the canvas a whole multiple of
+    // it, so its crisp pixels stay even
+    const k = post.scale(w, h), m = Math.max(1, Math.round(Math.min(devicePixelRatio, 2)));
+    renderer.setPixelRatio(1);
+    renderer.setSize(Math.round(w * k) * m, Math.round(h * k) * m, false);
+  } else {
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(w, h, false);
+  }
   post.size(w, h);
   fitCamera(w, h);
 }

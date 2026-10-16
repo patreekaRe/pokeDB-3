@@ -2721,3 +2721,4 @@ the board opens from the wall, three claims (coins, the pennant, a base slot), e
 errors. Detail: `docs/reference/hub-base-mall.md`.
 
 - **Done (2026-10-16): the Clearing's stutters** (the user's report): the Pokéstop labels' per-frame repaint, the flyer's shader recompiling every 30-50 s, 4 MP less at startup; the Secret Base and backyard measured fine. Detail in `docs/reference/hub-base-mall.md`.
+- **Done (2026-10-16): the Home Screen app as smooth as the browser** (the user's ask): full screen it drew 27% more pixels; `createPost()` now draws a Home Screen app's scene no taller than 1.75x its width (`fullScreenApp()`, `post.fit()` in `js/hd2d.js`), the Clearing's canvas an exact 2x of it; the browser is unchanged. `?standalone` tries it.
