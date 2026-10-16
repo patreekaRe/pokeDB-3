@@ -179,8 +179,9 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
   in the fuzz; peak block ~1,500 -> ~85 in the lab, Level 5 boss wins 53 -> 30%); **Leech Seed no longer grows with
   evolution** (`STAGE_STATUS.seed` 0; Burn keeps +1 a stage): at stage 2 it was +2 a card (Worry Seed 3 -> 5) and 3 Worry
   Seeds took a plain Grass deck from 0% to 97% against Level 5's last bosses, losing ~5 HP a fight; now seed decks win
-  5-50% there, like Fire's Burn decks (5-17%); halving the heal instead barely helped (90%). **Quick Guard and Safeguard
-  exhaust** (a whole enemy turn negated every time: top-3 card in every type's fuzz, stall loops of 20+ turns).
+  5-50% there, like Fire's Burn decks (5-17%); halving the heal instead barely helped (90%). **Quick Guard
+  exhausts** (a whole enemy turn negated every time: top-3 card in every type's fuzz, stall loops of 20+ turns; Mewtwo's
+  Safeguard was made to as well, but it cost Mewtwo's mode 63 -> 45% and three of them stall without winning, so it stays).
   **Amnesia** blocks 12 and **Power Within** gives 4 Focus too (each read exactly like Barrier Field / Swords Dance:
   `tests/cards.test.mjs` now checks that rule for every type).
 - **New cards** (32, each on a StS card, named in its comment; art in `js/card-art-new.js`): Fire and Grass at StS's

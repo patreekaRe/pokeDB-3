@@ -452,7 +452,7 @@ const PSYCHIC_CARDS = [
   { id: 'light-screen',        name: 'Light Screen',        type: 'psychic', cost: 1, art: '✨', effects: { blockEachTurn: 3 }, power: true, rarity: 'uncommon', upgrade: { effects: { blockEachTurn: 4 } } }, // Metallicize
   { id: 'barrier-field',       name: 'Barrier Field',       type: 'psychic', cost: 2, art: '🟣', effects: { keepBlock: 1 }, power: true, rarity: 'uncommon', upgrade: { cost: 1 } },               // Barricade
   { id: 'counter-guard',       name: 'Counter Guard',       type: 'psychic', cost: 1, art: '🛡️', effects: { block: 10, ifEnemyAttacks: { weaken: 1 } }, rarity: 'uncommon', upgrade: { effects: { block: 13, ifEnemyAttacks: { weaken: 2 } } } }, // Flame Barrier
-  { id: 'safeguard',           name: 'Safeguard',           type: 'psychic', cost: 1, art: '🔰', effects: { block: 7, guard: true }, exhaust: true, rarity: 'uncommon', upgrade: { effects: { block: 10 } } }, // Protect
+  { id: 'safeguard',           name: 'Safeguard',           type: 'psychic', cost: 1, art: '🔰', effects: { block: 7, guard: true }, rarity: 'uncommon', upgrade: { effects: { block: 10 } } }, // Protect
   { id: 'telekinetic-wall',    name: 'Telekinetic Wall',    type: 'psychic', cost: 2, art: '🧱', effects: { block: 15, blur: 1 }, rarity: 'uncommon', upgrade: { effects: { block: 19 } } },       // Blur + block
   { id: 'reflective-armor',    name: 'Reflective Armor',    type: 'psychic', cost: 1, art: '🪞', effects: { thorns: 5 }, power: true, rarity: 'uncommon', upgrade: { effects: { thorns: 7 } } }, // Caltrops
   { id: 'psychic-rampart',     name: 'Psychic Rampart',     type: 'psychic', cost: 1, art: '🏰', effects: { block: 11, blockNext: 5 }, rarity: 'uncommon', upgrade: { effects: { block: 14, blockNext: 7 } } }, // Dodge and Roll
