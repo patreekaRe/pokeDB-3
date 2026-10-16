@@ -50,14 +50,14 @@ export function flower(K, L, c, i, j, z, s = 1) {
   const W = K.p.w;
   for (let n = 0; n < 5; n++) {
     const a = n / 5 * Math.PI * 2 + 0.3;
-    K.put(L.ball(u(1.1 * s), 10, 8).scale(1, 1, 0.45), K.gloss(c), X(i + Math.cos(a) * 1.3 * s, W), Y(j + Math.sin(a) * 1.3 * s), z);
+    K.put(L.ball(u(1.1 * s), 8, 4).scale(1, 1, 0.45), K.gloss(c), X(i + Math.cos(a) * 1.3 * s, W), Y(j + Math.sin(a) * 1.3 * s), z);
   }
-  K.put(L.ball(u(0.8 * s), 10, 8).scale(1, 1, 0.6), K.gloss('#f8d030'), X(i, W), Y(j), z + u(0.4));
+  K.put(L.ball(u(0.8 * s), 8, 4).scale(1, 1, 0.6), K.gloss('#f8d030'), X(i, W), Y(j), z + u(0.4));
 }
 
 /** A leaf facing out at painted (i, j), its tip turned by `a`. */
 export function leaf(K, L, m, i, j, z, a = 0, s = 1) {
-  K.put(L.ball(u(1.6 * s), 12, 8).scale(0.62, 1.15, 0.28), m, X(i, K.p.w), Y(j), z, 0, 0.35, a);
+  K.put(L.ball(u(1.6 * s), 8, 6).scale(0.62, 1.15, 0.28), m, X(i, K.p.w), Y(j), z, 0, 0.35, a);
 }
 
 /** Parts tilted about the painted line j (top leaning out by `a`): put(g, m, i, j, z) like K.put. */

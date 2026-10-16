@@ -23,6 +23,14 @@ import { SAFARI_KINDS } from './base-furniture-safari.js';
 import { TRAINER_KINDS } from './base-furniture-trainer.js';
 import { YARD_KINDS } from './base-furniture-yard.js';
 import { FRIEND_KINDS } from './base-furniture-friends.js';
+import { SEASON_KINDS_1 } from './base-furniture-season1.js';
+import { SEASON_KINDS_2 } from './base-furniture-season2.js';
+import { SEASON_KINDS_3 } from './base-furniture-season3.js';
+import { YARD_KINDS_2 } from './base-furniture-yard2.js';
+import { YARD_KINDS_3 } from './base-furniture-yard3.js';
+import { YARD_KINDS_4 } from './base-furniture-yard4.js';
+import { YARD_KINDS_5 } from './base-furniture-yard5.js';
+import { STATUE_KINDS } from './base-furniture-statues.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -342,7 +350,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5, ...STATUE_KINDS);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 /* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by
@@ -366,9 +374,10 @@ const GIFT = { id: 'gift', name: 'Present', w: 1, h: 1, price: 0, draw(x, b) {
   R(x + 14, b - 38, 4, 5, '#e0a818'); R(x + 15, b - 37, 2, 1, '#fff4a0');
 } };
 
-/** What a piece costs at the store, from its authored price (80 to 1,600): 50 to 150 PokéCoins on a log curve, so the
-    order holds (a crate cheapest, a grand piano dearest) but furniture is cheap (the user's call, 2026-10-09). */
-export const shopPrice = (p) => (p ? Math.min(150, Math.max(50, Math.round((50 + 100 * Math.log(p / 80) / Math.log(20)) / 5) * 5)) : 0);
+/** What a piece costs at the store, from its authored price (80 to 1,600): 50 to 300 PokéCoins on a log curve, so the
+    order holds (a crate cheapest, a grand piano dearest). A crate still costs 50 (cheap furniture, the user's call,
+    2026-10-09); the top went 150 -> 300 on 2026-10-16 (the user's call: the Trainer's Journal paid more than coins could buy). */
+export const shopPrice = (p) => (p ? Math.min(300, Math.max(50, Math.round((50 + 250 * Math.log(p / 80) / Math.log(20)) / 5) * 5)) : 0);
 
 // HD pictures, the least recently used dropped past FINE_KEEP (each is a few hundred kilobytes)
 const FINE = new Map(), FINE_KEEP = 64;
@@ -378,8 +387,11 @@ function makePiece(fam, theme) {
   const pal = theme || THEMES[0];
   const p = {
     name: theme ? `${theme.name} ${noun(fam)}` : fam.name,
-    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, price: shopPrice(fam.price), pal,
+    fam: fam.id, own: fam.own || fam.id, group: fam.group, theme: pal.id, w: fam.w, h: fam.h, pal,
+    // a Grand Catalogue piece (js/data/catalogue.js) keeps its own price, off the store's curve
+    price: fam.luxury ? fam.price : shopPrice(fam.price),
   };
+  if (fam.luxury) Object.assign(p, { luxury: true, statueOf: fam.statueOf });
   if (fam.layer) p.layer = fam.layer;
   if (fam.flat) { p.flat = true; p.high = fam.high; p.side = sh(pal[fam.side] || pal.w, -1); }
   if (fam.wall) p.wall = true;
@@ -414,6 +426,9 @@ function makePiece(fam, theme) {
   };
   if (fam.solid) Object.assign(p, { solid: true, wood: pal.w, woodLit: sh(pal.w, 1) });
   if (fam.seat) p.seat = fam.seat;
+  // the garden catalogue's tab (js/garden-shop.js) and a seasonal set's holiday (js/data/holidays.js)
+  if (fam.yard) p.yard = fam.yard;
+  if (fam.holiday) p.holiday = fam.holiday;
   if (fam.live) Object.assign(p, { live: fam.live, news: fam.news });
   if (fam.glow) p.glow = fam.glow.map(key => key[0] === '#' ? key : pal[key]);
   if (fam.id === 'window' || fam.sky) p.glow = Object.values(SKY);

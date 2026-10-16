@@ -2757,3 +2757,36 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   the last visit sparkles and a line names what's new. Checked headless: nothing on the first visit, the trophy and
   Gym Leader lines after a win streak, nothing on the visit after.
 
+### House Upgrades' Backyard tab (2026-10-16, the user's ask: "backyard needs its own tab ... couldn't find the upgrade button")
+- The yard moved off 1F onto its own BACKYARD tab, its buy / grow card always shown; every Build key is sticky at the
+  page's foot. Checked headless at phone size: the key in view on 1F, the yard tab and a room build; no errors.
+
+- **Prices raised to match the Trainer's Journal** (2026-10-16, the user's call: "fix those prices" after the Journal's
+  coins outgrew what they could buy): perks, starters, shinies, Meowth's machines and the furniture curve, the numbers
+  in `docs/reference/economy-and-hall-of-fame.md`'s last entry. Not done, offered: a big new thing to save for (a third
+  Secret Base floor, a statue), and the Game Corner's 500 a day (`DAILY_CAP`), which pays more than runs do.
+- **The Grand Catalogue** (2026-10-16, the user's follow-up: "add something big to save up for"): gold starter statues
+  (~127,000 in all) and six Pokédex shells (15,000) at the PC; `docs/reference/hub-base-mall.md`'s last section. Checked
+  headless: the catalogue lists 30 statues and buys a statue and a shell, Settings shows the shell, the 3D base builds
+  placed statues, no errors. Still open: the Game Corner's daily cap.
+- **The Grand Ballroom** (2026-10-16, the user's idea: a floor of the Furniture store you unlock, with the high-ticket
+  items): 3F, opened by owning 40 kinds of furniture and paying 5,000; the Grand Catalogue moved there from the PC.
+  `docs/reference/hub-base-mall.md`'s Grand Catalogue section.
+- **Coins rebalanced towards runs** (2026-10-16, the user's yes): a won run's bonus 100 -> 200, the Game Corner's daily cap
+  500 -> 250. `docs/reference/economy-and-hall-of-fame.md`'s last entry.
+### The furniture model pass and the seasonal and yard sets (2026-10-16, after patch 1.23)
+- Every kind but the Present is a hand-built model (batches `-l` to `-q`: the Dojo, Safari and Trainer sets, the 14
+  posters, the old lathed and puffed pieces, the 64 frontboxes); the user saw sheets of all 115 and asked for the
+  Ranger tent and Acacia redone (done). The catalogue was slimmed from 6.6M to 3.6M triangles, and the Secret Base bakes
+  still pieces' colours: a 40-piece room 522 -> 325 draw calls a frame.
+- 237 new kinds (1,227 -> 1,464): eight holiday sets dealt only in their window plus a Birthday party set, and eight
+  yard shelves (120 kinds) in tabs in Smeargle's garden catalogue. Detail: `docs/reference/hub-base-mall.md`.
+
+## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
+- The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
+  (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall
+  and Choice Scarf (a no-catch +1 PP rare). Shell Smash and Quick Guard exhaust, `STAGE_STATUS.seed` is 0, Choice Scarf
+  (catch: no PP Up), Max Mushrooms and Slowpoke Tail are boss relics.
+- 34 relics (59 -> 93), 14 items (20 -> 34) and 32 cards (310 -> 342), each on a StS one; Block 7 / Cotton Guard 11 /
+  Withdraw 8 / Flame Body 11 and Mewtwo's Depths (bossDmg 4, bossHp 1.2, enemyDmg -3) bring the human bot back: L0 81 / 84 /
+  78, L3 62 / 64 / 60, L5 40 / 38 / 38, Mewtwo 67%. Detail: `docs/reference/cards.md`'s "The balance pass", relics.md, items.md.

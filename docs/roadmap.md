@@ -9,15 +9,16 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**The balance pass** (the user's ask, 2026-10-16: "an overall balance check... add more relics, items, cards to match
-Slay the Spire's numbers... find broken builds like Shell Armor + Shell Smash"). **On branch `balance-pass` in both repos,
-never pushed to `main` until the user says** (their call). Done: the combo lab and fuzzer in pokeDB-sim
-(`sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found and fixed Shell Smash's doubling, Leech Seed's evolution bonus, Quick Guard's
-stall and Choice Scarf (now a boss relic, with Max Mushrooms and Slowpoke Tail); 34 relics, 14 items and 32 cards added
-toward StS's counts; the starting defences and Mewtwo's Depths retuned so the human bot is back where it was (fire / grass /
-water, 300 runs a cell: L0 81 / 84 / 78, L3 62 / 64 / 60, L5 40 / 38 / 38; Mewtwo 67%). All of it in docs/reference/cards.md's
-"The balance pass", relics.md and items.md; `tests/cards.test.mjs`. **Next**: the user's playtest from the branch's githack
-link (try `&relics=` / `&cards=` / `&items=` on any `?arena=` peek), then merge both branches to `main` and cut the patch.
+**Furniture expansion, the next sets** (the user's ask, 2026-10-16: a catalogue as big as Animal Crossing's). The plan
+and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done, in `NEXT`
+for the next patch (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
+types, about 4 to 6 sets of 25 a session, one helper each, every kind painted and hand-built within the budget and
+checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). The gold starter statues and the yard's Pokémon statues stand as their sprites
+since the same day (the user's ask), ~450 triangles each; waiting on the user's look (`?yard&allfurniture`, `?mall=3f`). Waiting on the user's playtest of the
+seasonal sets (`?holiday=valentine` etc. on the Furniture store) and the yard sets (`?yard&allfurniture`, Smeargle's
+catalogue). Session prompt:
+> Run in: CLOUD. Read CLAUDE.md, docs/furniture-expansion.md and docs/reference/hub-base-mall.md's last section, then
+> build the furniture sets the user picks, a painting file and a model batch each, as the 2026-10-16 sets were.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -896,6 +897,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
   friend's Lost & Found. Maybe an Assist (a friend's partner for one fight), bot-checked. Needs sign-in.
 
 ## Waiting on the user
+
+- **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
+  shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the
+  shells, and says what to change. (Coins were rebalanced the same day: a won run pays 200, the Game Corner 250 a day.)
 
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate

@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -29,6 +29,8 @@ import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard } from './secret-base.js';
+import { loadStatues, statuesIn } from './base-furniture-statues.js';
+import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
@@ -43,12 +45,17 @@ const RIDER = 0.72;        // a piece up on a table, at this size
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
 // out in the yard Water types swim in the pond or pool and the rest take the swings and benches (docs/roadmap.md's
 // backyard, part c); where on the piece each goes, in its own frame unturned: [x across, y up, z out front, swing part]
-const YARD_SEATS = { swingset: { rest: [7000, 13000], swing: true }, paddlingpool: { rest: [8000, 15000], swim: true }, rockpond: { rest: [8000, 15000], swim: true } };
+const YARD_SEATS = { swingset: { rest: [7000, 13000], swing: true }, tyreswing: { rest: [7000, 13000], swing: true }, paddlingpool: { rest: [8000, 15000], swim: true }, rockpond: { rest: [8000, 15000], swim: true },
+  lotadpond: { rest: [8000, 15000], swim: true }, psyduckpond: { rest: [8000, 15000], swim: true }, cedartub: { rest: [8000, 15000], swim: true } };
 const YARD_SPOTS = {
   swingset: [[-0.42, 0.46, 0, 'swing0'], [0.42, 0.46, 0, 'swing1']],
+  tyreswing: [[0, 0.56, 0, 'swing0']],
   picnicbench: [[-0.45, 0.44, -0.72], [0.45, 0.44, -0.72], [-0.45, 0.44, 0.72], [0.45, 0.44, 0.72]],
   paddlingpool: [[0.28, 0.22, 0.3], [-0.3, 0.22, -0.28]],
   rockpond: [[-0.3, -0.12, 0.08], [0.3, -0.12, 0.22]],
+  lotadpond: [[-0.45, 0.43, 0.1], [0.45, 0.43, 0.25]],
+  psyduckpond: [[0.35, 0.19, 0.35], [-0.3, 0.19, -0.35]],
+  cedartub: [[-0.35, 0.62, 0.1], [0.35, 0.62, -0.1]],
 };
 
 const seatOf = (id) => { const p = PIECES[id]; return YARD_SEATS[p.fam] || SEATS[p.seat || p.fam] || (seatHeight(p.fam, p) ? { rest: [6000, 12000] } : null); };
@@ -452,6 +459,7 @@ function buildPieces() {
     for (let x = 0; x < fw; x++) for (let y = 0; y < fh; y++) blocked.add(`${it.x + x},${it.y + y}`);
   });
   bendOut(pieceGroup);
+  smallNoShadow(pieceGroup);
   lampLights.forEach((l, i) => { l.visible = i < lamps.length; if (lamps[i]) l.position.copy(lamps[i]); });
   if (mon && blocked.has(key(walker.tile.x, walker.tile.y))) {
     walker.tile = nearestFree(walker.tile);
@@ -481,7 +489,7 @@ function makePiece(it, ghostly = false, lift = null) {
       if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
       return m;
     });
-    if (ghostly) ownPictures(model);
+    if (ghostly) ownPictures(model); else bakeColours(model);
     model.traverse(o => { if (o.isMesh) { o.castShadow = !ghostly; o.receiveShadow = !ghostly; [o.material].flat().forEach(see); } });
     model.position.set(it.x - COLS / 2 + p.w / 2, 0, topOf(it.x) - ROWS / 2 + (ghostly ? 0.01 : 0));
     group.add(model);
@@ -524,6 +532,8 @@ function makePiece(it, ghostly = false, lift = null) {
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; }
     return m;
   });
+  // a still piece's plain-coloured parts as one draw (2026-10-16: a room of 40 pieces drew 522 calls a frame, now 325)
+  if (!ghostly && !model.userData.parts && !model.userData.doors) bakeColours(model);
   if (!ghostly) dressPlay(THREE, model, p);
   if (ghostly) ownPictures(model);
   model.traverse(o => {
@@ -1914,7 +1924,8 @@ function placeCamera(dt, now) {
   // Pokémon lean back by the tilt, as in the Clearing, so they face the camera unsquashed
   for (const m of [mon, ...guests.map(g => g.mon), visit?.mon]) if (m) m.board.rotation.x = -pitch;
   // and so do the pieces that stand as their painting
-  for (const s of standees) { if (!s.parent) standees.delete(s); else s.rotation.x = -pitch; }
+  // (turned back against their piece's own turn, so a statue's figure faces you whichever way its plinth does)
+  for (const s of standees) { if (!s.parent) standees.delete(s); else { s.rotation.order = 'YXZ'; s.rotation.y = -s.parent.rotation.y; s.rotation.x = -pitch; } }
   if (holding && pressing && pointer && Math.abs(camX - before) > 1e-4) { aimFrom(...pointer); showGhost(); }
 }
 
@@ -2214,6 +2225,9 @@ async function reopen(start) {
 export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   leaveTo = onLeave;
   playMusic('secret-base');
+  // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
+  const every = new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(loadBase().owned || {});
+  await Promise.all([loadStatues(every ? undefined : statuesIn(owned)), loadFigures(every ? undefined : owned)]);
   if (root && renderer) return reopen(start);
   calm = calmFx();
   root = document.createElement('section');

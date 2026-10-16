@@ -61,7 +61,7 @@ The first section began as the note on playtesting the live site and grew into t
   storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
   read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
 - **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
-  the HOUSE UPGRADES blueprint (centred on the main room, a path's width behind it), dashed till bought; a tap shows its
+  the HOUSE UPGRADES blueprint (its own BACKYARD tab since 2026-10-16, below), dashed till bought; a tap shows its
   card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
   `secretBase.house.yard` `{ size, items, wall, floor }` (`size` 2 the bigger yard, part e), its things packed there
   like a room's (`roomContents()` / `goRoom()` / `eachRoom()`). It is not one of `houseRooms()`, so nothing is built onto
@@ -133,8 +133,12 @@ The first section began as the note on playtesting the live site and grew into t
   is `house.yard.plot` (1), counted by `owns()` in `js/secret-base.js` (`YARD_GIFT`), and heard is `house.yard.met`
   (`metInYard()` / `meetInYard()`); a lent `?yard` hears it once a page load, any time, and its plot goes with the lent
   yard, so neither reaches a real save.
-- **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
-  in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
+- **The BACKYARD tab** (2026-10-16, the user's ask: over 1F the yard sat where a room built off the back wall went, and
+  the Build key hid under the text window): HOUSE UPGRADES has a tab after the floors (`yardTab`), the yard drawn alone
+  with its Arch under the front edge (`yardPlan()`, on the shared `sheet()`), its card always shown under it, no tap
+  needed. 1F draws only the house. Every page's Build key sits in `.pc-act`, sticky at the foot of the scroll.
+- **The bigger yard** (2026-10-15, part e): the bought yard's BACKYARD tab (`canGrowYard()` in `js/pc.js`) shows
+  BIGGER BACKYARD, the new lawn dashed round the yard; `buyBigYard()` in `js/secret-base.js`
   (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;
   `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
   (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.
@@ -439,3 +443,79 @@ LOGGED ✓. A new task is a line in `build()` there.
   under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
   Leader case!"). A piece placed for the first time only records what it shows.
 
+### The Grand Catalogue (2026-10-16)
+
+The user's ask after the price rise ("add something big to save up for ... add more things to save up for"), then the
+same day their idea of a floor of its own: the catalogue is sold in the Furniture store's **Grand Ballroom (3F)**.
+It was a row on the Clearing's PC for an hour; the row and its `NEWS` line are gone. `openGrandShop()` in
+`js/grand-shop.js` (the town shop's window with Kurt's Workshop's tabs, `.grand-shop` in `css/screens.css`) is opened by
+the Ballroom's keeper, Gardevoir (`KEEPERS[3].special` in `js/mall-furniture.js`). Always in stock. Prices, the shell list
+and the Ballroom's door are `js/data/catalogue.js` (`tests/catalogue.test.mjs`). A third Secret Base floor wasn't added:
+floors already have no limit.
+- **The Grand Ballroom**: `buildFloor(THREE, 3, …)`, the same room as 1F / 2F in midnight blue and gold (`LOOK[3]`, the
+  crest GRAND BALLROOM, the wings' signs STARTERS / LEGENDS), its eight stands the gold statues (`statueStands()`: each
+  wing's four, a starter you own whose statue you don't first, then ones you have (sold out; another copy is
+  Gardevoir's catalogue), then locked ones, which say so), its plaques `HALLS`, the piano in the corner. No door: its
+  way out is the lift. **The door**: own `BALLROOM_KINDS` (40) kinds of furniture (`kindsOwned()` in js/secret-base.js,
+  bought or earned, statues not counted), then pay `BALLROOM_PRICE` (5,000), both (the user left it to me; a collector's
+  floor); saved as `secretBase.ballroom` (`buyBallroom()`); `?mall=3f` lends it open and goes straight in. **The lift**
+  asks which floor once 2F is open (`choose()` in js/mall-3d.js: a key a floor in the ask window, `.mall-ask-keys.many`),
+  3F shown with a lock till it's bought (`ballroomTap()` says how many kinds to go, or asks to pay); `rideTo` is the floor
+  picked; the dial reads 1, 2, 3 (`dialTurn()`: 1F left, 2F up, 3F right). Its statues' sprites load before 3F is built
+  (`goPlace()`, only the eight on the stands) and are fetched ahead on 1F / 2F once it's open. Headless under software GL
+  the GIFs decode very slowly while the mall draws (a minute); on a plain page eight load in ~1 s, and 3F builds in ~2 s
+  (each statue's carved model ~250 ms).
+- **Statues**: a gold statue of every starter (`js/base-furniture-statues.js`, `STATUE_KINDS`, group Statues, 2 x 2,
+  `solo`): its final form's front sprite (a legendary as itself) gilded by luminance into seven golds, on a marble
+  pedestal with its name on a gold plate; 3D comes from its painting (`autoModel()`: the pedestal turned on a lathe, the
+  Pokémon a round hull), about three tiles tall. 2,000 the free three, 3,000 skins, 5,000 legendaries, 10,000 Mewtwo
+  (listed only once Mewtwo is unlocked; another starter you don't own shows dark, LOCKED). Owned ones can be bought again
+  at full price; the PC's Duplicate leaves them out (`duplicate()` refuses a `luxury` piece). `luxury` keeps a family's
+  own `price` off `shopPrice()`'s curve (`makePiece()`) and out of the store's daily deal (`dealDay()`).
+  **The sprites load on demand**, not at boot (30 GIFs, 2 MB): `loadStatues(ids)` fetches and gilds them; the catalogue
+  shows "Unpacking" till they're in, `openBase3d()` awaits the owned ones before building a room (a model built without
+  them would be carved bare and cached), and the PC's Decorations repaints once they arrive. A statue's `live()` changes
+  once its sprite is in, so its 2D pictures repaint; `icon()` in `js/secret-base.js` now keys its cache on `live()` too.
+- **Shells**: six Pokédex shells (Silver, Crystal, Teal, Orange, Purple, White) at 2,500 each, saved in `save.shells`;
+  buying one wears it at once (`wearShell()` in `js/settings.js`). Their colours are `data-shell` blocks in
+  `css/base.css`; Settings > Device colour shows a bought one's chip (like Grand Champion's gold), seven chips a row.
+
+### The furniture model pass, seasonal sets and yard sets (2026-10-16)
+
+The user's ask: every piece a "3D detailed CLEAN" model, optimised for phones, and a catalogue as big as Animal
+Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal and yard sets first, no ceiling layer yet).
+- **Every kind is hand-built now** but the starter room's Present (`gift`, still carved). New batches, one file each,
+  wired last in `js/base-shapes.js` / `js/base-mesh.js` so their SHAPES override older lines: `-l` the Dojo, Safari and
+  Trainer sets and the 14 posters (the live Trainer pieces read `K.p.live()` when built), `-m` the old lathed and
+  puffed pieces (globes, statues, planets, gumball), `-n` / `-o` / `-p` / `-q` the 64 old `frontbox`es (home machines;
+  shop, office and Spooky shelving; school, toy, library, space and farm; arcade and station), the frontbox's old `top`
+  (a cut fraction the room misread as a height) replaced by real heights or none.
+- **A shape can carry its tap** (`play: { does: ... }`, read by `dressPlay()` after `PLAY`) **and its screen**
+  (`screen: { x, y, w, h, z }`, for a cabinet whose only glow colour is its marquee).
+- **Lighter**: shared helpers pick their sides by size (`L.sides`; `exact` keeps a count for builders that move
+  vertices), `rbox` bevels less when small, `assemble()` merges parts differing only in colour (vertex colours, glows
+  through a small emissive-tint patch), dolls and leaf clumps are lighter, a wall piece's crops share its painting's
+  texture. The catalogue went from 6.6M to 3.6M triangles over 1,313 models (2,769 a piece, none over 20k), and the
+  room bakes a still piece's plain colours (`bakeColours()` in `makePiece()`, not for doors or moving parts) and drops
+  small parts' shadows (`smallNoShadow()`): a 40-piece room drew 522 calls a frame, now 325.
+- **Seasonal sets** (`js/base-furniture-season1.js` to `3`, models `-r` / `-s` / `-u`, all `solo`): New Year,
+  Valentine's, Egg Day, Wedding, Summer festival, Lantern Festival, Harvest and Winter holidays carry `holiday` and are
+  dealt only in their window (`js/data/holidays.js`, `tests/holidays.test.mjs`), one stand a floor while one is on
+  (`dealDay()`); the Birthday party set (`group: 'Party'`) has no holiday and is sold all year. `?holiday=<id>` holds
+  one on for a page load.
+- **Yard sets** (`js/base-furniture-yard2.js` to `5`, models `-v` / `-x` / `-z` / `-y2`, themed, `outdoor`): Fences,
+  Playground, Sports, Buildings, Water, Camping, Statues, Lights, each kind's `yard` naming its tab in the garden
+  catalogue (`GARDEN_TABS` in `js/garden-shop.js`; the first shelf is Yard). The tyre swing swings a Pokémon, and
+  Water types swim in the Lotad pond, Psyduck pond and cedar hot tub (`YARD_SEATS` / `YARD_SPOTS`).
+- **Statues stand as their sprites** (the same day, the user's ask: "like how you made the gym leader statues"; the
+  sculpted yard statues and the Bulbasaur topiary read oddly, the gold ones were 20k-triangle hulls): `js/base-figures.js`
+  recolours a Pokémon's first frame down a ramp (stone, hedge greens) for the yard's 11 (`FIGURES`, their plinths too,
+  shared by the paintings in `js/base-furniture-yard5.js` and `figureY2` in `js/base-models-y2.js`), and the gold
+  statues' gilded sprites stand on a hand-built marble pedestal (`js/base-models-gold.js`). A builder sets `K.figure`
+  and `figure()` in `js/base-mesh.js` stands it as a cut-out; js/base-3d.js leans every standee back and turns it
+  against its piece's turn, so it faces the camera however the plinth is turned. Fetched lazily like the gold statues'
+  (`loadFigures()`, awaited by `openBase3d()`; until then the plinth is bare and `live()` repaints it). ~450 triangles
+  each. Articuno's and Zapdos's front GIFs were added for them (PokeAPI black-white animated).
+- **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
+  draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
+  user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

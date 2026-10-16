@@ -87,7 +87,7 @@ function place(g, hex, t, kind = 'cloth') {
 const PEN = {
   puff(x, y, rx, ry, c, rot = 0, kind) {
     const t = fat * (layer === 'under' ? Math.min(rx, ry) * 0.75 : layer === 'front' ? Math.min(6, Math.min(rx, ry) * 0.45) : Math.min(rx, ry) * 0.7);
-    const g = new T.SphereGeometry(1, 24, 16);
+    const g = new T.SphereGeometry(1, 16, 10);
     g.scale(rx, ry, t);
     if (rot) g.rotateZ(-rot);
     g.translate(x, y, 0);
@@ -96,7 +96,7 @@ const PEN = {
   },
   flat(x, y, rx, ry, c, rot = 0, kind) {
     const t = Math.max(0.5, Math.min(1.8, Math.min(rx, ry) * 0.3));
-    const g = new T.SphereGeometry(1, 20, 12);
+    const g = new T.SphereGeometry(1, 12, 8);
     g.scale(rx, ry, t);
     if (rot) g.rotateZ(-rot);
     g.translate(x, y, 0);
@@ -114,7 +114,7 @@ const PEN = {
     const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
     const small = Math.min(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
     const depth = layer === 'front' ? 1.2 : Math.min(4, Math.max(1.5, small * 0.25)), bev = Math.max(0.3, Math.min(1.6, small * 0.18));
-    const g = new T.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: bev, bevelSize: bev * 0.8, bevelSegments: 3, curveSegments: 10 });
+    const g = new T.ExtrudeGeometry(s, { depth, bevelEnabled: true, bevelThickness: bev, bevelSize: bev * 0.8, bevelSegments: 2, curveSegments: 5 });
     g.translate(0, 0, -depth / 2);
     place(g, hexOf(c), depth / 2 + bev);
   },
@@ -128,9 +128,9 @@ const PEN = {
   },
 };
 function cord(path, c, w, kind) {
-  const r = Math.max(0.35, w / 2), g = new T.TubeGeometry(path, 24, r, 8, false);
+  const r = Math.max(0.35, w / 2), g = new T.TubeGeometry(path, 12, r, 6, false);
   for (const p of [path.getPoint(0), path.getPoint(1)]) {
-    const cap = new T.SphereGeometry(r, 8, 6);
+    const cap = new T.SphereGeometry(r, 6, 4);
     cap.translate(p.x, p.y, 0);
     place(cap, hexOf(c), r, kind);
   }
@@ -144,11 +144,11 @@ const EXTRAS3 = {
   bulb: (d, L) => {
     const [x, y, , ry] = L.head, prev = layer;
     layer = 'free';
-    const g = new T.SphereGeometry(1, 24, 16);
+    const g = new T.SphereGeometry(1, 16, 12);
     g.scale(21, 19, 18); g.translate(x, y + ry - 4, hosts[0].z - hosts[0].rz * 0.75);
     finish(soft(g), '#4fa042', 'cloth');
     for (const a of [-0.9, 0, 0.9]) {
-      const s = new T.TorusGeometry(19.5, 0.7, 6, 24, Math.PI);
+      const s = new T.TorusGeometry(19.5, 0.7, 4, 16, Math.PI);
       s.scale(1, 1, 0.95); s.rotateY(a + Math.PI / 2); s.translate(x, y + ry - 4, hosts[0].z - hosts[0].rz * 0.75);
       finish(soft(s), '#2f7a32', 'cloth');
     }
@@ -156,16 +156,16 @@ const EXTRAS3 = {
   },
   split: (d, L) => {
     const [x, y, rx, ry] = L.head, h = hosts[0];
-    const g = new T.SphereGeometry(1, 28, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+    const g = new T.SphereGeometry(1, 20, 7, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
     g.scale(rx + 0.4, ry + 0.4, h.rz + 0.4); g.translate(x, y, h.z);
     finish(soft(g), '#f8f8f8', 'cloth');
-    const r = new T.TorusGeometry(1, 0.02, 6, 40);
+    const r = new T.TorusGeometry(1, 0.02, 4, 24);
     r.rotateX(Math.PI / 2); r.scale(rx + 0.5, 30, h.rz + 0.5); r.translate(x, y, h.z);
     finish(soft(r), '#303038', 'cloth');
   },
   skull: (d, L) => {
     const [x, y, rx, ry] = L.head, h = hosts[0];
-    const g = new T.SphereGeometry(1, 28, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
+    const g = new T.SphereGeometry(1, 20, 8, 0, Math.PI * 2, 0, Math.PI * 0.55);
     g.scale(rx + 3, ry + 3, h.rz + 3); g.translate(x, y + 2, h.z);
     finish(soft(g), '#e8e0d0', 'cloth');
     hosts.push({ x, y: y + 2, rx: rx + 3, ry: ry + 3, rz: h.rz + 3, z: h.z });
@@ -185,7 +185,7 @@ const EXTRAS3 = {
     layer = prev;
   },
   crescent: (d, L) => {
-    const [x, y, , ry] = L.head, g = new T.TorusGeometry(5.5, 1.3, 8, 20, Math.PI * 1.3);
+    const [x, y, , ry] = L.head, g = new T.TorusGeometry(5.5, 1.3, 6, 12, Math.PI * 1.3);
     g.rotateZ(Math.PI * 1.35); g.translate(x, y + ry - 10, 0);
     place(g, hexOf(d.moon), 1.3);
   },
@@ -228,7 +228,7 @@ export function sewPlush(THREE, kit, d, size) {
   const feet = d.feet || sh(body, -1), arms = d.arms || body;
   const stuff = (part, [share, z], c, wide = 1) => {
     const [x, y, rx0, ry] = part, rx = rx0 * wide, rz = rx0 * share;
-    const g = new T.SphereGeometry(1, 32, 22);
+    const g = new T.SphereGeometry(1, 24, 14);
     g.scale(rx, ry, rz); g.translate(x, y, z);
     finish(soft(g), hexOf(c), 'cloth');
     return { x, y, rx, ry, rz, z };
@@ -247,12 +247,12 @@ export function sewPlush(THREE, kit, d, size) {
     for (const e of d.mid || []) (EXTRAS3[e] || EXTRAS[e])(d, L);
     layer = 'free';
     for (const [x0, y, rx, ry] of L.feet) {
-      const [x, z] = Z.feet(x0), g = new T.SphereGeometry(1, 20, 14);
+      const [x, z] = Z.feet(x0), g = new T.SphereGeometry(1, 12, 8);
       g.scale(rx, ry, rx * 1.2); g.translate(x, y, z);
       finish(soft(g), hexOf(feet), 'cloth');
     }
     if (!d.noarms) for (const [x, y, rx, ry, rot] of L.arms) {
-      const g = new T.SphereGeometry(1, 20, 14);
+      const g = new T.SphereGeometry(1, 12, 8);
       g.scale(rx, ry, rx * 1.1); g.rotateZ(-rot); g.translate(x, y, Z.arms);
       finish(soft(g), hexOf(arms), 'cloth');
     }

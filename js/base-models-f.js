@@ -1136,7 +1136,7 @@ export const MAKES = {
       const pts = [];
       for (let i = 0; i <= 24; i++) { const [x, y] = arch(i / 24); pts.push([x, y, z]); }
       K.put(tube(L, pts, u(1.5), 48), wood);
-      for (let n = 0; n < 22; n++) { const [x, y] = arch((n + 0.5) / 22); K.put(ball(u(3), 10, 8).scale(1, 0.7, 0.9), greens[n % 2], x + (R() - 0.5) * 0.04, y + 0.02, z + (R() - 0.5) * 0.08); }
+      for (let n = 0; n < 22; n++) { const [x, y] = arch((n + 0.5) / 22); K.put(ball(u(3), 8, 6).scale(1, 0.7, 0.9), greens[n % 2], x + (R() - 0.5) * 0.04, y + 0.02, z + (R() - 0.5) * 0.08); }
     }
     for (let n = 1; n < 8; n++) {
       const [x, y] = arch(n / 8);

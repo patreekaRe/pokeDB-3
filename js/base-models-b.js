@@ -13,10 +13,10 @@ const STRAW = '#e8c860';
 /** A clump of leaves round x, y, z, about `r` across: a round core puffed out all over with smaller balls in three greens. */
 export function bush(K, L, x, y, z, r, n = 12) {
   const R = K.r, greens = [K.gloss(K.pal.leaf), K.gloss(L.tone(K.pal.leaf, 1.08)), K.gloss(L.tone(K.pal.leaf, 0.9))];
-  K.put(L.ball(r * 0.8, 20, 14), greens[2], x, y, z);
+  K.put(L.ball(r * 0.8, 8, 6), greens[2], x, y, z);
   for (let i = 0; i < n; i++) {
     const e = Math.asin(1 - 1.7 * (i + 0.5) / n), a = i * 2.4 + R() * 0.4, q = r * 0.62, s = r * (0.36 + R() * 0.12);
-    K.put(L.ball(s, 14, 10), greens[i % 2], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
+    K.put(L.ball(s, 8, 6), greens[i % 2], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
   }
 }
 
@@ -25,9 +25,9 @@ export function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
   const petal = K.gloss(col);
   for (let i = 0; i < 5; i++) {
     const a = i / 5 * Math.PI * 2;
-    K.put(L.ball(r * 0.6, 10, 8).scale(1, 1, 0.45).translate(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, 0).rotateX(-tip).rotateY(turn), petal, x, y, z);
+    K.put(L.ball(r * 0.6, 8, 4).scale(1, 1, 0.45).translate(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, 0).rotateX(-tip).rotateY(turn), petal, x, y, z);
   }
-  K.put(L.ball(r * 0.4, 10, 8), K.gloss('#f8d030'), x, y, z);
+  K.put(L.ball(r * 0.4, 8, 4), K.gloss('#f8d030'), x, y, z);
 }
 
 /** A gable roof over a box `w` wide, `d` deep, its eaves at `y`, rising `rise`; the gables filled in `gable`. */
@@ -73,7 +73,7 @@ export function potOf(K, L, kind = 'round') {
 
 /** A leaf `len` long and `wid` wide from x, y, z, `turn` round, its tip `tip` from upright, curling down by `curl`. */
 export function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
-  const g = L.ball(1, 12, 8).scale(wid, 0.012 + wid * 0.08, len / 2);
+  const g = (len < 0.15 ? L.ball(1, 8, 4) : L.ball(1, 12, 6)).scale(wid, 0.012 + wid * 0.08, len / 2);
   const pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) { const t = (pos.getZ(i) / len + 0.5); pos.setY(i, pos.getY(i) - curl * t * t * len); }
   g.computeVertexNormals();
@@ -85,7 +85,7 @@ export function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
 export function column(K, L, x, y0, z, r, h, m, spine) {
   const pts = [[r * 0.9, 0], [r, 0.03]];
   for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pts.push([Math.cos(a) * r, h - r + Math.sin(a) * r]); }
-  const g = L.lathe(pts, 24), pos = g.attributes.position;
+  const g = L.lathe(pts, 24, true), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) { const a = Math.atan2(pos.getZ(i), pos.getX(i)), f = 1 + 0.07 * Math.cos(a * 8); pos.setX(i, pos.getX(i) * f); pos.setZ(i, pos.getZ(i) * f); }
   g.computeVertexNormals();
   K.put(g, m, x, y0, z);
@@ -250,7 +250,7 @@ export const MAKES = {
     const tip = K.gloss(L.tone(K.pal.c, 1.1));
     for (const [n, r, len, up, y] of [[9, 0.06, 0.28, 0.4, 0.02], [7, 0.04, 0.22, 0.75, 0.06], [5, 0.015, 0.15, 1.05, 0.1]]) {
       for (let i = 0; i < n; i++) {
-        const a = i / n * Math.PI * 2 + n, g = L.ball(1, 14, 10).scale(0.07, 0.035, len / 2);
+        const a = i / n * Math.PI * 2 + n, g = L.ball(1, 12, 6).scale(0.07, 0.035, len / 2);
         g.translate(0, 0, len / 2 + r); g.rotateX(-up); g.rotateY(a);
         K.put(g, K.gloss(L.tone(K.pal.leaf, 1.15)), 0, t + y, 0);
         K.put(L.ball(0.02, 8, 6), tip, Math.sin(a) * (r + len * Math.cos(up)), t + y + len * Math.sin(up), Math.cos(a) * (r + len * Math.cos(up)));
@@ -283,7 +283,7 @@ export const MAKES = {
     // a short trunk, three tiers of needles, a star on top and a few baubles
     K.put(cyl(0.05, u(12), 0.06, 12), K.wood(), 0, t + u(6), 0);
     for (const [y, h, r, f] of [[t + u(8), u(22), 0.36, 0.85], [t + u(24), u(20), 0.28, 1], [t + u(39), u(18), 0.2, 1.15]]) {
-      const g = lathe([[0.001, 0], [r, 0.03], [r * 0.92, 0.07], [r * 0.5, h * 0.55], [0.001, h]], 24), pos = g.attributes.position;
+      const g = lathe([[0.001, 0], [r, 0.03], [r * 0.92, 0.07], [r * 0.5, h * 0.55], [0.001, h]], 24, true), pos = g.attributes.position;
       for (let i = 0; i < pos.count; i++) { const a = Math.atan2(pos.getZ(i), pos.getX(i)), q = 1 + 0.08 * Math.cos(a * 9); pos.setX(i, pos.getX(i) * q); pos.setZ(i, pos.getZ(i) * q); }
       g.computeVertexNormals();
       K.put(g, K.gloss(L.tone(K.pal.leaf, f * 0.9)), 0, y, 0);
@@ -322,10 +322,10 @@ export const MAKES = {
     // a straight stem, two clipped balls of leaves, a few flowers tucked in
     K.put(L.cyl(0.028, u(36), 0.034, 12), K.wood(), 0, t + u(18), 0);
     for (const [y, r] of [[u(30), u(7)], [u(54), u(11)]]) {
-      K.put(L.ball(r * 0.95, 28, 20), K.gloss(L.tone(K.pal.leaf, 0.9)), 0, y, 0);
+      K.put(L.ball(r * 0.95, 16, 10), K.gloss(L.tone(K.pal.leaf, 0.9)), 0, y, 0);
       for (let n = 0; n < 40; n++) {
         const a = n * 2.4, e = Math.asin(1 - 2 * (n + 0.5) / 40), q = r * 0.92;
-        K.put(L.ball(r * 0.17, 10, 8), K.gloss(L.tone(K.pal.leaf, 0.95 + R() * 0.15)), Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q, Math.sin(a) * Math.cos(e) * q);
+        K.put(L.ball(r * 0.17, 8, 6), K.gloss(L.tone(K.pal.leaf, 0.95 + R() * 0.15)), Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q, Math.sin(a) * Math.cos(e) * q);
       }
     }
     for (const [y, a, r] of [[u(60), 0.5, u(11)], [u(50), 2.6, u(11)], [u(30), 4.2, u(7)], [u(56), 5.2, u(11)]]) flower(K, L, Math.sin(a) * r, y, Math.cos(a) * r, K.pal.c, 0.035, a, 0.2);
@@ -541,7 +541,7 @@ export const MAKES = {
     const R = K.r, greens = [K.gloss(K.pal.leaf), K.gloss(L.tone(K.pal.leaf, 1.12)), K.gloss(L.tone(K.pal.leaf, 0.88))];
     // a clipped block of leaves, darker at its foot, its faces tufted with little clumps
     K.put(L.rbox(0.92, u(30) - 0.04, 0.92, 0.12), K.gloss(L.tone(K.pal.leaf, 0.78)), 0, (u(30) - 0.04) / 2, 0);
-    const tuft = (x, y, z) => { const t = 0.12 + R() * 0.06; K.put(L.blob(t, t * 0.8, t, 0.6, 0.6), greens[Math.floor(R() * 3)], x, y, z); };
+    const tuft = (x, y, z) => { const t = 0.12 + R() * 0.06; K.put(L.blob(t, t * 0.8, t, 0.6, 0.6, 8), greens[Math.floor(R() * 3)], x, y, z); };
     for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) tuft(-0.38 + i * 0.19 + (R() - 0.5) * 0.04, u(30) - 0.06, -0.38 + j * 0.19 + (R() - 0.5) * 0.04);
     for (let a = 0; a < 4; a++) for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++) {
       const t = -0.38 + i * 0.19 + (R() - 0.5) * 0.04, y = 0.14 + j * 0.2, n = 0.45;
@@ -622,7 +622,7 @@ export const MAKES = {
     const bw = W - u(16), sy = seatY;
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       const x = sx * (bw / 2 - 0.05), z = sz < 0 ? -0.16 : 0.12;
-      for (let y = sy + 0.04; y < H - 0.04; y += 0.06) K.put(torus(0.018, 0.006, Math.PI * 2, 8), metal, x, y, z, Math.round(y * 20) % 2 ? Math.PI / 2 : 0);
+      for (let y = sy + 0.04; y < H - 0.04; y += 0.06) K.put(torus(0.018, 0.006, Math.PI * 2, 6), metal, x, y, z, Math.round(y * 20) % 2 ? Math.PI / 2 : 0);
     }
     K.put(rbox(bw, 0.06, 0.4, 0.02), wood, 0, sy - 0.03, -0.02);
     K.put(rbox(bw, 0.56, 0.05, 0.02), wood, 0, sy + 0.28, -0.2, 0, -0.12);

@@ -15,7 +15,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   to PP Up, asked by `tutorNotes()` at the end of `showMap()` after the checkpoint, so a refresh asks again) and
   **Scout Report** (Question Card: `REWARD_CARDS`, 4 cards on a fight's card reward). Old saves merge the new
   passives in as 0/false. **Shiny starters** (cosmetic): the Game Corner's third row, one per starter but Mewtwo
-  (`SHINY_COSTS`: 250 the free three, 350 skins, 500 legendaries, the user's call 2026-09-27; only once you own the starter, else a silhouette).
+  (`SHINY_COSTS`: 400 the free three, 600 skins, 800 legendaries since 2026-10-16, were 250 / 350 / 500 from the user's call 2026-09-27; only once you own the starter, else a silhouette).
   The save's `shiny: { owned, on }`; buying switches it on, and a ✨ Shiny pill in the character select's panel
   (`#sel-shiny`, only once owned; a ✨ marks the portrait too) switches it. `spriteUrl()` in `js/data/starters.js` swaps in `<id>-shiny-<kind>.gif` when it's on
   (main.js hands it `isShiny` via `useShinies()`, since data files don't read the save), so every screen follows,
@@ -66,3 +66,17 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `bookEntries()`): entries newest first, the Record Book's lost runs as greyed lines between them (`save.losses`, `recordLoss()`; since 2026-10-04 one opens its **loss recap**, `lossPage()`, the same page a lost run shows before its result window: the fatal move, HP over the run from `run.tally.hpTrail`, its numbers and deck); tap one for its page: plate, a grid of its numbers (old entries show "-" for what
   they lack), the Ability and relics, the items left in the Bag and the ones used (sprites; a tap shows their `title`), and
   the final deck (`fillDeck()` from `js/deckpreview.js`, each card `zoomable()`).
+
+- **The price rise of 2026-10-16** (the user's call, after the Trainer's Journal paid a full save ~26,500 at once): the
+  one-off rewards (Journal ~26,500, Pokédex ~13,300, Ranger board ~11,700, Level 5 jackpots, feats; ~55,000 in all) paid
+  for everything with a fixed price ~1.5 times over, before runs, missions (up to 200 a day, 1,000 a week) or the Game
+  Corner (up to 500 a day). So the shop (`js/data/shop.js`) went skins 150/250 -> 300/500, perks 4,730 -> 11,800 (every
+  level about doubled or more, the second and third levels most), shinies as above; Meowth's machines (`PRIZES` in
+  `js/data/corner.js`) 450 -> 750; and the furniture store's curve (`shopPrice()` in `js/base-furniture.js`) 50-150 ->
+  50-300, so one of every kind is ~192,000 (was ~107,000) and wallpapers and floors ~4,300 (was ~2,300). Fixed prices now
+  add up to ~62,000: skins 2,400, perks 11,800, shinies 20,400, machines 18,000, the Secret Base's upgrades 5,000 and its
+  papers ~4,300. Owned perks, shinies and pieces stay owned. House rooms (500) and doorways (100) are unchanged.
+- **Where coins come from, 2026-10-16** (the user's yes, right after the price rise): a won run's bonus 100 -> 200
+  (`COIN_REWARDS.winBonus`), the Game Corner's `DAILY_CAP` 500 -> 250, so runs out-earn the minigames. A daily player earns
+  about the same (~1,300 a day before, now more from runs); everything with a fixed price (~209,000 with the statues and
+  shells) is some four months of play, one of every furniture kind (~192,000) about as much again.

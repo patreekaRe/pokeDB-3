@@ -40,6 +40,20 @@ import { MAKES as MAKES_W7 } from './base-models-w7.js';
 import { MAKES as MAKES_T, ITEMS } from './base-models-t.js';
 import { MAKES as MAKES_Y } from './base-models-y.js';
 import { MAKES as MAKES_FR } from './base-models-friends.js';
+import { MAKES as MAKES_L } from './base-models-l.js';
+import { MAKES as MAKES_M } from './base-models-m.js';
+import { MAKES as MAKES_N } from './base-models-n.js';
+import { MAKES as MAKES_O } from './base-models-o.js';
+import { MAKES as MAKES_P } from './base-models-p.js';
+import { MAKES as MAKES_Q } from './base-models-q.js';
+import { MAKES as MAKES_R } from './base-models-r.js';
+import { MAKES as MAKES_S } from './base-models-s.js';
+import { MAKES as MAKES_U } from './base-models-u.js';
+import { MAKES as MAKES_V } from './base-models-v.js';
+import { MAKES as MAKES_X } from './base-models-x.js';
+import { MAKES as MAKES_Z } from './base-models-z.js';
+import { MAKES as MAKES_Y2 } from './base-models-y2.js';
+import { MAKES as MAKES_GOLD } from './base-models-gold.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -106,7 +120,20 @@ function weave() {
 /** A box with rounded edges (three.js's RoundedBoxGeometry's trick: only the middle segment of each face stays flat). */
 function rbox(w, h, d, r = 0.03, seg = 2) {
   r = Math.max(0.002, Math.min(r, w / 2, h / 2, d / 2) - 1e-4);
+  // as few bevel steps as stay under half a pixel close up (2026-10-16): uvs are moved to where `seg`'s would be, so a
+  // picture on a face still covers the same share of it
+  const was = seg, n0 = was * 2 + 1;
+  seg = Math.min(seg, r < 0.05 ? 1 : r < 0.2 ? 2 : seg);
+  if (r < 0.003) {
+    const g = new THREE.BoxGeometry(w, h, d).toNonIndexed(), uv = g.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (was + uv.getX(i)) / n0, (was + uv.getY(i)) / n0);
+    return g;
+  }
   const n = seg * 2 + 1, g = new THREE.BoxGeometry(1, 1, 1, n, n, n).toNonIndexed();
+  if (seg !== was) {
+    const uv = g.attributes.uv, to = (f) => { const i = Math.round(f * n); return (i <= seg ? i * was / seg : n0 - (n - i) * was / seg) / n0; };
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, to(uv.getX(i)), to(uv.getY(i)));
+  }
   const pos = g.attributes.position, nor = g.attributes.normal, half = 0.5 / n, v = new THREE.Vector3();
   const bx = w / 2 - r, by = h / 2 - r, bz = d / 2 - r;
   for (let i = 0; i < pos.count; i++) {
@@ -136,8 +163,9 @@ function weld(g) {
 
 /** A superellipsoid: e (round) 1 is a sphere's sides, near 0 a box's; ev the same up and down. Cushions, mattresses,
     arms, beanbags, clouds. */
-function blob(w, h, d, e = 0.45, ev = 0.5) {
-  const g = new THREE.SphereGeometry(1, 32, 20), pos = g.attributes.position;
+function blob(w, h, d, e = 0.45, ev = 0.5, seg) {
+  const ws = seg || Math.max(12, Math.min(32, round4(52 * Math.sqrt(Math.max(w, h, d) / 2))));
+  const g = new THREE.SphereGeometry(1, ws, Math.max(seg ? 6 : 8, 2 * Math.round(ws * 20 / 64))), pos = g.attributes.position;
   const sp = (v, k) => Math.sign(v) * Math.pow(Math.abs(v), k);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), c = Math.hypot(x, z);
@@ -148,10 +176,23 @@ function blob(w, h, d, e = 0.45, ev = 0.5) {
   return weld(g);
 }
 
-const cyl = (rt, h, rb = rt, seg = 20, open = false) => new THREE.CylinderGeometry(rt, rb, h, seg, 1, open);
-const ball = (r, w = 20, h = 14) => new THREE.SphereGeometry(r, w, h);
-const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(0.0005, r), y)), seg);
-const torus = (R, r, arc = Math.PI * 2, seg = 28) => new THREE.TorusGeometry(R, r, 10, seg, arc);
+/* Round parts get as many sides as keep their outline within half a pixel at 128 pixels a tile (2026-10-16: a 1x1 piece
+   ran to 20k triangles of 20-sided bolts and knobs): asked for 12 or more sides, a part r round gets `sides(r)`, a
+   multiple of 4 so its widest points stay where they were, never under 8. Fewer than 12 asked for is a shape (a hexagon,
+   an octagon) and is kept; `exact` keeps the count for a part whose vertices are moved after (flutes, ribs). */
+const round4 = (v) => Math.ceil(v / 4) * 4;
+const sides = (r, seg) => seg < 12 ? seg : Math.max(8, Math.min(seg, round4(35 * Math.sqrt(Math.abs(r)))));
+const cyl = (rt, h, rb = rt, seg = 20, open = false, exact = false) => new THREE.CylinderGeometry(rt, rb, h, exact ? seg : sides(Math.max(rt, rb), seg), 1, open);
+const ball = (r, w = 20, h = 14) => {
+  const w2 = sides(r, w);
+  return new THREE.SphereGeometry(r, w2, w2 === w || h < 8 ? h : Math.max(6, 2 * Math.round(h * w2 / w / 2)));
+};
+const lathe = (pts, seg = 28, exact = false) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(0.0005, r), y)),
+  exact ? seg : sides(Math.max(...pts.map(p => p[0])), seg));
+const torus = (R, r, arc = Math.PI * 2, seg = 28) => {
+  const f = Math.min(1, arc / (Math.PI * 2)), all = seg < 12 ? seg : Math.max(Math.ceil(8 * f), Math.min(seg, Math.ceil(sides(R + r, 99) * f)));
+  return new THREE.TorusGeometry(R, r, r < 0.016 ? 4 : r < 0.04 ? 8 : 10, all, arc);
+};
 
 /** A heart, extruded with rounded edges, `s` across, `t` thick, lying in the x-y plane. */
 function heart(s, t) {
@@ -193,18 +234,21 @@ function merge(geos) {
   const parts = geos.map(g => g.index ? g.toNonIndexed() : g);
   const n = parts.reduce((s, g) => s + g.attributes.position.count, 0);
   const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2);
+  const col = parts.some(g => g.attributes.color) ? new Float32Array(n * 3).fill(1) : null;
   let at = 0;
   for (const g of parts) {
     const c = g.attributes.position.count;
     pos.set(g.attributes.position.array, at * 3);
     nor.set(g.attributes.normal.array, at * 3);
     if (g.attributes.uv) uv.set(g.attributes.uv.array, at * 2);
+    if (col && g.attributes.color) col.set(g.attributes.color.array, at * 3);
     at += c;
   }
   const out = new THREE.BufferGeometry();
   out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  if (col) out.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return out;
 }
 
@@ -266,9 +310,44 @@ function kit(id, paint) {
   };
 }
 
+// parts of one kind differing only in colour are drawn as one, their colours riding along as vertex colours
+// (2026-10-16: a doll sewn in seven cloths was seven draws, a fridge's plain parts were never baked as it has doors):
+// wood and cloth share one grain or weave texture; a lamp's glows are tinted by the vertex colour too, and still
+// switched as one. Not glass (sorted by its mesh), nor the lamps of what blinks: js/base-play.js sets every lamp of a
+// crossing, a signal or a beacon red.
+const TINTABLE = new Set(['wood', 'cloth', 'glow', 'plain', 'gloss', 'metal']), BLINKS = new Set(['crossing', 'railsignal', 'beacon']);
+const tintKey = (m, fam) => {
+  const glow = m.userData.kind === 'glow';
+  if (!TINTABLE.has(m.userData.kind) || m.vertexColors || Object.keys(m.userData).length !== (glow ? 2 : 1) || (glow && (!m.userData.lamp || BLINKS.has(fam)))) return m;
+  return [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite, m.depthTest,
+    m.polygonOffset, m.polygonOffsetFactor, m.polygonOffsetUnits, m.blending, m.envMapIntensity, glow ? m.emissiveIntensity : m.emissive.getHex(), m.flatShading].join('|');
+};
+const glowTint = (m) => {
+  m.emissive.set('#ffffff');
+  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n\ttotalEmissiveRadiance *= vColor.rgb;'); };
+  m.customProgramCacheKey = () => 'glow-tint';
+};
+
 function assemble(K, bins = K.bins) {
-  const g = new THREE.Group();
+  const g = new THREE.Group(), sets = new Map();
   for (const [m, geos] of bins) {
+    const k = tintKey(m, K.p.fam);
+    if (!sets.has(k)) sets.set(k, []);
+    sets.get(k).push([m, geos]);
+  }
+  for (const list of sets.values()) {
+    let [[m, geos]] = list;
+    if (list.length > 1) {
+      geos = list.flatMap(([mm, gs]) => gs.map(geo => {
+        const n = geo.attributes.position.count, c = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) c.set([mm.color.r, mm.color.g, mm.color.b], i * 3);
+        geo.setAttribute('color', new THREE.BufferAttribute(c, 3));
+        return geo;
+      }));
+      m = m.clone();
+      m.color.set('#ffffff'); m.vertexColors = true;
+      if (m.userData.kind === 'glow') glowTint(m);
+    }
     const mesh = new THREE.Mesh(merge(geos), m);
     mesh.castShadow = m.userData.kind !== 'glass';
     mesh.receiveShadow = true;
@@ -589,10 +668,10 @@ function couch(K, s, W, D, opts = {}) {
   if (s.cloud) {
     const p = K.plain(K.pal.p), R = K.r;
     for (let x = -W / 2 + 0.2; x <= W / 2 - 0.2; x += 0.22) {
-      K.put(ball(0.2 + R() * 0.05), p, x, 0.22, 0.12 + R() * 0.05);
-      K.put(ball(0.24 + R() * 0.05), p, x, 0.62 + R() * 0.08, -0.22);
+      K.put(ball(0.2 + R() * 0.05, 16, 10), p, x, 0.22, 0.12 + R() * 0.05);
+      K.put(ball(0.24 + R() * 0.05, 16, 10), p, x, 0.62 + R() * 0.08, -0.22);
     }
-    for (const x of [-W / 2 + 0.16, W / 2 - 0.16]) K.put(ball(0.22), p, x, 0.45, 0.06);
+    for (const x of [-W / 2 + 0.16, W / 2 - 0.16]) K.put(ball(0.22, 16, 10), p, x, 0.45, 0.06);
     K.put(blob(W - 0.3, 0.16, D - 0.35, 0.4, 0.5), K.cloth(K.pal.c), 0, sh - 0.06, 0.08);
     return;
   }
@@ -997,7 +1076,7 @@ function pot(K, r, h) {
 }
 /** A leaf: a flattened ellipsoid tipped out from the stem at `a` round and `tilt` from upright. */
 function leafAt(K, m, y, a, tilt, len, wid) {
-  const g = ball(1, 10, 8).scale(wid, 0.012, len / 2);
+  const g = ball(1, 10, 4).scale(wid, 0.012, len / 2);
   g.translate(0, 0, len / 2);
   g.rotateX(-(Math.PI / 2 - tilt));
   g.rotateY(a);
@@ -1029,7 +1108,7 @@ B.palm = (K) => {
     for (let s = 0; s < 6; s++) {
       const t = s / 6, droop = 0.5 + t * 1.3;
       leafAt(K, leafM[s % 2], y - Math.pow(t, 2) * 0.3, a, Math.min(1.5, droop), 0.18, 0.05 + (1 - t) * 0.04);
-      const g = ball(1, 8, 6).scale(0.04, 0.008, 0.12);
+      const g = ball(1, 8, 4).scale(0.04, 0.008, 0.12);
       g.rotateY(a + Math.PI / 2); g.translate(x + Math.sin(a) * t * 0.6, y - t * t * 0.4, z + Math.cos(a) * t * 0.6);
       K.put(g, leafM[(s + 1) % 2]);
     }
@@ -1286,10 +1365,21 @@ B.cardtable = (K, s) => {
     for (const [x, z] of [[-0.7, -0.3], [0.7, -0.3], [-0.5, 0.25], [0.5, 0.25]]) { K.put(cyl(0.025, H - 0.12, 0.03, 12), chrome, x, (H - 0.12) / 2, z); K.put(cyl(0.05, 0.03, 0.05, 14), chrome, x, 0.015, z); }
     K.put(rbox(1.3, 0.03, 0.04, 0.01), chrome, 0, 0.18, -0.3);
   }
-  // cards: face up for the hands, a shoe or a deck for the dealer
+  // cards: face up for the hands, a shoe or a deck for the dealer, every face read off one sheet so they draw as one
+  // (2026-10-16: nine faces were nine draws), half a pixel in from each so a neighbour never bleeds in
+  const deal = bj ? ['As', 'Kh', '9d', '7c', 'Qs', ''] : ['3h', '7s', '9d', ''], faces = remember(`cards|${s.game}`, () => {
+    const c = new OffscreenCanvas(128 * deal.length, 176), g = c.getContext('2d');
+    deal.forEach((f, i) => g.drawImage(f ? cardFace(f[0], f[1]) : cardBack(), i * 128, 0));
+    return c;
+  });
+  const face = (f) => {
+    const geo = new THREE.PlaneGeometry(0.12, 0.165), uv = geo.attributes.uv, i = deal.indexOf(f);
+    for (let v = 0; v < uv.count; v++) uv.setX(v, (i * 128 + 0.5 + uv.getX(v) * 127) / faces.width);
+    return geo;
+  };
   const card = (rank, suit, x, z, turn = 0) => {
     K.put(rbox(0.13, 0.004, 0.18, 0.002), K.plain('#fffaf0'), x, H + 0.003, z, turn);
-    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(rank ? cardFace(rank, suit) : cardBack(), 0.12), x, H + 0.0065, z, turn, -Math.PI / 2);
+    K.put(face(rank ? rank + suit : ''), litPic(faces, 0.12), x, H + 0.0065, z, turn, -Math.PI / 2);
   };
   if (bj) {
     card('A', 's', -0.06, -0.18, 0.08); card('K', 'h', 0.06, -0.18, -0.06);
@@ -1304,7 +1394,7 @@ B.cardtable = (K, s) => {
   } else {
     card('3', 'h', -0.22, -0.02); card('7', 's', 0, -0.02); card('9', 'd', 0.22, -0.02);
     for (let i = 0; i < 8; i++) K.put(rbox(0.13, 0.006, 0.18, 0.002), K.plain(i % 2 ? '#f0e8d8' : '#fffaf0'), 0.02, H + 0.004 + i * 0.006, -0.3);
-    K.put(new THREE.PlaneGeometry(0.12, 0.165), litPic(cardBack(), 0.12), 0.02, H + 0.053, -0.3, 0, -Math.PI / 2);
+    K.put(face(''), litPic(faces, 0.12), 0.02, H + 0.053, -0.3, 0, -Math.PI / 2);
     // the HIGH and LOW buttons on the rail
     for (const [x, c] of [[-0.55, '#58d858'], [0.55, '#f05050']]) {
       K.put(cyl(0.07, 0.03, 0.075, 22), chrome, x, H + 0.02, 0.36);
@@ -1327,8 +1417,8 @@ B.plinko = (K) => {
   for (let r = 0; r < rows; r++) {
     const n = r % 2 ? 8 : 9, x0 = -(n - 1) * gap / 2;
     for (let i = 0; i < n; i++) {
-      K.put(cyl(0.011, 0.05, 0.011, 10), peg, x0 + i * gap, top - r * 0.11, 0.097, 0, Math.PI / 2);
-      K.put(ball(0.014, 10, 8), peg, x0 + i * gap, top - r * 0.11, 0.122);
+      K.put(cyl(0.011, 0.05, 0.011, 6), peg, x0 + i * gap, top - r * 0.11, 0.097, 0, Math.PI / 2);
+      K.put(ball(0.014, 8, 4), peg, x0 + i * gap, top - r * 0.11, 0.122);
     }
   }
   const bx = 0.04, by = top - 3 * 0.11 + 0.035, bz = 0.12;
@@ -1774,12 +1864,25 @@ function leafyModel(id, paint) {
    their shapes without Three.js) */
 const L = {
   get THREE() { return THREE; },
-  rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
+  rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
+}
+
+/** A statue's figure (js/base-figures.js, the gold statues): its picture as a cut-out standing at x, y, z, w x h tiles,
+    its pivot at its feet, so js/base-3d.js can lean it back and turn it to the camera as it does the Pokémon. */
+function figure(g, { c, w, h, x = 0, y = 0, z = 0 }, paint) {
+  const geo = new THREE.PlaneGeometry(w, h).translate(0, h / 2, 0), m = paint(c);
+  m.alphaTest = 0.5; m.side = THREE.DoubleSide; m.userData.kind = 'pic';
+  const mesh = new THREE.Mesh(geo, m);
+  mesh.position.set(x, y, z);
+  mesh.castShadow = mesh.receiveShadow = true;
+  mesh.userData.standee = true;
+  g.add(mesh);
+  return mesh;
 }
 
 /** Any piece as a 3D group (see the file's head); null for a flat piece with no shape (the caller lays it as a slab).
@@ -1796,6 +1899,7 @@ export function furnitureModel(three, id, paint) {
     const K = kit(id, paint);
     B[shape.make](K, shape, W, D, L);
     g = assemble(K);
+    if (K.figure) g.userData.standee = figure(g, K.figure, paint);
     if (K.doors.length && K.inside) {
       g.userData.inside = K.inside;
       g.userData.doors = K.doors.map(d => { const leaf = assemble(K, d.bins); g.add(leaf); return { leaf, hinge: d.hinge, side: d.side }; });

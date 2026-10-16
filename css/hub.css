@@ -229,6 +229,8 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mall-ask-yes { background: linear-gradient(#ffe070, #f0b020); color: #5a3a08; box-shadow: 0 4px 0 #b07c10, 0 6px 12px #0004; }
 .mall-ask-no { background: #e8dcc0; color: #6a5440; box-shadow: 0 4px 0 #c4b290; }
 .mall-ask-keys button:active { translate: 0 3px; box-shadow: none; }
+.mall-ask-keys.many { flex-wrap: wrap; gap: 10px; }   /* the lift's floors (js/mall-3d.js's choose()) */
+.mall-ask-keys.many button { min-width: 0; padding: 0 16px; }
 @media (prefers-reduced-motion: reduce) { .mall-ask.b3-say, .mall-shop.b3-say { animation: none; } }
 
 /* the Furniture store's and the Safari Outfitter's buy window (js/mall-3d.js's merchant(); 2026-10-16, the user's ask): a merchant's card in a
@@ -643,7 +645,7 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 /* House upgrades: the blueprint, after WoW's housing one, on a dark grid */
 .pc-blueprint { margin: 0 0 12px; padding: 6px; border: 2px solid #3a78b8; border-radius: 10px; background: #081a30; box-shadow: 0 3px 0 #2a5a90; }
 .pc-blueprint { display: flex; align-items: center; gap: 6px; }
-.pc-bp { display: block; flex: 1; min-width: 0; width: 100%; max-height: 300px; touch-action: none; user-select: none; -webkit-user-select: none; }
+.pc-bp { display: block; flex: 1; min-width: 0; width: 100%; max-height: min(300px, 34vh); touch-action: none; user-select: none; -webkit-user-select: none; }
 .pc-blueprint.zoomed .pc-bp { cursor: grab; }
 .pc-blueprint.zoomed .pc-bp:active { cursor: grabbing; }
 .pc-bp-keys { flex: none; display: flex; flex-direction: column; gap: 6px; }
@@ -679,6 +681,9 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .pc-bp-room.yard.plot .pc-bp-fill { fill: rgba(88, 216, 88, 0.12); }
 .pc-bp-room.yard.plot.picked .pc-bp-fill { fill: rgba(88, 216, 88, 0.3); }
 .pc-bp-room.yard.picked .pc-bp-edge { stroke: #f0b030; }
+/* the page's Build key held at the foot of the scroll, so a tall blueprint never pushes it out of sight */
+.pc-act { position: sticky; bottom: -10px; z-index: 1; margin: 0 -14px; padding: 8px 14px 2px; background: linear-gradient(rgba(124, 232, 240, 0), #7ce8f0 10px); }
+.pc-act > :last-child { margin-bottom: 10px; }
 .pc-build-row { display: flex; justify-content: center; gap: 10px; margin: 0 0 12px; }
 .pc-build-row .pc-build { margin: 0; }
 .pc-build.pc-turn { min-width: 90px; }

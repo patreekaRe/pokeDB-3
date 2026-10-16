@@ -8,6 +8,7 @@
 import { playSound, playCry, FURNITURE_NOTES } from './audio.js';
 import { HD, FT } from './base-paint.js';
 import { calmFx } from './prefs.js';
+import { shapeOf } from './base-shapes.js';
 
 let THREE = null;
 const U = 1 / FT;
@@ -429,7 +430,7 @@ function insidePicture(kind, w, h) {
     taps then go to tapPlay(), its frames to tickPlay(). */
 export function dressPlay(three, model, p) {
   THREE = three;
-  const how = PLAY[p.fam] || (p.doll ? { does: 'doll' } : { does: 'wiggle' });
+  const how = PLAY[p.fam] || shapeOf(p.fam, p)?.play || (p.doll ? { does: 'doll' } : { does: 'wiggle' });
   model.rotation.order = 'YXZ';
   model.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(model), art = p.art(0, 1, true);
@@ -439,7 +440,8 @@ export function dressPlay(three, model, p) {
   const D = how.does;
 
   if (D === 'screen') {
-    let r = how.tv ? null : glowRect(p, art) || glowRect(p, art, 1);
+    // a modelled screen says where it is (`screen` on its shape): a cabinet's only glow colour may be its marquee's
+    let r = how.tv ? null : shapeOf(p.fam, p)?.screen || glowRect(p, art) || glowRect(p, art, 1);
     if (how.tv) { const sw = p.w - 0.24, shh = sw * 0.58; r = { x: 0, y: 0.56 + shh / 2, w: sw - 0.08, h: shh - 0.08, z: 0.02 }; }
     if (!r) {
       const b = boxOf(art, (rr, g, b2, a) => a > 128);

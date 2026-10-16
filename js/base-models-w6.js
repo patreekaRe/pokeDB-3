@@ -121,8 +121,8 @@ function strand(K, L, i, j, len, z, r, step, ms, sway = 1.5, ph = 0, leafy = fal
     const x = i + Math.sin(d / 6 + ph) * sway, zz = z + Math.sin(d / 9 + ph) * 0.01;
     pts.push([x, j + d, zz]);
     const m = ms[Math.round(d / step) % ms.length];
-    if (leafy) K.put(L.ball(u(r), 10, 8).scale(0.7, 1.1, 0.35), m, X(x, W), Y(j + d), zz, 0, 0.3, Math.sin(d) * 0.8);
-    else K.put(L.ball(u(r), 10, 8), m, X(x, W), Y(j + d), zz);
+    if (leafy) K.put(L.ball(u(r), 8, 6).scale(0.7, 1.1, 0.35), m, X(x, W), Y(j + d), zz, 0, 0.3, Math.sin(d) * 0.8);
+    else K.put(L.ball(u(r), 6, 6), m, X(x, W), Y(j + d), zz);
   }
   if (pts.length > 1) cord(K, L, ms[0], pts, 0.25);
 }

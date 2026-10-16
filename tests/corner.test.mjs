@@ -67,8 +67,8 @@ test('the games share one daily cap, and each has its own', () => {
 /* What an average day pays, game by game: the table games played plainly (random reel stops, Blackjack by the book,
    High-Low cashed out after one guess), Voltorb Flip by a careful player (only tiles a clue proves safe, then quit), 5
    of 7 in the quiz and the scratch card's mean. The user's first pick (2026-10-12) was about 250 a day; they raised the paying plays the same day
-   (10 slots, 10 Plinko, 5 each of Blackjack, High-Low and Voltorb Flip, 7 quiz questions), so it's about 380 now,
-   still under the cap. */
+   (10 slots, 10 Plinko, 5 each of Blackjack, High-Low and Voltorb Flip, 7 quiz questions), so it's about 380 now; since
+   2026-10-16 DAILY_CAP (250) holds a regular to less than a won run pays. */
 function averageDay() {
   const N = 20000, rng = makeRng(77);
   let slots = 0;
@@ -107,10 +107,11 @@ function averageDay() {
   return { slots, plinko, bj, hl, voltorb, quiz, scratch };
 }
 
-test('an average day pays about 380, under the cap', () => {
+test('an average day\'s play comes to about 380, over the daily cap, each game under its own', () => {
   const day = averageDay(), total = Object.values(day).reduce((a, b) => a + b, 0);
   if (process.env.CORNER_DAY) console.log(Object.fromEntries(Object.entries(day).map(([k, v]) => [k, Math.round(v)])), Math.round(total));
   assert.ok(total > 300 && total < 450, `an average day pays ${total}`);
+  assert.ok(total > DAILY_CAP);
   for (const [game, v] of Object.entries(day)) assert.ok(v < GAME_CAP, `${game} averages ${v}`);
 });
 
@@ -129,7 +130,7 @@ test('prizes are unique and priced to take a few days of Game Corner coins', () 
   assert.equal(Object.keys(PRIZES_BY_KIND).length, PRIZES.length + RETIRED_PRIZES.length);
   const games = readFileSync(new URL('../js/home-arcade.js', import.meta.url), 'utf8');
   for (const p of PRIZES) assert.match(games, new RegExp(`^  ${p.kind}:`, 'm'), `${p.kind} is a game you can play at home`);
-  for (const p of PRIZES) assert.ok(p.coins >= 150 && p.coins <= DAILY_CAP * 2, p.kind);
+  for (const p of PRIZES) assert.ok(p.coins >= 150 && p.coins <= DAILY_CAP * 4, p.kind);
 });
 
 test('records keep the best, and counts add up', () => {

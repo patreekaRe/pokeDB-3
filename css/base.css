@@ -97,6 +97,35 @@
   --btn-a: radial-gradient(circle at 35% 30%, #ffb0b0 0 12%, #e03a3a 40%, #9a1414);
 }
 
+:root[data-shell="silver"] {   /* the Grand Catalogue's shells from here (js/data/catalogue.js), bought at the PC */
+  --shell-hi: #d4d8e2; --shell: #b4b8c4; --shell-lo: #9ea2b0; --shell-fold: #9296a4;
+  --shell-rim: #5a5e6a; --shell-deep: #3e424c; --shell-hinge: #6a6e7a;
+}
+:root[data-shell="crystal"] {
+  --shell-hi: #a898ec; --shell: #8a78d8; --shell-lo: #7664c4; --shell-fold: #6c5ab8;
+  --shell-rim: #3e2e7a; --shell-deep: #2a1e58; --shell-hinge: #4a3a8c;
+  --btn-a: radial-gradient(circle at 35% 30%, #c8fff4 0 12%, #3cc8b0 40%, #148a78);
+}
+:root[data-shell="teal"] {
+  --shell-hi: #30b8b0; --shell: #189a94; --shell-lo: #12867f; --shell-fold: #0f7a74;
+  --shell-rim: #08504c; --shell-deep: #053835; --shell-hinge: #0a605b;
+  --btn-a: radial-gradient(circle at 35% 30%, #ffd8b0 0 12%, #f08a3a 40%, #a84e10);
+}
+:root[data-shell="orange"] {
+  --shell-hi: #f8904a; --shell: #e8742a; --shell-lo: #d4621c; --shell-fold: #c85818;
+  --shell-rim: #7a320a; --shell-deep: #562206; --shell-hinge: #8c3e0e;
+}
+:root[data-shell="purple"] {
+  --shell-hi: #8a4ad0; --shell: #6a32b0; --shell-lo: #5a2898; --shell-fold: #52228c;
+  --shell-rim: #301258; --shell-deep: #200a3e; --shell-hinge: #3c1868;
+  --btn-a: radial-gradient(circle at 35% 30%, #fff4b0 0 12%, #e8c030 40%, #9a7a10);
+}
+:root[data-shell="white"] {
+  --shell-hi: #fbfbf8; --shell: #ecebe6; --shell-lo: #dcdbd4; --shell-fold: #d2d1ca;
+  --shell-rim: #8a8a84; --shell-deep: #5e5e5a; --shell-hinge: #9a9a94;
+  --btn-a: radial-gradient(circle at 35% 30%, #ffb0b0 0 12%, #e03a3a 40%, #9a1414);
+}
+
 body[data-theme="fire"]  { --accent: #ff7a45; --accent-dark: #d4501f; }
 body[data-theme="water"] { --accent: #3fa3ff; --accent-dark: #1f6fd0; }
 body[data-theme="grass"] { --accent: #4fcf6c; --accent-dark: #2a9a45; }

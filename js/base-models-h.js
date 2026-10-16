@@ -40,10 +40,10 @@ const strawWrap = () => once('strawwrap', () => sheet(128, 64, (g, w, h) => {
 /** A puff of round balls in the given colours round x, y, z, about `r` across (blossom, pine needles). */
 function clump(K, L, x, y, z, r, cols, n = 10) {
   const R = K.r, mats = cols.map(c => K.gloss(c));
-  K.put(L.ball(r * 0.78, 18, 12), mats[0], x, y, z);
+  K.put(L.ball(r * 0.78, 8, 6), mats[0], x, y, z);
   for (let i = 0; i < n; i++) {
     const e = Math.asin(1 - 1.7 * (i + 0.5) / n), a = i * 2.4 + R() * 0.5, q = r * 0.6, s = r * (0.34 + R() * 0.14);
-    K.put(L.ball(s, 12, 9), mats[i % mats.length], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
+    K.put(L.ball(s, 8, 6), mats[i % mats.length], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
   }
 }
 /** A five-pointed star, `r` to its points, `t` thick, facing +z. */
@@ -471,7 +471,8 @@ export const MAKES = {
     // halves tied back; a dark inside, a cushion peeking out, the poles crossing out of the top, bunting, a pennant
     const pole = (i, t) => { const a = (i + 0.5) / sides * TAU; return [Math.sin(a) * r * (1 - t), t * h, Math.cos(a) * r * (1 - t)]; };
     const panel = (i, cut) => {
-      const n = 24, m = 28, pos = [], uv = [], idx = [];
+      // only the doorway's cut needs a fine grid: a panel is straight from its foot to the top, sagging only across
+      const n = cut ? 24 : 12, m = cut ? 28 : 4, pos = [], uv = [], idx = [];
       for (let j = 0; j <= m; j++) for (let k = 0; k <= n; k++) {
         const s = k / n, t = j / m * 0.94, a = pole(i, t), b = pole(i + 1, t), sag = 0.05 * Math.sin(s * Math.PI) * (1 - t);
         const x = a[0] + (b[0] - a[0]) * s, z = a[2] + (b[2] - a[2]) * s, len = Math.hypot(x, z) || 1;
@@ -547,15 +548,20 @@ export const MAKES = {
 
   blocktower(K, s, W, D, L) {
     const { rbox, THREE } = L, letters = ['A', 'B', 'F', 'I', 'L', 'R'], R = K.r;
-    // six letter blocks stacked a little crooked, smaller going up
+    // six letter blocks stacked a little crooked, smaller going up, their 24 faces read off one sheet: one draw
+    const cols = [0, 1, 2, 3, 4, 5].map(n => (n % 2 ? K.pal.c : RAINBOW[n]));
+    const faces = once('blocks' + cols.join(), () => sheet(256, 384, (g) => {
+      cols.forEach((col, n) => { for (let f = 0; f < 4; f++) g.drawImage(blockFace(col, letters[(n + f) % 6]), f * 64, n * 64); });
+    }));
     let y = 0;
     for (let n = 0; n < 6; n++) {
       const col = n % 2 ? K.pal.c : RAINBOW[n], sz = u(14 - Math.floor(n / 2)), hh = u(13), cx = u(Math.round(Math.sin(n * 1.7) * 2));
       const put = turned(K, cx, (R() - 0.5) * 0.04, (R() - 0.5) * 0.5);
       put(rbox(sz, hh, sz, 0.015), K.gloss(col), 0, y + hh / 2, 0);
       for (let f = 0; f < 4; f++) {
-        const g = new THREE.PlaneGeometry(sz - 0.012, hh - 0.012).translate(0, 0, sz / 2 + 0.001).rotateY(f * Math.PI / 2);
-        put(g, K.pic(blockFace(col, letters[(n + f) % 6])), 0, y + hh / 2, 0);
+        const g = new THREE.PlaneGeometry(sz - 0.012, hh - 0.012).translate(0, 0, sz / 2 + 0.001).rotateY(f * Math.PI / 2), uv = g.attributes.uv;
+        for (let i = 0; i < uv.count; i++) uv.setXY(i, (f * 64 + 0.02 + uv.getX(i) * 63.96) / 256, 1 - (n * 64 + 0.02 + (1 - uv.getY(i)) * 63.96) / 384);
+        put(g, K.pic(faces), 0, y + hh / 2, 0);
       }
       y += hh;
     }
