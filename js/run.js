@@ -15,6 +15,7 @@
    ============================================================ */
 
 import { rangerCatch, rangerTick, rangerDay, rangerReady } from './ranger.js';
+import { finishedBy } from './data/ranger.js';
 import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
@@ -2440,6 +2441,11 @@ function gymLeader(node) {
 /** The song a boss's win plays on with: a Gym Leader's has its own. */
 const bossWin = () => (run.map?.boss && gymLeader(run.map.boss) ? 'gym-victory' : 'trainer-victory');
 
+/** What a Safari catch tells the Ranger Task Board (js/ranger.js): the Pokémon, its ball, night, first turn, unhurt,
+    and how many this run has caught. */
+const rangerInfo = (node, result) => ({ id: node.enemyId, rare: !!node.rare, ball: result.ball, night: timeOfDay() === 'night',
+  turn: result.tally?.turns, flawless: !!result.tally && !result.tally.taken, inRun: run.tally.caught });
+
 function afterFight(node, result) {
   // a Gym Leader's last words and badge come before the rewards (and before a last boss's ending); a refresh replays
   // the fight, so the win is only counted below with the boss's
@@ -2505,6 +2511,8 @@ function afterFight(node, result) {
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
+    if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
   }
   if (isSafari() && !peeking) dexNews.push(...creditSafari());   // before unlock(): a full Safari Pokédex is Rayquaza's
@@ -2535,7 +2543,7 @@ function afterFight(node, result) {
     if (result.tally && result.tally.turns <= 4) mission('quick');
     if (tough) mission('tough');
     if (result.caught) mission('catch');
-    if (result.caught && isSafari() && !peeking) rangerCatch({ id: node.enemyId, rare: !!node.rare, ball: result.ball, night: timeOfDay() === 'night', turn: result.tally?.turns, flawless: result.tally && !result.tally.taken, inRun: run.tally.caught });
+    if (result.caught && isSafari() && !peeking) rangerCatch(rangerInfo(node, result));
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);

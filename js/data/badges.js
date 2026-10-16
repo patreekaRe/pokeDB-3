@@ -21,6 +21,7 @@ import { BALLS, masterThrows } from './balls.js';
 import { SAFARI_AREAS, SAFARI_DEX_PAGES } from './safari.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES } from './pokedex.js';
 import { FLIGHT } from './tower.js';
+import { RANKS, rankOf } from './ranger.js';
 import { AUGMENTS, AUG_SETS } from './augments.js';
 import { PRIZES } from './corner.js';
 
@@ -270,6 +271,9 @@ export const BADGES = [
     emoji: AREA_EMOJI[p.area] ?? '🦺', text: `Catch every Pokémon on the Safari's ${p.name} page`, test: (s, save) => caughtAll(save, p.ids) })),
   ...SAFARI_DEX_PAGES.map(p => ({ id: `rares-${p.area}`, group: 'safari', name: `${p.name} Rarity Badge`, icon: `rares-${p.area}`,
     emoji: '💎', text: `Catch every rare Pokémon in the Safari's ${p.name}`, test: (s, save) => caughtAll(save, p.rare) })),
+  // the Ranger Task Board's ranks (js/data/ranger.js), one a rank past Rookie
+  ...RANKS.slice(1).map((r, i) => ({ id: `ranger-${i + 2}`, group: 'safari', name: `${r.name} Badge`, icon: `ranger-${i + 2}`, emoji: '📋',
+    text: `Reach the rank of ${r.name} on the Safari Outfitter's Ranger Task Board (${r.at} tasks claimed)`, test: (s, save) => rankOf(save).n >= r.at })),
   { id: 'safari-master', group: 'safari', name: 'Safari Master Badge', icon: 'safari-master', emoji: '🦺',
     text: 'Catch every Pokémon in the Safari Pokédex', test: (s, save) => !!save.safariDex?.complete },
   ...SAFARI_TYPE_BADGES,

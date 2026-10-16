@@ -377,6 +377,11 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
   by the same `rangerCatch()` / `rangerTick()` / `rangerDay()`), which starts afresh with a new week's first event. Their
   ids carry the week (`exp:<week>:<id>`); the Ranger Ranks don't count them. `tasksOn(tab)` / `taskById(id)` reach both
   kinds. The tab shows a banner with the time to the next Monday (`untilWeek()`) and each note's tier.
+- **Told as it happens** (2026-10-16): a catch that finishes a task says so in the fight's reward box (`finishedBy()`
+  in `js/data/ranger.js`, from `rangerInfo()` in `js/run.js`'s `afterFight()`, before the catch is logged in
+  `collect()`). **Ranks on the Trainer Card**: a RANGER line (`rankOf()`), and a badge for each rank past Rookie
+  (`ranger-2` to `ranger-7` in `js/data/badges.js`, their `LOOK` lines in `js/trainercard.js`), granted by
+  `checkBadges()` as a claim is paid and named in the claim's toast.
 - **The Clearing's Safari gate** wears a "!" (`safariMark` in `js/hub-3d.js`, rebuilt with the places) while
   `readyTasks()` has any, and its line says so.
 - A new task is a line in `build()`; a new reward kind needs a `rewardText()` line and a branch in `claim()`.

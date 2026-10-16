@@ -243,6 +243,14 @@ export function logCatch(prev = {}, { ball, night, turn, flawless, inRun }) {
   return out;
 }
 
+/** The tasks a catch would finish, before it's logged: told in the fight's reward box (the log itself waits for the
+    rewards to be collected, as a refresh replays the fight). `save` already holds the catch in its Pokédex. */
+export function finishedBy(save, info, now = new Date()) {
+  const week = expeditionWeek(now), before = new Set(readyTasks(save, now).map(t => t.id));
+  const after = { ...save, ranger: { claimed: [], ...save.ranger, log: logCatch(save.ranger?.log || {}, info), week: logWeekCatch(save.ranger?.week, week, info) } };
+  return readyTasks(after, now).filter(t => !before.has(t.id));
+}
+
 /** A Safari day started: the days-in-a-row streak, counted once a UTC day. */
 export function logDay(prev = {}, day) {
   if (prev.lastDay === day) return prev;

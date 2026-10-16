@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['runs', 'Berry Trees in runs now drop a berry or two into your Satchel, for Kurt to craft with.'],
-  ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 Safari tasks and three weekly Expeditions to claim for coins, balls, Safari furniture and room for more Pokémon at home.'],
+  ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 tasks and weekly Expeditions for coins, balls, Safari furniture and base room, with Ranger Ranks and badges on your Trainer Card.'],
   ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
   ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
@@ -474,7 +474,7 @@ export const IN_THE_GAME = [
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '176 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🏆', '182 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s two-floor furniture showroom, with new stock in eight departments every day, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
