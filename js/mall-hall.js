@@ -518,7 +518,7 @@ export function dressHall(three, { group, at, cols, rows, deck, deckD, block, ca
 /** The hall's palms, topiary, lamps and materials, for the Furniture store's showroom (js/mall-furniture.js). */
 export function hallKit(three) {
   THREE = three;
-  return { palm, topiary, lamp, M: mats() };
+  return { palm, topiary, lamp, bench, M: mats() };
 }
 
 /* ---------- the shop entrances ---------- */

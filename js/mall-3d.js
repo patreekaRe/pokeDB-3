@@ -1418,7 +1418,7 @@ function frame(now) {
     const gap = lift.want - lift.open;
     lift.open = calm ? lift.want : lift.open + Math.sign(gap) * Math.min(Math.abs(gap), dt / 420);
     const e = lift.open * lift.open * (3 - 2 * lift.open);
-    for (const d of lift.doors) d.position.x = d.userData.home + d.userData.side * 0.5 * e;
+    for (const d of lift.doors) d.position.x = d.userData.home + d.userData.side * (d.userData.slide ?? 0.5) * e;
     const turn = lift.dial === 1 ? Math.PI / 4 : -Math.PI / 4;
     lift.needle.rotation.z += (turn - lift.needle.rotation.z) * (calm ? 1 : Math.min(1, dt / 1000 * 2.5));
   }
