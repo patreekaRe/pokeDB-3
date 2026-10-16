@@ -9,16 +9,33 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**Furniture expansion, the next sets** (the user's ask, 2026-10-16: a catalogue as big as Animal Crossing's). The plan
-and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done, in `NEXT`
-for the next patch (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
-types, about 4 to 6 sets of 25 a session, one helper each, every kind painted and hand-built within the budget and
-checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). The gold starter statues and the yard's Pokémon statues stand as their sprites
-since the same day (the user's ask), ~450 triangles each; waiting on the user's look (`?yard&allfurniture`, `?mall=3f`). Waiting on the user's playtest of the
-seasonal sets (`?holiday=valentine` etc. on the Furniture store) and the yard sets (`?yard&allfurniture`, Smeargle's
-catalogue). Session prompt:
-> Run in: CLOUD. Read CLAUDE.md, docs/furniture-expansion.md and docs/reference/hub-base-mall.md's last section, then
-> build the furniture sets the user picks, a painting file and a model batch each, as the 2026-10-16 sets were.
+**Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
+Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
+set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
+hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites (`docs/roadmap-done.md`).
+Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
+`?mall=3f`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
+at once hit it on 2026-10-16; five is safer.
+- **a. The Pokémon rooms** (6 sets of 25): Pikachu, Eevee, Snorlax, Jigglypuff, Gengar, Lapras, every piece shaped
+  after its Pokémon. Plus the Present (`gift`), the last kind without a hand-built model (a wrapped box, its lid and
+  ribbon; it is opened in `js/base-3d.js`, keep that working).
+- **b. More Pokémon sets**: the Poké Ball collection (~27), fossils and museum, Contest Hall, Pokémon League, Team
+  Rocket hideout.
+- **c. More Pokémon sets**: Day Care, partner care, figurines (~30), more dolls (~60; dolls are sewn by
+  `js/base-plush3d.js`, keep them under ~4k triangles).
+- **d to h. The 22 furniture series**, about 5 a session in the list's order (Antique, Rattan, Log cabin, Ironwood,
+  Imperial first).
+- **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
+- **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
+  store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
+  disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
+Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
+Next session's prompt (session a):
+> Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
+> "Building a set" section is the helpers' brief). Build session a: the six Pokémon rooms (Pikachu, Eevee, Snorlax,
+> Jigglypuff, Gengar, Lapras, 25 kinds each) and a hand-built model for the Present, one helper a set, then check every
+> kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.

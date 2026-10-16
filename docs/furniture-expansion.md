@@ -94,3 +94,38 @@ ceiling lamps, chandeliers, fans, hanging plants, mobiles, paper lanterns, a dis
 The 55 sets above come to about 1,400 kinds (most have 25; the doll set has about 60). The seasons add about 120, the yard
 about 120 and the ceiling about 50. That is about 1,700 new kinds, about 2,900 in all, so the user can cut what they like
 least and still double the catalogue.
+
+## Building a set (the helpers' brief, 2026-10-16)
+
+What each helper was told, so a later session can hand it on as it is. One helper builds one or two sets, in its own
+two files only; the lead wires them in first and runs the checks after.
+- **Wiring (the lead, before the helpers start):** a stub painting file `js/base-furniture-<name>.js` exporting an
+  array, appended to `FAMILIES` in `js/base-furniture.js`, and a stub model batch `js/base-models-<letter>.js`
+  (`export const SHAPES = {}; export const MAKES = {};`) imported in `js/base-shapes.js` and `js/base-mesh.js` and
+  listed last there (later batches override older SHAPES lines). Give each helper the current list of kinds (id, name,
+  group of every family) so no id or name repeats.
+- **Paintings:** read the head of `js/base-furniture.js` and `js/base-paint.js`'s kit; model the file on
+  `js/base-furniture-yard.js` (themed) or `-safari.js` (`solo`, fixed colours). Front view (dir 0), 32 pixels a tile,
+  `draw(x, b, vw, dir)` / `wall(x)` / `flat(w, h)`; `layer: 'wall'` / `'rug'`; `glow` for what lights at night. New ids
+  lowercase, no dashes. Prices like similar kinds (about 150 to 1,500). Never `Math.random` in a painting.
+- **Models:** read the head of `js/base-models-f.js` (how a batch works), `js/base-models-kit.js`, and `kit()` /
+  `assemble()` / `L` in `js/base-mesh.js`; good examples are `js/base-models-c.js`, `-k.js`, `-friends.js`, and
+  `-w.js` for wall pieces. Real parts that follow the painting (rounded boxes, lathes, tubes, doors, glass), a proper
+  side and back, feet at y 0, inside the footprint. Themed kinds use `K.pal` so all 20 themes match. Builder names
+  unique across every batch (name it after the kind, or suffix a shared one with the batch's letter). Pictures (a
+  screen, a label) are crops of the painting or one cached canvas. A shape keeps the room's rules: `seat` (height a
+  Pokémon sits at), `top` (a real flat top's height, or none), `play: { does: ... }` for its tap (see `PLAY` /
+  `dressPlay()` in `js/base-play.js`), `screen` for a live screen's rect; a statue-like figure can stand as a sprite
+  (`K.figure`, `js/base-figures.js`).
+- **Budget:** at most 4,000 triangles for a 1x1 piece, 7,000 bigger (10,000 only for the truly intricate, say why),
+  8 draws or fewer. Low segment counts (the helpers pick sides by size: `L.sides`); plain colours wherever there is no
+  real picture, since the room bakes them into one draw. No per-frame work.
+- **Check, in text (no screenshots unless the user asks):** `npm i three@0.160.0` in a scratch folder, then
+  `THREE_JS=<that folder>/node_modules/three/build/three.module.min.js node tools/model-check.mjs id,id,...` from the
+  repo root: builder, size, triangles, draws, and how the front silhouette matches the painting (`iou` 0.75+ for a
+  solid piece; thin ones lower, the painting's 1px outline counts as missing; a big `extra` means parts stick out).
+  Run it on themed ids too (`<kind>-fire`). `tools/model-sheet.mjs ids "Title" out.png` renders a labelled sheet when
+  the user asks for pictures. Then `node --test tests/*.test.mjs`, and load `?base&allfurniture`, `?yard&allfurniture`
+  and `?mall=furniture` headless for console errors.
+- **Report:** each kind's id, name and price, its triangles, baked draws and IoU, and any rule bent.
+
