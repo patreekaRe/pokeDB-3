@@ -2735,3 +2735,9 @@ errors. Detail: `docs/reference/hub-base-mall.md`.
   past Rookie (182 badges now). Checked headless: a claim to Scout paid the Scout Badge and said so, the card read
   RANGER SCOUT, no errors.
 
+
+### Mewtwo off the character select (2026-10-16, the user's ask: "remove mewtwo from the normal startup screen")
+- **Done (2026-10-16)**: the Legendaries tab lists no `secret` starter (`listed()` in `js/select.js`), so Mewtwo's "???"
+  portrait is gone and the count no longer includes it. Its run starts from the open gate or the Depths camp, straight to its
+  Prepare step; Back from there goes home (`previewStarter()` in `js/main.js`). Checked headless: 15 legendaries, no
+  Mewtwo; Mewtwo's Prepare shows its own rules; a later Choose falls back to Charmander. No errors.

@@ -35,6 +35,9 @@ import { $, el, showScreen, setTheme, itemSprite, refreshCoins, makeCard, zoomab
 import { HELD_BY_ID, POUCH } from './data/held.js';
 
 const LEGENDS = (s) => s.legendary || s.secret;
+// Mewtwo (secret) has no portrait here: it is reached by its own doors, the open gate and the Depths camp, straight to
+// its Prepare step (the user's call, 2026-10-16)
+const listed = (which) => STARTERS.filter(s => !s.secret && (which === 'legends') === Boolean(LEGENDS(s)));
 const PSYCHIC = { label: '???', icon: '' };
 const LEGEND_POSE = 66;
 
@@ -101,7 +104,7 @@ export function initSelect(on) {
 }
 
 /** Show the character select on `starter` (or the last one picked, or the first playable one). */
-export function showSelect(starter = picked) {
+export function showSelect(starter = picked?.secret ? null : picked) {
   refreshCoins();
   showScreen('start-screen');
   setPreparing(null);
@@ -117,7 +120,7 @@ export function refreshSelect() {
 
 export const pickedStarter = () => picked;
 
-const inTab = () => STARTERS.filter(s => (tab === 'legends') === Boolean(LEGENDS(s)));
+const inTab = () => listed(tab);
 const usable = (s) => isStarterUnlocked(s) && !s.comingSoon;
 const level5Wins = (s) => getSave().stats.level5WinsBy[s.id] || 0;
 const winsOf = (s) => getSave().stats.winsBy[s.id] || 0;
@@ -134,7 +137,7 @@ function pick(starter, quiet = false) {
 
 function renderTabs() {
   for (const btn of document.querySelectorAll('.sel-tabs .mdex-btn')) {
-    const list = STARTERS.filter(s => (btn.dataset.tab === 'legends') === Boolean(LEGENDS(s)));
+    const list = listed(btn.dataset.tab);
     const on = btn.dataset.tab === tab;
     btn.classList.toggle('on', on);
     btn.setAttribute('aria-selected', String(on));

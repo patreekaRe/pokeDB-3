@@ -135,7 +135,7 @@ function previewStarter(starter) {
       }
       beginRun(starter, level, null, null, null, pack);
     },
-    onBack: () => showSelect(starter),
+    onBack: () => (starter.secret ? showHome() : showSelect(starter)),   // Mewtwo has no portrait on the select
   });
 }
 

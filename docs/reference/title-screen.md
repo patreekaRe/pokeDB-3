@@ -59,7 +59,7 @@ Once the Sealed Gate is broken and Mewtwo unlocked, the **open gate** stands on 
 36x44 at 2px on phones, 46x56 or 56x68 at 3px wider), glowing violet. Before that it isn't there at all (the user's call:
 the gate's progress is only seen at a run's end). After PRESS START a tap (`enterGate()`) plays Mewtwo's cry and
 `gate-hum`, swells the arch's light over the whole screen from the gate (`.gate-opening`, 1.1 s; straight through under
-reduced motion), then `actions.onGate` opens the character select on Mewtwo's Prepare step; Back leaves you on the select.
+reduced motion), then `actions.onGate` opens the character select on Mewtwo's Prepare step; Back goes home (2026-10-16: Mewtwo has no portrait on the select).
 Playtest: `?mewtwo&gate=0`.
 
 **Smooth icons** (2026-10-06, the user's call: clean and smooth like the Poké Ball signs, no pixels): every icon on the

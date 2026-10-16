@@ -2,8 +2,9 @@
 
 Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is unchanged. Dates are when each call was made: where two notes disagree, the later one wins.
 
-- **Mewtwo** is the secret last starter (`secret: true`: shown as "???",
-  the last portrait in the character select's Legendaries tab). It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
+- **Mewtwo** is the secret last starter (`secret: true`). It was the last portrait in the character select's Legendaries
+  tab, shown as "???"; since 2026-10-16 (the user's call) it isn't on the select at all: its run starts only from the open
+  gate (the Clearing's, or the title's) or the Depths camp, straight to its Prepare step, whose Back goes home. It unlocks when the **Sealed Gate** breaks (2026-10-02; it was
   every other starter + a Level 5 win): the save's `gateHp` (`js/data/gate.js`: 1000 HP) takes `GATE_HIT[level]`
   (40/50/60/75/90/120) after every won run; a loss at the last biome's boss still plays the scene, but your Pokémon is
   too weak to harm it (the user's call, 2026-10-02: no more loss chip) (`strikeGate()` in `js/run.js`, before `announceUnlocks()`, with a line and the seal bar in the result window); only a
