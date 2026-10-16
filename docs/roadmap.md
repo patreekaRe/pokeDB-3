@@ -774,6 +774,22 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Ideas, not agreed yet (ask the user before building)
 
+**After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
+from after playtesting the pass). Where it stands: cards per type ~72 like StS (done bar Water's 1 rare and Psychic's 6
+uncommons), neutral 28 (StS ~35 colorless), relics 93 (StS ~180), items 34 (StS ~42). Every relic added thins the pool
+(the pass's 34 cost Grass ~8 points at Level 3 until retuned), so each batch ends with a relic recalibration
+(`sim/calib-new.mjs`) and a human-bot check against `main` (docs/reference/cards.md's "The balance pass"). In order:
+1. **Shop-only and event-only relics** (StS has ~35): the Mart and the ? events get rewards of their own without
+   thinning the fights' drops. Needs a `shop: true` / `event: true` tier that `relicChoices()` skips.
+2. **More boss relics with a catch** (13 now, StS ~25), for a bigger pick after each boss.
+3. **Curses**: StS's junk cards you keep for the run as a strong reward's price (a run-deck status card), which opens risky
+   events and relics. A new card kind: never offered, removed only by forgetting or a relic.
+4. **The last cards**: Water's 16th rare, Psychic's 6 uncommons (to 36), ~7 neutral (to ~35).
+5. **Enemy variety** (the biggest gap now): StS's enemy tricks, such as Artifact (blocks your next debuffs), splitting,
+   enemies that buff each other, fights with two or three enemies. Every fight is one enemy cycling its moves today.
+   Engine work in `js/battle.js` and the sim, then enemies retuned.
+Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` / `cardTerms()` lines and the sim mirror.
+
 - Suggested 2026-10-05, not picked: shiny wild Pokémon (~1 in 100 wild fights), a "Save image" share picture of a
   win, Endless mode after Eternatus, Custom runs (switches that count for nothing), Unown letters hidden in the Depths.
 
