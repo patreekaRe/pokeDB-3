@@ -384,6 +384,19 @@ function glean(key, drop) {
   return true;
 }
 
+/* A Berry Tree's berries to take home (2026-10-16, the user's ask: berries from more than the backyard's plots): whether
+   you eat or plant, 1-2 of a garden berry go in the Satchel, once a room (glean()'s key), the common ones likelier.
+   Like materials, never in a Safari, the Sky Pillar, a playtest or a visit. Returns what to say, or ''. */
+const TREE_BERRIES = ['oran', 'oran', 'oran', 'cheri', 'cheri', 'pecha', 'pecha', 'sitrus', 'lum'];
+const canPocket = () => townsOpen() && !peeking && !isSafari() && !isTower() && !visiting && !gleaned(gleanKey(run.map.byId[run.current], 'berries'));
+function pocketBerries() {
+  if (!canPocket()) return '';
+  const id = TREE_BERRIES[randIndex(TREE_BERRIES.length)], n = random() < 0.5 ? 2 : 1;
+  if (!glean(gleanKey(run.map.byId[run.current], 'berries'), { id, n })) return '';
+  const name = MATERIALS_BY_ID[id].name;
+  return ` You pocket ${n === 1 ? `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}` : `${n} ${name.replace(/y$/, 'ies')}`} for your Satchel.`;
+}
+
 function restoreRun(saved) {
   if (saved.version !== RUN_SAVE_VERSION) throw new Error('old run save');
   const starterById = (id) => STARTERS_BY_ID[RENAMED_STARTERS[id] || id];
@@ -3761,13 +3774,13 @@ const EVENT_CHOICES = {
   'berry-tree'(event, state, back, react, done) {
     const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.eatHeal));
     const grow = perBiome(event.plantMaxHp);
-    return { sub: [event.text, 'Eat the berries to heal, or plant one to grow stronger.'], options: [
+    return { sub: [event.text, `Eat the berries to heal, or plant one to grow stronger.${canPocket() ? ' Either way, you\'ll pocket a few for your Satchel.' : ''}`], options: [
       spotOption(heal ? `Eat +${heal} HP` : 'Eat', heal ? `Heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
         if (!await playOut('eat')) return;
         run.hp += heal;
         playSound('heal-hp');
         await showHpChange();
-        tell(`Healed ${heal} HP.`);
+        tell(`Healed ${heal} HP.${pocketBerries()}`);
         done();
       }),
       spotOption(`Plant +${grow} max HP`, `Max HP +${grow} for the rest of the run.`, async () => {
@@ -3776,7 +3789,7 @@ const EVENT_CHOICES = {
         run.hp += grow;
         playSound('stat-up');
         await showHpChange();
-        tell(`Max HP +${grow}!`);
+        tell(`Max HP +${grow}!${pocketBerries()}`);
         done();
       }),
     ] };
