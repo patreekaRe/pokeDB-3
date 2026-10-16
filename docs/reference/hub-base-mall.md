@@ -343,3 +343,20 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   (`ballLooks` in `js/mall-outfitter.js`: each had painted and uploaded its own skin). `mergeStatic()`'s `keepReceive`
   keeps a piece's own shadow-receiving (the balls take none; off by default, so the Clearing's merges are unchanged).
   Now hall 345, 1F 360, 2F 351, Game Corner 463, Outfitter 233 draws a frame; taps and colours checked as before.
+
+- **The Clearing's stutters** (2026-10-16, the user's report: "choppy sometimes in the beginning and just randomly"), found by
+  timing every line of `frame()` and logging texture uploads and new shader programs per frame, headless:
+  1. The Pokéstops' glowing words (`stopCue()`) repainted their 760 x 240 picture 30 times a second for the marching
+     chevrons, ~180k pixels to the GPU every frame. The words are painted once now (again when Bungee loads) and the
+     chevrons are two little quads a face (`chevronArt`), moved by their corners and drawn under the letters, as painted.
+  2. Each legendary flying over (`launchFlyer()`, every 30-50 s) compiled a shader mid-frame: its board's material and its
+     shadow's were disposed after each flight, so their programs went with them. The last board material is kept
+     (`flownMat`, its sprite freed), the shadow is one mesh for every flight (`flyShade`), and both are bent (`bendAll(root)`)
+     and compiled with `warmShaders()` before the flight shows: one compile in a session, off the main thread where the GPU can.
+  3. The Ancient Tree's door pictures (`ancientArt()`) drop from 8 to 4 pixels a unit: four pictures were 5.2 MP sent to the
+     GPU on the first frame, for a door the screen shows ~1/50th of that. The gate (`clearingGateArt()`) and the vista stay
+     as they were: smaller, their edges and far ranges moved a few pixels (checked by rendered pixels; the tree's did not).
+  Tiny pieces cast no shadow (`smallNoShadow(scene)` at the end of `build()`). The Clearing draws ~590 calls a frame (370 the
+  shadow pass, which follows the camera's 26 x 26 area). The Secret Base measured fine: 117 draws fresh, 250 with 22 pieces,
+  no shaders compiled while in it, ~20k px of uploads a frame (TV screens); the backyard 61. Merging furniture there would
+  need re-merging on every move, recolour or play, so it was left.

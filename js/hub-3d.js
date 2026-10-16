@@ -16,7 +16,7 @@ import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow } from './hd2d.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -165,7 +165,7 @@ let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
 let safariFx = null;   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
-let glowMats = [], lamps = [], bugs = null, flyer = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
+let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flyShade = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null, pillarFx = null;
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
@@ -583,7 +583,9 @@ function gateVeilArt() {
     them, a round window and a lantern lit at dusk; mushrooms, ferns and grass at its foot. Open, the door's swung in on a
     warm room; `boarded` (not bought yet) nails two planks across it. */
 function ancientArt(open = false, boarded = false) {
-  const W = 128, H = 160, { c, g, fill, rr, lin, shine } = fine(W, H, 8), rnd = seeded(11), glow = shine();
+  // at 4 pixels a unit, still several times what the screen shows of it: at 8 its four pictures (shut and open, with their
+  // glow) were 5 MP, sent to the GPU as the Clearing first drew
+  const W = 128, H = 160, { c, g, fill, rr, lin, shine } = fine(W, H, 4), rnd = seeded(11), glow = shine();
   const B = ['#8a6844', '#6a4c30', '#4a3420', '#26180c'], WD = ['#e0b07c', '#c08a50', '#94643a', '#5a3a1c'];
   const root = (x0, x1, y1, t) => {   // a tapering root out of the trunk's foot, arching as it goes
     const at = (k) => [x0 + (x1 - x0) * k, 128 + (y1 - 128) * k * k - Math.sin(k * Math.PI) * 9], up = [], down = [];
@@ -3038,20 +3040,20 @@ function pokestop(g, id, x, z, S, saved, start) {
     holding the saved run, else what that stop starts, all the same size for a stop's size. Bungee, a heavy arcade face,
     white letters with a cyan glow on a dark extruded edge, a little see-through, chevrons marching in on either side;
     a face each way, so the words read right from behind too. */
-let cueFont;
+let cueFont, chevronArt;
 function stopCue(g, top, S, text) {
+  // the letters are painted once (again when Bungee arrives); the chevrons marching in beside them are little quads moved
+  // each frame, not a repaint: repainting this 760 x 240 picture 30 times a second sent all of it to the GPU each time,
+  // and the Clearing stuttered on phones (2026-10-16)
   const c = document.createElement('canvas');
   c.width = 760; c.height = 240;
   c.hd = 2;
   const map = tex(c);
-  // the letters are painted once onto `base`; each frame lays the marching chevrons beside them
-  const base = document.createElement('canvas');
-  base.width = c.width; base.height = c.height;
-  const cx = 380, cy = 120;
+  const cx = 380, cy = 120, w = 3.2 * S, k = w / c.width, h = c.height * k;
   let half = 0, px = 124, last = -1;
   const paint = () => {
-    const d = base.getContext('2d');
-    d.clearRect(0, 0, base.width, base.height);
+    const d = c.getContext('2d');
+    d.clearRect(0, 0, c.width, c.height);
     px = 124;
     do d.font = `${px -= 4}px Bungee, "Arial Black", sans-serif`; while (px > 40 && d.measureText(text).width > 500);
     d.textAlign = 'center'; d.textBaseline = 'middle'; d.lineJoin = 'round';
@@ -3065,46 +3067,76 @@ function stopCue(g, top, S, text) {
     for (let i = 6; i > 0; i -= 2) { d.strokeText(text, cx, cy + i); d.fillText(text, cx, cy + i); }
     d.strokeStyle = '#0c2c48';
     d.strokeText(text, cx, cy);
-    const g = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
-    g.addColorStop(0, '#ffffff'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#bff2ff');
-    d.fillStyle = g;
+    const grad = d.createLinearGradient(0, cy - px * 0.42, 0, cy + px * 0.42);
+    grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.5, '#ffffff'); grad.addColorStop(1, '#bff2ff');
+    d.fillStyle = grad;
     d.fillText(text, cx, cy);
+    map.needsUpdate = true;
     draw(last < 0 ? 0 : last, true);
   };
-  const chevron = (d, x, dir, a) => {
-    d.globalAlpha = a;
-    d.beginPath(); d.moveTo(x - 20 * dir, cy - 26); d.lineTo(x + 6 * dir, cy); d.lineTo(x - 20 * dir, cy + 26);
+  // one chevron pointing right, its tip 31 px in from the left of a 48 x 76 picture; the left side's march in that way,
+  // the right side's are the same picture flipped
+  const CW = 48, CH = 76, TIP = 31;
+  if (!chevronArt) {
+    const cc = document.createElement('canvas');
+    cc.width = CW; cc.height = CH; cc.hd = 2;
+    const d = cc.getContext('2d');
+    d.lineJoin = 'round'; d.lineCap = 'round';
+    d.beginPath(); d.moveTo(TIP - 20, CH / 2 - 26); d.lineTo(TIP + 6, CH / 2); d.lineTo(TIP - 20, CH / 2 + 26);
     d.lineWidth = 20; d.strokeStyle = '#0c2c48'; d.stroke();
     d.lineWidth = 10; d.strokeStyle = '#8eecff'; d.stroke();
+    chevronArt = tex(cc);
+  }
+  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
+  // two chevrons a side in turn (each its own fade), so a mesh for each, holding its left and right quads
+  const marks = [0, 1].map(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(8 * 3), 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(new Float32Array([0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0]), 2));
+    geo.setIndex([0, 2, 1, 2, 3, 1, 4, 6, 5, 6, 7, 5]);
+    geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Math.hypot(cx, cy) * k);   // the label's own, wherever they march
+    return { geo, mat: new THREE.MeshBasicMaterial({ map: chevronArt, transparent: true, depthWrite: false, fog: false, opacity: 0 }) };
+  });
+  /** One mark's quads with their tips `x` (canvas px) either side of the middle. */
+  const place = (mk, x) => {
+    const p = mk.geo.attributes.position.array, hw = CW / 2 * k, hh = CH / 2 * k;
+    for (const [i, side] of [[0, -1], [4, 1]]) {
+      const mid = (side < 0 ? -x - (TIP - CW / 2) : x + (TIP - CW / 2)) * k;
+      p.set([mid - hw, hh, 0, mid + hw, hh, 0, mid - hw, -hh, 0, mid + hw, -hh, 0], i * 3);
+    }
+    mk.geo.attributes.position.needsUpdate = true;
   };
   // `now` 0 (and Reduced motion) is the still look: one chevron each side
   const draw = (now, force) => {
-    if (!force && now - last < 33) return;
-    last = now;
-    const d = c.getContext('2d');
-    d.clearRect(0, 0, c.width, c.height);
-    d.lineJoin = 'round'; d.lineCap = 'round';
-    if (!now) { chevron(d, cx - half - 40, 1, 1); chevron(d, cx + half + 40, -1, 1); }
-    else for (let k = 0; k < 2; k++) {
-      const t = (now / 1100 + k / 2) % 1, x = half + 92 - t * 44, a = Math.sin(t * Math.PI);
-      chevron(d, cx - x, 1, a); chevron(d, cx + x, -1, a);
+    if (!now) {
+      if (force || last !== 0) place(marks[0], half + 40);
+      last = 0;
+      marks[0].mat.opacity = m.opacity; marks[1].mat.opacity = 0;
+      return;
     }
-    d.globalAlpha = 1;
-    d.drawImage(base, 0, 0);
-    map.needsUpdate = true;
+    last = now;
+    marks.forEach((mk, n) => {
+      const t = (now / 1100 + n / 2) % 1;
+      place(mk, half + 92 - t * 44);
+      mk.mat.opacity = Math.sin(t * Math.PI) * m.opacity;
+    });
   };
   paint();
   cueFont ??= new FontFace('Bungee', 'url(https://fonts.gstatic.com/s/bungee/v17/N0bU2SZBIuF2PU_0DXR1.woff2)').load()
     .then((f) => document.fonts.add(f));
   cueFont.then(paint, () => {});
   // drawn over the ground, not added to it: added light at 60% washed white letters into the grass (the user couldn't read them)
-  const m = new THREE.MeshBasicMaterial({ map, transparent: true, depthWrite: false, fog: false });
-  const w = 3.2 * S, h = w * 240 / 760;
   for (const turn of [0, Math.PI]) {
     const mesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m);
     mesh.rotation.y = turn;
     mesh.position.y = top + h * 0.3;
     mesh.renderOrder = 2;
+    for (const mk of marks) {
+      const chev = new THREE.Mesh(mk.geo, mk.mat);
+      chev.renderOrder = 1;   // under the letters, as they were painted: the letters' glow lies over them
+      chev.raycast = () => {};
+      mesh.add(chev);
+    }
     g.add(mesh);
   }
   m.userData.tick = draw;
@@ -3850,10 +3882,19 @@ async function launchFlyer(now) {
   m.board.castShadow = false;
   m.board.material.fog = false;
   if (!lit) m.board.material.color.set('#000');
-  const shade = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0, depthWrite: false }));
-  shade.rotation.x = -Math.PI / 2;
-  shade.scale.set(1.8, 0.7, 1);
-  shade.raycast = () => {};
+  // one shadow for every flight, kept: a new one each time compiled its shader again as it set off
+  if (!flyShade) {
+    flyShade = new THREE.Mesh(new THREE.CircleGeometry(1, 24), new THREE.MeshBasicMaterial({ color: '#000', transparent: true, opacity: 0, depthWrite: false }));
+    flyShade.rotation.x = -Math.PI / 2;
+    flyShade.scale.set(1.8, 0.7, 1);
+    flyShade.raycast = () => {};
+  }
+  const shade = flyShade;
+  shade.material.opacity = 0;
+  // their shaders, bent as they'll be drawn, built before it shows (off the main thread where the GPU can)
+  if (CURVE) { bendAll(m.group); bendAll(shade); }
+  await Promise.all([warmShaders(renderer, m.group, camera, scene), warmShaders(renderer, shade, camera, scene)]);
+  if (!running) return dispose(m.group);
   scene.add(m.group, shade);
   const dir = Math.random() < 0.5 ? 1 : -1, high = 0.4 + Math.random() * 0.15;
   // the path is fixed in the world when it sets off, across the top of the view as it is then, so walking about
@@ -3871,7 +3912,16 @@ async function launchFlyer(now) {
 function liveFlyer(now, dt) {
   if (!flyer) { if (now > nextFly) launchFlyer(now); return; }
   const f = flyer, k = (now - f.at) / f.ms;
-  if (k >= 1) { scene.remove(f.m.group, f.shade); dispose(f.m.group); f.shade.geometry.dispose(); f.shade.material.dispose(); flyer = null; return; }
+  if (k >= 1) {
+    // its board's material is kept (its sprite let go) and the last one's freed: disposing it threw its shader away, so
+    // every flight, each 30-50 s, compiled it again mid-frame, the Clearing's stutter now and then (2026-10-16)
+    const kept = f.m.board.material;
+    f.m.board.material = new THREE.MeshBasicMaterial();
+    scene.remove(f.m.group, f.shade); dispose(f.m.group);
+    kept.map?.dispose();
+    flownMat?.dispose(); flownMat = kept;
+    flyer = null; return;
+  }
   // high over the treetops (nearer the camera than the forest, or it would fly through it); the board always faces the camera
   f.m.group.position.lerpVectors(f.from, f.to, k);
   f.m.group.position.y += Math.sin(k * Math.PI) * 0.4 + Math.sin(now / 260) * 0.06;
@@ -3933,8 +3983,8 @@ export const CURVE = (() => {
 const BEND = { k: { value: CURVE }, z: { value: 0 } };
 
 /** Every material in the Clearing bent once; anything added since (a place, a guest, the flyer) is caught next frame. */
-function bendAll() {
-  scene.traverse(o => {
+function bendAll(root = scene) {
+  root.traverse(o => {
     if (!o.material) return;
     if (o.isMesh) bendFine(o);
     for (const m of [o.material].flat()) bend(m, BEND);
@@ -4122,6 +4172,7 @@ async function build() {
   view.addEventListener('pointercancel', onUp);
   addEventListener('keydown', onKey);
   new ResizeObserver(() => resize()).observe(view);
+  smallNoShadow(scene);
   if (CURVE) bendAll();
   await warmShaders(renderer, scene, camera);
 }

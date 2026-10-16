@@ -2712,3 +2712,4 @@ the crest on its shaft, the counter to its left and Smeargle's painting over a b
 
 - **Done (2026-10-16): the mall and arcade's frame cost** (the user's ask): the mall's draw calls cut by a fifth to two fifths a room (palms, shop fronts, chandeliers, Game Corner cabinets and showcased pieces merged; tiny pieces cast no shadow), the arcade games and Plinko capped at 60 fps. Numbers in `docs/reference/hub-base-mall.md`.
 - **Done (2026-10-16): the mall's second merge pass** (the user's yes): fountain, benches, lamps, columns, escalators, the Outfitter's wares, jeep and booth; the hall now 345 draws a frame (649 at the start), the Outfitter 233 (309).
+- **Done (2026-10-16): the Clearing's stutters** (the user's report): the Pokéstop labels' per-frame repaint, the flyer's shader recompiling every 30-50 s, 4 MP less at startup; the Secret Base and backyard measured fine. Detail in `docs/reference/hub-base-mall.md`.
