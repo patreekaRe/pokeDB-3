@@ -319,6 +319,7 @@ function checkpoint() {
     held: run.held,           // the held berry packed for the run (js/data/held.js); a save from before has none
     pouch: run.pouch,         // the Berry Pouch's berries not yet held, and the biome the last held one was eaten in
     heldAte: run.heldAte,
+    ashUsed: run.ashUsed,     // Sacred Ash has brought you back this run (once a run)
     itemChance: run.itemChance,
     map: { nodes: Object.values(byId), floors: floors.map(row => row.map(node => node.id)) },
     current: run.current,
@@ -455,6 +456,7 @@ function restoreRun(saved) {
     held: HELD_BY_ID[saved.held?.id] ? { id: saved.held.id, used: !!saved.held.used } : null,
     pouch: (saved.pouch || []).filter(id => HELD_BY_ID[id]),
     heldAte: Number.isInteger(saved.heldAte) ? saved.heldAte : null,
+    ashUsed: !!saved.ashUsed,
     map: { floors, boss: byId.boss, byId },
     unlocks: saved.unlocks.map(starterById),
     tally: { ...freshTally(), startedAt: null, ...saved.tally },   // runs saved before the record book count from here
@@ -523,6 +525,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     held: null,            // the held berry packed for the run: { id, used } (js/data/held.js, packKit())
     pouch: [],             // the Berry Pouch's other berries (ids), one held a biome from the Bag (holdBerry())
     heldAte: null,         // the biome (run.biome) the last held berry was eaten in (battle.js's heldGoes())
+    ashUsed: false,        // Sacred Ash (StS's Lizard Tail) has been spent
     itemChance: ITEM_DROP.base,   // chance of an item after the next won fight
     map: null,
     current: null,        // id of the map node you are standing on
@@ -544,6 +547,7 @@ export function beginRun(starter, level = 0, peek = null, safari = null, tower =
     over: false,
   };
   reseed('start');
+  if (peek) playtestKit(run);
   // rolled now and saved, so a refresh can't reroll the forks; a Safari run or a climb never forks (and its seed must stay put)
   if (!safari && !tower) run.roads = rollRoads(getSave().stats.biomesSeen);
 
@@ -680,6 +684,15 @@ export function peekArena(starter, kind, biome = null, slot = null) {
   peekDepths = !!home?.secret;
   peekAt = home && !home.secret ? (canWalk(biome, slot) ? biomeAt({ [slot]: biome }, slot) : home) : null;
   beginRun(starter, 0, kind === 'boss' ? ':boss' : kind === 'wild' ? ':wild' : kind === 'ken' ? ':ken' : ':elite');
+}
+
+/** A playtest run's kit from the URL (any throwaway run: ?arena=, ?biome=, ?gym=, ?bossfight=...): &relics=wide-lens,sticky-barb,
+    &cards=blazing-torque,ignite+ (added to the deck; a + is PP Upped) and &items=hyper-potion. Unknown ids are skipped. */
+function playtestKit(r) {
+  const list = (key) => (new URLSearchParams(location.search).get(key) || '').split(',').filter(Boolean);
+  r.relics.push(...list('relics').filter(id => RELICS_BY_ID[id] && !r.relics.includes(id)));
+  r.deck.push(...list('cards').filter(id => CARDS_BY_ID[id]));
+  r.items.push(...list('items').filter(id => ITEMS_BY_ID[id]));
 }
 
 /** Playtest shortcut: ?gym=phil (any Gym Leader, js/data/gym.js; &n=2 their second boss, &starter=id, &hp=0.1 shrinks the
@@ -1520,7 +1533,7 @@ function renderItemList() {
     const actions = el('span', 'item-actions');
     const use = el('button', 'btn item-use', 'Use');
     use.type = 'button';
-    use.disabled = !(inBattle || (onMap && item.map && (item.effects.maxHp || run.hp < run.maxHp)));
+    use.disabled = !(inBattle || (onMap && item.map && (item.effects.maxHp || (item.effects.fill ? !run.relics.includes('dusk-stone') : run.hp < run.maxHp))));
     use.addEventListener('click', () => {
       if (inBattle) { closeBag(true); return pickItem(index); }
       useItemOnMap(index);
@@ -1603,7 +1616,12 @@ function useItemOnMap(index) {
   run.items.splice(index, 1);
   run.tally.itemsUsed.push(item.id);
   markSeen('items', item.id);   // items are met in the Index once used, not when offered (the user's call)
-  if (item.effects.maxHp) {
+  if (item.effects.fill) {   // Wishing Piece
+    const pool = itemsForType(run.starter.type).filter(i => !i.effects.fill);
+    while (run.items.length < itemSlots()) run.items.push(pickOne(pool).id);
+    playSound('item-get', 'item');
+    tell(`Used ${item.name}: your Bag is full of items!`);
+  } else if (item.effects.maxHp) {
     run.maxHp += item.effects.maxHp;
     run.hp += item.effects.maxHp;
     playSound('stat-up', 'item');
@@ -1785,7 +1803,7 @@ async function fight(node, { talked = false } = {}) {
   if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
   const deferIntro = node.type === 'boss' || ken;
-  const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro });
+  const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro, slots: itemSlots() });
   if (deferIntro) {
     await enter();
     beginIntro();
@@ -2570,7 +2588,7 @@ function afterFight(node, result) {
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
     if (shard && glean(gleanKey(node, 'shard'), { key: shard.id })) playSound('crystal-2');
-    run.money += prize;
+    run.money += prize + (result.tally?.payDay || 0);   // Pay Day's ₽ (StS's Hand of Greed)
     setMoney(run.money);
     updateSave(d => {
       d.stats.enemiesDefeated += 1;
@@ -2586,6 +2604,7 @@ function afterFight(node, result) {
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
+    if (run.relics.includes('shiny-charm')) steps.push(next => offerRelic('Shiny Charm', next, { source: 'elite' }));   // StS's Black Star
     for (let i = 0; i < (augs().alphaCards || 0); i++) steps.push(next => offerCard('elite', next));   // Alpha Hunter
   }
   if (node.type === 'ken') {
@@ -2762,7 +2781,7 @@ function runSteps(steps, done) {
 
 function offerCard(source, next, rerolled = false, picky = false) {
   const a = augs();
-  let cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (a.rewardCards || 0), { reward: true });   // Scout Report: 4; Second Helping
+  let cards = cardChoices(run, source, REWARD_CARDS[perk('scoutReport') ? 1 : 0] + (a.rewardCards || 0) + (run.relics.includes('lucky-egg') ? 1 : 0), { reward: true });   // Scout Report: 4; Second Helping; Lucky Egg
   if (a.cardShark) {   // Card Shark: an upgraded rare as well
     const copies = (id) => run.deck.filter(x => baseId(x) === id).length;
     const rares = poolForType(run.starter.type).filter(c => c.rarity === 'rare' && copies(c.id) < MAX_COPIES && !cards.some(x => baseId(x.id) === c.id));
@@ -2859,7 +2878,7 @@ function newBadge(node, kind, thing) {
 
 function learnOption(card, next) {
   const option = cardOption(card, run.stage, () => {
-      run.deck.push(card.id);
+      run.deck.push(learnedId(card));
       mission('learn');
       tell(`${card.name} added to your deck!`);
       next();
@@ -2886,7 +2905,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
   const thisRun = run, boss = relics[0].boss || relics[0].unique, size = innerWidth <= 720 ? 72 : 88;
   showChoice({
     title,
-    sub: sub ?? [boss ? 'Pick a boss relic. Each one is strong, but comes with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
+    sub: sub ?? [boss ? 'Pick a boss relic. Each one is strong, and some come with a catch.' : 'Pick a relic. It helps you for the rest of the run.',
       'Tap one to see what it does.'],
     options: [],
     onSkip: skip ? next : null,
@@ -2948,9 +2967,25 @@ function gainRelic(relic, next) {
   markSeen('relics', relic.id);
   showBadgeNews();
   tell(`Found ${relic.name}!`);
+  pickedUp(relic, next);
+}
+
+/** What a relic does the moment it's taken: Cleanse Tag forgets a move, Rare Candy PP Ups two at random. */
+function pickedUp(relic, next) {
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
+  if (relic.id === 'rare-candy') {
+    const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, 2);
+    for (const i of spots) { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); tell(`${card.name} became ${CARDS_BY_ID[run.deck[i]].name}!`); }
+  }
   next();
 }
+
+/** The id a card joins the deck as: Power Bracer (attacks) and Power Belt (the rest) PP Up it on the way in. */
+function learnedId(card) {
+  const bracer = run.relics.includes(isAttackCard(card) ? 'power-bracer' : 'power-belt');
+  return bracer && canUpgrade(card) ? upgradeId(card.id) : card.id;
+}
+const isAttackCard = (card) => !!(card.effects.damage || card.effects.blockDamage);
 
 /** A found item first lies in a Poké Ball in the middle of the screen, like an item ball in the games: tapped, it
     wobbles, pops open (the treasure chest's flash and rays) and the item rises out, floating like a treasure relic, with
@@ -3288,11 +3323,12 @@ const MIN_DECK = 7;
 /* `used`: a choice was made, so the room stays (the player walks out when they like) with every choice greyed. */
 function restSite({ used = false } = {}) {
   const restHeal = (run.mods.restHeal + (perk('wellFed') ? 0.05 : 0)) * (augs().restMult || 1);   // shop passive: Well-Fed Bonus; Rest Stop
-  const heal = used ? 0 : Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal));
+  const heal = used ? 0 : Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * restHeal) + (run.relics.includes('moomoo-milk') ? 15 : 0));   // Moomoo Milk (StS's Regal Pillow)
   const banned = run.relics.includes('choice-band');
   const atMin = run.deck.length <= MIN_DECK;
   const herb = run.relics.includes('mental-herb') || !!augs().centerForget;   // like StS's Peace Pipe: only this relic (or Clean Slate) lets the PC forget a move
   const upgradable = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
+  const locked = run.relics.includes('choice-scarf');   // Choice Scarf (StS's Fusion Hammer): no PP Up here
   const spent = "You've already been helped here. Leave when you're ready.";
   if (used) checkpoint();
   const thenStay = () => restSite({ used: true });
@@ -3345,8 +3381,8 @@ function restSite({ used = false } = {}) {
         onPick: () => forgetMove(restSite, thenStay),
       },
       {
-        node: shortSign(upgradable || used ? 'Upgrade card' : 'All upgraded', used ? spent : upgradable ? 'PP Up: upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
-        disabled: !upgradable || used,
+        node: shortSign(locked ? 'No PP Up' : upgradable || used ? 'Upgrade card' : 'All upgraded', used ? spent : locked ? 'Your Choice Scarf locks your moves in: no PP Up.' : upgradable ? 'PP Up: upgrade a card for the rest of the run.' : 'Every card is already upgraded.'),
+        disabled: locked || !upgradable || used,
         onPick: () => upgradeMove(restSite, thenStay),
       },
     ],
@@ -3605,7 +3641,7 @@ function rollEvent(node, event) {
     node.event.relics = relicChoices(run).map(r => r.id);
   }
   if (event.offering) {
-    const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type));
+    const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type && !r.boss));
     node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
   }
 }
@@ -4083,7 +4119,7 @@ function tutorCards(back, pay, done = showMap) {
     options: cards.map(card => ({
       ...cardOption(card, run.stage, () => {
         pay();
-        run.deck.push(card.id);
+        run.deck.push(learnedId(card));
         mission('learn');
         tell(`${card.name} added to your deck.`);
         done();
@@ -4153,7 +4189,7 @@ function martRoom() {
     return ware(option, martPrice(item.price), () => {
       item.sold = true;
       if (card.upgraded) upgradeBurst(option.node);
-      run.deck.push(card.id);
+      run.deck.push(learnedId(card));
       mission('learn');
       tell(`Bought ${card.name}.`);
       martRoom();
@@ -4185,8 +4221,7 @@ function martRoom() {
       markSeen('relics', relic.id);
       showBadgeNews();
       tell(`Bought ${relic.name}!`);
-      if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(martRoom, martRoom);
-      martRoom();
+      pickedUp(relic, martRoom);
     }, { group: 'relics', name: `the ${relic.name}` });
   });
 

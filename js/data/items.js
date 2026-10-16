@@ -20,6 +20,16 @@
      discover  choose 1 of this many random cards of your type; it costs 0 this turn (TM, StS's Attack Potion)
      revive    can't be used: when you'd faint it's used up and you come back at this share of max HP
                (Revive, StS's Fairy in a Bottle)
+     blockBonus  your cards give this much more block for the rest of the fight (Iron, StS's Dexterity Potion)
+     power     { key: n }: a power for the rest of the fight, as if a power card gave it (POWERS in cards.js: Zinc's
+               block, Carbos's draw, Rage Candy Bar's strength; `regen` heals at the start of each turn)
+     cleanse   exhaust every status card in your hand and piles (Full Heal)
+     hit       deal this much damage to the enemy (Iron Ball, StS's Explosive Potion)
+     echo      the next card you play is played this many more times (Gold Bottle Cap, StS's Duplication Potion)
+     kind      with `discover`: only 'power' or 'skill' cards are offered (TR, HM: StS's Power and Skill Potions)
+     recall    choose a card in your discard pile; it goes to your hand and costs 0 this turn (Revival Herb, StS's
+               Liquid Memories)
+     fill      fill your Bag's empty slots with random items (Wishing Piece, StS's Entropic Brew)
    `map: true` items can also be used from the Bag on the map.
    `only` means the item only shows up for starters of that type.
    ============================================================ */
@@ -44,6 +54,21 @@ export const ITEMS = [
   { id: 'burn-drive',   name: 'Burn Drive',   icon: '🔥', rarity: 'uncommon', only: 'fire',  effects: { burnMult: 2 },  text: 'Double the enemy\'s Burn.' },   // Catalyst
   { id: 'absorb-bulb',  name: 'Absorb Bulb',  icon: '🌱', rarity: 'uncommon', only: 'grass', effects: { seed: 4 },      text: 'Leech Seed the enemy 4.' },   // Poison Potion
   { id: 'fresh-water',  name: 'Fresh Water',  icon: '🌊', rarity: 'uncommon', only: 'water', effects: { tide: 5 },      text: 'Gain 5 Tide.' },
+  // The 2026-10-16 balance pass: more of StS's potions
+  { id: 'hyper-potion', name: 'Hyper Potion', icon: '🧴', rarity: 'rare',     map: true, effects: { heal: 40 }, text: 'Heal 40 HP. Works on the map too.' },   // Blood Potion, Pokémon-sized
+  { id: 'full-heal',    name: 'Full Heal',    icon: '🧴', rarity: 'common',   effects: { cleanse: true, draw: 1 }, text: 'Exhaust every status card in your hand, draw pile and discard pile. Draw 1 card.' },   // Ancient Potion (the only debuffs you get are status cards)
+  { id: 'iron',         name: 'Iron',         icon: '🔰', rarity: 'common',   effects: { blockBonus: 3 }, text: 'Your cards give 3 more block for the rest of the fight.' },   // Dexterity Potion
+  { id: 'zinc',         name: 'Zinc',         icon: '🔰', rarity: 'common',   effects: { power: { blockEachTurn: 4 } }, text: 'Gain 4 block at the start of each turn for the rest of the fight.' },   // Essence of Steel
+  { id: 'carbos',       name: 'Carbos',       icon: '👟', rarity: 'uncommon', effects: { power: { drawEachTurn: 1 } }, text: 'Draw 1 more card each turn for the rest of the fight.' },   // (Swift Potion, kept)
+  { id: 'rage-candy-bar', name: 'Rage Candy Bar', icon: '🍫', rarity: 'rare', effects: { power: { strengthEachTurn: 1 } }, text: 'Gain 1 strength at the start of each turn for the rest of the fight.' },   // Cultist Potion
+  { id: 'sweet-heart',  name: 'Sweet Heart',  icon: '🍫', rarity: 'uncommon', effects: { power: { regen: 3 } }, text: 'Heal 3 HP at the start of each turn for the rest of the fight.' },   // Regen Potion
+  { id: 'elixir',       name: 'Elixir',       icon: '🍶', rarity: 'common',   effects: { energy: 1, draw: 1 }, text: 'Gain 1 PP. Draw 1 card.' },   // (Energy Potion, small)
+  { id: 'iron-ball',    name: 'Iron Ball',    icon: '⚫', rarity: 'common',   effects: { hit: 12 }, text: 'Deal 12 damage to the enemy.' },   // Explosive Potion
+  { id: 'gold-bottle-cap', name: 'Gold Bottle Cap', icon: '🧢', rarity: 'uncommon', effects: { echo: 1 }, text: 'The next card you play this turn is played twice.' },   // Duplication Potion
+  { id: 'tr-normal',    name: 'TR',           icon: '🃏', rarity: 'uncommon', effects: { discover: 3, kind: 'power' }, text: 'Choose 1 of 3 random powers of your type to add to your hand. It costs 0 this turn.' },   // Power Potion
+  { id: 'hm-normal',    name: 'HM',           icon: '🃏', rarity: 'common',   effects: { discover: 3, kind: 'skill' }, text: 'Choose 1 of 3 random cards of your type that aren\'t attacks or powers to add to your hand. It costs 0 this turn.' },   // Skill Potion
+  { id: 'revival-herb', name: 'Revival Herb', icon: '🌿', rarity: 'uncommon', effects: { recall: 1 }, text: 'Choose a card in your discard pile to put into your hand. It costs 0 this turn.' },   // Liquid Memories
+  { id: 'wishing-piece', name: 'Wishing Piece', icon: '🌠', rarity: 'uncommon', map: true, effects: { fill: true }, text: 'Fill your Bag\'s empty slots with random items. Works on the map too.' },   // Entropic Brew
   { id: 'water-gem',    name: 'Water Gem',    icon: '🔵', rarity: 'uncommon', only: 'water', effects: { block: 10, draw: 2 },   text: 'Gain 10 block and draw 2 cards.' },
 ];
 

@@ -28,7 +28,6 @@ export const RELICS = [
   { id: 'scope-lens',   name: 'Scope Lens',   icon: '🔍', rarity: 'rare', text: 'Draw 1 extra card each turn.' },
 
   { id: 'focus-sash',   name: 'Focus Sash',   icon: '🎗️', rarity: 'rare', text: 'Once per battle, survive a fatal hit with 1 HP.' },
-  { id: 'choice-scarf', name: 'Choice Scarf', icon: '🧣', rarity: 'rare', text: 'Gain 1 extra PP every turn.' },
 
   { id: 'black-belt',   name: 'Black Belt',   icon: '🥋', rarity: 'common', text: 'Start each battle with 1 strength.' },
   { id: 'quick-claw',   name: 'Quick Claw',   icon: '🐾', rarity: 'common', text: 'Draw 2 extra cards on your first turn.' },
@@ -59,7 +58,7 @@ export const RELICS = [
   { id: 'muscle-wing',     name: 'Muscle Wing',     icon: '💪', rarity: 'uncommon', only: 'grass', text: 'Whenever you gain strength, gain 1 more.' },   // Snecko Skull, for strength
   { id: 'gooey-mulch',     name: 'Gooey Mulch',     icon: '🌱', rarity: 'common',   only: 'grass', text: 'Enemies start each battle with 2 Leech Seed.' },   // Twisted Funnel
   { id: 'enigma-berry',    name: 'Enigma Berry',    icon: '🫐', rarity: 'rare',     only: 'grass', text: 'Whenever you heal in battle, the enemy takes that much damage.' },   // (Drain's payoff)
-  { id: 'max-mushrooms',   name: 'Max Mushrooms',   icon: '🍄', rarity: 'rare',     only: 'grass', text: 'Draw 2 more cards each turn. Every card you draw gets a random cost from 0 to 3 PP.' },   // Snecko Eye
+  { id: 'max-mushrooms',   name: 'Max Mushrooms',   icon: '🍄', boss: true,         only: 'grass', text: 'Draw 2 more cards each turn. Every card you draw gets a random cost from 0 to 3 PP.' },   // Snecko Eye
   { id: 'toxic-plate',     name: 'Toxic Plate',     icon: '☠️', rarity: 'uncommon', only: 'grass', text: 'Whenever you apply Vulnerable, also apply 1 Weak.' },   // Champion Belt
 
   // Water: Tsunami, Shell, Flow. Slowpoke Tail is Water's rule-changer.
@@ -67,7 +66,7 @@ export const RELICS = [
   { id: 'lustrous-orb',    name: 'Lustrous Orb',    icon: '🔮', rarity: 'uncommon', only: 'water', text: 'Spending your Tide leaves half of it (rounded down) behind.' },   // (Tsunami's own)
   { id: 'eviolite',        name: 'Eviolite',        icon: '🛡️', rarity: 'common',   only: 'water', text: 'Start each of your turns with 3 block.' },   // Anchor, every turn
   { id: 'everstone',       name: 'Everstone',       icon: '🧱', rarity: 'rare',     only: 'water', text: 'Your block no longer vanishes at the start of your turn: it only drops by 10.' },   // Calipers
-  { id: 'slowpoke-tail',   name: 'Slowpoke Tail',   icon: '🐚', rarity: 'rare',     only: 'water', text: 'At the end of your turn, you keep your hand instead of discarding it.' },   // Runic Pyramid
+  { id: 'slowpoke-tail',   name: 'Slowpoke Tail',   icon: '🐚', boss: true,         only: 'water', text: 'At the end of your turn, you keep your hand instead of discarding it.' },   // Runic Pyramid
   { id: 'heart-scale',     name: 'Heart Scale',     icon: '💚', rarity: 'uncommon', only: 'water', text: 'Whenever you discard a card, gain 3 block.' },   // Tough Bandages
 
   // Any type.
@@ -81,20 +80,60 @@ export const RELICS = [
   { id: 'lemonade',         name: 'Lemonade',         icon: '🥤', rarity: 'common',   text: 'Gain 1 extra PP on your first turn of each battle.' },   // Lantern
   { id: 'stone-plate',      name: 'Stone Plate',      icon: '🧱', rarity: 'common',   text: 'At the start of your 2nd turn in each battle, gain 12 block.' },   // Horn Cleat
 
-  // Boss relics: only offered after a boss, and every one has a catch.
+  // The 2026-10-16 balance pass: more of StS's relics, so a run meets about as many as a StS run does.
+  { id: 'wide-lens',      name: 'Wide Lens',      icon: '🔍', rarity: 'common',   text: 'Enemies start each battle with 1 Vulnerable.' },   // Bag of Marbles
+  { id: 'lava-cookie',    name: 'Lava Cookie',    icon: '🍪', rarity: 'common',   text: 'Heal 3 HP at the start of each battle.' },   // Blood Vial
+  { id: 'soothe-bell',    name: 'Soothe Bell',    icon: '🔔', rarity: 'common',   text: 'Every 3rd turn of a battle, gain 1 extra PP.' },   // Happy Flower
+  { id: 'metal-coat',     name: 'Metal Coat',     icon: '🛡️', rarity: 'common',   text: 'Cards that give block give 1 more.' },   // Oddly Smooth Stone
+  { id: 'rare-candy',     name: 'Rare Candy',     icon: '🍬', rarity: 'common',   text: 'When you pick this up, PP Up 2 random moves in your deck.' },   // War Paint + Whetstone
+  { id: 'lucky-punch',    name: 'Lucky Punch',    icon: '🥊', rarity: 'common',   text: 'Every hit of your attacks deals at least 5 damage.' },   // The Boot
+  { id: 'adrenaline-orb', name: 'Adrenaline Orb', icon: '🟢', rarity: 'common',   text: 'The first time you lose HP in each battle, draw 3 cards.' },   // Centennial Puzzle
+  { id: 'moomoo-milk',    name: 'Moomoo Milk',    icon: '🥛', rarity: 'common',   text: 'Resting at a Pokémon Center heals 15 more HP.' },   // Regal Pillow
+  { id: 'sticky-barb',    name: 'Sticky Barb',    icon: '🌵', rarity: 'uncommon', text: 'At the start of each of your turns, deal 3 damage to the enemy.' },   // Mercury Hourglass
+  { id: 'lucky-egg',      name: 'Lucky Egg',      icon: '🥚', rarity: 'uncommon', text: 'Card rewards offer 1 more card.' },   // Question Card
+  { id: 'power-bracer',   name: 'Power Bracer',   icon: '💪', rarity: 'uncommon', text: 'Attacks you add to your deck come PP Upped.' },   // Molten Egg
+  { id: 'power-belt',     name: 'Power Belt',     icon: '🎽', rarity: 'uncommon', text: 'Moves that aren\'t attacks come PP Upped when you add them to your deck.' },   // Frozen Egg + Toxic Egg
+  { id: 'razor-fang',     name: 'Razor Fang',     icon: '🦷', rarity: 'uncommon', text: 'Every 10th attack you play in a battle deals double damage.' },   // Pen Nib
+  { id: 'spell-tag',      name: 'Spell Tag',      icon: '🏷️', rarity: 'uncommon', text: 'Every 3rd card that isn\'t an attack you play in a turn deals 5 damage to the enemy.' },   // Letter Opener
+  { id: 'helix-fossil',   name: 'Helix Fossil',   icon: '🐚', rarity: 'rare',     text: 'The first time you would lose HP in each battle, you don\'t.' },   // Fossilized Helix
+  { id: 'bright-powder',  name: 'Bright Powder',  icon: '✨', rarity: 'rare',     text: 'Every 6th turn of a battle, the enemy\'s attack misses you (Guard).' },   // Incense Burner
+  { id: 'sacred-ash',     name: 'Sacred Ash',     icon: '🕯️', rarity: 'rare',     text: 'Once this run, when you would faint, you come back with half your max HP.' },   // Lizard Tail
+  { id: 'assault-vest',   name: 'Assault Vest',   icon: '🦺', rarity: 'rare',     text: 'Whenever an enemy hurts you, you lose 1 less HP.' },   // Tungsten Rod
+  { id: 'protective-pads', name: 'Protective Pads', icon: '🧤', rarity: 'rare',   text: 'An enemy hit that would hurt you for 5 or less hurts you for 1.' },   // Torii
+  { id: 'lagging-tail',   name: 'Lagging Tail',   icon: '🐾', rarity: 'rare',     text: 'If you play 3 or fewer cards in a turn, draw 3 more cards next turn.' },   // Pocketwatch
+  { id: 'shiny-stone',    name: 'Shiny Stone',    icon: '💎', rarity: 'rare',     text: 'Whenever you play a power, heal 4 HP.' },   // Bird-Faced Urn
+  // ...and one more per archetype for each type
+  { id: 'kee-berry',      name: 'Kee Berry',      icon: '🫐', rarity: 'common',   only: 'fire',  text: 'Whenever you lose HP in battle, gain 3 block at the start of your next turn.' },   // Self-Forming Clay (Reckless)
+  { id: 'fire-memory',    name: 'Fire Memory',    icon: '💿', rarity: 'uncommon', only: 'fire',  text: 'A burning enemy takes 25% more damage from your attacks.' },   // Paper Phrog, for Burn
+  { id: 'soot-sack',      name: 'Soot Sack',      icon: '👝', rarity: 'uncommon', only: 'fire',  text: 'The first time a card exhausts each turn, gain 1 PP.' },   // (Kindling's own)
+  { id: 'macho-brace',    name: 'Macho Brace',    icon: '🏋️', rarity: 'uncommon', only: 'grass', text: 'Start Alpha and boss battles with 2 strength.' },   // Sling of Courage (Growth)
+  { id: 'luminous-moss',  name: 'Luminous Moss',  icon: '🌿', rarity: 'common',   only: 'grass', text: 'Whenever you heal in battle, gain 2 block.' },   // (Drain's own)
+  { id: 'sachet',         name: 'Sachet',         icon: '👛', rarity: 'common',   only: 'grass', text: 'Enemies start each battle with 2 Weak.' },   // Bag of Marbles, as Weak (Spores)
+  { id: 'splash-plate',   name: 'Splash Plate',   icon: '💧', rarity: 'uncommon', only: 'water', text: 'The first time you spend Tide each turn, draw 1 card.' },   // (Tsunami's own)
+  { id: 'big-pearl',      name: 'Big Pearl',      icon: '⚪', rarity: 'common',   only: 'water', text: 'When your block stops an enemy attack completely, gain 2 Tide.' },   // (Shell's own)
+  { id: 'tidal-bell',     name: 'Tidal Bell',     icon: '🔔', rarity: 'rare',     only: 'water', text: 'Whenever you discard a card, deal 3 damage to the enemy.' },   // Tingsha (Flow)
+
+  // Boss relics: only offered after a boss. The energy ones have a catch; the others upgrade your Ability (StS's Black
+  // Blood, Ring of the Serpent...) or bend a run's rules (Snecko Eye, Runic Pyramid, Black Star).
   { id: 'choice-band',  name: 'Choice Band',  icon: '🎀', boss: true, text: 'Gain 1 extra PP every turn. You can no longer Rest at Pokémon Centers.' },
   { id: 'choice-specs', name: 'Choice Specs', icon: '👓', boss: true, text: 'Gain 1 extra PP every turn. Draw 1 fewer card each turn.' },
   { id: 'toxic-orb',    name: 'Toxic Orb',    icon: '☠️', boss: true, text: 'Gain 1 extra PP every turn. Lose 1 HP at the start of each of your turns (never below 1).' },
   { id: 'room-service',  name: 'Room Service',  icon: '🔔', boss: true, text: 'Gain 1 extra PP every turn. You can play at most 6 cards a turn.' },   // Velvet Choker
   { id: 'griseous-orb',  name: 'Griseous Orb',  icon: '🔮', boss: true, text: 'Gain 1 extra PP every turn. Every battle starts with 2 Sludge shuffled into your draw pile.' },   // Mark of Pain (was Philosopher's Stone: enemies +2 strength)
+  { id: 'choice-scarf', name: 'Choice Scarf', icon: '🧣', boss: true, text: 'Gain 1 extra PP every turn. Your moves are locked in: Chansey can no longer PP Up them at Pokémon Centers.' },   // Fusion Hammer (was a rare with no catch: the bot's best relic for every type, 2026-10-16)
   { id: 'dusk-stone',    name: 'Dusk Stone',    icon: '💎', boss: true, text: 'Gain 1 extra PP every turn. You can\'t get any more items (you keep the ones in your Bag).' },   // Sozu (was Runic Dome: hid the enemy's intent, the user disliked it)
+
+  { id: 'magmarizer',   name: 'Magmarizer',   icon: '🌋', boss: true, only: 'fire',  text: 'Blaze is always on, not just below half HP.' },   // Black Blood
+  { id: 'leaf-stone',   name: 'Leaf Stone',   icon: '🍃', boss: true, only: 'grass', text: 'Overgrow heals 10 HP after each fight you win, not 3.' },   // Black Blood
+  { id: 'water-stone',  name: 'Water Stone',  icon: '💧', boss: true, only: 'water', text: 'Draw 1 extra card each turn. Torrent starts each fight with 4 Tide, not 2.' },   // Ring of the Serpent
+  { id: 'shiny-charm',  name: 'Shiny Charm',  icon: '🌟', boss: true, text: 'Alphas give 2 relics to choose from, one after the other.' },   // Black Star
 
   // `unique`: never offered anywhere; only won by beating Chad Master Kenmatta in his dojo (the Move Tutor event)
   { id: 'exp-share', name: 'Mata-Mindset', icon: '🎓', unique: true, text: 'Gain 1 extra PP and draw 1 extra card every turn. Start each battle with 1 strength.' },
 ];
 
 /** Boss relics that give +1 energy every turn (Choice Band and the rest). */
-export const ENERGY_RELICS = ['choice-band', 'choice-specs', 'toxic-orb', 'room-service', 'griseous-orb', 'dusk-stone'];
+export const ENERGY_RELICS = ['choice-band', 'choice-specs', 'choice-scarf', 'toxic-orb', 'room-service', 'griseous-orb', 'dusk-stone'];
 
 export const RELICS_BY_ID = Object.fromEntries(RELICS.map(r => [r.id, r]));
 
