@@ -291,8 +291,8 @@ function renderPack() {
     return;
   }
   const r = o.recipe;
-  pick.replaceChildren(itemSprite({ id: r.sprite, icon: '' }, 'pack-ico'), el('span', 'pack-name', `${r.name} ×${o.n}`));
-  $('pack-rule').textContent = `Starts in your Bag: ${r.text}`;
+  pick.replaceChildren(itemSprite({ id: r.sprite, icon: '' }, 'pack-ico'), el('span', 'pack-name', r.name));
+  $('pack-rule').textContent = `Takes 1 of your ${o.n}. Starts in your Bag: ${r.text}`;
 }
 
 function setPreparing(on) {
