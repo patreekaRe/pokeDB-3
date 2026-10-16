@@ -414,6 +414,7 @@ function makePiece(fam, theme) {
   };
   if (fam.solid) Object.assign(p, { solid: true, wood: pal.w, woodLit: sh(pal.w, 1) });
   if (fam.seat) p.seat = fam.seat;
+  if (fam.live) Object.assign(p, { live: fam.live, news: fam.news });
   if (fam.glow) p.glow = fam.glow.map(key => key[0] === '#' ? key : pal[key]);
   if (fam.id === 'window' || fam.sky) p.glow = Object.values(SKY);
   return p;

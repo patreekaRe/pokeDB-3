@@ -49,6 +49,7 @@ function framed(l, x, y, w, h, beaten) {
 export const TRAINER_KINDS = [
   // a glass-fronted oak cabinet, three shelves of four trophies, each one lit as its milestone is reached
   { id: 'trophycase', name: 'Trophy case', group: 'Trainer', solo: true, w: 2, h: 1, price: 900, live: () => trophies(save()).map(t => +t.got).join(''),
+    news: (was, now) => { const got = trophies(save()).filter((t, i) => now[i] === '1' && was[i] !== '1').map(t => t.name); return got.length ? `Your trophy case has ${got.length > 1 ? 'new trophies' : 'a new trophy'}: ${got.join(', ')}!` : ''; },
     draw(x, b, vw) {
       floorShadow(x, b, vw);
       const top = b - 86, list = trophies(save());
@@ -64,6 +65,7 @@ export const TRAINER_KINDS = [
   // the Gym Leaders on the wall: thirteen framed photos, each one in colour once beaten, a gold frame when all are
   { id: 'gymcase', name: 'Gym Leader case', group: 'Trainer', solo: true, w: 2, h: 1, layer: 'wall', price: 900,
     live: () => GYM_LEADERS.map(l => +((save().gym?.[l.id] || 0) > 0)).join(''),
+    news: (was, now) => { const got = GYM_LEADERS.filter((l, i) => now[i] === '1' && was[i] !== '1').map(l => l.name); return got.length ? `${got.join(' and ')} joined your Gym Leader case!${now.includes('0') ? '' : ' Every frame is filled: it\'s turned gold!'}` : ''; },
     wall(x) {
       const s = save(), all = GYM_LEADERS.every(l => (s.gym?.[l.id] || 0) > 0), W = 62, H = 64, X = x + 1, Y = 18;
       R(X + 1, Y + 1, W, H, 'rgba(0,0,0,0.25)');
@@ -79,6 +81,7 @@ export const TRAINER_KINDS = [
     } },
   // a model of the Sky Pillar on a plinth: a band lit jade for every ten floors of your best climb, its crown at 100
   { id: 'pillarmodel', name: 'Sky Pillar model', group: 'Trainer', solo: true, w: 1, h: 1, price: 900, live: () => String(Math.min(10, Math.floor((save().tower?.bestEver || 0) / 10))),
+    news: (was, now) => (+now > +was ? `Your Sky Pillar model lit up to floor ${+now * 10}!${+now >= 10 ? ' Its crown is glowing!' : ''}` : ''),
     draw(x, b) {
       floorShadow(x + 4, b, 24);
       const lit = Math.min(10, Math.floor((save().tower?.bestEver || 0) / 10));
@@ -93,6 +96,7 @@ export const TRAINER_KINDS = [
     } },
   // a gold plaque: HALL OF FAME, a star, and how many times you've been entered
   { id: 'fameplaque', name: 'Hall of Fame plaque', group: 'Trainer', solo: true, w: 1, h: 1, layer: 'wall', price: 800, live: () => String((save().hallOfFame || []).length),
+    news: (was, now) => (+now > +was ? `Your Hall of Fame plaque reads ×${now} now!` : ''),
     wall(x) {
       const n = (save().hallOfFame || []).length, X = x + 3, Y = 22, W = 26, H = 34;
       R(X + 1, Y + 1, W, H, 'rgba(0,0,0,0.25)');

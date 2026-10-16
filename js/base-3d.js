@@ -1969,6 +1969,7 @@ function frame(now) {
   last = now;
   fpsLog.push(dt); if (fpsLog.length > 60) fpsLog.shift();
   keepUp(now);
+  tickSparks(now, dt);
 
   if (!hopping(walker, now) && walk(walker, mon, dt)) {
     if (walker.goal) partnerUp();
@@ -2106,6 +2107,70 @@ function showRoom(spot = () => null) {
   shots = fitted = null;
   resize();
   refresh();
+  liveNews();
+}
+
+/* The Trainer set's cases (js/base-furniture-trainer.js) fill in by themselves. The first time a room is shown after
+   what one shows has changed (a run won, a leader beaten), it sparkles and a line over the room says what's new (2026-10-16,
+   the user: players should see their display update). What each showed is kept in the base's `liveSeen`, by kind; a
+   piece seen for the first time is only noted. */
+let sparks = [];
+function liveNews() {
+  const seen = base.liveSeen ||= {}, lines = [];
+  let changed = false;
+  base.items.forEach((it, i) => {
+    const p = PIECES[it.id];
+    if (!p?.live) return;
+    const now = p.live(), was = seen[it.id];
+    if (was === now) return;
+    seen[it.id] = now;
+    changed = true;
+    if (was === undefined) return;
+    const line = p.news?.(was, now);
+    if (!line) return;
+    lines.push(line);
+    let g = null;   // its group, wherever bendOut() has put it
+    pieceGroup.traverse(o => { if (!g && o.userData.index === i) g = o; });
+    if (g) sparkle(g);
+  });
+  if (changed) saveBase(base);
+  if (!lines.length) return;
+  playSound('achievement');
+  const news = root.querySelector('.b3-news');
+  news.textContent = lines.join(' ');
+  news.hidden = false;
+  news.classList.remove('in'); void news.offsetWidth; news.classList.add('in');
+  clearTimeout(liveNews.t);
+  liveNews.t = setTimeout(() => { news.hidden = true; }, 7000);
+}
+
+/** Gold glints rising round a piece and fading, a couple of seconds. */
+function sparkle(g) {
+  if (calm) return;
+  const box = new THREE.Box3().setFromObject(g), size = box.getSize(new THREE.Vector3()), geo = new THREE.OctahedronGeometry(0.06);
+  for (let i = 0; i < 22; i++) {
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: i % 3 ? '#ffd860' : '#ffffff', transparent: true, depthWrite: false }));
+    m.position.set(box.min.x + Math.random() * size.x, box.min.y + Math.random() * size.y * 0.9, box.max.z + 0.05);
+    m.raycast = () => {};
+    scene.add(m);
+    sparks.push({ m, vy: 0.4 + Math.random() * 0.6, t0: performance.now() + i * 60, life: 1600 + Math.random() * 600 });
+  }
+}
+
+function tickSparks(now, dt) {
+  if (!sparks.length) return;
+  sparks = sparks.filter(s => {
+    const age = now - s.t0;
+    if (age < 0) { s.m.visible = false; return true; }
+    s.m.visible = true;
+    const k = age / s.life;
+    s.m.position.y += s.vy * dt / 1000;
+    s.m.rotation.y += dt / 300;
+    s.m.material.opacity = Math.max(0, 1 - k) * (k < 0.15 ? k / 0.15 : 1);
+    if (k < 1) return true;
+    scene.remove(s.m); s.m.material.dispose();
+    return false;
+  });
 }
 
 /** The Storage PC: the Clearing's PC on its Decorations, over the room. What it changed (a piece put away, the walking
@@ -2158,6 +2223,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
       <canvas class="b3-view"></canvas>
       <header class="b3-top"><h2>Secret Base</h2><span class="b3-fps" hidden></span></header>
       <p class="b3-hint" aria-live="polite"></p>
+      <p class="b3-news" aria-live="polite" hidden></p>
       <p class="b3-talk" hidden aria-live="polite"><b>Smeargle</b><span></span><i aria-hidden="true"></i></p>
       <div class="b3-gift" hidden><p>Starter furniture!</p><div class="b3-gift-row"></div><button type="button" class="b3-done">Decorate</button></div>
       <button type="button" class="b3-decor" aria-label="Decorate">${glyph('sofa')}<span>Decorate</span></button>
@@ -2266,6 +2332,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   new ResizeObserver(resize).observe(root.querySelector('.b3-sheet'));
   tray('furniture');
   refresh();
+  liveNews();
   syncGuests();
   startVisit();
   await warmShaders(renderer, scene, camera);

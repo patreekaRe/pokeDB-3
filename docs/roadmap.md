@@ -865,7 +865,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
         if they should move to the Outfitter only. ▶ Run in: CLOUD.
 - **Ranger Task Board and Trainer's Journal**: built and rebalanced 2026-10-16, with the Trainer furniture set and the gold
-  shell (`docs/roadmap-done.md`). **Next, if wanted**: a reward per Ranger rank, more tasks, seasonal Expeditions.
+  shell, and its cases sparkling with news when you come home (`docs/roadmap-done.md`). **Next, if wanted**: a reward per Ranger rank, more tasks, seasonal Expeditions.
   Waiting on the user's playtest (`?base` to see the set once claimed). ▶ Run in: CLOUD.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s

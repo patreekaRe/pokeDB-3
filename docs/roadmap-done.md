@@ -2753,4 +2753,7 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (half, Expeditions halved too); six Journal milestones give a Trainer furniture piece, four filling in by themselves
   (trophy case, Gym Leader case, Sky Pillar model, Hall of Fame plaque); Grand Champion opens a gold Pokédex shell.
   Checked headless: each piece paints, the Gym Leader case repaints on a new win, the base opens, no errors.
+  Then the homecoming news (the user: see the display "update in real time"): coming home, a case that changed since
+  the last visit sparkles and a line names what's new. Checked headless: nothing on the first visit, the trophy and
+  Gym Leader lines after a win streak, nothing on the visit after.
 

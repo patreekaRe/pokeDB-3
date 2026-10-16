@@ -432,4 +432,10 @@ LOGGED ✓. A new task is a line in `build()` there.
   Players also still place each Gym Leader's signed poster, from the third win against them. **Grand Champion** opens
   the gold Pokédex shell in Settings (`goldShell()` in `js/data/journal-ranks.js`, the chip hidden till then; the rank
   bar names the perk).
+- **The cases update while you're away** (2026-10-16, the user: "cool if players see their display update in real
+  time"): a live family also has `news(was, now)`. Each time a Secret Base room is shown (`showRoom()`, and the first
+  open), `liveNews()` in js/base-3d.js compares each placed live piece's `live()` with `base.liveSeen[kind]` (what it
+  showed last visit, saved in the base). A changed one sparkles (gold glints, `sparkle()` / `tickSparks()`, skipped
+  under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
+  Leader case!"). A piece placed for the first time only records what it shows.
 
