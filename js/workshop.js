@@ -11,12 +11,12 @@ import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js
 import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT } from './data/workshop.js';
 import { RING, townState, CLEARING } from './data/towns.js';
 import { toldHeld, tellHeld } from './held-tips.js';
-import { GYM_BY_ID, gymWins } from './data/gym.js';
+import { GYM_BY_ID, friendWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
 
 /** What the Workshop can see of the save, for shows(); `?hearts=N` puts every friend at N, so their secret recipes show. */
 const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : +n || 0; };
-const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => gymWins(save, id) || 0,
+const seen = (save) => ({ towns: Object.fromEntries(['clearing', ...RING.map(t => t.id)].map(id => [id, townState(save, id)])), wins: (id) => friendWins(save, id),
   hearts: (id) => heartsPeek() ?? heartsOf(workshopOf(save), id), yard: !!save.secretBase?.house?.yard, mats: satchelOf(save).seen });
 
 /** The recipes on a shelf now. */

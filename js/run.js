@@ -16,7 +16,7 @@
 
 import { rangerCatch, rangerTick, rangerDay, rangerReady } from './ranger.js';
 import { timeOfDay } from './daytime.js';
-import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
+import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch } from './data/workshop.js';
 import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
@@ -2068,7 +2068,7 @@ function homeRoom(b, onward = null) {
     await openWorkshop();
     again();
   }));
-  const wins = home.leader ? gymWins(getSave(), home.leader) : 0;
+  const wins = home.leader ? friendWins(getSave(), home.leader) : 0;
   const notBack = home.leader === 'nietos' && wins > 0 && !nietosHome(wins);   // beaten, but the Nietos aren't moving in yet (NIETOS_LIVE)
   // a town's questline is handed in to the leader whose step it is, here at their home (the user's ask, 2026-10-14; it
   // was the town's board), with a "!" over their roof and over them while it's ready; while it runs its leaders are home

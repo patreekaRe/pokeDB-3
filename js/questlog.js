@@ -60,7 +60,7 @@ function source(step, town, sat) {
 }
 
 /** How to start a quest that hasn't. */
-const unlock = (town, save) => (town.home ? 'Beat the Nietos at the Whispering Clearing\'s Gym, then come home.'
+const unlock = (town, save) => (town.home ? 'Beat Law, Britt or the Nietos at the Whispering Clearing\'s Gym, then come home.'
   : clearingLit(save) ? `Beat a Gym Leader at the end of the ${BIOMES_BY_ID[town.biome]?.name}, then pass through the town.`
     : 'Finish the Nietos\' quest first.');
 

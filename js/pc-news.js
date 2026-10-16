@@ -8,6 +8,7 @@ import { latestPatch, patchUnseen } from './patchnotes.js';
 import { claimable } from './missions.js';
 import { townsOpen } from './data/towns.js';
 import { FRIENDS } from './data/workshop.js';
+import { friendWins } from './data/gym.js';
 
 const SEEN_KEY = 'pokedb.pcSeen';   // per device, like the patch notes' "!"
 const LOOKED_KEY = 'pokedb.pcLooked';   // the news the hub's "!" over the PC last showed when you logged on
@@ -15,7 +16,7 @@ const LOOKED_KEY = 'pokedb.pcLooked';   // the news the hub's "!" over the PC la
 const hasBase = (save) => !!(save.baseOwned || save.secretBase);
 
 /** The PC's Friends page (docs/roadmap.md's step 8): with the towns on, once a Gym Leader who takes gifts is beaten. */
-export const friendsOpen = (save) => townsOpen() && FRIENDS.some(id => (save.gym?.[id] || 0) > 0);
+export const friendsOpen = (save) => townsOpen() && FRIENDS.some(id => friendWins(save, id) > 0);
 
 /** Each new page: the menu it sits in, and whether it's any use yet (a base page waits for a base). */
 const NEWS = {
