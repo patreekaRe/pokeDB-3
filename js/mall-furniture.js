@@ -1146,4 +1146,3 @@ function piano(THREE, group, x, z, { std, put, goldM, L }) {
   for (const sx of [-0.34, 0.34]) for (const sz of [-0.12, 0.12]) put(bench, new THREE.BoxGeometry(0.04, 0.4, 0.04), black, sx, 0.2, sz);
 }
 
-export const upstairsLine = () => `Upstairs there are 8 more pieces every day. Shall I open it for ${price(UPSTAIRS_PRICE)} PokéCoins? Tap again.`;

@@ -47,11 +47,82 @@ export function passState() {
   return safari?.pass === day ? 'pass' : safariAccess(safari, day);
 }
 
-/** What the keeper says at the Day Pass machine. */
-export function passLine(state = passState()) {
-  if (state === 'pass') return 'You\'ve got today\'s Day Pass already: replay the Safari as much as you like till midnight (UTC).';
-  if (state === 'first') return `Today's first try is free! A Day Pass (${DAY_PASS} PokéCoins) covers replays after it, till midnight (UTC). Tap again to buy one now.`;
-  return `You've had today's free try. A Day Pass is ${DAY_PASS} PokéCoins: replay the Safari as much as you like till midnight (UTC). Tap again!`;
+/* ---------- the buy windows ---------- */
+
+/* Each ball's colour, for its window's ribbon and turntable: the ball's own where it reads, a darker one where its top
+   is white or black. */
+const INK = { great: '#3a74e0', ultra: '#b8901a', dusk: '#3a8a48', quick: '#3a6ad8', timer: '#d84838', net: '#2a98b8', luxury: '#a83030', master: '#7a3ac0' };
+const previews = new Map();
+
+/** A ball turning on a cushion in its colour, a gold rim round it, the rest of its pack small at its side. */
+function ballPreview(THREE, id) {
+  if (previews.has(id)) return previews.get(id);
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
+  const b = BALLS.find(x => x.id === id), pivot = new THREE.Group(), R = 0.5, DISC = 0.1, r = 0.85;
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.02, DISC, 64), std({ color: INK[id] ?? L.felt, roughness: 0.95 }));
+  disc.position.y = DISC / 2;
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.025, 8, 64), std({ color: '#e8b848', metalness: 0.85, roughness: 0.22 }));
+  rim.rotation.x = Math.PI / 2; rim.position.y = DISC;
+  const ball = ballMesh(THREE, std, id, R);
+  ball.position.y = DISC + R;
+  ball.rotation.y = -0.5;
+  pivot.add(disc, rim, ball);
+  for (let n = 0; n < Math.min(b.pack ?? 1, 3) - 1; n++) {
+    const little = ballMesh(THREE, std, id, 0.2);
+    little.position.set(n ? -0.58 : 0.58, DISC + 0.2, 0.32);
+    little.rotation.y = n ? 0.6 : -0.9;
+    pivot.add(little);
+  }
+  const out = { pivot, h: DISC + R * 2, r: Math.hypot(r, DISC + R) };
+  previews.set(id, out);
+  return out;
+}
+
+/** A pack's (or the Master Ball's) window: what it does, how many you carry, its price. `e` is its cornerEntries() row. */
+export function ballWindow(id, e) {
+  const b = BALLS.find(x => x.id === id), have = getSave().balls?.[id] || 0;
+  return {
+    ink: INK[id] ?? L.trim, dept: b.weekly ? 'ONE THROW A WEEK' : `PACK OF ${b.pack}`, name: e.name, price: e.cost,
+    note: b.weekly ? e.text : `${e.text} You carry ${have}.`, preview: (T) => ballPreview(T, id),
+  };
+}
+
+/** The Day Pass's own picture: a gold ticket standing on a green stand, DAY PASS on both faces. */
+function ticketArt() {
+  const f = fine(64, 32, 8), { g } = f;
+  g.fillStyle = '#f8d048'; g.fillRect(0, 0, 64, 32);
+  ticket(g, 1.5, 1.5, 61, 29, '#f8d048', '#a8381e');
+  g.strokeStyle = 'rgba(168,56,30,0.5)'; g.setLineDash([1, 1]); g.lineWidth = 0.5;
+  for (const x of [13, 51]) { g.beginPath(); g.moveTo(x, 4); g.lineTo(x, 28); g.stroke(); }
+  g.setLineDash([]);
+  g.fillStyle = '#a8381e'; for (const x of [7.5, 56.5]) star(g, x, 16, 3);
+  words(g, 'DAY PASS', 32, 13.4, 10, '#8a2a14');
+  words(g, 'SAFARI ZONE', 32, 22.6, 4.6, '#8a2a14');
+  return f.c;
+}
+
+function passPreview(THREE) {
+  if (previews.has('pass')) return previews.get('pass');
+  const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.6, ...o });
+  const pivot = new THREE.Group(), face = std({ map: texOf(ticketArt()) }), edge = std({ color: '#e0b030' });
+  const card = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.75, 0.04), [edge, edge, edge, edge, face, face]);
+  card.position.y = 0.62;
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.77, 0.1, 64), std({ color: L.trim, roughness: 0.95 }));
+  disc.position.y = 0.05;
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.25, 12), std({ color: '#e8b848', metalness: 0.8, roughness: 0.25 }));
+  post.position.y = 0.2;
+  pivot.add(disc, post, card);
+  const out = { pivot, h: 1.0, r: 0.9 };
+  previews.set('pass', out);
+  return out;
+}
+
+/** The Day Pass booth's window: what a pass is, where today stands, its price, or that you hold one already. */
+export function passWindow(state = passState()) {
+  const how = 'Your first Safari try each day is free and counts for the leaderboard. A Day Pass lets you replay today\'s Safari as often as you like until midnight (UTC); replays don\'t go on the board.';
+  const today = state === 'pass' ? 'You hold today\'s pass.' : state === 'first' ? 'You still have today\'s free try.' : 'You\'ve had today\'s free try.';
+  return { ink: '#c8642e', dept: 'SAFARI DAY PASS', name: 'Replay the Safari all day', price: DAY_PASS,
+    note: `${how} ${today}`, held: state === 'pass' ? 'Yours today' : undefined, preview: passPreview };
 }
 
 /* ---------- the hall's front ---------- */
@@ -675,7 +746,7 @@ export function buildOutfitter(THREE, size) {
     paint();
     const spot = { id: 'safari-board', kind: 'game', name: 'Safari leaderboard', open: true, step: { x: BOARD.x, y: 2 } };
     spot.line = spot.name;
-    spot.game = { name: spot.name, line: 'Today\'s best catchers in the Safari Zone. Tap again to see the whole board!',
+    spot.game = { name: spot.name, line: 'Today\'s best catchers in the Safari Zone.', direct: true,
       open: (done) => import('./leaderboard.js').then(m => {
         m.openLeaderboard(0, 'safari');
         document.getElementById('board-dialog')?.addEventListener('close', () => { lb.fetched = -Infinity; done?.(); }, { once: true });

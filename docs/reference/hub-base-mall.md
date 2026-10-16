@@ -312,6 +312,12 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   call `first`), `first`, or `locked`; a second tap buys one (`DAY_PASS`, `safari.pass`). **The Master Ball** floats over a
   velvet cushion on the right wing's fourth stump, a gold ring round it and a violet glow. **The board** chalks
   `safariTop(5)` (every 90 s while shown); a second tap opens `openLeaderboard(0, 'safari')`. Torches flank the door and the counter, palms (`hallKit()`) the corners.
+- **Buy windows** (2026-10-16, the user's ask: the Furniture store's merchant window, no "tap again"): a tap on a stand
+  opens `merchant()` in `js/mall-3d.js` (shared with the Furniture store, generalised to `{ ink, dept, name, note, price,
+  preview, held }`) with `ballWindow()`: the ball turning on a cushion in its colour (`ballPreview()`, `INK`), what it does
+  and how many you carry. The booth opens `passWindow()`: what a pass is, where today stands and its price, a gold ticket
+  turning (`passPreview()`); once held, `held` shows "Yours today" and only OK. The board opens the leaderboard on one tap
+  (`game.direct`). The Furniture store's lift asks for the second floor on its first tap too.
 - All buys go through `cornerEntries('balls')` / `buyCorner()` in `js/shop.js`, the same as the Pokédex's Game Corner app
   and the Safari prep window's Buy, which still sell them too.
 - **Tapping through your partner**: standing at a stand, `onTap()` takes a tap on your partner as one on the stand it

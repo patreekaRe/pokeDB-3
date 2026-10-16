@@ -231,7 +231,7 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mall-ask-keys button:active { translate: 0 3px; box-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .mall-ask.b3-say, .mall-shop.b3-say { animation: none; } }
 
-/* the Furniture store's buy window (js/mall-3d.js's merchant(); 2026-10-16, the user's ask): a merchant's card in a
+/* the Furniture store's and the Safari Outfitter's buy window (js/mall-3d.js's merchant(); 2026-10-16, the user's ask): a merchant's card in a
    gold frame, the department on a ribbon in its colour, the piece turning on a velvet turntable in a spotlit box you
    drag to turn it, the price big with a coin */
 .mall-shop {
@@ -267,6 +267,7 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .mshop-price b { font: 24px/1 var(--pixel-font); color: #5a3a10; }
 .mshop-price small { flex-basis: 100%; margin-top: 6px; font-size: 13px; color: #8a7458; }
 .mall-shop.short .mshop-price b, .mall-shop.short .mshop-price small { color: #c83828; }
+.mall-shop.held .mshop-price b { color: #3a7a32; }   /* the Day Pass already held: no price, no Buy */
 
 /* each stand's price, on screen at its plinth's front (js/mall-furniture.js's priceTags()), hidden under the buy window */
 .mall-tags { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
