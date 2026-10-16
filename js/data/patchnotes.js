@@ -51,6 +51,8 @@ export const NEXT = [
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
   ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],
   ['runs', 'Mewtwo has left the character select: start its run from the open Sealed Gate or the Depths camp.'],
+  ['battle', 'A balance pass toward Slay the Spire\'s numbers: 35 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
+  ['battle', 'Runaway combos tamed: Shell Smash, Quick Guard and Safeguard exhaust, Leech Seed stops growing as you evolve, and Choice Scarf, Max Mushrooms and Slowpoke Tail are boss relics.'],
   ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Mall draws far less, the Clearing no longer stutters, and the Home Screen app plays as smoothly as the browser.'],
 ];
 
@@ -465,10 +467,10 @@ export const PATCHES = [
 /** What's in the game, as of the newest patch. */
 export const IN_THE_GAME = [
   ['🔥', '31 starters', 'Charmander, Bulbasaur and Squirtle, 12 more from later generations, 15 legendaries to earn, and Mewtwo behind the Sealed Gate.'],
-  ['🃏', '310 moves', 'About 74 each for Fire, Grass and Water, 68 Psychic moves for Mewtwo, and 21 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
+  ['🃏', '342 moves', 'About 80 each for Fire, Grass and Water, 74 Psychic moves for Mewtwo, and 28 Neutral moves any type can learn. Every one can be powered up with PP Up.'],
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
-  ['💎', '59 relics', 'Starter Abilities, relics for each type and boss relics that give extra PP with a catch.'],
-  ['🧴', '20 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
+  ['💎', '93 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
+  ['🧴', '34 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
   ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],

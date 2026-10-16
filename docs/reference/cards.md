@@ -168,3 +168,31 @@ the starter's colour, `POWER_LENS`) (block/heal/burn/strength/draw
   (the nameplate chip, `setupBattleScreen()` in `js/battle.js`; the map shows no type badge at all), since
   their own type would suggest a match-up; `def.type` stays as theme for the Pokédex. The sim
   mirrors both (`enemyMult()`; variant `oldTypes` restores the old rules).
+
+## The balance pass (2026-10-16, the user's ask: "match Slay the Spire's numbers... find broken builds")
+
+On branch `balance-pass` (both repos) until the user's playtest. **How broken builds are found now**: the whole-run bot
+can't see combos, so pokeDB-sim has `sim/combo-lab.mjs` (fixed decks and relics against a training dummy that hits 12
++3 a turn, 3000 HP, and against real bosses: `vs: 'boss', level: 5`) and `sim/combo-fuzz.mjs` (thousands of random
+late-run decks, ranked by how long they last and how hard they hit, with per-card and per-pair lift). Its README says how.
+- **Fixed** (each measured in the lab): **Shell Smash exhausts** (with Shell Armor it doubled block every turn: 396 million
+  in the fuzz; peak block ~1,500 -> ~85 in the lab, Level 5 boss wins 53 -> 30%); **Leech Seed no longer grows with
+  evolution** (`STAGE_STATUS.seed` 0; Burn keeps +1 a stage): at stage 2 it was +2 a card (Worry Seed 3 -> 5) and 3 Worry
+  Seeds took a plain Grass deck from 0% to 97% against Level 5's last bosses, losing ~5 HP a fight; now seed decks win
+  5-50% there, like Fire's Burn decks (5-17%); halving the heal instead barely helped (90%). **Quick Guard and Safeguard
+  exhaust** (a whole enemy turn negated every time: top-3 card in every type's fuzz, stall loops of 20+ turns).
+  **Amnesia** blocks 12 and **Power Within** gives 4 Focus too (each read exactly like Barrier Field / Swords Dance:
+  `tests/cards.test.mjs` now checks that rule for every type).
+- **New cards** (32, each on a StS card, named in its comment; art in `js/card-art-new.js`): Fire and Grass at StS's
+  20/36/16, Water 20/36/15, Psychic 20/30/16, Neutral 28. New mechanics, in `js/battle.js` with `describe()` and
+  `cardTerms()` lines and mirrored in the sim: `growOnPlay` (Blazing Torque = Rampage: its pile copy grows),
+  `growOnRetain: { discount }` (Steam Eruption = Sands of Time), `echo` (Inferno Overdrive: the next card this turn twice,
+  `battle.echoNext`, counted before a card resolves so it never replays itself), `seedMult` (Bloom Doom), `tempSap`
+  (Charm = Dark Shackles: `enemy.tempSap`, gone after its turn), `skipEnemy` (Eye of the Storm = Vault, Time Warp's path),
+  `reshuffle` (Recycle), `returnCard` (Return = Headbutt), `sketch` (Sketch = Secret Technique, `pickFromPile()` on the draw
+  pile), `upgradeAll` (Mega Evolution = Apotheosis, fight-only copies), `payDay` (Pay Day = Hand of Greed: `tally.payDay`,
+  added to the prize in `afterFight()`), powers `statusDamage` (Burning Spirit = Fire Breathing, in `draw()`), `burnKeep`
+  (Desolate Land), `strengthBlock` (Overgrowth), `focusEachTurn` (Meditate), `focusKeep` (Psychic Terrain) and `regen`
+  (only Sweet Heart gives it).
+- Playtest any of it on a throwaway run: `?arena=elite&starter=squirtle&relics=wide-lens,sticky-barb&cards=blazing-torque,ignite+&items=iron`
+  (`playtestKit()` in `js/run.js`, any `peek` run).

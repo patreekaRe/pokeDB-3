@@ -9,6 +9,15 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**The balance pass** (the user's ask, 2026-10-16: "an overall balance check... add more relics, items, cards to match
+Slay the Spire's numbers... find broken builds like Shell Armor + Shell Smash"). **On branch `balance-pass` in both repos,
+never pushed to `main` until the user says** (their call). Done so far: the combo lab and fuzzer in pokeDB-sim
+(`sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found and fixed Shell Smash's doubling, Leech Seed's evolution bonus, the Guard
+cards' stall and Choice Scarf (now a boss relic); 35 relics, 14 items and 32 cards added toward StS's counts
+(docs/reference/cards.md's "The balance pass", relics.md, items.md); `tests/cards.test.mjs`. **Next**: the human bot's
+whole-run check against `main` at Levels 0/3/5 (main: fire 82 / 68 / 38, grass 84 / 66 / 38, water 76 / 58 / 35, 200 runs a
+cell) and any retune, a fuzz of the new cards, then the user's playtest from the branch's githack link.
+
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
 
