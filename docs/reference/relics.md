@@ -39,7 +39,7 @@ offers). After the retune (see roadmap 6c.11a), human bot fire / grass / water: 
 27 / 29 / 26. Recalibrate `sim/ranks.json` after any relic change (`calibrateJobs(n, [ids])` measures just those).
 
 
-**The balance pass (2026-10-16, branch `balance-pass`)**: 93 relics (35 new, each on a StS relic named in its comment;
+**The balance pass (2026-10-16, branch `balance-pass`)**: 93 relics (34 new, each on a StS relic named in its comment;
 art from PokéSprite). Shared: commons Wide Lens, Lava Cookie, Soothe Bell, Metal Coat, Rare Candy (`pickedUp()` in
 `js/run.js`, with Cleanse Tag), Lucky Punch, Adrenaline Orb, Moomoo Milk; uncommons Sticky Barb, Lucky Egg, Power Bracer /
 Power Belt (`learnedId()`: every card add goes through it), Razor Fang (`battle.fightAttacks`), Spell Tag (`battle.skills`);

@@ -51,7 +51,7 @@ export const NEXT = [
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
   ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],
   ['runs', 'Mewtwo has left the character select: start its run from the open Sealed Gate or the Depths camp.'],
-  ['battle', 'A balance pass toward Slay the Spire\'s numbers: 35 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
+  ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash, Quick Guard and Safeguard exhaust, Leech Seed stops growing as you evolve, and Choice Scarf, Max Mushrooms and Slowpoke Tail are boss relics.'],
   ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Mall draws far less, the Clearing no longer stutters, and the Home Screen app plays as smoothly as the browser.'],
 ];
