@@ -388,7 +388,7 @@ export const MAKES = {
       // a dome ploughed with winding ridges
       const pts = [];
       for (let i = 0; i <= 14; i++) { const a = i / 14 * Math.PI / 2; pts.push([Math.max(0.001, Math.cos(a) * u(13)), t - u(1) + Math.sin(a) * u(19)]); }
-      const g = lathe(pts.reverse().map(([r, y]) => [r, y]).reverse(), 64), pos = g.attributes.position;
+      const g = lathe(pts.reverse().map(([r, y]) => [r, y]).reverse(), 64, true), pos = g.attributes.position;
       for (let k = 0; k < pos.count; k++) {
         const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k), a = Math.atan2(z, x), f = 1 + 0.045 * Math.sin(y * 70 + Math.sin(a * 5) * 3);
         pos.setX(k, x * f); pos.setZ(k, z * f);
@@ -464,7 +464,7 @@ export const MAKES = {
     const { rbox, lathe, ball } = L, marble = K.plain(MARBLE);
     // a slab, the fluted column on it snapped off at a slant, barnacles on it, a strand of weed up its side
     K.put(rbox(u(26), u(8), u(22), 0.015), marble, 0, u(4), 0);
-    const g = L.cyl(u(9), u(54), u(9.4), 48, true).translate(0, u(35), 0), pos = g.attributes.position;
+    const g = L.cyl(u(9), u(54), u(9.4), 48, true, true).translate(0, u(35), 0), pos = g.attributes.position;
     for (let k = 0; k < pos.count; k++) {
       const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k), a = Math.atan2(z, x), f = 1 - 0.06 * Math.max(0, Math.cos(a * 12));
       pos.setX(k, x * f); pos.setZ(k, z * f);
@@ -929,7 +929,7 @@ export const MAKES = {
     const { rbox, cyl, lathe, torus } = L, stone = K.plain(SANDST);
     // a plinth, a fluted shaft painted in bands, a square abacus, and the closed lotus bud for a capital, petals in green and lapis
     K.put(rbox(u(26), u(6), u(22), 0.015), K.plain(L.tone(SANDST, 0.85)), 0, u(3), 0);
-    const g = cyl(u(9), u(66), u(9), 48, true).translate(0, u(39), 0), pos = g.attributes.position;
+    const g = cyl(u(9), u(66), u(9), 48, true, true).translate(0, u(39), 0), pos = g.attributes.position;
     for (let k = 0; k < pos.count; k++) { const a = Math.atan2(pos.getZ(k), pos.getX(k)), f = 1 - 0.05 * Math.max(0, Math.cos(a * 10)); pos.setX(k, pos.getX(k) * f); pos.setZ(k, pos.getZ(k) * f); }
     g.computeVertexNormals();
     K.put(g, stone, 0, 0, 0);

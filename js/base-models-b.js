@@ -85,7 +85,7 @@ export function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
 export function column(K, L, x, y0, z, r, h, m, spine) {
   const pts = [[r * 0.9, 0], [r, 0.03]];
   for (let i = 0; i <= 8; i++) { const a = i / 8 * Math.PI / 2; pts.push([Math.cos(a) * r, h - r + Math.sin(a) * r]); }
-  const g = L.lathe(pts, 24), pos = g.attributes.position;
+  const g = L.lathe(pts, 24, true), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) { const a = Math.atan2(pos.getZ(i), pos.getX(i)), f = 1 + 0.07 * Math.cos(a * 8); pos.setX(i, pos.getX(i) * f); pos.setZ(i, pos.getZ(i) * f); }
   g.computeVertexNormals();
   K.put(g, m, x, y0, z);
@@ -283,7 +283,7 @@ export const MAKES = {
     // a short trunk, three tiers of needles, a star on top and a few baubles
     K.put(cyl(0.05, u(12), 0.06, 12), K.wood(), 0, t + u(6), 0);
     for (const [y, h, r, f] of [[t + u(8), u(22), 0.36, 0.85], [t + u(24), u(20), 0.28, 1], [t + u(39), u(18), 0.2, 1.15]]) {
-      const g = lathe([[0.001, 0], [r, 0.03], [r * 0.92, 0.07], [r * 0.5, h * 0.55], [0.001, h]], 24), pos = g.attributes.position;
+      const g = lathe([[0.001, 0], [r, 0.03], [r * 0.92, 0.07], [r * 0.5, h * 0.55], [0.001, h]], 24, true), pos = g.attributes.position;
       for (let i = 0; i < pos.count; i++) { const a = Math.atan2(pos.getZ(i), pos.getX(i)), q = 1 + 0.08 * Math.cos(a * 9); pos.setX(i, pos.getX(i) * q); pos.setZ(i, pos.getZ(i) * q); }
       g.computeVertexNormals();
       K.put(g, K.gloss(L.tone(K.pal.leaf, f * 0.9)), 0, y, 0);

@@ -112,7 +112,20 @@ function weave() {
 /** A box with rounded edges (three.js's RoundedBoxGeometry's trick: only the middle segment of each face stays flat). */
 function rbox(w, h, d, r = 0.03, seg = 2) {
   r = Math.max(0.002, Math.min(r, w / 2, h / 2, d / 2) - 1e-4);
+  // as few bevel steps as stay under half a pixel close up (2026-10-16): uvs are moved to where `seg`'s would be, so a
+  // picture on a face still covers the same share of it
+  const was = seg, n0 = was * 2 + 1;
+  seg = Math.min(seg, r < 0.05 ? 1 : r < 0.2 ? 2 : seg);
+  if (r < 0.004) {
+    const g = new THREE.BoxGeometry(w, h, d).toNonIndexed(), uv = g.attributes.uv;
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (was + uv.getX(i)) / n0, (was + uv.getY(i)) / n0);
+    return g;
+  }
   const n = seg * 2 + 1, g = new THREE.BoxGeometry(1, 1, 1, n, n, n).toNonIndexed();
+  if (seg !== was) {
+    const uv = g.attributes.uv, to = (f) => { const i = Math.round(f * n); return (i <= seg ? i * was / seg : n0 - (n - i) * was / seg) / n0; };
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, to(uv.getX(i)), to(uv.getY(i)));
+  }
   const pos = g.attributes.position, nor = g.attributes.normal, half = 0.5 / n, v = new THREE.Vector3();
   const bx = w / 2 - r, by = h / 2 - r, bz = d / 2 - r;
   for (let i = 0; i < pos.count; i++) {
@@ -143,7 +156,8 @@ function weld(g) {
 /** A superellipsoid: e (round) 1 is a sphere's sides, near 0 a box's; ev the same up and down. Cushions, mattresses,
     arms, beanbags, clouds. */
 function blob(w, h, d, e = 0.45, ev = 0.5) {
-  const g = new THREE.SphereGeometry(1, 32, 20), pos = g.attributes.position;
+  const ws = Math.max(12, Math.min(32, round4(52 * Math.sqrt(Math.max(w, h, d) / 2))));
+  const g = new THREE.SphereGeometry(1, ws, Math.max(8, 2 * Math.round(ws * 20 / 64))), pos = g.attributes.position;
   const sp = (v, k) => Math.sign(v) * Math.pow(Math.abs(v), k);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), c = Math.hypot(x, z);
@@ -154,10 +168,23 @@ function blob(w, h, d, e = 0.45, ev = 0.5) {
   return weld(g);
 }
 
-const cyl = (rt, h, rb = rt, seg = 20, open = false) => new THREE.CylinderGeometry(rt, rb, h, seg, 1, open);
-const ball = (r, w = 20, h = 14) => new THREE.SphereGeometry(r, w, h);
-const lathe = (pts, seg = 28) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(0.0005, r), y)), seg);
-const torus = (R, r, arc = Math.PI * 2, seg = 28) => new THREE.TorusGeometry(R, r, 10, seg, arc);
+/* Round parts get as many sides as keep their outline within half a pixel at 128 pixels a tile (2026-10-16: a 1x1 piece
+   ran to 20k triangles of 20-sided bolts and knobs): asked for 12 or more sides, a part r round gets `sides(r)`, a
+   multiple of 4 so its widest points stay where they were, never under 8. Fewer than 12 asked for is a shape (a hexagon,
+   an octagon) and is kept; `exact` keeps the count for a part whose vertices are moved after (flutes, ribs). */
+const round4 = (v) => Math.ceil(v / 4) * 4;
+const sides = (r, seg) => seg < 12 ? seg : Math.max(8, Math.min(seg, round4(35 * Math.sqrt(Math.abs(r)))));
+const cyl = (rt, h, rb = rt, seg = 20, open = false, exact = false) => new THREE.CylinderGeometry(rt, rb, h, exact ? seg : sides(Math.max(rt, rb), seg), 1, open);
+const ball = (r, w = 20, h = 14) => {
+  const w2 = sides(r, w);
+  return new THREE.SphereGeometry(r, w2, w2 === w || h < 8 ? h : Math.max(6, 2 * Math.round(h * w2 / w / 2)));
+};
+const lathe = (pts, seg = 28, exact = false) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(Math.max(0.0005, r), y)),
+  exact ? seg : sides(Math.max(...pts.map(p => p[0])), seg));
+const torus = (R, r, arc = Math.PI * 2, seg = 28) => {
+  const f = Math.min(1, arc / (Math.PI * 2)), all = seg < 12 ? seg : Math.max(Math.ceil(8 * f), Math.min(seg, Math.ceil(sides(R + r, 99) * f)));
+  return new THREE.TorusGeometry(R, r, r < 0.04 ? 8 : 10, all, arc);
+};
 
 /** A heart, extruded with rounded edges, `s` across, `t` thick, lying in the x-y plane. */
 function heart(s, t) {
