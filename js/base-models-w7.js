@@ -81,7 +81,7 @@ function gear(L, r, teeth, d, a = 0) {
   const hole = new THREE.Path();
   hole.absarc(0, 0, u(r * 0.3), 0, Math.PI * 2, true);
   sh.holes.push(hole);
-  return new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 2, curveSegments: 20 });
+  return new THREE.ExtrudeGeometry(sh, { depth: d, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 1, curveSegments: 8 });
 }
 
 export const SHAPES = {
@@ -292,7 +292,7 @@ export const MAKES = {
     MOTIFS.star.forEach((row, j) => [...row].forEach((ch, i) => {
       if (ch === '.') return;
       const c = [K.pal.c, '#f8d030', '#58b848', '#e04848', K.pal.a][(j + i) % 5], fat = 1 - Math.hypot(i - 4, j - 4) / 6;
-      K.put(L.blob(u(3.5), u(3.5), u(3.4 + fat * 3), 0.55, 0.55), K.cloth(c), X(4.5 + i * 3, W), Y(23.5 + j * 3), 0.06 + fat * 0.02);
+      K.put(L.blob(u(3.5), u(3.5), u(3.4 + fat * 3), 0.55, 0.55, 8), K.cloth(c), X(4.5 + i * 3, W), Y(23.5 + j * 3), 0.06 + fat * 0.02);
     }));
     for (let n = 0; n < 5; n++) {
       const pts = [];

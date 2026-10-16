@@ -622,7 +622,7 @@ export const MAKES = {
     const bw = W - u(16), sy = seatY;
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       const x = sx * (bw / 2 - 0.05), z = sz < 0 ? -0.16 : 0.12;
-      for (let y = sy + 0.04; y < H - 0.04; y += 0.06) K.put(torus(0.018, 0.006, Math.PI * 2, 8), metal, x, y, z, Math.round(y * 20) % 2 ? Math.PI / 2 : 0);
+      for (let y = sy + 0.04; y < H - 0.04; y += 0.06) K.put(torus(0.018, 0.006, Math.PI * 2, 6), metal, x, y, z, Math.round(y * 20) % 2 ? Math.PI / 2 : 0);
     }
     K.put(rbox(bw, 0.06, 0.4, 0.02), wood, 0, sy - 0.03, -0.02);
     K.put(rbox(bw, 0.56, 0.05, 0.02), wood, 0, sy + 0.28, -0.2, 0, -0.12);

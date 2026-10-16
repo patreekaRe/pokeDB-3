@@ -116,7 +116,7 @@ function rbox(w, h, d, r = 0.03, seg = 2) {
   // picture on a face still covers the same share of it
   const was = seg, n0 = was * 2 + 1;
   seg = Math.min(seg, r < 0.05 ? 1 : r < 0.2 ? 2 : seg);
-  if (r < 0.004) {
+  if (r < 0.006) {
     const g = new THREE.BoxGeometry(w, h, d).toNonIndexed(), uv = g.attributes.uv;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, (was + uv.getX(i)) / n0, (was + uv.getY(i)) / n0);
     return g;
@@ -183,7 +183,7 @@ const lathe = (pts, seg = 28, exact = false) => new THREE.LatheGeometry(pts.map(
   exact ? seg : sides(Math.max(...pts.map(p => p[0])), seg));
 const torus = (R, r, arc = Math.PI * 2, seg = 28) => {
   const f = Math.min(1, arc / (Math.PI * 2)), all = seg < 12 ? seg : Math.max(Math.ceil(8 * f), Math.min(seg, Math.ceil(sides(R + r, 99) * f)));
-  return new THREE.TorusGeometry(R, r, r < 0.012 ? 4 : r < 0.04 ? 8 : 10, all, arc);
+  return new THREE.TorusGeometry(R, r, r < 0.016 ? 4 : r < 0.04 ? 8 : 10, all, arc);
 };
 
 /** A heart, extruded with rounded edges, `s` across, `t` thick, lying in the x-y plane. */
@@ -647,10 +647,10 @@ function couch(K, s, W, D, opts = {}) {
   if (s.cloud) {
     const p = K.plain(K.pal.p), R = K.r;
     for (let x = -W / 2 + 0.2; x <= W / 2 - 0.2; x += 0.22) {
-      K.put(ball(0.2 + R() * 0.05), p, x, 0.22, 0.12 + R() * 0.05);
-      K.put(ball(0.24 + R() * 0.05), p, x, 0.62 + R() * 0.08, -0.22);
+      K.put(ball(0.2 + R() * 0.05, 16, 10), p, x, 0.22, 0.12 + R() * 0.05);
+      K.put(ball(0.24 + R() * 0.05, 16, 10), p, x, 0.62 + R() * 0.08, -0.22);
     }
-    for (const x of [-W / 2 + 0.16, W / 2 - 0.16]) K.put(ball(0.22), p, x, 0.45, 0.06);
+    for (const x of [-W / 2 + 0.16, W / 2 - 0.16]) K.put(ball(0.22, 16, 10), p, x, 0.45, 0.06);
     K.put(blob(W - 0.3, 0.16, D - 0.35, 0.4, 0.5), K.cloth(K.pal.c), 0, sh - 0.06, 0.08);
     return;
   }
@@ -1055,7 +1055,7 @@ function pot(K, r, h) {
 }
 /** A leaf: a flattened ellipsoid tipped out from the stem at `a` round and `tilt` from upright. */
 function leafAt(K, m, y, a, tilt, len, wid) {
-  const g = ball(1, 10, 8).scale(wid, 0.012, len / 2);
+  const g = ball(1, 10, 4).scale(wid, 0.012, len / 2);
   g.translate(0, 0, len / 2);
   g.rotateX(-(Math.PI / 2 - tilt));
   g.rotateY(a);
@@ -1087,7 +1087,7 @@ B.palm = (K) => {
     for (let s = 0; s < 6; s++) {
       const t = s / 6, droop = 0.5 + t * 1.3;
       leafAt(K, leafM[s % 2], y - Math.pow(t, 2) * 0.3, a, Math.min(1.5, droop), 0.18, 0.05 + (1 - t) * 0.04);
-      const g = ball(1, 8, 6).scale(0.04, 0.008, 0.12);
+      const g = ball(1, 8, 4).scale(0.04, 0.008, 0.12);
       g.rotateY(a + Math.PI / 2); g.translate(x + Math.sin(a) * t * 0.6, y - t * t * 0.4, z + Math.cos(a) * t * 0.6);
       K.put(g, leafM[(s + 1) % 2]);
     }
@@ -1385,8 +1385,8 @@ B.plinko = (K) => {
   for (let r = 0; r < rows; r++) {
     const n = r % 2 ? 8 : 9, x0 = -(n - 1) * gap / 2;
     for (let i = 0; i < n; i++) {
-      K.put(cyl(0.011, 0.05, 0.011, 10), peg, x0 + i * gap, top - r * 0.11, 0.097, 0, Math.PI / 2);
-      K.put(ball(0.014, 10, 8), peg, x0 + i * gap, top - r * 0.11, 0.122);
+      K.put(cyl(0.011, 0.05, 0.011, 6), peg, x0 + i * gap, top - r * 0.11, 0.097, 0, Math.PI / 2);
+      K.put(ball(0.014, 8, 4), peg, x0 + i * gap, top - r * 0.11, 0.122);
     }
   }
   const bx = 0.04, by = top - 3 * 0.11 + 0.035, bz = 0.12;

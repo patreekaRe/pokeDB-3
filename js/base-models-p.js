@@ -120,7 +120,7 @@ const TOYS_P = {
 const HEAPS_P = {
   apple(K, L, z) {
     const red = K.gloss('#d83030'), stem = K.plain('#6a4a2a'), leaf = K.gloss('#58a838'), r = u(3.5), R = K.r;
-    const rows = [[[-9, -3, 3, 9], 21.5, 0.17], [[-9, -3, 3, 9], 23, -0.15], [[-6, 0, 6], 26.5, 0.02]];
+    const rows = [[[-9, -3, 3, 9], 22.5, 0.15], [[-9, -3, 3, 9], 25.5, -0.14], [[-6, 0, 6], 29.5, 0.01]];
     let n = 0;
     for (const [xs, y, rz] of rows) for (const i of xs) {
       const tx = (R() - 0.5) * 0.5, tz = (R() - 0.5) * 0.5, put = (geo, m) => K.put(geo, m, u(i) + (R() - 0.5) * 0.02, u(y), rz, 0, tx, tz);
@@ -134,7 +134,7 @@ const HEAPS_P = {
     const orange = K.gloss('#f08030'), green = K.gloss('#58b848'), R = K.r;
     const rows = [[[-10, -6, -2, 2, 6, 10], 0.16], [[-8, -4, 0, 4, 8], 0], [[-6, -2, 2, 6], -0.16]];
     rows.forEach(([xs, rz], row) => xs.forEach((i, n) => {
-      const y = u(19.5 + ((n + row) % 2) * 3 + row * 1.5), tx = (R() - 0.5) * 0.3, tz = (R() - 0.5) * 0.3 + i * 0.012;
+      const y = u(20.5 + ((n + row) % 2) * 3 + row * 1.5), tx = (R() - 0.5) * 0.3, tz = (R() - 0.5) * 0.3 + i * 0.012;
       K.put(L.lathe([[0, 0], [u(0.7), u(2)], [u(1.3), u(5.5)], [u(1.6), u(8)], [u(1.3), u(8.6)], [0, u(8.8)]], 8), orange, u(i), y, rz, 0, tx, tz);
       for (let k = -1; k <= 1; k++) K.put(L.cyl(u(0.35), u(8), u(0.15), 4).translate(0, u(4), 0).rotateZ(k * 0.4).rotateX((R() - 0.5) * 0.5).translate(0, u(8.6), 0), green, u(i), y, rz, 0, tx, tz);
     }));
@@ -156,7 +156,7 @@ const HEAPS_P = {
       for (let k = 0; k < p.count; k++) { const x = p.getX(k), y = p.getY(k), zz = p.getZ(k), f = 1 + 0.09 * Math.sin(x * 3 + a) * Math.cos(y * 4 + zz * 2 + a); p.setXYZ(k, x * f, y * f, zz * f); }
       return g.scale(u(4) * (0.9 + R() * 0.2), u(3), u(3.4));
     };
-    for (const [xs, y, rz] of [[[-9, -3, 3, 9], 24, 0.16], [[-9, -3, 3, 9], 26, -0.14], [[-6, 0, 6], 28.5, 0.02]]) for (const i of xs) {
+    for (const [xs, y, rz] of [[[-9, -3, 3, 9], 25.5, 0.15], [[-9, -3, 3, 9], 28, -0.14], [[-6, 0, 6], 30.5, 0.01]]) for (const i of xs) {
       K.put(lump(), skin, u(i), u(y), rz, R() * TAU, 0, (R() - 0.5) * 0.4);
       if (rz > 0.1) K.put(L.ball(u(0.5), 6, 4), eye, u(i - 1), u(y + 1), rz + u(3.2));
     }
@@ -253,7 +253,7 @@ export const MAKES = {
     K.put(rbox(u(22), u(2), d - 0.06, 0.006, 1), K.gloss(K.pal.c), 0, u(1), 0);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(cyl(u(1.2), u(2), u(1.2), 8), ink, sx * u(10), u(39), sz * (fz - 0.06));
     for (const [y0, y1, cy, r, ty] of [[2, 38, 15, 10, 33], [40, 74, 52, 7, 69]]) {
-      K.put(rbox(u(26), u(y1 - y0), d, 0.025), cab, 0, u((y0 + y1) / 2), 0);
+      K.put(rbox(u(28), u(y1 - y0), d, 0.025), cab, 0, u((y0 + y1) / 2), 0);
       // the woofer: its surround, the cone dished in, the dust cap; the tweeter's dome
       K.put(torus(u(r - 1), u(1.1), TAU, 20), ink, 0, u(cy), fz);
       K.put(lathe([[u(r - 1.4), 0], [u(r * 0.38), -0.045]], 16).rotateX(Math.PI / 2), cone, 0, u(cy), fz + 0.002);
@@ -261,8 +261,8 @@ export const MAKES = {
       K.put(dome(u(2.5)).scale(1, 1, 0.5), ink, 0, u(ty), fz);
       // chrome corners and a handle either side
       for (const sx of [-1, 1]) {
-        for (const yy of [y0 + 1.2, y1 - 1.2]) K.put(rbox(u(2.8), u(2.8), u(2.8), 0.006, 1), chrome, sx * u(12), u(yy), fz - u(1.2));
-        K.put(box(L, 0.016, u(1.6), u(9)), chrome, sx * (u(13) + 0.004), u((y0 + y1) / 2 + 4), 0);
+        for (const yy of [y0 + 1.2, y1 - 1.2]) K.put(rbox(u(2.8), u(2.8), u(2.8), 0.006, 1), chrome, sx * u(13), u(yy), fz - u(1.2));
+        K.put(box(L, 0.016, u(1.6), u(9)), chrome, sx * (u(14) + 0.004), u((y0 + y1) / 2 + 4), 0);
       }
     }
   },
@@ -270,10 +270,10 @@ export const MAKES = {
   amplifier(K, s, W, D, L) {
     const { rbox, cyl } = L, tolex = K.plain(K.pal.m), ink = K.gloss(INK), chrome = K.metal(SILVER), d = 0.4, fz = d / 2;
     // the cabinet on four rubber feet, chrome corners
-    K.put(rbox(u(28), u(35), d, 0.025), tolex, 0, u(18.5), 0);
+    K.put(rbox(u(30), u(35), d, 0.025), tolex, 0, u(18.5), 0);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) {
       K.put(cyl(u(1.5), u(1.2), u(1.5), 8), ink, sx * u(11), u(0.6), sz * (fz - 0.05));
-      for (const yy of [2.2, 34.8]) K.put(rbox(u(2.4), u(2.4), u(2.4), 0.005, 1), chrome, sx * u(13.2), u(yy), sz * (fz - u(1)));
+      for (const yy of [2.2, 34.8]) K.put(rbox(u(2.4), u(2.4), u(2.4), 0.005, 1), chrome, sx * u(14.2), u(yy), sz * (fz - u(1)));
     }
     // the grille cloth behind its slats, piped in chrome
     K.put(rbox(u(22), u(24), 0.012, 0.004, 1), K.cloth(L.tone(K.pal.c, 0.8)), 0, u(16), fz + 0.002);
@@ -299,9 +299,9 @@ export const MAKES = {
     const { rbox, cyl, lathe } = L, dark = K.wood(L.tone(K.pal.w, 0.85)), face = K.wood(L.tone(K.pal.w, 1.12)), brass = K.metal(BRASS), card = K.plain(PARCH);
     const d = 0.5, fz = d / 2;
     // the cabinet, its top, an apron rail and four turned legs
-    K.put(rbox(u(28), u(53), d, 0.015), dark, 0, u(33), 0);
-    K.put(rbox(u(30), u(4), d + 0.03, 0.012, 1), dark, 0, u(61), 0);
-    K.put(rbox(u(28.6), u(1.6), d + 0.01, 0.006, 1), dark, 0, u(6.6), 0);
+    K.put(rbox(u(30), u(53), d, 0.015), dark, 0, u(33), 0);
+    K.put(rbox(u(32), u(4), d + 0.03, 0.012, 1), dark, 0, u(61), 0);
+    K.put(rbox(u(30.6), u(1.6), d + 0.01, 0.006, 1), dark, 0, u(6.6), 0);
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(lathe([[0, 0], [u(1.2), 0], [u(1), u(1.5)], [u(1.6), u(3.6)], [u(1.5), u(5.6)], [u(1.8), u(6.4)], [0, u(6.4)]], 10), dark, sx * u(11.5), 0, sz * (fz - 0.05));
     // eighteen drawers, each with its brass label plate and pull
     for (let r = 0; r < 6; r++) for (let c = 0; c < 3; c++) {
@@ -317,8 +317,8 @@ export const MAKES = {
     const { rbox, cyl } = L, x = (n) => X(n, W), wood = K.wood(), lid = K.wood(L.tone(K.pal.w, 1.12)), brass = K.metal(BRASS), card = K.plain(PARCH);
     const d = 0.62, fz = d / 2;
     // the chest on its dark plinth, the lighter top overhanging
-    K.put(rbox(u(60), u(26), d, 0.02), wood, 0, u(17), 0);
-    K.put(rbox(u(58), u(4.2), d - 0.06, 0.01, 1), K.plain(L.tone(K.pal.w, 0.4)), 0, u(2.1), -0.02);
+    K.put(rbox(u(62), u(26), d, 0.02), wood, 0, u(17), 0);
+    K.put(rbox(u(60), u(4.2), d - 0.06, 0.01, 1), K.plain(L.tone(K.pal.w, 0.4)), 0, u(2.1), -0.02);
     K.put(rbox(u(64), u(3), d + 0.04, 0.012), lid, 0, u(30.5), 0);
     // four wide flat drawers: a brass bar pull, a label plate either side
     for (let n = 0; n < 4; n++) {
@@ -344,9 +344,9 @@ export const MAKES = {
     const { THREE, rbox, cyl } = L, body = K.gloss(K.pal.m), hood = K.gloss(L.tone(K.pal.m, 1.18)), ink = K.gloss(INK), white = K.gloss('#ffffff');
     const d = 0.5, fz = d / 2;
     // the box, a rim and its rounded hood
-    K.put(rbox(u(24), u(42), d, 0.02), body, 0, u(21), 0);
-    K.put(rbox(u(24.8), u(2), d + 0.02, 0.006, 1), hood, 0, u(43), 0);
-    K.put(new THREE.CylinderGeometry(u(12.4), u(12.4), d + 0.02, 16, 1, false, Math.PI / 2, Math.PI).rotateX(Math.PI / 2).scale(1, 0.5, 1), hood, 0, u(44), 0);
+    K.put(rbox(u(26), u(42), d, 0.02), body, 0, u(21), 0);
+    K.put(rbox(u(26.8), u(2), d + 0.02, 0.006, 1), hood, 0, u(43), 0);
+    K.put(new THREE.CylinderGeometry(u(13.4), u(13.4), d + 0.02, 16, 1, false, Math.PI / 2, Math.PI).rotateX(Math.PI / 2).scale(1, 0.5, 1), hood, 0, u(44), 0);
     // the slot under its flap
     K.put(box(L, u(16), u(4), 0.01), ink, 0, u(36), fz + 0.002);
     K.put(rbox(u(17), u(2.4), 0.016, 0.005, 1), hood, 0, u(37.8), fz + 0.012, 0, -0.6);
@@ -391,10 +391,10 @@ export const MAKES = {
   foodpods(K, s, W, D, L) {
     const { rbox, cyl } = L, body = K.gloss(K.pal.m), dark = K.gloss(PANEL), chrome = K.metal(SILVER), d = 0.5, fz = d / 2;
     // the cabinet, the frame round its window, the accent cap on top
-    K.put(rbox(u(28), u(70), d - 0.2, 0.02), body, 0, u(35), -0.1);
-    K.put(rbox(u(28), u(34), 0.24, 0.02, 1), body, 0, u(17), fz - 0.12);
-    K.put(rbox(u(28), u(6), 0.24, 0.015, 1), body, 0, u(67), fz - 0.12);
-    for (const sx of [-1, 1]) K.put(rbox(u(3), u(31), 0.24, 0.01, 1), body, sx * u(12.5), u(49), fz - 0.12);
+    K.put(rbox(u(30), u(70), d - 0.2, 0.02), body, 0, u(35), -0.1);
+    K.put(rbox(u(30), u(34), 0.24, 0.02, 1), body, 0, u(17), fz - 0.12);
+    K.put(rbox(u(30), u(6), 0.24, 0.015, 1), body, 0, u(67), fz - 0.12);
+    for (const sx of [-1, 1]) K.put(rbox(u(4), u(31), 0.24, 0.01, 1), body, sx * u(13), u(49), fz - 0.12);
     K.put(rbox(u(24), u(2), d - 0.1, 0.006, 1), K.gloss(K.pal.a), 0, u(71), -0.02);
     // behind the glass: three chrome shelves of pods, their foil lids
     K.put(box(L, u(22), u(30), 0.01), dark, 0, u(49), 0.056);
@@ -419,15 +419,15 @@ export const MAKES = {
   /* ----- Farm: a slatted crate heaped with its crop ----- */
 
   crateP(K, s, W, D, L) {
-    const { rbox } = L, wood = K.wood(), post = K.wood(L.tone(K.pal.w, 0.8)), w = u(28), d = 0.6, hx = w / 2, hz = d / 2;
-    // four corner posts, three boards round each side with a gap between, a false floor to heap on
+    const { rbox } = L, wood = K.wood(), post = K.wood(L.tone(K.pal.w, 0.8)), w = u(30), d = 0.6, hx = w / 2, hz = d / 2;
+    // four corner posts, three boards round each side with a gap between, the dark inside filled up to where the heap sits
     for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(rbox(u(3), u(24), u(3), 0.008, 1), post, sx * (hx - u(1.5)), u(12), sz * (hz - u(1.5)));
     for (const [y0, y1] of [[0, 7], [8, 15], [16, 24]]) {
       const y = u((y0 + y1) / 2), h = u(y1 - y0);
       for (const sz of [-1, 1]) K.put(rbox(w - u(5.6), h, u(1.2), 0.004, 1), wood, 0, y, sz * (hz - u(1)));
       for (const sx of [-1, 1]) K.put(rbox(u(1.2), h, d - u(5.6), 0.004, 1), wood, sx * (hx - u(1)), y, 0);
     }
-    K.put(box(L, w - u(2.4), u(1), d - u(2.4)), K.plain(L.tone(K.pal.w, 0.45)), 0, u(19.5), 0);
+    K.put(box(L, w - u(2.6), u(20), d - u(2.6)), K.plain(L.tone(K.pal.w, 0.45)), 0, u(10), 0);
     // the label, its crop on it
     const lz = hz - u(0.4) + 0.006;
     K.put(rbox(u(12), u(6), 0.012, 0.004, 1), K.gloss(K.pal.p), 0, u(12), lz);

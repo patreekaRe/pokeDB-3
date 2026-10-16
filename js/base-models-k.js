@@ -39,7 +39,7 @@ function cloud(K, L, x, y, z, rx, ry, rz = rx * 0.8) {
     const t = i / (n - 1), a = i * 2.4, r = ry * (0.6 + Math.sin(t * Math.PI) * 0.45);
     K.put(ball(r, 18, 12), m, x - rx + r * 0.8 + t * (rx - r * 0.8) * 2, y + r * 0.85, z + Math.sin(a) * (rz - r) * 0.6);
   }
-  K.put(ball(1, 22, 14).scale(rx * 0.75, ry * 0.75, rz * 0.8), m, x, y + ry * 0.8, z);
+  K.put(ball(1, 16, 10).scale(rx * 0.75, ry * 0.75, rz * 0.8), m, x, y + ry * 0.8, z);
 }
 
 /** A track along x at y, `len` long: sleepers and two chrome rails at z +-g. */
@@ -490,7 +490,7 @@ export const MAKES = {
       const rx = u(24 - n * 3), ry = u(56 - n * 3), t = u(3), sh = new THREE.Shape();
       sh.absellipse(0, 0, rx, ry, 0, Math.PI, false);
       sh.absellipse(0, 0, rx - t, ry - t, Math.PI, 0, true);
-      const g = new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.008, bevelSegments: 2, curveSegments: 48 });
+      const g = new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.008, bevelSegments: 1, curveSegments: 16 });
       g.translate(0, u(10), -0.07);
       K.put(g, K.gloss(c));
     });
@@ -631,7 +631,7 @@ export const MAKES = {
     // two wings of feathers fanning up and out behind
     for (const sg of [-1, 1]) for (let f = 0; f < 5; f++) {
       const a = sg * (0.25 + f * 0.24), len = u(22 - f * 2.4);
-      const feather = blob(u(3.2), len, 0.03, 0.8, 0.5);
+      const feather = blob(u(3.2), len, 0.03, 0.8, 0.5, 16);
       feather.translate(0, len / 2, 0); feather.rotateZ(-a);
       K.put(feather, f % 2 ? marble : K.gloss(L.tone(MARBLE, 1.04)), sg * u(3), u(40), -u(3) - f * 0.006);
     }

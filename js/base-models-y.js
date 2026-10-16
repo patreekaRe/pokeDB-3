@@ -44,12 +44,12 @@ function board(K, L, m, a, b, w, t) {
 function bloom(K, L, x, y, z, c, r = 0.05, tilt = 0) {
   const { cyl, ball } = L;
   K.put(cyl(0.008, y, 0.01, 6), K.plain(STEM), x, y / 2, z);
-  for (const s of [-1, 1]) K.put(ball(0.03, 8, 6).scale(1.6, 0.35, 0.8), K.plain(STEM), x + s * 0.03, y * 0.4 + s * 0.02, z, s * 0.6, 0, s * 0.5);
+  for (const s of [-1, 1]) K.put(ball(0.03, 8, 4).scale(1.6, 0.35, 0.8), K.plain(STEM), x + s * 0.03, y * 0.4 + s * 0.02, z, s * 0.6, 0, s * 0.5);
   for (let i = 0; i < 5; i++) {
     const a = i / 5 * TAU;
-    K.put(ball(r * 0.62, 8, 6).scale(1, 0.5, 1), K.gloss(c), x + Math.cos(a) * r * 0.75, y + Math.sin(tilt) * Math.sin(a) * r * 0.5, z + Math.sin(a) * r * 0.75);
+    K.put(ball(r * 0.62, 8, 4).scale(1, 0.5, 1), K.gloss(c), x + Math.cos(a) * r * 0.75, y + Math.sin(tilt) * Math.sin(a) * r * 0.5, z + Math.sin(a) * r * 0.75);
   }
-  K.put(ball(r * 0.42, 8, 6), K.gloss('#f8d038'), x, y + r * 0.15, z);
+  K.put(ball(r * 0.42, 8, 4), K.gloss('#f8d038'), x, y + r * 0.15, z);
 }
 
 /** A stone, flattened, `r` round, sat on y. */
@@ -253,7 +253,7 @@ export const MAKES = {
     const colours = [K.pal.c, K.pal.a, L.mix(K.pal.c, '#ffffff', 0.45), K.pal.p];
     for (let row = 0; row < 3; row++) for (let i = 0; i < 6; i++) {
       const x = -w / 2 + 0.16 + i * (w - 0.32) / 5 + (row % 2) * 0.06, z = -d / 2 + 0.14 + row * (d - 0.28) / 2;
-      K.put(ball(0.07, 10, 8).scale(1.2, 0.55, 1.2), K.plain(L.tone(K.pal.leaf, 0.9 + (i % 2) * 0.15)), x, h - 0.01, z);
+      K.put(ball(0.07, 8, 6).scale(1.2, 0.55, 1.2), K.plain(L.tone(K.pal.leaf, 0.9 + (i % 2) * 0.15)), x, h - 0.01, z);
       bloom(K, L, x, h + 0.14 + ((i + row) % 3) * 0.05, z, colours[(i + row) % colours.length], 0.05, 0.4);
     }
   },
