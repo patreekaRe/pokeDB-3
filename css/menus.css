@@ -1754,6 +1754,17 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .pack-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pack-none { padding: 4px 0; }
 /* the Berry Pouch (2026-10-15): three slots, the first one held as the run sets out, and the kept berries to tap in */
+/* the tab pinned to the panel's foot while the pack is below it (updatePeek(), 2026-10-16): no height of its own, so
+   showing it never shifts the scroll */
+.pack-peek-pin { position: sticky; bottom: 0; height: 0; display: flex; justify-content: center; }
+.pack-peek {
+  position: absolute; bottom: 2px; padding: 6px 12px; border: 2px solid #b6d68e; border-radius: 999px; background: #1f3a14;
+  color: #b6d68e; font: 0.75rem var(--pixel-font); white-space: nowrap; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); cursor: pointer;
+  animation: peekBob 1.4s ease-in-out infinite;
+}
+.pack-peek[hidden] { display: none; }
+@keyframes peekBob { 50% { translate: 0 -3px; } }
+@media (prefers-reduced-motion: reduce) { .pack-peek { animation: none; } }
 .pack-pouch[hidden], .pack-kit[hidden] { display: none; }
 .pack-kit { margin-top: 6px; }
 .pouch-level { flex-direction: column; align-items: stretch; }

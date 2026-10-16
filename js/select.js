@@ -60,6 +60,14 @@ export function initSelect(on) {
   $('level-up').addEventListener('click', () => setLevel(level + 1));
   $('pack-down').addEventListener('click', () => stepPack(-1));
   $('pack-up').addEventListener('click', () => stepPack(1));
+  $('pack-peek').addEventListener('click', () => {
+    const info = $('sel-info'), top = $('prep-pack').getBoundingClientRect().top - info.getBoundingClientRect().top;
+    info.scrollTo({ top: info.scrollTop + top - 8, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    playSound('stick');
+  });
+  $('sel-info').addEventListener('scroll', updatePeek, { passive: true });
+  $('sel-prep').addEventListener('animationend', updatePeek);
+  addEventListener('resize', updatePeek);
   $('sel-shiny').addEventListener('click', () => {
     const id = picked.id;
     updateSave(d => { d.shiny.on = isShiny(id) ? d.shiny.on.filter(x => x !== id) : [...d.shiny.on, id]; });
@@ -295,6 +303,16 @@ function renderPack() {
   $('pack-rule').textContent = `Takes 1 of your ${o.n}. Starts in your Bag: ${r.text}`;
 }
 
+/* The pack sits under the Trainer Level, below the panel's fold on a phone with no scrollbar to hint at it (the user's
+   worry, 2026-10-16), so a tab pinned to the panel's foot names it until it's scrolled into view. */
+function updatePeek() {
+  const peek = $('pack-peek'), box = $('prep-pack');
+  const below = !!preparing && !box.hidden
+    && box.getBoundingClientRect().top + 72 > $('sel-info').getBoundingClientRect().bottom;
+  peek.hidden = !below;
+  if (below) peek.textContent = `▼ ${[!$('pack-pouch').hidden && 'Berry Pouch', !$('pack-kit').hidden && 'Run kit'].filter(Boolean).join(' · ')}`;
+}
+
 function setPreparing(on) {
   preparing = on;
   const screen = document.querySelector('.select-screen');
@@ -307,7 +325,7 @@ function setPreparing(on) {
   else renderTabs();
   for (const key of document.querySelectorAll('.sel-tabs .mdex-btn')) key.disabled = !!on;
   $('sel-info').scrollTop = 0;
-  requestAnimationFrame(sizeSprite);   // the stage changes height with the panel
+  requestAnimationFrame(() => { sizeSprite(); updatePeek(); });   // the stage changes height with the panel
 }
 
 /** The three forms in a row, each with its HP and when it evolves. */

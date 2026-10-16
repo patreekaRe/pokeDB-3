@@ -106,7 +106,7 @@ screen into the run's setup (**Prepare**, `prepare()` in `js/select.js`, StS's A
 a mockup 2026-09-28; the old separate deck preview screen is gone): `.preparing` hides the stats, blurb, Ability, pills and
 portrait strip; `#sel-prep` in the panel shows the evolution line in a row (each form's HP and when, the evolution rules
 in its `title`) and the Trainer Level as ◀ n ▶ (`setLevel()`; ← → too), the level's name, the rule it adds, a coins chip and
-an "All rules" fold-out (with the next level's lock); `#sel-deck` fans the starting deck along the bottom with copies stacked
+an "All rules" fold-out (with the next level's lock), then the Berry Pouch and Run kit (`#prep-pack`, `renderPack()`, only when Kurt's Workshop has kept something); below the panel's fold on a phone, so a "▼ Berry Pouch · Run kit" tab (`#pack-peek`, `updatePeek()`, 2026-10-16, the user's worry players would miss them) is pinned to the panel's foot until the pack's slots scroll into view, a tap scrolling there; `#sel-deck` fans the starting deck along the bottom with copies stacked
 (`groupDeck`, the ×N under each card), each `zoomable()`; Choose reads Begin run (`onBegin(level)`, which confirms over a
 saved run) and Back / Escape return to the portraits (`showSelect()` clears it). A Game Corner purchase refreshes it
 (`refreshSelect()` on the shop's `close`). Phones stack it (Pokémon, panel, Back / Choose, tabs, strip, which scrolls
