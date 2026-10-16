@@ -3,8 +3,8 @@
    made grand the same day (the user: "way bigger", price cards they couldn't read, "more of a safari aesthetic", the
    wall's things overlapping): a 21 x 13 hall of bamboo and log posts under a thatched eave, its back wall three tidy bays
    (the Safari Zone's map over a jeep, the savanna and the carved sign over Kangaskhan's counter, the leaderboard), the
-   packs on tree stumps down two wings each under a big lit price sign, the Master Ball on a roped dais in the middle and
-   a thatched Day Pass booth. Opens with the Safari Zone (safariOpen()). Painted smooth like the hall (fine());
+   packs and the Master Ball on tree stumps down two wings, each with a big lit price sign, and the thatched Day Pass booth
+   up on a dais in the middle (moved there 2026-10-16, the user's call). Opens with the Safari Zone (safariOpen()). Painted smooth like the hall (fine());
    js/mall-3d.js walks it and sells. */
 
 import { BALLS, DAY_PASS, safariAccess } from './data/balls.js';
