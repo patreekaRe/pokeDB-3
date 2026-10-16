@@ -8,7 +8,7 @@
    its carpet, the Safari Outfitter a khaki-and-green awning and crates of Poké Balls by its door. mall-3d.js lays the hall out and calls dressHall() / dressFronts();
    each returns its tick(now, dt), and `block(x, y)` is told every tile a thing stands on. */
 
-import { fine, texOf, words, star, GC } from './hub-3d.js';
+import { fine, texOf, words, star, GC, mergeStatic } from './hub-3d.js';
 import { outfitterSign, outfitterAwning } from './mall-outfitter.js';
 
 let THREE;
@@ -224,7 +224,7 @@ function frondGeo() {
   return FROND;
 }
 
-let frondMat = null;
+let frondMat = null, nutMat = null;
 /** A palm in a planter: a ringed trunk leaning a little, a crown of fronds that sway. */
 function palm(parent, x, z, h = 2.1, seed = 0) {
   const g = new THREE.Group();
@@ -253,7 +253,11 @@ function palm(parent, x, z, h = 2.1, seed = 0) {
     f.castShadow = true;
     crown.add(f);
   }
-  for (const [a, b] of [[0.06, 0.04], [-0.05, 0.05], [0.0, -0.06]]) put(crown, new THREE.SphereGeometry(0.055, 12, 8), std({ color: '#6a4a2a' }), a, -0.04, b);
+  nutMat ??= std({ color: '#6a4a2a' });
+  for (const [a, b] of [[0.06, 0.04], [-0.05, 0.05], [0.0, -0.06]]) put(crown, new THREE.SphereGeometry(0.055, 12, 8), nutMat, a, -0.04, b);
+  // 25 draw calls a palm, four palms in every room of the mall: the trunk's rings and the crown's fronds each baked into one
+  mergeStatic(g, (o) => o.parent === crown);
+  mergeStatic(crown, () => false);
   return (now) => { crown.rotation.z = Math.sin(now / 1700 + seed) * 0.035; crown.rotation.x = Math.cos(now / 2100 + seed) * 0.03; };
 }
 
@@ -577,6 +581,7 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
   const M = mats(), glows = [], bulbs = [[], [], []], ticks = [];
   const bulbMats = [0, 1, 2].map(() => std({ color: '#fff6d0', emissive: '#ffe08a', emissiveIntensity: 1.2, roughness: 0.3 }));
   const bulbGeo = new THREE.SphereGeometry(0.035, 10, 8);
+  const tints = new Map(), tint = (color, roughness) => { const k = color + roughness; if (!tints.has(k)) tints.set(k, std({ color, roughness })); return tints.get(k); };
   for (const fr of fronts) {
     const g = new THREE.Group(), [cx] = at(fr.x, 0);
     g.position.set(cx, 0, wallZ);
@@ -602,8 +607,8 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
         const cols = ['#e86a8a', '#f8d040', '#ffffff', '#e84838', '#b070e0'];
         for (let i = 0; i < 9; i++) {
           const fx = s * 0.95 - 0.36 + i * 0.09, fz = 0.42 + ((i * 5) % 3 - 1) * 0.05;
-          put(g, new THREE.SphereGeometry(0.06, 10, 8), std({ color: '#58a848', roughness: 0.9 }), fx, 0.25, fz, false);
-          put(g, new THREE.SphereGeometry(0.035, 10, 8), std({ color: cols[i % cols.length], roughness: 0.6 }), fx + 0.02, 0.31 + (i % 2) * 0.03, fz + 0.03, false);
+          put(g, new THREE.SphereGeometry(0.06, 10, 8), tint('#58a848', 0.9), fx, 0.25, fz, false);
+          put(g, new THREE.SphereGeometry(0.035, 10, 8), tint(cols[i % cols.length], 0.6), fx + 0.02, 0.31 + (i % 2) * 0.03, fz + 0.03, false);
         }
       }
     } else if (fr.id === 'corner') {
@@ -647,12 +652,15 @@ export function dressFronts(three, { group, fronts, at, wallZ, block, calm }) {
         crate.rotation.y = s * 0.12;
         for (let i = 0; i < 5; i++) {
           const bx = s * 1.2 - 0.18 + (i % 3) * 0.18, bz = 0.42 + Math.floor(i / 3) * 0.17;
-          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: tops[(i + (s > 0 ? 2 : 0)) % tops.length], roughness: 0.3 }), bx, 0.42, bz);
-          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f4f4f4', roughness: 0.3 }), bx, 0.42, bz);
+          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), tint(tops[(i + (s > 0 ? 2 : 0)) % tops.length], 0.3), bx, 0.42, bz);
+          put(g, new THREE.SphereGeometry(0.075, 14, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), tint('#f4f4f4', 0.3), bx, 0.42, bz);
         }
         block(fr.x + s, 0);
       }
     }
+    // ~90 draw calls on the Game Corner's front alone: whatever shares a material is baked into one (the bulbs chase by
+    // their three materials, so they still do), all but the spinning star finials
+    mergeStatic(g, (o) => o.userData.spin != null);
     g.traverse(o => { o.userData.front = fr; });
   }
   ticks.push((now) => {

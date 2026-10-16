@@ -2706,3 +2706,5 @@ Not now (no more "tap again"); prices are crisp on-screen tags at each plinth (`
 ### The Furniture store's lift moved to the head of the nave (2026-10-16, the user's ask)
 It stood behind the Plants stand, which hid the partner walking in; now it ends the carpet runner with a wider door and
 the crest on its shaft, the counter to its left and Smeargle's painting over a bench to its right (`js/mall-furniture.js`).
+
+- **Done (2026-10-16): the mall and arcade's frame cost** (the user's ask): the mall's draw calls cut by a fifth to two fifths a room (palms, shop fronts, chandeliers, Game Corner cabinets and showcased pieces merged; tiny pieces cast no shadow), the arcade games and Plinko capped at 60 fps. Numbers in `docs/reference/hub-base-mall.md`.

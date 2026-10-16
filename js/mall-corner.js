@@ -8,7 +8,7 @@
    Painted smooth (fine()); js/mall-3d.js walks it (its own COLS x ROWS, the camera following you), this file builds it. */
 
 import { cornerEntries } from './shop.js';
-import { trim, tex } from './hd2d.js';
+import { trim, tex, bakeColours } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
 import { PIECES } from './base-furniture.js';
 import { fine, texOf, words, star, GC, newsArt } from './hub-3d.js';
@@ -629,6 +629,7 @@ export function buildCorner(THREE, size) {
     model.position.set(tileX(x), 0, face ? tileZ(y) : -rows / 2 + 0.5);
     model.rotation.y = face * Math.PI / 2;
     model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    bakeColours(model);
     blocked.add(`${x},${y}`);
     const H = model.userData.top * ARCADE_K, edge = 0.36;
     const spot = { id: `${id}${x},${y}`, kind: 'game', game, name: game.name, open: true, line: game.name,
@@ -653,6 +654,7 @@ export function buildCorner(THREE, size) {
     model.scale.setScalar(CARD_K);
     model.position.set(tileX(x) - 0.5 + w / 2, 0, tileZ(y) - (TABLE_D - 1) / 2);
     model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    bakeColours(model);
     const H = model.userData.top * CARD_K;
     const spot = { id, kind: 'game', game: gm, name: gm.name, open: true, line: gm.name, step: { x: x + Math.floor(w / 2), y: y + 1 },
       frame: { x: tileX(x) - 0.5 + w / 2, y: H / 2, z: tileZ(y) + 0.4, w: w - 0.3, h: H + 0.1 } };

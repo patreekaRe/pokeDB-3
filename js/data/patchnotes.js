@@ -46,7 +46,7 @@ export const NEXT = [
   ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
   ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, the Master Ball on a roped dais, and big price signs you can read.'],
-  ['fixes', 'Cooler and steadier on phones: 3D places cap at 60 fps, walking in and out no longer piles up memory, and the Mall\'s floor keeps its shine.'],
+  ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Poké Mall draws far less each frame, no memory build-up, and the Mall\'s floor keeps its shine.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

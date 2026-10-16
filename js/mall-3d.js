@@ -17,7 +17,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon } from './hd2d.js';
+import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -657,6 +657,7 @@ function buildHall() {
     hall.add(m);
   }
   for (const m of glows) m.emissiveIntensity = Math.max(m.userData.glowMin || 0, 0.9) * m.userData.glow;
+  smallNoShadow(hall);
   places.hall = { id: 'hall', group: hall, blocked, fixed: new Set(blocked), spots: FRONTS, top: DECK + 0.8, title: 'Poké Mall', cols: HC, rows: HR, door: HALL_DOOR };
   addDoor(places.hall);
 }
@@ -791,6 +792,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
     built.group.add(k.mon.group);
     places[id] = { id, front: SHOPS[id].front, ...built };
     if (id !== 'f2') addDoor(places[id]);   // upstairs the way out is the lift down
+    smallNoShadow(built.group);
     scene.add(built.group);
     if (id === 'gc') places.gc.crowd = makeCrowd({   // the Game Corner's regulars (js/corner-crowd.js)
       oneWalker: true,

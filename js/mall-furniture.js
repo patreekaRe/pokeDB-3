@@ -11,10 +11,10 @@
    own COLS x ROWS and door, like the Game Corner); this file only builds it. */
 
 import { PIECES, pieceArt, furnitureStock, loadBase, UPSTAIRS_PRICE, KINDS_OF } from './secret-base.js';
-import { tex, trim } from './hd2d.js';
+import { tex, trim, bakeColours } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
 import { shapeOf } from './base-shapes.js';
-import { fine, texOf, words, star } from './hub-3d.js';
+import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
@@ -993,6 +993,7 @@ function pieceInto(THREE, ware, id, tall, H, std, goldM) {
     model.position.y = H;
     model.rotation.y = -0.3;
     model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    bakeColours(model);
     ware.add(model);
   } else if (p.flat) {
     const k = Math.min(1, fit), h = Math.max(0.04, p.high * k), s = std({ color: p.side, roughness: 0.95 });
@@ -1079,6 +1080,7 @@ function chandelier(THREE, parent, x, y, z, k, top, { put, lathe, goldM, crystal
   many(new THREE.OctahedronGeometry(0.04), crystal, drops, 1.8);
   many(new THREE.SphereGeometry(0.017, 6, 4), crystal, beads);
   put(g, new THREE.SphereGeometry(0.07, 16, 12), crystal, 0, -0.5, 0, false);
+  mergeStatic(g, () => false);   // ~34 gold parts, one draw; only the whole chandelier sways
   g.rotation.y = seed;
   return g;
 }

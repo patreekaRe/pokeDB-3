@@ -188,6 +188,62 @@ export function trim(src) {
   return { c, x: x0 / u, y: y0 / u, w: (x1 - x0 + 1) / u, h: (y1 - y0 + 1) / u };
 }
 
+/** A still model's plain-coloured parts (no picture, glow or see-through, nothing of their own in `userData` but the
+    tap's `front` and js/base-mesh.js's part `kind`) baked into one mesh per finish that carries each part's colour on its vertices: a Game Corner cabinet
+    was 18 draw calls a frame, twice with its shadow, most of them one colour each (2026-10-16). Looks the same; only for
+    models whose parts never move or change on their own. */
+export function bakeColours(root) {
+  root.updateMatrixWorld(true);
+  const inv = root.matrixWorld.clone().invert(), sets = new Map();
+  root.traverse(o => {
+    const m = o.material;
+    if (!o.isMesh || o.isInstancedMesh || !o.visible || Array.isArray(m) || !m?.isMeshStandardMaterial) return;
+    if (m.map || m.emissiveMap || m.alphaMap || m.normalMap || m.vertexColors || m.transparent || m.alphaTest || m.emissive.getHex()) return;
+    if (Object.keys(o.userData).some(k => k !== 'front') || Object.keys(m.userData).some(k => k !== 'kind') || o.geometry.morphAttributes.position) return;
+    const k = [m.roughness, m.metalness, m.side, m.flatShading, m.envMapIntensity, o.castShadow, o.receiveShadow].join('|');
+    if (sets.has(k)) sets.get(k).push(o); else sets.set(k, [o]);
+  });
+  for (const list of sets.values()) {
+    if (list.length < 2) continue;
+    const parts = list.map(o => (o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone()).applyMatrix4(inv.clone().multiply(o.matrixWorld)));
+    if (parts.some(p => !p.attributes.normal)) { parts.forEach(p => p.dispose()); continue; }
+    const n = parts.reduce((s, p) => s + p.attributes.position.count, 0), pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    let at = 0;
+    parts.forEach((p, i) => {
+      const c = list[i].material.color, count = p.attributes.position.count;
+      pos.set(p.attributes.position.array, at * 3);
+      nor.set(p.attributes.normal.array, at * 3);
+      for (let v = 0; v < count; v++) col.set([c.r, c.g, c.b], (at + v) * 3);
+      at += count;
+      p.dispose();
+    });
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    const mat = list[0].material.clone();
+    mat.color.set('#ffffff'); mat.vertexColors = true;
+    const baked = new THREE.Mesh(geo, mat);
+    baked.castShadow = list[0].castShadow; baked.receiveShadow = list[0].receiveShadow;
+    Object.assign(baked.userData, list[0].userData);
+    root.add(baked);
+    for (const o of list) { o.removeFromParent(); o.geometry.dispose(); }
+  }
+}
+
+/** Shadows only from things big enough to show one: a bulb, knob or button (under `r` across its middle) cast a few
+    pixels of shadow and cost a draw call each in the shadow pass (the Game Corner had 175, 2026-10-16). */
+export function smallNoShadow(root, r = 0.1) {
+  root.updateMatrixWorld(true);
+  const s = new THREE.Vector3();
+  root.traverse(o => {
+    if (!o.isMesh || !o.castShadow || o.isInstancedMesh) return;
+    if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+    o.getWorldScale(s);
+    if (o.geometry.boundingSphere.radius * Math.max(s.x, s.y, s.z) < r) o.castShadow = false;
+  });
+}
+
 export function dispose(group) {
   group.traverse(o => {
     o.geometry?.dispose();

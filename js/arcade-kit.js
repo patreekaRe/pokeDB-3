@@ -16,6 +16,7 @@ import { record, best } from './corner-pot.js';
 import { postArcadeScore, openLeaderboard } from './leaderboard.js';
 import { ARCADE_BY_ID } from './data/leaderboard.js';
 import { buddy } from './trainercard.js';
+import { tooSoon } from './hd2d.js';
 
 const sprites = new Map(), stills = new Map();
 /** A Pokémon's front GIF as an image (its first frame when drawn on a canvas). */
@@ -401,6 +402,7 @@ export function runArcade(def, onClose) {
 
   function frame(now) {
     if (!cv?.isConnected) return;
+    if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }   // 60 fps at most, as the 3D places
     const dt = Math.min(0.05, (now - last) / 1000);
     last = now;
     if (state === 'play' && !help) game.tick?.(dt, now);
