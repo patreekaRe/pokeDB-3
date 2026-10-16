@@ -67,7 +67,7 @@ export const SHAPES = {
   milkcrate: { make: 'milkcrate' },
   pantry: { make: 'pantry', top: u(78) },
   minifridge: { make: 'minifridge', top: u(32) },
-  cooler: { make: 'cooler', top: u(26) },
+  cooler: { make: 'cooler' },   // no top: its handle stands up in the middle of the lid
   espresso: { make: 'espresso' },
 };
 
@@ -101,7 +101,7 @@ export const MAKES = {
     for (const x of [1.5, 62.5]) K.put(rb(L, u(3), u(12), kf - cf, 0.008), wood, X(x, 2), u(26), (cf + kf) / 2);
     K.put(rb(L, u(58), u(5), kf - cf, 0.006), dark, 0, u(22.5), (cf + kf) / 2);
     for (let i = 0; i < 19; i++) K.put(bx(L, u(2.8), u(3), 0.2), ivory, X(4.5 + i * 3.05, 2), u(26.5), kf - 0.1);
-    for (let i = 4; i < 59; i += 3) if (![2, 6].includes(Math.floor(i / 3) % 7)) K.put(bx(L, u(1.8), u(1.6), 0.12), ebony, X(i + 4, 2), u(28.6), kf - 0.15);
+    for (let i = 4; i < 56; i += 3) if (![2, 6].includes(Math.floor(i / 3) % 7)) K.put(bx(L, u(1.8), u(1.6), 0.12), ebony, X(i + 4, 2), u(28.6), kf - 0.15);
     K.put(rb(L, u(58), u(4), 0.07, 0.008), dark, 0, u(31), cf + 0.035);
     // two turned legs on toe blocks under the key bed, two brass pedals
     for (const x of [6, 58]) {
@@ -210,7 +210,7 @@ export const MAKES = {
   },
 
   minifridge(K, s, W, D, L) {
-    fridgeN(K, L, { x0: 5, x1: 27, h: 32, cut: 21, gap: 1, kick: 1.5, d: 0.5, hx: 23, handles: [[24, 30], [9, 19]], vents: 3 }, (top, bottom, z) => {
+    fridgeN(K, L, { x0: 5, x1: 27, h: 32, cut: 21, gap: 1, kick: 1.5, d: 0.5, hx: 23, handles: [[24, 30], [9, 19]], vents: 0 }, (top, bottom, z) => {
       top(disc(L, u(1.6), 0.01, 10), K.cloth(K.pal.c), X(10), u(27), z + 0.005);
       bottom(bx(L, u(6), u(7), 0.004), K.cloth('#fffbe8'), X(12), u(12.5), z + 0.002);
       bottom(disc(L, u(1.1), 0.01, 8), K.cloth(K.pal.a), X(12), u(15.5), z + 0.007);
@@ -235,7 +235,7 @@ export const MAKES = {
     }
     for (const x of [13, 19]) K.put(L.ball(u(1.5), 8, 6), K.metal(K.pal.a), X(x), u(15), f + 0.03);
     // the counter with the basin let into it, a steel bowl, a drain and a little water
-    const top = new THREE.Shape([[-0.5, -f - 0.01], [0.5, -f - 0.01], [0.5, f + 0.03], [-0.5, f + 0.03]].map(([x, y]) => new THREE.Vector2(x, y)));
+    const top = new THREE.Shape([[-0.5, -f - 0.03], [0.5, -f - 0.03], [0.5, f + 0.01], [-0.5, f + 0.01]].map(([x, y]) => new THREE.Vector2(x, y)));
     const rx = u(9), rz = 0.17, bzc = 0.03;
     top.holes.push(new THREE.Path().absellipse(0, -bzc, rx, rz, 0, TAU, true));
     const counter = new THREE.ExtrudeGeometry(top, { depth: u(6), bevelEnabled: false, curveSegments: 16 }).rotateX(-Math.PI / 2);
@@ -275,7 +275,7 @@ export const MAKES = {
 
   vending(K, s, W, D, L) {
     const { THREE } = L, body = K.gloss(K.pal.c), shade = K.plain(L.tone(K.pal.c, 0.7)), ink = K.plain('#202028');
-    const H = u(80), d = 0.62, f = d / 2, fd = 0.1;
+    const H = u(80), d = 0.62, f = d / 2, fd = 0.14;
     // the cabinet, its front door a frame round a deep window lit from behind
     K.put(L.rbox(1, H, d - fd, 0.03), body, 0, H / 2, -fd / 2);
     const door = new THREE.Shape([[-0.5, 0], [0.5, 0], [0.5, H], [-0.5, H]].map(([x, y]) => new THREE.Vector2(x, y)));
