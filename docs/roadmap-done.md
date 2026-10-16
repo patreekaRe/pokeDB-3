@@ -2757,3 +2757,6 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   the last visit sparkles and a line names what's new. Checked headless: nothing on the first visit, the trophy and
   Gym Leader lines after a win streak, nothing on the visit after.
 
+### House Upgrades' Backyard tab (2026-10-16, the user's ask: "backyard needs its own tab ... couldn't find the upgrade button")
+- The yard moved off 1F onto its own BACKYARD tab, its buy / grow card always shown; every Build key is sticky at the
+  page's foot. Checked headless at phone size: the key in view on 1F, the yard tab and a room build; no errors.

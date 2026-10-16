@@ -61,7 +61,7 @@ The first section began as the note on playtesting the live site and grew into t
   storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
   read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
 - **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
-  the HOUSE UPGRADES blueprint (centred on the main room, a path's width behind it), dashed till bought; a tap shows its
+  the HOUSE UPGRADES blueprint (its own BACKYARD tab since 2026-10-16, below), dashed till bought; a tap shows its
   card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
   `secretBase.house.yard` `{ size, items, wall, floor }` (`size` 2 the bigger yard, part e), its things packed there
   like a room's (`roomContents()` / `goRoom()` / `eachRoom()`). It is not one of `houseRooms()`, so nothing is built onto
@@ -133,8 +133,12 @@ The first section began as the note on playtesting the live site and grew into t
   is `house.yard.plot` (1), counted by `owns()` in `js/secret-base.js` (`YARD_GIFT`), and heard is `house.yard.met`
   (`metInYard()` / `meetInYard()`); a lent `?yard` hears it once a page load, any time, and its plot goes with the lent
   yard, so neither reaches a real save.
-- **The bigger yard** (2026-10-15, part e): a tap on the bought yard on the blueprint (`yardPick` with `canGrowYard()`
-  in `js/pc.js`) shows BIGGER BACKYARD, the bigger lot dashed round the yard; `buyBigYard()` in `js/secret-base.js`
+- **The BACKYARD tab** (2026-10-16, the user's ask: over 1F the yard sat where a room built off the back wall went, and
+  the Build key hid under the text window): HOUSE UPGRADES has a tab after the floors (`yardTab`), the yard drawn alone
+  with its Arch under the front edge (`yardPlan()`, on the shared `sheet()`), its card always shown under it, no tap
+  needed. 1F draws only the house. Every page's Build key sits in `.pc-act`, sticky at the foot of the scroll.
+- **The bigger yard** (2026-10-15, part e): the bought yard's BACKYARD tab (`canGrowYard()` in `js/pc.js`) shows
+  BIGGER BACKYARD, the new lawn dashed round the yard; `buyBigYard()` in `js/secret-base.js`
   (`BIG_YARD_PRICE` 1,000 in `js/data/house.js`) sets `house.yard.size` 2, the `bigyard` kind (16 x 11, `yardKind()`;
   `yardOf()` reads it), and moves the yard's things 2 across and 3 back, so they keep their places by the doormat
   (always the middle of the front edge). `buildYard()` sizes all it draws from `COLS` / `ROWS`, winter's snow too.

@@ -66,17 +66,17 @@ let dupes = false;   // Decorations picking a piece to duplicate, not to put awa
 // House upgrades: the doorway picked on the blueprint ({ room, pip, up } to build onto, or { join } between two rooms), the
 // room kind tried there and which of its turns, the floor looked at, and a built room picked (to take down, `sure` once asked)
 let spot = null, plan = null, turn = 0, floor = 0, picked = null, sure = false;
-let yardPick = false;   // the backyard's plot tapped on the blueprint
+let yardTab = false;   // the blueprint's BACKYARD tab, the yard drawn on its own (the user's ask: over 1F it sat under the rooms)
 // the blueprint's zoom and the point it's centred on, in tiles; kept across the redraw every tap makes
 let view = { z: 1, cx: null, cy: null };
 const resetView = () => { view = { z: 1, cx: null, cy: null }; };
-const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; yardPick = false; };
+const unpick = () => { spot = plan = picked = null; turn = 0; sure = false; };
 const ownsYard = (house) => !!house?.yard && !house.yard.lent;   // ?yard lends one for a playtest
 const canGrowYard = (house) => ownsYard(house) && !(house.yard.size > 1);
-const yardHint = (house) => !ownsYard(house) ? ' The green plot behind is a backyard.' : canGrowYard(house) ? ' Tap the backyard to make it bigger.' : '';
-/** What the PC says with the yard picked: the plot to buy, or the bought one to make bigger. */
+/** What the PC says on the BACKYARD tab: the plot to buy, the bought one to make bigger, or the one grown as big as it goes. */
 const yardSay = (house) => canGrowYard(house)
   ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the gate.`
+  : ownsYard(house) ? 'Your backyard, as big as it grows, through the garden arch beside the Ancient Tree.'
   : !inBase && !getSave().baseOwned ? 'A backyard behind the Ancient Tree. Make the Ancient Tree your Secret Base first.'
   : `A backyard behind the Ancient Tree, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
@@ -231,7 +231,7 @@ const PAGES = {
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
-      ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
+      ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'How close you are to each Gym Leader. Gifts from Kurt\'s Workshop, given at their home, fill their hearts.', () => show('friends'), pcNew('friends', save)]] : []),
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
       ...(fame && onFame ? [[fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]] : []),
@@ -573,6 +573,11 @@ const PAGES = {
           }));
         return card;
       }
+      if (ownsYard(house)) {
+        const big = shapeOf('bigyard');
+        card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${big.w} × ${big.h} tiles of lawn, as big as it grows.`));
+        return card;
+      }
       if (!inBase && !save.baseOwned) {
         card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', 'Make the Ancient Tree your Secret Base first, then its backyard can be built.'));
         return card;
@@ -587,6 +592,22 @@ const PAGES = {
         }));
       return card;
     };
+    // a tab per floor, one more over the top to build up into once the main room is bigger, and the backyard's own
+    const tabs = el('div', 'pc-chips pc-floors');
+    const tab = (label, on, go) => {
+      const t = el('button', `pc-chip${on ? ' on' : ''}`, label);
+      t.type = 'button';
+      t.addEventListener('click', () => { playSound('select'); unpick(); resetView(); go(); show('house'); });
+      tabs.append(t);
+    };
+    for (let lv = 0; lv <= (big ? topFloor(house) + 1 : 0); lv++) tab(floorName(lv), !yardTab && lv === floor, () => { floor = lv; yardTab = false; });
+    tab('Backyard', yardTab, () => { yardTab = true; });
+    // the Build key stays in sight at the foot of the page, over the scroll (the user's ask: it hid under the text window)
+    const act = (...n) => { const a = el('div', 'pc-act'); a.append(...n); return a; };
+    if (yardTab) {
+      glass.replaceChildren(h, tabs, yardPlan(house), act(yardCard()));
+      return speak(yardSay(house));
+    }
     if (!big) {
       const card = el('div', 'pc-plan');
       card.append(el('b', 'pc-plan-name', 'BIGGER MAIN ROOM'), el('small', 'pc-plan-note', '11 × 8 → 14 × 10 tiles. Then build rooms onto any wall you like, or upstairs.'),
@@ -596,29 +617,19 @@ const PAGES = {
           show('house');
           speak('Your main room is bigger! Tap a green spot on a wall to build a room there, or go to 2F to build upstairs.');
         }));
-      glass.replaceChildren(h, blueprint(house, null), yardPick ? yardCard() : card);
-      if (yardPick) return speak(yardSay(house));
-      return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it.${yardHint(house)}`);
-    }
-    // a tab per floor, and one more over the top to build up into
-    const tabs = el('div', 'pc-chips pc-floors');
-    for (let lv = 0; lv <= topFloor(house) + 1; lv++) {
-      const t = el('button', `pc-chip${lv === floor ? ' on' : ''}`, floorName(lv));
-      t.type = 'button';
-      t.addEventListener('click', () => { playSound('select'); unpick(); resetView(); floor = lv; show('house'); });
-      tabs.append(t);
+      glass.replaceChildren(h, tabs, blueprint(house, null), act(card));
+      return speak(`First, make your main room bigger for ${BIG_PRICE} PokéCoins. Then you can build more rooms onto it. The Backyard tab has your lawn.`);
     }
     kids.push(tabs, blueprint(house, fit));
-    if (yardPick) kids.push(yardCard());
-    else if (spot?.join) {
-      kids.push(buy(`Doorway · ${DOOR_PRICE}`, () => {
+    if (spot?.join) {
+      kids.push(act(buy(`Doorway · ${DOOR_PRICE}`, () => {
         const { room, pip, to, toPip } = spot.join, done = buyDoor(loadBase(), room, pip, to, toPip);
         if (!done) { playSound('cancel'); return short(DOOR_PRICE); }
         unpick();
         playSound('item-get');
         show('house');
         speak(`A new doorway!${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear it.` : ''}`);
-      }));
+      })));
     } else if (spot) {
       const taken = takenOn(house, floor);
       const list = el('div', 'pc-menu pc-kinds');
@@ -647,26 +658,25 @@ const PAGES = {
           show('house');
           speak(`Your new ${name} is built! ${stairs ? 'Climb the new stairs to it' : 'Walk through to it'} in your Secret Base.${done.moved.length ? ` The ${[...new Set(done.moved)].join(', ')} went into storage to clear the way.` : ''}`);
         }));
-        kids.push(row);
+        kids.push(act(row));
       }
       kids.push(list);
     } else if (picked) {
       const r = houseRooms(house).find(x => x.id === picked), name = ROOM_KINDS[r.kind].name;
-      kids.push(buy(sure ? 'Sure? Take it down' : 'Take down', () => {
+      kids.push(act(buy(sure ? 'Sure? Take it down' : 'Take down', () => {
         if (!sure) { playSound('select'); sure = true; show('house'); return speak(`Take down the ${name}? Its furniture goes back into storage. No coins come back.`); }
         if (!takeDown(loadBase(), picked)) { playSound('cancel'); sure = false; show('house'); return speak(`Other rooms are only reached through the ${name}. Take those down first.`); }
         unpick();
         playSound('confirm');
         show('house');
         speak(`The ${name} is gone, and its furniture is back in storage.`);
-      }, ' pc-down'));
+      }, ' pc-down')));
     }
     glass.replaceChildren(...kids);
-    if (yardPick) speak(yardSay(house));
-    else if (spot?.join) speak(`Open a doorway between these two rooms for ${DOOR_PRICE} PokéCoins?`);
+    if (spot?.join) speak(`Open a doorway between these two rooms for ${DOOR_PRICE} PokéCoins?`);
     else if (spot && !plan) speak(spot.up ? 'Pick a room to build upstairs. Stairs will climb to it from that back wall.' : 'Pick a room to build there. Rooms that won\'t fit are greyed out.');
     else if (!spot && !picked) speak(floor ? `Tap a green spot on a back wall of the floor below to build a room up a staircase from it, ${ROOM_PRICE} PokéCoins.`
-      : `Tap a green spot on any wall to build a room there, ${ROOM_PRICE} PokéCoins. Gold spots join two rooms side by side. Tap a room to take it down.${yardHint(house)}`);
+      : `Tap a green spot on any wall to build a room there, ${ROOM_PRICE} PokéCoins. Gold spots join two rooms side by side. Tap a room to take it down.`);
   },
   rename() {
     const form = el('form', 'pc-name');
@@ -703,51 +713,9 @@ function blueprint(house, fit) {
   const place = (r) => r.shape.rects.map(([x, y, w, h]) => [x + r.gx, y + r.gy, w, h]);
   const ghost = fit ? shapeOf(fit.kind, fit.rot).rects.map(([x, y, w, h]) => [x + fit.gx, y + fit.gy, w, h]) : [];
   const door = floor ? [] : [[entry.at - 1, main.shape.h, 3, 1.5]];
-  // the backyard behind the house, a path's width clear of the rooms, centred on the main room (its way in is the
-  // Clearing's garden arch, not a door of the house); bought or a plot to buy (a tap picks it)
-  const mid = Math.floor(main.shape.w / 2), yard = shapeOf(yardKind(house)), owned = ownsYard(house);
-  const yx = main.gx + mid - Math.floor(yard.w / 2), yy = Math.min(...rooms.map(r => r.gy)) - yard.h - 1;
-  const lot = floor ? [] : [[yx, yy, yard.w, yard.h]];
-  // the bigger yard it would grow into, dashed round it while it's picked to buy
-  const big = shapeOf('bigyard'), grow = lot.length && yardPick && canGrowYard(house)
-    ? [[main.gx + mid - Math.floor(big.w / 2), yy + yard.h - big.h, big.w, big.h]] : [];
-  const every = [...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door, ...lot, ...grow];
-  const x0 = Math.min(...every.map(r => r[0])) - 2, y0 = Math.min(...every.map(r => r[1])) - 2;
-  const x1 = Math.max(...every.map(r => r[0] + r[2])) + 2, y1 = Math.max(...every.map(r => r[1] + r[3])) + 2;
-  const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': `House blueprint, ${floorName(floor)}` });
-  const pat = svg('pattern', { id: 'pc-bp-grid', width: 1, height: 1, patternUnits: 'userSpaceOnUse' });
-  pat.append(svg('path', { d: 'M1 0H0V1', fill: 'none', stroke: '#24507a', 'stroke-width': 0.05 }));
-  const defs = svg('defs');
-  defs.append(pat);
-  s.append(defs, svg('rect', { x: x0, y: y0, width: x1 - x0, height: y1 - y0, fill: 'url(#pc-bp-grid)' }));
-  // each block's outline, then its fill again over it, so a shaped room's inner seams don't show
-  const room = (rects, cls, label, tap) => {
-    const g = svg('g', { class: cls });
-    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-edge' }));
-    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-fill' }));
-    if (label) {
-      const [x, y, w, h] = [...rects].sort((a, b) => b[2] * b[3] - a[2] * a[3])[0];
-      const size = Math.min(1.1, w * 1.05 / label.length, h * 0.35);
-      const t = svg('text', { x: x + w / 2, y: y + h / 2, 'font-size': size, class: 'pc-bp-name' });
-      t.textContent = label;
-      g.append(t);
-    }
-    if (tap) g.addEventListener('click', tap);
-    s.append(g);
-  };
+  const { s, room, full } = sheet([...rooms.flatMap(place), ...below.flatMap(place), ...ghost, ...door], `House blueprint, ${floorName(floor)}`);
   for (const r of below) room(place(r), 'pc-bp-room below');
   if (door.length) room(door, 'pc-bp-room entry', 'Entry');
-  if (lot.length) {
-    if (grow.length) room(grow, 'pc-bp-room yard plot picked');
-    room(lot, `pc-bp-room yard${owned ? '' : ' plot'}${yardPick ? ' picked' : ''}`, 'Backyard', () => {
-      playSound('select');
-      const was = yardPick;
-      unpick();
-      yardPick = (!owned || canGrowYard(house)) && !was;
-      show('house');
-      if (owned && !yardPick) speak(canGrowYard(house) ? 'Your backyard, through the garden arch beside the Ancient Tree.' : 'Your backyard, made bigger, through the garden arch beside the Ancient Tree.');
-    });
-  }
   for (const r of rooms) {
     const name = ROOM_KINDS[r.kind].name;
     room(place(r), `pc-bp-room${picked === r.id ? ' picked' : ''}`, name, () => {
@@ -779,8 +747,7 @@ function blueprint(house, fit) {
     if (spot && line) speak(line);
   };
   if (!floor) pip(main.gx + entry.at + 0.5, main.gy + main.shape.h, 'shut');
-  if (!floor && owned) pip(main.gx + back.at + 0.5, main.gy, 'shut');
-  if (!house?.big) return wrap(s, [x0, y0, x1 - x0, y1 - y0]);
+  if (!house?.big) return wrap(s, full);
   const taken = takenOn(house, floor);
   // this floor's doorways and staircases, and the green spots a room fits onto
   for (const r of rooms) r.shape.pips.forEach((p, i) => {
@@ -802,7 +769,52 @@ function blueprint(house, fit) {
     const [dx, dy] = OUT[j.side], on = spot?.join?.room === j.room && spot.join.pip === j.pip;
     pip(j.x + 0.5 + dx * 0.5, j.y + 0.5 + dy * 0.5, `join${on ? ' on' : ''}`, pick({ join: j }));
   }
-  return wrap(s, [x0, y0, x1 - x0, y1 - y0]);
+  return wrap(s, full);
+}
+
+/** A blueprint's sheet: the dark grid round every block given, two tiles over, and `room()` to draw a block on it, named
+    and tapped. */
+function sheet(every, label) {
+  const x0 = Math.min(...every.map(r => r[0])) - 2, y0 = Math.min(...every.map(r => r[1])) - 2;
+  const x1 = Math.max(...every.map(r => r[0] + r[2])) + 2, y1 = Math.max(...every.map(r => r[1] + r[3])) + 2;
+  const s = svg('svg', { viewBox: `${x0} ${y0} ${x1 - x0} ${y1 - y0}`, class: 'pc-bp', role: 'img', 'aria-label': label });
+  const pat = svg('pattern', { id: 'pc-bp-grid', width: 1, height: 1, patternUnits: 'userSpaceOnUse' });
+  pat.append(svg('path', { d: 'M1 0H0V1', fill: 'none', stroke: '#24507a', 'stroke-width': 0.05 }));
+  const defs = svg('defs');
+  defs.append(pat);
+  s.append(defs, svg('rect', { x: x0, y: y0, width: x1 - x0, height: y1 - y0, fill: 'url(#pc-bp-grid)' }));
+  // each block's outline, then its fill again over it, so a shaped room's inner seams don't show
+  const room = (rects, cls, label, tap) => {
+    const g = svg('g', { class: cls });
+    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-edge' }));
+    for (const [x, y, w, h] of rects) g.append(svg('rect', { x, y, width: w, height: h, class: 'pc-bp-fill' }));
+    if (label) {
+      const [x, y, w, h] = [...rects].sort((a, b) => b[2] * b[3] - a[2] * a[3])[0];
+      const size = Math.min(1.1, w * 1.05 / label.length, h * 0.35);
+      const t = svg('text', { x: x + w / 2, y: y + h / 2, 'font-size': size, class: 'pc-bp-name' });
+      t.textContent = label;
+      g.append(t);
+    }
+    if (tap) g.addEventListener('click', tap);
+    s.append(g);
+  };
+  return { s, room, full: [x0, y0, x1 - x0, y1 - y0] };
+}
+
+/** The BACKYARD tab: the lawn on its own (the user's ask: drawn behind the house, rooms built off the back wall ran into
+    it), its garden arch under the front edge, and the bigger lot it would grow into dashed round it, wider at the sides
+    and deeper behind. */
+function yardPlan(house) {
+  const yard = shapeOf(yardKind(house)), owned = ownsYard(house), big = shapeOf('bigyard');
+  const lot = [[0, 0, yard.w, yard.h]], arch = [[Math.floor(yard.w / 2) - 1, yard.h, 3, 1.5]];
+  // the new lawn alone (the band behind, named, and a strip each side), so its name isn't under the yard's
+  const gx = Math.floor(yard.w / 2) - Math.floor(big.w / 2), back = big.h - yard.h;
+  const grow = canGrowYard(house) ? [[gx, -back, big.w, back], [gx, 0, -gx, yard.h], [yard.w, 0, big.w - yard.w + gx, yard.h]] : [];
+  const { s, room, full } = sheet([...lot, ...arch, ...grow], 'Backyard blueprint');
+  if (grow.length) room(grow, 'pc-bp-room yard plot', 'Bigger backyard');
+  room(lot, `pc-bp-room yard${owned ? '' : ' plot'}`, 'Backyard');
+  room(arch, 'pc-bp-room entry', 'Arch');
+  return wrap(s, full);
 }
 
 /** The blueprint in its frame, zoomed by a pinch, the wheel or the + / − keys and panned by a drag (the user's ask: a big
