@@ -6,11 +6,11 @@ import { BADGES } from '../js/data/badges.js';
 const save = (o = {}) => ({ stats: { runsWon: 0, winsBy: {}, bossKills: {}, level5WinsBy: {} }, maxLevel: 0, gym: {}, dex: { done: [], defeated: [] }, unlocked: [],
   shiny: { owned: [] }, badges: [], tower: {}, towns: {}, hallOfFame: [], safariDex: { caught: [] }, journal: { claimed: [] }, ...o });
 
-test('every Journal task has a unique id, a tab, a goal and a coin reward', () => {
+test('every Journal task has a unique id, a tab, a goal and a reward: PokéCoins or a Trainer piece', () => {
   assert.equal(new Set(JOURNAL_TASKS.map(t => t.id)).size, JOURNAL_TASKS.length);
   for (const t of JOURNAL_TASKS) {
     assert.ok(JOURNAL_TABS.some(x => x.id === t.tab), t.id);
-    assert.ok(t.goal >= 1 && t.reward.coins > 0, t.id);
+    assert.ok(t.goal >= 1 && (t.reward.coins > 0 || t.reward.kind), t.id);
     if (!t.id.startsWith('starters-')) assert.equal(journalProgress(t, save()).n, 0, t.id);   // a fresh save has done nothing but own the free starters
   }
 });
@@ -34,4 +34,20 @@ test('each rank past the first earns a badge with a name of its own', () => {
   }
   assert.equal(new Set(BADGES.map(b => b.name)).size, BADGES.length);
   assert.ok(JOURNAL_BY_ID['gym-all']);
+});
+
+test('the rebalance: the whole Journal pays well under 30,000 PokéCoins, and its milestones give the Trainer set', async () => {
+  const { JOURNAL_FURNITURE, trophies } = await import('../js/data/journal.js');
+  const { FURNITURE_BY_KIND, earnedFurniture } = await import('../js/data/furniture.js');
+  const total = JOURNAL_TASKS.reduce((n, t) => n + (t.reward.coins || 0), 0);
+  assert.ok(total < 30000, String(total));
+  for (const f of JOURNAL_FURNITURE) {
+    assert.equal(JOURNAL_BY_ID[f.task].reward.kind, f.kind);
+    assert.deepEqual(FURNITURE_BY_KIND[f.kind].from, ['journal', f.task]);
+  }
+  const s = save({ stats: { runsWon: 12, winsBy: {}, bossKills: {}, level5WinsBy: {} }, journal: { claimed: ['wins-1'] } });
+  assert.ok(earnedFurniture({ ...s, badges: [], unlocked: [], feats: [], corner: {}, workshop: {}, ranger: {} }).some(p => p.kind === 'trophycase'));
+  const t = trophies(s);
+  assert.equal(t.length, 12);
+  assert.deepEqual(t.slice(0, 3).map(x => x.got), [true, true, false]);
 });

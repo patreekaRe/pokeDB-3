@@ -2748,4 +2748,12 @@ Pillar, Collection) counted from what the save already keeps, so old saves start
 PokéCoins and climb seven Journal Ranks, a badge for each past Beginner (188 badges), the rank on the Trainer Card. The
 same pinned notes in a leather frame under a red plaque. Checked headless: the PC row's count, the board, six claims to
 Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no errors.
+- **Done (2026-10-16): the boards' coins rebalanced, the Trainer set** (the user: 84k coins "excessive"; asked for a
+  self-tracked Gym Leader case): the Journal pays about 26,500 PokéCoins in all (a third), the Ranger board about 11,700
+  (half, Expeditions halved too); six Journal milestones give a Trainer furniture piece, four filling in by themselves
+  (trophy case, Gym Leader case, Sky Pillar model, Hall of Fame plaque); Grand Champion opens a gold Pokédex shell.
+  Checked headless: each piece paints, the Gym Leader case repaints on a new win, the base opens, no errors.
+  Then the homecoming news (the user: see the display "update in real time"): coming home, a case that changed since
+  the last visit sparkles and a line names what's new. Checked headless: nothing on the first visit, the trophy and
+  Gym Leader lines after a win streak, nothing on the visit after.
 

@@ -852,3 +852,14 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .ranger-board.journal .rb-tab { background: linear-gradient(#7a3a24, #5a2a1a); color: #f4e0c8; box-shadow: inset 0 2px 0 #9a5a3a; }
 .ranger-board.journal .rb-tab.on { background: linear-gradient(#e8c890, #d4aa6a); color: #3a1a10; }
 .ranger-board.journal .rb-stamp { color: #2a5a9a; }
+
+/* the Secret Base's line when a Trainer set case has filled in since you were last home (js/base-3d.js's liveNews()) */
+.b3-news {
+  position: absolute; left: 50%; top: 64px; translate: -50% 0; z-index: 5; width: max-content; max-width: calc(100% - 32px); box-sizing: border-box;
+  margin: 0; padding: 10px 16px; border-radius: 14px; border: 3px solid #e2b648; background: linear-gradient(#fffaf0, #f4e8cc);
+  box-shadow: 0 6px 20px #0006; color: #4a3424; font: 13px/1.4 var(--pixel-font); text-align: center; pointer-events: none;
+}
+.b3-news[hidden] { display: none; }
+.b3-news.in { animation: b3NewsIn 0.45s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes b3NewsIn { from { translate: -50% -16px; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .b3-news.in { animation: none; } }

@@ -419,4 +419,23 @@ Card's JOURNAL line shows the rank. The board is `openJournal()` in `js/ranger.j
 ranks and save field), the same notes in a stitched leather frame under a red plaque (`.ranger-board.journal` in
 `css/hub.css`), a note's photo a big emoji (`pic.emoji`) or a Gym Leader's sprite (`pic.src`), claimed notes stamped
 LOGGED ✓. A new task is a line in `build()` there.
+- **Rebalanced, with the Trainer set** (2026-10-16, the user: 84,000 PokéCoins in all was "excessive"): the Journal's
+  coins are a third of what was first set (`pay()`, about 26,500 in all), the Ranger board's half (about 11,700, its
+  Expeditions 100 / 175 / 300 a week), since both together paid several times what coins can buy and an old save's
+  day-one claims would have emptied the shop. Six milestones give a **Trainer set** piece instead (`JOURNAL_FURNITURE`,
+  `js/data/furniture.js`'s `journal` source, painted in `js/base-furniture-trainer.js`): the trophy case (the first
+  win), the Gym Leader case (the first Gym Leader; a new `gym-first` task), the Sky Pillar model (floor 10), the Hall of
+  Fame plaque (the first entry), the gold Pokédex stand (every page) and the dojo banner (every star). The first four
+  fill in by themselves: a family's `live()` goes into its picture's cache key in `makePiece()` (js/base-furniture.js),
+  so the Secret Base repaints it as what it shows changes (`trophies()` in `js/data/journal.js` lists the case's twelve;
+  the Gym Leader case shows `LEADER_PICS` from js/base-furniture-gym.js, a silhouette till beaten, gold once all are).
+  Players also still place each Gym Leader's signed poster, from the third win against them. **Grand Champion** opens
+  the gold Pokédex shell in Settings (`goldShell()` in `js/data/journal-ranks.js`, the chip hidden till then; the rank
+  bar names the perk).
+- **The cases update while you're away** (2026-10-16, the user: "cool if players see their display update in real
+  time"): a live family also has `news(was, now)`. Each time a Secret Base room is shown (`showRoom()`, and the first
+  open), `liveNews()` in js/base-3d.js compares each placed live piece's `live()` with `base.liveSeen[kind]` (what it
+  showed last visit, saved in the base). A changed one sparkles (gold glints, `sparkle()` / `tickSparks()`, skipped
+  under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
+  Leader case!"). A piece placed for the first time only records what it shows.
 
