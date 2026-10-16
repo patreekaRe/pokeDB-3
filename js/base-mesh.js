@@ -40,6 +40,12 @@ import { MAKES as MAKES_W7 } from './base-models-w7.js';
 import { MAKES as MAKES_T, ITEMS } from './base-models-t.js';
 import { MAKES as MAKES_Y } from './base-models-y.js';
 import { MAKES as MAKES_FR } from './base-models-friends.js';
+import { MAKES as MAKES_L } from './base-models-l.js';
+import { MAKES as MAKES_M } from './base-models-m.js';
+import { MAKES as MAKES_N } from './base-models-n.js';
+import { MAKES as MAKES_O } from './base-models-o.js';
+import { MAKES as MAKES_P } from './base-models-p.js';
+import { MAKES as MAKES_Q } from './base-models-q.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -193,18 +199,21 @@ function merge(geos) {
   const parts = geos.map(g => g.index ? g.toNonIndexed() : g);
   const n = parts.reduce((s, g) => s + g.attributes.position.count, 0);
   const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2);
+  const col = parts.some(g => g.attributes.color) ? new Float32Array(n * 3).fill(1) : null;
   let at = 0;
   for (const g of parts) {
     const c = g.attributes.position.count;
     pos.set(g.attributes.position.array, at * 3);
     nor.set(g.attributes.normal.array, at * 3);
     if (g.attributes.uv) uv.set(g.attributes.uv.array, at * 2);
+    if (col && g.attributes.color) col.set(g.attributes.color.array, at * 3);
     at += c;
   }
   const out = new THREE.BufferGeometry();
   out.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   out.setAttribute('normal', new THREE.BufferAttribute(nor, 3));
   out.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  if (col) out.setAttribute('color', new THREE.BufferAttribute(col, 3));
   return out;
 }
 
@@ -266,9 +275,31 @@ function kit(id, paint) {
   };
 }
 
+// wood and cloth share one grain or weave texture, so their colours ride along as vertex colours and the piece draws
+// each once (2026-10-16: a doll sewn in seven cloths was seven draws); plain colours are baked later by bakeColours()
+const TINTABLE = new Set(['wood', 'cloth']);
+const tintKey = (m) => TINTABLE.has(m.userData.kind) && Object.keys(m.userData).length === 1 && !m.vertexColors
+  ? [m.userData.kind, m.map?.uuid, m.roughness, m.metalness, m.side, m.transparent, m.opacity, m.alphaTest, m.depthWrite, m.emissive.getHex(), m.flatShading].join('|') : m;
+
 function assemble(K, bins = K.bins) {
-  const g = new THREE.Group();
+  const g = new THREE.Group(), sets = new Map();
   for (const [m, geos] of bins) {
+    const k = tintKey(m);
+    if (!sets.has(k)) sets.set(k, []);
+    sets.get(k).push([m, geos]);
+  }
+  for (const list of sets.values()) {
+    let [[m, geos]] = list;
+    if (list.length > 1) {
+      geos = list.flatMap(([mm, gs]) => gs.map(geo => {
+        const n = geo.attributes.position.count, c = new Float32Array(n * 3);
+        for (let i = 0; i < n; i++) c.set([mm.color.r, mm.color.g, mm.color.b], i * 3);
+        geo.setAttribute('color', new THREE.BufferAttribute(c, 3));
+        return geo;
+      }));
+      m = m.clone();
+      m.color.set('#ffffff'); m.vertexColors = true;
+    }
     const mesh = new THREE.Mesh(merge(geos), m);
     mesh.castShadow = m.userData.kind !== 'glass';
     mesh.receiveShadow = true;
@@ -1777,7 +1808,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }

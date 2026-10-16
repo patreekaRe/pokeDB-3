@@ -53,6 +53,7 @@ export const NEXT = [
   ['runs', 'Mewtwo has left the character select: start its run from the open Sealed Gate or the Depths camp.'],
   ['base', 'House Upgrades has its own Backyard tab, and the Build key stays in sight under any blueprint.'],
   ['fixes', 'Cooler and smoother on phones: 3D places and arcade games cap at 60 fps, the Mall draws far less, the Clearing no longer stutters, and the Home Screen app plays as smoothly as the browser.'],
+  ['base', 'Every furniture piece is a clean 3D model now, the Dojo, Safari and Trainer sets and Gym Leader posters included, and furnished rooms run lighter.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

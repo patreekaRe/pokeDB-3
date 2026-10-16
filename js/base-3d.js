@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -452,6 +452,7 @@ function buildPieces() {
     for (let x = 0; x < fw; x++) for (let y = 0; y < fh; y++) blocked.add(`${it.x + x},${it.y + y}`);
   });
   bendOut(pieceGroup);
+  smallNoShadow(pieceGroup);
   lampLights.forEach((l, i) => { l.visible = i < lamps.length; if (lamps[i]) l.position.copy(lamps[i]); });
   if (mon && blocked.has(key(walker.tile.x, walker.tile.y))) {
     walker.tile = nearestFree(walker.tile);
@@ -481,7 +482,7 @@ function makePiece(it, ghostly = false, lift = null) {
       if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffffff'); m.emissiveMap = tex(mask(art, p.glow)); winMats.push(m); }
       return m;
     });
-    if (ghostly) ownPictures(model);
+    if (ghostly) ownPictures(model); else bakeColours(model);
     model.traverse(o => { if (o.isMesh) { o.castShadow = !ghostly; o.receiveShadow = !ghostly; [o.material].flat().forEach(see); } });
     model.position.set(it.x - COLS / 2 + p.w / 2, 0, topOf(it.x) - ROWS / 2 + (ghostly ? 0.01 : 0));
     group.add(model);
@@ -524,6 +525,8 @@ function makePiece(it, ghostly = false, lift = null) {
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; }
     return m;
   });
+  // a still piece's plain-coloured parts as one draw (2026-10-16: a room of 40 pieces drew 522 calls a frame, now 367)
+  if (!ghostly && !model.userData.parts && !model.userData.doors) bakeColours(model);
   if (!ghostly) dressPlay(THREE, model, p);
   if (ghostly) ownPictures(model);
   model.traverse(o => {
