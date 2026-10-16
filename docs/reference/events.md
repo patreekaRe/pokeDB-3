@@ -46,7 +46,9 @@ second-line captions were too much text); the first tap rings it in gold and say
 by the prop's draw function off `actFrame()`; skipped under reduced motion), then takes effect. Berry Tree:
 eat (berries fall and vanish) or plant (one flies into the empty plot, a sprout comes up). Either way, since 2026-10-16 (the user's ask:
 berries from more than the backyard), 1-2 garden berries go in the Satchel (`pocketBerries()` in `js/run.js`, `TREE_BERRIES`
-weighted to Oran, once a room through `glean()`; not in a Safari, the Sky Pillar, a peek or a visit). Hot Spring: soak
+weighted to Oran, once a room through `glean()`; not in a Safari, the Sky Pillar, a peek or a visit). The first ever, Professor Oak
+slides in (`treeTalk()`, `gymTalk()`, once a save as `told.tree` in `js/held-tips.js`), his lines following whether you
+have a backyard and whether Kurt's Workshop is open. Hot Spring: soak
 in the big pool (a cloud of steam) or dip in the small one (ripples); a rubber duck bobs. Wishing Well: its
 two halves are the two tosses (signs leaning apart); a coin (a Nugget for the big toss) arcs in, splashes,
 and a win sends light and sparkles up. Item Ball (60% an item, rising straight out via `offerItem(item, next, { opened:

@@ -77,7 +77,7 @@ import { track, claimable } from './missions.js';
 import { trackTowns, trackFavours, handInFriend, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
-  homeTalk, HEART_LINES, folkChats, clearingLit, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
+  homeTalk, HEART_LINES, folkChats, clearingLit, workshopOpen, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
 import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -395,6 +395,28 @@ function pocketBerries() {
   if (!glean(gleanKey(run.map.byId[run.current], 'berries'), { id, n })) return '';
   const name = MATERIALS_BY_ID[id].name;
   return ` You pocket ${n === 1 ? `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}` : `${n} ${name.replace(/y$/, 'ies')}`} for your Satchel.`;
+}
+
+/* The first berry a Berry Tree gives (2026-10-16, the user's ask): Professor Oak slides in over the room to say what it's
+   for, once a save (js/held-tips.js's 'tree'). What he says follows what you have: a backyard or not, Kurt's Workshop open
+   or not. */
+async function treeTalk() {
+  if (toldHeld('tree')) return;
+  tellHeld('tree');
+  const save = getSave(), yard = save.secretBase?.house?.yard, owned = yard && !yard.lent;
+  const lines = [
+    'Oh ho! Is that your first berry? Wonderful! Berries are a favourite subject of mine.',
+    'It\'s gone in your Satchel, and it keeps there between runs, win or lose.',
+    owned ? 'You can grow plenty more in a berry plot in your backyard. Water them each day for extra, and sell any spares!'
+      : save.baseOwned ? 'Build a backyard behind your Secret Base on the PC\'s House Upgrades, and you can grow your own in a berry plot.'
+        : 'Once you have a Secret Base, a backyard behind it lets you grow your own in a berry plot.',
+    workshopOpen(save) ? 'And take them to Kurt\'s Workshop! He turns berries into held berries and items you can pack for a run.'
+      : 'Hold on to them. Someone handy in the Clearing may make something of them someday!',
+    'Now, off you go. Your run won\'t wait!',
+  ];
+  event3dMod?.freezeEvent(true);
+  try { await gymTalk({ id: 'oak', name: 'Oak', sprite: 'assets/trainers/oak.png' }, lines, { lit: true, title: 'PROFESSOR ' }); }
+  finally { event3dMod?.freezeEvent(false); }
 }
 
 function restoreRun(saved) {
@@ -3780,7 +3802,9 @@ const EVENT_CHOICES = {
         run.hp += heal;
         playSound('heal-hp');
         await showHpChange();
-        tell(`Healed ${heal} HP.${pocketBerries()}`);
+        const got = pocketBerries();
+        tell(`Healed ${heal} HP.${got}`);
+        if (got) await treeTalk();
         done();
       }),
       spotOption(`Plant +${grow} max HP`, `Max HP +${grow} for the rest of the run.`, async () => {
@@ -3789,7 +3813,9 @@ const EVENT_CHOICES = {
         run.hp += grow;
         playSound('stat-up');
         await showHpChange();
-        tell(`Max HP +${grow}!${pocketBerries()}`);
+        const got = pocketBerries();
+        tell(`Max HP +${grow}!${got}`);
+        if (got) await treeTalk();
         done();
       }),
     ] };
