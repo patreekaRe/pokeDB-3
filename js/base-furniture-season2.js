@@ -91,7 +91,7 @@ const WEDDING = [
   { id: 'weddingarch', name: 'Flower wedding arch', w: 2, h: 1, price: 1200, draw(x, b, vw) {
     floorShadow(x, b, vw);
     for (const px of [1, 53]) panel(x + px, b - 5, 10, 5, IVORY);
-    for (const px of [4, 56]) { cyl(x + px, b - 62, 4, 57, WHITE); bow(x + px + 2, b - 34, BLUSH); }
+    for (const px of [4, 56]) { cyl(x + px, b - 62, 4, 57, WHITE); bow(x + px + 2, b - 34, BLUSH, 0.85); }
     arcS(x + 32, b - 62, 26, Math.PI, Math.PI * 2, WHITE, 4);
     arcS(x + 32, b - 62, 27.6, Math.PI, Math.PI * 2, sh(WHITE, -1), 0.8);
     for (let i = 0; i <= 12; i++) { const a = Math.PI + i / 12 * Math.PI; leaf(x + 32 + Math.cos(a) * 26, b - 62 + Math.sin(a) * 26 - 1, 2.6, 1.6, SAGE, Math.cos(a)); }
@@ -233,7 +233,7 @@ const WEDDING_WALL = [
     path(Array.from({ length: 30 }, (_, n) => [x + 3 + n * 2, j(3 + n * 2)]), sh(SAGE, -1), 1.5);
     for (let i = 5; i <= 59; i += 3) leaf(x + i, j(i) + 1, 2, 1.3, SAGE, 0.6);
     for (let i = 7, n = 0; i <= 57; i += 5, n++) rose(x + i, j(i), n % 3 ? 2.2 : 2.8, [ROSE, WHITE, BLUSH][n % 3]);
-    bow(x + 4, 14, BLUSH); bow(x + 60, 14, BLUSH);
+    bow(x + 7, 15, BLUSH, 0.8); bow(x + 57, 15, BLUSH, 0.8);
   } },
   // a gold-framed wall of roses, a warm neon heart lit in the middle of it
   { id: 'photobackdrop', name: 'Wedding flower wall', w: 2, h: 1, layer: 'wall', price: 700, glow: ['#ffd890'], wall(x) {

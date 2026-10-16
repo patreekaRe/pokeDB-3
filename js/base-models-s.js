@@ -152,7 +152,7 @@ export const MAKES = {
     for (const px of [6, 58]) {
       K.put(rbox(u(10), u(5), u(10), 0.01), K.gloss(IVORY), X(px, W), u(2.5), 0);
       K.put(cyl(u(2), u(57), u(2), 12), white, X(px, W), u(33.5), 0);
-      bow(K, L, K.cloth(BLUSH), X(px, W), u(34), u(2.4));
+      bow(K, L, K.cloth(BLUSH), X(px, W), u(34), u(2.4), 0.85);
       for (const [j, c] of [[56, BLUSH], [49, WHITE], [43, ROSE]]) { leaf(K, L, sage, X(px - 2, W), u(j - 2), u(1.2), u(2.4), u(1.6), 0.4); rose(K, L, c, X(px, W), u(j), u(1.6), u(2.2)); }
     }
     // the arch, leaves along it, roses round its crown
@@ -350,7 +350,7 @@ export const MAKES = {
     // leaves and roses along it, a blush bow at each hook
     for (let i = 5; i <= 59; i += 3) leaf(K, L, sage, WX(i, W), WY(j(i) + 1), zf(i) + u(1.2), u(2), u(1.3), -0.9 + (i % 2) * 1.8);
     for (let i = 7, n = 0; i <= 57; i += 5, n++) rose(K, L, [ROSE, WHITE, BLUSH][n % 3], WX(i, W), WY(j(i)), zf(i) + u(1.6), u(n % 3 ? 2.2 : 2.8));
-    for (const i of [4, 60]) bow(K, L, K.cloth(BLUSH), WX(i, W), WY(14), u(1.6));
+    for (const i of [7, 57]) bow(K, L, K.cloth(BLUSH), WX(i, W), WY(15), u(1.6), 0.8);
   },
 
   photobackdrop(K, s, W, D, L) {
@@ -464,8 +464,8 @@ export const MAKES = {
     const { THREE, rbox, cyl, lathe, ball } = L, dark = K.wood(L.tone(CEDAR, 0.75));
     // two X-frame stands, a stretcher between them, cradles on top
     for (const cx of [16, 48]) for (const z of [-u(8), u(8)]) {
-      rod(K, L, dark, [X(cx - 6, W), 0, z], [X(cx + 6, W), u(27), z], u(1.4));
-      rod(K, L, dark, [X(cx + 6, W), 0, z], [X(cx - 6, W), u(27), z], u(1.4));
+      rod(K, L, dark, [X(cx - 6, W), u(0.8), z], [X(cx + 6, W), u(27), z], u(1.4));
+      rod(K, L, dark, [X(cx + 6, W), u(0.8), z], [X(cx - 6, W), u(27), z], u(1.4));
     }
     for (const z of [-u(8), u(8)]) K.put(rbox(u(40), u(2.5), u(2.5), 0.004), dark, 0, u(12.75), z);
     for (const cx of [16, 48]) K.put(rbox(u(14), u(2), u(18), 0.004), dark, X(cx, W), u(26), 0);
@@ -717,7 +717,7 @@ export const MAKES = {
   chandelurestand(K, s, W, D, L) {
     const { THREE, lathe, cyl, ball } = L, iron = K.metal(IRON), black = K.gloss(INK);
     // the tripod and pole
-    for (let n = 0; n < 3; n++) { const a = n / 3 * TAU + Math.PI / 2; rod(K, L, iron, [0, u(8), 0], [Math.cos(a) * u(10), 0, Math.sin(a) * u(8)], u(0.8)); }
+    for (let n = 0; n < 3; n++) { const a = n / 3 * TAU + Math.PI / 2; rod(K, L, iron, [0, u(8), 0], [Math.cos(a) * u(10), u(0.6), Math.sin(a) * u(8)], u(0.8)); }
     K.put(cyl(u(1), u(46), u(1), 8), iron, 0, u(29), 0);
     // Chandelure: its glass body, the violet flame inside, yellow eyes, the black cap and its flame
     K.put(ball(u(7.5), 20, 14), K.M('glass', '#c8b0e8', { key: 'globe' }), 0, u(58), 0);
@@ -813,8 +813,8 @@ export const MAKES = {
     // the low round table: legs, apron, its red top edged in gold
     for (const [lx, lz] of L.legsAt(u(21), u(18), 0)) K.put(rbox(u(3), u(14), u(3), 0.004), lacq, lx, u(7), lz);
     K.put(rbox(u(26), u(3), u(22), 0.004), lacq, 0, u(13.5), 0);
-    K.put(cyl(u(15.8), u(4), u(15.8), 32).scale(1, 1, 0.9), K.gloss(RUBY), 0, u(17), 0);
-    K.put(torus(u(15.8), u(0.4), TAU, 32).rotateX(Math.PI / 2).scale(1, 1, 0.9), K.metal(GOLD), 0, u(16), 0);
+    K.put(cyl(u(15.4), u(4), u(15.4), 32).scale(1, 1, 0.9), K.gloss(RUBY), 0, u(17), 0);
+    K.put(torus(u(15.4), u(0.4), TAU, 32).rotateX(Math.PI / 2).scale(1, 1, 0.9), K.metal(GOLD), 0, u(16), 0);
     // a plate of three mooncakes, their tops pressed with a pattern
     K.put(cyl(u(9), u(0.6), u(8), 24), K.gloss('#f4f4f0'), X(12), u(19.3), u(1));
     for (const [cx, y0, z] of [[8.5, 19.6, 2], [15.5, 19.6, 1], [12, 24.6, 1.5]]) {
@@ -826,7 +826,7 @@ export const MAKES = {
     K.put(cyl(u(2), u(1.5), u(2), 12), K.gloss(L.tone(JADE, 0.75)), X(25), u(29.75), -u(2));
     K.put(ball(u(1), 8, 6), K.gloss(L.tone(JADE, 0.75)), X(25), u(31), -u(2));
     K.put(new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3([[21, 24.5], [19, 27], [17.5, 29.5]].map(([i, j]) => new L.THREE.Vector3(X(i), u(j), -u(2)))), 8, u(0.8), 6), jade, 0, 0, 0);
-    K.put(torus(u(2.4), u(0.5), Math.PI, 10), K.gloss(L.tone(JADE, 0.75)), X(29.5), u(25), -u(2), 0, 0, -Math.PI / 2);
+    K.put(torus(u(2.4), u(0.5), Math.PI, 10), K.gloss(L.tone(JADE, 0.75)), X(28.6), u(25), -u(2), 0, 0, -Math.PI / 2);
     K.put(lathe([[u(1.2), 0], [u(1.5), u(3)], [u(1.3), u(3)], [0.001, u(0.4)]], 12), jade, X(19.5), u(19.2), u(5));
   },
 
@@ -847,7 +847,7 @@ export const MAKES = {
     K.put(hipRoof(L, u(64), u(18), u(48), u(6), u(11)), K.gloss(TILE), 0, u(76.5), 0);
     K.put(rbox(u(52), u(2), u(2.5), 0.004), K.gloss(L.tone(TILE, 0.75)), 0, u(88.5), 0);
     for (const px of [6, 58]) K.put(ball(u(1.6), 8, 6), gold, X(px, W), u(90), 0);
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(cyl(0.001, u(4), u(1), 6), K.gloss(TILE), sx * u(31), u(79), sz * u(8.5), 0, sz * 0.4, -sx * 0.7);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) K.put(cyl(0.001, u(4), u(1), 6), K.gloss(TILE), sx * u(29.5), u(79), sz * u(8.5), 0, sz * 0.4, -sx * 0.7);
     // three red lanterns hung from the crossbeam, the middle one biggest
     for (const [i, rx, ry] of [[18, 4.5, 5.5], [32, 5.5, 6.5], [46, 4.5, 5.5]]) {
       K.put(cyl(u(0.25), u(2), u(0.25), 4), K.gloss(INK), X(i, W), u(59), 0);
@@ -880,7 +880,7 @@ export const MAKES = {
     K.put(cyl(u(14), u(0.5), u(14), 32).scale(1, 1, 0.95), K.gloss('#5aaa4a'), 0, u(1.7), 0);
     K.put(ball(u(4), 12, 8), K.glow('#fff0b0'), 0, u(20), 0);
     // three rings of lit petals, opening outwards
-    for (const [n, r0, y0, tilt, w, l, c, off] of [[9, 5, 2.5, 1.0, 3.5, 8, PINK, 0], [6, 3, 6, 0.55, 3.2, 9, PALEPINK, 0.5], [3, 1, 9, 0.2, 3.2, 10, PALEPINK, 0.2]]) {
+    for (const [n, r0, y0, tilt, w, l, c, off] of [[9, 4.5, 2.5, 0.85, 3.2, 7, PINK, 0], [6, 3, 6, 0.55, 3.2, 9, PALEPINK, 0.5], [3, 1, 9, 0.2, 3.2, 10, PALEPINK, 0.2]]) {
       for (let k = 0; k < n; k++) {
         const a = (k + off) / n * TAU, g = ball(1, 10, 8).scale(u(w), u(l), u(1.3)).translate(0, u(l), 0);
         K.put(g, K.glow(c), Math.sin(a) * u(r0), u(y0), Math.cos(a) * u(r0), a, tilt);

@@ -116,7 +116,7 @@ function ribbon(L, pts, w, t, turns, seg = 64, rad = 6) {
 
 /** A pumpkin's shape, r round and h tall from y 0: a ball pinched into `lobes`, dimpled at the stem. */
 function pumpkinGeo(L, r, h, lobes = 8, deep = 0.09) {
-  const g = L.ball(1, 16, 10), pos = g.attributes.position;
+  const g = r < 0.1 ? L.ball(1, 11, 8) : L.ball(1, 16, 10), pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), a = Math.atan2(z, x);
     const f = 1 - deep * (0.5 - 0.5 * Math.cos(lobes * a)) * Math.sqrt(Math.max(0, 1 - y * y));
@@ -135,8 +135,8 @@ const leafGeo = (L, len, wid, th = u(0.5)) => L.ball(1, 8, 6).scale(len, wid, th
 /** A bow facing +z: two loops, a knot and two tails `tail` x its size long. */
 function bow(K, L, m, x, y, z, s, turn = 0, tail = 0.8) {
   for (const f of [-1, 1]) {
-    K.put(L.torus(s * 0.4, s * 0.14, TAU, 12).scale(1, 0.72, 0.8).rotateZ(f * 0.45).translate(f * s * 0.46, s * 0.04, 0), m, x, y, z, turn);
-    if (tail) K.put(L.rbox(s * 0.24, s * tail, s * 0.06, 0.004).translate(0, -s * tail / 2, 0).rotateZ(f * 0.38), m, x, y - s * 0.1, z, turn);
+    K.put(L.torus(s * 0.4, s * 0.14, TAU, 10).scale(1, 0.72, 0.8).rotateZ(f * 0.45).translate(f * s * 0.46, s * 0.04, 0), m, x, y, z, turn);
+    if (tail) K.put(L.rbox(s * 0.24, s * tail, s * 0.06, 0.002).translate(0, -s * tail / 2, 0).rotateZ(f * 0.38), m, x, y - s * 0.1, z, turn);
   }
   K.put(L.ball(s * 0.2, 8, 6), m, x, y, z);
 }
@@ -146,21 +146,21 @@ function gift(K, L, x, y, z, w, h, d, box, rib, { bow: tied = true, turn = 0 } =
   const rb = K.gloss(rib), rw = Math.min(w, d) * 0.16, lid = Math.min(h * 0.25, u(3));
   put(L.rbox(w, h - lid, d, 0.008), K.gloss(box), 0, (h - lid) / 2, 0);
   put(L.rbox(w + 0.012, lid, d + 0.012, 0.008), K.gloss(L.tone(box, 1.12)), 0, h - lid / 2, 0);
-  put(L.rbox(rw, h + 0.004, d + 0.02, 0.003), rb, 0, h / 2, 0);
-  put(L.rbox(w + 0.02, h + 0.004, rw, 0.003), rb, 0, h / 2, 0);
+  put(L.rbox(rw, h + 0.004, d + 0.02, 0.002), rb, 0, h / 2, 0);
+  put(L.rbox(w + 0.02, h + 0.004, rw, 0.002), rb, 0, h / 2, 0);
   if (tied) bow(K, L, rb, x, y + h + Math.min(w, d) * 0.12, z, Math.min(w, d) * 0.42, turn, 0);
 }
 /** An acorn about x, y, z, `r` its size, tipped `tip` over: the nut, its cap, a stalk. */
 function acorn(K, L, x, y, z, r, tip = 0) {
   const { THREE } = L, at = (g) => g.rotateZ(tip).translate(x, y, z);
-  K.put(at(L.ball(r * 0.78, 10, 8).scale(1, 1.25, 1).translate(0, -r * 0.2, 0)), K.gloss(ACORN));
-  K.put(at(new THREE.SphereGeometry(r * 0.9, 10, 4, 0, TAU, 0, Math.PI / 2).scale(1, 0.75, 1).translate(0, r * 0.12, 0)), K.plain(CAP));
+  K.put(at(L.ball(r * 0.78, 8, 6).scale(1, 1.25, 1).translate(0, -r * 0.2, 0)), K.gloss(ACORN));
+  K.put(at(new THREE.SphereGeometry(r * 0.9, 8, 3, 0, TAU, 0, Math.PI / 2).scale(1, 0.75, 1).translate(0, r * 0.12, 0)), K.plain(CAP));
   K.put(at(L.cyl(r * 0.1, r * 0.4, r * 0.12, 6).translate(0, r * 0.9, 0)), K.plain(CAP));
 }
 /** A spoked wheel facing z: its rim, three spokes across, the hub. */
 function wheel(K, L, x, y, z, r, m, hub, spokes = 6) {
   K.put(L.torus(r - u(1), u(1.1), TAU, 24), m, x, y, z);
-  for (let i = 0; i < spokes; i++) K.put(L.rbox(u(1), r * 2 - u(2), u(0.8), 0.003).rotateZ(i / spokes * Math.PI), m, x, y, z);
+  for (let i = 0; i < spokes; i++) K.put(L.rbox(u(1), r * 2 - u(2), u(0.8), 0.002).rotateZ(i / spokes * Math.PI), m, x, y, z);
   K.put(L.cyl(u(2), u(2.6), u(2), 10).rotateX(Math.PI / 2), hub, x, y, z);
 }
 /** A cloth skirt to the floor from a round top `r0` at `top` to `r1` at the hem, pleated: a party table's. */
@@ -234,8 +234,8 @@ export const MAKES = {
     for (const lx of [10, 54]) for (const z of [-0.27, 0.27]) K.put(lathe(legP, 12), dark, X(lx, 2), 0, z);
     for (const lx of [10, 54]) K.put(rbox(u(2), u(2), 0.5, 0.006), dark, X(lx, 2), u(12), 0);
     K.put(rbox(u(44), u(2), u(2), 0.006), dark, 0, u(12), 0);
-    K.put(rbox(u(20), u(0.6), 0.76, 0.003), cloth, 0, u(31.3), 0);
-    for (const sz of [-1, 1]) K.put(rbox(u(20), u(10), u(0.6), 0.003), cloth, 0, u(26), sz * 0.385);
+    K.put(rbox(u(20), u(0.6), 0.76, 0.002), cloth, 0, u(31.3), 0);
+    for (const sz of [-1, 1]) K.put(rbox(u(20), u(10), u(0.6), 0.002), cloth, 0, u(26), sz * 0.385);
     // the horn, its rim and dark mouth
     const hp = [[42, 41], [33, 40], [25, 41], [18, 43.5], [13, 47], [10.5, 51.5], [11, 55]];
     K.put(taper(L, hp.map(([a, h]) => [X(a, 2), u(h), 0]), [9, 7.4, 5.8, 4.3, 3, 2, 1.2].map(u)), K.pic(wicker()));
@@ -275,7 +275,7 @@ export const MAKES = {
     const { rbox } = L, oak = K.wood(OAK), dark = K.wood(L.tone(OAK, 0.74));
     K.put(rbox(u(28), u(26), 0.42, 0.012), dark, 0, u(13), -0.25);
     K.put(rbox(u(30), u(12), 0.5, 0.012), oak, 0, u(6), 0.2);
-    for (const sx of [-1, 1]) K.put(rbox(u(2), u(12.2), u(2), 0.004), dark, sx * u(13.6), u(6.1), 0.43);
+    for (const sx of [-1, 1]) K.put(rbox(u(2), u(12.2), u(2), 0.002), dark, sx * u(13.6), u(6.1), 0.43);
     for (const h of [4, 8]) K.put(rbox(u(29), u(0.5), u(0.4), 0.001), K.plain(L.tone(OAK, 0.55)), 0, u(h), 0.452);
     pumpkin(K, L, X(22), u(26), -0.22, u(5), u(8.4), PUMPKIN);
     K.put(L.ball(u(3.6), 12, 8).scale(1, 0.84, 1), K.gloss(GOURD), X(9), u(29), -0.2);
@@ -290,10 +290,10 @@ export const MAKES = {
   ciderpress(K, s, W, D, L) {
     const { rbox, cyl, torus, ball } = L, oak = K.wood(OAK), dark = K.wood(DARKWOOD), iron = K.metal(IRON);
     K.put(rbox(u(30), u(7), 0.8, 0.015), dark, 0, u(3.5), 0);
-    K.put(rbox(u(6), u(2), 0.14, 0.004), K.plain(L.tone(DARKWOOD, 0.5)), 0, u(5.6), 0.35);
+    K.put(rbox(u(6), u(2), 0.14, 0.002), K.plain(L.tone(DARKWOOD, 0.5)), 0, u(5.6), 0.35);
     for (const px of [4, 28]) K.put(rbox(u(4), u(53), u(6), 0.01), oak, X(px), u(33.5), 0);
     K.put(rbox(u(30), u(6), u(8), 0.012), oak, 0, u(57), 0);
-    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; K.put(rbox(u(3.4), u(21), u(1.2), 0.004), oak, Math.sin(a) * u(7.4), u(17.5), Math.cos(a) * u(7.4), a); }
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; K.put(rbox(u(3.4), u(21), u(1.2), 0.002), oak, Math.sin(a) * u(7.4), u(17.5), Math.cos(a) * u(7.4), a); }
     K.put(cyl(u(7), u(19), u(7), 16), K.plain('#c89048'), 0, u(16.5), 0);
     for (const h of [11.5, 24.5]) K.put(torus(u(8.1), u(0.8), TAU, 24), iron, 0, u(h), 0, 0, Math.PI / 2);
     K.put(cyl(u(8), u(3), u(8), 16), oak, 0, u(29.5), 0);
@@ -349,8 +349,8 @@ export const MAKES = {
       K.put(ball(u(1.5), 8, 6).scale(1.3, 0.6, 1.3), iron, X(px), u(0.9), z);
     }
     [6, 24, 42].forEach((h, i) => {
-      for (const z of [-0.2, 0.2]) K.put(rbox(u(25), u(1.2), u(1.2), 0.004), iron, 0, u(h), z);
-      for (const px of [4, 28]) K.put(rbox(u(1.2), u(1.2), 0.4, 0.004), iron, X(px), u(h), 0);
+      for (const z of [-0.2, 0.2]) K.put(rbox(u(25), u(1.2), u(1.2), 0.002), iron, 0, u(h), z);
+      for (const px of [4, 28]) K.put(rbox(u(1.2), u(1.2), 0.4, 0.002), iron, X(px), u(h), 0);
       for (let k = 1; k < 5; k++) K.put(cyl(u(0.4), u(24), u(0.4), 6).rotateZ(Math.PI / 2), iron, 0, u(h + 0.5), -0.2 + k * 0.08);
       const y = u(h + 0.9);
       K.put(lathe([[0.001, 0], [u(9), 0], [u(11), u(4)], [u(10.4), u(4)], [u(8.6), u(0.6)], [0.001, u(0.6)]], 20), tin, 0, y, 0);
@@ -376,15 +376,14 @@ export const MAKES = {
     K.put(new THREE.SphereGeometry(1, 16, 6, 0, TAU, 0, Math.PI / 2).scale(rx, ry, rz), K.plain(L.tone(LEAFO, 0.85)));
     const cols = [LEAFR, LEAFO, LEAFY, RUST], up = new THREE.Vector3(0, 1, 0), n = new THREE.Vector3(), q = new THREE.Quaternion();
     for (let i = 0; i < 34; i++) {
-      const a = i * 2.39996, e = Math.asin(Math.min(0.97, (i + 0.5) / 34)), c = Math.cos(e);
+      const a = i * 2.39996, e = Math.asin(Math.min(0.97, (i + 2.5) / 36)), c = Math.cos(e);
       n.set(c * Math.cos(a) / rx, Math.sin(e) / ry, c * Math.sin(a) / rz).normalize();
       const g = L.ball(1, 8, 6).scale(u(3.3), u(0.45), u(1.9)).rotateY(i * 1.7).applyQuaternion(q.setFromUnitVectors(up, n));
       K.put(g, K.gloss(cols[i % 4]), c * Math.cos(a) * rx * 1.01, Math.sin(e) * ry * 1.01, c * Math.sin(a) * rz * 1.01);
     }
     // the Leafeon leaf: its outline extruded, a midrib up it
-    const P = (x, h) => new THREE.Vector2(X(x), u(h)), sh = new THREE.Shape();
+    const sh = new THREE.Shape();
     sh.moveTo(X(24), u(10)); sh.quadraticCurveTo(X(19), u(27), X(23), u(40)); sh.quadraticCurveTo(X(30), u(27), X(27.5), u(10)); sh.closePath();
-    void P;
     K.put(new THREE.ExtrudeGeometry(sh, { depth: u(1), bevelEnabled: true, bevelThickness: u(0.3), bevelSize: u(0.3), bevelSegments: 1, curveSegments: 8 }).translate(0, 0, -u(0.5)), K.gloss('#a8c858'));
     rod(K, L, K.plain(L.tone('#a8c858', 0.7)), [X(25.6), u(12), u(0.9)], [X(23.4), u(37), u(0.9)], u(0.35));
     for (const [a, c] of [[2.5, LEAFR], [29.5, LEAFY]]) K.put(L.ball(1, 8, 6).scale(u(2.8), u(0.4), u(1.4)), K.gloss(c), X(a), u(0.5), 0.34, a);
@@ -430,7 +429,7 @@ export const MAKES = {
 
   /** A maple log, a tin spile and a lidded sap bucket hung off it, a red leaf on the cut top. */
   syrupbucket(K, s, W, D, L) {
-    const { cyl, lathe, torus } = L, zc = -0.14, tin = K.metal(TIN);
+    const { cyl, lathe, torus } = L, zc = -0.11, tin = K.metal(TIN);
     const log = cyl(u(11), u(54), u(11.6), 24, false, true), pos = log.attributes.position;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), z = pos.getZ(i);
@@ -460,7 +459,7 @@ export const MAKES = {
       K.put(rbox(u(10), u(2), 0.84, 0.008), dark, X(lx, 2), u(25), 0);
     }
     K.put(rbox(u(50), u(3), u(3), 0.008), dark, 0, u(12.5), 0);
-    for (const lx of [6.4, 57.6]) K.put(rbox(u(1.4), u(5), u(3.8), 0.003), K.wood(L.tone(DARKWOOD, 1.3)), X(lx, 2), u(12.5), 0);
+    for (const lx of [6.4, 57.6]) K.put(rbox(u(1.4), u(5), u(3.8), 0.002), K.wood(L.tone(DARKWOOD, 1.3)), X(lx, 2), u(12.5), 0);
     K.put(rbox(u(16), u(0.5), 0.94, 0.002), burlap, 0, u(31.25), 0);
     for (const z of [-0.47, 0.47]) K.put(rbox(u(16), u(3.5), u(0.5), 0.002), burlap, 0, u(29.5), z);
   },
@@ -490,19 +489,19 @@ export const MAKES = {
     const rAt = (h) => Math.max(0, ...tiers.filter(([b0, a0]) => h >= b0 && h <= a0).map(([b0, a0, half]) => u(half) * (a0 - h) / (a0 - b0)));
     for (const [b0, a0, half] of tiers) {
       K.put(lathe([[0.001, u(b0 + 3)], [u(half * 0.7), u(b0 + 0.8)], [u(half), u(b0)], [u(half * 0.45), u((b0 + a0) / 2)], [0.001, u(a0)]], 20), fir);
-      for (let i = 0; i < 12; i++) { const a = i / 12 * TAU; K.put(ball(u(1.5), 8, 6), tip, Math.sin(a) * u(half - 0.6), u(b0 + 0.3), Math.cos(a) * u(half - 0.6)); }
+      for (let i = 0; i < 10; i++) { const a = i / 10 * TAU; K.put(ball(u(1.5), 6, 4), tip, Math.sin(a) * u(half - 1.1), u(b0 + 0.3), Math.cos(a) * u(half - 1.1)); }
     }
     // a garland round each of the two lower tiers
     for (const [h0, h1] of [[34, 20], [54, 42]]) {
       const pts = [];
       for (let k = 0; k <= 16; k++) { const a = -Math.PI / 2 + k / 16 * TAU, h = h0 + (h1 - h0) * k / 16, r = rAt(h) + u(0.5); pts.push([Math.sin(a) * r, u(h), Math.cos(a) * r]); }
-      K.put(tubeG(L, pts, u(0.6), 48, 5), gold);
+      K.put(tubeG(L, pts, u(0.6), 36, 5), gold);
     }
     const onTree = (a, h, back) => { const x = X(a), r = rAt(h), z = Math.sqrt(Math.max(0, r * r - x * x)) + u(0.6); return back ? [-x, u(h), -z] : [x, u(h), z]; };
     for (const [a, h, c] of [[10, 20, RED], [22, 22, BLUEB], [16, 30, GOLD], [12, 42, BLUEB], [21, 45, RED], [16, 61, GOLD], [5, 18, GOLD], [27, 19, RED]])
-      for (const back of [false, true]) K.put(ball(u(1.9), 10, 8), K.gloss(back && c === RED ? BLUEB : c), ...onTree(a, h, back));
+      for (const back of [false, true]) K.put(ball(u(1.9), 8, 6), K.gloss(back && c === RED ? BLUEB : c), ...onTree(a, h, back));
     for (const [a, h] of [[7, 18], [25, 18], [13, 26], [19, 36], [9, 39], [23, 40], [14, 52], [19, 57], [16, 70], [4, 15.5], [28, 15.5]])
-      for (const back of [false, true]) K.put(ball(u(1), 8, 6), glow, ...onTree(a, h, back));
+      for (const back of [false, true]) K.put(ball(u(1), 6, 4), glow, ...onTree(a, h, back));
     // the star
     const star = new THREE.Shape();
     for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + Math.PI / 2, r = u(i % 2 ? 2.6 : 6); i ? star.lineTo(Math.cos(a) * r, Math.sin(a) * r) : star.moveTo(Math.cos(a) * r, Math.sin(a) * r); }
@@ -522,7 +521,7 @@ export const MAKES = {
     const { rbox, cyl, torus, lathe, THREE } = L, black = K.gloss(BLACK), gold = K.metal(GOLD), red = K.gloss(RED), green = K.gloss(GREEN);
     K.put(rbox(u(62), u(5), 0.72, 0.02), K.plain(SNOW), 0, u(3.5), 0);
     K.put(rbox(u(62.4), u(1.5), 0.73, 0.006), K.plain('#a8b8c8'), 0, u(0.75), 0);
-    for (let i = 3; i < 62; i += 4) K.put(rbox(u(2), u(1), 0.3, 0.003), K.wood(DARKWOOD), X(i + 1, 2), u(6.5), 0);
+    for (let i = 3; i < 62; i += 4) K.put(rbox(u(2), u(1), 0.3, 0.002), K.wood(DARKWOOD), X(i + 1, 2), u(6.5), 0);
     for (const z of [-0.08, 0.08]) K.put(rbox(u(62), u(1), u(0.8), 0.002), K.metal(TIN), 0, u(7.2), z);
     for (const wx of [9, 23, 36, 46, 55]) for (const z of [-0.1, 0.1]) {
       K.put(cyl(u(3.6), u(1.4), u(3.6), 12).rotateX(Math.PI / 2), black, X(wx, 2), u(11.2), z);
@@ -535,7 +534,7 @@ export const MAKES = {
     K.put(cyl(u(0.7), u(4), u(0.7), 8).rotateZ(Math.PI / 2), black, X(30, 2), u(12), 0);
     // the engine: cab, boiler and its bands, smokebox, chimney, cowcatcher
     K.put(rbox(u(13), u(22), 0.32, 0.01), green, X(36.5, 2), u(21), 0);
-    for (const z of [-0.162, 0.162]) K.put(rbox(u(7), u(6), u(0.4), 0.003), K.gloss(BULB), X(36.5, 2), u(26), z);
+    for (const z of [-0.162, 0.162]) K.put(rbox(u(7), u(6), u(0.4), 0.002), K.gloss(BULB), X(36.5, 2), u(26), z);
     K.put(rbox(u(15), u(3), 0.38, 0.01), black, X(36.5, 2), u(32.5), 0);
     K.put(cyl(u(7), u(15), u(7), 16).rotateZ(Math.PI / 2), red, X(49.5, 2), u(19), 0);
     for (const bx of [45, 51]) K.put(torus(u(7.1), u(0.6), TAU, 24).rotateY(Math.PI / 2), gold, X(bx, 2), u(19), 0);
@@ -559,11 +558,11 @@ export const MAKES = {
       K.put(L.blob(u(10), u(6), u(4.6), 0.4, 0.5, 14), K.cloth(cuff), ...P(sx - 1, y0 + 3), u(3));
       K.put(L.torus(u(1), u(0.3), TAU, 12), K.metal(GOLD), ...P(sx, y0 - 1), u(2.4));
     }
-    const pts = []; for (let i = 0; i <= 12; i++) { const px = 2 + i * 5; pts.push([...P(px, sag(px)), u(3)]); }
+    const pts = []; for (let i = 0; i <= 12; i++) { const px = 5 + i * 4.5; pts.push([...P(px, sag(px)), u(3)]); }
     K.put(tubeG(L, pts, u(2.4), 40, 8), K.plain(L.tone(FIR, 0.74)));
-    for (let i = 0, px = 2; px <= 62; px += 2.4, i++) K.put(ball(u(2.9), 8, 6), K.plain(i % 2 ? FIR : L.tone(FIR, 0.82)), ...P(px, sag(px) + (i % 3 - 1) * 0.6), u(3) + (i % 2 ? u(0.9) : -u(0.4)));
-    for (let px = 5; px < 62; px += 6) K.put(ball(u(1.1), 8, 6), K.glow(BULB), ...P(px, sag(px) + 1.5), u(5.8));
-    for (const ex of [2, 62]) bow(K, L, K.cloth(RED), ...P(ex, 21), u(5.6), u(4.6), 0, 1);
+    for (let i = 0, px = 5; px <= 59; px += 2.4, i++) K.put(ball(u(2.9), 8, 6), K.plain(i % 2 ? FIR : L.tone(FIR, 0.82)), ...P(px, sag(px) + (i % 3 - 1) * 0.6), u(3) + (i % 2 ? u(0.9) : -u(0.4)));
+    for (let px = 7; px < 58; px += 6) K.put(ball(u(1.1), 6, 4), K.glow(BULB), ...P(px, sag(px) + 1.5), u(5.8));
+    for (const ex of [6, 58]) bow(K, L, K.cloth(RED), ...P(ex, 22), u(5.6), u(4.6), 0, 1);
   },
 
   /** Delibird's sack: red, lumpy with presents, tied at the neck under a white fluffy cuff, gifts and a cane poking out. */
@@ -596,7 +595,7 @@ export const MAKES = {
     }
     K.put(lathe([[0.001, u(25)], [u(6.6), u(25)], [u(7), u(28)], [u(6.6), u(38)], [u(7), u(45)], [u(5), u(46.5)], [0.001, u(46.5)]], 20), red);
     K.put(cyl(u(7.2), u(2.4), u(7.2), 20), white, 0, u(29.2), 0);
-    K.put(rbox(u(2.4), u(3.2), u(1), 0.004), gold, 0, u(29.2), u(7.1));
+    K.put(rbox(u(2.4), u(3.2), u(1), 0.002), gold, 0, u(29.2), u(7.1));
     for (const h of [34, 38, 42]) K.put(ball(u(0.9), 8, 6), gold, 0, u(h), u(6.8));
     for (const sx of [-1, 1]) {
       K.put(cyl(u(1.6), u(15), u(1.6), 10), red, sx * u(8.5), u(37.5), 0);
@@ -608,7 +607,7 @@ export const MAKES = {
     // the head: face, beard, moustache and mouth, eyes and rosy cheeks
     K.put(cyl(u(5), u(10), u(5), 16), skin, 0, u(51), 0);
     K.put(new THREE.CylinderGeometry(u(5.3), u(5.3), u(3), 12, 1, false, -Math.PI / 2, Math.PI), white, 0, u(47.6), 0);
-    K.put(rbox(u(6), u(1), u(1), 0.004), white, 0, u(50.2), u(5));
+    K.put(rbox(u(6), u(1), u(1), 0.002), white, 0, u(50.2), u(5));
     K.put(rbox(u(5), u(0.8), u(0.6), 0.002), K.plain('#a83a3a'), 0, u(49.3), u(5.2));
     K.put(ball(u(1), 8, 6), skin, 0, u(52), u(5.2));
     for (const sx of [-1, 1]) {
@@ -618,7 +617,7 @@ export const MAKES = {
     // the hat
     K.put(cyl(u(6), u(16), u(6), 16), black, 0, u(64), 0);
     for (const h of [57.8, 70.6]) K.put(cyl(u(6.15), u(1.4), u(6.15), 16), gold, 0, u(h), 0);
-    K.put(rbox(u(8), u(1), u(2.6), 0.004), black, 0, u(56.6), u(5.6));
+    K.put(rbox(u(8), u(1), u(2.6), 0.002), black, 0, u(56.6), u(5.6));
     K.put(ball(u(2.2), 10, 8).scale(1, 1.6, 1), red, 0, u(75), 0);
   },
 
@@ -636,11 +635,11 @@ export const MAKES = {
         K.put(lathe([[0.001, 0], [u(1.4), 0], [u(1.1), u(1.1)], [0.001, u(1.7)]], 10), K.gloss(PARTY[(i + (sx > 0 ? 2 : 0)) % 5]), X(16 + sx * (13 - f * 13)), u(22 + f * 14) + u(0.2), 0.3);
       }
     }
-    K.put(rbox(u(6), u(10), u(1), 0.004), K.gloss(RED), 0, u(8), 0.25);
+    K.put(rbox(u(6), u(10), u(1), 0.002), K.gloss(RED), 0, u(8), 0.25);
     K.put(ball(u(0.6), 8, 6), K.metal(GOLD), X(17.5), u(8), 0.27);
-    for (const wx of [9, 23]) { K.put(rbox(u(4), u(4), u(0.8), 0.003), yellow, X(wx), u(15), 0.245); K.put(rbox(u(5), u(1), u(1.6), 0.003), icing, X(wx), u(13), 0.25); }
-    for (const sx of [-1, 1]) K.put(rbox(u(0.8), u(4), u(4), 0.003), yellow, sx * (u(11) + 0.008), u(14), 0);
-    K.put(rbox(u(5), u(5), u(0.8), 0.003), yellow, 0, u(24.5), 0.245);
+    for (const wx of [9, 23]) { K.put(rbox(u(4), u(4), u(0.8), 0.002), yellow, X(wx), u(15), 0.245); K.put(rbox(u(5), u(1), u(1.6), 0.002), icing, X(wx), u(13), 0.25); }
+    for (const sx of [-1, 1]) K.put(rbox(u(0.8), u(4), u(4), 0.002), yellow, sx * (u(11) + 0.008), u(14), 0);
+    K.put(rbox(u(5), u(5), u(0.8), 0.002), yellow, 0, u(24.5), 0.245);
     for (let i = 0; i < 11; i++) K.put(ball(u(0.8), 8, 6), icing, X(5.5 + i * 2), u(3.6), 0.25);
     for (const sx of [-1, 1]) K.put(tubeG(L, [[sx * u(13), u(3), 0.3], [sx * u(13), u(13), 0.3], [sx * u(12), u(15.6), 0.3], [sx * u(10.4), u(14.6), 0.3]], u(0.9), 14, 6), K.pic(stripes(4)));
   },
@@ -665,9 +664,9 @@ export const MAKES = {
     K.put(torus(u(10), u(2.8), TAU, 28), K.plain(L.tone(FIR, 0.8)), 0, cy, u(3));
     for (let a = 0; a < 20; a++) { const t = a / 20 * TAU, [x, y] = at(t, 10 + (a % 3) - 1); K.put(ball(u(3), 8, 6), K.plain(a % 2 ? FIR : L.tone(FIR, 0.78)), x, y, u(4) + (a % 2) * u(0.8)); }
     for (const t of [0.4, 2.0, 3.3, 4.6]) { const [x, y] = at(t, 10); K.put(L.lathe([[0.001, -u(2.6)], [u(1.4), -u(1.6)], [u(1.9), u(0.4)], [u(1.2), u(2)], [0.001, u(2.6)]], 8, true), K.plain('#7a5232'), x, y, u(6), 0, 0, t); }
-    for (const t of [1.2, 2.7, 5.4]) for (const d of [-1, 1]) { const [x, y] = at(t, 10); K.put(ball(u(1.2), 8, 6), K.gloss(RED), x + d * u(1), y, u(6.6)); }
+    for (const t of [1.2, 2.7, 5.4]) for (const d of [-1, 1]) { const [x, y] = at(t, 10); K.put(ball(u(1.2), 6, 4), K.gloss(RED), x + d * u(1), y, u(6.6)); }
     for (const t of [0.9, 3.9, 6.0]) { const [x, y] = at(t, 10.5); K.put(ball(u(1.8), 10, 8), K.gloss(GOLD), x, y, u(6.2)); }
-    for (let a = 0; a < 10; a++) { const [x, y] = at(a / 10 * TAU + 0.3, 12.5); K.put(ball(u(0.9), 8, 6), K.glow(BULB), x, y, u(4.4)); }
+    for (let a = 0; a < 10; a++) { const [x, y] = at(a / 10 * TAU + 0.3, 12.5); K.put(ball(u(0.9), 6, 4), K.glow(BULB), x, y, u(4.4)); }
     bow(K, L, K.cloth(RED), 0, cy + u(11), u(6.6), u(7), 0, 1.4);
   },
 
@@ -714,7 +713,7 @@ export const MAKES = {
     // the lantern: its lit glass, iron corners, the roof under a cap of snow
     K.put(rbox(u(12), u(3), u(12), 0.008), iron, 0, u(65.5), 0);
     K.put(rbox(u(9.6), u(12), u(9.6), 0.006), K.glow(BULB), 0, u(73), 0);
-    for (let i = 0; i < 4; i++) { const a = i / 4 * TAU + Math.PI / 4; K.put(rbox(u(1.6), u(12.4), u(1.6), 0.004), iron, Math.sin(a) * u(7.07), u(73), Math.cos(a) * u(7.07)); }
+    for (let i = 0; i < 4; i++) { const a = i / 4 * TAU + Math.PI / 4; K.put(rbox(u(1.6), u(12.4), u(1.6), 0.002), iron, Math.sin(a) * u(7.07), u(73), Math.cos(a) * u(7.07)); }
     K.put(cyl(u(1), u(5.5), u(9.2), 4).rotateY(Math.PI / 4), iron, 0, u(81.8), 0);
     K.put(blob(u(14), u(4), u(14), 0.4, 0.6, 14), snow, 0, u(83), 0);
     K.put(ball(u(1.6), 8, 6), iron, 0, u(86.6), 0);
@@ -750,11 +749,11 @@ export const MAKES = {
     K.put(rbox(u(22), u(14), 0.56, 0.012), K.gloss(RED), 0, u(9), 0);
     K.put(rbox(u(24), u(3), 0.62, 0.012), K.gloss(L.tone(RED, 0.74)), 0, u(16.5), 0);
     for (const h of [3.6, 14.6]) K.put(rbox(u(22.4), u(0.8), 0.565, 0.002), gold, 0, u(h), 0);
-    K.put(rbox(u(12), u(7), u(0.6), 0.003), K.gloss(ICING), 0, u(9.5), 0.283);
+    K.put(rbox(u(12), u(7), u(0.6), 0.002), K.gloss(ICING), 0, u(9.5), 0.283);
     for (const f of [-1, 1]) K.put(leafGeo(L, u(2.4), u(1.2)).rotateZ(f * 0.6), K.gloss(GREEN), f * u(2.4), u(9.5), 0.3);
     K.put(ball(u(1.1), 8, 6), K.gloss(RED), 0, u(10), 0.31);
     K.put(cyl(u(0.6), u(3), u(0.6), 8).rotateZ(Math.PI / 2), gold, X(28.5), u(9.4), 0);
-    K.put(rbox(u(1.2), u(4.4), u(1.2), 0.003), gold, X(29.6), u(11), 0);
+    K.put(rbox(u(1.2), u(4.4), u(1.2), 0.002), gold, X(29.6), u(11), 0);
     K.put(ball(u(1.2), 8, 6), K.wood(DARKWOOD), X(29.6), u(13.6), u(1));
     // the turning part: a gold dais, three tiers of fir, baubles and a star
     const m = new THREE.MeshStandardMaterial({ map: L.canvasTex(cells(), false), roughness: 0.4, metalness: 0.15 });
@@ -832,10 +831,10 @@ export const MAKES = {
     const { ball } = L;
     for (const [c, ph, z] of [[PINK, 0, u(2.2)], [BLUE, Math.PI, u(3.2)]]) {
       const pts = [];
-      for (let i = 4; i <= 60; i += 3.5) pts.push([WX(i, 2), WY(18 + Math.sin((i - 4) / 56 * Math.PI) * 18 + Math.sin(i * 0.9 + ph) * 1.2), z]);
+      for (let i = 7; i <= 57; i += 3.125) pts.push([WX(i, 2), WY(19 + Math.sin((i - 7) / 50 * Math.PI) * 17 + Math.sin(i * 0.9 + ph) * 1.2), z]);
       K.put(ribbon(L, pts, u(3.6), u(0.5), 9, 96, 6), K.plain(c));
     }
-    for (const [px, py, r, c] of [[4, 18, 5.5, YELLOW], [60, 18, 5.5, PURPLE], [32, 37, 6, MINT]]) {
+    for (const [px, py, r, c] of [[7, 19, 5.5, YELLOW], [57, 19, 5.5, PURPLE], [32, 37, 6, MINT]]) {
       K.put(ball(u(r * 0.8), 12, 8), K.plain(c), WX(px, 2), WY(py), u(5));
       for (let a = 0; a < 10; a++) {
         const t = a / 10 * TAU, o = u(r * 0.55);
@@ -871,8 +870,8 @@ export const MAKES = {
     K.put(rbox(u(60), u(24), 0.8, 0.01), K.cloth(WHITE), 0, u(12), 0);
     for (let i = 4; i < 62; i += 6) K.put(rbox(u(3), u(23.4), u(0.3), 0.001), K.plain(PINK), X(i + 1.5, 2), u(12), 0.402);
     for (const sx of [-1, 1]) for (let z = -0.3; z < 0.35; z += 0.2) K.put(rbox(u(0.3), u(23.4), u(3), 0.001), K.plain(PINK), sx * u(30.05), u(12), z);
-    K.put(rbox(u(62), u(1.5), 0.84, 0.004), K.cloth(L.tone(PINK, 0.74)), 0, u(26.2), 0);
-    K.put(rbox(u(62), u(3), u(0.6), 0.003), K.cloth(L.tone(PINK, 0.74)), 0, u(24.5), 0.42);
+    K.put(rbox(u(62), u(1.5), 0.84, 0.002), K.cloth(L.tone(PINK, 0.74)), 0, u(26.2), 0);
+    K.put(rbox(u(62), u(3), u(0.6), 0.002), K.cloth(L.tone(PINK, 0.74)), 0, u(24.5), 0.42);
     const jar = (cx, r, h, lid, sweets) => {
       K.put(lathe([[0.001, 0], [u(r), 0], [u(r), u(h - 1)], [u(r - 1), u(h)], [0.001, u(h)]], 16), glass, X(cx, 2), u(27), 0.05);
       K.put(cyl(u(r - 0.6), u(h * 0.62), u(r - 0.6), 16), K.plain(L.tone(sweets[0][3], 1.25)), X(cx, 2), u(27 + h * 0.31), 0.05);
@@ -913,7 +912,7 @@ export const MAKES = {
     for (const [c, pts] of [[PINK, [[17, 45, 0], [14, 54, 0.05], [17, 60, 0.02], [13, 66, -0.03]]], [BLUE, [[21, 46, 0], [24, 56, -0.04], [21, 62, 0], [25, 68, 0.04]]], [MINT, [[19, 46, 0.02], [19, 58, 0.08], [22, 64, 0.06]]]])
       K.put(tubeG(L, pts.map(([a, h, z]) => [X(a), u(h), z]), u(0.7), 20, 5), K.plain(c));
     for (const [a, h, c, z] of [[11, 53, YELLOW, 0.05], [28, 53, PINK, -0.04], [13, 61, BLUE, -0.06], [27, 62, MINT, 0.07], [19, 71, PURPLE, 0]])
-      K.put(rbox(u(1.8), u(1.8), u(0.3), 0.001), K.plain(c), X(a), u(h), z, a * 0.7, h * 0.3);
+      K.put(rbox(u(1.8), u(1.8), u(0.3), 0.001), K.plain(c), X(a + 0.9), u(h - 0.9), z, a * 0.7, h * 0.3);
   },
 
   /** A bubble machine on four feet: a fan grille, a wand wheel turning through its dish of soap, bubbles rising. */
@@ -936,7 +935,7 @@ export const MAKES = {
 
   /** A stubby cannon on a four-wheeled carriage, aimed high: its barrel striped gold, confetti in its mouth. */
   confetticannon(K, s, W, D, L) {
-    const { THREE, lathe, cyl, torus, rbox, ball } = L, gold = K.metal(GOLD), aim = (g) => g.rotateZ(-0.72).translate(X(16), u(18), 0);
+    const { THREE, lathe, cyl, torus, rbox, ball } = L, gold = K.metal(GOLD), aim = (g) => g.rotateZ(-0.72).translate(X(14), u(16), 0);
     const car = new THREE.Shape([[4, 6], [26, 6], [22, 16], [8, 16]].map(([a, h]) => new THREE.Vector2(X(a), u(h))));
     K.put(new THREE.ExtrudeGeometry(car, { depth: 0.34, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 }).translate(0, 0, -0.17), K.gloss(PINK));
     for (const wx of [7, 25]) {
@@ -947,14 +946,13 @@ export const MAKES = {
         K.put(cyl(u(1.6), u(1.6), u(1.6), 10).rotateX(Math.PI / 2), K.gloss(PINK), X(wx), u(7), z * 1.05);
       }
     }
-    K.put(aim(lathe([[0.001, -u(6)], [u(3.6), -u(5.4)], [u(5), -u(3.4)], [u(5), u(24)], [0.001, u(24)]], 16)), K.gloss(PURPLE));
-    for (const t of [2, 12, 22]) K.put(aim(cyl(u(5.3), u(2.4), u(5.3), 16).translate(0, u(t + 1.2), 0)), gold);
-    K.put(aim(lathe([[u(5.2), 0], [u(6), u(0.6)], [u(6), u(3)], [u(5), u(3)], [u(4.4), u(1)]], 16).translate(0, u(24), 0)), K.gloss(L.tone(PURPLE, 0.74)));
-    K.put(aim(cyl(u(4.6), u(0.4), u(4.6), 14).translate(0, u(25.6), 0)), K.plain('#3a2a4a'));
-    for (const [dx, dz, c] of [[-2, 1, PINK], [1.5, -1.5, YELLOW], [0, 2.4, MINT], [2.4, 1, BLUE]]) K.put(aim(rbox(u(1.6), u(0.3), u(1.6), 0.001).rotateY(dx).translate(u(dx), u(26), u(dz))), K.plain(c));
-    for (const [a, h, c, z] of [[29, 46, PINK, 0.05], [25, 50, YELLOW, -0.05], [31, 52, MINT, 0], [27, 56, BLUE, 0.08], [22, 46, MINT, -0.08]])
-      K.put(rbox(u(2), u(2), u(0.3), 0.001), K.plain(c), X(a), u(h), z, a, h * 0.4);
-    void ball;
+    K.put(aim(lathe([[0.001, -u(5)], [u(3.6), -u(4.4)], [u(5), -u(2.4)], [u(5), u(20)], [0.001, u(20)]], 16)), K.gloss(PURPLE));
+    for (const t of [1, 9, 17]) K.put(aim(cyl(u(5.3), u(2.4), u(5.3), 16).translate(0, u(t + 1.2), 0)), gold);
+    K.put(aim(lathe([[u(5.2), 0], [u(6), u(0.6)], [u(6), u(3)], [u(5), u(3)], [u(4.4), u(1)]], 16).translate(0, u(20), 0)), K.gloss(L.tone(PURPLE, 0.74)));
+    K.put(aim(cyl(u(4.6), u(0.4), u(4.6), 14).translate(0, u(21.6), 0)), K.plain('#3a2a4a'));
+    for (const [dx, dz, c] of [[-2, 1, PINK], [1.5, -1.5, YELLOW], [0, 2.4, MINT], [2.4, 1, BLUE]]) K.put(aim(rbox(u(1.6), u(0.3), u(1.6), 0.001).rotateY(dx).translate(u(dx), u(22), u(dz))), K.plain(c));
+    for (const [a, h, c, z] of [[28, 40, PINK, 0.05], [23, 44, YELLOW, -0.05], [30, 46, MINT, 0], [26, 50, BLUE, 0.08], [20, 41, MINT, -0.08]])
+      K.put(rbox(u(2), u(2), u(0.3), 0.001), K.plain(c), X(a), u(h - 1), z, a, h * 0.4);
   },
 
   /** A wrapping table: three rolls of paper on a rack behind, a box half wrapped, its sheet folding off, ribbon spools
@@ -963,7 +961,7 @@ export const MAKES = {
     const { rbox, cyl, torus, THREE } = L, tin = K.metal(TIN), post = K.gloss('#d8d0c8');
     K.put(rbox(u(60), u(4), 0.8, 0.012), K.wood('#d8b080'), 0, u(28), 0);
     for (const lx of [7, 57]) for (const z of [-0.3, 0.3]) K.put(cyl(u(2), u(26), u(1.7), 12), K.wood(OAK), X(lx, 2), u(13), z);
-    for (const lx of [7, 57]) K.put(rbox(u(1.6), u(1.6), 0.6, 0.004), K.wood(OAK), X(lx, 2), u(8), 0);
+    for (const lx of [7, 57]) K.put(rbox(u(1.6), u(1.6), 0.6, 0.002), K.wood(OAK), X(lx, 2), u(8), 0);
     // the rack and its rolls (one picture, a band of it each)
     for (const px of [5.2, 59.2]) K.put(rbox(u(2.4), u(30), u(2.4), 0.006), post, X(px, 2), u(44), -0.32);
     K.put(cyl(u(0.8), u(56), u(0.8), 8).rotateZ(Math.PI / 2), tin, 0, u(52.2), -0.32);
@@ -990,7 +988,7 @@ export const MAKES = {
     for (const h of [20.4, 32.6]) for (let i = 0; i < 14; i++) { const a = i / 14 * TAU; K.put(ball(u(1.1), 8, 6), white, Math.sin(a) * u(10), u(h), Math.cos(a) * u(10)); }
     const one = new THREE.Shape([[14, 33], [19, 33], [19, 50], [16.5, 50], [12.5, 46], [13.5, 44.5], [14, 45]].map(([a, h]) => new THREE.Vector2(X(a), u(h))));
     K.put(new THREE.ExtrudeGeometry(one, { depth: u(2.4), bevelEnabled: true, bevelThickness: u(0.4), bevelSize: u(0.4), bevelSegments: 1 }).translate(0, 0, -u(1.2)), K.gloss(PINK));
-    K.put(rbox(u(8), u(1.6), u(3.4), 0.004), K.gloss(PINK), X(16.5), u(33.6), 0);
+    K.put(rbox(u(8), u(1.6), u(3.4), 0.002), K.gloss(PINK), X(16.5), u(33.6), 0);
     for (const h of [37, 41, 45]) K.put(rbox(u(5.6), u(0.8), u(3.6), 0.002), white, X(16.5), u(h), 0);
     K.put(cyl(u(0.3), u(2), u(0.3), 6), K.plain(BLACK), X(17.3), u(51), 0);
     K.put(ball(u(1.2), 8, 6).scale(1, 1.8, 1), K.glow(FLAME), X(17.3), u(54), 0);
@@ -1017,6 +1015,5 @@ export const MAKES = {
       K.put(cyl(u(1.5), u(2.6), u(1.7), 12), punch, X(cx), u(38.6), 0.14);
       K.put(torus(u(1.2), u(0.3), Math.PI, 8).rotateZ(cx < 16 ? Math.PI / 2 : -Math.PI / 2), glass, X(cx) + (cx < 16 ? -u(1.9) : u(1.9)), u(39), 0.14);
     }
-    void ball;
   },
 };

@@ -291,9 +291,9 @@ export const SEASON_KINDS_3 = [
       cushion(x + sx - 6, y0, 10, 6, cuff, 2);
       for (let h = 10; h < 22; h += 5) R(x + sx - 5, y0 + h, 8, 1.5, sh(c, 1));
     }
-    for (let i = 2; i < 62; i += 1.5) disc(x + i, sag(i), 3.4, (i * 3) % 2 < 1 ? FIR : sh(FIR, -1));
-    for (let i = 5; i < 62; i += 6) disc(x + i, sag(i) + 1.5, 1.2, BULB);
-    for (const ex of [2, 62]) { bow(x + ex, 21, 4, RED); }
+    for (let i = 5; i < 60; i += 1.5) disc(x + i, sag(i), 3.4, (i * 3) % 2 < 1 ? FIR : sh(FIR, -1));
+    for (let i = 7; i < 58; i += 6) disc(x + i, sag(i) + 1.5, 1.2, BULB);
+    for (const ex of [6, 58]) { bow(x + ex, 22, 4, RED); }
   } }),
   // Delibird's red sack of presents: tied at the neck, a white fluffy cuff, gifts and a candy cane poking out
   holidays({ id: 'delibirdsack', name: 'Delibird present sack', w: 1, h: 1, price: 500, draw(x, b) {
@@ -462,11 +462,11 @@ export const SEASON_KINDS_3 = [
   party({ id: 'streamers', name: 'Streamer garland', w: 2, h: 1, layer: 'wall', price: 250, wall(x) {
     for (const [c, ph] of [[PINK, 0], [BLUE, Math.PI]]) {
       const g = ctx(); g.strokeStyle = c; g.lineWidth = 2.6; g.beginPath();
-      for (let i = 4; i <= 60; i += 1) { const y = 18 + Math.sin((i - 4) / 56 * Math.PI) * 18 + Math.sin(i * 0.9 + ph) * 1.2; i === 4 ? g.moveTo(x + i, y) : g.lineTo(x + i, y); }
+      for (let i = 7; i <= 57; i += 1) { const y = 19 + Math.sin((i - 7) / 50 * Math.PI) * 17 + Math.sin(i * 0.9 + ph) * 1.2; i === 7 ? g.moveTo(x + i, y) : g.lineTo(x + i, y); }
       g.stroke();
-      for (let i = 6; i < 60; i += 3.5) { const y = 18 + Math.sin((i - 4) / 56 * Math.PI) * 18 + Math.sin(i * 0.9 + ph) * 1.2; R(x + i, y - 0.4, 1, 0.8, sh(c, -1)); }
+      for (let i = 9; i < 56; i += 3.5) { const y = 19 + Math.sin((i - 7) / 50 * Math.PI) * 17 + Math.sin(i * 0.9 + ph) * 1.2; R(x + i, y - 0.4, 1, 0.8, sh(c, -1)); }
     }
-    for (const [px, py, r, c] of [[4, 18, 5.5, YELLOW], [60, 18, 5.5, PURPLE], [32, 37, 6, MINT]]) {
+    for (const [px, py, r, c] of [[7, 19, 5.5, YELLOW], [57, 19, 5.5, PURPLE], [32, 37, 6, MINT]]) {
       disc(x + px, py, r, c);
       for (let a = 0; a < 8; a++) disc(x + px + Math.cos(a * 0.785) * r * 0.6, py + Math.sin(a * 0.785) * r * 0.6, r * 0.42, sh(c, a % 2 ? 1 : -1));
     }
@@ -525,13 +525,13 @@ export const SEASON_KINDS_3 = [
   party({ id: 'confetticannon', name: 'Confetti cannon', w: 1, h: 1, price: 500, draw(x, b) {
     floorShadow(x, b, 32);
     poly([[x + 4, b - 6], [x + 26, b - 6], [x + 22, b - 16], [x + 8, b - 16]], PINK);
-    const g = ctx(); g.save(); g.translate(x + 16, b - 18); g.rotate(-0.85);
-    g.fillStyle = PURPLE; g.beginPath(); g.roundRect(-6, -5, 30, 10, 3); g.fill();
-    g.fillStyle = GOLD; for (const t of [2, 12, 22]) g.fillRect(t, -5.5, 2.4, 11);
-    g.fillStyle = sh(PURPLE, -1); g.fillRect(24, -6, 3, 12);
+    const g = ctx(); g.save(); g.translate(x + 14, b - 16); g.rotate(-0.85);
+    g.fillStyle = PURPLE; g.beginPath(); g.roundRect(-5, -5, 25, 10, 3); g.fill();
+    g.fillStyle = GOLD; for (const t of [1, 9, 17]) g.fillRect(t, -5.5, 2.4, 11);
+    g.fillStyle = sh(PURPLE, -1); g.fillRect(20, -6, 3, 12);
     g.restore();
     for (const wx of [x + 7, x + 25]) { disc(wx, b - 7, 6.5, GOLD); disc(wx, b - 7, 4.6, sh(GOLD, -1)); disc(wx, b - 7, 1.6, PINK); }
-    for (const [a, h, c] of [[29, 46, PINK], [25, 50, YELLOW], [31, 52, MINT], [27, 56, BLUE], [22, 46, MINT]]) R(x + a - 1, b - h, 2, 2, c);
+    for (const [a, h, c] of [[28, 40, PINK], [23, 44, YELLOW], [30, 46, MINT], [26, 50, BLUE], [20, 41, MINT]]) R(x + a - 1, b - h, 2, 2, c);
   } }),
   // a wrapping table: three rolls of paper on a rack behind, a box half wrapped, ribbon spools, scissors
   party({ id: 'wraptable', name: 'Gift wrapping table', w: 2, h: 1, price: 650, draw(x, b, vw) { wide(x, vw, () => {

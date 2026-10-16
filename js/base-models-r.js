@@ -839,7 +839,7 @@ export const MAKES = {
     for (const [lx, ly, t] of [[12, 31, -0.5], [20, 32, 0.5], [16, 34, 0]]) K.put(ball(u(2.2), 10, 6).scale(1, 2, 0.4), K.gloss('#5aa848'), X(lx), u(ly), -0.06, 0, 0, t);
     [[9, 18, -0.12], [16, 20, -0.14], [23, 18, -0.12], [8, 11, 0.12], [16, 12, 0.12], [24, 11, 0.12]].forEach(([ex, ey, z]) => {
       const x = X(ex), y = u(ey);
-      eggR(K, L, K.gloss(EGG.exe), x, y, z, u(4.6), u(11), 12, 9);
+      eggR(K, L, K.gloss(EGG.exe), x, y, z, u(4.6), u(11), 10, 8);
       for (const sx of [-1, 1]) K.put(ball(u(1), 8, 6).scale(1, 1, 0.5), ink, x + sx * u(1.6), y + u(6.4), z + u(4.15));
       K.put(rbox(u(1.6), u(0.5), 0.006, 0.001), K.plain('#a05050'), x, y + u(4), z + u(4.55));
     });

@@ -231,7 +231,7 @@ export const MAKES = {
     const { rbox, ball, THREE } = L, stone = K.plain(STONE), pale = K.plain(K.pal.p), deck = 0.72;
     const sh = new THREE.Shape();
     sh.moveTo(X(2, W), 0); sh.lineTo(-0.5, 0); sh.absellipse(0, 0, 0.5, u(15), Math.PI, 0, true); sh.lineTo(X(62, W), 0); sh.lineTo(X(62, W), deck); sh.lineTo(X(2, W), deck); sh.closePath();
-    K.put(new THREE.ExtrudeGeometry(sh, { depth: 0.78, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1, curveSegments: 14 }).translate(0, 0, -0.39), stone, 0, 0, 0);
+    K.put(new THREE.ExtrudeGeometry(sh, { depth: 0.78, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1, curveSegments: 14 }).translate(0, 0.01, -0.39), stone, 0, 0, 0);
     for (let i = 1; i < 8; i++) {
       const a = Math.PI + i / 8 * Math.PI, x = Math.cos(a) * u(17.5), y = -Math.sin(a) * u(16.5);
       for (const z of [-0.405, 0.405]) K.put(rbox(u(5), u(4.4), 0.04, 0.002), K.plain(i % 2 ? '#bab4a8' : STONE2), x, y, z, 0, 0, a + Math.PI / 2);
@@ -613,7 +613,7 @@ export const MAKES = {
     const { rbox } = L, dark = K.wood(L.tone(K.pal.w, 0.74)), wood = K.wood();
     for (const px of [12, 52]) {
       const x = X(px, W);
-      for (const z of [-0.26, 0.26]) for (const sx of [-1, 1]) rod(K, L, dark, [x + sx * u(6), u(1.2), z * 1.15], [x, u(15), z], u(1.2));
+      for (const z of [-0.26, 0.26]) for (const sx of [-1, 1]) rod(K, L, dark, [x + sx * u(6), u(0.6), z * 1.15], [x, u(15), z], u(1.2));
       K.put(rbox(u(4), u(3), 0.72, 0.01), dark, x, u(16.5), 0);
     }
     // the hull: a grid bent through the canoe's sheer and keel, inside and out
@@ -689,7 +689,7 @@ export const MAKES = {
     const { rbox, cyl, THREE } = L, pole = K.wood(), dark = K.wood(L.tone(K.pal.w, 0.74));
     for (const sx of [-1, 1]) {
       K.put(cyl(u(2), u(88), u(2.2), 10), pole, sx * u(28), u(44), 0);
-      rod(K, L, dark, [sx * u(28), u(30), -0.02], [sx * u(20), 0, -0.36], u(1));
+      rod(K, L, dark, [sx * u(28), u(30), -0.02], [sx * u(20), u(1), -0.36], u(1));
     }
     K.put(rbox(u(52), u(40), 0.05, 0.01), K.gloss(INK), 0, u(66), 0);
     K.put(rbox(u(48), u(36), 0.01, 0.002), K.plain(K.pal.p), 0, u(66), 0.03);
