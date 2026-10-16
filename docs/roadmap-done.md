@@ -2760,3 +2760,11 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 ### House Upgrades' Backyard tab (2026-10-16, the user's ask: "backyard needs its own tab ... couldn't find the upgrade button")
 - The yard moved off 1F onto its own BACKYARD tab, its buy / grow card always shown; every Build key is sticky at the
   page's foot. Checked headless at phone size: the key in view on 1F, the yard tab and a room build; no errors.
+
+### The furniture model pass and the seasonal and yard sets (2026-10-16, patch 1.23)
+- Every kind but the Present is a hand-built model (batches `-l` to `-q`: the Dojo, Safari and Trainer sets, the 14
+  posters, the old lathed and puffed pieces, the 64 frontboxes); the user saw sheets of all 115 and asked for the
+  Ranger tent and Acacia redone (done). The catalogue was slimmed from 6.6M to 3.6M triangles, and the Secret Base bakes
+  still pieces' colours: a 40-piece room 522 -> 325 draw calls a frame.
+- 237 new kinds (1,227 -> 1,464): eight holiday sets dealt only in their window plus a Birthday party set, and eight
+  yard shelves (120 kinds) in tabs in Smeargle's garden catalogue. Detail: `docs/reference/hub-base-mall.md`.

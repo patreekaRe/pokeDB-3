@@ -147,6 +147,8 @@ These used to be buried in the notes. Each one has its detail in the reference f
   - **PC page**: a `NEWS` line in `js/pc-news.js`.
   - **Furniture reskin family**: a `set:`. An earned piece needs a source of its own. (`hub-base-mall.md`)
   - **Arcade game**: a `MARQUEE` line, and a `GAMES` line to play it at home. (`hub-base-mall.md`)
+  - **Furniture kind**: a painting and a hand-built model in a `js/base-models-*.js` batch, checked with
+    `tools/model-check.mjs`; a seasonal one a `holiday`, an outdoor one `outdoor` and a `yard` tab. (`hub-base-mall.md`)
   - **Song**: loop points.
 
 ## Playtest URLs
@@ -154,7 +156,7 @@ These used to be buried in the notes. Each one has its detail in the reference f
 Flags on the live site or a githack link. Most are never saved. Details are in the file named.
 
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
-  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
+  `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
   `?pixelcards`, `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`

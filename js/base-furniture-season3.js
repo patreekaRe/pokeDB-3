@@ -525,13 +525,13 @@ export const SEASON_KINDS_3 = [
   party({ id: 'confetticannon', name: 'Confetti cannon', w: 1, h: 1, price: 500, draw(x, b) {
     floorShadow(x, b, 32);
     poly([[x + 4, b - 6], [x + 26, b - 6], [x + 22, b - 16], [x + 8, b - 16]], PINK);
-    const g = ctx(); g.save(); g.translate(x + 14, b - 16); g.rotate(-0.85);
-    g.fillStyle = PURPLE; g.beginPath(); g.roundRect(-5, -5, 25, 10, 3); g.fill();
-    g.fillStyle = GOLD; for (const t of [1, 9, 17]) g.fillRect(t, -5.5, 2.4, 11);
-    g.fillStyle = sh(PURPLE, -1); g.fillRect(20, -6, 3, 12);
+    const g = ctx(); g.save(); g.translate(x + 13, b - 16); g.rotate(-0.85);
+    g.fillStyle = PURPLE; g.beginPath(); g.roundRect(-5, -5, 22, 10, 3); g.fill();
+    g.fillStyle = GOLD; for (const t of [1, 8, 14]) g.fillRect(t, -5.5, 2.4, 11);
+    g.fillStyle = sh(PURPLE, -1); g.fillRect(17, -6, 3, 12);
     g.restore();
     for (const wx of [x + 7, x + 25]) { disc(wx, b - 7, 6.5, GOLD); disc(wx, b - 7, 4.6, sh(GOLD, -1)); disc(wx, b - 7, 1.6, PINK); }
-    for (const [a, h, c] of [[28, 40, PINK], [23, 44, YELLOW], [30, 46, MINT], [26, 50, BLUE], [20, 41, MINT]]) R(x + a - 1, b - h, 2, 2, c);
+    for (const [a, h, c] of [[27, 37, PINK], [22, 41, YELLOW], [29, 43, MINT], [25, 47, BLUE], [19, 38, MINT]]) R(x + a - 1, b - h, 2, 2, c);
   } }),
   // a wrapping table: three rolls of paper on a rack behind, a box half wrapped, ribbon spools, scissors
   party({ id: 'wraptable', name: 'Gift wrapping table', w: 2, h: 1, price: 650, draw(x, b, vw) { wide(x, vw, () => {

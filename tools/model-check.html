@@ -1,0 +1,56 @@
+<!doctype html><meta charset="utf-8"><body><script type="module">
+import { loadThree, tex, bakeColours } from '../js/hd2d.js';
+import { PIECES, FAMILIES } from '../js/base-furniture.js';
+import { furnitureModel } from '../js/base-mesh.js';
+import { shapeOf } from '../js/base-shapes.js';
+const THREE = await loadThree();
+const q = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+const paint = (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 1 });
+const black = new THREE.MeshBasicMaterial({ color: '#000000', side: THREE.DoubleSide });
+function stats(g) {
+  let meshes = 0, draws = 0, tris = 0; const mats = new Set(), texs = new Set();
+  g.traverse(o => { if (!o.isMesh) return; meshes++; const ms = [o.material].flat(); draws += Array.isArray(o.material) ? (o.geometry.groups.length || 1) : 1;
+    ms.forEach(m => { mats.add(m); if (m.map) texs.add(m.map.image); });
+    const gi = o.geometry; tris += (gi.index ? gi.index.count : gi.attributes.position.count) / 3 * (o.isInstancedMesh ? o.count : 1); });
+  return { meshes, draws, tris: Math.round(tris), mats: mats.size, texs: texs.size };
+}
+function silhouette(g, p) {
+  const art = p.art(0, 1, true), W = art.width, H = art.height;
+  const wall = !!p.wall;
+  const cam = new THREE.OrthographicCamera(-W / 64, W / 64, wall ? 3 : H / 32, 0, -50, 50);
+  cam.position.set(0, 0, 10); cam.lookAt(0, 0, 0);
+  // wall pieces: Y(j) = (96 - j)/32 so the strip spans y 0..3 regardless of its canvas height
+  if (wall) { cam.top = 3; cam.bottom = 3 - H / 32; }
+  cam.updateProjectionMatrix();
+  const scene = new THREE.Scene(); scene.background = new THREE.Color('#ffffff');
+  const was = new Map(); g.traverse(o => { if (o.isMesh) { was.set(o, o.material); o.material = black; } });
+  scene.add(g); renderer.setSize(W, H, false); renderer.render(scene, cam); scene.remove(g);
+  was.forEach((m, o) => { o.material = m; });
+  const c = new OffscreenCanvas(W, H), x = c.getContext('2d'); x.drawImage(renderer.domElement, 0, 0);
+  const md = x.getImageData(0, 0, W, H).data, ad = art.getContext('2d').getImageData(0, 0, W, H).data;
+  let i = 0, u = 0, onlyArt = 0, onlyModel = 0;
+  for (let k = 0; k < W * H; k++) { const a = ad[k * 4 + 3] > 128, m = md[k * 4] < 128; if (a && m) i++; if (a || m) u++; if (a && !m) onlyArt++; if (m && !a) onlyModel++; }
+  return { iou: u ? +(i / u).toFixed(2) : 1, missing: u ? +(onlyArt / u).toFixed(2) : 0, extra: u ? +(onlyModel / u).toFixed(2) : 0 };
+}
+const out = [];
+const ids = q.get('ids').split(',');
+for (const id of ids) {
+  const p = PIECES[id];
+  if (!p) { out.push({ id, err: 'no piece' }); continue; }
+  try {
+    const s = shapeOf(p.fam, p);
+    const g = furnitureModel(THREE, id, paint);
+    if (!g) { out.push({ id, how: 'flat/none' }); continue; }
+    const box = new THREE.Box3().setFromObject(g), size = box.getSize(new THREE.Vector3());
+    const st = stats(g);
+    const sil = silhouette(g, p);
+    const anim = !!(g.userData.parts || g.userData.doors);
+    if (!anim) bakeColours(g);
+    const baked = stats(g);
+    out.push({ id, how: s ? s.make : (g.userData.standee ? 'carved' : 'auto'), w: p.w, d: p.h, size: [size.x, size.y, size.z].map(v => +v.toFixed(2)), min: [box.min.x, box.min.y, box.min.z].map(v => +v.toFixed(2)), ...st, bakedDraws: baked.draws, ...sil });
+  } catch (e) { out.push({ id, err: String(e.stack || e).slice(0, 400) }); }
+}
+window.result = out; window.done = true;
+</script>

@@ -530,7 +530,7 @@ function makePiece(it, ghostly = false, lift = null) {
     if (p.glow && !ghostly) { m.emissive = new THREE.Color('#ffd890'); m.emissiveMap = tex(mask(art, p.glow)); m.userData.lamp = true; }
     return m;
   });
-  // a still piece's plain-coloured parts as one draw (2026-10-16: a room of 40 pieces drew 522 calls a frame, now 367)
+  // a still piece's plain-coloured parts as one draw (2026-10-16: a room of 40 pieces drew 522 calls a frame, now 325)
   if (!ghostly && !model.userData.parts && !model.userData.doors) bakeColours(model);
   if (!ghostly) dressPlay(THREE, model, p);
   if (ghostly) ownPictures(model);

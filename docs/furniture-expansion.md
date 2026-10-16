@@ -1,8 +1,8 @@
 # Furniture expansion: towards an Animal Crossing–sized catalogue
 
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
-the plan for roughly doubling it, from 1,228 kinds (122 of them dolls) to about 2,450. Nothing here is built yet. The
-user picks the order.
+the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
+the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -67,12 +67,12 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 47. Garage and workshop, 48. Craft and sewing room, 49. Gamer room, 50. Recording studio,
 51. Cinema, 52. Hotel lobby, 53. Ski lodge, 54. Haunted mansion, 55. Cruise cabin.
 
-## Seasons and celebrations (10 to 15 kinds each)
+## Seasons and celebrations (done 2026-10-16: 13 kinds each, `js/data/holidays.js`)
 
 Birthday, wedding, New Year, Valentine's, Egg Day (spring), summer festival and fireworks, Lantern Festival (Lantern
 Village), harvest, winter holidays (beyond the Winter shelf). Each could be sold only in its season.
 
-## Outdoor, for the yard (about 120)
+## Outdoor, for the yard (done 2026-10-16: 120 kinds on 8 tabs)
 
 The yard has 17 kinds; AC's outdoor stock is much bigger.
 - Fences and gates: about 12 styles.

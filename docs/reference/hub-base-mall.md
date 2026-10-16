@@ -443,3 +443,34 @@ LOGGED ✓. A new task is a line in `build()` there.
   under `calmFx()`), the achievement chime plays, and `.b3-news` names what's new for 7 seconds ("BRITT joined your Gym
   Leader case!"). A piece placed for the first time only records what it shows.
 
+
+### The furniture model pass, seasonal sets and yard sets (2026-10-16)
+
+The user's ask: every piece a "3D detailed CLEAN" model, optimised for phones, and a catalogue as big as Animal
+Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal and yard sets first, no ceiling layer yet).
+- **Every kind is hand-built now** but the starter room's Present (`gift`, still carved). New batches, one file each,
+  wired last in `js/base-shapes.js` / `js/base-mesh.js` so their SHAPES override older lines: `-l` the Dojo, Safari and
+  Trainer sets and the 14 posters (the live Trainer pieces read `K.p.live()` when built), `-m` the old lathed and
+  puffed pieces (globes, statues, planets, gumball), `-n` / `-o` / `-p` / `-q` the 64 old `frontbox`es (home machines;
+  shop, office and Spooky shelving; school, toy, library, space and farm; arcade and station), the frontbox's old `top`
+  (a cut fraction the room misread as a height) replaced by real heights or none.
+- **A shape can carry its tap** (`play: { does: ... }`, read by `dressPlay()` after `PLAY`) **and its screen**
+  (`screen: { x, y, w, h, z }`, for a cabinet whose only glow colour is its marquee).
+- **Lighter**: shared helpers pick their sides by size (`L.sides`; `exact` keeps a count for builders that move
+  vertices), `rbox` bevels less when small, `assemble()` merges parts differing only in colour (vertex colours, glows
+  through a small emissive-tint patch), dolls and leaf clumps are lighter, a wall piece's crops share its painting's
+  texture. The catalogue went from 6.6M to 3.6M triangles over 1,313 models (2,769 a piece, none over 20k), and the
+  room bakes a still piece's plain colours (`bakeColours()` in `makePiece()`, not for doors or moving parts) and drops
+  small parts' shadows (`smallNoShadow()`): a 40-piece room drew 522 calls a frame, now 325.
+- **Seasonal sets** (`js/base-furniture-season1.js` to `3`, models `-r` / `-s` / `-u`, all `solo`): New Year,
+  Valentine's, Egg Day, Wedding, Summer festival, Lantern Festival, Harvest and Winter holidays carry `holiday` and are
+  dealt only in their window (`js/data/holidays.js`, `tests/holidays.test.mjs`), one stand a floor while one is on
+  (`dealDay()`); the Birthday party set (`group: 'Party'`) has no holiday and is sold all year. `?holiday=<id>` holds
+  one on for a page load.
+- **Yard sets** (`js/base-furniture-yard2.js` to `5`, models `-v` / `-x` / `-z` / `-y2`, themed, `outdoor`): Fences,
+  Playground, Sports, Buildings, Water, Camping, Statues, Lights, each kind's `yard` naming its tab in the garden
+  catalogue (`GARDEN_TABS` in `js/garden-shop.js`; the first shelf is Yard). The tyre swing swings a Pokémon, and
+  Water types swim in the Lotad pond, Psyduck pond and cedar hot tub (`YARD_SEATS` / `YARD_SPOTS`).
+- **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
+  draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
+  user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

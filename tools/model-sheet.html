@@ -1,0 +1,46 @@
+<!doctype html><meta charset="utf-8"><style>
+body{margin:0;padding:14px;background:#fbf6ea;font:600 13px system-ui,sans-serif;color:#2a2a3a}
+h1{font-size:20px;margin:0 0 10px}
+.g{display:grid;grid-template-columns:repeat(6,230px);gap:10px}
+.t{background:#fff;border-radius:12px;box-shadow:0 0 0 1.5px #e6dcc6;display:flex;flex-direction:column;align-items:center;padding:4px 4px 8px}
+.t canvas{width:222px;height:222px}
+</style><h1 id="h"></h1><div class="g" id="g"></div><script type="module">
+import { loadThree, tex, bakeColours } from '../js/hd2d.js';
+import { PIECES } from '../js/base-furniture.js';
+import { furnitureModel } from '../js/base-mesh.js';
+const THREE = await loadThree();
+const q = new URLSearchParams(location.search);
+document.getElementById('h').textContent = q.get('title');
+const R = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+R.setPixelRatio(1); R.setSize(444, 444, false); R.shadowMap.enabled = true; R.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#f4ecdc');
+scene.add(new THREE.HemisphereLight('#ffffff', '#8a7a6a', 1.5));
+const sun = new THREE.DirectionalLight('#fff2dc', 2.4); sun.position.set(-4, 9, 7); sun.castShadow = true; sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 4, bottom: -3 }); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.CircleGeometry(4, 40), new THREE.MeshStandardMaterial({ color: '#e2d4b4' }));
+floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+const wall = new THREE.Mesh(new THREE.PlaneGeometry(8, 6), new THREE.MeshStandardMaterial({ color: '#efe4cc' })); wall.receiveShadow = true;
+const cam = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+const paint = (art) => new THREE.MeshStandardMaterial({ map: tex(art), roughness: 0.9 });
+for (const id of q.get('ids').split(',')) {
+  const p = PIECES[id], t = document.createElement('div'); t.className = 't';
+  const c = document.createElement('canvas'); c.width = c.height = 444;
+  try {
+    const g = furnitureModel(THREE, id, paint);
+    g.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; } });
+    if (!g.userData.parts && !g.userData.doors) bakeColours(g);
+    scene.add(g);
+    const box = new THREE.Box3().setFromObject(g), size = box.getSize(new THREE.Vector3()), mid = box.getCenter(new THREE.Vector3());
+    const r = Math.max(0.9, size.length() * 0.6);
+    if (p.wall) { scene.add(wall); wall.position.set(0, 3, -0.002); g.rotation.y = 0; cam.position.set(mid.x + r * 1.1, mid.y + r * 0.7, r * 3.4); }
+    else { g.rotation.y = -0.55; cam.position.set(0, mid.y + r * 1.5, r * 3.3); }
+    cam.lookAt(mid.x, mid.y, p.wall ? 0 : 0);
+    R.render(scene, cam);
+    c.getContext('2d').drawImage(R.domElement, 0, 0);
+    scene.remove(g); scene.remove(wall);
+  } catch (e) { console.error(id, e); }
+  t.append(c, Object.assign(document.createElement('div'), { textContent: p ? p.name : id }));
+  document.getElementById('g').append(t);
+}
+window.done = true;
+</script>

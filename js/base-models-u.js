@@ -376,10 +376,10 @@ export const MAKES = {
     K.put(new THREE.SphereGeometry(1, 16, 6, 0, TAU, 0, Math.PI / 2).scale(rx, ry, rz), K.plain(L.tone(LEAFO, 0.85)));
     const cols = [LEAFR, LEAFO, LEAFY, RUST], up = new THREE.Vector3(0, 1, 0), n = new THREE.Vector3(), q = new THREE.Quaternion();
     for (let i = 0; i < 34; i++) {
-      const a = i * 2.39996, e = Math.asin(Math.min(0.97, (i + 2.5) / 36)), c = Math.cos(e);
-      n.set(c * Math.cos(a) / rx, Math.sin(e) / ry, c * Math.sin(a) / rz).normalize();
+      const a = i * 2.39996, e = Math.asin(Math.min(0.97, (i + 4) / 38)), c = Math.cos(e);
+      n.set(c * Math.cos(a) / rx, Math.sin(e) / ry + 2, c * Math.sin(a) / rz).normalize();
       const g = L.ball(1, 8, 6).scale(u(3.3), u(0.45), u(1.9)).rotateY(i * 1.7).applyQuaternion(q.setFromUnitVectors(up, n));
-      K.put(g, K.gloss(cols[i % 4]), c * Math.cos(a) * rx * 1.01, Math.sin(e) * ry * 1.01, c * Math.sin(a) * rz * 1.01);
+      K.put(g, K.gloss(cols[i % 4]), c * Math.cos(a) * rx * 0.86, Math.max(u(2.6), Math.sin(e) * ry * 1.01), c * Math.sin(a) * rz * 0.86);
     }
     // the Leafeon leaf: its outline extruded, a midrib up it
     const sh = new THREE.Shape();
@@ -935,7 +935,7 @@ export const MAKES = {
 
   /** A stubby cannon on a four-wheeled carriage, aimed high: its barrel striped gold, confetti in its mouth. */
   confetticannon(K, s, W, D, L) {
-    const { THREE, lathe, cyl, torus, rbox, ball } = L, gold = K.metal(GOLD), aim = (g) => g.rotateZ(-0.72).translate(X(14), u(16), 0);
+    const { THREE, lathe, cyl, torus, rbox, ball } = L, gold = K.metal(GOLD), aim = (g) => g.rotateZ(-0.72).translate(X(13), u(16), 0);
     const car = new THREE.Shape([[4, 6], [26, 6], [22, 16], [8, 16]].map(([a, h]) => new THREE.Vector2(X(a), u(h))));
     K.put(new THREE.ExtrudeGeometry(car, { depth: 0.34, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.01, bevelSegments: 1 }).translate(0, 0, -0.17), K.gloss(PINK));
     for (const wx of [7, 25]) {
@@ -946,12 +946,12 @@ export const MAKES = {
         K.put(cyl(u(1.6), u(1.6), u(1.6), 10).rotateX(Math.PI / 2), K.gloss(PINK), X(wx), u(7), z * 1.05);
       }
     }
-    K.put(aim(lathe([[0.001, -u(5)], [u(3.6), -u(4.4)], [u(5), -u(2.4)], [u(5), u(20)], [0.001, u(20)]], 16)), K.gloss(PURPLE));
-    for (const t of [1, 9, 17]) K.put(aim(cyl(u(5.3), u(2.4), u(5.3), 16).translate(0, u(t + 1.2), 0)), gold);
-    K.put(aim(lathe([[u(5.2), 0], [u(6), u(0.6)], [u(6), u(3)], [u(5), u(3)], [u(4.4), u(1)]], 16).translate(0, u(20), 0)), K.gloss(L.tone(PURPLE, 0.74)));
-    K.put(aim(cyl(u(4.6), u(0.4), u(4.6), 14).translate(0, u(21.6), 0)), K.plain('#3a2a4a'));
-    for (const [dx, dz, c] of [[-2, 1, PINK], [1.5, -1.5, YELLOW], [0, 2.4, MINT], [2.4, 1, BLUE]]) K.put(aim(rbox(u(1.6), u(0.3), u(1.6), 0.001).rotateY(dx).translate(u(dx), u(22), u(dz))), K.plain(c));
-    for (const [a, h, c, z] of [[28, 40, PINK, 0.05], [23, 44, YELLOW, -0.05], [30, 46, MINT, 0], [26, 50, BLUE, 0.08], [20, 41, MINT, -0.08]])
+    K.put(aim(lathe([[0.001, -u(5)], [u(3.6), -u(4.4)], [u(5), -u(2.4)], [u(5), u(17)], [0.001, u(17)]], 16)), K.gloss(PURPLE));
+    for (const t of [1, 8, 14]) K.put(aim(cyl(u(5.3), u(2.4), u(5.3), 16).translate(0, u(t + 1.2), 0)), gold);
+    K.put(aim(lathe([[u(5.2), 0], [u(6), u(0.6)], [u(6), u(3)], [u(5), u(3)], [u(4.4), u(1)]], 16).translate(0, u(17), 0)), K.gloss(L.tone(PURPLE, 0.74)));
+    K.put(aim(cyl(u(4.6), u(0.4), u(4.6), 14).translate(0, u(18.6), 0)), K.plain('#3a2a4a'));
+    for (const [dx, dz, c] of [[-2, 1, PINK], [1.5, -1.5, YELLOW], [0, 2.4, MINT], [2.4, 1, BLUE]]) K.put(aim(rbox(u(1.6), u(0.3), u(1.6), 0.001).rotateY(dx).translate(u(dx), u(19), u(dz))), K.plain(c));
+    for (const [a, h, c, z] of [[27, 37, PINK, 0.05], [22, 41, YELLOW, -0.05], [29, 43, MINT, 0], [25, 47, BLUE, 0.08], [19, 38, MINT, -0.08]])
       K.put(rbox(u(2), u(2), u(0.3), 0.001), K.plain(c), X(a), u(h - 1), z, a, h * 0.4);
   },
 

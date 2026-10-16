@@ -9,6 +9,16 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**Furniture expansion, the next sets** (the user's ask, 2026-10-16: a catalogue as big as Animal Crossing's). The plan
+and the list are `docs/furniture-expansion.md`; the seasonal sets and the yard (237 kinds, 1,464 in all) are done and
+in patch 1.23 (`docs/roadmap-done.md`). Next is the user's pick of the furniture series, the Pokémon sets and the room
+types, about 4 to 6 sets of 25 a session, one helper each, every kind painted and hand-built within the budget and
+checked with `tools/model-check.mjs`. No ceiling layer yet (the user's call). Waiting on the user's playtest of the
+seasonal sets (`?holiday=valentine` etc. on the Furniture store) and the yard sets (`?yard&allfurniture`, Smeargle's
+catalogue). Session prompt:
+> Run in: CLOUD. Read CLAUDE.md, docs/furniture-expansion.md and docs/reference/hub-base-mall.md's last section, then
+> build the furniture sets the user picks, a painting file and a model batch each, as the 2026-10-16 sets were.
+
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
 
