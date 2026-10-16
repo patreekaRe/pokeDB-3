@@ -37,19 +37,22 @@ const plate = (K, L, box, k) => [new L.THREE.PlaneGeometry(u(box[2] - box[0]), u
 const disc = (L, r, t, seg = 12) => L.cyl(r, t, r, seg).rotateX(HALF_PI);
 const coin = (L) => L.cyl(0.036, 0.012, 0.036, 8);
 
+/* where js/base-play.js plays a cabinet's live game: upright, just in front of the bottom of the leaning glass */
+const CRT = { x: 0, y: u(62), w: u(20), h: 0.62, z: 0.22 };
+
 export const SHAPES = {
-  racercabinet: { make: 'gamecabQ', game: 'racer' },
-  shootercabinet: { make: 'gamecabQ', game: 'shooter' },
-  puzzlecabinet: { make: 'gamecabQ', game: 'puzzle' },
-  fightercabinet: { make: 'gamecabQ', game: 'fighter' },
-  mazecabinet: { make: 'gamecabQ', game: 'maze' },
-  rhythmcabinet: { make: 'gamecabQ', game: 'rhythm' },
+  racercabinet: { make: 'gamecabQ', game: 'racer', screen: CRT },
+  shootercabinet: { make: 'gamecabQ', game: 'shooter', screen: CRT },
+  puzzlecabinet: { make: 'gamecabQ', game: 'puzzle', screen: CRT },
+  fightercabinet: { make: 'gamecabQ', game: 'fighter', screen: CRT },
+  mazecabinet: { make: 'gamecabQ', game: 'maze', screen: CRT },
+  rhythmcabinet: { make: 'gamecabQ', game: 'rhythm', screen: CRT },
   prizecounter: { make: 'prizecounter', top: 1.16 },
-  tokenmachine: { make: 'tokenmachine' },
+  tokenmachine: { make: 'tokenmachine', screen: { x: 0, y: u(62), w: u(16), h: u(8), z: 0.242 } },
   photobooth: { make: 'photobooth' },
   coinpusher: { make: 'coinpusher' },
   capsuletoy: { make: 'capsuletoy' },
-  ticketmachine: { make: 'ticketmachine' },
+  ticketmachine: { make: 'ticketmachine', screen: { x: 0, y: u(62), w: u(20), h: u(16), z: 0.268 } },
   newsstand: { make: 'newsstand' },
 };
 
