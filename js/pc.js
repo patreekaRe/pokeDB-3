@@ -9,6 +9,7 @@
    your things.
    ============================================================ */
 
+import { journalReady } from './data/journal.js';
 import { rangerSlots } from './data/ranger.js';
 import { getSave, updateSave, coinsWithBonus } from './storage.js';
 import { buddy, buddyChoices } from './trainercard.js';
@@ -217,7 +218,7 @@ function monTile(src, name, on, tap, tag = '') {
 
 const PAGES = {
   home() {
-    const waiting = unclaimed().length, ready = claimable();
+    const waiting = unclaimed().length, ready = claimable(), journal = journalReady(getSave()).length;
     const save = getSave();
     const fame = bookEntries('fame').length ? 'fame' : bookEntries('record').length ? 'record' : null;
     const patches = ['PATCH NOTES', patchUnseen() ? `Version ${latestPatch.version} is here! Read what's new.` : 'What changed in each version of the game.', () => show('patches'), patchUnseen()];
@@ -225,6 +226,8 @@ const PAGES = {
     const rows = [
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with something inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here, and letters from friends.', () => show('mailbox'), waiting > 0],
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
+      [journal ? `TRAINER'S JOURNAL (${journal})` : 'TRAINER\'S JOURNAL', journal ? `${journal} task${journal === 1 ? '' : 's'} done! Claim ${journal === 1 ? 'it' : 'them'} for PokéCoins.` : 'Goals for the whole game, from your first win to the top of the Sky Pillar, each paying PokéCoins.',
+        () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],

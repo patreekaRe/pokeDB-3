@@ -864,11 +864,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
         change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
         if they should move to the Outfitter only. ▶ Run in: CLOUD.
-- **Ranger Task Board**: built 2026-10-16 with weekly Expeditions, the Clearing gate's "!", a reward-box line when a
-  catch finishes a task, and Ranger Ranks on the Trainer Card with a badge each (`docs/roadmap-done.md`). **Next, offered
-  2026-10-16**: a reward for each rank (a ranger hat on your partner, an Apricorn look, a big Safari piece), more tasks,
-  seasonal Expeditions, and the big one, a "Trainer's Journal" board for the whole game (main runs, Gym Leaders, the Sky
-  Pillar, Kenmatta) on the same engine. Waiting on the user's playtest and pick. ▶ Run in: CLOUD.
+- **Ranger Task Board and Trainer's Journal**: both built 2026-10-16 on one engine (`docs/roadmap-done.md`): the board in
+  the Safari Outfitter, the Journal at the Clearing's PC. **Next, if wanted**: a reward for each rank (a ranger hat on
+  your partner, an Apricorn look, a big furniture piece), more tasks or Journal furniture, seasonal Expeditions. Waiting
+  on the user's playtest. ▶ Run in: CLOUD.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

@@ -4,6 +4,7 @@
    "!" too) until it's opened once. A new PC page gets a line in NEWS; its menu row then follows by itself.
    ============================================================ */
 
+import { journalReady } from './data/journal.js';
 import { latestPatch, patchUnseen } from './patchnotes.js';
 import { claimable } from './missions.js';
 import { townsOpen } from './data/towns.js';
@@ -59,6 +60,7 @@ function newsNow(save) {
     forever while a page inside was unread, and inside nothing said which). */
 export function pcBeckons(save) {
   if (claimable(save)) return true;   // a mission reward waits, like the mail's envelope, till it's claimed
+  if (journalReady(save).length) return true;   // and a Trainer's Journal task (js/data/journal.js)
   const now = newsNow(save);
   try { return !!now && localStorage.getItem(LOOKED_KEY) !== now; } catch { return false; }
 }

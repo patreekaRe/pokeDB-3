@@ -2741,3 +2741,11 @@ errors. Detail: `docs/reference/hub-base-mall.md`.
   portrait is gone and the count no longer includes it. Its run starts from the open gate or the Depths camp, straight to its
   Prepare step; Back from there goes home (`previewStarter()` in `js/main.js`). Checked headless: 15 legendaries, no
   Mewtwo; Mewtwo's Prepare shows its own rules; a later Choose falls back to Charmander. No errors.
+
+### The Trainer's Journal (2026-10-16, the user: "Okay do it")
+The Ranger Task Board's engine for the whole game, at the Clearing's PC: 98 tasks in four tabs (Runs, World, Sky
+Pillar, Collection) counted from what the save already keeps, so old saves start with their progress; claims pay
+PokéCoins and climb seven Journal Ranks, a badge for each past Beginner (188 badges), the rank on the Trainer Card. The
+same pinned notes in a leather frame under a red plaque. Checked headless: the PC row's count, the board, six claims to
+Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no errors.
+

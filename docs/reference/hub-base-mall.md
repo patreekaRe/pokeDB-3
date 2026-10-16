@@ -402,3 +402,21 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
   shadow pass, which follows the camera's 26 x 26 area). The Secret Base measured fine: 117 draws fresh, 250 with 22 pieces,
   no shaders compiled while in it, ~20k px of uploads a frame (TV screens); the backyard 61. Merging furniture there would
   need re-merging on every move, recolour or play, so it was left.
+
+### The Trainer's Journal (2026-10-16)
+
+The Ranger Task Board's engine for the whole game (the user's go-ahead), at the Clearing's PC: a TRAINER'S JOURNAL row
+in `PAGES.home()` of `js/pc.js` (its count and "!" from `journalReady()`; `pcBeckons()` in `js/pc-news.js` lights the
+PC's "!" in the Clearing too). The tasks are `JOURNAL_TASKS` in `js/data/journal.js` (pure, `tests/journal.test.mjs`), 98
+in four tabs (`JOURNAL_TABS`): **Runs** (wins, wins by type, Trainer Levels, Level 5 wins, foes, Alphas, bosses, best
+streak, Hall of Fame), **World** (each Gym Leader beaten, all of them, Waystones mended, Pokédex pages and Pokémon beaten,
+dojo stars, Kenmatta beaten), **Sky Pillar** (best floor, guardians, summits, weeks) and **Collection** (starters owned,
+shinies, badges, coins earned, Safari catches, reaching Ranger). Every count reads what the save already keeps, so an old
+save has its progress on day one; only `save.journal.claimed` is new. Claims pay PokéCoins only, and climb the
+**Journal Ranks** (`JOURNAL_RANKS` in `js/data/journal-ranks.js`, kept apart with no imports so `js/data/badges.js` can
+grant a badge per rank, `journal-2` to `journal-7`, without an import cycle; Beginner to Grand Champion). The Trainer
+Card's JOURNAL line shows the rank. The board is `openJournal()` in `js/ranger.js`: `BOARDS.journal` (its tabs, tasks,
+ranks and save field), the same notes in a stitched leather frame under a red plaque (`.ranger-board.journal` in
+`css/hub.css`), a note's photo a big emoji (`pic.emoji`) or a Gym Leader's sprite (`pic.src`), claimed notes stamped
+LOGGED ✓. A new task is a line in `build()` there.
+

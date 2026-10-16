@@ -87,6 +87,7 @@ const freshSave = () => ({
   safari: { day: null, tries: 0 },   // the Safari Zone's day (UTC "YYYY-MM-DD"), its tries so far (only the first counts) the days played (`days`, missing in an old save: safariDays()), the day its Day Pass was bought (`pass`) and the Safari Balls left in the run under way (`balls`)
   safariDex: { seen: [], caught: [], done: [], complete: false },   // Safari Pokémon met and caught, on any try (the Safari Pokédex), the areas whose reward was paid, and Rayquaza's full dex
   ranger: { claimed: [], log: {} },   // the Safari Outfitter's Ranger Task Board (js/data/ranger.js): tasks claimed, and the catches it counts that the Pokédex doesn't (balls, night, first turns, unhurt, best run, bosses, wins, days in a row)
+  journal: { claimed: [] },   // the Trainer's Journal at the Clearing's PC (js/data/journal.js): tasks claimed; its progress is counted from the rest of the save
   balls: { great: 0, ultra: 0, owned: [], masterWeek: null },   // Poké Balls from the Game Corner (js/data/balls.js): stock per ball id, the Master Ball if owned, the week the Master Ball was thrown and its throws (`masterThrows`, missing in an old save: masterThrows())
   losses: [],                 // lost runs, a short line each (js/halloffame.js recordLoss()): where it fell and to what, newest LOSS_KEEP
   hallOfFame: [],             // every Trainer Level 5 win, oldest first (js/halloffame.js); old saves start empty   // Pokédex: enemy ids fought / beaten, biome pages whose reward was paid, defeats per id (research), and the whole-dex bonus paid
@@ -132,6 +133,7 @@ function load() {
         shiny: { ...base.shiny, ...saved.shiny },
         safariDex: { ...base.safariDex, ...saved.safariDex },
         ranger: { ...base.ranger, ...saved.ranger },
+        journal: { ...base.journal, ...saved.journal },
         tower: { ...base.tower, ...saved.tower },
         corner: { ...base.corner, ...saved.corner },
         balls: migrateBalls({ ...base.balls, ...saved.balls }),

@@ -3,7 +3,9 @@
    js/data/ranger.js's; this file logs the catches they count, pays a claim and shows the board: a cork board in a
    bamboo frame, pinned paper notes with a Polaroid of the Pokémon (a silhouette till it's caught) or the ball, a
    paw-print trail for the progress and the reward; a ready note wiggles on its pin and its CLAIM stamps it. Opened
-   from the board on the Outfitter's wall (js/mall-outfitter.js) and the Safari lobby's Tasks key (js/safariprep.js). */
+   from the board on the Outfitter's wall (js/mall-outfitter.js) and the Safari lobby's Tasks key (js/safariprep.js).
+   The same board shows the Trainer's Journal (js/data/journal.js; 2026-10-16), the whole game's tasks at the Clearing's
+   PC, in a leather frame under a red plaque: `BOARDS` says which tasks, ranks and save field each one reads. */
 
 import { getSave, updateSave, awardCoins } from './storage.js';
 import { playSound } from './audio.js';
@@ -14,6 +16,16 @@ import { showBadgeNews } from './trainercard.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { BALLS } from './data/balls.js';
 import { TABS, progressOf, readyTasks, rankOf, rewardText, logCatch, logDay, logWeekCatch, logWeekTick, logWeekDay, expeditionWeek, tasksOn, taskById } from './data/ranger.js';
+import { JOURNAL_TABS, JOURNAL_TASKS, JOURNAL_BY_ID, journalProgress, journalReady, journalRank } from './data/journal.js';
+
+/* The two boards on one engine: the Safari Outfitter's Ranger Task Board and the PC's Trainer's Journal. */
+const BOARDS = {
+  ranger: { title: 'RANGER TASK BOARD', label: 'Ranger Task Board', stamp: 'RANGER ✓', store: 'ranger', tabs: TABS, tasksOn, taskById,
+    ready: readyTasks, rank: rankOf, progress: progressOf },
+  journal: { title: 'TRAINER\'S JOURNAL', label: 'Trainer\'s Journal', stamp: 'LOGGED ✓', store: 'journal', tabs: JOURNAL_TABS,
+    tasksOn: (tab) => JOURNAL_TASKS.filter(t => t.tab === tab), taskById: (id) => JOURNAL_BY_ID[id] ?? null,
+    ready: journalReady, rank: journalRank, progress: journalProgress },
+};
 
 /* ---------- counting ---------- */
 
@@ -35,11 +47,14 @@ export const rangerDay = (day) => logged(l => logDay(l, day), (w, week) => logWe
 /** How many tasks wait to be claimed: the board's "!". */
 export const rangerReady = (save = getSave()) => readyTasks(save).length;
 
+/** Journal tasks waiting to be claimed: the PC's count. */
+export const journalCount = (save = getSave()) => journalReady(save).length;
+
 /** Pays a done task once. Returns its reward, or null. */
 function claim(id) {
-  const task = taskById(id), save = getSave(), p = task && progressOf(task, save);
+  const task = B.taskById(id), save = getSave(), p = task && B.progress(task, save), key = B.store;
   if (!p?.done || p.claimed) return null;
-  updateSave(d => { d.ranger = { log: {}, ...d.ranger, claimed: [...(d.ranger?.claimed || []), id] }; });
+  updateSave(d => { d[key] = { ...(key === 'ranger' ? { log: {} } : {}), ...d[key], claimed: [...(d[key]?.claimed || []), id] }; });
   const r = task.reward;
   if (r.coins) return { ...r, paid: awardCoins(r.coins) };
   if (r.balls) updateSave(d => { d.balls[r.balls[0]] = (d.balls[r.balls[0]] || 0) + r.balls[1]; });
@@ -50,7 +65,9 @@ function claim(id) {
 
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
 const ballSprite = (id) => `assets/items/${BALLS.find(b => b.id === id)?.sprite ?? `${id}-ball`}.png`;
-let dlg = null, tab = 'expeditions', onDone = null;
+let B = BOARDS.ranger, dlg = null, onDone = null;
+const dlgs = {}, tabs = { ranger: 'expeditions', journal: 'runs' };
+let tab = tabs.ranger;
 
 function rewardIcon(r) {
   const i = el('span', 'rb-reward-ico');
@@ -62,16 +79,20 @@ function rewardIcon(r) {
 /** A task's note: pinned, a little crooked, its photo, words, trail and reward; done notes wiggle with a CLAIM stamp,
     claimed ones fade under a RANGER stamp. */
 function note(task, save, i) {
-  const p = progressOf(task, save), n = el('article', `rb-note${p.done && !p.claimed ? ' ready' : ''}${p.claimed ? ' claimed' : ''}`);
+  const p = B.progress(task, save), n = el('article', `rb-note${p.done && !p.claimed ? ' ready' : ''}${p.claimed ? ' claimed' : ''}`);
   n.style.setProperty('--tilt', `${((i * 37) % 7) - 3}deg`);
   n.style.setProperty('--pin', ['#d84838', '#3a74e0', '#f8c838', '#58a848'][i % 4]);
   n.append(el('span', 'rb-pin'));
   const pic = task.pic(save), shot = el('div', 'rb-photo');
   const img = el('img', 'pixel');
   img.alt = ''; img.loading = 'lazy';
-  if (pic.ball) { img.src = ballSprite(pic.ball); shot.classList.add('ball'); }
-  else { img.src = ENEMY_DEFS[pic.mon]?.image ?? ''; if (!pic.seen) shot.classList.add('unseen'); }
-  shot.append(img);
+  if (pic.emoji) { shot.classList.add('emoji'); shot.append(el('span', 'rb-emoji', pic.emoji)); }
+  else {
+    if (pic.ball) { img.src = ballSprite(pic.ball); shot.classList.add('ball'); }
+    else if (pic.src) { img.src = pic.src; shot.classList.add('trainer'); }
+    else { img.src = ENEMY_DEFS[pic.mon]?.image ?? ''; if (!pic.seen) shot.classList.add('unseen'); }
+    shot.append(img);
+  }
   const body = el('div', 'rb-body');
   if (task.tier) body.append(el('span', `rb-tier ${task.tier}`, task.tier === 'bonus' ? 'BONUS' : task.tier.toUpperCase()));
   body.append(el('h3', 'rb-title', task.title), el('p', 'rb-text', task.text));
@@ -82,7 +103,7 @@ function note(task, save, i) {
   reward.append(rewardIcon(task.reward), el('span', null, rewardText(task.reward)));
   body.append(trail, reward);
   n.append(shot, body);
-  if (p.claimed) n.append(el('span', 'rb-stamp done', 'RANGER ✓'));
+  if (p.claimed) n.append(el('span', 'rb-stamp done', B.stamp));
   else if (p.done) {
     const b = el('button', 'rb-claim', 'CLAIM');
     b.type = 'button';
@@ -101,21 +122,21 @@ function untilWeek(now = Date.now()) {
 
 /** Ready first, then nearest to done, claimed last. */
 const order = (save) => (a, b) => {
-  const pa = progressOf(a, save), pb = progressOf(b, save);
+  const pa = B.progress(a, save), pb = B.progress(b, save);
   const rank = (p) => (p.claimed ? 2 : p.done ? 0 : 1);
   return rank(pa) - rank(pb) || pb.n / pb.goal - pa.n / pa.goal;
 };
 
 function render() {
-  const save = getSave(), { n, rank, next, level } = rankOf(save);
+  const save = getSave(), { n, rank, next, level } = B.rank(save);
   const head = dlg.querySelector('.rb-rank');
   head.querySelector('.rb-rank-name').textContent = rank.name;
   head.querySelector('.rb-rank-lv').textContent = `RANK ${level}`;
   head.querySelector('.rb-rank-next').textContent = next ? `${n} / ${next.at} tasks to ${next.name}` : `All ${n} tasks claimed`;
   head.querySelector('.rb-rank-bar i').style.width = `${next ? Math.round((n - rank.at) / (next.at - rank.at) * 100) : 100}%`;
-  for (const t of TABS) {
-    const tasks = tasksOn(t.id), b = dlg.querySelector(`[data-tab="${t.id}"]`);
-    const ready = tasks.filter(x => progressOf(x, save).done && !progressOf(x, save).claimed).length, done = tasks.filter(x => progressOf(x, save).claimed).length;
+  for (const t of B.tabs) {
+    const tasks = B.tasksOn(t.id), b = dlg.querySelector(`[data-tab="${t.id}"]`);
+    const ready = tasks.filter(x => B.progress(x, save).done && !B.progress(x, save).claimed).length, done = tasks.filter(x => B.progress(x, save).claimed).length;
     b.classList.toggle('on', t.id === tab);
     b.setAttribute('aria-selected', String(t.id === tab));
     b.querySelector('.rb-tab-n').textContent = `${done}/${tasks.length}`;
@@ -123,7 +144,7 @@ function render() {
     b.querySelector('.rb-tab-ready').hidden = !ready;
   }
   const list = dlg.querySelector('.rb-notes');
-  const notes = tasksOn(tab), week = dlg.querySelector('.rb-week');
+  const notes = B.tasksOn(tab), week = dlg.querySelector('.rb-week');
   // the Expeditions keep their order (easy, medium, hard, then the bonus) under the week's banner
   list.replaceChildren(...(tab === 'expeditions' ? notes : notes.sort(order(save))).map((t, i) => note(t, save, i)));
   week.hidden = tab !== 'expeditions';
@@ -137,13 +158,13 @@ async function claimNote(task, n) {
   if (!r) return;
   const calm = calmFx();
   playSound('buy');
-  const stamp = el('span', `rb-stamp done${calm ? '' : ' slam'}`, 'RANGER ✓');
+  const stamp = el('span', `rb-stamp done${calm ? '' : ' slam'}`, B.stamp);
   n.querySelector('.rb-claim')?.remove();
   n.classList.remove('ready');
   n.append(stamp);
-  const before = rankOf({ ranger: { claimed: (getSave().ranger.claimed || []).slice(0, -1) } }).rank.name, after = rankOf(getSave()).rank.name;
+  const before = B.rank({ [B.store]: { claimed: (getSave()[B.store].claimed || []).slice(0, -1) } }).rank.name, after = B.rank(getSave()).rank.name;
   const toast = dlg.querySelector('.rb-toast');
-  const badges = checkBadges();   // a rank up earns its Ranger badge, shown on the Trainer Card
+  const badges = checkBadges();   // a rank up earns its badge, shown on the Trainer Card
   if (badges.length) showBadgeNews();
   toast.replaceChildren(rewardIcon(r), el('span', null, `${r.coins ? `+${r.paid.toLocaleString()} PokéCoins` : rewardText(r)}${after !== before ? `  ·  Rank up: ${after}!` : ''}${badges.length ? `  ·  ${badges.map(b => b.name).join(', ')}!` : ''}`));
   toast.hidden = false;
@@ -156,18 +177,18 @@ async function claimNote(task, n) {
   if (dlg?.open) render();
 }
 
-function build() {
-  dlg = el('dialog', 'ranger-board');
-  dlg.setAttribute('aria-label', 'Ranger Task Board');
+function build(kind) {
+  dlg = dlgs[kind] = el('dialog', `ranger-board ${kind}`);
+  dlg.setAttribute('aria-label', B.label);
   dlg.innerHTML = `
     <div class="rb-frame">
       <header class="rb-head">
-        <div class="rb-plaque"><span class="rb-plaque-ball" aria-hidden="true"></span><h2>RANGER TASK BOARD</h2></div>
+        <div class="rb-plaque"><span class="rb-plaque-ball" aria-hidden="true"></span><h2>${B.title}</h2></div>
         <button type="button" class="rb-close" aria-label="Close">✕</button>
       </header>
       <div class="rb-rank"><span class="rb-badge" aria-hidden="true">★</span><div><span class="rb-rank-lv"></span><b class="rb-rank-name"></b>
         <span class="rb-rank-bar"><i></i></span><small class="rb-rank-next"></small></div><span class="rb-coins">🪙 <b></b></span></div>
-      <nav class="rb-tabs" role="tablist">${TABS.map(t => `<button type="button" role="tab" class="rb-tab" data-tab="${t.id}"><span>${t.icon}</span> ${t.name} <small class="rb-tab-n"></small><em class="rb-tab-ready" hidden></em></button>`).join('')}</nav>
+      <nav class="rb-tabs" role="tablist">${B.tabs.map(t => `<button type="button" role="tab" class="rb-tab" data-tab="${t.id}"><span>${t.icon}</span> ${t.name} <small class="rb-tab-n"></small><em class="rb-tab-ready" hidden></em></button>`).join('')}</nav>
       <div class="rb-cork"><p class="rb-week" hidden><b>THIS WEEK'S EXPEDITIONS</b><span></span></p><div class="rb-notes"></div></div>
       <p class="rb-toast" hidden></p>
     </div>`;
@@ -175,7 +196,7 @@ function build() {
   dlg.querySelector('.rb-close').addEventListener('click', () => close());
   dlg.addEventListener('click', (e) => { if (e.target === dlg) close(); });
   dlg.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
-  for (const b of dlg.querySelectorAll('.rb-tab')) b.addEventListener('click', () => { if (tab === b.dataset.tab) return; tab = b.dataset.tab; playSound('confirm'); render(); dlg.querySelector('.rb-cork').scrollTop = 0; });
+  for (const b of dlg.querySelectorAll('.rb-tab')) b.addEventListener('click', () => { if (tab === b.dataset.tab) return; tab = tabs[kind] = b.dataset.tab; playSound('confirm'); render(); dlg.querySelector('.rb-cork').scrollTop = 0; });
 }
 
 function close() {
@@ -187,12 +208,15 @@ function close() {
   done?.();
 }
 
-/** The board, over whatever's on screen. `done` runs as it closes. Opens on the tab with something to claim, if any. */
-export function openRangerBoard(done = null) {
-  if (!dlg) build();
+/** A board, over whatever's on screen. `done` runs as it closes. Opens on the tab with something to claim, if any. */
+function openBoard(kind, done) {
+  B = BOARDS[kind];
+  dlg = dlgs[kind];
+  if (!dlg) build(kind);
   onDone = done;
-  const ready = readyTasks(getSave());
-  if (ready.length && !ready.some(t => t.tab === tab)) tab = ready[0].tab;
+  tab = tabs[kind];
+  const ready = B.ready(getSave());
+  if (ready.length && !ready.some(t => t.tab === tab)) tab = tabs[kind] = ready[0].tab;
   render();
   dlg.classList.toggle('calm', calmFx());
   dlg.showModal();
@@ -200,3 +224,8 @@ export function openRangerBoard(done = null) {
   playSound('confirm');
 }
 
+/** The Safari Outfitter's Ranger Task Board. */
+export const openRangerBoard = (done = null) => openBoard('ranger', done);
+
+/** The PC's Trainer's Journal: the whole game's tasks. */
+export const openJournal = (done = null) => openBoard('journal', done);

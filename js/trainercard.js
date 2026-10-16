@@ -8,6 +8,7 @@
    ============================================================ */
 
 import { rankOf } from './data/ranger.js';
+import { journalRank } from './data/journal.js';
 import { GYM_LEADERS, GYM_INK } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
 import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
@@ -241,6 +242,11 @@ LOOK['safari-open'] = ['shield', LOOK.safari[1], 'ball'];
   ['hex', ['#d8e8a0', '#7aa848', '#3a5a20'], 'leafy'], ['gem', ['#f0e0a0', '#b8a048', '#5a4a18'], 'compass'],
   ['crown', ['#fff0a0', '#e0b840', '#8a6a10'], 'paw'], ['star', ['#fff6c0', '#f0c838', '#9a7010'], 'sparkle']]
   .forEach((look, i) => { LOOK[`ranger-${i + 2}`] = look; });
+// the Journal ranks, Novice to Champion: a leather red climbing to gold
+[['circle', ['#f0b0a0', '#c84838', '#7a1c14'], 'cards'], ['shield', ['#f0b0a0', '#b83828', '#6a1810'], 'compass'],
+  ['hex', ['#f8c8a0', '#d06030', '#7a3010'], 'aplus'], ['gem', ['#f8d8a0', '#d89038', '#7a4a10'], 'cards'],
+  ['crown', ['#fff0a0', '#e0b840', '#8a6a10'], 'aplus'], ['star', ['#fff6c0', '#f0c838', '#9a7010'], 'sparkle']]
+  .forEach((look, i) => { LOOK[`journal-${i + 2}`] = look; });
 LOOK['master-ball'] = ['circle', ['#e8b8ff', '#9848c8', '#4c1870'], 'ball'];
 
 const INK = '#181820';
@@ -526,6 +532,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
     ['POKéDEX', `${dex}/${dexTotal}`, 'Pokémon researched in the main Pokédex.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
+    ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
     ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
