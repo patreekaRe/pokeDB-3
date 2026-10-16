@@ -38,7 +38,7 @@ import { makePillar } from './hub-pillar.js';
 import { kenWinsOf } from './data/dojo.js';
 import { RING, TOWNS, CLEARING, QUESTS, townState, townsOpen, nietosHome, mended, questProgress, questStep, stepText, stepHave, guestLines, clearingLit, sealOn, workshopOpen } from './data/towns.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID } from './data/satchel.js';
-import { gymWins, GYM_BY_ID, spriteOf } from './data/gym.js';
+import { gymWins, friendWins, GYM_BY_ID, spriteOf } from './data/gym.js';
 import { todaysGuest, welcomeHome, startQuest, heardCall } from './towns.js';
 import { asking, favourOf } from './data/favours.js';
 import { workshopOf, heartsOf } from './data/workshop.js';
@@ -1929,14 +1929,14 @@ export function cameHome(from, town) {
   warp = t ? { at: performance.now() + 300, out: false, colour: t.glow } : null;
 }
 
-/** What the Clearing has to tell you as you come home (step 7, the Nietos' questline): beaten at their Gym, Law and Britt
+/** What the Clearing has to tell you as you come home (step 7, the Nietos' questline): any of them beaten at the Gym, Law and Britt
     slide in once to send you to their notice on the quest board (takeQuest() opens the questline); once they've put its
     shard in, the stone lights. */
 let homeNewsBusy = false;
 async function homeNews() {
   if (homeNewsBusy || held || !townsOpen()) return;
   const save = getSave(), st = townState(save, 'clearing');
-  const greet = !st.quest && !st.called && nietosHome(gymWins(save, 'nietos') || 0) && !clearingLit(save);
+  const greet = !st.quest && !st.called && nietosHome(friendWins(save, 'nietos')) && !clearingLit(save);
   const mend = !!st.quest?.lit && !st.quest.welcomed;
   if (!greet && !mend) return;
   homeNewsBusy = true;
@@ -1981,12 +1981,12 @@ async function homeNews() {
   } finally { homeNewsBusy = false; cutscene = false; questMarks(); }
 }
 
-/** Where the quest board stands: `locked` till the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
+/** Where the quest board stands: `locked` till Law, Britt or the Nietos are beaten, `new` with their notice to read, `on` (`ready` to
     hand in) through their questline, then `towns`, every town's questline under way. */
 function boardNow(save) {
   const st = townState(save, 'clearing');
   if (!st.quest && !clearingLit(save)) {
-    return nietosHome(gymWins(save, 'nietos') || 0)
+    return nietosHome(friendWins(save, 'nietos'))
       ? { kind: 'new', line: 'A fresh notice in Britt\'s writing, pinned over the rest: "ABOUT THE WAYSTONE. Come and read this, sweetie. - Law & Britt"' }
       : { kind: 'locked', line: 'The Clearing\'s quest board. One notice, in Britt\'s writing: "Something\'s wrong with the Waystone. Beat us at the Gym and we\'ll explain. - Law & Britt"' };
   }
@@ -2318,8 +2318,8 @@ function makePlaces() {
     build: (g) => { for (const who of PROFS) standProf(g, who); },
   });
   // the Clearing's own Gym Leaders at home (the user's ask, 2026-10-14): walked in like a town's houses (js/run.js's homeRoom());
-  // they're home only once THE NIETOS are beaten at their Gym, and not at all while NIETOS_LIVE is off
-  const nietosIn = nietosHome(gymWins(save, 'nietos') || 0);
+  // they're home once Law, Britt or THE NIETOS are beaten at the Gym, and not at all while NIETOS_LIVE is off
+  const nietosIn = nietosHome(friendWins(save, 'nietos'));
   list.push({
     id: 'nietos', name: 'The Nietos\' House', step: { x: NIETOS_AT.tx + 1, y: NIETOS_AT.ty + 3 }, tiles: [...rect(NIETOS_AT.tx, NIETOS_AT.ty, NIETOS_AT.tx + 2, NIETOS_AT.ty + 2), ...NIETOS_YARD.map(([dx, dy]) => [NIETOS_AT.tx + dx, NIETOS_AT.ty + dy])], tag: [NIETOS_AT.tx + 1, 3.4, NIETOS_AT.ty + 2], open: true,
     line: nietosIn ? 'Law, Britt and baby Linc\'s house. The lights are on and something smells like fish sticks.' : 'Law, Britt and baby Linc\'s house. A note on the door: "Out!"',
@@ -3553,7 +3553,7 @@ function brokenWaystone(p, save) {
   card.querySelector('.hub-card-name').textContent = p.name;
   card.querySelector('.hub-card-line').textContent = st.quest
     ? `Cracked straight through, and every town's stone went dark with it. The Nietos are mending it: quest ${n}/${of}.${step ? ` Up now: ${stepText(step)}.` : ''}`
-    : 'Cracked straight through, humming off-key. It travels nowhere like this. The Nietos by the plaza seem to know about it: beat them at the Clearing\'s Gym, and they\'ll tell you.';
+    : 'Cracked straight through, humming off-key. It travels nowhere like this. The Nietos by the plaza seem to know about it: beat Law, Britt or the Nietos at the Clearing\'s Gym, and they\'ll tell you.';
   resetLine();
   card.querySelector('.hub-card-acts').replaceChildren();
   card.hidden = false;

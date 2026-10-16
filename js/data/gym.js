@@ -913,3 +913,8 @@ export function talkOf(l, kind, fresh = false) {
 
 /** How many times you've beaten them. */
 export const gymWins = (save, id) => save.gym?.[id] || 0;
+
+/** A friend's wins as their home and the Workshop count them: the Nietos' are every Clearing Gym win, Law's, Britt's or
+    THE NIETOS' (the user's call, 2026-10-16: beating any of the three brings them home; it was THE NIETOS alone). */
+export const NIETOS_HOUSE = ['lawrence', 'britt', 'nietos'];
+export const friendWins = (save, id) => (id === 'nietos' ? NIETOS_HOUSE.reduce((n, l) => n + gymWins(save, l), 0) : gymWins(save, id));

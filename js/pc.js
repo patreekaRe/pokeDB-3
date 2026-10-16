@@ -36,7 +36,7 @@ import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, 
 import { PATCHES } from './data/patchnotes.js';
 import { latestPatch, patchUnseen, markPatchSeen, patchNode, sincePatch, inTheGame } from './patchnotes.js';
 import { pcNew, markPcSeen, pcLookedAt, friendsOpen } from './pc-news.js';
-import { GYM_BY_ID, GYM_INK, gymWins, spriteOf } from './data/gym.js';
+import { GYM_BY_ID, GYM_INK, friendWins, spriteOf } from './data/gym.js';
 import { workshopOf, heartsOf, HEARTS, FRIENDS, FAVOURITE, gifteeOf, RECIPES_BY_ID, SECRETS, SECRET_AT } from './data/workshop.js';
 import { MATERIALS_BY_ID } from './data/satchel.js';
 
@@ -291,7 +291,7 @@ const PAGES = {
   friends() {
     const save = getSave(), ws = workshopOf(save);
     const cards = FRIENDS.filter(id => GYM_BY_ID[id]).map(id => {
-      const l = GYM_BY_ID[id], met = gymWins(save, id) > 0 || heartsOf(ws, id) > 0, n = heartsOf(ws, id), fond = ws.fond.includes(id);
+      const l = GYM_BY_ID[id], met = friendWins(save, id) > 0 || heartsOf(ws, id) > 0, n = heartsOf(ws, id), fond = ws.fond.includes(id);
       const who = met ? gifteeOf(id, l.name.replace(/^THE /, '')) : '???';
       const b = el('button', `pc-friend${met ? '' : ' unmet'}${n >= HEARTS ? ' best' : ''}`);
       b.type = 'button';

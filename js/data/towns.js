@@ -2161,7 +2161,7 @@ export const TOWN_SHELVES = new Set(Object.values(SHOP_SHELVES).flat());
 export const shelfTown = (group) => Object.keys(SHOP_SHELVES).find(id => SHOP_SHELVES[id].includes(group)) ?? null;
 
 /** Whether the Nietos are at home in their house in the Clearing (the house itself always stands): only once you've beaten
-    THE NIETOS (their Kangaskhan) at the Clearing's Gym, `wins` their Gym wins. Since step 7 (2026-10-14) that's how they
+    Law, Britt or THE NIETOS at the Clearing's Gym, `wins` all three's Gym wins (js/data/gym.js's friendWins()). Since step 7 (2026-10-14) that's how they
     turn up: beaten, they greet you at home and their questline mends the Clearing's Waystone, so they're home with the
     towns (townsOpen()). `?nietos` brings them home for a page load (`&gymwins=1` to have beaten them). */
 export const NIETOS_LIVE = true;
@@ -2217,7 +2217,7 @@ export const CLEARING = {
         machop: ['Machop is lifting a barbell that\'s bigger than it is. It insists it\'s fine.', 'Machop flexes for you. Then again. You get the idea.', 'Machop is doing push-ups on one finger. Ken says it\'s a warm-up.'],
       } },
     nietos: { name: 'The Nietos\' House', leader: 'nietos', sub: 'Toys all over the floor, a crib in the corner, two gaming chairs and one very tired couch.',
-      away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat us there and come for dinner! - Law & Britt"',
+      away: 'Nobody\'s home. A note on the fridge: "At the Gym with Linc. Beat one of us there and come for dinner! - Law & Britt"',
       // beaten, but not home yet (NIETOS_LIVE off)
       out: 'Nobody\'s home. The car\'s gone, Kangaskhan too. A note on the fridge: "Back soon! - Law & Britt"',
       // from seven at night (your clock) Linc is asleep, and the house whispers
