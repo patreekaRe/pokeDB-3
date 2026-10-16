@@ -9,6 +9,7 @@ import { GYM_LEADERS, GYM_INK, posterKind, spriteOf } from './data/gym.js';
 
 /** Each leader's sprite, cropped to what is painted. */
 const PICS = {};
+export const LEADER_PICS = PICS;   // the Trainer set's Gym Leader case shows them too (js/base-furniture-trainer.js)
 async function load(l) {
   const res = await fetch(new URL(`../${spriteOf(l)}`, import.meta.url));
   if (!res.ok) return;

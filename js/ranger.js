@@ -132,7 +132,7 @@ function render() {
   const head = dlg.querySelector('.rb-rank');
   head.querySelector('.rb-rank-name').textContent = rank.name;
   head.querySelector('.rb-rank-lv').textContent = `RANK ${level}`;
-  head.querySelector('.rb-rank-next').textContent = next ? `${n} / ${next.at} tasks to ${next.name}` : `All ${n} tasks claimed`;
+  head.querySelector('.rb-rank-next').textContent = next ? `${n} / ${next.at} tasks to ${next.name}${next.perk ? `, and ${next.perk}` : ''}` : `All ${n} tasks claimed`;
   head.querySelector('.rb-rank-bar i').style.width = `${next ? Math.round((n - rank.at) / (next.at - rank.at) * 100) : 100}%`;
   for (const t of B.tabs) {
     const tasks = B.tasksOn(t.id), b = dlg.querySelector(`[data-tab="${t.id}"]`);

@@ -57,7 +57,9 @@ const ofType = (t) => SAFARI_ROSTER.filter(id => ENEMY_DEFS[id]?.type === t);
 const countIn = (ids, save) => { const c = caughtSet(save); return ids.filter(id => c.has(id)).length; };
 // a photo for a task's note: the first of `ids` caught, or the first of them as a silhouette
 const photo = (ids) => (save) => { const c = caughtSet(save); return { mon: ids.find(id => c.has(id)) ?? ids[0], seen: ids.some(id => c.has(id)) }; };
-const coins = (n) => ({ coins: n });
+/* Half of what was first set (rounded to 25, 50 at least; 2026-10-16, with the Trainer's Journal's rebalance: coins are
+   the weakest reward for a long goal, and an old save's day-one claims shouldn't empty the shop). */
+const coins = (n) => ({ coins: Math.max(50, Math.round(n / 2 / 25) * 25) });
 
 function build() {
   const T = [];
@@ -161,7 +163,7 @@ const EXPEDITIONS = {
     { id: 'unhurt-12', group: 'unhurt', title: 'Untouchable', text: 'Catch 12 Pokémon this week without taking damage in the fight.', goal: 12, count: (w) => w.flawless || 0, ball: 'luxury' },
   ],
 };
-const TIER_PAY = { easy: 200, medium: 350, hard: 600 };
+const TIER_PAY = { easy: 100, medium: 175, hard: 300 };   // halved 2026-10-16, beside the weekly missions' coins
 export const EXPEDITION_BONUS = { balls: ['ultra', 5] };
 
 /** The week an expedition belongs to: its Monday (UTC), "YYYY-MM-DD". */

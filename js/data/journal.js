@@ -11,6 +11,13 @@
    (save.journal.claimed). Claims pay PokéCoins and climb the Journal
    Ranks, each rank past the first a badge on the Trainer Card. Pure:
    node tests read it.
+
+   Rebalanced 2026-10-16 (the user: 84,000 PokéCoins in all was
+   "excessive"; it was several times everything coins buy, and an old
+   save's day-one claims alone would empty the shop): about a third of
+   it now (`pay()`), and the big milestones give a Trainer furniture
+   piece instead (JOURNAL_FURNITURE), four of them filling in by
+   themselves as you play (js/base-furniture-trainer.js).
    ============================================================ */
 
 import { STARTERS, STARTERS_BY_ID } from './starters.js';
@@ -38,7 +45,21 @@ const TYPE_NAME = { fire: 'Fire', water: 'Water', grass: 'Grass' };
 const TYPE_ICON = { fire: '🔥', water: '💧', grass: '🌿' };
 const TOWN_IDS = Object.keys(TOWNS);
 const PAGES = DEX_PAGES.length + BONUS_PAGES.length;
-const coins = (n) => ({ coins: n });
+/* A third of what was first set (rounded to 25, 50 at least), so the whole Journal pays about 28,000 PokéCoins. */
+const pay = (n) => Math.max(50, Math.round(n / 3 / 25) * 25);
+const coins = (n) => ({ coins: pay(n) });
+
+/* The Trainer set: a piece for a milestone, never sold (js/data/furniture.js's `journal` source). The trophy case, the
+   Gym Leader case, the Sky Pillar model and the Hall of Fame plaque come early and fill in by themselves. */
+export const JOURNAL_FURNITURE = [
+  { kind: 'trophycase', name: 'Trophy case', task: 'wins-1' },
+  { kind: 'gymcase', name: 'Gym Leader case', task: 'gym-first' },
+  { kind: 'pillarmodel', name: 'Sky Pillar model', task: 'floor-10' },
+  { kind: 'fameplaque', name: 'Hall of Fame plaque', task: 'fame-1' },
+  { kind: 'goldpokedex', name: 'Gold Pokédex stand', task: `pages-${DEX_PAGES.length + BONUS_PAGES.length}` },
+  { kind: 'dojobanner', name: 'Dojo banner', task: `dojo-${TRIALS.length}` },
+];
+const FURNITURE_FOR = Object.fromEntries(JOURNAL_FURNITURE.map(f => [f.task, f]));
 
 function build() {
   const T = [];
@@ -67,6 +88,8 @@ function build() {
   // World: the Gym Leaders, the towns, the Pokédex, Kenmatta
   for (const l of GYM_LEADERS) T.push({ tab: 'world', store: 'journal', id: `gym-${l.id}`, goal: 1, reward: coins(250),
     title: `${l.name}'s ${l.badge}`, text: `Beat Gym Leader ${l.name} in a run.`, count: (s) => s.gym?.[l.id] || 0, pic: () => ({ src: l.sprite }) });
+  T.push({ tab: 'world', store: 'journal', id: 'gym-first', goal: 1, reward: coins(300), title: 'A Gym Leader falls',
+    text: 'Beat your first Gym Leader in a run.', count: (s) => GYM_LEADERS.filter(l => (s.gym?.[l.id] || 0) > 0).length, pic: () => ({ emoji: '🏅' }) });
   T.push({ tab: 'world', store: 'journal', id: 'gym-all', goal: GYM_LEADERS.length, reward: coins(2500), title: 'Every Gym Leader',
     text: `Beat all ${GYM_LEADERS.length} Gym Leaders.`, count: (s) => GYM_LEADERS.filter(l => (s.gym?.[l.id] || 0) > 0).length, pic: () => ({ emoji: '🏅' }) });
   series('world', 'towns', [[1, 400], [3, 900], [TOWN_IDS.length, 2000]], (n) => ({
@@ -106,7 +129,8 @@ function build() {
   const ranger = RANGER_RANKS.find(r => r.name === 'Ranger');
   T.push({ tab: 'collection', store: 'journal', id: 'ranger-rank', goal: ranger.at, reward: coins(800), title: 'A true Ranger',
     text: 'Reach the rank of Ranger on the Safari Outfitter\'s Ranger Task Board.', count: (s) => rangerRank(s).n, pic: () => ({ emoji: '📋' }) });
-  return T;
+  // a milestone with a Trainer piece gives it in place of its PokéCoins
+  return T.map(t => (FURNITURE_FOR[t.id] ? { ...t, reward: { kind: FURNITURE_FOR[t.id].kind, name: FURNITURE_FOR[t.id].name } } : t));
 }
 
 export const JOURNAL_TASKS = build();
@@ -129,4 +153,17 @@ export function journalRank(save) {
   let i = 0;
   while (i + 1 < JOURNAL_RANKS.length && n >= JOURNAL_RANKS[i + 1].at) i++;
   return { n, rank: JOURNAL_RANKS[i], next: JOURNAL_RANKS[i + 1] ?? null, level: i + 1 };
+}
+
+/** The trophy case's twelve trophies, in shelf order: each milestone's name and whether the save has it (the case
+    fills in by itself, js/base-furniture-trainer.js). */
+export function trophies(save) {
+  const s = save.stats || {}, pages = DEX_PAGES.length + BONUS_PAGES.length;
+  return [
+    ['First win', (s.runsWon || 0) >= 1], ['10 wins', (s.runsWon || 0) >= 10], ['25 wins', (s.runsWon || 0) >= 25],
+    ['50 wins', (s.runsWon || 0) >= 50], ['100 wins', (s.runsWon || 0) >= 100], ['Gold star', sum(s.level5WinsBy) >= 1],
+    ['Hall of Fame', (save.hallOfFame || []).length >= 1], ['Every Gym Leader', GYM_LEADERS.every(l => (save.gym?.[l.id] || 0) > 0)],
+    ['Sky Pillar summit', (save.tower?.summits || 0) >= 1], ['Every dojo star', starsOf(save) >= TRIALS.length],
+    ['Every Pokédex page', (save.dex?.done || []).length >= pages], ['Grand Champion', journalRank(save).rank === JOURNAL_RANKS.at(-1)],
+  ].map(([name, got]) => ({ name, got }));
 }

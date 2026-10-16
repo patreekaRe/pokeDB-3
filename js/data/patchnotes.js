@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['pc', 'The Trainer\'s Journal on the Clearing\'s PC: 98 goals for the whole game, from runs and Gym Leaders to the Sky Pillar, paying PokéCoins and Journal Ranks with badges.'],
+  ['pc', 'The Trainer\'s Journal on the Clearing\'s PC: 99 goals for the whole game, paying PokéCoins and a Trainer furniture set that fills in as you play, with ranks and a gold shell.'],
   ['runs', 'Berry Trees in runs now drop a berry or two into your Satchel, and Professor Oak drops by to explain your first.'],
   ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 tasks and weekly Expeditions for coins, balls, Safari furniture and base room, with Ranger Ranks and badges on your Trainer Card.'],
   ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
