@@ -2698,3 +2698,7 @@ Kurt slides in after your first held berry (`heldTalk` in `js/data/towns.js`), a
 A tap on a plinth opens a merchant window with the piece turning on a velvet turntable you can drag to spin, and Buy /
 Not now (no more "tap again"); prices are crisp on-screen tags at each plinth (`merchant()` in `js/mall-3d.js`,
 `priceTags()` / `piecePreview()` in `js/mall-furniture.js`, the shared `js/turntable.js`; `docs/reference/hub-base-mall.md`).
+- **Done (2026-10-16): the Day Pass made obvious and central** (the user's asks): a gold DAY PASS ticket over the booth and
+  a sandwich board, then the booth moved up onto the middle dais and the Master Ball onto the right wing's empty stump.
+  Checked headless: no stand covers another or Kangaskhan.
+

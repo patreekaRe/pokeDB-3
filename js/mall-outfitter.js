@@ -28,8 +28,8 @@ export const OUTFITTER_COLOUR = L.trim;
    the board. Each pack's stump stands in a wing, its step the tile in front. */
 const COLS = 21, ROWS = 13, AISLE = 10, DOOR = { x: AISLE, y: ROWS - 1 };
 const BAYS = [0, 7, 14, 21];
-const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8] };
-const DAIS = { x: AISLE, y: 7 }, KIOSK = { x: 18, y: 10 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
+const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8], master: [18, 8] };
+const DAIS = { x: AISLE, y: 8 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
 const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 };
 const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
@@ -581,7 +581,8 @@ export function buildOutfitter(THREE, size) {
   // easel in front: kept low (2026-10-16, the user's phone shot: signs up on poles hid the stands behind them), and the
   // wings' rows four apart, so nothing in front reaches what stands behind
   const rings = std({ map: texOf(ringsArt()), roughness: 0.8 }), cushion = std({ color: L.felt, roughness: 1 });
-  for (const b of BALLS.filter(x => x.stock)) {
+  const velvet = std({ color: '#6a2a9a', roughness: 1 });
+  for (const b of BALLS.filter(x => x.stock || x.weekly)) {
     const [x, y] = STANDS[b.id], e = entry(b.id);
     const spot = { id: `ware-${b.id}`, kind: 'ware', ball: b.id, name: e.name, open: true, step: { x, y: y + 1 },
       at: { x: tileX(x), y: 0.02, z: tileZ(y) }, ring: 0.62 };
@@ -590,13 +591,19 @@ export function buildOutfitter(THREE, size) {
     const cell = new THREE.Group();
     cell.position.set(tileX(x), 0, tileZ(y));
     put(cell, new THREE.CylinderGeometry(0.4, 0.47, STUMP_H, 18), [log, rings, log], 0, STUMP_H / 2, 0);
-    put(cell, new THREE.CylinderGeometry(0.3, 0.32, 0.08, 22), cushion, 0, STUMP_H + 0.04, 0);
+    put(cell, new THREE.CylinderGeometry(0.3, 0.32, 0.08, 22), b.weekly ? velvet : cushion, 0, STUMP_H + 0.04, 0);
     const ball = ballMesh(THREE, std, b.id, BALL_R);
     ball.position.y = STUMP_H + 0.07 + BALL_R;
     ball.rotation.y = x * 0.7;
     cell.add(ball);
-    spinners.push({ o: ball, k: 0.35 + (x % 3) * 0.08 });
-    for (let n = 0; n < Math.min(b.pack, 5) - 1; n++) {
+    // the Master Ball floats a little over its velvet in a soft violet glow, a gold ring round the stump's top
+    spinners.push(b.weekly ? { o: ball, k: 0.6, float: STUMP_H + 0.14 + BALL_R } : { o: ball, k: 0.35 + (x % 3) * 0.08 });
+    if (b.weekly) {
+      put(cell, new THREE.TorusGeometry(0.41, 0.03, 8, 32), brass, 0, STUMP_H, 0, false).rotation.x = Math.PI / 2;
+      const glow = put(cell, new THREE.CircleGeometry(0.3, 24), new THREE.MeshBasicMaterial({ color: '#c890ff', transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }), 0, STUMP_H + 0.085, 0, false);
+      glow.rotation.x = -Math.PI / 2;
+    }
+    for (let n = 0; n < Math.min(b.pack ?? 1, 5) - 1; n++) {
       const a = 0.35 + n * 0.55, little = ballMesh(THREE, std, b.id, 0.1);
       little.position.set(Math.cos(a + 2.4) * 0.6, 0.1, Math.sin(a + 2.4) * 0.42);
       little.rotation.y = -a;
@@ -611,57 +618,21 @@ export function buildOutfitter(THREE, size) {
     group.add(cell);
   }
 
-  // the Master Ball in the middle of the lodge: a two-tier dais roped off by brass posts, a carved pedestal, the ball
-  // floating under glass, and its plaque on a stand at the front
-  {
-    const b = BALLS.find(x => x.weekly), e = entry(b.id), { x, y } = DAIS;
-    const spot = { id: `ware-${b.id}`, kind: 'ware', ball: b.id, name: e.name, open: true, step: { x, y: y + 2 },
-      at: { x: tileX(x), y: 0.3, z: tileZ(y) }, ring: 1.5 };
-    spots.push(spot);
-    block(x - 1, y - 1, x + 1, y + 1);
-    const cell = new THREE.Group();
-    cell.position.set(tileX(x), 0, tileZ(y));
-    put(cell, new THREE.CylinderGeometry(1.4, 1.45, 0.14, 40), wood, 0, 0.07, 0);
-    put(cell, new THREE.CylinderGeometry(1.0, 1.05, 0.14, 40), dark, 0, 0.21, 0);
-    put(cell, new THREE.CylinderGeometry(0.26, 0.34, 1.0, 16), log, 0, 0.78, 0);
-    put(cell, new THREE.CylinderGeometry(0.36, 0.36, 0.06, 24), brass, 0, 1.31, 0);
-    put(cell, new THREE.CylinderGeometry(0.26, 0.28, 0.07, 22), std({ color: '#6a2a9a', roughness: 1 }), 0, 1.37, 0);
-    put(cell, new THREE.CylinderGeometry(0.36, 0.36, 0.72, 24, 1, true), std({ color: '#d8ecff', transparent: true, opacity: 0.2, roughness: 0.05, depthWrite: false, side: THREE.DoubleSide }), 0, 1.7, 0, false);
-    put(cell, new THREE.CylinderGeometry(0.38, 0.38, 0.05, 24), brass, 0, 2.07, 0);
-    const ball = ballMesh(THREE, std, b.id, 0.27);
-    ball.position.y = 1.7;
-    cell.add(ball);
-    spinners.push({ o: ball, k: 0.6, float: 1.7 });
-    const glow = put(cell, new THREE.CircleGeometry(0.34, 24), new THREE.MeshBasicMaterial({ color: '#c890ff', transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 1.415, 0, false);
-    glow.rotation.x = -Math.PI / 2;
-    const rope = std({ color: '#b01828', roughness: 0.6 }), posts = 8;
-    for (let i = 0; i < posts; i++) {
-      const a = (i + 0.5) / posts * Math.PI * 2, a2 = (i + 1.5) / posts * Math.PI * 2, r = 1.3;
-      put(cell, new THREE.CylinderGeometry(0.03, 0.03, 0.6, 10), brass, Math.cos(a) * r, 0.44, Math.sin(a) * r);
-      put(cell, new THREE.SphereGeometry(0.05, 12, 8), brass, Math.cos(a) * r, 0.76, Math.sin(a) * r);
-      if (i === 1) continue;   // open at the front, where the plaque stands
-      const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(Math.cos(a) * r, 0.7, Math.sin(a) * r),
-        new THREE.Vector3(Math.cos((a + a2) / 2) * r, 0.5, Math.sin((a + a2) / 2) * r), new THREE.Vector3(Math.cos(a2) * r, 0.7, Math.sin(a2) * r));
-      put(cell, new THREE.TubeGeometry(curve, 12, 0.02, 6), rope);
-    }
-    const plaque = sign(b, 1.3, 0.8);
-    plaque.position.set(0, 1.05, 1.2);
-    plaque.rotation.x = -0.35;
-    cell.add(plaque);
-    put(cell, new THREE.BoxGeometry(0.06, 0.7, 0.06), brass, 0, 0.35, 1.12);
-    cell.traverse(o => { o.userData.front = spot; });
-    group.add(cell);
-  }
-
-  // the Day Pass booth: a bamboo ticket booth under a thatched roof, its screen, a red button and a ticket in its slot
+  // the Day Pass booth in the middle of the lodge (the user's call, 2026-10-16: off in the corner it was awkward), up on
+  // a two-tier dais: a bamboo ticket booth under a thatched roof, its screen, a red button and a ticket in its slot
   let passMap;
   {
-    const { x, y } = KIOSK;
-    const spot = { id: 'pass', kind: 'pass', name: 'Day Pass', open: true, step: { x, y: y + 1 }, at: { x: tileX(x), y: 0.02, z: tileZ(y) }, ring: 0.7 };
+    const { x, y } = DAIS;
+    const spot = { id: 'pass', kind: 'pass', name: 'Day Pass', open: true, step: { x, y: y + 2 }, at: { x: tileX(x), y: 0.02, z: tileZ(y) }, ring: 1.5 };
     spots.push(spot);
-    block(x, y);
+    block(x - 1, y - 1, x + 1, y + 1);
+    const base = new THREE.Group();
+    base.position.set(tileX(x), 0, tileZ(y));
+    put(base, new THREE.CylinderGeometry(1.4, 1.45, 0.14, 40), wood, 0, 0.07, 0);
+    put(base, new THREE.CylinderGeometry(1.0, 1.05, 0.14, 40), dark, 0, 0.21, 0);
     const cell = new THREE.Group();
-    cell.position.set(tileX(x), 0, tileZ(y));
+    cell.position.y = 0.28;
+    base.add(cell);
     put(cell, new THREE.BoxGeometry(0.95, 1.3, 0.75), cane, 0, 0.65, 0);
     put(cell, new THREE.BoxGeometry(1.05, 0.08, 0.3), wood, 0, 0.74, 0.42);
     for (const sx of [-0.45, 0.45]) put(cell, new THREE.CylinderGeometry(0.05, 0.05, 1.65, 8), log, sx, 0.825, 0.4);
@@ -674,15 +645,16 @@ export function buildOutfitter(THREE, size) {
     const button = put(cell, new THREE.CylinderGeometry(0.06, 0.06, 0.05, 18), std({ color: '#e04838', emissive: new THREE.Color('#e04838'), emissiveIntensity: 0.4, roughness: 0.3 }), 0.25, 0.8, 0.45);
     button.rotation.x = 0;
     put(cell, new THREE.BoxGeometry(0.22, 0.01, 0.14), std({ color: '#f8e8b8', roughness: 0.8 }), -0.2, 0.79, 0.44);
-    cell.traverse(o => { o.userData.front = spot; });
-    group.add(cell);
+    base.traverse(o => { o.userData.front = spot; });
+    group.add(base);
     // a big gold DAY PASS ticket across the booth's front under its roof, and a sandwich board beside it (the user's
     // ask, 2026-10-16: make it obvious); both kept low, so they hide nothing behind
     const header = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.42), new THREE.MeshBasicMaterial({ map: texOf(passHeaderArt()), transparent: true, alphaTest: 0.3, toneMapped: false }));
     header.position.set(0, 1.62, 0.5);
     cell.add(header);
     const sandwich = new THREE.Group();
-    sandwich.position.set(1, 0, 0.15);
+    sandwich.position.set(0.95, -0.14, 0.75);
+    sandwich.rotation.y = -0.35;
     const face = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.82), new THREE.MeshBasicMaterial({ map: texOf(passBoardArt()), toneMapped: false }));
     face.position.set(0, 0.44, 0.13);
     face.rotation.x = -0.28;
@@ -690,8 +662,7 @@ export function buildOutfitter(THREE, size) {
     put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, 0.11).rotation.x = -0.28;
     put(sandwich, new THREE.BoxGeometry(0.7, 0.86, 0.03), wood, 0, 0.43, -0.11).rotation.x = 0.28;
     cell.add(sandwich);
-    cell.traverse(o => { o.userData.front = spot; });
-    block(x + 1, y);
+    base.traverse(o => { o.userData.front = spot; });
     redraws.push(() => { passMap.image = passArt(passState()); passMap.needsUpdate = true; });
   }
 
