@@ -2712,3 +2712,11 @@ the crest on its shaft, the counter to its left and Smeargle's painting over a b
 
 - **Done (2026-10-16): the mall and arcade's frame cost** (the user's ask): the mall's draw calls cut by a fifth to two fifths a room (palms, shop fronts, chandeliers, Game Corner cabinets and showcased pieces merged; tiny pieces cast no shadow), the arcade games and Plinko capped at 60 fps. Numbers in `docs/reference/hub-base-mall.md`.
 - **Done (2026-10-16): the mall's second merge pass** (the user's yes): fountain, benches, lamps, columns, escalators, the Outfitter's wares, jeep and booth; the hall now 345 draws a frame (649 at the start), the Outfitter 233 (309).
+
+### The Ranger Task Board (2026-10-16, the user's ask: "a task board that tracks things for players ... catch 10 for a piece of furniture ... cool and immersive")
+92 Safari tasks in three tabs (Field Research, Ball Mastery, Ranger Feats) on a cork board in the Outfitter and behind
+the Safari lobby's Tasks key; claims pay coins, ball packs, an 8-piece Safari furniture set or room for up to 7 more
+Pokémon in the Secret Base, and climb 7 Ranger Ranks. No Pokémon dolls (the user's call). Checked headless at 390 wide:
+the board opens from the wall, three claims (coins, the pennant, a base slot), every tab, no text under 12px, no
+errors. Detail: `docs/reference/hub-base-mall.md`.
+

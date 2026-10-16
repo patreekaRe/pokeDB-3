@@ -9,6 +9,7 @@
    your things.
    ============================================================ */
 
+import { rangerSlots } from './data/ranger.js';
 import { getSave, updateSave, coinsWithBonus } from './storage.js';
 import { buddy, buddyChoices } from './trainercard.js';
 import { trainerName, setTrainerName } from './leaderboard.js';
@@ -41,13 +42,15 @@ import { MATERIALS_BY_ID } from './data/satchel.js';
 
 /** Safari catches living in the Secret Base at once. */
 export const RESIDENTS = 6;
+/** How many Safari catches can live in the base: six, and one more for each Ranger Task Board task that gives room. */
+export const residentCap = (save = getSave()) => RESIDENTS + rangerSlots(save);
 
 /** Every catch that can live in the base, and the ones that do: the save's pick, or before one is made the first
     RESIDENTS caught (js/base-3d.js's onShow() reads the same). */
 export function residents(save = getSave(), lend = false) {
   const caught = new Set(save.safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
-  return { all, shown: (save.secretBase?.mons ?? all.slice(0, RESIDENTS)).filter(id => all.includes(id)) };
+  return { all, shown: (save.secretBase?.mons ?? all.slice(0, residentCap(save))).filter(id => all.includes(id)) };
 }
 
 /** Who a resident is: a Safari catch (an ENEMY_DEFS id). */
@@ -223,7 +226,7 @@ const PAGES = {
       [waiting ? `MAILBOX (${waiting})` : 'MAILBOX', waiting ? `You've got mail! ${waiting} letter${waiting === 1 ? '' : 's'} waiting, with something inside.` : 'No new mail. Rewards for your Pokédex and big wins arrive here, and letters from friends.', () => show('mailbox'), waiting > 0],
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
-      ['BASE RESIDENTS', `Choose up to ${RESIDENTS} Safari catches to live in your Secret Base.`, () => show('residents')],
+      ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'How close you are to each Gym Leader. Gifts from Kurt\'s Workshop, given at their home, fill their hearts.', () => show('friends'), pcNew('friends', save)]] : []),
@@ -445,13 +448,13 @@ const PAGES = {
     grid.append(...order.map(id => monTile(resident(id).image, resident(id).name, shown.includes(id), () => {
       const now = residents().shown, def = resident(id);
       if (now.includes(id)) { setResidents(now.filter(x => x !== id)); playSound('cancel'); show('residents'); speak(`${def.name} went back into the box.`); return; }
-      if (now.length >= RESIDENTS) { playSound('cancel'); speak(`${RESIDENTS} can live in the base at once. Send one back first.`); return; }
+      if (now.length >= residentCap()) { playSound('cancel'); speak(`${residentCap()} can live in the base at once. Send one back first.`); return; }
       setResidents([...now, id]);
       playCry(def.cry);
       show('residents');
       speak(`${def.name} moved into your Secret Base.`);
     }, shown.includes(id) ? '✓' : '')));
-    const count = el('span', 'pc-count', `${shown.length}/${RESIDENTS}`);
+    const count = el('span', 'pc-count', `${shown.length}/${residentCap()}`);
     const h = head('BASE RESIDENTS');
     h.append(count);
     glass.replaceChildren(h, all.length ? grid : el('p', 'pc-empty', 'No catches yet.'));

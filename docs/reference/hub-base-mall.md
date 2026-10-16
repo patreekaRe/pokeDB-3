@@ -343,3 +343,32 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   (`ballLooks` in `js/mall-outfitter.js`: each had painted and uploaded its own skin). `mergeStatic()`'s `keepReceive`
   keeps a piece's own shadow-receiving (the balls take none; off by default, so the Clearing's merges are unchanged).
   Now hall 345, 1F 360, 2F 351, Game Corner 463, Outfitter 233 draws a frame; taps and colours checked as before.
+
+### The Ranger Task Board (2026-10-16)
+
+The user's ask: a board that tracks things for players ("catch 10 for a piece of furniture"), a tracker per task and a
+claim, "cool and immersive when they pull it up"; no Pokémon dolls as rewards (the user's call). The tasks are
+`TASKS` in `js/data/ranger.js` (pure, `tests/ranger.test.mjs`), 92 in three tabs (`TABS`): **Field Research** (different
+Pokémon caught, each area's survey, each type, rare spawns), **Ball Mastery** (catches with each ball, the Master Ball,
+every kind) and **Ranger Feats** (catches in all, most in a run, unhurt, first turn, at night, the Safari crossed, area
+bosses, days in a row, days played). A task's progress is counted from the save: `safariDex.caught` for the Pokédex
+ones, and `save.ranger.log` for the rest (`logCatch()` / `logDay()`, fed by `rangerCatch()` in `collect()`,
+`rangerTick('bosses' | 'wins')` and `rangerDay()` in `beginSafari()`, all in `js/run.js`, never on a peeked run). The
+log only starts counting from 2026-10-16, so ball, night, first-turn and unhurt tasks count from then; Pokédex tasks
+count every catch ever made. Claimed ids are `save.ranger.claimed`.
+- **Rewards** (`rewardText()`): PokéCoins (`awardCoins()`), a ball pack (`save.balls`), room for one more Safari catch to
+  live in the Secret Base (`rangerSlots()`; `residentCap()` in `js/pc.js` is `RESIDENTS` plus it, read by the PC and
+  `js/base-3d.js`), or a piece of the **Safari set** (`RANGER_FURNITURE`, painted in `js/base-furniture-safari.js`, earned
+  through `js/data/furniture.js`'s `ranger` source: pennant, lantern, acacia, ball rack, rug, expedition map table, tent,
+  jeep). Nothing helps a first try score higher, so the leaderboard stays fair. Each claim counts toward the **Ranger
+  Ranks** (`RANKS`, Rookie to Master Ranger, `rankOf()`).
+- **The board** (`openRangerBoard()` in `js/ranger.js`, its own modal `<dialog class="ranger-board">`, styles in
+  `css/hub.css`): a cork board in a bamboo frame under a green plaque, the rank's badge and bar, three wooden tabs with a
+  red count of ready tasks, then the notes: pinned, a little crooked, a Polaroid of the Pokémon (a silhouette till one is
+  caught) or the ball, a paw-print trail and the reward. Ready first, then nearest to done, claimed last. A ready note
+  wiggles (not under `calmFx()`); CLAIM slams a green RANGER ✓ stamp onto it and a toast says the reward and any rank up.
+- **Where**: on the Outfitter's back wall over the jeep (`taskBoardArt()` in `js/mall-outfitter.js`, the left bay, a "!"
+  bobbing over it while `rangerReady()`), the Safari lobby's **Tasks** key (`#sp-tasks`, a red count on it), and a line
+  in a Safari run's result window when tasks wait.
+- A new task is a line in `build()`; a new reward kind needs a `rewardText()` line and a branch in `claim()`.
+

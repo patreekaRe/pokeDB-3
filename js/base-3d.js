@@ -13,7 +13,7 @@ import { calmFx } from './prefs.js';
 import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
-import { RESIDENTS, openPC, resident } from './pc.js';
+import { residentCap, openPC, resident } from './pc.js';
 import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
@@ -37,7 +37,7 @@ const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
 const LAMPS = 2;           // lamps that really light the room (point lights are dear on phones); the rest only glow
 const MIN_ACROSS = 6;      // tiles the view shows across at least, an upright phone panning over the rest
-const ON_SHOW = RESIDENTS;   // Safari catches living in the base at once, also picked at the Clearing's PC
+const onShowMax = () => residentCap();   // Safari catches living in the base at once (more from the Ranger Task Board), also picked at the Clearing's PC
 const RIDER = 0.72;        // a piece up on a table, at this size
 // kinds of piece a Pokémon climbs onto, and what it does there; any piece with a seat height (js/base-shapes.js) too
 const SEATS = { bed: { rest: [9000, 16000], sleep: true }, cushion: { rest: [5000, 9000] } };
@@ -803,13 +803,13 @@ function walk(w, m, dt, speed = 3.2) {
 
 const rand = (a, b) => a + Math.random() * (b - a);
 
-/** The catches on show: the save's pick, or before one is made the first ON_SHOW caught, so the room is never empty.
+/** The catches on show: the save's pick, or before one is made the first onShowMax() caught, so the room is never empty.
     `&guests` lends every Safari Pokémon as caught for the page load, to playtest without a full Safari Pokédex. */
 function onShow() {
   const lend = new URLSearchParams(location.search).has('guests');
   const caught = new Set(getSave().safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
-  return { all, shown: (base.mons ?? all.slice(0, ON_SHOW)).filter(id => all.includes(id)) };
+  return { all, shown: (base.mons ?? all.slice(0, onShowMax())).filter(id => all.includes(id)) };
 }
 
 /** Whether a resident lives out in the yard (let out on the yard's Pokémon tab) rather than indoors. */
@@ -1367,7 +1367,7 @@ async function yardLines() {
     `${metSmeargle(base) ? 'Hello again!' : 'Hello there! I\'m Smeargle.'} So this is your backyard. What a lovely patch of lawn!`,
     `It's yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall${metSmeargle(base) ? '' : ', which opens tomorrow'}: just tap me at the shop.`,
     'Whatever you buy waits in storage. Set it out with Furniture, the same as indoors.',
-    `And the Pokémon tab lets the ${ON_SHOW} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
+    `And the Pokémon tab lets the ${onShowMax()} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
     'Oh! I left you a Berry plot in storage, too. Set it down, then tap it while walking to plant a berry.',
     'Cheri, Oran and Pecha Berries take a day, Sitrus two and Lum three. They ripen at midnight, UTC.',
     'Water a growing plot once a day, and it gives one more berry for every day it was watered.',
@@ -1702,7 +1702,7 @@ function tray(which = tab) {
       add(resident(id).name, img, shown.includes(id), () => {
         const now = onShow().shown;
         if (now.includes(id)) { base.mons = now.filter(x => x !== id); base.out = base.out?.filter(x => x !== id); playSound('cancel'); }
-        else if (now.length >= ON_SHOW) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${ON_SHOW} can live here at once. Tap one to send it back first.`; return; }
+        else if (now.length >= onShowMax()) { playSound('cancel'); hushed = null; hud.hint.classList.remove('hush'); hud.hint.textContent = `${onShowMax()} can live here at once. Tap one to send it back first.`; return; }
         else { base.mons = [...now, id]; playSound('confirm'); }
         save(); syncGuests(); tray(); refresh();
       }, shown.includes(id) ? (livesOut(id) ? 'Yard' : '✓') : '');
@@ -1798,7 +1798,7 @@ function refresh() {
     : tab === 'furniture' && outdoors() && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'No garden pieces in storage. Smeargle sells them at the Poké Mall: tap Smeargle for the garden catalogue.'
     : tab === 'furniture' && !DESIGNS.some(id => fitsHere(id, base) && spare(base, id) > 0) ? 'Everything is out. Buy more at the Poké Mall.'
     : tab === 'mons' && outdoors() && mons.shown.length ? 'Tap one to let it out in the yard, or call it back in.'
-    : tab === 'mons' ? (mons.all.length ? `Up to ${ON_SHOW} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
+    : tab === 'mons' ? (mons.all.length ? `Up to ${onShowMax()} Safari catches can live here.` : 'Catch Pokémon in the Safari Zone and they can live here.')
     : '';
   hud.hint.classList.toggle('hush', hud.hint.textContent === hushed);
   if (sel >= 0) {

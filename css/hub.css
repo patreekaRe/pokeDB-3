@@ -697,3 +697,126 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 @media (prefers-reduced-motion: reduce) { .pc-bp-pip circle { animation: none !important; } }
 /* the Game Corner's regulars (js/corner-crowd.js) share the ghosts' bubble, kept on screen with its tail on the speaker */
 .crowd-bubble::after { left: calc(50% + var(--tail, 0px)); }
+
+/* ---------- the Ranger Task Board (js/ranger.js; 2026-10-16, the user's ask: a cool, immersive quest menu) ----------
+   A cork board in a bamboo frame under a carved plaque: the rank's badge and bar, three wooden tabs, then pinned
+   paper notes, each a little crooked, a Polaroid of the Pokémon (a silhouette till caught) or the ball, a paw-print
+   trail and the reward. A ready note wiggles on its pin under a red CLAIM stamp; a claimed one fades under RANGER ✓. */
+.ranger-board {
+  width: min(760px, 100vw - 16px); max-width: none; max-height: min(92vh, 100dvh - 16px); padding: 0; border: none;
+  background: transparent; color: #3a2a18; overflow: visible;
+}
+.ranger-board::backdrop { background: radial-gradient(circle at 50% 40%, #1a120a99, #0a0604e6); backdrop-filter: blur(2px); }
+.ranger-board[open] { animation: rbIn 0.32s cubic-bezier(.2, 1.3, .4, 1); }
+@keyframes rbIn { from { transform: translateY(24px) scale(0.94); opacity: 0; } }
+.rb-frame {
+  position: relative; display: flex; flex-direction: column; max-height: min(92vh, 100dvh - 16px); box-sizing: border-box;
+  padding: 10px; border-radius: 18px;
+  background: repeating-linear-gradient(90deg, #c8a058 0 11px, #b88e48 11px 13px, #d6b06a 13px 22px);
+  box-shadow: inset 0 0 0 3px #7a5428, inset 0 0 0 6px #e0c07a, 0 18px 50px #000a;
+}
+.rb-head { position: relative; display: flex; justify-content: center; margin: -26px 0 6px; }
+.rb-plaque {
+  display: flex; align-items: center; gap: 10px; padding: 10px 22px 9px; border-radius: 12px;
+  background: linear-gradient(#6a8a3e, #3e6228); border: 3px solid #4a3018; box-shadow: 0 4px 0 #2e1e0c, 0 8px 18px #0007;
+}
+.rb-plaque h2 { margin: 0; font: 15px/1 var(--pixel-font); letter-spacing: 0.08em; color: #fbf3dc; text-shadow: 0 2px 0 #1e3818; white-space: nowrap; }
+.rb-plaque-ball { width: 18px; height: 18px; border-radius: 50%; flex: none; border: 2px solid #26262c; background: linear-gradient(#58a848 0 46%, #26262c 46% 56%, #f4f4f4 56%); }
+.rb-close {
+  position: absolute; right: 2px; top: 22px; width: 36px; height: 36px; border-radius: 50%; border: 3px solid #4a3018;
+  background: radial-gradient(circle at 40% 35%, #d8a868, #8a5a30); color: #fbf3dc; font-size: 15px; cursor: pointer; box-shadow: 0 3px 0 #2e1e0c;
+}
+.rb-rank {
+  display: flex; align-items: center; gap: 12px; margin: 0 4px 8px; padding: 8px 12px; border-radius: 12px;
+  background: linear-gradient(#f6ead0, #e8d6b0); box-shadow: inset 0 0 0 2px #b88e48, 0 2px 0 #7a5428;
+}
+.rb-rank > div { flex: 1; min-width: 0; display: grid; grid-template-columns: auto 1fr; align-items: center; column-gap: 8px; }
+.rb-badge {
+  width: 46px; height: 46px; flex: none; display: grid; place-items: center; border-radius: 50%; font-size: 24px; color: #ffe890;
+  background: radial-gradient(circle at 40% 35%, #6a9a48, #2e5426); border: 3px solid #e0b040; box-shadow: 0 3px 0 #8a6a18, inset 0 0 0 2px #fff6;
+}
+.rb-rank-lv { font: 12px/1 var(--pixel-font); color: #8a6a3a; }
+.rb-rank-name { font: 16px/1.2 var(--pixel-font); color: #2e5426; }
+.rb-rank-bar { grid-column: 1 / -1; height: 10px; margin: 6px 0 4px; border-radius: 99px; background: #c8b48a; overflow: hidden; box-shadow: inset 0 1px 2px #0004; }
+.rb-rank-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #58a848, #a8d870); transition: width 0.5s; }
+.rb-rank-next { grid-column: 1 / -1; font-size: 12px; color: #6a5440; }
+.rb-coins { flex: none; padding: 6px 10px; border-radius: 99px; background: #fffaf0; box-shadow: inset 0 0 0 2px #e0b040; font-size: 13px; }
+.rb-coins b { font: 13px/1 var(--pixel-font); color: #5a3a10; }
+.rb-tabs { display: flex; gap: 6px; margin: 0 4px; overflow-x: auto; scrollbar-width: none; }
+.rb-tab {
+  position: relative; flex: 1 0 auto; padding: 9px 12px 12px; border: none; border-radius: 10px 10px 0 0; cursor: pointer;
+  background: linear-gradient(#a87a44, #8a5e30); color: #f4e8c8; font: 12px/1.2 var(--pixel-font); white-space: nowrap;
+  box-shadow: inset 0 2px 0 #c8985a; translate: 0 4px; transition: translate 0.15s;
+}
+.rb-tab.on { background: linear-gradient(#d8b878, #c49a5a); color: #3a2a18; translate: 0 0; }
+.rb-tab small { margin-left: 4px; font: 12px/1 var(--pixel-font); opacity: 0.8; }
+.rb-tab-ready {
+  position: absolute; top: -6px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;
+  display: grid; place-items: center; background: #d84838; color: #fff; font: 12px/1 var(--pixel-font); font-style: normal; box-shadow: 0 2px 0 #0005;
+}
+.rb-tab-ready[hidden] { display: none; }
+.rb-cork {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; margin: 0 4px 4px; padding: 16px 10px 20px; border-radius: 0 0 12px 12px;
+  background:
+    radial-gradient(circle at 20% 30%, #0000000f 1px, transparent 2px) 0 0 / 9px 11px,
+    radial-gradient(circle at 70% 60%, #ffffff14 1px, transparent 2px) 0 0 / 13px 7px,
+    linear-gradient(#c8955a, #b8844a);
+  box-shadow: inset 0 0 0 3px #7a5428, inset 0 6px 16px #0005;
+}
+.rb-notes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 18px 14px; }
+.rb-note {
+  position: relative; display: grid; grid-template-columns: 72px 1fr; gap: 10px; padding: 14px 12px 12px; rotate: var(--tilt);
+  background: linear-gradient(#fffdf4, #f6ecd2); box-shadow: 0 3px 0 #0002, 0 8px 14px #0003; border-radius: 3px;
+}
+.rb-note::after { content: ''; position: absolute; inset: auto 0 0 auto; width: 22px; height: 22px; background: linear-gradient(135deg, transparent 50%, #e2d2a8 50%); }
+.rb-pin {
+  position: absolute; top: -6px; left: 50%; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff9, var(--pin) 45%); box-shadow: 0 3px 2px #0005;
+}
+.rb-photo {
+  width: 72px; height: 80px; box-sizing: border-box; padding: 5px 5px 14px; background: #fff; box-shadow: 0 2px 4px #0003;
+  rotate: calc(var(--tilt) * -1.5); display: grid; place-items: center;
+}
+.rb-photo img { width: 100%; height: 100%; object-fit: contain; background: linear-gradient(#cfe8f4, #e8f0d8); }
+.rb-photo.ball img { padding: 10px; box-sizing: border-box; background: linear-gradient(#f6ead0, #e8d6b0); }
+.rb-photo.unseen img { filter: brightness(0) opacity(0.55); }
+.rb-body { min-width: 0; }
+.rb-title { margin: 0 0 4px; font: 13px/1.3 var(--pixel-font); color: #2e2418; }
+.rb-text { margin: 0 0 6px; font-size: 13px; line-height: 1.35; color: #5a4a36; }
+.rb-trail { display: flex; flex-wrap: wrap; align-items: center; gap: 1px; margin-bottom: 6px; }
+.rb-paw { font-size: 12px; filter: grayscale(1) opacity(0.25); }
+.rb-paw.on { filter: none; }
+.rb-count { margin-left: 6px; font: 12px/1 var(--pixel-font); color: #4a3424; }
+.rb-reward { display: flex; align-items: center; gap: 6px; margin: 0; padding: 5px 8px; border-radius: 8px; background: #2e54261a; font-size: 12px; color: #2e5426; }
+.rb-reward-ico { flex: none; display: grid; place-items: center; width: 20px; height: 20px; font-size: 15px; }
+.rb-reward-ico img { width: 20px; height: 20px; }
+.rb-note.ready { animation: rbWiggle 2.4s ease-in-out infinite; box-shadow: 0 0 0 3px #f8d048, 0 8px 18px #0004; }
+@keyframes rbWiggle { 0%, 80%, 100% { rotate: var(--tilt); } 85% { rotate: calc(var(--tilt) + 3deg); } 90% { rotate: calc(var(--tilt) - 3deg); } 95% { rotate: calc(var(--tilt) + 1.5deg); } }
+.rb-claim {
+  position: absolute; right: 10px; top: 8px; padding: 7px 12px; border: 3px solid #c83828; border-radius: 8px; cursor: pointer; rotate: 8deg;
+  background: #fff4f0; color: #c83828; font: 13px/1 var(--pixel-font); letter-spacing: 0.08em; box-shadow: 0 2px 0 #c8382855;
+}
+.rb-claim:hover { background: #ffe0d8; }
+.rb-stamp {
+  position: absolute; right: 12px; bottom: 10px; padding: 5px 9px; border: 3px solid currentColor; border-radius: 8px; rotate: -10deg;
+  font: 13px/1 var(--pixel-font); letter-spacing: 0.06em; color: #3a8a32; background: #fffdf4cc; pointer-events: none;
+}
+.rb-stamp.slam { animation: rbSlam 0.45s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes rbSlam { from { scale: 3; opacity: 0; } 60% { scale: 0.9; opacity: 1; } to { scale: 1; } }
+.rb-note.claimed > :not(.rb-stamp):not(.rb-pin) { opacity: 0.5; }
+.rb-toast {
+  position: absolute; left: 50%; bottom: 18px; translate: -50% 0; display: flex; align-items: center; gap: 8px; margin: 0; padding: 10px 16px;
+  border-radius: 12px; background: linear-gradient(#fffaf0, #f4e8cc); border: 3px solid #e2b648; box-shadow: 0 6px 20px #0007;
+  font: 13px/1.3 var(--pixel-font); color: #4a3424; white-space: nowrap; max-width: calc(100% - 32px); overflow: hidden; text-overflow: ellipsis;
+}
+.rb-toast[hidden] { display: none; }
+.rb-toast.in { animation: rbToast 0.4s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes rbToast { from { translate: -50% 40px; opacity: 0; } }
+.ranger-board.calm .rb-note.ready, .ranger-board.calm[open], .ranger-board.calm .rb-toast.in { animation: none; }
+@media (prefers-reduced-motion: reduce) { .rb-note.ready, .ranger-board[open], .rb-stamp.slam, .rb-toast.in { animation: none; } }
+@media (max-width: 480px) {
+  .rb-plaque h2 { font-size: 13px; }
+  .rb-note { grid-template-columns: 60px 1fr; }
+  .rb-photo { width: 60px; height: 68px; }
+  .rb-tab { padding: 8px 9px 11px; }
+}

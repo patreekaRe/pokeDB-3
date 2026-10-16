@@ -14,6 +14,8 @@
      picked for each slot at the crossroads), deck (list of card ids), relics (list of relic ids), map, ...
    ============================================================ */
 
+import { rangerCatch, rangerTick, rangerDay, rangerReady } from './ranger.js';
+import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch } from './data/workshop.js';
@@ -552,6 +554,7 @@ export function beginSafari(daily = safariDaily()) {
   const tries = getSave().safari.day === daily.day ? getSave().safari.tries : 0;
   const days = safariDays(getSave()) + (tries ? 0 : 1);   // the Safari Regular Badge's
   updateSave(d => { d.safari = { day: daily.day, tries: tries + 1, days, pass: d.safari.pass, balls: SAFARI_BALLS }; });   // counted at the start, so quitting can't retry the first
+  rangerDay(daily.day);
   beginRun(daily.starter, 0, null, { day: daily.day, seed: daily.seed, areas: daily.areas.map(a => a.id), first: tries === 0 });
   mission('safari');
 }
@@ -2519,6 +2522,8 @@ function afterFight(node, result) {
     if (result.tally && result.tally.turns <= 4) mission('quick');
     if (tough) mission('tough');
     if (result.caught) mission('catch');
+    if (result.caught && isSafari() && !peeking) rangerCatch({ ball: result.ball, night: timeOfDay() === 'night', turn: result.tally?.turns, flawless: result.tally && !result.tally.taken, inRun: run.tally.caught });
+    if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
     if (shard && glean(gleanKey(node, 'shard'), { key: shard.id })) playSound('crystal-2');
@@ -4395,6 +4400,7 @@ function endRun(won, atLastBoss = false, loss = null) {
   if (isTower()) return endTower(won);
   const mewtwoRun = isMewtwoRun(run.starter);
   const safari = isSafari();   // the daily run pays its coins, but its starter isn't yours: no records, stats or Levels
+  if (safari && won && !peeking) rangerTick('wins');
 
   let winCoins = 0;
   let level5 = [];
@@ -4471,6 +4477,8 @@ function endRun(won, atLastBoss = false, loss = null) {
   lines.unshift(...level5, ...(streak ? [streak] : []), ...(gate?.li ? [gate.li] : []));
   if (won) lines.unshift(`💰 +${winCoins} PokéCoins for winning!`);
   if (safari && run.tally.caught) lines.push(`🎯 Caught ${run.tally.caught} Pokémon this run.`);
+  const tasks = safari && !peeking ? rangerReady() : 0;
+  if (tasks) lines.push(`📋 ${tasks} Ranger task${tasks === 1 ? ' is' : 's are'} ready to claim on the board at the Safari Outfitter.`);
   if (safari) lines.push(run.safari.first ? '🦺 Your first try of the day, the one that counts: played without perks, like everyone\'s.' : '🦺 A replay: only the first try of the day counts (perks are back on).');
   if (safari && run.safari.first && !peeking) {   // the leaderboard's: posted once, never in the way of the end screens
     const line = postSafariResult(runResult({ day: run.safari.day, starter: run.starter.id, won, biome: run.biome,

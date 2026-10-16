@@ -52,6 +52,8 @@ export function initSafariPrep(handlers) {
   });
   $('sp-close').addEventListener('click', back);
   for (const id of Object.keys(APPS)) $(id).addEventListener('click', () => (app?.key === id ? back() : openApp(id)));
+  // the Ranger Task Board (js/ranger.js) opens over the lobby, a count on its key while tasks wait to be claimed
+  $('sp-tasks').addEventListener('click', () => { if (app) closeApp(true); import('./ranger.js').then(m => m.openRangerBoard(taskCount)); });
   const dialog = $('safari-prep-dialog');
   dialog.addEventListener('cancel', (e) => { if (app) { e.preventDefault(); back(); } });   // Escape is B
   dialog.addEventListener('keydown', (e) => {
@@ -156,6 +158,11 @@ function paintGate() {
   win.style.setProperty('--ground', `${g}px`);
 }
 
+/** The Tasks key's count: Ranger tasks ready to claim. */
+function taskCount() {
+  import('./ranger.js').then(m => { const n = m.rangerReady(), b = $('sp-tasks').querySelector('.sp-tasks-n'); b.textContent = n || ''; b.hidden = !n; });
+}
+
 export function openSafariPrep() {
   closeApp(true);
   render();
@@ -165,6 +172,7 @@ export function openSafariPrep() {
   const win = $('sp-top');
   win.classList.remove('power-on');
   engrave();
+  taskCount();
   paintGate();
   bootDevice($('sp-page'), { below: $('sp-page').querySelector('.tdev-lid'), screen: win, onScreen: () => { void win.offsetWidth; win.classList.add('power-on'); } });
 }
