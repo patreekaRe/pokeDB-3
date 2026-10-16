@@ -2688,4 +2688,6 @@ rest put on from the Bag's Held line on the map (`holdFromPouch()` / `canHold()`
 Kurt slides in after your first held berry (`heldTalk` in `js/data/towns.js`), a note the first time one is eaten in battle
 (`heldTip()` in `js/battle.js`), and a map note with the Items key pulsing the first new biome a pouch berry can go on
 (`berryNote()` in `js/run.js`, `nextBerryReady()` in `js/data/held.js`).
-
+- **Done (2026-10-16): the price signs moved low** (the user's phone shot: the front row's signs on poles hid the stands
+  behind): each on an easel in front of its stump, the rows four apart, the Day Pass booth moved clear; checked headless
+  from nine camera spots, no stand covering another (the old layout covered 40-57%).

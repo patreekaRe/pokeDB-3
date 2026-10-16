@@ -295,8 +295,10 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
   Kangaskhan's counter (`COUNTER`, gear shelves behind) in the middle, the leaderboard (`BOARD`) at the right. Keep it that
   way: a new thing goes in a wing or on the floor, not on the wall.
 - **The packs** stand on tree stumps down two wings (`STANDS`, sisal mats under each wing), the rest of the pack at the
-  stump's foot, each under a big lit price sign on bamboo poles (`priceArt()`: the name, the price, the pack and how many
-  you carry; LOCKED / OWNED), high enough to read over your partner. The balls are real spheres skinned by `SKINS` (x
+  stump's back, each with a big lit price sign on a low easel in front (`priceArt()`: the name, the price, the pack and
+  how many you carry; LOCKED / OWNED). Keep everything low: signs up on poles hid the stand behind them (2026-10-16, the
+  user's phone shot), so the wings' rows are four apart and the Day Pass booth stands where nothing is behind it. A
+  headless check projects every stand from nine camera spots and flags any nearer one covering a farther one. The balls are real spheres skinned by `SKINS` (x
   runs round the ball, 16 the front where its button is), turning (still under `calmFx()`).
 - **The Master Ball** floats in a glass case on a roped two-tier dais in the middle (`DAIS`, its plaque at the front, the
   step two tiles out). **The Day Pass** is a thatched bamboo booth (`KIOSK`) showing `passState()`: `pass` once one is

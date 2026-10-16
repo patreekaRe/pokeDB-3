@@ -28,10 +28,10 @@ export const OUTFITTER_COLOUR = L.trim;
    the board. Each pack's stump stands in a wing, its step the tile in front. */
 const COLS = 21, ROWS = 13, AISLE = 10, DOOR = { x: AISLE, y: ROWS - 1 };
 const BAYS = [0, 7, 14, 21];
-const STANDS = { great: [2, 5], ultra: [5, 5], luxury: [2, 8], quick: [5, 8], dusk: [15, 5], timer: [18, 5], net: [15, 8] };
-const DAIS = { x: AISLE, y: 7 }, KIOSK = { x: 18, y: 8 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
+const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8] };
+const DAIS = { x: AISLE, y: 7 }, KIOSK = { x: 18, y: 10 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
 const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 };
-const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.8, SIGN_H = 1.1;
+const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
 export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
   src: 'assets/pokemon/kangaskhan-front.gif',
@@ -282,7 +282,7 @@ function floorArt() {
     }
   }
   for (const x0 of [0.6, 13.6]) {   // the wings' mats
-    const x = x0 * T, y = 4.4 * T, w = 6.8 * T, h = 5.4 * T;
+    const x = x0 * T, y = 3.4 * T, w = 6.8 * T, h = 6.6 * T;
     rr(x + 1, y + 1.4, w, h, 3, 'rgba(40,20,5,0.25)');
     rr(x, y, w, h, 3, L.trimDark);
     rr(x + 3, y + 3, w - 6, h - 6, 2, L.sisal[0]);
@@ -318,23 +318,23 @@ function floorArt() {
   return f.c;
 }
 
-/** A stand's price sign, big enough to read from across the lodge: a bamboo frame, the ball's name on a green band, a
-    coin and the price, and the pack and how many you carry under it (LOCKED / OWNED in place of the price). */
+/** A stand's price sign, big and low: a bamboo frame, the ball's name on a green band, a coin and the price, and the
+    pack and how many you carry under it (LOCKED / OWNED in place of the price). */
 function priceArt(e, b) {
-  const f = fine(72, 44, 8), { g, rr } = f;
-  rr(0, 0, 72, 44, 3, L.cane[2]);
-  g.fillStyle = 'rgba(90,60,20,0.35)'; for (let x = 6; x < 72; x += 6) g.fillRect(x, 0, 0.4, 44);
-  rr(2.4, 2.4, 67.2, 39.2, 2, '#fbf3dc');
-  rr(2.4, 2.4, 67.2, 11.5, [2, 2, 0, 0], L.trim);
-  words(g, b.name.toUpperCase(), 36, 8.4, 7.6, '#fbf3dc');
+  const f = fine(72, 36, 8), { g, rr } = f;
+  rr(0, 0, 72, 36, 3, L.cane[2]);
+  g.fillStyle = 'rgba(90,60,20,0.35)'; for (let x = 6; x < 72; x += 6) g.fillRect(x, 0, 0.4, 36);
+  rr(2.2, 2.2, 67.6, 31.6, 2, '#fbf3dc');
+  rr(2.2, 2.2, 67.6, 10, [2, 2, 0, 0], L.trim);
+  words(g, b.name.toUpperCase(), 36, 7.6, 7, '#fbf3dc');
   const big = e.blocked ? 'LOCKED' : e.done ? e.done.toUpperCase() : e.cost.toLocaleString();
   if (!e.blocked && !e.done) {
-    g.fillStyle = '#f0c048'; g.beginPath(); g.arc(17, 25.6, 6, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#c89418'; star(g, 17, 25.6, 3.4);
-    words(g, big, 43, 26.4, 16, '#4a2c14');
-  } else words(g, big, 36, 26.4, 12, '#4a2c14');
+    g.fillStyle = '#f0c048'; g.beginPath(); g.arc(19, 20.4, 5.2, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#c89418'; star(g, 19, 20.4, 3);
+    words(g, big, 43, 21, 13.5, '#4a2c14');
+  } else words(g, big, 36, 21, 10, '#4a2c14');
   const note = b.weekly ? 'ONE THROW A WEEK' : `PACK OF ${b.pack} · HAVE ${getSave().balls?.[b.id] || 0}`;
-  words(g, note, 36, 37.6, 5.4, L.trimDark);
+  words(g, note, 36, 30.4, 5, L.trimDark);
   return f.c;
 }
 
@@ -539,8 +539,9 @@ export function buildOutfitter(THREE, size) {
     return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map, toneMapped: false }));
   };
 
-  // the packs, each on a tree stump with a woven cushion, the rest of the pack at its foot, and its price sign up on two
-  // bamboo poles under a strip of thatch, high enough to read over your partner
+  // the packs, each on a tree stump with a woven cushion, the rest of the pack at its foot, and its price sign on a low
+  // easel in front: kept low (2026-10-16, the user's phone shot: signs up on poles hid the stands behind them), and the
+  // wings' rows four apart, so nothing in front reaches what stands behind
   const rings = std({ map: texOf(ringsArt()), roughness: 0.8 }), cushion = std({ color: L.felt, roughness: 1 });
   for (const b of BALLS.filter(x => x.stock)) {
     const [x, y] = STANDS[b.id], e = entry(b.id);
@@ -559,17 +560,15 @@ export function buildOutfitter(THREE, size) {
     spinners.push({ o: ball, k: 0.35 + (x % 3) * 0.08 });
     for (let n = 0; n < Math.min(b.pack, 5) - 1; n++) {
       const a = 0.35 + n * 0.55, little = ballMesh(THREE, std, b.id, 0.1);
-      little.position.set(Math.cos(a) * 0.62, 0.1, Math.sin(a) * 0.45);
+      little.position.set(Math.cos(a + 2.4) * 0.6, 0.1, Math.sin(a + 2.4) * 0.42);
       little.rotation.y = -a;
       cell.add(little);
     }
-    for (const sx of [-SIGN_W / 2 + 0.06, SIGN_W / 2 - 0.06]) put(cell, new THREE.CylinderGeometry(0.035, 0.04, 2.95, 8), cane, sx, 1.475, -0.4);
     const board = sign(b, SIGN_W, SIGN_H);
-    board.position.set(0, 1.78 + SIGN_H / 2, -0.38);
-    board.rotation.x = -0.1;
+    board.position.set(0, 0.48, 0.62);
+    board.rotation.x = -0.55;
     cell.add(board);
-    const roof = put(cell, new THREE.PlaneGeometry(SIGN_W + 0.35, 0.45), thatch, 0, 2.98, -0.3, false);
-    roof.rotation.x = -Math.PI / 2 + 0.6;
+    for (const sx of [-0.5, 0.5]) put(cell, new THREE.BoxGeometry(0.05, 0.5, 0.05), cane, sx, 0.25, 0.5).rotation.x = -0.3;
     cell.traverse(o => { o.userData.front = spot; });
     group.add(cell);
   }
@@ -625,18 +624,18 @@ export function buildOutfitter(THREE, size) {
     block(x, y);
     const cell = new THREE.Group();
     cell.position.set(tileX(x), 0, tileZ(y));
-    put(cell, new THREE.BoxGeometry(0.95, 1.45, 0.75), cane, 0, 0.725, 0);
-    put(cell, new THREE.BoxGeometry(1.05, 0.08, 0.3), wood, 0, 0.9, 0.42);
-    for (const sx of [-0.45, 0.45]) put(cell, new THREE.CylinderGeometry(0.05, 0.05, 2.0, 8), log, sx, 1.0, 0.4);
-    const roof = put(cell, new THREE.ConeGeometry(0.95, 0.6, 4), std({ color: L.thatch[1], roughness: 1 }), 0, 2.2, 0.05);
+    put(cell, new THREE.BoxGeometry(0.95, 1.3, 0.75), cane, 0, 0.65, 0);
+    put(cell, new THREE.BoxGeometry(1.05, 0.08, 0.3), wood, 0, 0.74, 0.42);
+    for (const sx of [-0.45, 0.45]) put(cell, new THREE.CylinderGeometry(0.05, 0.05, 1.65, 8), log, sx, 0.825, 0.4);
+    const roof = put(cell, new THREE.ConeGeometry(0.95, 0.45, 4), std({ color: L.thatch[1], roughness: 1 }), 0, 1.86, 0.05);
     roof.rotation.y = Math.PI / 4;
     passMap = texOf(passArt(passState()));
     const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.6), new THREE.MeshBasicMaterial({ map: passMap, toneMapped: false }));
-    screen.position.set(0, 1.28, 0.38);
+    screen.position.set(0, 1.12, 0.38);
     cell.add(screen);
-    const button = put(cell, new THREE.CylinderGeometry(0.06, 0.06, 0.05, 18), std({ color: '#e04838', emissive: new THREE.Color('#e04838'), emissiveIntensity: 0.4, roughness: 0.3 }), 0.25, 0.97, 0.45);
+    const button = put(cell, new THREE.CylinderGeometry(0.06, 0.06, 0.05, 18), std({ color: '#e04838', emissive: new THREE.Color('#e04838'), emissiveIntensity: 0.4, roughness: 0.3 }), 0.25, 0.8, 0.45);
     button.rotation.x = 0;
-    put(cell, new THREE.BoxGeometry(0.22, 0.01, 0.14), std({ color: '#f8e8b8', roughness: 0.8 }), -0.2, 0.95, 0.44);
+    put(cell, new THREE.BoxGeometry(0.22, 0.01, 0.14), std({ color: '#f8e8b8', roughness: 0.8 }), -0.2, 0.79, 0.44);
     cell.traverse(o => { o.userData.front = spot; });
     group.add(cell);
     redraws.push(() => { passMap.image = passArt(passState()); passMap.needsUpdate = true; });
