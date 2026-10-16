@@ -108,8 +108,8 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   if (glow) layer.style.setProperty('--glow', glow);
   const shadow = !possess && !lit && gymWins(getSave(), l.id) === 0;   // after the fight they've been seen
   const who = el('img', `gym-trainer pixel${shadow ? ' shadow' : ''}`);
-  who.src = l.talk || spriteOf(l);
   who.alt = '';
+  await sitFor(who, l.talk || spriteOf(l));
   const plate = el('div', 'gym-plate');
   plate.append(el('small', '', title), l.name);
   const box = el('div', 'gym-say');
@@ -151,6 +151,29 @@ export async function gymTalk(l, lines, { vars = {}, badge = false, again = 0, p
   darkness?.();
   await sleep(calm ? 0 : 320);
   layer.remove();
+}
+
+/* The speaker's picture, loaded before they slide in (2026-10-16: on an iPhone Smeargle's talk slid in empty, the picture
+   missing till the tab was left and come back to), tried twice; an animated GIF stands as its first frame, a still on a
+   CPU canvas like the base's sprites, since Safari can drop a big scaled GIF's layer while a 3D place holds the GPU. */
+async function sitFor(img, src) {
+  const load = (url) => new Promise(res => {
+    const t = new Image();
+    t.onload = () => res(t); t.onerror = () => res(null);
+    t.src = url;
+    setTimeout(() => res(t.naturalWidth ? t : null), 2500);
+  });
+  const got = await load(src) || await load(`${src}${src.includes('?') ? '&' : '?'}again=${Date.now()}`);
+  if (got && /\.gif(\?|$)/i.test(src)) {
+    try {
+      const c = document.createElement('canvas');
+      c.width = got.naturalWidth; c.height = got.naturalHeight;
+      c.getContext('2d').drawImage(got, 0, 0);
+      img.src = c.toDataURL();
+      return;
+    } catch (e) { console.error(e); }
+  }
+  img.src = got?.src || src;
 }
 
 /** Anime speed lines racing past for a beat: only as they call their Pokémon out (`speed: 'last'`) and as they slide in
