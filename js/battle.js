@@ -228,7 +228,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, slots =
     blockNext: 0,      // block waiting for your next turn (Shelter)
     blur: 0,           // turns your block survives the start of your turn (Aqua Veil)
     strength: (run.relics.includes('black-belt') ? 1 : 0) + (run.relics.includes('exp-share') ? 1 : 0) + (aug.startStrength || 0) + (run.tower?.bloodStr || 0)
-      + (run.relics.includes('macho-brace') && (encounter.kind === 'elite' || encounter.kind === 'boss') ? 2 : 0),   // Macho Brace: Alphas and bosses   // extra damage on every hit, for the rest of this fight
+      + (run.relics.includes('macho-brace') && (encounter.kind === 'elite' || encounter.kind === 'boss') ? 3 : 0),   // Macho Brace: Alphas and bosses   // extra damage on every hit, for the rest of this fight
     firstAttack: run.relics.includes('dragon-fang') || !!aug.firstAttack || !!aug.onePunch,   // Dragon Fang's (First Strike's, One Punch's) bonus is still waiting for your first attack
     flex: 0,           // the part of `strength` that goes away at the end of this turn (Rototiller, StS's Flex)
     healedThisTurn: false,   // healed on this turn of yours (Grassy Glide)
@@ -262,7 +262,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, slots =
       seed: (run.relics.includes('gooey-mulch') ? 2 : 0) + (aug.startSeed || 0),   // Leech Seed: loses this much HP at the start of its turn, you heal it, then it drops by 1
       sap: 0,                         // its attacks deal this much less, all fight
       weak: (aug.startWeak || 0) + (run.relics.includes('sachet') ? 2 : 0),               // turns left dealing WEAK_MULT damage
-      vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 1 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
+      vulnerable: (aug.startVuln || 0) + (run.relics.includes('wide-lens') ? 2 : 0),      // turns left taking VULNERABLE_MULT damage from your attacks
       bait: 0,                        // Bait thrown at it (Safari): easier to catch, its attacks deal BAIT.damage more each
       rock: 0,                        // Rocks thrown at it (Safari): a wild one may run off on its turn
       moveIndex: trial ? 0 : randIndex(def.moves.length),
@@ -1202,7 +1202,7 @@ function spendTide() {
   b.tide = b.aug.tideKeep ? spent : hasRelic('lustrous-orb') || b.aug.tideHalf ? Math.floor(spent / 2) : 0;
   pop('player-zone', `🌊 ${spent} Tide spent`, 'note', 200);
   if (b.powers.tideSpendBlock) gainBlock(spent * b.powers.tideSpendBlock);
-  if (hasRelic('splash-plate') && !b.splashed) { b.splashed = true; draw(1); }
+  if (hasRelic('splash-plate') && !b.splashed) { b.splashed = true; draw(2); }
   return spent;
 }
 

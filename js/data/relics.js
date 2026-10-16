@@ -81,7 +81,7 @@ export const RELICS = [
   { id: 'stone-plate',      name: 'Stone Plate',      icon: '🧱', rarity: 'common',   text: 'At the start of your 2nd turn in each battle, gain 12 block.' },   // Horn Cleat
 
   // The 2026-10-16 balance pass: more of StS's relics, so a run meets about as many as a StS run does.
-  { id: 'wide-lens',      name: 'Wide Lens',      icon: '🔍', rarity: 'common',   text: 'Enemies start each battle with 1 Vulnerable.' },   // Bag of Marbles
+  { id: 'wide-lens',      name: 'Wide Lens',      icon: '🔍', rarity: 'common',   text: 'Enemies start each battle with 2 Vulnerable.' },   // Bag of Marbles (2: at 1 it only lasted turn 1, and measured below no relic)
   { id: 'lava-cookie',    name: 'Lava Cookie',    icon: '🍪', rarity: 'common',   text: 'Heal 3 HP at the start of each battle.' },   // Blood Vial
   { id: 'soothe-bell',    name: 'Soothe Bell',    icon: '🔔', rarity: 'common',   text: 'Every 3rd turn of a battle, gain 1 extra PP.' },   // Happy Flower
   { id: 'metal-coat',     name: 'Metal Coat',     icon: '🛡️', rarity: 'common',   text: 'Cards that give block give 1 more.' },   // Oddly Smooth Stone
@@ -92,7 +92,7 @@ export const RELICS = [
   { id: 'sticky-barb',    name: 'Sticky Barb',    icon: '🌵', rarity: 'uncommon', text: 'At the start of each of your turns, deal 3 damage to the enemy.' },   // Mercury Hourglass
   { id: 'lucky-egg',      name: 'Lucky Egg',      icon: '🥚', rarity: 'uncommon', text: 'Card rewards offer 1 more card.' },   // Question Card
   { id: 'power-bracer',   name: 'Power Bracer',   icon: '💪', rarity: 'uncommon', text: 'Attacks you add to your deck come PP Upped.' },   // Molten Egg
-  { id: 'power-belt',     name: 'Power Belt',     icon: '🎽', rarity: 'uncommon', text: 'Moves that aren\'t attacks come PP Upped when you add them to your deck.' },   // Frozen Egg + Toxic Egg
+  { id: 'power-belt',     name: 'Power Belt',     icon: '🎽', rarity: 'rare',     text: 'Moves that aren\'t attacks come PP Upped when you add them to your deck.' },   // Frozen Egg + Toxic Egg (two of StS's uncommons in one, so rare)
   { id: 'razor-fang',     name: 'Razor Fang',     icon: '🦷', rarity: 'uncommon', text: 'Every 10th attack you play in a battle deals double damage.' },   // Pen Nib
   { id: 'spell-tag',      name: 'Spell Tag',      icon: '🏷️', rarity: 'uncommon', text: 'Every 3rd card that isn\'t an attack you play in a turn deals 5 damage to the enemy.' },   // Letter Opener
   { id: 'helix-fossil',   name: 'Helix Fossil',   icon: '🐚', rarity: 'rare',     text: 'The first time you would lose HP in each battle, you don\'t.' },   // Fossilized Helix
@@ -106,10 +106,10 @@ export const RELICS = [
   { id: 'kee-berry',      name: 'Kee Berry',      icon: '🫐', rarity: 'common',   only: 'fire',  text: 'Whenever you lose HP in battle, gain 3 block at the start of your next turn.' },   // Self-Forming Clay (Reckless)
   { id: 'fire-memory',    name: 'Fire Memory',    icon: '💿', rarity: 'uncommon', only: 'fire',  text: 'A burning enemy takes 25% more damage from your attacks.' },   // Paper Phrog, for Burn
   { id: 'soot-sack',      name: 'Soot Sack',      icon: '👝', rarity: 'uncommon', only: 'fire',  text: 'The first time a card exhausts each turn, gain 1 PP.' },   // (Kindling's own)
-  { id: 'macho-brace',    name: 'Macho Brace',    icon: '🏋️', rarity: 'uncommon', only: 'grass', text: 'Start Alpha and boss battles with 2 strength.' },   // Sling of Courage (Growth)
+  { id: 'macho-brace',    name: 'Macho Brace',    icon: '🏋️', rarity: 'uncommon', only: 'grass', text: 'Start Alpha and boss battles with 3 strength.' },   // Sling of Courage (Growth)
   { id: 'luminous-moss',  name: 'Luminous Moss',  icon: '🌿', rarity: 'common',   only: 'grass', text: 'Whenever you heal in battle, gain 2 block.' },   // (Drain's own)
   { id: 'sachet',         name: 'Sachet',         icon: '👛', rarity: 'common',   only: 'grass', text: 'Enemies start each battle with 2 Weak.' },   // Bag of Marbles, as Weak (Spores)
-  { id: 'splash-plate',   name: 'Splash Plate',   icon: '💧', rarity: 'uncommon', only: 'water', text: 'The first time you spend Tide each turn, draw 1 card.' },   // (Tsunami's own)
+  { id: 'splash-plate',   name: 'Splash Plate',   icon: '💧', rarity: 'uncommon', only: 'water', text: 'The first time you spend Tide each turn, draw 2 cards.' },   // (Tsunami's own)
   { id: 'big-pearl',      name: 'Big Pearl',      icon: '⚪', rarity: 'common',   only: 'water', text: 'When your block stops an enemy attack completely, gain 2 Tide.' },   // (Shell's own)
   { id: 'tidal-bell',     name: 'Tidal Bell',     icon: '🔔', rarity: 'rare',     only: 'water', text: 'Whenever you discard a card, deal 3 damage to the enemy.' },   // Tingsha (Flow)
 
