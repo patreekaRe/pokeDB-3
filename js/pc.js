@@ -73,6 +73,7 @@ const yardHint = (house) => !ownsYard(house) ? ' The green plot behind is a back
 /** What the PC says with the yard picked: the plot to buy, or the bought one to make bigger. */
 const yardSay = (house) => canGrowYard(house)
   ? `Make your backyard bigger, ${BIG_YARD_PRICE.toLocaleString()} PokéCoins? Everything out there keeps its place by the gate.`
+  : !inBase && !getSave().baseOwned ? 'A backyard behind the Ancient Tree. Make the Ancient Tree your Secret Base first.'
   : `A backyard behind the Ancient Tree, through the garden arch beside it. ${YARD_PRICE.toLocaleString()} PokéCoins.`;
 
 /** Log on. `onClose` runs once it's logged off (the hub swaps in a new walking buddy); `onFame(app)` opens the device's
@@ -564,6 +565,10 @@ const PAGES = {
             show('house');
             speak('Your backyard is bigger! Everything out there kept its place by the gate, with new lawn round it.');
           }));
+        return card;
+      }
+      if (!inBase && !save.baseOwned) {
+        card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', 'Make the Ancient Tree your Secret Base first, then its backyard can be built.'));
         return card;
       }
       card.append(el('b', 'pc-plan-name', 'BACKYARD'), el('small', 'pc-plan-note', `${w} × ${h} tiles of lawn behind the Ancient Tree, through the garden arch beside it.`),

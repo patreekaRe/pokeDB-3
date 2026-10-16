@@ -197,7 +197,8 @@ const lendSize = () => new URLSearchParams(location.search).get('yard') === 'big
 
 /** Buy the backyard. False if the coins aren't there or it's already bought. */
 export function buyYard(b) {
-  if ((getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return false;
+  // a save can hold base data it never bought (a playtest's, or the free base of before 2026-10-08): only `baseOwned` counts
+  if (!getSave().baseOwned || (getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return false;
   b.house ||= freshHouse();
   b.house.yard = freshYard();
   updateSave(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
