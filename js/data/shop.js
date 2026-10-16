@@ -15,11 +15,12 @@
 
    Costs are tuned against roughly what a run earns (see run.js's
    COIN_REWARDS): a run that dies partway through earns ~80-100 coins,
-   a full clear ~230-250 at Level 0 and ~350 at Level 5 (COIN_LEVEL_BONUS).
+   a full clear ~330-350 at Level 0 and ~500 at Level 5 (COIN_LEVEL_BONUS;
+   the win bonus 200 since 2026-10-16).
    Since 2026-10-16 they also weigh the one-off rewards (the Trainer's
    Journal ~26500, the Pokédex ~13300, the Ranger board ~11700) and the
    daily ones (missions up to 200 a day and 1000 a week, the Game Corner
-   up to 500 a day), which together had outgrown what coins could buy (the
+   up to 500 a day then, 250 since), which together had outgrown what coins could buy (the
    user's call). Everything here costs ~34600: skins 2400, perks 11800
    (the Scope Upgrade's 4000 of it), shinies 20400 (cosmetic, the long
    tail; a Level 5 win gives its starter's for free).

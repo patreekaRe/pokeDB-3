@@ -76,3 +76,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   50-300, so one of every kind is ~192,000 (was ~107,000) and wallpapers and floors ~4,300 (was ~2,300). Fixed prices now
   add up to ~62,000: skins 2,400, perks 11,800, shinies 20,400, machines 18,000, the Secret Base's upgrades 5,000 and its
   papers ~4,300. Owned perks, shinies and pieces stay owned. House rooms (500) and doorways (100) are unchanged.
+- **Where coins come from, 2026-10-16** (the user's yes, right after the price rise): a won run's bonus 100 -> 200
+  (`COIN_REWARDS.winBonus`), the Game Corner's `DAILY_CAP` 500 -> 250, so runs out-earn the minigames. A daily player earns
+  about the same (~1,300 a day before, now more from runs); everything with a fixed price (~209,000 with the statues and
+  shells) is some four months of play, one of every furniture kind (~192,000) about as much again.

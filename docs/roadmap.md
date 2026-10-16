@@ -887,10 +887,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Waiting on the user
 
-- **Coins: the Game Corner's daily cap, and the Grand Ballroom's look** (2026-10-16): prices were raised and the Furniture
-  store's Grand Ballroom (3F) added, selling gold starter statues and six Pokédex shells (`docs/roadmap-done.md`). The Game
-  Corner still pays up to 500 a day (`DAILY_CAP` in `js/data/corner.js`), more than a run: lower it? The user also looks
-  at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the shells, and says what to change.
+- **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
+  shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the
+  shells, and says what to change. (Coins were rebalanced the same day: a won run pays 200, the Game Corner 250 a day.)
 
 - **The Sky Pillar's new look in the Clearing** (2026-10-15, the user's ask: "a big change aesthetically"): the box is
   now Hoenn's tower in 3D (`js/hub-pillar.js`; docs/reference/hub-base-mall.md). Checked headless (no errors, frame rate

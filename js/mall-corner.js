@@ -740,7 +740,7 @@ export function buildCorner(THREE, size) {
   // a little PC on the counter's right end, a "!" always bobbing over it: a tap explains the Game Corner (the user's
   // ask, 2026-10-12)
   const guide = { id: 'guide', kind: 'game', name: 'Game Corner guide', open: true, line: 'Game Corner guide', step: { x: COUNTER.x + COUNTER.w - 1, y: COUNTER.y + 1 } };
-  guide.game = { name: guide.name, line: 'New here, meow? This PC explains every game and how to win up to 500 PokéCoins a day. Tap again to read it.',
+  guide.game = { name: guide.name, line: `New here, meow? This PC explains every game and how to win up to ${DAILY_CAP} PokéCoins a day. Tap again to read it.`,
     open: (done) => import('./corner-guide.js').then(m => m.openGuide(done)) };
   const pcGlows = [], pc = pcModel(THREE, pcGlows);
   for (const m of pcGlows) m.emissiveIntensity = 0.9;

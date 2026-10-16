@@ -155,7 +155,7 @@ const biomeName = () => (isSafari() ? `Safari Zone: ${safariArea().name}` : isTo
 /* ============================================================
    PokéCoins  -  see js/data/shop.js for what they buy.
    ============================================================ */
-export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 100 };   // winBonus 50 until 2026-09-28 (the user's call)
+export const COIN_REWARDS = { fight: 3, elite: 12, boss: 30, winBonus: 200 };   // winBonus 50 until 2026-09-28, 100 until 2026-10-16 (the user's calls: runs the best way to earn)
 /** PokéCoins for the first Trainer Level 5 win with each type (Coin Finder adds to it). */
 export const LEVEL5_JACKPOT = 500;
 

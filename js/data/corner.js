@@ -4,8 +4,8 @@
 
    Every game is free (2026-10-12, the user's call: no betting). Each has PLAYS a UTC day that pay; past them, or past
    GAME_CAP from one game or DAILY_CAP from them all (`save.corner.pot`), it's played for fun. The table games stake
-   STAKE of Meowth's house chips a play, never your coins, and pay what the chips win. Average play pays about 250 a
-   day all told (tests/corner.test.mjs works it out), under a winning run, so runs stay the way to earn.
+   STAKE of Meowth's house chips a play, never your coins, and pay what the chips win. A day's average play would pay
+   about 380 (tests/corner.test.mjs works it out), so DAILY_CAP's 250 is what a regular earns, under a won run (~350+).
    Voltorb Flip  HeartGold / SoulSilver's: a 5x5 board of 1s, 2s, 3s and Voltorbs, each row and column's sum and
                  Voltorbs told at its edge. Flip a tile to multiply the round's score; flip every 2 and 3 to win it.
                  A won (or quit) round pays coins from its score. Levels 1-8 as in HGSS. Each board comes from the day's seed and
@@ -17,7 +17,7 @@ import { streamOf, randIndex, shuffled } from '../rng.js';
 
 /* ---------- Voltorb Flip ---------- */
 
-export const DAILY_CAP = 500;   // PokéCoins a UTC day from every game together
+export const DAILY_CAP = 250;   // PokéCoins a UTC day from every game together (500 until 2026-10-16, the user's call: a won run should pay more)
 export const GAME_CAP = 150;    // from any one game, so the cap takes several
 export const STAKE = 10;        // house chips a table play stakes
 /** Plays a UTC day that pay, by game (raised 2026-10-12, the user's pick). Who's That is one round a day. */

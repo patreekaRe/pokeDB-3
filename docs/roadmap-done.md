@@ -2772,3 +2772,5 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - **The Grand Ballroom** (2026-10-16, the user's idea: a floor of the Furniture store you unlock, with the high-ticket
   items): 3F, opened by owning 40 kinds of furniture and paying 5,000; the Grand Catalogue moved there from the PC.
   `docs/reference/hub-base-mall.md`'s Grand Catalogue section.
+- **Coins rebalanced towards runs** (2026-10-16, the user's yes): a won run's bonus 100 -> 200, the Game Corner's daily cap
+  500 -> 250. `docs/reference/economy-and-hall-of-fame.md`'s last entry.
