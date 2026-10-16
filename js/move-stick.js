@@ -2,7 +2,7 @@
    tile by tile the way it leans, like the arrow keys; let go and it stops on the next tile. Shown on touch screens, or
    anywhere with ?stick (?nostick hides it). Each place hands over who may walk (`can`), a step (`nudge(dx, dy)`, true if
    it took), what to do on letting go (`stop`) and what it stands above (`above`, a selector: the rooms' Pokédex bar,
-   whose Leave key it would cover). */
+   whose Leave key it would cover, and their text box). */
 
 const DEAD = 0.3;   // of the stick's reach, before a lean counts
 
@@ -60,8 +60,8 @@ export function moveStick({ can, nudge, stop, above = null, className = '' }) {
   el.addEventListener('contextmenu', (e) => e.preventDefault());
   // over the bar's top edge while it's up, else the corner's own place
   const lift = () => {
-    const bar = above && document.querySelector(above), r = bar?.getBoundingClientRect();
-    el.style.bottom = r?.height && r.top < innerHeight ? `${Math.round(innerHeight - r.top + 12)}px` : '';
+    const tops = [...document.querySelectorAll(above)].map(e => e.getBoundingClientRect()).filter(r => r.height && r.top < innerHeight).map(r => r.top);
+    el.style.bottom = tops.length ? `${Math.round(innerHeight - Math.min(...tops) + 12)}px` : '';
   };
   const bars = new ResizeObserver(lift);
   return {
@@ -71,8 +71,7 @@ export function moveStick({ can, nudge, stop, above = null, className = '' }) {
       parent.append(el);
       if (!above) return;
       lift();
-      const bar = document.querySelector(above);
-      if (bar) bars.observe(bar);
+      for (const bar of document.querySelectorAll(above)) bars.observe(bar);
       addEventListener('resize', lift);
       setTimeout(lift, 500);
     },

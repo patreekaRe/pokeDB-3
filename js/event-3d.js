@@ -10480,7 +10480,7 @@ export async function mountEvent(o) {
   addEventListener('click', onTap, true);
   drags?.off();
   drags = dragWalk({ can: canWalk, tile: floorTile, go: (t) => { aim = null; walker.path = reroute(walker, route, t); } });
-  if (stickOn()) { stick ??= moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; }, above: '#room-bar' }); stick.show(); }
+  if (stickOn()) { stick ??= moveStick({ can: canStep, nudge: stickStep, stop: () => { if (walker.path.length > 1) walker.path.length = 1; }, above: '#room-bar, #reward-screen .reward-bottom' }); stick.show(); }
   addEventListener('resize', resize);
   resize();
   last = 0;
