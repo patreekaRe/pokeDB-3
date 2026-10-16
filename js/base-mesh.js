@@ -155,9 +155,9 @@ function weld(g) {
 
 /** A superellipsoid: e (round) 1 is a sphere's sides, near 0 a box's; ev the same up and down. Cushions, mattresses,
     arms, beanbags, clouds. */
-function blob(w, h, d, e = 0.45, ev = 0.5) {
-  const ws = Math.max(12, Math.min(32, round4(52 * Math.sqrt(Math.max(w, h, d) / 2))));
-  const g = new THREE.SphereGeometry(1, ws, Math.max(8, 2 * Math.round(ws * 20 / 64))), pos = g.attributes.position;
+function blob(w, h, d, e = 0.45, ev = 0.5, seg) {
+  const ws = seg || Math.max(12, Math.min(32, round4(52 * Math.sqrt(Math.max(w, h, d) / 2))));
+  const g = new THREE.SphereGeometry(1, ws, Math.max(seg ? 6 : 8, 2 * Math.round(ws * 20 / 64))), pos = g.attributes.position;
   const sp = (v, k) => Math.sign(v) * Math.pow(Math.abs(v), k);
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i), c = Math.hypot(x, z);
@@ -183,7 +183,7 @@ const lathe = (pts, seg = 28, exact = false) => new THREE.LatheGeometry(pts.map(
   exact ? seg : sides(Math.max(...pts.map(p => p[0])), seg));
 const torus = (R, r, arc = Math.PI * 2, seg = 28) => {
   const f = Math.min(1, arc / (Math.PI * 2)), all = seg < 12 ? seg : Math.max(Math.ceil(8 * f), Math.min(seg, Math.ceil(sides(R + r, 99) * f)));
-  return new THREE.TorusGeometry(R, r, r < 0.04 ? 8 : 10, all, arc);
+  return new THREE.TorusGeometry(R, r, r < 0.012 ? 4 : r < 0.04 ? 8 : 10, all, arc);
 };
 
 /** A heart, extruded with rounded edges, `s` across, `t` thick, lying in the x-y plane. */
@@ -1832,7 +1832,7 @@ function leafyModel(id, paint) {
    their shapes without Three.js) */
 const L = {
   get THREE() { return THREE; },
-  rbox, blob, weld, cyl, ball, lathe, torus, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
+  rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
 for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q]) for (const [k, f] of Object.entries(makes)) {

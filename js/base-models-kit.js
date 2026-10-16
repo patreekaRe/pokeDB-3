@@ -107,16 +107,16 @@ export const ballTop = (K) => (K.pal.c === '#f4f4f0' ? K.pal.w : K.pal.c);
 
 /** A Poké Ball of radius r at x, y, z, its button facing +z. */
 export function pokeBall(K, L, x, y, z, r, top = ballTop(K)) {
-  const { THREE } = L, dark = K.gloss('#26262e');
-  K.put(new THREE.SphereGeometry(r, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2), K.gloss(top), x, y, z);
-  K.put(new THREE.SphereGeometry(r, 24, 10, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), K.gloss('#f6f6f2'), x, y, z);
+  const { THREE } = L, dark = K.gloss('#26262e'), n = L.sides(r, 24), h = Math.max(4, Math.round(n * 10 / 24));
+  K.put(new THREE.SphereGeometry(r, n, h, 0, Math.PI * 2, 0, Math.PI / 2), K.gloss(top), x, y, z);
+  K.put(new THREE.SphereGeometry(r, n, h, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), K.gloss('#f6f6f2'), x, y, z);
   K.put(L.cyl(r * 1.01, r * 0.16, r * 1.01, 24), dark, x, y, z);
   K.put(L.cyl(r * 0.34, r * 0.2, r * 0.34, 18).rotateX(Math.PI / 2), dark, x, y, z + r * 0.92);
   K.put(L.cyl(r * 0.22, r * 0.12, r * 0.22, 18).rotateX(Math.PI / 2), K.gloss('#f6f6f2'), x, y, z + r * 1.02);
 }
 
 /** A tube along points [[x, y, z]...], radius r. */
-export const tube = (L, pts, r, seg = 40) => new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3(pts.map(p => new L.THREE.Vector3(...p))), seg, r, 10, false);
+export const tube = (L, pts, r, seg = 40) => new L.THREE.TubeGeometry(new L.THREE.CatmullRomCurve3(pts.map(p => new L.THREE.Vector3(...p))), seg, r, r < 0.03 ? 6 : r < 0.06 ? 8 : 10, false);
 
 /** A rod from a to b ([x, y, z] each), radius r. */
 export function rod(K, L, m, a, b, r) {

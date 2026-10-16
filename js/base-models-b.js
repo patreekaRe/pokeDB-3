@@ -13,10 +13,10 @@ const STRAW = '#e8c860';
 /** A clump of leaves round x, y, z, about `r` across: a round core puffed out all over with smaller balls in three greens. */
 export function bush(K, L, x, y, z, r, n = 12) {
   const R = K.r, greens = [K.gloss(K.pal.leaf), K.gloss(L.tone(K.pal.leaf, 1.08)), K.gloss(L.tone(K.pal.leaf, 0.9))];
-  K.put(L.ball(r * 0.8, 20, 14), greens[2], x, y, z);
+  K.put(L.ball(r * 0.8, 8, 6), greens[2], x, y, z);
   for (let i = 0; i < n; i++) {
     const e = Math.asin(1 - 1.7 * (i + 0.5) / n), a = i * 2.4 + R() * 0.4, q = r * 0.62, s = r * (0.36 + R() * 0.12);
-    K.put(L.ball(s, 14, 10), greens[i % 2], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
+    K.put(L.ball(s, 8, 6), greens[i % 2], x + Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q * 0.9, z + Math.sin(a) * Math.cos(e) * q);
   }
 }
 
@@ -25,9 +25,9 @@ export function flower(K, L, x, y, z, col, r = 0.04, turn = 0, tip = 0.6) {
   const petal = K.gloss(col);
   for (let i = 0; i < 5; i++) {
     const a = i / 5 * Math.PI * 2;
-    K.put(L.ball(r * 0.6, 10, 8).scale(1, 1, 0.45).translate(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, 0).rotateX(-tip).rotateY(turn), petal, x, y, z);
+    K.put(L.ball(r * 0.6, 8, 4).scale(1, 1, 0.45).translate(Math.cos(a) * r * 0.7, Math.sin(a) * r * 0.7, 0).rotateX(-tip).rotateY(turn), petal, x, y, z);
   }
-  K.put(L.ball(r * 0.4, 10, 8), K.gloss('#f8d030'), x, y, z);
+  K.put(L.ball(r * 0.4, 8, 4), K.gloss('#f8d030'), x, y, z);
 }
 
 /** A gable roof over a box `w` wide, `d` deep, its eaves at `y`, rising `rise`; the gables filled in `gable`. */
@@ -73,7 +73,7 @@ export function potOf(K, L, kind = 'round') {
 
 /** A leaf `len` long and `wid` wide from x, y, z, `turn` round, its tip `tip` from upright, curling down by `curl`. */
 export function leaf(K, L, m, x, y, z, turn, tip, len, wid, curl = 0) {
-  const g = L.ball(1, 12, 8).scale(wid, 0.012 + wid * 0.08, len / 2);
+  const g = (len < 0.15 ? L.ball(1, 8, 4) : L.ball(1, 12, 6)).scale(wid, 0.012 + wid * 0.08, len / 2);
   const pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) { const t = (pos.getZ(i) / len + 0.5); pos.setY(i, pos.getY(i) - curl * t * t * len); }
   g.computeVertexNormals();
@@ -322,10 +322,10 @@ export const MAKES = {
     // a straight stem, two clipped balls of leaves, a few flowers tucked in
     K.put(L.cyl(0.028, u(36), 0.034, 12), K.wood(), 0, t + u(18), 0);
     for (const [y, r] of [[u(30), u(7)], [u(54), u(11)]]) {
-      K.put(L.ball(r * 0.95, 28, 20), K.gloss(L.tone(K.pal.leaf, 0.9)), 0, y, 0);
+      K.put(L.ball(r * 0.95, 16, 10), K.gloss(L.tone(K.pal.leaf, 0.9)), 0, y, 0);
       for (let n = 0; n < 40; n++) {
         const a = n * 2.4, e = Math.asin(1 - 2 * (n + 0.5) / 40), q = r * 0.92;
-        K.put(L.ball(r * 0.17, 10, 8), K.gloss(L.tone(K.pal.leaf, 0.95 + R() * 0.15)), Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q, Math.sin(a) * Math.cos(e) * q);
+        K.put(L.ball(r * 0.17, 8, 6), K.gloss(L.tone(K.pal.leaf, 0.95 + R() * 0.15)), Math.cos(a) * Math.cos(e) * q, y + Math.sin(e) * q, Math.sin(a) * Math.cos(e) * q);
       }
     }
     for (const [y, a, r] of [[u(60), 0.5, u(11)], [u(50), 2.6, u(11)], [u(30), 4.2, u(7)], [u(56), 5.2, u(11)]]) flower(K, L, Math.sin(a) * r, y, Math.cos(a) * r, K.pal.c, 0.035, a, 0.2);
@@ -541,7 +541,7 @@ export const MAKES = {
     const R = K.r, greens = [K.gloss(K.pal.leaf), K.gloss(L.tone(K.pal.leaf, 1.12)), K.gloss(L.tone(K.pal.leaf, 0.88))];
     // a clipped block of leaves, darker at its foot, its faces tufted with little clumps
     K.put(L.rbox(0.92, u(30) - 0.04, 0.92, 0.12), K.gloss(L.tone(K.pal.leaf, 0.78)), 0, (u(30) - 0.04) / 2, 0);
-    const tuft = (x, y, z) => { const t = 0.12 + R() * 0.06; K.put(L.blob(t, t * 0.8, t, 0.6, 0.6), greens[Math.floor(R() * 3)], x, y, z); };
+    const tuft = (x, y, z) => { const t = 0.12 + R() * 0.06; K.put(L.blob(t, t * 0.8, t, 0.6, 0.6, 8), greens[Math.floor(R() * 3)], x, y, z); };
     for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) tuft(-0.38 + i * 0.19 + (R() - 0.5) * 0.04, u(30) - 0.06, -0.38 + j * 0.19 + (R() - 0.5) * 0.04);
     for (let a = 0; a < 4; a++) for (let i = 0; i < 5; i++) for (let j = 0; j < 4; j++) {
       const t = -0.38 + i * 0.19 + (R() - 0.5) * 0.04, y = 0.14 + j * 0.2, n = 0.45;

@@ -9,7 +9,7 @@
    they keep up. Poké Balls and trophies are cheap shared shapes: nine balls on the rack, twelve cups in the case. */
 
 import { rod, tube } from './base-models-kit.js';
-import { X as WX, Y as WY, cut, bar, pic, ring, round } from './base-models-w.js';
+import { X as WX, Y as WY, cut, bar, pic, round } from './base-models-w.js';
 import { drape, rod as wallRod, cord, nail, star } from './base-models-w2.js';
 import { GYM_LEADERS, posterKind } from './data/gym.js';
 
@@ -69,7 +69,6 @@ function hurricane(K, L, x, y, z, s = 1) {
   K.put(cyl(k(5), k(2), k(5.4), 12), dark, x, y + k(1), z);
   K.put(cyl(k(1.2), k(1.2), k(1.4), 8), dark, x, y + k(2.6), z);
   K.put(lathe([[1.4, 0], [1.2, 1], [1.5, 2.4], [0.9, 4], [0, 5.2]].map(([r, h]) => [k(r), k(h)]), 10), K.glow('#ffb040'), x, y + k(3.2), z);
-  K.put(ball(k(0.8), 8, 6).scale(1, 1.6, 1), K.glow('#fff6d0'), x, y + k(5.2), z + k(0.5));
   const globe = K.M('glass', '#ffe9a0', { key: 'globe' });
   globe.opacity = 0.42;
   K.put(lathe([[2.4, 0], [4, 1.5], [4.5, 4.5], [4.2, 7.5], [2.6, 10], [2.2, 10]].map(([r, h]) => [k(r), k(h)]), 12), globe, x, y + k(2), z);
@@ -78,7 +77,13 @@ function hurricane(K, L, x, y, z, s = 1) {
     K.put(cyl(k(0.3), k(10), k(0.3), 4), dark, x + Math.cos(a) * k(4.8), y + k(7), z + Math.sin(a) * k(4.8));
   }
   K.put(lathe([[5, 0], [4.2, 1.6], [1.8, 2.4], [1.6, 3.2], [0, 3.2]].map(([r, h]) => [k(r), k(h)]), 12), dark, x, y + k(12), z);
-  K.put(new THREE.TorusGeometry(k(3), k(0.35), 4, 8, Math.PI), dark, x, y + k(15), z);
+  K.put(new THREE.TorusGeometry(k(2.2), k(0.4), 4, 8, Math.PI), dark, x, y + k(15.6), z);
+  K.put(ball(k(0.9), 6, 4), dark, x, y + k(18), z);
+}
+
+/** A wall piece's round rim at painted (cx, cy): its cross-section [[r, z]...] (r in painted units) turned on a lathe. */
+function rim(K, L, m, cx, cy, pts, seg = 32) {
+  K.put(L.lathe(pts.map(([r, z]) => [u(r), z]), seg).rotateX(Math.PI / 2), m, WX(cx, K.p.w), WY(cy), 0);
 }
 
 /** A trophy cup's shapes, shared by the trophy case's twelve: the lathed cup on its stem and one handle. */
@@ -149,9 +154,9 @@ export const MAKES = {
     const { rbox, cyl, lathe, torus, THREE } = L, oak = K.wood(OAK), chain = K.metal('#9a9aa8'), band = K.gloss('#2a2a30');
     // the A-frame: a pair of legs splayed front and back each side, braced, under the beam
     for (const i of [2.5, 29.5]) {
-      for (const z of [-0.4, 0.4]) rod(K, L, oak, [X(i), u(84), 0], [X(i + (i < 16 ? -1 : 1)), 0.03, z], u(1.6));
+      for (const z of [-0.4, 0.4]) rod(K, L, oak, [X(i), u(84), 0], [X(i + (i < 16 ? 2 : -2)), 0.03, z], u(1.6));
       K.put(rbox(u(2), u(2), 0.42, 0.006, 1), oak, X(i), u(30), 0);
-      for (const z of [-0.4, 0.4]) K.put(rbox(u(4), u(2), u(5), 0.006, 1), K.plain('#3a2414'), X(i + (i < 16 ? -1 : 1)), u(1), z);
+      for (const z of [-0.4, 0.4]) K.put(rbox(u(4), u(2), u(5), 0.006, 1), K.plain('#3a2414'), X(i + (i < 16 ? 2 : -2)), u(1), z);
     }
     K.put(rbox(1, u(5), u(5), 0.014, 1), K.wood(L.tone(OAK, 1.15)), 0, u(85.5), 0);
     // the hook, the chain's links, a ring and four straps down to the bag
@@ -214,22 +219,22 @@ export const MAKES = {
     nail(K, L, cx, 14);
     cord(K, L, K.plain(INK), [[cx, 14.6, 0.03], [cx, 17, 0.032], [cx, 19.6, 0.04]], 0.5);
     round(K, L, K.plain('#5a3a10'), cx, cy, 14.6, 0.006);
-    ring(K, L, gold, cx, cy, 15, 11.6, 0.075);
-    ring(K, L, K.metal('#a86a18'), cx, cy, 12.3, 11.4, 0.055);
+    rim(K, L, gold, cx, cy, [[11.6, 0], [11.6, 0.05], [12.3, 0.068], [14.2, 0.076], [15, 0.05], [15, 0]]);
+    rim(K, L, K.metal('#a86a18'), cx, cy, [[11.4, 0.044], [11.4, 0.054], [12.4, 0.06], [12.4, 0.05]]);
     round(K, L, K.pic(cut(K, L, [4.5, 22.5, 27.5, 45.5])), cx, cy, 11.5, 0.048);
     for (let i = 0; i < 16; i++) {
       const a = i / 16 * TAU;
-      K.put(L.ball(u(0.6), 8, 6), K.metal('#fff0b0'), WX(cx + Math.cos(a) * 13.3, W), WY(cy + Math.sin(a) * 13.3), 0.074);
+      K.put(L.ball(u(0.6), 6, 4), K.metal('#fff0b0'), WX(cx + Math.cos(a) * 13.3, W), WY(cy + Math.sin(a) * 13.3), 0.074);
     }
   },
 
   /* ---------- the Safari set ---------- */
   safarilantern(K, s, W, D, L) {
-    const { rbox, cyl } = L, cane = K.wood(CANE), node = K.plain(L.tone(CANE, 0.72));
+    const { rbox, cyl } = L, cane = K.wood(CANE), node = K.gloss(L.tone(CANE, 0.72));
     // a cross foot, the bamboo post with its nodes, the lantern on top
-    K.put(rbox(u(12), u(3), u(5), 0.01, 1), K.wood(DARK), X(16), u(1.5), 0);
-    K.put(rbox(u(5), u(3), u(12), 0.01, 1), K.wood(DARK), X(16), u(1.5), 0);
-    K.put(cyl(u(1.8), u(41), u(2.1), 10), cane, X(16), u(3 + 20.5), 0);
+    K.put(rbox(u(12), u(3), u(5), 0.01, 1), K.gloss(DARK), X(16), u(1.5), 0);
+    K.put(rbox(u(5), u(3), u(12), 0.01, 1), K.gloss(DARK), X(16), u(1.5), 0);
+    K.put(cyl(u(2), u(41), u(2.2), 10), cane, X(16), u(3 + 20.5), 0);
     for (const y of [40, 26, 12]) K.put(cyl(u(2.3), u(1.1), u(2.3), 10), node, X(16), u(y), 0);
     hurricane(K, L, X(16), u(43), 0, 1);
   },
@@ -244,7 +249,6 @@ export const MAKES = {
     K.put(tube(L, [[16.5, 14], [16, 26], [15.6, 38]].map(([x, y]) => [X(x), u(y), 0]), u(2), 8), bark, 0, 0, 0);
     K.put(tube(L, [[15.6, 37], [14.4, 46], [12, 54], [9, 60]].map(([x, y], i) => [X(x), u(y), -i * 0.03]), u(1.4), 10), bark, 0, 0, 0);
     K.put(tube(L, [[15.8, 38], [18.6, 47], [21.2, 54], [23.5, 60]].map(([x, y], i) => [X(x), u(y), i * 0.03]), u(1.2), 10), bark, 0, 0, 0);
-    K.put(tube(L, [[16, 42], [16.4, 52], [17, 60]].map(([x, y]) => [X(x), u(y), -0.02 - (y - 42) * 0.006]), u(0.9), 8), bark, 0, 0, 0);
     // the wide flat crown: dark puffs underneath, lighter ones on top
     const dark = K.plain('#4a7a30'), lit = K.plain('#5e9440');
     for (const [x, z, rx, rz] of [[7, -0.1, 7, 0.22], [24.5, -0.08, 7, 0.24], [16, 0.12, 9, 0.3], [11, 0.24, 6, 0.2], [21, 0.24, 6, 0.2], [16, -0.26, 8, 0.2]]) K.put(ball(1, 12, 8).scale(u(rx), u(4.2), rz), dark, X(x), u(63), z);
@@ -278,19 +282,20 @@ export const MAKES = {
       K.put(rbox(u(8), u(2), 0.42, 0.006, 1), legs, X(lx, W), u(13), 0);
       K.put(rbox(u(6), u(2), 0.3, 0.006, 1), legs, X(lx, W), u(24), 0);
     }
-    K.put(rbox(u(48), u(2.4), u(2.4), 0.006, 1), legs, 0, u(13), 0);
     K.put(rbox(u(60), u(5), 0.8, 0.02, 1), top, 0, u(27.5), 0);
-    // the map spread on it, rolled at both ends
-    K.put(new THREE.PlaneGeometry(u(46), 0.52).rotateX(-Math.PI / 2), K.pic(mapArt()), X(32, W), u(30) + 0.003, 0.02);
-    for (const sg of [-1, 1]) K.put(cyl(u(2.6), 0.56, u(2.6), 12).rotateX(Math.PI / 2), K.plain('#e4d0a0'), sg * u(24.6), u(32.6), 0.02);
+    // the map spread on it from a roll at the back, a stone on each front corner
+    K.put(new THREE.PlaneGeometry(u(50), 0.5).rotateX(-Math.PI / 2), K.pic(mapArt()), 0, u(30) + 0.003, 0.03);
+    K.put(cyl(u(3), u(51), u(3), 12).rotateZ(Math.PI / 2), K.plain('#e4d0a0'), 0, u(33), -0.25);
+    for (const sg of [-1, 1]) K.put(cyl(u(3.05), u(0.8), u(3.05), 12).rotateZ(Math.PI / 2), K.plain('#c8b080'), sg * u(25.2), u(33), -0.25);
+    for (const sg of [-1, 1]) K.put(L.ball(u(2), 8, 6).scale(1.3, 0.7, 1), K.plain('#8a8a90'), sg * u(22), u(30.8), 0.24);
     // the compass lying open, its lid stood up behind it
     const brass = K.metal('#e0b040');
     K.put(cyl(u(3.5), u(1.4), u(3.5), 14), brass, X(52, W), u(30.7), 0.12);
     K.put(cyl(u(2.6), u(0.3), u(2.6), 14), K.gloss('#f4f0e0'), X(52, W), u(31.5), 0.12);
     K.put(rbox(u(0.8), u(0.3), u(4.2), 0.002, 1), K.gloss('#c83a2a'), X(52, W), u(31.7), 0.12, 0.5);
-    K.put(cyl(u(3.5), u(1), u(3.5), 14).rotateX(Math.PI / 2 - 0.25), brass, X(52, W), u(34.2), 0.12 - u(3.6));
+    K.put(cyl(u(3.5), u(1), u(3.5), 14).rotateX(Math.PI / 2 - 0.2), brass, X(52, W), u(34.6), 0.12 - u(3.6));
     // the lantern
-    hurricane(K, L, X(13, W), u(30), -0.08, 0.62);
+    hurricane(K, L, X(13, W), u(30), -0.1, 0.8);
   },
 
   rangertent(K, s, W, D, L) {
@@ -298,7 +303,7 @@ export const MAKES = {
     const tri = (pts) => new THREE.Shape(pts.map(([x, y]) => new THREE.Vector2(x, y)));
     // the canvas: a ridge tent, solid, on a ground sheet
     K.put(rbox(1.96, 0.012, 0.96, 0.004, 1), K.plain(L.tone(KHAKI, 0.62)), 0, 0.006, 0);
-    const body = new THREE.ExtrudeGeometry(tri([[-u(31) + bev, bev], [u(31) - bev, bev], [0, u(62) - bev * 1.4]]), { depth: deep, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 1 });
+    const body = new THREE.ExtrudeGeometry(tri([[-u(31) + bev, bev * 1.8], [u(31) - bev, bev * 1.8], [0, u(62) - bev * 1.6]]), { depth: deep, bevelEnabled: true, bevelThickness: bev, bevelSize: bev, bevelSegments: 1 });
     K.put(body.translate(0, 0, -deep / 2), K.cloth(KHAKI), 0, 0, 0);
     // the doorway, its left flap tied back in a roll
     K.put(new THREE.ShapeGeometry(tri([[0, u(46)], [-u(12), 0.004], [u(12), 0.004]])), K.plain('#3a2a18'), 0, 0, z0 + 0.002);
@@ -311,7 +316,7 @@ export const MAKES = {
     K.put(cyl(u(1), deep + 0.08, u(1), 8).rotateX(Math.PI / 2), pole, 0, u(62) - 0.01, 0);
     K.put(cyl(u(0.8), u(14), u(0.8), 8), pole, 0, u(67), z0 - 0.02);
     K.put(new THREE.ExtrudeGeometry(tri([[u(1), u(74)], [u(11), u(71)], [u(1), u(68)]]), { depth: 0.01, bevelEnabled: false }), K.plain(GREEN), 0, 0, z0 - 0.025);
-    for (const sx of [-1, 1]) for (const z of [-1, 1]) K.put(rbox(u(2), u(2.6), u(2), 0.004, 1), pole, sx * u(30), u(1.3), z * (z0 - 0.02), 0, 0, -sx * 0.25);
+    for (const sx of [-1, 1]) for (const z of [-1, 1]) K.put(rbox(u(2), u(2.6), u(2), 0.004, 1), pole, sx * u(30), u(1.6), z * (z0 - 0.02), 0, 0, -sx * 0.25);
   },
 
   safarijeep(K, s, W, D, L) {
@@ -322,7 +327,7 @@ export const MAKES = {
       K.put(cyl(u(4), 0.14, u(4), 12).rotateX(Math.PI / 2), hub, X(wx, W), u(8), sz * 0.33);
       K.put(cyl(u(1.4), 0.15, u(1.4), 8).rotateX(Math.PI / 2), tyre, X(wx, W), u(8), sz * 0.33);
     }
-    K.put(rbox(u(52), u(6), 0.5, 0.01, 1), tyre, X(32, W), u(10), 0);
+    for (const wx of [14, 50]) K.put(cyl(u(1.2), 0.6, u(1.2), 8).rotateX(Math.PI / 2), tyre, X(wx, W), u(8), 0);
     // the tub: olive, its rim a shade lighter, the bonnet raised at the front, bumpers, a grille and headlights
     K.put(rbox(u(58), u(15), 0.62, 0.03, 1), olive, X(32, W), u(21.5), 0);
     K.put(rbox(u(58.4), u(1.6), 0.64, 0.008, 1), K.gloss(L.tone(OLIVE, 1.12)), X(32, W), u(29.2), 0);
@@ -338,12 +343,13 @@ export const MAKES = {
     const seat = K.plain(DARK);
     for (const [sx, wide] of [[30, 0.5], [17, 0.56]]) {
       K.put(rbox(u(7), u(2.4), wide, 0.01, 1), seat, X(sx, W), u(31), 0);
-      K.put(rbox(u(2), u(8), wide, 0.01, 1), seat, X(sx - 3.4, W), u(35), 0, 0, 0, 0.12);
+      K.put(rbox(u(2), u(6), wide, 0.01, 1), seat, X(sx - 3.4, W), u(34), 0, 0, 0, 0.12);
     }
     K.put(torus(u(2.6), u(0.45), TAU, 12).rotateY(Math.PI / 2), tyre, X(36, W), u(36), 0.12, 0, 0, -0.5);
     rod(K, L, tyre, [X(37.6, W), u(31), 0.12], [X(36, W), u(36), 0.12], u(0.5));
     for (const sz of [-1, 1]) K.put(rbox(u(1.6), u(14), u(1.6), 0.004, 1), bar, X(39, W), u(37), sz * 0.29);
     K.put(rbox(u(1.6), u(1.6), 0.6, 0.004, 1), bar, X(39, W), u(43.2), 0);
+    for (const sz of [-1, 1]) K.put(rbox(u(9), u(1.4), u(1.4), 0.004, 1), bar, X(43.5, W), u(43.2), sz * 0.29);
     K.put(new THREE.PlaneGeometry(0.56, u(12)).rotateY(Math.PI / 2), K.glass(), X(39, W), u(37), 0);
     // the roll bar: two hoops, rails between them, the khaki top over it
     for (const px of [9, 33]) {
@@ -354,8 +360,8 @@ export const MAKES = {
     K.put(rbox(u(31), u(3), 0.68, 0.014, 1), K.cloth(KHAKI), X(21, W), u(47), 0);
     K.put(rbox(u(31.4), u(1), 0.69, 0.004, 1), K.plain(L.tone(KHAKI, 0.8)), X(21, W), u(45.4), 0);
     // the spare on its back
-    K.put(cyl(u(6), u(3.4), u(6), 14).rotateZ(Math.PI / 2), tyre, X(1.5, W), u(24), 0);
-    K.put(cyl(u(3), u(3.6), u(3), 10).rotateZ(Math.PI / 2), hub, X(1.4, W), u(24), 0);
+    K.put(cyl(u(6), u(3.4), u(6), 14).rotateZ(Math.PI / 2), tyre, X(2.4, W), u(24), 0);
+    K.put(cyl(u(3), u(3.6), u(3), 10).rotateZ(Math.PI / 2), hub, X(2.3, W), u(24), 0);
   },
 
   /* ---------- the Trainer set ---------- */
@@ -430,7 +436,7 @@ export const MAKES = {
     pic(K, L, [4, 21, 60, 79], 0.016);
     for (const j of [52.4, 76.4]) bar(K, L, all ? frame : K.wood(L.tone(OAK, 1.2)), [4.5, j, 59.5, j + 1.2], 0.035, 0.016, 0.004);
     K.put(new L.THREE.PlaneGeometry(u(56), u(58)), K.glass(), WX(32, W), WY(50), d - 0.012);
-    if (all) for (const i of [4.6, 59.4]) K.put(L.ball(u(1.6), 10, 8), K.metal('#fff4c0'), WX(i, W), WY(21.6), d);
+    if (all) for (const i of [4.6, 59.4]) K.put(L.ball(u(1.2), 8, 6), K.metal('#fff4c0'), WX(i, W), WY(21.6), d - 0.02);
   },
 
   fameplaque(K, s, W, D, L) {

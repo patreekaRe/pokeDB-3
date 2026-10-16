@@ -563,19 +563,20 @@ export const MAKES = {
   },
 
   mosswall(K, s, W, D, L) {
-    const d = 0.03, green = K.pal.leaf;
+    const d = 0.03, green = K.pal.leaf, half = (r) => new L.THREE.SphereGeometry(r, 4, 4, 0, Math.PI);
     bezel(K, L, K.wood(), [2, 8, 62, 88], [5, 11, 59, 85], 0.09, 0.012);
     bar(K, L, K.plain('#3a2a1a'), [5, 11, 59, 85], d);
-    // a carpet of moss over the soil, then what was planted in it where it was painted
-    for (let n = 0; n < 90; n++) K.put(L.ball(u(2.2 + hash(n, 9) * 1.6), 10, 8).scale(1, 1, 0.45), K.gloss(L.tone('#5a8a32', 0.85 + hash(n, 8) * 0.3)), X(7 + hash(n, 6) * 50, W), Y(13 + hash(n, 7) * 70), d);
+    // a carpet of moss over the soil, then what was planted in it where it was painted (only their front halves: the
+    // backing hides the rest)
+    for (let n = 0; n < 90; n++) K.put(half(u(2.2 + hash(n, 9) * 1.6)).scale(1, 1, 0.45), K.gloss(L.tone('#5a8a32', 0.85 + hash(n, 8) * 0.3)), X(7 + hash(n, 6) * 50, W), Y(13 + hash(n, 7) * 70), d);
     for (let n = 0; n < 60; n++) {
       const cx = 8 + hash(n, 1) * 48, cy = 14 + hash(n, 2) * 68, s4 = n % 4;
       if (s4 === 0) for (let k = 0; k < 6; k++) {
         const a = k / 6 * Math.PI * 2 + n, r = k ? 2.6 : 0;
-        K.put(L.ball(u(2.4), 12, 8).scale(1, 0.9, 0.7), K.gloss(L.tone(green, 0.85 + (k % 3) * 0.12)), X(cx + Math.cos(a) * r, W), Y(cy + Math.sin(a) * r), d + 0.03 + (k ? 0 : 0.015));
+        K.put(half(u(2.4)).scale(1, 0.9, 0.7), K.gloss(L.tone(green, 0.85 + (k % 3) * 0.12)), X(cx + Math.cos(a) * r, W), Y(cy + Math.sin(a) * r), d + 0.03 + (k ? 0 : 0.015));
       }
       else if (s4 === 1) leaf(K, L, K.gloss(L.tone(green, 1.15)), cx, cy, d + 0.04, -(hash(n, 3) - 0.5) * 1.5, 1.5);
-      else if (s4 === 2) K.put(L.ball(u(3), 14, 10).scale(1, 1, 0.5), K.cloth('#6a9a3a'), X(cx, W), Y(cy), d + 0.02);
+      else if (s4 === 2) K.put(L.ball(u(3), 8, 6).scale(1, 1, 0.5), K.cloth('#6a9a3a'), X(cx, W), Y(cy), d + 0.02);
       else flower(K, L, K.pal.c, cx, cy, d + 0.05);
     }
   },
