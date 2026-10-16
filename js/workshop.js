@@ -9,7 +9,8 @@ import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
 import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT } from './data/workshop.js';
-import { RING, townState } from './data/towns.js';
+import { RING, townState, CLEARING } from './data/towns.js';
+import { toldHeld, tellHeld } from './held-tips.js';
 import { GYM_BY_ID, gymWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
 
@@ -124,7 +125,7 @@ export function openWorkshop() {
   close.type = 'button';
   d.append(head, talk, tabs, card, list, close);
   document.body.append(d);
-  let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, busy = false;
+  let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, busy = false, aside = false;
   const line = (t) => { say.textContent = t; };
   const draw = () => {
     const save = getSave(), sat = satchelOf(save), ws = workshopOf(save);
@@ -220,11 +221,27 @@ export function openWorkshop() {
           : repeats(r) ? `Done! ${an(r.name).replace(/^a/, 'A')}, kept for you: you have ${keptOf(r, workshopOf(getSave()))} now. Pack one when you set out on a run.`
             : `Done! A ${r.name}. Tap Carry it to use it.`);
     draw();
+    if (r.kind === 'held' && !toldHeld('held')) await kurtSays(CLEARING.homes.workshop.heldTalk, 'held');
+  };
+  /* Kurt slides in (gymTalk(), as on his first hello) over the room: the bench steps aside while he talks (a modal
+     dialog would sit over him), then comes back as it was. */
+  const kurtSays = async (lines, key) => {
+    tellHeld(key);
+    busy = aside = true;
+    const shut = new Promise(res => d.addEventListener('close', res, { once: true }));
+    d.close();
+    await shut;
+    try {
+      const { gymTalk } = await import('./gym.js');
+      await gymTalk({ id: 'kurt', name: KURT, talk: 'assets/trainers/kurt.png' }, lines, { lit: true, title: 'APRICORN SMITH ' });
+    } catch (e) { console.error(e); }
+    d.showModal();
+    busy = aside = false;
   };
   line('Ah, a customer! I make Apricorn balls, mostly. These days the towns keep me busy too. What\'ll it be?');
   draw();
   return new Promise(res => {
-    d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
+    d.addEventListener('close', () => { if (aside) return; d.remove(); res(); });
     d.addEventListener('cancel', (e) => { if (busy) e.preventDefault(); });
     close.addEventListener('click', () => { if (!busy) d.close(); });
     d.showModal();

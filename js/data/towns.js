@@ -2187,6 +2187,14 @@ export const CLEARING = {
         'That\'s how it works here. You bring what you find out on the roads, I make things from it. What the towns need, furniture, gifts for your friends...',
         '...and Apricorn skins for your Safari Ball. Looks only, mind. A ball\'s a ball. Have a look at the bench.',
       ],
+      // the first held berry he makes you (js/workshop.js, 2026-10-16, the user's ask): how they work, once a save
+      heldTalk: [
+        'Ah, your first held berry! Simpler than an Apricorn, this. Let me tell you how it goes.',
+        'Your Pokémon holds it, and when the moment\'s right it eats it all by itself. Once. Then it\'s gone.',
+        'Before a run, pack up to three in your Berry Pouch on the Prepare screen. It holds the first as you set out.',
+        'The others wait in the pouch. Swap from your Bag\'s Items pocket on the map. Never mid-battle, mind: no time for that.',
+        'And once one\'s eaten, the next can go on in the next biome. One a biome. Grow plenty, and come back for more!',
+      ],
       // after the second line, while the Nietos' Waystone Chime is the step you're on
       meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',
       cast: {

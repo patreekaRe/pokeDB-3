@@ -2684,4 +2684,8 @@ torches and palms. Checked headless: every buy, the pass, the board, the keeper,
 **Berry Pouch** (2026-10-15, the user's ask: "one berry per biome"): up to 3 held berries packed, the first held, the
 rest put on from the Bag's Held line on the map (`holdFromPouch()` / `canHold()` in `js/data/held.js`; `run.pouch`,
 `run.heldAte`), a new one only in a later biome once one is eaten; the kit item packs alongside. Mirrored in the sim.
+**Held berries explained** (2026-10-16, the user's ask): three once-a-save tips, `save.workshop.told` (`js/held-tips.js`):
+Kurt slides in after your first held berry (`heldTalk` in `js/data/towns.js`), a note the first time one is eaten in battle
+(`heldTip()` in `js/battle.js`), and a map note with the Items key pulsing the first new biome a pouch berry can go on
+(`berryNote()` in `js/run.js`, `nextBerryReady()` in `js/data/held.js`).
 

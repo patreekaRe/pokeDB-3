@@ -17,10 +17,11 @@
 import { leaderFor, gymWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
 import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch } from './data/workshop.js';
-import { HELD_BY_ID, setOut, canHold, holdFromPouch } from './data/held.js';
+import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
+import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
 import { TRIALS_BY_ID, BELTS, dojoOf, beltOf, trialMissed, kenTalk, DOJO_REWARDS } from './data/dojo.js';
-import { battleFx } from './prefs.js';
+import { battleFx, calmFx } from './prefs.js';
 import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRoads, rollRoads, roadsOpen, buildEncounter, buildKenEncounter, dealEnemies, ENEMY_DEFS, finalBiome, KEN } from './data/enemies.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
@@ -46,7 +47,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
@@ -1107,6 +1108,7 @@ function showMap() {
   if (isTower()) showScene(null);   // the tower is its own picture (js/tower.js)
   else { hideTower(); showScene(biome.id, 'wild', journey(run.map, here)); }
   playMusic(isTower() ? 'map4' : biome.music || `map${run.biome + 1}`);   // the climb has its own song (the user's call, 2026-10-09)
+  berryNote();
   if (run.charm) return relicCharm();
   if (run.gift) return chanseyGift();
   if (run.tutorLeft > 0) return tutorNotes();
@@ -1531,6 +1533,20 @@ function heldRow(onMap) {
   if (pouch.length) rows.push(el('p', 'drop-note pouch-note', !ok ? 'Your next berry can go on in the next biome.'
     : !onMap ? 'A berry from the pouch goes on from the map.' : run.held && !run.held.used ? 'Hold swaps it for the one held.' : 'One held berry a biome.'));
   return rows;
+}
+
+/** The first biome a pouch berry can go on in (once a save, js/held-tips.js): a note in the map's text box with the rest,
+    and the dock's Items key pulses a few times (not under calmFx()). */
+function berryNote() {
+  if (peeking || !nextBerryReady(run) || toldHeld('pouch')) return;
+  tellHeld('pouch');
+  noteLater('A new biome! Open your Bag\'s Items to put on your next berry from the Berry Pouch.');
+  if (calmFx()) return;
+  setTimeout(() => (mapFilm || Promise.resolve()).then(() => {
+    const key = document.querySelector('.mdex-btn[data-pocket="items"]');
+    key?.classList.add('berry-pulse');
+    setTimeout(() => key?.classList.remove('berry-pulse'), 3800);
+  }), 0);
 }
 
 /** Pouch berry `i` goes on (an uneaten held one back in the pouch), saved at once like a toss on the map. */

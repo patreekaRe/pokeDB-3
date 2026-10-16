@@ -424,6 +424,8 @@ export function showNotes() {
   sayLines(notes.splice(0), 'map-log');
 }
 export const dropNotes = () => { notes.length = 0; };
+/** News for the map's text box the next time it's told (showNotes()), not at once. */
+export const noteLater = (line) => { notes.push(line); };
 
 function showLine(i) {
   say.at = i;

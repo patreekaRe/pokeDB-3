@@ -55,6 +55,9 @@ export function holdFromPouch(run, i) {
   return { held: holding(id), pouch: back ? pouch.map((p, j) => (j === i ? back : p)) : pouch.filter((_, j) => j !== i) };
 }
 
+/** Whether the next pouch berry is waiting to go on: the held one eaten, one left in the pouch, and a new biome reached. */
+export const nextBerryReady = (run) => !!run.held?.used && (run.pouch || []).length > 0 && canHold(run);
+
 /** The berry `held` holds if it goes off on `event` ('hurt': { hp, maxHp, lost }, 'status': { card }), else null. */
 export function heldFires(held, event, at) {
   const h = held && !held.used ? HELD_BY_ID[held.id] : null;

@@ -95,3 +95,13 @@ test('packing the Berry Pouch takes each berry from what Kurt kept, repeats only
   assert.deepEqual(packPouch(ws, ['held-lum', 'kit-revive', 'held-oran']).berries, ['lum', 'oran'], 'a run kit item is no berry');
   assert.deepEqual(packPouch(ws, []).berries, []);
 });
+
+test('the next pouch berry is waiting once the held one\'s eaten, the pouch isn\'t empty and a new biome is reached', async () => {
+  const { nextBerryReady } = await import('../js/data/held.js');
+  const eaten = { held: { id: 'oran', used: true }, heldAte: 0, pouch: ['lum'] };
+  assert.ok(!nextBerryReady({ ...eaten, biome: 0 }), 'the same biome');
+  assert.ok(nextBerryReady({ ...eaten, biome: 1 }));
+  assert.ok(!nextBerryReady({ ...eaten, biome: 1, pouch: [] }), 'none left');
+  assert.ok(!nextBerryReady({ ...eaten, biome: 1, held: { id: 'oran', used: false } }), 'still held');
+  assert.ok(!nextBerryReady({ biome: 1, held: null, pouch: [] }));
+});

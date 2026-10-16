@@ -34,6 +34,7 @@ roaming Pokémon and a berry garden** (fishing not picked). Decoration only, no 
      intro (and a free plot), watering, picked berries into the Satchel (sell spares), the Garden window, and Kurt's
      two repeatable shelves, held berries and a run kit; the Prepare screen packs a Berry Pouch of 3 (one held, another
      put on from the Bag once a biome after one is eaten) and one kit item
+     and Kurt, the battle and the map each explain held berries once (docs/roadmap-done.md).
      (docs/roadmap-done.md). Not yet seen on a phone: `?yard` (intro, Garden button) and `?satchel` at Kurt's. Ideas
      left: a Pokédex Garden app with timers, Pokémon in the yard tending plots.
 

@@ -103,7 +103,16 @@ up to `POUCH` (3) packed, the first held as the run sets out (`setOut()`, so a o
 only, never in battle or on a reward screen: while the held one is uneaten, Hold swaps them (it goes back in that berry's
 place); once one's eaten, `heldGoes()` sets `run.heldAte` to `run.biome` (through `battle.ate()`), and `canHold()` keeps the
 next off till `run.biome` is past it, the buttons greyed under "Your next berry can go on in the next biome". A Hold is
-saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. The sim mirrors it (`cfg.held`, a list for a pouch refilled at each biome's start, `heldGoes()` in `sim/engine.js`);
+saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
+`save.workshop.told` as it shows (`toldHeld()` / `tellHeld()` in `js/held-tips.js`; under `?satchel` once a page load, never
+saved): `held`, Kurt slides in (`gymTalk()`, APRICORN SMITH) after the forge of your first held berry with
+`CLEARING.homes.workshop.heldTalk` in `js/data/towns.js` (the bench closes while he talks and comes back as it was);
+`eaten`, the first berry eaten in battle puts a tap-or-wait LCD note over the fight (`heldTip()` in `js/battle.js`, `.held-tip`,
+7 s, no animation under `calmFx()`): "<Mon> ate its <Berry>! You can put on another from your Bag in the next biome." (or
+"Pack more in your Berry Pouch next run." with the pouch empty); `pouch`, the first map where `nextBerryReady()` (js/data/held.js)
+says the next can go on queues "A new biome! Open your Bag's Items to put on your next berry from the Berry Pouch." with the
+map's notes (`noteLater()` in `js/rewards.js`, `berryNote()` in `js/run.js`) and pulses the dock's Items key three times
+(`.berry-pulse`, not under `calmFx()`). The sim mirrors it (`cfg.held`, a list for a pouch refilled at each biome's start, `heldGoes()` in `sim/engine.js`);
 no bot numbers (the user's call: none needed). Cheri and Pecha's sprites are PokéSprite's, like the rest.
 
 ## In the Index

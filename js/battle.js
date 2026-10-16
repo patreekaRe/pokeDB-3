@@ -25,8 +25,9 @@ import { CARDS_BY_ID, TYPES, POWERS, POWER_LENS, scaledEffects, baseId, typePool
 import { spriteUrl, stageName } from './data/starters.js';
 import { ITEMS_BY_ID } from './data/items.js';
 import { heldFires, heldHeal, clearsCard } from './data/held.js';
+import { toldHeld, tellHeld } from './held-tips.js';
 import { isShiny, getSave, updateSave, markSeen } from './storage.js';
-import { vibrate, battleFx } from './prefs.js';
+import { vibrate, battleFx, calmFx } from './prefs.js';
 import { ABILITIES, ENERGY_RELICS } from './data/relics.js';
 import { augEffects, lifeline as lifelineOf, copyCard } from './data/augments.js';
 import { spriteFit, bodyX } from './data/sprite-fit.js';
@@ -190,6 +191,7 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false }) {
     items: run.items,   // the run's own list: using an item takes it out of the Bag
     held: run.held ?? null,   // the run's held berry ({ id, used }, js/data/held.js): eaten once, by heldGoes()
     ate: () => { run.heldAte = run.biome; },   // and the biome it was eaten in: the Berry Pouch's next goes on from the next
+    pouched: () => (run.pouch || []).length > 0,
     shut: null,        // a status card no more of lands this fight (the Pecha Berry's)
     onEnd,
     trial,             // a dojo trial's goal: lost the moment it can't be met (trialBroken())
@@ -661,7 +663,24 @@ function heldGoes(event, at) {
   playSound('heal-hp');
   statFx('player');
   b.revived = [b.revived, `${h.name}! ${said.join(' ')}`].filter(Boolean).join(' ');
+  if (!toldHeld('eaten')) {
+    tellHeld('eaten');
+    heldTip(`${stageName(b.starter, b.stage)} ate its ${h.name}! ${b.pouched() ? 'You can put on another from your Bag in the next biome.' : 'Pack more in your Berry Pouch next run.'}`);
+  }
   return true;
+}
+
+/** The first held berry eaten's tip (once a save, js/held-tips.js): a small LCD note over the battle that never stops
+    play, gone with a tap or after a while. */
+function heldTip(text) {
+  document.querySelector('.held-tip')?.remove();
+  const tip = el('button', `held-tip${calmFx() ? ' calm' : ''}`, text);
+  tip.type = 'button';
+  tip.setAttribute('aria-live', 'polite');
+  const go = () => tip.remove();
+  tip.addEventListener('click', go);
+  $('battle-screen').append(tip);
+  setTimeout(go, 7000);
 }
 
 /** Tell what's waiting in `b.revived` (a held berry's line) after the line already shown. */
