@@ -868,6 +868,7 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
 
 ## Parked (don't start unprompted)
 
+- Battery Saver (a Settings switch: 3D at 30 fps, backdrops at 15): built and taken out the next day, the user's call (2026-10-16: "keep it 60fps for now"). `git cherry-pick dc3e47e` brings it back whole, `slowFrameMs()` included.
 - Gen 6-9 starters: the sprites staged in `assets/pokemon/_incoming/` have no Grass line, and they aren't official Gen 5 sprites (the rules below).
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.

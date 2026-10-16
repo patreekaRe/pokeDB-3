@@ -5,8 +5,6 @@
    full-resolution canvases, soft clouds, a ~30 fps frame loop.
    ============================================================ */
 
-import { batterySaver } from './prefs.js';
-
 export const rgba = (hex, a) => `rgba(${parseInt(hex.slice(1, 3), 16)}, ${parseInt(hex.slice(3, 5), 16)}, ${parseInt(hex.slice(5, 7), 16)}, ${a})`;
 
 /** An offscreen canvas at the screen's resolution, its context in CSS pixels. */
@@ -74,14 +72,14 @@ export function sparkle(ctx, x, y, k, colour) {
 
 export const stillMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Calls draw(seconds) at ~30 fps on `state.raf` (15 under Battery Saver; draws once under reduced motion). */
+/** Calls draw(seconds) at ~30 fps on `state.raf` (draws once under reduced motion). */
 export function animate(state, draw) {
   draw(0);
   if (stillMotion()) return;
   let last = 0;
   const tick = (now) => {
     state.raf = requestAnimationFrame(tick);
-    if (now - last < (batterySaver() ? 66 : 33)) return;
+    if (now - last < 33) return;
     last = now;
     draw(now / 1000);
   };

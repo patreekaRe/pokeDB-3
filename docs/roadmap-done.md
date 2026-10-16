@@ -2681,7 +2681,6 @@ stumps down two wings under big lit price signs; the Master Ball on a roped dais
 torches and palms. Checked headless: every buy, the pass, the board, the keeper, no errors at 420 wide.
 
 
-- **Done (2026-10-15): Battery Saver in Settings** (the user's yes after the audit): off by default; 3D at 30 fps, the drifting backdrops at 15 (`batterySaver()` in `js/prefs.js`, `tooSoon()` / `slowFrameMs()` in `js/hd2d.js`).
 **Berry Pouch** (2026-10-15, the user's ask: "one berry per biome"): up to 3 held berries packed, the first held, the
 rest put on from the Bag's Held line on the map (`holdFromPouch()` / `canHold()` in `js/data/held.js`; `run.pouch`,
 `run.heldAte`), a new one only in a later biome once one is eaten; the kit item packs alongside. Mirrored in the sim.

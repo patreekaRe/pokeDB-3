@@ -4,7 +4,6 @@
 
 import { spriteFit } from './data/sprite-fit.js';
 import { decodeGif } from './gif-frames.js';
-import { batterySaver } from './prefs.js';
 
 // the minified build (half the bytes to fetch and parse); index.html preloads it, so keep the two URLs the same
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
@@ -36,12 +35,8 @@ export function warmShaders(renderer, scene, camera, into = null, ms = 3000) {
 }
 
 /** True for a frame to skip: a 90 or 120 Hz phone screen calls a frame loop up to twice as often as 60 Hz, and drawing
-    a 3D place that often only heats the phone and drains it. So no place draws more than about 60 times a second, or 30
-    under Battery Saver. */
-export const tooSoon = (now, last) => last > 0 && now - last < (batterySaver() ? 1000 / 30 : 1000 / 60) - 3;
-/** The average frame (ms) past which a place steps its quality down: Battery Saver's own 33 ms frames aren't a slow phone,
-    or a place would lower itself for good on that device. */
-export const slowFrameMs = () => (batterySaver() ? 45 : 25);
+    a 3D place that often only heats the phone and drains it. So no place draws more than about 60 times a second. */
+export const tooSoon = (now, last) => last > 0 && now - last < 1000 / 60 - 3;
 
 /* ---------- one 3D place awake at a time ----------
    Every 3D place keeps its renderer, and a WebGL context holds every texture, shadow map and render target it ever

@@ -11,7 +11,7 @@
    Scenery set to Pixel leaves the sky plain.
    ============================================================ */
 
-import { hybridScenery, batterySaver } from './prefs.js';
+import { hybridScenery } from './prefs.js';
 
 const SCALE = 0.5;
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -138,7 +138,7 @@ export function runTitleLight(on) {
   let prev = 0;
   const loop = (now) => {
     raf = requestAnimationFrame(loop);
-    if (now - prev < (batterySaver() ? 64 : 32)) return;   // ~30 fps is plenty for drifting light
+    if (now - prev < 32) return;   // ~30 fps is plenty for drifting light
     prev = now;
     draw(now);
   };
