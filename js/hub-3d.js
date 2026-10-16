@@ -2981,7 +2981,7 @@ function open(p, i = null) {
     spinStop(stop);
   }
   if (p.id === 'base') return baseOwned() ? enterBase() : buyBase();
-  if (p.id === 'backyard') return yardOwned() ? enterYard() : buyYardArch();
+  if (p.id === 'backyard') return yardOwned() ? enterYard() : baseOwned() ? buyYardArch() : lockedArch();
   if (p.id === 'mall') return enterMall();
   if (p.id === 'pc') return openPc();
   if (p.id === 'nietos' || p.id === 'workshop' || p.id === 'dojo') return enterHouse(p);
@@ -3258,6 +3258,14 @@ async function enterBase() {
 
 /** The garden arch's price: too few coins says how many more; else a yes pays, the brambles wither and the padlock
     drops, and in through the gate. */
+async function lockedArch() {
+  if (entering) return;
+  hideCard();
+  walker.path = []; aim = null;
+  playSound('cancel');
+  await confirmDialog('The garden arch is padlocked. Make the Ancient Tree your Secret Base first, then its backyard can be cleared.', 'OK');
+}
+
 async function buyYardArch() {
   if (entering) return;
   hideCard();

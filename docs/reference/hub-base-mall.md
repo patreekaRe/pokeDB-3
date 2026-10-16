@@ -160,6 +160,9 @@ The first section began as the note on playtesting the live site and grew into t
   opens the base out in the yard (`openBase3d({ start })`); `inside` is `'backyard'`, so the yard's doormat (now an
   `exit` door in `doorsOf()`, like the main room's front door) brings you back out under the arch (`leftPlace()`). The
   main room and the yard no longer join: the tree's door leads to the house, the arch to the yard.
+  Since 2026-10-16 (the user's call) the yard is only for a bought Secret Base (`baseOwned`, not just base data on the
+  save): `buyYard()` refuses without it, a tap on the locked arch says so (`lockedArch()` in `js/hub-3d.js`), and the PC's
+  BACKYARD card shows no Build button.
 - **Secret Base earned furniture** (part c, 2026-10-09; on `secret-base` only until the user says): `js/data/furniture.js`
   names 39 catalogue kinds (family ids from `js/base-furniture*.js`) that are never sold, each `from` one badge /
   achievement (its starter) / feat / Safari page, owned once that is (`earnedFurniture(save)`: the save's lists never
