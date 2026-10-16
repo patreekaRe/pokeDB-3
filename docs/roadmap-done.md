@@ -2705,3 +2705,7 @@ Not now (no more "tap again"); prices are crisp on-screen tags at each plinth (`
   merchant window (the ball or a ticket turning, what it is, the price; the pass's held state has no Buy), every "tap
   again" gone from the Outfitter and the Furniture store's lift. Checked headless: each window draws and buys.
 
+
+### The Furniture store's lift moved to the head of the nave (2026-10-16, the user's ask)
+It stood behind the Plants stand, which hid the partner walking in; now it ends the carpet runner with a wider door and
+the crest on its shaft, the counter to its left and Smeargle's painting over a bench to its right (`js/mall-furniture.js`).

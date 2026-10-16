@@ -106,7 +106,9 @@ next off till `run.biome` is past it, the buttons greyed under "Your next berry 
 saved at once (`afterBagChange()`, Toss's way). `pouch` and `heldAte` are saved with the run; missing reads as empty / none. **First-time tips** (2026-10-16, the user's ask), each once a save, flagged in
 `save.workshop.told` as it shows (`toldHeld()` / `tellHeld()` in `js/held-tips.js`; under `?satchel` once a page load, never
 saved): `held`, Kurt slides in (`gymTalk()`, APRICORN SMITH) after the forge of your first held berry with
-`CLEARING.homes.workshop.heldTalk` in `js/data/towns.js` (the bench closes while he talks and comes back as it was);
+`CLEARING.homes.workshop.heldTalk` in `js/data/towns.js` (the bench closes while he talks and comes back as it was); `kit`, the same
+after your first run kit item, with `kitTalk` (make as many as you like, take one a run, it starts in your Bag and stays behind
+when the run ends);
 `eaten`, the first berry eaten in battle puts a tap-or-wait LCD note over the fight (`heldTip()` in `js/battle.js`, `.held-tip`,
 7 s, no animation under `calmFx()`): "<Mon> ate its <Berry>! You can put on another from your Bag in the next biome." (or
 "Pack more in your Berry Pouch next run." with the pouch empty); `pouch`, the first map where `nextBerryReady()` (js/data/held.js)

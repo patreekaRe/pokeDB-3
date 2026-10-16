@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
-  ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger, in eight departments, with prices you can read and a buy window where each piece turns as you drag it.'],
+  ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
   ['fixes', 'Cooler and steadier on phones: 3D places cap at 60 fps, walking in and out no longer piles up memory, and the Mall\'s floor keeps its shine.'],
 ];

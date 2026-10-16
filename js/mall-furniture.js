@@ -4,9 +4,9 @@
    follows you round, the day's stock (furnitureStock()) sorted into eight departments, four a wing (Furnishings left,
    Décor & Art right), each piece near life size on a velvet-topped marble plinth with its department's plaque set in the
    floor in front and a price card in the department's colour; a marble nave down the middle, a carpet runner from the
-   door to the counter under a gilded crest and Smeargle's painting, a velvet rotunda seat with a bouquet, crystal
+   door to the lift under the store's crest, the counter left of it and Smeargle's painting right, a velvet rotunda seat with a bouquet, crystal
    chandeliers, arched windows with drapes, and Smeargle's easel (a grand piano upstairs) in the back corner. The second
-   floor (`secretBase.upstairs`, bought once) is the same room in rose; its lift at the back right is roped off until it's
+   floor (`secretBase.upstairs`, bought once) is the same room in rose; its lift at the head of the nave is roped off until it's
    open. Painted smooth like the hall (fine()), the furniture in its own pixels (pieceArt()). js/mall-3d.js walks it (its
    own COLS x ROWS and door, like the Game Corner); this file only builds it. */
 
@@ -24,12 +24,14 @@ const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
 /* The room: `x` a thing's first tile, y 0 the back wall. The nave runs up the middle from the door to the counter, the
    wings either side of it hold the departments. */
 const COLS = 21, ROWS = 13, NAVE = 10, DOOR = { x: NAVE, y: ROWS - 1 };
-/* The lift between the floors at the back right (2026-10-09, the user's ask: the stair's steps were blocks under a smooth
-   ramp, so your partner sank into every tread): `x` its middle, `foot` the tile you stand on at its doors, `door` right in
+/* The lift between the floors (2026-10-09, the user's ask: the stair's steps were blocks under a smooth ramp, so your
+   partner sank into every tread), at the head of the nave where the runner ends since 2026-10-16 (the user's ask: at
+   the back right it stood behind the Plants stand, which hid your partner walking in): `x` its middle, `foot` the tile you stand on at its doors, `door` right in
    front of them and `inside` in its car. */
-export const LIFT = { x: 18, foot: { x: 18, y: 2 }, door: { x: 18, y: 2 }, inside: { x: 18, y: 0.45 } };
-const LIFT_W = 2, LIFT_D = 1.4, LIFT_H = 2.5, LIFT_DOOR = 1.8;   // its case, and its doorway's height
-const COUNTER = { x: 8, y: 2, w: 5 };   // its front on row 2, the shopkeeper a tile behind its middle
+export const LIFT = { x: NAVE, foot: { x: NAVE, y: 2 }, door: { x: NAVE, y: 2 }, inside: { x: NAVE, y: 0.45 } };
+const LIFT_W = 3, LIFT_D = 1.4, LIFT_H = 2.7, LIFT_DOOR = 2, DOORWAY = 1.3;   // its case, and its doorway's height and width
+const COUNTER = { x: 6, y: 2, w: 3 };   // left of the lift, its front on row 2, the shopkeeper a tile behind its middle
+const GALLERY = 13;                      // right of the lift: Smeargle's painting over a bench, a topiary each side
 const ROTUNDA = { x: NAVE, y: 7 };      // the velvet seat's middle, 3 x 3 tiles
 const CORNER = { x: 2, y: 0.6 };        // Smeargle's easel, or the piano upstairs, on tiles 1-3 of the back two rows
 /* The departments, a 2 x 2 stand each: the tall kinds along the back row of each wing, so nothing in front hides them.
@@ -293,11 +295,12 @@ function sconce(f, s, x, y) {
   }
 }
 
-/** A wing's sign hung from the cornice on two gold chains: a lacquered board in a gold frame, its name in lit gold. */
-function wingSign(f, s, cx, top, w, h, L, text, wy) {
+/** A wing's sign hung from the cornice on two gold chains (with `wy`; without, flat on the wall): a lacquered board in a
+    gold frame, its name in lit gold. */
+function wingSign(f, s, cx, top, w, h, L, text, wy = null) {
   const { g, rr, lin } = f;
   g.strokeStyle = GOLD[2]; g.lineWidth = 0.7; g.setLineDash([1.2, 0.8]);
-  for (const x of [cx - w / 2 + 8, cx + w / 2 - 8]) { g.beginPath(); g.moveTo(x, wy(5.4) + 2); g.lineTo(x, top); g.stroke(); }
+  if (wy) for (const x of [cx - w / 2 + 8, cx + w / 2 - 8]) { g.beginPath(); g.moveTo(x, wy(5.4) + 2); g.lineTo(x, top); g.stroke(); }
   g.setLineDash([]);
   rr(cx - w / 2 + 1, top + 1.4, w, h, 3, 'rgba(40,20,10,0.25)');
   rr(cx - w / 2, top, w, h, 3, lin(0, top, 0, top + h, GOLD));
@@ -327,8 +330,10 @@ function crest(f, s, cx, top, w, h, L, floor) {
   g.fillStyle = lin(0, my - mr, 0, my + mr, GOLD); g.beginPath(); g.arc(cx, my, mr, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#fbf3e0'; g.beginPath(); g.arc(cx, my, mr - 1.5, 0, Math.PI * 2); g.fill();
   leaf(g, cx, my - 0.4, mr - 3.2, L.trim);
-  words(g, name, cx, top + h * 0.52, h * 0.34, GOLD[0]);
-  words(s, name, cx, top + h * 0.52, h * 0.34, '#c8a050');
+  g.font = `900 ${h * 0.34}px "Trebuchet MS", sans-serif`;
+  const fs = h * 0.34 * Math.min(1, (w - 10) / g.measureText(name).width);
+  words(g, name, cx, top + h * 0.52, fs, GOLD[0]);
+  words(s, name, cx, top + h * 0.52, fs, '#c8a050');
   words(g, sub, cx, top + h * 0.8, h * 0.12, 'rgba(255,240,200,0.9)');
 }
 
@@ -390,13 +395,13 @@ function wallArt(floor, { top: TOP, u: U }) {
   const W = (COLS + 0.8) * U, H = TOP * U, L = LOOK[floor], f = fine(W, H, 4), s = f.shine();
   const wx = (t) => (t + 0.4) * U, wy = (y) => (TOP - y) * U;
   grand(f, W, H, L, wy);
-  for (const t of [0.1, 7, 14, 20.9]) pilaster(f, wx(t), wy);
+  for (const t of [0.1, 20.9]) pilaster(f, wx(t), wy);
   for (const t of [2, 5.1, 16]) archWindow(f, s, wx(t), wy(3.55), wy(1.55), 1.3 * U, L);
   wingSign(f, s, wx(3.55), wy(4.45), 3.6 * U, 0.6 * U, L, 'FURNISHINGS', wy);
   wingSign(f, s, wx(16), wy(4.45), 2.9 * U, 0.6 * U, L, 'DÉCOR & ART', wy);
-  for (const t of [8.35, 12.65, 20.2]) sconce(f, s, wx(t), wy(2.3));
-  masterpiece(f, wx(10.5), wy(2.5), 3.1 * U, 1.3 * U, L, floor);
-  crest(f, s, wx(10.5), wy(4.3), 5.2 * U, 1.0 * U, L, floor);
+  sconce(f, s, wx(20.2), wy(2.3));
+  masterpiece(f, wx(GALLERY + 0.5), wy(2.15), 2.1 * U, 1.05 * U, L, floor);
+  wingSign(f, s, wx(COUNTER.x + COUNTER.w / 2), wy(1.95), 1.9 * U, 0.5 * U, L, 'CASHIER');
   return f.c;
 }
 
@@ -488,7 +493,7 @@ function floorArt(floor, depts) {
   g.restore();
   for (const x of [n0, n1]) { rr(x - 1.4, 0, 2.8, H, 0, '#f6f0e2'); rr(x - 0.6, 0, 1.2, H, 0, lin(x - 0.6, 0, x + 0.6, 0, GOLD)); }
   // the runner from the counter to the door
-  const rx = (NAVE + 0.5) * T, rw = 1.6 * T, ry0 = (COUNTER.y + 1) * T - 1;
+  const rx = (NAVE + 0.5) * T, rw = 1.6 * T, ry0 = (LIFT_D + 0.5) * T;
   rr(rx - rw / 2 - 0.6, ry0, rw + 1.2, H - ry0, 0, 'rgba(30,20,10,0.25)');
   rr(rx - rw / 2, ry0, rw, H - ry0, 0, L.runner[0]);
   for (const sd of [-1, 1]) {
@@ -572,11 +577,11 @@ function ropeArt() {
 
 /** The lift's header: lacquer between gold bands, and a brass dial reading 1 and 2 (its needle is a mesh). */
 function liftDialArt(L) {
-  const f = fine(40, 14, 8), { g, rr, lin } = f;
-  rr(0, 0, 40, 14, 0, lin(0, 0, 0, 14, L.panel));
-  rr(0, 0, 40, 1, 0, GOLD[1]);
-  rr(0, 12, 40, 2, 0, lin(0, 12, 0, 14, GOLD));
-  const cx = 20, cy = 10.6;
+  const W = LIFT_W * 20, f = fine(W, 14, 8), { g, rr, lin } = f;
+  rr(0, 0, W, 14, 0, lin(0, 0, 0, 14, L.panel));
+  rr(0, 0, W, 1, 0, GOLD[1]);
+  rr(0, 12, W, 2, 0, lin(0, 12, 0, 14, GOLD));
+  const cx = W / 2, cy = 10.6;
   g.fillStyle = 'rgba(0,0,0,0.25)'; g.beginPath(); g.arc(cx + 0.3, cy + 0.4, 8, Math.PI, 0); g.closePath(); g.fill();
   g.fillStyle = lin(0, cy - 8, 0, cy, ['#fff0b0', '#e0b040', '#a87818']); g.beginPath(); g.arc(cx, cy, 8, Math.PI, 0); g.closePath(); g.fill();
   g.fillStyle = '#fbf6ea'; g.beginPath(); g.arc(cx, cy, 6.6, Math.PI, 0); g.closePath(); g.fill();
@@ -591,8 +596,9 @@ function liftDialArt(L) {
 }
 
 /** The lift's shaft from its header up to the top of the walls, `h` units tall: ivory damask between lacquered posts edged
-    in gold, the room's cornice crossing it, a gold sunburst over the header with a glowing lamp, and sunk panels above. */
-function liftShaftArt(L, h) {
+    in gold, the store's crest, the room's cornice crossing it, a gold sunburst over the header with a glowing lamp, and
+    sunk panels above. */
+function liftShaftArt(L, h, floor) {
   const U = 20, W = LIFT_W * U, H = h * U, f = fine(W, H, 4), { g, rr, lin, shine } = f, s = shine();
   const wy = (y) => (LIFT_H + 0.1 + h - y) * U;
   g.fillStyle = lin(0, 0, 0, H, [L.ivory[1], L.ivory[0]]); g.fillRect(0, 0, W, H);
@@ -610,6 +616,7 @@ function liftShaftArt(L, h) {
   for (let i = 0; i <= 10; i++) { const a = Math.PI + i / 10 * Math.PI; g.beginPath(); g.moveTo(lx + Math.cos(a) * 4, ly + Math.sin(a) * 4); g.lineTo(lx + Math.cos(a) * 12, ly + Math.sin(a) * 12); g.stroke(); }
   g.fillStyle = lin(0, ly - 5, 0, ly, ['#fffbe8', '#ffe2a0']); g.beginPath(); g.arc(lx, ly, 4, Math.PI, 0); g.fill();
   s.fillStyle = '#ffe8a8'; s.beginPath(); s.arc(lx, ly, 4, Math.PI, 0); s.fill();
+  crest(f, s, W / 2, wy(4.3), W - 13, 1.0 * U, L, floor);
   return f.c;
 }
 
@@ -767,28 +774,32 @@ export function buildFloor(THREE, floor, size, upstairs) {
 
   // the counter at the back of the nave: lacquer under a marble top on a gold edge, a brass till, the bell, a stack of
   // catalogues and a vase of flowers; the shopkeeper behind it
-  const keeper = { id: 'keeper', kind: 'keeper', name: KEEPERS[floor].name, open: true, step: { x: NAVE, y: COUNTER.y + 1 } };
+  const keeper = { id: 'keeper', kind: 'keeper', name: KEEPERS[floor].name, open: true, step: { x: COUNTER.x + 1, y: COUNTER.y + 1 } };
   spots.push(keeper);
   block(COUNTER.x, 0, COUNTER.x + COUNTER.w - 1, COUNTER.y);
   const desk = new THREE.Group();
-  desk.position.set(tileX(NAVE), 0, tileZ(COUNTER.y));
+  desk.position.set(tileX(COUNTER.x + 1), 0, tileZ(COUNTER.y));
   const body = put(desk, new THREE.BoxGeometry(COUNTER.w - 0.1, 0.8, 0.72), [lacquer, lacquer, lacquer, lacquer, std({ map: texOf(counterArt(COUNTER.w, L)), roughness: 0.35 }), lacquer], 0, 0.4, 0);
   body.receiveShadow = true;
   put(desk, new THREE.BoxGeometry(COUNTER.w + 0.06, 0.04, 0.9), goldM, 0, 0.82, 0);
   put(desk, new THREE.BoxGeometry(COUNTER.w + 0.02, 0.07, 0.86), marble, 0, 0.875, 0);
-  put(desk, new THREE.BoxGeometry(0.44, 0.24, 0.32), M.brass, -1.2, 1.03, -0.1);
-  put(desk, new THREE.BoxGeometry(0.3, 0.12, 0.04), std({ color: '#2a3440', emissive: new THREE.Color('#60c0a0'), emissiveIntensity: 0.6 }), -1.2, 1.2, -0.2).rotation.x = -0.4;
-  put(desk, new THREE.SphereGeometry(0.1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }), 0.25, 0.91, 0.2);
-  ['#c84a5a', '#3a7ac0', L.panel[0]].forEach((c, i) => put(desk, new THREE.BoxGeometry(0.34, 0.035, 0.26), std({ color: c, roughness: 0.6 }), -0.62, 0.928 + i * 0.036, 0.12).rotation.y = (i - 1) * 0.12);
+  put(desk, new THREE.BoxGeometry(0.44, 0.24, 0.32), M.brass, -0.95, 1.03, -0.1);
+  put(desk, new THREE.BoxGeometry(0.3, 0.12, 0.04), std({ color: '#2a3440', emissive: new THREE.Color('#60c0a0'), emissiveIntensity: 0.6 }), -0.95, 1.2, -0.2).rotation.x = -0.4;
+  put(desk, new THREE.SphereGeometry(0.1, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e8c050', metalness: 0.7, roughness: 0.3 }), 0.35, 0.91, 0.2);
+  ['#c84a5a', '#3a7ac0', L.panel[0]].forEach((c, i) => put(desk, new THREE.BoxGeometry(0.34, 0.035, 0.26), std({ color: c, roughness: 0.6 }), -0.3, 0.928 + i * 0.036, 0.16).rotation.y = (i - 1) * 0.12);
   const vase = new THREE.Group();
-  vase.position.set(1.55, 0.91, 0);
+  vase.position.set(0.95, 0.91, -0.1);
   put(vase, lathe([[0, 0], [0.07, 0], [0.1, 0.08], [0.07, 0.2], [0.05, 0.24], [0.07, 0.27], [0, 0.27]]), goldM, 0, 0, 0);
   vase.add(bouquet(THREE, std, L, 0.42)).children.at(-1).position.y = 0.3;
   desk.add(vase);
   desk.traverse(o => { o.userData.front = keeper; });
   group.add(desk);
-  // a topiary in a gold-trimmed box either side of the counter
-  for (const x of [COUNTER.x - 1, COUNTER.x + COUNTER.w]) { kit.topiary(group, tileX(x), tileZ(1), 0.28, x); block(x, 1); }
+  // a topiary left of the counter; right of the lift, a bench under Smeargle's painting between two more
+  kit.topiary(group, tileX(COUNTER.x - 1), tileZ(1), 0.28, 1);
+  block(COUNTER.x - 1, 1);
+  for (const x of [GALLERY - 1, GALLERY + 1]) kit.topiary(group, tileX(x), tileZ(0.8), 0.28, x);
+  kit.bench(group, tileX(GALLERY), tileZ(0.75), 0, 1.3);
+  block(GALLERY - 1, 0, GALLERY + 1, 1);
 
   // the velvet rotunda seat in the middle of the nave, a bouquet in a gold urn on top
   const ro = new THREE.Group();
@@ -835,7 +846,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
     lights.forEach((c, i) => { c.rotation.z = Math.sin(now / 2600 + i * 2) * 0.01; c.rotation.y = Math.sin(now / 5200 + i) * 0.06; });
   });
 
-  // the lift at the back right (LIFT): a lacquered case against the back wall, its car lit inside, two doors that slide
+  // the lift at the head of the nave (LIFT): a lacquered case against the back wall, its car lit inside, two doors that slide
   // apart into its sides, a brass dial over them and call buttons beside them (js/mall-3d.js opens and rides it)
   block(LIFT.x - 1, 0, LIFT.x + 1, 1);
   const liftSpot = { id: 'lift', kind: 'lift', name: floor === 1 ? 'Lift up' : 'Lift down', open: true, step: { ...LIFT.foot } };
@@ -844,11 +855,12 @@ export function buildFloor(THREE, floor, size, upstairs) {
   liftGroup.position.set(tileX(LIFT.x), 0, -rows / 2);
   const lp = (geo, m, x, y, z, shadow = true) => put(liftGroup, geo, m, x, y, z, shadow);
   const brass = std({ color: '#e0b040', metalness: 0.7, roughness: 0.3 }), champagne = std({ color: '#e4d0a0', metalness: 0.5, roughness: 0.35 });
-  const PW = (LIFT_W - 1) / 2;   // each side's width: the doorway is a tile across
+  const PW = (LIFT_W - DOORWAY) / 2;   // each side's width
   for (const sgn of [-1, 1]) {
-    lp(new THREE.BoxGeometry(PW, LIFT_H, LIFT_D), lacquer, sgn * (0.5 + PW / 2), LIFT_H / 2, LIFT_D / 2);
-    lp(new THREE.BoxGeometry(0.08, LIFT_DOOR + 0.04, 0.06), goldM, sgn * 0.54, (LIFT_DOOR + 0.04) / 2, LIFT_D + 0.03);
-    lp(new THREE.BoxGeometry(PW + 0.06, 0.12, LIFT_D + 0.06), goldM, sgn * (0.5 + PW / 2), 0.06, LIFT_D / 2);
+    // only up to the header: running on up behind it, their fronts shared its plane and the two flickered (2026-10-16)
+    lp(new THREE.BoxGeometry(PW, LIFT_DOOR, LIFT_D), lacquer, sgn * (DOORWAY / 2 + PW / 2), LIFT_DOOR / 2, LIFT_D / 2);
+    lp(new THREE.BoxGeometry(0.08, LIFT_DOOR + 0.04, 0.06), goldM, sgn * (DOORWAY / 2 + 0.04), (LIFT_DOOR + 0.04) / 2, LIFT_D + 0.03);
+    lp(new THREE.BoxGeometry(PW + 0.06, 0.12, LIFT_D + 0.06), goldM, sgn * (DOORWAY / 2 + PW / 2), 0.06, LIFT_D / 2);
   }
   const ceiling = std({ color: '#fff4d8', emissive: new THREE.Color('#ffe8b0'), emissiveIntensity: 0.9 });
   lp(new THREE.BoxGeometry(LIFT_W, LIFT_H - LIFT_DOOR, LIFT_D), [lacquer, lacquer, lacquer, ceiling, std({ map: texOf(liftDialArt(L)), roughness: 0.5 }), lacquer],
@@ -856,15 +868,15 @@ export function buildFloor(THREE, floor, size, upstairs) {
   lp(new THREE.BoxGeometry(LIFT_W + 0.12, 0.1, LIFT_D + 0.12), goldM, 0, LIFT_H + 0.05, LIFT_D / 2);
   // its shaft on up to the top of the walls, so it reads as a lift through the ceiling, not a booth on the floor
   const shaftH = TOP - LIFT_H - 0.1;
-  lp(new THREE.BoxGeometry(LIFT_W, shaftH, LIFT_D - 0.1), [lacquer, lacquer, lacquer, lacquer, lit(liftShaftArt(L, shaftH), '#ffe8b0', 0.8), lacquer],
+  lp(new THREE.BoxGeometry(LIFT_W, shaftH, LIFT_D - 0.1), [lacquer, lacquer, lacquer, lacquer, lit(liftShaftArt(L, shaftH, floor), '#ffe8b0', 0.8), lacquer],
     0, LIFT_H + 0.1 + shaftH / 2, (LIFT_D - 0.1) / 2);
   // the car: a warm-lit back panel, a wood floor, a brass handrail
-  lp(new THREE.PlaneGeometry(1, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.01, false);
-  lp(new THREE.BoxGeometry(1, 0.02, LIFT_D), M.wood, 0, 0.01, LIFT_D / 2, false);
-  lp(new THREE.CylinderGeometry(0.02, 0.02, 0.9, 10), brass, 0, 0.85, 0.1, false).rotation.z = Math.PI / 2;
+  lp(new THREE.PlaneGeometry(DOORWAY, LIFT_DOOR), std({ color: '#f6e6c4', emissive: new THREE.Color('#ffe0a8'), emissiveIntensity: 0.3 }), 0, LIFT_DOOR / 2, 0.03, false);
+  lp(new THREE.BoxGeometry(DOORWAY, 0.02, LIFT_D), M.wood, 0, 0.01, LIFT_D / 2, false);
+  lp(new THREE.CylinderGeometry(0.02, 0.02, DOORWAY - 0.1, 10), brass, 0, 0.85, 0.1, false).rotation.z = Math.PI / 2;
   // the dial's needle, turning about its foot (rotation.z: 1F left, 2F right)
   const needle = new THREE.Group();
-  needle.position.set(0, LIFT_H - 10.6 / 14 * (LIFT_H - LIFT_DOOR), LIFT_D + 0.006);
+  needle.position.set(0, LIFT_H - 10.6 / 14 * (LIFT_H - LIFT_DOOR), LIFT_D + 0.015);
   const hand = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.25, 0.008), std({ color: '#3a2418' }));
   hand.position.y = 0.11;
   needle.add(hand, new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.012, 14), brass).rotateX(Math.PI / 2));
@@ -875,19 +887,19 @@ export function buildFloor(THREE, floor, size, upstairs) {
     const map = doorTex.clone();
     map.repeat.set(0.5, 1); map.offset.set(sgn < 0 ? 0 : 0.5, 0); map.needsUpdate = true;
     const face = std({ map, metalness: 0.45, roughness: 0.35 });
-    const d = lp(new THREE.BoxGeometry(0.5, LIFT_DOOR, 0.04), [champagne, champagne, champagne, champagne, face, champagne], sgn * 0.25, LIFT_DOOR / 2, LIFT_D - 0.08);
-    d.userData.home = sgn * 0.25; d.userData.side = sgn;
+    const d = lp(new THREE.BoxGeometry(DOORWAY / 2, LIFT_DOOR, 0.04), [champagne, champagne, champagne, champagne, face, champagne], sgn * DOORWAY / 4, LIFT_DOOR / 2, LIFT_D - 0.08);
+    d.userData.home = sgn * DOORWAY / 4; d.userData.side = sgn; d.userData.slide = DOORWAY / 2;
     return d;
   });
-  lp(new THREE.PlaneGeometry(0.15, 0.26), lit(liftCallArt(), '#ffd870', 0.6), 0.5 + PW / 2, 1, LIFT_D + 0.004, false);
+  lp(new THREE.PlaneGeometry(0.15, 0.26), lit(liftCallArt(), '#ffd870', 0.6), DOORWAY / 2 + PW / 2, 1.1, LIFT_D + 0.012, false);
   let rope = null;
   if (floor === 1 && !upstairs) {
     rope = new THREE.Group();
-    for (const x of [-0.6, 0.6]) {
+    for (const x of [-0.75, 0.75]) {
       put(rope, new THREE.CylinderGeometry(0.045, 0.07, 0.7, 10), brass, x, 0.35, LIFT_D + 0.3);
       put(rope, new THREE.SphereGeometry(0.07, 10, 8), brass, x, 0.72, LIFT_D + 0.3, false);
     }
-    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.6, 0.66, LIFT_D + 0.3), new THREE.Vector3(0, 0.36, LIFT_D + 0.3), new THREE.Vector3(0.6, 0.66, LIFT_D + 0.3));
+    const curve = new THREE.QuadraticBezierCurve3(new THREE.Vector3(-0.75, 0.66, LIFT_D + 0.3), new THREE.Vector3(0, 0.36, LIFT_D + 0.3), new THREE.Vector3(0.75, 0.66, LIFT_D + 0.3));
     rope.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 16, 0.03, 6), std({ color: '#c8283a', roughness: 0.6 })));
     const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.24), std({ map: texOf(ropeArt()) }));
     sign.position.set(0, 0.4, LIFT_D + 0.34);
@@ -910,7 +922,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const tags = priceTags(THREE, spots);
   return {
     group, blocked, spots, ring, rope, lift, cols, rows, door: DOOR, top: 4.85, title: floor === 1 ? 'Furniture' : 'Furniture 2F',
-    keeper: { ...KEEPERS[floor], x: tileX(NAVE), z: tileZ(COUNTER.y - 1) },
+    keeper: { ...KEEPERS[floor], x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1) },
     tick: (now, dt, hud) => { for (const t of ticks) t(now, dt); if (hud) tags.place(hud); },
     leave: () => tags.drop(),
   };
