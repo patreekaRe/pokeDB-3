@@ -1,6 +1,6 @@
 /* base-furniture-statues.js  -  a gold statue of each starter (2026-10-16, js/data/catalogue.js): its own sprite,
    gilded, on a marble pedestal with its name on a gold plate. Never in the store's daily deal (`luxury`), sold only in
-   the PC's Grand Catalogue. The sprites are fetched only when needed (loadStatues(): the catalogue and the Secret Base
+   the Grand Catalogue (the Furniture store's Grand Ballroom). The sprites are fetched only when needed (loadStatues(): the catalogue and the Secret Base
    wait for it), not at boot like the Gym Leaders' posters: thirty GIFs are 2 MB. Until a statue's sprite is in, it
    paints its bare pedestal, and its `live()` changes once it is, so every picture of it is painted afresh. */
 

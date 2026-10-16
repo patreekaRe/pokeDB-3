@@ -2769,3 +2769,6 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (~127,000 in all) and six Pokédex shells (15,000) at the PC; `docs/reference/hub-base-mall.md`'s last section. Checked
   headless: the catalogue lists 30 statues and buys a statue and a shell, Settings shows the shell, the 3D base builds
   placed statues, no errors. Still open: the Game Corner's daily cap.
+- **The Grand Ballroom** (2026-10-16, the user's idea: a floor of the Furniture store you unlock, with the high-ticket
+  items): 3F, opened by owning 40 kinds of furniture and paying 5,000; the Grand Catalogue moved there from the PC.
+  `docs/reference/hub-base-mall.md`'s Grand Catalogue section.

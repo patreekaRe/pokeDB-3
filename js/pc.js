@@ -229,8 +229,6 @@ const PAGES = {
       [ready ? `MISSIONS (${ready})` : 'MISSIONS', ready ? `${ready} mission reward${ready === 1 ? '' : 's'} to claim!` : 'Daily and weekly goals that pay PokéCoins.', () => show('missions'), ready > 0 || pcNew('missions', save)],
       [journal ? `TRAINER'S JOURNAL (${journal})` : 'TRAINER\'S JOURNAL', journal ? `${journal} task${journal === 1 ? '' : 's'} done! Claim ${journal === 1 ? 'it' : 'them'} for PokéCoins.` : 'Goals for the whole game, from your first win to the top of the Sky Pillar, each paying PokéCoins.',
         () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
-      ['GRAND CATALOGUE', 'Big things to save your PokéCoins for: gold statues of your starters and new Pokédex shells.',
-        () => { markPcSeen('catalogue'); import('./grand-shop.js').then(m => m.openGrandShop(() => show('home'))); }, pcNew('catalogue', save)],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],

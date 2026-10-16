@@ -7,7 +7,9 @@
    door to the lift under the store's crest, the counter left of it and Smeargle's painting right, a velvet rotunda seat with a bouquet, crystal
    chandeliers, arched windows with drapes, and Smeargle's easel (a grand piano upstairs) in the back corner. The second
    floor (`secretBase.upstairs`, bought once) is the same room in rose; its lift at the head of the nave is roped off until it's
-   open. Painted smooth like the hall (fine()), the furniture in its own pixels (pieceArt()). js/mall-3d.js walks it (its
+   open. The third, the Grand Ballroom (2026-10-16, the user's idea; `secretBase.ballroom`), is the same room in midnight
+   blue and gold, its stands holding the Grand Catalogue's gold statues (js/data/catalogue.js): starters left, legends
+   right, and Gardevoir at the counter with the whole catalogue. Painted smooth like the hall (fine()), the furniture in its own pixels (pieceArt()). js/mall-3d.js walks it (its
    own COLS x ROWS and door, like the Game Corner); this file only builds it. */
 
 import { PIECES, pieceArt, furnitureStock, loadBase, UPSTAIRS_PRICE, KINDS_OF } from './secret-base.js';
@@ -18,6 +20,9 @@ import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
 import { RES, HD } from './base-paint.js';
 import { hallKit } from './mall-hall.js';
 import { calmFx } from './prefs.js';
+import { STARTERS } from './data/starters.js';
+import { statueKind } from './data/catalogue.js';
+import { isStarterUnlocked } from './progress.js';
 import { smoothIcon } from './smooth-icons.js';
 
 const PX = 1 / (16 * RES);   // one of a piece's painted pixels, in tiles
@@ -57,7 +62,15 @@ const LOOK = {
     velvet: '#d07490', runner: ['#c45a7a', '#9a3e5c'], inlay: ['#d88aa2', '#b86882'], bloom: ['#ffffff', '#f8d4e0', '#d8c0f0'],
     parquet: ['#ecd0b0', '#e2c2a0', '#f2dcc0'], gap: '#a8805e', sky: ['#3a3a7a', '#7a5aa8', '#e890b0'],
     trim: '#d0708a', trimDark: '#9a4a62', dark: '#7a4a4a' },
+  3: { ivory: ['#fbf6e8', '#efe4c8'], damask: 'rgba(40,60,140,0.12)', panel: ['#2c3c84', '#1c2860'], panelDark: '#101838',
+    velvet: '#283a90', runner: ['#b0242e', '#821620'], inlay: ['#d8b050', '#a88028'], bloom: ['#ffffff', '#f8e8b0', '#c8d4ff'],
+    parquet: ['#efe6d2', '#e2d6bc', '#f6efe0'], gap: '#9a8a6a', sky: ['#121a44', '#2c2c70', '#7a5aa0'],
+    trim: '#d0a040', trimDark: '#8a6a20', dark: '#2a2440' },
 };
+/** The Grand Ballroom's stands: the departments' places, the left wing's starters and the right wing's legends. */
+const HALLS = DEPTS.map((d, i) => ({ ...d, kind: 'Other', ...(i < 4 ? { name: 'STARTERS', ink: '#d0a040' } : { name: 'LEGENDS', ink: '#8a5ac8' }) }));
+/** Where the lift's needle points for each floor (rotation.z): 1F left, 2F up, 3F right. */
+export const dialTurn = (floor) => (2 - floor) * Math.PI / 4;
 export const STORE_COLOUR = LOOK[1].trim;
 
 /* Each floor's shopkeeper, who says every line in the store (the user's ask: "a shopkeeper, one of the Pokémon"):
@@ -66,12 +79,18 @@ export const KEEPERS = {
   1: { id: 'smeargle', name: 'Smeargle', src: 'assets/pokemon/smeargle-front.gif',
     hello: ['Welcome to my showroom! I painted every piece in here myself.', 'Fresh pieces in every department today, still wet! Kidding.', 'Have a look round. Tap a piece and I\'ll tell you about it.'],
     chat: ['Every colour of a piece comes with it. I can never pick just one.', 'New stock every day, the moment the clock strikes midnight.', 'A room is a canvas, you know. Your Secret Base is your masterpiece!',
-      'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades, and tap me: I keep a garden catalogue too!'],
+      'Seats and tables on the left, décor on the right. A place for everything!', 'Build a backyard on your PC\'s House Upgrades, and tap me: I keep a garden catalogue too!',
+      'Have you seen the top floor? The Grand Ballroom is for real collectors. Own 40 kinds of furniture and the lift goes up!'],
     // with a backyard, a tap opens the garden catalogue (js/garden-shop.js), the Yard shelf, always in stock
     special: (done) => import('./garden-shop.js').then(m => m.gardenTap(done)) },
   2: { id: 'minccino', name: 'Minccino', src: 'assets/pokemon/minccino-front.gif',
     hello: ['Welcome to the Rose Salon! Mind the... no, there\'s no dust. I checked.', 'Oh! A customer! Let me just polish that plinth. There.'],
     chat: ['I dust every plinth twice a day. Three times on Sundays.', 'Eight more pieces up here, every day. All spotless.', 'The chandeliers took me all morning. Worth it!'] },
+  // the Grand Ballroom's host: a tap opens the whole Grand Catalogue, every statue and the Pokédex shells (js/grand-shop.js)
+  3: { id: 'gardevoir', name: 'Gardevoir', src: 'assets/pokemon/gardevoir-front.gif',
+    hello: ['Welcome to the Grand Ballroom. Only the finest collectors come this high.', 'Good evening. Every statue here is solid gold. Please, take your time.'],
+    chat: ['The stands show a few statues. My catalogue has them all, and the Pokédex shells.', 'Each statue is cast from the Pokémon itself. Well, from its likeness.', 'A statue in your Secret Base says you\'ve truly arrived.'],
+    special: (done) => import('./grand-shop.js').then(m => m.openGrandShop(done)).then(() => true) },
 };
 
 const price = (n) => n.toLocaleString();
@@ -97,6 +116,15 @@ function sortIn(stock) {
 
 /** A stand's department: its own, or the one its piece belongs to when it only filled a gap. */
 const deptOf = (d, id) => (!id || fits(d, PIECES[id]) ? d : DEPTS.find(e => fits(e, PIECES[id])) ?? DEPTS.at(-1));
+
+/** The Grand Ballroom's eight statues: four starters, four legends, each wing's the ones you could buy first (a starter
+    you own whose statue you don't), then the ones you have (sold out here), then the ones still locked. Mewtwo's only
+    once it's yours. */
+export function statueStands(owned = loadBase().owned) {
+  const rank = (s) => (!isStarterUnlocked(s) ? 2 : (owned[statueKind(s.id)] || 0) > 0 ? 1 : 0);
+  const four = (list) => [...list].sort((a, b) => rank(a) - rank(b)).slice(0, 4).map(s => statueKind(s.id));
+  return [...four(STARTERS.filter(s => !s.legendary)), ...four(STARTERS.filter(s => s.legendary && (!s.secret || isStarterUnlocked(s))))];
+}
 
 /* ---------- the front, in the hall ---------- */
 
@@ -315,7 +343,7 @@ function wingSign(f, s, cx, top, w, h, L, text, wy = null) {
 /** The store's crest over the counter: a lacquered board framed in gold with a scroll each end, under a gold medallion
     ringed with pearls with the leaf in it, the store's name in lit gold and the floor's own small under it. */
 function crest(f, s, cx, top, w, h, L, floor) {
-  const { g, rr, lin } = f, name = floor === 1 ? 'FURNITURE' : 'FURNITURE 2F', sub = floor === 1 ? 'THE GRAND SHOWROOM' : 'THE ROSE SALON';
+  const { g, rr, lin } = f, [name, sub] = { 1: ['FURNITURE', 'THE GRAND SHOWROOM'], 2: ['FURNITURE 2F', 'THE ROSE SALON'], 3: ['GRAND BALLROOM', 'FURNITURE 3F'] }[floor];
   rr(cx - w / 2 + 1, top + 1.6, w, h, 4, 'rgba(40,20,10,0.25)');
   for (const sd of [-1, 1]) {
     g.fillStyle = GOLD[1]; g.beginPath(); g.arc(cx + sd * (w / 2 + 1), top + h / 2, 4, 0, Math.PI * 2); g.fill();
@@ -397,8 +425,8 @@ function wallArt(floor, { top: TOP, u: U }) {
   grand(f, W, H, L, wy);
   for (const t of [0.1, 20.9]) pilaster(f, wx(t), wy);
   for (const t of [2, 5.1, 16]) archWindow(f, s, wx(t), wy(3.55), wy(1.55), 1.3 * U, L);
-  wingSign(f, s, wx(3.55), wy(4.45), 3.6 * U, 0.6 * U, L, 'FURNISHINGS', wy);
-  wingSign(f, s, wx(16), wy(4.45), 2.9 * U, 0.6 * U, L, 'DÉCOR & ART', wy);
+  wingSign(f, s, wx(3.55), wy(4.45), 3.6 * U, 0.6 * U, L, floor === 3 ? 'STARTERS' : 'FURNISHINGS', wy);
+  wingSign(f, s, wx(16), wy(4.45), 2.9 * U, 0.6 * U, L, floor === 3 ? 'LEGENDS' : 'DÉCOR & ART', wy);
   sconce(f, s, wx(20.2), wy(2.3));
   masterpiece(f, wx(GALLERY + 0.5), wy(2.15), 2.1 * U, 1.05 * U, L, floor);
   wingSign(f, s, wx(COUNTER.x + COUNTER.w / 2), wy(1.95), 1.9 * U, 0.5 * U, L, 'CASHIER');
@@ -575,7 +603,7 @@ function ropeArt() {
   return f.c;
 }
 
-/** The lift's header: lacquer between gold bands, and a brass dial reading 1 and 2 (its needle is a mesh). */
+/** The lift's header: lacquer between gold bands, and a brass dial reading 1, 2 and 3 (its needle is a mesh). */
 function liftDialArt(L) {
   const W = LIFT_W * 20, f = fine(W, 14, 8), { g, rr, lin } = f;
   rr(0, 0, W, 14, 0, lin(0, 0, 0, 14, L.panel));
@@ -590,7 +618,7 @@ function liftDialArt(L) {
     const a = Math.PI + (0.25 + i / 8 * 0.5) * Math.PI;
     g.beginPath(); g.moveTo(cx + Math.cos(a) * 5.4, cy + Math.sin(a) * 5.4); g.lineTo(cx + Math.cos(a) * 6.2, cy + Math.sin(a) * 6.2); g.stroke();
   }
-  for (const [n, a] of [['1', -0.75], ['2', -0.25]]) words(g, n, cx + Math.cos(a * Math.PI) * 3.9, cy + Math.sin(a * Math.PI) * 3.9 + 0.2, 2.6, L.dark);
+  for (const [n, a] of [['1', -0.75], ['2', -0.5], ['3', -0.25]]) words(g, n, cx + Math.cos(a * Math.PI) * 3.9, cy + Math.sin(a * Math.PI) * 3.9 + 0.2, 2.6, L.dark);
   rr(cx - 8.4, cy, 16.8, 0.9, 0.3, '#a87818');
   return f.c;
 }
@@ -720,7 +748,8 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const kit = hallKit(THREE), M = kit.M, edge = std({ color: '#3a3040' });
   const goldM = M.gold, lacquer = std({ color: L.panel[1], roughness: 0.25, metalness: 0.1 }), marble = std({ color: '#f6f0e4', roughness: 0.22 });
 
-  const stock = furnitureStock(undefined, floor), owned = loadBase().owned, owners = sortIn(stock), depts = DEPTS.map((d, i) => deptOf(d, owners[i]));
+  const owned = loadBase().owned, owners = floor === 3 ? statueStands(owned) : sortIn(furnitureStock(undefined, floor));
+  const depts = floor === 3 ? HALLS : DEPTS.map((d, i) => deptOf(d, owners[i]));
   const floorBox = new THREE.Mesh(new THREE.BoxGeometry(cols, 0.6, rows), [edge, edge, std({ map: texOf(floorArt(floor, depts)), roughness: 0.45 }), edge, std({ color: L.panelDark }), edge]);
   floorBox.position.y = -0.3;
   floorBox.receiveShadow = true;
@@ -749,7 +778,8 @@ export function buildFloor(THREE, floor, size, upstairs) {
     if (!id) return;
     const p = PIECES[id], d = depts[i], cx = tileX(b.x) + 0.5, cz = tileZ(b.y) + 0.5, H = DAIS_H;
     // one of each piece a player (the user's call, 2026-10-12): once owned it's sold out here, and copies are the PC's Duplicate
-    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz }, sold: (owned[p.own] || 0) > 0, dept: { name: d.name, ink: d.ink } };
+    const spot = { id: `bay${i}`, kind: 'bay', piece: id, name: p.name, open: true, step: { ...b.step }, at: { x: cx, y: H + 0.01, z: cz }, sold: (owned[p.own] || 0) > 0, dept: { name: d.name, ink: d.ink },
+      locked: p.statueOf && !isStarterUnlocked(STARTERS.find(st => st.id === p.statueOf)) };
     spots.push(spot);
     const bay = new THREE.Group();
     bay.position.set(cx, 0, cz);
@@ -849,7 +879,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   // the lift at the head of the nave (LIFT): a lacquered case against the back wall, its car lit inside, two doors that slide
   // apart into its sides, a brass dial over them and call buttons beside them (js/mall-3d.js opens and rides it)
   block(LIFT.x - 1, 0, LIFT.x + 1, 1);
-  const liftSpot = { id: 'lift', kind: 'lift', name: floor === 1 ? 'Lift up' : 'Lift down', open: true, step: { ...LIFT.foot } };
+  const liftSpot = { id: 'lift', kind: 'lift', name: 'Lift', open: true, step: { ...LIFT.foot } };
   spots.push(liftSpot);
   const liftGroup = new THREE.Group();
   liftGroup.position.set(tileX(LIFT.x), 0, -rows / 2);
@@ -880,7 +910,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
   const hand = new THREE.Mesh(new THREE.BoxGeometry(0.018, 0.25, 0.008), std({ color: '#3a2418' }));
   hand.position.y = 0.11;
   needle.add(hand, new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.012, 14), brass).rotateX(Math.PI / 2));
-  needle.rotation.z = floor === 1 ? Math.PI / 4 : -Math.PI / 4;
+  needle.rotation.z = dialTurn(floor);
   liftGroup.add(needle);
   // the doors, each showing its half of the picture
   const doorTex = texOf(liftDoorArt(L)), doors = [-1, 1].map(sgn => {
@@ -921,7 +951,7 @@ export function buildFloor(THREE, floor, size, upstairs) {
 
   const tags = priceTags(THREE, spots);
   return {
-    group, blocked, spots, ring, rope, lift, cols, rows, door: DOOR, top: 4.85, title: floor === 1 ? 'Furniture' : 'Furniture 2F',
+    group, blocked, spots, ring, rope, lift, cols, rows, door: DOOR, top: 4.85, title: ['Furniture', 'Furniture 2F', 'Grand Ballroom'][floor - 1],
     keeper: { ...KEEPERS[floor], x: tileX(COUNTER.x + 1), z: tileZ(COUNTER.y - 1) },
     tick: (now, dt, hud) => { for (const t of ticks) t(now, dt); if (hud) tags.place(hud); },
     leave: () => tags.drop(),

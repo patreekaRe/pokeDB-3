@@ -1,7 +1,8 @@
 /* grand-shop.js  -  the Grand Catalogue (2026-10-16, js/data/catalogue.js): big things to save PokéCoins for, always in
-   stock, opened from the Clearing's PC. Two tabs: a gold statue of each starter you own (another copy at full price;
-   one you don't own yet shows dark, Mewtwo's not at all till it's yours), and the Pokédex shells, worn at once when
-   bought and switched from Settings after. Its window is a gateway town shop's with Kurt's Workshop's tabs. */
+   stock, opened by Gardevoir in the Furniture store's Grand Ballroom (3F; it was the Clearing's PC's for an hour). Two
+   tabs: a gold statue of each starter you own (another copy at full price; one you don't own yet shows dark, Mewtwo's
+   not at all till it's yours), and the Pokédex shells, worn at once when bought and switched from Settings after. Its
+   window is a gateway town shop's with Kurt's Workshop's tabs. */
 
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';

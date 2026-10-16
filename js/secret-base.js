@@ -13,6 +13,7 @@ import { streamOf, shuffled } from './rng.js';
 import { FURNITURE, FURNITURE_BY_KIND, isEarned, howToEarn } from './data/furniture.js';
 import { surfaceHeight, seatHeight } from './base-shapes.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_GOLD, LEADER_VISITS_LIVE, posterKind } from './data/gym.js';
+import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { TOWN_SHELVES, nietosHome, townsOpen, homeLeaders, HOME_LINES, BASE_LINES } from './data/towns.js';
 import { workshopOf, heartsOf, baseFriends, HEARTS, FRIENDS } from './data/workshop.js';
 import { todaysGuest } from './towns.js';
@@ -404,6 +405,18 @@ export function buyUpstairs(b) {
   if ((getSave().coins ?? 0) < UPSTAIRS_PRICE) return false;
   b.upstairs = true;
   updateSave(d => { d.coins -= UPSTAIRS_PRICE; d.secretBase = b; });
+  return true;
+}
+
+/** How many kinds of furniture you own, bought or earned, for the Grand Ballroom's door: the statues aren't counted. */
+export const kindsOwned = (b) => DESIGNS.filter(id => !PIECES[id].luxury && owns(b, id) > 0).length;
+/** The Grand Ballroom is open: bought, or lent for the page load by `?mall=3f`. */
+export const ballroomOpen = (b) => !!b.ballroom || new URLSearchParams(location.search).get('mall') === '3f';
+/** Open the store's third floor for good (`b.ballroom`): needs BALLROOM_KINDS kinds owned and BALLROOM_PRICE. */
+export function buyBallroom(b) {
+  if ((getSave().coins ?? 0) < BALLROOM_PRICE || kindsOwned(b) < BALLROOM_KINDS) return false;
+  b.ballroom = true;
+  updateSave(d => { d.coins -= BALLROOM_PRICE; d.secretBase = b; });
   return true;
 }
 

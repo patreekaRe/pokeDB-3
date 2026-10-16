@@ -1,13 +1,21 @@
 /* ============================================================
    catalogue.js  -  the Grand Catalogue (2026-10-16, the user's ask: big things to save PokéCoins for, once the
-   Trainer's Journal paid more than coins could buy). At the Clearing's PC (js/grand-shop.js), always in stock:
+   Trainer's Journal paid more than coins could buy), always in stock (js/grand-shop.js):
    - a gold statue of each starter you own (js/base-furniture-statues.js), 2 x 2 on a marble pedestal, its final form
      (a legendary as itself); Mewtwo's only once Mewtwo is yours. More copies are bought here again, at full price,
      never the PC's Duplicate.
    - Pokédex shells, worn from Settings > Device colour like the free ones (css/base.css's data-shell colours).
    Prices are tuned against the coins of 2026-10-16 (js/data/shop.js's note): ~700 a day from missions and the Game
    Corner, ~55,000 once from the Journal, Pokédex and Ranger board. The statues are the long tail (~127,000 in all).
+   Since 2026-10-16 (the user's idea the same day) they're sold in the Furniture store's third floor, the Grand
+   Ballroom, by its keeper: open once you own BALLROOM_KINDS kinds of furniture, for BALLROOM_PRICE (both, the
+   ballroom being for collectors; `secretBase.ballroom`).
    ============================================================ */
+
+/** Kinds of furniture to own (bought or earned, the statues not counted) before the Grand Ballroom can be opened. */
+export const BALLROOM_KINDS = 40;
+/** PokéCoins to open it, once you have them. */
+export const BALLROOM_PRICE = 5000;
 
 /** A statue's price by how its starter is unlocked. */
 export const STATUE_COSTS = { free: 2000, skin: 3000, legendary: 5000, secret: 10000 };
