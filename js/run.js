@@ -2522,7 +2522,7 @@ function afterFight(node, result) {
     if (result.tally && result.tally.turns <= 4) mission('quick');
     if (tough) mission('tough');
     if (result.caught) mission('catch');
-    if (result.caught && isSafari() && !peeking) rangerCatch({ ball: result.ball, night: timeOfDay() === 'night', turn: result.tally?.turns, flawless: result.tally && !result.tally.taken, inRun: run.tally.caught });
+    if (result.caught && isSafari() && !peeking) rangerCatch({ id: node.enemyId, rare: !!node.rare, ball: result.ball, night: timeOfDay() === 'night', turn: result.tally?.turns, flawless: result.tally && !result.tally.taken, inRun: run.tally.caught });
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);

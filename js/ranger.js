@@ -11,27 +11,31 @@ import { calmFx } from './prefs.js';
 import { refreshCoins } from './ui.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { BALLS } from './data/balls.js';
-import { TASKS, TABS, progressOf, readyTasks, rankOf, rewardText, logCatch, logDay } from './data/ranger.js';
+import { TABS, progressOf, readyTasks, rankOf, rewardText, logCatch, logDay, logWeekCatch, logWeekTick, logWeekDay, expeditionWeek, tasksOn, taskById } from './data/ranger.js';
 
 /* ---------- counting ---------- */
 
-const logged = (fn) => updateSave(d => { d.ranger = { claimed: [], ...d.ranger, log: fn(d.ranger?.log || {}) }; });
+/** The lasting log and this week's tally (the Expeditions'), each moved on by its own step. */
+const logged = (fn, weekly) => updateSave(d => {
+  const week = expeditionWeek();
+  d.ranger = { claimed: [], ...d.ranger, log: fn(d.ranger?.log || {}), week: weekly(d.ranger?.week, week) };
+});
 
 /** A Safari catch, as the rewards are collected (a refresh replays the fight, so never as it ends). */
-export const rangerCatch = (info) => logged(l => logCatch(l, info));
+export const rangerCatch = (info) => logged(l => logCatch(l, info), (w, week) => logWeekCatch(w, week, info));
 
 /** A Safari area's boss beaten, or the whole Safari crossed. */
-export const rangerTick = (key) => logged(l => ({ ...l, [key]: (l[key] || 0) + 1 }));
+export const rangerTick = (key) => logged(l => ({ ...l, [key]: (l[key] || 0) + 1 }), (w, week) => logWeekTick(w, week, key));
 
-/** A Safari day begun, for the days-in-a-row streak. */
-export const rangerDay = (day) => logged(l => logDay(l, day));
+/** A Safari day begun, for the days-in-a-row streak and the week's days. */
+export const rangerDay = (day) => logged(l => logDay(l, day), (w, week) => logWeekDay(w, week, day));
 
 /** How many tasks wait to be claimed: the board's "!". */
 export const rangerReady = (save = getSave()) => readyTasks(save).length;
 
 /** Pays a done task once. Returns its reward, or null. */
 function claim(id) {
-  const task = TASKS.find(t => t.id === id), save = getSave(), p = task && progressOf(task, save);
+  const task = taskById(id), save = getSave(), p = task && progressOf(task, save);
   if (!p?.done || p.claimed) return null;
   updateSave(d => { d.ranger = { log: {}, ...d.ranger, claimed: [...(d.ranger?.claimed || []), id] }; });
   const r = task.reward;
@@ -44,7 +48,7 @@ function claim(id) {
 
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
 const ballSprite = (id) => `assets/items/${BALLS.find(b => b.id === id)?.sprite ?? `${id}-ball`}.png`;
-let dlg = null, tab = 'research', onDone = null;
+let dlg = null, tab = 'expeditions', onDone = null;
 
 function rewardIcon(r) {
   const i = el('span', 'rb-reward-ico');
@@ -67,6 +71,7 @@ function note(task, save, i) {
   else { img.src = ENEMY_DEFS[pic.mon]?.image ?? ''; if (!pic.seen) shot.classList.add('unseen'); }
   shot.append(img);
   const body = el('div', 'rb-body');
+  if (task.tier) body.append(el('span', `rb-tier ${task.tier}`, task.tier === 'bonus' ? 'BONUS' : task.tier.toUpperCase()));
   body.append(el('h3', 'rb-title', task.title), el('p', 'rb-text', task.text));
   const trail = el('div', 'rb-trail'), steps = 10, lit = Math.floor(p.n / p.goal * steps);
   for (let k = 0; k < steps; k++) trail.append(el('span', `rb-paw${k < lit ? ' on' : ''}`, '🐾'));
@@ -85,6 +90,13 @@ function note(task, save, i) {
   return n;
 }
 
+/** Time left till the next Monday, UTC, when the week's expeditions change: "3d 4h", or "5h 12m" on the last day. */
+function untilWeek(now = Date.now()) {
+  const next = Date.parse(`${expeditionWeek(new Date(now))}T00:00:00Z`) + 7 * 86400000, min = Math.max(0, Math.floor((next - now) / 60000));
+  const d = Math.floor(min / 1440), h = Math.floor(min / 60) % 24, m = min % 60;
+  return d ? `${d}d ${h}h` : `${h}h ${m}m`;
+}
+
 /** Ready first, then nearest to done, claimed last. */
 const order = (save) => (a, b) => {
   const pa = progressOf(a, save), pb = progressOf(b, save);
@@ -100,8 +112,8 @@ function render() {
   head.querySelector('.rb-rank-next').textContent = next ? `${n} / ${next.at} tasks to ${next.name}` : `All ${n} tasks claimed`;
   head.querySelector('.rb-rank-bar i').style.width = `${next ? Math.round((n - rank.at) / (next.at - rank.at) * 100) : 100}%`;
   for (const t of TABS) {
-    const b = dlg.querySelector(`[data-tab="${t.id}"]`), ready = TASKS.filter(x => x.tab === t.id && progressOf(x, save).done && !progressOf(x, save).claimed).length;
-    const tasks = TASKS.filter(x => x.tab === t.id), done = tasks.filter(x => progressOf(x, save).claimed).length;
+    const tasks = tasksOn(t.id), b = dlg.querySelector(`[data-tab="${t.id}"]`);
+    const ready = tasks.filter(x => progressOf(x, save).done && !progressOf(x, save).claimed).length, done = tasks.filter(x => progressOf(x, save).claimed).length;
     b.classList.toggle('on', t.id === tab);
     b.setAttribute('aria-selected', String(t.id === tab));
     b.querySelector('.rb-tab-n').textContent = `${done}/${tasks.length}`;
@@ -109,7 +121,11 @@ function render() {
     b.querySelector('.rb-tab-ready').hidden = !ready;
   }
   const list = dlg.querySelector('.rb-notes');
-  list.replaceChildren(...TASKS.filter(t => t.tab === tab).sort(order(save)).map((t, i) => note(t, save, i)));
+  const notes = tasksOn(tab), week = dlg.querySelector('.rb-week');
+  // the Expeditions keep their order (easy, medium, hard, then the bonus) under the week's banner
+  list.replaceChildren(...(tab === 'expeditions' ? notes : notes.sort(order(save))).map((t, i) => note(t, save, i)));
+  week.hidden = tab !== 'expeditions';
+  if (!week.hidden) week.querySelector('span').textContent = `New expeditions in ${untilWeek()}`;
   dlg.querySelector('.rb-coins b').textContent = (save.coins ?? 0).toLocaleString();
 }
 
@@ -148,7 +164,7 @@ function build() {
       <div class="rb-rank"><span class="rb-badge" aria-hidden="true">★</span><div><span class="rb-rank-lv"></span><b class="rb-rank-name"></b>
         <span class="rb-rank-bar"><i></i></span><small class="rb-rank-next"></small></div><span class="rb-coins">🪙 <b></b></span></div>
       <nav class="rb-tabs" role="tablist">${TABS.map(t => `<button type="button" role="tab" class="rb-tab" data-tab="${t.id}"><span>${t.icon}</span> ${t.name} <small class="rb-tab-n"></small><em class="rb-tab-ready" hidden></em></button>`).join('')}</nav>
-      <div class="rb-cork"><div class="rb-notes"></div></div>
+      <div class="rb-cork"><p class="rb-week" hidden><b>THIS WEEK'S EXPEDITIONS</b><span></span></p><div class="rb-notes"></div></div>
       <p class="rb-toast" hidden></p>
     </div>`;
   document.body.append(dlg);

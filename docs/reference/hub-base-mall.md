@@ -370,6 +370,15 @@ count every catch ever made. Claimed ids are `save.ranger.claimed`.
 - **Where**: on the Outfitter's back wall over the jeep (`taskBoardArt()` in `js/mall-outfitter.js`, the left bay, a "!"
   bobbing over it while `rangerReady()`), the Safari lobby's **Tasks** key (`#sp-tasks`, a red count on it), and a line
   in a Safari run's result window when tasks wait.
+- **Expeditions** (2026-10-16, the board's first tab): three goals a week, one a tier (easy / medium / hard paying
+  `TIER_PAY` 200 / 350 / 600 PokéCoins) from `EXPEDITIONS`, rolled by `expeditionTasks(week)` from the week's seed (its
+  Monday UTC, `expeditionWeek()`, the Sky Pillar's week), never two of one `group`; a fourth note pays `EXPEDITION_BONUS`
+  (5 Ultra Balls) for all three. They count `save.ranger.week` (`logWeekCatch()` / `logWeekTick()` / `logWeekDay()`, fed
+  by the same `rangerCatch()` / `rangerTick()` / `rangerDay()`), which starts afresh with a new week's first event. Their
+  ids carry the week (`exp:<week>:<id>`); the Ranger Ranks don't count them. `tasksOn(tab)` / `taskById(id)` reach both
+  kinds. The tab shows a banner with the time to the next Monday (`untilWeek()`) and each note's tier.
+- **The Clearing's Safari gate** wears a "!" (`safariMark` in `js/hub-3d.js`, rebuilt with the places) while
+  `readyTasks()` has any, and its line says so.
 - A new task is a line in `build()`; a new reward kind needs a `rewardText()` line and a branch in `claim()`.
 
 - **The Clearing's stutters** (2026-10-16, the user's report: "choppy sometimes in the beginning and just randomly"), found by

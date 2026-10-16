@@ -19,9 +19,12 @@
 import { SAFARI_DEX_PAGES, SAFARI_ROSTER } from './safari.js';
 import { ENEMY_DEFS } from './enemies.js';
 import { BALLS } from './balls.js';
+import { towerWeek } from './tower.js';
+import { hashString, makeRng, shuffled } from '../rng.js';
 
 /** The board's tabs, in order. */
 export const TABS = [
+  { id: 'expeditions', name: 'Expeditions', icon: '🧭' },
   { id: 'research', name: 'Field Research', icon: '📖' },
   { id: 'balls', name: 'Ball Mastery', icon: '⚾' },
   { id: 'feats', name: 'Ranger Feats', icon: '🏅' },
@@ -124,8 +127,88 @@ export function progressOf(task, save) {
   return { n, goal: task.goal, done: n >= task.goal, claimed };
 }
 
-/** Tasks done and not yet claimed: the board's "!". */
-export const readyTasks = (save) => TASKS.filter(t => { const p = progressOf(t, save); return p.done && !p.claimed; });
+/* ---------- Expeditions: three goals a week ---------- */
+
+/* Three goals a week (2026-10-16, the user's go-ahead), one a tier, the same for everyone that week: rolled from the
+   week's seed (its Monday, UTC, like the Sky Pillar's and the weekly missions'), never two of one `group`. They count
+   only what's caught that week (save.ranger.week, reset as a new week's first catch, boss, crossing or day comes in),
+   and finishing all three pays a bonus. They pay PokéCoins and a ball pack; the Ranger Ranks count only the board's
+   lasting tasks. */
+const EXPEDITIONS = {
+  easy: [
+    { id: 'catch-15', group: 'catch', title: 'Survey sweep', text: 'Catch 15 Pokémon in the Safari Zone this week.', goal: 15, count: (w) => w.catches || 0, ball: 'safari' },
+    { id: 'safari-12', group: 'ball', title: 'Standard issue', text: 'Catch 12 Pokémon with Safari Balls this week.', goal: 12, count: (w) => w.balls?.safari || 0, ball: 'safari' },
+    { id: 'unhurt-4', group: 'unhurt', title: 'Light on your feet', text: 'Catch 4 Pokémon this week without taking damage in the fight.', goal: 4, count: (w) => w.flawless || 0, ball: 'luxury' },
+    { id: 'days-2', group: 'days', title: 'Regular visitor', text: 'Play the Safari Zone on 2 days this week.', goal: 2, count: (w) => (w.days || []).length, ball: 'premier' },
+    { id: 'normal-8', group: 'type', title: 'Common sightings', text: 'Catch 8 Normal-type Pokémon this week.', goal: 8, count: (w) => w.types?.normal || 0, ball: 'great' },
+  ],
+  medium: [
+    { id: 'water-8', group: 'type', title: 'Wetland study', text: 'Catch 8 Water-type Pokémon this week.', goal: 8, count: (w) => w.types?.water || 0, ball: 'net' },
+    { id: 'grass-8', group: 'type', title: 'Green survey', text: 'Catch 8 Grass-type Pokémon this week.', goal: 8, count: (w) => w.types?.grass || 0, ball: 'net' },
+    { id: 'rare-2', group: 'rare', title: 'Rare tracks', text: 'Catch 2 rare spawns this week.', goal: 2, count: (w) => w.rare || 0, ball: 'quick' },
+    { id: 'bosses-2', group: 'bosses', title: 'Big game', text: 'Beat 2 area bosses in the Safari Zone this week.', goal: 2, count: (w) => w.bosses || 0, ball: 'timer' },
+    { id: 'days-4', group: 'days', title: 'Out most days', text: 'Play the Safari Zone on 4 days this week.', goal: 4, count: (w) => (w.days || []).length, ball: 'premier' },
+    { id: 'bought-3', group: 'ball', title: 'Better gear', text: 'Catch 3 Pokémon this week with balls you bought (not Safari Balls).', goal: 3,
+      count: (w) => Object.entries(w.balls || {}).reduce((n, [id, k]) => n + (id === 'safari' ? 0 : k), 0), ball: 'ultra' },
+    { id: 'night-3', group: 'night', title: 'Night shift', text: 'Catch 3 Pokémon at night this week (your clock).', goal: 3, count: (w) => w.night || 0, ball: 'dusk' },
+  ],
+  hard: [
+    { id: 'catch-40', group: 'catch', title: 'Full field season', text: 'Catch 40 Pokémon in the Safari Zone this week.', goal: 40, count: (w) => w.catches || 0, ball: 'ultra' },
+    { id: 'bosses-5', group: 'bosses', title: 'Trophy hunter', text: 'Beat 5 area bosses in the Safari Zone this week.', goal: 5, count: (w) => w.bosses || 0, ball: 'timer' },
+    { id: 'cross-1', group: 'bosses', title: 'The long trek', text: 'Cross the whole Safari Zone this week, its last boss beaten.', goal: 1, count: (w) => w.wins || 0, ball: 'ultra' },
+    { id: 'rare-4', group: 'rare', title: 'Rare collector', text: 'Catch 4 rare spawns this week.', goal: 4, count: (w) => w.rare || 0, ball: 'quick' },
+    { id: 'fire-4', group: 'type', title: 'Heat wave', text: 'Catch 4 Fire-type Pokémon this week.', goal: 4, count: (w) => w.types?.fire || 0, ball: 'dusk' },
+    { id: 'unhurt-12', group: 'unhurt', title: 'Untouchable', text: 'Catch 12 Pokémon this week without taking damage in the fight.', goal: 12, count: (w) => w.flawless || 0, ball: 'luxury' },
+  ],
+};
+const TIER_PAY = { easy: 200, medium: 350, hard: 600 };
+export const EXPEDITION_BONUS = { balls: ['ultra', 5] };
+
+/** The week an expedition belongs to: its Monday (UTC), "YYYY-MM-DD". */
+export const expeditionWeek = (date = new Date()) => towerWeek(date);
+
+/** The week's three goals as board tasks, hard first in the roll so the others never share its group, then the bonus
+    for all three. */
+export function expeditionTasks(week = expeditionWeek()) {
+  const rng = makeRng(hashString(`expeditions:${week}`)), groups = new Set(), out = [];
+  for (const tier of ['hard', 'medium', 'easy']) {
+    const pick = shuffled(EXPEDITIONS[tier], rng).find(e => !groups.has(e.group)) ?? EXPEDITIONS[tier][0];
+    groups.add(pick.group);
+    out.push({ id: `exp:${week}:${pick.id}`, tab: 'expeditions', tier, title: pick.title, text: pick.text, goal: pick.goal,
+      count: (s) => (s.ranger?.week?.key === week ? pick.count(s.ranger.week) : 0), pic: () => ({ ball: pick.ball }), reward: { coins: TIER_PAY[tier] } });
+  }
+  out.reverse();
+  const three = [...out];
+  out.push({ id: `exp:${week}:all`, tab: 'expeditions', tier: 'bonus', title: 'Expedition complete', text: 'Finish all three of this week\'s expeditions.',
+    goal: 3, count: (s) => three.filter(t => t.count(s) >= t.goal).length, pic: () => ({ ball: 'ultra' }), reward: EXPEDITION_BONUS });
+  return out;
+}
+
+/** The week's tally, started afresh when a new week's first thing comes in. */
+const weekOf = (prev, week) => (prev?.key === week ? prev : { key: week });
+
+/** A Safari catch, for the week's expeditions: its type, whether it was rare, at night, unhurt, and the ball. */
+export function logWeekCatch(prev, week, { id, ball, night, flawless, rare }) {
+  const w = weekOf(prev, week), type = ENEMY_DEFS[id]?.type;
+  return { ...w, catches: (w.catches || 0) + 1, balls: { ...(w.balls || {}), ...(ball ? { [ball]: (w.balls?.[ball] || 0) + 1 } : {}) },
+    types: { ...(w.types || {}), ...(type ? { [type]: (w.types?.[type] || 0) + 1 } : {}) },
+    rare: (w.rare || 0) + (rare ? 1 : 0), night: (w.night || 0) + (night ? 1 : 0), flawless: (w.flawless || 0) + (flawless ? 1 : 0) };
+}
+
+/** A boss beaten or the Safari crossed this week. */
+export const logWeekTick = (prev, week, key) => { const w = weekOf(prev, week); return { ...w, [key]: (w[key] || 0) + 1 }; };
+
+/** A Safari day played this week (each UTC day once). */
+export const logWeekDay = (prev, week, day) => { const w = weekOf(prev, week); return (w.days || []).includes(day) ? w : { ...w, days: [...(w.days || []), day] }; };
+
+/** The tasks on a tab: this week's expeditions, or the board's lasting ones. */
+export const tasksOn = (tab, now = new Date()) => (tab === 'expeditions' ? expeditionTasks(expeditionWeek(now)) : TASKS.filter(t => t.tab === tab));
+
+/** Any task on the board, by id: a lasting one or one of this week's expeditions. */
+export const taskById = (id, now = new Date()) => TASKS_BY_ID[id] ?? expeditionTasks(expeditionWeek(now)).find(t => t.id === id) ?? null;
+
+/** Tasks done and not yet claimed, this week's expeditions too: the board's "!". */
+export const readyTasks = (save, now = new Date()) => [...expeditionTasks(expeditionWeek(now)), ...TASKS].filter(t => { const p = progressOf(t, save); return p.done && !p.claimed; });
 
 /** How many more Safari catches can live in the Secret Base, from claimed tasks. */
 export const rangerSlots = (save) => (save.ranger?.claimed || []).reduce((n, id) => n + (TASKS_BY_ID[id]?.reward?.slots || 0), 0);

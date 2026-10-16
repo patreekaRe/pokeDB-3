@@ -864,10 +864,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         (`docs/roadmap-done.md`). **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`) and says what to
         change. Poké Balls are still also sold in the Pokédex's Game Corner app and the Safari prep window's Buy key: say
         if they should move to the Outfitter only. ▶ Run in: CLOUD.
-- **Ranger Task Board, what's next** (built 2026-10-16, `docs/roadmap-done.md`; the user asked for it, no Pokémon dolls):
-  weekly **Expeditions** (3 rotating Safari goals a week, seeded like the missions), more tasks if the user wants them
-  (each is a line in `build()` in `js/data/ranger.js`), and maybe the board's "!" on the Clearing's Safari gate too.
-  Waiting on the user's playtest first: `?mall=outfitter&safari&coins=3000`. ▶ Run in: CLOUD.
+- **Ranger Task Board**: built 2026-10-16 with weekly Expeditions and the Clearing gate's "!" (`docs/roadmap-done.md`).
+  **Next**: the user playtests it (`?mall=outfitter&safari&coins=3000`); more tasks or expedition goals if wanted (a line
+  each in `js/data/ranger.js`). ▶ Run in: CLOUD.
 - **Safari daily modifiers** ("all Pokémon are Water today", "Burn does double"), maybe tied to the clock.
 - **More main-game Pokémon** (~70, per biome 3 wild, 1 elite, 1 boss). Candidates are in `docs/roadmap-done.md`'s
   Pokémon list; re-check each against the rules below before using it.

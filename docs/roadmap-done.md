@@ -2726,3 +2726,8 @@ errors. Detail: `docs/reference/hub-base-mall.md`.
   Law, Britt or THE NIETOS now brings them home, starts their Waystone questline, opens their Workshop gift and PC
   FRIENDS card (`friendWins()` in `js/data/gym.js`). Checked headless; detail in `docs/reference/towns.md`.
 - **Done (2026-10-16): the Home Screen app as smooth as the browser** (the user's ask): full screen it drew 27% more pixels; `createPost()` now draws a Home Screen app's scene no taller than 1.75x its width (`fullScreenApp()`, `post.fit()` in `js/hd2d.js`), the Clearing's canvas an exact 2x of it; the browser is unchanged. `?standalone` tries it.
+- **Done (2026-10-16): weekly Expeditions and the gate's "!"** (the user's go-ahead): three Safari goals a week (easy,
+  medium, hard; 200 / 350 / 600 coins) plus a bonus of 5 Ultra Balls for all three, the board's first tab with a
+  countdown to Monday; a "!" over the Clearing's Safari gate while a task waits. Checked headless: a week's catches,
+  boss and days counted, a claim paid, the gate's mark shown, no errors.
+

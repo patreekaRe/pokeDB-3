@@ -71,3 +71,32 @@ test('days in a row: a streak grows on the next UTC day, resets after a gap, cou
   assert.equal(l.streak, 1);
   assert.equal(l.bestStreak, 3);
 });
+
+test('a week\'s expeditions: three tiers in different groups, the same all week, a bonus for all three', async () => {
+  const { expeditionTasks, expeditionWeek, logWeekCatch, logWeekDay, logWeekTick } = await import('../js/data/ranger.js');
+  const week = expeditionWeek(new Date('2026-10-14T12:00:00Z'));
+  assert.equal(week, '2026-10-12');
+  assert.equal(expeditionWeek(new Date('2026-10-18T23:00:00Z')), week);
+  const tasks = expeditionTasks(week);
+  assert.deepEqual(tasks.map(t => t.tier), ['easy', 'medium', 'hard', 'bonus']);
+  assert.deepEqual(expeditionTasks(week).map(t => t.id), tasks.map(t => t.id));
+  // every week over a year: no two of one group, so the three are different kinds of goal
+  for (let i = 0; i < 52; i++) {
+    const w = expeditionWeek(new Date(Date.UTC(2026, 0, 5 + i * 7)));
+    const ids = expeditionTasks(w).slice(0, 3).map(t => t.id.split(':')[2]);
+    assert.equal(new Set(ids).size, 3, w);
+  }
+  // a week's tally counts only that week, and a new week starts afresh
+  let tally = logWeekCatch(undefined, week, { id: 'poliwag', ball: 'net', night: true, flawless: true, rare: true });
+  tally = logWeekDay(tally, week, '2026-10-13');
+  tally = logWeekTick(tally, week, 'bosses');
+  assert.equal(tally.types.water, 1);
+  assert.equal(tally.rare, 1);
+  const fresh = logWeekCatch(tally, '2026-10-19', { id: 'poliwag', ball: 'safari' });
+  assert.equal(fresh.catches, 1);
+  assert.equal(fresh.bosses, undefined);
+  const save = { safariDex: { caught: [] }, ranger: { claimed: [], log: {}, week: tally }, safari: {} };
+  for (const t of tasks) assert.ok(t.count(save) >= 0 && t.count(save) <= Math.max(t.goal, 99));
+  const other = { ...save, ranger: { ...save.ranger, week: { ...tally, key: '2026-10-05' } } };
+  assert.ok(tasks.slice(0, 3).every(t => t.count(other) === 0));
+});

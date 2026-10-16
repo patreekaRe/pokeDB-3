@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 Safari tasks to track and claim for coins, balls, Safari furniture, Ranger Ranks and room for more Pokémon at home.'],
+  ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 Safari tasks and three weekly Expeditions to claim for coins, balls, Safari furniture and room for more Pokémon at home.'],
   ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
   ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
   ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],

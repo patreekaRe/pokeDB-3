@@ -22,6 +22,7 @@ import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
+import { readyTasks } from './data/ranger.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { vistaArt, VISTA } from './hub-vista.js';
@@ -170,6 +171,7 @@ let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [],
 let built = null;   // the promise of the first build
 let seasonMats = [], snow = null;   // the season's lit decorations (kept apart from glowMats, which buildPlaces() remakes) and its snowfall
 let yardTiles = new Set(), spooks = null, cauldron = null, cracks = null;   // the tiles the season's decorations stand on (nothing walks through them), Halloween's ghosts and its cauldron
+let safariMark = null;   // the "!" over the Safari gate while a Ranger task waits (js/data/ranger.js)
 let pcMail = null;  // the envelope bobbing over the PC while its mailbox has a letter (js/mail.js)
 let beckons = [];   // the signs that are places of their own, hopping now and then (beckon())
 let questMark = null, nietosMark = null;   // the "!" over the quest board (a notice to read) and over the Nietos' house (a step to hand them; boardNow())
@@ -2203,7 +2205,7 @@ function makePlaces() {
   // walks up and says what it is
   list.push({
     id: 'safari-gate', name: 'Safari Zone', step: { x: SAFARI_AT.tx, y: SAFARI_AT.ty + 1 }, tiles: [], tag: [SAFARI_AT.tx, 4, SAFARI_AT.ty], open: safari,
-    line: safari ? 'Today\'s Safari Zone run, the same for everyone. Spin the Pokéstop to set out.'
+    line: safari ? `${readyTasks(save).length ? 'Ranger tasks are ready to claim at the Safari Outfitter in the Poké Mall! ' : ''}Today's Safari Zone run, the same for everyone. Spin the Pokéstop to set out.`
       : `The Safari Zone opens once you've beaten every Pokémon in all three biomes. ${safariUnlockProgress(save)}`,
     reset: safari && 'daily',
     buttons: [],
@@ -2214,6 +2216,12 @@ function makePlaces() {
       safariFx.group.position.set(x, 0, z);
       for (const l of lamps) if (l.userData.id === 'safari') l.userData.k = safari ? 0.8 : 0;   // its torches, unlit while it's shut
       g.add(safariFx.group);
+      // a "!" over the gate while a Ranger task waits to be claimed at the Outfitter (js/ranger.js; 2026-10-16)
+      safariMark = board(newsArt(), x, z + 0.1, { shadow: false });
+      safariMark.rotation.x = -PITCH;
+      safariMark.userData.y = 4.4;
+      safariMark.visible = safari && readyTasks(save).length > 0;
+      g.add(safariMark);
       safariFence(g, tileX(-MW + 0.5), x - WING_X, z);
       safariFence(g, x + WING_X, tileX(SAFARI_AT.tx + 4.6), z);   // past the ranks board, to the main gate's fence
     },
@@ -2512,7 +2520,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -4085,7 +4093,7 @@ function frame(now) {
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
-  for (const m of [pcMail, pcNews, questMark, nietosMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
+  for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {
     s.cue.opacity = calm ? 0.82 : 0.74 + 0.14 * (0.5 + 0.5 * Math.sin(now / 520));
