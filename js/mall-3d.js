@@ -23,10 +23,10 @@ import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
 import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight } from './secret-base.js';
-import { frontArt, frontWindow, buildFloor, upstairsLine, LIFT, KEEPERS, piecePreview } from './mall-furniture.js';
+import { frontArt, frontWindow, buildFloor, LIFT, KEEPERS, piecePreview } from './mall-furniture.js';
 import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
-import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, passLine } from './mall-outfitter.js';
+import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
 import { safariOpen } from './data/pokedex.js';
 import { safariDaily } from './data/safari.js';
 import { DAY_PASS } from './data/balls.js';
@@ -952,34 +952,27 @@ async function prizeTap(spot) {
 
 const wareOf = (spot) => cornerEntries('balls').find(e => e.id === spot.ball);
 
-/** A ball pack at the Safari Outfitter: the first tap picks it and Kangaskhan says what it does and costs, the next buys
-    it (js/shop.js's buyCorner(), the same as the Game Corner app's Buy). */
+/** A ball pack at the Safari Outfitter: a tap opens Kangaskhan's buy window, the ball turning on its cushion (2026-10-16,
+    the user's ask: the Furniture store's merchant window, no "tap again"); Buy goes through js/shop.js's buyCorner(),
+    the same as the Game Corner app's. */
 async function wareTap(spot) {
-  const e = wareOf(spot), coins = getSave().coins ?? 0;
-  const short = () => { playSound('cancel'); talk(`Hmm, you're ${(e.cost - coins).toLocaleString()} PokéCoins short for that one.`, 3600); };
-  if (picked !== spot) {
-    pick(spot);
-    if (e.blocked) return talk(e.text, 4600);
-    if (e.done) return talk(`${e.name}: that one's yours already! ${e.text}`, 4600);
-    const carrying = e.level ? ` You're carrying ${getSave().balls[spot.ball] || 0}.` : '';
-    return talk(`${e.name}! ${e.text} ${e.cost.toLocaleString()} PokéCoins.${carrying} Tap again and ${e.level ? 'they\'re' : 'it\'s'} yours.`, 5600);
-  }
-  if (e.done || e.blocked) { pick(null); return wareTap(spot); }
-  if (coins < e.cost) return short();
-  if (!await ask(`Buy ${e.name} for ${e.cost.toLocaleString()} PokéCoins?`)) return pick(null);
-  const news = buyCorner(e);
-  if (!news) return short();
+  const e = wareOf(spot);
+  pick(spot);
+  if (e.blocked) return talk(e.text, 4600);
+  if (e.done) return talk(`${e.name}: that one's yours already! ${e.text}`, 4600);
+  if (!await merchant(ballWindow(spot.ball, e))) return pick(null);
+  const coins = getSave().coins ?? 0, news = coins >= e.cost && buyCorner(e);
+  if (!news) { playSound('cancel'); pick(null); return talk(`Hmm, you're ${(e.cost - coins).toLocaleString()} PokéCoins short for that one.`, 3600); }
   thanks(`Thank you, ranger! ${news.join(' ')}`);
 }
 
-/** The Day Pass machine: the first tap says where today stands, the next buys a pass (if one is still worth buying). */
+/** The Day Pass booth: a tap opens its window, saying what a pass is and where today stands; Buy takes one, or once it's
+    held the window only says so. */
 async function passTap(spot) {
-  const state = passState(), coins = getSave().coins ?? 0;
-  if (picked !== spot || state === 'pass') { pick(spot); return talk(passLine(state), 5600); }
-  const short = () => { playSound('cancel'); talk(`A Day Pass is ${DAY_PASS} PokéCoins, and you have ${coins.toLocaleString()}.`, 3600); };
-  if (coins < DAY_PASS) return short();
-  if (!await ask(`Buy a Day Pass for ${DAY_PASS} PokéCoins? Replay today's Safari as often as you like until the day ends.`)) return pick(null);
-  if ((getSave().coins ?? 0) < DAY_PASS) return short();
+  pick(spot);
+  if (!await merchant(passWindow())) return pick(null);
+  const coins = getSave().coins ?? 0;
+  if (coins < DAY_PASS) { playSound('cancel'); pick(null); return talk(`A Day Pass is ${DAY_PASS} PokéCoins, and you have ${coins.toLocaleString()}.`, 3600); }
   const { day } = safariDaily();
   updateSave(d => { d.coins -= DAY_PASS; d.safari.pass = day; });
   thanks('Here\'s your Day Pass! Replay the Safari as much as you like today.');
@@ -1006,7 +999,7 @@ async function bayTap(spot) {
     return talk(`Sorry, the ${p.name.toLowerCase()} is sold out: you have one already! Your PC's Duplicate can make you more copies.`, 4600);
   }
   pick(spot);
-  if (!await merchant(spot)) return pick(null);
+  if (!await pieceWindow(spot)) return pick(null);
   const coins = getSave().coins ?? 0;
   if (coins < p.price || !buyPiece(loadBase(), spot.piece)) {
     playSound('cancel');
@@ -1022,26 +1015,39 @@ async function bayTap(spot) {
   talk(n > 1 ? `Thank you! All ${n} styles of the ${p.name.toLowerCase()} are off to your Secret Base.` : `Thank you! The ${p.name.toLowerCase()} is off to your Secret Base.`, 3600);
 }
 
-/** The buy window: the shopkeeper's tag, the piece's department on a ribbon in its colour, its name, the piece turning on
-    a velvet turntable (drag it to turn it yourself), how many styles come with it, the price and your coins, Buy / Not
-    now. Resolves true on Buy; a tap anywhere outside it is a no, like every window. */
-function merchant(spot) {
-  const p = PIECES[spot.piece], n = styles(spot.piece).length, coins = getSave().coins ?? 0, short = coins < p.price;
+/** The buy window: the shopkeeper's tag, a ribbon in its colour (the piece's department, the ball's kind), the thing's
+    name, the thing turning on a velvet turntable (drag it to turn it yourself), a note, the price and your coins, Buy /
+    Not now. `w`: { ink, dept, name, note, price, preview(THREE) => { pivot, h, r } }, and `held`: a line in place of the
+    price and no Buy (the Day Pass already bought). Resolves true on Buy; a tap anywhere outside it is a no, like every
+    window. */
+function merchant(w) {
+  const coins = getSave().coins ?? 0, short = !w.held && coins < w.price;
   closeAsk(false);
   clearTimeout(say.t);
   lineEl.classList.remove('on');
-  shopEl.style.setProperty('--ink', spot.dept?.ink ?? '#4fa45e');
+  shopEl.style.setProperty('--ink', w.ink);
   shopEl.querySelector('.mall-ask-who').textContent = P.keeper?.name ?? '';
-  shopEl.querySelector('.mshop-dept').textContent = spot.dept?.name ?? 'FURNITURE';
-  shopEl.querySelector('.mshop-name').textContent = p.name;
-  shopEl.querySelector('.mshop-note').textContent = n > 1 ? `All ${n} styles included` : 'Delivered to your Secret Base';
-  shopEl.querySelector('.mshop-price b').textContent = p.price.toLocaleString();
-  shopEl.querySelector('.mshop-price small').textContent = short ? `You have ${coins.toLocaleString()}: ${(p.price - coins).toLocaleString()} short` : `You have ${coins.toLocaleString()}`;
+  shopEl.querySelector('.mshop-dept').textContent = w.dept;
+  shopEl.querySelector('.mshop-name').textContent = w.name;
+  shopEl.querySelector('.mshop-note').textContent = w.note;
+  shopEl.querySelector('.mshop-price b').textContent = w.held ?? w.price.toLocaleString();
+  shopEl.querySelector('.mshop-coin').hidden = !!w.held;
+  shopEl.querySelector('.mshop-price small').textContent = w.held ? '' : short ? `You have ${coins.toLocaleString()}: ${(w.price - coins).toLocaleString()} short` : `You have ${coins.toLocaleString()}`;
+  shopEl.querySelector('.mall-ask-yes').hidden = !!w.held;
+  shopEl.querySelector('.mall-ask-no').textContent = w.held ? 'OK' : 'Not now';
   shopEl.classList.toggle('short', short);
+  shopEl.classList.toggle('held', !!w.held);
   shopEl.hidden = false;
   shopEl.classList.remove('b3-say'); void shopEl.offsetWidth; shopEl.classList.add('b3-say');
-  spinPiece(spot);
+  spinPiece(w.preview);
   return new Promise(res => { answer = res; });
+}
+
+/** A furniture piece's buy window, its department's colour and name. */
+function pieceWindow(spot) {
+  const p = PIECES[spot.piece], n = styles(spot.piece).length, ink = spot.dept?.ink ?? '#4fa45e';
+  return merchant({ ink, dept: spot.dept?.name ?? 'FURNITURE', name: p.name, price: p.price,
+    note: n > 1 ? `All ${n} styles included` : 'Delivered to your Secret Base', preview: (T) => piecePreview(T, spot.piece, ink) });
 }
 
 /* The buy window's turntable: the piece drawn by js/turntable.js's shared renderer, turning slowly on its own; a drag
@@ -1049,14 +1055,14 @@ function merchant(spot) {
 let spin = null;
 const SPIN = 0.55;   // its own pace, a turn every ~11 s
 
-async function spinPiece(spot) {
+async function spinPiece(preview) {
   const s = spin = { yaw: -0.6, vel: 0, tilt: 0.38, drag: null, last: 0 };
   const c = shopEl.querySelector('.mshop-turn');
   c.width = c.height = TURN_SIZE;
   c.getContext('2d').clearRect(0, 0, c.width, c.height);
   const st = await turntableStage().catch(() => null);
   if (!st || spin !== s) return;
-  const { pivot, h, r } = piecePreview(st.THREE, spot.piece, spot.dept?.ink ?? '#4fa45e');
+  const { pivot, h, r } = preview(st.THREE);
   const d = r / Math.sin(st.camera.fov * Math.PI / 360) * 1.02, mid = new THREE.Vector3(0, h * 0.45, 0);
   const step = (now) => {
     if (spin !== s || !root?.isConnected) return;
@@ -1171,7 +1177,7 @@ function tickPoofs(dt, now) {
 /** A Game Corner game (Voltorb Flip, the Gachapon): the first tap picks it and Meowth says what it is, the next sits
     down at it; coming back repaints the coins and the prize cases. */
 function gameTap(spot) {
-  if (picked !== spot) { pick(spot); return talk(spot.game.line, 4600); }
+  if (picked !== spot && !spot.game.direct) { pick(spot); return talk(spot.game.line, 4600); }
   if (spot.game.talkOnly) return talk(spot.game.line, 4600);
   pick(null);
   spot.game.open(() => { showCoins(); P?.refresh?.(); });
@@ -1188,12 +1194,12 @@ function keeperTap() {
   P.keeper.special(() => { showCoins(); place?.refresh?.(); }).then(r => { if (r === true || P !== place) return; if (typeof r === 'string') talk(r, 5200); else chat(); });
 }
 
-/** The lift: roped off until the second floor is bought (a tap asks, a second buys), then ridden up, or down again. */
+/** The lift: roped off until the second floor is bought (a tap opens the buy window), then ridden up, or down again. */
 async function liftTap(spot) {
   if (floorOf() === 1 && !loadBase().upstairs) {
-    if (picked !== spot) { pick(spot); return talk(upstairsLine(), 4600); }
+    pick(spot);
     const coins = getSave().coins ?? 0;
-    if (coins >= UPSTAIRS_PRICE && !await ask(`Open the second floor for ${UPSTAIRS_PRICE.toLocaleString()} PokéCoins?`)) return pick(null);
+    if (coins >= UPSTAIRS_PRICE && !await ask(`Upstairs there are 8 more pieces every day. Open the second floor for ${UPSTAIRS_PRICE.toLocaleString()} PokéCoins?`)) return pick(null);
     if (!buyUpstairs(loadBase())) { playSound('cancel'); return talk(`Hmm, you'd need ${(UPSTAIRS_PRICE - coins).toLocaleString()} more PokéCoins to open the second floor.`, 3600); }
     playSound('buy');
     pick(null);

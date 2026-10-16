@@ -2701,6 +2701,9 @@ Not now (no more "tap again"); prices are crisp on-screen tags at each plinth (`
 - **Done (2026-10-16): the Day Pass made obvious and central** (the user's asks): a gold DAY PASS ticket over the booth and
   a sandwich board, then the booth moved up onto the middle dais and the Master Ball onto the right wing's empty stump.
   Checked headless: no stand covers another or Kangaskhan.
+- **Done (2026-10-16): the Outfitter's buy windows** (the user's ask): balls and the Day Pass open the Furniture store's
+  merchant window (the ball or a ticket turning, what it is, the price; the pass's held state has no Buy), every "tap
+  again" gone from the Outfitter and the Furniture store's lift. Checked headless: each window draws and buys.
 
 
 ### The Furniture store's lift moved to the head of the nave (2026-10-16, the user's ask)

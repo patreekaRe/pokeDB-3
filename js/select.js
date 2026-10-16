@@ -264,9 +264,11 @@ function renderPack() {
     const slot = el('button', `pouch-slot${h ? ' full' : ''}${i === 0 ? ' first' : ''}`);
     slot.type = 'button';
     slot.disabled = !h;
-    slot.setAttribute('aria-label', h ? `Take the ${h.name} out` : 'Empty');
+    slot.setAttribute('aria-label', h ? `Biome ${i + 1}: take the ${h.name} out` : `Biome ${i + 1}: empty`);
     if (h) { slot.append(itemSprite(h, 'pack-ico')); slot.addEventListener('click', () => pouchTake(i)); }
-    return slot;
+    const cell = el('div', 'pouch-cell');
+    cell.append(slot, el('small', '', `Biome ${i + 1}`));
+    return cell;
   }));
   $('pouch-kept').replaceChildren(...berries.map(o => {
     const h = HELD_BY_ID[o.recipe.makes], left = leftOf(o);
@@ -278,9 +280,8 @@ function renderPack() {
     chip.addEventListener('click', () => pouchAdd(o.recipe.id));
     return chip;
   }));
-  const first = HELD_BY_ID[RECIPES_BY_ID[pouch[0]]?.makes];
-  $('pouch-rule').textContent = !first ? `Tap a berry to pack it, up to ${POUCH}. The first is held as you set out; the rest go on one a biome, from the Bag.`
-    : `Held first: ${first.name}. ${first.text.replace(/^Held\. /, '')}${pouch.length > 1 ? ` ${pouch.length - 1} more for the biomes after. Tap a slot to take one out.` : ' Tap it to take it out.'}`;
+  $('pouch-rule').textContent = pouch.length ? 'One berry a biome, eaten by itself when it\'s needed. Tap a slot to take it out.'
+    : 'Tap a berry to pack it, one for each biome.';
 
   if (!kits.some(o => o.recipe.id === pack)) pack = null;
   const o = kits.find(k => k.recipe.id === pack), pick = $('pack-pick');

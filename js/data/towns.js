@@ -2195,6 +2195,13 @@ export const CLEARING = {
         'The others wait in the pouch. Swap from your Bag\'s Items pocket on the map. Never mid-battle, mind: no time for that.',
         'And once one\'s eaten, the next can go on in the next biome. One a biome. Grow plenty, and come back for more!',
       ],
+      // the first run kit item he makes you (2026-10-16, the user's ask): the one-a-run rule, once a save
+      kitTalk: [
+        'There, your first bit of run kit! Supplies for the road, made from your berries and the towns\' finds.',
+        'Make as many as you like, whenever you like. I keep every one for you.',
+        'But you take only one into each run. Pick it on the Prepare screen, beside your Berry Pouch, and it starts in your Bag.',
+        'Use it when you need it. Whatever\'s left in your Bag stays behind when the run ends, win or lose, so don\'t hoard it!',
+      ],
       // after the second line, while the Nietos' Waystone Chime is the step you're on
       meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',
       cast: {

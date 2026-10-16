@@ -222,6 +222,7 @@ export function openWorkshop() {
             : `Done! A ${r.name}. Tap Carry it to use it.`);
     draw();
     if (r.kind === 'held' && !toldHeld('held')) await kurtSays(CLEARING.homes.workshop.heldTalk, 'held');
+    if (r.kind === 'kit' && !toldHeld('kit')) await kurtSays(CLEARING.homes.workshop.kitTalk, 'kit');
   };
   /* Kurt slides in (gymTalk(), as on his first hello) over the room: the bench steps aside while he talks (a modal
      dialog would sit over him), then comes back as it was. */
