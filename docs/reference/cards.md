@@ -209,3 +209,5 @@ late-run decks, ranked by how long they last and how hard they hit, with per-car
 - **Mewtwo** (human bot, `humanCfg('psychic', 0)`, shards 0): 63% at the branch's start (200 runs), 53.5% after the pass
   (400; all of it in the Depths), 45.5% while Safeguard exhausted too. Eternatus's own numbers barely moved it; the
   Depths' `MEWTWO_MODE.mods[3]` is now bossDmg 4 / bossHp 1.2 / enemyDmg -3 (was 8 / 1.3 / 0): 66.7% (300).
+- **Sky Pillar** (`towerCfg`, 60 climbs of 4 flights a type), reaching floor 40 before -> after: fire 68 -> 70%, grass
+  80 -> 78%, water 53 -> 58%: unchanged within noise. Its augments weren't retuned (stacking them is the mode's point).
