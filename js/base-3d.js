@@ -1365,21 +1365,22 @@ async function yardLines() {
   const { workshopOpen } = await import('./data/towns.js');
   return [
     `${metSmeargle(base) ? 'Hello again!' : 'Hello there! I\'m Smeargle.'} So this is your backyard. What a lovely patch of lawn!`,
-    'It\'s yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall: just tap me at the shop.',
+    `It's yours to furnish. Garden pieces come from my garden catalogue at the Poké Mall${metSmeargle(base) ? '' : ', which opens tomorrow'}: just tap me at the shop.`,
     'Whatever you buy waits in storage. Set it out with Furniture, the same as indoors.',
     `And the Pokémon tab lets the ${ON_SHOW} on show come out to play. They'll swim, swing and sit wherever you give them room.`,
     'Oh! I left you a Berry plot in storage, too. Set it down, then tap it while walking to plant a berry.',
     'Cheri, Oran and Pecha Berries take a day, Sitrus two and Lum three. They ripen at midnight, UTC.',
     'Water a growing plot once a day, and it gives one more berry for every day it was watered.',
     'Picked berries go in your Satchel. Sell the spares with the Garden button, out here.',
-    workshopOpen(getSave()) ? 'Kurt at his Workshop in the Clearing turns berries and town materials into a held berry or an item to take on a run. One a run, mind!'
+    workshopOpen(getSave()) ? 'Kurt at his Workshop in the Clearing turns berries and town materials into held berries and items to take on a run. Pack up to three berries, one going on each biome!'
       : 'And someone handy in the Clearing may craft with them someday. Keep a few!',
     'Happy gardening! See you at the shop.',
   ];
 }
 
 async function yardIntro() {
-  if (metInYard(base) || (!base.house.yard.lent && !metSmeargle(base))) return;
+  // no wait on the housewarming indoors: the arch leads straight out here, so a yard can be walked before the house
+  if (metInYard(base)) return;
   yardTalk = true;
   try {
     const lines = await yardLines();
@@ -1390,6 +1391,7 @@ async function yardIntro() {
     playCry('smeargle');
     const { gymTalk } = await import('./gym.js');
     await gymTalk(YARD_SMEARGLE, lines, { lit: true, title: 'PAINTER & GARDENER ' });
+    if (!base.house.yard.lent && !metSmeargle(base)) meetSmeargle(base);
     meetInYard(base);
     playSound('item-get');
   } finally { yardTalk = false; refresh(); }

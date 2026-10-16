@@ -122,8 +122,10 @@ The first section began as the note on playtesting the live site and grew into t
   `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
   berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
   so the 3D plants change at once.
-- **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard, once the housewarming
-  indoors is over (`metSmeargle()`; so the two never meet), `yardIntro()` in `js/base-3d.js` (from `startVisit()`) has
+- **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
+  failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
+  hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro
+  existed has no `met`, so it plays on the next visit), `yardIntro()` in `js/base-3d.js` (from `startVisit()`) has
   Smeargle slide in on `gymTalk()` (lit, plate PAINTER & GARDENER, its cry) and say what the yard is for: furnishing it
   from the garden catalogue, storage and Furniture, the Pokémon tab, the Berry plot it leaves in storage, the berries'
   days and UTC midnight, watering, the Satchel and the Garden key's selling, and Kurt's Workshop by name only once
