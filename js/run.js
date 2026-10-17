@@ -36,7 +36,7 @@ import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
-import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
+import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
@@ -1796,6 +1796,7 @@ async function fight(node, { talked = false } = {}) {
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
+  if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
@@ -3622,7 +3623,7 @@ function rollEvents() {
   let bag = [];
   for (const node of Object.values(run.map.byId)) {
     if (node.type !== 'event') continue;
-    if (!bag.length) bag = shuffled(EVENTS);
+    if (!bag.length) bag = shuffled(eventsFor(isTower() ? 'tower' : isSafari() ? 'safari' : 'run'));
     rollEvent(node, bag.pop());
   }
 }
@@ -3654,6 +3655,16 @@ function rollEvent(node, event) {
     const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type && !r.boss));
     node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
   }
+  if (event.wake) {   // the Snorlax: the pile's order, and one roll a search for whether it wakes
+    node.event.loot = shuffled(event.loot);
+    node.event.rolls = event.wake.map(() => random());
+    node.event.searched = 0;
+  }
+  if (event.digHp) { node.event.rolls = Array.from({ length: 12 }, () => random()); node.event.dug = 0; }
+  if (event.morph) {
+    const pool = poolForType(run.starter.type);
+    node.event.offers = Object.fromEntries(event.morph.map(rarity => [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
+  }
 }
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
@@ -3667,6 +3678,7 @@ const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
 const EVENT_SCENES = {
   'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar',
   'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
+  'sleeping-snorlax': 'snorlax', 'trash-heap': 'trash', ditto: 'ditto', 'bills-pc': 'billspc', abra: 'abra',
 };
 
 /** An event's room; `after` is its trainer's reaction (a figureDoes() move) once its picker is done: then the room has no
@@ -3707,7 +3719,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'gym', 'town', 'home'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
@@ -4076,7 +4088,155 @@ const EVENT_CHOICES = {
       }, run.hp <= cost),
     ] };
   },
+
+  // StS's Dead Adventurer: each search finds the next thing in the pile, but it may wake (an Alpha fight, elite rewards)
+  'sleeping-snorlax'(event, state, back, react, done) {
+    const node = run.map.byId[run.current], wakesAt = snorlaxWakesAt(event, state.rolls), n = state.searched;
+    const figures = { mon: { src: 'assets/pokemon/snorlax-front.gif' } };
+    if (n >= event.loot.length) return { figures, sub: [event.text, 'The pile is empty. Best tiptoe away.'], options: [spotOption('Search', 'Nothing left in the pile.', () => {}, true)] };
+    const odds = Math.round(event.wake[n] * 100);
+    const then = () => (state.searched >= event.loot.length ? done() : back());
+    const search = async () => {
+      const waking = n === wakesAt;
+      if (!await playOut('search', { wake: waking })) return;
+      if (waking) {
+        figureDoes('mon', 'hop');
+        return sayLines(['The Snorlax wakes up... and it is NOT happy!'], 'reward-log', () => fight({ ...node, type: 'elite', enemyId: 'snorlax', foeHp: event.foeHp }));
+      }
+      const what = state.loot[n];
+      state.searched += 1;
+      checkpoint();
+      const item = what === 'item' && !run.relics.includes('dusk-stone') ? itemChoices(run)[0] : null;
+      if (what === 'relic') return hold3d(), offerRelic('Under the Snorlax', then);
+      if (item) return hold3d(), offerItem(item, then, { opened: true, title: 'Under the Snorlax' });
+      const money = perBiome(event.lootMoney);
+      run.money += money;
+      setMoney(run.money);
+      playSound('coins');
+      tell(`Found ₽${money} in the pile!`);
+      then();
+    };
+    return { figures, sub: [event.text, `Search the pile: ${event.loot.length - n} thing${event.loot.length - n > 1 ? 's' : ''} left. It wakes more easily each time.`], options: [
+      spotOption('Search', `Find something in the pile. A ${odds}% chance it wakes up: an Alpha fight.`, search),
+    ] };
+  },
+
+  // StS's Scrap Ooze: dig for HP, each dig hurting more and likelier to turn up the relic
+  'trash-heap'(event, state, back, react, done) {
+    const dig = trashDig(event, state.dug, run.biome), odds = Math.round(dig.odds * 100);
+    return { figures: { mon: { src: 'assets/pokemon/trubbish-front.gif' } },
+      sub: [event.text, state.dug ? `Dug ${state.dug} time${state.dug > 1 ? 's' : ''}. The next dig: ${dig.hp} HP, a ${odds}% chance.` : `Dig in for ${dig.hp} HP: a ${odds}% chance of a relic. Each dig hurts more, and finds more.`], options: [
+        spotOption(`Dig -${dig.hp} HP`, run.hp <= dig.hp ? `You need more than ${dig.hp} HP.` : `A ${odds}% chance of finding a relic.`, async () => {
+          const win = state.rolls[state.dug % state.rolls.length] < dig.odds;
+          if (!await playOut('dig', { win })) return;
+          loseHp(dig.hp);
+          state.dug += 1;
+          await showHpChange();
+          checkpoint();
+          if (win) { figureDoes('mon', 'hop'); return hold3d(), offerRelic('Buried in the junk', done); }
+          figureDoes('mon', 'shake');
+          tell(`Just junk. Lost ${dig.hp} HP.`);
+          back();
+        }, run.hp <= dig.hp),
+      ] };
+  },
+
+  // StS's Duplicator and Transmogrifier: one more of a move, or a move turned into another of its rarity
+  ditto(event, state, back, react, done) {
+    const copyable = dittoCopies(), morphs = dittoMorphs(state);
+    const act = (name, then) => async () => { figureDoes('mon', 'hop'); if (await playOut(name)) then(); };
+    return { figures: { mon: { src: 'assets/pokemon/ditto-front.gif' } }, sub: [event.text, 'Let it copy one of your moves, or Transform one into a random move of the same rarity.'], options: [
+      spotOption('Copy', copyable.length ? 'Gain a second copy of one of your moves.' : 'You hold every move you could copy as many times as you can.',
+        act('copy', () => dittoPick('copy', copyable, back, done)), !copyable.length),
+      spotOption('Transform', morphs.length ? 'Turn one move into a random one of the same rarity.' : 'None of your moves can Transform.',
+        act('morph', () => dittoPick('morph', morphs, back, done)), !morphs.length),
+    ] };
+  },
+
+  // StS's Note for Yourself: take out the move you stored last time, then store one for a later run (a Box per type)
+  'bills-pc'(event, state, back, react, done) {
+    const type = run.starter.type, kept = getSave().pcBox?.[type], id = CARDS_BY_ID[kept] ? kept : event.box, card = CARDS_BY_ID[id];
+    if (state.took) return { sub: [event.text, 'Now store one of your moves in the Box for a later run.'], options: [
+      spotOption('Store a move', 'Choose a move to leave in the Box.', () => pcStore(done)),
+    ] };
+    return { sub: [event.text, `Your Box holds ${card.name}. Take it, then store one of yours for a later run.`], options: [
+      spotOption('Use the PC', `Take out ${card.name}, then leave one of your moves in its place.`, async () => {
+        if (!await playOut('boot')) return;
+        run.deck.push(id);
+        state.took = true;
+        checkpoint();
+        hold3d();
+        revealCard("Bill's PC", card, [`You took ${card.name} out of your Box!`, 'Now store one of your moves for a later run.'], () => pcStore(done));
+      }),
+    ] };
+  },
+
+  // StS's Secret Portal: straight to this biome's boss, skipping what's left of its map
+  abra(event, state, back, react, done) {
+    const node = run.map.byId[run.current], boss = run.map.byId[run.map.boss.id], near = node.next.includes(boss.id);
+    return { figures: { mon: { src: 'assets/pokemon/abra-front.gif' } }, sub: [event.text, 'Teleport skips the rest of this map, rooms and rewards and all: you land at the boss\'s door.'], options: [
+      spotOption('Teleport', near ? 'The boss is just ahead anyway.' : `Skip the rest of ${land().name}: straight to its boss.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('teleport')) return;
+        tell('Abra used Teleport!');
+        enterNode(boss);
+      }, near),
+    ] };
+  },
 };
+
+const copiesOf = (id) => run.deck.filter(x => baseId(x) === baseId(id)).length;
+const pickable = (card) => card && !card.evoOnly && !card.unplayable;
+
+/** The moves Ditto can copy: any of yours you hold fewer than MAX_COPIES of. */
+const dittoCopies = () => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card) && copiesOf(card.id) < MAX_COPIES);
+
+/** The moves Ditto can Transform, each with what it becomes (rolled as the biome started). */
+const dittoMorphs = (state) => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card))
+  .map(entry => ({ ...entry, gets: CARDS_BY_ID[dittoMorph(state.offers, CARDS_BY_ID[baseId(entry.card.id)], copiesOf, MAX_COPIES)] }))
+  .filter(entry => entry.gets);
+
+function dittoPick(kind, entries, back, done) {
+  const copy = kind === 'copy';
+  showChoice({
+    title: 'Ditto',
+    sub: copy ? 'Choose a move for Ditto to copy.' : 'Choose a move for Ditto to Transform. What it becomes is a surprise.',
+    options: entries.map(({ card, count, gets }) => ({
+      ...cardOption(card, run.stage, () => {
+        if (copy) run.deck.push(card.id);
+        else run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
+        revealCard('Ditto', copy ? card : gets, copy ? [`Ditto copied ${card.name}!`, `One more ${card.name} in your deck.`]
+          : [`Ditto Transformed your ${card.name}...`, `It became ${gets.name}!`], done);
+      }, count),
+      ask: copy ? `Copy ${card.name}?` : `Transform ${card.name}?`,
+      confirm: copy ? 'Copy it' : 'Transform it',
+    })),
+    skipLabel: 'Back',
+    layout: 'deck-pick',
+    onSkip: back,
+  });
+}
+
+/** Bill's PC: leave one of your moves in this type's Box for a later run (not saved from a playtest peek). No skipping:
+    you took one out. */
+function pcStore(done) {
+  const type = run.starter.type;
+  showChoice({
+    title: "Bill's PC",
+    sub: 'Choose a move to store in your Box. A later run of this type will find it here.',
+    options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card)).map(({ card, count }) => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.splice(run.deck.indexOf(card.id), 1);
+        if (!peeking) updateSave(s => { s.pcBox = { ...s.pcBox, [type]: card.id }; });
+        tell(`Stored ${card.name} in the Box.`);
+        done();
+      }, count),
+      ask: `Store ${card.name}?`,
+      confirm: 'Store it',
+    })),
+    layout: 'deck-pick',
+  });
+}
 
 /** The deck's common and uncommon cards, each with the card it trades for (the first rolled one you hold fewer than MAX_COPIES of). */
 function dayCareTrades(event, state) {

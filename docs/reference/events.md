@@ -198,6 +198,31 @@ from `figureDoes()`. An act's `ms` and `cues` can be functions of its `opts` (`p
 puts it back whole on a new visit (berries, the sprout, the ball). Team Rocket's room is built per grunt and Alpha, so it
 is not built ahead.
 
+## Batch 1 of the StS events (2026-10-17, the user's picks; docs/roadmap.md's "More ? events")
+
+Five events, each on a StS one (named in its `EVENTS` comment), their rules pure in `js/data/events.js` (`snorlaxWakesAt()`,
+`trashDig()`, `dittoMorph()`, `eventsFor()`; `tests/events.test.mjs`), their rooms in `EVENT_CHOICES` in `js/run.js`,
+mirrored in pokeDB-sim's `sim/engine.js`. An event's `not` keeps it out of a mode: `rollEvents()` draws from
+`eventsFor('run' | 'safari' | 'tower')`.
+- **Sleeping Snorlax** (Dead Adventurer): the pile's `loot` (₽, an item, a relic) in a rolled order, one a search; each
+  search's roll (`node.event.rolls`, rolled as the biome starts) against `wake` (25 / 50 / 75%). Waking is an Alpha
+  fight, `fight({ ...node, type: 'elite', enemyId: 'snorlax', foeHp })`: `foeHp` (0.4) scales its HP, read in `fight()`
+  (the boss Snorlax as an Alpha would be ~270 HP in the Clearing); elite rewards, the rest of the pile lost.
+- **Trash Heap** (Scrap Ooze): a dig costs `digHp` +1 a dig before, and finds the relic at `odds` +`step` a dig before
+  (25%, +10%); twelve rolls are rolled ahead. Trubbish stands on the heap.
+- **Ditto** (Duplicator + Transmogrifier): Copy pushes one more of a move (under `MAX_COPIES`); Transform swaps a move
+  for the first of its rarity's shuffled `offers` that isn't it (like the Day Care's, checked by `eventIdsKnown()`).
+  Neither takes an evolution card or an unplayable one.
+- **Bill's PC** (Note for Yourself): one Box a type, `save.pcBox[type]` (an empty one holds `box`, Quick Attack). Use the
+  PC takes it out (`revealCard()`), then `pcStore()` asks for one of yours, with no Back (you took one); `state.took`
+  brings a refresh back to that picker. A peek saves nothing. Not in a Safari day or a climb (`not`): the Box is yours.
+- **Abra** (Secret Portal): Teleport goes straight to `run.map.boss` (`enterNode()`, so a Gym Leader's gym still walks
+  in), greyed when the boss is the next room anyway. Not in a climb, whose floors are its score.
+Their scenes: outdoor ones in `PLACE_ART` (`snorlax`, `trash`, `ditto`, `abra`: the Pokémon are the page's sprites on
+`life.stands`) and 3D on the biome's ground (`buildSnorlax()`, `buildTrash()`, `buildDitto()`, `buildAbra()`, per biome);
+Bill's PC the Move Deleter's study in other colours (`billspc`, `buildBillsPc()` round the Storage PC furniture piece).
+Acts: `search`, `dig`, `copy`, `morph`, `teleport`, `boot`.
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.

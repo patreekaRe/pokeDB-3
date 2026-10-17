@@ -23,6 +23,35 @@ const PALETTE = {
 };
 
 const ICONS = {
+  // the Sleeping Snorlax and the Trash Heap ? events
+  '😴': [
+    '....yyyy....',
+    '..yyyyyyyy..',
+    '.yyyyyyyyyy.',
+    '.yyyyyyyyyy.',
+    'yykkyyyykkyy',
+    'yyyyyyyyyyyy',
+    'yyyyyyyyyyyy',
+    'yyyyykkyyyyy',
+    '.yyyykkyyyy.',
+    '.yyyyyyyyyy.',
+    '..yyyyyyyy..',
+    '....yyyy....',
+  ],
+  '🗑️': [
+    '....dddd....',
+    '.llllllllll.',
+    '.dddddddddd.',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..lglglglg..',
+    '..gggggggg..',
+    '............',
+  ],
   // the Sky Pillar (js/tower.js, js/towerprep.js): Rayquaza's mark, the tower, the summit, and the gauge's skies
   '🐉': [
     '............',

@@ -803,6 +803,8 @@ act its own, plus shared ones and shrines), the biggest gap left: a few runs see
 a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
 one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
 bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
+**Batch 1 built** (2026-10-17) on branch `events-batch-1` in both repos, waiting on the user's look before it goes to
+`main` (their call): the links are in that session's last reply; detail in docs/reference/events.md. Next: batch 2.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random

@@ -1095,6 +1095,32 @@ const PLACE_ART = {
     },
   },
 
+  // batch 1 of the StS events (2026-10-17): the Pokémon stand on `life.stands` as their real sprites, like Team Rocket's
+  snorlax: {   // a sleeping Snorlax by a pile of dropped things: balls, coins, a bag
+    outdoor: true, prop: 'snorlax', horizon: 0.5, zoom: 1.75, span: 80,
+    ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'], coin: ['#fff8b0', '#f8c830', '#b07818'],
+    bag: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], zee: ['#ffffff', '#8898c8'],
+    life: ['snorlax'],
+  },
+  trash: {   // a heap of junk, bin bags and cans, a Trubbish on top
+    outdoor: true, prop: 'trash', horizon: 0.5, zoom: 1.75, span: 70,
+    junk: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'], bags: ['#68a858', '#3e7a38', '#244a20', '#102010'],
+    can: ['#e8e8f0', '#a8a8b8', '#d84838'], shine: ['#fff8c0', '#f8d030'],
+    life: ['trash'],
+  },
+  ditto: {   // a Ditto on a flat stone, a still pool beside it that shows something else
+    outdoor: true, prop: 'ditto', horizon: 0.5, zoom: 1.75, span: 70,
+    stone: ['#c8c8d0', '#9898a8', '#6a6a7a', '#2a2a34'], pool: ['#c8e8ff', '#88b8f0', '#4a7ab8', '#1e3c70'],
+    glow: ['#f0c8f8', '#b878e0'],
+    life: ['ditto'],
+  },
+  abra: {   // an Abra dozing on a tree stump, the air round it shimmering
+    outdoor: true, prop: 'abra', horizon: 0.5, zoom: 1.75, span: 60,
+    wood: ['#c89860', '#9a6a3c', '#6a4424', '#2a1a0c'], rings: ['#e8c890', '#b88a50'],
+    psy: ['#fff0ff', '#f0a8f8', '#a868e0'],
+    life: ['abra'],
+  },
+
   /* the Move Tutor's dojo: shoji screens between timber posts over a tatami floor, his arena's Dragonite medallion big in
      a dark wood alcove under a shimenawa rope, Alder on a cushion below it, a hanging scroll (pay ₽), a sandbag (pay HP) */
   tutor: {
@@ -1141,6 +1167,16 @@ const PLACE_ART = {
 
   /* the Move Deleter's study: dim striped paper, shelves of old books, a lectern with a big open book (forget one) and a
      hypnotist's pendulum (forget two), candles, a Slowpoke dozing (the page's figure) */
+  billspc: {   // Bill's cottage: a study of books and his Storage PC, its screen blue (the deleter's study colours)
+    backdrop: 'study', floor: 'planks', prop: 'billspc', light: null, horizon: 0.6, sky: ['#4a5a6a'],
+    wall: ['#4a5a6a', '#405060', '#323e50', '#6a7a8a'],
+    trim: ['#9a6a48', '#6e4a30', '#4a2e1c', '#1e120a'],
+    plank: ['#8a6448', '#7a563c', '#644430', '#2e1e14'],
+    books: ['#b83828', '#3868b8', '#388858', '#c89830', '#8a4ab0', '#d8d0b8'],
+    case: ['#f0f0f4', '#c8c8d4', '#8a8a9a', '#2a2a34'], screen: ['#d8f8ff', '#68e8f8', '#2a8ab0', '#103848'],
+    view: ['#5888c8', '#88b8e8', '#2a4a68', '#4a6a88'],
+    life: ['billspc'],
+  },
   deleter: {
     backdrop: 'study', floor: 'planks', prop: 'deleter', light: null, horizon: 0.6, sky: ['#5a4a6a'],
     wall: ['#5a4a6a', '#4e4060', '#3e3250', '#7a6a8a'],
@@ -3849,7 +3885,8 @@ const groundAt = (k) => horizon + Math.round((H - horizon) * k);
 const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
 
 function eventProps() {
-  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene })[S.raw.prop]();
+  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene,
+    snorlax: snorlaxScene, trash: trashScene, ditto: dittoScene, abra: abraScene, billspc: billsPcScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -3897,6 +3934,12 @@ const ACTS = {
   hypno: { frames: 16 },
   trade: { frames: 18 },
   cheer: { frames: 18 },
+  search: { frames: ({ wake }) => (wake ? 18 : 12), cues: ({ wake }) => [[1, 'rustle'], ...(wake ? [[10, 'hit']] : [[8, 'item']])] },
+  dig: { frames: 14, cues: () => [[1, 'rustle'], [6, 'rustle']] },
+  copy: { frames: 14 },
+  morph: { frames: 16 },
+  boot: { frames: 12 },
+  teleport: { frames: 18 },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -3913,6 +3956,158 @@ const actFrame = (name) => (life.act?.name === name ? tick - life.act.at : -1);
 function actCues() {
   const { name, at, ...opts } = life.act;
   for (const [f, sound] of ACTS[name].cues?.(opts) || []) if (reached(at + f)) playSound(sound);
+}
+
+/* ---------- batch 1 of the StS events: the Pokémon are the page's sprites (life.stands), the props drawn here ---------- */
+
+function snorlaxScene() {
+  const cx = W >> 1, foot = groundAt(0.42), mon = { x: cx - 12, y: foot + 1 }, pile = { x: cx + 22, y: foot + 2 };
+  groundShadow(mon.x, mon.y, 16, 3);
+  groundShadow(pile.x, pile.y, 11, 2);
+  const [bLit, bag, bDark, bLine] = S.bag;   // a dropped bag, its flap open
+  outlined(pile.x + 1, pile.y - 9, pile.x + 10, pile.y, (x, y) => Math.hypot((x - pile.x - 5.5) / 5, (y - pile.y + 4) / 4.6) <= 1,
+    (x, y) => (x < pile.x + 4 ? bLit : y > pile.y - 3 ? bDark : bag), bLine);
+  const [w, wShade, red, redDark, line] = S.ball;
+  for (const [dx, dy] of [[-8, -6], [-3, -3]]) pixelMap(pile.x + dx, pile.y + dy, BALL, { k: line, R: red, D: redDark, W: w, G: wShade });
+  const [cLit, coin, cDark] = S.coin;
+  for (const [dx, dy] of [[-10, 0], [-6, 1], [-1, 0], [3, 1]]) { solid(pile.x + dx, pile.y + dy, cLit); solid(pile.x + dx + 1, pile.y + dy, coin); solid(pile.x + dx + 2, pile.y + dy, cDark); }
+  life.stands = { mon };
+  life.pile = pile;
+  life.eventSpots = [{ x0: pile.x - 12, x1: pile.x + 12, y0: pile.y - 14, y1: pile.y + 3 }];
+  life.foot = pile.y + 6;
+  life.keep = [{ x0: mon.x - 22, x1: pile.x + 13, y0: foot - 30, y1: pile.y + 3 }];
+}
+
+/** Z's drift up off the Snorlax; a search sends sparkles out of the pile, or (it woke) shakes the ground. */
+function drawSnorlax(t) {
+  const m = life.stands.mon, f = actFrame('search'), wake = life.act?.wake && f >= 8;
+  if (!wake) for (let i = 0; i < 3; i++) {
+    const k = ((t / 30) + i / 3) % 1, x = m.x + 8 + Math.round(k * 6 + Math.sin(k * 6) * 1.5), y = m.y - 26 - Math.round(k * 12);
+    const c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(x + d, y, c); put(x + 2 - d, y + d, c); put(x + d, y + 2, c); }
+  }
+  if (f < 0) return;
+  const p = life.pile;
+  for (let i = 0; i < 5; i++) { const age = (f + i * 2) % 9; sparkle(p.x - 8 + ((i * 5 + f) % 18), p.y - 6 - age, age < 5 ? S.coin[0] : S.coin[1]); }
+  if (wake) for (let x = 0; x < W; x += 3) if (dither(x, f) < 4) put(x, groundAt(0.42) + 4 + (f % 2), S.bag[2]);
+}
+
+function trashScene() {
+  const cx = W >> 1, foot = groundAt(0.42), heap = { x: cx, y: foot + 3 };
+  groundShadow(heap.x, heap.y, 22, 3);
+  const [jLit, junk, jDark, jLine] = S.junk, [gLit, bag, gDark, gLine] = S.bags;
+  outlined(heap.x - 22, heap.y - 14, heap.x + 22, heap.y, (x, y) => Math.hypot((x - heap.x) / 21, (y - heap.y) / 13) <= 1 && y <= heap.y,
+    (x, y) => (noise(x >> 2, y >> 2, 9) > 0.7 ? jLit : noise(x >> 1, y >> 1, 3) > 0.45 ? junk : jDark), jLine);
+  for (const [dx, dy, r] of [[-13, -4, 5], [11, -3, 5], [3, -9, 4]]) {   // bin bags, tied at the top
+    outlined(heap.x + dx - r, heap.y + dy - r, heap.x + dx + r, heap.y + dy + r, (x, y) => Math.hypot(x - heap.x - dx, y - heap.y - dy) <= r,
+      (x, y) => (x < heap.x + dx - 1 && y < heap.y + dy ? gLit : y > heap.y + dy + 1 ? gDark : bag), gLine);
+    solid(heap.x + dx, heap.y + dy - r - 1, gLine); solid(heap.x + dx, heap.y + dy - r - 2, gDark);
+  }
+  const [cLit, can, red] = S.can;
+  for (const [dx, dy] of [[-4, -2], [16, 0]]) for (let y = 0; y < 4; y++) { solid(heap.x + dx, heap.y + dy - y, cLit); solid(heap.x + dx + 1, heap.y + dy - y, y === 1 ? red : can); solid(heap.x + dx + 2, heap.y + dy - y, can); }
+  life.stands = { mon: { x: heap.x - 2, y: heap.y - 11 } };
+  life.heap = heap;
+  life.eventSpots = [{ x0: heap.x - 20, x1: heap.x + 20, y0: heap.y - 16, y1: heap.y + 2 }];
+  life.foot = heap.y + 6;
+  life.keep = [{ x0: heap.x - 24, x1: heap.x + 24, y0: heap.y - 40, y1: heap.y + 3 }];
+}
+
+/** Something buried glints now and then; a dig throws junk out of the heap. */
+function drawTrash(t) {
+  const h = life.heap, f = actFrame('dig');
+  if (Math.floor(t / 7) % 5 === 0) sparkle(h.x + 7, h.y - 6, S.shine[0]);
+  if (f < 0) return;
+  for (let i = 0; i < 6; i++) {
+    const k = f - (i >> 1), dir = i % 2 ? 1 : -1;
+    if (k < 0 || k > 9) continue;
+    const x = h.x + dir * (4 + k * (1 + i % 3)), y = h.y - 10 - k * 2 + Math.round(k * k * 0.3);
+    put(x, y, S.junk[i % 3]); put(x + dir, y, S.junk[3]);
+  }
+}
+
+function dittoScene() {
+  const cx = W >> 1, foot = groundAt(0.42), rock = { x: cx - 10, y: foot + 2 }, pool = { x: cx + 20, y: foot + 4 };
+  const [sLit, stone, sDark, sLine] = S.stone, [pLit, water, pDark, pLine] = S.pool;
+  groundShadow(rock.x, rock.y, 13, 2);
+  outlined(rock.x - 12, rock.y - 4, rock.x + 12, rock.y, (x, y) => Math.hypot((x - rock.x) / 12, (y - rock.y + 1) / 3.6) <= 1,
+    (x, y) => (y < rock.y - 2 ? sLit : x > rock.x + 6 ? sDark : stone), sLine);
+  outlined(pool.x - 10, pool.y - 3, pool.x + 10, pool.y + 3, (x, y) => Math.hypot((x - pool.x) / 10, (y - pool.y) / 3) <= 1,
+    (x, y) => (y < pool.y - 1 ? pLit : y > pool.y + 1 ? pDark : water), pLine);
+  life.stands = { mon: { x: rock.x, y: rock.y - 3 } };
+  life.pool = pool;
+  life.eventSpots = [
+    { x0: rock.x - 12, x1: rock.x + 12, y0: rock.y - 20, y1: rock.y + 1 },
+    { x0: pool.x - 11, x1: pool.x + 11, y0: pool.y - 8, y1: pool.y + 4 },
+  ];
+  life.foot = pool.y + 7;
+  life.keep = [{ x0: rock.x - 14, x1: pool.x + 12, y0: rock.y - 24, y1: pool.y + 4 }];
+}
+
+/** The pool ripples; copying sends sparkles off the Ditto, a Transform swirls the pool. */
+function drawDitto(t) {
+  const p = life.pool, c = actFrame('copy'), m = actFrame('morph'), s = life.stands.mon;
+  const r = (t / 4) % 8;
+  for (let q = 0; q < Math.PI * 2; q += 0.4) if (dither(Math.round(q * 9), r) < 6) put(p.x + Math.round(Math.cos(q) * r), p.y + Math.round(Math.sin(q) * r * 0.3), S.pool[0]);
+  if (c >= 0) for (let i = 0; i < 6; i++) { const age = (c + i * 2) % 10; sparkle(s.x - 8 + ((i * 7 + c) % 16), s.y - 6 - age, age < 5 ? S.glow[0] : S.glow[1]); }
+  if (m >= 0) for (let q = 0; q < Math.PI * 2; q += 0.3) {
+    const rr = 2 + ((m + q * 3) % 8);
+    put(p.x + Math.round(Math.cos(q + m / 3) * rr), p.y + Math.round(Math.sin(q + m / 3) * rr * 0.35), (q * 10 | 0) % 2 ? S.glow[0] : S.glow[1]);
+  }
+}
+
+function abraScene() {
+  const cx = W >> 1, foot = groundAt(0.42), stump = { x: cx, y: foot + 2 };
+  const [wLit, wood, wDark, wLine] = S.wood, [ring, ringDark] = S.rings;
+  groundShadow(stump.x, stump.y + 1, 11, 2);
+  outlined(stump.x - 8, stump.y - 8, stump.x + 8, stump.y, (x, y) => Math.abs(x - stump.x) <= 7 + (y > stump.y - 2 ? 1 : 0) && y >= stump.y - 7,
+    (x) => (x < stump.x - 3 ? wLit : x > stump.x + 4 ? wDark : wood), wLine);
+  outlined(stump.x - 8, stump.y - 10, stump.x + 8, stump.y - 6, (x, y) => Math.hypot((x - stump.x) / 7.5, (y - stump.y + 8) / 2) <= 1,
+    (x, y) => (Math.round(Math.hypot((x - stump.x) / 2.5, y - stump.y + 8)) % 2 ? ring : ringDark), wLine);
+  life.stands = { mon: { x: stump.x, y: stump.y - 8 } };
+  life.stump = stump;
+  life.eventSpots = [{ x0: stump.x - 12, x1: stump.x + 12, y0: stump.y - 30, y1: stump.y + 1 }];
+  life.foot = stump.y + 6;
+  life.keep = [{ x0: stump.x - 14, x1: stump.x + 14, y0: stump.y - 34, y1: stump.y + 3 }];
+}
+
+/** Psychic motes circle the Abra; Teleport flashes the whole scene white. */
+function drawAbra(t) {
+  const s = life.stands.mon, f = actFrame('teleport');
+  for (let i = 0; i < 4; i++) {
+    const a = t / 9 + i * Math.PI / 2;
+    put(s.x + Math.round(Math.cos(a) * 12), s.y - 10 + Math.round(Math.sin(a) * 4), S.psy[i % 2 ? 1 : 2]);
+  }
+  if (f < 0) return;
+  const k = f / 18, glow = Math.sin(Math.min(1, k * 1.4) * Math.PI);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (dither(x, y) < glow * 16) put(x, y, S.psy[0]);
+}
+
+function billsPcScene() {
+  const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const shelfTop = Math.round(horizon * 0.14), win = Math.min(u(0.16), railRow() - ceil - 8);
+  bookcase(cx - u(0.5), shelfTop, u(0.24), horizon - shelfTop - 1);
+  roomWindow(cx + u(0.3), ceil + 3, u(0.1), win);
+  const pc = { x: cx, top: foot - u(0.5), hw: u(0.12) }, [lit, body, shade, line] = S.case, [glare, blue, deep] = S.screen;
+  groundShadow(pc.x, foot + 1, pc.hw + 3, 2);
+  outlined(pc.x - pc.hw, pc.top, pc.x + pc.hw, foot, (x, y) => Math.abs(x - pc.x) <= pc.hw && y >= pc.top && y <= foot,
+    (x, y) => (x === pc.x - pc.hw ? lit : x >= pc.x + pc.hw - 1 ? shade : body), line);
+  const sw = pc.hw - 2, sTop = pc.top + 3, sh = Math.max(6, Math.round((foot - pc.top) * 0.36));
+  for (let y = sTop; y <= sTop + sh; y++) for (let x = pc.x - sw; x <= pc.x + sw; x++) solid(x, y, y === sTop || x === pc.x - sw ? deep : (y - sTop) % 3 === 0 ? glare : blue);
+  for (let y = sTop + sh + 3; y < foot - 2; y += 3) for (let x = pc.x - sw + 2; x <= pc.x + sw - 2; x++) solid(x, y, shade);
+  solid(pc.x + sw - 1, foot - 3, '#68e868');
+  life.pc = { x: pc.x, top: sTop, sw, sh };
+  life.eventSpots = [{ x0: pc.x - pc.hw - 2, x1: pc.x + pc.hw + 2, y0: pc.top, y1: foot }];
+  life.foot = foot + 4;
+}
+
+/** The PC's screen scrolls; booting it up flashes the screen and lights a Poké Ball on it. */
+function drawBillsPc(t) {
+  const p = life.pc, f = actFrame('boot');
+  const row = p.top + 1 + Math.floor(t / 3) % Math.max(1, p.sh - 1);
+  for (let x = p.x - p.sw + 1; x <= p.x + p.sw; x++) put(x, row, S.screen[0]);
+  if (f < 0) return;
+  const r = Math.min(4, Math.floor(f / 2));
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r) put(p.x + x, p.top + (p.sh >> 1) + y, y < 0 ? '#f04030' : y === 0 ? '#202028' : '#f8f8f8');
 }
 
 /* ---------- the Berry Tree ---------- */
@@ -5951,6 +6146,11 @@ function draw() {
   if (L.act) actCues();
   if (has('itemball')) drawItemBall(t);
   if (has('rocket')) drawRocket();
+  if (has('snorlax')) drawSnorlax(t);
+  if (has('trash')) drawTrash(t);
+  if (has('ditto')) drawDitto(t);
+  if (has('abra')) drawAbra(t);
+  if (has('billspc')) drawBillsPc(t);
   if (has('altar')) drawAltar(t);
   if (has('tutor')) drawTutor(t);
   if (has('deleter')) drawDeleter(t);

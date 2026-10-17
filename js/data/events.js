@@ -92,7 +92,66 @@ export const EVENTS = [
     // HP for one of your type's relics (a normal relic once you own them all); never faints you
     offering: [6, 9, 12, 15],
   },
+
+  // batch 1 of the StS events (2026-10-17, the user's picks): docs/roadmap.md's "More ? events"
+  {
+    id: 'sleeping-snorlax', icon: '😴', name: 'Sleeping Snorlax',   // StS: Dead Adventurer
+    music: 'event-outdoor',
+    text: 'A Snorlax snores across the path, curled round a pile of things other trainers dropped.',
+    loot: ['money', 'item', 'relic'],   // what the pile holds, found in a rolled order, one a search
+    lootMoney: [30, 40, 50, 60],
+    wake: [0.25, 0.5, 0.75],            // the chance it wakes on the 1st, 2nd and 3rd search: then an Alpha fight
+    foeHp: 0.4,                         // its share of a boss Snorlax's HP, fought as an Alpha
+  },
+  {
+    id: 'trash-heap', icon: '🗑️', name: 'Trash Heap',   // StS: Scrap Ooze
+    music: 'event-outdoor',
+    text: 'A Trubbish guards a heap of junk. Something shiny is buried in there.',
+    digHp: [3, 4, 5, 6],   // HP a dig, +1 each dig after
+    odds: 0.25,            // the first dig's chance of a relic, +step each dig after
+    step: 0.1,
+  },
+  {
+    id: 'ditto', icon: '🟣', name: 'Ditto',   // StS: Duplicator and Transmogrifier
+    music: 'event-outdoor',
+    text: 'A Ditto wobbles out of the grass and copies your Pokémon\'s face.',
+    // copy a move (one more of it), or let it turn one into a random move of the same rarity from your type's pool
+    morph: ['common', 'uncommon', 'rare'],
+  },
+  {
+    id: 'bills-pc', icon: '💻', name: "Bill's PC",   // StS: Note for Yourself
+    music: 'event-room',
+    text: 'Bill\'s cottage, and his famous PC. Someone left a move in your Box.',
+    // take out the move stored last time (one Box per type, kept in the save), then store one of yours for a later run
+    box: 'quick-attack',   // what an empty Box holds
+    not: ['safari', 'tower'],   // a Safari day and a climb are the same for everyone
+  },
+  {
+    id: 'abra', icon: '🌀', name: 'Abra',   // StS: Secret Portal
+    music: 'event-outdoor',
+    text: 'An Abra dozes on a stump, humming with psychic power. It could Teleport you somewhere.',
+    not: ['tower'],   // a climb's floors are its score
+  },
 ];
+
+/** Which search wakes the Snorlax (0-based), or loot.length if it sleeps through all of them: one roll a search. */
+export const snorlaxWakesAt = (event, rolls) => {
+  const i = event.wake.findIndex((p, k) => rolls[k] < p);
+  return i < 0 ? event.loot.length : i;
+};
+
+/** The trash heap's dig `n` (0-based): its HP cost and its chance of a relic. */
+export const trashDig = (event, n, biome) => ({
+  hp: (Array.isArray(event.digHp) ? event.digHp[biome] : event.digHp) + n,
+  odds: Math.min(1, event.odds + event.step * n),
+});
+
+/** What Ditto turns `card` into: the first rolled card of its rarity that isn't it and that you hold fewer than `max` of. */
+export const dittoMorph = (offers, card, copies, max) =>
+  (offers[card.rarity || 'common'] || []).find(id => id !== card.id && copies(id) < max) || null;
+
+/** The events a run of this kind can meet (an event's `not` lists the modes it stays out of). */
+export const eventsFor = (mode) => EVENTS.filter(e => !e.not?.includes(mode));
 
 /* The trainers standing in four events (still sprites from Pokéngine, `assets/trainers/<id>.png`, with an eyes-closed
    `<id>-blink.png`). eventFigure() in js/run.js cuts each into layers so it can breathe and talk a whole pixel at a
