@@ -46,6 +46,7 @@ export const NEXT = [
   ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
   ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
   ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
+  ['fixes', 'Evolving after a Gym Leader win raises your Max HP and heals you again; the HP gained was being lost on the way to the next biome.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

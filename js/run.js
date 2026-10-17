@@ -1861,6 +1861,9 @@ function gymRoom(node, leader, won = null, said = null) {
     if (run !== thisRun) return;
     sayLines([got]);
     if (!evolves) return;
+    // evolve from the HP the fight ended on; afterFight() then keeps the evolved HP rather than the fight's
+    run.hp = won.hp;
+    run.maxHp = won.maxHp ?? run.maxHp;
     await new Promise(done => evolve(done));
     if (run !== thisRun) return;
     evolved = true;
@@ -2520,7 +2523,7 @@ function afterFight(node, result) {
   if (winner && !peeking) updateSave(d => { d.gymLost = { ...(d.gymLost || {}), [winner.id]: (d.gymLost?.[winner.id] || 0) + 1 }; });
   if (winner) return gymTalk(winner, talkOf(winner, 'won'), { vars: { boss: ENEMY_DEFS[node.enemyId]?.name }, lit: true }).then(() => afterFight(node, { ...result, gymSaid: true }));
   addTally(result.tally);
-  run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
+  if (!result.evolved) run.maxHp = result.maxHp ?? run.maxHp;   // Jungle Healing (StS's Feed) and HP Up can raise it
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
   if (result.fled || result.escaped) {
     run.hp = result.hp;
@@ -2531,7 +2534,7 @@ function afterFight(node, result) {
   if (!result.won) missionTally(result.tally);
   if (!result.won) return endRun(false, node.type === 'boss' && run.biome === finalBiome(run.starter), { foe: result.foe, move: result.move, kind: node.type });
 
-  run.hp = result.hp;
+  if (!result.evolved) run.hp = result.hp;   // evolved in the gym: already set, healed and raised (gymRoom())
   run.fights += 1;
   if (isTower()) augmentsAfterFight(result);
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
@@ -2640,7 +2643,7 @@ function afterFight(node, result) {
       d.stats.bossKills[run.biome + 1] = (d.stats.bossKills[run.biome + 1] || 0) + 1;
       const leader = gymLeader(node);
       if (leader) d.gym = { ...(d.gym || {}), [leader.id]: (d.gym?.[leader.id] || 0) + 1 };
-      if (result.hp / run.maxHp > 0.5) d.stats.healthyBossWin = true;
+      if (result.hp / (result.maxHp ?? run.maxHp) > 0.5) d.stats.healthyBossWin = true;
     });
     if (run.gymWon && !recount && !peeking) {
       run.gymWon.counted = true;
