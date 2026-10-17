@@ -408,7 +408,7 @@ export const MAPLE_KINDS = [
         B(x, 50.5, 13.85, 18.6, 52.6, 0.3, MP.woodL, { m: 'wood', r: 0.6 }),
         leaf(x, 52, 14.3, 7.4, i ? MP.crimson : MP.scarlet, { d: 0.8, m: 'gloss', rot: i ? -12 : 12 }),
         leaf(x + (i ? 4 : -4), 33, 14.2, 3, i ? MP.orange : MP.gold, { d: 0.6, m: 'gloss', rot: i ? 30 : -30 }),
-        RD([hand, 46, 14.3], [hand, 56, 14.3], 0.5, MP.brass, M),
+        RD([hand, 46, 14.3], [hand, 56, 14.3], 0.5, MP.brass, GL),
       ] };
     }),
     inside: { x: 32, h: 50, w: 50, hh: 60, z: 12 },
@@ -553,8 +553,8 @@ export const MAPLE_KINDS = [
     C(16, 31.6, 0, 5.5, 1.6, MP.green, CL), leaf(16, 31.2, 5.8, 2.2, MP.green, { d: 0.6 }),
     ...[[7, 14.6, 7.6, MP.orange], [11.5, 13.8, 9.6, MP.gold], [16, 13.4, 10.6, MP.crimson], [20.5, 13.8, 9.6, MP.orange], [25, 14.6, 7.6, MP.gold]]
       .map(([x, h, z, c], i) => leaf(x, h, z, 3.2, c, { rot: 180 + (i - 2) * 8, d: 0.5 })),
-    ...[[10, 21, 7.4, MP.gold], [16, 20.6, 8.4, MP.orange], [22, 21, 7.4, MP.crimson]].map(([x, h, z, c], i) => leaf(x, h, z, 2.8, c, { rot: 180 + (i - 1) * 10, d: 0.5 })),
-    leaf(13.4, 38, 5.6, 2.4, MP.scarlet, { rot: 30, d: 0.5 }), leaf(18.6, 38, 5.6, 2.4, MP.orange, { rot: -30, d: 0.5 }),
+    ...[[10.4, 21, 6.6, MP.gold], [16, 20.6, 9, MP.orange], [21.6, 21, 6.6, MP.crimson]].map(([x, h, z, c], i) => leaf(x, h, z, 2.8, c, { rot: 180 + (i - 1) * 10, d: 0.5 })),
+    leaf(13.4, 38, 6.1, 2.4, MP.scarlet, { rot: 30, d: 0.5 }), leaf(18.6, 38, 6.1, 2.4, MP.orange, { rot: -30, d: 0.5 }),
     S(25.5, 3.2, 10, 3, 3.2, 2.8, MP.sew, { m: 'cloth', seg: 10 }),
     ...[24.4, 26.6].map(x => DS(x, 3.8, 12.6, 0.5, 0.3, MP.ink, PL)),
     leaf(25.5, 5.4, 9.2, 3.6, MP.scarlet, { d: 0.8 }),
