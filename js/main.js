@@ -68,7 +68,7 @@ import { initPokedex, dexPerkLevel } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
-import { initTrainers } from './trainers.js';
+import { initTrainers, onVisit } from './trainers.js';
 import { $, el, confirmDialog } from './ui.js';
 import './no-loupe.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
@@ -341,6 +341,16 @@ function init() {
   // only shown while it's the room bar's Leave key, or its Skip key
   $('reward-skip').prepend(roundKey('leave', 'round-key leave-ico'), roundKey('skip', 'round-key skip-ico'));
   initSelect({ onChoose: previewStarter, onBack: showHome });
+  // the Trainers app's Visit: a friend's Secret Base, walked round as they left it; its doormat comes home to the Clearing
+  onVisit(async (guest) => {
+    if (isRunActive()) return 'run';
+    hideDevice();
+    await curtain(true);
+    leaveTitle();
+    const went = await (await import('./base-3d.js')).openBase3d({ onLeave: showHome, guest });
+    if (went === false) { await showHome(); curtain(false); }
+    return went;
+  });
   initCollection({
     onBack: showHome,
     menu: async () => {
@@ -366,6 +376,8 @@ function init() {
   // game yet); where WebGL fails, or with &flat, the 2D room (js/secret-base.js)
   if (params.has('base') || params.has('3d')) {
     if (params.has('flat')) return import('./secret-base.js').then(m => m.openBase());
+    // &asfriend: your own saved base as a friend visiting it sees it (the Trainers app's Visit), nothing saved
+    if (params.has('asfriend') && getSave().secretBase) return import('./base-3d.js').then(m => m.openBase3d({ guest: { name: 'A FRIEND', json: JSON.stringify(getSave().secretBase) } }));
     return import('./base-3d.js').then(m => m.openBase3d());
   }
   // ?yard: out in the Secret Base's backyard, lent for the page load if it isn't bought (js/secret-base.js's loadBase())

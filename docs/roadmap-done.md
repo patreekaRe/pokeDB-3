@@ -2915,3 +2915,10 @@ Branch `claude/exciting-cray-y585nt`, pushed to `main`. `trainers/<uid>` pages a
 the Trainers app, a How to play tip, the PC's TRAINERS row and a one-time TRAINER NETWORK letter with your code, the
 Trainer Card's CODE line. Tested with two stand-in accounts (`tools/trainers-check.mjs`, 31 checks) and the real rules
 in the Firestore emulator (`tools/trainers-rules.mjs`, 33 checks). Detail: `docs/reference/cloud-save.md`.
+
+### Friends list, session 2: the visit-only base (2026-10-17)
+Branch `claude/visit-only-base-session-2-72ayar`, pushed to `main`. The Trainers app's Visit opens a friend's Secret Base
+from their page's `base` (`openBase3d({ guest })`, `readGuestBase()`), walk-only: no Decorate, Garden, PC, Smeargle, gifts
+or visitors, their residents and statues, the Trainer set's cases blank. `visitBase()` / `keep()` in `js/secret-base.js`
+refuses every base write while it's up; `tools/trainers-check.mjs` (43 checks) shows visiting and leaving leaves the
+save exactly as it was. `?base&asfriend` playtests it alone. Detail: `docs/reference/cloud-save.md`.

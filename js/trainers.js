@@ -9,7 +9,7 @@
    ============================================================ */
 
 import { TRAINERS, CODES, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend, trainerDoc, checkTrainer,
-  lastSeen, cardDoc, FRIENDS_MAX } from './data/trainers.js';
+  lastSeen, cardDoc, FRIENDS_MAX, BASE_MAX } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
@@ -140,8 +140,14 @@ function monImg(key, cls) {
 /** Someone else's page, made safe to draw: their card through cardDoc()'s bounds, or null if it isn't one. */
 function readDoc(d) {
   if (!d || typeof d !== 'object' || typeof d.name !== 'string') return null;
-  return { name: d.name.slice(0, 16) || 'TRAINER', card: cardDoc(d.card), buddy: typeof d.buddy === 'string' ? d.buddy : '', at: d.at };
+  return { name: d.name.slice(0, 16) || 'TRAINER', card: cardDoc(d.card), buddy: typeof d.buddy === 'string' ? d.buddy : '', at: d.at,
+    base: typeof d.base === 'string' && d.base.length <= BASE_MAX ? d.base : '' };
 }
+
+/* Visit: main.js hands over the way into a friend's base (openBase3d({ guest }) in js/base-3d.js), so this file never
+   loads the furniture to draw the app. It resolves false if their base couldn't be read, 'run' during a run. */
+let visitor = null;
+export const onVisit = (fn) => { visitor = fn; };
 
 const atOf = (doc) => (typeof doc?.at?.toMillis === 'function' ? doc.at.toMillis() : +doc?.at || 0);
 const playTime = (min) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
@@ -237,8 +243,16 @@ export function trainersApp() {
         const keys = el('div', 'trn-keys');
         const visit = el('button', 'lb-btn trn-visit', 'Visit');
         visit.type = 'button';
-        visit.disabled = true;
-        visit.title = 'Visiting a trainer\'s Secret Base is coming soon.';
+        visit.disabled = !doc?.base || !visitor;
+        visit.title = doc?.base ? `Walk round ${doc.name}'s Secret Base` : 'They haven\'t made a Secret Base yet.';
+        visit.addEventListener('click', async () => {
+          visit.disabled = true;
+          playSound('confirm');
+          const went = await visitor({ name: doc.name, json: doc.base });
+          if (went !== false && went !== 'run') return;
+          playSound('cancel');
+          visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
+        });
         const remove = el('button', `lb-btn trn-remove${removing === uid ? ' sure' : ''}`, removing === uid ? 'Tap again to remove' : 'Remove');
         remove.type = 'button';
         remove.addEventListener('click', () => {
@@ -253,7 +267,7 @@ export function trainersApp() {
         if (!doc) return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
         const walk = sprite(doc.buddy);
         return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card),
-          typed('', `Walking with ${walk.name}.`), keys, typed('muted', 'Base visits are coming soon.')];
+          typed('', `Walking with ${walk.name}.`), keys, typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')];
       },
       tally: () => 'Trainer Card',
       empty: () => '',

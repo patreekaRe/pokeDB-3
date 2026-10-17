@@ -684,3 +684,10 @@ Every floor the mall builds stays in its one scene, hidden when you're elsewhere
 hall under the Game Corner was ~126 MB of textures, and a friend's phone reloaded the game walking in. `setPlace()` in
 `js/mall-3d.js` now `unload()`s the floor walked out of (`js/hd2d.js`: geometry and textures let go on the GPU, kept
 whole in memory, uploaded again by `warm()` under the curtain on walking back in). Keep it if a floor is added.
+
+## A friend's base, visited (2026-10-17)
+
+`openBase3d({ guest })` opens a friend's base from their trainer page, walk-only, every base write refused while it's
+up (`visitBase()` / `keep()` in `js/secret-base.js`). The detail is in `docs/reference/cloud-save.md`'s Trainers section.
+A new base write in `js/secret-base.js` goes through `keep()`, and a new thing that happens on entering the base (a
+visitor, an intro, a gift) checks `host` in `js/base-3d.js`.
