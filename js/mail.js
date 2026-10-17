@@ -21,6 +21,7 @@ export const SENDERS = {
   safari: { name: 'SAFARI ZONE', ink: '#3f8f3a', paper: '#f2f8e4' },
   league: { name: 'POKéMON LEAGUE', ink: '#2f5fb8', paper: '#eef3ff' },
   depths: { name: 'CRYSTAL DEPTHS', ink: '#7a3fc0', paper: '#f4eeff' },
+  trainers: { name: 'TRAINER NETWORK', ink: '#1f8a9a', paper: '#eaf8fa' },
 };
 
 /** A letter's sender: one of SENDERS, or a friend (a Gym Leader's id) in their own ink. */
@@ -48,6 +49,14 @@ export function post(from, title, text, coins, extra = {}) {
     if (open.length > KEEP) { const gone = new Set(open.slice(0, open.length - KEEP).map(m => m.id)); d.mail = d.mail.filter(m => !gone.has(m.id)); }
   });
   return `📬 ${coinsWithBonus(coins)} PokéCoins are waiting in your PC's mailbox.`;
+}
+
+/** The first time a signed-in player logs on to the PC: one letter with their trainer code, and how the Trainers app
+    works (docs/roadmap.md's "Friends list and base visits"). Nothing to claim but the reading. */
+export function trainersLetter(code) {
+  if (!code || getSave().trainersLetter) return;
+  updateSave(d => { d.trainersLetter = true; });
+  post('trainers', 'Your trainer code', 'You\'re on the Trainer Network! Give a friend your code and they can add you in the Trainers app on your Pokédex. Type theirs there to add them back, or tap a name on any leaderboard.', 0, { code });
 }
 
 /** Letters not yet claimed. */

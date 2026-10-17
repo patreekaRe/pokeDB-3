@@ -22,7 +22,9 @@ import { playSound, playCry } from './audio.js';
 import { calmFx } from './prefs.js';
 import { cloudConfigured, cloudRemembered, openCloud } from './cloud.js';
 import { el } from './ui.js';
-import { senderOf, unclaimed, claim } from './mail.js';
+import { senderOf, unclaimed, claim, trainersLetter } from './mail.js';
+import { myCode, publishTrainer } from './trainers.js';
+import { formatCode } from './data/trainers.js';
 import { missions, claimable, claimMission, claimBonus, timeLeft } from './missions.js';
 import { MISSIONS_BY_ID, BONUS, missionText, isDone, bonusReady } from './data/missions.js';
 import { smoothIcon } from './smooth-icons.js';
@@ -92,6 +94,10 @@ export function openPC(opts = {}) {
   deco = null;
   inBase = !!opts.inBase;
   pcLookedAt(getSave());
+  if (cloudConfigured() && cloudRemembered() && !getSave().trainersLetter) {
+    if (myCode()) trainersLetter(myCode());
+    else publishTrainer().then(code => { if (code) { trainersLetter(code); if (root && page === 'home') show('home'); } });
+  }
   root = el('div', `pc-screen${inBase ? ' in-base' : ''}`);
   root.setAttribute('role', 'dialog');
   root.setAttribute('aria-label', 'PC');
@@ -236,6 +242,8 @@ const PAGES = {
       [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'Your friends\' hearts live in your Pokédex now, by the Quests app. This opens it there.', () => { logOff(); openDeviceApp('friends'); }, friendsNews(save), { sub: 'Opens in your Pokédex' }]] : []),
+      ...(cloudConfigured() ? [['TRAINERS', cloudRemembered() ? 'Other players you\'ve added, and your trainer code to give out. This opens it in your Pokédex.' : 'Sign in to get a trainer code and add other players. This opens it in your Pokédex.',
+        () => { logOff(); openDeviceApp('trainers'); }, false, { sub: myCode() ? `Your code: ${formatCode(myCode())}` : 'Opens in your Pokédex' }]] : []),
       ['PROF. OAK\'S PC', 'Have your Pokédex rated, see how complete it is, and get a hint at what to unlock next.', () => { hint = 0; show('prof'); }, pcNew('prof', save)],
       ...(fame && onFame ? [[fame === 'fame' ? 'HALL OF FAME' : 'RECORD BOOK', fame === 'fame' ? 'The champions of Trainer Level 5.' : 'Every run you have won.', () => { const go = onFame; logOff(); go?.(fame); }]] : []),
       patches,
@@ -318,35 +326,37 @@ const PAGES = {
     const m = (getSave().mail || []).find(x => x.id === letter);
     if (!m) return show('mailbox');
     const from = senderOf(m.from), fresh = !m.claimed, mat = m.mat && MATERIALS_BY_ID[m.mat.id], recipe = m.recipe && RECIPES_BY_ID[m.recipe];
+    const code = m.code && formatCode(m.code), read = recipe || code;
     const wrap = el('div', `pc-letter${fresh ? ' fresh' : ''}`);
     wrap.style.setProperty('--ink', from.ink);
     wrap.style.setProperty('--paper', from.paper);
     const sheet = el('div', 'pc-sheet');
     const prize = el('div', 'pc-prize');
     // a friend's letter holds a material or shows the secret recipe they taught Kurt (step 8, session e)
-    if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
+    if (code) prize.append(el('small', 'pc-prize-label', 'YOUR CODE'), el('b', 'pc-prize-n pc-prize-code', code));
+    else if (mat) prize.append(el('span', 'pc-prize-mat', mat.icon), el('b', 'pc-prize-n', `${mat.name} ×${m.mat.n}`));
     else if (recipe) {
       const img = el('img', 'pc-prize-ball pixel');
       Object.assign(img, { src: `assets/items/${recipe.sprite}.png`, alt: '', draggable: false });
       prize.append(img, el('b', 'pc-prize-n', recipe.name));
     } else prize.append(smoothIcon('coin', 'pc-prize-coin'), el('b', 'pc-prize-n', `${(m.coins || 0).toLocaleString()}`));
     sheet.append(el('span', 'pc-sheet-from', `From: ${from.name}`), el('b', 'pc-sheet-title', m.title), el('p', 'pc-sheet-text', m.text), prize);
-    if (!fresh) sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
+    if (!fresh) sheet.append(el('span', 'pc-claimed', read ? 'READ' : 'CLAIMED'));
     wrap.append(el('div', 'pc-env-back'), sheet, el('div', 'pc-env-front'), el('div', 'pc-env-flap'));
     const kids = [head(m.title.toUpperCase()), wrap];
     if (fresh) {
-      const ok = el('button', 'room-ok pc-claim', recipe ? 'Read' : 'Claim');
+      const ok = el('button', 'room-ok pc-claim', read ? 'Read' : 'Claim');
       ok.type = 'button';
       ok.addEventListener('click', () => {
         if (ok.classList.contains('pressed')) return;
         ok.classList.add('pressed');   // pushed in and lit, like every room's confirm (pressConfirm() in js/rewards.js)
         const paid = claim(m.id);
         playSound('item-get');
-        if (!mat && !recipe) countUp(prize.querySelector('.pc-prize-n'), paid);
-        sheet.append(el('span', 'pc-claimed', recipe ? 'READ' : 'CLAIMED'));
+        if (!mat && !read) countUp(prize.querySelector('.pc-prize-n'), paid);
+        sheet.append(el('span', 'pc-claimed', read ? 'READ' : 'CLAIMED'));
         wrap.classList.add('paid');
         const me = trainerName().toUpperCase();
-        speak(mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
+        speak(code ? `Open the Trainers app on your Pokédex to add a friend.` : mat ? `${me} put ${mat.name} ×${m.mat.n} in the Satchel!` : recipe ? `Kurt can make the ${recipe.name} now. Visit his Workshop!` : `${me} received ${paid.toLocaleString()} PokéCoins!`);
       });
       kids.push(ok);
     }

@@ -3935,6 +3935,8 @@ body.scene-peek #backdrop { display: none; }
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
 .lb-btn.primary { background: var(--btn-a); color: #fff; }
+.lb-add { justify-self: center; }
+.lb-add.on, .lb-add:disabled { opacity: 0.7; cursor: default; translate: none; }
 .lb-btn:active { translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim); }
 /* a board's banner: its top three on a podium, the winner in the middle and biggest; an empty board says so and doesn't open */
 .lb-podium .pdx-banner-mon:nth-child(n) { width: 70px; height: 70px; z-index: 0; }

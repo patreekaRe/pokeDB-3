@@ -2888,3 +2888,10 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   was 1). The mall kept every floor it built on the GPU (the hall under the Game Corner, ~126 MB of textures); `setPlace()`
   now `unload()`s the floor walked out of (`js/hd2d.js`: GPU copies dropped, re-uploaded under the curtain by `warm()`):
   the Game Corner ~85 MB, the hall ~50 MB, both drawing again after walking back and forth. Not yet seen on the phone.
+
+### Friends list, session 1: friend codes and the Trainers app (2026-10-17, the user's go)
+Branch `claude/exciting-cray-y585nt`, pushed to `main`. `trainers/<uid>` pages and `codes/<CODE>` friend codes
+(`js/trainers.js`, `js/data/trainers.js`), `save.friends`, adding by code or a leaderboard page's "+ Add to Trainers",
+the Trainers app, a How to play tip, the PC's TRAINERS row and a one-time TRAINER NETWORK letter with your code, the
+Trainer Card's CODE line. Tested with two stand-in accounts (`tools/trainers-check.mjs`, 31 checks) and the real rules
+in the Firestore emulator (`tools/trainers-rules.mjs`, 33 checks). Detail: `docs/reference/cloud-save.md`.

@@ -68,6 +68,7 @@ import { initPokedex, dexPerkLevel } from './pokedex.js';
 import { initLeaderboard, openLeaderboard } from './leaderboard.js';
 import { initSafariPrep, openSafariPrep } from './safariprep.js';
 import { initCloud } from './cloud.js';
+import { initTrainers } from './trainers.js';
 import { $, el, confirmDialog } from './ui.js';
 import './no-loupe.js';
 import { bossArenaPrelude, showPlaceScene, showScene } from './scene.js';
@@ -274,6 +275,7 @@ function init() {
   initPokedexButton();
   initCloud();
   initLeaderboard();
+  initTrainers();
   initSafariPrep({
     onStart: async () => {
       if (!(await safariTicket())) return openSafariPrep();
