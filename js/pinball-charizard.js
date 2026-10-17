@@ -203,12 +203,12 @@ export const TABLE = {
     ['◀ ▶ flip (or tap the halves); ◀ works both left flippers.', 'LAUNCH fires the plunger: roll through the flashing H-O-T lane for a Skill Shot. All three lit raises the bonus.'],
     ['The FLAME and BLAZE ramps cross over the volcano.', 'Shoot ramps and the orbit back to back for Combos: each one inside 3 seconds scores more.'],
     ['Ramps, the orbit, Slugma and F-I-R-E heat the volcano.', 'At full HEAT the crater lights: sink it for ERUPTION, three-ball multiball with Jackpots on every ramp.'],
-    ['Hit all four F-I-R-E targets to evolve Charmander.', 'Charizard lights BLAST BURN: the next crater shot is the table\'s biggest award.'],
+    ['Spell F-I-R-E twice on the targets to evolve Charmander.', 'Charizard lights BLAST BURN: the next crater shot is the table\'s biggest award.'],
     ['3 balls, each starting with a ball saver.', 'A first Blast Burn and a third Eruption each give an extra ball.'],
   ],
   make(t) {
     const lit = { bump: [0, 0, 0], lanes: [false, false, false], tgt: [false, false, false, false], tflash: [0, 0, 0, 0], inl: [0, 0, 0, 0] };
-    let heat = 0, ready = false, erupt = false, eruptions = 0, evo = 0, blast = false, burns = 0;
+    let heat = 0, half = false, ready = false, erupt = false, eruptions = 0, evo = 0, blast = false, burns = 0;
     let combo = 0, lastShot = -9, clock = 0, skill = 0, skillT = 0, fly = null, burst = 0;
     let bonus = {};
     const embers = [];
@@ -236,7 +236,9 @@ export const TABLE = {
       if (combo <= 1) t.say(`${which === 'leftRamp' ? 'FLAME' : 'BLAZE'} RAMP ${1500}`, 1.4);
     };
     const evolve = () => {
-      lit.tgt = [false, false, false, false]; bonus.evos++; t.stat('evolve');
+      lit.tgt = [false, false, false, false];
+      if (evo < 2 && !half) { half = true; t.add(2500); t.say('F-I-R-E 1/2 · AGAIN!', 1.8); t.sound('fx-crackle', 'plink-2'); return; }
+      half = false; bonus.evos++; t.stat('evolve');
       if (evo < 2) {
         evo++;
         t.add(5000 * evo); t.shout(`${EVO_NAME[evo].toUpperCase()}!`, '#ffb030');
@@ -255,7 +257,7 @@ export const TABLE = {
       });
       t.sound('fx-bloop', 'select');
       if (blast) {
-        const pts = 50000 + 25000 * burns;
+        const pts = 40000 + 20000 * burns;
         blast = false; burns++; evo = 0; bonus.burns++;
         t.add(pts); t.shout('BLAST BURN!', '#ff6020'); t.boom(CRATER.x, CRATER.y, '#ff6020', 40, 1.6);
         t.sound('charizard', 'stat-up'); t.stat('blastBurn');
@@ -387,7 +389,7 @@ export const TABLE = {
       dmd(now) {
         const lines = [`BALL ${t.ball}  BONUS ${t.mult}X`,
           erupt ? 'ERUPTION · JACKPOTS LIT' : ready ? 'CRATER LIT · SHOOT IT' : `HEAT ${heat}%`,
-          blast ? 'BLAST BURN LIT · CRATER' : `F-I-R-E ${lit.tgt.filter(Boolean).length}/4 ${EVO_NAME[evo].toUpperCase()}`,
+          blast ? 'BLAST BURN LIT · CRATER' : `F-I-R-E ${lit.tgt.filter(Boolean).length}/4${half ? ' ×2' : ''} ${EVO_NAME[evo].toUpperCase()}`,
           `ERUPTIONS ${eruptions}  BURNS ${burns}`];
         return lines[Math.floor(now / 2200) % lines.length];
       },

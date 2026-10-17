@@ -14,7 +14,7 @@ const W = 300, H = 520;
 const LANES = [104, 140, 176], LANE_Y = 98;
 const ROOF = 128, HOUSE = { l: 108, r: 172, eave: 150, sill: 182 }, DOOR = { x: 140, y: 190 };
 const STONES = [65, 79, 93, 107, 121], STONE_Y = 292;
-const RIDGE = [[54, 281], [93, 268], [132, 281]];   // a gable over the tombstones' backs, so a ball never rests on the row
+const RIDGE = [[64, 283], [93, 268], [132, 281]];   // a gable over the tombstones' backs, so a ball never rests on the row
 const GASTLY = [
   { cx: 72, cy: 228, rx: 16, ry: 10, w: 0.9, f8: false },
   { cx: 210, cy: 226, rx: 16, ry: 10, w: -1.1, f8: false },
@@ -24,7 +24,7 @@ const GR = 12;
 const SPOTS = [{ x: 68, y: 146 }, { x: 212, y: 146 }, { x: 140, y: 226 }, { x: 186, y: 318 }], GENGAR_R = 15;
 const MULT = [104, 128, 152, 176], MULT_Y = 352;
 const SLINGS = [{ s: 'l', a: [56, 370], b: [82, 432], c: [56, 416] }, { s: 'r', a: [224, 370], b: [198, 432], c: [224, 416] }];
-const DEFLECT = [12, 262, 44, 290];   // one-way: up the left orbit passes, down it turns the ball into the field
+const DEFLECT = [12, 262, 40, 286];   // one-way: up the left orbit passes, down it turns the ball into the field
 const GATE = [288, 146, 262, 172];
 const MINI = { s: 'r', x: 260, y: 292, len: 30, rest: Math.PI - 0.5, up: Math.PI + 0.5 };
 
@@ -293,7 +293,7 @@ export const TABLE = {
           if (!up || stoneBack) return;
           const x = STONES[i];
           // only a hit on the stone's face topples it; one coming down the orbit behind the row just bounces off its side
-          const c = hitSeg(b, x - 7, STONE_Y, x + 7, STONE_Y, 0.5);
+          const c = hitSeg(b, x - 5.5, STONE_Y, x + 5.5, STONE_Y, 0.5);
           if (!c || c.uy <= 0.3) return;
           stones[i] = false; bonus.stones++; score(250); t.stat('stone'); t.sound('hit-weak', 'plink-2');
           t.boom(x, STONE_Y - 8, '#9a94b0', 8, 0.3);

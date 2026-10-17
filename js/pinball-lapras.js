@@ -386,8 +386,8 @@ export const TABLE = {
       },
       over(g, now) {
         for (const w of whirls) t.drawBall(POOL.x + Math.cos(w.a) * w.r, POOL.y + Math.sin(w.a) * w.r, w.spin, 0.8 + 0.2 * w.r / POOL.r);
-        g.fillStyle = '#f4f8ff';
-        { const b = { x: KARP.x, y: karp.y }; t.drawBall(b.x, b.y, 0); g.fillStyle = '#ff8a3a'; g.beginPath(); g.arc(b.x, b.y, 3, 0, TAU); g.fill(); }
+        t.drawBall(KARP.x, karp.y, 0);   // the captive ball, Magikarp's orange spot on it
+        g.fillStyle = '#ff8a3a'; g.beginPath(); g.arc(KARP.x, karp.y, 3, 0, TAU); g.fill();
         if (wave > 0.02) {   // the wave over the drain, and Lapras riding it
           const top = 520 - 30 * wave;
           g.fillStyle = 'rgba(90, 200, 255, 0.45)';
