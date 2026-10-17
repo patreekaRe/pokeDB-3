@@ -525,7 +525,7 @@ export const CINEMA_KINDS = [
 
   // a director's chair: walnut X legs, red canvas seat and back, DIRECTOR stencilled across in gold
   piece('cnmchair', "Cinema director's chair", 1, 1, 450, 'wood', [
-    ...[8, -8].flatMap(z => [RD([5, 0.6, z], [27, 16, z], 1, CN.walnut, WD), RD([27, 0.6, z], [5, 16, z], 1, CN.walnut, WD), RD([4.4, 16, z], [27.6, 16, z], 0.7, CN.walnut, WD)]),
+    ...[8, -8].flatMap(z => [RD([5, 1, z], [27, 16, z], 1, CN.walnut, WD), RD([27, 1, z], [5, 16, z], 1, CN.walnut, WD), RD([4.4, 16, z], [27.6, 16, z], 0.7, CN.walnut, WD)]),
     ...[4.4, 27.6].flatMap(x => [RD([x, 16, 8], [x, 26, 8], 1, CN.walnut, WD), RD([x, 16, -8], [x, 38, -8], 1, CN.walnut, WD), RD([x, 26, -8], [x, 26, 9], 0.9, CN.walnut, WD)]),
     B(16, 16.8, 0, 22, 1, 16, CN.red, VL(0.4)),
     B(16, 32, -8, 22, 8, 0.8, CN.red, VL(0.3)), PC(16, 32, -7.55, 21, 7, word('DIRECTOR', CN.goldL, CN.red, 0.6)),

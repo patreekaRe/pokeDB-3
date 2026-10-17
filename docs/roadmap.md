@@ -30,7 +30,8 @@ all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 i
 125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
 Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), session h, Bamboo, Stone zen,
 Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), session i, the first five room types (2026-10-17,
-125 kinds, 2,587 in all), and session j, the next five (2026-10-17, 125 kinds, 2,712 in all; all ten in `docs/roadmap-done.md`).
+125 kinds, 2,587 in all), session j, the next five (2026-10-17, 125 kinds, 2,712 in all), and session k, four more (2026-10-17, 100 kinds, 2,812 in all;
+all eleven in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -46,7 +47,9 @@ or Smeargle's catalogue's Zen tab with a yard), and of session i's
 (`?mall=furniture&stock=hspbed,bstrange,bakcase,sshconveyor,rmnyatai,rmnsnorlax`; try the bed's heal, the oven and fridge
 doors, the ticket machines), and of session j's
 (`?mall=furniture&stock=pzroven,pzrlickitung,crsfridge,crscrane,lndwasher,lndrotom,slnpole,slngroom,grgporygon,grgtoolchest`;
-tap the oven, the fridge and washer doors, the barber pole, the Porygon cart). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+tap the oven, the fridge and washer doors, the barber pole, the Porygon cart), and of session k's
+(`?mall=furniture&stock=crfeasel,crfsewing,gmrdesk,gmrtv,rcsbooth,rcsconsole,cnmscreen,cnmpopcorn,cnmditto`; try the live
+screens, the popcorn machine, the booth's note, at night the gamer room's glow). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -64,18 +67,18 @@ at once hit it on 2026-10-16; five is safer.
 - **i. Done 2026-10-17, on `main`**: the first five room types, Hospital ward, Bistro kitchen, Bakery, Sushi bar and
   Ramen shop (`docs/roadmap-done.md`).
 - **j. Done 2026-10-17, on `main`**: Pizzeria, Corner shop, Laundromat, Salon and Garage (`docs/roadmap-done.md`).
-- **k and l. The other 8 room types**, 4 a session (Craft and sewing room, Gamer room, Recording studio, Cinema next;
-  then Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin).
+- **k. Done 2026-10-17, on `main`**: Craft and sewing room, Gamer room, Recording studio and Cinema (`docs/roadmap-done.md`).
+- **l. The last 4 room types**: Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin.
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session k):
+Next session's prompt (session l):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session k: the next four room types (Craft and sewing room,
-> Gamer room, Recording studio, Cinema; 25 each, a whole room of that place in one look, as sessions i and j), one helper
-> a set (four at once), then check every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and
-> push to main.
+> "Building a set" section is the helpers' brief). Build session l: the last four room types (Hotel lobby, Ski lodge,
+> Haunted mansion, Cruise cabin; 25 each, a whole room of that place in one look, as sessions i to k), one helper a set
+> (four at once), then check every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push
+> to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.

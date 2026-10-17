@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session k: Craft and sewing room, Gamer room, Recording studio, Cinema (2026-10-17)
+- Four more room types, 25 each: Craft room (`crf`), Gamer room (`gmr`), Recording studio (`rcs`) and Cinema (`cnm`): 100
+  kinds, 2,812 in all, one helper a set, all solo, session j's way. The whole catalogue (2,816 ids) went through
+  `tools/model-check.mjs` with no builder errors; every new kind within budget (none over 3,784 triangles or 8 draws); thin
+  pieces match their paintings at 0.41 (the studio's guitar stool) to 0.98, none sticking out. Existing kinds left alone
+  (`spinwheel`, `cello`, `mixingdesk`, `laxbeanbag`, `ringlight`, `tripledesk`, the arcade). Pokémon touches: Leavanny,
+  Smeargle's easel, Sewaddle, a Furret quilt; Porygon-Z, a Pikachu headset, Gengar on the TV, a Pokédex; Jigglypuff in the
+  vocal booth, Loudred, Kricketune, Toxtricity; Lugia, Jirachi and Celebi film posters, a Ditto usher, a Smeargle director,
+  a Pikachu popcorn bucket. The user got picture sheets.
+
 ### Furniture expansion session j: Pizzeria, Corner shop, Laundromat, Salon, Garage (2026-10-17)
 - The next five room types, 25 each: Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon (`sln`)
   and Garage and workshop (`grg`): 125 kinds, 2,712 in all, one helper a set, all solo, session i's `BUILT` way. The whole

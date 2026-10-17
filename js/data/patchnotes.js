@@ -64,7 +64,7 @@ export const PATCHES = [
     ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
     ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
     ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
-    ['mall', '250 pieces for whole rooms of a place: a Hospital ward, Bistro, Bakery, Sushi bar, Ramen shop, Pizzeria, Poké Mart corner shop, Laundromat, Salon and Garage.'],
+    ['mall', '350 pieces for whole rooms of a place, from a Hospital ward, Bakery and Ramen shop to a Poké Mart corner shop, Salon, Gamer room, Recording studio and Cinema.'],
     ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
     ['dex', 'A Trainers app on your Pokédex: signed in, get a trainer code, add friends by code or a leaderboard name, see their Trainer Card and walk round their Secret Base.'],
     ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
