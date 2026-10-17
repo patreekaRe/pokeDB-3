@@ -40,7 +40,7 @@ const PC = (x, h, z, w, hh, fn, o) => ({ t: 'pic', x, h, z, w, hh, fn, ...o });
 
 const GOLD = { m: 'metal' };
 /** A thin square-edged bar (a lattice's, a trim's). */
-const bar = (x, h, z, w, hh, d, c, o) => B(x, h, z, w, hh, d, c, { r: 0.2, ...o });
+const bar = (x, h, z, w, hh, d, c, o) => B(x, h, z, w, hh, d, c, { r: 0.05, ...o });
 
 /** A lattice panel facing the front from a0 to a1 across x and h0 to h1 up, at z `at`, its frame and nx x ny panes;
     `side` stands it along z instead (a0, a1 across z, at its x). */
@@ -48,8 +48,8 @@ function lattice(a0, a1, h0, h1, at, nx, ny, c, { side = false, th = 1.2, d = 1.
   const put = (a, h, w, hh, col) => (side ? bar(at, h, a, d, hh, w, col, { m }) : bar(a, h, at, w, hh, d, col, { m }));
   const am = (a0 + a1) / 2, hm = (h0 + h1) / 2, W = a1 - a0, H = h1 - h0;
   const out = [put(am, h0 + th / 2, W, th, frame), put(am, h1 - th / 2, W, th, frame), put(a0 + th / 2, hm, th, H, frame), put(a1 - th / 2, hm, th, H, frame)];
-  for (let i = 1; i < nx; i++) out.push(put(a0 + W * i / nx, hm, th * 0.6, H - th, c));
-  for (let j = 1; j < ny; j++) out.push(put(am, h0 + H * j / ny, W - th, th * 0.6, c));
+  for (let i = 1; i < nx; i++) out.push(put(a0 + W * i / nx, hm, th * 0.75, H - th, c));
+  for (let j = 1; j < ny; j++) out.push(put(am, h0 + H * j / ny, W - th, th * 0.75, c));
   return out;
 }
 /** A ruyi cloud in relief on a front face at z, s across. */
@@ -328,8 +328,10 @@ export const IMPERIAL_KINDS = [
     B(32, 91, 0, 64, 5, 62, IM.red, { r: 0.8 }),
     B(32, 94.6, 0, 60, 1.6, 58, IM.black, { r: 0.5 }),
     bar(32, 89, 31.3, 64, 1.4, 0.6, IM.gold, GOLD),
-    ...lattice(5, 59, 80, 88.4, 29, 12, 2, IM.gold, { frame: IM.black, m: 'metal' }),
-    ...lattice(5, 59, 21, 86, -29, 9, 10, IM.gold, { frame: IM.black, m: 'metal' }),
+    B(32, 84.2, 28.2, 54, 8.4, 0.6, IM.redD, { r: 0.2, m: 'cloth' }),
+    ...lattice(5, 59, 80, 88.4, 29, 12, 2, IM.gold, { frame: IM.black, th: 1.5, m: 'metal' }),
+    B(32, 53.5, -30, 54, 65, 0.6, IM.silk, { r: 0.2, m: 'cloth' }),
+    ...lattice(5, 59, 21, 86, -29, 9, 10, IM.gold, { frame: IM.black, th: 1.5, m: 'metal' }),
     ...[3, 61].flatMap(x => lattice(-27, 27, 21, 40, x, 8, 3, IM.gold, { side: true, frame: IM.black, m: 'metal' })),
     ...[7.5, 56.5].flatMap(x => [B(x, 56, 29.6, 6, 60, 1.6, IM.red, { m: 'cloth', r: 0.8 }), B(x, 50, 30.6, 6.6, 2, 0.8, IM.gold, { m: 'metal', r: 0.4 }),
       C(x, 46, 30.8, 0.4, 5, IM.gold, { m: 'cloth', rb: 1.4 })]),
@@ -376,7 +378,7 @@ export const IMPERIAL_KINDS = [
   piece('imptable', 'Round banquet table', 2, 2, 950, 'gloss', [
     ...[0, 1, 2, 3].flatMap(i => {
       const a = TAU * (i / 4 + 1 / 8), x = 32 + Math.cos(a) * 19, z = Math.sin(a) * 19;
-      return [C(x, 12, z, 2, 20, IM.black, { rb: 1.5 }), C(x, 1, z, 2.4, 2, IM.gold, GOLD)];
+      return [C(x, 12, z, 2.6, 20, IM.black, { rb: 2 }), C(x, 1, z, 3, 2, IM.gold, GOLD)];
     }),
     RG(32, 6, 0, 19, 0.8, IM.gold, { flat: true, m: 'metal' }),
     C(32, 22.5, 0, 25, 4, IM.black),
@@ -582,6 +584,7 @@ export const IMPERIAL_KINDS = [
     ...CORNERS(4, 28, 11).map(([x, z]) => B(x, 7.2, z, 2.6, 14.4, 2.6, IM.black, { r: 0.5 })),
     B(16, 12.4, 12.4, 22, 3, 0.8, IM.red, { r: 0.3 }),
     ...cloud(16, 12.6, 12.9, 3.6),
+    B(16, 4, 0, 23, 1.6, 21, IM.rose, { r: 0.4, m: 'wood' }),
     B(16, 15.6, 0, 30, 2.4, 28, IM.rose, { r: 0.6, m: 'wood' }),
     bar(16, 15.6, 14.1, 30, 0.6, 0.3, IM.gold, GOLD),
     B(16, 17.4, 0, 22, 1.2, 16, IM.black, { r: 0.4 }),
