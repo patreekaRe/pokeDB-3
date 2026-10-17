@@ -346,16 +346,19 @@ export const RANCH_KINDS = [
     B(32, 14.6, 31.2, 34, 1, 1.2, RC.nCream, CL),
   ]),
 
-  // a ladder-back chair of pale barn wood, three slats, a stitched leather seat
-  piece('rnchchair', 'Ranch ladder-back chair', 1, 1, 320, 'wood', [
+  // a barn-wood side chair with a cowhide back laced between its posts, a top slat, a stitched leather seat
+  piece('rnchchair', 'Ranch cowhide chair', 1, 1, 320, 'wood', [
     ...[6, 26].flatMap(x => [B(x, 22.5, -9, 3, 45, 3, RC.wood, WD), S(x, 45.6, -9, 1.9, 1.4, 1.9, RC.woodD, { m: 'wood', seg: 8 }), B(x, 7, 8, 3, 14, 3, RC.wood, WD), RD([x, 6, -9], [x, 6, 8], 0.8, RC.woodD, WD)]),
-    ...[24, 31.5, 39].map(h => B(16, h, -9, 20, 3.4, 1.6, RC.woodL, WD)),
+    B(16, 41.6, -9, 21, 4, 1.8, RC.woodL, WD), B(16, 21.4, -9, 20, 2.6, 1.6, RC.woodL, WD),
+    B(16, 31.2, -9, 20, 17.4, 1, RC.hide, CL),
+    DS(12.4, 34.6, -8.3, 3.4, 0.4, RC.spot, { m: 'plain', ry: 2.6, seg: 8 }), DS(20, 28, -8.3, 2.6, 0.4, RC.spot, { m: 'plain', ry: 2.2, seg: 8 }), DS(21.6, 37.4, -8.3, 1.4, 0.4, RC.spot, { m: 'plain', ry: 1.2, seg: 8 }),
     RD([6, 5, 8], [26, 5, 8], 0.8, RC.woodD, WD),
     B(16, 14.8, 0, 24, 2.4, 21, RC.woodD, WD),
     B(16, 16.8, 1, 21, 1.8, 18, RC.leather, LE),
   ]),
 
-  // a rocking chair: curved runners, a spindle back with a horseshoe on its crest, a Navajo-striped cushion
+  // a rocking chair: curved runners, a spindle back with a horseshoe on its crest, a Navajo-striped cushion and a
+  // turquoise blanket thrown over its back
   piece('rnchrocker', 'Ranch rocking chair', 1, 1, 620, 'wood', [
     ...[5, 27].flatMap(x => { const at = (z) => [x, 1.3 + (z / 14) ** 2 * 4, z], zs = [-14, -7, 0, 7, 14]; return zs.slice(0, 4).map((z, i) => RD(at(z), at(zs[i + 1]), 1.3, RC.woodD, WD)); }),
     ...[5, 27].flatMap(x => [-8, 8].map(z => B(x, 8.8, z, 2.6, 12.4, 2.6, RC.wood, WD))),
@@ -364,7 +367,10 @@ export const RANCH_KINDS = [
     ...[5, 27].map(x => B(x, 28, -10, 2.6, 26, 2.6, RC.wood, WD)),
     ...[10, 14, 18, 22].map(x => RD([x, 16.7, -10], [x, 38, -10], 0.7, RC.woodL, WD)),
     B(16, 39.6, -10, 25, 4, 2.4, RC.woodD, WD),
-    ...horseshoe(16, 40, -8.4, 2.4, 0.6, true, { nails: false }),
+    B(16, 40.4, -9.6, 18, 2, 4.6, RC.turq, CL), B(16, 31.6, -8.1, 18, 16, 1, RC.turq, CL),
+    ...bands(16, -7.45, 18, [[26, RC.nRed], [29.2, RC.nCream], [32.4, RC.nBlack], [35.6, RC.nCream]], 1.3),
+    B(16, 23, -8.1, 18, 1, 0.8, RC.nCream, CL),
+    ...horseshoe(16, 40, -7.2, 2.4, 0.6, true, { nails: false }),
     ...[4.5, 27.5].flatMap(x => [B(x, 24, 0, 3, 1.8, 21, RC.wood, WD), RD([x, 16.7, 8], [x, 23.2, 8], 0.9, RC.woodD, WD)]),
   ]),
 
