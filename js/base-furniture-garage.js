@@ -423,8 +423,8 @@ export const GARAGE_KINDS = [
   piece('grgbench', 'Garage workbench and vice', 2, 1, 1150, 'metal', [
     ...[3, 61].flatMap(x => [-11, 11].map(z => B(x, 13.5, z, 3.2, 27, 3.2, G.steelD, MT))),
     B(32, 6, 0, 60, 1.4, 24, G.steelD, MT),
-    B(32, 24.4, 0, 60, 4, 24, G.steel, MT),
-    B(18, 24.4, 12.2, 18, 3.2, 0.6, G.steel, MT), RD([14, 24.4, 12.9], [22, 24.4, 12.9], 0.4, G.black, GL),
+    B(32, 24.7, 0, 60, 4.6, 24, G.steel, MT),
+    B(18, 24.7, 12.2, 18, 3.4, 0.6, G.steel, MT), RD([14, 24.7, 12.9], [22, 24.7, 12.9], 0.4, G.black, GL),
     B(32, 28.6, 0, 64, 3.2, 28, G.woodL, { m: 'wood', tex: 'grain' }),
     B(14, 10.7, 0, 16, 8, 10, G.red, GL), ...[10, 18].map(x => RD([x, 14.7, 0], [x, 16.4, 0], 0.45, G.black, GL)), RD([10, 16.4, 0], [18, 16.4, 0], 0.55, G.black, GL),
     B(14, 11.2, 5.1, 14, 0.6, 0.3, G.yellow, PL),
