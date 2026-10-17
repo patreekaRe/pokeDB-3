@@ -5,8 +5,8 @@
    at the door and the Duskull kickback in the left outlane), B-O-O rollovers the flippers turn (all lit raises the bonus
    multiplier) and a left orbit that comes back down the right side onto a small upper flipper aimed at the door. HAUNT:
    Gengar teleports round the table; hit him before he vanishes and Gengar's Party starts, two balls with the door a
-   Jackpot. LIGHTS OUT (Night Shade), every third orbit or an unlit door: the table goes dark but for a light round each
-   ball and the glowing ghosts, and everything scores double. */
+   Jackpot. An unlit door topples the next tombstone. LIGHTS OUT (Night Shade), every third orbit: the table goes dark
+   but for a light round each ball and the glowing ghosts, and everything scores double. */
 
 import { openTable, arc, bump, hitSeg, side, rails, slingArt, gateArt, lampInsert, arrowPath, arrowInsert, label, hash, drawMon, TAU } from './pinball-kit.js';
 
@@ -245,6 +245,16 @@ export const TABLE = {
       if (busted === 2 || busted === 5) t.extraBall(`${busted} Gengar busted: an extra ball!`);
       if (!t.multi) { party = true; t.stat('party'); t.startMulti(1); }
     };
+    const topple = (i) => {
+      stones[i] = false; bonus.stones++; score(250); t.stat('stone'); t.sound('hit-weak', 'plink-2');
+      t.boom(STONES[i], STONE_Y - 8, '#9a94b0', 8, 0.3);
+      if (!stones.some(Boolean)) {
+        stoneBack = 1.4; score(1000);
+        if (!kick) kick = true;
+        if (!haunt && !doorLit) { doorLit = true; t.say('HAUNT IS LIT!', 2.5); t.api.say('G-H-O-S-T! HAUNT is lit at the door, and the kickback too.'); t.sound('stat-up'); }
+        else t.say('GHOST BANK 1000');
+      }
+    };
     const sinkDoor = (b) => {
       t.hold(b, DOOR.x, DOOR.y, 1.1, () => { const nb = t.spawn(DOOR.x, DOOR.y + 15, (Math.random() < 0.5 ? -1 : 1) * (110 + Math.random() * 90), 200); nb.cool = 0.5; });
       t.sound('fx-gong', 'select'); bonus.doors++; t.stat('door');
@@ -253,7 +263,11 @@ export const TABLE = {
         t.shout('JACKPOT!', '#ff70e0'); t.boom(DOOR.x, DOOR.y, '#ff70e0', 26, 1.3); t.sound('coins', 'stat-up'); t.api.say(`Jackpot! +${pts.toLocaleString()}`);
       } else if (haunt) { score(2000); haunt.hop = Math.min(haunt.hop, 0.4); t.say('DOOR 2000', 1.4); }
       else if (doorLit) startHaunt();
-      else { score(500); t.say('DOOR 500', 1.4); lightsOut('The door creaks...'); }
+      else {
+        score(500);
+        const i = stoneBack ? -1 : stones.indexOf(true);
+        if (i >= 0) { topple(i); if (stones.some(Boolean)) t.say(`A GHOST TOPPLED ${'GHOST'[i]}`, 1.6); } else t.say('DOOR 500', 1.4);
+      }
     };
     const orbit = () => {
       orbits++; bonus.orbits++; score(750); t.stat('orbit'); t.sound('fx-ding', 'plink-2');
@@ -295,14 +309,7 @@ export const TABLE = {
           // only a hit on the stone's face topples it; one coming down the orbit behind the row just bounces off its side
           const c = hitSeg(b, x - 5.5, STONE_Y, x + 5.5, STONE_Y, 0.5);
           if (!c || c.uy <= 0.3) return;
-          stones[i] = false; bonus.stones++; score(250); t.stat('stone'); t.sound('hit-weak', 'plink-2');
-          t.boom(x, STONE_Y - 8, '#9a94b0', 8, 0.3);
-          if (!stones.some(Boolean)) {
-            stoneBack = 1.4; score(1000);
-            if (!kick) kick = true;
-            if (!haunt && !doorLit) { doorLit = true; t.say('HAUNT IS LIT!', 2.5); t.api.say('G-H-O-S-T! HAUNT is lit at the door, and the kickback too.'); t.sound('stat-up'); }
-            else t.say('GHOST BANK 1000');
-          }
+          topple(i);
         });
         const cross = (y) => (py < y) !== (b.y < y);
         if (cross(LANE_Y)) LANES.forEach((x, i) => {

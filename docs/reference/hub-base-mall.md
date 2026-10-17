@@ -598,3 +598,29 @@ no plateau. Each file's header says what it now has; the gist:
 - **Checking a game** (text, no screenshots): `NODE_PATH=$(npm root -g) node tools/arcade-check.mjs arcade-pinball
   openPinball 20 [left,right,plunge]` plays it headless and prints fps, drawImage calls a frame, the lines it said and
   any errors.
+
+## Four more pinball tables (2026-10-17, the user's ask: "4 more of those pinball games, each completely different, same aesthetics")
+
+Each its own Game Corner prize (750 coins, `PRIZES` in `js/data/corner.js`) and home game (`js/home-arcade.js`), on the
+side walls under Whac-a-Diglett and Pokémon Pinball, two a wall (`ARCADE` in `js/mall-corner.js`), their 3D table
+`B.pinball` with `table:` (`PIN_LOOK` in `js/base-mesh.js`, pictures `PIN` / `tableField()` / `tableGlass()` in
+`js/arcade-art.js`), paintings `pinTable()` in `js/base-furniture-rooms5.js`, marquees in `MARQUEE`.
+- **The engine** is `js/pinball-kit.js` (Pokémon Pinball keeps its own): a table is a definition (walls, flippers, slings,
+  lane, art, `make(t)` returning its hooks); the kit runs flippers (any number, ◀ works every left one), the plunger,
+  saver, multiball, `t.ride()` ramps, `t.hold()` saucers, the dot-matrix strip, the bonus count, a scrolling camera
+  (`worldH`, `camera(low, cam)`) and a ball search that never nudges a ball cradled on a held flipper.
+- **Gengar's Haunted Pinball** (`js/pinball-gengar.js`, `gengarpinball`): a night graveyard, Gastly as drifting bumpers,
+  G-H-O-S-T tombstones light HAUNT at the mansion door (Gengar teleports; bust him for a 2-ball Party), an unlit door
+  topples the next stone, every third orbit LIGHTS OUT (dark but for the ball, ×2), a small upper flipper, Duskull kickback.
+- **Lapras's Lagoon Pinball** (`js/pinball-lapras.js`, `lapraspinball`): floatier (grav 540, drag), a whirlpool that spins
+  and flings the ball, Staryu bumpers, a Magikarp captive ball (6 splashes: Gyarados's Rampage, ×5), Shellder pearls
+  (4: an extra ball), SURF on three left orbits (2 balls, the wave lifts draining balls), a Lapras post during the saver.
+- **Charizard's Volcano Pinball** (`js/pinball-charizard.js`, `volcanopinball`): fast (grav 680), three flippers, crossing
+  FLAME / BLAZE ramps, a HEAT bar lighting the crater for a 3-ball ERUPTION, F-I-R-E twice an evolution (Charizard lights
+  BLAST BURN), combos within 3 s.
+- **Rayquaza's Sky Pillar Pinball** (`js/pinball-rayquaza.js`, `skypinball`): 980 tall, two screens like the Game Boy's
+  (the sky above y 505, the tower below 560), four flippers, the Sky Lift lights ASCEND to climb five floors (new bumper
+  Pokémon each), Rayquaza on floor 5 (8 hits: Dragon Ascent, 3 balls), wind gusts, Trapinch → Flygon kickbacks.
+- **Checking a table**: `NODE_PATH=$(npm root -g) node tools/pinball-sim.mjs pinball-gengar 8 10` plays whole games with a
+  bot (scores, ball lives, each table's `t.stat` counters, nudges, escapes); `tools/arcade-check.mjs` for the cabinet.
+  The bot is weak; only compare runs of the same bot.

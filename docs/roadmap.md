@@ -617,6 +617,12 @@ many, how chatty, the fountains' size); move to the archive once they're happy.
 the archive and `docs/reference/hub-base-mall.md`'s "The arcade overhaul"). Next: the user plays them on the phone and
 says which feel too hard, too easy or too busy; tune that game's numbers alone.
 
+**Four more pinball tables: waiting on the user's playtest** (2026-10-17, branch `claude/wonderful-ramanujan-ri0gb0`, on
+`main` too): Gengar's Haunted, Lapras's Lagoon, Charizard's Volcano and Rayquaza's Sky Pillar, on `js/pinball-kit.js`
+(see `docs/reference/hub-base-mall.md`'s last section), patch 1.24 "Full Tilt". Played by a bot headless only. Next: the
+user plays them on the phone and says which feel too hard, easy or busy (each file's top constants and its `make()`
+numbers are the knobs); their 3D tables and spots on the Game Corner's side walls were never seen in 3D.
+
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
 Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on

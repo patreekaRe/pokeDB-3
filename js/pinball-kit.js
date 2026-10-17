@@ -288,12 +288,13 @@ export function makeTable(T, api) {
           api.add(10); api.sound('fx-pop', 'plink-1'); hooks.sling?.(sl);
         }
       });
-      for (const f of flips) hitFlipper(b, f, f.ang, f.w);
+      let cradled = false;
+      for (const f of flips) if (hitFlipper(b, f, f.ang, f.w) && flip[f.s]) cradled = true;
       hooks.ball?.(b, h, py);
       const sp = Math.hypot(b.vx, b.vy);
       if (sp > MAXV) { b.vx *= MAXV / sp; b.vy *= MAXV / sp; }
-      // the ball search: a ball sat still away from the lane (wedged on a post) gets a nudge
-      if (!b.lane && sp < 12) { b.still = (b.still || 0) + h; if (b.still > 3) { b.vx = (Math.random() - 0.5) * 300; b.vy = -260; b.still = 0; t.stat('nudged'); } }
+      // the ball search: a ball sat still away from the lane (wedged on a post) gets a nudge, never one cradled on a held flipper
+      if (!b.lane && !cradled && sp < 12) { b.still = (b.still || 0) + h; if (b.still > 3) { b.vx = (Math.random() - 0.5) * 300; b.vy = -260; b.still = 0; t.stat('nudged'); } }
       else b.still = 0;
     }
     const live = t.field.filter(b => !b.gone);
