@@ -68,10 +68,16 @@ const lock = (x, h, z, r) => [
 const roof = (hw, hh) => [[-hw, 0], [hw, 0], [hw + 1.6, hh * 0.6], [hw * 0.55, hh * 0.5], [hw * 0.25, hh], [-hw * 0.25, hh], [-hw * 0.55, hh * 0.5], [-hw - 1.6, hh * 0.6]];
 /** A blue-and-white lathe: the profile cut at `cuts` (heights), its bands blue and white by turns from `first`. */
 function porcelain(x, h, z, pts, cuts, first = IM.blue, o) {
-  const at = (y) => { for (let i = 1; i < pts.length; i++) if (pts[i][1] >= y) { const [r0, y0] = pts[i - 1], [r1, y1] = pts[i]; return r0 + (r1 - r0) * (y - y0) / ((y1 - y0) || 1); } return pts[pts.length - 1][0]; };
+  // at a height a point sits on, a band's foot takes the widest last point there and its top the first
+  const at = (y, foot) => {
+    const on = pts.filter(p => p[1] === y);
+    if (on.length) return (foot ? on[on.length - 1] : on[0])[0];
+    for (let i = 1; i < pts.length; i++) if (pts[i][1] > y) { const [r0, y0] = pts[i - 1], [r1, y1] = pts[i]; return r0 + (r1 - r0) * (y - y0) / (y1 - y0); }
+    return pts[pts.length - 1][0];
+  };
   const ys = [0, ...cuts, pts[pts.length - 1][1]], out = [];
   for (let i = 0; i < ys.length - 1; i++) {
-    const lo = ys[i], hi = ys[i + 1], seg = [[at(lo), lo], ...pts.filter(([, y]) => y > lo && y < hi), [at(hi), hi]];
+    const lo = ys[i], hi = ys[i + 1], seg = [[at(lo, true), lo], ...pts.filter(([, y]) => y > lo && y < hi), [at(hi, false), hi]];
     if (i === 0) seg.unshift([0, 0]);
     if (i === ys.length - 2) seg.push([0, hi]);
     out.push(LA(x, h, z, seg, i % 2 ? (first === IM.blue ? IM.white : IM.blue) : first, o));
