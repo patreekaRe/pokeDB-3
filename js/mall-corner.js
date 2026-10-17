@@ -35,11 +35,12 @@ const PLINKOS = [2.5, 5.5];
 /* the home arcade's machines along the back wall, under the screens and the Plinko boards (2026-10-12, the user's ask),
    free to play for fun, the prize at Meowth's counter to take home: [kind, x, y, face]. Eight cabinets each side of the
    counter (the user's layout, 2026-10-12), Whac-a-Diglett and the pinball table on the side walls where their top slot
-   machines stood. */
+   machines stood; the four newer pinball tables below them, two a wall (2026-10-17). */
 const ARCADE = [
   ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'berrycabinet', 'dittocabinet'].map((id, x) => [id, x]),
   ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'bubblecabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
   ['whackmachine', 0, 3, 1], ['pokepinball', COLS - 1, 3, -1],
+  ['gengarpinball', 0, 4, 1], ['volcanopinball', 0, 5, 1], ['lapraspinball', COLS - 1, 4, -1], ['skypinball', COLS - 1, 5, -1],
 ];
 const ARCADE_K = 0.95;
 const SHOW_W = 2.3, DESK_W = 4.2;   // a little smaller since 2026-10-12, off the leaderboard (the user's ask)

@@ -196,6 +196,7 @@ set('blackjacktable', { make: 'cardtable', game: 'blackjack' });
 set('highlowtable', { make: 'cardtable', game: 'highlow' });
 set('plinkoboard', { make: 'plinko' });
 set('pokepinball', { make: 'pinball' });
+for (const [id, table] of [['gengarpinball', 'gengar'], ['lapraspinball', 'lapras'], ['volcanopinball', 'volcano'], ['skypinball', 'skypillar']]) set(id, { make: 'pinball', table });
 
 /* the batches modelled after the arcade cabinets (js/base-models-*.js): `'id id2': shape` each */
 for (const batch of [SHAPES_A, SHAPES_B, SHAPES_C, SHAPES_D, SHAPES_E, SHAPES_F, SHAPES_G, SHAPES_H, SHAPES_I, SHAPES_J, SHAPES_K, SHAPES_W, SHAPES_W2, SHAPES_W3, SHAPES_W4, SHAPES_W5, SHAPES_W6, SHAPES_W7, SHAPES_T, SHAPES_Y, SHAPES_FR, SHAPES_L, SHAPES_M, SHAPES_N, SHAPES_O, SHAPES_P, SHAPES_Q, SHAPES_R, SHAPES_S, SHAPES_U, SHAPES_V, SHAPES_X, SHAPES_Z, SHAPES_Y2, SHAPES_GOLD, SHAPES_PIKACHU, SHAPES_EEVEE, SHAPES_SNORLAX, SHAPES_JIGGLYPUFF, SHAPES_GENGAR, SHAPES_LAPRAS, SHAPES_BALL, SHAPES_MUSEUM, SHAPES_CONTEST, SHAPES_LEAGUE, SHAPES_ROCKET, SHAPES_DAYCARE, SHAPES_PARTNER, SHAPES_FIGURINES, SHAPES_ANTIQUE, SHAPES_RATTAN, SHAPES_LOGCABIN, SHAPES_IRONWOOD, SHAPES_IMPERIAL, SHAPES_DINER, SHAPES_CUTE, SHAPES_ELEGANT, SHAPES_GOLDEN, SHAPES_SHELL, SHAPES_SAKURA, SHAPES_MAPLE, SHAPES_ACORN, SHAPES_MUSHROOM]) for (const [ids, shape] of Object.entries(batch)) set(ids, shape);

@@ -2673,6 +2673,9 @@ earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js
 the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
 (`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
 the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
+- **Done (2026-10-17): Driftwood Landing's buildings merged** (the towns' draw calls, one town a session): each house's
+  still parts one mesh a material or colour-baked, moving parts lifted out (`stillParts()`, `moves()`), the door's tap
+  kept; 674 -> ~495 GL draws a frame headless, ten buildings 428 meshes -> ~194, every door opens. `docs/reference/towns.md`.
 - **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
   Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
   turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw

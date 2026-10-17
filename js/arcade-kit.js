@@ -98,7 +98,8 @@ const MARQUEE = {
   pong: ['psyduck', 'Psyduck', 'Pong'], puzzle: ['eevee', 'Poké', 'Puzzle'], rhythm: ['jigglypuff', 'Jigglypuff\'s', 'Sing-Along'],
   runner: ['ponyta', 'Ponyta', 'Dash'], skeeball: ['clefairy', 'Poké Ball', 'Skee-Ball'], snake: ['ekans', 'Ekans', 'Trail'],
   stacker: ['snorlax', 'Snorlax', 'Stacker'], volley: ['pikachu', 'Pikachu', 'Volleyball'], whack: ['diglett', 'Whac-a-', 'Diglett'],
-  words: ['unown', 'Unown', 'Word Search'],
+  words: ['unown', 'Unown', 'Word Search'], gengar: ['gengar', 'Gengar\'s', 'Haunted Pinball'], lapras: ['lapras', 'Lapras\'s', 'Lagoon Pinball'],
+  volcano: ['charizard', 'Charizard\'s', 'Volcano Pinball'], skypillar: ['rayquaza', 'Rayquaza\'s', 'Sky Pillar Pinball'],
 };
 const caps = (t) => t.toUpperCase().replace(/É/g, 'é');
 
