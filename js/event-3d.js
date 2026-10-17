@@ -10756,6 +10756,8 @@ export async function swapMate(mate) {
 }
 
 export const eventRoom3d = () => (R && alive() ? controls : null);
+/** The tile your partner stands on in the room on screen (the refresh key, js/stay.js), or null. */
+export const eventTile = () => (R && alive() && walker.tile ? { x: walker.tile.x, y: walker.tile.y } : null);
 
 /** A Waystone's rune circle, white (the material tints it): two rings, a band of runes between them, a star. */
 function runeCircleArt() {

@@ -2867,3 +2867,8 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
 - (2026-10-17) Leaving an arcade game mid-play (EXIT, Escape or RESTART) keeps its score as the Best and on the weekly
   leaderboard (`bank()` in `js/arcade-kit.js`).
+
+### The refresh key (2026-10-17, the user's ask: "a refresh button on the top right" in the scenes that need it)
+- A round key top right in the Clearing, Secret Base, Poké Mall, towns and houses, and a run's map: the newest version,
+  back on the same tile (a run: Continue, or its town). Detail: `docs/reference/saved-runs.md`'s "The refresh key".
+  Checked headless (each place's round trip, playtests keyless, a plain refresh still on the title).

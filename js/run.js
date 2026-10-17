@@ -96,6 +96,7 @@ const favourPeek = {};
 const favourReady = (id, real) => townsOpen() && asking(id, homeHearts(id)) && (real ? favourOf(getSave(), id).ready : satchelFlag() && !favourPeek[id]);
 const heardOf = (id) => (heartsFlag() !== null ? heardPeek[id] || 0 : workshopOf(getSave()).heard?.[id] || 0);
 import { buildingSvg } from './buildings.js';
+import { stayKey } from './stay.js';
 
 let run = null;
 let peeking = false;   // a ?event= playtest run (peekEvent()): nothing about it is saved, so the real saved run is safe
@@ -475,11 +476,13 @@ export function loadSavedRun() {
 export const hasSavedRun = () => loadSavedRun() !== null;
 
 /** Pick a saved run (from loadSavedRun) back up on its map. Returns the place's walk-on film if one plays over it. */
-export function continueRun(saved) {
+export function continueRun(saved, stay = null) {
   run = saved;
   mapFilm = null;
   if (run.town && TOWNS[run.town.id]) {   // left in a gateway town: back to it, the biome's map after its far gate
-    townRoom();
+    const house = stay?.house && TOWNS[run.town.id].buildings.find(b => b.id === stay.house && b.home);   // or the house the refresh key left you in
+    if (house) homeRoom(house, null, stay.tile);
+    else townRoom(null, stay?.tile ?? null);
     return null;
   }
   if (run.atFork) {   // left at the crossroads: back to it, not to the boss's map (the boss and its rewards are behind you)
@@ -745,12 +748,13 @@ let peekAt = null, peekDepths = false, peekHouse = null;
     its `house`). It runs as a throwaway run like a playtest (nothing about the run is saved, the saved run untouched),
     but what's done there is real: requests handed in, furniture bought. Leaving (the far gate, Leave,
     the Waystone, a house's doormat) calls `onHome(from, town)`: the hub, in front of the Waystone or on the doorstep. The
-    Depths camp's `onMewtwo` is the way out when you set out with Mewtwo (campTalk()). */
-export function visitTown(starter, id, onHome, house = null, { stage = 0, onMewtwo = null } = {}) {
+    Depths camp's `onMewtwo` is the way out when you set out with Mewtwo (campTalk()). `tile`: the tile to stand on (the
+    refresh key, js/stay.js). */
+export function visitTown(starter, id, onHome, house = null, { stage = 0, onMewtwo = null, tile = null } = {}) {
   const at = placeOf(id);
   if (!at || !starter) return false;
   peeking = true;
-  visiting = { onHome, id, stage, onMewtwo };
+  visiting = { onHome, id, stage, onMewtwo, at: tile };
   peekAt = BIOMES_BY_ID[at.biome];
   peekHouse = house;
   beginRun(starter, 0, ':visit');
@@ -825,11 +829,13 @@ function peekRoom(id) {
     dropNotes();   // no run-start lines on a visit
     document.body.classList.add('town-visit');   // no run's HP or Pokédollars on the room bar
     const place = placeOf(visiting.id);
-    run.town = { id: place.id, visit: true, trade: null };
+    run.town = { id: place.id, visit: true, trade: null, landed: !!visiting.at };   // back by the refresh key: no Waystone landing
     const lift = () => import('./hd2d.js').then(m => m.curtain(false, 420));   // the hub's door or Waystone went dark
-    if (place.home) { homeRoom(place.buildings.find(b => b.id === peekHouse) ?? place.buildings[0]); return setTimeout(lift, 700); }
+    if (place.home) { homeRoom(place.buildings.find(b => b.id === peekHouse) ?? place.buildings[0], null, visiting.at); return setTimeout(lift, 700); }
+    const house = place.buildings.find(b => b.id === peekHouse && b.home);
+    if (house) { homeRoom(house, null, visiting.at); return setTimeout(lift, 700); }
     const stone = place.buildings.find(b => b.kind === 'waystone')?.door;
-    return townRoom(lift, stone ? { x: stone.x, y: stone.y + 2 } : null);   // set down just in front of the Waystone's ring
+    return townRoom(lift, visiting.at ?? (stone ? { x: stone.x, y: stone.y + 2 } : null));   // set down just in front of the Waystone's ring
   }
   if (id === ':town') {
     walkInto(peekAt);
@@ -1082,9 +1088,12 @@ function showAbility() {
   el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
 
+let mapStay = null;   // the map's refresh key (js/stay.js), on the top bar after the coins; a playtest's map has none
 function showMap() {
   const biome = land();
   scoping = rubbing = false;
+  mapStay ??= document.querySelector('.topbar-actions').appendChild(stayKey(() => (peeking ? null : { at: 'run' }), 'home-key'));
+  mapStay.hidden = peeking;
   showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
@@ -1990,6 +1999,8 @@ function townRoom(covered = null, at = null) {
     onSkip: barred ? null : leave,
     layout: 'event-room town-room',
   });
+  inHouse = null;
+  stayHere();
   const visit = townVisit ??= { id: town.id };
   const knocks = {};
   event3d(visit, 'town', {}, null, {
@@ -2053,7 +2064,7 @@ function askPick(step) {
 /** A town house you walk into (js/data/towns.js's `homes`): its own small room, its doormat back out onto its doorstep.
     The shop holds the town's one trade; a Gym Leader's home has them in it to chat to; the Dance Theater its five
     dancers, the bathhouse its bathers (a home's `cast`). */
-function homeRoom(b, onward = null) {
+function homeRoom(b, onward = null, at = null) {
   const town = placeOf(run.town.id), home = town.homes[b.home], thisRun = run, t = run.town;
   const out = () => { if (run === thisRun) (onward ? onward() : town.home ? goHome(b.back ?? b.id) : townRoom(null, b.door)); };   // the Clearing's own houses open onto the hub
   // the shard handed in: out of the door under a slow fade rather than a cut (the user's ask, 2026-10-14: "it happens so
@@ -2250,6 +2261,8 @@ function homeRoom(b, onward = null) {
     ask: false,   // only a door back into the town
     hearts: townsOpen() && FAVOURITE[home.leader] && !away ? homeHearts(home.leader) : null,
   });
+  inHouse = b.id;
+  stayHere();
   const figures = {};
   if (b.home === 'shop') figures.trader = { src: `assets/pokemon/${town.trader.id}-front.gif` };
   if (home.kurt) figures.kurt = { npc: 'kurt' };
@@ -2282,7 +2295,7 @@ function homeRoom(b, onward = null) {
   const homeSt = () => (peeking && !t.visit && t.peekSt) || townState(getSave(), town.id);   // a ?town= playtest's questline is on the run
   homeVisits[b.id] ??= { id: b.id };
   event3d(homeVisits[b.id], 'home', figures, null, {
-    extra: { town, home: b.home, away, gift: gifting, belt: home.dojo ? dojoOf(getSave()).belt : null, marks: handOver && !nietosNew ? [`who:${home.leader}`] : [], onTalk: (stand) => {
+    extra: { town, home: b.home, at, away, gift: gifting, belt: home.dojo ? dojoOf(getSave()).belt : null, marks: handOver && !nietosNew ? [`who:${home.leader}`] : [], onTalk: (stand) => {
       if (run !== thisRun) return;
       if (stand === 'mewtwo' && home.mewtwo) return campTalk();
       if (stand === 'jona') return jonaTalk();
@@ -2408,6 +2421,20 @@ function afterTrial(trial, result, b) {
 }
 const homeVisits = {};
 let townVisit = null;
+
+/* The refresh key (js/stay.js) in a town or a house in one, top right: a visit from home comes back to the same town,
+   house and tile; a run's town is the run's own save, continued (continueRun()). Not on a playtest (?town=), which
+   restarts from its URL anyway, nor at the Depths camp a fall stops at. */
+let inHouse = null;
+function stayHere() {
+  const t = run.town;
+  if (!t || t.fall || (peeking && !t.visit)) return;
+  $('reward-options').append(stayKey(() => {
+    if (run?.town !== t) return null;
+    const tile = event3dMod?.eventTile() ?? null;
+    return t.visit ? { at: 'visit', town: visiting?.id, house: inHouse, tile } : { at: 'run', house: inHouse, tile };
+  }));
+}
 
 /** Mewtwo as gymTalk() slides it in (shiny if yours is). */
 const mewtwoTalker = () => ({ id: 'mewtwo', name: 'MEWTWO', talk: spriteUrl(STARTERS_BY_ID.mewtwo, 'front', 0, getSave().shiny.on.includes('mewtwo')) });

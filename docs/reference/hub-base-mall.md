@@ -230,7 +230,7 @@ The first section began as the note on playtesting the live site and grew into t
   just right of the PC, the user's ask the same day; it first stood two right of the Waystone, and Halloween's ghost
   that spawned there moved to that old spot). Professor Oak stands there except at night, Professor Sonia
   at night (`PROFS`, `profNow()`; both boards are built and `setTime()` shows one). Each tap reads the next of `HINTS`
-  (features a player might miss); every fifth tap ends on that professor's reminder to refresh the page for updates
+  (features a player might miss); every fifth tap ends on that professor's reminder to tap the refresh key for updates (`js/stay.js`)
   (`hintsHeard`; every tap until 2026-10-15, the user's ask). Sprites
   `assets/trainers/oak.png` / `sonia.png` (the user's own sprites since 2026-10-14, 80 x 80 like Kurt's; `monBoard()` finds their feet from the empty rows).
   A new feature worth a hint gets a `HINTS` line. **Talked to in the Gym Leaders' slide-in** (2026-10-15, the user's pick

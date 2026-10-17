@@ -46,6 +46,7 @@ export const NEXT = [
   ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
   ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
   ['fixes', 'Driftwood Landing runs lighter: each building draws in a few pieces, not dozens.'],
+  ['hub', 'A refresh key, top right in the Clearing, Secret Base, Poké Mall, towns and on a run\'s map, loads the newest version right where you stood.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
