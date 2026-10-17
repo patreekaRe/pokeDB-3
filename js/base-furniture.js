@@ -45,6 +45,11 @@ import { ROCKET_KINDS } from './base-furniture-rocket.js';
 import { DAYCARE_KINDS } from './base-furniture-daycare.js';
 import { PARTNER_KINDS } from './base-furniture-partner.js';
 import { FIGURINE_KINDS } from './base-furniture-figurines.js';
+import { ANTIQUE_KINDS } from './base-furniture-antique.js';
+import { RATTAN_KINDS } from './base-furniture-rattan.js';
+import { LOGCABIN_KINDS } from './base-furniture-logcabin.js';
+import { IRONWOOD_KINDS } from './base-furniture-ironwood.js';
+import { IMPERIAL_KINDS } from './base-furniture-imperial.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -364,7 +369,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5, ...STATUE_KINDS, ...PIKACHU_KINDS, ...EEVEE_KINDS, ...SNORLAX_KINDS, ...JIGGLYPUFF_KINDS, ...GENGAR_KINDS, ...LAPRAS_KINDS, ...BALL_KINDS, ...MUSEUM_KINDS, ...CONTEST_KINDS, ...LEAGUE_KINDS, ...ROCKET_KINDS, ...DAYCARE_KINDS, ...PARTNER_KINDS, ...FIGURINE_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5, ...STATUE_KINDS, ...PIKACHU_KINDS, ...EEVEE_KINDS, ...SNORLAX_KINDS, ...JIGGLYPUFF_KINDS, ...GENGAR_KINDS, ...LAPRAS_KINDS, ...BALL_KINDS, ...MUSEUM_KINDS, ...CONTEST_KINDS, ...LEAGUE_KINDS, ...ROCKET_KINDS, ...DAYCARE_KINDS, ...PARTNER_KINDS, ...FIGURINE_KINDS, ...ANTIQUE_KINDS, ...RATTAN_KINDS, ...LOGCABIN_KINDS, ...IRONWOOD_KINDS, ...IMPERIAL_KINDS);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 /* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by
