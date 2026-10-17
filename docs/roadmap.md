@@ -893,6 +893,9 @@ needs unique names, renames and a guard against rude names turning up in results
 details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (it already carries `base`, the
 `secretBase` as JSON), friend codes, `save.friends`, adding by code or a leaderboard name, the Trainers app, the tip and
 the PC letter. **Its rules wait on the user** (Waiting on the user, below).
+~~**Finding each other without meeting**~~ done 2026-10-17 (the user's ask, same day; `docs/roadmap-done.md`): the
+Trainer Plaza, an "Added you" banner and the TRAINER LINK pop-up when someone adds you (the user saw a screenshot before
+it was pushed). Same rules file, so one publish covers both.
 **Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
 `loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
 (`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`

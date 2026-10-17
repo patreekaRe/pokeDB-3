@@ -32,7 +32,7 @@ can't be reached from a cloud session).
 ## Trainers: friend codes and the friends list (2026-10-17, session 1 of the roadmap's "Friends list and base visits")
 
 Signed-in players only. `js/trainers.js` (network and the app) and `js/data/trainers.js` (pure: codes, the list, the
-doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (33 cases).
+doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (62 cases).
 - **`trainers/<uid>`** = `{ code, name, card, buddy, base, at }`, the public page: `card` the Trainer Card's numbers
   (`cardDoc()`: tier, earned badge ids, wins, Pokédex, Safari, stars, play minutes, the partner as a `save.partner`
   key), `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
@@ -57,6 +57,23 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   the Trainer Card's CODE line, and a one-time letter from TRAINER NETWORK (`trainersLetter()` in `js/mail.js`,
   `save.trainersLetter`) the first time a signed-in player logs on to the PC, its code where a prize would be, Read
   not Claim.
+- **Finding each other without meeting** (2026-10-17, the user's ask, the same day): the **Trainer Plaza**,
+  `plaza/<uid>` = a blurb (`blurbDoc()`: name, buddy, partner, tier, badge count, wins, `at`), written with your page
+  unless `save.plazaHidden` (the app's Hide me / Show me deletes or rewrites it); the app's Plaza banner lists the
+  `PLAZA_SHOWN` (30) on most lately (`plazaPick()`), never you, each with + Add. **Notes**: adding anyone (code, Plaza,
+  leaderboard, Add back) leaves `adds/<to>_<from>` (`addDoc()`, `seen: false`); removing takes it back (`removeTrainer()`).
+  Rules: only `to` reads (a query on `to == you`) and only marks `seen`; `from` writes as themselves; either deletes.
+  The app's **Added you** banner (gold, a "!") lists who added you and isn't on your list, with Add back.
+- **The TRAINER LINK pop-up** (`js/trainer-notice.js`, the user's ask: "aesthetic... like it's from a video game or MMO,
+  immersive Pokémon style"; they saw it in a screenshot before it was pushed): on sign-in, after the page is written,
+  `checkNotes()` queues every unseen note and shows them once the player is somewhere calm (`calmNow()`: no run screen,
+  window, PC or open Pokédex), 2.5 s after load. A card in the adder's Trainer Card colour: a signal and TRAINER LINK
+  (1/2...), a Poké Ball that falls, wobbles and opens in a flash on their buddy over painted rays (`rayWheel()`, not a
+  CSS gradient), a name plate (tier, name, badges, wins), the games' text box typing out the line with a blinking ▼,
+  and A ADD BACK / B LATER (keyboard: Enter, Z / Escape, X). Add back stamps LINKED! and plays `item-get`; someone who
+  adds you back after you added them gets TRAINER LINKED with OK only. Answering marks the note seen (it never pops
+  again; Later leaves them under Added you). Calm effects skip the ball, flash and bobbing. `?addnotice=N` shows N
+  samples with nothing sent.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
-  the rules (gstatic routed to stand-in SDK modules; 31 checks), and `tools/trainers-rules.mjs`, the real rules in the
+  the rules (gstatic routed to stand-in SDK modules; 59 checks, the pop-up, Plaza and notes among them), and `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

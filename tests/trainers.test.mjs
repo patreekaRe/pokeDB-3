@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { CODE_LETTERS, CODE_LEN, FRIENDS_MAX, BASE_MAX, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS } from '../js/data/trainers.js';
+  trainerDoc, checkTrainer, cardDoc, lastSeen, TRAINER_KEYS, CARD_KEYS, blurbDoc, addId, addDoc, plazaPick, PLAZA_SHOWN, PLAZA_KEYS, ADD_KEYS } from '../js/data/trainers.js';
 
 test('codes have no look-alikes and read either way', () => {
   for (const c of 'O0I1L') assert.ok(!CODE_LETTERS.includes(c));
@@ -69,4 +69,31 @@ test('last seen reads naturally', () => {
   assert.equal(lastSeen(now - 20 * 60000, now), 'Seen 20 min ago');
   assert.equal(lastSeen(now - 5 * 3600000, now), 'Seen 5 h ago');
   assert.equal(lastSeen(now - 4 * 86400000, now), 'Seen 4 days ago');
+});
+
+test('a blurb is bounded, a note starts unseen, the Plaza is newest first without you', () => {
+  const b = blurbDoc({ name: ' gary oak the very best ', tier: 'mauve', badges: 5000, wins: -3, buddy: 'starter:charmander', partner: 7 });
+  assert.equal(b.name, 'GARY OAK THE VER');
+  assert.equal(b.tier, 'green');
+  assert.equal(b.badges, 999);
+  assert.equal(b.wins, 0);
+  assert.equal(b.partner, '');
+  assert.equal(addId('to', 'from'), 'to_from');
+  const n = addDoc('b', 'a', { name: 'misty' });
+  assert.equal(n.seen, false);
+  assert.deepEqual([...Object.keys(n), 'at'].sort(), [...ADD_KEYS].sort());
+  assert.deepEqual([...Object.keys(blurbDoc()), 'at'].sort(), [...PLAZA_KEYS].sort());
+  const many = Array.from({ length: 40 }, (_, i) => ({ uid: `u${i}`, at: i }));
+  const pick = plazaPick([...many, { uid: 'me', at: 999 }, { uid: 'u39', at: 1 }], 'me');
+  assert.equal(pick.length, PLAZA_SHOWN);
+  assert.equal(pick[0].uid, 'u39');
+  assert.ok(!pick.some(e => e.uid === 'me'));
+  assert.equal(new Set(pick.map(e => e.uid)).size, pick.length);
+});
+
+test('the rules\' Plaza and note keys match the docs\'', () => {
+  const rules = readFileSync(new URL('../firestore.rules', import.meta.url), 'utf8');
+  const list = (s) => s.split(',').map(x => x.trim().replace(/'/g, '')).sort();
+  assert.deepEqual(list(rules.match(/request\.resource\.data\.keys\(\)\.hasOnly\(\[('name'[^\]]*)\]\)/)[1]), [...PLAZA_KEYS].sort());
+  assert.deepEqual(list(rules.match(/d\.keys\(\)\.hasOnly\(\[('from'[^\]]*)\]\)/)[1]), [...ADD_KEYS].sort());
 });

@@ -2895,3 +2895,9 @@ Branch `claude/exciting-cray-y585nt`, pushed to `main`. `trainers/<uid>` pages a
 the Trainers app, a How to play tip, the PC's TRAINERS row and a one-time TRAINER NETWORK letter with your code, the
 Trainer Card's CODE line. Tested with two stand-in accounts (`tools/trainers-check.mjs`, 31 checks) and the real rules
 in the Firestore emulator (`tools/trainers-rules.mjs`, 33 checks). Detail: `docs/reference/cloud-save.md`.
+
+### Finding each other without meeting: the Trainer Plaza, Added you and the TRAINER LINK pop-up (2026-10-17, the user's ask)
+The user asked how to find each other without talking outside the game, and for a pop-up when someone adds you,
+"aesthetic... like it's from a video game or MMO, immersive Pokémon style", shown in a screenshot before pushing.
+`plaza/<uid>` (trainers on lately, Hide me in the app), `adds/<to>_<from>` notes, the app's Added you and Trainer Plaza
+banners, `js/trainer-notice.js`. 59 headless checks, 62 rules checks. Detail: `docs/reference/cloud-save.md`.

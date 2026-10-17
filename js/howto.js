@@ -91,7 +91,7 @@ const TOPICS = [
     tip('tower', 'Sky Pillar', 'A 100-floor climb with a weekly leaderboard. Opens after your first win.'),
     tip('safari', 'Safari Zone', 'A daily run where you catch Pokémon. Opens once the Pokédex is done.'),
     tip('lock', 'The Sealed Gate', 'Every win cracks it a little. Something sleeps behind it...'),
-    tip('trainers', 'Trainers', 'Signed in, you get a trainer code. Swap codes with friends, or tap a leaderboard name, to add them in the Trainers app.'),
+    tip('trainers', 'Trainers', 'Signed in, meet players in the Trainer Plaza, swap trainer codes, or tap a leaderboard name to add them in the Trainers app.'),
   ] },
 ].map(t => ({ ...t, list: () => t.tips }));
 

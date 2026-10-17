@@ -13,6 +13,7 @@ function rulesAllow(op, path, data, uid) {
   const [col, id] = path.split('/');
   if (!uid) return false;
   if (col === 'saves') return id === uid;
+  if (op === 'set' && store.has(path) && col === 'codes') return false;
   if (col === 'codes') {
     if (op === 'get') return true;
     if (store.has(path)) return false;   // update: never
@@ -24,17 +25,28 @@ function rulesAllow(op, path, data, uid) {
     const owner = store.get(`codes/${data.code}`)?.uid;
     return owner === uid && Object.keys(data).every(k => ['code', 'name', 'card', 'buddy', 'base', 'at'].includes(k)) && data.name.length <= 16;
   }
+  if (col === 'plaza') return op === 'get' || op === 'query' || id === uid;
+  if (col === 'adds') {
+    const cur = store.get(path);
+    if (op === 'get') return cur?.to === uid;
+    if (op === 'delete') return cur && (cur.to === uid || cur.from === uid);
+    if (op === 'update') return cur?.to === uid && Object.keys(data).join() === 'seen' && data.seen === true;
+    return data.from === uid && id === `${data.to}_${data.from}` && data.seen === false && (!cur || cur.from === uid);
+  }
   if (col === 'safariBoard' || col === 'towerBoard' || col === 'arcadeBoard') return op === 'get' || op === 'query';
   return false;
 }
 
 function fsCall(uid, op, path, data, filter) {
   if (op === 'query') {
+    if (path === 'adds' && filter?.[1] !== uid) { log.push(`DENIED ${uid} list adds`); return denied(); }
     const out = [...store.entries()].filter(([p, d]) => p.startsWith(`${path}/`) && (!filter || d[filter[0]] === filter[1])).map(([p, d]) => ({ path: p, data: d }));
     return { docs: out };
   }
-  if (!rulesAllow(op === 'get' ? 'get' : 'set', path, data, uid)) { log.push(`DENIED ${uid} ${op} ${path}`); return denied(); }
+  if (!rulesAllow(op === 'get' ? 'get' : op, path, data, uid)) { log.push(`DENIED ${uid} ${op} ${path}`); return denied(); }
   if (op === 'get') return { exists: store.has(path), data: store.get(path) ?? null };
+  if (op === 'delete') { store.delete(path); log.push(`${uid} deleted ${path}`); return { ok: true }; }
+  if (op === 'update') { store.set(path, { ...store.get(path), ...data }); log.push(`${uid} updated ${path}`); return { ok: true }; }
   const d = JSON.parse(JSON.stringify(data), (k, v) => (v === '__serverTime__' ? Date.now() : v));
   store.set(path, d);
   log.push(`${uid} wrote ${path}`);
@@ -65,7 +77,10 @@ export const query = (c, ...parts) => ({ path: c.path, filter: parts.find(p => p
 export const serverTimestamp = () => '__serverTime__';
 export const getDoc = async (ref) => snap(ref.path, await call('get', ref.path));
 export const setDoc = async (ref, data) => { await call('set', ref.path, data); };
-export const getDocs = async (q) => ({ docs: (await call('query', q.path, null, q.filter)).docs.map(d => ({ data: () => wrap(d.data) })) });
+export const orderBy = () => ({});
+export const deleteDoc = async (ref) => { await call('delete', ref.path); };
+export const updateDoc = async (ref, data) => { await call('update', ref.path, data); };
+export const getDocs = async (q) => ({ docs: (await call('query', q.path, null, q.filter)).docs.map(d => ({ id: d.path.split('/').pop(), data: () => wrap(d.data) })) });
 export const runTransaction = async (db, fn) => fn({ get: getDoc, set: (ref, data) => { call('set', ref.path, data); } });
 `;
 
@@ -94,7 +109,7 @@ async function account(browser, uid, save) {
 }
 
 const check = (ok, what) => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${what}`); if (!ok) process.exitCode = 1; };
-const until = async (fn, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await fn()) return true; await new Promise(r => setTimeout(r, 100)); } return false; };
+const until = async (fn, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await Promise.resolve().then(fn).catch(() => false)) return true; await new Promise(r => setTimeout(r, 100)); } return false; };
 
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch());
 const saveA = { trainerName: 'ASH', setupDone: true, coins: 500, badges: ['first-win'], stats: { runsWon: 7, runsStarted: 10, playMs: 3 * 3600000 + 25 * 60000 }, unlocked: [], seen: { relics: [], items: [], cards: [], gym: [] }, newFinds: { relics: [], items: [], cards: [], gym: [] }, dex: { seen: [], defeated: [], done: [], count: {}, complete: false } };
@@ -142,9 +157,9 @@ await add(B, `${codeA.slice(0, 4)} ${codeA.slice(4).toLowerCase()}`);
 const friendsB = () => B.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).friends || []);
 check((await friendsB()).includes('uidA'), 'A is on B\'s list (save.friends)');
 check(await until(async () => (await B.textContent('.pdx-banners')).includes('ASH')), 'A\'s banner shows their name');
-const banner = await B.textContent('.trn-banner');
+const banner = await B.textContent('.trn-banner:not(.trn-plaza):not(.trn-added)');
 check(/Online just now|min ago/.test(banner) && banner.includes('1 badge'), `A's banner: last seen and badges (${banner.replace(/\s+/g, ' ').trim()})`);
-await B.click('.trn-banner');
+await B.click('.trn-banner:not(.trn-plaza):not(.trn-added)');
 await B.waitForTimeout(900);
 const pageText = (await B.textContent('.trn-device')).replace(/\s+/g, ' ');
 check(pageText.includes('Wins 7') && pageText.includes('Time 3:25') && pageText.includes('Badges 1'), 'A\'s Trainer Card on B\'s handheld');
@@ -170,8 +185,8 @@ await B.waitForTimeout(400);
 
 // in the app, BROCK has no page yet; remove takes two taps
 await openTrainers(B);
-check(await until(async () => (await B.$$('.trn-banner')).length === 2), 'two trainers on B\'s list');
-const brock = (await B.$$('.trn-banner'))[1];
+check(await until(async () => (await B.$$('.trn-banner:not(.trn-plaza):not(.trn-added)')).length === 2), 'two trainers on B\'s list');
+const brock = (await B.$$('.trn-banner:not(.trn-plaza):not(.trn-added)'))[1];
 check((await brock.textContent()).includes('Not on the network yet'), 'a trainer with no page yet says so');
 await brock.click();
 await B.waitForTimeout(900);
@@ -180,7 +195,7 @@ check((await friendsB()).includes('uidC'), 'one tap on Remove only asks');
 await B.click('.trn-remove');
 await B.waitForTimeout(400);
 check(!(await friendsB()).includes('uidC') && (await friendsB()).includes('uidA'), 'a second tap removes them');
-check((await B.$$('.trn-banner')).length === 1, 'the list redraws without them');
+check((await B.$$('.trn-banner:not(.trn-plaza):not(.trn-added)')).length === 1, 'the list redraws without them');
 for (let i = 0; i < 4; i++) { await B.keyboard.press('Escape'); await B.waitForTimeout(600); }
 
 // the PC letter, once, with B's code; the PC's row and the Trainer Card show it too
@@ -210,7 +225,70 @@ await B.waitForTimeout(500);
 const card = await B.evaluate(async () => { const box = document.createElement('div'); (await import('./js/trainercard.js')).openTrainerCard(box); return box.textContent; });
 check(card.includes('CODE') && card.includes(`${codeB.slice(0, 4)}-${codeB.slice(4)}`), 'the Trainer Card shows the code');
 
-// A, reloading, keeps the same code; signed out, no code shows
+
+// ---------- the Plaza, the notes and the TRAINER LINK pop-up ----------
+check(!!store.get('plaza/uidA') && store.get('plaza/uidA').name === 'ASH' && !('base' in store.get('plaza/uidA')), 'A stands in the Plaza, as a blurb');
+check(store.get('adds/uidA_uidB')?.name === 'MISTY' && store.get('adds/uidA_uidB').seen === false, 'B adding A left A a note');
+check(!store.has('adds/uidC_uidB'), 'removing BROCK took B\'s note back');
+store.set('adds/uidA_uidC', { from: 'uidC', to: 'uidA', name: 'BROCK', buddy: 'starter:bulbasaur', partner: 'starter:bulbasaur:1', tier: 'silver', badges: 5, wins: 2, seen: false, at: Date.now() - 3600000 });
+await A.reload();
+check(await until(async () => !!(await A.$('.tn-scrim')), 12000), 'A gets the TRAINER LINK pop-up on loading');
+await A.waitForFunction(() => document.querySelector('.tn-box.done'), null, { timeout: 8000 });
+const first = (await A.textContent('.tn-card')).replace(/\s+/g, ' ');
+check(first.includes('MISTY') && first.includes('1/2') && first.includes('ADD BACK') && first.includes('LATER'), `the first card: MISTY, 1/2, A and B (${first.slice(0, 120)})`);
+await A.click('.tn-a');
+await A.waitForTimeout(400);
+check((await A.textContent('.tn-card')).includes('LINKED!'), 'Add back stamps LINKED!');
+check(await until(async () => (await A.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).friends || [])).includes('uidB')), 'B is on A\'s list');
+check(await until(() => store.get('adds/uidB_uidA')?.from === 'uidA'), 'A adding back left B a note');
+check(await until(() => store.get('adds/uidA_uidB')?.seen === true), 'MISTY\'s note is marked seen');
+await A.waitForFunction(() => document.querySelector('.tn-count')?.textContent === '2/2' && document.querySelector('.tn-box.done'), null, { timeout: 8000 });
+check((await A.textContent('.tn-name')) === 'BROCK', 'then BROCK, 2/2');
+await A.click('.tn-b');
+await A.waitForTimeout(600);
+check(!(await A.$('.tn-scrim')) && store.get('adds/uidA_uidC')?.seen === true, 'Later closes it and marks it seen');
+check(!(await A.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).friends || [])).includes('uidC'), 'Later doesn\'t add them');
+await A.reload();
+await A.waitForTimeout(6000);
+check(!(await A.$('.tn-scrim')), 'answered notes don\'t pop up again');
+await openTrainers(A);
+check(await until(async () => !!(await A.$('.trn-added'))), 'BROCK waits under "Added you"');
+check((await A.textContent('.trn-plaza')).includes('Trainer Plaza'), 'A sees the Trainer Plaza');
+await A.click('.trn-added');
+await A.waitForTimeout(900);
+check((await A.textContent('.trn-device')).includes('BROCK added you'), 'BROCK\'s page says they added you');
+await A.click('.trn-addkey');
+await A.waitForTimeout(500);
+check((await A.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).friends || [])).includes('uidC') && !(await A.$('.trn-added')), 'Add back from the app; the banner goes');
+check((await A.textContent('.trn-said')).includes('BROCK is on your list now'), 'and it says so');
+
+// B: A added back, so B's pop-up says linked, with OK only
+await B.reload();
+check(await until(async () => !!(await B.$('.tn-box.done')), 12000), 'B gets a pop-up too');
+const mutual = (await B.textContent('.tn-card')).replace(/\s+/g, ' ');
+check(mutual.includes('TRAINER LINKED') && mutual.includes('added you back') && !mutual.includes('LATER'), 'it says ASH added B back, OK only');
+await B.keyboard.press('Enter');
+await B.waitForTimeout(500);
+check(!(await B.$('.tn-scrim')), 'A on the keyboard answers it');
+
+// B finds GARY in the Plaza and adds him; then hides from it
+store.set('plaza/uidD', { name: 'GARY', buddy: 'starter:charmander', partner: 'starter:charmander:2', tier: 'violet', badges: 40, wins: 88, at: Date.now() - 60000 });
+await openTrainers(B);
+check(await until(async () => (await B.textContent('.trn-plaza').catch(() => '')).includes('Trainer Plaza')), 'B sees the Plaza');
+await B.click('.trn-plaza');
+await B.waitForTimeout(900);
+const plazaPage = (await B.textContent('.trn-device')).replace(/\s+/g, ' ');
+check(plazaPage.includes('ASH') || plazaPage.includes('GARY'), `the Plaza lists trainers on lately (${plazaPage.slice(0, 80)})`);
+for (let i = 0; i < 3 && !(await B.textContent('.pdx-name')).includes('GARY'); i++) { await B.click('.pdx-round[aria-label=Next]'); await B.waitForTimeout(500); }
+check((await B.textContent('.pdx-name')).includes('GARY') && (await B.textContent('.trn-addkey')).includes('+ Add'), 'GARY has + Add');
+await B.click('.trn-addkey');
+await B.waitForTimeout(500);
+check((await friendsB()).includes('uidD') && store.get('adds/uidD_uidB')?.name === 'MISTY', 'B adds GARY from the Plaza; GARY gets a note');
+check(!plazaPage.includes('MISTY'), 'B isn\'t shown themselves in the Plaza');
+await B.click('.trn-spot button');
+check(await until(() => !store.has('plaza/uidB')), 'Hide me takes B out of the Plaza');
+check(await B.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).plazaHidden === true), 'and B stays hidden');
+
 await A.reload(); await A.waitForTimeout(2500);
 check(store.get('trainers/uidA').code === codeA && [...store.keys()].filter(k => k.startsWith('codes/')).length === 2, 'A keeps one code across loads');
 const out = await A.evaluate(async () => { localStorage.setItem('pokedb.cloud.v1', '{}'); return (await import('./js/trainers.js')).myCode(); });
