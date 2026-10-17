@@ -28,8 +28,9 @@ rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, 
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
 125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
-Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), and session h, Bamboo, Stone zen,
-Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all; all eight in `docs/roadmap-done.md`).
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), session h, Bamboo, Stone zen,
+Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), session i, the first five room types (2026-10-17,
+125 kinds, 2,587 in all), and session j, the next five (2026-10-17, 125 kinds, 2,712 in all; all ten in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -41,7 +42,11 @@ stands this October by itself, Cherry blossom with `?holiday=sakura`), and of se
 (`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
 or Smeargle's catalogue's Iron garden tab with a yard), and of session h's
 (`?mall=furniture&stock=bmbbed,bmbgrove,cstorrery,cstprojector,crvbed,crvspice`; Stone zen is outdoor: `?yard&allfurniture`,
-or Smeargle's catalogue's Zen tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+or Smeargle's catalogue's Zen tab with a yard), and of session i's
+(`?mall=furniture&stock=hspbed,bstrange,bakcase,sshconveyor,rmnyatai,rmnsnorlax`; try the bed's heal, the oven and fridge
+doors, the ticket machines), and of session j's
+(`?mall=furniture&stock=pzroven,pzrlickitung,crsfridge,crscrane,lndwasher,lndrotom,slnpole,slngroom,grgporygon,grgtoolchest`;
+tap the oven, the fridge and washer doors, the barber pole, the Porygon cart). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -56,17 +61,21 @@ at once hit it on 2026-10-16; five is safer.
   catalogue) (`docs/roadmap-done.md`).
 - **h. Done 2026-10-17, on `main`**: Bamboo, Stone zen (outdoor, a Zen tab in Smeargle's catalogue), Constellations and
   Desert caravan (`docs/roadmap-done.md`).
-- **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
+- **i. Done 2026-10-17, on `main`**: the first five room types, Hospital ward, Bistro kitchen, Bakery, Sushi bar and
+  Ramen shop (`docs/roadmap-done.md`).
+- **j. Done 2026-10-17, on `main`**: Pizzeria, Corner shop, Laundromat, Salon and Garage (`docs/roadmap-done.md`).
+- **k and l. The other 8 room types**, 4 a session (Craft and sewing room, Gamer room, Recording studio, Cinema next;
+  then Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session i):
+Next session's prompt (session k):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session i: the first five room types (Hospital ward, Bistro
-> kitchen, Bakery, Sushi bar, Ramen shop; 25 each, a whole room of that place in one look, as the furniture series), one
-> helper a set (five at once, the most that's safe), then check every kind with tools/model-check.mjs, send me picture
-> sheets, update the roadmap and push to main.
+> "Building a set" section is the helpers' brief). Build session k: the next four room types (Craft and sewing room,
+> Gamer room, Recording studio, Cinema; 25 each, a whole room of that place in one look, as sessions i and j), one helper
+> a set (four at once), then check every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and
+> push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -896,25 +905,16 @@ the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 ~~**Finding each other without meeting**~~ done 2026-10-17 (the user's ask, same day; `docs/roadmap-done.md`): the
 Trainer Plaza, an "Added you" banner and the TRAINER LINK pop-up when someone adds you (the user saw a screenshot before
 it was pushed). Same rules file, so one publish covers both. Then (same day) the TRAINER NETWORK welcome on the app's
-first open and the Plaza's 3D board in the Clearing (11,14). Branch `claude/exciting-cray-y585nt`; **main waits on the
-user's OK after the screenshots**.
-**For session 2 (another session is building the visits, 2026-10-17):** visits are announced as coming soon in three
-places, to change once they're in: the welcome's last line (`WELCOME` in `js/trainers.js`), the greyed Visit key and its
-"Base visits are coming soon." line (`friendKeys()` / `lines()` in `trainersApp()`). Merge `main` first: these files moved
-a lot after session 1 (`js/trainers.js`, `js/trainer-notice.js`, `firestore.rules`, `tools/trainers-check.mjs`).
-**Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
-`loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
-(`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
-in `js/secret-base.js` (20 places) plus 3 in `js/base-3d.js`, so one guard there refuses any write for a `guest` base.
-A test shows that visiting and leaving leaves your save exactly as it was. Their statues and figures are loaded from
-their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of stamps.
+first open and the Plaza's 3D board in the Clearing (11,14), merged with session 2's visits. Branch
+`claude/exciting-cray-y585nt`; **main waits on the user's OK after the screenshots**.
+~~**Session 2, the visit**~~ done 2026-10-17 on `claude/visit-only-base-session-2-72ayar` (pushed to `main` too;
+`docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`'s Trainers section): the Trainers app's Visit walks round
+a friend's base as they left it, read-only (`openBase3d({ guest })`, every base write refused by `visitBase()`), checked
+by `tools/trainers-check.mjs`'s save-unchanged test. **Next: the user playtests it** (two signed-in accounts, or
+`?base&asfriend` alone); a guestbook of stamps is still a maybe.
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
-▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 2: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry, docs/reference/cloud-save.md's Trainers section and docs/reference/hub-base-mall.md, then build session 2,
-the visit-only base, with the save-unchanged test, a patch-notes line and a githack link." (`tools/trainers-check.mjs`
-is the two-account harness to extend.)
 
 ## Ideas, not agreed yet (ask the user before building)
 

@@ -583,6 +583,17 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `cane()` (a rod with node rings) and cord `lash()`, Stone zen's `rock` (a sphere pushed out to the painted outline,
   `rockOutline()`) and square `sq` lathe, Constellations' extruded stars and crescents (`starPts()`, `crescent()`) and
   rings standing side-on or tilted, Desert caravan's flattened cylinder (`sz`) for drapes against the wall.
+- **Session i's room types** (2026-10-17): Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi bar (`ssh`) and
+  Ramen shop (`rmn`), files `js/base-furniture-<hospital|bistro|bakery|sushi|ramen>.js` and `js/base-models-<same>.js`,
+  built as session h's (`BUILT`). A room type furnishes one place (its working pieces, seats, storage, wall pieces and
+  props), not a bedroom. New parts: side-on rings and discs (`ax: 'x'`, wheels and castors), the Bakery's `wedge` (a side
+  profile extruded across, the awning). Taps reuse `PLAY`: the hospital bed `heal`, the ovens' and fridges' `door` with a
+  modelled inside (`bare`), the ticket machines `give` paper.
+- **Session j's room types** (2026-10-17): Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon
+  (`sln`, with Furfrou's trims) and Garage (`grg`), files `js/base-furniture-<pizzeria|cornershop|laundromat|salon|garage>.js`
+  and `js/base-models-<same>.js`, built as session i's. A drum turning front to back can't be a tap (`spin` turns the
+  whole piece upright), so the dryers whirr; a spinning part turns about the model's centre, so the barber pole stands
+  on the floor rather than hanging on the wall.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
@@ -676,3 +687,10 @@ Every floor the mall builds stays in its one scene, hidden when you're elsewhere
 hall under the Game Corner was ~126 MB of textures, and a friend's phone reloaded the game walking in. `setPlace()` in
 `js/mall-3d.js` now `unload()`s the floor walked out of (`js/hd2d.js`: geometry and textures let go on the GPU, kept
 whole in memory, uploaded again by `warm()` under the curtain on walking back in). Keep it if a floor is added.
+
+## A friend's base, visited (2026-10-17)
+
+`openBase3d({ guest })` opens a friend's base from their trainer page, walk-only, every base write refused while it's
+up (`visitBase()` / `keep()` in `js/secret-base.js`). The detail is in `docs/reference/cloud-save.md`'s Trainers section.
+A new base write in `js/secret-base.js` goes through `keep()`, and a new thing that happens on entering the base (a
+visitor, an intro, a gift) checks `host` in `js/base-3d.js`.

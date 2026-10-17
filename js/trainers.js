@@ -11,7 +11,7 @@
    ============================================================ */
 
 import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX } from './data/trainers.js';
+  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX, BASE_MAX } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
@@ -174,8 +174,14 @@ function monImg(key, cls) {
 /** Someone else's page, made safe to draw: their card through cardDoc()'s bounds, or null if it isn't one. */
 function readDoc(d) {
   if (!d || typeof d !== 'object' || typeof d.name !== 'string') return null;
-  return { name: d.name.slice(0, 16) || 'TRAINER', card: cardDoc(d.card), buddy: typeof d.buddy === 'string' ? d.buddy : '', at: d.at };
+  return { name: d.name.slice(0, 16) || 'TRAINER', card: cardDoc(d.card), buddy: typeof d.buddy === 'string' ? d.buddy : '', at: d.at,
+    base: typeof d.base === 'string' && d.base.length <= BASE_MAX ? d.base : '' };
 }
+
+/* Visit: main.js hands over the way into a friend's base (openBase3d({ guest }) in js/base-3d.js), so this file never
+   loads the furniture to draw the app. It resolves false if their base couldn't be read, 'run' during a run. */
+let visitor = null;
+export const onVisit = (fn) => { visitor = fn; };
 
 const atOf = (doc) => (typeof doc?.at?.toMillis === 'function' ? doc.at.toMillis() : +doc?.at || 0);
 const playTime = (min) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
@@ -215,8 +221,7 @@ export async function plazaTop(n = 6) {
   } catch (err) { return null; }
 }
 
-/* ---------- the welcome: the first time the app opens signed in, and its ? key. It says visits are coming (session 2
-   of the roadmap's "Friends list and base visits" changes that line once they're in). ---------- */
+/* ---------- the welcome: the first time the app opens signed in, and its ? key ---------- */
 
 const WELCOME = [
   'Welcome to the Trainer Network! This is your code. Give it to a friend to add you.',
@@ -224,7 +229,7 @@ const WELCOME = [
   'The Trainer Plaza shows who\'s played lately. Tap + Add to add one!',
   'Its board stands in the Clearing, by the Poké Mall. Hide me keeps you off it.',
   'Someone added you? A TRAINER LINK pops up. Add them back to link up!',
-  'Coming soon: visit a trainer\'s Secret Base, just as they left it!',
+  'Tap Visit on a trainer\'s page to walk round their Secret Base, just as they left it!',
 ];
 
 function welcome(code, done) {
@@ -374,11 +379,19 @@ export function trainersApp() {
   }
 
   function friendKeys(uid) {
-    const keys = el('div', 'trn-keys');
+    const keys = el('div', 'trn-keys'), doc = docs.get(uid);
     const visit = el('button', 'lb-btn trn-visit', 'Visit');
     visit.type = 'button';
-    visit.disabled = true;
-    visit.title = 'Visiting a trainer\'s Secret Base is coming soon.';
+    visit.disabled = !doc?.base || !visitor;
+    visit.title = doc?.base ? `Walk round ${doc.name}'s Secret Base` : 'They haven\'t made a Secret Base yet.';
+    visit.addEventListener('click', async () => {
+      visit.disabled = true;
+      playSound('confirm');
+      const went = await visitor({ name: doc.name, json: doc.base });
+      if (went !== false && went !== 'run') return;
+      playSound('cancel');
+      visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
+    });
     const remove = el('button', `lb-btn trn-remove${removing === uid ? ' sure' : ''}`, removing === uid ? 'Tap again to remove' : 'Remove');
     remove.type = 'button';
     remove.addEventListener('click', () => {
@@ -422,7 +435,7 @@ export function trainersApp() {
         const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
         const walk = sprite(buddyOf(uid));
         if (doc) return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card), typed('', `Walking with ${walk.name}.`), keys,
-          ...(g.friend ? [typed('muted', 'Base visits are coming soon.')] : [])];
+          ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
         if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
         return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
       },

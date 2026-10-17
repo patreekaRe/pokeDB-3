@@ -138,7 +138,7 @@ export function buyBigRoom(b) {
   b.house ||= freshHouse();
   b.house.big = true;
   for (const it of roomContents(b, 'main').items) it.x += 1;
-  updateSave(d => { d.coins -= BIG_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= BIG_PRICE; d.secretBase = b; });
   return true;
 }
 
@@ -166,7 +166,7 @@ export function buyRoom(b, id, pip, kind, rot = null, up = false) {
   if (!nid) return null;
   Object.assign(b.house.rooms.find(r => r.id === nid), { items: [], wall: 'cream', floor: 'wood' });
   const moved = clearDoors(b, was);
-  updateSave(d => { d.coins -= ROOM_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= ROOM_PRICE; d.secretBase = b; });
   return { id: nid, moved };
 }
 
@@ -176,7 +176,7 @@ export function buyDoor(b, a, pa, c, pc) {
   const was = new Set(b.house.links.map(l => l.join()));
   if (!joinRooms(b.house, a, pa, c, pc)) return null;
   const moved = clearDoors(b, was);
-  updateSave(d => { d.coins -= DOOR_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= DOOR_PRICE; d.secretBase = b; });
   return { moved };
 }
 
@@ -203,7 +203,7 @@ export function buyYard(b) {
   if (!getSave().baseOwned || (getSave().coins ?? 0) < YARD_PRICE || (b.house?.yard && !b.house.yard.lent)) return false;
   b.house ||= freshHouse();
   b.house.yard = freshYard();
-  updateSave(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= YARD_PRICE; d.secretBase = b; });
   return true;
 }
 /** The backyard made bigger (part e): the lawn grows round its things, which keep their places from the doormat (across
@@ -215,7 +215,7 @@ export function buyBigYard(b) {
   const was = shapeOf('yard'), to = shapeOf('bigyard');
   for (const it of roomContents(b, 'yard').items) { it.x += (to.w - was.w) / 2; it.y += to.h - was.h; }
   yard.size = 2;
-  updateSave(d => { d.coins -= BIG_YARD_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= BIG_YARD_PRICE; d.secretBase = b; });
   return true;
 }
 export { ROOM_PRICE, BIG_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE };
@@ -230,7 +230,7 @@ export function duplicate(b, id) {
   const kind = PIECES[id].own;
   b.owned[kind] = (b.owned[kind] || 0) + 1;
   b.dupes = (b.dupes || 0) + 1;
-  updateSave(d => { d.coins -= price; d.secretBase = b; });
+  keep(d => { d.coins -= price; d.secretBase = b; });
   return true;
 }
 
@@ -284,7 +284,37 @@ export function loadBase() {
   }
   return b;
 }
-export const saveBase = (b) => updateSave(d => { d.secretBase = b; });
+export const saveBase = (b) => keep(d => { d.secretBase = b; });
+
+/* A friend's Secret Base walked round (openBase3d({ guest }) in js/base-3d.js, docs/reference/cloud-save.md's Trainers):
+   while it's up, every write of a base in this file is refused, so nothing tapped on a visit can reach your save. */
+let visiting = false;
+export const visitBase = (on) => { visiting = !!on; };
+function keep(fn) { if (!visiting) updateSave(fn); }
+
+/** A friend's base from their trainer page's `base` (JSON from someone else's device, so nothing in it is trusted): in
+    the main room, only pieces this game knows, no present, no lent yard. Null if it isn't a base. */
+export function readGuestBase(json) {
+  try {
+    const b = JSON.parse(json);
+    if (!b || typeof b !== 'object' || !(b.v >= 2) || !Array.isArray(b.items)) return null;
+    const known = (list, id, or) => (list.some(s => s.id === id) ? id : or);
+    const clean = (r) => {
+      r.items = (Array.isArray(r.items) ? r.items : []).filter(it => it && PIECES[it.id] && !PIECES[it.id].gift && Number.isFinite(it.x) && (it.y === undefined || Number.isFinite(it.y)));
+      r.wall = known(WALLPAPERS, r.wall, 'cream');
+      r.floor = known(FLOORS, r.floor, r === b.house?.yard ? 'grass' : 'wood');
+    };
+    if (b.house && typeof b.house !== 'object') delete b.house;
+    if (b.house?.yard?.lent) { goRoom(b, 'main'); delete b.house.yard; }
+    goRoom(b, 'main');
+    eachRoom(b, clean);
+    if (!roomById(b.house, 'main')?.shape) return null;
+    b.owned = b.owned && typeof b.owned === 'object' ? b.owned : {};
+    b.mons = Array.isArray(b.mons) ? b.mons.filter(id => typeof id === 'string') : [];
+    b.out = Array.isArray(b.out) ? b.out.filter(id => typeof id === 'string') : [];
+    return b;
+  } catch { return null; }
+}
 
 /** `?allfurniture`: every catalogue piece to hand for a playtest, never saved as owned. */
 export const lendAll = () => new URLSearchParams(location.search).has('allfurniture');
@@ -409,7 +439,7 @@ export { UPSTAIRS_PRICE };
 export function buyUpstairs(b) {
   if ((getSave().coins ?? 0) < UPSTAIRS_PRICE) return false;
   b.upstairs = true;
-  updateSave(d => { d.coins -= UPSTAIRS_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= UPSTAIRS_PRICE; d.secretBase = b; });
   return true;
 }
 
@@ -421,7 +451,7 @@ export const ballroomOpen = (b) => !!b.ballroom || new URLSearchParams(location.
 export function buyBallroom(b) {
   if ((getSave().coins ?? 0) < BALLROOM_PRICE || kindsOwned(b) < BALLROOM_KINDS) return false;
   b.ballroom = true;
-  updateSave(d => { d.coins -= BALLROOM_PRICE; d.secretBase = b; });
+  keep(d => { d.coins -= BALLROOM_PRICE; d.secretBase = b; });
   return true;
 }
 
@@ -494,7 +524,7 @@ export function buyPaper(b, field, s) {
   if ((getSave().coins ?? 0) < s.price) return false;
   b.papers = [...(b.papers || []), `${field}:${s.id}`];
   b[field] = s.id;
-  updateSave(d => { d.coins -= s.price; d.secretBase = b; });
+  keep(d => { d.coins -= s.price; d.secretBase = b; });
   return true;
 }
 
@@ -512,7 +542,7 @@ export function buyPiece(b, id) {
   const price = PIECES[id].price;
   if ((getSave().coins ?? 0) < price) return false;
   b.owned[PIECES[id].own] = (b.owned[PIECES[id].own] || 0) + 1;
-  updateSave(d => { d.coins -= price; d.secretBase = b; });
+  keep(d => { d.coins -= price; d.secretBase = b; });
   return true;
 }
 
@@ -699,7 +729,7 @@ function pieceAt(lx, ly) {
   return order.find(i => PIECES[base.items[i].id].layer !== 'rug') ?? order[0] ?? -1;
 }
 
-const save = () => updateSave(d => { d.secretBase = base; });
+const save = () => keep(d => { d.secretBase = base; });
 
 function local(e) {
   const r = canvas.getBoundingClientRect();

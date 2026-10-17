@@ -1,9 +1,12 @@
 // Headless check of the Trainers app (js/trainers.js) with two stand-in accounts sharing one in-memory Firestore that
 // mirrors firestore.rules; gstatic is routed to stand-in SDK modules. Serve the repo (python3 -m http.server 8123), then:
-// node tools/trainers-check.mjs [path to three.module.min.js, so the Clearing runs; `npm pack three@0.160.0` gives one]
+// node tools/trainers-check.mjs [three.module.min.js]
+// The Clearing and the base visit need Three.js r160 on disk, as tools/model-check.mjs: `npm i three@0.160.0` (or
+// `npm pack three@0.160.0`) in a scratch folder and pass its build/three.module.min.js, or point THREE_JS at it.
 import { chromium } from '/opt/node22/lib/node_modules/playwright/index.mjs';
 
 const BASE = 'http://localhost:8123/';
+const THREE = process.argv[2] || process.env.THREE_JS || '/tmp/three/node_modules/three/build/three.module.min.js';
 const store = new Map();   // path -> data
 const log = [];
 const denied = () => ({ error: 'permission-denied' });
@@ -88,7 +91,7 @@ const errors = [];
 async function account(browser, uid, save) {
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
   await ctx.exposeFunction('__fs', (u, ...a) => fsCall(u, ...a));
-  if (THREE_FILE) await ctx.route('https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js', r => r.fulfill({ path: THREE_FILE, contentType: 'text/javascript' }));
+  await ctx.route('https://cdn.jsdelivr.net/npm/three@0.160.0/**', r => r.fulfill({ path: THREE, contentType: 'text/javascript' }));
   await ctx.route('https://www.gstatic.com/firebasejs/**', (route) => {
     const url = route.request().url();
     const body = url.includes('firebase-app') ? APP : url.includes('firebase-auth') ? AUTH : FS;
@@ -103,20 +106,29 @@ async function account(browser, uid, save) {
   }, [uid, save]);
   const page = await ctx.newPage();
   page.on('console', m => { if (m.type() === 'error') errors.push(`${uid}: ${m.text()}`); });
-  page.on('pageerror', e => errors.push(`${uid}: ${e.message}`));
+  page.on('pageerror', e => errors.push(`${uid} (after check ${checks}): ${e.message}`));
   await page.goto(BASE);
   await page.waitForTimeout(2500);
   return page;
 }
 
-const check = (ok, what) => { console.log(`${ok ? 'PASS' : 'FAIL'}  ${what}`); if (!ok) process.exitCode = 1; };
+let checks = 0;
+const check = (ok, what) => { checks++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${what}`); if (!ok) process.exitCode = 1; };
 const until = async (fn, ms = 8000) => { const t = Date.now(); while (Date.now() - t < ms) { if (await Promise.resolve().then(fn).catch(() => false)) return true; await new Promise(r => setTimeout(r, 100)); } return false; };
 
 const GL = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'];
 const browser = await chromium.launch({ args: GL, executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch({ args: GL }));
-const THREE_FILE = process.argv[2];
-const saveA = { trainerName: 'ASH', setupDone: true, seenHelp: true, coins: 500, badges: ['first-win'], stats: { runsWon: 7, runsStarted: 10, playMs: 3 * 3600000 + 25 * 60000 }, unlocked: [], seen: { relics: [], items: [], cards: [], gym: [] }, newFinds: { relics: [], items: [], cards: [], gym: [] }, dex: { seen: [], defeated: [], done: [], count: {}, complete: false } };
-const saveB = { ...saveA, trainerName: 'MISTY', badges: [], stats: { runsWon: 1, runsStarted: 2, playMs: 600000 } };
+// friendMail: today's friend letter already in, or the Clearing (which runs once Three.js loads) writes the save on load
+const today = new Date().toISOString().slice(0, 10);
+const saveA = { friendMail: today, trainerName: 'ASH', setupDone: true, seenHelp: true, coins: 500, badges: ['first-win', 'champion'], stats: { runsWon: 7, runsStarted: 10, playMs: 3 * 3600000 + 25 * 60000 }, unlocked: [], seen: { relics: [], items: [], cards: [], gym: [] }, newFinds: { relics: [], items: [], cards: [], gym: [] }, dex: { seen: [], defeated: [], done: [], count: {}, complete: false } };
+// A's base (session 2's visits): a TV, a PC and a Berry plot, a present and a piece this game doesn't know (both
+// dropped on a visit), a Safari resident and a made-up one
+saveA.secretBase = { v: 2, wall: 'mint', floor: 'checker', shopOpens: 1, leaderVisit: 99999, mons: ['rattata', 'hax'],
+  items: [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 }, { id: 'lamp', x: 2, y: 0, dir: 0 },
+    { id: 'tv', x: 7, y: 0, dir: 0 }, { id: 'pc', x: 9, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }, { id: 'hax', x: 1, y: 3 }],
+  owned: { window: 1, rug: 1, bed: 1, lamp: 1, tv: 1 } };
+const saveB = { ...saveA, trainerName: 'MISTY', badges: [], stats: { runsWon: 1, runsStarted: 2, playMs: 600000 },
+  secretBase: { v: 2, wall: 'cream', floor: 'wood', shopOpens: 1, leaderVisit: 99999, items: [{ id: 'bed', x: 0, y: 0, dir: 0 }], owned: { bed: 1 } } };
 
 // someone on a leaderboard who has never opened the game since Trainers came in
 const day = new Date().toISOString().slice(0, 10);
@@ -155,7 +167,7 @@ check(await until(async () => !!(await B.$('.tn-welcome .tn-box.done')), 30000),
 check((await B.textContent('.tn-welcome .tn-name')).replace('-', '') === codeB && (await B.textContent('.tn-count')) === '1/6', 'it shows B\'s code, 1/6');
 const pages = [];
 for (let i = 0; i < 6; i++) {
-  await B.waitForFunction(() => document.querySelector('.tn-box.done') && !document.querySelector('.tn-scrim')?.dataset.busy, null, { timeout: 8000 });
+  await B.waitForFunction(() => document.querySelector('.tn-box.done') && !document.querySelector('.tn-scrim')?.dataset.busy, null, { timeout: 30000 });
   pages.push(await B.textContent('.tn-text'));
   if (i < 5) await B.click('.tn-a');
 }
@@ -166,7 +178,7 @@ check(await until(async () => !(await B.$('.tn-scrim'))), 'and it closes');
 check(await B.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).trainersWelcome === true), 'it\'s marked seen in the save');
 await B.click('.trn-help');
 check(await until(async () => !!(await B.$('.tn-welcome'))), 'the ? key plays it again');
-await B.waitForFunction(() => document.querySelector('.tn-box.done'), null, { timeout: 8000 });
+await B.waitForFunction(() => document.querySelector('.tn-box.done'), null, { timeout: 20000 });
 await B.click('.tn-b');
 check(await until(async () => !(await B.$('.tn-scrim'))), 'Skip closes it');
 await B.waitForSelector('.trn-code-text');
@@ -185,7 +197,59 @@ await B.click('.trn-banner:not(.trn-plaza):not(.trn-added)');
 await B.waitForTimeout(900);
 const pageText = (await B.textContent('.trn-device')).replace(/\s+/g, ' ');
 check(pageText.includes('Wins 7') && pageText.includes('Time 3:25') && pageText.includes('Badges 1'), 'A\'s Trainer Card on B\'s handheld');
-check(await B.isDisabled('.trn-visit'), 'Visit is greyed until session 2');
+check(store.get('trainers/uidA').base && JSON.parse(store.get('trainers/uidA').base).items.length === 8, 'A\'s page carries their base');
+check(!(await B.isDisabled('.trn-visit')), 'Visit is open for a trainer with a base');
+
+// B visits A's base: walked round as A left it, nothing of B's saved
+// first let any upload already queued (the welcome's seen flag, the list) finish, so only the visit can change things
+await until(() => B.evaluate(() => JSON.parse(localStorage.getItem('pokedb.cloud.v1') || '{}').dirty === false), 20000);
+await B.waitForTimeout(1000);
+const before = await B.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
+const pageB = store.get('trainers/uidB').base;
+await B.click('.trn-visit');
+check(await until(async () => (await B.textContent('.base3d.guest .b3-top h2').catch(() => '')) === 'ASH\'s Base', 15000), 'Visit opens A\'s base, named for them');
+await B.waitForTimeout(2500);
+const inside = await B.evaluate(async () => {
+  const d = document.querySelector('.base3d');
+  const shown = (s) => { const e = d.querySelector(s); return !!e && !e.hidden && getComputedStyle(e).display !== 'none'; };
+  return { decor: shown('.b3-decor'), garden: shown('.b3-garden'), talk: shown('.b3-talk'), gift: shown('.b3-gift'), hint: d.querySelector('.b3-hint').textContent };
+});
+check(!inside.decor && !inside.garden, 'no Decorate or Garden key on a visit');
+check(!inside.talk && !inside.gift, 'no Smeargle, present or visitor on a visit');
+check(inside.hint.includes('ASH\'s Secret Base'), `the hint says whose base it is (${inside.hint})`);
+const read = await B.evaluate(async (json) => { const b = (await import('./js/secret-base.js')).readGuestBase(json); return { ids: b.items.map(i => i.id), mons: b.mons }; }, store.get('trainers/uidA').base);
+check(!read.ids.includes('gift') && !read.ids.includes('hax') && read.ids.length === 6, `their present and unknown pieces are left out (${read.ids})`);
+check(await B.evaluate(async () => (await import('./js/secret-base.js')).readGuestBase('{"v":2,"items":"x"}') === null && (await import('./js/secret-base.js')).readGuestBase('not json') === null), 'a base that isn\'t one is refused');
+// every way a tap could write: try the base's writers straight, and walk about by tapping the room
+const tries = await B.evaluate(async () => {
+  const sb = await import('./js/secret-base.js'), b = sb.loadBase();
+  sb.saveBase({ ...b, wall: 'stars' }); sb.meetSmeargle(b); sb.buyPiece(b, 'tv'); sb.leaderVisited(b); sb.openGift(b);
+  const c = document.querySelector('.b3-view'), r = c.getBoundingClientRect();
+  for (const [x, y] of [[0.5, 0.5], [0.3, 0.6], [0.7, 0.4], [0.5, 0.3]]) c.dispatchEvent(new MouseEvent('click', { clientX: r.left + r.width * x, clientY: r.top + r.height * y, bubbles: true }));
+  return true;
+});
+await B.waitForTimeout(1500);
+check(tries, 'taps and base writes during the visit ran');
+await B.evaluate(async () => (await import('./js/base-3d.js')).leave());
+check(await until(async () => !(await B.$('body > .base3d'))), 'the doormat takes B home');
+await B.waitForTimeout(1500);
+const after = await B.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
+// the play clock (stats.playMs) ticks on whatever you do, so it's left out
+const noClock = (all) => { const o = { ...all }; if (o['pokedb.save.v2']) { const d = JSON.parse(o['pokedb.save.v2']); delete d.stats.playMs; o['pokedb.save.v2'] = JSON.stringify(d); } return o; };
+Object.assign(before, noClock(before)); Object.assign(after, noClock(after));
+const changed = [...new Set([...Object.keys(before), ...Object.keys(after)])].filter(k => before[k] !== after[k]);
+if (changed.includes('pokedb.save.v2')) { const x = JSON.parse(before['pokedb.save.v2']), y = JSON.parse(after['pokedb.save.v2']); console.log('save fields changed:', Object.keys({ ...x, ...y }).filter(k => JSON.stringify(x[k]) !== JSON.stringify(y[k])).map(k => `${k}: ${JSON.stringify(x[k])?.slice(0, 200)} -> ${JSON.stringify(y[k])?.slice(0, 200)}`)); }
+check(!changed.length, `visiting and leaving leaves B's save exactly as it was${changed.length ? ` (changed: ${changed})` : ''}`);
+check(store.get('trainers/uidB').base === pageB, 'leaving a friend\'s base doesn\'t publish it as B\'s');
+// B's own base afterwards is B's again, and saves again
+await B.evaluate(async () => (await import('./js/base-3d.js')).openBase3d({ onLeave: async () => {} }));
+check(await until(async () => (await B.textContent('.base3d:not(.guest) .b3-top h2').catch(() => '')) === 'Secret Base', 15000), 'B\'s own base opens as theirs after');
+const own = await B.evaluate(async () => { const sb = await import('./js/secret-base.js'), b = sb.loadBase(); b.wall = 'stars'; sb.saveBase(b); return JSON.parse(localStorage.getItem('pokedb.save.v2')).secretBase.wall; });
+check(own === 'stars', 'and B\'s own base saves again');
+await B.evaluate(async () => (await import('./js/base-3d.js')).leave());
+await B.waitForTimeout(1500);
+await openTrainers(B);
+await B.waitForTimeout(1200);
 
 // back out, close the device
 await B.keyboard.press('Escape'); await B.waitForTimeout(500);
@@ -194,7 +258,7 @@ await B.keyboard.press('Escape'); await B.waitForTimeout(800);
 
 // B adds BROCK from the Safari leaderboard
 await B.evaluate(async () => { (await import('./js/leaderboard.js')).openLeaderboard(0, 'safari'); });
-await B.waitForSelector('#board-dialog[open] .bdx-banner:not(.empty)', { timeout: 8000 });
+await B.waitForSelector('#board-dialog[open] .bdx-banner:not(.empty)', { timeout: 20000 });
 await B.click('#board-dialog .bdx-banner:not(.empty)');
 await B.waitForTimeout(900);
 const addKey = await B.$('#board-dialog .lb-add');
@@ -256,7 +320,7 @@ check(!store.has('adds/uidC_uidB'), 'removing BROCK took B\'s note back');
 store.set('adds/uidA_uidC', { from: 'uidC', to: 'uidA', name: 'BROCK', buddy: 'starter:bulbasaur', partner: 'starter:bulbasaur:1', tier: 'silver', badges: 5, wins: 2, seen: false, at: Date.now() - 3600000 });
 await A.reload();
 check(await until(async () => !!(await A.$('.tn-scrim')), 60000), 'A gets the TRAINER LINK pop-up on loading');
-await A.waitForFunction(() => document.querySelector('.tn-box.done'), null, { timeout: 8000 });
+await A.waitForFunction(() => document.querySelector('.tn-box.done'), null, { timeout: 20000 });
 const first = (await A.textContent('.tn-card')).replace(/\s+/g, ' ');
 check(first.includes('MISTY') && first.includes('1/2') && first.includes('ADD BACK') && first.includes('LATER'), `the first card: MISTY, 1/2, A and B (${first.slice(0, 120)})`);
 await A.click('.tn-a');
@@ -265,7 +329,7 @@ check((await A.textContent('.tn-card')).includes('LINKED!'), 'Add back stamps LI
 check(await until(async () => (await A.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).friends || [])).includes('uidB')), 'B is on A\'s list');
 check(await until(() => store.get('adds/uidB_uidA')?.from === 'uidA'), 'A adding back left B a note');
 check(await until(() => store.get('adds/uidA_uidB')?.seen === true), 'MISTY\'s note is marked seen');
-await A.waitForFunction(() => document.querySelector('.tn-count')?.textContent === '2/2' && document.querySelector('.tn-box.done'), null, { timeout: 8000 });
+await A.waitForFunction(() => document.querySelector('.tn-count')?.textContent === '2/2' && document.querySelector('.tn-box.done'), null, { timeout: 20000 });
 check((await A.textContent('.tn-name')) === 'BROCK', 'then BROCK, 2/2');
 await A.click('.tn-b');
 await A.waitForTimeout(600);
@@ -313,9 +377,9 @@ await B.click('.trn-spot button');
 check(await until(() => !store.has('plaza/uidB')), 'Hide me takes B out of the Plaza');
 check(await B.evaluate(() => JSON.parse(localStorage.getItem('pokedb.save.v2')).plazaHidden === true), 'and B stays hidden');
 
-const before = store.get('trainers/uidA').at;
+const publishedAt = store.get('trainers/uidA').at;
 await A.reload();
-await until(() => store.get('trainers/uidA').at !== before, 30000);
+await until(() => store.get('trainers/uidA').at !== publishedAt, 30000);
 await A.waitForTimeout(1500);
 check(store.get('trainers/uidA').code === codeA && [...store.keys()].filter(k => k.startsWith('codes/')).length === 2, 'A keeps one code across loads');
 const out = await A.evaluate(async () => { localStorage.setItem('pokedb.cloud.v1', '{}'); return (await import('./js/trainers.js')).myCode(); });

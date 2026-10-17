@@ -2814,6 +2814,26 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session j: Pizzeria, Corner shop, Laundromat, Salon, Garage (2026-10-17)
+- The next five room types, 25 each: Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon (`sln`)
+  and Garage and workshop (`grg`): 125 kinds, 2,712 in all, one helper a set, all solo, session i's `BUILT` way. The whole
+  catalogue (2,716 ids) went through `tools/model-check.mjs` with no builder errors; every new kind within budget (none
+  over 5,522 triangles, the Poké Ball gondola, or 8 draws); thin pieces match their paintings at 0.39 (the pizzeria stool)
+  to 0.97, none sticking out. Pokémon touches: Charmander on the oven, a Lickitung chef, a Pikachu pizza poster; Kecleon
+  the shopkeeper, a Pikachu crane box, Munchlax, Vanillite; Rotom-Wash, Wooloo, Lotad soap, a Gyarados towel; Furfrou's
+  trimming table, trims board, topiaries, La Reine cushion and Pharaoh statue, Sylveon, Jynx, Smoochum; Magnemite's lamp,
+  a Klink clock, Porygon's diagnostics cart, Rotom's mower blueprint. The user got picture sheets.
+
+### Furniture expansion session i: Hospital ward, Bistro kitchen, Bakery, Sushi bar, Ramen shop (2026-10-17)
+- The first five room types (AC's Happy Home Paradise), 25 each: Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi
+  bar (`ssh`) and Ramen shop (`rmn`): 125 kinds, 2,587 in all, one helper a set, all solo, session h's `BUILT` way. The
+  whole catalogue (2,591 ids) went through `tools/model-check.mjs` with no builder errors; every new kind within budget
+  (none over 5,624 triangles, the sushi conveyor, or 8 draws, the ramen fridge whose door swings); thin pieces match their
+  paintings at 0.38 (the bakery's café set) to 0.74, none sticking out. Ideas the base already had (a healing machine,
+  waiting bench, scale, lucky cat, noren, low table) were left out. Pokémon touches: Chansey, Blissey, Audino, Comfey,
+  Unown; Pikachu, Slurpuff, Alcremie, Swirlix; Munchlax, Fidough, Dachsbun; Tatsugiri, Magikarp, Wishiwashi, Wingull,
+  Dondozo; Psyduck, Slowpoke, Lechonk, Snorlax. The user got picture sheets.
+
 ### Furniture expansion session h: Bamboo, Stone zen, Constellations, Desert caravan (2026-10-17)
 - Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan (`crv`), 25 each: 100 kinds, 2,462 in all,
   one helper a set, all solo, session f's `BUILT` way. The whole catalogue (2,466 ids) went through `tools/model-check.mjs`
@@ -2895,6 +2915,13 @@ Branch `claude/exciting-cray-y585nt`, pushed to `main`. `trainers/<uid>` pages a
 the Trainers app, a How to play tip, the PC's TRAINERS row and a one-time TRAINER NETWORK letter with your code, the
 Trainer Card's CODE line. Tested with two stand-in accounts (`tools/trainers-check.mjs`, 31 checks) and the real rules
 in the Firestore emulator (`tools/trainers-rules.mjs`, 33 checks). Detail: `docs/reference/cloud-save.md`.
+
+### Friends list, session 2: the visit-only base (2026-10-17)
+Branch `claude/visit-only-base-session-2-72ayar`, pushed to `main`. The Trainers app's Visit opens a friend's Secret Base
+from their page's `base` (`openBase3d({ guest })`, `readGuestBase()`), walk-only: no Decorate, Garden, PC, Smeargle, gifts
+or visitors, their residents and statues, the Trainer set's cases blank. `visitBase()` / `keep()` in `js/secret-base.js`
+refuses every base write while it's up; `tools/trainers-check.mjs` (43 checks) shows visiting and leaving leaves the
+save exactly as it was. `?base&asfriend` playtests it alone. Detail: `docs/reference/cloud-save.md`.
 
 ### Finding each other without meeting: the Trainer Plaza, Added you and the TRAINER LINK pop-up (2026-10-17, the user's ask)
 The user asked how to find each other without talking outside the game, and for a pop-up when someone adds you,

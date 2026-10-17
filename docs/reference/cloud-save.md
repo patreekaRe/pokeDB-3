@@ -77,7 +77,7 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
 - **The welcome** (the same day, the user's ask): the first time the Trainers app opens signed in (`save.trainersWelcome`),
   and from the ? key by your code, a TRAINER NETWORK card in the same style (`showTrainerWelcome()`): your buddy out of
   the ball, YOUR TRAINER CODE on the plate, six lines paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
-  `js/trainers.js`). Its last line says base visits are coming: **session 2 changes it** (and the greyed Visit key).
+  `js/trainers.js`); its last line points at Visit (session 2's visits landed the same day).
 - **The Trainer Plaza's board in the Clearing** (the same day, the user's ask: "the physical 3D board"):
   `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (11,14, scaled 1.3, nudged 0.3 east of the lamp;
   tiles 10-12 x 14, step 11,15), only while cloud save is configured. A real model: posts, a teal gable with a turning
@@ -87,6 +87,24 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 by the PC: from the
   camera's angle Halloween's pumpkin patch (19-21 x 17-18) stood in front of it.
 - The TRAINER LINK pop-up checks for calm every 1.5 s (`whenCalm()`): the Clearing's boot can hold it a while.
+- **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`) calls the hook main.js
+  hands `onVisit()`, which leaves the title and opens `openBase3d({ onLeave: showHome, guest: { name, json } })` (refused
+  mid-run, "Not mid-run"). `readGuestBase()` in `js/secret-base.js` reads their JSON as untrusted: back in the main
+  room, only known pieces (no present, no `hax` ids), known papers, no lent yard; null if it isn't a base ("Can't open
+  it"). In the room (`host` in `js/base-3d.js`): titled "NAME's Base", a hint saying whose it is, no Decorate or Garden
+  key, no Smeargle, yard intro, Gym Leader or friend dropping by, no liveNews, their PC and Berry plots only say so;
+  doors, seats, piece taps and home games work. Their residents are their `mons` (Safari ids only, 12 at most), your
+  partner walks it, their statues and figures load from their `owned`; the Trainer set's cases show an empty save
+  (`lendTrainerSave({})`), since the page carries no trophies. **The guard**: `visitBase(true)` while it's up makes
+  `keep()`, which every base write in `js/secret-base.js` goes through (saveBase and all 12 buyers), a no-op; leaving
+  calls `endGuest()` and doesn't `publishTrainer()`. The next open of your own base takes the `reopen()` path with
+  `loadBase()`. A friend's base has no 2D fallback (no WebGL: straight home). `?base&asfriend` opens your own saved base
+  as a visitor sees it.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
-  the rules (gstatic routed to stand-in SDK modules; 67 checks, the welcome, pop-up, Plaza and notes among them; pass it a three.js file and the real Clearing runs too), and `tools/trainers-rules.mjs`, the real rules in the
+  the rules (gstatic routed to stand-in SDK modules, Three.js from disk as its argument or `THREE_JS`, so the Clearing and
+  the base run; 70-odd checks: codes and pages, adding by code, leaderboard and Plaza, the welcome, the TRAINER LINK
+  pop-up, Added you, Hide me, and the visit's: the base on the page, Visit open, the room as theirs, no keys or
+  visitors, unknown pieces dropped, every base writer called during the visit and taps on the room, then the whole
+  localStorage the same after leaving bar the play clock, B's page not republished, B's own base theirs again and
+  saving), and `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.
