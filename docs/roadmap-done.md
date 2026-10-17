@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session h: Bamboo, Stone zen, Constellations, Desert caravan (2026-10-17)
+- Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan (`crv`), 25 each: 100 kinds, 2,462 in all,
+  one helper a set, all solo, session f's `BUILT` way. The whole catalogue (2,466 ids) went through `tools/model-check.mjs`
+  with no builder errors; every new kind within budget (none over 4,504 triangles, the spice stall, or 7 draws); thin
+  pieces match their paintings at 0.22 (the star garland's wire) to 0.74, none sticking out.
+- **Stone zen is outdoor** (the session's call, the Japanese shelf has the indoor zen pieces): the yard only, on a "Zen"
+  tab of Smeargle's garden catalogue; no wall pieces, four raked-gravel and stepping-stone ground pieces. Pokémon touches:
+  Pancham, Pangoro, Leafeon; Roggenrola, Lotad, Geodude, Stonjourner, Bronzor; Clefairy, Minior, Jirachi, Lunatone and
+  Solrock, Cosmog; Sandile, Hippopotas, Trapinch, Cacnea, Sigilyph. The user got picture sheets.
+
 ### Furniture expansion session g: Wooden block, Throwback, Ranch, Iron garden (2026-10-17)
 - Wooden block (`blk`), Throwback (`thb`), Ranch (`rnch`) and Iron garden (`igd`), 25 each: 100 kinds, 2,362 in all, one
   helper a set, all solo, session f's `BUILT` way. Every kind within budget (none over 5,624 triangles, the gazebo, or 8

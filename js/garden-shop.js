@@ -18,7 +18,7 @@ const INK = '#5a9a3a';   // the catalogue's turntables, Smeargle's garden green
 
 /** The catalogue's tabs (2026-10-16: the yard sets took it from 17 pieces to over a hundred), by each kind's `yard`
     shelf; the first Yard shelf's kinds carry none. */
-export const GARDEN_TABS = ['Yard', 'Fences', 'Playground', 'Sports', 'Buildings', 'Water', 'Camping', 'Statues', 'Lights', 'Iron garden'];
+export const GARDEN_TABS = ['Yard', 'Fences', 'Playground', 'Sports', 'Buildings', 'Water', 'Camping', 'Statues', 'Lights', 'Iron garden', 'Zen'];
 const tabOf = (p) => p.yard || 'Yard';
 /** Every outdoor design (on a tab, if given), cheapest first. */
 export const gardenStock = (tab) => DESIGNS.filter(id => PIECES[id].outdoor && (!tab || tabOf(PIECES[id]) === tab)).sort((a, b) => PIECES[a].price - PIECES[b].price);

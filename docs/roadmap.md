@@ -27,8 +27,9 @@ hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as
 rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, five more Pokémon sets (2026-10-17, 127
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
-125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), and session g,
-Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all; all seven in `docs/roadmap-done.md`).
+125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), and session h, Bamboo, Stone zen,
+Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all; all eight in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -38,7 +39,9 @@ Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furnit
 (`?mall=furniture&stock=blsmbed,blsmarch,mplbed,mplscreen,acrnwardrobe,acrnstash,shrmbed,shrmshiinotic`; Maple leaf is on the
 stands this October by itself, Cherry blossom with `?holiday=sakura`), and of session g's
 (`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
-or Smeargle's catalogue's Iron garden tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+or Smeargle's catalogue's Iron garden tab with a yard), and of session h's
+(`?mall=furniture&stock=bmbbed,bmbgrove,cstorrery,cstprojector,crvbed,crvspice`; Stone zen is outdoor: `?yard&allfurniture`,
+or Smeargle's catalogue's Zen tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -51,20 +54,19 @@ at once hit it on 2026-10-16; five is safer.
   (`docs/roadmap-done.md`).
 - **g. Done 2026-10-17, on `main`**: Wooden block, Throwback, Ranch and Iron garden (outdoor, its own tab in Smeargle's
   catalogue) (`docs/roadmap-done.md`).
-- **h. The last 4 furniture series**: Bamboo, Stone zen, Constellations, Desert caravan.
+- **h. Done 2026-10-17, on `main`**: Bamboo, Stone zen (outdoor, a Zen tab in Smeargle's catalogue), Constellations and
+  Desert caravan (`docs/roadmap-done.md`).
 - **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session h):
+Next session's prompt (session i):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session h: the last four furniture series (Bamboo, Stone zen,
-> Constellations, Desert caravan; 25 each), one helper a set (four at once), then check every kind with
-> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Stone zen is outdoor, like
-> session g's Iron garden (decided 2026-10-17, the user may still say otherwise: the Japanese shelf already has the indoor zen pieces), on a
-> `yard: 'Zen'` tab of its own in Smeargle's garden catalogue (add it to `GARDEN_TABS` in js/garden-shop.js); read
-> docs/reference/hub-base-mall.md on the yard sets first.
+> "Building a set" section is the helpers' brief). Build session i: the first five room types (Hospital ward, Bistro
+> kitchen, Bakery, Sushi bar, Ramen shop; 25 each, a whole room of that place in one look, as the furniture series), one
+> helper a set (five at once, the most that's safe), then check every kind with tools/model-check.mjs, send me picture
+> sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -635,8 +637,8 @@ says which feel too hard, too easy or too busy; tune that game's numbers alone.
 `main` too): Gengar's Haunted, Lapras's Lagoon, Charizard's Volcano and Rayquaza's Sky Pillar, on `js/pinball-kit.js`
 (see `docs/reference/hub-base-mall.md`'s last section), patch 1.24 "Full Tilt". Played by a bot headless only. Next: the
 user plays them on the phone and says which feel too hard, easy or busy (each file's top constants and its `make()`
-numbers are the knobs); their 3D tables were never seen in 3D. All five tables now stand in a row down the Game Corner's right wall, its slot
-machines removed (the user's ask, same day; untested in 3D, the cloud has no phone GPU).
+numbers are the knobs); their 3D tables were never seen in 3D. All five tables stand in a row down the Arcade Room's right wall (moved from the Game Corner's, 2026-10-17; untested
+in 3D, the cloud has no phone GPU).
 
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
@@ -650,8 +652,8 @@ Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/r
 <game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
 headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
 `B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
-still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`),
-and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
+still the auto hull). Since 2026-10-17 every machine stands in the Arcade Room, free to play (`MACHINES` in `js/mall-arcade.js`); before that
+eight stood under the Game Corner's screens, and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
 both raised like the screens; the right wall's top four slot machines taken out; the cabinets' flicker fixed by
 polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's phone). The claw and skee-ball aren't
 in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
@@ -909,9 +911,10 @@ needs unique names, renames and a guard against rude names turning up in results
 - **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
   device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
   carry `uid`). No requests and no accept step; anyone you add shows up.
-- **A player-list app** (a `shelfApp()`): name, Trainer Card, buddy, last seen, a Visit key (greyed until session 2),
-  Remove. One `getDoc` per friend on open. **"Friends" is taken** by the Gym Leaders' hearts app (`js/friendsdex.js`),
-  so ask the user first: a new name ("Trainers", "Pals"), or a tab in the Friends app.
+- **The Trainers app**, its own app on the Pokédex (a `shelfApp()`, plus a TRAINERS row on the PC; the user's call,
+  2026-10-17: its own app, the name left to Claude). "Trainers" because that's what Pokémon calls other players, and
+  because "Friends" is already the Gym Leaders' hearts app (`js/friendsdex.js`). Each trainer's name, Trainer Card,
+  buddy, last seen, a Visit key (greyed until session 2) and Remove. One `getDoc` per trainer on open.
 - **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
   one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
   setup.
@@ -925,8 +928,8 @@ Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs fro
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
 ▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry and docs/reference/cloud-save.md. Ask me the player list's name, then build session 1: the trainer doc,
-friend codes, the list in the save, adding from a code or a leaderboard name, the app, the How to play tip and the PC
+visits' entry and docs/reference/cloud-save.md. Build session 1: the trainer doc,
+friend codes, the list in the save, adding from a code or a leaderboard name, the Trainers app, the How to play tip and the PC
 letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
 rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
 build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
@@ -1071,9 +1074,18 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
   once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
-  three again and says whether it still resets, and on which phone (an older iPhone has far less room). If the Game
-  Corner still does it, the next lever is the user's idea: move the arcade cabinets into a room of their own (the corner
-  alone is ~85 MB of textures headless, the walls and floor ~26 MB of it, ~100 cabinet and table faces most of the rest).
+  three again and says whether it still resets, and on which phone (an older iPhone has far less room). The next lever,
+  the user's idea, is built too: the Arcade Room below. If it still resets, the cabinets' faces are the next lever
+  (smaller, and one picture shared between machines that look alike; `B.arcade` in `js/base-mesh.js`).
+
+- **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
+  after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
+  Corner into a 15 x 10 room through a lit ARCADE doorway in its right wall (rows 6-7), Porygon at a FREE PLAY desk, the
+  weekly leaderboard over it, the GAME CORNER sign back down over Meowth. Headless at an iPhone's size: the Game Corner
+  83 MB of textures before, 55 after, the Arcade 54, only one loaded at a time. My picks, said to the user: Porygon; the
+  leaderboard moves; the Game Corner's freed spots stay open; four cabinets on the left wall, not a middle row; no
+  regulars in the Arcade yet (their lines all talk to Meowth). The user walks it (`?mall=arcade&coins=5000`) and says
+  what to change.
 
 - **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
   shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the

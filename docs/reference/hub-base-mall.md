@@ -573,6 +573,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   (`BUILT`). **Iron garden is outdoor**: every kind `outdoor: true`, `yard: 'Iron garden'`, so it stands only in the yard
   and has its own tab at the end of `GARDEN_TABS` (`js/garden-shop.js`); no wall pieces (the yard has none), its rug a
   mosaic paving. Its thin wrought iron matches the paintings at only 0.41 to 0.65 (the painting's outline doubles a rod).
+- **Session h's series** (2026-10-17): Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan
+  (`crv`), files `js/base-furniture-<bamboo|stonezen|constellations|caravan>.js` and `js/base-models-<same>.js`, built as
+  session g's (`BUILT`). **Stone zen is outdoor** like Iron garden: `outdoor: true`, `yard: 'Zen'`, its own tab last in
+  `GARDEN_TABS`; no wall pieces, its raked gravel and stepping stones are ground (rug) pieces. New parts: Bamboo's
+  `cane()` (a rod with node rings) and cord `lash()`, Stone zen's `rock` (a sphere pushed out to the painted outline,
+  `rockOutline()`) and square `sq` lathe, Constellations' extruded stars and crescents (`starPts()`, `crescent()`) and
+  rings standing side-on or tilted, Desert caravan's flattened cylinder (`sz`) for drapes against the wall.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
@@ -644,6 +651,22 @@ the slots keep the left wall; `ARCADE` / `CASINO.slots` in `js/mall-corner.js`),
 - **Checking a table**: `NODE_PATH=$(npm root -g) node tools/pinball-sim.mjs pinball-gengar 8 10` plays whole games with a
   bot (scores, ball lives, each table's `t.stat` counters, nudges, escapes); `tools/arcade-check.mjs` for the cabinet.
   The bot is weak; only compare runs of the same bot.
+
+## The Arcade Room (2026-10-17, the user's "build it" after a mock-up)
+The Game Corner's arcade machines have a room of their own, `js/mall-arcade.js` (`buildArcade()`, `SHOPS.arc` in
+`js/mall-3d.js`), so a phone never holds both rooms' pictures (headless at an iPhone's size: the Game Corner was 83 MB of
+textures, now 55; the Arcade 54). The way in is a doorway in the Game Corner's right wall at rows 6-7 (`ARCADE_DOOR`,
+`arcadeDoorArt()` in `js/mall-corner.js`), at the end of the aisle between the quiz and High-Low tables, a spot of kind
+`door` (`into`, `through`: `throughDoor()` in `js/mall-3d.js` steps into it, then `goPlace()`s the room). The Arcade's
+doormat goes back through it (`out: 'gc'` in `SHOPS`, `back()`), arriving at the doorway. `?mall=arcade` walks straight in.
+- **Layout** (15 x 10, `MACHINES`): six cabinets each side of Porygon's FREE PLAY desk on the back wall (the desk tiles
+  6-8), the weekly arcade leaderboard on the wall over it (moved from over Meowth's counter; the GAME CORNER sign is back
+  down in its place), Whac-a-Diglett and Berry Catch, Where's Ditto?, Bubble Shooter and Poké Puzzle down the left wall,
+  the five pinball tables down the right. The middle stays open, room for a free-standing row when new games come.
+- **Shared with the Game Corner**: its wallpaper, tubes, side walls and gold frame (`paper()`, `tube()`, `sideArt()`,
+  `frameArt()`) and `machineMaker()`, which stands a Secret Base model as a game. The carpet is its own (`carpetArt()`:
+  neon shapes on navy). One side-wall picture serves both walls in each room (two uploads of it were ~4-5 MB).
+- **Porygon** (`ARCADE_KEEPER`) only chats; the leaderboard is the board's tap. The Game Corner's regulars stay next door.
 
 ## The mall's floors on the GPU (2026-10-17)
 Every floor the mall builds stays in its one scene, hidden when you're elsewhere, but its textures stayed uploaded: the
