@@ -800,7 +800,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
+**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
+both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
+entry there, which is the up-to-date one (batch 1 is built, batch 2 next, batch 3 picked). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
 Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
 act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
 ~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
