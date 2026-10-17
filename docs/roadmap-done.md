@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session i: Hospital ward, Bistro kitchen, Bakery, Sushi bar, Ramen shop (2026-10-17)
+- The first five room types (AC's Happy Home Paradise), 25 each: Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi
+  bar (`ssh`) and Ramen shop (`rmn`): 125 kinds, 2,587 in all, one helper a set, all solo, session h's `BUILT` way. The
+  whole catalogue (2,591 ids) went through `tools/model-check.mjs` with no builder errors; every new kind within budget
+  (none over 5,624 triangles, the sushi conveyor, or 8 draws, the ramen fridge whose door swings); thin pieces match their
+  paintings at 0.38 (the bakery's café set) to 0.74, none sticking out. Ideas the base already had (a healing machine,
+  waiting bench, scale, lucky cat, noren, low table) were left out. Pokémon touches: Chansey, Blissey, Audino, Comfey,
+  Unown; Pikachu, Slurpuff, Alcremie, Swirlix; Munchlax, Fidough, Dachsbun; Tatsugiri, Magikarp, Wishiwashi, Wingull,
+  Dondozo; Psyduck, Slowpoke, Lechonk, Snorlax. The user got picture sheets.
+
 ### Furniture expansion session h: Bamboo, Stone zen, Constellations, Desert caravan (2026-10-17)
 - Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan (`crv`), 25 each: 100 kinds, 2,462 in all,
   one helper a set, all solo, session f's `BUILT` way. The whole catalogue (2,466 ids) went through `tools/model-check.mjs`

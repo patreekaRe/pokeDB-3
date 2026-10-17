@@ -28,8 +28,9 @@ rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, 
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
 125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
-Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), and session h, Bamboo, Stone zen,
-Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all; all eight in `docs/roadmap-done.md`).
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), session h, Bamboo, Stone zen,
+Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), and session i, the first five room types (2026-10-17,
+125 kinds, 2,587 in all; all nine in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -41,7 +42,9 @@ stands this October by itself, Cherry blossom with `?holiday=sakura`), and of se
 (`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
 or Smeargle's catalogue's Iron garden tab with a yard), and of session h's
 (`?mall=furniture&stock=bmbbed,bmbgrove,cstorrery,cstprojector,crvbed,crvspice`; Stone zen is outdoor: `?yard&allfurniture`,
-or Smeargle's catalogue's Zen tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+or Smeargle's catalogue's Zen tab with a yard), and of session i's
+(`?mall=furniture&stock=hspbed,bstrange,bakcase,sshconveyor,rmnyatai,rmnsnorlax`; try the bed's heal, the oven and fridge
+doors, the ticket machines). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -56,17 +59,19 @@ at once hit it on 2026-10-16; five is safer.
   catalogue) (`docs/roadmap-done.md`).
 - **h. Done 2026-10-17, on `main`**: Bamboo, Stone zen (outdoor, a Zen tab in Smeargle's catalogue), Constellations and
   Desert caravan (`docs/roadmap-done.md`).
-- **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
+- **i. Done 2026-10-17, on `main`**: the first five room types, Hospital ward, Bistro kitchen, Bakery, Sushi bar and
+  Ramen shop (`docs/roadmap-done.md`).
+- **j to l. The other 13 room types**, about 5 a session (Pizzeria, Corner shop, Laundromat, Salon, Garage next).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session i):
+Next session's prompt (session j):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session i: the first five room types (Hospital ward, Bistro
-> kitchen, Bakery, Sushi bar, Ramen shop; 25 each, a whole room of that place in one look, as the furniture series), one
-> helper a set (five at once, the most that's safe), then check every kind with tools/model-check.mjs, send me picture
-> sheets, update the roadmap and push to main.
+> "Building a set" section is the helpers' brief). Build session j: the next five room types (Pizzeria, Corner shop with
+> Poké Mart shelves, fridges and a checkout, Laundromat, Salon with Furfrou trims, Garage and workshop; 25 each, a whole
+> room of that place in one look, as session i's), one helper a set (five at once, the most that's safe), then check
+> every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
