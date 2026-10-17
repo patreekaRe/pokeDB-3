@@ -93,8 +93,8 @@ function tripod(x, z, top, reach, th0 = Math.PI / 6) {
   const out = [];
   for (let k = 0; k < 3; k++) {
     const th = th0 + k * TAU / 3, cx = Math.cos(th), cz = Math.sin(th), P = (rad, h) => [x + cx * rad, h, z + cz * rad];
-    const pts = Array.from({ length: 6 }, (_, i) => { const t = i / 5; return P(1.6 + (reach - 1.6) * Math.sin(t * Math.PI / 2), 1.3 + (top - 1.3) * Math.cos(t * Math.PI / 2)); });
-    out.push(...line(pts, IR), ...curl([x + cx * reach, 2.6, z + cz * reach], 1.3, 0.4, -Math.PI / 2, -Math.PI / 2 + 1.6 * Math.PI, { u: [cx, cz], r: IR * 0.8, n: 5 }));
+    const pts = Array.from({ length: 6 }, (_, i) => { const t = i / 5; return P(1.6 + (reach - 1.6) * Math.sin(t * Math.PI / 2), 0.7 + (top - 0.7) * Math.cos(t * Math.PI / 2)); });
+    out.push(...line(pts, IR), ...curl([x + cx * reach, 2, z + cz * reach], 1.3, 0.4, -Math.PI / 2, -Math.PI / 2 + 1.6 * Math.PI, { u: [cx, cz], r: IR * 0.8, n: 5 }));
   }
   return out;
 }
@@ -342,7 +342,7 @@ const bedParts = (() => {
   parts.push(
     PR(32, 76, 0, [...bow(-29, 29, 0, 9, 0, 10).map(([x, h]) => [x, h]).reverse()], 25, IG.sage, CL),
     PR(32, 76, 12.9, scallop(29, 4.4, 6), 0.6, IG.sage, CL), PR(32, 76, -12.9, scallop(29, 4.4, 6), 0.6, IG.sage, CL),
-    ...vine(windUp(3, 13.6, 2, 74, 1.6, 16), { every: 3 }),
+    ...vine(windUp(4.4, 12.4, 2, 74, 1.2, 16), { every: 3, s: 2.8 }),
     ...vine(bow(4, 30, 79, 4.5, 13.8, 7).map(([x, h, z], i) => [x, h - 3 - (i % 2) * 2, z]), { every: 2 }),
   );
   return parts;
@@ -694,7 +694,7 @@ export const IRONGARDEN_KINDS = [
     ...Array.from({ length: 14 }, (_, i) => { const x = 6 + i * 4, top = 31 + 4.6 * Math.sin(Math.PI * (x - 4) / 56); return [bar([x, 0.6, 0], [x, top, 0], 0.6, IG.iron, { seg: 4 }), LA(x, top, 0, [[0.9, 0], [1.3, 0.8], [0, 3.2]], IG.iron, { m: 'gloss', seg: 4 })]; }).flat(),
     ...Array.from({ length: 13 }, (_, i) => curl([8 + i * 4, 20.4, 0.3], 1.4, 1.4, 0, TAU, { r: 0.4, n: 6, seg: 4 })).flat(),
     ...vine(Array.from({ length: 14 }, (_, j) => [5 + j * 4, 6 + (j % 2) * 2.6, 1.2]), { s: 3, every: 5 }),
-    ...vine(windUp(61.5, 0, 1, 38, 2.2, 8), { s: 3, every: 3 }),
+    ...vine(windUp(59.6, 0, 1, 38, 1.2, 8), { s: 2.8, every: 3 }),
   ]),
 
   // a garden gate: square posts with finials, an arch of scrolls over them with a climbing rose, two leaves that swing open
@@ -723,7 +723,7 @@ export const IRONGARDEN_KINDS = [
 
   // a porch swing: an iron A-frame under a sage canopy with a scalloped valance, a lattice-backed seat on chains, cushions
   piece('igdswing', 'Iron garden porch swing', 2, 1, 1400, [
-    ...[3, 61].flatMap(x => [bar([x, 0, -13], [x, 66, 0], 1.1), bar([x, 0, 13], [x, 66, 0], 1.1), bar([x, 24, -8.3], [x, 24, 8.3], IR), ...lyre(x, 40, 0, 10, { u: [0, 1], n: 8 })]),
+    ...[3, 61].flatMap(x => [bar([x, 0.4, -12.9], [x, 66, 0], 1.1), bar([x, 0.4, 12.9], [x, 66, 0], 1.1), bar([x, 24, -8.3], [x, 24, 8.3], IR), ...lyre(x, 40, 0, 10, { u: [0, 1], n: 8 })]),
     bar([2, 66, 0], [62, 66, 0], 1.2),
     B(32, 68.6, 0, 62, 1.2, 24, IG.sage, { m: 'cloth', r: 0.5 }), PR(32, 68.2, 12.2, scallop(31, 4, 7), 0.6, IG.sage, CL), PR(32, 68.2, -12.2, scallop(31, 4, 7), 0.6, IG.sage, CL),
     ...[8, 56].flatMap(x => [bar([x, 66, 0], [x, 16.4, 7], 0.3, IG.ironD, { seg: 4 }), bar([x, 66, 0], [x, 37, -8], 0.3, IG.ironD, { seg: 4 })]),
@@ -734,7 +734,7 @@ export const IRONGARDEN_KINDS = [
     fb(32, 19, -8, 48, 1.2, 1.2), ...line(bow(8, 56, 34, 4, -8, 8), IR), ...lyre(32, 37.6, -8, 4.6, { n: 8 }),
     ...[8, 56].map(x => bar([x, 25, -8], [x, 25, 7], IR)), ...armCurl(8, 15, 25, 7.4, 1), ...armCurl(56, 15, 25, 7.4, -1),
     S(20, 24, -5.4, 6, 4.6, 2, IG.cream, { m: 'cloth', seg: 10 }), S(44, 24, -5.4, 6, 4.6, 2, IG.roseL, { m: 'cloth', seg: 10 }),
-    ...vine(Array.from({ length: 13 }, (_, j) => { const t = j / 12; return [3 + (j % 2 ? 1 : -0.6), 66 * t, 13 - 13 * t + 1]; }), { every: 3, s: 3 }),
+    ...vine(Array.from({ length: 12 }, (_, j) => { const t = (j + 1) / 13; return [4.4 + (j % 2 ? 0.6 : -0.4), 66 * t, 13.4 - 12.9 * t]; }), { every: 3, s: 2.8 }),
   ]),
 
   // a tea cart: two big spoked wheels, a mesh shelf and a railed top, a scroll handle, a china teapot and cups, a pot of roses
