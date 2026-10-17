@@ -263,6 +263,14 @@ body.scrolled .topbar::before { opacity: 1; }
 .vol-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 18px; margin-top: -6px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
 .vol-slider::-moz-range-thumb { width: 12px; height: 14px; border: 2px solid #181818; border-radius: 3px; background: #f8f8f8; box-shadow: inset -2px -2px 0 #b8b8c8; }
 .vol-slider:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+/* a finger's size: a taller bar to land on and a bigger thumb (js/audio.js's fingerSlider() takes a touch anywhere on it) */
+@media (pointer: coarse) {
+  .vol-slider { height: 40px; }
+  .vol-slider::-webkit-slider-runnable-track { height: 14px; }
+  .vol-slider::-webkit-slider-thumb { width: 28px; height: 30px; margin-top: -10px; border-radius: 6px; }
+  .vol-slider::-moz-range-track, .vol-slider::-moz-range-progress { height: 10px; }
+  .vol-slider::-moz-range-thumb { width: 24px; height: 26px; border-radius: 6px; }
+}
 /* muted: the bar greys out, still draggable (turning it up unmutes) */
 .sound-ctl.muted .vol-slider { filter: grayscale(1); opacity: 0.55; }
 /* The Settings app (#dev-settings, js/settings.js), a games' OPTIONS screen: a card per group, its head a band in the

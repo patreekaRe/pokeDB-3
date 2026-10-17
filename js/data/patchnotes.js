@@ -47,7 +47,7 @@ export const NEXT = [
   ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
   ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
   ['base', 'New furniture wears a "!" piece by piece in the PC\'s Decorations and the Secret Base\'s Decorate tray until you tap it.'],
-  ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (music, bosses, towns and rooms you\'ve left), so iPhones stop reloading it mid-run.'],
+  ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (music, bosses, towns and rooms you\'ve left), so iPhones stop reloading it mid-run; the volume bars are easier to grab with a finger.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
