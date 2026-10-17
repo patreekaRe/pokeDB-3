@@ -130,6 +130,7 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
       add(new THREE.BoxGeometry(0.075, h, 0.03), paint, px, h / 2 + 0.1, 0.02, hinge);
       add(new THREE.ConeGeometry(0.053, 0.08, 4), paint, px, h + 0.14, 0.02, hinge).rotation.y = Math.PI / 4;
     }
+    merge(hinge);
     group.add(hinge);
     return { hinge, s };
   });
@@ -154,6 +155,7 @@ export function makeGardenArch(THREE, { x, z, owned, leaf, winter = false, merge
         if (k % 3 === 0) add(leafGeo, gloom, p.x, p.y + 0.04, p.z + 0.02, bramble).scale.setScalar(0.7);
       }
     }
+    merge(bramble);   // 91 pieces, a draw each, shrunk away whole when it's cleared
     group.add(bramble);
     lock = new THREE.Group();
     const brass = std({ color: '#d8a838', metalness: 0.8, roughness: 0.35 });

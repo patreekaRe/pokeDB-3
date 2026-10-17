@@ -13,7 +13,7 @@
    own COLS x ROWS and door, like the Game Corner); this file only builds it. */
 
 import { PIECES, pieceArt, furnitureStock, loadBase, UPSTAIRS_PRICE, KINDS_OF } from './secret-base.js';
-import { tex, trim, bakeColours } from './hd2d.js';
+import { tex, trim, bakeColours, dispose } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
 import { shapeOf } from './base-shapes.js';
 import { fine, texOf, words, star, mergeStatic } from './hub-3d.js';
@@ -1036,12 +1036,16 @@ function pieceInto(THREE, ware, id, tall, H, std, goldM) {
   }
 }
 
-const previews = new Map();
+const previews = new Map(), PREVIEWS_KEPT = 8;
 /** The piece alone for the buy window (js/turntable.js), on a round velvet turntable in its department's colour, rimmed
-    in gold, its middle over the turntable's. Kept per piece, as the shared renderer keeps it. */
+    in gold, its middle over the turntable's. The last few looked at are kept; every one kept held its meshes and
+    textures for the whole visit, and the Furniture store and garden show hundreds. */
 export function piecePreview(THREE, id, ink) {
-  if (!previews.has(id)) previews.set(id, pieceTurntable(THREE, id, ink));
-  return previews.get(id);
+  const pv = previews.get(id) ?? pieceTurntable(THREE, id, ink);
+  previews.delete(id);
+  previews.set(id, pv);
+  for (const [old, o] of previews) { if (previews.size <= PREVIEWS_KEPT) break; previews.delete(old); dispose(o.pivot); }
+  return pv;
 }
 
 /** piecePreview()'s piece, built afresh and not kept: for a still, after which the caller disposes it. */

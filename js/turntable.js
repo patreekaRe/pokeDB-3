@@ -1,15 +1,27 @@
 /* turntable.js  -  one small renderer, shared by every window that shows a thing turning in 3D: Meowth's prize counter
    (js/prizes.js) and the Furniture store's buy window (js/mall-3d.js). It draws off screen and each window copies the
-   frame onto its own canvas, so a window never adds a WebGL context of its own beside the place on screen. */
+   frame onto its own canvas, so a window never adds a WebGL context of its own beside the place on screen. Idle a few
+   seconds it sleeps (its context let go), or it stayed awake beside every place for the rest of the visit, and wakes on
+   its next draw. */
 
-import { loadThree } from './hd2d.js';
+import { loadThree, sleepGL, wakeBeside } from './hd2d.js';
 
 export const TURN_SIZE = 360;
-let stage = null;
+const NAP_MS = 4000;
+let stage = null, nap = 0, dozing = false, waking = null;
 
-/** The shared renderer, its lit scene and camera, made the first time a window asks. */
+function rest() {
+  clearTimeout(nap);
+  nap = setTimeout(() => { dozing = true; sleepGL(stage.renderer); }, NAP_MS);
+}
+function wake() {
+  if (!dozing) return Promise.resolve();
+  return (waking ??= wakeBeside(stage.renderer).then(() => { dozing = false; waking = null; }));
+}
+
+/** The shared renderer, its lit scene and camera, made the first time a window asks, awake once this resolves. */
 export async function turntableStage() {
-  if (stage) return stage;
+  if (stage) { await wake(); return stage; }
   const THREE = await loadThree();
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setPixelRatio(1);
@@ -23,14 +35,17 @@ export async function turntableStage() {
   return (stage = { THREE, renderer, scene, camera });
 }
 
-/** `pivot` drawn from the stage's camera, copied onto canvas `c`. */
+/** `pivot` drawn from the stage's camera, copied onto canvas `c`; false (nothing drawn) while the stage wakes. */
 export function drawTurn({ renderer, scene, camera }, pivot, c) {
+  if (dozing) { wake(); return false; }
+  rest();
   scene.add(pivot);
   renderer.render(scene, camera);
   scene.remove(pivot);
   const g = c.getContext('2d');
   g.clearRect(0, 0, c.width, c.height);
   g.drawImage(renderer.domElement, 0, 0, c.width, c.height);
+  return true;
 }
 
 /** The camera aimed at a preview `{ pivot, h, r }` (js/mall-furniture.js's piecePreview()), `tilt` up from level. */
@@ -40,11 +55,11 @@ function aim(camera, h, r, tilt) {
   camera.lookAt(0, midY, 0);
 }
 
-/** One still of a preview onto canvas `c`, as the buy window first shows it. */
+/** One still of a preview onto canvas `c`, as the buy window first shows it; false if the stage was asleep. */
 export function snapTurn(st, { pivot, h, r }, c) {
   pivot.rotation.y = -0.6;
   aim(st.camera, h, r, 0.38);
-  drawTurn(st, pivot, c);
+  return drawTurn(st, pivot, c);
 }
 
 const SPIN = 0.55;   // its own pace, a turn every ~11 s

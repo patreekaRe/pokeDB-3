@@ -18,18 +18,19 @@
      strength   gain this much strength for the fight
      clears     throw out every status card in your hand and piles ('all'), or only this card
      shuts      no more of this card lands on you for the rest of the fight
+   And `short` is its effect in a few words, for the garden's seed tiles (js/berry-garden.js).
    ============================================================ */
 
 export const HELD = [
-  { id: 'oran',   name: 'Oran Berry',   icon: '🫐', sprite: 'oran-berry',   berry: 'oran',   on: 'hurt', heal: 10,
+  { id: 'oran',   name: 'Oran Berry',   icon: '🫐', sprite: 'oran-berry',   berry: 'oran', short: 'Heals 10 HP when low',   on: 'hurt', heal: 10,
     text: 'Held. The first time your HP drops below half, it\'s eaten: heal 10 HP.' },
-  { id: 'sitrus', name: 'Sitrus Berry', icon: '🍋', sprite: 'sitrus-berry', berry: 'sitrus', on: 'hurt', healShare: 0.25,
+  { id: 'sitrus', name: 'Sitrus Berry', icon: '🍋', sprite: 'sitrus-berry', berry: 'sitrus', short: 'Heals 25% HP when low', on: 'hurt', healShare: 0.25,
     text: 'Held. The first time your HP drops below half, it\'s eaten: heal 25% of your max HP.' },
-  { id: 'cheri',  name: 'Cheri Berry',  icon: '🍒', sprite: 'cheri-berry',  berry: 'cheri',  on: 'hurt', hit: 10, strength: 2,
+  { id: 'cheri',  name: 'Cheri Berry',  icon: '🍒', sprite: 'cheri-berry',  berry: 'cheri', short: '+2 strength after a big hit',  on: 'hurt', hit: 10, strength: 2,
     text: 'Held. The first time one hit takes 10 or more of your HP, it\'s eaten: gain 2 strength for the fight.' },
-  { id: 'pecha',  name: 'Pecha Berry',  icon: '🍑', sprite: 'pecha-berry',  berry: 'pecha',  on: 'status', cures: 'poison', clears: 'poison', shuts: 'poison',
+  { id: 'pecha',  name: 'Pecha Berry',  icon: '🍑', sprite: 'pecha-berry',  berry: 'pecha', short: 'Cures Poison',  on: 'status', cures: 'poison', clears: 'poison', shuts: 'poison',
     text: 'Held. The first time an enemy puts Poison in your deck, it\'s eaten: all your Poison is thrown out, and no more lands that fight.' },
-  { id: 'lum',    name: 'Lum Berry',    icon: '🍏', sprite: 'lum-berry',    berry: 'lum',    on: 'status', clears: 'all',
+  { id: 'lum',    name: 'Lum Berry',    icon: '🍏', sprite: 'lum-berry',    berry: 'lum', short: 'Cures every status',    on: 'status', clears: 'all',
     text: 'Held. The first time an enemy puts a status card in your deck, it\'s eaten: every status card in your hand and piles is thrown out.' },
 ];
 export const HELD_BY_ID = Object.fromEntries(HELD.map(h => [h.id, h]));

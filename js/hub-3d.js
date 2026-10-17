@@ -2729,6 +2729,7 @@ function dressClearing() {
   const pane = std({ color: '#fff4d0', emissive: new THREE.Color('#ffd88a'), roughness: 0.3 });
   pane.userData.glow = 1.6; pane.userData.glowMin = 0.08;
   seasonMats.push(pane);
+  const still = new THREE.Group();   // merged below: the lamps, benches, beds and pond-side stones were ~250 draws a frame
   const add = (g, geo, m, x, y, z, shadow = true) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); o.castShadow = shadow; o.receiveShadow = true; o.raycast = () => {}; g.add(o); return o; };
   const pole = new THREE.CylinderGeometry(0.045, 0.06, 1.7, 8), foot = new THREE.CylinderGeometry(0.12, 0.15, 0.14, 8);
   const head = new THREE.BoxGeometry(0.22, 0.26, 0.22), roof = new THREE.ConeGeometry(0.2, 0.16, 4), arm = new THREE.BoxGeometry(0.3, 0.04, 0.04);
@@ -2738,7 +2739,7 @@ function dressClearing() {
     add(g, arm, iron, x, 1.62, z).castShadow = false;
     add(g, head, pane, x, 1.83, z, false);
     add(g, roof, cap, x, 2.04, z).rotation.y = Math.PI / 4;
-    forest.add(g);
+    still.add(g);
     dressTiles.add(key(tx, ty));
   }
   const wood = std({ color: '#b07a44' });
@@ -2748,7 +2749,7 @@ function dressClearing() {
     for (const dz of [-0.1, 0.02, 0.14]) add(g, new THREE.BoxGeometry(0.9, 0.05, 0.1), wood, 0, 0.36, dz);
     for (const dy of [0.5, 0.62]) add(g, new THREE.BoxGeometry(0.9, 0.08, 0.04), wood, 0, dy, -0.2);
     for (const dx of [-0.38, 0.38]) { add(g, new THREE.BoxGeometry(0.05, 0.36, 0.34), iron, dx, 0.18, 0); add(g, new THREE.BoxGeometry(0.05, 0.36, 0.05), iron, dx, 0.52, -0.2); }
-    forest.add(g);
+    still.add(g);
     dressTiles.add(key(tx, ty));
   }
   const kerbM = std({ color: STONE[2] }), soil = std({ color: '#6a4a2c', roughness: 1 });
@@ -2766,7 +2767,7 @@ function dressClearing() {
       leaf.scale.y = 0.7;
       if (rnd() < 0.7) add(g, petal, blooms[Math.floor(rnd() * blooms.length)], Math.cos(a) * d + (rnd() - 0.5) * 0.06, 0.32, Math.sin(a) * d, false);
     }
-    forest.add(g);
+    still.add(g);
     for (let dx = -Math.floor(r); dx <= Math.floor(r); dx++) for (let dy = -Math.floor(r); dy <= Math.floor(r); dy++) if (Math.hypot(dx, dy) <= r) dressTiles.add(key(tx + dx, ty + dy));
   }
   // the pond: still water over its painted bed, stones round its edge, lily pads, and nothing walks into it
@@ -2775,16 +2776,18 @@ function dressClearing() {
   forest.add(water);
   const pebble = new THREE.DodecahedronGeometry(0.13, 0), rock = std({ color: '#a8a294', flatShading: true });
   for (let i = 0; i < 26; i++) {
-    const a = i / 26 * Math.PI * 2, o = add(forest, pebble, rock, tileX(POND.x) + Math.cos(a) * (POND.r + 0.12), 0.05, tileZ(POND.y) + Math.sin(a) * (POND.r + 0.12));
+    const a = i / 26 * Math.PI * 2, o = add(still, pebble, rock, tileX(POND.x) + Math.cos(a) * (POND.r + 0.12), 0.05, tileZ(POND.y) + Math.sin(a) * (POND.r + 0.12));
     o.scale.set(1 + rnd() * 0.6, 0.6 + rnd() * 0.4, 1 + rnd() * 0.5); o.rotation.y = rnd() * 3;
   }
   const pad = std({ color: '#5aa848', side: THREE.DoubleSide });
   for (const [dx, dz, r] of [[-0.6, 0.3, 0.2], [0.5, -0.4, 0.16], [0.2, 0.7, 0.14], [-0.2, -0.8, 0.12]]) {
-    const o = add(forest, new THREE.CircleGeometry(r, 16, 0.3, Math.PI * 1.8), pad, tileX(POND.x) + dx, 0.045, tileZ(POND.y) + dz, false);
+    const o = add(still, new THREE.CircleGeometry(r, 16, 0.3, Math.PI * 1.8), pad, tileX(POND.x) + dx, 0.045, tileZ(POND.y) + dz, false);
     o.rotation.x = -Math.PI / 2;
-    if (r > 0.15) add(forest, petal, blooms[0], o.position.x + 0.05, 0.09, o.position.z - 0.04, false);
+    if (r > 0.15) add(still, petal, blooms[0], o.position.x + 0.05, 0.09, o.position.z - 0.04, false);
   }
   for (let tx = Math.floor(POND.x - POND.r); tx <= POND.x + POND.r; tx++) for (let ty = Math.floor(POND.y - POND.r); ty <= POND.y + POND.r; ty++) if (Math.hypot(tx - POND.x, ty - POND.y) <= POND.r + 0.2) dressTiles.add(key(tx, ty));
+  mergeStatic(still, () => false);
+  forest.add(still);
   // a duck paddling round the pond, outside the lily pads (liveDuck())
   const d = new THREE.Group(), white = std({ color: '#f4f1e8' }), bill = std({ color: '#f0a030' }), eye = std({ color: '#1a1a1a' });
   const body = add(d, new THREE.SphereGeometry(0.13, 14, 10), white, 0, 0.05, 0);

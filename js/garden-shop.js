@@ -12,6 +12,7 @@ import { loadFigures } from './base-figures.js';
 import { piecePreview, pieceTurntable } from './mall-furniture.js';
 import { turntableStage, snapTurn, turner } from './turntable.js';
 import { smoothIcon } from './smooth-icons.js';
+import { dispose } from './hd2d.js';
 
 const INK = '#5a9a3a';   // the catalogue's turntables, Smeargle's garden green
 
@@ -42,12 +43,6 @@ function picture(id) {
   queue.push([id, c]);
   return c;
 }
-function dispose(o) {
-  o.traverse(m => {
-    m.geometry?.dispose();
-    for (const mat of [m.material ?? []].flat()) { mat.map?.dispose(); mat.dispose(); }
-  });
-}
 async function snapAll(open) {
   const st = await turntableStage().catch(() => null);
   if (!st) return;
@@ -59,8 +54,9 @@ async function snapAll(open) {
       if (!snaps.has(id)) {
         const shot = el('canvas'), pv = pieceTurntable(st.THREE, id, INK);
         shot.width = shot.height = SNAP;
-        snapTurn(st, pv, shot);
+        const drawn = snapTurn(st, pv, shot);
         dispose(pv.pivot);
+        if (!drawn) { queue.unshift(job); requestAnimationFrame(step); return; }
         snaps.set(id, shot);
       }
       if (c.isConnected) {

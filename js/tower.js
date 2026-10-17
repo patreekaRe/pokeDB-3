@@ -16,6 +16,7 @@ import { spriteFit } from './data/sprite-fit.js';
 import { playSound, preloadSounds } from './audio.js';
 import { $, el, sleep } from './ui.js';
 import { calmFx } from './prefs.js';
+import { tooSoon } from './hd2d.js';
 
 const FPS = 30;       // the art's own clock (flicker, drift); the screen itself repaints every display frame
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -183,6 +184,7 @@ let lastNow = 0, owed = 0;
 function frame(now) {
   if ($('map-screen').hidden || !$('tower-view').isConnected || $('tower-view').hidden) { stop(); return; }
   timer = requestAnimationFrame(frame);
+  if (tooSoon(now, lastNow)) return;
   owed = Math.min(owed + (now - lastNow), 250);
   lastNow = now;
   for (; owed >= 1000 / FPS; owed -= 1000 / FPS) {
