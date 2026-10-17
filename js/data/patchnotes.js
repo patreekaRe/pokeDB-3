@@ -72,7 +72,7 @@ export const PATCHES = [
     ['mall', 'Every Game Corner arcade game rebuilt: painted worlds, rising stages, hazards and power-ups. Pinball is a real table; Bubble Shooter has a shot clock and rocks.'],
     ['base', 'The Berry Garden window is rebuilt like Kurt\'s Workshop, with Plots, Seeds and Sell tabs, Smeargle\'s tips, and a card saying what each berry does.'],
     ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, the Clearing and the 3D buy windows run lighter, and an arcade cabinet\'s How to play no longer stretches across a wide screen.'],
-    ['mall', 'Four new pinball tables down the Game Corner's right wall, each its own game: Gengar\'s haunted graveyard, Lapras\'s whirlpool lagoon, Charizard\'s volcano and Rayquaza\'s scrolling Sky Pillar.'],
+    ['mall', 'Four new pinball tables down the Game Corner\'s right wall, each its own game: Gengar\'s haunted graveyard, Lapras\'s whirlpool lagoon, Charizard\'s volcano and Rayquaza\'s scrolling Sky Pillar.'],
     ],
   },
   {
