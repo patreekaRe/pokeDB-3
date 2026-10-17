@@ -27,7 +27,7 @@ import { frontArt, frontWindow, buildFloor, LIFT, KEEPERS, piecePreview, dialTur
 import { loadStatues } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
-import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
+import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
 import { safariOpen } from './data/pokedex.js';
@@ -56,7 +56,7 @@ const FRONTS = [
   { id: 'outfitter', name: 'Safari Outfitter', line: 'Closed. A note on the door says: "Opening with the Safari Zone! Beat every Pokémon in all three biomes. Kangaskhan"', x: 16, step: { x: 16, y: 1 } },
 ];
 
-let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, shopEl, hemi, sun;
+let THREE, renderer, scene, camera, post, root, view, lineEl, askEl, shopEl, turn, hemi, sun;
 let mon, walker = { x: 0, z: 0, tile: { ...HALL_DOOR }, path: [], facing: 'back', flip: false, hop: 0 };
 let hall, glows = [], blocked = new Set(), aim = null, here = null, answer = null;
 // where you are: the hall, a floor of the Furniture store (js/mall-furniture.js) or the Game Corner (js/mall-corner.js),
@@ -925,7 +925,7 @@ function ask(text, art = null) {
 function closeAsk(yes) {
   if (askEl) askEl.hidden = true;
   if (shopEl) shopEl.hidden = true;
-  spin = null;
+  turn?.stop();
   const res = answer;
   answer = null;
   res?.(yes);
@@ -1054,7 +1054,7 @@ function merchant(w) {
   shopEl.classList.toggle('held', !!w.held);
   shopEl.hidden = false;
   shopEl.classList.remove('b3-say'); void shopEl.offsetWidth; shopEl.classList.add('b3-say');
-  spinPiece(w.preview);
+  turn.show(w.preview);
   return new Promise(res => { answer = res; });
 }
 
@@ -1065,67 +1065,6 @@ function pieceWindow(spot) {
     note: n > 1 ? `All ${n} styles included` : 'Delivered to your Secret Base', preview: (T) => piecePreview(T, spot.piece, ink) });
 }
 
-/* The buy window's turntable: the piece drawn by js/turntable.js's shared renderer, turning slowly on its own; a drag
-   turns it (and tips it a little up or down), and a flick keeps it spinning a moment before it slows to its own pace. */
-let spin = null;
-const SPIN = 0.55;   // its own pace, a turn every ~11 s
-
-async function spinPiece(preview) {
-  const s = spin = { yaw: -0.6, vel: 0, tilt: 0.38, drag: null, last: 0 };
-  const c = shopEl.querySelector('.mshop-turn');
-  c.width = c.height = TURN_SIZE;
-  c.getContext('2d').clearRect(0, 0, c.width, c.height);
-  const st = await turntableStage().catch(() => null);
-  if (!st || spin !== s) return;
-  const { pivot, h, r } = preview(st.THREE);
-  const d = r / Math.sin(st.camera.fov * Math.PI / 360) * 1.02, mid = new THREE.Vector3(0, h * 0.45, 0);
-  const step = (now) => {
-    if (spin !== s || !root?.isConnected) return;
-    requestAnimationFrame(step);
-    if (now - s.last < 30) return;
-    const dt = s.last ? Math.min(100, now - s.last) / 1000 : 0;
-    s.last = now;
-    if (!s.drag) {
-      s.vel *= Math.exp(-dt * 2.5);
-      s.yaw += (SPIN + s.vel) * dt;
-    }
-    pivot.rotation.y = s.yaw;
-    st.camera.position.set(0, mid.y + Math.sin(s.tilt) * d, Math.cos(s.tilt) * d);
-    st.camera.lookAt(mid);
-    drawTurn(st, pivot, c);
-  };
-  requestAnimationFrame(step);
-}
-
-/** Drags on the turntable's stage turn the piece; they never reach the room under the window. */
-function spinBy(stage) {
-  stage.addEventListener('pointerdown', (e) => {
-    if (!spin) return;
-    e.preventDefault();
-    stage.setPointerCapture(e.pointerId);
-    spin.drag = { x: e.clientX, y: e.clientY, t: performance.now() };
-    spin.vel = 0;
-    stage.classList.add('held');
-  });
-  stage.addEventListener('pointermove', (e) => {
-    const g = spin?.drag;
-    if (!g) return;
-    const now = performance.now(), dx = e.clientX - g.x, dy = e.clientY - g.y, k = 6 / stage.clientWidth;
-    spin.yaw += dx * k;
-    spin.tilt = Math.max(0.05, Math.min(0.9, spin.tilt + dy * k * 0.5));
-    if (now > g.t) spin.vel = spin.vel * 0.5 + (dx * k / ((now - g.t) / 1000)) * 0.5;
-    Object.assign(g, { x: e.clientX, y: e.clientY, t: now });
-  });
-  const up = () => {
-    if (!spin?.drag) return;
-    if (performance.now() - spin.drag.t > 80) spin.vel = 0;
-    spin.vel = Math.max(-12, Math.min(12, spin.vel - SPIN));
-    spin.drag = null;
-    stage.classList.remove('held');
-  };
-  stage.addEventListener('pointerup', up);
-  stage.addEventListener('pointercancel', up);
-}
 
 /* The poof as a piece is bought: it swells and shrinks away into a cloud of soft puffs and a few gold sparkles, then the
    SOLD OUT board pops up in its place. */
@@ -1600,7 +1539,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   shopEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
   shopEl.querySelector('.mall-ask-no').addEventListener('click', () => { playSound('cancel'); closeAsk(false); });
   shopEl.querySelector('.mshop-price b').before(smoothIcon('coin', 'mshop-coin'));
-  spinBy(shopEl.querySelector('.mshop-stage'));
+  turn = turner(shopEl.querySelector('.mshop-stage'), shopEl.querySelector('.mshop-turn'), () => root?.isConnected);
   lineEl = root.querySelector('.mall-line');
   const bar = root.querySelector('.mall-bar');
   bar.querySelector('.hbar-coins').before(smoothIcon('coin', 'hbar-coin'));

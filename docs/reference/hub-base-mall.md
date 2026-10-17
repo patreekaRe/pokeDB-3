@@ -81,7 +81,7 @@ The first section began as the note on playtesting the live site and grew into t
   `add()` sets it) and a builder in the -y batch. Sold only in **Smeargle's garden catalogue** (`js/garden-shop.js`): a tap
   on Smeargle in the store, once there's a yard (`KEEPERS[1].special` in `js/mall-furniture.js`; without one Smeargle
   chats, a line hinting at it), the whole shelf always in stock, owned ones marked; `dealDay()` leaves outdoor pieces out,
-  so the daily stands deal as before. Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
+  so the daily stands deal as before. Since 2026-10-17 (the user's ask: "all pixels", "some kind of merchant window") the catalogue is a merchant's card in the store buy window's look (`.gmerch` in css/hub.css): green ribbon tabs, each tile a still of the piece's 3D model (`pieceTurntable()` in `js/mall-furniture.js`, drawn once by the shared turntable, then disposed; only the 2D still is kept), and a tap opens a buy window with it turning (`turner()` in `js/turntable.js`, which the Furniture store's `merchant()` uses too). Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
   ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
