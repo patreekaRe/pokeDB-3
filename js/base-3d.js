@@ -34,6 +34,7 @@ import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
+import { stayKey } from './stay.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -2240,8 +2241,8 @@ async function reopen(start) {
 }
 
 /** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing);
-    `start` 'yard' opens out in the backyard (?yard), if there is one. */
-export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
+    `start` 'yard' opens out in the backyard (?yard), if there is one; `tile`, your partner standing there (the refresh key). */
+export async function openBase3d({ onLeave = null, start = 'main', tile = null } = {}) {
   leaveTo = onLeave;
   playMusic('secret-base');
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
@@ -2279,6 +2280,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
       <div class="b3-screen"><div class="b3-strip"></div></div>
     </div>`;
   document.body.append(root);
+  root.querySelector('.b3-stage').append(stayKey(() => ({ at: 'base', room: base?.here || 'main', tile: walker.tile && { ...walker.tile } })));
   view = root.querySelector('.b3-view');
   hud = { hint: root.querySelector('.b3-hint'), fps: null };
   if (new URLSearchParams(location.search).has('fps')) { hud.fps = root.querySelector('.b3-fps'); hud.fps.hidden = false; }
@@ -2332,7 +2334,7 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
   buildPieces();
   mon = await makeMon();
   mon.board.userData.who = { mon, w: walker };
-  walker.tile = nearestFree(startTile());
+  walker.tile = nearestFree(tile && inRoom(tile) ? { x: tile.x, y: tile.y } : startTile());
   walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y);
   camX = panX = walker.x;
   setTime(true);

@@ -35,6 +35,7 @@ import { safariDaily } from './data/safari.js';
 import { DAY_PASS } from './data/balls.js';
 import { cabinetUp } from './home-arcade.js';
 import { dressHall, dressFronts, FOUNTAINS, FOUNTAIN_SCALE } from './mall-hall.js';
+import { stayKey } from './stay.js';
 
 const COLS = 13, ROWS = 7;   // the shops' floors; the hall is bigger (the user's ask, 2026-10-12: it felt small)
 const HC = 21, HR = 10, HALL_DOOR = { x: 10, y: HR - 1 };
@@ -1494,8 +1495,9 @@ export async function leave() {
   curtain(false);
 }
 
-/** The Poké Mall's hall. `onLeave` is where its doormat goes (the Clearing hands it the way back out of the doors). */
-export async function openMall({ onLeave = null, store = null } = {}) {
+/** The Poké Mall's hall. `onLeave` is where its doormat goes (the Clearing hands it the way back out of the doors). `at`
+    ({ id, tile }): a floor or shop and the tile in it to stand on (the refresh key). */
+export async function openMall({ onLeave = null, store = null, at = null } = {}) {
   leaveTo = onLeave;
   playMusic('mart');   // the Poké Mart's song through the hall and every shop in it; the doormat's showHome() brings 'title' back
   calm = calmFx();
@@ -1531,6 +1533,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
       </div>
     </div>`;
   document.body.append(root);
+  root.querySelector('.b3-stage').append(stayKey(() => P && ({ at: 'mall', id: P.id, tile: { ...walker.tile } })));
   view = root.querySelector('.b3-view');
   askEl = root.querySelector('.mall-ask');
   askEl.querySelector('.mall-ask-yes').addEventListener('click', () => closeAsk(true));
@@ -1590,9 +1593,14 @@ export async function openMall({ onLeave = null, store = null } = {}) {
     go: (t) => { walker.exit = false; aim = null; here = null; pick(null); walker.path = reroute(walker, route, t); },
     done: () => { if (!walker.path.length) arrived(); },
   });
-  if (!store) await warm();
+  if (!store && !at) await warm();
   requestAnimationFrame(frame);
   curtain(false);
+  if (at?.id === 'hall' && free(at.tile ?? {})) setPlace(places.hall, at.tile);
+  else if (SHOPS[at?.id]) {
+    await goPlace(at.id, at.tile);
+    if (P?.id === at.id && !free(walker.tile)) setPlace(P, P.door ?? DOOR);   // a patch moved what stood there
+  }
   if (store === 'furniture' || store === '2f' || store === '3f') goPlace({ '2f': 'f2', '3f': 'f3' }[store] ?? 'f1', store === 'furniture' ? null : LIFT.foot);
   if (store === 'corner') goPlace('gc', null);
   if (store === 'outfitter') goPlace('so', null);
