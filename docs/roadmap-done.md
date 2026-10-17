@@ -2845,3 +2845,5 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   `tools/arcade-check.mjs` (no errors, ~60 fps); balance untested by a person. Branch `claude/peaceful-cori-1rx16c`, on `main` too.
 - (2026-10-17) An arcade cabinet's How to play no longer stretches across a wide browser: it wears the cabinet's dark
   sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
+- (2026-10-17) Leaving an arcade game mid-play (EXIT, Escape or RESTART) keeps its score as the Best and on the weekly
+  leaderboard (`bank()` in `js/arcade-kit.js`).

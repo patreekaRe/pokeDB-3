@@ -573,6 +573,9 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 Every Game Corner arcade game (the 18 on its floor) was rebuilt in one session, each still one `js/arcade-*.js` file on
 the kit, its world painted once a scale (`stamp()` or a cached canvas) so phones keep 60 fps, and a difficulty ramp with
 no plateau. Each file's header says what it now has; the gist:
+- **Leaving keeps the score** (the user's ask, 2026-10-17, "like a force quit but saving our score"): EXIT, Escape or
+  RESTART mid-game banks the score so far as the Best and posts it to the weekly leaderboard, as a game over would
+  (`bank()` in `js/arcade-kit.js`, every cabinet).
 - **Pokémon Pinball**: a real table (300x520): plunger lane with a swinging power gauge and a Skill Shot, P K M rollover
   lanes (flippers turn them, all three raise the bonus multiplier to 5x), Voltorb bumpers, slingshots, a spinner, two
   orbits, the Pika Ramp, Diglett drop targets that light CATCH, the saucer starting Catch mode (a wild Pokemon, hits on a
