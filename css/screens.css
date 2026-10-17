@@ -6193,3 +6193,16 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 .sl-row.done .sl-count { color: #6a4a00; }
 .safari-lock-dialog .sl-total-line { font-size: 0.75rem; color: #1f3a14; }
 @media (prefers-reduced-motion: reduce) { .sl-fill { transition: none; } }
+.sl-toast {
+  position: fixed; top: max(12px, env(safe-area-inset-top)); left: 50%; z-index: 1000; width: min(300px, calc(100vw - 32px));
+  transform: translateX(-50%); padding: 8px 10px 10px; border: 2px solid #1f3a14; border-radius: 10px; background: #c4dca0;
+  box-shadow: 0 0 0 3px var(--shell-rim, #8a1c1c), 0 4px 0 3px var(--shell-deep, #5a0e0e); color: #1f3a14; font: inherit; text-align: left;
+  cursor: pointer; animation: slToastIn 0.35s ease-out both;
+}
+.sl-toast .sl-kicker { display: block; margin-bottom: 6px; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; text-align: center; }
+.sl-toast .sl-fill { transition-duration: 0.9s; transition-delay: 0.3s; }
+.sl-toast.done .sl-fill { background: #c89a20; }
+.sl-toast.out { animation: slToastOut 0.4s ease-in both; }
+@keyframes slToastIn { from { transform: translate(-50%, -140%); } }
+@keyframes slToastOut { to { transform: translate(-50%, -140%); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sl-toast, .sl-toast.out { animation: none; } .sl-toast .sl-fill { transition: none; } }

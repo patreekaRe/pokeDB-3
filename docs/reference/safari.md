@@ -405,3 +405,7 @@ While the Safari Zone is shut, a tap on the title's gem, the Clearing's gate (`o
 Collection's 🔒 Safari app opens `#safari-lock-dialog` (`showSafariLock()`, `js/safarilock.js`): one bar per DEX_PAGES biome,
 Pokémon beaten / its entries (`safariUnlockPages()`), gold with ✓ Done once full, and the total. Walking up to the gate
 without tapping it still shows only its card line.
+In a run, a first win over one of the three biomes' Pokémon (`dexDefeated()` returns `safari`, passed on as
+`pendingCoins.safari`) slides `.sl-toast` (`safariStepToast()`) down over the reward screen as it tells the news: that
+biome's bar stepping up by one and the Safari total, gone after 4.5s, a tap opening the whole window. Never in a
+playtest, the Safari, the Sky Pillar or Mewtwo's sprint (none of those count), nor once the Safari is open.

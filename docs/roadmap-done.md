@@ -2966,4 +2966,5 @@ Then the TRAINER NETWORK welcome (first open, and a ? key) and the Plaza's 3D bo
 ### Safari Zone unlock tracker (2026-10-17, the user's ask)
 A tap on the locked Safari Zone (the title's gem, the Clearing's gate, the Collection's 🔒 app) opens `#safari-lock-dialog`
 (`js/safarilock.js`): a bar per biome of its Pokémon beaten (`safariUnlockPages()` in `js/data/pokedex.js`), gold once done,
-and the total. Branch `claude/safari-progress-tracker-6oy9oy`, also pushed to `main`.
+and the total. In a run, a first win over one of them slides a strip over the reward screen with that biome's bar
+stepping up (`safariStepToast()`). Branch `claude/safari-progress-tracker-6oy9oy`, also pushed to `main`.

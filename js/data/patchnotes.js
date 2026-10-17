@@ -45,7 +45,7 @@ export const NEXT_MAX = 20;
 export const NEXT = [
   ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
   ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
-  ['modes', 'Tap the locked Safari Zone to see a bar for each biome showing how many of its Pokémon you\'ve beaten.'],
+  ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

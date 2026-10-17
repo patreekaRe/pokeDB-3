@@ -2537,7 +2537,7 @@ function afterFight(node, result) {
   // Mewtwo's sprint through biomes 1-3 doesn't count for research: its boosted run would farm it (the user's call)
   const sprint = (isMewtwoRun(run.starter) && run.biome < finalBiome(run.starter)) || isSafari() || isTower();   // the Sky Pillar would farm it too
   const recounted = node.type === 'boss' && run.gymWon?.counted;   // back from Continue in the gym: its Pokédex research is already counted
-  const { lines: dexNews, complete: dexComplete, research } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeated(node.enemyId) : { lines: [], complete: false };
+  const { lines: dexNews, complete: dexComplete, research, safari: safariStep } = creditRoom(node) && !sprint && !peeking && !recounted ? dexDefeated(node.enemyId) : { lines: [], complete: false };
   if (dexComplete) run.dexComplete = true;   // the result window says so too
   // A finished Pokédex page can earn a legendary (Ho-Oh, Lugia, Palkia): say so in this fight's reward box.
   // The final boss leaves it to endRun(), whose result window lists every unlock.
@@ -2575,7 +2575,7 @@ function afterFight(node, result) {
   const foe = node.type === 'ken' ? KEN.name : ENEMY_DEFS[node.enemyId]?.name ?? 'The foe';
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
-    coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews,
+    coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
     beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${foe} was caught!` : null,
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a

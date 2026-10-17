@@ -3,6 +3,7 @@
 import { $, el, openDialog } from './ui.js';
 import { getSave } from './storage.js';
 import { playSound } from './audio.js';
+import { calmFx } from './prefs.js';
 import { safariUnlockPages } from './data/pokedex.js';
 
 export function showSafariLock() {
@@ -26,4 +27,29 @@ export function showSafariLock() {
   }));
   playSound('cancel');
   openDialog('safari-lock-dialog');
+}
+
+/** A first win over one of a biome's Pokémon, in a run (the user's ask, 2026-10-17): a strip slides down over the reward
+    screen with that biome's bar stepping up by one and the Safari Zone's total; a tap on it opens the whole window. */
+let toastTimer = 0;
+export function safariStepToast(biome) {
+  const pages = safariUnlockPages(getSave()), p = pages.find(x => x.biome === biome);
+  if (!p) return;
+  const n = pages.reduce((a, x) => a + x.n, 0), total = pages.reduce((a, x) => a + x.total, 0);
+  document.querySelector('.sl-toast')?.remove();
+  clearTimeout(toastTimer);
+  const toast = el('button', `sl-toast${p.n === p.total ? ' done' : ''}`);
+  toast.type = 'button';
+  const head = el('div', 'sl-head');
+  head.append(el('span', 'sl-name', p.name), el('span', 'sl-count', p.n === p.total ? '✓ Done' : `${p.n}/${p.total}`));
+  const bar = el('div', 'sl-bar'), fill = el('i', 'sl-fill');
+  fill.style.width = `${Math.round(((p.n - 1) / p.total) * 100)}%`;
+  bar.append(fill);
+  toast.append(el('span', 'sl-kicker', n === total ? 'Safari Zone open!' : `Safari Zone ${n}/${total}`), head, bar);
+  toast.setAttribute('aria-label', `Safari Zone: ${p.name} ${p.n} of ${p.total} beaten, ${n} of ${total} in all`);
+  toast.addEventListener('click', () => { toast.remove(); showSafariLock(); });
+  document.body.append(toast);
+  const step = () => { fill.style.width = `${Math.round((p.n / p.total) * 100)}%`; };
+  if (calmFx()) step(); else requestAnimationFrame(() => requestAnimationFrame(step));
+  toastTimer = setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 400); }, 4500);
 }

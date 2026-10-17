@@ -68,7 +68,8 @@ export function dexDefeated(id) {
   const name = ENEMY_DEFS[id].name;
   const lines = [];
   markDex('seen', id);
-  if (markDex('defeated', id)) lines.push(`${name}'s data was added to the Pokédex!`);
+  const fresh = markDex('defeated', id);
+  if (fresh) lines.push(`${name}'s data was added to the Pokédex!`);
 
   const goal = goalOf(id);
   const n = countDex(id);
@@ -87,6 +88,8 @@ export function dexDefeated(id) {
 
   const p = pageOf(id);
   const save = getSave();
+  // a first defeat on one of the three pages moves the Safari Zone's door a step: the reward screen shows its bar
+  const safari = fresh && DEX_PAGES.includes(p) && !save.safariPass ? p.biome : null;
   if (p === DEPTHS_PAGE && !save.dex.done.includes(p.biome) && pageDone(p, new Set(save.dex.defeated))) {
     updateSave(d => { d.dex.done.push(p.biome); });   // its prize, shiny Mewtwo, is a feat (checkFeats()), with its own window
     lines.push(`The ${p.name} page is complete! ${p.prize.icon} ${p.prize.name} unlocked!`);
@@ -110,7 +113,7 @@ export function dexDefeated(id) {
     lines.push(`Pokédex complete! Every entry's research is done. ${paid}`,`New on the map: the ${SCOPE.name}. ${SCOPE.text}`);
     complete = true;
   }
-  return { lines, complete, research };
+  return { lines, complete, research, safari };
 }
 
 /** How many entries' research is complete, of how many. */
