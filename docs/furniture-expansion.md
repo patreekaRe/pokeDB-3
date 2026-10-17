@@ -4,7 +4,7 @@ The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I 
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
 kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), session d's first five furniture
-series, 125 kinds (2,037 in all), session e's next five, 125 kinds (2,162 in all), session f's four, 100 kinds (2,262 in all), session g's four, 100 kinds (2,362 in all), session h's four, 100 kinds (2,462 in all), session i's five room types, 125 kinds (2,587 in all), session j's five, 125 kinds (2,712 in all), and session k's four, 100 kinds (2,812 in all).** No ceiling layer yet (the user's call).
+series, 125 kinds (2,037 in all), session e's next five, 125 kinds (2,162 in all), session f's four, 100 kinds (2,262 in all), session g's four, 100 kinds (2,362 in all), session h's four, 100 kinds (2,462 in all), session i's five room types, 125 kinds (2,587 in all), session j's five, 125 kinds (2,712 in all), session k's four, 100 kinds (2,812 in all), and session l's four, 100 kinds (2,912 in all): every room type is done.** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -67,7 +67,7 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 38. to 42. (done 2026-10-17) Hospital ward, Bistro kitchen, Bakery, Sushi bar, Ramen shop. 43. to 47. (done
 2026-10-17) Pizzeria, Corner shop (Poké Mart shelves, fridges, checkout), Laundromat, Salon (with Furfrou trims),
 Garage and workshop. 48. to 51. (done 2026-10-17) Craft and sewing room, Gamer room, Recording studio,
-Cinema. 52. Hotel lobby, 53. Ski lodge, 54. Haunted mansion, 55. Cruise cabin.
+Cinema. 52. to 55. (done 2026-10-17) Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin.
 
 ## Seasons and celebrations (done 2026-10-16: 13 kinds each, `js/data/holidays.js`)
 

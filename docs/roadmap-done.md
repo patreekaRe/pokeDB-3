@@ -2824,6 +2824,17 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   vocal booth, Loudred, Kricketune, Toxtricity; Lugia, Jirachi and Celebi film posters, a Ditto usher, a Smeargle director,
   a Pikachu popcorn bucket. The user got picture sheets.
 
+### Furniture expansion session l: Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin (2026-10-17)
+- The last four room types, 25 each: Hotel lobby (`htl`), Ski lodge (`skl`), Haunted mansion (`hnt`) and Cruise cabin
+  (`crz`): 100 kinds, 2,912 in all, one helper a set, all solo, session k's way. The whole catalogue (2,916 ids) went
+  through `tools/model-check.mjs` with no builder errors; every new kind within budget (the most 6,684 triangles, the 2x1
+  boot cubbies, and 8 draws); thin pieces match their paintings at 0.32 (the manor's Shuppet birdcage, its bars) to 0.99,
+  none sticking out. Left out what the base had (the log cabin's stove and antlers, the Spooky shelf's organ and window,
+  the Halloween coffin, the ship's wheel and porthole, `saunabench`). Pokémon touches: a lucky Meowth, a Pikachu bellhop, a
+  Persian, a Lugia painting; a Lapras Peak trail map, a Swinub snowmobile, Delibird, Cubchoo; Mismagius, Sableye, Shuppet,
+  Phantump and a Ghost family portrait (no Gengar: it has its own room); Wingull, Wailmer, Corsola, Tentacool. The user got
+  picture sheets.
+
 ### Furniture expansion session j: Pizzeria, Corner shop, Laundromat, Salon, Garage (2026-10-17)
 - The next five room types, 25 each: Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon (`sln`)
   and Garage and workshop (`grg`): 125 kinds, 2,712 in all, one helper a set, all solo, session i's `BUILT` way. The whole

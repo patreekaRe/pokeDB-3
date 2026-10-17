@@ -594,6 +594,11 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 - **Session k's room types** (2026-10-17): Craft and sewing room (`crf`), Gamer room (`gmr`), Recording studio (`rcs`) and
   Cinema (`cnm`), files `js/base-furniture-<craft|gamer|studio|cinema>.js` and `js/base-models-<same>.js`, built as session
   j's. Live screens (the gamer desk's middle monitor, its TV, the cinema's silver screen) set their own `screen` rect.
+- **Session l's room types** (2026-10-17), the last four: Hotel lobby (`htl`), Ski lodge (`skl`), Haunted mansion (`hnt`)
+  and Cruise cabin (`crz`), files `js/base-furniture-<hotel|skilodge|haunted|cruise>.js` and `js/base-models-<same>.js`,
+  built as session k's. The ski lodge's painter has a painted-only `tex: 'knit'` (sweater stitches, `kc` its band colour);
+  the cruise painter draws a `flat: true` ring as a thin band, as the model is seen front-on. The manor's secret bookcase
+  opens on a modelled passage (`inside: 'ghost'`); its bust's tap is `look`.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
