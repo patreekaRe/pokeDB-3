@@ -568,6 +568,11 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `flower` and `petal` (`flowerPts()`, shared by both files), Maple leaf's one leaf outline (`leafPts`, a `lie` leaf lies
   flat), Acorn's lathes lying over (`rot`) and painted-only cap cross-hatch (`tex`), Mushroom's squashed lathe (`sz`),
   half cylinder against the wall (`half`), side-facing disc (`ax: 'x'`) and gill cone (`gl`).
+- **Session g's series** (2026-10-17): Wooden block (`blk`), Throwback (`thb`), Ranch (`rnch`) and Iron garden (`igd`),
+  files `js/base-furniture-<block|throwback|ranch|irongarden>.js` and `js/base-models-<same>.js`, built as session f's
+  (`BUILT`). **Iron garden is outdoor**: every kind `outdoor: true`, `yard: 'Iron garden'`, so it stands only in the yard
+  and has its own tab at the end of `GARDEN_TABS` (`js/garden-shop.js`); no wall pieces (the yard has none), its rug a
+  mosaic paving. Its thin wrought iron matches the paintings at only 0.41 to 0.65 (the painting's outline doubles a rod).
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

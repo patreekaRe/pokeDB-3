@@ -27,7 +27,7 @@ export const IG = {
 };
 const GROUP = 'Iron garden';
 const TAU = Math.PI * 2;
-const IR = 0.75, IF = 0.5;
+const IR = 0.9, IF = 0.62;
 
 /* ---------- parts ---------- */
 const B = (x, h, z, w, hh, d, c, o) => ({ t: 'box', x, h, z, w, hh, d, c, r: 1, ...o });
@@ -70,7 +70,7 @@ function lyre(x, h, z, s, o = {}) {
 }
 /** Crossed square bars filling w x hh from (x0, h0) in the upright plane at z (along u, as curl()), step apart. */
 function lattice(x0, h0, w, hh, z, step, o = {}) {
-  const [ux, uz] = o.u ?? [1, 0], r = o.r ?? 0.42, c = o.c ?? IG.iron, out = [], P = (a, t) => [x0 + ux * a, h0 + t, z + uz * a];
+  const [ux, uz] = o.u ?? [1, 0], r = o.r ?? 0.5, c = o.c ?? IG.iron, out = [], P = (a, t) => [x0 + ux * a, h0 + t, z + uz * a];
   for (let k = -hh + step / 2; k < w; k += step) {
     const t0 = Math.max(0, -k), t1 = Math.min(hh, w - k);
     if (t1 - t0 < 0.8) continue;
@@ -315,7 +315,7 @@ function piece(id, name, w, h, price, parts, { doors = [], inside, ...rest } = {
 /** A sage cushion. */
 const cushion = (x, h, z, w, hh, d, c = IG.sage) => B(x, h, z, w, hh, d, c, { m: 'cloth', r: Math.min(1.4, hh / 2) });
 /** A front-plane arm scroll at x (sg 1 the left arm, -1 the right) rising from the seat at h to the arm at top. */
-const armCurl = (x, h, top, z, sg) => [bar([x, h, z], [x, top - 4.4, z], IR), ...curl([x - sg * 1.2, top - 2.2, z], 2.3, 0.5, -Math.PI / 2, -Math.PI / 2 - 1.7 * Math.PI, { u: [sg, 0], r: IR, n: 8 })];
+const armCurl = (x, h, top, z, sg) => [bar([x, h, z], [x - sg * 1.2, top - 4.5, z], IR), ...curl([x - sg * 1.2, top - 2.2, z], 2.3, 0.5, -Math.PI / 2, -Math.PI / 2 - 1.7 * Math.PI, { u: [sg, 0], r: IR, n: 8 })];
 /** A lamp or clock post's foot: a stepped base and four curled feet. */
 const postFoot = (x) => [
   LA(x, 0, 0, [[5.6, 0], [5.6, 1.4], [4, 2.6], [2.6, 4.6], [1.8, 7]], IG.iron, { m: 'gloss', seg: 8, ry: Math.PI / 8 }),
@@ -710,7 +710,7 @@ export const IRONGARDEN_KINDS = [
       const x0 = i ? 32 : 5, x1 = i ? 59 : 32, cx = (x0 + x1) / 2, outer = i ? x1 : x0, top = (x) => 42 + 6 * ((x - outer) / (32 - outer)) ** 2;
       const pk = Array.from({ length: 5 }, (_, j) => x0 + 4.5 + j * 4.5);
       return { hinge: [i ? 59 : 5, 0], side: i ? -1 : 1, parts: [
-        fb(x0 + 0.8, 23, 0, 1.6, 42, 1.2), fb(x1 - 0.8, 24.6, 0, 1.6, 45, 1.2),
+        fb(outer + (i ? -0.8 : 0.8), 23, 0, 1.6, 42, 1.2), fb(i ? x0 + 0.8 : x1 - 0.8, 24.6, 0, 1.6, 45, 1.2),
         fb(cx, 3, 0, 27, 1.4, 1), fb(cx, 18, 0, 27, 1.4, 1),
         ...line(Array.from({ length: 7 }, (_, j) => { const x = x0 + (x1 - x0) * j / 6; return [x, top(x), 0]; }), IR),
         ...pk.flatMap(x => [bar([x, 18, 0], [x, top(x) + 2.2, 0], 0.5, IG.iron, { seg: 4 }), LA(x, top(x) + 2.2, 0, [[0.8, 0], [1.2, 0.7], [0, 2.8]], IG.iron, { m: 'gloss', seg: 4 })]),

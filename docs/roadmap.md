@@ -27,8 +27,8 @@ hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as
 rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, five more Pokémon sets (2026-10-17, 127
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
-125 kinds, 2,162 in all), and session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all;
-all six in `docs/roadmap-done.md`).
+125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), and session g,
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all; all seven in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -36,7 +36,9 @@ Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furnit
 (`?mall=furniture&stock=dnrjukebox,dnrbooth,cutebed,elgspinet,merbed,merfountain`; the Golden set is never sold:
 `?base&allfurniture` lends it, and its pieces say "Earn N achievements" in the base's Shop), and of session f's
 (`?mall=furniture&stock=blsmbed,blsmarch,mplbed,mplscreen,acrnwardrobe,acrnstash,shrmbed,shrmshiinotic`; Maple leaf is on the
-stands this October by itself, Cherry blossom with `?holiday=sakura`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+stands this October by itself, Cherry blossom with `?holiday=sakura`), and of session g's
+(`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
+or Smeargle's catalogue's Iron garden tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -47,20 +49,21 @@ at once hit it on 2026-10-16; five is safer.
 - **e. Done 2026-10-17, on `main`**: the Diner, Cute, Elegant, Golden and Mermaid series (`docs/roadmap-done.md`).
 - **f. Done 2026-10-17, on `main`**: Cherry blossom and Maple leaf (sold only in April / October), Acorn and Mushroom
   (`docs/roadmap-done.md`).
-- **g to h. The other 8 furniture series**, 4 a session in the list's order (Wooden block, Throwback, Ranch, Iron
-  garden next).
+- **g. Done 2026-10-17, on `main`**: Wooden block, Throwback, Ranch and Iron garden (outdoor, its own tab in Smeargle's
+  catalogue) (`docs/roadmap-done.md`).
+- **h. The last 4 furniture series**: Bamboo, Stone zen, Constellations, Desert caravan.
 - **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session g):
+Next session's prompt (session h):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session g: the next four furniture series in the list's order
-> (Wooden block, Throwback, Ranch, Iron garden; 25 each), one helper a set (four at once), then check every kind with
-> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Iron garden is for the yard or a
-> conservatory: decide whether it is `outdoor` (Smeargle's garden catalogue, a `yard` tab) or sold indoors, after
-> reading docs/reference/hub-base-mall.md on the yard sets.
+> "Building a set" section is the helpers' brief). Build session h: the last four furniture series (Bamboo, Stone zen,
+> Constellations, Desert caravan; 25 each), one helper a set (four at once), then check every kind with
+> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Stone zen could be outdoor like
+> session g's Iron garden (a `yard` tab of its own in Smeargle's garden catalogue): decide after reading
+> docs/reference/hub-base-mall.md on the yard sets.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.

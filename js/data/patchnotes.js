@@ -44,6 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
+  ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
   ['fixes', 'Driftwood Landing runs lighter: each building draws in a few pieces, not dozens.'],
 ];
 

@@ -2814,6 +2814,14 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session g: Wooden block, Throwback, Ranch, Iron garden (2026-10-17)
+- Wooden block (`blk`), Throwback (`thb`), Ranch (`rnch`) and Iron garden (`igd`), 25 each: 100 kinds, 2,362 in all, one
+  helper a set, all solo, session f's `BUILT` way. Every kind within budget (none over 5,624 triangles, the gazebo, or 8
+  draws, the glass plant cabinet); thin pieces match their paintings at 0.36 (the glow-star wall) to 0.66, none sticking out.
+- **Iron garden is outdoor** (the user's call): the yard only, on its own "Iron garden" tab of Smeargle's garden catalogue.
+  Pokémon touches: Ditto, Psyduck, Ponyta; Pikachu, Porygon, Dedenne, Togepi; Tauros, Miltank, Mudbray, Meowth; Pidgey,
+  Comfey, Roselia, Natu, Butterfree. The user got picture sheets.
+
 ### Furniture expansion session f: Cherry blossom, Maple leaf, Acorn, Mushroom (2026-10-17)
 - Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`), 25 each: 100 kinds, 2,262 in all, one
   helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over 6,592 triangles, the blossom bed,

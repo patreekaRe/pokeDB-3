@@ -88,7 +88,7 @@ function buildIg(K, L, parts, put, W, def) {
       case 'rod': {
         // thin iron: an open tube of few sides (its ends meet the next rod, a post or the floor)
         const a = new THREE.Vector3(X(q.a[0]), u(q.a[1]), u(q.a[2])), b = new THREE.Vector3(X(q.b[0]), u(q.b[1]), u(q.b[2]));
-        const g = L.cyl(u(q.r), a.distanceTo(b), u(q.r), q.seg ?? (q.r >= 1.1 ? 8 : q.r >= 0.6 ? 6 : 4), q.r < 1);
+        const g = L.cyl(u(q.r), a.distanceTo(b), u(q.r), q.seg ?? (q.r >= 1.1 ? 8 : q.r >= 0.8 ? 6 : 4), q.r < 1);
         g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
         put(g, m, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
         break;
