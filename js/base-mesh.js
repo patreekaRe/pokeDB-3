@@ -54,6 +54,12 @@ import { MAKES as MAKES_X } from './base-models-x.js';
 import { MAKES as MAKES_Z } from './base-models-z.js';
 import { MAKES as MAKES_Y2 } from './base-models-y2.js';
 import { MAKES as MAKES_GOLD } from './base-models-gold.js';
+import { MAKES as MAKES_PIKACHU } from './base-models-pikachu.js';
+import { MAKES as MAKES_EEVEE } from './base-models-eevee.js';
+import { MAKES as MAKES_SNORLAX } from './base-models-snorlax.js';
+import { MAKES as MAKES_JIGGLYPUFF } from './base-models-jigglypuff.js';
+import { MAKES as MAKES_GENGAR } from './base-models-gengar.js';
+import { MAKES as MAKES_LAPRAS } from './base-models-lapras.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1867,7 +1873,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }

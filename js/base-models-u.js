@@ -197,6 +197,7 @@ export const SHAPES = {
   acornbasket: { make: 'acornbasket' },
   holidaytree: { make: 'holidaytree', play: { does: 'light' } },
   giftpile: { make: 'giftpile', play: { does: 'treasure' } },
+  gift: { make: 'present' },
   holidayexpress: { make: 'holidayexpress', play: { does: 'steam' } },
   stockinggarland: { make: 'stockinggarland', play: { does: 'light' } },
   delibirdsack: { make: 'delibirdsack', play: { does: 'treasure' } },
@@ -224,6 +225,18 @@ export const SHAPES = {
 };
 
 export const MAKES = {
+  // a new room's present (js/base-3d.js wobbles and opens it): its painting's red box under a wider lid, a gold ribbon
+  // down the front and over the top, a belt round its middle and a bow
+  present(K, s, W, D, L) {
+    const box = K.gloss('#d84848'), lid = K.gloss('#e85858'), rib = K.gloss('#f8d030');
+    K.put(L.rbox(u(26), u(25), u(26), 0.01), box, 0, u(12.5), 0);
+    K.put(L.rbox(u(30), u(7), u(30), 0.012), lid, 0, u(28.5), 0);
+    K.put(L.rbox(u(4), u(25.2), u(26.4), 0.003), rib, 0, u(12.6), 0);
+    K.put(L.rbox(u(26.4), u(4), u(26.4), 0.003), rib, 0, u(14), 0);
+    K.put(L.rbox(u(4), u(7.3), u(30.4), 0.003), rib, 0, u(28.6), 0);
+    K.put(L.rbox(u(30.4), u(7.3), u(4), 0.003), rib, 0, u(28.6), 0);
+    bow(K, L, rib, 0, u(36.5), 0, u(13), 0, 0);
+  },
   /* ---------- Harvest ---------- */
 
   /** A side table, its runner across it, a wicker horn of plenty spilling fruit. */
