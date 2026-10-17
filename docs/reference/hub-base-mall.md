@@ -525,6 +525,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   prefixes `pika` / `eevee` / `lax` / `puff` / `geng` / `lapr`. Sold in the daily stock like any kind. Snorlax and Lapras
   draw painting and model from one part list (`BUILT`, builders `laxparts` / `laprparts`); the others share their
   shapes' numbers between the two files. Taps use only existing `PLAY` entries.
+- **Session b's sets** (2026-10-17): the Poké Ball collection (27, `group: 'Poké Balls'`, prefix `pb`: one shared
+  `paintBall()` / `buildBall()` over `BALLS`, each type's markings a data line), Museum (`mus`), Contest Hall (`con`),
+  Pokémon League (`lg`) and Rocket hideout (`rkt`), 25 each, files `js/base-furniture-<balls|museum|contest|league|rocket>.js`
+  and `js/base-models-<same>.js`, wired last. All solo, all Snorlax's way (one `BUILT` part list a kind, builders
+  `pbparts` / `musparts` / `conparts` / `lgparts` / `rktparts`, plus a rug builder each). The museum's dig site is a rug
+  with bumps up to 0.18 tiles. `tools/model-sheet.mjs` can't draw a shapeless rug (`royalcarpet`, `concarpet`,
+  `lgredcarpet`: the room lays them as a flat slab).
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

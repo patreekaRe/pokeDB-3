@@ -351,7 +351,7 @@ export const LEAGUE_KINDS = [
     BX(16, 40, -10.5, 26, 44, 5, LG.ice, { r: 2.5 }),
     SH(16, 41, -7.6, star(6, 8, 2.4), 0.8, WHITE),
     CN(16, 60, -10.5, 5.5, 26, LG.frost), CN(8, 58, -10.5, 4, 16, LG.ice, { tilt: -0.3 }), CN(24, 58, -10.5, 4, 16, LG.ice, { tilt: 0.3 }),
-    CN(4.5, 50, -10.5, 3, 11, LG.frost, { tilt: -0.6 }), CN(27.5, 50, -10.5, 3, 11, LG.frost, { tilt: 0.6 }),
+    CN(6, 50, -10.5, 3, 11, LG.frost, { tilt: -0.4 }), CN(26, 50, -10.5, 3, 11, LG.frost, { tilt: 0.4 }),
     ...[3.5, 28.5].flatMap((x, i) => [BX(x, 21, -1, 4, 5, 20, LG.ice), BX(x, 24.5, -1, 5, 3, 22, LG.frost),
       CN(x, 26, 8, 2.2, 8, LG.ice, { tilt: i ? 0.15 : -0.15 })]),
   ]),

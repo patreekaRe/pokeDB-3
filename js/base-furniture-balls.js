@@ -343,7 +343,7 @@ const TICKS = (cx, ch, r) => FN(20, (g, X, Y) => {
 const LABEL = (s, x, h, size, c) => FN(30, (g, X, Y) => { g.font = `bold ${size}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = c; g.fillText(s, X(x), Y(h)); });
 
 const HEART_OUT = heartPts(28), HEART_IN = heartPts(17).map(([x, y]) => [x, y + 1.2]);
-const HEX = ngon(6, 15), HEX_IN = ngon(6, 11.2), HEX_GLOW = ngon(6, 10.4);
+const HEX = ngon(6, 15), HEX_IN = ngon(6, 11.2), HEX_GLOW = ngon(6, 9.8);
 const ANVIL = [[-9, 8], [9, 8], [9, 10], [5, 13], [5, 16], [12, 17], [13, 22], [-6, 22], [-14, 20.5], [-7, 17.5], [-5, 16], [-5, 13], [-9, 10]].map(([x, y]) => [x, y - 15]);
 const QBOLT = [[2, 3], [6.5, 3], [4.2, 10], [9.5, 10], [3.4, 24], [-3.4, 24], [0.6, 15], [-3.8, 15]].map(([x, y]) => [x, y - 13.5]);
 const WEED = (s) => [[0, 0], [2, 0], [3.5 * s, 5], [1.5 * s + 1, 10], [3 * s + 1, 15], [1.2, 18], [0.4 * s, 15], [-1 * s, 10], [1 * s, 5]];
@@ -423,19 +423,19 @@ export const BALL_KINDS = [
 
   // the Heal Ball on a little pink table's tray, like a Pokémon Center's
   piece('pbheal', 'Heal Ball healing tray', 1, 1, 450, [
-    LA(0, 0, 0, [[9, 0], [9, 1.6], [3.2, 3.2], [2.4, 4], [2.4, 18], [0, 18]], '#f4a8c8'),
-    CY(0, 19, 0, 13, 2, '#f8c8dc'),
-    BX(0, 21.1, 0, 22, 2.2, 15, '#f2f2f6', { r: 1 }),
-    BX(0, 21.1, 7.7, 6, 1.4, 0.4, '#e85a98', { r: 0.3 }), BX(0, 21.1, 7.7, 1.4, 1.4, 0.4, '#e85a98', { r: 0.3, k: 0.1 }),
-    TR(0, 22.6, 0, 4.4, 0.9, '#e85a98'),
-    BL(0, 30, 0, 7.6, 'heal'),
+    LA(0, 0, 0, [[9.5, 0], [9.5, 2], [5.4, 3.6], [4.2, 4.6], [4.2, 17.4], [0, 17.4]], '#f4a8c8'),
+    CY(0, 19, 0, 13, 3.2, '#f8c8dc'),
+    BX(0, 22, 0, 22, 3, 15, '#f2f2f6', { r: 1 }),
+    BX(0, 22, 7.7, 6, 1.4, 0.4, '#e85a98', { r: 0.3 }), BX(0, 22, 7.7, 1.4, 1.4, 0.4, '#e85a98', { r: 0.3, k: 0.1 }),
+    TR(0, 24, 0, 4.4, 0.9, '#e85a98'),
+    BL(0, 31.4, 0, 7.6, 'heal'),
   ], { play: 'heal' }),
 
   // the Net Ball caught in a teal net bag, hung from a wooden frame
   piece('pbnet', 'Net Ball hanging net', 1, 1, 500, [
     ...[-1, 1].map(s => BX(s * 12.5, 1, 0, 4, 2, 16, DARKWOOD, { m: 'wood' })),
-    ...[-1, 1].map(s => CY(s * 12.5, 26, 0, 1.4, 50, '#8a6a42', { m: 'wood' })),
-    SK([-13.6, 50.4, 0], [13.6, 50.4, 0], 1.4, '#8a6a42', { m: 'wood' }),
+    ...[-1, 1].map(s => CY(s * 12.5, 26, 0, 1.8, 50, '#8a6a42', { m: 'wood' })),
+    SK([-13.6, 50.4, 0], [13.6, 50.4, 0], 1.8, '#8a6a42', { m: 'wood' }),
     SK([0, 49.2, 0], [0, 42.4, 0], 0.45, '#d8c8a0', { m: 'plain' }),
     BL(0, 31.5, 0, 8, 'net'),
     ...netBag(31.5, 8, 42.4, '#2a9aa8'),
@@ -526,9 +526,9 @@ export const BALL_KINDS = [
   // the Lure Ball cradled on a fishing-rod rack, two rods leaning on its rail and a bobber hung from it
   piece('pblure', 'Lure Ball rod rack', 2, 1, 900, [
     BX(0, 2, 0, 60, 4, 20, '#8a6036', { m: 'wood' }),
-    BX(-24, 22, -6, 3, 36, 3, '#8a6036', { m: 'wood' }), BX(24, 22, -6, 3, 36, 3, '#8a6036', { m: 'wood' }),
+    BX(-24, 22, -6, 3.8, 36, 3.8, '#8a6036', { m: 'wood' }), BX(24, 22, -6, 3.8, 36, 3.8, '#8a6036', { m: 'wood' }),
     BX(0, 39, -6, 51, 3, 3.4, '#8a6036', { m: 'wood' }),
-    SK([-22, 4.6, 4], [-11, 60, -12], 0.8, '#3a3a44'), SK([22, 4.6, 4], [11, 60, -12], 0.8, '#3a3a44'),
+    SK([-22, 4.6, 4], [-11, 60, -12], 1, '#3a3a44'), SK([22, 4.6, 4], [11, 60, -12], 1, '#3a3a44'),
     ...[-1, 1].map(s => CY(s * 20.4, 13, 2.4, 2.4, 2, '#c8ccd8', { m: 'metal' })),
     ...[-1, 1].map(s => SK([s * 22.4, 4.4, 4.2], [s * 21.4, 9.6, 3.8], 1.3, '#d8b050', { m: 'cloth' })),
     SK([12, 37.4, -6], [12, 30.4, -6], 0.3, '#e8e8e8', { m: 'plain' }),
@@ -541,10 +541,10 @@ export const BALL_KINDS = [
   // the Moon Ball in a glowing crescent's cradle, a star on a wire beside it
   piece('pbmoon', 'Moon Ball crescent stand', 1, 1, 700, [
     CY(0, 1.5, 0, 10, 3, '#2a3060'),
-    CY(0, 6.5, 0, 2, 7.4, '#2a3060'),
+    CY(0, 6.5, 0, 2.8, 7.4, '#2a3060'),
     SB(0, 22.4, 0, MOON.pts, 4, '#f8e070', { m: 'glow' }),
     BL(0, 22.4 + MOON.bottom + 8, 0, 8, 'moon'),
-    SK([9, 3, -5], [11.4, 37, -5], 0.35, '#c8c8d0', { m: 'metal' }),
+    SK([9, 3, -5], [11.4, 37, -5], 0.5, '#c8c8d0', { m: 'metal' }),
     SB(11.4, 38.5, -5, star(3.4), 1.4, '#f8e070', { m: 'glow' }),
   ], { glow: ['#f8e070'], play: 'light' }),
 
@@ -560,7 +560,7 @@ export const BALL_KINDS = [
   // the Love Ball held in a pink heart
   piece('pblove', 'Love Ball heart stand', 1, 1, 550, [
     CY(0, 1.5, 0, 10, 3, '#f8c0d8'),
-    CY(0, 8.2, 0, 2, 11, '#f8c0d8'),
+    CY(0, 8.2, 0, 2.6, 11, '#f8c0d8'),
     SB(0, 25.4, 0, HEART_OUT, 4, '#f05890', { holes: [HEART_IN] }),
     BL(0, 25, 0, 6.6, 'love'),
   ], { play: 'ball' }),
@@ -586,21 +586,21 @@ export const BALL_KINDS = [
   piece('pbsport', 'Sport Ball bug net', 1, 1, 500, [
     CY(0, 1.5, 0, 9, 3, '#5a8a3a'),
     CY(0, 4.2, 0, 2.6, 2.4, '#4a7a2e'),
-    SK([0, 4, 0], [0, 40.6, 0], 1, '#c89a60', { m: 'wood' }),
+    SK([0, 4, 0], [0, 40.6, 0], 1.4, '#c89a60', { m: 'wood' }),
     EL(0, 48, -6.2, 8, 8, 7, '#f4f4f4', { m: 'glass', tint: '#f0f4f0' }),
     BL(0, 47, -2.4, 6.4, 'sport'),
-    TR(0, 48, 0, 8, 0.8, CHROME, { m: 'metal', axis: 'z' }),
+    TR(0, 48, 0, 8, 1, CHROME, { m: 'metal', axis: 'z' }),
   ], { play: 'ball' }),
 
   // the Park Ball lit in a lantern on a little park lamppost, grass and flowers at its foot
   piece('pbpark', 'Park Ball lamppost', 1, 1, 750, [
     CY(0, 1, 0, 13, 2, '#6ab04a', { m: 'plain' }),
     ...[[-8, 6, '#f8f0f0'], [7, 7, '#f8d030'], [-3, 10, '#e85a8a'], [9, -5, '#f8f0f0']].map(([x, z, c]) => EL(x, 2.8, z, 1.4, 1, 1.4, c, { m: 'plain' })),
-    LA(0, 2, 0, [[4, 0], [4, 2], [2.5, 4], [1.6, 6], [1.4, 44], [2.5, 46], [0, 46]], '#2a5a3a', { m: 'metal' }),
+    LA(0, 2, 0, [[4, 0], [4, 2], [2.5, 4], [2.2, 6], [2, 44], [3, 46], [0, 46]], '#2a5a3a', { m: 'metal' }),
     LA(0, 48, 0, [[2.5, 0], [7.5, 2.4], [0, 2.4]], '#2a5a3a', { m: 'metal' }),
     TR(0, 50.4, 0, 4.6, 0.8, '#fff0b0', { m: 'glow' }),
     BL(0, 57.6, 0, 6.8, 'park'),
-    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => SK([sx * 5.4, 50, sz * 5.4], [sx * 5.4, 65, sz * 5.4], 0.45, '#2a5a3a', { m: 'metal' })),
+    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => SK([sx * 5.4, 50, sz * 5.4], [sx * 5.4, 65, sz * 5.4], 0.6, '#2a5a3a', { m: 'metal' })),
     LA(0, 65, 0, [[8.6, 0], [6, 2.6], [2, 4.6], [0, 5.4]], '#2a5a3a', { m: 'metal' }),
     EL(0, 71.4, 0, 1.4, 1.4, 1.4, '#2a5a3a', { m: 'metal' }),
   ], { glow: ['#fff0b0'], play: 'light' }),
@@ -616,7 +616,7 @@ export const BALL_KINDS = [
   // the Beast Ball floating in an Ultra Beast's hexagon gate, its inner edge lit
   piece('pbbeast', 'Beast Ball hex frame', 1, 1, 900, [
     CY(0, 2, 0, 11, 4, '#1e2450', { seg: 6 }),
-    CY(0, 9.6, 0, 1.6, 11.2, '#2a3a8a'),
+    CY(0, 9.6, 0, 2.2, 11.2, '#2a3a8a'),
     SB(0, 30, 0, HEX, 3.2, '#2a3a8a', { holes: [HEX_IN] }),
     SB(0, 30, 0, HEX_IN, 3.8, '#58e0f8', { m: 'glow', holes: [HEX_GLOW] }),
     BL(0, 30, 0, 7.4, 'beast'),

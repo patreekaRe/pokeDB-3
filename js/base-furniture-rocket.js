@@ -460,8 +460,8 @@ export const ROCKET_KINDS = [
       g.fillStyle = '#f0c8a0'; g.beginPath(); g.arc(x + w / 2, y + 13.5, 3.6, 0, TAU); g.fill();
       g.fillStyle = RK.black; g.beginPath(); g.arc(x + w / 2, y + 12, 3.9, Math.PI, TAU); g.fill(); g.fillRect(x + w / 2 - 4.5, y + 11.6, 9, 1);
       fillR(g, x + w / 2, y + 19.2, 3.2, RK.red);
-      font(g, 3); g.fillStyle = RK.black; g.fillText('ROCKET GRUNT', x + w / 2, y + 25.5);
-      font(g, 3.4); g.fillStyle = RK.deep; g.fillText('REWARD ₽5000', x + w / 2, y + 29.6);
+      font(g, 3); g.fillStyle = RK.black; g.fillText('ROCKET GRUNT', x + w / 2, y + 25.5, w - 2);
+      font(g, 3.4); g.fillStyle = RK.deep; g.fillText('REWARD ₽5000', x + w / 2, y + 29.6, w - 2);
     }),
     S(5, 71, 1.4, 1, 1, 0.8, RK.red), S(27, 71, 1.4, 1, 1, 0.8, RK.red),
   ]),
@@ -521,7 +521,7 @@ export const ROCKET_KINDS = [
   piece('rktvending', 'Rocket vending machine', 1, 1, 650, 'gloss', [
     B(16, 34, -1, 28, 68, 26, RK.red, { r: 2 }),
     B(16, 64, 12.2, 26, 7, 0.6, RK.black, { r: 0.4 }),
-    PC(16, 64, 12.55, 24, 5.6, (g, x, y, w, h) => { g.fillStyle = RK.black; g.fillRect(x, y, w, h); font(g, 3.6); g.fillStyle = '#ffffff'; g.fillText('ROCKET COLA', x + w / 2, y + h / 2 + 0.2); }, { lit: 0.6 }),
+    PC(16, 64, 12.55, 24, 5.6, (g, x, y, w, h) => { g.fillStyle = RK.black; g.fillRect(x, y, w, h); font(g, 3.6); g.fillStyle = '#ffffff'; g.fillText('ROCKET COLA', x + w / 2, y + h / 2 + 0.2, w - 1.5); }, { lit: 0.6 }),
     B(12, 41, 12.2, 19, 36, 0.6, RK.black, { r: 0.4 }),
     PC(12, 41, 12.55, 17.5, 34.5, (g, x, y, w, h) => {
       g.fillStyle = '#e8f4fa'; g.fillRect(x, y, w, h);

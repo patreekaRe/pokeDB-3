@@ -3,7 +3,7 @@
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
-kinds (1,645 in all).** No ceiling layer yet (the user's call).
+kinds (1,645 in all), and session b's five Pokémon sets, 127 kinds (1,772 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -51,11 +51,11 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 
 23. (done 2026-10-17) Pikachu room, 24. Eevee room, 25. Snorlax room, 26. Jigglypuff room, 27. Gengar room, 28. Lapras room: every piece
   shaped after the Pokémon, like Pokémon Center merch.
-29. Poké Ball collection: a display of each ball type (about 27).
-30. Fossils and museum: Kabutops, Aerodactyl and Tyrantrum skeletons, amber, a dig site, museum ropes and plaques.
-31. Contest Hall: a stage, curtains, spotlights, ribbon cases, judges' desk.
-32. Pokémon League: the Champion's room, the Elite Four's thrones, the Hall of Fame machine.
-33. Team Rocket hideout: the big R, monitors, a slot-machine switch, a Meowth balloon.
+29. (done 2026-10-17) Poké Ball collection: a display of each ball type (about 27).
+30. (done 2026-10-17) Fossils and museum: Kabutops, Aerodactyl and Tyrantrum skeletons, amber, a dig site, museum ropes and plaques.
+31. (done 2026-10-17) Contest Hall: a stage, curtains, spotlights, ribbon cases, judges' desk.
+32. (done 2026-10-17) Pokémon League: the Champion's room, the Elite Four's thrones, the Hall of Fame machine.
+33. (done 2026-10-17) Team Rocket hideout: the big R, monitors, a slot-machine switch, a Meowth balloon.
 34. Day Care: egg baskets, cribs, a play pen, a feeding station.
 35. Partner care: food bowls, Poké Puff stand, grooming table, beds sized for each partner.
 36. Figurines: small figures of each starter and legendary, to stand on tables (about 30).

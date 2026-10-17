@@ -278,7 +278,7 @@ export const CONTEST_KINDS = [
 
   // a spotlight on a tripod, its gold-rimmed lens lit
   piece('conspotlight', 'Contest spotlight', 1, 1, 450, 'gloss', [
-    ...[[4, 0, 9], [28, 0, 9], [16, 0, -13]].map(f => ST([16, 38, 0], f, 1.3, C.black, { m: 'metal' })),
+    ...[[4, 0.7, 9], [28, 0.7, 9], [16, 0.7, -13]].map(f => ST([16, 38, 0], f, 1.3, C.black, { m: 'metal' })),
     B(16, 38, 0, 2.4, 2.4, 2.4, C.black),
     CY(16, 48, 0, 1.6, 20, C.silver, { m: 'metal' }),
     BX(16, 58, 0, 25, 2, 2, C.black, { r: 0.6 }), BX(4.5, 64, 0, 2, 12, 2, C.black, { r: 0.6 }), BX(27.5, 64, 0, 2, 12, 2, C.black, { r: 0.6 }),

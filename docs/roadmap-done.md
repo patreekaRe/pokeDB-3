@@ -2789,6 +2789,13 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   notes) match their paintings at 0.48 to 0.74, the rest 0.75 or better. The Present has a hand-built model, so no kind
   is carved any more. The user got picture sheets of all six. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session b: five more Pokémon sets (2026-10-17)
+- The Poké Ball collection (27, a themed display for each ball type), Museum (Kabutops, Aerodactyl and Tyrantrum
+  skeletons, Old Amber, a dig site), Contest Hall, Pokémon League (the Champion's seat, the Elite Four's thrones, the
+  Hall of Fame machine) and Rocket hideout (the R, the switch machine, the Meowth balloon): 127 kinds, 1,772 in all, one
+  helper a set. None over 6,524 triangles or 7 draws; thin pieces (skeletons, poles, nets) match their paintings at 0.50
+  to 0.74, the rest 0.75 or better. The user got picture sheets of all five. Detail: `docs/reference/hub-base-mall.md`.
+
 ## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
 - The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
   (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall
