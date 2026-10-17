@@ -3,7 +3,7 @@
 //   echo '{"emulators":{"firestore":{"port":8089,"host":"127.0.0.1"}}}' > firebase.json
 //   cp <repo>/tools/trainers-rules.mjs . && RULES=<repo>/firestore.rules npx firebase emulators:exec --only firestore --project demo-trainers "node trainers-rules.mjs"
 import { initializeTestEnvironment, assertFails, assertSucceeds } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, serverTimestamp, collection, getDocs, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, getDocs, deleteDoc, query, where, orderBy, limit } from 'firebase/firestore';
 import { readFileSync } from 'node:fs';
 const env = await initializeTestEnvironment({ projectId: 'demo-trainers', firestore: { rules: readFileSync(process.env.RULES || new URL('../firestore.rules', import.meta.url), 'utf8'), host: '127.0.0.1', port: 8089 } });
 const A = env.authenticatedContext('uidA').firestore(), B = env.authenticatedContext('uidB').firestore(), anon = env.unauthenticatedContext().firestore();
@@ -47,6 +47,39 @@ await no(getDocs(collection(B, 'trainers')), 'pages can\'t be listed');
 await no(deleteDoc(doc(B, 'trainers/uidA')), 'B can\'t delete A\'s page');
 await ok(deleteDoc(doc(B, 'trainers/uidB')), 'B can delete their own');
 await no(getDoc(doc(B, 'saves/uidA')), 'saves stay private');
+
+const blurb = { name: 'ASH', buddy: 'starter:squirtle', partner: 'starter:charmander:2', tier: 'gold', badges: 3, wins: 7 };
+await ok(setDoc(doc(A, 'plaza/uidA'), { ...blurb, at: serverTimestamp() }), 'A stands in the Plaza');
+await no(setDoc(doc(B, 'plaza/uidA'), { ...blurb, at: serverTimestamp() }), 'B can\'t stand A there');
+await no(setDoc(doc(B, 'plaza/uidB'), { ...blurb, base: 'x', at: serverTimestamp() }), 'a Plaza entry takes nothing extra');
+await no(setDoc(doc(B, 'plaza/uidB'), { ...blurb, tier: 'mauve', at: serverTimestamp() }), 'a bad tier is refused');
+await no(setDoc(doc(B, 'plaza/uidB'), { ...blurb, at: new Date(0) }), 'a made-up time is refused');
+await ok(setDoc(doc(B, 'plaza/uidB'), { ...blurb, name: 'MISTY', at: serverTimestamp() }), 'B stands in the Plaza');
+await ok(getDocs(query(collection(B, 'plaza'), orderBy('at', 'desc'), limit(31))), 'B lists the Plaza, newest first');
+await no(getDocs(collection(anon, 'plaza')), 'signed out can\'t list it');
+await no(deleteDoc(doc(B, 'plaza/uidA')), 'B can\'t take A down');
+await ok(deleteDoc(doc(B, 'plaza/uidB')), 'B hides');
+
+const add = (from, to, extra = {}) => ({ from, to, ...blurb, seen: false, at: serverTimestamp(), ...extra });
+await ok(setDoc(doc(B, 'adds/uidA_uidB'), add('uidB', 'uidA')), 'B leaves A a note');
+await ok(setDoc(doc(B, 'adds/uidA_uidB'), add('uidB', 'uidA')), 'B re-adding raises it again');
+await no(setDoc(doc(B, 'adds/uidC_uidA'), add('uidA', 'uidC')), 'B can\'t leave one as A');
+await no(setDoc(doc(B, 'adds/uidX_uidB'), add('uidB', 'uidA')), 'the id must be to_from');
+await no(setDoc(doc(B, 'adds/uidB_uidB'), add('uidB', 'uidB')), 'not to yourself');
+await no(setDoc(doc(B, 'adds/uidC_uidB'), add('uidB', 'uidC', { seen: true })), 'a note starts unseen');
+await no(setDoc(doc(B, 'adds/uidC_uidB'), add('uidB', 'uidC', { extra: 1 })), 'a note takes nothing extra');
+await ok(getDocs(query(collection(A, 'adds'), where('to', '==', 'uidA'))), 'A lists the notes left for them');
+await ok(getDoc(doc(A, 'adds/uidA_uidB')), 'A reads one');
+await no(getDocs(collection(A, 'adds')), 'A can\'t list everyone\'s notes');
+await no(getDocs(query(collection(B, 'adds'), where('to', '==', 'uidA'))), 'B can\'t list A\'s notes');
+await no(getDoc(doc(B, 'adds/uidA_uidB')), 'B can\'t even read the one they left');
+await no(updateDoc(doc(A, 'adds/uidA_uidB'), { seen: true, name: 'HAX' }), 'A marks seen and nothing else');
+await ok(updateDoc(doc(A, 'adds/uidA_uidB'), { seen: true }), 'A marks it seen');
+await no(updateDoc(doc(B, 'adds/uidA_uidB'), { seen: false }), 'B can\'t unsee it by hand');
+await ok(deleteDoc(doc(B, 'adds/uidA_uidB')), 'B takes it back on removing A');
+await ok(setDoc(doc(B, 'adds/uidA_uidB'), add('uidB', 'uidA')), 'B adds A again');
+await no(deleteDoc(doc(env.authenticatedContext('uidC').firestore(), 'adds/uidA_uidB')), 'C can\'t delete it');
+await ok(deleteDoc(doc(A, 'adds/uidA_uidB')), 'A can clear it');
 await env.cleanup();
 console.log(fails ? `${fails} FAILED` : 'all rules checks passed');
 process.exit(fails ? 1 : 0);

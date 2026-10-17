@@ -43,6 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
+  ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
   ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
 ];
 

@@ -1024,7 +1024,10 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .trn-said { grid-column: 1 / -1; margin: 0; font-size: 0.75rem; line-height: 1.5; }
 .trn-none { margin-top: 4px; text-align: center; }
 .trn-banner .dex-bar { display: none; }
-.trn-device .bdx-slots, .trn-device .pdx-controls { display: none; }
+.trn-device:not(.bdx-added):not(.bdx-plaza) .bdx-slots, .trn-device:not(.bdx-added):not(.bdx-plaza) .pdx-controls { display: none; }
+.trn-spot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.trn-added .pdx-banner-name::after { content: '!'; display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; border-radius: 50%; background: #ffe36b; color: #8a3a00; font-size: 0.75rem; vertical-align: 2px; box-shadow: 0 2px 0 #8a3a00; }
+.trn-addkey.on { opacity: 0.7; }
 .trn-role { background: #1f8a9a; }
 .trn-badges { display: grid; gap: 6px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .trn-badges b { font-weight: 400; }
@@ -1814,3 +1817,122 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .pouch-kept { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0 6px; }
 .pouch-chip { display: flex; align-items: center; gap: 2px; min-height: 36px; padding: 2px 8px 2px 4px; border: 2px solid #1f3a14; border-radius: 999px; background: #1f3a14; color: #b6d68e; font: 0.75rem var(--pixel-font); cursor: pointer; }
 .pouch-chip:disabled { opacity: 0.4; cursor: default; }
+
+/* ---------- the "added you" pop-up (js/trainer-notice.js): a TRAINER LINK card in the adder's card colour, a Poké Ball
+   that drops, wobbles and opens on their buddy, a name plate, the games' text box, and A / B keys ---------- */
+.tn-scrim {
+  position: fixed; inset: 0; z-index: 9000; display: grid; place-items: center; padding: 16px;
+  background: radial-gradient(circle at 50% 42%, rgba(30, 50, 110, 0.55), rgba(4, 6, 18, 0.82));
+  animation: tnFade 0.25s ease-out;
+}
+.tn-scrim.out { animation: tnFade 0.25s ease-in reverse forwards; }
+@keyframes tnFade { from { opacity: 0; } }
+.tn-card {
+  --t1: #5ad08a; --t2: #1e6a48; --t3: #0e3a26;
+  position: relative; width: min(360px, 100%); padding: 0 0 14px; border-radius: 20px; overflow: hidden; color: #fff;
+  background: linear-gradient(170deg, var(--t1), var(--t2) 62%, var(--t3));
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.85), inset 0 0 0 6px var(--t3), 0 0 0 3px var(--t3), 0 0 40px color-mix(in srgb, var(--t1) 55%, transparent), 0 24px 50px rgba(0, 0, 0, 0.55);
+  animation: tnDrop 0.42s cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.tn-card.leave { animation: tnLeave 0.24s ease-in forwards; }
+.tn-card.calm, .tn-card.calm * { animation: none !important; transition: none !important; }
+@keyframes tnDrop { from { translate: 0 -60px; scale: 0.86; opacity: 0; } }
+@keyframes tnLeave { to { translate: 0 40px; scale: 0.92; opacity: 0; } }
+.tn-card[data-tier="bronze"] { --t1: #f0b070; --t2: #a0521c; --t3: #4a2008; }
+.tn-card[data-tier="silver"] { --t1: #dde6f2; --t2: #6a7890; --t3: #2a3244; }
+.tn-card[data-tier="gold"] { --t1: #ffe07a; --t2: #c88a10; --t3: #5a3a02; }
+.tn-card[data-tier="violet"] { --t1: #cfa2ff; --t2: #6a34b8; --t3: #2a0e5a; }
+
+.tn-head {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px 10px; background: linear-gradient(180deg, rgba(10, 16, 40, 0.75), rgba(10, 16, 40, 0.55));
+  border-bottom: 3px solid rgba(255, 255, 255, 0.7); font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.06em;
+}
+.tn-title { flex: 1; font-weight: 400; text-shadow: 0 0 8px #7ae0ff; }
+.tn-count { color: #bfe8ff; }
+/* a signal: a dot and three arcs lighting up in turn, like a link coming in */
+.tn-signal svg { display: block; width: 24px; height: 20px; overflow: visible; }
+.tn-signal circle { fill: #7ae0ff; }
+.tn-signal path { fill: none; stroke: #7ae0ff; stroke-width: 2.6; stroke-linecap: round; animation: tnPing 1.2s infinite; }
+.tn-signal path:nth-of-type(2) { animation-delay: 0.2s; }
+.tn-signal path:nth-of-type(3) { animation-delay: 0.4s; }
+@keyframes tnPing { 0%, 100% { opacity: 0.25; } 30% { opacity: 1; } }
+
+.tn-stage {
+  position: relative; height: 176px; margin: 12px 14px 0; border-radius: 14px; overflow: hidden;
+  background: radial-gradient(circle at 50% 62%, rgba(255, 255, 255, 0.95), color-mix(in srgb, var(--t1) 80%, #fff) 30%, var(--t2) 78%);
+  box-shadow: inset 0 0 0 3px var(--t3), inset 0 -18px 30px rgba(0, 0, 0, 0.18);
+}
+.tn-rays { position: absolute; left: 50%; top: 62%; width: 320px; height: 320px; margin: -160px 0 0 -160px; opacity: 0; transition: opacity 0.4s; animation: tnSpin 14s linear infinite; }
+.tn-card.open .tn-rays { opacity: 1; }
+@keyframes tnSpin { to { rotate: 1turn; } }
+.tn-ground { position: absolute; left: 50%; bottom: 22px; width: 96px; height: 18px; margin-left: -48px; border-radius: 50%; background: rgba(0, 0, 0, 0.22); }
+.tn-mon { position: absolute; left: 50%; bottom: 28px; width: 112px; height: 112px; margin-left: -56px; object-fit: contain; scale: 0; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.2)); }
+.tn-mon.unseen { filter: brightness(0) opacity(0.6); }
+.tn-card.open .tn-mon { animation: tnPop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) forwards, tnBob 2.4s 0.6s ease-in-out infinite; }
+.tn-card.calm.open .tn-mon { scale: 1; }
+@keyframes tnPop { from { scale: 0; translate: 0 30px; } to { scale: 1; translate: 0 0; } }
+@keyframes tnBob { 0%, 100% { translate: 0 0; scale: 1; } 50% { translate: 0 -4px; scale: 1; } }
+
+/* the ball: falls in, bounces, wobbles twice, then splits open in a flash */
+.tn-ball { position: absolute; left: 50%; bottom: 30px; width: 40px; height: 40px; margin-left: -20px; animation: tnFall 0.5s cubic-bezier(0.5, 0, 0.8, 0.4), tnBounce 0.3s 0.5s ease-out, tnWobble 0.5s 0.8s ease-in-out; }
+.tn-ball i { position: absolute; left: 0; width: 40px; height: 20px; box-sizing: border-box; border: 3px solid #1c1430; }
+.tn-ball-top { top: 0; border-radius: 20px 20px 0 0; background: linear-gradient(160deg, #ff8a8a, #e8303a 55%, #a01622); border-bottom-width: 2px !important; transform-origin: 6px 18px; }
+.tn-ball-bot { bottom: 0; border-radius: 0 0 20px 20px; background: linear-gradient(180deg, #ffffff, #d8dce8); border-top-width: 2px !important; }
+.tn-ball .tn-ball-btn { left: 13px; top: 13px; width: 14px; height: 14px; border-radius: 50%; background: #fff; border-width: 3px; z-index: 1; }
+.tn-card.open .tn-ball-top { animation: tnLid 0.3s ease-out forwards; }
+.tn-card.open .tn-ball { animation: tnBallGo 0.45s 0.15s ease-in forwards; }
+.tn-card.calm .tn-ball { display: none; }
+@keyframes tnFall { from { translate: 0 -170px; } }
+@keyframes tnBounce { 50% { translate: 0 -14px; } }
+@keyframes tnWobble { 25% { rotate: -18deg; } 75% { rotate: 14deg; } }
+@keyframes tnLid { to { rotate: -70deg; translate: -4px -6px; } }
+@keyframes tnBallGo { to { opacity: 0; scale: 0.6; } }
+.tn-flash { position: absolute; left: 50%; bottom: 50px; width: 20px; height: 20px; margin: 0 0 0 -10px; border-radius: 50%; background: #fff; opacity: 0; }
+.tn-card.open:not(.calm) .tn-flash { animation: tnFlash 0.5s ease-out; }
+@keyframes tnFlash { 0% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 14; } }
+.tn-sparks i { position: absolute; left: 50%; bottom: 80px; width: 8px; height: 8px; background: #fff; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); opacity: 0; }
+.tn-card.open .tn-sparks i { animation: tnSpark 0.9s 0.2s ease-out forwards; }
+.tn-sparks i:nth-child(1) { --dx: -70px; --dy: -40px; }
+.tn-sparks i:nth-child(2) { --dx: 66px; --dy: -52px; animation-delay: 0.28s; }
+.tn-sparks i:nth-child(3) { --dx: -52px; --dy: 22px; animation-delay: 0.34s; }
+.tn-sparks i:nth-child(4) { --dx: 58px; --dy: 18px; animation-delay: 0.24s; }
+.tn-sparks i:nth-child(5) { --dx: -12px; --dy: -70px; animation-delay: 0.4s; }
+.tn-sparks i:nth-child(6) { --dx: 22px; --dy: -64px; animation-delay: 0.3s; }
+@keyframes tnSpark { 0% { opacity: 1; translate: 0 0; scale: 0.4; } 60% { opacity: 1; scale: 1.4; } 100% { opacity: 0; translate: var(--dx) var(--dy); scale: 0.6; } }
+
+.tn-plate { position: relative; display: grid; justify-items: center; gap: 6px; margin: -16px 30px 0; padding: 10px 12px 9px; border-radius: 12px; background: #fff; color: #1c1430; box-shadow: 0 0 0 3px var(--t3), 0 4px 0 var(--t3); text-align: center; }
+.tn-tier { padding: 3px 8px 2px; border-radius: 6px; background: var(--t2); color: #fff; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; }
+.tn-name { font: 400 1.25rem/1.1 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.04em; overflow-wrap: anywhere; }
+.tn-chips { display: flex; gap: 12px; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; color: #4a4460; }
+.tn-stamp {
+  position: absolute; right: -14px; top: -14px; padding: 6px 8px 5px; border: 3px solid #d8203a; border-radius: 8px; background: #fff4f0; color: #d8203a;
+  font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; rotate: 12deg; animation: tnStamp 0.35s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes tnStamp { from { scale: 2.4; opacity: 0; rotate: -10deg; } }
+
+/* the games' text box: white, a double rim, the ▼ blinking once the line is out */
+.tn-box {
+  position: relative; min-height: 64px; margin: 14px 14px 0; padding: 12px 34px 12px 14px; border-radius: 10px; background: #fbfbff; color: #22243a;
+  box-shadow: inset 0 0 0 3px #fff, inset 0 0 0 6px #5a6aa0, 0 0 0 3px #2a3260;
+}
+.tn-text { margin: 0; font: 0.8rem/1.75 var(--pixel-font); font-synthesis-weight: none; }
+.tn-more { position: absolute; right: 14px; bottom: 9px; color: #d8203a; font-size: 0.75rem; opacity: 0; }
+.tn-box.done .tn-more { opacity: 1; animation: tnBlink 0.9s steps(2) infinite; }
+@keyframes tnBlink { 50% { opacity: 0; } }
+
+.tn-keys { display: flex; gap: 10px; margin: 12px 14px 0; transition: opacity 0.2s; }
+.tn-keys[inert] { opacity: 0.45; }
+.tn-key {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 8px 9px; border: 3px solid #1c1430; border-radius: 12px; cursor: pointer;
+  font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; box-shadow: 0 4px 0 #1c1430;
+}
+.tn-key:active { translate: 0 3px; box-shadow: 0 1px 0 #1c1430; }
+.tn-key:focus-visible { outline: 3px solid #ffe36b; outline-offset: 2px; }
+.tn-a { background: linear-gradient(180deg, #ff6a6a, #d0283a); }
+.tn-b { background: linear-gradient(180deg, #8a90a8, #4a5068); }
+.tn-glyph { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, 0.95); color: #1c1430; }
+.tn-card.linked .tn-stage { box-shadow: inset 0 0 0 3px var(--t3), inset 0 0 40px #fff; }
+/* the welcome (TRAINER NETWORK): your code on the plate, spaced to read out */
+.tn-welcome .tn-name { letter-spacing: 0.12em; user-select: all; }
+.trn-code { flex-wrap: wrap; }
+.trn-help { margin-left: auto; padding: 6px 10px 5px; }

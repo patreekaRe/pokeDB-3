@@ -889,6 +889,13 @@ needs unique names, renames and a guard against rude names turning up in results
 details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (it already carries `base`, the
 `secretBase` as JSON), friend codes, `save.friends`, adding by code or a leaderboard name, the Trainers app, the tip and
 the PC letter. **Its rules wait on the user** (Waiting on the user, below).
+~~**Finding each other without meeting**~~ done 2026-10-17 (the user's ask, same day; `docs/roadmap-done.md`): the
+Trainer Plaza, an "Added you" banner and the TRAINER LINK pop-up when someone adds you (the user saw a screenshot before
+it was pushed). Same rules file, so one publish covers both. Then (same day) the TRAINER NETWORK welcome on the app's
+first open and the Plaza's 3D board in the Clearing, merged with session 2's visits; the board and the quest board then
+moved to the plaza's top corners (the user's marks). Branch
+`claude/exciting-cray-y585nt`, pushed to `main` on the user's OK. **Next: the user publishes `firestore.rules`** (Waiting
+on the user) **and playtests it on two signed-in devices.**
 ~~**Session 2, the visit**~~ done 2026-10-17 on `claude/visit-only-base-session-2-72ayar` (pushed to `main` too;
 `docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`'s Trainers section): the Trainers app's Visit walks round
 a friend's base as they left it, read-only (`openBase3d({ guest })`, every base write refused by `visitBase()`), checked
@@ -898,6 +905,12 @@ backyard, and their trophy cases as they last saw them at home. **Next: the user
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+**Friend ideas saved 2026-10-17** (the user's pick of these: **the daily gift**, one item a day to a friend, built
+first when friends work resumes; the rest just saved). Real email was ruled out: it needs a server (Cloud Functions on
+Blaze plus a mail service), iCloud drops Firebase's mail, and it means using sign-in addresses. Instead, in-game:
+Trainer Mail through the PC (Easy Chat-style phrase parts, a stationery pick, an optional small gift; rules shaped like
+`adds/`), Friends tabs on the Safari / Sky Pillar / Arcade boards, the visit guestbook of stamps, and trading spare
+furniture or Safari Pokémon (hardest: both sides must agree at once). All need `firestore.rules` published first.
 
 ## Ideas, not agreed yet (ask the user before building)
 

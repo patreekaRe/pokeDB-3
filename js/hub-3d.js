@@ -14,6 +14,9 @@ import { season } from './season.js';
 import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
+import { plazaBoard } from './hub-plaza.js';
+import { plazaTop } from './trainers.js';
+import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow } from './hd2d.js';
@@ -69,7 +72,12 @@ const TP = 16;                // painted pixels a tile
 const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
-const QUEST_AT = { tx: 11, ty: 10 };   // the quest board, the PC's mirror across the plaza (towns on only)
+// the quest board (towns on only) and the Trainer Plaza's board (js/hub-plaza.js) at the plaza's top corners, either side
+// of the north avenue, each turned to face the plaza (the user's marks on an aerial shot, 2026-10-17); `at` is where it
+// stands (tiles, fractions allowed), `tiles` what it blocks, `step` where you stand to read it
+const QUEST_AT = { at: [12.5, 8.4], tiles: [[13, 8], [12, 8], [12, 9]], step: { x: 13, y: 9 } };
+const PLAZA_AT = { at: [17.5, 8.4], tiles: [[17, 8], [18, 8], [18, 9]], step: { x: 17, y: 9 } };
+const facePlaza = ([x, y]) => Math.atan2(START.x - x, START.y - y);
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -165,7 +173,8 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let safariFx = null;   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
+let safariFx = null;
+let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
 let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flyShade = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null, pillarFx = null;
 let built = null;   // the promise of the first build
@@ -2032,10 +2041,10 @@ function questLog() {
 }
 
 /** The quest board: a cork face on two posts under a little shingled roof, notes pinned all over it. */
-function questBoard(x, z) {
+function questBoard(x, z, turn) {
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const s = new THREE.Group();
-  s.position.set(x, 0, z); s.rotation.y = 0.35;
+  s.position.set(x, 0, z); s.rotation.y = turn;
   const face = board(questBoardArt(), 0, 0, { s: 0.62, shadow: false });
   const { width: W, height: H } = face.geometry.parameters, Y = 0.55, RY = Y + H + 0.04;
   face.position.y = Y + H / 2;
@@ -2198,6 +2207,21 @@ function makePlaces() {
       },
     },
   ];
+  if (cloudConfigured()) list.push({
+    id: 'plaza', name: 'Trainer Plaza', step: PLAZA_AT.step, tiles: PLAZA_AT.tiles, tag: [PLAZA_AT.at[0], 3.8, PLAZA_AT.at[1]], open: true,
+    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
+      : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
+    buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
+    build: (g) => {
+      plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStatic });
+      plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
+      plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
+      plazaFx.group.scale.setScalar(1.1);   // between the avenue's edge and the PC
+      g.add(plazaFx.group);
+      const fx = plazaFx;
+      plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });
+    },
+  });
   const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
   // you walk right up to the gate (MEADOW), where a small Pokéstop of its own starts or continues the day's run
   // (the user's ask, 2026-10-09)
@@ -2293,12 +2317,12 @@ function makePlaces() {
   // the quest board across the plaza from the PC (the user's ask, 2026-10-14: nowhere said where the Nietos' questline
   // was picked up): its notice starts it, then it says where every questline stands; steps are still handed in at home
   if (townsOpen()) list.push({
-    id: 'quests', name: 'Quest Board', step: { x: QUEST_AT.tx, y: QUEST_AT.ty + 1 }, tiles: [[QUEST_AT.tx, QUEST_AT.ty]], tag: [QUEST_AT.tx, 2.6, QUEST_AT.ty], open: true,
+    id: 'quests', name: 'Quest Board', step: QUEST_AT.step, tiles: QUEST_AT.tiles, tag: [QUEST_AT.at[0], 2.6, QUEST_AT.at[1]], open: true,
     get line() { return boardNow(getSave()).line; },
     get buttons() { return boardNow(getSave()).kind === 'new' ? [['Read', takeQuest]] : [['Quest log', questLog]]; },
     build: (g) => {
-      g.add(questBoard(tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty)));
-      questMark = board(newsArt(), tileX(QUEST_AT.tx), tileZ(QUEST_AT.ty) + 0.1, { shadow: false });
+      g.add(questBoard(tileX(QUEST_AT.at[0]), tileZ(QUEST_AT.at[1]), facePlaza(QUEST_AT.at)));
+      questMark = board(newsArt(), tileX(QUEST_AT.at[0]), tileZ(QUEST_AT.at[1]) + 0.1, { shadow: false });
       questMark.rotation.x = -PITCH;
       questMark.userData.y = 2.35;
       g.add(questMark);
@@ -2520,7 +2544,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -4096,6 +4120,7 @@ function frame(now) {
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
+  plazaFx?.tick(now, calm);
   for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {

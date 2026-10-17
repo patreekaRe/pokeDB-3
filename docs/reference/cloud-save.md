@@ -32,7 +32,7 @@ can't be reached from a cloud session).
 ## Trainers: friend codes and the friends list (2026-10-17, session 1 of the roadmap's "Friends list and base visits")
 
 Signed-in players only. `js/trainers.js` (network and the app) and `js/data/trainers.js` (pure: codes, the list, the
-doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (33 cases).
+doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (62 cases).
 - **`trainers/<uid>`** = `{ code, name, card, buddy, base, at }`, the public page: `card` the Trainer Card's numbers
   (`cardDoc()`: tier, earned badge ids, wins, Pokédex, Safari, stars, play minutes, the partner as a `save.partner`
   key), `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
@@ -57,6 +57,37 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   the Trainer Card's CODE line, and a one-time letter from TRAINER NETWORK (`trainersLetter()` in `js/mail.js`,
   `save.trainersLetter`) the first time a signed-in player logs on to the PC, its code where a prize would be, Read
   not Claim.
+- **Finding each other without meeting** (2026-10-17, the user's ask, the same day): the **Trainer Plaza**,
+  `plaza/<uid>` = a blurb (`blurbDoc()`: name, buddy, partner, tier, badge count, wins, `at`), written with your page
+  unless `save.plazaHidden` (the app's Hide me / Show me deletes or rewrites it); the app's Plaza banner lists the
+  `PLAZA_SHOWN` (30) on most lately (`plazaPick()`), never you, each with + Add. **Notes**: adding anyone (code, Plaza,
+  leaderboard, Add back) leaves `adds/<to>_<from>` (`addDoc()`, `seen: false`); removing takes it back (`removeTrainer()`).
+  Rules: only `to` reads (a query on `to == you`) and only marks `seen`; `from` writes as themselves; either deletes.
+  The app's **Added you** banner (gold, a "!") lists who added you and isn't on your list, with Add back.
+- **The TRAINER LINK pop-up** (`js/trainer-notice.js`, the user's ask: "aesthetic... like it's from a video game or MMO,
+  immersive Pokémon style"; they saw it in a screenshot before it was pushed): on sign-in, after the page is written,
+  `checkNotes()` queues every unseen note and shows them once the player is somewhere calm (`calmNow()`: no run screen,
+  window, PC or open Pokédex), 2.5 s after load. A card in the adder's Trainer Card colour: a signal and TRAINER LINK
+  (1/2...), a Poké Ball that falls, wobbles and opens in a flash on their buddy over painted rays (`rayWheel()`, not a
+  CSS gradient), a name plate (tier, name, badges, wins), the games' text box typing out the line with a blinking ▼,
+  and A ADD BACK / B LATER (keyboard: Enter, Z / Escape, X). Add back stamps LINKED! and plays `item-get`; someone who
+  adds you back after you added them gets TRAINER LINKED with OK only. Answering marks the note seen (it never pops
+  again; Later leaves them under Added you). Calm effects skip the ball, flash and bobbing. `?addnotice=N` shows N
+  samples with nothing sent.
+- **The welcome** (the same day, the user's ask): the first time the Trainers app opens signed in (`save.trainersWelcome`),
+  and from the ? key by your code, a TRAINER NETWORK card in the same style (`showTrainerWelcome()`): your buddy out of
+  the ball, YOUR TRAINER CODE on the plate, six lines paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
+  `js/trainers.js`); its last line points at Visit (session 2's visits landed the same day).
+- **The Trainer Plaza's board in the Clearing** (the same day, the user's ask: "the physical 3D board"):
+  `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (since the user's marks on an aerial shot, the
+  same evening: 17.5,8.4, the plaza's top right corner between the north avenue and the PC, turned to face the plaza,
+  `facePlaza()`, scaled 1.1; the quest board mirrors it at 12.5,8.4), only while cloud save is configured. A real model: posts, a teal gable with a turning
+  Poké Ball on its ridge, a TRAINER PLAZA plank, bunting, two lanterns lit after dark (`glowMats`), flower pots. Its
+  cork is a canvas of up to 6 Polaroids from `plazaTop()` (once a minute at most; you among them with a gold YOU
+  sticker; a masked Pokémon a silhouette), a pinned notice when signed out or empty. Its Look key opens the app straight
+  onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 (Halloween's pumpkin
+  patch stood in front of it from the camera's angle), then 11,14 by the mall, before the user's marks.
+- The TRAINER LINK pop-up checks for calm every 1.5 s (`whenCalm()`): the Clearing's boot can hold it a while.
 - **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`; a base with a bought
   backyard gets two, Visit house and Visit yard, `start` `main` / `yard`, since the yard is reached through the garden
   arch, not the house: the user's pick over a back door, 2026-10-17) calls the hook main.js
@@ -74,9 +105,11 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   `loadBase()`. A friend's base has no 2D fallback (no WebGL: straight home). `?base&asfriend` opens your own saved base
   as a visitor sees it.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
-  the rules (gstatic routed to stand-in SDK modules, Three.js from disk via `THREE_JS`; 48 checks, the visit's: the
-  base on the page, Visit open, the room as theirs, no keys or visitors, unknown pieces dropped, every base writer called
-  during the visit and taps on the room, then the whole localStorage the same after leaving bar the play clock, B's page
-  not republished, B's own base theirs again and saving, A's trophy case showing A's trophies and B's own again at
-  home, Visit yard into their backyard with no Garden key), and `tools/trainers-rules.mjs`, the real rules in the
+  the rules (gstatic routed to stand-in SDK modules, Three.js from disk as its argument or `THREE_JS`, so the Clearing and
+  the base run; codes and pages, adding by code, leaderboard and Plaza, the welcome, the TRAINER LINK pop-up, Added you,
+  Hide me, and the visit's: the base on the page, Visit open, the room as theirs, no keys or visitors, unknown pieces
+  dropped, every base writer called during the visit and taps on the room, then the whole localStorage the same after
+  leaving bar the play clock, B's page not republished, B's own base theirs again and saving, A's trophy case showing
+  A's trophies and B's own again at home, Visit yard into their backyard with no Garden key), and
+  `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

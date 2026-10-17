@@ -56,7 +56,7 @@ export function post(from, title, text, coins, extra = {}) {
 export function trainersLetter(code) {
   if (!code || getSave().trainersLetter) return;
   updateSave(d => { d.trainersLetter = true; });
-  post('trainers', 'Your trainer code', 'You\'re on the Trainer Network! Give a friend your code and they can add you in the Trainers app on your Pokédex. Type theirs there to add them back, or tap a name on any leaderboard.', 0, { code });
+  post('trainers', 'Your trainer code', 'You\'re on the Trainer Network! Give a friend your code and they can add you in the Trainers app on your Pokédex. Meet more trainers in its Trainer Plaza, or tap a name on any leaderboard. When someone adds you, you\'ll get a TRAINER LINK.', 0, { code });
 }
 
 /** Letters not yet claimed. */

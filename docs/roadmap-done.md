@@ -2954,3 +2954,11 @@ Return), each a 3D room, mirrored in pokeDB-sim. Detail: `docs/reference/events.
 (human bot, 300 runs a cell, `main` -> all 30, fire / grass / water): L0 80.0 / 82.0 / 74.3 -> 78.0 / 78.7 / 68.3, L3
 63.3 / 62.0 / 62.0 -> 57.7 / 57.7 / 62.0, L5 42.3 / 40.0 / 29.3 -> 36.3 / 40.3 / 36.0. Every gap inside the ±8 noise
 (slightly harder on average), so no retune; batch 3b's Fire 66 at Level 3 was 150-run noise. Shipped as patch 1.25, Off the Path.
+
+### Finding each other without meeting: the Trainer Plaza, Added you and the TRAINER LINK pop-up (2026-10-17, the user's ask)
+The user asked how to find each other without talking outside the game, and for a pop-up when someone adds you,
+"aesthetic... like it's from a video game or MMO, immersive Pokémon style", shown in a screenshot before pushing.
+`plaza/<uid>` (trainers on lately, Hide me in the app), `adds/<to>_<from>` notes, the app's Added you and Trainer Plaza
+banners, `js/trainer-notice.js`. 59 headless checks, 62 rules checks. Detail: `docs/reference/cloud-save.md`.
+Then the TRAINER NETWORK welcome (first open, and a ? key) and the Plaza's 3D board in the Clearing (`js/hub-plaza.js`, 11,14);
+67 headless checks with the real Clearing running.

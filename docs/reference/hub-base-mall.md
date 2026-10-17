@@ -277,6 +277,11 @@ The first section began as the note on playtesting the live site and grew into t
   UVs there sampling the painting's top row (plain sky; the texture is clamped, so the stars keep off that row). The
   east-side `TREE_TILES` were taken out the same day.
 
+- **The Trainer Plaza's board and the quest board** (2026-10-17, the user's marks on an aerial shot): at the plaza's top
+  corners either side of the north avenue, each turned to face the plaza (`facePlaza()`): `PLAZA_AT` 17.5,8.4 (between
+  the avenue and the PC; `js/hub-plaza.js`, docs/reference/cloud-save.md's Trainers section) and `QUEST_AT` 12.5,8.4
+  (moved from 11,10). Each is `{ at, tiles, step }`, `at` in fractional tiles.
+
 ### The rolling-log bend (on by default, 2026-10-14)
 
 The user's ask: Animal Crossing's curved world, in the Clearing only. Tried behind `?curve=N` at 1, 2 and 3 on a branch,

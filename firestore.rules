@@ -4,7 +4,8 @@ rules_version = '2';
 // (js/leaderboard.js; its bounds match LIMITS in js/data/leaderboard.js): anyone reads, a signed-in player posts
 // their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
 // way once a week. arcadeBoard/<week>_<game>_<uid>: the home arcade's weekly bests, raised only by a higher score.
-// trainers/<uid> and codes/<CODE>: the Trainers app's public pages and friend codes (js/trainers.js).
+// trainers/<uid> and codes/<CODE>: the Trainers app's public pages and friend codes (js/trainers.js); plaza/<uid> the
+// Trainer Plaza's trainers on lately, and adds/<to>_<from> the note that pops up for someone you added.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -129,6 +130,42 @@ service cloud.firestore {
       allow create, update: if request.auth != null && request.auth.uid == uid && validTrainer(request.resource.data);
       allow delete: if request.auth != null && request.auth.uid == uid;
       allow list: if false;
+    }
+
+    // a trainer in a line (blurbDoc() in js/data/trainers.js), for the Plaza and the notes
+    function validBlurb(d) {
+      return d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && d.buddy is string && d.buddy.size() <= 64 && d.partner is string && d.partner.size() <= 64
+        && d.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
+        && inRange(d.badges, 0, 999) && inRange(d.wins, 0, 10000000);
+    }
+
+    // plaza/<uid>: the Trainer Plaza. Signed-in players list it (newest first); each writes or takes down only their own.
+    match /plaza/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'buddy', 'partner', 'tier', 'badges', 'wins', 'at'])
+        && request.resource.data.keys().hasAll(['name', 'buddy', 'partner', 'tier', 'badges', 'wins', 'at'])
+        && validBlurb(request.resource.data) && request.resource.data.at == request.time;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // adds/<to>_<from>: left by `from` on adding `to`. Only `to` reads them (a query on to == you), and only marks one
+    // seen; `from` writes it as themselves (re-adding raises it again); either may take it down.
+    function validAdd(id, d) {
+      return d.keys().hasOnly(['from', 'to', 'name', 'buddy', 'partner', 'tier', 'badges', 'wins', 'seen', 'at'])
+        && d.keys().hasAll(['from', 'to', 'name', 'buddy', 'partner', 'tier', 'badges', 'wins', 'seen', 'at'])
+        && d.from == request.auth.uid && d.to is string && d.to.size() >= 1 && d.to.size() <= 128 && d.to != d.from
+        && id == d.to + '_' + d.from && validBlurb(d) && d.seen == false && d.at == request.time;
+    }
+    match /adds/{id} {
+      allow read: if request.auth != null && resource.data.to == request.auth.uid;
+      allow create: if request.auth != null && validAdd(id, request.resource.data);
+      allow update: if request.auth != null && (
+        (resource.data.from == request.auth.uid && validAdd(id, request.resource.data))
+        || (resource.data.to == request.auth.uid && request.resource.data.seen == true
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['seen'])));
+      allow delete: if request.auth != null && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
     }
   }
 }

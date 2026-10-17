@@ -3,13 +3,15 @@
    session 1). Signed in, you publish a public page, trainers/<uid> (your name, Trainer Card, walking buddy and Secret
    Base), on every sign-in and each time you leave your base, under a friend code made once (codes/<CODE>). Your list
    of trainers is `save.friends`, so it travels with the cloud save. Adding is one way: type a code, or tap a name on
-   any leaderboard. "Trainers", not "Friends": that's the Gym Leaders' hearts app (js/friendsdex.js).
+   any leaderboard, or in the Trainer Plaza (plaza/<uid>, everyone on lately who hasn't hidden), and leaves the trainer a
+   note (adds/<them>_<you>) that pops up for them as the TRAINER LINK card (js/trainer-notice.js) and lists you under
+   "Added you" till they add you back. "Trainers", not "Friends": that's the Gym Leaders' hearts app (js/friendsdex.js).
    The pure part (codes, the list, the doc) is js/data/trainers.js; the rules are firestore.rules'.
    Nothing here may hold up the game: every Firebase call is caught.
    ============================================================ */
 
-import { TRAINERS, CODES, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend, trainerDoc, checkTrainer,
-  lastSeen, cardDoc, FRIENDS_MAX, BASE_MAX } from './data/trainers.js';
+import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
+  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX, BASE_MAX } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
@@ -22,7 +24,8 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
-import { el } from './ui.js';
+import { $, el } from './ui.js';
+import { showTrainerNotices, showTrainerWelcome, noticeOpen } from './trainer-notice.js';
 
 /* Your code, as this device last knew it: { uid, code }. Not in the save: writing it there while a first sign-in is still
    comparing saves would mark this device's copy changed and ask which to keep. Your page holds it for every device. */
@@ -50,6 +53,9 @@ function myCard(save) {
     time: Math.floor((save.stats.playMs || 0) / 60000), partner: partnerKey(save),
   };
 }
+
+/** You in a line, for the Plaza and the notes you leave. */
+const myBlurb = (save) => { const c = myCard(save); return blurbDoc({ name: trainerName(), buddy: buddyKey(save), partner: c.partner, tier: c.tier, badges: c.badges.length, wins: c.wins }); };
 
 /** Your code: the one this device keeps, else the one on your page, else a new one claimed in codes/ (a clash rolls
     again). Kept the moment it's claimed, so a failed page write never makes a second. */
@@ -80,6 +86,9 @@ export function publishTrainer() {
       const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: save.secretBase });
       if (checkTrainer(doc)) return code;
       await s.F.setDoc(s.F.doc(s.db, TRAINERS, s.user.uid), { ...doc, at: s.F.serverTimestamp() });
+      const spot = s.F.doc(s.db, PLAZA, s.user.uid);
+      if (save.plazaHidden) await s.F.deleteDoc(spot).catch(() => {});
+      else await s.F.setDoc(spot, { ...myBlurb(save), at: s.F.serverTimestamp() }).catch(() => {});
       return code;
     } catch (err) { return myCode(); }
     finally { publishing = null; }
@@ -89,8 +98,33 @@ export function publishTrainer() {
 /** Adds a trainer by their uid (a leaderboard name): null when added, else why not ('self', 'already', 'full', 'bad'). */
 export function addTrainer(uid, me) {
   const { list, why } = addFriend(friendsOf(getSave(), me), uid, me);
-  if (!why) updateSave(d => { d.friends = list; });
+  if (!why) { updateSave(d => { d.friends = list; }); note(uid, true); }
   return why;
+}
+
+export function removeTrainer(uid) {
+  updateSave(d => { d.friends = dropFriend(friendsOf(d), uid); });
+  note(uid, false);
+}
+
+/** Leaves (or takes back) the note that tells `uid` you added them. Never throws. */
+async function note(uid, on) {
+  try {
+    const s = await cloudSession();
+    if (!s.user || uid === s.user.uid) return;
+    const ref = s.F.doc(s.db, ADDS, addId(uid, s.user.uid));
+    if (on) await s.F.setDoc(ref, { ...addDoc(s.user.uid, uid, myBlurb(getSave())), at: s.F.serverTimestamp() });
+    else await s.F.deleteDoc(ref);
+  } catch (err) { /* they just won't hear of it */ }
+}
+
+/** The notes left for you: { from, name, buddy, partner, tier, badges, wins, seen, at }, newest first. */
+async function notesFor(s) {
+  const q = s.F.query(s.F.collection(s.db, ADDS), s.F.where('to', '==', s.user.uid), s.F.limit(100));
+  return (await s.F.getDocs(q)).docs.map(d => d.data())
+    .filter(d => d && typeof d.from === 'string' && d.from !== s.user.uid && d.to === s.user.uid)
+    .map(d => ({ ...blurbDoc(d), from: d.from, seen: d.seen === true, at: atOf(d) }))
+    .sort((a, b) => b.at - a.at);
 }
 export const hasTrainer = (uid) => friendsOf(getSave()).includes(uid);
 export const trainerCount = () => friendsOf(getSave()).length;
@@ -174,13 +208,95 @@ function badgeRow(c) {
   return box;
 }
 
+/* ---------- the Trainer Plaza: the app's banner, and the board in the Clearing (plazaBoard() in js/hub-plaza.js) ---------- */
+
+const fetchPlaza = (s) => s.F.getDocs(s.F.query(s.F.collection(s.db, PLAZA), s.F.orderBy('at', 'desc'), s.F.limit(PLAZA_SHOWN + 1)))
+  .then(q => q.docs.map(d => ({ ...blurbDoc(d.data()), uid: d.id, at: atOf(d.data()) })));
+
+let plazaCache = null;
+/** The Clearing's board: up to `n` trainers on lately, you among them, each with `mon` and `mine`; null signed out or
+    offline. Fetched at most once a minute. */
+export async function plazaTop(n = 6) {
+  if (!cloudConfigured() || !cloudRemembered()) return null;
+  try {
+    const s = await cloudSession();
+    if (!s.user) return null;
+    if (!plazaCache || Date.now() - plazaCache.at > 60000) plazaCache = { at: Date.now(), list: await fetchPlaza(s) };
+    return plazaPick(plazaCache.list, null).slice(0, n).map(e => ({ ...e, mon: sprite(e.buddy || e.partner), mine: e.uid === s.user.uid }));
+  } catch (err) { return null; }
+}
+
+/* ---------- the welcome: the first time the app opens signed in, and its ? key ---------- */
+
+const WELCOME = [
+  'Welcome to the Trainer Network! This is your code. Give it to a friend to add you.',
+  'Trainers you add get a banner here. Tap one to see their Trainer Card.',
+  'The Trainer Plaza shows who\'s played lately. Tap + Add to add one!',
+  'Its board stands at the top of the Clearing\'s plaza. Hide me keeps you off it.',
+  'Someone added you? A TRAINER LINK pops up. Add them back to link up!',
+  'Tap Visit on a trainer\'s page to walk round their Secret Base, just as they left it!',
+];
+
+function welcome(code, done) {
+  const save = getSave();
+  showTrainerWelcome({ tier: cardTier(save).id, code: formatCode(code) || '????-????', mon: sprite(buddyKey(save)) }, WELCOME, () => {
+    if (!getSave().trainersWelcome) updateSave(d => { d.trainersWelcome = true; });
+    done?.();
+  });
+}
+
+/* ---------- the TRAINER LINK pop-up: each note not answered yet, once you're somewhere calm ---------- */
+
+const RUN_SCREENS = ['map-screen', 'battle-screen', 'reward-screen'];
+const calmNow = () => !noticeOpen() && !document.querySelector('dialog[open], .pc-screen') && !RUN_SCREENS.includes(document.body.dataset.screen)
+  && $('collection-screen')?.hidden !== false;
+
+function whenCalm(fn, tries = 0) {
+  if (calmNow()) return fn();
+  if (tries < 400) setTimeout(() => whenCalm(fn, tries + 1), 1500);
+}
+
+const asNotice = (n, mutual) => ({ ...n, uid: n.from, mon: sprite(n.buddy || n.partner), mutual });
+
+/** On sign-in: anyone who added you since you last answered pops up (they keep their "Added you" banner till added). */
+async function checkNotes() {
+  let s;
+  try { s = await cloudSession(); if (!s.user) return; } catch (err) { return; }
+  let notes;
+  try { notes = (await notesFor(s)).filter(n => !n.seen); } catch (err) { return; }
+  if (!notes.length) return;
+  const me = s.user.uid;
+  setTimeout(() => whenCalm(() => showTrainerNotices(notes.map(n => asNotice(n, hasTrainer(n.from))), {
+    addBack: (n) => { const why = addTrainer(n.uid, me); return !why || why === 'already'; },
+    seen: (n) => { s.F.updateDoc(s.F.doc(s.db, ADDS, addId(me, n.uid)), { seen: true }).catch(() => {}); },
+  })), 2500);
+}
+
+/** `?addnotice=N`: N stand-in adders pop up (the last one adding you back), nothing saved or sent. */
+function sampleNotices(n) {
+  const all = [
+    { from: 'sample1', name: 'MISTY', tier: 'gold', badges: 24, wins: 31, buddy: 'starter:squirtle' },
+    { from: 'sample2', name: 'BROCK', tier: 'silver', badges: 12, wins: 9, buddy: 'starter:bulbasaur:shiny' },
+    { from: 'sample3', name: 'GARY', tier: 'violet', badges: 40, wins: 88, buddy: 'starter:charmander' },
+  ];
+  const list = all.slice(0, Math.max(1, Math.min(3, n || 1)));
+  setTimeout(() => whenCalm(() => showTrainerNotices(list.map((x, i) => asNotice(x, i > 0 && i === list.length - 1)), { addBack: () => true, seen: () => {} })), 2500);
+}
+
 /* ---------- the app ---------- */
 
-/** The Trainers app: your code and the add box on top, then a banner for every trainer on your list, each opening the
-    handheld on their Trainer Card, their buddy, when they were last seen, Visit (session 2) and Remove. One getDoc a
-    trainer each time it opens. */
+/** The Trainers app: your code, the add box and the Plaza switch on top; then "Added you" (who added you and isn't on
+    your list), the Trainer Plaza (trainers on lately), and a banner for every trainer on your list, each opening the
+    handheld on their Trainer Card, buddy, last seen, Visit (session 2) and Remove. One getDoc a trainer on your list
+    or who added you, and one query each for the notes and the Plaza, each time it opens. */
 export function trainersApp() {
-  let panel = null, shelf = null, me = null, code = null, docs = new Map(), state = 'loading', said = '', removing = null;
+  let panel = null, shelf = null, me = null, code = null, docs = new Map(), notes = [], plaza = [], state = 'loading', said = '', removing = null, openAt = null;
+
+  const blurbOf = (uid) => plaza.find(e => e.uid === uid) ?? notes.find(n => n.from === uid) ?? null;
+  const nameOf = (uid) => docs.get(uid)?.name ?? blurbOf(uid)?.name ?? '???';
+  const partnerOf = (uid) => docs.get(uid)?.card?.partner || blurbOf(uid)?.partner;
+  const buddyOf = (uid) => docs.get(uid)?.buddy || blurbOf(uid)?.buddy || partnerOf(uid);
+  const adders = () => notes.filter(n => !hasTrainer(n.from)).map(n => n.from);
 
   function topBox() {
     const box = el('div', 'lb-top trn-top');
@@ -190,13 +306,17 @@ export function trainersApp() {
       const btn = el('button', 'lb-btn primary', 'Sign in');
       btn.type = 'button';
       btn.addEventListener('click', openCloud);
-      row.append(el('p', '', 'Sign in to get your trainer code and add other trainers.'), btn);
+      row.append(el('p', '', 'Sign in to get your trainer code, meet trainers in the Trainer Plaza and add them.'), btn);
       box.append(row);
       return box;
     }
     if (state === 'offline') { box.append(el('p', 'pdx-lcd lb-note', 'The trainer network can\'t be reached right now (offline?). The game itself is unaffected.')); return box; }
     const mine = el('div', 'pdx-lcd trn-code');
-    mine.append(el('small', '', 'Your trainer code'), el('b', 'trn-code-text', code ? formatCode(code) : state === 'loading' ? 'Loading…' : '---'));
+    const help = el('button', 'lb-btn trn-help', '?');
+    help.type = 'button';
+    help.setAttribute('aria-label', 'How the Trainer Network works');
+    help.addEventListener('click', () => { playSound('confirm'); welcome(code); });
+    mine.append(el('small', '', 'Your trainer code'), el('b', 'trn-code-text', code ? formatCode(code) : state === 'loading' ? 'Loading…' : '---'), help);
     const form = el('form', 'pdx-lcd trn-add');
     const input = el('input', 'lb-name-input trn-input');
     Object.assign(input, { placeholder: 'ABCD-EFGH', maxLength: 12, autocomplete: 'off', spellcheck: false });
@@ -204,7 +324,7 @@ export function trainersApp() {
     input.autocapitalize = 'characters';
     const btn = el('button', 'lb-btn primary', 'Add');
     btn.type = 'submit';
-    const line = el('p', 'trn-said', said || 'Type a friend\'s code, or tap a name on any leaderboard.');
+    const line = el('p', 'trn-said', said || 'Type a friend\'s code, or find trainers in the Plaza and on any leaderboard.');
     form.append(el('strong', '', 'Add a trainer'), input, btn, line);
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -212,76 +332,126 @@ export function trainersApp() {
       line.textContent = 'Looking…';
       const why = await addByCode(input.value);
       if (!panel) return;
-      said = why ?? 'Added!';
+      said = why ?? 'Added! They\'ll see a TRAINER LINK next time they play.';
       playSound(why ? 'cancel' : 'confirm');
       if (why) { line.textContent = said; btn.disabled = false; return; }
       load();
     });
-    box.append(mine, form);
+    const hidden = !!getSave().plazaHidden;
+    const spot = el('div', 'pdx-lcd trn-spot');
+    const flip = el('button', 'lb-btn', hidden ? 'Show me' : 'Hide me');
+    flip.type = 'button';
+    flip.addEventListener('click', async () => {
+      flip.disabled = true;
+      playSound('confirm');
+      updateSave(d => { d.plazaHidden = !hidden; });
+      await publishTrainer();
+      if (panel) load();
+    });
+    spot.append(el('span', '', hidden ? 'You\'re hidden from the Trainer Plaza.' : 'You\'re in the Trainer Plaza.'), flip);
+    box.append(mine, form, spot);
     return box;
   }
 
-  const groups = () => friendsOf(getSave(), me).map(uid => {
-    const doc = docs.get(uid), ink = TIER_INK[doc?.card?.tier] ?? ['#8a96a8', '#3a4458'];
-    return {
-      id: uid, name: doc?.name ?? (state === 'loading' ? '…' : '???'), sub: doc ? lastSeen(atOf(doc)) : state === 'loading' ? 'Loading…' : 'Not on the network yet',
-      b1: ink[0], b2: ink[1], cls: 'trn-banner', list: () => [uid],
-    };
-  });
+  function groups() {
+    const out = [];
+    const waiting = adders();
+    if (waiting.length) out.push({ id: 'added', name: 'Added you', sub: `${waiting.length} trainer${waiting.length === 1 ? '' : 's'} to add back`, b1: '#ffd860', b2: '#c8601a', cls: 'trn-banner trn-added', list: adders });
+    if (state === 'ready') out.push({ id: 'plaza', name: 'Trainer Plaza', sub: 'Trainers on lately', b1: '#6ad8e8', b2: '#1a4a8a', cls: 'trn-banner trn-plaza', list: () => plaza.map(e => e.uid) });
+    for (const uid of friendsOf(getSave(), me)) {
+      const doc = docs.get(uid), ink = TIER_INK[doc?.card?.tier] ?? ['#8a96a8', '#3a4458'];
+      out.push({ id: uid, friend: true, name: doc?.name ?? (state === 'loading' ? '…' : '???'), sub: doc ? lastSeen(atOf(doc)) : state === 'loading' ? 'Loading…' : 'Not on the network yet',
+        b1: ink[0], b2: ink[1], cls: 'trn-banner', list: () => [uid] });
+    }
+    return out;
+  }
+
+  /** Add / Add back on someone not on your list (the Plaza, Added you), or where they stand. */
+  function addKeys(uid, back) {
+    const keys = el('div', 'trn-keys');
+    const on = hasTrainer(uid);
+    const b = el('button', `lb-btn primary trn-addkey${on ? ' on' : ''}`, on ? '✓ On your list' : back ? 'Add back' : '+ Add');
+    b.type = 'button';
+    b.disabled = on;
+    b.addEventListener('click', () => {
+      const why = addTrainer(uid, me);
+      playSound(why && why !== 'already' ? 'cancel' : 'item-get');
+      said = why === 'full' ? `Your list is full (${FRIENDS_MAX}). Remove someone first.` : `${nameOf(uid)} is on your list now!`;
+      remount();
+    });
+    keys.append(b);
+    return keys;
+  }
+
+  function friendKeys(uid) {
+    const keys = el('div', 'trn-keys'), doc = docs.get(uid);
+    // a base with a backyard gets two keys, as at home the yard is through the garden arch, not the house
+    const visits = (doc?.yard ? [['main', 'Visit house'], ['yard', 'Visit yard']] : [['main', 'Visit']]).map(([start, name]) => {
+      const visit = el('button', 'lb-btn trn-visit', name);
+      visit.type = 'button';
+      visit.dataset.start = start;
+      visit.disabled = !doc?.base || !visitor;
+      visit.title = doc?.base ? `Walk round ${doc.name}'s ${start === 'yard' ? 'backyard' : 'Secret Base'}` : 'They haven\'t made a Secret Base yet.';
+      visit.addEventListener('click', async () => {
+        visit.disabled = true;
+        playSound('confirm');
+        const went = await visitor({ name: doc.name, json: doc.base, start });
+        if (went !== false && went !== 'run') return;
+        playSound('cancel');
+        visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
+      });
+      return visit;
+    });
+    const remove = el('button', `lb-btn trn-remove${removing === uid ? ' sure' : ''}`, removing === uid ? 'Tap again to remove' : 'Remove');
+    remove.type = 'button';
+    remove.addEventListener('click', () => {
+      if (removing !== uid) { removing = uid; playSound('confirm'); remove.textContent = 'Tap again to remove'; remove.classList.add('sure'); return; }
+      removing = null;
+      playSound('cancel');
+      removeTrainer(uid);
+      said = '';
+      remount();
+    });
+    keys.append(...visits, remove);
+    return keys;
+  }
+
+  function blurbFacts(b) {
+    const box = el('div', 'pdx-lcd pdx-facts lb-facts trn-facts');
+    const fact = (k, v) => { const f = el('span', ''); f.append(el('b', '', `${k} `), v); return f; };
+    box.append(fact('Card', `${b.tier[0].toUpperCase()}${b.tier.slice(1)}`), fact('Badges', `${b.badges}`), fact('Wins', `${b.wins}`));
+    return box;
+  }
 
   function build() {
     return shelfApp({
       groups: groups(),
       deviceCls: 'trn-device',
-      known: (g, uid) => docs.has(uid),
-      no: (g, uid) => `No.${String(friendsOf(getSave(), me).indexOf(uid) + 1).padStart(2, '0')}`,
-      label: (g, uid) => docs.get(uid)?.name ?? '???',
-      count: (g) => { const c = docs.get(g.id)?.card; return c ? `${c.badges.length} badge${c.badges.length === 1 ? '' : 's'}` : ''; },
-      art: (g, uid, known, where) => monImg(docs.get(uid)?.buddy || docs.get(uid)?.card?.partner, where === 'banner' ? 'bdx-banner-mon' : 'pdx-slot-mon'),
-      screen(g, uid, known) {
-        const doc = docs.get(uid), nodes = [el('span', 'pdx-pad'), monImg(doc?.card?.partner, 'pdx-mon bdx-art')];
-        if (doc) nodes.push(el('span', 'pdx-role trn-role', `${doc.card.tier[0].toUpperCase()}${doc.card.tier.slice(1)} card`));
+      known: (g, uid) => docs.has(uid) || !!blurbOf(uid),
+      no: (g, uid) => (g.friend ? `No.${String(friendsOf(getSave(), me).indexOf(uid) + 1).padStart(2, '0')}` : `${g.list().indexOf(uid) + 1}/${g.list().length}`),
+      label: (g, uid) => nameOf(uid),
+      count: (g, things) => {
+        if (!g.friend) return `${things.length}`;
+        const c = docs.get(g.id)?.card;
+        return c ? `${c.badges.length} badge${c.badges.length === 1 ? '' : 's'}` : '';
+      },
+      art: (g, uid, known, where) => monImg(buddyOf(uid), where === 'banner' ? 'bdx-banner-mon' : 'pdx-slot-mon'),
+      screen(g, uid) {
+        const tier = docs.get(uid)?.card?.tier ?? blurbOf(uid)?.tier, nodes = [el('span', 'pdx-pad'), monImg(partnerOf(uid), 'pdx-mon bdx-art')];
+        if (tier) nodes.push(el('span', 'pdx-role trn-role', `${tier[0].toUpperCase()}${tier.slice(1)} card`));
         return nodes;
       },
-      lines(g, uid, known) {
-        const doc = docs.get(uid);
-        const keys = el('div', 'trn-keys');
-        // a base with a backyard gets two keys, as at home the yard is through the garden arch, not the house
-        const visits = (doc?.yard ? [['main', 'Visit house'], ['yard', 'Visit yard']] : [['main', 'Visit']]).map(([start, name]) => {
-          const visit = el('button', 'lb-btn trn-visit', name);
-          visit.type = 'button';
-          visit.dataset.start = start;
-          visit.disabled = !doc?.base || !visitor;
-          visit.title = doc?.base ? `Walk round ${doc.name}'s ${start === 'yard' ? 'backyard' : 'Secret Base'}` : 'They haven\'t made a Secret Base yet.';
-          visit.addEventListener('click', async () => {
-            visit.disabled = true;
-            playSound('confirm');
-            const went = await visitor({ name: doc.name, json: doc.base, start });
-            if (went !== false && went !== 'run') return;
-            playSound('cancel');
-            visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
-          });
-          return visit;
-        });
-        const remove = el('button', `lb-btn trn-remove${removing === uid ? ' sure' : ''}`, removing === uid ? 'Tap again to remove' : 'Remove');
-        remove.type = 'button';
-        remove.addEventListener('click', () => {
-          if (removing !== uid) { removing = uid; playSound('confirm'); remove.textContent = 'Tap again to remove'; remove.classList.add('sure'); return; }
-          removing = null;
-          playSound('cancel');
-          updateSave(d => { d.friends = dropFriend(friendsOf(d), uid); });
-          said = '';
-          remount();
-        });
-        keys.append(...visits, remove);
-        if (!doc) return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
-        const walk = sprite(doc.buddy);
-        return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card),
-          typed('', `Walking with ${walk.name}.`), keys, typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')];
+      lines(g, uid) {
+        const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
+        const walk = sprite(buddyOf(uid));
+        if (doc) return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card), typed('', `Walking with ${walk.name}.`), keys,
+          ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
+        if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
+        return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
       },
-      tally: () => 'Trainer Card',
-      empty: () => '',
-      onShow: (g, uid) => { removing = null; const doc = docs.get(uid); if (doc && !sprite(doc.card.partner).masked) playCry(sprite(doc.card.partner).cry); },
+      tally: (g) => (g.id === 'plaza' ? 'Trainers in the Plaza' : g.id === 'added' ? 'Trainers who added you' : 'Trainer Card'),
+      empty: (g) => (g.id === 'plaza' ? 'Nobody\'s here yet. Check back soon!' : ''),
+      onShow: (g, uid) => { removing = null; const m = sprite(partnerOf(uid)); if (partnerOf(uid) && !m.masked) playCry(m.cry); },
       top: topBox,
     });
   }
@@ -291,8 +461,10 @@ export function trainersApp() {
     shelf?.unmount();
     shelf = build();
     panel.replaceChildren();
-    shelf.mount(panel);
-    if (!friendsOf(getSave(), me).length && state === 'ready') panel.querySelector('.pdx-banners')?.append(el('p', 'pdx-lcd lb-note trn-none', 'No trainers yet. Swap codes with a friend!'));
+    const at = state === 'ready' ? openAt : null;
+    if (at) openAt = null;
+    shelf.mount(panel, at);
+    if (!friendsOf(getSave(), me).length && state === 'ready') panel.querySelector('.pdx-banners')?.append(el('p', 'pdx-lcd lb-note trn-none', 'No trainers on your list yet. Meet some in the Trainer Plaza, or swap codes with a friend!'));
   }
 
   async function load() {
@@ -306,16 +478,25 @@ export function trainersApp() {
     if (!s.user) { state = 'signin'; remount(); return; }
     me = s.user.uid;
     code = myCode(me) ?? await publishTrainer();
-    const list = friendsOf(getSave(), me);
-    const got = await Promise.all(list.map(uid => s.F.getDoc(s.F.doc(s.db, TRAINERS, uid)).then(d => (d.exists() ? d.data() : null), () => undefined)));
+    const [gotNotes, gotPlaza] = await Promise.all([
+      notesFor(s).catch(() => []),
+      fetchPlaza(s).catch(() => null),
+    ]);
+    notes = gotNotes;
+    plaza = plazaPick(gotPlaza ?? [], me);
+    const want = [...new Set([...friendsOf(getSave(), me), ...adders()])];
+    const got = await Promise.all(want.map(uid => s.F.getDoc(s.F.doc(s.db, TRAINERS, uid)).then(d => (d.exists() ? d.data() : null), () => undefined)));
     if (panel !== at) return;
-    state = list.length && got.every(d => d === undefined) ? 'offline' : 'ready';
-    docs = new Map(list.map((uid, i) => [uid, readDoc(got[i])]).filter(([, d]) => d));
+    state = gotPlaza === null && got.every(d => d === undefined) ? 'offline' : 'ready';
+    docs = new Map(want.map((uid, i) => [uid, readDoc(got[i])]).filter(([, d]) => d));
+    if (gotPlaza) plazaCache = { at: Date.now(), list: gotPlaza };
     remount();
+    if (state === 'ready' && !getSave().trainersWelcome) welcome(code);
   }
 
   return {
-    mount(p) { panel = p; said = ''; removing = null; load(); },
+    /** `at` 'plaza' opens straight onto the Plaza (the Clearing's board). */
+    mount(p, at) { panel = p; said = ''; removing = null; openAt = at ?? null; load(); },
     back: () => shelf?.back() || false,
     key: (e) => shelf?.key(e) || false,
     press: () => shelf?.press(),
@@ -324,6 +505,8 @@ export function trainersApp() {
 }
 
 export function initTrainers() {
+  const sample = new URLSearchParams(location.search).get('addnotice');
+  if (sample !== null) sampleNotices(+sample);
   if (!cloudConfigured()) return;
-  onCloudSignIn(() => { publishTrainer(); });
+  onCloudSignIn(() => { publishTrainer().then(checkNotes); });
 }

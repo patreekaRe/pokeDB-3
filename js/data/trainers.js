@@ -6,6 +6,8 @@
    trainers/<uid> = { code, name, card, buddy, base, at }: anyone signed in reads it, only its owner writes it.
    codes/<CODE>   = { uid }: made once, create-only, so a clash just rolls another.
    save.friends   = [uid, ...]: one way, no requests; the cloud save carries it to every device.
+   plaza/<uid>    = a blurb { name, buddy, partner, tier, badges, wins, at }: the Trainer Plaza, trainers on lately.
+   adds/<to>_<from> = the blurb of who added you, with { from, to, seen }: the "added you" pop-up, once each.
    ============================================================ */
 
 import { NAME_MAX, cleanName } from './leaderboard.js';
@@ -18,6 +20,10 @@ export const FRIENDS_MAX = 50;
 export const BASE_MAX = 600000;
 export const TRAINERS = 'trainers';
 export const CODES = 'codes';
+export const PLAZA = 'plaza';
+export const ADDS = 'adds';
+/** Trainers the Plaza shows: the ones on most lately. */
+export const PLAZA_SHOWN = 30;
 
 export const TRAINER_KEYS = ['code', 'name', 'card', 'buddy', 'base', 'at'];
 export const CARD_KEYS = ['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner'];
@@ -98,4 +104,24 @@ export function lastSeen(ms, now = Date.now()) {
   if (min < 60) return `Seen ${min} min ago`;
   if (min < 48 * 60) return `Seen ${Math.round(min / 60)} h ago`;
   return `Seen ${Math.round(min / 1440)} days ago`;
+}
+
+export const BLURB_KEYS = ['name', 'buddy', 'partner', 'tier', 'badges', 'wins'];
+export const PLAZA_KEYS = [...BLURB_KEYS, 'at'];
+export const ADD_KEYS = ['from', 'to', ...BLURB_KEYS, 'seen', 'at'];
+
+/** A trainer in a line: what the Plaza and the "added you" pop-up show. */
+export const blurbDoc = ({ name, buddy, partner, tier, badges, wins } = {}) => ({
+  name: cleanName(name).toUpperCase() || 'TRAINER', buddy: key(buddy), partner: key(partner),
+  tier: TIERS.includes(tier) ? tier : 'green', badges: count(badges, 999), wins: count(wins),
+});
+
+export const addId = (to, from) => `${to}_${from}`;
+/** The note `from` leaves for `to` on adding them (`at` added as it's sent). */
+export const addDoc = (from, to, blurb) => ({ from, to, ...blurbDoc(blurb), seen: false });
+
+/** The Plaza's trainers, on most lately first: never you, each once, at most PLAZA_SHOWN. `at` in ms. */
+export function plazaPick(entries, me) {
+  const seen = new Set([me]);
+  return [...entries].sort((a, b) => (b.at || 0) - (a.at || 0)).filter(e => e?.uid && !seen.has(e.uid) && seen.add(e.uid)).slice(0, PLAZA_SHOWN);
 }
