@@ -849,8 +849,12 @@ in both repos (merge `main` into it first each session), and only when all ~30 a
 bot check with every event in (human bot, Levels 0/3/5, against `main`) and a retune. Watch the healing rooms: with 15
 events in the bag Fire lost ~10 points at Level 3 until Abra got Doze (docs/reference/events.md), so give some of the new
 ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; last commit `7dcae871`). **Batch 2 built**
-(2026-10-17, as listed; game `4c2fcc1b` (its Swap Stall and Ruins Idol signs spread apart in `365242d8`), sim `6622811`; every choice played headless in 3D and 2D; human bot, Level 3, 150 runs, batch 1 -> with batch 2: Fire 56.7 -> 56.0, Grass 58.0 -> 53.3, Water 50.7 -> 56.0%, all within noise, no retune). Next: batch 3
-below, its first five (Canalave Library to Bug-Catching Contest), then its last five.
+(2026-10-17, as listed; game `4c2fcc1b` (its Swap Stall and Ruins Idol signs spread apart in `365242d8`), sim `6622811`; every choice played headless in 3D and 2D; human bot, Level 3, 150 runs, batch 1 -> with batch 2: Fire 56.7 -> 56.0, Grass 58.0 -> 53.3, Water 50.7 -> 56.0%, all within noise, no retune). **Batch 3's first
+five built** (2026-10-17: Canalave Library, Fishing Spot, Sludge Pit, Silph Co. Storeroom, Bug-Catching Contest; game
+`2b5c881b`, sim `38715bc`; every choice played headless in 3D and 2D, and the signs checked for overlap at phone and wide
+sizes; human bot, Level 3, batch 2 -> with these five: Fire 56.0 -> 56.7, Water 51.3 -> 48.7% (150 runs), Grass 53.7 ->
+56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). Next: batch 3's last five (Unown Tablet to Rival's
+Return), then the one bot check with all ~30 against `main`, a retune, and the merge.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
