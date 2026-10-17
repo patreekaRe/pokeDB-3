@@ -4388,7 +4388,7 @@ const EVENT_CHOICES = {
     ] };
   },
 
-  // StS's World of Goop: dig ₽ out of the sludge for HP, or climb out and lose some of yours (no Leave)
+  // StS's World of Goop: dig ₽ out of the sludge for HP, or climb out and lose some of yours (no Leave; climbing out leaves)
   'sludge-pit'(event, state, back, react, done) {
     const money = perBiome(event.goopMoney), cost = perBiome(event.goopHp), loss = goopLoss(event, state.lose, run.biome, run.money);
     return { figures: { mon: { src: 'assets/pokemon/grimer-front.gif' } }, leave: false,
@@ -4407,9 +4407,8 @@ const EVENT_CHOICES = {
           if (!await playOut('goop', { dig: false })) return;
           run.money -= loss;
           setMoney(run.money);
-          figureDoes('mon', 'hop');
           tell(loss ? `You climbed out. ₽${loss} sank into the sludge.` : 'You climbed out, sticky but no poorer.');
-          done();
+          showMap();   // out of the pit is out of the room: no walk back past the sludge (the user's call, 2026-10-17)
         }),
       ] };
   },

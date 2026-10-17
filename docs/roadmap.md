@@ -853,7 +853,7 @@ ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; l
 five built** (2026-10-17: Canalave Library, Fishing Spot, Sludge Pit, Silph Co. Storeroom, Bug-Catching Contest; game
 `2b5c881b`, sim `38715bc`; every choice played headless in 3D and 2D, and the signs checked for overlap at phone and wide
 sizes; human bot, Level 3, batch 2 -> with these five: Fire 56.0 -> 56.7, Water 51.3 -> 48.7% (150 runs), Grass 53.7 ->
-56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). Next: batch 3's last five (Unown Tablet to Rival's
+56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). The Sludge Pit's Climb out now leaves for the map at once (2026-10-17, the user's ask). Next: batch 3's last five (Unown Tablet to Rival's
 Return), then the one bot check with all ~30 against `main`, a retune, and the merge.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap

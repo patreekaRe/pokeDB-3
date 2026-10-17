@@ -267,7 +267,7 @@ Spot's Old and Good Rods).
   3D). Act `cast` (`{ rod }`). The 3D signs float at three heights so they never overlap on a phone.
 - **Sludge Pit** (World of Goop): no Leave (`leave: false`, 3D `exit: false` until a choice is made). Dig costs
   `goopHp` for `goopMoney` ₽; Climb out loses `goopLoss()` ₽ (`lose` per biome, rolled into `node.event.lose`, never more
-  than you have). Act `goop` (`{ dig }`).
+  than you have) and goes straight to the map, no walk back out (the user's call, 2026-10-17). Act `goop` (`{ dig }`).
 - **Silph Co. Storeroom** (The Lab): Search gives the `items` (3) rolled into `node.event.haul` (checked by
   `eventIdsKnown()`), one `offerItem()` after another, `node.event.got` counting them (a refresh resumes with "Keep
   searching"); under a Dusk Stone it pays `duskMoney` ₽ an item instead. Indoors: a steel-and-tile room (`labWall()`,
