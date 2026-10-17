@@ -68,7 +68,7 @@ export const PATCHES = [
     ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
     ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
     ['mall', 'Every Game Corner arcade game rebuilt: painted worlds, rising stages, hazards and power-ups. Pinball is a real table; Bubble Shooter has a shot clock and rocks.'],
-    ['base', 'The berry garden says what each berry does as you pick one to plant, and what Kurt makes from it.'],
+    ['base', 'The Berry Garden window is rebuilt like Kurt\'s Workshop, with Plots, Seeds and Sell tabs, Smeargle\'s tips, and a card saying what each berry does.'],
     ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, the Clearing and the 3D buy windows run lighter, and an arcade cabinet\'s How to play no longer stretches across a wide screen.'],
     ['mall', 'Four new pinball tables in the Game Corner, each its own game: Gengar\'s haunted graveyard, Lapras\'s whirlpool lagoon, Charizard\'s volcano and Rayquaza\'s scrolling Sky Pillar.'],
     ],

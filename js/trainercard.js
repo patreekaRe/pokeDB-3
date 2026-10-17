@@ -11,7 +11,7 @@ import { rankOf } from './data/ranger.js';
 import { journalRank } from './data/journal.js';
 import { GYM_LEADERS, GYM_INK } from './data/gym.js';
 import { BADGES, BADGE_GROUPS } from './data/badges.js';
-import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen } from './data/pokedex.js';
+import { DEX_PAGES, DEPTHS_PAGE, BONUS_PAGES, safariOpen, dexTally } from './data/pokedex.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { isStarterUnlocked } from './progress.js';
@@ -523,15 +523,14 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
   const dialog = into ?? $('trainer-dialog');
   dialog.dataset.tier = tier.id;
 
-  const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
-  const dex = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
+  const dex = dexTally(save);
   const safari = safariOpen(save) ? safariDexCount() : null;
   const stars = Object.values(s.level5WinsBy || {}).filter(n => n > 0).length;
   // each line says what it counts when tapped (js/tips.js reads the title): STARS and TIME weren't clear on their own
   const lines = [
     ['NAME', trainerName().toUpperCase(), 'Your nickname, shown on the leaderboards. Tap Edit to change it.'],
     ['WINS', String(s.runsWon), 'Runs you have won, at any Trainer Level.'],
-    ['POKéDEX', `${dex}/${dexTotal}`, 'Pokémon researched in the main Pokédex.'],
+    ['POKéDEX', `${dex.n}/${dex.total}`, dex.all ? 'Pokémon beaten on every Pokédex page you have found.' : 'Pokémon beaten in the three biomes. Beat them all to open the Safari Zone.'],
     ['SAFARI', safari ? `${safari.caught}/${safari.total}` : '---', safari ? 'Pokémon caught in the Safari Zone.' : 'Pokémon caught in the Safari Zone, once it opens.'],
     ['JOURNAL', journalRank(save).rank.name.toUpperCase(), 'Your rank in the Trainer\'s Journal, from tasks claimed at the Clearing\'s PC.'],
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],

@@ -117,15 +117,19 @@ The first section began as the note on playtesting the live site and grew into t
   `gainMat(id, -n)`.
 - **The Garden window** (2026-10-15, the user's ask): out in the yard with a plot placed, a green Garden key stands
   right of Decorate (`.b3-garden`, `.has-garden` moves Decorate over; `tendGarden()` / `plotsHere()` in
-  `js/base-3d.js`). `openGarden(b, plots, save)` in `js/berry-garden.js`, the plot window's `.dev-window town-shop`
-  look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
-  `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
-  berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
-  so the 3D plants change at once. A "?" in its title (`.berry-q`, 2026-10-17, the user's ask) toggles HOW TO GARDEN
-  over the plots (`gardenHelp()`: plant, ripening days from `BERRIES`, water, pick, sell, Kurt only once
-  `workshopOpen()`), shown by itself the first time per device (`firstLook('garden')`). Every seed tile (both windows) shows its
-  held berry's effect in a few words (`.berry-does`, `short` in `js/data/held.js`; 2026-10-17, the user's ask), and
-  picking one says its full held text and, once `workshopOpen()`, the run kit Kurt makes with it (`usesOf()`).
+  `js/base-3d.js`). `openGarden(b, plots, save, at)` in `js/berry-garden.js`; a tap on a plot in the yard opens the same
+  window on that plot (no separate plot window since 2026-10-17). **Built on Kurt's bench since 2026-10-17** (the user's
+  ask, after a day as a wood-and-parchment MMO window that broke on phones: "closer to Kurt's window"): it reuses the
+  Workshop's `craft-*` classes (`css/screens.css`) as `.dialog.craft.garden`, with only its extras in
+  `css/secret-base.css` (`.gd-*`). Smeargle's line on the red tag says what just happened or, idle, what to do next
+  (`hint()`); the "?" swaps it for HOW TO GARDEN, four one-line steps (`gardenHelp()`, shown by itself the first time
+  per device, `firstLook('garden')`). Three tabs: **Plots** (a green dot: ripe + thirsty plots), the list sorted ripe,
+  thirsty, growing, empty (`plotRank()`), the card a plot's stage, its held effect, Growth / Water / Harvest chips and
+  one big button (Pick! / Water it / Plant a seed, which opens Seeds aimed at that plot), with Pick all, Water all and
+  Dig up as small keys under it; **Seeds**, the card a berry's days, price, `short` effect, its full held text and the
+  run kit Kurt crafts once `workshopOpen()`, then Plant here / Plant in N empty; **Sell**, the card today's pay and Sell 1
+  / Sell all. No `scrollIntoView` (it can shove the whole page on an iPhone): the card stays put over the list. Each
+  change saves the base and sets `nextLook = 0`, so the 3D plants change at once.
 - **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
   failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
   hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro
@@ -573,6 +577,9 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 Every Game Corner arcade game (the 18 on its floor) was rebuilt in one session, each still one `js/arcade-*.js` file on
 the kit, its world painted once a scale (`stamp()` or a cached canvas) so phones keep 60 fps, and a difficulty ramp with
 no plateau. Each file's header says what it now has; the gist:
+- **Leaving keeps the score** (the user's ask, 2026-10-17, "like a force quit but saving our score"): EXIT, Escape or
+  RESTART mid-game banks the score so far as the Best and posts it to the weekly leaderboard, as a game over would
+  (`bank()` in `js/arcade-kit.js`, every cabinet).
 - **Pokémon Pinball**: a real table (300x520): plunger lane with a swinging power gauge and a Skill Shot, P K M rollover
   lanes (flippers turn them, all three raise the bonus multiplier to 5x), Voltorb bumpers, slingshots, a spinner, two
   orbits, the Pika Ramp, Diglett drop targets that light CATCH, the saucer starting Catch mode (a wild Pokemon, hits on a

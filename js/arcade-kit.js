@@ -111,7 +111,7 @@ export function runArcade(def, onClose) {
   let cv = null, g = null, overText = '', overAt = 0, preview = null, fit = null;
   const calm = calmFx();
 
-  const panel = openPanel(`ar ar-${def.id}`, def.title, { onClose: () => { cancelAnimationFrame(raf); fit?.disconnect(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('keyup', onKey, true); onClose?.(); } });
+  const panel = openPanel(`ar ar-${def.id}`, def.title, { onClose: () => { bank(); cancelAnimationFrame(raf); fit?.disconnect(); document.removeEventListener('keydown', onKey, true); document.removeEventListener('keyup', onKey, true); onClose?.(); } });
   panel.root.style.setProperty('--ar', def.colour);
 
   const api = {
@@ -135,7 +135,16 @@ export function runArcade(def, onClose) {
     },
   };
 
+  /** A game left mid-play, by EXIT, Escape or RESTART, keeps its score as a Best and on the leaderboard as if it had
+      ended there (the user's ask, 2026-10-17: leaving shouldn't mean playing it all again). */
+  function bank() {
+    if (state !== 'play' || !(score > 0)) return;
+    record(rec, score);
+    if (ARCADE_BY_ID[def.id]) postArcadeScore(def.id, score, buddy().id);
+  }
+
   function start() {
+    bank();
     score = 0; game = def.make(api); state = 'play'; line = def.go || def.intro;
     playSound('confirm', 'select');
     render();
