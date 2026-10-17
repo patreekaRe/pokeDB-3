@@ -573,6 +573,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   (`BUILT`). **Iron garden is outdoor**: every kind `outdoor: true`, `yard: 'Iron garden'`, so it stands only in the yard
   and has its own tab at the end of `GARDEN_TABS` (`js/garden-shop.js`); no wall pieces (the yard has none), its rug a
   mosaic paving. Its thin wrought iron matches the paintings at only 0.41 to 0.65 (the painting's outline doubles a rod).
+- **Session h's series** (2026-10-17): Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan
+  (`crv`), files `js/base-furniture-<bamboo|stonezen|constellations|caravan>.js` and `js/base-models-<same>.js`, built as
+  session g's (`BUILT`). **Stone zen is outdoor** like Iron garden: `outdoor: true`, `yard: 'Zen'`, its own tab last in
+  `GARDEN_TABS`; no wall pieces, its raked gravel and stepping stones are ground (rug) pieces. New parts: Bamboo's
+  `cane()` (a rod with node rings) and cord `lash()`, Stone zen's `rock` (a sphere pushed out to the painted outline,
+  `rockOutline()`) and square `sq` lathe, Constellations' extruded stars and crescents (`starPts()`, `crescent()`) and
+  rings standing side-on or tilted, Desert caravan's flattened cylinder (`sz`) for drapes against the wall.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

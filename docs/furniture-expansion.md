@@ -4,7 +4,7 @@ The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I 
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
 kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), session d's first five furniture
-series, 125 kinds (2,037 in all), session e's next five, 125 kinds (2,162 in all), session f's four, 100 kinds (2,262 in all), and session g's four, 100 kinds (2,362 in all).** No ceiling layer yet (the user's call).
+series, 125 kinds (2,037 in all), session e's next five, 125 kinds (2,162 in all), session f's four, 100 kinds (2,262 in all), session g's four, 100 kinds (2,362 in all), and session h's four, 100 kinds (2,462 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -43,10 +43,10 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 16. (done 2026-10-17) Throwback: the 90s, CRT TVs, cassettes, a boombox, glow stars.
 17. (done 2026-10-17) Ranch: the Wild West, hay, saddles, a wagon wheel.
 18. (done 2026-10-17) Iron garden: white wrought iron, outdoor, its own tab in Smeargle's garden catalogue.
-19. Bamboo: a full bamboo room (the Japanese shelf has only a few).
-20. Stone zen: raked stone, a water basin, slate.
-21. Constellations: midnight blue and silver stars.
-22. Desert caravan: rugs, brass lamps, cushions (Sunwell Bazaar?).
+19. (done 2026-10-17) Bamboo: a full bamboo room (the Japanese shelf has only a few).
+20. (done 2026-10-17) Stone zen: raked stone, a water basin, slate; outdoor, its own Zen tab in Smeargle's catalogue.
+21. (done 2026-10-17) Constellations: midnight blue and silver stars.
+22. (done 2026-10-17) Desert caravan: rugs, brass lamps, cushions (Sunwell Bazaar?).
 
 ## Pokémon sets (only we can have these)
 
