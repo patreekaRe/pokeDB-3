@@ -15,7 +15,7 @@ export const SHAPES = {
   antqchair: { make: 'antqparts', seat: u(17.8) },
   antqwingback: { make: 'antqparts', seat: u(16.2) },
   antqsofa: { make: 'antqparts', seat: u(18.3) },
-  antqtable: { make: 'antqparts', top: u(27.2) },
+  antqtable: { make: 'antqparts', top: u(27.4) },
   antqsidetable: { make: 'antqparts', top: u(23.3) },
   antqdesk: { make: 'antqparts', top: u(30.4) },
   antqarmoire: { make: 'antqparts', play: { does: 'door', inside: 'clothes', double: true } },

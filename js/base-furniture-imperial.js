@@ -40,7 +40,7 @@ const PC = (x, h, z, w, hh, fn, o) => ({ t: 'pic', x, h, z, w, hh, fn, ...o });
 
 const GOLD = { m: 'metal' };
 /** A thin square-edged bar (a lattice's, a trim's). */
-const bar = (x, h, z, w, hh, d, c, o) => B(x, h, z, w, hh, d, c, { r: 0.05, ...o });
+const bar = (x, h, z, w, hh, d, c, o) => B(x, h, z, w, hh, d, c, { r: 0.2, ...o });
 
 /** A lattice panel facing the front from a0 to a1 across x and h0 to h1 up, at z `at`, its frame and nx x ny panes;
     `side` stands it along z instead (a0, a1 across z, at its x). */
@@ -161,7 +161,7 @@ function paintParts(parts, x0, b, vw, dir, W, def) {
         l.addColorStop(0, sh(q.c, -1)); l.addColorStop(0.3, sh(q.c, 1)); l.addColorStop(0.6, q.c); l.addColorStop(1, sh(q.c, -2));
         g.strokeStyle = l; g.lineWidth = q.tube * 2;
         g.beginPath();
-        if (q.flat) g.ellipse(cx, cy, q.r, Math.max(0.01, q.r * 0.12), 0, 0, TAU); else g.arc(cx, cy, q.r, 0, TAU);
+        if (q.flat) g.ellipse(cx, cy, q.r, Math.max(0.01, q.r * 0.04), 0, 0, TAU); else g.arc(cx, cy, q.r, 0, TAU);
         g.stroke();
         break;
       }
@@ -382,7 +382,7 @@ export const IMPERIAL_KINDS = [
     C(32, 22.5, 0, 25, 4, IM.black),
     ...[[32, 25.1], [18, 20.4], [46, 20.4]].flatMap(([x, z]) => cloud(x, 22.4, z, 4)),
     C(32, 25.8, 0, 29, 2.6, IM.red),
-    RG(32, 25.8, 0, 29.1, 0.9, IM.gold, { flat: true, m: 'metal' }),
+    C(32, 25.8, 0, 29.3, 1.2, IM.gold, GOLD),
     C(32, 27.2, 0, 11, 0.3, IM.gold, GOLD), C(32, 27.4, 0, 8.5, 0.3, IM.jade),
   ]),
 

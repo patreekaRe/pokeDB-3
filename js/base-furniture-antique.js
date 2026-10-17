@@ -331,9 +331,9 @@ export const ANTIQUE_KINDS = [
   piece('antqtable', 'Pedestal tea table', 1, 1, 480, 'wood', [
     ...tripod(16, 7, 12.5, AQ.mahog),
     LA(16, 6, 0, [[3, 0], [3.2, 2], [2, 4], [2.8, 7], [1.6, 10], [1.6, 15], [2.4, 17], [1.8, 19]], AQ.mahog, { seg: 12 }),
-    C(16, 25, 0, 13.6, 1, AQ.mahogD),
-    C(16, 26.3, 0, 14.5, 1.8, AQ.mahog),
-    C(16, 27.35, 0, 8, 0.3, AQ.lace, PL),
+    C(16, 24.4, 0, 13.6, 1.2, AQ.mahogD),
+    C(16, 26.1, 0, 14.5, 2.6, AQ.mahog),
+    C(16, 27.55, 0, 8, 0.3, AQ.lace, PL),
   ]),
 
   // a little square table, turned legs and a shelf, a lace doily over its edge, a vase of roses
@@ -587,8 +587,8 @@ export const ANTIQUE_KINDS = [
   // a brass-framed tea trolley: two mahogany trays, a gallery rail, spoked wheels, a china tea set
   piece('antqtrolley', 'Brass tea trolley', 1, 1, 480, 'metal', [
     ...[[4, -10], [28, -10], [4, 10], [28, 10]].flatMap(([x, z]) => [RD([x, 4, z], [x, 26, z], 0.55, AQ.brass), S(x, 26.6, z, 0.9, 0.9, 0.9, AQ.brass, { seg: 6 })]),
-    ...[[5, -10.8], [27, -10.8], [5, 10.8], [27, 10.8]].flatMap(([x, z]) => [RG(x, 3.6, z, 3, 0.45, AQ.brassD), DS(x, 3.6, z, 0.9, 0.8, AQ.brass)]),
-    ...[[5, 10.8], [27, 10.8]].flatMap(([x, z]) => [RD([x - 2.8, 3.6, z], [x + 2.8, 3.6, z], 0.25, AQ.brassD), RD([x, 0.8, z], [x, 6.4, z], 0.25, AQ.brassD)]),
+    ...[[5, -10.8], [27, -10.8], [5, 10.8], [27, 10.8]].flatMap(([x, z]) => [RG(x, 3.45, z, 3, 0.45, AQ.brassD), DS(x, 3.45, z, 0.9, 0.8, AQ.brass)]),
+    ...[[5, 10.8], [27, 10.8]].flatMap(([x, z]) => [RD([x - 2.8, 3.45, z], [x + 2.8, 3.45, z], 0.25, AQ.brassD), RD([x, 0.65, z], [x, 6.25, z], 0.25, AQ.brassD)]),
     B(16, 12, 0, 26, 1.4, 22, AQ.mahog, { m: 'wood', r: 0.5 }),
     B(16, 24, 0, 26, 1.4, 22, AQ.mahog, { m: 'wood', r: 0.5 }),
     ...[-10, 10].map(z => RD([4, 26, z], [28, 26, z], 0.35, AQ.brass)),
