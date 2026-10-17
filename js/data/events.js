@@ -130,6 +130,7 @@ export const EVENTS = [
     id: 'abra', icon: '🌀', name: 'Abra',   // StS: Secret Portal
     music: 'event-outdoor',
     text: 'An Abra dozes on a stump, humming with psychic power. It could Teleport you somewhere.',
+    doze: 0.2,        // or doze beside it: this share of max HP healed (it sleeps 18 hours a day)
     not: ['tower'],   // a climb's floors are its score
   },
 ];

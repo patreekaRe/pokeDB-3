@@ -1117,7 +1117,7 @@ const PLACE_ART = {
   abra: {   // an Abra dozing on a tree stump, the air round it shimmering
     outdoor: true, prop: 'abra', horizon: 0.5, zoom: 1.75, span: 60,
     wood: ['#c89860', '#9a6a3c', '#6a4424', '#2a1a0c'], rings: ['#e8c890', '#b88a50'],
-    psy: ['#fff0ff', '#f0a8f8', '#a868e0'],
+    psy: ['#fff0ff', '#f0a8f8', '#a868e0'], moss: ['#88c860', '#5a9a40', '#3a6a28'], zee: ['#ffffff', '#8898c8'],
     life: ['abra'],
   },
 
@@ -3940,6 +3940,7 @@ const ACTS = {
   morph: { frames: 16 },
   boot: { frames: 12 },
   teleport: { frames: 18 },
+  doze: { frames: 16 },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -4063,16 +4064,26 @@ function abraScene() {
     (x) => (x < stump.x - 3 ? wLit : x > stump.x + 4 ? wDark : wood), wLine);
   outlined(stump.x - 8, stump.y - 10, stump.x + 8, stump.y - 6, (x, y) => Math.hypot((x - stump.x) / 7.5, (y - stump.y + 8) / 2) <= 1,
     (x, y) => (Math.round(Math.hypot((x - stump.x) / 2.5, y - stump.y + 8)) % 2 ? ring : ringDark), wLine);
+  const moss = { x: stump.x - 26, y: stump.y + 2 };   // a soft patch of moss to nap on
+  for (let y = -3; y <= 3; y++) for (let x = -9; x <= 9; x++) {
+    const d = (x / 9) ** 2 + (y / 3) ** 2;
+    if (d <= 1) solid(moss.x + x, moss.y + y, d > 0.6 ? S.moss[2] : dither(x, y) < 6 ? S.moss[0] : S.moss[1]);
+  }
   life.stands = { mon: { x: stump.x, y: stump.y - 8 } };
   life.stump = stump;
-  life.eventSpots = [{ x0: stump.x - 12, x1: stump.x + 12, y0: stump.y - 30, y1: stump.y + 1 }];
+  life.moss = moss;
+  life.eventSpots = [{ x0: stump.x - 12, x1: stump.x + 12, y0: stump.y - 30, y1: stump.y + 1 }, { x0: moss.x - 10, x1: moss.x + 10, y0: moss.y - 8, y1: moss.y + 4 }];
   life.foot = stump.y + 6;
-  life.keep = [{ x0: stump.x - 14, x1: stump.x + 14, y0: stump.y - 34, y1: stump.y + 3 }];
+  life.keep = [{ x0: moss.x - 10, x1: stump.x + 14, y0: stump.y - 34, y1: moss.y + 4 }];
 }
 
 /** Psychic motes circle the Abra; Teleport flashes the whole scene white. */
 function drawAbra(t) {
-  const s = life.stands.mon, f = actFrame('teleport');
+  const s = life.stands.mon, f = actFrame('teleport'), z = actFrame('doze');
+  if (z >= 0) for (let i = 0; i < 3; i++) {   // Z's rise off the moss while you nap
+    const k = ((z / 16) + i / 3) % 1, x = life.moss.x + 2 + Math.round(k * 6), y = life.moss.y - 6 - Math.round(k * 12), c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(x + d, y, c); put(x + 2 - d, y + d, c); put(x + d, y + 2, c); }
+  }
   for (let i = 0; i < 4; i++) {
     const a = t / 9 + i * Math.PI / 2;
     put(s.x + Math.round(Math.cos(a) * 12), s.y - 10 + Math.round(Math.sin(a) * 4), S.psy[i % 2 ? 1 : 2]);

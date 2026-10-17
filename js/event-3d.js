@@ -2854,8 +2854,18 @@ async function buildAbra(figs, { look: L, time }) {
   B.who.mon.group.traverse(o => { o.userData.spot = 0; });
   B.group.traverse(o => { if (o.isMesh && Math.hypot(o.position.x - cx, o.position.z - cz) < 0.7) o.userData.spot = 0; });
   B.blocked.add(key(5, 2));
-  B.spots = [{ step: { x: 5, y: 3 } }];
+  // a soft mound of moss beside it, to nap on
+  const mx = tileX(2.6), mz = tileZ(2.6), moss = new THREE.Group();
+  moss.position.set(mx, 0, mz);
+  B.group.add(moss);
+  const green = [L.grass?.[0] || '#88c860', L.grass?.[1] || '#5a9a40'].map(c => std({ color: c, roughness: 1, flatShading: true }));
+  for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, d = i ? 0.32 : 0, m = mesh(new THREE.IcosahedronGeometry(i ? 0.24 : 0.34, 1), green[i % 2], Math.cos(a) * d, 0.05, Math.sin(a) * d * 0.7, moss); m.scale.y = 0.4; }
+  moss.traverse(o => { o.userData.spot = 1; });
+  const nap = { on: false };
+  snores(new THREE.Vector3(mx, 0.6, mz), () => !nap.on);
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 3, y: 3 } }];
   B.anchors[0] = new THREE.Vector3(cx, 2.2, cz);
+  B.anchors[1] = new THREE.Vector3(mx, 1.2, mz);
   tufts(L, 50, rnd);
   const motes = Array.from({ length: 6 }, (_, i) => sprite(sparkArt(i % 2 ? '#f8c8f8' : '#c088e8'), 0.18));
   B.ticks.push((now) => {
@@ -2867,7 +2877,7 @@ async function buildAbra(figs, { look: L, time }) {
     });
   });
   const flash = sprite(sparkArt('#ffffff'), 1);
-  B.reset = () => { flash.visible = false; };
+  B.reset = () => { flash.visible = false; nap.on = false; };
   B.reset();
   B.acts = {
     teleport: { ms: 1800, cues: [[0.05, 'spirit'], [0.5, 'stat-up']],
@@ -2879,6 +2889,13 @@ async function buildAbra(figs, { look: L, time }) {
         flash.scale.setScalar(0.5 + u * 6);
         flash.material.opacity = u;
         walker.oy = k > 0.4 ? (k - 0.4) * 4 : 0;
+      } },
+    doze: { ms: 2200, cues: [[0.85, 'heal-hp']],
+      start() { nap.on = true; },
+      tick(k) {
+        walker.ox = (mx - walker.x) * ease(Math.min(1, k / 0.25)) * 0.6; walker.oz = (mz - walker.z) * ease(Math.min(1, k / 0.25)) * 0.6;
+        walker.oy = k > 0.25 && k < 0.9 ? -0.05 + Math.sin(k * 12) * 0.015 : 0;
+        if (k > 0.97) nap.on = false;
       } },
   };
 }

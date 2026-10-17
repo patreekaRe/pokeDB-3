@@ -217,7 +217,10 @@ mirrored in pokeDB-sim's `sim/engine.js`. An event's `not` keeps it out of a mod
   PC takes it out (`revealCard()`), then `pcStore()` asks for one of yours, with no Back (you took one); `state.took`
   brings a refresh back to that picker. A peek saves nothing. Not in a Safari day or a climb (`not`): the Box is yours.
 - **Abra** (Secret Portal): Teleport goes straight to `run.map.boss` (`enterNode()`, so a Gym Leader's gym still walks
-  in), greyed when the boss is the next room anyway. Not in a climb, whose floors are its score.
+  in), greyed when the boss is the next room anyway. Not in a climb, whose floors are its score. Or **Doze** on the moss
+  beside it, `doze` (20%) of max HP healed: added after the bot check (human bot, Level 3, 300 runs; before -> with the
+  five -> with Doze): Fire 64.3 -> 54.7 -> 60.7%, Grass 59.7 -> 57.7%, Water 56.0 -> 56.7% (150 runs). Fire's drop wasn't
+  Abra's Teleport or Ditto (neither one off brought it back) but fewer healing rooms: 15 events in the bag, not 10.
 Their scenes: outdoor ones in `PLACE_ART` (`snorlax`, `trash`, `ditto`, `abra`: the Pokémon are the page's sprites on
 `life.stands`) and 3D on the biome's ground (`buildSnorlax()`, `buildTrash()`, `buildDitto()`, `buildAbra()`, per biome);
 Bill's PC the Move Deleter's study in other colours (`billspc`, `buildBillsPc()` round the Storage PC furniture piece).

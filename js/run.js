@@ -4174,13 +4174,22 @@ const EVENT_CHOICES = {
   // StS's Secret Portal: straight to this biome's boss, skipping what's left of its map
   abra(event, state, back, react, done) {
     const node = run.map.byId[run.current], boss = run.map.byId[run.map.boss.id], near = node.next.includes(boss.id);
-    return { figures: { mon: { src: 'assets/pokemon/abra-front.gif' } }, sub: [event.text, 'Teleport skips the rest of this map, rooms and rewards and all: you land at the boss\'s door.'], options: [
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.doze));
+    return { figures: { mon: { src: 'assets/pokemon/abra-front.gif' } }, sub: [event.text, 'Teleport skips the rest of this map, rooms and rewards and all: you land at the boss\'s door. Or doze beside it a while.'], options: [
       spotOption('Teleport', near ? 'The boss is just ahead anyway.' : `Skip the rest of ${land().name}: straight to its boss.`, async () => {
         figureDoes('mon', 'hop');
         if (!await playOut('teleport')) return;
         tell('Abra used Teleport!');
         enterNode(boss);
       }, near),
+      spotOption(heal ? `Doze +${heal} HP` : 'Doze', heal ? `Nap beside it: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+        if (!await playOut('doze')) return;
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`A good nap. Healed ${heal} HP.`);
+        done();
+      }, !heal),
     ] };
   },
 };
