@@ -603,6 +603,10 @@ Corner's crowd code with options (`makeCrowd()` in `js/corner-crowd.js`: `cast`,
 a cast of 6 from `SHOPPERS` (`js/data/mall-crowd.js`, 18) dealt anew every 8 UTC hours. Next: the user playtests (how
 many, how chatty, the fountains' size); move to the archive once they're happy.
 
+**Arcade overhaul: waiting on the user's playtest** (2026-10-17): all 18 Game Corner games were deepened in one pass (see
+the archive and `docs/reference/hub-base-mall.md`'s "The arcade overhaul"). Next: the user plays them on the phone and
+says which feel too hard, too easy or too busy; tune that game's numbers alone.
+
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
 Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on

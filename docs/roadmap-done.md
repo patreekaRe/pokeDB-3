@@ -2821,3 +2821,8 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 
 ### The Berry Garden's "?" (2026-10-17, the user's ask: "a ? button that explains everything for gardening")
 - HOW TO GARDEN in the Garden window, toggled by a "?" in its title, shown once by itself. Checked headless; no errors.
+
+### The arcade overhaul (2026-10-17, the user's ask: every Game Corner game "super detailed", Pinball bland, Bubble Shooter too easy)
+- All 18 Game Corner arcade games deepened, Pinball rebuilt as a real table, Bubble Shooter given a shot clock, rocks and
+  quicker laps. Detail: `docs/reference/hub-base-mall.md`'s "The arcade overhaul". Checked headless with
+  `tools/arcade-check.mjs` (no errors, ~60 fps); balance untested by a person. Branch `claude/peaceful-cori-1rx16c`, on `main` too.
