@@ -51,6 +51,9 @@ const curveLine = (a, ctl, b, c, w) => { if (pen) return pen.curve(a, ctl, b, c,
 const dot = (x, y, r, c) => { if (pen) return pen.flat(x, y, r, r, c); g.fillStyle = c; g.beginPath(); g.arc(px(x), py(y), r * u, 0, Math.PI * 2); g.fill(); };
 const flat = (x, y, rx, ry, c, rot = 0) => { if (pen) return pen.flat(x, y, rx, ry, c, rot); g.fillStyle = c; g.beginPath(); g.ellipse(px(x), py(y), rx * u, ry * u, rot, 0, Math.PI * 2); g.fill(); };
 
+// the sewing kit for patterns kept in other files (js/base-dolls-2.js, -3.js): each stitch paints or sews, as here
+export const SEW = { puff, shape, line, curveLine, dot, flat, flame, sh };
+
 /* ---------- builds: where each part sits ---------- */
 export const BUILDS = {
   // stands on two feet: a small body under a big head

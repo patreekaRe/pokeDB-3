@@ -355,7 +355,7 @@ export const KINDS_OF = {
   Lights: (p) => !!p.glow,
   Rugs: (p) => p.layer === 'rug',
   Wall: (p) => p.layer === 'wall',
-  Dolls: (p) => p.group === 'Dolls',
+  Dolls: (p) => p.group === 'Dolls' || p.group === 'Figurines',
   Other: (p) => !Object.entries(KINDS_OF).some(([k, test]) => k !== 'All' && k !== 'Other' && test(p)),
 };
 
