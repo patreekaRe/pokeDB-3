@@ -349,7 +349,7 @@ export const BISTRO_KINDS = [
     B(32, 50, -11.6, 56, 1, 5.6, BS.steelL, MT),
     ...[[18, BS.red], [23, BS.herb], [28, BS.gold], [36, BS.copper], [41, BS.cream], [46, BS.red]].map(([x, c]) => C(x, 52.6, -11.6, 1.5, 4.2, c, { m: 'gloss', seg: 8 })),
     PR(32, 60, -6, [[-31.6, 0], [31.6, 0], [24, 15], [-24, 15]], 20, BS.copper, MT),
-    B(32, 61.2, -6, 63.4, 2.4, 20.4, BS.brass, MT),
+    B(32, 61.2, -6, 63.4, 2.4, 20, BS.brass, MT),
     B(32, 81, -11, 18, 12, 9, BS.copper, MT), B(32, 86.6, -11, 19.4, 1.4, 10, BS.brass, MT),
   ], {
     doors: [{ hinge: [3, 13.5], side: 1, parts: [
@@ -435,8 +435,7 @@ export const BISTRO_KINDS = [
   // a tall steel fridge with a glass door that opens: shelves of berry-juice bottles, a cheese wheel, a milk jug, eggs,
   // butter and a pot of jam
   piece('bstfridge', 'Bistro glass fridge', 1, 1, 1150, 'metal', [
-    ...[[3, -12], [29, -12], [3, 10], [29, 10]].map(([x, z]) => C(x, 0.5, z, 1.3, 1, BS.iron, { m: 'plain', seg: 6 })),
-    B(16, 4.5, -1, 30, 7, 28, BS.steelD, MT), B(16, 4.5, 13.2, 26, 4, 0.4, BS.ink, PL),
+    B(16, 4, -1, 30, 8, 28, BS.steelD, MT), B(16, 4.5, 13.2, 26, 4, 0.4, BS.ink, PL),
     B(16, 9, -1, 30, 2, 28, BS.steel, MT), B(16, 77, -1, 30, 4, 28, BS.steel, STL),
     B(1.6, 43, -1, 3.2, 66, 28, BS.steel, STL), B(30.4, 43, -1, 3.2, 66, 28, BS.steel, STL),
     B(16, 43, -14, 26, 66, 1.2, BS.steelL, PL),
@@ -530,7 +529,7 @@ export const BISTRO_KINDS = [
     B(32, 27, -8.4, 56, 25, 6, BS.green, { m: 'cloth', r: 2, tex: 'tuft', tc: BS.greenD, ts: 3.2 }),
     B(32, 40.6, -8.8, 62, 2.4, 7.6, BS.wood, WD),
     B(2, 19, 0, 3.6, 22, 26, BS.wood, WD), B(62, 19, 0, 3.6, 22, 26, BS.wood, WD),
-    B(2, 30.4, 0.6, 4.2, 1.4, 27, BS.woodL, WD), B(62, 30.4, 0.6, 4.2, 1.4, 27, BS.woodL, WD),
+    B(2, 30.4, 0.6, 3.8, 1.4, 27, BS.woodL, WD), B(62, 30.4, 0.6, 3.8, 1.4, 27, BS.woodL, WD),
     ...[6, 32, 58].map(x => RD([x, 41.8, -11], [x, 50, -11], 0.4, BS.brass, MT)),
     RD([4, 50, -11], [60, 50, -11], 0.6, BS.brass, MT), S(4, 50, -11, 1, 1, 1, BS.brass, { m: 'metal', seg: 6 }), S(60, 50, -11, 1, 1, 1, BS.brass, { m: 'metal', seg: 6 }),
     B(14, 17.4, -3, 10, 6, 3, BS.cream, { m: 'cloth', r: 2 }),
@@ -643,7 +642,7 @@ export const BISTRO_KINDS = [
     g.strokeStyle = BS.black; g.lineWidth = 1; g.strokeRect(4.5, 4.5, 55, 55);
   } },
 
-  // a tall walnut rack of berry-juice bottles lying in their cubbies, a basket of Oran, Pecha and Cheri berries on top
+  // a tall walnut rack of berry-juice bottles lying in their cubbies, their necks in coloured foil, a basket of Oran, Pecha and Cheri berries on top
   piece('bstrack', 'Bistro bottle rack', 1, 1, 640, 'wood', [
     ...[[3, -9], [29, -9], [3, 9], [29, 9]].map(([x, z]) => B(x, 40, z, 2.4, 80, 2.4, BS.woodD, WD)),
     ...[4, 20, 36, 52, 68].map(h => B(16, h, 0, 24, 1.2, 20, BS.wood, WD)),
@@ -651,7 +650,7 @@ export const BISTRO_KINDS = [
     B(16, 80, 0, 30, 1.6, 22, BS.woodD, WD),
     ...[4.6, 20.6, 36.6, 52.6].flatMap((s, r) => [7.2, 16, 24.8].flatMap((x, c) => [2.4, 7.2].flatMap((dh, k) => {
       const cap = [BS.berry, BS.berryL, BS.gold, BS.red][(r + c + k) % 4];
-      return [RD([x, s + dh, -8], [x, s + dh, 3], 2.2, BS.bottle, GL), RD([x, s + dh, 3], [x, s + dh, 7], 0.85, BS.bottle, GL), DS(x, s + dh, 7.4, 1, 1, cap, { m: 'plain', seg: 8 })];
+      return [RD([x, s + dh, -8], [x, s + dh, 3], 2.2, BS.bottle, GL), RD([x, s + dh, 3], [x, s + dh, 7.6], 0.95, cap, PL)];
     }))),
     C(16, 72, 0, 6, 5, BS.woodL, { m: 'cloth', seg: 12, rb: 5 }),
     S(13, 75, -1, 1.8, 1.8, 1.8, BS.oran, GL), S(17, 75.4, 1, 1.8, 1.6, 1.8, BS.pecha, GL), S(19.6, 75, -1.4, 1.6, 1.6, 1.6, BS.cheri, GL),

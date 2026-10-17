@@ -442,7 +442,7 @@ export const SUSHI_KINDS = [
 
   // a tall counter stool: four splayed hinoki legs, a steel footring, a black and red lacquer seat and an indigo cushion
   piece('sshstool', 'Sushi counter stool', 1, 1, 320, 'wood', [
-    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => RD([16 + sx * 11, 0.9, sz * 11], [16 + sx * 7, 21, sz * 7], 1.1, SB.hinD, WD)),
+    ...[[-1, -1], [1, -1], [-1, 1], [1, 1]].map(([sx, sz]) => RD([16 + sx * 11, 0.38, sz * 11], [16 + sx * 7, 21, sz * 7], 1.4, SB.hinD, WD)),
     ...[-9.4, 9.4].flatMap(k => [RD([6.6, 9, k], [25.4, 9, k], 0.6, SB.steel, MT), RD([16 + k, 9, -9.4], [16 + k, 9, 9.4], 0.6, SB.steel, MT)]),
     C(16, 21.8, 0, 9.4, 2, SB.lac, { m: 'gloss', seg: 18 }),
     C(16, 23.6, 0, 9.2, 1.6, SB.red, { m: 'gloss', seg: 18 }),
@@ -542,7 +542,7 @@ export const SUSHI_KINDS = [
   // the empty plates of a good meal stacked up: three towers of white, red, blue, gold, black, green and pink
   piece('sshplates', 'Sushi plate tower', 1, 1, 260, 'gloss', [
     B(16, 0.6, 1, 28, 1.2, 26, SB.hinD, WD),
-    ...[[8.6, 4, 9], [21.6, -4, 15], [22.4, 8, 4]].flatMap(([x, z, n], k) => Array.from({ length: n }, (_, i) => plate(x, 1.2 + i * 1.2, z, 5.8, PLATES[(i + k * 2) % PLATES.length]))),
+    ...[[8.6, 4, 9], [21.6, -4, 15], [22.4, 8, 4]].flatMap(([x, z, n], k) => Array.from({ length: n }, (_, i) => plate(x, 1.2 + i, z, 5.8, PLATES[(i + k * 2) % PLATES.length]))),
   ]),
 
   // a live fish tank on a hinoki cabinet: black lacquer frame, gravel, rocks and weed, two Magikarp, a light under the lid

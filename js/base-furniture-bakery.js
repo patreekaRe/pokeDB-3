@@ -415,12 +415,12 @@ export const BAKERY_KINDS = [
   piece('bakoven', 'Bakery deck oven', 2, 1, 1650, 'metal', [
     B(32, 3, -1, 62, 6, 28, BK.steelD, MT),
     B(32, 31, -2.5, 62, 50, 25, BK.brick, { m: 'cloth', tex: 'brick', tc: BK.mortar, ts: 4.4 }),
-    B(32, 57.4, -2, 64, 3, 27, BK.brickD, WD),
+    B(32, 57.4, -2, 64, 3, 27, BK.brickD, CL),
     B(32, 30, 10.6, 58, 44, 1.2, BK.steel, MT),
     B(32, 19, 11.8, 50, 15, 1.2, BK.steelL, MT), B(32, 19.6, 12.6, 36, 7, 0.4, BK.glow, GLW),
     RD([10, 25, 14.6], [54, 25, 14.6], 0.7, BK.steelD, MT), ...[10, 54].map(x => RD([x, 25, 12.4], [x, 25, 14.6], 0.4, BK.steelD, MT)),
     B(32, 47.6, 11.6, 54, 6, 1, BK.steelD, MT),
-    ...[10, 16, 22].map(x => DS(x, 47.6, 12.4, 1.6, 0.8, BK.ink, { m: 'gloss', seg: 10 })),
+    ...[10, 16, 22].map(x => DS(x, 47.6, 12.4, 1.6, 0.8, BK.ink, { m: 'plain', seg: 10 })),
     DS(50, 47.6, 12.4, 2.4, 0.6, BK.cream, { m: 'plain', seg: 12 }), RD([50, 47.6, 12.8], [51.4, 49, 12.8], 0.2, BK.berry, PL),
     C(52, 64, -9, 2.6, 12, BK.steelD, { m: 'metal', seg: 12 }), C(52, 70.4, -9, 3.4, 1.2, BK.steelD, { m: 'metal', seg: 12 }),
     ...[14, 28].flatMap(x => [B(x, 60.6, 0, 11, 3.4, 7, BK.steelD, MT), S(x, 62.4, 0, 5.4, 2.6, 3.4, BK.crust, LOAF)]),
@@ -489,7 +489,7 @@ export const BAKERY_KINDS = [
     ...[2.4, 29.6].map(x => S(x, 17, 1, 1.8, 2.8, 2.8, BK.sackD, { m: 'cloth', seg: 8 })),
     ...[4.4, 27.6].map(x => RG(x, 17, 1, 2.6, 0.35, BK.wickerD, { m: 'cloth', flat: true, k: 2 })),
     PC(16, 17, 9.2, 13, 7, flourLabel),
-    S(26, 0.4, 12, 3.4, 1, 2.4, BK.flour, { m: 'plain', seg: 8 }),
+    S(26, 1, 12, 3.4, 1, 2.4, BK.flour, { m: 'plain', seg: 8 }),
   ]),
 
   // the till counter: honey wood with sky-blue panels and a marble top, a brass cash register with its price flag, a
