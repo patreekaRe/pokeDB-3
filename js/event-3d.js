@@ -3341,6 +3341,456 @@ async function buildStall(figs, { look: L, time }) {
   };
 }
 
+/* ---------- batch 3 of the StS events (2026-10-17): the Canalave Library and a Silph Co. storeroom indoors; a fishing
+   boardwalk, Grimer's sludge pit and the Bug-Catching Contest's ring on the biome's own ground ---------- */
+
+/** A "Z" drifting up off someone napping. */
+function zzArt() {
+  const { c, g } = fine(10, 10, 8);
+  words(g, 'Z', 5, 5.4, 9, '#ffffff');
+  g.strokeStyle = '#4a5a8a'; g.lineWidth = 0.6; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('Z', 5, 5.4);
+  return c;
+}
+
+/** A page fluttering loose, lines of ink on it. */
+function pageArt() {
+  const { c, g } = fine(10, 12, 8);
+  g.fillStyle = '#fff8e4'; g.fillRect(1, 1, 8, 10);
+  g.fillStyle = '#6a5a48';
+  for (let y = 3; y < 10; y += 2) g.fillRect(2, y, y % 4 ? 6 : 5, 0.6);
+  return c;
+}
+
+/** Z's rising off `at` while `on()`. */
+function napZs(at, on) {
+  const zs = [0, 1, 2].map(() => sprite(zzArt(), 0.3));
+  B.ticks.push((now) => zs.forEach((s, i) => {
+    s.visible = on() && !calm;
+    if (!s.visible) return;
+    const t = ((now / 1600) + i / 3) % 1;
+    s.position.set(at.x + 0.2 + t * 0.35 + Math.sin(t * 6) * 0.05, at.y + t * 0.9, at.z);
+    s.material.opacity = t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8;
+    s.scale.setScalar(0.16 + t * 0.2);
+  }));
+}
+
+/** A plaque on the back wall's painting, `text` in it. */
+function wallPlaque(f, W, text, [rim, top, low, ink]) {
+  const { g, rr, lin } = f, bw = Math.min(W - 16, text.length * 6.4 + 16), bx = (W - bw) / 2, by = wy(5.6);
+  rr(bx - 1.5, by - 1.5, bw + 3, 20, 3, rim);
+  rr(bx, by, bw, 17, 2.4, lin(0, by, 0, by + 17, [top, low]));
+  words(g, text, bx + bw / 2, by + 8.9, 9.5, ink);
+}
+
+function libraryWall() {
+  const W = (COLS + 0.8) * U, f = fine(W, TOP * U, 5);
+  studyBands(f, W);
+  wallPlaque(f, W, 'CANALAVE LIBRARY', ['#5a3218', '#f0d898', '#c8a050', '#5a2a10']);
+  return f.c;
+}
+
+function librarySide() {
+  const W = ROWS * U, f = fine(W, TOP * U, 4);
+  studyBands(f, W);
+  return f.c;
+}
+
+async function buildLibrary(figs) {
+  shell({ floor: studyFloor(), wall: libraryWall(), side: librarySide, edge: '#3a2010', cap: '#4a2814', under: '#1c100a', bg: '#140c08' });
+  for (const x of [0, 2, 4, 6, 8]) piece('shelf', x, 0);
+  piece('bookstack', 10, 0); piece('bookcart', 0, 2); piece('bookstack', 10, 2); piece('globe', 10, 4); piece('bookstack', 0, 5); piece('floorlamp', 8, 2);
+  const lectern = piece('lectern', 3, 2), chair = piece('armchair', 7, 2);
+  lectern?.traverse(o => { o.userData.spot = 0; });
+  chair?.traverse(o => { o.userData.spot = 1; });
+  // Noctowl keeps watch from a perch in front of the shelves
+  const wood = std({ color: '#7a4a28', roughness: 0.8 }), px = tileX(5), pz = tileZ(1);
+  mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.06, 14), wood, px, 0.03, pz);
+  mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.0, 10), wood, px, 0.5, pz);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.56, 10), wood, px, 1.0, pz).rotation.z = Math.PI / 2;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/noctowl-front.gif' }, { x: 5, ty: 1, y: 1.02 });
+  B.blocked.add(key(5, 1));
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(3), 2.0, tileZ(2));
+  B.anchors[1] = new THREE.Vector3(tileX(7), 1.9, tileZ(2));
+  const glowing = [];
+  lectern?.traverse(o => { if (o.material?.emissiveMap) glowing.push(o.material); });
+  const pages = Array.from({ length: 8 }, () => sprite(pageArt(), 0.2));
+  const sparks = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4c0' : '#ffffff'), 0.2));
+  const nap = { on: false }, cx = tileX(7), cz = tileZ(2) + 0.1;
+  napZs(new THREE.Vector3(cx, 1.0, cz), () => nap.on);
+  B.reset = () => { nap.on = false; };
+  B.acts = {
+    read: { ms: 1800, cues: [[0.05, 'rustle'], [0.6, 'item']],
+      start() {
+        const at = new THREE.Vector3(tileX(3), 1.25, tileZ(2) + 0.1);
+        this.pages = burst(pages, at, { spread: 0.45, rise: 1.5, spin: true });
+        this.sparks = burst(sparks, at, { spread: 0.3, rise: 1.1 });
+      },
+      tick(k) { this.pages(k); this.sparks(k); for (const m of glowing) m.emissiveIntensity = 0.8 + Math.sin(k * Math.PI) * 2; } },
+    nap: { ms: 2400, cues: [[0.85, 'heal-hp']],
+      start() { nap.on = true; },
+      tick(k) {
+        const sit = ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.9) / 0.1));
+        walker.ox = (cx - walker.x) * sit; walker.oz = (cz - walker.z) * sit; walker.oy = sit * 0.32;
+        if (k > 0.97) nap.on = false;
+      } },
+  };
+}
+
+function labWall() {
+  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#d8e0e8', '#c0c8d4']); g.fillRect(0, 0, W, H);
+  for (let x = U * 0.4; x < W; x += U * 1.2) { g.fillStyle = 'rgba(70,80,100,0.22)'; g.fillRect(x, 0, 0.6, H); g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(x + 0.6, 0, 0.4, H); }
+  g.fillStyle = '#3868b8'; g.fillRect(0, wy(1.3), W, 3.4);
+  g.fillStyle = '#7a8496'; g.fillRect(0, wy(0.25), W, wy(0) - wy(0.25));
+  wallPlaque(f, W, 'SILPH CO.', ['#283858', '#ffffff', '#dfe6f0', '#2858a8']);
+  return f.c;
+}
+
+function labSide() {
+  const W = ROWS * U, H = TOP * U, f = fine(W, H, 4), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#d0d8e2', '#b8c0cc']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#3868b8'; g.fillRect(0, wy(1.3), W, 3.4);
+  g.fillStyle = '#7a8496'; g.fillRect(0, wy(0.25), W, wy(0) - wy(0.25));
+  return f.c;
+}
+
+function labFloor() {
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f;
+  g.fillStyle = '#8a929c'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < ROWS * 2; y++) for (let x = 0; x < COLS * 2; x++) { g.fillStyle = (x + y) % 2 ? '#c4ccd4' : '#b0b8c2'; g.fillRect(x * T / 2 + 0.3, y * T / 2 + 0.3, T / 2 - 0.6, T / 2 - 0.6); }
+  // hazard stripes round where the crates stand
+  const x0 = 3.6 * T, x1 = 7.4 * T, y0 = 1.4 * T, y1 = 3 * T;
+  g.save(); g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0); g.rect(x0 + 2.5, y0 + 2.5, x1 - x0 - 5, y1 - y0 - 5); g.clip('evenodd');
+  for (let x = x0 - 40; x < x1 + 40; x += 5) { g.fillStyle = (x / 5) % 2 ? '#f8d030' : '#2a2a30'; g.beginPath(); g.moveTo(x, y0); g.lineTo(x + 2.5, y0); g.lineTo(x + 2.5 + (y1 - y0), y1); g.lineTo(x + (y1 - y0), y1); g.fill(); }
+  g.restore();
+  return f.c;
+}
+
+/** A wooden crate with darker frame boards on every edge and Silph's blue label. */
+function crate3d(x, y, z, s) {
+  const c = new THREE.Group(), wood = std({ color: '#c89858', roughness: 0.85 }), dark = std({ color: '#8a5e2c', roughness: 0.85 }), t = s * 0.1, h = s / 2;
+  c.position.set(x, y, z);
+  B.group.add(c);
+  mesh(new THREE.BoxGeometry(s, s, s), wood, 0, h, 0, c);
+  for (const a of [-1, 1]) for (const b of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(s + 0.01, t, t), dark, 0, h + a * (h - t / 2), b * (h - t / 2), c);
+    mesh(new THREE.BoxGeometry(t, s + 0.01, t), dark, a * (h - t / 2), h, b * (h - t / 2), c);
+    mesh(new THREE.BoxGeometry(t, t, s + 0.01), dark, a * (h - t / 2), h + b * (h - t / 2), 0, c);
+  }
+  mesh(new THREE.PlaneGeometry(s * 0.42, s * 0.26), std({ color: '#3878d0', roughness: 0.6 }), 0, h, h + 0.006, c).castShadow = false;
+  return c;
+}
+
+async function buildStoreroom(figs) {
+  shell({ floor: labFloor(), wall: labWall(), side: labSide, edge: '#4a5468', cap: '#6a7688', under: '#1e2430', bg: '#141820' });
+  piece('potionshelf', 0, 0); piece('medicineshelf', 1, 0); piece('ballshelf', 2, 0); piece('locker', 3, 0); piece('computer', 5, 0);
+  piece('locker', 7, 0); piece('ballshelf', 8, 0); piece('potionshelf', 9, 0); piece('medicineshelf', 10, 0);
+  piece('crate', 0, 3); piece('crate', 0, 4); piece('milkcrate', 10, 3); piece('barrel', 10, 5);
+  const s = 0.72, crates = [crate3d(tileX(5) - 0.38, 0, tileZ(2), s), crate3d(tileX(5) + 0.38, 0, tileZ(2) + 0.05, s), crate3d(tileX(5), s, tileZ(2) + 0.02, s)];
+  crates[2].rotation.y = 0.2;
+  crates.forEach(c => c.traverse(o => { o.userData.spot = 0; }));
+  for (const t of [[4, 2], [5, 2], [6, 2]]) B.blocked.add(key(...t));
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/porygon-front.gif' }, { x: 7.4, ty: 2, y: 0.3 });
+  B.blocked.add(key(7, 2));
+  const pory = B.who.mon;
+  B.ticks.push((now) => { pory.base.y = 0.3 + (calm ? 0 : Math.sin(now / 650) * 0.07); });
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(5), 2.3, tileZ(2));
+  const balls = [0, 1, 2].map(() => { const b = lootBall(0, 0, 0, 0.12); b.visible = false; b.traverse(o => { o.raycast = () => {}; }); return b; });
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#a8e8ff' : '#ffffff'), 0.22));
+  const top = new THREE.Vector3(tileX(5), s * 2, tileZ(2) + 0.1);
+  B.reset = () => { crates.forEach((c, i) => { c.rotation.z = 0; c.rotation.y = i === 2 ? 0.2 : 0; }); balls.forEach(b => { b.visible = false; }); };
+  B.acts = {
+    rummage: { ms: 2000, cues: [[0.05, 'rustle'], [0.3, 'rustle'], [0.6, 'item']],
+      start() { this.fly = burst(sparks, top, { spread: 0.5, rise: 1.2 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.45) * Math.PI * 3) * 0.2 * (k < 0.45 ? 1 : 0);
+        crates.forEach((c, i) => { c.rotation.z = k < 0.5 ? Math.sin(k * 60 + i) * 0.05 : 0; });
+        balls.forEach((b, i) => {   // three Poké Balls pop out of the top crate, one after another
+          const u = (k - 0.45 - i * 0.08) / 0.4;
+          b.visible = u > 0 && u < 1;
+          if (!b.visible) return;
+          b.position.set(top.x + (i - 1) * 0.45 * u, top.y + Math.sin(u * Math.PI) * 0.9, top.z + 0.3 * u);
+          b.rotation.z = u * 6;
+        });
+        if (k > 0.4) this.fly((k - 0.4) / 0.6);
+      } },
+  };
+}
+
+const ROD_COLS = [['#c89860', '#6a4424'], ['#68a8e8', '#28508a'], ['#e85848', '#2a2a34']];   // the Old, Good and Super Rods
+
+async function buildFishing(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [0, 4, 1.1], [10, 5, 1.2], [0, 6, 1]] });
+  B.shotTop = 3.2;
+  const p = pool(tileX(5), tileZ(1.2), 3.9, 1.15, L, 41);
+  // a boardwalk along the near bank, a rail on its water side
+  const wood = std({ color: L.wood?.[0] || '#c89058', roughness: 0.85 }), dark = std({ color: L.wood?.[2] || '#6a4024', roughness: 0.9 });
+  const dz = tileZ(3) - 0.05, dx0 = tileX(1.2), dx1 = tileX(8.8);
+  mesh(new THREE.BoxGeometry(dx1 - dx0, 0.05, 0.95), wood, (dx0 + dx1) / 2, 0.025, dz).castShadow = false;
+  for (let x = dx0 + 0.3; x < dx1; x += 0.3) mesh(new THREE.BoxGeometry(0.015, 0.052, 0.95), dark, x, 0.026, dz).raycast = () => {};
+  const rz = dz - 0.44;
+  for (let x = dx0 + 0.05; x <= dx1; x += 1.25) mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.75, 8), dark, x, 0.375, rz);
+  const rail = mesh(new THREE.CylinderGeometry(0.035, 0.035, dx1 - dx0, 8), wood, (dx0 + dx1) / 2, 0.74, rz);
+  rail.rotation.z = Math.PI / 2;
+  // three rods leaning on the rail, out over the water
+  const len = 2.1, lean = 0.78, tips = [];
+  [3, 5, 7].forEach((tx, i) => {
+    const [col, grip] = ROD_COLS[i], rod = new THREE.Group(), x = tileX(tx), z = dz + 0.25;
+    rod.position.set(x, 0.05, z);
+    rod.rotation.x = -lean;
+    B.group.add(rod);
+    mesh(new THREE.CylinderGeometry(0.012, 0.026, len, 8), std({ color: col, roughness: 0.5 }), 0, len / 2, 0, rod);
+    mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.36, 8), std({ color: grip, roughness: 0.7 }), 0, 0.2, 0, rod);
+    const reel = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 14), std({ color: '#d8d8e0', metalness: 0.6, roughness: 0.3 }), 0.06, 0.42, 0, rod);
+    reel.rotation.z = Math.PI / 2;
+    rod.traverse(o => { o.userData.spot = i; });
+    tips.push(new THREE.Vector3(x, 0.05 + Math.cos(lean) * len, z - Math.sin(lean) * len));
+  });
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 5, y: 3 } }, { step: { x: 7, y: 3 } }];
+  // the rods stand close, so their signs float at three heights, Good Rod's (the widest) on top; Super Rod's pulled in off a phone's edge
+  [[0, 1.25], [0, 2.55], [-0.3, 1.9]].forEach(([dx, y], i) => { B.anchors[i] = new THREE.Vector3(tips[i].x + dx, y, tips[i].z + 0.3); });
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/magikarp-front.gif' }, { x: 8.3, ty: 1.3, y: 0.1 });
+  const karp = B.who.mon;
+  B.ticks.push((now) => { const j = (now % 2600) / 2600; karp.base.y = 0.08 + (calm || j > 0.25 ? 0 : Math.sin(j / 0.25 * Math.PI) * 0.5); });
+  const gyara = await figure('big', { src: 'assets/pokemon/gyarados-front.gif' }, { x: 5, ty: 1.0, scale: 1.25 });
+  B.who.big = gyara;
+  gyara.group.visible = false;
+  tufts(L, 40, rnd);
+  // the line, its float, and what each rod reels in
+  const N = 16, line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({ length: N }, () => new THREE.Vector3())), new THREE.LineBasicMaterial({ color: '#ffffff' }));
+  line.visible = false;
+  line.raycast = () => {};
+  B.group.add(line);
+  const float = new THREE.Group();
+  mesh(new THREE.SphereGeometry(0.06, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#f04030', roughness: 0.4 }), 0, 0, 0, float);
+  mesh(new THREE.SphereGeometry(0.06, 12, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f8f8f8', roughness: 0.4 }), 0, 0, 0, float);
+  float.visible = false;
+  B.group.add(float);
+  const catches = [
+    mesh(new THREE.SphereGeometry(0.1, 14, 10), std({ color: '#f8d838', roughness: 0.4, emissive: new THREE.Color('#806010'), emissiveIntensity: 0.3 }), 0, 0, 0),
+    mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.2, 12), std({ color: '#b080e8', roughness: 0.3, emissive: new THREE.Color('#402080'), emissiveIntensity: 0.3 }), 0, 0, 0),
+    lootBall(0, 0, 0, 0.12),
+  ];
+  catches.forEach(c => { c.visible = false; });
+  const spray = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(i % 2 ? '#ffffff' : (L.water?.[1] || '#a8f0f0')), 0.3));
+  const drops = Array.from({ length: 8 }, () => sprite(sparkArt(L.water?.[1] || '#a8f0f0'), 0.18));
+  const v = new THREE.Vector3();
+  const setLine = (from, to, sag) => {
+    const pos = line.geometry.attributes.position;
+    for (let i = 0; i < N; i++) { const q = i / (N - 1); v.lerpVectors(from, to, q); v.y -= Math.sin(q * Math.PI) * sag; pos.setXYZ(i, v.x, v.y, v.z); }
+    pos.needsUpdate = true;
+    line.geometry.computeBoundingSphere();
+  };
+  B.reset = () => { line.visible = float.visible = false; catches.forEach(c => { c.visible = false; }); gyara.group.visible = false; };
+  B.acts = {
+    cast: { ms: (o) => (o?.rod === 2 ? 3000 : 2400), cues: (o) => [[0.03, 'gust'], [0.26, 'splash'], ...(o?.rod === 2 ? [[0.56, 'wave-crash'], [0.7, 'hit']] : [[0.6, 'splash']])],
+      start(o) {
+        this.rod = o?.rod || 0;
+        this.tip = tips[this.rod];
+        this.bob = new THREE.Vector3(this.tip.x + (this.rod - 1) * 0.3, 0.19, tileZ(0.7));
+        this.splash = burst(spray, this.bob, { spread: 0.7, rise: 1.8 });
+        this.drip = burst(drops, this.bob, { spread: 0.3, rise: 0.6 });
+        line.visible = true;
+      },
+      tick(k) {
+        const big = this.rod === 2, c = catches[this.rod];
+        walker.lunge = k < 0.12 ? Math.sin(k / 0.12 * Math.PI) * 0.3 : 0;
+        let end;
+        if (k < 0.25) {   // the cast: the float arcs out to the water
+          const u = k / 0.25;
+          end = this.tip.clone().lerp(this.bob, u);
+          end.y += Math.sin(u * Math.PI) * 0.6;
+        } else if (k < 0.55) {   // it bobs, then dips under
+          end = this.bob.clone();
+          end.y += (k > 0.48 ? -0.08 : Math.sin(k * 60) * 0.02);
+          if (k < 0.32) this.drip((k - 0.25) / 0.07);
+        } else {   // the reel: the catch comes up on the line
+          const u = ease(Math.min(1, (k - 0.55) / 0.4));
+          end = this.bob.clone().lerp(this.tip, u * 0.85);
+          end.y -= Math.sin(u * Math.PI) * 0.1;
+          walker.oz = big && k < 0.8 ? -Math.sin((k - 0.55) / 0.25 * Math.PI) * 0.35 : 0;
+        }
+        float.visible = k < 0.55;
+        float.position.copy(end);
+        c.visible = k >= 0.55 && k < 0.98;
+        c.position.set(end.x, end.y - 0.14, end.z);
+        c.rotation.y = k * 10;
+        setLine(this.tip, end, k < 0.25 ? 0 : 0.12);
+        line.visible = k < 0.98;
+        if (big) {   // the Gyarados thrashes up out of the water and crashes back down
+          const u = (k - 0.52) / 0.42;
+          gyara.group.visible = u > 0 && u < 1;
+          gyara.base.y = -2.4 + Math.sin(Math.max(0, Math.min(1, u)) * Math.PI) * 2.4;
+          if (u > 0) this.splash(Math.min(1, u * 1.4));
+        } else if (k >= 0.55 && k < 0.7) this.drip((k - 0.55) / 0.15);
+      } },
+  };
+}
+
+/** The sludge's surface: purple muck in blobs and streaks, tiled and slid slowly. */
+function sludgeTex() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), r = seeded(53);
+  g.fillStyle = '#7a3ea0'; g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 70; i++) {
+    const x = r() * 128, y = r() * 128, rad = 3 + r() * 10;
+    g.fillStyle = ['#a868c8', '#5e2a80', '#8a4ab0', '#c890e0'][i % 4]; g.globalAlpha = 0.35 + r() * 0.4;
+    for (const [ox, oy] of [[0, 0], [128, 0], [-128, 0], [0, 128], [0, -128]]) { g.beginPath(); g.ellipse(x + ox, y + oy, rad, rad * 0.6, r() * 3, 0, Math.PI * 2); g.fill(); }
+  }
+  g.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+async function buildSludge(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 0, 1], [0, 5, 1.1], [10, 5, 1.2]], exit: false });   // no way out but through the choice
+  B.shotTop = 3.2;
+  const cx = tileX(4.3), cz = tileZ(1.7), rx = 2.5, rz = 1.15, grime = ['#6a5a70', '#54465c', '#3e3248'];
+  const basin = mesh(new THREE.CircleGeometry(1, 40), std({ color: '#2a1038', roughness: 1 }), cx, 0.012, cz);
+  basin.rotation.x = -Math.PI / 2; basin.scale.set(rx, rz, 1);
+  const map = sludgeTex();
+  map.repeat.set(rx * 0.8, rz * 0.8);
+  const surf = mesh(new THREE.CircleGeometry(1, 40), std({ map, roughness: 0.3, metalness: 0.1, emissive: new THREE.Color('#3a1050'), emissiveIntensity: 0.25 }), cx, 0.1, cz);
+  surf.rotation.x = -Math.PI / 2; surf.scale.set(rx, rz, 1);
+  surf.castShadow = false;
+  const n = Math.round((rx + rz) * 6);
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + rnd() * 0.1; boulder(cx + Math.cos(a) * (rx + 0.06), cz + Math.sin(a) * (rz + 0.06), 0.2 + rnd() * 0.12, grime, rnd); }
+  for (let x = 1; x <= 6; x++) for (let y = 0; y <= 2; y++) B.blocked.add(key(x, y));
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3, emissive: new THREE.Color('#5a4008'), emissiveIntensity: 0.3 }), coins = [];
+  for (let i = 0; i < 9; i++) {
+    const c = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 12), gold, cx - 1.5 + rnd() * 1.1, 0.11, cz - 0.4 + rnd() * 0.8);
+    c.rotation.set((rnd() - 0.5) * 0.6, 0, (rnd() - 0.5) * 0.6);
+    coins.push(c);
+  }
+  [surf, ...coins].forEach(o => { o.userData.spot = 0; });
+  // a heap of rocks to climb out by
+  const hx = tileX(7.7), hz = tileZ(2), heap = [];
+  for (const [ox, oz, sz, y] of [[0, 0, 0.55, 0], [-0.45, 0.25, 0.4, 0], [0.4, 0.2, 0.38, 0], [0.05, -0.05, 0.36, 0.3], [-0.2, 0.1, 0.26, 0.5]]) heap.push(boulder(hx + ox, hz + oz, sz, L.rock, rnd, { y }));
+  heap.forEach(o => { o.userData.spot = 1; });
+  for (const t of [[7, 2], [8, 2], [7, 1]]) B.blocked.add(key(...t));
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/grimer-front.gif' }, { x: 5, ty: 1.5, y: 0.04 });
+  const grimer = B.who.mon;
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx - 0.9, 1.3, cz);
+  B.anchors[1] = new THREE.Vector3(hx - 1.1, 1.9, hz);   // in from the heap, or its sign runs off a phone's right edge
+  tufts(L, 40, rnd);
+  // bubbles swell and pop on the muck
+  const bubbleM = std({ color: '#c890e0', transparent: true, opacity: 0.8, roughness: 0.2 });
+  const bubbles = Array.from({ length: 6 }, (_, i) => ({ m: mesh(new THREE.SphereGeometry(1, 12, 8), bubbleM, 0, 0.1, 0), phase: i / 6, a: rnd() * Math.PI * 2, d: 0.3 + rnd() * 0.6 }));
+  bubbles.forEach(b => { b.m.castShadow = false; b.m.raycast = () => {}; });
+  B.ticks.push((now) => {
+    if (!calm) map.offset.set(now / 90000, Math.sin(now / 4000) * 0.03);
+    grimer.base.y = 0.04 + (calm ? 0 : Math.sin(now / 900) * 0.025);
+    for (const b of bubbles) {
+      const t = calm ? 0.3 : (now / 2600 + b.phase) % 1;
+      b.m.position.set(cx + Math.cos(b.a + Math.floor(now / 2600 + b.phase)) * b.d * rx, 0.1, cz + Math.sin(b.a + Math.floor(now / 2600 + b.phase)) * b.d * rz * 0.8);
+      b.m.scale.setScalar(t < 0.8 ? 0.02 + t * 0.1 : 0.001);
+    }
+  });
+  const splat = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#c890e0' : '#8a4ab0'), 0.26));
+  const cash = Array.from({ length: 8 }, () => sprite(sparkArt('#f8d040'), 0.22));
+  B.reset = () => { coins.forEach(c => { c.visible = true; }); };
+  B.acts = {
+    goop: { ms: 2200, cues: (o) => (o?.dig ? [[0.08, 'splash'], [0.55, 'coins']] : [[0.08, 'rustle'], [0.5, 'splash']]),
+      start(o) {
+        this.dig = !!o?.dig;
+        const at = this.dig ? new THREE.Vector3(cx - 0.9, 0.15, cz + 0.2) : new THREE.Vector3(hx - 1.2, 0.15, hz - 0.2);
+        this.splat = burst(splat, at, { spread: 0.6, rise: 0.9 });
+        this.cash = burst(cash, this.dig ? at : new THREE.Vector3(walker.x, 1.0, walker.z), { spread: 0.5, rise: this.dig ? 1.4 : 0.9, fall: !this.dig });
+        this.x0 = walker.x; this.z0 = walker.z;
+      },
+      tick(k) {
+        if (this.dig) {   // a lunge into the muck, sludge flying, coins thrown up
+          walker.lunge = Math.sin(Math.min(1, k / 0.4) * Math.PI) * 0.45;
+          walker.oy = k > 0.15 && k < 0.4 ? -0.08 : 0;
+          this.splat(k);
+          if (k > 0.35) this.cash((k - 0.35) / 0.65);
+          if (k > 0.5) coins.forEach((c, i) => { c.visible = i % 3 !== 0; });
+        } else {   // up onto the rocks, coins tumbling out of your pockets into the sludge
+          const up = ease(Math.min(1, k / 0.35)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+          walker.ox = (hx - this.x0) * up * 0.6; walker.oz = (hz - this.z0) * up * 0.5; walker.oy = up * 0.55;
+          this.cash(k);
+          if (k > 0.4) this.splat((k - 0.4) / 0.6);
+        }
+      } },
+  };
+}
+
+/** A rope between two posts' tops, at height `y`. */
+function rope(a, b, y, m) {
+  const from = new THREE.Vector3(a.x, y, a.z), to = new THREE.Vector3(b.x, y, b.z), d = to.clone().sub(from);
+  const r = mesh(new THREE.CylinderGeometry(0.02, 0.02, d.length(), 6), m, (from.x + to.x) / 2, y, (from.z + to.z) / 2);
+  r.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  r.castShadow = false;
+  return r;
+}
+
+/** A pennant: a triangle of cloth hanging off the rope. */
+function pennant(x, y, z, col) {
+  const s = new THREE.Shape();
+  s.moveTo(-0.1, 0); s.lineTo(0.1, 0); s.lineTo(0, -0.2); s.closePath();
+  const m = mesh(new THREE.ShapeGeometry(s), std({ color: col, roughness: 0.8, side: THREE.DoubleSide }), x, y, z);
+  m.castShadow = false;
+  m.raycast = () => {};
+  return m;
+}
+
+async function buildContest(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [0, 5, 1.1], [10, 5, 1.2], [10, 3, 1]] });
+  B.shotTop = 3.2;
+  const wood = std({ color: '#a87840', roughness: 0.85 }), cord = std({ color: '#f0e0b0', roughness: 0.9 });
+  const x0 = tileX(2), x1 = tileX(8), z0 = tileZ(0.7), z1 = tileZ(2.9);
+  const corners = [[x0, z0], [x1, z0], [x0, z1], [x1, z1]].map(([x, z]) => {
+    mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.95, 10), wood, x, 0.475, z);
+    mesh(new THREE.SphereGeometry(0.08, 10, 8), std({ color: '#e04030', roughness: 0.5 }), x, 0.98, z);
+    return { x, z };
+  });
+  for (const y of [0.45, 0.82]) { rope(corners[0], corners[1], y, cord); rope(corners[0], corners[2], y, cord); rope(corners[1], corners[3], y, cord); }
+  const flags = ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'], pennants = [];
+  for (let i = 0, x = x0 + 0.25; x < x1 - 0.1; x += 0.36, i++) pennants.push(pennant(x, 0.82, z0, flags[i % flags.length]));
+  piece('trophy', 5, 0);
+  piece('scoreboard', 8, 0);
+  piece('gymflag', 1, 0);
+  for (const t of [[2, 0], [2, 1], [2, 2], [8, 1], [8, 2]]) B.blocked.add(key(...t));
+  const left = await figure('left', figs.left ?? { src: 'assets/pokemon/scyther-front.gif', flip: true }, { x: 4, ty: 1.8 });
+  const right = await figure('right', figs.right ?? { src: 'assets/pokemon/caterpie-front.gif' }, { x: 6.4, ty: 1.8 });
+  B.who.left = left; B.who.right = right;
+  left.group.traverse(o => { o.userData.spot = 0; });
+  right.group.traverse(o => { o.userData.spot = 1; });
+  for (const t of [[4, 1], [4, 2], [6, 1], [6, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(left.base.x, 2.2, left.base.z);
+  B.anchors[1] = new THREE.Vector3(right.base.x, 1.6, right.base.z);
+  tufts(L, 40, rnd);
+  B.ticks.push((now) => { if (!calm) pennants.forEach((p, i) => { p.rotation.x = Math.sin(now / 300 + i) * 0.25; }); });
+  const homes = [left.base.x, right.base.x], mid = new THREE.Vector3((homes[0] + homes[1]) / 2, 0.5, left.base.z);
+  const dust = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 3 ? '#f8f0d8' : '#f8d040'), 0.34));
+  const confetti = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(['#f8d030', '#f878b0', '#78c8f0', '#88e070'][i % 4]), 0.22));
+  B.reset = () => { left.base.x = homes[0]; right.base.x = homes[1]; };
+  B.acts = {
+    joust: { ms: 3000, cues: [[0.07, 'hit'], [0.23, 'hit'], [0.4, 'hit'], [0.62, 'stat-up']],
+      start(o) {
+        this.win = o?.win ? right : left;
+        this.dust = burst(dust, mid, { spread: 0.5, rise: 0.8, spin: true });
+        this.party = burst(confetti, new THREE.Vector3(this.win.base.x, 2.2, this.win.base.z), { spread: 0.6, rise: 1.4, fall: true, spin: true });
+        this.hopped = false;
+      },
+      tick(k) {
+        const u = Math.min(1, k / 0.55), clash = u < 1 ? Math.sin((u * 3 % 1) * Math.PI) : 0;   // three charges at each other
+        left.base.x = homes[0] + clash * 0.75;
+        right.base.x = homes[1] - clash * 0.75;
+        if (k < 0.6) this.dust(k / 0.6);
+        if (k > 0.6 && !this.hopped) { this.hopped = true; does(this.win, 'hop'); }
+        if (k > 0.6) this.party((k - 0.6) / 0.4);
+      } },
+  };
+}
+
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais before a round stone arch on
@@ -10658,9 +11108,10 @@ function townCrowd(town, chats) {
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
   berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, snorlax: buildSnorlax, trash: buildTrash, ditto: buildDitto,
   abra: buildAbra, billspc: buildBillsPc, wheel: buildWheel, idol: buildIdol, keystone: buildKeystone, moon: buildMoon, stall: buildStall,
+  library: buildLibrary, fishing: buildFishing, sludge: buildSludge, storeroom: buildStoreroom, contest: buildContest,
   gym: buildGym, town: buildTown, home: buildHome };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'gym', 'town', 'home']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'fishing', 'sludge', 'contest', 'gym', 'town', 'home']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);

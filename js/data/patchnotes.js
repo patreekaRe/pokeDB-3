@@ -46,7 +46,7 @@ export const NEXT = [
   ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
   ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
-  ['runs', 'Ten new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, a golden Ruins Idol, a Clefairy Moon Dance and Kecleon\'s Swap Stall.'],
+  ['runs', 'Fifteen new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, a Clefairy Moon Dance, the Canalave Library and a Bug-Catching Contest.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

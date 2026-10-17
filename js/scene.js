@@ -1154,6 +1154,48 @@ const PLACE_ART = {
     life: ['stall'],
   },
 
+  // batch 3 of the StS events (2026-10-17): two rooms and three outdoor scenes, the same way
+  library: {   // the Canalave Library: walls of books, a lectern with an open book (read), a reading chair (nap), Noctowl on a bookcase
+    backdrop: 'study', floor: 'planks', prop: 'library', light: null, horizon: 0.6, sky: ['#3e5a4a'],
+    wall: ['#3e5a4a', '#365040', '#2a4034', '#5a7a66'],
+    trim: ['#a87448', '#7a5232', '#52341e', '#22140a'],
+    plank: ['#8a6448', '#7a563c', '#644430', '#2e1e14'],
+    books: ['#b83828', '#3868b8', '#388858', '#c89830', '#8a4ab0', '#d8d0b8', '#a85a28'],
+    page: ['#fff8e4', '#d8c8a0', '#4a3a30'], wax: ['#fff8e8', '#d8ccb0'], flame: ['#fff8c0', '#f8a830'],
+    chair: ['#d86858', '#b84838', '#8a2c22', '#3a120c'], zee: ['#ffffff', '#8898c8'], shine: ['#ffffff', '#f8e070'],
+    life: ['library'],
+  },
+  fishing: {   // a boardwalk along a pond, three rods leaning on its rail, a Magikarp splashing in the water
+    outdoor: true, prop: 'fishing', horizon: 0.5, zoom: 1.75, span: 96,
+    water: ['#c8f0ff', '#78c0f0', '#3e88d0', '#1e4a90'], wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'],
+    rods: [['#c89860', '#6a4424'], ['#68a8e8', '#28508a'], ['#e85848', '#2a2a34']], line: '#f8f8f8',
+    bob: ['#f04030', '#f8f8f8'], catch: [['#f8e048', '#c89818'], ['#c8a0f0', '#7848c0'], ['#283858', '#101828']],
+    life: ['fishing'],
+  },
+  sludge: {   // a pit of purple sludge with coins glinting in it, a Grimer wallowing, a heap of rocks to climb out by
+    outdoor: true, prop: 'sludge', horizon: 0.5, zoom: 1.75, span: 84,
+    goop: ['#d8a8e8', '#a868c8', '#7a3ea0', '#3a1650'], rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
+    life: ['sludge'],
+  },
+  storeroom: {   // a Silph Co. storeroom: steel racks of boxes, a stack of crates in the middle (search), Porygon floating by
+    backdrop: 'lab', floor: 'planks', prop: 'storeroom', light: null, horizon: 0.6, sky: ['#c8d0d8'],
+    wall: ['#c8d0d8', '#b8c0cc', '#9aa4b4', '#e0e8f0'],
+    trim: ['#8a96a8', '#6a7688', '#4a5468', '#1e2430'],
+    plank: ['#a8b0b8', '#98a0a8', '#80888e', '#4a5058'],
+    box: ['#e0b878', '#c89858', '#9a7038', '#3a2810'], label: ['#3878d0', '#f8f8f8'],
+    crate: ['#d8a868', '#b88848', '#8a5e2c', '#2e1c0c'], lamp: ['#f84838', '#58e858'],
+    ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'], shine: ['#ffffff', '#a8e8ff'],
+    life: ['storeroom'],
+  },
+  contest: {   // a roped-off field, pennants on the rope, a gold trophy at the back; Scyther and Caterpie face off
+    outdoor: true, prop: 'contest', horizon: 0.5, zoom: 1.75, span: 84,
+    wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], rope: ['#f0e0b0', '#b89860'],
+    flags: ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'], gold: ['#fff8c0', '#f8d040', '#c89018', '#4a3008'],
+    dust: ['#f8f0d8', '#d8c8a0'], confetti: ['#f8d030', '#f878b0', '#78c8f0', '#88e070'],
+    life: ['contest'],
+  },
+
   /* the Move Tutor's dojo: shoji screens between timber posts over a tatami floor, his arena's Dragonite medallion big in
      a dark wood alcove under a shimenawa rope, Alder on a cushion below it, a hanging scroll (pay ₽), a sandbag (pay HP) */
   tutor: {
@@ -1870,6 +1912,7 @@ function paintBase() {
   if (S.raw.backdrop === 'onsen') onsenWall();
   if (S.raw.backdrop === 'dojo') roomWall({ posts: 28, shoji: true });
   if (S.raw.backdrop === 'study') roomWall({ stripes: 3 });
+  if (S.raw.backdrop === 'lab') roomWall();
   if (S.raw.backdrop === 'fanclub') fanWall();
   if (S.raw.backdrop === 'daycare') daycareHouse();
   if (S.raw.backdrop === 'kombat') kombatBackdrop();
@@ -3920,7 +3963,8 @@ const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 
 function eventProps() {
   ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene,
     snorlax: snorlaxScene, trash: trashScene, ditto: dittoScene, abra: abraScene, billspc: billsPcScene,
-    wheel: wheelScene, idol: idolScene, keystone: keystoneScene, moon: moonScene, stall: stallScene })[S.raw.prop]();
+    wheel: wheelScene, idol: idolScene, keystone: keystoneScene, moon: moonScene, stall: stallScene,
+    library: libraryScene, fishing: fishingScene, sludge: sludgeScene, storeroom: storeroomScene, contest: contestScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -3983,6 +4027,12 @@ const ACTS = {
   dance: { frames: 18, cues: () => [[2, 'bell'], [14, 'stat-up']] },
   moonlight: { frames: 16, cues: () => [[2, 'bell']] },
   swap: { frames: 16, cues: () => [[2, 'spirit'], [10, 'item']] },
+  read: { frames: 14, cues: () => [[1, 'rustle'], [9, 'item']] },
+  nap: { frames: 16 },
+  cast: { frames: ({ rod }) => (rod === 2 ? 24 : 20), cues: ({ rod }) => [[1, 'gust'], [6, 'splash'], ...(rod === 2 ? [[14, 'wave-crash'], [17, 'hit']] : [[14, 'splash']])] },
+  goop: { frames: 16, cues: ({ dig }) => (dig ? [[2, 'splash'], [9, 'coins']] : [[2, 'rustle'], [8, 'splash']]) },
+  rummage: { frames: 14, cues: () => [[1, 'rustle'], [6, 'rustle'], [10, 'item']] },
+  joust: { frames: 24, cues: () => [[2, 'hit'], [6, 'hit'], [10, 'hit'], [15, 'stat-up']] },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -4382,6 +4432,282 @@ function drawStall(t) {
   if (f < 0 || f > 16) return;
   const c = cs[life.act.i] || cs[0];
   for (let i = 0; i < 7; i++) { const age = (f + i * 2) % 9; sparkle(c.x - 7 + ((i * 5 + f) % 15), c.y - 4 - age, S.shine[i % 3]); }
+}
+
+/* ---------- batch 3 of the StS events: the Library and the Silph storeroom are rooms, the rest outdoors ---------- */
+
+/** Z's rising from (x, y) through a nap's frames. */
+function napZs(x, y, f, frames) {
+  for (let i = 0; i < 3; i++) {
+    const k = ((f / frames) + i / 3) % 1, zx = x + Math.round(k * 6), zy = y - Math.round(k * 12), c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(zx + d, zy, c); put(zx + 2 - d, zy + d, c); put(zx + d, zy + 2, c); }
+  }
+}
+
+function libraryScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  life.candles = [];
+  const shelfTop = Math.round(horizon * 0.14), perch = shelfTop + u(0.14);
+  for (let k = -3; k <= 3; k++) {   // bookcases wall to wall, the middle one lower for Noctowl to perch on
+    const x = cx + k * u(0.48), top = k ? shelfTop : perch;
+    if (x + u(0.23) > -2 && x - u(0.23) < W + 2) bookcase(x, top, u(0.23), horizon - top - 1);
+  }
+  const lec = { x: cx - u(0.27), top: foot - u(0.34) };
+  lectern(lec.x, foot, lec.top, u(0.18));
+  const ch = { x: cx + u(0.27), hw: Math.max(8, u(0.14)), top: foot - u(0.3) }, [cLit, cloth, cDark, cLine] = S.chair;
+  const seat = foot - Math.round((foot - ch.top) * 0.42), arm = foot - Math.round((foot - ch.top) * 0.55);
+  groundShadow(ch.x, foot + 1, ch.hw + 2, 2);
+  outlined(ch.x - ch.hw, ch.top, ch.x + ch.hw, foot, (x, y) => {
+    const dx = Math.abs(x - ch.x);
+    if (y > foot - 2) return y <= foot && dx >= ch.hw - 3 && dx <= ch.hw - 1;   // its little legs
+    if (dx <= ch.hw - 3) return y >= ch.top + (dx > ch.hw - 6 ? 2 : 0);   // the back, its corners rounded, and the seat
+    return dx <= ch.hw && y >= arm;   // the rolled arms
+  }, (x, y) => {
+    const dx = Math.abs(x - ch.x);
+    if (y > foot - 2) return S.trim[2];
+    if (dx > ch.hw - 3) return y === arm ? cLit : x < ch.x ? cloth : cDark;
+    if (y >= seat) return y === seat ? cLit : cloth;
+    return (x - ch.x + 40) % 5 === 0 && (y - ch.top) % 5 === 2 ? cDark : y < ch.top + 2 ? cLit : cloth;
+  }, cLine);
+  for (let x = ch.x - ch.hw + 3; x <= ch.x + ch.hw - 3; x++) solid(x, seat - 1, cDark);
+  life.book = { x: lec.x, y: lec.top - 2, w: Math.round(u(0.18) * 0.9) };
+  life.chair = { x: ch.x, y: seat };
+  life.stands = { mon: { x: cx, y: perch } };
+  life.eventSpots = [
+    { x0: lec.x - u(0.17), x1: lec.x + u(0.17), y0: lec.top - u(0.1), y1: foot },
+    { x0: ch.x - ch.hw - 2, x1: ch.x + ch.hw + 2, y0: ch.top - 2, y1: foot },
+  ];
+  life.foot = foot + 4;
+}
+
+/** The lectern's candles flicker; reading lifts pages and sparkles off the open book, a nap sends Z's up off the chair. */
+function drawLibrary(t) {
+  for (const c of life.candles) {
+    const f = Math.sin(t / 1.7 + c.x) + Math.sin(t / 3.1);
+    put(c.x, c.y, S.flame[0]); put(c.x, c.y - 1, f > -0.5 ? S.flame[1] : S.flame[0]); if (f > 0.4) put(c.x, c.y - 2, S.flame[1]);
+    for (let y = -4; y <= 3; y++) for (let x = -4; x <= 4; x++) if ((x || y) && x * x + y * y <= 14 + f * 3 && dither(c.x + x, c.y + y) < 3) blend(c.x + x, c.y + y, S.flame[1], 0.35);
+  }
+  const r = actFrame('read'), b = life.book;
+  if (r >= 0 && r < 14) for (let i = 0; i < 5; i++) {
+    const age = (r + i * 3) % 12, x = b.x - b.w + 2 + ((i * 7 + r) % (b.w * 2)), y = b.y - 4 - age, flap = (age + i) % 2;
+    if (age < 8) { put(x, y, S.page[0]); put(x + 1, y - flap, S.page[0]); put(x - 1, y - (1 - flap), S.page[1]); }
+    else sparkle(x, y, S.shine[i % 2]);
+  }
+  const z = actFrame('nap');
+  if (z >= 0 && z < 16) napZs(life.chair.x + 2, life.chair.y - 8, z, 16);
+}
+
+function storeroomScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const top = Math.round(horizon * 0.12), [mLit, metal, mDark, mLine] = S.trim, [bLit, box, bDark, bLine] = S.box, [blue, white] = S.label;
+  const rack = (x0, hw) => {   // a steel rack against the wall, cardboard boxes on its shelves
+    const shelf = Math.max(10, Math.round((horizon - top) / 4));
+    for (let y = top; y < horizon; y++) for (let x = x0 - hw; x <= x0 + hw; x++) {
+      const edge = Math.abs(x - x0) >= hw - 1, board = (y - top) % shelf === 0;
+      if (edge || board) { solid(x, y, x === x0 - hw || x === x0 + hw ? mLine : board ? mLit : metal); continue; }
+      const row = Math.floor((y - top) / shelf), from = shelf - ((y - top) % shelf);
+      const k = Math.floor((x - x0 + hw) / 7 + noise(row, 2, 9) * 2), tall = 4 + Math.floor(noise(k, row, 8) * (shelf - 5)), gap = noise(k, row, 7) > 0.82;
+      const left = (x - x0 + hw + Math.floor(noise(row, 2, 9) * 14)) % 7 === 0;
+      if (gap || from > tall) { solid(x, y, mDark); continue; }
+      solid(x, y, left ? bLine : from === tall ? bLit : from === tall - 2 && (x + k) % 7 > 2 && (x + k) % 7 < 5 ? (x % 2 ? blue : white) : from < 2 ? bDark : box);
+    }
+  };
+  for (let k = -3; k <= 3; k++) { const x = cx + k * u(0.42); if (k && x + u(0.19) > -2 && x - u(0.19) < W + 2) rack(x, u(0.19)); }
+  const [cLit, crate, cDark, cLine] = S.crate, w = Math.max(8, u(0.11)), h = Math.max(7, u(0.09));
+  const crateBox = (x0, y1) => {   // a slatted wooden crate, its bottom edge at y1
+    outlined(x0, y1 - h, x0 + w, y1, (x, y) => x >= x0 && x <= x0 + w && y >= y1 - h && y <= y1,
+      (x, y) => (x === x0 || x === x0 + w || y === y1 - h || y === y1 ? cDark : (y - y1 + h) % 4 === 0 ? cDark : x === x0 + 1 ? cLit : crate), cLine);
+    for (let i = 1; i < w; i++) { const y = y1 - Math.round(i * h / w); if (y > y1 - h && y < y1) solid(x0 + i, y, cDark); }
+  };
+  const st = { x: cx - u(0.04), y: foot };
+  groundShadow(st.x, foot + 1, w + 6, 2);
+  crateBox(st.x - w - 1, foot); crateBox(st.x + 1, foot); crateBox(st.x - Math.round(w / 2), foot - h - 1);
+  life.lamp = { x: cx + u(0.42) - u(0.19) + 3, y: top + 3 };
+  life.crates = { x: st.x, y: foot - h * 2 - 2 };
+  life.stands = { mon: { x: cx + u(0.3), y: foot - u(0.06) } };
+  life.eventSpots = [{ x0: st.x - w - 3, x1: st.x + w + 3, y0: foot - h * 2 - 8, y1: foot }];
+  life.foot = foot + 4;
+}
+
+/** A status light blinks on a rack; a search shakes sparkles and Poké Balls up out of the crates. */
+function drawStoreroom(t) {
+  const l = life.lamp, c = life.crates, f = actFrame('rummage');
+  put(l.x, l.y, Math.floor(t / 8) % 2 ? S.lamp[0] : S.lamp[1]);
+  if (f < 0 || f > 14) return;
+  for (let i = 0; i < 6; i++) { const age = (f + i * 2) % 10; sparkle(c.x - 9 + ((i * 5 + f) % 18), c.y - age, S.shine[i % 2]); }
+  if (f >= 6) {   // three Poké Balls pop up out of the top crate
+    const [w, wShade, red, redDark, line] = S.ball;
+    for (let i = 0; i < 3; i++) {
+      const k = Math.min(1, (f - 6 - i) / 6);
+      if (k < 0) continue;
+      const bx = c.x - 8 + i * 7, by = c.y - 2 - Math.round(Math.sin(k * Math.PI) * 10);
+      BALL.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') put(bx + x - 3, by + y - 6, { k: line, R: red, D: redDark, W: w, G: wShade }[row[x]]); });
+    }
+  }
+}
+
+function fishingScene() {
+  const cx = W >> 1, foot = groundAt(0.42), pond = { x: cx + 4, y: foot - 3, rx: 46, ry: 8 };
+  const [shine, water, deep, line] = S.water, [wLit, wood, wDark, wLine] = S.wood;
+  for (let y = -pond.ry - 1; y <= pond.ry + 1; y++) for (let x = -pond.rx - 1; x <= pond.rx + 1; x++) {
+    const d = (x / pond.rx) ** 2 + (y / pond.ry) ** 2;
+    if (d <= 1) solid(pond.x + x, pond.y + y, d > 0.86 ? line : y < -pond.ry * 0.4 ? deep : dither(x, y) < 3 ? shine : water);
+  }
+  const deck = { y0: foot + 2, y1: foot + 7, x0: cx - 36, x1: cx + 30 };   // a boardwalk along the near bank
+  for (let y = deck.y0; y <= deck.y1; y++) for (let x = deck.x0; x <= deck.x1; x++)
+    solid(x, y, y === deck.y0 ? wLit : y === deck.y1 ? wLine : (x - deck.x0) % 6 === 0 ? wDark : wood);
+  for (let x = deck.x0; x <= deck.x1; x += 11) for (let y = deck.y1 + 1; y <= deck.y1 + 3; y++) { solid(x, y, wDark); solid(x + 1, y, wLine); }
+  for (const x of [deck.x0 + 1, deck.x1 - 1]) for (let y = deck.y0 - 9; y < deck.y0; y++) { solid(x, y, wLine); solid(x + 1, y, wood); }
+  for (let x = deck.x0 + 1; x <= deck.x1; x++) { solid(x, deck.y0 - 9, wLine); solid(x, deck.y0 - 8, wLit); }   // the rail
+  const tips = [];
+  [-16, 0, 16].forEach((dx, i) => {   // the three rods, leaning on the rail out over the water
+    const [col, dark] = S.rods[i], x0 = cx + dx - 6, y0 = deck.y0 + 1, len = 24;
+    for (let k = 0; k <= len; k++) {
+      const x = Math.round(x0 + k * 0.5), y = y0 - k;
+      solid(x, y, k < 6 ? dark : col);
+      if (k < 6) solid(x + 1, y, dark);
+    }
+    solid(x0 + 2, y0 - 4, '#f8f8f8'); solid(x0 + 3, y0 - 4, dark);   // the reel
+    tips.push({ x: Math.round(x0 + len * 0.5), y: y0 - len });
+  });
+  life.tips = tips;
+  life.pond = pond;
+  life.stands = { mon: { x: pond.x + 30, y: pond.y + 3 } };
+  life.eventSpots = tips.map(p => ({ x0: p.x - 9, x1: p.x + 3, y0: p.y - 2, y1: deck.y1 }));
+  life.foot = deck.y1 + 6;
+  life.keep = [{ x0: pond.x - pond.rx - 2, x1: pond.x + pond.rx + 2, y0: tips[0].y - 3, y1: deck.y1 + 4 }];
+}
+
+/** Glints slide over the pond; a cast arcs the line out, the float bobs and dips, and the rod reels its catch in: a berry,
+    an HP Up, or (the Super Rod) a great splash as a Gyarados thrashes up. */
+function drawFishing(t) {
+  const p = life.pond;
+  for (let i = 0; i < 4; i++) {
+    const x = p.x - p.rx + 6 + ((t + i * 23) % (p.rx * 2 - 12)), y = p.y - 3 + i * 2;
+    put(x, y, S.water[0]); put(x + 1, y, S.water[0]);
+  }
+  const f = actFrame('cast');
+  if (f < 0) return;
+  const rod = life.act.rod || 0, tip = life.tips[rod], frames = rod === 2 ? 24 : 20;
+  if (f >= frames) return;
+  const bob = { x: tip.x + 12 + rod * 2, y: p.y - 1 };
+  const out = Math.min(1, f / 6), reel = f >= 14 ? (f - 14) / (frames - 14) : 0;
+  const end = { x: Math.round(tip.x + (bob.x - tip.x) * out * (1 - reel)), y: Math.round(tip.y + (bob.y - tip.y) * out - Math.sin(out * Math.PI) * 6 - reel * (bob.y - tip.y) * 0.7 + (f >= 10 && f < 14 ? (f % 2) * 2 : 0)) };
+  for (let k = 0; k <= 12; k++) { const q = k / 12; put(Math.round(tip.x + (end.x - tip.x) * q), Math.round(tip.y + (end.y - tip.y) * q + Math.sin(q * Math.PI) * 2), S.line); }
+  if (f < 14) { put(end.x, end.y, S.bob[0]); put(end.x, end.y - 1, S.bob[1]); }
+  else { const [c, dark] = S.catch[rod]; for (let y = -1; y <= 1; y++) for (let x = -1; x <= 1; x++) put(end.x + x, end.y + 2 + y, x + y > 0 ? dark : c); }
+  if (f >= 6 && f < 10) for (let i = 0; i < 6; i++) put(bob.x - 3 + i, bob.y - (i % 2) - (f - 6), S.water[0]);   // the float lands
+  if (rod === 2 && f >= 13) {   // the Gyarados: a dark hump and a tall white spout
+    const k = Math.min(1, (f - 13) / 5);
+    for (let x = -6; x <= 6; x++) for (let y = 0; y < Math.round((1 - (x / 6.5) ** 2) * 5 * k); y++) put(bob.x + x, bob.y - y, S.catch[2][y % 3 ? 0 : 1]);
+    for (let i = 0; i < 14; i++) { const h = Math.round(((i * 7) % 12) * k) + 2; put(bob.x - 8 + ((i * 5) % 17), bob.y - 4 - h, i % 3 ? S.water[0] : '#ffffff'); }
+  }
+}
+
+function sludgeScene() {
+  const cx = W >> 1, foot = groundAt(0.42), pit = { x: cx - 8, y: foot + 1, rx: 30, ry: 7 }, ledge = { x: cx + 32, y: foot + 3 };
+  const [gLit, goop, gDark, gLine] = S.goop, [rLit, rock, rDark, rLine] = S.rock, [cLit, coin, cDark] = S.coin;
+  for (let y = -pit.ry - 1; y <= pit.ry + 1; y++) for (let x = -pit.rx - 1; x <= pit.rx + 1; x++) {
+    const d = (x / pit.rx) ** 2 + (y / pit.ry) ** 2;
+    if (d <= 1) solid(pit.x + x, pit.y + y, d > 0.85 ? gLine : noise((pit.x + x) >> 1, (pit.y + y) >> 1, 21) > 0.68 ? gLit : y > pit.ry * 0.3 ? gDark : goop);
+  }
+  const coins = [[-20, -1], [-15, 2], [-11, -2], [-24, 2], [-8, 1]].map(([dx, dy]) => ({ x: pit.x + dx, y: pit.y + dy }));
+  for (const c of coins) { solid(c.x, c.y, cLit); solid(c.x + 1, c.y, coin); solid(c.x + 2, c.y, cDark); }
+  for (const [dx, dy, rx, ry] of [[0, 0, 9, 4], [-6, -4, 6, 3.4], [5, -6, 5, 3], [-1, -9, 4, 2.6]]) {   // a heap of rocks, the way out
+    const x0 = ledge.x + dx, y0 = ledge.y + dy;
+    outlined(x0 - rx, y0 - ry, x0 + rx, y0 + ry, (x, y) => Math.hypot((x - x0) / rx, (y - y0) / ry) <= 1,
+      (x, y) => (y < y0 - ry * 0.3 ? rLit : x > x0 + rx * 0.4 ? rDark : rock), rLine);
+  }
+  life.pit = pit;
+  life.coins = coins;
+  life.ledge = { x: ledge.x, y: ledge.y - 12 };
+  life.stands = { mon: { x: pit.x + 8, y: pit.y + 1 } };
+  life.eventSpots = [
+    { x0: pit.x - pit.rx + 2, x1: pit.x - 4, y0: pit.y - 12, y1: pit.y + pit.ry },
+    { x0: ledge.x - 11, x1: ledge.x + 11, y0: ledge.y - 16, y1: ledge.y + 4 },
+  ];
+  life.foot = ledge.y + 8;
+  life.keep = [{ x0: pit.x - pit.rx - 2, x1: ledge.x + 11, y0: foot - 30, y1: ledge.y + 5 }];
+}
+
+/** Bubbles swell and pop on the sludge and the coins glint; digging throws sludge and coins up out of it, climbing out
+    drops coins from the rocks into the muck with a plop. */
+function drawSludge(t) {
+  const p = life.pit;
+  for (let i = 0; i < 4; i++) {
+    const age = (t + i * 7) % 16, x = p.x - p.rx + 8 + ((i * 17 + Math.floor((t + i * 7) / 16) * 11) % (p.rx * 2 - 16)), y = p.y - 2 + (i % 3);
+    if (age < 10) { const r = age < 4 ? 0 : age < 8 ? 1 : 2; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.abs(dx) + Math.abs(dy) === r || !r) put(x + dx, y + dy, S.goop[0]); }
+    else if (age < 12) { put(x - 2, y - 1, S.goop[0]); put(x + 2, y - 1, S.goop[0]); }
+  }
+  if (Math.floor(t / 7) % 3 === 0) { const c = life.coins[Math.floor(t / 21) % life.coins.length]; put(c.x + 1, c.y - 1, '#ffffff'); }
+  const f = actFrame('goop');
+  if (f < 0 || f >= 16) return;
+  if (life.act.dig) {
+    for (let i = 0; i < 8; i++) {
+      const k = Math.min(1, Math.max(0, (f - i * 0.6) / 10)), x0 = p.x - 16, dx = (i - 3.5) * 2.6;
+      put(Math.round(x0 + dx * k * 2), Math.round(p.y - 2 - Math.sin(k * Math.PI) * (10 + (i % 3) * 3)), i % 2 ? S.coin[1] : S.goop[1]);
+    }
+    if (f >= 9) for (let i = 0; i < 4; i++) sparkle(p.x - 22 + i * 5, p.y - 10 - ((f + i * 2) % 6), S.coin[0]);
+  } else {
+    const l = life.ledge;
+    for (let i = 0; i < 4; i++) {
+      const k = Math.min(1, Math.max(0, (f - i * 1.5) / 7));
+      if (k <= 0 || k >= 1) continue;
+      put(Math.round(l.x - 6 - i * 3 - k * 14), Math.round(l.y + k * k * 14), S.coin[1]);
+    }
+    if (f >= 8) for (let i = 0; i < 6; i++) put(p.x + p.rx - 10 + (i % 3) * 2, p.y - 1 - ((f - 8 + i) % 4), S.goop[0]);
+  }
+}
+
+function contestScene() {
+  const cx = W >> 1, foot = groundAt(0.42), back = foot - 7, [wLit, wood, wDark, wLine] = S.wood, [rope, ropeDark] = S.rope;
+  const posts = [cx - 40, cx - 14, cx + 14, cx + 40];
+  for (const x of posts) for (let y = back - 11; y <= back; y++) { solid(x - 1, y, wLine); solid(x, y, wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine); }
+  for (const dy of [9, 4]) for (let x = posts[0]; x <= posts[3]; x++) {   // two ropes, sagging between the posts
+    const i = posts.findIndex((p, k) => x >= p && x <= posts[k + 1]), a = posts[i], b = posts[i + 1], q = (x - a) / (b - a);
+    solid(x, back - dy + Math.round(Math.sin(q * Math.PI) * 2), (x % 3) ? rope : ropeDark);
+  }
+  const cup = { x: cx, y: back - 1 }, [gLit, gold, gDark, gLine] = S.gold;   // the trophy on a little stand, at the back
+  for (let y = cup.y - 5; y <= cup.y; y++) for (let x = cup.x - 3; x <= cup.x + 3; x++) solid(x, y, x === cup.x - 3 || x === cup.x + 3 || y === cup.y - 5 ? wLine : wood);
+  outlined(cup.x - 5, cup.y - 15, cup.x + 5, cup.y - 6, (x, y) => (y >= cup.y - 15 && y <= cup.y - 10 && Math.abs(x - cup.x) <= 4 - (y > cup.y - 12 ? 1 : 0))
+    || (y > cup.y - 10 && y <= cup.y - 8 && Math.abs(x - cup.x) <= 1) || (y > cup.y - 8 && y <= cup.y - 6 && Math.abs(x - cup.x) <= 3),
+  (x, y) => (x < cup.x - 1 ? gLit : x > cup.x + 1 ? gDark : gold), gLine);
+  for (const s of [-1, 1]) { solid(cup.x + s * 6, cup.y - 14, gLine); solid(cup.x + s * 6, cup.y - 13, gold); solid(cup.x + s * 6, cup.y - 12, gLine); }
+  const left = { x: cx - 18, y: foot + 3 }, right = { x: cx + 18, y: foot + 3 };
+  groundShadow(left.x, left.y, 9, 2);
+  groundShadow(right.x, right.y, 6, 1);
+  life.cup = cup;
+  life.rope = { x0: posts[0], x1: posts[3], y: back - 9 };
+  life.fighters = [left, right];
+  life.stands = { left, right };
+  life.eventSpots = [
+    { x0: left.x - 12, x1: left.x + 12, y0: left.y - 30, y1: left.y + 2 },
+    { x0: right.x - 10, x1: right.x + 10, y0: right.y - 22, y1: right.y + 2 },
+  ];
+  life.foot = foot + 8;
+  life.keep = [{ x0: posts[0] - 2, x1: posts[3] + 3, y0: back - 18, y1: foot + 4 }];
+}
+
+/** Pennants flutter on the rope and the trophy glints; a bout throws up a dust cloud full of stars between them, then
+    confetti rains on the winner. */
+function drawContest(t) {
+  const r = life.rope;
+  for (let x = r.x0 + 3, i = 0; x < r.x1 - 2; x += 6, i++) {
+    const c = S.flags[i % S.flags.length], flap = (Math.floor(t / 5) + i) % 2;
+    for (let y = 0; y < 4; y++) for (let dx = 0; dx <= 3 - y - (y === 3 ? 0 : flap); dx++) put(x + dx, r.y + 1 + y, c);
+  }
+  if (Math.floor(t / 9) % 4 === 0) sparkle(life.cup.x + 2, life.cup.y - 14, S.gold[0]);
+  const f = actFrame('joust');
+  if (f < 0 || f >= 24) return;
+  const [a, b] = life.fighters, mid = { x: (a.x + b.x) >> 1, y: a.y - 8 };
+  if (f < 14) {
+    const k = Math.sin(Math.min(1, f / 12) * Math.PI), rx = Math.round(4 + k * 12), ry = Math.round(2 + k * 6);
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x / rx) ** 2 + (y / ry) ** 2 <= 1 && dither(x + f, y) < 10) put(mid.x + x, mid.y + y, (x + y + f) % 5 ? S.dust[0] : S.dust[1]);
+    for (let i = 0; i < 3; i++) sparkle(mid.x - 8 + ((i * 7 + f * 3) % 17), mid.y - 6 + ((i * 5 + f) % 9), S.gold[1]);
+  } else {
+    const w = life.fighters[life.act.win || 0];
+    for (let i = 0; i < 14; i++) { const age = (f - 14 + i) % 10; put(w.x - 12 + ((i * 7) % 25), w.y - 36 + age * 3 + (i % 3), S.confetti[i % 4]); }
+  }
 }
 
 /* ---------- the Berry Tree ---------- */
@@ -6430,6 +6756,11 @@ function draw() {
   if (has('keystone')) drawKeystone(t);
   if (has('moon')) drawMoon(t);
   if (has('stall')) drawStall(t);
+  if (has('library')) drawLibrary(t);
+  if (has('fishing')) drawFishing(t);
+  if (has('sludge')) drawSludge(t);
+  if (has('storeroom')) drawStoreroom(t);
+  if (has('contest')) drawContest(t);
   if (has('altar')) drawAltar(t);
   if (has('tutor')) drawTutor(t);
   if (has('deleter')) drawDeleter(t);

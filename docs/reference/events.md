@@ -253,6 +253,31 @@ Scenes: `PLACE_ART.wheel`, `idol`, `keystone`, `moon`, `stall` (outdoor), 3D `bu
 `buildKeystone()`, `buildMoon()`, `buildStall()` on the biome's ground. Event icons 🎡 🗿 🌙 🦎 in `js/icons.js` (Spiritomb
 reuses 👻).
 
+## Batch 3 of the StS events, first five (2026-10-17, docs/roadmap.md's "More ? events")
+
+Five more, the same way (rules pure in `js/data/events.js`: `libraryShelf()`, `goopLoss()`, `contestWinner()`;
+`tests/events.test.mjs`; mirrored in pokeDB-sim). Three of them can heal or add max HP (the Library's nap, the Fishing
+Spot's Old and Good Rods).
+- **Canalave Library** (The Library): Read picks one of `books` (20) moves from your type's pool (`node.event.books`,
+  rolled as the biome starts; never an evolution or unplayable card, nor one you hold `MAX_COPIES` of), in a deck-pick
+  grid (`libraryRead()`); or Nap in the reading chair, `nap` (33%) of max HP. Indoors: the study's shell and floor, a wall
+  of bookcases, the lectern (read), an armchair (nap), Noctowl on a perch. Acts `read`, `nap`.
+- **Fishing Spot** (Big Fish): one cast, three rods on a boardwalk's rail: the Old Rod heals `oldRod` (33%), the Good
+  Rod adds `goodRod` max HP, the Super Rod costs `superRod` HP for a relic (`offerRelic()`; a Gyarados thrashes up in
+  3D). Act `cast` (`{ rod }`). The 3D signs float at three heights so they never overlap on a phone.
+- **Sludge Pit** (World of Goop): no Leave (`leave: false`, 3D `exit: false` until a choice is made). Dig costs
+  `goopHp` for `goopMoney` ₽; Climb out loses `goopLoss()` ₽ (`lose` per biome, rolled into `node.event.lose`, never more
+  than you have). Act `goop` (`{ dig }`).
+- **Silph Co. Storeroom** (The Lab): Search gives the `items` (3) rolled into `node.event.haul` (checked by
+  `eventIdsKnown()`), one `offerItem()` after another, `node.event.got` counting them (a refresh resumes with "Keep
+  searching"); under a Dusk Stone it pays `duskMoney` ₽ an item instead. Indoors: a steel-and-tile room (`labWall()`,
+  `labFloor()`, the pixel scene's `lab` backdrop), racks of boxes, a stack of crates, Porygon. Act `rummage`.
+- **Bug-Catching Contest** (The Joust): bet `bet` ₽ on Scyther (wins `favourite`, 70%, pays 2x) or Caterpie (pays 5x);
+  the winner is rolled as the biome starts (`node.event.roll`). The bet goes through `spend()`. Act `joust` (`{ win }`).
+Scenes: `PLACE_ART.library`, `storeroom` (rooms), `fishing`, `sludge`, `contest` (outdoor); 3D `buildLibrary()`,
+`buildStoreroom()`, `buildFishing()`, `buildSludge()`, `buildContest()` (the last three per biome). Icons 🎣 🦠 📦 🐛 in
+`js/icons.js` (📚 was there).
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.

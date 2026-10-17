@@ -36,7 +36,7 @@ import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
-import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift } from './data/events.js';
+import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
@@ -3674,11 +3674,15 @@ function rollEvent(node, event) {
     node.event.rolls = [random(), random()];
     node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && (!r.only || r.only === run.starter.type) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
   }
+  if (event.books) node.event.books = libraryShelf(event, shuffled(poolForType(run.starter.type))).map(c => c.id);
+  if (event.lose) node.event.lose = random();
+  if (event.items) { node.event.haul = itemChoices(run, event.items).map(i => i.id); node.event.got = 0; }
+  if (event.favourite) node.event.roll = random();
 }
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
-const eventIdsKnown = (state) => [...Object.values(state.offers || {}).flat(), ...(state.moves || [])].every(id => CARDS_BY_ID[id])
-  && (state.relics || []).every(id => RELICS_BY_ID[id]);
+const eventIdsKnown = (state) => [...Object.values(state.offers || {}).flat(), ...(state.moves || []), ...(state.books || [])].every(id => CARDS_BY_ID[id])
+  && (state.relics || []).every(id => RELICS_BY_ID[id]) && (state.haul || []).every(id => ITEMS_BY_ID[id]);
 
 const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
 const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
@@ -3689,6 +3693,7 @@ const EVENT_SCENES = {
   'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
   'sleeping-snorlax': 'snorlax', 'trash-heap': 'trash', ditto: 'ditto', 'bills-pc': 'billspc', abra: 'abra',
   'prize-wheel': 'wheel', 'ruins-idol': 'idol', 'odd-keystone': 'keystone', 'moon-dance': 'moon', 'swap-stall': 'stall',
+  'canalave-library': 'library', 'fishing-spot': 'fishing', 'sludge-pit': 'sludge', 'silph-storeroom': 'storeroom', 'bug-contest': 'contest',
 };
 
 /** An event's room; `after` is its trainer's reaction (a figureDoes() move) once its picker is done: then the room has no
@@ -3729,7 +3734,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'gym', 'town', 'home'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'library', 'fishing', 'sludge', 'storeroom', 'contest', 'gym', 'town', 'home'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
@@ -4332,7 +4337,157 @@ const EVENT_CHOICES = {
         revealGift(gets, [`Kecleon took your ${give.name} and gave you ${gets.name}!`, ...relicLines(gets).map((line, k) => (k ? line : gets.text))], () => gainRelic(gets, done));
       })) };
   },
+
+  // StS's The Library: learn one of 20 moves, or nap and heal
+  'canalave-library'(event, state, back, react, done) {
+    const books = state.books.map(id => CARDS_BY_ID[id]).filter(card => copiesOf(card.id) < MAX_COPIES);
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.nap));
+    return { figures: { mon: { src: 'assets/pokemon/noctowl-front.gif' } }, sub: [event.text, `Read through ${books.length} move manuals and learn one, or nap in the reading chair.`], options: [
+      spotOption('Read', books.length ? `Browse ${books.length} moves from the shelves and learn one.` : 'You know every move on these shelves as well as you can.', async () => {
+        figureDoes('mon', 'hop');
+        if (await playOut('read')) libraryRead(books, back, done);
+      }, !books.length),
+      spotOption(heal ? `Nap +${heal} HP` : 'Nap', heal ? `Doze off in the reading chair: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+        if (!await playOut('nap')) return;
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`A good nap among the books. Healed ${heal} HP.`);
+        done();
+      }, !heal),
+    ] };
+  },
+
+  // StS's Big Fish: one cast, and each rod hooks something different (a heal, max HP, or a relic for HP)
+  'fishing-spot'(event, state, back, react, done) {
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.oldRod)), grow = perBiome(event.goodRod), cost = perBiome(event.superRod);
+    const cast = (rod, then) => async () => { if (await playOut('cast', { rod })) then(); };
+    return { figures: { mon: { src: 'assets/pokemon/magikarp-front.gif' } }, sub: [event.text, 'Each rod hooks something different, and there\'s only time for one cast.'], options: [
+      spotOption(heal ? `Old Rod +${heal} HP` : 'Old Rod', heal ? `Hook a Sitrus Berry: heal ${heal} HP.` : 'You\'re already at full HP.', cast(0, async () => {
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`You hooked a Sitrus Berry! Healed ${heal} HP.`);
+        done();
+      }), !heal),
+      spotOption(`Good Rod +${grow} max HP`, `Reel in an HP Up: max HP +${grow} for the rest of the run.`, cast(1, async () => {
+        run.maxHp += grow;
+        run.hp += grow;
+        playSound('stat-up');
+        await showHpChange();
+        tell(`You reeled in an HP Up! Max HP +${grow}.`);
+        done();
+      })),
+      spotOption(`Super Rod -${cost} HP`, run.hp <= cost ? `You need more than ${cost} HP.` : `Something huge bites. Wrestle it (${cost} HP) for the chest it guards: a relic.`, cast(2, async () => {
+        loseHp(cost);
+        await showHpChange();
+        tell(`A Gyarados! You fought it off for ${cost} HP and hauled up its chest.`);
+        hold3d();
+        offerRelic('Super Rod', done);
+      }), run.hp <= cost),
+    ] };
+  },
+
+  // StS's World of Goop: dig ₽ out of the sludge for HP, or climb out and lose some of yours (no Leave)
+  'sludge-pit'(event, state, back, react, done) {
+    const money = perBiome(event.goopMoney), cost = perBiome(event.goopHp), loss = goopLoss(event, state.lose, run.biome, run.money);
+    return { figures: { mon: { src: 'assets/pokemon/grimer-front.gif' } }, leave: false,
+      sub: [event.text, `Dig the coins out (₽${money} for ${cost} HP), or climb straight out and ${loss ? `lose ₽${loss}` : 'leave it'}.`], options: [
+        spotOption(`Dig ₽${money} -${cost} HP`, run.hp <= cost ? `You need more than ${cost} HP.` : `Grub through the muck for ₽${money}. The sludge stings: ${cost} HP.`, async () => {
+          if (!await playOut('goop', { dig: true })) return;
+          loseHp(cost);
+          run.money += money;
+          setMoney(run.money);
+          playSound('coins');
+          await showHpChange();
+          tell(`You dug out ₽${money}! The sludge stung for ${cost} HP.`);
+          done();
+        }, run.hp <= cost),
+        spotOption(loss ? `Climb out -₽${loss}` : 'Climb out', loss ? `Leave now: ₽${loss} of yours sinks into the sludge.` : 'Leave now. You\'ve no ₽ to lose.', async () => {
+          if (!await playOut('goop', { dig: false })) return;
+          run.money -= loss;
+          setMoney(run.money);
+          figureDoes('mon', 'hop');
+          tell(loss ? `You climbed out. ₽${loss} sank into the sludge.` : 'You climbed out, sticky but no poorer.');
+          done();
+        }),
+      ] };
+  },
+
+  // StS's The Lab: a few free items, one after another; with a Dusk Stone, ₽ instead
+  'silph-storeroom'(event, state, back, react, done) {
+    const haul = state.haul.map(id => ITEMS_BY_ID[id]).filter(Boolean), dusk = run.relics.includes('dusk-stone'), cash = perBiome(event.duskMoney) * (haul.length - state.got);
+    const figures = { mon: { src: 'assets/pokemon/porygon-front.gif' } };
+    if (state.got >= haul.length) return { figures, sub: [event.text, 'The crates are empty.'], options: [spotOption('Search', 'Nothing left in the crates.', () => {}, true)] };
+    const next = () => {
+      if (state.got >= haul.length) return done();
+      const item = haul[state.got];
+      state.got += 1;
+      checkpoint();
+      offerItem(item, next, { opened: true, title: `Silph Co. Storeroom ${state.got}/${haul.length}` });
+    };
+    return { figures, sub: [event.text, dusk ? `Your Dusk Stone keeps items away, but there's ₽${cash} in the crates.` : `Search the crates: ${haul.length - state.got} free item${haul.length - state.got > 1 ? 's' : ''}, one after another.`], options: [
+      spotOption(state.got ? 'Keep searching' : 'Search', dusk ? `Sell what you find: ₽${cash}.` : `${haul.length - state.got} free items. A full Bag swaps or leaves each one.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('rummage')) return;
+        if (!dusk) return hold3d(), next();
+        state.got = haul.length;
+        run.money += cash;
+        setMoney(run.money);
+        playSound('coins');
+        tell(`Your Dusk Stone kept the items away, so you sold them: ₽${cash}.`);
+        done();
+      }),
+    ] };
+  },
+
+  // StS's The Joust: bet ₽ on the favourite (Scyther) or the underdog (Caterpie); the winner was rolled as the biome started
+  'bug-contest'(event, state, back, react, done) {
+    const bet = perBiome(event.bet), winner = contestWinner(event, state.roll), short = run.money < bet, odds = Math.round(event.favourite * 10);
+    const NAMES = { favourite: 'Scyther', underdog: 'Caterpie' }, STANDS = { favourite: 'left', underdog: 'right' };
+    const wager = (pick) => async () => {
+      figureDoes(STANDS[pick], 'hop');
+      if (!await playOut('joust', { win: winner === 'favourite' ? 0 : 1 })) return;
+      spend(bet);
+      figureDoes(STANDS[winner], 'hop');
+      if (pick === winner) {
+        const won = bet * event.pays[pick];
+        run.money += won;
+        playSound('coins');
+        tell(`${NAMES[winner]} won! Your bet paid ₽${won}.`);
+      } else tell(`${NAMES[winner]} won the contest. You lost your ₽${bet}.`);
+      setMoney(run.money);
+      done();
+    };
+    return { figures: { left: { src: 'assets/pokemon/scyther-front.gif', flip: true }, right: { src: 'assets/pokemon/caterpie-front.gif' } },
+      sub: [event.text, `Bet ₽${bet} on Scyther, the favourite (${odds} in 10, pays ${event.pays.favourite}x), or on Caterpie (${10 - odds} in 10, pays ${event.pays.underdog}x).`], options: [
+        spotOption(`Scyther ₽${bet}`, short ? `You need ₽${bet} to bet.` : `The favourite, ${odds} in 10 to win: a win pays ₽${bet * event.pays.favourite}.`, wager('favourite'), short),
+        spotOption(`Caterpie ₽${bet}`, short ? `You need ₽${bet} to bet.` : `The underdog, ${10 - odds} in 10 to win: a win pays ₽${bet * event.pays.underdog}.`, wager('underdog'), short),
+      ] };
+  },
 };
+
+/** The Canalave Library's shelves: learn one of its moves, or go Back to the room. */
+function libraryRead(books, back, done) {
+  showChoice({
+    title: 'Canalave Library',
+    sub: 'Choose a move to learn from the shelves.',
+    options: books.map(card => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.push(learnedId(card));
+        mission('learn');
+        tell(`${card.name} added to your deck.`);
+        done();
+      }),
+      ask: `Learn ${card.name}?`,
+      confirm: 'Learn it',
+      note: deckNote(card, run.deck),
+    })),
+    skipLabel: 'Back',
+    onSkip: back,
+    layout: 'deck-pick',
+  });
+}
 
 /** The Prize Wheel's slice paid out; one that can't be (no Forget at the deck's minimum, no item under Dusk Stone) pays ₽. */
 async function wheelPrize(event, slice, done) {

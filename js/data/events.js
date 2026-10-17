@@ -174,6 +174,46 @@ export const EVENTS = [
     // it wants one of two of your relics (rolled), and trades it for one a tier rarer
     up: { common: 'uncommon', uncommon: 'rare' },
   },
+
+  // batch 3 of the StS events (2026-10-17): docs/roadmap.md's "More ? events"
+  {
+    id: 'canalave-library', icon: '📚', name: 'Canalave Library',   // StS: The Library
+    music: 'event-room',
+    text: 'The great library of Canalave City. A Noctowl keeps watch over shelves of old move manuals.',
+    books: 20,     // read: learn one of this many moves from your type's pool, rolled as the biome starts
+    nap: 0.33,     // or nap in the reading chair: this share of max HP healed
+  },
+  {
+    id: 'fishing-spot', icon: '🎣', name: 'Fishing Spot',   // StS: Big Fish
+    music: 'event-outdoor',
+    text: 'A quiet jetty over deep water, three rods leaning on its rail. A Magikarp splashes about below.',
+    oldRod: 0.33,             // the Old Rod hooks a Sitrus Berry: this share of max HP healed
+    goodRod: [5, 6, 7, 8],    // the Good Rod reels in an HP Up: max HP gained (and healed)
+    superRod: [8, 11, 14, 17],   // the Super Rod hooks a Gyarados guarding a chest: a relic, for this much HP
+  },
+  {
+    id: 'sludge-pit', icon: '🦠', name: 'Sludge Pit',   // StS: World of Goop
+    music: 'event-outdoor',
+    text: 'You slip into a pit of sludge, a Grimer wallowing in it. Coins glint in the muck... and some of yours are sinking.',
+    goopMoney: [60, 75, 90, 105],   // dig the coins out of the muck, for this much HP
+    goopHp: [8, 10, 12, 14],
+    lose: [[15, 35], [20, 45], [25, 55], [30, 65]],   // or climb out and leave this much ₽ in the sludge (rolled; never more than you have)
+  },
+  {
+    id: 'silph-storeroom', icon: '📦', name: 'Silph Co. Storeroom',   // StS: The Lab
+    music: 'event-room',
+    text: 'A back room of Silph Co., stacked with crates of their newest goods. A Porygon floats by the shelves, guarding nothing in particular.',
+    items: 3,                     // free items, found one after another (a full Bag asks what to swap)
+    duskMoney: [20, 25, 30, 35],   // ₽ for each one a Dusk Stone keeps away
+  },
+  {
+    id: 'bug-contest', icon: '🐛', name: 'Bug-Catching Contest',   // StS: The Joust
+    music: 'event-outdoor',
+    text: 'The Bug-Catching Contest\'s final round: a Scyther against a Caterpie! A Bug Catcher is taking bets.',
+    bet: [30, 40, 50, 60],         // ₽ staked on one of them; the winner is rolled as the biome starts
+    favourite: 0.7,                // Scyther's chance of winning
+    pays: { favourite: 2, underdog: 5 },   // a winning bet pays back this many times the stake
+  },
 ];
 
 /** Which search wakes the Snorlax (0-based), or loot.length if it sleeps through all of them: one roll a search. */
@@ -210,6 +250,19 @@ export function swapWares(event, owned, rolls) {
 
 /** What Kecleon gives for `give`: the first of the rolled `offers` (relic objects) a tier rarer that you don't hold. */
 export const swapGift = (event, give, offers, held) => offers.find(r => r.rarity === event.up[give.rarity] && !held.includes(r.id)) || null;
+
+/** The Library's shelf: the moves it can offer from your type's `pool` (never an evolution or unplayable card), in a
+    rolled order (`order`, a shuffle), `event.books` of them. */
+export const libraryShelf = (event, order) => order.filter(c => !c.evoOnly && !c.unplayable).slice(0, event.books);
+
+/** The ₽ left in the Sludge Pit for climbing out: rolled between the biome's two numbers, never more than you have. */
+export function goopLoss(event, roll, biome, money) {
+  const [lo, hi] = event.lose[Math.min(biome, event.lose.length - 1)];
+  return Math.min(money, lo + Math.min(hi - lo, Math.floor(roll * (hi - lo + 1))));
+}
+
+/** Who wins the Bug-Catching Contest for a roll (0-1): 'favourite' (Scyther) or 'underdog' (Caterpie). */
+export const contestWinner = (event, roll) => (roll < event.favourite ? 'favourite' : 'underdog');
 
 /** The events a run of this kind can meet (an event's `not` lists the modes it stays out of). */
 export const eventsFor = (mode) => EVENTS.filter(e => !e.not?.includes(mode));
