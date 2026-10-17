@@ -896,9 +896,10 @@ needs unique names, renames and a guard against rude names turning up in results
 - **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
   device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
   carry `uid`). No requests and no accept step; anyone you add shows up.
-- **A player-list app** (a `shelfApp()`): name, Trainer Card, buddy, last seen, a Visit key (greyed until session 2),
-  Remove. One `getDoc` per friend on open. **"Friends" is taken** by the Gym Leaders' hearts app (`js/friendsdex.js`),
-  so ask the user first: a new name ("Trainers", "Pals"), or a tab in the Friends app.
+- **The Trainers app**, its own app on the Pokédex (a `shelfApp()`, plus a TRAINERS row on the PC; the user's call,
+  2026-10-17: its own app, the name left to Claude). "Trainers" because that's what Pokémon calls other players, and
+  because "Friends" is already the Gym Leaders' hearts app (`js/friendsdex.js`). Each trainer's name, Trainer Card,
+  buddy, last seen, a Visit key (greyed until session 2) and Remove. One `getDoc` per trainer on open.
 - **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
   one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
   setup.
@@ -912,8 +913,8 @@ Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs fro
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
 ▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry and docs/reference/cloud-save.md. Ask me the player list's name, then build session 1: the trainer doc,
-friend codes, the list in the save, adding from a code or a leaderboard name, the app, the How to play tip and the PC
+visits' entry and docs/reference/cloud-save.md. Build session 1: the trainer doc,
+friend codes, the list in the save, adding from a code or a leaderboard name, the Trainers app, the How to play tip and the PC
 letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
 rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
 build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
