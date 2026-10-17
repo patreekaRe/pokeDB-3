@@ -3768,6 +3768,9 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 .card-reveal.pair { grid-auto-flow: column; gap: 14px; }
 .card-reveal.pair .card { --card-w: min(40vw, 180px); }
 .card-reveal.pair .card:last-child { animation-delay: 0.15s; }
+.card-reveal.trio { gap: 8px; }
+.card-reveal.trio .card { --card-w: min(29vw, 160px); }
+.card-reveal.trio .card:nth-child(4) { animation-delay: 0.08s; }
 @media (prefers-reduced-motion: reduce) { .card-reveal .card, .card-reveal .chest-rays { animation: none; opacity: 1; } }
 /* Voltorb Flip's table (flipGame() in js/run.js): eight cards, two rows of four, each turning over to its move or a
    Voltorb; a matched pair keeps a gold ring */

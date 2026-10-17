@@ -314,6 +314,9 @@ Deck pocket; never on a visit (`body.town-visit`: the dojo, a town, a home), nor
 doesn't walk your Pokémon (`#bag` in `canWalk()`). Voltorb Flip's board (`flip-game`) is one of the `roomy` layouts in
 `showChoice()`, or it would have no room bar and no OK to leave by (the user got stuck there, 2026-10-17): a new layout
 that ends on `roomConfirm()` needs the same.
+Voltorb Flip's board speaks in one line it replaces (`status()`, `sayLines()`), never `tell()`, which would queue every try's
+line for the room's box to tap through after (the user's ask). A face-up card zooms on a tap (`zoomCard()`), and OK shows
+what you won in the treasure rays (`revealCard()`, which takes up to three: `.card-reveal.trio`).
 
 ## From CLAUDE.md (moved 2026-10-14)
 

@@ -50,6 +50,7 @@ export const NEXT = [
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
   ['runs', 'Twenty new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, the Canalave Library, a Litwick Bonfire and a game of Voltorb Flip.'],
   ['runs', 'The Bag is in every ? room now, opening on your deck, so you can look through your moves before choosing.'],
+  ['look', 'Text boxes move on by themselves now, the last line waiting for a tap; Settings has Text boxes: Tap for the old way.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

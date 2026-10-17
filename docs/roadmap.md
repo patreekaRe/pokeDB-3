@@ -861,7 +861,8 @@ bag; every choice played headless in 3D and 2D, a whole game of Voltorb Flip, th
 game `d9d4684d`, sim `81f4c06`; human bot, Level 3, 150 runs, batch 3a -> all 30: Fire 51.3 -> 66.0, Grass 50.0 -> 58.7,
 Water 56.0 -> 60.0%: easier, Fire past the noise. Suspects for the retune: the Bonfire's full heal for an uncommon (and the
 free removal with it), the Unown Tablet's free PP Ups of every basic, Rival's relics). The user's playtest (2026-10-17): Voltorb Flip had no way out once played (fixed), and
-the Bag now shows in the ? rooms to look through your deck. Next: the one bot check with all 30
+the Bag now shows in the ? rooms to look through your deck; then text boxes went Auto (Settings: Text boxes) and Voltorb
+Flip got one live line, zoomable cards and a reveal of what you won. Next: the one bot check with all 30
 against `main` (human bot, Levels 0/3/5), a retune (start with the Bonfire's `warmth` and the Tablet), and the merge.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap

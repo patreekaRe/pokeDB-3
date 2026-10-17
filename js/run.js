@@ -52,7 +52,7 @@ import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, zoomCard, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -4647,8 +4647,10 @@ function flipGame(event, state, done) {
   const board = state.board, zap = perBiome(event.zap);
   let open = [], busy = false;
   const game = () => flipState(event, board, state.flips);
-  const say = () => { const g = game(); return g.over ? 'That\'s the game!' : `${g.left} tr${g.left > 1 ? 'ies' : 'y'} left. Flip two cards.`; };
-  showChoice({ title: 'Voltorb Flip', sub: ['Match two of a kind: a move joins your deck. Match the Voltorb and they blow up!', say()], options: [], layout: 'flip-game' });
+  const left = () => { const g = game(); return g.over ? 'That\'s the game!' : `${g.left} tr${g.left > 1 ? 'ies' : 'y'} left. Flip two cards.`; };
+  // the board says how it's going in one line, replaced each try, never queued up to tap through after (the user's ask)
+  const status = (line) => sayLines([line], 'reward-log');
+  showChoice({ title: 'Voltorb Flip', sub: ['Match two of a kind: a move joins your deck. Match the Voltorb and they blow up!', left()], options: [], layout: 'flip-game' });
   roomConfirm(null);
   const grid = el('div', 'flip-board');
   const tiles = board.map((id, i) => {
@@ -4659,7 +4661,7 @@ function flipGame(event, state, done) {
     else face.append(makeCard(CARDS_BY_ID[id], { stage: run.stage }));
     tile.append(el('span', 'flip-back'), face);
     tile.setAttribute('aria-label', `Card ${i + 1}, face down`);
-    tile.onclick = () => flip(i);
+    tile.onclick = () => (tile.classList.contains('up') && id !== 'voltorb' ? zoomCard(CARDS_BY_ID[id], run.stage, face.firstChild) : flip(i));   // a card face up: read it big
     return tile;
   });
   grid.append(...tiles);
@@ -4673,10 +4675,14 @@ function flipGame(event, state, done) {
       tile.setAttribute('aria-label', up ? (board[i] === 'voltorb' ? 'Voltorb' : CARDS_BY_ID[board[i]].name) : `Card ${i + 1}, face down`);
     });
   };
-  const finish = () => {
+  const finish = () => {   // every card turns over, and OK shows what you won the way a found card shows
     paint(true);
-    tell(say());
-    roomConfirm('OK', done);
+    const { won, zapped } = game(), cards = won.map(id => CARDS_BY_ID[id]);
+    status(cards.length ? `That's the game! You won ${cards.length} move${cards.length > 1 ? 's' : ''}.` : 'That\'s the game! No pairs kept this time.');
+    roomConfirm('OK', () => {
+      if (!cards.length) return done();
+      revealCard('Voltorb Flip', cards, [`You won ${cards.map(c => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}!`, ...(zapped ? [`The Voltorb blew up for ${zap} HP.`] : [])], done);
+    });
   };
   async function flip(i) {
     if (busy || game().over || open.includes(i) || game().matched.has(i)) return;
@@ -4691,16 +4697,16 @@ function flipGame(event, state, done) {
       if (board[a] === 'voltorb') {
         loseHp(zap);
         playSound('thunder');
+        status(`The Voltorb blew up! Lost ${zap} HP.`);
         await showHpChange();
-        tell(`The Voltorb blew up! Lost ${zap} HP.`);
       } else {
         const card = CARDS_BY_ID[board[a]];
-        if (copiesOf(card.id) < MAX_COPIES) { run.deck.push(learnedId(card)); mission('learn'); playSound('item-get'); tell(`A match! ${card.name} joins your deck.`); }
-        else tell(`A match! But you already know ${card.name} as well as you can.`);
+        if (copiesOf(card.id) < MAX_COPIES) { run.deck.push(learnedId(card)); mission('learn'); playSound('item-get'); status(`A match! ${card.name} is yours.`); }
+        else status(`A match! But you already know ${card.name} as well as you can.`);
       }
       open = [];
     } else {
-      tell('No match.');
+      status('No match.');
       await sleep(900);
       open = [];
     }
@@ -4708,7 +4714,7 @@ function flipGame(event, state, done) {
     paint();
     busy = false;
     if (game().over) finish();
-    else tell(say());
+    else if (board[a] !== board[b]) status(left());
   }
   paint();
 }
@@ -4853,7 +4859,7 @@ function revealCard(title, card, lines, done) {
   showChoice({ title, sub: lines, options: [], layout: 'card-reveal-room' });
   let gone = false;
   roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
-  const cards = [].concat(card), stage = el('div', `card-reveal${cards.length > 1 ? ' pair' : ''}`);
+  const cards = [].concat(card), stage = el('div', `card-reveal${cards.length > 1 ? ' pair' : ''}${cards.length > 2 ? ' trio' : ''}`);
   stage.append(chestRays(), el('div', 'treasure-flash'), ...cards.map(c => zoomable(makeCard(c, { stage: run.stage }), c, run.stage)));
   $('reward-options').append(stage);
   playSound('item-get');

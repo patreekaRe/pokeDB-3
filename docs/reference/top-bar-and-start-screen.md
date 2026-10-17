@@ -9,7 +9,10 @@ per group, its head a band in the group's colour with a smooth icon, `.set-group
 that mutes, then Music, Effects and Cries bars, each with an LCD number (`.vol-num`, painted by `paintSliders()`); Cries
 have their own gain node (`cryVol` in `js/audio.js`, the save's `cryVolume`, which follows `sfxVolume` until moved; letting
 go of the bar plays a cry). **Display**: Text speed Slow / Mid / Fast / Instant (`textPace()` in `js/prefs.js`, DOM-free so tests can import it, read by `sayLines()` in
-`js/rewards.js`, so every text box and scene, and the Pokédex's `typeOut()`), Day & night Clock / Dawn / Day / Dusk / Night
+`js/rewards.js`, so every text box and scene, and the Pokédex's `typeOut()`), Text boxes Auto / Tap (2026-10-17, the user's ask
+after tapping through a game's worth of lines: Auto, the default, moves a box on by itself after a reading pause,
+`textHold()` in `js/prefs.js`, 0.9 s + 24 ms a letter; every line but the last, which waits for a tap since closing it can act,
+such as starting Kenmatta's fight; a tap still skips ahead), Day & night Clock / Dawn / Day / Dusk / Night
 (`setClock()` in `js/daytime.js`; a `?time=` pin still wins). **Battle**: speed 1x / 2x, the end-turn warning, Vibration
 (`vibrate()` in `js/prefs.js`, every buzz goes through it). **Save**: Sign in (the cloud save, see Cloud save) and Abandon run over a run;
 the card hides when neither shows. Every chip row is built from `OPTIONS` in `js/settings.js`: a new option is a line

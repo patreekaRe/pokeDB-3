@@ -29,6 +29,7 @@ const OPTIONS = {
     apply: v => { if (v === 'red') delete document.documentElement.dataset.shell; else document.documentElement.dataset.shell = v; },
   },
   textSpeed: { values: [['slow', 'Slow'], ['mid', 'Mid'], ['fast', 'Fast'], ['instant', 'Instant']] },
+  textAuto: { values: [[true, 'Auto'], [false, 'Tap']] },
   clock: {
     values: [['auto', 'Clock'], ['dawn', 'Dawn'], ['day', 'Day'], ['dusk', 'Dusk'], ['night', 'Night']],
     // the title's sky repaints on resize; every other scene reads the time as it paints

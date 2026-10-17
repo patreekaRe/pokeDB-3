@@ -8,7 +8,7 @@ import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
-import { textPace } from './prefs.js';
+import { textPace, textHold } from './prefs.js';
 
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
@@ -392,13 +392,15 @@ let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
 export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
   clearInterval(say.typing);
-  say = { lines, at: 0, typing: 0, box: boxId };
+  clearTimeout(say.auto);
+  say = { lines, at: 0, typing: 0, auto: 0, box: boxId };
   const box = $(boxId);
   if (who) box.dataset.who = who; else delete box.dataset.who;   // a speaker's name on a tag over the box (Britt at the Mart)
   box.hidden = !lines.length;
   box.onclick = () => {
     if (say.box !== boxId) return;
     if (say.typing) return finishLine();
+    clearTimeout(say.auto);
     if (say.at < say.lines.length - 1) showLine(say.at + 1);
     else { box.hidden = true; onDone?.(); }   // like the games, a tap on the last line closes the box
   };
@@ -408,6 +410,7 @@ export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
 /** Takes the reward box's lines back unsaid (the box put away), for a screen that tells them later. */
 export function holdLines() {
   clearInterval(say.typing);
+  clearTimeout(say.auto);
   $(say.box).hidden = true;
   const lines = say.lines;
   say = { lines: [], at: 0, typing: 0, box: say.box };
@@ -464,6 +467,10 @@ function finishLine() {
   $(say.box).classList.remove('typing');
   $(`${say.box}-text`).textContent = say.lines[say.at]?.text ?? say.lines[say.at];
   $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
+  // Text boxes: Auto (Settings) moves on by itself after a reading pause, all but the last line, which closing may act on
+  // (a fight starting); a tap still skips ahead (the user's ask, 2026-10-17: a game's worth of lines to tap through)
+  const hold = say.at < say.lines.length - 1 && textHold(say.lines[say.at]?.text ?? say.lines[say.at]);
+  if (hold) { const at = say.at, now = say; say.auto = setTimeout(() => { if (say === now && say.at === at && !say.typing && !$(say.box).hidden) showLine(at + 1); }, hold); }
 }
 
 /** Ready-made option tiles. */

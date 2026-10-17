@@ -6,7 +6,7 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid', titleHub: true, sharpness: 'sharp' };
+export const PREF_DEFAULTS = { textSpeed: 'mid', textAuto: true, clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid', titleHub: true, sharpness: 'sharp' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
@@ -34,6 +34,8 @@ export const calmFx = () => pref('calmFx') || (typeof matchMedia === 'function' 
 const PACE = { slow: [1, 34], mid: [2, 18], fast: [4, 14], instant: null };
 /** The text boxes' typing pace, [letters, ms], or null for instant. */
 export const textPace = () => (pref('textSpeed') in PACE ? PACE[pref('textSpeed')] : PACE.mid);
+/** How long a typed line stays up before the text box moves on by itself (Settings' Text boxes: Auto), or null (Tap). */
+export const textHold = (line) => (pref('textAuto') ? 900 + String(line ?? '').length * 24 : null);
 
 /** Buzz the phone, unless Vibration is off. */
 export function vibrate(pattern) {
