@@ -901,6 +901,12 @@ backyard, and their trophy cases as they last saw them at home. **Next: the user
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+**Friend ideas saved 2026-10-17** (the user's pick of these: **the daily gift**, one item a day to a friend, built
+first when friends work resumes; the rest just saved). Real email was ruled out: it needs a server (Cloud Functions on
+Blaze plus a mail service), iCloud drops Firebase's mail, and it means using sign-in addresses. Instead, in-game:
+Trainer Mail through the PC (Easy Chat-style phrase parts, a stationery pick, an optional small gift; rules shaped like
+`adds/`), Friends tabs on the Safari / Sky Pillar / Arcade boards, the visit guestbook of stamps, and trading spare
+furniture or Safari Pokémon (hardest: both sides must agree at once). All need `firestore.rules` published first.
 
 ## Ideas, not agreed yet (ask the user before building)
 
