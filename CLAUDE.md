@@ -158,7 +158,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
 - **Save and unlocks**: `?levels` (every Trainer Level), `?coins=N`, `?safari`, `?mewtwo` / `?lockmewtwo`,
   `?lockdepths`, `?gymwins=N` (for good; `?ungym=id,id` undoes it), `?onboard` (new-player setup), `?mail` (sample letters), `?satchel` (every material and key item; on a `?town=` peek every quest step ready), `?holiday=<id>` (a seasonal furniture set on sale, `js/data/holidays.js`), `?shards=N` (N Waystone Shards placed: Mewtwo's Sealed Weakness, the pentagram, the Depths camp), `?hearts=N` (every friend at N hearts at home and in the Secret Base, their heart lines unheard; nothing saved; `?base&hearts=5&visit` a best friend sitting).
 - **Look**: `?time=dawn|day|dusk|night`, `?season=halloween|winter|none`, `?hybrid` / `?pixel` / `?smooth`,
-  `?pixelcards`, `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
+  `?pixelcards`, `?sharp=soft|sharp|max` (the Sharpness setting for a page load), `?phone` (a phone frame on a wide screen), `?standalone` (3D drawn as in a Home Screen app), `?signs` / `?walk` (old title / walkable Clearing).
 - **Runs** (throwaway): `?biome=ruins` (`&starter=`, `&level=`, `&slot=`), `?event=<id>` (`&event2d`), `?center`
   (`&center2d`), `?mart` (`&money=`), `?crossroads` (`&slot=2&from=`, `&road=`, `&meowth`; `?xr2d` the painted one),
   `?bossfight=<area>|depths` (`&hp=`), `?tower=25` (`&hp=`, `&aug=`), `?climb`, `?gym=<id>` (`&n=2`, `&hp=`),

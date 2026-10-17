@@ -36,6 +36,8 @@ const OPTIONS = {
   },
   // the scene on screen repaints at once; the title's sky (and its light) on the resize
   scenery: { values: [['hybrid', 'Hybrid'], ['pixel', 'Pixel']], apply: (v, changed) => { if (changed) { refreshScenery(); dispatchEvent(new Event('resize')); } } },
+  // every 3D place listens for the resize and redraws its scene at the new size
+  sharpness: { values: [['soft', 'Soft'], ['sharp', 'Sharp'], ['max', 'Max']], apply: (v, changed) => { if (changed) dispatchEvent(new Event('resize')); } },
   // the title as the walkable Clearing (js/hub-3d.js) or its menu signs; js/title.js swaps them at once
   titleHub: { values: [[true, 'Walk'], [false, 'Signs']], apply: (v, changed) => { if (changed) dispatchEvent(new Event('title-hub')); } },
   calmFx: { values: [[false, 'Full'], [true, 'Reduced']], apply: v => document.documentElement.classList.toggle('calm-fx', v) },

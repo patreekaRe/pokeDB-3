@@ -6,16 +6,28 @@
 
 import { getSave } from './storage.js';
 
-export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid', titleHub: true };
+export const PREF_DEFAULTS = { textSpeed: 'mid', clock: 'auto', battleSpeed: 1, battleFx: true, calmFx: false, endTurnWarn: true, vibration: true, shell: 'red', scenery: 'hybrid', titleHub: true, sharpness: 'sharp' };
 export const pref = (key) => getSave()[key] ?? PREF_DEFAULTS[key];
 
 /** Battle animations (the games' Battle Scene): off in Settings or under reduced motion, a fight skips its move effects
     and slow intros. */
 export const battleFx = () => pref('battleFx') && !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-/** Reduce flashing / screen shake (Settings, or reduced motion): nothing shakes, and white-outs become a soft brightening. */
 /** The scenery's look: Hybrid (pixels under smooth light, the default since 2026-10-08) or plain Pixel (Settings, ?pixel). */
 export const hybridScenery = () => pref('scenery') !== 'pixel';
+/* How sharp the 3D places draw (the user's ask, 2026-10-16: things looked blurry). Soft is the old way: a smooth place drawn at
+   most at CSS pixels (a third of an iPhone's), and a Home Screen app's tall screen a little smaller. Sharp draws up to 1.5x
+   CSS pixels (about 2.25x the GPU work of Soft), Max up to 2x (about 4x). [scene size multiplier, most device px per CSS px] */
+const SHARP = { soft: [1, 1], sharp: [1.5, 1.5], max: [2, 2] };
+/** The Sharpness setting: `mult` on a smooth place's scene size, `cap` the most device pixels per CSS pixel, `soft` the
+    old way (`?sharp=soft|sharp|max` for a page load). */
+export function sharpness() {
+  const q = typeof location === 'object' ? new URLSearchParams(location.search).get('sharp') : null;
+  const [mult, cap] = SHARP[q] || SHARP[pref('sharpness')] || SHARP.sharp;
+  const dpr = typeof devicePixelRatio === 'number' ? devicePixelRatio : 1;
+  return { mult, cap: Math.max(1, Math.min(cap, dpr)), soft: mult === 1 };
+}
+/** Reduce flashing / screen shake (Settings, or reduced motion): nothing shakes, and white-outs become a soft brightening. */
 export const calmFx = () => pref('calmFx') || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // letters typed per tick and the tick's ms; null types the whole line at once

@@ -47,6 +47,7 @@ export const NEXT = [
   ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
+  ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
