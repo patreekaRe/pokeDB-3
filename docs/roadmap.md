@@ -803,8 +803,12 @@ act its own, plus shared ones and shrines), the biggest gap left: a few runs see
 a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
 one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
 bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
-**Batch 1 built** (2026-10-17) on branch `events-batch-1` in both repos, waiting on the user's look before it goes to
-`main` (their call): the links are in that session's last reply; detail in docs/reference/events.md. Next: batch 2.
+**All of them go to `main` at once** (the user's call, 2026-10-17): every batch is built on branch `events-batch-1`
+in both repos (merge `main` into it first each session), and only when all ~30 are done does it merge to `main`, after one
+bot check with every event in (human bot, Levels 0/3/5, against `main`) and a retune. Watch the healing rooms: with 15
+events in the bag Fire lost ~10 points at Level 3 until Abra got Doze (docs/reference/events.md), so give some of the new
+ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; last commit `7dcae871`). Next: batch 2, then
+batch 3 below.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
@@ -812,8 +816,13 @@ one of its rarity), Bill's PC (Note for Yourself: leave a move in the Box for a 
 field), Abra (Secret Portal: Teleport to the biome's boss now; map work, and the bot must learn when). Batch 2: Prize
 Wheel (Wheel of Change), Ruins Idol (Golden Idol: a gold relic, then lose HP or max HP to the boulder), Spiritomb's
 Keystone (Knowing Skull: ₽, an item or a neutral move, each ask more HP), Clefairy Moon Dance (Shining Light: 2 random
-upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Then 10 more toward ~30, and the
-curse events once curses land.
+upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Batch 3 (picked 2026-10-17, 5 a
+session, two sessions): Canalave Library (The Library: 1 of 20 moves, or nap and heal), Fishing Spot (Big Fish: heal, max
+HP, or a relic for HP), Grimer's Sludge Pit (World of Goop: ₽ for HP, or leave some ₽), Silph Co. Storeroom (Lab: a few
+free items), Bug-Catching Contest (The Joust: bet ₽ on the winner), Unown Tablet (Ancient Writing: upgrade every Tackle and
+Block, or forget a move), Smeargle's Studio (Designer: ₽ to upgrade, forget or Transform), Litwick Bonfire (Bonfire
+Spirits: offer a move, rewarded by its rarity), Voltorb Flip (Match and Keep: flip pairs, keep the moves you match),
+Rival's Return (We Meet Again: ₽, an item or a move for a relic). The curse events once curses land.
 ▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
 and docs/reference/walk-in-rooms.md. Take the next batch on its list (ask me if I want to swap any), then build
 them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
