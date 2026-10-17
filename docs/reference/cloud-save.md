@@ -88,24 +88,28 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 (Halloween's pumpkin
   patch stood in front of it from the camera's angle), then 11,14 by the mall, before the user's marks.
 - The TRAINER LINK pop-up checks for calm every 1.5 s (`whenCalm()`): the Clearing's boot can hold it a while.
-- **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`) calls the hook main.js
+- **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`; a base with a bought
+  backyard gets two, Visit house and Visit yard, `start` `main` / `yard`, since the yard is reached through the garden
+  arch, not the house: the user's pick over a back door, 2026-10-17) calls the hook main.js
   hands `onVisit()`, which leaves the title and opens `openBase3d({ onLeave: showHome, guest: { name, json } })` (refused
   mid-run, "Not mid-run"). `readGuestBase()` in `js/secret-base.js` reads their JSON as untrusted: back in the main
   room, only known pieces (no present, no `hax` ids), known papers, no lent yard; null if it isn't a base ("Can't open
   it"). In the room (`host` in `js/base-3d.js`): titled "NAME's Base", a hint saying whose it is, no Decorate or Garden
   key, no Smeargle, yard intro, Gym Leader or friend dropping by, no liveNews, their PC and Berry plots only say so;
   doors, seats, piece taps and home games work. Their residents are their `mons` (Safari ids only, 12 at most), your
-  partner walks it, their statues and figures load from their `owned`; the Trainer set's cases show an empty save
-  (`lendTrainerSave({})`), since the page carries no trophies. **The guard**: `visitBase(true)` while it's up makes
+  partner walks it, their statues and figures load from their `owned`; the Trainer set's cases show what they held the
+  last time their owner was home (`lendTrainerShows()` in `js/base-furniture-trainer.js`, from the base's `liveSeen`,
+  each kind's last `live()` string; a case never seen at home shows empty), since the page carries no trophies. **The guard**: `visitBase(true)` while it's up makes
   `keep()`, which every base write in `js/secret-base.js` goes through (saveBase and all 12 buyers), a no-op; leaving
   calls `endGuest()` and doesn't `publishTrainer()`. The next open of your own base takes the `reopen()` path with
   `loadBase()`. A friend's base has no 2D fallback (no WebGL: straight home). `?base&asfriend` opens your own saved base
   as a visitor sees it.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
   the rules (gstatic routed to stand-in SDK modules, Three.js from disk as its argument or `THREE_JS`, so the Clearing and
-  the base run; 70-odd checks: codes and pages, adding by code, leaderboard and Plaza, the welcome, the TRAINER LINK
-  pop-up, Added you, Hide me, and the visit's: the base on the page, Visit open, the room as theirs, no keys or
-  visitors, unknown pieces dropped, every base writer called during the visit and taps on the room, then the whole
-  localStorage the same after leaving bar the play clock, B's page not republished, B's own base theirs again and
-  saving), and `tools/trainers-rules.mjs`, the real rules in the
+  the base run; codes and pages, adding by code, leaderboard and Plaza, the welcome, the TRAINER LINK pop-up, Added you,
+  Hide me, and the visit's: the base on the page, Visit open, the room as theirs, no keys or visitors, unknown pieces
+  dropped, every base writer called during the visit and taps on the room, then the whole localStorage the same after
+  leaving bar the play clock, B's page not republished, B's own base theirs again and saving, A's trophy case showing
+  A's trophies and B's own again at home, Visit yard into their backyard with no Garden key), and
+  `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

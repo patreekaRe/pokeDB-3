@@ -37,8 +37,10 @@ const GROUPS = {
       list: () => RELICS.filter(r => !r.boss && !r.unique && r.rarity === 'rare'), where: 'Found in treasure rooms, from Alphas and at the Poké Mart.' },
     { id: 'boss', name: 'Boss', sub: 'Power at a price', b1: '#d04848', b2: '#3a0c14',
       list: () => RELICS.filter(r => r.boss), where: 'Only offered after beating a biome\'s boss.' },
+    { id: 'found', name: 'Found', sub: 'From ? rooms', b1: '#a878e0', b2: '#3a1c6a',
+      list: () => RELICS.filter(r => r.event), where: 'Only found in a ? room on the map.' },
     { id: 'special', name: 'Special', sub: 'From the dojo', b1: '#c8a040', b2: '#4a2a10',
-      list: () => RELICS.filter(r => r.unique), where: 'Won by beating Chad Master Kenmatta in his dojo.' },
+      list: () => RELICS.filter(r => r.unique && !r.event), where: 'Won by beating Chad Master Kenmatta in his dojo.' },
   ],
   items: [
     { id: 'medicine', name: 'Medicine', sub: 'Heal up', b1: '#f0708a', b2: '#8a2440',

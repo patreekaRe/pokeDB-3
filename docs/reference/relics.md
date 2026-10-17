@@ -15,7 +15,7 @@ into every fight's draw pile, `startBattle()`), Dusk Stone (Sozu: no new items; 
 Fan Club (₽ instead) and the Mart check it). Until 2026-09-30 they were Philosopher's Stone and Runic Dome; the user disliked
 the hidden intent. **Mata-Mindset** (`unique: true`, 2026-10-01): +1 PP and +1 card every turn (each turn's draw shouts FORTIFY YOUR MIND with a "🎓 +1 card" pop, the user's call) and 1 strength at each battle's start; never
 offered (`relicChoices()` and the Starting Relic Charm skip `unique`), only won by beating Chad Master Kenmatta in his
-dojo (see ? events). The Index lists it under Special. Relics get keyword boxes like cards: `relicTerms()` in `js/data/relics.js` finds terms in the text
+dojo (see ? events). The Index lists it under Special. **Relic Statue** (`unique`, `event: 'ruins-idol'`, 2026-10-17): +25% prize money, only from the Ruins Idol ? room; the Index lists `event` relics under Found. Relics get keyword boxes like cards: `relicTerms()` in `js/data/relics.js` finds terms in the text
 (the words are `TERMS` in `js/data/cards.js`, shared with `cardTerms()`), shown as lines under the tile (`relicTips()`,
 `makeRelic(relic, { tips: true })`: rewards, the Index, the Bag) or extra text box lines (`relicLines()`: treasure,
 floating relic rewards, the Shrine). Each type has 8 relics: its +2

@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session k: Craft and sewing room, Gamer room, Recording studio, Cinema (2026-10-17)
+- Four more room types, 25 each: Craft room (`crf`), Gamer room (`gmr`), Recording studio (`rcs`) and Cinema (`cnm`): 100
+  kinds, 2,812 in all, one helper a set, all solo, session j's way. The whole catalogue (2,816 ids) went through
+  `tools/model-check.mjs` with no builder errors; every new kind within budget (none over 3,784 triangles or 8 draws); thin
+  pieces match their paintings at 0.41 (the studio's guitar stool) to 0.98, none sticking out. Existing kinds left alone
+  (`spinwheel`, `cello`, `mixingdesk`, `laxbeanbag`, `ringlight`, `tripledesk`, the arcade). Pokémon touches: Leavanny,
+  Smeargle's easel, Sewaddle, a Furret quilt; Porygon-Z, a Pikachu headset, Gengar on the TV, a Pokédex; Jigglypuff in the
+  vocal booth, Loudred, Kricketune, Toxtricity; Lugia, Jirachi and Celebi film posters, a Ditto usher, a Smeargle director,
+  a Pikachu popcorn bucket. The user got picture sheets.
+
 ### Furniture expansion session j: Pizzeria, Corner shop, Laundromat, Salon, Garage (2026-10-17)
 - The next five room types, 25 each: Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon (`sln`)
   and Garage and workshop (`grg`): 125 kinds, 2,712 in all, one helper a set, all solo, session i's `BUILT` way. The whole
@@ -2921,7 +2931,18 @@ Branch `claude/visit-only-base-session-2-72ayar`, pushed to `main`. The Trainers
 from their page's `base` (`openBase3d({ guest })`, `readGuestBase()`), walk-only: no Decorate, Garden, PC, Smeargle, gifts
 or visitors, their residents and statues, the Trainer set's cases blank. `visitBase()` / `keep()` in `js/secret-base.js`
 refuses every base write while it's up; `tools/trainers-check.mjs` (43 checks) shows visiting and leaving leaves the
-save exactly as it was. `?base&asfriend` playtests it alone. Detail: `docs/reference/cloud-save.md`.
+save exactly as it was. `?base&asfriend` playtests it alone. Follow-up the same day (the user's picks): Visit house /
+Visit yard (the yard is through the garden arch, so a choice beat a back door), and their trophy cases from their
+base's `liveSeen` (48 checks). Detail: `docs/reference/cloud-save.md`.
+
+**More ? events, 10 -> 30** (2026-10-17, branch `events-batch-1` in both repos, merged to `main` in one go). Twenty StS
+events with Pokémon dress in three batches (batch 1: Sleeping Snorlax, Trubbish's Trash Heap, Ditto, Bill's PC, Abra;
+batch 2: Prize Wheel, Ruins Idol, Odd Keystone, Moon Dance, Swap Stall; batch 3: Canalave Library, Fishing Spot, Sludge
+Pit, Silph Co. Storeroom, Bug-Catching Contest, Unown Tablet, Smeargle's Studio, Litwick Bonfire, Voltorb Flip, Rival's
+Return), each a 3D room, mirrored in pokeDB-sim. Detail: `docs/reference/events.md`. The one bot check before the merge
+(human bot, 300 runs a cell, `main` -> all 30, fire / grass / water): L0 80.0 / 82.0 / 74.3 -> 78.0 / 78.7 / 68.3, L3
+63.3 / 62.0 / 62.0 -> 57.7 / 57.7 / 62.0, L5 42.3 / 40.0 / 29.3 -> 36.3 / 40.3 / 36.0. Every gap inside the ±8 noise
+(slightly harder on average), so no retune; batch 3b's Fire 66 at Level 3 was 150-run noise. Shipped as patch 1.25, Off the Path.
 
 ### Finding each other without meeting: the Trainer Plaza, Added you and the TRAINER LINK pop-up (2026-10-17, the user's ask)
 The user asked how to find each other without talking outside the game, and for a pop-up when someone adds you,

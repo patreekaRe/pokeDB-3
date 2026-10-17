@@ -29,14 +29,14 @@ import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRo
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
-import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
+import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
-import { EVENTS, EVENTS_BY_ID, NPCS } from './data/events.js';
+import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
@@ -52,7 +52,7 @@ import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, zoomCard, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -1384,7 +1384,7 @@ function initBag() {
   $('run-mon').addEventListener('click', toggleMon);
   $('bag-btn').addEventListener('click', () => ($('bag').hidden ? openBag() : closeBag()));
   $('room-bag').append(roundKey('bag'));
-  $('room-bag').addEventListener('click', () => ($('bag').hidden ? openBag('items') : closeBag()));
+  $('room-bag').addEventListener('click', () => ($('bag').hidden ? openBag($('reward-options').classList.contains('event-room') ? 'deck' : 'items') : closeBag()));   // a ? room opens on your deck
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }
@@ -1796,6 +1796,7 @@ async function fight(node, { talked = false } = {}) {
   const encounter = ken ? buildKenEncounter(mainBiome(), run.mods) : buildEncounter(mainBiome(), node.type, run.mods, node.enemyId);
   if (isTower() && node.type === 'boss' && augs().guardianHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().guardianHp));
   if (isTower() && augs().enemyHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * augs().enemyHp));   // Sudden Death
+  if (node.foeHp) encounter.maxHp = Math.max(1, Math.round(encounter.maxHp * node.foeHp));   // an event's foe, smaller than its usual self (the Snorlax)
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
@@ -2555,7 +2556,7 @@ function afterFight(node, result) {
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
   // a catch pays less ₽ than a knockout: it pays in a card and a Safari Pokédex entry (the user's call)
-  const base = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const base = Math.round(Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * prizeMult(run.relics));   // Amulet Coin, Relic Statue
   const prize = Math.round(base * (augs().prizeMult || 1) * (augs().riskyClimb && node.type === 'elite' ? augs().riskyClimb : 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Risky Climb, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
   if (result.caught) {
@@ -2983,11 +2984,14 @@ function gainRelic(relic, next) {
 /** What a relic does the moment it's taken: Cleanse Tag forgets a move, Rare Candy PP Ups two at random. */
 function pickedUp(relic, next) {
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
-  if (relic.id === 'rare-candy') {
-    const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, 2);
-    for (const i of spots) { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); tell(`${card.name} became ${CARDS_BY_ID[run.deck[i]].name}!`); }
-  }
+  if (relic.id === 'rare-candy') for (const [card, up] of ppUpRandom(2)) tell(`${card.name} became ${up.name}!`);
   next();
+}
+
+/** PP Up `n` random moves in the deck (Rare Candy, the Moon Dance): each [card, its upgrade]. */
+function ppUpRandom(n) {
+  const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, n);
+  return spots.map(i => { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); return [card, CARDS_BY_ID[run.deck[i]]]; });
 }
 
 /** The id a card joins the deck as: Power Bracer (attacks) and Power Belt (the rest) PP Up it on the way in. */
@@ -3622,7 +3626,7 @@ function rollEvents() {
   let bag = [];
   for (const node of Object.values(run.map.byId)) {
     if (node.type !== 'event') continue;
-    if (!bag.length) bag = shuffled(EVENTS);
+    if (!bag.length) bag = shuffled(eventsFor(isTower() ? 'tower' : isSafari() ? 'safari' : 'run'));
     rollEvent(node, bag.pop());
   }
 }
@@ -3654,11 +3658,38 @@ function rollEvent(node, event) {
     const typeRelics = shuffled(RELICS.filter(r => r.only === run.starter.type && !r.boss));
     node.event.relics = [...typeRelics, ...relicChoices(run).filter(r => !r.only)].map(r => r.id);
   }
+  if (event.wake) {   // the Snorlax: the pile's order, and one roll a search for whether it wakes
+    node.event.loot = shuffled(event.loot);
+    node.event.rolls = event.wake.map(() => random());
+    node.event.searched = 0;
+  }
+  if (event.digHp) { node.event.rolls = Array.from({ length: 12 }, () => random()); node.event.dug = 0; }
+  if (event.morph) {
+    const pool = poolForType(run.starter.type);
+    node.event.offers = Object.fromEntries(event.morph.map(rarity => [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
+  }
+  if (event.slices) node.event.spin = random();
+  if (event.askHp) { node.event.asked = 0; node.event.moves = shuffled(poolForType(run.starter.type).filter(c => c.type === 'normal')).map(c => c.id); }
+  if (event.up) {   // Kecleon: which two of your relics it asks for, and what it trades for each, in a rolled order
+    node.event.rolls = [random(), random()];
+    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && (!r.only || r.only === run.starter.type) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
+  }
+  if (event.books) node.event.books = libraryShelf(event, shuffled(poolForType(run.starter.type))).map(c => c.id);
+  if (event.lose) node.event.lose = random();
+  if (event.items) { node.event.haul = itemChoices(run, event.items).map(i => i.id); node.event.got = 0; }
+  if (event.favourite) node.event.roll = random();
+  if (event.pairs) {   // Voltorb Flip: a move of each rarity twice and two Voltorb, face down in a rolled order
+    const pool = poolForType(run.starter.type).filter(c => pickable(c) && copiesOf(c.id) < MAX_COPIES);
+    const picks = event.pairs.map(rarity => shuffled(pool.filter(c => (c.rarity || 'common') === rarity))[0]?.id).filter(Boolean);
+    node.event.board = shuffled([...picks, ...picks, 'voltorb', 'voltorb']);
+    node.event.flips = [];
+  }
+  if (event.ask) node.event.pick = [random(), random()];   // which item and which move your rival asks for
 }
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
-const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(id => CARDS_BY_ID[id])
-  && (state.relics || []).every(id => RELICS_BY_ID[id]);
+const eventIdsKnown = (state) => [...Object.values(state.offers || {}).flat(), ...(state.moves || []), ...(state.books || []), ...(state.board || []).filter(id => id !== 'voltorb')].every(id => CARDS_BY_ID[id])
+  && (state.relics || []).every(id => RELICS_BY_ID[id]) && (state.haul || []).every(id => ITEMS_BY_ID[id]);
 
 const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
 const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
@@ -3667,6 +3698,10 @@ const loseHp = (amount) => { run.hp = Math.max(1, run.hp - amount); };
 const EVENT_SCENES = {
   'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar',
   'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
+  'sleeping-snorlax': 'snorlax', 'trash-heap': 'trash', ditto: 'ditto', 'bills-pc': 'billspc', abra: 'abra',
+  'prize-wheel': 'wheel', 'ruins-idol': 'idol', 'odd-keystone': 'keystone', 'moon-dance': 'moon', 'swap-stall': 'stall',
+  'canalave-library': 'library', 'fishing-spot': 'fishing', 'sludge-pit': 'sludge', 'silph-storeroom': 'storeroom', 'bug-contest': 'contest',
+  'unown-tablet': 'tablet', 'smeargle-studio': 'studio', 'litwick-bonfire': 'bonfire', 'voltorb-flip': 'flip', 'rivals-return': 'rival',
 };
 
 /** An event's room; `after` is its trainer's reaction (a figureDoes() move) once its picker is done: then the room has no
@@ -3707,7 +3742,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'library', 'fishing', 'sludge', 'storeroom', 'contest', 'tablet', 'studio', 'bonfire', 'flip', 'rival', 'gym', 'town', 'home'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
@@ -4076,7 +4111,719 @@ const EVENT_CHOICES = {
       }, run.hp <= cost),
     ] };
   },
+
+  // StS's Dead Adventurer: each search finds the next thing in the pile, but it may wake (an Alpha fight, elite rewards)
+  'sleeping-snorlax'(event, state, back, react, done) {
+    const node = run.map.byId[run.current], wakesAt = snorlaxWakesAt(event, state.rolls), n = state.searched;
+    const figures = { mon: { src: 'assets/pokemon/snorlax-front.gif' } };
+    if (n >= event.loot.length) return { figures, sub: [event.text, 'The pile is empty. Best tiptoe away.'], options: [spotOption('Search', 'Nothing left in the pile.', () => {}, true)] };
+    const odds = Math.round(event.wake[n] * 100);
+    const then = () => (state.searched >= event.loot.length ? done() : back());
+    const search = async () => {
+      const waking = n === wakesAt;
+      if (!await playOut('search', { wake: waking })) return;
+      if (waking) {
+        figureDoes('mon', 'hop');
+        return sayLines(['The Snorlax wakes up... and it is NOT happy!'], 'reward-log', () => fight({ ...node, type: 'elite', enemyId: 'snorlax', foeHp: event.foeHp }));
+      }
+      const what = state.loot[n];
+      state.searched += 1;
+      checkpoint();
+      const item = what === 'item' && !run.relics.includes('dusk-stone') ? itemChoices(run)[0] : null;
+      if (what === 'relic') return hold3d(), offerRelic('Under the Snorlax', then);
+      if (item) return hold3d(), offerItem(item, then, { opened: true, title: 'Under the Snorlax' });
+      const money = perBiome(event.lootMoney);
+      run.money += money;
+      setMoney(run.money);
+      playSound('coins');
+      tell(`Found ₽${money} in the pile!`);
+      then();
+    };
+    return { figures, sub: [event.text, `Search the pile: ${event.loot.length - n} thing${event.loot.length - n > 1 ? 's' : ''} left. It wakes more easily each time.`], options: [
+      spotOption('Search', `Find something in the pile. A ${odds}% chance it wakes up: an Alpha fight.`, search),
+    ] };
+  },
+
+  // StS's Scrap Ooze: dig for HP, each dig hurting more and likelier to turn up the relic
+  'trash-heap'(event, state, back, react, done) {
+    const dig = trashDig(event, state.dug, run.biome), odds = Math.round(dig.odds * 100);
+    return { figures: { mon: { src: 'assets/pokemon/trubbish-front.gif' } },
+      sub: [event.text, state.dug ? `Dug ${state.dug} time${state.dug > 1 ? 's' : ''}. The next dig: ${dig.hp} HP, a ${odds}% chance.` : `Dig in for ${dig.hp} HP: a ${odds}% chance of a relic. Each dig hurts more, and finds more.`], options: [
+        spotOption(`Dig -${dig.hp} HP`, run.hp <= dig.hp ? `You need more than ${dig.hp} HP.` : `A ${odds}% chance of finding a relic.`, async () => {
+          const win = state.rolls[state.dug % state.rolls.length] < dig.odds;
+          if (!await playOut('dig', { win })) return;
+          loseHp(dig.hp);
+          state.dug += 1;
+          await showHpChange();
+          checkpoint();
+          if (win) { figureDoes('mon', 'hop'); return hold3d(), offerRelic('Buried in the junk', done); }
+          figureDoes('mon', 'shake');
+          tell(`Just junk. Lost ${dig.hp} HP.`);
+          back();
+        }, run.hp <= dig.hp),
+      ] };
+  },
+
+  // StS's Duplicator and Transmogrifier: one more of a move, or a move turned into another of its rarity
+  ditto(event, state, back, react, done) {
+    const copyable = dittoCopies(), morphs = dittoMorphs(state);
+    const act = (name, then) => async () => { figureDoes('mon', 'hop'); if (await playOut(name)) then(); };
+    return { figures: { mon: { src: 'assets/pokemon/ditto-front.gif' } }, sub: [event.text, 'Let it copy one of your moves, or Transform one into a random move of the same rarity.'], options: [
+      spotOption('Copy', copyable.length ? 'Gain a second copy of one of your moves.' : 'You hold every move you could copy as many times as you can.',
+        act('copy', () => dittoPick('copy', copyable, back, done)), !copyable.length),
+      spotOption('Transform', morphs.length ? 'Turn one move into a random one of the same rarity.' : 'None of your moves can Transform.',
+        act('morph', () => dittoPick('morph', morphs, back, done)), !morphs.length),
+    ] };
+  },
+
+  // StS's Note for Yourself: take out the move you stored last time, then store one for a later run (a Box per type)
+  'bills-pc'(event, state, back, react, done) {
+    const type = run.starter.type, kept = getSave().pcBox?.[type], id = CARDS_BY_ID[kept] ? kept : event.box, card = CARDS_BY_ID[id];
+    if (state.took) return { sub: [event.text, 'Now store one of your moves in the Box for a later run.'], options: [
+      spotOption('Store a move', 'Choose a move to leave in the Box.', () => pcStore(done)),
+    ] };
+    return { sub: [event.text, `Your Box holds ${card.name}. Take it, then store one of yours for a later run.`], options: [
+      spotOption('Use the PC', `Take out ${card.name}, then leave one of your moves in its place.`, async () => {
+        if (!await playOut('boot')) return;
+        run.deck.push(id);
+        state.took = true;
+        checkpoint();
+        hold3d();
+        revealCard("Bill's PC", card, [`You took ${card.name} out of your Box!`, 'Now store one of your moves for a later run.'], () => pcStore(done));
+      }),
+    ] };
+  },
+
+  // StS's Secret Portal: straight to this biome's boss, skipping what's left of its map
+  abra(event, state, back, react, done) {
+    const node = run.map.byId[run.current], boss = run.map.byId[run.map.boss.id], near = node.next.includes(boss.id);
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.doze));
+    return { figures: { mon: { src: 'assets/pokemon/abra-front.gif' } }, sub: [event.text, 'Teleport skips the rest of this map, rooms and rewards and all: you land at the boss\'s door. Or doze beside it a while.'], options: [
+      spotOption('Teleport', near ? 'The boss is just ahead anyway.' : `Skip the rest of ${land().name}: straight to its boss.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('teleport')) return;
+        tell('Abra used Teleport!');
+        enterNode(boss);
+      }, near),
+      spotOption(heal ? `Doze +${heal} HP` : 'Doze', heal ? `Nap beside it: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+        if (!await playOut('doze')) return;
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`A good nap. Healed ${heal} HP.`);
+        done();
+      }, !heal),
+    ] };
+  },
+
+  // StS's Wheel of Change: one free spin, its slice rolled as the biome started
+  'prize-wheel'(event, state, back, react, done) {
+    const slice = wheelSlice(event, state.spin);
+    return { figures: { mon: { src: 'assets/pokemon/meowth-front.gif', flip: true } }, sub: [event.text, 'It could land on ₽, a relic, a full heal, a free Forget or an item... or a nasty pinch.'], options: [
+      spotOption('Spin!', 'One free spin. Every slice is as likely as the rest.', async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('spin', { slice: event.slices.indexOf(slice) })) return;
+        wheelPrize(event, slice, done);
+      }),
+    ] };
+  },
+
+  // StS's Golden Idol: take the idol (a relic), then the Golem rolls down at you: lose HP, or max HP for good
+  'ruins-idol'(event, state, back, react, done) {
+    const boulder = idolBoulder(event, run.maxHp), relic = RELICS_BY_ID[event.relic], owned = run.relics.includes(relic.id), gold = perBiome(event.gold);
+    const figures = { mon: { src: 'assets/pokemon/golem-front.gif' } };
+    if (state.took) return { figures, leave: false, sub: ['The ground shakes. The Golem shoves its boulder down the slope at you!', `Brace for it (${boulder.hp} HP), or dive aside and get scraped (max HP -${boulder.maxHp}).`], options: [
+      spotOption(`Brace -${boulder.hp} HP`, `Take the hit: lose ${boulder.hp} HP.`, async () => {
+        if (!await playOut('brace')) return;
+        loseHp(boulder.hp);
+        await showHpChange();
+        tell(`The boulder bowled you over. Lost ${boulder.hp} HP.`);
+        done();
+      }),
+      spotOption(`Hide -${boulder.maxHp} max HP`, `Dive behind a pillar: lose ${boulder.maxHp} max HP for the rest of the run.`, async () => {
+        if (!await playOut('hide')) return;
+        run.maxHp = Math.max(1, run.maxHp - boulder.maxHp);
+        run.hp = Math.min(run.hp, run.maxHp);
+        await showHpChange();
+        tell(`It rolled right past you. Max HP -${boulder.maxHp}.`);
+        done();
+      }),
+    ] };
+    const what = owned ? `It's a Relic Gold, worth ₽${gold}.` : `It's the ${relic.name}: ${relic.text}`;
+    return { figures, sub: [event.text, `${what} Taking it is sure to anger the Golem.`], options: [
+      spotOption('Take the idol', `${what} Then the boulder comes.`, async () => {
+        if (!await playOut('grab')) return;
+        state.took = true;
+        checkpoint();
+        const then = () => { playSound('quake'); back(); };
+        if (!owned) return revealGift(relic, [`You took the ${relic.name}!`, ...relicLines(relic).map((line, i) => (i ? line : relic.text))], () => gainRelic(relic, then));
+        run.money += gold;
+        setMoney(run.money);
+        playSound('coins');
+        tell(`The Relic Gold is worth ₽${gold}!`);
+        then();
+      }),
+    ] };
+  },
+
+  // StS's Knowing Skull: ask for ₽, a neutral move or an item, each ask costing more HP than the last
+  'odd-keystone'(event, state, back, react, done) {
+    const cost = keystoneAsk(event, state.asked, run.biome), money = perBiome(event.askMoney), short = run.hp <= cost;
+    const move = state.moves.map(id => CARDS_BY_ID[id]).find(card => copiesOf(card.id) < MAX_COPIES), noItem = run.relics.includes('dusk-stone');
+    const need = (hint) => (short ? `You need more than ${cost} HP.` : hint);
+    const ask = (what, then) => async () => {
+      if (!await playOut('ask', { what })) return;
+      loseHp(cost);
+      state.asked += 1;
+      await showHpChange();
+      checkpoint();
+      then();
+    };
+    return { figures: { mon: { src: 'assets/pokemon/spiritomb-front.gif' } },
+      sub: [event.text, state.asked ? `Asked ${state.asked} time${state.asked > 1 ? 's' : ''}. The next ask costs ${cost} HP.` : `The first ask costs ${cost} HP, and each one after costs 1 more.`], options: [
+        spotOption(`₽${money} -${cost} HP`, need(`It gives you ₽${money}.`), ask('money', () => {
+          run.money += money;
+          setMoney(run.money);
+          playSound('coins');
+          tell(`The keystone gave you ₽${money}. Lost ${cost} HP.`);
+          back();
+        }), short),
+        spotOption(`A move -${cost} HP`, move ? need('A random neutral move for your deck.') : 'You hold every neutral move it could give.', ask('move', () => {
+          run.deck.push(move.id);
+          hold3d();
+          revealCard('Odd Keystone', move, [`The keystone gave you ${move.name}!`, `Lost ${cost} HP.`], back);
+        }), short || !move),
+        spotOption(`An item -${cost} HP`, noItem ? 'Your Dusk Stone keeps items away.' : need('A random item for your Bag.'), ask('item', () => {
+          const [item] = itemChoices(run);
+          if (!item) return back();
+          hold3d();
+          offerItem(item, back, { opened: true, title: 'Odd Keystone' });
+        }), short || noItem),
+      ] };
+  },
+
+  // StS's Shining Light: dance (2 random moves PP Up) for HP, or heal in the moonlight
+  'moon-dance'(event, state, back, react, done) {
+    const cost = perBiome(event.danceHp), heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.moonlight));
+    const can = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
+    return { figures: { left: { src: 'assets/pokemon/clefairy-front.gif', flip: true }, right: { src: 'assets/pokemon/clefairy-front.gif' } },
+      sub: [event.text, `Join the dance for ${cost} HP and 2 random moves PP Up, or bask in the moonlight and heal.`], options: [
+        spotOption(`Dance -${cost} HP`, !can ? 'None of your moves can PP Up.' : run.hp <= cost ? `You need more than ${cost} HP.` : `PP Up 2 random moves in your deck, for ${cost} HP.`, async () => {
+          for (const fan of ['left', 'right']) figureDoes(fan, 'hop');
+          if (!await playOut('dance')) return;
+          loseHp(cost);
+          await showHpChange();
+          const ups = ppUpRandom(2).map(([, up]) => up);
+          checkpoint();
+          hold3d();
+          revealCard('Moon Dance', ups, [`The moonlight powered up ${ups.map(c => c.name).join(' and ')}!`, `Lost ${cost} HP.`], done);
+        }, !can || run.hp <= cost),
+        spotOption(heal ? `Moonlight +${heal} HP` : 'Moonlight', heal ? `Bask in the moonlight: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+          if (!await playOut('moonlight')) return;
+          run.hp += heal;
+          playSound('heal-hp');
+          await showHpChange();
+          tell(`The moonlight healed ${heal} HP.`);
+          done();
+        }, !heal),
+      ] };
+  },
+
+  // StS's N'loth: Kecleon wants one of two of your relics, and gives one a tier rarer for it
+  'swap-stall'(event, state, back, react, done) {
+    const offers = state.relics.map(id => RELICS_BY_ID[id]);
+    const trades = swapWares(event, run.relics.map(id => RELICS_BY_ID[id]).filter(Boolean), state.rolls)
+      .map(give => ({ give, gets: swapGift(event, give, offers, run.relics) })).filter(t => t.gets);
+    const figures = { mon: { src: 'assets/pokemon/kecleon-front.gif' } };
+    trades.forEach(({ give }, i) => { figures[i ? 'right' : 'left'] = { src: `assets/items/${give.id}.png` }; });
+    if (!trades.length) return { figures, sub: [event.text, 'It looks through your Bag and shrugs: nothing it can trade up today.'], options: [spotOption('Trade', 'You hold no common or uncommon relic it wants.', () => {}, true)] };
+    return { figures, sub: [event.text, 'It wants one of these, and offers something rarer for it. Tap one to see the trade.'], options: trades.map(({ give, gets }, i) =>
+      spotOption(`Trade ${give.name}`, `Give ${give.icon} ${give.name}, get ${gets.icon} ${gets.name}: ${gets.text}`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('swap', { i, gets: gets.id })) return;
+        run.relics.splice(run.relics.indexOf(give.id), 1);
+        revealGift(gets, [`Kecleon took your ${give.name} and gave you ${gets.name}!`, ...relicLines(gets).map((line, k) => (k ? line : gets.text))], () => gainRelic(gets, done));
+      })) };
+  },
+
+  // StS's The Library: learn one of 20 moves, or nap and heal
+  'canalave-library'(event, state, back, react, done) {
+    const books = state.books.map(id => CARDS_BY_ID[id]).filter(card => copiesOf(card.id) < MAX_COPIES);
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.nap));
+    return { figures: { mon: { src: 'assets/pokemon/noctowl-front.gif' } }, sub: [event.text, `Read through ${books.length} move manuals and learn one, or nap in the reading chair.`], options: [
+      spotOption('Read', books.length ? `Browse ${books.length} moves from the shelves and learn one.` : 'You know every move on these shelves as well as you can.', async () => {
+        figureDoes('mon', 'hop');
+        if (await playOut('read')) libraryRead(books, back, done);
+      }, !books.length),
+      spotOption(heal ? `Nap +${heal} HP` : 'Nap', heal ? `Doze off in the reading chair: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+        if (!await playOut('nap')) return;
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`A good nap among the books. Healed ${heal} HP.`);
+        done();
+      }, !heal),
+    ] };
+  },
+
+  // StS's Big Fish: one cast, and each rod hooks something different (a heal, max HP, or a relic for HP)
+  'fishing-spot'(event, state, back, react, done) {
+    const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.oldRod)), grow = perBiome(event.goodRod), cost = perBiome(event.superRod);
+    const cast = (rod, then) => async () => { if (await playOut('cast', { rod })) then(); };
+    return { figures: { mon: { src: 'assets/pokemon/magikarp-front.gif' } }, sub: [event.text, 'Each rod hooks something different, and there\'s only time for one cast.'], options: [
+      spotOption(heal ? `Old Rod +${heal} HP` : 'Old Rod', heal ? `Hook a Sitrus Berry: heal ${heal} HP.` : 'You\'re already at full HP.', cast(0, async () => {
+        run.hp += heal;
+        playSound('heal-hp');
+        await showHpChange();
+        tell(`You hooked a Sitrus Berry! Healed ${heal} HP.`);
+        done();
+      }), !heal),
+      spotOption(`Good Rod +${grow} max HP`, `Reel in an HP Up: max HP +${grow} for the rest of the run.`, cast(1, async () => {
+        run.maxHp += grow;
+        run.hp += grow;
+        playSound('stat-up');
+        await showHpChange();
+        tell(`You reeled in an HP Up! Max HP +${grow}.`);
+        done();
+      })),
+      spotOption(`Super Rod -${cost} HP`, run.hp <= cost ? `You need more than ${cost} HP.` : `Something huge bites. Wrestle it (${cost} HP) for the chest it guards: a relic.`, cast(2, async () => {
+        loseHp(cost);
+        await showHpChange();
+        tell(`A Gyarados! You fought it off for ${cost} HP and hauled up its chest.`);
+        hold3d();
+        offerRelic('Super Rod', done);
+      }), run.hp <= cost),
+    ] };
+  },
+
+  // StS's World of Goop: dig ₽ out of the sludge for HP, or climb out and lose some of yours (no Leave; climbing out leaves)
+  'sludge-pit'(event, state, back, react, done) {
+    const money = perBiome(event.goopMoney), cost = perBiome(event.goopHp), loss = goopLoss(event, state.lose, run.biome, run.money);
+    return { figures: { mon: { src: 'assets/pokemon/grimer-front.gif' } }, leave: false,
+      sub: [event.text, `Dig the coins out (₽${money} for ${cost} HP), or climb straight out and ${loss ? `lose ₽${loss}` : 'leave it'}.`], options: [
+        spotOption(`Dig ₽${money} -${cost} HP`, run.hp <= cost ? `You need more than ${cost} HP.` : `Grub through the muck for ₽${money}. The sludge stings: ${cost} HP.`, async () => {
+          if (!await playOut('goop', { dig: true })) return;
+          loseHp(cost);
+          run.money += money;
+          setMoney(run.money);
+          playSound('coins');
+          await showHpChange();
+          tell(`You dug out ₽${money}! The sludge stung for ${cost} HP.`);
+          done();
+        }, run.hp <= cost),
+        spotOption(loss ? `Climb out -₽${loss}` : 'Climb out', loss ? `Leave now: ₽${loss} of yours sinks into the sludge.` : 'Leave now. You\'ve no ₽ to lose.', async () => {
+          if (!await playOut('goop', { dig: false })) return;
+          run.money -= loss;
+          setMoney(run.money);
+          tell(loss ? `You climbed out. ₽${loss} sank into the sludge.` : 'You climbed out, sticky but no poorer.');
+          showMap();   // out of the pit is out of the room: no walk back past the sludge (the user's call, 2026-10-17)
+        }),
+      ] };
+  },
+
+  // StS's The Lab: a few free items, one after another; with a Dusk Stone, ₽ instead
+  'silph-storeroom'(event, state, back, react, done) {
+    const haul = state.haul.map(id => ITEMS_BY_ID[id]).filter(Boolean), dusk = run.relics.includes('dusk-stone'), cash = perBiome(event.duskMoney) * (haul.length - state.got);
+    const figures = { mon: { src: 'assets/pokemon/porygon-front.gif' } };
+    if (state.got >= haul.length) return { figures, sub: [event.text, 'The crates are empty.'], options: [spotOption('Search', 'Nothing left in the crates.', () => {}, true)] };
+    const next = () => {
+      if (state.got >= haul.length) return done();
+      const item = haul[state.got];
+      state.got += 1;
+      checkpoint();
+      offerItem(item, next, { opened: true, title: `Silph Co. Storeroom ${state.got}/${haul.length}` });
+    };
+    return { figures, sub: [event.text, dusk ? `Your Dusk Stone keeps items away, but there's ₽${cash} in the crates.` : `Search the crates: ${haul.length - state.got} free item${haul.length - state.got > 1 ? 's' : ''}, one after another.`], options: [
+      spotOption(state.got ? 'Keep searching' : 'Search', dusk ? `Sell what you find: ₽${cash}.` : `${haul.length - state.got} free items. A full Bag swaps or leaves each one.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('rummage')) return;
+        if (!dusk) return hold3d(), next();
+        state.got = haul.length;
+        run.money += cash;
+        setMoney(run.money);
+        playSound('coins');
+        tell(`Your Dusk Stone kept the items away, so you sold them: ₽${cash}.`);
+        done();
+      }),
+    ] };
+  },
+
+  // StS's The Joust: bet ₽ on the favourite (Scyther) or the underdog (Caterpie); the winner was rolled as the biome started
+  'bug-contest'(event, state, back, react, done) {
+    const bet = perBiome(event.bet), winner = contestWinner(event, state.roll), short = run.money < bet, odds = Math.round(event.favourite * 10);
+    const NAMES = { favourite: 'Scyther', underdog: 'Caterpie' }, STANDS = { favourite: 'left', underdog: 'right' };
+    const wager = (pick) => async () => {
+      figureDoes(STANDS[pick], 'hop');
+      if (!await playOut('joust', { win: winner === 'favourite' ? 0 : 1 })) return;
+      spend(bet);
+      figureDoes(STANDS[winner], 'hop');
+      if (pick === winner) {
+        const won = bet * event.pays[pick];
+        run.money += won;
+        playSound('coins');
+        tell(`${NAMES[winner]} won! Your bet paid ₽${won}.`);
+      } else tell(`${NAMES[winner]} won the contest. You lost your ₽${bet}.`);
+      setMoney(run.money);
+      done();
+    };
+    return { figures: { left: { src: 'assets/pokemon/scyther-front.gif', flip: true }, right: { src: 'assets/pokemon/caterpie-front.gif' } },
+      sub: [event.text, `Bet ₽${bet} on Scyther, the favourite (${odds} in 10, pays ${event.pays.favourite}x), or on Caterpie (${10 - odds} in 10, pays ${event.pays.underdog}x).`], options: [
+        spotOption(`Scyther ₽${bet}`, short ? `You need ₽${bet} to bet.` : `The favourite, ${odds} in 10 to win: a win pays ₽${bet * event.pays.favourite}.`, wager('favourite'), short),
+        spotOption(`Caterpie ₽${bet}`, short ? `You need ₽${bet} to bet.` : `The underdog, ${10 - odds} in 10 to win: a win pays ₽${bet * event.pays.underdog}.`, wager('underdog'), short),
+      ] };
+  },
+
+  // StS's Ancient Writing: study the glyphs (every copy of your two basic moves PP Ups), or let the Unown erase a move
+  'unown-tablet'(event, state, back, react, done) {
+    const type = run.starter.type, ups = tabletUps(type, run.deck), thin = run.deck.length <= MIN_DECK;
+    const names = (BASICS[type] || []).map(id => CARDS_BY_ID[id]?.name).filter(Boolean).join(' and ');
+    return { figures: { mon: { src: 'assets/pokemon/unown-front.gif' } }, sub: [event.text, `Study the glyphs to PP Up every ${names} you hold, or let the Unown erase one of your moves.`], options: [
+      spotOption('Study', ups.length ? `PP Up every ${names} in your deck (${ups.length} card${ups.length > 1 ? 's' : ''}).` : `You hold no ${names} left to PP Up.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('study')) return;
+        for (const i of ups) run.deck[i] = upgradeId(run.deck[i]);
+        mission('upgrade', ups.length);
+        checkpoint();
+        hold3d();
+        const shown = [...new Set(ups.map(i => run.deck[i]))].map(id => CARDS_BY_ID[id]);
+        revealCard('Unown Tablet', shown, [`The glyphs glowed: ${ups.length} move${ups.length > 1 ? 's' : ''} PP Upped!`, `Every ${names} in your deck is stronger.`], done);
+      }, !ups.length),
+      spotOption('Erase', thin ? `Your deck can't go below ${MIN_DECK} cards.` : 'The Unown erase a move of your choice, for free.', async () => {
+        if (!await playOut('efface')) return;
+        hold3d();
+        forgetMove(back, done);
+      }, thin),
+    ] };
+  },
+
+  // StS's Designer In-Spire: pay Smeargle to touch up a move, repaint one, or do the full portrait (forget one, and a
+  // random one PP Ups); the ₽ is only paid once a move is picked
+  'smeargle-studio'(event, state, back, react, done) {
+    const touch = perBiome(event.touchUp), paint = perBiome(event.repaint), full = perBiome(event.portrait);
+    const ups = run.deck.some(id => canUpgrade(CARDS_BY_ID[id])), morphs = dittoMorphs(state), thin = run.deck.length <= MIN_DECK;
+    const why = (price, can, hint, cant) => (!can ? cant : run.money < price ? `You need ₽${price}.` : hint);
+    const pay = (price) => { spend(price); setMoney(run.money); playSound('buy'); };
+    const act = (i, then) => async () => { figureDoes('mon', 'hop'); if (await playOut('paint', { i })) { hold3d(); then(); } };
+    return { figures: { mon: { src: 'assets/pokemon/smeargle-front.gif' } }, sub: [event.text, 'A touch-up, a repaint, or the full portrait. You only pay once you\'ve picked the move.'], options: [
+      spotOption(`Touch-up ₽${touch}`, why(touch, ups, 'PP Up a move of your choice.', 'None of your moves can PP Up.'),
+        act(0, () => upgradeMove(back, () => { pay(touch); done(); }, { title: "Smeargle's Studio", sub: `Choose a move for Smeargle to touch up, for ₽${touch}. What changes is in green.` })),
+        run.money < touch || !ups),
+      spotOption(`Repaint ₽${paint}`, why(paint, morphs.length, 'Transform a move of your choice into a random move of its rarity.', 'None of your moves can be repainted.'),
+        act(1, () => studioRepaint(morphs, paint, pay, back, done)), run.money < paint || !morphs.length),
+      spotOption(`Portrait ₽${full}`, why(full, !thin, 'Forget a move of your choice, and Smeargle PP Ups a random one.', `Your deck can't go below ${MIN_DECK} cards.`),
+        act(2, () => forgetMove(back, () => {
+          pay(full);
+          for (const [card, up] of ppUpRandom(1)) tell(`Smeargle touched up ${card.name}: it's ${up.name} now!`);
+          done();
+        })), run.money < full || thin),
+    ] };
+  },
+
+  // StS's Bonfire Spirits: burn a move, and the Litwick give back warmth by its rarity
+  'litwick-bonfire'(event, state, back, react, done) {
+    const thin = run.deck.length <= MIN_DECK;
+    return { figures: { left: { src: 'assets/pokemon/litwick-front.gif', flip: true }, right: { src: 'assets/pokemon/litwick-front.gif' } },
+      sub: [event.text, 'Offer a move to the flames: the rarer it is, the more warmth comes back.'], options: [
+        spotOption('Offer a move', thin ? `Your deck can't go below ${MIN_DECK} cards.` : 'Burn a move of your choice. A basic warms you a little, a common more; an uncommon heals you fully, and a rare raises your max HP too.', async () => {
+          for (const fan of ['left', 'right']) figureDoes(fan, 'hop');
+          if (!await playOut('offer')) return;
+          hold3d();
+          bonfirePick(event, back, done);
+        }, thin),
+      ] };
+  },
+
+  // StS's Match and Keep: flip the face-down cards two at a time; a matched move is yours, a matched Voltorb pair blows up
+  'voltorb-flip'(event, state, back, react, done) {
+    const game = flipState(event, state.board, state.flips), figures = { mon: { src: 'assets/pokemon/voltorb-front.gif' } };
+    if (game.over) return { figures, sub: [event.text, 'The game is over.'], options: [spotOption('Play', 'You\'ve had your flips.', () => {}, true)] };
+    return { figures, sub: [event.text, `Flip two cards a try, ${game.left} tr${game.left > 1 ? 'ies' : 'y'}. A matched move joins your deck; match the Voltorb and they blow up (${perBiome(event.zap)} HP).`], options: [
+      spotOption(state.flips.length ? 'Keep playing' : 'Play', `${game.left} tr${game.left > 1 ? 'ies' : 'y'} left: flip two cards at a time.`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('deal')) return;
+        hold3d();
+        flipGame(event, state, done);
+      }),
+    ] };
+  },
+
+  // StS's We Meet Again: your rival trades a relic for ₽, an item of your Bag or a move of your deck (which are rolled)
+  'rivals-return'(event, state, back, react, done) {
+    const price = perBiome(event.ask), item = ITEMS_BY_ID[rivalWants(run.items, state.pick[0])], thin = run.deck.length <= MIN_DECK;
+    const moves = run.deck.filter(id => pickable(CARDS_BY_ID[id]) && !(BASICS[run.starter.type] || []).includes(baseId(id)));
+    const move = CARDS_BY_ID[rivalWants(moves, state.pick[1])];
+    const trade = (what, pay) => async () => {
+      figureDoes('npc', 'nod');
+      if (!await playOut('barter', { what })) return;
+      pay();
+      checkpoint();
+      hold3d();
+      offerRelic("Rival's Return", done);
+    };
+    return { figures: { npc: { npc: 'rival' }, mon: { src: 'assets/pokemon/sneasel-front.gif' } },
+      sub: [event.text, 'Give him ₽, the item or the move he wants, and pick a relic in return.'], options: [
+        spotOption(`Give ₽${price}`, run.money < price ? `You need ₽${price}.` : `Hand him ₽${price} for a relic.`, trade('money', () => {
+          spend(price);
+          setMoney(run.money);
+          playSound('coins');
+          tell(`You gave your rival ₽${price}.`);
+        }), run.money < price),
+        spotOption(item ? `Give ${item.name}` : 'Give an item', item ? `He wants your ${item.name}: trade it for a relic.` : 'Your Bag is empty.', trade('item', () => {
+          run.items.splice(run.items.indexOf(item.id), 1);
+          renderItemList();
+          tell(`You gave your rival your ${item.name}.`);
+        }), !item),
+        spotOption(move ? `Give ${move.name}` : 'Give a move', thin ? `Your deck can't go below ${MIN_DECK} cards.` : move ? `He wants your ${move.name}: trade it for a relic.` : 'He wants none of your moves.', trade('move', () => {
+          run.deck.splice(run.deck.indexOf(move.id), 1);
+          tell(`You gave your rival your ${move.name}.`);
+        }), !move || thin),
+      ] };
+  },
 };
+
+/** Smeargle repaints a move into a random one of its rarity (rolled as the biome started, like Ditto's Transform). */
+function studioRepaint(entries, price, pay, back, done) {
+  showChoice({
+    title: "Smeargle's Studio",
+    sub: `Choose a move for Smeargle to repaint, for ₽${price}. What it becomes is a surprise.`,
+    options: entries.map(({ card, count, gets }) => ({
+      ...cardOption(card, run.stage, () => {
+        pay(price);
+        run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
+        revealCard("Smeargle's Studio", gets, [`Smeargle repainted your ${card.name}...`, `It's ${gets.name} now!`], done);
+      }, count),
+      ask: `Repaint ${card.name}?`,
+      confirm: 'Repaint it',
+    })),
+    skipLabel: 'Back',
+    layout: 'deck-pick',
+    onSkip: back,
+  });
+}
+
+const BONFIRE_SAYS = {
+  basic: 'The Litwick barely flicker',
+  common: 'The flames crackle warmly',
+  uncommon: 'The bonfire roars up',
+  rare: 'The bonfire blazes blue',
+};
+
+/** The Litwick Bonfire: burn a move of your choice, each one marked with what it gives back. */
+function bonfirePick(event, back, done) {
+  const type = run.starter.type;
+  showChoice({
+    title: 'Litwick Bonfire',
+    sub: 'Choose a move to offer to the flames. It\'s gone for the rest of the run.',
+    options: groupDeck(run.deck, CARDS_BY_ID).map(({ card, count }) => {
+      const gift = bonfireGift(event, card, type, run.biome);
+      const gives = gift.maxHp ? `Full heal and max HP +${gift.maxHp}` : gift.heal >= 1 ? 'A full heal' : `Heals ${Math.round(gift.heal * 100)}% of your max HP`;
+      return {
+        ...cardOption(card, run.stage, async () => {
+          run.deck.splice(run.deck.indexOf(card.id), 1);
+          run.tally.forgotten += 1;
+          mission('forget');
+          run.maxHp += gift.maxHp;
+          const heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * gift.heal));
+          run.hp += heal;
+          playSound(gift.maxHp ? 'stat-up' : 'heal-hp');
+          await showHpChange();
+          tell(`${BONFIRE_SAYS[gift.rank] || BONFIRE_SAYS.common} as ${card.name} burns. ${gift.maxHp ? `Max HP +${gift.maxHp}, and ` : ''}${heal ? `healed ${heal} HP.` : 'You were already at full HP.'}`);
+          done();
+        }, count),
+        ask: `Burn ${card.name}?`,
+        confirm: 'Burn it',
+        note: gives,
+      };
+    }),
+    skipLabel: 'Back',
+    layout: 'deck-pick',
+    onSkip: back,
+  });
+}
+
+/** Voltorb Flip's table: the board face down, two flips a try. A matched move joins the deck there and then and every
+    try is saved, so a refresh picks the game up where it stood. */
+function flipGame(event, state, done) {
+  const board = state.board, zap = perBiome(event.zap);
+  let open = [], busy = false;
+  const game = () => flipState(event, board, state.flips);
+  const left = () => { const g = game(); return g.over ? 'That\'s the game!' : `${g.left} tr${g.left > 1 ? 'ies' : 'y'} left. Flip two cards.`; };
+  // the board says how it's going in one line, replaced each try, never queued up to tap through after (the user's ask)
+  const status = (line) => sayLines([line], 'reward-log');
+  showChoice({ title: 'Voltorb Flip', sub: ['Match two of a kind: a move joins your deck. Match the Voltorb and they blow up!', left()], options: [], layout: 'flip-game' });
+  roomConfirm(null);
+  const grid = el('div', 'flip-board');
+  const tiles = board.map((id, i) => {
+    const tile = el('button', 'flip-tile');
+    tile.type = 'button';
+    const face = el('span', 'flip-face');
+    if (id === 'voltorb') { const img = el('img', 'flip-voltorb'); img.src = 'assets/pokemon/voltorb-front.gif'; img.alt = 'Voltorb'; face.append(img); }
+    else face.append(makeCard(CARDS_BY_ID[id], { stage: run.stage }));
+    tile.append(el('span', 'flip-back'), face);
+    tile.setAttribute('aria-label', `Card ${i + 1}, face down`);
+    tile.onclick = () => (tile.classList.contains('up') && id !== 'voltorb' ? zoomCard(CARDS_BY_ID[id], run.stage, face.firstChild) : flip(i));   // a card face up: read it big
+    return tile;
+  });
+  grid.append(...tiles);
+  $('reward-options').append(grid);
+  const paint = (all = false) => {
+    const { matched } = game();
+    tiles.forEach((tile, i) => {
+      const up = all || matched.has(i) || open.includes(i);
+      tile.classList.toggle('up', up);
+      tile.classList.toggle('kept', matched.has(i));
+      tile.setAttribute('aria-label', up ? (board[i] === 'voltorb' ? 'Voltorb' : CARDS_BY_ID[board[i]].name) : `Card ${i + 1}, face down`);
+    });
+  };
+  const finish = () => {   // every card turns over, and OK shows what you won the way a found card shows
+    paint(true);
+    const { won, zapped } = game(), cards = won.map(id => CARDS_BY_ID[id]);
+    status(cards.length ? `That's the game! You won ${cards.length} move${cards.length > 1 ? 's' : ''}.` : 'That\'s the game! No pairs kept this time.');
+    roomConfirm('OK', () => {
+      if (!cards.length) return done();
+      revealCard('Voltorb Flip', cards, [`You won ${cards.map(c => c.name).join(', ').replace(/, ([^,]*)$/, ' and $1')}!`, ...(zapped ? [`The Voltorb blew up for ${zap} HP.`] : [])], done);
+    });
+  };
+  async function flip(i) {
+    if (busy || game().over || open.includes(i) || game().matched.has(i)) return;
+    open.push(i);
+    playSound('card');
+    paint();
+    if (open.length < 2) return;
+    busy = true;
+    const [a, b] = open;
+    state.flips.push(a, b);
+    if (board[a] === board[b]) {
+      if (board[a] === 'voltorb') {
+        loseHp(zap);
+        playSound('thunder');
+        status(`The Voltorb blew up! Lost ${zap} HP.`);
+        await showHpChange();
+      } else {
+        const card = CARDS_BY_ID[board[a]];
+        if (copiesOf(card.id) < MAX_COPIES) { run.deck.push(learnedId(card)); mission('learn'); playSound('item-get'); status(`A match! ${card.name} is yours.`); }
+        else status(`A match! But you already know ${card.name} as well as you can.`);
+      }
+      open = [];
+    } else {
+      status('No match.');
+      await sleep(900);
+      open = [];
+    }
+    checkpoint();
+    paint();
+    busy = false;
+    if (game().over) finish();
+    else if (board[a] !== board[b]) status(left());
+  }
+  paint();
+}
+
+/** The Canalave Library's shelves: learn one of its moves, or go Back to the room. */
+function libraryRead(books, back, done) {
+  showChoice({
+    title: 'Canalave Library',
+    sub: 'Choose a move to learn from the shelves.',
+    options: books.map(card => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.push(learnedId(card));
+        mission('learn');
+        tell(`${card.name} added to your deck.`);
+        done();
+      }),
+      ask: `Learn ${card.name}?`,
+      confirm: 'Learn it',
+      note: deckNote(card, run.deck),
+    })),
+    skipLabel: 'Back',
+    onSkip: back,
+    layout: 'deck-pick',
+  });
+}
+
+/** The Prize Wheel's slice paid out; one that can't be (no Forget at the deck's minimum, no item under Dusk Stone) pays ₽. */
+async function wheelPrize(event, slice, done) {
+  const cash = () => {
+    const money = perBiome(event.wheelMoney);
+    run.money += money;
+    setMoney(run.money);
+    playSound('coins');
+    tell(`It landed on ₽! You won ₽${money}.`);
+    done();
+  };
+  const [item] = slice === 'item' && !run.relics.includes('dusk-stone') ? itemChoices(run) : [];
+  if (slice === 'relic') return hold3d(), offerRelic('Prize Wheel', done);
+  if (slice === 'forget' && run.deck.length > MIN_DECK) return tell('It landed on Forget: a move of your choice, for free.'), hold3d(), forgetMove(done, done);
+  if (item) return hold3d(), offerItem(item, done, { opened: true, title: 'Prize Wheel' });
+  if (slice === 'heal') {
+    const heal = run.maxHp - run.hp;
+    run.hp = run.maxHp;
+    playSound('heal-hp');
+    await showHpChange();
+    tell(heal ? `It landed on Full Heal! Healed ${heal} HP.` : 'It landed on Full Heal... and you were already at full HP.');
+    return done();
+  }
+  if (slice !== 'ouch') return cash();
+  const ouch = Math.ceil(run.maxHp * event.ouch);
+  figureDoes('mon', 'hop');
+  loseHp(ouch);
+  await showHpChange();
+  tell(`It landed on the Pinch! Meowth Fury Swiped you for ${ouch} HP.`);
+  done();
+}
+
+const copiesOf = (id) => run.deck.filter(x => baseId(x) === baseId(id)).length;
+const pickable = (card) => card && !card.evoOnly && !card.unplayable;
+
+/** The moves Ditto can copy: any of yours you hold fewer than MAX_COPIES of. */
+const dittoCopies = () => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card) && copiesOf(card.id) < MAX_COPIES);
+
+/** The moves Ditto can Transform, each with what it becomes (rolled as the biome started). */
+const dittoMorphs = (state) => groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card))
+  .map(entry => ({ ...entry, gets: CARDS_BY_ID[dittoMorph(state.offers, CARDS_BY_ID[baseId(entry.card.id)], copiesOf, MAX_COPIES)] }))
+  .filter(entry => entry.gets);
+
+function dittoPick(kind, entries, back, done) {
+  const copy = kind === 'copy';
+  showChoice({
+    title: 'Ditto',
+    sub: copy ? 'Choose a move for Ditto to copy.' : 'Choose a move for Ditto to Transform. What it becomes is a surprise.',
+    options: entries.map(({ card, count, gets }) => ({
+      ...cardOption(card, run.stage, () => {
+        if (copy) run.deck.push(card.id);
+        else run.deck.splice(run.deck.indexOf(card.id), 1, gets.id);
+        revealCard('Ditto', copy ? card : gets, copy ? [`Ditto copied ${card.name}!`, `One more ${card.name} in your deck.`]
+          : [`Ditto Transformed your ${card.name}...`, `It became ${gets.name}!`], done);
+      }, count),
+      ask: copy ? `Copy ${card.name}?` : `Transform ${card.name}?`,
+      confirm: copy ? 'Copy it' : 'Transform it',
+    })),
+    skipLabel: 'Back',
+    layout: 'deck-pick',
+    onSkip: back,
+  });
+}
+
+/** Bill's PC: leave one of your moves in this type's Box for a later run (not saved from a playtest peek). No skipping:
+    you took one out. */
+function pcStore(done) {
+  const type = run.starter.type;
+  showChoice({
+    title: "Bill's PC",
+    sub: 'Choose a move to store in your Box. A later run of this type will find it here.',
+    options: groupDeck(run.deck, CARDS_BY_ID).filter(({ card }) => pickable(card)).map(({ card, count }) => ({
+      ...cardOption(card, run.stage, () => {
+        run.deck.splice(run.deck.indexOf(card.id), 1);
+        if (!peeking) updateSave(s => { s.pcBox = { ...s.pcBox, [type]: card.id }; });
+        tell(`Stored ${card.name} in the Box.`);
+        done();
+      }, count),
+      ask: `Store ${card.name}?`,
+      confirm: 'Store it',
+    })),
+    layout: 'deck-pick',
+  });
+}
 
 /** The deck's common and uncommon cards, each with the card it trades for (the first rolled one you hold fewer than MAX_COPIES of). */
 function dayCareTrades(event, state) {
@@ -4105,15 +4852,15 @@ function dayCare(trades, back, done = showMap) {
   });
 }
 
-/** A card an event handed you, shown big in a burst of light before you go on (the user found "You got X!" in the
-    text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text box's last line goes on. */
+/** A card an event handed you (or a list: the Moon Dance's two), shown big in a burst of light before you go on (the
+    user found "You got X!" in the text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text
+    box's last line goes on. */
 function revealCard(title, card, lines, done) {
   showChoice({ title, sub: lines, options: [], layout: 'card-reveal-room' });
   let gone = false;
   roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
-  const stage = el('div', 'card-reveal');
-  const big = zoomable(makeCard(card, { stage: run.stage }), card, run.stage);
-  stage.append(chestRays(), el('div', 'treasure-flash'), big);
+  const cards = [].concat(card), stage = el('div', `card-reveal${cards.length > 1 ? ' pair' : ''}${cards.length > 2 ? ' trio' : ''}`);
+  stage.append(chestRays(), el('div', 'treasure-flash'), ...cards.map(c => zoomable(makeCard(c, { stage: run.stage }), c, run.stage)));
   $('reward-options').append(stage);
   playSound('item-get');
 }

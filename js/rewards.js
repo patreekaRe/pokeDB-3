@@ -8,7 +8,7 @@ import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
 import { playSound } from './audio.js';
 import { random, shuffled, pickOne } from './rng.js';
-import { textPace } from './prefs.js';
+import { textPace, textHold } from './prefs.js';
 
 // The balance simulator imports the pure reward pickers in a Web Worker. Defer DOM helpers to the browser page so the
 // worker can use cardChoices()/relicChoices() without evaluating UI code.
@@ -205,7 +205,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
   // the rooms and a fight's reward steps (moves, relics, a found item): the bar along the bottom, the title on its
   // hinge's LCD, no top bar
-  const roomy = inBar || /\b(learn-room|item-found|card-reveal-room)\b/.test(layout);
+  const roomy = inBar || /\b(learn-room|item-found|card-reveal-room|flip-game)\b/.test(layout);
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
@@ -219,8 +219,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   // a fight's reward steps put Skip by Home too, a key in the shell's colour (the user's call, 2026-10-08)
   if (roomy) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
-  // the Mart has it too, to check or toss an item before buying (the user's ask, 2026-10-14)
-  $('room-bag').hidden = !roomy || (inBar && !/\bmart-window\b/.test(layout));
+  // the Mart has it too, to check or toss an item before buying (the user's ask, 2026-10-14), and the ? rooms, to look
+  // through your deck before choosing (the user's ask, 2026-10-17); never on a visit, which has no run of yours
+  const bagged = /\bmart-window\b/.test(layout) || (/\bevent-room\b/.test(layout) && !document.body.classList.contains('town-visit'));
+  $('room-bag').hidden = !roomy || (inBar && !bagged);
   skip.classList.toggle('room-leave', inBar);
   skip.classList.toggle('room-skip', roomy && !inBar);
   // the move picks spell it out under the key, pulsing gently: the icon alone was missed after a boss (the user's ask, 2026-10-13)
@@ -390,13 +392,15 @@ let say = { lines: [], at: 0, typing: 0, box: 'reward-log' };
 
 export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
   clearInterval(say.typing);
-  say = { lines, at: 0, typing: 0, box: boxId };
+  clearTimeout(say.auto);
+  say = { lines, at: 0, typing: 0, auto: 0, box: boxId };
   const box = $(boxId);
   if (who) box.dataset.who = who; else delete box.dataset.who;   // a speaker's name on a tag over the box (Britt at the Mart)
   box.hidden = !lines.length;
   box.onclick = () => {
     if (say.box !== boxId) return;
     if (say.typing) return finishLine();
+    clearTimeout(say.auto);
     if (say.at < say.lines.length - 1) showLine(say.at + 1);
     else { box.hidden = true; onDone?.(); }   // like the games, a tap on the last line closes the box
   };
@@ -406,6 +410,7 @@ export function sayLines(lines, boxId = 'reward-log', onDone, who = '') {
 /** Takes the reward box's lines back unsaid (the box put away), for a screen that tells them later. */
 export function holdLines() {
   clearInterval(say.typing);
+  clearTimeout(say.auto);
   $(say.box).hidden = true;
   const lines = say.lines;
   say = { lines: [], at: 0, typing: 0, box: say.box };
@@ -462,6 +467,10 @@ function finishLine() {
   $(say.box).classList.remove('typing');
   $(`${say.box}-text`).textContent = say.lines[say.at]?.text ?? say.lines[say.at];
   $(say.box).classList.toggle('more', say.at < say.lines.length - 1);
+  // Text boxes: Auto (Settings) moves on by itself after a reading pause, all but the last line, which closing may act on
+  // (a fight starting); a tap still skips ahead (the user's ask, 2026-10-17: a game's worth of lines to tap through)
+  const hold = say.at < say.lines.length - 1 && textHold(say.lines[say.at]?.text ?? say.lines[say.at]);
+  if (hold) { const at = say.at, now = say; say.auto = setTimeout(() => { if (say === now && say.at === at && !say.typing && !$(say.box).hidden) showLine(at + 1); }, hold); }
 }
 
 /** Ready-made option tiles. */

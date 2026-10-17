@@ -42,6 +42,7 @@ const freshSave = () => ({
   battleSpeed: 1,            // 1 or 2: the enemy's turn and the hit animations (battleSpeed() in js/battle.js)
   endTurnWarn: true,         // ask before ending a turn with PP left and a card you could play
   textSpeed: 'mid',          // text boxes typing: slow, mid, fast or instant (textPace() in js/settings.js)
+  textAuto: true,            // text boxes move on by themselves, all but their last line (textHold() in js/prefs.js), or wait for a tap
   clock: 'auto',             // the scenes' time of day: auto (the device clock) or dawn / day / dusk / night (js/daytime.js)
   vibration: true,           // phones buzz (vibrate() in js/prefs.js)
   shell: 'red',              // the Pokédex device's colour: red, blue, yellow, green, pink or black (css/base.css)
@@ -292,7 +293,7 @@ export function countDex(id) {
 }
 
 // Settings' choices (and the deck view's sort) belong to the player, not the progress: a reset keeps them
-const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed',
+const PREF_KEYS = ['muted', 'volume', 'musicVolume', 'sfxVolume', 'cryVolume', 'battleSpeed', 'battleFx', 'endTurnWarn', 'textSpeed', 'textAuto',
   'clock', 'calmFx', 'vibration', 'shell', 'scenery', 'titleHub', 'deckSort', 'deckFilter', 'seenHelp', 'trainerName', 'setupDone'];
 
 export function resetSave() {

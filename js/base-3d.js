@@ -29,7 +29,7 @@ import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
   useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase } from './secret-base.js';
-import { lendTrainerSave } from './base-furniture-trainer.js';
+import { lendTrainerShows } from './base-furniture-trainer.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
@@ -110,6 +110,7 @@ const outdoors = () => (base.here || 'main') === 'yard';
 let host = null;
 const homeBase = (start) => { const b = host ? readGuestBase(host.json) : loadBase(); return b && goRoom(b, start); };
 const baseTitle = () => (host ? `${host.name}'s Base` : 'Secret Base');
+const roomTitle = (id) => (host && id === 'yard' ? `${host.name}'s ${roomName(base.house, id)}` : roomName(base.house, id));
 
 
 /** Only the pixels in (or shaded near) these colours, for an emissive map: a window's sky, a lamp's shade. The pieces
@@ -1837,7 +1838,7 @@ function refresh() {
   const tip = mode === 'walk' && giftBoard && !visit && root.querySelector('.b3-gift').hidden;
   hud.hint.classList.toggle('tip', !!tip || !!host);
   // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
-  hud.hint.textContent = host ? host.said || `${host.name}'s Secret Base, as they last left it. The doormat takes you home.`
+  hud.hint.textContent = host ? host.said || `${host.name}'s ${outdoors() ? 'backyard' : 'Secret Base'}, as they last left it. The doormat takes you home.`
     : tip ? 'A present! Tap it to open it.'
     : busy ? (named && performance.now() < named.until ? named.text : '')
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
@@ -2091,7 +2092,7 @@ function stepDown() {
 async function fallBack() {
   root.remove();
   root = null;
-  if (host) { host = null; visitBase(false); lendTrainerSave(null); await leaveTo?.(); curtain(false); return false; }   // a friend's base has no 2D room
+  if (host) { host = null; visitBase(false); lendTrainerShows(null); await leaveTo?.(); curtain(false); return false; }   // a friend's base has no 2D room
   await (await import('./secret-base.js')).openBase();
   curtain(false);
 }
@@ -2141,7 +2142,7 @@ function showRoom(spot = () => null) {
   // outdoors there's no wallpaper or floor to pick, only furniture and who's let out
   if (outdoors() && tab !== 'furniture' && tab !== 'mons') tab = 'furniture';
   const lv = here().lv;
-  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? baseTitle() : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
+  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? baseTitle() : `${roomTitle(base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
   buildRoom();
   Object.assign(walker, { path: [], through: null, seat: null, seatTo: null, goal: null, jump: null, y: 0 });
   buildPieces();
@@ -2247,7 +2248,7 @@ function logOn() {
 function endGuest() {
   host = null;
   visitBase(false);
-  lendTrainerSave(null);
+  lendTrainerShows(null);
   root.classList.remove('guest');
 }
 
@@ -2279,7 +2280,8 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   const first = homeBase(start);
   if (!first) { host = null; return false; }
   visitBase(!!host);
-  lendTrainerSave(host ? {} : null);   // a friend's trophy cases can't show your trophies, and their page doesn't carry theirs
+  // a friend's trophy cases show what they held the last time they were home (their `liveSeen`), not your save
+  lendTrainerShows(host ? Object.fromEntries(Object.entries(first.liveSeen).filter(([id, v]) => PIECES[id] && typeof v === 'string').map(([id, v]) => [PIECES[id].fam, v])) : null);
   leaveTo = onLeave;
   playMusic('secret-base');
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
@@ -2366,7 +2368,7 @@ export async function openBase3d({ onLeave = null, start = 'main', guest = null 
   base = first;
   useRoom(base);
   root.querySelector('.b3-top h2').textContent = baseTitle();
-  if (outdoors()) root.querySelector('.b3-top h2').textContent = roomName(base.house, 'yard');
+  if (outdoors()) root.querySelector('.b3-top h2').textContent = roomTitle('yard');
   buildRoom();
   buildPieces();
   mon = await makeMon();

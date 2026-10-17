@@ -596,6 +596,9 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   and `js/base-models-<same>.js`, built as session i's. A drum turning front to back can't be a tap (`spin` turns the
   whole piece upright), so the dryers whirr; a spinning part turns about the model's centre, so the barber pole stands
   on the floor rather than hanging on the wall.
+- **Session k's room types** (2026-10-17): Craft and sewing room (`crf`), Gamer room (`gmr`), Recording studio (`rcs`) and
+  Cinema (`cnm`), files `js/base-furniture-<craft|gamer|studio|cinema>.js` and `js/base-models-<same>.js`, built as session
+  j's. Live screens (the gamer desk's middle monitor, its TV, the cinema's silver screen) set their own `screen` rect.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

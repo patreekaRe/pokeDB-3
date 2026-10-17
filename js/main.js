@@ -347,7 +347,7 @@ function init() {
     hideDevice();
     await curtain(true);
     leaveTitle();
-    const went = await (await import('./base-3d.js')).openBase3d({ onLeave: showHome, guest });
+    const went = await (await import('./base-3d.js')).openBase3d({ onLeave: showHome, guest, start: guest.start });
     if (went === false) { await showHome(); curtain(false); }
     return went;
   });
