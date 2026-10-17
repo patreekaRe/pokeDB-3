@@ -255,10 +255,12 @@ export function dispose(group) {
     o.geometry?.dispose();
     if (o.isInstancedMesh) o.dispose();   // its instance matrices are a buffer of their own (a town's forest)
     // shared textures (js/base-mesh.js's grain and weave) are marked `keep` and outlive the room
-    for (const m of [o.material].flat()) if (m) { if (!m.map?.userData.keep) m.map?.dispose(); if (!m.emissiveMap?.userData.keep) m.emissiveMap?.dispose(); if (!m.alphaMap?.userData.keep) m.alphaMap?.dispose(); m.dispose(); }
+    for (const m of [o.material].flat()) if (m) { for (const k of MAPS) if (!m[k]?.userData.keep) m[k]?.dispose(); m.dispose(); }
   });
   group.clear();
 }
+// every picture a material can hold but its envMap (shared, the mall's baked hall)
+const MAPS = ['map', 'emissiveMap', 'alphaMap', 'bumpMap', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'lightMap', 'specularMap', 'displacementMap'];
 
 /** Lets go of what `group` holds on the GPU while keeping it whole: three.js uploads its pictures and shapes again the
     next time it's drawn. For a place kept hidden beside the one on screen (the mall's hall under the Game Corner held
@@ -267,8 +269,15 @@ export function unload(group) {
   group.traverse(o => {
     o.geometry?.dispose();
     if (o.isInstancedMesh) o.dispose();
-    for (const m of [o.material].flat()) if (m) for (const t of [m.map, m.emissiveMap, m.alphaMap]) if (t) { t.dispose(); delete t.userData.warm; }
+    for (const m of [o.material].flat()) if (m) for (const k of MAPS) if (m[k]) { m[k].dispose(); delete m[k].userData.warm; }
   });
+}
+
+/** A walk-in room left for the map: what it holds on the GPU is let go (unload()), its context kept awake for the rooms
+    the map warms. Awake and full, the last room walked out of (a Mart, a ? room, a house) sat under the map beside them,
+    and iPhones reloaded the tab (2026-10-17). Not when a deck picker stood over it: that room comes straight back. */
+export function putAway(view, scene) {
+  setTimeout(() => { if (!view.isConnected && !document.getElementById('map-screen').hidden) unload(scene); }, 1000);
 }
 
 /* ---------- a Pokémon: GIF frames on a billboard ---------- */

@@ -37,3 +37,12 @@ Every smooth 3D place sizes its scene through `scale()` in `createPost()` (`js/h
 applies on), Sharp (the default) up to 1.5x CSS pixels, Max up to 2x, never past the device's pixels. Crisp posts (the
 Clearing) keep their pixel-art size. A new place built on `createPost()` gets it for free; one that sizes its own
 canvas should read `sharpness().cap`.
+
+## Memory when a room is left (2026-10-17)
+
+The Center, Mart and event rooms keep their renderer awake under the map (to warm the next rooms), and kept the room
+walked out of uploaded with it. `unmount()` now calls `putAway(view, scene)` (`js/hd2d.js`): a second after, if the map
+is up, the scene is `unload()`ed (re-uploaded on the next visit); headless, ~65-80MB down to ~47MB, which is the
+renderer's own post targets. Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
+(`forgetTowns()`); a partner board replaced is disposed; `dispose()`/`unload()` free every material map but `envMap`;
+the Mart keeps at most `CARD_TEX_MAX` (24) card faces.

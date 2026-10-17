@@ -8,7 +8,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon } from './hd2d.js';
+import { loadThree, tex, monBoard, drawMon, createPost, doormat, dispose, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { furnitureModel } from './base-mesh.js';
 import { pcModel, livePc } from './hub-pc.js';
@@ -635,10 +635,13 @@ function tagMesh(text, look, w = 0.56) {
   return new THREE.Mesh(new THREE.PlaneGeometry(w, w * 92 / 240), new THREE.MeshStandardMaterial({ map: t, transparent: true, roughness: 0.6, emissive: '#ffffff', emissiveMap: t, emissiveIntensity: 0.25 }));
 }
 
-const cardTex = new Map();
+const cardTex = new Map(), CARD_TEX_MAX = 24;   // ~1 MB a face: every card a session's Marts showed, kept, only grew
 function cardMap(card) {
-  if (!cardTex.has(card.id)) cardTex.set(card.id, cardArt(card).then(c => { const t = texOf(Object.assign(c, { fine: 2 })); t.userData.keep = true; return t; }));
-  return cardTex.get(card.id);
+  const t = cardTex.get(card.id) ?? cardArt(card).then(c => { const t = texOf(Object.assign(c, { fine: 2 })); t.userData.keep = true; return t; });
+  cardTex.delete(card.id);
+  cardTex.set(card.id, t);   // the newest last
+  for (const [id, old] of [...cardTex].slice(0, Math.max(0, cardTex.size - CARD_TEX_MAX))) { cardTex.delete(id); old.then(o => o.dispose()).catch(() => {}); }
+  return t;
 }
 const sprites = new Map();
 function spriteOf(thing) {
@@ -956,6 +959,7 @@ function unmount() {
   aim = null;
   for (const f of flying) f.obj.parent?.remove(f.obj);
   flying = [];
+  if (view) putAway(view, scene);
 }
 
 /* ---------- in ---------- */
@@ -1100,7 +1104,7 @@ function ensureMon(mate) {
   if (monReady?.src !== mate.src) {
     const old = mon;
     monReady = monBoard(mate).then(m => {
-      if (old) scene.remove(old.group);
+      if (old) { scene.remove(old.group); dispose(old.group); }
       m.board.rotation.x = -PITCH;
       m.group.scale.setScalar(Math.min(1, MON_MAX / m.top));
       scene.add(m.group);

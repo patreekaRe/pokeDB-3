@@ -10,7 +10,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, warmShaders, wakeGL, restGL, pickingOver, tooSoon, putAway, dispose } from './hd2d.js';
 import { fine, texOf, words, hubThree } from './hub-3d.js';
 import { sh as shadeOf } from './base-paint.js';
 import { furnitureModel } from './base-mesh.js';
@@ -846,6 +846,7 @@ function unmount() {
   busy = false; aim = null; healing = null; flashing = null; going = null; popping = null;
   if (walker) walker.size = 1;
   if (machine) machine.ball.visible = false;
+  if (view) putAway(view, scene);
 }
 
 /* ---------- in ---------- */
@@ -903,7 +904,7 @@ export async function mountCenter(o) {
   await wakeGL(renderer);
   if (!alive()) return null;   // left while it loaded
   if (mon?.src !== o.mate.src) {
-    if (mon) scene.remove(mon.group);
+    if (mon) { scene.remove(mon.group); dispose(mon.group); }
     mon = await monBoard(o.mate);
     mon.board.rotation.x = -PITCH;
     scene.add(mon.group);

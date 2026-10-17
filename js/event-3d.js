@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -11830,6 +11830,7 @@ function unmount() {
   busy = false; aim = null; frozen = false;
   if (acting) { const done = acting.done; acting = null; done(); }
   endWarp();
+  if (view) putAway(view, scene);
 }
 
 /* ---------- in ---------- */
@@ -11951,7 +11952,10 @@ export async function mountEvent(o) {
   if (!showing() || opts !== o) return null;
   useSize(next);
   if (R !== next) {
-    if (R) { scene.remove(R.group); for (const who of Object.values(R.who)) scene.remove(who.group); }   // its people stand in the scene, not its group
+    if (R) {   // its people stand in the scene, not its group; kept for a walk back (a town round its houses), off the GPU
+      scene.remove(R.group); unload(R.group);
+      for (const who of Object.values(R.who)) { scene.remove(who.group); unload(who.group); }
+    }
     R = next;
     scene.add(R.group);
     for (const who of Object.values(R.who)) if (!who.group.parent) scene.add(who.group);
@@ -11975,7 +11979,7 @@ export async function mountEvent(o) {
     if (R.scroll) { R.scroll.ink = 0.12; const m = R.scroll.mesh.material; m.map.dispose(); m.map = texOf(scrollArt(0.12)); m.needsUpdate = true; }
   }
   if (mon?.src !== o.mate.src) {
-    if (mon) scene.remove(mon.group);
+    if (mon) { scene.remove(mon.group); dispose(mon.group); }
     mon = await monBoard(o.mate);
     scene.add(bendAll(mon.group));
   }
@@ -12238,6 +12242,7 @@ export async function swapMate(mate) {
   if (!alive()) return;
   next.board.rotation.x = -PITCH;
   scene.remove(mon.group);
+  dispose(mon.group);
   mon = next;
   scene.add(mon.group);
   if (opts) opts.mate = mate;

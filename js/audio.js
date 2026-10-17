@@ -720,7 +720,8 @@ class LoopedTrack {
     const passes = this.passes;
     this.passes = [];
     passes.forEach(p => p.source.stop());
-    if (!keep) this.decoded = null;
+    // this.buffer too: kept, every song played once stayed decoded for the page load (~1 GB a long session on an iPhone)
+    if (!keep) this.decoded = this.buffer = null;
   }
 }
 
