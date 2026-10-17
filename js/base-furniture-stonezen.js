@@ -71,7 +71,7 @@ const bow = (x0, x1, h, rise, z, n = 8) => Array.from({ length: n + 1 }, (_, i) 
 /** Rods joining points in turn. */
 const line = (pts, r, c, o) => pts.slice(1).map((p, i) => RD(pts[i], p, r, c, o));
 /** A cushion of moss on the ground (or on h). */
-const tuft = (x, h, z, r, c = ZN.moss) => S(x, h + r * 0.3, z, r, r * 0.55, r * 0.8, c, { m: 'moss', seg: 8 });
+const tuft = (x, h, z, r, c = ZN.moss) => S(x, h + r * 0.55, z, r, r * 0.55, r * 0.8, c, { m: 'moss', seg: 8 });
 /** A bamboo pole from a to b, its nodes darker rings every `every` units. */
 function pole(a, b, r, every = 9) {
   const out = [RD(a, b, r, ZN.bamboo, { m: 'wood', seg: r >= 1.2 ? 8 : 6 })], len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
