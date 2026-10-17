@@ -889,22 +889,10 @@ visits together come later, if ever (they need the full Firestore SDK with live 
 avatar and position sync). Signed-in players only, no free-text chat. **Friend codes are in** (the user's call,
 2026-10-17, replacing 2026-10-07's "no codes"): they are the easiest way in. Name search is left for later, because it
 needs unique names, renames and a guard against rude names turning up in results. The easiest build, 2 sessions:
-**Session 1, the list (no 3D):**
-- **A public trainer doc**, `trainers/<uid>` = `{ code, name, card, buddy, base, at }`. `saves/<uid>` stays private.
-  Written on sign-in and whenever you leave your base. Rules: signed-in players read it; only the owner writes it,
-  within size bounds, the same way the boards' rules do.
-- **A friend code**, `codes/<CODE>` = `{ uid }`: 8 letters with no look-alikes (no 0/O, 1/I/L), made once and
-  create-only, so a clash just rolls again. Shown on the Trainer Card and the PC.
-- **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
-  device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
-  carry `uid`). No requests and no accept step; anyone you add shows up.
-- **The Trainers app**, its own app on the Pokédex (a `shelfApp()`, plus a TRAINERS row on the PC; the user's call,
-  2026-10-17: its own app, the name left to Claude). "Trainers" because that's what Pokémon calls other players, and
-  because "Friends" is already the Gym Leaders' hearts app (`js/friendsdex.js`). Each trainer's name, Trainer Card,
-  buddy, last seen, a Visit key (greyed until session 2) and Remove. One `getDoc` per trainer on open.
-- **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
-  one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
-  setup.
+~~**Session 1, the list**~~ done 2026-10-17 on `claude/exciting-cray-y585nt` (pushed to `main` too; `docs/roadmap-done.md`,
+details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (it already carries `base`, the
+`secretBase` as JSON), friend codes, `save.friends`, adding by code or a leaderboard name, the Trainers app, the tip and
+the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 **Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
 `loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
 (`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
@@ -914,12 +902,10 @@ their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of sta
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
-▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry and docs/reference/cloud-save.md. Build session 1: the trainer doc,
-friend codes, the list in the save, adding from a code or a leaderboard name, the Trainers app, the How to play tip and the PC
-letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
-rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
-build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
+▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 2: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
+visits' entry, docs/reference/cloud-save.md's Trainers section and docs/reference/hub-base-mall.md, then build session 2,
+the visit-only base, with the save-unchanged test, a patch-notes line and a githack link." (`tools/trainers-check.mjs`
+is the two-account harness to extend.)
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -1057,6 +1043,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Publish the Trainers rules** (2026-10-17): paste the whole `firestore.rules` into the Firebase console (Firestore
+  Database > Rules > Publish). Until then the Trainers app can't make codes or pages (it says it can't reach the
+  network), and the rest of the game is unaffected.
 
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted

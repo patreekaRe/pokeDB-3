@@ -187,7 +187,7 @@ gets at most a line.
 - The Clearing, PC, missions, Secret Base, Poké Mall, Game Corner, arcade - `docs/reference/hub-base-mall.md`
 - Gateway towns - `docs/reference/towns.md`
 - Saved runs - `docs/reference/saved-runs.md`
-- Cloud save - `docs/reference/cloud-save.md`
+- Cloud save, and the Trainers app (friend codes, the friends list) - `docs/reference/cloud-save.md`
 - Deck thinning - `docs/reference/deck-thinning.md`
 - Poké Mart and Pokédollars - `docs/reference/mart.md`
 - Treasure room - `docs/reference/treasure-room.md`

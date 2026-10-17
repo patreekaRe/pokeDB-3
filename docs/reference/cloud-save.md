@@ -28,3 +28,35 @@ added to `firestore.rules` and the file published again. `cloudSession()` / `onC
 `openCloud()` are exported for `js/leaderboard.js`. Headless tests route gstatic to stand-in modules (the real SDK
 can't be reached from a cloud session).
 
+
+## Trainers: friend codes and the friends list (2026-10-17, session 1 of the roadmap's "Friends list and base visits")
+
+Signed-in players only. `js/trainers.js` (network and the app) and `js/data/trainers.js` (pure: codes, the list, the
+doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (33 cases).
+- **`trainers/<uid>`** = `{ code, name, card, buddy, base, at }`, the public page: `card` the Trainer Card's numbers
+  (`cardDoc()`: tier, earned badge ids, wins, Pokédex, Safari, stars, play minutes, the partner as a `save.partner`
+  key), `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
+  visits. Written by `publishTrainer()` on every sign-in (`onCloudSignIn`, which fires on each load while signed in)
+  and as you leave your base (`leave()` in `js/base-3d.js`). Rules: signed-in `get` only (no listing), the owner writes
+  it under a code `codes/` says is theirs, bounded like the boards. Someone else's page is only drawn through
+  `readDoc()` / `cardDoc()`, and sprites only from our own keys (never a URL); a Pokémon you haven't met (Mewtwo before
+  it's yours) stays a silhouette and `???`.
+- **`codes/<CODE>`** = `{ uid }`: 8 of `CODE_LETTERS` (no O, I, L), shown as ABCD-EFGH. `ensureCode()` reuses the
+  code on your page, else claims a new one (create-only, so a clash is `permission-denied` and rolls again). This
+  device keeps it in `pokedb.trainer.code` (`{ uid, code }`), **not in the save**: a save write during a first sign-in
+  would mark this device's save changed and pop "Two saves found". `myCode()` is null while signed out.
+- **`save.friends`** = `[uid, ...]`, at most `FRIENDS_MAX` (50), one way, no requests; the cloud save carries it.
+  Added by a typed code (the app's box: any case, spaces or a dash) or a leaderboard page's "+ Add to Trainers"
+  (`addKey()` in `js/leaderboard.js`, on anyone else's entry while signed in).
+- **The Trainers app** (`trainersApp()`, a `shelfApp()`; on the home screen whenever cloud save is configured): your
+  code and the add box on LCDs over the banners, a banner per trainer in their card's colour (their buddy, last seen,
+  badges), their page the handheld: partner, card facts, badges, buddy, Visit (greyed until session 2) and Remove (a
+  second tap confirms). One `getDoc` a trainer on each open. A trainer with no page yet shows as `???`, "Not on the
+  network yet".
+- **Introduced by** the Going Further tip in How to play, the PC's TRAINERS row (your code under it; opens the app),
+  the Trainer Card's CODE line, and a one-time letter from TRAINER NETWORK (`trainersLetter()` in `js/mail.js`,
+  `save.trainersLetter`) the first time a signed-in player logs on to the PC, its code where a prize would be, Read
+  not Claim.
+- Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
+  the rules (gstatic routed to stand-in SDK modules; 31 checks), and `tools/trainers-rules.mjs`, the real rules in the
+  Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

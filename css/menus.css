@@ -1012,6 +1012,30 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .fdx-banner-hearts svg { stroke: #fff; stroke-width: 1.4; filter: drop-shadow(1px 1px 0 rgba(0, 0, 0, 0.45)); }
 .fdx-device .bdx-slots, .fdx-device .pdx-controls { display: none; }
 
+/* the Trainers app (js/trainers.js): your code and the add box on LCDs over the banners, a banner a trainer in their card's
+   colour, their page the handheld with their Trainer Card; one trainer a page, so no slots or arrows */
+.trn-top { margin-bottom: 12px; }
+.trn-code { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.trn-code small { font-size: 0.75rem; opacity: 0.75; }
+.trn-code-text { font: 400 1rem/1.2 var(--pixel-font); font-synthesis-weight: none; letter-spacing: 0.08em; user-select: all; }
+.trn-add { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.trn-add strong { grid-column: 1 / -1; font-weight: 400; font-size: 0.75rem; }
+.trn-add .trn-input { width: 100%; min-width: 0; letter-spacing: 0.08em; }
+.trn-said { grid-column: 1 / -1; margin: 0; font-size: 0.75rem; line-height: 1.5; }
+.trn-none { margin-top: 4px; text-align: center; }
+.trn-banner .dex-bar { display: none; }
+.trn-device .bdx-slots, .trn-device .pdx-controls { display: none; }
+.trn-role { background: #1f8a9a; }
+.trn-badges { display: grid; gap: 6px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
+.trn-badges b { font-weight: 400; }
+.trn-badge-row { display: flex; flex-wrap: wrap; gap: 3px; }
+.trn-badge-row img { width: 26px; height: 26px; }
+.trn-keys { display: flex; gap: 8px; }
+.trn-keys .lb-btn { flex: 1; }
+.trn-keys .lb-btn:disabled { opacity: 0.5; cursor: default; translate: none; }
+.trn-remove.sure { background: #c8384a; color: #fff; }
+.trn-device img.unseen, .trn-banner img.unseen { filter: brightness(0) opacity(0.55); }
+
 /* the books (js/halloffame.js) on the same handheld: the Record Book a banner per Trainer Level, a run a screen */
 .bdx-banner-mon.lost, .bdx-screen.lost .pdx-mon { filter: grayscale(1) brightness(0.85); }
 .bdx-screen.opens { cursor: zoom-in; }

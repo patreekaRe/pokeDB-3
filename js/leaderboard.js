@@ -23,6 +23,7 @@ import { augIcon } from './augment-art.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
 import { getSave, updateSave } from './storage.js';
+import { addTrainer, hasTrainer } from './trainers.js';
 
 const POST_KEY = 'pokedb.safari.post';
 const TOWER_POST_KEY = 'pokedb.tower.post';
@@ -279,6 +280,26 @@ function picks(e) {
   return [box];
 }
 
+let me = null;   // the uid signed in when the board last loaded: anyone else's page offers Add to Trainers
+
+/** A key that puts this trainer on your Trainers list (js/trainers.js), signed in only. */
+function addKey(r) {
+  const uid = r.entry.uid;
+  if (!me || r.mine || !uid || uid === me) return [];
+  const on = hasTrainer(uid);
+  const b = el('button', `lb-btn lb-add${on ? ' on' : ''}`, on ? '✓ In your Trainers' : '+ Add to Trainers');
+  b.type = 'button';
+  b.disabled = on;
+  b.addEventListener('click', () => {
+    const why = addTrainer(uid, me);
+    playSound(why && why !== 'already' ? 'cancel' : 'confirm');
+    b.textContent = why === 'full' ? 'Your Trainers list is full' : '✓ In your Trainers';
+    b.disabled = true;
+    b.classList.toggle('on', !why || why === 'already');
+  });
+  return [b];
+}
+
 const value = (id, e) => (kind === 'arcade' ? arcadeValue(e) : boardValue(id, e));
 
 function boardsApp(boards, day) {
@@ -306,7 +327,7 @@ function boardsApp(boards, day) {
     screen: (g, r) => [el('span', 'pdx-pad'), mon(r.entry, 'pdx-mon bdx-art'),
       el('span', `pdx-role lb-rank${MEDAL[r.rank] ? ` ${MEDAL[r.rank]}` : ''}`, r.rank === 1 ? '★ 1st' : `#${r.rank}`),
       el('span', 'lb-value', value(g.id, r.entry)), ...(r.mine ? [el('span', 'lb-you', 'You')] : [])],
-    lines: (g, r) => [typed('', `${g.name}: ${value(g.id, r.entry)}${r.mine ? '. That\'s you!' : ''}`), facts(r.entry), ...picks(r.entry)],
+    lines: (g, r) => [typed('', `${g.name}: ${value(g.id, r.entry)}${r.mine ? '. That\'s you!' : ''}`), facts(r.entry), ...picks(r.entry), ...addKey(r)],
     tally: (g) => (mine(g) ? `Your rank: #${mine(g).rank} of` : 'Trainers on this board'),
     count: (g) => `${g.board.total}`,
     bannerArt: (g, rows) => {
@@ -422,6 +443,7 @@ async function render() {
   let s;
   try { s = await cloudSession(); }
   catch (err) { if (fresh()) show(note(UNREACHABLE)); return; }
+  me = s.user?.uid ?? null;
   const top = [];
   const waiting = pending(k);
   if (!nameFor() || editingName) top.push(nameRow(s.user, waiting && s.user));   // a nickname first, signed in or not

@@ -34,6 +34,7 @@ import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
 import { trainerName } from './leaderboard.js';
 import { roomById, roomName, doorsOf, pipTile, floorName } from './data/house.js';
+import { publishTrainer } from './trainers.js';
 
 const PX = 1 / (T * RES);   // furniture: one painted pixel
 const WALL_H = WALL / T;   // 3 tiles, as in the 2D room
@@ -2088,6 +2089,7 @@ export async function leave() {
   untry();
   root.remove();
   sleepGL(renderer);   // its GPU memory let go; reopen() wakes it
+  publishTrainer();   // your trainer page carries the base as you left it, for friends' visits
   await leaveTo();
   leave.busy = false;
   curtain(false);

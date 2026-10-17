@@ -30,6 +30,8 @@ import { satchelNews, questNews } from './satchel.js';
 import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
 import { FRIENDS } from './data/workshop.js';
+import { myCode } from './trainers.js';
+import { formatCode } from './data/trainers.js';
 
 // shapes as polygons in a 16x16 box, scaled onto a 36x36 SVG
 const circle = (r = 7.6, cx = 8, cy = 8) => Array.from({ length: 32 }, (_, i) => [cx + r * Math.cos(i * Math.PI / 16), cy + r * Math.sin(i * Math.PI / 16)]);
@@ -368,6 +370,14 @@ export function partner(save) {
   return { key: null, src: spriteUrl(starter, 'front', stage), name: starter.line[stage].name, shiny, twin };
 }
 
+/** The partner as a `save.partner` key, picked or not (the Trainers app's page, js/trainers.js). */
+export function partnerKey(save = getSave()) {
+  const m = partner(save);
+  if (m.key) return m.key;
+  const { starter, stage } = autoPartner(save);
+  return `starter:${starter.id}:${stage}${m.shiny ? ':shiny' : ''}`;
+}
+
 /** Who may walk with you in the Clearing, the Secret Base and the Poké Mall (the PC's walking buddy, the user's call,
     2026-10-09): the first form of every starter you own, no legendaries (their sprites are too big to walk about), and
     each one's shiny once bought. Keys are 'starter:<id>[:shiny]'. */
@@ -389,6 +399,9 @@ export function buddy(save = getSave()) {
   const st = STARTERS_BY_ID[best?.id ?? 'charmander'], shiny = isShiny(st.id) && (save.shiny?.owned || []).includes(st.id);
   return { key: null, id: st.id, cry: st.line[0].id, src: spriteUrl(st, 'front', 0, shiny), name: st.line[0].name, shiny };
 }
+
+/** The walking buddy as a `save.buddy` key, picked or not. */
+export const buddyKey = (save = getSave()) => { const b = buddy(save); return b.key ?? `starter:${b.id}${b.shiny ? ':shiny' : ''}`; };
 
 /** The picker over the card's body: Auto, then a grid per group; a tap saves it and calls `done`. */
 function partnerPicker(body, done) {
@@ -536,6 +549,7 @@ export function openTrainerCard(into = null, { reopen = false } = {}) {   // `in
     ['RANGER', safari ? rankOf(save).rank.name.toUpperCase() : '---', 'Your Ranger Rank, from tasks claimed on the Safari Outfitter\'s Ranger Task Board.'],
     ['STARS', stars ? '⭐'.repeat(Math.min(stars, 3)) + (stars > 3 ? `×${stars}` : '') : '-', 'A gold star for each starter you have won a Level 5 run with.'],
     ['TIME', playTime(s.playMs), 'Play time, in hours and minutes.'],
+    ...(myCode() ? [['CODE', formatCode(myCode()), 'Your trainer code. A friend types it in the Trainers app to add you.']] : []),
   ];
   const info = el('div', 'tc-info');
   const list = el('dl', 'tc-lines');
