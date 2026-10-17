@@ -344,6 +344,26 @@ export function decorations(b) {
   });
 }
 
+/** The designs you own but haven't looked at yet: a "!" on each in the PC's Decorations and the Decorate tray till it's
+    tapped (the user's ask, 2026-10-17: only the Decorations row said anything was new, once). `b.known` lists the ones
+    seen; a base from before it starts out knowing all it has, so only what comes after wears the mark. */
+export function freshDesigns(b) {
+  if (visiting || heartsPeek() !== null) return [];
+  const have = DESIGNS.filter(id => !PIECES[id].gift && owns(b, id) > 0);
+  if (!b.known) {
+    if (getSave().secretBase === b) { b.known = have; saveBase(b); }
+    return [];
+  }
+  const known = new Set(b.known);
+  return have.filter(id => !known.has(id));
+}
+export function seeDesign(b, id) {
+  const kind = PIECES[id]?.own;
+  if (!kind || !b.known || b.known.includes(kind) || visiting || heartsPeek() !== null) return;
+  b.known.push(kind);
+  saveBase(b);
+}
+
 /** Put every piece of a design standing in the room back in storage, and whatever stands on them. How many went. */
 export function putAway(b, id) {
   let n = 0;

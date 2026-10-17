@@ -2968,3 +2968,7 @@ A tap on the locked Safari Zone (the title's gem, the Clearing's gate, the Colle
 (`js/safarilock.js`): a bar per biome of its Pokémon beaten (`safariUnlockPages()` in `js/data/pokedex.js`), gold once done,
 and the total. In a run, a first win over one of them slides a strip over the reward screen with that biome's bar
 stepping up (`safariStepToast()`). Branch `claude/safari-progress-tracker-6oy9oy`, also pushed to `main`.
+
+## New furniture's "!" (2026-10-17, the user's ask)
+
+Each newly owned furniture design wears a "!" in the PC's Decorations and the base's Decorate tray till tapped, not just the DECORATIONS row once (`freshDesigns()` / `seeDesign()`, `b.known`; `docs/reference/hub-base-mall.md`).

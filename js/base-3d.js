@@ -28,7 +28,7 @@ import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-g
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase, freshDesigns, seeDesign } from './secret-base.js';
 import { lendTrainerShows } from './base-furniture-trainer.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
@@ -1699,7 +1699,7 @@ function tray(which = tab) {
     e.target.prepend(e.target.paint()); e.target.paint = null; lazy.unobserve(e.target);
   }), { root: list, rootMargin: '200px' });
   root.querySelectorAll('.b3-tab').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
-  const add = (label, art, on, pick, tag = '') => {
+  const add = (label, art, on, pick, tag = '', isNew = false) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'b3-tile' + (on ? ' on' : '');
     const pic = Object.assign(document.createElement('span'), { className: 'b3-pic' });
@@ -1707,11 +1707,13 @@ function tray(which = tab) {
     if (typeof art === 'function') { pic.paint = art; lazy.observe(pic); } else pic.append(art);
     if (tag) pic.append(Object.assign(document.createElement('i'), { className: 'b3-tag', textContent: tag }));
     b.append(pic, Object.assign(document.createElement('span'), { className: 'b3-name', textContent: label }));
+    if (isNew) b.append(Object.assign(document.createElement('i'), { className: 'b3-new', textContent: '!' }));
     b.title = label;
     b.addEventListener('click', pick);
     list.append(b);
   };
-  filters();
+  const fresh = new Set(tab === 'furniture' ? freshDesigns(base) : []);
+  filters(fresh);
   if (tab === 'colour') {
     const id = holding?.id ?? base.items[sel]?.id;
     if (!id) return tray('furniture');
@@ -1720,13 +1722,14 @@ function tray(which = tab) {
   }
   if (tab === 'furniture') for (const id of DESIGNS.filter(id => fitsHere(id, base) && spare(base, id) > 0 && KINDS_OF[kindPick](PIECES[id]))) add(PIECES[id].name, () => icon(id), holding?.id === id && !holding.back, () => {
     if (holding?.back) act('cancel');
+    seeDesign(base, id);
     if (holding?.id === id) { dropHold(); refresh(); return; }
     if (holding) dropHold();
     playSound('confirm');
     named = { text: PIECES[id].name, until: performance.now() + 1600 };
     setTimeout(refresh, 1650);
     hold(id);
-  }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '');
+  }, spare(base, id) > 1 && spare(base, id) < Infinity ? `×${spare(base, id)}` : PIECES[id].layer === 'wall' ? 'Wall' : '', fresh.has(id));
   // the ones you have first, then the ones for sale, cheapest first
   const swatch = (all, field) => [...all.filter(s => ownsPaper(base, field, s)), ...all.filter(s => !ownsPaper(base, field, s)).sort((a, b) => a.price - b.price)]
     .forEach(s => add(s.name, () => paperArt(field, s.id), base[field] === s.id, () => paperTap(field, s), ownsPaper(base, field, s) ? '' : s.price.toLocaleString()));
@@ -1761,7 +1764,7 @@ function tray(which = tab) {
 let kindPick = 'All';
 
 /** The filter chips over the Furniture tab: only kinds you have a piece of, so none ever opens empty. */
-function filters() {
+function filters(fresh) {
   const row = root.querySelector('.b3-filters');
   row.hidden = tab !== 'furniture';
   if (row.hidden) return;
@@ -1769,7 +1772,7 @@ function filters() {
   const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || have.some(KINDS_OF[k]));
   if (!kinds.includes(kindPick)) kindPick = 'All';
   row.replaceChildren(...kinds.map(k => {
-    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'b3-chip' + (k === kindPick ? ' on' : ''), textContent: k });
+    const b = Object.assign(document.createElement('button'), { type: 'button', className: 'b3-chip' + (k === kindPick ? ' on' : '') + (k !== 'All' && [...fresh].some(id => fitsHere(id, base) && spare(base, id) > 0 && KINDS_OF[k](PIECES[id])) ? ' fresh' : ''), textContent: k });
     b.addEventListener('click', () => {
       if (k === kindPick) return;
       kindPick = k; playSound('select'); tray();
@@ -1862,6 +1865,9 @@ function refresh() {
     selBox.visible = true;
   } else selBox.visible = false;
   if (tab === 'furniture' || tab === 'colour') tray();
+  const anyNew = !host && freshDesigns(base).length > 0;
+  root.querySelector('.b3-decor').classList.toggle('fresh', anyNew);
+  root.querySelector('.b3-tab[data-tab="furniture"]').classList.toggle('fresh', anyNew);
   root.querySelector('.b3-ok').textContent = holding ? 'Place' : 'Done';
 }
 

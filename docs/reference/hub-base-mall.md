@@ -704,3 +704,12 @@ whole in memory, uploaded again by `warm()` under the curtain on walking back in
 up (`visitBase()` / `keep()` in `js/secret-base.js`). The detail is in `docs/reference/cloud-save.md`'s Trainers section.
 A new base write in `js/secret-base.js` goes through `keep()`, and a new thing that happens on entering the base (a
 visitor, an intro, a gift) checks `host` in `js/base-3d.js`.
+
+### New furniture's "!" (2026-10-17, the user's ask)
+
+The PC's DECORATIONS row only showed a "!" once, as a new page, and nothing said which pieces were new. Now each design
+owned but not yet tapped (`freshDesigns(b)` in `js/secret-base.js`) wears a gold "!": on its tile in the PC's
+Decorations (and a gold dot on its kind's chip), on its tile and filter chip in the base's Decorate tray, on the
+Furniture tab and the Decorate key, and on the PC's MY PC and DECORATIONS rows. Tapping the piece in either place clears
+it (`seeDesign()`). `b.known` (in the base save) lists the designs seen; a base without it starts out knowing everything it
+owns, so old saves don't light up. A friend's base on a visit and a `?hearts=` peek show none and write none.

@@ -34,7 +34,7 @@ import { SAFARI_AREA_COINS } from './data/safari.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { isStarterUnlocked } from './progress.js';
-import { PIECES, KINDS_OF, icon, loadBase, decorations, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
+import { PIECES, KINDS_OF, icon, loadBase, decorations, freshDesigns, seeDesign, putAway, buyBigRoom, buyRoom, buyDoor, buyYard, buyBigYard, takeDown, dupePrice, duplicate, BIG_PRICE, ROOM_PRICE, DOOR_PRICE, YARD_PRICE, BIG_YARD_PRICE } from './secret-base.js';
 import { loadStatues, statuesIn, statueReady } from './base-furniture-statues.js';
 import { loadFigures, figuresToLoad } from './base-figures.js';
 import { ROOM_KINDS, BUILDABLE, houseRooms, fitRoom, fitsOf, joinPips, takenOn, topFloor, floorName, pipTile, linkOf, pipUsed, entryOf, shapeOf, yardKind } from './data/house.js';
@@ -239,7 +239,7 @@ const PAGES = {
         () => import('./ranger.js').then(m => m.openJournal(() => show('home'))), journal > 0],
       ['WALKING BUDDY', 'Choose the Pokémon that walks with you in the Clearing, your base and the mall.', () => { buddyShiny = null; show('buddy'); }, false, { sub: `Now: ${buddy(save).name}` }],
       ['BASE RESIDENTS', `Choose up to ${residentCap()} Safari catches to live in your Secret Base.`, () => show('residents')],
-      [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save)],
+      [`${trainerName().toUpperCase()}'S PC`, 'Your own things. Change your name here.', () => show('mine'), pcNew('mine', save) || freshDesigns(loadBase()).length > 0],
       ...(inBase || save.baseOwned || save.secretBase ? [['HOUSE UPGRADES', 'Your Secret Base\'s blueprint: make your room bigger and build more rooms onto it.', () => { unpick(); resetView(); floor = 0; yardTab = false; show('house'); }, pcNew('house', inBase ? { baseOwned: true } : save)]] : []),
       ...(friendsOpen(save) ? [['FRIENDS', 'Your friends\' hearts live in your Pokédex now, by the Quests app. This opens it there.', () => { logOff(); openDeviceApp('friends'); }, friendsNews(save), { sub: 'Opens in your Pokédex' }]] : []),
       ...(cloudConfigured() ? [['TRAINERS', cloudRemembered() ? 'Other players you\'ve added, and your trainer code to give out. This opens it in your Pokédex.' : 'Sign in to get a trainer code and add other players. This opens it in your Pokédex.',
@@ -449,7 +449,7 @@ const PAGES = {
   },
   mine() {
     menu(`${trainerName().toUpperCase()}'S PC`, [
-      ['DECORATIONS', 'Your Secret Base furniture: what stands in your rooms and what\'s kept in storage.', () => { deco = null; dupes = false; show('decor'); }, pcNew('decor', getSave())],
+      ['DECORATIONS', 'Your Secret Base furniture: what stands in your rooms and what\'s kept in storage.', () => { deco = null; dupes = false; show('decor'); }, pcNew('decor', getSave()) || freshDesigns(loadBase()).length > 0],
       ['DUPLICATE', `Make one more of any piece you own, into storage: ${dupePrice(loadBase())} PokéCoins. Each copy costs 5 more, up to 100.`, () => { deco = null; dupes = true; show('decor'); }, pcNew('dupe', getSave())],
       ['RENAME', `Your name on the Trainer Card and the leaderboards: ${trainerName()}.`, () => show('rename')],
     ]);
@@ -466,7 +466,7 @@ const PAGES = {
     const kinds = Object.keys(KINDS_OF).filter(k => k === 'All' || all.some(d => KINDS_OF[k](PIECES[d.id])));
     if (!kinds.includes(decoKind)) decoKind = 'All';
     const list = all.filter(d => KINDS_OF[decoKind](PIECES[d.id]));
-    const picked = all.find(d => d.id === deco), price = dupePrice(b);
+    const picked = all.find(d => d.id === deco), price = dupePrice(b), fresh = new Set(freshDesigns(b));
     const h = head(dupes ? 'DUPLICATE' : 'DECORATIONS');
     h.append(el('span', 'pc-count', dupes ? `${(save.coins ?? 0).toLocaleString()} coins` : `${all.length} kinds`));
 
@@ -504,7 +504,7 @@ const PAGES = {
     }
     const chips = el('div', 'pc-chips');
     chips.append(...kinds.map(k => {
-      const c = el('button', `pc-chip${k === decoKind ? ' on' : ''}`, k);
+      const c = el('button', `pc-chip${k === decoKind ? ' on' : ''}${k !== 'All' && all.some(d => fresh.has(d.id) && KINDS_OF[k](PIECES[d.id])) ? ' fresh' : ''}`, k);
       c.type = 'button';
       c.addEventListener('click', () => { if (k === decoKind) return; decoKind = k; playSound('select'); show('decor'); });
       return c;
@@ -517,8 +517,10 @@ const PAGES = {
       t.setAttribute('aria-label', `${PIECES[d.id].name}, ${d.room} in your room, ${d.have - d.room} in storage`);
       t.append(icon(d.id));
       if (d.have > 1) t.append(el('span', 'pc-mon-tag', `×${d.have}`));
+      if (fresh.has(d.id)) t.append(freshMark());
       t.addEventListener('click', () => {
         playSound('select');
+        seeDesign(b, d.id);
         deco = d.id === deco ? null : d.id;
         show('decor');
         if (deco) speak(dupes ? `${PIECES[d.id].name}. Copy it for ${price} PokéCoins?` : `${PIECES[d.id].name}. ${d.room ? 'Put it away to keep it in storage.' : 'It\'s in storage. Place it from the Secret Base\'s Decorate.'}`);
