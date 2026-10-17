@@ -9,11 +9,16 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check): each town's buildings stay
-separate meshes, as their meshes carry the door's `userData.spot` and some move (flags, wheels, beams, boats), so Ruins
-draws 677 times a frame, Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186 (the mall's hall, after its
-merges, 345). Merge each building's still parts into one mesh a material (`mergeStatic()` in `js/hub-3d.js`, the tag set
-again on the merged meshes), leaving out what a tick moves; one town a session, the user checking each on their phone.
+**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
+Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
+phone. **Driftwood Landing done 2026-10-17** (`stillParts()` in `js/event-3d.js`, `merge: true` on the `lagoon` style;
+how it works in `docs/reference/towns.md`'s "Merged buildings"): 674 -> ~495 GL draws a frame headless, waiting on the
+user's phone check (`?town=ruins&towns`). Next, Thornwood (Highbough), then Savanna:
+> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
+> towns' draw calls for Highbough (`?town=thornwood`, style `canopy`): add `merge: true` to its style, mark every part a
+> tick moves or hides in `treehouse()`, `greatTree()`, `nursery()`, `canopyManor()` and anything they attach with
+> `moves()`, then check headless (draws a frame before and after, every door opens, no console errors, one GL context
+> awake; no screenshots), update the roadmap, push to main and give me the githack link.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

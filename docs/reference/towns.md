@@ -488,3 +488,16 @@ overlaps, every free tile is reachable from the door, and each hall has a spot f
 page load, `?mended=shrine,ruins` only those, so the Clearing's Waystone offers Travel without a questline walked first.
 `mended()` reads it through the state's `id`, which `townState()` sets non-enumerable so no spread of it is ever saved.
 The Clearing's Waystone counts a mended town as met (`showWaystone()`), so it isn't shown sealed.
+
+**Merged buildings** (2026-10-17, the towns' draw calls; Driftwood Landing first, one town a session). A town style with
+`merge: true` (`TOWN_STYLES`, only `lagoon` so far) runs `stillParts(g)` on each house `buildTown()` builds (not the
+`LANDMARKS`: the Waystone, pagoda, minehead...), before `fadeBehind()` and the door's `spot` tag, which then lands on the
+merged meshes. It lifts out what a tick moves (marked with `moves()`: a flag's hang, the bait shop's vane, the houseboat's
+`boat` and paddlewheel, the beacon's beam, `tradePost()`'s ball and swinging board), anything hidden, instanced or
+upright, cuts each part to bend (`bendFine()`, `fineTris()`: a merged house is past `fineTris()`'s budget), splits
+many-material meshes by face (`byFace()`), rounds plain parts' roughness to quarters, bakes plain colours onto vertices
+(`bakeColours()` in `js/hd2d.js`), merges the rest one mesh a material (`mergeStatic()`), and merges a moving part's own
+still parts inside it. **A new moving or hidden part in a merged town's building needs `moves()`**, or it freezes.
+Headless at 390 x 844: Driftwood Landing 674 -> ~495 GL draws a frame, its ten buildings 428 meshes -> ~194, every door
+still tapped and opened, one context awake. What's left there is mostly the ground's extras (rowboats, columns, jungle)
+and textured faces (each painting its own material). Next: add `merge: true` to another style, mark its moving parts.
