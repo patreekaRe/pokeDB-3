@@ -307,6 +307,39 @@ function menuBlip(e) {
   setTimeout(() => { if (lastCue < at) playSound(name, 'confirm'); });
 }
 
+// iOS only moves a range input from its small thumb; a finger anywhere on the bar grabs it here and drags from there
+function fingerSlider(slider) {
+  const valueAt = (x) => {
+    const r = slider.getBoundingClientRect(), thumb = 28;
+    const t = Math.min(1, Math.max(0, (x - r.left - thumb / 2) / (r.width - thumb)));
+    const min = +slider.min, max = +slider.max, step = +slider.step || 1;
+    return Math.round((min + t * (max - min)) / step) * step;
+  };
+  const moveTo = (x) => {
+    const v = valueAt(x);
+    if (+slider.value === v) return;
+    slider.value = v;
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+  };
+  slider.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse') return;
+    e.preventDefault();
+    slider.setPointerCapture(e.pointerId);
+    moveTo(e.clientX);
+    const move = (ev) => { if (ev.pointerId === e.pointerId) moveTo(ev.clientX); };
+    const end = (ev) => {
+      if (ev.pointerId !== e.pointerId) return;
+      slider.removeEventListener('pointermove', move);
+      slider.removeEventListener('pointerup', end);
+      slider.removeEventListener('pointercancel', end);
+      slider.dispatchEvent(new Event('change', { bubbles: true }));
+    };
+    slider.addEventListener('pointermove', move);
+    slider.addEventListener('pointerup', end);
+    slider.addEventListener('pointercancel', end);
+  });
+}
+
 /** Called once at startup. */
 export function initAudio() {
   // iOS treats Web Audio as ringer sound, so Silent Mode muted the whole game; as playback it plays like a video does
@@ -323,6 +356,7 @@ export function initAudio() {
     });
     // a blip (or a cry) at the new level, so you hear what you picked
     slider.addEventListener('change', () => { if (key === 'cryVolume') playCry('charmander'); else playSound('confirm'); });
+    fingerSlider(slider);
   }
   paintSliders();
   initSoundPops();
