@@ -17,14 +17,14 @@ export const SHAPES = {
   'musamber musmeteor': { make: 'musparts', play: { does: 'light' } },
   musrevival: { make: 'musparts', play: { does: 'zap' } },
   muskiosk: { make: 'musparts', screen: { x: 0, y: u(56), w: u(15), h: u(18), z: u(4.95) + 0.004 }, play: { does: 'screen', show: ['news', 'quiz'] } },
-  musbench: { make: 'musparts', seat: u(20.1) },
+  musbench: { make: 'musparts', seat: u(21.6) },
   musticket: { make: 'musparts', play: { does: 'give', gives: 'coin', sound: 'fx-ding' } },
   musdig: { make: 'musdig' },
   musrug: { make: 'musrug' },
 };
 
-/** As many sides as a part r units round needs: the small bones and vertebrae stay at 8. */
-const segOf = (r) => (r < 2.6 ? 8 : r < 6 ? 12 : 16);
+/** As many sides as a part r units round needs: the small knuckles and vertebrae stay at 6 or 8. */
+const segOf = (r) => (r < 1.8 ? 6 : r < 2.6 ? 8 : r < 6 ? 12 : 16);
 
 function build(K, L, parts, W) {
   const { THREE } = L, X = (x) => u(x) - W / 2;
@@ -45,7 +45,7 @@ function build(K, L, parts, W) {
     if (q.paintOnly) continue;
     const x = X(q.x), y = u(q.h), z = u(q.z);
     switch (q.t) {
-      case 'blob': K.put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), q.e ?? 1, q.ev ?? 1, segOf(Math.max(q.rx, q.ry, q.rz))), mat(q), x, y, z, 0, 0, -(q.tilt || 0)); break;
+      case 'blob': K.put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), q.e ?? 1, q.ev ?? 1, q.seg ?? segOf(Math.max(q.rx, q.ry, q.rz))), mat(q), x, y, z, 0, 0, -(q.tilt || 0)); break;
       case 'box': K.put(L.rbox(u(q.w), u(q.hh), u(q.d), u(q.r)), mat(q), x, y, z); break;
       case 'cyl': K.put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), 20), mat(q), x, y, z); break;
       case 'disc': {

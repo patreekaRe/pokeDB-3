@@ -343,15 +343,15 @@ export const MUSEUM_KINDS = [
   piece('muskabutops', 'Kabutops skeleton', 1, 1, 1400, [
     ...plinth(16, 26, 22, 8),
     CY(16, 24, -5, 0.9, 30, M.rod, metal()),
-    ...spine([[16, 31, -3], [16, 24, -7], [17, 18, -9], [19, 13, -10]], 5, 2, 0.9),
+    ...spine([[16, 31, -3], [16, 24, -7], [17, 18, -9], [19, 13, -10]], 4, 2, 0.9),
     ...[-1, 1].flatMap(s => [
       BN([16 + s * 4, 31, 0], [16 + s * 6.5, 22, 3], 1.6, M.bone, { r1: 1.3 }), B(16 + s * 6.5, 22, 3, 1.8, 1.8, 1.8, M.joint, { m: 'plain' }),
       BN([16 + s * 6.5, 22, 3], [16 + s * 5, 12, 0], 1.3, M.bone, { r1: 1.1 }), B(16 + s * 5, 11.5, 0, 1.4, 1.4, 1.4, M.joint, { m: 'plain' }),
       BN([16 + s * 5, 10.4, 0], [16 + s * 6.5, 10.2, 6], 1, M.bone, { r1: 0.5 }), BN([16 + s * 5, 10.4, 0], [16 + s * 3.5, 10.2, 5.5], 0.8, M.bone, { r1: 0.4 }),
     ]),
     B(16, 32, 0, 6, 3, 3.5, M.bone),
-    ...spine([[16, 34, -1.5], [16, 46, -2.5], [16, 57, -1.5]], 7, 2, 1.6),
-    ...[39, 43, 47, 51, 55].flatMap(h => [-1, 1].flatMap(s => [
+    ...spine([[16, 34, -1.5], [16, 46, -2.5], [16, 57, -1.5]], 6, 2, 1.6),
+    ...[40, 44.5, 49, 53.5].flatMap(h => [-1, 1].flatMap(s => [
       BN([16, h, -1.5], [16 + s * 7, h - 2, 1], 0.9, M.bone, { r1: 0.8, seg: 6 }), BN([16 + s * 7, h - 2, 1], [16 + s * 4.5, h - 5, 4.5], 0.8, M.bone, { r1: 0.6, seg: 6 }),
     ])),
     ...[-1, 1].flatMap(s => [
@@ -588,7 +588,7 @@ export const MUSEUM_KINDS = [
 
   // Tyrunt's Jaw Fossil under a bell jar, on a round side table
   piece('musglassdome', 'Jaw Fossil bell jar', 1, 1, 600, [
-    LA(16, 0, 0, [[8, 0], [8, 1.5], [5, 3], [2.2, 5], [2.2, 24], [6, 26], [9, 27.4], [9, 29], [0, 29]], M.woodD, { m: 'wood' }),
+    LA(16, 0, 0, [[8, 0], [8, 1.5], [5.4, 3], [3.4, 5], [3, 14], [3.4, 23], [6.4, 26], [9, 27.4], [9, 29], [0, 29]], M.woodD, { m: 'wood' }),
     CY(16, 30, 0, 8, 2, M.wood, { m: 'wood' }),
     CY(16, 31.6, 0, 1, 1.4, M.rod, metal()),
     BN([9, 33.6, 0], [22.5, 32.6, 0], 1.6, M.bone, { r1: 1.1 }), BN([9.4, 33, 0], [8.4, 39.5, -0.5], 1.4, M.boneD, { r1: 1 }),
@@ -630,10 +630,10 @@ export const MUSEUM_KINDS = [
 
   // a long backless bench in red leather, for sitting with the exhibits
   piece('musbench', 'Museum bench', 2, 1, 400, [
-    BX(8, 7, 0, 3, 14, 18, M.steelD, metal({ r: 0.6 })), BX(56, 7, 0, 3, 14, 18, M.steelD, metal({ r: 0.6 })),
-    RD(8, 56, 5, 0, 1, M.steelD, metal()),
-    BX(32, 14.8, 0, 62, 2.4, 22, M.wood, { m: 'wood' }),
-    BX(32, 18, 0, 60, 4.2, 20, M.leather, { m: 'cloth', r: 1.8 }),
+    BX(9, 7, 0, 6, 14, 18, M.steelD, metal({ r: 0.8 })), BX(55, 7, 0, 6, 14, 18, M.steelD, metal({ r: 0.8 })),
+    RD(9, 55, 5, 0, 1.4, M.steelD, metal()),
+    BX(32, 14.8, 0, 62, 2.6, 22, M.wood, { m: 'wood' }),
+    BX(32, 19, 0, 60, 5.6, 20, M.leather, { m: 'cloth', r: 2 }),
   ]),
 
   // the desk you buy your tickets at, the museum's sign over it
@@ -700,7 +700,7 @@ export const MUSEUM_KINDS = [
     BX(16, 2, 0, 26, 4, 14, M.woodD, { m: 'wood' }), BX(16, 80.8, 0, 32, 1.6, 15, M.woodD, { m: 'wood' }),
     BX(16, 28, 0, 24, 1.6, 13, M.wood, { m: 'wood' }), BX(16, 53, 0, 24, 1.6, 13, M.wood, { m: 'wood' }),
     ...[[4, ['#d8c098', '#e8dcc0', '#7a9a48']], [28.8, ['#a85a30', '#f4e8d0', '#5a8ad8']], [53.8, ['#c87ab0', '#8a6038', '#e0b440']]].flatMap(([h0, cols], row) => [7.5, 16, 24.5].flatMap((x, i) => [
-      B(x, h0 + 5.5, 1, 2.4, 4, 2.4, cols[i], { m: 'gloss' }),
+      B(x, h0 + 5.5, 1, 2.4, 4, 2.4, cols[i], { m: 'gloss', seg: 8 }),
       LA(x, h0, 1, [[3.4, 0], [3.6, 1], [3.6, 13], [2.6, 14], [2.6, 15.4], [0, 15.4]], '#cfe8f4', GLASS),
       CY(x, h0 + 16, 1, 2.9, 1.4, M.brassD, metal()),
       BX(x, h0 + 4.5, 4.7, 4.6, 3, 0.2, M.paper, { m: 'plain', r: 0.2, k: 55 }),
