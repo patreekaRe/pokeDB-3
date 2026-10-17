@@ -3,7 +3,7 @@
    them once, lit up as they speak; after you win, their last words and the badge. One layer over whatever is showing,
    a tap (or Enter / Space) for each line. */
 
-import { el, sleep } from './ui.js';
+import { el, sleep, rayWheel } from './ui.js';
 import { playSound, playCry } from './audio.js';
 import { getSave } from './storage.js';
 import { spriteOf, gymWins, voiced } from './data/gym.js';
@@ -196,27 +196,8 @@ function speedLines(layer) {
   setTimeout(() => lines.remove(), 1400);
 }
 
-/** The golden rays behind the badge, painted once on a canvas at one pixel to a CSS pixel. They were a CSS gradient
-    under a mask on a layer 180vmax wide, turning: on an iPhone that is hundreds of MB of GPU at three pixels to one,
-    on top of the gym's 3D room, and Safari's GPU process gave out as the badge landed (2026-10-14: the sound died, the
-    Clearing's sprites went blank). Soft rays lose nothing drawn coarser. */
-function rays() {
-  const c = el('canvas', 'gym-get-rays'), n = Math.min(1024, Math.round(Math.max(innerWidth, innerHeight)) || 800), r = n / 2;
-  c.width = c.height = n;
-  const g = c.getContext('2d');
-  if (!g) return c;
-  g.fillStyle = 'rgba(255, 216, 100, 0.34)';
-  for (let k = 0; k < 18; k++) {
-    const a = (k * 20 - 90) * Math.PI / 180;
-    g.beginPath(); g.moveTo(r, r); g.arc(r, r, r, a, a + 7 * Math.PI / 180); g.closePath(); g.fill();
-  }
-  const fade = g.createRadialGradient(r, r, 0, r, r, r * 0.97);
-  fade.addColorStop(0, '#000'); fade.addColorStop(0.1, '#000'); fade.addColorStop(1, 'transparent');
-  g.globalCompositeOperation = 'destination-in';
-  g.fillStyle = fade;
-  g.fillRect(0, 0, n, n);
-  return c;
-}
+/** The golden rays behind the badge (they were a 180vmax masked gradient: rayWheel() in js/ui.js says why not). */
+const rays = () => rayWheel('gym-get-rays', 'rgba(255, 216, 100, 0.34)', { n: Math.min(1024, Math.round(Math.max(innerWidth, innerHeight)) || 800) });
 
 /** Their badge handed over, after their last words (the user's ask, 2026-10-13): the screen goes dark but for the badge on
     the gym's arch (or, without the 3D gym, the middle of the screen's top), glowing, and the badge is the only thing that

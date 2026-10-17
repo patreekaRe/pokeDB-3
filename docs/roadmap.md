@@ -1022,6 +1022,13 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 
 ## Waiting on the user
 
+- **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
+  after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
+  once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
+  three again and says whether it still resets, and on which phone (an older iPhone has far less room). If the Game
+  Corner still does it, the next lever is the user's idea: move the arcade cabinets into a room of their own (the corner
+  alone is ~85 MB of textures headless, the walls and floor ~26 MB of it, ~100 cabinet and table faces most of the rest).
+
 - **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
   shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the
   shells, and says what to change. (Coins were rebalanced the same day: a won run pays 200, the Game Corner 250 a day.)

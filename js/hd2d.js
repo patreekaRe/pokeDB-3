@@ -259,6 +259,17 @@ export function dispose(group) {
   group.clear();
 }
 
+/** Lets go of what `group` holds on the GPU while keeping it whole: three.js uploads its pictures and shapes again the
+    next time it's drawn. For a place kept hidden beside the one on screen (the mall's hall under the Game Corner held
+    both on an iPhone, 2026-10-17). */
+export function unload(group) {
+  group.traverse(o => {
+    o.geometry?.dispose();
+    if (o.isInstancedMesh) o.dispose();
+    for (const m of [o.material].flat()) if (m) for (const t of [m.map, m.emissiveMap, m.alphaMap]) if (t) { t.dispose(); delete t.userData.warm; }
+  });
+}
+
 /* ---------- a Pokémon: GIF frames on a billboard ---------- */
 
 /** A copy of a picture on a canvas kept in memory, not on the GPU: iPhone Safari keeps an ImageBitmap (or a plain canvas)
