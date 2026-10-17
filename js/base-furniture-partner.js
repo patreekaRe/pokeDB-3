@@ -216,15 +216,16 @@ export const PARTNER_KINDS = [
   // a single bowl of kibble on a teal mat
   piece('pcbowl', 'Partner food bowl', 1, 1, 150, 'gloss', [
     B(16, 0.6, 1, 28, 1.2, 22, PT.teal, { r: 0.6, m: 'plain' }),
-    ...bowl(16, 1.2, 1, 10, 7, PT.white, PT.red, 'food'),
-    ...paw(16, 4.6, 9.4, 5, PT.red),
-    S(8, 9.6, 3, 1.2, 0.9, 1.2, sh(PT.kibble, -1), { m: 'plain', seg: 8 }),
-    S(23, 9.2, 0, 1.2, 0.9, 1.2, sh(PT.kibble, -1), { m: 'plain', seg: 8 }),
+    ...bowl(16, 1.2, 1, 12.5, 9, PT.white, PT.red, 'food'),
+    ...paw(16, 5.6, 12.6, 6, PT.red),
+    S(10, 12.2, 3, 1.4, 1, 1.4, sh(PT.kibble, -1), { m: 'plain', seg: 8 }),
+    S(22, 12, 0, 1.4, 1, 1.4, sh(PT.kibble, -1), { m: 'plain', seg: 8 }),
   ]),
 
   // food and water side by side, set into a wooden stand
   piece('pcdoublebowl', 'Double bowl stand', 1, 1, 320, 'wood', [
-    ...[[3, -7], [29, -7], [3, 7], [29, 7]].map(([x, z]) => B(x, 4, z, 3, 8, 3, PT.woodD, { r: 0.8 })),
+    ...[2.5, 29.5].map(x => B(x, 4.5, 0, 4, 9, 19, PT.woodD, { r: 0.8 })),
+    B(16, 5, 8.6, 25, 6.4, 1.4, PT.woodD, { r: 0.6 }),
     B(16, 9, 0, 31, 2.6, 20, PT.wood, { r: 1 }),
     ...bowl(9, 8, 0, 6.4, 5, PT.teal, PT.white, 'food').map(q => ({ m: 'gloss', ...q })),
     ...bowl(23, 8, 0, 6.4, 5, PT.white, PT.teal, 'water').map(q => ({ m: 'gloss', ...q })),
@@ -253,13 +254,13 @@ export const PARTNER_KINDS = [
     LA(16, 9, 0, [[0, 0], [3.4, 0], [2.4, 5], [5, 9], [5.4, 10], [0, 10]], PT.white),
     C(16, 19.2, 0, 4.6, 0.5, PT.water),
     S(16, 20, 0, 2, 1.6, 2, sh(PT.water, 2), { seg: 8 }),
-    ...[0, 1, 2, 3].map(i => { const a = (i + 0.5) * TAU / 4, cx = Math.cos(a), cz = Math.sin(a); return RD([16 + cx * 5.2, 18.6, cz * 5.2], [16 + cx * 9, 9.6, cz * 9], 0.6, PT.water); }),
+    ...[0, 1, 2, 3].map(i => { const a = (i + 0.5) * TAU / 4, cx = Math.cos(a), cz = Math.sin(a); return RD([16 + cx * 5.2, 18.6, cz * 5.2], [16 + cx * 9, 9.6, cz * 9], 1, PT.water); }),
   ]),
 
   // a tiered stand of Poké Puffs
   piece('pcpuffstand', 'Poké Puff tier stand', 1, 1, 650, 'gloss', [
     LA(16, 0, 0, [[7, 0], [7, 1], [3, 2.5], [1.2, 3], [0, 3]], PT.white),
-    C(16, 22, 0, 1, 40, PT.gold, { m: 'metal' }),
+    C(16, 22, 0, 1.4, 40, PT.gold, { m: 'metal' }),
     C(16, 4, 0, 14, 1.2, PT.white, { rb: 13 }),
     ...[0, 1, 2, 3, 4].flatMap(i => { const a = TAU * (i / 5 + 0.1); return puff(16 + Math.cos(a) * 9.4, 4.6, Math.sin(a) * 9.4, 3, [PT.pink, PT.lav, PT.mint, PT.yellow, PT.blue][i], i % 2 ? null : PT.red); }),
     C(16, 18, 0, 10.5, 1.2, PT.white, { rb: 9.5 }),
@@ -302,17 +303,19 @@ export const PARTNER_KINDS = [
 
   // a grooming table: arm and loop, a hair dryer on a stand, brushes and towels
   piece('pcgroomtable', 'Grooming table', 2, 1, 1100, 'metal', [
-    ...[[5, -10], [59, -10], [5, 10], [59, 10]].map(([x, z]) => C(x, 11, z, 1.1, 22, PT.steel)),
-    B(32, 6, 0, 56, 1.6, 22, PT.white, { r: 0.6, m: 'gloss' }),
-    B(14, 8.8, 2, 11, 3.6, 9, PT.pink, { r: 1.8, m: 'cloth' }), B(26, 8.8, 2, 11, 3.6, 9, PT.mint, { r: 1.8, m: 'cloth' }),
-    B(20, 12.2, 2, 11, 3.2, 9, PT.lav, { r: 1.6, m: 'cloth' }),
-    C(44, 10, 2, 3, 6, PT.teal, { m: 'gloss' }), C(44, 14, 2, 1.2, 2, PT.white, { m: 'gloss' }),
+    B(21, 11, 0, 38, 22, 25, PT.white, { r: 1.4, m: 'gloss' }),
+    ...[6, 16].map(h => B(21, h, 12.6, 34, 8.6, 0.8, PT.mint, { r: 1, m: 'gloss' })),
+    ...[6, 16].map(h => B(21, h, 13.2, 8, 1.4, 0.8, PT.tealD, { r: 0.6, m: 'gloss' })),
+    ...[-10, 10].map(z => C(59, 11, z, 1.4, 22, PT.steel)),
+    B(50, 6, 0, 20, 1.6, 22, PT.white, { r: 0.6, m: 'gloss' }),
+    B(46, 8.8, 2, 7.6, 3.6, 9, PT.pink, { r: 1.8, m: 'cloth' }), B(54, 8.8, 2, 7.6, 3.6, 9, PT.lav, { r: 1.8, m: 'cloth' }),
+    B(50, 12.2, 2, 8, 3.2, 9, PT.mint, { r: 1.6, m: 'cloth' }),
     B(32, 23, 0, 62, 2.6, 28, PT.teal, { r: 1.2, m: 'gloss' }),
     B(34, 24.6, 0, 44, 0.8, 22, PT.mint, { r: 0.4, m: 'cloth' }),
-    C(59, 40, -9, 1.1, 32, PT.steel), RD([59, 56, -9], [44, 56, -9], 1.1, PT.steel),
-    RD([44, 56, -9], [44, 46, -9], 0.4, PT.red, { m: 'plain' }),
+    C(59, 40, -9, 1.4, 32, PT.steel), RD([59, 56, -9], [44, 56, -9], 1.3, PT.steel),
+    RD([44, 56, -9], [44, 46, -9], 0.6, PT.red, { m: 'plain' }),
     RG(44, 42.5, -9, 3.6, 0.6, PT.red, { m: 'plain' }),
-    C(7, 38, -6, 0.9, 28, PT.steel),
+    C(7, 38, -6, 1.3, 28, PT.steel),
     S(7, 53, -5, 4.6, 4.4, 5.6, PT.pink, { m: 'gloss' }),
     DS(7, 53, 2, 2.4, 5, PT.white, { m: 'gloss' }),
     RD([7, 50, -4], [7, 45, -2], 1.4, PT.pinkD, { m: 'gloss' }),
@@ -430,8 +433,8 @@ export const PARTNER_KINDS = [
     S(7, 2.4, 12, 3, 2.2, 2.6, sh(PT.stone, -1), { seg: 8 }), S(27, 2.2, 11, 2.6, 2, 2.4, sh(PT.stone, 1), { seg: 8 }),
     S(17, 8.4, 3, 8, 1.4, 7, '#d8a088'),
     LA(4, 1, -12, [[4, 0], [4, 1.4], [2, 2.4], [0, 2.4]], PT.dark, { m: 'metal' }),
-    C(4, 25, -12, 1, 46, PT.steel, { m: 'metal' }),
-    RD([4, 48, -12], [16, 51, 0], 1, PT.steel, { m: 'metal' }),
+    C(4, 25, -12, 1.5, 46, PT.steel, { m: 'metal' }),
+    RD([4, 48, -12], [16, 51, 0], 1.4, PT.steel, { m: 'metal' }),
     LA(16, 44, 0, [[8, 0], [5, 4], [2, 7], [0, 7.4]], PT.red, { m: 'gloss' }),
     S(16, 44, 0, 3.6, 2.6, 3.6, PT.amber, { m: 'glow' }),
   ], { glow: [PT.amber] }),
@@ -481,7 +484,8 @@ export const PARTNER_KINDS = [
 
   // vitamins on a wall shelf: HP Up, Protein, Iron, Calcium, Zinc, Carbos
   wallPiece('pcvitamins', 'Vitamin shelf', 2, 550, 'gloss', [
-    B(32, 48, 6, 60, 2, 12, PT.white, { r: 0.6 }),
+    B(32, 56, 0.6, 62, 20, 1.2, PT.mint, { r: 0.8, m: 'plain' }),
+    B(32, 48, 6, 62, 2.4, 12, PT.white, { r: 0.6 }),
     ...[8, 56].map(x => PR(x, 47, 3, [[-0.8, 0], [0.8, 0], [0.8, -7], [-0.8, -7]], 6, PT.teal)),
     ...VITAMINS.flatMap(([c], i) => {
       const x = 7 + i * 10;

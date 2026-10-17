@@ -14,12 +14,15 @@ const sign = (x, y, r, c, plus) => {
     : [[x - r, y + t], [x + r, y + t], [x + r, y - t], [x - r, y - t]], c, { curve: false });
 };
 
+// a zigzag band `w` thick through `pts`, as one flat patch (a piped cord costs twice the triangles)
+const zig = (pts, w, c) => shape([...pts.map(([x, y]) => [x, y + w / 2]), ...pts.reverse().map(([x, y]) => [x, y - w / 2])], c, { curve: false });
+
 Object.assign(EXTRAS, {
   // a jewel on the forehead (Espeon's, Sneasel's)
-  d2gem: (d, L) => { const [x, y, , ry] = L.head, r = d.gemr || 4; flat(x, y + ry * 0.6, r, r * 0.85, d.gemc); dot(x - r * 0.35, y + ry * 0.6 + r * 0.3, r * 0.3, '#ffffff'); },
+  d2gem: (d, L) => { const [x, y, , ry] = L.head, r = d.gemr || 4; flat(x, y + ry * 0.6, r, r * 0.85, d.gemc); },
   d2chestgem: (d, L) => { const [x, y] = L.body; flat(x, y - 3, 3.6, 3, d.gemc); },
   // Espeon's tail, split in two at the end
-  d2forktail: (d, L) => { const [tx, ty] = L.tail; shape([[tx - 6, ty - 3], [tx + 12, ty + 2], [tx + 20, ty + 16], [tx + 22, ty + 30], [tx + 32, ty + 44], [tx + 20, ty + 36], [tx + 16, ty + 48], [tx + 13, ty + 30], [tx + 8, ty + 16], [tx - 4, ty + 6]], d.tailc || d.body); },
+  d2forktail: (d, L) => { const [tx, ty] = L.tail; shape([[tx - 6, ty - 3], [tx + 14, ty + 4], [tx + 22, ty + 26], [tx + 32, ty + 46], [tx + 20, ty + 36], [tx + 15, ty + 50], [tx + 10, ty + 18], [tx - 4, ty + 6]], d.tailc || d.body); },
   // Umbreon's rings: one round each ear, one on the forehead, one round the tail
   d2earband: (d, L) => {
     const [ex, ey] = L.ear;
@@ -69,7 +72,7 @@ Object.assign(EXTRAS, {
   },
   d2feathertail: (d, L) => {
     const [tx, ty] = L.tail;
-    for (const [dx, dy] of [[18, 22], [24, 12]]) shape([[tx - 4, ty - 3], [tx + dx * 0.5, ty + dy * 0.5 - 2], [tx + dx + 4, ty + dy + 2], [tx + dx * 0.5 - 2, ty + dy * 0.5 + 4], [tx - 4, ty + 4]], d.plume);
+    for (const [dx, dy] of [[18, 22], [24, 12]]) shape([[tx - 4, ty - 3], [tx + dx * 0.5 + 1, ty + dy * 0.5 - 2.5], [tx + dx + 4, ty + dy + 2], [tx + dx * 0.5 - 2, ty + dy * 0.5 + 3.5], [tx - 4, ty + 4]], d.plume, { curve: false });
   },
   // Houndour's bone across the head and its arrow-tipped tail
   d2bonecap: (d, L) => { const [x, y, rx, ry] = L.head; curveLine([x - rx + 4, y + 8], [x, y + ry + 16], [x + rx - 4, y + 8], d.bone, 4.5); },
@@ -115,8 +118,8 @@ Object.assign(EXTRAS, {
   d2nose: (d, L) => { const [x, y] = L.head; flat(x, y - 6, 3.6, 2.6, '#202028'); },
   d2zigs: (d, L) => {
     const [x, y, , ry] = L.head, [bx, by] = L.body;
-    line([[x - 9, y + ry - 1], [x - 3, y + ry - 7], [x + 3, y + ry - 1], [x + 9, y + ry - 7]], d.stripe, 2.6);
-    line([[bx - 16, by - 2], [bx - 8, by - 9], [bx, by - 2], [bx + 8, by - 9], [bx + 16, by - 2]], d.stripe, 3);
+    zig([[x - 9, y + ry - 1], [x - 3, y + ry - 7], [x + 3, y + ry - 1], [x + 9, y + ry - 7]], 2.8, d.stripe);
+    zig([[bx - 16, by - 2], [bx - 8, by - 9], [bx, by - 2], [bx + 8, by - 9], [bx + 16, by - 2]], 3.2, d.stripe);
   },
   // Absol's white forelock, its sickle horn and the little blade on the other side, and its sickle tail
   d2forelock: (d, L) => { const [x, y, rx, ry] = L.head; puff(x - 3, y + ry * 0.66, rx * 0.8, ry * 0.42, d.lockc, -0.15); },
@@ -144,19 +147,19 @@ Object.assign(EXTRAS, {
 });
 
 Object.assign(PLUSH, {
-  espeon: { shape: 'quad', body: '#dcaee0', ears: 'long', earin: '#b47cc4', under: ['d2forktail'], top: ['d2gem'], gemc: '#e0304a', eye: '#7a2a8a', mouth: 'w' },
+  espeon: { shape: 'quad', body: '#dcaee0', ears: 'long', earin: '#b47cc4', under: ['d2forktail'], top: ['d2gem'], gemc: '#e0304a', eye: '#7a2a8a', mouth: 'smile' },
   umbreon: { shape: 'quad', body: '#30343e', ears: 'long', under: ['d2ringtail'], top: ['d2earband', 'd2ring'], ring: '#f8d038', eye: '#e03030', mouth: 'smile' },
   hoppip: { shape: 'ball', body: '#f4a8c8', ears: 'side', top: ['d2hopleaves'], leafc: '#5cc040', eyes: 'big', mouth: 'smile', feet: '#e888ac' },
   natu: { shape: 'ball', body: '#5cb450', under: ['d2natucrest'], top: ['beak'], crest: '#4a9a40', crestTip: '#e84838', beakc: '#f8d030', eyes: 'white', mouth: 'none', arms: '#f0ead0', feet: '#f08838' },
   snubbull: { body: '#f4b0c8', ears: 'big', earin: '#c86098', top: ['d2underbite'], jawc: '#f8c8d8', nosec: '#a83868', tail: 'stub', mouth: 'none' },
-  sneasel: { body: '#2c3448', ears: 'pointy', under: ['d2feathertail'], mid: ['d2chestgem'], top: ['d2plume', 'd2gem'], plume: '#e03838', gemc: '#f0c030', gemr: 3.4, eye: '#f0b020', eyes: 'slant', mouth: 'smile' },
-  houndour: { shape: 'quad', body: '#363640', belly: '#c85830', ears: 'pointy', under: ['d2arrowtail'], top: ['d2bonecap', 'muzzle'], bone: '#f0ece0', muz: '#c85830', eye: '#e03838', eyes: 'slant', mouth: 'none' },
+  sneasel: { body: '#2c3448', ears: 'pointy', under: ['d2feathertail'], mid: ['d2chestgem'], top: ['d2plume', 'd2gem'], plume: '#e03838', gemc: '#f0c030', gemr: 3.4, eye: '#f0b020', eyes: 'slant', mouth: 'none' },
+  houndour: { shape: 'quad', body: '#363640', belly: '#c85830', ears: 'pointy', under: ['d2arrowtail'], top: ['d2bonecap', 'muzzle'], bone: '#f0ece0', muz: '#c85830', eye: '#e03838', mouth: 'none' },
   larvitar: { body: '#98c070', mid: ['d2diamond'], diamond: '#4a6890', top: ['d2spike'], eye: '#c02828', mouth: 'open' },
   bagon: { body: '#5888d0', belly: '#f0e0a0', top: ['d2helm', 'd2underbite'], helmc: '#b4b4bc', jawc: '#f0e0a0', tail: 'stub', mouth: 'none' },
   ralts: { body: '#f8f8f8', feet: '#e8e8f0', top: ['d2horns', 'd2bob'], hairc: '#6cc45c', hornc: '#e8506a', eye: '#e04870', mouth: 'none' },
   plusle: { body: '#f8f0d0', ears: 'tall', earc: '#e84838', arms: '#e84838', under: ['d2signtail'], top: ['d2signs'], signc: '#e84838', plus: true, mouth: 'open' },
   minun: { body: '#f8f0d0', ears: 'tall', earc: '#4a88e0', arms: '#4a88e0', under: ['d2signtail'], top: ['d2signs'], signc: '#4a88e0', plus: false, mouth: 'smile' },
-  zigzagoon: { shape: 'quad', body: '#e2d0a4', ears: 'cat', eartip: '#6a4a30', tail: 'fluffy', tailtip: '#6a4a30', mid: ['d2zigs'], top: ['d2mask', 'd2nose'], stripe: '#6a4a30', mouth: 'smile' },
+  zigzagoon: { shape: 'quad', body: '#e2d0a4', ears: 'cat', eartip: '#6a4a30', tail: 'fluffy', tailtip: '#6a4a30', mid: ['d2zigs'], top: ['d2mask', 'd2nose'], stripe: '#6a4a30', mouth: 'none' },
   absol: { shape: 'quad', body: '#f0f0f6', head: '#4a5070', feet: '#4a5070', under: ['d2scythetail'], top: ['d2sickle', 'd2forelock'], horn: '#3a4058', lockc: '#f0f0f6', tailc: '#4a5070', eye: '#d83048', eyes: 'slant', mouth: 'none' },
   jirachi: { shape: 'ball', body: '#f8f8ec', top: ['d2star', 'd2tears'], starc: '#f8d838', tag: '#6cb4e8', eyes: 'big', eye: '#283048', mouth: 'smile', feet: '#e8e8d8' },
 });
