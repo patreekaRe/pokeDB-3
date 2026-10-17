@@ -1303,8 +1303,11 @@ B.whack = (K) => {
   K.put(cyl(0.016, 0.42, 0.016, 10), wood, 0.2, 0.8, 0.36, -0.5, 0, Math.PI / 2);
   K.put(blob(0.12, 0.13, 0.13, 0.6, 0.9), K.gloss('#e83838'), 0.38, 0.81, 0.47, -0.5, 0, Math.PI / 2);
 };
-B.pinball = (K) => {
-  const purple = K.gloss('#3a1a6a'), chrome = K.metal('#d8dce4'), yellow = K.gloss('#e8c030'), W = 0.6, D = 0.94, tilt = -0.07;
+/* `s.table` one of the newer tables (js/pinball-*.js): its own cabinet colours and pictures */
+const PIN_LOOK = { gengar: ['#2a1048', '#9cf060', '#b070ff'], lapras: ['#0a3a6a', '#f08a5a', '#5ad0ff'], volcano: ['#2a1410', '#f06a20', '#ffb030'], skypillar: ['#1a4a3a', '#f8d030', '#5ae0a0'] };
+B.pinball = (K, s = {}) => {
+  const [body, box, strip] = PIN_LOOK[s.table] || ['#3a1a6a', '#e8c030', '#ff70c0'];
+  const purple = K.gloss(body), chrome = K.metal('#d8dce4'), yellow = K.gloss(box), W = 0.6, D = 0.94, tilt = -0.07;
   // legs, the tilted table on them, its playfield lit under the glass, a lockdown bar
   for (const [x, z, h] of [[-W / 2 + 0.04, D / 2 - 0.06, 0.62], [W / 2 - 0.04, D / 2 - 0.06, 0.62], [-W / 2 + 0.04, -D / 2 + 0.06, 0.7], [W / 2 - 0.04, -D / 2 + 0.06, 0.7]]) {
     K.put(cyl(0.024, h, 0.03, 12), chrome, x, h / 2, z);
@@ -1312,7 +1315,7 @@ B.pinball = (K) => {
   }
   const table = (geo, m, x, up, z) => { geo.translate(x, up, z); K.put(geo, m, 0, 0.79, 0, 0, tilt); };
   table(rbox(W, 0.22, D, 0.03), purple, 0, 0, 0);
-  table(new THREE.PlaneGeometry(W - 0.08, D - 0.1).rotateX(-Math.PI / 2), litPic(pinField(), 0.55), 0, 0.12, 0);
+  table(new THREE.PlaneGeometry(W - 0.08, D - 0.1).rotateX(-Math.PI / 2), litPic(pinField(s.table), 0.55), 0, 0.12, 0);
   table(new THREE.PlaneGeometry(W - 0.06, D - 0.08).rotateX(-Math.PI / 2), K.glass(), 0, 0.132, 0);
   for (const sg of [-1, 1]) table(rbox(0.03, 0.03, D - 0.02, 0.01), chrome, sg * (W / 2 - 0.015), 0.125, 0);
   table(rbox(W, 0.03, 0.06, 0.012), chrome, 0, 0.12, D / 2 - 0.03);
@@ -1325,8 +1328,8 @@ B.pinball = (K) => {
   // the backbox, its backglass lit, a speaker grille under it
   K.put(rbox(W + 0.02, 0.62, 0.16, 0.025), yellow, 0, 1.28, -D / 2 + 0.06);
   K.put(rbox(W - 0.06, 0.04, 0.12, 0.01), purple, 0, 0.95, -D / 2 + 0.07);
-  K.put(new THREE.PlaneGeometry(W - 0.08, 0.5), litPic(pinGlass(), 0.75), 0, 1.3, -D / 2 + 0.152);
-  for (const sg of [-1, 1]) K.put(rbox(0.04, 0.5, 0.04, 0.015), K.glow('#ff70c0'), sg * (W / 2 + 0.005), 1.3, -D / 2 + 0.13);
+  K.put(new THREE.PlaneGeometry(W - 0.08, 0.5), litPic(pinGlass(s.table), 0.75), 0, 1.3, -D / 2 + 0.152);
+  for (const sg of [-1, 1]) K.put(rbox(0.04, 0.5, 0.04, 0.015), K.glow(strip), sg * (W / 2 + 0.005), 1.3, -D / 2 + 0.13);
 };
 
 /* the Game Corner's games, played at home (2026-10-12, the user's ask: they were still their painting puffed up) */
