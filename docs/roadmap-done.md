@@ -2922,3 +2922,12 @@ from their page's `base` (`openBase3d({ guest })`, `readGuestBase()`), walk-only
 or visitors, their residents and statues, the Trainer set's cases blank. `visitBase()` / `keep()` in `js/secret-base.js`
 refuses every base write while it's up; `tools/trainers-check.mjs` (43 checks) shows visiting and leaving leaves the
 save exactly as it was. `?base&asfriend` playtests it alone. Detail: `docs/reference/cloud-save.md`.
+
+**More ? events, 10 -> 30** (2026-10-17, branch `events-batch-1` in both repos, merged to `main` in one go). Twenty StS
+events with Pokémon dress in three batches (batch 1: Sleeping Snorlax, Trubbish's Trash Heap, Ditto, Bill's PC, Abra;
+batch 2: Prize Wheel, Ruins Idol, Odd Keystone, Moon Dance, Swap Stall; batch 3: Canalave Library, Fishing Spot, Sludge
+Pit, Silph Co. Storeroom, Bug-Catching Contest, Unown Tablet, Smeargle's Studio, Litwick Bonfire, Voltorb Flip, Rival's
+Return), each a 3D room, mirrored in pokeDB-sim. Detail: `docs/reference/events.md`. The one bot check before the merge
+(human bot, 300 runs a cell, `main` -> all 30, fire / grass / water): L0 80.0 / 82.0 / 74.3 -> 78.0 / 78.7 / 68.3, L3
+63.3 / 62.0 / 62.0 -> 57.7 / 57.7 / 62.0, L5 42.3 / 40.0 / 29.3 -> 36.3 / 40.3 / 36.0. Every gap inside the ±8 noise
+(slightly harder on average), so no retune; batch 3b's Fire 66 at Level 3 was 150-run noise. Shipped as patch 1.25, Off the Path.

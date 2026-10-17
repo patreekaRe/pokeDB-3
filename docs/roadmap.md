@@ -846,30 +846,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
-both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
-entry there, which is the up-to-date one (batch 1 is built, batch 2 next, batch 3 picked). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
-Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
-act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
-~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
-a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
-one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
-bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
-**In progress on branch `events-batch-1` in both repos** (2026-10-17): batch 1 is built there, the plan for the rest
-(batch 2 as listed, batch 3 picked, all landing on `main` at once after one bot check) is in this entry on that branch.
-Check it out and read it there; don't build events on `main`.
-The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
-Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
-Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
-one of its rarity), Bill's PC (Note for Yourself: leave a move in the Box for a later run, take the last one left; a save
-field), Abra (Secret Portal: Teleport to the biome's boss now; map work, and the bot must learn when). Batch 2: Prize
-Wheel (Wheel of Change), Ruins Idol (Golden Idol: a gold relic, then lose HP or max HP to the boulder), Spiritomb's
-Keystone (Knowing Skull: ₽, an item or a neutral move, each ask more HP), Clefairy Moon Dance (Shining Light: 2 random
-upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Then 10 more toward ~30, and the
-curse events once curses land.
-▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
-and docs/reference/walk-in-rooms.md. Take the next batch on its list (ask me if I want to swap any), then build
-them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
+**More ? events, the next batches** (the user's pick, 2026-10-17): 30 are in the game (merged 2026-10-17; the archive's
+"More ? events" has the batches and bot checks). Toward StS's ~50: the curse events once curses land, and more on
+StS events with Pokémon dress (one walkable 3D room each, every roll through `js/rng.js`, mirrored in pokeDB-sim,
+bot-checked when one hands out power; give some a heal). Pairs with the "event-only relics" step below.
 
 **Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
 116 augments (Silver 38, Gold 48, Prismatic 30; 6 sets holding 25), all ranked in pokeDB-sim's `sim/augranks.json`, but

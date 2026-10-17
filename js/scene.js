@@ -1095,6 +1095,141 @@ const PLACE_ART = {
     },
   },
 
+  // batch 1 of the StS events (2026-10-17): the Pokémon stand on `life.stands` as their real sprites, like Team Rocket's
+  snorlax: {   // a sleeping Snorlax by a pile of dropped things: balls, coins, a bag
+    outdoor: true, prop: 'snorlax', horizon: 0.5, zoom: 1.75, span: 80,
+    ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'], coin: ['#fff8b0', '#f8c830', '#b07818'],
+    bag: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], zee: ['#ffffff', '#8898c8'],
+    life: ['snorlax'],
+  },
+  trash: {   // a heap of junk, bin bags and cans, a Trubbish on top
+    outdoor: true, prop: 'trash', horizon: 0.5, zoom: 1.75, span: 70,
+    junk: ['#8a8a98', '#5e5e6a', '#3e3e48', '#18181e'], bags: ['#68a858', '#3e7a38', '#244a20', '#102010'],
+    can: ['#e8e8f0', '#a8a8b8', '#d84838'], shine: ['#fff8c0', '#f8d030'],
+    life: ['trash'],
+  },
+  ditto: {   // a Ditto on a flat stone, a still pool beside it that shows something else
+    outdoor: true, prop: 'ditto', horizon: 0.5, zoom: 1.75, span: 70,
+    stone: ['#c8c8d0', '#9898a8', '#6a6a7a', '#2a2a34'], pool: ['#c8e8ff', '#88b8f0', '#4a7ab8', '#1e3c70'],
+    glow: ['#f0c8f8', '#b878e0'],
+    life: ['ditto'],
+  },
+  abra: {   // an Abra dozing on a tree stump, the air round it shimmering
+    outdoor: true, prop: 'abra', horizon: 0.5, zoom: 1.75, span: 60,
+    wood: ['#c89860', '#9a6a3c', '#6a4424', '#2a1a0c'], rings: ['#e8c890', '#b88a50'],
+    psy: ['#fff0ff', '#f0a8f8', '#a868e0'], moss: ['#88c860', '#5a9a40', '#3a6a28'], zee: ['#ffffff', '#8898c8'],
+    life: ['abra'],
+  },
+
+  // batch 2 of the StS events (2026-10-17), the same way
+  wheel: {   // a prize wheel on an A-frame stand by the road, Meowth beside it
+    outdoor: true, prop: 'wheel', horizon: 0.5, zoom: 1.75, span: 70,
+    wood: ['#c89860', '#9a6a3c', '#6a4424', '#2a1a0c'],
+    slices: ['#f8d030', '#b058d8', '#f878b0', '#98d8f8', '#58c048', '#68687a'],   // event.slices' order
+    rim: ['#fff8d0', '#f8c830', '#a87818', '#2a1a0c'], pin: ['#e83828', '#2a1a0c'],
+    life: ['wheel'],
+  },
+  idol: {   // ruins: a plinth with a golden idol, broken columns, a Golem by its boulder on a ledge behind
+    outdoor: true, prop: 'idol', horizon: 0.5, zoom: 1.75, span: 84,
+    stone: ['#e8dcb8', '#c8b890', '#988860', '#3a3020'], gold: ['#fff8c0', '#f8d040', '#c89018', '#4a3008'],
+    rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    life: ['idol'],
+  },
+  keystone: {   // a cairn with Spiritomb (its Odd Keystone) on top, coins on a flat stone, a Poké Ball by a rock
+    outdoor: true, prop: 'keystone', horizon: 0.5, zoom: 1.75, span: 80,
+    stone: ['#b8b4c0', '#8a8698', '#5e5a6e', '#24202e'], wisp: ['#f0d8ff', '#a868e0', '#6a2aa8'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'], ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'],
+    life: ['keystone'],
+  },
+  moon: {   // two Clefairy dancing round a Moon Stone under a big moon, a pool of moonlight beside them
+    outdoor: true, prop: 'moon', horizon: 0.5, zoom: 1.75, span: 80,
+    stone: ['#f4f4ff', '#c8c8e8', '#9090b8', '#38385a'], rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    glow: ['#ffffff', '#fff8d0', '#d8d0ff'], moon: ['#fffce8', '#f0e8c0', '#d8cc98'],
+    life: ['moon'],
+  },
+  stall: {   // Kecleon's stall: a striped awning on posts over a counter, two cushions holding the relics it wants
+    outdoor: true, prop: 'stall', horizon: 0.5, zoom: 1.75, span: 84,
+    wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], awning: ['#fff4e0', '#e04838', '#a82820', '#3a1008'],
+    cloth: ['#e05878', '#a83050', '#601830'], shine: ['#ffffff', '#f8e070', '#80e070'],
+    life: ['stall'],
+  },
+
+  // batch 3 of the StS events (2026-10-17): two rooms and three outdoor scenes, the same way
+  library: {   // the Canalave Library: walls of books, a lectern with an open book (read), a reading chair (nap), Noctowl on a bookcase
+    backdrop: 'study', floor: 'planks', prop: 'library', light: null, horizon: 0.6, sky: ['#3e5a4a'],
+    wall: ['#3e5a4a', '#365040', '#2a4034', '#5a7a66'],
+    trim: ['#a87448', '#7a5232', '#52341e', '#22140a'],
+    plank: ['#8a6448', '#7a563c', '#644430', '#2e1e14'],
+    books: ['#b83828', '#3868b8', '#388858', '#c89830', '#8a4ab0', '#d8d0b8', '#a85a28'],
+    page: ['#fff8e4', '#d8c8a0', '#4a3a30'], wax: ['#fff8e8', '#d8ccb0'], flame: ['#fff8c0', '#f8a830'],
+    chair: ['#d86858', '#b84838', '#8a2c22', '#3a120c'], zee: ['#ffffff', '#8898c8'], shine: ['#ffffff', '#f8e070'],
+    life: ['library'],
+  },
+  fishing: {   // a boardwalk along a pond, three rods leaning on its rail, a Magikarp splashing in the water
+    outdoor: true, prop: 'fishing', horizon: 0.5, zoom: 1.75, span: 96,
+    water: ['#c8f0ff', '#78c0f0', '#3e88d0', '#1e4a90'], wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'],
+    rods: [['#c89860', '#6a4424'], ['#68a8e8', '#28508a'], ['#e85848', '#2a2a34']], line: '#f8f8f8',
+    bob: ['#f04030', '#f8f8f8'], catch: [['#f8e048', '#c89818'], ['#c8a0f0', '#7848c0'], ['#283858', '#101828']],
+    life: ['fishing'],
+  },
+  sludge: {   // a pit of purple sludge with coins glinting in it, a Grimer wallowing, a heap of rocks to climb out by
+    outdoor: true, prop: 'sludge', horizon: 0.5, zoom: 1.75, span: 84,
+    goop: ['#d8a8e8', '#a868c8', '#7a3ea0', '#3a1650'], rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'],
+    life: ['sludge'],
+  },
+  storeroom: {   // a Silph Co. storeroom: steel racks of boxes, a stack of crates in the middle (search), Porygon floating by
+    backdrop: 'lab', floor: 'planks', prop: 'storeroom', light: null, horizon: 0.6, sky: ['#c8d0d8'],
+    wall: ['#c8d0d8', '#b8c0cc', '#9aa4b4', '#e0e8f0'],
+    trim: ['#8a96a8', '#6a7688', '#4a5468', '#1e2430'],
+    plank: ['#a8b0b8', '#98a0a8', '#80888e', '#4a5058'],
+    box: ['#e0b878', '#c89858', '#9a7038', '#3a2810'], label: ['#3878d0', '#f8f8f8'],
+    crate: ['#d8a868', '#b88848', '#8a5e2c', '#2e1c0c'], lamp: ['#f84838', '#58e858'],
+    ball: ['#f8f8f8', '#b8b8c8', '#f04030', '#a82018', '#202028'], shine: ['#ffffff', '#a8e8ff'],
+    life: ['storeroom'],
+  },
+  contest: {   // a roped-off field, pennants on the rope, a gold trophy at the back; Scyther and Caterpie face off
+    outdoor: true, prop: 'contest', horizon: 0.5, zoom: 1.75, span: 84,
+    wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], rope: ['#f0e0b0', '#b89860'],
+    flags: ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'], gold: ['#fff8c0', '#f8d040', '#c89018', '#4a3008'],
+    dust: ['#f8f0d8', '#d8c8a0'], confetti: ['#f8d030', '#f878b0', '#78c8f0', '#88e070'],
+    life: ['contest'],
+  },
+  // batch 3's last five (2026-10-17): Smeargle's studio a room, the rest outdoors
+  tablet: {   // an old stone tablet carved with Unown glyphs, a flat stone before it scattered with chipped ones; Unown drift by
+    outdoor: true, prop: 'tablet', horizon: 0.5, zoom: 1.75, span: 80,
+    stone: ['#d0ccc0', '#a8a498', '#7a766a', '#2e2a24'], glyph: ['#3a3630', '#f8e888', '#fffce0'], moss: ['#98c060', '#5a8a38'],
+    life: ['tablet'],
+  },
+  studio: {   // Smeargle's studio: paint splashed up the walls, three easels (a touch-up, a repaint, the full portrait), paint pots
+    backdrop: 'lab', floor: 'planks', prop: 'studio', light: null, horizon: 0.6, sky: ['#f4ecdc'],
+    wall: ['#f4ecdc', '#e8dcc8', '#d4c6ac', '#fffaf0'],
+    trim: ['#c09060', '#8e6440', '#604024', '#2a1a0c'],
+    plank: ['#c8a070', '#b48c5c', '#987248', '#4a3420'],
+    easel: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], canvas: ['#fffef8', '#e8e2d4', '#c8c0b0'],
+    paints: ['#e84838', '#f8c830', '#3878e0', '#58b858', '#a868e0', '#f878b0'],
+    life: ['studio'],
+  },
+  bonfire: {   // a bonfire in a ring of stones, logs to sit on, two Litwick swaying either side of it
+    outdoor: true, prop: 'bonfire', horizon: 0.5, zoom: 1.75, span: 76,
+    stone: ['#a8a098', '#888078', '#605850', '#2a2420'], log: ['#b07c4c', '#82583a', '#5a3a22', '#26160a'],
+    flame: ['#fffce0', '#f8d048', '#f88028', '#c83818'], wisp: ['#e8d8ff', '#a878f0', '#6a3ac0'], ember: '#f8a038',
+    life: ['bonfire'],
+  },
+  flip: {   // a folding table under a parasol, eight cards face down on its green top; a Voltorb rolls about beside it
+    outdoor: true, prop: 'flip', horizon: 0.5, zoom: 1.75, span: 80,
+    felt: ['#68c878', '#48a058', '#2e7a40', '#123a1c'], legs: ['#c8c8d0', '#8a8a98', '#3a3a44'],
+    back: ['#f8f8f8', '#e84838', '#28242c'], spark: ['#ffffff', '#f8e048'],
+    life: ['flip'],
+  },
+  rival: {   // the road: your rival and his Sneasel by a signpost, what he wants laid out before him (coins, a Bag, a TM)
+    outdoor: true, prop: 'rival', horizon: 0.5, zoom: 1.75, span: 84,
+    wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'], bag: ['#f87848', '#c84a28', '#7a2a14', '#2a1008'], disc: ['#f0f0f8', '#a8b8d8', '#5868a8', '#202838'],
+    shine: ['#ffffff', '#f8e888'],
+    life: ['rival'],
+  },
+
   /* the Move Tutor's dojo: shoji screens between timber posts over a tatami floor, his arena's Dragonite medallion big in
      a dark wood alcove under a shimenawa rope, Alder on a cushion below it, a hanging scroll (pay ₽), a sandbag (pay HP) */
   tutor: {
@@ -1141,6 +1276,16 @@ const PLACE_ART = {
 
   /* the Move Deleter's study: dim striped paper, shelves of old books, a lectern with a big open book (forget one) and a
      hypnotist's pendulum (forget two), candles, a Slowpoke dozing (the page's figure) */
+  billspc: {   // Bill's cottage: a study of books and his Storage PC, its screen blue (the deleter's study colours)
+    backdrop: 'study', floor: 'planks', prop: 'billspc', light: null, horizon: 0.6, sky: ['#4a5a6a'],
+    wall: ['#4a5a6a', '#405060', '#323e50', '#6a7a8a'],
+    trim: ['#9a6a48', '#6e4a30', '#4a2e1c', '#1e120a'],
+    plank: ['#8a6448', '#7a563c', '#644430', '#2e1e14'],
+    books: ['#b83828', '#3868b8', '#388858', '#c89830', '#8a4ab0', '#d8d0b8'],
+    case: ['#f0f0f4', '#c8c8d4', '#8a8a9a', '#2a2a34'], screen: ['#d8f8ff', '#68e8f8', '#2a8ab0', '#103848'],
+    view: ['#5888c8', '#88b8e8', '#2a4a68', '#4a6a88'],
+    life: ['billspc'],
+  },
   deleter: {
     backdrop: 'study', floor: 'planks', prop: 'deleter', light: null, horizon: 0.6, sky: ['#5a4a6a'],
     wall: ['#5a4a6a', '#4e4060', '#3e3250', '#7a6a8a'],
@@ -1801,6 +1946,7 @@ function paintBase() {
   if (S.raw.backdrop === 'onsen') onsenWall();
   if (S.raw.backdrop === 'dojo') roomWall({ posts: 28, shoji: true });
   if (S.raw.backdrop === 'study') roomWall({ stripes: 3 });
+  if (S.raw.backdrop === 'lab') roomWall();
   if (S.raw.backdrop === 'fanclub') fanWall();
   if (S.raw.backdrop === 'daycare') daycareHouse();
   if (S.raw.backdrop === 'kombat') kombatBackdrop();
@@ -3849,7 +3995,11 @@ const groundAt = (k) => horizon + Math.round((H - horizon) * k);
 const kept = (x, y) => life.keep?.some(r => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1);
 
 function eventProps() {
-  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene })[S.raw.prop]();
+  ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene,
+    snorlax: snorlaxScene, trash: trashScene, ditto: dittoScene, abra: abraScene, billspc: billsPcScene,
+    wheel: wheelScene, idol: idolScene, keystone: keystoneScene, moon: moonScene, stall: stallScene,
+    library: libraryScene, fishing: fishingScene, sludge: sludgeScene, storeroom: storeroomScene, contest: contestScene,
+    tablet: tabletScene, studio: studioScene, bonfire: bonfireScene, flip: flipScene, rival: rivalScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -3897,6 +4047,33 @@ const ACTS = {
   hypno: { frames: 16 },
   trade: { frames: 18 },
   cheer: { frames: 18 },
+  search: { frames: ({ wake }) => (wake ? 18 : 12), cues: ({ wake }) => [[1, 'rustle'], ...(wake ? [[10, 'hit']] : [[8, 'item']])] },
+  dig: { frames: 14, cues: () => [[1, 'rustle'], [6, 'rustle']] },
+  copy: { frames: 14 },
+  morph: { frames: 16 },
+  boot: { frames: 12 },
+  teleport: { frames: 18 },
+  doze: { frames: 16 },
+  spin: { frames: 24, cues: () => [1, 3, 5, 7, 9, 11, 13, 15, 18, 21].map(f => [f, 'stat-tick']) },
+  grab: { frames: 12, cues: () => [[2, 'item'], [8, 'rumble-far']] },
+  brace: { frames: 16, cues: () => [[1, 'quake'], [9, 'hit']] },
+  hide: { frames: 16, cues: () => [[1, 'quake'], [5, 'run-away']] },
+  ask: { frames: 14, cues: () => [[1, 'spirit'], [9, 'item']] },
+  dance: { frames: 18, cues: () => [[2, 'bell'], [14, 'stat-up']] },
+  moonlight: { frames: 16, cues: () => [[2, 'bell']] },
+  swap: { frames: 16, cues: () => [[2, 'spirit'], [10, 'item']] },
+  read: { frames: 14, cues: () => [[1, 'rustle'], [9, 'item']] },
+  nap: { frames: 16 },
+  cast: { frames: ({ rod }) => (rod === 2 ? 24 : 20), cues: ({ rod }) => [[1, 'gust'], [6, 'splash'], ...(rod === 2 ? [[14, 'wave-crash'], [17, 'hit']] : [[14, 'splash']])] },
+  goop: { frames: 16, cues: ({ dig }) => (dig ? [[2, 'splash'], [9, 'coins']] : [[2, 'rustle'], [8, 'splash']]) },
+  rummage: { frames: 14, cues: () => [[1, 'rustle'], [6, 'rustle'], [10, 'item']] },
+  joust: { frames: 24, cues: () => [[2, 'hit'], [6, 'hit'], [10, 'hit'], [15, 'stat-up']] },
+  study: { frames: 16, cues: () => [[1, 'crystal-0'], [6, 'crystal-1'], [11, 'stat-up']] },
+  efface: { frames: 12, cues: () => [[1, 'snip'], [6, 'rustle']] },
+  paint: { frames: 14, cues: () => [[1, 'rustle'], [7, 'rustle'], [12, 'stat-up']] },
+  offer: { frames: 16, cues: () => [[1, 'burn'], [8, 'spirit']] },
+  deal: { frames: 12, cues: () => [[1, 'card'], [4, 'card'], [7, 'card']] },
+  barter: { frames: 14, cues: ({ what }) => [[1, what === 'money' ? 'coins' : 'item'], [10, 'item-get']] },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -3913,6 +4090,876 @@ const actFrame = (name) => (life.act?.name === name ? tick - life.act.at : -1);
 function actCues() {
   const { name, at, ...opts } = life.act;
   for (const [f, sound] of ACTS[name].cues?.(opts) || []) if (reached(at + f)) playSound(sound);
+}
+
+/* ---------- batch 1 of the StS events: the Pokémon are the page's sprites (life.stands), the props drawn here ---------- */
+
+function snorlaxScene() {
+  const cx = W >> 1, foot = groundAt(0.42), mon = { x: cx - 12, y: foot + 1 }, pile = { x: cx + 22, y: foot + 2 };
+  groundShadow(mon.x, mon.y, 16, 3);
+  groundShadow(pile.x, pile.y, 11, 2);
+  const [bLit, bag, bDark, bLine] = S.bag;   // a dropped bag, its flap open
+  outlined(pile.x + 1, pile.y - 9, pile.x + 10, pile.y, (x, y) => Math.hypot((x - pile.x - 5.5) / 5, (y - pile.y + 4) / 4.6) <= 1,
+    (x, y) => (x < pile.x + 4 ? bLit : y > pile.y - 3 ? bDark : bag), bLine);
+  const [w, wShade, red, redDark, line] = S.ball;
+  for (const [dx, dy] of [[-8, -6], [-3, -3]]) pixelMap(pile.x + dx, pile.y + dy, BALL, { k: line, R: red, D: redDark, W: w, G: wShade });
+  const [cLit, coin, cDark] = S.coin;
+  for (const [dx, dy] of [[-10, 0], [-6, 1], [-1, 0], [3, 1]]) { solid(pile.x + dx, pile.y + dy, cLit); solid(pile.x + dx + 1, pile.y + dy, coin); solid(pile.x + dx + 2, pile.y + dy, cDark); }
+  life.stands = { mon };
+  life.pile = pile;
+  life.eventSpots = [{ x0: pile.x - 12, x1: pile.x + 12, y0: pile.y - 14, y1: pile.y + 3 }];
+  life.foot = pile.y + 6;
+  life.keep = [{ x0: mon.x - 22, x1: pile.x + 13, y0: foot - 30, y1: pile.y + 3 }];
+}
+
+/** Z's drift up off the Snorlax; a search sends sparkles out of the pile, or (it woke) shakes the ground. */
+function drawSnorlax(t) {
+  const m = life.stands.mon, f = actFrame('search'), wake = life.act?.wake && f >= 8;
+  if (!wake) for (let i = 0; i < 3; i++) {
+    const k = ((t / 30) + i / 3) % 1, x = m.x + 8 + Math.round(k * 6 + Math.sin(k * 6) * 1.5), y = m.y - 26 - Math.round(k * 12);
+    const c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(x + d, y, c); put(x + 2 - d, y + d, c); put(x + d, y + 2, c); }
+  }
+  if (f < 0) return;
+  const p = life.pile;
+  for (let i = 0; i < 5; i++) { const age = (f + i * 2) % 9; sparkle(p.x - 8 + ((i * 5 + f) % 18), p.y - 6 - age, age < 5 ? S.coin[0] : S.coin[1]); }
+  if (wake) for (let x = 0; x < W; x += 3) if (dither(x, f) < 4) put(x, groundAt(0.42) + 4 + (f % 2), S.bag[2]);
+}
+
+function trashScene() {
+  const cx = W >> 1, foot = groundAt(0.42), heap = { x: cx, y: foot + 3 };
+  groundShadow(heap.x, heap.y, 22, 3);
+  const [jLit, junk, jDark, jLine] = S.junk, [gLit, bag, gDark, gLine] = S.bags;
+  outlined(heap.x - 22, heap.y - 14, heap.x + 22, heap.y, (x, y) => Math.hypot((x - heap.x) / 21, (y - heap.y) / 13) <= 1 && y <= heap.y,
+    (x, y) => (noise(x >> 2, y >> 2, 9) > 0.7 ? jLit : noise(x >> 1, y >> 1, 3) > 0.45 ? junk : jDark), jLine);
+  for (const [dx, dy, r] of [[-13, -4, 5], [11, -3, 5], [3, -9, 4]]) {   // bin bags, tied at the top
+    outlined(heap.x + dx - r, heap.y + dy - r, heap.x + dx + r, heap.y + dy + r, (x, y) => Math.hypot(x - heap.x - dx, y - heap.y - dy) <= r,
+      (x, y) => (x < heap.x + dx - 1 && y < heap.y + dy ? gLit : y > heap.y + dy + 1 ? gDark : bag), gLine);
+    solid(heap.x + dx, heap.y + dy - r - 1, gLine); solid(heap.x + dx, heap.y + dy - r - 2, gDark);
+  }
+  const [cLit, can, red] = S.can;
+  for (const [dx, dy] of [[-4, -2], [16, 0]]) for (let y = 0; y < 4; y++) { solid(heap.x + dx, heap.y + dy - y, cLit); solid(heap.x + dx + 1, heap.y + dy - y, y === 1 ? red : can); solid(heap.x + dx + 2, heap.y + dy - y, can); }
+  life.stands = { mon: { x: heap.x - 2, y: heap.y - 11 } };
+  life.heap = heap;
+  life.eventSpots = [{ x0: heap.x - 20, x1: heap.x + 20, y0: heap.y - 16, y1: heap.y + 2 }];
+  life.foot = heap.y + 6;
+  life.keep = [{ x0: heap.x - 24, x1: heap.x + 24, y0: heap.y - 40, y1: heap.y + 3 }];
+}
+
+/** Something buried glints now and then; a dig throws junk out of the heap. */
+function drawTrash(t) {
+  const h = life.heap, f = actFrame('dig');
+  if (Math.floor(t / 7) % 5 === 0) sparkle(h.x + 7, h.y - 6, S.shine[0]);
+  if (f < 0) return;
+  for (let i = 0; i < 6; i++) {
+    const k = f - (i >> 1), dir = i % 2 ? 1 : -1;
+    if (k < 0 || k > 9) continue;
+    const x = h.x + dir * (4 + k * (1 + i % 3)), y = h.y - 10 - k * 2 + Math.round(k * k * 0.3);
+    put(x, y, S.junk[i % 3]); put(x + dir, y, S.junk[3]);
+  }
+}
+
+function dittoScene() {
+  const cx = W >> 1, foot = groundAt(0.42), rock = { x: cx - 10, y: foot + 2 }, pool = { x: cx + 20, y: foot + 4 };
+  const [sLit, stone, sDark, sLine] = S.stone, [pLit, water, pDark, pLine] = S.pool;
+  groundShadow(rock.x, rock.y, 13, 2);
+  outlined(rock.x - 12, rock.y - 4, rock.x + 12, rock.y, (x, y) => Math.hypot((x - rock.x) / 12, (y - rock.y + 1) / 3.6) <= 1,
+    (x, y) => (y < rock.y - 2 ? sLit : x > rock.x + 6 ? sDark : stone), sLine);
+  outlined(pool.x - 10, pool.y - 3, pool.x + 10, pool.y + 3, (x, y) => Math.hypot((x - pool.x) / 10, (y - pool.y) / 3) <= 1,
+    (x, y) => (y < pool.y - 1 ? pLit : y > pool.y + 1 ? pDark : water), pLine);
+  life.stands = { mon: { x: rock.x, y: rock.y - 3 } };
+  life.pool = pool;
+  life.eventSpots = [
+    { x0: rock.x - 12, x1: rock.x + 12, y0: rock.y - 20, y1: rock.y + 1 },
+    { x0: pool.x - 11, x1: pool.x + 11, y0: pool.y - 8, y1: pool.y + 4 },
+  ];
+  life.foot = pool.y + 7;
+  life.keep = [{ x0: rock.x - 14, x1: pool.x + 12, y0: rock.y - 24, y1: pool.y + 4 }];
+}
+
+/** The pool ripples; copying sends sparkles off the Ditto, a Transform swirls the pool. */
+function drawDitto(t) {
+  const p = life.pool, c = actFrame('copy'), m = actFrame('morph'), s = life.stands.mon;
+  const r = (t / 4) % 8;
+  for (let q = 0; q < Math.PI * 2; q += 0.4) if (dither(Math.round(q * 9), r) < 6) put(p.x + Math.round(Math.cos(q) * r), p.y + Math.round(Math.sin(q) * r * 0.3), S.pool[0]);
+  if (c >= 0) for (let i = 0; i < 6; i++) { const age = (c + i * 2) % 10; sparkle(s.x - 8 + ((i * 7 + c) % 16), s.y - 6 - age, age < 5 ? S.glow[0] : S.glow[1]); }
+  if (m >= 0) for (let q = 0; q < Math.PI * 2; q += 0.3) {
+    const rr = 2 + ((m + q * 3) % 8);
+    put(p.x + Math.round(Math.cos(q + m / 3) * rr), p.y + Math.round(Math.sin(q + m / 3) * rr * 0.35), (q * 10 | 0) % 2 ? S.glow[0] : S.glow[1]);
+  }
+}
+
+function abraScene() {
+  const cx = W >> 1, foot = groundAt(0.42), stump = { x: cx, y: foot + 2 };
+  const [wLit, wood, wDark, wLine] = S.wood, [ring, ringDark] = S.rings;
+  groundShadow(stump.x, stump.y + 1, 11, 2);
+  outlined(stump.x - 8, stump.y - 8, stump.x + 8, stump.y, (x, y) => Math.abs(x - stump.x) <= 7 + (y > stump.y - 2 ? 1 : 0) && y >= stump.y - 7,
+    (x) => (x < stump.x - 3 ? wLit : x > stump.x + 4 ? wDark : wood), wLine);
+  outlined(stump.x - 8, stump.y - 10, stump.x + 8, stump.y - 6, (x, y) => Math.hypot((x - stump.x) / 7.5, (y - stump.y + 8) / 2) <= 1,
+    (x, y) => (Math.round(Math.hypot((x - stump.x) / 2.5, y - stump.y + 8)) % 2 ? ring : ringDark), wLine);
+  const moss = { x: stump.x - 26, y: stump.y + 2 };   // a soft patch of moss to nap on
+  for (let y = -3; y <= 3; y++) for (let x = -9; x <= 9; x++) {
+    const d = (x / 9) ** 2 + (y / 3) ** 2;
+    if (d <= 1) solid(moss.x + x, moss.y + y, d > 0.6 ? S.moss[2] : dither(x, y) < 6 ? S.moss[0] : S.moss[1]);
+  }
+  life.stands = { mon: { x: stump.x, y: stump.y - 8 } };
+  life.stump = stump;
+  life.moss = moss;
+  life.eventSpots = [{ x0: stump.x - 12, x1: stump.x + 12, y0: stump.y - 30, y1: stump.y + 1 }, { x0: moss.x - 10, x1: moss.x + 10, y0: moss.y - 8, y1: moss.y + 4 }];
+  life.foot = stump.y + 6;
+  life.keep = [{ x0: moss.x - 10, x1: stump.x + 14, y0: stump.y - 34, y1: moss.y + 4 }];
+}
+
+/** Psychic motes circle the Abra; Teleport flashes the whole scene white. */
+function drawAbra(t) {
+  const s = life.stands.mon, f = actFrame('teleport'), z = actFrame('doze');
+  if (z >= 0) for (let i = 0; i < 3; i++) {   // Z's rise off the moss while you nap
+    const k = ((z / 16) + i / 3) % 1, x = life.moss.x + 2 + Math.round(k * 6), y = life.moss.y - 6 - Math.round(k * 12), c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(x + d, y, c); put(x + 2 - d, y + d, c); put(x + d, y + 2, c); }
+  }
+  for (let i = 0; i < 4; i++) {
+    const a = t / 9 + i * Math.PI / 2;
+    put(s.x + Math.round(Math.cos(a) * 12), s.y - 10 + Math.round(Math.sin(a) * 4), S.psy[i % 2 ? 1 : 2]);
+  }
+  if (f < 0) return;
+  const k = f / 18, glow = Math.sin(Math.min(1, k * 1.4) * Math.PI);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (dither(x, y) < glow * 16) put(x, y, S.psy[0]);
+}
+
+function billsPcScene() {
+  const { cx, foot, s, ceil } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const shelfTop = Math.round(horizon * 0.14), win = Math.min(u(0.16), railRow() - ceil - 8);
+  bookcase(cx - u(0.5), shelfTop, u(0.24), horizon - shelfTop - 1);
+  roomWindow(cx + u(0.3), ceil + 3, u(0.1), win);
+  const pc = { x: cx, top: foot - u(0.5), hw: u(0.12) }, [lit, body, shade, line] = S.case, [glare, blue, deep] = S.screen;
+  groundShadow(pc.x, foot + 1, pc.hw + 3, 2);
+  outlined(pc.x - pc.hw, pc.top, pc.x + pc.hw, foot, (x, y) => Math.abs(x - pc.x) <= pc.hw && y >= pc.top && y <= foot,
+    (x, y) => (x === pc.x - pc.hw ? lit : x >= pc.x + pc.hw - 1 ? shade : body), line);
+  const sw = pc.hw - 2, sTop = pc.top + 3, sh = Math.max(6, Math.round((foot - pc.top) * 0.36));
+  for (let y = sTop; y <= sTop + sh; y++) for (let x = pc.x - sw; x <= pc.x + sw; x++) solid(x, y, y === sTop || x === pc.x - sw ? deep : (y - sTop) % 3 === 0 ? glare : blue);
+  for (let y = sTop + sh + 3; y < foot - 2; y += 3) for (let x = pc.x - sw + 2; x <= pc.x + sw - 2; x++) solid(x, y, shade);
+  solid(pc.x + sw - 1, foot - 3, '#68e868');
+  life.pc = { x: pc.x, top: sTop, sw, sh };
+  life.eventSpots = [{ x0: pc.x - pc.hw - 2, x1: pc.x + pc.hw + 2, y0: pc.top, y1: foot }];
+  life.foot = foot + 4;
+}
+
+/** The PC's screen scrolls; booting it up flashes the screen and lights a Poké Ball on it. */
+function drawBillsPc(t) {
+  const p = life.pc, f = actFrame('boot');
+  const row = p.top + 1 + Math.floor(t / 3) % Math.max(1, p.sh - 1);
+  for (let x = p.x - p.sw + 1; x <= p.x + p.sw; x++) put(x, row, S.screen[0]);
+  if (f < 0) return;
+  const r = Math.min(4, Math.floor(f / 2));
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r) put(p.x + x, p.top + (p.sh >> 1) + y, y < 0 ? '#f04030' : y === 0 ? '#202028' : '#f8f8f8');
+}
+
+/* ---------- batch 2 of the StS events: the Pokémon are the page's sprites again, the props drawn here ---------- */
+
+/** A filled disc of colour `c(x, y)` at (cx, cy), for the round things below. */
+function disc(cx, cy, r, c) {
+  for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + r * 0.6) put(cx + x, cy + y, c(x, y));
+}
+
+function wheelScene() {
+  const cx = W >> 1, foot = groundAt(0.42), wheel = { x: cx + 8, y: foot - 17, r: 12 };
+  const [wLit, wood, wDark, wLine] = S.wood;
+  groundShadow(wheel.x, foot + 1, 12, 2);
+  for (const s of [-1, 1]) for (let y = wheel.y; y <= foot; y++) {   // the A-frame's legs, behind the wheel
+    const x = wheel.x + Math.round(s * (y - wheel.y) * 0.45);
+    solid(x - 1, y, wLine); solid(x, y, s < 0 ? wLit : wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine);
+  }
+  for (let x = wheel.x - 7; x <= wheel.x + 8; x++) { solid(x, foot - 4, wood); solid(x, foot - 3, wDark); }
+  life.stands = { mon: { x: cx - 17, y: foot + 1 } };
+  life.wheel = wheel;
+  life.eventSpots = [{ x0: wheel.x - 13, x1: wheel.x + 13, y0: wheel.y - 16, y1: foot }];
+  life.foot = foot + 6;
+  life.keep = [{ x0: cx - 30, x1: wheel.x + 15, y0: wheel.y - 17, y1: foot + 2 }];
+}
+
+/** The wheel, its bulbs chasing round the rim; a spin turns it three times and eases to a stop with the rolled slice
+    under the pin at the top, and it stays there. */
+function drawWheel(t) {
+  const w = life.wheel, f = actFrame('spin'), n = S.slices.length, step = Math.PI * 2 / n;
+  if (f >= 0) {
+    const k = Math.min(1, f / ACTS.spin.frames);
+    life.wheelAt = (Math.PI * 2 * 3 - life.act.slice * step) * (1 - (1 - k) ** 3);
+  }
+  const rot = life.wheelAt || 0;
+  disc(w.x, w.y, w.r, (x, y) => {
+    const d = Math.hypot(x, y);
+    if (d > w.r - 1) return S.rim[3];
+    if (d < 2) return d < 1 ? S.rim[0] : S.rim[2];
+    const a = ((Math.atan2(x, -y) - rot + step / 2) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    return (a % step) * d < 0.8 ? S.rim[3] : S.slices[Math.floor(a / step)];
+  });
+  for (let i = 0; i < 12; i++) {
+    const q = i / 12 * Math.PI * 2;
+    put(w.x + Math.round(Math.sin(q) * (w.r + 1)), w.y - Math.round(Math.cos(q) * (w.r + 1)), (i + Math.floor(t / 2)) % 3 ? S.rim[1] : S.rim[0]);
+  }
+  for (let y = 0; y < 4; y++) for (let x = y - 3; x <= 3 - y; x++) put(w.x + x, w.y - w.r - 4 + y, y === 3 || Math.abs(x) === 3 - y ? S.pin[1] : S.pin[0]);
+}
+
+function idolScene() {
+  const cx = W >> 1, foot = groundAt(0.42), plinth = { x: cx - 4, y: foot + 2 }, ledge = { x: cx + 22, y: foot - 9 };
+  const [sLit, stone, sDark, sLine] = S.stone, [rLit, rock, rDark, rLine] = S.rock;
+  outlined(ledge.x - 14, ledge.y - 2, ledge.x + 14, foot - 2, (x, y) => y >= ledge.y + Math.abs(x - ledge.x) ** 2 / 40 && y <= foot - 2,
+    (x, y) => (noise(x >> 1, y >> 1, 5) > 0.6 ? rLit : y > foot - 6 ? rDark : rock), rLine);
+  const column = (x0, top, broken) => {   // a fluted column, its top snapped off
+    groundShadow(x0 + 2, foot + 1, 5, 1);
+    outlined(x0 - 2, top, x0 + 5, foot, (x, y) => x >= x0 - 1 && x <= x0 + 4 && y >= top + (broken ? Math.abs((x * 7) % 3) : 0) && y <= foot,
+      (x) => (x === x0 - 1 ? sLit : x === x0 + 4 ? sDark : (x - x0) % 2 ? stone : sLit), sLine);
+    for (let x = x0 - 2; x <= x0 + 5; x++) { solid(x, foot, sDark); if (!broken) solid(x, top, stone); }
+  };
+  column(cx - 30, foot - 26, false);
+  column(cx - 18, foot - 13, true);
+  column(cx + 36, foot - 17, true);
+  outlined(cx + 4, foot - 1, cx + 12, foot + 3, (x, y) => Math.hypot((x - cx - 8) / 4.5, (y - foot - 1) / 2.2) <= 1, (x) => (x < cx + 7 ? sLit : stone), sLine);   // a fallen drum
+  groundShadow(plinth.x, plinth.y, 8, 2);
+  outlined(plinth.x - 6, plinth.y - 8, plinth.x + 6, plinth.y, (x, y) => Math.abs(x - plinth.x) <= (y < plinth.y - 6 || y > plinth.y - 2 ? 6 : 5) && y >= plinth.y - 8 && y <= plinth.y,
+    (x, y) => (y === plinth.y - 8 ? sLit : x > plinth.x + 3 ? sDark : stone), sLine);
+  life.stands = { mon: { x: ledge.x + 4, y: ledge.y + 1 } };
+  life.plinth = plinth;
+  life.ledge = ledge;
+  life.eventSpots = [
+    { x0: plinth.x - 8, x1: plinth.x + 8, y0: plinth.y - 20, y1: plinth.y + 1 },
+    { x0: cx - 22, x1: cx - 13, y0: foot - 16, y1: foot + 1 },
+  ];
+  life.foot = foot + 6;
+  life.keep = [{ x0: cx - 34, x1: cx + 42, y0: foot - 28, y1: foot + 4 }];
+}
+
+/** The idol glints on its plinth until you grab it (it rises and is gone); the boulder sits by the Golem until it's
+    shoved: it rolls down at you (brace) or past the column you dived behind (hide). */
+function drawIdol(t) {
+  const p = life.plinth, l = life.ledge, g = actFrame('grab'), b = Math.max(actFrame('brace'), actFrame('hide'));
+  if (g >= 0) life.idolGone = true;
+  const lift = g >= 0 ? Math.min(10, g * 1.5) : 0;
+  if (!life.idolGone || (g >= 0 && g < 8)) {
+    const [lit, gold, dark, line] = S.gold, x0 = p.x, y0 = p.y - 9 - Math.round(lift);
+    outlined(x0 - 3, y0 - 8, x0 + 3, y0, (x, y) => (y >= y0 - 8 && y <= y0 - 5 && Math.abs(x - x0) <= 2) || (y > y0 - 5 && y <= y0 && Math.abs(x - x0) <= 3 - (y === y0 - 4 ? 1 : 0)),
+      (x, y) => (x < x0 ? lit : x > x0 + 1 ? dark : gold), line);
+    put(x0 - 1, y0 - 7, line); put(x0 + 1, y0 - 7, line);
+    if (Math.floor(t / 6) % 4 === 0 || g >= 0) sparkle(x0 + 2, y0 - 8, S.gold[0]);
+  }
+  if (b >= 0) life.rolled = life.act.name;
+  const r = 6, rolling = b >= 0 && b < 16;
+  if (life.rolled && !rolling) return;
+  const k = rolling ? b / 16 : 0, hide = life.rolled === 'hide';
+  const x = Math.round(l.x - 6 - k * (hide ? 70 : 34)), y = Math.round(l.y - r + k * (hide ? 28 : 16) + (rolling ? Math.abs(Math.sin(k * 9)) * -2 : 0));
+  const spin = k * 12;
+  disc(x, y, r, (dx, dy) => {
+    const d = Math.hypot(dx, dy);
+    if (d > r - 0.6) return S.rock[3];
+    return Math.sin(Math.atan2(dy, dx) * 3 + spin) > 0.6 ? S.rock[2] : dx + dy < -3 ? S.rock[0] : S.rock[1];
+  });
+}
+
+function keystoneScene() {
+  const cx = W >> 1, foot = groundAt(0.42), cairn = { x: cx, y: foot + 1 }, cash = { x: cx - 26, y: foot + 3 }, ball = { x: cx + 26, y: foot + 3 };
+  const [sLit, stone, sDark, sLine] = S.stone;
+  groundShadow(cairn.x, cairn.y + 1, 12, 2);
+  let top = cairn.y;
+  for (const [rx, ry, dx] of [[11, 3, 0], [9, 3, 1], [7, 2.6, -1], [5, 2.2, 0]]) {   // stones stacked, each a little smaller
+    const cy = top - ry, x0 = cairn.x + dx;
+    outlined(x0 - rx, cy - ry, x0 + rx, cy + ry, (x, y) => Math.hypot((x - x0) / rx, (y - cy) / ry) <= 1,
+      (x, y) => (y < cy - ry * 0.4 ? sLit : x > x0 + rx * 0.5 ? sDark : stone), sLine);
+    top = cy - ry + 1;
+  }
+  outlined(cash.x - 7, cash.y - 3, cash.x + 7, cash.y, (x, y) => Math.hypot((x - cash.x) / 7, (y - cash.y + 1) / 2.4) <= 1, (x, y) => (y < cash.y - 1 ? sLit : stone), sLine);
+  const [cLit, coin, cDark] = S.coin;
+  for (const [dx, dy] of [[-4, -3], [-1, -4], [2, -3], [0, -2], [-3, -2]]) { solid(cash.x + dx, cash.y + dy, cLit); solid(cash.x + dx + 1, cash.y + dy, coin); solid(cash.x + dx + 2, cash.y + dy, cDark); }
+  outlined(ball.x + 2, ball.y - 6, ball.x + 10, ball.y, (x, y) => Math.hypot((x - ball.x - 6) / 4.5, (y - ball.y + 2) / 3.6) <= 1, (x, y) => (y < ball.y - 3 ? sLit : sDark), sLine);
+  const [w, wShade, red, redDark, line] = S.ball;
+  pixelMap(ball.x - 5, ball.y - 6, BALL, { k: line, R: red, D: redDark, W: w, G: wShade });
+  life.stands = { mon: { x: cairn.x, y: top + 1 } };
+  life.cairn = { x: cairn.x, y: top };
+  life.asks = [cash, { x: cairn.x, y: top }, ball];
+  life.eventSpots = [
+    { x0: cash.x - 8, x1: cash.x + 8, y0: cash.y - 12, y1: cash.y + 1 },
+    { x0: cairn.x - 11, x1: cairn.x + 11, y0: top - 22, y1: cairn.y },
+    { x0: ball.x - 7, x1: ball.x + 11, y0: ball.y - 12, y1: ball.y + 1 },
+  ];
+  life.foot = foot + 7;
+  life.keep = [{ x0: cash.x - 9, x1: ball.x + 12, y0: top - 26, y1: cash.y + 2 }];
+}
+
+/** Wisps circle Spiritomb; an ask sends them streaming out to the thing asked for, which sparkles. */
+function drawKeystone(t) {
+  const c = life.cairn, f = actFrame('ask');
+  for (let i = 0; i < 5; i++) {
+    const a = t / 7 + i / 5 * Math.PI * 2;
+    put(c.x + Math.round(Math.cos(a) * 13), c.y - 12 + Math.round(Math.sin(a) * 4), S.wisp[i % 3]);
+  }
+  if (f < 0 || f > 14) return;
+  const to = life.asks[{ money: 0, move: 1, item: 2 }[life.act.what] ?? 1];
+  for (let i = 0; i < 6; i++) {
+    const k = Math.min(1, Math.max(0, (f - i * 0.8) / 8));
+    put(Math.round(c.x + (to.x - c.x) * k + Math.sin(k * 9 + i) * 2), Math.round(c.y - 12 + (to.y - 6 - c.y + 12) * k), S.wisp[i % 3]);
+  }
+  if (f >= 8) for (let i = 0; i < 5; i++) { const age = (f - 8 + i * 2) % 7; sparkle(to.x - 5 + ((i * 5 + f) % 12), to.y - 4 - age, age < 4 ? S.coin[0] : S.wisp[0]); }
+}
+
+function moonScene() {
+  const cx = W >> 1, foot = groundAt(0.42), gem = { x: cx - 8, y: foot + 1 }, pool = { x: cx + 26, y: foot + 4 };
+  const [rLit, rock, rDark, rLine] = S.rock, [mLit, moon, mDark] = S.moon;
+  const sky = { x: cx + 30, y: Math.max(8, Math.round(horizon * 0.32)), r: 9 };   // the moon itself
+  for (let y = -sky.r; y <= sky.r; y++) for (let x = -sky.r; x <= sky.r; x++) {
+    const d = Math.hypot(x, y);
+    if (d <= sky.r) solid(sky.x + x, sky.y + y, noise((sky.x + x) >> 1, (sky.y + y) >> 1, 13) > 0.72 ? mDark : x + y < -4 ? mLit : moon);
+  }
+  groundShadow(gem.x, gem.y + 1, 9, 2);
+  outlined(gem.x - 8, gem.y - 4, gem.x + 8, gem.y, (x, y) => Math.hypot((x - gem.x) / 8, (y - gem.y + 1) / 3.4) <= 1, (x, y) => (y < gem.y - 2 ? rLit : x > gem.x + 4 ? rDark : rock), rLine);
+  life.stands = { left: { x: gem.x - 15, y: foot + 2 }, right: { x: gem.x + 15, y: foot + 2 } };
+  life.gem = { x: gem.x, y: gem.y - 4 };
+  life.pool = pool;
+  life.eventSpots = [
+    { x0: gem.x - 20, x1: gem.x + 20, y0: gem.y - 20, y1: gem.y + 2 },
+    { x0: pool.x - 10, x1: pool.x + 10, y0: pool.y - 10, y1: pool.y + 3 },
+  ];
+  life.foot = foot + 7;
+  life.keep = [{ x0: gem.x - 22, x1: pool.x + 11, y0: gem.y - 24, y1: pool.y + 3 }];
+}
+
+/** The Moon Stone twinkles and the moonlight pool shimmers; a dance whirls sparkles round the stone, Moonlight pours a
+    beam down onto the pool. */
+function drawMoon(t) {
+  const g = life.gem, p = life.pool, d = actFrame('dance'), m = actFrame('moonlight');
+  const [lit, stone, dark, line] = S.stone;
+  outlined(g.x - 3, g.y - 9, g.x + 3, g.y, (x, y) => Math.abs(x - g.x) * 2.2 + Math.abs(y - g.y + 4.5) * 1.3 <= 6.5, (x, y) => (x < g.x ? lit : y > g.y - 3 ? dark : stone), line);
+  if (Math.floor(t / 5) % 3 === 0) sparkle(g.x + 2, g.y - 8, S.glow[0]);
+  for (let y = -3; y <= 3; y++) for (let x = -9; x <= 9; x++) {
+    const q = (x / 9) ** 2 + (y / 3) ** 2;
+    if (q <= 1 && dither(x + t, y) < (1 - q) * 10 + (m >= 0 && m < 16 ? 6 : 0)) put(p.x + x, p.y + y, q < 0.4 ? S.glow[0] : S.glow[1]);
+  }
+  if (d >= 0 && d < 18) for (let i = 0; i < 8; i++) {
+    const a = d / 2.5 + i / 8 * Math.PI * 2;
+    sparkle(g.x + Math.round(Math.cos(a) * 16), g.y - 4 + Math.round(Math.sin(a) * 4) - (i % 2) * 3, i % 2 ? S.glow[0] : S.glow[2]);
+  }
+  if (m >= 0 && m < 16) {
+    const k = Math.sin(m / 16 * Math.PI);
+    for (let y = 0; y < p.y; y++) for (let x = -5; x <= 5; x++) if (dither(x, y + m) < k * (12 - Math.abs(x) * 2)) put(p.x + x, y, S.glow[1]);
+  }
+}
+
+function stallScene() {
+  const cx = W >> 1, foot = groundAt(0.42), counter = { x: cx + 6, y: foot + 2, hw: 20 }, roof = foot - 30;
+  const [wLit, wood, wDark, wLine] = S.wood, [white, red, redDark, aLine] = S.awning, [cLit, cloth, cDark] = S.cloth;
+  groundShadow(counter.x, counter.y + 1, counter.hw + 2, 2);
+  for (const sx of [-1, 1]) {   // the posts
+    const x0 = counter.x + sx * (counter.hw - 1);
+    for (let y = roof; y <= counter.y; y++) { solid(x0 - 1, y, wLine); solid(x0, y, wood); solid(x0 + 1, y, wDark); solid(x0 + 2, y, wLine); }
+  }
+  for (let y = roof - 6; y <= roof; y++) for (let x = counter.x - counter.hw - 3; x <= counter.x + counter.hw + 3; x++) {   // the striped awning, scalloped
+    const scallop = y === roof && Math.abs(((x - counter.x) % 6 + 6) % 6 - 3) > 2;
+    if (scallop) continue;
+    solid(x, y, y === roof - 6 || x === counter.x - counter.hw - 3 || x === counter.x + counter.hw + 3 ? aLine : Math.floor((x - counter.x + 60) / 3) % 2 ? red : white);
+  }
+  outlined(counter.x - counter.hw, counter.y - 8, counter.x + counter.hw, counter.y, (x, y) => Math.abs(x - counter.x) <= counter.hw && y >= counter.y - 8 && y <= counter.y,
+    (x, y) => (y <= counter.y - 7 ? wLit : (x - counter.x + 40) % 7 === 0 ? wDark : y > counter.y - 2 ? wDark : wood), wLine);
+  const cushions = [counter.x - 9, counter.x + 9].map(x => ({ x, y: counter.y - 9 }));
+  for (const c of cushions) for (let y = -2; y <= 1; y++) for (let x = -6; x <= 6; x++) if (Math.abs(x) <= 6 - (y < -1 ? 1 : 0)) solid(c.x + x, c.y + y, y < -1 ? cLit : y > 0 ? cDark : cloth);
+  life.stands = { mon: { x: counter.x - counter.hw - 13, y: foot + 2 }, left: { x: cushions[0].x, y: cushions[0].y - 1 }, right: { x: cushions[1].x, y: cushions[1].y - 1 } };
+  life.cushions = cushions;
+  life.eventSpots = cushions.map(c => ({ x0: c.x - 7, x1: c.x + 7, y0: c.y - 16, y1: c.y + 2 }));
+  life.foot = foot + 6;
+  life.keep = [{ x0: counter.x - counter.hw - 22, x1: counter.x + counter.hw + 4, y0: roof - 7, y1: counter.y + 2 }];
+}
+
+/** Something on the stall glints now and then; a trade bursts sparkles off the cushion and flashes Kecleon's colours. */
+function drawStall(t) {
+  const f = actFrame('swap'), cs = life.cushions;
+  if (Math.floor(t / 9) % 3 === 0) sparkle(cs[Math.floor(t / 27) % 2].x + 4, cs[0].y - 8, S.shine[0]);
+  if (f < 0 || f > 16) return;
+  const c = cs[life.act.i] || cs[0];
+  for (let i = 0; i < 7; i++) { const age = (f + i * 2) % 9; sparkle(c.x - 7 + ((i * 5 + f) % 15), c.y - 4 - age, S.shine[i % 3]); }
+}
+
+/* ---------- batch 3 of the StS events: the Library and the Silph storeroom are rooms, the rest outdoors ---------- */
+
+/** Z's rising from (x, y) through a nap's frames. */
+function napZs(x, y, f, frames) {
+  for (let i = 0; i < 3; i++) {
+    const k = ((f / frames) + i / 3) % 1, zx = x + Math.round(k * 6), zy = y - Math.round(k * 12), c = k < 0.7 ? S.zee[0] : S.zee[1];
+    for (let d = 0; d < 3; d++) { put(zx + d, zy, c); put(zx + 2 - d, zy + d, c); put(zx + d, zy + 2, c); }
+  }
+}
+
+function libraryScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  life.candles = [];
+  const shelfTop = Math.round(horizon * 0.14), perch = shelfTop + u(0.14);
+  for (let k = -3; k <= 3; k++) {   // bookcases wall to wall, the middle one lower for Noctowl to perch on
+    const x = cx + k * u(0.48), top = k ? shelfTop : perch;
+    if (x + u(0.23) > -2 && x - u(0.23) < W + 2) bookcase(x, top, u(0.23), horizon - top - 1);
+  }
+  const lec = { x: cx - u(0.27), top: foot - u(0.34) };
+  lectern(lec.x, foot, lec.top, u(0.18));
+  const ch = { x: cx + u(0.27), hw: Math.max(8, u(0.14)), top: foot - u(0.3) }, [cLit, cloth, cDark, cLine] = S.chair;
+  const seat = foot - Math.round((foot - ch.top) * 0.42), arm = foot - Math.round((foot - ch.top) * 0.55);
+  groundShadow(ch.x, foot + 1, ch.hw + 2, 2);
+  outlined(ch.x - ch.hw, ch.top, ch.x + ch.hw, foot, (x, y) => {
+    const dx = Math.abs(x - ch.x);
+    if (y > foot - 2) return y <= foot && dx >= ch.hw - 3 && dx <= ch.hw - 1;   // its little legs
+    if (dx <= ch.hw - 3) return y >= ch.top + (dx > ch.hw - 6 ? 2 : 0);   // the back, its corners rounded, and the seat
+    return dx <= ch.hw && y >= arm;   // the rolled arms
+  }, (x, y) => {
+    const dx = Math.abs(x - ch.x);
+    if (y > foot - 2) return S.trim[2];
+    if (dx > ch.hw - 3) return y === arm ? cLit : x < ch.x ? cloth : cDark;
+    if (y >= seat) return y === seat ? cLit : cloth;
+    return (x - ch.x + 40) % 5 === 0 && (y - ch.top) % 5 === 2 ? cDark : y < ch.top + 2 ? cLit : cloth;
+  }, cLine);
+  for (let x = ch.x - ch.hw + 3; x <= ch.x + ch.hw - 3; x++) solid(x, seat - 1, cDark);
+  life.book = { x: lec.x, y: lec.top - 2, w: Math.round(u(0.18) * 0.9) };
+  life.chair = { x: ch.x, y: seat };
+  life.stands = { mon: { x: cx, y: perch } };
+  life.eventSpots = [
+    { x0: lec.x - u(0.17), x1: lec.x + u(0.17), y0: lec.top - u(0.1), y1: foot },
+    { x0: ch.x - ch.hw - 2, x1: ch.x + ch.hw + 2, y0: ch.top - 2, y1: foot },
+  ];
+  life.foot = foot + 4;
+}
+
+/** The lectern's candles flicker; reading lifts pages and sparkles off the open book, a nap sends Z's up off the chair. */
+function drawLibrary(t) {
+  for (const c of life.candles) {
+    const f = Math.sin(t / 1.7 + c.x) + Math.sin(t / 3.1);
+    put(c.x, c.y, S.flame[0]); put(c.x, c.y - 1, f > -0.5 ? S.flame[1] : S.flame[0]); if (f > 0.4) put(c.x, c.y - 2, S.flame[1]);
+    for (let y = -4; y <= 3; y++) for (let x = -4; x <= 4; x++) if ((x || y) && x * x + y * y <= 14 + f * 3 && dither(c.x + x, c.y + y) < 3) blend(c.x + x, c.y + y, S.flame[1], 0.35);
+  }
+  const r = actFrame('read'), b = life.book;
+  if (r >= 0 && r < 14) for (let i = 0; i < 5; i++) {
+    const age = (r + i * 3) % 12, x = b.x - b.w + 2 + ((i * 7 + r) % (b.w * 2)), y = b.y - 4 - age, flap = (age + i) % 2;
+    if (age < 8) { put(x, y, S.page[0]); put(x + 1, y - flap, S.page[0]); put(x - 1, y - (1 - flap), S.page[1]); }
+    else sparkle(x, y, S.shine[i % 2]);
+  }
+  const z = actFrame('nap');
+  if (z >= 0 && z < 16) napZs(life.chair.x + 2, life.chair.y - 8, z, 16);
+}
+
+function storeroomScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  const top = Math.round(horizon * 0.12), [mLit, metal, mDark, mLine] = S.trim, [bLit, box, bDark, bLine] = S.box, [blue, white] = S.label;
+  const rack = (x0, hw) => {   // a steel rack against the wall, cardboard boxes on its shelves
+    const shelf = Math.max(10, Math.round((horizon - top) / 4));
+    for (let y = top; y < horizon; y++) for (let x = x0 - hw; x <= x0 + hw; x++) {
+      const edge = Math.abs(x - x0) >= hw - 1, board = (y - top) % shelf === 0;
+      if (edge || board) { solid(x, y, x === x0 - hw || x === x0 + hw ? mLine : board ? mLit : metal); continue; }
+      const row = Math.floor((y - top) / shelf), from = shelf - ((y - top) % shelf);
+      const k = Math.floor((x - x0 + hw) / 7 + noise(row, 2, 9) * 2), tall = 4 + Math.floor(noise(k, row, 8) * (shelf - 5)), gap = noise(k, row, 7) > 0.82;
+      const left = (x - x0 + hw + Math.floor(noise(row, 2, 9) * 14)) % 7 === 0;
+      if (gap || from > tall) { solid(x, y, mDark); continue; }
+      solid(x, y, left ? bLine : from === tall ? bLit : from === tall - 2 && (x + k) % 7 > 2 && (x + k) % 7 < 5 ? (x % 2 ? blue : white) : from < 2 ? bDark : box);
+    }
+  };
+  for (let k = -3; k <= 3; k++) { const x = cx + k * u(0.42); if (k && x + u(0.19) > -2 && x - u(0.19) < W + 2) rack(x, u(0.19)); }
+  const [cLit, crate, cDark, cLine] = S.crate, w = Math.max(8, u(0.11)), h = Math.max(7, u(0.09));
+  const crateBox = (x0, y1) => {   // a slatted wooden crate, its bottom edge at y1
+    outlined(x0, y1 - h, x0 + w, y1, (x, y) => x >= x0 && x <= x0 + w && y >= y1 - h && y <= y1,
+      (x, y) => (x === x0 || x === x0 + w || y === y1 - h || y === y1 ? cDark : (y - y1 + h) % 4 === 0 ? cDark : x === x0 + 1 ? cLit : crate), cLine);
+    for (let i = 1; i < w; i++) { const y = y1 - Math.round(i * h / w); if (y > y1 - h && y < y1) solid(x0 + i, y, cDark); }
+  };
+  const st = { x: cx - u(0.04), y: foot };
+  groundShadow(st.x, foot + 1, w + 6, 2);
+  crateBox(st.x - w - 1, foot); crateBox(st.x + 1, foot); crateBox(st.x - Math.round(w / 2), foot - h - 1);
+  life.lamp = { x: cx + u(0.42) - u(0.19) + 3, y: top + 3 };
+  life.crates = { x: st.x, y: foot - h * 2 - 2 };
+  life.stands = { mon: { x: cx + u(0.3), y: foot - u(0.06) } };
+  life.eventSpots = [{ x0: st.x - w - 3, x1: st.x + w + 3, y0: foot - h * 2 - 8, y1: foot }];
+  life.foot = foot + 4;
+}
+
+/** A status light blinks on a rack; a search shakes sparkles and Poké Balls up out of the crates. */
+function drawStoreroom(t) {
+  const l = life.lamp, c = life.crates, f = actFrame('rummage');
+  put(l.x, l.y, Math.floor(t / 8) % 2 ? S.lamp[0] : S.lamp[1]);
+  if (f < 0 || f > 14) return;
+  for (let i = 0; i < 6; i++) { const age = (f + i * 2) % 10; sparkle(c.x - 9 + ((i * 5 + f) % 18), c.y - age, S.shine[i % 2]); }
+  if (f >= 6) {   // three Poké Balls pop up out of the top crate
+    const [w, wShade, red, redDark, line] = S.ball;
+    for (let i = 0; i < 3; i++) {
+      const k = Math.min(1, (f - 6 - i) / 6);
+      if (k < 0) continue;
+      const bx = c.x - 8 + i * 7, by = c.y - 2 - Math.round(Math.sin(k * Math.PI) * 10);
+      BALL.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (row[x] !== '.') put(bx + x - 3, by + y - 6, { k: line, R: red, D: redDark, W: w, G: wShade }[row[x]]); });
+    }
+  }
+}
+
+function fishingScene() {
+  const cx = W >> 1, foot = groundAt(0.42), pond = { x: cx + 4, y: foot - 3, rx: 46, ry: 8 };
+  const [shine, water, deep, line] = S.water, [wLit, wood, wDark, wLine] = S.wood;
+  for (let y = -pond.ry - 1; y <= pond.ry + 1; y++) for (let x = -pond.rx - 1; x <= pond.rx + 1; x++) {
+    const d = (x / pond.rx) ** 2 + (y / pond.ry) ** 2;
+    if (d <= 1) solid(pond.x + x, pond.y + y, d > 0.86 ? line : y < -pond.ry * 0.4 ? deep : dither(x, y) < 3 ? shine : water);
+  }
+  const deck = { y0: foot + 2, y1: foot + 7, x0: cx - 36, x1: cx + 30 };   // a boardwalk along the near bank
+  for (let y = deck.y0; y <= deck.y1; y++) for (let x = deck.x0; x <= deck.x1; x++)
+    solid(x, y, y === deck.y0 ? wLit : y === deck.y1 ? wLine : (x - deck.x0) % 6 === 0 ? wDark : wood);
+  for (let x = deck.x0; x <= deck.x1; x += 11) for (let y = deck.y1 + 1; y <= deck.y1 + 3; y++) { solid(x, y, wDark); solid(x + 1, y, wLine); }
+  for (const x of [deck.x0 + 1, deck.x1 - 1]) for (let y = deck.y0 - 9; y < deck.y0; y++) { solid(x, y, wLine); solid(x + 1, y, wood); }
+  for (let x = deck.x0 + 1; x <= deck.x1; x++) { solid(x, deck.y0 - 9, wLine); solid(x, deck.y0 - 8, wLit); }   // the rail
+  const tips = [];
+  [-16, 0, 16].forEach((dx, i) => {   // the three rods, leaning on the rail out over the water
+    const [col, dark] = S.rods[i], x0 = cx + dx - 6, y0 = deck.y0 + 1, len = 24;
+    for (let k = 0; k <= len; k++) {
+      const x = Math.round(x0 + k * 0.5), y = y0 - k;
+      solid(x, y, k < 6 ? dark : col);
+      if (k < 6) solid(x + 1, y, dark);
+    }
+    solid(x0 + 2, y0 - 4, '#f8f8f8'); solid(x0 + 3, y0 - 4, dark);   // the reel
+    tips.push({ x: Math.round(x0 + len * 0.5), y: y0 - len });
+  });
+  life.tips = tips;
+  life.pond = pond;
+  life.stands = { mon: { x: pond.x + 30, y: pond.y + 3 } };
+  life.eventSpots = tips.map(p => ({ x0: p.x - 9, x1: p.x + 3, y0: p.y - 2, y1: deck.y1 }));
+  life.foot = deck.y1 + 6;
+  life.keep = [{ x0: pond.x - pond.rx - 2, x1: pond.x + pond.rx + 2, y0: tips[0].y - 3, y1: deck.y1 + 4 }];
+}
+
+/** Glints slide over the pond; a cast arcs the line out, the float bobs and dips, and the rod reels its catch in: a berry,
+    an HP Up, or (the Super Rod) a great splash as a Gyarados thrashes up. */
+function drawFishing(t) {
+  const p = life.pond;
+  for (let i = 0; i < 4; i++) {
+    const x = p.x - p.rx + 6 + ((t + i * 23) % (p.rx * 2 - 12)), y = p.y - 3 + i * 2;
+    put(x, y, S.water[0]); put(x + 1, y, S.water[0]);
+  }
+  const f = actFrame('cast');
+  if (f < 0) return;
+  const rod = life.act.rod || 0, tip = life.tips[rod], frames = rod === 2 ? 24 : 20;
+  if (f >= frames) return;
+  const bob = { x: tip.x + 12 + rod * 2, y: p.y - 1 };
+  const out = Math.min(1, f / 6), reel = f >= 14 ? (f - 14) / (frames - 14) : 0;
+  const end = { x: Math.round(tip.x + (bob.x - tip.x) * out * (1 - reel)), y: Math.round(tip.y + (bob.y - tip.y) * out - Math.sin(out * Math.PI) * 6 - reel * (bob.y - tip.y) * 0.7 + (f >= 10 && f < 14 ? (f % 2) * 2 : 0)) };
+  for (let k = 0; k <= 12; k++) { const q = k / 12; put(Math.round(tip.x + (end.x - tip.x) * q), Math.round(tip.y + (end.y - tip.y) * q + Math.sin(q * Math.PI) * 2), S.line); }
+  if (f < 14) { put(end.x, end.y, S.bob[0]); put(end.x, end.y - 1, S.bob[1]); }
+  else { const [c, dark] = S.catch[rod]; for (let y = -1; y <= 1; y++) for (let x = -1; x <= 1; x++) put(end.x + x, end.y + 2 + y, x + y > 0 ? dark : c); }
+  if (f >= 6 && f < 10) for (let i = 0; i < 6; i++) put(bob.x - 3 + i, bob.y - (i % 2) - (f - 6), S.water[0]);   // the float lands
+  if (rod === 2 && f >= 13) {   // the Gyarados: a dark hump and a tall white spout
+    const k = Math.min(1, (f - 13) / 5);
+    for (let x = -6; x <= 6; x++) for (let y = 0; y < Math.round((1 - (x / 6.5) ** 2) * 5 * k); y++) put(bob.x + x, bob.y - y, S.catch[2][y % 3 ? 0 : 1]);
+    for (let i = 0; i < 14; i++) { const h = Math.round(((i * 7) % 12) * k) + 2; put(bob.x - 8 + ((i * 5) % 17), bob.y - 4 - h, i % 3 ? S.water[0] : '#ffffff'); }
+  }
+}
+
+function sludgeScene() {
+  const cx = W >> 1, foot = groundAt(0.42), pit = { x: cx - 8, y: foot + 1, rx: 30, ry: 7 }, ledge = { x: cx + 32, y: foot + 3 };
+  const [gLit, goop, gDark, gLine] = S.goop, [rLit, rock, rDark, rLine] = S.rock, [cLit, coin, cDark] = S.coin;
+  for (let y = -pit.ry - 1; y <= pit.ry + 1; y++) for (let x = -pit.rx - 1; x <= pit.rx + 1; x++) {
+    const d = (x / pit.rx) ** 2 + (y / pit.ry) ** 2;
+    if (d <= 1) solid(pit.x + x, pit.y + y, d > 0.85 ? gLine : noise((pit.x + x) >> 1, (pit.y + y) >> 1, 21) > 0.68 ? gLit : y > pit.ry * 0.3 ? gDark : goop);
+  }
+  const coins = [[-20, -1], [-15, 2], [-11, -2], [-24, 2], [-8, 1]].map(([dx, dy]) => ({ x: pit.x + dx, y: pit.y + dy }));
+  for (const c of coins) { solid(c.x, c.y, cLit); solid(c.x + 1, c.y, coin); solid(c.x + 2, c.y, cDark); }
+  for (const [dx, dy, rx, ry] of [[0, 0, 9, 4], [-6, -4, 6, 3.4], [5, -6, 5, 3], [-1, -9, 4, 2.6]]) {   // a heap of rocks, the way out
+    const x0 = ledge.x + dx, y0 = ledge.y + dy;
+    outlined(x0 - rx, y0 - ry, x0 + rx, y0 + ry, (x, y) => Math.hypot((x - x0) / rx, (y - y0) / ry) <= 1,
+      (x, y) => (y < y0 - ry * 0.3 ? rLit : x > x0 + rx * 0.4 ? rDark : rock), rLine);
+  }
+  life.pit = pit;
+  life.coins = coins;
+  life.ledge = { x: ledge.x, y: ledge.y - 12 };
+  life.stands = { mon: { x: pit.x + 8, y: pit.y + 1 } };
+  life.eventSpots = [
+    { x0: pit.x - pit.rx + 2, x1: pit.x - 4, y0: pit.y - 12, y1: pit.y + pit.ry },
+    { x0: ledge.x - 11, x1: ledge.x + 11, y0: ledge.y - 16, y1: ledge.y + 4 },
+  ];
+  life.foot = ledge.y + 8;
+  life.keep = [{ x0: pit.x - pit.rx - 2, x1: ledge.x + 11, y0: foot - 30, y1: ledge.y + 5 }];
+}
+
+/** Bubbles swell and pop on the sludge and the coins glint; digging throws sludge and coins up out of it, climbing out
+    drops coins from the rocks into the muck with a plop. */
+function drawSludge(t) {
+  const p = life.pit;
+  for (let i = 0; i < 4; i++) {
+    const age = (t + i * 7) % 16, x = p.x - p.rx + 8 + ((i * 17 + Math.floor((t + i * 7) / 16) * 11) % (p.rx * 2 - 16)), y = p.y - 2 + (i % 3);
+    if (age < 10) { const r = age < 4 ? 0 : age < 8 ? 1 : 2; for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) if (Math.abs(dx) + Math.abs(dy) === r || !r) put(x + dx, y + dy, S.goop[0]); }
+    else if (age < 12) { put(x - 2, y - 1, S.goop[0]); put(x + 2, y - 1, S.goop[0]); }
+  }
+  if (Math.floor(t / 7) % 3 === 0) { const c = life.coins[Math.floor(t / 21) % life.coins.length]; put(c.x + 1, c.y - 1, '#ffffff'); }
+  const f = actFrame('goop');
+  if (f < 0 || f >= 16) return;
+  if (life.act.dig) {
+    for (let i = 0; i < 8; i++) {
+      const k = Math.min(1, Math.max(0, (f - i * 0.6) / 10)), x0 = p.x - 16, dx = (i - 3.5) * 2.6;
+      put(Math.round(x0 + dx * k * 2), Math.round(p.y - 2 - Math.sin(k * Math.PI) * (10 + (i % 3) * 3)), i % 2 ? S.coin[1] : S.goop[1]);
+    }
+    if (f >= 9) for (let i = 0; i < 4; i++) sparkle(p.x - 22 + i * 5, p.y - 10 - ((f + i * 2) % 6), S.coin[0]);
+  } else {
+    const l = life.ledge;
+    for (let i = 0; i < 4; i++) {
+      const k = Math.min(1, Math.max(0, (f - i * 1.5) / 7));
+      if (k <= 0 || k >= 1) continue;
+      put(Math.round(l.x - 6 - i * 3 - k * 14), Math.round(l.y + k * k * 14), S.coin[1]);
+    }
+    if (f >= 8) for (let i = 0; i < 6; i++) put(p.x + p.rx - 10 + (i % 3) * 2, p.y - 1 - ((f - 8 + i) % 4), S.goop[0]);
+  }
+}
+
+function contestScene() {
+  const cx = W >> 1, foot = groundAt(0.42), back = foot - 7, [wLit, wood, wDark, wLine] = S.wood, [rope, ropeDark] = S.rope;
+  const posts = [cx - 40, cx - 14, cx + 14, cx + 40];
+  for (const x of posts) for (let y = back - 11; y <= back; y++) { solid(x - 1, y, wLine); solid(x, y, wood); solid(x + 1, y, wDark); solid(x + 2, y, wLine); }
+  for (const dy of [9, 4]) for (let x = posts[0]; x <= posts[3]; x++) {   // two ropes, sagging between the posts
+    const i = posts.findIndex((p, k) => x >= p && x <= posts[k + 1]), a = posts[i], b = posts[i + 1], q = (x - a) / (b - a);
+    solid(x, back - dy + Math.round(Math.sin(q * Math.PI) * 2), (x % 3) ? rope : ropeDark);
+  }
+  const cup = { x: cx, y: back - 1 }, [gLit, gold, gDark, gLine] = S.gold;   // the trophy on a little stand, at the back
+  for (let y = cup.y - 5; y <= cup.y; y++) for (let x = cup.x - 3; x <= cup.x + 3; x++) solid(x, y, x === cup.x - 3 || x === cup.x + 3 || y === cup.y - 5 ? wLine : wood);
+  outlined(cup.x - 5, cup.y - 15, cup.x + 5, cup.y - 6, (x, y) => (y >= cup.y - 15 && y <= cup.y - 10 && Math.abs(x - cup.x) <= 4 - (y > cup.y - 12 ? 1 : 0))
+    || (y > cup.y - 10 && y <= cup.y - 8 && Math.abs(x - cup.x) <= 1) || (y > cup.y - 8 && y <= cup.y - 6 && Math.abs(x - cup.x) <= 3),
+  (x, y) => (x < cup.x - 1 ? gLit : x > cup.x + 1 ? gDark : gold), gLine);
+  for (const s of [-1, 1]) { solid(cup.x + s * 6, cup.y - 14, gLine); solid(cup.x + s * 6, cup.y - 13, gold); solid(cup.x + s * 6, cup.y - 12, gLine); }
+  const left = { x: cx - 18, y: foot + 3 }, right = { x: cx + 18, y: foot + 3 };
+  groundShadow(left.x, left.y, 9, 2);
+  groundShadow(right.x, right.y, 6, 1);
+  life.cup = cup;
+  life.rope = { x0: posts[0], x1: posts[3], y: back - 9 };
+  life.fighters = [left, right];
+  life.stands = { left, right };
+  life.eventSpots = [
+    { x0: left.x - 12, x1: left.x + 12, y0: left.y - 30, y1: left.y + 2 },
+    { x0: right.x - 10, x1: right.x + 10, y0: right.y - 22, y1: right.y + 2 },
+  ];
+  life.foot = foot + 8;
+  life.keep = [{ x0: posts[0] - 2, x1: posts[3] + 3, y0: back - 18, y1: foot + 4 }];
+}
+
+/** Pennants flutter on the rope and the trophy glints; a bout throws up a dust cloud full of stars between them, then
+    confetti rains on the winner. */
+function drawContest(t) {
+  const r = life.rope;
+  for (let x = r.x0 + 3, i = 0; x < r.x1 - 2; x += 6, i++) {
+    const c = S.flags[i % S.flags.length], flap = (Math.floor(t / 5) + i) % 2;
+    for (let y = 0; y < 4; y++) for (let dx = 0; dx <= 3 - y - (y === 3 ? 0 : flap); dx++) put(x + dx, r.y + 1 + y, c);
+  }
+  if (Math.floor(t / 9) % 4 === 0) sparkle(life.cup.x + 2, life.cup.y - 14, S.gold[0]);
+  const f = actFrame('joust');
+  if (f < 0 || f >= 24) return;
+  const [a, b] = life.fighters, mid = { x: (a.x + b.x) >> 1, y: a.y - 8 };
+  if (f < 14) {
+    const k = Math.sin(Math.min(1, f / 12) * Math.PI), rx = Math.round(4 + k * 12), ry = Math.round(2 + k * 6);
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) if ((x / rx) ** 2 + (y / ry) ** 2 <= 1 && dither(x + f, y) < 10) put(mid.x + x, mid.y + y, (x + y + f) % 5 ? S.dust[0] : S.dust[1]);
+    for (let i = 0; i < 3; i++) sparkle(mid.x - 8 + ((i * 7 + f * 3) % 17), mid.y - 6 + ((i * 5 + f) % 9), S.gold[1]);
+  } else {
+    const w = life.fighters[life.act.win || 0];
+    for (let i = 0; i < 14; i++) { const age = (f - 14 + i) % 10; put(w.x - 12 + ((i * 7) % 25), w.y - 36 + age * 3 + (i % 3), S.confetti[i % 4]); }
+  }
+}
+
+/* ---------- batch 3's last five: the Unown Tablet, Smeargle's studio (a room), the Litwick Bonfire, Voltorb Flip's table
+   and your rival on the road ---------- */
+
+// little Unown glyphs, 3 wide and 4 tall, carved in rows down the tablet
+const UNOWN_MARKS = ['010101111101', '110101110111', '111100100111', '101111101101', '010010010010', '111101101111', '101101111010', '111010010010'];
+
+function tabletScene() {
+  const cx = W >> 1, foot = groundAt(0.42), tab = { x: cx - 10, y: foot + 1, hw: 12, h: 36 }, alt = { x: cx + 22, y: foot + 4 };
+  const [lit, stone, dark, line] = S.stone, [moss, mossDark] = S.moss, top = tab.y - tab.h;
+  groundShadow(tab.x, tab.y + 1, tab.hw + 3, 2);
+  outlined(tab.x - tab.hw, top, tab.x + tab.hw, tab.y, (x, y) => {   // a slab with a rounded top
+    const dx = Math.abs(x - tab.x), dy = y - top;
+    return dx <= tab.hw && (dy >= 6 || Math.hypot(Math.max(0, dx - tab.hw + 6), 6 - dy) <= 6);
+  }, (x, y) => (x < tab.x - tab.hw + 3 ? lit : x > tab.x + tab.hw - 3 ? dark : noise(x >> 1, y >> 1, 31) > 0.82 ? dark : stone), line);
+  for (let x = tab.x - tab.hw; x <= tab.x + tab.hw; x++) for (let y = tab.y - 3; y <= tab.y; y++) if (noise(x, y, 33) < 0.45) solid(x, y, (x + y) % 3 ? moss : mossDark);
+  life.glyphs = [];
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) {
+    const gx = tab.x - 8 + c * 5, gy = top + 6 + r * 6, g = UNOWN_MARKS[(r * 4 + c * 3) % UNOWN_MARKS.length];
+    life.glyphs.push({ x: gx, y: gy, g });
+    for (let i = 0; i < 12; i++) if (g[i] === '1') solid(gx + (i % 3), gy + Math.floor(i / 3), S.glyph[0]);
+  }
+  groundShadow(alt.x, alt.y + 1, 9, 2);
+  outlined(alt.x - 9, alt.y - 5, alt.x + 9, alt.y, (x, y) => Math.hypot((x - alt.x) / 9, (y - alt.y + 1.5) / 3.8) <= 1, (x, y) => (y < alt.y - 3 ? lit : x > alt.x + 5 ? dark : stone), line);
+  for (const [dx, dy] of [[-5, -5], [0, -6], [4, -5], [-2, -4]]) { solid(alt.x + dx, alt.y + dy, dark); solid(alt.x + dx + 1, alt.y + dy, S.glyph[0]); }   // chipped-off glyphs
+  life.tablet = { x: tab.x, top, y: tab.y };
+  life.altar = alt;
+  life.stands = { mon: { x: tab.x + tab.hw + 9, y: top + 10 } };
+  life.eventSpots = [
+    { x0: tab.x - tab.hw - 2, x1: tab.x + tab.hw + 2, y0: top - 2, y1: tab.y + 2 },
+    { x0: alt.x - 11, x1: alt.x + 11, y0: alt.y - 14, y1: alt.y + 3 },
+  ];
+  life.foot = foot + 8;
+  life.keep = [{ x0: tab.x - tab.hw - 3, x1: alt.x + 11, y0: top - 2, y1: alt.y + 3 }];
+}
+
+/** A glyph glows now and then; studying lights them all, row by row, and sparks pour off the tablet; erasing knocks chips
+    of stone off the flat stone in a puff of dust. */
+function drawTablet(t) {
+  const gs = life.glyphs, f = actFrame('study'), e = actFrame('efface');
+  const lit = f >= 0 && f < 16 ? Math.min(gs.length, Math.floor(f * 2.2)) : -1;
+  gs.forEach((g, k) => {
+    const on = lit >= 0 ? k < lit : k === Math.floor(t / 6) % gs.length;
+    if (on) for (let i = 0; i < 12; i++) if (g.g[i] === '1') put(g.x + (i % 3), g.y + Math.floor(i / 3), lit >= 0 && k === lit - 1 ? S.glyph[2] : S.glyph[1]);
+  });
+  if (f >= 6 && f < 16) for (let i = 0; i < 8; i++) { const age = (f + i * 2) % 10; sparkle(life.tablet.x - 12 + ((i * 7 + f) % 25), life.tablet.top + 4 + age * 3, S.glyph[1 + (i % 2)]); }
+  if (e >= 0 && e < 12) {
+    const a = life.altar;
+    for (let i = 0; i < 6; i++) { const k = e / 12, x = a.x - 6 + i * 2.4 + (i - 2.5) * k * 6, y = a.y - 6 - Math.sin(Math.min(1, k * 1.6) * Math.PI) * (6 + (i % 3) * 3); put(Math.round(x), Math.round(y), i % 2 ? S.stone[2] : S.glyph[0]); }
+    for (let y = -3; y <= 3; y++) for (let x = -9; x <= 9; x++) if (dither(x + e, y) < (12 - e) * 0.7 && (x / 9) ** 2 + (y / 3) ** 2 <= 1) put(a.x + x, a.y - 7 + y, S.stone[0]);
+  }
+}
+
+/** An easel: an A-frame of legs, a ledge and a canvas with paint on it (`marks` from `seed`). Returns the canvas box. */
+function easel(cx, foot, hw, h, seed) {
+  const [eLit, wood, eDark, line] = S.easel, [cLit, canvas, cDark] = S.canvas, top = foot - h, cw = hw, ch = Math.round(h * 0.5), cy = top + 2;
+  for (let y = top; y <= foot; y++) {
+    const k = (y - top) / (foot - top), spread = Math.round(k * hw * 0.8);
+    for (const x of [cx - spread, cx + spread]) { solid(x, y, wood); solid(x + 1, y, eDark); }
+    if (y > top + ch) solid(cx, y, eDark);   // the back leg
+  }
+  outlined(cx - cw, cy, cx + cw, cy + ch, (x, y) => x >= cx - cw && x <= cx + cw && y >= cy && y <= cy + ch,
+    (x, y) => (x === cx - cw || y === cy ? cLit : x === cx + cw || y === cy + ch ? cDark : canvas), line);
+  for (let i = 0; i < 6; i++) {   // the painting so far: a few dabs of colour
+    const px0 = cx - cw + 2 + Math.floor(noise(seed, i, 41) * (cw * 2 - 4)), py0 = cy + 2 + Math.floor(noise(i, seed, 43) * (ch - 4)), c = S.paints[(seed + i) % S.paints.length];
+    for (let d = 0; d < 3; d++) solid(px0 + d - 1, py0 + (d === 1 ? -1 : 0), c);
+  }
+  for (let x = cx - cw - 1; x <= cx + cw + 1; x++) { solid(x, cy + ch + 1, eLit); solid(x, cy + ch + 2, line); }   // the ledge
+  return { x: cx, y0: cy, y1: cy + ch, hw: cw };
+}
+
+function studioScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  for (let i = 0; i < 26; i++) {   // paint splashed up the wall
+    const x0 = Math.floor(noise(i, 3, 51) * W), y0 = Math.floor(noise(i, 5, 53) * horizon * 0.85) + 4, c = S.paints[i % S.paints.length], r = 1 + Math.floor(noise(i, 7, 55) * 3);
+    for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + 1) put(x0 + x, y0 + y, c);
+    if (i % 3 === 0) for (let y = 1; y < 3 + r * 2; y++) put(x0, y0 + r + y, c);   // a drip
+  }
+  const hw = Math.max(7, u(0.09)), h = Math.max(22, u(0.36)), xs = [cx - u(0.3), cx, cx + u(0.3)];
+  life.canvases = xs.map((x, i) => easel(x, foot - (i === 1 ? u(0.04) : 0), i === 2 ? hw + 2 : hw, i === 2 ? h + 4 : h, i * 7 + 3));
+  for (const [dx, k] of [[-0.44, 0], [0.16, 2], [0.43, 4]]) {   // paint pots on the floor
+    const x = cx + u(dx), c = S.paints[k];
+    groundShadow(x, foot + 1, 4, 1);
+    for (let y = -4; y <= 0; y++) for (let xx = -3; xx <= 3; xx++) solid(x + xx, foot + y, y === -4 ? c : Math.abs(xx) === 3 ? S.trim[3] : S.canvas[1]);
+  }
+  life.stands = { mon: { x: cx + u(0.15), y: foot + 2 } };
+  life.eventSpots = life.canvases.map(c => ({ x0: c.x - c.hw - 3, x1: c.x + c.hw + 3, y0: c.y0 - 3, y1: foot }));
+  life.foot = foot + 4;
+}
+
+/** Fresh paint glistens on a canvas now and then; painting dabs colour after colour onto the chosen canvas, sparkles
+    flying off it. */
+function drawStudio(t) {
+  const cs = life.canvases, c0 = cs[Math.floor(t / 13) % cs.length];
+  if (Math.floor(t / 13) % 2 === 0) sparkle(c0.x + 2, c0.y0 + 3, '#ffffff');
+  const f = actFrame('paint');
+  if (f < 0 || f >= 14) return;
+  const c = cs[life.act.i] || cs[0];
+  for (let i = 0; i <= f; i++) {
+    const x = c.x - c.hw + 2 + Math.floor(noise(i, 9, 61) * (c.hw * 2 - 3)), y = c.y0 + 2 + Math.floor(noise(9, i, 63) * (c.y1 - c.y0 - 3));
+    put(x, y, S.paints[i % S.paints.length]); put(x + 1, y, S.paints[i % S.paints.length]);
+  }
+  for (let i = 0; i < 4; i++) sparkle(c.x - c.hw + ((i * 5 + f * 3) % (c.hw * 2)), c.y0 - 2 - ((f + i * 3) % 7), S.paints[(i + f) % S.paints.length]);
+}
+
+function bonfireScene() {
+  const cx = W >> 1, foot = groundAt(0.42), fire = { x: cx, y: foot + 2 }, [rLit, rock, rDark, rLine] = S.stone, [lLit, log, lDark, lLine] = S.log;
+  for (let i = 0; i < 12; i++) {   // the ring of stones
+    const a = i / 12 * Math.PI * 2, x = Math.round(fire.x + Math.cos(a) * 11), y = Math.round(fire.y + Math.sin(a) * 3.5);
+    outlined(x - 2, y - 2, x + 2, y + 1, (px, py) => Math.hypot(px - x, (py - y + 0.5) * 1.3) <= 2.2, (px, py) => (py < y - 1 ? rLit : px > x ? rDark : rock), rLine);
+  }
+  for (const [dx, dy, len, k] of [[-5, -1, 10, 1], [-4, -3, 9, -1], [-3, -2, 7, 0.4]]) {   // logs crossed in the middle
+    for (let i = 0; i < len; i++) { const x = fire.x + dx + i, y = Math.round(fire.y + dy - i * 0.25 * k); solid(x, y, lLit); solid(x, y + 1, log); solid(x, y + 2, lDark); }
+  }
+  for (const sx of [-1, 1]) {   // a log seat either side
+    const x0 = fire.x + sx * 30 - 7, y = foot + 5;
+    for (let x = x0; x <= x0 + 14; x++) { solid(x, y - 3, x === x0 || x === x0 + 14 ? lLine : lLit); solid(x, y - 2, log); solid(x, y - 1, lDark); solid(x, y, lLine); }
+  }
+  life.fire = fire;
+  life.stands = { left: { x: fire.x - 19, y: foot + 3 }, right: { x: fire.x + 19, y: foot + 3 } };
+  life.eventSpots = [{ x0: fire.x - 13, x1: fire.x + 13, y0: fire.y - 26, y1: fire.y + 5 }];
+  life.foot = foot + 9;
+  life.keep = [{ x0: fire.x - 38, x1: fire.x + 38, y0: fire.y - 30, y1: foot + 6 }];
+}
+
+/** The fire flickers and spits embers; an offering makes it roar up tall, its tips turning the Litwick's purple, and
+    wisps rise out of it. */
+function drawBonfire(t) {
+  const p = life.fire, f = actFrame('offer'), roar = f >= 0 && f < 16 ? Math.sin(f / 16 * Math.PI) : 0, tall = 12 + roar * 10;
+  for (let y = 0; y < tall; y++) {
+    const k = y / tall, hw = Math.round((1 - k) * 6 + Math.sin(t / 2 + y) * (1 - k) * 1.5);
+    for (let x = -hw; x <= hw; x++) {
+      if (dither(x + t, y + t * 2) > (1 - k) * 16 + 2) continue;
+      const edge = Math.abs(x) >= hw - 1, c = k > 0.7 ? (roar > 0.3 ? S.wisp[1] : S.flame[3]) : edge ? S.flame[2] : k < 0.35 ? S.flame[0] : S.flame[1];
+      put(p.x + x, p.y - 3 - y, c);
+    }
+  }
+  for (let i = 0; i < 3; i++) { const age = (t + i * 5) % 14; put(p.x - 3 + ((i * 7 + Math.floor((t + i * 5) / 14) * 3) % 7), p.y - 10 - age * 1.5, S.ember); }
+  if (roar) for (let i = 0; i < 6; i++) { const age = (f + i * 2) % 12; sparkle(p.x - 8 + ((i * 5 + f) % 17), p.y - 14 - age * 2, S.wisp[i % 3]); }
+}
+
+function flipScene() {
+  const cx = W >> 1, foot = groundAt(0.42), tb = { x: cx - 6, y: foot + 1, hw: 20, d: 7 };
+  const [fLit, felt, fDark, fLine] = S.felt, [gLit, leg, gLine] = S.legs, [white, red, ink] = S.back, top = tb.y - 9;
+  groundShadow(tb.x, tb.y + 2, tb.hw + 2, 2);
+  for (const x of [tb.x - tb.hw + 2, tb.x + tb.hw - 2]) for (let y = top + 1; y <= tb.y; y++) { solid(x, y, leg); solid(x + 1, y, gLine); }
+  for (let y = top - tb.d; y <= top; y++) {   // the green top, seen from above, its near edge darker
+    const inset = Math.round((top - y) * 0.6);
+    for (let x = tb.x - tb.hw + inset; x <= tb.x + tb.hw - inset; x++) solid(x, y, y === top - tb.d || x === tb.x - tb.hw + inset || x === tb.x + tb.hw - inset ? fLine : y === top ? fDark : (x + y) % 5 ? felt : fLit);
+  }
+  for (let x = tb.x - tb.hw; x <= tb.x + tb.hw; x++) { solid(x, top + 1, gLit); solid(x, top + 2, gLine); }
+  life.cards = [];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {   // eight cards face down, Poké Ball backs
+    const x = tb.x - 13 + c * 7 + (r ? 1 : 0) - r, y = top - tb.d + 2 + r * 3;
+    life.cards.push({ x, y });
+    for (let yy = 0; yy < 3; yy++) for (let xx = 0; xx < 5; xx++) solid(x + xx, y + yy, yy === 0 ? red : yy === 1 ? (xx === 2 ? white : ink) : white);
+  }
+  life.table = { x: tb.x, y: top - tb.d };
+  life.stands = { mon: { x: tb.x + tb.hw + 11, y: foot + 3 } };
+  life.eventSpots = [{ x0: tb.x - tb.hw - 2, x1: tb.x + tb.hw + 2, y0: top - tb.d - 8, y1: tb.y + 2 }];
+  life.foot = foot + 8;
+  life.keep = [{ x0: tb.x - tb.hw - 3, x1: tb.x + tb.hw + 22, y0: top - tb.d - 2, y1: tb.y + 3 }];
+}
+
+/** A card twitches now and then; dealing flips the cards up one by one in a run of sparkles and lays them down again. */
+function drawFlip(t) {
+  const cs = life.cards, f = actFrame('deal');
+  if (f < 0 || f >= 12) { const c = cs[Math.floor(t / 11) % cs.length]; if (Math.floor(t / 11) % 2 === 0) sparkle(c.x + 2, c.y - 1, S.spark[0]); return; }
+  cs.forEach((c, i) => {
+    const k = f - i * 0.8;
+    if (k < 0 || k > 3) return;
+    for (let x = 0; x < 5; x++) put(c.x + x, c.y - 1 - Math.round(Math.sin(k / 3 * Math.PI) * 3), S.spark[x % 2]);
+  });
+}
+
+function rivalScene() {
+  const cx = W >> 1, foot = groundAt(0.42), [wLit, wood, wDark, wLine] = S.wood, [rLit, rock, rDark, rLine] = S.rock;
+  const sign = { x: cx + 36, y: foot - 2 };
+  for (let y = sign.y - 14; y <= sign.y; y++) { solid(sign.x, y, wood); solid(sign.x + 1, y, wDark); }
+  outlined(sign.x - 8, sign.y - 18, sign.x + 9, sign.y - 11, (x, y) => x >= sign.x - 8 && x <= sign.x + 9 && y >= sign.y - 18 && y <= sign.y - 11 && !(x === sign.x + 9 && (y === sign.y - 18 || y === sign.y - 11)),
+    (x, y) => (y === sign.y - 17 ? wLit : wood), wLine);
+  const props = [{ x: cx - 22, y: foot + 6 }, { x: cx, y: foot + 8 }, { x: cx + 22, y: foot + 6 }];
+  const [coinLit, coin, coinDark] = S.coin, [bLit, bag, bDark, bLine] = S.bag, [dLit, disc, dDark, dLine] = S.disc;
+  { const p = props[0];   // coins stacked on a flat rock
+    outlined(p.x - 7, p.y - 3, p.x + 7, p.y, (x, y) => Math.hypot((x - p.x) / 7, (y - p.y + 1) / 2.5) <= 1, (x, y) => (y < p.y - 1 ? rLit : rock), rLine);
+    for (let i = 0; i < 4; i++) for (let x = -2; x <= 2; x++) solid(p.x - 2 + x + (i % 2) * 3, p.y - 4 - Math.floor(i / 2) * 2, x === -2 ? coinLit : x === 2 ? coinDark : coin); }
+  { const p = props[1];   // a Bag, flap open
+    outlined(p.x - 5, p.y - 9, p.x + 5, p.y, (x, y) => Math.abs(x - p.x) <= 5 - (y < p.y - 7 ? 1 : 0) && y >= p.y - 9 && y <= p.y, (x, y) => (y < p.y - 6 ? bLit : x > p.x + 2 ? bDark : bag), bLine);
+    for (let x = -3; x <= 3; x++) solid(p.x + x, p.y - 5, bDark); }
+  { const p = props[2];   // a TM disc on a stump
+    for (let y = p.y - 4; y <= p.y; y++) for (let x = -5; x <= 5; x++) solid(p.x + x, y, y === p.y - 4 ? wLit : Math.abs(x) === 5 ? wLine : wood);
+    outlined(p.x - 4, p.y - 8, p.x + 4, p.y - 4, (x, y) => Math.hypot((x - p.x) / 4, (y - p.y + 6) / 2) <= 1, (x, y) => (Math.hypot(x - p.x, (y - p.y + 6) * 2) < 1.5 ? dDark : x < p.x ? dLit : disc), dLine); }
+  life.props = props;
+  life.stands = { npc: { x: cx - 8, y: foot - 4 }, mon: { x: cx + 12, y: foot - 3 } };
+  life.eventSpots = props.map(p => ({ x0: p.x - 9, x1: p.x + 9, y0: p.y - 14, y1: p.y + 2 }));
+  life.foot = foot + 10;
+  life.keep = [{ x0: cx - 32, x1: sign.x + 10, y0: sign.y - 20, y1: foot + 8 }];
+}
+
+/** The coins glint; a trade sends what he asked for arcing up to your rival, a burst of sparkles where it lands. */
+function drawRival(t) {
+  const ps = life.props;
+  if (Math.floor(t / 9) % 3 === 0) sparkle(ps[0].x + 1, ps[0].y - 7, S.shine[0]);
+  const f = actFrame('barter');
+  if (f < 0 || f >= 14) return;
+  const from = ps[{ money: 0, item: 1, move: 2 }[life.act.what] ?? 0], to = life.stands.npc, k = Math.min(1, f / 9);
+  const x = Math.round(from.x + (to.x - from.x) * k), y = Math.round(from.y - 6 + (to.y - 14 - from.y + 6) * k - Math.sin(k * Math.PI) * 12);
+  const c = { money: S.coin[1], item: S.bag[1], move: S.disc[2] }[life.act.what] || S.coin[1];
+  if (f < 9) for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) put(x + xx, y + yy, c);
+  else for (let i = 0; i < 6; i++) sparkle(to.x - 6 + ((i * 5 + f) % 13), to.y - 20 + ((i * 3 + f) % 7), S.shine[i % 2]);
 }
 
 /* ---------- the Berry Tree ---------- */
@@ -5951,6 +6998,26 @@ function draw() {
   if (L.act) actCues();
   if (has('itemball')) drawItemBall(t);
   if (has('rocket')) drawRocket();
+  if (has('snorlax')) drawSnorlax(t);
+  if (has('trash')) drawTrash(t);
+  if (has('ditto')) drawDitto(t);
+  if (has('abra')) drawAbra(t);
+  if (has('billspc')) drawBillsPc(t);
+  if (has('wheel')) drawWheel(t);
+  if (has('idol')) drawIdol(t);
+  if (has('keystone')) drawKeystone(t);
+  if (has('moon')) drawMoon(t);
+  if (has('stall')) drawStall(t);
+  if (has('library')) drawLibrary(t);
+  if (has('fishing')) drawFishing(t);
+  if (has('sludge')) drawSludge(t);
+  if (has('storeroom')) drawStoreroom(t);
+  if (has('contest')) drawContest(t);
+  if (has('tablet')) drawTablet(t);
+  if (has('studio')) drawStudio(t);
+  if (has('bonfire')) drawBonfire(t);
+  if (has('flip')) drawFlip(t);
+  if (has('rival')) drawRival(t);
   if (has('altar')) drawAltar(t);
   if (has('tutor')) drawTutor(t);
   if (has('deleter')) drawDeleter(t);

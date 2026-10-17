@@ -2640,6 +2640,1470 @@ async function buildRocket(figs, { look: L, time }) {
   };
 }
 
+/* ---------- batch 1 of the StS events (2026-10-17): a Snorlax asleep by a pile, Trubbish's trash heap, a Ditto on its
+   stone by a pool, an Abra on a stump, all on the biome's own ground; Bill's PC in his study ---------- */
+
+/** Z's drifting up off a sleeper, round `at`. */
+function snores(at, awake = () => false) {
+  const zArt = (() => { const { c, g } = fine(10, 10, 8); words(g, 'Z', 5, 5.4, 9, '#ffffff'); g.strokeStyle = '#4a5a8a'; g.lineWidth = 0.6; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('Z', 5, 5.4); return c; })();
+  const zs = [0, 1, 2].map(() => sprite(zArt, 0.3));
+  B.ticks.push((now) => {
+    zs.forEach((z, i) => {
+      const t = ((now / 2400) + i / 3) % 1;
+      z.visible = !calm && !awake();
+      z.position.set(at.x + 0.3 + t * 0.4 + Math.sin(t * 6) * 0.05, at.y + t * 1.1, at.z);
+      z.material.opacity = t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8;
+      z.scale.setScalar(0.2 + t * 0.25);
+    });
+  });
+  return zs;
+}
+
+/** Burlap: a woven weave of warm browns, a few darker slubs, and a stitched patch. */
+function burlap() {
+  const f = fine(64, 64, 6), { g } = f, r = seeded(71);
+  g.fillStyle = '#c89a5c'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 2) for (let x = 0; x < 64; x += 2) {
+    g.fillStyle = (x + y) % 4 ? '#d4a868' : '#b8884c'; g.fillRect(x, y, 2, 1);
+    g.fillStyle = (x + y) % 4 ? '#a87a42' : '#c49458'; g.fillRect(x + (y % 4 ? 1 : 0), y + 1, 1, 1);
+  }
+  for (let i = 0; i < 26; i++) { g.fillStyle = 'rgba(90,56,26,0.35)'; g.fillRect(r() * 64, r() * 64, 3 + r() * 6, 0.8); }
+  g.fillStyle = '#8a6a48'; g.fillRect(36, 30, 14, 12);
+  g.strokeStyle = '#f0dcb0'; g.lineWidth = 0.7; g.setLineDash([1.6, 1.2]); g.strokeRect(36.8, 30.8, 12.4, 10.4);
+  return f.c;
+}
+
+/** A tied burlap sack slumped on the ground: a round belly narrowing to a cinched neck, a rope tied round it, its top
+    flaring in a ruffle, leaning a little as if dropped. */
+function lootSack(parent) {
+  const sack = new THREE.Group();
+  sack.position.set(0.18, 0, -0.12);
+  sack.rotation.set(0.05, -0.5, -0.12);
+  parent.add(sack);
+  const cloth = std({ map: texOf(burlap()), roughness: 1, side: THREE.DoubleSide });
+  const profile = [[0, 0], [0.2, 0.005], [0.3, 0.05], [0.35, 0.13], [0.36, 0.23], [0.33, 0.33], [0.25, 0.42], [0.13, 0.5], [0.075, 0.55],
+    [0.07, 0.58], [0.1, 0.62], [0.15, 0.67], [0.17, 0.71], [0.13, 0.7], [0.08, 0.66]].map(([x, y]) => new THREE.Vector2(x, y));
+  const body = mesh(new THREE.LatheGeometry(profile, 28), cloth, 0, 0, 0, sack);
+  body.scale.set(1, 1, 0.86);
+  const pos = body.geometry.attributes.position, r = seeded(37);   // slumped, not turned on a lathe: a few soft dents
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i), a = Math.atan2(pos.getZ(i), pos.getX(i)), k = 1 + Math.sin(a * 3 + 1) * 0.05 * Math.min(1, y * 3) + Math.sin(a * 5) * 0.025;
+    pos.setX(i, pos.getX(i) * k); pos.setZ(i, pos.getZ(i) * k);
+    if (y < 0.3) pos.setY(i, y * (0.92 + r() * 0.02));
+  }
+  body.geometry.computeVertexNormals();
+  const rope = std({ color: '#7a5430', roughness: 0.9 });
+  const tie = mesh(new THREE.TorusGeometry(0.08, 0.022, 8, 20), rope, 0, 0.565, 0, sack);
+  tie.rotation.x = Math.PI / 2;
+  for (const [s, len] of [[1, 0.2], [-1, 0.15]]) {   // the knot's two loose ends
+    const end = mesh(new THREE.CylinderGeometry(0.016, 0.012, len, 6), rope, s * 0.08, 0.53 - len / 2 + 0.04, 0.06, sack);
+    end.rotation.z = s * 0.35;
+  }
+  return sack;
+}
+
+function lootBall(x, y, z, r, parent = B.group) {
+  const g = new THREE.Group();
+  g.position.set(x, y, z);
+  parent.add(g);
+  mesh(new THREE.SphereGeometry(r, 18, 9, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#e83828', roughness: 0.3 }), 0, 0, 0, g);
+  mesh(new THREE.SphereGeometry(r, 18, 9, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f4f4f8', roughness: 0.3 }), 0, 0, 0, g);
+  mesh(new THREE.CylinderGeometry(r * 1.02, r * 1.02, r * 0.18, 18), std({ color: '#202026', roughness: 0.4 }), 0, 0, 0, g);
+  return g;
+}
+
+async function buildSnorlax(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 0, 1.1], [9, 1, 1.2], [0, 4, 1], [10, 5, 1.1]] });
+  B.shotTop = 3.2;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/snorlax-front.gif' }, { x: 4, ty: 1.6, scale: 1.9, sleep: true });
+  for (let x = 3; x <= 5; x++) for (let y = 1; y <= 2; y++) B.blocked.add(key(x, y));
+  const px = tileX(7), pz = tileZ(2.2), pile = new THREE.Group();
+  pile.position.set(px, 0, pz);
+  B.group.add(pile);
+  lootSack(pile);
+  lootBall(-0.32, 0.13, 0.18, 0.13, pile); lootBall(0.38, 0.11, 0.3, 0.11, pile);
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 });
+  for (let i = 0; i < 7; i++) { const c = mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.015, 12), gold, (rnd() - 0.5) * 0.9, 0.012, 0.2 + (rnd() - 0.5) * 0.4, pile); c.rotation.x = (rnd() - 0.5) * 0.4; }
+  pile.traverse(o => { o.userData.spot = 0; });
+  B.blocked.add(key(7, 2));
+  B.spots = [{ step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(px, 1.4, pz);
+  const mon = B.who.mon, state = { awake: false };
+  snores(new THREE.Vector3(mon.base.x + 0.6, 2.1, mon.base.z), () => state.awake);
+  tufts(L, 55, rnd);
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffe080'), 0.22));
+  B.reset = () => { state.awake = false; mon.group.scale.setScalar(1.9); pile.rotation.set(0, 0, 0); };
+  B.reset();
+  B.acts = {
+    search: { ms: (o) => (o?.wake ? 2400 : 1600), cues: (o) => [[0.05, 'rustle'], ...(o?.wake ? [[0.55, 'hit']] : [[0.5, 'item']])],
+      start(o) { this.wake = !!o?.wake; this.fly = burst(sparks, new THREE.Vector3(px, 0.5, pz), { spread: 0.4, rise: 1.1 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.35) * Math.PI) * 0.3;
+        pile.rotation.z = k < 0.45 ? Math.sin(k * 60) * 0.05 : 0;
+        if (!this.wake) { if (k > 0.45) this.fly((k - 0.45) / 0.55); return; }
+        // it wakes: it stirs, rears up big, and the ground shakes
+        state.awake = k > 0.45;
+        const u = Math.max(0, (k - 0.45) / 0.55);
+        mon.group.scale.setScalar(1.9 * (1 + Math.sin(Math.min(1, u * 1.5) * Math.PI / 2) * 0.12));
+        mon.group.position.x = mon.base.x + (u > 0 && u < 0.6 ? Math.sin(u * 70) * 0.05 : 0);
+        walker.oz = Math.sin(Math.min(1, u * 2) * Math.PI / 2) * 0.35;
+      } },
+  };
+}
+
+async function buildTrash(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1], [9, 0, 1.1], [0, 5, 1.2], [10, 4, 1]] });
+  B.shotTop = 3.0;
+  const cx = tileX(5), cz = tileZ(2), heap = new THREE.Group();
+  heap.position.set(cx, 0, cz);
+  B.group.add(heap);
+  const greys = ['#8a8a98', '#6a6a78', '#4e4e5a'].map(c => std({ color: c, roughness: 0.95, flatShading: true }));
+  for (let i = 0; i < 9; i++) {
+    const a = i / 9 * Math.PI * 2, d = i ? 0.6 + rnd() * 0.25 : 0, r = i ? 0.38 + rnd() * 0.18 : 0.62;
+    const m = mesh(new THREE.IcosahedronGeometry(r, 0), greys[i % 3], Math.cos(a) * d, r * 0.55, Math.sin(a) * d * 0.7, heap);
+    m.scale.y = 0.75;
+  }
+  const bag = std({ color: '#4a8a40', roughness: 0.5 }), tie = std({ color: '#2e5a28', roughness: 0.5 });
+  for (const [x, z, r] of [[-0.75, 0.25, 0.3], [0.8, 0.2, 0.28], [0.25, -0.45, 0.26]]) {
+    mesh(new THREE.SphereGeometry(r, 14, 10), bag, x, r * 0.85, z, heap);
+    mesh(new THREE.ConeGeometry(r * 0.3, r * 0.5, 8), tie, x, r * 1.8, z, heap);
+  }
+  const tin = std({ color: '#d8d8e0', metalness: 0.6, roughness: 0.35 }), label = std({ color: '#d84838', roughness: 0.5 });
+  for (const [x, z, lie] of [[-0.3, 0.55, 1], [0.55, 0.6, 0], [1.1, -0.1, 1]]) {
+    const c = new THREE.Group();
+    c.position.set(x, lie ? 0.07 : 0.11, z); c.rotation.z = lie ? Math.PI / 2 : 0;
+    mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.22, 12), tin, 0, 0, 0, c);
+    mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.09, 12), label, 0, 0, 0, c);
+    heap.add(c);
+  }
+  const glint = sprite(sparkArt('#fff8c0'), 0.3);
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/trubbish-front.gif' }, { x: 5, ty: 2, dz: -0.15, y: 0.7 });
+  heap.traverse(o => { o.userData.spot = 0; });
+  B.who.mon.group.traverse(o => { o.userData.spot = 0; });
+  for (let x = 4; x <= 6; x++) for (let y = 1; y <= 2; y++) B.blocked.add(key(x, y));
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx, 2.5, cz);
+  tufts(L, 50, rnd);
+  B.ticks.push((now) => {
+    const on = !calm && Math.floor(now / 1400) % 4 === 0;
+    glint.visible = on;
+    if (on) { glint.position.set(cx + 0.35, 0.75, cz + 0.45); glint.material.opacity = Math.sin((now % 1400) / 1400 * Math.PI); }
+  });
+  const bits = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(['#9a9aa8', '#68a858', '#c8c8d0'][i % 3]), 0.2));
+  const gold = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffe080'), 0.26));
+  B.acts = {
+    dig: { ms: (o) => (o?.win ? 2000 : 1500), cues: (o) => [[0.05, 'rustle'], [0.35, 'rustle'], ...(o?.win ? [[0.6, 'item']] : [])],
+      start(o) { this.win = !!o?.win; this.junk = burst(bits, new THREE.Vector3(cx, 0.7, cz + 0.4), { spread: 0.8, rise: 0.9, spin: true }); this.shine = burst(gold, new THREE.Vector3(cx, 0.7, cz + 0.4), { spread: 0.4, rise: 1.6 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.3) * Math.PI) * 0.35;
+        heap.rotation.z = k < 0.6 ? Math.sin(k * 50) * 0.03 : 0;
+        heap.scale.y = 1 - (k < 0.6 ? Math.abs(Math.sin(k * 25)) * 0.04 : 0);
+        this.junk(Math.min(1, k / 0.8));
+        if (this.win && k > 0.5) this.shine((k - 0.5) / 0.5);
+      } },
+  };
+}
+
+async function buildDitto(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [2, 0, 1], [8, 0, 1.2], [0, 4, 1.1], [10, 5, 1]] });
+  B.shotTop = 2.8;
+  const sx = tileX(3.6), sz = tileZ(2.2), stone = mesh(new THREE.CylinderGeometry(0.75, 0.85, 0.22, 20), std({ color: L.rock?.[1] || '#9898a8', roughness: 0.9, flatShading: true }), sx, 0.11, sz);
+  stone.scale.z = 0.75;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/ditto-front.gif' }, { x: 3.6, ty: 2.2, y: 0.22 });
+  const ditto = B.who.mon;
+  stone.userData.spot = 0;
+  ditto.group.traverse(o => { o.userData.spot = 0; });
+  const ox = tileX(7), oz = tileZ(2.5), map = waterTex(['#ffffff', '#c8b0f0', '#8878d8', '#4a3a98', '#1c1448']);
+  const pool = mesh(new THREE.CircleGeometry(0.85, 32), std({ map, roughness: 0.15, emissive: new THREE.Color('#6a4ab0'), emissiveIntensity: 0.2 }), ox, 0.02, oz);
+  pool.rotation.x = -Math.PI / 2; pool.scale.y = 0.7;
+  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; boulder(ox + Math.cos(a) * 0.9, oz + Math.sin(a) * 0.62, 0.1 + rnd() * 0.06, L.rock || ['#c8c8d0', '#9898a8', '#6a6a7a'], rnd); }
+  pool.userData.spot = 1;
+  for (const t of [[3, 2], [4, 2], [7, 2], [7, 3]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 6, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(sx, 1.5, sz);
+  B.anchors[1] = new THREE.Vector3(ox, 1.0, oz);
+  tufts(L, 50, rnd);
+  B.ticks.push((now) => { if (!calm) map.offset.set(now / 60000, now / 90000); });
+  const rings = ripples(3, '#e8d0ff');
+  const pink = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#f8c8f8' : '#c088e8'), 0.22));
+  B.acts = {
+    copy: { ms: 1600, cues: [[0.1, 'stat-up']],
+      start() { this.fly = burst(pink, new THREE.Vector3(sx, 0.6, sz), { spread: 0.5, rise: 1.2 }); },
+      tick(k) { ditto.group.scale.set(1 + Math.sin(k * Math.PI * 4) * 0.12 * (1 - k), 1 - Math.sin(k * Math.PI * 4) * 0.1 * (1 - k), 1); this.fly(k); } },
+    morph: { ms: 2000, cues: [[0.1, 'spirit'], [0.7, 'stat-up']],
+      start() { this.fly = burst(pink, new THREE.Vector3(ox, 0.2, oz), { spread: 0.6, rise: 1.5 }); },
+      tick(k) {
+        rings.forEach((m, i) => ringAt(m, ox, 0.03, oz, ((k * 2) % 1) - i * 0.15, 0.8));
+        pool.material.emissiveIntensity = 0.2 + Math.sin(k * Math.PI) * 1.4;
+        map.rotation = k * 3;
+        if (k > 0.3) this.fly((k - 0.3) / 0.7);
+      } },
+  };
+}
+
+async function buildAbra(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1.1], [9, 1, 1], [0, 5, 1.2], [10, 6, 1]] });
+  B.shotTop = 2.8;
+  const cx = tileX(5), cz = tileZ(2), bark = std({ color: L.trunk?.[0] || '#9a6a3c', roughness: 0.95 });
+  mesh(new THREE.CylinderGeometry(0.42, 0.5, 0.5, 16), bark, cx, 0.25, cz);
+  const top = mesh(new THREE.CircleGeometry(0.42, 24), std({ color: '#e0c088', roughness: 0.8 }), cx, 0.505, cz);
+  top.rotation.x = -Math.PI / 2;
+  for (const r of [0.15, 0.27, 0.37]) { const ring = mesh(new THREE.RingGeometry(r, r + 0.015, 24), std({ color: '#a87a48' }), cx, 0.507, cz); ring.rotation.x = -Math.PI / 2; ring.raycast = () => {}; }
+  for (let i = 0; i < 4; i++) { const a = i * 1.6 + 0.4, root = mesh(new THREE.ConeGeometry(0.1, 0.5, 6), bark, cx + Math.cos(a) * 0.45, 0.08, cz + Math.sin(a) * 0.4); root.rotation.set(Math.PI / 2, 0, -a + Math.PI / 2); root.rotation.order = 'YXZ'; }
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/abra-front.gif' }, { x: 5, ty: 2, y: 0.5 });
+  B.who.mon.group.traverse(o => { o.userData.spot = 0; });
+  B.group.traverse(o => { if (o.isMesh && Math.hypot(o.position.x - cx, o.position.z - cz) < 0.7) o.userData.spot = 0; });
+  B.blocked.add(key(5, 2));
+  // a soft mound of moss beside it, to nap on
+  const mx = tileX(2.6), mz = tileZ(2.6), moss = new THREE.Group();
+  moss.position.set(mx, 0, mz);
+  B.group.add(moss);
+  const green = [L.grass?.[0] || '#88c860', L.grass?.[1] || '#5a9a40'].map(c => std({ color: c, roughness: 1, flatShading: true }));
+  for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2, d = i ? 0.32 : 0, m = mesh(new THREE.IcosahedronGeometry(i ? 0.24 : 0.34, 1), green[i % 2], Math.cos(a) * d, 0.05, Math.sin(a) * d * 0.7, moss); m.scale.y = 0.4; }
+  moss.traverse(o => { o.userData.spot = 1; });
+  const nap = { on: false };
+  snores(new THREE.Vector3(mx, 0.6, mz), () => !nap.on);
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 3, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx, 2.2, cz);
+  B.anchors[1] = new THREE.Vector3(mx, 1.2, mz);
+  tufts(L, 50, rnd);
+  const motes = Array.from({ length: 6 }, (_, i) => sprite(sparkArt(i % 2 ? '#f8c8f8' : '#c088e8'), 0.18));
+  B.ticks.push((now) => {
+    motes.forEach((m, i) => {
+      const a = now / 900 + i / motes.length * Math.PI * 2;
+      m.visible = !calm;
+      m.position.set(cx + Math.cos(a) * 0.65, 0.95 + Math.sin(a * 2) * 0.12, cz + Math.sin(a) * 0.4);
+      m.material.opacity = 0.75;
+    });
+  });
+  const flash = sprite(sparkArt('#ffffff'), 1);
+  B.reset = () => { flash.visible = false; nap.on = false; };
+  B.reset();
+  B.acts = {
+    teleport: { ms: 1800, cues: [[0.05, 'spirit'], [0.5, 'stat-up']],
+      start() {},
+      tick(k) {
+        const u = Math.sin(Math.min(1, k * 1.25) * Math.PI);
+        flash.visible = k > 0.25;
+        flash.position.set(walker.x, 0.8, walker.z);
+        flash.scale.setScalar(0.5 + u * 6);
+        flash.material.opacity = u;
+        walker.oy = k > 0.4 ? (k - 0.4) * 4 : 0;
+      } },
+    doze: { ms: 2200, cues: [[0.85, 'heal-hp']],
+      start() { nap.on = true; },
+      tick(k) {
+        walker.ox = (mx - walker.x) * ease(Math.min(1, k / 0.25)) * 0.6; walker.oz = (mz - walker.z) * ease(Math.min(1, k / 0.25)) * 0.6;
+        walker.oy = k > 0.25 && k < 0.9 ? -0.05 + Math.sin(k * 12) * 0.015 : 0;
+        if (k > 0.97) nap.on = false;
+      } },
+  };
+}
+
+async function buildBillsPc(figs) {
+  shell({ floor: studyFloor(), wall: studyWall(), side: studySide, edge: '#3a2010', cap: '#4a2814', under: '#1c100a', bg: '#140c08' });
+  const pc = piece('pc', 5, 1);
+  pc?.traverse(o => { o.userData.spot = 0; });
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(5), 2.2, tileZ(1));
+  piece('shelf', 0, 0); piece('bindershelf', 2, 0); piece('computer', 7, 0); piece('shelf', 9, 0);
+  piece('writingdesk', 3, 0); piece('globe', 10, 3); piece('bookstack', 0, 4); piece('plant', 10, 5); piece('bookcart', 0, 2);
+  const screens = [];
+  pc?.traverse(o => { if (o.material?.emissiveMap) screens.push(o.material); });
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#a8f4fc' : '#ffffff'), 0.2));
+  B.acts = {
+    boot: { ms: 1500, cues: [[0.6, 'item']],
+      start() { this.fly = burst(sparks, new THREE.Vector3(tileX(5), 1.2, tileZ(1) + 0.4), { spread: 0.4, rise: 1 }); },
+      tick(k) {
+        for (const m of screens) m.emissiveIntensity = 0.8 + Math.sin(k * Math.PI) * 2.2 * (Math.sin(k * 40) > -0.3 ? 1 : 0.4);
+        if (k > 0.4) this.fly((k - 0.4) / 0.6);
+      } },
+  };
+}
+
+/* ---------- batch 2 of the StS events (2026-10-17): Meowth's prize wheel by the road, a golden idol in ruins under a
+   Golem's boulder, Spiritomb on its cairn, Clefairy dancing round a Moon Stone at night, Kecleon's stall, all on the
+   biome's own ground ---------- */
+
+const WHEEL_COLS = ['#f8d030', '#b058d8', '#f878b0', '#78c8f0', '#58c048', '#6a6a7a'];   // event.slices' order, as the pixel wheel's
+
+/** What each slice pays, drawn on it: ₽, a relic's star, a heart, a cross (Forget), a Poké Ball, a bolt (the pinch). */
+const WHEEL_MARKS = [
+  (g) => { g.fillStyle = '#5a3a08'; g.font = '900 20px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('₽', 0, 1); },
+  (g) => { g.fillStyle = '#fff4c0'; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 4 : 9; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); },
+  (g) => { g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(0, 7); g.bezierCurveTo(-11, -1, -5, -10, 0, -4); g.bezierCurveTo(5, -10, 11, -1, 0, 7); g.fill(); },
+  (g) => { g.strokeStyle = '#1e4a7a'; g.lineWidth = 3.4; g.beginPath(); g.moveTo(-6, -6); g.lineTo(6, 6); g.moveTo(6, -6); g.lineTo(-6, 6); g.stroke(); },
+  (g) => {
+    g.fillStyle = '#e83828'; g.beginPath(); g.arc(0, 0, 8, Math.PI, 0); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 8, 0, Math.PI); g.fill();
+    g.strokeStyle = '#202026'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, 8, 0, Math.PI * 2); g.moveTo(-8, 0); g.lineTo(8, 0); g.stroke();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 2.6, 0, Math.PI * 2); g.fill(); g.stroke();
+  },
+  (g) => { g.fillStyle = '#f8f060'; g.beginPath(); g.moveTo(2, -10); g.lineTo(-5, 1); g.lineTo(0, 1); g.lineTo(-2, 10); g.lineTo(5, -2); g.lineTo(0, -2); g.closePath(); g.fill(); },
+];
+
+/** The wheel's face: six slices, slice 0 at the top and the rest clockwise, each with its mark, under a gold rim. */
+function prizeWheelArt() {
+  const S = 128, f = fine(S, S, 4), { g } = f, r = S / 2, step = Math.PI * 2 / WHEEL_COLS.length;
+  WHEEL_COLS.forEach((col, i) => {
+    const a0 = -Math.PI / 2 + (i - 0.5) * step;
+    g.fillStyle = col; g.beginPath(); g.moveTo(r, r); g.arc(r, r, r - 4, a0, a0 + step); g.closePath(); g.fill();
+    g.strokeStyle = '#2a1a0c'; g.lineWidth = 1.6; g.stroke();
+    const a = a0 + step / 2;
+    g.save(); g.translate(r + Math.cos(a) * r * 0.62, r + Math.sin(a) * r * 0.62); g.rotate(a + Math.PI / 2); g.scale(1.3, 1.3);
+    WHEEL_MARKS[i](g);
+    g.restore();
+  });
+  g.lineWidth = 5; g.strokeStyle = '#f8c830'; g.beginPath(); g.arc(r, r, r - 3, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 1; g.strokeStyle = '#a87818'; g.beginPath(); g.arc(r, r, r - 0.8, 0, Math.PI * 2); g.stroke();
+  return f.c;
+}
+
+async function buildWheel(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.2], [10, 5, 1]] });
+  B.shotTop = 3.4;
+  const wx = tileX(6), wz = tileZ(1.4), hub = 1.55, stand = new THREE.Group();
+  stand.position.set(wx, 0, wz);
+  B.group.add(stand);
+  const wood = std({ color: L.wood?.[1] || '#9a6438', roughness: 0.8 });
+  for (const s of [-1, 1]) {   // the A-frame, legs splayed behind the wheel
+    const leg = mesh(new THREE.CylinderGeometry(0.06, 0.07, hub + 0.15, 8), wood, s * 0.42, hub / 2, -0.22, stand);
+    leg.rotation.z = s * 0.3;
+  }
+  mesh(new THREE.BoxGeometry(1.0, 0.07, 0.07), wood, 0, 0.45, -0.22, stand);
+  mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8), wood, 0, hub, -0.1, stand).rotation.x = Math.PI / 2;
+  const wheel = new THREE.Group();
+  wheel.position.set(0, hub, 0.04);
+  wheel.rotation.x = -0.12;
+  stand.add(wheel);
+  const disc = new THREE.Group();
+  wheel.add(disc);
+  mesh(new THREE.CircleGeometry(1, 48), std({ map: texOf(prizeWheelArt()), roughness: 0.5 }), 0, 0, 0.012, disc);
+  mesh(new THREE.CylinderGeometry(1, 1, 0.08, 48), std({ color: '#c89020', metalness: 0.6, roughness: 0.35 }), 0, 0, -0.03, disc).rotation.x = Math.PI / 2;
+  const bulbs = Array.from({ length: 12 }, (_, i) => {
+    const a = i / 12 * Math.PI * 2, m = std({ color: '#fff4c0', emissive: new THREE.Color('#f8c830'), emissiveIntensity: 0.6, roughness: 0.3 });
+    mesh(new THREE.SphereGeometry(0.05, 10, 8), m, Math.cos(a) * 1.06, Math.sin(a) * 1.06, 0.03, wheel);
+    return m;
+  });
+  mesh(new THREE.SphereGeometry(0.09, 14, 10), std({ color: '#fff8d0', metalness: 0.5, roughness: 0.3 }), 0, 0, 0.06, wheel);
+  const pin = mesh(new THREE.ConeGeometry(0.11, 0.26, 4), std({ color: '#e83828', roughness: 0.4 }), 0, 1.18, 0.08, wheel);
+  pin.rotation.z = Math.PI;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/meowth-front.gif', flip: true }, { x: 3.6, ty: 2.2 });
+  stand.traverse(o => { o.userData.spot = 0; });
+  for (const t of [[5, 1], [6, 1], [7, 1], [4, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 6, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(wx, hub + 1.6, wz);
+  tufts(L, 50, rnd);
+  B.ticks.push((now) => { bulbs.forEach((m, i) => { m.emissiveIntensity = calm ? 0.6 : (i + Math.floor(now / 260)) % 3 ? 0.35 : 1.4; }); });
+  const confetti = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(WHEEL_COLS[i % WHEEL_COLS.length]), 0.22));
+  const step = Math.PI * 2 / WHEEL_COLS.length;
+  B.reset = () => { disc.rotation.z = 0; };
+  B.reset();
+  B.acts = {
+    spin: { ms: 3400, cues: [0.02, 0.07, 0.13, 0.19, 0.26, 0.33, 0.41, 0.5, 0.6, 0.72].map(k => [k, 'stat-tick']),
+      start(o) { this.to = Math.PI * 2 * 3 + (o?.slice || 0) * step; this.fly = burst(confetti, new THREE.Vector3(wx, hub + 0.4, wz + 0.2), { spread: 0.8, rise: 1.2, spin: true }); },
+      tick(k) {
+        walker.lunge = k < 0.15 ? Math.sin(k / 0.15 * Math.PI) * 0.3 : 0;
+        disc.rotation.z = this.to * (1 - (1 - Math.min(1, k / 0.85)) ** 3);
+        if (k > 0.85) this.fly((k - 0.85) / 0.15);
+      } },
+  };
+}
+
+/** A fluted stone column, `broken` off short and jagged, or whole with a capital. */
+function column(x, z, h, C, broken, rnd) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const side = std({ color: C[1], roughness: 0.9, flatShading: true }), top = std({ color: C[0], roughness: 0.9 });
+  mesh(new THREE.BoxGeometry(0.62, 0.16, 0.62), top, 0, 0.08, 0, g);
+  mesh(new THREE.CylinderGeometry(0.22, 0.25, h, 12), side, 0, 0.16 + h / 2, 0, g);
+  if (broken) {
+    const cap = mesh(new THREE.ConeGeometry(0.22, 0.24, 7), side, 0.02, 0.16 + h + 0.06, 0, g);
+    cap.rotation.set(rnd() * 0.5, rnd() * 3, 0.4);
+  } else mesh(new THREE.BoxGeometry(0.6, 0.18, 0.6), top, 0, 0.25 + h, 0, g);
+  return g;
+}
+
+/** The Relic Statue as an idol: a squat gold figure with a round head, arms in, standing on a little base. */
+function goldIdol(parent) {
+  const g = new THREE.Group(), gold = std({ color: '#f8c830', metalness: 0.85, roughness: 0.25, emissive: new THREE.Color('#6a4808'), emissiveIntensity: 0.35 });
+  parent.add(g);
+  mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.05, 14), gold, 0, 0.025, 0, g);
+  mesh(new THREE.SphereGeometry(0.13, 16, 12), gold, 0, 0.17, 0, g).scale.set(1, 1.25, 0.85);
+  mesh(new THREE.SphereGeometry(0.1, 16, 12), gold, 0, 0.38, 0, g);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.SphereGeometry(0.045, 10, 8), gold, s * 0.12, 0.2, 0.05, g);
+    mesh(new THREE.SphereGeometry(0.018, 8, 6), std({ color: '#2a1a08' }), s * 0.035, 0.4, 0.088, g);
+  }
+  return g;
+}
+
+async function buildIdol(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 1, 1.2], [0, 4, 1.1], [10, 5, 1]] });
+  B.shotTop = 3.2;
+  const sand = ['#e8dcb8', '#c8b890', '#988860'], rock = L.rock || ['#a8a098', '#888078', '#605850'];
+  const px = tileX(5), pz = tileZ(2), plinth = new THREE.Group();
+  plinth.position.set(px, 0, pz);
+  B.group.add(plinth);
+  const top = std({ color: sand[0], roughness: 0.9 }), side = std({ color: sand[1], roughness: 0.9 });
+  mesh(rbox(0.9, 0.2, 0.9, 0.04), side, 0, 0.1, 0, plinth);
+  mesh(rbox(0.66, 0.62, 0.66, 0.04), side, 0, 0.51, 0, plinth);
+  mesh(rbox(0.84, 0.12, 0.84, 0.04), top, 0, 0.88, 0, plinth);
+  const idol = goldIdol(plinth);
+  idol.position.y = 0.94;
+  const glint = sprite(sparkArt('#fff8c0'), 0.3);
+  column(tileX(1.6), tileZ(1), 2.2, sand, false, rnd);
+  const hideAt = column(tileX(3), tileZ(2.6), 1.2, sand, true, rnd);
+  column(tileX(9.2), tileZ(2.4), 1.5, sand, true, rnd);
+  const drum = mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.5, 12), std({ color: sand[1], roughness: 0.9, flatShading: true }), tileX(7.2), 0.23, tileZ(3.4));
+  drum.rotation.set(0, 0.6, Math.PI / 2);
+  // the ledge at the back, a Golem on it beside its boulder
+  const lx = tileX(7.6), lz = tileZ(0.6), ledge = mesh(new THREE.CylinderGeometry(1.25, 1.6, 0.95, 9), std({ color: rock[1], roughness: 0.95, flatShading: true }), lx, 0.47, lz);
+  ledge.scale.z = 0.7;
+  for (let i = 0; i < 5; i++) boulder(lx - 1.3 + i * 0.6, lz + 0.65, 0.18 + rnd() * 0.1, rock, rnd);
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/golem-front.gif' }, { x: 8.3, ty: 0.55, y: 0.95 });
+  const R0 = 0.42, home = new THREE.Vector3(tileX(6.9), 0.95 + R0, tileZ(0.75));
+  const stone = boulder(0, 0, 1, rock, rnd, { squash: 1 });
+  stone.scale.setScalar(R0);
+  for (const t of [[4, 2], [5, 2], [5, 1], [6, 0], [7, 0], [8, 0], [7, 1], [8, 1], [3, 2], [9, 2], [1, 1]]) B.blocked.add(key(...t));
+  plinth.traverse(o => { o.userData.spot = 0; });
+  hideAt.traverse(o => { o.userData.spot = 1; });
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 3, y: 3 } }];
+  // Brace floats high over the plinth and Hide low on its column, so the two never overlap on a phone
+  B.anchors[0] = new THREE.Vector3(px + 0.3, 2.5, pz);
+  B.anchors[1] = new THREE.Vector3(tileX(3.3), 1.45, tileZ(2.6));
+  tufts(L, 45, rnd);
+  B.ticks.push((now) => {
+    const on = !calm && idol.visible && Math.floor(now / 1300) % 3 === 0;
+    glint.visible = on;
+    if (on) { glint.position.set(px + 0.12, 1.42, pz + 0.1); glint.material.opacity = Math.sin((now % 1300) / 1300 * Math.PI); }
+  });
+  const dust = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#e8dcb8' : '#c8b890'), 0.3));
+  const shine = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffe080'), 0.22));
+  const roll = (from, to, k) => {   // the boulder from `from` to `to`, turning as it goes
+    stone.position.lerpVectors(from, to, k);
+    stone.rotation.x = -from.distanceTo(to) * k / R0;
+  };
+  B.reset = () => { idol.visible = !opts?.node?.event?.took; idol.position.y = 0.94; idol.scale.setScalar(1); stone.visible = true; stone.position.copy(home); stone.rotation.set(0, 0, 0); };
+  B.reset();
+  B.acts = {
+    grab: { ms: 1800, cues: [[0.15, 'item'], [0.6, 'rumble-far']],
+      start() { this.fly = burst(shine, new THREE.Vector3(px, 1.2, pz), { spread: 0.3, rise: 0.8 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.3) * Math.PI) * 0.35;
+        idol.position.y = 0.94 + ease(Math.min(1, k / 0.5)) * 0.7;
+        idol.rotation.y = k * 8;
+        idol.scale.setScalar(k < 0.5 ? 1 : Math.max(0.001, 1 - (k - 0.5) / 0.2));
+        idol.visible = k < 0.7;
+        this.fly(k);
+        stone.position.x = home.x + (k > 0.6 ? Math.sin(k * 90) * 0.04 : 0);
+      } },
+    brace: { ms: 2000, cues: [[0.05, 'quake'], [0.5, 'hit']],
+      start() {
+        this.at = new THREE.Vector3(walker.x, R0, walker.z - 0.2);
+        this.off = new THREE.Vector3(walker.x - 3, R0, walker.z + 4);
+        this.dust = burst(dust, new THREE.Vector3(walker.x, 0.3, walker.z), { spread: 0.7, rise: 0.6 });
+      },
+      tick(k) {
+        if (k < 0.5) { const u = k / 0.5, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        else roll(this.at, this.off, (k - 0.5) / 0.5);
+        stone.visible = k < 0.98;
+        walker.oz = k > 0.5 ? Math.sin(Math.min(1, (k - 0.5) / 0.3) * Math.PI / 2) * 0.5 * (1 - Math.max(0, (k - 0.8) / 0.2)) : 0;
+        walker.oy = k > 0.5 && k < 0.7 ? -0.05 : 0;
+        if (k > 0.5) this.dust((k - 0.5) / 0.5);
+      } },
+    hide: { ms: 2200, cues: [[0.05, 'quake'], [0.2, 'run-away']],
+      start() {
+        this.x0 = walker.x; this.z0 = walker.z;
+        this.at = new THREE.Vector3(tileX(4.2), R0, tileZ(3.4));
+        this.off = new THREE.Vector3(tileX(5.5), R0, tileZ(9));
+      },
+      tick(k) {
+        const d = ease(Math.min(1, k / 0.2));   // a dive behind the column
+        walker.ox = (tileX(2.6) - this.x0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
+        walker.oz = (tileZ(2.1) - this.z0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
+        if (k < 0.45) { const u = k / 0.45, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        else roll(this.at, this.off, (k - 0.45) / 0.55);
+        stone.visible = k < 0.98;
+      } },
+  };
+}
+
+async function buildKeystone(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1.1], [9, 0, 1], [0, 5, 1.1], [10, 4, 1.2]] });
+  B.shotTop = 3.2;
+  const grey = ['#b8b4c0', '#8a8698', '#5e5a6e'], cx = tileX(5), cz = tileZ(1.6);
+  let y = 0;
+  const cairn = [];
+  for (const [r, sq] of [[0.62, 0.5], [0.5, 0.55], [0.4, 0.6], [0.3, 0.65]]) {   // stones stacked, each a little smaller
+    const s = boulder(cx + (rnd() - 0.5) * 0.08, cz, r, grey, rnd, { squash: sq, y });
+    cairn.push(s);
+    y += r * sq * 1.05;
+  }
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/spiritomb-front.gif' }, { x: 5, ty: 1.6, y });
+  cairn.forEach(s => { s.userData.spot = 1; });
+  B.who.mon.group.traverse(o => { o.userData.spot = 1; });
+  // ₽ on a flat stone to the left, a Poké Ball by a rock to the right
+  const mx = tileX(2.6), mz = tileZ(2.3), flat = mesh(new THREE.CylinderGeometry(0.5, 0.56, 0.16, 12), std({ color: grey[1], roughness: 0.95, flatShading: true }), mx, 0.08, mz);
+  flat.scale.z = 0.7;
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 }), coins = [flat];
+  for (let i = 0; i < 9; i++) { const c = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 12), gold, mx + (rnd() - 0.5) * 0.5, 0.17 + (i % 3) * 0.02, mz + (rnd() - 0.5) * 0.3); coins.push(c); }
+  coins.forEach(c => { c.userData.spot = 0; });
+  const bx = tileX(7.4), bz = tileZ(2.3), ball = lootBall(bx, 0.16, bz, 0.16);
+  ball.rotation.set(0.2, -0.5, 0.15);
+  const rockBy = boulder(bx + 0.36, bz - 0.2, 0.28, grey, rnd);
+  ball.traverse(o => { o.userData.spot = 2; });
+  rockBy.userData.spot = 2;
+  for (const t of [[4, 1], [5, 1], [6, 1], [2, 2], [7, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 5, y: 3 } }, { step: { x: 7, y: 3 } }];
+  const asks = [new THREE.Vector3(mx, 0.3, mz), new THREE.Vector3(cx, y + 0.4, cz), new THREE.Vector3(bx, 0.3, bz)];
+  B.anchors[0] = new THREE.Vector3(mx, 1.2, mz);
+  B.anchors[1] = new THREE.Vector3(cx, y + 1.5, cz);
+  B.anchors[2] = new THREE.Vector3(bx, 1.2, bz);
+  tufts(L, 45, rnd);
+  const wisps = Array.from({ length: 7 }, (_, i) => sprite(sparkArt(['#f0d8ff', '#a868e0', '#6a2aa8'][i % 3]), 0.2));
+  const state = { stream: -1, to: null };
+  B.ticks.push((now) => {
+    wisps.forEach((w, i) => {
+      w.visible = !calm;
+      const a = now / 1100 + i / wisps.length * Math.PI * 2;
+      let p = new THREE.Vector3(cx + Math.cos(a) * 0.7, y + 0.3 + Math.sin(a * 2) * 0.12, cz + Math.sin(a) * 0.45);
+      if (state.stream >= 0) {   // an ask: they stream out to what was asked for, then home
+        const u = Math.max(0, Math.min(1, state.stream * 1.6 - i * 0.06)), out = Math.sin(u * Math.PI);
+        p = p.lerp(state.to, out);
+        p.y += Math.sin(u * Math.PI) * 0.5;
+      }
+      w.position.copy(p);
+      w.material.opacity = 0.8;
+    });
+  });
+  const shine = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#d8b8ff'), 0.22));
+  const motes = Array.from({ length: 6 }, () => sprite(sparkArt('#f84848'), 0.18));
+  B.reset = () => { state.stream = -1; };
+  B.acts = {
+    ask: { ms: 1900, cues: [[0.05, 'spirit'], [0.6, 'item']],
+      start(o) {
+        state.to = asks[{ money: 0, move: 1, item: 2 }[o?.what] ?? 1];
+        this.fly = burst(shine, state.to, { spread: 0.4, rise: 0.9 });
+        this.drain = motes.map((m, i) => ({ m, d: i * 0.06 }));
+      },
+      tick(k) {
+        state.stream = k < 1 ? k : -1;
+        walker.oy = k < 0.4 ? Math.sin(k * 40) * 0.02 : 0;
+        for (const { m, d } of this.drain) {   // your HP drawn off into the keystone
+          const u = Math.max(0, Math.min(1, (k - d) / 0.45));
+          m.visible = u > 0 && u < 1;
+          m.position.set(walker.x + (cx - walker.x) * u, 0.6 + (y + 0.3 - 0.6) * u + Math.sin(u * Math.PI) * 0.4, walker.z + (cz - walker.z) * u);
+        }
+        if (k > 0.5) this.fly((k - 0.5) / 0.5);
+      } },
+  };
+}
+
+async function buildMoon(figs, { look: L }) {
+  const rnd = wild(L, 'night', { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.2], [10, 5, 1]] });   // always under the moon
+  B.env = { ...B.env, bloom: 0.6 };
+  B.shotTop = 3.2;
+  const moon = sprite(moonArt('night'), 2.2);
+  moon.visible = true;
+  moon.position.set(tileX(8.6), 3.4, tileZ(0) - 0.3);
+  const gx = tileX(4), gz = tileZ(1.9), rockM = std({ color: (L.rock || GARDEN.rock)[1], roughness: 0.95, flatShading: true });
+  const base = mesh(new THREE.CylinderGeometry(0.5, 0.62, 0.24, 10), rockM, gx, 0.12, gz);
+  base.scale.z = 0.75;
+  const gem = mesh(new THREE.OctahedronGeometry(0.2, 0), std({ color: '#eceaff', emissive: new THREE.Color('#9890f0'), emissiveIntensity: 0.7, roughness: 0.15, flatShading: true }), gx, 0.52, gz);
+  gem.scale.y = 1.5;
+  // the dancers, round the stone
+  const ring = [figs.left ?? { src: 'assets/pokemon/clefairy-front.gif', flip: true }, figs.right ?? { src: 'assets/pokemon/clefairy-front.gif' }, { src: 'assets/pokemon/clefairy-front.gif' }];
+  const dancers = await Promise.all(ring.map((f, i) => figure(['left', 'right', 'third'][i], f, { x: 4, ty: 1.9 })));
+  dancers.forEach((d, i) => { B.who[d.stand] = d; d.home = i / dancers.length * Math.PI * 2 + Math.PI / 2; });
+  const place = (a) => dancers.forEach(d => { const q = d.home + a; d.base.x = gx + Math.cos(q) * 0.95; d.base.z = gz + Math.sin(q) * 0.55; d.flip = Math.sin(q) > 0 ? Math.cos(q) < 0 : Math.cos(q) > 0; });
+  place(0);
+  [base, gem].forEach(o => { o.userData.spot = 0; });
+  dancers.forEach(d => d.group.traverse(o => { o.userData.spot = 0; }));
+  // a pool of moonlight on the grass to the right
+  const lx = tileX(7.4), lz = tileZ(2.5), pool = mesh(new THREE.CircleGeometry(0.62, 32), new THREE.MeshBasicMaterial({ color: '#fff8d8', transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }), lx, 0.02, lz);
+  pool.rotation.x = -Math.PI / 2; pool.scale.y = 0.75;
+  pool.castShadow = false;
+  const shaft = shaftOfLight(lx, lz, '#fff4d0');
+  shaft.children[0].scale.set(0.55, 1, 0.42);
+  pool.userData.spot = 1;
+  for (const t of [[3, 1], [4, 1], [5, 1], [3, 2], [4, 2], [5, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(gx, 1.9, gz);
+  B.anchors[1] = new THREE.Vector3(lx, 1.3, lz);
+  tufts(L, 45, rnd);
+  const state = { spin: 0, light: 0 };
+  B.ticks.push((now) => {
+    if (calm) return;
+    gem.rotation.y = now / 1400;
+    gem.material.emissiveIntensity = 0.6 + Math.sin(now / 500) * 0.2;
+    pool.material.opacity = 0.3 + Math.sin(now / 900) * 0.06 + state.light * 0.5;
+    shaft.children[0].material.opacity = 0.07 + state.light * 0.25;
+    place(now / 4000 + state.spin);   // they dance round slowly all the time, faster when you join in
+  });
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#ffffff' : '#d8d0ff'), 0.22));
+  const fall = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8d0' : '#ffffff'), 0.2));
+  B.reset = () => { state.spin = 0; state.light = 0; };
+  B.acts = {
+    dance: { ms: 2600, cues: [[0.05, 'bell'], [0.8, 'stat-up']],
+      start() { this.fly = burst(sparks, new THREE.Vector3(gx, 0.6, gz), { spread: 0.8, rise: 1.4 }); this.from = state.spin; },
+      tick(k) {
+        state.spin = this.from + ease(k) * Math.PI * 4;
+        walker.oy = Math.abs(Math.sin(k * Math.PI * 6)) * 0.22 * (1 - k);
+        dancers.forEach((d, i) => { d.base.y = Math.abs(Math.sin(k * Math.PI * 6 + i)) * 0.18 * (1 - k); });
+        this.fly(k);
+      } },
+    moonlight: { ms: 2200, cues: [[0.05, 'bell'], [0.75, 'heal-hp']],
+      start() { this.fly = burst(fall, new THREE.Vector3(lx, 2.2, lz), { spread: 0.5, rise: 1.8, fall: true }); },
+      tick(k) {
+        state.light = Math.sin(k * Math.PI);
+        walker.ox = (lx - walker.x) * ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+        walker.oz = (lz - walker.z) * ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+        this.fly(k);
+      } },
+  };
+}
+
+/** Stripes for the stall's awning, red and cream. */
+function stallAwningArt() {
+  const f = fine(64, 32, 4), { g } = f;
+  for (let x = 0; x < 64; x += 8) { g.fillStyle = '#e04838'; g.fillRect(x, 0, 4, 32); g.fillStyle = '#fff4e0'; g.fillRect(x + 4, 0, 4, 32); }
+  g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 28, 64, 4);
+  return f.c;
+}
+
+async function buildStall(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.1], [10, 5, 1.2]] });
+  B.shotTop = 3.2;
+  const sx = tileX(5.5), sz = tileZ(1.5), stall = new THREE.Group();
+  stall.position.set(sx, 0, sz);
+  B.group.add(stall);
+  const wood = std({ color: '#b88850', roughness: 0.8 }), dark = std({ color: '#7a5430', roughness: 0.85 });
+  mesh(rbox(2.6, 0.78, 0.7, 0.04), wood, 0, 0.39, 0, stall);
+  for (let i = -3; i <= 3; i++) mesh(new THREE.BoxGeometry(0.03, 0.7, 0.01), dark, i * 0.37, 0.38, 0.356, stall).raycast = () => {};
+  mesh(new THREE.BoxGeometry(2.7, 0.06, 0.8), dark, 0, 0.8, 0, stall);
+  for (const x of [-1.25, 1.25]) for (const z of [-0.3, 0.3]) mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.1, 8), dark, x, 1.05, z, stall);
+  const roof = mesh(new THREE.BoxGeometry(2.9, 0.03, 1.2), std({ map: texOf(stallAwningArt()), roughness: 0.8, side: THREE.DoubleSide }), 0, 2.15, 0.1, stall);
+  roof.rotation.x = 0.28;
+  const scallop = std({ color: '#e04838', roughness: 0.8, side: THREE.DoubleSide });
+  for (let i = 0; i < 9; i++) {
+    const s = mesh(new THREE.CircleGeometry(0.16, 12, 0, Math.PI), scallop, -1.28 + i * 0.32, 2.0, 0.7, stall);
+    s.rotation.set(-0.28, 0, Math.PI);
+  }
+  const velvet = std({ color: '#c84060', roughness: 0.7 });
+  const wares = [-0.6, 0.6].map((x, i) => {
+    const cushion = mesh(rbox(0.5, 0.1, 0.42, 0.05), velvet, x, 0.88, 0.02, stall);
+    const card = mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, side: THREE.DoubleSide }), x, 1.18, 0.04, stall);
+    card.rotation.x = -PITCH * 0.6;
+    card.castShadow = false;
+    cushion.userData.spot = card.userData.spot = i;
+    return card;
+  });
+  for (const [x, z, h] of [[-1.6, 0.3, 0.5], [1.65, 0.2, 0.42], [1.95, -0.25, 0.36]]) mesh(new THREE.CylinderGeometry(0.2, 0.17, h, 12), std({ color: '#9a6438', roughness: 0.9 }), x, h / 2, z, stall);
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/kecleon-front.gif' }, { x: 2.2, ty: 2.1 });
+  for (const t of [[4, 1], [5, 1], [6, 1], [7, 1], [2, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 6, y: 3 } }];
+  // the cushions are close together, so their signs float out past the posts, one higher than the other
+  B.anchors[0] = new THREE.Vector3(sx - 1.0, 2.62, sz);
+  B.anchors[1] = new THREE.Vector3(sx + 1.0, 1.72, sz);
+  tufts(L, 45, rnd);
+  const show = (card, id) => {   // a relic's PokéSprite art on its cushion
+    card.visible = !!id;
+    if (!id) return;
+    new THREE.TextureLoader().load(`assets/items/${id}.png`, (t) => {
+      t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+      card.material.map?.dispose();
+      card.material.map = t;
+      card.material.needsUpdate = true;
+    });
+  };
+  const idOf = (f) => f?.src?.match(/items\/([\w-]+)\.png$/)?.[1];
+  B.ticks.push((now) => { if (!calm) wares.forEach((c, i) => { c.position.y = 1.18 + Math.sin(now / 700 + i * 2) * 0.03; }); });
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(['#ffffff', '#f8e070', '#80e070'][i % 3]), 0.22));
+  const kecleon = B.who.mon;
+  B.reset = () => { show(wares[0], idOf(opts?.figures?.left)); show(wares[1], idOf(opts?.figures?.right)); wares.forEach(c => { c.rotation.y = 0; }); kecleon.board.material.color.set('#ffffff'); };
+  B.acts = {
+    swap: { ms: 2000, cues: [[0.05, 'spirit'], [0.55, 'item']],
+      start(o) {
+        this.card = wares[o?.i || 0];
+        this.gets = o?.gets;
+        this.swapped = false;
+        this.fly = burst(sparks, new THREE.Vector3(sx + (o?.i ? 0.6 : -0.6), 1.2, sz + 0.1), { spread: 0.4, rise: 1 });
+      },
+      tick(k) {
+        kecleon.board.material.color.setHSL((k * 3) % 1, k < 1 ? 0.75 : 0, k < 1 ? 0.65 : 1);
+        if (k >= 1) kecleon.board.material.color.set('#ffffff');
+        this.card.rotation.y = ease(k) * Math.PI * 6;
+        if (k > 0.5 && !this.swapped && this.gets) { this.swapped = true; show(this.card, this.gets); }
+        this.fly(k);
+      } },
+  };
+}
+
+/* ---------- batch 3 of the StS events (2026-10-17): the Canalave Library and a Silph Co. storeroom indoors; a fishing
+   boardwalk, Grimer's sludge pit and the Bug-Catching Contest's ring on the biome's own ground ---------- */
+
+/** A "Z" drifting up off someone napping. */
+function zzArt() {
+  const { c, g } = fine(10, 10, 8);
+  words(g, 'Z', 5, 5.4, 9, '#ffffff');
+  g.strokeStyle = '#4a5a8a'; g.lineWidth = 0.6; g.font = '900 9px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.strokeText('Z', 5, 5.4);
+  return c;
+}
+
+/** A page fluttering loose, lines of ink on it. */
+function pageArt() {
+  const { c, g } = fine(10, 12, 8);
+  g.fillStyle = '#fff8e4'; g.fillRect(1, 1, 8, 10);
+  g.fillStyle = '#6a5a48';
+  for (let y = 3; y < 10; y += 2) g.fillRect(2, y, y % 4 ? 6 : 5, 0.6);
+  return c;
+}
+
+/** Z's rising off `at` while `on()`. */
+function napZs(at, on) {
+  const zs = [0, 1, 2].map(() => sprite(zzArt(), 0.3));
+  B.ticks.push((now) => zs.forEach((s, i) => {
+    s.visible = on() && !calm;
+    if (!s.visible) return;
+    const t = ((now / 1600) + i / 3) % 1;
+    s.position.set(at.x + 0.2 + t * 0.35 + Math.sin(t * 6) * 0.05, at.y + t * 0.9, at.z);
+    s.material.opacity = t < 0.2 ? t / 0.2 : 1 - (t - 0.2) / 0.8;
+    s.scale.setScalar(0.16 + t * 0.2);
+  }));
+}
+
+/** A plaque on the back wall's painting, `text` in it. */
+function wallPlaque(f, W, text, [rim, top, low, ink]) {
+  const { g, rr, lin } = f, bw = Math.min(W - 16, text.length * 6.4 + 16), bx = (W - bw) / 2, by = wy(5.6);
+  rr(bx - 1.5, by - 1.5, bw + 3, 20, 3, rim);
+  rr(bx, by, bw, 17, 2.4, lin(0, by, 0, by + 17, [top, low]));
+  words(g, text, bx + bw / 2, by + 8.9, 9.5, ink);
+}
+
+function libraryWall() {
+  const W = (COLS + 0.8) * U, f = fine(W, TOP * U, 5);
+  studyBands(f, W);
+  wallPlaque(f, W, 'CANALAVE LIBRARY', ['#5a3218', '#f0d898', '#c8a050', '#5a2a10']);
+  return f.c;
+}
+
+function librarySide() {
+  const W = ROWS * U, f = fine(W, TOP * U, 4);
+  studyBands(f, W);
+  return f.c;
+}
+
+async function buildLibrary(figs) {
+  shell({ floor: studyFloor(), wall: libraryWall(), side: librarySide, edge: '#3a2010', cap: '#4a2814', under: '#1c100a', bg: '#140c08' });
+  for (const x of [0, 2, 4, 6, 8]) piece('shelf', x, 0);
+  piece('bookstack', 10, 0); piece('bookcart', 0, 2); piece('bookstack', 10, 2); piece('globe', 10, 4); piece('bookstack', 0, 5); piece('floorlamp', 8, 2);
+  const lectern = piece('lectern', 3, 2), chair = piece('armchair', 7, 2);
+  lectern?.traverse(o => { o.userData.spot = 0; });
+  chair?.traverse(o => { o.userData.spot = 1; });
+  // Noctowl keeps watch from a perch in front of the shelves
+  const wood = std({ color: '#7a4a28', roughness: 0.8 }), px = tileX(5), pz = tileZ(1);
+  mesh(new THREE.CylinderGeometry(0.2, 0.24, 0.06, 14), wood, px, 0.03, pz);
+  mesh(new THREE.CylinderGeometry(0.035, 0.04, 1.0, 10), wood, px, 0.5, pz);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.56, 10), wood, px, 1.0, pz).rotation.z = Math.PI / 2;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/noctowl-front.gif' }, { x: 5, ty: 1, y: 1.02 });
+  B.blocked.add(key(5, 1));
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(3), 2.0, tileZ(2));
+  B.anchors[1] = new THREE.Vector3(tileX(7), 1.9, tileZ(2));
+  const glowing = [];
+  lectern?.traverse(o => { if (o.material?.emissiveMap) glowing.push(o.material); });
+  const pages = Array.from({ length: 8 }, () => sprite(pageArt(), 0.2));
+  const sparks = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4c0' : '#ffffff'), 0.2));
+  const nap = { on: false }, cx = tileX(7), cz = tileZ(2) + 0.1;
+  napZs(new THREE.Vector3(cx, 1.0, cz), () => nap.on);
+  B.reset = () => { nap.on = false; };
+  B.acts = {
+    read: { ms: 1800, cues: [[0.05, 'rustle'], [0.6, 'item']],
+      start() {
+        const at = new THREE.Vector3(tileX(3), 1.25, tileZ(2) + 0.1);
+        this.pages = burst(pages, at, { spread: 0.45, rise: 1.5, spin: true });
+        this.sparks = burst(sparks, at, { spread: 0.3, rise: 1.1 });
+      },
+      tick(k) { this.pages(k); this.sparks(k); for (const m of glowing) m.emissiveIntensity = 0.8 + Math.sin(k * Math.PI) * 2; } },
+    nap: { ms: 2400, cues: [[0.85, 'heal-hp']],
+      start() { nap.on = true; },
+      tick(k) {
+        const sit = ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.9) / 0.1));
+        walker.ox = (cx - walker.x) * sit; walker.oz = (cz - walker.z) * sit; walker.oy = sit * 0.32;
+        if (k > 0.97) nap.on = false;
+      } },
+  };
+}
+
+function labWall() {
+  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#d8e0e8', '#c0c8d4']); g.fillRect(0, 0, W, H);
+  for (let x = U * 0.4; x < W; x += U * 1.2) { g.fillStyle = 'rgba(70,80,100,0.22)'; g.fillRect(x, 0, 0.6, H); g.fillStyle = 'rgba(255,255,255,0.4)'; g.fillRect(x + 0.6, 0, 0.4, H); }
+  g.fillStyle = '#3868b8'; g.fillRect(0, wy(1.3), W, 3.4);
+  g.fillStyle = '#7a8496'; g.fillRect(0, wy(0.25), W, wy(0) - wy(0.25));
+  wallPlaque(f, W, 'SILPH CO.', ['#283858', '#ffffff', '#dfe6f0', '#2858a8']);
+  return f.c;
+}
+
+function labSide() {
+  const W = ROWS * U, H = TOP * U, f = fine(W, H, 4), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#d0d8e2', '#b8c0cc']); g.fillRect(0, 0, W, H);
+  g.fillStyle = '#3868b8'; g.fillRect(0, wy(1.3), W, 3.4);
+  g.fillStyle = '#7a8496'; g.fillRect(0, wy(0.25), W, wy(0) - wy(0.25));
+  return f.c;
+}
+
+function labFloor() {
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, 5), { g } = f;
+  g.fillStyle = '#8a929c'; g.fillRect(0, 0, W, H);
+  for (let y = 0; y < ROWS * 2; y++) for (let x = 0; x < COLS * 2; x++) { g.fillStyle = (x + y) % 2 ? '#c4ccd4' : '#b0b8c2'; g.fillRect(x * T / 2 + 0.3, y * T / 2 + 0.3, T / 2 - 0.6, T / 2 - 0.6); }
+  // hazard stripes round where the crates stand
+  const x0 = 3.6 * T, x1 = 7.4 * T, y0 = 1.4 * T, y1 = 3 * T;
+  g.save(); g.beginPath(); g.rect(x0, y0, x1 - x0, y1 - y0); g.rect(x0 + 2.5, y0 + 2.5, x1 - x0 - 5, y1 - y0 - 5); g.clip('evenodd');
+  for (let x = x0 - 40; x < x1 + 40; x += 5) { g.fillStyle = (x / 5) % 2 ? '#f8d030' : '#2a2a30'; g.beginPath(); g.moveTo(x, y0); g.lineTo(x + 2.5, y0); g.lineTo(x + 2.5 + (y1 - y0), y1); g.lineTo(x + (y1 - y0), y1); g.fill(); }
+  g.restore();
+  return f.c;
+}
+
+/** A wooden crate with darker frame boards on every edge and Silph's blue label. */
+function crate3d(x, y, z, s) {
+  const c = new THREE.Group(), wood = std({ color: '#c89858', roughness: 0.85 }), dark = std({ color: '#8a5e2c', roughness: 0.85 }), t = s * 0.1, h = s / 2;
+  c.position.set(x, y, z);
+  B.group.add(c);
+  mesh(new THREE.BoxGeometry(s, s, s), wood, 0, h, 0, c);
+  for (const a of [-1, 1]) for (const b of [-1, 1]) {
+    mesh(new THREE.BoxGeometry(s + 0.01, t, t), dark, 0, h + a * (h - t / 2), b * (h - t / 2), c);
+    mesh(new THREE.BoxGeometry(t, s + 0.01, t), dark, a * (h - t / 2), h, b * (h - t / 2), c);
+    mesh(new THREE.BoxGeometry(t, t, s + 0.01), dark, a * (h - t / 2), h + b * (h - t / 2), 0, c);
+  }
+  mesh(new THREE.PlaneGeometry(s * 0.42, s * 0.26), std({ color: '#3878d0', roughness: 0.6 }), 0, h, h + 0.006, c).castShadow = false;
+  return c;
+}
+
+async function buildStoreroom(figs) {
+  shell({ floor: labFloor(), wall: labWall(), side: labSide, edge: '#4a5468', cap: '#6a7688', under: '#1e2430', bg: '#141820' });
+  piece('potionshelf', 0, 0); piece('medicineshelf', 1, 0); piece('ballshelf', 2, 0); piece('locker', 3, 0); piece('computer', 5, 0);
+  piece('locker', 7, 0); piece('ballshelf', 8, 0); piece('potionshelf', 9, 0); piece('medicineshelf', 10, 0);
+  piece('crate', 0, 3); piece('crate', 0, 4); piece('milkcrate', 10, 3); piece('barrel', 10, 5);
+  const s = 0.72, crates = [crate3d(tileX(5) - 0.38, 0, tileZ(2), s), crate3d(tileX(5) + 0.38, 0, tileZ(2) + 0.05, s), crate3d(tileX(5), s, tileZ(2) + 0.02, s)];
+  crates[2].rotation.y = 0.2;
+  crates.forEach(c => c.traverse(o => { o.userData.spot = 0; }));
+  for (const t of [[4, 2], [5, 2], [6, 2]]) B.blocked.add(key(...t));
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/porygon-front.gif' }, { x: 7.4, ty: 2, y: 0.3 });
+  B.blocked.add(key(7, 2));
+  const pory = B.who.mon;
+  B.ticks.push((now) => { pory.base.y = 0.3 + (calm ? 0 : Math.sin(now / 650) * 0.07); });
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(tileX(5), 2.3, tileZ(2));
+  const balls = [0, 1, 2].map(() => { const b = lootBall(0, 0, 0, 0.12); b.visible = false; b.traverse(o => { o.raycast = () => {}; }); return b; });
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#a8e8ff' : '#ffffff'), 0.22));
+  const top = new THREE.Vector3(tileX(5), s * 2, tileZ(2) + 0.1);
+  B.reset = () => { crates.forEach((c, i) => { c.rotation.z = 0; c.rotation.y = i === 2 ? 0.2 : 0; }); balls.forEach(b => { b.visible = false; }); };
+  B.acts = {
+    rummage: { ms: 2000, cues: [[0.05, 'rustle'], [0.3, 'rustle'], [0.6, 'item']],
+      start() { this.fly = burst(sparks, top, { spread: 0.5, rise: 1.2 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.45) * Math.PI * 3) * 0.2 * (k < 0.45 ? 1 : 0);
+        crates.forEach((c, i) => { c.rotation.z = k < 0.5 ? Math.sin(k * 60 + i) * 0.05 : 0; });
+        balls.forEach((b, i) => {   // three Poké Balls pop out of the top crate, one after another
+          const u = (k - 0.45 - i * 0.08) / 0.4;
+          b.visible = u > 0 && u < 1;
+          if (!b.visible) return;
+          b.position.set(top.x + (i - 1) * 0.45 * u, top.y + Math.sin(u * Math.PI) * 0.9, top.z + 0.3 * u);
+          b.rotation.z = u * 6;
+        });
+        if (k > 0.4) this.fly((k - 0.4) / 0.6);
+      } },
+  };
+}
+
+const ROD_COLS = [['#c89860', '#6a4424'], ['#68a8e8', '#28508a'], ['#e85848', '#2a2a34']];   // the Old, Good and Super Rods
+
+async function buildFishing(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [0, 4, 1.1], [10, 5, 1.2], [0, 6, 1]] });
+  B.shotTop = 3.2;
+  const p = pool(tileX(5), tileZ(1.2), 3.9, 1.15, L, 41);
+  // a boardwalk along the near bank, a rail on its water side
+  const wood = std({ color: L.wood?.[0] || '#c89058', roughness: 0.85 }), dark = std({ color: L.wood?.[2] || '#6a4024', roughness: 0.9 });
+  const dz = tileZ(3) - 0.05, dx0 = tileX(1.2), dx1 = tileX(8.8);
+  mesh(new THREE.BoxGeometry(dx1 - dx0, 0.05, 0.95), wood, (dx0 + dx1) / 2, 0.025, dz).castShadow = false;
+  for (let x = dx0 + 0.3; x < dx1; x += 0.3) mesh(new THREE.BoxGeometry(0.015, 0.052, 0.95), dark, x, 0.026, dz).raycast = () => {};
+  const rz = dz - 0.44;
+  for (let x = dx0 + 0.05; x <= dx1; x += 1.25) mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.75, 8), dark, x, 0.375, rz);
+  const rail = mesh(new THREE.CylinderGeometry(0.035, 0.035, dx1 - dx0, 8), wood, (dx0 + dx1) / 2, 0.74, rz);
+  rail.rotation.z = Math.PI / 2;
+  // three rods leaning on the rail, out over the water
+  const len = 2.1, lean = 0.78, tips = [];
+  [3, 5, 7].forEach((tx, i) => {
+    const [col, grip] = ROD_COLS[i], rod = new THREE.Group(), x = tileX(tx), z = dz + 0.25;
+    rod.position.set(x, 0.05, z);
+    rod.rotation.x = -lean;
+    B.group.add(rod);
+    mesh(new THREE.CylinderGeometry(0.012, 0.026, len, 8), std({ color: col, roughness: 0.5 }), 0, len / 2, 0, rod);
+    mesh(new THREE.CylinderGeometry(0.034, 0.034, 0.36, 8), std({ color: grip, roughness: 0.7 }), 0, 0.2, 0, rod);
+    const reel = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.05, 14), std({ color: '#d8d8e0', metalness: 0.6, roughness: 0.3 }), 0.06, 0.42, 0, rod);
+    reel.rotation.z = Math.PI / 2;
+    rod.traverse(o => { o.userData.spot = i; });
+    tips.push(new THREE.Vector3(x, 0.05 + Math.cos(lean) * len, z - Math.sin(lean) * len));
+  });
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 5, y: 3 } }, { step: { x: 7, y: 3 } }];
+  // the rods stand close, so their signs float at three heights, Good Rod's (the widest) on top; Super Rod's pulled in off a phone's edge
+  [[0, 1.25], [0, 2.55], [-0.3, 1.9]].forEach(([dx, y], i) => { B.anchors[i] = new THREE.Vector3(tips[i].x + dx, y, tips[i].z + 0.3); });
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/magikarp-front.gif' }, { x: 8.3, ty: 1.3, y: 0.1 });
+  const karp = B.who.mon;
+  B.ticks.push((now) => { const j = (now % 2600) / 2600; karp.base.y = 0.08 + (calm || j > 0.25 ? 0 : Math.sin(j / 0.25 * Math.PI) * 0.5); });
+  const gyara = await figure('big', { src: 'assets/pokemon/gyarados-front.gif' }, { x: 5, ty: 1.0, scale: 1.25 });
+  B.who.big = gyara;
+  gyara.group.visible = false;
+  tufts(L, 40, rnd);
+  // the line, its float, and what each rod reels in
+  const N = 16, line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(Array.from({ length: N }, () => new THREE.Vector3())), new THREE.LineBasicMaterial({ color: '#ffffff' }));
+  line.visible = false;
+  line.raycast = () => {};
+  B.group.add(line);
+  const float = new THREE.Group();
+  mesh(new THREE.SphereGeometry(0.06, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), std({ color: '#f04030', roughness: 0.4 }), 0, 0, 0, float);
+  mesh(new THREE.SphereGeometry(0.06, 12, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f8f8f8', roughness: 0.4 }), 0, 0, 0, float);
+  float.visible = false;
+  B.group.add(float);
+  const catches = [
+    mesh(new THREE.SphereGeometry(0.1, 14, 10), std({ color: '#f8d838', roughness: 0.4, emissive: new THREE.Color('#806010'), emissiveIntensity: 0.3 }), 0, 0, 0),
+    mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.2, 12), std({ color: '#b080e8', roughness: 0.3, emissive: new THREE.Color('#402080'), emissiveIntensity: 0.3 }), 0, 0, 0),
+    lootBall(0, 0, 0, 0.12),
+  ];
+  catches.forEach(c => { c.visible = false; });
+  const spray = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(i % 2 ? '#ffffff' : (L.water?.[1] || '#a8f0f0')), 0.3));
+  const drops = Array.from({ length: 8 }, () => sprite(sparkArt(L.water?.[1] || '#a8f0f0'), 0.18));
+  const v = new THREE.Vector3();
+  const setLine = (from, to, sag) => {
+    const pos = line.geometry.attributes.position;
+    for (let i = 0; i < N; i++) { const q = i / (N - 1); v.lerpVectors(from, to, q); v.y -= Math.sin(q * Math.PI) * sag; pos.setXYZ(i, v.x, v.y, v.z); }
+    pos.needsUpdate = true;
+    line.geometry.computeBoundingSphere();
+  };
+  B.reset = () => { line.visible = float.visible = false; catches.forEach(c => { c.visible = false; }); gyara.group.visible = false; };
+  B.acts = {
+    cast: { ms: (o) => (o?.rod === 2 ? 3000 : 2400), cues: (o) => [[0.03, 'gust'], [0.26, 'splash'], ...(o?.rod === 2 ? [[0.56, 'wave-crash'], [0.7, 'hit']] : [[0.6, 'splash']])],
+      start(o) {
+        this.rod = o?.rod || 0;
+        this.tip = tips[this.rod];
+        this.bob = new THREE.Vector3(this.tip.x + (this.rod - 1) * 0.3, 0.19, tileZ(0.7));
+        this.splash = burst(spray, this.bob, { spread: 0.7, rise: 1.8 });
+        this.drip = burst(drops, this.bob, { spread: 0.3, rise: 0.6 });
+        line.visible = true;
+      },
+      tick(k) {
+        const big = this.rod === 2, c = catches[this.rod];
+        walker.lunge = k < 0.12 ? Math.sin(k / 0.12 * Math.PI) * 0.3 : 0;
+        let end;
+        if (k < 0.25) {   // the cast: the float arcs out to the water
+          const u = k / 0.25;
+          end = this.tip.clone().lerp(this.bob, u);
+          end.y += Math.sin(u * Math.PI) * 0.6;
+        } else if (k < 0.55) {   // it bobs, then dips under
+          end = this.bob.clone();
+          end.y += (k > 0.48 ? -0.08 : Math.sin(k * 60) * 0.02);
+          if (k < 0.32) this.drip((k - 0.25) / 0.07);
+        } else {   // the reel: the catch comes up on the line
+          const u = ease(Math.min(1, (k - 0.55) / 0.4));
+          end = this.bob.clone().lerp(this.tip, u * 0.85);
+          end.y -= Math.sin(u * Math.PI) * 0.1;
+          walker.oz = big && k < 0.8 ? -Math.sin((k - 0.55) / 0.25 * Math.PI) * 0.35 : 0;
+        }
+        float.visible = k < 0.55;
+        float.position.copy(end);
+        c.visible = k >= 0.55 && k < 0.98;
+        c.position.set(end.x, end.y - 0.14, end.z);
+        c.rotation.y = k * 10;
+        setLine(this.tip, end, k < 0.25 ? 0 : 0.12);
+        line.visible = k < 0.98;
+        if (big) {   // the Gyarados thrashes up out of the water and crashes back down
+          const u = (k - 0.52) / 0.42;
+          gyara.group.visible = u > 0 && u < 1;
+          gyara.base.y = -2.4 + Math.sin(Math.max(0, Math.min(1, u)) * Math.PI) * 2.4;
+          if (u > 0) this.splash(Math.min(1, u * 1.4));
+        } else if (k >= 0.55 && k < 0.7) this.drip((k - 0.55) / 0.15);
+      } },
+  };
+}
+
+/** The sludge's surface: purple muck in blobs and streaks, tiled and slid slowly. */
+function sludgeTex() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 128;
+  const g = c.getContext('2d'), r = seeded(53);
+  g.fillStyle = '#7a3ea0'; g.fillRect(0, 0, 128, 128);
+  for (let i = 0; i < 70; i++) {
+    const x = r() * 128, y = r() * 128, rad = 3 + r() * 10;
+    g.fillStyle = ['#a868c8', '#5e2a80', '#8a4ab0', '#c890e0'][i % 4]; g.globalAlpha = 0.35 + r() * 0.4;
+    for (const [ox, oy] of [[0, 0], [128, 0], [-128, 0], [0, 128], [0, -128]]) { g.beginPath(); g.ellipse(x + ox, y + oy, rad, rad * 0.6, r() * 3, 0, Math.PI * 2); g.fill(); }
+  }
+  g.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(c);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+async function buildSludge(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 0, 1], [0, 5, 1.1], [10, 5, 1.2]], exit: false });   // no way out but through the choice
+  B.shotTop = 3.2;
+  const cx = tileX(4.3), cz = tileZ(1.7), rx = 2.5, rz = 1.15, grime = ['#6a5a70', '#54465c', '#3e3248'];
+  const basin = mesh(new THREE.CircleGeometry(1, 40), std({ color: '#2a1038', roughness: 1 }), cx, 0.012, cz);
+  basin.rotation.x = -Math.PI / 2; basin.scale.set(rx, rz, 1);
+  const map = sludgeTex();
+  map.repeat.set(rx * 0.8, rz * 0.8);
+  const surf = mesh(new THREE.CircleGeometry(1, 40), std({ map, roughness: 0.3, metalness: 0.1, emissive: new THREE.Color('#3a1050'), emissiveIntensity: 0.25 }), cx, 0.1, cz);
+  surf.rotation.x = -Math.PI / 2; surf.scale.set(rx, rz, 1);
+  surf.castShadow = false;
+  const n = Math.round((rx + rz) * 6);
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + rnd() * 0.1; boulder(cx + Math.cos(a) * (rx + 0.06), cz + Math.sin(a) * (rz + 0.06), 0.2 + rnd() * 0.12, grime, rnd); }
+  for (let x = 1; x <= 6; x++) for (let y = 0; y <= 2; y++) B.blocked.add(key(x, y));
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3, emissive: new THREE.Color('#5a4008'), emissiveIntensity: 0.3 }), coins = [];
+  for (let i = 0; i < 9; i++) {
+    const c = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 12), gold, cx - 1.5 + rnd() * 1.1, 0.11, cz - 0.4 + rnd() * 0.8);
+    c.rotation.set((rnd() - 0.5) * 0.6, 0, (rnd() - 0.5) * 0.6);
+    coins.push(c);
+  }
+  [surf, ...coins].forEach(o => { o.userData.spot = 0; });
+  // a heap of rocks to climb out by
+  const hx = tileX(7.7), hz = tileZ(2), heap = [];
+  for (const [ox, oz, sz, y] of [[0, 0, 0.55, 0], [-0.45, 0.25, 0.4, 0], [0.4, 0.2, 0.38, 0], [0.05, -0.05, 0.36, 0.3], [-0.2, 0.1, 0.26, 0.5]]) heap.push(boulder(hx + ox, hz + oz, sz, L.rock, rnd, { y }));
+  heap.forEach(o => { o.userData.spot = 1; });
+  for (const t of [[7, 2], [8, 2], [7, 1]]) B.blocked.add(key(...t));
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/grimer-front.gif' }, { x: 5, ty: 1.5, y: 0.04 });
+  const grimer = B.who.mon;
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(cx - 0.9, 1.3, cz);
+  B.anchors[1] = new THREE.Vector3(hx - 1.1, 1.9, hz);   // in from the heap, or its sign runs off a phone's right edge
+  tufts(L, 40, rnd);
+  // bubbles swell and pop on the muck
+  const bubbleM = std({ color: '#c890e0', transparent: true, opacity: 0.8, roughness: 0.2 });
+  const bubbles = Array.from({ length: 6 }, (_, i) => ({ m: mesh(new THREE.SphereGeometry(1, 12, 8), bubbleM, 0, 0.1, 0), phase: i / 6, a: rnd() * Math.PI * 2, d: 0.3 + rnd() * 0.6 }));
+  bubbles.forEach(b => { b.m.castShadow = false; b.m.raycast = () => {}; });
+  B.ticks.push((now) => {
+    if (!calm) map.offset.set(now / 90000, Math.sin(now / 4000) * 0.03);
+    grimer.base.y = 0.04 + (calm ? 0 : Math.sin(now / 900) * 0.025);
+    for (const b of bubbles) {
+      const t = calm ? 0.3 : (now / 2600 + b.phase) % 1;
+      b.m.position.set(cx + Math.cos(b.a + Math.floor(now / 2600 + b.phase)) * b.d * rx, 0.1, cz + Math.sin(b.a + Math.floor(now / 2600 + b.phase)) * b.d * rz * 0.8);
+      b.m.scale.setScalar(t < 0.8 ? 0.02 + t * 0.1 : 0.001);
+    }
+  });
+  const splat = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#c890e0' : '#8a4ab0'), 0.26));
+  const cash = Array.from({ length: 8 }, () => sprite(sparkArt('#f8d040'), 0.22));
+  B.reset = () => { coins.forEach(c => { c.visible = true; }); };
+  B.acts = {
+    goop: { ms: 2200, cues: (o) => (o?.dig ? [[0.08, 'splash'], [0.55, 'coins']] : [[0.08, 'rustle'], [0.5, 'splash']]),
+      start(o) {
+        this.dig = !!o?.dig;
+        const at = this.dig ? new THREE.Vector3(cx - 0.9, 0.15, cz + 0.2) : new THREE.Vector3(hx - 1.2, 0.15, hz - 0.2);
+        this.splat = burst(splat, at, { spread: 0.6, rise: 0.9 });
+        this.cash = burst(cash, this.dig ? at : new THREE.Vector3(walker.x, 1.0, walker.z), { spread: 0.5, rise: this.dig ? 1.4 : 0.9, fall: !this.dig });
+        this.x0 = walker.x; this.z0 = walker.z;
+      },
+      tick(k) {
+        if (this.dig) {   // a lunge into the muck, sludge flying, coins thrown up
+          walker.lunge = Math.sin(Math.min(1, k / 0.4) * Math.PI) * 0.45;
+          walker.oy = k > 0.15 && k < 0.4 ? -0.08 : 0;
+          this.splat(k);
+          if (k > 0.35) this.cash((k - 0.35) / 0.65);
+          if (k > 0.5) coins.forEach((c, i) => { c.visible = i % 3 !== 0; });
+        } else {   // up onto the rocks, coins tumbling out of your pockets into the sludge
+          const up = ease(Math.min(1, k / 0.35)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+          walker.ox = (hx - this.x0) * up * 0.6; walker.oz = (hz - this.z0) * up * 0.5; walker.oy = up * 0.55;
+          this.cash(k);
+          if (k > 0.4) this.splat((k - 0.4) / 0.6);
+        }
+      } },
+  };
+}
+
+/** A rope between two posts' tops, at height `y`. */
+function rope(a, b, y, m) {
+  const from = new THREE.Vector3(a.x, y, a.z), to = new THREE.Vector3(b.x, y, b.z), d = to.clone().sub(from);
+  const r = mesh(new THREE.CylinderGeometry(0.02, 0.02, d.length(), 6), m, (from.x + to.x) / 2, y, (from.z + to.z) / 2);
+  r.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
+  r.castShadow = false;
+  return r;
+}
+
+/** A pennant: a triangle of cloth hanging off the rope. */
+function pennant(x, y, z, col) {
+  const s = new THREE.Shape();
+  s.moveTo(-0.1, 0); s.lineTo(0.1, 0); s.lineTo(0, -0.2); s.closePath();
+  const m = mesh(new THREE.ShapeGeometry(s), std({ color: col, roughness: 0.8, side: THREE.DoubleSide }), x, y, z);
+  m.castShadow = false;
+  m.raycast = () => {};
+  return m;
+}
+
+async function buildContest(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [0, 5, 1.1], [10, 5, 1.2], [10, 3, 1]] });
+  B.shotTop = 3.2;
+  const wood = std({ color: '#a87840', roughness: 0.85 }), cord = std({ color: '#f0e0b0', roughness: 0.9 });
+  const x0 = tileX(2), x1 = tileX(8), z0 = tileZ(0.7), z1 = tileZ(2.9);
+  const corners = [[x0, z0], [x1, z0], [x0, z1], [x1, z1]].map(([x, z]) => {
+    mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.95, 10), wood, x, 0.475, z);
+    mesh(new THREE.SphereGeometry(0.08, 10, 8), std({ color: '#e04030', roughness: 0.5 }), x, 0.98, z);
+    return { x, z };
+  });
+  for (const y of [0.45, 0.82]) { rope(corners[0], corners[1], y, cord); rope(corners[0], corners[2], y, cord); rope(corners[1], corners[3], y, cord); }
+  const flags = ['#e04030', '#f8c030', '#3878f0', '#58b858', '#f070a8'], pennants = [];
+  for (let i = 0, x = x0 + 0.25; x < x1 - 0.1; x += 0.36, i++) pennants.push(pennant(x, 0.82, z0, flags[i % flags.length]));
+  piece('trophy', 5, 0);
+  piece('scoreboard', 8, 0);
+  piece('gymflag', 1, 0);
+  for (const t of [[2, 0], [2, 1], [2, 2], [8, 1], [8, 2]]) B.blocked.add(key(...t));
+  const left = await figure('left', figs.left ?? { src: 'assets/pokemon/scyther-front.gif', flip: true }, { x: 4, ty: 1.8 });
+  const right = await figure('right', figs.right ?? { src: 'assets/pokemon/caterpie-front.gif' }, { x: 6.4, ty: 1.8 });
+  B.who.left = left; B.who.right = right;
+  left.group.traverse(o => { o.userData.spot = 0; });
+  right.group.traverse(o => { o.userData.spot = 1; });
+  for (const t of [[4, 1], [4, 2], [6, 1], [6, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(left.base.x, 2.2, left.base.z);
+  B.anchors[1] = new THREE.Vector3(right.base.x, 1.6, right.base.z);
+  tufts(L, 40, rnd);
+  B.ticks.push((now) => { if (!calm) pennants.forEach((p, i) => { p.rotation.x = Math.sin(now / 300 + i) * 0.25; }); });
+  const homes = [left.base.x, right.base.x], mid = new THREE.Vector3((homes[0] + homes[1]) / 2, 0.5, left.base.z);
+  const dust = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 3 ? '#f8f0d8' : '#f8d040'), 0.34));
+  const confetti = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(['#f8d030', '#f878b0', '#78c8f0', '#88e070'][i % 4]), 0.22));
+  B.reset = () => { left.base.x = homes[0]; right.base.x = homes[1]; };
+  B.acts = {
+    joust: { ms: 3000, cues: [[0.07, 'hit'], [0.23, 'hit'], [0.4, 'hit'], [0.62, 'stat-up']],
+      start(o) {
+        this.win = o?.win ? right : left;
+        this.dust = burst(dust, mid, { spread: 0.5, rise: 0.8, spin: true });
+        this.party = burst(confetti, new THREE.Vector3(this.win.base.x, 2.2, this.win.base.z), { spread: 0.6, rise: 1.4, fall: true, spin: true });
+        this.hopped = false;
+      },
+      tick(k) {
+        const u = Math.min(1, k / 0.55), clash = u < 1 ? Math.sin((u * 3 % 1) * Math.PI) : 0;   // three charges at each other
+        left.base.x = homes[0] + clash * 0.75;
+        right.base.x = homes[1] - clash * 0.75;
+        if (k < 0.6) this.dust(k / 0.6);
+        if (k > 0.6 && !this.hopped) { this.hopped = true; does(this.win, 'hop'); }
+        if (k > 0.6) this.party((k - 0.6) / 0.4);
+      } },
+  };
+}
+
+/* ---------- batch 3's last five (2026-10-17): the Unown Tablet, the Litwick Bonfire (always at night), Voltorb Flip's
+   table and your rival on the road, on the biome's own ground; Smeargle's studio indoors ---------- */
+
+/** The tablet's face: rows of Unown, each a letter with its one eye, carved dark (or, `lit`, glowing gold). */
+function glyphArt(lit) {
+  const { c, g } = fine(60, 84, 5), r = seeded(7), letters = 'UNOWNABCDEFGHIJKLMQRSTVXYZ?!';
+  for (let row = 0; row < 5; row++) for (let col = 0; col < 4; col++) {
+    const x = 9 + col * 14, y = 12 + row * 15, ch = letters[Math.floor(r() * letters.length)];
+    words(g, ch, x, y, 11, lit ? '#fff4a0' : '#3a362e');
+    g.fillStyle = lit ? '#ffffff' : '#3a362e'; g.beginPath(); g.arc(x + 0.4, y - 0.4, 1.6, 0, Math.PI * 2); g.fill();
+    if (!lit) { g.fillStyle = '#f8f4e8'; g.beginPath(); g.arc(x + 0.4, y - 0.4, 0.7, 0, Math.PI * 2); g.fill(); }
+  }
+  return c;
+}
+
+async function buildTablet(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1], [10, 2, 1.1], [0, 5, 1.2], [10, 5, 1]] });
+  B.shotTop = 3.2;
+  const tx = tileX(4.2), tz = tileZ(1.2), grey = ['#d0ccc0', '#a8a498', '#7a766a'];
+  const slab = mesh(rbox(1.6, 2.2, 0.36, 0.12), std({ color: grey[1], roughness: 0.95, flatShading: true }), tx, 1.1, tz);
+  mesh(rbox(1.9, 0.18, 0.6, 0.05), std({ color: grey[2], roughness: 0.95 }), tx, 0.09, tz);
+  const face = mesh(new THREE.PlaneGeometry(1.36, 1.9), std({ map: texOf(glyphArt(false)), transparent: true, alphaTest: 0.3, roughness: 1 }), tx, 1.12, tz + 0.185);
+  const glow = mesh(new THREE.PlaneGeometry(1.36, 1.9), new THREE.MeshBasicMaterial({ map: texOf(glyphArt(true)), transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }), tx, 1.12, tz + 0.19);
+  glow.material.opacity = 0;
+  face.raycast = glow.raycast = () => {};
+  for (let i = 0; i < 7; i++) mesh(new THREE.SphereGeometry(0.07 + rnd() * 0.06, 6, 5), std({ color: '#7aa848', roughness: 1, flatShading: true }), tx - 0.8 + rnd() * 1.6, 0.18, tz + 0.2 + rnd() * 0.15);   // moss at its foot
+  slab.traverse(o => { o.userData.spot = 0; });
+  const ax = tileX(7.2), az = tileZ(2.3), stone = boulder(ax, az, 0.55, grey, rnd, { squash: 0.35 });
+  const chips = Array.from({ length: 5 }, (_, i) => mesh(new THREE.BoxGeometry(0.1, 0.03, 0.1), std({ color: i % 2 ? grey[2] : '#3a362e' }), ax - 0.3 + i * 0.15, 0.22, az + (i % 2 ? 0.1 : -0.08)));
+  stone.traverse(o => { o.userData.spot = 1; });
+  for (const c of chips) c.userData.spot = 1;
+  for (const t of [[3, 1], [4, 1], [5, 1], [7, 2]]) B.blocked.add(key(...t));
+  const unown = await figure('mon', figs.mon ?? { src: 'assets/pokemon/unown-front.gif' }, { x: 6, ty: 1, y: 1.1 });
+  const more = await figure('u2', { src: 'assets/pokemon/unown-front.gif', flip: true }, { x: 2.4, ty: 1.6, y: 1.5, scale: 0.75 });
+  B.who.mon = unown; B.who.u2 = more;
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 7, y: 3 } }];
+  // the tablet's sign floats high, the stone's low and further right, so they never overlap on a phone
+  B.anchors[0] = new THREE.Vector3(tx, 2.75, tz);
+  B.anchors[1] = new THREE.Vector3(ax + 0.2, 1.25, az);
+  tufts(L, 40, rnd);
+  const homes = [unown.base.y, more.base.y];
+  B.ticks.push((now) => { if (!calm) [unown, more].forEach((u, i) => { u.group.position.y = homes[i] + Math.sin(now / 700 + i * 2) * 0.12; }); });
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4a0' : '#ffffff'), 0.24));
+  const dust = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#d0ccc0' : '#a8a498'), 0.3));
+  B.reset = () => { glow.material.opacity = 0; chips.forEach(c => { c.visible = true; }); };
+  B.acts = {
+    study: { ms: 2200, cues: [[0.05, 'crystal-0'], [0.35, 'crystal-1'], [0.7, 'stat-up']],
+      start() { this.fly = burst(sparks, new THREE.Vector3(tx, 1.3, tz + 0.3), { spread: 0.7, rise: 1.2 }); },
+      tick(k) { glow.material.opacity = Math.sin(Math.min(1, k / 0.85) * Math.PI) * 1.2; if (k > 0.3) this.fly((k - 0.3) / 0.7); } },
+    efface: { ms: 1500, cues: [[0.05, 'snip'], [0.4, 'rustle']],
+      start() { this.puff = burst(dust, new THREE.Vector3(ax, 0.35, az), { spread: 0.5, rise: 0.6, spin: true }); },
+      tick(k) { this.puff(k); chips.forEach((c, i) => { c.visible = k < 0.25 + i * 0.1; }); } },
+  };
+}
+
+/** Smeargle's walls: cream plaster splashed with paint, drips running down, a plaque. */
+function studioWall() {
+  const W = (COLS + 0.8) * U, H = TOP * U, f = fine(W, H, 5), { g, lin } = f, r = seeded(17);
+  const paints = ['#e84838', '#f8c830', '#3878e0', '#58b858', '#a868e0', '#f878b0'];
+  g.fillStyle = lin(0, 0, 0, H, ['#fbf4e6', '#ecdfc8']); g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 40; i++) {
+    const x = r() * W, y = wy(TOP - 0.6) + r() * (wy(1.2) - wy(TOP - 0.6)), rad = 1.5 + r() * 4;
+    g.fillStyle = paints[i % paints.length]; g.globalAlpha = 0.85;
+    g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+    for (let k = 0; k < 4; k++) { g.beginPath(); g.arc(x + (r() - 0.5) * rad * 4, y + (r() - 0.5) * rad * 3, rad * 0.3, 0, Math.PI * 2); g.fill(); }
+    if (r() < 0.4) g.fillRect(x - 0.5, y, 1, rad * 2 + r() * 10);
+  }
+  g.globalAlpha = 1;
+  g.fillStyle = lin(0, wy(1.2), 0, wy(0), ['#a87848', '#7a5430']); g.fillRect(0, wy(1.2), W, wy(0) - wy(1.2));
+  wallPlaque(f, W, "SMEARGLE'S STUDIO", ['#6a3a18', '#fff4d8', '#f0d8a0', '#a83820']);
+  return f.c;
+}
+
+function studioSide() {
+  const W = ROWS * U, H = TOP * U, f = fine(W, H, 4), { g, lin } = f;
+  g.fillStyle = lin(0, 0, 0, H, ['#f6eedc', '#e6d8c0']); g.fillRect(0, 0, W, H);
+  g.fillStyle = lin(0, wy(1.2), 0, wy(0), ['#a87848', '#7a5430']); g.fillRect(0, wy(1.2), W, wy(0) - wy(1.2));
+  return f.c;
+}
+
+/** A canvas on an easel: its painting so far, to which a paint act adds. */
+function easelArt(seed, extra = 0) {
+  const { c, g } = fine(40, 30, 6), r = seeded(seed), paints = ['#e84838', '#f8c830', '#3878e0', '#58b858', '#a868e0', '#f878b0'];
+  g.fillStyle = '#fffef6'; g.fillRect(0, 0, 40, 30);
+  for (let i = 0; i < 6 + extra; i++) {
+    g.strokeStyle = paints[Math.floor(r() * paints.length)]; g.lineWidth = 1.5 + r() * 2.5; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(r() * 40, r() * 30); g.quadraticCurveTo(r() * 40, r() * 30, r() * 40, r() * 30); g.stroke();
+  }
+  g.strokeStyle = '#c8b898'; g.lineWidth = 1.5; g.strokeRect(0.75, 0.75, 38.5, 28.5);
+  return c;
+}
+
+async function buildStudio(figs) {
+  shell({ floor: studyFloor(), wall: studioWall(), side: studioSide, edge: '#5a3a20', cap: '#7a5430', under: '#2a1a0c', bg: '#1a100a' });
+  const wood = std({ color: '#b88850', roughness: 0.8 }), dark = std({ color: '#7a5430', roughness: 0.85 });
+  const xs = [3.2, 5.2, 7.1], canvases = xs.map((tx, i) => {   // three easels: a touch-up, a repaint, the full portrait
+    const x = tileX(tx), z = tileZ(1.3), g = new THREE.Group();
+    g.position.set(x, 0, z);
+    B.group.add(g);
+    for (const s of [-1, 1]) { const leg = mesh(new THREE.BoxGeometry(0.06, 1.9, 0.06), wood, s * 0.32, 0.92, 0.08, g); leg.rotation.z = s * 0.16; }
+    const back = mesh(new THREE.BoxGeometry(0.06, 1.8, 0.06), dark, 0, 0.88, -0.32, g); back.rotation.x = -0.32;
+    mesh(new THREE.BoxGeometry(0.9, 0.06, 0.12), wood, 0, 0.82, 0.12, g);
+    const big = i === 2, w = big ? 1.1 : 0.9, h = big ? 0.82 : 0.68;
+    const art = mesh(new THREE.BoxGeometry(w, h, 0.04), [dark, dark, dark, dark, std({ map: texOf(easelArt(11 + i * 7)), roughness: 0.9 }), dark], 0, 0.86 + h / 2, 0.14, g);
+    art.rotation.x = -0.1;
+    g.traverse(o => { o.userData.spot = i; });
+    B.blocked.add(key(Math.floor(tx), 1));
+    return { art, seed: 11 + i * 7, x, z, top: 0.86 + h };
+  });
+  piece('arttable', 0, 1); piece('stool', 1, 3); piece('arttable', 9, 1); piece('floorlamp', 10, 4);
+  const paints = ['#e84838', '#f8c830', '#3878e0', '#58b858', '#a868e0'];
+  [[1.2, 2.1], [2.2, 4.6], [8.6, 2.4], [9.4, 4.9], [4.1, 2.6]].forEach(([tx, ty], i) => {   // paint pots, one tipped over
+    const pot = mesh(new THREE.CylinderGeometry(0.13, 0.12, 0.2, 12), [std({ color: '#d8d8e0', roughness: 0.5 }), std({ color: paints[i], roughness: 0.4 }), std({ color: '#d8d8e0' })], tileX(tx), 0.1, tileZ(ty));
+    if (i === 4) { pot.rotation.z = Math.PI / 2; pot.position.y = 0.13; const splat = mesh(new THREE.CircleGeometry(0.32, 14), std({ color: paints[i], roughness: 0.3 }), tileX(tx) + 0.32, 0.012, tileZ(ty)); splat.rotation.x = -Math.PI / 2; splat.scale.y = 0.7; splat.raycast = () => {}; }
+  });
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/smeargle-front.gif' }, { x: 6.2, ty: 2 });
+  B.blocked.add(key(6, 2));
+  B.spots = xs.map(tx => ({ step: { x: Math.round(tx), y: 3 } }));
+  // three signs a little over two tiles apart: the middle one floats higher so none overlap on a phone
+  B.anchors = canvases.map((c, i) => new THREE.Vector3(c.x, i === 1 ? 3.05 : 1.95, c.z));
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(paints[i % paints.length]), 0.24));
+  const repaint = (c, extra) => { const m = c.art.material[4], old = m.map; m.map = texOf(easelArt(c.seed, extra)); old?.dispose(); };   // each stroke's texture replaces the last one
+  B.reset = () => canvases.forEach(c => repaint(c, 0));
+  B.acts = {
+    paint: { ms: 1900, cues: [[0.05, 'rustle'], [0.45, 'rustle'], [0.85, 'stat-up']],
+      start(o) {
+        this.c = canvases[o?.i ?? 0];
+        this.fly = burst(sparks, new THREE.Vector3(this.c.x, this.c.top - 0.2, this.c.z + 0.3), { spread: 0.5, rise: 0.9, spin: true });
+        this.strokes = 0;
+      },
+      tick(k) {
+        this.fly(k);
+        const n = Math.floor(k * 5);
+        if (n > this.strokes) { this.strokes = n; repaint(this.c, n * 2); }
+      } },
+  };
+}
+
+async function buildBonfire(figs, { look: L }) {
+  const rnd = wild(L, 'night', { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1.1], [9, 1, 1], [0, 5, 1.2], [10, 5, 1.1]] });   // always after dark
+  B.env = { ...B.env, bloom: 0.7 };
+  B.shotTop = 3.2;
+  const fx = tileX(5), fz = tileZ(1.6), rock = ['#a8a098', '#888078', '#605850'];
+  for (let i = 0; i < 11; i++) { const a = i / 11 * Math.PI * 2; boulder(fx + Math.cos(a) * 0.85, fz + Math.sin(a) * 0.6, 0.24, rock, rnd, { squash: 0.6 }); }
+  const bark = std({ color: '#82583a', roughness: 0.95 }), end = std({ color: '#c89868', roughness: 0.9 });
+  for (const [a, tilt] of [[0.4, 0.5], [2.1, 0.45], [3.9, 0.55]]) {   // logs leaning together
+    const log = mesh(new THREE.CylinderGeometry(0.08, 0.1, 1.0, 8), bark, fx + Math.cos(a) * 0.2, 0.3, fz + Math.sin(a) * 0.14);
+    log.rotation.set(Math.sin(a) * tilt, 0, -Math.cos(a) * tilt);
+  }
+  for (const s of [-1, 1]) {   // a log seat either side
+    const seat = mesh(new THREE.CylinderGeometry(0.17, 0.17, 1.3, 10), [bark, end, end], fx + s * 2.3, 0.17, fz + 0.6);
+    seat.rotation.set(0, s * 0.4, Math.PI / 2);
+  }
+  const fire = new THREE.Group();
+  fire.position.set(fx, 0.18, fz);
+  B.group.add(fire);
+  const flames = [['#f88028', 0.95, 0], ['#f8c040', 0.7, 0.18], ['#f87828', 0.6, -0.18], ['#fff4c0', 0.45, 0]].map(([col, size, dx]) => {
+    const f = sprite(flameArt(col), size);
+    f.visible = true;
+    f.center.set(0.5, 0);
+    f.position.set(fx + dx, 0.18, fz + 0.05);
+    return { f, size, dx };
+  });
+  const purple = sprite(flameArt('#a878f0'), 1.3);
+  purple.center.set(0.5, 0);
+  purple.position.set(fx, 0.18, fz);
+  const halo = sprite(haloArt('#f8a040'), 3.2);
+  halo.material.blending = THREE.AdditiveBlending;
+  halo.material.opacity = 0.55;
+  halo.visible = true;
+  halo.position.set(fx, 0.7, fz);
+  const light = new THREE.PointLight('#ff9a40', 2.2, 7, 1.6);
+  light.position.set(fx, 1.0, fz + 0.3);
+  B.group.add(light);
+  const hit = mesh(new THREE.CylinderGeometry(0.75, 0.75, 1.4, 12), new THREE.MeshBasicMaterial({ visible: false }), fx, 0.7, fz);
+  hit.userData.spot = 0;
+  for (const t of [[4, 1], [5, 1], [6, 1], [4, 2], [5, 2], [6, 2], [2, 2], [3, 2], [7, 2], [8, 2]]) B.blocked.add(key(...t));
+  const left = await figure('left', figs.left ?? { src: 'assets/pokemon/litwick-front.gif', flip: true }, { x: 3.1, ty: 2.1, y: 0.33 });
+  const right = await figure('right', figs.right ?? { src: 'assets/pokemon/litwick-front.gif' }, { x: 6.9, ty: 2.1, y: 0.33 });
+  B.who.left = left; B.who.right = right;
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(fx, 2.3, fz);
+  tufts(L, 30, rnd);
+  let roar = 0;
+  B.ticks.push((now) => {
+    const flick = calm ? 0 : Math.sin(now / 90) * 0.06 + Math.sin(now / 37) * 0.04;
+    flames.forEach(({ f, size, dx }, i) => { f.scale.set(size * (1 + roar * 0.6), size * (1 + flick * (i + 1) + roar * 1.2), 1); f.position.x = fx + dx * (1 + roar * 0.5); });
+    purple.visible = roar > 0.05;
+    purple.material.opacity = roar;
+    purple.scale.set(1.3 * (0.6 + roar * 0.6), 1.3 * (0.6 + roar * 1.3), 1);
+    light.intensity = 2.2 + flick * 6 + roar * 3;
+    halo.material.opacity = 0.55 + flick + roar * 0.3;
+    if (!calm) [left, right].forEach((w, i) => { w.group.rotation.z = Math.sin(now / 600 + i * 1.7) * 0.06; });
+  });
+  const wisps = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 3 ? '#a878f0' : '#e8d8ff'), 0.3));
+  B.reset = () => { roar = 0; };
+  B.acts = {
+    offer: { ms: 2200, cues: [[0.05, 'burn'], [0.4, 'spirit']],
+      start() { this.up = burst(wisps, new THREE.Vector3(fx, 1.2, fz), { spread: 0.8, rise: 2.0 }); },
+      tick(k) { roar = Math.sin(Math.min(1, k / 0.9) * Math.PI); if (k > 0.2) this.up((k - 0.2) / 0.8); if (k > 0.97) roar = 0; } },
+  };
+}
+
+/** A card face down: a Poké Ball on its back. */
+function cardBackArt() {
+  const { c, g } = fine(20, 28, 6);
+  g.fillStyle = '#f8f8f8'; g.fillRect(0, 0, 20, 28);
+  g.fillStyle = '#e84838'; g.fillRect(1.5, 1.5, 17, 12.5);
+  g.fillStyle = '#28242c'; g.fillRect(1.5, 13, 17, 2);
+  g.beginPath(); g.arc(10, 14, 3.6, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#f8f8f8'; g.beginPath(); g.arc(10, 14, 2, 0, Math.PI * 2); g.fill();
+  g.strokeStyle = '#28242c'; g.lineWidth = 1; g.strokeRect(0.5, 0.5, 19, 27);
+  return c;
+}
+
+async function buildFlip(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.2], [0, 4, 1.1], [10, 5, 1.2], [1, 1, 1]] });
+  B.shotTop = 3.2;
+  const x = tileX(5), z = tileZ(1.5), table = new THREE.Group(), steel = std({ color: '#b8b8c4', roughness: 0.4, metalness: 0.5 });
+  table.position.set(x, 0, z);
+  B.group.add(table);
+  mesh(rbox(2.4, 0.08, 1.3, 0.03), std({ color: '#48a058', roughness: 0.95 }), 0, 0.78, 0, table);
+  mesh(new THREE.BoxGeometry(2.44, 0.05, 1.34), std({ color: '#2e7a40', roughness: 0.9 }), 0, 0.73, 0, table);
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.74, 8), steel, sx * 1.08, 0.37, sz * 0.55, table);
+  const pole = mesh(new THREE.CylinderGeometry(0.03, 0.03, 2.4, 8), steel, -1.4, 1.2, -0.4, table);   // a parasol over it
+  const shade = mesh(new THREE.ConeGeometry(1.3, 0.45, 12, 1, true), std({ color: '#f8d048', roughness: 0.8, side: THREE.DoubleSide }), -1.1, 2.3, -0.3, table);
+  shade.rotation.z = -0.15;
+  pole.rotation.z = -0.12;
+  const back = std({ map: texOf(cardBackArt()), roughness: 0.6 }), edge = std({ color: '#f8f8f8' }), front = std({ color: '#fff8e0', roughness: 0.7 });
+  const cards = [];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {
+    const card = mesh(new THREE.BoxGeometry(0.36, 0.02, 0.5), [edge, edge, back, front, edge, edge], -0.66 + c * 0.44, 0.83, -0.28 + r * 0.56, table);
+    cards.push(card);
+  }
+  table.traverse(o => { o.userData.spot = 0; });
+  for (const t of [[4, 1], [5, 1], [6, 1], [4, 2], [5, 2], [6, 2], [3, 1]]) B.blocked.add(key(...t));
+  const ball = await figure('mon', figs.mon ?? { src: 'assets/pokemon/voltorb-front.gif' }, { x: 7.6, ty: 2 });
+  B.who.mon = ball;
+  B.spots = [{ step: { x: 5, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(x, 1.9, z);
+  tufts(L, 40, rnd);
+  const home = ball.base.x;
+  B.ticks.push((now) => { if (!calm) ball.group.position.x = home + Math.sin(now / 900) * 0.35; });
+  const sparks = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#f8e048' : '#ffffff'), 0.22));
+  B.reset = () => cards.forEach(c => { c.rotation.set(0, 0, 0); c.position.y = 0.83; });
+  B.acts = {
+    deal: { ms: 1800, cues: [[0.05, 'card'], [0.3, 'card'], [0.55, 'card']],
+      start() { this.fly = burst(sparks, new THREE.Vector3(x, 1.0, z), { spread: 0.9, rise: 0.8 }); },
+      tick(k) {
+        this.fly(k);
+        cards.forEach((c, i) => {   // each flips up and over in turn, and lies back down
+          const u = Math.max(0, Math.min(1, (k - i * 0.06) / 0.45));
+          c.rotation.z = Math.sin(u * Math.PI) * Math.PI;
+          c.position.y = 0.83 + Math.sin(u * Math.PI) * 0.18;
+        });
+      } },
+  };
+}
+
+async function buildRival(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [0, 3, 1], [10, 4, 1.2], [1, 1, 1.1]] });
+  B.shotTop = 3.2;
+  const wood = std({ color: '#a87840', roughness: 0.85 }), plank = std({ color: '#d8a868', roughness: 0.85 });
+  mesh(new THREE.BoxGeometry(0.1, 1.5, 0.1), wood, tileX(8.6), 0.75, tileZ(1));   // a signpost
+  const board = mesh(rbox(0.9, 0.4, 0.06, 0.03), plank, tileX(8.6) + 0.2, 1.3, tileZ(1) + 0.05);
+  board.rotation.y = -0.15;
+  const rival = await figure('npc', figs.npc ?? { npc: 'rival' }, { x: 4.6, ty: 0.9 });
+  const sneasel = await figure('mon', figs.mon ?? { src: 'assets/pokemon/sneasel-front.gif' }, { x: 6.1, ty: 1.2 });
+  B.who.npc = rival; B.who.mon = sneasel;
+  const rock = ['#a8a098', '#888078', '#605850'], gold = std({ color: '#f8c830', roughness: 0.3, metalness: 0.6 });
+  const props = [3.4, 5, 6.4].map((tx, i) => { const g = new THREE.Group(); g.position.set(tileX(tx), 0, tileZ(2.3)); B.group.add(g); g.userData.home = g.position.clone(); return g; });
+  boulder(props[0].position.x, props[0].position.z, 0.5, rock, rnd, { squash: 0.35 }).traverse(o => { o.userData.spot = 0; });
+  const coins = [[0, 0], [0.08, 0.06], [-0.08, 0.05], [0.02, -0.07]].map(([dx, dz], i) => mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.025, 14), gold, dx, 0.2 + (i === 1 ? 0.03 : 0), dz, props[0]));
+  const bag = std({ color: '#e86838', roughness: 0.8 }), bagDark = std({ color: '#a8401c', roughness: 0.8 });
+  mesh(rbox(0.5, 0.42, 0.32, 0.08), bag, 0, 0.21, 0, props[1]);
+  const flap = mesh(rbox(0.5, 0.06, 0.3, 0.03), bagDark, 0, 0.44, -0.12, props[1]);
+  flap.rotation.x = -0.9;
+  mesh(new THREE.BoxGeometry(0.14, 0.1, 0.02), std({ color: '#f8d048' }), 0, 0.26, 0.165, props[1]);
+  mesh(new THREE.CylinderGeometry(0.26, 0.3, 0.32, 12), std({ color: '#8a5a30', roughness: 0.95 }), 0, 0.16, 0, props[2]);
+  const disc = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20), std({ color: '#b8c8e8', roughness: 0.2, metalness: 0.7 }), 0, 0.34, 0, props[2]);
+  mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.025, 12), std({ color: '#283058' }), 0, 0.35, 0, props[2]);
+  props.forEach((g, i) => g.traverse(o => { o.userData.spot = i; }));
+  for (const t of [[3, 2], [5, 2], [6, 2], [4, 0], [4, 1], [6, 1], [8, 1]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 5, y: 3 } }, { step: { x: 6, y: 3 } }];
+  // the middle sign floats higher than the outer two, so their names never overlap on a phone
+  B.anchors = props.map((g, i) => new THREE.Vector3(g.position.x, i === 1 ? 2.3 : 1.05, g.position.z));
+  tufts(L, 40, rnd);
+  const sparks = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffffff'), 0.24));
+  const moving = { money: coins[1], item: props[1], move: disc };
+  const root = B.group;   // B is gone by the time an act plays
+  B.reset = () => { props.forEach(g => g.position.copy(g.userData.home)); coins[1].position.set(0.08, 0.23, 0.06); disc.position.set(0, 0.34, 0); props.forEach(g => { g.visible = true; }); coins[1].visible = disc.visible = true; };
+  B.acts = {
+    barter: { ms: 1700, cues: (o) => [[0.05, o?.what === 'money' ? 'coins' : 'item'], [0.65, 'item-get']],
+      start(o) {
+        this.what = o?.what || 'money';
+        this.thing = moving[this.what];
+        this.from = this.thing.getWorldPosition(new THREE.Vector3());
+        this.to = new THREE.Vector3(rival.base.x + 0.2, 1.2, rival.base.z + 0.15);
+        this.shine = burst(sparks, this.to, { spread: 0.4, rise: 0.6 });
+        this.parent = this.thing.parent;
+        root.attach(this.thing);
+      },
+      tick(k) {
+        const u = Math.min(1, k / 0.6), p = this.from.clone().lerp(this.to, ease(u));
+        p.y += Math.sin(u * Math.PI) * 0.8;
+        this.thing.position.copy(p);
+        this.thing.visible = k < 0.65;
+        if (k > 0.6) this.shine((k - 0.6) / 0.4);
+        if (k > 0.97) { this.parent.attach(this.thing); this.thing.visible = false; }
+      } },
+  };
+}
+
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais before a round stone arch on
@@ -9955,9 +11419,13 @@ function townCrowd(town, chats) {
 }
 
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
-  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, gym: buildGym, town: buildTown, home: buildHome };
+  berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, snorlax: buildSnorlax, trash: buildTrash, ditto: buildDitto,
+  abra: buildAbra, billspc: buildBillsPc, wheel: buildWheel, idol: buildIdol, keystone: buildKeystone, moon: buildMoon, stall: buildStall,
+  library: buildLibrary, fishing: buildFishing, sludge: buildSludge, storeroom: buildStoreroom, contest: buildContest,
+  tablet: buildTablet, studio: buildStudio, bonfire: buildBonfire, flip: buildFlip, rival: buildRival,
+  gym: buildGym, town: buildTown, home: buildHome };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'gym', 'town', 'home']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'fishing', 'sludge', 'contest', 'tablet', 'bonfire', 'flip', 'rival', 'gym', 'town', 'home']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);
@@ -10029,7 +11497,7 @@ function arrived() {
 /* ---------- taps ---------- */
 
 const canWalk = (e) => !busy && !acting && !frozen && !document.querySelector('.gym-scene') && inRoom() && !document.querySelector('dialog[open]')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #bag, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
 
 /** The screen's ray through a pointer as straight pieces of the world: one, or in a rolling town many short ones, each put
     back where it stands unbent, as the bend only moves what is drawn (the Clearing's tapRays()). Made once and reused,
