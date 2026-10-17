@@ -105,5 +105,19 @@ export function safariUnlockProgress(save) {
   return `${ids.filter(id => beaten.has(id)).length}/${ids.length}`;
 }
 
+/** The Collection's and Trainer Card's Pokédex count: the three biomes' entries until the Safari Zone opens (its goal),
+    then every page found so far, bonus roads and the Depths included, so a road not yet taken stays a secret
+    (the user's call, 2026-10-17). */
+export function dexTally(save) {
+  const seen = new Set(save.dex.seen), stats = save.stats || {};
+  const found = safariOpen(save) ? [
+    ...DEX_PAGES,
+    ...BONUS_PAGES.filter(p => (stats.biomesSeen || []).includes(p.biome) || p.ids.some(id => seen.has(id))),
+    ...((stats.deepestBiome >= 4 || DEPTHS_PAGE.ids.some(id => seen.has(id))) ? [DEPTHS_PAGE] : []),
+  ] : DEX_PAGES;
+  const ids = found.flatMap(p => p.ids), beaten = new Set(save.dex.defeated);
+  return { n: ids.filter(id => beaten.has(id)).length, total: ids.length, all: found !== DEX_PAGES };
+}
+
 /** Every entry in dex order, numbered from 1 like the games. */
 export const DEX_NUMBER = Object.fromEntries(ALL_PAGES.flatMap(p => p.ids).map((id, i) => [id, i + 1]));
