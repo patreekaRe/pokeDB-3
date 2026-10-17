@@ -635,8 +635,8 @@ says which feel too hard, too easy or too busy; tune that game's numbers alone.
 `main` too): Gengar's Haunted, Lapras's Lagoon, Charizard's Volcano and Rayquaza's Sky Pillar, on `js/pinball-kit.js`
 (see `docs/reference/hub-base-mall.md`'s last section), patch 1.24 "Full Tilt". Played by a bot headless only. Next: the
 user plays them on the phone and says which feel too hard, easy or busy (each file's top constants and its `make()`
-numbers are the knobs); their 3D tables were never seen in 3D. All five tables now stand in a row down the Game Corner's right wall, its slot
-machines removed (the user's ask, same day; untested in 3D, the cloud has no phone GPU).
+numbers are the knobs); their 3D tables were never seen in 3D. All five tables stand in a row down the Arcade Room's right wall (moved from the Game Corner's, 2026-10-17; untested
+in 3D, the cloud has no phone GPU).
 
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
@@ -650,8 +650,8 @@ Prompt for each: "▶ Run in: CLOUD (attach pokeDB-3). Read CLAUDE.md and docs/r
 <game> (<file>): ask me what I thought of it first, then polish it as the roadmap's Home arcade entry says. Test it
 headless and send me a screenshot and a playtest link." Their 3D machines are done (2026-10-12): `B.arcade` / `B.whack` /
 `B.pinball` in `js/base-mesh.js`, shapes in `js/base-shapes.js`, pictures in `js/arcade-art.js` (the claw and skee-ball
-still the auto hull). Eight of them also stand in a row under the Game Corner's screens, free to play (`ARCADE` in `js/mall-corner.js`),
-and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
+still the auto hull). Since 2026-10-17 every machine stands in the Arcade Room, free to play (`MACHINES` in `js/mall-arcade.js`); before that
+eight stood under the Game Corner's screens, and Pong and the Maze under the two Plinko boards on the left (2026-10-12, the user's layout: the second board back,
 both raised like the screens; the right wall's top four slot machines taken out; the cabinets' flicker fixed by
 polygon offset and wider gaps in `js/base-mesh.js`, not yet seen on the user's phone). The claw and skee-ball aren't
 in the Game Corner yet. Magikarp Fishing was replaced by Pidgey Flap and two games added (2026-10-12, the user's picks
@@ -1059,9 +1059,18 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
   once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
-  three again and says whether it still resets, and on which phone (an older iPhone has far less room). If the Game
-  Corner still does it, the next lever is the user's idea: move the arcade cabinets into a room of their own (the corner
-  alone is ~85 MB of textures headless, the walls and floor ~26 MB of it, ~100 cabinet and table faces most of the rest).
+  three again and says whether it still resets, and on which phone (an older iPhone has far less room). The next lever,
+  the user's idea, is built too: the Arcade Room below. If it still resets, the cabinets' faces are the next lever
+  (smaller, and one picture shared between machines that look alike; `B.arcade` in `js/base-mesh.js`).
+
+- **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
+  after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
+  Corner into a 15 x 10 room through a lit ARCADE doorway in its right wall (rows 6-7), Porygon at a FREE PLAY desk, the
+  weekly leaderboard over it, the GAME CORNER sign back down over Meowth. Headless at an iPhone's size: the Game Corner
+  83 MB of textures before, 55 after, the Arcade 54, only one loaded at a time. My picks, said to the user: Porygon; the
+  leaderboard moves; the Game Corner's freed spots stay open; four cabinets on the left wall, not a middle row; no
+  regulars in the Arcade yet (their lines all talk to Meowth). The user walks it (`?mall=arcade&coins=5000`) and says
+  what to change.
 
 - **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
   shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the

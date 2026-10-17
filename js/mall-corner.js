@@ -1,16 +1,15 @@
 /* mall-corner.js  -  the Poké Mall's Game Corner, walked into: a huge neon arcade behind the hall's middle front
    (rebuilt 2026-10-10, the user's ask: the room bigger, and no more cramped prize cases). On the back wall three big
    showcase screens right of Meowth's prize counter, each cycling through what it sells, opened up close to step through
-   one at a time (js/showcase.js): Pokémon skins, shinies and perks; two Plinko boards left of it, the home arcade's
-   machines under them all (a tap on Meowth: the scratch card or the prize counter). Down the floor the games, all free
-   (no betting since 2026-10-12): Voltorb Flip, Who's That Pokémon?, Blackjack and High-Low tables, slot machines down
-   the side walls.
+   one at a time (js/showcase.js): Pokémon skins, shinies and perks; two Plinko boards left of it (a tap on Meowth: the
+   scratch card or the prize counter). Down the floor the games, all free (no betting since 2026-10-12): Voltorb Flip,
+   Who's That Pokémon?, Blackjack and High-Low tables, slot machines down the left wall. The arcade machines are next
+   door, through the right wall (js/mall-arcade.js).
    Painted smooth (fine()); js/mall-3d.js walks it (its own COLS x ROWS, the camera following you), this file builds it. */
 
 import { cornerEntries } from './shop.js';
 import { trim, tex, bakeColours } from './hd2d.js';
 import { furnitureModel } from './base-mesh.js';
-import { PIECES } from './base-furniture.js';
 import { fine, texOf, words, star, GC, newsArt } from './hub-3d.js';
 import { pcModel, livePc } from './hub-pc.js';
 import { stillPays } from './casino-pot.js';
@@ -19,7 +18,6 @@ import { DAILY_CAP } from './data/corner.js';
 import { SHOWCASES } from './showcase.js';
 import { stampState } from './scratch.js';
 import { PLINKO_PAYS } from './data/casino.js';
-import { ARCADE_GAMES, arcadeValue } from './data/leaderboard.js';
 
 /* The room: `x` a thing's first tile, `w` its tiles; y 0 is the back wall. */
 const COLS = 21, ROWS = 13, RUNNER = 10, DOOR = { x: RUNNER, y: ROWS - 1 };
@@ -32,17 +30,11 @@ const SHOWS = [   // mounted on the back wall's right half (2026-10-12, the user
 /* two Plinko boards left of the counter, raised like the screens so arcade machines stand under them (2026-10-12, the
    user's ask: the second board back) */
 const PLINKOS = [2.5, 5.5];
-/* the home arcade's machines along the back wall, under the screens and the Plinko boards (2026-10-12, the user's ask),
-   free to play for fun, the prize at Meowth's counter to take home: [kind, x, y, face]. Eight cabinets each side of the
-   counter (the user's layout, 2026-10-12), Whac-a-Diglett and the pinball table on the side walls where their top slot
-   machines stood; every pinball table down the right wall, its slot machines gone (2026-10-17, the user's ask). */
-const ARCADE = [
-  ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'berrycabinet', 'dittocabinet'].map((id, x) => [id, x]),
-  ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'bubblecabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
-  ['whackmachine', 0, 3, 1],
-  ...['pokepinball', 'gengarpinball', 'lapraspinball', 'volcanopinball', 'skypinball'].map((id, i) => [id, COLS - 1, 3 + i, -1]),
-];
-const ARCADE_K = 0.95;
+/* The way through to the Arcade Room (js/mall-arcade.js), in the right wall at the end of the aisle between the quiz and
+   High-Low tables, where the pinball tables stood (2026-10-17, the user's call: the arcade machines in a room of their
+   own, so the Game Corner uploads half the pictures on a phone). `at` its floor tile; the doorway spans rows 6 and 7. */
+const ARCADE_DOOR = { x: COLS - 1, y: 6 };
+export const ARCADE_K = 0.95;
 const SHOW_W = 2.3, DESK_W = 4.2;   // a little smaller since 2026-10-12, off the leaderboard (the user's ask)
 const SHOW_H = 2.15, SHOW_D = 0.12, SHOW_Y = 2.05, PLINKO_Y = SHOW_Y, SCREEN = { x0: 0.07, x1: 0.93, y0: 0.2, y1: 0.8 };   // the screen's share of the face
 const CYCLE = 3600;   // ms each thing stays on a showcase's screen
@@ -74,7 +66,7 @@ const CASINO = {
     line: 'Blackjack! I deal, you try to beat me to 21. Blackjack pays 3 to 2. Tap again to sit down.',
     open: (done) => import('./blackjack.js').then(m => m.openBlackjack(done)) },
 };
-const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
+export const NEON = { pink: '#ff5ab8', cyan: '#4ae8f0', gold: '#ffd84a', lime: '#9cf060' };
 const WALL = ['#3a2260', '#2a1648', '#1c0e34'];
 
 /* Meowth keeps the Game Corner (Pay Day: it can't keep its paws off a coin). */
@@ -96,24 +88,24 @@ export const KEEPER = {
 
 /* ---------- painting ---------- */
 
-const glow = (g, col, blur) => { g.shadowColor = col; g.shadowBlur = blur; };
+export const glow = (g, col, blur) => { g.shadowColor = col; g.shadowBlur = blur; };
 
 /** A neon tube along a path: a soft halo, the colour, a white-hot core; the shine map gets it too. */
-function tube(g, s, col, w, path) {
+export function tube(g, s, col, w, path) {
   for (const [ctx, c, lw, b] of [[g, col, w * 2.2, w * 3], [g, col, w, 0], [g, '#ffffff', w * 0.35, 0], [s, col, w * 1.4, w * 2]]) {
     ctx.save(); glow(ctx, c, b); ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.globalAlpha = lw > w * 2 ? 0.35 : 1;
     ctx.beginPath(); path(ctx); ctx.stroke(); ctx.restore();
   }
 }
 
-function coin(g, x, y, r) {
+export function coin(g, x, y, r) {
   g.fillStyle = GC.goldDark; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
   g.fillStyle = GC.gold; g.beginPath(); g.arc(x, y, r * 0.8, 0, Math.PI * 2); g.fill();
   g.fillStyle = '#fff6c8'; star(g, x, y, r * 0.5);
 }
 
 /** Violet wallpaper in a gold lattice, with stars; `wy` turns a height into the painting's y. */
-function paper(f, W, H) {
+export function paper(f, W, H) {
   const { g, lin } = f;
   g.fillStyle = lin(0, 0, 0, H, [WALL[2], WALL[1], WALL[0], WALL[1]]); g.fillRect(0, 0, W, H);
   g.strokeStyle = 'rgba(248,208,64,0.12)'; g.lineWidth = 0.5;
@@ -133,9 +125,9 @@ function wallArt({ cols, top: TOP, u: U }) {
   rr(0, wy(0.9), W, H - wy(0.9), 0, lin(0, wy(0.9), 0, H, ['#24123e', '#140a24']));
   tube(g, s, NEON.cyan, 1.1, (c) => { c.moveTo(0, wy(0.9)); c.lineTo(W, wy(0.9)); });
   tube(g, s, NEON.pink, 1.1, (c) => { c.moveTo(0, wy(5.4)); c.lineTo(W, wy(5.4)); });
-  // the sign: a red board ringed with bulbs, gold letters
-  // up over the pink tube since 2026-10-12 (the user's layout: the arcade leaderboard took its place over the counter)
-  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 5.6 * U, sh = 26, sy = wy(6.9);
+  // the sign: a red board ringed with bulbs, gold letters, back down over the counter since the arcade leaderboard went
+  // next door with the machines (2026-10-17)
+  const cx = wx(COUNTER.x + COUNTER.w / 2), sw = 5.6 * U, sh = 26, sy = wy(4.1);
   rr(cx - sw / 2 - 2, sy - 2, sw + 4, sh + 4, 4, GC.goldDark);
   rr(cx - sw / 2, sy, sw, sh, 3, lin(0, sy, 0, sy + sh, [GC.red, GC.redDark]));
   s.fillStyle = '#3a1010'; s.beginPath(); s.roundRect(cx - sw / 2, sy, sw, sh, 3); s.fill();
@@ -158,7 +150,7 @@ function wallArt({ cols, top: TOP, u: U }) {
 }
 
 /** A side wall's inside: the same paper and tubes. */
-function sideArt({ rows, top: TOP, u: U }) {
+export function sideArt({ rows, top: TOP, u: U }) {
   const W = rows * U, H = TOP * U, f = fine(W, H, 3), { g, rr, lin, shine } = f, s = shine();
   const wy = (y) => (TOP - y) * U;
   paper(f, W, H);
@@ -171,7 +163,7 @@ function sideArt({ rows, top: TOP, u: U }) {
 /** A Pokémon casino's carpet (2026-10-12, the user's ask): deep crimson under a gold diamond lattice, a Poké Ball at
     every crossing, card suits and coins in the diamonds, a gold border, and a royal blue runner up the middle studded
     with gold Poké Ball medallions. */
-function floorArt({ cols, rows }) {
+export function floorArt({ cols, rows, runner = RUNNER, from = 3 }) {
   const T = 16, W = cols * T, H = rows * T, f = fine(W, H, 5), { g, rr, lin } = f;
   g.fillStyle = '#6a1424'; g.fillRect(0, 0, W, H);
   for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {   // each diamond a touch darker or lighter
@@ -200,7 +192,7 @@ function floorArt({ cols, rows }) {
     else { g.fillStyle = '#c89418'; star(g, cx, cy, 1.6); }
   }
   rr(0, 0, W, 2, 0, GC.goldDark); rr(0, H - 2, W, 2, 0, GC.goldDark); rr(0, 0, 2, H, 0, GC.goldDark); rr(W - 2, 0, 2, H, 0, GC.goldDark);
-  const rx = RUNNER * T + 1.5, rw = T - 3, ry = 3 * T;
+  const rx = runner * T + 1.5, rw = T - 3, ry = from * T;
   rr(rx - 1.2, ry, rw + 2.4, H - ry, 0, '#e8c860');
   rr(rx, ry, rw, H - ry, 0, lin(rx, 0, rx + rw, 0, ['#1a2a7a', '#2a44b0', '#1a2a7a']));
   for (let y = ry + T / 2; y < H; y += T * 1.5) ball(rx + rw / 2, y, 3.6);
@@ -208,7 +200,7 @@ function floorArt({ cols, rows }) {
 }
 
 /** The picked thing's marker: a gold frame with corner sparkles, laid over its cell or machine. */
-function frameArt() {
+export function frameArt() {
   const f = fine(40, 40, 6), { g } = f;
   g.save(); glow(g, NEON.gold, 3); g.strokeStyle = NEON.gold; g.lineWidth = 2;
   g.beginPath(); g.roundRect(2, 2, 36, 36, 4); g.stroke(); g.restore();
@@ -382,49 +374,57 @@ function stampSign(c, { n, of, ready, paid }) {
   }
 }
 
-/** The arcade leaderboard over Meowth's counter: one ranked game at a time, its name and top three this week. `boards` is
-    arcadeTop()'s (null: unreachable, undefined: still loading). */
-function boardScreen(c, boards, at) {
-  const g = c.getContext('2d'), W = c.width, H = c.height, game = ARCADE_GAMES[at % ARCADE_GAMES.length];
-  g.clearRect(0, 0, W, H);
-  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#24123e'); bg.addColorStop(1, '#120824');
-  g.fillStyle = bg; g.strokeStyle = GC.gold; g.lineWidth = 8;
-  g.beginPath(); g.roundRect(6, 6, W - 12, H - 12, 22); g.fill(); g.stroke();
-  g.strokeStyle = 'rgba(255, 90, 184, 0.55)'; g.lineWidth = 2; g.beginPath(); g.roundRect(16, 16, W - 32, H - 32, 14); g.stroke();
-  g.textBaseline = 'middle'; g.textAlign = 'center';
-  g.font = '800 20px system-ui, sans-serif'; g.fillStyle = '#ffa8dc'; g.shadowColor = '#ff5ab8'; g.shadowBlur = 8;
-  g.fillText('🏆 WEEKLY HIGH SCORES 🏆', W / 2, 34);
-  g.font = '900 38px system-ui, sans-serif'; g.fillStyle = '#fff8e0'; g.shadowColor = game.b1; g.shadowBlur = 16;
-  g.fillText(game.name.toUpperCase(), W / 2, 70, W - 60);
-  g.shadowBlur = 0;
-  const rows = boards?.find(b => b.id === game.id)?.rows ?? [];
-  if (!rows.length) {
-    g.font = '800 26px system-ui, sans-serif'; g.fillStyle = '#fffbea';
-    g.fillText(boards === undefined ? 'Loading…' : boards === null ? 'Play to beat your best!' : 'No scores yet. Be the first!', W / 2, 140);
-  }
-  const MEDAL = ['#ffd84a', '#d8d8e8', '#e09858'];
-  rows.slice(0, 3).forEach((r, i) => {   // big enough to read from the door (the user's ask, 2026-10-12)
-    const y = 112 + i * 38;
-    g.fillStyle = r.mine ? 'rgba(255, 216, 74, 0.18)' : 'rgba(255, 255, 255, 0.06)';
-    g.beginPath(); g.roundRect(30, y - 17, W - 60, 34, 10); g.fill();
-    g.fillStyle = MEDAL[i]; g.beginPath(); g.arc(52, y, 14, 0, Math.PI * 2); g.fill();
-    g.font = '900 18px system-ui, sans-serif'; g.fillStyle = '#2a1648'; g.textAlign = 'center'; g.fillText(String(r.rank), 52, y + 1);
-    g.font = '800 26px system-ui, sans-serif'; g.textAlign = 'left'; g.fillStyle = r.mine ? '#ffe890' : '#ffffff';
-    g.fillText(r.entry.name, 76, y + 1, W - 230);
-    g.textAlign = 'right'; g.fillStyle = '#c8ffb8'; g.fillText(arcadeValue(r.entry), W - 44, y + 1);
-  });
-  g.textAlign = 'center';
-  ARCADE_GAMES.forEach((_, i) => {   // which game is up, as dots
-    g.fillStyle = i === at % ARCADE_GAMES.length ? '#ffd84a' : 'rgba(255, 255, 255, 0.25)';
-    g.beginPath(); g.arc(W / 2 + (i - (ARCADE_GAMES.length - 1) / 2) * 16, H - 16, 4, 0, Math.PI * 2); g.fill();
-  });
-}
-
 /** Time left till the UTC day turns over and every game pays again: "5h 12m", or "4:59" in the last hour. */
 function untilReset(now = Date.now()) {
   const d = new Date(now), next = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1);
   const sec = Math.max(0, Math.ceil((next - now) / 1000)), h = Math.floor(sec / 3600), m = Math.floor(sec / 60) % 60, ss = sec % 60;
   return { h, m, s: ss, short: h ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}:${String(ss).padStart(2, '0')}` };
+}
+
+/** The doorway to the Arcade Room (2026-10-17), `DW` x `DH` tiles: an arch in pink and cyan neon, the passage inside dark
+    with a lit floor running in between glowing cabinets, and ARCADE in gold on a bulb-ringed board over it. */
+function arcadeDoorArt() {
+  const W = 44, H = 68, f = fine(W, H, 6), { g, rr, lin, shine } = f, s = shine();
+  const top = 34, arch = (c, k) => { const l = 7 + k, r = 37 - k; c.moveTo(l, H); c.lineTo(l, top); c.arc(22, top, (r - l) / 2, Math.PI, 0); c.lineTo(r, H); };
+  g.save(); g.beginPath(); arch(g, 0); g.closePath(); g.clip();
+  g.fillStyle = lin(0, 19, 0, H, ['#08040f', '#160a2a', '#26123e']); g.fillRect(0, 0, W, H);
+  g.fillStyle = lin(0, 50, 0, H, ['#2a0c26', '#6a1424']); g.beginPath(); g.moveTo(18, 50); g.lineTo(26, 50); g.lineTo(37, H); g.lineTo(7, H); g.fill();
+  g.fillStyle = lin(0, 50, 0, H, ['#1a2a7a', '#2a44b0']); g.beginPath(); g.moveTo(21, 50); g.lineTo(23, 50); g.lineTo(25.5, H); g.lineTo(18.5, H); g.fill();
+  const SCREENS = [NEON.cyan, NEON.pink, NEON.gold, NEON.lime, NEON.pink, NEON.cyan];
+  for (const side of [-1, 1]) for (let i = 2; i >= 0; i--) {   // far to near, either side of the floor
+    const k = 0.55 + i * 0.28, cx = 22 + side * (5 + i * 4.6), cw = 4 * k, ch = 9 * k, by = 50 + i * 5.6, col = SCREENS[i + (side > 0 ? 3 : 0)];
+    rr(cx - cw / 2, by - ch, cw, ch, 0.6, '#1c1030');
+    rr(cx - cw / 2 + 0.5 * k, by - ch + 1.4 * k, cw - k, 3 * k, 0.4, col);
+    s.fillStyle = col; s.beginPath(); s.roundRect(cx - cw / 2 + 0.5 * k, by - ch + 1.4 * k, cw - k, 3 * k, 0.4); s.fill();
+    rr(cx - cw / 2, by - ch - 1.2 * k, cw, 1.2 * k, 0.4, col);
+  }
+  g.restore();
+  tube(g, s, NEON.pink, 1.3, (c) => arch(c, -1.2));
+  tube(g, s, NEON.cyan, 0.8, (c) => arch(c, 1.4));
+  const sy = 2, sh = 13;
+  rr(2, sy - 0.6, 40, sh + 1.2, 3, GC.goldDark);
+  rr(2.6, sy, 38.8, sh, 2.6, lin(0, sy, 0, sy + sh, ['#3a1a66', '#1c0e34']));
+  s.fillStyle = '#1a0a28'; s.beginPath(); s.roundRect(2.6, sy, 38.8, sh, 2.6); s.fill();
+  for (let i = 0; i <= 16; i++) for (const y of [sy + 1.2, sy + sh - 1.2]) {
+    const x = 4 + i * 36 / 16;
+    g.fillStyle = '#fff6c8'; g.beginPath(); g.arc(x, y, 0.5, 0, Math.PI * 2); g.fill();
+    s.fillStyle = '#ffffff'; s.beginPath(); s.arc(x, y, 0.6, 0, Math.PI * 2); s.fill();
+  }
+  g.save(); glow(g, NEON.gold, 3); words(g, 'ARCADE', 22, sy + sh / 2 + 0.4, 7, GC.gold); g.restore();
+  words(s, 'ARCADE', 22, sy + sh / 2 + 0.4, 7, '#ffe890');
+  return f.c;
+}
+
+/** The blade sign over the Arcade's doorway: ARCADE and an arrow in neon on a violet board ringed in gold. */
+function bladeArt() {
+  const W = 34, H = 13, f = fine(W, H, 8), { g, rr, lin, shine } = f, s = shine();
+  rr(0, 0, W, H, 3, GC.goldDark);
+  rr(0.7, 0.7, W - 1.4, H - 1.4, 2.4, lin(0, 0, 0, H, ['#3a1a66', '#1c0e34']));
+  g.save(); glow(g, NEON.pink, 3); words(g, 'ARCADE', W / 2 - 3, H / 2 + 0.3, 6.4, NEON.pink); g.restore();
+  words(g, 'ARCADE', W / 2 - 3, H / 2 + 0.3, 6.4, '#ffe8f6'); words(s, 'ARCADE', W / 2 - 3, H / 2 + 0.3, 6.4, NEON.pink);
+  const arrow = (c) => { c.moveTo(W - 7.5, H / 2 - 2.6); c.lineTo(W - 4, H / 2); c.lineTo(W - 7.5, H / 2 + 2.6); };
+  tube(g, s, NEON.cyan, 0.9, arrow);
+  return f.c;
 }
 
 /* ---------- pictures ---------- */
@@ -521,6 +521,31 @@ function paintScreen(c, def, e, cut) {
   words(g, tag, W - H * 0.23, H * 0.1, H * 0.07, e.done ? '#ffffff' : '#ffe890');
 }
 
+/** Stands Secret Base 3D models in a room as games you walk up to (the slot machines since 2026-10-12, the user's ask:
+    new cabinets): `machine(id, x, y, face, game)`, `face` 0 looking into the room from the back wall, 1 right from the
+    left wall, -1 left from the right. Each blocks its tile and adds its spot. */
+export function machineMaker({ THREE, group, blocked, spots, cols, rows, std }) {
+  const tileX = (tx) => tx + 0.5 - cols / 2, tileZ = (ty) => ty + 0.5 - rows / 2;
+  return (id, x, y, face, game) => {
+    const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
+    if (!model) return;
+    model.scale.setScalar(ARCADE_K);
+    model.position.set(tileX(x), 0, face ? tileZ(y) : -rows / 2 + 0.5);
+    model.rotation.y = face * Math.PI / 2;
+    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
+    bakeColours(model);
+    blocked.add(`${x},${y}`);
+    const H = model.userData.top * ARCADE_K, edge = 0.36;
+    const spot = { id: `${id}${x},${y}`, kind: 'game', game, name: game.name, open: true, line: game.name,
+      step: face ? { x: x + face, y } : { x, y: y + 1 },
+      frame: face ? { x: tileX(x) + face * edge, y: H / 2, z: tileZ(y), w: 1.05, h: H + 0.1, ry: face * Math.PI / 2 }
+        : { x: tileX(x), y: H / 2, z: -rows / 2 + 0.95, w: 1.05, h: H + 0.1 } };
+    spots.push(spot);
+    model.traverse(o => { o.userData.front = spot; });
+    group.add(model);
+  };
+}
+
 /* ---------- building it ---------- */
 
 /** The Game Corner. `size` gives the hall's paint units and wall height; the room is its own COLS x ROWS. Returns its
@@ -547,9 +572,8 @@ export function buildCorner(THREE, size) {
   back.position.set(0, TOP / 2, -rows / 2 - 0.2);
   back.receiveShadow = true;
   group.add(back);
-  const side = sideArt(room);
+  const inside = lit(sideArt(room), 1.1);   // one picture for both walls, uploaded once
   for (const sgn of [-1, 1]) {
-    const inside = lit(side, 1.1);
     const m = new THREE.Mesh(new THREE.BoxGeometry(0.4, TOP, rows), sgn < 0 ? [inside, cap, cap, cap, cap, cap] : [cap, inside, cap, cap, cap, cap]);
     m.position.set(sgn * (cols / 2 + 0.2), TOP / 2, 0);
     m.receiveShadow = true;
@@ -622,26 +646,7 @@ export function buildCorner(THREE, size) {
   });
 
   const chrome = std({ color: '#cdc8e0', metalness: 0.5, roughness: 0.35 }), violet = std({ color: GC.violet, roughness: 0.6 });
-  /* every machine on the floor and walls is its Secret Base 3D model (the slot machines since 2026-10-12, the user's ask:
-     new cabinets): `face` 0 looks into the room from the back wall, 1 right from the left wall, -1 left from the right */
-  const machine = (id, x, y, face, game) => {
-    const model = furnitureModel(THREE, id, (art) => std({ map: tex(art), roughness: 0.9 }));
-    if (!model) return;
-    model.scale.setScalar(ARCADE_K);
-    model.position.set(tileX(x), 0, face ? tileZ(y) : -rows / 2 + 0.5);
-    model.rotation.y = face * Math.PI / 2;
-    model.traverse(o => { if (o.isMesh) o.castShadow = o.receiveShadow = true; });
-    bakeColours(model);
-    blocked.add(`${x},${y}`);
-    const H = model.userData.top * ARCADE_K, edge = 0.36;
-    const spot = { id: `${id}${x},${y}`, kind: 'game', game, name: game.name, open: true, line: game.name,
-      step: face ? { x: x + face, y } : { x, y: y + 1 },
-      frame: face ? { x: tileX(x) + face * edge, y: H / 2, z: tileZ(y), w: 1.05, h: H + 0.1, ry: face * Math.PI / 2 }
-        : { x: tileX(x), y: H / 2, z: -rows / 2 + 0.95, w: 1.05, h: H + 0.1 } };
-    spots.push(spot);
-    model.traverse(o => { o.userData.front = spot; });
-    group.add(model);
-  };
+  const machine = machineMaker({ THREE, group, blocked, spots, cols, rows, std });
   for (const at of CASINO.slots.ats) machine('slotmachine', at.x, at.y, at.face, CASINO.slots);
 
   // the card tables, Blackjack and High-Low, are the Secret Base's 3D models (2026-10-12, the user's ask), grown to stand
@@ -692,12 +697,22 @@ export function buildCorner(THREE, size) {
     group.add(t);
   }
 
-  // the arcade machines, their 3D models from the Secret Base (js/base-mesh.js), each a tap to play
-  for (const [id, x, y = 0, face = 0] of ARCADE) {
-    const name = PIECES[id].name;
-    machine(id, x, y, face, { name, line: `${name}! Free to play, just for fun. Win one at my counter to play at home, meow.`,
-      open: (done) => import('./home-arcade.js').then(m => m.playAtHome(id, done)) });
-  }
+  // the doorway through to the Arcade Room, its passage painted in, an ARCADE sign in bulbs over it; a tap walks through
+  const doorArt = arcadeDoorArt(), DW = 2.2, DH = 3.4, doorZ = tileZ(ARCADE_DOOR.y) + 0.5;
+  const doorway = new THREE.Mesh(new THREE.PlaneGeometry(DW, DH), std({ map: texOf(doorArt), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(doorArt.glow), emissiveIntensity: 1.1, transparent: true, alphaTest: 0.05 }));
+  doorway.rotation.y = -Math.PI / 2;
+  doorway.position.set(cols / 2 - 0.01, DH / 2, doorZ);
+  const arcadeDoor = { id: 'arcade-door', kind: 'door', into: 'arc', name: 'Arcade', line: 'The Arcade', open: true,
+    step: { ...ARCADE_DOOR }, through: { x: ARCADE_DOOR.x + 0.45, y: ARCADE_DOOR.y + 0.5 },
+    frame: { x: cols / 2 - 0.05, y: 1.25, z: doorZ, w: 1.8, h: 2.6, ry: -Math.PI / 2 } };
+  // a blade sign out from the wall over it, facing the room: on a phone the wall itself is seen edge on, at the screen's side
+  const bladePic = bladeArt(), BLW = 1.7, BLH = 0.64;
+  const blade = new THREE.Mesh(new THREE.PlaneGeometry(BLW, BLH), std({ map: texOf(bladePic), emissive: new THREE.Color('#ffffff'), emissiveMap: texOf(bladePic.glow), emissiveIntensity: 1.2, transparent: true, alphaTest: 0.05, side: THREE.DoubleSide }));
+  blade.position.set(cols / 2 - BLW / 2 - 0.04, 3.55, doorZ);
+  const rod = new THREE.Mesh(new THREE.BoxGeometry(BLW + 0.04, 0.05, 0.05), gold);
+  rod.position.set(blade.position.x + 0.02, blade.position.y + BLH / 2 + 0.04, doorZ);
+  for (const m of [doorway, blade, rod]) { m.userData.front = arcadeDoor; group.add(m); }
+  spots.push(arcadeDoor);
 
   // the prize counter (made bigger 2026-10-12, the user's ask): a front and two sides running back to the wall, Meowth
   // closed in behind it and close up to the front, its stamp card on the wall behind it
@@ -826,33 +841,6 @@ export function buildCorner(THREE, size) {
   const paintSign = () => { stampSign(signCanvas, stampState()); signMap.needsUpdate = true; };
   paintSign();
   redraws.push(paintSign);
-
-  // the arcade leaderboard where the GAME CORNER sign was (2026-10-12, the user's layout): each ranked game in turn, its
-  // top three this week; a tap opens the leaderboard
-  const BW = 4.3, BH = 2.05, boardCanvas = new OffscreenCanvas(480, Math.round(480 * BH / BW));
-  boardCanvas.fine = 1;
-  const boardMap = texOf(boardCanvas), lb = { boards: undefined, at: 0, next: 0, fetched: -Infinity };
-  const board = new THREE.Mesh(new THREE.PlaneGeometry(BW, BH), new THREE.MeshBasicMaterial({ map: boardMap, transparent: true, toneMapped: false }));
-  board.position.set(tileX(COUNTER.x + 2), 4.45 - BH / 2, -rows / 2 + 0.03);
-  const paintBoard = () => { boardScreen(boardCanvas, lb.boards, lb.at); boardMap.needsUpdate = true; };
-  const fetchBoards = () => import('./leaderboard.js').then(m => m.arcadeTop()).then(b => { lb.boards = b; paintBoard(); }).catch(() => {});
-  const boardSpot = { id: 'arcade-board', kind: 'game', name: 'Arcade leaderboard', open: true, step: { x: COUNTER.x + 2, y: COUNTER.y + 1 },
-    frame: { x: board.position.x, y: board.position.y, z: board.position.z + 0.02, w: BW + 0.1, h: BH + 0.1 } };
-  boardSpot.line = boardSpot.name;
-  boardSpot.game = { name: boardSpot.name, line: 'This week\'s top scores on the arcade machines, meow! Tap again to see the whole board.',
-    open: (done) => import('./leaderboard.js').then(m => {
-      m.openLeaderboard(0, 'arcade');
-      const dlg = document.getElementById('board-dialog');
-      dlg?.addEventListener('close', () => { lb.fetched = -Infinity; done?.(); }, { once: true });
-    }) };
-  spots.push(boardSpot);
-  board.userData.front = boardSpot;
-  group.add(board);
-  paintBoard();
-  ticks.push((now) => {
-    if (now - lb.fetched > 90000) { lb.fetched = now; fetchBoards(); }
-    if (now >= lb.next) { if (lb.next) lb.at += 1; lb.next = now + 4500; paintBoard(); }
-  });
 
   // a mini "!" hopping over every game while it still has paying plays today, gone once they're used up or the day's
   // coins are all won, back the next UTC day (the user's asks, 2026-10-12); every slot machine and Plinko board has one

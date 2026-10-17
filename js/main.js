@@ -368,7 +368,7 @@ function init() {
   }
   // ?yard: out in the Secret Base's backyard, lent for the page load if it isn't bought (js/secret-base.js's loadBase())
   if (params.has('yard')) return import('./base-3d.js').then(m => m.openBase3d({ start: 'yard' }));
-  // ?mall: the Poké Mall's hall; ?mall=furniture straight into the Furniture store, ?mall=2f its second floor, ?mall=3f the Grand Ballroom (lent open)
+  // ?mall: the Poké Mall's hall; ?mall=furniture straight into the Furniture store, ?mall=2f its second floor, ?mall=3f the Grand Ballroom (lent open), ?mall=arcade the Game Corner's Arcade
   if (params.has('mall')) return import('./mall-3d.js').then(m => m.openMall({ store: params.get('mall') }));
   if (place) {
     document.body.classList.add('scene-peek');

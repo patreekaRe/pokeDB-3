@@ -106,7 +106,7 @@ context small. Where two notes disagree, the later date wins.
 - **The Clearing, Secret Base, Poké Mall and Game Corner** (`hub-base-mall.md`): the walkable 3D hub
   (`js/hub-3d.js`), its PC (`js/pc.js`: mail, missions, house upgrades, patch notes), the Secret Base (`js/base-3d.js`,
   `js/secret-base.js`, furniture in `js/base-furniture*.js`, models in `js/base-mesh.js`), the mall (`js/mall-3d.js`,
-  `js/mall-furniture.js`, `js/mall-corner.js`) and its arcade (`js/arcade-*.js`). The Clearing's layout of 2026-10-14
+  `js/mall-furniture.js`, `js/mall-corner.js`) and its arcade (`js/arcade-*.js`, the Arcade Room `js/mall-arcade.js`). The Clearing's layout of 2026-10-14
   (the last section there) replaces the older positions in that file.
 - **Gym Leaders** (`gym-leaders.md`: who each friend is, and how the gym works).
 - **Gateway towns** (`towns.md`; live since 2026-10-15, `TOWNS_LIVE`): any town clean-up reads
@@ -165,7 +165,7 @@ Flags on the live site or a githack link. Most are never saved. Details are in t
   `?arena=ken`. Any of these takes `&relics=a,b`, `&cards=a,b+` and `&items=a` (`playtestKit()` in `js/run.js`).
 - **Films and scenes**: `?travel=<biome>` (`&from=`, `&at=`, `&flyer=`), `?descent=mewtwo`, `?gate=N`, `?strike=N`
   (`&kind=loss`, `&land=`, `&first`), `?scene=<room>`, `?area=<area>` (`&stage=`, `&kind=boss`, `&intro=0`).
-- **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?yard` (out in the Secret Base's backyard, lent for the page load; `?yard=big` the bigger one), `?mall=furniture|2f|3f|corner|outfitter` (3f the Grand Ballroom, lent open)
+- **The hub**: `?base` (`&basefresh`, `&allfurniture`, `&flat`, `&guests`, `&fps`), `?yard` (out in the Secret Base's backyard, lent for the page load; `?yard=big` the bigger one), `?mall=furniture|2f|3f|corner|arcade|outfitter` (3f the Grand Ballroom, lent open)
   (`&stock=id,...`), `?shopopen`, `?ribbon`, `?meowth` (shuts the Game Corner again), `?visit`, `?towns`,
   `?mended` / `?mended=shrine,ruins` (towns mended for a page load, to test Waystone travel), `?town=<biome>` (`&home=`, `&aerial` the whole town from above, `&fest=lantern|moon|fireworks` John's festival in Lantern Village, mended; with `&mend` it appears as you mend the stone), `?nietos`, `?dojo` (straight into Kenmatta's dojo; its stars are real; `&trials` opens every trial), `?aerial`, `?hubat=x,y`, `?curve=N` (the Clearing's and the towns' Animal Crossing bend at another strength; 3 by default, 0 flat).
 
