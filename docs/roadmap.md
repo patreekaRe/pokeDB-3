@@ -806,13 +806,18 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
+**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
+both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
+entry there, which is the up-to-date one (batch 1 is built, batch 2 next, batch 3 picked). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
 Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
 act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
 ~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
 a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
 one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
 bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
+**In progress on branch `events-batch-1` in both repos** (2026-10-17): batch 1 is built there, the plan for the rest
+(batch 2 as listed, batch 3 picked, all landing on `main` at once after one bot check) is in this entry on that branch.
+Check it out and read it there; don't build events on `main`.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
