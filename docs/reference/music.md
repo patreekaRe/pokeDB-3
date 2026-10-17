@@ -120,3 +120,5 @@ the waveform at the join correlates under 0.95. It found Mart's 48.709 s to the 
 - `audio.js` defines its own `$` instead of importing `ui.js`, because
   `ui.js` imports `audio.js`.
 
+
+- 2026-10-17: a preload (`preloadMusic`) of a looped track only fetches its MP3; it decodes on play. Decoding at preload held a boss fight's victory, Sealed Gate and phase-two songs (~40-70 MB each) at once and reloaded iPhones on bosses and Alphas.

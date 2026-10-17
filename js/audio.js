@@ -624,8 +624,8 @@ function player(name) {
 /**
  * A track that loops between two points inside its file, standing in for an <audio> element (play, pause, paused,
  * currentTime) so the fades above treat both alike. An <audio> element can only loop the whole file, so this plays a
- * decoded buffer instead. A decoded song is ~50 MB, so only the playing one is kept decoded: pausing drops it and keeps
- * the MP3's bytes, which decode again in a moment next time.
+ * decoded buffer instead. A decoded song is ~50 MB, so only the playing one is kept decoded: a preload only fetches the
+ * MP3's bytes (a boss fight's preloads, decoded up front, reloaded iPhones, 2026-10-17), and pausing drops the buffer.
  * With no crossfade the buffer loops natively, sample-exact (the battle songs repeat exactly). With one, each pass is
  * its own source, handing over to the next with an equal-power crossfade centred on the loop points (the other songs'
  * repeats match in melody and beat but not sample for sample). Each pass's end queues the pass after next, from the
@@ -643,7 +643,6 @@ class LoopedTrack {
     this.bytes = fetch(url)
       .then(res => { if (!res.ok) throw new Error(`${res.status}`); return res.arrayBuffer(); })
       .catch(() => { onError(); return null; });
-    this.decode();
   }
   decode() {
     this.decoded ||= this.bytes.then(data => data && ctx.decodeAudioData(data.slice(0))).catch(() => null);
