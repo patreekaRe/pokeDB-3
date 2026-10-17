@@ -2921,6 +2921,424 @@ async function buildBillsPc(figs) {
   };
 }
 
+/* ---------- batch 2 of the StS events (2026-10-17): Meowth's prize wheel by the road, a golden idol in ruins under a
+   Golem's boulder, Spiritomb on its cairn, Clefairy dancing round a Moon Stone at night, Kecleon's stall, all on the
+   biome's own ground ---------- */
+
+const WHEEL_COLS = ['#f8d030', '#b058d8', '#f878b0', '#78c8f0', '#58c048', '#6a6a7a'];   // event.slices' order, as the pixel wheel's
+
+/** What each slice pays, drawn on it: ₽, a relic's star, a heart, a cross (Forget), a Poké Ball, a bolt (the pinch). */
+const WHEEL_MARKS = [
+  (g) => { g.fillStyle = '#5a3a08'; g.font = '900 20px "Trebuchet MS", sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('₽', 0, 1); },
+  (g) => { g.fillStyle = '#fff4c0'; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 4 : 9; g.lineTo(Math.cos(a) * r, Math.sin(a) * r); } g.closePath(); g.fill(); },
+  (g) => { g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(0, 7); g.bezierCurveTo(-11, -1, -5, -10, 0, -4); g.bezierCurveTo(5, -10, 11, -1, 0, 7); g.fill(); },
+  (g) => { g.strokeStyle = '#1e4a7a'; g.lineWidth = 3.4; g.beginPath(); g.moveTo(-6, -6); g.lineTo(6, 6); g.moveTo(6, -6); g.lineTo(-6, 6); g.stroke(); },
+  (g) => {
+    g.fillStyle = '#e83828'; g.beginPath(); g.arc(0, 0, 8, Math.PI, 0); g.fill();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 8, 0, Math.PI); g.fill();
+    g.strokeStyle = '#202026'; g.lineWidth = 1.6; g.beginPath(); g.arc(0, 0, 8, 0, Math.PI * 2); g.moveTo(-8, 0); g.lineTo(8, 0); g.stroke();
+    g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 2.6, 0, Math.PI * 2); g.fill(); g.stroke();
+  },
+  (g) => { g.fillStyle = '#f8f060'; g.beginPath(); g.moveTo(2, -10); g.lineTo(-5, 1); g.lineTo(0, 1); g.lineTo(-2, 10); g.lineTo(5, -2); g.lineTo(0, -2); g.closePath(); g.fill(); },
+];
+
+/** The wheel's face: six slices, slice 0 at the top and the rest clockwise, each with its mark, under a gold rim. */
+function prizeWheelArt() {
+  const S = 128, f = fine(S, S, 4), { g } = f, r = S / 2, step = Math.PI * 2 / WHEEL_COLS.length;
+  WHEEL_COLS.forEach((col, i) => {
+    const a0 = -Math.PI / 2 + (i - 0.5) * step;
+    g.fillStyle = col; g.beginPath(); g.moveTo(r, r); g.arc(r, r, r - 4, a0, a0 + step); g.closePath(); g.fill();
+    g.strokeStyle = '#2a1a0c'; g.lineWidth = 1.6; g.stroke();
+    const a = a0 + step / 2;
+    g.save(); g.translate(r + Math.cos(a) * r * 0.62, r + Math.sin(a) * r * 0.62); g.rotate(a + Math.PI / 2); g.scale(1.3, 1.3);
+    WHEEL_MARKS[i](g);
+    g.restore();
+  });
+  g.lineWidth = 5; g.strokeStyle = '#f8c830'; g.beginPath(); g.arc(r, r, r - 3, 0, Math.PI * 2); g.stroke();
+  g.lineWidth = 1; g.strokeStyle = '#a87818'; g.beginPath(); g.arc(r, r, r - 0.8, 0, Math.PI * 2); g.stroke();
+  return f.c;
+}
+
+async function buildWheel(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.2], [10, 5, 1]] });
+  B.shotTop = 3.4;
+  const wx = tileX(6), wz = tileZ(1.4), hub = 1.55, stand = new THREE.Group();
+  stand.position.set(wx, 0, wz);
+  B.group.add(stand);
+  const wood = std({ color: L.wood?.[1] || '#9a6438', roughness: 0.8 });
+  for (const s of [-1, 1]) {   // the A-frame, legs splayed behind the wheel
+    const leg = mesh(new THREE.CylinderGeometry(0.06, 0.07, hub + 0.15, 8), wood, s * 0.42, hub / 2, -0.22, stand);
+    leg.rotation.z = s * 0.3;
+  }
+  mesh(new THREE.BoxGeometry(1.0, 0.07, 0.07), wood, 0, 0.45, -0.22, stand);
+  mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8), wood, 0, hub, -0.1, stand).rotation.x = Math.PI / 2;
+  const wheel = new THREE.Group();
+  wheel.position.set(0, hub, 0.04);
+  wheel.rotation.x = -0.12;
+  stand.add(wheel);
+  const disc = new THREE.Group();
+  wheel.add(disc);
+  mesh(new THREE.CircleGeometry(1, 48), std({ map: texOf(prizeWheelArt()), roughness: 0.5 }), 0, 0, 0.012, disc);
+  mesh(new THREE.CylinderGeometry(1, 1, 0.08, 48), std({ color: '#c89020', metalness: 0.6, roughness: 0.35 }), 0, 0, -0.03, disc).rotation.x = Math.PI / 2;
+  const bulbs = Array.from({ length: 12 }, (_, i) => {
+    const a = i / 12 * Math.PI * 2, m = std({ color: '#fff4c0', emissive: new THREE.Color('#f8c830'), emissiveIntensity: 0.6, roughness: 0.3 });
+    mesh(new THREE.SphereGeometry(0.05, 10, 8), m, Math.cos(a) * 1.06, Math.sin(a) * 1.06, 0.03, wheel);
+    return m;
+  });
+  mesh(new THREE.SphereGeometry(0.09, 14, 10), std({ color: '#fff8d0', metalness: 0.5, roughness: 0.3 }), 0, 0, 0.06, wheel);
+  const pin = mesh(new THREE.ConeGeometry(0.11, 0.26, 4), std({ color: '#e83828', roughness: 0.4 }), 0, 1.18, 0.08, wheel);
+  pin.rotation.z = Math.PI;
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/meowth-front.gif', flip: true }, { x: 3.6, ty: 2.2 });
+  stand.traverse(o => { o.userData.spot = 0; });
+  for (const t of [[5, 1], [6, 1], [7, 1], [4, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 6, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(wx, hub + 1.6, wz);
+  tufts(L, 50, rnd);
+  B.ticks.push((now) => { bulbs.forEach((m, i) => { m.emissiveIntensity = calm ? 0.6 : (i + Math.floor(now / 260)) % 3 ? 0.35 : 1.4; }); });
+  const confetti = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(WHEEL_COLS[i % WHEEL_COLS.length]), 0.22));
+  const step = Math.PI * 2 / WHEEL_COLS.length;
+  B.reset = () => { disc.rotation.z = 0; };
+  B.reset();
+  B.acts = {
+    spin: { ms: 3400, cues: [0.02, 0.07, 0.13, 0.19, 0.26, 0.33, 0.41, 0.5, 0.6, 0.72].map(k => [k, 'stat-tick']),
+      start(o) { this.to = Math.PI * 2 * 3 + (o?.slice || 0) * step; this.fly = burst(confetti, new THREE.Vector3(wx, hub + 0.4, wz + 0.2), { spread: 0.8, rise: 1.2, spin: true }); },
+      tick(k) {
+        walker.lunge = k < 0.15 ? Math.sin(k / 0.15 * Math.PI) * 0.3 : 0;
+        disc.rotation.z = this.to * (1 - (1 - Math.min(1, k / 0.85)) ** 3);
+        if (k > 0.85) this.fly((k - 0.85) / 0.15);
+      } },
+  };
+}
+
+/** A fluted stone column, `broken` off short and jagged, or whole with a capital. */
+function column(x, z, h, C, broken, rnd) {
+  const g = new THREE.Group();
+  g.position.set(x, 0, z);
+  B.group.add(g);
+  const side = std({ color: C[1], roughness: 0.9, flatShading: true }), top = std({ color: C[0], roughness: 0.9 });
+  mesh(new THREE.BoxGeometry(0.62, 0.16, 0.62), top, 0, 0.08, 0, g);
+  mesh(new THREE.CylinderGeometry(0.22, 0.25, h, 12), side, 0, 0.16 + h / 2, 0, g);
+  if (broken) {
+    const cap = mesh(new THREE.ConeGeometry(0.22, 0.24, 7), side, 0.02, 0.16 + h + 0.06, 0, g);
+    cap.rotation.set(rnd() * 0.5, rnd() * 3, 0.4);
+  } else mesh(new THREE.BoxGeometry(0.6, 0.18, 0.6), top, 0, 0.25 + h, 0, g);
+  return g;
+}
+
+/** The Relic Statue as an idol: a squat gold figure with a round head, arms in, standing on a little base. */
+function goldIdol(parent) {
+  const g = new THREE.Group(), gold = std({ color: '#f8c830', metalness: 0.85, roughness: 0.25, emissive: new THREE.Color('#6a4808'), emissiveIntensity: 0.35 });
+  parent.add(g);
+  mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.05, 14), gold, 0, 0.025, 0, g);
+  mesh(new THREE.SphereGeometry(0.13, 16, 12), gold, 0, 0.17, 0, g).scale.set(1, 1.25, 0.85);
+  mesh(new THREE.SphereGeometry(0.1, 16, 12), gold, 0, 0.38, 0, g);
+  for (const s of [-1, 1]) {
+    mesh(new THREE.SphereGeometry(0.045, 10, 8), gold, s * 0.12, 0.2, 0.05, g);
+    mesh(new THREE.SphereGeometry(0.018, 8, 6), std({ color: '#2a1a08' }), s * 0.035, 0.4, 0.088, g);
+  }
+  return g;
+}
+
+async function buildIdol(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 1, 1.2], [0, 4, 1.1], [10, 5, 1]] });
+  B.shotTop = 3.2;
+  const sand = ['#e8dcb8', '#c8b890', '#988860'], rock = L.rock || ['#a8a098', '#888078', '#605850'];
+  const px = tileX(5), pz = tileZ(2), plinth = new THREE.Group();
+  plinth.position.set(px, 0, pz);
+  B.group.add(plinth);
+  const top = std({ color: sand[0], roughness: 0.9 }), side = std({ color: sand[1], roughness: 0.9 });
+  mesh(rbox(0.9, 0.2, 0.9, 0.04), side, 0, 0.1, 0, plinth);
+  mesh(rbox(0.66, 0.62, 0.66, 0.04), side, 0, 0.51, 0, plinth);
+  mesh(rbox(0.84, 0.12, 0.84, 0.04), top, 0, 0.88, 0, plinth);
+  const idol = goldIdol(plinth);
+  idol.position.y = 0.94;
+  const glint = sprite(sparkArt('#fff8c0'), 0.3);
+  column(tileX(1.6), tileZ(1), 2.2, sand, false, rnd);
+  const hideAt = column(tileX(3), tileZ(2.6), 1.2, sand, true, rnd);
+  column(tileX(9.2), tileZ(2.4), 1.5, sand, true, rnd);
+  const drum = mesh(new THREE.CylinderGeometry(0.23, 0.23, 0.5, 12), std({ color: sand[1], roughness: 0.9, flatShading: true }), tileX(7.2), 0.23, tileZ(3.4));
+  drum.rotation.set(0, 0.6, Math.PI / 2);
+  // the ledge at the back, a Golem on it beside its boulder
+  const lx = tileX(7.6), lz = tileZ(0.6), ledge = mesh(new THREE.CylinderGeometry(1.25, 1.6, 0.95, 9), std({ color: rock[1], roughness: 0.95, flatShading: true }), lx, 0.47, lz);
+  ledge.scale.z = 0.7;
+  for (let i = 0; i < 5; i++) boulder(lx - 1.3 + i * 0.6, lz + 0.65, 0.18 + rnd() * 0.1, rock, rnd);
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/golem-front.gif' }, { x: 8.3, ty: 0.55, y: 0.95 });
+  const R0 = 0.42, home = new THREE.Vector3(tileX(6.9), 0.95 + R0, tileZ(0.75));
+  const stone = boulder(0, 0, 1, rock, rnd, { squash: 1 });
+  stone.scale.setScalar(R0);
+  for (const t of [[4, 2], [5, 2], [5, 1], [6, 0], [7, 0], [8, 0], [7, 1], [8, 1], [3, 2], [9, 2], [1, 1]]) B.blocked.add(key(...t));
+  plinth.traverse(o => { o.userData.spot = 0; });
+  hideAt.traverse(o => { o.userData.spot = 1; });
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 3, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(px, 2.1, pz);
+  B.anchors[1] = new THREE.Vector3(tileX(3), 2.2, tileZ(2.6));
+  tufts(L, 45, rnd);
+  B.ticks.push((now) => {
+    const on = !calm && idol.visible && Math.floor(now / 1300) % 3 === 0;
+    glint.visible = on;
+    if (on) { glint.position.set(px + 0.12, 1.42, pz + 0.1); glint.material.opacity = Math.sin((now % 1300) / 1300 * Math.PI); }
+  });
+  const dust = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#e8dcb8' : '#c8b890'), 0.3));
+  const shine = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#ffe080'), 0.22));
+  const roll = (from, to, k) => {   // the boulder from `from` to `to`, turning as it goes
+    stone.position.lerpVectors(from, to, k);
+    stone.rotation.x = -from.distanceTo(to) * k / R0;
+  };
+  B.reset = () => { idol.visible = !opts?.node?.event?.took; idol.position.y = 0.94; idol.scale.setScalar(1); stone.visible = true; stone.position.copy(home); stone.rotation.set(0, 0, 0); };
+  B.reset();
+  B.acts = {
+    grab: { ms: 1800, cues: [[0.15, 'item'], [0.6, 'rumble-far']],
+      start() { this.fly = burst(shine, new THREE.Vector3(px, 1.2, pz), { spread: 0.3, rise: 0.8 }); },
+      tick(k) {
+        walker.lunge = Math.sin(Math.min(1, k / 0.3) * Math.PI) * 0.35;
+        idol.position.y = 0.94 + ease(Math.min(1, k / 0.5)) * 0.7;
+        idol.rotation.y = k * 8;
+        idol.scale.setScalar(k < 0.5 ? 1 : Math.max(0.001, 1 - (k - 0.5) / 0.2));
+        idol.visible = k < 0.7;
+        this.fly(k);
+        stone.position.x = home.x + (k > 0.6 ? Math.sin(k * 90) * 0.04 : 0);
+      } },
+    brace: { ms: 2000, cues: [[0.05, 'quake'], [0.5, 'hit']],
+      start() {
+        this.at = new THREE.Vector3(walker.x, R0, walker.z - 0.2);
+        this.off = new THREE.Vector3(walker.x - 3, R0, walker.z + 4);
+        this.dust = burst(dust, new THREE.Vector3(walker.x, 0.3, walker.z), { spread: 0.7, rise: 0.6 });
+      },
+      tick(k) {
+        if (k < 0.5) { const u = k / 0.5, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        else roll(this.at, this.off, (k - 0.5) / 0.5);
+        stone.visible = k < 0.98;
+        walker.oz = k > 0.5 ? Math.sin(Math.min(1, (k - 0.5) / 0.3) * Math.PI / 2) * 0.5 * (1 - Math.max(0, (k - 0.8) / 0.2)) : 0;
+        walker.oy = k > 0.5 && k < 0.7 ? -0.05 : 0;
+        if (k > 0.5) this.dust((k - 0.5) / 0.5);
+      } },
+    hide: { ms: 2200, cues: [[0.05, 'quake'], [0.2, 'run-away']],
+      start() {
+        this.x0 = walker.x; this.z0 = walker.z;
+        this.at = new THREE.Vector3(tileX(4.2), R0, tileZ(3.4));
+        this.off = new THREE.Vector3(tileX(5.5), R0, tileZ(9));
+      },
+      tick(k) {
+        const d = ease(Math.min(1, k / 0.2));   // a dive behind the column
+        walker.ox = (tileX(2.6) - this.x0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
+        walker.oz = (tileZ(2.1) - this.z0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
+        if (k < 0.45) { const u = k / 0.45, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        else roll(this.at, this.off, (k - 0.45) / 0.55);
+        stone.visible = k < 0.98;
+      } },
+  };
+}
+
+async function buildKeystone(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1.1], [9, 0, 1], [0, 5, 1.1], [10, 4, 1.2]] });
+  B.shotTop = 3.2;
+  const grey = ['#b8b4c0', '#8a8698', '#5e5a6e'], cx = tileX(5), cz = tileZ(1.6);
+  let y = 0;
+  const cairn = [];
+  for (const [r, sq] of [[0.62, 0.5], [0.5, 0.55], [0.4, 0.6], [0.3, 0.65]]) {   // stones stacked, each a little smaller
+    const s = boulder(cx + (rnd() - 0.5) * 0.08, cz, r, grey, rnd, { squash: sq, y });
+    cairn.push(s);
+    y += r * sq * 1.05;
+  }
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/spiritomb-front.gif' }, { x: 5, ty: 1.6, y });
+  cairn.forEach(s => { s.userData.spot = 1; });
+  B.who.mon.group.traverse(o => { o.userData.spot = 1; });
+  // ₽ on a flat stone to the left, a Poké Ball by a rock to the right
+  const mx = tileX(2.6), mz = tileZ(2.3), flat = mesh(new THREE.CylinderGeometry(0.5, 0.56, 0.16, 12), std({ color: grey[1], roughness: 0.95, flatShading: true }), mx, 0.08, mz);
+  flat.scale.z = 0.7;
+  const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 }), coins = [flat];
+  for (let i = 0; i < 9; i++) { const c = mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 12), gold, mx + (rnd() - 0.5) * 0.5, 0.17 + (i % 3) * 0.02, mz + (rnd() - 0.5) * 0.3); coins.push(c); }
+  coins.forEach(c => { c.userData.spot = 0; });
+  const bx = tileX(7.4), bz = tileZ(2.3), ball = lootBall(bx, 0.16, bz, 0.16);
+  ball.rotation.set(0.2, -0.5, 0.15);
+  const rockBy = boulder(bx + 0.36, bz - 0.2, 0.28, grey, rnd);
+  ball.traverse(o => { o.userData.spot = 2; });
+  rockBy.userData.spot = 2;
+  for (const t of [[4, 1], [5, 1], [6, 1], [2, 2], [7, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 3, y: 3 } }, { step: { x: 5, y: 3 } }, { step: { x: 7, y: 3 } }];
+  const asks = [new THREE.Vector3(mx, 0.3, mz), new THREE.Vector3(cx, y + 0.4, cz), new THREE.Vector3(bx, 0.3, bz)];
+  B.anchors[0] = new THREE.Vector3(mx, 1.2, mz);
+  B.anchors[1] = new THREE.Vector3(cx, y + 1.5, cz);
+  B.anchors[2] = new THREE.Vector3(bx, 1.2, bz);
+  tufts(L, 45, rnd);
+  const wisps = Array.from({ length: 7 }, (_, i) => sprite(sparkArt(['#f0d8ff', '#a868e0', '#6a2aa8'][i % 3]), 0.2));
+  const state = { stream: -1, to: null };
+  B.ticks.push((now) => {
+    wisps.forEach((w, i) => {
+      w.visible = !calm;
+      const a = now / 1100 + i / wisps.length * Math.PI * 2;
+      let p = new THREE.Vector3(cx + Math.cos(a) * 0.7, y + 0.3 + Math.sin(a * 2) * 0.12, cz + Math.sin(a) * 0.45);
+      if (state.stream >= 0) {   // an ask: they stream out to what was asked for, then home
+        const u = Math.max(0, Math.min(1, state.stream * 1.6 - i * 0.06)), out = Math.sin(u * Math.PI);
+        p = p.lerp(state.to, out);
+        p.y += Math.sin(u * Math.PI) * 0.5;
+      }
+      w.position.copy(p);
+      w.material.opacity = 0.8;
+    });
+  });
+  const shine = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8c0' : '#d8b8ff'), 0.22));
+  const motes = Array.from({ length: 6 }, () => sprite(sparkArt('#f84848'), 0.18));
+  B.reset = () => { state.stream = -1; };
+  B.acts = {
+    ask: { ms: 1900, cues: [[0.05, 'spirit'], [0.6, 'item']],
+      start(o) {
+        state.to = asks[{ money: 0, move: 1, item: 2 }[o?.what] ?? 1];
+        this.fly = burst(shine, state.to, { spread: 0.4, rise: 0.9 });
+        this.drain = motes.map((m, i) => ({ m, d: i * 0.06 }));
+      },
+      tick(k) {
+        state.stream = k < 1 ? k : -1;
+        walker.oy = k < 0.4 ? Math.sin(k * 40) * 0.02 : 0;
+        for (const { m, d } of this.drain) {   // your HP drawn off into the keystone
+          const u = Math.max(0, Math.min(1, (k - d) / 0.45));
+          m.visible = u > 0 && u < 1;
+          m.position.set(walker.x + (cx - walker.x) * u, 0.6 + (y + 0.3 - 0.6) * u + Math.sin(u * Math.PI) * 0.4, walker.z + (cz - walker.z) * u);
+        }
+        if (k > 0.5) this.fly((k - 0.5) / 0.5);
+      } },
+  };
+}
+
+async function buildMoon(figs, { look: L }) {
+  const rnd = wild(L, 'night', { to: 3, trees: [[0, 0, 1.4], [10, 0, 1.3], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.2], [10, 5, 1]] });   // always under the moon
+  B.env = { ...B.env, bloom: 0.6 };
+  B.shotTop = 3.2;
+  const moon = sprite(moonArt('night'), 2.2);
+  moon.visible = true;
+  moon.position.set(tileX(8.6), 3.4, tileZ(0) - 0.3);
+  const gx = tileX(4), gz = tileZ(1.9), rockM = std({ color: (L.rock || GARDEN.rock)[1], roughness: 0.95, flatShading: true });
+  const base = mesh(new THREE.CylinderGeometry(0.5, 0.62, 0.24, 10), rockM, gx, 0.12, gz);
+  base.scale.z = 0.75;
+  const gem = mesh(new THREE.OctahedronGeometry(0.2, 0), std({ color: '#eceaff', emissive: new THREE.Color('#9890f0'), emissiveIntensity: 0.7, roughness: 0.15, flatShading: true }), gx, 0.52, gz);
+  gem.scale.y = 1.5;
+  // the dancers, round the stone
+  const ring = [figs.left ?? { src: 'assets/pokemon/clefairy-front.gif', flip: true }, figs.right ?? { src: 'assets/pokemon/clefairy-front.gif' }, { src: 'assets/pokemon/clefairy-front.gif' }];
+  const dancers = await Promise.all(ring.map((f, i) => figure(['left', 'right', 'third'][i], f, { x: 4, ty: 1.9 })));
+  dancers.forEach((d, i) => { B.who[d.stand] = d; d.home = i / dancers.length * Math.PI * 2 + Math.PI / 2; });
+  const place = (a) => dancers.forEach(d => { const q = d.home + a; d.base.x = gx + Math.cos(q) * 0.95; d.base.z = gz + Math.sin(q) * 0.55; d.flip = Math.sin(q) > 0 ? Math.cos(q) < 0 : Math.cos(q) > 0; });
+  place(0);
+  [base, gem].forEach(o => { o.userData.spot = 0; });
+  dancers.forEach(d => d.group.traverse(o => { o.userData.spot = 0; }));
+  // a pool of moonlight on the grass to the right
+  const lx = tileX(7.4), lz = tileZ(2.5), pool = mesh(new THREE.CircleGeometry(0.62, 32), new THREE.MeshBasicMaterial({ color: '#fff8d8', transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending }), lx, 0.02, lz);
+  pool.rotation.x = -Math.PI / 2; pool.scale.y = 0.75;
+  pool.castShadow = false;
+  const shaft = shaftOfLight(lx, lz, '#fff4d0');
+  shaft.children[0].scale.set(0.55, 1, 0.42);
+  pool.userData.spot = 1;
+  for (const t of [[3, 1], [4, 1], [5, 1], [3, 2], [4, 2], [5, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 4, y: 3 } }, { step: { x: 7, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(gx, 1.9, gz);
+  B.anchors[1] = new THREE.Vector3(lx, 1.3, lz);
+  tufts(L, 45, rnd);
+  const state = { spin: 0, light: 0 };
+  B.ticks.push((now) => {
+    if (calm) return;
+    gem.rotation.y = now / 1400;
+    gem.material.emissiveIntensity = 0.6 + Math.sin(now / 500) * 0.2;
+    pool.material.opacity = 0.3 + Math.sin(now / 900) * 0.06 + state.light * 0.5;
+    shaft.children[0].material.opacity = 0.07 + state.light * 0.25;
+    place(now / 4000 + state.spin);   // they dance round slowly all the time, faster when you join in
+  });
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#ffffff' : '#d8d0ff'), 0.22));
+  const fall = Array.from({ length: 10 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff8d0' : '#ffffff'), 0.2));
+  B.reset = () => { state.spin = 0; state.light = 0; };
+  B.acts = {
+    dance: { ms: 2600, cues: [[0.05, 'bell'], [0.8, 'stat-up']],
+      start() { this.fly = burst(sparks, new THREE.Vector3(gx, 0.6, gz), { spread: 0.8, rise: 1.4 }); this.from = state.spin; },
+      tick(k) {
+        state.spin = this.from + ease(k) * Math.PI * 4;
+        walker.oy = Math.abs(Math.sin(k * Math.PI * 6)) * 0.22 * (1 - k);
+        dancers.forEach((d, i) => { d.base.y = Math.abs(Math.sin(k * Math.PI * 6 + i)) * 0.18 * (1 - k); });
+        this.fly(k);
+      } },
+    moonlight: { ms: 2200, cues: [[0.05, 'bell'], [0.75, 'heal-hp']],
+      start() { this.fly = burst(fall, new THREE.Vector3(lx, 2.2, lz), { spread: 0.5, rise: 1.8, fall: true }); },
+      tick(k) {
+        state.light = Math.sin(k * Math.PI);
+        walker.ox = (lx - walker.x) * ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+        walker.oz = (lz - walker.z) * ease(Math.min(1, k / 0.25)) * (1 - Math.max(0, (k - 0.85) / 0.15));
+        this.fly(k);
+      } },
+  };
+}
+
+/** Stripes for the stall's awning, red and cream. */
+function stallAwningArt() {
+  const f = fine(64, 32, 4), { g } = f;
+  for (let x = 0; x < 64; x += 8) { g.fillStyle = '#e04838'; g.fillRect(x, 0, 4, 32); g.fillStyle = '#fff4e0'; g.fillRect(x + 4, 0, 4, 32); }
+  g.fillStyle = 'rgba(0,0,0,0.12)'; g.fillRect(0, 28, 64, 4);
+  return f.c;
+}
+
+async function buildStall(figs, { look: L, time }) {
+  const rnd = wild(L, time, { to: 3, trees: [[0, 0, 1.3], [10, 0, 1.4], [1, 1, 1], [9, 1, 1.1], [0, 5, 1.1], [10, 5, 1.2]] });
+  B.shotTop = 3.2;
+  const sx = tileX(5.5), sz = tileZ(1.5), stall = new THREE.Group();
+  stall.position.set(sx, 0, sz);
+  B.group.add(stall);
+  const wood = std({ color: '#b88850', roughness: 0.8 }), dark = std({ color: '#7a5430', roughness: 0.85 });
+  mesh(rbox(2.6, 0.78, 0.7, 0.04), wood, 0, 0.39, 0, stall);
+  for (let i = -3; i <= 3; i++) mesh(new THREE.BoxGeometry(0.03, 0.7, 0.01), dark, i * 0.37, 0.38, 0.356, stall).raycast = () => {};
+  mesh(new THREE.BoxGeometry(2.7, 0.06, 0.8), dark, 0, 0.8, 0, stall);
+  for (const x of [-1.25, 1.25]) for (const z of [-0.3, 0.3]) mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.1, 8), dark, x, 1.05, z, stall);
+  const roof = mesh(new THREE.BoxGeometry(2.9, 0.03, 1.2), std({ map: texOf(stallAwningArt()), roughness: 0.8, side: THREE.DoubleSide }), 0, 2.15, 0.1, stall);
+  roof.rotation.x = 0.28;
+  const scallop = std({ color: '#e04838', roughness: 0.8, side: THREE.DoubleSide });
+  for (let i = 0; i < 9; i++) {
+    const s = mesh(new THREE.CircleGeometry(0.16, 12, 0, Math.PI), scallop, -1.28 + i * 0.32, 2.0, 0.7, stall);
+    s.rotation.set(-0.28, 0, Math.PI);
+  }
+  const velvet = std({ color: '#c84060', roughness: 0.7 });
+  const wares = [-0.6, 0.6].map((x, i) => {
+    const cushion = mesh(rbox(0.5, 0.1, 0.42, 0.05), velvet, x, 0.88, 0.02, stall);
+    const card = mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ transparent: true, alphaTest: 0.5, side: THREE.DoubleSide }), x, 1.18, 0.04, stall);
+    card.rotation.x = -PITCH * 0.6;
+    card.castShadow = false;
+    cushion.userData.spot = card.userData.spot = i;
+    return card;
+  });
+  for (const [x, z, h] of [[-1.6, 0.3, 0.5], [1.65, 0.2, 0.42], [1.95, -0.25, 0.36]]) mesh(new THREE.CylinderGeometry(0.2, 0.17, h, 12), std({ color: '#9a6438', roughness: 0.9 }), x, h / 2, z, stall);
+  B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/kecleon-front.gif' }, { x: 2.2, ty: 2.1 });
+  for (const t of [[4, 1], [5, 1], [6, 1], [7, 1], [2, 2]]) B.blocked.add(key(...t));
+  B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 6, y: 3 } }];
+  B.anchors[0] = new THREE.Vector3(sx - 0.6, 1.9, sz);
+  B.anchors[1] = new THREE.Vector3(sx + 0.6, 1.9, sz);
+  tufts(L, 45, rnd);
+  const show = (card, id) => {   // a relic's PokéSprite art on its cushion
+    card.visible = !!id;
+    if (!id) return;
+    new THREE.TextureLoader().load(`assets/items/${id}.png`, (t) => {
+      t.colorSpace = THREE.SRGBColorSpace; t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false;
+      card.material.map?.dispose();
+      card.material.map = t;
+      card.material.needsUpdate = true;
+    });
+  };
+  const idOf = (f) => f?.src?.match(/items\/([\w-]+)\.png$/)?.[1];
+  B.ticks.push((now) => { if (!calm) wares.forEach((c, i) => { c.position.y = 1.18 + Math.sin(now / 700 + i * 2) * 0.03; }); });
+  const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(['#ffffff', '#f8e070', '#80e070'][i % 3]), 0.22));
+  const kecleon = B.who.mon;
+  B.reset = () => { show(wares[0], idOf(opts?.figures?.left)); show(wares[1], idOf(opts?.figures?.right)); wares.forEach(c => { c.rotation.y = 0; }); kecleon.board.material.color.set('#ffffff'); };
+  B.acts = {
+    swap: { ms: 2000, cues: [[0.05, 'spirit'], [0.55, 'item']],
+      start(o) {
+        this.card = wares[o?.i || 0];
+        this.gets = o?.gets;
+        this.swapped = false;
+        this.fly = burst(sparks, new THREE.Vector3(sx + (o?.i ? 0.6 : -0.6), 1.2, sz + 0.1), { spread: 0.4, rise: 1 });
+      },
+      tick(k) {
+        kecleon.board.material.color.setHSL((k * 3) % 1, k < 1 ? 0.75 : 0, k < 1 ? 0.65 : 1);
+        if (k >= 1) kecleon.board.material.color.set('#ffffff');
+        this.card.rotation.y = ease(k) * Math.PI * 6;
+        if (k > 0.5 && !this.swapped && this.gets) { this.swapped = true; show(this.card, this.gets); }
+        this.fly(k);
+      } },
+  };
+}
+
 /* ---------- a Gym Leader's gym (js/gym.js): walked in before their boss, a long hall in the biome's own ground. Stone
    statues of their Pokémon guard the doorway, an avenue of fire pillars runs up either side of the battle court, each
    pair lighting with a drum beat as you pass, and at the far end the leader stands on a two-tier dais before a round stone arch on
@@ -10188,9 +10606,10 @@ function townCrowd(town, chats) {
 
 const BUILD = { tutor: buildTutor, deleter: buildDeleter, daycare: buildDaycare, fans: buildFans, spring: buildSpring, altar: buildAltar, grotto: buildGrotto,
   berry: buildBerry, well: buildWell, itemball: buildItemball, rocket: buildRocket, snorlax: buildSnorlax, trash: buildTrash, ditto: buildDitto,
-  abra: buildAbra, billspc: buildBillsPc, gym: buildGym, town: buildTown, home: buildHome };
+  abra: buildAbra, billspc: buildBillsPc, wheel: buildWheel, idol: buildIdol, keystone: buildKeystone, moon: buildMoon, stall: buildStall,
+  gym: buildGym, town: buildTown, home: buildHome };
 /** The rooms built per biome and hour (the open-air ones and the grotto); the rest are one room wherever you are. */
-const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'abra', 'gym', 'town', 'home']);
+const PER_BIOME = new Set(['spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'gym', 'town', 'home']);
 /** A room's choices on the page (its layout's classes on #reward-options) and the buttons its signs are: the grotto is
     treasureRoom()'s, its one sign the chest. */
 const ROOM_OF = (kind) => (kind === 'grotto' ? '.treasure-room' : `.event-room.${kind}-room`);

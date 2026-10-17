@@ -226,6 +226,33 @@ Their scenes: outdoor ones in `PLACE_ART` (`snorlax`, `trash`, `ditto`, `abra`: 
 Bill's PC the Move Deleter's study in other colours (`billspc`, `buildBillsPc()` round the Storage PC furniture piece).
 Acts: `search`, `dig`, `copy`, `morph`, `teleport`, `boot`.
 
+## Batch 2 of the StS events (2026-10-17, docs/roadmap.md's "More ? events")
+
+Five more, the same way as batch 1 (rules pure in `js/data/events.js`: `wheelSlice()`, `idolBoulder()`, `keystoneAsk()`,
+`swapWares()`, `swapGift()`; `tests/events.test.mjs`; mirrored in pokeDB-sim). Two of them heal (the user's ask: with 20
+events in the bag the healing rooms come up less often).
+- **Prize Wheel** (Wheel of Change): Meowth's wheel, one free spin, its slice rolled as the biome starts
+  (`node.event.spin`): ₽ (`wheelMoney`), a relic, a full heal, a free Forget, an item, or the pinch (`ouch`, 10% max HP).
+  A slice that can't pay (Forget at `MIN_DECK`, an item under Dusk Stone) pays ₽ (`wheelPrize()` in `js/run.js`). The act
+  `spin` (`{ slice }`) turns the wheel three times and eases it to a stop with that slice under the pin, in 2D and 3D.
+- **Ruins Idol** (Golden Idol): Take the idol, the **Relic Statue** (`relic-statue`, `unique` + `event: 'ruins-idol'`: never
+  offered, listed in the Index under its own heading, Found; +25% prize money, `prizeMult()` in `js/data/relics.js`, art
+  PokéSprite's), or a Relic Gold worth `gold` ₽ if you hold it. Then (`state.took`, no Leave) the Golem shoves its boulder
+  down: Brace (`boulder`, 25% max HP) or Hide behind a column (`hide`, 8% max HP for good). Acts `grab`, `brace`, `hide`.
+- **Odd Keystone** (Knowing Skull): Spiritomb on a cairn; ask for ₽ (`askMoney`), a neutral move (the first of the rolled
+  `node.event.moves` you hold under `MAX_COPIES`, checked by `eventIdsKnown()`) or an item, as often as your HP allows,
+  each ask `askHp` + 1 for every ask before. Act `ask` (`{ what }`): wisps stream out to the coins, the cairn or the ball.
+- **Moon Dance** (Shining Light): Clefairy round a Moon Stone (the 3D room is always at night). Dance (`danceHp`) PP Ups
+  2 random moves (`ppUpRandom()`, shared with Rare Candy; `revealCard()` takes a list and shows both), or Moonlight heals
+  `moonlight` (25%) of max HP. Acts `dance`, `moonlight`.
+- **Swap Stall** (N'loth): Kecleon wants one of two of your common / uncommon relics (`node.event.rolls`), each shown on
+  its cushion (`figures.left` / `right` are the relics' PNGs; the 3D room loads them in `reset()` from `opts.figures`) and
+  trades it for the first of the rolled `node.event.relics` a tier rarer that you lack, named in the hint. Act `swap`
+  (`{ i, gets }`): the relic spins into the new one while Kecleon changes colour.
+Scenes: `PLACE_ART.wheel`, `idol`, `keystone`, `moon`, `stall` (outdoor), 3D `buildWheel()`, `buildIdol()`,
+`buildKeystone()`, `buildMoon()`, `buildStall()` on the biome's ground. Event icons 🎡 🗿 🌙 🦎 in `js/icons.js` (Spiritomb
+reuses 👻).
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.

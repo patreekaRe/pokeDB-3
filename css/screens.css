@@ -3767,6 +3767,9 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 .card-reveal .chest-rays { bottom: 50%; animation: raysIn 0.7s ease-out forwards, raysTurn 40s linear infinite; }
 .card-reveal .card { --card-w: min(56vw, 220px); position: relative; animation: cardReveal 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
 @keyframes cardReveal { from { scale: 0.2; rotate: -12deg; opacity: 0; } 60% { opacity: 1; } }
+.card-reveal.pair { grid-auto-flow: column; gap: 14px; }
+.card-reveal.pair .card { --card-w: min(40vw, 180px); }
+.card-reveal.pair .card:last-child { animation-delay: 0.15s; }
 @media (prefers-reduced-motion: reduce) { .card-reveal .card, .card-reveal .chest-rays { animation: none; opacity: 1; } }
 
 /* ---------- a biome's intro (js/biome-intro.js): a short film over the map as the biome starts ---------- */

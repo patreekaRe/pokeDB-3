@@ -815,18 +815,12 @@ act its own, plus shared ones and shrines), the biggest gap left: a few runs see
 a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
 one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
 bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
-<<<<<<< HEAD
 **All of them go to `main` at once** (the user's call, 2026-10-17): every batch is built on branch `events-batch-1`
 in both repos (merge `main` into it first each session), and only when all ~30 are done does it merge to `main`, after one
 bot check with every event in (human bot, Levels 0/3/5, against `main`) and a retune. Watch the healing rooms: with 15
 events in the bag Fire lost ~10 points at Level 3 until Abra got Doze (docs/reference/events.md), so give some of the new
 ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; last commit `7dcae871`). Next: batch 2, then
 batch 3 below.
-=======
-**In progress on branch `events-batch-1` in both repos** (2026-10-17): batch 1 is built there, the plan for the rest
-(batch 2 as listed, batch 3 picked, all landing on `main` at once after one bot check) is in this entry on that branch.
-Check it out and read it there; don't build events on `main`.
->>>>>>> origin/main
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random

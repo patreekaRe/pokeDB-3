@@ -29,14 +29,14 @@ import { BIOMES, BIOMES_BY_ID, FORKS, POOL, ROADS_WINS, biomeAt, canWalk, forkRo
 import { spriteFit, bodyX } from './data/sprite-fit.js';
 import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, stageName } from './data/starters.js';
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
-import { RELICS, RELICS_BY_ID, ABILITIES } from './data/relics.js';
+import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
 import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
 import { gateBar, setGateBar } from './gate.js';
-import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor } from './data/events.js';
+import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift } from './data/events.js';
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
@@ -2556,7 +2556,7 @@ function afterFight(node, result) {
   if (tough) dexNews.unshift('A tough match-up! You earned an Alpha\'s prize.');
   const [low, high] = PRIZE_MONEY[payAs];
   // a catch pays less ₽ than a knockout: it pays in a card and a Safari Pokédex entry (the user's call)
-  const base = Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * (run.relics.includes('amulet-coin') ? 2 : 1);
+  const base = Math.round(Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * prizeMult(run.relics));   // Amulet Coin, Relic Statue
   const prize = Math.round(base * (augs().prizeMult || 1) * (augs().riskyClimb && node.type === 'elite' ? augs().riskyClimb : 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Risky Climb, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
   if (result.caught) {
@@ -2984,11 +2984,14 @@ function gainRelic(relic, next) {
 /** What a relic does the moment it's taken: Cleanse Tag forgets a move, Rare Candy PP Ups two at random. */
 function pickedUp(relic, next) {
   if (relic.id === 'cleanse-tag' && run.deck.length > MIN_DECK) return forgetMove(next, next);
-  if (relic.id === 'rare-candy') {
-    const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, 2);
-    for (const i of spots) { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); tell(`${card.name} became ${CARDS_BY_ID[run.deck[i]].name}!`); }
-  }
+  if (relic.id === 'rare-candy') for (const [card, up] of ppUpRandom(2)) tell(`${card.name} became ${up.name}!`);
   next();
+}
+
+/** PP Up `n` random moves in the deck (Rare Candy, the Moon Dance): each [card, its upgrade]. */
+function ppUpRandom(n) {
+  const spots = shuffled(run.deck.map((id, i) => i).filter(i => canUpgrade(CARDS_BY_ID[run.deck[i]]))).slice(0, n);
+  return spots.map(i => { const card = CARDS_BY_ID[run.deck[i]]; run.deck[i] = upgradeId(card.id); return [card, CARDS_BY_ID[run.deck[i]]]; });
 }
 
 /** The id a card joins the deck as: Power Bracer (attacks) and Power Belt (the rest) PP Up it on the way in. */
@@ -3665,10 +3668,16 @@ function rollEvent(node, event) {
     const pool = poolForType(run.starter.type);
     node.event.offers = Object.fromEntries(event.morph.map(rarity => [rarity, shuffled(pool.filter(c => (c.rarity || 'common') === rarity)).map(c => c.id)]));
   }
+  if (event.slices) node.event.spin = random();
+  if (event.askHp) { node.event.asked = 0; node.event.moves = shuffled(poolForType(run.starter.type).filter(c => c.type === 'normal')).map(c => c.id); }
+  if (event.up) {   // Kecleon: which two of your relics it asks for, and what it trades for each, in a rolled order
+    node.event.rolls = [random(), random()];
+    node.event.relics = shuffled(RELICS.filter(r => !r.boss && !r.unique && (!r.only || r.only === run.starter.type) && Object.values(event.up).includes(r.rarity))).map(r => r.id);
+  }
 }
 
 /** Every card and relic id a saved event holds is still in the game (checked by restoreRun). */
-const eventIdsKnown = (state) => Object.values(state.offers || {}).flat().every(id => CARDS_BY_ID[id])
+const eventIdsKnown = (state) => [...Object.values(state.offers || {}).flat(), ...(state.moves || [])].every(id => CARDS_BY_ID[id])
   && (state.relics || []).every(id => RELICS_BY_ID[id]);
 
 const perBiome = (value) => (Array.isArray(value) ? value[run.biome] : value);
@@ -3679,6 +3688,7 @@ const EVENT_SCENES = {
   'berry-tree': 'berry', 'hot-spring': 'spring', 'wishing-well': 'well', 'item-ball': 'itemball', 'team-rocket': 'rocket', shrine: 'altar',
   'move-tutor': 'tutor', 'move-deleter': 'deleter', 'day-care': 'daycare', 'fan-club': 'fans',
   'sleeping-snorlax': 'snorlax', 'trash-heap': 'trash', ditto: 'ditto', 'bills-pc': 'billspc', abra: 'abra',
+  'prize-wheel': 'wheel', 'ruins-idol': 'idol', 'odd-keystone': 'keystone', 'moon-dance': 'moon', 'swap-stall': 'stall',
 };
 
 /** An event's room; `after` is its trainer's reaction (a figureDoes() move) once its picker is done: then the room has no
@@ -3719,7 +3729,7 @@ const ROOM_SPENT = "That's all here. Leave when you're ready.";
 const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 
 // the rooms walked in 3D (js/event-3d.js), like the Center: every ? room and the treasure grotto
-const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'gym', 'town', 'home'];
+const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'gym', 'town', 'home'];
 let event3dMod = null;
 
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
@@ -4192,7 +4202,168 @@ const EVENT_CHOICES = {
       }, !heal),
     ] };
   },
+
+  // StS's Wheel of Change: one free spin, its slice rolled as the biome started
+  'prize-wheel'(event, state, back, react, done) {
+    const slice = wheelSlice(event, state.spin);
+    return { figures: { mon: { src: 'assets/pokemon/meowth-front.gif', flip: true } }, sub: [event.text, 'It could land on ₽, a relic, a full heal, a free Forget or an item... or a nasty pinch.'], options: [
+      spotOption('Spin!', 'One free spin. Every slice is as likely as the rest.', async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('spin', { slice: event.slices.indexOf(slice) })) return;
+        wheelPrize(event, slice, done);
+      }),
+    ] };
+  },
+
+  // StS's Golden Idol: take the idol (a relic), then the Golem rolls down at you: lose HP, or max HP for good
+  'ruins-idol'(event, state, back, react, done) {
+    const boulder = idolBoulder(event, run.maxHp), relic = RELICS_BY_ID[event.relic], owned = run.relics.includes(relic.id), gold = perBiome(event.gold);
+    const figures = { mon: { src: 'assets/pokemon/golem-front.gif' } };
+    if (state.took) return { figures, leave: false, sub: ['The ground shakes. The Golem shoves its boulder down the slope at you!', `Brace for it (${boulder.hp} HP), or dive aside and get scraped (max HP -${boulder.maxHp}).`], options: [
+      spotOption(`Brace -${boulder.hp} HP`, `Take the hit: lose ${boulder.hp} HP.`, async () => {
+        if (!await playOut('brace')) return;
+        loseHp(boulder.hp);
+        await showHpChange();
+        tell(`The boulder bowled you over. Lost ${boulder.hp} HP.`);
+        done();
+      }),
+      spotOption(`Hide -${boulder.maxHp} max HP`, `Dive behind a pillar: lose ${boulder.maxHp} max HP for the rest of the run.`, async () => {
+        if (!await playOut('hide')) return;
+        run.maxHp = Math.max(1, run.maxHp - boulder.maxHp);
+        run.hp = Math.min(run.hp, run.maxHp);
+        await showHpChange();
+        tell(`It rolled right past you. Max HP -${boulder.maxHp}.`);
+        done();
+      }),
+    ] };
+    const what = owned ? `It's a Relic Gold, worth ₽${gold}.` : `It's the ${relic.name}: ${relic.text}`;
+    return { figures, sub: [event.text, `${what} Taking it is sure to anger the Golem.`], options: [
+      spotOption('Take the idol', `${what} Then the boulder comes.`, async () => {
+        if (!await playOut('grab')) return;
+        state.took = true;
+        checkpoint();
+        const then = () => { playSound('quake'); back(); };
+        if (!owned) return revealGift(relic, [`You took the ${relic.name}!`, ...relicLines(relic).map((line, i) => (i ? line : relic.text))], () => gainRelic(relic, then));
+        run.money += gold;
+        setMoney(run.money);
+        playSound('coins');
+        tell(`The Relic Gold is worth ₽${gold}!`);
+        then();
+      }),
+    ] };
+  },
+
+  // StS's Knowing Skull: ask for ₽, a neutral move or an item, each ask costing more HP than the last
+  'odd-keystone'(event, state, back, react, done) {
+    const cost = keystoneAsk(event, state.asked, run.biome), money = perBiome(event.askMoney), short = run.hp <= cost;
+    const move = state.moves.map(id => CARDS_BY_ID[id]).find(card => copiesOf(card.id) < MAX_COPIES), noItem = run.relics.includes('dusk-stone');
+    const need = (hint) => (short ? `You need more than ${cost} HP.` : hint);
+    const ask = (what, then) => async () => {
+      if (!await playOut('ask', { what })) return;
+      loseHp(cost);
+      state.asked += 1;
+      await showHpChange();
+      checkpoint();
+      then();
+    };
+    return { figures: { mon: { src: 'assets/pokemon/spiritomb-front.gif' } },
+      sub: [event.text, state.asked ? `Asked ${state.asked} time${state.asked > 1 ? 's' : ''}. The next ask costs ${cost} HP.` : `The first ask costs ${cost} HP, and each one after costs 1 more.`], options: [
+        spotOption(`₽${money} -${cost} HP`, need(`It gives you ₽${money}.`), ask('money', () => {
+          run.money += money;
+          setMoney(run.money);
+          playSound('coins');
+          tell(`The keystone gave you ₽${money}. Lost ${cost} HP.`);
+          back();
+        }), short),
+        spotOption(`A move -${cost} HP`, move ? need('A random neutral move for your deck.') : 'You hold every neutral move it could give.', ask('move', () => {
+          run.deck.push(move.id);
+          hold3d();
+          revealCard('Odd Keystone', move, [`The keystone gave you ${move.name}!`, `Lost ${cost} HP.`], back);
+        }), short || !move),
+        spotOption(`An item -${cost} HP`, noItem ? 'Your Dusk Stone keeps items away.' : need('A random item for your Bag.'), ask('item', () => {
+          const [item] = itemChoices(run);
+          if (!item) return back();
+          hold3d();
+          offerItem(item, back, { opened: true, title: 'Odd Keystone' });
+        }), short || noItem),
+      ] };
+  },
+
+  // StS's Shining Light: dance (2 random moves PP Up) for HP, or heal in the moonlight
+  'moon-dance'(event, state, back, react, done) {
+    const cost = perBiome(event.danceHp), heal = Math.min(run.maxHp - run.hp, Math.ceil(run.maxHp * event.moonlight));
+    const can = run.deck.some(id => canUpgrade(CARDS_BY_ID[id]));
+    return { figures: { left: { src: 'assets/pokemon/clefairy-front.gif', flip: true }, right: { src: 'assets/pokemon/clefairy-front.gif' } },
+      sub: [event.text, `Join the dance for ${cost} HP and 2 random moves PP Up, or bask in the moonlight and heal.`], options: [
+        spotOption(`Dance -${cost} HP`, !can ? 'None of your moves can PP Up.' : run.hp <= cost ? `You need more than ${cost} HP.` : `PP Up 2 random moves in your deck, for ${cost} HP.`, async () => {
+          for (const fan of ['left', 'right']) figureDoes(fan, 'hop');
+          if (!await playOut('dance')) return;
+          loseHp(cost);
+          await showHpChange();
+          const ups = ppUpRandom(2).map(([, up]) => up);
+          checkpoint();
+          hold3d();
+          revealCard('Moon Dance', ups, [`The moonlight powered up ${ups.map(c => c.name).join(' and ')}!`, `Lost ${cost} HP.`], done);
+        }, !can || run.hp <= cost),
+        spotOption(heal ? `Moonlight +${heal} HP` : 'Moonlight', heal ? `Bask in the moonlight: heal ${heal} HP.` : 'You\'re already at full HP.', async () => {
+          if (!await playOut('moonlight')) return;
+          run.hp += heal;
+          playSound('heal-hp');
+          await showHpChange();
+          tell(`The moonlight healed ${heal} HP.`);
+          done();
+        }, !heal),
+      ] };
+  },
+
+  // StS's N'loth: Kecleon wants one of two of your relics, and gives one a tier rarer for it
+  'swap-stall'(event, state, back, react, done) {
+    const offers = state.relics.map(id => RELICS_BY_ID[id]);
+    const trades = swapWares(event, run.relics.map(id => RELICS_BY_ID[id]).filter(Boolean), state.rolls)
+      .map(give => ({ give, gets: swapGift(event, give, offers, run.relics) })).filter(t => t.gets);
+    const figures = { mon: { src: 'assets/pokemon/kecleon-front.gif' } };
+    trades.forEach(({ give }, i) => { figures[i ? 'right' : 'left'] = { src: `assets/items/${give.id}.png` }; });
+    if (!trades.length) return { figures, sub: [event.text, 'It looks through your Bag and shrugs: nothing it can trade up today.'], options: [spotOption('Trade', 'You hold no common or uncommon relic it wants.', () => {}, true)] };
+    return { figures, sub: [event.text, 'It wants one of these, and offers something rarer for it. Tap one to see the trade.'], options: trades.map(({ give, gets }, i) =>
+      spotOption(`Trade ${give.name}`, `Give ${give.icon} ${give.name}, get ${gets.icon} ${gets.name}: ${gets.text}`, async () => {
+        figureDoes('mon', 'hop');
+        if (!await playOut('swap', { i, gets: gets.id })) return;
+        run.relics.splice(run.relics.indexOf(give.id), 1);
+        revealGift(gets, [`Kecleon took your ${give.name} and gave you ${gets.name}!`, ...relicLines(gets).map((line, k) => (k ? line : gets.text))], () => gainRelic(gets, done));
+      })) };
+  },
 };
+
+/** The Prize Wheel's slice paid out; one that can't be (no Forget at the deck's minimum, no item under Dusk Stone) pays ₽. */
+async function wheelPrize(event, slice, done) {
+  const cash = () => {
+    const money = perBiome(event.wheelMoney);
+    run.money += money;
+    setMoney(run.money);
+    playSound('coins');
+    tell(`It landed on ₽! You won ₽${money}.`);
+    done();
+  };
+  const [item] = slice === 'item' && !run.relics.includes('dusk-stone') ? itemChoices(run) : [];
+  if (slice === 'relic') return hold3d(), offerRelic('Prize Wheel', done);
+  if (slice === 'forget' && run.deck.length > MIN_DECK) return tell('It landed on Forget: a move of your choice, for free.'), hold3d(), forgetMove(done, done);
+  if (item) return hold3d(), offerItem(item, done, { opened: true, title: 'Prize Wheel' });
+  if (slice === 'heal') {
+    const heal = run.maxHp - run.hp;
+    run.hp = run.maxHp;
+    playSound('heal-hp');
+    await showHpChange();
+    tell(heal ? `It landed on Full Heal! Healed ${heal} HP.` : 'It landed on Full Heal... and you were already at full HP.');
+    return done();
+  }
+  if (slice !== 'ouch') return cash();
+  const ouch = Math.ceil(run.maxHp * event.ouch);
+  figureDoes('mon', 'hop');
+  loseHp(ouch);
+  await showHpChange();
+  tell(`It landed on the Pinch! Meowth Fury Swiped you for ${ouch} HP.`);
+  done();
+}
 
 const copiesOf = (id) => run.deck.filter(x => baseId(x) === baseId(id)).length;
 const pickable = (card) => card && !card.evoOnly && !card.unplayable;
@@ -4274,15 +4445,15 @@ function dayCare(trades, back, done = showMap) {
   });
 }
 
-/** A card an event handed you, shown big in a burst of light before you go on (the user found "You got X!" in the
-    text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text box's last line goes on. */
+/** A card an event handed you (or a list: the Moon Dance's two), shown big in a burst of light before you go on (the
+    user found "You got X!" in the text box alone too blank, 2026-09-28). A tap on it zooms it; OK or a tap on the text
+    box's last line goes on. */
 function revealCard(title, card, lines, done) {
   showChoice({ title, sub: lines, options: [], layout: 'card-reveal-room' });
   let gone = false;
   roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
-  const stage = el('div', 'card-reveal');
-  const big = zoomable(makeCard(card, { stage: run.stage }), card, run.stage);
-  stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), big);
+  const cards = [].concat(card), stage = el('div', `card-reveal${cards.length > 1 ? ' pair' : ''}`);
+  stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), ...cards.map(c => zoomable(makeCard(c, { stage: run.stage }), c, run.stage)));
   $('reward-options').append(stage);
   playSound('item-get');
 }

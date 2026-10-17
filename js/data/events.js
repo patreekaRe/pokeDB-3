@@ -133,6 +133,47 @@ export const EVENTS = [
     doze: 0.2,        // or doze beside it: this share of max HP healed (it sleeps 18 hours a day)
     not: ['tower'],   // a climb's floors are its score
   },
+
+  // batch 2 of the StS events (2026-10-17): docs/roadmap.md's "More ? events"
+  {
+    id: 'prize-wheel', icon: '🎡', name: 'Prize Wheel',   // StS: Wheel of Change
+    music: 'event-outdoor',
+    text: 'A Meowth runs a prize wheel by the road. "One free spin, nya! No refunds!"',
+    // one free spin, its slice rolled as the biome starts: each as likely as the rest
+    slices: ['money', 'relic', 'heal', 'forget', 'item', 'ouch'],
+    wheelMoney: [70, 100, 130, 160],
+    ouch: 0.1,   // the share of max HP the bad slice costs (never faints you)
+  },
+  {
+    id: 'ruins-idol', icon: '🗿', name: 'Ruins Idol',   // StS: Golden Idol
+    music: 'event-outdoor',
+    text: 'A golden idol sits on a plinth among old ruins. On the ledge above it, a Golem sits beside a huge boulder.',
+    relic: 'relic-statue',          // what the idol is; held already, it's a Relic Gold worth `gold` ₽ instead
+    gold: [60, 80, 100, 120],
+    boulder: 0.25,                  // then the Golem shoves its boulder down: brace for this share of max HP,
+    hide: 0.08,                     // or dive aside and lose this share of max HP for good
+  },
+  {
+    id: 'odd-keystone', icon: '👻', name: 'Odd Keystone',   // StS: Knowing Skull
+    music: 'event-outdoor',
+    text: 'An Odd Keystone sits on a cairn of stones. A Spiritomb drifts out of it, whispering: ask, and it will give... for a price.',
+    askHp: [5, 6, 7, 8],            // HP an ask, +1 for every ask before it
+    askMoney: [40, 55, 70, 85],     // ask for ₽, an item or a neutral move, as often as your HP allows
+  },
+  {
+    id: 'moon-dance', icon: '🌙', name: 'Moon Dance',   // StS: Shining Light
+    music: 'event-outdoor',
+    text: 'Under the moon, a ring of Clefairy dance round a Moon Stone.',
+    danceHp: [6, 8, 10, 12],        // join the dance: 2 random moves PP Up, for this much HP
+    moonlight: 0.25,                // or bask in the moonlight: this share of max HP healed
+  },
+  {
+    id: 'swap-stall', icon: '🦎', name: 'Swap Stall',   // StS: N'loth
+    music: 'event-outdoor',
+    text: 'A Kecleon keeps a stall of odd treasures. It eyes your Bag and changes colour.',
+    // it wants one of two of your relics (rolled), and trades it for one a tier rarer
+    up: { common: 'uncommon', uncommon: 'rare' },
+  },
 ];
 
 /** Which search wakes the Snorlax (0-based), or loot.length if it sleeps through all of them: one roll a search. */
@@ -150,6 +191,25 @@ export const trashDig = (event, n, biome) => ({
 /** What Ditto turns `card` into: the first rolled card of its rarity that isn't it and that you hold fewer than `max` of. */
 export const dittoMorph = (offers, card, copies, max) =>
   (offers[card.rarity || 'common'] || []).find(id => id !== card.id && copies(id) < max) || null;
+
+/** The Prize Wheel's slice for a spin rolled at `roll` (0-1). */
+export const wheelSlice = (event, roll) => event.slices[Math.min(event.slices.length - 1, Math.floor(roll * event.slices.length))];
+
+/** The Golem's boulder: { hp } it costs to brace for it, { maxHp } to dive aside. */
+export const idolBoulder = (event, maxHp) => ({ hp: Math.ceil(maxHp * event.boulder), maxHp: Math.ceil(maxHp * event.hide) });
+
+/** The HP the Odd Keystone's next ask costs, after `asked` asks. */
+export const keystoneAsk = (event, asked, biome) => (Array.isArray(event.askHp) ? event.askHp[biome] : event.askHp) + asked;
+
+/** The two relics of yours Kecleon wants (`owned` relic objects): those it can trade up, in a stable order, two picked
+    by the rolls. */
+export function swapWares(event, owned, rolls) {
+  const left = owned.filter(r => event.up[r.rarity] && !r.boss && !r.unique).sort((a, b) => (a.id < b.id ? -1 : 1));
+  return rolls.map(roll => left.splice(Math.floor(roll * left.length), 1)[0]).filter(Boolean);
+}
+
+/** What Kecleon gives for `give`: the first of the rolled `offers` (relic objects) a tier rarer that you don't hold. */
+export const swapGift = (event, give, offers, held) => offers.find(r => r.rarity === event.up[give.rarity] && !held.includes(r.id)) || null;
 
 /** The events a run of this kind can meet (an event's `not` lists the modes it stays out of). */
 export const eventsFor = (mode) => EVENTS.filter(e => !e.not?.includes(mode));

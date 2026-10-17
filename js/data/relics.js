@@ -130,7 +130,12 @@ export const RELICS = [
 
   // `unique`: never offered anywhere; only won by beating Chad Master Kenmatta in his dojo (the Move Tutor event)
   { id: 'exp-share', name: 'Mata-Mindset', icon: '🎓', unique: true, text: 'Gain 1 extra PP and draw 1 extra card every turn. Start each battle with 1 strength.' },
+  // `event`: unique too, but found in a ? room (the Ruins Idol), listed in the Index under its own heading
+  { id: 'relic-statue', name: 'Relic Statue', icon: '🗿', unique: true, event: 'ruins-idol', text: 'Win 25% more prize money (₽) after fights.' },   // Golden Idol
 ];
+
+/** The prize money (₽) a fight pays is multiplied by this: Amulet Coin doubles it, the Relic Statue adds a quarter. */
+export const prizeMult = (relics) => (relics.includes('amulet-coin') ? 2 : 1) * (relics.includes('relic-statue') ? 1.25 : 1);
 
 /** Boss relics that give +1 energy every turn (Choice Band and the rest). */
 export const ENERGY_RELICS = ['choice-band', 'choice-specs', 'choice-scarf', 'toxic-orb', 'room-service', 'griseous-orb', 'dusk-stone'];

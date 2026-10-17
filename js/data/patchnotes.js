@@ -53,7 +53,7 @@ export const NEXT = [
   ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
   ['base', 'The berry garden says what each berry does as you pick one to plant, and what Kurt makes from it.'],
   ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, and the Clearing and the 3D buy windows run lighter.'],
-  ['runs', 'Five new ? rooms: a Sleeping Snorlax on a pile of loot, Trubbish\'s Trash Heap, Ditto, Bill\'s PC and an Abra that Teleports you to the boss or lets you nap.'],
+  ['runs', 'Ten new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, a golden Ruins Idol, a Clefairy Moon Dance and Kecleon\'s Swap Stall.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
