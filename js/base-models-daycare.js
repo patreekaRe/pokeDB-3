@@ -53,7 +53,7 @@ function buildDc(K, L, parts, put, W, def) {
       case 'box': put(L.rbox(u(q.w), u(q.hh), u(q.d), u(q.r)), m, x, y, z); break;
       case 'cyl': put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), 24), m, x, y, z); break;
       case 'ball': {
-        const r = Math.max(q.rx, q.ry, q.rz), seg = Math.max(8, L.sides(u(r), 24));
+        const r = Math.max(q.rx, q.ry, q.rz), seg = q.seg ?? Math.max(8, L.sides(u(r), 24));
         put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), 1, 1, seg), m, x, y, z);
         break;
       }
@@ -64,7 +64,7 @@ function buildDc(K, L, parts, put, W, def) {
         break;
       }
       case 'lathe': put(L.lathe(q.pts.map(([r, up]) => [u(r), u(up)]), 20), m, x, y, z); break;
-      case 'ring': put(L.torus(u(q.r), u(q.tube), Math.PI * 2, 24).rotateX(Math.PI / 2), m, x, y, z); break;
+      case 'ring': put(L.torus(u(q.r), u(q.tube), Math.PI * 2, q.seg ?? 24).rotateX(Math.PI / 2), m, x, y, z); break;
       case 'rod': {
         const a = new THREE.Vector3(X(q.a[0]), u(q.a[1]), u(q.a[2])), b = new THREE.Vector3(X(q.b[0]), u(q.b[1]), u(q.b[2]));
         const g = L.cyl(u(q.r), a.distanceTo(b), u(q.r), q.r > 1.2 ? 12 : 8);

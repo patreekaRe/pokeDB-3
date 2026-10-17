@@ -61,8 +61,8 @@ const egg = (x, h, z, r, c, spot, o = {}) => {
   const ry = r * 1.3, fz = (dx, dh) => z + r * Math.sqrt(Math.max(0, 1 - (dx / r) ** 2 - (dh / ry) ** 2));
   return [
     S(x, h, z, r, ry, r, c, { m: 'gloss', ...o }),
-    S(x - r * 0.38, h + r * 0.35, fz(-r * 0.38, r * 0.35) - r * 0.08, r * 0.26, r * 0.3, r * 0.14, spot, { m: 'gloss' }),
-    S(x + r * 0.34, h - r * 0.4, fz(r * 0.34, -r * 0.4) - r * 0.08, r * 0.22, r * 0.24, r * 0.12, spot, { m: 'gloss' }),
+    S(x - r * 0.38, h + r * 0.35, fz(-r * 0.38, r * 0.35) - r * 0.08, r * 0.26, r * 0.3, r * 0.14, spot, { m: 'gloss', seg: 8 }),
+    S(x + r * 0.34, h - r * 0.4, fz(r * 0.34, -r * 0.4) - r * 0.08, r * 0.22, r * 0.24, r * 0.12, spot, { m: 'gloss', seg: 8 }),
   ];
 };
 /** A Poké Ball r round at x, h, z: two lathe halves, its band and button. */
@@ -216,9 +216,9 @@ export const DAYCARE_KINDS = [
   // a wicker basket of three eggs, a pink bow on its handle
   piece('dceggbasket', 'Wicker egg basket', 1, 1, 300, 'wood', [
     LA(16, 0, 0, [[0, 0], [8, 0], [10.5, 2], [12.5, 6], [13.5, 10], [13.5, 11.5], [0, 11.5]], DC.wicker),
-    RG(16, 4, 0, 11.6, 0.7, DC.wickerD, { m: 'wood' }), RG(16, 8, 0, 13.1, 0.7, DC.wickerD, { m: 'wood' }),
+    RG(16, 6, 0, 12.3, 0.7, DC.wickerD, { m: 'wood', seg: 16 }),
     RG(16, 11.5, 0, 13.2, 1.3, DC.wickerD, { m: 'wood' }),
-    S(16, 12, 0, 12, 2.4, 12, DC.pink, { m: 'cloth' }),
+    S(16, 12, 0, 12, 2.4, 12, DC.pink, { m: 'cloth', seg: 16 }),
     ...egg(10.5, 17, -2, 4.2, DC.egg, DC.mintD), ...egg(21.5, 17, -2, 4.2, DC.egg, DC.skyD), ...egg(16, 16.5, 4, 4, DC.eggP, DC.pinkD),
     ...arch(3, 29, 11.5, 19.5, 0, 1, DC.wickerD),
     S(13.4, 31, 0.4, 2.3, 1.6, 1, DC.pink, { m: 'cloth' }), S(18.6, 31, 0.4, 2.3, 1.6, 1, DC.pink, { m: 'cloth' }), S(16, 31, 1.2, 1, 1, 1, DC.pinkD, { m: 'cloth' }),
@@ -230,11 +230,11 @@ export const DAYCARE_KINDS = [
     C(16, 18, 0, 1, 30, DC.pine),
     ...[[8, 12.5], [21, 10], [33, 7.5]].flatMap(([h, r]) => [
       LA(16, h, 0, [[0, 0], [r * 0.6, 0], [r, 2.2], [r, 3.4], [0, 3.4]], DC.wicker),
-      RG(16, h + 3.4, 0, r, 0.9, DC.wickerD, { m: 'wood' }),
+      RG(16, h + 3.4, 0, r, 0.9, DC.wickerD, { m: 'wood', seg: 16 }),
     ]),
-    ...egg(9.5, 15.8, 2, 3.4, DC.egg, DC.mintD), ...egg(16, 15.8, -4, 3.4, DC.eggS, DC.skyD), ...egg(22.5, 15.8, 2, 3.4, DC.eggP, DC.pinkD),
-    ...egg(12.4, 28.6, 1, 3.2, DC.eggP, DC.pinkD), ...egg(19.6, 28.6, 1, 3.2, DC.egg, DC.mintD),
-    ...egg(16, 40.6, 0, 3.2, DC.egg, DC.orange),
+    ...egg(9.5, 15.8, 2, 3.4, DC.egg, DC.mintD, { seg: 12 }), ...egg(16, 15.8, -4, 3.4, DC.eggS, DC.skyD, { seg: 12 }), ...egg(22.5, 15.8, 2, 3.4, DC.eggP, DC.pinkD, { seg: 12 }),
+    ...egg(12.4, 28.6, 1, 3.2, DC.eggP, DC.pinkD, { seg: 12 }), ...egg(19.6, 28.6, 1, 3.2, DC.egg, DC.mintD, { seg: 12 }),
+    ...egg(16, 40.6, 0, 3.2, DC.egg, DC.orange, { seg: 12 }),
   ]),
 
   // the incubator: an egg on a warm pad under a glass dome
@@ -308,14 +308,14 @@ export const DAYCARE_KINDS = [
 
   // a pine high chair, a butter-yellow tray with a bowl and spoon
   piece('dchighchair', 'Feeding high chair', 1, 1, 450, 'wood', [
-    RD([5, 0, -11], [9, 27, -5], 1.1, DC.pine), RD([27, 0, -11], [23, 27, -5], 1.1, DC.pine),
+    RD([5, 0.8, -11], [9, 27, -5], 1.1, DC.pine), RD([27, 0.8, -11], [23, 27, -5], 1.1, DC.pine),
     B(16, 42, -7.5, 18, 22, 2.6, DC.pine, { r: 4 }),
     ...pokeBall(16, 44, -5.4, 3.2),
     RD([6.2, 8, -9.2], [6.2, 8, 9.2], 0.7, DC.pineD), RD([25.8, 8, -9.2], [25.8, 8, 9.2], 0.7, DC.pineD),
     B(16, 28, 0, 20, 3, 16, DC.pine, { r: 1 }),
     B(16, 30.2, 0, 17, 1.8, 14, DC.pink, { m: 'cloth', r: 0.8 }),
     B(6.5, 34, 1, 2, 2, 14, DC.pine, { r: 0.8 }), B(25.5, 34, 1, 2, 2, 14, DC.pine, { r: 0.8 }),
-    RD([5, 0, 11], [9, 27, 5], 1.1, DC.pine), RD([27, 0, 11], [23, 27, 5], 1.1, DC.pine),
+    RD([5, 0.8, 11], [9, 27, 5], 1.1, DC.pine), RD([27, 0.8, 11], [23, 27, 5], 1.1, DC.pine),
     B(16, 12, 9, 16, 1.6, 3, DC.pineD, { r: 0.6 }),
     B(16, 36, 9, 26, 2, 9, DC.butter, { m: 'gloss', r: 1.6 }),
     LA(19.5, 37, 9.5, [[0, 0], [2, 0], [3, 1.6], [3.2, 2.2], [0, 2.2]], DC.sky, { m: 'gloss' }),
