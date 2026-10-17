@@ -13,18 +13,28 @@
    new row slides the cluster down instead of jumping. Its foot is Puzzle Bobble's (the user's ask, 2026-10-12): a brass
    launcher with a gold pointer between two animated Squirtles, the normal one and the shiny, facing each other, the left
    one pulling the next bubble out of a bag and loading it after every shot (`load`). A tap anywhere under the line
-   swaps the loaded bubble and the bag's. */
+   swaps the loaded bubble and the bag's.
+   Harder since 2026-10-17 (the user's ask: it got repetitive and easy, they lasted a long while): a shot clock, Puzzle
+   Bobble's hurry-up, that fires for you when it runs out and shortens every level (`clockFor()`); Geodude rocks in the
+   boards from level 5 that never pop, only drop (`ROCK`, js/data/bubble-boards.js); the ceiling two shots sooner each lap.
+   Skill pays back: shots that pop in a row build a chain (x2 up to x5 on everything popped and dropped), and every
+   fourth in a row loads a Voltorb bomb into the bag, which blasts every bubble and rock round where it lands. */
 
 import { runArcade, banner, stamp } from './arcade-kit.js';
 import { gifFrames } from './hd2d.js';
-import { BOARDS, boardCells } from './data/bubble-boards.js';
+import { calmFx } from './prefs.js';
+import { BOARDS, boardCells, ROCK, ROCKS_FROM } from './data/bubble-boards.js';
 
 const CLEAR = 500, LEVEL_S = 1.8;
 const R = 15, COLS = 10, ROWH = R * Math.sqrt(3), TOP = 8, W = COLS * R * 2, H = 420;
 const LINE = H - 78, GUN = [W / 2, H - 46], SPEED = 640;
 const POP = 10, DROP = 20, AIM_SHOTS = 3, BAG = [36, H - 6], LOADER = 84, CRANK = W - 76, LOAD_S = 0.32;
 /* the bubbles' colours (base, light, dark): water, fire, grass, electric, psychic, fairy, each with its glyph inside */
-const COLOURS = [['#2a7af0', '#b8e0ff', '#0a2c80'], ['#e83030', '#ffb0a0', '#701010'], ['#30c040', '#c0ffb0', '#0c5a18'], ['#f8d018', '#fff8b0', '#906800'], ['#b050e0', '#f0c8ff', '#4a1070'], ['#f060a8', '#ffd0e8', '#801850']];
+const COLOURS = [['#2a7af0', '#b8e0ff', '#0a2c80'], ['#e83030', '#ffb0a0', '#701010'], ['#30c040', '#c0ffb0', '#0c5a18'], ['#f8d018', '#fff8b0', '#906800'], ['#b050e0', '#f0c8ff', '#4a1070'], ['#f060a8', '#ffd0e8', '#801850'],
+  ['#8a8170', '#d8d0bc', '#3a352a'], ['#e83030', '#ffffff', '#5a0c0c']];
+const BOMB = 7, PLAIN = 6, CHAIN_MAX = 5, BOMB_EVERY = 4, BLAST = R * 2 * 1.75;
+/** Seconds to shoot before the launcher fires itself: generous at first, down to 4 by level 16 (the user's ask, 2026-10-17). */
+const clockFor = (level) => Math.max(4, 11 - level * 0.45);
 const TAU = Math.PI * 2;
 
 const sprites = new Map();
@@ -53,6 +63,8 @@ function bubbleSprite(colour, r, s) {
   const g = c.getContext('2d');
   g.scale(s, s);
   const x = r + 1, y = r + 1, [base, light, dark] = COLOURS[colour];
+  if (colour === ROCK) { rockArt(g, x, y, r); sprites.set(k, c); return c; }
+  if (colour === BOMB) { bombArt(g, x, y, r); sprites.set(k, c); return c; }
   g.fillStyle = dark; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();   // the outline
   const body = g.createRadialGradient(x - r * 0.3, y - r * 0.35, r * 0.05, x, y, r * 0.95);
   body.addColorStop(0, light); body.addColorStop(0.35, base); body.addColorStop(0.8, base); body.addColorStop(1, dark);
@@ -70,6 +82,39 @@ function bubbleSprite(colour, r, s) {
   g.beginPath(); g.arc(x - r * 0.62, y - r * 0.08, r * 0.08, 0, TAU); g.fill();
   sprites.set(k, c);
   return c;
+}
+
+/** A Geodude rock: a lumpy grey boulder, craggy, with Geodude's brow and a crack, no colour to match. */
+function rockArt(g, x, y, r) {
+  const [base, light, dark] = COLOURS[ROCK];
+  g.fillStyle = dark; g.beginPath();
+  for (let i = 0; i < 11; i++) { const a = i * TAU / 11, d = r * (0.9 + ((i * 7) % 3) * 0.05); g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); }
+  g.closePath(); g.fill();
+  const body = g.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  body.addColorStop(0, light); body.addColorStop(0.5, base); body.addColorStop(1, dark);
+  g.fillStyle = body; g.beginPath();
+  for (let i = 0; i < 11; i++) { const a = i * TAU / 11, d = r * (0.8 + ((i * 7) % 3) * 0.05); g.lineTo(x + Math.cos(a) * d, y + Math.sin(a) * d); }
+  g.closePath(); g.fill();
+  g.strokeStyle = dark; g.lineWidth = r * 0.09; g.lineCap = 'round';
+  g.beginPath(); g.moveTo(x - r * 0.5, y - r * 0.12); g.lineTo(x - r * 0.12, y - r * 0.02); g.moveTo(x + r * 0.5, y - r * 0.12); g.lineTo(x + r * 0.12, y - r * 0.02); g.stroke();   // the brow
+  g.fillStyle = dark; for (const s of [-1, 1]) { g.beginPath(); g.arc(x + s * r * 0.28, y + r * 0.14, r * 0.09, 0, TAU); g.fill(); }
+  g.lineWidth = r * 0.06; g.beginPath(); g.moveTo(x + r * 0.2, y - r * 0.75); g.lineTo(x + r * 0.32, y - r * 0.45); g.lineTo(x + r * 0.22, y - r * 0.3); g.stroke();   // a crack
+  g.fillStyle = 'rgba(255, 255, 255, 0.25)'; for (const [dx, dy] of [[-0.45, 0.5], [0.4, 0.45], [-0.1, 0.62]]) g.fillRect(x + dx * r, y + dy * r, r * 0.12, r * 0.08);
+}
+/** A Voltorb bomb: the ball's red top and white bottom, its band, and Voltorb's scowl. */
+function bombArt(g, x, y, r) {
+  g.fillStyle = '#2a0808'; g.beginPath(); g.arc(x, y, r, 0, TAU); g.fill();
+  const top = g.createRadialGradient(x - r * 0.3, y - r * 0.5, r * 0.1, x, y, r);
+  top.addColorStop(0, '#ffb0a0'); top.addColorStop(0.45, '#e83030'); top.addColorStop(1, '#7a1010');
+  g.fillStyle = top; g.beginPath(); g.arc(x, y, r - 1.2, Math.PI, 0); g.fill();
+  const bot = g.createRadialGradient(x - r * 0.2, y, r * 0.1, x, y, r);
+  bot.addColorStop(0, '#ffffff'); bot.addColorStop(0.7, '#e8e8f0'); bot.addColorStop(1, '#9a9aa8');
+  g.fillStyle = bot; g.beginPath(); g.arc(x, y, r - 1.2, 0, Math.PI); g.fill();
+  g.fillStyle = '#2a0808'; g.fillRect(x - r + 1, y - r * 0.07, r * 2 - 2, r * 0.14);
+  g.fillStyle = '#fff'; g.strokeStyle = '#2a0808'; g.lineWidth = r * 0.07;   // the scowl
+  for (const s of [-1, 1]) { g.beginPath(); g.moveTo(x + s * r * 0.15, y - r * 0.38); g.lineTo(x + s * r * 0.62, y - r * 0.55); g.lineTo(x + s * r * 0.55, y - r * 0.2); g.closePath(); g.fill(); g.stroke(); }
+  g.fillStyle = '#2a0808'; for (const s of [-1, 1]) { g.beginPath(); g.arc(x + s * r * 0.36, y - r * 0.33, r * 0.08, 0, TAU); g.fill(); }
+  g.fillStyle = 'rgba(255, 255, 255, 0.9)'; g.beginPath(); g.ellipse(x - r * 0.4, y - r * 0.62, r * 0.22, r * 0.11, -0.6, 0, TAU); g.fill();
 }
 
 const PLATE = TOP + 12 * ROWH;
@@ -222,20 +267,21 @@ export const openBubble = (onClose) => runArcade({
   keys: { left: [['◀', 'left'], ['▶', 'right']] },
   pad: [['SHOOT', 'fire']],
   sounds: ['fx-bloop', 'fx-bubble'],
-  help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap under the line to swap.', 'The loaded bubble and the one in the bag trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots the ceiling lowers a row.', 'The bubbles shake the shot before. Don\'t let them past the line!'], ['Clear the board for the next level.', `+${CLEAR} a level cleared. ${BOARDS.length} boards, each laid out by hand, then they come round in new colours with the ceiling quicker.`]],
+  help: [['Hold ◀ or ▶ to aim, then press SHOOT.', 'The beam shows where it goes (arrow keys and Space work too). Bounce shots off the walls!'], ['Tap under the line to swap.', 'The loaded bubble and the one in the bag trade places.'], ['Three or more of a colour touching pop.', `${POP} a bubble, and ${DROP} for each one left hanging that falls.`], ['Every few shots the ceiling lowers a row.', 'The bubbles shake the shot before. Don\'t let them past the line!'], ['Shoot before the clock runs out!', 'HURRY! means the launcher fires by itself soon, and the clock shortens every level.'], [`Rocks from level ${ROCKS_FROM} never pop.`, 'Drop them by popping what holds them up.'], ['Pop shots in a row for a chain.', `Up to x${CHAIN_MAX} points. Every ${BOMB_EVERY}th in a row puts a Voltorb bomb in the bag: it blasts everything round it.`], ['Clear the board for the next level.', `+${CLEAR} a level cleared. ${BOARDS.length} boards, each laid out by hand, then they come round in new colours with the ceiling quicker.`]],
   make(api) {
-    let level = 1, levelUp = 0, load = null, cheer = 0, rows = [], drop = 0, sink = 0, board = null, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
+    let clock = 0, hurried = false, chain = 0, run = 0, flash = 0, level = 1, levelUp = 0, load = null, cheer = 0, rows = [], drop = 0, sink = 0, board = null, angle = -Math.PI / 2, held = 0, shot = null, shots = 0, fired = 0, slide = 0, scale = 1, cur, next;
     const falling = [], bursts = [];
     let pressed = { left: false, right: false };
     const offset = (r) => (r % 2 ? R : 0);
     const width = (r) => (offset(r) ? COLS - 1 : COLS);
     const pos = (r, c) => [R + c * R * 2 + offset(r), TOP + R + (r + drop) * ROWH];
     const ceiling = () => TOP + drop * ROWH;
-    const colours = () => { const s = new Set(); rows.forEach(row => row.forEach(v => v !== null && v !== undefined && s.add(v))); return [...s]; };
+    const colours = () => { const s = new Set(); rows.forEach(row => row.forEach(v => v !== null && v !== undefined && v < PLAIN && s.add(v))); return [...s]; };
     const deal = () => { const c = colours(); return c.length ? c[Math.floor(Math.random() * c.length)] : Math.floor(Math.random() * COLOURS.length); };
     const setUp = () => { board = boardCells(level); rows = board.cells.map(row => [...row]); };
     setUp();
     cur = deal(); next = deal();
+    clock = clockFor(level);
     const pushEvery = () => board.push;
 
     const neighbours = (r, c) => {
@@ -275,27 +321,44 @@ export const openBubble = (onClose) => runArcade({
       return bestCell;
     };
 
+    /** Pops `group`, drops whatever's left hanging from nothing, scores both at the chain's rate, and says so. */
+    const burst = (group, colour) => {
+      for (const [r, c] of group) { const [px, py] = pos(r, c); bursts.push({ x: px, y: py, colour: rows[r][c] ?? colour, t: 0 }); rows[r][c] = null; }
+      const tops = rows[0] ? rows[0].map((v, c) => [0, c]).filter(([r, c]) => at(r, c) !== null) : [];
+      const held = new Set(flood(tops).map(([r, c]) => `${r},${c}`));
+      let dropped = 0;
+      rows.forEach((row, r) => row.forEach((v, c) => {
+        if (v === null || held.has(`${r},${c}`)) return;
+        const [px, py] = pos(r, c);
+        falling.push({ x: px, y: py, vy: -60 - Math.random() * 80, vx: (Math.random() - 0.5) * 80, colour: v });
+        rows[r][c] = null; dropped++;
+      }));
+      run++; chain = Math.min(CHAIN_MAX, run);
+      const won = (group.length * POP + dropped * DROP) * chain;
+      api.add(won);
+      cheer = 0.6;
+      api.sound('fx-bubble', 'plink-1');
+      if (dropped) api.sound('coins', 'plink-2');
+      const tag = chain > 1 ? ` Chain x${chain}!` : '';
+      if (dropped) api.say(`${dropped} dropped! +${won}.${tag}`);
+      else if (group.length >= 5 || chain > 1) api.say(`${group.length} popped! +${won}.${tag}`);
+      if (run % BOMB_EVERY === 0) { next = BOMB; api.say(`${run} in a row! A Voltorb bomb is in the bag!`); api.sound('stat-up', 'plink-2'); }
+    };
+
     const land = (x, y, colour) => {
       const cell = snap(x, y);
       if (!cell) return;
       rows[cell[0]][cell[1]] = colour;
-      const group = flood([cell], colour);
-      if (group.length >= 3) {
-        cheer = 0.6;
-        for (const [r, c] of group) { const [px, py] = pos(r, c); bursts.push({ x: px, y: py, colour, t: 0 }); rows[r][c] = null; }
-        api.add(group.length * POP);
-        api.sound('fx-bubble', 'plink-1');
-        const tops = rows[0] ? rows[0].map((v, c) => [0, c]).filter(([r, c]) => at(r, c) !== null) : [];
-        const held = new Set(flood(tops).map(([r, c]) => `${r},${c}`));
-        let dropped = 0;
-        rows.forEach((row, r) => row.forEach((v, c) => {
-          if (v === null || held.has(`${r},${c}`)) return;
-          const [px, py] = pos(r, c);
-          falling.push({ x: px, y: py, vy: -60 - Math.random() * 80, vx: (Math.random() - 0.5) * 80, colour: v });
-          rows[r][c] = null; dropped++;
-        }));
-        if (dropped) { api.add(dropped * DROP); api.say(`${dropped} dropped! +${dropped * DROP}`); api.sound('coins', 'plink-2'); }
-        else if (group.length >= 5) api.say(`${group.length} popped! Splashing!`);
+      if (colour === BOMB) {
+        const [bx, by] = pos(...cell), blast = [];
+        rows.forEach((row, r) => row.forEach((v, c) => { if (v === null) return; const [px, py] = pos(r, c); if ((px - bx) ** 2 + (py - by) ** 2 <= BLAST ** 2) blast.push([r, c]); }));
+        flash = 0.35;
+        api.sound('thunder', 'plink-2');
+        burst(blast, BOMB);
+      } else {
+        const group = flood([cell], colour);
+        if (group.length >= 3) burst(group, colour);
+        else if (run) { run = 0; chain = 0; }
       }
       trim();
       if (!rows.some(row => row.some(v => v !== null))) {
@@ -306,7 +369,8 @@ export const openBubble = (onClose) => runArcade({
         setUp();
         slide = TOP + rows.length * ROWH;
         cur = deal(); next = deal();
-        api.say(`Board cleared! +${bonus}. Level ${level}: ${board.name}${board.lap && (level - 1) % BOARDS.length === 0 ? ', the ceiling quicker!' : '!'}`);
+        clock = clockFor(level);
+        api.say(`Board cleared! +${bonus}. Level ${level}: ${board.name}${level === ROCKS_FROM ? ', and Geodude rocks!' : board.lap && (level - 1) % BOARDS.length === 0 ? ', the ceiling quicker!' : '!'}`);
         api.sound('coins', 'plink-2');
         return;
       }
@@ -316,6 +380,7 @@ export const openBubble = (onClose) => runArcade({
 
     const fire = () => {
       if (shot) return;
+      clock = clockFor(level); hurried = false;
       shot = { x: GUN[0], y: GUN[1], vx: Math.cos(angle) * SPEED, vy: Math.sin(angle) * SPEED, colour: cur };
       fired++;
       cur = next; next = deal();
@@ -324,7 +389,7 @@ export const openBubble = (onClose) => runArcade({
     };
     const aimAt = (x, y) => { angle = Math.max(-Math.PI + 0.18, Math.min(-0.18, Math.atan2(y - GUN[1], x - GUN[0]))); };
     const onSwap = (x, y) => y > LINE + 6;
-    const swap = () => { if (cur === next || load) return; [cur, next] = [next, cur]; api.sound('select'); };
+    const swap = () => { if (cur === next || load || shot) return; [cur, next] = [next, cur]; api.sound('select'); };
 
     const bubble = (g, x, y, colour, r = R) => {
       const c = bubbleSprite(colour, r, scale);
@@ -350,6 +415,13 @@ export const openBubble = (onClose) => runArcade({
             if (hit) { const s = shot; shot = null; land(s.x, s.y + lift, s.colour); }
           }
         }
+        if (!shot && !load && !levelUp) {
+          clock -= dt;
+          if (clock < 3 && !hurried) { hurried = true; api.say('HURRY! Shoot before the launcher fires itself!'); api.sound('fx-tick', 'select'); }
+          if (hurried && Math.ceil(clock) !== Math.ceil(clock + dt) && clock > 0) api.sound('fx-tick', 'select');
+          if (clock <= 0) fire();
+        }
+        if (flash) flash = Math.max(0, flash - dt);
         if (load && (load.t += dt) >= LOAD_S) load = null;
         if (cheer) cheer = Math.max(0, cheer - dt);
         if (levelUp) levelUp = Math.max(0, levelUp - dt);
@@ -399,6 +471,14 @@ export const openBubble = (onClose) => runArcade({
         if (l < 1) bubble(g, mouth[0] + (gx - mouth[0]) * l, mouth[1] + (gy - mouth[1]) * l - Math.sin(l * Math.PI) * 34, cur);
         else bubble(g, gx, gy, cur);
         if (shot) bubble(g, shot.x, shot.y, shot.colour);
+        else if (l >= 1) {   // the shot clock, a ring round the loaded bubble running down green to red
+          const left = Math.max(0, clock / clockFor(level)), warn = clock < 3;
+          g.lineWidth = 3; g.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+          g.beginPath(); g.arc(gx, gy, R + 4, 0, TAU); g.stroke();
+          g.strokeStyle = warn ? (Math.floor(now / 160) % 2 ? '#ff4a4a' : '#ffd84a') : left > 0.5 ? '#6ae86a' : '#ffd84a';
+          g.beginPath(); g.arc(gx, gy, R + 4, -Math.PI / 2, -Math.PI / 2 + TAU * left); g.stroke();
+          if (warn) banner(g, `HURRY! ${Math.ceil(clock)}`, gx, LINE - 22 - Math.abs(Math.sin(now / 120)) * 4, 18, '#ff6a4a');
+        }
         stamp(g, 'bubble-bag', BAG[0] - 28, BAG[1] - 50, 56, 50, bagArt);
         bubble(g, mouth[0], mouth[1] + 2 + (1 - l) * 12, next, R * 0.8);   // the next one rising into the bag's mouth
         stamp(g, 'bubble-baglip', BAG[0] - 28, BAG[1] - 50, 56, 50, bagLip);
@@ -407,6 +487,9 @@ export const openBubble = (onClose) => runArcade({
         banner(g, 'NEXT', BAG[0], BAG[1] - 60, 9, '#a8d4ff');
         banner(g, 'TAP TO SWAP', GUN[0], H - 5, 9, '#ffd84a');
         banner(g, `Lv ${level} · Lower in ${pushEvery() - (shots % pushEvery())}`, W - 46, LINE + 14, 10, '#ffffff');
+        if (chain > 1) banner(g, `CHAIN x${chain}`, W - 46, LINE + 28, 11 + Math.min(1, cheer * 3) * 3, chain >= CHAIN_MAX ? '#ff8ad8' : '#ffd84a');
+        if (run % BOMB_EVERY && run) for (let i = 0; i < BOMB_EVERY; i++) { g.fillStyle = i < run % BOMB_EVERY ? '#ffd84a' : 'rgba(255, 255, 255, 0.25)'; g.beginPath(); g.arc(BAG[0] - 12 + i * 8, BAG[1] - 70, 2.5, 0, TAU); g.fill(); }
+        if (flash && !calmFx()) { g.fillStyle = `rgba(255, 250, 220, ${flash * 1.6})`; g.fillRect(0, 0, W, H); }
         if (levelUp) {
           g.globalAlpha = Math.min(1, levelUp / 0.4);
           banner(g, `LEVEL ${level}`, W / 2, LINE * 0.55, 34 + (1 - Math.min(1, (LEVEL_S - levelUp) / 0.25)) * 14, '#ffd84a');

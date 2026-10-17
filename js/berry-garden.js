@@ -1,7 +1,7 @@
 /* berry-garden.js  -  the backyard's berry garden in the 3D base (docs/roadmap.md's backyard, part d; the rules are
-   js/data/berries.js): what grows on a placed plot, a bobbing "!" over a ripe one, darker soil on one watered today, the
-   window a tap on a plot opens, to plant it, water it, look in on it or pick it, and the Garden window over every plot
-   at once (openGarden(), 2026-10-15) with the Satchel's berries to sell. A plant is a few merged meshes a stage, shared by every plot growing the same
+   js/data/berries.js): what grows on a placed plot, a bobbing "!" over a ripe one, darker soil on one watered today, and
+   the Garden window over every plot at once (openGarden(), 2026-10-15; a tap on a plot opens it on that plot since
+   2026-10-17) with the Satchel's berries to sell. A plant is a few merged meshes a stage, shared by every plot growing the same
    berry; js/base-3d.js lays them on and calls liveGarden() each frame, which swaps a plant when its stage turns over. */
 
 import { getSave, updateSave } from './storage.js';
@@ -12,6 +12,8 @@ import { satchelOf, matCount } from './data/satchel.js';
 import { gainMat } from './satchel.js';
 import { firstLook } from './corner-panel.js';
 import { workshopOpen } from './data/towns.js';
+import { HELD_BY_ID } from './data/held.js';
+import { RECIPES } from './data/workshop.js';
 
 const PLOT_TOP = 0.12;   // the plot's soil (js/base-models-y.js's berryplot)
 const STEM = '#4a9a3a', LEAF = '#4f9e3c', LEAF_LIT = '#6cbc4c';
@@ -194,222 +196,241 @@ function berryArt(berry, stage = 'fruit', wet = false) {
   return c;
 }
 
-const WORD = { sprout: 'sprouting', bloom: 'in bloom' };
-const days = (n) => `${n} DAY${n > 1 ? 'S' : ''}`;
-const left = (m) => m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
+const WORD = { sprout: 'Sprouting', bloom: 'In bloom' };
+const days = (n) => `${n} day${n > 1 ? 's' : ''}`;
+const left = (m) => m >= 1440 ? `${Math.floor(m / 1440)}d ${Math.floor(m % 1440 / 60)}h` : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`;
 const many = (berry, n) => `${n} ${n === 1 ? berry.name : berry.name.replace(/y$/, 'ies')}`;
-/** A drop in a tile's corner: watered today. */
-const drop = () => { const d = el('span', 'berry-wet'); d.title = 'Watered today'; d.setAttribute('aria-label', 'Watered today'); return d; };
+/** How far a crop has grown, 0 to 1. */
+const grown = (crop, now = Date.now()) => Math.min(1, Math.max(0, (now - crop.at) / Math.max(1, crop.ready - crop.at)));
+const button = (cls, text) => { const b = el('button', cls, text); b.type = 'button'; return b; };
+/** A held berry's text without its "Held." and its "it's eaten". */
+const heldText = (h) => h.text.replace(/^Held\. /, '').replace(/, it's eaten: /, ': ');
+/** Plots in the list's order: ripe, then thirsty, then growing, then empty. */
+const plotRank = (it) => { const s = stageOf(it.crop); return s === 'fruit' ? 0 : canWater(it.crop) ? 1 : s ? 2 : 3; };
 
-/** A plot's tile: its berry at its stage, the berry's name, how it's doing. */
-function plotTile(it, tag = 'div') {
-  const stage = stageOf(it.crop), berry = stage && BERRY[it.crop.id], wet = wetToday(it.crop);
-  const tile = el(tag, `tshop-tile berry-tile${stage === 'fruit' ? ' ripe' : ''}`);
-  if (tag === 'button') tile.type = 'button';
-  tile.append(berryArt(berry, stage, wet), el('span', 'tshop-name', berry ? berry.name : 'Bare soil'),
-    el('span', 'tshop-price', !stage ? 'EMPTY' : stage === 'fruit' ? 'RIPE!' : left(minutesLeft(it.crop))));
-  if (wet) tile.append(drop());
-  return tile;
+/** A stat chip on the card, the Workshop's material slot: an icon, a name, a value and (with `share`) a bar. */
+function chip(icon, name, value, share = null, ok = false) {
+  const c = el('div', `craft-mat${ok ? ' ok' : ''}${share == null ? ' gd-flat' : ''}`);
+  c.append(el('span', 'craft-mat-ico', icon), el('span', 'craft-mat-name', name), el('span', 'craft-mat-n', value));
+  if (share != null) {
+    const bar = el('span', 'craft-bar'), fill = el('i');
+    fill.style.width = `${Math.round(Math.min(1, share) * 100)}%`;
+    bar.append(fill);
+    c.append(bar);
+  }
+  return c;
 }
 
-/** Berry tiles to plant from, `on` the one picked. */
-const seedTiles = (on, pick) => BERRIES.map(berry => {
-  const tile = el('button', `tshop-tile${on === berry.id ? ' on' : ''}`);
-  tile.type = 'button';
-  tile.append(berryArt(berry), el('span', 'tshop-name', berry.name), el('span', 'tshop-price', days(berry.days)));
-  tile.addEventListener('click', () => { playSound('select'); pick(berry); });
-  return tile;
-});
-
-function dialog(cls, title) {
-  const d = el('dialog', `dialog dev-window town-shop ${cls}`), screen = el('div', 'dev-screen'), acts = el('div', 'dialog-actions');
-  d.append(el('h2', '', title), screen, acts);
-  document.body.append(d);
-  return { d, screen, acts };
-}
-
-/** The window a tap on a plot opens: plant it, water it, look in on it, or pick it. `b` is the base (its `garden` books
-    the picking), `it` the plot; `save()` keeps them. Resolves once closed, true if the plot changed. */
-export function openPlot(b, it, save) {
-  const { d, screen, acts } = dialog('berry-plot', 'BERRY PLOT');
-  const say = el('p', 'tshop-say'), grid = el('div', 'tshop-grid');
-  screen.append(say, grid);
-  const close = el('button', 'btn secondary', 'Close'), wet = el('button', 'btn', 'Water'), go = el('button', 'btn danger', 'Plant');
-  acts.append(close, wet, go);
-  let picked = null, changed = false;
-  // the plant on the plot changes at once, not at liveGarden()'s next look
-  const keep = () => { changed = true; nextLook = 0; save(); };
-  const draw = (line) => {
-    const stage = stageOf(it.crop);
-    wet.hidden = !stage || stage === 'fruit';
-    if (!stage) {
-      say.textContent = line || 'Freshly turned soil. What will you plant? Berries ripen at midnight (UTC) once their days are up.';
-      grid.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`The ${berry.name}: ${days(berry.days).toLowerCase()} to ripen. Water it each day it grows for an extra berry.`); }));
-      go.textContent = 'Plant';
-      go.disabled = !picked;
-      return;
-    }
-    const berry = BERRY[it.crop.id];
-    grid.replaceChildren(plotTile(it));
-    const more = yieldOf(it.crop) - 1;
-    say.textContent = line || (stage === 'fruit' ? `Your ${berry.name} is ripe! ${many(berry, yieldOf(it.crop))} to pick.`
-      : `Your ${berry.name} is ${WORD[stage]}. Ripe in ${left(minutesLeft(it.crop))}.${more ? ` Watered ${more} day${more > 1 ? 's' : ''}: ${more} extra.` : ''}`);
-    wet.textContent = wetToday(it.crop) ? 'Watered today' : 'Water';
-    wet.disabled = !canWater(it.crop);
-    go.textContent = stage === 'fruit' ? 'Pick' : 'Dig up';
-    go.className = `btn ${stage === 'fruit' ? '' : 'danger'}`;
-    go.disabled = false;
-  };
-  wet.addEventListener('click', () => {
-    if (!water(it.crop)) return;
-    playSound('confirm');
-    keep();
-    draw(`You watered the ${BERRY[it.crop.id].name}. It'll give one more berry. Water it again tomorrow!`);
-  });
-  go.addEventListener('click', async () => {
-    const stage = stageOf(it.crop);
-    if (!stage) {
-      if (!picked) return;
-      it.crop = sow(picked);
-      playSound('confirm');
-      keep();
-      picked = null;
-      return draw(`You planted the ${BERRY[it.crop.id].name}. Water it, and come back once it's grown!`);
-    }
-    if (stage !== 'fruit') {
-      if (!(await confirmDialog(`Dig up the ${BERRY[it.crop.id].name}? It won't come back.`, 'Dig up'))) return;
-      delete it.crop;
-      playSound('cancel');
-      keep();
-      return draw('The plot is empty again.');
-    }
-    const got = harvest(b, it);
-    if (!got) return;
-    gainMat(got.berry.id, got.n);
-    keep();
-    playSound(got.basket ? 'item-get' : 'confirm');
-    draw(`You picked ${many(got.berry, got.n)}. ${got.n > 1 ? 'They' : 'It'} went into your Satchel.${got.basket ? ` Your first ${got.berry.name}! A ${got.berry.name.split(' ')[0]} basket for your home is in your storage.` : ''}`);
-  });
-  draw();
-  return new Promise(res => {
-    d.addEventListener('close', () => { d.remove(); res(changed); }, { once: true });
-    close.addEventListener('click', () => d.close());
-    d.showModal();
-  });
-}
-
-/** The Garden window (2026-10-15, the user's ask): every placed plot `list` on base `b` at once, a tap on one opening
-    openPlot(), with Pick all, Water all and Plant all (a berry picked first), and the Satchel's berries to sell to the
-    berry stand, up to the day's cap. `save()` keeps the base. Resolves once closed, true if a plot changed. */
-/** The garden's How to garden card (the user's ask, 2026-10-17): everything Smeargle's walk round says, kept to hand. */
+/** The garden's How to garden (the user's ask, 2026-10-17): four steps, a line each, in Smeargle's bubble. */
 function gardenHelp() {
-  const by = new Map();
-  for (const berry of BERRIES) by.set(berry.days, [...(by.get(berry.days) || []), berry.name.replace(/ Berry$/, '')]);
-  const ripen = [...by].map(([n, names]) => `${names.join(', ').replace(/, ([^,]*)$/, ' and $1')} ${n} day${n > 1 ? 's' : ''}`).join('; ');
-  const steps = [
-    ['Plant.', 'Tap an empty plot, or pick a berry under Plant the empty ones and tap Plant all. More Berry plots are at Smeargle\'s Furniture store; place them with Decorate.'],
-    ['Grow.', `Berries ripen at midnight (UTC) once their days are up: ${ripen}.`],
-    ['Water.', 'Once a day while a crop grows (Water all does every plot). Each watered day adds one more berry when you pick. Watered soil looks darker and wears a blue drop.'],
-    ['Pick.', 'A ripe plot shows a "!". Pick all puts the berries in your Satchel, and your first of each berry earns its basket for indoors.'],
-    ['Use them.', `Sell spares below, up to ${DAY_CAP} PokéCoins a day at the berry stand.${workshopOpen(getSave()) ? ' Or take them to Kurt\'s Workshop to craft held berries and items to pack for a run.' : ''}`],
-  ];
-  const card = el('div', 'berry-help');
-  card.append(el('strong', 'berry-help-title', 'HOW TO GARDEN'));
-  const ol = el('ol', 'berry-help-steps');
-  for (const [lead, rest] of steps) { const li = el('li'); li.append(el('b', '', lead), ` ${rest}`); ol.append(li); }
-  card.append(ol);
-  return card;
+  const ol = el('ol', 'gd-help');
+  for (const [icon, lead, rest] of [
+    ['🌱', 'Plant', 'Tap an empty plot, then pick a seed.'],
+    ['💧', 'Water', 'Once a day while it grows: +1 berry.'],
+    ['✨', 'Pick', 'Ripe at midnight (UTC) when its days are up.'],
+    ['🪙', 'Use', workshopOpen(getSave()) ? 'Sell spares, or craft at Kurt\'s.' : `Sell spares, up to ${DAY_CAP} a day.`],
+  ]) {
+    const li = el('li');
+    li.append(el('span', 'gd-help-ico', icon), el('b', '', lead), el('span', '', rest));
+    ol.append(li);
+  }
+  return ol;
 }
 
-export function openGarden(b, list, save) {
-  const { d, screen, acts } = dialog('berry-garden', 'BERRY GARDEN');
-  // the "?" in the title brings the card up over the plots, and down again; it shows by itself the first time
-  const help = gardenHelp(), q = el('button', 'berry-q', '?');
-  q.type = 'button';
+/** The Garden window (2026-10-15; rebuilt on Kurt's bench, js/workshop.js's openWorkshop(), 2026-10-17, the user's ask):
+    Smeargle's line on a tag, three tabs (Plots, Seeds, Berry stand), the picked plot or berry on a parchment card with
+    its stats as the Workshop's material slots and one big button, and the tab's list under it. A tap on a plot in the
+    yard opens it on that plot (`at`). `save()` keeps the base `b`. Resolves once closed, true if a plot changed. */
+export function openGarden(b, list, save, at = null) {
+  const d = el('dialog', 'dialog craft garden');
+  const head = el('div', 'craft-head'), q = button('gd-q', '?');
   q.setAttribute('aria-label', 'How to garden');
-  d.querySelector('h2').append(q);
-  const showHelp = (on) => { help.hidden = !on; q.classList.toggle('on', on); q.setAttribute('aria-expanded', on); if (on) screen.scrollTop = 0; };
-  q.addEventListener('click', () => { playSound('select'); showHelp(help.hidden); });
-  showHelp(firstLook('garden'));
-  const say = el('p', 'tshop-say'), grid = el('div', 'tshop-grid berry-plots'), bar = el('div', 'berry-bar');
-  const seeds = el('div', 'tshop-grid berry-seeds'), sales = el('div', 'berry-sales');
-  const head = (t) => el('h3', 'berry-head', t);
-  const pickAll = el('button', 'btn', 'Pick all'), waterAll = el('button', 'btn', 'Water all'), plantAll = el('button', 'btn', 'Plant all');
-  bar.append(pickAll, waterAll, plantAll);
-  const plantHead = head('PLANT THE EMPTY ONES');
-  screen.append(help, say, grid, bar, plantHead, seeds, head('BERRIES IN YOUR SATCHEL'), sales);
-  const close = el('button', 'btn secondary', 'Close');
-  acts.append(close);
-  let picked = null, changed = false;
+  head.append(el('h2', '', 'BERRY GARDEN'), q);
+  const talk = el('div', 'craft-talk'), say = el('p', 'craft-say'), help = gardenHelp();
+  talk.append(el('span', 'craft-tag', 'SMEARGLE'), say, help);
+  const tabs = el('div', 'craft-tabs'), card = el('div', 'craft-card'), rows = el('div', 'craft-list');
+  const close = button('btn secondary craft-close', 'Close');
+  d.append(head, talk, tabs, card, rows, close);
+  document.body.append(d);
+
+  let tab = 'plots', plot = at || [...list].sort((x, y) => plotRank(x) - plotRank(y))[0], seed = BERRIES[0].id, stand = BERRIES[0].id;
+  let target = null, changed = false, said = '';
   const keep = () => { changed = true; nextLook = 0; save(); };
   const empty = () => list.filter(it => !stageOf(it.crop));
-  const draw = (line) => {
-    const ripe = list.filter(it => stageOf(it.crop) === 'fruit'), dry = list.filter(it => canWater(it.crop)), bare = empty();
-    say.textContent = line || (ripe.length ? `${ripe.length} plot${ripe.length > 1 ? 's are' : ' is'} ripe for picking!` : 'Tap a plot to look in on it. Water growing ones once a day for an extra berry each.');
-    grid.replaceChildren(...list.map(it => {
-      const tile = plotTile(it, 'button');
-      tile.addEventListener('click', async () => {
+  const sat = () => satchelOf(getSave());
+  const held = (id) => matCount(sat(), id);
+  const showHelp = (on) => { help.hidden = !on; say.hidden = on; q.classList.toggle('on', on); q.setAttribute('aria-expanded', on); };
+  q.addEventListener('click', () => { playSound('select'); showHelp(help.hidden); });
+  showHelp(firstLook('garden'));
+  const line = (t) => { said = t; showHelp(false); draw(); };
+
+  /** Smeargle's line when nothing's just happened: what to do next on this tab. */
+  function hint() {
+    if (tab === 'seeds') return target ? 'Which seed for this plot? Each berry does something in a run.' : 'Every berry does something in a run. Tap one to see what.';
+    if (tab === 'stand') return coinsLeft(b.garden) > 0 ? `I buy spare berries, up to ${DAY_CAP} PokéCoins a day.` : 'I\'ve bought all I can today. Come back tomorrow!';
+    if (list.some(it => stageOf(it.crop) === 'fruit')) return 'Ripe berries! Pick them for your Satchel.';
+    if (list.some(it => canWater(it.crop))) return 'Thirsty plants! Water each once a day for one more berry.';
+    if (empty().length) return 'An empty plot! Tap it, then plant a seed.';
+    return 'All tended! Come back tomorrow.';
+  }
+
+  function drawTabs() {
+    const ripe = list.filter(it => stageOf(it.crop) === 'fruit').length, dry = list.filter(it => canWater(it.crop)).length;
+    const bare = empty().length;
+    const have = BERRIES.reduce((n, berry) => n + held(berry.id), 0);
+    tabs.replaceChildren(...[
+      ['plots', 'Plots', ripe ? `${ripe} ripe` : `${list.length} plot${list.length > 1 ? 's' : ''}`, ripe + dry],
+      ['seeds', 'Seeds', bare ? `${bare} empty` : `${BERRIES.length} kinds`, 0],
+      ['stand', 'Sell', `have ${have}`, 0],
+    ].map(([id, name, count, dot]) => {
+      const t = button(`craft-tab${tab === id ? ' on' : ''}`);
+      t.append(el('span', 'craft-tab-name', name), el('span', 'craft-tab-count', count));
+      if (dot) t.append(el('span', 'craft-dot', String(dot)));
+      t.addEventListener('click', () => {
+        if (tab === id) return;
         playSound('select');
-        if (await openPlot(b, it, save)) changed = true;
+        tab = id; said = '';
+        if (id !== 'seeds') target = null;
         draw();
       });
-      return tile;
+      return t;
     }));
-    pickAll.textContent = `Pick all${ripe.length ? ` (${ripe.length})` : ''}`; pickAll.disabled = !ripe.length;
-    waterAll.textContent = `Water all${dry.length ? ` (${dry.length})` : ''}`; waterAll.disabled = !dry.length;
-    plantAll.textContent = `Plant all${bare.length ? ` (${bare.length})` : ''}`; plantAll.disabled = !bare.length || !picked;
-    plantHead.hidden = seeds.hidden = !bare.length;
-    if (bare.length) seeds.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`${berry.name} for the ${bare.length} empty plot${bare.length > 1 ? 's' : ''}: ${days(berry.days).toLowerCase()} to ripen.`); }));
-    const sat = satchelOf(getSave()), cap = coinsLeft(b.garden);
-    sales.replaceChildren(el('p', 'berry-cap', cap > 0 ? `The berry stand pays ${cap} more PokéCoins today.` : 'The berry stand has bought all it can today. Tomorrow!'),
-      ...BERRIES.map(berry => {
-        const n = matCount(sat, berry.id), row = el('div', 'berry-sale');
-        const one = el('button', 'btn secondary', 'Sell 1'), all = el('button', 'btn secondary', 'Sell all');
-        one.disabled = all.disabled = !n || cap < berry.coins;
-        one.addEventListener('click', () => sellSome(berry, 1));
-        all.addEventListener('click', () => sellSome(berry, matCount(satchelOf(getSave()), berry.id)));
-        row.append(berryArt(berry), el('span', 'berry-sale-name', `${berry.name} ×${n}`), el('span', 'berry-sale-price', `${berry.coins} each`), one, all);
-        return row;
-      }));
-  };
-  function sellSome(berry, k) {
-    const got = sell(b, berry.id, k);
-    if (!got.n) return draw('The berry stand can\'t pay that much more today.');
-    gainMat(berry.id, -got.n);
-    updateSave(dd => { dd.coins = (dd.coins ?? 0) + got.coins; });
-    save();
-    refreshCoins();
-    playSound('buy');
-    draw(`You sold ${many(berry, got.n)} for ${got.coins} PokéCoins.${got.n < k ? ' That\'s all the berry stand can pay for today.' : ''}`);
   }
-  pickAll.addEventListener('click', () => {
-    const got = list.map(it => harvest(b, it)).filter(Boolean);
+
+  /** A list row: a picture, a name, a count and a pill. */
+  function row(art, name, pill, pillCls, on, pick, count = '') {
+    const r = button(`craft-row${on ? ' on' : ''}`), pic = el('span', 'craft-row-pic');
+    pic.append(art);
+    r.append(pic, el('span', 'craft-row-name', name));
+    if (count) r.append(el('span', 'craft-held', count));
+    r.append(el('span', `craft-pill ${pillCls}`, pill));
+    r.addEventListener('click', () => { playSound('select'); said = ''; pick(); draw(); });
+    return r;
+  }
+
+  /** The card's top: the picture in its ring, a name, the line under it and the text. */
+  function top(art, name, goes, text, ready = false, earns = '') {
+    const pic = el('div', `craft-pic${ready ? ' ready' : ''}`), info = el('div', 'craft-info'), t = el('div', 'craft-top');
+    pic.append(art);
+    info.append(el('h3', 'craft-name', name), el('p', 'craft-goes', goes));
+    if (text) info.append(el('p', 'craft-text', text));
+    if (earns) info.append(el('p', 'craft-earns', earns));
+    t.append(pic, info);
+    return t;
+  }
+  const big = (text, on, act, cls = 'ready') => { const g = button(`craft-make ${on ? cls : ''}`, text); g.disabled = !on; g.addEventListener('click', act); return g; };
+  const small = (text, act, cls = '') => { const s = button(`gd-more-btn ${cls}`, text); s.addEventListener('click', act); return s; };
+
+  function drawPlots() {
+    const sorted = [...list].sort((x, y) => plotRank(x) - plotRank(y));
+    if (!list.includes(plot)) plot = sorted[0];
+    rows.replaceChildren(...sorted.map(it => {
+      const stage = stageOf(it.crop), berry = stage && BERRY[it.crop.id];
+      const pill = stage === 'fruit' ? ['RIPE!', 'ready'] : canWater(it.crop) ? ['WATER', 'short'] : stage ? [left(minutesLeft(it.crop)), 'made'] : ['EMPTY', ''];
+      return row(berryArt(berry, stage, wetToday(it.crop)), berry ? berry.name : 'Empty plot', ...pill, it === plot, () => { plot = it; }, wetToday(it.crop) ? '💧' : '');
+    }));
+    const it = plot, stage = stageOf(it.crop), ripe = list.filter(p => stageOf(p.crop) === 'fruit'), dry = list.filter(p => canWater(p.crop));
+    const more = el('div', 'gd-more'), mats = el('div', 'craft-mats');
+    if (!stage) {
+      card.replaceChildren(top(berryArt(null), 'Empty plot', 'Fresh soil, ready to plant', 'Pick a seed and it starts growing today.'),
+        big('Plant a seed', true, () => { playSound('confirm'); target = it; tab = 'seeds'; said = ''; draw(); }));
+      return;
+    }
+    const berry = BERRY[it.crop.id], h = HELD_BY_ID[berry.id], n = yieldOf(it.crop);
+    const goes = stage === 'fruit' ? `Ripe! ${many(berry, n)} to pick` : `${WORD[stage]} · ripe in ${left(minutesLeft(it.crop))}`;
+    mats.append(chip('🌱', 'Growth', `${Math.round(grown(it.crop) * 100)}%`, grown(it.crop), stage === 'fruit'));
+    if (stage !== 'fruit') mats.append(chip('💧', 'Water', wetToday(it.crop) ? 'Done' : 'Not yet', wetToday(it.crop) ? 1 : 0, wetToday(it.crop)));
+    mats.append(chip('✨', 'Harvest', `${n}`, n / (1 + berry.days), stage === 'fruit'));
+    const go = stage === 'fruit' ? big('Pick!', true, () => pick([it]))
+      : canWater(it.crop) ? big('Water it', true, () => soak([it])) : big('Watered ✓', false, null, 'made');
+    if (stage === 'fruit' && ripe.length > 1) more.append(small(`Pick all ${ripe.length}`, () => pick(ripe)));
+    if (dry.length > (canWater(it.crop) ? 1 : 0)) more.append(small(`Water all ${dry.length}`, () => soak(dry)));
+    if (stage !== 'fruit') more.append(small('Dig up', () => dig(it), 'warn'));
+    card.replaceChildren(top(berryArt(berry, stage, wetToday(it.crop)), berry.name, goes, h ? `✨ ${h.short}` : '', stage === 'fruit'),
+      el('p', 'craft-label', stage === 'fruit' ? 'Grown' : 'Growing'), mats, go, more);
+  }
+
+  function drawSeeds() {
+    const bare = empty();
+    if (target && stageOf(target.crop)) target = null;
+    rows.replaceChildren(...BERRIES.map(berry => row(berryArt(berry), berry.name, days(berry.days).toUpperCase(), 'made', berry.id === seed, () => { seed = berry.id; },
+      held(berry.id) ? `×${held(berry.id)}` : '')));
+    const berry = BERRY[seed], h = HELD_BY_ID[berry.id];
+    const kits = RECIPES.filter(r => r.kind === 'kit' && r.needs[berry.id]).map(r => r.name);
+    const mats = el('div', 'craft-mats'), more = el('div', 'gd-more');
+    mats.append(chip('🌱', 'Ripens', days(berry.days)), chip('🪙', 'Sells', `${berry.coins}`), chip('💧', 'Water', '+1/day'));
+    const go = target ? big('Plant here', true, () => plant([target]))
+      : bare.length ? big(`Plant in ${bare.length} empty`, true, () => plant(bare)) : big('No empty plot', false);
+    if (target && bare.length > 1) more.append(small(`Plant all ${bare.length}`, () => plant(bare)));
+    card.replaceChildren(top(berryArt(berry), berry.name, h ? `✨ ${h.short}` : 'Seed', h ? `Held in a run: ${heldText(h)}` : '', false,
+      kits.length && workshopOpen(getSave()) ? `Kurt crafts: ${kits.join(', ')}` : ''), mats, go, more);
+  }
+
+  function drawStand() {
+    const cap = coinsLeft(b.garden);
+    rows.replaceChildren(...BERRIES.map(berry => row(berryArt(berry), berry.name, `🪙 ${berry.coins}`, held(berry.id) ? 'carried' : '', berry.id === stand, () => { stand = berry.id; },
+      `×${held(berry.id)}`)));
+    const berry = BERRY[stand], n = held(berry.id), h = HELD_BY_ID[berry.id];
+    const mats = el('div', 'craft-mats'), more = el('div', 'gd-more');
+    mats.append(chip('🪙', 'Paid today', `${DAY_CAP - cap}/${DAY_CAP}`, (DAY_CAP - cap) / DAY_CAP, cap <= 0));
+    const can = n > 0 && cap >= berry.coins;
+    const go = big(n ? (can ? `Sell 1 for ${berry.coins}` : 'Stand\'s full today') : 'None to sell', can, () => sellSome(berry, 1));
+    if (can && n > 1) more.append(small(`Sell all ${n}`, () => sellSome(berry, n)));
+    card.replaceChildren(top(berryArt(berry), berry.name, `You have ${n} · 🪙 ${berry.coins} each`, h ? `✨ ${h.short}${workshopOpen(getSave()) ? '. Keep some for Kurt!' : ''}` : ''),
+      el('p', 'craft-label', 'The berry stand'), mats, go, more);
+  }
+
+  function draw() {
+    drawTabs();
+    if (tab === 'plots') drawPlots(); else if (tab === 'seeds') drawSeeds(); else drawStand();
+    say.textContent = said || hint();
+  }
+
+  function plant(bare) {
+    if (!bare.length) return;
+    for (const it of bare) it.crop = sow(seed);
+    playSound('confirm');
+    keep();
+    const berry = BERRY[seed];
+    plot = bare[0]; target = null; tab = 'plots';
+    line(`${bare.length === 1 ? `${/^[AEIOU]/.test(berry.name) ? 'An' : 'A'} ${berry.name}` : many(berry, bare.length)}, planted! Water ${bare.length === 1 ? 'it' : 'them'} once a day.`);
+  }
+  function pick(from) {
+    const got = from.map(it => harvest(b, it)).filter(Boolean);
     if (!got.length) return;
     const by = new Map();
     for (const g of got) by.set(g.berry, (by.get(g.berry) || 0) + g.n);
     for (const [berry, n] of by) gainMat(berry.id, n);
     keep();
-    const firsts = got.filter(g => g.basket).map(g => g.berry.name);
+    const firsts = got.filter(g => g.basket).map(g => g.berry.name.split(' ')[0]);
     playSound(firsts.length ? 'item-get' : 'confirm');
-    draw(`You picked ${[...by].map(([berry, n]) => many(berry, n)).join(', ')}. Into your Satchel they go!${firsts.length ? ` Your first ${firsts.join(' and ')}! ${firsts.length > 1 ? 'Their baskets are' : 'Its basket is'} in your storage.` : ''}`);
-  });
-  waterAll.addEventListener('click', () => {
-    const n = list.filter(it => water(it.crop)).length;
+    line(`${[...by].map(([berry, n]) => many(berry, n)).join(', ')}, into your Satchel!${firsts.length ? ` Your first! ${firsts.length > 1 ? 'Their baskets are' : `${/^[AEIOU]/.test(firsts[0]) ? 'An' : 'A'} ${firsts[0]} basket is`} in your storage.` : ''}`);
+  }
+  function soak(from) {
+    const n = from.filter(it => water(it.crop)).length;
     if (!n) return;
     playSound('confirm');
     keep();
-    draw(`You watered ${n} plot${n > 1 ? 's' : ''}. One more berry each!`);
-  });
-  plantAll.addEventListener('click', () => {
-    const bare = empty();
-    if (!picked || !bare.length) return;
-    for (const it of bare) it.crop = sow(picked);
-    playSound('confirm');
+    line(`Watered ${n === 1 ? 'it' : `${n} plots`}! That's one more berry ${n === 1 ? '' : 'each '}when you pick.`);
+  }
+  async function dig(it) {
+    if (!(await confirmDialog(`Dig up the ${BERRY[it.crop.id].name}? It won't come back.`, 'Dig up'))) return;
+    delete it.crop;
+    playSound('cancel');
     keep();
-    const berry = BERRY[picked];
-    picked = null;
-    draw(`You planted ${bare.length} ${bare.length === 1 ? berry.name : berry.name.replace(/y$/, 'ies')}. Water them, and come back once they've grown!`);
-  });
+    line('Dug up. The plot is empty again.');
+  }
+  function sellSome(berry, k) {
+    const got = sell(b, berry.id, k);
+    if (!got.n) return line('I can\'t pay any more today. Tomorrow!');
+    gainMat(berry.id, -got.n);
+    updateSave(dd => { dd.coins = (dd.coins ?? 0) + got.coins; });
+    save();
+    refreshCoins();
+    playSound('buy');
+    line(`${many(berry, got.n)}, sold for ${got.coins} PokéCoins.${got.n < k ? ' That\'s all I can pay today.' : ''}`);
+  }
+
   draw();
   return new Promise(res => {
     d.addEventListener('close', () => { d.remove(); res(changed); }, { once: true });

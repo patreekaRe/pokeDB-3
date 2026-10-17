@@ -1,13 +1,20 @@
 /* arcade-bowling.js  -  Geodude Bowling, a home arcade game (js/arcade-kit.js): ten Geodude stand at the end of a lane
    in perspective; swipe up to roll a Poké Ball. Where the swipe starts places the ball, its direction aims, its speed
    sets the power and a bend at its end puts hook on it. Ball and pins knock each other about in lane space (units of one
-   lane width). Ten frames of real bowling, strikes and spares, on a scorecard up top. */
+   lane width). Ten frames of real bowling, strikes and spares, on a scorecard up top. Since 2026-10-17 (the user's ask:
+   every arcade game far more detailed, with more in it) it's a whole alley, neighbouring lanes, a neon sign and a
+   Graveler cheering, with dust where pins fall; each frame's oil runs a different length (the hook only bites past it);
+   frames 3, 6 and 9 rack a Golden Geodude worth a 50 bonus; from frame 5 a Diglett pops up in the lane and knocks the
+   ball off line, two from frame 8; three strikes running is a Turkey, 30 more each strike it carries on. The bonuses add
+   to the card's total for the score. */
 
-import { runArcade, banner, rand, stamp } from './arcade-kit.js';
+import { runArcade, banner, rand, stamp, drawMon } from './arcade-kit.js';
+import { calmFx } from './prefs.js';
 
 const W = 300, H = 380, HEAD = 4, END = 5.15, BR = 0.105, PR = 0.057, LAY = 0.085, BALL_Z = 0.25;
 const PK = 985, PD = 4.28, HZ = -194, PC = 2310;
 const sx = (x, z) => W / 2 + x * PK / (z + PD), sy = (z) => HZ + PC / (z + PD), sc = (z) => PK / (z + PD);
+const GOLD = [2, 5, 8], GOLD_PTS = 50, TURKEY = 30, DIG_R = 0.07;
 const RACK = [[0, 0], [-0.5, 1], [0.5, 1], [-1, 2], [0, 2], [1, 2], [-1.5, 3], [-0.5, 3], [0.5, 3], [1.5, 3]].map(([c, r]) => [c * 0.29, HEAD + r * 0.251]);
 
 function card(rolls) {
@@ -40,12 +47,24 @@ function card(rolls) {
 export const openBowling = (onClose) => runArcade({
   id: 'bowling', title: 'Geodude Bowling', colour: '#8a7a6a', W, H,
   intro: 'Bowl over the Geodude! Swipe up from the ball to roll it.',
-  help: [['Swipe up from the bottom to roll.', 'Start the swipe where you want the ball, swipe the way you want it to go; a faster swipe rolls harder.'], ['Bend the end of your swipe', 'to put a hook on the ball: it curls that way near the pins.'], ['Ten frames, two rolls each.', 'A strike scores 10 plus your next two rolls, a spare 10 plus the next one. Arrow keys aim, up / down set the hook, Space rolls.']],
+  sounds: ['fx-drum', 'fx-cymbal', 'fx-boing', 'fx-whirr'],
+  help: [['Swipe up from the bottom to roll.', 'Start the swipe where you want the ball, swipe the way you want it to go; a faster swipe rolls harder.'], ['Bend the end of your swipe', 'to put a hook on the ball: it curls that way once it\'s past the oil (the shiny part, a new length each frame).'], ['Ten frames, two rolls each.', 'A strike scores 10 plus your next two rolls, a spare 10 plus the next one. Arrow keys aim, up / down set the hook, Space rolls.'], ['Bonuses:', `a Golden Geodude (frames 3, 6, 9) is +${GOLD_PTS}; three strikes in a row is a Turkey, +${TURKEY} each.`], ['Watch out from frame 5:', 'a Diglett pops up in the lane and knocks the ball aside. Two from frame 8.']],
   make(api) {
     const rolls = [];
+    const calm = calmFx();
     let frame = 0, inFrame = 0, pins = [], ball = null, phase = 'ready', wait = 0, slow = 0, aim = 0, spin = 0, keyAim = 0, swipe = null, startX = 0, msg = null, gone = 0;
-    const rack = () => { pins = RACK.map(([x, z]) => ({ x, z, vx: 0, vz: 0, down: false, fall: 0, fx: 0, fz: 1, out: false, wob: 0 })); };
-    rack();
+    let bonus = 0, run = 0, oil = 2.4, shake = 0, cheer = 0, digs = [], goldFell = false, goldNew = false;
+    const dust = [], rays = { t: 0 };
+    const rack = () => {
+      pins = RACK.map(([x, z]) => ({ x, z, vx: 0, vz: 0, down: false, fall: 0, fx: 0, fz: 1, out: false, wob: 0 }));
+      if (GOLD.includes(frame) && inFrame === 0) pins[Math.floor(rand(1, 10))].gold = true;
+      goldFell = false;
+    };
+    const lane = () => {
+      oil = rand(1.4, 3.3);
+      digs = Array.from({ length: frame >= 7 ? 2 : frame >= 4 ? 1 : 0 }, (_, i) => ({ x: rand(-0.3, 0.3), z: 1.9 + i * 0.9 + rand(0, 0.5), up: 0, t: rand(0, 2), hit: 0 }));
+    };
+    rack(); lane();
     const standing = () => pins.filter((p) => !p.down);
     const roll = (x, slope, speed, hook) => {
       ball = { x, z: BALL_Z, vx: slope * speed, vz: speed, spin: hook, gutter: false, turn: 0 };
@@ -55,6 +74,8 @@ export const openBowling = (onClose) => runArcade({
       if (p.down) return;
       const d = Math.hypot(dx, dz) || 1;
       p.down = true; p.fx = dx / d; p.fz = dz / d; api.sound(Math.random() < 0.5 ? 'plink-1' : 'plink-2', 'select');
+      for (let i = 0; i < 4; i++) dust.push({ x: p.x + rand(-0.05, 0.05), z: p.z, h: rand(0, 0.05), vx: rand(-0.3, 0.3), vh: rand(0.2, 0.5), t: rand(0.5, 0.9), r: rand(0.02, 0.04) });
+      if (p.gold && !goldFell) { goldFell = goldNew = true; bonus += GOLD_PTS; api.score = api.score + GOLD_PTS; api.sound('coins', 'plink-2'); }
     };
     const bump = (a, b, ma, mb, ra, rb, e) => {
       const dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
@@ -70,10 +91,14 @@ export const openBowling = (onClose) => runArcade({
     const settle = () => {
       const fell = gone - standing().length, cleared = !standing().length, strike = gone === 10 && fell === 10;
       rolls.push(fell);
-      msg = { text: strike ? 'STRIKE!' : cleared ? 'SPARE!' : fell ? `${fell} pin${fell > 1 ? 's' : ''}` : ball.gutter ? 'Gutter...' : 'Miss', t: 1.4 };
+      run = strike ? run + 1 : 0;
+      const turkey = run >= 3;
+      if (turkey) bonus += TURKEY;
+      msg = { text: turkey ? (run === 3 ? 'TURKEY!' : `${run} STRIKES!`) : strike ? 'STRIKE!' : cleared ? 'SPARE!' : fell ? `${fell} pin${fell > 1 ? 's' : ''}` : ball.gutter ? 'Gutter...' : 'Miss', t: 1.4 };
       api.sound(strike ? 'stat-up' : cleared ? 'coins' : fell ? 'select' : 'cancel', 'select');
+      if (strike || cleared) { rays.t = 1.4; cheer = 1.2; api.sound(strike ? 'fx-cymbal' : 'fx-drum', 'coins'); if (strike && !calm) shake = 0.35; }
       const last = card(rolls).filter((f) => f.total != null).pop();
-      api.score = last ? last.total : 0;
+      api.score = (last ? last.total : 0) + bonus;
       let fresh = false, over = false;
       if (frame < 9) {
         if (strike || inFrame === 1) { frame += 1; inFrame = 0; fresh = true; } else inFrame = 1;
@@ -83,12 +108,25 @@ export const openBowling = (onClose) => runArcade({
         if (a === 10 || a + b === 10) { inFrame = 2; fresh = cleared; } else over = true;
       } else over = true;
       phase = 'show'; wait = 1.3; ball.next = { fresh, over };
-      if (!over) api.say(`Frame ${frame + 1}, ball ${inFrame + 1}.`);
+      const gotGold = goldNew; goldNew = false;
+      if (!over) {
+        const notes = [];
+        if (turkey) notes.push(`+${TURKEY} Turkey bonus!`);
+        if (gotGold) notes.push(`Golden Geodude +${GOLD_PTS}!`);
+        if (fresh && GOLD.includes(frame)) notes.push('A Golden Geodude is in this rack.');
+        if (fresh && frame === 4 && inFrame === 0) notes.push('Watch out: a Diglett is in the lane!');
+        if (fresh && frame === 7 && inFrame === 0) notes.push('Two Diglett now!');
+        api.say(`Frame ${frame + 1}, ball ${inFrame + 1}. ${notes.join(' ')}`.trim());
+      }
     };
     const physics = (h) => {
       if (ball && !ball.done) {
         const b = ball;
-        if (!b.gutter) b.vx += b.spin * 0.95 * Math.min(1, Math.max(0, b.z / HEAD)) ** 1.5 * h;
+        if (!b.gutter && b.z > oil) b.vx += b.spin * 1.25 * Math.min(1, (b.z - oil) / Math.max(0.6, HEAD - oil)) * h;
+        if (!b.gutter) for (const dg of digs) if (dg.up > 0.6 && !dg.hit) {
+          const dx = b.x - dg.x, dz = b.z - dg.z, d = Math.hypot(dx, dz);
+          if (d < BR + DIG_R) { const side = dx >= 0 ? 1 : -1; b.vx += side * rand(0.45, 0.75); b.vz *= 0.82; b.z = dg.z + BR + DIG_R + 0.01; dg.hit = 1; api.sound('fx-boing', 'cancel'); api.say('A Diglett knocked your ball aside!'); }
+        }
         b.x += b.vx * h; b.z += b.vz * h; b.turn += b.vz * h * 9;
         if (!b.gutter && Math.abs(b.x) > 0.5 - BR * 0.4 && b.z < HEAD - 0.3) { b.gutter = true; b.x = Math.sign(b.x) * 0.57; b.vx = 0; api.sound('cancel'); }
         if (b.gutter) b.x = Math.sign(b.x) * 0.57;
@@ -107,7 +145,7 @@ export const openBowling = (onClose) => runArcade({
         const f = Math.exp(-(p.down ? 1.6 : 6) * h); p.vx *= f; p.vz *= f;
         p.x += p.vx * h; p.z += p.vz * h;
         if (Math.abs(p.x) > 0.64) { p.x = Math.sign(p.x) * 0.64; p.vx *= -0.6; knock(p, p.vx, p.vz); }
-        if (p.z > END || p.z < HEAD - 1.2) { p.out = true; p.down = true; }
+        if (p.z > END || p.z < HEAD - 1.2) { knock(p, p.vx, p.vz); p.out = true; }
       }
     };
     const fire = () => roll(startX, aim, 3.5, spin * 0.6);
@@ -115,6 +153,13 @@ export const openBowling = (onClose) => runArcade({
       tick(dt) {
         if (msg) { msg.t -= dt; if (msg.t <= 0) msg = null; }
         for (const p of pins) { if (p.down) p.fall = Math.min(1, p.fall + dt * 4); p.wob = Math.max(0, p.wob - dt); }
+        shake = Math.max(0, shake - dt); cheer = Math.max(0, cheer - dt); rays.t = Math.max(0, rays.t - dt);
+        for (const dg of digs) {
+          dg.t += dt; dg.hit = Math.max(0, dg.hit - dt * 0.8);
+          const cyc = (dg.t % 2.6) / 2.6, want = dg.hit ? 0 : cyc < 0.5 ? 1 : 0;
+          dg.up += (want - dg.up) * Math.min(1, dt * 10);
+        }
+        for (let i = dust.length - 1; i >= 0; i--) { const q = dust[i]; q.x += q.vx * dt; q.h += q.vh * dt; q.vh -= 0.6 * dt; q.r += dt * 0.05; if ((q.t -= dt) <= 0) dust.splice(i, 1); }
         if (phase === 'ready') { aim = Math.max(-0.16, Math.min(0.16, aim + keyAim * 0.18 * dt)); return; }
         if (phase === 'roll') {
           for (let s = 0; s < 6; s++) physics(dt / 6);
@@ -126,8 +171,8 @@ export const openBowling = (onClose) => runArcade({
           wait -= dt;
           if (wait <= 0) {
             const { fresh, over } = ball.next;
-            if (over) return api.over(rolls.length === 12 && api.score === 300 ? 'Perfect game!' : 'Ten frames!');
-            if (fresh) rack(); else pins = pins.filter((p) => !p.down);
+            if (over) return api.over(rolls.length === 12 && rolls.every((n) => n === 10) ? 'Perfect game!' : 'Ten frames!');
+            if (fresh) { rack(); lane(); } else pins = pins.filter((p) => !p.down);
             ball = null; phase = 'ready'; spin = 0; aim = 0;
           }
         }
@@ -164,10 +209,25 @@ export const openBowling = (onClose) => runArcade({
         if (k === 'act') fire();
       },
       draw(g, now) {
-        stamp(g, 'bw-lane', 0, 0, W, H, (g) => {   // the lane never changes: painted once
-          const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#1c1424'); bg.addColorStop(1, '#3a2a2a');
+        g.save();
+        if (shake) g.translate(Math.sin(now / 17) * shake * 10, Math.cos(now / 23) * shake * 5);
+        stamp(g, 'bw-lane', 0, 0, W, H, (g) => {   // the alley never changes: painted once
+          const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, '#120c1c'); bg.addColorStop(0.4, '#24182e'); bg.addColorStop(1, '#3a2a2a');
           g.fillStyle = bg; g.fillRect(0, 0, W, H);
           const quad = (x0, x1, z0, z1, fill) => { g.fillStyle = fill; g.beginPath(); g.moveTo(sx(x0, z0), sy(z0)); g.lineTo(sx(x1, z0), sy(z0)); g.lineTo(sx(x1, z1), sy(z1)); g.lineTo(sx(x0, z1), sy(z1)); g.closePath(); g.fill(); };
+          for (const side of [-1, 1]) {   // the neighbouring lanes, dimmer, with their own pins in the dark
+            const c = side * 1.55;
+            quad(c - 0.75, c + 0.75, -0.6, END, '#1e161c');
+            quad(c - 0.5, c + 0.5, -0.6, END, '#7a5a38');
+            quad(c - 0.5, c + 0.5, -0.6, END, 'rgba(20, 10, 30, 0.45)');
+            g.fillStyle = 'rgba(240, 230, 210, 0.35)';
+            for (const [x, z] of RACK) { g.beginPath(); g.arc(sx(c + x, z), sy(z) - 3, Math.max(1.2, sc(z) * 0.03), 0, Math.PI * 2); g.fill(); }
+          }
+          g.fillStyle = '#0c0812'; g.fillRect(0, 0, W, 52);
+          for (let i = 0; i < 5; i++) {   // ceiling lights
+            const lx = 30 + i * 60, gl = g.createRadialGradient(lx, 52, 2, lx, 52, 40); gl.addColorStop(0, 'rgba(255, 230, 180, 0.35)'); gl.addColorStop(1, 'rgba(255, 230, 180, 0)');
+            g.fillStyle = gl; g.fillRect(lx - 40, 30, 80, 60); g.fillStyle = '#fff0c8'; g.fillRect(lx - 9, 50, 18, 3);
+          }
           quad(-0.75, 0.75, -0.6, END, '#2a2026');
           for (const s of [-1, 1]) { const gg = g.createLinearGradient(sx(s * 0.5, 0), 0, sx(s * 0.64, 0), 0); gg.addColorStop(0, '#4a4048'); gg.addColorStop(1, '#2a2228'); quad(Math.min(s * 0.5, s * 0.64), Math.max(s * 0.5, s * 0.64), -0.6, END, gg); }
           const wood = g.createLinearGradient(0, sy(END), 0, H); wood.addColorStop(0, '#c89a5a'); wood.addColorStop(0.5, '#e8c088'); wood.addColorStop(1, '#d8a868');
@@ -185,29 +245,65 @@ export const openBowling = (onClose) => runArcade({
           const mask = g.createLinearGradient(0, 30, 0, sy(END)); mask.addColorStop(0, '#3a2048'); mask.addColorStop(1, '#5a3060');
           g.fillStyle = mask; g.fillRect(sx(-0.75, END), 34, sx(0.75, END) - sx(-0.75, END), sy(END) - 34);
           g.fillStyle = '#100810'; g.fillRect(sx(-0.75, END), sy(END) - 4, sx(0.75, END) - sx(-0.75, END), 6);
-          banner(g, 'GEODUDE LANES', W / 2, 42, 8, '#ffd84a');
+          const mx = sx(-0.75, END), mw = sx(0.75, END) - mx;   // the pinsetter's hood: a Geodude logo between two stars
+          g.fillStyle = '#ffd84a'; for (const k of [0.18, 0.82]) { const cx = mx + mw * k, cy = 66; g.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, d = i % 2 ? 2.5 : 6; g.lineTo(cx + Math.cos(a) * d, cy + Math.sin(a) * d); } g.fill(); }
+          g.fillStyle = '#958e80'; g.beginPath(); g.arc(W / 2, 66, 8, 0, Math.PI * 2); g.fill();
+          g.fillStyle = '#2a2622'; g.fillRect(W / 2 - 4, 64, 2, 2); g.fillRect(W / 2 + 2, 64, 2, 2);
+          g.strokeStyle = '#958e80'; g.lineWidth = 3; g.beginPath(); g.moveTo(W / 2 - 8, 66); g.lineTo(W / 2 - 15, 61); g.moveTo(W / 2 + 8, 66); g.lineTo(W / 2 + 15, 61); g.stroke();
+          g.strokeStyle = 'rgba(255, 90, 200, 0.35)'; g.lineWidth = 5; g.strokeRect(W / 2 - 66, 14, 132, 24);   // the neon sign's glow
+          g.strokeStyle = '#ff7ad8'; g.lineWidth = 1.6; g.strokeRect(W / 2 - 66, 14, 132, 24);
+          banner(g, 'GEODUDE LANES', W / 2, 27, 12, '#ffd84a');
+          for (const side of [-1, 1]) {   // the ball returns either side of the approach
+            const bx = W / 2 + side * 128;
+            g.fillStyle = '#3a3040'; g.beginPath(); g.roundRect(bx - 14, H - 70, 28, 70, 8); g.fill();
+            g.fillStyle = '#1a141e'; g.beginPath(); g.ellipse(bx, H - 60, 10, 5, 0, 0, Math.PI * 2); g.fill();
+            g.fillStyle = side < 0 ? '#3a7ae0' : '#40b060'; g.beginPath(); g.arc(bx, H - 64, 7, Math.PI, 0); g.fill();
+          }
         });
+        {   // the oil: a gloss down the lane to where the hook starts to bite
+          const q = [sx(-0.5, BALL_Z), sy(BALL_Z), sx(0.5, BALL_Z), sx(0.5, oil), sy(oil), sx(-0.5, oil)];
+          g.fillStyle = 'rgba(200, 230, 255, 0.12)'; g.beginPath(); g.moveTo(q[0], q[1]); g.lineTo(q[2], q[1]); g.lineTo(q[3], q[4]); g.lineTo(q[5], q[4]); g.closePath(); g.fill();
+          g.strokeStyle = 'rgba(200, 230, 255, 0.4)'; g.lineWidth = 1; g.setLineDash([3, 4]); g.beginPath(); g.moveTo(q[5], q[4]); g.lineTo(q[3], q[4]); g.stroke(); g.setLineDash([]);
+        }
         if (phase === 'ready' && !swipe) {
           const x0 = sx(startX, BALL_Z), y0 = sy(BALL_Z);
           g.setLineDash([4, 6]); g.strokeStyle = `rgba(255, 216, 74, ${0.5 + 0.3 * Math.sin(now / 200)})`; g.lineWidth = 2; g.beginPath(); g.moveTo(x0, y0);
-          for (let z = BALL_Z; z < HEAD; z += 0.2) { const t = z - BALL_Z; g.lineTo(sx(startX + aim * t + spin * 0.09 * (Math.max(0, z / HEAD) ** 3.5) * t * 1.5, z), sy(z)); }
+          let px = startX, vx = aim * 3.5;
+          for (let z = BALL_Z; z < HEAD; z += 0.2) { const h = 0.2 / 3.5; if (z > oil) vx += spin * 0.6 * 1.25 * Math.min(1, (z - oil) / Math.max(0.6, HEAD - oil)) * h; px += vx * h; g.lineTo(sx(px, z), sy(z)); }
           g.stroke(); g.setLineDash([]);
         }
         const things = pins.filter((p) => !p.out).map((p) => ({ z: p.z, p }));
         if (ball && !ball.done) things.push({ z: ball.z, b: ball });
+        for (const dg of digs) things.push({ z: dg.z, d: dg });
         things.sort((a, b) => b.z - a.z);
         for (const t of things) {
           if (t.p) geodude(g, t.p, now);
+          else if (t.d) diglett(g, t.d);
           else pokeBall(g, t.b);
         }
+        for (const q of dust) { const r = q.r * sc(q.z); g.globalAlpha = Math.min(1, q.t * 1.5) * 0.5; g.fillStyle = '#c8b8a0'; g.beginPath(); g.arc(sx(q.x, q.z), sy(q.z) - q.h * sc(q.z), r, 0, Math.PI * 2); g.fill(); }
+        g.globalAlpha = 1;
         if (phase === 'ready') pokeBall(g, { x: startX, z: BALL_Z, turn: 0 });
         if (swipe && swipe.length > 1) {
           g.strokeStyle = 'rgba(255, 255, 255, 0.55)'; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath();
           swipe.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y))); g.stroke(); g.lineCap = 'butt';
         }
         if (phase === 'ready' && !swipe && !rolls.length) banner(g, 'SWIPE UP ↑', W / 2, sy(BALL_Z) - 46 + Math.sin(now / 300) * 3, 14, '#fff');
-        if (msg) banner(g, msg.text, W / 2, 150 - (1.4 - msg.t) * 12, msg.text.endsWith('!') ? 30 : 20, msg.text === 'STRIKE!' ? '#ffd84a' : msg.text === 'SPARE!' ? '#8ae8ff' : '#fff');
+        drawMon(g, 'graveler', 34, H - 6 - (cheer ? Math.abs(Math.sin(now / 90)) * 10 : 0), 44);
+        g.restore();
+        if (rays.t) {   // a burst of light behind a strike or spare
+          g.save(); g.translate(W / 2, 150); g.rotate(now / 900); g.globalAlpha = Math.min(1, rays.t) * 0.35;
+          g.fillStyle = msg?.text === 'SPARE!' ? '#8ae8ff' : '#ffd84a';
+          for (let i = 0; i < 12; i++) { g.rotate(Math.PI / 6); g.beginPath(); g.moveTo(0, 0); g.lineTo(-10, -150); g.lineTo(10, -150); g.fill(); }
+          g.restore();
+        }
+        if (msg) {
+          const big = msg.text.endsWith('!'), pop = Math.max(0, msg.t - 1.2) * 4;
+          banner(g, msg.text, W / 2, 150 - (1.4 - msg.t) * 12, (big ? 30 : 20) * (1 + pop * 0.4), msg.text.includes('STRIKE') || msg.text === 'TURKEY!' ? '#ffd84a' : msg.text === 'SPARE!' ? '#8ae8ff' : '#fff');
+        }
         scorecard(g, card(rolls), frame, phase);
+        if (bonus) { g.fillStyle = 'rgba(0, 0, 0, 0.5)'; g.beginPath(); g.roundRect(W - 74, 36, 70, 16, 5); g.fill(); banner(g, `BONUS +${bonus}`, W - 39, 44, 9, '#ffd84a'); }
+        if (phase === 'ready' && digs.length) banner(g, `${digs.length} DIGLETT`, 40, 44, 9, '#ff9a6a');
       },
     };
   },
@@ -218,9 +314,20 @@ function geodude(g, p, now) {
   // a standing Geodude is stamped from a sprite of its size (each one's gradients every frame cost the frame rate)
   if (!p.fall && p.z <= END - 0.15) {
     const q = Math.round(r * 2) / 2;
-    return stamp(g, `bw-g${q}${p.down ? 1 : 0}`, x - q * 2.1, y - q * 2.1, q * 4.2, q * 2.6, (cg) => body(cg, q * 2.1, q * 2.1, q, p));
+    return stamp(g, `bw-g${q}${p.down ? 1 : 0}${p.gold ? 'g' : ''}`, x - q * 2.1, y - q * 2.1, q * 4.2, q * 2.6, (cg) => body(cg, q * 2.1, q * 2.1, q, p));
   }
   body(g, x, y, r, p);
+}
+
+/** A Diglett popping out of its hole in the lane, the hole always there. */
+function diglett(g, d) {
+  const s = sc(d.z), x = sx(d.x, d.z), y = sy(d.z), r = DIG_R * s;
+  g.fillStyle = '#3a2414'; g.beginPath(); g.ellipse(x, y, r * 1.3, r * 0.45, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = '#8a6438'; g.beginPath(); g.ellipse(x, y + r * 0.12, r * 1.5, r * 0.4, 0, 0, Math.PI); g.fill();
+  if (d.up < 0.05) return;
+  g.save(); g.beginPath(); g.rect(x - r * 3, y - r * 6, r * 6, r * 6); g.clip();
+  drawMon(g, 'diglett', x, y + r * 2.6 * (1 - d.up), r * 3);
+  g.restore();
 }
 
 function body(g, x, y, r, p) {
@@ -231,12 +338,14 @@ function body(g, x, y, r, p) {
   g.translate(x, y - r * 0.9 + drop); g.rotate(tilt); g.scale(1, 1 - p.fall * 0.15);
   for (const side of [-1, 1]) {
     g.save(); g.scale(side, 1);
-    const arm = g.createLinearGradient(r * 0.8, 0, r * 1.8, 0); arm.addColorStop(0, '#8a8478'); arm.addColorStop(1, '#a8a294');
+    const arm = g.createLinearGradient(r * 0.8, 0, r * 1.8, 0); arm.addColorStop(0, p.gold ? '#c89820' : '#8a8478'); arm.addColorStop(1, p.gold ? '#ffe070' : '#a8a294');
     g.fillStyle = arm; g.beginPath(); g.ellipse(r * 1.15, r * 0.15, r * 0.45, r * 0.24, -0.5 - p.fall, 0, Math.PI * 2); g.fill();
     g.beginPath(); g.arc(r * 1.55, -r * 0.2 - p.fall * r * 0.3, r * 0.3, 0, Math.PI * 2); g.fill();
     g.restore();
   }
-  const rock = g.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r); rock.addColorStop(0, '#c8c2b4'); rock.addColorStop(0.7, '#958e80'); rock.addColorStop(1, '#6a6458');
+  const rock = g.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.1, 0, 0, r);
+  if (p.gold) { rock.addColorStop(0, '#fff4b0'); rock.addColorStop(0.6, '#e8b830'); rock.addColorStop(1, '#9a6a10'); }
+  else { rock.addColorStop(0, '#c8c2b4'); rock.addColorStop(0.7, '#958e80'); rock.addColorStop(1, '#6a6458'); }
   g.fillStyle = rock; g.beginPath();
   for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2, rr = r * (1 + 0.06 * Math.sin(i * 2.7)); g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr * 0.95); }
   g.closePath(); g.fill();

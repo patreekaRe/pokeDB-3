@@ -11,7 +11,7 @@ import { ALL_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
-import { DEX_PAGES, safariOpen } from './data/pokedex.js';
+import { dexTally, safariOpen } from './data/pokedex.js';
 import { getSave } from './storage.js';
 import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
@@ -125,8 +125,7 @@ const vec = (name) => {
 /** The apps, in the home screen's order. `locked` is how to unlock one ("???" until then); `fill` / `app` run in the
     screen (device.js's openApp()). */
 function apps(save) {
-  const dexTotal = DEX_PAGES.reduce((n, p) => n + p.ids.length, 0);
-  const dexN = save.dex.defeated.filter(id => DEX_PAGES.some(p => p.ids.includes(id))).length;
+  const dex = dexTally(save);
   const book = (id, name, noun, how) => {
     const entries = bookEntries(id);
     if (!entries.length) return { id, locked: how };
@@ -137,7 +136,7 @@ function apps(save) {
     id, name, art, count: `${save.seen[id].length}/${all.length}`, cls: 'cdev-dex cdev-bag', app: bagApp(id), news: newFinds(id, save).length > 0,
   });
   return [
-    { id: 'dex', name: 'Pokédex', art: vec('dex'), count: `${dexN}/${dexTotal}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
+    { id: 'dex', name: 'Pokédex', art: vec('dex'), count: `${dex.n}/${dex.total}`, cls: 'cdev-dex', app: pokedexApp, at: here.dex },
     { id: 'moves', name: 'Moves', art: vec('moves'), count: `${ALL_CARDS.filter(c => save.seen.cards.includes(c.id)).length}/${ALL_CARDS.length}`,
       cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type), news: newFinds('cards', save).length > 0 },
     safari

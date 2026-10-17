@@ -3,8 +3,8 @@
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
-kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), and session d's first five furniture
-series, 125 kinds (2,037 in all).** No ceiling layer yet (the user's call).
+kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), session d's first five furniture
+series, 125 kinds (2,037 in all), and session e's next five, 125 kinds (2,162 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -30,11 +30,11 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 3. (done 2026-10-17) Log cabin: split logs, plaid, antlers (Highbough's shelf?).
 4. (done 2026-10-17) Ironwood: iron and reclaimed wood, workshop feel (Cinder Springs?).
 5. (done 2026-10-17) Imperial: red lacquer and gold, a lunar-new-year look.
-6. Diner: chrome, red vinyl, checker tiles, a jukebox.
-7. Cute: pastel pink, hearts and bows.
-8. Elegant: white and gold, curving legs.
-9. Golden: gold-plated, earned from achievements, never sold.
-10. Shell and mermaid: pearl, scallop shells, sea glass (Driftwood Landing?).
+6. (done 2026-10-17) Diner: chrome, red vinyl, checker tiles, a jukebox.
+7. (done 2026-10-17) Cute: pastel pink, hearts and bows.
+8. (done 2026-10-17) Elegant: white and gold, curving legs.
+9. (done 2026-10-17) Golden: gold-plated, earned from achievements (the nth piece with the nth achievement), never sold.
+10. (done 2026-10-17) Shell and mermaid: pearl, scallop shells, sea glass (Driftwood Landing?).
 11. Cherry blossom: spring, pink petals.
 12. Maple leaf: autumn reds.
 13. Acorn: autumn, nuts and wood (AC's "tree's bounty").

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOARDS, LETTERS, boardCells, hanging, MIN_PUSH } from '../js/data/bubble-boards.js';
+import { BOARDS, LETTERS, boardCells, hanging, MIN_PUSH, LAP_FASTER, ROCK, ROCKS_FROM, rocksFor } from '../js/data/bubble-boards.js';
 
 const MAX_ROWS = 8;
 
@@ -25,9 +25,20 @@ test('every bubble hangs from the ceiling', () => {
 test('a lap recolours a board but keeps its layout and colours', () => {
   const a = boardCells(1), b = boardCells(BOARDS.length + 1);
   assert.equal(a.name, b.name);
-  assert.equal(b.push, Math.max(MIN_PUSH, BOARDS[0].push - 1));
-  const set = (x) => new Set(x.cells.flat().filter(v => v !== null));
+  assert.equal(b.push, Math.max(MIN_PUSH, BOARDS[0].push - LAP_FASTER));
+  const set = (x) => new Set(x.cells.flat().filter(v => v !== null && v !== ROCK));
   assert.deepEqual([...set(a)].sort(), [...set(b)].sort());
   assert.notDeepEqual(a.cells, b.cells);
   a.cells.forEach((row, r) => row.forEach((v, c) => assert.equal(v === null, b.cells[r][c] === null)));
+});
+
+test('rocks come in from ROCKS_FROM, never in the top row, the same each time, and never the whole board', () => {
+  for (let level = 1; level <= BOARDS.length * 2; level++) {
+    const { name, cells } = boardCells(level), rocks = cells.flat().filter(v => v === ROCK).length;
+    if (level < ROCKS_FROM) assert.equal(rocks, 0, name);
+    else assert.ok(rocks >= 1 && rocks <= rocksFor(level), `${name} at ${level}`);
+    assert.ok(!cells[0].includes(ROCK), `${name} at ${level}: a rock in the top row could never drop`);
+    assert.ok(cells.flat().some(v => v !== null && v !== ROCK), name);
+    assert.deepEqual(boardCells(level).cells, cells);
+  }
 });
