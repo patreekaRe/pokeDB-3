@@ -563,7 +563,7 @@ export const GARAGE_KINDS = [
     B(27.6, 6.4, 0, 5, 3.6, 11, G.black, { m: 'cloth', r: 1.6 }),
     B(9, 6.8, 2, 6, 0.8, 5, G.blueL, { m: 'cloth', r: 0.4 }),
     RD([14, 6.8, -3], [21, 6.8, -1], 0.5, G.chrome, MT),
-  ], { seatH: 6.4 }),
+  ]),
 
   // an engine on a red engine stand: an oily block with a red valve cover, the oil pan below, pulleys at the front, its
   // exhaust manifold, the stand's post and castored T-foot
@@ -604,10 +604,10 @@ export const GARAGE_KINDS = [
     B(17.4, 21.4, -6.4, 15, 9, 2.4, G.red, { m: 'gloss', r: 3 }),
     DS(12, 21.4, -1, 4, 9, G.blackL, { m: 'gloss', ax: 'x', seg: 14 }),
     B(22, 21.6, -1, 6, 8, 7, G.steelD, MT), C(22, 27, -1, 2.6, 3, G.steelL, { m: 'metal', seg: 10 }),
-    ...[3, 29].flatMap(x => [RD([x < 16 ? 4 : 28, 16, -6], [x < 16 ? 1.6 : 30.4, 26, -6], 0.6, G.black, GL)]), RD([1.6, 26, -6], [1.6, 26, 6], 0.9, G.black, GL), RD([4, 16, 6], [1.6, 26, 6], 0.6, G.black, GL),
+    ...[-6, 6].map(z => RD([4, 16, z], [1.6, 26, z], 0.6, G.black, GL)), RD([1.6, 26, -6], [1.6, 26, 6], 0.9, G.black, GL),
     B(22, 27.6, 4.4, 4, 3, 3, G.steelD, MT), DS(22, 30.6, 5, 2.2, 1, G.white, { m: 'plain', seg: 12 }), RD([22, 30.6, 5.6], [23.2, 31.6, 5.6], 0.2, G.red, PL),
     RG(16, 10, 8.4, 4, 0.8, G.yellow, GL), RG(16, 10, 8.8, 2.6, 0.8, G.yellow, GL),
-  ], { seatH: 0 }),
+  ]),
 
   // a black drum fan on a yoke: yellow blades behind a chrome cage, a carry handle on top
   piece('grgfan', 'Garage drum fan', 1, 1, 420, 'metal', [
