@@ -46,3 +46,12 @@ is up, the scene is `unload()`ed (re-uploaded on the next visit); headless, ~65-
 renderer's own post targets. Swapping rooms (a town and its houses) unloads the one left; leaving a town disposes it
 (`forgetTowns()`); a partner board replaced is disposed; `dispose()`/`unload()` free every material map but `envMap`;
 the Mart keeps at most `CARD_TEX_MAX` (24) card faces.
+
+**The 20 new ? rooms checked** (2026-10-17, headless Chromium at 390x844 x3, one page load): every room walked in and
+out three laps, each act played six times, one pair ten times running. Each room is 13-14MB of textures, ~40-190
+shapes; an act adds no objects; leaving drops the renderer to its post targets (1 shape, 4 textures) every lap; the room
+cache stays at 3, the canvases flat, the heap ~47MB with no growth lap on lap; no "Too many active WebGL contexts". Their
+ticks no longer allocate per frame (the Odd Keystone's wisps made 7 vectors a frame). The harness hooks `__e3d` /
+`__run` onto `js/event-3d.js` and `js/run.js` through Playwright routes, Three.js from a local `npm pack`; re-make it
+from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by a choice.
+

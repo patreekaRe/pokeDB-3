@@ -3106,7 +3106,7 @@ async function buildIdol(figs, { look: L, time }) {
         this.dust = burst(dust, new THREE.Vector3(walker.x, 0.3, walker.z), { spread: 0.7, rise: 0.6 });
       },
       tick(k) {
-        if (k < 0.5) { const u = k / 0.5, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        if (k < 0.5) { const u = k / 0.5; stone.position.lerpVectors(home, this.at, u).y = R0 + (home.y - R0) * (1 - u) ** 2; stone.rotation.x = -u * 6; }
         else roll(this.at, this.off, (k - 0.5) / 0.5);
         stone.visible = k < 0.98;
         walker.oz = k > 0.5 ? Math.sin(Math.min(1, (k - 0.5) / 0.3) * Math.PI / 2) * 0.5 * (1 - Math.max(0, (k - 0.8) / 0.2)) : 0;
@@ -3123,7 +3123,7 @@ async function buildIdol(figs, { look: L, time }) {
         const d = ease(Math.min(1, k / 0.2));   // a dive behind the column
         walker.ox = (tileX(2.6) - this.x0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
         walker.oz = (tileZ(2.1) - this.z0) * d * (1 - Math.max(0, (k - 0.85) / 0.15));
-        if (k < 0.45) { const u = k / 0.45, p = home.clone().lerp(this.at, u); p.y = R0 + (home.y - R0) * (1 - u) ** 2; stone.position.copy(p); stone.rotation.x = -u * 6; }
+        if (k < 0.45) { const u = k / 0.45; stone.position.lerpVectors(home, this.at, u).y = R0 + (home.y - R0) * (1 - u) ** 2; stone.rotation.x = -u * 6; }
         else roll(this.at, this.off, (k - 0.45) / 0.55);
         stone.visible = k < 0.98;
       } },
@@ -3168,13 +3168,12 @@ async function buildKeystone(figs, { look: L, time }) {
     wisps.forEach((w, i) => {
       w.visible = !calm;
       const a = now / 1100 + i / wisps.length * Math.PI * 2;
-      let p = new THREE.Vector3(cx + Math.cos(a) * 0.7, y + 0.3 + Math.sin(a * 2) * 0.12, cz + Math.sin(a) * 0.45);
+      const p = w.position.set(cx + Math.cos(a) * 0.7, y + 0.3 + Math.sin(a * 2) * 0.12, cz + Math.sin(a) * 0.45);
       if (state.stream >= 0) {   // an ask: they stream out to what was asked for, then home
         const u = Math.max(0, Math.min(1, state.stream * 1.6 - i * 0.06)), out = Math.sin(u * Math.PI);
-        p = p.lerp(state.to, out);
+        p.lerp(state.to, out);
         p.y += Math.sin(u * Math.PI) * 0.5;
       }
-      w.position.copy(p);
       w.material.opacity = 0.8;
     });
   });
@@ -3576,7 +3575,7 @@ async function buildFishing(figs, { look: L, time }) {
   catches.forEach(c => { c.visible = false; });
   const spray = Array.from({ length: 14 }, (_, i) => sprite(sparkArt(i % 2 ? '#ffffff' : (L.water?.[1] || '#a8f0f0')), 0.3));
   const drops = Array.from({ length: 8 }, () => sprite(sparkArt(L.water?.[1] || '#a8f0f0'), 0.18));
-  const v = new THREE.Vector3();
+  const v = new THREE.Vector3(), reel = new THREE.Vector3();
   const setLine = (from, to, sag) => {
     const pos = line.geometry.attributes.position;
     for (let i = 0; i < N; i++) { const q = i / (N - 1); v.lerpVectors(from, to, q); v.y -= Math.sin(q * Math.PI) * sag; pos.setXYZ(i, v.x, v.y, v.z); }
@@ -3600,15 +3599,15 @@ async function buildFishing(figs, { look: L, time }) {
         let end;
         if (k < 0.25) {   // the cast: the float arcs out to the water
           const u = k / 0.25;
-          end = this.tip.clone().lerp(this.bob, u);
+          end = reel.lerpVectors(this.tip, this.bob, u);
           end.y += Math.sin(u * Math.PI) * 0.6;
         } else if (k < 0.55) {   // it bobs, then dips under
-          end = this.bob.clone();
+          end = reel.copy(this.bob);
           end.y += (k > 0.48 ? -0.08 : Math.sin(k * 60) * 0.02);
           if (k < 0.32) this.drip((k - 0.25) / 0.07);
         } else {   // the reel: the catch comes up on the line
           const u = ease(Math.min(1, (k - 0.55) / 0.4));
-          end = this.bob.clone().lerp(this.tip, u * 0.85);
+          end = reel.lerpVectors(this.bob, this.tip, u * 0.85);
           end.y -= Math.sin(u * Math.PI) * 0.1;
           walker.oz = big && k < 0.8 ? -Math.sin((k - 0.55) / 0.25 * Math.PI) * 0.35 : 0;
         }
@@ -3832,7 +3831,8 @@ async function buildTablet(figs, { look: L, time }) {
   B.anchors[1] = new THREE.Vector3(ax + 0.2, 1.25, az);
   tufts(L, 40, rnd);
   const homes = [unown.base.y, more.base.y];
-  B.ticks.push((now) => { if (!calm) [unown, more].forEach((u, i) => { u.group.position.y = homes[i] + Math.sin(now / 700 + i * 2) * 0.12; }); });
+  const floaters = [unown, more];
+  B.ticks.push((now) => { if (!calm) floaters.forEach((u, i) => { u.group.position.y = homes[i] + Math.sin(now / 700 + i * 2) * 0.12; }); });
   const sparks = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 2 ? '#fff4a0' : '#ffffff'), 0.24));
   const dust = Array.from({ length: 8 }, (_, i) => sprite(sparkArt(i % 2 ? '#d0ccc0' : '#a8a498'), 0.3));
   B.reset = () => { glow.material.opacity = 0; chips.forEach(c => { c.visible = true; }); };
@@ -3971,6 +3971,7 @@ async function buildBonfire(figs, { look: L }) {
   const left = await figure('left', figs.left ?? { src: 'assets/pokemon/litwick-front.gif', flip: true }, { x: 3.1, ty: 2.1, y: 0.33 });
   const right = await figure('right', figs.right ?? { src: 'assets/pokemon/litwick-front.gif' }, { x: 6.9, ty: 2.1, y: 0.33 });
   B.who.left = left; B.who.right = right;
+  const sides = [left, right];
   B.spots = [{ step: { x: 5, y: 3 } }];
   B.anchors[0] = new THREE.Vector3(fx, 2.3, fz);
   tufts(L, 30, rnd);
@@ -3983,7 +3984,7 @@ async function buildBonfire(figs, { look: L }) {
     purple.scale.set(1.3 * (0.6 + roar * 0.6), 1.3 * (0.6 + roar * 1.3), 1);
     light.intensity = 2.2 + flick * 6 + roar * 3;
     halo.material.opacity = 0.55 + flick + roar * 0.3;
-    if (!calm) [left, right].forEach((w, i) => { w.group.rotation.z = Math.sin(now / 600 + i * 1.7) * 0.06; });
+    if (!calm) sides.forEach((w, i) => { w.group.rotation.z = Math.sin(now / 600 + i * 1.7) * 0.06; });
   });
   const wisps = Array.from({ length: 12 }, (_, i) => sprite(sparkArt(i % 3 ? '#a878f0' : '#e8d8ff'), 0.3));
   B.reset = () => { roar = 0; };
@@ -4094,9 +4095,8 @@ async function buildRival(figs, { look: L, time }) {
         root.attach(this.thing);
       },
       tick(k) {
-        const u = Math.min(1, k / 0.6), p = this.from.clone().lerp(this.to, ease(u));
-        p.y += Math.sin(u * Math.PI) * 0.8;
-        this.thing.position.copy(p);
+        const u = Math.min(1, k / 0.6);
+        this.thing.position.lerpVectors(this.from, this.to, ease(u)).y += Math.sin(u * Math.PI) * 0.8;
         this.thing.visible = k < 0.65;
         if (k > 0.6) this.shine((k - 0.6) / 0.4);
         if (k > 0.97) { this.parent.attach(this.thing); this.thing.visible = false; }

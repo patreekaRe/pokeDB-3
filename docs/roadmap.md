@@ -1058,6 +1058,8 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   three again and says whether it still resets, and on which phone (an older iPhone has far less room). The next lever,
   the user's idea, is built too: the Arcade Room below. If it still resets, the cabinets' faces are the next lever
   (smaller, and one picture shared between machines that look alike; `B.arcade` in `js/base-mesh.js`).
+  The 20 new ? rooms were checked the same way (2026-10-17, `docs/reference/walk-in-rooms.md`): none leaks; their
+  per-frame allocations were taken out.
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
