@@ -858,7 +858,10 @@ sizes; human bot, Level 3, batch 2 -> with these five: Fire 56.0 -> 56.7, Water 
 56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). The Sludge Pit's Climb out now leaves for the map at once (2026-10-17, the user's ask). **Batch 3's last
 five built** (2026-10-17: Unown Tablet, Smeargle's Studio, Litwick Bonfire, Voltorb Flip, Rival's Return; 30 events in the
 bag; every choice played headless in 3D and 2D, a whole game of Voltorb Flip, the signs checked at 360 to 1280 wide;
-a Level 3 bot check against batch 3a is running). Next: the one bot check with all 30 against `main` (human bot, Levels 0/3/5), a retune, and the merge.
+game `d9d4684d`, sim `81f4c06`; human bot, Level 3, 150 runs, batch 3a -> all 30: Fire 51.3 -> 66.0, Grass 50.0 -> 58.7,
+Water 56.0 -> 60.0%: easier, Fire past the noise. Suspects for the retune: the Bonfire's full heal for an uncommon (and the
+free removal with it), the Unown Tablet's free PP Ups of every basic, Rival's relics). Next: the one bot check with all 30
+against `main` (human bot, Levels 0/3/5), a retune (start with the Bonfire's `warmth` and the Tablet), and the merge.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
