@@ -282,8 +282,8 @@ export const BLOCK_KINDS = [
 
   // a green seat on red peg legs, blue posts with yellow ball tops, a yellow back block painted A
   piece('blkchair', 'Wooden block chair', 1, 1, 380, 'wood', [
-    ...[6, 26].map(x => C(x, 6.5, 8, 2.2, 13, BK.red, WD)),
-    ...[6, 26].flatMap(x => [C(x, 17, -9, 2.2, 34, BK.blue, WD), S(x, 36.4, -9, 2.6, 2.6, 2.6, BK.yellow, GL)]),
+    ...[6, 26].map(x => C(x, 6.5, 8, 2.6, 13, BK.red, WD)),
+    ...[6, 26].flatMap(x => [C(x, 17, -9, 2.6, 34, BK.blue, WD), S(x, 36.6, -9, 3, 3, 3, BK.yellow, GL)]),
     B(16, 26, -9, 17.6, 12, 2.4, BK.yellow, WD),
     PC(16, 26, -7.7, 9, 9, face('A', BK.yellow)),
     B(16, 15, 0, 26, 4, 22, BK.green, { m: 'wood', r: 1.4 }),
@@ -368,7 +368,7 @@ export const BLOCK_KINDS = [
   piece('blklamp', 'Wooden block lamp', 1, 1, 420, 'wood', [
     ...lcube(16, 0, 0, 13, BK.blue, 'A'),
     C(16, 15.5, 0, 5, 5, BK.red, WD),
-    C(16, 34, 0, 1.4, 32, BK.beech, WD),
+    C(16, 34, 0, 2, 32, BK.beech, WD),
     S(16, 50.6, 0, 2.4, 2.4, 2.4, BK.yellow, GL),
     C(16, 59, 0, 7, 14, BK.glow, { m: 'glow', rb: 11.5, seg: 16 }),
     S(16, 67.6, 0, 2.6, 2.6, 2.6, BK.red, GL),
@@ -413,13 +413,13 @@ export const BLOCK_KINDS = [
   // a beech plank on red and blue brackets: a row of coloured pegs under it with a ring and a ball on a string hung up,
   // an A block, a Poké Ball, an arch, a cylinder and a 1 block on top
   wallPiece('blkpegshelf', 'Wooden block peg shelf', 2, 400, 'wood', [
-    B(32, 64, 4, 60, 3, 8, BK.beech, WD),
+    B(32, 64, 4, 60, 4, 8, BK.beech, WD),
     B(8, 59, 2.5, 4, 7, 5, BK.red, WD), B(56, 59, 2.5, 4, 7, 5, BK.blue, WD),
     ...[[16, BK.yellow], [24, BK.green], [32, BK.red], [40, BK.blue], [48, BK.orange]].map(([x, c]) => DS(x, 52, 3.5, 2, 7, c, WD)),
     RG(24, 49.4, 6, 3.6, 1, BK.purple, WD),
     RD([40, 51, 6], [40, 44.6, 6], 0.25, BK.ink, PL), S(40, 42.2, 6, 2.6, 2.6, 2.6, BK.red, GL),
-    ...lcube(12, 65.5, 4, 7, BK.red, 'A'), ...pball(24, 65.5, 4, 3.4),
-    PR(36, 65.5, 4, archBlock(10, 6, 2.6), 6, BK.green), C(46, 69, 4, 3, 7, BK.yellow, WD), ...lcube(54.5, 65.5, 4, 6, BK.blue, '1'),
+    ...lcube(12, 66, 4, 7, BK.red, 'A'), ...pball(24, 66, 4, 3.4),
+    PR(36, 66, 4, archBlock(10, 6, 2.6), 6, BK.green), C(46, 69.5, 4, 3, 7, BK.yellow, WD), ...lcube(54.5, 66, 4, 6, BK.blue, '1'),
   ]),
 
   // a red toy chest on yellow peg feet, T O Y painted on its front, a blue lid with a yellow knob
