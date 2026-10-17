@@ -2843,3 +2843,5 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - All 18 Game Corner arcade games deepened, Pinball rebuilt as a real table, Bubble Shooter given a shot clock, rocks and
   quicker laps. Detail: `docs/reference/hub-base-mall.md`'s "The arcade overhaul". Checked headless with
   `tools/arcade-check.mjs` (no errors, ~60 fps); balance untested by a person. Branch `claude/peaceful-cori-1rx16c`, on `main` too.
+- (2026-10-17) An arcade cabinet's How to play no longer stretches across a wide browser: it wears the cabinet's dark
+  sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
