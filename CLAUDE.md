@@ -150,7 +150,6 @@ These used to be buried in the notes. Each one has its detail in the reference f
   - **Furniture kind**: a painting and a hand-built model in a `js/base-models-*.js` batch, checked with
     `tools/model-check.mjs`; a seasonal one a `holiday`, an outdoor one `outdoor` and a `yard` tab. (`hub-base-mall.md`)
   - **Song**: loop points.
-  - **Walkable place**: the refresh key top right (`stayKey()`, `js/stay.js`) and a `stayBack()` case in `js/main.js`. (`saved-runs.md`)
 
 ## Playtest URLs
 

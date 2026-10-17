@@ -34,23 +34,3 @@ exists, its icon the run's Poké Ball wobbling like a catch in progress (`.cball
 the user wanted back), its biome and HP on the nameplate under the gems; tapping it swings the lid open in a flash of light, and your
 Pokémon comes out white, then in colour, with its cry (`sendOut()`) before the map loads. Begin run confirms before replacing a save.
 
-
-## The refresh key (2026-10-17, the user's ask: refresh and land back where you were, with the newest patches)
-
-A round key top right in the places you walk: the Clearing (`.hub`), the Secret Base and the Poké Mall (`.b3-stage`), a
-town or a house in one (`#reward-options`, fixed), and a run's map (on the top bar after the coins, a `home-key`; the
-hinge had no room for it on a 390px phone, the biome's name was cut off, and the run card's top right is the coins').
-`stayKey(spot)` in `js/stay.js` builds it: a tap writes `spot()` to sessionStorage (`pokedb.stay.v1`, with a time) and
-calls `reloadFresh()` (the title's Refresh: every loaded .js/.css fetched past the cache, then reload). On load
-`stayBack(takeStay())` in `js/main.js` runs before every playtest flag (so a branch link's `?base` doesn't win over where
-you walked to); the note is removed as it's read and ignored after a minute, so a plain browser refresh still opens on
-the title. Spots: `{ at: 'hub', tile }` (`standAt()` in `js/hub-3d.js`, open ground only, else the walk in);
-`{ at: 'base', room, tile }` (`openBase3d({ start, tile })`, nearest free tile; the hub's `inside` set by `cameHome()`
-to 'base' or 'backyard' so the ✕ walks you out of the right door); `{ at: 'mall', id, tile }` (`openMall({ at })`, a
-stale tile falls back to the doors); `{ at: 'visit', town, house, tile }` (`walkToTown()` in `js/main.js` →
-`visitTown(…, { tile })`, no Waystone landing); `{ at: 'run', house, tile }` (`continueGame(saved, stay)` →
-`continueRun(saved, stay)`: the map, or the run's town / house at the tile; `eventTile()` in `js/event-3d.js` reads it).
-Not shown: under the shut Pokédex, while decorating, on a playtest's throwaway run (`peeking`, visits aside), at the
-Depths camp a fall stops at, on a Sky Pillar climb (its bar is at the foot of the screen), in battles, films and rooms
-(a refresh there would only go back to the map). In the Clearing it stands in for the title corner's Refresh, which the
-Signs title keeps. A new walkable place gets a key and a `stayBack()` case.

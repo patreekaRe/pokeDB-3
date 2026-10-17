@@ -472,7 +472,6 @@ const KEY_GLYPHS = {
   play: '<path d="M8 5.5v13l10.5-6.5Z" fill="currentColor" stroke-width="2"/>',
   plus: '<path d="M12 5v14M5 12h14" stroke-width="2.8"/>',
   help: '<path d="M8.8 9a3.4 3.4 0 1 1 5 3c-1.2.7-1.8 1.5-1.8 2.9" stroke-width="2.6"/><circle cx="12" cy="18.6" r="1.5" fill="currentColor" stroke="none"/>',
-  refresh: '<path d="M19 12a7 7 0 1 1-2.05-4.95" stroke-width="2.4"/><path d="M17.8 3.8v3.9h-3.9" stroke-width="2.4"/>',
   rope: '<circle cx="11" cy="12" r="6.5" stroke-width="2.2"/><circle cx="11" cy="12" r="3" stroke-width="2"/><path d="M17.5 12c0 4 1.5 6.5 3 7.5" stroke-width="2.2"/>',
 };
 

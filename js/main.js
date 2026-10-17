@@ -55,8 +55,7 @@ import { initAudio, playMusic, setHomeTrack } from './audio.js';
 import { initSettings } from './settings.js';
 import { initPatchNotes } from './patchnotes.js';
 import { initTitle, showTitle, showHome, leaveTitle, eternatusGuest, useHub } from './title.js';
-import { cameHome, standAt } from './hub-3d.js';
-import { takeStay } from './stay.js';
+import { cameHome } from './hub-3d.js';
 import { curtain } from './hd2d.js';
 import { initSelect, showSelect, refreshSelect, pickedStarter, prepare } from './select.js';
 import { initCollection, showCollection, openPokedex, openDeviceApp, openHowto, bootHowto, splash } from './collection.js';
@@ -117,11 +116,10 @@ function newGame(starter) {
   bootDevice(dev, { below: dev.querySelector('.tdev-lid'), screen: dev.querySelector('.sel-stage') });
 }
 
-/** Continue: the map, its Pokédex opening on the run (not a Sky Pillar climb, whose map is the tower). `stay`: the refresh
-    key's spot in the run's town (js/stay.js). */
-function continueGame(saved, stay = null) {
+/** Continue: the map, its Pokédex opening on the run (not a Sky Pillar climb, whose map is the tower). */
+function continueGame(saved) {
   leaveTitle();
-  const film = continueRun(saved, stay);   // a place's walk-on film, if the run stood at a place's end: the boot comes after it
+  const film = continueRun(saved);   // a place's walk-on film, if the run stood at a place's end: the boot comes after it
   const map = $('map-screen');
   if (!map.hidden && !map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
 }
@@ -187,48 +185,6 @@ function initPokedexButton() {
 }
 
 /* ---------- start everything ---------- */
-
-/** The Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
-    any run (visitTown() in js/run.js), and comes home in front of the Waystone or on the doorstep. `at`: a tile in it
-    (the refresh key). */
-function walkToTown(id, house = null, at = null) {
-  const pal = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
-  const mate = id === 'depths' && isMewtwoRun(pal) ? STARTERS.find(s => s.free) : pal;   // Mewtwo is waiting down there
-  leaveTitle();
-  // the camp's Mewtwo asks you along: its Prepare step, as the gate itself once opened (campTalk() in js/run.js)
-  const onMewtwo = id === 'depths' ? () => { const m = STARTERS_BY_ID.mewtwo; cameHome('gate'); newGame(m); previewStarter(m); curtain(false, 420); } : null;
-  return visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house, { onMewtwo, tile: at });
-}
-
-/** Back where the refresh key left you (js/stay.js), past the title: the Clearing, the Secret Base, the Poké Mall, a town
-    visited from home, or the saved run (its map, or its town). False with nowhere to go back to: the title, as ever. */
-function stayBack(stay) {
-  if (stay?.at === 'run') {
-    const run = savedRunCard();
-    if (!run) return false;
-    showSelect();
-    continueGame(run.saved, stay);
-    return true;
-  }
-  if (!stay || !useHub()) return false;   // the rest are the walkable Clearing's places
-  showSelect();
-  if (stay.at === 'hub') {
-    standAt(stay.tile);
-    showHome();
-    return true;
-  }
-  if (stay.at === 'base') {
-    cameHome(stay.room === 'yard' ? 'backyard' : 'base');
-    import('./base-3d.js').then(m => m.openBase3d({ onLeave: showHome, start: stay.room, tile: stay.tile }));
-    return true;
-  }
-  if (stay.at === 'mall') {
-    cameHome('mall');
-    import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome, at: stay }));
-    return true;
-  }
-  return stay.at === 'visit' && walkToTown(stay.town, stay.house, stay.tile);
-}
 
 function init() {
   initPixelIcons();
@@ -365,7 +321,14 @@ function init() {
     onMall: () => { leaveTitle(); return import('./mall-3d.js').then(m => m.openMall({ onLeave: showHome })); },
     // the Clearing's Waystone, or the Nietos' door (js/hub-3d.js): your walking buddy walks that town (or house) outside
     // any run (visitTown() in js/run.js), and comes home in front of the Waystone or on the doorstep
-    onTown: (id, house = null) => walkToTown(id, house),
+    onTown: (id, house = null) => {
+      const pal = STARTERS_BY_ID[buddy(getSave()).id] ?? STARTERS.find(s => s.free);
+      const mate = id === 'depths' && isMewtwoRun(pal) ? STARTERS.find(s => s.free) : pal;   // Mewtwo is waiting down there
+      leaveTitle();
+      // the camp's Mewtwo asks you along: its Prepare step, as the gate itself once opened (campTalk() in js/run.js)
+      const onMewtwo = id === 'depths' ? () => { const m = STARTERS_BY_ID.mewtwo; cameHome('gate'); newGame(m); previewStarter(m); curtain(false, 420); } : null;
+      visitTown(mate, id, async (from, town) => { cameHome(from, town); await showHome(); curtain(false, 420); }, house, { onMewtwo });
+    },
   });
   $('dock-menu').querySelector('.mdex-ico').append(smoothIcon('home'));
   $('dock-menu').addEventListener('click', async () => {
@@ -394,7 +357,6 @@ function init() {
   // the HTML shows the title from the first paint (the shut Pokédex), so a playtest that skips it must hide it, or it
   // sits over the run; showTitle() below shows it again in the same task, so the normal way in never flickers
   $('title-screen').hidden = true;
-  if (stayBack(takeStay())) return;
   // ?area=wetland (any Safari area; &stage=0-3, &kind=elite or boss) shows that area's scene the same way, and each
   // tap walks on to its next place, then the next area
   if (params.has('area')) return peekSafari(params);

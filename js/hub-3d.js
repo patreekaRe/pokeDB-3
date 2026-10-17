@@ -25,7 +25,6 @@ import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
 import { readyTasks } from './data/ranger.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
-import { stayKey } from './stay.js';
 import { vistaArt, VISTA } from './hub-vista.js';
 import { makeCracks, CRACK_LINES } from './hub-cracks.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -1924,10 +1923,6 @@ async function warpTo(p, t) {
   await acts.onTown(t.id);
 }
 
-/** Back after the refresh key (js/stay.js): your partner set down on `tile`, if it's still open ground. */
-let standing = null;
-export function standAt(tile) { standing = tile?.x >= -99 && tile?.y >= -99 ? { x: tile.x, y: tile.y } : null; }
-
 /** Back from a visit (js/run.js's visitTown()): in front of the Waystone, the light of the town it came from setting your
     partner down, or on the house's doorstep. */
 export function cameHome(from, town) {
@@ -2421,9 +2416,9 @@ async function standGuest(g, l) {
 
 const PROF_AT = { x: PC_AT.tx + 1, y: PC_AT.ty };
 const PROFS = [
-  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: tap the refresh key up in the corner often! The game gets updates all the time.',
+  { id: 'oak', name: 'Professor Oak', short: 'Oak', night: false, refresh: 'And remember: refresh the page often! The game gets updates all the time.',
     hello: 'Ah, there you are! Good to see you back. Let me share something from my research...' },
-  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and tap the refresh key up in the corner often, okay? New updates land all the time!',
+  { id: 'sonia', name: 'Professor Sonia', short: 'Sonia', night: true, dx: 0.35, refresh: 'Oh, and refresh the page often, okay? New updates land all the time!',
     hello: 'Oh, hi! Up late too? Perfect timing, I just jotted this one down in my notes...' },
 ];
 const HINTS = [
@@ -4142,7 +4137,6 @@ async function build() {
           <button type="button" class="hbar-flee" title="Escape Rope" aria-label="Escape Rope"></button></div></div></div>
     </div>
     <span class="hub-fps" hidden></span>`;
-  root.append(stayKey(() => ({ at: 'hub', tile: { ...walker.tile } })));
   view = root.querySelector('.hub-view');
   card = root.querySelector('.hub-card');
   bar = root.querySelector('.hub-bar');
@@ -4238,10 +4232,9 @@ async function openHub(titleScreen, actions, hold) {
   mon.group.visible = !held;
   if (!placed) {
     placed = true;
-    // ?hubat=x,y starts your partner on that tile, to look round one corner of the Clearing; the refresh key, where it stood
-    const at = standing ? [standing.x, standing.y] : new URLSearchParams(location.search).get('hubat')?.split(',').map(Number);
-    walker.tile = at?.length === 2 && (!standing || free(standing)) ? { x: at[0], y: at[1] } : ARRIVE;
-    standing = null;
+    // ?hubat=x,y starts your partner on that tile, to look round one corner of the Clearing
+    const at = new URLSearchParams(location.search).get('hubat')?.split(',').map(Number);
+    walker.tile = at?.length === 2 ? { x: at[0], y: at[1] } : ARRIVE;
     walker.x = tileX(walker.tile.x); walker.z = tileZ(walker.tile.y); camX = walker.x; camZ = walker.z;
   }
   walker.path = []; aim = null; here = placeAt(walker.tile);

@@ -38,7 +38,6 @@ import { showHub, hideHub, enterHub, hubDex, refreshBuddy } from './hub-3d.js';
 import { pickedName, setTrainerName } from './leaderboard.js';
 import { NAME_MAX } from './data/leaderboard.js';
 import { pref } from './prefs.js';
-import { reloadFresh } from './stay.js';
 
 const PIXEL = 3;
 const FPS = 10;                 // a stepped, Game Boy-ish frame rate for the twinkles
@@ -827,13 +826,19 @@ function hatch() {
 }
 
 /** The Sound button under the PC opens the same Sound toggle and slider as the Pokédex's Settings (js/audio.js runs both). */
-/** The Refresh button (the user's ask): the newest version, past the browser's cache (reloadFresh() in js/stay.js). In the
-    Clearing the refresh key top right takes its place, and keeps your spot. */
-function refreshGame() {
+/**
+ * The Refresh button (the user's ask): a plain reload can keep showing the old game for up to 10 minutes after a push,
+ * since the browser keeps its files (GitHub Pages caches them that long), so every file this page loaded is fetched
+ * again past the cache first, and then the page reloads onto them. The save is in localStorage, untouched.
+ */
+async function refreshGame() {
   const btn = $('title-refresh');
   if (btn.classList.contains('spinning')) return;
   btn.classList.add('spinning');
-  reloadFresh();
+  const files = performance.getEntriesByType('resource').map(r => r.name)
+    .filter(url => url.startsWith(location.origin) && /\.(js|css)(\?|$)/.test(url));   // the code and styles: art and sound rarely change
+  await Promise.all([location.href, ...files].map(url => fetch(url, { cache: 'reload' }).catch(() => null)));
+  location.reload();
 }
 
 /* ---------- the sky ---------- */

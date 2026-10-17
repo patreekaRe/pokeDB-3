@@ -899,23 +899,3 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .b3-news.in { animation: b3NewsIn 0.45s cubic-bezier(.2, 1.4, .4, 1); }
 @keyframes b3NewsIn { from { translate: -50% -16px; opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .b3-news.in { animation: none; } }
-
-/* the refresh key (js/stay.js; the user's ask, 2026-10-17): top right in the places you walk, the newest version and back
-   where you stood. Over the Clearing, the Secret Base, the Poké Mall and a town it's a round key of its own; on a run's map
-   it's on the top bar after the coins, a Home key like the hinge's (the hinge had no room for it on a phone: the biome's
-   name was cut off) */
-.stay-key {
-  display: grid; place-items: center; padding: 0; border: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
-}
-.stay-key[hidden] { display: none; }
-:is(.hub, .b3-stage, #reward-options) > .stay-key { position: absolute; z-index: 6; top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); }
-#reward-options > .stay-key { position: fixed; z-index: 30; }
-.stay-key .round-key svg { width: 20px; height: 20px; }
-.stay-key:active :is(.round-key, .home-key) { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--shell-rim), 0 1px 0 var(--shell-deep); }
-.stay-key.spinning svg { animation: taSpin 0.7s linear infinite; }
-.topbar-actions > .stay-key { display: none; }
-body[data-screen="map-screen"] .topbar-actions > .stay-key:not([hidden]) { display: grid; }
-/* under the shut Pokédex, and while decorating, the key waits; in the Clearing it stands in for the title corner's refresh */
-.hub.held .stay-key, .base3d.editing .stay-key { display: none; }
-.title-screen.hub-mode.menu .title-refresh { display: none; }
-body[data-screen="map-screen"]:has(#map-screen.tower) .topbar-actions > .stay-key { display: none; }   /* a climb's bar is at the foot of the screen */
