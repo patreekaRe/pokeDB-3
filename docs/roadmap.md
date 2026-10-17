@@ -820,7 +820,7 @@ in both repos (merge `main` into it first each session), and only when all ~30 a
 bot check with every event in (human bot, Levels 0/3/5, against `main`) and a retune. Watch the healing rooms: with 15
 events in the bag Fire lost ~10 points at Level 3 until Abra got Doze (docs/reference/events.md), so give some of the new
 ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; last commit `7dcae871`). **Batch 2 built**
-(2026-10-17, as listed; game `4c2fcc1b`, sim `6622811`; every choice played headless in 3D and 2D; human bot, Level 3, 150 runs, batch 1 -> with batch 2: Fire 56.7 -> 56.0, Grass 58.0 -> 53.3, Water 50.7 -> 56.0%, all within noise, no retune). Next: batch 3
+(2026-10-17, as listed; game `4c2fcc1b` (its Swap Stall and Ruins Idol signs spread apart in `365242d8`), sim `6622811`; every choice played headless in 3D and 2D; human bot, Level 3, 150 runs, batch 1 -> with batch 2: Fire 56.7 -> 56.0, Grass 58.0 -> 53.3, Water 50.7 -> 56.0%, all within noise, no retune). Next: batch 3
 below, its first five (Canalave Library to Bug-Catching Contest), then its last five.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
