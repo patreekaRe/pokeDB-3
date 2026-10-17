@@ -274,3 +274,26 @@ test('held berries and run kit: made again and again, each a berry or two and a 
   assert.deepEqual(packable(b.ws).map(o => o.recipe.id), ['kit-potion']);
   assert.deepEqual(workshopOf({}).kit, {}, 'an old save keeps none');
 });
+
+test('Kurt explains gifts once, and every friend says a hello once that hints at their favourite without naming it', async () => {
+  const { FRIENDS, GIFT_TOLD, meetKey, withTold, giftMeetDue, giveGift: give } = await import('../js/data/workshop.js');
+  const { GIFT_MEET } = await import('../js/data/towns.js');
+  const talk = CLEARING.homes.workshop.giftTalk;
+  assert.ok(talk.length >= 3 && talk.length <= 4);
+  assert.ok(/heart/i.test(talk.join(' ')) && /Friends app/.test(talk.join(' ')) && /Secret Base/.test(talk.join(' ')));
+  const told = withTold(workshopOf({}), GIFT_TOLD);
+  assert.equal(told.told[GIFT_TOLD], true);
+  assert.deepEqual(Object.keys(GIFT_MEET).sort(), [...FRIENDS].sort());
+  for (const id of FRIENDS) {
+    const lines = GIFT_MEET[id], fav = FAVOURITE[id];
+    assert.ok(lines.length >= 1 && lines.length <= 2, id);
+    assert.ok(/Kurt/.test(lines.join(' ')), `${id} points to Kurt`);
+    assert.ok(!lines.join(' ').toLowerCase().includes(fav.name.toLowerCase()), `${id} names ${fav.name}`);
+    const fresh = workshopOf({});
+    assert.ok(giftMeetDue(fresh, id), id);
+    assert.ok(!giftMeetDue(withTold(fresh, meetKey(id)), id), `${id} says it once`);
+    assert.ok(FRIENDS.filter(o => o !== id).every(o => giftMeetDue(withTold(fresh, meetKey(id)), o)), `${id}'s is theirs alone`);
+    const held = { ...fresh, gifts: { [fav.makes]: 1 } };
+    assert.ok(!giftMeetDue(give(held, fav.makes, id).ws, id), `${id} skips it once gifted`);
+  }
+});

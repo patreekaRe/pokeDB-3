@@ -218,6 +218,14 @@ export const heartsOf = (ws, leader) => Math.min(HEARTS, ws.liked?.[leader] || 0
 /** Everyone who takes a gift, the Nietos (home) first. */
 export const FRIENDS = ['nietos', ...GIFTS.map(g => g.leader).filter(id => id !== 'nietos')];
 
+/** The gifts' first-time words, each once a save in `ws.told` (js/held-tips.js): Kurt's `giftTalk` on the first gift
+    made (GIFT_TOLD), and each friend's GIFT_MEET hello (js/data/towns.js) the first time home after their Gym, unless
+    they've had a gift already. */
+export const GIFT_TOLD = 'gift';
+export const meetKey = (leader) => `meet-${leader}`;
+export const withTold = (ws, key) => ({ ...ws, told: { ...ws.told, [key]: true } });
+export const giftMeetDue = (ws, leader) => !ws.told?.[meetKey(leader)] && !(ws.liked?.[leader] > 0);
+
 /** Each friend's second and third signature pieces (step 8, session d), in their first one's style: given at
     HEART_AT[0] and HEART_AT[1] hearts. js/data/furniture.js's `heart` source owns them while `liked` is that high, so an
     old save already there has them on load. */

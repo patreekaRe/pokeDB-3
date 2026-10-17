@@ -8,7 +8,7 @@ import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
 import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
-import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT } from './data/workshop.js';
+import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
 import { RING, townState, CLEARING } from './data/towns.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { GYM_BY_ID, friendWins } from './data/gym.js';
@@ -223,6 +223,7 @@ export function openWorkshop() {
     draw();
     if (r.kind === 'held' && !toldHeld('held')) await kurtSays(CLEARING.homes.workshop.heldTalk, 'held');
     if (r.kind === 'kit' && !toldHeld('kit')) await kurtSays(CLEARING.homes.workshop.kitTalk, 'kit');
+    if (r.kind === 'gift' && !toldHeld(GIFT_TOLD)) await kurtSays(CLEARING.homes.workshop.giftTalk, GIFT_TOLD);
   };
   /* Kurt slides in (gymTalk(), as on his first hello) over the room: the bench steps aside while he talks (a modal
      dialog would sit over him), then comes back as it was. */

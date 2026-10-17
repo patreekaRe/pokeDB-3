@@ -573,7 +573,10 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). **Since 2026-10-16 the Friends page is a Pokédex app**
    (the user's ask: it's carried into the towns where gifts are chosen), after Quests, with a "!" the first time it's
    seen and on a friend changed since you looked; the PC's FRIENDS row opens it (`js/friendsdex.js`, `js/data/friends.js`;
-   `docs/reference/towns.md`'s Friends app). On `main`, waiting on the user's look. Next: nothing planned; the user's call.
+   `docs/reference/towns.md`'s Friends app). **Since 2026-10-16 the game explains it** (the user asked whether any
+   dialogue did): Kurt's `giftTalk` after the first gift made, and each friend's `GIFT_MEET` hello the first time home
+   after their Gym, hinting at their favourite (`docs/reference/towns.md`'s Gift words). On `main`, waiting on the user's
+   look. Next: nothing planned; the user's call.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens

@@ -218,6 +218,19 @@ is tapped there to talk, and gets down to walk out; with no seat they stand as b
 `taken()`, so your partner and the Safari Pokémon leave their seat alone. The gift toast says they'll drop by at 3 and
 often at 5. `?hearts=N` works in the base too: `?base&hearts=5&visit`.
 
+**Gift words** (2026-10-16, the user asked whether any dialogue explained gifting; none did). Kurt, once a save: the first
+gift made at his bench slides him in (`kurtSays()` in `js/workshop.js`, as `heldTalk`) with `homes.workshop.giftTalk` in
+`js/data/towns.js`: a gift fills a heart, the favourite two, hearts to 5, more signature pieces at 3 and 5, good friends
+visit the Secret Base, the Friends app in the Pokédex. Each friend (`FRIENDS`), once a save: the first time in their home
+after beating them (not `away`, awake or the Nietos, `workshopOpen()` so Kurt is there to point to), they slide in
+(`talkOut()` in `homeRoom()`) with `GIFT_MEET[id]` in `js/data/towns.js`, a hello and a hint at their favourite that
+never names it and sends you to Kurt, not repeating his explanation. Skipped for good once they've had any gift
+(`giftMeetDue()` in `js/data/workshop.js`), held back while a hand-in waits on them (`handOver`; the Nietos' "go read the
+board" word counts) and under `?hearts=N`. Both are `save.workshop.told` keys through `js/held-tips.js` (`GIFT_TOLD`
+'gift', `meetKey(id)` 'meet-<id>'); under `?satchel` they play once a page load and nothing is saved, and a `?town=` peek
+(not a visit) never saves its friend's. Test: `tests/workshop.test.mjs` (every friend has one, says it once, never names
+their favourite).
+
 **Friends' own requests** (2026-10-15, docs/roadmap.md step 8 session f): a friend at `FAVOUR_HEARTS` (3) or more has a
 request of their own up (`FAVOURS` in `js/data/favours.js`, three a friend, each `text` / `note` (their pinned words) /
 `thanks`, in order and round again; `FRIEND_TOWN` their town, the Nietos' the Clearing). `trackFavours()` in `js/towns.js`
