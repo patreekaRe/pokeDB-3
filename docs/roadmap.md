@@ -881,6 +881,36 @@ through `perk()` / `dexPerk()` in `js/run.js` (a Safari first try stays fair), m
 docs/reference/economy-and-hall-of-fame.md. Propose the loadout (slots, where you pick it, what it costs) and 8 perks,
 pick with me, then build it with the sim mirror, a bot check at Levels 0/3/5, a patch-notes line and a githack link."
 
+**Friends list and base visits** (the user's go, 2026-10-17; was parked as "Friends and messages", 2026-10-07).
+Offline visits, like Animal Crossing's dream visits: you walk round a friend's Secret Base as they last left it. Live
+visits together come later, if ever (they need the full Firestore SDK with live listeners, not `firestore-lite`, and
+avatar and position sync). The 2026-10-07 design stands: **no codes or links, no free-text chat**, signed-in players
+only. Phase 1, about 2-3 sessions:
+1. **Names and finding people.** A unique nickname, claimed in Firestore (the save's leaderboard nickname,
+   `pickedName()` in `js/leaderboard.js`), plus a "Let others find me" switch. Search by name. One-tap Follow from
+   search, the leaderboards and suggested Rivals; following each other makes you Friends. A Friends tab on both boards.
+2. **A public base copy.** `saves/<uid>` stays private. A new public doc (name, Trainer Card, buddy, `secretBase`)
+   is written when you leave your base. Its `firestore.rules` bounds follow the boards' (size limits, owner-only
+   writes), and the rules are published again in the Firebase console.
+3. **A player list in the device** (a `shelfApp()`, maybe also a PC page): each one's name, Trainer Card, buddy,
+   last seen and a Visit key. **"Friends" is taken**: the Pokédex's Friends app (`js/friendsdex.js`) is the Gym Leaders'
+   hearts. So ask the user first: a new name ("Trainers", "Pals"), or a players tab in the Friends app.
+4. **Visit-only base.** `openBase3d()` in `js/base-3d.js` takes a friend's base instead of `loadBase()`, with
+   decorating off and **every `saveBase()` / `updateSave()` blocked while visiting** (the risk: one missed write
+   overwrites your own base). Load their statues and figures from their owned pieces. Keep `wakeGL` and the GPU rules.
+   Optional: a guestbook of stamps or set phrases.
+5. **Introducing it** (the user's call, 2026-10-17): one tip in How to play's Going Further (`js/howto.js`), for
+   example "Friends: Sign in and pick a name. Find friends by name and visit their Secret Base." Plus a one-time PC letter the
+   first time a signed-in player opens the PC, pointing to the new app. No slide in the first-launch setup.
+Phase 2, later, from the 2026-10-07 talk: Dark Souls signs from phrase parts on map nodes (best on the seeded Safari /
+Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift in a friend's
+Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+▶ Run in: CLOUD (attach pokeDB-3). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base visits'
+entry, docs/reference/cloud-save.md and docs/reference/hub-base-mall.md. Build phase 1, part by part: unique names and
+search, Follow and Friends, the public base copy and its rules, the player list (ask me its name first), the visit-only base, the How to play
+tip and the PC letter. Test visits headless with two stand-in accounts, add a patch-notes line, tell me what to paste
+into the Firebase console's rules, and give me a githack link."
+
 ## Ideas, not agreed yet (ask the user before building)
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
@@ -923,7 +953,7 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
      kind, kept out of the daily stock, shown locked in the Shop with how to earn it (CLAUDE.md); Torchic / Treecko /
      Mudkip give their own dolls since the 44 new ones;
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
-  e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
+  e) visiting another trainer's base: now "Friends list and base visits" under Open, ready to build;
   f) later (the user's ask, 2026-10-08): give the 3D base's tall upper wall (`dressRoom()` in `js/base-3d.js`, the wallpaper
      running up past a picture rail) a job: a **trophy shelf** up there showing your Badges, Hall of Fame wins and trophies,
      and maybe wall pieces (posters, clocks) hung higher than the 3-tile wall (Run in: CLOUD).
@@ -1014,12 +1044,7 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
-- Friends and messages (talked through 2026-10-07, "maybe later"; Run in: CLOUD). No free-text chat. Friends with no
-  codes or links: unique nicknames (claimed in Firestore, a "Let others find me" switch), search by name, one-tap
-  Follow (mutual = Friends) from search, leaderboards and suggested Rivals, a Friends tab on both boards, a Friends app
-  in the device. Then, Dark Souls style: signs built from phrase parts left on map nodes (best on the seeded Safari /
-  Sky Pillar, rated for coins), friends' ghosts where they lost (opens their loss recap), a daily gift item in a
-  friend's Lost & Found. Maybe an Assist (a friend's partner for one fight), bot-checked. Needs sign-in.
+- Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
 
