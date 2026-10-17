@@ -1,5 +1,5 @@
 /* hub-plaza.js  -  the Trainer Plaza's board in the Clearing (the user's ask, 2026-10-17: "the physical 3D board"),
-   on the lawn between the plaza and the Poké Mall: a notice board on two wooden posts under a little teal gable with a Poké Ball on
+   at the plaza's top right corner, turned to face it: a notice board on two wooden posts under a little teal gable with a Poké Ball on
    its ridge, a TRAINER PLAZA plank, bunting along the eave and two lanterns that light up after dark, flower pots at its
    feet. Its cork face shows Polaroids of the trainers on lately (js/trainers.js's plazaTop()), each with their buddy,
    their card's colour and their name, yours with a gold YOU sticker; signed out, a notice to sign in. plazaBoard()

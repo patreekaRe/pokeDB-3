@@ -79,13 +79,14 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   the ball, YOUR TRAINER CODE on the plate, six lines paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
   `js/trainers.js`); its last line points at Visit (session 2's visits landed the same day).
 - **The Trainer Plaza's board in the Clearing** (the same day, the user's ask: "the physical 3D board"):
-  `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (11,14, scaled 1.3, nudged 0.3 east of the lamp;
-  tiles 10-12 x 14, step 11,15), only while cloud save is configured. A real model: posts, a teal gable with a turning
+  `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (since the user's marks on an aerial shot, the
+  same evening: 17.5,8.4, the plaza's top right corner between the north avenue and the PC, turned to face the plaza,
+  `facePlaza()`, scaled 1.1; the quest board mirrors it at 12.5,8.4), only while cloud save is configured. A real model: posts, a teal gable with a turning
   Poké Ball on its ridge, a TRAINER PLAZA plank, bunting, two lanterns lit after dark (`glowMats`), flower pots. Its
   cork is a canvas of up to 6 Polaroids from `plazaTop()` (once a minute at most; you among them with a gold YOU
   sticker; a masked Pokémon a silhouette), a pinned notice when signed out or empty. Its Look key opens the app straight
-  onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 by the PC: from the
-  camera's angle Halloween's pumpkin patch (19-21 x 17-18) stood in front of it.
+  onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 (Halloween's pumpkin
+  patch stood in front of it from the camera's angle), then 11,14 by the mall, before the user's marks.
 - The TRAINER LINK pop-up checks for calm every 1.5 s (`whenCalm()`): the Clearing's boot can hold it a while.
 - **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`) calls the hook main.js
   hands `onVisit()`, which leaves the title and opens `openBase3d({ onLeave: showHome, guest: { name, json } })` (refused

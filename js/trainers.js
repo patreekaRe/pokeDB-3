@@ -227,7 +227,7 @@ const WELCOME = [
   'Welcome to the Trainer Network! This is your code. Give it to a friend to add you.',
   'Trainers you add get a banner here. Tap one to see their Trainer Card.',
   'The Trainer Plaza shows who\'s played lately. Tap + Add to add one!',
-  'Its board stands in the Clearing, by the Poké Mall. Hide me keeps you off it.',
+  'Its board stands at the top of the Clearing\'s plaza. Hide me keeps you off it.',
   'Someone added you? A TRAINER LINK pops up. Add them back to link up!',
   'Tap Visit on a trainer\'s page to walk round their Secret Base, just as they left it!',
 ];

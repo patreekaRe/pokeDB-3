@@ -905,7 +905,8 @@ the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 ~~**Finding each other without meeting**~~ done 2026-10-17 (the user's ask, same day; `docs/roadmap-done.md`): the
 Trainer Plaza, an "Added you" banner and the TRAINER LINK pop-up when someone adds you (the user saw a screenshot before
 it was pushed). Same rules file, so one publish covers both. Then (same day) the TRAINER NETWORK welcome on the app's
-first open and the Plaza's 3D board in the Clearing (11,14), merged with session 2's visits. Branch
+first open and the Plaza's 3D board in the Clearing, merged with session 2's visits; the board and the quest board then
+moved to the plaza's top corners (the user's marks). Branch
 `claude/exciting-cray-y585nt`; **main waits on the user's OK after the screenshots**.
 ~~**Session 2, the visit**~~ done 2026-10-17 on `claude/visit-only-base-session-2-72ayar` (pushed to `main` too;
 `docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`'s Trainers section): the Trainers app's Visit walks round
