@@ -12,6 +12,8 @@ import { satchelOf, matCount } from './data/satchel.js';
 import { gainMat } from './satchel.js';
 import { firstLook } from './corner-panel.js';
 import { workshopOpen } from './data/towns.js';
+import { HELD_BY_ID } from './data/held.js';
+import { RECIPES } from './data/workshop.js';
 
 const PLOT_TOP = 0.12;   // the plot's soil (js/base-models-y.js's berryplot)
 const STEM = '#4a9a3a', LEAF = '#4f9e3c', LEAF_LIT = '#6cbc4c';
@@ -212,11 +214,21 @@ function plotTile(it, tag = 'div') {
   return tile;
 }
 
-/** Berry tiles to plant from, `on` the one picked. */
+/** What a berry is for, said once it's picked to plant: its held berry's effect, and the run kit Kurt makes with it. */
+function usesOf(berry) {
+  const h = HELD_BY_ID[berry.id];
+  const kits = RECIPES.filter(r => r.kind === 'kit' && r.needs[berry.id]).map(r => r.name);
+  const held = h ? ` As a held berry in a run, ${h.text.replace(/^Held\. The/, 'the')}` : '';
+  const kit = kits.length && workshopOpen(getSave()) ? ` Kurt also makes ${kits.join(' and ')} with it.` : '';
+  return held + kit;
+}
+
+/** Berry tiles to plant from, `on` the one picked, each with what its held berry does. */
 const seedTiles = (on, pick) => BERRIES.map(berry => {
   const tile = el('button', `tshop-tile${on === berry.id ? ' on' : ''}`);
   tile.type = 'button';
   tile.append(berryArt(berry), el('span', 'tshop-name', berry.name), el('span', 'tshop-price', days(berry.days)));
+  if (HELD_BY_ID[berry.id]) tile.append(el('span', 'berry-does', HELD_BY_ID[berry.id].short));
   tile.addEventListener('click', () => { playSound('select'); pick(berry); });
   return tile;
 });
@@ -244,7 +256,7 @@ export function openPlot(b, it, save) {
     wet.hidden = !stage || stage === 'fruit';
     if (!stage) {
       say.textContent = line || 'Freshly turned soil. What will you plant? Berries ripen at midnight (UTC) once their days are up.';
-      grid.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`The ${berry.name}: ${days(berry.days).toLowerCase()} to ripen. Water it each day it grows for an extra berry.`); }));
+      grid.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`The ${berry.name}: ${days(berry.days).toLowerCase()} to ripen.${usesOf(berry)}`); }));
       go.textContent = 'Plant';
       go.disabled = !picked;
       return;
@@ -359,7 +371,7 @@ export function openGarden(b, list, save) {
     waterAll.textContent = `Water all${dry.length ? ` (${dry.length})` : ''}`; waterAll.disabled = !dry.length;
     plantAll.textContent = `Plant all${bare.length ? ` (${bare.length})` : ''}`; plantAll.disabled = !bare.length || !picked;
     plantHead.hidden = seeds.hidden = !bare.length;
-    if (bare.length) seeds.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`${berry.name} for the ${bare.length} empty plot${bare.length > 1 ? 's' : ''}: ${days(berry.days).toLowerCase()} to ripen.`); }));
+    if (bare.length) seeds.replaceChildren(...seedTiles(picked, (berry) => { picked = berry.id; draw(`${berry.name} for the ${bare.length} empty plot${bare.length > 1 ? 's' : ''}: ${days(berry.days).toLowerCase()} to ripen.${usesOf(berry)}`); }));
     const sat = satchelOf(getSave()), cap = coinsLeft(b.garden);
     sales.replaceChildren(el('p', 'berry-cap', cap > 0 ? `The berry stand pays ${cap} more PokéCoins today.` : 'The berry stand has bought all it can today. Tomorrow!'),
       ...BERRIES.map(berry => {

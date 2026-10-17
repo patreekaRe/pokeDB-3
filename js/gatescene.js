@@ -13,6 +13,7 @@
  */
 import { $, el, sleep, makeCard } from './ui.js';
 import { vibrate, calmFx } from './prefs.js';
+import { tooSoon } from './hd2d.js';
 import { ALL_CARDS } from './data/cards.js';
 import { playSound, playCry, playMusic, preloadCries } from './audio.js';
 import { sceneSay } from './evolution.js';
@@ -296,6 +297,7 @@ function paintHalo() {
 }
 
 function frame(now) {
+  if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   t += dt;

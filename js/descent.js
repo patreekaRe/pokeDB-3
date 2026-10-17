@@ -16,6 +16,7 @@ import { $, sleep } from './ui.js';
 import { playSound, playMusic } from './audio.js';
 import { sceneSay } from './evolution.js';
 import { calmFx } from './prefs.js';
+import { tooSoon } from './hd2d.js';
 import { spriteUrl, stageName } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 
@@ -403,6 +404,7 @@ function drawBits(dt) {
 }
 
 function frame(now) {
+  if (tooSoon(now, last)) { raf = requestAnimationFrame(frame); return; }
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
   t += dt;

@@ -51,7 +51,8 @@ export const NEXT = [
   ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
   ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
   ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
-  ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz.'],
+  ['base', 'The berry garden says what each berry does as you pick one to plant, and what Kurt makes from it.'],
+  ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, and the Clearing and the 3D buy windows run lighter.'],
   ['runs', 'Five new ? rooms: a Sleeping Snorlax on a pile of loot, Trubbish\'s Trash Heap, Ditto, Bill\'s PC and an Abra that Teleports you to the boss or lets you nap.'],
 ];
 

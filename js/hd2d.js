@@ -109,7 +109,12 @@ export function wakeGL(renderer) {
   places.add(renderer);
   shown = renderer; spare = null;
   for (const other of places) if (other !== renderer) sleepGL(other);
-  if (!asleep.has(renderer)) return Promise.resolve();
+  return wakeBeside(renderer);
+}
+
+/** A renderer woken without putting the place on screen to sleep: js/turntable.js's small one, drawn over a place. */
+export function wakeBeside(renderer) {
+  if (!renderer || !asleep.has(renderer)) return Promise.resolve();
   asleep.delete(renderer);
   return new Promise(done => {
     const timer = setTimeout(done, 2000);
