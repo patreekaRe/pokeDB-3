@@ -2659,6 +2659,49 @@ function snores(at, awake = () => false) {
   return zs;
 }
 
+/** Burlap: a woven weave of warm browns, a few darker slubs, and a stitched patch. */
+function burlap() {
+  const f = fine(64, 64, 6), { g } = f, r = seeded(71);
+  g.fillStyle = '#c89a5c'; g.fillRect(0, 0, 64, 64);
+  for (let y = 0; y < 64; y += 2) for (let x = 0; x < 64; x += 2) {
+    g.fillStyle = (x + y) % 4 ? '#d4a868' : '#b8884c'; g.fillRect(x, y, 2, 1);
+    g.fillStyle = (x + y) % 4 ? '#a87a42' : '#c49458'; g.fillRect(x + (y % 4 ? 1 : 0), y + 1, 1, 1);
+  }
+  for (let i = 0; i < 26; i++) { g.fillStyle = 'rgba(90,56,26,0.35)'; g.fillRect(r() * 64, r() * 64, 3 + r() * 6, 0.8); }
+  g.fillStyle = '#8a6a48'; g.fillRect(36, 30, 14, 12);
+  g.strokeStyle = '#f0dcb0'; g.lineWidth = 0.7; g.setLineDash([1.6, 1.2]); g.strokeRect(36.8, 30.8, 12.4, 10.4);
+  return f.c;
+}
+
+/** A tied burlap sack slumped on the ground: a round belly narrowing to a cinched neck, a rope tied round it, its top
+    flaring in a ruffle, leaning a little as if dropped. */
+function lootSack(parent) {
+  const sack = new THREE.Group();
+  sack.position.set(0.18, 0, -0.12);
+  sack.rotation.set(0.05, -0.5, -0.12);
+  parent.add(sack);
+  const cloth = std({ map: texOf(burlap()), roughness: 1, side: THREE.DoubleSide });
+  const profile = [[0, 0], [0.2, 0.005], [0.3, 0.05], [0.35, 0.13], [0.36, 0.23], [0.33, 0.33], [0.25, 0.42], [0.13, 0.5], [0.075, 0.55],
+    [0.07, 0.58], [0.1, 0.62], [0.15, 0.67], [0.17, 0.71], [0.13, 0.7], [0.08, 0.66]].map(([x, y]) => new THREE.Vector2(x, y));
+  const body = mesh(new THREE.LatheGeometry(profile, 28), cloth, 0, 0, 0, sack);
+  body.scale.set(1, 1, 0.86);
+  const pos = body.geometry.attributes.position, r = seeded(37);   // slumped, not turned on a lathe: a few soft dents
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i), a = Math.atan2(pos.getZ(i), pos.getX(i)), k = 1 + Math.sin(a * 3 + 1) * 0.05 * Math.min(1, y * 3) + Math.sin(a * 5) * 0.025;
+    pos.setX(i, pos.getX(i) * k); pos.setZ(i, pos.getZ(i) * k);
+    if (y < 0.3) pos.setY(i, y * (0.92 + r() * 0.02));
+  }
+  body.geometry.computeVertexNormals();
+  const rope = std({ color: '#7a5430', roughness: 0.9 });
+  const tie = mesh(new THREE.TorusGeometry(0.08, 0.022, 8, 20), rope, 0, 0.565, 0, sack);
+  tie.rotation.x = Math.PI / 2;
+  for (const [s, len] of [[1, 0.2], [-1, 0.15]]) {   // the knot's two loose ends
+    const end = mesh(new THREE.CylinderGeometry(0.016, 0.012, len, 6), rope, s * 0.08, 0.53 - len / 2 + 0.04, 0.06, sack);
+    end.rotation.z = s * 0.35;
+  }
+  return sack;
+}
+
 function lootBall(x, y, z, r, parent = B.group) {
   const g = new THREE.Group();
   g.position.set(x, y, z);
@@ -2677,9 +2720,7 @@ async function buildSnorlax(figs, { look: L, time }) {
   const px = tileX(7), pz = tileZ(2.2), pile = new THREE.Group();
   pile.position.set(px, 0, pz);
   B.group.add(pile);
-  const bag = mesh(new THREE.SphereGeometry(0.34, 16, 12), std({ color: '#b88a50', roughness: 0.85 }), 0.15, 0.26, -0.1, pile);
-  bag.scale.set(1.15, 0.8, 0.9);
-  mesh(new THREE.CylinderGeometry(0.08, 0.14, 0.14, 10), std({ color: '#8a6038', roughness: 0.85 }), 0.15, 0.55, -0.1, pile);
+  lootSack(pile);
   lootBall(-0.32, 0.13, 0.18, 0.13, pile); lootBall(0.38, 0.11, 0.3, 0.11, pile);
   const gold = std({ color: '#f8c830', metalness: 0.8, roughness: 0.3 });
   for (let i = 0; i < 7; i++) { const c = mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.015, 12), gold, (rnd() - 0.5) * 0.9, 0.012, 0.2 + (rnd() - 0.5) * 0.4, pile); c.rotation.x = (rnd() - 0.5) * 0.4; }
