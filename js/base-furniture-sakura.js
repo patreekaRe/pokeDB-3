@@ -66,7 +66,7 @@ const cluster = (x, h, z, rad, n, seed, r = 1.8) => Array.from({ length: n }, (_
 /** A soft mass of blossom behind the flowers. */
 const puff = (x, h, z, rx, ry, rz, c = BL.pinkL) => S(x, h, z, rx, ry, rz, c, { m: 'cloth', seg: 6 });
 /** A fallen petal lying flat. */
-const petal = (x, h, z, c = BL.pinkD, r = 1) => C(x, h, z, r, 0.25, c, { m: 'plain', seg: 5 });
+const petal = (x, h, z, c = BL.pinkD, r = 1) => ({ t: 'petal', x, h, z, r, hh: 0.25, c, m: 'plain' });
 /** n petals strewn over a top at h, x0..x1 across and z0..z1 deep. */
 const strew = (x0, x1, z0, z1, h, n, seed) => Array.from({ length: n }, (_, i) => petal(x0 + hash(i, seed) * (x1 - x0), h, z0 + hash(i, seed, 1) * (z1 - z0), i % 3 ? BL.pinkD : BL.pink, 0.9 + hash(i, seed, 2) * 0.4));
 /** A crest arched over a top, `rise` high. */
@@ -129,7 +129,7 @@ function paintParts(parts, x0, b, vw, dir, Wd) {
     const m = q.m || 'wood', cx = U(q.x, q.z), cy = b - q.h;
     switch (q.t) {
       case 'box': { const w = side ? q.d : q.w; rbx(cx - w / 2, cy - q.hh / 2, w, q.hh, q.r, q.c, m); break; }
-      case 'cyl': {
+      case 'cyl': case 'petal': {
         const rb = q.rb ?? q.r, top = cy - q.hh / 2, bot = cy + q.hh / 2;
         poly([[cx - q.r, top], [cx + q.r, top], [cx + rb, bot], [cx - rb, bot]], q.c, m, m !== 'glow' && m !== 'plain');
         oval(cx, top, q.r, Math.min(q.r * 0.22, Math.max(0.3, q.hh / 2)), sh(q.c, m === 'glow' ? 2 : 1));
@@ -280,12 +280,12 @@ export const SAKURA_KINDS = [
     ...twig([[2, 79, 30], [14, 85, 29.5], [26, 82, 30], [40, 87, 29.5], [52, 83, 30], [62, 79, 29.5]], 1.2, 0.7),
     ...twig([[4, 79, 29], [3.5, 70, 30.2], [6, 63, 30.4]], 0.8, 0.5),
     ...twig([[60, 79, 29], [61, 69, 30.2], [58, 62, 30.4]], 0.8, 0.5),
-    ...cluster(14, 85, 30.4, 6, 6, 1), ...cluster(32, 86, 30.4, 7, 7, 2), ...cluster(50, 85, 30.4, 6, 6, 3),
+    ...cluster(14, 85, 30.4, 6, 5, 1, 2), ...cluster(32, 86, 30.4, 7, 6, 2, 2), ...cluster(50, 85, 30.4, 6, 5, 3, 2),
     ...cluster(6, 65, 31, 3, 3, 4, 1.5), ...cluster(58, 64, 31, 3, 3, 5, 1.5),
     PR(32, 8, -29, HEADB, 3, BL.wood),
     PR(32, 12, -27.4, HEADB.map(([x, h]) => [x * 0.84, h * 0.8]), 0.6, BL.woodL),
     ...twig([[6, 34, -26.6], [14, 40, -26.6], [24, 42.5, -26.6], [34, 45, -26.6], [44, 42, -26.6], [56, 36, -26.6]], 1, 0.6),
-    ...cluster(14, 41, -26.2, 4, 4, 6, 1.6), ...cluster(34, 45, -26.2, 5, 5, 7, 1.7), ...cluster(52, 38, -26.2, 4, 4, 8, 1.6),
+    ...cluster(14, 41, -26.2, 4, 3, 6, 1.8), ...cluster(34, 45, -26.2, 5, 4, 7, 1.9), ...cluster(52, 38, -26.2, 4, 3, 8, 1.8),
     B(32, 9, 0, 58, 6, 56, BL.wood),
     B(32, 15.5, 0, 55, 7, 54, BL.cream, CL),
     B(32, 20.4, 6, 56.4, 2.6, 44, BL.blush, CL), B(32, 20.6, -17, 56.4, 2.8, 6, BL.cream, CL),
@@ -486,12 +486,13 @@ export const SAKURA_KINDS = [
 
   // a blossom-branch wall hanging: a long flowering branch slung on red cords from two pegs
   wallPiece('blsmhanging', 'Cherry blossom branch hanging', 2, 440, 'wood', [
-    ...[12, 52].map(x => S(x, 84, 1, 1.3, 1.3, 1.2, BL.woodD, { seg: 8 })),
-    RD([12, 84, 1], [10, 67.5, 2], 0.3, BL.red, PL), RD([52, 84, 1], [54, 65.5, 2], 0.3, BL.red, PL),
+    ...[12, 52].map(x => S(x, 84, 1.3, 1.3, 1.3, 1.2, BL.woodD, { seg: 8 })),
+    RD([12, 84, 1.3], [10, 67.5, 2], 0.3, BL.red, PL), RD([52, 84, 1.3], [54, 65.5, 2], 0.3, BL.red, PL),
     ...twig([[2, 61, 2], [12, 67, 2.2], [24, 63.5, 2.4], [34, 68, 2.4], [46, 63.5, 2.4], [56, 66, 2.2], [62.5, 60, 2]], 1.4, 0.6),
     ...twig([[24, 63.5, 2.4], [28, 56, 2.6], [26, 50, 2.6]], 0.6, 0.35), ...twig([[46, 63.5, 2.4], [43, 57, 2.6]], 0.5, 0.3), ...twig([[34, 68, 2.4], [37, 74, 2.6]], 0.5, 0.3),
-    ...cluster(6, 63, 3.2, 3.5, 4, 52, 1.7), ...cluster(18, 66, 3.2, 4, 5, 53, 1.8), ...cluster(27, 54, 3.4, 3.5, 5, 54, 1.7), ...cluster(36, 70, 3.2, 4, 5, 55, 1.8),
-    ...cluster(44, 59, 3.4, 3, 4, 56, 1.6), ...cluster(54, 66, 3.2, 4, 5, 57, 1.8), ...cluster(61, 60, 3.2, 2.4, 3, 58, 1.5),
+    ...[[6, 63, 4], [18, 67, 5], [27, 54, 4.4], [36, 70, 5], [44, 59, 4], [54, 66, 5]].map(([x, h, r], i) => puff(x, h, 2.4, r, r * 0.75, 1.6, i % 2 ? BL.pink : BL.pinkL)),
+    ...cluster(6, 63, 3.6, 3.5, 4, 52, 2.2), ...cluster(18, 66, 3.6, 4.4, 5, 53, 2.4), ...cluster(27, 54, 3.8, 3.6, 4, 54, 2.2), ...cluster(36, 70, 3.6, 4.4, 5, 55, 2.4),
+    ...cluster(44, 59, 3.8, 3.4, 4, 56, 2.2), ...cluster(54, 66, 3.6, 4.4, 5, 57, 2.4), ...cluster(61, 60, 3.6, 2.4, 3, 58, 1.9),
   ]),
 
   // a hanging scroll: a blossom branch inked on washi, a blush silk mount, cherry rollers, a red seal
@@ -507,7 +508,7 @@ export const SAKURA_KINDS = [
   // a blossom wreath: a ring of woven twigs thick with bloom, a pink ribbon bow at its foot
   wallPiece('blsmwreath', 'Cherry blossom wreath', 1, 360, 'wood', [
     S(16, 75, 0.4, 0.8, 0.8, 0.6, BL.woodD, { seg: 6 }),
-    RG(16, 62, 1.4, 10, 1.8, BL.twig), RG(16, 62, 2, 10.6, 0.7, BL.twigL),
+    RG(16, 62, 2, 10, 1.8, BL.twig), RG(16, 62, 2.6, 10.6, 0.7, BL.twigL),
     ...Array.from({ length: 18 }, (_, i) => {
       const a = i / 18 * TAU + hash(i, 59) * 0.2, rr = 10 + (hash(i, 60) - 0.5) * 3;
       return FL(16 + Math.cos(a) * rr, 62 + Math.sin(a) * rr, 3.2 + hash(i, 61), 1.9 + hash(i, 62) * 0.8, PINKS[i % 5], { rot: a });
@@ -581,12 +582,12 @@ export const SAKURA_KINDS = [
     ...[5, 59].flatMap(x => [
       B(x, 1, 0, 6, 2, 20, BL.woodD, { r: 0.6 }),
       ...[-8, 8].map(z => B(x, 31, z, 2.4, 60, 2.4, BL.wood, { r: 0.6 })),
-      ...[10, 22, 34, 46].map(h => B(x, h, 0, 1.6, 1.2, 17, BL.woodL, { r: 0.3 })),
-      B(x, 28, 0, 1.2, 52, 1.2, BL.woodL, { r: 0.3 }),
+      ...[10, 22, 34, 46].map(h => B(x, h, 0, 1.6, 1.2, 17, BL.woodL, { r: 0.05 })),
+      B(x, 28, 0, 1.2, 52, 1.2, BL.woodL, { r: 0.05 }),
     ]),
     ...[-8, 8].map(z => RG(32, 60, z, 27, 1.3, BL.wood, { a0: 0, arc: Math.PI })),
     ...ARC(32, 60, 27, 7, 0.06, 0.94).map(([x, h]) => RD([x, h, -8], [x, h, 8], 0.8, BL.woodL)),
-    ...ARC(32, 60, 27.6, 7, 0.1, 0.9).map(([x, h], i) => puff(x, h + 1.4, 0, 6, 4, 9, i % 2 ? BL.pink : BL.pinkL)),
+    ...ARC(32, 60, 27.6, 7, 0.12, 0.88).map(([x, h], i) => puff(x, h + 1.4, 0, 5.4, 4, 9, i % 2 ? BL.pink : BL.pinkL)),
     ...ARC(32, 60, 27.4, 9, 0.04, 0.96).flatMap(([x, h], i) => cluster(x, h + 0.6, 9.4, 4, 3, 71 + i, 1.7)),
     ...[[14, 79], [32, 87], [50, 79]].flatMap(([x, h], i) => [...twig([[x, h - 1, 10], [x + (i - 1) * 2, h - 9, 10.4], [x + (i - 1) * 3, h - 15, 10.4]], 0.5, 0.3), ...cluster(x + (i - 1) * 2.6, h - 13, 10.8, 2.4, 3, 80 + i, 1.4)]),
     ...cluster(5, 50, 9.6, 3, 3, 83, 1.5), ...cluster(59, 46, 9.6, 3, 3, 84, 1.5), ...cluster(5, 26, 9.6, 2.4, 2, 85, 1.4), ...cluster(59, 22, 9.6, 2.4, 2, 86, 1.4),
@@ -594,14 +595,14 @@ export const SAKURA_KINDS = [
 
   // a stone basin (tsukubai): water and floating petals in a round stone bowl, a bamboo spout and ladle, river stones
   piece('blsmbasin', 'Cherry blossom stone basin', 1, 1, 660, 'plain', [
-    S(6, 2, 7, 5, 3, 5, BL.stoneD, { seg: 8 }), S(27, 1.8, 5, 4.2, 2.6, 4.2, BL.stone, { seg: 8 }), S(8, 1.6, -9, 4, 2, 4, BL.stone, { seg: 8 }),
+    S(6, 3, 7, 5, 3, 5, BL.stoneD, { seg: 8 }), S(27, 2.6, 5, 4.2, 2.6, 4.2, BL.stone, { seg: 8 }), S(8, 2, -9, 4, 2, 4, BL.stone, { seg: 8 }),
     LA(16, 0, -1, [[8, 0], [10, 3], [10.4, 8], [9.6, 12], [8.4, 13], [6, 13], [6, 10.6], [0, 10.6]], BL.stone, { seg: 12 }),
     C(16, 11.9, -1, 6.1, 0.3, BL.water, GL),
     ...strew(12, 20, -4, 2, 12.1, 5, 87),
     C(26, 12, -9, 1.6, 24, BL.bamboo, GL), C(26, 8, -9, 1.75, 0.8, BL.bambooD, PL), C(26, 17, -9, 1.75, 0.8, BL.bambooD, PL),
     RD([26, 22, -9], [18.5, 20, -3.4], 1, BL.bamboo, GL), RD([18.5, 20, -3.4], [18, 12.2, -3], 0.35, BL.water, PL),
     RD([8.6, 13.7, -5], [23, 13.7, 3], 0.4, BL.bambooD, GL), C(8.6, 14.4, -5, 1.6, 2, BL.bamboo, GL),
-    FL(6, 4.4, 11.4, 1.6, BL.pink, { rot: 0.4 }), FL(9, 3.8, 10.8, 1.3, BL.pinkD, { rot: 1.1 }), FL(26, 3.6, 8.6, 1.4, BL.pink, { rot: 0.8 }),
+    FL(6, 5.4, 11.4, 1.6, BL.pink, { rot: 0.4 }), FL(9, 4.8, 10.8, 1.3, BL.pinkD, { rot: 1.1 }), FL(26, 4.4, 8.6, 1.4, BL.pink, { rot: 0.8 }),
   ]),
 
   // a Cherrim planter: Cherrim in its Sunshine Form, petals open and smiling, in a cherry planter with blossoms

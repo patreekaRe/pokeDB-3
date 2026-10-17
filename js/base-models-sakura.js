@@ -52,6 +52,7 @@ function buildBl(K, L, parts, put, W, def) {
     const m = q.t === 'pic' ? null : mat(q), x = X(q.x), y = u(q.h), z = u(q.z);
     switch (q.t) {
       case 'box': put(L.rbox(u(q.w), u(q.hh), u(q.d), u(q.r)), m, x, y, z); break;
+      case 'petal': put(new THREE.CircleGeometry(u(q.r), 5).rotateX(-Math.PI / 2), m, x, y + u(q.hh) / 2, z); break;
       case 'cyl': put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), q.seg ?? 24), m, x, y, z); break;
       case 'ball': {
         const r = Math.max(q.rx, q.ry, q.rz), seg = q.seg ?? Math.max(8, L.sides(u(r), 20));
@@ -75,7 +76,7 @@ function buildBl(K, L, parts, put, W, def) {
       }
       case 'rod': {
         const a = new THREE.Vector3(X(q.a[0]), u(q.a[1]), u(q.a[2])), b = new THREE.Vector3(X(q.b[0]), u(q.b[1]), u(q.b[2]));
-        const g = L.cyl(u(q.r), a.distanceTo(b), u(q.r), q.r > 1.2 ? 10 : q.r < 0.5 ? 5 : 7);
+        const g = L.cyl(u(q.r), a.distanceTo(b), u(q.r), q.r > 1.2 ? 10 : q.r < 0.5 ? 5 : 7, q.r < 1);
         g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
         put(g, m, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
         break;
@@ -88,7 +89,7 @@ function buildBl(K, L, parts, put, W, def) {
       case 'flower': {
         const sh = new THREE.Shape(flowerPts(u(q.r), q.rot).map(([px, py]) => new THREE.Vector2(px, py)));
         put(new THREE.ExtrudeGeometry(sh, { depth: u(q.d), bevelEnabled: false }).translate(0, 0, -u(q.d) / 2), m, x, y, z);
-        put(L.cyl(u(q.r * q.cr), u(q.d) * 0.6, u(q.r * q.cr), 5).rotateX(Math.PI / 2), q.m === 'glow' ? K.glow(q.cc) : K.plain(q.cc), x, y, z + u(q.d) * 0.55);
+        put(new THREE.CircleGeometry(u(q.r * q.cr), 5, Math.PI / 2 + q.rot), q.m === 'glow' ? K.glow(q.cc) : K.plain(q.cc), x, y, z + u(q.d) * 0.5 + 0.002);
         break;
       }
       case 'pic': {

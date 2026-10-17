@@ -337,14 +337,12 @@ export const ACORN_KINDS = [
   // a moss coverlet and cream pillows
   piece('acrnbed', 'Acorn cap bed', 2, 2, 1500, 'wood', [
     ...[[6, -27], [58, -27], [6, 27], [58, 27]].map(([x, z]) => capFoot(x, z, 3.4)),
-    oak(14, 30, -31, 34, 30, AC.tawny, 0.75, 1), oak(50, 30, -31, 34, 30, AC.rust, -0.75, 1),
-    oak(32, 12, -29.5, 64, 58, AC.leaf, 0, 2.4),
-    ...[5, 59].flatMap(x => [C(x, 22, -28.5, 3, 44, AC.oak, WD), ...acorn(x, 44, -28.5, 9)]),
+    oak(32, 12, -28.5, 64, 58, AC.leaf, 0, 2.4),
+    ...[5, 59].flatMap(x => [C(x, 22, -27, 3, 44, AC.oak, WD), ...acorn(x, 44, -27, 9)]),
     B(32, 9, 0, 60, 8, 58, AC.oak, { m: 'wood', r: 3 }),
     B(32, 16, 0, 58, 6, 54, AC.cream, { m: 'cloth', r: 2 }),
     B(32, 19.6, 6, 59, 3, 42, AC.moss, { m: 'cloth', r: 1.5 }), B(32, 20, -14.5, 59, 3.2, 5, AC.mossL, { m: 'cloth', r: 1.4 }),
     ...[20, 44].map(x => S(x, 22, -22, 9, 3.4, 4.8, AC.cream, { m: 'cloth' })),
-    oak(32, 19, 4, 14, 12, AC.tawny, 0.2, 0.6),
     ...[5, 59].flatMap(x => [C(x, 13, 28, 2.8, 26, AC.oak, WD), ...acorn(x, 26, 28, 7)]),
     B(32, 16, 28.5, 52, 12, 3.4, AC.oak, { m: 'wood', r: 1.6 }),
     B(32, 23, 28.5, 54, 3.4, 5, AC.cap, { m: 'wood', r: 1.6, tex: 'hatch', ts: 1.4 }),
@@ -377,7 +375,7 @@ export const ACORN_KINDS = [
     ...[[7, -10], [57, -10], [7, 10], [57, 10]].map(([x, z]) => capFoot(x, z, 3)),
     B(32, 8.5, 1, 58, 8, 26, AC.oak, { m: 'wood', r: 3 }),
     B(32, 22, -10.5, 56, 24, 6, AC.oak, { m: 'wood', r: 3 }),
-    ...acorn(6, 31, -10.5, 7), ...acorn(58, 31, -10.5, 7),
+    ...acorn(6, 34, -10.5, 7), ...acorn(58, 34, -10.5, 7),
     ...[18.5, 45.5].flatMap(x => [B(x, 14.6, 3, 25, 5, 21, AC.moss, { m: 'cloth', r: 2 }), B(x, 22, -6.5, 25, 14, 4, AC.mossL, { m: 'cloth', r: 2 })]),
     ...[4.5, 59.5].flatMap(x => [B(x, 14, 1, 8, 15, 26, AC.oak, { m: 'wood', r: 3.4 }), DS(x, 17, 14.2, 3.6, 1.2, AC.cap, { m: 'wood', tex: 'hatch', ts: 1.2 })]),
     oak(32, 14.5, -3, 15, 14, AC.tawny, 0.25, 3, { m: 'cloth' }),
@@ -387,14 +385,14 @@ export const ACORN_KINDS = [
   piece('acrntable', 'Acorn stump table', 1, 1, 480, 'wood', [
     LA(16, 0, 0, stumpPts, AC.bark, { m: 'wood', seg: 16, tex: 'bark' }),
     C(16, 23.4, 0, 11.2, 1.6, AC.ring, WD),
-    ...[[4.5, 4], [27.5, 3], [10, 11], [23, -10]].map(([x, z]) => S(x, 1.4, z, 3.6, 1.6, 2.6, AC.bark, { m: 'wood', seg: 8 })),
-    ...acorn(25, 0, 12.6, 4.6, { rot: 1.35 }), ...acorn(28.5, 0, 9, 4, { rot: -1.4 }),
+    ...[[4.5, 4], [27.5, 3], [10, 11], [23, -10]].map(([x, z]) => S(x, 1.6, z, 3.6, 1.6, 2.6, AC.bark, { m: 'wood', seg: 8 })),
+    ...acorn(25, 2, 12.4, 4.6, { rot: 1.35 }), ...acorn(26, 1.8, 8.6, 4, { rot: -1.4 }),
   ]),
 
   // a rounded oak desk: a drawer pedestal with acorn knobs, a log leg, a little hutch of acorns and a pinecone, an
   // oak-leaf crest, an open book
   piece('acrndesk', 'Acorn writing desk', 2, 1, 1100, 'wood', [
-    B(11, 12.5, 0, 17, 23, 24, AC.oak, { m: 'wood', r: 2 }),
+    B(11, 12, 0, 17, 24, 24, AC.oak, { m: 'wood', r: 2 }),
     ...[18.5, 8.5].flatMap(h => [B(11, h, 12.2, 13.5, 7.6, 0.9, AC.oakL, { m: 'wood', r: 1.4 }), ...acorn(11, h - 1.8, 13, 3.4)]),
     ...[-9, 9].map(z => C(56, 12, z, 2.4, 24, AC.bark, { m: 'wood', tex: 'bark' })),
     B(32, 25.6, 0, 62, 3, 28, AC.oakL, { m: 'wood', r: 1.4 }),
@@ -438,12 +436,12 @@ export const ACORN_KINDS = [
 
   // an open oak shelf under a hatched acorn-cap dome, its shelves heaped with acorns and pinecones: a nut stash
   piece('acrnshelf', 'Acorn nut-stash shelf', 1, 1, 680, 'wood', [
-    ...[2.5, 29.5].map(x => B(x, 32, 0, 3, 62, 18, AC.oak, { m: 'wood', r: 1.4 })),
+    ...[2.5, 29.5].map(x => B(x, 31.5, 0, 3, 63, 18, AC.oak, { m: 'wood', r: 1.4 })),
     B(16, 32, -8, 26, 60, 1.6, AC.oakD, { m: 'wood', r: 0.4 }),
     ...[3, 22, 41, 60].map(h => B(16, h, 0, 26, 2, 17, AC.oakL, { m: 'wood', r: 0.6 })),
     PR(16, 61, 0, capFront(15.4, 13), 19, AC.cap, { m: 'wood', tex: 'hatch', ts: 1.5 }),
     RD([16, 73.6, 0], [17.2, 77.4, 0], 1, AC.capD, WD),
-    ...acorn(7.5, 4, 3, 5.4), ...acorn(12.5, 4, -2, 6), ...acorn(18, 4, 3, 5.4), ...acorn(24, 4, -1, 6.2),
+    ...acorn(10, 6.6, 3, 5.6, { rot: 1.5 }), ...acorn(13.5, 4, -3, 6), ...acorn(19, 6.6, 3, 5.6, { rot: -1.5 }), ...acorn(25.6, 4, -1, 5.6),
     pinecone(9, 23, 0, 11), pinecone(21, 23, -2, 12), ...acorn(26, 23, 4, 4.4),
     ...acorn(8.5, 42, 0, 6.6), ...acorn(15.5, 42, 3, 5.6), ...acorn(22.5, 42, -1, 7),
   ]),
@@ -463,7 +461,7 @@ export const ACORN_KINDS = [
     LA(16, 0, 0, [[9, 0], [9, 2], [7.6, 4], [7, 10], [7.4, 12]], AC.bark, { m: 'wood', seg: 16, tex: 'bark' }),
     LA(16, 12, 0, conePts(52, 25, 7).map(([r, h]) => [r * 0.86, h]), AC.glow, { m: 'glow', seg: 12 }),
     LA(16, 12, 0, conePts(52, 26, 7), AC.cone, { m: 'wood', seg: 12, tex: 'hatch', ts: 2.2 }),
-    oak(11, 11, 7.6, 13, 10, AC.leaf, 0.9, 0.6), oak(21, 11, 7.6, 12, 10, AC.tawny, -0.8, 0.6),
+    oak(12.5, 11, 7.6, 12, 10, AC.leaf, 0.7, 0.6), oak(19.5, 11, 7.6, 12, 10, AC.tawny, -0.7, 0.6),
   ], { glow: [AC.glow] }),
 
   // an acorn wall clock: a nut-brown case with a cream dial, a hatched cap with its stem, an acorn on the pendulum
@@ -481,7 +479,7 @@ export const ACORN_KINDS = [
   piece('acrnscreen', 'Acorn oak-leaf screen', 2, 1, 700, 'wood', [
     ...[[11, 4, 1], [32, -4, 2], [53, 4, 3]].flatMap(([x, z, seed]) => [
       ...[-7, 7].map(dx => capFoot(x + dx, z, 1.8)),
-      B(x, 32.5, z, 20.4, 58, 2.2, AC.oak, { m: 'wood', r: 2 }),
+      B(x, 32, z, 20.4, 58, 2.2, AC.oak, { m: 'wood', r: 2 }),
       PC(x, 33, z + 1.3, 16, 50, bough(seed)),
       ...acorn(x, 61.4, z, 5.6),
     ]),
@@ -493,14 +491,14 @@ export const ACORN_KINDS = [
     DS(16, 62, 0.6, 12.4, 1.2, AC.oakD, WD),
     RG(16, 62, 1.6, 11.2, 1.8, AC.cap, { m: 'wood', tex: 'hatch', ts: 1.3 }),
     DS(16, 62, 1.4, 9.6, 0.5, AC.mirror, GL),
-    oak(9, 48, 2.6, 11, 9, AC.leaf, 1, 0.6), oak(23, 48, 2.6, 11, 9, AC.tawny, -1, 0.6),
+    oak(10.5, 48, 2.6, 10, 8.4, AC.leaf, 0.8, 0.6), oak(21.5, 48, 2.6, 10, 8.4, AC.tawny, -0.8, 0.6),
     ...acorn(13.4, 44, 3.4, 6), ...acorn(18.6, 44.4, 3.4, 5.4),
     RD([16, 74, 1.8], [17, 77.4, 1.8], 0.8, AC.capD, WD),
   ]),
 
   // a garland of oak leaves, green turning tawny and rust, swagged on twine, acorn clusters at its ends and middle
   wallPiece('acrngarland', 'Acorn oak-leaf garland', 2, 380, 'cloth', (() => {
-    const at = swag(5, 59, 86, 17), n = 12, parts = [];
+    const at = swag(7, 57, 86, 17), n = 12, parts = [];
     for (let i = 0; i < n; i++) { const [ax, ah] = at(i / n), [bx, bh] = at((i + 1) / n); parts.push(RD([ax, ah, 1.4], [bx, bh, 1.4], 0.35, AC.oakD, WD)); }
     for (let i = 0; i <= 12; i++) {
       const t = 0.04 + i * 0.92 / 12, [x, h] = at(t), side = i % 2 ? 1 : -1;
@@ -514,7 +512,7 @@ export const ACORN_KINDS = [
   // a wreath of pinecones round a twig ring, oak leaves between, a rust ribbon bow at its foot
   wallPiece('acrnwreath', 'Acorn pinecone wreath', 1, 340, 'wood', [
     RG(16, 62, 1, 9.2, 1.8, AC.barkD, WD),
-    ...Array.from({ length: 8 }, (_, i) => { const a = Math.PI / 2 + i / 8 * TAU + 0.2; return oak(16 + Math.cos(a) * 10.6, 62 + Math.sin(a) * 10.6, 1.6, 7, 6, LEAVES[i % 6], a - Math.PI / 2 + 0.9, 0.6); }),
+    ...Array.from({ length: 8 }, (_, i) => { const a = Math.PI / 2 + i / 8 * TAU + 0.2; return oak(16 + Math.cos(a) * 9.6, 62 + Math.sin(a) * 9.6, 1.6, 7, 6, LEAVES[i % 6], a - Math.PI / 2 + 0.9, 0.6); }),
     ...Array.from({ length: 8 }, (_, i) => { const a = Math.PI / 2 + (i + 0.5) / 8 * TAU, r = 6.4; return pinecone(16 + Math.cos(a) * r, 62 + Math.sin(a) * r, 2.6, 7.6, { rot: a - Math.PI / 2, wid: 4.4, seg: 8 }); }),
     ...acorn(16, 69.5, 3.4, 4.6),
     ...[-1, 1].flatMap(s => [S(16 + s * 3, 50, 3.4, 2.8, 1.8, 1, AC.rust, { m: 'cloth', seg: 8 }), RD([16 + s * 1, 49, 3.2], [16 + s * 3.4, 44, 3.2], 0.8, AC.rust, CL)]),
@@ -524,20 +522,18 @@ export const ACORN_KINDS = [
   // Seedot as a stool: its glossy brown body on two little feet, its pale cap the seat with a moss cushion on it
   piece('acrnseedot', 'Seedot acorn stool', 1, 1, 380, 'gloss', [
     ...[-5, 5].map(dx => S(16 + dx, 1.6, 3, 2.6, 1.6, 3.2, AC.ink, { m: 'gloss', seg: 8 })),
-    LA(16, 1.2, 0, nutPts(28).map(([r, h], i) => [i ? r : 0, h]), AC.seedot, { m: 'gloss', seg: 16 }),
+    LA(16, 1.2, 0, nutPts(28), AC.seedot, { m: 'gloss', seg: 16 }),
     LA(16, 1.2 + 28 * 0.62, 0, capPts(28), AC.seedotCap, { m: 'wood', seg: 16 }),
     ...[-1, 1].flatMap(s => [DS(16 + s * 3.6, 11.6, 11.4, 1.3, 0.8, AC.ink, { ry: 2.2, m: 'gloss', seg: 8 }), DS(16 + s * 3.6 - 0.4, 12.6, 11.9, 0.4, 0.3, '#ffffff', { m: 'plain', seg: 6 })]),
-    S(16, 8.6, 12.2, 0.9, 0.6, 0.6, AC.nutD, { m: 'plain', seg: 6 }),
     S(16, 29.4, 0, 9.4, 1.8, 9.4, AC.moss, { m: 'cloth', seg: 14 }),
-    RD([16, 30.8, 0], [17.4, 34, 0], 1, AC.capD, WD),
   ]),
 
   // a hollow log on its side spilling acorns, a Skwovet on top with stuffed cheeks hugging one more
   piece('acrnstash', 'Skwovet acorn stash', 1, 1, 560, 'wood', [
-    DS(16, 11, 0, 11, 28, AC.bark, { m: 'wood', seg: 16, tex: 'bark' }),
-    RG(16, 11, 14, 10.2, 0.9, AC.ring, WD), DS(16, 11, 14, 9.4, 0.4, AC.barkD, { m: 'plain', seg: 16 }),
-    ...acorn(10, 3, 14, 5, { rot: 1.3 }), ...acorn(15.5, 2.6, 14.8, 5.6), ...acorn(21.5, 2.8, 14, 5.2, { rot: -0.4 }), ...acorn(13, 7.4, 13.6, 4.6, { rot: -1 }),
-    ...acorn(4, 0, 14, 4.4, { rot: 1.45 }), ...acorn(27.5, 0, 13, 4.2, { rot: -1.45 }),
+    DS(16, 11, -2.5, 11, 23, AC.bark, { m: 'wood', seg: 16, tex: 'bark' }),
+    RG(16, 11, 9, 10.2, 0.9, AC.ring, WD), DS(16, 11, 9.1, 9.4, 0.4, AC.barkD, { m: 'plain', seg: 16 }),
+    ...acorn(11, 3.4, 11.5, 5, { rot: 1.3 }), ...acorn(16, 2.4, 12.6, 5.6), ...acorn(21, 3, 11.6, 5.2, { rot: -0.5 }), ...acorn(13.6, 7.6, 10.8, 4.6, { rot: -1 }),
+    ...acorn(6.2, 2, 13, 4.4, { rot: 1.45 }), ...acorn(26, 2, 12.4, 4.2, { rot: -1.45 }),
     S(16, 31, -8, 5, 8, 3.2, AC.skwTail, { m: 'cloth', seg: 10 }), S(16, 38, -5.4, 4, 3.6, 3, AC.skwTail, { m: 'cloth', seg: 10 }),
     S(16, 26.4, -1, 5.4, 5.4, 4.6, AC.skw, { m: 'cloth', seg: 12 }), S(16, 25.6, 2.6, 3.6, 4, 1.6, AC.skwL, { m: 'cloth', seg: 10 }),
     S(16, 33.6, 0, 4.4, 4, 4, AC.skw, { m: 'cloth', seg: 12 }),
@@ -555,15 +551,14 @@ export const ACORN_KINDS = [
     RD([22, 57, 0], [22, 40, 0], 0.18, AC.thread, PL),
     S(22, 32.6, 0, 7.4, 8, 7.4, AC.pineco, { m: 'wood', seg: 12, tex: 'hatch', ts: 2.4 }),
     S(22, 40.6, 0, 3, 1.6, 3, AC.pineco, { m: 'wood', seg: 8 }),
-    DS(22, 32.6, 6.4, 4.6, 0.8, AC.pinecoD, { ry: 2.1, m: 'plain', seg: 12 }),
-    ...[-1, 1].map(s => DS(22 + s * 2, 32.8, 6.9, 0.7, 0.3, AC.cream, { m: 'plain', seg: 6 })),
+    S(22, 32.6, 5.2, 4.8, 2.4, 2.6, AC.pinecoD, { m: 'plain', seg: 10 }),
+    ...[-1, 1].map(s => DS(22 + s * 2, 32.8, 7.7, 0.7, 0.3, AC.cream, { m: 'plain', seg: 6 })),
   ]),
 
   // a heap of acorns lying every way, a few standing on top, a fallen oak leaf among them
   piece('acrnpile', 'Acorn pile', 1, 1, 220, 'gloss', [
-    oak(7, 0.4, -4, 11, 9, AC.tawny, -1.3, 0.6),
-    ...acorn(12.5, 3.6, -5, 7, { rot: 1.5 }), ...acorn(19.5, 3.4, -6, 7, { rot: -1.4 }), ...acorn(26, 3.4, -2, 6.4, { rot: -1.6 }),
-    ...acorn(6, 3.4, 2, 6.4, { rot: 1.6 }), ...acorn(13, 3.6, 4, 7, { rot: -1.5 }), ...acorn(20, 3.4, 6, 6.6, { rot: 1.5 }),
+    ...acorn(4.5, 3.4, -5, 6.6, { rot: -1.5 }), ...acorn(12.5, 3.4, -6, 6.6, { rot: -1.45 }), ...acorn(27.5, 3.4, -4, 6.6, { rot: 1.5 }),
+    ...acorn(5, 3.4, 4, 6.4, { rot: -1.55 }), ...acorn(19, 3.4, 6, 6.4, { rot: 1.5 }), ...acorn(21, 3.4, 3, 6.6, { rot: -1.5 }),
     ...acorn(10.5, 6, 0, 7.4, { rot: 0.5 }), ...acorn(17.5, 6.6, 0, 8), ...acorn(23.5, 6, -1, 7, { rot: -0.6 }),
     ...acorn(14.5, 12.8, -2, 7.4, { rot: 0.2 }),
   ]),
@@ -571,18 +566,18 @@ export const ACORN_KINDS = [
   // an arch of oak leaves, green, tawny and rust, on two bark posts, acorns hanging from it, pinecones at its feet
   piece('acrnarch', 'Acorn bounty arch', 2, 1, 980, 'wood', (() => {
     const parts = [
-      ...[5, 59].flatMap(x => [LA(x, 0, 0, [[4, 0], [4, 1.6], [3, 3], [2.6, 5], [2.6, 58]], AC.bark, { m: 'wood', seg: 10, tex: 'bark' })]),
-      RG(32, 58, 0, 27, 1.8, AC.bark, { m: 'wood', ry: 26, a0: 0, arc: Math.PI }),
+      ...[7, 57].flatMap(x => [LA(x, 0, 0, [[4, 0], [4, 1.6], [3, 3], [2.6, 5], [2.6, 58]], AC.bark, { m: 'wood', seg: 10, tex: 'bark' })]),
+      RG(32, 58, 0, 25, 1.8, AC.bark, { m: 'wood', ry: 26, a0: 0, arc: Math.PI }),
     ];
     for (let i = 0; i <= 14; i++) {
-      const a = i / 14 * Math.PI, x = 32 + Math.cos(a) * 27, h = 58 + Math.sin(a) * 26, s = i % 2 ? 1 : -1;
-      parts.push(oak(x, h, s * 1.4, 10, 8.4, LEAVES[i % 6], a - Math.PI / 2 + s * 0.5, 0.8));
+      const a = 0.1 + i / 14 * (Math.PI - 0.2), x = 32 + Math.cos(a) * 25, h = 58 + Math.sin(a) * 26, s = i % 2 ? 1 : -1;
+      parts.push(oak(x, h, s * 1.4, 9, 7.6, LEAVES[i % 6], a + s * 0.35, 0.8));
     }
-    for (const [x, h, i] of [[5, 46, 0], [59, 40, 1], [5, 30, 2], [59, 24, 3], [5, 14, 4]]) parts.push(oak(x, h, 2.6, 9, 7.6, LEAVES[(i + 2) % 6], (x < 32 ? -1 : 1) * 0.8, 0.6));
+    for (const [x, h, i] of [[7, 46, 0], [57, 40, 1], [7, 30, 2], [57, 24, 3], [7, 14, 4]]) parts.push(oak(x, h, 2.6, 9, 7.6, LEAVES[(i + 2) % 6], (x < 32 ? -1 : 1) * 0.8, 0.6));
     for (const [x, h, s] of [[24, 66, 5], [32, 70, 6], [40, 66, 5]]) {
-      parts.push(RD([x, h + s * 1.08, 0], [x, 58 + Math.sqrt(Math.max(0, 1 - ((x - 32) / 27) ** 2)) * 26, 0], 0.2, AC.thread, PL), ...acorn(x, h, 0, s));
+      parts.push(RD([x, h + s * 1.08, 0], [x, 58 + Math.sqrt(Math.max(0, 1 - ((x - 32) / 25) ** 2)) * 26, 0], 0.2, AC.thread, PL), ...acorn(x, h, 0, s));
     }
-    parts.push(pinecone(11, 0, 6, 9), pinecone(53, 0, 6, 9.6), ...acorn(14.5, 0, 9, 4, { rot: 1.4 }));
+    parts.push(pinecone(11, 0, 6, 9), pinecone(53, 0, 6, 9.6), ...acorn(15, 1.8, 9, 4, { rot: 1.4 }));
     return parts;
   })()),
 
@@ -593,7 +588,7 @@ export const ACORN_KINDS = [
     C(16, 12.6, 0, 8.2, 0.6, AC.soil, PL),
     RD([16, 12, 0], [16.6, 34, 0], 1, AC.bark, WD),
     RD([16.4, 24, 0], [10, 32, 1], 0.6, AC.bark, WD), RD([16.5, 28, 0], [23, 35, -1], 0.6, AC.bark, WD),
-    ...[[10, 32, 1, 0.7, 0], [7, 29, 2, 1.6, 1], [11, 36, 0, 0.2, 2], [23, 35, -1, -0.6, 2], [26, 31, 1, -1.5, 0], [21, 38, -2, -0.2, 3], [16.6, 34, 0, 0, 0], [14, 26, 3, 1.1, 1], [19.5, 27, 3, -1.2, 4]].map(([x, h, z, a, c]) => oak(x, h, z, 10, 8, LEAVES[c], a, 0.6)),
+    ...[[10, 32, 1, 0.6, 0], [9.5, 27, 2, 0.9, 1], [12, 37, 0, 0.25, 2], [22, 35, -1, -0.5, 2], [22.5, 30, 1, -0.95, 0], [20, 39, -2, -0.2, 3], [16.6, 34, 0, 0, 0], [13, 25, 3, 0.8, 1], [20, 26, 3, -0.85, 4]].map(([x, h, z, a, c]) => oak(x, h, z, 8, 6.6, LEAVES[c], a, 0.6)),
     ...acorn(12, 13, 4, 3.6, { rot: 1.4 }),
   ]),
 
@@ -603,7 +598,7 @@ export const ACORN_KINDS = [
     B(16, 13.5, 0, 26, 20, 22, AC.oak, { m: 'wood', r: 3 }),
     B(16, 18.6, 11.2, 21.6, 6.4, 0.8, AC.oakL, { m: 'wood', r: 1.4 }), ...acorn(16, 17, 11.9, 3.4),
     B(16, 9.4, 11, 21.6, 8, 0.4, AC.oakD, { m: 'plain', r: 1.6 }),
-    ...acorn(10.6, 6, 11.4, 3, { rot: 1.4 }), pinecone(19, 5.6, 11.4, 6, { rot: -1.5 }),
+    ...acorn(10.6, 6.8, 11.4, 3, { rot: 1.4 }), pinecone(19, 7.2, 11.4, 6, { rot: -1.5 }),
     B(16, 24.6, 0, 28, 2.4, 24, AC.oakL, { m: 'wood', r: 1.2 }),
   ]),
 
