@@ -13,17 +13,18 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
 hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites, and session a, the six Pokémon
-rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), and session b, five more Pokémon sets (2026-10-17, 127
-kinds, 1,772 in all; both in `docs/roadmap-done.md`).
+rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, five more Pokémon sets (2026-10-17, 127
+kinds, 1,772 in all), and session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
+all; all three in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
-`?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+`?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
+(`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
 - **b. Done 2026-10-17, on `main`**: the Poké Ball collection (27), Museum, Contest Hall, Pokémon League and Rocket
   hideout (`docs/roadmap-done.md`).
-- **c. More Pokémon sets**: Day Care, partner care, figurines (~30), more dolls (~60; dolls are sewn by
-  `js/base-plush3d.js`, keep them under ~4k triangles).
+- **c. Done 2026-10-17, on `main`**: Day Care, Partner care, 30 figurines and 60 more dolls (`docs/roadmap-done.md`).
 - **d to h. The 22 furniture series**, about 5 a session in the list's order (Antique, Rattan, Log cabin, Ironwood,
   Imperial first).
 - **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
@@ -31,12 +32,11 @@ at once hit it on 2026-10-16; five is safer.
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session c):
+Next session's prompt (session d):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session c: Day Care and partner care (25 each), figurines (~30)
-> and more dolls (~60, sewn by js/base-plush3d.js, under ~4k triangles each; split them over two helpers), one helper a
-> set (five at once), then check every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and
-> push to main.
+> "Building a set" section is the helpers' brief). Build session d: the first five furniture series in the list's order
+> (Antique, Rattan, Log cabin, Ironwood, Imperial; 25 each), one helper a set (five at once), then check every kind
+> with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.

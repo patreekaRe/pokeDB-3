@@ -3,7 +3,7 @@
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
-kinds (1,645 in all), and session b's five Pokémon sets, 127 kinds (1,772 in all).** No ceiling layer yet (the user's call).
+kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), and session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -56,10 +56,10 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 31. (done 2026-10-17) Contest Hall: a stage, curtains, spotlights, ribbon cases, judges' desk.
 32. (done 2026-10-17) Pokémon League: the Champion's room, the Elite Four's thrones, the Hall of Fame machine.
 33. (done 2026-10-17) Team Rocket hideout: the big R, monitors, a slot-machine switch, a Meowth balloon.
-34. Day Care: egg baskets, cribs, a play pen, a feeding station.
-35. Partner care: food bowls, Poké Puff stand, grooming table, beds sized for each partner.
-36. Figurines: small figures of each starter and legendary, to stand on tables (about 30).
-37. More dolls: Gen 2 to Gen 5 favourites and big sizes (about 60 more).
+34. (done 2026-10-17) Day Care: egg baskets, cribs, a play pen, a feeding station.
+35. (done 2026-10-17) Partner care: food bowls, Poké Puff stand, grooming table, beds sized for each partner.
+36. (done 2026-10-17) Figurines: small figures of each starter and legendary, to stand on tables (about 30).
+37. (done 2026-10-17) More dolls: Gen 2 to Gen 5 favourites and big sizes (about 60 more).
 
 ## Room types (AC's Happy Home Paradise)
 

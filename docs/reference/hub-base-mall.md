@@ -532,6 +532,16 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `pbparts` / `musparts` / `conparts` / `lgparts` / `rktparts`, plus a rug builder each). The museum's dig site is a rug
   with bumps up to 0.18 tiles. `tools/model-sheet.mjs` can't draw a shapeless rug (`royalcarpet`, `concarpet`,
   `lgredcarpet`: the room lays them as a flat slab).
+- **Session c's sets** (2026-10-17): Day Care (`dc`, 25) and Partner care (`pc`, 25), Snorlax's way (`BUILT`, builders
+  `dcparts` / `pcparts` plus a rug builder each; both added a `ring` part and a per-part `seg`). **Figurines** (`fig`,
+  30, `group: 'Figurines'`, shown under the tray's Dolls tab): each starter's first form and each legendary but Mewtwo,
+  its sprite in full colour (`pvc` in `js/base-figures.js`, kept in `FIGURINES`, apart from the yard's `FIGURES` that
+  `base-models-y2.js` keys on) on a glossy base, small enough to stand on a table, tapped to turn. Loaded where shown:
+  `figuresToLoad()` by the mall (each floor's stock before its hall is built), the PC's Decorations and the base; the
+  garden catalogue loads only its own statues. **60 more dolls** (30 Pokémon, small and big): patterns in
+  `js/base-dolls-2.js` (Gen 2-3) and `-3.js` (Gen 4-5), appended to `DOLLS` / `PLUSH` / `EXTRAS`, their new extras drawn
+  only through `SEW` (js/base-dolls.js's pen-aware kit: puff, shape, line, curveLine, dot, flat, flame). The model check
+  now matches a standee by its cut-out (alpha), not its whole rectangle.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

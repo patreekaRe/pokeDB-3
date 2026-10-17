@@ -308,14 +308,14 @@ export const DAYCARE_KINDS = [
 
   // a pine high chair, a butter-yellow tray with a bowl and spoon
   piece('dchighchair', 'Feeding high chair', 1, 1, 450, 'wood', [
-    RD([5, 0.8, -11], [9, 27, -5], 1.1, DC.pine), RD([27, 0.8, -11], [23, 27, -5], 1.1, DC.pine),
+    RD([5, 0.3, -11], [9, 27, -5], 1.1, DC.pine), RD([27, 0.3, -11], [23, 27, -5], 1.1, DC.pine),
     B(16, 42, -7.5, 18, 22, 2.6, DC.pine, { r: 4 }),
     ...pokeBall(16, 44, -5.4, 3.2),
     RD([6.2, 8, -9.2], [6.2, 8, 9.2], 0.7, DC.pineD), RD([25.8, 8, -9.2], [25.8, 8, 9.2], 0.7, DC.pineD),
     B(16, 28, 0, 20, 3, 16, DC.pine, { r: 1 }),
     B(16, 30.2, 0, 17, 1.8, 14, DC.pink, { m: 'cloth', r: 0.8 }),
     B(6.5, 34, 1, 2, 2, 14, DC.pine, { r: 0.8 }), B(25.5, 34, 1, 2, 2, 14, DC.pine, { r: 0.8 }),
-    RD([5, 0.8, 11], [9, 27, 5], 1.1, DC.pine), RD([27, 0.8, 11], [23, 27, 5], 1.1, DC.pine),
+    RD([5, 0.3, 11], [9, 27, 5], 1.1, DC.pine), RD([27, 0.3, 11], [23, 27, 5], 1.1, DC.pine),
     B(16, 12, 9, 16, 1.6, 3, DC.pineD, { r: 0.6 }),
     B(16, 36, 9, 26, 2, 9, DC.butter, { m: 'gloss', r: 1.6 }),
     LA(19.5, 37, 9.5, [[0, 0], [2, 0], [3, 1.6], [3.2, 2.2], [0, 2.2]], DC.sky, { m: 'gloss' }),
