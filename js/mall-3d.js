@@ -29,6 +29,7 @@ import { loadFigures } from './base-figures.js';
 import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { turner } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
+import { buildArcade } from './mall-arcade.js';
 import { buildOutfitter, outfitterFront, OUTFITTER_KEEPER, passState, ballWindow, passWindow } from './mall-outfitter.js';
 import { safariOpen } from './data/pokedex.js';
 import { safariDaily } from './data/safari.js';
@@ -744,7 +745,7 @@ function goTo(fr, enter) {
 }
 
 function arrived() {
-  if (walker.exit) { walker.exit = false; return back(); }
+  if (walker.exit) { const out = walker.exit; walker.exit = false; return out === true ? back() : out(); }
   if (riding) return rideOn();
   const go = aim;
   aim = null;
@@ -759,12 +760,14 @@ function arrived() {
 
 const SIZE = { cols: COLS, rows: ROWS, top: TOP, u: U };
 const floorOf = () => ({ f1: 1, f2: 2, f3: 3 })[P.id] ?? 0;
-// each place inside a shop: how it's built and which of the hall's fronts its doormat walks back out to
+// each place inside a shop: how it's built and which of the hall's fronts its doormat walks back out to; `out` a room
+// inside another, its doormat back through the doorway it was walked in by
 const SHOPS = {
   f1: { front: 'furniture', build: () => buildFloor(THREE, 1, SIZE, !!loadBase().upstairs) },
   f2: { front: 'furniture', build: () => buildFloor(THREE, 2, SIZE, !!loadBase().upstairs) },
   f3: { front: 'furniture', build: () => buildFloor(THREE, 3, SIZE, true) },
   gc: { front: 'corner', build: () => buildCorner(THREE, SIZE) },
+  arc: { front: 'corner', out: 'gc', build: () => buildArcade(THREE, SIZE) },
   so: { front: 'outfitter', build: () => buildOutfitter(THREE, SIZE) },
 };
 
@@ -782,7 +785,8 @@ async function warm() {
   } catch {}
 }
 
-/** Into a place: the hall, a store floor or the Game Corner (built the first time), at tile `at`, under the curtain. */
+/** Into a place: the hall, a store floor, the Game Corner or its Arcade (built the first time), at tile `at` (or the tile
+    `at(place)` picks once it's built), under the curtain. */
 async function goPlace(id, at, facing = 'back', sound = 'door') {
   await curtain(true);
   if (!root?.isConnected) return;
@@ -807,7 +811,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
       say, partner: () => walker, keeper: () => places.gc.keeper, calm: () => calm,
     });
   }
-  setPlace(places[id], at ?? places[id].door ?? DOOR, facing);
+  setPlace(places[id], (typeof at === 'function' ? at(places[id]) : at) ?? places[id].door ?? DOOR, facing);
   if ((id === 'f1' || id === 'f2') && ballroomOpen(loadBase())) loadStatues(statueStands().map(k => PIECES[k].statueOf));   // 3F's, fetched ahead
   if (id === 'hall') syncRibbon();
   await warm();
@@ -1275,12 +1279,20 @@ function enterFront(fr) {
   if (fr.kind === 'game') return gameTap(fr);
   if (fr.kind === 'ware') return wareTap(fr);
   if (fr.kind === 'pass') return passTap(fr);
+  if (fr.kind === 'door') return throughDoor(fr);
   if (!fr.open) { playSound('cancel'); return say(fr); }
   const r = ribbons.find(r => r.shop === fr && r.group.visible);
   if (r) return ribbonTap(r);
   if (fr.id === 'furniture') return walkIn('f1');
   if (fr.id === 'corner') return walkIn('gc');
   if (fr.id === 'outfitter') return walkIn('so');
+}
+
+/** Through a doorway inside a shop (the Game Corner's into the Arcade): a step into it, then the room beyond. */
+function throughDoor(fr) {
+  walker.path = [{ ...fr.through }];
+  walker.exit = () => goPlace(fr.into, null);
+  aim = null; here = null; pick(null);
 }
 
 /* ---------- taps ---------- */
@@ -1476,9 +1488,12 @@ function atDoors() {
   setPlace(places.hall, { ...HALL_DOOR });
 }
 
-/** Out over the doormat: from a shop to its doorstep in the hall, or out of the mall. */
+/** Out over the doormat: from a shop to its doorstep in the hall, from the Arcade back through its doorway, or out of
+    the mall. */
 function back() {
   if (P.id === 'hall') return leave();
+  const out = SHOPS[P.id].out, from = P.id;
+  if (out) return goPlace(out, (p) => p.spots.find(s => s.into === from)?.step, 'front');
   goPlace('hall', FRONTS.find(f => f.id === P.front).step, 'front');
 }
 
@@ -1595,5 +1610,6 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   curtain(false);
   if (store === 'furniture' || store === '2f' || store === '3f') goPlace({ '2f': 'f2', '3f': 'f3' }[store] ?? 'f1', store === 'furniture' ? null : LIFT.foot);
   if (store === 'corner') goPlace('gc', null);
+  if (store === 'arcade') goPlace('arc', null);
   if (store === 'outfitter') goPlace('so', null);
 }

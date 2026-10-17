@@ -652,6 +652,22 @@ the slots keep the left wall; `ARCADE` / `CASINO.slots` in `js/mall-corner.js`),
   bot (scores, ball lives, each table's `t.stat` counters, nudges, escapes); `tools/arcade-check.mjs` for the cabinet.
   The bot is weak; only compare runs of the same bot.
 
+## The Arcade Room (2026-10-17, the user's "build it" after a mock-up)
+The Game Corner's arcade machines have a room of their own, `js/mall-arcade.js` (`buildArcade()`, `SHOPS.arc` in
+`js/mall-3d.js`), so a phone never holds both rooms' pictures (headless at an iPhone's size: the Game Corner was 83 MB of
+textures, now 55; the Arcade 54). The way in is a doorway in the Game Corner's right wall at rows 6-7 (`ARCADE_DOOR`,
+`arcadeDoorArt()` in `js/mall-corner.js`), at the end of the aisle between the quiz and High-Low tables, a spot of kind
+`door` (`into`, `through`: `throughDoor()` in `js/mall-3d.js` steps into it, then `goPlace()`s the room). The Arcade's
+doormat goes back through it (`out: 'gc'` in `SHOPS`, `back()`), arriving at the doorway. `?mall=arcade` walks straight in.
+- **Layout** (15 x 10, `MACHINES`): six cabinets each side of Porygon's FREE PLAY desk on the back wall (the desk tiles
+  6-8), the weekly arcade leaderboard on the wall over it (moved from over Meowth's counter; the GAME CORNER sign is back
+  down in its place), Whac-a-Diglett and Berry Catch, Where's Ditto?, Bubble Shooter and Poké Puzzle down the left wall,
+  the five pinball tables down the right. The middle stays open, room for a free-standing row when new games come.
+- **Shared with the Game Corner**: its wallpaper, tubes, side walls and gold frame (`paper()`, `tube()`, `sideArt()`,
+  `frameArt()`) and `machineMaker()`, which stands a Secret Base model as a game. The carpet is its own (`carpetArt()`:
+  neon shapes on navy). One side-wall picture serves both walls in each room (two uploads of it were ~4-5 MB).
+- **Porygon** (`ARCADE_KEEPER`) only chats; the leaderboard is the board's tap. The Game Corner's regulars stay next door.
+
 ## The mall's floors on the GPU (2026-10-17)
 Every floor the mall builds stays in its one scene, hidden when you're elsewhere, but its textures stayed uploaded: the
 hall under the Game Corner was ~126 MB of textures, and a friend's phone reloaded the game walking in. `setPlace()` in
