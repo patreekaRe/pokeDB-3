@@ -61,9 +61,10 @@ Next session's prompt (session h):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
 > "Building a set" section is the helpers' brief). Build session h: the last four furniture series (Bamboo, Stone zen,
 > Constellations, Desert caravan; 25 each), one helper a set (four at once), then check every kind with
-> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Stone zen could be outdoor like
-> session g's Iron garden (a `yard` tab of its own in Smeargle's garden catalogue): decide after reading
-> docs/reference/hub-base-mall.md on the yard sets.
+> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Stone zen is outdoor, like
+> session g's Iron garden (the user's call, 2026-10-17: the Japanese shelf already has the indoor zen pieces), on a
+> `yard: 'Zen'` tab of its own in Smeargle's garden catalogue (add it to `GARDEN_TABS` in js/garden-shop.js); read
+> docs/reference/hub-base-mall.md on the yard sets first.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
