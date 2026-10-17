@@ -3070,8 +3070,9 @@ async function buildIdol(figs, { look: L, time }) {
   plinth.traverse(o => { o.userData.spot = 0; });
   hideAt.traverse(o => { o.userData.spot = 1; });
   B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 3, y: 3 } }];
-  B.anchors[0] = new THREE.Vector3(px, 2.1, pz);
-  B.anchors[1] = new THREE.Vector3(tileX(3), 2.2, tileZ(2.6));
+  // Brace floats high over the plinth and Hide low on its column, so the two never overlap on a phone
+  B.anchors[0] = new THREE.Vector3(px + 0.3, 2.5, pz);
+  B.anchors[1] = new THREE.Vector3(tileX(3.3), 1.45, tileZ(2.6));
   tufts(L, 45, rnd);
   B.ticks.push((now) => {
     const on = !calm && idol.visible && Math.floor(now / 1300) % 3 === 0;
@@ -3303,8 +3304,9 @@ async function buildStall(figs, { look: L, time }) {
   B.who.mon = await figure('mon', figs.mon ?? { src: 'assets/pokemon/kecleon-front.gif' }, { x: 2.2, ty: 2.1 });
   for (const t of [[4, 1], [5, 1], [6, 1], [7, 1], [2, 2]]) B.blocked.add(key(...t));
   B.spots = [{ step: { x: 5, y: 3 } }, { step: { x: 6, y: 3 } }];
-  B.anchors[0] = new THREE.Vector3(sx - 0.6, 1.9, sz);
-  B.anchors[1] = new THREE.Vector3(sx + 0.6, 1.9, sz);
+  // the cushions are close together, so their signs float out past the posts, one higher than the other
+  B.anchors[0] = new THREE.Vector3(sx - 1.0, 2.62, sz);
+  B.anchors[1] = new THREE.Vector3(sx + 1.0, 1.72, sz);
   tufts(L, 45, rnd);
   const show = (card, id) => {   // a relic's PokéSprite art on its cushion
     card.visible = !!id;
