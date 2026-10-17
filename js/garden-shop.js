@@ -81,8 +81,8 @@ export function openGardenShop() {
   });
   line('Things for your backyard! They only go outside, and they\'re always in stock.');
   draw();
-  // the statues are their Pokémon's sprites: their pictures repaint once those are in
-  loadFigures().then(() => { if (d.isConnected) draw(); });
+  // the statues are their Pokémon's sprites: their pictures repaint once those are in (only the yard's, not every figurine)
+  loadFigures(gardenStock()).then(() => { if (d.isConnected) draw(); });
   return new Promise(res => {
     d.addEventListener('close', () => { d.remove(); res(); }, { once: true });
     close.addEventListener('click', () => d.close());

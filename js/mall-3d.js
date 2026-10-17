@@ -22,9 +22,10 @@ import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
 import { cornerEntries, buyCorner } from './shop.js';
-import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, metSmeargle, shopOpen, tillMidnight, kindsOwned, ballroomOpen, buyBallroom } from './secret-base.js';
+import { PIECES, styles, loadBase, saveBase, buyPiece, buyUpstairs, UPSTAIRS_PRICE, furnitureStock, metSmeargle, shopOpen, tillMidnight, kindsOwned, ballroomOpen, buyBallroom } from './secret-base.js';
 import { frontArt, frontWindow, buildFloor, LIFT, KEEPERS, piecePreview, dialTurn, statueStands } from './mall-furniture.js';
 import { loadStatues } from './base-furniture-statues.js';
+import { loadFigures } from './base-figures.js';
 import { BALLROOM_KINDS, BALLROOM_PRICE } from './data/catalogue.js';
 import { turntableStage, drawTurn, TURN_SIZE } from './turntable.js';
 import { buildCorner, KEEPER } from './mall-corner.js';
@@ -787,6 +788,7 @@ async function goPlace(id, at, facing = 'back', sound = 'door') {
   if (!root?.isConnected) return;
   if (!places[id]) {
     if (id === 'f3') await loadStatues(statueStands().map(k => PIECES[k].statueOf));   // its statues are carved from their sprites, so those come first
+    else if (id === 'f1' || id === 'f2') await loadFigures(furnitureStock(undefined, id === 'f1' ? 1 : 2).map(k => PIECES[k].fam));   // and a figurine is its sprite
     const built = SHOPS[id].build();
     const k = built.keeper, spot = built.spots.find(s => s.kind === 'keeper');
     k.mon = await monBoard(k, false);
@@ -1630,6 +1632,7 @@ export async function openMall({ onLeave = null, store = null } = {}) {
   post = createPost(renderer, { short: 760, crisp: false });   // smooth, like the Secret Base
   env = hallEnv();
   syncShop();
+  await loadFigures(furnitureStock().map(k => PIECES[k].fam));   // a figurine in the Furniture store's window is its sprite
   buildHall();
   syncShop();
   mon = await monBoard(buddy(getSave()));
