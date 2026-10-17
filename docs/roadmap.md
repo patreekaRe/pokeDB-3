@@ -895,7 +895,13 @@ details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (
 the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 ~~**Finding each other without meeting**~~ done 2026-10-17 (the user's ask, same day; `docs/roadmap-done.md`): the
 Trainer Plaza, an "Added you" banner and the TRAINER LINK pop-up when someone adds you (the user saw a screenshot before
-it was pushed). Same rules file, so one publish covers both.
+it was pushed). Same rules file, so one publish covers both. Then (same day) the TRAINER NETWORK welcome on the app's
+first open and the Plaza's 3D board in the Clearing (11,14). Branch `claude/exciting-cray-y585nt`; **main waits on the
+user's OK after the screenshots**.
+**For session 2 (another session is building the visits, 2026-10-17):** visits are announced as coming soon in three
+places, to change once they're in: the welcome's last line (`WELCOME` in `js/trainers.js`), the greyed Visit key and its
+"Base visits are coming soon." line (`friendKeys()` / `lines()` in `trainersApp()`). Merge `main` first: these files moved
+a lot after session 1 (`js/trainers.js`, `js/trainer-notice.js`, `firestore.rules`, `tools/trainers-check.mjs`).
 **Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
 `loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
 (`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`

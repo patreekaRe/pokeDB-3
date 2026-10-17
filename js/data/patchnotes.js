@@ -47,7 +47,7 @@ export const NEXT = [
   ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
   ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
   ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
-  ['dex', 'A Trainers app on your Pokédex: meet players in the Trainer Plaza, add them by code or leaderboard name, and a TRAINER LINK pops up when someone adds you.'],
+  ['dex', 'A Trainers app and a Trainer Plaza board in the Clearing: meet players, add them by code, and get a TRAINER LINK when someone adds you.'],
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
 ];
 

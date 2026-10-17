@@ -74,6 +74,19 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   adds you back after you added them gets TRAINER LINKED with OK only. Answering marks the note seen (it never pops
   again; Later leaves them under Added you). Calm effects skip the ball, flash and bobbing. `?addnotice=N` shows N
   samples with nothing sent.
+- **The welcome** (the same day, the user's ask): the first time the Trainers app opens signed in (`save.trainersWelcome`),
+  and from the ? key by your code, a TRAINER NETWORK card in the same style (`showTrainerWelcome()`): your buddy out of
+  the ball, YOUR TRAINER CODE on the plate, six lines paged with A NEXT (the last LET'S GO!), B SKIP (`WELCOME` in
+  `js/trainers.js`). Its last line says base visits are coming: **session 2 changes it** (and the greyed Visit key).
+- **The Trainer Plaza's board in the Clearing** (the same day, the user's ask: "the physical 3D board"):
+  `plazaBoard()` in `js/hub-plaza.js`, the place `plaza` on `PLAZA_AT` (11,14, scaled 1.3, nudged 0.3 east of the lamp;
+  tiles 10-12 x 14, step 11,15), only while cloud save is configured. A real model: posts, a teal gable with a turning
+  Poké Ball on its ridge, a TRAINER PLAZA plank, bunting, two lanterns lit after dark (`glowMats`), flower pots. Its
+  cork is a canvas of up to 6 Polaroids from `plazaTop()` (once a minute at most; you among them with a gold YOU
+  sticker; a masked Pokémon a silhouette), a pinned notice when signed out or empty. Its Look key opens the app straight
+  onto the Plaza (`acts.onApp('trainers', 'plaza')`, `mount(panel, 'plaza')`). First tried at 19,14 by the PC: from the
+  camera's angle Halloween's pumpkin patch (19-21 x 17-18) stood in front of it.
+- The TRAINER LINK pop-up checks for calm every 1.5 s (`whenCalm()`): the Clearing's boot can hold it a while.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
-  the rules (gstatic routed to stand-in SDK modules; 59 checks, the pop-up, Plaza and notes among them), and `tools/trainers-rules.mjs`, the real rules in the
+  the rules (gstatic routed to stand-in SDK modules; 67 checks, the welcome, pop-up, Plaza and notes among them; pass it a three.js file and the real Clearing runs too), and `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

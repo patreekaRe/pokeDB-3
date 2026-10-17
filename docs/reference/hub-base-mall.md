@@ -277,6 +277,9 @@ The first section began as the note on playtesting the live site and grew into t
   UVs there sampling the painting's top row (plain sky; the texture is clamped, so the stars keep off that row). The
   east-side `TREE_TILES` were taken out the same day.
 
+- **The Trainer Plaza's board** (2026-10-17): `PLAZA_AT` 11,14, on the lawn between the plaza and the Poké Mall, the
+  quest board's mirror across the west avenue (`js/hub-plaza.js`; docs/reference/cloud-save.md's Trainers section).
+
 ### The rolling-log bend (on by default, 2026-10-14)
 
 The user's ask: Animal Crossing's curved world, in the Clearing only. Tried behind `?curve=N` at 1, 2 and 3 on a branch,

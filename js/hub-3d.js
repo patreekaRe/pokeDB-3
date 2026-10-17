@@ -14,6 +14,9 @@ import { season } from './season.js';
 import { leavesOf, groundLook, vistaLook, snowCap, tintOf, BUG_LOOK, pumpkinArt, snowmanArt, graveArt, deadTreeArt, scarecrowArt, candlesArt, hayArt, lanternArt, capsArt } from './hub-season.js';
 import { makeSpooks } from './hub-spooky.js';
 import { calmFx } from './prefs.js';
+import { plazaBoard } from './hub-plaza.js';
+import { plazaTop } from './trainers.js';
+import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow } from './hd2d.js';
@@ -70,6 +73,10 @@ const START = { x: 15, y: 12 };  // the plaza's middle, the Waystone's tile
 const PLAZA_R = 3.6;             // the paved plaza's radius
 const PC_AT = { tx: 19, ty: 10 };
 const QUEST_AT = { tx: 11, ty: 10 };   // the quest board, the PC's mirror across the plaza (towns on only)
+// the Trainer Plaza's board (js/hub-plaza.js; 2026-10-17, the user's ask), on the lawn between the plaza and the Poké Mall,
+// the quest board's mirror across the west avenue; nothing tall stands south of it to hide it (by the PC, Halloween's
+// pumpkin patch did)
+const PLAZA_AT = { tx: 11, ty: 14 };
 const PITCH = 0.6, LOOK_Y = 0.6;   // Octopath's low angle; Pokémon lean back by all of it (showHub()), so they face the camera unsquashed
 const ACROSS = 8;             // tiles the view shows across at least; an upright phone pans over the rest
 const DEPTH = 15;             // and rows deep at least, on a wide screen
@@ -165,7 +172,8 @@ let THREE, renderer, scene, camera, post, root, view, screen, acts, dexBtn;
 let hemi, sun, ring, ground, forest, placeGroup, vista = null;
 let mon = null, walker = { x: 0, z: 0, tile: SPAWN, path: [], facing: 'front', flip: false, hop: 0 };
 let places = [], blocked = new Set(), aim = null, here = null, card, bar, barKey = null, barCoins = null, saved = null;
-let safariFx = null;   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
+let safariFx = null;
+let plazaFx = null;   // the Trainer Plaza's board: its lanterns, its Poké Ball and its cork of Polaroids (js/hub-plaza.js)   // the Safari gate's swaying pennants, lanterns and torches (js/hub-safari.js)
 let glowMats = [], lamps = [], bugs = null, flyer = null, flownMat = null, flyShade = null, nextFly = 0, stepAt = 0, airAt = 0, tree = null, sign = null, gardenArch = null, inside = null, entering = null, leaving = null;   // inside: the place walked into, 'base', 'backyard' or 'mall'
 let stops = {}, calm = false, time = '', running = false, last = 0, fpsLog = [], camX = 0, camZ = 0, fpsEl = null, sealed = null, gateFx = null, dojoFx = null, pillarFx = null;
 let built = null;   // the promise of the first build
@@ -2198,6 +2206,21 @@ function makePlaces() {
       },
     },
   ];
+  if (cloudConfigured()) list.push({
+    id: 'plaza', name: 'Trainer Plaza', step: { x: PLAZA_AT.tx, y: PLAZA_AT.ty + 1 }, tiles: [[PLAZA_AT.tx - 1, PLAZA_AT.ty], [PLAZA_AT.tx, PLAZA_AT.ty], [PLAZA_AT.tx + 1, PLAZA_AT.ty]],
+    tag: [PLAZA_AT.tx, 4.2, PLAZA_AT.ty], open: true,
+    line: cloudRemembered() ? 'The Trainer Plaza\'s board: Polaroids of trainers who\'ve played lately. Add one from your Pokédex\'s Trainers app.'
+      : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
+    buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
+    build: (g) => {
+      plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStatic });
+      plazaFx.group.position.set(tileX(PLAZA_AT.tx) + 0.3, 0, tileZ(PLAZA_AT.ty));   // clear of the lamp at its left
+      plazaFx.group.scale.setScalar(1.3);
+      g.add(plazaFx.group);
+      const fx = plazaFx;
+      plazaTop(6).then(list => { if (plazaFx === fx) fx.paint(list); });
+    },
+  });
   const safari = safariOpen(save) || !!runAt('safari'), safariRun = runAt('safari');
   // you walk right up to the gate (MEADOW), where a small Pokéstop of its own starts or continues the day's run
   // (the user's ask, 2026-10-09)
@@ -2520,7 +2543,7 @@ function buildPlaces() {
   dispose(placeGroup);
   tree?.open.dispose();
   sign?.fixed?.dispose();
-  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
+  glowMats = []; safariFx = null; profBoards = {}; tree = null; sign = null; gardenArch = null; stops = {}; pcMail = null; pcNews = null; questMark = null; nietosMark = null; safariMark = null; beckons = []; plazaFx = null; stoneLit = null; smoke = null; cracks = null; sealed = null; dojoFx = null; pillarFx = null; mallFx = null;
   places = makePlaces();  saved = acts.savedRun();
   barKey = null;
   blocked = new Set(TREE_TILES.map(([x, y]) => key(x, y)));
@@ -4096,6 +4119,7 @@ function frame(now) {
   if (!calm) livePc(now);
   cauldron?.tick(now, dt, calm);
   safariFx?.tick(now, calm);
+  plazaFx?.tick(now, calm);
   for (const m of [pcMail, pcNews, questMark, nietosMark, safariMark]) if (m?.visible) m.position.y = m.userData.y + (calm ? 0 : Math.sin(now / 380) * 0.08);
   if (!calm) for (const s of Object.values(stops)) liveStop(s, now);
   for (const s of Object.values(stops)) if (s.cue) {

@@ -25,7 +25,7 @@ import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
 import { $, el } from './ui.js';
-import { showTrainerNotices, noticeOpen } from './trainer-notice.js';
+import { showTrainerNotices, showTrainerWelcome, noticeOpen } from './trainer-notice.js';
 
 /* Your code, as this device last knew it: { uid, code }. Not in the save: writing it there while a first sign-in is still
    comparing saves would mark this device's copy changed and ask which to keep. Your page holds it for every device. */
@@ -197,6 +197,44 @@ function badgeRow(c) {
   return box;
 }
 
+/* ---------- the Trainer Plaza: the app's banner, and the board in the Clearing (plazaBoard() in js/hub-plaza.js) ---------- */
+
+const fetchPlaza = (s) => s.F.getDocs(s.F.query(s.F.collection(s.db, PLAZA), s.F.orderBy('at', 'desc'), s.F.limit(PLAZA_SHOWN + 1)))
+  .then(q => q.docs.map(d => ({ ...blurbDoc(d.data()), uid: d.id, at: atOf(d.data()) })));
+
+let plazaCache = null;
+/** The Clearing's board: up to `n` trainers on lately, you among them, each with `mon` and `mine`; null signed out or
+    offline. Fetched at most once a minute. */
+export async function plazaTop(n = 6) {
+  if (!cloudConfigured() || !cloudRemembered()) return null;
+  try {
+    const s = await cloudSession();
+    if (!s.user) return null;
+    if (!plazaCache || Date.now() - plazaCache.at > 60000) plazaCache = { at: Date.now(), list: await fetchPlaza(s) };
+    return plazaPick(plazaCache.list, null).slice(0, n).map(e => ({ ...e, mon: sprite(e.buddy || e.partner), mine: e.uid === s.user.uid }));
+  } catch (err) { return null; }
+}
+
+/* ---------- the welcome: the first time the app opens signed in, and its ? key. It says visits are coming (session 2
+   of the roadmap's "Friends list and base visits" changes that line once they're in). ---------- */
+
+const WELCOME = [
+  'Welcome to the Trainer Network! This is your code. Give it to a friend to add you.',
+  'Trainers you add get a banner here. Tap one to see their Trainer Card.',
+  'The Trainer Plaza shows who\'s played lately. Tap + Add to add one!',
+  'Its board stands in the Clearing, by the Poké Mall. Hide me keeps you off it.',
+  'Someone added you? A TRAINER LINK pops up. Add them back to link up!',
+  'Coming soon: visit a trainer\'s Secret Base, just as they left it!',
+];
+
+function welcome(code, done) {
+  const save = getSave();
+  showTrainerWelcome({ tier: cardTier(save).id, code: formatCode(code) || '????-????', mon: sprite(buddyKey(save)) }, WELCOME, () => {
+    if (!getSave().trainersWelcome) updateSave(d => { d.trainersWelcome = true; });
+    done?.();
+  });
+}
+
 /* ---------- the TRAINER LINK pop-up: each note not answered yet, once you're somewhere calm ---------- */
 
 const RUN_SCREENS = ['map-screen', 'battle-screen', 'reward-screen'];
@@ -205,7 +243,7 @@ const calmNow = () => !noticeOpen() && !document.querySelector('dialog[open], .p
 
 function whenCalm(fn, tries = 0) {
   if (calmNow()) return fn();
-  if (tries < 150) setTimeout(() => whenCalm(fn, tries + 1), 4000);
+  if (tries < 400) setTimeout(() => whenCalm(fn, tries + 1), 1500);
 }
 
 const asNotice = (n, mutual) => ({ ...n, uid: n.from, mon: sprite(n.buddy || n.partner), mutual });
@@ -242,7 +280,7 @@ function sampleNotices(n) {
     handheld on their Trainer Card, buddy, last seen, Visit (session 2) and Remove. One getDoc a trainer on your list
     or who added you, and one query each for the notes and the Plaza, each time it opens. */
 export function trainersApp() {
-  let panel = null, shelf = null, me = null, code = null, docs = new Map(), notes = [], plaza = [], state = 'loading', said = '', removing = null;
+  let panel = null, shelf = null, me = null, code = null, docs = new Map(), notes = [], plaza = [], state = 'loading', said = '', removing = null, openAt = null;
 
   const blurbOf = (uid) => plaza.find(e => e.uid === uid) ?? notes.find(n => n.from === uid) ?? null;
   const nameOf = (uid) => docs.get(uid)?.name ?? blurbOf(uid)?.name ?? '???';
@@ -264,7 +302,11 @@ export function trainersApp() {
     }
     if (state === 'offline') { box.append(el('p', 'pdx-lcd lb-note', 'The trainer network can\'t be reached right now (offline?). The game itself is unaffected.')); return box; }
     const mine = el('div', 'pdx-lcd trn-code');
-    mine.append(el('small', '', 'Your trainer code'), el('b', 'trn-code-text', code ? formatCode(code) : state === 'loading' ? 'Loading…' : '---'));
+    const help = el('button', 'lb-btn trn-help', '?');
+    help.type = 'button';
+    help.setAttribute('aria-label', 'How the Trainer Network works');
+    help.addEventListener('click', () => { playSound('confirm'); welcome(code); });
+    mine.append(el('small', '', 'Your trainer code'), el('b', 'trn-code-text', code ? formatCode(code) : state === 'loading' ? 'Loading…' : '---'), help);
     const form = el('form', 'pdx-lcd trn-add');
     const input = el('input', 'lb-name-input trn-input');
     Object.assign(input, { placeholder: 'ABCD-EFGH', maxLength: 12, autocomplete: 'off', spellcheck: false });
@@ -396,7 +438,9 @@ export function trainersApp() {
     shelf?.unmount();
     shelf = build();
     panel.replaceChildren();
-    shelf.mount(panel);
+    const at = state === 'ready' ? openAt : null;
+    if (at) openAt = null;
+    shelf.mount(panel, at);
     if (!friendsOf(getSave(), me).length && state === 'ready') panel.querySelector('.pdx-banners')?.append(el('p', 'pdx-lcd lb-note trn-none', 'No trainers on your list yet. Meet some in the Trainer Plaza, or swap codes with a friend!'));
   }
 
@@ -413,8 +457,7 @@ export function trainersApp() {
     code = myCode(me) ?? await publishTrainer();
     const [gotNotes, gotPlaza] = await Promise.all([
       notesFor(s).catch(() => []),
-      s.F.getDocs(s.F.query(s.F.collection(s.db, PLAZA), s.F.orderBy('at', 'desc'), s.F.limit(PLAZA_SHOWN + 1)))
-        .then(q => q.docs.map(d => ({ ...blurbDoc(d.data()), uid: d.id, at: atOf(d.data()) })), () => null),
+      fetchPlaza(s).catch(() => null),
     ]);
     notes = gotNotes;
     plaza = plazaPick(gotPlaza ?? [], me);
@@ -423,11 +466,14 @@ export function trainersApp() {
     if (panel !== at) return;
     state = gotPlaza === null && got.every(d => d === undefined) ? 'offline' : 'ready';
     docs = new Map(want.map((uid, i) => [uid, readDoc(got[i])]).filter(([, d]) => d));
+    if (gotPlaza) plazaCache = { at: Date.now(), list: gotPlaza };
     remount();
+    if (state === 'ready' && !getSave().trainersWelcome) welcome(code);
   }
 
   return {
-    mount(p) { panel = p; said = ''; removing = null; load(); },
+    /** `at` 'plaza' opens straight onto the Plaza (the Clearing's board). */
+    mount(p, at) { panel = p; said = ''; removing = null; openAt = at ?? null; load(); },
     back: () => shelf?.back() || false,
     key: (e) => shelf?.key(e) || false,
     press: () => shelf?.press(),

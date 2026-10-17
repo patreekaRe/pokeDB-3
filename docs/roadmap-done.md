@@ -2901,3 +2901,5 @@ The user asked how to find each other without talking outside the game, and for 
 "aesthetic... like it's from a video game or MMO, immersive Pokémon style", shown in a screenshot before pushing.
 `plaza/<uid>` (trainers on lately, Hide me in the app), `adds/<to>_<from>` notes, the app's Added you and Trainer Plaza
 banners, `js/trainer-notice.js`. 59 headless checks, 62 rules checks. Detail: `docs/reference/cloud-save.md`.
+Then the TRAINER NETWORK welcome (first open, and a ? key) and the Plaza's 3D board in the Clearing (`js/hub-plaza.js`, 11,14);
+67 headless checks with the real Clearing running.
