@@ -550,6 +550,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   part kinds there: Rattan's `weave` finish, Log cabin's side discs (cut log ends) and its plaid as one cached canvas each,
   Antique's `slab` (a side profile run across) and `horn`. Pokémon touches: a Stantler antler mount, a Pidgey cuckoo
   clock, Ursaring and Teddiursa carvings, a Gyarados carving and scroll, a Lapras in the gilt landscape.
+- **Session e's series** (2026-10-17): Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and
+  mermaid (`mer`, `group` 'Mermaid'), files `js/base-furniture-<diner|cute|elegant|golden|shell>.js` and
+  `js/base-models-<same>.js`, built as session d's (builders `<prefix>parts` / `<prefix>rug`; Golden's `gldparts`, with a
+  `plate` part, an outline seen from above, for the grand piano). **The Golden set is earned, never sold**: source
+  `golden` in `js/data/furniture.js` (`GOLDEN`), the nth piece owned at n achievements earned, whichever ones
+  ("Earn N achievements (k/N)"), the throne at all 22; `goldbed`, `goldchest`, `goldvase` from the `gold`, `roster` and
+  `shiny-hunter` badges. Being in `FURNITURE` keeps it out of every shop's stock.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

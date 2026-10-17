@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
-  ['mall', '779 new pieces: five furniture series (Antique, Rattan, Log cabin, Ironwood, Imperial), six Pokémon rooms, seven Pokémon sets, 30 figurines, 60 dolls, eight holiday sets and 120 for the yard.'],
+  ['mall', '904 new pieces: ten furniture series (Antique to Mermaid; the Golden one earned by achievements), six Pokémon rooms, seven Pokémon sets, 30 figurines, 60 dolls, eight holiday sets and 120 for the yard.'],
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
   ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
