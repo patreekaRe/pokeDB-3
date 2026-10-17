@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session j: Pizzeria, Corner shop, Laundromat, Salon, Garage (2026-10-17)
+- The next five room types, 25 each: Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon (`sln`)
+  and Garage and workshop (`grg`): 125 kinds, 2,712 in all, one helper a set, all solo, session i's `BUILT` way. The whole
+  catalogue (2,716 ids) went through `tools/model-check.mjs` with no builder errors; every new kind within budget (none
+  over 5,522 triangles, the Poké Ball gondola, or 8 draws); thin pieces match their paintings at 0.39 (the pizzeria stool)
+  to 0.97, none sticking out. Pokémon touches: Charmander on the oven, a Lickitung chef, a Pikachu pizza poster; Kecleon
+  the shopkeeper, a Pikachu crane box, Munchlax, Vanillite; Rotom-Wash, Wooloo, Lotad soap, a Gyarados towel; Furfrou's
+  trimming table, trims board, topiaries, La Reine cushion and Pharaoh statue, Sylveon, Jynx, Smoochum; Magnemite's lamp,
+  a Klink clock, Porygon's diagnostics cart, Rotom's mower blueprint. The user got picture sheets.
+
 ### Furniture expansion session i: Hospital ward, Bistro kitchen, Bakery, Sushi bar, Ramen shop (2026-10-17)
 - The first five room types (AC's Happy Home Paradise), 25 each: Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi
   bar (`ssh`) and Ramen shop (`rmn`): 125 kinds, 2,587 in all, one helper a set, all solo, session h's `BUILT` way. The

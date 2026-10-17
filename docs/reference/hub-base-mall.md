@@ -586,6 +586,11 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   props), not a bedroom. New parts: side-on rings and discs (`ax: 'x'`, wheels and castors), the Bakery's `wedge` (a side
   profile extruded across, the awning). Taps reuse `PLAY`: the hospital bed `heal`, the ovens' and fridges' `door` with a
   modelled inside (`bare`), the ticket machines `give` paper.
+- **Session j's room types** (2026-10-17): Pizzeria (`pzr`), Corner shop (`crs`, a Poké Mart), Laundromat (`lnd`), Salon
+  (`sln`, with Furfrou's trims) and Garage (`grg`), files `js/base-furniture-<pizzeria|cornershop|laundromat|salon|garage>.js`
+  and `js/base-models-<same>.js`, built as session i's. A drum turning front to back can't be a tap (`spin` turns the
+  whole piece upright), so the dryers whirr; a spinning part turns about the model's centre, so the barber pole stands
+  on the floor rather than hanging on the wall.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
