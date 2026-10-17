@@ -2673,6 +2673,9 @@ earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js
 the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
 (`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
 the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
+- **Done (2026-10-17): Driftwood Landing's buildings merged** (the towns' draw calls, one town a session): each house's
+  still parts one mesh a material or colour-baked, moving parts lifted out (`stillParts()`, `moves()`), the door's tap
+  kept; 674 -> ~495 GL draws a frame headless, ten buildings 428 meshes -> ~194, every door opens. `docs/reference/towns.md`.
 - **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
   Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
   turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw
@@ -2811,6 +2814,15 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session f: Cherry blossom, Maple leaf, Acorn, Mushroom (2026-10-17)
+- Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`), 25 each: 100 kinds, 2,262 in all, one
+  helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over 6,592 triangles, the blossom bed,
+  or 7 draws); thin, twiggy pieces match their paintings at 0.37 (the maple garland) to 0.74, nothing sticking out.
+- **Cherry blossom and Maple leaf are seasonal** (the session's call, AC's way): `holiday: 'sakura'` / `'maple'`, two new
+  windows in `js/data/holidays.js`, April and October, a month each so a 25-piece set can be collected at a stand a
+  floor a day. Acorn and Mushroom are sold all year. Pokémon touches: Cherrim, Hoppip, Cherubi; Deerling, Leavanny,
+  Sawsbuck; Seedot, Skwovet, Pineco; Shroomish, Foongus, Parasect, Shiinotic, Breloom. The user got picture sheets.
+
 ### Furniture expansion session e: the next five furniture series (2026-10-17)
 - Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and mermaid (`mer`, group 'Mermaid'), 25
   each: 125 kinds, 2,162 in all, one helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over
@@ -2851,4 +2863,4 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 ### The refresh key (2026-10-17, the user's ask: "a refresh button on the top right" in the scenes that need it)
 - A round key top right in the Clearing, Secret Base, Poké Mall, towns and houses, and a run's map: the newest version,
   back on the same tile (a run: Continue, or its town). Detail: `docs/reference/saved-runs.md`'s "The refresh key".
-  Checked headless (each place's round trip, playtests keyless, a plain refresh still on the title); patch 1.24 cut.
+  Checked headless (each place's round trip, playtests keyless, a plain refresh still on the title).

@@ -4,7 +4,7 @@ The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I 
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
 kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), session d's first five furniture
-series, 125 kinds (2,037 in all), and session e's next five, 125 kinds (2,162 in all).** No ceiling layer yet (the user's call).
+series, 125 kinds (2,037 in all), session e's next five, 125 kinds (2,162 in all), and session f's four, 100 kinds (2,262 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -35,10 +35,10 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 8. (done 2026-10-17) Elegant: white and gold, curving legs.
 9. (done 2026-10-17) Golden: gold-plated, earned from achievements (the nth piece with the nth achievement), never sold.
 10. (done 2026-10-17) Shell and mermaid: pearl, scallop shells, sea glass (Driftwood Landing?).
-11. Cherry blossom: spring, pink petals.
-12. Maple leaf: autumn reds.
-13. Acorn: autumn, nuts and wood (AC's "tree's bounty").
-14. Mushroom: caps for seats and lamps.
+11. (done 2026-10-17) Cherry blossom: spring, pink petals. Sold only in April (`holiday: 'sakura'`).
+12. (done 2026-10-17) Maple leaf: autumn reds. Sold only in October (`holiday: 'maple'`).
+13. (done 2026-10-17) Acorn: autumn, nuts and wood (AC's "tree's bounty").
+14. (done 2026-10-17) Mushroom: caps for seats and lamps.
 15. Wooden block: a toddler's chunky primary colours.
 16. Throwback: the 90s, CRT TVs, cassettes, a boombox, glow stars.
 17. Ranch: the Wild West, hay, saddles, a wagon wheel.

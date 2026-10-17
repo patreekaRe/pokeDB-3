@@ -445,8 +445,8 @@ export const whackSign = () => once('whack:sign', 512, 224, (g, w, h) => {
   diglett(g, 54, 160, 1.6); diglett(g, w - 54, 160, 1.6);
 });
 
-/** The pinball table's playfield, seen from above, its top the back of the table. */
-export const pinField = () => once('pin:field', 256, 384, (g, w, h) => {
+/** The pinball table's playfield, seen from above, its top the back of the table; `table` one of the four newer tables. */
+export const pinField = (table) => table ? once(`pin:field:${table}`, 256, 384, (g, w, h) => tableField(g, w, h, PIN[table])) : once('pin:field', 256, 384, (g, w, h) => {
   const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, '#1a3a9a'); bg.addColorStop(1, '#0c1a5a');
   g.fillStyle = bg; g.fillRect(0, 0, w, h);
   g.fillStyle = 'rgba(255,255,255,0.08)'; disc(g, w / 2, h * 0.42, 90, 'rgba(120,180,255,0.15)');
@@ -471,7 +471,7 @@ export const pinField = () => once('pin:field', 256, 384, (g, w, h) => {
 });
 
 /** The pinball's backglass: its name and a scene over the dot-matrix score. */
-export const pinGlass = () => once('pin:glass', 320, 288, (g, w, h) => {
+export const pinGlass = (table) => table ? once(`pin:glass:${table}`, 320, 288, (g, w, h) => tableGlass(g, w, h, PIN[table])) : once('pin:glass', 320, 288, (g, w, h) => {
   const bg = g.createRadialGradient(w / 2, h * 0.4, 10, w / 2, h * 0.4, w * 0.7); bg.addColorStop(0, '#7a4ae0'); bg.addColorStop(1, '#2a0a5a');
   g.fillStyle = bg; g.fillRect(0, 0, w, h);
   g.fillStyle = 'rgba(255,255,255,0.1)';
@@ -486,6 +486,82 @@ export const pinGlass = () => once('pin:glass', 320, 288, (g, w, h) => {
   g.fillStyle = 'rgba(255,120,30,0.18)'; for (let y = h - 62; y < h - 18; y += 4) for (let x = 22; x < w - 22; x += 4) g.fillRect(x, y, 2, 2);
   glowOn(g, '#ff8a30', 12); text(g, '2,450,800', w / 2, h - 40, 34, '#ff9a40'); glowOff(g);
 });
+
+/* The four tables after Pokémon Pinball (js/pinball-*.js, 2026-10-17): each a field's colours, its emblem drawn big in
+   the middle of the playfield and the backglass, and the name on the glass. */
+function ghost(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#6a3aa8'; g.beginPath(); g.moveTo(-26, 18);
+  for (const [a, b] of [[-30, -6], [-22, -24], [-12, -30], [-6, -22], [0, -32], [6, -22], [12, -30], [22, -24], [30, -6]]) g.lineTo(a, b);
+  g.lineTo(26, 18); g.quadraticCurveTo(0, 30, -26, 18); g.fill();
+  g.fillStyle = '#ff3a4a'; for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(sx * 4, -8); g.lineTo(sx * 18, -14); g.lineTo(sx * 15, -3); g.closePath(); g.fill(); }
+  g.fillStyle = '#ffffff'; g.beginPath(); g.moveTo(-17, 4); g.quadraticCurveTo(0, 20, 17, 4); g.quadraticCurveTo(0, 10, -17, 4); g.fill();
+  g.restore();
+}
+function wave(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  oval(g, 0, 8, 30, 16, '#3a7ad8');
+  g.fillStyle = '#8a8070'; g.beginPath(); g.ellipse(0, 4, 20, 12, 0, Math.PI, 0); g.fill();
+  for (const [a, b] of [[-10, -6], [0, -9], [10, -6]]) disc(g, a, b, 2.4, '#5a5048');
+  g.fillStyle = '#5ab0f0'; g.beginPath(); g.moveTo(16, 4); g.quadraticCurveTo(30, -26, 22, -36); g.quadraticCurveTo(14, -26, 12, 4); g.fill();
+  oval(g, 24, -36, 9, 7, '#5ab0f0'); disc(g, 27, -38, 1.6, '#101830');
+  g.strokeStyle = '#ffffff'; g.lineWidth = 2.5;
+  for (const yy of [22, 30]) { g.beginPath(); for (let i = -34; i <= 34; i += 4) g.lineTo(i, yy + Math.sin(i / 4) * 2); g.stroke(); }
+  g.restore();
+}
+function volcano(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.fillStyle = '#3a2420'; g.beginPath(); g.moveTo(-36, 26); g.lineTo(-10, -18); g.lineTo(10, -18); g.lineTo(36, 26); g.fill();
+  g.fillStyle = '#ff6a1a'; g.beginPath(); g.moveTo(-8, -18); g.lineTo(-14, 8); g.lineTo(-4, 2); g.lineTo(0, 24); g.lineTo(6, -2); g.lineTo(14, 10); g.lineTo(8, -18); g.fill();
+  for (const [a, b, r] of [[0, -30, 8], [-12, -40, 5], [12, -42, 6], [2, -52, 4]]) disc(g, a, b, r, '#ffb030');
+  disc(g, 0, -30, 4, '#fff0a0');
+  g.restore();
+}
+function dragon(g, x, y, s) {
+  g.save(); g.translate(x, y); g.scale(s, s);
+  g.lineCap = 'round'; g.strokeStyle = '#1a6a3a'; g.lineWidth = 12;
+  const body = () => { g.beginPath(); g.moveTo(-30, 30); g.bezierCurveTo(-40, 0, 30, 10, 20, -14); g.bezierCurveTo(12, -30, -20, -24, -8, -38); };
+  body(); g.stroke(); g.strokeStyle = '#3ac070'; g.lineWidth = 8; body(); g.stroke();
+  g.fillStyle = '#f8d030'; for (const [a, b] of [[-26, 14], [-4, 6], [16, -2], [6, -24], [-10, -30]]) disc(g, a, b, 2.4, '#f8d030');
+  oval(g, -6, -40, 9, 6, '#3ac070', -0.4); disc(g, -9, -42, 1.4, '#f8d030');
+  g.restore();
+}
+const PIN = {
+  gengar: { top: '#2a1048', bottom: '#0c1a14', glow: 'rgba(120, 255, 160, 0.18)', rail: '#9cf060', emblem: ghost, glass: ['#7a3ae0', '#14082a'], name: 'HAUNTED PINBALL', ink: '#c8ff9a' },
+  lapras: { top: '#f08a5a', bottom: '#0a2a5a', glow: 'rgba(120, 220, 255, 0.2)', rail: '#ffe0a0', emblem: wave, glass: ['#3ab0f0', '#0a2a6a'], name: 'LAGOON PINBALL', ink: '#a8ecff' },
+  volcano: { top: '#5a1408', bottom: '#140806', glow: 'rgba(255, 120, 40, 0.25)', rail: '#ffb030', emblem: volcano, glass: ['#ff6a1a', '#3a0806'], name: 'VOLCANO PINBALL', ink: '#ffd060' },
+  skypillar: { top: '#5ab0f0', bottom: '#2a4a3a', glow: 'rgba(255, 255, 200, 0.22)', rail: '#f8d030', emblem: dragon, glass: ['#58c0f8', '#123a5a'], name: 'SKY PILLAR PINBALL', ink: '#e8ffb0' },
+};
+function tableField(g, w, h, t) {
+  const bg = g.createLinearGradient(0, 0, 0, h); bg.addColorStop(0, t.top); bg.addColorStop(1, t.bottom);
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  disc(g, w / 2, h * 0.42, 96, t.glow);
+  g.strokeStyle = t.rail; g.lineWidth = 5;
+  g.beginPath(); g.moveTo(12, h - 70); g.lineTo(12, 70); g.arc(w / 2, 70, w / 2 - 12, Math.PI, 0); g.lineTo(w - 12, h - 70); g.stroke();
+  g.strokeStyle = '#ffffff'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(w - 34, h - 10); g.lineTo(w - 34, 110); g.stroke();
+  for (const [x, y] of [[0.3, 0.26], [0.62, 0.26], [0.46, 0.36]]) { glowOn(g, t.rail, 14); disc(g, w * x, h * y, 16, '#f4f4f4'); glowOff(g); disc(g, w * x, h * y, 11, t.glass[0]); }
+  t.emblem(g, w * 0.46, h * 0.6, 1.5);
+  g.fillStyle = '#ffffff';
+  for (const [x, sgn] of [[0.12, 1], [0.78, -1]]) { g.beginPath(); g.moveTo(w * x, h * 0.8); g.lineTo(w * x + sgn * 26, h * 0.88); g.lineTo(w * x, h * 0.84); g.fill(); }
+  g.lineWidth = 12; g.lineCap = 'round'; g.strokeStyle = t.rail;
+  g.beginPath(); g.moveTo(w * 0.24, h * 0.9); g.lineTo(w * 0.4, h * 0.94); g.moveTo(w * 0.68, h * 0.9); g.lineTo(w * 0.52, h * 0.94); g.stroke(); g.lineCap = 'butt';
+  text(g, t.name.split(' ')[0], w / 2, h * 0.15, 24, t.ink, '#101018');
+}
+function tableGlass(g, w, h, t) {
+  const bg = g.createRadialGradient(w / 2, h * 0.4, 10, w / 2, h * 0.4, w * 0.7); bg.addColorStop(0, t.glass[0]); bg.addColorStop(1, t.glass[1]);
+  g.fillStyle = bg; g.fillRect(0, 0, w, h);
+  g.fillStyle = 'rgba(255,255,255,0.1)';
+  for (let k = 0; k < 16; k++) { g.beginPath(); g.moveTo(w / 2, h * 0.45); g.arc(w / 2, h * 0.45, w, k * 0.4, k * 0.4 + 0.18); g.fill(); }
+  t.emblem(g, w / 2, h * 0.52, 2.1);
+  g.save(); g.translate(w / 2, 38); g.font = '900 40px "Arial Black", Arial, sans-serif';
+  const s = Math.min(1, (w - 30) / g.measureText(t.name).width); g.scale(s, 1);
+  glowOn(g, t.ink, 18); text(g, t.name, 0, 0, 40, t.ink, t.glass[1]); glowOff(g);
+  g.restore();
+  rr(g, 18, h - 66, w - 36, 52, 6, '#140a04');
+  g.fillStyle = 'rgba(255,120,30,0.18)'; for (let y = h - 62; y < h - 18; y += 4) for (let x = 22; x < w - 22; x += 4) g.fillRect(x, y, 2, 2);
+  glowOn(g, '#ff8a30', 12); text(g, '1,280,450', w / 2, h - 40, 34, '#ff9a40'); glowOff(g);
+}
 
 /* ---------- the casino games' pictures (2026-10-12, the user's ask: the six table games modelled too) ---------- */
 

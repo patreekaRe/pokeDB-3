@@ -11,7 +11,7 @@
 import { calmFx } from './prefs.js';
 import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
-import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon } from './hd2d.js';
+import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
@@ -4495,6 +4495,54 @@ function fireworksNight(town, L, lit) {
 
 const FESTIVALS = { lantern: lanternFestival, moon: moonViewing, fireworks: fireworksNight };
 
+/** A part a tick moves or hides: stillParts() leaves it whole. */
+const moves = (o) => { o.userData.live = true; return o; };
+
+/** A town building's still parts in as few draws as they'll go (the towns' draw calls, 2026-10-17: Driftwood Landing drew
+    near 700 times a frame, every board, post and float its own mesh): each many-faced part split by its faces, plain
+    colours baked onto the vertices (bakeColours()), the rest one mesh a material (mergeStatic()). What moves (`moves()`),
+    what's hidden and an upright sign are lifted out first and put back after, a moving part's own still parts joined
+    inside it, so a rocking boat is a few draws too. Each part is cut to bend before it's joined: joined, a house is past
+    fineTris()'s budget and its walls would sag. */
+function stillParts(g) {
+  const out = [], parts = [];
+  const lift = (o) => { for (const c of [...o.children]) if (c.userData.live || !c.visible || !(c.isMesh || c.type === 'Group') || c.isInstancedMesh || c.material?.userData?.upright || c.userData.noBend) out.push([c, o]); else { if (c.isMesh) parts.push(c); lift(c); } };
+  lift(g);
+  for (const [c] of out) c.removeFromParent();
+  if (CURVE) for (const o of parts) { bendFine(o); fineTris(o); }
+  for (const o of parts) if (Array.isArray(o.material)) byFace(o);
+  g.traverse(o => { const m = o.material; if (o.isMesh && m.isMeshStandardMaterial && !m.map && !m.transparent && !m.emissive.getHex()) m.roughness = Math.round(m.roughness * 4) / 4; });   // 0.8 and 0.85 look the same and were a draw each
+  bakeColours(g);
+  mergeStatic(g, () => false);
+  for (const [c, o] of out) { o.add(c); if (c.userData.live && c.children.length) stillParts(c); }
+}
+
+/** A mesh of many materials as one mesh a material, in its place. */
+function byFace(o) {
+  const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry, n = geo.attributes.position.count, sets = new Map();
+  for (const r of geo.groups.length ? geo.groups : [{ start: 0, count: n, materialIndex: 0 }]) {
+    if (!o.material[r.materialIndex]) continue;
+    if (!sets.has(r.materialIndex)) sets.set(r.materialIndex, []);
+    sets.get(r.materialIndex).push([r.start, Math.min(n, r.start + r.count)]);
+  }
+  for (const [i, runs] of sets) {
+    const part = new THREE.BufferGeometry();
+    for (const [name, a] of Object.entries(geo.attributes)) {
+      const k = a.itemSize, arr = new a.array.constructor(runs.reduce((s, [s0, s1]) => s + (s1 - s0), 0) * k);
+      let at = 0;
+      for (const [s0, s1] of runs) { arr.set(a.array.subarray(s0 * k, s1 * k), at); at += (s1 - s0) * k; }
+      part.setAttribute(name, new THREE.BufferAttribute(arr, k, a.normalized));
+    }
+    const m = new THREE.Mesh(part, o.material[i]);
+    m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale);
+    m.castShadow = o.castShadow; m.receiveShadow = o.receiveShadow; m.raycast = o.raycast;
+    o.parent.add(m);
+  }
+  if (geo !== o.geometry) geo.dispose();
+  o.geometry.dispose();
+  o.removeFromParent();
+}
+
 /** Fades a building while your Pokémon is behind it (Highbough's crowns do the same, `B.crowns`), so a roof or the
     pagoda never hides it: everything in `g`, back from its back wall as far as its height hides from the camera. */
 function fadeBehind(g) {
@@ -6131,7 +6179,7 @@ function baitShop(b, f, L, lit, smoke) {
   const gable = new THREE.Shape(); gable.moveTo(-sw / 2, 0); gable.lineTo(sw / 2, 0); gable.lineTo(0, 0.72); gable.closePath();
   for (const z of [fz + 0.005, sz - sd / 2 - 0.005]) { const m = mesh(new THREE.ShapeGeometry(gable), std({ map: clap, roughness: 0.8, side: THREE.DoubleSide }), sx, top, z, g); m.castShadow = false; }
   g.attach(panel(houseCrest('ball'), 0.38, 0.38, f.cx + sx, top + 0.3, f.cz + fz + 0.02));
-  const vane = new THREE.Group(); vane.position.set(sx, top + rise, sz); g.add(vane);
+  const vane = moves(new THREE.Group()); vane.position.set(sx, top + rise, sz); g.add(vane);
   mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6), iron, 0, 0.25, 0, vane);
   const fish = new THREE.Shape(); fish.moveTo(-0.22, 0); fish.quadraticCurveTo(-0.05, 0.11, 0.12, 0.02); fish.lineTo(0.24, 0.09); fish.lineTo(0.22, -0.08); fish.lineTo(0.12, -0.02); fish.quadraticCurveTo(-0.05, -0.11, -0.22, 0);
   const fin = small(mesh(new THREE.ShapeGeometry(fish), std({ color: '#c87a40', roughness: 0.35, metalness: 0.7, side: THREE.DoubleSide }), 0, 0.42, 0, vane));
@@ -6188,7 +6236,7 @@ function baitShop(b, f, L, lit, smoke) {
   const mx = lx1 - 0.08, mz = lz0 + 0.06, mh = P + 2.75;
   mesh(new THREE.CylinderGeometry(0.03, 0.04, mh, 8), wood, mx, mh / 2, mz, g);
   small(mesh(new THREE.SphereGeometry(0.05, 10, 8), copper, mx, mh + 0.03, mz, g));
-  const flag = new THREE.Group(); flag.position.set(mx, mh - 0.2, mz); g.add(flag);
+  const flag = moves(new THREE.Group()); flag.position.set(mx, mh - 0.2, mz); g.add(flag);
   small(mesh(new THREE.PlaneGeometry(0.5, 0.33), std({ map: texOf(peliFlagArt(col)), side: THREE.DoubleSide, roughness: 0.9 }), -0.26, 0, 0, flag));
   const a = new THREE.Vector3(mx, mh - 0.45, mz), c = new THREE.Vector3(sx, top + rise + 0.25, sz), tri = new THREE.Shape();
   tri.moveTo(-0.07, 0); tri.lineTo(0.07, 0); tri.lineTo(0, -0.15); tri.closePath();
@@ -6297,7 +6345,7 @@ function stiltManor(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.045, tall + P - WATER_Y, 8), dark, x, (P + tall + WATER_Y) / 2, z, g);
     small(mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g));
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x + s * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x + s * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.4, 1.5), cloth, 0, -0.75, 0, hang));
@@ -6386,7 +6434,7 @@ function drownedColumn(x, z, tall, L) {
 function houseboat(b, f, L, lit) {
   const leader = b.home && B.town?.homes?.[b.home]?.leader;
   const ink = LEADER_INK[leader] || [shadeOf(b.roof, 1), b.roof, shadeOf(b.roof, -1)], letter = (b.name || '?')[0].toUpperCase();
-  const g = new THREE.Group(), boat = new THREE.Group();
+  const g = new THREE.Group(), boat = moves(new THREE.Group());
   g.position.set(f.cx, 0, f.cz);
   B.group.add(g);
   g.add(boat);
@@ -6436,7 +6484,7 @@ function houseboat(b, f, L, lit) {
   small(mesh(new THREE.BoxGeometry(ww + 0.22, 0.04, 0.04), gold, wx, ry + wh + 0.02, wd * 0.62, boat));
   plate(houseCrest('ink', ink, letter), 0.36, 0.36, wx, ry + wh + 0.16, wd * 0.62 + 0.03, -0.35);
   // the paddlewheel at the stern under its white guard, turning slowly
-  const wheel = new THREE.Group();
+  const wheel = moves(new THREE.Group());
   wheel.position.set(-hl - 0.42, WATER_Y + 0.18, 0);
   boat.add(wheel);
   for (const z of [-0.36, 0.36]) small(mesh(new THREE.TorusGeometry(0.46, 0.03, 6, 24), deep, 0, 0, z, wheel));
@@ -6453,7 +6501,7 @@ function houseboat(b, f, L, lit) {
     mesh(new THREE.CylinderGeometry(0.03, 0.04, tall, 8), wood, x, top + tall / 2, 0, boat);
     small(mesh(new THREE.SphereGeometry(0.05, 10, 8), gold, x, top + tall + 0.03, 0, boat));
     mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 6), wood, x - sd * 0.2, top + tall - 0.35, 0.05, boat).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - sd * 0.2, top + tall - 0.37, 0.07);
     boat.add(hang);
     small(mesh(new THREE.PlaneGeometry(0.34, 1.2), cloth, 0, -0.6, 0, hang));
@@ -6516,7 +6564,7 @@ function beacon(f, L, lit) {
   mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.45, 14), light, 0, tall + 0.3, 0, g).castShadow = false;
   mesh(new THREE.ConeGeometry(0.42, 0.45, 14), std({ color: '#d84a3a', roughness: 0.5 }), 0, tall + 0.75, 0, g);
   mesh(new THREE.TorusGeometry(0.16, 0.06, 6, 12), std({ color: '#8a6a40', roughness: 1 }), 0, tall + 0.98, 0, g).rotation.x = Math.PI / 2;
-  const beam = new THREE.Group();
+  const beam = moves(new THREE.Group());
   beam.position.y = tall + 0.3;
   g.add(beam);
   const ray = std({ color: '#fff4c0', emissive: new THREE.Color('#fff0b0'), emissiveIntensity: 0.6, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.DoubleSide });
@@ -8672,11 +8720,11 @@ function tradePost(b, f, lit) {
   mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.14, 12), std({ color: '#8a8478', roughness: 1 }), 0, 0.07, 0, g);
   mesh(new THREE.CylinderGeometry(0.055, 0.07, H, 10), wood, 0, H / 2, 0, g);
   mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.06, 12), brass, 0, H + 0.03, 0, g);
-  const ball = pokeBall(0.3, lit);
+  const ball = moves(pokeBall(0.3, lit));
   ball.position.y = H + 0.34; g.add(ball);
   mesh(new THREE.BoxGeometry(0.95, 0.06, 0.06), wood, side * 0.45, H - 0.3, 0, g);
   mesh(new THREE.SphereGeometry(0.05, 10, 8), brass, side * 0.92, H - 0.3, 0, g);
-  const swing = new THREE.Group();
+  const swing = moves(new THREE.Group());
   swing.position.set(side * 0.5, H - 0.33, 0.03); g.add(swing);
   for (const sx of [-1, 1]) mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.14, 4), brass, sx * 0.4, -0.07, 0, swing).castShadow = false;
   const board = panel(tradeBoardArt(b.roof || '#c83a3a'), 1.18, 0.5, 0, 0, 0);
@@ -9181,7 +9229,7 @@ const TOWN_STYLES = {
     trees: crags, house: (b, f, L, lit, smoke) => cabin(b, f, L, lit, smoke), lamp: 'brazier', lampScale: 0.62,
     gate: (town, lit) => mineGate(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.7, town.name, lit),
     drift: (i) => (i % 3 ? { art: ashArt(), size: 0.1 } : { art: emberArt(i % 2 ? '#f8a030' : '#f06020'), size: 0.12, rise: true }) },
-  lagoon: { holes: true, fade: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
+  lagoon: { holes: true, fade: true, merge: true, ground: lagoonGround, trees: lagoonJungle, lamp: 'tikitorch', lampScale: 0.9,
     house: (b, f, L, lit, smoke) => (b.kind === 'houseboat' ? houseboat(b, f, L, lit) : b.kind === 'beacon' ? beacon(f, L, lit) : stiltHut(b, f, L, lit, smoke)),
     gate: (town, lit, L) => templeArch(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 2.5, town.name, L, lit),
     extras: lagoonExtras,
@@ -9226,6 +9274,7 @@ async function buildTown(figs, { look, time, town, mended = false, fest = null }
     for (let x = f.x0; x <= f.x1; x++) for (let y = f.y0; y <= f.y1; y++) B.blocked.add(key(x, y));
     const g = LANDMARKS[b.kind]?.(b, f) ?? S.house(b, f, L, lit, smoke);
     if (b.kind === 'shop' && !g.userData.signed) g.attach(tradePost(b, f, lit));
+    if (S.merge && !LANDMARKS[b.kind]) stillParts(g);
     if (S.fade) fadeBehind(g);
     if (!b.door) continue;
     B.doors[`door:${b.id}`] = { id: b.id, step: { ...b.door }, g };
