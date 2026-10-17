@@ -644,3 +644,9 @@ the slots keep the left wall; `ARCADE` / `CASINO.slots` in `js/mall-corner.js`),
 - **Checking a table**: `NODE_PATH=$(npm root -g) node tools/pinball-sim.mjs pinball-gengar 8 10` plays whole games with a
   bot (scores, ball lives, each table's `t.stat` counters, nudges, escapes); `tools/arcade-check.mjs` for the cabinet.
   The bot is weak; only compare runs of the same bot.
+
+## The mall's floors on the GPU (2026-10-17)
+Every floor the mall builds stays in its one scene, hidden when you're elsewhere, but its textures stayed uploaded: the
+hall under the Game Corner was ~126 MB of textures, and a friend's phone reloaded the game walking in. `setPlace()` in
+`js/mall-3d.js` now `unload()`s the floor walked out of (`js/hd2d.js`: geometry and textures let go on the GPU, kept
+whole in memory, uploaded again by `warm()` under the curtain on walking back in). Keep it if a floor is added.

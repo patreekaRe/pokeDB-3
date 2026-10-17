@@ -17,7 +17,7 @@ import { dragWalk, reroute } from './drag-walk.js';
 import { buddy, deviceNews } from './trainercard.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
 import { openPokedex, openHowto } from './collection.js';
-import { loadThree, dispose, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
+import { loadThree, dispose, unload, monBoard, drawMon, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, tooSoon, smallNoShadow } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
 import { SHOPPERS, MALL_SHARED, MALL_CHATS } from './data/mall-crowd.js';
 import { fine, texOf, GC, words, star, hubThree } from './hub-3d.js';
@@ -828,7 +828,7 @@ const pickLine = (lines) => lines[Math.floor(Math.random() * lines.length)];
 const talk = (line, ms) => say({ line }, ms);
 
 function setPlace(p, at, facing = 'back') {
-  if (P) { P.group.visible = false; P.leave?.(); }
+  if (P) { P.group.visible = false; P.leave?.(); if (P !== p) unload(P.group); }   // only the place you're in stays on the GPU
   P = p; P.group.visible = true; blocked = P.blocked;
   PC = P.cols ?? COLS; PR = P.rows ?? ROWS;
   pick(null);

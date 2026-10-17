@@ -2867,3 +2867,14 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
 - (2026-10-17) Leaving an arcade game mid-play (EXIT, Escape or RESTART) keeps its score as the Best and on the weekly
   leaderboard (`bank()` in `js/arcade-kit.js`).
+
+### Phone reloads in the Game Corner and after Alpha / Gym Leader wins (2026-10-17, a friend's report)
+- Measured headless at an iPhone's size (texture uploads and canvases counted in the page). Three causes, three fixes:
+  the relic reward's turning rays (`.chest-rays`, also the treasure chest, Item Ball and card reveal) were the masked
+  conic gradient that took Safari's GPU process down at the badge on 2026-10-14, and Alpha and gym wins both show them
+  over a still-awake 3D arena; now `rayWheel()` / `chestRays()` in `js/ui.js` paint them once at 1x (the badge's `rays()`
+  uses it too). The arena kept its context awake after a fight; `frame()` in `js/arena-3d.js` now `sleepGL()`s it as
+  the battle screen goes, and `mountArena()` recompiles its shaders on the next wake (reward screen: 0 contexts awake,
+  was 1). The mall kept every floor it built on the GPU (the hall under the Game Corner, ~126 MB of textures); `setPlace()`
+  now `unload()`s the floor walked out of (`js/hd2d.js`: GPU copies dropped, re-uploaded under the curtain by `warm()`):
+  the Game Corner ~85 MB, the hall ~50 MB, both drawing again after walking back and forth. Not yet seen on the phone.
