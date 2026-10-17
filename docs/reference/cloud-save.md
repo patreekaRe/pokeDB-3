@@ -57,6 +57,22 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   the Trainer Card's CODE line, and a one-time letter from TRAINER NETWORK (`trainersLetter()` in `js/mail.js`,
   `save.trainersLetter`) the first time a signed-in player logs on to the PC, its code where a prize would be, Read
   not Claim.
+- **Visit** (2026-10-17, session 2): the app's Visit key (open once their page carries a `base`) calls the hook main.js
+  hands `onVisit()`, which leaves the title and opens `openBase3d({ onLeave: showHome, guest: { name, json } })` (refused
+  mid-run, "Not mid-run"). `readGuestBase()` in `js/secret-base.js` reads their JSON as untrusted: back in the main
+  room, only known pieces (no present, no `hax` ids), known papers, no lent yard; null if it isn't a base ("Can't open
+  it"). In the room (`host` in `js/base-3d.js`): titled "NAME's Base", a hint saying whose it is, no Decorate or Garden
+  key, no Smeargle, yard intro, Gym Leader or friend dropping by, no liveNews, their PC and Berry plots only say so;
+  doors, seats, piece taps and home games work. Their residents are their `mons` (Safari ids only, 12 at most), your
+  partner walks it, their statues and figures load from their `owned`; the Trainer set's cases show an empty save
+  (`lendTrainerSave({})`), since the page carries no trophies. **The guard**: `visitBase(true)` while it's up makes
+  `keep()`, which every base write in `js/secret-base.js` goes through (saveBase and all 12 buyers), a no-op; leaving
+  calls `endGuest()` and doesn't `publishTrainer()`. The next open of your own base takes the `reopen()` path with
+  `loadBase()`. A friend's base has no 2D fallback (no WebGL: straight home). `?base&asfriend` opens your own saved base
+  as a visitor sees it.
 - Tests: `tools/trainers-check.mjs`, two stand-in accounts in Playwright sharing one in-memory Firestore that mirrors
-  the rules (gstatic routed to stand-in SDK modules; 31 checks), and `tools/trainers-rules.mjs`, the real rules in the
+  the rules (gstatic routed to stand-in SDK modules, Three.js from disk via `THREE_JS`; 43 checks, the visit's: the
+  base on the page, Visit open, the room as theirs, no keys or visitors, unknown pieces dropped, every base writer called
+  during the visit and taps on the room, then the whole localStorage the same after leaving bar the play clock, B's page
+  not republished, B's own base theirs again and saving), and `tools/trainers-rules.mjs`, the real rules in the
   Firestore emulator (how to run it is at its top). Rerun both when the doc or the rules change.

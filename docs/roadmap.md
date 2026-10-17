@@ -898,19 +898,14 @@ needs unique names, renames and a guard against rude names turning up in results
 details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (it already carries `base`, the
 `secretBase` as JSON), friend codes, `save.friends`, adding by code or a leaderboard name, the Trainers app, the tip and
 the PC letter. **Its rules wait on the user** (Waiting on the user, below).
-**Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
-`loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
-(`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
-in `js/secret-base.js` (20 places) plus 3 in `js/base-3d.js`, so one guard there refuses any write for a `guest` base.
-A test shows that visiting and leaving leaves your save exactly as it was. Their statues and figures are loaded from
-their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of stamps.
+~~**Session 2, the visit**~~ done 2026-10-17 on `claude/visit-only-base-session-2-72ayar` (pushed to `main` too;
+`docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`'s Trainers section): the Trainers app's Visit walks round
+a friend's base as they left it, read-only (`openBase3d({ guest })`, every base write refused by `visitBase()`), checked
+by `tools/trainers-check.mjs`'s save-unchanged test. **Next: the user playtests it** (two signed-in accounts, or
+`?base&asfriend` alone); a guestbook of stamps is still a maybe.
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
-▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 2: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry, docs/reference/cloud-save.md's Trainers section and docs/reference/hub-base-mall.md, then build session 2,
-the visit-only base, with the save-unchanged test, a patch-notes line and a githack link." (`tools/trainers-check.mjs`
-is the two-account harness to extend.)
 
 ## Ideas, not agreed yet (ask the user before building)
 

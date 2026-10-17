@@ -28,7 +28,8 @@ import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-g
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
-  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard } from './secret-base.js';
+  useRoom, goRoom, onFloor, topOf, leaderVisitor, leaderVisited, postersUp, fitsHere, metInYard, meetInYard, visitBase, readGuestBase } from './secret-base.js';
+import { lendTrainerSave } from './base-furniture-trainer.js';
 import { loadStatues, statuesIn } from './base-furniture-statues.js';
 import { loadFigures } from './base-figures.js';
 import { spriteOf } from './data/gym.js';
@@ -103,6 +104,12 @@ const BEND = { k: { value: 0 }, z: { value: 0 } };
 const SEASON = season();
 let snow = null;   // winter's snowfall over the yard
 const outdoors = () => (base.here || 'main') === 'yard';
+/* A friend's base, visited (docs/reference/cloud-save.md's Trainers): `{ name, json }` from their trainer page, walked
+   round as they last left it. No decorating, no garden, no PC, no Smeargle, gifts or Gym Leaders dropping by, and
+   visitBase() refuses every base write while it's up, so leaving puts your save back exactly as it was. */
+let host = null;
+const homeBase = (start) => { const b = host ? readGuestBase(host.json) : loadBase(); return b && goRoom(b, start); };
+const baseTitle = () => (host ? `${host.name}'s Base` : 'Secret Base');
 
 
 /** Only the pixels in (or shaded near) these colours, for an emissive map: a window's sky, a lamp's shade. The pieces
@@ -817,6 +824,7 @@ const rand = (a, b) => a + Math.random() * (b - a);
 /** The catches on show: the save's pick, or before one is made the first onShowMax() caught, so the room is never empty.
     `&guests` lends every Safari Pokémon as caught for the page load, to playtest without a full Safari Pokédex. */
 function onShow() {
+  if (host) { const all = base.mons.filter(id => ENEMY_DEFS[id] && SAFARI_DEX_PAGES.some(p => p.ids.includes(id))).slice(0, 12); return { all, shown: all }; }
   const lend = new URLSearchParams(location.search).has('guests');
   const caught = new Set(getSave().safariDex?.caught || []);
   const all = [...new Set(SAFARI_DEX_PAGES.flatMap(p => p.ids))].filter(id => (lend || caught.has(id)) && ENEMY_DEFS[id]);
@@ -1172,7 +1180,7 @@ function visitSpot() {
 }
 
 async function startVisit() {
-  if (visit || yardTalk) return;
+  if (visit || yardTalk || host) return;
   if (outdoors()) return yardIntro();
   if (base.here) return;
   if (metSmeargle(base)) return leaderVisit();
@@ -1592,6 +1600,14 @@ let drags = null;
 const plotsHere = () => outdoors() ? base.items.filter(it => isPlot(PIECES[it.id])) : [];
 
 /** The Garden key: every plot in one window (openGarden() in js/berry-garden.js). */
+/** A line on the hint for a friend's base, until the next tap. */
+function guestSays(text) {
+  playSound('cancel');
+  host.said = text;
+  hushed = null;
+  refresh();
+}
+
 function tendGarden() {
   const list = plotsHere();
   if (!list.length || mode !== 'walk' || yardTalk) return;
@@ -1620,6 +1636,7 @@ function onTap(e) {
   if (g && g.parent === pieceGroup && PIECES[base.items[g.userData.index].id].gift) return unwrap(g.userData.index);
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
+    if (host && (PIECES[it.id].own === FREE_PC || isPlot(PIECES[it.id]))) return guestSays(PIECES[it.id].own === FREE_PC ? `It's ${host.name}'s PC. Better not log on.` : `${host.name}'s Berry plot. Best left to them.`);
     if (PIECES[it.id].own === FREE_PC) return logOn();
     if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openGarden(base, plotsHere(), save, it); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
@@ -1805,7 +1822,7 @@ function refresh() {
   root.classList.toggle('painting', tab === 'colour');
   root.classList.toggle('outdoors', outdoors());
   const garden = root.querySelector('.b3-garden');
-  garden.hidden = !(outdoors() && mode === 'walk' && !yardTalk && plotsHere().length);
+  garden.hidden = !!host || !(outdoors() && mode === 'walk' && !yardTalk && plotsHere().length);
   root.classList.toggle('has-garden', !garden.hidden);
   const bar = root.querySelector('.b3-acts');
   bar.hidden = !busy;
@@ -1818,9 +1835,10 @@ function refresh() {
   });
   const mons = onShow();
   const tip = mode === 'walk' && giftBoard && !visit && root.querySelector('.b3-gift').hidden;
-  hud.hint.classList.toggle('tip', !!tip);
+  hud.hint.classList.toggle('tip', !!tip || !!host);
   // with a piece in hand or picked the hinge's LCD says what's going on, and nothing covers the room
-  hud.hint.textContent = tip ? 'A present! Tap it to open it.'
+  hud.hint.textContent = host ? host.said || `${host.name}'s Secret Base, as they last left it. The doormat takes you home.`
+    : tip ? 'A present! Tap it to open it.'
     : busy ? (named && performance.now() < named.until ? named.text : '')
     : trying ? `${papers(trying.field).find(s => s.id === trying.id).name}: ${papers(trying.field).find(s => s.id === trying.id).price.toLocaleString()} PokéCoins. Tap again to buy.`
     : (tab === 'wall' || tab === 'floor') && shopMsg ? shopMsg
@@ -2073,6 +2091,7 @@ function stepDown() {
 async function fallBack() {
   root.remove();
   root = null;
+  if (host) { host = null; visitBase(false); lendTrainerSave(null); await leaveTo?.(); curtain(false); return false; }   // a friend's base has no 2D room
   await (await import('./secret-base.js')).openBase();
   curtain(false);
 }
@@ -2089,7 +2108,8 @@ export async function leave() {
   untry();
   root.remove();
   sleepGL(renderer);   // its GPU memory let go; reopen() wakes it
-  publishTrainer();   // your trainer page carries the base as you left it, for friends' visits
+  if (host) endGuest();
+  else publishTrainer();   // your trainer page carries the base as you left it, for friends' visits
   await leaveTo();
   leave.busy = false;
   curtain(false);
@@ -2121,7 +2141,7 @@ function showRoom(spot = () => null) {
   // outdoors there's no wallpaper or floor to pick, only furniture and who's let out
   if (outdoors() && tab !== 'furniture' && tab !== 'mons') tab = 'furniture';
   const lv = here().lv;
-  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? 'Secret Base' : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
+  root.querySelector('.b3-top h2').textContent = (base.here || 'main') === 'main' ? baseTitle() : `${roomName(base.house, base.here)}${lv ? ` · ${floorName(lv)}` : ''}`;
   buildRoom();
   Object.assign(walker, { path: [], through: null, seat: null, seatTo: null, goal: null, jump: null, y: 0 });
   buildPieces();
@@ -2148,6 +2168,7 @@ function showRoom(spot = () => null) {
    piece seen for the first time is only noted. */
 let sparks = [];
 function liveNews() {
+  if (host) return;
   const seen = base.liveSeen ||= {}, lines = [];
   let changed = false;
   base.items.forEach((it, i) => {
@@ -2222,11 +2243,20 @@ function logOn() {
   } });
 }
 
+/** Home from a friend's base: your own base's writes allowed again, the Trainer set's cases showing your save. */
+function endGuest() {
+  host = null;
+  visitBase(false);
+  lendTrainerSave(null);
+  root.classList.remove('guest');
+}
+
 /** Back in a second time: the room as it was left, the partner in at the door, any new catches moved in. */
-async function reopen(start) {
+async function reopen(first) {
   playMusic('secret-base');
   calm = calmFx();
-  base = goRoom(loadBase(), start);   // the mall's Furniture store may have bought into it since; in at the front door
+  base = first;   // the mall's Furniture store may have bought into it since; in at the front door
+  root.classList.toggle('guest', !!host);
   document.body.append(root);
   await wakeGL(renderer);
   const mate = buddy(getSave());
@@ -2242,17 +2272,23 @@ async function reopen(start) {
 }
 
 /** The Secret Base. `onLeave` is where its doormat goes (the walkable hub hands it the way back out to the Clearing);
-    `start` 'yard' opens out in the backyard (?yard), if there is one. */
-export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
+    `start` 'yard' opens out in the backyard (?yard), if there is one. `guest` ({ name, json }, a friend's trainer page)
+    opens their base instead, to walk round only. False if a guest's base can't be read. */
+export async function openBase3d({ onLeave = null, start = 'main', guest = null } = {}) {
+  host = guest ? { name: guest.name, json: guest.json } : null;
+  const first = homeBase(start);
+  if (!first) { host = null; return false; }
+  visitBase(!!host);
+  lendTrainerSave(host ? {} : null);   // a friend's trophy cases can't show your trophies, and their page doesn't carry theirs
   leaveTo = onLeave;
   playMusic('secret-base');
   // the statues' sprites are fetched only now: a room built without them would carve its statue models bare
-  const every = new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(loadBase().owned || {});
+  const every = !host && new URLSearchParams(location.search).has('allfurniture'), owned = Object.keys(first.owned || {});
   await Promise.all([loadStatues(every ? undefined : statuesIn(owned)), loadFigures(every ? undefined : owned)]);
-  if (root && renderer) return reopen(start);
+  if (root && renderer) return reopen(first);
   calm = calmFx();
   root = document.createElement('section');
-  root.className = 'base3d';
+  root.className = host ? 'base3d guest' : 'base3d';
   root.innerHTML = `
     <div class="b3-stage">
       <canvas class="b3-view"></canvas>
@@ -2327,8 +2363,9 @@ export async function openBase3d({ onLeave = null, start = 'main' } = {}) {
 
   // the furniture is smooth 3D: a sharper scene, scaled up smoothly, not in whole pixels
   post = createPost(renderer, { short: 820, crisp: false });
-  base = goRoom(loadBase(), start);
+  base = first;
   useRoom(base);
+  root.querySelector('.b3-top h2').textContent = baseTitle();
   if (outdoors()) root.querySelector('.b3-top h2').textContent = roomName(base.house, 'yard');
   buildRoom();
   buildPieces();

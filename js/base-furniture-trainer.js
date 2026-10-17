@@ -13,7 +13,10 @@ import { trophies } from './data/journal.js';
 import { LEADER_PICS } from './base-furniture-gym.js';
 
 const OAK = '#6a4224', GOLD = '#e0b04a', GLASS = 'rgba(200,230,255,0.28)', INK = '#2a1a10';
-const save = () => { try { return getSave(); } catch { return {}; } };
+let lent = null;
+/** A save to show instead of yours: a friend's base (js/base-3d.js) lends an empty one; null gives yours back. */
+export const lendTrainerSave = (s) => { lent = s; };
+const save = () => { if (lent) return lent; try { return getSave(); } catch { return {}; } };
 
 const words = (text, x, y, size, col, w) => {
   const g = ctx();
