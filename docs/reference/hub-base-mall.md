@@ -117,15 +117,21 @@ The first section began as the note on playtesting the live site and grew into t
   `gainMat(id, -n)`.
 - **The Garden window** (2026-10-15, the user's ask): out in the yard with a plot placed, a green Garden key stands
   right of Decorate (`.b3-garden`, `.has-garden` moves Decorate over; `tendGarden()` / `plotsHere()` in
-  `js/base-3d.js`). `openGarden(b, plots, save)` in `js/berry-garden.js`, the plot window's `.dev-window town-shop`
-  look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
-  `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
-  berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
-  so the 3D plants change at once. A "?" in its title (`.berry-q`, 2026-10-17, the user's ask) toggles HOW TO GARDEN
-  over the plots (`gardenHelp()`: plant, ripening days from `BERRIES`, water, pick, sell, Kurt only once
-  `workshopOpen()`), shown by itself the first time per device (`firstLook('garden')`). Every seed tile (both windows) shows its
-  held berry's effect in a few words (`.berry-does`, `short` in `js/data/held.js`; 2026-10-17, the user's ask), and
-  picking one says its full held text and, once `workshopOpen()`, the run kit Kurt makes with it (`usesOf()`).
+  `js/base-3d.js`). `openGarden(b, plots, save, at)` in `js/berry-garden.js`; a tap on a plot in the yard opens the same
+  window on that plot (the separate plot window, `openPlot()`, is gone since 2026-10-17). **An MMO-style window since
+  2026-10-17** (the user's ask: "immersive, clean, easy to follow, too much text"): its own look, not the device's
+  (`.garden-win`, `.gw-*` in `css/secret-base.css`: a wood frame with a gold trim, a parchment inside, dark soil
+  slots), with a "?" and an X in the title bar and two tabs, PLOTS (a gold badge: ripe plots) and BERRY STAND (berries
+  held). PLOTS: three task keys, Pick / Water / Plant with a count each (each every plot at once; Plant jumps to the
+  first empty plot), the next thing to do glowing (`.next`, off under `calm-fx`); the plots as slots (plant art, a
+  growth bar, time left, a gold "!" when ripe, a blue drop once watered today or an empty one while it wants water);
+  under them an item card for the slot picked (stage, a big growth bar, harvest count, the held effect, Water / Dig up
+  or Pick) or, for an empty plot, the seed bar and the picked seed's card (days, price, `short` effect, its full held
+  text, the run kit Kurt crafts once `workshopOpen()`, Plant here / Plant all N). BERRY STAND: today's pay as a bar,
+  then a row a berry (count badge, effect, price, Sell 1 / Sell all). A one-line log at the foot (`.gw-log`) says what
+  just happened or, idle, what to do next (`hint()`). Each change saves the base and sets `nextLook = 0`, so the 3D
+  plants change at once. HOW TO GARDEN (`gardenHelp()`): four steps, an icon and a line each, toggled by the "?" and
+  shown by itself the first time per device (`firstLook('garden')`).
 - **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
   failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
   hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro

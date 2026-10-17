@@ -24,7 +24,7 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
-import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot, openGarden } from './berry-garden.js';
+import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
@@ -1601,7 +1601,7 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
-    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openPlot(base, it, save); }
+    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openGarden(base, plotsHere(), save, it); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {
