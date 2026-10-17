@@ -2811,6 +2811,15 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session f: Cherry blossom, Maple leaf, Acorn, Mushroom (2026-10-17)
+- Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`), 25 each: 100 kinds, 2,262 in all, one
+  helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over 6,592 triangles, the blossom bed,
+  or 7 draws); thin, twiggy pieces match their paintings at 0.37 (the maple garland) to 0.74, nothing sticking out.
+- **Cherry blossom and Maple leaf are seasonal** (the session's call, AC's way): `holiday: 'sakura'` / `'maple'`, two new
+  windows in `js/data/holidays.js`, April and October, a month each so a 25-piece set can be collected at a stand a
+  floor a day. Acorn and Mushroom are sold all year. Pokémon touches: Cherrim, Hoppip, Cherubi; Deerling, Leavanny,
+  Sawsbuck; Seedot, Skwovet, Pineco; Shroomish, Foongus, Parasect, Shiinotic, Breloom. The user got picture sheets.
+
 ### Furniture expansion session e: the next five furniture series (2026-10-17)
 - Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and mermaid (`mer`, group 'Mermaid'), 25
   each: 125 kinds, 2,162 in all, one helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over

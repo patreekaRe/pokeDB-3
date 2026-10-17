@@ -563,6 +563,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `golden` in `js/data/furniture.js` (`GOLDEN`), the nth piece owned at n achievements earned, whichever ones
   ("Earn N achievements (k/N)"), the throne at all 22; `goldbed`, `goldchest`, `goldvase` from the `gold`, `roster` and
   `shiny-hunter` badges. Being in `FURNITURE` keeps it out of every shop's stock.
+- **Session f's series** (2026-10-17): Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`),
+  files `js/base-furniture-<sakura|maple|acorn|mushroom>.js` and `js/base-models-<same>.js`, built as session d's. **Cherry
+  blossom and Maple leaf are seasonal**: `holiday: 'sakura'` (April) and `'maple'` (October) in `js/data/holidays.js`,
+  dealt on the holiday stand like the holiday sets, a month each so the 25 can be collected. New parts: Cherry blossom's
+  `flower` and `petal` (`flowerPts()`, shared by both files), Maple leaf's one leaf outline (`leafPts`, a `lie` leaf lies
+  flat), Acorn's lathes lying over (`rot`) and painted-only cap cross-hatch (`tex`), Mushroom's squashed lathe (`sz`),
+  half cylinder against the wall (`half`), side-facing disc (`ax: 'x'`) and gill cone (`gl`).
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

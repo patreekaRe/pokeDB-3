@@ -44,6 +44,9 @@ function cropBl(L, g, art, [x0, y0, x1, y1]) {
   for (let i = 0; i < uv.count; i++) uv.setXY(i, (x0 + e + uv.getX(i) * (x1 - x0 - 2 * e)) / Wp, 1 - (y1 - e - uv.getY(i) * (y1 - y0 - 2 * e)) / Hp);
 }
 
+/** The turn that puts a corner of a few-sided round part at its side, so it shows its full width from the front. */
+const wide = (seg) => (seg && seg < 12 ? (Math.PI / 2) % (Math.PI * 2 / seg) : 0);
+
 function buildBl(K, L, parts, put, W, def) {
   const { THREE } = L, X = (x) => u(x) - W / 2;
   const mat = (q, m = q.m || def) => (m === 'glass' ? K.glass() : K[m](q.c));
@@ -53,7 +56,7 @@ function buildBl(K, L, parts, put, W, def) {
     switch (q.t) {
       case 'box': put(L.rbox(u(q.w), u(q.hh), u(q.d), u(q.r)), m, x, y, z); break;
       case 'petal': put(new THREE.CircleGeometry(u(q.r), 5).rotateX(-Math.PI / 2), m, x, y + u(q.hh) / 2, z); break;
-      case 'cyl': put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), q.seg ?? 24), m, x, y, z); break;
+      case 'cyl': put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), q.seg ?? 24).rotateY(wide(q.seg)), m, x, y, z); break;
       case 'ball': {
         const r = Math.max(q.rx, q.ry, q.rz), seg = q.seg ?? Math.max(8, L.sides(u(r), 20));
         put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), 1, 1, seg), m, x, y, z);
@@ -65,7 +68,7 @@ function buildBl(K, L, parts, put, W, def) {
         put(g, m, x, y, z);
         break;
       }
-      case 'lathe': put(L.lathe(q.pts.map(([r, up]) => [u(r), u(up)]), q.seg ?? 20), m, x, y, z); break;
+      case 'lathe': put(L.lathe(q.pts.map(([r, up]) => [u(r), u(up)]), q.seg ?? 20).rotateY(wide(q.seg)), m, x, y, z); break;
       case 'ring': {
         const g = L.torus(u(q.r), u(q.tr), q.arc ?? Math.PI * 2, 20);
         if (q.a0) g.rotateZ(q.a0);
