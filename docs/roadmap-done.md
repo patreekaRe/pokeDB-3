@@ -2673,6 +2673,14 @@ earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js
 the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
 (`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
 the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
+- **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
+  Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
+  turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw
+  (`wakeBeside()` in `js/hd2d.js`) instead of staying awake beside every place, and the buy windows keep only the last 8
+  previews (they kept every piece looked at); the Clearing's lamps, benches, beds, pond stones and the garden arch's
+  brambles merged (575 draws a frame to 397); the Sky Pillar view, the Sealed Gate and the descent capped at 60 fps.
+  Left for a session of their own: the towns' buildings are never merged (tappable `spot`s, and animated parts inside):
+  Ruins 677 draws a frame, Thornwood 601, Savanna 549 (the mall's hall is 345).
 
 ### The Safari Outfitter made a grand lodge (2026-10-15, the user's ask: "way bigger", couldn't read the price cards, "more of a safari aesthetic", the wall's things overlapping, "I want it grand")
 Its own 21 x 13 like the Furniture store's showroom: bamboo, log posts and a thatched eave; the back wall three bays with

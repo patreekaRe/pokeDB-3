@@ -551,3 +551,10 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
+- **The turntable's context** (2026-10-17): `js/turntable.js`'s one renderer sleeps 4 s after its last draw
+  (`sleepGL()`), woken by `wakeBeside()` (`js/hd2d.js`, which leaves the place on screen awake); `drawTurn()` returns
+  false and draws nothing while it wakes, so a still taken then is tried again (`snapAll()` in `js/garden-shop.js`).
+  `piecePreview()` keeps the last 8 pieces' previews, disposing older ones.
+- **The Clearing's dressing** (2026-10-17): the lamps, benches, flower beds, pond stones and lily pads are built into one
+  group and merged (`dressClearing()` in `js/hub-3d.js`), the garden arch's brambles and gate leaves too
+  (`js/hub-arch.js`): 575 draws a frame to 397.

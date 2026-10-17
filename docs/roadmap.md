@@ -9,6 +9,12 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check): each town's buildings stay
+separate meshes, as their meshes carry the door's `userData.spot` and some move (flags, wheels, beams, boats), so Ruins
+draws 677 times a frame, Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186 (the mall's hall, after its
+merges, 345). Merge each building's still parts into one mesh a material (`mergeStatic()` in `js/hub-3d.js`, the tag set
+again on the merged meshes), leaving out what a tick moves; one town a session, the user checking each on their phone.
+
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
