@@ -3,7 +3,6 @@
    which cards and relics you are offered.
    ============================================================ */
 
-import { safariStepToast } from './safarilock.js';
 import { poolForType, evolutionCardsFor, MAX_COPIES, baseId, upgradeId, CARDS_BY_ID, SAFARI_ONLY_CARDS } from './data/cards.js';
 import { RELICS } from './data/relics.js';
 import { itemsForType, ITEM_WEIGHTS } from './data/items.js';
@@ -151,7 +150,8 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
     ...[].concat(sub),   // sub is one line, or a list of them
   ];
   sayLines(lines.filter(Boolean));
-  if (news && coins.safari) safariStepToast(coins.safari);
+  // loaded on demand: this file is also imported by the Node tests, which have no DOM for safarilock.js's imports
+  if (news && coins.safari) import('./safarilock.js').then(m => m.safariStepToast(coins.safari));
 
   // a `layout` (the Mart's 'mart-window') styles the options as one window; options with a `group` are
   // gathered into a .choice-group per group, in the order they first appear
