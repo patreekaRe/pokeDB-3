@@ -121,7 +121,9 @@ The first section began as the note on playtesting the live site and grew into t
   look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
   `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
   berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
-  so the 3D plants change at once.
+  so the 3D plants change at once. A "?" in its title (`.berry-q`, 2026-10-17, the user's ask) toggles HOW TO GARDEN
+  over the plots (`gardenHelp()`: plant, ripening days from `BERRIES`, water, pick, sell, Kurt only once
+  `workshopOpen()`), shown by itself the first time per device (`firstLook('garden')`).
 - **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
   failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
   hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro

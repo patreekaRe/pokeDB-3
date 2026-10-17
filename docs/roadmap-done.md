@@ -2790,3 +2790,6 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - 34 relics (59 -> 93), 14 items (20 -> 34) and 32 cards (310 -> 342), each on a StS one; Block 7 / Cotton Guard 11 /
   Withdraw 8 / Flame Body 11 and Mewtwo's Depths (bossDmg 4, bossHp 1.2, enemyDmg -3) bring the human bot back: L0 81 / 84 /
   78, L3 62 / 64 / 60, L5 40 / 38 / 38, Mewtwo 67%. Detail: `docs/reference/cards.md`'s "The balance pass", relics.md, items.md.
+
+### The Berry Garden's "?" (2026-10-17, the user's ask: "a ? button that explains everything for gardening")
+- HOW TO GARDEN in the Garden window, toggled by a "?" in its title, shown once by itself. Checked headless; no errors.

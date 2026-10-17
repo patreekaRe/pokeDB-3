@@ -66,7 +66,7 @@ export const PATCHES = [
     ['pc', 'The Trainer\'s Journal on the Clearing\'s PC: 99 goals for the whole game, paying PokéCoins and a Trainer furniture set that fills in as you play (and sparkles when you come home to something new), with ranks and a gold shell.'],
     ['runs', 'Berry Trees in runs now drop a berry or two into your Satchel, and Professor Oak drops by to explain your first.'],
     ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 tasks and weekly Expeditions for coins, balls, Safari furniture and base room, with Ranger Ranks and badges on your Trainer Card.'],
-    ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
+    ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot (its ? explains it all), and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
     ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
     ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
     ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],
