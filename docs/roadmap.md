@@ -884,32 +884,39 @@ pick with me, then build it with the sim mirror, a bot check at Levels 0/3/5, a 
 **Friends list and base visits** (the user's go, 2026-10-17; was parked as "Friends and messages", 2026-10-07).
 Offline visits, like Animal Crossing's dream visits: you walk round a friend's Secret Base as they last left it. Live
 visits together come later, if ever (they need the full Firestore SDK with live listeners, not `firestore-lite`, and
-avatar and position sync). The 2026-10-07 design stands: **no codes or links, no free-text chat**, signed-in players
-only. Phase 1, about 2-3 sessions:
-1. **Names and finding people.** A unique nickname, claimed in Firestore (the save's leaderboard nickname,
-   `pickedName()` in `js/leaderboard.js`), plus a "Let others find me" switch. Search by name. One-tap Follow from
-   search, the leaderboards and suggested Rivals; following each other makes you Friends. A Friends tab on both boards.
-2. **A public base copy.** `saves/<uid>` stays private. A new public doc (name, Trainer Card, buddy, `secretBase`)
-   is written when you leave your base. Its `firestore.rules` bounds follow the boards' (size limits, owner-only
-   writes), and the rules are published again in the Firebase console.
-3. **A player list in the device** (a `shelfApp()`, maybe also a PC page): each one's name, Trainer Card, buddy,
-   last seen and a Visit key. **"Friends" is taken**: the Pokédex's Friends app (`js/friendsdex.js`) is the Gym Leaders'
-   hearts. So ask the user first: a new name ("Trainers", "Pals"), or a players tab in the Friends app.
-4. **Visit-only base.** `openBase3d()` in `js/base-3d.js` takes a friend's base instead of `loadBase()`, with
-   decorating off and **every `saveBase()` / `updateSave()` blocked while visiting** (the risk: one missed write
-   overwrites your own base). Load their statues and figures from their owned pieces. Keep `wakeGL` and the GPU rules.
-   Optional: a guestbook of stamps or set phrases.
-5. **Introducing it** (the user's call, 2026-10-17): one tip in How to play's Going Further (`js/howto.js`), for
-   example "Friends: Sign in and pick a name. Find friends by name and visit their Secret Base." Plus a one-time PC letter the
-   first time a signed-in player opens the PC, pointing to the new app. No slide in the first-launch setup.
-Phase 2, later, from the 2026-10-07 talk: Dark Souls signs from phrase parts on map nodes (best on the seeded Safari /
-Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift in a friend's
-Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
-▶ Run in: CLOUD (attach pokeDB-3). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base visits'
-entry, docs/reference/cloud-save.md and docs/reference/hub-base-mall.md. Build phase 1, part by part: unique names and
-search, Follow and Friends, the public base copy and its rules, the player list (ask me its name first), the visit-only base, the How to play
-tip and the PC letter. Test visits headless with two stand-in accounts, add a patch-notes line, tell me what to paste
-into the Firebase console's rules, and give me a githack link."
+avatar and position sync). Signed-in players only, no free-text chat. **Friend codes are in** (the user's call,
+2026-10-17, replacing 2026-10-07's "no codes"): they are the easiest way in. Name search is left for later, because it
+needs unique names, renames and a guard against rude names turning up in results. The easiest build, 2 sessions:
+**Session 1, the list (no 3D):**
+- **A public trainer doc**, `trainers/<uid>` = `{ code, name, card, buddy, base, at }`. `saves/<uid>` stays private.
+  Written on sign-in and whenever you leave your base. Rules: signed-in players read it; only the owner writes it,
+  within size bounds, the same way the boards' rules do.
+- **A friend code**, `codes/<CODE>` = `{ uid }`: 8 letters with no look-alikes (no 0/O, 1/I/L), made once and
+  create-only, so a clash just rolls again. Shown on the Trainer Card and the PC.
+- **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
+  device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
+  carry `uid`). No requests and no accept step; anyone you add shows up.
+- **A player-list app** (a `shelfApp()`): name, Trainer Card, buddy, last seen, a Visit key (greyed until session 2),
+  Remove. One `getDoc` per friend on open. **"Friends" is taken** by the Gym Leaders' hearts app (`js/friendsdex.js`),
+  so ask the user first: a new name ("Trainers", "Pals"), or a tab in the Friends app.
+- **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
+  one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
+  setup.
+**Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
+`loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
+(`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
+in `js/secret-base.js` (20 places) plus 3 in `js/base-3d.js`, so one guard there refuses any write for a `guest` base.
+A test shows that visiting and leaving leaves your save exactly as it was. Their statues and figures are loaded from
+their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of stamps.
+Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
+seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
+in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
+visits' entry and docs/reference/cloud-save.md. Ask me the player list's name, then build session 1: the trainer doc,
+friend codes, the list in the save, adding from a code or a leaderboard name, the app, the How to play tip and the PC
+letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
+rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
+build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
 
 ## Ideas, not agreed yet (ask the user before building)
 
