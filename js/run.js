@@ -792,6 +792,7 @@ async function walkIntoRun(saved) {
   for (const k of Object.keys(homeVisits)) delete homeVisits[k];
   run = saved;
   mapFilm = null;
+  event3dMod?.forgetTowns();
   if (run.town) {
     run.town = null;
     startBiome();
@@ -1913,6 +1914,7 @@ function townRoom(covered = null, at = null) {
     if (home) { playSound('stick'); return said('The far gate won\'t open from this side. Only the Waystone\'s light takes you home.'); }
     run.town = null;
     townVisit = null;
+    event3dMod?.forgetTowns();
     startBiome();
   };
   const said = (line, who = '') => sayLines([line], 'reward-log', null, who);
@@ -2425,6 +2427,7 @@ function campStop(onDown) {
   homeRoom(b, () => {
     if (run !== thisRun) return;
     run.town = null;
+    event3dMod?.forgetTowns();
     onDown();
   });
   setTimeout(() => { if (run === thisRun && run.town?.fall) campTalk(); }, 2200);

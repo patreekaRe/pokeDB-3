@@ -11909,6 +11909,26 @@ function forgetRooms() {
   }
 }
 
+/** Lets go of every town and home built, as the run walks on out of the town into its biome. A town is ~90MB on the
+    GPU, kept awake under the map while it warmed the next rooms on top, and an iPhone reloaded the tab just after
+    leaving one (a friend's run, 2026-10-17). */
+export function forgetTowns() {
+  for (const [id, kept] of Object.entries(built)) {
+    if (!/^(town|home)\//.test(id)) continue;
+    delete built[id];
+    if (kept === entering) entering = null;
+    kept.then(b => {
+      if (b === R) {   // the town you're walking out of: its next frame finds no room and puts the view away (unmount())
+        scene.remove(R.group);
+        R = null;
+      }
+      b.crowd?.hide();
+      for (const who of Object.values(b.who)) { scene.remove(who.group); dispose(who.group); }
+      dispose(b.group);
+    }).catch(() => {});
+  }
+}
+
 /** Builds a room ahead, while the map is up (`at` as room()'s). */
 export function preloadEvent(kind, at = {}, figs = {}) {
   if (BUILD[kind] && kind !== 'rocket') room(kind, figs, at).catch(() => {});   // Team Rocket's is built for its grunt and Alpha

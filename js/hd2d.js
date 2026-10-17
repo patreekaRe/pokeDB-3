@@ -253,6 +253,7 @@ export function smallNoShadow(root, r = 0.1) {
 export function dispose(group) {
   group.traverse(o => {
     o.geometry?.dispose();
+    if (o.isInstancedMesh) o.dispose();   // its instance matrices are a buffer of their own (a town's forest)
     // shared textures (js/base-mesh.js's grain and weave) are marked `keep` and outlive the room
     for (const m of [o.material].flat()) if (m) { if (!m.map?.userData.keep) m.map?.dispose(); if (!m.emissiveMap?.userData.keep) m.emissiveMap?.dispose(); if (!m.alphaMap?.userData.keep) m.alphaMap?.dispose(); m.dispose(); }
   });

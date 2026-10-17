@@ -501,3 +501,12 @@ still parts inside it. **A new moving or hidden part in a merged town's building
 Headless at 390 x 844: Driftwood Landing 674 -> ~495 GL draws a frame, its ten buildings 428 meshes -> ~194, every door
 still tapped and opened, one context awake. What's left there is mostly the ground's extras (rowboats, columns, jungle)
 and textured faces (each painting its own material). Next: add `merge: true` to another style, mark its moving parts.
+
+## Leaving a town lets go of it (2026-10-17)
+
+A friend's iPhone reloaded the tab right after leaving a town for the next biome. The town (~92MB of textures and
+buffers, headless at 390 x 844) stayed built and its context awake under the map, which then warmed the next ? rooms or
+the gym (~40MB) on top. Every way out of a town into a run (`townRoom()`'s leave, `walkIntoRun()`, the Depths camp in
+`campStop()`) now calls `forgetTowns()` in `js/event-3d.js`, which disposes every built town and home: ~9MB stays (the
+post targets and shadow map). `dispose()` in `js/hd2d.js` now also frees an instanced mesh's matrices (a town's forest
+held ~8MB of them). Coming back to a town builds it again.
