@@ -370,7 +370,7 @@ export const RANCH_KINDS = [
     B(16, 40.4, -9.6, 18, 2, 4.6, RC.turq, CL), B(16, 31.6, -8.1, 18, 16, 1, RC.turq, CL),
     ...bands(16, -7.45, 18, [[26, RC.nRed], [29.2, RC.nCream], [32.4, RC.nBlack], [35.6, RC.nCream]], 1.3),
     B(16, 23, -8.1, 18, 1, 0.8, RC.nCream, CL),
-    ...horseshoe(16, 40, -7.2, 2.4, 0.6, true, { nails: false }),
+    ...horseshoe(16, 44.6, -10, 2.4, 0.6, true, { nails: false }),
     ...[4.5, 27.5].flatMap(x => [B(x, 24, 0, 3, 1.8, 21, RC.wood, WD), RD([x, 16.7, 8], [x, 23.2, 8], 0.9, RC.woodD, WD)]),
   ]),
 
@@ -598,7 +598,7 @@ export const RANCH_KINDS = [
   // a hay bale to sit on, bound with twine, a turquoise Navajo blanket folded over it
   piece('rnchhay', 'Ranch hay bale seat', 1, 1, 240, 'cloth', [
     B(16, 9, 0, 30, 18, 24, RC.hay, { m: 'cloth', tex: 'straw', r: 2 }),
-    ...[9, 23].map(x => B(x, 9, 0, 1.2, 18.4, 24.4, RC.ropeD, CL)),
+    ...[9, 23].map(x => B(x, 9.2, 0, 1.2, 18.4, 24.4, RC.ropeD, CL)),
     ...[[3, 17.6, 4, 1.4, 20, 5], [28, 17.4, -6, 30.6, 19.4, -7], [5, 4, 12, 2, 2.6, 13], [27, 11, 12, 30, 12.4, 13.4]].map(([ax, ah, az, bx, bh, bz]) => RD([ax, ah, az], [bx, bh, bz], 0.3, RC.hayL, CL)),
     B(16, 18.6, 3, 16, 1.2, 19, RC.turq, CL), B(16, 13, 12.6, 16, 11, 0.8, RC.turq, CL),
     ...bands(16, 13.15, 16, [[9.6, RC.nRed], [12.6, RC.nCream], [15.6, RC.nBlack]], 1.2),
