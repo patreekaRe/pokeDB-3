@@ -50,6 +50,7 @@ export const NEXT = [
   ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
   ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
   ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
+  ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
   ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz.'],
 ];
 

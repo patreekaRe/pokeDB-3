@@ -1040,7 +1040,12 @@ const previews = new Map();
 /** The piece alone for the buy window (js/turntable.js), on a round velvet turntable in its department's colour, rimmed
     in gold, its middle over the turntable's. Kept per piece, as the shared renderer keeps it. */
 export function piecePreview(THREE, id, ink) {
-  if (previews.has(id)) return previews.get(id);
+  if (!previews.has(id)) previews.set(id, pieceTurntable(THREE, id, ink));
+  return previews.get(id);
+}
+
+/** piecePreview()'s piece, built afresh and not kept: for a still, after which the caller disposes it. */
+export function pieceTurntable(THREE, id, ink) {
   const std = (o) => new THREE.MeshStandardMaterial({ roughness: 0.85, ...o });
   const goldM = std({ color: '#e8b848', metalness: 0.85, roughness: 0.22 });
   const pivot = new THREE.Group(), ware = new THREE.Group();
@@ -1055,9 +1060,7 @@ export function piecePreview(THREE, id, ink) {
   const foot = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.06, r * 1.08, 0.05, 64), std({ color: '#2a2030', roughness: 0.3 }));
   foot.position.y = -0.025;
   pivot.add(ware, disc, rim, foot);
-  const out = { pivot, h: size.y + DISC, r: Math.hypot(r, (size.y + DISC) / 2) };
-  previews.set(id, out);
-  return out;
+  return { pivot, h: size.y + DISC, r: Math.hypot(r, (size.y + DISC) / 2) };
 }
 
 /** A round bouquet: blooms in the floor's colours heaped in a dome, a few leaves among them, `k` its size. */
