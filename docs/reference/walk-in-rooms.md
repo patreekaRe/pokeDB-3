@@ -29,3 +29,11 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   `?event=treasure` the grotto; `&event2d` the pixel room). Merged into `main` and live since 2026-10-11 (the user's call). Detail in
   `docs/reference/events.md`.
 - **A deck picker over its room** (2026-10-14, the user's ask): wider than a phone, the PP Up / Forget pickers of the Center, the Mart's PC and the ? rooms (Move Deleter, Day Care) keep the 3D room up behind them, still and untappable, instead of the old pixel scene it was drawn over (`pickingOver()` in `js/hd2d.js`, in each room's `alive()`; walking checks `inRoom()`). On a phone the picker covers everything, so the room is put away as before.
+
+## Sharpness (2026-10-16)
+
+Every smooth 3D place sizes its scene through `scale()` in `createPost()` (`js/hd2d.js`), which reads `sharpness()` in
+`js/prefs.js`: Soft draws at most at CSS pixels (the old way, and the only level the Home Screen app's tall-screen fit
+applies on), Sharp (the default) up to 1.5x CSS pixels, Max up to 2x, never past the device's pixels. Crisp posts (the
+Clearing) keep their pixel-art size. A new place built on `createPost()` gets it for free; one that sizes its own
+canvas should read `sharpness().cap`.

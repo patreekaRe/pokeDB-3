@@ -47,6 +47,9 @@ export const NEXT = [
   ['mall', '387 new pieces: Pikachu, Eevee, Snorlax, Jigglypuff, Gengar and Lapras rooms, eight holiday sets in their season, a birthday party set, and 120 for the backyard.'],
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
+  ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
+  ['dex', 'Friends moved into your Pokédex, by Quests: each friend\'s hearts, the pieces they\'ve given and what the next heart brings.'],
+  ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -66,7 +69,7 @@ export const PATCHES = [
     ['pc', 'The Trainer\'s Journal on the Clearing\'s PC: 99 goals for the whole game, paying PokéCoins and a Trainer furniture set that fills in as you play (and sparkles when you come home to something new), with ranks and a gold shell.'],
     ['runs', 'Berry Trees in runs now drop a berry or two into your Satchel, and Professor Oak drops by to explain your first.'],
     ['mall', 'A Ranger Task Board in the Safari Outfitter: 92 tasks and weekly Expeditions for coins, balls, Safari furniture and base room, with Ranger Ranks and badges on your Trainer Card.'],
-    ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot, and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
+    ['base', 'Grow berries in your backyard: Smeargle shows you round, watering adds berries, a Garden window tends every plot (its ? explains it all), and Kurt crafts held berries (up to 3 a run, one a biome) and items to pack.'],
     ['mall', 'Smeargle\'s Furniture store is a grand showroom three times bigger: eight departments, prices you can read, a lift at the end of the carpet, and a buy window where pieces turn.'],
     ['mall', 'The Safari Outfitter is a grand safari lodge now: bamboo and thatch, a jeep, a Day Pass booth in the middle, and a buy window where each ball turns.'],
     ['hub', 'The Nietos come home once you beat Law, Britt or the Nietos at the Clearing\'s Gym, not only the Nietos.'],

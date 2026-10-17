@@ -569,7 +569,13 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
 8. **Done (2026-10-15): Friendship, what gifts are for**, all six sessions (a-f): hearts, heart lines, Secret Base visits,
    signature pieces 2 and 3, badges / letters / secret recipes, and (f) each friend's own requests on the Quests board.
    Every session's notes are in `docs/roadmap-done.md`; how it all works in `docs/reference/towns.md`. On `main`, waiting
-   on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). Next: nothing planned; the user's call.
+   on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). **Since 2026-10-16 the Friends page is a Pokédex app**
+   (the user's ask: it's carried into the towns where gifts are chosen), after Quests, with a "!" the first time it's
+   seen and on a friend changed since you looked; the PC's FRIENDS row opens it (`js/friendsdex.js`, `js/data/friends.js`;
+   `docs/reference/towns.md`'s Friends app). **Since 2026-10-16 the game explains it** (the user asked whether any
+   dialogue did): Kurt's `giftTalk` after the first gift made, and each friend's `GIFT_MEET` hello the first time home
+   after their Gym, hinting at their favourite (`docs/reference/towns.md`'s Gift words). On `main`, waiting on the user's
+   look. Next: nothing planned; the user's call.
 
 **Smooth card art** (the user's yes, 2026-10-12: every card's picture off pixels, a picture of the move rather than an
 item pun). **Done for every card a run can meet** (2026-10-12): all of Fire, Water, Grass, Psychic and Neutral, the tokens
@@ -787,6 +793,38 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       merged meshes, the step-down still working). Check it at 390x844 and 1280x800 for every place (`&stage=0-2`,
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
+
+**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
+Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
+act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
+~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
+a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
+one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
+bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
+▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
+and docs/reference/walk-in-rooms.md. List 10 StS events that would fit as Pokémon events and pick 5 with me, then build
+them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
+
+**Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
+116 augments (Silver 38, Gold 48, Prismatic 30; 6 sets holding 25), all ranked in pokeDB-sim's `sim/augranks.json`, but
+those ranks are from 2026-10-11, before the pass's 34 relics and 32 cards. The pass's climb check only went to floor 40
+(fire 68 -> 70%, grass 80 -> 78%, water 53 -> 58%); floor 100 was last measured 2026-10-05 (Fire 0%, Grass and Water 7%).
+A climb shows ~9 Prismatics of 30, so that tier repeats first. Then: re-measure the ranks, climb to 100 per type, list the
+dead and must-pick augments and fix them, then ~10 Prismatics and 2-3 new sets (build-arounds), checked again.
+▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'Sky Pillar augments: re-check' entry,
+docs/reference/sky-pillar.md, docs/augments.md and pokeDB-sim's README on the Sky Pillar. Re-measure every augment's rank
+on today's main, run 4-flight and 10-flight climbs per type, and show me the dead and must-pick augments and Fire's top
+floors before changing anything. Then retune, add ~10 Prismatics and 2-3 sets, re-check, and push to main."
+
+**Perk loadout** (the user's pick, 2026-10-17). 15 perks today: 9 at the Game Corner (`PASSIVE_SHOP_ITEMS` in
+`js/data/shop.js`, 14 levels, 11,800 coins) and 6 from Pokédex pages (`DEX_PERKS` in `js/data/pokedex.js`). StS has none
+past Neow, and every always-on perk makes Level 0 easier, so new perks go in a loadout: own many, bring 3 into a run
+(Hades' Mirror, Monster Train's covenants), chosen at the run's start. The 15 that exist stay as they are (players bought
+them). Then 5-8 new perks that add choices, not stats, like the Pokédex ones (see the map, reroll, open a road), each read
+through `perk()` / `dexPerk()` in `js/run.js` (a Safari first try stays fair), mirrored in the sim and bot-checked.
+▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'Perk loadout' entry and
+docs/reference/economy-and-hall-of-fame.md. Propose the loadout (slots, where you pick it, what it costs) and 8 perks,
+pick with me, then build it with the sim mirror, a bot check at Levels 0/3/5, a patch-notes line and a githack link."
 
 ## Ideas, not agreed yet (ask the user before building)
 

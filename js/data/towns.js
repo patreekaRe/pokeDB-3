@@ -1776,6 +1776,56 @@ export const HEART_LINES = {
   ],
 };
 
+/* A friend's hello the first time you're in their home after beating them at their Gym (2026-10-16; js/run.js's
+   homeRoom(), once a save, skipped once they've had a gift): a hint at their favourite gift (js/data/workshop.js's
+   FAVOURITE) without naming it, pointing you to Kurt, whose `giftTalk` explains the hearts. */
+export const GIFT_MEET = {
+  nietos: [
+    'BRITT: Sweetie! You beat us fair and square, so you\'re family now. Shoes off. Juice box?',
+    'LAW: Real talk? If anything could hum Linc to sleep, we\'d be friends for life. Kurt next door makes things. Just saying.',
+  ],
+  john: [
+    'Oh, hi! Come in. I was choosing which handheld to show you. I\'m still choosing.',
+    'If Kurt could make something to help me finally pick... I\'d owe you. Probably. I can\'t decide.',
+  ],
+  jahmes: [
+    'LET\'S GO! You found my place! Make yourself at home! Till eleven!',
+    'Real talk, I wish I could stay up with the boys. If Kurt could cook up something that keeps me awake... SPICY? LET\'S GO!',
+  ],
+  clarence: [
+    'Welcome, darling, to my dressing room! Mind the boa. It sheds.',
+    'A performer can never check the pose enough. Kurt makes lovely things. A little sparkle would not go unnoticed.',
+  ],
+  shaun: [
+    'You beat me. Fine. You had good comms. Sit anywhere that isn\'t my chair.',
+    'My setup\'s too quiet. I can\'t hear myself flame. Kurt takes commissions. Make it LOUD.',
+  ],
+  pat: [
+    '♪ Oh, a visitor at my door... ♪ Sorry. Come in! I sing when the door opens.',
+    'Singing all day dries you out. Something cold and sweet, like the song... Kurt could make it. ♪ Like a tall glass of... ♪',
+  ],
+  kayl: [
+    'Hi! You came! Mind Spooky. And Reya. And there\'s a third one somewhere. Hi!',
+    'The cats keep stealing my chair. If Kurt built them something of their own to climb... oh, I\'d cry. Then forget why.',
+  ],
+  phil: [
+    'You beat me, so JONA lets you in. Don\'t touch the candles. They move on their own.',
+    'I eat in the dark so she can\'t watch. Something warm that glows a bit would help. Kurt cooks, apparently. JONA says no.',
+  ],
+  ricky: [
+    'Hey. Come in. It\'s, uh, morning? For you. Night for me. Always night for me.',
+    'Third hour of a stream at 3 a.m., I\'d kill for a hot drink with a kick. Kurt makes stuff. Just putting that out there.',
+  ],
+  machew: [
+    '...You have defeated me. So you may enter the shadow\'s den. Shoes off.',
+    'A ninja meditates on his failures. I have many. Kurt the smith could make something to burn while I do. ...Something smoky.',
+  ],
+  jerome: [
+    'Oh, hey. Come in. Don\'t mind the trailer, it\'s on loop. Somebody found a new mailbox.',
+    'Those bandits outside town? I\'m planning a heist. Need every way in AND out, on paper. Kurt\'s good with paper. Just saying.',
+  ],
+};
+
 /* A friend dropping by your Secret Base (step 8, session c; js/secret-base.js's leaderVisitor()): `drop` from 3 hearts,
    standing about till you tap them; `sit` at 5, on a seat of yours, at home. One speech of each said a visit, picked at
    random; a LAW: / BRITT: / LINC: tag names who says the line. */
@@ -2201,6 +2251,13 @@ export const CLEARING = {
         'Make as many as you like, whenever you like. I keep every one for you.',
         'But you take only one into each run. Pick it on the Prepare screen, beside your Berry Pouch, and it starts in your Bag.',
         'Use it when you need it. Whatever\'s left in your Bag stays behind when the run ends, win or lose, so don\'t hoard it!',
+      ],
+      // the first gift he makes you (2026-10-16): what gifts and hearts do, once a save
+      giftTalk: [
+        'Your first gift! A word on how these go, since the young ones never ask.',
+        'Hand it to a friend at their home and it fills a heart. Their favourite fills two. Five hearts is as close as friends get.',
+        'At three hearts and at five, they\'ll give you more of their signature pieces for your Secret Base. Good friends drop by there to visit, too.',
+        'You can see where you stand with each of them in the Friends app on your Pokédex. Off you go!',
       ],
       // after the second line, while the Nietos' Waystone Chime is the step you're on
       meetChime: 'The Nietos sent you for a Waystone Chime, eh? Whisper Acorns from the Clearing, carved thin. Bring me four and a pinch of Glowmoss.',

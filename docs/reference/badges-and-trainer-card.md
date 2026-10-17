@@ -37,7 +37,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   first `markSeen()` of a relic, item or move also files it in `save.newFinds`, and while any is there the title's Pokédex
   sign, the top bar's / map's / rooms' Home keys (`.dex-news`, `deviceNews()` in `showBadgeNews()`), the device's LED, the
   app's tile, the group's banner and the slot (`shelfApp()`'s `fresh` / `shown`; the group opens on it) or the Moves tab
-  and card wear a "!"; once on screen it's cleared (`clearFinds()`). `newFinds()` ignores ids no app lists (tokens, status cards). **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
+  and card wear a "!"; once on screen it's cleared (`clearFinds()`). `newFinds()` ignores ids no app lists (tokens, status cards). The Friends app's "!" (`friendsNews()`, 2026-10-16) rides the same trail: until it's first opened, then for a friend changed since the page showed them (`docs/reference/towns.md`'s Friends app). **Getting to it** (2026-10-04): the title's Pokédex sign (the device, whose home has the Trainer Card strip; `renderMenu()` in `js/title.js`), the
   Bag's 5th pocket (`trainer`, `renderTrainerPocket()` in `js/run.js`), and a tap on a result window's badge line
   (`badgeItem()`); `showBadgeNews()` colours the title's Pokédex sign and the Bag by tier and puts a gold "!" on them while a badge
   is unseen (after a fight that earns one, too). The title is four signs, Continue, New game, **Game Modes ▸** and **Pokédex** (2026-10-05, the user's pick over

@@ -27,6 +27,7 @@ import { tipAt } from './tips.js';
 import { playSound } from './audio.js';
 import { $, el, openDialog } from './ui.js';
 import { satchelNews, questNews } from './satchel.js';
+import { friendsNews } from './data/friends.js';
 import { townsOpen } from './data/towns.js';
 import { FRIENDS } from './data/workshop.js';
 
@@ -650,7 +651,7 @@ const FIND_LISTS = { relics: RELICS, items: ITEMS, cards: ALL_CARDS, gym: GYM_LE
 export const newFinds = (kind, save = getSave()) => (save.newFinds?.[kind] || []).filter(id => FIND_LISTS[kind].some(t => t.id === id));
 
 /** Anything new in the Collection device: a badge, or a relic, item, move or Gym Leader found. */
-export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length) || (townsOpen() && (satchelNews(save) || questNews(save)));
+export const deviceNews = (save = getSave()) => badgeNews(save) || Object.keys(FIND_LISTS).some(k => newFinds(k, save).length) || (townsOpen() && (satchelNews(save) || questNews(save))) || friendsNews(save);
 
 /** The title's card button and the Bag follow the card's colour, and glint while a new badge waits to be seen; the
     title's Pokédex sign and every Pokédex / Home key glint for anything new in the device. */

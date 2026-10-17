@@ -19,7 +19,7 @@ import { finishedBy } from './data/ranger.js';
 import { timeOfDay } from './daytime.js';
 import { leaderFor, gymWins, friendWins, gymMilestone, GYM_BY_ID, spriteOf, talkOf, voiced, JONA_HOME } from './data/gym.js';
 import { FAVOUR_COINS, favourOf, asking, currentFavour, favourText } from './data/favours.js';
-import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch } from './data/workshop.js';
+import { workshopOf, GIFT_BY_ID, FAVOURITE, gifteeOf, RECIPES, heartsOf, heartGifts, HEARTS, VISIT_HEARTS, SECRETS, SECRET_AT, packOne, packPouch, giftMeetDue, meetKey } from './data/workshop.js';
 import { HELD_BY_ID, setOut, canHold, holdFromPouch, nextBerryReady } from './data/held.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { gymTalk, wayFlash, wayCard, awakenTalk } from './gym.js';
@@ -78,7 +78,7 @@ import { track, claimable } from './missions.js';
 import { trackTowns, trackFavours, handInFriend, handInRequest, readBoard, metTown, isMended, startQuest, handInQuest, campFresh, campNews, sawCamp } from './towns.js';
 import { townsOpen, TOWNS, MEND_AT, townState, placeOf, nietosHome,
   questOf, greeterOf, openQuest, requestBy, questStep, questProgress, stepText, stepReady, handInStep, mended, RING,
-  homeTalk, HEART_LINES, folkChats, clearingLit, workshopOpen, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf } from './data/towns.js';
+  homeTalk, HEART_LINES, folkChats, clearingLit, workshopOpen, weaknessShards, sealOn, shardsPlaced, QUESTS, townPick, pickStepOf, GIFT_MEET } from './data/towns.js';
 import { campLines, landLine, selfLines, whyLines } from './data/camp.js';
 import { satchelOf, satchelFlag, MATERIALS_BY_ID, KEY_BY_ID, biomeMats, fightDrop, markSparkles, matLine, markShard, shardFlag, hasKey } from './data/satchel.js';
 import { gainMat, gainKey } from './satchel.js';
@@ -2330,6 +2330,16 @@ function homeRoom(b, onward = null) {
       } finally { kurtMeeting = false; if (run === thisRun) event3dMod?.freezeEvent(false); }
     }, 900);
   }
+  // a friend's hello the first time home after their Gym (GIFT_MEET): a hint at their favourite gift, once a save, held
+  // back while a hand-in waits on them and never once they've had a gift
+  const meetKeyOf = home.leader && meetKey(home.leader);
+  const meet = !!leader && townsOpen() && !away && (!sleepy || home.leader === 'nietos') && !handOver && heartsFlag() === null
+    && workshopOpen(getSave()) && giftMeetDue(workshopOf(getSave()), home.leader) && !toldHeld(meetKeyOf) && GIFT_MEET[home.leader];
+  if (meet) setTimeout(() => {
+    if (run !== thisRun || run.town !== t || toldHeld(meetKeyOf)) return;   // walked straight back out, or heard it
+    tellHeld(meetKeyOf, real);
+    talkOut(meet);
+  }, 900);
 }
 let kurtMeeting = false;   // Kurt's first hello (home.meet) under way
 

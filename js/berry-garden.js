@@ -7,9 +7,11 @@
 import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el, refreshCoins, confirmDialog } from './ui.js';
-import { BERRIES, BERRY, sow, stageOf, minutesLeft, harvest, coinsLeft, water, canWater, wetToday, yieldOf, sell } from './data/berries.js';
+import { BERRIES, BERRY, DAY_CAP, sow, stageOf, minutesLeft, harvest, coinsLeft, water, canWater, wetToday, yieldOf, sell } from './data/berries.js';
 import { satchelOf, matCount } from './data/satchel.js';
 import { gainMat } from './satchel.js';
+import { firstLook } from './corner-panel.js';
+import { workshopOpen } from './data/towns.js';
 
 const PLOT_TOP = 0.12;   // the plot's soil (js/base-models-y.js's berryplot)
 const STEM = '#4a9a3a', LEAF = '#4f9e3c', LEAF_LIT = '#6cbc4c';
@@ -299,15 +301,43 @@ export function openPlot(b, it, save) {
 /** The Garden window (2026-10-15, the user's ask): every placed plot `list` on base `b` at once, a tap on one opening
     openPlot(), with Pick all, Water all and Plant all (a berry picked first), and the Satchel's berries to sell to the
     berry stand, up to the day's cap. `save()` keeps the base. Resolves once closed, true if a plot changed. */
+/** The garden's How to garden card (the user's ask, 2026-10-17): everything Smeargle's walk round says, kept to hand. */
+function gardenHelp() {
+  const by = new Map();
+  for (const berry of BERRIES) by.set(berry.days, [...(by.get(berry.days) || []), berry.name.replace(/ Berry$/, '')]);
+  const ripen = [...by].map(([n, names]) => `${names.join(', ').replace(/, ([^,]*)$/, ' and $1')} ${n} day${n > 1 ? 's' : ''}`).join('; ');
+  const steps = [
+    ['Plant.', 'Tap an empty plot, or pick a berry under Plant the empty ones and tap Plant all. More Berry plots are at Smeargle\'s Furniture store; place them with Decorate.'],
+    ['Grow.', `Berries ripen at midnight (UTC) once their days are up: ${ripen}.`],
+    ['Water.', 'Once a day while a crop grows (Water all does every plot). Each watered day adds one more berry when you pick. Watered soil looks darker and wears a blue drop.'],
+    ['Pick.', 'A ripe plot shows a "!". Pick all puts the berries in your Satchel, and your first of each berry earns its basket for indoors.'],
+    ['Use them.', `Sell spares below, up to ${DAY_CAP} PokéCoins a day at the berry stand.${workshopOpen(getSave()) ? ' Or take them to Kurt\'s Workshop to craft held berries and items to pack for a run.' : ''}`],
+  ];
+  const card = el('div', 'berry-help');
+  card.append(el('strong', 'berry-help-title', 'HOW TO GARDEN'));
+  const ol = el('ol', 'berry-help-steps');
+  for (const [lead, rest] of steps) { const li = el('li'); li.append(el('b', '', lead), ` ${rest}`); ol.append(li); }
+  card.append(ol);
+  return card;
+}
+
 export function openGarden(b, list, save) {
   const { d, screen, acts } = dialog('berry-garden', 'BERRY GARDEN');
+  // the "?" in the title brings the card up over the plots, and down again; it shows by itself the first time
+  const help = gardenHelp(), q = el('button', 'berry-q', '?');
+  q.type = 'button';
+  q.setAttribute('aria-label', 'How to garden');
+  d.querySelector('h2').append(q);
+  const showHelp = (on) => { help.hidden = !on; q.classList.toggle('on', on); q.setAttribute('aria-expanded', on); if (on) screen.scrollTop = 0; };
+  q.addEventListener('click', () => { playSound('select'); showHelp(help.hidden); });
+  showHelp(firstLook('garden'));
   const say = el('p', 'tshop-say'), grid = el('div', 'tshop-grid berry-plots'), bar = el('div', 'berry-bar');
   const seeds = el('div', 'tshop-grid berry-seeds'), sales = el('div', 'berry-sales');
   const head = (t) => el('h3', 'berry-head', t);
   const pickAll = el('button', 'btn', 'Pick all'), waterAll = el('button', 'btn', 'Water all'), plantAll = el('button', 'btn', 'Plant all');
   bar.append(pickAll, waterAll, plantAll);
   const plantHead = head('PLANT THE EMPTY ONES');
-  screen.append(say, grid, bar, plantHead, seeds, head('BERRIES IN YOUR SATCHEL'), sales);
+  screen.append(help, say, grid, bar, plantHead, seeds, head('BERRIES IN YOUR SATCHEL'), sales);
   const close = el('button', 'btn secondary', 'Close');
   acts.append(close);
   let picked = null, changed = false;

@@ -2726,6 +2726,7 @@ errors. Detail: `docs/reference/hub-base-mall.md`.
   Law, Britt or THE NIETOS now brings them home, starts their Waystone questline, opens their Workshop gift and PC
   FRIENDS card (`friendWins()` in `js/data/gym.js`). Checked headless; detail in `docs/reference/towns.md`.
 - **Done (2026-10-16): the Home Screen app as smooth as the browser** (the user's ask): full screen it drew 27% more pixels; `createPost()` now draws a Home Screen app's scene no taller than 1.75x its width (`fullScreenApp()`, `post.fit()` in `js/hd2d.js`), the Clearing's canvas an exact 2x of it; the browser is unchanged. `?standalone` tries it.
+- **Done (2026-10-16): Sharpness setting** (the user's ask: things looked blurry): Settings → Look → Sharpness, Soft / Sharp (default) / Max (`sharpness()` in `js/prefs.js`, `scale()` in `createPost()`, `js/hd2d.js`). Smooth places drew at most at CSS pixels (a third of an iPhone's); Sharp draws up to 1.5x them (about 2.25x the GPU work), Max 2x (about 4x). The Home Screen fit above only applies on Soft. The crisp Clearing keeps its pixel size. `?sharp=soft|sharp|max` for a page load; the slow-device step-downs still apply.
 - **Done (2026-10-16): weekly Expeditions and the gate's "!"** (the user's go-ahead): three Safari goals a week (easy,
   medium, hard; 200 / 350 / 600 coins) plus a bonus of 5 Ultra Balls for all three, the board's first tab with a
   countdown to Monday; a "!" over the Clearing's Safari gate while a task waits. Checked headless: a week's catches,
@@ -2796,3 +2797,6 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - 34 relics (59 -> 93), 14 items (20 -> 34) and 32 cards (310 -> 342), each on a StS one; Block 7 / Cotton Guard 11 /
   Withdraw 8 / Flame Body 11 and Mewtwo's Depths (bossDmg 4, bossHp 1.2, enemyDmg -3) bring the human bot back: L0 81 / 84 /
   78, L3 62 / 64 / 60, L5 40 / 38 / 38, Mewtwo 67%. Detail: `docs/reference/cards.md`'s "The balance pass", relics.md, items.md.
+
+### The Berry Garden's "?" (2026-10-17, the user's ask: "a ? button that explains everything for gardening")
+- HOW TO GARDEN in the Garden window, toggled by a "?" in its title, shown once by itself. Checked headless; no errors.
