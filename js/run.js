@@ -1384,7 +1384,7 @@ function initBag() {
   $('run-mon').addEventListener('click', toggleMon);
   $('bag-btn').addEventListener('click', () => ($('bag').hidden ? openBag() : closeBag()));
   $('room-bag').append(roundKey('bag'));
-  $('room-bag').addEventListener('click', () => ($('bag').hidden ? openBag('items') : closeBag()));
+  $('room-bag').addEventListener('click', () => ($('bag').hidden ? openBag($('reward-options').classList.contains('event-room') ? 'deck' : 'items') : closeBag()));   // a ? room opens on your deck
   for (const tab of document.querySelectorAll('.bag-pocket')) {
     tab.addEventListener('click', () => showPocket(tab.dataset.pocket));
   }

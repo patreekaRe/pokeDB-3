@@ -11497,7 +11497,7 @@ function arrived() {
 /* ---------- taps ---------- */
 
 const canWalk = (e) => !busy && !acting && !frozen && !document.querySelector('.gym-scene') && inRoom() && !document.querySelector('dialog[open]')
-  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
+  && !e.target.closest('button, a, input, select, dialog, .reward-bottom, #room-bar, .room-hinge, .top-bar, #bag, #collection-screen, .over, .gift-float, .floating-thing, .treasure-relic');
 
 /** The screen's ray through a pointer as straight pieces of the world: one, or in a rolling town many short ones, each put
     back where it stands unbent, as the bend only moves what is drawn (the Clearing's tapRays()). Made once and reused,

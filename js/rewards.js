@@ -205,7 +205,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   const inBar = /\b(event-room|center-room|treasure-room|mart-window)\b/.test(layout);
   // the rooms and a fight's reward steps (moves, relics, a found item): the bar along the bottom, the title on its
   // hinge's LCD, no top bar
-  const roomy = inBar || /\b(learn-room|item-found|card-reveal-room)\b/.test(layout);
+  const roomy = inBar || /\b(learn-room|item-found|card-reveal-room|flip-game)\b/.test(layout);
   $('reward-screen').classList.toggle('in-room', roomy);
   $('reward-screen').classList.toggle('learn', roomy && !inBar);
   $('room-title').textContent = title;
@@ -219,8 +219,10 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   // a fight's reward steps put Skip by Home too, a key in the shell's colour (the user's call, 2026-10-08)
   if (roomy) $('room-home').after(skip);
   else $('reward-reroll').after(skip);
-  // the Mart has it too, to check or toss an item before buying (the user's ask, 2026-10-14)
-  $('room-bag').hidden = !roomy || (inBar && !/\bmart-window\b/.test(layout));
+  // the Mart has it too, to check or toss an item before buying (the user's ask, 2026-10-14), and the ? rooms, to look
+  // through your deck before choosing (the user's ask, 2026-10-17); never on a visit, which has no run of yours
+  const bagged = /\bmart-window\b/.test(layout) || (/\bevent-room\b/.test(layout) && !document.body.classList.contains('town-visit'));
+  $('room-bag').hidden = !roomy || (inBar && !bagged);
   skip.classList.toggle('room-leave', inBar);
   skip.classList.toggle('room-skip', roomy && !inBar);
   // the move picks spell it out under the key, pulsing gently: the icon alone was missed after a boss (the user's ask, 2026-10-13)

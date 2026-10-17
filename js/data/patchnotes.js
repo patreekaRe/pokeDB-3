@@ -49,6 +49,7 @@ export const NEXT = [
   ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
   ['runs', 'Twenty new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, the Canalave Library, a Litwick Bonfire and a game of Voltorb Flip.'],
+  ['runs', 'The Bag is in every ? room now, opening on your deck, so you can look through your moves before choosing.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

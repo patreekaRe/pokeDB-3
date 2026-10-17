@@ -308,6 +308,13 @@ Scenes: `PLACE_ART.tablet`, `studio` (a room, the `lab` wall), `bonfire`, `flip`
 `js/icons.js` (Voltorb Flip shares 🃏). A 2D act name is shared by every pixel room (`ACTS` in `js/scene.js`): check it's
 free before naming a new one.
 
+**The Bag in the ? rooms** (2026-10-17, the user's ask: to see your deck before choosing): the room bar's Bag
+(`#room-bag`, which the Mart and a fight's reward steps already had) shows in every `event-room` of a run and opens on the
+Deck pocket; never on a visit (`body.town-visit`: the dojo, a town, a home), nor at the Center. A tap in the open Bag
+doesn't walk your Pokémon (`#bag` in `canWalk()`). Voltorb Flip's board (`flip-game`) is one of the `roomy` layouts in
+`showChoice()`, or it would have no room bar and no OK to leave by (the user got stuck there, 2026-10-17): a new layout
+that ends on `roomConfirm()` needs the same.
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
