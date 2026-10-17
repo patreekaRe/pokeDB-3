@@ -2782,6 +2782,12 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 - 237 new kinds (1,227 -> 1,464): eight holiday sets dealt only in their window plus a Birthday party set, and eight
   yard shelves (120 kinds) in tabs in Smeargle's garden catalogue. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session a: the Pokémon rooms (2026-10-17)
+- Six Pokémon rooms of 25 kinds (Pikachu, Eevee, Snorlax, Jigglypuff, Gengar, Lapras), one helper a set: 150 kinds,
+  1,645 in all. Every model within budget (none over 6,700 triangles or 8 draws); the thin pieces (poles, strings,
+  notes) match their paintings at 0.48 to 0.74, the rest 0.75 or better. The Present has a hand-built model, so no kind
+  is carved any more. The user got picture sheets of all six. Detail: `docs/reference/hub-base-mall.md`.
+
 ## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
 - The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
   (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall

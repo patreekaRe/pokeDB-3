@@ -484,7 +484,8 @@ floors already have no limit.
 
 The user's ask: every piece a "3D detailed CLEAN" model, optimised for phones, and a catalogue as big as Animal
 Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal and yard sets first, no ceiling layer yet).
-- **Every kind is hand-built now** but the starter room's Present (`gift`, still carved). New batches, one file each,
+- **Every kind is hand-built now**, the starter room's Present too since 2026-10-17 (`present` in `js/base-models-u.js`;
+  js/base-3d.js wobbles and opens it as before). New batches, one file each,
   wired last in `js/base-shapes.js` / `js/base-mesh.js` so their SHAPES override older lines: `-l` the Dojo, Safari and
   Trainer sets and the 14 posters (the live Trainer pieces read `K.p.live()` when built), `-m` the old lathed and
   puffed pieces (globes, statues, planets, gumball), `-n` / `-o` / `-p` / `-q` the 64 old `frontbox`es (home machines;
@@ -516,6 +517,12 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   against its piece's turn, so it faces the camera however the plinth is turned. Fetched lazily like the gold statues'
   (`loadFigures()`, awaited by `openBase3d()`; until then the plinth is bare and `live()` repaints it). ~450 triangles
   each. Articuno's and Zapdos's front GIFs were added for them (PokeAPI black-white animated).
+- **The Pokémon rooms** (2026-10-17, furniture expansion session a): Pikachu, Eevee, Snorlax, Jigglypuff, Gengar and
+  Lapras, 25 kinds each, every piece shaped after its Pokémon. One painting file and one model batch a set
+  (`js/base-furniture-<name>.js`, `js/base-models-<name>.js`, wired last), all `solo`, `group: '<Name> room'`, id
+  prefixes `pika` / `eevee` / `lax` / `puff` / `geng` / `lapr`. Sold in the daily stock like any kind. Snorlax and Lapras
+  draw painting and model from one part list (`BUILT`, builders `laxparts` / `laprparts`); the others share their
+  shapes' numbers between the two files. Taps use only existing `PLAY` entries.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

@@ -44,7 +44,7 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
-  ['mall', '237 new pieces: eight holiday sets in the Furniture store while their holiday is on, a birthday party set, and 120 for the backyard in Smeargle\'s garden catalogue, now in tabs.'],
+  ['mall', '387 new pieces: Pikachu, Eevee, Snorlax, Jigglypuff, Gengar and Lapras rooms, eight holiday sets in their season, a birthday party set, and 120 for the backyard.'],
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
 ];

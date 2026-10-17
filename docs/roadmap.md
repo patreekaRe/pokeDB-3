@@ -12,14 +12,13 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
-hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites (`docs/roadmap-done.md`).
+hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites, and session a, the six Pokémon
+rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all; `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
-`?mall=3f`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+`?mall=3f`), and of the Pokémon rooms (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,eeveebed,...`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
-- **a. The Pokémon rooms** (6 sets of 25): Pikachu, Eevee, Snorlax, Jigglypuff, Gengar, Lapras, every piece shaped
-  after its Pokémon. Plus the Present (`gift`), the last kind without a hand-built model (a wrapped box, its lid and
-  ribbon; it is opened in `js/base-3d.js`, keep that working).
+- **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
 - **b. More Pokémon sets**: the Poké Ball collection (~27), fossils and museum, Contest Hall, Pokémon League, Team
   Rocket hideout.
 - **c. More Pokémon sets**: Day Care, partner care, figurines (~30), more dolls (~60; dolls are sewn by
@@ -31,10 +30,10 @@ at once hit it on 2026-10-16; five is safer.
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session a):
+Next session's prompt (session b):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session a: the six Pokémon rooms (Pikachu, Eevee, Snorlax,
-> Jigglypuff, Gengar, Lapras, 25 kinds each) and a hand-built model for the Present, one helper a set, then check every
+> "Building a set" section is the helpers' brief). Build session b: the Poké Ball collection (~27), fossils and museum,
+> Contest Hall, Pokémon League and Team Rocket hideout (25 each), one helper a set (five at once), then check every
 > kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch

@@ -2,7 +2,8 @@
 
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
-the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all).** No ceiling layer yet (the user's call).
+the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
+kinds (1,645 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -48,7 +49,7 @@ mirror, a rug and two or three wall pieces. 25 kinds each.
 
 ## Pokémon sets (only we can have these)
 
-23. Pikachu room, 24. Eevee room, 25. Snorlax room, 26. Jigglypuff room, 27. Gengar room, 28. Lapras room: every piece
+23. (done 2026-10-17) Pikachu room, 24. Eevee room, 25. Snorlax room, 26. Jigglypuff room, 27. Gengar room, 28. Lapras room: every piece
   shaped after the Pokémon, like Pokémon Center merch.
 29. Poké Ball collection: a display of each ball type (about 27).
 30. Fossils and museum: Kabutops, Aerodactyl and Tyrantrum skeletons, amber, a dig site, museum ropes and plaques.
@@ -127,5 +128,8 @@ two files only; the lead wires them in first and runs the checks after.
   Run it on themed ids too (`<kind>-fire`). `tools/model-sheet.mjs ids "Title" out.png` renders a labelled sheet when
   the user asks for pictures. Then `node --test tests/*.test.mjs`, and load `?base&allfurniture`, `?yard&allfurniture`
   and `?mall=furniture` headless for console errors.
+- **What worked (2026-10-17):** the lead writes the brief to a scratch file and gives each helper its set's look
+  and ideas in a few lines. One part list drawn by both the painting and the model (Snorlax's `BUILT`) keeps the
+  silhouettes matching. The whole catalogue's check goes in chunks of ~150 ids (a longer list overflows the URL).
 - **Report:** each kind's id, name and price, its triangles, baked draws and IoU, and any rule bent.
 
