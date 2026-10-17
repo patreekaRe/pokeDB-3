@@ -998,6 +998,14 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .gdx-poster { padding: 2px; border: 2px solid #fff; background: linear-gradient(180deg, #fff4dc, #e8d4a8); image-rendering: pixelated; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); }
 .gdx-step b { font: 0.75rem/1.25 var(--pixel-font); font-synthesis-weight: none; font-weight: 400; }
 .gdx-step small { font-size: 0.75rem; opacity: 0.8; }
+/* the Friends app (js/friendsdex.js) on the same handheld: their hearts on an LCD, their three pieces as the track */
+.fdx-hearts { display: flex; align-items: center; gap: 8px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
+.fdx-hearts .hearts i { width: 16px; height: 15px; }
+.fdx-hearts .hearts { color: #7a1424; }
+.fdx-role { background: #c83a6a; }
+.fdx-pic { width: 48px; height: 48px; }
+.fdx-pic canvas { width: 100%; height: 100%; object-fit: contain; }
+.fdx-step:not(.got) .fdx-pic canvas { filter: grayscale(1) opacity(0.6); }
 
 /* the books (js/halloffame.js) on the same handheld: the Record Book a banner per Trainer Level, a run a screen */
 .bdx-banner-mon.lost, .bdx-screen.lost .pdx-mon { filter: grayscale(1) brightness(0.85); }

@@ -59,7 +59,7 @@ The first section began as the note on playtesting the live site and grew into t
   floor mask, walls and doorways `fits()` reads. Opening the base always starts in the main room. A new doorway clears
   its furniture into storage (`clearDoors()`). **Duplicate** (the same day): the PC's DUPLICATE copies any owned piece into
   storage, 50 PokéCoins, +5 a copy, never over 100 (`dupePrice()` / `duplicate()`, `secretBase.dupes`). New things to
-  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
+  read in the PC wear a bobbing gold "!" (`freshMark()`, `.pc-new`), not a "(NEW)". The FRIENDS row (2026-10-16) is no page: it logs off and opens the Pokédex's Friends app, with that app's "!" (`docs/reference/towns.md`'s Friends app). A new PC page also gets a `NEWS` line in `js/pc-news.js` (per device, `pokedb.pcSeen`): its row, the menu holding it and the PC over the hub (`pcMarks()`) wear the "!" until it is opened once (2026-10-10, the user's ask: House Upgrades and Duplicate shipped with none).
 - **The backyard** (2026-10-14, part a of docs/roadmap.md's backyard, the user's picks): a green plot behind the main room on
   the HOUSE UPGRADES blueprint (its own BACKYARD tab since 2026-10-16, below), dashed till bought; a tap shows its
   card, Build for `YARD_PRICE` 1,000 (`buyYard()` in `js/secret-base.js`), at any main-room size. Saved as
