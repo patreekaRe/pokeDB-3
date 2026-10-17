@@ -803,8 +803,17 @@ act its own, plus shared ones and shrines), the biggest gap left: a few runs see
 a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
 one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
 bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
+The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
+Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
+Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
+one of its rarity), Bill's PC (Note for Yourself: leave a move in the Box for a later run, take the last one left; a save
+field), Abra (Secret Portal: Teleport to the biome's boss now; map work, and the bot must learn when). Batch 2: Prize
+Wheel (Wheel of Change), Ruins Idol (Golden Idol: a gold relic, then lose HP or max HP to the boulder), Spiritomb's
+Keystone (Knowing Skull: ₽, an item or a neutral move, each ask more HP), Clefairy Moon Dance (Shining Light: 2 random
+upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Then 10 more toward ~30, and the
+curse events once curses land.
 ▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
-and docs/reference/walk-in-rooms.md. List 10 StS events that would fit as Pokémon events and pick 5 with me, then build
+and docs/reference/walk-in-rooms.md. Take the next batch on its list (ask me if I want to swap any), then build
 them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
 
 **Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
