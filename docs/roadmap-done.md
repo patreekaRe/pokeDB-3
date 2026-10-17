@@ -2673,6 +2673,9 @@ earlier wake's buffers and programs (the mall +2.2 MB a visit; `unhook()` in `js
 the mall's baked reflections went blank from the second visit (re-baked on reopen); 3D loops capped at 60 fps
 (`tooSoon()`), the select sky stopped painting under the title, the map trainer's hop moved to `translate`. Left as is:
 the prize counter's turntable (`js/prizes.js`) keeps a small context of its own once opened.
+- **Done (2026-10-17): Driftwood Landing's buildings merged** (the towns' draw calls, one town a session): each house's
+  still parts one mesh a material or colour-baked, moving parts lifted out (`stillParts()`, `moves()`), the door's tap
+  kept; 674 -> ~495 GL draws a frame headless, ten buildings 428 meshes -> ~194, every door opens. `docs/reference/towns.md`.
 - **Done (2026-10-17): a second performance check** (the user's ask). Headless across the hub, base, yard, mall floors,
   Center, Mart, five towns, a gym, the dojo, arena and Sky Pillar: one GL context awake everywhere. Fixed: the shared
   turntable (the prize counter, the Furniture store's and garden's buy windows) now sleeps 4 s after its last draw
@@ -2811,6 +2814,32 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session g: Wooden block, Throwback, Ranch, Iron garden (2026-10-17)
+- Wooden block (`blk`), Throwback (`thb`), Ranch (`rnch`) and Iron garden (`igd`), 25 each: 100 kinds, 2,362 in all, one
+  helper a set, all solo, session f's `BUILT` way. Every kind within budget (none over 5,624 triangles, the gazebo, or 8
+  draws, the glass plant cabinet); thin pieces match their paintings at 0.36 (the glow-star wall) to 0.66, none sticking out.
+- **Iron garden is outdoor** (the user's call): the yard only, on its own "Iron garden" tab of Smeargle's garden catalogue.
+  Pokémon touches: Ditto, Psyduck, Ponyta; Pikachu, Porygon, Dedenne, Togepi; Tauros, Miltank, Mudbray, Meowth; Pidgey,
+  Comfey, Roselia, Natu, Butterfree. The user got picture sheets.
+
+### Furniture expansion session f: Cherry blossom, Maple leaf, Acorn, Mushroom (2026-10-17)
+- Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`), 25 each: 100 kinds, 2,262 in all, one
+  helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over 6,592 triangles, the blossom bed,
+  or 7 draws); thin, twiggy pieces match their paintings at 0.37 (the maple garland) to 0.74, nothing sticking out.
+- **Cherry blossom and Maple leaf are seasonal** (the session's call, AC's way): `holiday: 'sakura'` / `'maple'`, two new
+  windows in `js/data/holidays.js`, April and October, a month each so a 25-piece set can be collected at a stand a
+  floor a day. Acorn and Mushroom are sold all year. Pokémon touches: Cherrim, Hoppip, Cherubi; Deerling, Leavanny,
+  Sawsbuck; Seedot, Skwovet, Pineco; Shroomish, Foongus, Parasect, Shiinotic, Breloom. The user got picture sheets.
+
+### Furniture expansion session e: the next five furniture series (2026-10-17)
+- Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and mermaid (`mer`, group 'Mermaid'), 25
+  each: 125 kinds, 2,162 in all, one helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over
+  5,736 triangles or 7 draws); thin pieces match their paintings at 0.33 (Elegant's birdcage wires) to 0.74.
+- **Golden is earned, never sold** (the session's call): a new `golden` source in `js/data/furniture.js`, the nth piece
+  owned once the save holds n achievements (`ACHIEVEMENTS` starters in `unlocked`, whichever they are), the candlestick
+  with the first and the throne with all 22; the bed, the Gimmighoul chest and the vase come from the Gold, Full Roster
+  and Shiny Hunter badges. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
+
 ### Furniture expansion session d: the first five furniture series (2026-10-17)
 - Antique (`antq`), Rattan (`rtn`), Log cabin (`cabin`), Ironwood (`iw`) and Imperial (`imp`), 25 each, a whole room in
   one look: 125 kinds, 2,037 in all, one helper a set. All solo, Snorlax's way (one `BUILT` list a kind, builders
@@ -2829,3 +2858,23 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 
 ### The Berry Garden's "?" (2026-10-17, the user's ask: "a ? button that explains everything for gardening")
 - HOW TO GARDEN in the Garden window, toggled by a "?" in its title, shown once by itself. Checked headless; no errors.
+
+### The arcade overhaul (2026-10-17, the user's ask: every Game Corner game "super detailed", Pinball bland, Bubble Shooter too easy)
+- All 18 Game Corner arcade games deepened, Pinball rebuilt as a real table, Bubble Shooter given a shot clock, rocks and
+  quicker laps. Detail: `docs/reference/hub-base-mall.md`'s "The arcade overhaul". Checked headless with
+  `tools/arcade-check.mjs` (no errors, ~60 fps); balance untested by a person. Branch `claude/peaceful-cori-1rx16c`, on `main` too.
+- (2026-10-17) An arcade cabinet's How to play no longer stretches across a wide browser: it wears the cabinet's dark
+  sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
+- (2026-10-17) Leaving an arcade game mid-play (EXIT, Escape or RESTART) keeps its score as the Best and on the weekly
+  leaderboard (`bank()` in `js/arcade-kit.js`).
+
+### Phone reloads in the Game Corner and after Alpha / Gym Leader wins (2026-10-17, a friend's report)
+- Measured headless at an iPhone's size (texture uploads and canvases counted in the page). Three causes, three fixes:
+  the relic reward's turning rays (`.chest-rays`, also the treasure chest, Item Ball and card reveal) were the masked
+  conic gradient that took Safari's GPU process down at the badge on 2026-10-14, and Alpha and gym wins both show them
+  over a still-awake 3D arena; now `rayWheel()` / `chestRays()` in `js/ui.js` paint them once at 1x (the badge's `rays()`
+  uses it too). The arena kept its context awake after a fight; `frame()` in `js/arena-3d.js` now `sleepGL()`s it as
+  the battle screen goes, and `mountArena()` recompiles its shaders on the next wake (reward screen: 0 contexts awake,
+  was 1). The mall kept every floor it built on the GPU (the hall under the Game Corner, ~126 MB of textures); `setPlace()`
+  now `unload()`s the floor walked out of (`js/hd2d.js`: GPU copies dropped, re-uploaded under the curtain by `warm()`):
+  the Game Corner ~85 MB, the hall ~50 MB, both drawing again after walking back and forth. Not yet seen on the phone.

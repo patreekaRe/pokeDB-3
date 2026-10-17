@@ -2,10 +2,15 @@
    (2026-10-13, the user's pick): each board is a fixed set of bubbles, nothing is ever added to it, and the ceiling
    lowers it a row every `push` shots. A row is a string a cell: W water, F fire, G grass, E electric, P psychic, Y fairy,
    . empty; even rows are 10 cells, odd rows 9 and set half a bubble in. Every bubble must hang from the ceiling
-   (tests/bubble.test.mjs). Past the last board they come round again, recoloured, the ceiling a shot sooner each lap. */
+   (tests/bubble.test.mjs). Past the last board they come round again, recoloured, the ceiling two shots sooner each lap.
+   From ROCKS_FROM on, some bubbles below the top row are Geodude rocks (2026-10-17, the user's ask: it got easy and
+   repetitive): no colour, never popped, only dropped when what holds them up goes; more of them the further you get,
+   picked by the level so a board is the same each time. */
 
 export const LETTERS = 'WFGEPY';
-export const LAP_FASTER = 1, MIN_PUSH = 3;
+export const LAP_FASTER = 2, MIN_PUSH = 3, ROCK = 6, ROCKS_FROM = 5;
+/** How many rocks a level's board carries. */
+export const rocksFor = (level) => (level < ROCKS_FROM ? 0 : Math.min(9, 1 + Math.floor((level - ROCKS_FROM) / 2)));
 
 export const BOARDS = [
   { name: 'First Splash', push: 10, rows: [
@@ -186,6 +191,13 @@ export function boardCells(level) {
   const used = [...new Set(board.rows.join('').replace(/\./g, ''))].map(ch => LETTERS.indexOf(ch)).sort();
   const turn = (v) => used[(used.indexOf(v) + lap) % used.length];
   const cells = board.rows.map(row => [...row].map(ch => (ch === '.' ? null : turn(LETTERS.indexOf(ch)))));
+  const spots = cells.flatMap((row, r) => (r ? row.map((v, c) => (v === null ? null : [r, c])).filter(Boolean) : []));
+  let seed = level * 2654435761 >>> 0;
+  for (let n = Math.min(rocksFor(level), spots.length - 3); n > 0; n--) {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    const [r, c] = spots.splice(seed % spots.length, 1)[0];
+    cells[r][c] = ROCK;
+  }
   return { name: board.name, cells, push: Math.max(MIN_PUSH, board.push - lap * LAP_FASTER), lap };
 }
 

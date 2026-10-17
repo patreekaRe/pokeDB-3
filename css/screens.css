@@ -3364,8 +3364,7 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
   width: min(160vmin, 900px);
   aspect-ratio: 1;
   translate: -50% 50%;
-  background: repeating-conic-gradient(rgba(255, 244, 190, 0.3) 0 7deg, transparent 7deg 20deg);
-  mask: radial-gradient(circle, #000 8%, transparent 62%);
+  height: auto;
   opacity: 0;
   pointer-events: none;
 }
@@ -3545,7 +3544,6 @@ body[data-screen="reward-screen"]:has(.treasure-room) #backdrop::after { backgro
 .relic-stage .float-thing.taken { animation: relicToBag 0.7s ease-in forwards; }
 .relic-stage.choosing .float-thing:not(.chosen) { opacity: 0.55; filter: grayscale(0.6); }
 .relic-stage.taking .float-thing:not(.taken) { opacity: 0; }
-.relic-stage.boss .chest-rays { background: repeating-conic-gradient(rgba(248, 200, 64, 0.38) 0 7deg, transparent 7deg 20deg); }
 .relic-stage.boss .relic-halo { background: radial-gradient(closest-side, rgba(248, 192, 40, 0.85), transparent); }
 .relic-stage.boss .treasure-sprite .item-sprite { filter: drop-shadow(0 0 8px rgba(248, 192, 40, 0.95)) drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.35)); }
 .relic-stage.boss .float-label { color: #f8d860; }

@@ -52,7 +52,7 @@ import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
-import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog } from './ui.js';
+import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
 import { showScene, showPlaceScene, healAtCenter, flashCenter, centerSpots, treasureSpots, treasureChest, itemBallArt, eventSpots, sceneAct } from './scene.js';
 import { battleWipe } from './transition.js';
@@ -2937,7 +2937,7 @@ function showRelics(title, relics, next, { sub = null, skip = true } = {}) {
     line.append(...tier);
     return line;
   }));
-  spot.append(el('span', 'chest-rays'), row);
+  spot.append(chestRays(boss), row);
   stage.append(el('div', 'treasure-flash'), spot);
   $('reward-options').append(stage);
   playSound('ball-open');
@@ -3037,7 +3037,7 @@ function offerItem(item, next, { opened = false, title = 'Item found', skip = tr
     return img;
   };
   ball.append(half('bottom'), half('top'), el('span', 'chest-glow'));
-  spot.append(el('span', 'chest-rays'), ...(opened ? [] : [ball]), thing);   // opened: it came out of an event's ball already
+  spot.append(chestRays(), ...(opened ? [] : [ball]), thing);   // opened: it came out of an event's ball already
   stage.append(spot, tip);
   ball.addEventListener('click', async () => {
     if (ball.classList.contains('shaking') || ball.classList.contains('opened')) return;
@@ -3186,7 +3186,7 @@ function treasureRoom(spent = false) {
   const chest = el('button', 'treasure-chest');
   chest.type = 'button';
   chest.setAttribute('aria-label', 'Open the chest');
-  chest.append(el('span', 'chest-rays'), part('open'), part('body'), part('lid'), el('span', 'chest-glow'), centerLabel('Open', 'Open the chest'));
+  chest.append(chestRays(), part('open'), part('body'), part('lid'), el('span', 'chest-glow'), centerLabel('Open', 'Open the chest'));
   const take = goButton('Take it', () => takeIt());
   if (spent) chest.classList.add('opened');   // taken: the room stays with its chest open, and you walk out yourself
   stage.append(chest);
@@ -4453,7 +4453,7 @@ function revealCard(title, card, lines, done) {
   let gone = false;
   roomConfirm('OK', () => { if (!gone) { gone = true; done(); } });
   const cards = [].concat(card), stage = el('div', `card-reveal${cards.length > 1 ? ' pair' : ''}`);
-  stage.append(el('span', 'chest-rays'), el('div', 'treasure-flash'), ...cards.map(c => zoomable(makeCard(c, { stage: run.stage }), c, run.stage)));
+  stage.append(chestRays(), el('div', 'treasure-flash'), ...cards.map(c => zoomable(makeCard(c, { stage: run.stage }), c, run.stage)));
   $('reward-options').append(stage);
   playSound('item-get');
 }

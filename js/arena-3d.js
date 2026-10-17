@@ -8,7 +8,7 @@
    white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
    the sky in its windows is the pixel scene's. */
 
-import { loadThree, tex, createPost, dispose, wakeGL, restGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, wakeGL, restGL, sleepGL, tooSoon } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1518,7 +1518,9 @@ const onBattle = () => document.body.dataset.screen === 'battle-screen';
 function frame(now) {
   raf = 0;
   if (!A) return;
-  if (!onBattle()) { unmountArena(); return; }
+  // the fight's over: the rewards, the map or a gym come next, and its GPU memory goes back to them (an Alpha's or a
+  // Gym Leader's relic window over a still-awake arena reloaded a friend's iPhone tab, 2026-10-17)
+  if (!onBattle()) { unmountArena(); sleepGL(renderer); napping = true; return; }
   if (tooSoon(now, last)) { if (!document.hidden) raf = requestAnimationFrame(frame); return; }
   const dt = Math.min(0.1, (now - (last || now)) / 1000);
   last = now;
@@ -1592,7 +1594,7 @@ function resize() {
 
 /* ---------- in and out ---------- */
 
-let warming = null;
+let warming = null, napping = false;
 /** Three.js and the renderer, ready before a fight needs them. */
 export function warmArena() {
   warming ??= (async () => {
@@ -1663,6 +1665,7 @@ export async function mountArena(o, { reveal = true } = {}) {
   current = { ...o, stage: stage != null ? Math.max(0, Math.min(3, Number(stage) || 0)) : o.stage, time: timeOfDay() };
   try { await warmArena(); } catch { return false; }
   await wakeGL(renderer);
+  if (napping) { napping = false; precompile(); }   // a lost context lost its shaders too
   // the page's sprites must be laid out (sizeSprite()) before their pads are cast into the ground
   await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
   if (id !== building || !onBattle()) return false;

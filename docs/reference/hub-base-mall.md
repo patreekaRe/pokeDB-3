@@ -117,15 +117,19 @@ The first section began as the note on playtesting the live site and grew into t
   `gainMat(id, -n)`.
 - **The Garden window** (2026-10-15, the user's ask): out in the yard with a plot placed, a green Garden key stands
   right of Decorate (`.b3-garden`, `.has-garden` moves Decorate over; `tendGarden()` / `plotsHere()` in
-  `js/base-3d.js`). `openGarden(b, plots, save)` in `js/berry-garden.js`, the plot window's `.dev-window town-shop`
-  look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
-  `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
-  berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
-  so the 3D plants change at once. A "?" in its title (`.berry-q`, 2026-10-17, the user's ask) toggles HOW TO GARDEN
-  over the plots (`gardenHelp()`: plant, ripening days from `BERRIES`, water, pick, sell, Kurt only once
-  `workshopOpen()`), shown by itself the first time per device (`firstLook('garden')`). Every seed tile (both windows) shows its
-  held berry's effect in a few words (`.berry-does`, `short` in `js/data/held.js`; 2026-10-17, the user's ask), and
-  picking one says its full held text and, once `workshopOpen()`, the run kit Kurt makes with it (`usesOf()`).
+  `js/base-3d.js`). `openGarden(b, plots, save, at)` in `js/berry-garden.js`; a tap on a plot in the yard opens the same
+  window on that plot (no separate plot window since 2026-10-17). **Built on Kurt's bench since 2026-10-17** (the user's
+  ask, after a day as a wood-and-parchment MMO window that broke on phones: "closer to Kurt's window"): it reuses the
+  Workshop's `craft-*` classes (`css/screens.css`) as `.dialog.craft.garden`, with only its extras in
+  `css/secret-base.css` (`.gd-*`). Smeargle's line on the red tag says what just happened or, idle, what to do next
+  (`hint()`); the "?" swaps it for HOW TO GARDEN, four one-line steps (`gardenHelp()`, shown by itself the first time
+  per device, `firstLook('garden')`). Three tabs: **Plots** (a green dot: ripe + thirsty plots), the list sorted ripe,
+  thirsty, growing, empty (`plotRank()`), the card a plot's stage, its held effect, Growth / Water / Harvest chips and
+  one big button (Pick! / Water it / Plant a seed, which opens Seeds aimed at that plot), with Pick all, Water all and
+  Dig up as small keys under it; **Seeds**, the card a berry's days, price, `short` effect, its full held text and the
+  run kit Kurt crafts once `workshopOpen()`, then Plant here / Plant in N empty; **Sell**, the card today's pay and Sell 1
+  / Sell all. No `scrollIntoView` (it can shove the whole page on an iPhone): the card stays put over the list. Each
+  change saves the base and sets `nextLook = 0`, so the 3D plants change at once.
 - **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
   failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
   hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro
@@ -550,6 +554,25 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   part kinds there: Rattan's `weave` finish, Log cabin's side discs (cut log ends) and its plaid as one cached canvas each,
   Antique's `slab` (a side profile run across) and `horn`. Pokémon touches: a Stantler antler mount, a Pidgey cuckoo
   clock, Ursaring and Teddiursa carvings, a Gyarados carving and scroll, a Lapras in the gilt landscape.
+- **Session e's series** (2026-10-17): Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and
+  mermaid (`mer`, `group` 'Mermaid'), files `js/base-furniture-<diner|cute|elegant|golden|shell>.js` and
+  `js/base-models-<same>.js`, built as session d's (builders `<prefix>parts` / `<prefix>rug`; Golden's `gldparts`, with a
+  `plate` part, an outline seen from above, for the grand piano). **The Golden set is earned, never sold**: source
+  `golden` in `js/data/furniture.js` (`GOLDEN`), the nth piece owned at n achievements earned, whichever ones
+  ("Earn N achievements (k/N)"), the throne at all 22; `goldbed`, `goldchest`, `goldvase` from the `gold`, `roster` and
+  `shiny-hunter` badges. Being in `FURNITURE` keeps it out of every shop's stock.
+- **Session f's series** (2026-10-17): Cherry blossom (`blsm`), Maple leaf (`mpl`), Acorn (`acrn`) and Mushroom (`shrm`),
+  files `js/base-furniture-<sakura|maple|acorn|mushroom>.js` and `js/base-models-<same>.js`, built as session d's. **Cherry
+  blossom and Maple leaf are seasonal**: `holiday: 'sakura'` (April) and `'maple'` (October) in `js/data/holidays.js`,
+  dealt on the holiday stand like the holiday sets, a month each so the 25 can be collected. New parts: Cherry blossom's
+  `flower` and `petal` (`flowerPts()`, shared by both files), Maple leaf's one leaf outline (`leafPts`, a `lie` leaf lies
+  flat), Acorn's lathes lying over (`rot`) and painted-only cap cross-hatch (`tex`), Mushroom's squashed lathe (`sz`),
+  half cylinder against the wall (`half`), side-facing disc (`ax: 'x'`) and gill cone (`gl`).
+- **Session g's series** (2026-10-17): Wooden block (`blk`), Throwback (`thb`), Ranch (`rnch`) and Iron garden (`igd`),
+  files `js/base-furniture-<block|throwback|ranch|irongarden>.js` and `js/base-models-<same>.js`, built as session f's
+  (`BUILT`). **Iron garden is outdoor**: every kind `outdoor: true`, `yard: 'Iron garden'`, so it stands only in the yard
+  and has its own tab at the end of `GARDEN_TABS` (`js/garden-shop.js`); no wall pieces (the yard has none), its rug a
+  mosaic paving. Its thin wrought iron matches the paintings at only 0.41 to 0.65 (the painting's outline doubles a rod).
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
@@ -560,3 +583,70 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 - **The Clearing's dressing** (2026-10-17): the lamps, benches, flower beds, pond stones and lily pads are built into one
   group and merged (`dressClearing()` in `js/hub-3d.js`), the garden arch's brambles and gate leaves too
   (`js/hub-arch.js`): 575 draws a frame to 397.
+
+## The arcade overhaul (2026-10-17, the user's ask: "make them super detailed... the pinball is pretty bland"; Bubble Shooter "got repetitive and easy")
+
+Every Game Corner arcade game (the 18 on its floor) was rebuilt in one session, each still one `js/arcade-*.js` file on
+the kit, its world painted once a scale (`stamp()` or a cached canvas) so phones keep 60 fps, and a difficulty ramp with
+no plateau. Each file's header says what it now has; the gist:
+- **Leaving keeps the score** (the user's ask, 2026-10-17, "like a force quit but saving our score"): EXIT, Escape or
+  RESTART mid-game banks the score so far as the Best and posts it to the weekly leaderboard, as a game over would
+  (`bank()` in `js/arcade-kit.js`, every cabinet).
+- **Pokémon Pinball**: a real table (300x520): plunger lane with a swinging power gauge and a Skill Shot, P K M rollover
+  lanes (flippers turn them, all three raise the bonus multiplier to 5x), Voltorb bumpers, slingshots, a spinner, two
+  orbits, the Pika Ramp, Diglett drop targets that light CATCH, the saucer starting Catch mode (a wild Pokemon, hits on a
+  timer, rarer ones as the list grows), Multiball on three ramps with Jackpots, Pikachu kickbacks, a ball saver, extra
+  balls at 3 and 8 catches, a dot-matrix strip on top. LAUNCH is a pad key.
+- **Squirtle Bubble Shooter**: a shot clock that fires for you (`clockFor()`, 10.5 s down to 4 s by level 16), Geodude
+  rocks from level 5 (`ROCK`, `rocksFor()` in `js/data/bubble-boards.js`, below the top row, picked by the level), laps
+  two shots quicker (`LAP_FASTER` 2); chains x2 to x5 and a Voltorb bomb every 4th popping shot in a row.
+- **Ponyta Dash** four lands and hazard tiers every 250 m, Berries, Protect, a Fire Stone Rapidash; **Pidgey Flap** four
+  skies, sliding trunks, guards, charging Spearow, evolves at 30 / 60; **Snorlax Stacker** cushions from the meadow to
+  space, Perfect streaks regrow the cushion; **Voltorb Memory** growing boards with a preview, Voltorb cards, Ditto swaps.
+- **Berry Catch** stages with quotas, power-up Berries, wind, weaving Pineco, Forretress; **Where's Ditto?** a theatre,
+  feints, up to five balls, a pick clock, lights out, a Golden Ditto; **Geodude Bowling** lane oil, Golden Geodude and
+  Turkey bonuses, Diglett in the lane; **Poké Puzzle** levels every 30 s, Trubbish garbage slabs, stop time, Shiny panels.
+- **Electrode Breakout** ten walls, Golem / Voltorb / steel / crystal bricks, Laser (a FIRE key) and Catch, Onix every
+  fifth; **Poliwag Crossing** diving Lapras, a bank Ekans, Arbok in a pad, Butterfree; **Ekans Trail** eight walled stages,
+  Chesto, Rare Candy, Diglett; **Gastly Maze** four mazes, four ghosts with Pac-Man's personalities, chained zaps.
+- **Psyduck Pong** a pool and a ladder of six rivals, first to 5 each, smashes and power-ups; **Whac-a-Diglett** 20 s
+  stages with quotas, Dugtrio, golden Diglett, Voltorb / Electrode, Fever, a miss stalls the mallet; **Pikachu
+  Volleyball** a beach, six rivals, Thunder spike, sea wind, four touches a fault; **Beedrill Invaders** formations,
+  Kakuna, dive-bombers, berry-bush bunkers, power-ups, Vespiquen every fifth wave.
+- Not touched: the home-only Claw Machine, Skee-Ball, Sing-Along and Word Search.
+- **Checking a game** (text, no screenshots): `NODE_PATH=$(npm root -g) node tools/arcade-check.mjs arcade-pinball
+  openPinball 20 [left,right,plunge]` plays it headless and prints fps, drawImage calls a frame, the lines it said and
+  any errors.
+
+## Four more pinball tables (2026-10-17, the user's ask: "4 more of those pinball games, each completely different, same aesthetics")
+
+Each its own Game Corner prize (750 coins, `PRIZES` in `js/data/corner.js`) and home game (`js/home-arcade.js`), on the
+right wall in a row with Pokémon Pinball, where that wall's five slot machines stood (the user's ask, the same day;
+the slots keep the left wall; `ARCADE` / `CASINO.slots` in `js/mall-corner.js`), their 3D table
+`B.pinball` with `table:` (`PIN_LOOK` in `js/base-mesh.js`, pictures `PIN` / `tableField()` / `tableGlass()` in
+`js/arcade-art.js`), paintings `pinTable()` in `js/base-furniture-rooms5.js`, marquees in `MARQUEE`.
+- **The engine** is `js/pinball-kit.js` (Pokémon Pinball keeps its own): a table is a definition (walls, flippers, slings,
+  lane, art, `make(t)` returning its hooks); the kit runs flippers (any number, ◀ works every left one), the plunger,
+  saver, multiball, `t.ride()` ramps, `t.hold()` saucers, the dot-matrix strip, the bonus count, a scrolling camera
+  (`worldH`, `camera(low, cam)`) and a ball search that never nudges a ball cradled on a held flipper.
+- **Gengar's Haunted Pinball** (`js/pinball-gengar.js`, `gengarpinball`): a night graveyard, Gastly as drifting bumpers,
+  G-H-O-S-T tombstones light HAUNT at the mansion door (Gengar teleports; bust him for a 2-ball Party), an unlit door
+  topples the next stone, every third orbit LIGHTS OUT (dark but for the ball, ×2), a small upper flipper, Duskull kickback.
+- **Lapras's Lagoon Pinball** (`js/pinball-lapras.js`, `lapraspinball`): floatier (grav 540, drag), a whirlpool that spins
+  and flings the ball, Staryu bumpers, a Magikarp captive ball (6 splashes: Gyarados's Rampage, ×5), Shellder pearls
+  (4: an extra ball), SURF on three left orbits (2 balls, the wave lifts draining balls), a Lapras post during the saver.
+- **Charizard's Volcano Pinball** (`js/pinball-charizard.js`, `volcanopinball`): fast (grav 680), three flippers, crossing
+  FLAME / BLAZE ramps, a HEAT bar lighting the crater for a 3-ball ERUPTION, F-I-R-E twice an evolution (Charizard lights
+  BLAST BURN), combos within 3 s.
+- **Rayquaza's Sky Pillar Pinball** (`js/pinball-rayquaza.js`, `skypinball`): 980 tall, two screens like the Game Boy's
+  (the sky above y 505, the tower below 560), four flippers, the Sky Lift lights ASCEND to climb five floors (new bumper
+  Pokémon each), Rayquaza on floor 5 (8 hits: Dragon Ascent, 3 balls), wind gusts, Trapinch → Flygon kickbacks.
+- **Checking a table**: `NODE_PATH=$(npm root -g) node tools/pinball-sim.mjs pinball-gengar 8 10` plays whole games with a
+  bot (scores, ball lives, each table's `t.stat` counters, nudges, escapes); `tools/arcade-check.mjs` for the cabinet.
+  The bot is weak; only compare runs of the same bot.
+
+## The mall's floors on the GPU (2026-10-17)
+Every floor the mall builds stays in its one scene, hidden when you're elsewhere, but its textures stayed uploaded: the
+hall under the Game Corner was ~126 MB of textures, and a friend's phone reloaded the game walking in. `setPlace()` in
+`js/mall-3d.js` now `unload()`s the floor walked out of (`js/hd2d.js`: geometry and textures let go on the GPU, kept
+whole in memory, uploaded again by `warm()` under the curtain on walking back in). Keep it if a floor is added.

@@ -14,7 +14,7 @@ import { playSound, playCry, playMusic } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { buddy } from './trainercard.js';
 import { residentCap, openPC, resident } from './pc.js';
-import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
+import { loadThree, tex, crop, trim, dispose, monBoard, drawMon, onSprite, createPost, curtain, doormat, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, bakeColours, smallNoShadow } from './hd2d.js';
 import { CURVE, CLEARING_LOOK, CLEARING_LIGHT, treeArt, bushArt } from './hub-3d.js';
 import { season } from './season.js';
 import { leavesOf, groundLook, snowCap, tintOf } from './hub-season.js';
@@ -24,7 +24,7 @@ import { furnitureModel } from './base-mesh.js';
 import { dressPlay, tapPlay, tickPlay, stopPlay } from './base-play.js';
 import { homeGame, playAtHome, cabinetUp } from './home-arcade.js';
 import { shapeOf, seatHeight } from './base-shapes.js';
-import { isPlot, tendPlot, forgetPlots, liveGarden, openPlot, openGarden } from './berry-garden.js';
+import { isPlot, tendPlot, forgetPlots, liveGarden, openGarden } from './berry-garden.js';
 import { SAFARI_DEX_PAGES } from './data/safari.js';
 import { PIECES, DESIGNS, colours, styles, WALLPAPERS, FLOORS, papers, T, WALL, COLS, ROWS, footprint, fits, aimTile, icon, loadBase, saveBase, roomArt, pieceArt,
   spare, openGift, ownsPaper, buyPaper, paperArt, cells, surfaceOf, surfaceUnder, ridersOf, standing, metSmeargle, meetSmeargle, KINDS_OF, FREE_PC,
@@ -1530,7 +1530,26 @@ function pieceUnder(at) {
 function tapped(at, ray = new THREE.Raycaster()) {
   ray.setFromCamera(new THREE.Vector2(...at), camera);
   const boards = [mon.board, ...present().filter(g => g.mon).map(g => g.mon.board), ...(visit?.phase === 'stand' ? [visit.mon.board] : [])];
-  return ray.intersectObjects([...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])], true).find(h => !h.object.userData.who || onSprite(h))?.object;
+  const under = [...boards, pieceGroup, ...(mode === 'walk' ? [roomGroup] : [])];
+  for (const r of bentRays(ray)) {
+    const hit = r.intersectObjects(under, true).find(h => !h.object.userData.who || onSprite(h));
+    if (hit) return hit.object;
+  }
+}
+
+/* Out on the rolling lawn a piece is drawn lower than it stands, more so the further it is from the focus, so a straight
+   ray passes over a plot on the front row: the ray is walked in short pieces, each put back where it stands unbent (the
+   Clearing's tapRays()). Made once and reused, as a drag in Decorate asks on every move. */
+let bentPieces = null;
+function bentRays(ray) {
+  if (!BEND.k.value) return [ray];
+  const STEP = 1.5, o = ray.ray.origin, d = ray.ray.direction;
+  bentPieces ??= Object.assign(Array.from({ length: 60 }, () => new THREE.Raycaster()), { a: new THREE.Vector3(), b: new THREE.Vector3() });
+  bentPieces.forEach((p, i) => {
+    const a = unbend(bentPieces.a.copy(o).addScaledVector(d, i * STEP), BEND), b = unbend(bentPieces.b.copy(o).addScaledVector(d, (i + 1) * STEP), BEND);
+    p.ray.origin.copy(a); p.ray.direction.subVectors(b, a).normalize(); p.near = 0; p.far = a.distanceTo(b); p.camera = camera;
+  });
+  return bentPieces;
 }
 
 /** Off across the floor to `to`, getting up first if sitting; `drag` keeps the step under way (drag to walk). */
@@ -1601,7 +1620,7 @@ function onTap(e) {
   if (mode !== 'edit' && g && g.parent === pieceGroup) {
     const it = base.items[g.userData.index], play = g.userData.model?.userData.play;
     if (PIECES[it.id].own === FREE_PC) return logOn();
-    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openPlot(base, it, save); }
+    if (isPlot(PIECES[it.id])) { playSound('select'); walker.hopUntil = performance.now() + 500; return openGarden(base, plotsHere(), save, it); }
     if (homeGame(it.id)) { playSound('confirm'); walker.hopUntil = performance.now() + 500; return playAtHome(it.id); }
     // a tap on a piece works it (the TV changes channel, the fridge opens...), and your partner cheers it on
     if (play) {

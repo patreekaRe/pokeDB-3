@@ -73,6 +73,19 @@ import { MAKES as MAKES_RATTAN } from './base-models-rattan.js';
 import { MAKES as MAKES_LOGCABIN } from './base-models-logcabin.js';
 import { MAKES as MAKES_IRONWOOD } from './base-models-ironwood.js';
 import { MAKES as MAKES_IMPERIAL } from './base-models-imperial.js';
+import { MAKES as MAKES_DINER } from './base-models-diner.js';
+import { MAKES as MAKES_CUTE } from './base-models-cute.js';
+import { MAKES as MAKES_ELEGANT } from './base-models-elegant.js';
+import { MAKES as MAKES_GOLDEN } from './base-models-golden.js';
+import { MAKES as MAKES_SHELL } from './base-models-shell.js';
+import { MAKES as MAKES_SAKURA } from './base-models-sakura.js';
+import { MAKES as MAKES_MAPLE } from './base-models-maple.js';
+import { MAKES as MAKES_ACORN } from './base-models-acorn.js';
+import { MAKES as MAKES_MUSHROOM } from './base-models-mushroom.js';
+import { MAKES as MAKES_BLOCK } from './base-models-block.js';
+import { MAKES as MAKES_THROWBACK } from './base-models-throwback.js';
+import { MAKES as MAKES_RANCH } from './base-models-ranch.js';
+import { MAKES as MAKES_IRONGARDEN } from './base-models-irongarden.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1298,8 +1311,11 @@ B.whack = (K) => {
   K.put(cyl(0.016, 0.42, 0.016, 10), wood, 0.2, 0.8, 0.36, -0.5, 0, Math.PI / 2);
   K.put(blob(0.12, 0.13, 0.13, 0.6, 0.9), K.gloss('#e83838'), 0.38, 0.81, 0.47, -0.5, 0, Math.PI / 2);
 };
-B.pinball = (K) => {
-  const purple = K.gloss('#3a1a6a'), chrome = K.metal('#d8dce4'), yellow = K.gloss('#e8c030'), W = 0.6, D = 0.94, tilt = -0.07;
+/* `s.table` one of the newer tables (js/pinball-*.js): its own cabinet colours and pictures */
+const PIN_LOOK = { gengar: ['#2a1048', '#9cf060', '#b070ff'], lapras: ['#0a3a6a', '#f08a5a', '#5ad0ff'], volcano: ['#2a1410', '#f06a20', '#ffb030'], skypillar: ['#1a4a3a', '#f8d030', '#5ae0a0'] };
+B.pinball = (K, s = {}) => {
+  const [body, box, strip] = PIN_LOOK[s.table] || ['#3a1a6a', '#e8c030', '#ff70c0'];
+  const purple = K.gloss(body), chrome = K.metal('#d8dce4'), yellow = K.gloss(box), W = 0.6, D = 0.94, tilt = -0.07;
   // legs, the tilted table on them, its playfield lit under the glass, a lockdown bar
   for (const [x, z, h] of [[-W / 2 + 0.04, D / 2 - 0.06, 0.62], [W / 2 - 0.04, D / 2 - 0.06, 0.62], [-W / 2 + 0.04, -D / 2 + 0.06, 0.7], [W / 2 - 0.04, -D / 2 + 0.06, 0.7]]) {
     K.put(cyl(0.024, h, 0.03, 12), chrome, x, h / 2, z);
@@ -1307,7 +1323,7 @@ B.pinball = (K) => {
   }
   const table = (geo, m, x, up, z) => { geo.translate(x, up, z); K.put(geo, m, 0, 0.79, 0, 0, tilt); };
   table(rbox(W, 0.22, D, 0.03), purple, 0, 0, 0);
-  table(new THREE.PlaneGeometry(W - 0.08, D - 0.1).rotateX(-Math.PI / 2), litPic(pinField(), 0.55), 0, 0.12, 0);
+  table(new THREE.PlaneGeometry(W - 0.08, D - 0.1).rotateX(-Math.PI / 2), litPic(pinField(s.table), 0.55), 0, 0.12, 0);
   table(new THREE.PlaneGeometry(W - 0.06, D - 0.08).rotateX(-Math.PI / 2), K.glass(), 0, 0.132, 0);
   for (const sg of [-1, 1]) table(rbox(0.03, 0.03, D - 0.02, 0.01), chrome, sg * (W / 2 - 0.015), 0.125, 0);
   table(rbox(W, 0.03, 0.06, 0.012), chrome, 0, 0.12, D / 2 - 0.03);
@@ -1320,8 +1336,8 @@ B.pinball = (K) => {
   // the backbox, its backglass lit, a speaker grille under it
   K.put(rbox(W + 0.02, 0.62, 0.16, 0.025), yellow, 0, 1.28, -D / 2 + 0.06);
   K.put(rbox(W - 0.06, 0.04, 0.12, 0.01), purple, 0, 0.95, -D / 2 + 0.07);
-  K.put(new THREE.PlaneGeometry(W - 0.08, 0.5), litPic(pinGlass(), 0.75), 0, 1.3, -D / 2 + 0.152);
-  for (const sg of [-1, 1]) K.put(rbox(0.04, 0.5, 0.04, 0.015), K.glow('#ff70c0'), sg * (W / 2 + 0.005), 1.3, -D / 2 + 0.13);
+  K.put(new THREE.PlaneGeometry(W - 0.08, 0.5), litPic(pinGlass(s.table), 0.75), 0, 1.3, -D / 2 + 0.152);
+  for (const sg of [-1, 1]) K.put(rbox(0.04, 0.5, 0.04, 0.015), K.glow(strip), sg * (W / 2 + 0.005), 1.3, -D / 2 + 0.13);
 };
 
 /* the Game Corner's games, played at home (2026-10-12, the user's ask: they were still their painting puffed up) */
@@ -1886,7 +1902,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET, MAKES_DAYCARE, MAKES_PARTNER, MAKES_FIGURINES, MAKES_ANTIQUE, MAKES_RATTAN, MAKES_LOGCABIN, MAKES_IRONWOOD, MAKES_IMPERIAL]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET, MAKES_DAYCARE, MAKES_PARTNER, MAKES_FIGURINES, MAKES_ANTIQUE, MAKES_RATTAN, MAKES_LOGCABIN, MAKES_IRONWOOD, MAKES_IMPERIAL, MAKES_DINER, MAKES_CUTE, MAKES_ELEGANT, MAKES_GOLDEN, MAKES_SHELL, MAKES_SAKURA, MAKES_MAPLE, MAKES_ACORN, MAKES_MUSHROOM, MAKES_BLOCK, MAKES_THROWBACK, MAKES_RANCH, MAKES_IRONGARDEN]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }

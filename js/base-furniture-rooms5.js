@@ -654,6 +654,21 @@ function seven(x, y, s, c = GOLD) {
   bitmap(SEVEN, x + 1, y + 1, sh(c, -2), s); bitmap(SEVEN, x, y, c, s); R(x, y, s * 3, 1, sh(c, 1));
 }
 const TIER = ['#5a6a80', '#4a9a68', '#3aa8d8', '#e8a030', '#e85a3a', '#ffd84a'];
+/** The four tables after Pokémon Pinball (js/pinball-*.js): its painting in the table's colours, `mark` its emblem on the backglass. */
+function pinTable(x, b, body, box, field, accent, mark) {
+  floorShadow(x, b, 32); for (const i of [3, 26]) cyl(x + i, b - 30, 3, 30, CHROME);
+  panel(x + 1, b - 40, 30, 12, body, 2); R(x, b - 37, 2, 4, accent); R(x + 30, b - 37, 2, 4, accent);
+  panel(x + 2, b - 92, 28, 46, box, 2); inset(x + 5, b - 88, 22, 30, field);
+  mark(x + 16, b - 74);
+  line(x + 9, b - 60, x + 14, b - 58, accent, 2); line(x + 23, b - 60, x + 18, b - 58, accent, 2);
+  inset(x + 5, b - 54, 22, 7, INK); for (let n = 0; n < 6; n++) R(x + 7 + n * 3, b - 52, 2, 3, accent);
+}
+const PIN_MARKS = {
+  gengar: (cx, cy) => { R(cx - 7, cy - 4, 14, 10, '#7a4ab8'); for (const i of [-7, -3, 1, 5]) R(cx + i, cy - 7, 2, 3, '#7a4ab8'); R(cx - 5, cy - 2, 3, 2, '#f84848'); R(cx + 2, cy - 2, 3, 2, '#f84848'); R(cx - 4, cy + 2, 8, 2, '#f8f8f8'); },
+  lapras: (cx, cy) => { disc(cx - 1, cy + 2, 6, '#4a8ad8'); R(cx - 5, cy - 1, 8, 3, '#a89880'); R(cx + 4, cy - 8, 3, 9, '#6ab8f0'); R(cx + 4, cy - 9, 5, 3, '#6ab8f0'); R(cx - 9, cy + 6, 18, 1, '#f8f8f8'); },
+  volcano: (cx, cy) => { for (let j = 0; j < 10; j++) R(cx - 2 - j, cy - 2 + j, 4 + j * 2, 1, '#4a2a20'); R(cx - 1, cy - 2, 2, 8, '#f86a20'); disc(cx, cy - 6, 3, '#f8b030'); disc(cx - 3, cy - 9, 1.5, '#f8b030'); },
+  skypillar: (cx, cy) => { line(cx - 8, cy + 6, cx, cy - 2, '#3ac070', 3); line(cx, cy - 2, cx + 6, cy - 8, '#3ac070', 3); for (const [i, j] of [[-6, 4], [-1, -1], [4, -6]]) R(cx + i, cy + j, 2, 2, '#f8d030'); },
+};
 add('Arcade', [
   { id: 'slotmachine', name: 'Slot machine', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#f85050'], draw(x, b) {
     floorShadow(x, b, 32); panel(x + 3, b - 84, 25, 84, k.c, 2); R(x + 3, b - 70, 2, 40, sh(k.c, -1)); R(x + 26, b - 70, 2, 40, sh(k.c, -1));
@@ -779,6 +794,10 @@ add('Arcade', [
     line(x + 9, b - 60, x + 14, b - 58, '#e04848', 2); line(x + 23, b - 60, x + 18, b - 58, '#e04848', 2);
     inset(x + 5, b - 54, 22, 7, INK); for (let n = 0; n < 6; n++) R(x + 7 + n * 3, b - 52, 2, 3, '#f8d030');
   } },
+  { id: 'gengarpinball', name: 'Gengar\'s Haunted Pinball', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#9cf060'], draw: (x, b) => pinTable(x, b, '#2a1048', '#5a2a90', '#101a14', '#9cf060', PIN_MARKS.gengar) },
+  { id: 'lapraspinball', name: 'Lapras\'s Lagoon Pinball', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#5ad0ff'], draw: (x, b) => pinTable(x, b, '#0a3a6a', '#f08a5a', '#0e3a6a', '#5ad0ff', PIN_MARKS.lapras) },
+  { id: 'volcanopinball', name: 'Charizard\'s Volcano Pinball', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#f06a20'], draw: (x, b) => pinTable(x, b, '#2a1410', '#c84818', '#1a0806', '#f8b030', PIN_MARKS.volcano) },
+  { id: 'skypinball', name: 'Rayquaza\'s Sky Pillar Pinball', w: 1, h: 1, price: 1200, glow: [MARQUEE, '#5ae0a0'], draw: (x, b) => pinTable(x, b, '#1a4a3a', '#e8c030', '#3a7ab8', '#5ae0a0', PIN_MARKS.skypillar) },
   { id: 'casinorug', name: 'Casino carpet', w: 3, h: 2, layer: 'rug', price: 700, high: 0.04, side: 'c', flat(w, h) {
     R(0, 0, w, h, '#6a101c'); R(2, 2, w - 4, h - 4, '#a82230');
     for (const i of [4, w - 5]) R(i, 4, 1, h - 8, GOLD);

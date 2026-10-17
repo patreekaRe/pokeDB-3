@@ -20,10 +20,18 @@ test('a fresh save has nothing; an old one has what its lists prove', () => {
   assert.deepEqual(kinds(fresh()), []);
   const save = { ...fresh(), badges: ['clearing', 'fire'], unlocked: ['torchic'], feats: ['eternatus'] };
   save.safariDex.done = ['wetland'];
-  assert.deepEqual(kinds(save), ['charmanderdoll', 'koipond', 'plasmaglobe', 'stump', 'torchicdoll']);
+  assert.deepEqual(kinds(save), ['charmanderdoll', 'goldcandle', 'koipond', 'plasmaglobe', 'stump', 'torchicdoll']);
   delete save.badges;
   delete save.safariDex;
-  assert.deepEqual(kinds(save), ['plasmaglobe', 'torchicdoll']);
+  assert.deepEqual(kinds(save), ['goldcandle', 'plasmaglobe', 'torchicdoll']);
+});
+
+test('a Golden piece comes with each achievement, whichever it is', () => {
+  const save = { ...fresh(), unlocked: ['lugia', 'squirtle'] };
+  assert.ok(kinds(save).includes('goldcandle'));
+  assert.ok(!kinds(save).includes('goldclock'), 'a starter bought or free is not an achievement');
+  assert.match(howToEarn(FURNITURE_BY_KIND.goldclock, save), /2 achievements \(1\/2\)/);
+  assert.match(howToEarn(FURNITURE_BY_KIND.goldthrone, save), /every achievement/);
 });
 
 test('a Game Corner prize is owned once swapped for, and says where to get it', () => {

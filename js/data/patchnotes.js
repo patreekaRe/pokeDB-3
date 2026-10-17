@@ -43,16 +43,9 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
-  ['mall', '779 new pieces: five furniture series (Antique, Rattan, Log cabin, Ironwood, Imperial), six Pokémon rooms, seven Pokémon sets, 30 figurines, 60 dolls, eight holiday sets and 120 for the yard.'],
-  ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
-  ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
-  ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
-  ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
-  ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
-  ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
-  ['base', 'The berry garden says what each berry does as you pick one to plant, and what Kurt makes from it.'],
-  ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, and the Clearing and the 3D buy windows run lighter.'],
+  ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
+  ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
+  ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
   ['runs', 'Ten new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, a golden Ruins Idol, a Clefairy Moon Dance and Kecleon\'s Swap Stall.'],
 ];
 
@@ -65,6 +58,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.24',
+    name: 'Full Tilt',
+    date: '2026-10-17',
+    notes: [
+    ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
+    ['mall', '904 new pieces: ten furniture series (Antique to Mermaid; the Golden one earned by achievements), six Pokémon rooms, seven Pokémon sets, 30 figurines, 60 dolls, eight holiday sets and 120 for the yard.'],
+    ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
+    ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
+    ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
+    ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
+    ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
+    ['mall', 'Smeargle\'s garden catalogue is a proper merchant window: every piece shown as its 3D model, turning in a buy window when tapped.'],
+    ['mall', 'Every Game Corner arcade game rebuilt: painted worlds, rising stages, hazards and power-ups. Pinball is a real table; Bubble Shooter has a shot clock and rocks.'],
+    ['base', 'The Berry Garden window is rebuilt like Kurt\'s Workshop, with Plots, Seeds and Sell tabs, Smeargle\'s tips, and a card saying what each berry does.'],
+    ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz, the Clearing and the 3D buy windows run lighter, and an arcade cabinet\'s How to play no longer stretches across a wide screen.'],
+    ['mall', 'Four new pinball tables down the Game Corner\'s right wall, each its own game: Gengar\'s haunted graveyard, Lapras\'s whirlpool lagoon, Charizard\'s volcano and Rayquaza\'s scrolling Sky Pillar.'],
+    ],
+  },
   {
     version: '1.23',
     name: 'Collectors',
@@ -501,7 +513,7 @@ export const IN_THE_GAME = [
   ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
-  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 24 games to take home and play, from slot machines to Pokémon Pinball, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
+  ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],
   ['🥋', 'Kenmatta\'s dojo', 'Puzzle trials with set hands in the Clearing, a star each, six belts from white to black and a dojo set of furniture to earn.'],
   ['☁️', 'Cloud save', 'Sign in at the Clearing\'s PC or in Settings to play on your phone and PC with one save.'],
 ];

@@ -24,6 +24,31 @@ export function el(tag, className = '', text = '') {
   return node;
 }
 
+/** A wheel of soft rays, painted once on a canvas at one pixel to a CSS pixel (`n` across), solid to `solid` of its
+    radius and faded out by `fade`. Rays were CSS gradients under a mask on a turning layer: on an iPhone each is a
+    masked layer redrawn at three pixels to one every frame, and over a 3D place Safari's GPU process gave out (the
+    badge, 2026-10-14; a friend's game reloading after Alpha and gym rewards, 2026-10-17). */
+export function rayWheel(className, colour, { n = 640, solid = 0.1, fade = 0.97 } = {}) {
+  const c = el('canvas', className), r = n / 2;
+  c.width = c.height = n;
+  const g = c.getContext('2d');
+  if (!g) return c;
+  g.fillStyle = colour;
+  for (let k = 0; k < 18; k++) {
+    const a = (k * 20 - 90) * Math.PI / 180;
+    g.beginPath(); g.moveTo(r, r); g.arc(r, r, r, a, a + 7 * Math.PI / 180); g.closePath(); g.fill();
+  }
+  const edge = g.createRadialGradient(r, r, 0, r, r, r * fade);
+  edge.addColorStop(0, '#000'); edge.addColorStop(solid / fade, '#000'); edge.addColorStop(1, 'transparent');
+  g.globalCompositeOperation = 'destination-in';
+  g.fillStyle = edge;
+  g.fillRect(0, 0, n, n);
+  return c;
+}
+
+/** The light behind a chest, a relic, an Item Ball's find or a card (`.chest-rays`), gold for a boss's. */
+export const chestRays = (gold = false) => rayWheel('chest-rays', gold ? 'rgba(248, 200, 64, 0.38)' : 'rgba(255, 244, 190, 0.3)', { solid: 0.11, fade: 0.88 });
+
 const HEART = '<svg viewBox="0 0 10 9" aria-hidden="true"><path d="M5 8.6C1.2 5.8 0 4.2 0 2.6 0 1.1 1.1 0 2.5 0 3.5 0 4.4.6 5 1.5 5.6.6 6.5 0 7.5 0 8.9 0 10 1.1 10 2.6 10 4.2 8.8 5.8 5 8.6Z"/></svg>';
 
 /** A friend's row of hearts, `n` of `of` filled (js/data/workshop.js's heartsOf()). */

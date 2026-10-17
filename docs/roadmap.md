@@ -9,11 +9,16 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check): each town's buildings stay
-separate meshes, as their meshes carry the door's `userData.spot` and some move (flags, wheels, beams, boats), so Ruins
-draws 677 times a frame, Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186 (the mall's hall, after its
-merges, 345). Merge each building's still parts into one mesh a material (`mergeStatic()` in `js/hub-3d.js`, the tag set
-again on the merged meshes), leaving out what a tick moves; one town a session, the user checking each on their phone.
+**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
+Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
+phone. **Driftwood Landing done 2026-10-17** (`stillParts()` in `js/event-3d.js`, `merge: true` on the `lagoon` style;
+how it works in `docs/reference/towns.md`'s "Merged buildings"): 674 -> ~495 GL draws a frame headless, waiting on the
+user's phone check (`?town=ruins&towns`). Next, Thornwood (Highbough), then Savanna:
+> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
+> towns' draw calls for Highbough (`?town=thornwood`, style `canopy`): add `merge: true` to its style, mark every part a
+> tick moves or hides in `treehouse()`, `greatTree()`, `nursery()`, `canopyManor()` and anything they attach with
+> `moves()`, then check headless (draws a frame before and after, every door opens, no console errors, one GL context
+> awake; no screenshots), update the roadmap, push to main and give me the githack link.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
@@ -21,11 +26,19 @@ set is built (the helpers' brief, budgets, the check) is its "Building a set" se
 hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites, and session a, the six Pokémon
 rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, five more Pokémon sets (2026-10-17, 127
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
-all), and session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all; all four in `docs/roadmap-done.md`).
+all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
+125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), and session g,
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all; all seven in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
-(`?mall=furniture&stock=antqbed,rtnpeacock,cabinstove,iwlocker,impgong,impdragon`; try the stove's and the iron stove's fire tap). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+(`?mall=furniture&stock=antqbed,rtnpeacock,cabinstove,iwlocker,impgong,impdragon`; try the stove's and the iron stove's fire tap), and of session e's
+(`?mall=furniture&stock=dnrjukebox,dnrbooth,cutebed,elgspinet,merbed,merfountain`; the Golden set is never sold:
+`?base&allfurniture` lends it, and its pieces say "Earn N achievements" in the base's Shop), and of session f's
+(`?mall=furniture&stock=blsmbed,blsmarch,mplbed,mplscreen,acrnwardrobe,acrnstash,shrmbed,shrmshiinotic`; Maple leaf is on the
+stands this October by itself, Cherry blossom with `?holiday=sakura`), and of session g's
+(`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
+or Smeargle's catalogue's Iron garden tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -33,20 +46,25 @@ at once hit it on 2026-10-16; five is safer.
   hideout (`docs/roadmap-done.md`).
 - **c. Done 2026-10-17, on `main`**: Day Care, Partner care, 30 figurines and 60 more dolls (`docs/roadmap-done.md`).
 - **d. Done 2026-10-17, on `main`**: the Antique, Rattan, Log cabin, Ironwood and Imperial series (`docs/roadmap-done.md`).
-- **e to h. The other 17 furniture series**, about 5 a session in the list's order (Diner, Cute, Elegant, Golden, Shell
-  and mermaid next).
+- **e. Done 2026-10-17, on `main`**: the Diner, Cute, Elegant, Golden and Mermaid series (`docs/roadmap-done.md`).
+- **f. Done 2026-10-17, on `main`**: Cherry blossom and Maple leaf (sold only in April / October), Acorn and Mushroom
+  (`docs/roadmap-done.md`).
+- **g. Done 2026-10-17, on `main`**: Wooden block, Throwback, Ranch and Iron garden (outdoor, its own tab in Smeargle's
+  catalogue) (`docs/roadmap-done.md`).
+- **h. The last 4 furniture series**: Bamboo, Stone zen, Constellations, Desert caravan.
 - **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session e):
+Next session's prompt (session h):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session e: the next five furniture series in the list's order
-> (Diner, Cute, Elegant, Golden, Shell and mermaid; 25 each), one helper a set (five at once), then check every kind
-> with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Golden is "earned from
-> achievements, never sold": before the helpers start, decide how its pieces are earned (read docs/reference/hub-base-mall.md
-> on earned furniture and `?allfurniture`) and keep them out of the store's stock.
+> "Building a set" section is the helpers' brief). Build session h: the last four furniture series (Bamboo, Stone zen,
+> Constellations, Desert caravan; 25 each), one helper a set (four at once), then check every kind with
+> tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Stone zen is outdoor, like
+> session g's Iron garden (decided 2026-10-17, the user may still say otherwise: the Japanese shelf already has the indoor zen pieces), on a
+> `yard: 'Zen'` tab of its own in Smeargle's garden catalogue (add it to `GARDEN_TABS` in js/garden-shop.js); read
+> docs/reference/hub-base-mall.md on the yard sets first.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -609,6 +627,17 @@ Corner's crowd code with options (`makeCrowd()` in `js/corner-crowd.js`: `cast`,
 a cast of 6 from `SHOPPERS` (`js/data/mall-crowd.js`, 18) dealt anew every 8 UTC hours. Next: the user playtests (how
 many, how chatty, the fountains' size); move to the archive once they're happy.
 
+**Arcade overhaul: waiting on the user's playtest** (2026-10-17): all 18 Game Corner games were deepened in one pass (see
+the archive and `docs/reference/hub-base-mall.md`'s "The arcade overhaul"). Next: the user plays them on the phone and
+says which feel too hard, too easy or too busy; tune that game's numbers alone.
+
+**Four more pinball tables: waiting on the user's playtest** (2026-10-17, branch `claude/wonderful-ramanujan-ri0gb0`, on
+`main` too): Gengar's Haunted, Lapras's Lagoon, Charizard's Volcano and Rayquaza's Sky Pillar, on `js/pinball-kit.js`
+(see `docs/reference/hub-base-mall.md`'s last section), patch 1.24 "Full Tilt". Played by a bot headless only. Next: the
+user plays them on the phone and says which feel too hard, easy or busy (each file's top constants and its `make()`
+numbers are the knobs); their 3D tables were never seen in 3D. All five tables now stand in a row down the Game Corner's right wall, its slot
+machines removed (the user's ask, same day; untested in 3D, the cloud has no phone GPU).
+
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at
 Meowth's counter (450 coins), played in the Secret Base by a tap (`js/home-arcade.js`), every game a file on
@@ -861,6 +890,43 @@ through `perk()` / `dexPerk()` in `js/run.js` (a Safari first try stays fair), m
 docs/reference/economy-and-hall-of-fame.md. Propose the loadout (slots, where you pick it, what it costs) and 8 perks,
 pick with me, then build it with the sim mirror, a bot check at Levels 0/3/5, a patch-notes line and a githack link."
 
+**Friends list and base visits** (the user's go, 2026-10-17; was parked as "Friends and messages", 2026-10-07).
+Offline visits, like Animal Crossing's dream visits: you walk round a friend's Secret Base as they last left it. Live
+visits together come later, if ever (they need the full Firestore SDK with live listeners, not `firestore-lite`, and
+avatar and position sync). Signed-in players only, no free-text chat. **Friend codes are in** (the user's call,
+2026-10-17, replacing 2026-10-07's "no codes"): they are the easiest way in. Name search is left for later, because it
+needs unique names, renames and a guard against rude names turning up in results. The easiest build, 2 sessions:
+**Session 1, the list (no 3D):**
+- **A public trainer doc**, `trainers/<uid>` = `{ code, name, card, buddy, base, at }`. `saves/<uid>` stays private.
+  Written on sign-in and whenever you leave your base. Rules: signed-in players read it; only the owner writes it,
+  within size bounds, the same way the boards' rules do.
+- **A friend code**, `codes/<CODE>` = `{ uid }`: 8 letters with no look-alikes (no 0/O, 1/I/L), made once and
+  create-only, so a clash just rolls again. Shown on the Trainer Card and the PC.
+- **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
+  device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
+  carry `uid`). No requests and no accept step; anyone you add shows up.
+- **A player-list app** (a `shelfApp()`): name, Trainer Card, buddy, last seen, a Visit key (greyed until session 2),
+  Remove. One `getDoc` per friend on open. **"Friends" is taken** by the Gym Leaders' hearts app (`js/friendsdex.js`),
+  so ask the user first: a new name ("Trainers", "Pals"), or a tab in the Friends app.
+- **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
+  one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
+  setup.
+**Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
+`loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
+(`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
+in `js/secret-base.js` (20 places) plus 3 in `js/base-3d.js`, so one guard there refuses any write for a `guest` base.
+A test shows that visiting and leaving leaves your save exactly as it was. Their statues and figures are loaded from
+their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of stamps.
+Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
+seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
+in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
+▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
+visits' entry and docs/reference/cloud-save.md. Ask me the player list's name, then build session 1: the trainer doc,
+friend codes, the list in the save, adding from a code or a leaderboard name, the app, the How to play tip and the PC
+letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
+rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
+build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
+
 ## Ideas, not agreed yet (ask the user before building)
 
 **After the balance pass: more content, toward StS's numbers** (2026-10-16; the user wants these on the roadmap, to pick
@@ -903,7 +969,7 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
      kind, kept out of the daily stock, shown locked in the Shop with how to earn it (CLAUDE.md); Torchic / Treecko /
      Mudkip give their own dolls since the 44 new ones;
   d) Safari Pokémon on display: pick up to N, they wander, tap for a cry / hop / hearts, some pieces they use (a bed, a pool) (Run in: LOCAL);
-  e) later, maybe: visit another trainer's base through Firestore, like the leaderboards (Run in: CLOUD).
+  e) visiting another trainer's base: now "Friends list and base visits" under Open, ready to build;
   f) later (the user's ask, 2026-10-08): give the 3D base's tall upper wall (`dressRoom()` in `js/base-3d.js`, the wallpaper
      running up past a picture rail) a job: a **trophy shelf** up there showing your Badges, Hall of Fame wins and trophies,
      and maybe wall pieces (posters, clocks) hung higher than the 3-tile wall (Run in: CLOUD).
@@ -994,14 +1060,16 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Catching in the main game: dropped (the user's call, 2026-09-27). Only the Safari Zone catches.
 - Game Corner skins Budew, Sewaddle, Lotad, Horsea, Spheal, Tympole: the user said no. Don't re-add them.
 - A Safari "zone legend" (a weekly Pokémon catchable only on the last floor): the user said no, 2026-10-03.
-- Friends and messages (talked through 2026-10-07, "maybe later"; Run in: CLOUD). No free-text chat. Friends with no
-  codes or links: unique nicknames (claimed in Firestore, a "Let others find me" switch), search by name, one-tap
-  Follow (mutual = Friends) from search, leaderboards and suggested Rivals, a Friends tab on both boards, a Friends app
-  in the device. Then, Dark Souls style: signs built from phrase parts left on map nodes (best on the seeded Safari /
-  Sky Pillar, rated for coins), friends' ghosts where they lost (opens their loss recap), a daily gift item in a
-  friend's Lost & Found. Maybe an Assist (a friend's partner for one fight), bot-checked. Needs sign-in.
+- Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
+
+- **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
+  after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
+  once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
+  three again and says whether it still resets, and on which phone (an older iPhone has far less room). If the Game
+  Corner still does it, the next lever is the user's idea: move the arcade cabinets into a room of their own (the corner
+  alone is ~85 MB of textures headless, the walls and floor ~26 MB of it, ~100 cabinet and table faces most of the rest).
 
 - **The Grand Ballroom's look** (2026-10-16): the Furniture store's 3F, selling gold starter statues and six Pokédex
   shells (`docs/roadmap-done.md`). The user looks at the Ballroom (`?mall=3f&coins=20000`), a statue in the base and the
