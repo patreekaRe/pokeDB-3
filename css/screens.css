@@ -6180,3 +6180,16 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 @keyframes heldTipIn { from { opacity: 0; translate: -50% -10px; } }
 .mdex-btn.berry-pulse { animation: berryPulse 1.2s ease-in-out 3; }
 @keyframes berryPulse { 50% { box-shadow: 0 0 0 3px #ffd860, 0 0 14px rgba(255, 216, 96, 0.9); scale: 1.08; } }
+
+/* the Safari Zone's locked door (js/safarilock.js): a bar per biome on the device's LCD */
+.safari-lock-dialog { width: min(360px, calc(100vw - 32px)); }
+.safari-lock-dialog .sl-why { font-size: 0.75rem; line-height: 1.6; }
+.sl-bars { list-style: none; margin: 4px 0 10px; padding: 0; display: grid; gap: 10px; }
+.sl-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 4px; color: #1f3a14; font-size: 0.75rem; }
+.sl-count { white-space: nowrap; }
+.sl-bar { height: 12px; border: 2px solid #1f3a14; border-radius: 6px; background: #e4f0cc; overflow: hidden; }
+.sl-fill { display: block; height: 100%; background: #3a7a28; transition: width 0.5s ease-out; }
+.sl-row.done .sl-fill { background: #c89a20; }
+.sl-row.done .sl-count { color: #6a4a00; }
+.safari-lock-dialog .sl-total-line { font-size: 0.75rem; color: #1f3a14; }
+@media (prefers-reduced-motion: reduce) { .sl-fill { transition: none; } }

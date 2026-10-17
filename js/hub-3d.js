@@ -25,6 +25,7 @@ import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
 import { spriteFit } from './data/sprite-fit.js';
 import { safariOpen, safariUnlockProgress } from './data/pokedex.js';
+import { showSafariLock } from './safarilock.js';
 import { readyTasks } from './data/ranger.js';
 import { towerOpen } from './data/tower.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
@@ -3012,6 +3013,7 @@ function arrived() {
     place only shows its card, the bar's keys choosing; else straight in. */
 function open(p, i = null) {
   if (p.waystone) return showWaystone(p);
+  if (p.id === 'safari-gate' && !p.open) return showSafariLock();   // shut, each biome's bar to opening it
   if (!p.open || !p.buttons.length || (i == null && p.buttons.length > 1)) return showCard(p);
   const stop = stops[p.id];
   if (stop) {

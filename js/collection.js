@@ -12,6 +12,7 @@ import { RELICS } from './data/relics.js';
 import { ITEMS } from './data/items.js';
 import { ACHIEVEMENTS } from './data/achievements.js';
 import { dexTally, safariOpen } from './data/pokedex.js';
+import { showSafariLock } from './safarilock.js';
 import { getSave } from './storage.js';
 import { pokedexApp } from './pokedex.js';
 import { safariDexApp, safariDexCount } from './safaridex.js';
@@ -143,7 +144,7 @@ function apps(save) {
       cls: 'cdev-win panel cdev-moves', app: movesApp(pickedStarter()?.type), news: newFinds('cards', save).length > 0 },
     safari
       ? { ...safariApp(safari), name: 'Safari', art: vec('safari'), at: here.safari }
-      : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.' },
+      : { id: 'safari', locked: 'Beat every Pokémon in all three biomes to open the Safari Zone.', onLocked: showSafariLock },
     GYM_LEADERS.some(l => gymMet(save, l.id))
       ? { id: 'gym', name: 'Gym Leaders', art: vec('gym'), count: `${GYM_LEADERS.filter(l => save.gym?.[l.id]).length}/${GYM_LEADERS.length}`,
         cls: 'cdev-dex cdev-bag', app: gymApp(), news: newFinds('gym', save).length > 0 }
@@ -209,7 +210,7 @@ function renderHome() {
     const tile = el('span', 'cdev-tile');
     tile.append(a.locked ? vec('lock') : a.art);
     icon.append(tile, el('span', 'cdev-label', a.locked ? '???' : a.name), el('span', 'cdev-count', a.locked ? '???' : a.count));
-    if (a.locked) icon.addEventListener('click', () => tipAt(icon, a.locked));   // a ??? until its first entry: a tap says how
+    if (a.locked) icon.addEventListener('click', () => (a.onLocked ? a.onLocked() : tipAt(icon, a.locked)));   // a ??? until its first entry: a tap says how
     else icon.addEventListener('click', () => openApp({ ...a, name: a.name.toUpperCase() }));
     return icon;
   }));

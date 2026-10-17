@@ -922,6 +922,17 @@
     </div>
   </dialog>
 
+  <!-- the Safari Zone's locked door: how far each biome's Pokémon are beaten (js/safarilock.js) -->
+  <dialog id="safari-lock-dialog" class="dialog small-dialog safari-lock-dialog dev-window">
+    <h2>Safari Zone</h2>
+    <div class="dev-screen">
+      <p class="sl-why">Beat every Pokémon in all three biomes to open it.</p>
+      <ul id="sl-bars" class="sl-bars"></ul>
+      <p class="sl-total-line">Beaten so far: <b id="sl-total"></b></p>
+    </div>
+    <form method="dialog" class="dialog-actions"><button class="btn primary">OK</button></form>
+  </dialog>
+
   <!-- a starter a won fight just unlocked (unlockWindow() in js/run.js) -->
   <dialog id="unlock-dialog" class="dialog small-dialog unlock-dialog dev-window">
     <p class="unlock-kicker">🏆 Achievement unlocked!</p>

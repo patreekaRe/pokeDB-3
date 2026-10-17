@@ -2962,3 +2962,8 @@ The user asked how to find each other without talking outside the game, and for 
 banners, `js/trainer-notice.js`. 59 headless checks, 62 rules checks. Detail: `docs/reference/cloud-save.md`.
 Then the TRAINER NETWORK welcome (first open, and a ? key) and the Plaza's 3D board in the Clearing (`js/hub-plaza.js`, 11,14);
 67 headless checks with the real Clearing running.
+
+### Safari Zone unlock tracker (2026-10-17, the user's ask)
+A tap on the locked Safari Zone (the title's gem, the Clearing's gate, the Collection's 🔒 app) opens `#safari-lock-dialog`
+(`js/safarilock.js`): a bar per biome of its Pokémon beaten (`safariUnlockPages()` in `js/data/pokedex.js`), gold once done,
+and the total. Branch `claude/safari-progress-tracker-6oy9oy`, also pushed to `main`.

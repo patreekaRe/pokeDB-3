@@ -98,11 +98,16 @@ export const pageIndexOf = (biomeId) => ALL_PAGES.findIndex(p => p.biome === bio
     3 defeats of each felt like a grind for a door (the user's call, 2026-10-02). */
 export const safariOpen = (save) => save.safariPass || DEX_PAGES.every(p => save.dex.done.includes(p.biome));
 
-/** How far along the Safari Zone's unlock is: "12/48", Pokémon beaten over every entry in the three biomes. */
-export function safariUnlockProgress(save) {
-  const ids = DEX_PAGES.flatMap(p => p.ids);
+/** How far along the Safari Zone's unlock is, page by page: each biome's Pokémon beaten out of its entries. */
+export function safariUnlockPages(save) {
   const beaten = new Set(save.dex.defeated);
-  return `${ids.filter(id => beaten.has(id)).length}/${ids.length}`;
+  return DEX_PAGES.map(p => ({ biome: p.biome, name: p.name, n: p.ids.filter(id => beaten.has(id)).length, total: p.ids.length }));
+}
+
+/** The same in one line: "12/48" over every entry in the three biomes. */
+export function safariUnlockProgress(save) {
+  const pages = safariUnlockPages(save);
+  return `${pages.reduce((a, p) => a + p.n, 0)}/${pages.reduce((a, p) => a + p.total, 0)}`;
 }
 
 /** The Collection's and Trainer Card's Pokédex count: the three biomes' entries until the Safari Zone opens (its goal),

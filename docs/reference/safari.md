@@ -399,3 +399,9 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
   all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's
   goal ahead growing nearer every floor, a different roadside landmark each floor. A Safari run asks for its area (`land()` in `js/run.js`)
   for the scene, the map's palette and the signs; detail in `docs/reference/safari.md`.
+
+## The locked door's tracker (2026-10-17, the user's ask)
+While the Safari Zone is shut, a tap on the title's gem, the Clearing's gate (`open()` in `js/hub-3d.js`) or the
+Collection's 🔒 Safari app opens `#safari-lock-dialog` (`showSafariLock()`, `js/safarilock.js`): one bar per DEX_PAGES biome,
+Pokémon beaten / its entries (`safariUnlockPages()`), gold with ✓ Done once full, and the total. Walking up to the gate
+without tapping it still shows only its card line.
