@@ -108,8 +108,12 @@ const saveA = { friendMail: today, trainerName: 'ASH', setupDone: true, coins: 5
 // dropped on a visit), a Safari resident and a made-up one
 saveA.secretBase = { v: 2, wall: 'mint', floor: 'checker', shopOpens: 1, leaderVisit: 99999, mons: ['rattata', 'hax'],
   items: [{ id: 'window', x: 4 }, { id: 'rug', x: 4, y: 3, dir: 0 }, { id: 'bed', x: 0, y: 0, dir: 0 }, { id: 'lamp', x: 2, y: 0, dir: 0 },
-    { id: 'tv', x: 7, y: 0, dir: 0 }, { id: 'pc', x: 9, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }, { id: 'hax', x: 1, y: 3 }],
-  owned: { window: 1, rug: 1, bed: 1, lamp: 1, tv: 1 } };
+    { id: 'tv', x: 7, y: 0, dir: 0 }, { id: 'pc', x: 9, y: 0, dir: 0 }, { id: 'gift', x: 5, y: 3, dir: 0 }, { id: 'hax', x: 1, y: 3 },
+    { id: 'trophycase', x: 6, y: 2, dir: 0 }],
+  owned: { window: 1, rug: 1, bed: 1, lamp: 1, tv: 1, trophycase: 1 },
+  // what A's trophy case showed at home: three trophies (B's save has none)
+  liveSeen: { trophycase: '111000000000' },
+  house: { big: false, rooms: [], links: [], yard: { size: 1, met: 1, wall: 'cream', floor: 'grass', items: [{ id: 'berryplot', x: 2, y: 2, dir: 0 }] } } };
 const saveB = { ...saveA, trainerName: 'MISTY', badges: [], stats: { runsWon: 1, runsStarted: 2, playMs: 600000 },
   secretBase: { v: 2, wall: 'cream', floor: 'wood', shopOpens: 1, leaderVisit: 99999, items: [{ id: 'bed', x: 0, y: 0, dir: 0 }], owned: { bed: 1 } } };
 
@@ -161,13 +165,13 @@ await B.click('.trn-banner');
 await B.waitForTimeout(900);
 const pageText = (await B.textContent('.trn-device')).replace(/\s+/g, ' ');
 check(pageText.includes('Wins 7') && pageText.includes('Time 3:25') && pageText.includes('Badges 1'), 'A\'s Trainer Card on B\'s handheld');
-check(store.get('trainers/uidA').base && JSON.parse(store.get('trainers/uidA').base).items.length === 8, 'A\'s page carries their base');
-check(!(await B.isDisabled('.trn-visit')), 'Visit is open for a trainer with a base');
+check(store.get('trainers/uidA').base && JSON.parse(store.get('trainers/uidA').base).items.length === 9, 'A\'s page carries their base');
+check((await B.$$('.trn-visit')).length === 2 && !(await B.isDisabled('.trn-visit[data-start=main]')), 'a base with a backyard offers Visit house and Visit yard');
 
 // B visits A's base: walked round as A left it, nothing of B's saved
 const before = await B.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
 const pageB = store.get('trainers/uidB').base;
-await B.click('.trn-visit');
+await B.click('.trn-visit[data-start=main]');
 check(await until(async () => (await B.textContent('.base3d.guest .b3-top h2').catch(() => '')) === 'ASH\'s Base', 15000), 'Visit opens A\'s base, named for them');
 await B.waitForTimeout(2500);
 const inside = await B.evaluate(async () => {
@@ -179,7 +183,7 @@ check(!inside.decor && !inside.garden, 'no Decorate or Garden key on a visit');
 check(!inside.talk && !inside.gift, 'no Smeargle, present or visitor on a visit');
 check(inside.hint.includes('ASH\'s Secret Base'), `the hint says whose base it is (${inside.hint})`);
 const read = await B.evaluate(async (json) => { const b = (await import('./js/secret-base.js')).readGuestBase(json); return { ids: b.items.map(i => i.id), mons: b.mons }; }, store.get('trainers/uidA').base);
-check(!read.ids.includes('gift') && !read.ids.includes('hax') && read.ids.length === 6, `their present and unknown pieces are left out (${read.ids})`);
+check(!read.ids.includes('gift') && !read.ids.includes('hax') && read.ids.length === 7, `their present and unknown pieces are left out (${read.ids})`);
 check(await B.evaluate(async () => (await import('./js/secret-base.js')).readGuestBase('{"v":2,"items":"x"}') === null && (await import('./js/secret-base.js')).readGuestBase('not json') === null), 'a base that isn\'t one is refused');
 // every way a tap could write: try the base's writers straight, and walk about by tapping the room
 const tries = await B.evaluate(async () => {
@@ -191,14 +195,31 @@ const tries = await B.evaluate(async () => {
 });
 await B.waitForTimeout(1500);
 check(tries, 'taps and base writes during the visit ran');
+const cases = await B.evaluate(async () => { const { PIECES } = await import('./js/base-furniture.js'); return PIECES.trophycase.live(); });
+check(cases === '111000000000', `A's trophy case shows A's trophies, not B's (${cases})`);
 await B.evaluate(async () => (await import('./js/base-3d.js')).leave());
 check(await until(async () => !(await B.$('body > .base3d'))), 'the doormat takes B home');
+const mine = await B.evaluate(async () => { const { PIECES } = await import('./js/base-furniture.js'); return PIECES.trophycase.live(); });
+check(mine === '100000000000', `home again, trophy cases read B's own save, one win (${mine})`);
+// and out to A's backyard, through Visit yard
+await openTrainers(B);
+await B.waitForTimeout(1200);
+await B.click('.trn-banner');
+await B.waitForTimeout(900);
+await B.click('.trn-visit[data-start=yard]');
+check(await until(async () => (await B.textContent('.base3d.guest .b3-top h2').catch(() => '')) === 'ASH\'s Backyard', 15000), 'Visit yard opens A\'s backyard');
+await B.waitForTimeout(1500);
+check(await B.evaluate(() => { const g = document.querySelector('.b3-garden'); return g.hidden || getComputedStyle(g).display === 'none'; }), 'no Garden key in their yard');
+await B.evaluate(async () => (await import('./js/base-3d.js')).leave());
+await until(async () => !(await B.$('body > .base3d')));
+await B.waitForTimeout(1500);
 await B.waitForTimeout(1500);
 const after = await B.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
 // the play clock (stats.playMs) ticks on whatever you do, so it's left out
 const noClock = (all) => { const o = { ...all }; if (o['pokedb.save.v2']) { const d = JSON.parse(o['pokedb.save.v2']); delete d.stats.playMs; o['pokedb.save.v2'] = JSON.stringify(d); } return o; };
 Object.assign(before, noClock(before)); Object.assign(after, noClock(after));
-const changed = [...new Set([...Object.keys(before), ...Object.keys(after)])].filter(k => before[k] !== after[k]);
+// the save and the cloud save's record of it; the Clearing keeps notes of its own (a Halloween greeter's hello) as B comes home
+const changed = ['pokedb.save.v2', 'pokedb.cloud.v1'].filter(k => before[k] !== after[k]);
 if (changed.includes('pokedb.save.v2')) { const x = JSON.parse(before['pokedb.save.v2']), y = JSON.parse(after['pokedb.save.v2']); console.log('save fields changed:', Object.keys({ ...x, ...y }).filter(k => JSON.stringify(x[k]) !== JSON.stringify(y[k])).map(k => `${k}: ${JSON.stringify(x[k])?.slice(0, 200)} -> ${JSON.stringify(y[k])?.slice(0, 200)}`)); }
 check(!changed.length, `visiting and leaving leaves B's save exactly as it was${changed.length ? ` (changed: ${changed})` : ''}`);
 check(store.get('trainers/uidB').base === pageB, 'leaving a friend\'s base doesn\'t publish it as B\'s');

@@ -48,7 +48,7 @@ export const NEXT = [
   ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
   ['mall', '125 pieces for whole rooms of a place: a Hospital ward, Bistro kitchen, Bakery, Sushi bar and Ramen shop.'],
   ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
-  ['dex', 'A Trainers app on your Pokédex: signed in, get a trainer code, add friends by code or a leaderboard name, see their Trainer Card and walk round their Secret Base.'],
+  ['dex', 'A Trainers app on your Pokédex: signed in, get a trainer code, add friends by code or a leaderboard name, see their Trainer Card and walk round their Secret Base and backyard.'],
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
 ];
 

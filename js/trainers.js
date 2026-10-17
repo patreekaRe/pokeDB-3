@@ -141,7 +141,12 @@ function monImg(key, cls) {
 function readDoc(d) {
   if (!d || typeof d !== 'object' || typeof d.name !== 'string') return null;
   return { name: d.name.slice(0, 16) || 'TRAINER', card: cardDoc(d.card), buddy: typeof d.buddy === 'string' ? d.buddy : '', at: d.at,
-    base: typeof d.base === 'string' && d.base.length <= BASE_MAX ? d.base : '' };
+    base: typeof d.base === 'string' && d.base.length <= BASE_MAX ? d.base : '', yard: hasYard(d.base) };
+}
+
+/** Whether a page's base has a bought backyard: it's reached through the garden arch, not the house, so Visit asks which. */
+function hasYard(json) {
+  try { const y = typeof json === 'string' && json.length <= BASE_MAX && JSON.parse(json)?.house?.yard; return !!y && !y.lent; } catch { return false; }
 }
 
 /* Visit: main.js hands over the way into a friend's base (openBase3d({ guest }) in js/base-3d.js), so this file never
@@ -241,17 +246,22 @@ export function trainersApp() {
       lines(g, uid, known) {
         const doc = docs.get(uid);
         const keys = el('div', 'trn-keys');
-        const visit = el('button', 'lb-btn trn-visit', 'Visit');
-        visit.type = 'button';
-        visit.disabled = !doc?.base || !visitor;
-        visit.title = doc?.base ? `Walk round ${doc.name}'s Secret Base` : 'They haven\'t made a Secret Base yet.';
-        visit.addEventListener('click', async () => {
-          visit.disabled = true;
-          playSound('confirm');
-          const went = await visitor({ name: doc.name, json: doc.base });
-          if (went !== false && went !== 'run') return;
-          playSound('cancel');
-          visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
+        // a base with a backyard gets two keys, as at home the yard is through the garden arch, not the house
+        const visits = (doc?.yard ? [['main', 'Visit house'], ['yard', 'Visit yard']] : [['main', 'Visit']]).map(([start, name]) => {
+          const visit = el('button', 'lb-btn trn-visit', name);
+          visit.type = 'button';
+          visit.dataset.start = start;
+          visit.disabled = !doc?.base || !visitor;
+          visit.title = doc?.base ? `Walk round ${doc.name}'s ${start === 'yard' ? 'backyard' : 'Secret Base'}` : 'They haven\'t made a Secret Base yet.';
+          visit.addEventListener('click', async () => {
+            visit.disabled = true;
+            playSound('confirm');
+            const went = await visitor({ name: doc.name, json: doc.base, start });
+            if (went !== false && went !== 'run') return;
+            playSound('cancel');
+            visit.textContent = went === 'run' ? 'Not mid-run' : 'Can\'t open it';
+          });
+          return visit;
         });
         const remove = el('button', `lb-btn trn-remove${removing === uid ? ' sure' : ''}`, removing === uid ? 'Tap again to remove' : 'Remove');
         remove.type = 'button';
@@ -263,7 +273,7 @@ export function trainersApp() {
           said = '';
           remount();
         });
-        keys.append(visit, remove);
+        keys.append(...visits, remove);
         if (!doc) return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];
         const walk = sprite(doc.buddy);
         return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card),

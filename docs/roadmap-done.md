@@ -2911,4 +2911,6 @@ Branch `claude/visit-only-base-session-2-72ayar`, pushed to `main`. The Trainers
 from their page's `base` (`openBase3d({ guest })`, `readGuestBase()`), walk-only: no Decorate, Garden, PC, Smeargle, gifts
 or visitors, their residents and statues, the Trainer set's cases blank. `visitBase()` / `keep()` in `js/secret-base.js`
 refuses every base write while it's up; `tools/trainers-check.mjs` (43 checks) shows visiting and leaving leaves the
-save exactly as it was. `?base&asfriend` playtests it alone. Detail: `docs/reference/cloud-save.md`.
+save exactly as it was. `?base&asfriend` playtests it alone. Follow-up the same day (the user's picks): Visit house /
+Visit yard (the yard is through the garden arch, so a choice beat a back door), and their trophy cases from their
+base's `liveSeen` (48 checks). Detail: `docs/reference/cloud-save.md`.

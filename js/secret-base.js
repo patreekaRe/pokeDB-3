@@ -312,6 +312,7 @@ export function readGuestBase(json) {
     b.owned = b.owned && typeof b.owned === 'object' ? b.owned : {};
     b.mons = Array.isArray(b.mons) ? b.mons.filter(id => typeof id === 'string') : [];
     b.out = Array.isArray(b.out) ? b.out.filter(id => typeof id === 'string') : [];
+    b.liveSeen = b.liveSeen && typeof b.liveSeen === 'object' ? b.liveSeen : {};
     return b;
   } catch { return null; }
 }

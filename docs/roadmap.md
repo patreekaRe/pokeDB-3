@@ -901,7 +901,8 @@ the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 ~~**Session 2, the visit**~~ done 2026-10-17 on `claude/visit-only-base-session-2-72ayar` (pushed to `main` too;
 `docs/roadmap-done.md`, details in `docs/reference/cloud-save.md`'s Trainers section): the Trainers app's Visit walks round
 a friend's base as they left it, read-only (`openBase3d({ guest })`, every base write refused by `visitBase()`), checked
-by `tools/trainers-check.mjs`'s save-unchanged test. **Next: the user playtests it** (two signed-in accounts, or
+by `tools/trainers-check.mjs`'s save-unchanged test. Then (the user's picks): Visit house / Visit yard for a base with a
+backyard, and their trophy cases as they last saw them at home. **Next: the user playtests it** (two signed-in accounts, or
 `?base&asfriend` alone); a guestbook of stamps is still a maybe.
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
