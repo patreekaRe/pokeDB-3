@@ -348,6 +348,14 @@ const ART = {
   // ---- the device's text icons (a run's full record, the Pokédex's move kinds, the Safari areas) ----
   heart: `<path d="M16 27.5C9 22.5 3.5 17.6 3.5 11.6c0-4 3.1-7.1 6.9-7.1 2.6 0 4.5 1.4 5.6 3.4 1.1-2 3-3.4 5.6-3.4 3.8 0 6.9 3.1 6.9 7.1 0 6-5.5 10.9-12.5 15.9Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M7.6 11c.2-1.8 1.4-3 3-3.2" fill="none" stroke="#ffc0cc" stroke-width="2" stroke-linecap="round"/>`,
+  // the Trainers app: two trainers in caps, side by side
+  trainers: `<path d="M17 29c0-5 2.6-8.4 7-8.4s7 3.4 7 8.4Z" fill="#3c8cf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="24" cy="15" r="4.6" fill="#ffd8b0" stroke="${INK}" stroke-width="2"/>
+    <path d="M19.2 13.6c.4-3 2.4-4.6 4.8-4.6s4.4 1.6 4.8 4.6Z" fill="#3c8cf0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M1 29c0-5.6 3-9.4 8-9.4s8 3.8 8 9.4Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="9" cy="13" r="5.2" fill="#ffd8b0" stroke="${INK}" stroke-width="2"/>
+    <path d="M3.6 11.4c.4-3.4 2.7-5.2 5.4-5.2s5 1.8 5.4 5.2Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M7 9.2h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`,
   // the Friends app: a pink heart behind a red one
   friends: `<path d="M21.5 21C16.8 17.6 13 14.3 13 10.2c0-2.7 2.1-4.8 4.7-4.8 1.8 0 3.1 1 3.8 2.3.8-1.3 2.1-2.3 3.8-2.3 2.6 0 4.7 2.1 4.7 4.8 0 4.1-3.8 7.4-8.5 10.8Z" fill="#f8a0c0" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>
     <path d="M12 28.5C6.4 24.5 2 20.6 2 15.8c0-3.2 2.5-5.7 5.5-5.7 2.1 0 3.6 1.1 4.5 2.7.9-1.6 2.4-2.7 4.5-2.7 3 0 5.5 2.5 5.5 5.7 0 4.8-4.4 8.7-10 12.7Z" fill="#f0405a" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>

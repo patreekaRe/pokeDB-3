@@ -23,6 +23,8 @@ import { satchelNews, questNews } from './satchel.js';
 import { questLogApp, questCount } from './questlog.js';
 import { friendsApp, friendsCount } from './friendsdex.js';
 import { friendsOpen, friendsNews } from './data/friends.js';
+import { trainersApp, trainerCount } from './trainers.js';
+import { cloudConfigured } from './cloud.js';
 import { satchelOf } from './data/satchel.js';
 import { townsOpen } from './data/towns.js';
 import { GYM_LEADERS } from './data/gym.js';
@@ -151,6 +153,7 @@ function apps(save) {
     townsOpen() && satchelEntry(save),
     townsOpen() && { id: 'quests', name: 'Quests', art: vec('quests'), count: questCount(save), cls: 'cdev-win cdev-quests', app: questLogApp, news: questNews(save) },
     friendsOpen(save) && friendsEntry(save),
+    cloudConfigured() && trainersEntry(),
     { id: 'stats', name: 'Stats', art: vec('stats'), count: `${save.stats.runsWon} win${save.stats.runsWon === 1 ? '' : 's'}`, cls: 'cdev-dex', app: statsApp },
     { id: 'achievements', name: 'Achievements', art: vec('trophy'),
       count: `${ACHIEVEMENTS.filter(a => save.unlocked.includes(a.starter)).length}/${ACHIEVEMENTS.length}`, cls: 'cdev-dex cdev-bag', app: achievementsApp },
@@ -167,6 +170,12 @@ function satchelEntry(save) {
 
 /** Friends (js/friendsdex.js), by Quests. */
 const friendsEntry = (save) => ({ id: 'friends', name: 'Friends', art: vec('friends'), count: friendsCount(), cls: 'cdev-dex cdev-bag', app: friendsApp(), news: friendsNews(save) });
+
+/** Trainers (js/trainers.js): other players, signed in. */
+const trainersEntry = () => {
+  const n = trainerCount();
+  return { id: 'trainers', name: 'Trainers', art: vec('trainers'), count: `${n} trainer${n === 1 ? '' : 's'}`, cls: 'cdev-dex cdev-bag', app: trainersApp() };
+};
 
 /** The owner's ID strip at the top of the home screen: it opens the Trainer Card. */
 function ownerStrip(save) {

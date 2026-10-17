@@ -4,6 +4,7 @@ rules_version = '2';
 // (js/leaderboard.js; its bounds match LIMITS in js/data/leaderboard.js): anyone reads, a signed-in player posts
 // their own entry for a day once, and nobody edits or deletes one. towerBoard/<week>_<uid>: the Sky Pillar's, the same
 // way once a week. arcadeBoard/<week>_<game>_<uid>: the home arcade's weekly bests, raised only by a higher score.
+// trainers/<uid> and codes/<CODE>: the Trainers app's public pages and friend codes (js/trainers.js).
 service cloud.firestore {
   match /databases/{database}/documents {
     match /saves/{uid} {
@@ -87,6 +88,47 @@ service cloud.firestore {
       allow update: if request.auth != null && validArcade(id, request.resource.data)
         && request.resource.data.score > resource.data.score;
       allow delete: if false;
+    }
+
+    // codes/<CODE>: a friend code, 8 letters with no look-alikes (CODE_LETTERS in js/data/trainers.js), claimed once by
+    // its owner and never changed, so a clash just rolls another. Looked up one at a time, never listed.
+    function isCode(c) {
+      return c is string && c.matches('[A-HJKMNP-Z]{8}');
+    }
+    match /codes/{code} {
+      allow get: if request.auth != null;
+      allow create: if request.auth != null && isCode(code)
+        && request.resource.data.keys().hasOnly(['uid']) && request.resource.data.uid == request.auth.uid;
+      allow list, update, delete: if false;
+    }
+
+    // trainers/<uid>: a trainer's public page (bounds match checkTrainer() in js/data/trainers.js). Signed-in players
+    // read it one at a time; only its owner writes it, under a code they own. `base` is their Secret Base as JSON.
+    function validCard(c) {
+      return c is map
+        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner'])
+        && c.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
+        && c.badges is list && c.badges.size() <= 100
+        && inRange(c.wins, 0, 10000000) && inRange(c.dex, 0, 9999) && inRange(c.dexOf, 0, 9999)
+        && inRange(c.safari, 0, 9999) && inRange(c.safariOf, 0, 9999) && inRange(c.stars, 0, 99)
+        && inRange(c.time, 0, 10000000) && c.partner is string && c.partner.size() <= 64;
+    }
+    function validTrainer(d) {
+      return d.keys().hasOnly(['code', 'name', 'card', 'buddy', 'base', 'at'])
+        && d.keys().hasAll(['code', 'name', 'card', 'buddy', 'at'])
+        && isCode(d.code)
+        && get(/databases/$(database)/documents/codes/$(d.code)).data.uid == request.auth.uid
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 16
+        && validCard(d.card)
+        && d.buddy is string && d.buddy.size() <= 64
+        && (!('base' in d) || (d.base is string && d.base.size() <= 600000))
+        && d.at == request.time;
+    }
+    match /trainers/{uid} {
+      allow get: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == uid && validTrainer(request.resource.data);
+      allow delete: if request.auth != null && request.auth.uid == uid;
+      allow list: if false;
     }
   }
 }

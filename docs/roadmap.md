@@ -28,8 +28,9 @@ rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, 
 kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
 125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
-Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), and session h, Bamboo, Stone zen,
-Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all; all eight in `docs/roadmap-done.md`).
+Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), session h, Bamboo, Stone zen,
+Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), and session i, the first five room types (2026-10-17,
+125 kinds, 2,587 in all; all nine in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -41,7 +42,9 @@ stands this October by itself, Cherry blossom with `?holiday=sakura`), and of se
 (`?mall=furniture&stock=blkbed,blkditto,thbtv,thbboombox,rnchbed,rnchsaddle`; Iron garden is outdoor: `?yard&allfurniture`,
 or Smeargle's catalogue's Iron garden tab with a yard), and of session h's
 (`?mall=furniture&stock=bmbbed,bmbgrove,cstorrery,cstprojector,crvbed,crvspice`; Stone zen is outdoor: `?yard&allfurniture`,
-or Smeargle's catalogue's Zen tab with a yard). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+or Smeargle's catalogue's Zen tab with a yard), and of session i's
+(`?mall=furniture&stock=hspbed,bstrange,bakcase,sshconveyor,rmnyatai,rmnsnorlax`; try the bed's heal, the oven and fridge
+doors, the ticket machines). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -56,17 +59,19 @@ at once hit it on 2026-10-16; five is safer.
   catalogue) (`docs/roadmap-done.md`).
 - **h. Done 2026-10-17, on `main`**: Bamboo, Stone zen (outdoor, a Zen tab in Smeargle's catalogue), Constellations and
   Desert caravan (`docs/roadmap-done.md`).
-- **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
+- **i. Done 2026-10-17, on `main`**: the first five room types, Hospital ward, Bistro kitchen, Bakery, Sushi bar and
+  Ramen shop (`docs/roadmap-done.md`).
+- **j to l. The other 13 room types**, about 5 a session (Pizzeria, Corner shop, Laundromat, Salon, Garage next).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session i):
+Next session's prompt (session j):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session i: the first five room types (Hospital ward, Bistro
-> kitchen, Bakery, Sushi bar, Ramen shop; 25 each, a whole room of that place in one look, as the furniture series), one
-> helper a set (five at once, the most that's safe), then check every kind with tools/model-check.mjs, send me picture
-> sheets, update the roadmap and push to main.
+> "Building a set" section is the helpers' brief). Build session j: the next five room types (Pizzeria, Corner shop with
+> Poké Mart shelves, fridges and a checkout, Laundromat, Salon with Furfrou trims, Garage and workshop; 25 each, a whole
+> room of that place in one look, as session i's), one helper a set (five at once, the most that's safe), then check
+> every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -910,22 +915,10 @@ visits together come later, if ever (they need the full Firestore SDK with live 
 avatar and position sync). Signed-in players only, no free-text chat. **Friend codes are in** (the user's call,
 2026-10-17, replacing 2026-10-07's "no codes"): they are the easiest way in. Name search is left for later, because it
 needs unique names, renames and a guard against rude names turning up in results. The easiest build, 2 sessions:
-**Session 1, the list (no 3D):**
-- **A public trainer doc**, `trainers/<uid>` = `{ code, name, card, buddy, base, at }`. `saves/<uid>` stays private.
-  Written on sign-in and whenever you leave your base. Rules: signed-in players read it; only the owner writes it,
-  within size bounds, the same way the boards' rules do.
-- **A friend code**, `codes/<CODE>` = `{ uid }`: 8 letters with no look-alikes (no 0/O, 1/I/L), made once and
-  create-only, so a clash just rolls again. Shown on the Trainer Card and the PC.
-- **The list itself lives in your own save** (`friends: [uid, ...]`, at most 50), so cloud save carries it to every
-  device with no rules of its own. Adding is one way: type a code, or tap a name on any leaderboard (entries already
-  carry `uid`). No requests and no accept step; anyone you add shows up.
-- **The Trainers app**, its own app on the Pokédex (a `shelfApp()`, plus a TRAINERS row on the PC; the user's call,
-  2026-10-17: its own app, the name left to Claude). "Trainers" because that's what Pokémon calls other players, and
-  because "Friends" is already the Gym Leaders' hearts app (`js/friendsdex.js`). Each trainer's name, Trainer Card,
-  buddy, last seen, a Visit key (greyed until session 2) and Remove. One `getDoc` per trainer on open.
-- **Introducing it** (the user's call, 2026-10-17): one How to play tip in Going Further (`js/howto.js`), and a
-  one-time PC letter the first time a signed-in player opens the PC, showing their code. No slide in the first-launch
-  setup.
+~~**Session 1, the list**~~ done 2026-10-17 on `claude/exciting-cray-y585nt` (pushed to `main` too; `docs/roadmap-done.md`,
+details in `docs/reference/cloud-save.md`'s Trainers section): the trainer doc (it already carries `base`, the
+`secretBase` as JSON), friend codes, `save.friends`, adding by code or a leaderboard name, the Trainers app, the tip and
+the PC letter. **Its rules wait on the user** (Waiting on the user, below).
 **Session 2, the visit:** `openBase3d({ guest })` in `js/base-3d.js` builds from the friend's `base` in place of
 `loadBase()`, marked `guest`. Decorate and Garden are hidden, and Smeargle, gifts and Gym Leader visits are skipped
 (`startVisit()`, `openGift()`). Every base write already goes through `saveBase()` or `updateSave(d => d.secretBase = b)`
@@ -935,12 +928,10 @@ their owned pieces, and the `wakeGL` rules still apply. Maybe a guestbook of sta
 Later: name search and Follow, then the 2026-10-07 phase 2: Dark Souls signs from phrase parts on map nodes (best on the
 seeded Safari / Sky Pillar, rated for coins), friends' ghosts where they lost (opening their loss recap), a daily gift
 in a friend's Lost & Found, maybe an Assist (a friend's partner for one fight, bot-checked).
-▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 1: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
-visits' entry and docs/reference/cloud-save.md. Build session 1: the trainer doc,
-friend codes, the list in the save, adding from a code or a leaderboard name, the Trainers app, the How to play tip and the PC
-letter. Test it headless with two stand-in accounts, add a patch-notes line, tell me what to paste into the Firebase
-rules, and give me a githack link." Session 2: "Read CLAUDE.md, the same entry and docs/reference/hub-base-mall.md, then
-build session 2, the visit-only base, with the save-unchanged test, a patch-notes line and a githack link."
+▶ Run in: CLOUD (attach pokeDB-3). Prompt for session 2: "Read CLAUDE.md, docs/roadmap.md's 'Friends list and base
+visits' entry, docs/reference/cloud-save.md's Trainers section and docs/reference/hub-base-mall.md, then build session 2,
+the visit-only base, with the save-unchanged test, a patch-notes line and a githack link." (`tools/trainers-check.mjs`
+is the two-account harness to extend.)
 
 ## Ideas, not agreed yet (ask the user before building)
 
@@ -1078,6 +1069,9 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Publish the Trainers rules** (2026-10-17): paste the whole `firestore.rules` into the Firebase console (Firestore
+  Database > Rules > Publish). Until then the Trainers app can't make codes or pages (it says it can't reach the
+  network), and the rest of the game is unaffected.
 
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted

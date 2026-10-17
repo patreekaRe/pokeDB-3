@@ -580,6 +580,12 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `cane()` (a rod with node rings) and cord `lash()`, Stone zen's `rock` (a sphere pushed out to the painted outline,
   `rockOutline()`) and square `sq` lathe, Constellations' extruded stars and crescents (`starPts()`, `crescent()`) and
   rings standing side-on or tilted, Desert caravan's flattened cylinder (`sz`) for drapes against the wall.
+- **Session i's room types** (2026-10-17): Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi bar (`ssh`) and
+  Ramen shop (`rmn`), files `js/base-furniture-<hospital|bistro|bakery|sushi|ramen>.js` and `js/base-models-<same>.js`,
+  built as session h's (`BUILT`). A room type furnishes one place (its working pieces, seats, storage, wall pieces and
+  props), not a bedroom. New parts: side-on rings and discs (`ax: 'x'`, wheels and castors), the Bakery's `wedge` (a side
+  profile extruded across, the awning). Taps reuse `PLAY`: the hospital bed `heal`, the ovens' and fridges' `door` with a
+  modelled inside (`bare`), the ticket machines `give` paper.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

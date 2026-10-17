@@ -2814,6 +2814,16 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session i: Hospital ward, Bistro kitchen, Bakery, Sushi bar, Ramen shop (2026-10-17)
+- The first five room types (AC's Happy Home Paradise), 25 each: Hospital (`hsp`), Bistro (`bst`), Bakery (`bak`), Sushi
+  bar (`ssh`) and Ramen shop (`rmn`): 125 kinds, 2,587 in all, one helper a set, all solo, session h's `BUILT` way. The
+  whole catalogue (2,591 ids) went through `tools/model-check.mjs` with no builder errors; every new kind within budget
+  (none over 5,624 triangles, the sushi conveyor, or 8 draws, the ramen fridge whose door swings); thin pieces match their
+  paintings at 0.38 (the bakery's café set) to 0.74, none sticking out. Ideas the base already had (a healing machine,
+  waiting bench, scale, lucky cat, noren, low table) were left out. Pokémon touches: Chansey, Blissey, Audino, Comfey,
+  Unown; Pikachu, Slurpuff, Alcremie, Swirlix; Munchlax, Fidough, Dachsbun; Tatsugiri, Magikarp, Wishiwashi, Wingull,
+  Dondozo; Psyduck, Slowpoke, Lechonk, Snorlax. The user got picture sheets.
+
 ### Furniture expansion session h: Bamboo, Stone zen, Constellations, Desert caravan (2026-10-17)
 - Bamboo (`bmb`), Stone zen (`stz`), Constellations (`cst`) and Desert caravan (`crv`), 25 each: 100 kinds, 2,462 in all,
   one helper a set, all solo, session f's `BUILT` way. The whole catalogue (2,466 ids) went through `tools/model-check.mjs`
@@ -2888,3 +2898,10 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   was 1). The mall kept every floor it built on the GPU (the hall under the Game Corner, ~126 MB of textures); `setPlace()`
   now `unload()`s the floor walked out of (`js/hd2d.js`: GPU copies dropped, re-uploaded under the curtain by `warm()`):
   the Game Corner ~85 MB, the hall ~50 MB, both drawing again after walking back and forth. Not yet seen on the phone.
+
+### Friends list, session 1: friend codes and the Trainers app (2026-10-17, the user's go)
+Branch `claude/exciting-cray-y585nt`, pushed to `main`. `trainers/<uid>` pages and `codes/<CODE>` friend codes
+(`js/trainers.js`, `js/data/trainers.js`), `save.friends`, adding by code or a leaderboard page's "+ Add to Trainers",
+the Trainers app, a How to play tip, the PC's TRAINERS row and a one-time TRAINER NETWORK letter with your code, the
+Trainer Card's CODE line. Tested with two stand-in accounts (`tools/trainers-check.mjs`, 31 checks) and the real rules
+in the Firestore emulator (`tools/trainers-rules.mjs`, 33 checks). Detail: `docs/reference/cloud-save.md`.
