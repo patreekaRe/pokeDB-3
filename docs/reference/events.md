@@ -198,6 +198,126 @@ from `figureDoes()`. An act's `ms` and `cues` can be functions of its `opts` (`p
 puts it back whole on a new visit (berries, the sprout, the ball). Team Rocket's room is built per grunt and Alpha, so it
 is not built ahead.
 
+## Batch 1 of the StS events (2026-10-17, the user's picks; docs/roadmap.md's "More ? events")
+
+Five events, each on a StS one (named in its `EVENTS` comment), their rules pure in `js/data/events.js` (`snorlaxWakesAt()`,
+`trashDig()`, `dittoMorph()`, `eventsFor()`; `tests/events.test.mjs`), their rooms in `EVENT_CHOICES` in `js/run.js`,
+mirrored in pokeDB-sim's `sim/engine.js`. An event's `not` keeps it out of a mode: `rollEvents()` draws from
+`eventsFor('run' | 'safari' | 'tower')`.
+- **Sleeping Snorlax** (Dead Adventurer): the pile's `loot` (₽, an item, a relic) in a rolled order, one a search; each
+  search's roll (`node.event.rolls`, rolled as the biome starts) against `wake` (25 / 50 / 75%). Waking is an Alpha
+  fight, `fight({ ...node, type: 'elite', enemyId: 'snorlax', foeHp })`: `foeHp` (0.4) scales its HP, read in `fight()`
+  (the boss Snorlax as an Alpha would be ~270 HP in the Clearing); elite rewards, the rest of the pile lost.
+- **Trash Heap** (Scrap Ooze): a dig costs `digHp` +1 a dig before, and finds the relic at `odds` +`step` a dig before
+  (25%, +10%); twelve rolls are rolled ahead. Trubbish stands on the heap.
+- **Ditto** (Duplicator + Transmogrifier): Copy pushes one more of a move (under `MAX_COPIES`); Transform swaps a move
+  for the first of its rarity's shuffled `offers` that isn't it (like the Day Care's, checked by `eventIdsKnown()`).
+  Neither takes an evolution card or an unplayable one.
+- **Bill's PC** (Note for Yourself): one Box a type, `save.pcBox[type]` (an empty one holds `box`, Quick Attack). Use the
+  PC takes it out (`revealCard()`), then `pcStore()` asks for one of yours, with no Back (you took one); `state.took`
+  brings a refresh back to that picker. A peek saves nothing. Not in a Safari day or a climb (`not`): the Box is yours.
+- **Abra** (Secret Portal): Teleport goes straight to `run.map.boss` (`enterNode()`, so a Gym Leader's gym still walks
+  in), greyed when the boss is the next room anyway. Not in a climb, whose floors are its score. Or **Doze** on the moss
+  beside it, `doze` (20%) of max HP healed: added after the bot check (human bot, Level 3, 300 runs; before -> with the
+  five -> with Doze): Fire 64.3 -> 54.7 -> 60.7%, Grass 59.7 -> 57.7%, Water 56.0 -> 56.7% (150 runs). Fire's drop wasn't
+  Abra's Teleport or Ditto (neither one off brought it back) but fewer healing rooms: 15 events in the bag, not 10.
+Their scenes: outdoor ones in `PLACE_ART` (`snorlax`, `trash`, `ditto`, `abra`: the Pokémon are the page's sprites on
+`life.stands`) and 3D on the biome's ground (`buildSnorlax()`, `buildTrash()`, `buildDitto()`, `buildAbra()`, per biome);
+Bill's PC the Move Deleter's study in other colours (`billspc`, `buildBillsPc()` round the Storage PC furniture piece).
+Acts: `search`, `dig`, `copy`, `morph`, `teleport`, `boot`.
+
+## Batch 2 of the StS events (2026-10-17, docs/roadmap.md's "More ? events")
+
+Five more, the same way as batch 1 (rules pure in `js/data/events.js`: `wheelSlice()`, `idolBoulder()`, `keystoneAsk()`,
+`swapWares()`, `swapGift()`; `tests/events.test.mjs`; mirrored in pokeDB-sim). Two of them heal (the user's ask: with 20
+events in the bag the healing rooms come up less often).
+- **Prize Wheel** (Wheel of Change): Meowth's wheel, one free spin, its slice rolled as the biome starts
+  (`node.event.spin`): ₽ (`wheelMoney`), a relic, a full heal, a free Forget, an item, or the pinch (`ouch`, 10% max HP).
+  A slice that can't pay (Forget at `MIN_DECK`, an item under Dusk Stone) pays ₽ (`wheelPrize()` in `js/run.js`). The act
+  `spin` (`{ slice }`) turns the wheel three times and eases it to a stop with that slice under the pin, in 2D and 3D.
+- **Ruins Idol** (Golden Idol): Take the idol, the **Relic Statue** (`relic-statue`, `unique` + `event: 'ruins-idol'`: never
+  offered, listed in the Index under its own heading, Found; +25% prize money, `prizeMult()` in `js/data/relics.js`, art
+  PokéSprite's), or a Relic Gold worth `gold` ₽ if you hold it. Then (`state.took`, no Leave) the Golem shoves its boulder
+  down: Brace (`boulder`, 25% max HP) or Hide behind a column (`hide`, 8% max HP for good). Acts `grab`, `brace`, `hide`.
+- **Odd Keystone** (Knowing Skull): Spiritomb on a cairn; ask for ₽ (`askMoney`), a neutral move (the first of the rolled
+  `node.event.moves` you hold under `MAX_COPIES`, checked by `eventIdsKnown()`) or an item, as often as your HP allows,
+  each ask `askHp` + 1 for every ask before. Act `ask` (`{ what }`): wisps stream out to the coins, the cairn or the ball.
+- **Moon Dance** (Shining Light): Clefairy round a Moon Stone (the 3D room is always at night). Dance (`danceHp`) PP Ups
+  2 random moves (`ppUpRandom()`, shared with Rare Candy; `revealCard()` takes a list and shows both), or Moonlight heals
+  `moonlight` (25%) of max HP. Acts `dance`, `moonlight`.
+- **Swap Stall** (N'loth): Kecleon wants one of two of your common / uncommon relics (`node.event.rolls`), each shown on
+  its cushion (`figures.left` / `right` are the relics' PNGs; the 3D room loads them in `reset()` from `opts.figures`) and
+  trades it for the first of the rolled `node.event.relics` a tier rarer that you lack, named in the hint. Act `swap`
+  (`{ i, gets }`): the relic spins into the new one while Kecleon changes colour.
+Scenes: `PLACE_ART.wheel`, `idol`, `keystone`, `moon`, `stall` (outdoor), 3D `buildWheel()`, `buildIdol()`,
+`buildKeystone()`, `buildMoon()`, `buildStall()` on the biome's ground. Event icons 🎡 🗿 🌙 🦎 in `js/icons.js` (Spiritomb
+reuses 👻).
+
+## Batch 3 of the StS events, first five (2026-10-17, docs/roadmap.md's "More ? events")
+
+Five more, the same way (rules pure in `js/data/events.js`: `libraryShelf()`, `goopLoss()`, `contestWinner()`;
+`tests/events.test.mjs`; mirrored in pokeDB-sim). Three of them can heal or add max HP (the Library's nap, the Fishing
+Spot's Old and Good Rods).
+- **Canalave Library** (The Library): Read picks one of `books` (20) moves from your type's pool (`node.event.books`,
+  rolled as the biome starts; never an evolution or unplayable card, nor one you hold `MAX_COPIES` of), in a deck-pick
+  grid (`libraryRead()`); or Nap in the reading chair, `nap` (33%) of max HP. Indoors: the study's shell and floor, a wall
+  of bookcases, the lectern (read), an armchair (nap), Noctowl on a perch. Acts `read`, `nap`.
+- **Fishing Spot** (Big Fish): one cast, three rods on a boardwalk's rail: the Old Rod heals `oldRod` (33%), the Good
+  Rod adds `goodRod` max HP, the Super Rod costs `superRod` HP for a relic (`offerRelic()`; a Gyarados thrashes up in
+  3D). Act `cast` (`{ rod }`). The 3D signs float at three heights so they never overlap on a phone.
+- **Sludge Pit** (World of Goop): no Leave (`leave: false`, 3D `exit: false` until a choice is made). Dig costs
+  `goopHp` for `goopMoney` ₽; Climb out loses `goopLoss()` ₽ (`lose` per biome, rolled into `node.event.lose`, never more
+  than you have) and goes straight to the map, no walk back out (the user's call, 2026-10-17). Act `goop` (`{ dig }`).
+- **Silph Co. Storeroom** (The Lab): Search gives the `items` (3) rolled into `node.event.haul` (checked by
+  `eventIdsKnown()`), one `offerItem()` after another, `node.event.got` counting them (a refresh resumes with "Keep
+  searching"); under a Dusk Stone it pays `duskMoney` ₽ an item instead. Indoors: a steel-and-tile room (`labWall()`,
+  `labFloor()`, the pixel scene's `lab` backdrop), racks of boxes, a stack of crates, Porygon. Act `rummage`.
+- **Bug-Catching Contest** (The Joust): bet `bet` ₽ on Scyther (wins `favourite`, 70%, pays 2x) or Caterpie (pays 5x);
+  the winner is rolled as the biome starts (`node.event.roll`). The bet goes through `spend()`. Act `joust` (`{ win }`).
+Scenes: `PLACE_ART.library`, `storeroom` (rooms), `fishing`, `sludge`, `contest` (outdoor); 3D `buildLibrary()`,
+`buildStoreroom()`, `buildFishing()`, `buildSludge()`, `buildContest()` (the last three per biome). Icons 🎣 🦠 📦 🐛 in
+`js/icons.js` (📚 was there).
+
+## Batch 3 of the StS events, last five (2026-10-17, docs/roadmap.md's "More ? events")
+
+The bag now holds 30. Rules pure in `js/data/events.js`: `BASICS` (each type's starting attack and block: Fire Ember and
+Flame Wall, Grass Vine Whip and Block, Water Water Gun and Withdraw, Psychic Psywave and Psychic Guard), `tabletUps()`,
+`bonfireGift()`, `flipState()`, `rivalWants()`; `tests/events.test.mjs`; mirrored in pokeDB-sim. The Litwick Bonfire heals.
+- **Unown Tablet** (Ancient Writing): Study PP Ups every copy of your two `BASICS` not yet PP Upped (both shown by
+  `revealCard()`); Erase forgets a move for free. Free either way. Acts `study` (the glyphs light up), `efface` (chips fly
+  off the flat stone; `erase` was the Deleter's).
+- **Smeargle's Studio** (Designer In-Spire): indoors, three easels. Touch-up (`touchUp` ₽) is the PP Up picker; Repaint
+  (`repaint` ₽) Transforms a move into a random one of its rarity (`morph`, the Ditto's `offers`, `studioRepaint()`);
+  Portrait (`portrait` ₽) forgets a move and PP Ups a random one (`ppUpRandom(1)`). ₽ is paid only once a move is picked.
+  Act `paint` (`{ i }`: strokes go onto that easel's canvas). The middle sign floats higher so none overlap on a phone.
+- **Litwick Bonfire** (Bonfire Spirits): one sign, the fire. Offer a move (`bonfirePick()`, each card marked with what it
+  gives): a basic heals `warmth.basic` (10%), a common 25%, an uncommon fully, a rare fully and `rareMaxHp` max HP. The
+  3D room is always at night, with a real point light. Act `offer` (the fire roars up, purple at the tips, wisps rise).
+- **Voltorb Flip** (Match and Keep): `node.event.board` holds a move of each rarity in `pairs` twice (your type's pool,
+  under `MAX_COPIES` when rolled) and two Voltorb, shuffled as the biome starts; `node.event.flips` the tiles flipped,
+  two a try, `tries` (4). Play opens `flipGame()`: a board of 8 tiles (`.flip-board`, layout `flip-game`, since the room
+  is `flip-room`) that turn over; a matched move joins the deck there and then (`learnedId()`), a matched Voltorb pair
+  blows up for `zap` HP; every try is saved, so a refresh picks the game up ("Keep playing"). Act `deal`.
+- **Rival's Return** (We Meet Again): your rival, a silhouette in a cap (the Gym's unknown leader copied to
+  `assets/trainers/rival.png`, its blink the same picture; `NPCS.rival`), and his Sneasel. He asks ₽ (`ask`), the item
+  of your Bag and the move of your deck picked by `node.event.pick` (never a basic, an evolution or unplayable card), each
+  for a relic (`offerRelic()`). Act `barter` (`{ what }`: the coins, the Bag or the TM disc arcs to him; `trade` was the
+  Day Care's).
+Scenes: `PLACE_ART.tablet`, `studio` (a room, the `lab` wall), `bonfire`, `flip`, `rival`; 3D `buildTablet()`,
+`buildStudio()`, `buildBonfire()`, `buildFlip()`, `buildRival()` (all but the studio per biome). Icons 🔠 🎨 🕯️ 🆚 in
+`js/icons.js` (Voltorb Flip shares 🃏). A 2D act name is shared by every pixel room (`ACTS` in `js/scene.js`): check it's
+free before naming a new one.
+
+**The Bag in the ? rooms** (2026-10-17, the user's ask: to see your deck before choosing): the room bar's Bag
+(`#room-bag`, which the Mart and a fight's reward steps already had) shows in every `event-room` of a run and opens on the
+Deck pocket; never on a visit (`body.town-visit`: the dojo, a town, a home), nor at the Center. A tap in the open Bag
+doesn't walk your Pokémon (`#bag` in `canWalk()`). Voltorb Flip's board (`flip-game`) is one of the `roomy` layouts in
+`showChoice()`, or it would have no room bar and no OK to leave by (the user got stuck there, 2026-10-17): a new layout
+that ends on `roomConfirm()` needs the same.
+Voltorb Flip's board speaks in one line it replaces (`status()`, `sayLines()`), never `tell()`, which would queue every try's
+line for the room's box to tap through after (the user's ask). A face-up card zooms on a tap (`zoomCard()`), and OK shows
+what you won in the treasure rays (`revealCard()`, which takes up to three: `.card-reveal.trio`).
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.
@@ -253,3 +373,7 @@ real, like walking in); `?trials` opens every trial in the window for the page l
   colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
   stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till
   earned. The older Training dummy and Punching bag stay the Dojo and Black Belt badges'.
+
+Merged to `main` 2026-10-17 after one bot check with all 30 against `main` (human bot, Levels 0/3/5, 300 runs a cell):
+every type and Level within noise, no retune (numbers in `docs/roadmap-done.md`). pokeDB-sim's `noev=id/id` and
+`ev=id/field/value` tweaks (e.g. `ev=litwick-bonfire/warmth.uncommon/0.5`) take an event out or change one of its numbers.

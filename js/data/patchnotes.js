@@ -43,13 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
-  ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
-  ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
-  ['mall', '125 pieces for whole rooms of a place: a Hospital ward, Bistro kitchen, Bakery, Sushi bar and Ramen shop.'],
-  ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
-  ['dex', 'A Trainers app on your Pokédex: signed in, get a trainer code, add friends by code or a leaderboard name, see their Trainer Card and walk round their Secret Base and backyard.'],
-  ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
+  ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -61,6 +55,23 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.25',
+    name: 'Off the Path',
+    date: '2026-10-17',
+    notes: [
+    ['runs', 'Twenty new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, the Canalave Library, a Litwick Bonfire and a game of Voltorb Flip.'],
+    ['mall', '100 new pieces: the Cherry blossom and Maple leaf series, sold only in April and October, and the Acorn and Mushroom series.'],
+    ['mall', '100 more pieces: the Wooden block, Throwback and Ranch series, and Iron garden for the backyard on its own tab of Smeargle\'s catalogue.'],
+    ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
+    ['mall', '250 pieces for whole rooms of a place: a Hospital ward, Bistro, Bakery, Sushi bar, Ramen shop, Pizzeria, Poké Mart corner shop, Laundromat, Salon and Garage.'],
+    ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
+    ['dex', 'A Trainers app on your Pokédex: signed in, get a trainer code, add friends by code or a leaderboard name, see their Trainer Card and walk round their Secret Base.'],
+    ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
+    ['runs', 'The Bag is in every ? room now, opening on your deck, so you can look through your moves before choosing.'],
+    ['look', 'Text boxes move on by themselves now, the last line waiting for a tap; Settings has Text boxes: Tap for the old way.'],
+    ],
+  },
   {
     version: '1.24',
     name: 'Full Tilt',
@@ -505,7 +516,7 @@ export const IN_THE_GAME = [
   ['🗺️', '7 biomes', 'Whispering Clearing, Overgrown Shrine and Ember Wastes, the Sunken Ruins, Thornwood Jungle and Sunscorch Savanna on the roads that branch off them, and the Crystal Depths for Mewtwo alone.'],
   ['💎', '93 relics', 'Starter Abilities, relics for each type, and boss relics: extra PP with a catch, or your Ability made stronger.'],
   ['🧴', '34 items', 'Potions, battle items and one for each type, carried in your Bag, plus five held berries Kurt makes from your backyard\'s crop.'],
-  ['❓', '10 events', 'Berry Tree, Move Tutor, Move Deleter, Item Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club and Shrine, each a 3D place you walk about, with its own music.'],
+  ['❓', '30 events', 'From the Berry Tree, Move Tutor and Team Rocket to a Sleeping Snorlax, Bill\'s PC, a Litwick Bonfire and Voltorb Flip, each a 3D place you walk about, with its own music.'],
   ['🏪', 'Poké Mart & Center', 'Spend Pokédollars on moves, items and relics, or rest and power up a move at the Pokémon Center.'],
   ['🏘️', '5 towns', 'A gateway town on every road out of the Clearing, each with a trader, its Gym Leaders\' homes and a broken Waystone to mend, plus Kurt\'s Workshop at home to craft for it.'],
   ['🏅', '13 Gym Leaders', 'Two or three in every biome, standing in front of its boss, each with their own gym, speeches and badge.'],

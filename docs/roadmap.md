@@ -29,8 +29,8 @@ kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more d
 all), session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all), session e, the next five (2026-10-17,
 125 kinds, 2,162 in all), session f, Cherry blossom, Maple leaf, Acorn and Mushroom (2026-10-17, 100 kinds, 2,262 in all), session g,
 Wooden block, Throwback, Ranch and Iron garden (2026-10-17, 100 kinds, 2,362 in all), session h, Bamboo, Stone zen,
-Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), and session i, the first five room types (2026-10-17,
-125 kinds, 2,587 in all; all nine in `docs/roadmap-done.md`).
+Constellations and Desert caravan (2026-10-17, 100 kinds, 2,462 in all), session i, the first five room types (2026-10-17,
+125 kinds, 2,587 in all), and session j, the next five (2026-10-17, 125 kinds, 2,712 in all; all ten in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
 (`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
@@ -44,7 +44,9 @@ or Smeargle's catalogue's Iron garden tab with a yard), and of session h's
 (`?mall=furniture&stock=bmbbed,bmbgrove,cstorrery,cstprojector,crvbed,crvspice`; Stone zen is outdoor: `?yard&allfurniture`,
 or Smeargle's catalogue's Zen tab with a yard), and of session i's
 (`?mall=furniture&stock=hspbed,bstrange,bakcase,sshconveyor,rmnyatai,rmnsnorlax`; try the bed's heal, the oven and fridge
-doors, the ticket machines). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+doors, the ticket machines), and of session j's
+(`?mall=furniture&stock=pzroven,pzrlickitung,crsfridge,crscrane,lndwasher,lndrotom,slnpole,slngroom,grgporygon,grgtoolchest`;
+tap the oven, the fridge and washer doors, the barber pole, the Porygon cart). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
@@ -61,17 +63,19 @@ at once hit it on 2026-10-16; five is safer.
   Desert caravan (`docs/roadmap-done.md`).
 - **i. Done 2026-10-17, on `main`**: the first five room types, Hospital ward, Bistro kitchen, Bakery, Sushi bar and
   Ramen shop (`docs/roadmap-done.md`).
-- **j to l. The other 13 room types**, about 5 a session (Pizzeria, Corner shop, Laundromat, Salon, Garage next).
+- **j. Done 2026-10-17, on `main`**: Pizzeria, Corner shop, Laundromat, Salon and Garage (`docs/roadmap-done.md`).
+- **k and l. The other 8 room types**, 4 a session (Craft and sewing room, Gamer room, Recording studio, Cinema next;
+  then Hotel lobby, Ski lodge, Haunted mansion, Cruise cabin).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session j):
+Next session's prompt (session k):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session j: the next five room types (Pizzeria, Corner shop with
-> Poké Mart shelves, fridges and a checkout, Laundromat, Salon with Furfrou trims, Garage and workshop; 25 each, a whole
-> room of that place in one look, as session i's), one helper a set (five at once, the most that's safe), then check
-> every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
+> "Building a set" section is the helpers' brief). Build session k: the next four room types (Craft and sewing room,
+> Gamer room, Recording studio, Cinema; 25 each, a whole room of that place in one look, as sessions i and j), one helper
+> a set (four at once), then check every kind with tools/model-check.mjs, send me picture sheets, update the roadmap and
+> push to main.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -842,30 +846,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
-both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
-entry there, which is the up-to-date one (batch 1 is built, batch 2 next, batch 3 picked). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
-Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
-act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
-~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
-a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
-one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
-bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
-**In progress on branch `events-batch-1` in both repos** (2026-10-17): batch 1 is built there, the plan for the rest
-(batch 2 as listed, batch 3 picked, all landing on `main` at once after one bot check) is in this entry on that branch.
-Check it out and read it there; don't build events on `main`.
-The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
-Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
-Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
-one of its rarity), Bill's PC (Note for Yourself: leave a move in the Box for a later run, take the last one left; a save
-field), Abra (Secret Portal: Teleport to the biome's boss now; map work, and the bot must learn when). Batch 2: Prize
-Wheel (Wheel of Change), Ruins Idol (Golden Idol: a gold relic, then lose HP or max HP to the boulder), Spiritomb's
-Keystone (Knowing Skull: ₽, an item or a neutral move, each ask more HP), Clefairy Moon Dance (Shining Light: 2 random
-upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Then 10 more toward ~30, and the
-curse events once curses land.
-▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
-and docs/reference/walk-in-rooms.md. Take the next batch on its list (ask me if I want to swap any), then build
-them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
+**More ? events, the next batches** (the user's pick, 2026-10-17): 30 are in the game (merged 2026-10-17; the archive's
+"More ? events" has the batches and bot checks). Toward StS's ~50: the curse events once curses land, and more on
+StS events with Pokémon dress (one walkable 3D room each, every roll through `js/rng.js`, mirrored in pokeDB-sim,
+bot-checked when one hands out power; give some a heal). Pairs with the "event-only relics" step below.
 
 **Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
 116 augments (Silver 38, Gold 48, Prismatic 30; 6 sets holding 25), all ranked in pokeDB-sim's `sim/augranks.json`, but
