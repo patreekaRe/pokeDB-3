@@ -631,7 +631,8 @@ says which feel too hard, too easy or too busy; tune that game's numbers alone.
 `main` too): Gengar's Haunted, Lapras's Lagoon, Charizard's Volcano and Rayquaza's Sky Pillar, on `js/pinball-kit.js`
 (see `docs/reference/hub-base-mall.md`'s last section), patch 1.24 "Full Tilt". Played by a bot headless only. Next: the
 user plays them on the phone and says which feel too hard, easy or busy (each file's top constants and its `make()`
-numbers are the knobs); their 3D tables and spots on the Game Corner's side walls were never seen in 3D.
+numbers are the knobs); their 3D tables were never seen in 3D. All five tables now stand in a row down the Game Corner's right wall, its slot
+machines removed (the user's ask, same day; untested in 3D, the cloud has no phone GPU).
 
 **Home arcade: one game a session** (the user's call, 2026-10-12: "separate sessions"). A quick first pass of the first ten
 went live in patch 1.7 (commit `7d94218` on `main`, branch `claude/dreamy-galileo-0o4aqc`): each is a prize machine at

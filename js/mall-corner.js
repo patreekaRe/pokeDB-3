@@ -35,12 +35,12 @@ const PLINKOS = [2.5, 5.5];
 /* the home arcade's machines along the back wall, under the screens and the Plinko boards (2026-10-12, the user's ask),
    free to play for fun, the prize at Meowth's counter to take home: [kind, x, y, face]. Eight cabinets each side of the
    counter (the user's layout, 2026-10-12), Whac-a-Diglett and the pinball table on the side walls where their top slot
-   machines stood; the four newer pinball tables below them, two a wall (2026-10-17). */
+   machines stood; every pinball table down the right wall, its slot machines gone (2026-10-17, the user's ask). */
 const ARCADE = [
   ...['crossingcabinet', 'ekanscabinet', 'pongcabinet', 'invaderscabinet', 'breakoutcabinet', 'gastlymaze', 'berrycabinet', 'dittocabinet'].map((id, x) => [id, x]),
   ...['bowlingcabinet', 'stackercabinet', 'dashcabinet', 'memorycabinet', 'flapcabinet', 'volleycabinet', 'bubblecabinet', 'pokepuzzle'].map((id, i) => [id, 13 + i]),
-  ['whackmachine', 0, 3, 1], ['pokepinball', COLS - 1, 3, -1],
-  ['gengarpinball', 0, 4, 1], ['volcanopinball', 0, 5, 1], ['lapraspinball', COLS - 1, 4, -1], ['skypinball', COLS - 1, 5, -1],
+  ['whackmachine', 0, 3, 1],
+  ...['pokepinball', 'gengarpinball', 'lapraspinball', 'volcanopinball', 'skypinball'].map((id, i) => [id, COLS - 1, 3 + i, -1]),
 ];
 const ARCADE_K = 0.95;
 const SHOW_W = 2.3, DESK_W = 4.2;   // a little smaller since 2026-10-12, off the leaderboard (the user's ask)
@@ -55,12 +55,13 @@ const GAMES = {
     line: 'Who\'s That Pokémon? Seven silhouettes a day, name \'em for coins. Tap again to play, meow.',
     open: (done) => import('./quiz.js').then(m => m.openQuiz(done)) },
 };
-/* The table games, played with Meowth's house chips (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the side walls facing in
-   (`face` 1 looks right, -1 left), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
+/* The table games, played with Meowth's house chips (2026-10-10; laid out 2026-10-12, the user's ask): slot machines down the left wall facing in
+   (`face` 1 looks right, -1 left; the left wall only since 2026-10-17), two Plinko boards the back wall's left half, Blackjack and High-Low card tables up front. The free
    games are touchscreen tables behind them, so the floor is four tables, two a side of the runner. */
 const CASINO = {
-  /* both walls' top four taken out (2026-10-12, the user's asks), five a side */
-  slots: { ats: [6, 7, 8, 9, 10].flatMap(y => [{ x: 0, y, face: 1 }, { x: COLS - 1, y, face: -1 }]), name: 'Slots', colour: '#ff5a5a',
+  /* both walls' top four taken out (2026-10-12, the user's asks), then the right wall's five for the pinball tables
+     (2026-10-17): five down the left wall */
+  slots: { ats: [6, 7, 8, 9, 10].map(y => ({ x: 0, y, face: 1 })), name: 'Slots', colour: '#ff5a5a',
     line: 'The slots! Five free spins a day, and you stop the reels yourself, so time it for a 7. Tap again to play, meow.',
     open: (done) => import('./slots.js').then(m => m.openSlots(done)) },
   plinko: { name: 'Plinko', colour: '#4ae8f0',

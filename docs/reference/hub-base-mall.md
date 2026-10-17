@@ -616,7 +616,8 @@ no plateau. Each file's header says what it now has; the gist:
 ## Four more pinball tables (2026-10-17, the user's ask: "4 more of those pinball games, each completely different, same aesthetics")
 
 Each its own Game Corner prize (750 coins, `PRIZES` in `js/data/corner.js`) and home game (`js/home-arcade.js`), on the
-side walls under Whac-a-Diglett and Pokémon Pinball, two a wall (`ARCADE` in `js/mall-corner.js`), their 3D table
+right wall in a row with Pokémon Pinball, where that wall's five slot machines stood (the user's ask, the same day;
+the slots keep the left wall; `ARCADE` / `CASINO.slots` in `js/mall-corner.js`), their 3D table
 `B.pinball` with `table:` (`PIN_LOOK` in `js/base-mesh.js`, pictures `PIN` / `tableField()` / `tableGlass()` in
 `js/arcade-art.js`), paintings `pinTable()` in `js/base-furniture-rooms5.js`, marquees in `MARQUEE`.
 - **The engine** is `js/pinball-kit.js` (Pokémon Pinball keeps its own): a table is a definition (walls, flippers, slings,
