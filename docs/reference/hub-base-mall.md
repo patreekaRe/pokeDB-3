@@ -556,6 +556,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   part kinds there: Rattan's `weave` finish, Log cabin's side discs (cut log ends) and its plaid as one cached canvas each,
   Antique's `slab` (a side profile run across) and `horn`. Pokémon touches: a Stantler antler mount, a Pidgey cuckoo
   clock, Ursaring and Teddiursa carvings, a Gyarados carving and scroll, a Lapras in the gilt landscape.
+- **Session e's series** (2026-10-17): Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and
+  mermaid (`mer`, `group` 'Mermaid'), files `js/base-furniture-<diner|cute|elegant|golden|shell>.js` and
+  `js/base-models-<same>.js`, built as session d's (builders `<prefix>parts` / `<prefix>rug`; Golden's `gldparts`, with a
+  `plate` part, an outline seen from above, for the grand piano). **The Golden set is earned, never sold**: source
+  `golden` in `js/data/furniture.js` (`GOLDEN`), the nth piece owned at n achievements earned, whichever ones
+  ("Earn N achievements (k/N)"), the throne at all 22; `goldbed`, `goldchest`, `goldvase` from the `gold`, `roster` and
+  `shiny-hunter` badges. Being in `FURNITURE` keeps it out of every shop's stock.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
@@ -566,3 +573,34 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 - **The Clearing's dressing** (2026-10-17): the lamps, benches, flower beds, pond stones and lily pads are built into one
   group and merged (`dressClearing()` in `js/hub-3d.js`), the garden arch's brambles and gate leaves too
   (`js/hub-arch.js`): 575 draws a frame to 397.
+
+## The arcade overhaul (2026-10-17, the user's ask: "make them super detailed... the pinball is pretty bland"; Bubble Shooter "got repetitive and easy")
+
+Every Game Corner arcade game (the 18 on its floor) was rebuilt in one session, each still one `js/arcade-*.js` file on
+the kit, its world painted once a scale (`stamp()` or a cached canvas) so phones keep 60 fps, and a difficulty ramp with
+no plateau. Each file's header says what it now has; the gist:
+- **Pokémon Pinball**: a real table (300x520): plunger lane with a swinging power gauge and a Skill Shot, P K M rollover
+  lanes (flippers turn them, all three raise the bonus multiplier to 5x), Voltorb bumpers, slingshots, a spinner, two
+  orbits, the Pika Ramp, Diglett drop targets that light CATCH, the saucer starting Catch mode (a wild Pokemon, hits on a
+  timer, rarer ones as the list grows), Multiball on three ramps with Jackpots, Pikachu kickbacks, a ball saver, extra
+  balls at 3 and 8 catches, a dot-matrix strip on top. LAUNCH is a pad key.
+- **Squirtle Bubble Shooter**: a shot clock that fires for you (`clockFor()`, 10.5 s down to 4 s by level 16), Geodude
+  rocks from level 5 (`ROCK`, `rocksFor()` in `js/data/bubble-boards.js`, below the top row, picked by the level), laps
+  two shots quicker (`LAP_FASTER` 2); chains x2 to x5 and a Voltorb bomb every 4th popping shot in a row.
+- **Ponyta Dash** four lands and hazard tiers every 250 m, Berries, Protect, a Fire Stone Rapidash; **Pidgey Flap** four
+  skies, sliding trunks, guards, charging Spearow, evolves at 30 / 60; **Snorlax Stacker** cushions from the meadow to
+  space, Perfect streaks regrow the cushion; **Voltorb Memory** growing boards with a preview, Voltorb cards, Ditto swaps.
+- **Berry Catch** stages with quotas, power-up Berries, wind, weaving Pineco, Forretress; **Where's Ditto?** a theatre,
+  feints, up to five balls, a pick clock, lights out, a Golden Ditto; **Geodude Bowling** lane oil, Golden Geodude and
+  Turkey bonuses, Diglett in the lane; **Poké Puzzle** levels every 30 s, Trubbish garbage slabs, stop time, Shiny panels.
+- **Electrode Breakout** ten walls, Golem / Voltorb / steel / crystal bricks, Laser (a FIRE key) and Catch, Onix every
+  fifth; **Poliwag Crossing** diving Lapras, a bank Ekans, Arbok in a pad, Butterfree; **Ekans Trail** eight walled stages,
+  Chesto, Rare Candy, Diglett; **Gastly Maze** four mazes, four ghosts with Pac-Man's personalities, chained zaps.
+- **Psyduck Pong** a pool and a ladder of six rivals, first to 5 each, smashes and power-ups; **Whac-a-Diglett** 20 s
+  stages with quotas, Dugtrio, golden Diglett, Voltorb / Electrode, Fever, a miss stalls the mallet; **Pikachu
+  Volleyball** a beach, six rivals, Thunder spike, sea wind, four touches a fault; **Beedrill Invaders** formations,
+  Kakuna, dive-bombers, berry-bush bunkers, power-ups, Vespiquen every fifth wave.
+- Not touched: the home-only Claw Machine, Skee-Ball, Sing-Along and Word Search.
+- **Checking a game** (text, no screenshots): `NODE_PATH=$(npm root -g) node tools/arcade-check.mjs arcade-pinball
+  openPinball 20 [left,right,plunge]` plays it headless and prints fps, drawImage calls a frame, the lines it said and
+  any errors.

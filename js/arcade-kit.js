@@ -183,6 +183,7 @@ export function runArcade(def, onClose) {
     const head = marquee();
     const box = el('div', 'vf-panel ar-panel');
     if (help) {
+      box.classList.add('ar-cab', 'ar-help-cab');
       box.append(head, helpScreen());
       panel.root.replaceChildren(box);
       size(Math.min(cv.parentElement.clientWidth - 12, 240 * def.W / def.H));

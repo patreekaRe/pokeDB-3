@@ -2811,6 +2811,15 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session e: the next five furniture series (2026-10-17)
+- Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and mermaid (`mer`, group 'Mermaid'), 25
+  each: 125 kinds, 2,162 in all, one helper a set, all solo, session d's `BUILT` way. Every kind within budget (none over
+  5,736 triangles or 7 draws); thin pieces match their paintings at 0.33 (Elegant's birdcage wires) to 0.74.
+- **Golden is earned, never sold** (the session's call): a new `golden` source in `js/data/furniture.js`, the nth piece
+  owned once the save holds n achievements (`ACHIEVEMENTS` starters in `unlocked`, whichever they are), the candlestick
+  with the first and the throne with all 22; the bed, the Gimmighoul chest and the vase come from the Gold, Full Roster
+  and Shiny Hunter badges. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
+
 ### Furniture expansion session d: the first five furniture series (2026-10-17)
 - Antique (`antq`), Rattan (`rtn`), Log cabin (`cabin`), Ironwood (`iw`) and Imperial (`imp`), 25 each, a whole room in
   one look: 125 kinds, 2,037 in all, one helper a set. All solo, Snorlax's way (one `BUILT` list a kind, builders
@@ -2829,3 +2838,10 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
 
 ### The Berry Garden's "?" (2026-10-17, the user's ask: "a ? button that explains everything for gardening")
 - HOW TO GARDEN in the Garden window, toggled by a "?" in its title, shown once by itself. Checked headless; no errors.
+
+### The arcade overhaul (2026-10-17, the user's ask: every Game Corner game "super detailed", Pinball bland, Bubble Shooter too easy)
+- All 18 Game Corner arcade games deepened, Pinball rebuilt as a real table, Bubble Shooter given a shot clock, rocks and
+  quicker laps. Detail: `docs/reference/hub-base-mall.md`'s "The arcade overhaul". Checked headless with
+  `tools/arcade-check.mjs` (no errors, ~60 fps); balance untested by a person. Branch `claude/peaceful-cori-1rx16c`, on `main` too.
+- (2026-10-17) An arcade cabinet's How to play no longer stretches across a wide browser: it wears the cabinet's dark
+  sides and stands 560px wide in the middle (`.ar-help-cab` in `css/corner-games.css`); a phone's is unchanged.
