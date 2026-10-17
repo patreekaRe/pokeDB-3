@@ -28,7 +28,7 @@ const WALLS = [
   [12, 136, 12, 560], [288, 136, 288, 560], [268, 166, 268, 560],
   [34, 360, 34, 432], [34, 432, 95, 465], [246, 360, 246, 432], [246, 432, 185, 465],
   ...[93, 131, 169, 207].map(x => [x, 92, x, 116]),
-  [12, 250, 30, 280],                          // the upper flipper's guide
+  [12, 268, 22, 284],                          // the upper flipper's guide
   [50, 214, 50, 252], [94, 206, 94, 252],      // the left ramp's mouth
   [206, 206, 206, 252], [240, 196, 240, 300],  // the right ramp's mouth and the orbit's inner wall
   [136, 192, 136, 160], [136, 160, 150, 152], [150, 152, 164, 160], [164, 160, 164, 192],   // the crater's cup
@@ -157,7 +157,7 @@ function tableArt(g) {
     g.fillStyle = '#e86018'; g.beginPath(); g.arc(x, y, 3.5, 0, TAU); g.fill();
     g.fillStyle = '#ffe0b0'; g.beginPath(); g.arc(x - 1, y - 1, 1.2, 0, TAU); g.fill();
   }
-  for (const [x, y] of [[92, 470], [188, 470], [38, 290]]) { g.fillStyle = '#1c0804'; g.beginPath(); g.arc(x, y, 9, 0, TAU); g.fill(); }
+  for (const [x, y] of [[92, 470], [188, 470], [26, 292]]) { g.fillStyle = '#1c0804'; g.beginPath(); g.arc(x, y, 9, 0, TAU); g.fill(); }
   g.fillStyle = '#2a1a16'; g.fillRect(268, 494, 20, 26);
   g.strokeStyle = 'rgba(255, 255, 255, 0.15)'; g.strokeRect(268.5, 494.5, 19, 25);
 }
@@ -190,7 +190,7 @@ export const TABLE = {
   flippers: [
     { s: 'l', x: 92, y: 470, len: 38, rest: 0.52, up: -0.5 },
     { s: 'r', x: 188, y: 470, len: 38, rest: Math.PI - 0.52, up: Math.PI + 0.5 },
-    { s: 'l', x: 38, y: 290, len: 30, rest: 0.5, up: -0.42 },
+    { s: 'l', x: 26, y: 292, len: 32, rest: 0.6, up: -0.45 },
   ],
   ball: { key: 'repeat', paint: BALL },
   flip: { edge: '#120604', face: '#3e383c', rubber: '#ff7a1a', pivot: '#ffb030' },

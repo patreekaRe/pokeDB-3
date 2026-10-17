@@ -14,6 +14,7 @@ const W = 300, H = 520;
 const LANES = [104, 140, 176], LANE_Y = 98;
 const ROOF = 128, HOUSE = { l: 108, r: 172, eave: 150, sill: 182 }, DOOR = { x: 140, y: 190 };
 const STONES = [65, 79, 93, 107, 121], STONE_Y = 292;
+const RIDGE = [[54, 281], [93, 268], [132, 281]];   // a gable over the tombstones' backs, so a ball never rests on the row
 const GASTLY = [
   { cx: 72, cy: 228, rx: 16, ry: 10, w: 0.9, f8: false },
   { cx: 210, cy: 226, rx: 16, ry: 10, w: -1.1, f8: false },
@@ -32,7 +33,7 @@ const WALLS = [
   [12, 136, 12, 560], [288, 136, 288, 560], [268, 166, 268, 560],
   [34, 360, 34, 432], [34, 432, 95, 465], [246, 360, 246, 432], [246, 432, 185, 465],
   ...[86, 122, 158, 194].map(x => [x, 84, x, 112]),
-  [38, 170, 38, 260], [244, 200, 244, 272],
+  [38, 170, 38, 260], [244, 200, 244, 272], [...RIDGE[0], ...RIDGE[1]], [...RIDGE[1], ...RIDGE[2]],
   [HOUSE.l, HOUSE.eave, 140, ROOF], [140, ROOF, HOUSE.r, HOUSE.eave],
   [HOUSE.l, HOUSE.eave, HOUSE.l, HOUSE.sill], [HOUSE.r, HOUSE.eave, HOUSE.r, HOUSE.sill], [HOUSE.l, HOUSE.sill, HOUSE.r, HOUSE.sill],
   ...SLINGS.flatMap(({ a, b, c }) => [[...a, ...c], [...c, ...b]]),
@@ -291,8 +292,9 @@ export const TABLE = {
         stones.forEach((up, i) => {
           if (!up || stoneBack) return;
           const x = STONES[i];
-          const c = hitSeg(b, x - 7, STONE_Y, x + 7, STONE_Y, 0.5) || hitSeg(b, x - 7, STONE_Y - 12, x + 7, STONE_Y - 12, 0.5);
-          if (!c) return;
+          // only a hit on the stone's face topples it; one coming down the orbit behind the row just bounces off its side
+          const c = hitSeg(b, x - 7, STONE_Y, x + 7, STONE_Y, 0.5);
+          if (!c || c.uy <= 0.3) return;
           stones[i] = false; bonus.stones++; score(250); t.stat('stone'); t.sound('hit-weak', 'plink-2');
           t.boom(x, STONE_Y - 8, '#9a94b0', 8, 0.3);
           if (!stones.some(Boolean)) {

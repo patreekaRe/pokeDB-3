@@ -164,6 +164,8 @@ export const TABLE = {
   id: 'skypillar', title: 'Rayquaza\'s Sky Pillar Pinball', colour: '#30c070', W, H, worldH: WH,
   grav: 600, maxV: 1500, launch: 1.62, dmd: '#7affb0', bezel: '#ffd84a',
   lane: { x: 278, y: 946, top: 144, wall: 268, gate: [288, 150, 262, 176] },
+  // two screens, as on the Game Boy: the sky while the ball is up on the upper flippers, the tower once it falls past them
+  camera: (low, cam) => low < 505 ? 0 : low > 560 ? WH - H : cam,
   flippers: FLIPPERS, walls: WALLS, slings: SLINGS, ball: BALL,
   flip: { edge: '#0e3a2a', face: '#7ae0b0', rubber: '#ffd84a', pivot: '#ffd84a' },
   art: tableArt,
@@ -175,7 +177,7 @@ export const TABLE = {
     ['Shoot the SKY LIFT ramp to light ASCEND,', 'then sink ASCEND at the top to climb a floor of the Sky Pillar. Each floor is worth more.'],
     ['On floor 5, ASCEND wakes RAYQUAZA.', `Hit it ${NEED} times as it circles before it flies off: catch it for 3-ball Dragon Ascent!`],
     ['Light S-K-Y for a bigger bonus; flipping moves the lit lanes.', 'Mind the gusts across the clouds: they push the ball sideways.'],
-    ['Knock down the three Trapinch to light both KICKBACKs.', '3 balls, each with a ball saver. Catching Rayquaza gives an extra ball.'],
+    ['Knock the Trapinch bank down twice: Flygon lights both KICKBACKs.', '3 balls, each with a ball saver. Catching Rayquaza gives an extra ball.'],
   ],
   make(t) {
     const api = t.api;
@@ -258,9 +260,11 @@ export const TABLE = {
           traps[i] = false; bonus.targets++; t.add(val(250)); t.sound('hit-weak', 'plink-2'); t.stat('trapinch');
           t.boom(TRAP[i], TRAP_Y - 8, '#e8c070', 8, 0.3);
           if (traps.some(Boolean)) return;
-          trapBack = 1.4; kick = true; evo = Math.min(2, evo + 1);
-          if (evo === 2) { t.add(val(10000)); t.shout('FLYGON!', '#80ff90'); api.say('Trapinch evolved all the way into Flygon! Both kickbacks are lit.'); evo = 0; }
-          else { t.add(val(1000)); t.say(`${EVO[evo].toUpperCase()}! KICKBACK LIT`, 2.2); api.say(`Trapinch bank down: it evolved into ${EVO[evo] === 'vibrava' ? 'Vibrava' : 'Trapinch'}, and the kickbacks are lit.`); }
+          trapBack = 1.4; t.stat('evolve');
+          if (evo === 2) { t.add(val(5000)); t.say(`FLYGON BANK ${val(5000)}`, 1.8); return; }
+          evo++;
+          if (evo === 2) { kick = true; t.add(val(10000)); t.shout('FLYGON!', '#80ff90'); api.say('Vibrava evolved into Flygon! Both kickbacks are lit.'); }
+          else { t.add(val(1000)); t.say('TRAPINCH → VIBRAVA', 2.2); api.say('Trapinch evolved into Vibrava! Knock the bank down again for Flygon and the kickbacks.'); }
           t.sound('stat-up');
         });
         const cross = (y) => (py < y) !== (b.y < y);
@@ -284,7 +288,7 @@ export const TABLE = {
           sink();
         }
         if (kick && b.y > 900 && b.y < 960 && (b.x < 34 || b.x > 246)) {
-          b.vy = -1000; b.vx = 0; kick = false; t.stat('kickback');
+          b.vy = -1000; b.vx = 0; kick = false; evo = 0; t.stat('kickback');
           t.sound('fx-zap', 'plink-2'); t.shout('KICKBACK!', '#80ff90'); t.boom(b.x, b.y, '#80ff90', 20, 1);
           api.say('Flygon\'s kickback flew it back up!');
         }

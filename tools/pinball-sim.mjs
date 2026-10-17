@@ -2,7 +2,8 @@
    NODE_PATH=$(npm root -g) node tools/pinball-sim.mjs <file> [games=6] [minutes=12]
    e.g. node tools/pinball-sim.mjs pinball-gengar 8
    The file exports TABLE (its definition). The bot flips a side when a ball comes down onto its flippers and launches
-   at a random point of the gauge. Prints each game's score and length, the table's own counters (`t.stat`), how often
+   at a random point of the gauge, and lets a ball rest on a flipper now and then rather than pinning it there (re-flipping
+   at every touch held balls against a raised flipper and stretched every table's ball life). Prints each game's score and length, the table's own counters (`t.stat`), how often
    the ball search nudged a still ball, balls that left the table, and the display lines seen most. */
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
@@ -46,7 +47,7 @@ const out = await page.evaluate(async ({ file, games, minutes }) => {
         const near = t.field.some(b => !b.gone && !b.lane && fs.some(f => {
           const tipX = f.x + Math.cos(f.rest) * f.len, tipY = f.y + Math.sin(f.rest) * f.len;
           const d = Math.hypot(b.x - (f.x + tipX) / 2, b.y - (f.y + tipY) / 2);
-          return d < f.len * 0.75 + 14 && b.y < f.y + 6 && b.vy > -50;
+          return d < f.len * 0.75 + 14 && b.y < f.y + 6 && b.vy > -50 && (Math.hypot(b.vx, b.vy) > 40 || Math.random() < 0.01);
         }));
         if (near && hold[s] <= 0) { hold[s] = 0.16 + Math.random() * 0.08; game.press(s, true); }
         if (hold[s] > 0 && (hold[s] -= dt) <= 0) game.press(s, false);

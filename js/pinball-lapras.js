@@ -157,7 +157,7 @@ function diveBall(g) {
 
 export const TABLE = {
   id: 'lapras', title: 'Lapras\'s Lagoon Pinball', colour: '#3aa0e0', W, H,
-  grav: 500, drag: 0.18, launch: 0.94, maxV: 1050,
+  grav: 540, drag: 0.1, launch: 0.94, maxV: 1050,
   walls: WALLS, slings: SLINGS,
   flippers: [{ s: 'l', x: 92, y: 470, len: 38, rest: 0.52, up: -0.5 }, { s: 'r', x: 188, y: 470, len: 38, rest: Math.PI - 0.52, up: Math.PI + 0.5 }],
   ball: { key: 'dive', paint: diveBall },

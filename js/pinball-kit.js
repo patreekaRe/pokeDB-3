@@ -162,7 +162,8 @@ const FLIP = { edge: '#4a0610', face: '#f4f4f8', rubber: '#e83040', pivot: '#ffd
 /** The table's engine and its hooks, without the cabinet. `T`:
     W, H the screen; `worldH` a taller table the camera scrolls (default H); `grav`, `maxV`, `drag` (speed lost a second,
     0..1); `balls` (3); `saver` seconds for each ball's saver ([8, 6, 4]); `lane` the plunger lane ({ x, y, top, wall,
-    gate }, the right side by default); `flippers` [{ s: 'l'|'r', x, y, len, rest, up }]; `walls` segments; `slings`
+    gate }, the right side by default); `camera(low, cam)` where a tall table's view should sit, given the lowest ball
+    (else it keeps that ball at 58% down the screen); `flippers` [{ s: 'l'|'r', x, y, len, rest, up }]; `walls` segments; `slings`
     [{ s, a, b, c }]; `ball` (key, paint(g)) the ball's look; `flip` the flippers' colours; `art(g)` the still table,
     W x worldH; `dmd` the display's colour; and make(t) -> hooks:
     ball(b, h, py) each substep for each ball after the walls and flippers; tick(dt, now); under(g, now) lamps and parts
@@ -347,7 +348,7 @@ export function makeTable(T, api) {
     for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.vy += 300 * dt; p.x += p.vx * dt; p.y += p.vy * dt; if ((p.t -= dt) <= 0) parts.splice(i, 1); }
     if (WH > H) {   // the camera keeps the lowest ball (the one nearest the drain) in the lower half
       const live = t.field.filter(b => !b.gone), low = live.length ? Math.max(...live.map(b => b.y)) : WH;
-      const want = clamp(low - H * 0.58, 0, WH - H);
+      const want = clamp(T.camera ? T.camera(low, cam) : low - H * 0.58, 0, WH - H);
       cam += (want - cam) * Math.min(1, dt * (want > cam ? 9 : 5));
     }
   };
