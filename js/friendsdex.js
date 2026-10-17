@@ -35,12 +35,16 @@ function sprite(l, cls) {
   return img;
 }
 
+/** A piece's painting cropped to what's painted, as the Secret Base's tray shows it (a painting is mostly empty canvas,
+    so uncropped it sat small and low in its tile). */
 function pieceArt(kind) {
   const c = document.createElement('canvas'), p = PIECES?.[kind];
   if (!p) return c;
-  const a = p.art(0, 2);
-  c.width = a.width; c.height = a.height;
-  c.getContext('2d').drawImage(a, 0, 0);
+  const a = p.art(0, 2), d = a.getContext('2d').getImageData(0, 0, a.width, a.height).data;
+  let x0 = a.width, y0 = a.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) if (d[(y * a.width + x) * 4 + 3] > 40) { x0 = Math.min(x0, x); y0 = Math.min(y0, y); x1 = Math.max(x1, x); y1 = Math.max(y1, y); }
+  c.width = Math.max(1, x1 - x0 + 1); c.height = Math.max(1, y1 - y0 + 1);
+  c.getContext('2d').drawImage(a, -x0, -y0);
   return c;
 }
 
