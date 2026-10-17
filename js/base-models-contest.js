@@ -65,7 +65,7 @@ function build(K, L, parts, W, def) {
   for (const q of parts) {
     const m = q.t === 'text' || q.t === 'pic' ? null : mat(q), x = X(q.x), y = u(q.h), z = u(q.z);
     switch (q.t) {
-      case 'blob': K.put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), q.e ?? 1, q.ev ?? 1, segOf(Math.max(q.rx, q.ry, q.rz))), m, x, y, z, 0, 0, -(q.tilt || 0)); break;
+      case 'blob': K.put(L.blob(u(2 * q.rx), u(2 * q.ry), u(2 * q.rz), q.e ?? 1, q.ev ?? 1, q.seg ?? segOf(Math.max(q.rx, q.rz, q.ry * 0.5))), m, x, y, z, 0, 0, -(q.tilt || 0)); break;
       case 'box': K.put(L.rbox(u(q.w), u(q.hh), u(q.d), u(q.r)), m, x, y, z, 0, q.tx || 0, -(q.tilt || 0)); break;
       case 'cyl': K.put(L.cyl(u(q.r), u(q.hh), u(q.rb ?? q.r), 20), m, x, y, z); break;
       case 'disc': {

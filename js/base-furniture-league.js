@@ -245,7 +245,7 @@ function paintParts(parts, x0, b, vw, dir, W) {
         const l = g.createLinearGradient(cx - q.R, cy - q.R, cx + q.R, cy + q.R);
         l.addColorStop(0, sh(q.c, 1)); l.addColorStop(0.5, q.c); l.addColorStop(1, sh(q.c, -1));
         g.strokeStyle = l; g.lineWidth = q.r * 2; g.lineCap = 'round';
-        const a = dir === 2 ? [Math.PI + q.a0 - q.arc, Math.PI + q.a0].map(v => -v).reverse() : [-(q.a0 + q.arc), -q.a0];
+        const a = dir === 2 ? [q.a0 - Math.PI, q.a0 + q.arc - Math.PI] : [-(q.a0 + q.arc), -q.a0];
         g.beginPath(); g.arc(cx, cy, q.R, a[0], a[1]); g.stroke();
         break;
       }
@@ -398,9 +398,9 @@ export const LEAGUE_KINDS = [
 
   // the Hall of Fame: a great console, the champion's six on its screen, six balls in its tray
   piece('lghalloffame', 'Hall of Fame machine', 2, 2, 2400, 'gloss', [
-    BX(32, 1.5, 8, 62.5, 3, 46.5, DEEP, { r: 1 }), BX(32, 15, 8, 62, 26, 46, BLUE, { r: 3 }),
-    BX(32, 28, 8, 62.6, 1.6, 46.6, GOLD, { m: 'metal', r: 0.5 }),
-    ...emblem(32, 15, 31.4, 4), BX(4, 15, 31.3, 2, 20, 0.6, LG.light, { m: 'glow', r: 0.3 }), BX(60, 15, 31.3, 2, 20, 0.6, LG.light, { m: 'glow', r: 0.3 }),
+    BX(32, 1.5, 5, 62.5, 3, 46.5, DEEP, { r: 1 }), BX(32, 15, 5, 62, 26, 46, BLUE, { r: 3 }),
+    BX(32, 28, 5, 62.6, 1.6, 46.6, GOLD, { m: 'metal', r: 0.5 }),
+    ...emblem(32, 15, 28, 3), BX(4, 15, 28.3, 2, 20, 0.6, LG.light, { m: 'glow', r: 0.3 }), BX(60, 15, 28.3, 2, 20, 0.6, LG.light, { m: 'glow', r: 0.3 }),
     BX(32, 30, 20, 44, 2.4, 14, '#30344a', { r: 0.6 }), FN(28, keys(12, 52, 29)),
     ...[12, 20, 28, 36, 44, 52].map(x => BALL(x, 31.4, 7, 2.6)),
     BX(32, 60, -18, 60, 62, 22, DEEP, { r: 3 }),
@@ -494,11 +494,11 @@ export const LEAGUE_KINDS = [
 
   // a healing station in League colours: six balls rest on its marble tray
   piece('lgheal', 'League healing station', 2, 1, 1400, 'gloss', [
-    BX(32, 1.2, 0, 60.4, 2.4, 26.4, DEEP, { r: 1 }), BX(32, 15, 0, 60, 26, 26, BLUE, { r: 4 }),
+    BX(32, 1.2, 0, 60.4, 2.4, 24.4, DEEP, { r: 1 }), BX(32, 15, 0, 60, 26, 24, BLUE, { r: 4 }),
     BX(32, 28.6, 0, 62, 2.4, 28, MARBLE, { r: 1 }), BX(32, 29.9, 0, 40, 0.4, 14, '#c8d8e8', { r: 0.2 }), FN(14, traySlots),
-    BX(32, 24, 13.2, 56, 1.6, 0.8, GOLD, { m: 'metal', r: 0.3 }),
-    ...emblem(32, 13, 13.6, 4.5),
-    BX(5, 14, 13.2, 2, 18, 0.8, LG.mint, { m: 'glow', r: 0.3 }), BX(59, 14, 13.2, 2, 18, 0.8, LG.mint, { m: 'glow', r: 0.3 }),
+    BX(32, 24, 12.2, 56, 1.6, 0.8, GOLD, { m: 'metal', r: 0.3 }),
+    ...emblem(32, 13, 12.6, 3),
+    BX(5, 14, 12.2, 2, 18, 0.8, LG.mint, { m: 'glow', r: 0.3 }), BX(59, 14, 12.2, 2, 18, 0.8, LG.mint, { m: 'glow', r: 0.3 }),
   ], { glow: [LG.mint] }),
 
   // the gate up to the Indigo Plateau: marble columns, a blue arch, the emblem for a keystone
@@ -576,8 +576,8 @@ export const LEAGUE_KINDS = [
   piece('lgfanfare', 'Fanfare trumpet rack', 1, 1, 650, 'metal', [
     LA(16, 0, 0, [[8, 0], [8, 2], [5, 3.5], [1.5, 5], [0, 5]], BRONZE), CY(16, 30, 0, 1.2, 50, BRONZE),
     BX(16, 50, 0.8, 2.2, 2.2, 1.6, BRONZE, { r: 0.4 }), BX(16, 38, 0.8, 2.2, 2.2, 1.6, BRONZE, { r: 0.4 }),
-    RD(4, 22, 50, 1.6, 0.8, GOLD), CY(3.3, 50, 1.6, 0.9, 1.6, GOLD), CN(27.5, 50, 1.6, 4, 7, GOLD, { tilt: -Math.PI / 2 }),
-    RD(10, 28, 38, 1.6, 0.8, GOLD), CY(28.7, 38, 1.6, 0.9, 1.6, GOLD), CN(4.5, 38, 1.6, 4, 7, GOLD, { tilt: Math.PI / 2 }),
+    RD(4, 22, 50, 1.6, 0.8, GOLD), B(3.4, 50, 1.6, 1, 1, 1, GOLD), CN(27.5, 50, 1.6, 4, 7, GOLD, { tilt: -Math.PI / 2 }),
+    RD(10, 28, 38, 1.6, 0.8, GOLD), B(28.6, 38, 1.6, 1, 1, 1, GOLD), CN(4.5, 38, 1.6, 4, 7, GOLD, { tilt: Math.PI / 2 }),
     SH(11, 50, 2.6, PENNANT(5, 0, 10, 7), 0.8, BLUE, { m: 'cloth' }), BALL(11, 45, 3.6, 1.9),
     SH(21, 38, 2.6, PENNANT(5, 0, 10, 7), 0.8, BLUE, { m: 'cloth' }), BALL(21, 33, 3.6, 1.9),
   ]),

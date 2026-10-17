@@ -247,7 +247,7 @@ export const CONTEST_KINDS = [
     BX(48, 64, -29, 80, 88, 3, C.stage),
     ...[[22, 90], [40, 98], [58, 86], [76, 96], [30, 72], [66, 70]].map(([x, h]) => star(x, h, -27.2, 2.2, 0.6, C.gold)),
     ...[5, 91].flatMap(x => [BX(x, 64, -26, 10, 88, 10, C.black, { r: 1.5 }), BX(x, 64, -20.8, 4, 84, 0.6, C.gold, { m: 'metal', r: 0.3 })]),
-    ...[13, 19, 25, 71, 77, 83].map(x => B(x, 64, -24, 4, 42, 3, C.velvet, { ev: 0.7, e: 0.8, m: 'cloth' })),
+    ...[13, 19, 25, 71, 77, 83].map(x => B(x, 64, -24, 4, 42, 3, C.velvet, { ev: 0.7, e: 0.8, m: 'cloth', seg: 16 })),
     ...[20, 76].flatMap(x => [BX(x, 52, -20.6, 14, 1.6, 1, C.gold, { m: 'metal', r: 0.5, tilt: x < 48 ? 0.15 : -0.15 }),
       B(x < 48 ? 27 : 69, 50, -20.4, 1.6, 1.6, 1.6, C.gold, { m: 'metal' }), CN(x < 48 ? 27 : 69, 49, -20.4, 1.8, 6, C.gold, { tilt: Math.PI, m: 'metal' })]),
     BX(48, 101, -23, 76, 10, 4, C.velvet, { m: 'cloth', r: 2 }),
@@ -278,9 +278,9 @@ export const CONTEST_KINDS = [
 
   // a spotlight on a tripod, its gold-rimmed lens lit
   piece('conspotlight', 'Contest spotlight', 1, 1, 450, 'gloss', [
-    ...[[4, 0, 9], [28, 0, 9], [16, 0, -13]].map(f => ST([16, 38, 0], f, 1, C.black, { m: 'metal' })),
+    ...[[4, 0, 9], [28, 0, 9], [16, 0, -13]].map(f => ST([16, 38, 0], f, 1.3, C.black, { m: 'metal' })),
     B(16, 38, 0, 2.4, 2.4, 2.4, C.black),
-    CY(16, 48, 0, 1.2, 20, C.silver, { m: 'metal' }),
+    CY(16, 48, 0, 1.6, 20, C.silver, { m: 'metal' }),
     BX(16, 58, 0, 25, 2, 2, C.black, { r: 0.6 }), BX(4.5, 64, 0, 2, 12, 2, C.black, { r: 0.6 }), BX(27.5, 64, 0, 2, 12, 2, C.black, { r: 0.6 }),
     B(3.6, 68, 0, 1.6, 1.6, 1.6, C.gold, { m: 'metal' }), B(28.4, 68, 0, 1.6, 1.6, 1.6, C.gold, { m: 'metal' }),
     DZ(16, 68, -1, 10, 18, C.black),
@@ -388,7 +388,7 @@ export const CONTEST_KINDS = [
 
   // a costume rack: a gold rail of five contest dresses, one in each condition's colour
   piece('conrack', 'Costume rack', 2, 1, 650, 'cloth', [
-    ...[4, 60].flatMap(x => [ST([x, 3.5, 0], [x, 72, 0], 1.2, C.gold, { m: 'metal' }), BX(x, 2.6, 0, 4, 2, 28, C.black, { m: 'gloss', r: 0.8 }),
+    ...[4, 60].flatMap(x => [ST([x, 3.5, 0], [x, 72, 0], 1.6, C.gold, { m: 'metal' }), BX(x, 2.6, 0, 4, 2, 28, C.black, { m: 'gloss', r: 0.8 }),
       B(x, 1, -12, 1.1, 1.1, 1.1, C.black, { m: 'gloss' }), B(x, 1, 12, 1.1, 1.1, 1.1, C.black, { m: 'gloss' }), B(x, 73.4, 0, 1.8, 1.8, 1.8, C.gold, { m: 'metal' })]),
     RD(3, 61, 72, 0, 1.3, C.gold, { m: 'metal' }),
     ...FIVE.flatMap((c, i) => dress(10 + i * 11, i % 2 ? 1.5 : -1.5, c)),
@@ -412,7 +412,7 @@ export const CONTEST_KINDS = [
   // a contest microphone: a gold mic on a stand with a gold base, a pink bow tied on
   piece('conmic', 'Contest microphone', 1, 1, 250, 'metal', [
     CY(16, 1, 0, 8, 2, C.gold, { rb: 9 }),
-    CY(16, 28, 0, 1, 52, C.black),
+    CY(16, 28, 0, 1.5, 52, C.black),
     B(13.4, 40, 0.6, 2.4, 1.6, 1, C.cute, { tilt: 0.4, m: 'plain' }), B(18.6, 40, 0.6, 2.4, 1.6, 1, C.cute, { tilt: -0.4, m: 'plain' }), B(16, 40, 1, 1, 1, 1, C.cute, { m: 'plain' }),
     BX(16, 55, 0, 3, 3, 3, C.black, { m: 'gloss', r: 0.6 }),
     CY(16, 60, 1, 1.8, 8, C.gold, { rb: 1.2 }), CY(16, 64.5, 1, 2.2, 1.2, C.black),
@@ -517,7 +517,7 @@ export const CONTEST_KINDS = [
   // a big gold star on a pole that spins
   piece('constarprop', 'Spinning star', 1, 1, 400, 'metal', [
     LA(16, 0, 0, [[10, 0], [10, 2], [8, 4], [3, 6], [0, 6]], C.black, { m: 'gloss' }),
-    CY(16, 28, 0, 1.4, 44, C.gold),
+    CY(16, 28, 0, 2, 44, C.gold),
     star(16, 61, 0, 15, 4, C.gold),
     SH(starPts(16, 61, 8.5), 2.4, 0.8, C.cream, { m: 'plain' }), SH(starPts(16, 61, 8.5), -2.4, 0.8, C.cream, { m: 'plain' }),
     B(16, 61, 0, 1.6, 1.6, 3, C.velvet, { m: 'gloss' }),
@@ -526,7 +526,7 @@ export const CONTEST_KINDS = [
   // a gold stand of three trays of bouquets thrown to the winners
   piece('conflowers', 'Fan bouquet stand', 1, 1, 350, 'metal', [
     CY(16, 1.2, 0, 9, 2.4, C.gold, { rb: 10 }),
-    CY(16, 30, 0, 1.2, 56, C.gold),
+    CY(16, 30, 0, 1.8, 56, C.gold),
     CY(16, 18, 0, 14, 1.4, C.gold, { rb: 13 }), CY(16, 36, 0, 11, 1.4, C.gold, { rb: 10 }), CY(16, 54, 0, 8, 1.4, C.gold, { rb: 7 }),
     ...bouquet(16, 18.7, -7, [C.smart, C.tough, C.white, C.smart], C.cream),
     ...bouquet(8.5, 18.7, 3, [C.cool, C.cute, C.white, C.cool], C.wrap), ...bouquet(23.5, 18.7, 3, [C.beauty, C.white, C.beauty, C.cute], C.cream),
