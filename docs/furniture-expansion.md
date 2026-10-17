@@ -3,7 +3,8 @@
 The user's ask (2026-10-16): Animal Crossing has about double our furniture, "I want our catalogue to be massive". This is
 the plan for roughly doubling it, from 1,228 kinds (122 of them dolls). The user picks the order. **Done (2026-10-16):
 the seasonal sets and the outdoor yard sets, 237 kinds (1,464 in all). Done (2026-10-17): the six Pokémon rooms, 150
-kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), and session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all).** No ceiling layer yet (the user's call).
+kinds (1,645 in all), session b's five Pokémon sets, 127 kinds (1,772 in all), session c's Day Care, partner care, figurines and dolls, 140 kinds (1,912 in all), and session d's first five furniture
+series, 125 kinds (2,037 in all).** No ceiling layer yet (the user's call).
 
 ## What a new kind needs now
 
@@ -24,11 +25,11 @@ each (as the 2026-10-16 model pass was), about 4 to 6 sets a session.
 Each set has a full room in one look: bed, chair, sofa, table, desk, wardrobe, dresser, shelf, lamp, clock, screen,
 mirror, a rug and two or three wall pieces. 25 kinds each.
 
-1. Antique: dark carved wood, brass.
-2. Rattan: woven cane, beach-house cushions.
-3. Log cabin: split logs, plaid, antlers (Highbough's shelf?).
-4. Ironwood: iron and reclaimed wood, workshop feel (Cinder Springs?).
-5. Imperial: red lacquer and gold, a lunar-new-year look.
+1. (done 2026-10-17) Antique: dark carved wood, brass.
+2. (done 2026-10-17) Rattan: woven cane, beach-house cushions.
+3. (done 2026-10-17) Log cabin: split logs, plaid, antlers (Highbough's shelf?).
+4. (done 2026-10-17) Ironwood: iron and reclaimed wood, workshop feel (Cinder Springs?).
+5. (done 2026-10-17) Imperial: red lacquer and gold, a lunar-new-year look.
 6. Diner: chrome, red vinyl, checker tiles, a jukebox.
 7. Cute: pastel pink, hearts and bows.
 8. Elegant: white and gold, curving legs.

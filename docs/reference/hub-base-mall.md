@@ -81,7 +81,7 @@ The first section began as the note on playtesting the live site and grew into t
   `add()` sets it) and a builder in the -y batch. Sold only in **Smeargle's garden catalogue** (`js/garden-shop.js`): a tap
   on Smeargle in the store, once there's a yard (`KEEPERS[1].special` in `js/mall-furniture.js`; without one Smeargle
   chats, a line hinting at it), the whole shelf always in stock, owned ones marked; `dealDay()` leaves outdoor pieces out,
-  so the daily stands deal as before. Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
+  so the daily stands deal as before. Since 2026-10-17 (the user's ask: "all pixels", "some kind of merchant window") the catalogue is a merchant's card in the store buy window's look (`.gmerch` in css/hub.css): green ribbon tabs, each tile a still of the piece's 3D model (`pieceTurntable()` in `js/mall-furniture.js`, drawn once by the shared turntable, then disposed; only the 2D still is kept), and a tap opens a buy window with it turning (`turner()` in `js/turntable.js`, which the Furniture store's `merchant()` uses too). Outdoors only the Furniture tab shows (`.base3d.outdoors .b3-tab`); pieces, the
   ghost, its footprint and the pick box roll with the lawn (`bendOut()`, `bend()` on `foot` / `selBox`, a no-op indoors),
   and a held piece aims at the lawn as drawn (`groundHit()` in `aimFrom()`). Seats (bench, picnic bench, lounger) carry
   a shape `seat` for part c. The lamp post and string lights switch (`light`), the barbecue burns (`fire`).
@@ -542,6 +542,12 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   `js/base-dolls-2.js` (Gen 2-3) and `-3.js` (Gen 4-5), appended to `DOLLS` / `PLUSH` / `EXTRAS`, their new extras drawn
   only through `SEW` (js/base-dolls.js's pen-aware kit: puff, shape, line, curveLine, dot, flat, flame). The model check
   now matches a standee by its cut-out (alpha), not its whole rectangle.
+- **Session d's series** (2026-10-17): Antique (`antq`), Rattan (`rtn`), Log cabin (`cabin`), Ironwood (`iw`) and
+  Imperial (`imp`), 25 each, `group` the series' name, files `js/base-furniture-<antique|rattan|logcabin|ironwood|imperial>.js`
+  and `js/base-models-<same>.js`, wired last; all solo, Snorlax's way (builders `<prefix>parts`, rugs `<prefix>rug`). New
+  part kinds there: Rattan's `weave` finish, Log cabin's side discs (cut log ends) and its plaid as one cached canvas each,
+  Antique's `slab` (a side profile run across) and `horn`. Pokémon touches: a Stantler antler mount, a Pidgey cuckoo
+  clock, Ursaring and Teddiursa carvings, a Gyarados carving and scroll, a Lapras in the gilt landscape.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.

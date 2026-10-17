@@ -2803,6 +2803,13 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
   old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session d: the first five furniture series (2026-10-17)
+- Antique (`antq`), Rattan (`rtn`), Log cabin (`cabin`), Ironwood (`iw`) and Imperial (`imp`), 25 each, a whole room in
+  one look: 125 kinds, 2,037 in all, one helper a set. All solo, Snorlax's way (one `BUILT` list a kind, builders
+  `<prefix>parts` plus a rug builder). Every kind within budget (none over 5,596 triangles or 7 draws); thin, leggy pieces
+  match their paintings at 0.34 (Ironwood's mesh screen) to 0.74 (the painting's 1px outline: grown 1px they score 0.85 to 0.97).
+  The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
+
 ## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
 - The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
   (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall

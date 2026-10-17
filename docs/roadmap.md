@@ -14,29 +14,33 @@ Crossing's; the user picked all of what's below, in this order). The list is `do
 set is built (the helpers' brief, budgets, the check) is its "Building a set" section. Done so far: every kind
 hand-built, the seasonal and yard sets (237 kinds, 1,464 in all), the statues as their sprites, and session a, the six Pokémon
 rooms and the Present's model (2026-10-17, 150 kinds, 1,645 in all), session b, five more Pokémon sets (2026-10-17, 127
-kinds, 1,772 in all), and session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
-all; all three in `docs/roadmap-done.md`).
+kinds, 1,772 in all), session c, Day Care, partner care, figurines and 60 more dolls (2026-10-17, 140 kinds, 1,912 in
+all), and session d, the first five furniture series (2026-10-17, 125 kinds, 2,037 in all; all four in `docs/roadmap-done.md`).
 Waiting on the user's playtest of those (`?holiday=valentine` etc. on the Furniture store, `?yard&allfurniture`,
 `?mall=3f`), and of the Pokémon rooms and session b's sets (`?base&allfurniture`, or `?mall=furniture&stock=pikabed,pbmaster,mustyrantrum,constage,lgchampseat,rktballoon`), and of session c's
-(`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
+(`?mall=furniture&stock=dccrib,dcponyta,pcgroomtable,pcbigbed,figcharmander,figlugia,bigespeondoll,biglitwickdoll`), and of session d's
+(`?mall=furniture&stock=antqbed,rtnpeacock,cabinstove,iwlocker,impgong,impdragon`; try the stove's and the iron stove's fire tap). Each session builds its sets with one helper (Agent) a set or two, in parallel, then checks the whole
 catalogue, sends picture sheets (the user asks for them), and pushes to `main`. Watch the usage limit: seven helpers
 at once hit it on 2026-10-16; five is safer.
 - **a. Done 2026-10-17, on `main`**: the six Pokémon rooms and the Present's model (`docs/roadmap-done.md`).
 - **b. Done 2026-10-17, on `main`**: the Poké Ball collection (27), Museum, Contest Hall, Pokémon League and Rocket
   hideout (`docs/roadmap-done.md`).
 - **c. Done 2026-10-17, on `main`**: Day Care, Partner care, 30 figurines and 60 more dolls (`docs/roadmap-done.md`).
-- **d to h. The 22 furniture series**, about 5 a session in the list's order (Antique, Rattan, Log cabin, Ironwood,
-  Imperial first).
+- **d. Done 2026-10-17, on `main`**: the Antique, Rattan, Log cabin, Ironwood and Imperial series (`docs/roadmap-done.md`).
+- **e to h. The other 17 furniture series**, about 5 a session in the list's order (Diner, Cute, Elegant, Golden, Shell
+  and mermaid next).
 - **i to l. The 18 room types**, about 5 a session (hospital, bistro, bakery, sushi bar, ramen shop first).
 - **m. The ceiling layer** (~50 pieces): a new `layer: 'ceiling'` hung from the room's ceiling (placing, the tray, the
   store's display, saving), then its pieces: ceiling lamps, chandeliers, fans, hanging plants, mobiles, lanterns, a
   disco ball, bunting. Read `docs/reference/hub-base-mall.md` on how wall pieces were added first.
 Every finished session moves its line to `docs/roadmap-done.md` and writes the next session's prompt here.
-Next session's prompt (session d):
+Next session's prompt (session e):
 > Run in: CLOUD. Read CLAUDE.md, the roadmap's "Furniture expansion" entry and docs/furniture-expansion.md (its
-> "Building a set" section is the helpers' brief). Build session d: the first five furniture series in the list's order
-> (Antique, Rattan, Log cabin, Ironwood, Imperial; 25 each), one helper a set (five at once), then check every kind
-> with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main.
+> "Building a set" section is the helpers' brief). Build session e: the next five furniture series in the list's order
+> (Diner, Cute, Elegant, Golden, Shell and mermaid; 25 each), one helper a set (five at once), then check every kind
+> with tools/model-check.mjs, send me picture sheets, update the roadmap and push to main. Golden is "earned from
+> achievements, never sold": before the helpers start, decide how its pieces are earned (read docs/reference/hub-base-mall.md
+> on earned furniture and `?allfurniture`) and keep them out of the store's stock.
 
 **Kenmatta's dojo: all 20 trials in** (2026-10-15, docs/roadmap-done.md). Trials 15-20 are on branch
 `claude/kenmatta-trials-9-14-dojo-ffy0jk` and `main`, waiting on the user's playtest (`?dojo&trials` opens every trial on any save). Nothing left to build here unless the user wants more.
@@ -796,7 +800,9 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
+**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
+both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
+entry there, which is the up-to-date one (batch 1 is built, batch 2 next, batch 3 picked). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
 Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
 act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
 ~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
