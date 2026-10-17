@@ -1195,6 +1195,40 @@ const PLACE_ART = {
     dust: ['#f8f0d8', '#d8c8a0'], confetti: ['#f8d030', '#f878b0', '#78c8f0', '#88e070'],
     life: ['contest'],
   },
+  // batch 3's last five (2026-10-17): Smeargle's studio a room, the rest outdoors
+  tablet: {   // an old stone tablet carved with Unown glyphs, a flat stone before it scattered with chipped ones; Unown drift by
+    outdoor: true, prop: 'tablet', horizon: 0.5, zoom: 1.75, span: 80,
+    stone: ['#d0ccc0', '#a8a498', '#7a766a', '#2e2a24'], glyph: ['#3a3630', '#f8e888', '#fffce0'], moss: ['#98c060', '#5a8a38'],
+    life: ['tablet'],
+  },
+  studio: {   // Smeargle's studio: paint splashed up the walls, three easels (a touch-up, a repaint, the full portrait), paint pots
+    backdrop: 'lab', floor: 'planks', prop: 'studio', light: null, horizon: 0.6, sky: ['#f4ecdc'],
+    wall: ['#f4ecdc', '#e8dcc8', '#d4c6ac', '#fffaf0'],
+    trim: ['#c09060', '#8e6440', '#604024', '#2a1a0c'],
+    plank: ['#c8a070', '#b48c5c', '#987248', '#4a3420'],
+    easel: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], canvas: ['#fffef8', '#e8e2d4', '#c8c0b0'],
+    paints: ['#e84838', '#f8c830', '#3878e0', '#58b858', '#a868e0', '#f878b0'],
+    life: ['studio'],
+  },
+  bonfire: {   // a bonfire in a ring of stones, logs to sit on, two Litwick swaying either side of it
+    outdoor: true, prop: 'bonfire', horizon: 0.5, zoom: 1.75, span: 76,
+    stone: ['#a8a098', '#888078', '#605850', '#2a2420'], log: ['#b07c4c', '#82583a', '#5a3a22', '#26160a'],
+    flame: ['#fffce0', '#f8d048', '#f88028', '#c83818'], wisp: ['#e8d8ff', '#a878f0', '#6a3ac0'], ember: '#f8a038',
+    life: ['bonfire'],
+  },
+  flip: {   // a folding table under a parasol, eight cards face down on its green top; a Voltorb rolls about beside it
+    outdoor: true, prop: 'flip', horizon: 0.5, zoom: 1.75, span: 80,
+    felt: ['#68c878', '#48a058', '#2e7a40', '#123a1c'], legs: ['#c8c8d0', '#8a8a98', '#3a3a44'],
+    back: ['#f8f8f8', '#e84838', '#28242c'], spark: ['#ffffff', '#f8e048'],
+    life: ['flip'],
+  },
+  rival: {   // the road: your rival and his Sneasel by a signpost, what he wants laid out before him (coins, a Bag, a TM)
+    outdoor: true, prop: 'rival', horizon: 0.5, zoom: 1.75, span: 84,
+    wood: ['#d8a868', '#a87840', '#6a4824', '#2a1c10'], rock: ['#a8a098', '#888078', '#605850', '#2a2420'],
+    coin: ['#fff8b0', '#f8c830', '#b07818'], bag: ['#f87848', '#c84a28', '#7a2a14', '#2a1008'], disc: ['#f0f0f8', '#a8b8d8', '#5868a8', '#202838'],
+    shine: ['#ffffff', '#f8e888'],
+    life: ['rival'],
+  },
 
   /* the Move Tutor's dojo: shoji screens between timber posts over a tatami floor, his arena's Dragonite medallion big in
      a dark wood alcove under a shimenawa rope, Alder on a cushion below it, a hanging scroll (pay ₽), a sandbag (pay HP) */
@@ -3964,7 +3998,8 @@ function eventProps() {
   ({ berry: berryScene, spring: springScene, well: wellScene, itemball: itemBallScene, rocket: rocketScene, altar: altarScene, tutor: tutorScene, deleter: deleterScene, daycare: daycareScene, fans: fanScene,
     snorlax: snorlaxScene, trash: trashScene, ditto: dittoScene, abra: abraScene, billspc: billsPcScene,
     wheel: wheelScene, idol: idolScene, keystone: keystoneScene, moon: moonScene, stall: stallScene,
-    library: libraryScene, fishing: fishingScene, sludge: sludgeScene, storeroom: storeroomScene, contest: contestScene })[S.raw.prop]();
+    library: libraryScene, fishing: fishingScene, sludge: sludgeScene, storeroom: storeroomScene, contest: contestScene,
+    tablet: tabletScene, studio: studioScene, bonfire: bonfireScene, flip: flipScene, rival: rivalScene })[S.raw.prop]();
   if (life.cracks) life.cracks = life.cracks.filter(([x, y]) => !kept(x, y));   // no lava glowing through them either
 }
 
@@ -4033,6 +4068,12 @@ const ACTS = {
   goop: { frames: 16, cues: ({ dig }) => (dig ? [[2, 'splash'], [9, 'coins']] : [[2, 'rustle'], [8, 'splash']]) },
   rummage: { frames: 14, cues: () => [[1, 'rustle'], [6, 'rustle'], [10, 'item']] },
   joust: { frames: 24, cues: () => [[2, 'hit'], [6, 'hit'], [10, 'hit'], [15, 'stat-up']] },
+  study: { frames: 16, cues: () => [[1, 'crystal-0'], [6, 'crystal-1'], [11, 'stat-up']] },
+  efface: { frames: 12, cues: () => [[1, 'snip'], [6, 'rustle']] },
+  paint: { frames: 14, cues: () => [[1, 'rustle'], [7, 'rustle'], [12, 'stat-up']] },
+  offer: { frames: 16, cues: () => [[1, 'burn'], [8, 'spirit']] },
+  deal: { frames: 12, cues: () => [[1, 'card'], [4, 'card'], [7, 'card']] },
+  barter: { frames: 14, cues: ({ what }) => [[1, what === 'money' ? 'coins' : 'item'], [10, 'item-get']] },
 };
 
 /** Play a choice out on the event's props; resolves how long it takes in ms (0 under reduced motion, which skips it
@@ -4708,6 +4749,217 @@ function drawContest(t) {
     const w = life.fighters[life.act.win || 0];
     for (let i = 0; i < 14; i++) { const age = (f - 14 + i) % 10; put(w.x - 12 + ((i * 7) % 25), w.y - 36 + age * 3 + (i % 3), S.confetti[i % 4]); }
   }
+}
+
+/* ---------- batch 3's last five: the Unown Tablet, Smeargle's studio (a room), the Litwick Bonfire, Voltorb Flip's table
+   and your rival on the road ---------- */
+
+// little Unown glyphs, 3 wide and 4 tall, carved in rows down the tablet
+const UNOWN_MARKS = ['010101111101', '110101110111', '111100100111', '101111101101', '010010010010', '111101101111', '101101111010', '111010010010'];
+
+function tabletScene() {
+  const cx = W >> 1, foot = groundAt(0.42), tab = { x: cx - 10, y: foot + 1, hw: 12, h: 36 }, alt = { x: cx + 22, y: foot + 4 };
+  const [lit, stone, dark, line] = S.stone, [moss, mossDark] = S.moss, top = tab.y - tab.h;
+  groundShadow(tab.x, tab.y + 1, tab.hw + 3, 2);
+  outlined(tab.x - tab.hw, top, tab.x + tab.hw, tab.y, (x, y) => {   // a slab with a rounded top
+    const dx = Math.abs(x - tab.x), dy = y - top;
+    return dx <= tab.hw && (dy >= 6 || Math.hypot(Math.max(0, dx - tab.hw + 6), 6 - dy) <= 6);
+  }, (x, y) => (x < tab.x - tab.hw + 3 ? lit : x > tab.x + tab.hw - 3 ? dark : noise(x >> 1, y >> 1, 31) > 0.82 ? dark : stone), line);
+  for (let x = tab.x - tab.hw; x <= tab.x + tab.hw; x++) for (let y = tab.y - 3; y <= tab.y; y++) if (noise(x, y, 33) < 0.45) solid(x, y, (x + y) % 3 ? moss : mossDark);
+  life.glyphs = [];
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 4; c++) {
+    const gx = tab.x - 8 + c * 5, gy = top + 6 + r * 6, g = UNOWN_MARKS[(r * 4 + c * 3) % UNOWN_MARKS.length];
+    life.glyphs.push({ x: gx, y: gy, g });
+    for (let i = 0; i < 12; i++) if (g[i] === '1') solid(gx + (i % 3), gy + Math.floor(i / 3), S.glyph[0]);
+  }
+  groundShadow(alt.x, alt.y + 1, 9, 2);
+  outlined(alt.x - 9, alt.y - 5, alt.x + 9, alt.y, (x, y) => Math.hypot((x - alt.x) / 9, (y - alt.y + 1.5) / 3.8) <= 1, (x, y) => (y < alt.y - 3 ? lit : x > alt.x + 5 ? dark : stone), line);
+  for (const [dx, dy] of [[-5, -5], [0, -6], [4, -5], [-2, -4]]) { solid(alt.x + dx, alt.y + dy, dark); solid(alt.x + dx + 1, alt.y + dy, S.glyph[0]); }   // chipped-off glyphs
+  life.tablet = { x: tab.x, top, y: tab.y };
+  life.altar = alt;
+  life.stands = { mon: { x: tab.x + tab.hw + 9, y: top + 10 } };
+  life.eventSpots = [
+    { x0: tab.x - tab.hw - 2, x1: tab.x + tab.hw + 2, y0: top - 2, y1: tab.y + 2 },
+    { x0: alt.x - 11, x1: alt.x + 11, y0: alt.y - 14, y1: alt.y + 3 },
+  ];
+  life.foot = foot + 8;
+  life.keep = [{ x0: tab.x - tab.hw - 3, x1: alt.x + 11, y0: top - 2, y1: alt.y + 3 }];
+}
+
+/** A glyph glows now and then; studying lights them all, row by row, and sparks pour off the tablet; erasing knocks chips
+    of stone off the flat stone in a puff of dust. */
+function drawTablet(t) {
+  const gs = life.glyphs, f = actFrame('study'), e = actFrame('efface');
+  const lit = f >= 0 && f < 16 ? Math.min(gs.length, Math.floor(f * 2.2)) : -1;
+  gs.forEach((g, k) => {
+    const on = lit >= 0 ? k < lit : k === Math.floor(t / 6) % gs.length;
+    if (on) for (let i = 0; i < 12; i++) if (g.g[i] === '1') put(g.x + (i % 3), g.y + Math.floor(i / 3), lit >= 0 && k === lit - 1 ? S.glyph[2] : S.glyph[1]);
+  });
+  if (f >= 6 && f < 16) for (let i = 0; i < 8; i++) { const age = (f + i * 2) % 10; sparkle(life.tablet.x - 12 + ((i * 7 + f) % 25), life.tablet.top + 4 + age * 3, S.glyph[1 + (i % 2)]); }
+  if (e >= 0 && e < 12) {
+    const a = life.altar;
+    for (let i = 0; i < 6; i++) { const k = e / 12, x = a.x - 6 + i * 2.4 + (i - 2.5) * k * 6, y = a.y - 6 - Math.sin(Math.min(1, k * 1.6) * Math.PI) * (6 + (i % 3) * 3); put(Math.round(x), Math.round(y), i % 2 ? S.stone[2] : S.glyph[0]); }
+    for (let y = -3; y <= 3; y++) for (let x = -9; x <= 9; x++) if (dither(x + e, y) < (12 - e) * 0.7 && (x / 9) ** 2 + (y / 3) ** 2 <= 1) put(a.x + x, a.y - 7 + y, S.stone[0]);
+  }
+}
+
+/** An easel: an A-frame of legs, a ledge and a canvas with paint on it (`marks` from `seed`). Returns the canvas box. */
+function easel(cx, foot, hw, h, seed) {
+  const [eLit, wood, eDark, line] = S.easel, [cLit, canvas, cDark] = S.canvas, top = foot - h, cw = hw, ch = Math.round(h * 0.5), cy = top + 2;
+  for (let y = top; y <= foot; y++) {
+    const k = (y - top) / (foot - top), spread = Math.round(k * hw * 0.8);
+    for (const x of [cx - spread, cx + spread]) { solid(x, y, wood); solid(x + 1, y, eDark); }
+    if (y > top + ch) solid(cx, y, eDark);   // the back leg
+  }
+  outlined(cx - cw, cy, cx + cw, cy + ch, (x, y) => x >= cx - cw && x <= cx + cw && y >= cy && y <= cy + ch,
+    (x, y) => (x === cx - cw || y === cy ? cLit : x === cx + cw || y === cy + ch ? cDark : canvas), line);
+  for (let i = 0; i < 6; i++) {   // the painting so far: a few dabs of colour
+    const px0 = cx - cw + 2 + Math.floor(noise(seed, i, 41) * (cw * 2 - 4)), py0 = cy + 2 + Math.floor(noise(i, seed, 43) * (ch - 4)), c = S.paints[(seed + i) % S.paints.length];
+    for (let d = 0; d < 3; d++) solid(px0 + d - 1, py0 + (d === 1 ? -1 : 0), c);
+  }
+  for (let x = cx - cw - 1; x <= cx + cw + 1; x++) { solid(x, cy + ch + 1, eLit); solid(x, cy + ch + 2, line); }   // the ledge
+  return { x: cx, y0: cy, y1: cy + ch, hw: cw };
+}
+
+function studioScene() {
+  const { cx, foot, s } = roomLayout(), u = (k) => Math.max(1, Math.round(s * k));
+  for (let i = 0; i < 26; i++) {   // paint splashed up the wall
+    const x0 = Math.floor(noise(i, 3, 51) * W), y0 = Math.floor(noise(i, 5, 53) * horizon * 0.85) + 4, c = S.paints[i % S.paints.length], r = 1 + Math.floor(noise(i, 7, 55) * 3);
+    for (let y = -r; y <= r; y++) for (let x = -r; x <= r; x++) if (x * x + y * y <= r * r + 1) put(x0 + x, y0 + y, c);
+    if (i % 3 === 0) for (let y = 1; y < 3 + r * 2; y++) put(x0, y0 + r + y, c);   // a drip
+  }
+  const hw = Math.max(7, u(0.09)), h = Math.max(22, u(0.36)), xs = [cx - u(0.3), cx, cx + u(0.3)];
+  life.canvases = xs.map((x, i) => easel(x, foot - (i === 1 ? u(0.04) : 0), i === 2 ? hw + 2 : hw, i === 2 ? h + 4 : h, i * 7 + 3));
+  for (const [dx, k] of [[-0.44, 0], [0.16, 2], [0.43, 4]]) {   // paint pots on the floor
+    const x = cx + u(dx), c = S.paints[k];
+    groundShadow(x, foot + 1, 4, 1);
+    for (let y = -4; y <= 0; y++) for (let xx = -3; xx <= 3; xx++) solid(x + xx, foot + y, y === -4 ? c : Math.abs(xx) === 3 ? S.trim[3] : S.canvas[1]);
+  }
+  life.stands = { mon: { x: cx + u(0.15), y: foot + 2 } };
+  life.eventSpots = life.canvases.map(c => ({ x0: c.x - c.hw - 3, x1: c.x + c.hw + 3, y0: c.y0 - 3, y1: foot }));
+  life.foot = foot + 4;
+}
+
+/** Fresh paint glistens on a canvas now and then; painting dabs colour after colour onto the chosen canvas, sparkles
+    flying off it. */
+function drawStudio(t) {
+  const cs = life.canvases, c0 = cs[Math.floor(t / 13) % cs.length];
+  if (Math.floor(t / 13) % 2 === 0) sparkle(c0.x + 2, c0.y0 + 3, '#ffffff');
+  const f = actFrame('paint');
+  if (f < 0 || f >= 14) return;
+  const c = cs[life.act.i] || cs[0];
+  for (let i = 0; i <= f; i++) {
+    const x = c.x - c.hw + 2 + Math.floor(noise(i, 9, 61) * (c.hw * 2 - 3)), y = c.y0 + 2 + Math.floor(noise(9, i, 63) * (c.y1 - c.y0 - 3));
+    put(x, y, S.paints[i % S.paints.length]); put(x + 1, y, S.paints[i % S.paints.length]);
+  }
+  for (let i = 0; i < 4; i++) sparkle(c.x - c.hw + ((i * 5 + f * 3) % (c.hw * 2)), c.y0 - 2 - ((f + i * 3) % 7), S.paints[(i + f) % S.paints.length]);
+}
+
+function bonfireScene() {
+  const cx = W >> 1, foot = groundAt(0.42), fire = { x: cx, y: foot + 2 }, [rLit, rock, rDark, rLine] = S.stone, [lLit, log, lDark, lLine] = S.log;
+  for (let i = 0; i < 12; i++) {   // the ring of stones
+    const a = i / 12 * Math.PI * 2, x = Math.round(fire.x + Math.cos(a) * 11), y = Math.round(fire.y + Math.sin(a) * 3.5);
+    outlined(x - 2, y - 2, x + 2, y + 1, (px, py) => Math.hypot(px - x, (py - y + 0.5) * 1.3) <= 2.2, (px, py) => (py < y - 1 ? rLit : px > x ? rDark : rock), rLine);
+  }
+  for (const [dx, dy, len, k] of [[-5, -1, 10, 1], [-4, -3, 9, -1], [-3, -2, 7, 0.4]]) {   // logs crossed in the middle
+    for (let i = 0; i < len; i++) { const x = fire.x + dx + i, y = Math.round(fire.y + dy - i * 0.25 * k); solid(x, y, lLit); solid(x, y + 1, log); solid(x, y + 2, lDark); }
+  }
+  for (const sx of [-1, 1]) {   // a log seat either side
+    const x0 = fire.x + sx * 30 - 7, y = foot + 5;
+    for (let x = x0; x <= x0 + 14; x++) { solid(x, y - 3, x === x0 || x === x0 + 14 ? lLine : lLit); solid(x, y - 2, log); solid(x, y - 1, lDark); solid(x, y, lLine); }
+  }
+  life.fire = fire;
+  life.stands = { left: { x: fire.x - 19, y: foot + 3 }, right: { x: fire.x + 19, y: foot + 3 } };
+  life.eventSpots = [{ x0: fire.x - 13, x1: fire.x + 13, y0: fire.y - 26, y1: fire.y + 5 }];
+  life.foot = foot + 9;
+  life.keep = [{ x0: fire.x - 38, x1: fire.x + 38, y0: fire.y - 30, y1: foot + 6 }];
+}
+
+/** The fire flickers and spits embers; an offering makes it roar up tall, its tips turning the Litwick's purple, and
+    wisps rise out of it. */
+function drawBonfire(t) {
+  const p = life.fire, f = actFrame('offer'), roar = f >= 0 && f < 16 ? Math.sin(f / 16 * Math.PI) : 0, tall = 12 + roar * 10;
+  for (let y = 0; y < tall; y++) {
+    const k = y / tall, hw = Math.round((1 - k) * 6 + Math.sin(t / 2 + y) * (1 - k) * 1.5);
+    for (let x = -hw; x <= hw; x++) {
+      if (dither(x + t, y + t * 2) > (1 - k) * 16 + 2) continue;
+      const edge = Math.abs(x) >= hw - 1, c = k > 0.7 ? (roar > 0.3 ? S.wisp[1] : S.flame[3]) : edge ? S.flame[2] : k < 0.35 ? S.flame[0] : S.flame[1];
+      put(p.x + x, p.y - 3 - y, c);
+    }
+  }
+  for (let i = 0; i < 3; i++) { const age = (t + i * 5) % 14; put(p.x - 3 + ((i * 7 + Math.floor((t + i * 5) / 14) * 3) % 7), p.y - 10 - age * 1.5, S.ember); }
+  if (roar) for (let i = 0; i < 6; i++) { const age = (f + i * 2) % 12; sparkle(p.x - 8 + ((i * 5 + f) % 17), p.y - 14 - age * 2, S.wisp[i % 3]); }
+}
+
+function flipScene() {
+  const cx = W >> 1, foot = groundAt(0.42), tb = { x: cx - 6, y: foot + 1, hw: 20, d: 7 };
+  const [fLit, felt, fDark, fLine] = S.felt, [gLit, leg, gLine] = S.legs, [white, red, ink] = S.back, top = tb.y - 9;
+  groundShadow(tb.x, tb.y + 2, tb.hw + 2, 2);
+  for (const x of [tb.x - tb.hw + 2, tb.x + tb.hw - 2]) for (let y = top + 1; y <= tb.y; y++) { solid(x, y, leg); solid(x + 1, y, gLine); }
+  for (let y = top - tb.d; y <= top; y++) {   // the green top, seen from above, its near edge darker
+    const inset = Math.round((top - y) * 0.6);
+    for (let x = tb.x - tb.hw + inset; x <= tb.x + tb.hw - inset; x++) solid(x, y, y === top - tb.d || x === tb.x - tb.hw + inset || x === tb.x + tb.hw - inset ? fLine : y === top ? fDark : (x + y) % 5 ? felt : fLit);
+  }
+  for (let x = tb.x - tb.hw; x <= tb.x + tb.hw; x++) { solid(x, top + 1, gLit); solid(x, top + 2, gLine); }
+  life.cards = [];
+  for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) {   // eight cards face down, Poké Ball backs
+    const x = tb.x - 13 + c * 7 + (r ? 1 : 0) - r, y = top - tb.d + 2 + r * 3;
+    life.cards.push({ x, y });
+    for (let yy = 0; yy < 3; yy++) for (let xx = 0; xx < 5; xx++) solid(x + xx, y + yy, yy === 0 ? red : yy === 1 ? (xx === 2 ? white : ink) : white);
+  }
+  life.table = { x: tb.x, y: top - tb.d };
+  life.stands = { mon: { x: tb.x + tb.hw + 11, y: foot + 3 } };
+  life.eventSpots = [{ x0: tb.x - tb.hw - 2, x1: tb.x + tb.hw + 2, y0: top - tb.d - 8, y1: tb.y + 2 }];
+  life.foot = foot + 8;
+  life.keep = [{ x0: tb.x - tb.hw - 3, x1: tb.x + tb.hw + 22, y0: top - tb.d - 2, y1: tb.y + 3 }];
+}
+
+/** A card twitches now and then; dealing flips the cards up one by one in a run of sparkles and lays them down again. */
+function drawFlip(t) {
+  const cs = life.cards, f = actFrame('deal');
+  if (f < 0 || f >= 12) { const c = cs[Math.floor(t / 11) % cs.length]; if (Math.floor(t / 11) % 2 === 0) sparkle(c.x + 2, c.y - 1, S.spark[0]); return; }
+  cs.forEach((c, i) => {
+    const k = f - i * 0.8;
+    if (k < 0 || k > 3) return;
+    for (let x = 0; x < 5; x++) put(c.x + x, c.y - 1 - Math.round(Math.sin(k / 3 * Math.PI) * 3), S.spark[x % 2]);
+  });
+}
+
+function rivalScene() {
+  const cx = W >> 1, foot = groundAt(0.42), [wLit, wood, wDark, wLine] = S.wood, [rLit, rock, rDark, rLine] = S.rock;
+  const sign = { x: cx + 36, y: foot - 2 };
+  for (let y = sign.y - 14; y <= sign.y; y++) { solid(sign.x, y, wood); solid(sign.x + 1, y, wDark); }
+  outlined(sign.x - 8, sign.y - 18, sign.x + 9, sign.y - 11, (x, y) => x >= sign.x - 8 && x <= sign.x + 9 && y >= sign.y - 18 && y <= sign.y - 11 && !(x === sign.x + 9 && (y === sign.y - 18 || y === sign.y - 11)),
+    (x, y) => (y === sign.y - 17 ? wLit : wood), wLine);
+  const props = [{ x: cx - 22, y: foot + 6 }, { x: cx, y: foot + 8 }, { x: cx + 22, y: foot + 6 }];
+  const [coinLit, coin, coinDark] = S.coin, [bLit, bag, bDark, bLine] = S.bag, [dLit, disc, dDark, dLine] = S.disc;
+  { const p = props[0];   // coins stacked on a flat rock
+    outlined(p.x - 7, p.y - 3, p.x + 7, p.y, (x, y) => Math.hypot((x - p.x) / 7, (y - p.y + 1) / 2.5) <= 1, (x, y) => (y < p.y - 1 ? rLit : rock), rLine);
+    for (let i = 0; i < 4; i++) for (let x = -2; x <= 2; x++) solid(p.x - 2 + x + (i % 2) * 3, p.y - 4 - Math.floor(i / 2) * 2, x === -2 ? coinLit : x === 2 ? coinDark : coin); }
+  { const p = props[1];   // a Bag, flap open
+    outlined(p.x - 5, p.y - 9, p.x + 5, p.y, (x, y) => Math.abs(x - p.x) <= 5 - (y < p.y - 7 ? 1 : 0) && y >= p.y - 9 && y <= p.y, (x, y) => (y < p.y - 6 ? bLit : x > p.x + 2 ? bDark : bag), bLine);
+    for (let x = -3; x <= 3; x++) solid(p.x + x, p.y - 5, bDark); }
+  { const p = props[2];   // a TM disc on a stump
+    for (let y = p.y - 4; y <= p.y; y++) for (let x = -5; x <= 5; x++) solid(p.x + x, y, y === p.y - 4 ? wLit : Math.abs(x) === 5 ? wLine : wood);
+    outlined(p.x - 4, p.y - 8, p.x + 4, p.y - 4, (x, y) => Math.hypot((x - p.x) / 4, (y - p.y + 6) / 2) <= 1, (x, y) => (Math.hypot(x - p.x, (y - p.y + 6) * 2) < 1.5 ? dDark : x < p.x ? dLit : disc), dLine); }
+  life.props = props;
+  life.stands = { npc: { x: cx - 8, y: foot - 4 }, mon: { x: cx + 12, y: foot - 3 } };
+  life.eventSpots = props.map(p => ({ x0: p.x - 9, x1: p.x + 9, y0: p.y - 14, y1: p.y + 2 }));
+  life.foot = foot + 10;
+  life.keep = [{ x0: cx - 32, x1: sign.x + 10, y0: sign.y - 20, y1: foot + 8 }];
+}
+
+/** The coins glint; a trade sends what he asked for arcing up to your rival, a burst of sparkles where it lands. */
+function drawRival(t) {
+  const ps = life.props;
+  if (Math.floor(t / 9) % 3 === 0) sparkle(ps[0].x + 1, ps[0].y - 7, S.shine[0]);
+  const f = actFrame('barter');
+  if (f < 0 || f >= 14) return;
+  const from = ps[{ money: 0, item: 1, move: 2 }[life.act.what] ?? 0], to = life.stands.npc, k = Math.min(1, f / 9);
+  const x = Math.round(from.x + (to.x - from.x) * k), y = Math.round(from.y - 6 + (to.y - 14 - from.y + 6) * k - Math.sin(k * Math.PI) * 12);
+  const c = { money: S.coin[1], item: S.bag[1], move: S.disc[2] }[life.act.what] || S.coin[1];
+  if (f < 9) for (let yy = -1; yy <= 1; yy++) for (let xx = -1; xx <= 1; xx++) put(x + xx, y + yy, c);
+  else for (let i = 0; i < 6; i++) sparkle(to.x - 6 + ((i * 5 + f) % 13), to.y - 20 + ((i * 3 + f) % 7), S.shine[i % 2]);
 }
 
 /* ---------- the Berry Tree ---------- */
@@ -6761,6 +7013,11 @@ function draw() {
   if (has('sludge')) drawSludge(t);
   if (has('storeroom')) drawStoreroom(t);
   if (has('contest')) drawContest(t);
+  if (has('tablet')) drawTablet(t);
+  if (has('studio')) drawStudio(t);
+  if (has('bonfire')) drawBonfire(t);
+  if (has('flip')) drawFlip(t);
+  if (has('rival')) drawRival(t);
   if (has('altar')) drawAltar(t);
   if (has('tutor')) drawTutor(t);
   if (has('deleter')) drawDeleter(t);

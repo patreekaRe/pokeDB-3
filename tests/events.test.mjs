@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { EVENTS, EVENTS_BY_ID, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner } from '../js/data/events.js';
+import { EVENTS, EVENTS_BY_ID, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wheelSlice, idolBoulder, keystoneAsk, swapWares, swapGift, libraryShelf, goopLoss, contestWinner, BASICS, tabletUps, bonfireGift, flipState, rivalWants } from '../js/data/events.js';
 import { poolForType } from '../js/data/cards.js';
 import { RELICS_BY_ID, prizeMult } from '../js/data/relics.js';
 
@@ -110,4 +110,67 @@ test('Scyther wins the Bug-Catching Contest 7 times in 10, and a bet on the unde
 test("batch 3's five are in every run's bag, and the Sludge Pit's numbers come per biome", () => {
   for (const key of ['goopMoney', 'goopHp', 'lose']) assert.equal(goop[key].length, 4, key);
   for (const e of ['fishing-spot', 'silph-storeroom', 'canalave-library', 'bug-contest', 'sludge-pit']) assert.ok(eventsFor('run').some(x => x.id === e), e);
+});
+
+const tablet = EVENTS_BY_ID['unown-tablet'], bonfire = EVENTS_BY_ID['litwick-bonfire'], flip = EVENTS_BY_ID['voltorb-flip'];
+
+test("each type's two basics are an attack and a block its starting deck holds, and both can PP Up", async () => {
+  const { STARTERS } = await import('../js/data/starters.js');
+  const { CARDS_BY_ID, canUpgrade } = await import('../js/data/cards.js');
+  for (const starter of STARTERS.filter(s => BASICS[s.type])) {
+    for (const id of BASICS[starter.type]) {
+      assert.ok(starter.deck.includes(id), `${starter.id} starts with ${id}`);
+      assert.ok(canUpgrade(CARDS_BY_ID[id]), id);
+    }
+  }
+});
+
+test('the Unown Tablet PP Ups every copy of the basics not yet PP Upped, and nothing else', () => {
+  const deck = ['ember', 'ember+', 'flame-wall', 'scorch', 'ember', 'flame-wall+'];
+  assert.deepEqual(tabletUps('fire', deck), [0, 2, 4]);
+  assert.deepEqual(tabletUps('fire', ['scorch']), []);
+  assert.deepEqual(tabletUps('normal', deck), []);
+});
+
+test('the Litwick Bonfire warms by rarity: a basic least, an uncommon fully, a rare with max HP too', () => {
+  const card = (id, rarity) => ({ id, rarity });
+  assert.equal(bonfireGift(bonfire, card('ember+'), 'fire', 0).rank, 'basic');
+  assert.equal(bonfireGift(bonfire, card('vine-whip'), 'fire', 0).rank, 'common');
+  const [basic, common, uncommon, rare] = [card('ember'), card('scorch'), card('x', 'uncommon'), card('y', 'rare')].map(c => bonfireGift(bonfire, c, 'fire', 2));
+  assert.ok(basic.heal < common.heal && common.heal < uncommon.heal);
+  assert.equal(uncommon.heal, 1);
+  assert.equal(rare.heal, 1);
+  assert.equal(rare.maxHp, bonfire.rareMaxHp[2]);
+  assert.equal(uncommon.maxHp, 0);
+});
+
+test('Voltorb Flip counts its tries, keeps matched moves, and is over once only Voltorb lie face down', () => {
+  const board = ['a', 'voltorb', 'b', 'a', 'c', 'b', 'voltorb', 'c'];
+  let g = flipState(flip, board, []);
+  assert.equal(g.left, flip.tries);
+  assert.equal(g.over, false);
+  g = flipState(flip, board, [0, 3, 1, 2]);
+  assert.deepEqual(g.won, ['a']);
+  assert.deepEqual([...g.matched].sort(), [0, 3]);
+  assert.equal(g.left, flip.tries - 2);
+  g = flipState(flip, board, [1, 6]);
+  assert.equal(g.zapped, true);
+  assert.deepEqual(g.won, []);
+  g = flipState(flip, board, [0, 3, 2, 5, 4, 7]);
+  assert.deepEqual(g.won, ['a', 'b', 'c']);
+  assert.equal(g.over, true);
+  assert.equal(flipState(flip, board, [0, 1, 0, 1, 0, 1, 0, 1]).over, true);
+  assert.equal(flipState(flip, board, [0, 0]).matched.size, 0);
+});
+
+test('your rival asks for one of the list by its roll, and for nothing from an empty one', () => {
+  assert.equal(rivalWants(['a', 'b', 'c'], 0), 'a');
+  assert.equal(rivalWants(['a', 'b', 'c'], 0.99999), 'c');
+  assert.equal(rivalWants(['a', 'b', 'c'], 0.5), 'b');
+  assert.equal(rivalWants([], 0.5), null);
+});
+
+test("batch 3's last five are in every run's bag, which now holds 30", () => {
+  for (const e of ['unown-tablet', 'smeargle-studio', 'litwick-bonfire', 'voltorb-flip', 'rivals-return']) assert.ok(eventsFor('run').some(x => x.id === e), e);
+  assert.equal(EVENTS.length, 30);
 });

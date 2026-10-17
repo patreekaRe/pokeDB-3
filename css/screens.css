@@ -3769,6 +3769,25 @@ body.has-scene.hybrid-scene #scene-light { display: block; }
 .card-reveal.pair .card { --card-w: min(40vw, 180px); }
 .card-reveal.pair .card:last-child { animation-delay: 0.15s; }
 @media (prefers-reduced-motion: reduce) { .card-reveal .card, .card-reveal .chest-rays { animation: none; opacity: 1; } }
+/* Voltorb Flip's table (flipGame() in js/run.js): eight cards, two rows of four, each turning over to its move or a
+   Voltorb; a matched pair keeps a gold ring */
+.reward-options.flip-game { display: grid; place-items: center; }
+.flip-board { --tile-w: min(21vw, 112px, 15vh); display: grid; grid-template-columns: repeat(4, var(--tile-w)); gap: 10px; padding: 16px 0; }
+.flip-tile { position: relative; width: var(--tile-w); aspect-ratio: 5 / 7.4; padding: 0; border: 0; background: none; cursor: pointer; perspective: 700px; }
+.flip-back, .flip-face { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 9%; backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform 0.35s ease-out; }
+.flip-back {
+  background: radial-gradient(circle at 50% 50%, #f8f8f8 0 14%, #28242c 14% 19%, transparent 19%),
+    linear-gradient(#e84838 0 47%, #28242c 47% 53%, #f8f8f8 53%);
+  border: 3px solid #f8f8f8; box-shadow: 0 0 0 2px #28242c, 0 4px 0 #1a1820;
+}
+.flip-face { transform: rotateY(180deg); }
+.flip-tile.up .flip-back { transform: rotateY(-180deg); }
+.flip-tile.up .flip-face { transform: rotateY(0deg); }
+.flip-face .card { --card-w: 100%; }
+.flip-face:has(.flip-voltorb) { background: #2a2a38; border: 3px solid #f8d030; box-shadow: 0 0 0 2px #28242c; }
+.flip-voltorb { width: 82%; image-rendering: pixelated; }
+.flip-tile.kept .flip-face { box-shadow: 0 0 0 3px #f8d030, 0 0 12px 2px rgba(248, 208, 48, 0.7); }
+@media (prefers-reduced-motion: reduce) { .flip-back, .flip-face { transition: none; } }
 
 /* ---------- a biome's intro (js/biome-intro.js): a short film over the map as the biome starts ---------- */
 .biome-intro { position: fixed; inset: 0; z-index: 940; overflow: hidden; background: #000; cursor: pointer; animation: biIn 0.5s both; }

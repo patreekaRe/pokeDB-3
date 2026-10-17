@@ -855,8 +855,10 @@ ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; l
 five built** (2026-10-17: Canalave Library, Fishing Spot, Sludge Pit, Silph Co. Storeroom, Bug-Catching Contest; game
 `2b5c881b`, sim `38715bc`; every choice played headless in 3D and 2D, and the signs checked for overlap at phone and wide
 sizes; human bot, Level 3, batch 2 -> with these five: Fire 56.0 -> 56.7, Water 51.3 -> 48.7% (150 runs), Grass 53.7 ->
-56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). The Sludge Pit's Climb out now leaves for the map at once (2026-10-17, the user's ask). Next: batch 3's last five (Unown Tablet to Rival's
-Return), then the one bot check with all ~30 against `main`, a retune, and the merge.
+56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). The Sludge Pit's Climb out now leaves for the map at once (2026-10-17, the user's ask). **Batch 3's last
+five built** (2026-10-17: Unown Tablet, Smeargle's Studio, Litwick Bonfire, Voltorb Flip, Rival's Return; 30 events in the
+bag; every choice played headless in 3D and 2D, a whole game of Voltorb Flip, the signs checked at 360 to 1280 wide;
+a Level 3 bot check against batch 3a is running). Next: the one bot check with all 30 against `main` (human bot, Levels 0/3/5), a retune, and the merge.
 The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
 Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
 Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
@@ -871,9 +873,10 @@ free items), Bug-Catching Contest (The Joust: bet ₽ on the winner), Unown Tabl
 Block, or forget a move), Smeargle's Studio (Designer: ₽ to upgrade, forget or Transform), Litwick Bonfire (Bonfire
 Spirits: offer a move, rewarded by its rarity), Voltorb Flip (Match and Keep: flip pairs, keep the moves you match),
 Rival's Return (We Meet Again: ₽, an item or a move for a relic). The curse events once curses land.
-▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, docs/roadmap.md's 'More ? events' entry, docs/reference/events.md
-and docs/reference/walk-in-rooms.md. Take the next batch on its list (ask me if I want to swap any), then build
-them: data, 3D room, text, art, the sim mirror, tests, a patch-notes line, and a githack link with `?event=<id>`."
+▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, then check out branch events-batch-1 in both repos and merge main
+into it. Read docs/roadmap.md's 'More ? events' entry and docs/reference/events.md. Run the one bot check with all 30
+events (human bot, Levels 0/3/5, ~300 runs a cell) against main, show me the numbers, retune what's out of line, then
+merge the branch into main in both repos."
 
 **Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
 116 augments (Silver 38, Gold 48, Prismatic 30; 6 sets holding 25), all ranked in pokeDB-sim's `sim/augranks.json`, but

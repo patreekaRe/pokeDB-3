@@ -278,6 +278,36 @@ Scenes: `PLACE_ART.library`, `storeroom` (rooms), `fishing`, `sludge`, `contest`
 `buildStoreroom()`, `buildFishing()`, `buildSludge()`, `buildContest()` (the last three per biome). Icons 🎣 🦠 📦 🐛 in
 `js/icons.js` (📚 was there).
 
+## Batch 3 of the StS events, last five (2026-10-17, docs/roadmap.md's "More ? events")
+
+The bag now holds 30. Rules pure in `js/data/events.js`: `BASICS` (each type's starting attack and block: Fire Ember and
+Flame Wall, Grass Vine Whip and Block, Water Water Gun and Withdraw, Psychic Psywave and Psychic Guard), `tabletUps()`,
+`bonfireGift()`, `flipState()`, `rivalWants()`; `tests/events.test.mjs`; mirrored in pokeDB-sim. The Litwick Bonfire heals.
+- **Unown Tablet** (Ancient Writing): Study PP Ups every copy of your two `BASICS` not yet PP Upped (both shown by
+  `revealCard()`); Erase forgets a move for free. Free either way. Acts `study` (the glyphs light up), `efface` (chips fly
+  off the flat stone; `erase` was the Deleter's).
+- **Smeargle's Studio** (Designer In-Spire): indoors, three easels. Touch-up (`touchUp` ₽) is the PP Up picker; Repaint
+  (`repaint` ₽) Transforms a move into a random one of its rarity (`morph`, the Ditto's `offers`, `studioRepaint()`);
+  Portrait (`portrait` ₽) forgets a move and PP Ups a random one (`ppUpRandom(1)`). ₽ is paid only once a move is picked.
+  Act `paint` (`{ i }`: strokes go onto that easel's canvas). The middle sign floats higher so none overlap on a phone.
+- **Litwick Bonfire** (Bonfire Spirits): one sign, the fire. Offer a move (`bonfirePick()`, each card marked with what it
+  gives): a basic heals `warmth.basic` (10%), a common 25%, an uncommon fully, a rare fully and `rareMaxHp` max HP. The
+  3D room is always at night, with a real point light. Act `offer` (the fire roars up, purple at the tips, wisps rise).
+- **Voltorb Flip** (Match and Keep): `node.event.board` holds a move of each rarity in `pairs` twice (your type's pool,
+  under `MAX_COPIES` when rolled) and two Voltorb, shuffled as the biome starts; `node.event.flips` the tiles flipped,
+  two a try, `tries` (4). Play opens `flipGame()`: a board of 8 tiles (`.flip-board`, layout `flip-game`, since the room
+  is `flip-room`) that turn over; a matched move joins the deck there and then (`learnedId()`), a matched Voltorb pair
+  blows up for `zap` HP; every try is saved, so a refresh picks the game up ("Keep playing"). Act `deal`.
+- **Rival's Return** (We Meet Again): your rival, a silhouette in a cap (the Gym's unknown leader copied to
+  `assets/trainers/rival.png`, its blink the same picture; `NPCS.rival`), and his Sneasel. He asks ₽ (`ask`), the item
+  of your Bag and the move of your deck picked by `node.event.pick` (never a basic, an evolution or unplayable card), each
+  for a relic (`offerRelic()`). Act `barter` (`{ what }`: the coins, the Bag or the TM disc arcs to him; `trade` was the
+  Day Care's).
+Scenes: `PLACE_ART.tablet`, `studio` (a room, the `lab` wall), `bonfire`, `flip`, `rival`; 3D `buildTablet()`,
+`buildStudio()`, `buildBonfire()`, `buildFlip()`, `buildRival()` (all but the studio per biome). Icons 🔠 🎨 🕯️ 🆚 in
+`js/icons.js` (Voltorb Flip shares 🃏). A 2D act name is shared by every pixel room (`ACTS` in `js/scene.js`): check it's
+free before naming a new one.
+
 ## From CLAUDE.md (moved 2026-10-14)
 
 The summary CLAUDE.md used to carry, unchanged. Where it and the notes above disagree, the later date wins.

@@ -48,7 +48,7 @@ export const NEXT = [
   ['mall', '100 more pieces: the Bamboo, Constellations and Desert caravan series, and Stone zen for the backyard on a Zen tab of Smeargle\'s catalogue.'],
   ['mall', 'The arcade machines have a room of their own: walk through the lit ARCADE door in the Game Corner\'s right wall, where Porygon keeps the weekly leaderboard.'],
   ['fixes', 'Driftwood Landing runs lighter, and phones no longer reload the game in the Game Corner or after Alpha and Gym Leader wins.'],
-  ['runs', 'Fifteen new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, a Clefairy Moon Dance, the Canalave Library and a Bug-Catching Contest.'],
+  ['runs', 'Twenty new ? rooms, among them a Sleeping Snorlax, Bill\'s PC, Meowth\'s Prize Wheel, the Canalave Library, a Litwick Bonfire and a game of Voltorb Flip.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
