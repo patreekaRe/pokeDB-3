@@ -77,6 +77,10 @@ import { CORNERSHOP_KINDS } from './base-furniture-cornershop.js';
 import { LAUNDROMAT_KINDS } from './base-furniture-laundromat.js';
 import { SALON_KINDS } from './base-furniture-salon.js';
 import { GARAGE_KINDS } from './base-furniture-garage.js';
+import { CRAFT_KINDS } from './base-furniture-craft.js';
+import { GAMER_KINDS } from './base-furniture-gamer.js';
+import { STUDIO_KINDS } from './base-furniture-studio.js';
+import { CINEMA_KINDS } from './base-furniture-cinema.js';
 import { k, sh, R, P, panel, inset, wood, cushion, disc, oval, ovalShade, cyl, leaf, foliage, speckle,
   floorShadow, paintWith, finish, setBare, FT, WALL_PX, HEAD } from './base-paint.js';
 import { BOOKS, SKY, view, books } from './base-paint-scenes.js';
@@ -396,7 +400,7 @@ const FAMILIES = [
   } },
 ].map(f => ({ group: f.layer === 'wall' ? 'Wall' : f.layer === 'rug' ? 'Rugs' : 'Classics', ...f }));
 
-FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5, ...STATUE_KINDS, ...PIKACHU_KINDS, ...EEVEE_KINDS, ...SNORLAX_KINDS, ...JIGGLYPUFF_KINDS, ...GENGAR_KINDS, ...LAPRAS_KINDS, ...BALL_KINDS, ...MUSEUM_KINDS, ...CONTEST_KINDS, ...LEAGUE_KINDS, ...ROCKET_KINDS, ...DAYCARE_KINDS, ...PARTNER_KINDS, ...FIGURINE_KINDS, ...ANTIQUE_KINDS, ...RATTAN_KINDS, ...LOGCABIN_KINDS, ...IRONWOOD_KINDS, ...IMPERIAL_KINDS, ...DINER_KINDS, ...CUTE_KINDS, ...ELEGANT_KINDS, ...GOLDEN_KINDS, ...SHELL_KINDS, ...SAKURA_KINDS, ...MAPLE_KINDS, ...ACORN_KINDS, ...MUSHROOM_KINDS, ...BLOCK_KINDS, ...THROWBACK_KINDS, ...RANCH_KINDS, ...IRONGARDEN_KINDS, ...BAMBOO_KINDS, ...STONEZEN_KINDS, ...CONSTELLATION_KINDS, ...CARAVAN_KINDS, ...HOSPITAL_KINDS, ...BISTRO_KINDS, ...BAKERY_KINDS, ...SUSHI_KINDS, ...RAMEN_KINDS, ...PIZZERIA_KINDS, ...CORNERSHOP_KINDS, ...LAUNDROMAT_KINDS, ...SALON_KINDS, ...GARAGE_KINDS);
+FAMILIES.push(...MORE_KINDS, ...ROOM_KINDS, ...ROOM_KINDS_2, ...ROOM_KINDS_3, ...ROOM_KINDS_4, ...ROOM_KINDS_5, ...GYM_KINDS, ...DOJO_KINDS, ...SAFARI_KINDS, ...TRAINER_KINDS, ...YARD_KINDS, ...FRIEND_KINDS, ...SEASON_KINDS_1, ...SEASON_KINDS_2, ...SEASON_KINDS_3, ...YARD_KINDS_2, ...YARD_KINDS_3, ...YARD_KINDS_4, ...YARD_KINDS_5, ...STATUE_KINDS, ...PIKACHU_KINDS, ...EEVEE_KINDS, ...SNORLAX_KINDS, ...JIGGLYPUFF_KINDS, ...GENGAR_KINDS, ...LAPRAS_KINDS, ...BALL_KINDS, ...MUSEUM_KINDS, ...CONTEST_KINDS, ...LEAGUE_KINDS, ...ROCKET_KINDS, ...DAYCARE_KINDS, ...PARTNER_KINDS, ...FIGURINE_KINDS, ...ANTIQUE_KINDS, ...RATTAN_KINDS, ...LOGCABIN_KINDS, ...IRONWOOD_KINDS, ...IMPERIAL_KINDS, ...DINER_KINDS, ...CUTE_KINDS, ...ELEGANT_KINDS, ...GOLDEN_KINDS, ...SHELL_KINDS, ...SAKURA_KINDS, ...MAPLE_KINDS, ...ACORN_KINDS, ...MUSHROOM_KINDS, ...BLOCK_KINDS, ...THROWBACK_KINDS, ...RANCH_KINDS, ...IRONGARDEN_KINDS, ...BAMBOO_KINDS, ...STONEZEN_KINDS, ...CONSTELLATION_KINDS, ...CARAVAN_KINDS, ...HOSPITAL_KINDS, ...BISTRO_KINDS, ...BAKERY_KINDS, ...SUSHI_KINDS, ...RAMEN_KINDS, ...PIZZERIA_KINDS, ...CORNERSHOP_KINDS, ...LAUNDROMAT_KINDS, ...SALON_KINDS, ...GARAGE_KINDS, ...CRAFT_KINDS, ...GAMER_KINDS, ...STUDIO_KINDS, ...CINEMA_KINDS);
 const seen = new Set();
 for (const f of FAMILIES) { if (seen.has(f.id)) throw new Error(`furniture: two kinds called ${f.id}`); seen.add(f.id); }
 /* A `set` is one painter's family whose kinds differ only by the picture on them or the thing on top (13 banners by
