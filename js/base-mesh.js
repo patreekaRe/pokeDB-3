@@ -65,6 +65,9 @@ import { MAKES as MAKES_MUSEUM } from './base-models-museum.js';
 import { MAKES as MAKES_CONTEST } from './base-models-contest.js';
 import { MAKES as MAKES_LEAGUE } from './base-models-league.js';
 import { MAKES as MAKES_ROCKET } from './base-models-rocket.js';
+import { MAKES as MAKES_DAYCARE } from './base-models-daycare.js';
+import { MAKES as MAKES_PARTNER } from './base-models-partner.js';
+import { MAKES as MAKES_FIGURINES } from './base-models-figurines.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1878,7 +1881,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET, MAKES_DAYCARE, MAKES_PARTNER, MAKES_FIGURINES]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }

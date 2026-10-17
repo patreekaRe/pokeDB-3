@@ -2796,6 +2796,13 @@ Novice with its badge, the card's JOURNAL line, the Ranger board unchanged, no e
   helper a set. None over 6,524 triangles or 7 draws; thin pieces (skeletons, poles, nets) match their paintings at 0.50
   to 0.74, the rest 0.75 or better. The user got picture sheets of all five. Detail: `docs/reference/hub-base-mall.md`.
 
+### Furniture expansion session c: Day Care, partner care, figurines, dolls (2026-10-17)
+- Day Care (25), Partner care (25), Figurines (30: each starter's first form and each legendary but Mewtwo, its sprite in
+  full colour on a glossy base, small enough for a table) and 60 more dolls (30 Pokémon from Gen 2 to 5, small and big):
+  140 kinds, 1,912 in all, one helper a set. Every kind within budget (none over 4,488 triangles or 6 draws); thin pieces
+  (the mobile, the perch, the puff stand) match their paintings at 0.45 to 0.74, small quad dolls 0.67 to 0.73 like the
+  old ones. The user got picture sheets. Detail: `docs/reference/hub-base-mall.md`.
+
 ## The balance pass (2026-10-16, the user's ask; merged to `main` the same day)
 - The combo lab and fuzzer (pokeDB-sim's `sim/combo-lab.mjs`, `sim/combo-fuzz.mjs`) found Shell Armor + Shell Smash
   (exponential block), Leech Seed's +1 a stage (3 Worry Seeds: 0 -> 97% against Level 5's last bosses), Quick Guard's stall

@@ -1615,7 +1615,18 @@ Object.assign(SOUNDS, {
   'fx-tick': { synth: ac => render(ac, 0.05, t => Math.sin(TAU * (1300 - 4000 * t) * t) * Math.min(1, t / 0.002) * Math.exp(-t * 90), 0.18) },
   'fx-bloop': { synth: ac => render(ac, 0.16, t => Math.sin(TAU * (260 + 520 * Math.min(1, t / 0.05)) * t) * Math.min(1, t / 0.006) * Math.exp(-t * 22), 0.32) },
   'fx-bubble': { synth: ac => render(ac, 0.12, t => Math.sin(TAU * (500 + 2400 * t) * t) * Math.exp(-t * 30), 0.3) },
-  'fx-poof': noisy(0.5, (t, r) => r * Math.min(1, t / 0.015) * Math.exp(-t * 9) * (0.6 + 0.4 * Math.sin(TAU * 90 * t)) + Math.sin(TAU * (520 - 380 * t) * t) * 0.25 * Math.exp(-t * 14), 0.3),
+  // raw white noise pulsed at 90 Hz read as a distorted buzz (the user's ear, 2026-10-17): a two-pole low-pass sliding
+  // from bright to dull makes it a soft puff of air
+  'fx-poof': { synth: ac => {
+    const noise = chipNoise(Math.round(ac.sampleRate * 0.5), 1);
+    let a = 0, b = 0;
+    return render(ac, 0.5, (t, i, rate) => {
+      const k = 1 - Math.exp(-TAU * (300 + 2200 * Math.exp(-t * 7)) / rate);
+      a += k * (noise[i] - a);
+      b += k * (a - b);
+      return b * Math.min(1, t / 0.02) * Math.exp(-t * 8) + Math.sin(TAU * (520 - 380 * t) * t) * 0.12 * Math.exp(-t * 14);
+    }, 0.3);
+  } },
   'fx-whoosh': noisy(0.6, (t, r) => r * Math.sin(Math.PI * t / 0.6) ** 2, 0.25),
   'fx-drum': noisy(0.5, (t, r) => Math.sin(TAU * (60 + 120 * Math.exp(-t * 30)) * t) * Math.exp(-t * 7) + r * 0.3 * Math.exp(-t * 40), 0.55),
   'fx-snare': noisy(0.25, (t, r) => r * Math.exp(-t * 18) + Math.sin(TAU * 190 * t) * 0.4 * Math.exp(-t * 25), 0.4),

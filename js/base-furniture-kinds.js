@@ -9,6 +9,8 @@ import { plush, k, sh, R, P, clear, hash, panel, inset, wood, cushion, sphere, d
   speckle, stamp, floorShadow, clipped } from './base-paint.js';
 import { BOOKS, view, books } from './base-paint-scenes.js';
 import { PLUSH, plushDoll } from './base-dolls.js';
+import { DOLLS_2 } from './base-dolls-2.js';
+import { DOLLS_3 } from './base-dolls-3.js';
 
 export const MORE_KINDS = [];
 const add = (group, list) => list.forEach(f => MORE_KINDS.push({ group, ...f }));
@@ -1026,6 +1028,7 @@ const DOLLS = [
   ['kangaskhan', 'Kangaskhan', { b: '#a8845a', w: '#ecdcae', e: '#202028' },
     ['.b......b.', '.bbbbbbbb.', 'bbebbbbebb', 'bbbwwwwbbb', '.bbbbbbbb.', 'bbwbbbbwbb', 'bbwbebbwbb', 'bbwwwwwwbb', '.bwwwwwwb.', '.bb....bb.']],
 ];
+DOLLS.push(...DOLLS_2, ...DOLLS_3);
 /** A doll: a real plush sewn from its PLUSH pattern (js/base-dolls.js); its bitmap is only the fallback. */
 function doll(id, x, b, vw, rows, colours, s) {
   const w = Math.max(...rows.map(r => r.length)), h = rows.length;

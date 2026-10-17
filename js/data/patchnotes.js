@@ -44,12 +44,14 @@ export const NEXT_MAX = 20;
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
   ['base', 'Every furniture piece is a clean 3D model now, the Gym Leader posters included, statues stand as their Pokémon\'s own sprite in stone or gold, and rooms run lighter.'],
-  ['mall', '514 new pieces: six Pokémon rooms, Poké Ball, Museum, Contest Hall, League and Rocket hideout sets, eight holiday sets, a party set and 120 for the backyard.'],
+  ['mall', '654 new pieces: six Pokémon rooms, seven Pokémon sets (Day Care and partner care the newest), 30 figurines, 60 new dolls, eight holiday sets and 120 for the backyard.'],
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
   ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
   ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
-  ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],  ['runs', 'Five new ? rooms: a Sleeping Snorlax on a pile of loot, Trubbish\'s Trash Heap, Ditto, Bill\'s PC and an Abra that Teleports you to the boss.'],
+  ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
+  ['fixes', 'Buying furniture in the Poké Mall makes a soft puff now, not a crackly buzz.'],
+  ['runs', 'Five new ? rooms: a Sleeping Snorlax on a pile of loot, Trubbish\'s Trash Heap, Ditto, Bill\'s PC and an Abra that Teleports you to the boss.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

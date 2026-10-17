@@ -28,7 +28,7 @@ function silhouette(g, p) {
   if (wall) { cam.top = 3; cam.bottom = 3 - H / 32; }
   cam.updateProjectionMatrix();
   const scene = new THREE.Scene(); scene.background = new THREE.Color('#ffffff');
-  const was = new Map(); g.traverse(o => { if (o.isMesh) { was.set(o, o.material); o.material = black; } });
+  const was = new Map(); g.traverse(o => { if (o.isMesh) { was.set(o, o.material); o.material = o.userData.standee ? new THREE.MeshBasicMaterial({ color: '#000000', map: o.material.map, alphaTest: 0.5, side: THREE.DoubleSide }) : black; } });
   scene.add(g); renderer.setSize(W, H, false); renderer.render(scene, cam); scene.remove(g);
   was.forEach((m, o) => { o.material = m; });
   const c = new OffscreenCanvas(W, H), x = c.getContext('2d'); x.drawImage(renderer.domElement, 0, 0);
