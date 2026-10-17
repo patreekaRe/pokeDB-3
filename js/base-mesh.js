@@ -78,6 +78,10 @@ import { MAKES as MAKES_CUTE } from './base-models-cute.js';
 import { MAKES as MAKES_ELEGANT } from './base-models-elegant.js';
 import { MAKES as MAKES_GOLDEN } from './base-models-golden.js';
 import { MAKES as MAKES_SHELL } from './base-models-shell.js';
+import { MAKES as MAKES_SAKURA } from './base-models-sakura.js';
+import { MAKES as MAKES_MAPLE } from './base-models-maple.js';
+import { MAKES as MAKES_ACORN } from './base-models-acorn.js';
+import { MAKES as MAKES_MUSHROOM } from './base-models-mushroom.js';
 import { screenArt, marqueeArt, sideArt, whackFront, whackSign, pinField, pinGlass, cardFace, cardBack, feltArt, reelArt, slotBelly, plinkoFace } from './arcade-art.js';
 
 let THREE = null;
@@ -1891,7 +1895,7 @@ const L = {
   rbox, blob, weld, cyl, ball, lathe, torus, sides, heart, profileSlab, litPic, decal, canvasTex, tone, mix, rng,
   leg, legsAt, thing, pot, leafAt, topUV, rowsOf, U, HD, FT,
 };
-for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET, MAKES_DAYCARE, MAKES_PARTNER, MAKES_FIGURINES, MAKES_ANTIQUE, MAKES_RATTAN, MAKES_LOGCABIN, MAKES_IRONWOOD, MAKES_IMPERIAL, MAKES_DINER, MAKES_CUTE, MAKES_ELEGANT, MAKES_GOLDEN, MAKES_SHELL]) for (const [k, f] of Object.entries(makes)) {
+for (const makes of [MAKES_A, MAKES_B, MAKES_C, MAKES_D, MAKES_E, MAKES_F, MAKES_G, MAKES_H, MAKES_I, MAKES_J, MAKES_K, MAKES_W, MAKES_W2, MAKES_W3, MAKES_W4, MAKES_W5, MAKES_W6, MAKES_W7, MAKES_T, MAKES_Y, MAKES_FR, MAKES_L, MAKES_M, MAKES_N, MAKES_O, MAKES_P, MAKES_Q, MAKES_R, MAKES_S, MAKES_U, MAKES_V, MAKES_X, MAKES_Z, MAKES_Y2, MAKES_GOLD, MAKES_PIKACHU, MAKES_EEVEE, MAKES_SNORLAX, MAKES_JIGGLYPUFF, MAKES_GENGAR, MAKES_LAPRAS, MAKES_BALL, MAKES_MUSEUM, MAKES_CONTEST, MAKES_LEAGUE, MAKES_ROCKET, MAKES_DAYCARE, MAKES_PARTNER, MAKES_FIGURINES, MAKES_ANTIQUE, MAKES_RATTAN, MAKES_LOGCABIN, MAKES_IRONWOOD, MAKES_IMPERIAL, MAKES_DINER, MAKES_CUTE, MAKES_ELEGANT, MAKES_GOLDEN, MAKES_SHELL, MAKES_SAKURA, MAKES_MAPLE, MAKES_ACORN, MAKES_MUSHROOM]) for (const [k, f] of Object.entries(makes)) {
   if (B[k]) throw new Error(`base-mesh: two builders named ${k}`);
   B[k] = f;
 }
