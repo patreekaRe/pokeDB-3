@@ -245,8 +245,10 @@ asking and ready, once a page load, nothing saved). Test: `tests/favours.test.mj
 
 **The Friends app** (2026-10-16, the user's ask: friendship belongs in the Pokédex you carry, into the towns where gifts
 are chosen, by the Quests app, not on the Clearing's PC). `js/friendsdex.js` on `shelfApp()`, the Gym Leaders app's
-handheld: one banner, Friends, its count every friend's hearts together (n/55); each of `FRIENDS` (the Nietos first) a
-page, unmet a silhouette and ???, met their hearts on an LCD, their favourite once given, their secret recipe from
+handheld; its home-screen tile counts every friend's hearts together (n/55). A banner a friend (the user's ask, same day:
+not rows under one Friends banner), `FRIENDS` in order (the Nietos first), in their `GYM_INK`, their hearts the sub line
+(`shelfApp()`'s `subArt`; `.fdx-banner` hides the count and bar), unmet a ??? "Not met yet" (`mask`) and a silhouette;
+each opens the handheld on just them (`.fdx-device`: no slots or arrows), the tally their hearts n/5: met their hearts on an LCD, their favourite once given, their secret recipe from
 `SECRET_AT`, their three pieces as a track (the favourite's, then `HEART_PIECES` at 3 and 5, painted from
 `js/base-furniture.js`'s `PIECES`, which the app loads the first time it opens: it's not in the start-up graph), and
 what the next heart that brings anything brings (`nextHeart()`: letters at 2, the piece, visits and a request at 3, the
@@ -255,8 +257,8 @@ gift-taking leader beaten; the home screen's tile, after Quests), `friendMet()`.
 app's tile wears one, and so the whole trail from the title's Pokédex sign and the Home keys (`deviceNews()`), until it's
 first opened: that makes `save.friendsSeen`, a stamp per met friend (`friendStamp()`: hearts, `f` once their favourite's
 given), so a save with hearts from the old PC page gets it once too and then no friend is marked. After that a friend
-met, or with a new heart or their favourite given since the page showed them (`friendFresh()`), marks the tile, the
-banner and their slot, the app opens on them, and showing them stamps them (`seeFriends()`). `?hearts=N` shows every
+met, or with a new heart or their favourite given since the page showed them (`friendFresh()`), marks the tile and
+their banner, and opening their page stamps them (`seeFriends()`). `?hearts=N` shows every
 friend at N, nothing saved (the stamps keep the real hearts). The PC's FRIENDS row is a shortcut now: it logs off and
 opens the device on the app (`openDeviceApp('friends')`), wearing the app's "!". Friends' letters stay in the PC's
 mailbox. Test: `tests/friends.test.mjs`. Peek: `?towns&gymwins=10&hearts=3`.

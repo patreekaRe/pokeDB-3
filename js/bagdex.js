@@ -105,7 +105,8 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
 /* ---------- the engine ---------- */
 
 /** A banner-and-handheld app for the Collection device (js/device.js). `spec`:
-    groups      [{ id, name, sub, b1, b2, list(), mask?() }]: mask() gives a { name, sub } to show while the group is a secret
+    groups      [{ id, name, sub, b1, b2, list(), mask?(), cls? }]: mask() gives a { name, sub } to show while the group is a secret;
+                `cls` more classes for its banner
     known(g, t) whether the thing counts as found (lit up, counted)
     no(g, t)    the nameplate's number
     art(g, t, known, where)  its picture, `where` 'banner' | 'slot'
@@ -123,6 +124,7 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     score(g, things)         [n, of] for the banner, the tally and "complete" instead of the known count (the Safari's caught)
     medal(g)                 a medal for the banner's corner
     bannerArt(g, things)     the banner's own art instead of its first three things
+    subArt(g, things)        a node for the banner's sub line instead of its words (a friend's hearts), unless masked
     slotCls(g, t, known)     more classes for a slot
     foot(g)                  nodes under the tally (a page's prize)
     top()                    a node above the banners (a window's own title bar)
@@ -143,14 +145,16 @@ export function shelfApp(spec) {
       const counted = spec.count?.(g, things);
       const all = !counted && n === of;
       const mask = g.mask?.();
-      const b = el('button', `pdx-banner bdx-banner${all ? ' complete' : ''}${mask ? ' masked' : ''}${things.some(t => spec.fresh?.(g, t)) ? ' news' : ''}`);
+      const b = el('button', `pdx-banner bdx-banner${all ? ' complete' : ''}${mask ? ' masked' : ''}${things.some(t => spec.fresh?.(g, t)) ? ' news' : ''}${g.cls ? ` ${g.cls}` : ''}`);
       b.type = 'button';
       b.dataset.group = g.id;
       b.style.setProperty('--b1', g.b1);
       b.style.setProperty('--b2', g.b2);
       if (g.scene) b.append(sceneImg(still(g.scene, 150, 46, 0.56), 'pdx-banner-art'), el('span', 'pdx-banner-shade'));
+      const sub = el('span', 'pdx-banner-sub', mask?.sub ?? (all ? spec.doneSub : g.sub));
+      if (!mask && spec.subArt) sub.replaceChildren(spec.subArt(g, things));
       b.append(el('span', 'pdx-stripe'),
-        el('strong', 'pdx-banner-name', mask?.name ?? g.name), el('span', 'pdx-banner-sub', mask?.sub ?? (all ? spec.doneSub : g.sub)),
+        el('strong', 'pdx-banner-name', mask?.name ?? g.name), sub,
         el('span', 'pdx-banner-count', counted ?? `${n} / ${of}`));
       if (!counted) b.append(progressBar(n, of));
       if (spec.medal) b.querySelector('.pdx-banner-name').append(spec.medal(g));

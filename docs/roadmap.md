@@ -570,8 +570,8 @@ Sessions, in order (one each; a patch-notes line each, `?town=<biome>` to walk o
    signature pieces 2 and 3, badges / letters / secret recipes, and (f) each friend's own requests on the Quests board.
    Every session's notes are in `docs/roadmap-done.md`; how it all works in `docs/reference/towns.md`. On `main`, waiting
    on the user's playtest (`?towns&satchel&gymwins=10&hearts=5`). **Since 2026-10-16 the Friends page is a Pokédex app**
-   (the user's ask: it's carried into the towns where gifts are chosen), after Quests, with a "!" the first time it's
-   seen and on a friend changed since you looked; the PC's FRIENDS row opens it (`js/friendsdex.js`, `js/data/friends.js`;
+   (the user's ask: it's carried into the towns where gifts are chosen), after Quests, a banner a friend in their own
+   colours with their hearts, with a "!" the first time it's seen and on a friend changed since you looked; the PC's FRIENDS row opens it (`js/friendsdex.js`, `js/data/friends.js`;
    `docs/reference/towns.md`'s Friends app). **Since 2026-10-16 the game explains it** (the user asked whether any
    dialogue did): Kurt's `giftTalk` after the first gift made, and each friend's `GIFT_MEET` hello the first time home
    after their Gym, hinting at their favourite (`docs/reference/towns.md`'s Gift words). On `main`, waiting on the user's

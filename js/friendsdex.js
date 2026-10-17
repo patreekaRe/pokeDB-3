@@ -1,15 +1,16 @@
 /* ============================================================
    friendsdex.js  -  the Friends app for the Collection device (2026-10-16, the user's ask: it was a page on the
-   Clearing's PC, whose FRIENDS row now opens this). Every friend who takes a gift (js/data/workshop.js's FRIENDS) on the
-   Gym Leaders app's handheld: their hearts, their three pieces, and what the next heart brings. Its "!" and what a
-   friend's is are js/data/friends.js's. Shown only while the towns are on, once a gift-taking leader is beaten.
+   Clearing's PC, whose FRIENDS row now opens this). A banner for every friend who takes a gift (js/data/workshop.js's
+   FRIENDS), each opening the Gym Leaders app's handheld on them: their hearts, their three pieces, and what the next
+   heart brings. Its "!" and what a friend's is are js/data/friends.js's. Shown only while the towns are on, once a
+   gift-taking leader is beaten.
    ============================================================ */
 
 import { FRIENDS, FAVOURITE, HEARTS, SECRETS, SECRET_AT, gifteeOf, heartsOf, workshopOf } from './data/workshop.js';
 import { friendMet, friendFresh, seeFriends, friendPieces, nextHeart } from './data/friends.js';
 import { FRIEND_TOWN } from './data/favours.js';
 import { TOWNS } from './data/towns.js';
-import { GYM_BY_ID, spriteOf } from './data/gym.js';
+import { GYM_BY_ID, GYM_INK, spriteOf } from './data/gym.js';
 import { getSave, updateSave } from './storage.js';
 import { showBadgeNews } from './trainercard.js';
 import { shelfApp, typed } from './bagdex.js';
@@ -84,15 +85,20 @@ function hearts(n) {
   return box;
 }
 
-const GROUP = {
-  id: 'friends', name: 'Friends', sub: 'Gifts fill their hearts', b1: '#f07aa8', b2: '#8a2a5a',
-  list: () => FRIENDS.map(id => GYM_BY_ID[id]).filter(Boolean),
-};
+/** A banner each (the user's ask, 2026-10-16: not rows under one Friends banner), in their Gym's ink, their hearts under
+    their name; a friend not met yet a ??? and a silhouette. */
+const groups = () => FRIENDS.filter(id => GYM_BY_ID[id]).map(id => ({
+  id, name: GYM_BY_ID[id].name, sub: '', b1: GYM_INK[id]?.[1] ?? '#f07aa8', b2: GYM_INK[id]?.[2] ?? '#8a2a5a', cls: 'fdx-banner',
+  list: () => [GYM_BY_ID[id]],
+  mask: () => (met(id) ? null : { name: '???', sub: 'Not met yet' }),
+}));
 
 /** The Friends app: the save stamps every friend the first time it opens, which takes the app's "!" away for good. */
 export function friendsApp() {
   const shelf = shelfApp({
-    groups: [GROUP],
+    groups: groups(),
+    deviceCls: 'fdx-device',
+    subArt: (g) => heartRow(heartsAt(g.id), HEARTS, 'fdx-banner-hearts'),
     known: (g, l) => met(l.id),
     fresh: (g, l) => friendFresh(getSave(), l.id),
     shown: (g, l) => { updateSave(d => { d.friendsSeen = seeFriends(d, [l.id]); }); showBadgeNews(); },
@@ -115,8 +121,8 @@ export function friendsApp() {
       lines.push(pieceTrack(l), typed('muted', nextLine(l.id, n)));
       return lines;
     },
-    tally: (g, done) => (done ? '★ Best friends with all' : 'Hearts'),
-    doneSub: 'Best friends with all!',
+    tally: (g, done) => (done ? '★ Best friends' : 'Hearts'),
+    doneSub: 'Best friends!',
   });
   return {
     ...shelf,

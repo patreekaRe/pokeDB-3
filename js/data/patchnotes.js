@@ -48,7 +48,7 @@ export const NEXT = [
   ['battle', 'A balance pass toward Slay the Spire\'s numbers: 34 new relics, 14 new items and 32 new moves, each modelled on one of its own.'],
   ['battle', 'Runaway combos tamed: Shell Smash and Quick Guard exhaust, Leech Seed stops growing as you evolve, Choice Scarf is a boss relic, and starting defences are sturdier.'],
   ['look', 'A Sharpness setting: 3D places draw crisper on a phone by default, Max crispest, and Soft runs lightest on an older phone.'],
-  ['dex', 'Friends moved into your Pokédex, by Quests: each friend\'s hearts, the pieces they\'ve given and what the next heart brings.'],
+  ['dex', 'Friends moved into your Pokédex, by Quests: a banner each, their hearts, the pieces they\'ve given and what the next heart brings.'],
   ['hub', 'Kurt explains gifts and hearts after your first gift, and each Gym Leader greets you at home with a hint at their favourite.'],
 ];
 
