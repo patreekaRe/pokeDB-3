@@ -117,15 +117,21 @@ The first section began as the note on playtesting the live site and grew into t
   `gainMat(id, -n)`.
 - **The Garden window** (2026-10-15, the user's ask): out in the yard with a plot placed, a green Garden key stands
   right of Decorate (`.b3-garden`, `.has-garden` moves Decorate over; `tendGarden()` / `plotsHere()` in
-  `js/base-3d.js`). `openGarden(b, plots, save)` in `js/berry-garden.js`, the plot window's `.dev-window town-shop`
-  look: every placed plot as a tile (its stage's art, RIPE! / time left / EMPTY, the drop if watered today; a tap opens
-  `openPlot()` over it), Pick all, Water all and Plant all (a berry tile picked first), then the Satchel's count of each
-  berry with Sell 1 / Sell all and what the stand still pays today. Each change saves the base and sets `nextLook = 0`,
-  so the 3D plants change at once. A "?" in its title (`.berry-q`, 2026-10-17, the user's ask) toggles HOW TO GARDEN
-  over the plots (`gardenHelp()`: plant, ripening days from `BERRIES`, water, pick, sell, Kurt only once
-  `workshopOpen()`), shown by itself the first time per device (`firstLook('garden')`). Every seed tile (both windows) shows its
-  held berry's effect in a few words (`.berry-does`, `short` in `js/data/held.js`; 2026-10-17, the user's ask), and
-  picking one says its full held text and, once `workshopOpen()`, the run kit Kurt makes with it (`usesOf()`).
+  `js/base-3d.js`). `openGarden(b, plots, save, at)` in `js/berry-garden.js`; a tap on a plot in the yard opens the same
+  window on that plot (the separate plot window, `openPlot()`, is gone since 2026-10-17). **An MMO-style window since
+  2026-10-17** (the user's ask: "immersive, clean, easy to follow, too much text"): its own look, not the device's
+  (`.garden-win`, `.gw-*` in `css/secret-base.css`: a wood frame with a gold trim, a parchment inside, dark soil
+  slots), with a "?" and an X in the title bar and two tabs, PLOTS (a gold badge: ripe plots) and BERRY STAND (berries
+  held). PLOTS: three task keys, Pick / Water / Plant with a count each (each every plot at once; Plant jumps to the
+  first empty plot), the next thing to do glowing (`.next`, off under `calm-fx`); the plots as slots (plant art, a
+  growth bar, time left, a gold "!" when ripe, a blue drop once watered today or an empty one while it wants water);
+  under them an item card for the slot picked (stage, a big growth bar, harvest count, the held effect, Water / Dig up
+  or Pick) or, for an empty plot, the seed bar and the picked seed's card (days, price, `short` effect, its full held
+  text, the run kit Kurt crafts once `workshopOpen()`, Plant here / Plant all N). BERRY STAND: today's pay as a bar,
+  then a row a berry (count badge, effect, price, Sell 1 / Sell all). A one-line log at the foot (`.gw-log`) says what
+  just happened or, idle, what to do next (`hint()`). Each change saves the base and sets `nextLook = 0`, so the 3D
+  plants change at once. HOW TO GARDEN (`gardenHelp()`): four steps, an icon and a line each, toggled by the "?" and
+  shown by itself the first time per device (`firstLook('garden')`).
 - **Smeargle in the yard** (2026-10-15, the user's ask): the first time out in a bought yard (since 2026-10-16, the user's
   failsafe: whether or not the housewarming indoors has happened, since the arch leads out here first; if not, it says
   hello as a stranger, says the shop opens tomorrow and calls `meetSmeargle()` itself; a yard bought before the intro
@@ -550,6 +556,13 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
   part kinds there: Rattan's `weave` finish, Log cabin's side discs (cut log ends) and its plaid as one cached canvas each,
   Antique's `slab` (a side profile run across) and `horn`. Pokémon touches: a Stantler antler mount, a Pidgey cuckoo
   clock, Ursaring and Teddiursa carvings, a Gyarados carving and scroll, a Lapras in the gilt landscape.
+- **Session e's series** (2026-10-17): Diner (`dnr`), Cute (`cute`), Elegant (`elg`), Golden (`gold`) and Shell and
+  mermaid (`mer`, `group` 'Mermaid'), files `js/base-furniture-<diner|cute|elegant|golden|shell>.js` and
+  `js/base-models-<same>.js`, built as session d's (builders `<prefix>parts` / `<prefix>rug`; Golden's `gldparts`, with a
+  `plate` part, an outline seen from above, for the grand piano). **The Golden set is earned, never sold**: source
+  `golden` in `js/data/furniture.js` (`GOLDEN`), the nth piece owned at n achievements earned, whichever ones
+  ("Earn N achievements (k/N)"), the throne at all 22; `goldbed`, `goldchest`, `goldvase` from the `gold`, `roster` and
+  `shiny-hunter` badges. Being in `FURNITURE` keeps it out of every shop's stock.
 - **Checking a model** (text, no screenshots): `node tools/model-check.mjs id,id` prints its builder, size, triangles,
   draws and how its front silhouette matches its painting; `tools/model-sheet.mjs` renders a labelled sheet when the
   user asks for pictures. Budgets: 4k triangles a 1x1 piece, 7k bigger, 8 draws.
@@ -566,6 +579,9 @@ Crossing's (the plan: `docs/furniture-expansion.md`; they picked the seasonal an
 Every Game Corner arcade game (the 18 on its floor) was rebuilt in one session, each still one `js/arcade-*.js` file on
 the kit, its world painted once a scale (`stamp()` or a cached canvas) so phones keep 60 fps, and a difficulty ramp with
 no plateau. Each file's header says what it now has; the gist:
+- **Leaving keeps the score** (the user's ask, 2026-10-17, "like a force quit but saving our score"): EXIT, Escape or
+  RESTART mid-game banks the score so far as the Best and posts it to the weekly leaderboard, as a game over would
+  (`bank()` in `js/arcade-kit.js`, every cabinet).
 - **Pokémon Pinball**: a real table (300x520): plunger lane with a swinging power gauge and a Skill Shot, P K M rollover
   lanes (flippers turn them, all three raise the bonus multiplier to 5x), Voltorb bumpers, slingshots, a spinner, two
   orbits, the Pika Ramp, Diglett drop targets that light CATCH, the saucer starting Catch mode (a wild Pokemon, hits on a

@@ -13,7 +13,7 @@
    ============================================================ */
 
 import { BADGES_BY_ID } from './badges.js';
-import { ACHIEVEMENT_FOR, FEATS } from './achievements.js';
+import { ACHIEVEMENTS, ACHIEVEMENT_FOR, FEATS } from './achievements.js';
 import { SAFARI_DEX_PAGES } from './safari.js';
 import { PRIZES, RETIRED_PRIZES } from './corner.js';
 import { GYM_LEADERS, GYM_BY_ID, GYM_POSTER, posterKind } from './gym.js';
@@ -44,7 +44,18 @@ const SOURCES = {
   ranger: { owned: (save, id) => (save.ranger?.claimed || []).includes(id), item: (id) => TASKS_BY_ID[id] },
   // the Trainer's Journal at the PC (js/data/journal.js): a milestone's piece, once it's claimed
   journal: { owned: (save, id) => (save.journal?.claimed || []).includes(id), item: (id) => JOURNAL_BY_ID[id] },
+  // the Golden set: a piece for every achievement earned, so the nth comes with the nth, whichever it is
+  golden: { owned: (save, n) => achievementsOf(save) >= n, item: (n) => n >= 1 && n <= ACHIEVEMENTS.length && { n } },
 };
+
+const achievementsOf = (save) => (save.unlocked || []).filter(id => ACHIEVEMENT_FOR[id]).length;
+
+/* The Golden series (js/base-furniture-golden.js; furniture expansion session e, 2026-10-17): never sold, earned. The
+   small pieces come with the first achievements and the throne with the last; the bed, the chest and the vase are
+   badges no other piece comes from. */
+const GOLDEN = ['goldcandle', 'goldclock', 'goldchair', 'goldstool', 'goldlamp', 'golddishes', 'goldtable', 'goldmirror',
+  'goldshelf', 'golddresser', 'golddesk', 'goldscreen', 'goldframe', 'goldsconce', 'goldrug', 'goldsofa', 'goldwardrobe',
+  'goldmagikarp', 'goldtoilet', 'goldbath', 'goldpiano', 'goldthrone'];
 
 export const FURNITURE = [
   // Journey badges: a piece of each biome to bring home.
@@ -110,6 +121,11 @@ export const FURNITURE = [
   ...RANGER_FURNITURE.map(f => ({ kind: f.kind, from: ['ranger', f.task] })),
   // the Trainer set, from the Trainer's Journal
   ...JOURNAL_FURNITURE.map(f => ({ kind: f.kind, from: ['journal', f.task] })),
+  // the Golden set
+  ...GOLDEN.map((kind, i) => ({ kind, from: ['golden', i + 1] })),
+  { kind: 'goldbed', from: ['badge', 'gold'] },
+  { kind: 'goldchest', from: ['badge', 'roster'] },
+  { kind: 'goldvase', from: ['badge', 'shiny-hunter'] },
 ];
 
 export const FURNITURE_BY_KIND = Object.fromEntries(FURNITURE.map(p => [p.kind, p]));
@@ -144,6 +160,10 @@ export function howToEarn(piece, save) {
   if (kind === 'berry') return `Pick your first ${src.name} in your backyard's berry garden`;
   if (kind === 'journal') return `Trainer's Journal at the Clearing's PC: ${src.title} (${src.text.replace(/\.$/, '')})`;
   if (kind === 'ranger') return `Ranger Task Board at the Safari Outfitter: ${src.title} (${src.text.replace(/\.$/, '')})`;
+  if (kind === 'golden') {
+    const n = piece.from[1];
+    return `Earn ${n === ACHIEVEMENTS.length ? 'every' : n} achievement${n > 1 ? 's' : ''} (${Math.min(achievementsOf(save), n)}/${n})`;
+  }
   if (kind === 'prize') return `Buy it for ${src.coins} PokéCoins at Meowth's prize counter in the Game Corner`;
   return `Catch every Pokémon in the Safari's ${src.name}`;
 }
