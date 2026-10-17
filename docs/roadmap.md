@@ -842,51 +842,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
       `&arena=boss`) with Three.js routed to a local `npm pack three@0.160.0` in Playwright, and give me raw.githack
       links." Order: Shrine, Ruins, Thornwood, Savanna, Depths.
 
-**More ? events, toward StS's ~50** (the user's pick, 2026-10-17). **This work lives on branch `events-batch-1` in
-both repos, and lands on `main` all at once when ~30 are done** (the user's call): check that branch out and read this
-entry there, which is the up-to-date one (batches 1 and 2 are built, batch 3 next). We have 10 (Berry Tree, Move Tutor, Move Deleter, Item
-Ball, Hot Spring, Team Rocket, Day Care, Wishing Well, Fan Club, Shrine; `EVENTS` in `js/data/events.js`), StS ~50 (each
-act its own, plus shared ones and shrines), the biggest gap left: a few runs see every event. About 5 a session, toward
-~30, each on a StS event (named in a comment) with Pokémon dress: some a biome's own, some shared, some with a price (HP,
-a curse once curses land, Pokédollars) for a strong reward. Every roll through `js/rng.js` (the daily Safari run), each
-one walkable in 3D like the others (`js/event-3d.js`, reusing a room kind where one fits), mirrored in pokeDB-sim if its
-bot plays events, and bot-checked when one hands out power. Pairs with the "event-only relics" step below.
-**All of them go to `main` at once** (the user's call, 2026-10-17): every batch is built on branch `events-batch-1`
-in both repos (merge `main` into it first each session), and only when all ~30 are done does it merge to `main`, after one
-bot check with every event in (human bot, Levels 0/3/5, against `main`) and a retune. Watch the healing rooms: with 15
-events in the bag Fire lost ~10 points at Level 3 until Abra got Doze (docs/reference/events.md), so give some of the new
-ones a heal. **Batch 1 built** (2026-10-17, the user has seen it and likes it; last commit `7dcae871`). **Batch 2 built**
-(2026-10-17, as listed; game `4c2fcc1b` (its Swap Stall and Ruins Idol signs spread apart in `365242d8`), sim `6622811`; every choice played headless in 3D and 2D; human bot, Level 3, 150 runs, batch 1 -> with batch 2: Fire 56.7 -> 56.0, Grass 58.0 -> 53.3, Water 50.7 -> 56.0%, all within noise, no retune). **Batch 3's first
-five built** (2026-10-17: Canalave Library, Fishing Spot, Sludge Pit, Silph Co. Storeroom, Bug-Catching Contest; game
-`2b5c881b`, sim `38715bc`; every choice played headless in 3D and 2D, and the signs checked for overlap at phone and wide
-sizes; human bot, Level 3, batch 2 -> with these five: Fire 56.0 -> 56.7, Water 51.3 -> 48.7% (150 runs), Grass 53.7 ->
-56.0% (300 runs; at 150 it read 63.3 -> 51.3, noise), no retune). The Sludge Pit's Climb out now leaves for the map at once (2026-10-17, the user's ask). **Batch 3's last
-five built** (2026-10-17: Unown Tablet, Smeargle's Studio, Litwick Bonfire, Voltorb Flip, Rival's Return; 30 events in the
-bag; every choice played headless in 3D and 2D, a whole game of Voltorb Flip, the signs checked at 360 to 1280 wide;
-game `d9d4684d`, sim `81f4c06`; human bot, Level 3, 150 runs, batch 3a -> all 30: Fire 51.3 -> 66.0, Grass 50.0 -> 58.7,
-Water 56.0 -> 60.0%: easier, Fire past the noise. Suspects for the retune: the Bonfire's full heal for an uncommon (and the
-free removal with it), the Unown Tablet's free PP Ups of every basic, Rival's relics). The user's playtest (2026-10-17): Voltorb Flip had no way out once played (fixed), and
-the Bag now shows in the ? rooms to look through your deck; then text boxes went Auto (Settings: Text boxes) and Voltorb
-Flip got one live line, zoomable cards and a reveal of what you won. Next: the one bot check with all 30
-against `main` (human bot, Levels 0/3/5), a retune (start with the Bonfire's `warmth` and the Tablet), and the merge.
-The list (2026-10-17, all to be built in time, 5 a session; none needs curses). Batch 1: Sleeping Snorlax (Dead
-Adventurer: each search for ₽ / an item / a relic raises the odds it wakes, an Alpha fight), Trubbish's Trash Heap (Scrap
-Ooze: a few HP a try, the relic odds rising), Ditto (Duplicator + Transmogrifier: copy a move, or turn one into a random
-one of its rarity), Bill's PC (Note for Yourself: leave a move in the Box for a later run, take the last one left; a save
-field), Abra (Secret Portal: Teleport to the biome's boss now; map work, and the bot must learn when). Batch 2: Prize
-Wheel (Wheel of Change), Ruins Idol (Golden Idol: a gold relic, then lose HP or max HP to the boulder), Spiritomb's
-Keystone (Knowing Skull: ₽, an item or a neutral move, each ask more HP), Clefairy Moon Dance (Shining Light: 2 random
-upgrades for HP), Kecleon's Swap Stall (N'loth: a relic of yours for a rarer one). Batch 3 (picked 2026-10-17, 5 a
-session, two sessions): Canalave Library (The Library: 1 of 20 moves, or nap and heal), Fishing Spot (Big Fish: heal, max
-HP, or a relic for HP), Grimer's Sludge Pit (World of Goop: ₽ for HP, or leave some ₽), Silph Co. Storeroom (Lab: a few
-free items), Bug-Catching Contest (The Joust: bet ₽ on the winner), Unown Tablet (Ancient Writing: upgrade every Tackle and
-Block, or forget a move), Smeargle's Studio (Designer: ₽ to upgrade, forget or Transform), Litwick Bonfire (Bonfire
-Spirits: offer a move, rewarded by its rarity), Voltorb Flip (Match and Keep: flip pairs, keep the moves you match),
-Rival's Return (We Meet Again: ₽, an item or a move for a relic). The curse events once curses land.
-▶ Run in: CLOUD (both repos). Prompt: "Read CLAUDE.md, then check out branch events-batch-1 in both repos and merge main
-into it. Read docs/roadmap.md's 'More ? events' entry and docs/reference/events.md. Run the one bot check with all 30
-events (human bot, Levels 0/3/5, ~300 runs a cell) against main, show me the numbers, retune what's out of line, then
-merge the branch into main in both repos."
+**More ? events, the next batches** (the user's pick, 2026-10-17): 30 are in the game (merged 2026-10-17; the archive's
+"More ? events" has the batches and bot checks). Toward StS's ~50: the curse events once curses land, and more on
+StS events with Pokémon dress (one walkable 3D room each, every roll through `js/rng.js`, mirrored in pokeDB-sim,
+bot-checked when one hands out power; give some a heal). Pairs with the "event-only relics" step below.
 
 **Sky Pillar augments: re-check after the balance pass, then more Prismatics and sets** (the user's pick, 2026-10-17).
 116 augments (Silver 38, Gold 48, Prismatic 30; 6 sets holding 25), all ranked in pokeDB-sim's `sim/augranks.json`, but

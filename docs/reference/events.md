@@ -373,3 +373,7 @@ real, like walking in); `?trials` opens every trial in the window for the page l
   colour each, group Dojo): Kenmatta's poster (1 star), Dojo mat (yellow), Wooden dummy (green), Dragonite medallion (6
   stars), Kenmatta's sandbag (blue), Dojo gong (brown), Black belt trophy (black). The window lists them, greyed till
   earned. The older Training dummy and Punching bag stay the Dojo and Black Belt badges'.
+
+Merged to `main` 2026-10-17 after one bot check with all 30 against `main` (human bot, Levels 0/3/5, 300 runs a cell):
+every type and Level within noise, no retune (numbers in `docs/roadmap-done.md`). pokeDB-sim's `noev=id/id` and
+`ev=id/field/value` tweaks (e.g. `ev=litwick-bonfire/warmth.uncommon/0.5`) take an event out or change one of its numbers.
