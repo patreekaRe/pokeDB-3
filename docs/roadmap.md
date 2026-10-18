@@ -55,17 +55,21 @@ past-★5 duplicate that pays 3 Lucky Stars):
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
-Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
-phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in `js/event-3d.js`, `merge: true` on
-a style, `moves()` on what a tick moves). **Driftwood Landing done 2026-10-17** (674 -> ~495 GL draws a frame headless).
-**Highbough done 2026-10-18** (`canopy`: ~590 -> ~360 a frame at the way in, 1,062 meshes -> 499; `moves()` on the
-manors' banners and the Nursery's wisps). **Sunwell Bazaar done 2026-10-18** (`bazaar`: 557 -> 376 a frame at the way
-in, 1,781 -> 1,156 from above, 952 meshes -> 651; `moves()` on the kasbahs' banners and the tent's flag and ball). All
-three wait on the user's phone check (`?town=ruins&towns`, `?town=thornwood&towns`, `?town=savanna&towns&gymwins=1`):
-banners and flags still sway, the tent's Poké Ball still turns, nothing looks sunk or bent wrong.
-`tools/draw-probe.mjs` measures a place and walks into every door. Lantern Village (154) and Cinder Springs (186) were
-already cheap; nothing more is queued here unless the user asks.
+**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check). One town a session, the user
+checking each on their phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in
+`js/event-3d.js`, `merge: true` on a style, `moves()` on what a tick moves); `tools/draw-probe.mjs` measures a place and
+walks into every door. GL draws a frame headless at the way in, before -> after:
+- **Driftwood Landing** (2026-10-17) 674 -> ~475. **Highbough** (2026-10-18) ~590 -> ~360. **Sunwell Bazaar**
+  (2026-10-18) 557 -> 376. **Lantern Village** (2026-10-18) ~604 -> ~360 (the festival night ~614 -> ~374; `moves()` on
+  `manor()`'s banners). All four wait on the user's phone check (`?town=ruins&towns`, `thornwood`, `savanna`, `shrine`):
+  banners and flags still sway, nothing looks sunk, bent or gapped, roofs still fade when you walk behind them.
+- **Next, Cinder Springs** (~590 a frame on 2026-10-18; the old check's 186 was low):
+> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
+> towns' draw calls for Cinder Springs (`?town=wastes`, style `springs`): measure first with `tools/draw-probe.mjs
+> --doors` (its header says how), add `merge: true` to the style, mark with `moves()` every part a tick moves or hides in
+> `cabin()`, `forge()`, `cottage()`, `bathhouse()`, `lodge()` and anything they attach (grep `B.ticks` there; check the
+> chimney `smoke` and the bathhouse's `steam` too), then measure again (draws a frame, every door opens, no console
+> errors, one GL context awake; no screenshots), update the roadmap, push to main and give me the githack link.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a

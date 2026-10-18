@@ -43,7 +43,7 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['fixes', 'Highbough and Sunwell Bazaar run lighter on phones.'],
+  ['fixes', 'Highbough, Sunwell Bazaar and Lantern Village run lighter on phones.'],
   ['look', 'A slow 3D room shows your Pokémon hopping by a Poké Ball while it loads, and tries again rather than falling back to the flat room.'],
 ];
 

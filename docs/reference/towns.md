@@ -508,8 +508,13 @@ as before, every home walked into, one context awake. Sunwell Bazaar (`bazaar`, 
 banners and `bazaarTent()`'s flag and turning Poké Ball; the rondavels, caravanserai and wagons have nothing a tick moves
 (the windpump and kopje are `LANDMARKS`, never merged). Headless at 390 x 844: 557 -> 376 GL draws a frame at the way in,
 1,781 -> 1,156 from above, 952 meshes -> 651, every door the same as before (the tent, caravanserai and both kasbahs
-walked into, the rest knock), no console errors, one context awake. Lantern Village (154) and Cinder Springs (186) were
-already cheap; any further pass there is on the user's ask.
+walked into, the rest knock), no console errors, one context awake. Lantern Village (`village`, 2026-10-18): only
+`manor()`'s two banners needed `moves()` (`house()` has nothing a tick moves; the theater, pagoda and Waystone are
+`LANDMARKS`). The 2026-10-17 check's 154 and 186 for Lantern Village and Cinder Springs were low: `tools/draw-probe.mjs`
+read ~600 and ~590 a frame for them on 2026-10-18, more than the three towns already merged. Headless at 390 x 844:
+Lantern Village ~604 -> ~360 at the way in, ~1,510 -> ~800 from above, ~614 -> ~374 at night with the lantern festival,
+688 meshes -> 333, every home walked into (the shop, John's, Jahmes's, the theater), the rest knock, no console errors,
+one context awake.
 
 ## Leaving a town lets go of it (2026-10-17)
 
