@@ -8,8 +8,11 @@
    js/mall-3d.js walks it and sells. */
 
 import { BALLS, DAY_PASS, safariAccess } from './data/balls.js';
-import { safariDaily } from './data/safari.js';
-import { getSave } from './storage.js';
+import { safariDaily, SAFARI_DEX_PAGES, SAFARI_ROSTER } from './data/safari.js';
+import { EXCHANGE_INK } from './data/exchange.js';
+import { shinyImage, sparkleOf } from './data/shinies.js';
+import { ENEMY_DEFS } from './data/enemies.js';
+import { getSave, exchangeCaught } from './storage.js';
 import { cornerEntries } from './shop.js';
 import { fine, texOf, words, star, mergeStatic, newsArt } from './hub-3d.js';
 import { hallKit } from './mall-hall.js';
@@ -30,7 +33,7 @@ const COLS = 21, ROWS = 13, AISLE = 10, DOOR = { x: AISLE, y: ROWS - 1 };
 const BAYS = [0, 7, 14, 21];
 const STANDS = { great: [2, 4], ultra: [5, 4], luxury: [2, 8], quick: [5, 8], dusk: [15, 4], timer: [18, 4], net: [15, 8], master: [18, 8] };
 const DAIS = { x: AISLE, y: 8 }, BOARD = { x: 17, w: 5, h: 3.1, y: 1.3 };
-const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 };
+const JEEP = { x: 3, y: 1 }, COUNTER = { x: 8, y: 3, w: 5 }, KIOSK = { x: 13, y: 8 };
 const STUMP_H = 0.82, BALL_R = 0.24, SIGN_W = 1.5, SIGN_H = 0.75;
 
 export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
@@ -38,7 +41,8 @@ export const OUTFITTER_KEEPER = { id: 'kangaskhan', name: 'Kangaskhan',
   hello: ['Welcome to the Safari Outfitter! Kit up before you head into the Zone.', 'Ah, a ranger in the making! Have a look round.', 'Fresh balls on every cushion. My little one polished them all.'],
   chat: ['Great and Ultra Balls are the safe bet. The others shine at the right moment: read their tags!', 'Your first try each day is free. After that, a Day Pass from the machine buys replays till midnight.',
     'The board on the wall shows today\'s best catchers. Think you can top it?', 'Check the Ranger Task Board by my jeep: catch enough and there\'s furniture, coins and room for more Pokémon at home.', 'My little one wants to come along on a run. Not until it\'s bigger!',
-    'Packs are used up as you throw them. The Safari Balls you get every run are always free.'] };
+    'Packs are used up as you throw them. The Safari Balls you get every run are always free.',
+    'The Shiny Exchange by the Day Pass booth holds capsules of every Pokémon you\'ve caught out there. Shiny ones!'] };
 
 /** The Day Pass machine's state today: 'pass' (held, even before the free try), 'first' (today's try is free) or
     'locked' (buy one to replay). */
@@ -619,6 +623,65 @@ function ringsArt() {
   return f.c;
 }
 
+/* ---------- the Shiny Exchange's kiosk (js/exchange.js is its window) ---------- */
+
+/* Its LED screen's order: the areas in turn, so the colours change each time. */
+const LED_ORDER = (() => {
+  const out = [], n = Math.max(...SAFARI_DEX_PAGES.map(p => p.ids.length));
+  for (let k = 0; k < n; k++) for (const p of SAFARI_DEX_PAGES) if (p.ids[k]) out.push({ id: p.ids[k], area: p.area, name: p.name });
+  return out;
+})();
+
+/** The kiosk's LED screen: a Safari shiny on a glow in its area's colour, a shadow till you've caught it, its name and
+    what the capsules hold; scan lines and a dot mask over it. `img` is its sprite, once loaded. */
+function ledArt(c, m, img) {
+  const g = c.getContext('2d'), W = c.width, H = c.height, [ink] = EXCHANGE_INK[m.area], save = getSave();
+  const caught = exchangeCaught().includes(m.id), lvl = sparkleOf(save.safariShinies, m.id);
+  const tech = (px) => `700 ${px}px "Chakra Petch", system-ui, sans-serif`;
+  const bg = g.createRadialGradient(W / 2, H * 0.46, 4, W / 2, H * 0.46, W * 0.62);
+  bg.addColorStop(0, `${ink}${caught ? '66' : 'bb'}`); bg.addColorStop(1, '#05070d');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  g.textBaseline = 'middle';
+  g.font = tech(13); g.textAlign = 'left'; g.fillStyle = '#5ff0ff'; g.fillText('SAFARI · SHINY CAPSULES', 14, 16);
+  g.textAlign = 'right'; g.fillStyle = '#ffd36b';
+  g.fillText(`OWNED ${SAFARI_ROSTER.filter(id => sparkleOf(save.safariShinies, id)).length} / ${SAFARI_ROSTER.length}`, W - 14, 16);
+  if (img) {
+    const s = 128, x = (W - s) / 2, y = 30;
+    const t = new OffscreenCanvas(s, s), tg = t.getContext('2d');
+    tg.imageSmoothingEnabled = false;
+    const k = Math.min(s / img.naturalWidth, s / img.naturalHeight);
+    tg.drawImage(img, (s - img.naturalWidth * k) / 2, (s - img.naturalHeight * k) / 2, img.naturalWidth * k, img.naturalHeight * k);
+    if (!caught) { tg.globalCompositeOperation = 'source-in'; tg.fillStyle = '#000'; tg.fillRect(0, 0, s, s); }
+    if (caught) { g.shadowColor = 'rgba(255,211,107,0.7)'; g.shadowBlur = 14; }
+    g.drawImage(t, x, y);
+    g.shadowBlur = 0;
+  }
+  g.textAlign = 'center'; g.font = tech(24); g.fillStyle = '#fff';
+  g.fillText(caught ? (ENEMY_DEFS[m.id]?.name ?? m.id).toUpperCase() : '???', W / 2, 176, W - 20);
+  g.font = tech(13);
+  const area = m.name.toUpperCase(), aw = g.measureText(area).width + 18;
+  const tag = lvl ? `OWNED ${'★'.repeat(lvl)}` : caught ? 'IN THE CAPSULES' : 'CATCH IT TO UNLOCK';
+  const tw = g.measureText(tag).width, x0 = W / 2 - (aw + 10 + tw) / 2;
+  g.fillStyle = ink; g.beginPath(); g.roundRect(x0, 194, aw, 22, 11); g.fill();
+  g.fillStyle = '#0b1020'; g.fillText(area, x0 + aw / 2, 205.5);
+  g.textAlign = 'left'; g.fillStyle = lvl ? '#5ff0ff' : caught ? '#ffd36b' : '#a9b3c2'; g.fillText(tag, x0 + aw + 10, 205.5);
+  g.fillStyle = 'rgba(0,0,0,0.4)';
+  for (let y = 0; y < H; y += 3) g.fillRect(0, y, W, 1);
+}
+
+/** The kiosk's header: SHINY EXCHANGE in cyan between two gold sparkles, on a dark plate. */
+function kioskSignArt() {
+  const f = fine(96, 20, 6), { g, rr } = f;
+  rr(0, 0, 96, 20, 4, '#3a4a6c');
+  rr(0.8, 0.8, 94.4, 18.4, 3.4, '#0b1020');
+  g.fillStyle = '#ffd36b'; for (const x of [9, 87]) star(g, x, 10, 3.4);
+  g.save(); g.shadowColor = '#5ff0ff'; g.shadowBlur = 3;
+  g.font = '700 10px "Chakra Petch", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#b8f9ff';
+  g.fillText('SHINY EXCHANGE', 48, 10.6, 70);
+  g.restore();
+  return f.c;
+}
+
 /* ---------- building it ---------- */
 
 /** The Outfitter's lodge, its own COLS x ROWS (like the Game Corner), so the camera follows you through it. `size` gives
@@ -770,6 +833,71 @@ export function buildOutfitter(THREE, size) {
     mergeStatic(base, () => false, true);
     base.traverse(o => { o.userData.front = spot; });
     redraws.push(() => { passMap.image = passArt(passState()); passMap.needsUpdate = true; });
+  }
+
+  // the Shiny Exchange's kiosk right of the Day Pass dais, facing the door (2026-10-18, the user's ask), no taller than
+  // the booth: its LED screen cycles the Safari shinies, and a capsule turns slowly in the tray at its foot
+  {
+    const { x, y } = KIOSK;
+    const spot = { id: 'exchange', kind: 'game', name: 'Shiny Exchange', open: true, step: { x, y: y + 1 } };
+    spot.line = spot.name;
+    spot.game = { name: spot.name, line: 'The Shiny Exchange: capsules of the Safari shinies.', direct: true,
+      open: (done) => import('./exchange.js').then(m => m.openShinyExchange(done)) };
+    spots.push(spot);
+    block(x, y);
+    const k = new THREE.Group();
+    k.position.set(tileX(x), 0, tileZ(y));
+    const navy = std({ color: '#242c3e', roughness: 0.45, metalness: 0.3 }), plate = std({ color: '#1a2030', roughness: 0.4, metalness: 0.4 });
+    const cyan = new THREE.MeshBasicMaterial({ color: '#5ff0ff', toneMapped: false });
+    put(k, new THREE.BoxGeometry(0.98, 0.12, 0.74), plate, 0, 0.06, 0);
+    put(k, new THREE.BoxGeometry(0.98, 0.025, 0.02), cyan, 0, 0.12, 0.37, false);
+    put(k, new THREE.BoxGeometry(0.8, 1.2, 0.56), navy, 0, 0.72, -0.02);
+    for (const sx of [-0.41, 0.41]) put(k, new THREE.BoxGeometry(0.025, 1.2, 0.025), cyan, sx, 0.72, 0.265, false);
+    put(k, new THREE.BoxGeometry(1.0, 0.76, 0.14), plate, 0, 1.68, 0.02);
+    const led = new OffscreenCanvas(320, 240), ledMap = texOf(led);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.88, 0.66), new THREE.MeshBasicMaterial({ map: ledMap, toneMapped: false }));
+    screen.position.set(0, 1.68, 0.095);
+    k.add(screen);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(0.96, 0.2), new THREE.MeshBasicMaterial({ map: texOf(kioskSignArt()), toneMapped: false }));
+    sign.position.set(0, 2.2, 0.03);
+    k.add(sign);
+    put(k, new THREE.BoxGeometry(1.0, 0.24, 0.1), plate, 0, 2.2, -0.03);
+    // the tray: a dark alcove with a cyan lip, its capsule a sphere in the lodge's own scene
+    put(k, new THREE.BoxGeometry(0.56, 0.36, 0.06), std({ color: '#0b1020', roughness: 0.6 }), 0, 0.5, 0.27, false);
+    put(k, new THREE.BoxGeometry(0.6, 0.03, 0.14), cyan, 0, 0.33, 0.3, false);
+    const capTop = std({ color: EXCHANGE_INK.meadow[0], roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.82 });
+    const pearl = std({ color: '#eef2f8', roughness: 0.25 }), chrome = std({ color: '#c8d0dc', roughness: 0.2, metalness: 0.85 });
+    const cap = new THREE.Group();
+    cap.position.set(0, 0.48, 0.31);
+    const R = 0.12;
+    put(cap, new THREE.SphereGeometry(R, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), capTop, 0, 0, 0, false);
+    put(cap, new THREE.SphereGeometry(R, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), pearl, 0, 0, 0, false);
+    put(cap, new THREE.TorusGeometry(R, 0.012, 8, 32), chrome, 0, 0, 0, false).rotation.x = Math.PI / 2;
+    put(cap, new THREE.CylinderGeometry(0.035, 0.035, 0.02, 16), chrome, 0, 0, R, false).rotation.x = Math.PI / 2;
+    k.add(cap);
+    mergeStatic(k, (o) => o === screen || o === sign || o.parent === cap, true);
+    k.traverse(o => { o.userData.front = spot; });
+    group.add(k);
+    let at = -1, shownAt = -Infinity, img = null;
+    const show = () => {
+      const m = LED_ORDER[at];
+      ledArt(led, m, img); ledMap.needsUpdate = true;
+      capTop.color.set(EXCHANGE_INK[m.area][0]);
+    };
+    const next = () => {
+      at = (at + 1) % LED_ORDER.length;
+      const m = LED_ORDER[at], pic = new Image();
+      img = null;
+      show();
+      pic.onload = () => { if (LED_ORDER[at] === m) { img = pic; show(); } };
+      pic.src = shinyImage(m.id);
+    };
+    document.fonts?.load('700 20px "Chakra Petch"').then(() => { if (at >= 0) show(); }).catch(() => {});
+    redraws.push(() => { if (at >= 0) show(); });
+    ticks.push((now) => {
+      if (now - shownAt > 2600) { shownAt = now; next(); }
+      if (!calm) { cap.rotation.y = now / 1400; cap.position.y = 0.48 + Math.sin(now / 600) * 0.01; }
+    });
   }
 
   // the board in the right bay: today's top catchers, fetched now and then; a tap opens the leaderboard

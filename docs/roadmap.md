@@ -39,15 +39,13 @@ Three sessions, in order. **Session 1 done 2026-10-18, on `main`** (patch 1.26):
 the roll, the battle's entrance, banner, twinkles, gold shakes and catch box, the signature card's Sparkle looks; how it
 works is `docs/reference/safari.md`'s "Wild shinies and Sparkle". The user plays a Safari run with `?wildshiny` (every
 wild shiny, a catch saves nothing) and looks at the cards with `?sparkle=1` to `?sparkle=5`, and says what to change.
-Next, session 2 (`gainShiny()` / `shinyGain()` in `js/data/shinies.js` are the Exchange's pull too; `maxed` is the
-past-★5 duplicate that pays 3 Lucky Stars):
-
-> Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's Safari Outfitter part and this roadmap entry.
-> Session 2, the Shiny Exchange: the kiosk in the lodge, its LED screen and tray, the Exchange window, the capsule pulls
-> (duplicates, Sparkle, gold odds, Lucky Stars) and the reveal, as on the mock's boards 1-5. Mind the GPU rules (one
-> context, `calmFx()`, nothing kept after the window closes). Tests for the pull rules; check headless at
-> `?mall=outfitter&ribbon&coins=5000` (no screenshots), a patch-notes line, update this entry, push to main and give
-> me the githack link.
+**Session 2 done 2026-10-18, on `main`**: the Shiny Exchange kiosk right of the Day Pass dais (LED screen, tray
+capsule), its window, the pulls and the reveal; how it works is `docs/reference/hub-base-mall.md`'s Safari Outfitter part
+("The Shiny Exchange"), the rules `js/data/exchange.js` (`tests/exchange.test.mjs`). The user tries it at
+`?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change; one call to
+check with them: `NEW_ODDS` (1 in 3 plain capsules new) means a machine where you own one shiny gives that one again and
+again (a pull of ten gave six Wurmple headless), so they may want it as a floor instead (new at least 1 in 3, else
+any caught one at random). Next, session 3:
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
 > Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
