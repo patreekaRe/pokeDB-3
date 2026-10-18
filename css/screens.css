@@ -3936,17 +3936,6 @@ body.scene-peek #backdrop { display: none; }
   font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none; text-transform: uppercase;
 }
 .lb-glass { position: relative; flex: 1; margin: 0 10px 12px; border: 4px solid #2a2a30; border-radius: 8px 8px 8px 24px; box-shadow: 0 0 0 3px var(--shell-rim); }
-.lb-top { display: grid; gap: 8px; margin-bottom: 12px; }
-.lb-period { display: flex; border: 3px solid var(--shell-rim); border-radius: 9px; overflow: hidden; background: #d6e8b8; box-shadow: 0 3px 0 var(--shell-rim); }
-.lb-key { flex: 1; padding: 9px 4px 8px; border: 0; border-left: 3px solid var(--shell-rim); background: none; color: #1f3a14; cursor: pointer; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; }
-.lb-key:first-child { border-left: 0; }
-.lb-key[aria-selected="true"] { background: #1f3a14; color: #b6d68e; }
-.lb-top .pdx-lcd { margin: 0; padding: 7px 10px; font: 0.75rem/1.7 var(--pixel-font); font-synthesis-weight: none; }
-.lb-note { text-align: center; }
-.lb-top .lb-mine { background: #f2dc8a; color: #6a4a00; }
-.lb-name-line { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.lb-name-line small { font-size: 1em; opacity: 0.7; }
-.lb-name-line b { font-weight: 400; overflow-wrap: anywhere; }
 .lb-signin, .lb-name-form { display: grid; justify-items: center; gap: 8px; text-align: center; }
 .lb-signin p, .lb-name-form p { margin: 0; }
 .lb-name-form strong { font-weight: 400; font-size: 0.75rem; }
@@ -3960,38 +3949,96 @@ body.scene-peek #backdrop { display: none; }
   font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; box-shadow: 0 3px 0 var(--shell-rim);
 }
 .lb-btn.primary { background: var(--btn-a); color: #fff; }
+.lb-btn:active { translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim); }
+/* the board itself (2026-10-18, the user's ask: an MMO-style table, easy to read): a banner, gold period tabs, board pills,
+   a row per trainer with the top three in gold / silver / bronze, your own row pinned, then the count and your name */
+.lb-host { overflow: hidden !important; }
+.lb-mmo {
+  --lb-ink: #e8ecff; --lb-dim: #9aa6d4; --lb-gold: #ffd25a; --lb-gold-lo: #b8861c; --lb-row: #1b2342; --lb-row2: #171e3a; --lb-line: #2c3766;
+  position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; color: var(--lb-ink);
+  background: linear-gradient(180deg, #1a2244, #0e1328); font: 0.75rem/1.3 var(--pixel-font); font-synthesis-weight: none;
+}
+.lb-hero {
+  position: relative; flex: none; display: grid; gap: 6px; justify-items: start; padding: 10px 84px 9px 12px; overflow: hidden;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1.5px) 0 0 / 10px 10px, linear-gradient(120deg, var(--b1), var(--b2));
+  border-bottom: 3px solid var(--lb-gold-lo); text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.45);
+}
+.lb-hero-name { font-size: 0.95rem; font-weight: 400; color: #fff; text-transform: uppercase; text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.45); }
+.lb-hero-line { line-height: 1.6; color: #eef2ff; }
+.lb-hero-timer { padding: 4px 7px; border: 2px solid rgba(255, 255, 255, 0.35); border-radius: 6px; background: rgba(0, 0, 0, 0.35); color: var(--lb-gold); }
+.lb-hero-mon { position: absolute; right: 4px; bottom: -4px; width: 76px; height: 76px; object-fit: contain; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35)); }
+.lb-top { display: grid; gap: 6px; padding: 8px 8px 0; background: #0c1024; }
+.lb-top:empty { display: none; }
+.lb-period { display: flex; gap: 4px; margin: 0 0 -6px; border-bottom: 3px solid var(--lb-gold-lo); }
+.lb-key {
+  flex: 1; padding: 9px 2px 8px; border: 2px solid var(--lb-line); border-bottom: 0; border-radius: 7px 7px 0 0; background: #141a32; color: var(--lb-dim);
+  cursor: pointer; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; white-space: nowrap;
+}
+.lb-key[aria-selected="true"] { border-color: var(--lb-gold-lo); background: linear-gradient(180deg, #ffe58a, var(--lb-gold)); color: #1a1406; }
+.lb-top .pdx-lcd { margin: 6px 0 0; padding: 8px 10px; border: 2px solid var(--lb-line); border-radius: 8px; background: #141a32; color: var(--lb-ink); box-shadow: none; font: 0.75rem/1.7 var(--pixel-font); font-synthesis-weight: none; }
+.lb-top .pdx-lcd ~ .pdx-lcd { margin-top: 0; }
+.lb-top .lb-mine { border-color: #5ad08a; color: #b8ffd0; }
+.lb-note { text-align: center; }
+.lb-pills { flex: none; display: flex; gap: 6px; padding: 8px; background: #141a32; }
+.lb-pills.scroll { overflow-x: auto; scrollbar-width: none; }
+.lb-pill {
+  flex: 1 0 auto; padding: 8px 10px 7px; border: 2px solid var(--lb-line); border-radius: 20px; background: none; color: var(--lb-dim); cursor: pointer;
+  font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; white-space: nowrap;
+}
+.lb-pill[aria-selected="true"] { border-color: #6a7ee0; background: #2d3a78; color: #fff; }
+.lb-cols { position: sticky; top: 0; z-index: 1; display: flex; gap: 6px; padding: 7px 14px; border-top: 2px solid var(--lb-line); border-bottom: 2px solid var(--lb-line); background: #10162e; color: var(--lb-dim); text-transform: uppercase; }
+.lb-cols span:first-child { width: 86px; }
+.lb-cols span:nth-child(2) { flex: 1; }
+.lb-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.lb-rows { padding: 4px 6px; }
+.lb-empty { margin: 24px 12px; text-align: center; color: var(--lb-dim); line-height: 1.7; }
+.lb-row { margin: 4px 0; border: 2px solid transparent; border-radius: 8px; background: var(--lb-row); }
+.lb-row:nth-child(even) { background: var(--lb-row2); }
+.lb-row-head {
+  display: grid; grid-template-columns: 34px 40px 1fr auto; align-items: center; column-gap: 6px; width: 100%; padding: 5px 6px; border: 0;
+  background: none; color: inherit; text-align: left; cursor: pointer; font: inherit;
+}
+.lb-rk { grid-row: 1 / span 3; display: grid; place-items: center; height: 30px; color: var(--lb-dim); }
+.lb-rk.medal { color: #1a1406; clip-path: polygon(50% 0, 100% 22%, 100% 78%, 50% 100%, 0 78%, 0 22%); }
+.lb-mon { grid-row: 1 / span 3; width: 40px; height: 40px; object-fit: contain; }
+.lb-who { display: contents; }
+.lb-name { grid-column: 3; min-width: 0; overflow: hidden; font-weight: 400; color: #fff; white-space: nowrap; text-overflow: ellipsis; }
+.lb-sub { grid-column: 3 / span 2; margin-top: 5px; font-size: 0.75rem; overflow: hidden; color: var(--lb-dim); white-space: nowrap; text-overflow: ellipsis; }
+.lb-val { grid-column: 4; grid-row: 1; font-size: 0.875rem; color: #fff; text-align: right; white-space: nowrap; }
+.lb-aug-row { grid-column: 3 / span 2; display: flex; flex-wrap: nowrap; align-items: center; gap: 3px; margin-top: 5px; overflow: hidden; }
+.lb-aug-row .aug-icon, .lb-aug-row .aug-emoji { flex: none; width: 22px; height: 22px; font-size: 16px; line-height: 22px; }
+.lb-aug-more { color: var(--lb-dim); }
+.lb-crown { margin-right: 4px; }
+.lb-you-tag { margin-right: 6px; padding: 2px 4px; border-radius: 4px; background: #5ad08a; color: #0c2416; }
+.lb-row.gold { border-color: rgba(255, 210, 90, 0.6); background: linear-gradient(90deg, rgba(255, 210, 90, 0.28), rgba(255, 210, 90, 0.04)); box-shadow: 0 0 12px rgba(255, 210, 90, 0.25); }
+.lb-row.silver { border-color: rgba(200, 210, 235, 0.4); background: linear-gradient(90deg, rgba(200, 210, 235, 0.2), rgba(200, 210, 235, 0.03)); }
+.lb-row.bronze { border-color: rgba(216, 138, 72, 0.45); background: linear-gradient(90deg, rgba(216, 138, 72, 0.22), rgba(216, 138, 72, 0.03)); }
+.lb-row.gold .lb-rk { background: linear-gradient(180deg, #fff2a8, #f4c430 60%, #b8861c); }
+.lb-row.silver .lb-rk { background: linear-gradient(180deg, #ffffff, #c8d0e0 60%, #7d879c); }
+.lb-row.bronze .lb-rk { background: linear-gradient(180deg, #ffd0a0, #d88a48 60%, #8a4a1c); }
+.lb-row.gold .lb-name, .lb-row.gold .lb-val { color: var(--lb-gold); }
+.lb-row.gold .lb-val { text-shadow: 0 0 6px rgba(255, 210, 90, 0.6); }
+.lb-rows .lb-row.mine { box-shadow: inset 0 0 0 2px #5ad08a; }
+.lb-row.pinned { flex: none; margin: 4px 6px 6px; border-color: #5ad08a; background: linear-gradient(90deg, #1f5a3a, #173a2c); box-shadow: 0 0 10px rgba(90, 208, 138, 0.35); }
+.lb-row.pinned .lb-rk { color: #b8ffd0; background: none; clip-path: none; }
+.lb-row.pinned.open { max-height: 45%; overflow-y: auto; }
+.lb-more { display: grid; gap: 8px; padding: 4px 8px 10px; }
+.lb-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 2px solid var(--lb-line); border-radius: 6px; background: rgba(0, 0, 0, 0.3); }
+.lb-facts span { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+.lb-facts b { font-weight: 400; color: var(--lb-dim); }
+.lb-augs { display: grid; gap: 4px; padding: 8px; border: 2px solid var(--lb-line); border-radius: 6px; background: rgba(0, 0, 0, 0.3); }
+.lb-augs b { margin-bottom: 2px; font-weight: 400; color: var(--lb-dim); }
+.lb-aug { display: flex; align-items: center; gap: 8px; line-height: 1.4; }
+.lb-aug .aug-icon, .lb-aug .aug-emoji { flex: none; width: 26px; height: 26px; font-size: 18px; line-height: 26px; text-align: center; }
 .lb-add { justify-self: center; }
 .lb-add.on, .lb-add:disabled { opacity: 0.7; cursor: default; translate: none; }
-.lb-btn:active { translate: 0 2px; box-shadow: 0 1px 0 var(--shell-rim); }
-/* a board's banner: its top three on a podium, the winner in the middle and biggest; an empty board says so and doesn't open */
-.lb-podium .pdx-banner-mon:nth-child(n) { width: 70px; height: 70px; z-index: 0; }
-.lb-podium .pdx-banner-mon.lb-first { width: 92px; height: 92px; z-index: 1; }
+.lb-foot { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 10px; border-top: 2px solid var(--lb-line); background: #0a0e20; color: var(--lb-dim); }
+.lb-mmo .lb-btn { border-color: var(--lb-gold-lo); background: var(--lb-gold); color: #1a1406; box-shadow: 0 3px 0 var(--lb-gold-lo); }
+.lb-mmo .lb-btn.primary { border-color: #2a7a4a; background: #5ad08a; color: #0c2416; box-shadow: 0 3px 0 #2a7a4a; }
+.lb-name-key { min-width: 0; max-width: 60%; padding: 6px 8px 5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .bdx-banner.empty { cursor: default; }
 .bdx-banner.empty:hover, .bdx-banner.empty:active { transform: none; }
 .bdx-banner.empty .pdx-banner-sub { top: 42px; max-width: 70%; }
-.lb-medal { font: 0.75rem/1 var(--pixel-font); color: #1f2a44; }
-/* the handheld: the trainer's Pokémon on the board's colours (gold, silver, bronze for the top three), its rank and number */
-.lb-screen.medal-gold { background: radial-gradient(circle at 50% 50%, #fff4b0 0, transparent 60%), linear-gradient(150deg, #f0c448, #8a5a08); }
-.lb-screen.medal-silver { background: radial-gradient(circle at 50% 50%, #ffffff 0, transparent 60%), linear-gradient(150deg, #d4dae6, #5a6478); }
-.lb-screen.medal-bronze { background: radial-gradient(circle at 50% 50%, #ffd8b0 0, transparent 60%), linear-gradient(150deg, #e09a58, #6a3410); }
-.lb-rank.gold { background: linear-gradient(145deg, #fff0a0, #d89a10); color: #5a3a00; }
-.lb-rank.silver { background: linear-gradient(145deg, #ffffff, #8e98a8); color: #303848; }
-.lb-rank.bronze { background: linear-gradient(145deg, #ffd0a0, #9a5a24); color: #4a2408; }
-.lb-value, .lb-you { position: absolute; padding: 6px 8px 5px; border-radius: 6px; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; color: #fff; }
-.lb-value { right: 8px; bottom: 8px; background: rgba(0, 0, 0, 0.5); }
-.lb-you { right: 8px; top: 8px; background: var(--btn-a); box-shadow: 0 0 0 2px #fff; }
-.lb-facts b { font-weight: 400; opacity: 0.7; }
-.lb-augs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; }
-.lb-augs b { font-weight: 400; }
-.lb-aug-row { display: flex; flex-wrap: wrap; gap: 2px; }
-.lb-aug-row .aug-icon { width: 24px; height: 24px; }
-.lb-slot { position: absolute; inset: 0; }
-.lb-slot-rank { position: absolute; left: 3px; top: 2px; z-index: 1; font: 0.75rem/1 var(--pixel-font); font-synthesis-weight: none; color: #1f2a44; }
-.bdx-slot.medal-gold { background: linear-gradient(180deg, #fff0a0, #e0a820); }
-.bdx-slot.medal-silver { background: linear-gradient(180deg, #ffffff, #b4bcc8); }
-.bdx-slot.medal-bronze { background: linear-gradient(180deg, #ffd8b0, #c8803c); }
-.bdx-slot.mine { box-shadow: inset 0 0 0 3px #3aa83a; }
-.bdx-slot.on { background: #ffe36b; }
 .board-line { font-size: 1.1rem; text-align: center; }
 
 /* ---------- the descent to the Sealed Gate (js/descent.js): the arena splits, your Pokémon falls down a crystal shaft into

@@ -343,12 +343,16 @@ phase 1 run.
   then wins, bosses, turns). Ties: the earlier post first. Top 10 each, plus your row under a ⋯ when you're below, and a
   "Your try" line with your own entry. A day's entries are one `where('day', '==', day)` query (up to 1000, no index
   needed), sorted on the device and cached a minute.
-- **The window** (`#board-dialog`, `.lb-*` in `css/screens.css`; since 2026-10-07 the Pokédex look, on `shelfApp()` in
-  `js/bagdex.js`): a red handheld (lid, LCD title, ✕), its screen the board's app: Today / Yesterday keys and the day's
-  starter and areas on LCDs (with your name, Sign in and your try), then a banner per board painted with one of the day's
-  areas, its top three on a podium; a tap opens the handheld on that board, one trainer a screen (gold / silver / bronze
-  for the top three, a climb's augments under it), the ranks as slots. ◀ / ▶ switch the period on the banners and step
-  the trainers on a board; B / Escape goes back to the banners first. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open) and a Safari run's
+- **The window** (`#board-dialog`, `.lb-*` in `css/screens.css`; since 2026-10-18 an MMO-style table, the user's ask:
+  "easy to read and follow and see all the information"; `tableApp()` in `js/leaderboard.js`, it was the Pokédex look
+  on `shelfApp()`): a red handheld (lid, LCD title, ✕), its screen dark navy and gold: a banner in the board's colours
+  (its name, the period's line, the period's starter, "Resets in" or "Final standings"), gold period tabs, any sign-in /
+  name / posting lines, pills for the board (Safari: Fastest / Turns / Caught; arcade: one per game), then a row per
+  trainer (rank badge gold / silver / bronze for the top three, their Pokémon, name, a second line of the other numbers,
+  a climb's augments as up to 6 icons and "+N", the board's number on the right), your own row pinned in green at the
+  bottom, the count and your name (✎ to change it) in the foot. A tap opens a row's details (every number, its Pokémon,
+  a climb's augments by name, Add to Trainers); B / Escape shuts it first. ◀ / ▶ switch the period. `?lbsample=tower|safari|arcade`
+  opens the board on 24 made-up trainers (you 14th), nothing fetched or posted. Opens from the title's 🏆 beside the Safari Zone gem (`#title-board`, only once the Safari is open) and a Safari run's
   result window; the lobbies' Ranks keys mount the same app in their own screen (`boardApp()`)
   (`#result-board`). Signed out: "Sign in to post..." with a Sign in button (opens the cloud window).
   No config / Firebase unreachable: "can't be reached right now", the game unaffected. Every Firebase call is caught.
@@ -392,8 +396,7 @@ The summary CLAUDE.md used to carry, unchanged. Where it and the notes above dis
   **Leaderboard** (phase 5a, 2026-10-02): the day's first try posts once to Firestore (`safariBoard/<day>_<uid>`) through
   the cloud save's sign-in (`js/leaderboard.js`, pure part `js/data/leaderboard.js`, guarded by `firestore.rules`, which
   the user pastes into the console); every Firebase call is caught, so offline or blocked the game is unchanged. Its
-  window and the lobbies' Ranks apps (the Sky Pillar's board too) are the Pokédex look on `shelfApp()` (2026-10-07): a
-  banner per board, the handheld one trainer a screen; `shelfApp()`'s `empty(g)` keeps a board with no rows as a banner.
+  window and the lobbies' Ranks apps (the Sky Pillar's board too) are the MMO-style table (2026-10-18; see The window).
   **Its scenery** (phase 5b): each area is a `BIOME_ART` entry built from `SAFARI_ART` in `js/scene.js` (Meadow, Forest,
   Wetland, Marsh, Peak, Desert; painted by `SAFARI_PAINT`, with the Zone's own fence, sign, rest house and tall grass over
   all six), with 4 places each (`stages` in `js/data/safari.js`), walked as one road: a trail to the horizon, the area's

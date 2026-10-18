@@ -2972,3 +2972,7 @@ stepping up (`safariStepToast()`). Branch `claude/safari-progress-tracker-6oy9oy
 ## New furniture's "!" (2026-10-17, the user's ask)
 
 Each newly owned furniture design wears a "!" in the PC's Decorations and the base's Decorate tray till tapped, not just the DECORATIONS row once (`freshDesigns()` / `seeDesign()`, `b.known`; `docs/reference/hub-base-mall.md`).
+
+## MMO-style leaderboards (2026-10-18, the user's ask)
+
+Every leaderboard (Safari, Sky Pillar, arcade; the window and the lobbies' Ranks apps) is a dark-and-gold ranking table instead of the Pokédex banners: a banner with the period and a reset countdown, gold period tabs, board pills, a row per trainer (top three gold / silver / bronze, a climb's augments as icons), your row pinned, a tap for details (`tableApp()` in `js/leaderboard.js`; `docs/reference/safari.md`'s "The window"). The user saw a mock first. `?lbsample=tower|safari|arcade` shows it on made-up trainers. Branch `claude/leaderboards-mmo-redesign-dn1t8h`, also pushed to `main`. Waiting on the user's look on their phone.
