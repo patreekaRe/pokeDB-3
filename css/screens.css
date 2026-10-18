@@ -5548,6 +5548,19 @@ body:has(#reward-options.deck-pick) :is(.mart3d-sign, .town-stage) { display: no
 body:has(#reward-options.c3d) #reward-screen { cursor: pointer; }
 /* the pixel room never shows while the 3D one loads (c3d-wait); if Three.js fails the wait comes off and it's back */
 body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
+/* a 3D place that keeps you waiting (load3d()): your Pokémon hops by a rolling Poké Ball, faded in only after half a
+   second so a quick load never flashes it */
+.loading-mark {
+  position: fixed; left: 50%; top: 46%; translate: -50% -50%; z-index: 3; pointer-events: none;
+  display: flex; align-items: flex-end; gap: 6px; opacity: 0; animation: loading-in 0.25s 0.5s forwards;
+}
+.loading-mark img { image-rendering: pixelated; }
+.loading-mon { height: 96px; animation: loading-hop 0.6s steps(2, jump-none) infinite alternate; }
+.loading-ball { width: 60px; height: 60px; margin-bottom: 4px; animation: loading-roll 0.8s steps(8) infinite; }
+.loading-mark.calm :is(.loading-mon, .loading-ball) { animation: none; }
+@keyframes loading-in { to { opacity: 1; } }
+@keyframes loading-hop { to { translate: 0 -8px; } }
+@keyframes loading-roll { to { rotate: 1turn; } }
 /* the signs are small cream speech windows, a thin border in the choice's colour (the user's pick, 2026-10-09) */
 #reward-options.c3d .center-label {
   bottom: 8px; padding: 7px 12px 6px;

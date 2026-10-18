@@ -3460,7 +3460,7 @@ function restSite({ used = false } = {}) {
     // The lines are only told if the pixel room has to stand in.
     const lines = holdLines();
     const greet = () => { if (run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines); };
-    import('./center-3d.js').then(m => m.mountCenter({
+    load3d(() => import('./center-3d.js').then(m => m.mountCenter({
       run: thisRun, hp: run.hp, maxHp: run.maxHp, heal: banned ? 0 : heal, name: stageName(run.starter, run.stage),
       mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
       onPick: async (i) => {
@@ -3472,7 +3472,7 @@ function restSite({ used = false } = {}) {
         if (run === thisRun && box.isConnected) btn.click();
       },
       onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-    })).then(ctl => { room3d = ctl; placeCenterSpots(); if (!ctl) greet(); })
+    })), box).then(ctl => { room3d = ctl; placeCenterSpots(); if (!ctl) greet(); })
       .catch(err => { console.warn('3D Center unavailable', err); greet(); })
       .finally(() => box.classList.remove('c3d-wait'));
   }
@@ -3781,6 +3781,34 @@ const hold3d = () => event3dMod?.eventRoom3d()?.hold();
 const EVENT_3D = ['tutor', 'deleter', 'daycare', 'fans', 'spring', 'altar', 'grotto', 'berry', 'well', 'itemball', 'rocket', 'snorlax', 'trash', 'ditto', 'billspc', 'abra', 'wheel', 'idol', 'keystone', 'moon', 'stall', 'library', 'fishing', 'sludge', 'storeroom', 'contest', 'tablet', 'studio', 'bonfire', 'flip', 'rival', 'gym', 'town', 'home'];
 let event3dMod = null;
 
+/** A 3D place mounted under `box` (its pixel room hidden meanwhile), tried once more a second after a failure: a
+    download dropped on a weak signal, or a phone short of memory refusing a WebGL context once, showed the pixel room
+    (2026-10-18). A wait that runs long shows your Pokémon by a rolling Poké Ball, not a blank screen (`mark`: null for
+    none, as a Mart already up and redrawn after a purchase). */
+function load3d(mount, box, mark = loadingMark()) {
+  const thisRun = run, waiting = () => run === thisRun && box.isConnected && !$('reward-screen').hidden;
+  return mount()
+    .catch(err => {
+      if (!waiting()) throw err;
+      console.warn('3D place failed to load, trying again', err);
+      return new Promise(done => setTimeout(done, 1000)).then(() => { if (!waiting()) throw err; return mount(); });
+    })
+    .finally(() => mark?.remove());
+}
+
+/** Your Pokémon hopping by a rolling Poké Ball, over the reward screen (gone with it): shown only once a 3D place has
+    kept you waiting half a second (its CSS), so a quick one never flashes it. */
+function loadingMark() {
+  const mark = el('div', `loading-mark${calmFx() ? ' calm' : ''}`), mon = el('img', 'loading-mon'), ball = el('img', 'loading-ball');
+  mon.src = spriteUrl(run.starter, 'front', run.stage);
+  ball.src = 'assets/items/poke-ball.png';
+  mon.alt = ball.alt = '';
+  mark.setAttribute('aria-label', 'Loading');
+  mark.append(mon, ball);
+  $('reward-screen').append(mark);
+  return mark;
+}
+
 /** The walk-in 3D room under a room's choices; the pixel room stays if Three.js won't load (or `?event2d`). `onPick` swaps
     how a choice is pressed (the grotto's chest is no `.reward-option`). */
 function event3d(node, kind, figures, after, { onPick = null, spent = false, extra = {}, onSaid = null, onIn = null, onFail = null } = {}) {
@@ -3790,7 +3818,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
   // its text waits until you're inside (the box coming and going jolted the camera while it loaded)
   const lines = holdLines();
   const greet = () => { if (lines && run === thisRun && box.isConnected && !$('reward-screen').hidden) sayLines(lines, 'reward-log', onSaid); };
-  import('./event-3d.js').then(m => {
+  load3d(() => import('./event-3d.js').then(m => {
     event3dMod = m;
     return m.mountEvent({
       kind, run: thisRun, node, figures, after, spent, biome: land().id, type: run.starter.type, ...extra,
@@ -3798,7 +3826,7 @@ function event3d(node, kind, figures, after, { onPick = null, spent = false, ext
       onPick: (i) => { if (run === thisRun && box.isConnected) (onPick ? onPick(i) : box.querySelectorAll('.reward-option')[i]?.click()); },
       onLeave: extra.onLeave ?? (() => document.querySelector('#room-bar .room-leave, #reward-skip')?.click()),   // a visit's barred gate says so
     });
-  }).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
+  }), box).then(() => setTimeout(() => { greet(); if (run === thisRun && box.isConnected && !$('reward-screen').hidden) onIn?.(); }, 350))
     .catch(err => {
       console.warn('3D event room unavailable', err);
       if (!onFail) return greet();
@@ -5074,7 +5102,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
   // the welcome waits until you're inside (a purchase's news is said at once: the room is already up)
   const lines = document.querySelector('.mart3d-view.on') ? null : holdLines();
   box.classList.add('m3d-wait');
-  import('./mart-3d.js').then(m => m.mountMart({
+  load3d(() => import('./mart-3d.js').then(m => m.mountMart({
     run: thisRun, wares,
     mate: { src: spriteUrl(run.starter, 'front', run.stage), name: stageName(run.starter, run.stage), cry: run.starter.line[run.stage].id },
     onPick: (i) => {
@@ -5086,7 +5114,7 @@ function mart3d({ cards, items, relics, removal, removalPrice, bagFull, dusk, at
     onClerk: () => sayLines(BRITT_TALKS[brittTalk++ % BRITT_TALKS.length], 'reward-log', null, 'BRITT'),
     onSoldOut: () => sayLines(['That one has sold out.']),
     onLeave: () => document.querySelector('#room-bar .room-leave, #reward-skip')?.click(),
-  })).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
+  })), box, lines ? undefined : null).then(up => { if (up && lines) setTimeout(() => sayLines(lines), 500); })
     .catch(err => { console.warn('3D Mart unavailable', err); if (lines) sayLines(lines); })
     .finally(() => box.classList.remove('m3d-wait'));
 }

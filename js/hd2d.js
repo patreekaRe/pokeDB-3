@@ -10,10 +10,11 @@ import { sharpness } from './prefs.js';
 const THREE_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js';
 export const MON_PX = 1 / 32;   // Pokémon GIFs are drawn at twice the furniture's detail
 
-let THREE = null, loading = null;
+let THREE = null, loading = null, failed = 0;
 /** Three.js, loaded once; throws offline (the callers fall back to their 2D version). */
 export async function loadThree() {
-  loading ??= import(THREE_URL).then(m => { noteDisposeHooks(m); noteMade(); return m; }, e => { loading = null; throw e; });
+  // a failed import() of a URL fails again from the browser's module map without fetching, so a retry asks anew
+  loading ??= import(failed ? `${THREE_URL}?try=${failed}` : THREE_URL).then(m => { noteDisposeHooks(m); noteMade(); return m; }, e => { loading = null; failed++; throw e; });
   THREE ??= await loading;
   return THREE;
 }
