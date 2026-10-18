@@ -13,7 +13,7 @@ export const MON_PX = 1 / 32;   // Pokémon GIFs are drawn at twice the furnitur
 let THREE = null, loading = null;
 /** Three.js, loaded once; throws offline (the callers fall back to their 2D version). */
 export async function loadThree() {
-  loading ??= import(THREE_URL).then(m => { noteDisposeHooks(m); return m; }, e => { loading = null; throw e; });
+  loading ??= import(THREE_URL).then(m => { noteDisposeHooks(m); noteMade(); return m; }, e => { loading = null; throw e; });
   THREE ??= await loading;
   return THREE;
 }
@@ -60,7 +60,61 @@ export function sleepGL(renderer) {
   if (!renderer || asleep.has(renderer)) return;
   asleep.add(renderer);
   unhook(renderer);
+  letGo(renderer);
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
+}
+
+/* A lost context frees nothing in Safari. WebKit's loseContext() only cuts its objects loose: the GPU context behind it,
+   with every texture, render target, shader and screen-sized buffer it made, lives on until the context is restored or
+   garbage collected (WebGLRenderingContextBase::forceLostContext(), read 2026-10-18). Chrome frees all of it at the loss,
+   and every round of measuring was done in Chrome, so on an iPhone each place "asleep" still held everything (the
+   Clearing and the mall ~137 MB under the Secret Base), and the tab kept reloading. So what each context makes is noted,
+   and a place going to sleep deletes it all and shrinks its canvas to a pixel (which reallocates the drawing buffers)
+   before the loss; three.js uploads everything again on the restore, as it always did. */
+const KINDS = ['Texture', 'Buffer', 'Framebuffer', 'Renderbuffer', 'Program', 'Shader', 'VertexArray', 'Query', 'Sampler', 'TransformFeedback'];
+const made = new WeakMap();   // a WebGL context -> kind -> what it made and hasn't deleted
+function noteMade() {
+  for (const C of [globalThis.WebGL2RenderingContext, globalThis.WebGLRenderingContext]) {
+    const P = C?.prototype;
+    if (!P || P.__noted) continue;
+    P.__noted = true;
+    for (const kind of KINDS) {
+      const make = P[`create${kind}`], del = P[`delete${kind}`];
+      if (!make || !del) continue;
+      P[`create${kind}`] = function (...a) {
+        const o = make.apply(this, a);
+        if (o) {
+          let m = made.get(this);
+          if (!m) {
+            made.set(this, m = new Map());
+            // what a lost context made is gone with it (a real loss too: iOS drops one now and then); captured, so
+            // it's forgotten before three.js's own listener makes the new context's
+            this.canvas.addEventListener?.('webglcontextrestored', () => m.clear(), { capture: true });
+          }
+          if (!m.has(kind)) m.set(kind, new Set());
+          m.get(kind).add(o);
+        }
+        return o;
+      };
+      P[`delete${kind}`] = function (o) { made.get(this)?.get(kind)?.delete(o); return del.call(this, o); };
+    }
+  }
+}
+const shrunk = new WeakMap();   // a sleeping place's canvas -> the size it had
+function letGo(renderer) {
+  let gl;
+  try { gl = renderer.getContext(); } catch { return; }
+  if (!gl || gl.isContextLost() || !gl.getExtension('WEBGL_lose_context')) return;   // a context that can't be lost and restored keeps what it drew
+  for (const [kind, all] of made.get(gl) ?? []) for (const o of [...all]) try { gl[`delete${kind}`](o); } catch { /* gone */ }
+  const view = renderer.domElement;
+  if (view.width > 1 || view.height > 1) { shrunk.set(view, [view.width, view.height]); view.width = view.height = 1; }
+}
+/** Its canvas back to the size it slept at, unless the place has sized it since. Before the restore, which sizes the
+    new context's drawing buffer from it. */
+function regrow(renderer) {
+  const view = renderer.domElement, was = shrunk.get(view);
+  shrunk.delete(view);
+  if (was && view.width === 1 && view.height === 1) [view.width, view.height] = was;
 }
 
 /* three.js (r160) builds its GPU bookkeeping afresh on every context restore, and each build hooks a 'dispose' listener
@@ -116,12 +170,28 @@ export function wakeGL(renderer) {
 export function wakeBeside(renderer) {
   if (!renderer || !asleep.has(renderer)) return Promise.resolve();
   asleep.delete(renderer);
+  regrow(renderer);
   return new Promise(done => {
     const timer = setTimeout(done, 2000);
     renderer.domElement.addEventListener('webglcontextrestored', () => { clearTimeout(timer); done(); }, { once: true });
     try { renderer.forceContextRestore(); } catch { clearTimeout(timer); done(); }
   });
 }
+
+/* Away from the game (another app, the lock screen), the page is kept frozen until iOS needs the memory, and it lets go of
+   the biggest first; a Home Screen app let go of starts over from the title. So while hidden, the place on screen and
+   the one warmed beside it sleep, and come back on return (their frame loops draw nothing meanwhile: three.js skips a
+   lost context). */
+let napped = [];
+globalThis.document?.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    napped = [shown, spare].filter(r => r && !asleep.has(r));
+    napped.forEach(sleepGL);
+    return;
+  }
+  for (const r of napped) if (r === shown || r === spare) wakeBeside(r);
+  napped = [];
+});
 
 /** A place built ahead of being shown (warmed while the map is up). Only the last one warmed stays awake beside the
     place on screen: every place warming its own context at once kept four awake on the map, and an iPhone still
@@ -152,6 +222,7 @@ export function dropGL(renderer, scene) {
   unhook(renderer);   // before dispose(), while it can still draw the probe
   renderer.dispose();
   asleep.add(renderer);
+  letGo(renderer);   // the render targets and shadow maps dispose() leaves behind
   try { renderer.forceContextLoss(); } catch { /* already gone */ }
 }
 

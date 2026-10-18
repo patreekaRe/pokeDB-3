@@ -372,9 +372,21 @@ export function initAudio() {
   // a window with a data-close-sound plays its own as it closes (the title PC's pc-off), so it skips this one
   document.addEventListener('cancel', (e) => { if (e.target instanceof HTMLDialogElement && !e.target.dataset.closeSound) playSound('cancel', 'confirm'); }, true);
 
+  // away, a looped song's decoded buffer (~30-50 MB) is let go too: iOS frees a hidden page's memory biggest page first
+  let away = null;
   document.addEventListener('visibilitychange', () => {
     if (!ctx) return;
-    if (document.hidden) { ctx.suspend(); keepAlive?.pause(); } else ctx.resume().catch(() => {});
+    if (document.hidden) {
+      const el = players[current]?.el;
+      keepAlive?.pause();
+      if (!(el instanceof LoopedTrack) || el.paused) return void ctx.suspend();
+      el.pause(); away = current;
+      setTimeout(() => { if (document.hidden) ctx.suspend(); }, 250);   // suspended at once, the stopped song never ends and keeps its buffer
+      return;
+    }
+    ctx.resume().catch(() => {});
+    if (away && away === current && !getSave().muted) players[away].el.play();
+    away = null;
   });
   window.addEventListener('pageshow', () => { if (ctx && !document.hidden) ctx.resume().catch(() => {}); });   // back from the bfcache
 

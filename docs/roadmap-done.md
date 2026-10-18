@@ -3022,3 +3022,18 @@ full-screen layers zeroed, the Game Corner's three spinning `repeating-conic-gra
 That, showcases) painted once by `rayWheel()`. Added the reload log in Settings (`js/crumbs.js`). A static audit and the
 probe are how it was found; the probe isn't in the repo (it lived in the session's scratchpad).
 
+### Phone reloads, round five: WebKit keeps a lost context's memory (2026-10-18, the friend's iPhone 17 Pro, Home Screen app)
+Read WebKit's source (`WebGLRenderingContextBase::forceLostContext()`): `loseContext()` only detaches the JS objects;
+the GPU context behind it, with every texture, render target, shader and drawing buffer, lives until the context is
+restored or garbage collected. Chrome frees it at the loss, and rounds one to four were all measured in Chrome, so
+`sleepGL()` never freed anything on an iPhone. Now `js/hd2d.js` notes what each WebGL context makes (`noteMade()`), and
+`sleepGL()` / `dropGL()` delete it and shrink the canvas to 1 x 1 before the loss (`letGo()`, `regrow()` on wake). Also:
+`fine()`'s glow maps painted at half resolution (`GLOW` in `js/hub-3d.js`; a shadow's blur scaled to match, `softer()`),
+and a hidden page puts the shown and warmed places to sleep and drops the looped song's decoded buffer (suspending the
+audio context 250 ms later, or the stopped song kept its buffer). Measured with `tools/memory-probe.mjs` (new; counts a
+lost context's objects as WebKit holds them), 402 x 874 at 3x: Clearing -> mall -> Secret Base held 137 MB in the two
+places asleep, now 0 (296 -> 159 MB in all); glow maps Cinder Springs 72 -> 18 MB (269 -> 214 MB), the mall 36 -> 9 MB,
+other towns -15 to -23 MB; the Clearing while hidden 127 -> 45 MB. Places wake drawing with all their textures, no GL
+errors; tests pass. iOS gives a page about 1.5-2 GB in all (an iPhone 17 Pro's log: `ActiveHard 2048 MB`), canvases,
+textures and drawing buffers alike; a Home Screen app has the same limit as a tab, but starts over from the title when
+iOS lets go of it in the background.

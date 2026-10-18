@@ -186,7 +186,7 @@ function flame(g, x, y, s, glow) {
 function pumpkinGlow(gl, p, x, y, w, h) {
   gl.save();
   gl.beginPath(); gl.rect(x, y, w, h); gl.clip();
-  gl.drawImage(p.glow, 0, 0, p.width, p.height, x, y, w, h);
+  gl.drawImage(p.glow, 0, 0, p.glow.width, p.glow.height, x, y, w, h);
   gl.globalCompositeOperation = 'multiply'; gl.fillStyle = '#ffa040'; gl.fillRect(x, y, w, h);
   gl.restore();
 }

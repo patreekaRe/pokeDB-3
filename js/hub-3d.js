@@ -769,10 +769,15 @@ const SIGN_NAIL = [14, 1.2];
 
 const KIT = { white: '#f6f8fb', pale: '#e2e6ee', grey: '#bcc3cf', dark: '#8a92a0', ink: '#3a3e4c', red: '#e84838', redDark: '#b8302a' };
 const FINE = 12;   // a smooth painting's pixels per painted pixel
+/* A glow map's resolution against its painting's. Full size, the glow maps were half of every smooth painting's memory,
+   mostly black (Cinder Springs held ~70 MB of them, 2026-10-18, while an iPhone kept reloading the tab); light is soft,
+   and half as fine is a quarter of that. */
+const GLOW = 0.5;
 
 /** A smooth painting (the user's call: the notice boards, then the Safari gate, the Sky Pillar and the Ancient Tree,
     aren't pixel art), drawn in painted-pixel units, `k` times finer; board() shows it the same size as a pixel one.
-    shine() is its emissive map, painted alongside (mask() matches exact pixel colours, which smooth edges never are). */
+    shine() is its emissive map, painted alongside in the same units at GLOW its resolution (mask() matches exact pixel
+    colours, which smooth edges never are). */
 export function fine(w, h, k = FINE) {
   const c = new OffscreenCanvas(w * k, h * k), g = c.getContext('2d');
   c.fine = k;
@@ -783,14 +788,27 @@ export function fine(w, h, k = FINE) {
   const lin = (x0, y0, x1, y1, stops) => { const l = g.createLinearGradient(x0, y0, x1, y1); stops.forEach((s, i) => l.addColorStop(i / (stops.length - 1), s)); return l; };
   const shine = () => {
     if (!c.glow) {
-      c.glow = new OffscreenCanvas(c.width, c.height); c.glow.fine = k;
-      const gg = c.glow.getContext('2d');
-      gg.fillStyle = '#000'; gg.fillRect(0, 0, c.width, c.height);
-      gg.scale(k, k); gg.lineJoin = gg.lineCap = 'round';
+      c.glow = new OffscreenCanvas(Math.max(1, Math.round(c.width * GLOW)), Math.max(1, Math.round(c.height * GLOW)));
+      const sx = c.glow.width / c.width * k, sy = c.glow.height / c.height * k, gg = c.glow.getContext('2d');
+      c.glow.fine = sx;
+      gg.fillStyle = '#000'; gg.fillRect(0, 0, c.glow.width, c.glow.height);
+      gg.scale(sx, sy); gg.lineJoin = gg.lineCap = 'round';
+      softer(gg, sx / k);
     }
     return c.glow.getContext('2d');
   };
   return { c, g, fill, rr, lin, shine };
+}
+
+/** A context drawn at `q` its painting's resolution keeps its painting's halos: a shadow's blur and offset are in
+    canvas pixels, never scaled by the transform (leader-homes.js's neon and rune rings blur their glow too). */
+function softer(ctx, q) {
+  for (const key of ['shadowBlur', 'shadowOffsetX', 'shadowOffsetY']) {
+    let p = Object.getPrototypeOf(ctx), d;
+    while (p && !(d = Object.getOwnPropertyDescriptor(p, key))) p = Object.getPrototypeOf(p);
+    if (!d?.set) continue;
+    Object.defineProperty(ctx, key, { get() { return d.get.call(this) / q; }, set(v) { d.set.call(this, v * q); } });
+  }
 }
 
 /** A texture, filtered smooth for a smooth painting. */

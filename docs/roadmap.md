@@ -1065,16 +1065,14 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   the ~0.45 s freeze before a new run's film (the map, scenery and film painted at once) and the crossroads' ~0.4 s
   build behind its plain backdrop; next levers if they're noticed.
 
-- **The phone reloads, round four** (2026-10-18, the friend's iPhone 17 Pro still reloads "randomly", other tabs
-  closed). A headless sweep at an iPhone's size (a bot playing a run, and six trips Clearing -> mall -> base in one page
-  load) found no runaway leak, but a lot held for good; cut (archive): the mall's shops let go on the way out (~70 MB),
-  the partner's GIF shared by every 3D place, cries and song bytes no longer kept, the Clearing's old PCs, arcade and Mart
-  caches capped, the Game Corner's spinning CSS rays as canvases. **New: Settings > Save lists "The game reloaded by
-  itself"** (`js/crumbs.js`): where, how many minutes in, and whether the game was on screen or the phone was away from
-  it. The friend plays as usual and, after a reload, reads that line to the user. Next levers, by size: the `shine()`
-  emissive canvases at full size (half of every smooth painting's memory, `fine()` in `js/hub-3d.js`), the mall's hall
-  kept through runs (~36 MB), `KEEP_ROOMS` 3 (~36 MB a ? room). If it says "while away from the game", iOS dropped a
-  hidden tab, and the lever is letting go on `visibilitychange`.
+- **The phone reloads, round five** (2026-10-18, branch `claude/funny-pascal-bu8emp`, on `main` too; archive): found why
+  four rounds didn't help: in Safari a 3D place put to sleep kept all its GPU memory (WebKit frees nothing at a forced
+  context loss; every round was measured in Chrome, which does). Now a sleeping place deletes what its context made and
+  shrinks its canvas first (`letGo()` in `js/hd2d.js`), glow maps are painted at half size, and while the game is hidden
+  the place on screen sleeps and the song's decoded buffer goes. `tools/memory-probe.mjs` measures it as WebKit holds it.
+  The friend plays as usual (the Home Screen app too) and says if it still reloads, reading Settings > Save's "The game
+  reloaded by itself" line. Next levers if it does: the 4x MSAA render target of each smooth place (~25 MB awake),
+  music decoded at ~30-50 MB a song, the towns' ground canvas (2560 px, ~24 MB + its texture), `KEEP_ROOMS` 3.
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game
