@@ -115,7 +115,7 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   again", the strength from `sealedMult()`); `'plain'` (the shards don't count yet, `sealOn()` false) says the full lines
   without the star or badge. Then Mewtwo thanks you, the light rises, and five **epilogue stills** fade in a line each
   (`SLIDES`: Lantern Village's Waystone at night, the Nietos by the PC, the Gym Leaders you've beaten (all of them if
-  none, two rows past seven), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
+  none, two rows past seven; the Nietos as baby Linc alone, `linc.png` cut from their sprite), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
   The Well plays `seal` (the fanfare gives way to it); `hall-of-fame` comes back with the win scene. After the credits'
   THE END, a black screen, a chime and Mewtwo's last word (the camp's, or the gate's before the shards count).
   **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
