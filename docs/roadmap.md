@@ -35,14 +35,12 @@ agreed on the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy, boards 1-7
 - Sprites: every Safari Pokémon (514, all Gen 1-5) has PokeAPI's black-white animated shiny, the source of the normal
   ones; numbers from `raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv` (pokeapi.co is blocked).
 
-Three sessions, in order:
-> Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md, cards.md and economy-and-hall-of-fame.md's shiny part, and
-> this roadmap entry. Session 1, shiny catching and Sparkle: fetch every Safari Pokémon's shiny front GIF as
-> `assets/pokemon/<id>-shiny-front.gif` (`SPRITE_FIT` lends the normal entry), add the save's Safari shinies (id ->
-> Sparkle), roll a wild shiny in a Safari run's rooms (kept in a saved run), the battle's entrance, banner, gold shakes
-> and catch box, and the signature card's Sparkle looks. Tests for the save and the roll; no sim change (look only).
-> Check headless with `?biome=` / `?safari` flags (no screenshots), a patch-notes line, update this entry, push to main
-> and give me the githack link.
+Three sessions, in order. **Session 1 done 2026-10-18, on `main`** (patch 1.26): the 514 shiny GIFs, `save.safariShinies`,
+the roll, the battle's entrance, banner, twinkles, gold shakes and catch box, the signature card's Sparkle looks; how it
+works is `docs/reference/safari.md`'s "Wild shinies and Sparkle". The user plays a Safari run with `?wildshiny` (every
+wild shiny, a catch saves nothing) and looks at the cards with `?sparkle=1` to `?sparkle=5`, and says what to change.
+Next, session 2 (`gainShiny()` / `shinyGain()` in `js/data/shinies.js` are the Exchange's pull too; `maxed` is the
+past-★5 duplicate that pays 3 Lucky Stars):
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's Safari Outfitter part and this roadmap entry.
 > Session 2, the Shiny Exchange: the kiosk in the lodge, its LED screen and tray, the Exchange window, the capsule pulls

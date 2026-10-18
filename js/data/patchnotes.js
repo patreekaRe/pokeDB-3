@@ -43,17 +43,6 @@ export const NEXT_MAX = 20;
 
 /** What has shipped since the newest patch, waiting for the next one: [group, line]. */
 export const NEXT = [
-  ['modes', 'Every leaderboard is a new ranking table: the whole top 10 at a glance, gold, silver and bronze, your own row pinned, and climbers\' augments on their rows.'],
-  ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
-  ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
-  ['dex', 'A trainer\'s card is tidier, adds their Journal rank, top Trainer Level, favourite starter and best Sky Pillar floor, and explains anything you tap.'],
-  ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
-  ['base', 'New furniture wears a "!" piece by piece in the PC\'s Decorations and the Secret Base\'s Decorate tray until you tap it.'],
-  ['modes', 'The Crystal Depths get a real ending: the Energy Well, Mewtwo\'s farewell and epilogue scenes; all five Waystones lit binds the Well for a new badge.'],
-  ['music', 'Eternatus and Eternamax have their own battle themes, and the Depths\' ending its own songs for the Energy Well and the credits.'],
-  ['runs', 'A biome\'s boss stands on the map in colour once your Pokédex has met it, beside its Gym Leader, instead of a grey silhouette.'],
-  ['runs', 'Smoother transitions: every biome\'s and place\'s film runs at full speed, and a fight\'s wipe opens only once its 3D arena is ready.'],
-  ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (places, music and cries you\'ve left, and all of it while you\'re in another app), so iPhones stop reloading it, and Settings notes where if one still does; the volume bars are easier to grab with a finger, and every Gym Leader can be handed a gift (John\'s kotatsu was in the way); a tree no longer fills the screen in some Clearing fights.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */
@@ -65,6 +54,25 @@ export function sectionsOf(p) {
 }
 
 export const PATCHES = [
+  {
+    version: '1.26',
+    name: 'Shine Bright',
+    date: '2026-10-18',
+    notes: [
+    ['modes', 'Every leaderboard is a new ranking table: the whole top 10 at a glance, gold, silver and bronze, your own row pinned, and climbers\' augments on their rows.'],
+    ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
+    ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
+    ['dex', 'A trainer\'s card is tidier, adds their Journal rank, top Trainer Level, favourite starter and best Sky Pillar floor, and explains anything you tap.'],
+    ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
+    ['base', 'New furniture wears a "!" piece by piece in the PC\'s Decorations and the Secret Base\'s Decorate tray until you tap it.'],
+    ['modes', 'The Crystal Depths get a real ending: the Energy Well, Mewtwo\'s farewell and epilogue scenes; all five Waystones lit binds the Well for a new badge.'],
+    ['music', 'Eternatus and Eternamax have their own battle themes, and the Depths\' ending its own songs for the Energy Well and the credits.'],
+    ['runs', 'A biome\'s boss stands on the map in colour once your Pokédex has met it, beside its Gym Leader, instead of a grey silhouette.'],
+    ['runs', 'Smoother transitions: every biome\'s and place\'s film runs at full speed, and a fight\'s wipe opens only once its 3D arena is ready.'],
+    ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (places, music and cries you\'ve left, and all of it while you\'re in another app), so iPhones stop reloading it, and Settings notes where if one still does; the volume bars are easier to grab with a finger, and every Gym Leader can be handed a gift (John\'s kotatsu was in the way); a tree no longer fills the screen in some Clearing fights.'],
+    ['modes', 'A Safari wild can be shiny, 1 in 150: catch it to keep it, and each one caught again raises its Sparkle, lighting up its signature card.'],
+    ],
+  },
   {
     version: '1.25',
     name: 'Off the Path',
@@ -533,8 +541,8 @@ export const IN_THE_GAME = [
   ['⭐', '6 Trainer Levels', 'Level 0 to 5, each adding a new rule. Win to unlock the next, and strike the Sealed Gate harder.'],
   ['📕', 'Pokédex', '125 entries over seven pages. Research each Pokémon for PokéCoins, page perks and a Silph Scope.'],
   ['🗼', 'Sky Pillar', 'A 100-floor climb with a new starter every week, 116 augments and a weekly leaderboard.'],
-  ['🏆', '188 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
-  ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas and a leaderboard.'],
+  ['🏆', '189 badges', 'Earned all over the game and kept in your Trainer Card\'s Badge Case.'],
+  ['🌿', 'Safari Zone', 'A daily run, the same for everyone, with 514 Pokémon to catch over six areas, each with a rare shiny, and a leaderboard.'],
   ['🏠', 'Secret Base', 'A 3D house in the Ancient Tree, with as many rooms as you build and a backyard with a berry garden, to decorate with over 1,000 kinds of furniture, and home to six of your Safari catches.'],
   ['🏪', 'Poké Mall', 'A grand 3D hall with fountains and Pokémon passing through, Smeargle\'s furniture showroom, with new stock in eight departments every day and a Grand Ballroom of gold statues for collectors, and Kangaskhan\'s Safari Outfitter for Poké Balls and Day Passes.'],
   ['🎰', 'Game Corner', 'Meowth\'s place in the Poké Mall: Voltorb Flip, Who\'s That Pokémon?, slots, Plinko, Blackjack and High-Low, free to play for up to 250 PokéCoins a day, a prize counter of 28 games to take home and play, from slot machines to five pinball tables, and 6 starters, 9 perks and a shiny for every starter but Mewtwo to buy.'],

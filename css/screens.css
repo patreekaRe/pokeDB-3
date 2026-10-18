@@ -6309,3 +6309,48 @@ body.way-shake :is(.event3d-view, canvas) { animation: wayShake 0.9s steps(1); }
 @keyframes slToastIn { from { transform: translate(-50%, -140%); } }
 @keyframes slToastOut { to { transform: translate(-50%, -140%); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .sl-toast, .sl-toast.out { animation: none; } .sl-toast .sl-fill { transition: none; } }
+
+/* a wild shiny in a Safari room (js/data/shinies.js): a gold rim and tag on its plate, sparkles on it all fight, a gold
+   banner as it appears, a ball that shakes in gold, and a gold catch box */
+#enemy-plate.shiny { box-shadow: 0 0 0 2px #f8d030, 0 0 14px rgba(248, 208, 48, 0.6); }
+#enemy-plate.shiny #enemy-name { color: #a07000; }
+.shiny-tag {
+  flex: none; margin-left: auto; padding: 2px 5px 1px; border-radius: 3px;
+  background: #f8d030; color: #4a3000; font-size: 0.75rem; line-height: 1.2; text-transform: uppercase;
+}
+.shiny-tag[hidden] { display: none; }
+.shiny-aura { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.shiny-twinkle, .gold-spark, .sig-twinkle {
+  position: absolute; background: #fff3b8;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+.shiny-twinkle { width: 16px; height: 16px; opacity: 0; animation: shinyTwinkle 2.4s ease-in-out infinite; }
+.shiny-twinkle.t0 { left: 18%; top: 22%; }
+.shiny-twinkle.t1 { left: 72%; top: 14%; animation-delay: 0.5s; width: 12px; height: 12px; }
+.shiny-twinkle.t2 { left: 80%; top: 58%; animation-delay: 1.1s; }
+.shiny-twinkle.t3 { left: 10%; top: 64%; animation-delay: 1.6s; width: 12px; height: 12px; background: #ffd34a; }
+.shiny-twinkle.t4 { left: 46%; top: 6%; animation-delay: 2s; width: 10px; height: 10px; background: #ffd34a; }
+@keyframes shinyTwinkle { 0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); } 50% { opacity: 1; transform: scale(1) rotate(45deg); } }
+.enemy-portrait:is(.defeated, .sinking, .captured, .ran) .shiny-aura { display: none; }
+.shiny-banner {
+  position: absolute; left: 0; right: 0; top: 30%; z-index: 7;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  padding: 9px 16px;
+  background: linear-gradient(90deg, transparent, rgba(74, 46, 0, 0.88) 12%, rgba(74, 46, 0, 0.88) 88%, transparent);
+  border-block: 2px solid #f8d030;
+  color: #ffe590; text-align: center; text-transform: uppercase; text-shadow: 2px 2px 0 #3a2400;
+  font-family: var(--pixel-font); font-synthesis-weight: none;
+  pointer-events: none;
+}
+.shiny-banner strong { font-weight: normal; font-size: clamp(0.8rem, 3.8vw, 1.25rem); }
+.shiny-banner-star { font-size: 1.1rem; }
+.shiny-banner.show { animation: shinyBannerIn 2.6s ease-out both; }
+@keyframes shinyBannerIn { 0% { transform: translateX(-110%); } 12%, 86% { transform: none; } 100% { transform: translateX(110%); } }
+.thrown-ball.gold .item-sprite { filter: drop-shadow(0 0 3px #ffd34a) drop-shadow(0 0 7px rgba(255, 211, 74, 0.75)); }
+.thrown-ball.gold.caught .item-sprite { filter: brightness(0.6) drop-shadow(0 0 3px #ffd34a); }
+.gold-spark { left: -5px; top: -5px; width: 10px; height: 10px; background: #ffe27a; opacity: 0; animation: goldSpark 0.8s ease-out var(--delay) forwards; }
+@keyframes goldSpark { 0% { opacity: 1; transform: translate(0, 0) scale(0.6); } 100% { opacity: 0; transform: translate(var(--dx), -48px) scale(1.2); } }
+#reward-screen .reward-log.shiny-catch {
+  border-color: #f8d030;
+  box-shadow: 0 0 0 2px #6a4a00, inset 0 0 0 2px #6a4a00, 0 0 18px rgba(248, 208, 48, 0.65), 3px 3px 0 2px rgba(0, 0, 0, 0.4);
+}
