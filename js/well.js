@@ -14,7 +14,8 @@ import { gymTalk } from './gym.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
 import { ENEMY_DEFS } from './data/enemies.js';
 import { RING } from './data/towns.js';
-import { GYM_BY_ID } from './data/gym.js';
+import { GYM_LEADERS, GYM_BY_ID, gymWins } from './data/gym.js';
+import { getSave } from './storage.js';
 import { sealedMult } from './data/difficulty.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -289,6 +290,7 @@ const SLIDES = [
   { paint: lanternNight, line: 'The Waystones burn on, all across the land.' },
   { paint: clearingPC, line: ['Back home in the Clearing, word spreads fast.', 'Linc hasn\'t taken off his Pikachu suit since.'], cast: () => [{ src: 'assets/trainers/gym/nietos.png', x: 34, y: 82, h: 34, cls: 'wave' }] },
   ...HOMES.map(home => ({ paint: (c, w, h) => leaderHome(c, w, h, home), line: home.line, cast: () => homeCast(home) })),
+  { paint: leaderStage, line: 'Every leader you beat heard what you did below.', cast: leaderRow },   // then all of them together (the user's call, 2026-10-18)
   { paint: depthsCamp, line: 'The miners\' camp falls quiet. Nothing stirs under the gate.' },
   { paint: titleSky, line: 'And something old sleeps beneath it all.', cast: () => [{ src: ENEMY_DEFS.eternatus.image, x: 50, y: 40, h: 11, cls: 'drift' }] },
 ];
@@ -328,6 +330,21 @@ function homeCast({ who }) {
   const cast = who.map((id, i) => ({ src: GYM_BY_ID[id].sprite, x: i ? 70 : 30, y: 84, h: 34 }));
   if (who.includes('phil')) cast.unshift({ src: 'assets/trainers/gym/jona.png', x: 17, y: 80, h: 32, cls: 'ghost' });
   return cast;
+}
+
+/** The leaders you've beaten in a row along the stage (all of them, if you've beaten none yet). The Nietos' sprite is Law
+    and Britt again with Linc, so they stand as Linc alone, cut out of it, small, in the front row (the user's ask). */
+function leaderRow() {
+  const all = GYM_LEADERS.filter(l => l.sprite), beaten = all.filter(l => gymWins(getSave(), l.id) > 0);
+  const picked = beaten.length ? beaten : all;
+  const list = picked.filter(l => l.id !== 'nietos').map(l => ({ src: l.sprite, size: 1 }));
+  const back = list.length > 7 ? Math.floor(list.length / 2) : 0;   // two rows when it's a crowd
+  if (picked.some(l => l.id === 'nietos')) list.splice(back + Math.ceil((list.length - back) / 2), 0, { src: 'assets/trainers/gym/linc.png', size: 0.62 });
+  const place = (row, y, scale) => row.map((l, i) => {
+    const per = Math.min(16, 88 / row.length);
+    return { src: l.src, x: 50 + (i - (row.length - 1) / 2) * per, y, h: Math.min(26, per * 2.4) * scale * l.size };
+  });
+  return [...place(list.slice(0, back), 72, 0.85), ...place(list.slice(back), 88, 1)];
 }
 
 function stars(c, w, h, n, top = 0.6) {
@@ -555,6 +572,21 @@ function bazaarView(c, x, y, w, h) {
   disc(c, '#fff4c0', x + w * 0.25, y + h * 0.3, Math.min(w, h) * 0.12);
   c.fillStyle = '#e0a050'; c.beginPath(); c.moveTo(x, y + h); c.quadraticCurveTo(x + w * 0.3, y + h * 0.55, x + w * 0.6, y + h * 0.8); c.quadraticCurveTo(x + w * 0.8, y + h * 0.6, x + w, y + h * 0.7); c.lineTo(x + w, y + h); c.fill();
   for (let i = 0; i < 6; i++) rect(c, i % 2 ? '#e04848' : '#fff0d8', x + i * w / 6, y, w / 6, h * 0.12);
+}
+
+/** A stage at dusk for the Gym Leaders to stand along. */
+function leaderStage(c, w, h) {
+  c.fillStyle = grad(c, 0, h * 0.7, ['#20184a', '#6a2a5a', '#d8603a', '#f8b048']);
+  c.fillRect(0, 0, w, h);
+  stars(c, w, h, Math.round(w * h / 200), 0.3);
+  halo(c, w / 2, h * 0.7, Math.max(w, h) * 0.5, '#ffd070', 0.5);
+  c.fillStyle = '#3a1a38';
+  c.beginPath(); c.moveTo(0, h * 0.72);
+  for (let i = 0; i <= 8; i++) c.lineTo(w * i / 8, h * (0.66 + hash(i * 3) * 0.05));
+  c.lineTo(w, h); c.lineTo(0, h); c.fill();
+  c.fillStyle = grad(c, h * 0.8, h, ['#c89858', '#8a6034']);
+  c.fillRect(0, h * 0.8, w, h * 0.2);
+  c.fillStyle = '#f0d088'; c.fillRect(0, h * 0.8, w, 2);
 }
 
 /** The Depths camp after: tents, the fire still lit, the crystal cart on its rails empty, the dark mine mouth. */
