@@ -786,14 +786,15 @@ body:has(.mall3d) .collection-screen.over { z-index: 920; }
 .rb-rank-next { grid-column: 1 / -1; font-size: 12px; color: #6a5440; }
 .rb-coins { flex: none; padding: 6px 10px; border-radius: 99px; background: #fffaf0; box-shadow: inset 0 0 0 2px #e0b040; font-size: 13px; }
 .rb-coins b { font: 13px/1 var(--pixel-font); color: #5a3a10; }
-.rb-tabs { display: flex; gap: 6px; margin: 0 4px; overflow-x: auto; scrollbar-width: none; }
+/* the tabs wrap, two to a row on a phone, rather than scroll: a hidden scrollbar hid the last two (the user, 2026-10-18) */
+.rb-tabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px; margin: 0 4px; }
 .rb-tab {
-  position: relative; flex: 1 0 auto; padding: 9px 12px 12px; border: none; border-radius: 10px 10px 0 0; cursor: pointer;
-  background: linear-gradient(#a87a44, #8a5e30); color: #f4e8c8; font: 12px/1.2 var(--pixel-font); white-space: nowrap;
+  position: relative; min-width: 0; padding: 9px 12px 12px; border: none; border-radius: 10px 10px 0 0; cursor: pointer;
+  background: linear-gradient(#a87a44, #8a5e30); color: #f4e8c8; font: 12px/1.2 var(--pixel-font); text-align: center;
   box-shadow: inset 0 2px 0 #c8985a; translate: 0 4px; transition: translate 0.15s;
 }
 .rb-tab.on { background: linear-gradient(#d8b878, #c49a5a); color: #3a2a18; translate: 0 0; }
-.rb-tab small { margin-left: 4px; font: 12px/1 var(--pixel-font); opacity: 0.8; }
+.rb-tab small { margin-left: 4px; font: 12px/1 var(--pixel-font); opacity: 0.8; white-space: nowrap; }
 .rb-tab-ready {
   position: absolute; top: -6px; right: -2px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 99px;
   display: grid; place-items: center; background: #d84838; color: #fff; font: 12px/1 var(--pixel-font); font-style: normal; box-shadow: 0 2px 0 #0005;
