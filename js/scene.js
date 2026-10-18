@@ -1888,8 +1888,11 @@ function horizonRow(scale) {
 // 30 a second timer, it made every other film frame twice as heavy, and the films stuttered on a phone (2026-10-18)
 const filmOver = () => !!document.querySelector('.biome-intro:not(.leaving), #travel-scene:not([hidden]), #crossroads-scene:not([hidden])');
 
+// a 3D place over the scenery (the arena, a walk-in room, the Mart) only hides it, and it drew on under every one (2026-10-18)
+const unseen = () => { const c = getComputedStyle(canvas); return c.display === 'none' || c.visibility === 'hidden'; };
+
 function frame() {
-  if (document.hidden || !$('title-screen').hidden || filmOver()) return;
+  if (document.hidden || !$('title-screen').hidden || filmOver() || unseen()) return;
   tick += DT;
   storm.level = Math.max(0, Math.min(1, storm.level + (storm.on ? 1 : -1) * DT / (FPS * 2)));
   draw();

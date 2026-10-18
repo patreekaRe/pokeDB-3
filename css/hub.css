@@ -159,6 +159,8 @@
 .title-screen.hub-mode .title-version { visibility: hidden; }   /* the patch notes are on the Clearing's PC there */
 @keyframes hubLogo { 0%, 75% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 .title-screen.hub-on.hub-greeted .title-center { animation: none; visibility: hidden; }
+/* hidden, its letters still waved and the ball wobbled under the logo's glow, every frame behind the Clearing */
+.title-screen.hub-on.hub-greeted .title-center * { animation-play-state: paused; }
 /* the title's fade in showed the screen under it (the character select) through the Clearing; the walk out of the mall
    or the base is already a fade through black */
 .title-screen.hub-mode:not([hidden]) { animation: none; }

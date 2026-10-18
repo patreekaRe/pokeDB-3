@@ -2113,6 +2113,8 @@ export async function leave() {
   if (holding) act('cancel');
   endVisit();
   untry();
+  // a jukebox left on played on through the runs and the hub, its notes piling up sprites no frame cleared
+  pieceGroup.traverse(o => { const p = o.userData.play; if (p?.on && p.timer) { stopPlay(p); p.on = p.st.on = false; } });
   root.remove();
   sleepGL(renderer);   // its GPU memory let go; reopen() wakes it
   if (host) endGuest();
