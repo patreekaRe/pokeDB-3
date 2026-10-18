@@ -7,7 +7,9 @@ import { TYPES, CARDS_BY_ID, describe, keywords, termTips, cardTerms } from './d
 import { ITEM_FIT } from './data/item-fit.js';
 import { cardArt } from './card-art.js';
 import { relicTerms } from './data/relics.js';
-import { getSave } from './storage.js';
+import { getSave, safariSparkle } from './storage.js';
+import { shinyImage } from './data/shinies.js';
+import { spriteFit } from './data/sprite-fit.js';
 import { playMusic, playSound } from './audio.js';
 
 /** Shorthand for document.getElementById. */
@@ -199,7 +201,10 @@ export function makeCard(card, options = {}) {
   // pixel letters can't break inside a word, so a long one (Flamethrower) shrinks to fit the card
   const longest = Math.max(...card.name.split(/[ -]/).map(w => w.length));
   if (longest > 9) name.style.setProperty('--name-fit', (9.4 / longest).toFixed(3));
-  const art = cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
+  // a Safari signature card wears its Pokémon's shiny once it's caught, brighter with each Sparkle (options.sparkle: the
+  // catch box's, before the catch is saved)
+  const sparkle = card.safari && card.from ? options.sparkle ?? safariSparkle(card.from) : 0;
+  const art = (sparkle && shinyArt(card.from)) || cardArt(card) || (card.sprite ? cardSprite(card) : el('div', 'card-art', card.art));
   const tag = el('div', 'card-type', `${type.icon} ${type.label}${kind ? ` · ${kind[0].toUpperCase()}${kind.slice(1)}` : ''}`);
   const text = el('p', 'card-text');
   text.append(cardLine(card, options.stage || 0));
@@ -210,10 +215,16 @@ export function makeCard(card, options = {}) {
   face.append(cost, name, art, tag, text);
   // the TCG's rarity symbol (● ◆ ★) opposite the cost; a starting card counts as common, signature moves and junk have none
   const rarity = card.rarity || (card.evoOnly || card.token || card.status || card.safari ? null : 'common');
-  if (rarity) {
+  if (rarity && !sparkle) {   // a sparkled card's ★ takes the gem's place
     const gem = el('span', `card-rarity ${rarity}`);
     gem.title = rarity[0].toUpperCase() + rarity.slice(1);
     face.append(gem);
+  }
+  if (sparkle) {
+    node.classList.add('sparkled', `sparkle-${sparkle}`);
+    const stars = el('span', 'card-sparkle', `★${sparkle}`);
+    stars.title = `Its shiny is yours: Sparkle ${sparkle} of 5`;
+    face.append(stars);
   }
   node.append(face);
 
@@ -304,6 +315,25 @@ function fitCard(node) {
 }
 
 /** A card's item art, cropped to the sprite's visible pixels (ITEM_FIT) so the CSS can scale it to fill the art window. */
+/** A signature card's art once its shiny is yours: the Pokémon's shiny GIF, cropped to its pose like the battle sprites,
+    with sparkles over it from ★4. */
+function shinyArt(id) {
+  const art = el('div', 'card-art sig-art');
+  const fit = el('div', 'sig-fit');
+  const img = Object.assign(new Image(), { className: 'pixel', alt: '', draggable: false, decoding: 'async' });
+  const src = shinyImage(id), [t, b, l, r] = spriteFit(src);
+  img.addEventListener('load', () => {
+    const w = img.naturalWidth, h = img.naturalHeight;
+    for (const [k, v] of Object.entries({ gw: w, gh: h, bx: l, by: t, bw: Math.max(1, w - l - r), bh: Math.max(1, h - t - b) })) fit.style.setProperty(`--${k}`, v);
+    fit.classList.add('ready');
+  }, { once: true });
+  img.src = src;
+  fit.append(img);
+  art.append(fit);
+  for (let i = 0; i < 3; i++) art.append(el('span', `sig-twinkle t${i}`));
+  return art;
+}
+
 function cardSprite(card) {
   const art = el('div', 'card-art');
   const [x, y, w, h] = ITEM_FIT[card.sprite] || [0, 0, 32, 32];

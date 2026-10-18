@@ -143,6 +143,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   // every screen after a fight shows the icon row, but only the first one tells the news
   const news = coins && !coins.told;
   if (coins) coins.told = true;
+  $('reward-log').classList.toggle('shiny-catch', !!(news && coins.shiny));   // a shiny's catch box is gold
   const lines = [
     ...notes.splice(0),
     // the icon row over the screen already shows the coins and ₽, so the box doesn't read them out again
@@ -476,8 +477,8 @@ function finishLine() {
 }
 
 /** Ready-made option tiles. */
-export function cardOption(card, stage, onPick, count = 1) {
-  const node = makeCard(card, { stage, count });
+export function cardOption(card, stage, onPick, count = 1, look = null) {   // look: makeCard()'s other options (a Sparkle)
+  const node = makeCard(card, { stage, count, ...look });
   if (card.rarity === 'rare') node.classList.add('shimmer');
   return { node, onPick: onPick && (() => { if (card.upgraded) upgradeBurst(node); onPick(); }) };
 }

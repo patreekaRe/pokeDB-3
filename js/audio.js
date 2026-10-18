@@ -191,6 +191,7 @@ const SOUNDS = {
   'crystal-0':  { synth: ac => windChime(ac, 2349), gain: 0.5 },   // ...and its intro: crystals chiming as the light catches them
   'crystal-1':  { synth: ac => windChime(ac, 2794), gain: 0.5 },
   'crystal-2':  { synth: ac => windChime(ac, 3136), gain: 0.5 },
+  shiny:        { synth: shinyChime, gain: 0.55 },   // a wild shiny's sparkle as it appears (battle.js)
   // the Safari areas' boss preludes (SAFARI_PRELUDES in scene.js)
   'leaf-storm': { synth: leafStorm },        // the Meadow's: the wind rises and the Lone Tree's crown thrashes...
   flock:        { synth: flockBurst },       // ...and its birds burst out
@@ -1420,6 +1421,21 @@ function windChime(ac, f) {
     for (const [p, a, d] of partials) v += Math.sin(2 * Math.PI * p * t) * a * Math.exp(-t / d);
     out[i] = v * Math.min(1, t / 0.002, (length - i) / (rate * 0.05));
   }
+  return normalize(buffer, 0.12);
+}
+
+/** A wild shiny appearing: the games' glitter, four bell notes running up in a quick sparkle. */
+function shinyChime(ac) {
+  const rate = ac.sampleRate, length = Math.round(rate * 1.3);
+  const buffer = ac.createBuffer(1, length, rate);
+  const out = buffer.getChannelData(0);
+  for (const [f, at] of [[2637, 0], [3136, 0.07], [3951, 0.14], [5274, 0.22]]) {
+    for (let i = Math.round(at * rate); i < length; i++) {
+      const t = i / rate - at;
+      out[i] += (Math.sin(2 * Math.PI * f * t) + 0.35 * Math.sin(2 * Math.PI * f * 2.76 * t) * Math.exp(-t / 0.08)) * Math.exp(-t / 0.3) * Math.min(1, t / 0.002);
+    }
+  }
+  for (let i = length - Math.round(rate * 0.05); i < length; i++) out[i] *= (length - i) / (rate * 0.05);
   return normalize(buffer, 0.12);
 }
 

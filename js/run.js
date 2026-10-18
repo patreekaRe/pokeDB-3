@@ -31,7 +31,8 @@ import { BASE_HP, HP_PER_STAGE, STARTERS_BY_ID, RENAMED_STARTERS, spriteUrl, sta
 import { TYPES, STAGE_POWER, CARDS_BY_ID, MAX_COPIES, poolForType, baseId, upgradeId, canUpgrade, SIGNATURE_FOR } from './data/cards.js';
 import { RELICS, RELICS_BY_ID, ABILITIES, prizeMult } from './data/relics.js';
 import { ITEMS_BY_ID, ITEM_SLOTS, ITEM_DROP, itemsForType } from './data/items.js';
-import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew } from './storage.js';
+import { getSave, updateSave, awardCoins, coinsWithBonus, saveRunData, loadRunData, clearRunData, markSeen, markSafari, perkLevel, isNew, gainShiny } from './storage.js';
+import { SHINY_ODDS, markShinies, shinyGain, shinyLine } from './data/shinies.js';
 import { MART_DISCOUNT, REWARD_CARDS, COIN_LEVEL_BONUS } from './data/shop.js';
 import { MAX_LEVEL, LEVELS, runMods, runFloors, isMewtwoRun } from './data/difficulty.js';
 import { GATE_HP, GATE_HIT, GATE_SLIVER } from './data/gate.js';
@@ -88,6 +89,7 @@ const mendFlag = () => new URLSearchParams(location.search).has('mend');
 /** `&fest=lantern|moon|fireworks` on a `?town=shrine` peek: John's festival picked (with `&mend`, the stone still to mend; alone, mended). */
 const festFlag = () => new URLSearchParams(location.search).get('fest');
 /** `?hearts=N`: every friend at N hearts at home for a page load, their heart lines unheard till said (nothing saved). */
+const wildShinyFlag = () => new URLSearchParams(location.search).has('wildshiny');   // ?wildshiny: every Safari wild is shiny, and catching one saves nothing
 const heartsFlag = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : Math.max(0, Math.min(HEARTS, +n || 0)); };
 const heardPeek = {};
 /** A friend's hearts at home, and how many of their heart lines they've said (js/data/towns.js's HEART_LINES). */
@@ -946,6 +948,7 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     dealEnemies(mainBiome(), kind, nodes.filter(node => node.type === kind), run.map.byId, isSafari() ? undefined : dexWeight, safariArea()?.normals);
   }
   if (isSafari()) markRares(nodes.filter(node => node.type === 'fight'), safariArea(), rareOdds(safariArea().id, getSave().safariDex, fairTry()));   // rare spawns, on the biome's seed (more on a replay once the area's page is complete)
+  if (isSafari()) markShinies(nodes.filter(node => node.type === 'fight'), wildShinyFlag() ? 1 : SHINY_ODDS);   // off the seed (looks only), and saved on the map so a refresh can't reroll one
   if (gleaning()) markSparkles(nodes, mainBiome().id, random);   // a town's materials, sparkling in a room or two
   const shard = shardHere();
   if (shard) markShard(nodes, shard, random);   // the town's Waystone Shard, floating over one of its Alphas
@@ -1813,6 +1816,7 @@ async function fight(node, { talked = false } = {}) {
   if (!ken && !isSafari() && !isTower() && !peeking) dexSeen(node.enemyId);   // the Safari's wilds go in its own Pokédex, not this one; a playtest's in none
   if (isSafari() && node.type === 'fight' && !peeking) markSafari('seen', node.enemyId);
   encounter.rare = isSafari() && Boolean(node.rare);
+  encounter.shiny = isSafari() && node.type === 'fight' && Boolean(node.shiny);
   encounter.leader = gymLeader(node);
   if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
@@ -2545,7 +2549,7 @@ function afterFight(node, result) {
   if (result.spent && isTower()) run.tower.spent.push(result.spent);   // a once-a-climb augment used up (Rebirth, Second Wind)
   if (result.fled || result.escaped) {
     run.hp = result.hp;
-    tell(result.escaped ? `The wild ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
+    tell(result.escaped ? `The ${node.shiny ? 'shiny' : 'wild'} ${ENEMY_DEFS[node.enemyId]?.name ?? 'Pokémon'} ran away. Nothing won.` : 'Got away safely!');
     missionTally(result.tally);
     return showMap();
   }
@@ -2580,9 +2584,13 @@ function afterFight(node, result) {
   const base = Math.round(Math.round((low + randIndex(high - low + 1)) * run.mods.prizeMult * (result.caught ? CATCH_PRIZE : 1)) * prizeMult(run.relics));   // Amulet Coin, Relic Statue
   const prize = Math.round(base * (augs().prizeMult || 1) * (augs().riskyClimb && node.type === 'elite' ? augs().riskyClimb : 1)) + (augs().goldenTouch ? result.tally?.biggest || 0 : 0);   // Pocket Change, Risky Climb, Golden Touch
   const luxury = result.caught && BALLS_BY_ID[result.ball]?.id === 'luxury' ? LUXURY_COINS : 0;   // the Luxury Ball's bonus
+  // a shiny caught: its Sparkle is raised as the rewards are collected, like the coins, so a refresh can't raise it twice
+  const shinyCatch = result.caught && result.shiny && isSafari() ? shinyGain(getSave().safariShinies, node.enemyId) : null;
+  const lentShiny = peeking || wildShinyFlag();
   if (result.caught) {
     run.tally.caught = (run.tally.caught || 0) + 1;
     if (!peeking && markSafari('caught', node.enemyId)) dexNews.unshift(`${ENEMY_DEFS[node.enemyId].name} was added to your Safari Pokédex!`);
+    if (shinyCatch) dexNews.unshift(shinyLine(ENEMY_DEFS[node.enemyId].name, shinyCatch) + (lentShiny ? ' (A playtest: nothing is saved.)' : ''));
     // a Ranger task this catch finishes, said now (it's logged as the rewards are collected)
     if (!peeking && isSafari()) for (const t of finishedBy(getSave(), rangerInfo(node, result))) dexNews.push(`📋 Ranger task done: ${t.title}! Claim it on the board at the Safari Outfitter.`);
     if (luxury) dexNews.push(`The Luxury Ball pays ${coinsWithBonus(luxury)} more PokéCoins.`);
@@ -2597,7 +2605,8 @@ function afterFight(node, result) {
   run.pendingCoins = {
     foe: node.type === 'fight' ? `The wild ${foe}` : node.type === 'elite' ? `The Alpha ${foe}` : foe,
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
-    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${foe} was caught!` : null,
+    beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
+    shiny: Boolean(shinyCatch),   // the catch box's gold
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
@@ -2616,6 +2625,7 @@ function afterFight(node, result) {
     if (tough) mission('tough');
     if (result.caught) mission('catch');
     if (result.caught && isSafari() && !peeking) rangerCatch(rangerInfo(node, result));
+    if (shinyCatch && !lentShiny) gainShiny(node.enemyId);
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
@@ -2632,7 +2642,7 @@ function afterFight(node, result) {
   };
 
   const steps = [];   // screens to show one after another
-  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next) : offerCard('fight', next)));
+  if (node.type === 'fight') steps.push(next => (result.caught ? offerSignature(node.enemyId, next, shinyCatch?.level) : offerCard('fight', next)));
   if (node.type === 'elite') {
     run.tally.elites += 1;
     steps.push(next => offerRelic('The Alpha\'s relic', next, { source: 'elite' }), next => offerCard('elite', next));
@@ -2869,7 +2879,7 @@ function creditSafari() {
 }
 
 /** A caught Pokémon offers its signature card for the run, take it or leave it, like a card reward (one copy a run). */
-function offerSignature(enemyId, next) {
+function offerSignature(enemyId, next, sparkle) {   // sparkle: a shiny just caught, so its card shows the Sparkle it's getting
   const card = CARDS_BY_ID[SIGNATURE_FOR[enemyId]];
   const name = ENEMY_DEFS[enemyId].name;
   if (!card) return next();
@@ -2878,7 +2888,7 @@ function offerSignature(enemyId, next) {
     title: `${name}'s move`,
     sub: known ? `You already know ${card.name}, ${name}'s signature move.`
       : `${name} can teach you its signature move, ${card.name}. Add it to your deck, or skip.`,
-    options: known ? [] : [learnOption(card, next)],
+    options: known ? [] : [learnOption(card, next, sparkle && { sparkle })],
     onSkip: next,
     skipLabel: known ? 'Continue' : 'Skip',
     coins: run.pendingCoins,
@@ -2908,13 +2918,13 @@ function newBadge(node, kind, thing) {
   return node;
 }
 
-function learnOption(card, next) {
+function learnOption(card, next, look) {
   const option = cardOption(card, run.stage, () => {
       run.deck.push(learnedId(card));
       mission('learn');
       tell(`${card.name} added to your deck!`);
       next();
-    });
+    }, 1, look);
   newBadge(option.node, 'cards', card);
   return {
     ...option,
