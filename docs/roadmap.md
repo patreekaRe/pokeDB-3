@@ -28,6 +28,10 @@ agreed on the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy, boards 1-7
   Star; 10 pick any caught shiny free (a prism capsule). The reveal: the capsule drops in the tray (a gold one shows
   plain, then turns gold), a tap opens it (rays, stars), the shadow holds (a gold one shakes), a flash, the shiny.
   Capsules are smooth SVG in the window (no new GL context); the tray's one is a sphere in the lodge's own scene.
+  Make them look cool (the user's only ask; the design is session 2's call): start from the mock's glossy capsule
+  (biome colour, gold, prism; pearl base, chrome band and button), and push it: a see-through top with sparkles
+  drifting inside, a rim light in its colour, a slow idle turn in the tray, a crack of light along the band before it
+  opens. Animate only transform and opacity, no animated blur or masks, and all of it off under `calmFx()`.
 - Sprites: every Safari Pokémon (514, all Gen 1-5) has PokeAPI's black-white animated shiny, the source of the normal
   ones; numbers from `raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv` (pokeapi.co is blocked).
 
