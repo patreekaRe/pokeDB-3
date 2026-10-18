@@ -145,7 +145,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   if (coins) coins.told = true;
   $('reward-log').classList.toggle('shiny-catch', !!(news && coins.shiny));   // a shiny's catch box is gold
   const lines = [
-    ...notes.splice(0),
+    ...takeNotes(),
     // the icon row over the screen already shows the coins and ₽, so the box doesn't read them out again
     ...(news ? [coins.beaten ?? `${coins.foe} fainted!`, ...(coins.dex || [])] : []),
     ...[].concat(sub),   // sub is one line, or a list of them
@@ -153,6 +153,7 @@ export function showChoice({ title, sub, options, skipLabel = 'Skip', onSkip, co
   sayLines(lines.filter(Boolean));
   // loaded on demand: this file is also imported by the Node tests, which have no DOM for safarilock.js's imports
   if (news && coins.safari) import('./safarilock.js').then(m => m.safariStepToast(coins.safari));
+  if (news && coins.finds?.length) popLater(coins.finds);
 
   // a `layout` (the Mart's 'mart-window') styles the options as one window; options with a `group` are
   // gathered into a .choice-group per group, in the order they first appear
@@ -422,18 +423,26 @@ export function holdLines() {
 
 /* News from the run (a card learned, a Mart buy, an event's outcome) in place of pop-up toasts: told in the next
    text box, like the games. On the map it's told there and then; otherwise it waits for the next screen's box. */
-const notes = [];
-export function tell(line) {
+const notes = [], finds = [];
+/** `find`: a Satchel material ({ id, n }) the line tells of, popped up over the screen as it's told (js/satchel-pop.js). */
+export function tell(line, find = null) {
   notes.push(line);
+  if (find) finds.push(find);
   if (document.body.dataset.screen === 'map-screen') showNotes();
 }
 /** Tell whatever news is waiting in the map's text box (or put the box away if there's none). */
 export function showNotes() {
-  sayLines(notes.splice(0), 'map-log');
+  sayLines(takeNotes(), 'map-log');
 }
-export const dropNotes = () => { notes.length = 0; };
+function takeNotes() {
+  if (finds.length) popLater(finds.splice(0));
+  return notes.splice(0);
+}
+export const dropNotes = () => { notes.length = 0; finds.length = 0; };
 /** News for the map's text box the next time it's told (showNotes()), not at once. */
-export const noteLater = (line) => { notes.push(line); };
+export const noteLater = (line, find = null) => { notes.push(line); if (find) finds.push(find); };
+/** Pop Satchel finds up over the screen now (loaded on demand, like safarilock.js above). */
+export const popLater = (list) => import('./satchel-pop.js').then(m => m.popFinds(list));
 
 function showLine(i) {
   say.at = i;

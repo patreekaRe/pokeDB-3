@@ -51,7 +51,7 @@ import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPool
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
 import { startBattle, abandonBattle, pickItem, isBattleRunning, arenaReady } from './battle.js';
-import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
+import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, popLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, zoomCard, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
 import { playMusic, playSound, preloadSounds, playCry, duckMusic, preloadMusic } from './audio.js';
@@ -398,6 +398,7 @@ function pocketBerries() {
   if (!canPocket()) return '';
   const id = TREE_BERRIES[randIndex(TREE_BERRIES.length)], n = random() < 0.5 ? 2 : 1;
   if (!glean(gleanKey(run.map.byId[run.current], 'berries'), { id, n })) return '';
+  popLater([{ id, n }]);
   const name = MATERIALS_BY_ID[id].name;
   return ` You pocket ${n === 1 ? `${/^[AEIOU]/.test(name) ? 'an' : 'a'} ${name}` : `${n} ${name.replace(/y$/, 'ies')}`} for your Satchel.`;
 }
@@ -1768,10 +1769,7 @@ function enterNode(node) {
   reseed(`room:${zone()}:${node.id}`);
   markHp(node);
   node.visited = true;
-  if (node.sparkle && gleaning() && glean(gleanKey(node, 'sparkle'), node.sparkle)) {   // told back on the map
-    playSound('item-get');
-    tell(`Something sparkled here! ${matLine(node.sparkle)}`);
-  }
+  if (node.sparkle && gleaning() && glean(gleanKey(node, 'sparkle'), node.sparkle)) tell(`Something sparkled here! ${matLine(node.sparkle)}`, node.sparkle);   // told back on the map
   if (isTower()) {   // the tower's screen draws a statue of every foe beaten before the door it came through
     const row = node.type === 'boss' ? [node] : run.map.floors[node.floor], f = floorOf(run.tower.flight, node.floor);
     run.tower.trail = [...(run.tower.trail || []).filter(e => e.f !== f), { f, type: node.type, enemy: node.enemyId || null, n: row.length, k: row.indexOf(node) }];
@@ -2607,11 +2605,12 @@ function afterFight(node, result) {
     coins: coinsWithBonus(levelCoins(COIN_REWARDS[payAs]) + luxury), money: prize, dex: dexNews, safari: safariStep,
     beaten: node.type === 'ken' ? `You defeated ${KEN.name}!` : result.caught ? `Gotcha! ${shinyCatch ? 'Shiny ' : ''}${foe} was caught!` : null,
     shiny: Boolean(shinyCatch),   // the catch box's gold
+    finds: drop ? [drop] : [],   // popped up as the news is told
   };
   // Paid out only as the rewards end, right before the map checkpoint: a refresh on a
   // reward screen replays the fight, so paying earlier would let it be earned twice.
   const collect = () => {
-    if (!run.pendingCoins.told) dexNews.forEach(tell);   // no reward screen said it
+    if (!run.pendingCoins.told) { dexNews.forEach(line => tell(line)); if (drop) popLater([drop]); }   // no reward screen said it
     // counted here, not as the fight ends: a refresh on a reward screen replays the fight
     missionTally(result.tally);
     mission(['fight', 'fight-type', 'fight-special']);
@@ -2629,7 +2628,7 @@ function afterFight(node, result) {
     if (isSafari() && node.type === 'boss' && !peeking) rangerTick('bosses');
     awardCoins(levelCoins(COIN_REWARDS[payAs]) + luxury);
     glean(gleanKey(node, 'drop'), drop);
-    if (shard && glean(gleanKey(node, 'shard'), { key: shard.id })) playSound('crystal-2');
+    if (shard) glean(gleanKey(node, 'shard'), { key: shard.id });
     run.money += prize + (result.tally?.payDay || 0);   // Pay Day's ₽ (StS's Hand of Greed)
     setMoney(run.money);
     updateSave(d => {
@@ -2699,6 +2698,7 @@ function afterFight(node, result) {
       });
     }
   } else steps.unshift(next => unlockWindow(unlocked, next));
+  if (shard) steps.unshift(next => offerKeyItem(shard, next));   // first, where the news says it was floating over the Alpha
 
   // Slay the Spire's potion odds: each drop makes the next one less likely, each miss more likely.
   if (run.relics.includes('dusk-stone')) {
@@ -3127,16 +3127,45 @@ function offerItem(item, next, { opened = false, title = 'Item found', skip = tr
   }
 }
 
-/** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. */
+/** A relic or item bobbing in the light with no tile round it (the treasure room's look), its name under it. A Satchel
+    key item has no sprite, only its icon. */
 function floatingThing(thing, i = 0, size = 72) {
   const btn = el('button', 'float-thing'), float = el('span', 'relic-float');
   btn.type = 'button';
   btn.style.setProperty('--i', i);
   btn.style.setProperty('--size', `${size}px`);
   btn.setAttribute('aria-label', `${thing.name}: ${thing.text}`);
-  float.append(itemSprite(thing, 'treasure-sprite'));
+  float.append(KEY_BY_ID[thing.id] ? el('span', 'satchel-glyph', thing.icon) : itemSprite(thing, 'treasure-sprite'));
   btn.append(el('span', 'relic-halo'), float, el('span', 'float-label', thing.name));
   return btn;
+}
+
+/** A key item for the Satchel found after a fight (a Waystone Shard over an Alpha): it floats up in the light like a
+    found item, what it is in a window under it, and a tap (or Put in Satchel) flies it off with a chime. It's saved as
+    the rewards end, with the coins (collect()). */
+function offerKeyItem(key, next) {
+  const thisRun = run, coins = run.pendingCoins, finds = coins?.told ? [] : coins?.finds ?? [];
+  if (coins) coins.finds = [];   // a material dropped too pops as the key item flies off, not over it
+  showChoice({ title: 'Key item found', sub: [], options: [], coins, layout: 'item-found' });
+  const stage = el('div', 'float-stage open'), spot = el('div', 'ball-spot'), thing = floatingThing(key, 0, 96);
+  const go = goButton('Put in Satchel', () => take());
+  go.disabled = false;
+  spot.append(chestRays(), thing);
+  stage.append(spot, swapTip('found', key.name, key.text));
+  $('reward-options').append(stage);
+  playSound('crystal-2');
+  let taking = false;
+  thing.addEventListener('click', () => take());
+  async function take() {
+    if (taking) return;
+    taking = true;
+    playSound('item-get');
+    pressConfirm(go);
+    stage.querySelector('.swap-tip').hidden = true;
+    if (finds.length) popLater(finds);
+    await flyToBag(thing);
+    if (run === thisRun) next();
+  }
 }
 
 function swapTip(kind, name, text) {

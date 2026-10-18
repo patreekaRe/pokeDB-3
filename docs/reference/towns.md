@@ -135,6 +135,12 @@ lights 1-2 of a biome map's fight / ❓ / Center rooms (not floor 0) with `spark
 drops from a fight and takes a biome's first sparkle. Each gift is keyed in `run.gleaned` and written into the saved run
 at once (`glean()`, `creditRoom()`'s way), so a refresh can't give it twice. All rolls go through `js/rng.js`. About 10 a
 biome a pass, so a gather step is a run or two (`tests/quests.test.mjs` checks it).
+**Found materials pop up** (2026-10-18, the user's ask: "i didnt know when i got materials"): `popFinds()` in
+`js/satchel-pop.js` floats each one's icon and name over the screen, then flies it to the Bag on screen; it takes no tap.
+A find rides its line: `tell(line, find)` / `noteLater()` in `js/rewards.js` pop it as the line is told, and a fight's
+drop is `pendingCoins.finds`, popped with the reward news. A Berry Tree's berries pop at once (`pocketBerries()`).
+**A Waystone Shard gets its own reward screen**, first after the Alpha (`offerKeyItem()` in `js/run.js`, the found
+item's look; a material dropped too pops as the Shard flies off). It's still saved in `collect()`.
 
 **Kurt's Workshop** (session 3 of Towns step 6, 2026-10-14; only while `townsOpen()`). A timber workshop in the
 Clearing's north-east (`WORKSHOP_AT` 23,8 in `js/hub-3d.js` since 2026-10-15, the user's ask: its door right on the east avenue, a short `towns:

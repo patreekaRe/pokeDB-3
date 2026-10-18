@@ -3069,3 +3069,8 @@ text box and the hand's full rebuild share, and the Ability chip repainted every
 Kurt's Workshop's material slots are buttons now: a tap opens a box under them saying where it drops (its biome's wild
 Pokémon, Alphas and boss, its sparkling rooms, where the biome sits on the road, a friend's letter), a second tap shuts it.
 One source of truth, `matHints()` in `js/data/satchel.js`, also feeds the Satchel app (`tests/quests.test.mjs`).
+
+## Found materials pop up, and a Shard gets its own screen (2026-10-18, the user's ask; branch `claude/quest-item-popups-us8wjw`)
+"I didn't know when I got materials": a found material (a fight's drop, a sparkling room, a Berry Tree) now floats up
+over the screen with its name and flies to the Bag (`js/satchel-pop.js`, no tap needed), and a Waystone Shard over an
+Alpha opens its own reward screen first, like a found item (`offerKeyItem()`). Notes in `docs/reference/towns.md`.
