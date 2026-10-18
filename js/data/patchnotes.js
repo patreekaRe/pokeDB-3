@@ -50,6 +50,7 @@ export const NEXT = [
   ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
   ['base', 'New furniture wears a "!" piece by piece in the PC\'s Decorations and the Secret Base\'s Decorate tray until you tap it.'],
   ['modes', 'The Crystal Depths get a real ending: the Energy Well, Mewtwo\'s farewell and epilogue scenes; all five Waystones lit binds the Well for a new badge.'],
+  ['music', 'Eternatus and Eternamax have their own battle themes.'],
   ['runs', 'A biome\'s boss stands on the map in colour once your Pokédex has met it, beside its Gym Leader, instead of a grey silhouette.'],
   ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (music, bosses, towns and rooms you\'ve left), so iPhones stop reloading it mid-run; the volume bars are easier to grab with a finger.'],
 ];
