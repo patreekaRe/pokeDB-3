@@ -2983,3 +2983,6 @@ A trainer's page: Journal rank and last seen on the nameplate's second line, a 3
 as a sprite, Pillar; Safari off), the newest 7 badges and a +N out of every badge, and a tap on any part explains it.
 New card keys `rank`, `top`, `fave`, `pillar` need `firestore.rules` published again ("Waiting on the user"). Details in
 `docs/reference/cloud-save.md`; checked by `tools/trainers-check.mjs` (and `OLD_RULES=1` for the fallback).
+
+Map boss in colour (2026-10-18): the boss above its room on the map is coloured in once the Pokédex has met it, as
+on the crossroads, instead of always a grey silhouette (`met` in `renderMap()`, `js/map.js`).

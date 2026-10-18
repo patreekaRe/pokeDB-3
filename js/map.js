@@ -31,6 +31,7 @@ import { EVENTS_BY_ID } from './data/events.js';
 import { buildingSvg } from './buildings.js';
 import { random } from './rng.js';
 import { RING } from './data/towns.js';
+import { getSave } from './storage.js';
 
 // Map generation is also imported by the headless balance bot's Web Worker. Load DOM helpers only in a page so the
 // worker can share generateMap() without evaluating UI modules that need document/window.
@@ -842,11 +843,12 @@ export function renderMap(map, currentId, onPick, { biome = 'clearing', trainer,
     if (node.revealed && node.enemyId && !node.visited) box.append(revealedFigure(node));
   }
 
-  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming; in a Gym its Gym Leader stands
-  // beside it, in colour once beaten (the Pokémon stays a silhouette till they send it out)
+  // The biome's boss waits above its room as a grey silhouette, a hint of what's coming, in colour once the Pokédex has
+  // met it (as on the crossroads; the user's call, 2026-10-18); in a Gym its Gym Leader stands beside it, in colour once beaten
   const boss = map.boss.enemyId && ENEMY_DEFS[map.boss.enemyId];
   if (boss?.image) {
-    const img = el('img', `map-boss-shadow${gym ? ' paired' : ''}`);
+    const met = getSave().dex.seen.includes(map.boss.enemyId);   // read, never dexSeen(): that marks it seen
+    const img = el('img', `map-boss-shadow${gym ? ' paired' : ''}${met ? ' met' : ''}`);
     img.src = boss.image;
     img.alt = '';
     place(img, CENTER_X + (gym ? 3.5 : 0), rowY(rows));
