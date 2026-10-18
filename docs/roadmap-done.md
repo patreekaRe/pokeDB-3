@@ -2992,3 +2992,15 @@ Energy Well (`wellEnding()` in `js/well.js`, `#well-scene`, 2D only): a white-ou
 Eternatus curled dim, Mewtwo's talk; with all five Waystones lit the five towns' star binds the Well (the **Star of the
 Depths** badge, `save.depthsBound`), with fewer it only closes it; then five painted epilogue stills, the trimmed Champion
 of the Depths scene, the credits and Mewtwo's last word after them (`js/credits.js`). Playtest `?bossfight=depths&hp=0.001&shards=5` (or `=1`).
+
+## Smoother transitions: the films and the first fight (2026-10-18, the user's ask)
+Measured headless (Chromium, rAF frame times and long-animation-frame attribution, `--disable-accelerated-2d-canvas`
+so the game's own drawing counts; 3D frame rates there are SwiftShader's, so only main-thread stalls were trusted).
+Found and fixed: the pixel scene kept drawing (with its bloom) under every full-screen film, halving the Shrine's and
+the Wastes' films to ~20 fps (now ~52; `filmOver()` in `js/scene.js`); every 3D place warmed under the Clearing's film,
+freezing it for 0.2-0.5 s several times (now after the film and the boot, `warmPlaces()`; the Center and the Mart only
+once a step away); the Center and Mart warmed after the arena put it to sleep, so the first fight woke it and compiled
+every shader as the wipe opened, and the arena's warm-up compiled the screen's shader variants, not its render
+target's (`precompile()` now `warmShaders()`, recompiled after any context loss, `restGL(renderer, 1)`); the wipe now
+stays shut until the arena has drawn its first frame (`arenaReady()`, `ARENA_WAIT` 2 s). The biome-title chime
+synthesises ~3x faster (same samples). All 17 journey films already held ~60 fps.

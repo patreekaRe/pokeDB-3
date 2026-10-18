@@ -155,7 +155,7 @@ const isAttack = (card) => !!(card.effects.damage || card.effects.blockDamage);
  *   onEnd      called when the fight is over with
  *              { won, hp, damageTaken, tally }, plus fled: true after a Poké Doll
  */
-export function startBattle({ run, encounter, onEnd, deferIntro = false, slots = ITEM_SLOTS }) {
+export function startBattle({ run, encounter, onEnd, deferIntro = false, held = false, slots = ITEM_SLOTS }) {
   const def = encounter.def;
   // the Sky Pillar's augments (js/data/augments.js), summed: they act like relics for the rest of the climb
   const aug = run.tower ? augEffects(run.tower.augments, run.tower.spent) : {};
@@ -301,15 +301,19 @@ export function startBattle({ run, encounter, onEnd, deferIntro = false, slots =
     $('enemy-zone').classList.add('boss-waiting');
     return () => playIntro();
   }
+  if (held) return () => playIntro();   // under a wipe held shut till the 3D arena is up: the Pokémon appear as it opens
   playIntro();
 }
 
 /* A main biome's fight in a 3D place (js/arena-3d.js): loaded only when one is, and laid under the battle screen; a
    boss's stays hidden until its pixel prelude is over (playIntro()). A Sky Pillar fight's is the tower's room (`room`). */
-let arenaMod = null, arenaUp = false;
+let arenaMod = null, arenaUp = false, arenaLaid = null;
+/** Resolves once this fight's 3D arena is built and has drawn its first frame, or won't be (the pixel scene's fight). */
+export const arenaReady = () => arenaLaid ?? Promise.resolve();
 function arena3d(land, kind, def, run, room = null) {
   arenaMod?.unmountArena();
   arenaUp = false;
+  arenaLaid = null;
   if (run.safari || (def.arena && def.arena !== 'kombat') || new URLSearchParams(location.search).has('arena2d')) return;
   // Kenmatta's painted courtyard is never shown while his 3D one loads (the user saw it flash up first); it has no
   // prelude, so the 3D one comes up as soon as it's built. Without WebGL the pixels come back.
@@ -317,7 +321,7 @@ function arena3d(land, kind, def, run, room = null) {
   if (ken) document.body.classList.add('arena3d-wait');
   const fallBack = () => document.body.classList.remove('arena3d-wait');
   if (ken) setTimeout(fallBack, 8000);
-  import('./arena-3d.js').then(async m => {
+  arenaLaid = import('./arena-3d.js').then(async m => {
     arenaMod = m;
     if (!m.wantsArena({ land, kind, def, run })) return fallBack();
     // Kenmatta's courtyard is his own place (`def.arena`), whatever biome his dojo stood in

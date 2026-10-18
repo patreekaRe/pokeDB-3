@@ -1048,6 +1048,12 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
+  its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
+  user plays a new run on their phone and says whether the first fight's wipe and the films still stutter. Not fixed:
+  the ~0.45 s freeze before a new run's film (the map, scenery and film painted at once) and the crossroads' ~0.4 s
+  build behind its plain backdrop; next levers if they're noticed.
+
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
   once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those

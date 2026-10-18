@@ -49,7 +49,7 @@ import { generateMap, landingMap, renderMap, scopeable, readable, journey, stage
 import { towerWeekly, towerMods, towerBiome, landingTypes, guardianOf, towerPools, floorOf, FLIGHT, LANDINGS, GUARDIAN_HEAL, TOP_FLOOR, TOP_FLIGHT } from './data/tower.js';
 import { AUGMENTS_BY_ID, RISKY_FROM, AUG_REROLLS, AUG_TIER_NAMES, AUG_SETS, AUG_SETS_BY_ID, augEffects, augmentOffer, dealPrismatic, newBonuses, setCounts, setMembers } from './data/augments.js';
 import { augIcon, augTile, dealAugments, foldAugments } from './augment-art.js';
-import { startBattle, abandonBattle, pickItem, isBattleRunning } from './battle.js';
+import { startBattle, abandonBattle, pickItem, isBattleRunning, arenaReady } from './battle.js';
 import { cardChoices, relicChoices, evolutionChoices, itemChoices, showChoice, showChoiceHp, trackHp, roomConfirm, pressConfirm, sayLines, holdLines, tell, showNotes, dropNotes, noteLater, cardOption, deckNote, relicOption, itemOption, doorOut } from './rewards.js';
 import { showDeckDialog } from './deckpreview.js';
 import { $, el, makeCard, groupDeck, showScreen, setTheme, openDialog, closeDialog, refreshCoins, setMoney, sleep, setHpBar, itemSprite, zoomable, zoomCard, relicTips, relicLines, upgradeBurst, markUpgrade, confirmDialog, chestRays } from './ui.js';
@@ -959,7 +959,7 @@ function startBiome(quiet = false) {   // quiet: no map or intro (a ?bossfight= 
     for (const sign of [$('biome-name'), $('stage-name')]) { sign.classList.remove('arrive'); void sign.offsetWidth; sign.classList.add('arrive'); }
   });
   // a new run's way in: the Pokédex boots onto the map once the first biome's film is over
-  if (run.biome === 0) bootMap(film);
+  filmsUp = (run.biome === 0 && bootMap(film)) || film;
 }
 
 /** The Pokédex's boot onto the map (a new run, Continue), after `film`. If a perk's screen (the Relic Charm, Chansey's
@@ -970,7 +970,7 @@ export function bootMap(film) {
   bootLater = null;
   if (document.body.dataset.screen !== 'map-screen') { bootLater = film || Promise.resolve(); return; }
   const map = $('map-screen');
-  if (!map.classList.contains('tower')) bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
+  if (!map.classList.contains('tower')) return bootDevice(map, { screen: map.querySelector('.mdex-window'), after: film });
 }
 
 /** A Sky Pillar flight: its landings' doors on the map (the placeholder until the tower gets its own screen, roadmap
@@ -1090,10 +1090,7 @@ function showMap() {
   showBadgeNews();
   setTheme(run.starter.type);
   preloadSounds('ball-throw', 'ball-open', 'event', 'buy', 'item', 'potion', 'item-get', 'coins', 'door', 'achievement', 'bag', 'run-away');
-  warmCenter3d();
-  warmMart3d();
-  warmEvent3d();
-  warmArena3d();
+  warmPlaces();
 
   $('run-sprite').src = spriteUrl(run.starter, 'front', run.stage);
   $('run-sprite').alt = stageName(run.starter, run.stage);
@@ -1174,10 +1171,24 @@ function showMap() {
   if (run.tower?.train) return trainingDay();
   const next = isTower() ? 0 : nextPlace(here);
   if (!next) return showNotes();
-  mapFilm = placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage));
+  mapFilm = filmsUp = placeIntro(biome, next, spriteUrl(run.starter, 'back', run.stage));
   mapFilm.then(showNotes);
 }
 let mapFilm = null;   // the walk-on film showMap() last started, for Continue's boot to wait for
+
+/* The 3D places the map can walk into next, warmed once no film plays over it: warmed under the Clearing's film (Three.js,
+   the arena, the Center, the Mart), they froze it for a beat several times on a run's first seconds (2026-10-18). */
+let filmsUp = null;   // the film over the map (a biome's, its boot, a place's), set just after showMap() calls this
+function warmPlaces() {
+  const at = run;
+  setTimeout(() => (filmsUp ?? Promise.resolve()).then(() => {
+    if (run !== at || document.body.dataset.screen !== 'map-screen') return;
+    warmCenter3d();
+    warmMart3d();
+    warmEvent3d();
+    warmArena3d();
+  }));
+}
 
 // Back on the map after a place's last room, the next place's short film plays over the map, with the map's music
 // (it used to wait for a tap on the next room, and cut off whatever that room was playing). Kept for the page's life,
@@ -1806,12 +1817,15 @@ async function fight(node, { talked = false } = {}) {
   if (encounter.leader && !peeking) markSeen('gym', encounter.leader.id);   // met: the Gym Leaders app shows them from now on
   encounter.leaderTalked = talked;   // they already spoke in their gym (gymRoom())
   const deferIntro = node.type === 'boss' || ken;
-  const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro, slots: itemSlots() });
-  if (deferIntro) {
-    await enter();
-    beginIntro();
-  } else enter();
+  const beginIntro = startBattle({ run, encounter, onEnd: (result) => afterFight(node, result), deferIntro, held: true, slots: itemSlots() });
+  // the wipe stays shut while the 3D arena is built and draws its first frame (its context woken, its shaders compiled):
+  // opened over that, a phone's first fight froze the bars half-way and the arena popped in over the pixel scene (2026-10-18)
+  await Promise.race([arenaReady(), sleep(ARENA_WAIT)]);
+  if (deferIntro) await enter();
+  else enter();
+  beginIntro();
 }
+const ARENA_WAIT = 2000;   // the longest the wipe stays shut for a slow arena; it comes up under the fight after that
 
 /** A Gym Leader's gym, walked in 3D (js/event-3d.js's 'gym'): before their boss you walk up the court, the great braziers
     flare and they slide in over the room to talk (gymTalk(), a shadow till they speak if you've never beaten them), then
@@ -3287,14 +3301,18 @@ function chest3dSpot(stage) {
   return { left: r.left - 18 * px, foot: r.top + 28 * px - 30, px };
 }
 
-/** The 3D Center built in the background while the map is up, once a map has a Center on it, so walking in is instant. */
+/* The Center and the Mart warm once one is a step away, like the ? rooms: warmed with the arena on a biome's first map,
+   each built a WebGL context for nothing (only one place warmed ahead stays awake) and froze the map ~1 s on a phone. */
+const nextTo = (type) => !!run.map && reachableNodes(run.map, run.current).some(n => n.type === type);
+
+/** The 3D Center built in the background while the map is up, once a Center is a step away, so walking in is instant. */
 function warmCenter3d() {
-  if (warmCenter3d.done || !Object.values(run.map?.byId ?? {}).some(n => n.type === 'rest') || new URLSearchParams(location.search).has('center2d')) return;
+  if (warmCenter3d.done || !nextTo('rest') || new URLSearchParams(location.search).has('center2d')) return;
   warmCenter3d.done = true;
   setTimeout(() => import('./center-3d.js').then(m => m.warmCenter()).catch(() => { warmCenter3d.done = false; }), 1500);
 }
 
-/** The 3D Mart likewise, once a map has a Mart on it, with your Pokémon and every Mart's wares painted ahead, so walking
+/** The 3D Mart likewise, once a Mart is a step away, with your Pokémon and every Mart's wares painted ahead, so walking
     in shows the room at once (the user saw a blank blue screen while it loaded). */
 /** The 3D arena's renderer readied while the map is up, in a biome whose fights are laid in it (js/arena-3d.js). */
 function warmArena3d() {
@@ -3303,7 +3321,7 @@ function warmArena3d() {
     // every Sky Pillar fight stands in a 3D room of the tower: cold, a phone showed the pixel room for its first seconds
     if (!(isTower() || m.arenaFor(mainBiome().id, 'fight')) || warmArena3d.done) return;
     warmArena3d.done = true;
-    setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 2000);
+    setTimeout(() => m.warmArena().catch(() => { warmArena3d.done = false; }), 600);   // after any film (warmPlaces()), so soon
   }).catch(() => {});
 }
 
@@ -3327,7 +3345,7 @@ function warmEvent3d() {
 
 function warmMart3d() {
   const shops = Object.values(run.map?.byId ?? {}).filter(n => n.type === 'shop' && n.stock);
-  if (warmMart3d.map === run.map || !shops.length) return;
+  if (warmMart3d.map === run.map || !shops.length || !nextTo('shop')) return;
   warmMart3d.map = run.map;
   const wares = shops.flatMap(({ stock }) => [
     ...stock.cards.map(i => ({ kind: 'card', thing: CARDS_BY_ID[i.id] })),

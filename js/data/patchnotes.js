@@ -52,6 +52,7 @@ export const NEXT = [
   ['modes', 'The Crystal Depths get a real ending: the Energy Well, Mewtwo\'s farewell and epilogue scenes; all five Waystones lit binds the Well for a new badge.'],
   ['music', 'Eternatus and Eternamax have their own battle themes.'],
   ['runs', 'A biome\'s boss stands on the map in colour once your Pokédex has met it, beside its Gym Leader, instead of a grey silhouette.'],
+  ['runs', 'Smoother transitions: every biome\'s and place\'s film runs at full speed, and a fight\'s wipe opens only once its 3D arena is ready.'],
   ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (music, bosses, towns and rooms you\'ve left), so iPhones stop reloading it mid-run; the volume bars are easier to grab with a finger.'],
 ];
 

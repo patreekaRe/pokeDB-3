@@ -13,7 +13,8 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   (`STOCK` / `cabinet()`: books, binders, potions, jars, towels, a first-aid kit, a photo, a plant; never two shelves
   alike), benches, an escalator down in each front corner; the doormat presses Leave. A choice no longer sends you to the map: the room stays with every sign greyed and you walk out yourself (`restSite({ used })`; 2026-10-09, the user's ask). A gentle tilt, close in, no tilt-shift blur (2026-10-09, the user's call)
   (`PITCH`, `ACROSS`, `SHOT_TOP`). Your Pokémon walks to the spot first; back from a deck picker it stands where it was.
-  `warmCenter()` builds it while the map is up (`warmCenter3d()`); without Three.js the pixel room stays. `?center`
+  `warmCenter()` builds it while the map is up (`warmCenter3d()`; since 2026-10-18 once a Center is a step away, the Mart
+  likewise, and only after any film over the map, `warmPlaces()`); without Three.js the pixel room stays. `?center`
   (`&starter=id`) walks a throwaway run straight into one (`peekCenter()`), `&center2d` the pixel room.
 - **The walk-in 3D Poké Mart** (2026-10-09; merged into `main` and live since 2026-10-10, the user's call): `js/mart-3d.js`
   lays a 3D HGSS-style Mart under `martRoom()` the way the Center does (`mart3d()` in `js/run.js`): the moves on a wall unit

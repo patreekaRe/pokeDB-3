@@ -1358,20 +1358,30 @@ function windChime(ac, f) {
   return normalize(buffer, 0.12);
 }
 
-/** Arriving somewhere new: a rising major arpeggio on a soft square wave, then a shimmer of high notes ringing out. */
+/** Arriving somewhere new: a rising major arpeggio on a soft square wave, then a shimmer of high notes ringing out.
+    Each note's sine is turned a sample at a time and its decay multiplied down, rather than a Math.sin and a Math.exp per
+    note per sample: the same sound, but synthesising it held up the start of every run's first film (2026-10-18). */
 function arrivalChime(ac) {
   const rate = ac.sampleRate, seconds = 2.2, length = Math.round(rate * seconds);
   const buffer = ac.createBuffer(1, length, rate);
-  const out = buffer.getChannelData(0);
+  const out = buffer.getChannelData(0), sum = new Float64Array(length);
   const notes = [[392, 0], [523, 0.09], [659, 0.18], [784, 0.27], [1047, 0.4]];
   const sparkle = [[2093, 0.55], [2637, 0.63], [3136, 0.71], [2637, 0.82], [3951, 0.93]];
-  for (let i = 0; i < length; i++) {
-    const t = i / rate;
-    let v = 0;
-    for (const [f, at] of notes) { const s = t - at; if (s >= 0) v += Math.sign(Math.sin(2 * Math.PI * f * s)) * 0.16 * Math.exp(-s / (at === 0.4 ? 0.9 : 0.3)) * Math.min(1, s / 0.004); }
-    for (const [f, at] of sparkle) { const s = t - at; if (s >= 0) v += Math.sin(2 * Math.PI * f * s) * 0.12 * Math.exp(-s / 0.35); }
-    out[i] = v * Math.min(1, (length - i) / (rate * 0.05));
-  }
+  const ring = (f, at, gain, decay, square) => {
+    let i = Math.ceil(at * rate);
+    if (i / rate < at) i++;
+    const s0 = i / rate - at, w = 2 * Math.PI * f, cs = Math.cos(w / rate), sn = Math.sin(w / rate), fall = Math.exp(-1 / (rate * decay));
+    let c = Math.cos(w * s0), s = Math.sin(w * s0), env = gain * Math.exp(-s0 / decay);
+    for (; i < length; i++) {
+      sum[i] += square ? Math.sign(s) * env * Math.min(1, (i / rate - at) / 0.004) : s * env;
+      const c2 = c * cs - s * sn;
+      s = s * cs + c * sn; c = c2;
+      env *= fall;
+    }
+  };
+  for (const [f, at] of notes) ring(f, at, 0.16, at === 0.4 ? 0.9 : 0.3, true);
+  for (const [f, at] of sparkle) ring(f, at, 0.12, 0.35, false);
+  for (let i = 0; i < length; i++) out[i] = sum[i] * Math.min(1, (length - i) / (rate * 0.05));
   return normalize(buffer, 0.18);
 }
 

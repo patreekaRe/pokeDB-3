@@ -8,7 +8,7 @@
    white flash (`revealArena()`). A Sky Pillar fight stands in one of the tower's rooms, built whole (`dressTower()`): only
    the sky in its windows is the pixel scene's. */
 
-import { loadThree, tex, createPost, dispose, wakeGL, restGL, sleepGL, tooSoon } from './hd2d.js';
+import { loadThree, tex, createPost, dispose, warmShaders, wakeGL, restGL, sleepGL, tooSoon } from './hd2d.js';
 import { timeOfDay } from './daytime.js';
 import { sceneHorizon, sceneColour, sceneBare } from './scene.js';
 import { paintMedallion } from './medallion-art.js';
@@ -1619,7 +1619,6 @@ export function warmArena() {
     sun.shadow.bias = -0.0012;
     sun.shadow.normalBias = 0.03;
     scene.add(hemi, sun, sun.target);
-    precompile();
     post = createPost(renderer, { short: 720, crisp: false });
     Object.assign(post.final.uniforms.uBlur, { value: 3.2 });
     Object.assign(post.final.uniforms.uBand, { value: 0.26 });
@@ -1631,23 +1630,23 @@ export function warmArena() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => { if (A) rebuild(); }, 200);
     });
-    restGL(renderer);
+    await precompile();
+    restGL(renderer, 1);
   })();
   warming.catch(() => { warming = null; });
   return warming;
 }
 
 /** Every material's shaders built ahead, under the arena's lights and fog, so a boss's pixel prelude doesn't stutter
-    while its 3D arena is laid behind it. */
+    while its 3D arena is laid behind it. Compiled for the post's render target (warmShaders()): compiled for the screen,
+    every one was a variant the first frame never used, and that frame compiled them all again (2026-10-18). */
 function precompile() {
   const M = materials(), g = new THREE.Group(), geo = new THREE.PlaneGeometry(1, 1);
   scene.fog = new THREE.Fog('#fff', 30, 85);
   for (const m of Object.values(M).flat()) g.add(new THREE.Mesh(geo, m));
   g.add(new THREE.InstancedMesh(geo, M.blade, 1), new THREE.Points(geo, new THREE.PointsMaterial({ transparent: true, blending: THREE.AdditiveBlending })));
   g.traverse(o => { o.castShadow = o.receiveShadow = true; });
-  scene.add(g);
-  try { renderer.compile(scene, camera); } catch { /* built on first use instead */ }
-  scene.remove(g);
+  return warmShaders(renderer, g, camera, scene);
 }
 
 let current = null;   // what mountArena() was last asked for, to build again on a resize
@@ -1664,12 +1663,16 @@ export async function mountArena(o, { reveal = true } = {}) {
   const stage = new URLSearchParams(location.search).get('stage');
   current = { ...o, stage: stage != null ? Math.max(0, Math.min(3, Number(stage) || 0)) : o.stage, time: timeOfDay() };
   try { await warmArena(); } catch { return false; }
+  // a lost context lost its shaders too: asleep after its last fight, or put to sleep by a place warmed after it
+  const lost = napping || renderer.getContext().isContextLost();
   await wakeGL(renderer);
-  if (napping) { napping = false; precompile(); }   // a lost context lost its shaders too
+  if (lost) { napping = false; await precompile(); }
   // the page's sprites must be laid out (sizeSprite()) before their pads are cast into the ground
   await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));
   if (id !== building || !onBattle()) return false;
-  return rebuild();
+  if (!rebuild()) return false;
+  await new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done)));   // its first frame drawn (battle.js's arenaReady())
+  return true;
 }
 
 function rebuild() {

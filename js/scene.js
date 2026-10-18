@@ -1878,8 +1878,12 @@ function horizonRow(scale) {
   return Math.max(Math.round(H * 0.15), Math.min(low, row));
 }
 
+// a film over the whole screen (a biome's or a place's, a journey's, the crossroads): the scenery under it holds still. Drawn on its own
+// 30 a second timer, it made every other film frame twice as heavy, and the films stuttered on a phone (2026-10-18)
+const filmOver = () => !!document.querySelector('.biome-intro:not(.leaving), #travel-scene:not([hidden]), #crossroads-scene:not([hidden])');
+
 function frame() {
-  if (document.hidden || !$('title-screen').hidden) return;
+  if (document.hidden || !$('title-screen').hidden || filmOver()) return;
   tick += DT;
   storm.level = Math.max(0, Math.min(1, storm.level + (storm.on ? 1 : -1) * DT / (FPS * 2)));
   draw();

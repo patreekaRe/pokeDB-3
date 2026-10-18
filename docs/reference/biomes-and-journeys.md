@@ -2,6 +2,10 @@
 
 Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is unchanged. Dates are when each call was made: where two notes disagree, the later one wins.
 
+- **Films and the scenery under them** (2026-10-18, the user's ask: "some transitions feel choppy"): while a biome's or a
+  place's film, a journey film or the crossroads covers the screen, the pixel scene under it holds still (`filmOver()` in
+  `js/scene.js`; drawn on its own 30 a second timer with its bloom, it halved the Shrine's and the Wastes' films to ~20 fps
+  headless, now ~52), and the 3D places warm only once the film is over (`warmPlaces()` in `js/run.js`).
 - **Journey films** (roadmap steps 10-11, 2026-10-04): between a boss's rewards and the next biome, `walkOn()` in `js/run.js`
   plays `travel()` from `js/travel.js` (not on Mewtwo's runs or in the Safari): your Pokémon (front GIF, flipped) walks a
   side-on parallax road, a low-res canvas per layer slid the last fraction of a pixel by CSS so it glides (`into()`; `#travel-scene`, z-index 945), the land turning from one biome into the

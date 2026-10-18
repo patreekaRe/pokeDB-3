@@ -132,7 +132,9 @@ unchanged, and each node's `jx`/`jy` wobble is no longer drawn). In
   starts with the flash (no sound effect of its own: the games have none), so `startBattle()`'s `playMusic` is a no-op), starts the battle under
   the black, then opens onto it the same way (`.out`: the bars carry on off the far side, the
   iris opens, the tiles fall away), so the battle screen never just appears: ~1.6 s, ~2.7 s for
-  a boss. The boss silhouette stays grey on the map; its cry waits until battle. After the
+  a boss. Since 2026-10-18 the black holds till the fight's 3D arena has drawn its first frame (`arenaReady()` in
+  `js/battle.js`, at most `ARENA_WAIT` 2 s; `startBattle({ held })` holds `playIntro()` till then): opened while it
+  was built, a phone's first fight froze the bars and the arena popped in over the pixel scene. The boss silhouette stays grey on the map; its cry waits until battle. After the
   existing wipe opens, `playIntro()` holds the fighters and battle UI away while
   `bossArenaPrelude()` in `js/scene.js` plays the empty arena: 3.6 s of wake, 1.1 s of handoff, each biome's sounds cued
   on its frames by `preludeSounds()`. All three are set pieces of their own (the user wanted Biomes 1 and 2 as "insanely

@@ -47,7 +47,7 @@ export const tooSoon = (now, last) => last > 0 && now - last < 1000 / 60 - 3;
    restored on their next wakeGL(), where three.js uploads again whatever they draw. Their scenes stay as they are. */
 const places = new Set();
 const asleep = new WeakSet();
-let shown = null, spare = null;   // the place on screen, and the one place warmed ahead that may stay awake beside it
+let shown = null, spare = null, spareRank = 0;   // the place on screen, and the one place warmed ahead that may stay awake beside it
 
 /** A deck picker (PP Up, Forget, the Day Care) opened from a walk-in room, on a screen wide enough to show the room
     around it: the room stays up behind it, still, instead of the pixel scene it was drawn over (the user's ask,
@@ -107,7 +107,7 @@ function unhook(renderer) {
 export function wakeGL(renderer) {
   if (!renderer) return Promise.resolve();
   places.add(renderer);
-  shown = renderer; spare = null;
+  shown = renderer; spare = null; spareRank = 0;
   for (const other of places) if (other !== renderer) sleepGL(other);
   return wakeBeside(renderer);
 }
@@ -125,13 +125,18 @@ export function wakeBeside(renderer) {
 
 /** A place built ahead of being shown (warmed while the map is up). Only the last one warmed stays awake beside the
     place on screen: every place warming its own context at once kept four awake on the map, and an iPhone still
-    reloaded the tab late in a run (after Clarence's badge, 2026-10-14). The others sleep till they're shown. */
-export function restGL(renderer) {
+    reloaded the tab late in a run (after Clarence's badge, 2026-10-14). The others sleep till they're shown. `rank`: a
+    place likelier next stays awake over one of a lower rank warmed after it (the arena, 1: the Center and the Mart warmed
+    after it put it to sleep, and the first fight woke it and compiled every shader as the wipe opened, 2026-10-18). */
+export function restGL(renderer, rank = 0) {
   if (!renderer) return;
   places.add(renderer);
   if (renderer === shown || asleep.has(renderer)) return;
-  if (spare && spare !== renderer) sleepGL(spare);
-  spare = renderer;
+  if (spare && spare !== renderer) {
+    if (rank < spareRank) return sleepGL(renderer);
+    sleepGL(spare);
+  }
+  spare = renderer; spareRank = rank;
 }
 
 /** A place let go for good as it's left: its renderer is disposed, so the next visit must make a new one. Reopening a
@@ -141,7 +146,7 @@ export function dropGL(renderer, scene) {
   if (!renderer) return;
   places.delete(renderer);
   if (shown === renderer) shown = null;
-  if (spare === renderer) spare = null;
+  if (spare === renderer) { spare = null; spareRank = 0; }
   if (scene) dispose(scene);
   if (asleep.has(renderer)) return renderer.dispose();
   unhook(renderer);   // before dispose(), while it can still draw the probe
