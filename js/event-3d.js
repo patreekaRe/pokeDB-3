@@ -10867,6 +10867,24 @@ function overHead(who, dx = 0, gap = 0.12) {
   return new THREE.Vector3(who.base.x + dx, who.base.y + top * Math.cos(lean) + gap, who.base.z - top * Math.sin(lean));
 }
 
+/** The tile you can walk to that's nearest a leader at (lx, ly), in front of them first: a free tile walled in by their
+    furniture (John's kotatsu and cushions) left the Gift with no path (2026-10-18). */
+function giftStep(lx, ly) {
+  const seen = new Set([key(DOOR.x, DOOR.y)]), queue = [{ x: DOOR.x, y: DOOR.y }];
+  let best = null, bestS = Infinity;
+  while (queue.length) {
+    const c = queue.shift(), dx = Math.abs(c.x - lx), dy = c.y - ly;
+    const s = Math.max(dx, Math.abs(dy)) * 10 + (dy < 0 ? 4 : dy === 0 ? 2 : 0) + dx + (dx && dy ? 1 : 0);
+    if (s < bestS) { best = c; bestS = s; }
+    for (const [sx, sy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const n = { x: c.x + sx, y: c.y + sy }, k = key(n.x, n.y);
+      if (n.x < 0 || n.y < 0 || n.x >= COLS || n.y >= ROWS || seen.has(k) || B.blocked.has(k)) continue;
+      seen.add(k); queue.push(n);
+    }
+  }
+  return best;
+}
+
 async function buildHome(figs, { time, town, home, gift, belt }) {
   const L = town.homes[home]?.leader && LEADER_HOMES[home];   // a Gym Leader's own (js/leader-homes.js)
   const H = !L && HALLS[home];   // a town's great hall (js/town-halls.js)
@@ -10903,9 +10921,8 @@ async function buildHome(figs, { time, town, home, gift, belt }) {
       if (L.with.glow) { w.board.material.emissive.set('#ffffff'); w.board.material.emissiveMap = w.t; w.board.material.emissiveIntensity = L.with.glow; }
     }
     if (gift) {   // a gift from Kurt's Workshop held: its sign beside them, a step in front of them its spot
-      const x = Math.round(at.x), y = Math.round(at.ty) + 1;   // the nearest free tile in front of them (John's kotatsu is right there)
-      const step = [[x, y], [x + 1, y], [x - 1, y], [x, y + 1], [x + 1, y + 1], [x - 1, y + 1]].find(([i, j]) => j < ROWS && !B.blocked.has(key(i, j))) ?? [x, y + 1];
-      B.spots = [{ step: { x: step[0], y: step[1] } }];
+      const step = giftStep(Math.floor(at.x), Math.floor(at.ty));
+      B.spots = [{ step }];
       B.anchors[0] = new THREE.Vector3(tileX(at.x) + 0.9, 2.3, tileZ(at.ty));
     }
   }
