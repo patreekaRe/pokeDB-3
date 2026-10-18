@@ -1048,6 +1048,14 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
+- **The Safari Shiny Exchange, a mock** (2026-10-18, the user's ask): a kiosk in the Safari Outfitter that sells the
+  shinies of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a
+  hi-tech window (not the Pokédex look) of biome banners, each a grid to pick shinies from and buy at once. Mock on a
+  canvas: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy (where it stands, the kiosk, the window). Proposed: the
+  east wall between the savanna window and the front palm, step tile (19,10); 200 coins a wild, 500 a rare, only once
+  caught. The user says yes or what to change; still open is what an owned Safari shiny shows (the Safari Pokédex, Secret
+  Base residents, Safari runs' catches).
+
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
   user plays a new run on their phone and says whether the first fight's wipe and the films still stutter. Not fixed:
