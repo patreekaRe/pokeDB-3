@@ -5223,7 +5223,7 @@ function manor(b, f, L, lit, leader) {
     mesh(new THREE.CylinderGeometry(0.035, 0.04, tall, 8), dark, x, P + tall / 2, z, g);
     mesh(new THREE.SphereGeometry(0.06, 10, 8), gold, x, P + tall + 0.04, z, g).castShadow = false;
     mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.48, 6), dark, x - sx * 0.22, P + tall - 0.1, z, g).rotation.z = Math.PI / 2;
-    const hang = new THREE.Group();
+    const hang = moves(new THREE.Group());
     hang.position.set(x - sx * 0.22, P + tall - 0.12, z + 0.02);
     g.add(hang);
     const m = mesh(new THREE.PlaneGeometry(0.4, 1.6), cloth, 0, -0.8, 0, hang);
@@ -10686,7 +10686,7 @@ function fireflyArt(col) {
     litter, its forest, houses and gate, what drifts through the air, and its lamps. */
 const TOWN_STYLES = {
   village: { under: 'rgba(30,50,30,0.45)', scrub: 'rgba(40,90,40,0.35)', flowers: ['#ffffff', '#f8d040', '#f890b0', '#f8a060'], litter: mapleLitter,
-    holes: true, fade: true, soft: true, extras: villageExtras, festival: true,
+    holes: true, fade: true, soft: true, merge: true, extras: villageExtras, festival: true,
     trees: (map, L, rnd) => forest(map, L, rnd), house: (b, f, L, lit) => house(b, f, L, lit), lamp: 'stonelantern',
     gate: (town, lit, L, time) => torii(tileX(town.gate.x) + 0.5, tileZ(1) + 0.3, 2.4, 3.3, town.name, lit, time),
     drift: (i) => ({ art: leafArt(MAPLE[i % 4]), size: 0.18 + (i % 3) * 0.03 }) },

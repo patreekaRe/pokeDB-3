@@ -39,15 +39,13 @@ Three sessions, in order. **Session 1 done 2026-10-18, on `main`** (patch 1.26):
 the roll, the battle's entrance, banner, twinkles, gold shakes and catch box, the signature card's Sparkle looks; how it
 works is `docs/reference/safari.md`'s "Wild shinies and Sparkle". The user plays a Safari run with `?wildshiny` (every
 wild shiny, a catch saves nothing) and looks at the cards with `?sparkle=1` to `?sparkle=5`, and says what to change.
-Next, session 2 (`gainShiny()` / `shinyGain()` in `js/data/shinies.js` are the Exchange's pull too; `maxed` is the
-past-★5 duplicate that pays 3 Lucky Stars):
-
-> Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's Safari Outfitter part and this roadmap entry.
-> Session 2, the Shiny Exchange: the kiosk in the lodge, its LED screen and tray, the Exchange window, the capsule pulls
-> (duplicates, Sparkle, gold odds, Lucky Stars) and the reveal, as on the mock's boards 1-5. Mind the GPU rules (one
-> context, `calmFx()`, nothing kept after the window closes). Tests for the pull rules; check headless at
-> `?mall=outfitter&ribbon&coins=5000` (no screenshots), a patch-notes line, update this entry, push to main and give
-> me the githack link.
+**Session 2 done 2026-10-18, on `main`**: the Shiny Exchange kiosk right of the Day Pass dais (LED screen, tray
+capsule), its window, the pulls and the reveal; how it works is `docs/reference/hub-base-mall.md`'s Safari Outfitter part
+("The Shiny Exchange"), the rules `js/data/exchange.js` (`tests/exchange.test.mjs`). The user tries it at
+`?mall=outfitter&ribbon&coins=5000&safaridex` (every Safari Pokémon counted caught) and says what to change; one call to
+check with them: `NEW_ODDS` (1 in 3 plain capsules new) means a machine where you own one shiny gives that one again and
+again (a pull of ten gave six Wurmple headless), so they may want it as a floor instead (new at least 1 in 3, else
+any caught one at random). Next, session 3:
 
 > Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
 > Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
@@ -55,17 +53,21 @@ past-★5 duplicate that pays 3 Lucky Stars):
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
-**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
-Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
-phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in `js/event-3d.js`, `merge: true` on
-a style, `moves()` on what a tick moves). **Driftwood Landing done 2026-10-17** (674 -> ~495 GL draws a frame headless).
-**Highbough done 2026-10-18** (`canopy`: ~590 -> ~360 a frame at the way in, 1,062 meshes -> 499; `moves()` on the
-manors' banners and the Nursery's wisps). **Sunwell Bazaar done 2026-10-18** (`bazaar`: 557 -> 376 a frame at the way
-in, 1,781 -> 1,156 from above, 952 meshes -> 651; `moves()` on the kasbahs' banners and the tent's flag and ball). All
-three wait on the user's phone check (`?town=ruins&towns`, `?town=thornwood&towns`, `?town=savanna&towns&gymwins=1`):
-banners and flags still sway, the tent's Poké Ball still turns, nothing looks sunk or bent wrong.
-`tools/draw-probe.mjs` measures a place and walks into every door. Lantern Village (154) and Cinder Springs (186) were
-already cheap; nothing more is queued here unless the user asks.
+**▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check). One town a session, the user
+checking each on their phone. How it works: `docs/reference/towns.md`'s "Merged buildings" (`stillParts()` in
+`js/event-3d.js`, `merge: true` on a style, `moves()` on what a tick moves); `tools/draw-probe.mjs` measures a place and
+walks into every door. GL draws a frame headless at the way in, before -> after:
+- **Driftwood Landing** (2026-10-17) 674 -> ~475. **Highbough** (2026-10-18) ~590 -> ~360. **Sunwell Bazaar**
+  (2026-10-18) 557 -> 376. **Lantern Village** (2026-10-18) ~604 -> ~360 (the festival night ~614 -> ~374; `moves()` on
+  `manor()`'s banners). All four wait on the user's phone check (`?town=ruins&towns`, `thornwood`, `savanna`, `shrine`):
+  banners and flags still sway, nothing looks sunk, bent or gapped, roofs still fade when you walk behind them.
+- **Next, Cinder Springs** (~590 a frame on 2026-10-18; the old check's 186 was low):
+> Run in: CLOUD. Read CLAUDE.md, docs/handoff-town-cleanups.md and docs/reference/towns.md's "Merged buildings". Do the
+> towns' draw calls for Cinder Springs (`?town=wastes`, style `springs`): measure first with `tools/draw-probe.mjs
+> --doors` (its header says how), add `merge: true` to the style, mark with `moves()` every part a tick moves or hides in
+> `cabin()`, `forge()`, `cottage()`, `bathhouse()`, `lodge()` and anything they attach (grep `B.ticks` there; check the
+> chimney `smoke` and the bathhouse's `steam` too), then measure again (draws a frame, every door opens, no console
+> errors, one GL context awake; no screenshots), update the roadmap, push to main and give me the githack link.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
