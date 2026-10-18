@@ -151,7 +151,12 @@ Once played it flies off to where it acts (`flyCard()` -> `flyTrail()` in js/car
 0.2 s at 2x, never awaited): an attack arcs high, spinning, into the enemy as the hit lands, anything else drops glowing into your
 Pokémon, both shedding a trail in the card's type (Fire embers, Water droplets, Grass leaves, Psychic sparkles, Neutral white;
 roadmap 8, 2026-10-03) with a burst where it lands. The particles are whole pixels on one low-res canvas (`.card-fx`, 3 CSS px
-a pixel on phones, 4 wider), faded by stepping down a palette; the card is a clone moved by hand. A card that exhausts burns
+a pixel on phones, 4 wider), faded by stepping down a palette. The card is a clone flown by a Web Animation of transform and opacity (2026-10-18:
+moved by hand every frame it restyled ~60 elements a frame and stuttered whenever the 3D arena, the text box or the hand's
+redraw ran long; a block's glow is `.fly-glow`'s opacity, not a filter). `renderHand()` keeps a hand card's node while it
+would look the same (its HTML, less the art's numbered SVG ids), so a tap no longer rebuilds and re-fits the whole hand; a
+card that changes is rebuilt. The Ability chip's sheen and glow are transform and opacity layers (`.ability-shine`) for the
+same reason: their background and box-shadow repainted every frame of a fight. A card that exhausts burns
 away instead (`burnOut()`). Tapping that big card plays it, tapping elsewhere or Escape cancels
 (`cancelPick()`), and tapping another hand card through the layer switches
 (`elementsFromPoint`, by `data-uid`). Items still blow up at the bottom middle. The pick clears

@@ -1083,7 +1083,7 @@ function showAbility() {
   }
   el.dataset.state = state;
   el.dataset.type = run.starter.type;
-  el.textContent = ability.name;
+  el.replaceChildren(Object.assign(document.createElement('i'), { className: 'ability-shine' }), ability.name);
   el.title = `Ability: ${ability.name}. ${ability.text}${state === 'off' ? ' (Not active yet.)' : state === 'on' ? ` Active now: +${ability.amount} damage!` : ''}`;
 }
 

@@ -3054,3 +3054,9 @@ went blank -> 3D in ~0.35 s); the pixel room only shows when a mount fails. Now 
 later (with a fresh Three.js URL, since Chrome keeps a failed module import) and shows your Pokémon by a rolling Poké Ball
 past half a second's wait (`load3d()` in `js/run.js`; `walk-in-rooms.md`). Checked headless with the CDN failing once
 (retry -> 3D) and always (pixel room after the retry) on the Moon Dance, Center, Mart and Britt's gym.
+
+**Card flights stutter in battle (2026-10-18, branch `claude/card-animation-lag-battle-xrpann`).** The user saw played cards
+lag now and then. Traced headless: the flying clone was restyled by JS every frame, on the main thread the 3D arena, the
+text box and the hand's full rebuild share, and the Ability chip repainted every frame. Now the flight is a Web Animation,
+`renderHand()` keeps unchanged cards (0 rebuilt over 20 taps, was 100) and the chip animates transform and opacity
+(`battle-screen-layout.md`).
