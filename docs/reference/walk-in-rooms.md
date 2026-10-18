@@ -60,3 +60,9 @@ from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by 
 never one `forgetRooms()` lets go (`forgetTowns()` does, on the way out), so a town keeps itself and its last home. The map
 warms only that many of the next step's rooms (`warmEvent3d()` in `js/run.js`, the gym last so it's kept); a third ? room
 reachable is built when it's walked into.
+- **Loading and a second try** (2026-10-18, the user's ask after the Moon Dance showed its pixel room on a phone): the ? rooms,
+  the gym, towns and homes (`event3d()`), the Center and the Mart mount through `load3d()` in `js/run.js`. A failed mount
+  is tried once more a second later (the mount functions forget a failed try's `visit` / `runId`, so the retry is a first
+  visit), and only a second failure lets the pixel room show. `loadThree()` (`js/hd2d.js`) asks for `?try=N` after a
+  failure: a failed `import()` fails again from the module map without fetching. A wait past half a second shows
+  `.loading-mark` (your Pokémon hopping by a rolling Poké Ball, still under `calmFx()`), inside `#reward-screen` so it goes with it.

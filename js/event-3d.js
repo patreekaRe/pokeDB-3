@@ -11964,6 +11964,12 @@ export function preloadEvent(kind, at = {}, figs = {}) {
     trainer's reaction once a picker is done), biome (the open-air rooms' look), type (the Shrine's glow), onPick(index): press that choice, onLeave(): press Leave }. Resolves the
     room's controls, or null if it was left while it loaded; throws if Three.js won't load (the pixel room stays). */
 export async function mountEvent(o) {
+  const was = visit;
+  // a failed try is forgotten, so the retry (load3d() in js/run.js) comes in as the first visit it is
+  try { return await enterEvent(o); } catch (err) { if (opts === o) visit = was; throw err; }
+}
+
+async function enterEvent(o) {
   const back = visit && visit.node === o.node && visit.run === o.run && (o.spent || view?.isConnected || performance.now() - leftAt < 30000);   // a done room keeps its eaten berry, its picked-up ball
   visit = { node: o.node, run: o.run };
   opts = o;

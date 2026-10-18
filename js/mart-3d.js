@@ -1015,6 +1015,12 @@ export function warmMart() {
     onPick(index), onLeave(), onClerk(), onSoldOut() }. Resolves once it's showing (null if the shop was left meanwhile);
     throws if Three.js won't load (only the list of wares shows). */
 export async function mountMart(o) {
+  const was = runId;
+  // a failed try is forgotten, so the retry (load3d() in js/run.js) comes in as the first visit it is
+  try { return await enterMart(o); } catch (err) { if (opts === o) runId = was; throw err; }
+}
+
+async function enterMart(o) {
   const back = o.run === runId && (view?.isConnected || performance.now() - leftAt < 20000);
   const again = o.run === runId && !!raf;   // re-shown after a purchase: the room is already up
   runId = o.run;
