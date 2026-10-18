@@ -38,7 +38,7 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   key; since 2026-10-18 also `rank` the Journal rank's index, `top` the highest Trainer Level won, `fave` the starter
   with most wins, `pillar` the best Sky Pillar floor, -1 / '' / 0 when none or on an older page). Rules published
   before those keys refuse them, so `publishTrainer()` writes the page again without them on `permission-denied`
-  (`NEW_CARD_KEYS`): publish `firestore.rules` in the Firebase console for them to show. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
+  (`NEW_CARD_KEYS`). Rules with them published 2026-10-18. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
   visits. Written by `publishTrainer()` on every sign-in (`onCloudSignIn`, which fires on each load while signed in)
   and as you leave your base (`leave()` in `js/base-3d.js`). Rules: signed-in `get` only (no listing), the owner writes
   it under a code `codes/` says is theirs, bounded like the boards. Someone else's page is only drawn through

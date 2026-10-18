@@ -1048,13 +1048,6 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **Publish the rules again for the tidier Trainer Card** (2026-10-18): paste the whole `firestore.rules` into the
-  Firebase console (Firestore Database > Rules > Publish). Until then a friend's card shows "-" for Top Lv, Fave and
-  Pillar and no Journal rank (pages are written without those numbers, `NEW_CARD_KEYS`); nothing else is affected.
-- **Publish the Trainers rules** (2026-10-17): paste the whole `firestore.rules` into the Firebase console (Firestore
-  Database > Rules > Publish). Until then the Trainers app can't make codes or pages (it says it can't reach the
-  network), and the rest of the game is unaffected.
-
 - **The phone reloads, round three** (2026-10-17, a friend's report: the game reset entering the Game Corner, and
   after Gym Leader and Alpha fights). Fixed in this order (`docs/roadmap-done.md`): the relic / chest / card rays painted
   once on a canvas, the arena asleep once a fight ends, and the mall's other floors off the GPU. The friend plays those
