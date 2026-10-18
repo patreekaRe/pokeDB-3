@@ -3004,3 +3004,7 @@ every shader as the wipe opened, and the arena's warm-up compiled the screen's s
 target's (`precompile()` now `warmShaders()`, recompiled after any context loss, `restGL(renderer, 1)`); the wipe now
 stays shut until the arena has drawn its first frame (`arenaReady()`, `ARENA_WAIT` 2 s). The biome-title chime
 synthesises ~3x faster (same samples). All 17 journey films already held ~60 fps.
+
+- **Gifting every Gym Leader** (2026-10-18, the user's ask after Phirip couldn't gift John past his kotatsu): the Gift spot is now
+  `giftStep()` in `js/event-3d.js`, the tile walkable from the door nearest the leader (in front, then beside, then behind).
+  Checked headless in all 11 leader homes: every one gets a reachable tile next to them (John's beside him, the rest in front).
