@@ -843,6 +843,10 @@ session (rules, data, saves, bot) then a LOCAL Desktop-app session (the look). E
         (`spot()`) so a phone's narrow view gets its share; flat things keep off the middle between the Pokémon (the boss's
         lava runs across it), tall ones to the sides. Light by the hour, `WASTES_TIMES`; its pads basalt with lava seams.
         ~40 draw calls a frame (the Clearing ~300). Checked at 390x844 and 1280x800, every place, day / dusk / night.
+      - **Fixed (2026-10-18):** a Clearing side tree near the camera could fill the screen (the user's iPhone, a Forest
+        Edge wild fight): `side()` in `build()` only tested the trunk, so its crown swept across the middle. It now takes a
+        `reach` (the crown's spread, a snag's branches) and rejects anything that reaches past the camera. Checked headless
+        with a probe of every prop's box on screen, Clearing and Wastes, wild / Alpha / boss, 375x667 to 1280x800.
       - Merged into `main` and live since 2026-10-11 (the user's call). Next: the Shrine, then Ruins, Thornwood, Savanna, Depths.
       Run in: CLOUD (attach `pokeDB-3` and `pokeDB-sim`). Prompt (swap the biome and its dressing each session): "Read
       CLAUDE.md and docs/roadmap.md's item 22, then give the Shrine's 3D arena its own foreground in js/arena-3d.js, a `GROUNDS`

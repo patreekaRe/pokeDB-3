@@ -53,7 +53,7 @@ export const NEXT = [
   ['music', 'Eternatus and Eternamax have their own battle themes, and the Depths\' ending its own songs for the Energy Well and the credits.'],
   ['runs', 'A biome\'s boss stands on the map in colour once your Pokédex has met it, beside its Gym Leader, instead of a grey silhouette.'],
   ['runs', 'Smoother transitions: every biome\'s and place\'s film runs at full speed, and a fight\'s wipe opens only once its 3D arena is ready.'],
-  ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (places, music and cries you\'ve left, and all of it while you\'re in another app), so iPhones stop reloading it, and Settings notes where if one still does; the volume bars are easier to grab with a finger, and every Gym Leader can be handed a gift (John\'s kotatsu was in the way).'],
+  ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (places, music and cries you\'ve left, and all of it while you\'re in another app), so iPhones stop reloading it, and Settings notes where if one still does; the volume bars are easier to grab with a finger, and every Gym Leader can be handed a gift (John\'s kotatsu was in the way); a tree no longer fills the screen in some Clearing fights.'],
 ];
 
 /** A patch's sections, [icon, heading, lines]: its own, or its notes grouped by GROUPS. */

@@ -558,8 +558,14 @@ function build(o) {
   const clear = (x, z, m = 0.9) => [at.foe, at.you].every(p => Math.hypot(x - p.x, z - p.z) > p.r + m);
   const onLand = (x, z) => onScreen(x, 0, z).y > hz + 0.004;   // stands on the 3D ground, not out in the pixel backdrop
   const between = (x, z) => { const s = onScreen(x, 0, z); return s.y > at.foe.sy - 0.02 && s.y < at.you.sy + 0.06 && s.x > 0.1 && s.x < 0.9; };
-  // anything tall on screen must keep off the middle, where the backdrop's landmark and both Pokémon are
-  const side = (x, z, s) => { const p = onScreen(x, 0, z), q = onScreen(x, 6 * s, z); return Math.max(p.x, q.x) < 0.17 || Math.min(p.x, q.x) > 0.83; };
+  // anything tall on screen must keep off the middle, where the backdrop's landmark and both Pokémon are; `reach` is how far
+  // its crown or branches spread, which near the camera can sweep across the whole screen from a trunk at the edge
+  const side = (x, z, s, reach = 0) => {
+    const ps = [];
+    for (const dx of [-reach, 0, reach]) for (const dz of [-reach, 0, reach]) for (const y of [0, 6 * s]) ps.push(onScreen(x + dx, y, z + dz));
+    const xs = ps.map(p => p.x);
+    return ps.every(p => p.front) && (Math.max(...xs) < 0.17 || Math.min(...xs) > 0.83);
+  };
   dress({ o, r, at, hz, zFar, zNear, len, alpha, look, wl, clear, onLand, between, side });
   const b = B;
   B = null;
@@ -578,7 +584,7 @@ function dressClearing({ o, r, zFar, zNear, len, alpha, look, clear, onLand, bet
   let placed = 0;
   for (let i = 0; i < 500 && placed < 8; i++) {   // a few trees framing the sides, standing on the 3D ground
     const x = (r() - 0.5) * 40, z = zFar + 1 + r() * (len - 4), size = 0.8 + r() * 0.5;
-    if (!onLand(x, z) || !side(x, z, size) || !clear(x, z, 2)) continue;
+    if (!onLand(x, z) || !side(x, z, size * 1.35, size * 3.3) || !clear(x, z, 2)) continue;   // tree()'s crown tops out ~8x its size, ~3.2x wide
     tree(x, z, size, r);
     placed++;
   }
@@ -976,7 +982,7 @@ function dressWastes({ o, r, at, hz, zFar, zNear, len, alpha, wl, clear, onLand,
   const charM = tinted(std({ roughness: 1 }), 0.45);
   for (let i = 0, placed = 0; i < 400 && placed < (st === 0 ? 5 : 3); i++) {
     const x = (r() - 0.5) * 40, z = zFar + 1 + r() * (len - 4), s = 0.7 + r() * 0.5;
-    if (!onLand(x, z) || !side(x, z, s * 0.75) || !clear(x, z, 2) || Math.abs(onScreen(x, 0, z).x - 0.5) < 0.38) continue;
+    if (!onLand(x, z) || !side(x, z, s * 0.75, s * 1.5) || !clear(x, z, 2) || Math.abs(onScreen(x, 0, z).x - 0.5) < 0.38) continue;
     snag(x, z, s, r, charM);
     placed++;
   }
