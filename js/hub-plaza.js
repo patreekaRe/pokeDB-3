@@ -196,6 +196,7 @@ export function plazaBoard(THREE, { glows, merge }) {
   add(new T.SphereGeometry(0.15, 18, 9, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), std({ color: '#f8f8f8', roughness: 0.4 }), 0, 0, 0, ball);
   add(new T.TorusGeometry(0.15, 0.018, 6, 24), std({ color: '#1c1430' }), 0, 0, 0, ball).rotation.x = Math.PI / 2;
   add(new T.CylinderGeometry(0.045, 0.045, 0.03, 12), std({ color: '#ffffff' }), 0, 0, 0.15, ball).rotation.x = Math.PI / 2;
+  merge?.(ball);
   root.add(ball);
 
   // bunting along the front eave, sagging between the posts
@@ -219,6 +220,7 @@ export function plazaBoard(THREE, { glows, merge }) {
     add(new T.BoxGeometry(0.16, 0.04, 0.16), woodDark, 0, -0.17, 0, l);
     add(new T.BoxGeometry(0.13, 0.17, 0.13), glow, 0, -0.27, 0, l, false);
     add(new T.BoxGeometry(0.16, 0.04, 0.16), woodDark, 0, -0.37, 0, l);
+    merge?.(l);
     root.add(l);
     lanterns.push(l);
   }

@@ -52,8 +52,9 @@ const ease = (t) => t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
 const rand = (a, b) => a + Math.random() * (b - a);
 
 /** The cauldron, its feet at the origin. `group` goes in the scene, `hit` is what a tap's ray tests, `lights` join the
-    hub's lamps; tick(now, dt, calm) each frame, tap(now) when it is tapped (`want` names a trick, for a test page). */
-export function makeCauldron(THREE) {
+    hub's lamps; tick(now, dt, calm) each frame, tap(now) when it is tapped (`want` names a trick, for a test page). `merge`
+    (js/hub-3d.js's mergeStill()) joins its still parts. */
+export function makeCauldron(THREE, merge = null) {
   T = THREE;
   const root = new T.Group(), body = new T.Group();
   root.add(body);
@@ -93,14 +94,21 @@ export function makeCauldron(THREE) {
   flameGeo.translate(0, 0.1, 0);
   const flameMat = (colour, opacity) => new T.MeshBasicMaterial({ color: colour, transparent: true, opacity, blending: T.AdditiveBlending, depthWrite: false });
   const outer = flameMat('#ff6a1a', 0.85), inner = flameMat('#ffd860', 0.9);
-  const flames = [];
+  // the flames, an instanced mesh a colour, each tongue an instance (two draws, not twelve)
+  const flames = [], at = new T.Object3D(), tongues = [outer, inner].map(m => {
+    const im = new T.InstancedMesh(flameGeo, m, 6);
+    im.castShadow = false; im.frustumCulled = false;
+    fire.add(im);
+    return im;
+  });
+  const shape = (fl, sx, sy) => { at.position.set(fl.x, 0.08, fl.z); at.scale.set(sx, sy, sx); at.updateMatrix(); fl.im.setMatrixAt(fl.i, at.matrix); };
   for (let i = 0; i < 6; i++) {
     const a = i / 6 * Math.PI * 2 + 0.4, r = i % 2 ? 0.34 : 0.22;
-    for (const [m, k] of [[outer, 1], [inner, 0.55]]) {
-      const f = add(flameGeo, m, fire, false);
-      f.position.set(Math.cos(a) * r, 0.08, Math.sin(a) * r);
-      flames.push({ f, k: k * (i % 2 ? 0.9 : 1.15), phase: i * 1.7 + k * 3, rate: 0.011 + i * 0.0013 });
-    }
+    [[tongues[0], 1], [tongues[1], 0.55]].forEach(([im, k]) => {
+      const fl = { im, i, x: Math.cos(a) * r, z: Math.sin(a) * r, k: k * (i % 2 ? 0.9 : 1.15), phase: i * 1.7 + k * 3, rate: 0.011 + i * 0.0013 };
+      shape(fl, 1, 1);
+      flames.push(fl);
+    });
   }
 
   // the pot: a lathed iron belly with a raised band and a thick rim, three splayed legs, a ring handle each side
@@ -165,6 +173,13 @@ export function makeCauldron(THREE) {
   hit.position.y = 0.7;
   hit.userData.cauldron = true;
   root.add(hit);
+  // what never moves on its own joined (js/hub-3d.js's mergeStill()): the pot's iron, the logs and the ring of stones
+  if (merge) {
+    const under = (o, g) => { for (let p = o; p; p = p.parent) if (p === g) return true; return false; };
+    merge(body, (o) => under(o, swirl) || under(o, stir) || drips.includes(o));
+    merge(fire, (o) => o.isInstancedMesh);
+    merge(stir);
+  }
   root.traverse(o => { if (o.isMesh && o !== hit) o.raycast = () => {}; });
 
   const fireLight = new T.PointLight('#ff8a30', 0, 3.5, 1.8);
@@ -367,10 +382,11 @@ export function makeCauldron(THREE) {
     if (!calm) {
       swirl.rotation.y -= dt * 0.00045;
       stir.rotation.y -= dt * 0.0011 * (1 + swell * 2);
-      for (const { f, k, phase, rate } of flames) {
-        const h = k * (1 + 0.28 * Math.sin(now * rate + phase) + 0.12 * Math.sin(now * rate * 2.7 + phase * 2));
-        f.scale.set(k * 0.85, h * 2.4, k * 0.85);
+      for (const fl of flames) {
+        const { k, phase, rate } = fl, h = k * (1 + 0.28 * Math.sin(now * rate + phase) + 0.12 * Math.sin(now * rate * 2.7 + phase * 2));
+        shape(fl, k * 0.85, h * 2.4);
       }
+      for (const im of tongues) im.instanceMatrix.needsUpdate = true;
       if (now > nextBubble) { nextBubble = now + rand(180, 420); emit('bubble', { at: onBrew(), life: rand(0.5, 0.9), size: rand(0.025, 0.06) }); }
       if (now > nextSteam) { nextSteam = now + rand(350, 650); emit('puff', { at: onBrew(0.3).map((v, i) => i === 1 ? level + 0.1 : v), vel: [rand(-0.05, 0.1), rand(0.35, 0.55), rand(-0.05, 0.05)], life: rand(2.2, 3), size: 0.18, grow: 2.2, alpha: 0.28, tint: pale(), wobble: 0.04 }); }
       if (now > nextEmber) { nextEmber = now + rand(250, 700); const a = Math.random() * Math.PI * 2; emit('spark', { at: [Math.cos(a) * 0.4, 0.2, Math.sin(a) * 0.4], vel: [rand(-0.1, 0.1), rand(0.5, 0.9), rand(-0.1, 0.1)], life: rand(0.8, 1.4), size: 0.05, tint: '#ffa040', wobble: 0.03 }); }

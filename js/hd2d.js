@@ -275,15 +275,15 @@ export function trim(src) {
     tap's `front` and js/base-mesh.js's part `kind`) baked into one mesh per finish that carries each part's colour on its vertices: a Game Corner cabinet
     was 18 draw calls a frame, twice with its shadow, most of them one colour each (2026-10-16). Looks the same; only for
     models whose parts never move or change on their own. */
-export function bakeColours(root) {
+export function bakeColours(root, skip = null) {
   root.updateMatrixWorld(true);
   const inv = root.matrixWorld.clone().invert(), sets = new Map();
   root.traverse(o => {
     const m = o.material;
-    if (!o.isMesh || o.isInstancedMesh || !o.visible || Array.isArray(m) || !m?.isMeshStandardMaterial) return;
+    if (!o.isMesh || o.isInstancedMesh || !o.visible || Array.isArray(m) || !m?.isMeshStandardMaterial || skip?.(o)) return;
     if (m.map || m.emissiveMap || m.alphaMap || m.normalMap || m.vertexColors || m.transparent || m.alphaTest || m.emissive.getHex()) return;
     if (Object.keys(o.userData).some(k => k !== 'front') || Object.keys(m.userData).some(k => k !== 'kind') || o.geometry.morphAttributes.position) return;
-    const k = [m.roughness, m.metalness, m.side, m.flatShading, m.envMapIntensity, o.castShadow, o.receiveShadow].join('|');
+    const k = [m.roughness, m.metalness, m.side, m.flatShading, m.envMapIntensity, o.castShadow, o.receiveShadow, o.raycast === THREE.Mesh.prototype.raycast].join('|');
     if (sets.has(k)) sets.get(k).push(o); else sets.set(k, [o]);
   });
   for (const list of sets.values()) {
@@ -308,6 +308,7 @@ export function bakeColours(root) {
     mat.color.set('#ffffff'); mat.vertexColors = true;
     const baked = new THREE.Mesh(geo, mat);
     baked.castShadow = list[0].castShadow; baked.receiveShadow = list[0].receiveShadow;
+    if (list[0].raycast !== THREE.Mesh.prototype.raycast) baked.raycast = list[0].raycast;
     Object.assign(baked.userData, list[0].userData);
     root.add(baked);
     for (const o of list) { o.removeFromParent(); o.geometry.dispose(); }

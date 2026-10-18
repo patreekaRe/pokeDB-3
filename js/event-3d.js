@@ -13,7 +13,7 @@ import { playSound, playCry, hushBlip } from './audio.js';
 import { dragWalk, reroute } from './drag-walk.js';
 import { loadThree, tex, crop, monBoard, drawMon, createPost, doormat, dispose, MON_PX, warmShaders, wakeGL, restGL, pickingOver, bend, bendFine, unbend, tooSoon, bakeColours, unload, putAway } from './hd2d.js';
 import { makeCrowd } from './corner-crowd.js';
-import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic } from './hub-3d.js';
+import { fine, texOf, words, hubThree, CURVE, newsArt, mergeStatic, byFace } from './hub-3d.js';
 import { makeSealedGate } from './hub-sealed.js';
 import { townBackdrop } from './town-backdrop.js';
 import { sh as shadeOf, HD } from './base-paint.js';
@@ -5982,32 +5982,6 @@ function stillParts(g) {
   bakeColours(g);
   mergeStatic(g, () => false);
   for (const [c, o] of out) { o.add(c); if (c.userData.live && c.children.length) stillParts(c); }
-}
-
-/** A mesh of many materials as one mesh a material, in its place. */
-function byFace(o) {
-  const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry, n = geo.attributes.position.count, sets = new Map();
-  for (const r of geo.groups.length ? geo.groups : [{ start: 0, count: n, materialIndex: 0 }]) {
-    if (!o.material[r.materialIndex]) continue;
-    if (!sets.has(r.materialIndex)) sets.set(r.materialIndex, []);
-    sets.get(r.materialIndex).push([r.start, Math.min(n, r.start + r.count)]);
-  }
-  for (const [i, runs] of sets) {
-    const part = new THREE.BufferGeometry();
-    for (const [name, a] of Object.entries(geo.attributes)) {
-      const k = a.itemSize, arr = new a.array.constructor(runs.reduce((s, [s0, s1]) => s + (s1 - s0), 0) * k);
-      let at = 0;
-      for (const [s0, s1] of runs) { arr.set(a.array.subarray(s0 * k, s1 * k), at); at += (s1 - s0) * k; }
-      part.setAttribute(name, new THREE.BufferAttribute(arr, k, a.normalized));
-    }
-    const m = new THREE.Mesh(part, o.material[i]);
-    m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale);
-    m.castShadow = o.castShadow; m.receiveShadow = o.receiveShadow; m.raycast = o.raycast;
-    o.parent.add(m);
-  }
-  if (geo !== o.geometry) geo.dispose();
-  o.geometry.dispose();
-  o.removeFromParent();
 }
 
 /** Fades a building while your Pokémon is behind it (Highbough's crowns do the same, `B.crowns`), so a roof or the

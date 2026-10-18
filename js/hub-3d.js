@@ -19,7 +19,7 @@ import { plazaTop } from './trainers.js';
 import { cloudConfigured, cloudRemembered } from './cloud.js';
 import { playSound, playCry, setLoop } from './audio.js';
 import { buddy, deviceNews } from './trainercard.js';
-import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow } from './hd2d.js';
+import { loadThree, tex, dispose, MON_PX, monBoard, drawMon, onSprite, createPost, curtain, warmShaders, wakeGL, sleepGL, bend, bendFine, unbend, tooSoon, smallNoShadow, bakeColours } from './hd2d.js';
 import { gateHp, gateReady } from './gate.js';
 import { isStarterUnlocked } from './progress.js';
 import { STARTERS_BY_ID } from './data/starters.js';
@@ -385,10 +385,13 @@ function blossom(g, x, y, r, petal, heart) {
 /** The fence either side of the gate, the lobby's: round log posts and two rails, from `x0` to `x1` along `z`. */
 function safariFence(g, x0, x1, z) {
   const wood = new THREE.MeshStandardMaterial({ color: '#b87c48', roughness: 0.9 }), dark = new THREE.MeshStandardMaterial({ color: '#8a5a30', roughness: 0.9 });
-  const add = (mesh, x, y, zz) => { mesh.position.set(x, y, zz); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
+  const f = new THREE.Group();
+  const add = (mesh, x, y, zz) => { mesh.position.set(x, y, zz); mesh.castShadow = mesh.receiveShadow = true; f.add(mesh); return mesh; };
   const n = Math.max(1, Math.round((x1 - x0) / 1.1)), post = new THREE.CylinderGeometry(0.075, 0.085, 0.78, 10);
   for (let i = 0; i <= n; i++) add(new THREE.Mesh(post, wood), x0 + (x1 - x0) * i / n, 0.39, z);
   for (const y of [0.34, 0.62]) add(new THREE.Mesh(new THREE.BoxGeometry(Math.abs(x1 - x0), 0.08, 0.06), dark), (x0 + x1) / 2, y, z + 0.06);
+  mergeStill(f);
+  g.add(f);
 }
 
 /** The Whispering Clearing's gate, the way out to every run (first 2026-10-09; made grander 2026-10-14, the user's ask:
@@ -1388,7 +1391,7 @@ function mallBuilding() {
   // only its doors take a tap (the user's ask, 2026-10-09: a tap meant for the road to the Safari went in); the rest
   // lets it through to the ground
   g.traverse(o => { if (o.isMesh) o.raycast = () => {}; });
-  mergeStatic(g, (o) => o.parent.userData.live);
+  mergeStill(g, (o) => o.parent.userData.live);
   const doorH = H - 32.5 / MU;
   add(new THREE.Mesh(new THREE.BoxGeometry(W * 0.24 + 0.06, doorH + 0.08, 0.5), new THREE.MeshBasicMaterial({ visible: false })), 0, (doorH + 0.08) / 2, D / 2 + 0.25, false);
   mallFx = {
@@ -1460,6 +1463,7 @@ function clearingWaystone(g, lit, whole = true) {
     pool.rotation.x = -Math.PI / 2; pool.position.y = 0.02; pool.raycast = () => {};
     s.add(pool);
   }
+  mergeStill(s, (o) => o.parent === orbit || o.raycast !== THREE.Mesh.prototype.raycast);
   stoneLit = { glow, orbit, gems, any, whole };   // no lamp of its own: a light here would recompile the scene's shaders
   g.add(s);
 }
@@ -1764,7 +1768,7 @@ function nietosHouse(g, x, z, home) {
   box(0.54, 0.04, 0.42, std({ color: '#f0dca0' }), 1.92, 0.1, 1.0);
   add(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 10), std({ color: '#e84838' }), 1.82, 0.17, 0.95);
   add(new THREE.SphereGeometry(0.09, 12, 8), std({ color: '#f8e048' }), 2.04, 0.21, 1.06);
-  mergeStatic(h);
+  mergeStill(h);
 }
 
 /** The Nietos' name board, front left of their garden, on two posts under a little roof and turned to the path; tapped,
@@ -1855,7 +1859,7 @@ function kurtWorkshop(g, x, z, open = true) {
     const a = i / 5 * Math.PI * 2 + 0.4;
     add(new THREE.SphereGeometry(0.09, 10, 8), std({ color: c, roughness: 0.5 }), TX + Math.cos(a) * 0.42, 1.0 + (i % 2) * 0.22, TZ + Math.sin(a) * 0.42 + 0.12);
   });
-  mergeStatic(h);
+  mergeStill(h);
 }
 
 /** `root`'s still meshes that share a material (and shadow) baked into one mesh each: the Nietos' house is ~110 small
@@ -1891,6 +1895,50 @@ export function mergeStatic(root, live = null, keepReceive = false) {
     root.add(m);
     for (const o of list) { o.removeFromParent(); o.geometry.dispose(); }
   }
+}
+
+/** A mesh of many materials as one mesh a material, in its place. */
+export function byFace(o) {
+  const geo = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry, n = geo.attributes.position.count, sets = new Map();
+  for (const r of geo.groups.length ? geo.groups : [{ start: 0, count: n, materialIndex: 0 }]) {
+    if (!o.material[r.materialIndex]) continue;
+    if (!sets.has(r.materialIndex)) sets.set(r.materialIndex, []);
+    sets.get(r.materialIndex).push([r.start, Math.min(n, r.start + r.count)]);
+  }
+  for (const [i, runs] of sets) {
+    const part = new THREE.BufferGeometry();
+    for (const [name, a] of Object.entries(geo.attributes)) {
+      const k = a.itemSize, arr = new a.array.constructor(runs.reduce((s, [s0, s1]) => s + (s1 - s0), 0) * k);
+      let at = 0;
+      for (const [s0, s1] of runs) { arr.set(a.array.subarray(s0 * k, s1 * k), at); at += (s1 - s0) * k; }
+      part.setAttribute(name, new THREE.BufferAttribute(arr, k, a.normalized));
+    }
+    const m = new THREE.Mesh(part, o.material[i]);
+    m.position.copy(o.position); m.quaternion.copy(o.quaternion); m.scale.copy(o.scale);
+    m.castShadow = o.castShadow; m.receiveShadow = o.receiveShadow; m.raycast = o.raycast;
+    o.parent.add(m);
+  }
+  if (geo !== o.geometry) geo.dispose();
+  o.geometry.dispose();
+  o.removeFromParent();
+}
+
+/** mergeStatic() and fewer draws yet, for a group whose meshes stand still (the Clearing's draw calls, 2026-10-18: ~480
+    a frame on the plaza, the most of any place): a many-faced box split by its faces, plain colours baked onto the
+    vertices (bakeColours()), then one mesh a material. Each part is cut to bend first (bendFine()), as a joined one no
+    longer is. What `live(mesh)` names (by default, as mergeStatic(), a mesh with a raycast of its own) is left be. */
+export function mergeStill(root, live = null, keepReceive = false) {
+  const skip = live || ((o) => o.raycast !== THREE.Mesh.prototype.raycast);
+  const parts = [];
+  root.traverse(o => { if (o.isMesh && !o.isInstancedMesh && !skip(o)) parts.push(o); });
+  for (const o of parts) {
+    if (CURVE) bendFine(o);
+    if (Array.isArray(o.material)) byFace(o);
+    const m = o.material;
+    if (!Array.isArray(m) && m.isMeshStandardMaterial && !m.map && !m.transparent && !m.emissive.getHex()) m.roughness = Math.round(m.roughness * 4) / 4;   // 0.8 and 0.85 look the same and were a draw each
+  }
+  bakeColours(root, skip);
+  mergeStatic(root, live, keepReceive);
 }
 
 /** The Nietos' chimney smoke: puffs rising, swelling and fading in turn. */
@@ -2073,6 +2121,7 @@ function questBoard(x, z, turn) {
   for (const sx of [-1, 1]) add(new THREE.CylinderGeometry(0.045, 0.05, RY, 6), wood, sx * (W / 2 + 0.02), RY / 2, -0.05);
   add(new THREE.BoxGeometry(W + 0.1, 0.07, 0.1), wood, 0, Y - 0.02, -0.02);
   for (const sx of [-1, 1]) add(new THREE.BoxGeometry(W / 2 + 0.2, 0.05, 0.34), roof, sx * (W / 4 + 0.04), RY + 0.13, -0.03).rotation.z = -sx * 0.32;
+  mergeStill(s);
   return s;
 }
 
@@ -2201,7 +2250,7 @@ function makePlaces() {
       buttons: yardOwned() ? [['Go in', enterYard]] : baseOwned() ? [['Unlock', buyYardArch]] : [],
       build: (g) => {
         const L = leavesOf(SEASON), owned = yardOwned();
-        gardenArch = { ...makeGardenArch(THREE, { x: tileX(ARCH_AT.tx) + ARCH_X, z: tileZ(ARCH_AT.ty), owned, leaf: L ? L.trees[0] : P.trees, winter: SEASON === 'winter', merge: mergeStatic }), owned };
+        gardenArch = { ...makeGardenArch(THREE, { x: tileX(ARCH_AT.tx) + ARCH_X, z: tileZ(ARCH_AT.ty), owned, leaf: L ? L.trees[0] : P.trees, winter: SEASON === 'winter', merge: mergeStill }), owned };
         glowMats.push(...gardenArch.glows);
         g.add(gardenArch.group);
       },
@@ -2213,6 +2262,7 @@ function makePlaces() {
       buttons: [['Log on', openPc]],
       build: (g) => {
         const pc = pcModel(THREE, glowMats);
+        mergeStill(pc);
         pcMail = board(mailArt(), tileX(PC_AT.tx), tileZ(PC_AT.ty) + 0.1, { shadow: false });
         pcMail.rotation.x = -PITCH;
         pcMail.userData.y = 2.35;
@@ -2232,7 +2282,7 @@ function makePlaces() {
       : 'The Trainer Plaza\'s board, where trainers pin themselves up. Sign in at the PC to join them.',
     buttons: [['Look', () => acts.onApp('trainers', 'plaza')]],
     build: (g) => {
-      plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStatic });
+      plazaFx = plazaBoard(THREE, { glows: glowMats, merge: mergeStill });
       plazaFx.group.position.set(tileX(PLAZA_AT.at[0]), 0, tileZ(PLAZA_AT.at[1]));
       plazaFx.group.rotation.y = facePlaza(PLAZA_AT.at);
       plazaFx.group.scale.setScalar(1.1);   // between the avenue's edge and the PC
@@ -2301,7 +2351,7 @@ function makePlaces() {
     buttons: [],
     // Hoenn's tower since 2026-10-15 (js/hub-pillar.js; the user's ask, "a big change"): asleep till a won run opens it
     build: (g) => {
-      pillarFx = makePillar(THREE, { x: tileX(PILLAR_AT.tx), z: tileZ(PILLAR_AT.ty), open: tower, fine, texOf, merge: mergeStatic });
+      pillarFx = makePillar(THREE, { x: tileX(PILLAR_AT.tx), z: tileZ(PILLAR_AT.ty), open: tower, fine, texOf, merge: mergeStill });
       glowMats.push(...pillarFx.glows);
       g.add(pillarFx.group);
     },
@@ -2412,7 +2462,7 @@ function makePlaces() {
       : 'Chad Master Kenmatta\'s dojo. The door won\'t budge. A note on it: "Beat me in a ? room first, bro. Then we train. - Ken."',
     buttons: dojoIn ? [['Go in', () => {}]] : [],
     build: (g) => {
-      dojoFx = makeDojo(THREE, { x: tileX(DOJO_AT.tx + 2), z: tileZ(DOJO_AT.ty + 2), fine, texOf, merge: mergeStatic });
+      dojoFx = makeDojo(THREE, { x: tileX(DOJO_AT.tx + 2), z: tileZ(DOJO_AT.ty + 2), fine, texOf, merge: mergeStill });
       glowMats.push(...dojoFx.glows);
       g.add(dojoFx.group);
     },
@@ -2423,7 +2473,7 @@ function makePlaces() {
     line: 'The broken Sealed Gate. Far below, a fire flickers: Mewtwo\'s camp in the Depths.',
     buttons: [['Go through', enterCamp]],
     build: (g) => {   // built in the round (js/hub-sealed.js; 2026-10-15, the user's ask: no longer a flat pixel painting)
-      sealed = makeSealedGate(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), dot: dotTexture(), merge: mergeStatic });
+      sealed = makeSealedGate(THREE, { x: tileX(SEALED_AT.tx), z: tileZ(SEALED_AT.ty), dot: dotTexture(), merge: mergeStill });
       g.add(sealed.group);
     },
   });
@@ -2570,6 +2620,7 @@ function buildPlaces() {
   for (const k of [...yardTiles, ...dressTiles, ...FENCES]) blocked.add(k);
   for (const p of places) {
     const g = new THREE.Group();
+    g.name = p.id;
     p.build(g);
     g.traverse(o => { o.userData.place = p; });
     placeGroup.add(g);
@@ -2676,6 +2727,7 @@ function buildClearing() {
   scene.add(ground);
 
   forest = new THREE.Group();
+  forest.name = 'forest';
   scene.add(forest);
   const L = leavesOf(SEASON), crown = (i) => L ? L.trees[i % L.trees.length] : P.trees, far = (i) => L ? L.deep[i % L.deep.length] : P.deep;
   const rnd = seeded(21), kinds = [treeArt(1, crown(0)), treeArt(2, crown(1)), treeArt(3, far(0)), treeArt(4, far(1)), bushArt(5, crown(2)), bushArt(6, crown(0))]
@@ -2829,7 +2881,7 @@ function dressClearing() {
     if (r > 0.15) add(still, petal, blooms[0], o.position.x + 0.05, 0.09, o.position.z - 0.04, false);
   }
   for (let tx = Math.floor(POND.x - POND.r); tx <= POND.x + POND.r; tx++) for (let ty = Math.floor(POND.y - POND.r); ty <= POND.y + POND.r; ty++) if (Math.hypot(tx - POND.x, ty - POND.y) <= POND.r + 0.2) dressTiles.add(key(tx, ty));
-  mergeStatic(still, () => false);
+  mergeStill(still, () => false);
   forest.add(still);
   // a duck paddling round the pond, outside the lily pads (liveDuck())
   const d = new THREE.Group(), white = std({ color: '#f4f1e8' }), bill = std({ color: '#f0a030' }), eye = std({ color: '#1a1a1a' });
@@ -2889,7 +2941,7 @@ function dressSeason() {
       yardTiles.add(key(tx, ty));
     }
     // the witch's cauldron, a real model that does something when tapped (js/hub-cauldron.js); its fire and brew are lamps
-    cauldron = makeCauldron(THREE);
+    cauldron = makeCauldron(THREE, mergeStill);
     cauldron.group.position.set(tileX(11), 0, tileZ(2));
     forest.add(cauldron.group);
     yardTiles.add(key(11, 2));

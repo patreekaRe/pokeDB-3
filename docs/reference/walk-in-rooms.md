@@ -65,4 +65,6 @@ reachable is built when it's walked into.
   is tried once more a second later (the mount functions forget a failed try's `visit` / `runId`, so the retry is a first
   visit), and only a second failure lets the pixel room show. `loadThree()` (`js/hd2d.js`) asks for `?try=N` after a
   failure: a failed `import()` fails again from the module map without fetching. A wait past half a second shows
-  `.loading-mark` (your Pokémon hopping by a rolling Poké Ball, still under `calmFx()`), inside `#reward-screen` so it goes with it.
+  `.loading-mark` (the user's layout, 2026-10-18: the room bar fades away, a navy banner bottom left with a red stripe and
+  gold edges holds the room's name and LOADING with stepping dots, your Pokémon at 56px by a rolling 30px Poké Ball bottom
+  right; still under `calmFx()`; once shown it stays 0.6 s at least and fades out over the room, the bar fading back, `endLoading()`), inside `#reward-screen` so it goes with it.

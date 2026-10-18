@@ -53,12 +53,13 @@ any caught one at random). Next, session 3:
 > the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
 > docs/roadmap-done.md, push to main and give me the githack link.
 
-**▶ PLAYTEST ON THE LIVE SITE. The towns' draw calls: done, waiting on the user's phone check** (all five towns merged,
+**▶ PLAYTEST ON THE LIVE SITE. The towns' and the Clearing's draw calls: done, waiting on the user's phone check** (all five towns merged,
 2026-10-17 / 18; numbers in `docs/roadmap-done.md` and `docs/reference/towns.md`'s "Merged buildings"). On a phone, each of
 `?town=ruins&towns`, `thornwood`, `savanna`, `shrine`, `wastes` (`&gymwins=1` for the leaders' homes): smoother, nothing
-sunk, bent or gapped, banners and flags still sway, roofs still fade behind you. Not queued, the user's call: the Clearing
-(~450 draws a frame headless, the most of any place now) and the towns' ground extras (Cinder Springs' lava field,
-Driftwood's rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into every door.
+sunk, bent or gapped, banners and flags still sway, roofs still fade behind you. The Clearing too (2026-10-18, ~459 -> ~243 a frame,
+`mergeStill()`; `docs/reference/hub-base-mall.md`): on a phone, the walls and roofs whole, the cauldron's fire flickering,
+every place still tapped. Not queued, the user's call: the towns' ground extras (Cinder Springs' lava field, Driftwood's
+rowboats and jungle). `tools/draw-probe.mjs` measures a place and walks into every door.
 
 **Furniture expansion: the plan, session by session** (the user's ask, 2026-10-16: a catalogue as big as Animal
 Crossing's; the user picked all of what's below, in this order). The list is `docs/furniture-expansion.md`, and how a
