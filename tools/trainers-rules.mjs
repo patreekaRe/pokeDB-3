@@ -37,6 +37,9 @@ await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { extra: 1 })), 'an ex
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { at: new Date(0) })), 'a made-up time is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { card: { ...card, tier: 'mauve' } })), 'a bad card tier is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { card: { ...card, hax: 1 } })), 'an extra card key is refused');
+await ok(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, rank: 2, top: 5, fave: 'cyndaquil', pillar: 18 } })), 'the card\'s newer numbers are taken');
+await ok(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, rank: -1, top: -1, fave: '', pillar: 0 } })), 'and their "none" values');
+await no(setDoc(doc(A, 'trainers/uidA'), page('ABCDEFGH', { card: { ...card, pillar: 5000 } })), 'a Sky Pillar floor past 999 is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { card: { ...card, wins: -1 } })), 'a negative count is refused');
 await no(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB', { base: 'x'.repeat(600001) })), 'a base past 600,000 is refused');
 await ok(setDoc(doc(B, 'trainers/uidB'), page('BBBBBBBB')), 'B writes their page');

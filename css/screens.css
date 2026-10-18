@@ -4472,6 +4472,9 @@ body.scene-peek #backdrop { display: none; }
 }
 .pdx-nameplate { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 0.8rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .pdx-no { opacity: 0.75; white-space: nowrap; }
+.pdx-plate2 { display: grid; grid-template-columns: 1fr auto; gap: 6px 8px; }
+.pdx-plate2 .pdx-no, .pdx-plate2 .pdx-sub:last-child { text-align: right; }
+.pdx-sub { font-size: 0.75rem; opacity: 0.75; white-space: nowrap; }
 .pdx-screen {
   position: relative; flex: none; aspect-ratio: 2 / 1; container-type: size;
   border: 4px solid #2a2a30; border-radius: 10px; overflow: hidden; touch-action: pan-y;

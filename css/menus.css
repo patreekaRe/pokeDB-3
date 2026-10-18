@@ -1029,10 +1029,19 @@ body[data-screen="start-screen"] .topbar { display: none; }
 .trn-added .pdx-banner-name::after { content: '!'; display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; border-radius: 50%; background: #ffe36b; color: #8a3a00; font-size: 0.75rem; vertical-align: 2px; box-shadow: 0 2px 0 #8a3a00; }
 .trn-addkey.on { opacity: 0.7; }
 .trn-role { background: #1f8a9a; }
-.trn-badges { display: grid; gap: 6px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
+.trn-badges { display: grid; gap: 8px; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; }
 .trn-badges b { font-weight: 400; }
-.trn-badge-row { display: flex; flex-wrap: wrap; gap: 3px; }
+.trn-badges-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.trn-badges-head span { opacity: 0.75; }
+.trn-badge-row { display: flex; align-items: center; justify-content: space-between; gap: 3px; }
 .trn-badge-row img { width: 26px; height: 26px; }
+.trn-more { padding: 4px 5px; border: 2px dashed currentColor; border-radius: 6px; white-space: nowrap; }
+/* the six numbers: a 3x2 grid of equal boxes, the gaps drawn in the device's red */
+.trn-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 2px; padding: 0; overflow: hidden; background: var(--shell-rim); }
+.trn-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-width: 0; padding: 9px 4px; background: #b6d68e; font: 0.75rem/1.2 var(--pixel-font); font-synthesis-weight: none; text-align: center; }
+.trn-cell small { font-size: 0.75rem; opacity: 0.7; }
+.trn-cell b { font-weight: 400; max-width: 100%; }
+.trn-fave { width: 30px; height: 30px; object-fit: contain; margin: -6px 0 -4px; }
 .trn-keys { display: flex; gap: 8px; }
 .trn-keys .lb-btn { flex: 1; }
 .trn-keys .lb-btn:disabled { opacity: 0.5; cursor: default; translate: none; }

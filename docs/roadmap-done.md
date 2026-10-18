@@ -2976,3 +2976,10 @@ Each newly owned furniture design wears a "!" in the PC's Decorations and the ba
 ## MMO-style leaderboards (2026-10-18, the user's ask)
 
 Every leaderboard (Safari, Sky Pillar, arcade; the window and the lobbies' Ranks apps) is a dark-and-gold ranking table instead of the Pokédex banners: a banner with the period and a reset countdown, gold period tabs, board pills, a row per trainer (top three gold / silver / bronze, a climb's augments as icons), your row pinned, a tap for details (`tableApp()` in `js/leaderboard.js`; `docs/reference/safari.md`'s "The window"). The user saw a mock first. `?lbsample=tower|safari|arcade` shows it on made-up trainers. Branch `claude/leaderboards-mmo-redesign-dn1t8h`, also pushed to `main`. Waiting on the user's look on their phone.
+
+## A tidier Trainer Card in the Trainers app (2026-10-18, the user's pick from a mock)
+
+A trainer's page: Journal rank and last seen on the nameplate's second line, a 3x2 grid (Wins, Dex, Stars, Top Lv, Fave
+as a sprite, Pillar; Safari off), the newest 7 badges and a +N out of every badge, and a tap on any part explains it.
+New card keys `rank`, `top`, `fave`, `pillar` need `firestore.rules` published again ("Waiting on the user"). Details in
+`docs/reference/cloud-save.md`; checked by `tools/trainers-check.mjs` (and `OLD_RULES=1` for the fallback).

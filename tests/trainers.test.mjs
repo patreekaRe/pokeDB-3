@@ -97,3 +97,11 @@ test('the rules\' Plaza and note keys match the docs\'', () => {
   assert.deepEqual(list(rules.match(/request\.resource\.data\.keys\(\)\.hasOnly\(\[('name'[^\]]*)\]\)/)[1]), [...PLAZA_KEYS].sort());
   assert.deepEqual(list(rules.match(/d\.keys\(\)\.hasOnly\(\[('from'[^\]]*)\]\)/)[1]), [...ADD_KEYS].sort());
 });
+
+test('the card\'s newer numbers: kept in bounds, and "none" on a page from before them', () => {
+  const c = cardDoc({ rank: 2, top: 5, fave: 'cyndaquil', pillar: 18 });
+  assert.deepEqual([c.rank, c.top, c.fave, c.pillar], [2, 5, 'cyndaquil', 18]);
+  const old = cardDoc({ tier: 'gold', wins: 3 });
+  assert.deepEqual([old.rank, old.top, old.fave, old.pillar], [-1, -1, '', 0]);
+  assert.deepEqual([cardDoc({ top: -1 }).top, cardDoc({ top: 0 }).top, cardDoc({ rank: 99 }).rank], [-1, 0, 20]);
+});

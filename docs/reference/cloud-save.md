@@ -35,7 +35,10 @@ Signed-in players only. `js/trainers.js` (network and the app) and `js/data/trai
 doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Firestore emulator (62 cases).
 - **`trainers/<uid>`** = `{ code, name, card, buddy, base, at }`, the public page: `card` the Trainer Card's numbers
   (`cardDoc()`: tier, earned badge ids, wins, Pokédex, Safari, stars, play minutes, the partner as a `save.partner`
-  key), `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
+  key; since 2026-10-18 also `rank` the Journal rank's index, `top` the highest Trainer Level won, `fave` the starter
+  with most wins, `pillar` the best Sky Pillar floor, -1 / '' / 0 when none or on an older page). Rules published
+  before those keys refuse them, so `publishTrainer()` writes the page again without them on `permission-denied`
+  (`NEW_CARD_KEYS`): publish `firestore.rules` in the Firebase console for them to show. `buddy` a `save.buddy` key, `base` `save.secretBase` as JSON (left out past `BASE_MAX`, 600,000) for session 2's
   visits. Written by `publishTrainer()` on every sign-in (`onCloudSignIn`, which fires on each load while signed in)
   and as you leave your base (`leave()` in `js/base-3d.js`). Rules: signed-in `get` only (no listing), the owner writes
   it under a code `codes/` says is theirs, bounded like the boards. Someone else's page is only drawn through
@@ -50,7 +53,10 @@ doc, `tests/trainers.test.mjs`). Rules in `firestore.rules`, checked in the Fire
   (`addKey()` in `js/leaderboard.js`, on anyone else's entry while signed in).
 - **The Trainers app** (`trainersApp()`, a `shelfApp()`; on the home screen whenever cloud save is configured): your
   code and the add box on LCDs over the banners, a banner per trainer in their card's colour (their buddy, last seen,
-  badges), their page the handheld: partner, card facts, badges, buddy, Visit (greyed until session 2) and Remove (a
+  badges), their page the handheld (the 2026-10-18 tidy-up, the user's pick from a mock): the nameplate's second line
+  their Journal rank and last seen (`sub` in `shelfApp()`), partner and card colour, a 3x2 grid (Wins, Dex, Stars, Top
+  Lv, Fave as a sprite so a long name never spills, Pillar; Safari left off), the newest 7 badges and a +N, buddy;
+  every part has a `title`, so a tap explains it (js/tips.js), Visit (greyed until session 2) and Remove (a
   second tap confirms). One `getDoc` a trainer on each open. A trainer with no page yet shows as `???`, "Not on the
   network yet".
 - **Introduced by** the Going Further tip in How to play, the PC's TRAINERS row (your code under it; opens the app),

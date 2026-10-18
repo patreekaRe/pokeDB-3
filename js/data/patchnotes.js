@@ -46,6 +46,7 @@ export const NEXT = [
   ['modes', 'Every leaderboard is a new ranking table: the whole top 10 at a glance, gold, silver and bronze, your own row pinned, and climbers\' augments on their rows.'],
   ['dex', 'The Trainer Plaza: meet players on a new board in the Clearing and in the Trainers app, and a TRAINER LINK pops up when someone adds you.'],
   ['dex', 'Visiting a friend with a backyard asks house or yard, and their trophy cases show their own trophies.'],
+  ['dex', 'A trainer\'s card is tidier, adds their Journal rank, top Trainer Level, favourite starter and best Sky Pillar floor, and explains anything you tap.'],
   ['modes', 'Tap the locked Safari Zone to see a bar per biome of the Pokémon you\'ve beaten, and a new one beaten in a run steps its bar up.'],
   ['base', 'New furniture wears a "!" piece by piece in the PC\'s Decorations and the Secret Base\'s Decorate tray until you tap it.'],
   ['fixes', 'Evolving after a Gym Leader win keeps its Max HP and heal again, and the game holds far less memory (music, bosses, towns and rooms you\'ve left), so iPhones stop reloading it mid-run; the volume bars are easier to grab with a finger.'],

@@ -107,12 +107,14 @@ service cloud.firestore {
     // read it one at a time; only its owner writes it, under a code they own. `base` is their Secret Base as JSON.
     function validCard(c) {
       return c is map
-        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner'])
+        && c.keys().hasOnly(['tier', 'badges', 'wins', 'dex', 'dexOf', 'safari', 'safariOf', 'stars', 'time', 'partner', 'rank', 'top', 'fave', 'pillar'])
         && c.tier in ['green', 'bronze', 'silver', 'gold', 'violet']
         && c.badges is list && c.badges.size() <= 100
         && inRange(c.wins, 0, 10000000) && inRange(c.dex, 0, 9999) && inRange(c.dexOf, 0, 9999)
         && inRange(c.safari, 0, 9999) && inRange(c.safariOf, 0, 9999) && inRange(c.stars, 0, 99)
-        && inRange(c.time, 0, 10000000) && c.partner is string && c.partner.size() <= 64;
+        && inRange(c.time, 0, 10000000) && c.partner is string && c.partner.size() <= 64
+        && (!('rank' in c) || inRange(c.rank, -1, 20)) && (!('top' in c) || inRange(c.top, -1, 20))
+        && (!('fave' in c) || (c.fave is string && c.fave.size() <= 64)) && (!('pillar' in c) || inRange(c.pillar, 0, 999));
     }
     function validTrainer(d) {
       return d.keys().hasOnly(['code', 'name', 'card', 'buddy', 'base', 'at'])

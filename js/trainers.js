@@ -11,12 +11,14 @@
    ============================================================ */
 
 import { TRAINERS, CODES, PLAZA, ADDS, PLAZA_SHOWN, rollCode, isCode, formatCode, parseCode, friendsOf, addFriend, dropFriend,
-  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX, BASE_MAX } from './data/trainers.js';
+  trainerDoc, checkTrainer, lastSeen, cardDoc, blurbDoc, addId, addDoc, plazaPick, FRIENDS_MAX, BASE_MAX, NEW_CARD_KEYS } from './data/trainers.js';
 import { cloudConfigured, cloudRemembered, cloudSession, onCloudSignIn, openCloud } from './cloud.js';
 import { getSave, updateSave } from './storage.js';
 import { trainerName } from './leaderboard.js';
-import { partnerKey, buddyKey, cardTier, badgeArt } from './trainercard.js';
-import { BADGES } from './data/badges.js';
+import { partnerKey, buddyKey, cardTier, badgeArt, TIERS as CARD_TIERS } from './trainercard.js';
+import { BADGES, BADGES_BY_ID } from './data/badges.js';
+import { journalRank } from './data/journal.js';
+import { JOURNAL_RANKS } from './data/journal-ranks.js';
 import { dexTally, safariOpen } from './data/pokedex.js';
 import { safariDexCount } from './safaridex.js';
 import { STARTERS_BY_ID, spriteUrl } from './data/starters.js';
@@ -24,7 +26,7 @@ import { ENEMY_DEFS } from './data/enemies.js';
 import { isStarterUnlocked } from './progress.js';
 import { shelfApp, typed } from './bagdex.js';
 import { playCry, playSound } from './audio.js';
-import { $, el } from './ui.js';
+import { $, el, fitText } from './ui.js';
 import { showTrainerNotices, showTrainerWelcome, noticeOpen } from './trainer-notice.js';
 
 /* Your code, as this device last knew it: { uid, code }. Not in the save: writing it there while a first sign-in is still
@@ -51,8 +53,13 @@ function myCard(save) {
     dex: dex.n, dexOf: dex.total, safari: safari?.caught ?? 0, safariOf: safari?.total ?? 0,
     stars: Object.values(save.stats.level5WinsBy || {}).filter(n => n > 0).length,
     time: Math.floor((save.stats.playMs || 0) / 60000), partner: partnerKey(save),
+    rank: journalRank(save).level - 1, top: Math.max(-1, ...Object.values(save.stats.maxLevelWinByType || {})),
+    fave: faveStarter(save.stats.winsBy), pillar: save.tower?.bestEver || 0,
   };
 }
+
+/** The starter with the most wins ('' before any). */
+const faveStarter = (winsBy = {}) => Object.entries(winsBy).filter(([id, n]) => n > 0 && STARTERS_BY_ID[id]).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
 
 /** You in a line, for the Plaza and the notes you leave. */
 const myBlurb = (save) => { const c = myCard(save); return blurbDoc({ name: trainerName(), buddy: buddyKey(save), partner: c.partner, tier: c.tier, badges: c.badges.length, wins: c.wins }); };
@@ -85,7 +92,14 @@ export function publishTrainer() {
       const code = await ensureCode(s), save = getSave(), b = buddyKey(save);
       const doc = trainerDoc({ code, name: trainerName(), card: myCard(save), buddy: b, base: save.secretBase });
       if (checkTrainer(doc)) return code;
-      await s.F.setDoc(s.F.doc(s.db, TRAINERS, s.user.uid), { ...doc, at: s.F.serverTimestamp() });
+      const page = s.F.doc(s.db, TRAINERS, s.user.uid);
+      try { await s.F.setDoc(page, { ...doc, at: s.F.serverTimestamp() }); }
+      catch (err) {
+        // rules published before the card's newer numbers refuse them: the page still goes up without
+        if (err?.code !== 'permission-denied') throw err;
+        const card = Object.fromEntries(Object.entries(doc.card).filter(([k]) => !NEW_CARD_KEYS.includes(k)));
+        await s.F.setDoc(page, { ...doc, card, at: s.F.serverTimestamp() });
+      }
       const spot = s.F.doc(s.db, PLAZA, s.user.uid);
       if (save.plazaHidden) await s.F.deleteDoc(spot).catch(() => {});
       else await s.F.setDoc(spot, { ...myBlurb(save), at: s.F.serverTimestamp() }).catch(() => {});
@@ -189,24 +203,52 @@ let visitor = null;
 export const onVisit = (fn) => { visitor = fn; };
 
 const atOf = (doc) => (typeof doc?.at?.toMillis === 'function' ? doc.at.toMillis() : +doc?.at || 0);
-const playTime = (min) => `${Math.floor(min / 60)}:${String(min % 60).padStart(2, '0')}`;
+const playTime = (min) => `${Math.floor(min / 60)}h ${min % 60}m`;
+const BADGES_SHOWN = 7;
+const EARNABLE = BADGES.filter(b => !b.locked).length;
 
-function cardFacts(c) {
-  const box = el('div', 'pdx-lcd pdx-facts lb-facts trn-facts');
-  const fact = (k, v) => { const f = el('span', ''); f.append(el('b', '', `${k} `), v); return f; };
-  box.append(fact('Wins', `${c.wins}`), fact('Pokédex', `${c.dex}/${c.dexOf}`), fact('Safari', c.safariOf ? `${c.safari}/${c.safariOf}` : '---'),
-    fact('Stars', c.stars ? '⭐'.repeat(Math.min(c.stars, 3)) + (c.stars > 3 ? `×${c.stars}` : '') : '-'), fact('Time', playTime(c.time)));
+/** The card's six numbers, three by two; each says what it is when tapped (js/tips.js reads the title). */
+function cardGrid(c, name) {
+  const box = el('div', 'pdx-lcd trn-grid');
+  const cell = (k, v, tip) => { const f = el('span', 'trn-cell'); f.title = tip; f.append(el('small', '', k), v); return f; };
+  const wins = el('b', '', `${c.wins}`);
+  const fave = c.fave && STARTERS_BY_ID[c.fave] ? sprite(`starter:${c.fave}`) : null;
+  box.append(
+    cell('Wins', wins, `Runs ${name} has won, at any Trainer Level, in ${playTime(c.time)} of play.`),
+    cell('Dex', el('b', '', `${c.dex}/${c.dexOf}`), `Pokémon ${name} has beaten, on every Pokédex page they have found.`),
+    cell('Stars', el('b', '', c.stars ? `⭐${c.stars}` : '-'), `A gold star for each starter ${name} has won a Level 5 run with.`),
+    cell('Top Lv', el('b', '', c.top >= 0 ? `Lv ${c.top}` : '-'), c.top >= 0 ? `The highest Trainer Level ${name} has won a run on.` : `The highest Trainer Level ${name} has won a run on. None yet.`),
+    cell('Fave', fave ? monImg(`starter:${c.fave}`, 'trn-fave') : el('b', '', '-'), fave ? `${name}'s favourite: ${fave.name}, the starter they have won the most runs with.` : `The starter ${name} has won the most runs with. None yet.`),
+    cell('Pillar', el('b', '', c.pillar ? `${c.pillar}F` : '-'), c.pillar ? `The highest Sky Pillar floor ${name} has reached.` : `The highest Sky Pillar floor ${name} has reached. Not climbed yet.`));
+  fitText(wins);
   return box;
 }
 
-function badgeRow(c) {
-  const ids = c.badges.filter(id => BADGES.some(b => b.id === id && !b.locked));
+function badgeRow(c, name) {
+  const ids = c.badges.filter(id => BADGES_BY_ID[id] && !BADGES_BY_ID[id].locked);
   const box = el('div', 'pdx-lcd trn-badges');
+  const head = el('div', 'trn-badges-head'), title = el('b', '', 'Badges');
+  title.title = `${name} has earned ${ids.length} of the game's ${EARNABLE} badges. The row shows their newest.`;
+  head.append(title, el('span', '', `${ids.length}/${EARNABLE}`));
   const row = el('span', 'trn-badge-row');
-  for (const id of ids.slice(-12)) { const img = el('img', ''); img.src = badgeArt(id, true); img.alt = ''; row.append(img); }
-  box.append(el('b', '', `Badges ${ids.length}`), ids.length ? row : el('small', '', 'None yet'));
+  for (const id of ids.slice(-BADGES_SHOWN)) {
+    const b = BADGES_BY_ID[id], img = el('img', '');
+    img.src = badgeArt(id, true);
+    img.alt = b.name;
+    img.title = `${b.name}: ${b.text}.`;
+    row.append(img);
+  }
+  if (ids.length > BADGES_SHOWN) {
+    const more = el('span', 'trn-more', `+${ids.length - BADGES_SHOWN}`);
+    more.title = `${ids.length - BADGES_SHOWN} more of ${name}'s badges.`;
+    row.append(more);
+  }
+  box.append(head, ids.length ? row : el('small', '', 'None yet'));
   return box;
 }
+
+/** "3 h ago" for the nameplate's corner. */
+const seenShort = (ms) => { const t = lastSeen(ms); return t === 'Online just now' ? 'Online' : t === 'Not seen yet' ? '-' : t.replace(/^Seen /, ''); };
 
 /* ---------- the Trainer Plaza: the app's banner, and the board in the Clearing (plazaBoard() in js/hub-plaza.js) ---------- */
 
@@ -436,15 +478,29 @@ export function trainersApp() {
         return c ? `${c.badges.length} badge${c.badges.length === 1 ? '' : 's'}` : '';
       },
       art: (g, uid, known, where) => monImg(buddyOf(uid), where === 'banner' ? 'bdx-banner-mon' : 'pdx-slot-mon'),
+      sub(g, uid) {
+        const doc = docs.get(uid), at = doc ? atOf(doc) : blurbOf(uid)?.at;
+        if (at === undefined) return null;
+        const rank = JOURNAL_RANKS[doc?.card.rank], left = el('span', 'pdx-sub', rank?.name ?? ''), right = el('span', 'pdx-sub', seenShort(at));
+        if (rank) left.title = `${doc.name}'s Trainer's Journal rank, from tasks claimed at the Clearing's PC.`;
+        right.title = `${nameOf(uid)} last played ${lastSeen(at).replace(/^Seen /, '').replace(/^Online /, '')}. Their card updates each time they do.`;
+        return [left, right];
+      },
       screen(g, uid) {
-        const tier = docs.get(uid)?.card?.tier ?? blurbOf(uid)?.tier, nodes = [el('span', 'pdx-pad'), monImg(partnerOf(uid), 'pdx-mon bdx-art')];
-        if (tier) nodes.push(el('span', 'pdx-role trn-role', `${tier[0].toUpperCase()}${tier.slice(1)} card`));
+        const tier = docs.get(uid)?.card?.tier ?? blurbOf(uid)?.tier, mon = monImg(partnerOf(uid), 'pdx-mon bdx-art'), m = sprite(partnerOf(uid));
+        if (!m.masked) mon.title = `${nameOf(uid)}'s partner, ${m.name}.`;
+        const nodes = [el('span', 'pdx-pad'), mon];
+        if (tier) {
+          const tag = el('span', 'pdx-role trn-role', `${tier[0].toUpperCase()}${tier.slice(1)} card`);
+          tag.title = `The card's colour comes from badges: ${CARD_TIERS.map(t => (t.at ? `${t.name} at ${t.at}` : t.name)).join(', ')}. Violet once Eternatus is beaten.`;
+          nodes.push(tag);
+        }
         return nodes;
       },
       lines(g, uid) {
         const doc = docs.get(uid), b = blurbOf(uid), keys = g.friend ? friendKeys(uid) : addKeys(uid, g.id === 'added');
         const walk = sprite(buddyOf(uid));
-        if (doc) return [typed('', `${doc.name}'s Trainer Card. ${lastSeen(atOf(doc))}.`), cardFacts(doc.card), badgeRow(doc.card), typed('', `Walking with ${walk.name}.`), keys,
+        if (doc) return [cardGrid(doc.card, doc.name), badgeRow(doc.card, doc.name), typed('', `Walking with ${walk.name}.`), keys,
           ...(g.friend ? [typed('muted', doc.base ? 'Visit walks round their Secret Base as they last left it.' : 'No Secret Base to visit yet.')] : [])];
         if (b) return [typed('', g.id === 'added' ? `${b.name} added you ${lastSeen(b.at).replace(/^Seen |^Online /, '')}.` : `${b.name}. ${lastSeen(b.at)}.`), blurbFacts(b), typed('', `Walking with ${walk.name}.`), keys];
         return [typed('muted', 'They haven\'t been on since Trainers came in.'), typed('muted', 'They\'ll show up here once they play signed in.'), keys];

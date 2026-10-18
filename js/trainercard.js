@@ -289,7 +289,7 @@ const shadeInk = (hex) => `#${[1, 3, 5].map(i => Math.round(parseInt(hex.slice(i
 /* ---------- the card's colour: it steps up with badges ---------- */
 
 const EARNABLE = BADGES.filter(b => !b.locked);
-const TIERS = [
+export const TIERS = [
   { id: 'green', name: 'Green', at: 0 },
   { id: 'bronze', name: 'Bronze', at: 10 },
   { id: 'silver', name: 'Silver', at: 25 },

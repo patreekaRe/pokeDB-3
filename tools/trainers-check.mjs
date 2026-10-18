@@ -26,7 +26,8 @@ function rulesAllow(op, path, data, uid) {
     if (op === 'get') return true;
     if (id !== uid) return false;
     const owner = store.get(`codes/${data.code}`)?.uid;
-    return owner === uid && Object.keys(data).every(k => ['code', 'name', 'card', 'buddy', 'base', 'at'].includes(k)) && data.name.length <= 16;
+    return owner === uid && Object.keys(data).every(k => ['code', 'name', 'card', 'buddy', 'base', 'at'].includes(k)) && data.name.length <= 16
+      && (!process.env.OLD_RULES || Object.keys(data.card).every(k => !['rank', 'top', 'fave', 'pillar'].includes(k)));
   }
   if (col === 'plaza') return op === 'get' || op === 'query' || id === uid;
   if (col === 'adds') {
@@ -120,7 +121,7 @@ const GL = ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swifts
 const browser = await chromium.launch({ args: GL, executablePath: '/opt/pw-browsers/chromium' }).catch(() => chromium.launch({ args: GL }));
 // friendMail: today's friend letter already in, or the Clearing (which runs once Three.js loads) writes the save on load
 const today = new Date().toISOString().slice(0, 10);
-const saveA = { friendMail: today, trainerName: 'ASH', setupDone: true, seenHelp: true, coins: 500, badges: ['first-win', 'champion'], stats: { runsWon: 7, runsStarted: 10, playMs: 3 * 3600000 + 25 * 60000 }, unlocked: [], seen: { relics: [], items: [], cards: [], gym: [] }, newFinds: { relics: [], items: [], cards: [], gym: [] }, dex: { seen: [], defeated: [], done: [], count: {}, complete: false } };
+const saveA = { friendMail: today, trainerName: 'ASH', setupDone: true, seenHelp: true, coins: 500, badges: ['first-win', 'champion'], stats: { runsWon: 7, runsStarted: 10, playMs: 3 * 3600000 + 25 * 60000, winsBy: { charmander: 2, cyndaquil: 5 }, maxLevelWinByType: { fire: 5, grass: -1, water: 2 } }, tower: { bestEver: 18 }, unlocked: [], seen: { relics: [], items: [], cards: [], gym: [] }, newFinds: { relics: [], items: [], cards: [], gym: [] }, dex: { seen: [], defeated: [], done: [], count: {}, complete: false } };
 // A's base (session 2's visits): a TV, a PC and a Berry plot, a present and a piece this game doesn't know (both
 // dropped on a visit), a Safari resident and a made-up one
 saveA.secretBase = { v: 2, wall: 'mint', floor: 'checker', shopOpens: 1, leaderVisit: 99999, mons: ['rattata', 'hax'],
@@ -200,7 +201,14 @@ check(/Online just now|min ago/.test(banner) && banner.includes('1 badge'), `A's
 await B.click('.trn-banner:not(.trn-plaza):not(.trn-added)');
 await B.waitForTimeout(900);
 const pageText = (await B.textContent('.trn-device')).replace(/\s+/g, ' ');
-check(pageText.includes('Wins 7') && pageText.includes('Time 3:25') && pageText.includes('Badges 1'), 'A\'s Trainer Card on B\'s handheld');
+const cells = await B.$$eval('.trn-cell', cs => cs.map(c => c.textContent.trim() + (c.querySelector('img') ? '<img>' : '')));
+check(cells.length === 6 && cells[0] === 'Wins7' && cells[1].startsWith('Dex') && cells[2] === 'Stars-', `A's card grid (${cells.join(' | ')})`);
+check(process.env.OLD_RULES ? cells.slice(3).join() === 'Top Lv-,Fave-,Pillar-' : cells.slice(3).join() === 'Top LvLv 5,Fave<img>,Pillar18F', `the newer numbers ${process.env.OLD_RULES ? 'left off under the old rules' : 'shown'} (${cells.slice(3)})`);
+check(pageText.includes('Badges') && pageText.includes('1/'), 'the badge count, out of every badge');
+const tips = await B.$$eval('.trn-device [title]', ts => ts.map(t => t.title));
+check(tips.some(t => t.includes('3h 25m of play')) && tips.some(t => t.startsWith('ASH last played')) && tips.some(t => t.includes('Gold at 40')) && (process.env.OLD_RULES || tips.some(t => t.includes('favourite: Cyndaquil'))), `each part says what it is when tapped (${tips.length} tips)`);
+const spill = await B.evaluate(() => [...document.querySelectorAll('.trn-device .pdx-nameplate *, .trn-grid *, .trn-badges *')].filter(n => { const p = n.closest('.pdx-lcd').getBoundingClientRect(), r = n.getBoundingClientRect(); return r.width && (r.right > p.right + 0.5 || r.left < p.left - 0.5); }).map(n => n.className || n.tagName));
+check(!spill.length, `nothing spills out of its box${spill.length ? ` (${spill})` : ''}`);
 check(store.get('trainers/uidA').base && JSON.parse(store.get('trainers/uidA').base).items.length === 9, 'A\'s page carries their base');
 check((await B.$$('.trn-visit')).length === 2 && !(await B.isDisabled('.trn-visit[data-start=main]')), 'a base with a backyard offers Visit house and Visit yard');
 

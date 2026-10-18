@@ -116,6 +116,7 @@ export const typeChip = (type) => el('span', `index-only type-${type}`, `${TYPES
     screenCls(g, t, known)   more classes for the screen
     lines(g, t, known)       the LCD lines under the screen (`typed()` ones type out)
     label(g, t, known)       the nameplate's name and the slot's label
+    sub(g, t, known)         two nodes for a second nameplate line, under the name and under the number (a trainer's rank)
     tally(g, done)           the tally's words
     doneSub                  the banner's sub once all are found
     onShow(g, t, known)      after stepping to a thing (a cry)
@@ -222,6 +223,8 @@ export function shelfApp(spec) {
 
     const nameplate = el('div', 'pdx-lcd pdx-nameplate');
     nameplate.append(el('span', 'pdx-name', spec.label(group, thing, known)), el('span', 'pdx-no', spec.no(group, thing)));
+    const sub = spec.sub?.(group, thing, known);
+    if (sub) { nameplate.classList.add('pdx-plate2'); nameplate.append(...sub); }
 
     const extra = spec.screenCls?.(group, thing, known);
     const screen = el('div', `pdx-screen bdx-screen${known ? '' : ' unseen'}${extra ? ` ${extra}` : ''}`);
