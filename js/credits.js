@@ -20,7 +20,7 @@ function sections(entry) {
     { cast: [spriteUrl(mewtwo, 'front', entry.stage, entry.shiny)], big: true, caption: `${stageName(mewtwo, entry.stage)}, Champion of the Depths` },
     ['Created by', 'Patrick'],
     ['Game design', 'Patrick'],
-    ['Playtesting', 'Patrick', 'and every run that fainted on the way'],
+    ['Playtesting', 'Britt'],
     ['Programming', 'Patrick', 'with Claude Code and opencode'],
     { cast: ['charmander', 'bulbasaur', 'squirtle'].map(id => spriteUrl(STARTERS_BY_ID[id], 'front', 0, false)), caption: 'The first three' },
     ['Pokémon sprites', 'PokeAPI/sprites', 'Gen 5 art, Black & White'],
