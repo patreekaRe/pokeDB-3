@@ -314,13 +314,17 @@ async function epilogue(scene) {
   cast.replaceChildren();
 }
 
-/** The leaders you've beaten in a row along the stage (all of them, if you've beaten none yet). */
+/** The leaders you've beaten in a row along the stage (all of them, if you've beaten none yet). The Nietos' sprite is Law
+    and Britt again with Linc, so they stand as Linc alone, cut out of it, small, in the front row (the user's ask). */
 function leaderRow() {
   const all = GYM_LEADERS.filter(l => l.sprite), beaten = all.filter(l => gymWins(getSave(), l.id) > 0);
-  const list = beaten.length ? beaten : all, back = list.length > 7 ? Math.floor(list.length / 2) : 0;   // two rows when it's a crowd
+  const picked = beaten.length ? beaten : all;
+  const list = picked.filter(l => l.id !== 'nietos').map(l => ({ src: l.sprite, size: 1 }));
+  const back = list.length > 7 ? Math.floor(list.length / 2) : 0;   // two rows when it's a crowd
+  if (picked.some(l => l.id === 'nietos')) list.splice(back + Math.ceil((list.length - back) / 2), 0, { src: 'assets/trainers/gym/linc.png', size: 0.62 });
   const place = (row, y, scale) => row.map((l, i) => {
     const per = Math.min(16, 88 / row.length);
-    return { src: l.sprite, x: 50 + (i - (row.length - 1) / 2) * per, y, h: Math.min(26, per * 2.4) * scale };
+    return { src: l.src, x: 50 + (i - (row.length - 1) / 2) * per, y, h: Math.min(26, per * 2.4) * scale * l.size };
   });
   return [...place(list.slice(0, back), 72, 0.85), ...place(list.slice(back), 88, 1)];
 }
