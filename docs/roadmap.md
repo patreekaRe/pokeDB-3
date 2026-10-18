@@ -1048,13 +1048,16 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **The Safari Shiny Exchange, a mock** (2026-10-18, the user's ask): a kiosk in the Safari Outfitter that sells the
-  shinies of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a
-  hi-tech window (not the Pokédex look) of biome banners, each a grid to pick shinies from and buy at once. Mock on a
-  canvas: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy (where it stands, the kiosk, the window). Proposed: the
-  east wall between the savanna window and the front palm, step tile (19,10); 200 coins a wild, 500 a rare, only once
-  caught. The user says yes or what to change; still open is what an owned Safari shiny shows (the Safari Pokédex, Secret
-  Base residents, Safari runs' catches).
+- **The Safari Shiny Exchange, a mock** (2026-10-18, the user's ask): a kiosk in the Safari Outfitter for the shinies
+  of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a hi-tech
+  window (not the Pokédex look) of biome banners. Made a gacha the same day (the user's ask, "but fun"): each biome is a
+  capsule machine that only draws caught shinies you don't own (never a repeat), a gold capsule for a rare (8%, +4% a
+  plain one), a multi-pull always holding a gold one, a Lucky Star a capsule and 10 to pick any free, and picking one
+  outright still there at a higher price (150 a pull, 300 a wild, 600 a rare). The reveal: the capsule drops into the
+  kiosk's tray, a tap opens it, the shadow holds (a gold one shakes gold), a flash, the shiny. Placed on the floor right
+  of the Day Pass dais (tile 13,8), facing the door, no taller than the booth (the user wanted it front-facing and
+  obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. The user says yes or what to change; still open is
+  what an owned Safari shiny shows (the Safari Pokédex, Secret Base residents, Safari runs' catches).
 
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
