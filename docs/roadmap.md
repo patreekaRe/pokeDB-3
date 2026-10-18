@@ -1065,14 +1065,14 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
   the ~0.45 s freeze before a new run's film (the map, scenery and film painted at once) and the crossroads' ~0.4 s
   build behind its plain backdrop; next levers if they're noticed.
 
-- **The phone reloads, round five** (2026-10-18, branch `claude/funny-pascal-bu8emp`, on `main` too; archive): found why
-  four rounds didn't help: in Safari a 3D place put to sleep kept all its GPU memory (WebKit frees nothing at a forced
-  context loss; every round was measured in Chrome, which does). Now a sleeping place deletes what its context made and
-  shrinks its canvas first (`letGo()` in `js/hd2d.js`), glow maps are painted at half size, and while the game is hidden
-  the place on screen sleeps and the song's decoded buffer goes. `tools/memory-probe.mjs` measures it as WebKit holds it.
-  The friend plays as usual (the Home Screen app too) and says if it still reloads, reading Settings > Save's "The game
-  reloaded by itself" line. Next levers if it does: the 4x MSAA render target of each smooth place (~25 MB awake),
-  music decoded at ~30-50 MB a song, the towns' ground canvas (2560 px, ~24 MB + its texture), `KEEP_ROOMS` 3.
+- **The phone reloads, round six** (2026-10-18, branch `claude/funny-pascal-bu8emp`, on `main` too; archive): round five's
+  next levers, done: 2x multisampling on touch screens, songs decoded only up to their loop's end (four battle and gym songs
+  loop sooner, the same repeat), a town's ground at 2048 px, two rooms kept (the town you're in always). Headless at an
+  iPhone's size: a town 215 -> 183 MB, the gym 128 -> 106, a boss fight 79 -> 46. The friend plays as usual (the Home Screen
+  app too) and, if it reloads, reads Settings' Save card ("The game reloaded by itself", shown only after one). The user
+  listens to the boss, wild, elite and gym songs loop and looks at a town's ground. Next levers if it still reloads: the
+  smooth paintings' canvases kept on the CPU beside their textures (~40-60 MB a town), the full-screen DOM layers (the probe
+  can't see them), a 32 kHz song decode (~3 dB off at 10 kHz in Safari, so not done).
 
 - **The Arcade Room's look** (2026-10-17, branch `claude/charming-edison-0yf3mg`, on `main` too; the user's "build it"
   after a mock-up, `docs/reference/hub-base-mall.md`'s "The Arcade Room"): all 22 arcade machines moved out of the Game

@@ -56,3 +56,7 @@ ticks no longer allocate per frame (the Odd Keystone's wisps made 7 vectors a fr
 `__run` onto `js/event-3d.js` and `js/run.js` through Playwright routes, Three.js from a local `npm pack`; re-make it
 from this note if needed. Sludge Pit and Team Rocket have no Leave: walk out by a choice.
 
+**Two rooms kept** (2026-10-18, round six of the iPhone reloads): `KEEP_ROOMS` 2, down from 3, and the newest town is
+never one `forgetRooms()` lets go (`forgetTowns()` does, on the way out), so a town keeps itself and its last home. The map
+warms only that many of the next step's rooms (`warmEvent3d()` in `js/run.js`, the gym last so it's kept); a third ? room
+reachable is built when it's walked into.

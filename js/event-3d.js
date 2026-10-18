@@ -2209,10 +2209,13 @@ async function buildGrotto(figs, { biome }) {
 
 /* ---------- the outdoor four: a patch of the biome itself ---------- */
 
+// a town's ground at most this many pixels a side: 2560 held ~57 MB (the canvas and its mipmapped texture), and 2048, ~35,
+// still has about a texel per scene pixel where a phone at Sharp looks at it (12 tiles across 603 px)
+const GROUND_MAX = 2048;
 /** Wild ground: grass with tufts and flowers in the garden, moss and fallen leaves under the cedars, ash with glowing
     cracks among the rocks, and a worn path from where you came in up to the thing. */
 function wildFloor(L, { to = 2 } = {}) {
-  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, Math.min(5, 2560 / Math.max(W, H))), { g } = f, r = seeded(43);
+  const T = 16, W = COLS * T, H = ROWS * T, f = fine(W, H, Math.min(5, GROUND_MAX / Math.max(W, H))), { g } = f, r = seeded(43);
   const s = L.vein ? f.shine() : null, more = Math.max(1, COLS * ROWS / 88);   // a town's ground keeps the rooms' density
   g.fillStyle = L.grass[1]; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 900 * more; i++) { g.fillStyle = L.grass[Math.floor(r() * 3)]; g.beginPath(); g.ellipse(r() * W, r() * H, 1 + r() * 3, 0.6 + r() * 1.4, r() * 3, 0, Math.PI * 2); g.fill(); }
@@ -11909,14 +11912,18 @@ function room(kind, figs, at = {}) {
 }
 
 /** Only the last few rooms built are kept for a visit back: a long session's towns, homes and gyms would otherwise all
-    stay in memory, which on an iPhone ends with Safari reloading the tab. */
-const KEEP_ROOMS = 3;   // the next step's rooms (the map builds only those): a gym alone paints ~40MB of textures
+    stay in memory, which on an iPhone ends with Safari reloading the tab. The newest town is never one let go here (its
+    homes come and go around it; forgetTowns() lets it go on the way out), so in a town it's the town and the last home. */
+export const KEEP_ROOMS = 2;   // the map warms only this many of the next step's rooms (warmEvent3d() in js/run.js): a gym alone paints ~40MB of textures
 let entering = null;   // the room mountEvent() is walking into
 function forgetRooms() {
-  const ids = Object.keys(built);
-  for (const id of ids.slice(0, Math.max(0, ids.length - KEEP_ROOMS))) {
+  const ids = Object.keys(built), town = [...ids].reverse().find(id => id.startsWith('town/'));
+  let over = ids.length - KEEP_ROOMS;
+  for (const id of ids) {
+    if (over <= 0) break;
     const kept = built[id];
-    if (kept === entering) continue;
+    if (kept === entering || id === town) continue;
+    over--;
     delete built[id];
     kept.then(b => {
       if (b === R || kept === entering) { built[id] ??= kept; return; }   // still standing in it, or about to be

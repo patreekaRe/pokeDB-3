@@ -93,3 +93,7 @@ game is (`pokedb.crumb`); a load finding the last note never closed logs it (`po
 Settings' Save group shows `#reload-log`: "The game reloaded by itself", when, where, minutes in, and "while away from
 the game" if the tab was hidden. For the user's friends to read out after an iPhone reloads the tab.
 
+## Multisampling on a phone (2026-10-18)
+
+A smooth place's scene (`createPost()` in `js/hd2d.js`) multisamples 2x on a touch screen (`msaa()`, `pointer: coarse`),
+4x elsewhere: 4x kept the scene and its depth four times over, ~25 MB at an iPhone's Sharp (603 x 1311), 2x ~13 MB.

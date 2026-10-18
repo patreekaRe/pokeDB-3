@@ -75,9 +75,12 @@ const TRACKS = {
 // loopEnd] in seconds, loopEnd - loopStart being the song's own repeat, found by correlating the file against itself
 // (both points sit well inside the part that repeats, so a decoder's few ms of padding doesn't matter).
 const LOOP_POINTS = {
-  wild:  [47.31002, 126],   // intro ~14 s, then a 78.69 s phrase
-  elite: [62.50379, 146],   // 83.50 s
-  boss:  [117.35612, 178],  // 60.64 s
+  // wild, elite, boss and gym-room loop from their phrase's second time round (2026-10-18; tools/loop.html's picks were
+  // [47.31, 126], [62.50, 146], [117.36, 178], [23.2, 57.12]): the same repeat, as clean at the join (0.99-0.998 over
+  // 2 s), but the decoded song ends sooner (decode() keeps no more than the loop needs), the boss's at 82 s, not 180
+  wild:  [28, 106.68998],   // intro ~14 s, then a 78.69 s phrase
+  elite: [27.75, 111.24621],   // 83.50 s
+  boss:  [20.8, 81.44388],  // 60.64 s
   eternatus: [46.25, 167.23327],   // the user's, 2026-10-18: a 120.98 s repeat (0.999 at the join), tools/loop.html
   eternamax: [11.4, 165.44764],    // the user's, 2026-10-18: a 154.05 s repeat (0.988 at the join)
   'energy-well': [11.45, 59.47],   // the user's, 2026-10-18: a 48.02 s repeat (0.988 at the join); its 16 s one (the finder's first) loops too soon
@@ -107,7 +110,7 @@ const LOOP_POINTS = {
   savanna: [17.3, 40.8109, 0.3],   // a 23.51 s repeat (0.95 melody match, 0.58 sample correlation at the join, so cross-faded); the file is 56.7 s, fading from ~48 s
   ruins:   [16.05, 77.13694, 0.3],   // a 61.09 s repeat (0.968 melody match, 0.912 sample correlation at the join, so cross-faded); the file is 133.4 s
   seal:    [41.4, 79.58037, 0.3],   // a 38.18 s repeat (0.975 melody match, 0.822 sample correlation at the join, so cross-faded); the file is 102.2 s; the Depths' map since 2026-10-09
-  'gym-room': [23.2, 57.11875],   // a 33.92 s repeat (0.999 melody match, 0.998 at the join); the file is 77.9 s
+  'gym-room': [9, 42.91875],   // a 33.92 s repeat (0.999 melody match, 0.998 at the join); the file is 77.9 s
   'gym-victory': [36.92, 78.862, 0.2],   // a 41.94 s repeat (0.997 melody match, 0.953 at the join); the file is 100.2 s, fading from ~95 s
   'gym-leader-battle': [17.83, 49.17744, 0.5],   // the file is a 60.4 s clip with no repeat in it (its best match 0.72), so the closest bars, cross-faded long; it fades from ~55 s
   thornwood: [20.2, 85.54415, 0.3],   // a 65.34 s repeat (0.888 melody match, 0.747 sample correlation at the join, so cross-faded; the finder's 16 s one at the top would skip most of the song); the file is 94.8 s, fading from ~86 s
@@ -711,8 +714,20 @@ class LoopedTrack {
       .catch(() => { this.onError(); return null; });
     return this.bytes;
   }
+  /* Decoded, a song is ~8 bytes a sample (~380 KB a second), so only the file up to the loop's end is: what comes after
+     (a fade-out, a second pass) never plays. The whole file if that part won't decode. */
   decode() {
-    this.decoded ||= (this.bytes || this.fetch()).then(data => data && ctx.decodeAudioData(data)).catch(() => null);
+    if (this.decoded) return this.decoded;
+    const bytes = this.bytes || this.fetch();
+    this.decoded = bytes.then(async data => {
+      if (!data) return null;
+      const need = this.loopEnd + this.xfade / 2, cut = mp3Upto(data, need + 1);
+      if (cut < data.byteLength) {
+        const part = await ctx.decodeAudioData(data.slice(0, cut)).catch(() => null);
+        if (part && part.duration >= need) { if (this.bytes === bytes) this.bytes = null; return part; }
+      }
+      return ctx.decodeAudioData(data);
+    }).catch(() => null);
     return this.decoded;
   }
   get currentTime() {
@@ -791,6 +806,24 @@ class LoopedTrack {
     // and its MP3's bytes (~2 MB a song, 60 MB once every song had played): fetched again from the browser's cache
     if (!keep) this.decoded = this.buffer = this.bytes = null;
   }
+}
+
+/** How many of an MP3's bytes hold at least its first `seconds`, in whole frames; all of them if it can't tell. A frame
+    leans only on the ones before it (the bit reservoir), so the frames kept decode as they would in the whole file. */
+const MP3_KBPS = [[0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160], [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320]];
+function mp3Upto(data, seconds) {
+  const b = new Uint8Array(data);
+  let i = 0, t = 0;
+  if (b[0] === 0x49 && b[1] === 0x44 && b[2] === 0x33) i = 10 + ((b[6] & 127) << 21 | (b[7] & 127) << 14 | (b[8] & 127) << 7 | (b[9] & 127)) + (b[5] & 0x10 ? 10 : 0);   // an ID3v2 tag
+  while (t < seconds) {
+    if (i + 4 > b.length) return b.length;
+    const ver = (b[i + 1] >> 3) & 3, layer = (b[i + 1] >> 1) & 3, rate = (b[i + 2] >> 2) & 3, kbps = MP3_KBPS[ver === 3 ? 1 : 0][b[i + 2] >> 4];
+    if (b[i] !== 0xff || (b[i + 1] & 0xe0) !== 0xe0 || ver === 1 || layer !== 1 || !kbps || rate === 3) return b.length;   // not an MPEG audio Layer III frame
+    const hz = [44100, 48000, 32000][rate] / (ver === 3 ? 1 : ver === 2 ? 2 : 4), per = ver === 3 ? 1152 : 576;
+    i += Math.floor(per / 8 * kbps * 1000 / hz) + ((b[i + 2] >> 1) & 1);
+    t += per / hz;
+  }
+  return Math.min(i, b.length);
 }
 
 function loadSound(name, url = SOUNDS[name]?.url) {

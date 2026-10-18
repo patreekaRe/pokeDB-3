@@ -3037,3 +3037,13 @@ other towns -15 to -23 MB; the Clearing while hidden 127 -> 45 MB. Places wake d
 errors; tests pass. iOS gives a page about 1.5-2 GB in all (an iPhone 17 Pro's log: `ActiveHard 2048 MB`), canvases,
 textures and drawing buffers alike; a Home Screen app has the same limit as a tab, but starts over from the title when
 iOS lets go of it in the background.
+
+### Phone reloads, round six: round five's next levers (2026-10-18)
+The four levers round five named, measured with `tools/memory-probe.mjs` (402 x 874 at 3x, before -> after): 2x
+multisampling on a touch screen (`msaa()` in `js/hd2d.js`; render buffers 27.5 -> 16.9 MB a smooth place); a song decoded
+only to its loop's end plus a second (`mp3Upto()` in `js/audio.js`, 17% less on average), and `wild` / `elite` / `boss` /
+`gym-room` looping from their phrase's second time round (boss 61 -> 28 MB, gym-room 26 -> 15); a town's ground at 2048 px,
+not 2560 (`GROUND_MAX`, ~57 -> ~35 MB); `KEEP_ROOMS` 2 with the newest town never let go there, and the map warming only
+that many rooms. Lantern Village 215 -> 183 MB, the Secret Base 89 -> 74, Mall 2F 173 -> 154, Britt's gym 128 -> 106, a
+boss fight 79 -> 46. Checked headless: every cut MP3 decodes past its loop (ffmpeg and Chromium), the four new joins as clean
+as the old, each song wraps at its new loop end, no page errors; tests pass.

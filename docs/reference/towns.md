@@ -510,3 +510,9 @@ the gym (~40MB) on top. Every way out of a town into a run (`townRoom()`'s leave
 `campStop()`) now calls `forgetTowns()` in `js/event-3d.js`, which disposes every built town and home: ~9MB stays (the
 post targets and shadow map). `dispose()` in `js/hd2d.js` now also frees an instanced mesh's matrices (a town's forest
 held ~8MB of them). Coming back to a town builds it again.
+
+## The ground's size (2026-10-18)
+
+A town's ground (`wildFloor()` in `js/event-3d.js`) is painted at most `GROUND_MAX` (2048) px a side, down from 2560: the
+canvas and its mipmapped texture went ~57 -> ~35 MB (headless, Lantern Village 215 -> 183 MB with 2x multisampling). That's
+still about a texel per scene pixel where a phone at Sharp looks (12 tiles across 603 px); on a big screen it's softer.

@@ -568,7 +568,7 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(posit
 /** The pass chain for one renderer: `size(w, h)` on every resize, then `draw(scene, camera, focusY)` each frame, focusY
     being where the sharp band sits (0 the bottom of the view, 1 the top). */
 /** `short`: the scene's size on its short side before scaling up; `crisp` scales up in whole pixels, else smoothly with
-    4x multisampling (the Secret Base's smooth furniture, 2026-10-09). */
+    multisampling (the Secret Base's smooth furniture, 2026-10-09; `msaa()`). */
 /* Played from the Home Screen, the game fills the whole screen: on a tall phone a third more pixels than the same view in
    the browser, under its bars, and it played that much worse (the user's report, 2026-10-16). There, no scene is drawn
    taller than SCREEN_ASPECT times its width in pixels: a little softer, the browser's cost. In the browser it never applies.
@@ -576,6 +576,11 @@ const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(posit
 const SCREEN_ASPECT = 1.75;
 export const fullScreenApp = () => new URLSearchParams(location.search).has('standalone')
   || navigator.standalone === true || (typeof matchMedia === 'function' && matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches);
+
+/* 4x multisampling keeps the scene four times over, its depth too: ~25 MB on an iPhone at Sharp, for every smooth place
+   awake (2026-10-18, a friend's iPhone still reloading the tab). A phone or tablet takes 2x, half that; on its small dense
+   screen, scaled up from the scene, the edges stay soft. */
+const msaa = () => (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches ? 2 : 4);
 
 export function createPost(renderer, { short = 420, crisp = true } = {}) {
   const bright = new THREE.ShaderMaterial({
@@ -655,7 +660,7 @@ export function createPost(renderer, { short = 420, crisp = true } = {}) {
       const k = scale(w, h);
       const sw = Math.round(w * k), sh = Math.round(h * k);
       rt?.dispose(); bloomA?.dispose(); bloomB?.dispose();
-      rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: crisp ? 0 : 4 });
+      rt = new THREE.WebGLRenderTarget(sw, sh, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, samples: crisp ? 0 : msaa() });
       rt.texture.colorSpace = THREE.SRGBColorSpace;
       const bw = Math.max(1, sw >> 1), bh = Math.max(1, sh >> 1);
       bloomA = new THREE.WebGLRenderTarget(bw, bh);

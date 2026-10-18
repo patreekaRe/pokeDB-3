@@ -3338,7 +3338,8 @@ function warmEvent3d() {
   const at = { biome: land().id, type: run.starter.type };
   setTimeout(() => import('./event-3d.js').then(m => {
     event3dMod = m;
-    kinds.forEach(k => m.preloadEvent(k, at));
+    // no more than the rooms kept, or the first warmed is let go before it's walked into (the gym last, so it's kept)
+    kinds.slice(0, Math.max(0, m.KEEP_ROOMS - (leader ? 1 : 0))).forEach(k => m.preloadEvent(k, at));
     if (leader) { m.preloadEvent('gym', { ...at, leader }, { npc: { npc: spriteOf(leader) } }); preloadMusic('gym-room'); }
   }).catch(() => { warmEvent3d.map = null; }), 1800);
 }
