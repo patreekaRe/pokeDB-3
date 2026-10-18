@@ -165,6 +165,7 @@ const LOOK = {
   jackpot: ['circle', ['#fff090', '#f0c030', '#a07010'], 'coin'],
   'black-belt': ['octagon', ['#8890a0', '#40444c', '#141418'], 'fist'],
   eternal: ['gem', ['#ffb8c8', '#d02850', '#600c28'], 'facet'],
+  'star-depths': ['star', ['#f4f0ff', '#b080f0', '#482090'], 'sparkle'],
   thunder: ['bolt', ['#ffe0a0', '#f89820', '#984800']],
   legend: ['star', ['#ffffff', '#b8c8ff', '#4c5aa0']],
   'sky-king': ['crown', ['#e8f8ff', '#78c0f0', '#2c6098']],

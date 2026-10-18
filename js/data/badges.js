@@ -231,6 +231,8 @@ export const BADGES = [
   { id: 'eternal', group: 'secrets', name: 'Eternal Badge', icon: 'eternal', emoji: '♾️', secret: true,
     text: 'Defeat Eternatus twice',
     test: (s, save) => (s.bossKills?.[4] || 0) >= 2 || (save.hallOfFame || []).filter(w => w.starter === 'mewtwo').length >= 2 },
+  { id: 'star-depths', group: 'secrets', name: 'Star of the Depths', icon: 'star-depths', emoji: '🌟', secret: true,
+    text: 'Beat Eternatus with all five Waystones lit, and bind the Well', test: (s, save) => !!save.depthsBound },
   { id: 'pokedex', group: 'secrets', name: 'Pokédex Badge', icon: 'pokedex', emoji: '📕',
     text: 'Complete the research of every Pokédex entry', test: (s, save) => !!save.dex?.complete },
   { id: 'safari', group: 'secrets', name: 'Safari Badge', icon: 'safari', emoji: '🦺',

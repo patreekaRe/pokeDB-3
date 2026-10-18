@@ -40,7 +40,7 @@ import { EVENTS_BY_ID, NPCS, snorlaxWakesAt, trashDig, dittoMorph, eventsFor, wh
 import { PRIZE_MONEY, MART_CARD_PRICES, MART_RELIC_PRICES, MART_ITEM_PRICES, MART_JITTER, MART_REMOVAL, MART_STOCK, BRITT_TALKS } from './data/mart.js';
 import { checkAchievements, checkFeats, checkBadges } from './progress.js';
 import { post, mailOn } from './mail.js';
-import { badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
+import { BADGES_BY_ID, badgeLine, towerWeeks, safariDays, guardiansBeaten } from './data/badges.js';
 import { openTrainerCard, cardIcon, cardTier, badgeNews, showBadgeNews, trainerTile } from './trainercard.js';
 import { openDeviceApp } from './collection.js';
 import { smoothIcon, roundKey } from './smooth-icons.js';
@@ -59,6 +59,7 @@ import { battleWipe } from './transition.js';
 import { biomeIntro, placeIntro } from './biome-intro.js';
 import { bootDevice } from './device-boot.js';
 import { evolutionScene, preloadEvolution } from './evolution.js';
+import { wellEnding } from './well.js';
 import { recordWin, recordLoss, lossRecap, draftWin, draftSummit, fameNo, winScene, preloadWinScene, conquered } from './halloffame.js';
 import { gateScene } from './gatescene.js';
 import { descent } from './descent.js';
@@ -5301,8 +5302,14 @@ function endRun(won, atLastBoss = false, loss = null) {
 
   // ?bossfight=depths: the ending plays (scene, credits, the achievement's window) without a thing saved
   if (won && peeking && mewtwoRun) record = draftWin(run, getSave().shiny.on.includes(run.starter.id));
+  // Eternatus beaten: the Well's ending first; with all five Waystones lit Mewtwo binds it (the Star of the Depths badge)
+  const shards = sealOn() ? shardsPlaced(getSave()) : RING.length;
+  const well = won && mewtwoRun && { stage: run.stage, shiny: getSave().shiny.on.includes(run.starter.id), shards,
+    bind: !sealOn() ? 'plain' : shards >= RING.length ? 'full' : 'part' };
+  if (well?.bind === 'full' && !peeking) updateSave(d => { d.depthsBound = true; });
   const gate = strikeGate(won, atLastBoss);
   const fresh = announceUnlocks();   // a lost run can still have earned one (and an old save's goals are granted here too)
+  if (well?.bind === 'full' && peeking) run.badges.push(BADGES_BY_ID['star-depths']);
   if (won && run.research) fresh.unshift(run.research);   // the last boss's own research, first so Mewtwo's reveal stays last
   if (won && peeking && mewtwoRun) fresh.push({ ...FEATS.find(f => f.id === 'eternatus'), feat: true, paid: 0 });
 
@@ -5349,6 +5356,11 @@ function endRun(won, atLastBoss = false, loss = null) {
     if (gate?.scene?.kind === 'camp') {   // a walk only when something new waits there, else Mewtwo's one line (2026-10-15)
       if (campNews()) { await campAfterWin(close); close = null; }
       else await gymTalk(mewtwoTalker(), [landLine(shardsPlaced(getSave()))], { lit: true, title: '', look: 'psychic' });
+    }
+    if (well) {
+      const shut = await wellEnding(well);
+      const prev = close;
+      close = () => { prev?.(); shut(); };
     }
     const next = record ? winScene(record) : lostEntry ? lossRecap(lostEntry) : null;
     if (close) setTimeout(close, 800);   // the open gate's dark scene stays under the next one until it covers the screen

@@ -104,6 +104,20 @@ Moved out of CLAUDE.md on 2026-10-14 so every session loads less; the text is un
   treasure grotto (`PLACE_ART.treasure.biomes.depths`, a Master Ball chest). Its map plays `seal`, the fall's song
   carrying on (its `music`, 2026-10-09, the user's call); `map4`, the user's song that was the Depths' (looped at
   6.0-45.747 s, `TRACK_GAIN` 0.18), is the Sky Pillar climb's since (`showMap()`).
+  **The Energy Well** (2026-10-18, the user's script): before that win scene, `endRun()` in `js/run.js` plays
+  `wellEnding()` (`js/well.js`, `#well-scene`, z-index 949, one low-res 2D canvas, no WebGL): a white-out and a rumble
+  (`calmFx()`: no shake, a softer white), narrator lines, the vortex cooling red to violet (`cool`), Eternatus's sprite
+  dimmed and curled with its cry slowed (`playCry(..., { rate: 0.7, echo: true })`), then Mewtwo's talk (`gymTalk()`,
+  `look: 'psychic'`, the run's own stage and shiny; lines in `wellLines()`). The branch is `bind`: `'full'` (all five
+  shards placed) draws the five towns' star in their `RING` colours over the Well, flashes it and sinks it in, the Well
+  cooling to crystal white, and sets `save.depthsBound` (the **Star of the Depths** badge, `star-depths`, a `LOOK` line in
+  `js/trainercard.js`; a peek only shows it in the result window); `'part'` (fewer) only closes the Well ("it will stir
+  again", the strength from `sealedMult()`); `'plain'` (the shards don't count yet, `sealOn()` false) says the full lines
+  without the star or badge. Then Mewtwo thanks you, the light rises, and five **epilogue stills** fade in a line each
+  (`SLIDES`: Lantern Village's Waystone at night, the Nietos by the PC, the Gym Leaders you've beaten (all of them if
+  none, two rows past seven), the empty camp, Eternatus drifting over the title's sky), painted on their own 2D canvas.
+  The Well plays `seal` (the fanfare gives way to it); `hall-of-fame` comes back with the win scene. After the credits'
+  THE END, a black screen, a chime and Mewtwo's last word (the camp's, or the gate's before the shards count).
   **The ending** (part D, 2026-10-03, the user's picks): a Mewtwo win is the **Champion of the Depths**: `winScene()` in
   `js/halloffame.js` plays its own version (`.hof-scene.depths`: a violet cavern with crystal clusters and stalactites, a
   crystal pedestal trimmed in gold, the party in violet / crystal / gold, `celebrate()`'s `psychic` palette), then

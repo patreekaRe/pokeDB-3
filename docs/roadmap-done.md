@@ -2986,3 +2986,9 @@ New card keys `rank`, `top`, `fave`, `pillar` need `firestore.rules` published a
 
 Map boss in colour (2026-10-18): the boss above its room on the map is coloured in once the Pokédex has met it, as
 on the crossroads, instead of always a grey silhouette (`met` in `renderMap()`, `js/map.js`).
+
+The Depths' new ending (2026-10-18, the user's script, written with Claude the same day): after Eternamax falls, the
+Energy Well (`wellEnding()` in `js/well.js`, `#well-scene`, 2D only): a white-out and rumble, the vortex cooling to violet,
+Eternatus curled dim, Mewtwo's talk; with all five Waystones lit the five towns' star binds the Well (the **Star of the
+Depths** badge, `save.depthsBound`), with fewer it only closes it; then five painted epilogue stills, the trimmed Champion
+of the Depths scene, the credits and Mewtwo's last word after them (`js/credits.js`). Playtest `?bossfight=depths&hp=0.001&shards=5` (or `=1`).

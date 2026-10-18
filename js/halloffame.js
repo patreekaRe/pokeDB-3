@@ -268,7 +268,7 @@ export async function winScene(entry) {
   scene.classList.add('plate-in');
   fx?.finale();
   await sceneSay('hof-scene', 'hof-log', depths
-    ? ['Eternatus\'s energy is spent. The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
+    ? ['The Crystal Depths fall quiet.', `${name} is the CHAMPION OF THE DEPTHS!`]
     : summit ? ['Rayquaza bows its head and soars off. Above the summit there is only sky.', `${name} climbed all ${entry.floor} floors of the SKY PILLAR!`]
     : fame ? ['Welcome to the HALL OF FAME!', `${name} became a champion on Trainer Level ${entry.level}!`]
     : [`${name} conquered ${conquered(entry.route)} on Trainer Level ${entry.level}!`]);
@@ -279,7 +279,7 @@ export async function winScene(entry) {
 
   extra.replaceChildren(deckStrip(entry));
   await sceneSay('hof-scene', 'hof-log', [`${name}'s final deck: ${entry.deck.length} cards.`, depths
-    ? `It is entered in the Hall of Fame as ${numberOf(entry)}. The wild Pokémon above can rest at last.`
+    ? `It is entered in the Hall of Fame as ${numberOf(entry)}.`
     : summit ? (entry.counts ? `${entry.turns} turns to the top: the week's leaderboard ranks summits by fewest turns. Congratulations!`
       : `${entry.turns} turns to the top. Congratulations!`)
     : fame ? `It is entered in the Hall of Fame as ${numberOf(entry)}. Congratulations!`

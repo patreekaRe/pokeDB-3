@@ -7,6 +7,8 @@ import { el, sleep } from './ui.js';
 import { STARTERS_BY_ID, spriteUrl, stageName } from './data/starters.js';
 import { ENEMY_DEFS, BIOMES } from './data/enemies.js';
 import { PATCHES } from './data/patchnotes.js';
+import { sealOn } from './data/towns.js';
+import { playSound } from './audio.js';
 
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SECONDS = 38;   // the roll's length at its own pace
@@ -57,6 +59,8 @@ function rollOf(entry) {
   return roll;
 }
 
+const tapped = (layer) => new Promise(resolve => layer.addEventListener('click', (e) => { e.stopPropagation(); resolve(); }, { once: true }));
+
 /** Roll the credits over `scene`; resolves once THE END is tapped away. */
 export async function rollCredits(scene, entry) {
   const layer = el('div', 'hof-credits scene-keep');
@@ -80,7 +84,17 @@ export async function rollCredits(scene, entry) {
   }
   layer.classList.add('ended');
   await sleep(still() ? 0 : 900);
-  await new Promise(resolve => layer.addEventListener('click', (e) => { e.stopPropagation(); resolve(); }, { once: true }));
+  await tapped(layer);
+  // after the credits: the dark, a crystal's chime, and Mewtwo's last word (the camp's once the shards count, else the gate's)
+  const coda = el('div', 'credits-coda');
+  coda.append(el('small', '', 'MEWTWO'), el('p', '', `...I will be at the ${sealOn() ? 'camp' : 'gate'}. When you want to fight together again.`));
+  layer.append(coda);
+  layer.classList.add('coda');
+  await sleep(still() ? 0 : 1100);
+  playSound('crystal-2');
+  coda.classList.add('in');
+  await sleep(still() ? 0 : 700);
+  await tapped(layer);
   layer.classList.add('out');
   await sleep(still() ? 0 : 500);
   layer.remove();
