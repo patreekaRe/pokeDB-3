@@ -9,6 +9,50 @@ Every session prompt starts with its "Run in:" line (CLAUDE.md, "Cloud or local"
 
 ## Open, ready to build
 
+**▶ Run in: CLOUD. Safari shinies: catching, Sparkle levels and the Shiny Exchange** (the user's asks, 2026-10-18;
+agreed on the mock https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy, boards 1-7). Decided:
+- **Shiny catching**, look only: any wild in a Safari room is shiny at `SHINY_ODDS` (1 in 150), rares too; the same
+  fight, HP, moves and catch odds, so the roll is cosmetic (`Math.random`, off the daily seed: the run and leaderboard
+  stay the same for everyone). It comes out in the starters' ✨ burst (`shinySparkle()` in `js/battle.js`) under a gold
+  "A SHINY X APPEARED!" banner and sparkles all fight; the ball's shakes trail gold. Knocked out, it's gone. Caught, the
+  GOTCHA box says NEW SHINY (and fills its Safari Pokédex page if new), or raises its Sparkle if owned.
+- **Sparkle** ★1-★5 per owned Safari shiny (a duplicate +1). Shown on its signature card (★1 shiny art, ★2 a burst when
+  played, ★3 a glowing edge, ★4 sparkles over the art, ★5 a gold frame and foil, under `calmFx()`), the catch box, the
+  Safari Pokédex and its Secret Base resident. Wild Pokémon stay their normal colours whatever you own.
+- **The Shiny Exchange**: a kiosk on the Outfitter's floor right of the Day Pass dais (tile 13,8), facing the door, no
+  taller than the booth; its LED screen cycles the Safari shinies (a shadow until caught); a capsule tray at its base.
+  Its window (dark hi-tech, not the Pokédex look): six biome banners, each a capsule machine of the shinies you've
+  caught. Coins only pull, never buy outright (the user's call): 150 a pull, x10 for 1,500 always holding a gold one.
+  Duplicates allowed (a duplicate is +1 Sparkle and 2 Lucky Stars, 3 past ★5; about 1 plain capsule in 3 is a shiny you
+  don't own yet). A gold capsule is a rare (8%, +4% each plain one, back to 8% after a gold). Every capsule is a Lucky
+  Star; 10 pick any caught shiny free (a prism capsule). The reveal: the capsule drops in the tray (a gold one shows
+  plain, then turns gold), a tap opens it (rays, stars), the shadow holds (a gold one shakes), a flash, the shiny.
+  Capsules are smooth SVG in the window (no new GL context); the tray's one is a sphere in the lodge's own scene.
+- Sprites: every Safari Pokémon (514, all Gen 1-5) has PokeAPI's black-white animated shiny, the source of the normal
+  ones; numbers from `raw.githubusercontent.com/PokeAPI/pokeapi/master/data/v2/csv/pokemon.csv` (pokeapi.co is blocked).
+
+Three sessions, in order:
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md, cards.md and economy-and-hall-of-fame.md's shiny part, and
+> this roadmap entry. Session 1, shiny catching and Sparkle: fetch every Safari Pokémon's shiny front GIF as
+> `assets/pokemon/<id>-shiny-front.gif` (`SPRITE_FIT` lends the normal entry), add the save's Safari shinies (id ->
+> Sparkle), roll a wild shiny in a Safari run's rooms (kept in a saved run), the battle's entrance, banner, gold shakes
+> and catch box, and the signature card's Sparkle looks. Tests for the save and the roll; no sim change (look only).
+> Check headless with `?biome=` / `?safari` flags (no screenshots), a patch-notes line, update this entry, push to main
+> and give me the githack link.
+
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/hub-base-mall.md's Safari Outfitter part and this roadmap entry.
+> Session 2, the Shiny Exchange: the kiosk in the lodge, its LED screen and tray, the Exchange window, the capsule pulls
+> (duplicates, Sparkle, gold odds, Lucky Stars) and the reveal, as on the mock's boards 1-5. Mind the GPU rules (one
+> context, `calmFx()`, nothing kept after the window closes). Tests for the pull rules; check headless at
+> `?mall=outfitter&ribbon&coins=5000` (no screenshots), a patch-notes line, update this entry, push to main and give
+> me the githack link.
+
+> Run in: CLOUD. Read CLAUDE.md, docs/reference/safari.md's Safari Pokédex part, hub-base-mall.md's residents and the
+> Ranger Task Board, and this roadmap entry. Session 3, shinies everywhere else: the Safari Pokédex shows owned shinies
+> and their Sparkle (a shiny toggle on a page), Secret Base residents come out shiny, Ranger tasks for shiny catches,
+> the Trainer Card's count and a ✨ on the day's leaderboard. Check headless, a patch-notes line, move this entry to
+> docs/roadmap-done.md, push to main and give me the githack link.
+
 **▶ Run in: CLOUD. The towns' draw calls** (found by the 2026-10-17 performance check: Ruins drew 677 times a frame,
 Thornwood 601, Savanna 549, Lantern Village 154, Cinder Springs 186). One town a session, the user checking each on their
 phone. **Driftwood Landing done 2026-10-17** (`stillParts()` in `js/event-3d.js`, `merge: true` on the `lagoon` style;
@@ -1048,22 +1092,6 @@ Each is ▶ Run in: CLOUD (both repos), one per session, with art, `describe()` 
 - Friends phase 2 (signs, ghosts, Lost & Found gifts, an Assist): see "Friends list and base visits" above.
 
 ## Waiting on the user
-- **The Safari Shiny Exchange, a mock** (2026-10-18, the user's ask): a kiosk in the Safari Outfitter for the shinies
-  of every Safari Pokémon (516 on the pages), its LED screen cycling them (a shadow until caught), opening a hi-tech
-  window (not the Pokédex look) of biome banners. Made a gacha the same day (the user's ask, "but fun"): each biome is a
-  capsule machine that only draws caught shinies you don't own (never a repeat), a gold capsule for a rare (8%, +4% a
-  plain one), a multi-pull always holding a gold one, a Lucky Star a capsule and 10 to pick any free, 150 coins a
-  pull. No buying one outright (the user's call: it undercut the gacha); the biome's grid only shows what's inside. The reveal: the capsule drops into the
-  kiosk's tray, a tap opens it, the shadow holds (a gold one shakes gold), a flash, the shiny. Placed on the floor right
-  of the Day Pass dais (tile 13,8), facing the door, no taller than the booth (the user wanted it front-facing and
-  obvious). Mock: https://claude.ai/artifact/9uB1Mu3pG2C6WLFQRQctQy. Then (same day, the user's calls): duplicates allowed, each
-  raising that shiny's **Sparkle** ★1-★5 (+2 Lucky Stars, +3 past ★5; about 1 plain capsule in 3 still a new one); an
-  owned shiny shows in all three places (the Safari Pokédex, Secret Base residents, and in Safari runs on its signature
-  card and the catch box, framed by its Sparkle; wild ones stay normal); **shiny catching** in Safari runs, look only:
-  ~1 in 150 wilds shiny, the same fight and catch odds, rolled off the daily seed so the run and leaderboard stay the
-  same, a catch adding it or raising its Sparkle. Capsules smooth SVG (biome-coloured, gold, a prism one for the Lucky
-  Star pick; a gold one shows plain until it turns gold in the tray). The user checks the mock's boards 5-7 next.
-
 - **Smoother transitions, on a phone** (2026-10-18, the user's ask; `docs/roadmap-done.md`): a new run's Clearing film,
   its first wild fight's wipe, the Shrine's and Wastes' films (biome and place) were measured headless and fixed. The
   user plays a new run on their phone and says whether the first fight's wipe and the films still stutter. Not fixed:
