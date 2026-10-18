@@ -7,12 +7,13 @@ import { getSave, updateSave } from './storage.js';
 import { playSound } from './audio.js';
 import { el } from './ui.js';
 import { calmFx } from './prefs.js';
-import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID } from './data/satchel.js';
-import { RECIPES, TABS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
+import { satchelOf, addKey, KEY_BY_ID, MATERIALS_BY_ID, matHints } from './data/satchel.js';
+import { RECIPES, TABS, FRIENDS, GIFTS, GIFT_BY_ID, gifteeOf, workshopOf, shortOf, isMade, shows, spend, madeInto, giveGift, needsLine, heartsOf, repeats, REPEAT, GIFT_TOLD } from './data/workshop.js';
 import { RING, townState, CLEARING } from './data/towns.js';
 import { toldHeld, tellHeld } from './held-tips.js';
 import { GYM_BY_ID, friendWins } from './data/gym.js';
 import { PIECES } from './secret-base.js';
+import { BIOMES_BY_ID } from './data/enemies.js';
 
 /** What the Workshop can see of the save, for shows(); `?hearts=N` puts every friend at N, so their secret recipes show. */
 const heartsPeek = () => { const n = new URLSearchParams(location.search).get('hearts'); return n === null ? null : +n || 0; };
@@ -108,6 +109,9 @@ function stateOf(r, ws, sat) {
   if (isMade(r, ws, sat)) return 'made';
   return shortOf(r, sat).length ? 'short' : 'ready';
 }
+/** Where a material drops, for its slot's tap. */
+export const whereOf = (m) => matHints(m, BIOMES_BY_ID[m.biome]?.name, FRIENDS.some(id => GYM_BY_ID[id]?.biome === m.biome));
+
 const missing = (r, sat) => shortOf(r, sat).reduce((n, m) => n + m.need - m.have, 0);
 const ORDER = { ready: 0, short: 1, carried: 2, made: 3 };
 
@@ -125,7 +129,7 @@ export function openWorkshop() {
   close.type = 'button';
   d.append(head, talk, tabs, card, list, close);
   document.body.append(d);
-  let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, busy = false, aside = false;
+  let tab = TABS.find(t => shelf(t.id).length)?.id ?? 'skin', picked = null, hint = null, busy = false, aside = false;
   const line = (t) => { say.textContent = t; };
   const draw = () => {
     const save = getSave(), sat = satchelOf(save), ws = workshopOf(save);
@@ -171,14 +175,24 @@ export function openWorkshop() {
     const top = el('div', 'craft-top');
     top.append(pic, info);
     const mats = el('div', 'craft-mats');
+    if (!(hint in r.needs)) hint = null;
     for (const [id, need] of Object.entries(r.needs)) {
       const m = MATERIALS_BY_ID[id], have = sat.mats[id] || 0, ok = have >= need;
-      const slot = el('div', `craft-mat${ok ? ' ok' : ''}`);
+      const slot = el('button', `craft-mat${ok ? ' ok' : ''}${hint === id ? ' on' : ''}`);
+      slot.type = 'button';
+      slot.title = `Where to find ${m?.name ?? id}`;
       const bar = el('span', 'craft-bar'), fill = el('i');
       fill.style.width = `${Math.min(100, have / need * 100)}%`;
       bar.append(fill);
-      slot.append(el('span', 'craft-mat-ico', m?.icon ?? '?'), el('span', 'craft-mat-name', m?.name ?? id), el('span', 'craft-mat-n', `${Math.min(have, 99)}/${need}`), bar);
+      slot.append(el('span', 'craft-mat-ico', m?.icon ?? '?'), el('span', 'craft-mat-name', m?.name ?? id), el('span', 'craft-mat-n', `${Math.min(have, 99)}/${need}`), bar, el('span', 'craft-mat-q', '?'));
+      slot.addEventListener('click', () => { if (busy) return; playSound('select'); hint = hint === id ? null : id; drawCard(o, ws, sat); });
       mats.append(slot);
+    }
+    const tip = hint && MATERIALS_BY_ID[hint];
+    if (tip) {
+      const box = el('div', 'craft-where');
+      box.append(el('p', 'craft-where-head', `${tip.icon} Where to find ${tip.name}`), ...whereOf(tip).map(t => el('p', 'craft-where-line', t)));
+      mats.append(box);
     }
     const madeSkin = r.kind === 'skin' && ws.made.includes(r.id);
     const go = el('button', `craft-make ${st}`, madeSkin ? (ws.skin === r.makes ? 'Put away' : 'Carry it') : st === 'made' ? 'Made ✓' : st === 'ready' ? (keptOf(r, ws) ? 'Make another' : 'Make it!') : `Need ${missing(r, sat)} more`);

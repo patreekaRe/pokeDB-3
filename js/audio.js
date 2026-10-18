@@ -296,6 +296,7 @@ let homeTrack = 'title';   // what playMusic('title') plays: 'clearing-hub' whil
 export const musicNow = () => current;
 
 let lastCue = -1;          // ctx time the latest effect started
+let asked = 0, askedAtTap = 0;   // effects asked for, counted before playSound() waits on a suspended context
 
 /* A 3D room presses its own buttons when your partner arrives at what you tapped; the blip already played on the tap
    (the user's ask, 2026-10-12: the confirm sound on the tap, not on arrival), so that press stays quiet. */
@@ -311,9 +312,10 @@ const CONTROLS = 'button, a[href], [role="button"], [role="tab"], summary, .map-
 const CANCELS = '#reward-skip, #cdev-b, #sel-back, .pdx-back, #dex-close, #confirm-no, .sheet-close, form[method="dialog"] button, .card-zoom';
 function menuBlip(e) {
   if (!ctx || performance.now() < hushUntil || !e.target.closest?.(CONTROLS)) return;
-  const at = ctx.currentTime;
+  const at = ctx.currentTime, since = askedAtTap;
   const name = e.target.closest(CANCELS) ? 'cancel' : 'confirm';
-  setTimeout(() => { if (lastCue < at) playSound(name, 'confirm'); });
+  // the tap's own effect can still be waiting on iOS waking the context, so count it as asked, not only as started
+  setTimeout(() => { if (lastCue < at && asked === since) playSound(name, 'confirm'); });
 }
 
 // iOS only moves a range input from its small thumb; a finger anywhere on the bar grabs it here and drags from there
@@ -371,6 +373,7 @@ export function initAudio() {
   initSoundPops();
 
   UNLOCK_EVENTS.forEach(type => document.addEventListener(type, unlock, true));
+  document.addEventListener('click', () => { askedAtTap = asked; }, true);
   document.addEventListener('click', menuBlip);
   // Escape on a modal window (`cancel` doesn't bubble, so listen while it captures)
   // a window with a data-close-sound plays its own as it closes (the title PC's pc-off), so it skips this one
@@ -453,6 +456,7 @@ function awake() {
  */
 export async function playSound(name, fallback) {
   if (getSave().muted) return 0;
+  asked++;
   let buffer = await loadSound(name);
   if (!buffer && fallback) buffer = await loadSound(name = fallback);
   if (!buffer || !await awake()) return 0;

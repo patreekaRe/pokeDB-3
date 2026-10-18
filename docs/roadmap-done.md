@@ -3064,3 +3064,8 @@ lag now and then. Traced headless: the flying clone was restyled by JS every fra
 text box and the hand's full rebuild share, and the Ability chip repainted every frame. Now the flight is a Web Animation,
 `renderHand()` keeps unchanged cards (0 rebuilt over 20 taps, was 100) and the chip animates transform and opacity
 (`battle-screen-layout.md`).
+
+## Where a material drops, on a tap (2026-10-18, the user's ask; branch `claude/material-drop-source-vtltyf`)
+Kurt's Workshop's material slots are buttons now: a tap opens a box under them saying where it drops (its biome's wild
+Pokémon, Alphas and boss, its sparkling rooms, where the biome sits on the road, a friend's letter), a second tap shuts it.
+One source of truth, `matHints()` in `js/data/satchel.js`, also feeds the Satchel app (`tests/quests.test.mjs`).
