@@ -5561,19 +5561,41 @@ body:has(#reward-options.deck-pick) :is(.mart3d-sign, .town-stage) { display: no
 body:has(#reward-options.c3d) #reward-screen { cursor: pointer; }
 /* the pixel room never shows while the 3D one loads (c3d-wait); if Three.js fails the wait comes off and it's back */
 body:has(#reward-options:is(.c3d, .c3d-wait)) :is(#scene-bg, #scene-light, #backdrop) { visibility: hidden; }
-/* a 3D place that keeps you waiting (load3d()): your Pokémon hops by a rolling Poké Ball, faded in only after half a
-   second so a quick load never flashes it */
-.loading-mark {
-  position: fixed; left: 50%; top: 46%; translate: -50% -50%; z-index: 3; pointer-events: none;
-  display: flex; align-items: flex-end; gap: 6px; opacity: 0; animation: loading-in 0.25s 0.5s forwards;
+/* a 3D place that keeps you waiting (load3d()): its name on a banner bottom left, your Pokémon hopping by a rolling
+   Poké Ball bottom right, and the room bar out of the way; all after half a second, so a quick load never flashes it */
+.loading-mark { position: fixed; inset: 0; z-index: 3; pointer-events: none; opacity: 0; animation: loading-in 0.25s 0.5s forwards; }
+body:has(.loading-mark:not(.out)) #reward-screen.in-room .room-bar { animation: loading-out 0.25s 0.5s forwards; pointer-events: none; }
+/* once the room is up the screen fades out over it, the room bar fading back in */
+.loading-mark.out { opacity: 1; animation: loading-out 0.3s forwards; }
+body:has(.loading-mark.out) #reward-screen.in-room .room-bar { animation: loading-back 0.3s both; }
+.loading-buddy {
+  position: absolute; right: 16px; bottom: calc(24px + env(safe-area-inset-bottom));
+  display: flex; align-items: flex-end; gap: 2px;
 }
-.loading-mark img { image-rendering: pixelated; }
-.loading-mon { height: 96px; animation: loading-hop 0.6s steps(2, jump-none) infinite alternate; }
-.loading-ball { width: 60px; height: 60px; margin-bottom: 4px; animation: loading-roll 0.8s steps(8) infinite; }
-.loading-mark.calm :is(.loading-mon, .loading-ball) { animation: none; }
+.loading-buddy img { image-rendering: pixelated; }
+.loading-mon { height: 56px; animation: loading-hop 0.6s steps(2, jump-none) infinite alternate; }
+.loading-ball { width: 30px; height: 30px; margin-bottom: 2px; animation: loading-roll 0.8s steps(8) infinite; }
+.loading-banner {
+  position: absolute; left: 0; bottom: calc(24px + env(safe-area-inset-bottom));
+  display: grid; gap: 6px; padding: 10px 34px 10px 18px; min-width: 150px;
+  background: linear-gradient(90deg, var(--shell) 0 6px, rgba(18, 20, 42, 0.92) 6px);
+  border-block: 2px solid var(--gold); color: var(--ink);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
+  animation: loading-slide 0.3s 0.5s both ease-out;
+}
+.loading-place { font-size: 0.875rem; font-weight: normal; letter-spacing: 0.04em; }
+.loading-word { font-size: 0.75rem; color: var(--gold); letter-spacing: 0.12em; text-transform: uppercase; }
+.loading-word i { font-style: normal; animation: loading-dot 1.2s steps(1) infinite; }
+.loading-word i:nth-child(2) { animation-delay: 0.3s; }
+.loading-word i:nth-child(3) { animation-delay: 0.6s; }
+.loading-mark.calm :is(.loading-mon, .loading-ball, .loading-banner, .loading-word i) { animation: none; }
 @keyframes loading-in { to { opacity: 1; } }
-@keyframes loading-hop { to { translate: 0 -8px; } }
+@keyframes loading-out { to { opacity: 0; visibility: hidden; } }
+@keyframes loading-back { from { opacity: 0; } }
+@keyframes loading-hop { to { translate: 0 -6px; } }
 @keyframes loading-roll { to { rotate: 1turn; } }
+@keyframes loading-slide { from { translate: -100% 0; } }
+@keyframes loading-dot { 0% { opacity: 0; } 25% { opacity: 1; } }
 /* the signs are small cream speech windows, a thin border in the choice's colour (the user's pick, 2026-10-09) */
 #reward-options.c3d .center-label {
   bottom: 8px; padding: 7px 12px 6px;

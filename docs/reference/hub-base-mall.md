@@ -394,6 +394,10 @@ walks it and sells (`wareTap()`, `passTap()`, `thanks()`).
 
 ### The Ranger Task Board (2026-10-16)
 
+- **Its tabs wrap** (2026-10-18, the user couldn't see them all on a phone): `.rb-tabs` is a grid of `minmax(150px, 1fr)`
+  columns, so four in a row on a PC and two rows of two on a phone, a long name on two lines; it was one row scrolling
+  sideways with its scrollbar hidden, so the last two tabs sat off screen with no sign of them. The Journal shares it.
+
 The user's ask: a board that tracks things for players ("catch 10 for a piece of furniture"), a tracker per task and a
 claim, "cool and immersive when they pull it up"; no Pokémon dolls as rewards (the user's call). The tasks are
 `TASKS` in `js/data/ranger.js` (pure, `tests/ranger.test.mjs`), 92 in three tabs (`TABS`): **Field Research** (different
